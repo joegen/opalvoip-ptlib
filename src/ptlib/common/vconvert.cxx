@@ -1781,17 +1781,10 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     return false;
   }
 
-  static const unsigned greenOffset = 1;
-
-  unsigned height = PMIN(srcFrameHeight, dstFrameHeight)&(UINT_MAX-1); // Must be even
-  unsigned width = PMIN(srcFrameWidth, dstFrameWidth)&(UINT_MAX-1);
-
-  unsigned    yplanesize = srcFrameWidth*srcFrameHeight;
+  unsigned    yplaneSize = srcFrameWidth*srcFrameHeight;
   const BYTE *yplane     = srcFrameBuffer;        // 1 byte Y (luminance) for each pixel
-  const BYTE *uplane     = yplane+yplanesize;     // 1 byte U for a block of 4 pixels
-  const BYTE *vplane     = uplane+(yplanesize/4); // 1 byte V for a block of 4 pixels
-
-  BYTE * dstScanLine   = dstFrameBuffer;
+  const BYTE *uplane     = yplane+yplaneSize;      // 1 byte U for a block of 4 pixels
+  const BYTE *vplane     = uplane+yplaneSize/4;      // 1 byte V for a block of 4 pixels
 
 #ifdef P_MEDIALIB
   const BYTE *y0;
@@ -1815,25 +1808,37 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   }
 #else
 
-  unsigned int srcPixpos[4] = { 0, 1, srcFrameWidth, srcFrameWidth + 1 };
-  unsigned int dstPixpos[4] = { 0, rgbIncrement, dstFrameWidth*rgbIncrement, (dstFrameWidth+1)*rgbIncrement };
+  static const unsigned greenOffset = 1;
+
+  unsigned srcPixpos[4] = { 0, 1, srcFrameWidth, srcFrameWidth + 1 };
+  unsigned dstPixpos[4] = { 0, rgbIncrement, dstFrameWidth*rgbIncrement, (dstFrameWidth+1)*rgbIncrement };
+
+  BYTE * dstScanLine = dstFrameBuffer;
+  int dstScanLineSize = 2*rgbIncrement*dstFrameWidth;
 
   if (verticalFlip) {
     dstScanLine += (dstFrameHeight - 2) * dstFrameWidth * rgbIncrement;
+    dstScanLineSize = -dstScanLineSize;
     dstPixpos[0] = dstPixpos[2];
     dstPixpos[1] = dstPixpos[3];
     dstPixpos[2] = 0;
     dstPixpos[3] = rgbIncrement;
   }
 
-  for (unsigned y = 0; y < height; y += 2)
+  unsigned srcLineSizeY = srcFrameWidth*2;
+  unsigned srcLineSizeUV = srcFrameWidth/2;
+
+  unsigned height = std::min(srcFrameHeight, dstFrameHeight)/2;
+  unsigned width = std::min(srcFrameWidth, dstFrameWidth)/2;
+
+  for (unsigned y = 0; y < height; ++y)
   {
     BYTE * dstPixelGroup = dstScanLine;
-    for (unsigned x = 0; x < width; x += 2)
+    for (unsigned x = 0; x < width; ++x)
     {
       // The RGB value without luminance
-      long cb = *uplane-128;
-      long cr = *vplane-128;
+      long cb = uplane[x]-128;
+      long cr = vplane[x]-128;
       long rd = FIX(1.40200) * cr + ONE_HALF;
       long gd = -FIX(0.34414) * cb -FIX(0.71414) * cr + ONE_HALF;
       long bd = FIX(1.77200) * cb + ONE_HALF;
@@ -1842,7 +1847,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
       for (unsigned p = 0; p < 4; p++)
       {
-        int yvalue = yplane[srcPixpos[p]];
+        int yvalue = yplane[srcPixpos[p]+x+x];
 
         int l = yvalue << SCALEBITS;
 
@@ -1858,21 +1863,19 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
           rgpPtr[3] = 0;
       }
 
-      yplane += 2;
       dstPixelGroup += rgbIncrement*2;
-
-      uplane++;
-      vplane++;
     }
  
-    yplane += srcFrameWidth;
+    yplane += srcLineSizeY;
+    uplane += srcLineSizeUV;
+    vplane += srcLineSizeUV;
 
-    dstScanLine += (verticalFlip?-2:2)*rgbIncrement*dstFrameWidth;
+    dstScanLine += dstScanLineSize;
   }
+#endif
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
-#endif
 
   return true;
 }
