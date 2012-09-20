@@ -161,6 +161,7 @@ typedef PNotifierTemplate<INT> PNotifier;
             target->func(reinterpret_cast<notifier &>(note), extra); \
         } \
       static PNotifierTemplate<ParamType> Create(notifiee * obj) { return new func##_PNotifier(obj); } \
+      static PNotifierTemplate<ParamType> Create(notifiee & obj) { return new func##_PNotifier(&obj); } \
   }; \
   friend class func##_PNotifier; \
   virtual void func(notifier & note, ParamType extra) \
