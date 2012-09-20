@@ -263,6 +263,12 @@ class PSafeObject : public PObject
        @return true if object may be deleted.
       */
     virtual bool GarbageCollection();
+
+    /**Get count of references to this object.
+       Note this returns the value outside of any mutexes, so it could change
+       at any moment. Care must be exercised in its use.
+      */
+    unsigned GetSafeReferenceCount() const { return safeReferenceCount; }
   //@}
 
   private:
