@@ -562,7 +562,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
     unsigned id = 0;
     if (instance != NULL)
       id = instance->GetTraceContextIdentifier();
-    if (id == 0)
+    else if (thread != NULL)
       id = thread->GetTraceContextIdentifier();
     if (id != 0)
       stream << setfill('0') << setw(13) << id << setfill(' ');
