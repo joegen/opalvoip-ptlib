@@ -1836,6 +1836,7 @@ void PProcess::PreShutdown()
   PTRACE(4, "PTLib\tTerminated all threads, destroying " << m_autoDeleteThreads.GetSize() << " remaining auto-delete threads.");
   m_autoDeleteThreads.AllowDeleteObjects();
   m_autoDeleteThreads.RemoveAll();
+  m_activeThreads.clear();
 
   m_threadMutex.Signal();
 
