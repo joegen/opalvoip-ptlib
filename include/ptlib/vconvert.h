@@ -101,14 +101,14 @@ class PColourConverter : public PObject
 
     /**Get the video conversion vertical flip state
      */
-    PBoolean GetVFlipState() 
-      { return verticalFlip; }
+    bool GetVFlipState() const
+    { return m_verticalFlip; }
     
     /**Set the video conversion vertical flip state
      */
     void SetVFlipState(
-      PBoolean vFlipState  ///< New state for flipping images
-    ) { verticalFlip = vFlipState; }
+      bool vFlipState  ///< New state for flipping images
+    ) { m_verticalFlip = vFlipState; }
     
     /**Set the frame size to be used.
 
@@ -184,25 +184,25 @@ class PColourConverter : public PObject
 
     /**Get the source colour format.
       */
-    const PString & GetSrcColourFormat() { return srcColourFormat; }
+    const PString & GetSrcColourFormat() { return m_srcColourFormat; }
 
     /**Get the destination colour format.
       */
-    const PString & GetDstColourFormat() { return dstColourFormat; }
+    const PString & GetDstColourFormat() { return m_dstColourFormat; }
 
     /**Get the maximum frame size in bytes for source frames.
 
        Note a particular device may be able to provide variable length
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
-    PINDEX GetMaxSrcFrameBytes() { return srcFrameBytes; }
+    PINDEX GetMaxSrcFrameBytes() { return m_srcFrameBytes; }
 
     /**Get the maximum frame size in bytes for destination frames.
 
        Note a particular device may be able to provide variable length
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
-    PINDEX GetMaxDstFrameBytes() { return dstFrameBytes; }
+    PINDEX GetMaxDstFrameBytes() { return m_dstFrameBytes; }
 
 
     /**Convert from one colour format to another.
@@ -279,20 +279,20 @@ class PColourConverter : public PObject
       unsigned & height ///< Height of source frame
     ) const;
 
-    unsigned GetSrcFrameWidth()  const { return srcFrameWidth;  }
-    unsigned GetSrcFrameHeight() const { return srcFrameHeight; }
-    unsigned GetDstFrameWidth()  const { return dstFrameWidth;  }
-    unsigned GetDstFrameHeight() const { return dstFrameHeight; }
+    unsigned GetSrcFrameWidth()  const { return m_srcFrameWidth;  }
+    unsigned GetSrcFrameHeight() const { return m_srcFrameHeight; }
+    unsigned GetDstFrameWidth()  const { return m_dstFrameWidth;  }
+    unsigned GetDstFrameHeight() const { return m_dstFrameHeight; }
 
     /**Set the resize mode to be used.
     */
     void SetResizeMode(
       PVideoFrameInfo::ResizeMode mode
-    ) { if (mode < PVideoFrameInfo::eMaxResizeMode) resizeMode = mode; }
+    ) { if (mode < PVideoFrameInfo::eMaxResizeMode) m_resizeMode = mode; }
 
     /**Get the resize mode to be used.
     */
-    PVideoFrameInfo::ResizeMode GetResizeMode() const { return resizeMode; }
+    PVideoFrameInfo::ResizeMode GetResizeMode() const { return m_resizeMode; }
 
     /**Convert RGB to YUV.
       */
@@ -340,22 +340,21 @@ class PColourConverter : public PObject
       const PVideoFrameInfo & dst  ///< Destination frame info
     );
 
-    PString  srcColourFormat;
-    PString  dstColourFormat;
-    unsigned srcFrameWidth;
-    unsigned srcFrameHeight;
-    unsigned srcFrameBytes;
+    PString  m_srcColourFormat;
+    PString  m_dstColourFormat;
+    unsigned m_srcFrameWidth;
+    unsigned m_srcFrameHeight;
+    PINDEX   m_srcFrameBytes;
 
     // Needed for resizing
-    unsigned dstFrameWidth;
-    unsigned dstFrameHeight;
-    unsigned dstFrameBytes;
+    unsigned m_dstFrameWidth;
+    unsigned m_dstFrameHeight;
+    PINDEX   m_dstFrameBytes;
 
-    PVideoFrameInfo::ResizeMode resizeMode;
-     
-    PBoolean     verticalFlip;
+    PVideoFrameInfo::ResizeMode m_resizeMode;
+    bool                        m_verticalFlip;
 
-    PBYTEArray intermediateFrameStore;
+    PBYTEArray m_intermediateFrameStore;
 
   friend class PColourConverterRegistration;
 };
@@ -381,8 +380,8 @@ static class cls##_Registration : public PColourConverterRegistration { \
 } p_##cls##_registration_instance; \
 PColourConverter * cls##_Registration::Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const \
   { return new cls(src, dst); } \
-PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, unsigned int p_srcFrameBytes, PINDEX * bytesReturned) \
-  { srcFrameBytes = p_srcFrameBytes;return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned); } \
+PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, unsigned int srcFrameBytes, PINDEX * bytesReturned) \
+  { m_srcFrameBytes = srcFrameBytes;return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned); } \
 PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned)
 
 
