@@ -1902,62 +1902,62 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for Alsa sound support
 
-      AC_ARG_ENABLE(
-         alsa,
-         AS_HELP_STRING([--disable-alsa],[disable ALSA audio support]),
-         [AC_MSG_NOTICE(ALSA audio disabled by user)],
-         [AC_CHECK_HEADER([alsa/asoundlib.h], [AC_SUBST(HAS_ALSA, 1)])]
-      )
+      AC_ARG_ENABLE(alsa, AS_HELP_STRING([--disable-alsa],[disable ALSA audio support]))
+      if test "x${enable_alsa}" = "xno" ; then
+         AC_MSG_NOTICE(ALSA audio disabled by user)
+      else
+         AC_CHECK_HEADER([alsa/asoundlib.h], [AC_SUBST(HAS_ALSA, 1)])
+      fi
 
       dnl #########################################################################
       dnl check for ESD sound support
 
-      AC_ARG_ENABLE(
-         esd,
-         AS_HELP_STRING([--disable-esd],[disable ESD audio support]),
-         [AC_MSG_NOTICE(ESD audio disabled by user)],
-         [AC_CHECK_HEADER([esd.h], [AC_SUBST(HAS_ESD, 1)])]
-      )
+      AC_ARG_ENABLE(esd, AS_HELP_STRING([--disable-esd],[disable ESD audio support]))
+      if test "x${enable_esd}" = "xno" ; then
+         AC_MSG_NOTICE(ESD audio disabled by user)
+      else
+         AC_CHECK_HEADER([esd.h], [AC_SUBST(HAS_ESD, 1)])
+      fi
 
       dnl #########################################################################
       dnl check for OSS sound support
 
-      AC_ARG_ENABLE(
-         oss,
-         AS_HELP_STRING([--disable-oss],[disable OSS audio support]),
-         [AC_MSG_NOTICE(OSS audio disabled by user)],
-         [AC_CHECK_HEADER([sys/soundcard.h], [AC_SUBST(HAS_OSS, 1)])]
-      )
+      AC_ARG_ENABLE(oss, AS_HELP_STRING([--disable-oss],[disable OSS audio support]))
+      if test "x${enable_oss}" = "xno" ; then
+         AC_MSG_NOTICE(OSS audio disabled by user)
+      else
+         AC_CHECK_HEADER([sys/soundcard.h], [AC_SUBST(HAS_OSS, 1)])
+      fi
 
       dnl #########################################################################
       dnl check for Pulse sound support
 
-      AC_ARG_ENABLE(
-         pulse,
-         AS_HELP_STRING([--disable-pulse],[disable Pulse audio support]),
-         [AC_MSG_NOTICE(OSS audio disabled by user)],
-         [AC_CHECK_HEADER([pulse/simple.h], [AC_SUBST(HAS_PULSE, 1)])]
-      )
+      AC_ARG_ENABLE(pulse, AS_HELP_STRING([--disable-pulse],[disable Pulse audio support]))
+      if test "x${enable_pulse}" = "xno" ; then
+         AC_MSG_NOTICE(OSS audio disabled by user)
+      else
+         AC_CHECK_HEADER([pulse/simple.h], [AC_SUBST(HAS_PULSE, 1)])
+      fi
 
       dnl #########################################################################
       dnl check for sunaudio sound support
 
-      AC_ARG_ENABLE(
-         sunaudio,
-         AS_HELP_STRING([--disable-sunaudio],[disable Sun audio support]),
-         [AC_MSG_NOTICE(OSS audio disabled by user)],
-         [AC_CHECK_HEADER([sys/mixer.h], [AC_SUBST(HAS_SUNAUDIO, 1)])]
-      )
+      AC_ARG_ENABLE(sunaudio, AS_HELP_STRING([--disable-sunaudio],[disable Sun audio support]))
+      if test "x${enable_sunaudio}" = "xno" ; then
+         AC_MSG_NOTICE(OSS audio disabled by user)
+      else
+         AC_CHECK_HEADER([sys/mixer.h], [AC_SUBST(HAS_SUNAUDIO, 1)])
+      fi
 
       dnl #########################################################################
       dnl check for shm sound support
 
-      AC_ARG_ENABLE(
-         shmaudio,
-         AS_HELP_STRING([--disable-shmaudio],[disable shm audio support]),
-         [AC_MSG_NOTICE(shm audio disabled by user)],
-         [AC_CHECK_FUNC([sem_timedwait], [AC_SUBST(HAS_AUDIOSHM, 1)])]
-      )
+      AC_ARG_ENABLE(shmaudio, AS_HELP_STRING([--disable-shmaudio],[disable shm audio support]))
+      if test "x${enable_shmaudio}" = "xno" ; then
+         AC_MSG_NOTICE(shm audio disabled by user)
+      else
+         AC_CHECK_FUNC([sem_timedwait], [AC_SUBST(HAS_AUDIOSHM, 1)])
+      fi
 
    fi # enable_audio
 
@@ -1966,25 +1966,22 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for V4L video support
 
-      AC_ARG_ENABLE(
-         v4l,
-         AS_HELP_STRING([--disable-v4l],[disable V4L video support]),
-         [AC_MSG_NOTICE(V4L video disabled by user)],
-         [AC_CHECK_HEADER([linux/videodev.h], [AC_SUBST(HAS_V4L, 1)])]
-      )
+      AC_ARG_ENABLE(v4l, AS_HELP_STRING([--disable-v4l],[disable V4L video support]))
+      if test "x${enable_v4l}" = "xno" ; then
+         AC_MSG_NOTICE(V4L video disabled by user)
+      else
+         AC_CHECK_HEADER([linux/videodev.h], [AC_SUBST(HAS_V4L, 1)])
+      fi
 
       dnl #########################################################################
       dnl check for V4L2 video support
       dnl ########################################################################
 
-      AC_ARG_ENABLE(
-         v4l2,
-         AS_HELP_STRING([--disable-v4l2],[disable V4L2 video support]),
-         [AC_MSG_NOTICE(V4L2 video disabled by user)],
-         [enable_v4l2=yes]
-      )
+      AC_ARG_ENABLE(v4l2, AS_HELP_STRING([--disable-v4l2],[disable V4L2 video support]))
 
-      if test "x$enable_v4l2" = "xyes" ; then
+      if test "x$enable_v4l2" = "xno" ; then
+        AC_MSG_NOTICE(V4L2 video disabled by user)
+      else
          case "$target_os" in
             solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
             netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
@@ -2058,77 +2055,71 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for BSD video capture support
 
-      AC_ARG_ENABLE(
-         bsdvideo,
-         AS_HELP_STRING([--disable-bsdvideo],[disable BSD video support]),
-         [AC_MSG_NOTICE(BSD video disabled by user)],
-         [
-            AC_CHECK_HEADER(
-               [machine/ioctl_meteor.h],
-               [AC_SUBST(HAS_BSDVIDEOCAP, 1)],
-               [
-                  AC_CHECK_HEADER(
-                     [i386/ioctl_meteor.h],
-                     [AC_SUBST(HAS_BSDVIDEOCAP, 1)],
-                     [
-                        AC_CHECK_HEADER(
-                           [dev/ic/bt8xx.h],
-                           [AC_SUBST(HAS_BSDVIDEOCAP, 1)]
-                        )
-                     ]
-                  )
-               ]
-            )
-         ]
-      )
+      AC_ARG_ENABLE(bsdvideo, AS_HELP_STRING([--disable-bsdvideo],[disable BSD video support]))
+      if test "x$enable_bsdvideo" = "xno" ; then
+         AC_MSG_NOTICE(BSD video disabled by user)
+      else
+         AC_CHECK_HEADER(
+            [machine/ioctl_meteor.h],
+            [AC_SUBST(HAS_BSDVIDEOCAP, 1)],
+            [
+               AC_CHECK_HEADER(
+                  [i386/ioctl_meteor.h],
+                  [AC_SUBST(HAS_BSDVIDEOCAP, 1)],
+                  [
+                     AC_CHECK_HEADER(
+                        [dev/ic/bt8xx.h],
+                        [AC_SUBST(HAS_BSDVIDEOCAP, 1)]
+                     )
+                  ]
+               )
+            ]
+         )
+      fi
 
       dnl #########################################################################
       dnl check for AVC video support
 
-      AC_ARG_ENABLE(
-         avc,
-         AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]),
-         [AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)],
-         [
-            AC_CHECK_HEADER(
-               [libavc1394/avc1394.h],
-               [AC_SUBST(HAS_AVC1394, 1)],
-               [
-                  AC_CHECK_HEADER(
-                     [libdv/dv.h],
-                     [AC_SUBST(HAS_AVC1394, 1)],
-                     [
-                        AC_CHECK_HEADER(
-                           [libraw1394/raw1394.h],
-                           [AC_SUBST(HAS_AVC1394, 1)]
-                        )
-                     ]
-                  )
-               ]
-            )
-         ]
-      )
+      AC_ARG_ENABLE(avc, AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]))
+      if test "x$enable_avc" = "xno" ; then
+         AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)
+      else
+         AC_CHECK_HEADER(
+            [libavc1394/avc1394.h],
+            [AC_SUBST(HAS_AVC1394, 1)],
+            [
+               AC_CHECK_HEADER(
+                  [libdv/dv.h],
+                  [AC_SUBST(HAS_AVC1394, 1)],
+                  [
+                     AC_CHECK_HEADER(
+                        [libraw1394/raw1394.h],
+                        [AC_SUBST(HAS_AVC1394, 1)]
+                     )
+                  ]
+               )
+            ]
+         )
+      fi
 
       dnl #########################################################################
       dnl check for DC video support
 
-      AC_ARG_ENABLE(
-         dc,
-         AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]),
-         [AC_MSG_NOTICE(IEEE1394/DC video disabled by user)],
-         [
-            AC_CHECK_HEADER(
-               [libdc1394/dc1394_control.h],
-               [AC_SUBST(HAS_DC1394, 1)],
-               [
-                  AC_CHECK_HEADER(
-                     [libraw1394/raw1394.h],
-                     [AC_SUBST(HAS_DC1394, 1)],
-                  )
-               ]
-            )
-         ]
-      )
+      AC_ARG_ENABLE(dc, AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]))
+      if test "x$enable_dc" = "xno" ; then
+         AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)
+      else
+         AC_CHECK_HEADER(
+            [libdc1394/dc1394_control.h],
+            [AC_SUBST(HAS_DC1394, 1)],
+            [
+               AC_CHECK_HEADER(
+                  [libraw1394/raw1394.h],
+                  [AC_SUBST(HAS_DC1394, 1)],
+               )
+            ]
+         )
+      fi
 
       if test "x${HAS_DC1394}" = "x1" ; then
          AC_MSG_CHECKING(if dc1394_dma_setup_capture has 12 parms)
