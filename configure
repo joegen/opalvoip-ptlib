@@ -12411,103 +12411,115 @@ _ACEOF
 
       # Check whether --enable-alsa was given.
 if test "${enable_alsa+set}" = set; then :
-  enableval=$enable_alsa; { $as_echo "$as_me:${as_lineno-$LINENO}: ALSA audio disabled by user" >&5
+  enableval=$enable_alsa;
+fi
+
+      if test "x${enable_alsa}" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: ALSA audio disabled by user" >&5
 $as_echo "$as_me: ALSA audio disabled by user" >&6;}
-else
-  ac_fn_c_check_header_mongrel "$LINENO" "alsa/asoundlib.h" "ac_cv_header_alsa_asoundlib_h" "$ac_includes_default"
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "alsa/asoundlib.h" "ac_cv_header_alsa_asoundlib_h" "$ac_includes_default"
 if test "x$ac_cv_header_alsa_asoundlib_h" = xyes; then :
   HAS_ALSA=1
 
 fi
 
 
-
-fi
-
+      fi
 
 
       # Check whether --enable-esd was given.
 if test "${enable_esd+set}" = set; then :
-  enableval=$enable_esd; { $as_echo "$as_me:${as_lineno-$LINENO}: ESD audio disabled by user" >&5
+  enableval=$enable_esd;
+fi
+
+      if test "x${enable_esd}" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: ESD audio disabled by user" >&5
 $as_echo "$as_me: ESD audio disabled by user" >&6;}
-else
-  ac_fn_c_check_header_mongrel "$LINENO" "esd.h" "ac_cv_header_esd_h" "$ac_includes_default"
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "esd.h" "ac_cv_header_esd_h" "$ac_includes_default"
 if test "x$ac_cv_header_esd_h" = xyes; then :
   HAS_ESD=1
 
 fi
 
 
-
-fi
-
+      fi
 
 
       # Check whether --enable-oss was given.
 if test "${enable_oss+set}" = set; then :
-  enableval=$enable_oss; { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
+  enableval=$enable_oss;
+fi
+
+      if test "x${enable_oss}" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
 $as_echo "$as_me: OSS audio disabled by user" >&6;}
-else
-  ac_fn_c_check_header_mongrel "$LINENO" "sys/soundcard.h" "ac_cv_header_sys_soundcard_h" "$ac_includes_default"
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "sys/soundcard.h" "ac_cv_header_sys_soundcard_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_soundcard_h" = xyes; then :
   HAS_OSS=1
 
 fi
 
 
-
-fi
-
+      fi
 
 
       # Check whether --enable-pulse was given.
 if test "${enable_pulse+set}" = set; then :
-  enableval=$enable_pulse; { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
+  enableval=$enable_pulse;
+fi
+
+      if test "x${enable_pulse}" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
 $as_echo "$as_me: OSS audio disabled by user" >&6;}
-else
-  ac_fn_c_check_header_mongrel "$LINENO" "pulse/simple.h" "ac_cv_header_pulse_simple_h" "$ac_includes_default"
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "pulse/simple.h" "ac_cv_header_pulse_simple_h" "$ac_includes_default"
 if test "x$ac_cv_header_pulse_simple_h" = xyes; then :
   HAS_PULSE=1
 
 fi
 
 
-
-fi
-
+      fi
 
 
       # Check whether --enable-sunaudio was given.
 if test "${enable_sunaudio+set}" = set; then :
-  enableval=$enable_sunaudio; { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
+  enableval=$enable_sunaudio;
+fi
+
+      if test "x${enable_sunaudio}" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
 $as_echo "$as_me: OSS audio disabled by user" >&6;}
-else
-  ac_fn_c_check_header_mongrel "$LINENO" "sys/mixer.h" "ac_cv_header_sys_mixer_h" "$ac_includes_default"
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "sys/mixer.h" "ac_cv_header_sys_mixer_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_mixer_h" = xyes; then :
   HAS_SUNAUDIO=1
 
 fi
 
 
-
-fi
-
+      fi
 
 
       # Check whether --enable-shmaudio was given.
 if test "${enable_shmaudio+set}" = set; then :
-  enableval=$enable_shmaudio; { $as_echo "$as_me:${as_lineno-$LINENO}: shm audio disabled by user" >&5
+  enableval=$enable_shmaudio;
+fi
+
+      if test "x${enable_shmaudio}" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: shm audio disabled by user" >&5
 $as_echo "$as_me: shm audio disabled by user" >&6;}
-else
-  ac_fn_c_check_func "$LINENO" "sem_timedwait" "ac_cv_func_sem_timedwait"
+      else
+         ac_fn_c_check_func "$LINENO" "sem_timedwait" "ac_cv_func_sem_timedwait"
 if test "x$ac_cv_func_sem_timedwait" = xyes; then :
   HAS_AUDIOSHM=1
 
 fi
 
-
-fi
-
+      fi
 
    fi # enable_audio
 
@@ -12516,32 +12528,33 @@ fi
 
       # Check whether --enable-v4l was given.
 if test "${enable_v4l+set}" = set; then :
-  enableval=$enable_v4l; { $as_echo "$as_me:${as_lineno-$LINENO}: V4L video disabled by user" >&5
+  enableval=$enable_v4l;
+fi
+
+      if test "x${enable_v4l}" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: V4L video disabled by user" >&5
 $as_echo "$as_me: V4L video disabled by user" >&6;}
-else
-  ac_fn_c_check_header_mongrel "$LINENO" "linux/videodev.h" "ac_cv_header_linux_videodev_h" "$ac_includes_default"
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "linux/videodev.h" "ac_cv_header_linux_videodev_h" "$ac_includes_default"
 if test "x$ac_cv_header_linux_videodev_h" = xyes; then :
   HAS_V4L=1
 
 fi
 
 
-
-fi
-
+      fi
 
 
       # Check whether --enable-v4l2 was given.
 if test "${enable_v4l2+set}" = set; then :
-  enableval=$enable_v4l2; { $as_echo "$as_me:${as_lineno-$LINENO}: V4L2 video disabled by user" >&5
-$as_echo "$as_me: V4L2 video disabled by user" >&6;}
-else
-  enable_v4l2=yes
-
+  enableval=$enable_v4l2;
 fi
 
 
-      if test "x$enable_v4l2" = "xyes" ; then
+      if test "x$enable_v4l2" = "xno" ; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: V4L2 video disabled by user" >&5
+$as_echo "$as_me: V4L2 video disabled by user" >&6;}
+      else
          case "$target_os" in
             solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
             netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
@@ -12686,23 +12699,26 @@ $as_echo "no" >&6; }
 
       # Check whether --enable-bsdvideo was given.
 if test "${enable_bsdvideo+set}" = set; then :
-  enableval=$enable_bsdvideo; { $as_echo "$as_me:${as_lineno-$LINENO}: BSD video disabled by user" >&5
-$as_echo "$as_me: BSD video disabled by user" >&6;}
-else
+  enableval=$enable_bsdvideo;
+fi
 
-            ac_fn_c_check_header_mongrel "$LINENO" "machine/ioctl_meteor.h" "ac_cv_header_machine_ioctl_meteor_h" "$ac_includes_default"
+      if test "x$enable_bsdvideo" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: BSD video disabled by user" >&5
+$as_echo "$as_me: BSD video disabled by user" >&6;}
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "machine/ioctl_meteor.h" "ac_cv_header_machine_ioctl_meteor_h" "$ac_includes_default"
 if test "x$ac_cv_header_machine_ioctl_meteor_h" = xyes; then :
   HAS_BSDVIDEOCAP=1
 
 else
 
-                  ac_fn_c_check_header_mongrel "$LINENO" "i386/ioctl_meteor.h" "ac_cv_header_i386_ioctl_meteor_h" "$ac_includes_default"
+               ac_fn_c_check_header_mongrel "$LINENO" "i386/ioctl_meteor.h" "ac_cv_header_i386_ioctl_meteor_h" "$ac_includes_default"
 if test "x$ac_cv_header_i386_ioctl_meteor_h" = xyes; then :
   HAS_BSDVIDEOCAP=1
 
 else
 
-                        ac_fn_c_check_header_mongrel "$LINENO" "dev/ic/bt8xx.h" "ac_cv_header_dev_ic_bt8xx_h" "$ac_includes_default"
+                     ac_fn_c_check_header_mongrel "$LINENO" "dev/ic/bt8xx.h" "ac_cv_header_dev_ic_bt8xx_h" "$ac_includes_default"
 if test "x$ac_cv_header_dev_ic_bt8xx_h" = xyes; then :
   HAS_BSDVIDEOCAP=1
 
@@ -12720,31 +12736,31 @@ fi
 fi
 
 
-
-
-fi
-
+      fi
 
 
       # Check whether --enable-avc was given.
 if test "${enable_avc+set}" = set; then :
-  enableval=$enable_avc; { $as_echo "$as_me:${as_lineno-$LINENO}: IEEE1394/AVC video disabled by user" >&5
-$as_echo "$as_me: IEEE1394/AVC video disabled by user" >&6;}
-else
+  enableval=$enable_avc;
+fi
 
-            ac_fn_c_check_header_mongrel "$LINENO" "libavc1394/avc1394.h" "ac_cv_header_libavc1394_avc1394_h" "$ac_includes_default"
+      if test "x$enable_avc" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: IEEE1394/AVC video disabled by user" >&5
+$as_echo "$as_me: IEEE1394/AVC video disabled by user" >&6;}
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "libavc1394/avc1394.h" "ac_cv_header_libavc1394_avc1394_h" "$ac_includes_default"
 if test "x$ac_cv_header_libavc1394_avc1394_h" = xyes; then :
   HAS_AVC1394=1
 
 else
 
-                  ac_fn_c_check_header_mongrel "$LINENO" "libdv/dv.h" "ac_cv_header_libdv_dv_h" "$ac_includes_default"
+               ac_fn_c_check_header_mongrel "$LINENO" "libdv/dv.h" "ac_cv_header_libdv_dv_h" "$ac_includes_default"
 if test "x$ac_cv_header_libdv_dv_h" = xyes; then :
   HAS_AVC1394=1
 
 else
 
-                        ac_fn_c_check_header_mongrel "$LINENO" "libraw1394/raw1394.h" "ac_cv_header_libraw1394_raw1394_h" "$ac_includes_default"
+                     ac_fn_c_check_header_mongrel "$LINENO" "libraw1394/raw1394.h" "ac_cv_header_libraw1394_raw1394_h" "$ac_includes_default"
 if test "x$ac_cv_header_libraw1394_raw1394_h" = xyes; then :
   HAS_AVC1394=1
 
@@ -12762,25 +12778,25 @@ fi
 fi
 
 
-
-
-fi
-
+      fi
 
 
       # Check whether --enable-dc was given.
 if test "${enable_dc+set}" = set; then :
-  enableval=$enable_dc; { $as_echo "$as_me:${as_lineno-$LINENO}: IEEE1394/DC video disabled by user" >&5
-$as_echo "$as_me: IEEE1394/DC video disabled by user" >&6;}
-else
+  enableval=$enable_dc;
+fi
 
-            ac_fn_c_check_header_mongrel "$LINENO" "libdc1394/dc1394_control.h" "ac_cv_header_libdc1394_dc1394_control_h" "$ac_includes_default"
+      if test "x$enable_dc" = "xno" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: IEEE1394/AVC video disabled by user" >&5
+$as_echo "$as_me: IEEE1394/AVC video disabled by user" >&6;}
+      else
+         ac_fn_c_check_header_mongrel "$LINENO" "libdc1394/dc1394_control.h" "ac_cv_header_libdc1394_dc1394_control_h" "$ac_includes_default"
 if test "x$ac_cv_header_libdc1394_dc1394_control_h" = xyes; then :
   HAS_DC1394=1
 
 else
 
-                  ac_fn_c_check_header_mongrel "$LINENO" "libraw1394/raw1394.h" "ac_cv_header_libraw1394_raw1394_h" "$ac_includes_default"
+               ac_fn_c_check_header_mongrel "$LINENO" "libraw1394/raw1394.h" "ac_cv_header_libraw1394_raw1394_h" "$ac_includes_default"
 if test "x$ac_cv_header_libraw1394_raw1394_h" = xyes; then :
   HAS_DC1394=1
 
@@ -12792,10 +12808,7 @@ fi
 fi
 
 
-
-
-fi
-
+      fi
 
       if test "x${HAS_DC1394}" = "x1" ; then
          { $as_echo "$as_me:${as_lineno-$LINENO}: checking if dc1394_dma_setup_capture has 12 parms" >&5
