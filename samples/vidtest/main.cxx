@@ -53,43 +53,23 @@ void VidTest::Main()
 {
   PArgList & args = GetArguments();
 
-  args.Parse("h-help."
-             "-input-driver:"
-             "I-input-device:"
-             "-input-format:"
-             "-input-channel:"
-             "-output-driver:"
-             "O-output-device:"
-             "T-time:"
+  args.Parse("-input-driver: video grabber driver.\n"
+             "I-input-device: video grabber device.\n"
+             "-input-format: video grabber format (\"pal\"/\"ntsc\")\n"
+             "-input-channel: video grabber channel.\n"
+             "-output-driver: video display driver to use.\n"
+             "O-output-device: video display device to use.\n"
+             "T-time: time in seconds to run test, no command line\n"
 #if PTRACING
-             "o-output:"             "-no-output."
-             "t-trace."              "-no-trace."
+             "o-output: file name for output of log messages\n"
+             "t-trace. degree of verbosity in log (more times for more detail)\n"
 #endif
-       );
-
-#if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-#endif
+             "h-help."
+             );
 
   if (args.HasOption('h')) {
-    PError << "usage: vidtest [options] [descriptor ...]\n"
-              "\n"
-              "Available options are:\n"
-              "   --help                 : print this help message.\n"
-              "   --input-driver  drv    : video grabber driver.\n"
-              "   -I --input-device dev  : video grabber device.\n"
-              "   --input-format  fmt    : video grabber format (\"pal\"/\"ntsc\")\n"
-              "   --input-channel num    : video grabber channel.\n"
-              "   --output-driver drv    : video display driver to use.\n"
-              "   -O --output-device dev : video display device to use.\n"
-              "   -T --time              : time in seconds to run test, no command line\n"
-#if PTRACING
-              "   -o or --output file   : file name for output of log messages\n"       
-              "   -t or --trace         : degree of verbosity in log (more times for more detail)\n"     
-#endif
-              "\n"
+    args.Usage(cerr, "[options] [descriptor ...]")
+           << "\n"
               "The dscriptor arguments are of the form:\n"
               "    [colour ':' ] size [ '@' rate][ \"/crop\" ].\n"
               "The size component is size is one of the prefined names \"qcif\", \"cif\", \"vga\"\n"
@@ -104,9 +84,12 @@ void VidTest::Main()
               "If they cannot do the format natively, or there are intermediate formats, then\n"
               "video converters are provided.\n"
               "\n"
-              " e.g. ./vidtest --input-device fake --input-channel 2 YUV420P/qcif" << endl << endl;
+              " e.g. ./vidtest --input-device fake --input-channel 2 YUV420P/qcif"
+           << endl;
     return;
   }
+
+  PTRACE_INITIALISE(args, PTrace::Blocks|PTrace::Timestamp|PTrace::Thread|PTrace::FileAndLine);
 
 
   /////////////////////////////////////////////////////////////////////
@@ -142,7 +125,9 @@ void VidTest::Main()
   if (m_grabber->GetDeviceCapabilities(&caps)) {
     cout << "Grabber " << inputDeviceName << " capabilities." << endl;
     for (std::list<PVideoFrameInfo>::const_iterator r = caps.framesizes.begin(); r != caps.framesizes.end(); ++r)
-      cout << "    " << r->GetColourFormat() << ' ' << r->GetFrameWidth() << 'x' << r->GetFrameHeight() << ' ' << r->GetFrameRate() << "fps\n";
+      cout << "    " << r->GetColourFormat() << ' '
+           << r->GetFrameWidth() << 'x' << r->GetFrameHeight()
+           << ' ' << r->GetFrameRate() << "fps\n";
     cout << endl;
   }
   else
