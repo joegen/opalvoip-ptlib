@@ -48,16 +48,13 @@ class PColourConverter;
 
 class PVideoFrameInfo : public PObject
 {
-  PCLASSINFO(PVideoFrameInfo, PObject);
-
+    PCLASSINFO(PVideoFrameInfo, PObject);
   public:
-    enum ResizeMode
-    {
-      eScale,
+    P_DECLARE_ENUM_EX(ResizeMode,eMaxResizeMode,
+      eScale,0,
       eCropCentre,
-      eCropTopLeft,
-      eMaxResizeMode
-    };
+      eCropTopLeft
+    );
     friend ostream & operator<<(ostream & strm, ResizeMode mode);
 
     enum StandardSizes {
