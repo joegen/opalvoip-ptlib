@@ -2765,7 +2765,7 @@ bool PStandardColourConverter::MJPEGtoXXXSameSize(const BYTE *mjpeg, BYTE *rgb, 
   }
   tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   tinyjpeg_set_components(jdec, components, 1);
-  if (tinyjpeg_parse_header(jdec, mjpeg, srcFrameBytes) < 0) {
+  if (tinyjpeg_parse_header(jdec, mjpeg, m_srcFrameBytes) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
      free(jdec);
      return false;
@@ -2861,7 +2861,7 @@ bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *y
   }
   tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
   tinyjpeg_set_components(jdec, components, 4);
-  if (tinyjpeg_parse_header(jdec, mjpeg, srcFrameBytes) < 0) {
+  if (tinyjpeg_parse_header(jdec, mjpeg, m_srcFrameBytes) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
      free(jdec);
      return false;
@@ -2898,11 +2898,11 @@ bool PStandardColourConverter::MJPEGtoYUV420P(const BYTE *mjpeg,
   } else {
      /* Very not efficient */
      unsigned int frameBytes = m_srcFrameWidth * m_srcFrameHeight * 3 / 2;
-     BYTE *intermed = intermediateFrameStore.GetPointer(frameBytes);
+     BYTE *intermed = m_intermediateFrameStore.GetPointer(frameBytes);
      MJPEGtoYUV420PSameSize(mjpeg, intermed);
      CopyYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, intermed,
                  0, 0, m_dstFrameWidth, m_dstFrameHeight, m_dstFrameWidth, m_dstFrameHeight, yuv420p,
-                     resizeMode);
+                 m_resizeMode);
   }
 
   if (bytesReturned != NULL)
