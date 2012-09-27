@@ -48,7 +48,6 @@ PCREATE_VIDINPUT_PLUGIN(V4L2);
 
 #ifdef HAS_LIBV4L
 #include <libv4l2.h>
-#include <linux/videodev2.h>
 #else
 #define v4l2_fd_open(fd, flags) (fd)
 #define v4l2_open open
