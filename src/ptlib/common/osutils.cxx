@@ -1736,7 +1736,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 #if PTRACING
   // Do this before PProcessInstance is set to avoid a recursive loop with PTimedMutex
-  PTrace::SetLevel(0);
+  PTraceInfo::Instance();
 #endif
 
   PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
