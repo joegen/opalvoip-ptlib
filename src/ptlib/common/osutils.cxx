@@ -910,9 +910,6 @@ void PTimer::Process(PInt64 now)
     m_state = InTimeout;
 
     OnTimeout();
-
-    if (m_state == InTimeout)
-      m_state = m_oneshot ? Stopped : Running;
   }
 }
 
@@ -1015,7 +1012,15 @@ PTimeInterval PTimerList::Process()
       ActiveTimerInfo & timer = t->second;
       if (expiry.m_serialNumber == timer.m_serialNumber) {
         timer.m_timer->Process(now);
-        if (timer.m_timer->m_state != PTimer::Stopped)
+
+        PTimer::TimerState timerState = timer.m_timer->m_state;
+        if (timerState == PTimer::InTimeout)
+          timer.m_timer->m_state = timerState = (timer.m_timer->m_oneshot ? PTimer::Stopped : PTimer::Running);
+
+        // PTimer object can be destroyed between the above assignment to Stopped and the test below,
+        // so make sure is in temporary variable.
+
+        if (timerState != PTimer::Stopped)
           m_expiryList.insert(TimerExpiryInfo(expiry.m_timerId, now + timer.m_timer->m_resetTime.GetMilliSeconds(), timer.m_serialNumber));
         else
           m_activeTimers.erase(t);
