@@ -159,6 +159,7 @@ private:
   int    frameBytes;
   PBoolean   started;
   PAdaptiveDelay m_pacing;
+  PString userFriendlyDevName;
 };
 
 #endif
