@@ -281,11 +281,11 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean /* start
     Close();
   }
 
-  PString name = GetNames().GetDeviceName(devName);
-  deviceName=name;
+  deviceName=GetNames().GetDeviceName(devName);
+  userFriendlyDevName=devName;
   
-  PTRACE(5,"PVidInDev\tOpen()\tdevName:" << name << "  videoFd:" << videoFd);
-  videoFd = ::v4l2_open((const char *)name, O_RDWR);
+  PTRACE(5,"PVidInDev\tOpen()\tdevName:" << deviceName << "  videoFd:" << videoFd);
+  videoFd = ::v4l2_open((const char *)deviceName, O_RDWR);
   if (videoFd < 0) {
     PTRACE(1,"PVidInDev\topen failed : " << ::strerror(errno));
     return isOpen;
@@ -564,23 +564,17 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 {
   PTRACE(8,"PVidInDev\tSet colour format \"" << newFormat << "\"");
 
-  PBoolean colorFormatSet = PFalse;
   PINDEX currentColourFormatIndex, colourFormatIndex = 0;
   while (newFormat != colourFormatTab[colourFormatIndex].colourFormat) {
+    PTRACE(9,"PVidInDev\tColourformat did not match " << colourFormatTab[colourFormatIndex].colourFormat);
     colourFormatIndex++;
-    PTRACE(9,"PVidInDev\tColourformat did not match" << colourFormatTab[colourFormatIndex].colourFormat);
     if (colourFormatIndex >= PARRAYSIZE(colourFormatTab))
-      return colorFormatSet;
+      return PFalse;
   }
 
   if (!PVideoDevice::SetColourFormat(newFormat)) {
     PTRACE(3,"PVidInDev\tSetColourFormat failed for colour format " << newFormat);
-    return colorFormatSet;
-  }
-
-  PBoolean resume = started;
-  if (started == PTrue) {
-    Stop();
+    return PFalse;
   }
 
   struct v4l2_format videoFormat;
@@ -604,7 +598,7 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   // get the colour format
   if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
     PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
-    return colorFormatSet;
+    return PFalse;
   } else {
     PTRACE(8,"PVidInDev\tG_FMT succeeded");
   }
@@ -618,13 +612,23 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
     }
   }
 
+  if(videoFormat.fmt.pix.pixelformat == colourFormatTab[colourFormatIndex].code){
+    PTRACE(3,"PVidInDev\tcolour format already set.");
+    return PTrue;
+  }
+
   videoFormat.fmt.pix.pixelformat = colourFormatTab[colourFormatIndex].code;
+
+  PBoolean resume = started;
+  if (started == PTrue) {
+    Stop();
+  }
 
   // set the colour format
   if (v4l2_ioctl(videoFd, VIDIOC_S_FMT, &videoFormat) < 0) {
     PTRACE(1,"PVidInDev\tS_FMT failed : " << ::strerror(errno));
     PTRACE(1,"PVidInDev\tused code of " << videoFormat.fmt.pix.pixelformat << " for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
-    return colorFormatSet;
+    return PFalse;
   } else {
     PTRACE(8,"PVidInDev\tS_FMT succeeded for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
   }
@@ -632,14 +636,14 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   // get the colour format again to be careful about broken drivers
   if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
     PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
-    return colorFormatSet;
+    return PFalse;
   } else {
     PTRACE(8,"PVidInDev\tG_FMT succeeded");
   }
 
   if (videoFormat.fmt.pix.pixelformat != colourFormatTab[colourFormatIndex].code) {
     PTRACE(3,"PVidInDev\tcolour format mismatch.");
-    return colorFormatSet;
+    return PFalse;
   } else {
     colourFormat = newFormat;
     PTRACE(8,"PVidInDev\tcolour format matches.");
@@ -661,14 +665,13 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 
   PTRACE(6,"PVidInDev\tset colour format \"" << newFormat << "\" set for " << deviceName << ", fd=" << videoFd);
 
-  colorFormatSet = PTrue;
   if (resume) {
-    if (colorFormatSet) {
-      colorFormatSet = Start();
+    if (PFalse == Start()) {
+      return PFalse;
     }
   }
 
-  return colorFormatSet;
+  return PTrue;
 }
 
 
@@ -676,19 +679,25 @@ PBoolean PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
 {
   PTRACE(8,"PVidInDev\tSetFrameRate()\tvideoFd:" << videoFd << "  started:" << started);
 
-  PBoolean resume = started;
-
-  if (started == PTrue) {
-    Stop();
-  }
-
   if (canSetFrameRate) {
     videoStreamParm.parm.capture.timeperframe.numerator = 1;
     videoStreamParm.parm.capture.timeperframe.denominator = (rate ? rate : 1);
 
+    PBoolean resume = started;
+
+    if (started == PTrue) {
+      Stop();
+    }
+
     // set the stream parameters
     if (!DoIOCTL(VIDIOC_S_PARM, &videoStreamParm, PTrue))  {
       PTRACE(1,"PVidInDev\tS_PARM failed : "<< ::strerror(errno));
+    }
+
+    if (resume) {
+      if (PFalse == Start()) {
+        return PFalse;
+      }
     }
 
     // The rate is 1/x * s^-1 where timeperframe is x * s, so we have to inverse the
@@ -701,12 +710,6 @@ PBoolean PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
 
   if (!PVideoDevice::SetFrameRate(rate)) {
     PTRACE(3,"PVidInDev\tSetFrameRate failed for rate " << rate);
-  }
-
-  if (resume) {
-    if (PFalse == Start()) {
-      return PFalse;
-    }
   }
 
   PTRACE(8,"PVidInDev\tSetFrameRate()\tvideoFd:" << videoFd << "  started:" << started);
@@ -749,12 +752,6 @@ PBoolean PVideoInputDevice_V4L2::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 PBoolean PVideoInputDevice_V4L2::SetFrameSize(unsigned width, unsigned height) {
-  PBoolean resume = started;
-
-  if (started == PTrue) {
-    Stop();
-  }
-
   unsigned requestedWidth = width;
   unsigned requestedHeight = height;
 
@@ -777,22 +774,10 @@ PBoolean PVideoInputDevice_V4L2::SetFrameSize(unsigned width, unsigned height) {
     return PFalse;
   }
 
-  if (resume) {
-    if (PFalse == Start()) {
-      return PFalse;
-    }
-  }
-
   return PTrue;
 }
 
 PBoolean PVideoInputDevice_V4L2::SetNearestFrameSize(unsigned width, unsigned height) {
-  PBoolean resume = started;
-
-  if (started == PTrue) {
-    Stop();
-  }
-
   unsigned requestedWidth = width;
   unsigned requestedHeight = height;
 
@@ -809,12 +794,6 @@ PBoolean PVideoInputDevice_V4L2::SetNearestFrameSize(unsigned width, unsigned he
 
   if(!PVideoDevice::SetFrameSize(requestedWidth, requestedHeight)){
     return PFalse;
-  }
-
-  if (resume) {
-    if (PFalse == Start()) {
-      return PFalse;
-    }
   }
 
   return PTrue;
@@ -1032,8 +1011,19 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
     PTRACE(1,"PVidInDev\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
   }
 
+  if(videoFormat.fmt.pix.width == width && videoFormat.fmt.pix.height == height){
+    PTRACE(3,"PVidInDev\tFrame size already set.");
+    return PTrue;
+  }
+
   videoFormat.fmt.pix.width = width;
   videoFormat.fmt.pix.height = height;
+
+  PBoolean resume = started;
+
+  if (started == PTrue) {
+    Stop();
+  }
 
   PTRACE(4, "PVidInDev\tTry setting resolution: " << videoFormat.fmt.pix.width << "x" << videoFormat.fmt.pix.height);
   if(!DoIOCTL(VIDIOC_S_FMT, &videoFormat, PTrue)){
@@ -1068,6 +1058,12 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
               << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
   }
 
+  if (resume) {
+    if (PFalse == Start()) {
+      return PFalse;
+    }
+  }
+
   return PTrue;
 }
 
@@ -1079,7 +1075,7 @@ PBoolean PVideoInputDevice_V4L2::DoIOCTL(unsigned long int r, void * s, PBoolean
 
     if(errno == EBUSY && retryOnBusy){
       Close();
-      Open(GetNames().GetUserFriendly(deviceName), PTrue);
+      Open(userFriendlyDevName, PTrue);
 
       if (v4l2_ioctl(videoFd, r, s) < 0)  {
         PTRACE(1,"PVidInDev\tIOCTL ("<< r <<") failed : "<< ::strerror(errno));
