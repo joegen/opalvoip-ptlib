@@ -414,10 +414,6 @@ class PThread : public PObject
 };
 
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355 4121)
-#endif
-
 /** Define some templates to simplify the declaration
   * of simple <code>PThread</code> descendants with one or two paramaters 
   */
@@ -436,20 +432,20 @@ class PThread : public PObject
  */
 class PThreadMain : public PThread
 {
-  PCLASSINFO(PThreadMain, PThread);
+    PCLASSINFO(PThreadMain, PThread);
   public:
     typedef void (*FnType)(); 
     PThreadMain(FnType function, bool autoDel = false)
       : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
       , m_function(function)
-      { PThread::Resume(); }
-    PThreadMain(const char * file, int line, FnType function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,  NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_function(function)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
+
     virtual void Main()
-      { (*m_function)(); }
+    {
+      (*m_function)();
+    }
 
   protected:
     FnType m_function;
@@ -471,21 +467,19 @@ class PThreadMain : public PThread
 template<typename Functor>
 class PThreadFunctor : public PThread
 {
-  PCLASSINFO(PThreadFunctor, PThread);
+    PCLASSINFO(PThreadFunctor, PThread);
   public:
     PThreadFunctor(Functor & funct, bool autoDel = false)
       : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
       , m_funct(funct)
-    { PThread::Resume(); }
-
-    PThreadFunctor(const char * file, int line, Functor & funct, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_funct(funct)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
 
     virtual void Main()
-      { m_funct(*this); }
+    {
+      m_funct(*this);
+    }
 
   protected:
     Functor & m_funct;
@@ -507,7 +501,7 @@ class PThreadFunctor : public PThread
 template<typename Arg1Type>
 class PThread1Arg : public PThread
 {
-  PCLASSINFO(PThread1Arg, PThread);
+    PCLASSINFO(PThread1Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1);
 
@@ -515,15 +509,14 @@ class PThread1Arg : public PThread
       : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
       , m_function(function)
       , m_arg1(arg1)
-    { PThread::Resume(); }
-    PThread1Arg(const char * file, int line, Arg1Type arg1, FnType function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_function(function)
-      , m_arg1(arg1)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
+
     virtual void Main()
-      { (*m_function)(m_arg1); }
+    {
+      (*m_function)(m_arg1);
+    }
 
   protected:
     FnType   m_function;
@@ -546,7 +539,7 @@ class PThread1Arg : public PThread
 template<typename Arg1Type, typename Arg2Type>
 class PThread2Arg : public PThread
 {
-  PCLASSINFO(PThread2Arg, PThread);
+    PCLASSINFO(PThread2Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2); 
     PThread2Arg(Arg1Type arg1, Arg2Type arg2, FnType function, bool autoDel = false)
@@ -554,16 +547,14 @@ class PThread2Arg : public PThread
       , m_function(function)
       , m_arg1(arg1)
       , m_arg2(arg2)
-      { PThread::Resume(); }
-    PThread2Arg(const char * file, int line, Arg1Type arg1, Arg2Type arg2, FnType function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_function(function)
-      , m_arg1(arg1)
-      , m_arg2(arg2)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
+    
     virtual void Main()
-      { (*m_function)(m_arg1, m_arg2); }
+    {
+      (*m_function)(m_arg1, m_arg2);
+    }
 
   protected:
     FnType   m_function;
@@ -595,17 +586,14 @@ class PThread3Arg : public PThread
       , m_arg1(arg1)
       , m_arg2(arg2)
       , m_arg3(arg3)
-      { PThread::Resume(); }
-    PThread3Arg(const char * file, int line, Arg1Type arg1, Arg2Type arg2, Arg3Type arg3, FnType function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, NormalPriority,
-                psprintf("%s:%08x-%s:%i", GetClass(), (void *)this, file, line))
-      , m_function(function)
-      , m_arg1(arg1)
-      , m_arg2(arg2)
-      , m_arg3(arg3)
-      { PThread::Resume(); }
+    {
+      PThread::Resume();
+    }
+    
     virtual void Main()
-      { (*m_function)(m_arg1, m_arg2, m_arg3); }
+    {
+      (*m_function)(m_arg1, m_arg2, m_arg3);
+    }
 
   protected:
     FnType   m_function;
@@ -781,10 +769,6 @@ class PThreadLocalStorage : public PThread::LocalStorageBase
 
 #define P_HAS_THREADLOCAL_STORAGE 1  // For backward compatbility
 
-
-#ifdef _MSC_VER
-#pragma warning(default:4355 4121)
-#endif
 
 #endif // PTLIB_THREAD_H
 

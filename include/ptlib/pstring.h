@@ -1924,10 +1924,6 @@ class PCaselessString : public PString
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 /**Create a constant string.
    This is used to create a PString wrapper around a constant char string. Thus
    internal memory allocations are avoided as it does not change. The resultant
@@ -1949,7 +1945,7 @@ class PConstantString : public ParentString
   public:
     PConstantString(typename ParentString::Initialiser init)
       : ParentString(m_staticReference, init != NULL ? strlen(init) : 0)
-      , m_staticReference(this->m_length+1, true)
+      , P_DISABLE_MSVC_WARNINGS(4355, m_staticReference(this->m_length+1, true))
     {
       this->theArray = (char *)(init != NULL ? init : "");
     }
@@ -1967,9 +1963,6 @@ class PConstantString : public ParentString
     void operator=(const PConstantString &) { }
 };
 
-#ifdef _MSC_VER
-#pragma warning(default:4355)
-#endif
 
 /// Constant PString type. See PConstantString.
 typedef PConstantString<PString>         PConstString;

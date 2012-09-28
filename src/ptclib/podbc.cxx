@@ -1504,14 +1504,10 @@ PINDEX PODBC::Row::ColumnByName(const PCaselessString & columnName) const
 /////////////////////////////////////////////////////////////////////////////
 // PODBC::Table
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 PODBC::RecordSet::RecordSet(PODBC & odbc, const PString & query)
   : m_statement(new Statement(odbc))
   , m_totalRows(UndefinedRowIndex)
-  , m_cursor(*this)
+  , P_DISABLE_MSVC_WARNINGS(4355, m_cursor(*this))
 {
   Query(query);
 }
@@ -1520,7 +1516,7 @@ PODBC::RecordSet::RecordSet(PODBC & odbc, const PString & query)
 PODBC::RecordSet::RecordSet(PODBC * odbc, const PString & query)
   : m_statement(new Statement(*odbc))
   , m_totalRows(UndefinedRowIndex)
-  , m_cursor(*this)
+  , P_DISABLE_MSVC_WARNINGS(4355, m_cursor(*this))
 {
   Query(query);
 }
@@ -1529,13 +1525,9 @@ PODBC::RecordSet::RecordSet(PODBC * odbc, const PString & query)
 PODBC::RecordSet::RecordSet(const RecordSet & other)
   : PObject(other)
   , m_statement(NULL)
-  , m_cursor(*this)
+  , P_DISABLE_MSVC_WARNINGS(4355, m_cursor(*this))
 {
 }
-
-#ifdef _MSC_VER
-#pragma warning(default:4355)
-#endif
 
 
 PODBC::RecordSet::~RecordSet()
