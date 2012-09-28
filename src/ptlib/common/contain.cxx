@@ -2339,38 +2339,30 @@ PStringStream::Buffer::pos_type PStringStream::Buffer::seekpos(pos_type pos, ios
 }
 
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 PStringStream::PStringStream()
-  : iostream(new PStringStream::Buffer(*this, 0))
+  : P_DISABLE_MSVC_WARNINGS(4355, iostream(new PStringStream::Buffer(*this, 0)))
 {
 }
 
 
 PStringStream::PStringStream(PINDEX fixedBufferSize)
-  : iostream(new PStringStream::Buffer(*this, fixedBufferSize))
+  : P_DISABLE_MSVC_WARNINGS(4355, iostream(new PStringStream::Buffer(*this, fixedBufferSize)))
 {
 }
 
 
 PStringStream::PStringStream(const PString & str)
-  : PString(str),
-    iostream(new PStringStream::Buffer(*this, 0))
+  : PString(str)
+  , P_DISABLE_MSVC_WARNINGS(4355, iostream(new PStringStream::Buffer(*this, 0)))
 {
 }
 
 
 PStringStream::PStringStream(const char * cstr)
-  : PString(cstr),
-    iostream(new PStringStream::Buffer(*this, 0))
+  : PString(cstr)
+  , P_DISABLE_MSVC_WARNINGS(4355, iostream(new PStringStream::Buffer(*this, 0)))
 {
 }
-
-#ifdef _MSC_VER
-#pragma warning(default:4355)
-#endif
 
 
 PStringStream::~PStringStream()

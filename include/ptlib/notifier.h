@@ -225,10 +225,10 @@ typedef PNotifierTemplate<INT> PNotifier;
   against. The <code>PCREATE_NOTIFIER_EXT</code> macro may be used if the instance to be
   called is not the current object instance.
  */
-#define PCREATE_NOTIFIER2(func, type) func##_PNotifier::Create(this)
+#define PCREATE_NOTIFIER2(func, type) P_DISABLE_MSVC_WARNINGS(4355, func##_PNotifier::Create(this))
 
 /// Create PNotifier object instance with INT parameter. Uses PCREATE_NOTIFIER2 macro.
-#define PCREATE_NOTIFIER(func) func##_PNotifier::Create(this)
+#define PCREATE_NOTIFIER(func) P_DISABLE_MSVC_WARNINGS(4355, func##_PNotifier::Create(this))
 
 
 #endif // PTLIB_NOTIFIER_H
