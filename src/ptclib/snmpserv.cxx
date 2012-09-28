@@ -43,13 +43,7 @@
 static const char defaultCommunity[] = "public";
 
 PSNMPServer::PSNMPServer(PIPSocket::Address binding, WORD localPort, PINDEX timeout, PINDEX rxSize, PINDEX txSize)
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
- : m_thread(*this, &PSNMPServer::Main, true, "SNMP Server")
-#ifdef _MSC_VER
-#pragma warning(default:4355)
-#endif
+ : P_DISABLE_MSVC_WARNINGS(4355, m_thread(*this, &PSNMPServer::Main, true, "SNMP Server"))
  , community(defaultCommunity)
  , version(SNMP_VERSION)
  , maxRxSize(rxSize)

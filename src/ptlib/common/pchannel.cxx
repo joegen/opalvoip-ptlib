@@ -147,13 +147,10 @@ PChannelStreamBuffer::pos_type PChannelStreamBuffer::seekpos(pos_type pos, ios_b
 }
 
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 PChannel::PChannel()
-  : iostream(new PChannelStreamBuffer(this)),
-    readTimeout(PMaxTimeInterval), writeTimeout(PMaxTimeInterval)
+  : P_DISABLE_MSVC_WARNINGS(4355, iostream(new PChannelStreamBuffer(this)))
+  , readTimeout(PMaxTimeInterval)
+  , writeTimeout(PMaxTimeInterval)
 {
   os_handle = -1;
   memset(lastErrorCode, 0, sizeof(lastErrorCode));
@@ -161,10 +158,6 @@ PChannel::PChannel()
   lastReadCount = lastWriteCount = 0;
   Construct();
 }
-
-#ifdef _MSC_VER
-#pragma warning(default:4355)
-#endif
 
 
 PChannel::~PChannel()

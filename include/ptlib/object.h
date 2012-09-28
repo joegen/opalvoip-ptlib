@@ -105,6 +105,16 @@ using namespace std; // Not a good practice (name space polution), but will take
 #define P_REMOVE_VIRTUAL(type, fn, ret) P_REMOVE_VIRTUAL_INTERNAL(type, fn, { return ret; })
 
 
+#ifdef _MSC_VER
+  #define P_PUSH_MSVC_WARNINGS(warnings) __pragma(warning(push)) __pragma(warning(disable:warnings))
+  #define P_POP_MSVC_WARNINGS() __pragma(warning(pop))
+#else
+  #define P_PUSH_MSVC_WARNINGS(warnings)
+  #define P_POP_MSVC_WARNINGS()
+#endif // _MSC_VER
+#define P_DISABLE_MSVC_WARNINGS(warnings, statement) P_PUSH_MSVC_WARNINGS(warnings) statement P_POP_MSVC_WARNINGS()
+
+
 // P_USE_INTEGER_BOOL is the default and gives the old behaviour (it
 // is also used for C translation units).
 // without P_USE_INTEGER_BOOL, the ANSI C++ bool is used.
