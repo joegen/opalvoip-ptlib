@@ -655,9 +655,13 @@ PString::PString(const PCharArray & buf)
 
 
 PString::PString(const PBYTEArray & buf)
-  : PCharArray((const char *)(const BYTE *)buf, buf.GetSize())
-  , m_length(strlen(theArray))
 {
+  PINDEX bufSize = buf.GetSize();
+  if (bufSize > 0) {
+    if (buf[bufSize-1] == '\0')
+      --bufSize;
+    memcpy(GetPointerAndSetLength(bufSize), buf, bufSize);
+  }
 }
 
 
