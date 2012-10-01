@@ -495,6 +495,17 @@ PVideoDevice::~PVideoDevice()
 }
 
 
+PVideoDevice::Attributes::Attributes()
+  : m_brightness(-1)
+  , m_contrast(-1)
+  , m_saturation(-1)
+  , m_hue(-1)
+  , m_gamma(-1)
+  , m_exposure(-1)
+{
+}
+
+
 PVideoDevice::OpenArgs::OpenArgs()
   : pluginMgr(NULL),
     deviceName("#1"),
@@ -507,12 +518,7 @@ PVideoDevice::OpenArgs::OpenArgs()
     height(CIFHeight),
     convertSize(PTrue),
     resizeMode(eScale),
-    flip(PFalse),
-    brightness(-1),
-    whiteness(-1),
-    contrast(-1),
-    colour(-1),
-    hue(-1)
+    flip(PFalse)
 {
 }
 
@@ -565,30 +571,7 @@ PBoolean PVideoDevice::OpenFull(const OpenArgs & args, PBoolean startImmediate)
   if (!SetVFlipState(args.flip))
     return PFalse;
 
-  if (args.brightness >= 0) {
-    if (!SetBrightness(args.brightness))
-      return PFalse;
-  }
-
-  if (args.whiteness >= 0) {
-    if (!SetWhiteness(args.whiteness))
-      return PFalse;
-  }
-
-  if (args.contrast >= 0) {
-    if (!SetContrast(args.contrast))
-      return PFalse;
-  }
-
-  if (args.colour >= 0) {
-    if (!SetColour(args.colour))
-      return PFalse;
-  }
-
-  if (args.hue >= 0) {
-    if (!SetColour(args.hue))
-      return PFalse;
-  }
+  SetAttributes(args.m_attributes);
 
   if (startImmediate)
     return Start();
@@ -893,88 +876,17 @@ PINDEX PVideoDevice::GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const
 }
 
 
-int PVideoDevice::GetBrightness()
+bool PVideoDevice::GetAttributes(Attributes &)
 {
-  return frameBrightness;
+  return false;
 }
 
 
-PBoolean PVideoDevice::SetBrightness(unsigned newBrightness)
+bool PVideoDevice::SetAttributes(const Attributes &)
 {
-  frameBrightness = newBrightness;
-  return PTrue;
+  return false;
 }
 
-
-int PVideoDevice::GetWhiteness()
-{
-  return frameWhiteness;
-}
-
-
-PBoolean PVideoDevice::SetWhiteness(unsigned newWhiteness)
-{
-  frameWhiteness = newWhiteness;
-  return PTrue;
-}
-
-
-int PVideoDevice::GetColour()
-{
-  return frameColour;
-}
-
-
-PBoolean PVideoDevice::SetColour(unsigned newColour)
-{
-  frameColour=newColour;
-  return PTrue;
-}
-
-
-int PVideoDevice::GetContrast()
-{
-  return frameContrast;
-}
-
-
-PBoolean PVideoDevice::SetContrast(unsigned newContrast)
-{
-  frameContrast=newContrast;
-  return PTrue;
-}
-
-
-int PVideoDevice::GetHue()
-{
-  return frameHue;
-}
-
-
-PBoolean PVideoDevice::SetHue(unsigned newHue)
-{
-  frameHue=newHue;
-  return PTrue;
-}
-
-    
-PBoolean PVideoDevice::GetParameters (int *whiteness,
-                                  int *brightness, 
-                                  int *colour,
-                                  int *contrast,
-                                  int *hue)
-{
-  if (!IsOpen())
-    return PFalse;
-
-  *brightness = frameBrightness;
-  *colour     = frameColour;
-  *contrast   = frameContrast;
-  *hue        = frameHue;
-  *whiteness  = frameWhiteness;
-
-  return PTrue;
-}
 
 PBoolean PVideoDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
 {
