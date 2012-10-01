@@ -313,7 +313,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     }
 
     if (m_thresholdLevel > 0) {
-      ostream & log = PTrace::Begin(1, "", 0) << '\t';
+      ostream & log = PTrace::Begin(UINT_MAX, NULL, 0) << '\t';
 
       if (PProcess::IsInitialised()) {
         PProcess & process = PProcess::Current();
@@ -459,8 +459,11 @@ unsigned PTrace::GetOptions()
 
 void PTrace::SetLevel(unsigned level)
 {
-  PTraceInfo::Instance().m_thresholdLevel = level;
-  PTRACE(1, NULL, "PTLib", "Trace threshold set to " << level);
+  PTraceInfo & info = PTraceInfo::Instance();
+  if (info.m_thresholdLevel != level) {
+    info.m_thresholdLevel = level;
+    Begin(UINT_MAX, NULL, 0) << "PTLib\tTrace threshold set to " << level << End;
+  }
 }
 
 
