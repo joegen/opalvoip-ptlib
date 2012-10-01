@@ -1101,9 +1101,6 @@ PBoolean PVideoInputDevice_V4L2::DoIOCTL(unsigned long int r, void * s, PBoolean
  */
 int PVideoInputDevice_V4L2::GetControlCommon(unsigned int control, int *value) 
 {
-  if (!IsOpen())
-    return -1;
-
   struct v4l2_queryctrl q;
   CLEAR(q);
   q.id = control;
@@ -1121,29 +1118,17 @@ int PVideoInputDevice_V4L2::GetControlCommon(unsigned int control, int *value)
   return *value;
 }
 
-int PVideoInputDevice_V4L2::GetBrightness() 
-{ 
-  return GetControlCommon(V4L2_CID_BRIGHTNESS, &frameBrightness);
-}
-
-int PVideoInputDevice_V4L2::GetWhiteness() 
+bool PVideoInputDevice_V4L2::GetAttributes(Attributes & attrib)
 {
-  return GetControlCommon(V4L2_CID_WHITENESS, &frameWhiteness);
-}
+  if (!IsOpen())
+    return false;
 
-int PVideoInputDevice_V4L2::GetColour() 
-{ 
-  return GetControlCommon(V4L2_CID_SATURATION, &frameColour);
-}
+  GetControlCommon(V4L2_CID_BRIGHTNESS, &attrib.m_brightness);
+  GetControlCommon(V4L2_CID_SATURATION, &attrib.m_saturation);
+  GetControlCommon(V4L2_CID_CONTRAST, &attrib.m_contrast);
+  GetControlCommon(V4L2_CID_HUE, &attrib.m_hue);
 
-int PVideoInputDevice_V4L2::GetContrast() 
-{
-  return GetControlCommon(V4L2_CID_CONTRAST, &frameContrast);
-}
-
-int PVideoInputDevice_V4L2::GetHue() 
-{
-  return GetControlCommon(V4L2_CID_HUE, &frameHue);
+  return true;
 }
 
 /**
@@ -1179,72 +1164,13 @@ PBoolean PVideoInputDevice_V4L2::SetControlCommon(unsigned int control, int newV
   return PTrue;
 }
 
-PBoolean PVideoInputDevice_V4L2::SetBrightness(unsigned newBrightness) 
+bool PVideoInputDevice_V4L2::SetAttributes(const Attributes & attrib)
 { 
-  if (!SetControlCommon(V4L2_CID_BRIGHTNESS, newBrightness))
-    return PFalse;
-  frameBrightness = newBrightness;
-  return PTrue;
+  return SetControlCommon(V4L2_CID_BRIGHTNESS, attrib.m_brightness) &&
+         SetControlCommon(V4L2_CID_SATURATION, attrib.m_saturation) &&
+         SetControlCommon(V4L2_CID_CONTRAST, attrib.m_contrast) &&
+         SetControlCommon(V4L2_CID_HUE, attrib.m_hue);
 }
-
-PBoolean PVideoInputDevice_V4L2::SetWhiteness(unsigned newWhiteness) 
-{ 
-  if (!SetControlCommon(V4L2_CID_WHITENESS, newWhiteness))
-    return PFalse;
-
-  frameWhiteness = newWhiteness;
-  return PTrue;
-}
-
-PBoolean PVideoInputDevice_V4L2::SetColour(unsigned newColour) 
-{ 
-  if (!SetControlCommon(V4L2_CID_SATURATION, newColour))
-    return PFalse;
-  frameColour = newColour;
-  return PTrue;
-}
-
-PBoolean PVideoInputDevice_V4L2::SetContrast(unsigned newContrast) 
-{ 
-  if (!SetControlCommon(V4L2_CID_CONTRAST, newContrast))
-    return PFalse;
-  frameContrast = newContrast;
-  return PTrue;
-}
-
-PBoolean PVideoInputDevice_V4L2::SetHue(unsigned newHue) 
-{
-  if (!SetControlCommon(V4L2_CID_HUE, newHue))
-    return PFalse;
-  frameHue=newHue;
-  return PTrue;
-}
-
-PBoolean PVideoInputDevice_V4L2::GetParameters (int *whiteness, int *brightness, int *colour, int *contrast, int *hue)
-{
-  if (!IsOpen())
-    return PFalse;
-
-  frameWhiteness = -1;
-  frameBrightness = -1;
-  frameColour = -1;
-  frameContrast = -1;
-  frameHue = -1;
-  GetWhiteness();
-  GetBrightness();
-  GetColour();
-  GetContrast();
-  GetHue();
-
-  *whiteness  = frameWhiteness;
-  *brightness = frameBrightness;
-  *colour     = frameColour;
-  *contrast   = frameContrast;
-  *hue        = frameHue;
-
-  return PTrue;
-}
-
 
 PBoolean PVideoInputDevice_V4L2::QueueAllBuffers()
 {
