@@ -2381,6 +2381,7 @@ PStringStream::~PStringStream()
 PString & PStringStream::MakeEmpty()
 {
   memset(theArray, 0, GetSize());
+  m_length = 0;
   flush();
   return *this;
 }
