@@ -396,6 +396,17 @@ class PVideoDevice : public PVideoFrameInfo
       */
     virtual PStringArray GetDeviceNames() const = 0;
 
+    struct Attributes {
+      Attributes();
+
+      int m_brightness;
+      int m_contrast;
+      int m_saturation;
+      int m_hue;
+      int m_gamma;
+      int m_exposure;
+    };
+
     struct OpenArgs {
       OpenArgs();
 
@@ -412,11 +423,7 @@ class PVideoDevice : public PVideoFrameInfo
       bool        convertSize;
       ResizeMode  resizeMode;
       bool        flip;
-      int         brightness;
-      int         whiteness;
-      int         contrast;
-      int         colour;
-      int         hue;
+      Attributes  m_attributes;
     };
 
     /**Open the device given the device name.
@@ -612,62 +619,19 @@ class PVideoDevice : public PVideoFrameInfo
      */
     virtual PBoolean CanCaptureVideo() const = 0;
 
-    /**Get the brightness of the image. 0xffff-Very bright. -1 is unknown.
+    /**Get video attributes.
      */
-    virtual int GetBrightness();
-
-    /**Set brightness of the image. 0xffff-Very bright.
-     */
-    virtual PBoolean SetBrightness(unsigned newBrightness);
-
-
-    /**Get the whiteness of the image. 0xffff-Very white. -1 is unknown.
-     */
-    virtual int GetWhiteness();
-
-    /**Set whiteness of the image. 0xffff-Very white.
-     */
-    virtual PBoolean SetWhiteness(unsigned newWhiteness);
-
-
-    /**Get the colour of the image. 0xffff-lots of colour. -1 is unknown.
-     */
-    virtual int GetColour();
-
-    /**Set colour of the image. 0xffff-lots of colour.
-     */
-    virtual PBoolean SetColour(unsigned newColour);
-
-
-    /**Get the contrast of the image. 0xffff-High contrast. -1 is unknown.
-     */
-    virtual int GetContrast();
-
-    /**Set contrast of the image. 0xffff-High contrast.
-     */
-    virtual PBoolean SetContrast(unsigned newContrast);
-
-
-    /**Get the hue of the image. 0xffff-High hue. -1 is unknown.
-     */
-    virtual int GetHue();
-
-    /**Set hue of the image. 0xffff-High hue.
-     */
-    virtual PBoolean SetHue(unsigned newHue);
-    
-    
-    /**Return whiteness, brightness, colour, contrast and hue in one call.
-     */
-    virtual PBoolean GetParameters(
-      int *whiteness,
-      int *brightness,
-      int *colour,
-      int *contrast,
-      int *hue
+    virtual bool GetAttributes(
+      Attributes & attributes
     );
 
-    
+    /**Set video attributes.
+     */
+    virtual bool SetAttributes(
+      const Attributes & attributes
+    );
+
+
     /** Set VideoFormat and VideoChannel in one ioctl
      */
     virtual PBoolean SetVideoChannelFormat (
@@ -700,11 +664,18 @@ class PVideoDevice : public PVideoFrameInfo
     PColourConverter * converter;
     PBYTEArray         frameStore;
 
-    int          frameBrightness; // 16 bit entity, -1 is no value
-    int          frameWhiteness;
-    int          frameContrast;
-    int          frameColour;
-    int          frameHue;
+  private:
+    P_REMOVE_VIRTUAL(int, GetBrightness(), 0);
+    P_REMOVE_VIRTUAL(PBoolean, SetBrightness(unsigned), false);
+    P_REMOVE_VIRTUAL(int, GetWhiteness(), 0);
+    P_REMOVE_VIRTUAL(PBoolean, SetWhiteness(unsigned), false);
+    P_REMOVE_VIRTUAL(int, GetColour(), 0);
+    P_REMOVE_VIRTUAL(PBoolean, SetColour(unsigned), false);
+    P_REMOVE_VIRTUAL(int, GetContrast(), 0);
+    P_REMOVE_VIRTUAL(PBoolean, SetContrast(unsigned), false);
+    P_REMOVE_VIRTUAL(int, GetHue(), 0);
+    P_REMOVE_VIRTUAL(PBoolean, SetHue(unsigned), false);
+    P_REMOVE_VIRTUAL(PBoolean, GetParameters(int *, int *, int *, int *, int *), false);
 };
 
 

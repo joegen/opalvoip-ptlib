@@ -211,17 +211,8 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     virtual PBoolean GetFrameData(BYTE * buffer, PINDEX * bytesReturned);
     virtual PBoolean GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned);
     virtual bool FlowControl(const void * flowData);
-    virtual int GetBrightness();
-    virtual PBoolean SetBrightness(unsigned newBrightness);
-    virtual int GetWhiteness();
-    virtual PBoolean SetWhiteness(unsigned newWhiteness);
-    virtual int GetColour();
-    virtual PBoolean SetColour(unsigned newColour);
-    virtual int GetContrast();
-    virtual PBoolean SetContrast(unsigned newContrast);
-    virtual int GetHue();
-    virtual PBoolean SetHue(unsigned newHue);
-    virtual PBoolean GetParameters(int *whiteness, int *brightness, int *colour, int *contrast, int *hue);
+    virtual bool GetAttributes(Attributes & attributes);
+    virtual bool SetAttributes(const Attributes & attributes);
 
 
   protected:
@@ -929,41 +920,16 @@ int PVideoInputDevice_DirectShow::GetControlCommon(long control)
 }
 
 
-int PVideoInputDevice_DirectShow::GetBrightness()
-{
-  return GetControlCommon(VideoProcAmp_Brightness);
-}
-
-int PVideoInputDevice_DirectShow::GetWhiteness()
-{
-  return GetControlCommon(VideoProcAmp_Gamma);
-}
-
-int PVideoInputDevice_DirectShow::GetColour()
-{
-  return GetControlCommon(VideoProcAmp_Saturation);
-}
-
-int PVideoInputDevice_DirectShow::GetContrast()
-{
-  return GetControlCommon(VideoProcAmp_Contrast);
-}
-
-int PVideoInputDevice_DirectShow::GetHue()
-{
-  return GetControlCommon(VideoProcAmp_Hue);
-}
-
-PBoolean PVideoInputDevice_DirectShow::GetParameters(int *whiteness, int *brightness, int *colour, int *contrast, int *hue)
+bool PVideoInputDevice_DirectShow::GetAttributes(Attributes & attrib)
 {
   if (!IsOpen())
     return false;
 
-  *whiteness  = GetWhiteness();
-  *brightness = GetBrightness();
-  *colour     = GetColour();
-  *contrast   = GetContrast();
-  *hue        = GetHue();
+  attrib.m_brightness = GetControlCommon(VideoProcAmp_Brightness);
+  attrib.m_contrast   = GetControlCommon(VideoProcAmp_Contrast);
+  attrib.m_saturation = GetControlCommon(VideoProcAmp_Saturation);
+  attrib.m_hue        = GetControlCommon(VideoProcAmp_Hue);
+  attrib.m_gamma      = GetControlCommon(VideoProcAmp_Gamma);
 
   return true;
 }
@@ -992,29 +958,13 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
   return true;
 }
 
-PBoolean PVideoInputDevice_DirectShow::SetBrightness(unsigned newBrightness)
+PBoolean PVideoInputDevice_DirectShow::SetAttributes(const Attributes & attrib)
 {
-  return SetControlCommon(VideoProcAmp_Brightness, newBrightness);
-}
-
-PBoolean PVideoInputDevice_DirectShow::SetColour(unsigned newColour)
-{
-  return SetControlCommon(VideoProcAmp_Saturation, newColour);
-}
-
-PBoolean PVideoInputDevice_DirectShow::SetContrast(unsigned newContrast)
-{
-  return SetControlCommon(VideoProcAmp_Contrast, newContrast);
-}
-
-PBoolean PVideoInputDevice_DirectShow::SetHue(unsigned newHue)
-{
-  return SetControlCommon(VideoProcAmp_Hue, newHue);
-}
-
-PBoolean PVideoInputDevice_DirectShow::SetWhiteness(unsigned newWhiteness)
-{
-  return SetControlCommon(VideoProcAmp_Gamma, newWhiteness);
+  return SetControlCommon(VideoProcAmp_Brightness, attrib.m_brightness) &&
+         SetControlCommon(VideoProcAmp_Saturation, attrib.m_saturation) &&
+         SetControlCommon(VideoProcAmp_Contrast, attrib.m_contrast) &&
+         SetControlCommon(VideoProcAmp_Hue, attrib.m_hue) &&
+         SetControlCommon(VideoProcAmp_Gamma, attrib.m_gamma);
 }
 
 
