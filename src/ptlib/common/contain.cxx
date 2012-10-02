@@ -2382,6 +2382,7 @@ PString & PStringStream::MakeEmpty()
 {
   memset(theArray, 0, GetSize());
   m_length = 0;
+  clear();
   flush();
   return *this;
 }
@@ -2398,6 +2399,7 @@ PINDEX PStringStream::GetLength() const
 void PStringStream::AssignContents(const PContainer & cont)
 {
   PString::AssignContents(cont);
+  clear();
   flush();
 }
 
