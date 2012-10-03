@@ -127,7 +127,7 @@ void PSetErrorStream(ostream * s)
 
 #if PTRACING
 
-class PTraceInfo
+class PTraceInfo : public PTrace
 {
   /* NOTE you cannot have any complex types in this structure. Anything
      that might do an asert or PTRACE will crash due to recursion.
@@ -192,7 +192,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
   PTraceInfo()
     : m_currentLevel(0)
     , m_thresholdLevel(1)
-    , m_options(PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine)
+    , m_options(Blocks | Timestamp | Thread | FileAndLine)
 #ifdef __NUCLEUS_PLUS__
     , m_stream(NULL)
 #else
@@ -282,17 +282,17 @@ PTHREAD_MUTEX_RECURSIVE_NP
       PFilePath fn(m_filename);
       fn.Replace("%P", PString(PProcess::GetCurrentProcessID()));
      
-      if ((m_options & PTrace::RotateLogMask) != 0)
+      if ((m_options & RotateLogMask) != 0)
       {
           PTime now;
           fn = fn.GetDirectory() +
                fn.GetTitle() +
-               now.AsString(m_rolloverPattern, ((m_options&PTrace::GMTTime) ? PTime::GMT : PTime::Local)) +
+               now.AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local)) +
                fn.GetType();
       }
 
       ofstream * traceOutput;
-      if (m_options & PTrace::AppendToFile) 
+      if (m_options & AppendToFile) 
         traceOutput = new ofstream((const char *)fn, ios_base::out | ios_base::app);
       else 
         traceOutput = new ofstream((const char *)fn, ios_base::out | ios_base::trunc);
@@ -313,7 +313,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     }
 
     if (m_thresholdLevel > 0) {
-      ostream & log = PTrace::Begin(UINT_MAX, NULL, 0) << '\t';
+      ostream & log = InternalBegin(UINT_MAX, NULL, 0, NULL, NULL) << '\t';
 
       if (PProcess::IsInitialised()) {
         PProcess & process = PProcess::Current();
@@ -327,10 +327,14 @@ PTHREAD_MUTEX_RECURSIVE_NP
           << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
              " with PTLib (v" << PProcess::GetLibVersion() << ")"
              " at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu") << ","
-             " level=" << m_thresholdLevel << ", to \"" << m_filename << '"'
-          << PTrace::End;
+             " level=" << m_thresholdLevel << ", to \"" << m_filename << '"';
+      InternalEnd(log);
     }
   }
+
+  void InternalInitialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options);
+  std::ostream & InternalBegin(unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module);
+  std::ostream & InternalEnd(std::ostream & stream);
 };
 
 
@@ -369,33 +373,33 @@ void PTrace::Initialise(const PArgList & args,
   PCaselessString optStr = args.GetOptionString(traceOpts);
   PINDEX pos = 0;
   while ((pos = optStr.FindOneOf("+-", pos)) != P_MAX_INDEX) {
-    void (*operation)(unsigned & options, PTrace::Options option) = optStr[pos++] == '+' ? SetOptionBit : ClearOptionBit;
+    void (*operation)(unsigned & options, Options option) = optStr[pos++] == '+' ? SetOptionBit : ClearOptionBit;
     if (optStr.NumCompare("block", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::Blocks);
+      operation(options, Blocks);
     else if (optStr.NumCompare("date", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::DateAndTime);
+      operation(options, DateAndTime);
     else if (optStr.NumCompare("time", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::Timestamp);
+      operation(options, Timestamp);
     else if (optStr.NumCompare("thread", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::Thread);
+      operation(options, Thread);
     else if (optStr.NumCompare("level", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::TraceLevel);
+      operation(options, TraceLevel);
     else if (optStr.NumCompare("file", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::FileAndLine);
+      operation(options, FileAndLine);
     else if (optStr.NumCompare("object", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::ObjectInstance);
+      operation(options, ObjectInstance);
     else if (optStr.NumCompare("context", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::ContextIdentifier);
+      operation(options, ContextIdentifier);
     else if (optStr.NumCompare("gmt", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::GMTTime);
+      operation(options, GMTTime);
     else if (optStr.NumCompare("daily", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::RotateDaily);
+      operation(options, RotateDaily);
     else if (optStr.NumCompare("hour", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::RotateHourly);
+      operation(options, RotateHourly);
     else if (optStr.NumCompare("minute", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::RotateMinutely);
+      operation(options, RotateMinutely);
     else if (optStr.NumCompare("append", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PTrace::AppendToFile);
+      operation(options, AppendToFile);
   }
 
   Initialise(args.GetOptionCount(traceLevel), args.GetOptionString(outputFile), args.GetOptionString(traceRollover), options);
@@ -423,17 +427,21 @@ static unsigned GetRotateVal(unsigned options)
 
 void PTrace::Initialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options)
 {
-  PTraceInfo & info = PTraceInfo::Instance();
+  PTraceInfo::Instance().InternalInitialise(level, filename, rolloverPattern, options);
+}
 
-  info.m_options = options;
-  info.m_thresholdLevel = level;
-  info.m_rolloverPattern = rolloverPattern;
-  if (info.m_rolloverPattern.IsEmpty())
-    info.m_rolloverPattern = DefaultRollOverPattern;
+
+void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options)
+{
+  m_options = options;
+  m_thresholdLevel = level;
+  m_rolloverPattern = rolloverPattern;
+  if (m_rolloverPattern.IsEmpty())
+    m_rolloverPattern = DefaultRollOverPattern;
   // Does PTime::GetDayOfYear() etc. want to take zone param like PTime::AsString() to switch 
   // between os_gmtime and os_localtime?
-  info.m_lastRotate = GetRotateVal(options);
-  info.OpenTraceFile(filename);
+  m_lastRotate = GetRotateVal(options);
+  OpenTraceFile(filename);
 }
 
 
@@ -481,16 +489,20 @@ PBoolean PTrace::CanTrace(unsigned level)
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
 {
-  PTraceInfo & info = PTraceInfo::Instance();
+  return PTraceInfo::Instance().InternalBegin(level, fileName, lineNum, instance, module);
+}
 
+
+ostream & PTraceInfo::InternalBegin(unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
+{
   PThread * thread = NULL;
   PTraceInfo::ThreadLocalInfo * threadInfo = NULL;
-  ostream * streamPtr = info.m_stream;
+  ostream * streamPtr = m_stream;
 
   if (level != UINT_MAX && PProcess::IsInitialised()) {
     thread = PThread::Current();
 
-    threadInfo = info.m_threadStorage.Get();
+    threadInfo = m_threadStorage.Get();
     if (threadInfo != NULL) {
       PStringStream * stringStreamPtr = new PStringStream;
       threadInfo->m_traceStreams.Push(stringStreamPtr);
@@ -498,40 +510,40 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
     }
   }
 
-  info.Lock();
+  Lock();
 
   ostream & stream = *streamPtr;
 
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
 
-  info.m_oldStreamFlags = stream.flags();
-  info.m_oldPrecision   = stream.precision();
+  m_oldStreamFlags = stream.flags();
+  m_oldPrecision   = stream.precision();
 
-  if (!info.m_filename.IsEmpty() && info.HasOption(RotateLogMask)) {
-    unsigned rotateVal = GetRotateVal(info.m_options);
-    if (rotateVal != info.m_lastRotate) {
-      info.OpenTraceFile(info.m_filename);
-      info.m_lastRotate = rotateVal;
-      if (info.m_stream == NULL)
-        info.SetStream(&cerr);
+  if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
+    unsigned rotateVal = GetRotateVal(m_options);
+    if (rotateVal != m_lastRotate) {
+      OpenTraceFile(m_filename);
+      m_lastRotate = rotateVal;
+      if (m_stream == NULL)
+        SetStream(&cerr);
     }
   }
 
-  if (!info.HasOption(SystemLogStream)) {
-    if (info.HasOption(DateAndTime)) {
+  if (!HasOption(SystemLogStream)) {
+    if (HasOption(DateAndTime)) {
       PTime now;
-      stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", info.HasOption(GMTTime) ? PTime::GMT : PTime::Local);
+      stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", HasOption(GMTTime) ? PTime::GMT : PTime::Local);
     }
 
-    if (info.HasOption(Timestamp))
-      stream << setprecision(3) << setw(10) << (PTimer::Tick()-info.m_startTick) << '\t';
+    if (HasOption(Timestamp))
+      stream << setprecision(3) << setw(10) << (PTimer::Tick()-m_startTick) << '\t';
   }
 
-  if (info.HasOption(TraceLevel))
+  if (HasOption(TraceLevel))
     stream << level << '\t';
 
-  if (info.HasOption(Thread)) {
+  if (HasOption(Thread)) {
     PString name;
     if (thread == NULL)
       name.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
@@ -544,10 +556,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
     stream << '\t';
   }
 
-  if (info.HasOption(ThreadAddress))
+  if (HasOption(ThreadAddress))
     stream << hex << setfill('0') << setw(7) << (void *)thread << dec << setfill(' ') << '\t';
 
-  if (info.HasOption(FileAndLine)) {
+  if (HasOption(FileAndLine)) {
     const char * file;
     if (fileName == NULL)
       file = "-";
@@ -567,13 +579,13 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
     stream << setw(16) << file << '(' << lineNum << ")\t";
   }
 
-  if (info.HasOption(ObjectInstance)) {
+  if (HasOption(ObjectInstance)) {
     if (instance != NULL)
       stream << instance->GetClass() << ':' << instance;
     stream << '\t';
   }
 
-  if (info.HasOption(ContextIdentifier)) {
+  if (HasOption(ContextIdentifier)) {
     unsigned id = 0;
     if (instance != NULL)
       id = instance->GetTraceContextIdentifier();
@@ -592,10 +604,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex or is thread local
   if (threadInfo == NULL)
-    info.m_currentLevel = level;
+    m_currentLevel = level;
   else {
     threadInfo->m_traceLevel = level;
-    info.Unlock();
+    Unlock();
   }
 
   return stream;
@@ -604,12 +616,16 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
 
 ostream & PTrace::End(ostream & paramStream)
 {
-  PTraceInfo & info = PTraceInfo::Instance();
+  return PTraceInfo::Instance().InternalEnd(paramStream);
+}
 
-  PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? info.m_threadStorage.Get() : NULL;
 
-  paramStream.flags(info.m_oldStreamFlags);
-  paramStream.precision(info.m_oldPrecision);
+ostream & PTraceInfo::InternalEnd(ostream & paramStream)
+{
+  PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? m_threadStorage.Get() : NULL;
+
+  paramStream.flags(m_oldStreamFlags);
+  paramStream.precision(m_oldPrecision);
 
   unsigned currentLevel;
 
@@ -618,34 +634,34 @@ ostream & PTrace::End(ostream & paramStream)
     if (!PAssert(&paramStream == stackStream, PLogicError))
       return paramStream;
     *stackStream << ends << flush;
-    info.Lock();
-    *info.m_stream << *stackStream;
+    Lock();
+    *m_stream << *stackStream;
     delete stackStream;
 
     currentLevel = threadInfo->m_traceLevel;
   }
   else {
-    if (!PAssert(&paramStream == info.m_stream, PLogicError)) {
-      info.Unlock();
+    if (!PAssert(&paramStream == m_stream, PLogicError)) {
+      Unlock();
       return paramStream;
     }
 
-    currentLevel = info.m_currentLevel;
+    currentLevel = m_currentLevel;
     // Inherit lock from PTrace::Begin()
   }
 
-  if (info.HasOption(SystemLogStream)) {
+  if (HasOption(SystemLogStream)) {
     // Get the trace level for this message and set the stream width to that
     // level so that the PSystemLog can extract the log level back out of the
     // ios structure. There could be portability issues with this though it
     // should work pretty universally.
-    info.m_stream->width(currentLevel + 1);
+    m_stream->width(currentLevel + 1);
   }
   else
-    *info.m_stream << '\n';
-  info.m_stream->flush();
+    *m_stream << '\n';
+  m_stream->flush();
 
-  info.Unlock();
+  Unlock();
   return paramStream;
 }
 
