@@ -562,19 +562,22 @@
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bison -o ../common/getdate_tab.c ../common/getdate.y
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PATH=%PATH%;C:\Tools
+bison -o ../common/getdate_tab.c ../common/getdate.y
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bison -o ../common/getdate_tab.c ../common/getdate.y
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../common/getdate_tab.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../common/getdate_tab.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">bison -o ../common/getdate_tab.c ../common/getdate.y
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">PATH=%PATH%;C:\Tools
+bison -o ../common/getdate_tab.c ../common/getdate.y
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">bison -o ../common/getdate_tab.c ../common/getdate.y
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">../common/getdate_tab.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">../common/getdate_tab.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bison -o ../common/getdate_tab.c ../common/getdate.y
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PATH=%PATH%;C:\Tools
+bison -o ../common/getdate_tab.c ../common/getdate.y
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bison -o ../common/getdate_tab.c ../common/getdate.y
 </Command>
