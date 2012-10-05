@@ -108,7 +108,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
     bits = ESD_BITS8;
     break;
   default:
-    return (PFalse);
+    return (false);
   }
 
   // make sure we have proper number of channels
@@ -120,7 +120,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
     channels = ESD_MONO;
     break;
   default:
-    return (PFalse);
+    return (false);
   }
 
   rate = sampleRate;
@@ -135,7 +135,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
     func = ESD_PLAY;
     break;
   default:
-    return (PFalse);
+    return (false);
   }
 
   format = bits | channels | mode | func;
@@ -145,7 +145,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
     os_handle = esd_play_stream_fallback( format, rate, host, name );
 
   if ( os_handle <= 0 ) 
-    return (PFalse);
+    return (false);
 
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
@@ -153,18 +153,18 @@ PBoolean PSoundChannelESD::Open(const PString & device,
 PBoolean PSoundChannelESD::SetVolume(unsigned newVal)
 {
   if (os_handle <= 0)  //Cannot set volume in loop back mode.
-    return PFalse;
+    return false;
   
-  return PFalse;
+  return false;
 }
 
 PBoolean  PSoundChannelESD::GetVolume(unsigned &devVol)
 {
   if (os_handle <= 0)  //Cannot get volume in loop back mode.
-    return PFalse;
+    return false;
   
   devVol = 0;
-  return PFalse;
+  return false;
 }
   
 
@@ -187,7 +187,7 @@ PBoolean PSoundChannelESD::SetFormat(unsigned numChannels,
   PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
   PAssert(bitsPerSample == 8 || bitsPerSample == 16, PInvalidParameter);
 
-  return PTrue;
+  return true;
 }
 
 
@@ -197,13 +197,13 @@ PBoolean PSoundChannelESD::SetBuffers(PINDEX size, PINDEX count)
 
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelESD::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -221,11 +221,11 @@ PBoolean PSoundChannelESD::Write(const void * buf, PINDEX len)
       // writing data out at the correct rate.
       writeDelay.Delay(len/16);
 #endif
-      return (PTrue);
+      return (true);
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -234,83 +234,83 @@ PBoolean PSoundChannelESD::PlaySound(const PSound & sound, PBoolean wait)
   Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return PFalse;
+    return false;
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelESD::PlayFile(const PFilePath & filename, PBoolean wait)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelESD::HasPlayCompleted()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelESD::WaitForPlayCompletion()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelESD::Read(void * buf, PINDEX len)
 {
   if (os_handle < 0) 
-    return PFalse;
+    return false;
 
   lastReadCount = 0;
   // keep looping until we have read 'len' bytes
   while (lastReadCount < len) {
     int retval = ::read(os_handle, ((char *)buf)+lastReadCount, len-lastReadCount);
-    if (retval <= 0) return PFalse;
+    if (retval <= 0) return false;
     lastReadCount += retval;
   }
-  return (PTrue);
+  return (true);
 }
 
 
 PBoolean PSoundChannelESD::RecordSound(PSound & sound)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelESD::RecordFile(const PFilePath & filename)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelESD::StartRecording()
 {
-  return (PTrue);
+  return (true);
 }
 
 
 PBoolean PSoundChannelESD::IsRecordBufferFull()
 {
-  return (PTrue);
+  return (true);
 }
 
 
 PBoolean PSoundChannelESD::AreAllRecordBuffersFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelESD::WaitForRecordBufferFull()
 {
   if (os_handle < 0) {
-    return PFalse;
+    return false;
   }
 
   return PXSetIOBlock(PXReadBlock, readTimeout);
@@ -319,13 +319,13 @@ PBoolean PSoundChannelESD::WaitForRecordBufferFull()
 
 PBoolean PSoundChannelESD::WaitForAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelESD::Abort()
 {
-  return PTrue;
+  return true;
 }
 
 

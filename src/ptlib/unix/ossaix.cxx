@@ -132,13 +132,13 @@ void PSound::SetFormat(unsigned channels,
 
 PBoolean PSound::Load(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSound::Save(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -147,9 +147,9 @@ PBoolean PSound::Play()
   PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
                         PSoundChannel::Player);
   if (!channel.IsOpen())
-    return PFalse;
+    return false;
 
-  return channel.PlaySound(*this, PTrue);
+  return channel.PlaySound(*this, true);
 }
 
 
@@ -158,7 +158,7 @@ PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
   PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
                         PSoundChannel::Player);
   if (!channel.IsOpen())
-    return PFalse;
+    return false;
 
   return channel.PlayFile(file, wait);
 }
@@ -244,7 +244,7 @@ PBoolean PSoundChannel::Open(const PString & _device,
     // see if the sound channel is already open in this direction
     if ((entry.direction & dir) != 0) {
       dictMutex.Signal();
-      return PFalse;
+      return false;
     }
 
     // flag this entry as open in this direction
@@ -261,7 +261,7 @@ PBoolean PSoundChannel::Open(const PString & _device,
     }
     else if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) {
       dictMutex.Signal();
-      return PFalse;
+      return false;
     }
 
     // add the device to the dictionary
@@ -274,7 +274,7 @@ PBoolean PSoundChannel::Open(const PString & _device,
     entry->numChannels   = _numChannels;
     entry->sampleRate    = _sampleRate;
     entry->bitsPerSample = _bitsPerSample;
-    entry->isInitialised = PFalse;
+    entry->isInitialised = false;
     entry->fragmentValue = 0x7fff0008;
   }
    
@@ -285,18 +285,18 @@ PBoolean PSoundChannel::Open(const PString & _device,
   // save the direction and device
   direction     = _dir;
   device        = _device;
-  isInitialised = PFalse;
+  isInitialised = false;
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannel::Setup()
 {
   if (os_handle < 0)
-    return PFalse;
+    return false;
 
   if (isInitialised)
-    return PTrue;
+    return true;
 
   // lock the dictionary
   dictMutex.Wait();
@@ -307,12 +307,12 @@ PBoolean PSoundChannel::Setup()
   // get record for the device
   SoundHandleEntry & entry = handleDict()[device];
 
-  PBoolean stat = PFalse;
+  PBoolean stat = false;
   if (entry.isInitialised)  {
-    isInitialised = PTrue;
-    stat          = PTrue;
+    isInitialised = true;
+    stat          = true;
   } else if (device == "loopback")
-    stat = PTrue;
+    stat = true;
   else {
 
   // must always set paramaters in the following order:
@@ -340,7 +340,7 @@ PBoolean PSoundChannel::Setup()
 
             arg = val = entry.sampleRate;
             if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg)) || (arg != val)) 
-              stat = PTrue;
+              stat = true;
           }
         }
       }
@@ -349,8 +349,8 @@ PBoolean PSoundChannel::Setup()
 
   }
 
-  entry.isInitialised = PTrue;
-  isInitialised       = PTrue;
+  entry.isInitialised = true;
+  isInitialised       = true;
 
   dictMutex.Signal();
 
@@ -361,11 +361,11 @@ PBoolean PSoundChannel::Close()
 {
   // if the channel isn't open, do nothing
   if (os_handle < 0)
-    return PTrue;
+    return true;
 
   if (os_handle == 0) {
     os_handle = -1;
-    return PTrue;
+    return true;
   }
 
   // the device must be in the dictionary
@@ -386,19 +386,19 @@ PBoolean PSoundChannel::Close()
   // flag this channel as closed
   dictMutex.Signal();
   os_handle = -1;
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
 {
   if (!Setup())
-    return PFalse;
+    return false;
 
   if (os_handle > 0) {
     while (!ConvertOSError(::write(os_handle, (void *)buf, len)))
       if (GetErrorCode() != Interrupted)
-        return PFalse;
-    return PTrue;
+        return false;
+    return true;
   }
 
   int index = 0;
@@ -412,19 +412,19 @@ PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
       usleep(5000);
     }
   }
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannel::Read(void * buf, PINDEX len)
 {
   if (!Setup())
-    return PFalse;
+    return false;
 
   if (os_handle > 0) {
     while (!ConvertOSError(::read(os_handle, (void *)buf, len)))
       if (GetErrorCode() != Interrupted)
-        return PFalse;
-    return PTrue;
+        return false;
+    return true;
   }
 
   int index = 0;
@@ -437,7 +437,7 @@ PBoolean PSoundChannel::Read(void * buf, PINDEX len)
     if (startptr == LOOPBACK_BUFFER_SIZE)
       startptr = 0;
   } 
-  return PTrue;
+  return true;
 }
 
 
@@ -447,7 +447,7 @@ PBoolean PSoundChannel::SetFormat(unsigned numChannels,
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   // check parameters
@@ -468,15 +468,15 @@ PBoolean PSoundChannel::SetFormat(unsigned numChannels,
   entry.numChannels   = numChannels;
   entry.sampleRate    = sampleRate;
   entry.bitsPerSample = bitsPerSample;
-  entry.isInitialised  = PFalse;
+  entry.isInitialised  = false;
 
   // unlock dictionary
   dictMutex.Signal();
 
   // mark this channel as uninitialised
-  isInitialised = PFalse;
+  isInitialised = false;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -484,7 +484,7 @@ PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   Abort();
@@ -507,14 +507,14 @@ PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
   // set information in the common record
   entry.fragmentValue = arg;
-  entry.isInitialised = PFalse;
+  entry.isInitialised = false;
 
   // flag this channel as not initialised
-  isInitialised       = PFalse;
+  isInitialised       = false;
 
   dictMutex.Signal();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -522,7 +522,7 @@ PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   // lock the dictionary
@@ -539,7 +539,7 @@ PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 
   count = arg >> 16;
   size = 1 << (arg&0xffff);
-  return PTrue;
+  return true;
 }
 
 
@@ -547,18 +547,18 @@ PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return PFalse;
+    return false;
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -566,12 +566,12 @@ PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   PFile file(filename, PFile::ReadOnly);
   if (!file.IsOpen())
-    return PFalse;
+    return false;
 
   for (;;) {
     BYTE buffer[256];
@@ -589,7 +589,7 @@ PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -597,7 +597,7 @@ PBoolean PSoundChannel::HasPlayCompleted()
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   if (os_handle == 0)
@@ -606,7 +606,7 @@ PBoolean PSoundChannel::HasPlayCompleted()
 #ifndef P_AIX
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info)))
-    return PFalse;
+    return false;
 
   return info.fragments == info.fragstotal;
 #else
@@ -620,13 +620,13 @@ PBoolean PSoundChannel::WaitForPlayCompletion()
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   if (os_handle == 0) {
     while (BYTESINBUF > 0)
       usleep(1000);
-    return PTrue;
+    return true;
   }
 #ifndef P_AIX
   return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SYNC, NULL));
@@ -640,10 +640,10 @@ PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -651,10 +651,10 @@ PBoolean PSoundChannel::RecordFile(const PFilePath & filename)
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -662,11 +662,11 @@ PBoolean PSoundChannel::StartRecording()
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   if (os_handle == 0)
-    return PTrue;
+    return true;
 
   fd_set fds;
   FD_ZERO(&fds);
@@ -683,7 +683,7 @@ PBoolean PSoundChannel::IsRecordBufferFull()
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   if (os_handle == 0)
@@ -692,7 +692,7 @@ PBoolean PSoundChannel::IsRecordBufferFull()
 #ifndef P_AIX
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
-    return PFalse;
+    return false;
 
   return info.fragments > 0;
 #else
@@ -705,7 +705,7 @@ PBoolean PSoundChannel::AreAllRecordBuffersFull()
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   if (os_handle == 0)
@@ -714,7 +714,7 @@ PBoolean PSoundChannel::AreAllRecordBuffersFull()
 #ifndef P_AIX
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
-    return PFalse;
+    return false;
 
   return info.fragments == info.fragstotal;
 #else
@@ -727,7 +727,7 @@ PBoolean PSoundChannel::WaitForRecordBufferFull()
 {
   if (os_handle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   return PXSetIOBlock(PXReadBlock, readTimeout);
@@ -736,7 +736,7 @@ PBoolean PSoundChannel::WaitForRecordBufferFull()
 
 PBoolean PSoundChannel::WaitForAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -744,7 +744,7 @@ PBoolean PSoundChannel::Abort()
 {
   if (os_handle == 0) {
     startptr = endptr = 0;
-    return PTrue;
+    return true;
   }
 
 #ifndef P_AIX
@@ -757,13 +757,13 @@ PBoolean PSoundChannel::Abort()
 PBoolean PSoundChannel::SetVolume(unsigned newVolume)
 {
   cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 
 PBoolean  PSoundChannel::GetVolume(unsigned & volume)
 {
  cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 
 

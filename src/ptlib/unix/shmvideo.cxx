@@ -54,7 +54,7 @@ PVideoOutputDevice_Shm::shmInit()
       if (shmId >= 0) {
         shmPtr = shmat(shmId, NULL, 0);
         if (shmPtr) {
-          return PTrue;
+          return true;
         }
         else {
           PTRACE(1, "SHMV\t shmInit can not attach shared memory" << endl);
@@ -81,7 +81,7 @@ PVideoOutputDevice_Shm::shmInit()
   shmId = -1;
   shmPtr = NULL;
 
-  return PFalse;
+  return false;
 }
 
 PVideoOutputDevice_Shm::PVideoOutputDevice_Shm()
@@ -113,7 +113,7 @@ PBoolean PVideoOutputDevice_Shm::SetColourFormat(const PString & colourFormat)
 PBoolean PVideoOutputDevice_Shm::SetFrameSize(unsigned width, unsigned height)
 {
 	if (!PVideoOutputDevice::SetFrameSize(width, height))
-		return PFalse;
+		return false;
 	
 	return frameStore.SetSize(frameWidth*frameHeight*bytesPerPixel);
 }
@@ -129,7 +129,7 @@ PBoolean PVideoOutputDevice_Shm::SetFrameData(unsigned x, unsigned y,
                                          PBoolean endFrame)
 {
 	if (x+width > frameWidth || y+height > frameHeight)
-		return PFalse;
+		return false;
 	
 	if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
 		if (converter != NULL)
@@ -140,7 +140,7 @@ PBoolean PVideoOutputDevice_Shm::SetFrameData(unsigned x, unsigned y,
 	else {
 		if (converter != NULL) {
 			PAssertAlways("Converted output of partial RGB frame not supported");
-			return PFalse;
+			return false;
 		}
 		
 		if (x == 0 && width == frameWidth)
@@ -155,7 +155,7 @@ PBoolean PVideoOutputDevice_Shm::SetFrameData(unsigned x, unsigned y,
 	if (endFrame)
 		return EndFrame();
 	
-	return PTrue;
+	return true;
 }
 
 PBoolean
@@ -166,12 +166,12 @@ PVideoOutputDevice_Shm::Open(const PString & name,
 
   Close();
 
-  if (shmInit() == PTrue) {
+  if (shmInit() == true) {
     deviceName = name;
-    return PTrue;
+    return true;
   }
   else {
-    return PFalse;
+    return false;
   }
 }
 
@@ -179,10 +179,10 @@ PBoolean
 PVideoOutputDevice_Shm::IsOpen()
 {
   if (semLock != (sem_t *)SEM_FAILED) {
-    return PTrue;
+    return true;
   }
   else {
-    return PFalse;
+    return false;
   }
 }
 
@@ -194,7 +194,7 @@ PVideoOutputDevice_Shm::Close()
     sem_close(semLock);
     shmPtr = NULL;
   }
-  return PTrue;
+  return true;
 }
 
 PStringArray
@@ -209,16 +209,16 @@ PVideoOutputDevice_Shm::EndFrame()
   long *ptr = (long *)shmPtr;
 
   if (semLock == (sem_t *)SEM_FAILED) {
-    return PFalse;
+    return false;
   }
 
   if (bytesPerPixel != 3 && bytesPerPixel != 4) {
     PTRACE(1, "SHMV\t EndFrame() does not handle bytesPerPixel!={3,4}"<<endl);
-    return PFalse;
+    return false;
   }
 
   if (frameWidth*frameHeight*bytesPerPixel > SHMVIDEO_FRAMESIZE) {
-    return PFalse;
+    return false;
   }
 
   // write header info so the consumer knows what to expect
@@ -229,12 +229,12 @@ PVideoOutputDevice_Shm::EndFrame()
   PTRACE(1, "writing " << frameStore.GetSize() << " bytes" << endl);
   if (memcpy((char *)shmPtr+sizeof(long)*3,
              frameStore, frameStore.GetSize()) == NULL) {
-    return PFalse;
+    return false;
   }
 
   sem_post(semLock);
 
-  return PTrue;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -254,7 +254,7 @@ PVideoInputDevice_Shm::shmInit()
       if (shmId >= 0) {
         shmPtr = shmat(shmId, NULL, 0);
         if (shmPtr) {
-          return PTrue;
+          return true;
         }
         else {
           PTRACE(1, "SHMV\t shmInit can not attach shared memory" << endl);
@@ -281,7 +281,7 @@ PVideoInputDevice_Shm::shmInit()
   shmId = -1;
   shmPtr = NULL;
 
-  return PFalse;
+  return false;
 }
 
 PVideoInputDevice_Shm::PVideoInputDevice_Shm()
@@ -302,12 +302,12 @@ PVideoInputDevice_Shm::Open(const PString & name,
 
   Close();
 
-  if (shmInit() == PTrue) {
+  if (shmInit() == true) {
     deviceName = name;
-    return PTrue;
+    return true;
   }
   else {
-    return PFalse;
+    return false;
   }
 }
 
@@ -315,10 +315,10 @@ PBoolean
 PVideoInputDevice_Shm::IsOpen()
 {
   if (semLock != (sem_t *)SEM_FAILED) {
-    return PTrue;
+    return true;
   }
   else {
-    return PFalse;
+    return false;
   }
 }
 
@@ -330,12 +330,12 @@ PVideoInputDevice_Shm::Close()
     sem_close(semLock);
     shmPtr = NULL;
   }
-  return PTrue;
+  return true;
 }
 
 PBoolean PVideoInputDevice_Shm::IsCapturing()
 {
-	return PTrue;
+	return true;
 }
 
 PINDEX PVideoInputDevice_Shm::GetMaxFrameBytes()
@@ -360,7 +360,7 @@ PVideoInputDevice_Shm::GetFrameSizeLimits(unsigned & minWidth,
   maxWidth  = 352;
   maxHeight =  288;
 
-  return PTrue;
+  return true;
 }
 
 static void RGBtoYUV420PSameSize (const BYTE *, BYTE *, unsigned, PBoolean, 
@@ -415,10 +415,10 @@ PBoolean PVideoInputDevice_Shm::GetFrame(PBYTEArray & frame)
 {
 	PINDEX returned;
 	if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-		return PFalse;
+		return false;
 	
 	frame.SetSize(returned);
-	return PTrue;
+	return true;
 }
 
 PBoolean
@@ -446,30 +446,30 @@ PVideoInputDevice_Shm::GetFrameDataNoDelay (BYTE *buffer, PINDEX *bytesReturned)
   if (semLock != (sem_t *)SEM_FAILED && sem_trywait(semLock) == 0) {
     if (bufPtr[0] == (long)width && bufPtr[1] == (long)height) {
       rgbIncrement = bufPtr[2];
-      RGBtoYUV420PSameSize ((BYTE *)(bufPtr+3), buffer, rgbIncrement, PFalse, 
+      RGBtoYUV420PSameSize ((BYTE *)(bufPtr+3), buffer, rgbIncrement, false, 
 			    width, height);
 	  
 	  *bytesReturned = videoFrameSize;
-      return PTrue;
+      return true;
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 PBoolean PVideoInputDevice_Shm::TestAllFormats()
 {
-	return PTrue;
+	return true;
 }
 
 PBoolean PVideoInputDevice_Shm::Start()
 {
-	return PTrue;
+	return true;
 }
 
 PBoolean PVideoInputDevice_Shm::Stop()
 {
-	return PTrue;
+	return true;
 }
 
 #endif

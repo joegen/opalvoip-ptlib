@@ -111,12 +111,12 @@ static PBoolean IsWinVer401()
   GetVersionEx(&verinf);
 
   if (verinf.dwPlatformId != VER_PLATFORM_WIN32_NT)
-    return PFalse;
+    return false;
 
   if (verinf.dwMajorVersion < 4)
-    return PFalse;
+    return false;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -188,7 +188,7 @@ PBoolean PRemoteConnection::Open(PBoolean existing)
 {
   Close();
   if (!Ras.IsLoaded())
-    return PFalse;
+    return false;
 
   PBoolean isVer401 = IsWinVer401();
 
@@ -220,12 +220,12 @@ PBoolean PRemoteConnection::Open(PBoolean existing)
 
   if (rasConnection != NULL && GetStatus() == Connected) {
     osError = 0;
-    return PTrue;
+    return true;
   }
   rasConnection = NULL;
 
   if (existing)
-    return PFalse;
+    return false;
 
   RASDIALPARAMS params;
   memset(&params, 0, sizeof(params));
@@ -244,7 +244,7 @@ PBoolean PRemoteConnection::Open(PBoolean existing)
 
   osError = Ras.Dial(NULL, NULL, &params, 0, NULL, &rasConnection);
   if (osError == 0)
-    return PTrue;
+    return true;
 
   if (rasConnection != NULL) {
     Ras.HangUp(rasConnection);
@@ -252,7 +252,7 @@ PBoolean PRemoteConnection::Open(PBoolean existing)
   }
 
   SetLastError(osError);
-  return PFalse;
+  return false;
 }
 
 

@@ -57,7 +57,7 @@ PFTPClient::~PFTPClient()
 PBoolean PFTPClient::Close()
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
   PBoolean ok = ExecuteCommand(QUIT)/100 == 2;
   return PFTP::Close() && ok;
 }
@@ -65,17 +65,17 @@ PBoolean PFTPClient::Close()
 PBoolean PFTPClient::OnOpen()
 {
   if (!ReadResponse() || lastResponseCode != 220)
-    return PFalse;
+    return false;
 
   // the default data port for a server is the adjacent port
   PIPSocket::Address remoteHost;
   PIPSocket * socket = GetSocket();
   if (socket == NULL)
-    return PFalse;
+    return false;
 
   socket->GetPeerAddress(remoteHost, remotePort);
   remotePort--;
-  return PTrue;
+  return true;
 }
 
 
@@ -93,7 +93,7 @@ bool PFTPClient::OpenHost(const PString & host, WORD port)
 PBoolean PFTPClient::LogIn(const PString & username, const PString & password)
 {
   if (ExecuteCommand(USER, username)/100 != 3)
-    return PFalse;
+    return false;
   return ExecuteCommand(PASS, password)/100 == 2;
 }
 

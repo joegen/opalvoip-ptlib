@@ -109,19 +109,19 @@ void PSerialChannel::SaveSettings(PConfig & cfg)
 
 void PSerialChannel::ClearDTR()
 {
-  SetDTR(PFalse);
+  SetDTR(false);
 }
 
 
 void PSerialChannel::ClearRTS()
 {
-  SetRTS(PFalse);
+  SetRTS(false);
 }
 
 
 void PSerialChannel::ClearBreak()
 {
-  SetBreak(PFalse);
+  SetBreak(false);
 }
 
 

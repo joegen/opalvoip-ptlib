@@ -48,9 +48,9 @@ PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
   PAssert(retval != NU_SEMAPHORE_DELETED, "Semaphore Deleted");
 
   if (retval == NU_SUCCESS)
-    return PTrue;
+    return true;
   else
-    return PFalse;
+    return false;
   }
 
 void PSemaphore::Signal()

@@ -51,7 +51,7 @@ PHTTPField::PHTTPField(const char * nam, const char * titl, const char * hlp)
     title(titl != NULL ? titl : nam),
     help(hlp != NULL ? hlp : "")
 {
-  notInHTML = PTrue;
+  notInHTML = true;
 }
 
 
@@ -105,16 +105,16 @@ static PBoolean FindSpliceBlock(const PRegularExpression & startExpr,
   start = finish = P_MAX_INDEX;
 
   if (!text.FindRegEx(startExpr, pos, len, offset))
-    return PFalse;
+    return false;
 
   PINDEX endpos, endlen;
   if (!text.FindRegEx(endExpr, endpos, endlen, pos+len))
-    return PTrue;
+    return true;
 
   start = pos + len;
   finish = endpos - 1;
   len = endpos - pos + endlen;
-  return PTrue;
+  return true;
 }
 
 
@@ -142,10 +142,10 @@ static PBoolean FindSpliceName(const PCaselessString & text,
     static PRegularExpression NameExpr("name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"",
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
     if ((pos = text.FindRegEx(NameExpr, start)) == P_MAX_INDEX)
-      return PFalse;
+      return false;
 
     if (pos >= finish)
-      return PFalse;
+      return false;
 
     pos = text.Find('"', pos) + 1;
     end = text.Find('"', pos) - 1;
@@ -177,16 +177,16 @@ static PBoolean FindSpliceFieldName(const PString & text,
                                       "<[a-z]+[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   if (!text.FindRegEx(FieldName, pos, len, offset))
-    return PFalse;
+    return false;
 
   PINDEX nameStart, nameEnd;
   if (!FindSpliceName(text, pos, pos+len-1, nameStart, nameEnd))
-    return PFalse;
+    return false;
 
   name = text(nameStart, nameEnd);
   pos = nameStart;
   len = nameEnd - nameStart + 1;
-  return PTrue;
+  return true;
 }
 
 
@@ -224,7 +224,7 @@ static PBoolean FindInputValue(const PString & text, PINDEX & before, PINDEX & a
                                   PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   PINDEX pos = text.FindRegEx(Value);
   if (pos == P_MAX_INDEX)
-    return PFalse;
+    return false;
 
   before = text.Find('"', pos);
   if (before != P_MAX_INDEX)
@@ -237,7 +237,7 @@ static PBoolean FindInputValue(const PString & text, PINDEX & before, PINDEX & a
     while (text[after] != '\0' && text[after] != '>' && !isspace(text[after]))
       after++;
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -331,7 +331,7 @@ PString PHTTPField::GetHTMLSelect(const PString & selection) const
   PString text = selection;
   PStringArray dummy1;
   PINDEX dummy2 = P_MAX_INDEX;
-  AdjustSelectOptions(text, 0, P_MAX_INDEX, GetValue(PFalse), dummy1, dummy2);
+  AdjustSelectOptions(text, 0, P_MAX_INDEX, GetValue(false), dummy1, dummy2);
   return text;
 }
 
@@ -367,10 +367,10 @@ void PHTTPField::LoadFromConfig(PConfig & cfg)
   PString section, key;
   switch (SplitConfigKey(fullName, section, key)) {
     case 1 :
-      SetValue(cfg.GetString(key, GetValue(PTrue)));
+      SetValue(cfg.GetString(key, GetValue(true)));
       break;
     case 2 :
-      SetValue(cfg.GetString(section, key, GetValue(PTrue)));
+      SetValue(cfg.GetString(section, key, GetValue(true)));
   }
 }
 
@@ -390,7 +390,7 @@ void PHTTPField::SaveToConfig(PConfig & cfg) const
 
 PBoolean PHTTPField::Validated(const PString &, PStringStream &) const
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -411,7 +411,7 @@ PBoolean PHTTPField::ValidateAll(const PStringToString & data, PStringStream & m
 {
   if (data.Contains(fullName))
     return Validated(data[fullName], msg);
-  return PTrue;
+  return true;
 }
 
 
@@ -583,9 +583,9 @@ PBoolean PHTTPCompositeField::ValidateAll(const PStringToString & data,
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++)
     if (!fields[i].ValidateAll(data, msg))
-      return PFalse;
+      return false;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -901,7 +901,7 @@ void PHTTPFieldArray::SetAllValues(const PStringToString & data)
   for (i = 0; i < fields.GetSize(); i++)
     newFields.SetAt(i, fields.GetAt(i));
 
-  PBoolean lastFieldIsSet = PFalse;
+  PBoolean lastFieldIsSet = false;
   PINDEX size = fields.GetSize();
   for (i = 0; i < size; i++) {
     PHTTPField * fieldPtr = &fields[i];
@@ -933,14 +933,14 @@ void PHTTPFieldArray::SetAllValues(const PStringToString & data)
       if (i == size-1) {
         newFields.RemoveAt(pos);
         newFields.InsertAt(0, fieldPtr);
-        lastFieldIsSet = PTrue;
+        lastFieldIsSet = true;
       }
     }
     else if (control == ArrayControlAddBottom || control == ArrayControlAdd) {
       if (i == size-1) {
         newFields.RemoveAt(pos);
         newFields.Append(fieldPtr);
-        lastFieldIsSet = PTrue;
+        lastFieldIsSet = true;
       }
     }
     else if (control == ArrayControlIgnore) {
@@ -991,7 +991,7 @@ PStringArray PHTTPFieldArray::GetStrings(PConfig & cfg)
   PStringArray values(GetSize());
 
   for (PINDEX i = 0; i < GetSize(); i++)
-    values[i] = fields[i].GetValue(PFalse);
+    values[i] = fields[i].GetValue(false);
 
   return values;
 }
@@ -1285,11 +1285,11 @@ PBoolean PHTTPIntegerField::Validated(const PString & newVal, PStringStream & ms
 {
   int val = newVal.AsInteger();
   if (val >= low && val <= high)
-    return PTrue;
+    return true;
 
   msg << "The field \"" << GetName() << "\" should be between "
       << low << " and " << high << ".<BR>";
-  return PFalse;
+  return false;
 }
 
 
@@ -1754,13 +1754,13 @@ static PBoolean FindSpliceField(const PRegularExpression & startExpr,
   field = NULL;
 
   if (!FindSpliceBlock(startExpr, endExpr, text, offset, pos, len, start, finish))
-    return PFalse;
+    return false;
 
   PINDEX endBlock = start != finish ? (start-1) : (pos+len-1);
   PINDEX namePos, nameEnd;
   if (FindSpliceName(text, pos, endBlock, namePos, nameEnd))
     field = rootField.LocateName(text(namePos, nameEnd));
-  return PTrue;
+  return true;
 }
 
 
@@ -2010,7 +2010,7 @@ PBoolean PHTTPForm::Post(PHTTPRequest & request,
       while (FindSpliceAccepted(msg, pos, pos, len, start, finish))
         msg.Delete(pos, len);
 
-      PBoolean appendErrors = PTrue;
+      PBoolean appendErrors = true;
       pos = 0;
       while (FindSpliceErrors(msg, pos, pos, len, start, finish)) {
         PString block = msg(start, finish);
@@ -2022,7 +2022,7 @@ PBoolean PHTTPForm::Post(PHTTPRequest & request,
         else
           block += errors;
         msg.Splice(block, pos, len);
-        appendErrors = PFalse;
+        appendErrors = false;
       }
 
       if (appendErrors)
@@ -2030,7 +2030,7 @@ PBoolean PHTTPForm::Post(PHTTPRequest & request,
     }
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -2126,14 +2126,14 @@ PBoolean PHTTPConfig::Post(PHTTPRequest & request,
 
   PHTTPForm::Post(request, data, msg);
   if (request.code != PHTTP::RequestOK)
-    return PTrue;
+    return true;
 
   if (sectionField != NULL)
     section = sectionPrefix + sectionField->GetValue() + sectionSuffix;
 
   PString sectionName = request.url.GetQueryVars()("section", section);
   if (sectionName.IsEmpty())
-    return PTrue;
+    return true;
 
   PConfig cfg(sectionName);
 
@@ -2176,7 +2176,7 @@ PBoolean PHTTPConfig::Post(PHTTPRequest & request,
   }
 
   section = sectionName;
-  return PTrue;
+  return true;
 }
 
 
@@ -2285,12 +2285,12 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
           text.Splice(repeat, pos, 0);
           text.Replace("<!--#form hotlink-->",
                        editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation),
-                       PTrue, pos);
+                       true, pos);
           if (!additionalValueName)
             text.Replace("<!--#form additional-->",
                          cfg.GetString(nameList[i], additionalValueName, ""),
-                         PTrue, pos);
-          text.Replace("<!--#form section-->", name, PTrue, pos);
+                         true, pos);
+          text.Replace("<!--#form section-->", name, true, pos);
           pos = text.Find(FormListInclude, pos);
         }
       }
@@ -2317,7 +2317,7 @@ PBoolean PHTTPConfigSectionList::Post(PHTTPRequest &,
     }
   }
 
-  return PTrue;
+  return true;
 }
 
 

@@ -55,7 +55,7 @@ PBoolean FindIP::get_ip(PString server_url, PString &ip_address){
 
   cout << "Trying " << server_url << " - " << flush;
 
-  PBoolean result = PFalse;
+  PBoolean result = false;
 
   PHTTPClient web("webserver");
 
@@ -71,7 +71,7 @@ PBoolean FindIP::get_ip(PString server_url, PString &ip_address){
         ip_address = html.Mid(pos,len);
         cout << "IP obtained." << endl;
         //cout << "Your real IP is " << ip_address << endl;
-        result = PTrue;
+        result = true;
       } else {
         cout << "No IP address found on page." << endl;
       }

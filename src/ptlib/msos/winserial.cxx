@@ -97,7 +97,7 @@ PBoolean PSerialChannel::Read(void * buf, PINDEX len)
     if (!ReadFile(commsResource, bufferPtr, bytesToGo, &readCount, &overlap)) {
       if (::GetLastError() != ERROR_IO_PENDING)
         return ConvertOSError(-2, LastReadError);
-      if (!::GetOverlappedResult(commsResource, &overlap, &readCount, PFalse))
+      if (!::GetOverlappedResult(commsResource, &overlap, &readCount, false))
         return ConvertOSError(-2, LastReadError);
     }
 
@@ -146,13 +146,13 @@ PBoolean PSerialChannel::Write(const void * buf, PINDEX len)
     return lastWriteCount == len;
 
   if (GetLastError() == ERROR_IO_PENDING)
-    if (GetOverlappedResult(commsResource, &overlap, (LPDWORD)&lastWriteCount, PTrue)) {
+    if (GetOverlappedResult(commsResource, &overlap, (LPDWORD)&lastWriteCount, true)) {
       return lastWriteCount == len;
     }
 
   ConvertOSError(-2, LastWriteError);
 
-  return PFalse;
+  return false;
 }
 
 
@@ -207,33 +207,33 @@ PBoolean PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
   switch (inputFlow) {
     case NoFlowControl :
       deviceControlBlock.fRtsControl = RTS_CONTROL_DISABLE;
-      deviceControlBlock.fInX = PFalse;
+      deviceControlBlock.fInX = false;
       break;
     case XonXoff :
       deviceControlBlock.fRtsControl = RTS_CONTROL_DISABLE;
-      deviceControlBlock.fInX = PTrue;
+      deviceControlBlock.fInX = true;
       break;
     case RtsCts :
       deviceControlBlock.fRtsControl = RTS_CONTROL_HANDSHAKE;
-      deviceControlBlock.fInX = PFalse;
+      deviceControlBlock.fInX = false;
       break;
   }
 
   switch (outputFlow) {
     case NoFlowControl :
-      deviceControlBlock.fOutxCtsFlow = PFalse;
-      deviceControlBlock.fOutxDsrFlow = PFalse;
-      deviceControlBlock.fOutX = PFalse;
+      deviceControlBlock.fOutxCtsFlow = false;
+      deviceControlBlock.fOutxDsrFlow = false;
+      deviceControlBlock.fOutX = false;
       break;
     case XonXoff :
-      deviceControlBlock.fOutxCtsFlow = PFalse;
-      deviceControlBlock.fOutxDsrFlow = PFalse;
-      deviceControlBlock.fOutX = PTrue;
+      deviceControlBlock.fOutxCtsFlow = false;
+      deviceControlBlock.fOutxDsrFlow = false;
+      deviceControlBlock.fOutX = true;
       break;
     case RtsCts :
-      deviceControlBlock.fOutxCtsFlow = PTrue;
-      deviceControlBlock.fOutxDsrFlow = PFalse;
-      deviceControlBlock.fOutX = PFalse;
+      deviceControlBlock.fOutxCtsFlow = true;
+      deviceControlBlock.fOutxDsrFlow = false;
+      deviceControlBlock.fOutX = false;
       break;
   }
 
@@ -267,12 +267,12 @@ PBoolean PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
   SetupComm(commsResource, QUEUE_SIZE, QUEUE_SIZE);
 
   if (SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow))
-    return PTrue;
+    return true;
 
   ConvertOSError(-2);
   CloseHandle(commsResource);
   os_handle = -1;
-  return PFalse;
+  return false;
 }
 
 

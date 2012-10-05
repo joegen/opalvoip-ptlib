@@ -68,7 +68,7 @@ LDAPTest::LDAPTest()
 void LDAPTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("h:p:xb:s:PI", PFalse);
+  args.Parse("h:p:xb:s:PI", false);
 
   if (args.GetCount() == 0) {
     Usage();

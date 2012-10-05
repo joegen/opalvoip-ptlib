@@ -13,10 +13,10 @@ PBoolean PBER_Stream::NullDecode(PASN_Null & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return PFalse;
+    return false;
 
   byteOffset += len;
-  return PTrue;
+  return true;
 }
 
 
@@ -31,15 +31,15 @@ PBoolean PBER_Stream::BooleanDecode(PASN_Boolean & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return PFalse;
+    return false;
 
   while (len-- > 0) {
     if (IsAtEnd())
-      return PFalse;
+      return false;
     value = (PBoolean)ByteDecode();
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -55,17 +55,17 @@ PBoolean PBER_Stream::IntegerDecode(PASN_Integer & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return PFalse;
+    return false;
 
   int accumulator = (char)ByteDecode(); // sign extended first byte
   while (--len > 0) {
     if (IsAtEnd())
-      return PFalse;
+      return false;
     accumulator = (accumulator << 8) | ByteDecode();
   }
 
   value = accumulator;
-  return PTrue;
+  return true;
 }
 
 
@@ -83,17 +83,17 @@ PBoolean PBER_Stream::EnumerationDecode(PASN_Enumeration & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return PFalse;
+    return false;
 
   unsigned val = 0;
   while (len-- > 0) {
     if (IsAtEnd())
-      return PFalse;
+      return false;
     val = (val << 8) | ByteDecode();
   }
 
   value = val;
-  return PTrue;
+  return true;
 }
 
 
@@ -111,12 +111,12 @@ PBoolean PBER_Stream::RealDecode(PASN_Real & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return PFalse;
+    return false;
 
   PAssertAlways(PUnimplementedFunction);
   byteOffset += len;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -131,7 +131,7 @@ PBoolean PBER_Stream::ObjectIdDecode(PASN_ObjectId & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return PFalse;
+    return false;
 
   return value.CommonDecode(*this, len);
 }
@@ -171,7 +171,7 @@ PBoolean PBER_Stream::BitStringDecode(PASN_BitString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len) || len == 0 || IsAtEnd())
-    return PFalse;
+    return false;
 
   return value.DecodeBER(*this, len);
 }
@@ -189,7 +189,7 @@ PBoolean PBER_Stream::OctetStringDecode(PASN_OctetString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return PFalse;
+    return false;
 
   return BlockDecode(value.GetPointer(len), len) == len;
 }
@@ -220,7 +220,7 @@ PBoolean PBER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return PFalse;
+    return false;
 
   return value.DecodeBER(*this, len);
 }
@@ -252,7 +252,7 @@ PBoolean PBER_Stream::BMPStringDecode(PASN_BMPString & value)
 {
   unsigned len;
   if (!HeaderDecode(value, len))
-    return PFalse;
+    return false;
 
   return value.DecodeBER(*this, len);
 }
@@ -275,7 +275,7 @@ PBoolean PBER_Stream::ChoiceDecode(PASN_Choice & value)
   PBoolean primitive;
   unsigned entryLen;
   if (!HeaderDecode(tag, tagClass, primitive, entryLen))
-    return PFalse;
+    return false;
 
   SetPosition(savedPosition);
 
@@ -283,7 +283,7 @@ PBoolean PBER_Stream::ChoiceDecode(PASN_Choice & value)
   if (value.IsValid())
     return value.GetObject().Decode(*this);
 
-  return PTrue;
+  return true;
 }
 
 void PBER_Stream::ChoiceEncode(const PASN_Choice & value)
@@ -300,7 +300,7 @@ PBoolean PASN_Sequence::PreambleDecodeBER(PBER_Stream & strm)
 
   unsigned len;
   if (!strm.HeaderDecode(*this, len))
-    return PFalse;
+    return false;
 
   endBasicEncoding = strm.GetPosition() + len;
   return !strm.IsAtEnd();
@@ -316,7 +316,7 @@ void PASN_Sequence::PreambleEncodeBER(PBER_Stream & strm) const
 PBoolean PASN_Sequence::KnownExtensionDecodeBER(PBER_Stream & strm, PINDEX, PASN_Object & field)
 {
   if (strm.GetPosition() >= endBasicEncoding)
-    return PFalse;
+    return false;
 
   return field.Decode(strm);
 }
@@ -338,7 +338,7 @@ PBoolean PASN_Sequence::UnknownExtensionsDecodeBER(PBER_Stream & strm)
     PBoolean primitive;
     unsigned entryLen;
     if (!strm.HeaderDecode(tag, tagClass, primitive, entryLen))
-      return PFalse;
+      return false;
 
     PINDEX nextEntryPosition = strm.GetPosition() + entryLen;
     strm.SetPosition(savedPosition);
@@ -348,13 +348,13 @@ PBoolean PASN_Sequence::UnknownExtensionsDecodeBER(PBER_Stream & strm)
       strm.SetPosition(nextEntryPosition);
     else {
       if (!obj->Decode(strm))
-        return PFalse;
+        return false;
 
       fields.Append(obj);
     }
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -409,21 +409,21 @@ PBoolean PBER_Stream::ArrayDecode(PASN_Array & array)
 
   unsigned len;
   if (!HeaderDecode(array, len))
-    return PFalse;
+    return false;
 
   PINDEX endOffset = byteOffset + len;
   PINDEX count = 0;
   while (byteOffset < endOffset) {
     if (!array.SetSize(count+1))
-      return PFalse;
+      return false;
     if (!array[count].Decode(*this))
-      return PFalse;
+      return false;
     count++;
   }
 
   byteOffset = endOffset;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -468,7 +468,7 @@ PBoolean PBER_Stream::Read(PChannel & chan)
   // read the sequence header
   int b;
   if ((b = chan.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   SetAt(offset++, (char)b);
 
@@ -476,14 +476,14 @@ PBoolean PBER_Stream::Read(PChannel & chan)
   if ((b&0x1f) == 0x1f) {
     do {
       if ((b = chan.ReadChar()) < 0)
-        return PFalse;
+        return false;
       SetAt(offset++, (char)b);
     } while ((b & 0x80) != 0);
   }
 
   // read the first byte of the ASN length
   if ((b = chan.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   SetAt(offset++, (char)b);
 
@@ -497,7 +497,7 @@ PBoolean PBER_Stream::Read(PChannel & chan)
     while (lenLen-- > 0) {
       // read the length
       if ((b = chan.ReadChar()) < 0)
-        return PFalse;
+        return false;
       dataLen = (dataLen << 8) | b;
       SetAt(offset++, (char)b);
     }
@@ -507,12 +507,12 @@ PBoolean PBER_Stream::Read(PChannel & chan)
   BYTE * bufptr = GetPointer(dataLen+offset) + offset;
   while (dataLen > 0) {
     if (!chan.Read(bufptr, dataLen))
-      return PFalse;
+      return false;
     PINDEX readbytes = chan.GetLastReadCount();
     bufptr += readbytes;
     dataLen -= readbytes;
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -582,7 +582,7 @@ PASN_Object * PBER_Stream::CreateObject(unsigned tag,
   if (primitive)
     return new PASN_OctetString(tag, tagClass);
   else
-    return new PASN_Sequence(tag, tagClass, 0, PFalse, 0);
+    return new PASN_Sequence(tag, tagClass, 0, false, 0);
 }
 
 PBoolean PBER_Stream::HeaderDecode(unsigned & tagVal,
@@ -599,7 +599,7 @@ PBoolean PBER_Stream::HeaderDecode(unsigned & tagVal,
     tagVal = 0;
     do {
       if (IsAtEnd())
-        return PFalse;
+        return false;
 
       b = ByteDecode();
       tagVal = (tagVal << 7) | (b&0x7f);
@@ -607,12 +607,12 @@ PBoolean PBER_Stream::HeaderDecode(unsigned & tagVal,
   }
 
   if (IsAtEnd())
-    return PFalse;
+    return false;
 
   BYTE len_len = ByteDecode();
   if ((len_len & 0x80) == 0) {
     len = len_len;
-    return PTrue;
+    return true;
   }
 
   len_len &= 0x7f;
@@ -620,12 +620,12 @@ PBoolean PBER_Stream::HeaderDecode(unsigned & tagVal,
   len = 0;
   while (len_len-- > 0) {
     if (IsAtEnd())
-      return PFalse;
+      return false;
 
     len = (len << 8) | ByteDecode();
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -638,10 +638,10 @@ PBoolean PBER_Stream::HeaderDecode(PASN_Object & obj, unsigned & len)
   PBoolean primitive;
   if (HeaderDecode(tagVal, tagClass, primitive, len) &&
               tagVal == obj.GetTag() && tagClass == obj.GetTagClass())
-    return PTrue;
+    return true;
 
   byteOffset = pos;
-  return PFalse;
+  return false;
 }
 
 

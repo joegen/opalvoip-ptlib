@@ -35,7 +35,7 @@ class PVideoInputDevice_BeOSVideo : public PVideoInputDevice
       */
     virtual PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Determine if the device is currently open.

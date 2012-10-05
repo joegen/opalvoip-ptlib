@@ -77,7 +77,7 @@ void SafeTest::Main()
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
          << "Manufacturer: " << GetManufacturer() << endl
-         << "Version     : " << GetVersion(PTrue) << endl
+         << "Version     : " << GetVersion(true) << endl
          << "System      : " << GetOSName() << '-'
          << GetOSHardware() << ' '
          << GetOSVersion() << endl;
@@ -139,7 +139,7 @@ void SafeTest::Main()
   ui.Resume();
   ui.WaitForTermination();
 
-  exitNow = PTrue;
+  exitNow = true;
 
   cerr << "in preexit delay, let all threads die" << endl;
   PThread::Sleep(delay * 2);
@@ -243,7 +243,7 @@ DelayThread::DelayThread(SafeTest &_safeTest, PINDEX _delay, PInt64 iteration)
   : safeTest(_safeTest),
     delay(_delay)
 {
-  threadRunning = PTrue;
+  threadRunning = true;
 
   PTRACE(5, "Constructor for a non auto deleted delay thread");
 
@@ -277,7 +277,7 @@ void DelayThread::DelayThreadMain(PThread &thisThread, INT)
 
 
   if (safeTest.UseOnThreadEnd()) {
-    threadRunning = PFalse;
+    threadRunning = false;
     new OnDelayThreadEnd(safeTest, id);
   } else {
     SafeReference();    
@@ -301,7 +301,7 @@ void DelayThread::Release()
 void DelayThread::OnReleaseThreadMain(PThread &, INT)
 {
   safeTest.OnReleased(*this);
-  threadRunning = PFalse;
+  threadRunning = false;
   SafeDereference();
 }
 
@@ -316,13 +316,13 @@ ReporterThread::ReporterThread(LauncherThread & _launcher)
   : PThread(10000, NoAutoDeleteThread),
     launcher(_launcher)
 {
-  terminateNow = PFalse;
+  terminateNow = false;
   Resume();
 }
 
 void ReporterThread::Terminate()
 {
-  terminateNow = PTrue;
+  terminateNow = true;
   exitFlag.Signal();
 }
 
@@ -343,7 +343,7 @@ LauncherThread::LauncherThread(SafeTest &_safeTest)
     safeTest(_safeTest)
 { 
   iteration = 0; 
-  keepGoing = PTrue; 
+  keepGoing = true; 
 
   if (safeTest.RegularReporting())
     reporter = new ReporterThread(*this);

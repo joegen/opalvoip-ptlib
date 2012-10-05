@@ -35,7 +35,7 @@ void LocalAddress::Main()
     PStringStream progName;
     progName << "Product Name: " << GetName() << endl
              << "Manufacturer: " << GetManufacturer() << endl
-             << "Version     : " << GetVersion(PTrue) << endl
+             << "Version     : " << GetVersion(true) << endl
              << "System      : " << GetOSName() << '-'
              << GetOSHardware() << ' '
              << GetOSVersion();

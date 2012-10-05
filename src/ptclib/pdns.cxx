@@ -99,9 +99,9 @@ static PBoolean GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, ch
 {
   int len = dn_expand(reply, replyEnd, cp, buff, MAXDNAME);
   if (len < 0)
-    return PFalse;
+    return false;
   cp += len;
-  return PTrue;
+  return true;
 }
 
 static PBoolean ProcessDNSRecords(
@@ -133,7 +133,7 @@ static PBoolean ProcessDNSRecords(
     // get the name
     char pName[MAXDNAME];
     if (!GetDN(reply, replyEnd, cp, pName))
-      return PFalse;
+      return false;
 
     // get other common parts of the record
     WORD  type;
@@ -166,7 +166,7 @@ static PBoolean ProcessDNSRecords(
         GETSHORT(newRecord->Data.SRV.wPort, data);
         if (!GetDN(reply, replyEnd, data, newRecord->Data.SRV.pNameTarget)) {
           free(newRecord);
-          return PFalse;
+          return false;
         }
         break;
 
@@ -176,7 +176,7 @@ static PBoolean ProcessDNSRecords(
         GETSHORT(newRecord->Data.MX.wPreference,  data);
         if (!GetDN(reply, replyEnd, data, newRecord->Data.MX.pNameExchange)) {
           free(newRecord);
-          return PFalse;
+          return false;
         }
         break;
 
@@ -200,7 +200,7 @@ static PBoolean ProcessDNSRecords(
         memset(newRecord, 0, sizeof(DnsRecord));
         if (!GetDN(reply, replyEnd, data, newRecord->Data.NS.pNameHost)) {
           delete newRecord;
-          return PFalse;
+          return false;
         }
         break;
     }
@@ -223,7 +223,7 @@ static PBoolean ProcessDNSRecords(
     }
   }
 
-  return PTrue;
+  return true;
 }
 
 DNS_STATUS DnsQuery_A(const char * service,
@@ -397,9 +397,9 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetFirst()
     priList.SetSize(1);
     WORD lastPri = (*this)[0].priority;
     priList[0] = lastPri;
-    (*this)[0].used = PFalse;
+    (*this)[0].used = false;
     for (i = 1; i < GetSize(); i++) {
-      (*this)[i].used = PFalse;
+      (*this)[i].used = false;
       if ((*this)[i].priority != lastPri) {
         priPos++;
         priList.SetSize(priPos);
@@ -455,7 +455,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
         if (!(*this)[i].used) {
           totalWeight += (*this)[i].weight;
           if (totalWeight >= targetWeight) {
-            (*this)[i].used = PTrue;
+            (*this)[i].used = true;
             return &(*this)[i];
           }
         }
@@ -468,7 +468,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
     for (i = firstPos; i < GetSize() && ((*this)[i].priority == currentPri); i++) {
       if (!(*this)[i].used) {
         if (count == j) {
-          (*this)[i].used = PTrue;
+          (*this)[i].used = true;
           return &(*this)[i];
         }
         count++;
@@ -490,7 +490,7 @@ PBoolean PDNS::GetSRVRecords(
 )
 {
   if (_service.IsEmpty())
-    return PFalse;
+    return false;
 
   PStringStream service;
   if (_service[0] != '_')
@@ -514,7 +514,7 @@ PBoolean PDNS::LookupSRV(
 
   if (!LookupSRV(url.GetHostName(), service, defaultPort, info)) {
     PTRACE(2,"DNS\tSRV Lookup Fail no domain " << url );
-    return PFalse;
+    return false;
   }
 
   PString user = url.GetUserName();
@@ -544,7 +544,7 @@ PBoolean PDNS::LookupSRV(
 {
   if (domain.IsEmpty()) {
     PTRACE(1,"DNS\tSRV lookup failed - no domain specified");
-    return PFalse;
+    return false;
   }
 
   PString srvLookupStr = service;
@@ -654,7 +654,7 @@ PDNS::MXRecord * PDNS::MXRecordList::GetFirst()
 {
   PINDEX i;
   for (i = 0; i < GetSize(); i++) 
-    (*this)[i].used = PFalse;
+    (*this)[i].used = false;
 
   lastIndex = 0;
 

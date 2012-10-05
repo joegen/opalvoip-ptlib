@@ -205,7 +205,7 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
     return ConvertOSError(val);
 
   if (!PXSetIOBlock(PXConnectBlock, readTimeout))
-    return PFalse;
+    return false;
 
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
@@ -216,7 +216,7 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
     return ConvertOSError(-1);
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -562,20 +562,20 @@ PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 PBoolean PIPSocket::IsLocalHost(const PString & hostname)
 {
   if (hostname.IsEmpty())
-    return PTrue;
+    return true;
 
   if (hostname *= "localhost")
-    return PTrue;
+    return true;
 
   // lookup the host address using inet_addr, assuming it is a "." address
   Address addr = hostname;
   if (addr.IsLoopback())  // Is 127.0.0.1
-    return PTrue;
+    return true;
   if (!addr.IsValid())
-    return PFalse;
+    return false;
 
   if (!GetHostAddress(hostname, addr))
-    return PFalse;
+    return false;
 
 #if P_HAS_IPV6
   {
@@ -583,7 +583,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
     int dummy;
     int addr6[16];
     char ifaceName[255];
-    PBoolean found = PFalse;
+    PBoolean found = false;
     if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
       while (!found && (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %x %x %x %x %255s\n",
               &addr6[0],  &addr6[1],  &addr6[2],  &addr6[3], 
@@ -604,7 +604,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
       fclose(file);
     }
     if (found)
-      return PTrue;
+      return true;
   }
 #endif
 
@@ -650,7 +650,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
           sockaddr_in * sin = (sockaddr_in *)&ifReq.ifr_addr;
           PIPSocket::Address address = sin->sin_addr;
           if (addr *= address)
-            return PTrue;
+            return true;
         }
       }
       
@@ -665,7 +665,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
   }
 #endif
   
-  return PFalse;
+  return false;
 }
 
 
@@ -681,7 +681,7 @@ PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
   // wait until select indicates there is data to read, or until
   // a timeout occurs
   if (!PXSetIOBlock(PXReadBlock, readTimeout))
-    return PFalse;
+    return false;
 
   // attempt to read out of band data
   char buffer[32];
@@ -692,7 +692,7 @@ PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
   // attempt to read non-out of band data
   int r = ::recv(os_handle, (char *)buf, maxLen, 0);
   if (!ConvertOSError(r, LastReadError))
-    return PFalse;
+    return false;
 
   lastReadCount = r;
   return lastReadCount > 0;
@@ -705,7 +705,7 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
-    return PFalse;
+    return false;
 
   int lastReadCount = ::recv(os_handle, (char *)buf, len, 0);
     return lastReadCount > 0;
@@ -713,7 +713,7 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
     return lastReadCount > 0;
 
   lastReadCount = 0;
-  return PFalse;
+  return false;
 }
 
 bool PSocket::Write(const void * buf, PINDEX len)
@@ -751,11 +751,11 @@ PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
       if ((table[i].GetNetwork() == 0)
           && (table[i].GetDestination().GetVersion() == (unsigned)version)) {
         addr = table[i].GetDestination();
-        return PTrue;
+        return true;
       }
     }
   }
-  return PFalse;
+  return false;
 }
 
 
@@ -888,25 +888,25 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 
   if (sysctl(mib, 6, NULL, &space_needed, NULL, 0) < 0) {
     printf("sysctl: net.route.0.0.dump estimate");
-    return PFalse;
+    return false;
   }
 
   if ((buf = (char *)malloc(space_needed)) == NULL) {
     printf("malloc(%lu)", (unsigned long)space_needed);
-    return PFalse;
+    return false;
   }
 
   // read the routing table data
   if (sysctl(mib, 6, buf, &space_needed, NULL, 0) < 0) {
     printf("sysctl: net.route.0.0.dump");
     free(buf);
-    return PFalse;
+    return false;
   }
 
   // Read the interface table
   if (!GetInterfaceTable(if_table)) {
     printf("Interface Table Invalid\n");
-    return PFalse;
+    return false;
   }
 
   // Process the Routing Table data
@@ -934,7 +934,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
   } // end for loop
 
   free(buf);
-  return PTrue;
+  return true;
 }
 
 PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & net_addr,
@@ -945,7 +945,7 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
   // Check for zero length entry
   if (rtm->rtm_msglen == 0) {
     printf("zero length message\n");
-    return PFalse;
+    return false;
   }
 
   if ((~rtm->rtm_flags & RTF_LLINFO)
@@ -1024,10 +1024,10 @@ PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & 
         net_mask = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff";
     }
 
-    return PTrue;
+    return true;
 
   } else {
-    return PFalse;
+    return false;
   }
 }
 
@@ -1047,18 +1047,18 @@ PBoolean get_ifname(int index, char *name) {
 
   if (sysctl(mib, 6, NULL, &needed, NULL, 0) < 0) {
     printf("ERR route-sysctl-estimate");
-    return PFalse;
+    return false;
   }
 
   if ((buf = (char *)malloc(needed)) == NULL) {
     printf("ERR malloc");
-    return PFalse;
+    return false;
   }
 
   if (sysctl(mib, 6, buf, &needed, NULL, 0) < 0) {
     printf("ERR actual retrieval of routing table");
     free(buf);
-    return PFalse;
+    return false;
   }
 
   lim = buf + needed;
@@ -1072,7 +1072,7 @@ PBoolean get_ifname(int index, char *name) {
       sdl = (struct sockaddr_dl *)(ifm + 1);
     } else {
       printf("out of sync parsing NET_RT_IFLIST\n");
-      return PFalse;
+      return false;
     }
     next += ifm->ifm_msglen;
 
@@ -1080,11 +1080,11 @@ PBoolean get_ifname(int index, char *name) {
     name[sdl->sdl_nlen] = '\0';
 
     free(buf);
-    return PTrue;
+    return true;
 
   } else {
     free(buf);
-    return PFalse;
+    return false;
   }
 
 }
@@ -1285,9 +1285,9 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
     errno = i;
     /*task_block_reclaim(task_pagesize, buf);*/
     if (errno)
-      return (PFalse);
+      return (false);
     else
-      return (PTrue);
+      return (true);
 }
 
 
@@ -1306,7 +1306,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
     entry->interfaceName = iface;
     entry->metric = metric;
     table.Append(entry);
-    return PTrue;
+    return true;
   }
 }
 
@@ -1326,7 +1326,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
         ret = get_route_table(&reqtable); 
         if (ret < 0) 
         { 
-                return PFalse; 
+                return false; 
         } 
         
         for (i=reqtable.cnt, rrtp = reqtable.rrtp;i>0;i--, rrtp++) 
@@ -1353,13 +1353,13 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
         
         free(reqtable.rrtp); 
                 
-        return PTrue; 
+        return true; 
 #endif // 0
 
 PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 {
 #warning Platform requires implemetation of GetRouteTable()
-  return PFalse;
+  return false;
 }
 #endif
 
@@ -1847,7 +1847,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
 #endif
 #endif
 
-  return PTrue;
+  return true;
 }
 
 #ifdef P_VXWORKS
@@ -1912,7 +1912,7 @@ void PUDPSocket::EnableGQoS()
 
 PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & )
 {
-  return PFalse;
+  return false;
 }
 
 #endif

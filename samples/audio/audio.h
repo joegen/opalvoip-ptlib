@@ -62,7 +62,7 @@ class TestAudio : public PThread
     TestAudio(TestAudioDevice &master);
     virtual ~TestAudio();
 
-    virtual void Terminate() { keepGoing = PFalse; }
+    virtual void Terminate() { keepGoing = false; }
     void LowerVolume();
     void RaiseVolume();
     

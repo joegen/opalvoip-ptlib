@@ -25,7 +25,7 @@ PAssertAlways("No RTC");
 #else
 #warning No AMPM implementation
 #endif
-  return PFalse;
+  return false;
 #endif
 }
 
@@ -287,7 +287,7 @@ PBoolean PTime::IsDaylightSavings()
 #ifdef __NUCLEUS_PLUS__
 #pragma message ("No RTC")
 PAssertAlways("No RTC");
-return PFalse;
+return false;
 #else
   time_t theTime = ::time(NULL);
   return ::localtime(&theTime)->tm_isdst != 0;

@@ -113,7 +113,7 @@ PGloballyUniqueID::PGloballyUniqueID()
   theArray[9] = (BYTE)clockSequence;
 
   static PEthSocket::Address macAddress;
-  static PBoolean needMacAddress = PTrue;
+  static PBoolean needMacAddress = true;
   if (needMacAddress) {
     PIPSocket::InterfaceTable interfaces;
     if (PIPSocket::GetInterfaceTable(interfaces)) {
@@ -122,7 +122,7 @@ PGloballyUniqueID::PGloballyUniqueID()
         if (!macAddrStr && macAddrStr != "44-45-53-54-00-00") { /* not Win32 PPP device */
           macAddress = macAddrStr;
           if (macAddress != NULL) {
-            needMacAddress = PFalse;
+            needMacAddress = false;
             break;
           }
         }
@@ -135,7 +135,7 @@ PGloballyUniqueID::PGloballyUniqueID()
       macAddress.ls.s = (WORD)rand;
       macAddress.b[0] |= '\x80';
 
-      needMacAddress = PFalse;
+      needMacAddress = false;
     }
   }
 

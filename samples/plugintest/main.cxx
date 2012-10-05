@@ -157,12 +157,12 @@ void PluginTest::Main()
 
   if (args.HasOption('a') || args.HasOption('A')) {
     PString driver;
-    PBoolean useFactory = PFalse;
+    PBoolean useFactory = false;
     if (args.HasOption('a'))
       driver = args.GetOptionString('a');
     else {
       driver = args.GetOptionString('A');
-      useFactory = PTrue;
+      useFactory = true;
     }
 
     PStringList driverList;

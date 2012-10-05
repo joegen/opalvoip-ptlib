@@ -243,7 +243,7 @@ PBoolean PSASLClient::Init(const PString& fqdn, PStringSet& supportedMechanisms)
     for (PINDEX i = 0, max = a.GetSize() ; i < max ; i++)
         supportedMechanisms.Include(a[i]);
 
-    return  PTrue;
+    return  true;
 }
 
 
@@ -260,27 +260,27 @@ PBoolean PSASLClient::Start(const PString& mechanism, PString& output)
             b64.StartEncoding();
             b64.ProcessEncoding(_output, _len);
             output = b64.CompleteEncoding();
-            output.Replace("\r\n", PString::Empty(), PTrue);
+            output.Replace("\r\n", PString::Empty(), true);
         }
 
-        return PTrue;
+        return true;
     }
 
-    return PFalse;
+    return false;
 }
 
 
 PBoolean PSASLClient::Start(const PString& mechanism, const char ** output, unsigned& len)
 {
     if (!m_ConnState)
-        return PFalse;
+        return false;
 
     int result = sasl_client_start(m_ConnState, mechanism, 0, output, &len, 0);
 
     if (result == SASL_OK || result == SASL_CONTINUE)
-        return PTrue;
+        return true;
 
-    return PFalse;
+    return false;
 }
 
 
@@ -303,7 +303,7 @@ PSASLClient::PSASLResult PSASLClient::Negotiate(const PString& input, PString& o
         b64.StartEncoding();
         b64.ProcessEncoding(_output);
         output = b64.CompleteEncoding();
-        output.Replace("\r\n", PString::Empty(), PTrue);
+        output.Replace("\r\n", PString::Empty(), true);
     }
 
     return result;
@@ -331,10 +331,10 @@ PBoolean PSASLClient::End()
     if (m_ConnState)
     {
         sasl_dispose(&m_ConnState);
-        return PTrue;
+        return true;
     }
 
-    return PFalse;
+    return false;
 }
 
 

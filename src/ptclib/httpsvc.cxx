@@ -76,7 +76,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
     copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : (const char *)manufacturersHomePage),
     copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : (const char *)manufacturersEmail)
 {
-  ignoreSignatures = PFalse;
+  ignoreSignatures = false;
 
   if (inf.gifFilename != NULL) {
     PDirectory exeDir = GetFile().GetDirectory();
@@ -116,10 +116,10 @@ PHTTPServiceProcess & PHTTPServiceProcess::Current()
 PBoolean PHTTPServiceProcess::OnStart()
 {
   if (!Initialise("Started"))
-    return PFalse;
+    return false;
 
   OnConfigChanged();
-  return PTrue;
+  return true;
 }
 
 
@@ -133,7 +133,7 @@ void PHTTPServiceProcess::OnStop()
 PBoolean PHTTPServiceProcess::OnPause()
 {
   OnConfigChanged();
-  return PTrue;
+  return true;
 }
 
 
@@ -301,7 +301,7 @@ PString PHTTPServiceProcess::GetPageGraphic()
 
        << PHTML::TableData()
        << GetOSClass() << ' ' << GetOSName()
-       << " Version " << GetVersion(PTrue) << PHTML::BreakLine()
+       << " Version " << GetVersion(true) << PHTML::BreakLine()
        << ' ' << GetCompilationDate().AsString("d MMMM yyyy")
        << PHTML::BreakLine()
        << "By "
@@ -366,7 +366,7 @@ PBoolean PHTTPServiceProcess::ProcessHTTP(PTCPSocket & socket)
   PHTTPServer * server = CreateHTTPServer(socket);
   if (server == NULL) {
     PSYSTEMLOG(Error, "HTTP server creation/open failed.");
-    return PTrue;
+    return true;
   }
 
   // process requests
@@ -425,7 +425,7 @@ void PHTTPServiceProcess::AddUnregisteredText(PHTML &)
 
 PBoolean PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -533,7 +533,7 @@ PBoolean PConfigPage::OnPOST(PHTTPServer & server,
                          const PHTTPConnectionInfo & connectInfo)
 {
   PHTTPConfig::OnPOST(server, url, info, data, connectInfo);
-  return PFalse;    // Make sure we break any persistent connections
+  return false;    // Make sure we break any persistent connections
 }
 
 
@@ -560,7 +560,7 @@ PBoolean PConfigPage::GetExpirationDate(PTime & when)
 {
   // Well and truly before now....
   when = ImmediateExpiryTime;
-  return PTrue;
+  return true;
 }
 
 
@@ -598,7 +598,7 @@ PBoolean PConfigSectionsPage::OnPOST(PHTTPServer & server,
                                  const PHTTPConnectionInfo & connectInfo)
 {
   PHTTPConfigSectionList::OnPOST(server, url, info, data, connectInfo);
-  return PFalse;    // Make sure we break any persistent connections
+  return false;    // Make sure we break any persistent connections
 }
 
 
@@ -617,7 +617,7 @@ PBoolean PConfigSectionsPage::GetExpirationDate(PTime & when)
 {
   // Well and truly before now....
   when = ImmediateExpiryTime;
-  return PTrue;
+  return true;
 }
 
 
@@ -642,7 +642,7 @@ PString PRegisterPage::LoadText(PHTTPRequest & request)
   if (process.GetHomePage() == HOME_PAGE) {
     orderURL = "https://home.equival.com.au/purchase.html";
     tempURL = "http://www.equival.com/" + process.GetName().ToLower() + "/register.html";
-    tempURL.Replace(" ", "", PTrue);
+    tempURL.Replace(" ", "", true);
   }
 
   PServiceHTML regPage(process.GetName() & "Registration", NULL);
@@ -755,7 +755,7 @@ static PBoolean FindSpliceBlock(const PRegularExpression & regex,
                             PINDEX & finish)
 {
   if (!text.FindRegEx(regex, pos, len, 0))
-    return PFalse;
+    return false;
 
   PINDEX endpos, endlen;
   static PRegularExpression EndBlock("<?!--#registration[ \t\n]*end[ \t\n]*[a-z]*[ \t\n]*-->?",
@@ -766,7 +766,7 @@ static PBoolean FindSpliceBlock(const PRegularExpression & regex,
     len = endpos - pos + endlen;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -889,7 +889,7 @@ PBoolean PRegisterPage::Post(PHTTPRequest & request,
 
   PBoolean retval = PHTTPConfig::Post(request, data, reply);
   if (request.code != PHTTP::RequestOK)
-    return PFalse;
+    return false;
 
   PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
   switch (sconf.GetValidation()) {
@@ -1049,7 +1049,7 @@ PBoolean PServiceHTML::CheckSignature()
 PBoolean PServiceHTML::CheckSignature(const PString & html)
 {
   if (PHTTPServiceProcess::Current().ShouldIgnoreSignatures())
-    return PTrue;
+    return true;
 
   // extract the signature from the file
   PString out;
@@ -1058,7 +1058,7 @@ PBoolean PServiceHTML::CheckSignature(const PString & html)
   // calculate the signature on the data
   PString checkSignature = CalculateSignature(out);
 
-  // return PTrue or PFalse
+  // return true or false
   return checkSignature == signature;
 }
 
@@ -1067,7 +1067,7 @@ static PBoolean FindBrackets(const PString & args, PINDEX & open, PINDEX & close
 {
   open = args.FindOneOf("[{(", close);
   if (open == P_MAX_INDEX)
-    return PFalse;
+    return false;
 
   switch (args[open]) {
     case '[' :
@@ -1097,12 +1097,12 @@ static PBoolean ExtractVariables(const PString & args,
     close = P_MAX_INDEX-1;
   }
   if (variable.IsEmpty())
-    return PFalse;
+    return false;
 
   if (FindBrackets(args, open, close))
     value = args(open+1, close-1);
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1191,7 +1191,7 @@ PCREATE_SERVICE_MACRO(Manufacturer,P_EMPTY,P_EMPTY)
 
 PCREATE_SERVICE_MACRO(Version,P_EMPTY,P_EMPTY)
 {
-  return PHTTPServiceProcess::Current().GetVersion(PTrue);
+  return PHTTPServiceProcess::Current().GetVersion(true);
 }
 
 
@@ -1357,7 +1357,7 @@ PCREATE_SERVICE_MACRO(MonitorInfo,request,P_EMPTY)
 
   PStringStream monitorText; 
   monitorText << "Program: "          << PHTTPServiceProcess::Current().GetProductName() << "\n"
-              << "Version: "          << PHTTPServiceProcess::Current().GetVersion(PTrue) << "\n"
+              << "Version: "          << PHTTPServiceProcess::Current().GetVersion(true) << "\n"
               << "Manufacturer: "     << PHTTPServiceProcess::Current().GetManufacturer() << "\n"
               << "OS: "               << PHTTPServiceProcess::Current().GetOSClass() << " " << PHTTPServiceProcess::Current().GetOSName() << "\n"
               << "OS Version: "       << PHTTPServiceProcess::Current().GetOSVersion() << "\n"
@@ -1661,7 +1661,7 @@ bool PServiceHTML::ProcessMacros(PHTTPRequest & request,
            << '"'
            << PHTML::Body();
       text = html;
-      return PFalse;
+      return false;
     }
   }
 
@@ -1678,7 +1678,7 @@ bool PServiceHTML::ProcessMacros(PHTTPRequest & request,
 
   PBoolean substitedMacro;
   do {
-    substitedMacro = PFalse;
+    substitedMacro = false;
 
     PINDEX pos = 0;
     PINDEX len;
@@ -1696,10 +1696,10 @@ bool PServiceHTML::ProcessMacros(PHTTPRequest & request,
       if (text.FindRegEx(EndBlockRegEx, endpos, endlen, pos+len)) {
         PINDEX startpos = pos+len;
         len = endpos-pos + endlen;
-        PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, PTrue));
+        PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, true));
         if (idx != P_MAX_INDEX) {
           substitution = ServiceMacros[idx].Translate(request, args, text(startpos, endpos-1));
-          substitedMacro = PTrue;
+          substitedMacro = true;
         }
       }
 
@@ -1714,10 +1714,10 @@ bool PServiceHTML::ProcessMacros(PHTTPRequest & request,
 
       PString substitution;
       if (!process.SubstituteEquivalSequence(request, cmd & args, substitution)) {
-        PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, PFalse));
+        PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, false));
         if (idx != P_MAX_INDEX) {
           substitution = ServiceMacros[idx].Translate(request, args, PString::Empty());
-          substitedMacro = PTrue;
+          substitedMacro = true;
         }
       }
 
@@ -1725,7 +1725,7 @@ bool PServiceHTML::ProcessMacros(PHTTPRequest & request,
     }
   } while (substitedMacro);
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1756,15 +1756,15 @@ static void ServiceOnLoadedText(PString & text)
 
   PString manuf = "<!--Standard_" + process.GetManufacturer() + "_Header-->";
   if (text.Find(manuf) != P_MAX_INDEX)
-    text.Replace(manuf, process.GetPageGraphic(), PTrue);
+    text.Replace(manuf, process.GetPageGraphic(), true);
 
   static const char equiv[] = "<!--Standard_Equivalence_Header-->";
   if (text.Find(equiv) != P_MAX_INDEX)
-    text.Replace(equiv, process.GetPageGraphic(), PTrue);
+    text.Replace(equiv, process.GetPageGraphic(), true);
 
   static const char copy[] = "<!--Standard_Copyright_Header-->";
   if (text.Find(copy) != P_MAX_INDEX)
-    text.Replace(copy, process.GetCopyrightText(), PTrue);
+    text.Replace(copy, process.GetCopyrightText(), true);
 }
 
 
@@ -1781,7 +1781,7 @@ PBoolean PServiceHTTPString::GetExpirationDate(PTime & when)
 {
   // Well and truly before now....
   when = ImmediateExpiryTime;
-  return PTrue;
+  return true;
 }
 
 
@@ -1796,7 +1796,7 @@ PBoolean PServiceHTTPFile::GetExpirationDate(PTime & when)
 {
   // Well and truly before now....
   when = ImmediateExpiryTime;
-  return PTrue;
+  return true;
 }
 
 
@@ -1812,7 +1812,7 @@ PBoolean PServiceHTTPDirectory::GetExpirationDate(PTime & when)
 {
   // Well and truly before now....
   when = ImmediateExpiryTime;
-  return PTrue;
+  return true;
 }
 
 #endif // P_HTTPSVC

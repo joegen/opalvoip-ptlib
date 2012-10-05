@@ -123,7 +123,7 @@ private:
   PBoolean StartStreaming();
   void StopStreaming();
 
-  PBoolean DoIOCTL(unsigned long int r, void * s, PBoolean retryOnBusy=PFalse);
+  PBoolean DoIOCTL(unsigned long int r, void * s, PBoolean retryOnBusy=false);
 
   PBoolean EnumFrameFormats(Capabilities & capabilities) const;
   PBoolean EnumControls(Capabilities & capabilities) const;

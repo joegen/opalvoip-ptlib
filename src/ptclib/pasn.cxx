@@ -171,7 +171,7 @@ PBoolean PASNObject::DecodeASNLength (const PBYTEArray & buffer, PINDEX & ptr, W
   PINDEX s = buffer.GetSize();
 
   if (ptr >= s)
-    return PFalse;
+    return false;
 
   BYTE ch = buffer[ptr++];
 
@@ -179,15 +179,15 @@ PBoolean PASNObject::DecodeASNLength (const PBYTEArray & buffer, PINDEX & ptr, W
     len = (WORD)ch;
   else if ((ch & ~ASN_LONG_LEN) == 0x01) {
     if (ptr >= s)
-      return PFalse;
+      return false;
     len = (WORD)buffer[ptr++];
   } else {
     if (ptr + 1 >= s)
-      return PFalse;
+      return false;
     len = (WORD)((buffer[ptr] << 8) + buffer[ptr+1]);
     ptr += 2;
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -307,14 +307,14 @@ void PASNObject::EncodeASNUnsigned (PBYTEArray & buffer, PASNUnsigned data, PASN
 PBoolean PASNObject::DecodeASNInteger(const PBYTEArray & buffer, PINDEX & ptr, PASNInt & value, PASNObject::ASNType theType)
 {
   if (buffer[ptr++] != ASNTypeToType[theType])
-    return PFalse;
+    return false;
 
   WORD len;
   if (!DecodeASNLength(buffer, ptr, len))
-    return PFalse;
+    return false;
 
   if (ptr + len > buffer.GetSize())
-    return PFalse;
+    return false;
 
   if (buffer[ptr] & 0x80)
     value = -1; /* integer is negative */
@@ -323,21 +323,21 @@ PBoolean PASNObject::DecodeASNInteger(const PBYTEArray & buffer, PINDEX & ptr, P
 
   while (len--)
     value = (value << 8) | buffer[ptr++];
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PASNObject::DecodeASNUnsigned(const PBYTEArray & buffer, PINDEX & ptr, PASNUnsigned & value, PASNObject::ASNType theType)
 {
   if (buffer[ptr++] != ASNTypeToType[theType])
-    return PFalse;
+    return false;
 
   WORD len;
   if (!DecodeASNLength(buffer, ptr, len))
-    return PFalse;
+    return false;
 
   if (ptr + len > buffer.GetSize())
-    return PFalse;
+    return false;
 
 //  if (buffer[ptr] & 0x80)
 //    value = -1; /* integer is negative */
@@ -345,7 +345,7 @@ PBoolean PASNObject::DecodeASNUnsigned(const PBYTEArray & buffer, PINDEX & ptr, 
   value = 0;
   while (len--)
     value = (value << 8) | buffer[ptr++];
-  return PTrue;
+  return true;
 }
 
 
@@ -538,18 +538,18 @@ PBoolean PASNString::Decode(const PBYTEArray & buffer, PINDEX & ptr, PASNObject:
 {
   valueLen = 0;
   if (buffer[ptr++] != ASNTypeToType[type])
-    return PFalse;
+    return false;
 
   if (!DecodeASNLength(buffer, ptr, valueLen))
-    return PFalse;
+    return false;
 
   if (ptr + valueLen > buffer.GetSize())
-    return PFalse;
+    return false;
 
   value = PString(ptr + (const char *)(const BYTE *)buffer, valueLen);
   ptr += valueLen;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -849,7 +849,7 @@ PBoolean PASNObjectID::Decode(const PBYTEArray & buffer, PINDEX & offs)
   
   WORD dataLen;
   if (!DecodeASNLength(buffer, offs, dataLen))
-    return PFalse;
+    return false;
 
   value.SetSize(2);
 
@@ -865,7 +865,7 @@ PBoolean PASNObjectID::Decode(const PBYTEArray & buffer, PINDEX & offs)
       subId = 0;
       do {    /* shift and add in low order 7 bits */
         if (dataLen == 0 || offs >= s)
-          return PFalse;
+          return false;
         subId = (subId << 7) + (buffer[offs] & ~ASN_BIT8);
         dataLen--;
       } while (buffer[offs++] & ASN_BIT8);
@@ -888,7 +888,7 @@ PBoolean PASNObjectID::Decode(const PBYTEArray & buffer, PINDEX & offs)
     }
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -990,10 +990,10 @@ PBoolean PASNSequence::Encode(PBYTEArray & buffer, PINDEX maxLen)
   for (PINDEX i = 0; i < sequence.GetSize(); i++) {
     sequence[i].Encode(buffer);
     if (buffer.GetSize() > maxLen)
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1051,7 +1051,7 @@ PBoolean PASNSequence::Decode(const PBYTEArray & buffer, PINDEX & ptr)
 
   // all sequences start with a sequence start
   if (ptr >= s)
-    return PFalse;
+    return false;
 
   // get the sequence header
   c = buffer[ptr++];
@@ -1061,22 +1061,22 @@ PBoolean PASNSequence::Decode(const PBYTEArray & buffer, PINDEX & ptr)
     type    = (BYTE)(c & ASN_EXTENSION_ID);
     asnType = Choice;
   } else
-    return PFalse;
+    return false;
 
   // get the sequence length
   WORD len;
   if (!DecodeASNLength(buffer, ptr, len))
-    return PFalse;
+    return false;
 
   // check the length
   if (ptr + len > s)
-    return PFalse;
+    return false;
 
   // set new length
   s = ptr + len;
 
   // now decode the elements
-  PBoolean   ok = PTrue;
+  PBoolean   ok = true;
   while (ptr < s && ok) {
     c = buffer[ptr];
     if ((c & ~ASN_EXTENSION_ID) == (ASN_CONSTRUCTOR | ASN_CONTEXT)) 
@@ -1129,7 +1129,7 @@ PBoolean PASNSequence::Decode(const PBYTEArray & buffer, PINDEX & ptr)
         break;
 
       default:
-        return PTrue;
+        return true;
     }
   }
 
