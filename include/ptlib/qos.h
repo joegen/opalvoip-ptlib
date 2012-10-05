@@ -40,7 +40,6 @@
 #endif  // KNOCKOUT_QOS
 #endif  // KNOCKOUT_WINSOCK2
 #endif  // _WIN32
-#endif  // P_QOS
 
 #ifndef QOS_NOT_SPECIFIED
 #define QOS_NOT_SPECIFIED 0xFFFFFFFF
@@ -104,6 +103,9 @@ public:
 
 };
 
+#else
+class PQoS;
+#endif  // P_QOS
 
 #endif // PTLIB_QOS_H
 

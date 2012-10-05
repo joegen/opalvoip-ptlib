@@ -43,11 +43,13 @@
 #include <sys/fcntl.h>
 #include <sys/termios.h>
 #include <unistd.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
 
 #include <limits>
+
+#define P_STRTOQ strtoq
+#define P_STRTOUQ strtouq
 
 #define HAS_IFREQ
 
@@ -78,6 +80,20 @@ typedef size_t socklen_t;
 #define HAS_IFREQ
 
 ///////////////////////////////////////////////////////////////////////////////
+#elif defined(P_ANDROID)
+
+#define P_THREAD_SAFE_LIBC
+#define P_NO_CANCEL
+
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <dlfcn.h>
+#include <netinet/tcp.h>
+
+#define P_STRTOQ strtoll
+#define P_STRTOUQ strtoull
+
+///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_FREEBSD)
 
 #if defined(P_PTHREADS)
@@ -97,8 +113,10 @@ typedef size_t socklen_t;
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/signal.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
+
+#define P_STRTOQ strtoq
+#define P_STRTOUQ strtouq
 
 /* socklen_t is defined in FreeBSD 3.4-STABLE, 4.0-RELEASE and above */
 #if (P_FREEBSD <= 340000)
@@ -126,8 +144,10 @@ typedef int socklen_t;
 #include <sys/sockio.h>
 #include <sys/ioctl.h>
 #include <sys/signal.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
+
+#define P_STRTOQ strtoq
+#define P_STRTOUQ strtouq
 
 #define HAS_IFREQ
 
@@ -141,7 +161,6 @@ typedef int socklen_t;
 #include <pthread.h>
 #endif
 
-#include <stdlib.h>
 #include <paths.h>
 #include <dlfcn.h>
 #include <termios.h>
@@ -152,8 +171,10 @@ typedef int socklen_t;
 #include <sys/sockio.h>
 #include <sys/ioctl.h>
 #include <sys/signal.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
+
+#define P_STRTOQ strtoq
+#define P_STRTOUQ strtouq
 
 #define HAS_IFREQ
 
@@ -174,11 +195,12 @@ typedef int socklen_t;
 #include <sys/uio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
-#include <net/if.h>
 #include <sys/sockio.h>
+
+#define P_STRTOQ strtoll
+#define P_STRTOUQ strtoull
 
 #if !defined(P_HAS_UPAD128_T)
 typedef union {
@@ -212,9 +234,10 @@ int gethostname(char *, int);
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <signal.h>
-#include <net/if.h>
 #include <sys/sockio.h>
+
+#define P_STRTOQ strtoq
+#define P_STRTOUQ strtouq
 
 #define HAS_IFREQ
 #define raise(s)    kill(getpid(),s)
@@ -286,6 +309,9 @@ struct servent * getservbyname(const char *, const char *);
 #include <OS.h>
 #include <cpp/stl.h>
 
+#define P_STRTOQ strtoll
+#define P_STRTOUQ strtoull
+
 #define SOCK_RAW 3 // raw-protocol interface, not suported in R4
 #define PF_INET AF_INET
 #define TCP_NODELAY 1
@@ -352,6 +378,9 @@ void *dlsym(void *handle, const char *symbol);
 typedef int socklen_t;
 #endif
  
+#define P_STRTOQ strtoq
+#define P_STRTOUQ strtouq
+
 #define HAS_IFREQ
 
 
@@ -370,11 +399,12 @@ typedef int socklen_t;
 #include <sys/uio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
-#include <net/if.h>
 #include <strings.h>
+
+#define P_STRTOQ strtoll
+#define P_STRTOUQ strtoull
 
 #define HAS_IFREQ
 
@@ -394,11 +424,12 @@ typedef int socklen_t;
 #include <sys/uio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
-#include <net/if.h>
 #include <sys/sockio.h>
+
+#define P_STRTOQ strtoll
+#define P_STRTOUQ strtoull
 
 typedef int socklen_t;
 
@@ -415,17 +446,18 @@ typedef int socklen_t;
 #include <inetLib.h>
 #include <hostLib.h>
 #include <ioctl.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/times.h>
 #include <socklib.h>
-#include <signal.h>
 
 // Prevent conflict between net/mbuf.h and some ASN.1 header files
 // VxWorks uses some #define m_data <to-something-else> constructions
 #undef m_data
 #undef m_type
+
+#define P_STRTOQ strtol
+#define P_STRTOUQ strtoul
 
 #define HAS_IFREQ
 
@@ -458,7 +490,10 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
-#include <net/if.h>
+
+#define P_STRTOQ strtol
+#define P_STRTOUQ strtoul
+
 typedef int socklen_t;
 typedef int64_t         quad_t;
 extern "C" {
@@ -484,7 +519,6 @@ extern "C" {
 #include <resolv.h> /* for pthread's h_errno */
 #endif
 
-#include <stdlib.h>
 #include <paths.h>
 #include <dlfcn.h>
 #include <unistd.h>
@@ -496,8 +530,10 @@ extern "C" {
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/ioctl.h>
-#include <net/if.h>
 #include <netinet/tcp.h>
+
+#define P_STRTOQ strtoll
+#define P_STRTOUQ strtoull
 
 #define HAS_IFREQ
 
@@ -507,11 +543,17 @@ extern "C" {
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 
+#define P_STRTOQ strtoq
+#define P_STRTOUQ strtouq
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Other operating systems here
 
 #else
+
+#error No operating system selected.
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

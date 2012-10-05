@@ -74,11 +74,17 @@
 #include <mntent.h>
 #include <sys/vfs.h>
 
-#if (__GNUC_MINOR__ < 7 && __GNUC__ < 3)
+#if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 7)
 #include <localeinfo.h>
 #else
 #define P_USE_LANGINFO
 #endif
+
+#elif defined(P_ANDROID)
+
+#include <mntent.h>
+#include <sys/vfs.h>
+#define P_USE_STRFTIME
 
 #elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
 #define P_USE_STRFTIME
@@ -274,25 +280,13 @@ static PString CanonicaliseFilename(const PString & filename)
 PInt64 PString::AsInt64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined(P_IRIX) || defined (P_QNX)
-  return strtoll(theArray, &dummy, base);
-#elif defined(P_VXWORKS) || defined(P_RTEMS)
-  return strtol(theArray, &dummy, base);
-#else
-  return strtoq(theArray, &dummy, base);
-#endif
+  return P_STRTOQ(theArray, &dummy, base);
 }
 
 PUInt64 PString::AsUnsigned64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined (P_IRIX) || defined (P_QNX)
-  return strtoull(theArray, &dummy, base);
-#elif defined(P_VXWORKS) || defined(P_RTEMS)
-  return strtoul(theArray, &dummy, base);
-#else
-  return strtouq(theArray, &dummy, base);
-#endif
+  return P_STRTOUQ(theArray, &dummy, base);
 }
 
 
@@ -506,9 +500,13 @@ PString PDirectory::GetVolume() const
   if (stat(operator+("."), &status) != -1) {
     dev_t my_dev = status.st_dev;
 
-#if defined(P_LINUX) || defined(P_IRIX) || defined(P_GNU_HURD)
+#if defined(P_LINUX) || defined(P_IRIX) || defined(P_GNU_HURD) || defined(P_ANDROID)
 
+  #if defined(P_ANDROID)
+    FILE * fp = fopen("/etc/mtab", "r");
+  #else
     FILE * fp = setmntent(MOUNTED, "r");
+  #endif
     if (fp != NULL) {
       struct mntent * mnt;
       while ((mnt = getmntent(fp)) != NULL) {
@@ -518,7 +516,11 @@ PString PDirectory::GetVolume() const
         }
       }
     }
+  #if defined(P_ANDROID)
+    fclose(fp);
+  #else
     endmntent(fp);
+  #endif
 
 #elif defined(P_SOLARIS)
 
@@ -574,7 +576,7 @@ PString PDirectory::GetVolume() const
 
 PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU_HURD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU_HURD) || defined(P_ANDROID)
 
   struct statfs fs;
 
@@ -1428,7 +1430,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__) || defined(P_QNX) || defined(P_GNU_HURD)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
   time_t t;
   time(&t);
   struct tm ts;

@@ -42,9 +42,10 @@
 #include <vector>
 #include <map>
 #include <io.h>
+#include <direct.h>
 
 
-#define VERSION "1.21"
+#define VERSION "1.22"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -52,13 +53,13 @@ using namespace std;
 
 bool DirExcluded(const string & dir);
 
-string ToLower(const string & _str)
+string ToLower(const string & str)
 {
-  string str = _str;
+  string adjusted = str;
   string::iterator r;
-  for(r = str.begin(); r != str.end(); ++r)
+  for(r = adjusted.begin(); r != adjusted.end(); ++r)
     *r = (char)tolower(*r);
-  return str;
+  return adjusted;
 }
 
 string GetFullPathNameString(const string & path)
@@ -89,63 +90,73 @@ class Feature
     Feature(const string & featureName, const string & optionName, const string & optionValue);
 
     void Parse(const string & optionName, const string & optionValue);
+    void DisplayHelp();
+    void DisplayResult();
+    bool ProcessArgs(const char * arg);
     void Adjust(string & line);
+    bool CheckFiles();
     bool Locate(const char * testDir);
     void RunDependencies();
 
-    string featureName;
-    string displayName;
-    string directorySymbol;
-    string simpleDefineName;
-    string simpleDefineValue;
-    map<string, string> defines;
-    map<string, string> defineValues;
+    string m_featureName;
+    string m_displayName;
+    string m_directorySymbol;
+    string m_simpleDefineName;
+    string m_simpleDefineValue;
+    map<string, string> m_defines;
+    map<string, string> m_defineValues;
 
     struct CheckFileInfo {
-      CheckFileInfo() : found(false), defineName("1") { }
+      CheckFileInfo()
+        : m_found(false)
+        , m_defineName("1")
+      { }
 
       bool Locate(string & testDir);
 
-      bool   found;
-      string fileName;
-      string fileText;
-      string defineName;
-      string defineValue;
+      bool   m_found;
+      string m_fileName;
+      string m_fileText;
+      string m_defineName;
+      string m_defineValue;
     };
-    list<CheckFileInfo> checkFiles;
+    list<CheckFileInfo> m_checkFiles;
 
-    list<string> checkDirectories;
+    list<string> m_checkDirectories;
 
     struct FindFileInfo {
-      string symbol;
-      string basename;
-      string subdir;
-      string fullname;
+      string m_symbol;
+      string m_basename;
+      string m_subdir;
+      string m_fullname;
     };
-    list<FindFileInfo> findFiles;
+    list<FindFileInfo> m_findFiles;
 
     struct IfFeature {
-      list<string> present;
-      list<string> absent;
+      list<string> m_present;
+      list<string> m_absent;
     };
-    list<IfFeature> ifFeatures;
+    list<IfFeature> m_ifFeatures;
 
-    string breaker;
-    string directory;
-    States state;
+    string m_breaker;
+    string m_directory;
+    States m_state;
 };
 
 
-vector<Feature> features;
-list<string> excludeDirList;
+vector<Feature> g_features;
+list<string> g_excludeDirList;
+vector<string> g_envConfigureList;
+map<string, string> g_predefines;
+bool g_verbose = false;
 
 ///////////////////////////////////////////////////////////////////////
 
 Feature::Feature(const string & featureNameParam,
                  const string & optionName,
                  const string & optionValue)
-  : featureName(featureNameParam),
-    state(Enabled)
+  : m_featureName(featureNameParam)
+  , m_state(Enabled)
 {
   Parse(optionName, optionValue);
 
@@ -157,7 +168,7 @@ Feature::Feature(const string & featureNameParam,
   char * dir = strtok(includes, ";");
   do {
     if (*dir != '\0') {
-      checkDirectories.push_back(GetFullPathNameString(dir));
+      m_checkDirectories.push_back(GetFullPathNameString(dir));
 
       char * end = &dir[strlen(dir)-1];
       if (*end == '\\')
@@ -165,7 +176,7 @@ Feature::Feature(const string & featureNameParam,
       end -= 7;
       if (*end == '\\' && strnicmp(end+1, "include", 7) == 0) {
         *end = '\0';
-        checkDirectories.push_back(GetFullPathNameString(dir));
+        m_checkDirectories.push_back(GetFullPathNameString(dir));
       }
     }
   } while ((dir = strtok(NULL, ";")) != NULL);
@@ -176,25 +187,25 @@ Feature::Feature(const string & featureNameParam,
 void Feature::Parse(const string & optionName, const string & optionValue)
 {
   if (optionName == "DISPLAY")
-    displayName = optionValue;
+    m_displayName = optionValue;
 
   else if (optionName == "DEFAULT")
-    state = ToLower(optionValue) == "disabled" ? DefaultDisabled : Enabled;
+    m_state = ToLower(optionValue) == "disabled" ? DefaultDisabled : Enabled;
 
   else if (optionName == "DEFINE") {
     string::size_type equal = optionValue.find('=');
     if (equal == string::npos)
-      simpleDefineName = optionValue;
+      m_simpleDefineName = optionValue;
     else {
-      simpleDefineName.assign(optionValue, 0, equal);
-      simpleDefineValue.assign(optionValue, equal+1, INT_MAX);
+      m_simpleDefineName.assign(optionValue, 0, equal);
+      m_simpleDefineValue.assign(optionValue, equal+1, INT_MAX);
     }
   }
 
   else if (optionName == "VERSION") {
     string::size_type equal = optionValue.find('=');
     if (equal != string::npos)
-      defines.insert(pair<string,string>(optionValue.substr(0, equal), optionValue.substr(equal+1)));
+      m_defines.insert(pair<string,string>(optionValue.substr(0, equal), optionValue.substr(equal+1)));
   }
 
   else if (optionName == "CHECK_FILE") {
@@ -205,28 +216,28 @@ void Feature::Parse(const string & optionName, const string & optionValue)
     CheckFileInfo check;
     string::size_type pipe = optionValue.find('|');
     if (pipe < 0 || pipe > comma)
-      check.fileName.assign(optionValue, 0, comma);
+      check.m_fileName.assign(optionValue, 0, comma);
     else {
-      check.fileName.assign(optionValue, 0, pipe);
-      check.fileText.assign(optionValue, pipe+1, comma-pipe-1);
+      check.m_fileName.assign(optionValue, 0, pipe);
+      check.m_fileText.assign(optionValue, pipe+1, comma-pipe-1);
     }
 
     string::size_type equal = optionValue.find('=', comma);
     if (equal == string::npos)
-      check.defineName.assign(optionValue, comma+1, INT_MAX);
+      check.m_defineName.assign(optionValue, comma+1, INT_MAX);
     else {
-      check.defineName.assign(optionValue, comma+1, equal-comma-1);
-      check.defineValue.assign(optionValue, equal+1, INT_MAX);
+      check.m_defineName.assign(optionValue, comma+1, equal-comma-1);
+      check.m_defineValue.assign(optionValue, equal+1, INT_MAX);
     }
 
-    checkFiles.push_back(check);
+    m_checkFiles.push_back(check);
   }
 
   else if (optionName == "DIR_SYMBOL")
-    directorySymbol = '@' + optionValue + '@';
+    m_directorySymbol = '@' + optionValue + '@';
 
   else if (optionName == "CHECK_DIR")
-    checkDirectories.push_back(GetFullPathNameString(optionValue));
+    m_checkDirectories.push_back(GetFullPathNameString(optionValue));
 
   else if (optionName == "FIND_FILE") {
     string::size_type comma1 = optionValue.find(',');
@@ -238,12 +249,12 @@ void Feature::Parse(const string & optionName, const string & optionValue)
       comma2 = INT_MAX-1;
 
     FindFileInfo find;
-    find.symbol.assign(optionValue, 0, comma1);
-    find.basename.assign(optionValue, comma1+1, comma2-comma1-1);
-    find.subdir.assign(optionValue, comma2+1, INT_MAX);
-    if (find.subdir.empty())
-      find.subdir = "...";
-    findFiles.push_back(find);
+    find.m_symbol.assign(optionValue, 0, comma1);
+    find.m_basename.assign(optionValue, comma1+1, comma2-comma1-1);
+    find.m_subdir.assign(optionValue, comma2+1, INT_MAX);
+    if (find.m_subdir.empty())
+      find.m_subdir = "...";
+    m_findFiles.push_back(find);
   }
 
   else if (optionName == "IF_FEATURE") {
@@ -254,14 +265,93 @@ void Feature::Parse(const string & optionName, const string & optionValue)
     while (string::npos != pos || string::npos != lastPos) {
       string str = optionValue.substr(lastPos, pos - lastPos);
       if (str[0] == '!')
-        ifFeature.absent.push_back(str.substr(1));
+        ifFeature.m_absent.push_back(str.substr(1));
       else
-        ifFeature.present.push_back(str);
+        ifFeature.m_present.push_back(str);
       lastPos = optionValue.find_first_not_of(delimiters, pos);
       pos = optionValue.find_first_of(delimiters, lastPos);
     }
-    ifFeatures.push_back(ifFeature);
+    m_ifFeatures.push_back(ifFeature);
   }
+}
+
+
+void Feature::DisplayHelp()
+{
+  if (m_featureName.empty())
+    return;
+
+  cout << "  --disable-" << m_featureName
+       << setw(20-m_featureName.length()) << "Disable " << m_displayName << '\n';
+
+  if (!m_checkFiles.empty())
+    cout << "  --" << m_featureName << "-dir=dir"
+         << setw(30-m_featureName.length()) << "Set directory for " << m_displayName << '\n';
+}
+
+
+void Feature::DisplayResult()
+{
+  cout << m_displayName << ' ';
+  switch (m_state)
+  {
+    case Feature::Enabled:
+      cout << "enabled";
+      break;
+
+    case Feature::NotFound :
+      cout << "DISABLED due to missing library";
+      break;
+
+    case Feature::Disabled :
+      cout << "DISABLED by user";
+      break;
+
+    case Feature::Dependency :
+      cout << "DISABLED due to absence of feature " << m_breaker;
+      break;
+
+    case Feature::Blocked :
+      cout << "DISABLED due to presence of feature " << m_breaker;
+      break;
+
+    default :
+      cout << "DISABLED";
+  }
+  cout << '\n';
+}
+
+
+bool Feature::ProcessArgs(const char * arg)
+{
+  if (stricmp(arg, ("--no-"     + m_featureName).c_str()) == 0 ||
+      stricmp(arg, ("--disable-"+ m_featureName).c_str()) == 0) {
+    m_state = Feature::Disabled;
+    return true;
+  }
+  
+  if (stricmp(arg, ("--enable-"+ m_featureName).c_str()) == 0) {
+    m_state = Feature::Enabled;
+    return true;
+  }
+  
+  if (find(g_envConfigureList.begin(), g_envConfigureList.end(), "enable-"+ m_featureName) != g_envConfigureList.end()) {
+    m_state = Feature::Enabled;
+    return true;
+  }
+  
+  if (find(g_envConfigureList.begin(), g_envConfigureList.end(), "disable-"+ m_featureName) != g_envConfigureList.end() ||
+            find(g_envConfigureList.begin(), g_envConfigureList.end(), "no-"+ m_featureName) != g_envConfigureList.end()) {
+    m_state = Feature::Disabled;
+    return true;
+  }
+  
+  if (strstr(arg, ("--" + m_featureName + "-dir=").c_str()) == arg &&
+          !Locate(arg + strlen(("--" + m_featureName + "-dir=").c_str())))
+    cerr << m_displayName << " not found in "
+          << arg + strlen(("--" + m_featureName+"-dir=").c_str()) << endl;
+
+  return false;
 }
 
 
@@ -278,43 +368,43 @@ static bool CompareName(const string & line, const string & name)
 void Feature::Adjust(string & line)
 {
   string::size_type undefPos = line.find("#undef");
-  if (state == Enabled && undefPos != string::npos) {
-    if (!simpleDefineName.empty() && CompareName(line, simpleDefineName)) {
-      line.replace(undefPos, INT_MAX, "#define " + simpleDefineName + ' ');
-      if (simpleDefineValue.empty())
+  if (m_state == Enabled && undefPos != string::npos) {
+    if (!m_simpleDefineName.empty() && CompareName(line, m_simpleDefineName)) {
+      line.replace(undefPos, INT_MAX, "#define " + m_simpleDefineName + ' ');
+      if (m_simpleDefineValue.empty())
         line += '1';
       else
-        line += simpleDefineValue;
+        line += m_simpleDefineValue;
     }
 
     map<string,string>::iterator r, s;
-    for (r = defines.begin(); r != defines.end(); ++r) {
+    for (r = m_defines.begin(); r != m_defines.end(); ++r) {
       if (CompareName(line, r->first)) {
-        s = defineValues.find(r->second);
-        if (s != defineValues.end())
+        s = m_defineValues.find(r->second);
+        if (s != m_defineValues.end())
           line.replace(undefPos, INT_MAX, "#define " + r->first + ' ' + s->second);
       }
     }
 
-    for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); file++) {
-      if (file->found && CompareName(line, file->defineName)) {
-        line.replace(undefPos, INT_MAX, "#define " + file->defineName + ' ' + file->defineValue);
+    for (list<CheckFileInfo>::iterator file = m_checkFiles.begin(); file != m_checkFiles.end(); file++) {
+      if (file->m_found && CompareName(line, file->m_defineName)) {
+        line.replace(undefPos, INT_MAX, "#define " + file->m_defineName + ' ' + file->m_defineValue);
         break;
       }
     }
 
-    for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
-      if (!file->fullname.empty() && CompareName(line, file->symbol)) {
-        line.replace(undefPos, INT_MAX, "#define " + file->symbol + " \"" + file->fullname + '"');
+    for (list<FindFileInfo>::iterator file = m_findFiles.begin(); file != m_findFiles.end(); file++) {
+      if (!file->m_fullname.empty() && CompareName(line, file->m_symbol)) {
+        line.replace(undefPos, INT_MAX, "#define " + file->m_symbol + " \"" + file->m_fullname + '"');
         break;
       }
     }
   }
 
-  if (directorySymbol[0] != '\0') {
-    string::size_type pos = line.find(directorySymbol);
+  if (m_directorySymbol[0] != '\0') {
+    string::size_type pos = line.find(m_directorySymbol);
     if (pos != string::npos)
-      line.replace(pos, directorySymbol.length(), directory);
+      line.replace(pos, m_directorySymbol.length(), m_directory);
   }
 }
 
@@ -363,25 +453,59 @@ bool FindFileInTree(const string & directory, string & filename)
 }
 
 
+bool Feature::CheckFiles()
+{
+  if (m_state != Feature::Enabled)
+    return true;
+  
+  if (m_checkFiles.empty())
+    return true;
+
+  list<string>::iterator dir;
+  for (dir = m_checkDirectories.begin(); dir != m_checkDirectories.end(); dir++) {
+    if (DirExcluded(*dir)) {
+      if (g_verbose)
+        cout << "Excluded " << *dir << endl;
+    }
+    else {
+      if (Locate(dir->c_str()))
+        return true;
+    }
+  }
+
+  return false;
+}
+
+
 bool Feature::Locate(const char * testDir)
 {
-  if (state != Enabled)
+  if (m_state != Enabled)
     return true;
 
-  if (!directory.empty())
+  if (!m_directory.empty()) {
+    if (g_verbose)
+      cout << "No directory for " << m_displayName << endl;
     return true;
+  }
 
-  if (checkFiles.empty())
+  if (m_checkFiles.empty()) {
+    if (g_verbose)
+      cout << "No files to check for " << m_displayName << endl;
     return true;
+  }
 
   bool noneFound = true;
-  for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); ++file) {
+  for (list<CheckFileInfo>::iterator file = m_checkFiles.begin(); file != m_checkFiles.end(); ++file) {
     string testDirectory = testDir;
     if (file->Locate(testDirectory) && noneFound) {
       char buf[_MAX_PATH];
       _fullpath(buf, testDirectory.c_str(), _MAX_PATH);
-      if (!DirExcluded(buf)) {
-        directory = buf;
+      if (DirExcluded(buf)) {
+        if (g_verbose)
+          cout << "Excluded " << buf << endl;
+      }
+      else {
+        m_directory = buf;
         noneFound = false;
         // No break as want to continue with other CHECK_FILE entries, setting defines
       }
@@ -391,30 +515,31 @@ bool Feature::Locate(const char * testDir)
   if (noneFound)
     return false;
   
-  cout << "Located " << displayName << " at " << directory << endl;
+  if (g_verbose)
+    cout << "Located " << m_displayName << " at " << m_directory << endl;
 
   string::size_type pos;
-  while ((pos = directory.find('\\')) != string::npos)
-    directory[pos] = '/';
-  pos = directory.length()-1;
-  if (directory[pos] == '/')
-    directory.erase(pos);
+  while ((pos = m_directory.find('\\')) != string::npos)
+    m_directory[pos] = '/';
+  pos = m_directory.length()-1;
+  if (m_directory[pos] == '/')
+    m_directory.erase(pos);
 
-  for (list<FindFileInfo>::iterator file = findFiles.begin(); file != findFiles.end(); file++) {
-    string::size_type elipses = file->subdir.find("...");
+  for (list<FindFileInfo>::iterator file = m_findFiles.begin(); file != m_findFiles.end(); file++) {
+    string::size_type elipses = file->m_subdir.find("...");
     if (elipses == string::npos) {
-      string filename = directory + '/' + file->subdir + '/' + file->basename;
+      string filename = m_directory + '/' + file->m_subdir + '/' + file->m_basename;
       if (_access(filename.c_str(), 0) == 0)
-        file->fullname = filename;
+        file->m_fullname = filename;
     }
     else {
-      string subdir = directory + '/';
-      subdir.append(file->subdir, 0, elipses);
-      string filename = file->basename;
+      string subdir = m_directory + '/';
+      subdir.append(file->m_subdir, 0, elipses);
+      string filename = file->m_basename;
       if (FindFileInTree(subdir, filename)) {
         while ((pos = filename.find('\\')) != string::npos)
           filename[pos] = '/';
-        file->fullname = filename;
+        file->m_fullname = filename;
       }
     }
   }
@@ -448,25 +573,25 @@ bool Feature::CheckFileInfo::Locate(string & testDirectory)
   if (testDirectory[testDirectory.length()-1] != '\\')
     testDirectory += '\\';
 
-  string filename = testDirectory + fileName;
+  string filename = testDirectory + m_fileName;
   ifstream file(filename.c_str(), ios::in);
   if (!file.is_open())
     return false;
 
-  if (fileText.empty())
-    found = true;
+  if (m_fileText.empty())
+    m_found = true;
   else {
     while (file.good()) {
       string line;
       getline(file, line);
-      if (line.find(fileText) != string::npos) {
-        found = true;
+      if (line.find(m_fileText) != string::npos) {
+        m_found = true;
         break;
       }
     }
   }
 
-  return found;
+  return m_found;
 }
 
 string ExcludeDir(const string & _dir)
@@ -482,7 +607,7 @@ string ExcludeDir(const string & _dir)
   else if (dir[last] != '\\')
     dir += '\\';
 
-  excludeDirList.push_back(dir);
+  g_excludeDirList.push_back(dir);
 
   dir += '*'; // For cosmetic display
   return dir;
@@ -500,7 +625,7 @@ bool DirExcluded(const string & _dir)
 
   list<string>::const_iterator r;
 
-  for (r = excludeDirList.begin(); r != excludeDirList.end(); ++r) {
+  for (r = g_excludeDirList.begin(); r != g_excludeDirList.end(); ++r) {
     string excludeDir = *r;
     string dirPrefix(dir.substr(0, excludeDir.length()));
     if (dirPrefix == excludeDir)
@@ -531,7 +656,7 @@ bool TreeWalk(const string & directory)
 
         foundAll = true;
         vector<Feature>::iterator feature;
-        for (feature = features.begin(); feature != features.end(); feature++) {
+        for (feature = g_features.begin(); feature != g_features.end(); feature++) {
           if (!feature->Locate(subdir.c_str()))
             foundAll = false;
         }
@@ -549,10 +674,18 @@ bool TreeWalk(const string & directory)
 }
 
 
-bool ProcessHeader(const string & headerFilename)
+bool ProcessHeader(const string & headerFileSpec)
 {
-  string inFilename = headerFilename;
-  inFilename += ".in";
+  string inFilename, outFilename;
+  size_t colon = headerFileSpec.find(':');
+  if (colon == string::npos) {
+    inFilename = headerFileSpec + ".in";
+    outFilename = headerFileSpec;
+  }
+  else {
+    inFilename.assign(headerFileSpec, colon+1, string::npos);
+    outFilename.assign(headerFileSpec, 0, colon);
+  }
 
   ifstream in(inFilename.c_str(), ios::in);
   if (!in.is_open()) {
@@ -560,32 +693,57 @@ bool ProcessHeader(const string & headerFilename)
     return false;
   }
 
-  ofstream out(headerFilename.c_str(), ios::out);
-  if (!out.is_open()) {
-    cerr << "Could not open " << headerFilename << endl;
+  for (map<string, string>::iterator it = g_predefines.begin(); it != g_predefines.end(); ++it) {
+    size_t var;
+    while ((var = outFilename.find(it->first)) != string::npos &&
+            (it->first[1] == '{' || !isalnum(outFilename[var+it->first.length()]))) {
+      outFilename.erase(var, it->first.length());
+      outFilename.insert(var, it->second);
+    }
+  }
+
+  string outDir(outFilename, 0, outFilename.find_last_of("/\\"));
+  if (_mkdir(outDir.c_str()) < 0) {
+    if (errno != EEXIST) {
+      cerr << "Could not create directory " << outDir << endl;
+      return false;
+    }
+  }
+
+  ofstream out(outFilename.c_str(), ios::out);  if (!out.is_open()) {
+    cerr << "Could not open " << outFilename << endl;
     return false;
   }
 
-  while (in.good()) {
+  while (!in.eof()) {
     string line;
     getline(in, line);
+    if (in.bad()) {
+      cerr << "Error reading " << inFilename << endl;
+      return false;
+    }
 
     vector<Feature>::iterator feature;
-    for (feature = features.begin(); feature != features.end(); feature++)
+    for (feature = g_features.begin(); feature != g_features.end(); feature++)
       feature->Adjust(line);
 
     out << line << '\n';
+    if (out.bad()) {
+      cerr << "Error writing " << outFilename << endl;
+      return false;
+    }
   }
 
-  return !in.bad() && !out.bad();
+  cout << "Written " << outFilename << endl;
+  return true;
 }
 
 
 bool FeatureEnabled(const string & name)
 {
   vector<Feature>::iterator feature;
-  for (feature = features.begin(); feature != features.end(); feature++) {
-    if (feature->featureName == name && feature->state == Feature::Enabled)
+  for (feature = g_features.begin(); feature != g_features.end(); feature++) {
+    if (feature->m_featureName == name && feature->m_state == Feature::Enabled)
       return true;
   }
   return false;
@@ -629,14 +787,14 @@ bool AllFeaturesAre(bool state, const list<string> & features, string & breaker)
 
 void Feature::RunDependencies()
 {
-  if (state != Enabled)
+  if (m_state != Enabled)
     return;
 
   States newState = Enabled;
-  for (list<IfFeature>::iterator it = ifFeatures.begin(); it != ifFeatures.end(); ++it) {
-    if (!AllFeaturesAre(true, it->present, breaker))
+  for (list<IfFeature>::iterator it = m_ifFeatures.begin(); it != m_ifFeatures.end(); ++it) {
+    if (!AllFeaturesAre(true, it->m_present, m_breaker))
       newState = Dependency;
-    else if (!AllFeaturesAre(false, it->absent, breaker))
+    else if (!AllFeaturesAre(false, it->m_absent, m_breaker))
       newState = Blocked;
     else {
       newState = Enabled;
@@ -644,17 +802,17 @@ void Feature::RunDependencies()
     }
   }
   if (newState != Enabled) {
-    state = newState;
+    m_state = newState;
     return;
   }
 
-  if (checkFiles.empty())
+  if (m_checkFiles.empty())
     return;
 
-  state = NotFound;
-  for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); file++) {
-    if (file->found) {
-      state = Enabled;
+  m_state = NotFound;
+  for (list<CheckFileInfo>::iterator file = m_checkFiles.begin(); file != m_checkFiles.end(); file++) {
+    if (file->m_found) {
+      m_state = Enabled;
       break;
     }
   }
@@ -707,8 +865,8 @@ int main(int argc, char* argv[])
           if (!optionValue.empty()) {
             string featureName(line, space, comma-space);
             bool found = false;
-            for (feature = features.begin(); feature != features.end(); feature++) {
-              if (feature->featureName == featureName) {
+            for (feature = g_features.begin(); feature != g_features.end(); feature++) {
+              if (feature->m_featureName == featureName) {
                 found = true;
                 break;
               }
@@ -716,7 +874,7 @@ int main(int argc, char* argv[])
             if (found)
               feature->Parse(optionName, optionValue);
             else
-              features.push_back(Feature(featureName, optionName, optionValue));
+              g_features.push_back(Feature(featureName, optionName, optionValue));
           }
         }
       }
@@ -724,10 +882,11 @@ int main(int argc, char* argv[])
   }
 
   // scan version.h if there is a feature called version and if version.h exists
-  for (feature = features.begin(); feature != features.end(); ++feature)
-    if (feature->featureName == "version")
+  for (feature = g_features.begin(); feature != g_features.end(); ++feature) {
+    if (feature->m_featureName == "version")
       break;
-  if (feature != features.end()) {
+  }
+  if (feature != g_features.end()) {
     ifstream version("version.h", ios::in);
     if (version.is_open()) {
       while (version.good()) {
@@ -747,29 +906,29 @@ int main(int argc, char* argv[])
                 version.erase(0);
               while (version.length() > 0 && ::iswspace(version[version.length()-1]))
                 version.erase(version.length()-1);
-              feature->defineValues.insert(pair<string,string>(VersionTags[i], version));
+              feature->m_defineValues.insert(pair<string,string>(VersionTags[i], version));
             }
           }
         }
       }
       string version("\"");
       map<string,string>::iterator ver;
-      if ((ver = feature->defineValues.find(VersionTags[0])) != feature->defineValues.end())
+      if ((ver = feature->m_defineValues.find(VersionTags[0])) != feature->m_defineValues.end())
         version += ver->second;
       else
         version += "0";
       version += ".";
-      if ((ver = feature->defineValues.find(VersionTags[1])) != feature->defineValues.end())
+      if ((ver = feature->m_defineValues.find(VersionTags[1])) != feature->m_defineValues.end())
         version += ver->second;
       else
         version += "0";
       version += ".";
-      if ((ver = feature->defineValues.find(VersionTags[2])) != feature->defineValues.end())
+      if ((ver = feature->m_defineValues.find(VersionTags[2])) != feature->m_defineValues.end())
         version += ver->second;
       else
         version += "0";
       version += "\"";
-      feature->defineValues.insert(pair<string,string>("VERSION", version));
+      feature->m_defineValues.insert(pair<string,string>("VERSION", version));
     }
   }
 
@@ -784,7 +943,7 @@ int main(int argc, char* argv[])
   for (i = 1; i < argc; i++) {
     if (stricmp(argv[i], "--no-search") == 0 || stricmp(argv[i], "--disable-search") == 0)
       searchDisk = false;
-    else if (strnicmp(argv[i], EXCLUDE_ENV, sizeof(EXCLUDE_ENV) - 1) == 0){
+    else if (strnicmp(argv[i], EXCLUDE_ENV, sizeof(EXCLUDE_ENV) - 1) == 0) {
         externEnv = argv[i] + sizeof(EXCLUDE_ENV) - 1;
     }
     else if (strnicmp(argv[i], EXTERN_DIR, sizeof(EXTERN_DIR) - 1) == 0){
@@ -794,6 +953,19 @@ int main(int argc, char* argv[])
       string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1);
       cout << "Excluding \"" << ExcludeDir(dir) << "\" from feature search" << endl;
     }
+    else if (argv[i][0] == '-' && argv[i][1] == 'D') {
+      string var(argv[i]+2), val;
+      size_t equal = var.find('=');
+      if (equal != string::npos) {
+        val.assign(var, equal+1, string::npos);
+        var.erase(equal);
+      }
+      cout << "Predefine variable \"" << var << "\" as \"" << val << '"' << endl;
+      g_predefines['$'+var] = val;
+      g_predefines["${"+var+'}'] = val;
+    }
+    else if (stricmp(argv[i], "-V") == 0 || stricmp(argv[i], "--verbose") == 0)
+      g_verbose =  true;
     else if (stricmp(argv[i], "-v") == 0 || stricmp(argv[i], "--version") == 0) {
       cout << "configure version " VERSION "\n";
       return 1;
@@ -801,24 +973,18 @@ int main(int argc, char* argv[])
     else if (stricmp(argv[i], "-h") == 0 || stricmp(argv[i], "--help") == 0) {
       cout << "configure version " VERSION "\n"
               "usage: configure args\n"
+              "  -v or --version       Dispaly version\n"
+              "  -V or --verbose       Verbose output\n"
               "  --no-search           Do not search disk for libraries.\n"
               "  --extern-dir=dir      Specify where to search disk for libraries.\n"
               "  --exclude-dir=dir     Exclude dir from search path.\n";
               "  --exclude-env=var     Exclude dirs decribed by specified env var from search path.\n";
-      for (feature = features.begin(); feature != features.end(); feature++) {
-        if (feature->featureName[0] != '\0') {
-            cout << "  --disable-" << feature->featureName
-                 << setw(20-feature->featureName.length()) << "Disable " << feature->displayName << '\n';
-          if (!feature->checkFiles.empty())
-            cout << "  --" << feature->featureName << "-dir=dir"
-                 << setw(30-feature->featureName.length()) << "Set directory for " << feature->displayName << '\n';
-        }
-      }
+      for (feature = g_features.begin(); feature != g_features.end(); feature++)
+        feature->DisplayHelp();
       return 1;
     }
     else {
       // parse environment variable if it exists
-      std::vector<std::string> envConfigureList;
       char * envStr = getenv("PWLIB_CONFIGURE_FEATURES");
       if (envStr != NULL) {
         string str(envStr);
@@ -833,35 +999,14 @@ int main(int argc, char* argv[])
             xable = str.substr(offs);
             offs += str.length();
           }
-          envConfigureList.push_back(ToLower(xable));
+          g_envConfigureList.push_back(ToLower(xable));
         }
       }
 
       // go through features and disable ones that need disabling either from command line or environment
-      for (feature = features.begin(); feature != features.end(); feature++) {
-        if (stricmp(argv[i], ("--no-"     + feature->featureName).c_str()) == 0 ||
-            stricmp(argv[i], ("--disable-"+ feature->featureName).c_str()) == 0) {
-          feature->state = Feature::Disabled;
+      for (feature = g_features.begin(); feature != g_features.end(); feature++) {
+        if (feature->ProcessArgs(argv[i]))
           break;
-        }
-        else if (stricmp(argv[i], ("--enable-"+ feature->featureName).c_str()) == 0) {
-          feature->state = Feature::Enabled;
-          break;
-        }
-        else if (find(envConfigureList.begin(), envConfigureList.end(), "enable-"+ feature->featureName) != envConfigureList.end()) {
-          feature->state = Feature::Enabled;
-          break;
-        }
-        else if (find(envConfigureList.begin(), envConfigureList.end(), "disable-"+ feature->featureName) != envConfigureList.end() ||
-                 find(envConfigureList.begin(), envConfigureList.end(), "no-"+ feature->featureName) != envConfigureList.end()) {
-          feature->state = Feature::Disabled;
-          break;
-        }
-        else if (strstr(argv[i], ("--" + feature->featureName + "-dir=").c_str()) == argv[i] &&
-               !feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
-          cerr << feature->displayName << " not found in "
-               << argv[i] + strlen(("--" + feature->featureName+"-dir=").c_str()) << endl;
-
       }
     }
   }
@@ -896,25 +1041,9 @@ int main(int argc, char* argv[])
   }
 
   bool foundAll = true;
-  for (feature = features.begin(); feature != features.end(); feature++) {
-#if 0 // Does not work yet
-    if (feature->state == Feature::Enabled && !AllFeaturesAre(true, feature->ifFeature, feature->breaker))
-      feature->state = Feature::Dependency;
-    if (feature->state == Feature::Enabled && !AllFeaturesAre(false, feature->ifNotFeature, feature->breaker))
-      feature->state = Feature::Blocked;
-#endif
-    if (feature->state == Feature::Enabled && !feature->checkFiles.empty()) {
-      bool foundOne = false;
-      list<string>::iterator dir;
-      for (dir = feature->checkDirectories.begin(); dir != feature->checkDirectories.end(); dir++) {
-        if (!DirExcluded(*dir) && feature->Locate(dir->c_str())) {
-          foundOne = true;
-          break;
-        }
-      }
-      if (!foundOne)
-        foundAll = false;
-    }
+  for (feature = g_features.begin(); feature != g_features.end(); feature++) {
+    if (!feature->CheckFiles())
+      foundAll = false;
   }
 
   if (searchDisk && !foundAll) {
@@ -940,45 +1069,20 @@ int main(int argc, char* argv[])
     }
   }
 
-  for (feature = features.begin(); feature != features.end(); feature++)
+  for (feature = g_features.begin(); feature != g_features.end(); feature++)
     feature->RunDependencies();
 
   int longestNameWidth = 0;
-  for (feature = features.begin(); feature != features.end(); feature++) {
-    int length = feature->displayName.length();
+  for (feature = g_features.begin(); feature != g_features.end(); feature++) {
+    int length = feature->m_displayName.length();
     if (length > longestNameWidth)
       longestNameWidth = length;
   }
 
   cout << "\n\nFeatures:\n";
-  for (feature = features.begin(); feature != features.end(); feature++) {
-    cout << setw(longestNameWidth+3) << feature->displayName << ' ';
-    switch (feature->state)
-    {
-      case Feature::Enabled:
-        cout << "enabled";
-        break;
-
-      case Feature::NotFound :
-        cout << "DISABLED due to missing library";
-        break;
-
-      case Feature::Disabled :
-        cout << "DISABLED by user";
-        break;
-
-      case Feature::Dependency :
-        cout << "DISABLED due to absence of feature " << feature->breaker;
-        break;
-
-      case Feature::Blocked :
-        cout << "DISABLED due to presence of feature " << feature->breaker;
-        break;
-
-      default :
-        cout << "DISABLED";
-    }
-    cout << '\n';
+  for (feature = g_features.begin(); feature != g_features.end(); feature++) {
+    cout.width(longestNameWidth+3);
+    feature->DisplayResult();
   }
   cout << endl;
 

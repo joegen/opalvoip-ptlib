@@ -170,6 +170,10 @@ dnl Normalise target_os and target_cpu
 dnl MSWIN_DISPLAY winver,Advanced Windows API
 dnl MSWIN_DEFINE  winver,WINVER=0x502
 
+dnl MSWIN_DISPLAY android,Android build (using vs-android)
+dnl MSWIN_DEFINE  android,P_ANDROID
+dnl MSWIN_DEFAULT android,Disabled
+
 m4_include(make/canonical.m4)
 MY_CANONICAL_TARGET()
 
@@ -2217,7 +2221,7 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 
 dnl ########################################################################
 dnl output header file
-AC_CONFIG_HEADERS(include/ptbuildopts.h)
+AC_CONFIG_HEADERS($LIBDIR/ptbuildopts.h:include/ptbuildopts.h.in)
 
 AC_OUTPUT()
 
