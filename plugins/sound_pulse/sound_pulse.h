@@ -71,7 +71,7 @@ class PSoundChannelPulse: public PSoundChannel
     PBoolean AreAllRecordBuffersFull();
     PBoolean WaitForRecordBufferFull();
     PBoolean WaitForAllRecordBuffersFull();
-    PBoolean Abort()   { return PTrue; }
+    PBoolean Abort()   { return true; }
     PBoolean SetVolume(unsigned newVal);
     PBoolean GetVolume(unsigned &devVol);
 

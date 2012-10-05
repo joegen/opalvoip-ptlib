@@ -40,20 +40,20 @@
 PAdaptiveDelay::PAdaptiveDelay(unsigned _maximumSlip, unsigned _minimumDelay)
   : jitterLimit(_maximumSlip), minimumDelay(_minimumDelay)
 {
-  firstTime = PTrue;
+  firstTime = true;
 }
 
 void PAdaptiveDelay::Restart()
 {
-  firstTime = PTrue;
+  firstTime = true;
 }
 
 PBoolean PAdaptiveDelay::Delay(int frameTime)
 {
   if (firstTime) {
-    firstTime = PFalse;
+    firstTime = false;
     targetTime = PTime();   // targetTime is the time we want to delay to
-    return PTrue;
+    return true;
   }
 
   if (frameTime == 0)
@@ -115,7 +115,7 @@ PDelayChannel::PDelayChannel(PChannel &channel,
    minimumDelay(min)
 {
   maximumSlip = -PTimeInterval(max);
-  if(Open(channel) == PFalse){
+  if(Open(channel) == false){
     PTRACE(1,"Delay\tPDelayChannel cannot open channel");
   }
   PTRACE(5,"Delay\tdelay = " << frameDelay << ", size = " << frameSize);

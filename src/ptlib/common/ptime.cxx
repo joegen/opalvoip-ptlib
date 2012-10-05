@@ -150,14 +150,14 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
     return str;
   }
 
-  PBoolean hadPrevious = PFalse;
+  PBoolean hadPrevious = false;
   long tmp;
 
   if (format == IncludeDays) {
     tmp = (long)(ms/86400000);
     if (tmp > 0 || width > (precision+10)) {
       str << tmp << 'd';
-      hadPrevious = PTrue;
+      hadPrevious = true;
     }
 
     tmp = (long)(ms%86400000)/3600000;
@@ -170,7 +170,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
       if (hadPrevious)
         str << ':' << setw(2);
       str << tmp;
-      hadPrevious = PTrue;
+      hadPrevious = true;
     }
   }
 
@@ -180,7 +180,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
       if (hadPrevious)
         str << ':' << setw(2);
       str << tmp;
-      hadPrevious = PTrue;
+      hadPrevious = true;
     }
   }
 

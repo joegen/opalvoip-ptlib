@@ -74,7 +74,7 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
       */
     PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Determine of the device is currently open.

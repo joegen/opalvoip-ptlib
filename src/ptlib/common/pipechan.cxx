@@ -46,7 +46,7 @@ static PBoolean SplitArgs(const PString & cmdline,
 {
   PArgList list = cmdline;
   if (list.GetCount() == 0)
-    return PFalse;
+    return false;
 
   progName = list[0];
 
@@ -54,7 +54,7 @@ static PBoolean SplitArgs(const PString & cmdline,
   for (PINDEX i = 1; i < list.GetCount(); i++)
     arguments[i-1] = list[i];
 
-  return PTrue;
+  return true;
 }
 
 
@@ -125,7 +125,7 @@ PBoolean PPipeChannel::Open(const PString & subProgram,
   PString progName;
   PStringArray arguments;
   if (!SplitArgs(subProgram, progName, arguments))
-    return PFalse;
+    return false;
   return PlatformOpen(progName, arguments, mode, searchPath, stderrSeparate, NULL);
 }
 
@@ -149,7 +149,7 @@ PBoolean PPipeChannel::Open(const PString & subProgram,
   PString progName;
   PStringArray arguments;
   if (!SplitArgs(subProgram, progName, arguments))
-    return PFalse;
+    return false;
   return PlatformOpen(progName, arguments, mode, searchPath, stderrSeparate, &environment);
 }
 

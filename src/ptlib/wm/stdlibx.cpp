@@ -716,9 +716,9 @@ PServiceProcess::PServiceProcess(char const *,
 	enum PProcess::CodeStatus,unsigned short) {};
 PServiceProcess & PServiceProcess::Current(void) 
 { return (PServiceProcess &) PProcess::Current(); }
-PBoolean PServiceProcess::OnStart() { return PTrue; }; 
+PBoolean PServiceProcess::OnStart() { return true; }; 
 void PServiceProcess::OnStop() {}; 
-PBoolean PServiceProcess::OnPause() { return PTrue; }; 
+PBoolean PServiceProcess::OnPause() { return true; }; 
 void PServiceProcess::OnContinue() {}; 
 char const * PServiceProcess::GetServiceDependencies(void)const { return NULL; }
 

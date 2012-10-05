@@ -519,13 +519,13 @@ void PSound::SetFormat(unsigned channels,
 
 PBoolean PSound::Load(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSound::Save(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -540,9 +540,9 @@ PBoolean PSound::Play(const PString & device)
 
   PSoundChannel channel(device, PSoundChannel::Player);
   if (!channel.IsOpen())
-    return PFalse;
+    return false;
 
-  return channel.PlaySound(*this, PTrue);
+  return channel.PlaySound(*this, true);
 }
 
 
@@ -551,7 +551,7 @@ PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
   PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
                         PSoundChannel::Player);
   if (!channel.IsOpen())
-    return PFalse;
+    return false;
 
   return channel.PlayFile(file, wait);
 }

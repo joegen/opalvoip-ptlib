@@ -19,14 +19,14 @@
 PBoolean PChannel::Read(void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PChannel::Write(const void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  return false;
 }
 
 PBoolean PChannel::Write(const void * buf, PINDEX len, const void * /*mark*/)
@@ -38,7 +38,7 @@ PBoolean PChannel::Close()
 {
    ::shutdown(os_handle,2);
    os_handle=-1;
-   return PFalse;
+   return false;
 }
 
 
@@ -72,7 +72,7 @@ PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return PTrue;
+      return true;
 
     case EINTR:
       lastError = Interrupted;
@@ -115,7 +115,7 @@ PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
       lastError = Miscellaneous;
       break;
   }
-  return PFalse;
+  return false;
 }
 
 PBoolean PChannel::PXSetIOBlock (int type, const PTimeInterval & timeout)
@@ -127,22 +127,22 @@ PBoolean PChannel::PXSetIOBlock (int type, int blockHandle, const PTimeInterval 
 {
   if (blockHandle < 0) {
     lastError = NotOpen;
-    return PFalse;
+    return false;
   }
 
   int stat = PThread::Current()->PXBlockOnIO(blockHandle, type, timeout);
 
-  // if select returned < 0, then covert errno into lastError and return PFalse
+  // if select returned < 0, then covert errno into lastError and return false
   if (stat < 0)
     return ConvertOSError(stat);
 
-  // if the select succeeded, then return PTrue
+  // if the select succeeded, then return true
   if (stat > 0) 
-    return PTrue;
+    return true;
 
-  // otherwise, a timeout occurred so return PFalse
+  // otherwise, a timeout occurred so return false
   lastError = Timeout;
-  return PFalse;
+  return false;
 }
 
 int PChannel::PXClose()

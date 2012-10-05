@@ -78,7 +78,7 @@ void Audio::Main()
     cout << endl
          << "Product Name: " <<  (const char *)GetName() << endl
          << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(PTrue) << endl
+         << "Version     : " <<  (const char *)GetVersion(true) << endl
          << "System      : " <<  (const char *)GetOSName() << '-'
          <<  (const char *)GetOSHardware() << ' '
          <<  (const char *)GetOSVersion() << endl
@@ -227,17 +227,17 @@ TestAudioDevice::~TestAudioDevice()
   AllowDeleteObjects();
   access.Wait();
   RemoveAll();
-  endNow = PTrue;
+  endNow = true;
   access.Signal();
   PThread::Sleep(100);
 }
 
 void TestAudioDevice::Test(const PString & captureFileName)
 {
-   endNow = PFalse;
+   endNow = false;
    PConsoleChannel console(PConsoleChannel::StandardInput);
 
-   AllowDeleteObjects(PFalse);
+   AllowDeleteObjects(false);
    PTRACE(3, "Start operation of TestAudioDevice");
 
    TestAudioRead reader(*this, captureFileName);
@@ -303,7 +303,7 @@ void TestAudioDevice::Test(const PString & captureFileName)
   }
 
 endAudioTest:
-  endNow = PTrue;
+  endNow = true;
   cout  << "end audio test" << endl;
 
   reader.WaitForTermination();
@@ -344,7 +344,7 @@ void TestAudioDevice::WriteAudioFrame(PBYTEArray *data)
   Append(data);
   if (GetSize() > 50) {
     cout << "The audio reader thread is not working - exit now before memory is exhausted" << endl;
-    endNow = PTrue;
+    endNow = true;
   }
   return;
 }
@@ -446,7 +446,7 @@ TestAudio::TestAudio(TestAudioDevice &master)
      controller(master)
 {
     iterations = 0;
-    keepGoing = PTrue;
+    keepGoing = true;
 }
 
 TestAudio::~TestAudio()
@@ -474,14 +474,14 @@ PBoolean TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
       cerr <<  "Please check that \"" << devName << "\" is a valid device name" << endl;
       PTRACE(3, "TestAudio\tFailed to open device for " << name << " and device name of " << devName);
 
-    return PFalse;
+    return false;
   }
   
   currentVolume = 90;
   sound.SetVolume(currentVolume);
   
   sound.SetBuffers(480, 2);
-  return PTrue;
+  return true;
 }
 
 

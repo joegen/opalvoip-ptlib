@@ -177,7 +177,7 @@ PBoolean PSoundChannel_WAVFile::SetFormat(unsigned numChannels,
   m_WAVFile.SetSampleRate(sampleRate);
   m_WAVFile.SetSampleSize(bitsPerSample);
 
-  return PTrue;
+  return true;
 }
 
 
@@ -206,7 +206,7 @@ PBoolean PSoundChannel_WAVFile::Close()
 
   m_WAVFile.Close();
   os_handle = -1;
-  return PTrue;
+  return true;
 }
 
 
@@ -236,19 +236,19 @@ PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
 
 PBoolean PSoundChannel_WAVFile::HasPlayCompleted()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel_WAVFile::WaitForPlayCompletion()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel_WAVFile::StartRecording()
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -329,25 +329,25 @@ bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
 
 PBoolean PSoundChannel_WAVFile::IsRecordBufferFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel_WAVFile::AreAllRecordBuffersFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel_WAVFile::WaitForRecordBufferFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
 {
-  return PTrue;
+  return true;
 }
 
 

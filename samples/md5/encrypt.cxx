@@ -44,11 +44,11 @@ void Md5::Main()
        "o-output:"             "-no-output."
        "t-trace: "             "-no-trace."
 #endif
-       , PFalse);
+       , false);
 
   cout << "Product Name: " << GetName() << endl
        << "Manufacturer: " << GetManufacturer() << endl
-       << "Version     : " << GetVersion(PTrue) << endl
+       << "Version     : " << GetVersion(true) << endl
        << "System      : " << GetOSName() << '-'
                            << GetOSHardware() << ' '
                            << GetOSVersion() << endl

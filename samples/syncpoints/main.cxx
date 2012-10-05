@@ -76,7 +76,7 @@ void SyncPoints::Main()
     cout << endl
          << "Product Name: " <<  (const char *)GetName() << endl
          << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(PTrue) << endl
+         << "Version     : " <<  (const char *)GetVersion(true) << endl
          << "System      : " <<  (const char *)GetOSName() << '-'
          <<  (const char *)GetOSHardware() << ' '
          <<  (const char *)GetOSVersion() << endl

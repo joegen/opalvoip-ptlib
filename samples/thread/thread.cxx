@@ -82,14 +82,14 @@ class MyThread2 : public PThread
   PCLASSINFO(MyThread2, PThread);
   public:
     MyThread2() : PThread(1000,NoAutoDeleteThread) {
-      exitFlag = PFalse;
+      exitFlag = false;
     }
 
     void Main() {
       while (1) {
         // Check if we need to exit
         exitMutex.Wait();
-        if (exitFlag == PTrue) {
+        if (exitFlag == true) {
           exitMutex.Signal();
           break;
         }
@@ -105,7 +105,7 @@ class MyThread2 : public PThread
       // set the exit flag. On the next iteration, the thread's
       // Main() function will exit cleanly.
       exitMutex.Wait();
-      exitFlag = PTrue;
+      exitFlag = true;
       exitMutex.Signal();
     }
 

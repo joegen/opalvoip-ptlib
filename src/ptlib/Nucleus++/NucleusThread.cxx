@@ -108,11 +108,11 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
     {
     if (timeout == 0)
       {
-      return PFalse;
+      return false;
       }
     Current()->Sleep(10);
     }
-  return PTrue;
+  return true;
   }
 
 void PThread::Suspend(PBoolean susp)
@@ -169,7 +169,7 @@ PThread::Priority PThread::GetPriority() const
   NucleusTaskInfo->Update();
   PAssert(stat == NU_SUCCESS, "Invalid Task Pointer on GetPriority Request");
 
-  PBoolean FoundIt = PFalse;
+  PBoolean FoundIt = false;
 
   for ( int i = LowestPriority;
         i < NumPriorities;
@@ -220,7 +220,7 @@ PBoolean PThread::IsNoLongerBlocked()
 PThread::PThread()
   : n_suspendCount(1)
   {
-  autoDelete = PFalse;
+  autoDelete = false;
 
   NucleusTask = new pwNUTask( (UNSIGNED)2048, // Stack Size Requested
                               (OPTION)priorities[HighPriority],

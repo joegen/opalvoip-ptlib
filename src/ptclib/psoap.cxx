@@ -80,14 +80,14 @@ void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace, c
     
     rtElement = GetRootElement();
 
-    rtElement->SetAttribute("xmlns:SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/", PTrue );
-    rtElement->SetAttribute("xmlns:xsi", "http://www.w3.org/1999/XMLSchema-instance", PTrue );
-    rtElement->SetAttribute("xmlns:xsd", "http://www.w3.org/1999/XMLSchema", PTrue );
-    rtElement->SetAttribute("xmlns:SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/", PTrue );
+    rtElement->SetAttribute("xmlns:SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/", true );
+    rtElement->SetAttribute("xmlns:xsi", "http://www.w3.org/1999/XMLSchema-instance", true );
+    rtElement->SetAttribute("xmlns:xsd", "http://www.w3.org/1999/XMLSchema", true );
+    rtElement->SetAttribute("xmlns:SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/", true );
 
     pSOAPBody = new PXMLElement( rtElement, "SOAP-ENV:Body");
 
-    rtElement->AddChild( pSOAPBody, PTrue );
+    rtElement->AddChild( pSOAPBody, true );
   }
 
   if ( pSOAPMethod == 0 )
@@ -102,7 +102,7 @@ void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace, c
       else
         pSOAPMethod->SetAttribute("xmlns:m", nameSpace, true);
     }
-    pSOAPBody->AddChild( pSOAPMethod, PTrue );
+    pSOAPBody->AddChild( pSOAPMethod, true );
   }
 
 }
@@ -133,9 +133,9 @@ void PSOAPMessage::AddParameter( PString name, PString type, PString value )
       pParameter->SetAttribute( "xsi:type", PString( "xsd:" ) + type );
     }
     
-    pParameter->AddChild( pParameterData, PTrue );
+    pParameter->AddChild( pParameterData, true );
 
-    AddParameter( pParameter, PTrue );
+    AddParameter( pParameter, true );
   }
 }
 
@@ -195,33 +195,33 @@ PBoolean PSOAPMessage::GetParameter( const PString & name, PString & value )
 {
   PXMLElement* pElement = GetParameter( name );
   if(pElement == NULL)
-    return PFalse;
+    return false;
 
 
   if ( pElement->GetAttribute( "xsi:type") == "xsd:string" )
   {
     value = pElement->GetData();
-    return PTrue;
+    return true;
   }
 
   value.MakeEmpty();
-  return PFalse;
+  return false;
 }
 
 PBoolean PSOAPMessage::GetParameter( const PString & name, int & value )
 {
   PXMLElement* pElement = GetParameter( name );
   if(pElement == NULL)
-    return PFalse;
+    return false;
 
   if ( pElement->GetAttribute( "xsi:type") == "xsd:int" )
   {
     value = pElement->GetData().AsInteger();
-    return PTrue;
+    return true;
   }
 
   value = -1;
-  return PFalse;
+  return false;
 }
 
 PXMLElement* PSOAPMessage::GetParameter( const PString & name )
@@ -239,7 +239,7 @@ PXMLElement* PSOAPMessage::GetParameter( const PString & name )
 PBoolean PSOAPMessage::Load( const PString & str )
 {
   if ( !PXML::Load( str ) )
-    return PFalse;
+    return false;
  
   if ( rootElement != NULL )
   {
@@ -275,13 +275,13 @@ PBoolean PSOAPMessage::Load( const PString & str )
           }
           else
           {
-            return PTrue;
+            return true;
           }
         }
       }
     }
   }
-  return PFalse;
+  return false;
 }
 
 void PSOAPMessage::SetFault( PINDEX code, const PString & text) 
@@ -355,12 +355,12 @@ PBoolean PSOAPServerResource::SetMethod(const PString & methodName, const PNotif
   // set the function
   methodInfo->methodFunc = func;
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PSOAPServerResource::LoadHeaders( PHTTPRequest& /* request */ )    // Information on this request.
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PSOAPServerResource::OnPOSTData( PHTTPRequest & request,
@@ -370,7 +370,7 @@ PBoolean PSOAPServerResource::OnPOSTData( PHTTPRequest & request,
 
   PString reply;
 
-  PBoolean ok = PFalse;
+  PBoolean ok = false;
 
   // Check for the SOAPAction header
   PString* pSOAPAction = request.inMIME.GetAt( "SOAPAction" );
@@ -391,14 +391,14 @@ PBoolean PSOAPServerResource::OnPOSTData( PHTTPRequest & request,
       }
       else
       {
-        ok = PFalse;
+        ok = false;
         reply = FormatFault( PSOAPMessage::Client, "Incorrect SOAPAction in HTTP Header: " + *pSOAPAction ).AsString();
       }
     }
   }
   else
   {
-    ok = PFalse;
+    ok = false;
     reply = FormatFault( PSOAPMessage::Client, "SOAPAction is missing in HTTP Header" ).AsString();
   }
 
@@ -431,7 +431,7 @@ PBoolean PSOAPServerResource::OnSOAPRequest( const PString & body, PString & rep
   if ( !ok ) 
   { 
     reply = FormatFault( PSOAPMessage::Client, "XML error:" + request.GetErrorString() ).AsString();
-    return PFalse;
+    return false;
   }
 
 
@@ -458,7 +458,7 @@ PBoolean PSOAPServerResource::OnSOAPRequest( const PString & methodName,
   if ( pos == P_MAX_INDEX ) 
   {
     reply = FormatFault( PSOAPMessage::Client, "Unknown method = " + methodName ).AsString();
-    return PFalse;
+    return false;
   }
   
   PSOAPServerMethod * methodInfo = ( PSOAPServerMethod * )methodList.GetAt( pos );
@@ -542,7 +542,7 @@ PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & res
         << request.GetErrorLine() 
         << ") :" 
         << request.GetErrorString();
-    return PFalse;
+    return false;
   }
 
   // End with a newline
@@ -607,11 +607,11 @@ PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & res
        ( !ok ) )
   {
     response.SetFault( PSOAPMessage::Server, txt );
-    return PFalse;
+    return false;
   }
 
 
-  return PTrue;
+  return true;
 }
 
 

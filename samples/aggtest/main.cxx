@@ -48,7 +48,7 @@ class MyUDPSocket : public PUDPSocket
     {
       BYTE buffer[1024];
       Read(buffer, 1024);
-      return PTrue;
+      return true;
     }
 
 };

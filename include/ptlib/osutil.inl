@@ -256,7 +256,7 @@ PINLINE int PChannel::GetErrorNumber(ErrorGroup group) const
   { return lastErrorNumber[group]; }
 
 PINLINE void PChannel::AbortCommandString()
-  { abortCommandString = PTrue; }
+  { abortCommandString = true; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -334,13 +334,13 @@ PINLINE PFilePath & PFilePath::operator+=(const char * cstr)
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PFile::PFile()
-  { os_handle = -1; removeOnClose = PFalse; }
+  { os_handle = -1; removeOnClose = false; }
 
 PINLINE PFile::PFile(OpenMode mode, OpenOptions opts)
-  { os_handle = -1; removeOnClose = PFalse; Open(mode, opts); }
+  { os_handle = -1; removeOnClose = false; Open(mode, opts); }
 
 PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, OpenOptions opts)
-  { os_handle = -1; removeOnClose = PFalse; Open(name, mode, opts); }
+  { os_handle = -1; removeOnClose = false; Open(name, mode, opts); }
 
 
 PINLINE PBoolean PFile::Exists() const

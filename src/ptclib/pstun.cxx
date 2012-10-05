@@ -769,7 +769,7 @@ PSTUNUDPSocket::PSTUNUDPSocket()
 
 bool PSTUNUDPSocket::OpenSTUN(PSTUNClient & client)
 {
-  m_natType = client.GetNatType(PFalse);
+  m_natType = client.GetNatType(false);
 
   switch (m_natType) {
     case PNatMethod::OpenNat :
@@ -1204,7 +1204,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   socket1 = NULL;
   socket2 = NULL;
 
-  switch (GetNatType(PFalse)) {
+  switch (GetNatType(false)) {
     case OpenNat :
     case ConeNat :
     case RestrictedNat :
@@ -1216,13 +1216,13 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       {
         PTRACE(1, "STUN\tInvalid local UDP port range "
                << pairedPortInfo.currentPort << '-' << pairedPortInfo.maxPort);
-        return PFalse;
+        return false;
       }
       break;
 
     default : // UnknownNet, SymmetricFirewall, BlockedNat
       PTRACE(1, "STUN\tCannot create socket pair using NAT type " << GetNatTypeName());
-      return PFalse;
+      return false;
   }
 
   PPtrVector<SocketInfo> socketInfo;
@@ -1423,7 +1423,7 @@ int PTURNUDPSocket::OpenTURN(PTURNClient & client)
     return OpenSTUN(client) ? 0 : -1;
   }
 
-  PSTUN::m_natType = client.GetNatType(PFalse);
+  PSTUN::m_natType = client.GetNatType(false);
 
 #ifndef ENABLE_TURN_FOR_ALL
   // for some NAT types, STUN is just fine
@@ -1770,7 +1770,7 @@ bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
     return false;
 
 #ifndef ENABLE_TURN_FOR_ALL
-  switch (GetNatType(PFalse)) {
+  switch (GetNatType(false)) {
     case OpenNat :
     //case ConeNat : 
       PTRACE(3, "TURN\tNAT type allows use of STUN for socket pair");

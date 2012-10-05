@@ -168,9 +168,9 @@ PBoolean PArrayObjects::Remove(const PObject * obj)
 {
   PINDEX i = GetObjectsIndex(obj);
   if (i == P_MAX_INDEX)
-    return PFalse;
+    return false;
   RemoveAt(i);
-  return PTrue;
+  return true;
 }
 
 
@@ -183,12 +183,12 @@ PObject * PArrayObjects::GetAt(PINDEX index) const
 PBoolean PArrayObjects::SetAt(PINDEX index, PObject * obj)
 {
   if (!theArray->SetMinSize(index+1))
-    return PFalse;
+    return false;
   PObject * oldObj = theArray->GetAt(index);
   if (oldObj != NULL && reference->deleteObjects)
     delete oldObj;
   (*theArray)[index] = obj;
-  return PTrue;
+  return true;
 }
 
 
@@ -307,7 +307,7 @@ PObject::Comparison PAbstractList::Compare(const PObject & obj) const
 
 PBoolean PAbstractList::SetSize(PINDEX)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -637,7 +637,7 @@ void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
 
 PBoolean PAbstractSortedList::SetSize(PINDEX)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -796,7 +796,7 @@ PINDEX PAbstractSortedList::InsertAt(PINDEX, PObject * obj)
 
 PBoolean PAbstractSortedList::SetAt(PINDEX, PObject *)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -1359,7 +1359,7 @@ PObject::Comparison PHashTable::Compare(const PObject & obj) const
 
 PBoolean PHashTable::SetSize(PINDEX)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -1426,15 +1426,15 @@ PINDEX PAbstractSet::InsertAt(PINDEX, PObject * obj)
 PBoolean PAbstractSet::Remove(const PObject * obj)
 {
   if (PAssertNULL(obj) == NULL)
-    return PFalse;
+    return false;
 
   if (hashTable->GetElementAt(*obj) == NULL)
-    return PFalse;
+    return false;
 
   hashTable->deleteKeys = hashTable->reference->deleteObjects = reference->deleteObjects;
   hashTable->RemoveElement(*obj);
   reference->size--;
-  return PTrue;
+  return true;
 }
 
 
@@ -1454,13 +1454,13 @@ PObject * PAbstractSet::RemoveAt(PINDEX index)
 
 PINDEX PAbstractSet::GetObjectsIndex(const PObject * obj) const
 {
-  return hashTable->GetElementsIndex(obj, PFalse, PTrue);
+  return hashTable->GetElementsIndex(obj, false, true);
 }
 
 
 PINDEX PAbstractSet::GetValuesIndex(const PObject & obj) const
 {
-  return hashTable->GetElementsIndex(&obj, PTrue, PTrue);
+  return hashTable->GetElementsIndex(&obj, true, true);
 }
 
 
@@ -1535,10 +1535,10 @@ PBoolean PAbstractDictionary::Remove(const PObject * obj)
 {
   PINDEX idx = GetObjectsIndex(obj);
   if (idx == P_MAX_INDEX)
-    return PFalse;
+    return false;
 
   RemoveAt(idx);
-  return PTrue;
+  return true;
 }
 
 
@@ -1552,13 +1552,13 @@ PObject * PAbstractDictionary::RemoveAt(PINDEX index)
 
 PINDEX PAbstractDictionary::GetObjectsIndex(const PObject * obj) const
 {
-  return hashTable->GetElementsIndex(obj, PFalse, PFalse);
+  return hashTable->GetElementsIndex(obj, false, false);
 }
 
 
 PINDEX PAbstractDictionary::GetValuesIndex(const PObject & obj) const
 {
-  return hashTable->GetElementsIndex(&obj, PTrue, PFalse);
+  return hashTable->GetElementsIndex(&obj, true, false);
 }
 
 

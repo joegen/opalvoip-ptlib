@@ -80,14 +80,14 @@ PBoolean PQueueChannel::Open(PINDEX size)
     unfull.Signal();
   }
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PQueueChannel::Close()
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   mutex.Wait();
   if (queueBuffer != NULL)
@@ -97,7 +97,7 @@ PBoolean PQueueChannel::Close()
   mutex.Signal();
   unempty.Signal();
   unfull.Signal();
-  return PTrue;
+  return true;
 }
 
 
@@ -109,7 +109,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
 
   if (!IsOpen()) {
     mutex.Signal();
-    return PFalse;
+    return false;
   }
 
   BYTE * buffer = (BYTE *)buf;
@@ -181,7 +181,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
   // unlock the buffer
   mutex.Signal();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -193,7 +193,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
 
   if (!IsOpen()) {
     mutex.Signal();
-    return PFalse;
+    return false;
   }
 
   const BYTE * buffer = (BYTE *)buf;
@@ -259,7 +259,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
 
   mutex.Signal();
 
-  return PTrue;
+  return true;
 }
 
 

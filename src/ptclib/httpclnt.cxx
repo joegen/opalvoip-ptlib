@@ -240,7 +240,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       lastResponseCode = PHTTP::RequestOK;
       lastResponseInfo = "HTTP/0.9";
       PTRACE(3, "HTTP\tRead HTTP/0.9 OK");
-      return PTrue;
+      return true;
     }
 
     if (http[0] == '\n')
@@ -281,7 +281,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
         lastResponseInfo += '\n' + body;
 
       if (readOK)
-        return PTrue;
+        return true;
     }
   }
  
@@ -293,7 +293,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     SetErrorValues(ProtocolFailure, 0, LastReadError);
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -482,7 +482,7 @@ PBoolean PHTTPClient::GetTextDocument(const PURL & url,
 {
   PMIMEInfo outMIME, replyMIME;
   if (!GetDocument(url, outMIME, replyMIME))
-    return PFalse;
+    return false;
 
   if (!CheckContentType(replyMIME, requiredContentType)) {
     PHTTPClient_DummyProcessor dummy;
@@ -507,7 +507,7 @@ bool PHTTPClient::GetBinaryDocument(const PURL & url,
 {
   PMIMEInfo outMIME, replyMIME;
   if (!GetDocument(url, outMIME, replyMIME))
-    return PFalse;
+    return false;
 
   if (!CheckContentType(replyMIME, requiredContentType)) {
     PHTTPClient_DummyProcessor dummy;
@@ -634,7 +634,7 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
         lastResponseCode = -2;
         lastResponseInfo = tcp->GetErrorText();
         delete tcp;
-        return PFalse;
+        return false;
       }
 
       PSSLChannel * ssl = new PSSLChannel;
@@ -642,13 +642,13 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
         lastResponseCode = -2;
         lastResponseInfo = ssl->GetErrorText();
         delete ssl;
-        return PFalse;
+        return false;
       }
 
       if (!Open(ssl)) {
         lastResponseCode = -2;
         lastResponseInfo = GetErrorText();
-        return PFalse;
+        return false;
       }
     }
     else
@@ -657,7 +657,7 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
     if (!Connect(host, url.GetPort())) {
       lastResponseCode = -2;
       lastResponseInfo = GetErrorText();
-      return PFalse;
+      return false;
     }
   }
 
@@ -672,7 +672,7 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
     }
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -690,7 +690,7 @@ void PHTTPClient::SetAuthenticationInfo(
 
 PHTTPClientAuthentication::PHTTPClientAuthentication()
 {
-  isProxy = PFalse;
+  isProxy = false;
 }
 
 
@@ -848,7 +848,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
   opaque.MakeEmpty();
   algorithm = NumAlgorithms;
 
-  qopAuth = qopAuthInt = PFalse;
+  qopAuth = qopAuthInt = false;
   cnonce.MakeEmpty();
   nonceCount.SetValue(1);
 
@@ -864,7 +864,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
       algorithm = (Algorithm)(algorithm+1);
       if (algorithm >= PHTTPClientDigestAuthentication::NumAlgorithms) {
         PTRACE(1, "HTTP\tUnknown digest algorithm " << str);
-        return PFalse;
+        return false;
       }
     }
   }
@@ -872,13 +872,13 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
   authRealm = GetAuthParam(auth, "realm");
   if (authRealm.IsEmpty()) {
     PTRACE(1, "HTTP\tNo realm in authentication");
-    return PFalse;
+    return false;
   }
 
   nonce = GetAuthParam(auth, "nonce");
   if (nonce.IsEmpty()) {
     PTRACE(1, "HTTP\tNo nonce in authentication");
-    return PFalse;
+    return false;
   }
 
   opaque = GetAuthParam(auth, "opaque");
@@ -889,7 +889,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
   PString qopStr = GetAuthParam(auth, "qop");
   if (!qopStr.IsEmpty()) {
     PTRACE(3, "HTTP\tAuthentication contains qop-options " << qopStr);
-    PStringList options = qopStr.Tokenise(',', PTrue);
+    PStringList options = qopStr.Tokenise(',', true);
     qopAuth    = options.GetStringsIndex("auth") != P_MAX_INDEX;
     qopAuthInt = options.GetStringsIndex("auth-int") != P_MAX_INDEX;
     cnonce = PGloballyUniqueID().AsString();
@@ -900,7 +900,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
   stale = staleStr.Find("true") != P_MAX_INDEX;
 
   isProxy = proxy;
-  return PTrue;
+  return true;
 }
 
 
@@ -986,7 +986,7 @@ PBoolean PHTTPClientDigestAuthentication::Authorise(AuthObject & authObject) con
     auth << ", opaque=\"" << opaque << "\"";
 
   authObject.GetMIME().SetAt(isProxy ? "Proxy-Authorization" : "Authorization", auth);
-  return PTrue;
+  return true;
 }
 
 PHTTPClientAuthentication * PHTTPClientAuthentication::ParseAuthenticationRequired(bool isProxy, const PMIMEInfo & replyMIME, PString & errorMsg)

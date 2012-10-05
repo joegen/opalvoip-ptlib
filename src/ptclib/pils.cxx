@@ -104,12 +104,12 @@ PBoolean PILSSession::SearchPerson(const PString & canonicalName, RTPerson & per
 {
   SearchContext context;
   if (!Search(context, "cn="+canonicalName))
-    return PFalse;
+    return false;
 
   if (!GetSearchResult(context, person))
-    return PFalse;
+    return false;
 
-  // Return PFalse if there is more than one match
+  // Return false if there is more than one match
   return !GetNextSearchResult(context);
 }
 

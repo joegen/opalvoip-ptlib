@@ -65,7 +65,7 @@ PSecureHTTPServiceProcess::PSecureHTTPServiceProcess(const Info & inf)
   : PHTTPServiceProcess(inf)
 {
   sslContext = new PSSLContext;
-  disableSSL = PFalse;
+  disableSSL = false;
 }
 
 
@@ -120,10 +120,10 @@ PBoolean PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certi
     }
     if (!certificate.CreateRoot(name, key)) {
       PTRACE(1, "MTGW\tCould not create certificate");
-      return PFalse;
+      return false;
     }
     certificate.Save(certificateFile);
-    key.Save(certificateFile, PTrue);
+    key.Save(certificateFile, true);
   }
 
   return sslContext->UseCertificate(certificateFile) &&
@@ -167,7 +167,7 @@ PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, 
   chan->WriteString(str);
   chan->Close();
 
-  return PFalse; 
+  return false; 
 }
 
 PString PSecureHTTPServiceProcess::CreateNonSSLMessage(const PString & url)
@@ -222,7 +222,7 @@ PBoolean HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
         line += (char)ch;
 
       if (!svc->OnDetectedNonSSLConnection(chan, line))
-        return PFalse;
+        return false;
     }
   }
 
@@ -230,7 +230,7 @@ PBoolean HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
   len = PMIN(len, preReadLen);
   memcpy(buf, preRead, len);
   preReadLen -= len;
-  return PTrue;
+  return true;
 }
 
 #endif //P_SSL

@@ -48,7 +48,7 @@ public:
 
   PBoolean Open(
     const PString &deviceName,
-    PBoolean startImmediate = PTrue
+    PBoolean startImmediate = true
   );
 
   PBoolean IsOpen();

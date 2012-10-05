@@ -85,13 +85,13 @@ void PSound::SetFormat(unsigned channels,
 
 PBoolean PSound::Load(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSound::Save(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -150,7 +150,7 @@ PBoolean PSoundChannel::Open(const PString & device,
 {
   Close();
   if (!ConvertOSError(os_handle = ::open(device, (dir == Player ? O_WRONLY : O_RDONLY) ,0)))
-     return PFalse;
+     return false;
 
   direction = dir;
   if (dir == Player) {
@@ -158,7 +158,7 @@ PBoolean PSoundChannel::Open(const PString & device,
 
     if (fcntl(os_handle, F_SETFL, flag) < 0) {
       PTRACE(1,"F_SETFL fcntl ERROR");
-      return PFalse;
+      return false;
     }
   }
 
@@ -199,7 +199,7 @@ PBoolean PSoundChannel::SetFormat(unsigned numChannels,
   }
   err=::ioctl(os_handle,AUDIO_SETINFO,&audio_info);	// The actual setting of the parameters
   if(err==EINVAL || err==EBUSY)
-     return PFalse;
+     return false;
 
   err = ::ioctl(os_handle, AUDIO_GETINFO, &audio_info);	// Let's recheck the configuration...
   if (direction == Player){
@@ -209,7 +209,7 @@ PBoolean PSoundChannel::SetFormat(unsigned numChannels,
     actualSampleRate = audio_info.record.sample_rate;
 //    PAssert(actualSampleRate==sampleRate && audio_info.record.precision==bitsPerSample && audio_info.record.encoding==AUDIO_ENCODING_LINEAR, PInvalidParameter);
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -228,15 +228,15 @@ PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
   err = ioctl(os_handle,AUDIO_SETINFO,&audio_info);	// The actual setting of the parameters
   if (err == EINVAL || err == EBUSY)
-    return PFalse;
+    return false;
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -247,9 +247,9 @@ PBoolean PSoundChannel::Write(const void * buf, PINDEX len)
 /* Implementation based on OSS PSoundChannel::Write. This works, but no difference on sound when compared to the basic implementation...
     while (!ConvertOSError(err=::write(os_handle, (void *)buf, len)))
       if (GetErrorCode() != Interrupted){
-	        return PFalse;
+	        return false;
 	}
-    return PTrue;
+    return true;
 */
 }
 
@@ -259,12 +259,12 @@ PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
   Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return PFalse;
+    return false;
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -325,7 +325,7 @@ PBoolean PSoundChannel::WaitForRecordBufferFull()
 
 PBoolean PSoundChannel::WaitForAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -336,13 +336,13 @@ PBoolean PSoundChannel::Abort()
 PBoolean PSoundChannel::SetVolume(unsigned newVolume)
 {
   cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 
 PBoolean  PSoundChannel::GetVolume(unsigned & volume)
 {
   cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 
 

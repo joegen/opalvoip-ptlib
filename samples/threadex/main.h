@@ -86,13 +86,13 @@ class LauncherThread : public PThread
 public:
   LauncherThread()
     : PThread(10000, NoAutoDeleteThread)
-    { iteration = 0; keepGoing = PTrue; }
+    { iteration = 0; keepGoing = true; }
   
   void Main();
     
   PINDEX GetIteration() { return iteration; }
 
-  virtual void Terminate() { keepGoing = PFalse; }
+  virtual void Terminate() { keepGoing = false; }
 
   PTimeInterval GetElapsedTime() { return PTime() - startTime; }
 

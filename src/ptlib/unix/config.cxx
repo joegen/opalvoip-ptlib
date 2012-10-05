@@ -82,7 +82,7 @@ class PXConfig : public PDictionary<PCaselessString, PStringToString>
     void SetDirty()
     {
       PTRACE_IF(4, !dirty, "PTLib\tSetting PXConfig dirty.");
-      dirty = PTrue;
+      dirty = true;
     }
 
   protected:
@@ -158,7 +158,7 @@ PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
 void PXConfigWriteThread::Main()
 {
   PTRACE(4, "PTLib\tConfig file cache write back thread started.");
-  while (!stop.Wait(30000))  // if stop.Wait() returns PTrue, we are shutting down
+  while (!stop.Wait(30000))  // if stop.Wait() returns true, we are shutting down
     PXConfigData()->WriteChangedInstances();   // check dictionary for items that need writing
 
   PXConfigData()->WriteChangedInstances();
@@ -177,10 +177,10 @@ PXConfig::PXConfig(const PString & key, const PFilePath & filename)
   AllowDeleteObjects();
 
   // we start off clean
-  dirty = PFalse;
+  dirty = false;
 
   // normally save on exit (except for environment configs)
-  canSave = PTrue;
+  canSave = true;
 
   PTRACE(4, "PTLib\tCreated PXConfig " << this);
 }
@@ -198,7 +198,7 @@ void PXConfig::Flush()
 
   if (canSave && dirty) {
     WriteToFile(m_filename);
-    dirty = PFalse;
+    dirty = false;
   }
 
   mutex.Signal();
@@ -213,7 +213,7 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
                                    PFileInfo::UserWrite |
                                    PFileInfo::UserRead)) {
     PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config directory");
-    return PFalse;
+    return false;
   }
 
   PTextFile file;
@@ -222,7 +222,7 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
 
   if (!file.IsOpen()) {
     PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file: " + file.GetErrorText());
-    return PFalse;
+    return false;
   }
 
   for (iterator it = begin(); it != end(); ++it) {
@@ -234,7 +234,7 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
 
     file << "[" << it->first << "]" << endl;
     for (PStringToString::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
-      PStringArray lines = it2->second.Tokenise('\n', PTrue);
+      PStringArray lines = it2->second.Tokenise('\n', true);
       // Preserve name/value pairs with no value, i.e. of the form "name="
       if (lines.IsEmpty())
 	file << it2->first << "=" << endl;
@@ -251,14 +251,14 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
   file.Close();
 
   if (file.GetFilePath() != filename) {
-    if (!file.Rename(file.GetFilePath(), filename.GetFileName(), PTrue)) {
+    if (!file.Rename(file.GetFilePath(), filename.GetFileName(), true)) {
       PProcess::PXShowSystemWarning(2001, "Cannot rename config file: " + file.GetErrorText());
-      return PFalse;
+      return false;
     }
   }
 
   PTRACE(4, "PTLib\tSaved config file: " << filename);
-  return PTrue;
+  return true;
 }
 
 
@@ -274,7 +274,7 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
   // attempt to open file
   PTextFile file;
   if (!file.Open(filename, PFile::ReadOnly))
-    return PFalse;
+    return false;
 
   PStringToString * currentSection = NULL;
 
@@ -314,7 +314,7 @@ PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
   
   // close the file and return
   file.Close();
-  return PTrue;
+  return true;
 }
 
 void PXConfig::ReadFromEnvironment (char **envp)
@@ -326,7 +326,7 @@ void PXConfig::ReadFromEnvironment (char **envp)
   SetAt("Options", currentSection);
 
   // can't save environment configs
-  canSave = PFalse;
+  canSave = false;
 
   if (envp == NULL)
     return;
@@ -348,7 +348,7 @@ static PBoolean LocateFile(const PString & baseName,
   // check the user's home directory first
   filename = readFilename = PProcess::Current().GetConfigurationFile();
   if (PFile::Exists(filename))
-    return PTrue;
+    return true;
 
   // otherwise check the system directory for a file to read,
   // and then create 

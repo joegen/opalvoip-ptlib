@@ -10,12 +10,12 @@ pthread_mutex_t& PSoundChannelCoreAudio::GetWriteMuteMutex(){
 }
 
 PBoolean& PSoundChannelCoreAudio::GetReadMute(){
-	static PBoolean isReadMute(PFalse);
+	static PBoolean isReadMute(false);
 	return isReadMute;
 }
 
 PBoolean& PSoundChannelCoreAudio::GetWriteMute(){
-	static PBoolean isWriteMute(PFalse);
+	static PBoolean isWriteMute(false);
 	return isWriteMute;
 }
 

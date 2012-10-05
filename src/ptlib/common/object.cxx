@@ -668,13 +668,13 @@ PBoolean PMemoryHeap::ValidateHeap(ostream * error)
     if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
       if (error != NULL)
         *error << "Underrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
-      return PFalse;
+      return false;
     }
   
     if (memcmp((char *)(obj+1)+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
       if (error != NULL)
         *error << "Overrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
-      return PFalse;
+      return false;
     }
 
     obj = obj->next;
@@ -684,12 +684,12 @@ PBoolean PMemoryHeap::ValidateHeap(ostream * error)
   if (!_CrtCheckMemory()) {
     if (error != NULL)
       *error << "Heap failed MSVCRT validation!" << endl;
-    return PFalse;
+    return false;
   }
 #endif
   if (error != NULL)
     *error << "Heap passed validation." << endl;
-  return PTrue;
+  return true;
 }
 
 
@@ -807,7 +807,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
         strm << "0x" << hex << obj->threadId << dec << ' ';
     }
 
-    strm << '\n' << hex << setfill('0') << PBYTEArray(data, std::min(MaxMemoryDumBytes, obj->size), PFalse)
+    strm << '\n' << hex << setfill('0') << PBYTEArray(data, std::min(MaxMemoryDumBytes, obj->size), false)
                  << dec << setfill(' ') << endl;
   }
 }
@@ -1078,9 +1078,9 @@ void PInt64__::ShiftRight(int bits)
 PBoolean PInt64::Lt(const PInt64 & v) const
 {
   if ((long)high < (long)v.high)
-    return PTrue;
+    return true;
   if ((long)high > (long)v.high)
-    return PFalse;
+    return false;
   if ((long)high < 0)
     return (long)low > (long)v.low;
   return (long)low < (long)v.low;
@@ -1090,9 +1090,9 @@ PBoolean PInt64::Lt(const PInt64 & v) const
 PBoolean PInt64::Gt(const PInt64 & v) const
 {
   if ((long)high > (long)v.high)
-    return PTrue;
+    return true;
   if ((long)high < (long)v.high)
-    return PFalse;
+    return false;
   if ((long)high < 0)
     return (long)low < (long)v.low;
   return (long)low > (long)v.low;
@@ -1102,9 +1102,9 @@ PBoolean PInt64::Gt(const PInt64 & v) const
 PBoolean PUInt64::Lt(const PUInt64 & v) const
 {
   if (high < v.high)
-    return PTrue;
+    return true;
   if (high > v.high)
-    return PFalse;
+    return false;
   return low < high;
 }
 
@@ -1112,9 +1112,9 @@ PBoolean PUInt64::Lt(const PUInt64 & v) const
 PBoolean PUInt64::Gt(const PUInt64 & v) const
 {
   if (high > v.high)
-    return PTrue;
+    return true;
   if (high < v.high)
-    return PFalse;
+    return false;
   return low > high;
 }
 

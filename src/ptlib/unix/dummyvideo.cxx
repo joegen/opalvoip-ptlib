@@ -45,43 +45,43 @@ PVideoInputDevice::PVideoInputDevice()
 
 PBoolean PVideoInputDevice::Open(const PString & devName, PBoolean startImmediate)
 {
-  return PFalse;    
+  return false;    
 }
 
 
 PBoolean PVideoInputDevice::IsOpen() 
 {
-  return PFalse;    
+  return false;    
 }
 
 
 PBoolean PVideoInputDevice::Close()
 {
-  return PFalse;    
+  return false;    
 }
 
 
 PBoolean PVideoInputDevice::Start()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::Stop()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::IsCapturing()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -93,7 +93,7 @@ int PVideoInputDevice::GetBrightness()
 
 PBoolean PVideoInputDevice::SetBrightness(unsigned newBrightness)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -105,7 +105,7 @@ int PVideoInputDevice::GetHue()
 
 PBoolean PVideoInputDevice::SetHue(unsigned newHue)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -117,14 +117,14 @@ int PVideoInputDevice::GetContrast()
 
 PBoolean PVideoInputDevice::SetContrast(unsigned newContrast)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::GetParameters (int *whiteness, int *brightness,
                                        int *colour, int *contrast, int *hue)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -136,19 +136,19 @@ int PVideoInputDevice::GetNumChannels()
 
 PBoolean PVideoInputDevice::SetChannel(int newChannel)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::SetColourFormat(const PString & newFormat)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::SetFrameRate(unsigned rate)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -157,13 +157,13 @@ PBoolean PVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -176,13 +176,13 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 
 PBoolean PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -194,12 +194,12 @@ PBoolean PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
                                                 unsigned height)
 {
 	// Assume the size is valid
-	return PTrue;
+	return true;
 }
 
 PBoolean PVideoInputDevice::TestAllFormats()
 {
-  return PTrue;
+  return true;
 }
     
 // End Of File ///////////////////////////////////////////////////////////////
