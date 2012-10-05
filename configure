@@ -629,6 +629,9 @@ HAS_PLUGINS
 HAS_EXCEPTIONS
 PTLIB_ODBC
 HAS_ODBC
+HAS_GSTREAMER
+GSTREAMER_LIBS
+GSTREAMER_CFLAGS
 HAS_VFW_CAPTURE
 PTLIB_VIDEO_CAPTURE
 HAS_VIDEO_CAPTURE
@@ -876,6 +879,7 @@ enable_shmvideo
 enable_sdl
 with_directx_includedir
 enable_vfw
+enable_gstreamer
 enable_memcheck
 enable_odbc
 with_odbc_dir
@@ -915,7 +919,9 @@ CPP
 LUA_CFLAGS
 LUA_LIBS
 SDL_CFLAGS
-SDL_LIBS'
+SDL_LIBS
+GSTREAMER_CFLAGS
+GSTREAMER_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1590,6 +1596,7 @@ Optional Features:
   --enable-shmvideo       enable shared memory video devices
   --disable-sdl           disable SDL support
   --enable-vfw            enable video for windows capture
+  --disable-lgstreamerua  disable GStreamer support
   --enable-memcheck       enable leak testing code (off by default)
   --disable-odbc          disable ODBC support
   --enable-exceptions     enable C++ exceptions
@@ -1645,6 +1652,10 @@ Some influential environment variables:
   LUA_LIBS    linker flags for LUA, overriding pkg-config
   SDL_CFLAGS  C compiler flags for SDL, overriding pkg-config
   SDL_LIBS    linker flags for SDL, overriding pkg-config
+  GSTREAMER_CFLAGS
+              C compiler flags for GSTREAMER, overriding pkg-config
+  GSTREAMER_LIBS
+              linker flags for GSTREAMER, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3255,6 +3266,7 @@ _ACEOF
 cat >>confdefs.h <<_ACEOF
 #define PTLIB_VERSION "$PTLIB_VERSION"
 _ACEOF
+
 
 
 
@@ -11854,6 +11866,101 @@ $as_echo "no" >&6; }
 
 
 
+
+# Check whether --enable-gstreamer was given.
+if test "${enable_gstreamer+set}" = set; then :
+  enableval=$enable_gstreamer; enable_gstreamer=$enableval
+else
+  enable_gstreamer=$default_lua
+
+fi
+
+
+if test "$enable_gstreamer" = "no" ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: GStreamer disabled" >&5
+$as_echo "$as_me: GStreamer disabled" >&6;}
+else
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER" >&5
+$as_echo_n "checking for GSTREAMER... " >&6; }
+
+if test -n "$GSTREAMER_CFLAGS"; then
+    pkg_cv_GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-app-0.10\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gstreamer-app-0.10") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GSTREAMER_CFLAGS=`$PKG_CONFIG --cflags "gstreamer-app-0.10" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GSTREAMER_LIBS"; then
+    pkg_cv_GSTREAMER_LIBS="$GSTREAMER_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gstreamer-app-0.10\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gstreamer-app-0.10") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GSTREAMER_LIBS=`$PKG_CONFIG --libs "gstreamer-app-0.10" 2>/dev/null`
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gstreamer-app-0.10" 2>&1`
+        else
+	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --print-errors "gstreamer-app-0.10" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$GSTREAMER_PKG_ERRORS" >&5
+
+	HAS_GSTREAMER=
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	HAS_GSTREAMER=
+else
+	GSTREAMER_CFLAGS=$pkg_cv_GSTREAMER_CFLAGS
+	GSTREAMER_LIBS=$pkg_cv_GSTREAMER_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+                      HAS_GSTREAMER=1
+
+$as_echo "#define P_GSTREAMER 1" >>confdefs.h
+
+                      STDCCFLAGS="$STDCCFLAGS $GSTREAMER_CFLAGS"
+                      ENDLDLIBS="$ENDLDLIBS $GSTREAMER_LIBS"
+
+fi
+fi
+
+
+
+
 # Check whether --enable-memcheck was given.
 if test "${enable_memcheck+set}" = set; then :
   enableval=$enable_memcheck;
@@ -12978,7 +13085,7 @@ ac_config_files="$ac_config_files ptlib_cfg.dxy"
 ac_config_files="$ac_config_files make/ptbuildopts.mak"
 
 
-ac_config_headers="$ac_config_headers include/ptbuildopts.h"
+ac_config_headers="$ac_config_headers $libdir/ptbuildopts.h:include/ptbuildopts.h.in"
 
 
 cat >confcache <<\_ACEOF
@@ -13690,7 +13797,7 @@ do
     "ptlib.pc") CONFIG_FILES="$CONFIG_FILES ptlib.pc" ;;
     "ptlib_cfg.dxy") CONFIG_FILES="$CONFIG_FILES ptlib_cfg.dxy" ;;
     "make/ptbuildopts.mak") CONFIG_FILES="$CONFIG_FILES make/ptbuildopts.mak" ;;
-    "include/ptbuildopts.h") CONFIG_HEADERS="$CONFIG_HEADERS include/ptbuildopts.h" ;;
+    "$libdir/ptbuildopts.h") CONFIG_HEADERS="$CONFIG_HEADERS $libdir/ptbuildopts.h:include/ptbuildopts.h.in" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
