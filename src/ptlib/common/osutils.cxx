@@ -340,8 +340,12 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
 void PTrace::SetStream(ostream * s)
 {
-  PTraceInfo::Instance().SetStream(s);
-  PTRACE(1, NULL, "PTLib", "Trace stream set to " << s);
+  PTraceInfo & info = PTraceInfo::Instance();
+  ostream * before = info.GetStream();
+  info.SetStream(s);
+  ostream * after = info.GetStream();
+  if (before != after)
+    Begin(UINT_MAX, NULL, 0) << "PTLib\tTrace stream set to " << after << " (" << s << ')' << End;
 }
 
 
