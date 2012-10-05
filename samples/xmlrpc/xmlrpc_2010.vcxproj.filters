@@ -9,10 +9,6 @@
       <UniqueIdentifier>{bb9c52f5-388c-4bcb-a3ca-f6f7ef495f6e}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{baf713c9-d096-4651-b217-9d151cb0ecca}</UniqueIdentifier>
-      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cxx">

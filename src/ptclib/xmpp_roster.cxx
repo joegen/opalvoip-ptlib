@@ -132,7 +132,7 @@ PXMLElement * XMPP::Roster::Item::AsXML(PXMLElement * parent) const
   if (parent == NULL)
     return NULL;
 
-  PXMLElement * item = parent->AddChild(new PXMLElement(parent, "item"));
+  PXMLElement * item = parent->AddElement("item");
   item->SetAttribute("jid", GetJID());
   item->SetAttribute("name", GetName());
 
@@ -159,8 +159,8 @@ PXMLElement * XMPP::Roster::Item::AsXML(PXMLElement * parent) const
     item->SetAttribute("subscrition", s);
 
   for (PStringSet::const_iterator it = m_Groups.begin(); it != m_Groups.end(); ++it) {
-    PXMLElement * group = item->AddChild(new PXMLElement(item, "group"));
-    group->AddChild(new PXMLData(group, *it));
+    PXMLElement * group = item->AddElement("group");
+    group->AddData(*it);
   }
 
   return item;
@@ -212,11 +212,11 @@ PBoolean XMPP::Roster::SetItem(Item * item, PBoolean localOnly)
       return false;
   }
 
-  PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
+  XMPP::IQ iq(XMPP::IQ::Set);
+  PXMLElement * query = iq.SetRootElement(XMPP::IQQueryTag());
   query->SetAttribute(XMPP::NamespaceTag(), "jabber:iq:roster");
   item->AsXML(query);
 
-  XMPP::IQ iq(XMPP::IQ::Set, query);
   return m_Handler->Write(iq);
 }
 
@@ -229,17 +229,16 @@ PBoolean XMPP::Roster::RemoveItem(const PString& jid, PBoolean localOnly)
     return false;
 
   if (localOnly) {
+    m_RosterChangedHandlers(*this, false);
     m_Items.Remove(item);
-    m_RosterChangedHandlers(*this, 0);
     return true;
   }
 
-  PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
+  XMPP::IQ iq(XMPP::IQ::Set);
+  PXMLElement * query = iq.SetRootElement(XMPP::IQQueryTag());
   query->SetAttribute(XMPP::NamespaceTag(), "jabber:iq:roster");
-  PXMLElement * _item = item->AsXML(query);
-  _item->SetAttribute("subscription", "remove");
+  item->AsXML(query)->SetAttribute("subscription", "remove");
 
-  XMPP::IQ iq(XMPP::IQ::Set, query);
   return m_Handler->Write(iq);
 }
 
@@ -292,9 +291,9 @@ void XMPP::Roster::Refresh(PBoolean sendPresence)
   if (m_Handler == NULL)
     return;
 
-  PXMLElement * query = new PXMLElement(0, XMPP::IQQueryTag());
+  XMPP::IQ iq(XMPP::IQ::Get);
+  PXMLElement * query = iq.SetRootElement(XMPP::IQQueryTag());
   query->SetAttribute(XMPP::NamespaceTag(), "jabber:iq:roster");
-  XMPP::IQ iq(XMPP::IQ::Get, query);
 
   m_Handler->Write(iq);
 
@@ -338,7 +337,7 @@ void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
 
   PINDEX i = 0;
   PXMLElement * item;
-  PBoolean doUpdate = false;
+  bool doUpdate = false;
 
   while ((item = query->GetElement("item", i++)) != 0) {
     if (item->GetAttribute("subscription") == "remove")

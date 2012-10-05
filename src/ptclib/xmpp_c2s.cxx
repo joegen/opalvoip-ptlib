@@ -214,13 +214,13 @@ PBoolean XMPP::C2S::StreamHandler::Discover(const PString& xmlns,
     return false;
   }
 
-  PXMLElement * query = new PXMLElement(NULL, XMPP::IQQueryTag());
+  XMPP::IQ * iq = new XMPP::IQ(XMPP::IQ::Get);
+  PXMLElement * query = iq->SetRootElement(XMPP::IQQueryTag());
   query->SetAttribute(XMPP::NamespaceTag(), xmlns);
 
   if (!node.IsEmpty())
     query->SetAttribute("node", node);
 
-  XMPP::IQ * iq = new XMPP::IQ(XMPP::IQ::Get, query);
   iq->SetTo(jid);
   iq->GetResponseHandlers().Add(responseHandler);
   
@@ -318,10 +318,8 @@ void XMPP::C2S::StreamHandler::OnOpen(XMPP::Stream& stream, INT extra)
     return;
   }
 
-  PXMLElement * root = parser->GetXMLTree();
-
-  if (root != NULL)
-    m_StreamID = root->GetAttribute("id");
+  if (!parser->IsParsing())
+    m_StreamID = parser->GetDocument().GetRootElement()->GetAttribute("id");
 
   BaseStreamHandler::OnOpen(stream, extra);
 
@@ -418,7 +416,7 @@ void XMPP::C2S::StreamHandler::OnSessionReleased()
 }
 
 
-void XMPP::C2S::StreamHandler::OnElement(PXML& pdu)
+void XMPP::C2S::StreamHandler::OnElement(PXMLElement & pdu)
 {
   switch (m_State)
   {
@@ -467,9 +465,9 @@ void XMPP::C2S::StreamHandler::OnElement(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleNullState(PXMLElement & pdu)
 {
-  if (pdu.GetRootElement()->GetName() != "stream:features")
+  if (pdu.GetName() != "stream:features")
   {
     Stop();
     return;
@@ -493,9 +491,8 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
   // We might have to negotiate the TLS first, but we set up the SASL phase now
 
 #if P_SASL
-  PXMLElement * mechList = pdu.GetRootElement()->GetElement("mechanisms");
-  if (!mechList || !m_SASL.Init(m_JID.GetServer(), ourMechSet))
-  {
+  PXMLElement * mechList = pdu.GetElement("mechanisms");
+  if (!mechList || !m_SASL.Init(m_JID.GetServer(), ourMechSet)) {
     // SASL initialisation failed, goodbye...
     Stop();
     return;
@@ -504,8 +501,7 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
   PXMLElement * mech;
   PINDEX i = 0;
 
-  while ((mech = mechList->GetElement("mechanism", i++)) != 0)
-  {
+  while ((mech = mechList->GetElement("mechanism", i++)) != 0) {
     if (ourMechSet.Contains(mech->GetData())) // Hit
       break;
   }
@@ -524,11 +520,9 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::HandleRegStartedState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleRegStartedState(PXMLElement & pdu)
 {
-  PXMLElement * elem = pdu.GetRootElement();
-
-  if (elem->GetName() != "iq" || elem->GetAttribute("type") != "result") {
+  if (pdu.GetName() != "iq" || pdu.GetAttribute("type") != "result") {
     Stop();
     return;
   }
@@ -538,20 +532,20 @@ void XMPP::C2S::StreamHandler::HandleRegStartedState(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::HandleTLSStartedState(PXML& /*pdu*/)
+void XMPP::C2S::StreamHandler::HandleTLSStartedState(PXMLElement & /*pdu*/)
 {
   PAssertAlways(PUnimplementedFunction);
 }
 
 
 #if P_SASL
-void XMPP::C2S::StreamHandler::HandleSASLStartedState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleSASLStartedState(PXMLElement & pdu)
 {
-  PString name = pdu.GetRootElement()->GetName();
+  PString name = pdu.GetName();
 
   if (name == "challenge")
   {
-    PString input = pdu.GetRootElement()->GetData();
+    PString input = pdu.GetData();
     PString output;
 
     if (m_SASL.Negotiate(input, output) == PSASLClient::Fail)
@@ -584,16 +578,14 @@ void XMPP::C2S::StreamHandler::HandleSASLStartedState(PXML& pdu)
 #endif
 
 
-void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXMLElement & pdu)
 {
-  PXMLElement * elem = pdu.GetRootElement();
-
-  if (elem->GetName() != "iq" || elem->GetAttribute("type") != "result") {
+  if (pdu.GetName() != "iq" || pdu.GetAttribute("type") != "result") {
     Stop();
     return;
   }
 
-  elem = elem->GetElement(XMPP::IQQueryTag());
+  PXMLElement * elem = pdu.GetElement(XMPP::IQQueryTag());
 
   if (elem == NULL) { // Authentication succeded
     SetState(XMPP::C2S::StreamHandler::Established);
@@ -607,7 +599,7 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
     PXMLElement * item;
     PBoolean uid = false, pwd = false, digest = false, res = false;
 
-    while ((item = (PXMLElement *)elem->GetElement(i++)) != NULL) {
+    while ((item = elem->GetElement(i++)) != NULL) {
       PString name = item->GetName();
 
       if (name *= "username")
@@ -651,9 +643,9 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::HandleStreamSentState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleStreamSentState(PXMLElement & pdu)
 {
-  if (pdu.GetRootElement()->GetName() != "stream:features")
+  if (pdu.GetName() != "stream:features")
   {
     Stop();
     return;
@@ -665,8 +657,8 @@ void XMPP::C2S::StreamHandler::HandleStreamSentState(PXML& pdu)
   </stream:features>
   */
 
-  m_HasBind = pdu.GetRootElement()->GetElement("bind") != NULL;
-  m_HasSession = pdu.GetRootElement()->GetElement("session") != NULL;
+  m_HasBind = pdu.GetElement("bind") != NULL;
+  m_HasSession = pdu.GetElement("session") != NULL;
 
   if (m_HasBind)
   {
@@ -692,19 +684,18 @@ void XMPP::C2S::StreamHandler::HandleStreamSentState(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::HandleBindSentState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleBindSentState(PXMLElement & pdu)
 {
   if (m_State == XMPP::C2S::StreamHandler::BindSent)
   {
-    PXMLElement * elem = pdu.GetRootElement();
-
-    if (elem->GetName() != "iq" || elem->GetAttribute("type") != "result")
+    if (pdu.GetName() != "iq" || pdu.GetAttribute("type") != "result")
     {
       Stop();
       return;
     }
 
-    if ((elem = elem->GetElement("bind")) == NULL || (elem = elem->GetElement("jid")) == NULL)
+    PXMLElement * elem;
+    if ((elem = pdu.GetElement("bind")) == NULL || (elem = elem->GetElement("jid")) == NULL)
     {
       Stop();
       return;
@@ -724,11 +715,9 @@ void XMPP::C2S::StreamHandler::HandleBindSentState(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::HandleSessionSentState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleSessionSentState(PXMLElement & pdu)
 {
-  PXMLElement * elem = pdu.GetRootElement();
-
-  if (elem->GetName() != "iq" || elem->GetAttribute("type") != "result")
+  if (pdu.GetName() != "iq" || pdu.GetAttribute("type") != "result")
   {
     Stop();
     return;
@@ -738,9 +727,9 @@ void XMPP::C2S::StreamHandler::HandleSessionSentState(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::HandleEstablishedState(PXML& pdu)
+void XMPP::C2S::StreamHandler::HandleEstablishedState(PXMLElement& pdu)
 {
-  PCaselessString name = pdu.GetRootElement()->GetName();
+  PCaselessString name = pdu.GetName();
 
   if (name == "stream:error") {
     OnError(pdu);
@@ -775,7 +764,7 @@ void XMPP::C2S::StreamHandler::HandleEstablishedState(PXML& pdu)
 }
 
 
-void XMPP::C2S::StreamHandler::OnError(PXML& pdu)
+void XMPP::C2S::StreamHandler::OnError(PXMLElement & pdu)
 {
   m_ErrorHandlers(pdu, 0);
 }
@@ -820,7 +809,7 @@ void XMPP::C2S::StreamHandler::OnIQ(XMPP::IQ& pdu)
     origMsg->GetResponseHandlers()(pdu, 0);
 
   // Let's see if someone is registered to handle this namespace
-  PXMLElement * query = (PXMLElement *)pdu.GetRootElement()->GetElement(0);
+  PXMLElement * query = pdu.GetRootElement()->GetElement(0);
   PString xmlns = query != NULL ? query->GetAttribute(XMPP::NamespaceTag()) : PString::Empty();
 
   if (!xmlns.IsEmpty() && m_IQNamespaceHandlers.Contains(xmlns))
