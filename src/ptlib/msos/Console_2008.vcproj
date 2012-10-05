@@ -7441,6 +7441,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\gstreamer.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\guid.cxx"
 					>
 				</File>
@@ -9401,6 +9405,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptclib\ftp.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptclib\gstreamer.h"
 					>
 				</File>
 				<File
