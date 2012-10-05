@@ -2221,7 +2221,7 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 
 dnl ########################################################################
 dnl output header file
-AC_CONFIG_HEADERS($LIBDIR/ptbuildopts.h:include/ptbuildopts.h.in)
+AC_CONFIG_HEADERS($libdir/ptbuildopts.h:include/ptbuildopts.h.in)
 
 AC_OUTPUT()
 
