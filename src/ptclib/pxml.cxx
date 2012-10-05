@@ -217,7 +217,7 @@ bool PXMLParserBase::Parse(istream & strm)
     strm.read(buffer, sizeof(buffer));
 
     if (!Parse(buffer, (size_t)strm.gcount(), strm.eof())) {
-      strm.setf(ios::badbit);
+      strm.setstate(ios::badbit);
       return false;
     }
   } while (m_parsing);
