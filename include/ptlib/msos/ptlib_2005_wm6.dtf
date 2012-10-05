@@ -143,6 +143,8 @@ EXPORTS
     ??$unchecked_uninitialized_fill_n@PAPAVPVideoFrameInfo@@IPAV1@V?$allocator@PAVPVideoFrameInfo@@@std@@@stdext@@YAXPAPAVPVideoFrameInfo@@IABQAV1@AAV?$allocator@PAVPVideoFrameInfo@@@std@@@Z @35706 NONAME
     ??$unchecked_uninitialized_fill_n@PAPAVRequestType@PTimerList@@IPAV12@V?$allocator@PAVRequestType@PTimerList@@@std@@@stdext@@YAXPAPAVRequestType@PTimerList@@IABQAV12@AAV?$allocator@PAVRequestType@PTimerList@@@std@@@Z @27281 NONAME
     ??$unchecked_uninitialized_fill_n@PAPAVWorkerThreadBase@PThreadPoolBase@@IPAV12@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@stdext@@YAXPAPAVWorkerThreadBase@PThreadPoolBase@@IABQAV12@AAV?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@Z @31569 NONAME
+    ??$unchecked_uninitialized_fill_n@PAUtMIXERCONTROLDETAILS_BOOLEAN@@IU1@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@stdext@@YAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@IABU1@AAV?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@Z @42815 NONAME
+    ??$unchecked_uninitialized_fill_n@PAUtMIXERCONTROLDETAILS_LISTTEXT@@IU1@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@stdext@@YAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@IABU1@AAV?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@Z @42816 NONAME
     ??$unchecked_uninitialized_fill_n@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@IV12@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@stdext@@YAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@IABV12@AAV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@Z @15678 NONAME
     ??$unchecked_uninitialized_fill_n@PAVPFilePath@@IV1@V?$allocator@VPFilePath@@@std@@@stdext@@YAXPAVPFilePath@@IABV1@AAV?$allocator@VPFilePath@@@std@@@Z @41025 NONAME
     ??$unique@V?$_Vector_iterator@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@VPVideoFrameInfoMatch@@@std@@YA?AV?$_Vector_iterator@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@0@V10@0VPVideoFrameInfoMatch@@@Z @35707 NONAME
@@ -157,6 +159,8 @@ EXPORTS
     ??$_Allocate@UPListInfo@@@std@@YAPAUPListInfo@@IPAU1@@Z @31573 NONAME
     ??$_Allocate@UPSortedListElement@@@std@@YAPAUPSortedListElement@@IPAU1@@Z @31574 NONAME
     ??$_Allocate@UPSortedListInfo@@@std@@YAPAUPSortedListInfo@@IPAU1@@Z @31575 NONAME
+    ??$_Allocate@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@YAPAUtMIXERCONTROLDETAILS_BOOLEAN@@IPAU1@@Z @42817 NONAME
+    ??$_Allocate@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@YAPAUtMIXERCONTROLDETAILS_LISTTEXT@@IPAU1@@Z @42818 NONAME
     ??$_Allocate@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@0@IPAU120@@Z @31576 NONAME
     ??$_Allocate@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@0@IPAU120@@Z @17443 NONAME
     ??$_Allocate@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@YAPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@0@IPAU120@@Z @17444 NONAME
@@ -259,6 +263,8 @@ EXPORTS
     ??$_Construct@PAVContext@PCLI@@PAV12@@std@@YAXPAPAVContext@PCLI@@ABQAV12@@Z @31597 NONAME
     ??$_Construct@PAVPInterfaceMonitorClient@@PAV1@@std@@YAXPAPAVPInterfaceMonitorClient@@ABQAV1@@Z @17452 NONAME
     ??$_Construct@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@U12@@std@@YAXPAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@0@ABU10@@Z @17453 NONAME
+    ??$_Construct@UtMIXERCONTROLDETAILS_BOOLEAN@@U1@@std@@YAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@ABU1@@Z @42819 NONAME
+    ??$_Construct@UtMIXERCONTROLDETAILS_LISTTEXT@@U1@@std@@YAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@ABU1@@Z @42820 NONAME
     ??$_Construct@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@std@@YAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@ABV10@@Z @15698 NONAME
     ??$_Construct@VPFilePath@@V1@@std@@YAXPAVPFilePath@@ABV1@@Z @41045 NONAME
     ??$_Construct@VPVideoFrameInfo@@V1@@std@@YAXPAVPVideoFrameInfo@@ABV1@@Z @31191 NONAME
@@ -310,6 +316,8 @@ EXPORTS
     ??$_Destroy@PAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@@std@@YAXPAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@0@@Z @33106 NONAME
     ??$_Destroy@PAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@@std@@YAXPAPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@0@@Z @31608 NONAME
     ??$_Destroy@PAVRequestType@PTimerList@@@std@@YAXPAPAVRequestType@PTimerList@@@Z @27319 NONAME
+    ??$_Destroy@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@YAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@@Z @42821 NONAME
+    ??$_Destroy@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@YAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@@Z @42822 NONAME
     ??$_Destroy@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@YAXPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@0@@Z @31609 NONAME
     ??$_Destroy@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@YAXPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@0@@Z @17458 NONAME
     ??$_Destroy@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@YAXPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@0@@Z @17459 NONAME
@@ -357,6 +365,10 @@ EXPORTS
     ??$_Destroy_range@PAVRequestType@PTimerList@@V?$allocator@PAVRequestType@PTimerList@@@std@@@std@@YAXPAPAVRequestType@PTimerList@@0AAV?$allocator@PAVRequestType@PTimerList@@@0@U_Scalar_ptr_iterator_tag@0@@Z @27330 NONAME
     ??$_Destroy_range@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@YAXPAPAVWorkerThreadBase@PThreadPoolBase@@0AAV?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@0@@Z @31618 NONAME
     ??$_Destroy_range@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@YAXPAPAVWorkerThreadBase@PThreadPoolBase@@0AAV?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@0@U_Scalar_ptr_iterator_tag@0@@Z @31619 NONAME
+    ??$_Destroy_range@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@YAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@0AAV?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@0@@Z @42823 NONAME
+    ??$_Destroy_range@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@YAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@0AAV?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z @42824 NONAME
+    ??$_Destroy_range@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@YAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@0AAV?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@0@@Z @42825 NONAME
+    ??$_Destroy_range@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@YAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@0AAV?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z @42826 NONAME
     ??$_Destroy_range@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@YAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@0AAV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@0@@Z @15714 NONAME
     ??$_Destroy_range@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@YAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@0AAV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z @15715 NONAME
     ??$_Destroy_range@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@YAXPAVPFilePath@@0AAV?$allocator@VPFilePath@@@0@@Z @41067 NONAME
@@ -429,6 +441,8 @@ EXPORTS
     ??$_Ptr_cat@PAPAVPVideoFrameInfo@@PAPAV1@@std@@YA?AU_Scalar_ptr_iterator_tag@0@AAPAPAVPVideoFrameInfo@@0@Z @35733 NONAME
     ??$_Ptr_cat@PAPAVRequestType@PTimerList@@PAPAV12@@std@@YA?AU_Scalar_ptr_iterator_tag@0@AAPAPAVRequestType@PTimerList@@0@Z @27353 NONAME
     ??$_Ptr_cat@PAPAVWorkerThreadBase@PThreadPoolBase@@PAPAV12@@std@@YA?AU_Scalar_ptr_iterator_tag@0@AAPAPAVWorkerThreadBase@PThreadPoolBase@@0@Z @31633 NONAME
+    ??$_Ptr_cat@PAUtMIXERCONTROLDETAILS_BOOLEAN@@PAU1@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAUtMIXERCONTROLDETAILS_BOOLEAN@@0@Z @42827 NONAME
+    ??$_Ptr_cat@PAUtMIXERCONTROLDETAILS_LISTTEXT@@PAU1@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAUtMIXERCONTROLDETAILS_LISTTEXT@@0@Z @42828 NONAME
     ??$_Ptr_cat@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAV12@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@0@Z @15721 NONAME
     ??$_Ptr_cat@PAVPFilePath@@PAV1@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAPAVPFilePath@@0@Z @41084 NONAME
     ??$_Ptr_cat@V?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@AAV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@AAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@@Z @15722 NONAME
@@ -462,6 +476,8 @@ EXPORTS
     ??$_Uninit_fill_n@PAPAVPVideoFrameInfo@@IPAV1@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@YAXPAPAVPVideoFrameInfo@@IABQAV1@AAV?$allocator@PAVPVideoFrameInfo@@@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @35744 NONAME
     ??$_Uninit_fill_n@PAPAVRequestType@PTimerList@@IPAV12@V?$allocator@PAVRequestType@PTimerList@@@std@@@std@@YAXPAPAVRequestType@PTimerList@@IABQAV12@AAV?$allocator@PAVRequestType@PTimerList@@@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @27367 NONAME
     ??$_Uninit_fill_n@PAPAVWorkerThreadBase@PThreadPoolBase@@IPAV12@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@YAXPAPAVWorkerThreadBase@PThreadPoolBase@@IABQAV12@AAV?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@0@U_Scalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @31638 NONAME
+    ??$_Uninit_fill_n@PAUtMIXERCONTROLDETAILS_BOOLEAN@@IU1@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@YAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@IABU1@AAV?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @42829 NONAME
+    ??$_Uninit_fill_n@PAUtMIXERCONTROLDETAILS_LISTTEXT@@IU1@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@YAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@IABU1@AAV?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @42830 NONAME
     ??$_Uninit_fill_n@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@IV12@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@YAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@IABV10@AAV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @15728 NONAME
     ??$_Uninit_fill_n@PAVPFilePath@@IV1@V?$allocator@VPFilePath@@@std@@@std@@YAXPAVPFilePath@@IABV1@AAV?$allocator@VPFilePath@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z @41091 NONAME
     ??$_Uninit_move@PAPAVPVideoFrameInfo@@PAPAV1@V?$allocator@PAVPVideoFrameInfo@@@std@@U_Undefined_move_tag@3@@std@@YAPAPAVPVideoFrameInfo@@PAPAV1@00AAV?$allocator@PAVPVideoFrameInfo@@@0@U_Undefined_move_tag@0@U_Range_checked_iterator_tag@0@@Z @35745 NONAME
@@ -547,6 +563,10 @@ EXPORTS
     ??0?$allocator@UPSortedListInfo@@@std@@QAA@XZ @31660 NONAME
     ??0?$allocator@UTimerExpiryInfo@PTimerList@@@std@@QAA@ABV01@@Z @31661 NONAME
     ??0?$allocator@UTimerExpiryInfo@PTimerList@@@std@@QAA@XZ @31662 NONAME
+    ??0?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAA@ABV01@@Z @42831 NONAME
+    ??0?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAA@XZ @42832 NONAME
+    ??0?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@QAA@ABV01@@Z @42833 NONAME
+    ??0?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@QAA@XZ @42834 NONAME
     ??0?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAA@ABV01@@Z @17530 NONAME
     ??0?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAA@XZ @17531 NONAME
     ??0?$allocator@VPContainerReference@@@std@@QAA@XZ @31663 NONAME
@@ -947,6 +967,8 @@ EXPORTS
     ??0?$reverse_iterator@V?$_Iterator@$00@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAA@V?$_Iterator@$00@?$list@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@1@@Z @25737 NONAME
     ??0?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@QAA@XZ @35769 NONAME
     ??0?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QAA@XZ @31720 NONAME
+    ??0?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QAA@I@Z @42835 NONAME
+    ??0?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@QAA@I@Z @42836 NONAME
     ??0?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAA@ABV01@@Z @17770 NONAME
     ??0?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAA@XZ @17771 NONAME
     ??0?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAA@XZ @41140 NONAME
@@ -1283,6 +1305,8 @@ EXPORTS
     ??0?$_Vector_iterator@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAA@PAVPFilePath@@PBU_Container_base@1@@Z @41221 NONAME
     ??0?$_Vector_val@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@IAA@V?$allocator@PAVPVideoFrameInfo@@@1@@Z @35773 NONAME
     ??0?$_Vector_val@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@IAA@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@1@@Z @31782 NONAME
+    ??0?$_Vector_val@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@IAA@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@1@@Z @42837 NONAME
+    ??0?$_Vector_val@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@IAA@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@1@@Z @42838 NONAME
     ??0?$_Vector_val@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAA@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@1@@Z @17978 NONAME
     ??0?$_Vector_val@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAA@V?$allocator@VPFilePath@@@1@@Z @41222 NONAME
     ??0ActiveTimerInfo@PTimerList@@QAA@PAVPTimer@@J@Z @31783 NONAME
@@ -2831,6 +2855,8 @@ EXPORTS
     ??1?$queue@VRequestType@PTimerList@@V?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@@std@@QAA@XZ @27714 NONAME
     ??1?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@QAA@XZ @35793 NONAME
     ??1?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QAA@XZ @31899 NONAME
+    ??1?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QAA@XZ @42839 NONAME
+    ??1?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@QAA@XZ @42840 NONAME
     ??1?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAA@XZ @19086 NONAME
     ??1?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAA@XZ @41325 NONAME
     ??1?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAA@XZ @31900 NONAME
@@ -4097,6 +4123,8 @@ EXPORTS
     ??A?$PSortedList@VPString@@@@QBAAAVPString@@H@Z @19941 NONAME
     ??A?$PStringDictionary@VPString@@@@QBAABVPString@@ABV1@@Z @19944 NONAME
     ??A?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QAAAAPAVWorkerThreadBase@PThreadPoolBase@@I@Z @32009 NONAME
+    ??A?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QAAAAUtMIXERCONTROLDETAILS_BOOLEAN@@I@Z @42841 NONAME
+    ??A?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@QAAAAUtMIXERCONTROLDETAILS_LISTTEXT@@I@Z @42842 NONAME
     ??A?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAAAAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@I@Z @41447 NONAME
     ??AAddress@PIPSocket@@QBAEH@Z @19948 NONAME
     ??APArgList@@QBA?AVPString@@H@Z @19949 NONAME
@@ -10361,6 +10389,8 @@ EXPORTS
     ?allocate@?$allocator@UPListInfo@@@std@@QAAPAUPListInfo@@I@Z @32353 NONAME
     ?allocate@?$allocator@UPSortedListElement@@@std@@QAAPAUPSortedListElement@@I@Z @32354 NONAME
     ?allocate@?$allocator@UPSortedListInfo@@@std@@QAAPAUPSortedListInfo@@I@Z @32355 NONAME
+    ?allocate@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAAPAUtMIXERCONTROLDETAILS_BOOLEAN@@I@Z @42843 NONAME
+    ?allocate@?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@QAAPAUtMIXERCONTROLDETAILS_LISTTEXT@@I@Z @42844 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAAPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@I@Z @32356 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAAPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@I@Z @20779 NONAME
     ?allocate@?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAAPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@I@Z @20780 NONAME
@@ -11902,6 +11932,8 @@ EXPORTS
     ?construct@?$allocator@PAVContext@PCLI@@@std@@QAAXPAPAVContext@PCLI@@ABQAV34@@Z @32461 NONAME
     ?construct@?$allocator@PAVPInterfaceMonitorClient@@@std@@QAAXPAPAVPInterfaceMonitorClient@@ABQAV3@@Z @21625 NONAME
     ?construct@?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@QAAXPAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@2@ABU32@@Z @21626 NONAME
+    ?construct@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@ABU3@@Z @42845 NONAME
+    ?construct@?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@QAAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@ABU3@@Z @42846 NONAME
     ?construct@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@ABV32@@Z @21627 NONAME
     ?construct@?$allocator@VPFilePath@@@std@@QAAXPAVPFilePath@@ABV3@@Z @42179 NONAME
     ?construct@?$allocator@VPVideoFrameInfo@@@std@@QAAXPAVPVideoFrameInfo@@ABV3@@Z @31419 NONAME
@@ -12314,6 +12346,8 @@ EXPORTS
     ?deallocate@?$allocator@UPListInfo@@@std@@QAAXPAUPListInfo@@I@Z @32494 NONAME
     ?deallocate@?$allocator@UPSortedListElement@@@std@@QAAXPAUPSortedListElement@@I@Z @32495 NONAME
     ?deallocate@?$allocator@UPSortedListInfo@@@std@@QAAXPAUPSortedListInfo@@I@Z @32496 NONAME
+    ?deallocate@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@I@Z @42847 NONAME
+    ?deallocate@?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@QAAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@I@Z @42848 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAAXPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@I@Z @32497 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAAXPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@I@Z @21864 NONAME
     ?deallocate@?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAAXPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@I@Z @21865 NONAME
@@ -12480,6 +12514,8 @@ EXPORTS
     ?destroy@?$allocator@PAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@@std@@QAAXPAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@2@@Z @33716 NONAME
     ?destroy@?$allocator@PAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@@std@@QAAXPAPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@@Z @32520 NONAME
     ?destroy@?$allocator@PAVRequestType@PTimerList@@@std@@QAAXPAPAVRequestType@PTimerList@@@Z @29119 NONAME
+    ?destroy@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@@Z @42849 NONAME
+    ?destroy@?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@QAAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@@Z @42850 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAAXPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@@Z @32521 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@std@@@std@@QAAXPAU_Node@?$_List_nod@PAVPInterfaceMonitorClient@@V?$allocator@PAVPInterfaceMonitorClient@@@std@@@2@@Z @21967 NONAME
     ?destroy@?$allocator@U_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAAXPAU_Node@?$_List_nod@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@2@@Z @21968 NONAME
@@ -13989,6 +14025,8 @@ EXPORTS
     ?GetMonth@PTime@@QBA?AW4Months@1@XZ @22926 NONAME
     ?GetMonthName@PTime@@SA?AVPString@@W4Months@1@W4NameType@1@@Z @11719 NONAME
     ?GetMultipartFormInfo@PHTTPConnectionInfo@@QBAABVPMultiPartList@@XZ @32629 NONAME
+    ?GetMute@PSoundChannel@@UAA_NAA_N@Z @42851 NONAME
+    ?GetMute@PSoundChannelWin32@@UAA_NAA_N@Z @42852 NONAME
     ?GetMutex@PXML@@QAAAAVPCriticalSection@@XZ @40603 NONAME
     ?GetName@InterfaceEntry@PIPSocket@@QBAABVPString@@XZ @22928 NONAME
     ?GetName@Item@Roster@XMPP@@QBAABVPString@@XZ @40604 NONAME
@@ -15408,6 +15446,8 @@ EXPORTS
     ?max_size@?$allocator@U?$pair@QAVPSocket@@PAVContext@PCLI@@@std@@@std@@QBAIXZ @32716 NONAME
     ?max_size@?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@QBAIXZ @23906 NONAME
     ?max_size@?$allocator@UTimerExpiryInfo@PTimerList@@@std@@QBAIXZ @32717 NONAME
+    ?max_size@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QBAIXZ @42853 NONAME
+    ?max_size@?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@QBAIXZ @42854 NONAME
     ?max_size@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QBAIXZ @23907 NONAME
     ?max_size@?$allocator@VPFilePath@@@std@@QBAIXZ @42431 NONAME
     ?max_size@?$allocator@VPVideoFrameInfo@@@std@@QBAIXZ @31479 NONAME
@@ -15421,6 +15461,8 @@ EXPORTS
     ?max_size@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QBAIXZ @31480 NONAME
     ?max_size@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@QBAIXZ @35873 NONAME
     ?max_size@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBAIXZ @32719 NONAME
+    ?max_size@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QBAIXZ @42855 NONAME
+    ?max_size@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@QBAIXZ @42856 NONAME
     ?max_size@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBAIXZ @23917 NONAME
     ?max_size@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBAIXZ @42433 NONAME
     ?max_size@?$_Tree@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@QBAIXZ @42434 NONAME
@@ -16857,6 +16899,8 @@ EXPORTS
     ?SetMilliSeconds@PTimeInterval@@UAAX_J@Z @32814 NONAME
     ?SetMIME@PHTTPConnectionInfo@@QAAXABVPString@@0@Z @24756 NONAME
     ?SetMinSize@PContainer@@QAA_NH@Z @27078 NONAME
+    ?SetMute@PSoundChannel@@UAA_N_N@Z @42857 NONAME
+    ?SetMute@PSoundChannelWin32@@UAA_N_N@Z @42858 NONAME
     ?SetName@Item@Roster@XMPP@@UAAXABVPString@@_N@Z @40932 NONAME
     ?SetName@PHTTPCompositeField@@UAAXABVPString@@@Z @24758 NONAME
     ?SetName@PHTTPField@@UAAXABVPString@@@Z @24759 NONAME
@@ -17095,6 +17139,8 @@ EXPORTS
     ?size@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QBAIXZ @35912 NONAME
     ?size@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@QBAIXZ @35913 NONAME
     ?size@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBAIXZ @32834 NONAME
+    ?size@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QBAIXZ @42859 NONAME
+    ?size@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@QBAIXZ @42860 NONAME
     ?size@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBAIXZ @24917 NONAME
     ?size@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QBAIXZ @42546 NONAME
     ?size@?$_Tree@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@QBAIXZ @42547 NONAME
@@ -17608,6 +17654,8 @@ EXPORTS
     ?_access@@YAHPBDH@Z @25166 NONAME
     ?_Buy@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@IAA_NI@Z @35943 NONAME
     ?_Buy@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@IAA_NI@Z @32872 NONAME
+    ?_Buy@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@IAA_NI@Z @42861 NONAME
+    ?_Buy@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@IAA_NI@Z @42862 NONAME
     ?_Buy@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAA_NI@Z @25174 NONAME
     ?_Buy@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAA_NI@Z @42629 NONAME
     ?_Buynode@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@IAAPAU_Node@?$_List_nod@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@2@PAU342@0ABQAVContext@PCLI@@@Z @32873 NONAME
@@ -17719,6 +17767,8 @@ EXPORTS
     ?_Color@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@std@@KAAADPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@2@@Z @33933 NONAME
     ?_Color@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@KAAADPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@2@@Z @33934 NONAME
     ?_Color@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@KAAADPAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@@Z @32896 NONAME
+    ?_Construct_n@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QAAXIABUtMIXERCONTROLDETAILS_BOOLEAN@@@Z @42863 NONAME
+    ?_Construct_n@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@QAAXIABUtMIXERCONTROLDETAILS_LISTTEXT@@@Z @42864 NONAME
     ?_Copy@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@IAAXII@Z @25228 NONAME
     ?_Copy@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@std@@IAAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@2@PAU342@0@Z @25229 NONAME
     ?_Copy@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPNatMethod@@VPString@@@@@std@@@5@$0A@@std@@@std@@IAAXABV12@@Z @25230 NONAME
@@ -17761,6 +17811,8 @@ EXPORTS
     ?_Dec@const_iterator@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QAAXXZ @32903 NONAME
     ?_Destroy@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@IAAXPAPAVPVideoFrameInfo@@0@Z @35946 NONAME
     ?_Destroy@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@IAAXPAPAVWorkerThreadBase@PThreadPoolBase@@0@Z @32904 NONAME
+    ?_Destroy@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@IAAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@0@Z @42865 NONAME
+    ?_Destroy@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@IAAXPAUtMIXERCONTROLDETAILS_LISTTEXT@@0@Z @42866 NONAME
     ?_Destroy@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAAXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@0@Z @25259 NONAME
     ?_Destroy@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAAXPAVPFilePath@@0@Z @42654 NONAME
     ?_EEM_DS@?$deque@DV?$allocator@D@std@@@std@@2HB @42655 NONAME
@@ -18467,6 +18519,8 @@ EXPORTS
     ?_Tidy@?$numpunct@D@std@@AAAXXZ @25543 NONAME
     ?_Tidy@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@IAAXXZ @35960 NONAME
     ?_Tidy@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@IAAXXZ @33055 NONAME
+    ?_Tidy@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@IAAXXZ @42867 NONAME
+    ?_Tidy@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@IAAXXZ @42868 NONAME
     ?_Tidy@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAAXXZ @25549 NONAME
     ?_Tidy@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAAXXZ @42779 NONAME
     ?_Tidy@?$_Tree@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@IAAXXZ @42780 NONAME
@@ -18507,6 +18561,8 @@ EXPORTS
     ?_Ubound@?$_Tree@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@std@@IBAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@$0A@@std@@@2@ABVPString@@@Z @39224 NONAME
     ?_Ufill@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@IAAPAPAVPVideoFrameInfo@@PAPAV3@IABQAV3@@Z @35961 NONAME
     ?_Ufill@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@IAAPAPAVWorkerThreadBase@PThreadPoolBase@@PAPAV34@IABQAV34@@Z @33065 NONAME
+    ?_Ufill@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@IAAPAUtMIXERCONTROLDETAILS_BOOLEAN@@PAU3@IABU3@@Z @42869 NONAME
+    ?_Ufill@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@IAAPAUtMIXERCONTROLDETAILS_LISTTEXT@@PAU3@IABU3@@Z @42870 NONAME
     ?_Ufill@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@PAV32@IABV32@@Z @25580 NONAME
     ?_Ufill@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IAAPAVPFilePath@@PAV3@IABV3@@Z @42788 NONAME
     ?_ui64toa@@YAPAD_KPADH@Z @25582 NONAME
@@ -18516,6 +18572,8 @@ EXPORTS
     ?_Xlen@?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@KAXXZ @30154 NONAME
     ?_Xlen@?$vector@PAVPVideoFrameInfo@@V?$allocator@PAVPVideoFrameInfo@@@std@@@std@@KAXXZ @35962 NONAME
     ?_Xlen@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@KAXXZ @33066 NONAME
+    ?_Xlen@?$vector@UtMIXERCONTROLDETAILS_BOOLEAN@@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@KAXXZ @42871 NONAME
+    ?_Xlen@?$vector@UtMIXERCONTROLDETAILS_LISTTEXT@@V?$allocator@UtMIXERCONTROLDETAILS_LISTTEXT@@@std@@@std@@KAXXZ @42872 NONAME
     ?_Xlen@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@KAXXZ @16764 NONAME
     ?_Xlen@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@KAXXZ @42790 NONAME
     ?_Xsgetn_s@?$basic_streambuf@DU?$char_traits@D@std@@@std@@MAAHPADIH@Z @25585 NONAME
