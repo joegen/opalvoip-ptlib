@@ -89,7 +89,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 0, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 1, false, true)
 {
 }
 
@@ -344,6 +344,7 @@ void MergeSym::Main()
 
   if (added == 0 && removed == 0) {
     cout << "\nNo changes to symbols.\n";
+    PFile::Copy(def_filename, out_filename, true);
     return;
   }
 
