@@ -408,9 +408,9 @@ class PXMLElement : public PXMLObject
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLElement * GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const;
 
-    template <class T> T * GetElementAs(PINDEX idx = 0) const { return dynamic_cast<T *>(GetEement(idx)); }
-    template <class T> T * GetElementAs(const PCaselessString & name, PINDEX idx = 0) const { return dynamic_cast<T *>(GetEement(name, idx)); }
-    template <class T> T * GetElementAs(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const { return dynamic_cast<T *>(GetEement(name, attr, attrval)); }
+    template <class T> T * GetElementAs(PINDEX idx = 0) const { return dynamic_cast<T *>(GetElement(idx)); }
+    template <class T> T * GetElementAs(const PCaselessString & name, PINDEX idx = 0) const { return dynamic_cast<T *>(GetElement(name, idx)); }
+    template <class T> T * GetElementAs(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const { return dynamic_cast<T *>(GetElement(name, attr, attrval)); }
 
     PString GetData(bool trim = true) const;
     void SetData(const PString & data);
