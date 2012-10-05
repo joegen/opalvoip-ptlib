@@ -51,7 +51,7 @@ class PXMLRPCStructBase;
 
 class PXMLRPC : public PObject
 {
-  PCLASSINFO(PXMLRPC, PObject);
+    PCLASSINFO(PXMLRPC, PObject);
   public:
     enum {
       CannotCreateRequestXML          = 100,
@@ -83,15 +83,15 @@ class PXMLRPC : public PObject
       PXML::Options options = PXML::NoOptions
     );
 
-    void SetTimeout(const PTimeInterval & t) { timeout = t; }
+    void SetTimeout(const PTimeInterval & t) { m_timeout = t; }
 
     PBoolean MakeRequest(const PString & method);
     PBoolean MakeRequest(const PString & method,  PXMLRPCBlock & response);
     PBoolean MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
     PBoolean MakeRequest(const PString & method, const PXMLRPCStructBase & args, PXMLRPCStructBase & reply);
 
-    PString GetFaultText() const { return faultText; }
-    PINDEX  GetFaultCode() const { return faultCode; }
+    PString GetFaultText() const { return m_faultText; }
+    PINDEX  GetFaultCode() const { return m_faultCode; }
 
     static PBoolean    ISO8601ToPTime(const PString & iso8601, PTime & val, int tz = PTime::GMT);
     static PString PTimeToISO8601(const PTime & val);
@@ -99,10 +99,10 @@ class PXMLRPC : public PObject
   protected:
     PBoolean PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
 
-    PURL          url;
-    PINDEX        faultCode;
-    PString       faultText;
-    PTimeInterval timeout;
+    PURL          m_url;
+    PINDEX        m_faultCode;
+    PString       m_faultText;
+    PTimeInterval m_timeout;
     PXML::Options m_options;
 };
 
@@ -110,22 +110,20 @@ class PXMLRPC : public PObject
 
 class PXMLRPCBlock : public PXML
 {
-  PCLASSINFO(PXMLRPCBlock, PXML);
+    PCLASSINFO(PXMLRPCBlock, PXML);
   public:
     PXMLRPCBlock();
     PXMLRPCBlock(const PString & method);
     PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & structData);
-
-    PBoolean Load(const PString & str);
 
     PXMLElement * GetParams();
     PXMLElement * GetParam(PINDEX idx) const;
     PINDEX GetParamCount() const;
 
     // used when used as a response
-    PINDEX  GetFaultCode() const                     { return faultCode; }
-    PString GetFaultText() const                     { return faultText; }
-    void SetFault(PINDEX code, const PString & text) { faultCode = code; faultText = text; }
+    PINDEX  GetFaultCode() const                     { return m_faultCode; }
+    PString GetFaultText() const                     { return m_faultText; }
+    void SetFault(PINDEX code, const PString & text) { m_faultCode = code; m_faultText = text; }
     PBoolean ValidateResponse();
 
     // helper functions for getting parameters
@@ -142,7 +140,7 @@ class PXMLRPCBlock : public PXML
     PBoolean GetParam(PINDEX idx, PStringArray & result);
     PBoolean GetParam(PINDEX idx, PArray<PStringToString> & result);
 
-    // static functions for parsing values
+    // functions for parsing values
     PBoolean ParseScalar(PXMLElement * element, PString & type, PString & value);
     PBoolean ParseStruct(PXMLElement * element, PStringToString & structDict);
     PBoolean ParseStruct(PXMLElement * element, PXMLRPCStructBase & structData);
@@ -150,27 +148,28 @@ class PXMLRPCBlock : public PXML
     PBoolean ParseArray(PXMLElement * element, PArray<PStringToString> & array);
     PBoolean ParseArray(PXMLElement * element, PXMLRPCVariableBase & array);
 
-    // static functions for creating values
-    static PXMLElement * CreateValueElement(PXMLElement * element);
-    static PXMLElement * CreateScalar(const PString & type, const PString & scalar);
-    static PXMLElement * CreateMember(const PString & name, PXMLElement * value);
+    // functions for creating values
+    PXMLElement * CreateValueElement(PXMLElement * element);
+    PXMLElement * CreateScalar(const PString & type, const PString & scalar);
+    PXMLElement * CreateMember(const PString & name, PXMLElement * value);
 
-    static PXMLElement * CreateScalar(const PString & str);
-    static PXMLElement * CreateScalar(int value);
-    static PXMLElement * CreateScalar(double value);
-    static PXMLElement * CreateDateAndTime(const PTime & time);
-    static PXMLElement * CreateBinary(const PBYTEArray & data);
+    PXMLElement * CreateScalar(const PString & str);
+    PXMLElement * CreateScalar(int value);
+    PXMLElement * CreateScalar(double value);
+    PXMLElement * CreateDateAndTime(const PTime & time);
+    PXMLElement * CreateBinary(const PBYTEArray & data);
 
-    static PXMLElement * CreateStruct();
-    static PXMLElement * CreateStruct(const PStringToString & dict);
-    static PXMLElement * CreateStruct(const PStringToString & dict, const PString & typeStr);
-    static PXMLElement * CreateStruct(const PXMLRPCStructBase & structData);
+    PXMLElement * CreateStruct(PXMLElement * & data);
+    PXMLElement * CreateStruct(const PStringToString & dict);
+    PXMLElement * CreateStruct(const PStringToString & dict, const PString & typeStr);
+    PXMLElement * CreateStruct(const PXMLRPCStructBase & structData);
 
-    static PXMLElement * CreateArray(const PStringArray & array);
-    static PXMLElement * CreateArray(const PStringArray & array, const PString & typeStr);
-    static PXMLElement * CreateArray(const PStringArray & array, const PStringArray & types);
-    static PXMLElement * CreateArray(const PArray<PStringToString> & array);
-    static PXMLElement * CreateArray(const PXMLRPCVariableBase & array);
+    PXMLElement * CreateArray(PXMLElement * & data);
+    PXMLElement * CreateArray(const PStringArray & array);
+    PXMLElement * CreateArray(const PStringArray & array, const PString & typeStr);
+    PXMLElement * CreateArray(const PStringArray & array, const PStringArray & types);
+    PXMLElement * CreateArray(const PArray<PStringToString> & array);
+    PXMLElement * CreateArray(const PXMLRPCVariableBase & array);
 
     // helper functions for adding parameters
     void AddParam(PXMLElement * parm);
@@ -188,9 +187,9 @@ class PXMLRPCBlock : public PXML
     void AddArray(const PArray<PStringToString> & array);
 
   protected:
-    PXMLElement * params;
-    PString faultText;
-    PINDEX  faultCode;
+    PXMLElement * m_params;
+    PString       m_faultText;
+    PINDEX        m_faultCode;
 };
 
 
@@ -202,8 +201,8 @@ class PXMLRPCVariableBase : public PObject {
     PXMLRPCVariableBase(const char * name, const char * type = NULL);
 
   public:
-    const char * GetName() const { return name; }
-    const char * GetType() const { return type; }
+    const char * GetName() const { return m_name; }
+    const char * GetType() const { return m_type; }
 
     virtual void Copy(const PXMLRPCVariableBase & other) = 0;
     virtual PString ToString(PINDEX i) const;
@@ -217,8 +216,8 @@ class PXMLRPCVariableBase : public PObject {
     void FromBase64(const PString & str, PAbstractArray & data);
 
   protected:
-    const char * name;
-    const char * type;
+    const char * m_name;
+    const char * m_type;
 
   private:
     PXMLRPCVariableBase(const PXMLRPCVariableBase &) : PObject() { }
@@ -239,7 +238,7 @@ class PXMLRPCArrayBase : public PXMLRPCVariableBase {
     virtual PBoolean SetSize(PINDEX);
 
   protected:
-    PContainer & array;
+    PContainer & m_array;
 };
 
 
@@ -257,7 +256,7 @@ class PXMLRPCArrayObjectsBase : public PXMLRPCArrayBase {
     virtual PObject * CreateObject() const = 0;
 
   protected:
-    PArrayObjects & array;
+    PArrayObjects & m_array;
 };
 
 
@@ -320,7 +319,7 @@ class PXMLRPCStructBase : public PObject {
     private: struct PXMLRPCVar_##variable : public par { \
       PXMLRPCVar_##variable() \
         : par(((base &)base::GetInitialiser()).variable, #variable, xmltype), \
-          instance((arraytype &)array) \
+          instance((arraytype &)m_array) \
         { } \
       extras \
       arraytype & instance; \

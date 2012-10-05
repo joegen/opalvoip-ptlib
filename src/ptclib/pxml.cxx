@@ -57,223 +57,322 @@
 #endif
 
 
+#define MY_CONTEXT ((XML_Parser)m_context)
+
+
 ////////////////////////////////////////////////////
 
 static void PXML_StartElement(void * userData, const char * name, const char ** attrs)
 {
-  ((PXMLParser *)userData)->StartElement(name, attrs);
+  ((PXMLParserBase *)userData)->StartElement(name, attrs);
 }
+
 
 static void PXML_EndElement(void * userData, const char * name)
 {
-  ((PXMLParser *)userData)->EndElement(name);
+  ((PXMLParserBase *)userData)->EndElement(name);
 }
+
 
 static void PXML_CharacterDataHandler(void * userData, const char * data, int len)
 {
-  ((PXMLParser *)userData)->AddCharacterData(data, len);
+  ((PXMLParserBase *)userData)->AddCharacterData(data, len);
 }
+
 
 static void PXML_XmlDeclHandler(void * userData, const char * version, const char * encoding, int standalone)
 {
-  ((PXMLParser *)userData)->XmlDecl(version, encoding, standalone);
+  ((PXMLParserBase *)userData)->XmlDecl(version, encoding, standalone);
 }
 
+
 static void PXML_StartDocTypeDecl(void * userData,
-                const char * docTypeName,
-                const char * sysid,
-                const char * pubid,
-                    int hasInternalSubSet)
+                                  const char * docTypeName,
+                                  const char * sysid,
+                                  const char * pubid,
+                                  int hasInternalSubSet)
 {
-  ((PXMLParser *)userData)->StartDocTypeDecl(docTypeName, sysid, pubid, hasInternalSubSet);
+  ((PXMLParserBase *)userData)->StartDocTypeDecl(docTypeName, sysid, pubid, hasInternalSubSet);
 }
+
 
 static void PXML_EndDocTypeDecl(void * userData)
 {
-  ((PXMLParser *)userData)->EndDocTypeDecl();
+  ((PXMLParserBase *)userData)->EndDocTypeDecl();
 }
 
-static void PXML_StartNamespaceDeclHandler(void *userData,
-                                 const XML_Char *prefix,
-                                 const XML_Char *uri)
+
+static void PXML_StartNamespaceDeclHandler(void *userData, const XML_Char *prefix, const XML_Char *uri)
 {
-  ((PXMLParser *)userData)->StartNamespaceDeclHandler(prefix, uri);
+  ((PXMLParserBase *)userData)->StartNamespaceDeclHandler(prefix, uri);
 }
+
 
 static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
 {
-  ((PXMLParser *)userData)->EndNamespaceDeclHandler(prefix);
+  ((PXMLParserBase *)userData)->EndNamespaceDeclHandler(prefix);
 }
 
-PXMLParser::PXMLParser(Options options)
-  : PXMLBase(options)
-  , m_parsing(true)
+
+PXMLParserBase::PXMLParserBase(bool withNS)
+  : m_parsing(true)
+  , m_total(0)
+  , m_consumed(0)
+  , m_percent(0)
+  , m_userAborted(false)
 {
-  if ((options & WithNS) != 0)
-    expat = XML_ParserCreateNS(NULL, '|');
+  if (withNS)
+    m_context = XML_ParserCreateNS(NULL, '|');
   else
-    expat = XML_ParserCreate(NULL);
+    m_context = XML_ParserCreate(NULL);
 
-  XML_SetUserData((XML_Parser)expat, this);
+  XML_SetUserData(MY_CONTEXT, this);
 
-  XML_SetElementHandler      ((XML_Parser)expat, PXML_StartElement, PXML_EndElement);
-  XML_SetCharacterDataHandler((XML_Parser)expat, PXML_CharacterDataHandler);
-  XML_SetXmlDeclHandler      ((XML_Parser)expat, PXML_XmlDeclHandler);
-  XML_SetDoctypeDeclHandler  ((XML_Parser)expat, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
-  XML_SetNamespaceDeclHandler((XML_Parser)expat, PXML_StartNamespaceDeclHandler, PXML_EndNamespaceDeclHandler);
-
-  rootElement = NULL;
-  currentElement = NULL;
-  lastElement    = NULL;
+  XML_SetElementHandler      (MY_CONTEXT, PXML_StartElement, PXML_EndElement);
+  XML_SetCharacterDataHandler(MY_CONTEXT, PXML_CharacterDataHandler);
+  XML_SetXmlDeclHandler      (MY_CONTEXT, PXML_XmlDeclHandler);
+  XML_SetDoctypeDeclHandler  (MY_CONTEXT, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
+  XML_SetNamespaceDeclHandler(MY_CONTEXT, PXML_StartNamespaceDeclHandler, PXML_EndNamespaceDeclHandler);
 }
 
-PXMLParser::~PXMLParser()
+
+PXMLParserBase::~PXMLParserBase()
 {
-  XML_ParserFree((XML_Parser)expat);
+  XML_ParserFree(MY_CONTEXT);
 }
 
-PXMLElement * PXMLParser::GetXMLTree() const
-{ 
-  return m_parsing ? NULL : rootElement; 
-}
 
-PXMLElement * PXMLParser::SetXMLTree(PXMLElement * newRoot)
-{ 
-  PXMLElement * oldRoot = rootElement;
-  rootElement = newRoot;
-  m_parsing = false;
-  return oldRoot;
-}
-
-bool PXMLParser::Parse(const char * data, int dataLen, bool final)
+bool PXMLParserBase::Parse(const char * data, size_t dataLen, bool final)
 {
-  return XML_Parse((XML_Parser)expat, data, dataLen, final) != 0;  
+  if (m_total != 0) {
+    if (final)
+      m_consumed = m_total;
+    else
+      m_consumed += dataLen;
+
+    unsigned newPercent = (unsigned)(m_consumed*100LL/m_total);
+    if (m_percent != newPercent) {
+      m_percent = newPercent;
+      if (!Progress()) {
+        m_userAborted = true;
+        return false;
+      }
+    }
+  }
+
+  return XML_Parse(MY_CONTEXT, data, dataLen, final) != 0;  
 }
 
-void PXMLParser::GetErrorInfo(PString & errorString, unsigned & errorCol, unsigned & errorLine)
+
+void PXMLParserBase::StartDocTypeDecl(const char *, const char *, const char *, int)
 {
-  XML_Error err = XML_GetErrorCode((XML_Parser)expat);
-  errorString = PString(XML_ErrorString(err));
-  errorCol    = XML_GetCurrentColumnNumber((XML_Parser)expat);
-  errorLine   = XML_GetCurrentLineNumber((XML_Parser)expat);
 }
+
+
+void PXMLParserBase::EndDocTypeDecl()
+{
+}
+
+
+void PXMLParserBase::XmlDecl(const char *, const char *, int)
+{
+}
+
+
+void PXMLParserBase::StartNamespaceDeclHandler(const char *, const char *)
+{
+}
+
+
+void PXMLParserBase::EndNamespaceDeclHandler(const char *)
+{
+}
+
+
+void PXMLParserBase::GetFilePosition(unsigned & col, unsigned & line) const
+{
+  col = XML_GetCurrentColumnNumber(MY_CONTEXT);
+  line = XML_GetCurrentLineNumber(MY_CONTEXT);
+}
+
+
+void PXMLParserBase::GetErrorInfo(PString & errorString, unsigned & errorCol, unsigned & errorLine) const
+{
+  GetFilePosition(errorCol, errorLine);
+
+  if (m_userAborted)
+    errorString = "User aborted parsing";
+  else
+    errorString = XML_ErrorString(XML_GetErrorCode(MY_CONTEXT));
+}
+
+
+bool PXMLParserBase::Parse(istream & strm)
+{
+  do {
+    if (!strm.good())
+      return false;
+
+    char buffer[10000];
+    strm.read(buffer, sizeof(buffer));
+
+    if (!Parse(buffer, (size_t)strm.gcount(), strm.eof())) {
+      strm.setf(ios::badbit);
+      return false;
+    }
+  } while (m_parsing);
+
+  return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////
+
+PXMLParser::PXMLParser(PXML & doc, Options options, off_t progressTotal)
+  : PXMLBase(options)
+  , PXMLParserBase(options & WithNS)
+  , m_document(doc)
+  , m_currentElement(NULL)
+  , m_lastData(NULL)
+{
+  m_total = progressTotal;
+}
+
+
+void PXMLParser::XmlDecl(const char * version, const char * encoding, int standAlone)
+{
+  m_document.m_version    = version;
+  m_document.m_encoding   = encoding;
+  m_document.m_standAlone = (StandAloneType)standAlone;
+}
+
+
+bool PXMLParser::Progress()
+{
+  return m_document.OnLoadProgress(m_percent);
+}
+
+
+void PXMLParser::StartDocTypeDecl(const char * docType,
+                                  const char * sysId,
+                                  const char * pubId,
+                                  int /*hasInternalSubSet*/)
+{
+  m_document.m_docType = docType;
+  m_document.m_dtdURI = sysId;
+  m_document.m_publicId = pubId;
+}
+
+
+void PXMLParser::StartNamespaceDeclHandler(const char * prefix, const char * uri)
+{
+  m_nameSpaces.SetAt(prefix, uri);
+}
+
 
 void PXMLParser::StartElement(const char * name, const char **attrs)
 {
-  PXMLElement * newElement = new PXMLElement(currentElement, name);
-  if (currentElement != NULL) {
-    currentElement->AddSubObject(newElement, false);
-    newElement->SetFilePosition(XML_GetCurrentColumnNumber((XML_Parser)expat) , XML_GetCurrentLineNumber((XML_Parser)expat));
+  PXMLElement * newElement;
+  if (m_currentElement == NULL) {
+    PAssert(m_document.m_rootElement == NULL, PLogicError);
+    newElement = m_document.m_rootElement = m_document.CreateRootElement(name);
+    PAssert(newElement != NULL, PLogicError);
+  }
+  else {
+    newElement = m_currentElement->CreateElement(name);
+    if (newElement == NULL)
+      return;
+    m_currentElement->AddSubObject(newElement, false);
   }
 
+  unsigned col,line;
+  GetFilePosition(col, line);
+  newElement->SetFilePosition(col, line);
+
   while (attrs[0] != NULL) {
-    newElement->SetAttribute(PString(attrs[0]), PString(attrs[1]));
+    newElement->SetAttribute(attrs[0], attrs[1]);
     attrs += 2;
   }
 
-  currentElement = newElement;
-  lastElement    = NULL;
+  m_currentElement = newElement;
+  m_lastData = NULL;
 
-  if (rootElement == NULL) {
-    rootElement = currentElement;
-    m_parsing = true;
-  }
+  for (PStringToString::iterator it = m_nameSpaces.begin(); it != m_nameSpaces.end(); ++it) 
+    m_currentElement->AddNamespace(it->first, it->second);
 
-  for (PStringToString::iterator it = m_tempNamespaceList.begin(); it != m_tempNamespaceList.end(); ++it) 
-    currentElement->AddNamespace(it->first, it->second);
-
-  m_tempNamespaceList.RemoveAll();
+  m_nameSpaces.RemoveAll();
 }
 
-void PXMLParser::EndElement(const char * /*name*/)
+
+void PXMLParser::EndElement(const char * name)
 {
-  if (currentElement != rootElement)
-    currentElement = currentElement->GetParent();
+  if (m_currentElement == NULL || m_currentElement->GetName() != name)
+    return;
+
+  if (m_currentElement != m_document.m_rootElement)
+    m_currentElement = m_currentElement->GetParent();
   else {
-    currentElement = NULL;
+    m_currentElement = NULL;
     m_parsing = false;
   }
-  lastElement    = NULL;
+
+  m_lastData = NULL;
 }
+
 
 void PXMLParser::AddCharacterData(const char * data, int len)
 {
-  PString str(data, len);
+  if (m_lastData != NULL) {
+    m_lastData->SetString(m_lastData->GetString() + PString(data, len), false);
+    return;
+  }
 
-  if (lastElement != NULL) {
-    PAssert(!lastElement->IsElement(), "lastElement set by non-data element");
-    lastElement->SetString(lastElement->GetString() + str, false);
-  } else {
-    PXMLData * newElement = new PXMLData(currentElement, str);
-    if (currentElement != NULL)
-      currentElement->AddSubObject(newElement, false);
-    lastElement = newElement;
-  } 
-}
+  if (!(m_options & NoIgnoreWhiteSpace)) {
+    while (len > 0 && *data > 0 && isspace(*data)) {
+      ++data;
+      --len;
+    }
+  }
 
+  if (len <= 0)
+    return;
 
-void PXMLParser::XmlDecl(const char * _version, const char * _encoding, int standAlone)
-{
-  version    = _version;
-  encoding   = _encoding;
-  m_standAlone = (StandAloneType)standAlone;
-}
+  PXMLData * newData = m_currentElement->AddData(PString(data, len));
+  if (newData == NULL)
+    return;
 
-void PXMLParser::StartDocTypeDecl(const char * /*docTypeName*/,
-                                  const char * /*sysid*/,
-                                  const char * /*pubid*/,
-                                  int /*hasInternalSubSet*/)
-{
-}
-
-void PXMLParser::EndDocTypeDecl()
-{
-}
-
-void PXMLParser::StartNamespaceDeclHandler(const XML_Char * prefix, 
-                                           const XML_Char * uri)
-{
-  m_tempNamespaceList.SetAt(PString(prefix == NULL ? "" : prefix), uri);
-}
-
-void PXMLParser::EndNamespaceDeclHandler(const XML_Char * /*prefix*/)
-{
+  unsigned col,line;
+  GetFilePosition(col, line);
+  newData->SetFilePosition(col, line);
+  m_lastData = newData;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 PXML::PXML(Options options, const char * noIndentElementsParam)
   : PXMLBase(options)
-  , rootElement(NULL)
-  , loadFromFile(false)
-  , m_standAlone(UninitialisedStandAlone)
+  , m_rootElement(NULL)
   , m_errorLine(0)
   , m_errorColumn(0)
-  , noIndentElements(PString(noIndentElementsParam).Tokenise(' ', false))
+  , m_noIndentElements(PString(noIndentElementsParam).Tokenise(' ', false))
 {
+  if (m_options & PXML::FragmentOnly)
+    SetRootElement("");
 }
 
 
 PXML::PXML(const PXML & xml)
-  : PXMLBase(xml.m_options)
-  , loadFromFile(xml.loadFromFile)
-  , loadFilename(xml.loadFilename)
-  , version(xml.version)
-  , encoding(xml.encoding)
-  , m_standAlone(xml.m_standAlone)
+  : PXMLBase(xml)
+  , m_loadFilename(xml.m_loadFilename)
+  , m_rootElement(NULL)
   , m_errorLine(0)
   , m_errorColumn(0)
-  , noIndentElements(xml.noIndentElements)
+  , m_noIndentElements(xml.m_noIndentElements)
   , m_defaultNameSpace(xml.m_defaultNameSpace)
 {
-  PWaitAndSignal m(xml.rootMutex);
-  if (xml.rootElement != NULL)
-    rootElement = (PXMLElement *)xml.rootElement->Clone(NULL);
-  else
-    rootElement = NULL;
+  if (xml.m_rootElement != NULL)
+    m_rootElement = new PXMLRootElement(*this, *xml.m_rootElement);
 }
 
 
@@ -283,56 +382,43 @@ PXML::~PXML()
 }
 
 
-PXMLElement * PXML::SetRootElement(const PString & documentType)
-{
-  return SetRootElement(new PXMLElement(NULL, documentType));
+PCaselessString PXML::GetDocumentType() const
+{ 
+  return m_rootElement == NULL ? PString::Empty() : m_rootElement->GetName();
 }
 
-PXMLElement * PXML::SetRootElement(PXMLElement * element)
+
+PXMLElement * PXML::SetRootElement(const PString & documentType)
 {
-  PWaitAndSignal m(rootMutex);
+  return SetRootElement(CreateRootElement(documentType));
+}
 
-  if (rootElement != NULL)
-    delete rootElement;
 
-  rootElement = element;
+PXMLElement * PXML::SetRootElement(PXMLRootElement * root)
+{
+  delete m_rootElement;
+  m_rootElement = root;
   m_errorString.MakeEmpty();
   m_errorLine = m_errorColumn = 0;
 
-  return rootElement;
+  return m_rootElement;
 }
+
 
 bool PXML::IsDirty() const
 {
-  PWaitAndSignal m(rootMutex);
-
-  if (rootElement == NULL)
-    return false;
-
-  return rootElement->IsDirty();
+  return m_rootElement != NULL && m_rootElement->IsDirty();
 }
 
 
-PCaselessString PXML::GetDocumentType() const
-{ 
-  PWaitAndSignal m(rootMutex);
-
-  if (rootElement == NULL)
-    return PCaselessString();
-  return rootElement->GetName();
-}
-
-
-bool PXML::LoadFile(const PFilePath & fn, PXMLParser::Options options)
+bool PXML::LoadFile(const PFilePath & fn, PXML::Options options)
 {
   PTRACE(4, "XML\tLoading file " << fn);
 
-  PWaitAndSignal m(rootMutex);
+  RemoveAll();
 
   m_options = options;
-
-  loadFilename = fn;
-  loadFromFile = true;
+  m_loadFilename = fn;
 
   PFile file;
   if (!file.Open(fn, PFile::ReadOnly)) {
@@ -340,76 +426,56 @@ bool PXML::LoadFile(const PFilePath & fn, PXMLParser::Options options)
     return false;
   }
 
-  PString data= file.ReadString(file.GetLength());
-  if (data.IsEmpty()) {
-    m_errorString << "File read error " << file.GetErrorText();
+  PXMLParser parser(*this, m_options, file.GetLength());
+  if (!parser.Parse(file))
     return false;
-  }
 
-  return Load(data);
+  PTRACE(4, "XML\tRead XML <" << GetDocumentType() << '>');
+
+  return m_rootElement != NULL;
 }
 
 
-bool PXML::Load(const PString & data, PXMLParser::Options options)
+bool PXML::Load(const PString & data, PXML::Options options)
 {
+  RemoveAll();
+
   m_options = options;
+  m_loadFilename.MakeEmpty();
+
   m_errorString.MakeEmpty();
   m_errorLine = m_errorColumn = 0;
 
-  bool stat = false;
-  PXMLElement * loadingRootElement = NULL;
-
-  {
-    PXMLParser parser(options);
-    int done = 1;
-    stat = parser.Parse(data, data.GetLength(), done) != 0;
-  
-    if (!stat)
-      parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
-
-    version      = parser.GetVersion();
-    encoding     = parser.GetEncoding();
-    m_standAlone = parser.GetStandAlone();
-
-    loadingRootElement = parser.GetXMLTree();
-  }
-
-  if (!stat)
-    return false;
-
-  if (loadingRootElement == NULL) {
-    m_errorString << "Failed to create root node in XML!";
+  PXMLParser parser(*this, options, data.GetLength());
+  if (!parser.Parse(data, data.GetLength(), true)) {
+    parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
     return false;
   }
 
-  PWaitAndSignal m(rootMutex);
-  if (rootElement != NULL) {
-    delete rootElement;
-    rootElement = NULL;
-  }
-  rootElement = loadingRootElement;
-  PTRACE(4, "XML\tLoaded XML <" << rootElement->GetName() << '>');
+  if (!IsLoaded())
+    return false;
+
+  PTRACE(4, "XML\tLoaded XML <" << GetDocumentType() << '>');
 
   OnLoaded();
 
   return true;
 }
 
-bool PXML::Save(PXMLParser::Options options)
+
+bool PXML::Save(PXML::Options options)
 {
   m_options = options;
 
-  if (!loadFromFile || !IsDirty())
+  if (m_loadFilename.IsEmpty() || !IsDirty())
     return false;
 
-  return SaveFile(loadFilename);
+  return SaveFile(m_loadFilename);
 }
 
 
-bool PXML::SaveFile(const PFilePath & fn, PXMLParser::Options options)
+bool PXML::SaveFile(const PFilePath & fn, PXML::Options options)
 {
-  PWaitAndSignal m(rootMutex);
-
   PFile file;
   if (!file.Open(fn, PFile::WriteOnly)) 
     return false;
@@ -422,10 +488,8 @@ bool PXML::SaveFile(const PFilePath & fn, PXMLParser::Options options)
 }
 
 
-PString PXML::AsString(PXMLParser::Options options)
+PString PXML::AsString(PXML::Options options)
 {
-  PWaitAndSignal m(rootMutex);
-
   m_options = options;
 
   PStringStream strm;
@@ -436,51 +500,50 @@ PString PXML::AsString(PXMLParser::Options options)
 
 void PXML::RemoveAll()
 {
-  PWaitAndSignal m(rootMutex);
+  delete m_rootElement;
+  m_rootElement = NULL;
+}
 
-  if (rootElement != NULL) {
-    delete rootElement;
-    rootElement = NULL;
-  }
+
+PXMLElement * PXML::CreateElement(const PCaselessString & name, const char * data)
+{
+  return new PXMLElement(name, data);
+}
+
+
+PXMLRootElement * PXML::CreateRootElement(const PCaselessString & name)
+{
+  return new PXMLRootElement(*this, name);
 }
 
 
 PXMLElement * PXML::GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const
 {
-  return rootElement != NULL ? rootElement->GetElement(name, attr, attrval) : NULL;
+  return m_rootElement != NULL ? m_rootElement->GetElement(name, attr, attrval) : NULL;
 }
 
 
 PXMLElement * PXML::GetElement(const PCaselessString & name, PINDEX idx) const
 {
-  return rootElement != NULL ? rootElement->GetElement(name, idx) : NULL;
+  return m_rootElement != NULL ? m_rootElement->GetElement(name, idx) : NULL;
 }
 
 
 PXMLElement * PXML::GetElement(PINDEX idx) const
 {
-  return rootElement != NULL ? (PXMLElement *)rootElement->GetElement(idx) : NULL;
-}
-
-
-bool PXML::RemoveElement(PINDEX idx)
-{
-  return rootElement != NULL && rootElement->RemoveElement(idx);
+  return m_rootElement != NULL ? m_rootElement->GetElement(idx) : NULL;
 }
 
 
 PINDEX PXML::GetNumElements() const
 {
-  if (rootElement == NULL) 
-    return 0;
-  else 
-    return rootElement->GetSize();
+  return m_rootElement == NULL ? 0 : m_rootElement->GetSize();
 }
 
 
 PBoolean PXML::IsNoIndentElement(const PString & elementName) const
 {
-  return noIndentElements.GetValuesIndex(elementName) != P_MAX_INDEX;
+  return m_noIndentElements.GetValuesIndex(elementName) != P_MAX_INDEX;
 }
 
 
@@ -496,20 +559,20 @@ void PXML::PrintOn(ostream & strm) const
 {
 //<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
-  if ((m_options & PXMLParser::FragmentOnly) == 0) {
+  if (!(m_options & PXML::FragmentOnly)) {
     strm << "<?xml version=\"";
 
-    if (version.IsEmpty())
+    if (m_version.IsEmpty())
       strm << "1.0";
     else
-      strm << version;
+      strm << m_version;
 
     strm << "\" encoding=\"";
 
-    if (encoding.IsEmpty())
+    if (m_encoding.IsEmpty())
       strm << "UTF-8";
     else
-      strm << encoding;
+      strm << m_encoding;
 
     strm << "\"";
 
@@ -525,74 +588,36 @@ void PXML::PrintOn(ostream & strm) const
     }
 
     strm << "?>";
-    if ((m_options & PXMLParser::NewLineAfterElement) != 0)
+    if ((m_options & PXML::NewLineAfterElement) != 0)
       strm << '\n';
+
+    if (!m_docType.IsEmpty()) {
+      strm << "<!DOCTYPE " << m_docType;
+      if (m_publicId.IsEmpty())
+        strm << " PUBLIC";
+      else
+        strm << " \"" << m_publicId << '"';
+      if (!m_dtdURI.IsEmpty())
+        strm << " \"" << m_dtdURI << '"';
+      strm << '>' << endl;
+    }
   }
 
-  if (rootElement != NULL) {
-    if (!docType.IsEmpty())
-      strm << "<!DOCTYPE " << docType << '>' << endl;
-
-    rootElement->Output(strm, *this, 2);
-  }
+  if (m_rootElement != NULL)
+    m_rootElement->Output(strm, *this, 2);
 }
 
 
 void PXML::ReadFrom(istream & strm)
 {
-  rootMutex.Wait();
-  delete rootElement;
-  rootElement = NULL;
-  rootMutex.Signal();
+  delete m_rootElement;
+  m_rootElement = NULL;
 
-  PXMLParser parser(m_options);
-  while (strm.good()) {
-    PString line;
-    strm >> line;
+  PXMLParser parser(*this, m_options, 0);
+  if (!parser.Parse(strm))
+    return;
 
-    if (!parser.Parse(line, line.GetLength(), false)) {
-      parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
-      break;
-    }
-
-    if (parser.GetXMLTree() != NULL) {
-      rootMutex.Wait();
-
-      version            = parser.GetVersion();
-      encoding           = parser.GetEncoding();
-      m_standAlone       = parser.GetStandAlone();
-      rootElement        = parser.GetXMLTree();
-
-      rootMutex.Signal();
-
-      PTRACE(4, "XML\tRead XML <" << rootElement->GetName() << '>');
-      break;
-    }
-  }
-}
-
-
-PString PXML::CreateStartTag(const PString & text)
-{
-  return '<' + text + '>';
-}
-
-
-PString PXML::CreateEndTag(const PString & text)
-{
-  return "</" + text + '>';
-}
-
-
-PString PXML::CreateTagNoData(const PString & text)
-{
-  return '<' + text + "/>";
-}
-
-
-PString PXML::CreateTag(const PString & text, const PString & data)
-{
-  return CreateStartTag(text) + data + CreateEndTag(text);
+  PTRACE(4, "XML\tRead XML <" << GetDocumentType() << '>');
 }
 
 
@@ -603,17 +628,13 @@ bool PXML::Validate(const ValidationInfo * validator)
 
   m_errorString.MakeEmpty();
 
-  ValidationContext context;
-
-  bool s;
-  if (rootElement != NULL)
-    s = ValidateElements(context, rootElement, validator);
-  else {
-    m_errorString << "No root element";
-    s = false;
+  if (m_rootElement != NULL) {
+    ValidationContext context;
+    return ValidateElements(context, m_rootElement, validator);
   }
 
-  return s;
+  m_errorString << "No root element";
+  return false;
 }
 
 
@@ -627,8 +648,10 @@ bool PXML::ValidateElements(ValidationContext & context, PXMLElement * baseEleme
       return false;
     ++validator;
   }
+
   return true;
 }
+
 
 bool PXML::ValidateElement(ValidationContext & context, PXMLElement * baseElement, const ValidationInfo * validator)
 {
@@ -859,7 +882,7 @@ PXML_HTTP::PXML_HTTP(Options options, const char * noIndentElements)
 
 bool PXML_HTTP::LoadURL(const PURL & url)
 {
-  return LoadURL(url, PMaxTimeInterval, PXMLParser::NoOptions);
+  return LoadURL(url, PMaxTimeInterval, PXML::NoOptions);
 }
 
 
@@ -887,25 +910,25 @@ bool PXML_HTTP::LoadURL(const PURL & url, const PTimeInterval & timeout, Options
 bool PXML_HTTP::StartAutoReloadURL(const PURL & url, 
                                    const PTimeInterval & timeout, 
                                    const PTimeInterval & refreshTime,
-                                   PXMLParser::Options options)
+                                   PXML::Options options)
 {
   if (url.IsEmpty()) {
-    autoLoadError = "Cannot auto-load empty URL";
+    m_autoLoadError = "Cannot auto-load empty URL";
     return false;
   }
 
-  PWaitAndSignal m(autoLoadMutex);
-  autoLoadTimer.Stop();
+  PWaitAndSignal m(m_autoLoadMutex);
+  m_autoLoadTimer.Stop();
 
   SetOptions(options);
-  autoloadURL      = url;
-  autoLoadWaitTime = timeout;
-  autoLoadError.MakeEmpty();
-  autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout));
+  m_autoloadURL      = url;
+  m_autoLoadWaitTime = timeout;
+  m_autoLoadError.MakeEmpty();
+  m_autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout));
 
   bool stat = AutoLoadURL();
 
-  autoLoadTimer = refreshTime;
+  m_autoLoadTimer = refreshTime;
 
   return stat;
 }
@@ -919,9 +942,9 @@ void PXML_HTTP::AutoReloadTimeout(PTimer &, INT)
 
 void PXML_HTTP::AutoReloadThread(PThread &, INT)
 {
-  PWaitAndSignal m(autoLoadMutex);
+  PWaitAndSignal m(m_autoLoadMutex);
   OnAutoLoad(AutoLoadURL());
-  autoLoadTimer.Reset();
+  m_autoLoadTimer.Reset();
 }
 
 
@@ -931,21 +954,30 @@ void PXML_HTTP::OnAutoLoad(bool PTRACE_PARAM(ok))
 }
 
 
+PString PXML_HTTP::GetAutoReloadStatus() const
+{
+  PWaitAndSignal m(m_autoLoadMutex);
+  PString str = m_autoLoadError;
+  str.MakeEmpty();
+  return str;
+}
+
+
 bool PXML_HTTP::AutoLoadURL()
 {
-  bool stat = LoadURL(autoloadURL, autoLoadWaitTime);
+  bool stat = LoadURL(m_autoloadURL, m_autoLoadWaitTime);
   if (stat)
-    autoLoadError.MakeEmpty();
+    m_autoLoadError.MakeEmpty();
   else 
-    autoLoadError = GetErrorString() + psprintf(" at line %i, column %i", GetErrorLine(), GetErrorColumn());
+    m_autoLoadError = GetErrorString() + psprintf(" at line %i, column %i", GetErrorLine(), GetErrorColumn());
   return stat;
 }
 
 
 bool PXML_HTTP::StopAutoReloadURL()
 {
-  PWaitAndSignal m(autoLoadMutex);
-  autoLoadTimer.Stop();
+  PWaitAndSignal m(m_autoLoadMutex);
+  m_autoLoadTimer.Stop();
   return true;
 }
 
@@ -953,30 +985,50 @@ bool PXML_HTTP::StopAutoReloadURL()
 
 
 ///////////////////////////////////////////////////////
-//
+
+PXMLObject::PXMLObject()
+  : m_parent(NULL)
+  , m_dirty(false)
+  , m_lineNumber(1)
+  , m_column(1)
+{
+}
+
+
 void PXMLObject::SetDirty()
 {
-  dirty = true;
-  if (parent != NULL)
-    parent->SetDirty();
+  m_dirty = true;
+  if (m_parent != NULL)
+    m_parent->SetDirty();
 }
+
+
+bool PXMLObject::SetParent(PXMLElement * parent)
+{
+  if (!PAssert(m_parent == NULL, "XML object alread in another element"))
+    return false;
+
+  m_parent = PAssertNULL(parent);
+  return true;
+}
+
 
 PXMLObject * PXMLObject::GetNextObject() const
 {
-  if (parent == NULL)
+  if (m_parent == NULL)
     return NULL;
 
   // find our index in our parent's list
-  PINDEX idx = parent->FindObject(this);
+  PINDEX idx = m_parent->FindObject(this);
   if (idx == P_MAX_INDEX)
     return NULL;
 
   // get the next object
   ++idx;
-  if (idx >= parent->GetSize())
+  if (idx >= m_parent->GetSize())
     return NULL;
 
-  return (*parent).GetElement(idx);
+  return (*m_parent).GetElement(idx);
 }
 
 
@@ -990,68 +1042,75 @@ PString PXMLObject::AsString() const
 
 ///////////////////////////////////////////////////////
 
-PXMLData::PXMLData(PXMLElement * _parent, const PString & _value)
- : PXMLObject(_parent)
+PXMLData::PXMLData(const PString & value)
+ : m_value(value)
 {
-  value = _value;
 }
 
-PXMLData::PXMLData(PXMLElement * _parent, const char * data, int len)
- : PXMLObject(_parent)
+
+PXMLData::PXMLData(const char * data, int len)
+ : m_value(data, len)
 {
-  value = PString(data, len);
 }
+
 
 void PXMLData::Output(ostream & strm, const PXMLBase & xml, int indent) const
 {
-  int options = xml.GetOptions();
-  if (xml.IsNoIndentElement(parent->GetName()))
-    options &= ~PXMLParser::Indent;
+  PXML::Options options = xml.GetOptions();
+  if (xml.IsNoIndentElement(m_parent->GetName()))
+    options -= PXML::Indent;
 
-  if (options & PXMLParser::Indent)
+  if (options & PXML::Indent)
     strm << setw(indent-1) << " ";
 
-  strm << value;
+  strm << m_value;
 
-  if ((options & (PXMLParser::Indent|PXMLParser::NewLineAfterElement)) != 0)
+  if ((options & (PXML::Indent|PXML::NewLineAfterElement)) != 0)
     strm << endl;
 }
 
+
 void PXMLData::SetString(const PString & str, bool setDirty)
 {
-  value = str;
+  m_value = str;
   if (setDirty)
     SetDirty();
 }
 
-PXMLObject * PXMLData::Clone(PXMLElement * _parent) const
+
+PObject * PXMLData::Clone() const
 {
-  return new PXMLData(_parent, value);
+  return new PXMLData(m_value);
 }
+
 
 ///////////////////////////////////////////////////////
 
-PXMLElement::PXMLElement(PXMLElement * _parent, const char * _name)
- : PXMLObject(_parent)
+PXMLElement::PXMLElement(const char * name, const char * data)
+ : m_name(name)
 {
-  lineNumber = column = 1;
-  dirty = false;
-  if (_name != NULL)
-    name = _name;
+  if (data != NULL)
+    AddData(data);
 }
 
-PXMLElement::PXMLElement(PXMLElement * _parent, const PString & _name, const PString & data)
- : PXMLObject(_parent), name(_name)
+
+PXMLElement::PXMLElement(const PXMLElement & copy)
+  : m_name(copy.m_name)
+  , m_attributes(copy.m_attributes)
 {
-  lineNumber = column = 1;
-  dirty = false;
-  AddSubObject(new PXMLData(this, data));
+  m_attributes.MakeUnique();
+  m_dirty = copy.m_dirty;
+
+  for (PINDEX idx = 0; idx < m_subObjects.GetSize(); idx++)
+    AddSubObject(dynamic_cast<PXMLObject *>(m_subObjects[idx].Clone()), false);
 }
+
 
 PINDEX PXMLElement::FindObject(const PXMLObject * ptr) const
 {
-  return subObjects.GetObjectsIndex(ptr);
+  return m_subObjects.GetObjectsIndex(ptr);
 }
+
 
 bool PXMLElement::GetDefaultNamespace(PCaselessString & str) const
 {
@@ -1060,11 +1119,12 @@ bool PXMLElement::GetDefaultNamespace(PCaselessString & str) const
     return true;
   }
 
-  if (parent != NULL)
-    return parent->GetDefaultNamespace(str);
+  if (m_parent != NULL)
+    return m_parent->GetDefaultNamespace(str);
 
   return false;
 }
+
 
 bool PXMLElement::GetNamespace(const PCaselessString & prefix, PCaselessString & str) const
 {
@@ -1073,11 +1133,12 @@ bool PXMLElement::GetNamespace(const PCaselessString & prefix, PCaselessString &
     return true;
   }
 
-  if (parent != NULL)
-    return parent->GetNamespace(prefix, str);
+  if (m_parent != NULL)
+    return m_parent->GetNamespace(prefix, str);
 
   return false;
 }
+
 
 bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessString & uri) const
 {
@@ -1096,13 +1157,14 @@ bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessSt
     }
   }
 
-  if (parent != NULL)
-    return parent->GetNamespace(prefix, uri);
+  if (m_parent != NULL)
+    return m_parent->GetNamespace(prefix, uri);
 
   uri = prefix + ":";
 
   return false;
 }
+
 
 PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name_) const
 {
@@ -1119,71 +1181,84 @@ PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name_) con
   return name;
 }
 
-PXMLElement * PXMLElement::GetElement(const PCaselessString & name_, const PCaselessString & attr, const PString & attrval) const
+
+PXMLObject * PXMLElement::GetObject(PINDEX idx) const
 {
-  PCaselessString name(PrependNamespace(name_));
-  for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
-    if (subObjects[i].IsElement()) {
-      PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
-      if (name == subElement.GetName() && attrval == subElement.GetAttribute(attr))
-        return &subElement;
-    }
+  return idx < m_subObjects.GetSize() ? &m_subObjects[idx] : NULL;
+}
+
+
+PXMLElement * PXMLElement::GetElement(PINDEX index) const
+{
+  for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) {
+    PXMLElement * element = dynamic_cast<PXMLElement *>(m_subObjects.GetAt(i));
+    if (element != NULL && index-- == 0)
+      return element;
   }
   return NULL;
 }
 
 
-PXMLElement * PXMLElement::GetElement(const PCaselessString & name_, PINDEX index) const
+PXMLElement * PXMLElement::GetElement(const PCaselessString & name, PINDEX index) const
 {
-  PCaselessString name(PrependNamespace(name_));
-  for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
-    if (subObjects[i].IsElement()) {
-      PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
-      if (name == subElement.GetName()) {
-        if (index == 0)
-          return &subElement;
-        --index;
-      }
-    }
+  PCaselessString extendedName(PrependNamespace(name));
+  for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) {
+    PXMLElement * element = dynamic_cast<PXMLElement *>(m_subObjects.GetAt(i));
+    if (element != NULL && extendedName == element->GetName() && index-- == 0)
+      return element;
   }
   return NULL;
 }
 
 
-PXMLObject * PXMLElement::GetElement(PINDEX idx) const
+PXMLElement * PXMLElement::GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const
 {
-  return idx < subObjects.GetSize() ? &subObjects[idx] : NULL;
+  PCaselessString extendedName(PrependNamespace(name));
+  for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) {
+    PXMLElement * element = dynamic_cast<PXMLElement *>(m_subObjects.GetAt(i));
+    if (element != NULL && extendedName == element->GetName() && attrval == element->GetAttribute(attr))
+      return element;
+  }
+  return NULL;
 }
 
 
-bool PXMLElement::RemoveElement(PINDEX idx)
+bool PXMLElement::RemoveSubObject(PINDEX idx, bool dispose)
 {
-  if (idx >= subObjects.GetSize())
+  if (idx >= m_subObjects.GetSize())
     return false;
 
-  subObjects.RemoveAt(idx);
+  if (dispose)
+    m_subObjects.RemoveAt(idx);
+  else {
+    m_subObjects.DisallowDeleteObjects();
+    m_subObjects.RemoveAt(idx);
+    m_subObjects.AllowDeleteObjects();
+  }
   return true;
 }
 
 
 PString PXMLElement::GetAttribute(const PCaselessString & key) const
 {
-  return attributes(key);
+  return m_attributes(key);
 }
 
 void PXMLElement::SetAttribute(const PCaselessString & key,
                                const PString & value,
                                bool setDirty)
 {
-  attributes.SetAt(key, value);
+  m_attributes.SetAt(key, value);
   if (setDirty)
     SetDirty();
 }
 
+
 bool PXMLElement::HasAttribute(const PCaselessString & key) const
 {
-  return attributes.Contains(key);
+  return m_attributes.Contains(key);
 }
+
 
 void PXMLElement::PrintOn(ostream & strm) const
 {
@@ -1191,127 +1266,134 @@ void PXMLElement::PrintOn(ostream & strm) const
   Output(strm, xml, 0);
 }
 
+
 void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
 {
   int options = xml.GetOptions();
 
-  bool newLine = (options & (PXMLParser::Indent|PXMLParser::NewLineAfterElement)) != 0;
+  bool newLine = (options & (PXML::Indent|PXML::NewLineAfterElement)) != 0;
 
-  if ((options & PXMLParser::Indent) != 0)
+  if ((options & PXML::Indent) != 0)
     strm << setw(indent-1) << " ";
 
-  strm << '<' << name;
+  strm << '<' << m_name;
 
-  if (attributes.GetSize() > 0) {
-    for (PStringToString::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
+  if (m_attributes.GetSize() > 0) {
+    for (PStringToString::const_iterator it = m_attributes.begin(); it != m_attributes.end(); ++it)
       strm << ' ' << it->first << "=\"" << it->second << '"';
   }
 
   // this ensures empty elements use the shortened form
-  if (subObjects.GetSize() == 0) {
+  if (m_subObjects.IsEmpty()) {
     strm << "/>";
     if (newLine)
       strm << endl;
   }
   else {
-    bool indenting = (options & PXMLParser::Indent) != 0 && !xml.IsNoIndentElement(name);
+    bool indenting = (options & PXML::Indent) != 0 && !xml.IsNoIndentElement(m_name);
 
     strm << '>';
     if (indenting)
       strm << endl;
   
-    for (PINDEX i = 0; i < subObjects.GetSize(); i++) 
-      subObjects[i].Output(strm, xml, indent + 2);
+    for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) 
+      m_subObjects[i].Output(strm, xml, indent + 2);
 
     if (indenting)
       strm << setw(indent-1) << " ";
 
-    strm << "</" << name << '>';
+    strm << "</" << m_name << '>';
     if (newLine)
       strm << endl;
   }
 }
 
-PXMLObject * PXMLElement::AddSubObject(PXMLObject * elem, bool setDirty)
+
+PXMLObject * PXMLElement::AddSubObject(PXMLObject * obj, bool setDirty)
 {
-  subObjects.SetAt(subObjects.GetSize(), elem);
+  if (PAssertNULL(obj) == NULL)
+    return NULL;
+
+  if (obj->SetParent(this))
+    m_subObjects.SetAt(m_subObjects.GetSize(), obj);
+
   if (setDirty)
     SetDirty();
 
-  return elem;
+  return obj;
 }
 
-PXMLElement * PXMLElement::AddChild(PXMLElement * elem, bool dirty)
+
+PXMLElement * PXMLElement::CreateElement(const PCaselessString & name, const char * data)
 {
-  return (PXMLElement *)AddSubObject(elem, dirty);
+  if (PAssertNULL(m_parent) == NULL)
+    return NULL;
+
+  return m_parent->CreateElement(name, data);
 }
 
-PXMLData * PXMLElement::AddChild(PXMLData * elem, bool dirty)
-{
-  return (PXMLData *)AddSubObject(elem, dirty);
-}
 
 PXMLElement * PXMLElement::AddElement(const char * name)
 {
-  return (PXMLElement *)AddSubObject(new PXMLElement(this, name));
+  return static_cast<PXMLElement *>(AddSubObject(CreateElement(name)));
 }
+
 
 PXMLElement * PXMLElement::AddElement(const PString & name, const PString & data)
 {
-  return (PXMLElement *)AddSubObject(new PXMLElement(this, name, data));
+  return static_cast<PXMLElement *>(AddSubObject(CreateElement(name, data)));
 }
+
 
 PXMLElement * PXMLElement::AddElement(const PString & name, const PString & attrName, const PString & attrVal)
 {
-  PXMLElement * element = (PXMLElement *)AddSubObject(new PXMLElement(this, name));
+  PXMLElement * element = static_cast<PXMLElement *>(AddSubObject(CreateElement(name)));
   element->SetAttribute(attrName, attrVal);
   return element;
 }
 
-PXMLObject * PXMLElement::Clone(PXMLElement * _parent) const
+
+PObject * PXMLElement::Clone() const
 {
-  PXMLElement * elem = new PXMLElement(_parent);
-
-  elem->SetName(name);
-  elem->attributes = attributes;
-  elem->dirty      = dirty;
-
-  PINDEX idx;
-  for (idx = 0; idx < subObjects.GetSize(); idx++)
-    elem->AddSubObject(subObjects[idx].Clone(elem), false);
-
-  return elem;
+  return new PXMLElement(*this);
 }
 
-PString PXMLElement::GetData() const
+
+PString PXMLElement::GetData(bool trim) const
 {
   PString str;
-  PINDEX idx;
-  for (idx = 0; idx < subObjects.GetSize(); idx++) {
-    if (!subObjects[idx].IsElement()) {
-      PXMLData & dataElement = ((PXMLData &)subObjects[idx]);
-      PStringArray lines = dataElement.GetString().Lines();
-      PINDEX j;
-      for (j = 0; j < lines.GetSize(); j++)
-        str = str & lines[j];
+
+  for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) {
+    PXMLData * data = dynamic_cast<PXMLData *>(m_subObjects.GetAt(i));
+    if (data != NULL) {
+      if (trim) {
+        PStringArray lines = data->GetString().Lines();
+        for (PINDEX j = 0; j < lines.GetSize(); j++)
+          str &= lines[j];
+      }
+      else
+        str += data->GetString();
     }
   }
   return str;
 }
 
+
 void PXMLElement::SetData(const PString & data)
 {
-  for (PINDEX idx = 0; idx < subObjects.GetSize(); idx++) {
-    if (!subObjects[idx].IsElement())
-      subObjects.RemoveAt(idx--);
+  for (PINDEX idx = 0; idx < m_subObjects.GetSize(); idx++) {
+    if (!m_subObjects[idx].IsElement())
+      m_subObjects.RemoveAt(idx--);
   }
   AddData(data);
 }
 
-void PXMLElement::AddData(const PString & data)
+
+PXMLData * PXMLElement::AddData(const PString & data)
 {
-  AddSubObject(new PXMLData(this, data));
+  return static_cast<PXMLData *>(AddSubObject(new PXMLData(data)));
 }
+
 
 PCaselessString PXMLElement::GetPathName() const
 {
@@ -1324,6 +1406,7 @@ PCaselessString PXMLElement::GetPathName() const
     return s;
 }
 
+
 void PXMLElement::AddNamespace(const PString & prefix, const PString & uri)
 {
   if (prefix.IsEmpty())
@@ -1331,6 +1414,7 @@ void PXMLElement::AddNamespace(const PString & prefix, const PString & uri)
   else
     m_nameSpaces.SetAt(prefix, uri);
 }
+
 
 void PXMLElement::RemoveNamespace(const PString & prefix)
 {
@@ -1340,44 +1424,55 @@ void PXMLElement::RemoveNamespace(const PString & prefix)
     m_nameSpaces.RemoveAt(prefix);
 }
 
+
 ///////////////////////////////////////////////////////
 
-PXMLSettings::PXMLSettings(PXMLParser::Options options)
+PObject * PXMLRootElement::Clone()
+{
+  return m_document.CreateRootElement(m_name);
+}
+
+
+PXMLElement * PXMLRootElement::CreateElement(const PCaselessString & name, const char * data)
+{
+  return m_document.CreateElement(name, data);
+}
+
+
+///////////////////////////////////////////////////////
+
+PXMLSettings::PXMLSettings(PXML::Options options)
   : PXML(options)
 {
 }
 
+
 PString PXMLSettings::GetAttribute(const PCaselessString & section, const PString & key) const
 {
-  if (rootElement == NULL)
-    return PString();
-
-  PXMLElement * element = rootElement->GetElement(section);
+  PXMLElement * element = GetElement(section);
   if (element == NULL)
-    return PString();
+    return PString::Empty();
 
   return element->GetAttribute(key);
 }
 
+
 void PXMLSettings::SetAttribute(const PCaselessString & section, const PString & key, const PString & value)
 {
-  if (rootElement == NULL) 
-    rootElement = new PXMLElement(NULL, "settings");
+  if (m_rootElement == NULL) 
+    SetRootElement("settings");
 
-  PXMLElement * element = rootElement->GetElement(section);
-  if (element == NULL) {
-    element = new PXMLElement(rootElement, section);
-    rootElement->AddSubObject(element);
-  }
+  PXMLElement * element = m_rootElement->GetElement(section);
+  if (element == NULL)
+    element = m_rootElement->AddElement(section);
+
   element->SetAttribute(key, value);
 }
 
+
 bool PXMLSettings::HasAttribute(const PCaselessString & section, const PString & key) const
 {
-  if (rootElement == NULL)
-    return false;
-
-  PXMLElement * element = rootElement->GetElement(section);
+  PXMLElement * element = GetElement(section);
   if (element == NULL)
     return false;
 
@@ -1411,34 +1506,31 @@ void PXMLSettings::FromConfig(const PConfig & data)
 
 ///////////////////////////////////////////////////////
 
-PXMLStreamParser::PXMLStreamParser()
+PXMLStreamParser::PXMLStreamParser(PXML & doc, Options options)
+  : PXMLParser(doc, options, 0)
 {
 }
 
 
 void PXMLStreamParser::EndElement(const char * name)
 {
-  PXMLElement * element = currentElement;
+  PXMLElement * element = m_currentElement;
 
   PXMLParser::EndElement(name);
 
-  if (m_parsing) {
-    PINDEX i = rootElement->FindObject(element);
+  if (!m_parsing)
+    return;
 
-    if (i != P_MAX_INDEX) {
-      PXML tmp;
-      element = (PXMLElement *)element->Clone(0);
-      rootElement->RemoveElement(i);
+  PINDEX i = m_document.GetRootElement()->FindObject(element);
+  if (i == P_MAX_INDEX)
+    return;
 
-      PXML * msg = new PXML;
-      msg->SetRootElement(element);
-      messages.Enqueue(msg);
-    }
-  }
+  messages.Enqueue(element);
+  m_document.GetRootElement()->RemoveSubObject(i, false);
 }
 
 
-PXML * PXMLStreamParser::Read(PChannel * channel)
+PXMLElement * PXMLStreamParser::Read(PChannel * channel)
 {
   char buf[256];
 
@@ -1460,6 +1552,7 @@ PXML * PXMLStreamParser::Read(PChannel * channel)
   channel->Close();
   return 0;
 }
+
 
 ///////////////////////////////////////////////////////
 

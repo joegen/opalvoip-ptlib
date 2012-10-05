@@ -1331,9 +1331,10 @@ bool PVXMLSession::ProcessNode()
 
   m_xmlChanged = false;
 
-  if (!m_currentNode->IsElement()) {
+  PXMLData * nodeData = dynamic_cast<PXMLData *>(m_currentNode);
+  if (nodeData != NULL) {
     if (m_speakNodeData)
-      PlayText(((PXMLData *)m_currentNode)->GetString().Trim());
+      PlayText(nodeData->GetString().Trim());
     return true;
   }
 
@@ -1751,12 +1752,7 @@ PBoolean PVXMLSession::TraverseValue(PXMLElement & element)
 
 PBoolean PVXMLSession::TraverseSayAs(PXMLElement & element)
 {
-  PString className = element.GetAttribute("class");
-  PXMLObject * object = element.GetElement();
-  if (!object->IsElement()) {
-    PString text = ((PXMLData *)object)->GetString();
-    SayAs(className, text);
-  }
+  SayAs(element.GetAttribute("class"), element.GetData());
   return true;
 }
 

@@ -85,16 +85,14 @@ void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace, c
     rtElement->SetAttribute("xmlns:xsd", "http://www.w3.org/1999/XMLSchema", true );
     rtElement->SetAttribute("xmlns:SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/", true );
 
-    pSOAPBody = new PXMLElement( rtElement, "SOAP-ENV:Body");
-
-    rtElement->AddChild( pSOAPBody, true );
+    pSOAPBody = rtElement->AddElement("SOAP-ENV:Body");
   }
 
   if ( pSOAPMethod == 0 )
   {
     rtElement = GetRootElement();
 
-    pSOAPMethod = new PXMLElement(rtElement, methodPrefix + name);
+    pSOAPMethod = pSOAPBody->AddElement(methodPrefix + name);
     if (!nameSpace.IsEmpty())
     {
       if (methodPrefix.IsEmpty())
@@ -102,10 +100,9 @@ void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace, c
       else
         pSOAPMethod->SetAttribute("xmlns:m", nameSpace, true);
     }
-    pSOAPBody->AddChild( pSOAPMethod, true );
   }
-
 }
+
 
 void PSOAPMessage::GetMethod( PString & name, PString & nameSpace )
 {
@@ -123,18 +120,11 @@ void PSOAPMessage::AddParameter( PString name, PString type, PString value )
 {
   if ( pSOAPMethod )
   {
-    PXMLElement* rtElement = GetRootElement();
+    PXMLElement* pParameter = m_rootElement->CreateElement(name, value);
     
-    PXMLElement* pParameter = new PXMLElement( rtElement, name);
-    PXMLData* pParameterData = new PXMLData( pParameter, value);
-    
-    if ( type != "" )
-    {
+    if (!type.IsEmpty())
       pParameter->SetAttribute( "xsi:type", PString( "xsd:" ) + type );
-    }
     
-    pParameter->AddChild( pParameterData, true );
-
     AddParameter( pParameter, true );
   }
 }
@@ -143,7 +133,7 @@ void PSOAPMessage::AddParameter( PXMLElement* parameter, PBoolean dirty )
 {
   if ( pSOAPMethod )
   {
-    pSOAPMethod->AddChild( parameter, dirty );
+    pSOAPMethod->AddSubObject( parameter, dirty );
   }
 }
 
@@ -226,61 +216,41 @@ PBoolean PSOAPMessage::GetParameter( const PString & name, int & value )
 
 PXMLElement* PSOAPMessage::GetParameter( const PString & name )
 {
-  if ( pSOAPMethod )
-  {
-    return pSOAPMethod->GetElement( name, 0 );
-  }
-  else
-  {
-    return 0;
-  }
+  if (pSOAPMethod != NULL)
+    return pSOAPMethod->GetElement(name);
+
+  return 0;
 }
 
 PBoolean PSOAPMessage::Load( const PString & str )
 {
-  if ( !PXML::Load( str ) )
+  if (!PXML::Load(str))
     return false;
  
-  if ( rootElement != NULL )
-  {
-    PString soapEnvelopeName = rootElement->GetName();
-    PString soapEnvelopeID = soapEnvelopeName.Left( soapEnvelopeName.Find(':') );
-    
-    pSOAPBody = rootElement->GetElement( soapEnvelopeID + ":Body", 0 );
-    
-    if ( pSOAPBody != NULL )
-    {
-      PXMLObjectArray  subObjects = pSOAPBody->GetSubObjects() ;
+  PString soapEnvelopeName = GetRootElement()->GetName();
+  PString soapEnvelopeID = soapEnvelopeName.Left( soapEnvelopeName.Find(':') );
 
-      PINDEX idx;
-      PINDEX size = subObjects.GetSize();
-      
-      for ( idx = 0; idx < size; idx++ ) {
-        if ( subObjects[ idx ].IsElement() ) {
-          // First subobject being an element is the method
-          pSOAPMethod = ( PXMLElement * ) &subObjects[ idx  ];
+  pSOAPBody = GetRootElement()->GetElement( soapEnvelopeID + ":Body");
 
-          PString method;
-          PString nameSpace;
+  if (pSOAPBody == NULL)
+    return false;
 
-          GetMethod( method, nameSpace );
+  if ((pSOAPMethod = GetElement(0)) != NULL) {
+    PString method;
+    PString nameSpace;
 
-          // Check if method name is "Fault"
-          if ( method == "Fault" )
-          {
-            // The SOAP server has signalled an error
-            PString faultCodeData = GetParameter( "faultcode" )->GetData();
-            faultCode = stringToFaultCode( faultCodeData );
-            faultText = GetParameter( "faultstring" )->GetData();
-          }
-          else
-          {
-            return true;
-          }
-        }
-      }
-    }
+    GetMethod( method, nameSpace );
+
+    // Check if method name is "Fault"
+    if (method != "Fault")
+      return true;
+
+    // The SOAP server has signalled an error
+    PString faultCodeData = GetParameter( "faultcode" )->GetData();
+    faultCode = stringToFaultCode( faultCodeData );
+    faultText = GetParameter( "faultstring" )->GetData();
   }
+
   return false;
 }
 

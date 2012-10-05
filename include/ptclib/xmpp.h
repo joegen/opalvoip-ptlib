@@ -161,11 +161,12 @@ namespace XMPP
 
     virtual PBoolean        Write(const void * buf, PINDEX len);
     virtual PBoolean        Write(const PString& data);
-    virtual PBoolean        Write(const PXML& pdu);
+//    virtual PBoolean        Write(const PXMLElement & pdu);
+    virtual PBoolean        Write(const PXML & pdu);
 
     /** Read a XMPP stanza from the stream
     */
-    virtual PXML *      Read();
+    virtual PXMLElement * Read();
 
     /** Reset the parser. The will delete and re-instantiate the
     XML stream parser.
@@ -174,6 +175,7 @@ namespace XMPP
     PXMLStreamParser *  GetParser()     { return m_Parser; }
 
   protected:
+    PXML                m_Document;
     PXMLStreamParser *  m_Parser;
     PNotifierList       m_OpenHandlers;
     PNotifierList       m_CloseHandlers;
@@ -188,18 +190,19 @@ namespace XMPP
     BaseStreamHandler();
     ~BaseStreamHandler();
 
-    virtual PBoolean        Start(Transport * transport = 0);
-    virtual PBoolean        Stop(const PString& error = PString::Empty());
+    virtual PBoolean Start(Transport * transport = 0);
+    virtual PBoolean Stop(const PString& error = PString::Empty());
 
-    void                SetAutoReconnect(PBoolean b = true, long timeout = 1000);
+    void SetAutoReconnect(PBoolean b = true, long timeout = 1000);
 
-    PNotifierList&      ElementHandlers()   { return m_ElementHandlers; }
-    Stream *            GetStream()         { return m_Stream; }
+    void AddNotifier(const PNotifierTemplate<PXMLElement&> & notifier) { m_ElementHandlers.Add(notifier); }
+
+    Stream * GetStream() const { return m_Stream; }
 
     virtual PBoolean        Write(const void * buf, PINDEX len);
     virtual PBoolean        Write(const PString& data);
-    virtual PBoolean        Write(const PXML& pdu);
-    virtual void        OnElement(PXML& pdu);
+    virtual PBoolean        Write(const PXML & pdu);
+    virtual void        OnElement(PXMLElement& pdu);
 
     virtual void        Main();
 
@@ -208,10 +211,10 @@ namespace XMPP
     PDECLARE_NOTIFIER(Stream, BaseStreamHandler, OnClose);
 
     Stream *        m_Stream;
-    PBoolean            m_AutoReconnect;
+    bool            m_AutoReconnect;
     PTimeInterval   m_ReconnectTimeout;
 
-    PNotifierList   m_ElementHandlers;
+    PNotifierListTemplate<PXMLElement&> m_ElementHandlers;
   };
 
 
@@ -241,7 +244,6 @@ namespace XMPP
     virtual void SetTo(const PString& to);
 
     virtual PXMLElement * GetElement(const PString& name, PINDEX i = 0);
-    virtual void AddElement(PXMLElement * elem);
 
     static PString GenerateID();
   };
@@ -278,11 +280,9 @@ namespace XMPP
     The root of the pdu MUST be a message stanza.
     NOTE: the root of the pdu is cloned.
     */
-    Message(PXML& pdu);
-    Message(PXML * pdu);
+    Message(PXMLElement & pdu);
 
     virtual PBoolean IsValid() const;
-    static PBoolean IsValid(const PXML * pdu);
 
     virtual MessageType GetType(PString * typeName = 0) const;
     virtual PString     GetLanguage() const;
@@ -349,11 +349,9 @@ namespace XMPP
     The root of the pdu MUST be a presence stanza.
     NOTE: the root of the pdu is cloned.
     */
-    Presence(PXML& pdu);
-    Presence(PXML * pdu);
+    Presence(PXMLElement & pdu);
 
     virtual PBoolean IsValid() const;
-    static PBoolean IsValid(const PXML * pdu);
 
     virtual PresenceType GetType(PString * typeName = 0) const;
     virtual ShowType     GetShow(PString * showName = 0) const;
@@ -393,13 +391,11 @@ namespace XMPP
     */
     static const PCaselessString & TypeTag();
 
-    IQ(IQType type, PXMLElement * body = 0);
-    IQ(PXML& pdu);
-    IQ(PXML * pdu);
+    IQ(IQType type);
+    IQ(PXMLElement & pdu);
     ~IQ();
 
     virtual PBoolean IsValid() const;
-    static PBoolean IsValid(const PXML * pdu);
 
     /** This method signals that the message was taken care of
     If the stream handler, after firing all the notifiers finds
@@ -433,7 +429,7 @@ namespace XMPP
     virtual PNotifierList GetResponseHandlers()   { return m_ResponseHandlers; }
 
   protected:
-    PBoolean            m_Processed;
+    bool            m_Processed;
     IQ *            m_OriginalIQ;
     PNotifierList   m_ResponseHandlers;
   };
