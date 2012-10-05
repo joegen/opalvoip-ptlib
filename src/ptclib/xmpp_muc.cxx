@@ -100,10 +100,8 @@ PBoolean XMPP::MUC::Room::Enter()
   pre.SetStatus("Available");
   pre.SetPriority(0);
 
-  PXMLElement * x = new PXMLElement(NULL, "x");
-  x->SetAttribute(XMPP::NamespaceTag(), XMPP::MUC::NamespaceTag());
+  pre.GetRootElement()->AddElement("x", XMPP::NamespaceTag(), XMPP::MUC::NamespaceTag());
 
-  pre.AddElement(x);
 
   return m_Handler->Write(pre);
 }

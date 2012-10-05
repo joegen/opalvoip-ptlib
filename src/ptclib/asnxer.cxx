@@ -32,7 +32,7 @@ PBoolean PXER_Stream::BooleanDecode(PASN_Boolean & value)
 
 void PXER_Stream::BooleanEncode(const PASN_Boolean & value)
 {
-  position->AddChild(new PXMLElement(position, value.GetValue() ? "true" : "false"));
+  position->AddElement(value.GetValue() ? "true" : "false");
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ PBoolean PXER_Stream::IntegerDecode(PASN_Integer & value)
 
 void PXER_Stream::IntegerEncode(const PASN_Integer & value)
 {
-  position->AddChild(new PXMLData(position, value.GetValue()));
+  position->AddData(value.GetValue());
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -60,8 +60,7 @@ PBoolean PASN_Enumeration::DecodeXER(PXER_Stream & strm)
 
 void PASN_Enumeration::EncodeXER(PXER_Stream & strm) const
 {
-  PXMLElement * elem = strm.GetCurrentElement();
-  elem->AddChild(new PXMLData(elem, value));
+  strm.GetCurrentElement()->AddData(value);
 }
 
 
@@ -87,7 +86,7 @@ PBoolean PXER_Stream::RealDecode(PASN_Real & value)
 
 void PXER_Stream::RealEncode(const PASN_Real & value)
 {
-  position->AddChild(new PXMLData(position, PString(PString::Decimal, value.GetValue(), 10)));
+  position->AddData(PString(PString::Decimal, value.GetValue(), 10));
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -101,7 +100,7 @@ PBoolean PXER_Stream::ObjectIdDecode(PASN_ObjectId & value)
 
 void PXER_Stream::ObjectIdEncode(const PASN_ObjectId & value)
 {
-  position->AddChild(new PXMLData(position, value.AsString()));
+  position->AddData(value.AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -130,11 +129,9 @@ void PXER_Stream::BitStringEncode(const PASN_BitString & value)
   PString bits;
 
   for (PINDEX i = 0 ; i < (PINDEX)value.GetSize() ; i++)
-  {
     bits += (value[i] ? '1' : '0');
-  }
 
-  position->AddChild(new PXMLData(position, bits));
+  position->AddData(bits);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -173,7 +170,7 @@ void PXER_Stream::OctetStringEncode(const PASN_OctetString & value)
     bin.sprintf("%02x", v);
   }
 
-  position->AddChild(new PXMLData(position, bin));
+  position->AddData(bin);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -187,7 +184,7 @@ PBoolean PXER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
 
 void PXER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
 {
-  position->AddChild(new PXMLData(position, value.GetValue()));
+  position->AddData(value.GetValue());
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -207,7 +204,7 @@ void PXER_Stream::BMPStringEncode(const PASN_BMPString &)
 PBoolean PASN_Choice::DecodeXER(PXER_Stream & strm)
 {
   PXMLElement * elem = strm.GetCurrentElement();
-  PXMLElement * choice_elem = (PXMLElement *)elem->GetElement();
+  PXMLElement * choice_elem = elem->GetElement();
 
   if (!choice_elem || !choice_elem->IsElement())
     return false;
@@ -235,7 +232,7 @@ void PASN_Choice::EncodeXER(PXER_Stream & strm) const
   if (choice)
   {
     PXMLElement * elem = strm.GetCurrentElement();
-    strm.SetCurrentElement(elem->AddChild(new PXMLElement(elem, GetTagName())));
+    strm.SetCurrentElement(elem->AddElement(GetTagName()));
     choice->Encode(strm);
     strm.SetCurrentElement(elem);
   }
@@ -340,7 +337,7 @@ PBoolean PXER_Stream::ArrayDecode(PASN_Array & array)
   PBoolean res = true;
 
   for (PINDEX i = 0; i < (PINDEX)size; i++) {
-    position = (PXMLElement *)elem->GetElement(i);
+    position = elem->GetElement(i);
 
     if (!position->IsElement() || !array[i].Decode(*this)) {
       res = false;
@@ -362,7 +359,7 @@ void PXER_Stream::ArrayEncode(const PASN_Array & array)
   for (PINDEX i = 0; i < (PINDEX)size; i++) {
     PString name = array[i].GetTypeAsString();
     name.Replace(" ", "_", true);
-    position = elem->AddChild(new PXMLElement(elem, name));
+    position = elem->AddElement(name);
     array[i].Encode(*this);
   }
 

@@ -145,7 +145,7 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & body, PString & repl
     reply = FormatFault(PXMLRPC::MethodNameIsEmpty, "methodName is empty");
     return;
   }
-  PString method = ((PXMLData *)methodName->GetElement(0))->GetString();
+  PString method = methodName->GetData();
 
   // extract params
   PTRACE(3, "XMLRPC\tReceived XMLRPC request for method " << method);

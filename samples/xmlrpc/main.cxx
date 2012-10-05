@@ -16,20 +16,9 @@
 
   Example command lines
 
-    http://time.xmlrpc.com/RPC2 currentTime.getCurrentTime 
+    http://betty.userland.com/RPC2 examples.getStateName -i 1
 
-    http://www.mirrorproject.com/xmlrpc mirror.Random
-
-    http://xmlrpc.usefulinc.com/demo/server.php system.listMethods
-    http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoString "A test!"
-    -i http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoInteger 12
-    -f http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoFloat 3.121
-    -a http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoStringArray One Two Three Four
-    -a -i http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoIntegerArray 11 222 3333 44444
-    -a -f http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoIntegerArray 1.1 22.23 333.333 4444.4444
-    -s http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoStruct first 1st second 2nd third 3rd
-    -a -s http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoStructArray first 1st second 2nd third 3rd "," fourth 4th fifth 5th "," sixth 6th "," seventh 7th eigth 8th ninth 9th tenth 10th
-    --echo-struct http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoStruct
+    --test-struct http://xmlrpc.usefulinc.com/demo/server.php interopEchoTests.echoStruct
     -s http://10.0.2.13:6666/RPC2 Function1 key value
 
 
@@ -69,6 +58,52 @@ PXMLRPC_STRUCT_END()
 PCREATE_PROCESS(XMLRPCApp);
 
 
+bool AddParam(PXMLRPCBlock & request, PArgList & args,PXMLElement * params)
+{
+  if (!args.Parse(NULL))
+    return false;
+
+  PINDEX arg = 0;
+
+  if (args.HasOption('a')) {
+    PINDEX sz = args.GetOptionString('a').AsUnsigned();
+    if (sz == 0)
+      return true;
+
+    const char * arrType;
+    if (args.HasOption('i'))
+      arrType = "int";
+    else if (args.HasOption('d'))
+      arrType = "double";
+    else if (args.HasOption('s'))
+      arrType = "struct";
+    else
+      arrType = "string";
+    PXMLElement * d;
+    PXMLElement * a = request.CreateArray(d);
+    params->AddSubObject(a);
+    return true;
+  }
+
+  if (args.HasOption('s')) {
+    PXMLElement * d;
+    PXMLElement * s = request.CreateStruct(d);
+    params->AddSubObject(s);
+    return true;
+  }
+
+  if (args.HasOption('i'))
+    params->AddSubObject(request.CreateScalar(args[arg++].AsInteger()));
+  else if (args.HasOption('f'))
+    params->AddSubObject(request.CreateScalar(args[arg++].AsReal()));
+
+  while (arg < args.GetCount())
+    params->AddSubObject(request.CreateScalar(args[arg++]));
+
+  return true;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 
 XMLRPCApp::XMLRPCApp()
@@ -78,11 +113,9 @@ XMLRPCApp::XMLRPCApp()
 
 void XMLRPCApp::Main()
 {
-  PINDEX i;
   PArgList & args = GetArguments();
 
-  args.Parse("a-array."
-             "d-debug."
+  args.Parse("a-array:"
              "f-float."
              "i-integer."
              "s-struct."
@@ -90,7 +123,8 @@ void XMLRPCApp::Main()
              "t-trace."
              "o-output:"
 #endif
-             "-echo-struct."
+             "v-verbose."
+             "-test-struct."
              );
 
 #if PTRACING
@@ -99,11 +133,27 @@ void XMLRPCApp::Main()
 #endif
 
   if (args.GetCount() < 2) {
-    PError << "usage: xmlrpc url method [parms...]" << endl;
+    PError << "usage: xmlrpc [ -v -t ] url method [ <param> ... ]\n"
+              "       xmlrpc --test-struct url method\n"
+              "\n"
+              "Options:\n"
+              "  -v or --version              Verbose output\n"
+#if PTRACING
+              "  -t or --trace                Trace level\n"
+              "  -o or --output file          Trace output file\n"
+#endif
+              "\n"
+              "With <param> being one of:\n"
+              "  -a N <param>                 array with N <param> elements\n"
+              "  -s <param> [ <param> ... ]   structure\n"
+              "  -i value                     integer value\n"
+              "  -f value                     floating pont value\n"
+              "  string                       string value\n"
+           << endl;
     return;
   }
 
-  PString url    = args[0];
+  PURL url = args[0];
   PString method = args[1];
 
   PXMLRPC rpc(url);
@@ -111,12 +161,12 @@ void XMLRPCApp::Main()
   PXMLRPCBlock request(method);
   PXMLRPCBlock response;
 
-  if (args.HasOption("echo-struct")) {
+  if (args.HasOption("test-struct")) {
     TestStruct ts;
     ts.a_date -= PTimeInterval(0, 0, 0, 0, 5);
 
     ts.a_binary.SetSize(10);
-    for (i = 0; i < 10; i++)
+    for (PINDEX i = 0; i < 10; i++)
       ts.a_binary[i] = (BYTE)(i+1);
 
     ts.a_string_array.SetSize(3);
@@ -125,11 +175,11 @@ void XMLRPCApp::Main()
     ts.a_string_array[2] = "third";
 
     ts.an_integer_array.SetSize(7);
-    for (i = 0; i < ts.an_integer_array.GetSize(); i++)
+    for (PINDEX i = 0; i < ts.an_integer_array.GetSize(); i++)
       ts.an_integer_array[i] = i+1;
 
     ts.a_float_array.SetSize(5);
-    for (i = 0; i < ts.a_float_array.GetSize(); i++)
+    for (PINDEX i = 0; i < ts.a_float_array.GetSize(); i++)
       ts.a_float_array[i] = (float)(1.0/(i+2));
 
     ts.nested_struct.another_string = "Another string!";
@@ -145,60 +195,11 @@ void XMLRPCApp::Main()
     request.AddParam(ts);
   }
   else {
-    if (args.HasOption('a')) {
-      if (args.HasOption('s')) {
-        PArray<PStringToString> array;
-        PStringToString dict;
-        PString key;
-        for (i = 2; i < args.GetCount(); i++) {
-          if (args[i] == ",") {
-            array.SetAt(array.GetSize(), new PStringToString(dict));
-            dict = PStringToString();
-            key = PString::Empty();
-          }
-          else if (key.IsEmpty())
-            key = args[i];
-          else {
-            dict.SetAt(key, args[i]);
-            key = PString::Empty();
-          }
-        }
-
-        if (!dict.IsEmpty())
-          array.SetAt(array.GetSize(), new PStringToString(dict));
-
-        request.AddArray(array);
-      }
-      else if (args.HasOption('i'))
-        request.AddArray(args.GetParameters(2), "int");
-      else if (args.HasOption('f'))
-        request.AddArray(args.GetParameters(2), "double");
-      else
-        request.AddArray(args.GetParameters(2));
-    }
-    else if (args.HasOption('s')) {
-      PStringToString dict;
-      for (i = 2; (i+1) < args.GetCount(); i += 2) {
-        PString key   = args[i];
-        PString value = args[i+1];
-        dict.SetAt(key, value);
-      }
-
-      request.AddStruct(dict);
-    }
-    else {
-      for (i = 2; i < args.GetCount(); i++) {
-        if (args.HasOption('i'))
-          request.AddParam((int)args[i].AsInteger());
-        else if (args.HasOption('f'))
-          request.AddParam(args[i].AsReal());
-        else
-          request.AddParam(args[i]);
-      }
-    }
+    while (AddParam(request, args, request.GetParams()))
+      ;
   }
 
-  if (args.HasOption('d'))
+  if (args.HasOption('v'))
     cout << "Request = " << request << endl;
 
   if (!rpc.MakeRequest(request, response)) {
@@ -212,7 +213,7 @@ void XMLRPCApp::Main()
 
   // scan through the response and print it out
   cout << "Response" << endl;
-  for (i = 0; i < response.GetParamCount(); i++) {
+  for (PINDEX i = 0; i < response.GetParamCount(); i++) {
     cout << "  " << i << ": ";
     PString type;
     PString val;
@@ -236,7 +237,7 @@ void XMLRPCApp::Main()
     cout << endl;
   }
 
-  if (args.HasOption("echo-struct")) {
+  if (args.HasOption("test-struct")) {
     TestStruct ts;
     ts.a_date = PTime(0);
     if (response.GetParam(0, ts))
