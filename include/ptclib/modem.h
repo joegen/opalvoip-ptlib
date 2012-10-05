@@ -39,6 +39,7 @@
 
 #include <ptlib/serchan.h>
 
+#if P_SERIAL
 
 /** A class representing a modem attached to a serial port. This adds the usual
    modem operations to the basic serial port.
@@ -457,6 +458,8 @@ class PModem : public PSerialChannel
       // Current modem status
 };
 
+
+#endif // P_SERIAL
 
 #endif // PTLIB_MODEM_H
 
