@@ -56,7 +56,7 @@ static PBoolean PAssertAction(int c, const char * msg)
     case 'T' :
       PError << "\nThrowing exception\n";
       throw std::runtime_error(msg);
-      return PTrue;
+      return true;
 #endif
         
 #ifdef _DEBUG
@@ -83,9 +83,9 @@ static PBoolean PAssertAction(int c, const char * msg)
     case 'I' :
     case EOF :
       PError << "\nIgnoring.\n";
-      return PTrue;
+      return true;
   }
-  return PFalse;
+  return false;
 }
 #endif
 #endif
@@ -96,7 +96,7 @@ bool PAssertFunc(const char * msg)
   static PBoolean inAssert;
   if (inAssert)
     return false;
-  inAssert = PTrue;
+  inAssert = true;
 
 #ifdef P_BEOS
   // Print location in Eddie-compatible format
@@ -134,13 +134,13 @@ bool PAssertFunc(const char * msg)
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
   if (env != NULL && *env != EOF && PAssertAction(*env, msg)) {
-    inAssert = PFalse;
+    inAssert = false;
     return false;
   }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (isatty(STDIN_FILENO) != 1) {
-    inAssert = PFalse;
+    inAssert = false;
     return false;
   }
 
@@ -159,7 +159,7 @@ bool PAssertFunc(const char * msg)
     if (PAssertAction(c, msg))
       break;
    }
-   inAssert = PFalse;
+   inAssert = false;
 
 #else // P_VXWORKS
 

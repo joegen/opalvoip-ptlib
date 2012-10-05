@@ -263,7 +263,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
     PTRACE(2, ": pa_stream_new() uses stream " << streamName);
     PTRACE(2, ": pa_stream_new() uses rate " << PINDEX(ss.rate));
     PTRACE(2, ": pa_stream_new() uses channels " << PINDEX(ss.channels));
-    return PFalse;
+    return false;
   }
 
   if (_dir == Player) {
@@ -272,7 +272,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
       PTRACE(2, ": pa_connect_playback() failed: " << pa_strerror(err));
       pa_stream_unref(s);
       s=NULL;
-      return PFalse;
+      return false;
     }
     pa_stream_set_write_callback(s,stream_write_cb,NULL);
   } else {
@@ -281,7 +281,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
       PTRACE(2, ": pa_connect_record() failed: " << pa_strerror(pa_context_errno(context)));
       pa_stream_unref(s);
       s=NULL;
-      return PFalse;
+      return false;
     }
     pa_stream_set_read_callback(s,stream_write_cb,NULL);
     /* No input yet */
@@ -295,11 +295,11 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
     PTRACE(2, "stream state is " << pa_stream_get_state(s));
     pa_stream_unref(s);
     s=NULL;
-    return PFalse;
+    return false;
   }
 
   os_handle = 1;
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannelPulse::Close()
@@ -309,7 +309,7 @@ PBoolean PSoundChannelPulse::Close()
   PulseLock lock;
 
   if (s == NULL)
-    return PTrue;
+    return true;
 
   /* Remove the reference. The main loop keeps going and will drain the output */
   pa_stream_disconnect(s);
@@ -317,7 +317,7 @@ PBoolean PSoundChannelPulse::Close()
   s = NULL;
   os_handle = -1;
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannelPulse::IsOpen() const
@@ -336,7 +336,7 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
 
   if (!os_handle) {
     PTRACE(4, ": Pulse audio Write() failed as device closed");
-    return PFalse;
+    return false;
   }
 
   size_t toWrite=len;
@@ -347,7 +347,7 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
     int err=pa_stream_write(s,buff,ws,NULL,0,PA_SEEK_RELATIVE);
     if (err) {
       PTRACE(4, ": pa_stream_write() failed: " << pa_strerror(err));
-      return PFalse;
+      return false;
     }
     toWrite-=ws;
     buff+=ws;
@@ -356,7 +356,7 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
   lastWriteCount = len;
 
   PTRACE(6, "Pulse\tWrite completed");
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
@@ -368,7 +368,7 @@ PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
 
   if (!os_handle) {
     PTRACE(4, ": Pulse audio Read() failed as device closed");
-    return PFalse;
+    return false;
   }
 
   size_t toRead=len;
@@ -391,7 +391,7 @@ PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
   lastReadCount = len;
 
   PTRACE(6, "Pulse\tRead completed of " <<len << " bytes");
-  return PTrue;
+  return true;
 }
 
 
@@ -405,7 +405,7 @@ PBoolean PSoundChannelPulse::SetFormat(unsigned numChannels,
   ss.channels = numChannels;
   PAssert((bitsPerSample == 16), PInvalidParameter);
 
-  return PTrue;
+  return true;
 }
 
 // Get  the number of channels (mono/stereo) in the sound.
@@ -436,7 +436,7 @@ PBoolean PSoundChannelPulse::SetBuffers(PINDEX size, PINDEX count)
   bufferSize = size;
   bufferCount = count;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -445,74 +445,74 @@ PBoolean PSoundChannelPulse::GetBuffers(PINDEX & size, PINDEX & count)
   size = bufferSize;
   count = bufferCount;
   PTRACE(6, "Pulse\t report buffers as " << size << " and " << count);
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelPulse::PlaySound(const PSound & sound, PBoolean wait)
 {
 
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::PlayFile(const PFilePath & filename, PBoolean wait)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::HasPlayCompleted()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelPulse::WaitForPlayCompletion()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelPulse::RecordSound(PSound & sound)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::RecordFile(const PFilePath & filename)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::StartRecording()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::IsRecordBufferFull()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::AreAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::WaitForRecordBufferFull()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelPulse::WaitForAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 static void sink_volume_cb(pa_context* context,const pa_sink_info* i,int eol,void* userdata) {
@@ -541,7 +541,7 @@ PBoolean PSoundChannelPulse::SetVolume(unsigned newVal)
     } else {
       operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);
     }
-    if (!lock.waitFor(operation)) return PFalse;
+    if (!lock.waitFor(operation)) return false;
     pa_cvolume_scale(&volume,newVal*PA_VOLUME_NORM/100);
     if (direction==Player) {
       pa_context_set_sink_volume_by_index(context,dev,&volume,NULL,NULL);
@@ -549,7 +549,7 @@ PBoolean PSoundChannelPulse::SetVolume(unsigned newVal)
       pa_context_set_source_volume_by_index(context,dev,&volume,NULL,NULL);
     }
   }
-  return PTrue;
+  return true;
 }
 
 PBoolean  PSoundChannelPulse::GetVolume(unsigned &devVol)
@@ -564,10 +564,10 @@ PBoolean  PSoundChannelPulse::GetVolume(unsigned &devVol)
     } else {
       operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);
     }
-    if (!lock.waitFor(operation)) return PFalse;
+    if (!lock.waitFor(operation)) return false;
     devVol=100*pa_cvolume_avg(&volume)/PA_VOLUME_NORM;
   }
-  return PTrue;
+  return true;
 }
   
 

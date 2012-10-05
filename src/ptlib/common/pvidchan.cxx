@@ -92,7 +92,7 @@ PBoolean PVideoChannel::Open(const PString & dev,
   deviceName = dev;
   direction = dir;
   
-  return PTrue;
+  return true;
 }
 
 
@@ -102,7 +102,7 @@ PBoolean PVideoChannel::Read(void * buf, PINDEX  len)
   PWaitAndSignal m(accessMutex);
 
   if (mpInput == NULL)  
-    return PFalse;
+    return false;
 
   BYTE * dataBuf;
   PINDEX dataLen;
@@ -110,7 +110,7 @@ PBoolean PVideoChannel::Read(void * buf, PINDEX  len)
   dataLen = len;
   return mpInput->GetFrameData(dataBuf, &dataLen);
 
-  // CHANGED  return PTrue;
+  // CHANGED  return true;
 }
 
 PBoolean PVideoChannel::Write(const void * buf,  //image data to be rendered
@@ -124,7 +124,7 @@ PBoolean PVideoChannel::Write(const void * buf, PINDEX /*len*/, void * mark)
   PWaitAndSignal m(accessMutex);
 
   if (mpOutput == NULL)
-    return PFalse;
+    return false;
 
 
   bool keyFrameNeeded;
@@ -161,7 +161,7 @@ PBoolean PVideoChannel::Close()
   CloseVideoReader();
   CloseVideoPlayer();
 
-  return PTrue;
+  return true;
 }
 
 /*returns true if either input or output is open */
@@ -249,7 +249,7 @@ PBoolean PVideoChannel::IsGrabberOpen()
   if (mpInput != NULL)
     return mpInput->IsOpen();
   else
-    return PFalse; 
+    return false; 
 }
 
 PBoolean PVideoChannel::IsRenderOpen()      
@@ -259,7 +259,7 @@ PBoolean PVideoChannel::IsRenderOpen()
   if (mpOutput != NULL)
     return mpOutput->IsOpen();
   else
-    return PFalse; 
+    return false; 
 }
 
 PBoolean PVideoChannel::DisableDecode()
@@ -267,7 +267,7 @@ PBoolean PVideoChannel::DisableDecode()
   if (mpOutput != NULL)
     return mpOutput->DisableDecode();
   else
-    return PFalse; 
+    return false; 
 }
 
 PBoolean PVideoChannel::DisplayRawData(void *videoBuffer)
@@ -275,7 +275,7 @@ PBoolean PVideoChannel::DisplayRawData(void *videoBuffer)
   PWaitAndSignal m(accessMutex);
 
   if ((mpOutput == NULL) || (mpInput == NULL))
-    return PFalse;
+    return false;
   
   PINDEX length=0;
 
@@ -288,7 +288,7 @@ PBoolean PVideoChannel::DisplayRawData(void *videoBuffer)
   Read(videoBuffer, length);
   Write((const void *)videoBuffer, length);
   
-  return PTrue;      
+  return true;      
 }
 
 void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)     
@@ -374,7 +374,7 @@ PBoolean PVideoChannel::ToggleVFlipInput()
  if (mpOutput != NULL)
   return mpInput->SetVFlipState(mpInput->GetVFlipState()); 
 
- return PFalse;
+ return false;
 }
 
 bool PVideoChannel::FlowControl(const void* flowData)

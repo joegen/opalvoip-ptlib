@@ -111,7 +111,7 @@ static void GetDigits(PBoolean sign, istream & s, char * buffer)
 istream & operator>>(istream & s, PInt64 & v)
 {
   char b[MaxDigits+1];
-  GetDigits(PTrue, s, b);
+  GetDigits(true, s, b);
   v = _atoi64(b);
   return s;
 }
@@ -120,7 +120,7 @@ istream & operator>>(istream & s, PInt64 & v)
 istream & operator>>(istream & s, PUInt64 & v)
 {
   char b[MaxDigits+1];
-  GetDigits(PFalse, s, b);
+  GetDigits(false, s, b);
   v = _atoi64(b);
   return s;
 }
@@ -232,20 +232,20 @@ void PChannel::Construct()
 PBoolean PChannel::Read(void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PChannel::Write(const void *, PINDEX)
 {
   PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PChannel::Close()
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -267,7 +267,7 @@ PBoolean PDirectory::Change(const PString & p)
 
   if (d[0] != '\\')
     if (_chdrive(toupper(d[0])-'A'+1) != 0)
-      return PFalse;
+      return false;
 
   return _chdir(d + ".") == 0;
 }
@@ -281,11 +281,11 @@ PBoolean PDirectory::Filtered()
   char * name = fileinfo.cFileName;
 #endif // UNICODE
   if (strcmp(name, ".") == 0)
-    return PTrue;
+    return true;
   if (strcmp(name, "..") == 0)
-    return PTrue;
+    return true;
   if (scanMask == PFileInfo::AllPermissions)
-    return PFalse;
+    return false;
 
   PFileInfo inf;
   PAssert(PFile::GetInfo(*this+name, inf), POperatingSystemError);
@@ -320,9 +320,9 @@ PStringArray PDirectory::GetPath() const
     return path;
 
   if ((*this)[1] == ':')
-    path = Tokenise("/\\", PFalse);
+    path = Tokenise("/\\", false);
   else {
-    path = Mid(2).Tokenise("/\\", PFalse);
+    path = Mid(2).Tokenise("/\\", false);
     path[0].Splice("\\\\", 0);
   }
 
@@ -355,13 +355,13 @@ PBoolean PDirectory::Exists(const PString & path)
 // File Path
 
 PFilePath::PFilePath(const PString & str)
-  : PCaselessString(PDirectory::CreateFullPath(str, PFalse))
+  : PCaselessString(PDirectory::CreateFullPath(str, false))
 {
 }
 
 
 PFilePath::PFilePath(const char * cstr)
-  : PCaselessString(PDirectory::CreateFullPath(cstr, PFalse))
+  : PCaselessString(PDirectory::CreateFullPath(cstr, false))
 {
 }
 
@@ -395,7 +395,7 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
 void PFilePath::AssignContents(const PContainer & cont)
 {
   PCaselessString::AssignContents(cont);
-  PCaselessString::AssignContents(PDirectory::CreateFullPath(*this, PFalse));
+  PCaselessString::AssignContents(PDirectory::CreateFullPath(*this, false));
 }
 
 
@@ -533,11 +533,11 @@ PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
 PBoolean PFile::Remove(const PString & name, PBoolean force)
 {
   if (remove(name) == 0)
-    return PTrue;
+    return true;
   if (!force || errno != EACCES)
-    return PFalse;
+    return false;
   if (_chmod(name, _S_IWRITE) != 0)
-    return PFalse;
+    return false;
   return remove(name) == 0;
 }
 
@@ -550,15 +550,15 @@ PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBool
 #else
     errno = EINVAL;
 #endif // _WIN32_WCE
-    return PFalse;
+    return false;
   }
   PString fullname = oldname.GetDirectory() + newname;
   if (rename(oldname, fullname) == 0)
-    return PTrue;
+    return true;
   if (!force || errno == ENOENT || !Exists(fullname))
-    return PFalse;
-  if (!Remove(fullname, PTrue))
-    return PFalse;
+    return false;
+  if (!Remove(fullname, true))
+    return false;
   return rename(oldname, fullname) == 0;
 }
 
@@ -566,14 +566,14 @@ PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBool
 PBoolean PFile::Move(const PFilePath & oldname, const PFilePath & newname, PBoolean force)
 {
   if (rename(oldname, newname) == 0)
-    return PTrue;
+    return true;
   if (errno == ENOENT)
-    return PFalse;
+    return false;
   if (force && Exists(newname)) {
-    if (!Remove(newname, PTrue))
-      return PFalse;
+    if (!Remove(newname, true))
+      return false;
     if (rename(oldname, newname) == 0)
-      return PTrue;
+      return true;
   }
   return Copy(oldname, newname, force) && Remove(oldname);
 }
@@ -753,7 +753,7 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
 PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
   if (name.IsEmpty())
-    return PFalse;
+    return false;
 
   PString fn = name;
   PINDEX pos = fn.GetLength()-1;
@@ -763,7 +763,7 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 
   struct stat s;
   if (stat(fn, &s) != 0)
-    return PFalse;
+    return false;
 
   info.created =  (s.st_ctime < 0) ? 0 : s.st_ctime;
   info.modified = (s.st_mtime < 0) ? 0 : s.st_mtime;
@@ -806,7 +806,7 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   info.hidden = (attr & _A_HIDDEN) != 0;
 #endif
 
-  return PTrue;
+  return true;
 }
 
 #endif // _WIN32_WCE
@@ -823,7 +823,7 @@ PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
 
 PBoolean PFile::IsTextFile() const
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -896,7 +896,7 @@ PBoolean PFile::SetLength(off_t len)
 
 PBoolean PTextFile::IsTextFile() const
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -1057,7 +1057,7 @@ void PProcess::Construct()
 PBoolean PProcess::SetMaxHandles(int /*newLimit*/)
 {
   // Not applicable
-  return PTrue;
+  return true;
 }
 
 

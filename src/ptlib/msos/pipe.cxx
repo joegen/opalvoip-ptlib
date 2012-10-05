@@ -47,7 +47,7 @@ PPipeChannel::PPipeChannel()
 #ifdef _WIN32_WCE
 PBoolean PPipeChannel::PlatformOpen(const PString &, const PStringArray &, OpenMode, PBoolean, PBoolean, const PStringToString *)
 {
-  return PFalse;
+  return false;
 }
 #else
 PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
@@ -142,7 +142,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   }
 
   if (ConvertOSError(CreateProcess(prog, (LPSTR)(const char *)cmdLine,
-                                   NULL, NULL, PTrue, 0, envStr,
+                                   NULL, NULL, true, 0, envStr,
                                    NULL, &startup, &info) ? 0 : -2))
     os_handle = info.dwProcessId;
   else {
@@ -192,7 +192,7 @@ int PPipeChannel::GetReturnCode() const
 
 PBoolean PPipeChannel::CanReadAndWrite()
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PPipeChannel::IsRunning() const
@@ -289,7 +289,7 @@ PBoolean PPipeChannel::Write(const void * buffer, PINDEX len)
   lastWriteCount = 0;
   DWORD count;
   if (!ConvertOSError(WriteFile(m_hToChild, buffer, len, &count, NULL) ? 0 : -2, LastWriteError))
-    return PFalse;
+    return false;
   lastWriteCount = count;
   return lastWriteCount >= len;
 }
@@ -303,9 +303,9 @@ PBoolean PPipeChannel::Close()
     m_hFromChild.Close();
     m_hStandardError.Close();
     if (!TerminateProcess(info.hProcess, 1))
-      return PFalse;
+      return false;
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -321,7 +321,7 @@ PBoolean PPipeChannel::Execute()
 #ifdef _WIN32_WCE
 PBoolean PPipeChannel::ReadStandardError(PString &, PBoolean)
 {
-  return PFalse;
+  return false;
 }
 #else
 PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
@@ -336,7 +336,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
                           &bytesRead, NULL) ? 0 : -2, LastReadError);
 
   if (!wait)
-    return PFalse;
+    return false;
 
   char firstByte;
   if (!ReadFile(m_hStandardError, &firstByte, 1, &bytesRead, NULL))
@@ -348,7 +348,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
     return ConvertOSError(-2, LastReadError);
 
   if (available == 0)
-    return PTrue;
+    return true;
 
   return ConvertOSError(ReadFile(m_hStandardError,
                         errors.GetPointerAndSetLength(available+1)+1, available,

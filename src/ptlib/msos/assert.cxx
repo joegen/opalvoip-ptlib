@@ -55,12 +55,12 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   char wndClassName[100];
   GetClassName(hWnd, wndClassName, sizeof(wndClassName));
   if (strcmp(wndClassName, "ConsoleWindowClass") != 0)
-    return PTrue;
+    return true;
 
   DWORD wndProcess;
   GetWindowThreadProcessId(hWnd, &wndProcess);
   if (wndProcess != (DWORD)thisProcess)
-    return PTrue;
+    return true;
 
   PTRACE(4, "PTLib\tAwaiting key press on exit.");
   cerr << "\nPress a key to continue . . .";
@@ -72,7 +72,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   char dummy;
   DWORD readBytes;
   ReadConsole(in, &dummy, 1, &readBytes, NULL);
-  return PFalse;
+  return false;
 }
 
 

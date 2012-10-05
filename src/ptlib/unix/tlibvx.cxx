@@ -83,7 +83,7 @@ CCriticalSection::~CCriticalSection()
 void CCriticalSection::Lock()
 {
   if (locked == false) {
-    if (::intContext() == PFalse)
+    if (::intContext() == false)
       taskLocked = ::taskLock();
     else
       taskLocked = ERROR;
@@ -286,15 +286,15 @@ void PThread::WaitForTermination() const
 PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   if (PX_threadId == 0)
-    return PTrue;
+    return true;
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
     if (timeout == 0)
-      return PFalse;
+      return false;
     Current()->Sleep(100);
   }
- return PTrue;
+ return true;
 }
 
 
@@ -328,7 +328,7 @@ void PThread::Resume()
 
 PBoolean PThread::IsSuspended() const
 {
-  PBoolean isSuspended = PFalse;
+  PBoolean isSuspended = false;
   if (!IsTerminated())
     isSuspended = ::taskIsSuspended(PX_threadId);
   else
@@ -395,7 +395,7 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/)
   while (!IsTerminated()) {
     Current()->Sleep(100);
   }
-  return PTrue;
+  return true;
 }
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)

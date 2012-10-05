@@ -120,7 +120,7 @@ void Vxmltest::Main()
     return;
   }
 
-  if (!vxml->Open(PTrue)) {
+  if (!vxml->Open(true)) {
     PError << "error: cannot open VXML device in PCM mode" << endl;
     return;
   }
@@ -128,12 +128,12 @@ void Vxmltest::Main()
   cout << "Starting media" << endl;
   PThread * thread1 = new ChannelCopyThread(*vxml, player);
 
-  inputRunning = PTrue;
+  inputRunning = true;
   PThread * inputThread = PThread::Create(PCREATE_NOTIFIER(InputThread), 0, NoAutoDeleteThread);
 
   thread1->WaitForTermination();
 
-  inputRunning = PFalse;
+  inputRunning = false;
   cout << "Press a key to continue" << endl;
   inputThread->WaitForTermination();
 

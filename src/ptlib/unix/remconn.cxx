@@ -143,7 +143,7 @@ PBoolean PRemoteConnection::Open(const PString & name,
   if (name.IsEmpty()) {
     status = NoNameOrNumber;
     PProcess::PXShowSystemWarning(1000, ErrorTable[0].str);
-    return PFalse;
+    return false;
   }
 
   // cannot open remote connection not in config file
@@ -152,7 +152,7 @@ PBoolean PRemoteConnection::Open(const PString & name,
   if ((phoneNumber = config.GetString(name, NumberStr, "")).IsEmpty()) {
     status = NoNameOrNumber;
     PProcess::PXShowSystemWarning(1001, ErrorTable[1].str);
-    return PFalse;
+    return false;
   }
 
   // if there is a connection active, check to see if it has the same name
@@ -162,12 +162,12 @@ PBoolean PRemoteConnection::Open(const PString & name,
       PPPDeviceStatus(deviceStr) > 0) {
     osError = errno;
     status = Connected;
-    return PTrue;
+    return true;
   }
   osError = errno;
 
   if (existing)
-    return PFalse;
+    return false;
 
   Close();
 
@@ -264,7 +264,7 @@ PBoolean PRemoteConnection::Open(const PString & name,
 
     if (PPPDeviceStatus(deviceStr) > 0) {
       osError = errno;
-      return PTrue;
+      return true;
     }
 
     if (!timer.IsRunning())
@@ -280,7 +280,7 @@ PBoolean PRemoteConnection::Open(const PString & name,
   //
   Close();
 
-  return PFalse;
+  return false;
 }
 
 
@@ -389,7 +389,7 @@ static int PPPDeviceStatus(const char * devName)
   return stat;
 #else
 #warning "No PPPDeviceExists implementation defined"
-  return PFalse;
+  return false;
 #endif
 }
 
@@ -422,7 +422,7 @@ PRemoteConnection::Status PRemoteConnection::GetConfiguration(
   config.dnsAddress = cfg.GetString(NameServerStr);
   config.script = cfg.GetString(LoginStr, DefaultLogin);
   config.subEntries = 0;
-  config.dialAllSubEntries = PFalse;
+  config.dialAllSubEntries = false;
 
   return Connected;
 }

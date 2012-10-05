@@ -82,13 +82,13 @@ void PSound::SetFormat(unsigned channels,
 
 PBoolean PSound::Load(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSound::Save(const PFilePath & /*filename*/)
 {
-  return PFalse;
+  return false;
 }
 
 PBoolean PSound::Play(const PString & device)
@@ -97,9 +97,9 @@ PBoolean PSound::Play(const PString & device)
   PSoundChannel channel(device,
                        PSoundChannel::Player);
   if (!channel.IsOpen())
-    return PFalse;
+    return false;
 
-  return channel.PlaySound(*this, PTrue);
+  return channel.PlaySound(*this, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ PBoolean PSoundChannel::Open(const PString & device,
   Close();
 
   if (!ConvertOSError(os_handle = ::open(device, dir == Player ? O_RDONLY : O_WRONLY)))
-    return PFalse;
+    return false;
 
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
@@ -179,7 +179,7 @@ PBoolean PSoundChannel::SetFormat(unsigned numChannels,
   PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
   PAssert(bitsPerSample == 8 || bitsPerSample == 16, PInvalidParameter);
 
-  return PTrue;
+  return true;
 }
 
 
@@ -189,13 +189,13 @@ PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -210,30 +210,30 @@ PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
   Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return PFalse;
+    return false;
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::HasPlayCompleted()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::WaitForPlayCompletion()
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -245,38 +245,38 @@ PBoolean PSoundChannel::Read(void * buffer, PINDEX length)
 
 PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::RecordFile(const PFilePath & filename)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::StartRecording()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::IsRecordBufferFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::AreAllRecordBuffersFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::WaitForRecordBufferFull()
 {
   if (os_handle < 0) {
-    return PFalse;
+    return false;
   }
 
   return PXSetIOBlock(PXReadBlock, readTimeout);
@@ -285,23 +285,23 @@ PBoolean PSoundChannel::WaitForRecordBufferFull()
 
 PBoolean PSoundChannel::WaitForAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannel::Abort()
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannel::SetVolume(unsigned newVolume)
 {
-  return PFalse;
+  return false;
 }
 
 PBoolean  PSoundChannel::GetVolume(unsigned & volume)
 {
-  return PFalse;
+  return false;
 }
 
 

@@ -75,7 +75,7 @@ MySNMPServer::MySNMPServer()
 PBoolean MySNMPServer::Authorise(const PIPSocket::Address & received)
 {
   PTRACE(1, "SNMPServer\tReceived request from " << received);
-  return PTrue;
+  return true;
 }
 
 
@@ -84,7 +84,7 @@ PBoolean MySNMPServer::Authorise(const PIPSocket::Address & received)
 PBoolean MySNMPServer::ConfirmCommunity(PASN_OctetString & community)
 {
   PTRACE(1, "SNMPServer\tReceived community : " << community);
-  return PTrue;
+  return true;
 }
 
 /** This is called on every get request
@@ -92,7 +92,7 @@ PBoolean MySNMPServer::ConfirmCommunity(PASN_OctetString & community)
 */
 PBoolean MySNMPServer::OnGetRequest(PINDEX reqID, PSNMP::BindingList & vars, PSNMP::ErrorType & errCode)
 {
-  return PTrue;
+  return true;
 }
 
 /* We can confirm the version of the snmp request here
@@ -101,7 +101,7 @@ PBoolean MySNMPServer::OnGetRequest(PINDEX reqID, PSNMP::BindingList & vars, PSN
 PBoolean MySNMPServer::ConfirmVersion(PASN_Integer vers)
 {
   PTRACE(1,"SNMPServer\tReceived Request version " << vers);
-  return PTrue;
+  return true;
 }
 
 MySNMPServer::~MySNMPServer()

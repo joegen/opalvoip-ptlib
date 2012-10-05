@@ -67,7 +67,7 @@ void PChannel::Construct()
 //
 // PChannel::PXSetIOBlock
 //   This function is used to perform IO blocks.
-//   If the return value is PFalse, then the select call either
+//   If the return value is false, then the select call either
 //   returned an error or a timeout occurred. The member variable lastError
 //   can be used to determine which error occurred
 //
@@ -131,15 +131,15 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
   }
   px_threadMutex.Signal();
 
-  // if select returned < 0, then convert errno into lastError and return PFalse
+  // if select returned < 0, then convert errno into lastError and return false
   if (stat < 0)
     return ConvertOSError(stat, group);
 
-  // if the select succeeded, then return PTrue
+  // if the select succeeded, then return true
   if (stat > 0) 
-    return PTrue;
+    return true;
 
-  // otherwise, a timeout occurred so return PFalse
+  // otherwise, a timeout occurred so return false
   return SetErrorValues(Timeout, ETIMEDOUT, group);
 }
 
@@ -393,7 +393,7 @@ PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return PTrue;
+      return true;
 
     case EMSGSIZE:
       lastError = BufferTooSmall;
@@ -452,7 +452,7 @@ PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
       lastError = Miscellaneous;
       break;
   }
-  return PFalse;
+  return false;
 }
 
 

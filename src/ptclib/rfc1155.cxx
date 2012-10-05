@@ -40,7 +40,7 @@ PObject * PRFC1155_ObjectName::Clone() const
 //
 
 PRFC1155_ObjectSyntax::PRFC1155_ObjectSyntax(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Choice(tag, tagClass, 2, PFalse
+  : PASN_Choice(tag, tagClass, 2, false
 //#ifndef PASN_NOPRINTON
 //    ,(const PASN_Names *)Names_PRFC1155_ObjectSyntax,0
 //#endif
@@ -97,16 +97,16 @@ PBoolean PRFC1155_ObjectSyntax::CreateObject()
 {
   choice = new PRFC1155_SimpleSyntax(tag, tagClass);
   if (((PASN_Choice*)choice)->CreateObject())
-    return PTrue;
+    return true;
   delete choice;
 
   choice = new PRFC1155_ApplicationSyntax(tag, tagClass);
   if (((PASN_Choice*)choice)->CreateObject())
-    return PTrue;
+    return true;
   delete choice;
 
   choice = NULL;
-  return PFalse;
+  return false;
 }
 
 
@@ -133,7 +133,7 @@ const static PASN_Names Names_PRFC1155_SimpleSyntax[]={
 //
 
 PRFC1155_SimpleSyntax::PRFC1155_SimpleSyntax(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Choice(tag, tagClass, 4, PFalse
+  : PASN_Choice(tag, tagClass, 4, false
 #ifndef PASN_NOPRINTON
     ,(const PASN_Names *)Names_PRFC1155_SimpleSyntax,4
 #endif
@@ -147,20 +147,20 @@ PBoolean PRFC1155_SimpleSyntax::CreateObject()
   switch (tag) {
     case e_number :
       choice = new PASN_Integer();
-      return PTrue;
+      return true;
     case e_string :
       choice = new PASN_OctetString();
-      return PTrue;
+      return true;
     case e_object :
       choice = new PASN_ObjectId();
-      return PTrue;
+      return true;
     case e_empty :
       choice = new PASN_Null();
-      return PTrue;
+      return true;
   }
 
   choice = NULL;
-  return PFalse;
+  return false;
 }
 
 
@@ -187,7 +187,7 @@ const static PASN_Names Names_PRFC1155_ApplicationSyntax[]={
 //
 
 PRFC1155_ApplicationSyntax::PRFC1155_ApplicationSyntax(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Choice(tag, tagClass, 5, PFalse
+  : PASN_Choice(tag, tagClass, 5, false
 #ifndef PASN_NOPRINTON
     ,(const PASN_Names *)Names_PRFC1155_ApplicationSyntax,4
 #endif
@@ -311,25 +311,25 @@ PBoolean PRFC1155_ApplicationSyntax::CreateObject()
   switch (tag) {
     case e_counter :
       choice = new PRFC1155_Counter();
-      return PTrue;
+      return true;
     case e_gauge :
       choice = new PRFC1155_Gauge();
-      return PTrue;
+      return true;
     case e_ticks :
       choice = new PRFC1155_TimeTicks();
-      return PTrue;
+      return true;
     case e_arbitrary :
       choice = new PRFC1155_Opaque();
-      return PTrue;
+      return true;
   }
 
   choice = new PRFC1155_NetworkAddress(tag, tagClass);
   if (((PASN_Choice*)choice)->CreateObject())
-    return PTrue;
+    return true;
   delete choice;
 
   choice = NULL;
-  return PFalse;
+  return false;
 }
 
 
@@ -353,7 +353,7 @@ const static PASN_Names Names_PRFC1155_NetworkAddress[]={
 //
 
 PRFC1155_NetworkAddress::PRFC1155_NetworkAddress(unsigned tag, PASN_Object::TagClass tagClass)
-  : PASN_Choice(tag, tagClass, 1, PFalse
+  : PASN_Choice(tag, tagClass, 1, false
 #ifndef PASN_NOPRINTON
     ,(const PASN_Names *)Names_PRFC1155_NetworkAddress,1
 #endif
@@ -389,11 +389,11 @@ PBoolean PRFC1155_NetworkAddress::CreateObject()
   switch (tag) {
     case e_internet :
       choice = new PRFC1155_IpAddress();
-      return PTrue;
+      return true;
   }
 
   choice = NULL;
-  return PFalse;
+  return false;
 }
 
 

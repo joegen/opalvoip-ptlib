@@ -258,7 +258,7 @@ public:
   PInt64 GetIteration() { return iteration; }
 
   /**Cause this thread to stop work and end */
-  virtual void Terminate() { keepGoing = PFalse; }
+  virtual void Terminate() { keepGoing = false; }
 
   /**Access function, which is callled by the UserInterfaceThread.
    It reports the time since this program stared.*/
@@ -353,11 +353,11 @@ class SafeTest : public PProcess
     /**Report the status of the useOnThreadEnd flag */
     PBoolean UseOnThreadEnd();
 
-    /**Return PTrue or PFalse, to decide if we use PThread::Create */
+    /**Return true or false, to decide if we use PThread::Create */
     PBoolean AvoidPThreadCreate() { return avoidPThreadCreate; }
 
 
-    /**Return PTrue or PFalse to determine if a thread should be
+    /**Return true or false to determine if a thread should be
        launched to regularly report on status */
     PBoolean RegularReporting() { return regularReporting; }
  protected:

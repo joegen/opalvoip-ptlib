@@ -266,12 +266,12 @@ PBoolean PChannel::WriteString(const PString & str)
   while (written < len) {
     if (!Write((const char *)str + written, len - written)) {
       lastWriteCount += written;
-      return PFalse;
+      return false;
     }
     written += lastWriteCount;
   }
   lastWriteCount = written;
-  return PTrue;
+  return true;
 }
 
 
@@ -412,7 +412,7 @@ PBoolean PChannel::ReceiveCommandString(int nextChar,
 {
   if (nextChar != GetNextChar(reply, pos)) {
     pos = start;
-    return PFalse;
+    return false;
   }
 
   PINDEX dummyPos = pos;
@@ -422,7 +422,7 @@ PBoolean PChannel::ReceiveCommandString(int nextChar,
 
 PBoolean PChannel::SendCommandString(const PString & command)
 {
-  abortCommandString = PFalse;
+  abortCommandString = false;
 
   int nextChar;
   PINDEX sendPosition = 0;
@@ -434,11 +434,11 @@ PBoolean PChannel::SendCommandString(const PString & command)
     switch (nextChar) {
       default :
         if (!WriteChar(nextChar))
-          return PFalse;
+          return false;
         break;
 
       case NextCharEndOfString :
-        return PTrue;  // Success!!
+        return true;  // Success!!
 
       case NextCharSend :
         break;
@@ -453,15 +453,15 @@ PBoolean PChannel::SendCommandString(const PString & command)
           SetReadTimeout(timeout);
           while (ReadChar() >= 0)
             if (abortCommandString) // aborted
-              return PFalse;
+              return false;
         }
         else {
           receivePosition = sendPosition;
           do {
             if (abortCommandString) // aborted
-              return PFalse;
+              return false;
             if ((nextChar = ReadCharWithTimeout(timeout)) < 0)
-              return PFalse;
+              return false;
           } while (!ReceiveCommandString(nextChar,
                                      command, receivePosition, sendPosition));
 //          nextChar = GetNextChar(command, receivePosition);
@@ -470,13 +470,13 @@ PBoolean PChannel::SendCommandString(const PString & command)
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PChannel::Shutdown(ShutdownValue)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -597,7 +597,7 @@ PBoolean PNullChannel::Write(const void *, PINDEX length)
 PIndirectChannel::PIndirectChannel()
 {
   readChannel = writeChannel = NULL;
-  writeAutoDelete = readAutoDelete = PFalse;
+  writeAutoDelete = readAutoDelete = false;
 }
 
 
@@ -633,7 +633,7 @@ PString PIndirectChannel::GetName() const
 
 PBoolean PIndirectChannel::Close()
 {
-  PBoolean retval = PTrue;
+  PBoolean retval = true;
 
   flush();
 
@@ -674,7 +674,7 @@ PBoolean PIndirectChannel::IsOpen() const
   if (readChannel != NULL && readChannel == writeChannel)
     return readChannel->IsOpen();
 
-  PBoolean returnValue = readChannel != NULL ? readChannel->IsOpen() : PFalse;
+  PBoolean returnValue = readChannel != NULL ? readChannel->IsOpen() : false;
 
   if (writeChannel != NULL)
     returnValue = writeChannel->IsOpen() || returnValue;
@@ -691,7 +691,7 @@ PBoolean PIndirectChannel::Read(void * buf, PINDEX len)
 
   if (readChannel == NULL) {
     SetErrorValues(NotOpen, EBADF, LastReadError);
-    return PFalse;
+    return false;
   }
 
   readChannel->SetReadTimeout(readTimeout);
@@ -714,7 +714,7 @@ PBoolean PIndirectChannel::Write(const void * buf, PINDEX len)
 
   if (writeChannel == NULL) {
     SetErrorValues(NotOpen, EBADF, LastWriteError);
-    return PFalse;
+    return false;
   }
 
   writeChannel->SetWriteTimeout(writeTimeout);
@@ -737,7 +737,7 @@ PBoolean PIndirectChannel::Shutdown(ShutdownValue value)
   if (readChannel != NULL && readChannel == writeChannel)
     return readChannel->Shutdown(value);
 
-  PBoolean returnValue = readChannel != NULL ? readChannel->Shutdown(value) : PFalse;
+  PBoolean returnValue = readChannel != NULL ? readChannel->Shutdown(value) : false;
 
   if (writeChannel != NULL)
     returnValue = writeChannel->Shutdown(value) || returnValue;
@@ -767,7 +767,7 @@ PString PIndirectChannel::GetErrorText(ErrorGroup group) const
 
 PBoolean PIndirectChannel::Open(PChannel & channel)
 {
-  return Open(&channel, (PBoolean)PFalse);
+  return Open(&channel, (PBoolean)false);
 }
 
 
@@ -812,7 +812,7 @@ PBoolean PIndirectChannel::Open(PChannel * readChan,
 
 PBoolean PIndirectChannel::OnOpen()
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -891,10 +891,10 @@ PBoolean PFile::Rename(const PString & newname, PBoolean force)
   Close();
 
   if (!ConvertOSError(Rename(path, newname, force) ? 0 : -1))
-    return PFalse;
+    return false;
 
   path = path.GetDirectory() + newname;
-  return PTrue;
+  return true;
 }
 
 
@@ -906,7 +906,7 @@ PBoolean PFile::Close()
   flush();
 
 #ifdef WOT_NO_FILESYSTEM
-  PBoolean ok = PTrue;
+  PBoolean ok = true;
 #else
   PBoolean ok = ConvertOSError(_close(os_handle));
 #endif
@@ -987,7 +987,7 @@ PBoolean PFile::IsEndOfFile() const
 PBoolean PFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
 #ifdef WOT_NO_FILESYSTEM
-  return PTrue;
+  return true;
 #else
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
@@ -1001,28 +1001,28 @@ PBoolean PFile::Copy(const PFilePath & oldname, const PFilePath & newname, PBool
 {
   PFile oldfile(oldname, ReadOnly);
   if (!oldfile.IsOpen())
-    return PFalse;
+    return false;
 
   PFile newfile(newname,
                    WriteOnly, Create|Truncate|(force ? MustExist : Exclusive));
   if (!newfile.IsOpen())
-    return PFalse;
+    return false;
 
   PCharArray buffer(10000);
 
   off_t amount = oldfile.GetLength();
   while (amount > 10000) {
     if (!oldfile.Read(buffer.GetPointer(), 10000))
-      return PFalse;
+      return false;
     if (!newfile.Write((const char *)buffer, 10000))
-      return PFalse;
+      return false;
     amount -= 10000;
   }
 
   if (!oldfile.Read(buffer.GetPointer(), (int)amount))
-    return PFalse;
+    return false;
   if (!newfile.Write((const char *)buffer, (int)amount))
-    return PFalse;
+    return false;
 
   return newfile.Close();
 }

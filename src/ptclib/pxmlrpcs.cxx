@@ -87,12 +87,12 @@ PBoolean PXMLRPCServerResource::SetMethod(const PString & methodName, const PNot
   // set the function
   methodInfo->methodFunc = func;
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PXMLRPCServerResource::LoadHeaders(PHTTPRequest & /*request*/)    // Information on this request.
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PXMLRPCServerResource::OnPOSTData(PHTTPRequest & request,

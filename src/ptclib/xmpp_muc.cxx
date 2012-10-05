@@ -90,7 +90,7 @@ XMPP::MUC::Room::Room(C2S::StreamHandler * handler, const JID& jid, const PStrin
 PBoolean XMPP::MUC::Room::Enter()
 {
   if (PAssertNULL(m_Handler) == NULL)
-    return PFalse;
+    return false;
 
   JID ourUser(m_RoomJID);
   ourUser.SetResource(m_User.m_Nick);
@@ -112,7 +112,7 @@ PBoolean XMPP::MUC::Room::Enter()
 PBoolean XMPP::MUC::Room::Leave()
 {
   if (PAssertNULL(m_Handler) == NULL)
-    return PFalse;
+    return false;
 
   XMPP::Presence pre;
   pre.SetTo(m_RoomJID);
@@ -134,7 +134,7 @@ PBoolean XMPP::MUC::Room::SendMessage(const PString& msg)
 PBoolean XMPP::MUC::Room::SendMessage(Message& msg)
 {
   if (PAssertNULL(m_Handler) == NULL)
-    return PFalse;
+    return false;
 
   msg.SetTo(m_RoomJID);
   msg.SetType(XMPP::Message::GroupChat);

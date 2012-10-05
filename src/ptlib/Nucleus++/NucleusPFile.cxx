@@ -25,7 +25,7 @@ PBoolean PFile::Open(OpenMode mode, int opt)
 {
 #ifdef __NUCLEUS_PLUS__
 PAssertAlways("No PFile under Nucleus");
-return PTrue;
+return true;
 #else
   Close();
   clear();
@@ -68,7 +68,7 @@ return PTrue;
   removeOnClose = opt & Temporary;
 
   if (!ConvertOSError(os_handle = ::open(path, oflags, DEFAULT_FILE_MODE)))
-    return PFalse;
+    return false;
 
   return ConvertOSError(::fcntl(os_handle, F_SETFD, 1));
 #endif
@@ -79,7 +79,7 @@ PBoolean PFile::SetLength(off_t len)
 {
 #ifdef __NUCLEUS_PLUS__
 PAssertAlways("No PFile under Nucleus");
-  return PTrue;
+  return true;
 #else
   return ConvertOSError(ftruncate(GetHandle(), len));
 #endif
@@ -90,21 +90,21 @@ PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBool
 {
 #ifdef __NUCLEUS_PLUS__
   PAssertAlways("No PFile under Nucleus");
-  return PTrue;
+  return true;
 #else
   if (newname.Find('/') != P_MAX_INDEX) {
     errno = EINVAL;
-    return PFalse;
+    return false;
   }
 
   if (rename(oldname, oldname.GetPath() + newname) == 0)
-    return PTrue;
+    return true;
 
   if (!force || errno == ENOENT || !Exists(newname))
-    return PFalse;
+    return false;
 
-  if (!Remove(newname, PTrue))
-    return PFalse;
+  if (!Remove(newname, true))
+    return false;
 
   return rename(oldname, oldname.GetPath() + newname) == 0;
 }
@@ -116,17 +116,17 @@ PBoolean PFile::Move(const PFilePath & oldname, const PFilePath & newname, PBool
   PFilePath to = newname.GetDirectory() + newname.GetFileName();
 
   if (rename(from, to) == 0)
-    return PTrue;
+    return true;
 
   if (errno == EXDEV)
     return Copy(from, to, force) && Remove(from);
 
   if (force && errno == EEXIST)
-    if (Remove(to, PTrue))
+    if (Remove(to, true))
       if (rename(from, to) == 0)
-	return PTrue;
+	return true;
 
-  return PFalse;
+  return false;
 #endif
 }
 
@@ -135,7 +135,7 @@ PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
 {
 #ifdef __NUCLEUS_PLUS__
   PAssertAlways("No PFile under Nucleus");
-  return PTrue;
+  return true;
 #else
   int accmode;
 
@@ -166,12 +166,12 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 
   struct stat s;
   if (lstat(name, &s) != 0)
-    return PFalse;
+    return false;
 
   if (S_ISLNK(s.st_mode)) {
     status.type = PFileInfo::SymbolicLink;
     if (stat(name, &s) != 0) 
-      return PFalse;
+      return false;
   } 
 
   status.created     = s.st_ctime;
@@ -196,7 +196,7 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 #endif // !__BEOS__
 #endif
 
-  return PTrue;
+  return true;
 }
 
 
@@ -205,7 +205,7 @@ PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
 {
 #ifdef __NUCLEUS_PLUS__
   PAssertAlways("No PFile under Nucleus");
-  return PTrue;
+  return true;
 #else
   mode_t mode = 0;
 

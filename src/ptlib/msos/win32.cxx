@@ -264,7 +264,7 @@ void PDirectory::Construct()
 {
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
-  PCaselessString::AssignContents(CreateFullPath(*this, PTrue));
+  PCaselessString::AssignContents(CreateFullPath(*this, true));
 }
 
 
@@ -283,23 +283,23 @@ PBoolean PDirectory::Open(int newScanMask)
 
   hFindFile = FindFirstFile(wildcard, &fileinfo);
   if (hFindFile == INVALID_HANDLE_VALUE)
-    return PFalse;
+    return false;
 
-  return Filtered() ? Next() : PTrue;
+  return Filtered() ? Next() : true;
 }
 
 
 PBoolean PDirectory::Next()
 {
   if (hFindFile == INVALID_HANDLE_VALUE)
-    return PFalse;
+    return false;
 
   do {
     if (!FindNextFile(hFindFile, &fileinfo))
-      return PFalse;
+      return false;
   } while (Filtered());
 
-  return PTrue;
+  return true;
 }
 
 
@@ -395,10 +395,10 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
   }
 
   if (root.IsEmpty())
-    return PFalse;
+    return false;
 
 #ifndef _WIN32_WCE
-  PBoolean needTotalAndFree = PTrue;
+  PBoolean needTotalAndFree = true;
 
   static GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
         (GetDiskFreeSpaceExType)GetProcAddress(LoadLibrary("KERNEL32.DLL"), "GetDiskFreeSpaceExA");
@@ -412,7 +412,7 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
                            &totalNumberOfFreeBytes)) {
       total = totalNumberOfBytes.QuadPart;
       free = totalNumberOfFreeBytes.QuadPart;
-      needTotalAndFree = PFalse;
+      needTotalAndFree = false;
     }
   }
 
@@ -422,7 +422,7 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
     if (strcasecmp(fsName, "FAT32") == 0) {
       clusterSize = 4096; // Cannot use GetDiskFreeSpace() results for FAT32
       if (!needTotalAndFree)
-        return PTrue;
+        return true;
     }
   }
 
@@ -438,12 +438,12 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
                         &totalNumberOfClusters)) 
 {
     if (root[0] != '\\' || ::GetLastError() != ERROR_NOT_SUPPORTED)
-      return PFalse;
+      return false;
 
     PString drive = "A:";
     while (WNetAddConnection(root, NULL, drive) != NO_ERROR) {
       if (::GetLastError() != ERROR_ALREADY_ASSIGNED)
-        return PFalse;
+        return false;
       drive[0]++;
     }
     PBoolean ok = GetDiskFreeSpace(drive+'\\',
@@ -451,9 +451,9 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
                                &bytesPerSector,
                                &numberOfFreeClusters,
                                &totalNumberOfClusters);
-    WNetCancelConnection(drive, PTrue);
+    WNetCancelConnection(drive, true);
     if (!ok)
-      return PFalse;
+      return false;
   }
 
   if (needTotalAndFree) {
@@ -464,7 +464,7 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
   if (clusterSize == 0)
     clusterSize = bytesPerSector*sectorsPerCluster;
 
-  return PTrue;
+  return true;
 #elif _WIN32_WCE < 300
   USES_CONVERSION;
     ULARGE_INTEGER freeBytesAvailableToCaller;
@@ -478,11 +478,11 @@ PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clust
     total = totalNumberOfBytes.QuadPart;
     free = totalNumberOfFreeBytes.QuadPart;
     clusterSize = 512; //X3
-    return PTrue;
+    return true;
   }
-  return PFalse;
+  return false;
 #else
-  return PFalse;
+  return false;
 #endif
 }
 
@@ -761,7 +761,7 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return PTrue;
+      return true;
     case ENOENT :
       lastError = NotFound;
       break;
@@ -798,7 +798,7 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
       lastError = Miscellaneous;
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -808,7 +808,7 @@ PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
 PWin32Overlapped::PWin32Overlapped()
 {
   memset(this, 0, sizeof(*this));
-  hEvent = CreateEvent(NULL, PTrue, PFalse, NULL);
+  hEvent = CreateEvent(NULL, true, false, NULL);
 }
 
 PWin32Overlapped::~PWin32Overlapped()
@@ -842,8 +842,8 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
  * after the thread has been started
  *
 #ifndef _WIN32_WCE
-  AttachThreadInput(thread->threadId, ((PThread&)process).threadId, PTrue);
-  AttachThreadInput(((PThread&)process).threadId, thread->threadId, PTrue);
+  AttachThreadInput(thread->threadId, ((PThread&)process).threadId, true);
+  AttachThreadInput(((PThread&)process).threadId, thread->threadId, true);
 #endif
 */
 
@@ -869,8 +869,8 @@ void PThread::Win32AttachThreadInput()
 {
 #ifndef _WIN32_WCE
   PProcess & process = PProcess::Current();
-  ::AttachThreadInput(m_threadId, ((PThread&)process).m_threadId, PTrue);
-  ::AttachThreadInput(((PThread&)process).m_threadId, m_threadId, PTrue);
+  ::AttachThreadInput(m_threadId, ((PThread&)process).m_threadId, true);
+  ::AttachThreadInput(((PThread&)process).m_threadId, m_threadId, true);
 #endif
 }
 
@@ -1131,7 +1131,7 @@ void PProcess::HouseKeeping()
     DWORD result;
     int retries = 100;
 
-    while ((result = WaitForMultipleObjects(numHandles, handles, PFalse, delay)) == WAIT_FAILED) {
+    while ((result = WaitForMultipleObjects(numHandles, handles, false, delay)) == WAIT_FAILED) {
 
       // if we get an invalid handle error, than assume this is because a thread ended between
       // creating the handle list and testing it. So, cleanup the list before calling 
@@ -1335,10 +1335,10 @@ PString PProcess::GetUserName() const
 PBoolean PProcess::SetUserName(const PString & username, PBoolean)
 {
   if (username.IsEmpty())
-    return PFalse;
+    return false;
 
   PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  return false;
 }
 
 
@@ -1351,10 +1351,10 @@ PString PProcess::GetGroupName() const
 PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean)
 {
   if (groupname.IsEmpty())
-    return PFalse;
+    return false;
 
   PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  return false;
 }
 
 
@@ -1366,7 +1366,7 @@ PProcessIdentifier PProcess::GetCurrentProcessID()
 
 PBoolean PProcess::IsServiceProcess() const
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -1374,7 +1374,7 @@ PBoolean PProcess::IsServiceProcess() const
 
 PBoolean PProcess::IsGUIProcess() const
 {
-  return PTrue;
+  return true;
 }
 
 #else
@@ -1848,7 +1848,7 @@ PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
   m_lastError.MakeEmpty();
 
   if (m_hDLL == NULL)
-    return PFalse;
+    return false;
 
   PVarString funcname = name;
   func = (Function)GetProcAddress(m_hDLL, funcname);

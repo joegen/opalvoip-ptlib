@@ -89,7 +89,7 @@ void Threadex::Main()
   if (args.HasOption('v')) {
     cout << "Product Name: " << GetName() << endl
          << "Manufacturer: " << GetManufacturer() << endl
-         << "Version     : " << GetVersion(PTrue) << endl
+         << "Version     : " << GetVersion(true) << endl
          << "System      : " << GetOSName() << '-'
          << GetOSHardware() << ' '
          << GetOSVersion() << endl;
@@ -224,7 +224,7 @@ void LauncherThread::Main()
                                      PThread::NormalPriority,
                                      "auto deleted %X");
       } else {
-        thread = new DelayThread(delay, PTrue);
+        thread = new DelayThread(delay, true);
         thread->Resume();
       }
       //     PThread::Sleep(1);

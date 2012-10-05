@@ -111,7 +111,7 @@ PBoolean PSocksProtocol::SetServer(const PString & hostname, WORD port)
 
   serverPort = port;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -128,7 +128,7 @@ PBoolean PSocksProtocol::ConnectSocksServer(PTCPSocket & socket)
 {
   PIPSocket::Address ipnum;
   if (!PIPSocket::GetHostAddress(serverHost, ipnum))
-    return PFalse;
+    return false;
 
   remotePort = socket.GetPort();
   socket.SetPort(serverPort);
@@ -143,7 +143,7 @@ PBoolean PSocksProtocol::SendSocksCommand(PTCPSocket & socket,
 {
   if (!socket.IsOpen()) {
     if (!ConnectSocksServer(socket))
-      return PFalse;
+      return false;
 
     socket << SOCKS_VERSION_5
            << (authenticationUsername.IsEmpty() ? '\001' : '\002') // length
@@ -154,12 +154,12 @@ PBoolean PSocksProtocol::SendSocksCommand(PTCPSocket & socket,
 
     BYTE auth_pdu[2];
     if (!socket.ReadBlock(auth_pdu, sizeof(auth_pdu)))  // Should get 2 byte reply
-      return PFalse;
+      return false;
 
     if (auth_pdu[0] != SOCKS_VERSION_5 || auth_pdu[1] == SOCKS_AUTH_FAILED) {
       socket.Close();
       SetErrorCodes(PChannel::AccessDenied, EACCES);
-      return PFalse;
+      return false;
     }
 
     if (auth_pdu[1] == SOCKS_AUTH_USER_PASS) {
@@ -172,12 +172,12 @@ PBoolean PSocksProtocol::SendSocksCommand(PTCPSocket & socket,
              << ::flush;
 
       if (!socket.ReadBlock(auth_pdu, sizeof(auth_pdu)))  // Should get 2 byte reply
-        return PFalse;
+        return false;
 
       if (/*auth_pdu[0] != SOCKS_VERSION_5 ||*/ auth_pdu[1] != 0) {
         socket.Close();
         SetErrorCodes(PChannel::AccessDenied, EACCES);
-        return PFalse;
+        return false;
       }
     }
   }
@@ -215,15 +215,15 @@ PBoolean PSocksProtocol::ReceiveSocksResponse(PTCPSocket & socket,
 {
   int reply;
   if ((reply = socket.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   if (reply != SOCKS_VERSION_5) {
     SetErrorCodes(PChannel::Miscellaneous, EINVAL);
-    return PFalse;
+    return false;
   }
 
   if ((reply = socket.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   switch (reply) {
     case 0 :  // No error
@@ -231,48 +231,48 @@ PBoolean PSocksProtocol::ReceiveSocksResponse(PTCPSocket & socket,
 
     case 2 :  // Refused permission
       SetErrorCodes(PChannel::AccessDenied, EACCES);
-      return PFalse;
+      return false;
 
     case 3 : // Network unreachable
       SetErrorCodes(PChannel::NotFound, ENETUNREACH);
-      return PFalse;
+      return false;
 
     case 4 : // Host unreachable
       SetErrorCodes(PChannel::NotFound, EHOSTUNREACH);
-      return PFalse;
+      return false;
 
     case 5 : // Connection refused
       SetErrorCodes(PChannel::NotFound, EHOSTUNREACH);
-      return PFalse;
+      return false;
 
     default :
       SetErrorCodes(PChannel::Miscellaneous, EINVAL);
-      return PFalse;
+      return false;
   }
 
   // Ignore next byte (reserved)
   if ((reply = socket.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   // Get type byte for bound address
   if ((reply = socket.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   switch (reply) {
     case SOCKS_ADDR_DOMAINNAME :
       // Get length
       if ((reply = socket.ReadChar()) < 0)
-        return PFalse;
+        return false;
 
       if (!PIPSocket::GetHostAddress(socket.ReadString(reply), addr))
-        return PFalse;
+        return false;
       break;
 
     case SOCKS_ADDR_IPV4 :
       {
           in_addr add;
           if (!socket.ReadBlock(&add, sizeof(add)))
-              return PFalse;
+              return false;
           addr = add;
       }
       break;
@@ -282,7 +282,7 @@ PBoolean PSocksProtocol::ReceiveSocksResponse(PTCPSocket & socket,
       {
         in6_addr add;
         if (!socket.ReadBlock(&add, sizeof(add)))
-            return PFalse;
+            return false;
         addr = add;
       }
       break;
@@ -290,15 +290,15 @@ PBoolean PSocksProtocol::ReceiveSocksResponse(PTCPSocket & socket,
 
     default :
       SetErrorCodes(PChannel::Miscellaneous, EINVAL);
-      return PFalse;
+      return false;
   }
 
   WORD rxPort;
   if (!socket.ReadBlock(&rxPort, sizeof(rxPort)))
-    return PFalse;
+    return false;
 
   port = PSocket::Net2Host(rxPort);
-  return PTrue;
+  return true;
 }
 
 
@@ -313,27 +313,27 @@ PSocksSocket::PSocksSocket(WORD port)
 PBoolean PSocksSocket::Connect(const PString & address)
 {
   if (!SendSocksCommand(*this, SOCKS_CMD_CONNECT, address, 0))
-    return PFalse;
+    return false;
 
   port = remotePort;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksSocket::Connect(const Address & addr)
 {
   if (!SendSocksCommand(*this, SOCKS_CMD_CONNECT, NULL, addr))
-    return PFalse;
+    return false;
 
   port = remotePort;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksSocket::Connect(WORD, const Address &)
 {
   PAssertAlways(PUnsupportedFeature);
-  return PFalse;
+  return false;
 }
 
 
@@ -343,17 +343,17 @@ PBoolean PSocksSocket::Listen(unsigned, WORD newPort, Reusability reuse)
   PAssert(reuse, PUnsupportedFeature);
 
   if (!SendSocksCommand(*this, SOCKS_CMD_BIND, NULL, 0))
-    return PFalse;
+    return false;
 
   port = localPort;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksSocket::Accept()
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   return ReceiveSocksResponse(*this, remoteAddress, remotePort);
 }
@@ -388,42 +388,42 @@ int PSocksSocket::TransferHandle(PSocksSocket & destination)
 PBoolean PSocksSocket::GetLocalAddress(Address & addr)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = localAddress;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksSocket::GetLocalAddress(Address & addr, WORD & port)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = localAddress;
   port = localPort;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksSocket::GetPeerAddress(Address & addr)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = remoteAddress;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksSocket::GetPeerAddress(Address & addr, WORD & port)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = remoteAddress;
   port = remotePort;
-  return PTrue;
+  return true;
 }
 
 
@@ -461,12 +461,12 @@ PBoolean PSocks4Socket::SendSocksCommand(PTCPSocket & socket,
 {
   if (hostname != NULL) {
     if (!GetHostAddress(hostname, addr))
-      return PFalse;
+      return false;
   }
 
   if (!IsOpen()) {
     if (!ConnectSocksServer(*this))
-      return PFalse;
+      return false;
   }
 
   PString user = PProcess::Current().GetUserName();
@@ -487,15 +487,15 @@ PBoolean PSocks4Socket::ReceiveSocksResponse(PTCPSocket & socket,
 {
   int reply;
   if ((reply = socket.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   if (reply != 0 /*!= SOCKS_VERSION_4*/) {
     SetErrorCodes(PChannel::Miscellaneous, EINVAL);
-    return PFalse;
+    return false;
   }
 
   if ((reply = socket.ReadChar()) < 0)
-    return PFalse;
+    return false;
 
   switch (reply) {
     case 90 :  // No error
@@ -503,20 +503,20 @@ PBoolean PSocks4Socket::ReceiveSocksResponse(PTCPSocket & socket,
 
     case 91 : // Connection refused
       SetErrorCodes(PChannel::NotFound, EHOSTUNREACH);
-      return PFalse;
+      return false;
 
     case 92 :  // Refused permission
       SetErrorCodes(PChannel::AccessDenied, EACCES);
-      return PFalse;
+      return false;
 
     default :
       SetErrorCodes(PChannel::Miscellaneous, EINVAL);
-      return PFalse;
+      return false;
   }
 
   WORD rxPort;
   if (!socket.ReadBlock(&rxPort, sizeof(rxPort)))
-    return PFalse;
+    return false;
 
   port = PSocket::Net2Host(rxPort);
 
@@ -524,10 +524,10 @@ PBoolean PSocks4Socket::ReceiveSocksResponse(PTCPSocket & socket,
   if ( socket.ReadBlock(&add, sizeof(add)) )
   {
     addr = add;
-    return PTrue;
+    return true;
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -576,27 +576,27 @@ PObject * PSocksUDPSocket::Clone() const
 PBoolean PSocksUDPSocket::Connect(const PString & address)
 {
   if (!SendSocksCommand(socksControl, SOCKS_CMD_UDP_ASSOCIATE, address, 0))
-    return PFalse;
+    return false;
 
   socksControl.GetPeerAddress(serverAddress);
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksUDPSocket::Connect(const Address & addr)
 {
   if (!SendSocksCommand(socksControl, SOCKS_CMD_UDP_ASSOCIATE, NULL, addr))
-    return PFalse;
+    return false;
 
   socksControl.GetPeerAddress(serverAddress);
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksUDPSocket::Connect(WORD, const Address &)
 {
   PAssertAlways(PUnsupportedFeature);
-  return PFalse;
+  return false;
 }
 
 
@@ -606,53 +606,53 @@ PBoolean PSocksUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
   PAssert(reuse, PUnsupportedFeature);
 
   if (!SendSocksCommand(socksControl, SOCKS_CMD_UDP_ASSOCIATE, NULL, 0))
-    return PFalse;
+    return false;
 
   socksControl.GetPeerAddress(serverAddress);
   port = localPort;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksUDPSocket::GetLocalAddress(Address & addr)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = localAddress;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksUDPSocket::GetLocalAddress(Address & addr, WORD & port)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = localAddress;
   port = localPort;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksUDPSocket::GetPeerAddress(Address & addr)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = remoteAddress;
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSocksUDPSocket::GetPeerAddress(Address & addr, WORD & port)
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
 
   addr = remoteAddress;
   port = remotePort;
-  return PTrue;
+  return true;
 }
 
 
@@ -662,16 +662,16 @@ PBoolean PSocksUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD 
   Address rx_addr;
   WORD rx_port;
   if (!PUDPSocket::ReadFrom(newbuf.GetPointer(), newbuf.GetSize(), rx_addr, rx_port))
-    return PFalse;
+    return false;
 
   if (rx_addr != serverAddress || rx_port != serverPort)
-    return PFalse;
+    return false;
 
   PINDEX port_pos;
   switch (newbuf[3]) {
     case SOCKS_ADDR_DOMAINNAME :
       if (!PIPSocket::GetHostAddress(PString((const char *)&newbuf[5], (PINDEX)newbuf[4]), addr))
-        return PFalse;
+        return false;
 
       port_pos = newbuf[4]+5;
       break;
@@ -683,13 +683,13 @@ PBoolean PSocksUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD 
 
     default :
       SetErrorCodes(PChannel::Miscellaneous, EINVAL);
-      return PFalse;
+      return false;
   }
 
   port = (WORD)((newbuf[port_pos] << 8)|newbuf[port_pos+1]);
   memcpy(buf, &newbuf[port_pos+2], len);
 
-  return PTrue;
+  return true;
 }
 
 

@@ -128,7 +128,7 @@ class PVideoFrameInfo : public PObject
     /**Set the Storage Aspect Ratio size to be used.
 
        Default behaviour sets the sarWidth and sarHeight variables and
-       returns PTrue.
+       returns true.
     */
     virtual PBoolean SetFrameSar(
       unsigned width,   ///< New SAR width of frame
@@ -138,7 +138,7 @@ class PVideoFrameInfo : public PObject
      /**Get the Storage Aspect Ratio size being used.
 
        Default behaviour returns the value of the sarWidth and sarHeight
-       variable and returns PTrue.
+       variable and returns true.
     */
     virtual PBoolean GetSarSize(
       unsigned & width, ///< Current SAR width of frame
@@ -1119,7 +1119,7 @@ class PVideoInputDevice : public PVideoDevice
 
        In video-mode the camera continuously sends new frames.
 
-       The default implementation does nothing but returns PFalse.
+       The default implementation does nothing but returns false.
       */
     virtual bool SetCaptureMode(unsigned mode);
 

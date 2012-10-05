@@ -85,7 +85,7 @@ PBoolean Xmlrpcsrvr::Initialise(const char * initMsg)
   //  create the home page
   static const char welcomeHtml[] = "welcome.html";
   if (PFile::Exists(welcomeHtml))
-    httpNameSpace.AddResource(new PServiceHTTPFile(welcomeHtml, PTrue), PHTTPSpace::Overwrite);
+    httpNameSpace.AddResource(new PServiceHTTPFile(welcomeHtml, true), PHTTPSpace::Overwrite);
   else {
     PHTML html;
     html << PHTML::Title("Welcome to "+GetName())
@@ -95,7 +95,7 @@ PBoolean Xmlrpcsrvr::Initialise(const char * initMsg)
          << gifHTML
          << PHTML::Heading(1)
          << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
-         << " Version " << GetVersion(PTrue) << PHTML::BreakLine()
+         << " Version " << GetVersion(true) << PHTML::BreakLine()
          << ' ' << compilationDate.AsString("d MMMM yy")
          << PHTML::BreakLine()
          << "by"
@@ -108,7 +108,7 @@ PBoolean Xmlrpcsrvr::Initialise(const char * initMsg)
          << PHTML::HRule()
          << PHTML::Paragraph()
 
-         << PHTML::HotLink("http://www.equival.com.au/xmlrpcsrvr/relnotes/" + GetVersion(PTrue) + ".html")
+         << PHTML::HotLink("http://www.equival.com.au/xmlrpcsrvr/relnotes/" + GetVersion(true) + ".html")
          << "Release notes" << PHTML::HotLink()
          << " on this version of " << GetProductName() << " are available."
          << PHTML::Paragraph()
@@ -126,11 +126,11 @@ PBoolean Xmlrpcsrvr::Initialise(const char * initMsg)
     PSYSTEMLOG(Info, "Opened master socket for HTTP: " << httpListeningSocket->GetPort());
   else {
     PSYSTEMLOG(Fatal, "Cannot run without HTTP port: " << httpListeningSocket->GetErrorText());
-    return PFalse;
+    return false;
   }
 
   PSYSTEMLOG(Info, "Service " << GetName() << ' ' << initMsg);
-  return PTrue;
+  return true;
 }
 
 
