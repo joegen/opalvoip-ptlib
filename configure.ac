@@ -1752,6 +1752,37 @@ PTLIB_SIMPLE_OPTION([vfw], [VFW_CAPTURE], [enable video for windows capture], [H
 
 
 dnl ########################################################################
+dnl check for GStreamer library
+
+dnl MSWIN_DISPLAY    gstreamer,GStreamer (OSSBuild)
+dnl MSWIN_CHECK_FILE gstreamer,include\gstreamer-0.10\gst\gst.h,P_GSTREAMER_WIN32=1
+dnl MSWIN_DIR_SYMBOL gstreamer,GSTREAMER_DIR
+dnl MSWIN_CHECK_DIR  gstreamer,\Program Files\OSSBuild\GStreamer\v0.10.6\sdk
+dnl MSWIN_CHECK_DIR  gstreamer,\Program Files (x86)\OSSBuild\GStreamer\v0.10.6\sdk
+
+AC_ARG_ENABLE([gstreamer],
+	      AS_HELP_STRING([--disable-lgstreamerua],[disable GStreamer support]),
+	      [enable_gstreamer=$enableval],
+	      [enable_gstreamer=$default_lua]
+	     )
+
+if test "$enable_gstreamer" = "no" ; then
+  AC_MSG_NOTICE(GStreamer disabled)
+else
+  PKG_CHECK_MODULES([GSTREAMER], 
+                    [gstreamer-app-0.10], 
+                    [
+                      HAS_GSTREAMER=1
+                      AC_DEFINE(P_GSTREAMER, 1, "GStreamer found")
+                      STDCCFLAGS="$STDCCFLAGS $GSTREAMER_CFLAGS"
+                      ENDLDLIBS="$ENDLDLIBS $GSTREAMER_LIBS"
+                    ],
+		    [HAS_GSTREAMER=])
+fi
+AC_SUBST(HAS_GSTREAMER)
+
+
+dnl ########################################################################
 dnl look for MEMORY_CHECK enabled.
 
 AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
