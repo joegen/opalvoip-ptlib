@@ -280,7 +280,7 @@ WORD Psockaddr::GetPort() const
 static PWinSock dummyForWinSock; // Assure winsock is initialised
 #endif
 
-#if (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)) || defined(__NUCLEUS_PLUS__)
+#if (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)) || defined(__NUCLEUS_PLUS__)
 #define REENTRANT_BUFFER_LEN 1024
 #endif
 
@@ -613,7 +613,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     host_info = Vx_gethostbyname((char *)name, &hostEnt);
     localErrNo = h_errno;
 
-#elif defined P_LINUX || defined(P_GNU_HURD)
+#elif defined P_LINUX || defined(P_GNU_HURD) || defined(P_ANDROID)
 
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
@@ -626,7 +626,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
         localErrNo = NETDB_SUCCESS;
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)) || defined(__NUCLEUS_PLUS__)
+#elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)) || defined(__NUCLEUS_PLUS__)
 
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
@@ -732,10 +732,14 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
       localErrNo = h_errno;
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif defined P_RTEMS || defined P_CYGWIN || defined P_MINGW
+#elif defined P_RTEMS || defined P_CYGWIN || defined P_MINGW || defined P_ANDROID
 
+    // Mutex here is not perfect, but will be 100% provided application only
+    // ever use PTLib do name lookups, no direct calls to gethostbyaddr()
+    mutex.Wait();
     host_info = ::gethostbyaddr(addr.GetPointer(), addr.GetSize(), PF_INET);
     localErrNo = h_errno;
+    mutex.Signal();
 
 #elif defined P_VXWORKS
 
@@ -747,15 +751,15 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
     do {
-      ::gethostbyaddr_r(addr.GetPointer(), addr.GetSize(),
-                        PF_INET, 
-                        &hostEnt,
-                        buffer, REENTRANT_BUFFER_LEN,
-                        &host_info,
-                        &localErrNo);
+      gethostbyaddr_r(addr.GetPointer(), addr.GetSize(),
+                      PF_INET, 
+                      &hostEnt,
+                      buffer, REENTRANT_BUFFER_LEN,
+                      &host_info,
+                      &localErrNo);
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)) || defined(__NUCLEUS_PLUS__)
+#elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)) || defined(__NUCLEUS_PLUS__)
 
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
@@ -2531,8 +2535,10 @@ PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
     m_lastReceiveAddress(loopback4)
 #endif
 {
+#if P_QOS
   if (qos != NULL)
       qosSpec = *qos;
+#endif
   m_sendPort = 0;
   SetPort(newPort);
   OpenSocket(iAddressFamily);
@@ -2548,8 +2554,10 @@ PUDPSocket::PUDPSocket(const PString & service, PQoS * qos, int iAddressFamily)
     m_lastReceiveAddress(loopback4)
 #endif
 {
+#if P_QOS
   if (qos != NULL)
       qosSpec = *qos;
+#endif
   m_sendPort = 0;
   SetPort(service);
   OpenSocket(iAddressFamily);

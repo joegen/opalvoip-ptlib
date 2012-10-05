@@ -45,27 +45,28 @@
 #include <ptbuildopts.h>
 #include <ptlib/sockets.h>
 
-#include <map>
-#include <ptlib/pstring.h>
 
-#if defined(SIOCGENADDR)
-#define SIO_Get_MAC_Address SIOCGENADDR
-#define  ifr_macaddr         ifr_ifru.ifru_enaddr
-#elif defined(SIOCGIFHWADDR)
-#define SIO_Get_MAC_Address SIOCGIFHWADDR
-#define  ifr_macaddr         ifr_hwaddr.sa_data
+#if !defined(P_CYGWIN)
+#include <net/if.h>
 #endif
 
-#if defined(P_LINUX) && P_HAS_RECVMSG && P_HAS_RECVMSG_MSG_ERRQUEUE
-  #include "asm/types.h"
-  #include "linux/errqueue.h"
-#endif
-
-#if defined(P_LINUX)
-#include <sys/types.h>
-#include <sys/socket.h>
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
 #include <ifaddrs.h>
 #endif
+
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_QNX)
+#include <sys/sysctl.h>
+#endif
+
+#ifdef P_RTEMS
+#include <bsp.h>
+#endif
+
+#if (defined(P_LINUX) || defined(P_ANDROID)) && P_HAS_RECVMSG && P_HAS_RECVMSG_MSG_ERRQUEUE
+  #include <asm/types.h>
+  #include <linux/errqueue.h>
+#endif
+
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 #define ifr_netmask ifr_addr
@@ -77,35 +78,21 @@
 #include <net/route.h>
 #endif
 
-#include <netinet/in.h>
-#if !defined(P_QNX)  && !defined(P_IPHONEOS)
+#if !defined(P_QNX) && !defined(P_IPHONEOS)
 #include <netinet/if_ether.h>
 #endif
 
-#if defined(P_FREEBSD) || defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
-#include <ifaddrs.h>
 #endif
 
-#define ROUNDUP(a) \
-        ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 
+#if defined(SIOCGENADDR)
+#define SIO_Get_MAC_Address SIOCGENADDR
+#define  ifr_macaddr         ifr_ifru.ifru_enaddr
+#elif defined(SIOCGIFHWADDR)
+#define SIO_Get_MAC_Address SIOCGIFHWADDR
+#define  ifr_macaddr         ifr_hwaddr.sa_data
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_QNX)
-#include <sys/sysctl.h>
-#endif
-
-#ifdef P_RTEMS
-#include <bsp.h>
-#endif
-
-#ifdef P_BEOS
-#include <posix/sys/ioctl.h> // for FIONBIO
-#include <be/bone/net/if.h> // for ifconf
-#include <be/bone/sys/sockio.h> // for SIOCGI*
-#endif
-
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 // Define _SIZEOF_IFREQ for platforms (eg OpenBSD) which do not have it.
 #ifndef _SIZEOF_ADDR_IFREQ
 #define _SIZEOF_ADDR_IFREQ(ifr) \
@@ -113,7 +100,7 @@
   (sizeof(struct ifreq) - sizeof(struct sockaddr) + \
   (ifr).ifr_addr.sa_len) : sizeof(struct ifreq))
 #endif
-#endif
+
 
 int PX_NewHandle(const char *, int);
 
@@ -123,6 +110,10 @@ int PX_NewHandle(const char *, int);
 #define INET_ADDR_LEN      18
 extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
 #endif // P_VXWORKS
+
+
+#define ROUNDUP(a) ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
+
 
 //////////////////////////////////////////////////////////////////////////////
 // P_fd_set
@@ -795,7 +786,7 @@ PIPSocket::Address NetmaskV6WithPrefix(unsigned prefixbits, unsigned masklen = 0
   return PIPSocket::Address(16, (BYTE*)&fullmask);
 }
 
-#if defined(P_LINUX) || defined (P_AIX)
+#if defined(P_LINUX) || defined(P_ANDROID) || defined (P_AIX)
 
 PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 {
@@ -1368,10 +1359,9 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 #ifdef P_HAS_NETLINK
 
 #include <asm/types.h>
-#include <sys/socket.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
-#include <linux/genetlink.h>
+//#include <linux/genetlink.h>
 
 #include <memory.h>
 #include <errno.h>
@@ -1479,12 +1469,6 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 }
 
 #elif defined(P_IPHONEOS)
-
-#include <netdb.h>
-#include <sys/time.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <SystemConfiguration/SCNetworkReachability.h>

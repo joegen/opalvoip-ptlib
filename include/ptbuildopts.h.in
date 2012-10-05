@@ -56,6 +56,7 @@
 #undef    P_CYGWIN
 #undef    P_MINGW
 #undef    P_GNU_HURD
+#undef    P_ANDROID
 #undef    P_UNKNOWN_OS
 
 #ifndef _WIN32_WCE
@@ -117,17 +118,31 @@
 // Threads and Unix variants for network stuff
 //
 
-#undef P_PTHREADS
-#undef P_HAS_SEMAPHORES
-#undef P_HAS_ATOMIC_INT
-#undef P_NEEDS_GNU_CXX_NAMESPACE
+#if P_ANDROID
+  #define P_PTHREADS 1
+  #define P_HAS_SEMAPHORES 1
+  #define P_HAS_ATOMIC_INT 1
+  #define P_NEEDS_GNU_CXX_NAMESPACE 1
+  #define P_HAS_RECURSIVE_MUTEX 1
+  #define P_HAS_RECVMSG 1
+  #define P_HAS_RECVMSG_MSG_ERRQUEUE 1
+  #define P_HAS_RECVMSG_IP_RECVERR 1
+  #define P_HAS_NETLINK 1
+  #define P_SETPGRP_NOPARM 1
+#else
+  #undef P_PTHREADS
+  #undef P_HAS_SEMAPHORES
+  #undef P_HAS_ATOMIC_INT
+  #undef P_NEEDS_GNU_CXX_NAMESPACE
+  #undef P_HAS_RECURSIVE_MUTEX
+  #undef P_HAS_RECVMSG
+  #undef P_HAS_RECVMSG_MSG_ERRQUEUE
+  #undef P_HAS_RECVMSG_IP_RECVERR
+  #undef P_HAS_NETLINK
+  #undef P_SETPGRP_NOPARM
+#endif
+
 #undef P_GNU_ALLOCATOR
-#undef P_HAS_RECURSIVE_MUTEX
-#undef P_HAS_RECVMSG
-#undef P_HAS_RECVMSG_MSG_ERRQUEUE
-#undef P_HAS_RECVMSG_IP_RECVERR
-#undef P_HAS_NETLINK
-#undef P_SETPGRP_NOPARM
 #undef P_HAS_NAMED_SEMAPHORES
 #undef P_PTHREADS_XPG6      
 #undef P_HAS_SEMAPHORES_XPG6
@@ -821,7 +836,6 @@
 
 #undef P_MEDIALIB
 #undef P_TINY_JPEG
-
 
 /////////////////////////////////////////////////
 //
