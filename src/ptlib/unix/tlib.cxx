@@ -70,7 +70,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU_HURD)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #elif defined(P_RTEMS)
@@ -214,13 +214,11 @@ PDirectory PProcess::PXGetHomeDir ()
   char *ptr;
   struct passwd *pw = NULL;
 
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
   struct passwd pwd;
   char buffer[1024];
 #if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
-  ::getpwuid_r(geteuid(), &pwd,
-               buffer, 1024,
-               &pw);
+  ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
 #else
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
 #endif
@@ -264,7 +262,7 @@ PString PProcess::GetUserName() const
 
 #else
 
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw = NULL;
@@ -305,7 +303,7 @@ PBoolean PProcess::SetUserName(const PString & username, PBoolean permanent)
       uid = s.AsInteger();
   }
   else {
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
     struct passwd pwd;
     char buffer[1024];
     struct passwd * pw = NULL;
@@ -352,7 +350,7 @@ PString PProcess::GetGroupName() const
 
 #else
 
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
   struct group grp;
   char buffer[1024];
   struct group * gr = NULL;
@@ -393,7 +391,7 @@ PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean permanent)
       gid = s.AsInteger();
   }
   else {
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
     struct group grp;
     char buffer[1024];
     struct group * gr = NULL;

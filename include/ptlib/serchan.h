@@ -34,6 +34,8 @@
 #ifndef PTLIB_SERIALCHANNEL_H
 #define PTLIB_SERIALCHANNEL_H
 
+#if P_SERIAL
+
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
@@ -383,6 +385,8 @@ class PSerialChannel : public PChannel
 #endif
 };
 
+
+#endif // P_SERIAL
 
 #endif // PTLIB_SERIALCHANNEL_H
 

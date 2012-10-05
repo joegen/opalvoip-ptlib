@@ -150,7 +150,7 @@ using namespace std; // Not a good practice (name space polution), but will take
 #endif
 
 #if P_USE_INLINES
-#define PINLINE inline
+#define PINLINE __inline
 #else
 #define PINLINE
 #endif

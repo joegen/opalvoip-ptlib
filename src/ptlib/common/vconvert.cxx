@@ -81,7 +81,7 @@ class PStandardColourConverter : public PColourConverter
       const PVideoFrameInfo & src,
       const PVideoFrameInfo & dst
     ) : PColourConverter(src, dst)
-#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
+#if defined(P_TINY_JPEG)
       , jdec(NULL)
 #endif
     { }
@@ -171,7 +171,7 @@ class PStandardColourConverter : public PColourConverter
       BYTE *yuv420p
     );
 
-#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
+#if defined(P_TINY_JPEG)
       /* Use by the jpeg decompressor */
     struct jdec_private *jdec;
     bool MJPEGtoXXX(
@@ -2744,7 +2744,7 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
   return true;
 }
 
-#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
+#if defined (P_TINY_JPEG)
 /*
  * Convert a MJPEG Buffer to one plane pixel format (RGB24, BGR24, GRAY)
  * image need to be same size.

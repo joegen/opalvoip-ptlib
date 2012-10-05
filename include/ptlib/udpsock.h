@@ -201,7 +201,9 @@ class PUDPSocket : public PIPDatagramSocket
 
     virtual const char * GetProtocolName() const;
 
+#if P_QOS
     PQoS    qosSpec;
+#endif
 
 // Include platform dependent part of class
 #ifdef _WIN32
