@@ -331,6 +331,9 @@
     <ClCompile Include="..\..\ptclib\ssdp.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ptclib\gstreamer.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\script.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -791,6 +794,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
       <Filter>Header Files\MSOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptclib\gstreamer.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\script.h">
       <Filter>Header Files\Components</Filter>
