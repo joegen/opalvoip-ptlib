@@ -56,27 +56,27 @@ static const char NoIndentElements[] = "methodName name string int boolean doubl
 PXMLRPCBlock::PXMLRPCBlock()
   : PXML(PXMLParser::NoOptions, NoIndentElements)
 {
-  faultCode = P_MAX_INDEX;
+  m_faultCode = P_MAX_INDEX;
   SetRootElement("methodResponse");
-  params = NULL;
+  m_params = NULL;
 }
+
 
 PXMLRPCBlock::PXMLRPCBlock(const PString & method)
   : PXML(PXMLParser::NoOptions, NoIndentElements)
 {
-  faultCode = P_MAX_INDEX;
-  SetRootElement("methodCall");
-  rootElement->AddChild(new PXMLElement(rootElement, "methodName", method));
-  params = NULL;
+  m_faultCode = P_MAX_INDEX;
+  SetRootElement("methodCall")->AddElement("methodName", method);
+  m_params = NULL;
 }
+
 
 PXMLRPCBlock::PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & data)
   : PXML(PXMLParser::NoOptions, NoIndentElements)
 {
-  faultCode = P_MAX_INDEX;
-  SetRootElement("methodCall");
-  rootElement->AddChild(new PXMLElement(rootElement, "methodName", method));
-  params = NULL;
+  m_faultCode = P_MAX_INDEX;
+  SetRootElement("methodCall")->AddElement("methodName", method);
+  m_params = NULL;
 
   for (PINDEX i = 0; i < data.GetNumVariables(); i++) {
     PXMLRPCVariableBase & variable = data.GetVariable(i);
@@ -87,76 +87,72 @@ PXMLRPCBlock::PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & dat
       if (structVar != NULL)
         AddParam(*structVar);
       else
-        AddParam(CreateValueElement(new PXMLElement(NULL, variable.GetType(), variable.ToString(0))));
+        AddParam(CreateScalar(variable.GetType(), variable.ToString(0)));
     }
   }
 }
 
 
-PBoolean PXMLRPCBlock::Load(const PString & str)
-{
-  if (!PXML::Load(str))
-    return false;
-
-  if (rootElement != NULL)
-    params = rootElement->GetElement("params");
-
-  return true;
-}
-
-
 PXMLElement * PXMLRPCBlock::GetParams()
 {
-  if (params == NULL)
-    params = rootElement->AddChild(new PXMLElement(rootElement, "params"));
+  if (PAssertNULL(m_rootElement) == NULL)
+    return NULL;
 
-  return params;
+  if (m_params == NULL)
+    m_params = m_rootElement->AddElement("params");
+
+  return m_params;
 }
+
 
 PXMLElement * PXMLRPCBlock::CreateValueElement(PXMLElement * element) 
 { 
-  PXMLElement * value = new PXMLElement(NULL, "value");
-  value->AddChild(element);
-  element->SetParent(value);
-
+  PXMLElement * value = CreateElement("value");
+  value->AddSubObject(element);
   return value;
 }
 
-PXMLElement * PXMLRPCBlock::CreateScalar(const PString & type, 
-                                         const PString & scalar)
+
+PXMLElement * PXMLRPCBlock::CreateScalar(const PString & type, const PString & value)
 { 
-  return CreateValueElement(new PXMLElement(NULL, type, scalar));
+  return CreateValueElement(CreateElement(type, value));
 }
 
-PXMLElement * PXMLRPCBlock::CreateScalar(const PString & str) 
+
+PXMLElement * PXMLRPCBlock::CreateScalar(const PString & value) 
 { 
-  return CreateScalar("string", str);
+  return CreateScalar("string", value);
 }
+
 
 PXMLElement * PXMLRPCBlock::CreateScalar(int value) 
 {
   return CreateScalar("int", PString(PString::Unsigned, value)); 
 }
 
+
 PXMLElement * PXMLRPCBlock::CreateScalar(double value)
 { 
   return CreateScalar("double", psprintf("%lf", value)); 
 }
+
 
 PXMLElement * PXMLRPCBlock::CreateDateAndTime(const PTime & time)
 {
   return CreateScalar("dateTime.iso8601", PXMLRPC::PTimeToISO8601(time)); 
 }
 
+
 PXMLElement * PXMLRPCBlock::CreateBinary(const PBYTEArray & data)
 {
   return CreateScalar("base64", PBase64::Encode(data)); 
 }
 
-PXMLElement * PXMLRPCBlock::CreateStruct()
+
+PXMLElement * PXMLRPCBlock::CreateStruct(PXMLElement * & structElement)
 {
-  PAssertAlways("Not used");
-  return NULL;
+  structElement = CreateElement("struct");
+  return CreateValueElement(structElement);
 }
 
 
@@ -165,13 +161,14 @@ PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict)
   return CreateStruct(dict, "string");
 }
 
+
 PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict, const PString & typeStr)
 {
-  PXMLElement * structElement = new PXMLElement(NULL, "struct");
+  PXMLElement * structElement = CreateElement("struct");
   PXMLElement * valueElement  = CreateValueElement(structElement);
 
   for (PStringToString::const_iterator it = dict.begin(); it != dict.end(); ++it)
-    structElement->AddChild(CreateMember(it->first, CreateScalar(typeStr, it->second)));
+    structElement->AddSubObject(CreateMember(it->first, CreateScalar(typeStr, it->second)));
 
   return valueElement;
 }
@@ -179,7 +176,7 @@ PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict, const PSt
 
 PXMLElement * PXMLRPCBlock::CreateStruct(const PXMLRPCStructBase & data)
 {
-  PXMLElement * structElement = new PXMLElement(NULL, "struct");
+  PXMLElement * structElement = CreateElement("struct");
   PXMLElement * valueElement  = PXMLRPCBlock::CreateValueElement(structElement);
 
   PINDEX i;
@@ -197,7 +194,7 @@ PXMLElement * PXMLRPCBlock::CreateStruct(const PXMLRPCStructBase & data)
         element = CreateScalar(variable.GetType(), variable.ToString(0));
     }
 
-    structElement->AddChild(CreateMember(variable.GetName(), element));
+    structElement->AddSubObject(CreateMember(variable.GetName(), element));
   }
 
   return valueElement;
@@ -206,11 +203,20 @@ PXMLElement * PXMLRPCBlock::CreateStruct(const PXMLRPCStructBase & data)
 
 PXMLElement * PXMLRPCBlock::CreateMember(const PString & name, PXMLElement * value)
 {
-  PXMLElement * member = new PXMLElement(NULL, "member");
-  member->AddChild(new PXMLElement(member, "name", name));
-  member->AddChild(value);
+  PXMLElement * member = CreateElement("member");
+  member->AddElement("name", name);
+  member->AddSubObject(value);
 
   return member;
+}
+
+
+PXMLElement * PXMLRPCBlock::CreateArray(PXMLElement * & dataElement)
+{
+  PXMLElement * arrayElement = CreateElement("array");
+  dataElement  = CreateElement("data");
+  arrayElement->AddSubObject(dataElement);
+  return CreateValueElement(arrayElement);
 }
 
 
@@ -222,14 +228,12 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array)
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PString & typeStr)
 {
-  PXMLElement * arrayElement = new PXMLElement(NULL, "array");
+  PXMLElement * arrayElement = CreateElement("array");
+  PXMLElement * dataElement  = CreateElement("data");
+  arrayElement->AddSubObject(dataElement);
 
-  PXMLElement * dataElement = new PXMLElement(arrayElement, "data");
-  arrayElement->AddChild(dataElement);
-
-  PINDEX i;
-  for (i = 0; i < array.GetSize(); i++)
-    dataElement->AddChild(CreateScalar(typeStr, array[i]));
+  for (PINDEX i = 0; i < array.GetSize(); i++)
+    dataElement->AddSubObject(CreateScalar(typeStr, array[i]));
 
   return CreateValueElement(arrayElement);
 }
@@ -237,14 +241,13 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PStrin
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PStringArray & types)
 {
-  PXMLElement * arrayElement = new PXMLElement(NULL, "array");
-
-  PXMLElement * dataElement = new PXMLElement(arrayElement, "data");
-  arrayElement->AddChild(dataElement);
+  PXMLElement * arrayElement = CreateElement("array");
+  PXMLElement * dataElement  = CreateElement("data");
+  arrayElement->AddSubObject(dataElement);
 
   PINDEX i;
   for (i = 0; i < array.GetSize(); i++)
-    dataElement->AddChild(CreateScalar(types[i], array[i]));
+    dataElement->AddSubObject(CreateScalar(types[i], array[i]));
 
   return CreateValueElement(arrayElement);
 }
@@ -252,14 +255,13 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PStrin
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PArray<PStringToString> & array)
 {
-  PXMLElement * arrayElement = new PXMLElement(NULL, "array");
-
-  PXMLElement * dataElement = new PXMLElement(arrayElement, "data");
-  arrayElement->AddChild(dataElement);
+  PXMLElement * arrayElement = CreateElement("array");
+  PXMLElement * dataElement = CreateElement("data");
+  arrayElement->AddSubObject(dataElement);
 
   PINDEX i;
   for (i = 0; i < array.GetSize(); i++)
-    dataElement->AddChild(CreateStruct(array[i]));
+    dataElement->AddSubObject(CreateStruct(array[i]));
 
   return CreateValueElement(arrayElement);
 }
@@ -267,10 +269,9 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PArray<PStringToString> & array)
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PXMLRPCVariableBase & array)
 {
-  PXMLElement * arrayElement = new PXMLElement(NULL, "array");
-
-  PXMLElement * dataElement = new PXMLElement(arrayElement, "data");
-  arrayElement->AddChild(dataElement);
+  PXMLElement * arrayElement = CreateElement("array");
+  PXMLElement * dataElement = CreateElement("data");
+  arrayElement->AddSubObject(dataElement);
 
   PINDEX i;
   for (i = 0; i < array.GetSize(); i++) {
@@ -280,7 +281,7 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PXMLRPCVariableBase & array)
       element = CreateStruct(*structure);
     else
       element = CreateScalar(array.GetType(), array.ToString(i));
-    dataElement->AddChild(element);
+    dataElement->AddSubObject(element);
   }
 
   return CreateValueElement(arrayElement);
@@ -291,10 +292,8 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PXMLRPCVariableBase & array)
 
 void PXMLRPCBlock::AddParam(PXMLElement * parm)
 {
-  GetParams();
-  PXMLElement * child = params->AddChild(new PXMLElement(params, "param"));
-  child->AddChild(parm);
-  parm->SetParent(child);
+  PXMLElement * child = (PXMLElement *)GetParams()->AddSubObject(CreateElement("param"));
+  child->AddSubObject(parm);
 }
 
 void PXMLRPCBlock::AddParam(const PString & str) 
@@ -363,36 +362,36 @@ void PXMLRPCBlock::AddArray(const PArray<PStringToString> & array)
 PBoolean PXMLRPCBlock::ValidateResponse()
 {
   // ensure root element exists and has correct name
-  if ((rootElement == NULL) || 
-      (rootElement->GetName() != "methodResponse")) {
+  if (GetDocumentType() != "methodResponse") {
     SetFault(PXMLRPC::ResponseRootNotMethodResponse, "Response root not methodResponse");
     PTRACE(2, "XMLRPC\t" << GetFaultText());
     return false;
   }
 
   // determine if response returned
-  if (params == NULL)
-    params = rootElement->GetElement("params");
-  if (params == NULL)
-    params = rootElement->GetElement("fault");
-  if (params == NULL)
+  if (m_params == NULL)
+    m_params = GetElement("params");
+  if (m_params == NULL)
+    m_params = GetElement("fault");
+  if (m_params == NULL)
     return true;
 
   // determine if fault
-  if (params->GetName() == "fault") {
+  if (m_params->GetName() == "fault") {
 
     // assume fault is a simple struct
     PStringToString faultInfo;
-    PXMLElement * value = params->GetElement("value");
+    PXMLElement * value = m_params->GetElement("value");
     if (value == NULL) {
       PStringStream txt;
       txt << "Fault does not contain value\n" << *this;
       SetFault(PXMLRPC::FaultyFault, txt);
-    } else if (!ParseStruct(value->GetElement("struct"), faultInfo) ||
-         (faultInfo.GetSize() != 2) ||
-         (!faultInfo.Contains("faultCode")) ||
-         (!faultInfo.Contains("faultString"))
-         ) {
+    }
+    else if (!ParseStruct(value->GetElement("struct"), faultInfo) ||
+             (faultInfo.GetSize() != 2) ||
+             (!faultInfo.Contains("faultCode")) ||
+             (!faultInfo.Contains("faultString"))
+             ) {
       PStringStream txt;
       txt << "Fault return is faulty:\n" << *this;
       SetFault(PXMLRPC::FaultyFault, txt);
@@ -407,8 +406,8 @@ PBoolean PXMLRPCBlock::ValidateResponse()
   }
 
   // must be params
-  else if (params->GetName() != "params") {
-    SetFault(PXMLRPC::ResponseUnknownFormat, PString("Response contains unknown element") & params->GetName());
+  else if (m_params->GetName() != "params") {
+    SetFault(PXMLRPC::ResponseUnknownFormat, PString("Response contains unknown element") & m_params->GetName());
     PTRACE(2, "XMLRPC\t" << GetFaultText());
     return false;
   }
@@ -433,7 +432,7 @@ PBoolean PXMLRPCBlock::ParseScalar(PXMLElement * valueElement,
   }
 
   for (PINDEX i = 0; i < valueElement->GetSize(); i++) {
-    PXMLElement * element = (PXMLElement *)valueElement->GetElement(i);
+    PXMLElement * element = valueElement->GetElement(i);
     if (element != NULL && element->IsElement()) {
       type = element->GetName();
       value = element->GetData();
@@ -481,7 +480,7 @@ static PXMLElement * ParseStructElement(PXMLRPCBlock & block,
   if (structElement == NULL)
     return NULL;
 
-  PXMLElement * member = (PXMLElement *)structElement->GetElement(idx);
+  PXMLElement * member = structElement->GetElement(idx);
   if (member == NULL)
     return NULL;
 
@@ -624,7 +623,7 @@ PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PStringArray & arr
   for (PINDEX i = 0; i < dataElement->GetSize(); i++) {
     PString value;
     PString type;
-    if (ParseScalar((PXMLElement *)dataElement->GetElement(i), type, value))
+    if (ParseScalar(dataElement->GetElement(i), type, value))
       array[count++] = value;
   }
 
@@ -644,7 +643,7 @@ PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PArray<PStringToSt
   PINDEX count = 0;
   for (PINDEX i = 0; i < dataElement->GetSize(); i++) {
     PStringToString values;
-    if (!ParseStruct((PXMLElement *)dataElement->GetElement(i), values))
+    if (!ParseStruct(dataElement->GetElement(i), values))
       return false;
 
     array[count++] = values;
@@ -665,7 +664,7 @@ PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PXMLRPCVariableBas
 
   PINDEX count = 0;
   for (PINDEX i = 0; i < dataElement->GetSize(); i++) {
-    PXMLElement * element = (PXMLElement *)dataElement->GetElement(i);
+    PXMLElement * element = dataElement->GetElement(i);
 
     PXMLRPCStructBase * structure = array.GetStruct(count);
     if (structure != NULL) {
@@ -691,12 +690,12 @@ PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PXMLRPCVariableBas
 
 PINDEX PXMLRPCBlock::GetParamCount() const
 {
-  if (params == NULL) 
+  if (m_params == NULL) 
     return 0;
 
   PINDEX count = 0;
-  for (PINDEX i = 0; i < params->GetSize(); i++) {
-    PXMLElement * element = (PXMLElement *)params->GetElement(i);
+  for (PINDEX i = 0; i < m_params->GetSize(); i++) {
+    PXMLElement * element = m_params->GetElement(i);
     if (element != NULL && element->IsElement() && element->GetName() == "param")
       count++;
   }
@@ -706,14 +705,14 @@ PINDEX PXMLRPCBlock::GetParamCount() const
 
 PXMLElement * PXMLRPCBlock::GetParam(PINDEX idx) const 
 { 
-  if (params == NULL) 
+  if (m_params == NULL) 
     return NULL;
 
   PXMLElement * param = NULL;
   PINDEX i;
-  PINDEX s = params->GetSize();
+  PINDEX s = m_params->GetSize();
   for (i = 0; i < s; i++) {
-    PXMLElement * element = (PXMLElement *)params->GetElement(i);
+    PXMLElement * element = m_params->GetElement(i);
     if (element != NULL && element->IsElement() && element->GetName() == "param") {
       if (idx <= 0) {
         param = element;
@@ -726,19 +725,13 @@ PXMLElement * PXMLRPCBlock::GetParam(PINDEX idx) const
   if (param == NULL)
     return NULL;
 
-  for (i = 0; i < param->GetSize(); i++) {
-    PXMLObject * parm = param->GetElement(i);
-    if (parm != NULL && parm->IsElement())
-      return (PXMLElement *)parm;
-  }
-
-  return NULL;
+  return param->GetElement();
 }
 
 
 PBoolean PXMLRPCBlock::GetParams(PXMLRPCStructBase & data)
 {
-  if (params == NULL) 
+  if (m_params == NULL) 
     return false;
 
   // Special case to allow for server implementations that always return
@@ -875,9 +868,9 @@ PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PXMLRPCStructBase & data)
 
 ////////////////////////////////////////////////////////
 
-PXMLRPC::PXMLRPC(const PURL & _url, PXMLParser::Options opts)
-  : url(_url)
-  , timeout(0, 10) // Seconds
+PXMLRPC::PXMLRPC(const PURL & url, PXMLParser::Options opts)
+  : m_url(url)
+  , m_timeout(0, 10) // Seconds
   , m_options(opts)
 {
 }
@@ -902,8 +895,8 @@ PBoolean PXMLRPC::MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
   if (PerformRequest(request, response))
     return true;
 
-  faultCode = response.GetFaultCode();
-  faultText = response.GetFaultText();
+  m_faultCode = response.GetFaultCode();
+  m_faultText = response.GetFaultText();
 
   return false;
 }
@@ -945,18 +938,18 @@ PBoolean PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response
   // do the request
   PHTTPClient client;
   PMIMEInfo sendMIME, replyMIME;
-  sendMIME.SetAt("Server", url.GetHostName());
+  sendMIME.SetAt("Server", m_url.GetHostName());
   sendMIME.SetAt(PHTTP::ContentTypeTag(), "text/xml");
 
-  PTRACE(5, "XMLRPC\tOutgoing XML/RPC:\n" << url << '\n' << sendMIME << requestXML);
+  PTRACE(5, "XMLRPC\tOutgoing XML/RPC:\n" << m_url << '\n' << sendMIME << requestXML);
 
   // apply the timeout
-  client.SetReadTimeout(timeout);
+  client.SetReadTimeout(m_timeout);
 
   PString replyXML;
 
   // do the request
-  PBoolean ok = client.PostData(url, sendMIME, requestXML, replyMIME, replyXML);
+  PBoolean ok = client.PostData(m_url, sendMIME, requestXML, replyMIME, replyXML);
 
   PTRACE(5, "XMLRPC\tIncoming XML/RPC:\n" << replyMIME << replyXML);
 
@@ -1032,8 +1025,8 @@ PString PXMLRPC::PTimeToISO8601(const PTime & time)
 /////////////////////////////////////////////////////////////////
 
 PXMLRPCVariableBase::PXMLRPCVariableBase(const char * n, const char * t)
-  : name(n),
-    type(t != NULL ? t : "string")
+  : m_name(n)
+  , m_type(t != NULL ? t : "string")
 {
   PXMLRPCStructBase::GetInitialiser().AddVariable(this);
 }
@@ -1096,21 +1089,21 @@ void PXMLRPCVariableBase::FromBase64(const PString & str, PAbstractArray & data)
 /////////////////////////////////////////////////////////////////
 
 PXMLRPCArrayBase::PXMLRPCArrayBase(PContainer & a, const char * n, const char * t)
-  : PXMLRPCVariableBase(n, t),
-    array(a)
+  : PXMLRPCVariableBase(n, t)
+  , m_array(a)
 {
 }
 
 
 void PXMLRPCArrayBase::PrintOn(ostream & strm) const
 {
-  strm << setfill('\n') << array << setfill(' ');
+  strm << setfill('\n') << m_array << setfill(' ');
 }
 
 
 void PXMLRPCArrayBase::Copy(const PXMLRPCVariableBase & other)
 {
-  array = ((PXMLRPCArrayBase &)other).array;
+  m_array = ((PXMLRPCArrayBase &)other).m_array;
 }
 
 
@@ -1122,36 +1115,36 @@ PBoolean PXMLRPCArrayBase::IsArray() const
 
 PINDEX PXMLRPCArrayBase::GetSize() const
 {
-  return array.GetSize();
+  return m_array.GetSize();
 }
 
 
 PBoolean PXMLRPCArrayBase::SetSize(PINDEX sz)
 {
-  return array.SetSize(sz);
+  return m_array.SetSize(sz);
 }
 
 
 /////////////////////////////////////////////////////////////////
 
 PXMLRPCArrayObjectsBase::PXMLRPCArrayObjectsBase(PArrayObjects & a, const char * n, const char * t)
-  : PXMLRPCArrayBase(a, n, t),
-    array(a)
+  : PXMLRPCArrayBase(a, n, t)
+  , m_array(a)
 {
 }
 
 
 PBoolean PXMLRPCArrayObjectsBase::SetSize(PINDEX sz)
 {
-  if (!array.SetSize(sz))
+  if (!m_array.SetSize(sz))
     return false;
 
   for (PINDEX i = 0; i < sz; i++) {
-    if (array.GetAt(i) == NULL) {
+    if (m_array.GetAt(i) == NULL) {
       PObject * object = CreateObject();
       if (object == NULL)
         return false;
-      array.SetAt(i, object);
+      m_array.SetAt(i, object);
     }
   }
 
@@ -1162,17 +1155,17 @@ PBoolean PXMLRPCArrayObjectsBase::SetSize(PINDEX sz)
 PString PXMLRPCArrayObjectsBase::ToString(PINDEX i) const
 {
   PStringStream stream;
-  stream << *array.GetAt(i);
+  stream << *m_array.GetAt(i);
   return stream;
 }
 
 
 void PXMLRPCArrayObjectsBase::FromString(PINDEX i, const PString & str)
 {
-  PObject * object = array.GetAt(i);
+  PObject * object = m_array.GetAt(i);
   if (object == NULL) {
     object = CreateObject();
-    array.SetAt(i, object);
+    m_array.SetAt(i, object);
   }
 
   PStringStream stream(str);

@@ -158,25 +158,25 @@ namespace XMPP
 
       virtual void    OnSessionEstablished();
       virtual void    OnSessionReleased();
-      virtual void    OnElement(PXML& pdu);
-      virtual void    OnError(PXML& pdu);
+      virtual void    OnElement(PXMLElement & pdu);
+      virtual void    OnError(PXMLElement & pdu);
 
       virtual void    OnMessage(XMPP::Message& pdu);
       virtual void    OnPresence(XMPP::Presence& pdu);
       virtual void    OnIQ(XMPP::IQ& pdu);
 
       // State handlers
-      virtual void    HandleNullState(PXML& pdu);
-      virtual void    HandleRegStartedState(PXML& pdu);
-      virtual void    HandleTLSStartedState(PXML& pdu);
+      virtual void    HandleNullState(PXMLElement & pdu);
+      virtual void    HandleRegStartedState(PXMLElement & pdu);
+      virtual void    HandleTLSStartedState(PXMLElement & pdu);
 #if P_SASL
-      virtual void    HandleSASLStartedState(PXML& pdu);
+      virtual void    HandleSASLStartedState(PXMLElement & pdu);
 #endif
-      virtual void    HandleNonSASLStartedState(PXML& pdu);
-      virtual void    HandleStreamSentState(PXML& pdu);
-      virtual void    HandleBindSentState(PXML& pdu);
-      virtual void    HandleSessionSentState(PXML& pdu);
-      virtual void    HandleEstablishedState(PXML& pdu);
+      virtual void    HandleNonSASLStartedState(PXMLElement & pdu);
+      virtual void    HandleStreamSentState(PXMLElement & pdu);
+      virtual void    HandleBindSentState(PXMLElement & pdu);
+      virtual void    HandleSessionSentState(PXMLElement & pdu);
+      virtual void    HandleEstablishedState(PXMLElement& pdu);
 
       virtual PBoolean    Discover(const PString& xmlns,
                                const PString& jid,

@@ -105,7 +105,7 @@ namespace XMPP
       // a presence stanza if kept.
       PDictionary<PString, Presence> m_Presence;
 
-      PBoolean        m_IsDirty; // item modified locally, server needs to be updated
+      bool        m_IsDirty; // item modified locally, server needs to be updated
     };
     PLIST(ItemList, Item);
 
