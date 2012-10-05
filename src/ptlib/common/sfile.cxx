@@ -72,11 +72,11 @@ PBoolean PStructuredFile::Read(void * buffer)
 {
   PAssert(structureSize > 0, PInvalidParameter);
   if (!PFile::Read(buffer, structureSize))
-    return PFalse;
+    return false;
   if (GetLastReadCount() != structureSize)
-    return PFalse;
+    return false;
   // Translate all structure elements according to endian-ness.
-  return PTrue;
+  return true;
 }
       
 

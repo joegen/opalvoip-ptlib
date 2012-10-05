@@ -64,18 +64,18 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
   switch (type) {
     case StandardInput :
       os_handle = 0;
-      return PTrue;
+      return true;
 
     case StandardOutput :
       os_handle = 1;
-      return PTrue;
+      return true;
 
     case StandardError :
       os_handle = 2;
-      return PTrue;
+      return true;
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -99,13 +99,13 @@ PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
   {
   flush();
   cout << PString((const char *)buffer, length) << "\n";
-  return PTrue;
+  return true;
   }
 #endif
 
 PBoolean PConsoleChannel::Close()
   {
   os_handle = -1;
-  return PTrue;
+  return true;
   }
 

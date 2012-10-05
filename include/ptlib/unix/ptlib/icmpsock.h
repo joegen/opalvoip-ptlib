@@ -42,7 +42,7 @@
     /* Send an ECHO_REPLY message to the specified host.
 
        <H2>Returns:</H2>
-       PFalse if host not found or no response.
+       false if host not found or no response.
      */
 
     PBoolean ReadPing(
@@ -51,7 +51,7 @@
     /* Receive an ECHO_REPLY message from the host.
 
        <H2>Returns:</H2>
-       PFalse if an error occurred.
+       false if an error occurred.
      */
 
 // End Of File ////////////////////////////////////////////////////////////////

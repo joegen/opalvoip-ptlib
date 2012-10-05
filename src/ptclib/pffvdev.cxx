@@ -188,7 +188,7 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
   SetFrameSize(m_ffmpegFrameWidth, m_ffmpegFrameHeight);
 
   deviceName = _deviceName;
-  return PTrue;    
+  return true;    
 }
 
 
@@ -250,7 +250,7 @@ PBoolean PVideoInputDevice_FFMPEG::SetChannel(int newChannel)
 PBoolean PVideoInputDevice_FFMPEG::SetColourFormat(const PString & newFormat)
 {
   if (!(newFormat *= "YUV420P"))
-    return PFalse;
+    return false;
 
   return PVideoDevice::SetColourFormat(newFormat);
 }
@@ -273,7 +273,7 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameSizeLimits(unsigned & minWidth,
 
   minWidth  = maxWidth  = m_ffmpegFrameWidth;
   minHeight = maxHeight = m_ffmpegFrameHeight;
-  return PTrue;
+  return true;
 }
 
 PBoolean PVideoInputDevice_FFMPEG::SetFrameSize(unsigned width, unsigned height)
@@ -302,7 +302,7 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameData(BYTE * buffer, PINDEX * bytesRet
 PBoolean PVideoInputDevice_FFMPEG::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
   if (!m_command.IsOpen())
-    return PFalse;
+    return false;
 
   // make sure that stderr is emptied, as too much unread data 
   // will cause ffmpeg to silently stop 
@@ -334,12 +334,12 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
   } else {
     converter->SetSrcFrameSize(m_ffmpegFrameWidth, m_ffmpegFrameHeight);
     if (!converter->Convert(readBuffer, destFrame, bytesReturned))
-      return PFalse;
+      return false;
     if (bytesReturned != NULL)
       *bytesReturned = converter->GetMaxDstFrameBytes();
   }
 
-  return PTrue;
+  return true;
 }
 
 #endif

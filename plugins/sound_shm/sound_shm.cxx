@@ -169,7 +169,7 @@ DPRINT(("ashm construc() frameBytes=%d 4x=storedSize=%d val=%d\n", frameBytes,st
 
   card_nr = 0;
   os_handle = NULL;
-  isInitialised = PFalse;
+  isInitialised = false;
 }
 
 
@@ -240,7 +240,7 @@ DPRINT(("ashm Open channel=%d sampleRate=%d bitsperSample=%d\n",
 
   if (_device != "shm") {
       DPRINT(("ashm Open() device %s not supported\n", (const unsigned char *)_device ));
-      return PFalse;
+      return false;
   }
   /* save internal parameters */
   card_nr = -2;
@@ -250,7 +250,7 @@ DPRINT(("ashm Open channel=%d sampleRate=%d bitsperSample=%d\n",
   Setup ();
   //PTRACE (1, "ALSA\tDevice " << real_device_name << " Opened");
 
-  return PTrue;
+  return true;
 }
 
 
@@ -260,11 +260,11 @@ PBoolean PSoundChannelSHM::Setup()
 
   if (isInitialised) {
     printf("ashm Setup() Skipping setup of %s as instance already initialised", (const char *)device);
-    return PTrue;
+    return true;
   }
  
-  isInitialised = PTrue;
-  return PTrue;
+  isInitialised = true;
+  return true;
 }
 
 
@@ -276,12 +276,12 @@ PBoolean PSoundChannelSHM::Close()
 
   /* if the channel isn't open, do nothing */
   if (!os_handle)
-    return PFalse;
+    return false;
   DPRINT(("ashm close  oshandle=%d\n", (int)os_handle));
   closeMapping();
   os_handle = NULL;
-  isInitialised = PFalse;
-  return PTrue;
+  isInitialised = false;
+  return true;
 }
 
 PBoolean PSoundChannelSHM::Write (const void *buf, PINDEX len)
@@ -297,14 +297,14 @@ PBoolean PSoundChannelSHM::Write (const void *buf, PINDEX len)
   PWaitAndSignal m(device_mutex);
 
   if ((!isInitialised && !Setup()) || !len || !os_handle)
-    return PFalse;
+    return false;
 
   writeSample( (void*)buf, len );
 
    m_Pacing.Delay(delay);
    lastWriteCount = 640;   //len;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -313,9 +313,9 @@ PBoolean PSoundChannelSHM::Read (void * buf, PINDEX len)
   DPRINT(("ashm read\n"));
 
   printf("ashm read read not supported on device ipm\n");
-  return PFalse;
+  return false;
   
-  return PTrue;
+  return true;
 }
 
 
@@ -336,9 +336,9 @@ PBoolean PSoundChannelSHM::SetFormat (unsigned numChannels,
   mBitsPerSample = bitsPerSample;
  
   /* mark this channel as uninitialised */
-  isInitialised = PFalse;
+  isInitialised = false;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -365,9 +365,9 @@ PBoolean PSoundChannelSHM::SetBuffers (PINDEX size, PINDEX count)
   storedPeriods = count;
   storedSize = size;
 
-  isInitialised = PFalse;
+  isInitialised = false;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -376,7 +376,7 @@ PBoolean PSoundChannelSHM::GetBuffers(PINDEX & size, PINDEX & count)
   size = storedSize;
   count = storedPeriods;
   
-  return PFalse;
+  return false;
 }
 
 
@@ -395,14 +395,14 @@ PBoolean PSoundChannelSHM::PlaySound(const PSound & sound, PBoolean wait)
   do {
 
     if (!Write(&buf [pos], PMIN(320, len - pos)))
-      return PFalse;
+      return false;
     pos += 320;
   } while (pos < len);
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -417,7 +417,7 @@ PBoolean PSoundChannelSHM::PlayFile(const PFilePath & filename, PBoolean wait)
   PFile file (filename, PFile::ReadOnly);
 
   if (!file.IsOpen())
-    return PFalse;
+    return false;
 
   for (;;) {
 
@@ -436,71 +436,71 @@ PBoolean PSoundChannelSHM::PlayFile(const PFilePath & filename, PBoolean wait)
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelSHM::HasPlayCompleted()
 {
   DPRINT(("ashm hasplayCompleted\n"));
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelSHM::WaitForPlayCompletion()
 {
   DPRINT(("ashm wait4playCompleted\n"));
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelSHM::RecordSound(PSound & sound)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelSHM::RecordFile(const PFilePath & filename)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelSHM::StartRecording()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelSHM::IsRecordBufferFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelSHM::AreAllRecordBuffersFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelSHM::WaitForRecordBufferFull()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelSHM::WaitForAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannelSHM::Abort()
 {
   if (!os_handle)
-    return PFalse;
-  return PTrue;
+    return false;
+  return true;
 }
 
 
@@ -509,13 +509,13 @@ PBoolean PSoundChannelSHM::SetVolume (unsigned newVal)
 {
   unsigned i = 0;
 
-  return Volume (PTrue, newVal, i);
+  return Volume (true, newVal, i);
 }
 
 
 PBoolean  PSoundChannelSHM::GetVolume(unsigned &devVol)
 {
-  return Volume (PFalse, 0, devVol);
+  return Volume (false, 0, devVol);
 }
   
 
@@ -527,6 +527,6 @@ PBoolean PSoundChannelSHM::IsOpen () const
 
 PBoolean PSoundChannelSHM::Volume (PBoolean set, unsigned set_vol, unsigned &get_vol)
 {
-    return PFalse;
+    return false;
 }
 

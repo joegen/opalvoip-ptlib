@@ -73,7 +73,7 @@ PBoolean PSoundChannel::Open(const PString & device,
     m_sampleRate = sampleRate;
     m_bitsPerSample = bitsPerSample;
 
-    return PTrue;
+    return true;
 }
 
 PBoolean PSoundChannel::Read(void *buf, PINDEX len)
@@ -84,7 +84,7 @@ PBoolean PSoundChannel::Read(void *buf, PINDEX len)
     if(m_Direction==Player)
     {
 //        PTRACE(0, "Tried to PSoundChannel::Read from a Player channel.");
-        return PFalse;
+        return false;
     }
     if(soundbitesize%8) soundbitesize = (soundbitesize/8)*8;
     unsigned int *dest, *src;
@@ -111,21 +111,21 @@ PBoolean PSoundChannel::Read(void *buf, PINDEX len)
     }
 
 #endif
-    return PTrue;
+    return true;
 //    PTRACE(1, "PSoundChannel::Read(bye)");*/
 }
 
 PBoolean PSoundChannel::Write(const void *buf, PINDEX len)
 {
-    if(!len) return PTrue;
+    if(!len) return true;
 //    PTRACE(9, "PSoundChannel::Write");
     if(m_Direction==Recorder)
     {
 //        PTRACE(0, "Tried to PSoundChannel::Write from a Recorder channel.");
-        return PFalse;
+        return false;
     }
     PThread::Current()->Sleep(30);
-    return PTrue;
+    return true;
 }
 
 PBoolean PSoundChannel::Close()
@@ -135,35 +135,35 @@ PBoolean PSoundChannel::Close()
     {
     } else {
     }
-    return PTrue;
+    return true;
 }
 
 PBoolean PSoundChannel::Abort()
 {
-    return PFalse;
+    return false;
 }
 
 PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
 //    PTRACE(1, "PSoundChannel::SetBuffers("<<size<<","<<count<<")");
-    return PTrue;
+    return true;
 }
 
 PBoolean PSoundChannel::GetBuffers(PINDEX &size, PINDEX &count)
 {
 //    PTRACE(1, "PSoundChannel::GetBuffers");
-    return PTrue;
+    return true;
 }
 
 PBoolean PSoundChannel::SetVolume(int newVal)
 {
   cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 
 PBoolean  PSoundChannel::GetVolume(int &devVol)
 {
  cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 

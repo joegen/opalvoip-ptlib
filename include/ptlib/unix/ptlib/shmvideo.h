@@ -63,7 +63,7 @@ class PVideoOutputDevice_Shm : public PVideoOutputDevice
       */
     virtual PBoolean Open(
       const PString & deviceName,   /// Device name (filename base) to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Determine if the device is currently open.
@@ -90,7 +90,7 @@ class PVideoOutputDevice_Shm : public PVideoOutputDevice
 							  unsigned width,
 							  unsigned height,
 							  const BYTE * data,
-							  PBoolean endFrame = PTrue);
+							  PBoolean endFrame = true);
 	
 	/**Indicate frame may be displayed.
 		*/
@@ -121,7 +121,7 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
 
     PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
       );
     PBoolean IsOpen();
     PBoolean Close();
@@ -146,7 +146,7 @@ class PVideoInputDevice_Shm : public PVideoInputDevice
     /**Get the minimum & maximum size of a frame on the device.
 
     Default behaviour returns the value 1 to UINT_MAX for both and returns
-    PFalse.
+    false.
     */
     virtual PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   /// Variable to receive minimum width

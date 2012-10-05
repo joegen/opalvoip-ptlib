@@ -97,7 +97,7 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
     PBoolean WriteToFile(const PFilePath & filename);
     PBoolean Flush(const PFilePath & filename, PBoolean force);
 
-    void SetDirty()   { dirty = PTrue; }
+    void SetDirty()   { dirty = true; }
 
     PBoolean      AddInstance();
     PBoolean      RemoveInstance(const PFilePath & filename);
@@ -165,10 +165,10 @@ PXConfigWriteThread::~PXConfigWriteThread()
 
 void PXConfigWriteThread::Main()
 {
-  while (!stop.Wait(30000))  // if stop.Wait() returns PTrue, we are shutting down
-    configDict->WriteChangedInstances(PFalse);   // check dictionary for items that need writing
+  while (!stop.Wait(30000))  // if stop.Wait() returns true, we are shutting down
+    configDict->WriteChangedInstances(false);   // check dictionary for items that need writing
 
-  configDict->WriteChangedInstances(PTrue);
+  configDict->WriteChangedInstances(true);
 }
 
 
@@ -182,10 +182,10 @@ PXConfig::PXConfig(int)
   instanceCount = 0;
 
   // we start off clean
-  dirty = PFalse;
+  dirty = false;
 
   // normally save on exit (except for environment configs)
-  saveOnExit = PTrue;
+  saveOnExit = true;
 }
 
 PBoolean PXConfig::AddInstance()
@@ -211,7 +211,7 @@ PBoolean PXConfig::RemoveInstance(const PFilePath & /*filename*/)
 
   if (stat && saveOnExit && dirty) {
     WriteToFile(filename);
-    dirty = PFalse;
+    dirty = false;
   }
 */
 
@@ -230,7 +230,7 @@ PBoolean PXConfig::Flush(const PFilePath & filename, PBoolean force)
     if (instanceCount != 0) 
       PProcess::PXShowSystemWarning(2000, "Flush of config with non-zero instance");
     WriteToFile(filename);
-    dirty = PFalse;
+    dirty = false;
   }
 
   mutex.Signal();
@@ -243,7 +243,7 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
 #ifdef WOT_NO_FILESYSTEM
   PProcess::PXShowSystemWarning
                        (2000, "No filing system for PXConfig::WriteToFile");
-  return PTrue;
+  return true;
 #else
   // make sure the directory that the file is to be written into exists
   PDirectory dir = filename.GetDirectory();
@@ -252,13 +252,13 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
                                    PFileInfo::UserWrite |
                                    PFileInfo::UserRead)) {
     PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config dir");
-    return PFalse;
+    return false;
   }
 
   PTextFile file;
   if (!file.Open(filename, PFile::WriteOnly)) {
     PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
-    return PFalse;
+    return false;
   }
 
   for (PINDEX i = 0; i < GetSize(); i++) {
@@ -274,7 +274,7 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
   file.flush();
   file.SetLength(file.GetPosition());
 
-  return PTrue;
+  return true;
 #endif
 }
 
@@ -284,7 +284,7 @@ PBoolean PXConfig::ReadFromFile (const PFilePath & filename)
 #ifdef WOT_NO_FILESYSTEM
   PProcess::PXShowSystemWarning
                        (2000, "No filing system for PXConfig::ReadFromFile");
-  return PTrue;
+  return true;
 #else
   PINDEX len;
   PString line;
@@ -295,7 +295,7 @@ PBoolean PXConfig::ReadFromFile (const PFilePath & filename)
   // attempt to open file
   PTextFile file;
   if (!file.Open(filename, PFile::ReadOnly))
-    return PFalse;
+    return false;
 
   PXConfigSection * currentSection = NULL;
 
@@ -331,7 +331,7 @@ PBoolean PXConfig::ReadFromFile (const PFilePath & filename)
   
   // close the file and return
   file.Close();
-  return PTrue;
+  return true;
 #endif
 }
 
@@ -354,7 +354,7 @@ void PXConfig::ReadFromEnvironment (char **envp)
   }
 
   // can't save environment configs
-  saveOnExit = PFalse;
+  saveOnExit = false;
 }
 
 
@@ -369,14 +369,14 @@ static PBoolean LocateFile(const PString & baseName,
   filename = readFilename = PProcess::Current().PXGetHomeDir() +
              APP_CONFIG_DIR + baseName + EXTENSION;
   if (PFile::Exists(filename))
-    return PTrue;
+    return true;
 
   // otherwise check the system directory for a file to read,
   // and then create 
   readFilename = SYS_CONFIG_DIR + baseName + EXTENSION;
   return PFile::Exists(readFilename);
 #else
-  return PFalse;
+  return false;
 #endif
 }
 
@@ -724,7 +724,7 @@ PBoolean PConfig::HasKey(const PString & theSection, const PString & theKey) con
   PAssert(config != NULL, "config instance not set");
   config->Wait();
 
-  PBoolean present = PFalse;
+  PBoolean present = false;
   PINDEX index;
   if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
     PXConfigSectionList & section = (*config)[index].GetList();

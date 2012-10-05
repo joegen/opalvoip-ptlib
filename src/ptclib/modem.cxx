@@ -161,10 +161,10 @@ PBoolean PModem::Open(const PString & port, DWORD speed, BYTE data,
 {
   if (!PSerialChannel::Open(port,
                             speed, data, parity, stop, inputFlow, outputFlow))
-    return PFalse;
+    return false;
 
   status = Uninitialised;
-  return PTrue;
+  return true;
 }
 
 
@@ -191,10 +191,10 @@ PBoolean PModem::Open(PConfig & cfg)
   hangUpCmd = cfg.GetString(ModemHangUp, "\\d2s+++\\d2sATH0\\r");
 
   if (!PSerialChannel::Open(cfg))
-    return PFalse;
+    return false;
 
   status = Uninitialised;
-  return PTrue;
+  return true;
 }
 
 
@@ -223,10 +223,10 @@ PBoolean PModem::CanInitialise() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return PFalse;
+      return false;
 
     default :
-      return PTrue;
+      return true;
   }
 }
 
@@ -237,11 +237,11 @@ PBoolean PModem::Initialise()
     status = Initialising;
     if (SendCommandString(initCmd)) {
       status = Initialised;
-      return PTrue;
+      return true;
     }
     status = InitialiseFailed;
   }
-  return PFalse;
+  return false;
 }
 
 
@@ -256,10 +256,10 @@ PBoolean PModem::CanDeinitialise() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return PFalse;
+      return false;
 
     default :
-      return PTrue;
+      return true;
   }
 }
 
@@ -270,11 +270,11 @@ PBoolean PModem::Deinitialise()
     status = Deinitialising;
     if (SendCommandString(deinitCmd)) {
       status = Uninitialised;
-      return PTrue;
+      return true;
     }
     status = DeinitialiseFailed;
   }
-  return PFalse;
+  return false;
 }
 
 
@@ -292,10 +292,10 @@ PBoolean PModem::CanDial() const
     case Deinitialising :
     case DeinitialiseFailed :
     case SendingUserCommand :
-      return PFalse;
+      return false;
 
     default :
-      return PTrue;
+      return true;
   }
 }
 
@@ -303,12 +303,12 @@ PBoolean PModem::CanDial() const
 PBoolean PModem::Dial(const PString & number)
 {
   if (!CanDial())
-    return PFalse;
+    return false;
 
   status = Dialling;
   if (!SendCommandString(preDialCmd + "\\s" + number + postDialCmd)) {
     status = DialFailed;
-    return PFalse;
+    return false;
   }
 
   status = AwaitingResponse;
@@ -321,24 +321,24 @@ PBoolean PModem::Dial(const PString & number)
   for (;;) {
     int nextChar;
     if ((nextChar = ReadCharWithTimeout(timeout)) < 0)
-      return PFalse;
+      return false;
 
     if (ReceiveCommandString(nextChar, connectReply, connectPosition, 0))
       break;
 
     if (ReceiveCommandString(nextChar, busyReply, busyPosition, 0)) {
       status = LineBusy;
-      return PFalse;
+      return false;
     }
 
     if (ReceiveCommandString(nextChar, noCarrierReply, noCarrierPosition, 0)) {
       status = NoCarrier;
-      return PFalse;
+      return false;
     }
   }
 
   status = Connected;
-  return PTrue;
+  return true;
 }
 
 
@@ -354,10 +354,10 @@ PBoolean PModem::CanHangUp() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return PFalse;
+      return false;
 
     default :
-      return PTrue;
+      return true;
   }
 }
 
@@ -368,11 +368,11 @@ PBoolean PModem::HangUp()
     status = HangingUp;
     if (SendCommandString(hangUpCmd)) {
       status = Initialised;
-      return PTrue;
+      return true;
     }
     status = HangUpFailed;
   }
-  return PFalse;
+  return false;
 }
 
 
@@ -388,10 +388,10 @@ PBoolean PModem::CanSendUser() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return PFalse;
+      return false;
 
     default :
-      return PTrue;
+      return true;
   }
 }
 
@@ -403,11 +403,11 @@ PBoolean PModem::SendUser(const PString & str)
     status = SendingUserCommand;
     if (SendCommandString(str)) {
       status = oldStatus;
-      return PTrue;
+      return true;
     }
     status = oldStatus;
   }
-  return PFalse;
+  return false;
 }
 
 
@@ -443,10 +443,10 @@ PBoolean PModem::CanRead() const
     case HangingUp :
     case Deinitialising :
     case SendingUserCommand :
-      return PFalse;
+      return false;
 
     default :
-      return PTrue;
+      return true;
   }
 }
 

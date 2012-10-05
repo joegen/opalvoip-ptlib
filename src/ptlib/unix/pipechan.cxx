@@ -82,7 +82,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
 {
 #if defined(P_VXWORKS) || defined(P_RTEMS)
   PAssertAlways("PPipeChannel::PlatformOpen");
-  return PFalse;
+  return false;
 #else
   subProgName = subProgram;
 
@@ -130,7 +130,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   childPid = vfork();
 #endif
   if (childPid < 0)
-    return PFalse;
+    return false;
 
   if (childPid > 0) {
     // setup the pipe to the child
@@ -153,7 +153,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
       free(exec_environ);
  
     os_handle = 0;
-    return PTrue;
+    return true;
   }
 
   // the following code is in the child process
@@ -224,7 +224,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   execve(subProgram, args, exec_environ);
 
   _exit(2);
-  return PFalse;
+  return false;
 #endif // P_VXWORKS || P_RTEMS
 }
 
@@ -311,7 +311,7 @@ PBoolean PPipeChannel::Execute()
     ::close(toChildPipe[1]);
     toChildPipe[1] = -1;
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -328,17 +328,17 @@ int PPipeChannel::GetReturnCode() const
 PBoolean PPipeChannel::IsRunning() const
 {
   if (childPid == 0)
-    return PFalse;
+    return false;
 
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
 
   int err;
   int status;
   if ((err = waitpid(childPid, &status, WNOHANG)) == 0)
-    return PTrue;
+    return true;
 
   if (err != childPid)
-    return PFalse;
+    return false;
 
   PPipeChannel * thisW = (PPipeChannel *)this;
   thisW->childPid = 0;
@@ -357,7 +357,7 @@ PBoolean PPipeChannel::IsRunning() const
     thisW->retVal = -1;
   }
 
-  return PFalse;
+  return false;
 
 #else
   return kill(childPid, 0) == 0;
@@ -449,7 +449,7 @@ PBoolean PPipeChannel::Kill(int killType)
 
 PBoolean PPipeChannel::CanReadAndWrite()
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -460,7 +460,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 
   os_handle = stderrChildPipe[0];
   
-  PBoolean status = PFalse;
+  PBoolean status = false;
 #ifndef BE_BONELESS
   int available;
   if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {

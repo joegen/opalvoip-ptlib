@@ -195,21 +195,21 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const //
 
   result = ::wait_for_thread(mId, &exit_value);
   if ( result == B_INTERRUPTED ) { // thread was killed.
-    return PTrue;
+    return true;
   }
 
   if ( result == B_OK ) { // thread is dead
     #ifdef DEBUG_THREADS
     PError << "B_OK" << endl;
     #endif
-    return PTrue;
+    return true;
   }
 
   if ( result == B_BAD_THREAD_ID ) { // thread has invalid id
-    return PTrue;
+    return true;
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -423,7 +423,7 @@ void PProcess::HouseKeeping()
 
 PBoolean PProcess::SetMaxHandles(int newMax)
 {
-  return PFalse;
+  return false;
 }
 
 PProcess::~PProcess()
@@ -559,7 +559,7 @@ PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
     result = ((BLocker*)semId)->LockWithTimeout(microseconds); // Using BLocker class to support recursive locks 
   }
 
-  return ms == 0 ? PFalse : result == B_OK;
+  return ms == 0 ? false : result == B_OK;
 }
 
 void PSemaphore::Signal()
@@ -586,7 +586,7 @@ void PSemaphore::Signal()
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
- : PSemaphore(PFalse) // PFalse is semaphore based, PTrue means implemented through BLocker
+ : PSemaphore(false) // false is semaphore based, true means implemented through BLocker
 {
    PSemaphore::Create(0);
 }
@@ -611,13 +611,13 @@ PBoolean PSyncPoint::Wait(const PTimeInterval & timeout)
 // PMutex, derived from BLightNestedLocker  
 
 PMutex::PMutex() 
-  : PSemaphore(PTrue) // PTrue means implemented through BLocker
+  : PSemaphore(true) // true means implemented through BLocker
 {
   PSemaphore::Create(0);
 }
 
 PMutex::PMutex(const PMutex&) 
- : PSemaphore(PTrue)
+ : PSemaphore(true)
 {
   PAssertAlways("PMutex copy constructor not supported");
 } 

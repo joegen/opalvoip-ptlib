@@ -1315,7 +1315,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       */
     PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Determine of the device is currently open.
@@ -1458,7 +1458,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     /**Get the minimum & maximum size of a frame on the device.
 
        Default behaviour returns the value 1 to UINT_MAX for both and returns
-       PFalse.
+       false.
     */
     virtual PBoolean GetFrameSizeLimits(
       unsigned & minWidth,   /// Variable to receive minimum width
@@ -1602,10 +1602,10 @@ PBoolean PVideoInputDevice_FakeVideo::SetColourFormat(const PString & newFormat)
   else if ((newFormat *= "YUV422") || (newFormat *= "YUY2"))
     m_internalColourFormat = eYUV422;
   else
-    return PFalse;
+    return false;
 
   if (!PVideoDevice::SetColourFormat(newFormat))
-    return PFalse;
+    return false;
 
   return SetFrameSize(frameWidth, frameHeight);
 }
@@ -1632,14 +1632,14 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameSizeLimits(unsigned & minWidth,
   maxWidth  = PVideoFrameInfo::MaxWidth;
   maxHeight = PVideoFrameInfo::MaxHeight;
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PVideoInputDevice_FakeVideo::SetFrameSize(unsigned width, unsigned height)
 {
   if (!PVideoDevice::SetFrameSize(width, height))
-    return PFalse;
+    return false;
 
   m_videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   m_scanLineWidth = (frameHeight == 0) ? 0 : m_videoFrameSize/frameHeight;
@@ -1691,18 +1691,18 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
        GrabNTSCTestFrame(destFrame);
        break;
      default :
-       return PFalse;
+       return false;
   }
 
   if (NULL != converter) {
     if (!converter->Convert(destFrame, destFrame, bytesReturned))
-      return PFalse;
+      return false;
   }
 
   if (bytesReturned != NULL)
     *bytesReturned = m_videoFrameSize;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -2132,7 +2132,7 @@ class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
       */
     virtual PBoolean Open(
       const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = PTrue    /// Immediately start device
+      PBoolean startImmediate = true    /// Immediately start device
     );
 
     /**Start the video device I/O.
@@ -2166,7 +2166,7 @@ class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
       unsigned width,
       unsigned height,
       const BYTE * data,
-      PBoolean endFrame = PTrue
+      PBoolean endFrame = true
     );
 
     /**Indicate frame may be displayed.
@@ -2193,27 +2193,27 @@ PVideoOutputDevice_NULLOutput::PVideoOutputDevice_NULLOutput()
 PBoolean PVideoOutputDevice_NULLOutput::Open(const PString & /*deviceName*/,
                                   PBoolean /*startImmediate*/)
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PVideoOutputDevice_NULLOutput::Close()
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PVideoOutputDevice_NULLOutput::Start()
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PVideoOutputDevice_NULLOutput::Stop()
 {
-  return PTrue;
+  return true;
 }
 
 PBoolean PVideoOutputDevice_NULLOutput::IsOpen()
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -2234,19 +2234,19 @@ PBoolean PVideoOutputDevice_NULLOutput::SetFrameData(unsigned /*x*/, unsigned /*
                                           const BYTE * /*data*/,
                                           PBoolean /*endFrame*/)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PVideoOutputDevice_NULLOutput::EndFrame()
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PVideoOutputDevice_NULLOutput::DisableDecode()
 {
-  return PTrue; 
+  return true; 
 }
 
 

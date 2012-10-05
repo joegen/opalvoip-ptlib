@@ -95,13 +95,13 @@ void PSound::SetFormat(unsigned channels,
 
 PBoolean PSound::Load(const PFilePath & filename)
 {
-    return PFalse;
+    return false;
 }
 
 
 PBoolean PSound::Save(const PFilePath & filename)
 {
-    return PFalse;
+    return false;
 }
 
 
@@ -196,8 +196,8 @@ PBoolean PSoundChannel::Open(const PString & dev,
         if (err != 0 || r.m_status)
             goto bail; // destructor will close channel
 
-        PTRACE(1, "PSoundChannel::Open(p): returning PTrue");
-  		return PTrue;
+        PTRACE(1, "PSoundChannel::Open(p): returning true");
+  		return true;
 	}
 	else
  	if( direction == Recorder )
@@ -221,12 +221,12 @@ PBoolean PSoundChannel::Open(const PString & dev,
         err = r.CarbonQueue();
         if (err || r.m_status) goto bail;
 
-        PTRACE(1, "PSoundChannel::Open(r): returning PTrue");
-        return PTrue;
+        PTRACE(1, "PSoundChannel::Open(r): returning true");
+        return true;
  	} else assert(0); // bad direction type
 
   bail: // badness
-   	return PFalse;
+   	return false;
 }
 
 
@@ -254,35 +254,35 @@ PBoolean PSoundChannel::SetFormat(unsigned numChannels,
   	if( direction == Player )
 	{
 		if( os_handle < 0 )
-			return PFalse;		
+			return false;		
 
         commandRequest r(kSetFormatPlayer, os_handle, &sp);
         int err = r.CarbonQueue();
         if (err || r.m_status)
-            return PFalse;
-        return PTrue;
+            return false;
+        return true;
 	}
 	else
 	if( direction == Recorder )
 	{
 		if( os_handle < 0 )
-			return PFalse;		
+			return false;		
 
         commandRequest r(kSetFormatRecorder, os_handle, &sp);
         int err = r.CarbonQueue();
         if (err || r.m_status)
-            return PFalse;
-        return PTrue;
+            return false;
+        return true;
     }
     
-	return PFalse;
+	return false;
 }
 
 PBoolean PSoundChannel::Read( void * buf, PINDEX len)
 {
   	if( direction == Player )
 	{
-		return PFalse;
+		return false;
 	}
 	else
 	if( direction == Recorder )
@@ -291,7 +291,7 @@ PBoolean PSoundChannel::Read( void * buf, PINDEX len)
         static int message_level = 0;
         
 		if( !mpInput )
-			return PFalse;
+			return false;
 		
 		int rlen = mpInput->Read(buf, len);
         PAssert(rlen == -1 || rlen == len, "huh?");
@@ -313,10 +313,10 @@ PBoolean PSoundChannel::Read( void * buf, PINDEX len)
             }
         }
         
-		return rlen == len? PTrue : PFalse;
+		return rlen == len? true : false;
 	}
 
-	return PFalse;
+	return false;
 }
 
 PBoolean PSoundChannel::Write( const void * buf, PINDEX len)
@@ -329,18 +329,18 @@ PBoolean PSoundChannel::Write( const void * buf, PINDEX len)
         int err = r.CarbonQueue();
         if (err || r.m_status) {
             fprintf(stderr,"Write failed: err %d status %d\n", err, r.m_status);
-            return PFalse;
+            return false;
         }
         
-        return PTrue;
+        return true;
 	}
 	else
 	if( direction == Recorder )
 	{
-		return PFalse;
+		return false;
 	}
 
-	return PFalse;
+	return false;
 }
 
 PBoolean PSoundChannel::Close()
@@ -353,7 +353,7 @@ PBoolean PSoundChannel::Close()
         }
         isInitialised = false;
         os_handle = -1;
-		return PTrue;
+		return true;
 	}
 	else
 	if( direction == Recorder )
@@ -365,40 +365,40 @@ PBoolean PSoundChannel::Close()
         
 	 	isInitialised = false;
         os_handle = -1;
-		return PTrue;
+		return true;
 	}
 
-	return PFalse;
+	return false;
 }
 
 PBoolean PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 {
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return PFalse;
+    return false;
 
   if (wait)
     return WaitForPlayCompletion();
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -406,7 +406,7 @@ PBoolean PSoundChannel::HasPlayCompleted()
 {
     commandRequest r(kIsPlaying, os_handle);
     (void)r.CarbonQueue();
-	return r.m_result ? PFalse : PTrue;
+	return r.m_result ? false : true;
 }
 
 
@@ -421,13 +421,13 @@ PBoolean PSoundChannel::WaitForPlayCompletion()
 
 PBoolean PSoundChannel::RecordSound(PSound & sound)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PSoundChannel::RecordFile(const PFilePath & filename)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -435,7 +435,7 @@ PBoolean PSoundChannel::StartRecording()
 {
   	if( direction == Player )
 	{
-		return PFalse;
+		return false;
 	}
 	else
 	if( direction == Recorder )
@@ -448,10 +448,10 @@ PBoolean PSoundChannel::StartRecording()
 		
 		if( err == 0 )
 			PError << "Recording started" << endl;
-		return err == 0 ? PTrue : PFalse;
+		return err == 0 ? true : false;
 	}
 
-	return PFalse;
+	return false;
 }
 
 
@@ -463,7 +463,7 @@ PBoolean PSoundChannel::IsRecordBufferFull()
 		PAssertNULL(mpInput);
         return !mpInput->IsEmpty();
     }
-    return PFalse;
+    return false;
 }
 
 
@@ -474,7 +474,7 @@ PBoolean PSoundChannel::AreAllRecordBuffersFull()
 		PAssertNULL(mpInput);
         return mpInput->IsFull();
     }
-    return PFalse;
+    return false;
 }
 
 
@@ -485,13 +485,13 @@ PBoolean PSoundChannel::WaitForRecordBufferFull()
 		PAssertNULL(mpInput);
         return mpInput->WaitForData();
     }
-    return PFalse;
+    return false;
 }
 
 
 PBoolean PSoundChannel::WaitForAllRecordBuffersFull()
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -508,27 +508,27 @@ PBoolean PSoundChannel::Abort()
   	if( direction == Recorder )
 	{
 		if(!mpInput)
-			return PFalse;
+			return false;
 			
         commandRequest r(kStopRecorder, os_handle);
         int err = r.CarbonQueue();
         if (err == 0) err = r.m_status;
-        return PTrue;
+        return true;
 	}
 	
-	return PFalse;
+	return false;
 }
 
 PBoolean PSoundChannel::SetVolume(unsigned newVolume)
 {
   cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 
 PBoolean  PSoundChannel::GetVolume(unsigned & volume)
 {
  cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
-  return PFalse;
+  return false;
 }
 
 

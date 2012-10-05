@@ -318,7 +318,7 @@ PThread::PThread(PINDEX stackSize,
   ::pipe(unblockPipe);
 
   // throw the new thread
-  PX_NewThread(PTrue);
+  PX_NewThread(true);
 }
 
 
@@ -444,7 +444,7 @@ void PThread::Restart()
   if (IsTerminated())
     return;
 
-  PX_NewThread(PFalse);
+  PX_NewThread(false);
 }
 
 
@@ -487,7 +487,7 @@ PBoolean PThread::IsTerminated() const
 {
   if (PX_threadId == 0) {
     //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") = 0");
-    return PTrue;
+    return true;
   }
 
 #ifdef _not_def_ // Sigh.  no MPGetNextTaskID on MOSX
@@ -500,14 +500,14 @@ PBoolean PThread::IsTerminated() const
       if (sometask == 0) break;
       if (sometask == PX_threadId) {
           //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") not dead yet");
-          return PFalse;
+          return false;
       }
   }
   // didn't find it, it's dead
   //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") = 0");
-  return PTrue;
+  return true;
 #else
-  return PFalse; // ENOCLUE
+  return false; // ENOCLUE
 #endif
 }
 
@@ -516,8 +516,8 @@ PBoolean PThread::IsTerminated() const
 // partial implementation using a Semaphore.
 // As a result, we can create a thread in a suspended state and then 'resume'
 // it, but once it is going, we can no longer suspend it.
-// So, for Mac OS X, we will accept Resume() calls (or Suspend(PFalse))
-// but reject Suspend(PTrue) calls with an Assertion. This will indicate
+// So, for Mac OS X, we will accept Resume() calls (or Suspend(false))
+// but reject Suspend(true) calls with an Assertion. This will indicate
 // to a user that we cannot Suspend threads on Mac OS X
 
 void PThread::Suspend(PBoolean susp)
@@ -545,7 +545,7 @@ void PThread::Suspend(PBoolean susp)
 
 void PThread::Resume()
 {
-  Suspend(PFalse);
+  Suspend(false);
 }
 
 
@@ -554,7 +554,7 @@ PBoolean PThread::IsSuspended() const
   OSStatus err;
 
   if (IsTerminated())
-    return PFalse;
+    return false;
 
   err = MPWaitOnSemaphore(PX_suspendMutex, kDurationForever);
   PAssert(err == 0, "MPWaitOnSemaphore failed");
@@ -624,10 +624,10 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
     if (timeout == 0)
-      return PFalse;
+      return false;
     Current()->Sleep(10);
   }
-  return PTrue;
+  return true;
 }
 
 
@@ -667,16 +667,16 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
     
   if (waitTime == PMaxTimeInterval) {
     Wait();
-    return PTrue;
+    return true;
   }
 
   Duration timeout = waitTime.GetMilliSeconds();
   if ((err = MPWaitOnSemaphore(semId, timeout)) == noErr)
-      return PTrue;
+      return true;
   if (err == kMPTimeoutErr)
-      return PFalse;
+      return false;
   PAssert(err == 0, psprintf("timed wait error = %i", err));
-  return PFalse;
+  return false;
 }
 
 void PSemaphore::Signal()

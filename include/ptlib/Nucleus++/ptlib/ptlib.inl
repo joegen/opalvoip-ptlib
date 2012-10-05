@@ -71,7 +71,7 @@ PINLINE void PTime::SetCurrentTime()
 
 PINLINE PBoolean PDirectory::IsRoot() const
 #ifdef WOT_NO_FILESYSTEM
-  { return PTrue;}
+  { return true;}
 #else
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
 #endif
@@ -81,10 +81,10 @@ PINLINE PBoolean PDirectory::IsSeparator(char ch)
 
 #ifdef WOT_NO_FILESYSTEM
 PINLINE PBoolean PDirectory::Change(const PString &)
-  { return PTrue;}
+  { return true;}
 
 PINLINE PBoolean PDirectory::Exists(const PString & p)
-  { return PFalse; }
+  { return false; }
 #else
 PINLINE PBoolean PDirectory::Change(const PString & p)
   { return chdir(p) == 0; }
@@ -102,7 +102,7 @@ PINLINE PString PFilePath::GetVolume() const
 
 PINLINE PBoolean PFile::Exists(const PFilePath & name)
 #ifdef WOT_NO_FILESYSTEM
-  { return PFalse; }
+  { return false; }
 #else
   { return access(name, 0) == 0; }
 #endif

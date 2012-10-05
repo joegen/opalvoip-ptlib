@@ -121,7 +121,7 @@ class StringHolder
       strncpy(buffer, ptr, 20);
 
       if (strcmp((const char *)buffer, SPECIALNAME)) {
-        finishFlag = PTrue;
+        finishFlag = true;
         cerr << "String compare failed at " << count << " in " << label << " thread" << endl;
         return;
       }
@@ -167,11 +167,11 @@ void Test4()
   StringHolder<PString, PStringConv> holder(SPECIALNAME);
 
   PThread * thread = holder.StartThread();
-  finishFlag = PFalse;
+  finishFlag = false;
   int count = 0;
   while (!finishFlag && count < COUNT_MAX) 
     holder.TestString(count++, "main");
-  finishFlag = PTrue;
+  finishFlag = true;
   thread->WaitForTermination(9000);
   cerr << "finish" << endl;
   delete thread;

@@ -68,9 +68,9 @@ PSMTP::PSMTP()
 
 PSMTPClient::PSMTPClient()
 {
-  haveHello = PFalse;
-  extendedHello = PFalse;
-  eightBitMIME = PFalse;
+  haveHello = false;
+  extendedHello = false;
+  eightBitMIME = false;
 }
 
 
@@ -88,7 +88,7 @@ PBoolean PSMTPClient::OnOpen()
 
 PBoolean PSMTPClient::Close()
 {
-  PBoolean ok = PTrue;
+  PBoolean ok = true;
 
   if (sendingData)
     ok = EndMessage();
@@ -113,12 +113,12 @@ PBoolean PSMTPClient::LogIn(const PString & username,
   }
 
   if (haveHello)
-    return PFalse; // Wrong state
+    return false; // Wrong state
 
   if (ExecuteCommand(EHLO, localHost)/100 != 2)
-    return PTrue; // EHLO not supported, therefore AUTH not supported
+    return true; // EHLO not supported, therefore AUTH not supported
 
-  haveHello = extendedHello = PTrue;
+  haveHello = extendedHello = true;
 
   PStringArray caps = lastResponseInfo.Lines();
   PStringArray serverMechs;
@@ -126,18 +126,18 @@ PBoolean PSMTPClient::LogIn(const PString & username,
 
   for (i = 0, max = caps.GetSize() ; i < max ; i++)
     if (caps[i].Left(5) == "AUTH ") {
-      serverMechs = caps[i].Mid(5).Tokenise(" ", PFalse);
+      serverMechs = caps[i].Mid(5).Tokenise(" ", false);
       break;
     }
 
   if (serverMechs.GetSize() == 0)
-    return PTrue; // No mechanisms, no login
+    return true; // No mechanisms, no login
 
   PSASLClient auth("smtp", username, username, password);
   PStringSet ourMechs;
 
   if (!auth.Init("", ourMechs))
-    return PFalse;
+    return false;
 
   PString mech;
 
@@ -148,19 +148,19 @@ PBoolean PSMTPClient::LogIn(const PString & username,
     }
 
   if (mech.IsEmpty())
-    return PTrue;  // No mechanism in common
+    return true;  // No mechanism in common
 
   PString output;
 
   // Ok, let's go...
   if (!auth.Start(mech, output))
-    return PFalse;
+    return false;
 
   if (!output.IsEmpty())
     mech = mech + " " + output;
 
   if (ExecuteCommand(AUTH, mech) <= 0)
-    return PFalse;
+    return false;
 
   PSASLClient::PSASLResult result;
   int response;
@@ -171,22 +171,22 @@ PBoolean PSMTPClient::LogIn(const PString & username,
     if (response == 2)
       break;
     else if (response != 3)
-      return PFalse;
+      return false;
 
     result = auth.Negotiate(lastResponseInfo, output);
       
     if (result == PSASLClient::Fail)
-      return PFalse;
+      return false;
 
     if (!output.IsEmpty()) {
       WriteLine(output);
       if (!ReadResponse())
-        return PFalse;
+        return false;
     }
   } while (result == PSASLClient::Continue);
   auth.End();
 
-  return PTrue;
+  return true;
 }
 
 #else
@@ -194,7 +194,7 @@ PBoolean PSMTPClient::LogIn(const PString & username,
 PBoolean PSMTPClient::LogIn(const PString &,
                         const PString &)
 {
-  return PTrue;
+  return true;
 }
 
 #endif
@@ -235,16 +235,16 @@ bool PSMTPClient::InternalBeginMessage()
 
   if (!haveHello) {
     if (ExecuteCommand(EHLO, localHost)/100 == 2)
-      haveHello = extendedHello = PTrue;
+      haveHello = extendedHello = true;
   }
 
   if (!haveHello) {
-    extendedHello = PFalse;
+    extendedHello = false;
     if (eightBitMIME)
-      return PFalse;
+      return false;
     if (ExecuteCommand(HELO, localHost)/100 != 2)
-      return PFalse;
-    haveHello = PTrue;
+      return false;
+    haveHello = true;
   }
 
   if (fromAddress[0] != '"' && fromAddress.Find(' ') != P_MAX_INDEX)
@@ -252,7 +252,7 @@ bool PSMTPClient::InternalBeginMessage()
   if (!localHost && fromAddress.Find('@') == P_MAX_INDEX)
     fromAddress += '@' + localHost;
   if (ExecuteCommand(MAIL, "FROM:<" + fromAddress + '>')/100 != 2)
-    return PFalse;
+    return false;
 
   for (PStringList::iterator i = toNames.begin(); i != toNames.end(); i++) {
     if (!peerHost && i->Find('@') == P_MAX_INDEX)
@@ -267,7 +267,7 @@ bool PSMTPClient::InternalBeginMessage()
   flush();
 
   stuffingState = StuffIdle;
-  sendingData = PTrue;
+  sendingData = true;
   return true;
 }
 
@@ -277,10 +277,10 @@ PBoolean PSMTPClient::EndMessage()
   flush();
 
   stuffingState = DontStuff;
-  sendingData = PFalse;
+  sendingData = false;
 
   if (!WriteString(CRLFdotCRLF))
-    return PFalse;
+    return false;
 
   return ReadResponse() && lastResponseCode/100 == 2;
 }
@@ -291,8 +291,8 @@ PBoolean PSMTPClient::EndMessage()
 
 PSMTPServer::PSMTPServer()
 {
-  extendedHello = PFalse;
-  eightBitMIME = PFalse;
+  extendedHello = false;
+  eightBitMIME = false;
   messageBufferSize = 30000;
   ServerReset();
 }
@@ -300,7 +300,7 @@ PSMTPServer::PSMTPServer()
 
 void PSMTPServer::ServerReset()
 {
-  eightBitMIME = PFalse;
+  eightBitMIME = false;
   sendCommand = WasMAIL;
   fromAddress = PString();
   toNames.RemoveAll();
@@ -318,7 +318,7 @@ PBoolean PSMTPServer::ProcessCommand()
   PString args;
   PINDEX num;
   if (!ReadCommand(num, args))
-    return PFalse;
+    return false;
 
   switch (num) {
     case HELO :
@@ -329,7 +329,7 @@ PBoolean PSMTPServer::ProcessCommand()
       break;
     case QUIT :
       OnQUIT();
-      return PFalse;
+      return false;
     case NOOP :
       OnNOOP();
       break;
@@ -367,13 +367,13 @@ PBoolean PSMTPServer::ProcessCommand()
       return OnUnknown(args);
   }
 
-  return PTrue;
+  return true;
 }
 
 
 void PSMTPServer::OnHELO(const PCaselessString & remoteHost)
 {
-  extendedHello = PFalse;
+  extendedHello = false;
   ServerReset();
 
   PCaselessString peerHost;
@@ -396,7 +396,7 @@ void PSMTPServer::OnHELO(const PCaselessString & remoteHost)
 
 void PSMTPServer::OnEHLO(const PCaselessString & remoteHost)
 {
-  extendedHello = PTrue;
+  extendedHello = true;
   ServerReset();
 
   PCaselessString peerHost;
@@ -659,9 +659,9 @@ void PSMTPServer::OnDATA()
 
   endMIMEDetectState = eightBitMIME ? StuffIdle : DontStuff;
 
-  PBoolean ok = PTrue;
-  PBoolean completed = PFalse;
-  PBoolean starting = PTrue;
+  PBoolean ok = true;
+  PBoolean completed = false;
+  PBoolean starting = true;
 
   while (ok && !completed) {
     PCharArray buffer;
@@ -671,7 +671,7 @@ void PSMTPServer::OnDATA()
       ok = OnTextData(buffer, completed);
     if (ok) {
       ok = HandleMessage(buffer, starting, completed);
-      starting = PFalse;
+      starting = false;
     }
   }
 
@@ -685,7 +685,7 @@ void PSMTPServer::OnDATA()
 PBoolean PSMTPServer::OnUnknown(const PCaselessString & command)
 {
   WriteResponse(500, "Command \"" + command + "\" unrecognised.");
-  return PTrue;
+  return true;
 }
 
 
@@ -695,8 +695,8 @@ PBoolean PSMTPServer::OnTextData(PCharArray & buffer, PBoolean & completed)
   while (ReadLine(line)) {
     PINDEX len = line.GetLength();
     if (len == 1 && line[0] == '.') {
-      completed = PTrue;
-      return PTrue;
+      completed = true;
+      return true;
     }
 
     PINDEX start = (len > 1 && line[0] == '.' && line[1] == '.') ? 1 : 0;
@@ -708,9 +708,9 @@ PBoolean PSMTPServer::OnTextData(PCharArray & buffer, PBoolean & completed)
     buffer[size++] = '\r';
     buffer[size++] = '\n';
     if (size > messageBufferSize)
-      return PTrue;
+      return true;
   }
-  return PFalse;
+  return false;
 }
 
 
@@ -760,8 +760,8 @@ PBoolean PSMTPServer::OnMIMEData(PCharArray & buffer, PBoolean & completed)
 
       case StuffCRLFdotCR :
         if (c == '\n') {
-          completed = PTrue;
-          return PTrue;
+          completed = true;
+          return true;
         }
         buffer[count++] = '.';
         buffer[count++] = '\r';
@@ -773,11 +773,11 @@ PBoolean PSMTPServer::OnMIMEData(PCharArray & buffer, PBoolean & completed)
     }
     if (count > messageBufferSize) {
       buffer.SetSize(messageBufferSize);
-      return PTrue;
+      return true;
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -798,7 +798,7 @@ PSMTPServer::LookUpResult PSMTPServer::LookUpName(const PCaselessString &,
 
 PBoolean PSMTPServer::HandleMessage(PCharArray &, PBoolean, PBoolean)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -839,7 +839,7 @@ PINDEX PPOP3::ParseResponse(const PString & line)
 
 PPOP3Client::PPOP3Client()
 {
-  loggedIn = PFalse;
+  loggedIn = false;
 }
 
 
@@ -851,7 +851,7 @@ PPOP3Client::~PPOP3Client()
 PBoolean PPOP3Client::OnOpen()
 {
   if (!ReadResponse() || lastResponseCode <= 0)
-    return PFalse;
+    return false;
 
   // APOP login command supported?
   PINDEX i = lastResponseInfo.FindRegEx("<.*@.*>");
@@ -859,13 +859,13 @@ PBoolean PPOP3Client::OnOpen()
   if (i != P_MAX_INDEX)
     apopBanner = lastResponseInfo.Mid(i);
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PPOP3Client::Close()
 {
-  PBoolean ok = PTrue;
+  PBoolean ok = true;
   if (IsOpen() && loggedIn) {
     SetReadTimeout(60000);
     ok = ExecuteCommand(QUIT, "") > 0;
@@ -908,7 +908,7 @@ PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, 
   if ((options & UseSASL) && !mech.IsEmpty() && auth.Start(mech, output)) {
 
     if (ExecuteCommand(AUTH, mech) <= 0)
-      return PFalse;
+      return false;
 
     PSASLClient::PSASLResult result;
 
@@ -916,12 +916,12 @@ PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, 
       result = auth.Negotiate(lastResponseInfo, output);
       
       if (result == PSASLClient::Fail)
-        return PFalse;
+        return false;
 
       if (!output.IsEmpty()) {
         WriteLine(output);
         if (!ReadResponse() || !lastResponseCode)
-          return PFalse;
+          return false;
       }
     } while (result == PSASLClient::Continue);
     auth.End();
@@ -941,24 +941,24 @@ PBoolean PPOP3Client::LogIn(const PString & username, const PString & password, 
         digest.sprintf("%02x", (unsigned)data[i]);
 
       if (ExecuteCommand(APOP, username + " " + digest) > 0)
-        return loggedIn = PTrue;
+        return loggedIn = true;
     }
 
     // No SASL and APOP didn't work for us
     // If we really have to, we'll go with the plain old USER/PASS scheme
 
     if (!(options & AllowUserPass))
-      return PFalse;
+      return false;
 
     if (ExecuteCommand(USER, username) <= 0)
-      return PFalse;
+      return false;
 
     if (ExecuteCommand(PASS, password) <= 0)
-      return PFalse;
+      return false;
   }
 
-  loggedIn = PTrue;
-  return PTrue;
+  loggedIn = true;
+  return true;
 }
 
 
@@ -994,7 +994,7 @@ PStringArray PPOP3Client::GetMessageHeaders()
   for (int msgNum = 1; msgNum <= count; msgNum++) {
     if (ExecuteCommand(TOP, PString(PString::Unsigned,msgNum) + " 0") > 0) {
       PString headerLine;
-      while (ReadLine(headerLine, PTrue))
+      while (ReadLine(headerLine, true))
         headers[msgNum-1] += headerLine;
     }
   }
@@ -1035,7 +1035,7 @@ PBoolean PPOP3Server::ProcessCommand()
   PString args;
   PINDEX num;
   if (!ReadCommand(num, args))
-    return PFalse;
+    return false;
 
   switch (num) {
     case USER :
@@ -1046,7 +1046,7 @@ PBoolean PPOP3Server::ProcessCommand()
       break;
     case QUIT :
       OnQUIT();
-      return PFalse;
+      return false;
     case RSET :
       OnRSET();
       break;
@@ -1079,7 +1079,7 @@ PBoolean PPOP3Server::ProcessCommand()
       return OnUnknown(args);
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1121,7 +1121,7 @@ void PPOP3Server::OnQUIT()
 void PPOP3Server::OnRSET()
 {
   for (PINDEX i = 0; i < messageDeletions.GetSize(); i++)
-    messageDeletions[i] = PFalse;
+    messageDeletions[i] = false;
   WriteResponse(okResponse(), "Resetting state.");
 }
 
@@ -1177,7 +1177,7 @@ void PPOP3Server::OnDELE(PINDEX msg)
   if (msg < 1 || msg > messageDeletions.GetSize())
     WriteResponse(errResponse(), "No such message.");
   else {
-    messageDeletions[msg-1] = PTrue;
+    messageDeletions[msg-1] = true;
     WriteResponse(okResponse(), "Message marked for deletion.");
   }
 }
@@ -1217,13 +1217,13 @@ void PPOP3Server::OnUIDL(PINDEX msg)
 PBoolean PPOP3Server::OnUnknown(const PCaselessString & command)
 {
   WriteResponse(errResponse(), "Command \"" + command + "\" unrecognised.");
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PPOP3Server::HandleOpenMailbox(const PString &, const PString &)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -1257,7 +1257,7 @@ const PCaselessString & PRFC822Channel::MailerTag()      { static const PConstCa
 PRFC822Channel::PRFC822Channel(Direction direction)
 {
   writeHeaders = direction == Sending;
-  writePartHeaders = PFalse;
+  writePartHeaders = false;
   base64 = NULL;
 }
 
@@ -1283,7 +1283,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
 
   if (writeHeaders) {
     if (!headers.Contains(FromTag()) || !headers.Contains(ToTag()))
-      return PFalse;
+      return false;
 
     if (!headers.Contains(MimeVersionTag()))
       headers.SetAt(MimeVersionTag(), "1.0");
@@ -1299,12 +1299,12 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
     PStringStream hdr;
     hdr << headers;
     if (!PIndirectChannel::Write((const char *)hdr, hdr.GetLength()))
-      return PFalse;
+      return false;
 
     if (base64 != NULL)
       base64->StartEncoding();
 
-    writeHeaders = PFalse;
+    writeHeaders = false;
 
     flush();
   }
@@ -1317,12 +1317,12 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
     hdr << "\n--"  << boundaries.front() << '\n'
         << partHeaders;
     if (!PIndirectChannel::Write((const char *)hdr, hdr.GetLength()))
-      return PFalse;
+      return false;
 
     if (base64 != NULL)
       base64->StartEncoding();
 
-    writePartHeaders = PFalse;
+    writePartHeaders = false;
 
     flush();
   }
@@ -1350,7 +1350,7 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
 PBoolean PRFC822Channel::OnOpen()
 {
   if (writeHeaders)
-    return PTrue;
+    return true;
 
   istream & this_stream = *this;
   this_stream >> headers;
@@ -1367,7 +1367,7 @@ void PRFC822Channel::NewMessage(Direction direction)
   headers.RemoveAll();
   partHeaders.RemoveAll();
   writeHeaders = direction == Sending;
-  writePartHeaders = PFalse;
+  writePartHeaders = false;
 }
 
 
@@ -1385,7 +1385,7 @@ PString PRFC822Channel::MultipartMessage()
 
 PBoolean PRFC822Channel::MultipartMessage(const PString & boundary)
 {
-  writePartHeaders = PTrue;
+  writePartHeaders = true;
   for (PStringList::iterator i = boundaries.begin(); i != boundaries.end(); i++) {
     if (*i == boundary)
       return false;
@@ -1394,7 +1394,7 @@ PBoolean PRFC822Channel::MultipartMessage(const PString & boundary)
   if (boundaries.GetSize() > 0) {
     partHeaders.SetAt(ContentTypeTag(), "multipart/mixed; boundary=\""+boundary+'"');
     flush();
-    writePartHeaders = PTrue;
+    writePartHeaders = true;
   }
 
   boundaries.Prepend(new PString(boundary));
@@ -1505,10 +1505,10 @@ PBoolean PRFC822Channel::SendWithSMTP(const PString & hostname)
 PBoolean PRFC822Channel::SendWithSMTP(PSMTPClient * smtp)
 {
   if (!Open(smtp))
-    return PFalse;
+    return false;
 
   if (!headers.Contains(FromTag()) || !headers.Contains(ToTag()))
-    return PFalse;
+    return false;
 
   return smtp->BeginMessage(headers[FromTag()], headers[ToTag()]);
 }

@@ -103,7 +103,7 @@ XMPP::C2S::StreamHandler::StreamHandler(const JID& jid, const PString& pwd, PBoo
 #if P_SASL
     m_SASL("xmpp", BareJID(m_JID), m_JID.GetUser(), m_Password),
 #endif
-    m_HasBind(PFalse), m_HasSession(PFalse),
+    m_HasBind(false), m_HasSession(false),
     m_State(XMPP::C2S::StreamHandler::Null)
 {
   m_PendingIQs.DisallowDeleteObjects();
@@ -131,7 +131,7 @@ PBoolean XMPP::C2S::StreamHandler::Start(Transport * transport)
 PBoolean XMPP::C2S::StreamHandler::Send(XMPP::Stanza * stanza)
 {
   if (!stanza)
-    return PFalse;
+    return false;
 
   if (PIsDescendant(stanza, XMPP::IQ)) {
     XMPP::IQ * iq = (XMPP::IQ *)stanza;
@@ -142,11 +142,11 @@ PBoolean XMPP::C2S::StreamHandler::Send(XMPP::Stanza * stanza)
         m_PendingIQsLock.Wait();
         m_PendingIQs.Append(iq);
         m_PendingIQsLock.Signal();
-        return PTrue;
+        return true;
       }
       else {
         delete iq;
-        return PFalse;
+        return false;
       }
     }
   }
@@ -207,11 +207,11 @@ PBoolean XMPP::C2S::StreamHandler::Discover(const PString& xmlns,
 {
   if (!IsEstablished()) {
     PTRACE(1, "XMPP\tDisco: invalid stream state");
-    return PFalse;
+    return false;
   }
   else if (responseHandler.IsNULL()) {
     PTRACE(1, "XMPP\tDisco: invalid response handler");
-    return PFalse;
+    return false;
   }
 
   PXMLElement * query = new PXMLElement(NULL, XMPP::IQQueryTag());
@@ -312,7 +312,7 @@ void XMPP::C2S::StreamHandler::OnOpen(XMPP::Stream& stream, INT extra)
   PXMLStreamParser * parser = stream.GetParser();
 
   // Now we have to feed to the parser whatever we read so far
-  if (parser == NULL || !parser->Parse(data, data.GetLength(), PFalse)) {
+  if (parser == NULL || !parser->Parse(data, data.GetLength(), false)) {
     // Error!!!
     stream.Close();
     return;
@@ -333,8 +333,8 @@ void XMPP::C2S::StreamHandler::OnOpen(XMPP::Stream& stream, INT extra)
 void XMPP::C2S::StreamHandler::OnClose(XMPP::Stream& stream, INT extra)
 {
   SetState(XMPP::C2S::StreamHandler::Null);
-  m_HasBind = PFalse;
-  m_HasSession = PFalse;
+  m_HasBind = false;
+  m_HasSession = false;
   PString streamOff("</stream:stream>");
 
   stream.Write(streamOff);
@@ -533,7 +533,7 @@ void XMPP::C2S::StreamHandler::HandleRegStartedState(PXML& pdu)
     return;
   }
 
-  m_NewAccount = PFalse;
+  m_NewAccount = false;
   StartAuthNegotiation();
 }
 
@@ -605,19 +605,19 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
 
     PINDEX i = 0;
     PXMLElement * item;
-    PBoolean uid = PFalse, pwd = PFalse, digest = PFalse, res = PFalse;
+    PBoolean uid = false, pwd = false, digest = false, res = false;
 
     while ((item = (PXMLElement *)elem->GetElement(i++)) != NULL) {
       PString name = item->GetName();
 
       if (name *= "username")
-        uid = PTrue;
+        uid = true;
       else if (name *= "password")
-        pwd = PTrue;
+        pwd = true;
       else if (name *= "digest")
-        digest = PTrue;
+        digest = true;
       else if (name *= "resource")
-        res = PTrue;
+        res = true;
     }
 
     if (uid)

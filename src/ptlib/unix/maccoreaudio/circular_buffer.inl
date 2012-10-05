@@ -73,13 +73,13 @@ class CircularBuffer
       if (rval) {
         PTRACE(1, __func__ << " can not init mutex");
         init = false;
-        //return PFalse;
+        //return false;
       }
       rval = pthread_cond_init(&cond, NULL);
       if (rval) {
         PTRACE(1, __func__ << " can not init cond");
         init = false;
-        //return PFalse;
+        //return false;
       }
    }
 

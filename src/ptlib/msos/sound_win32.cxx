@@ -75,7 +75,7 @@ PBoolean PMultiMediaFile::CreateWaveFile(const PFilePath & filename,
                                      DWORD dataSize)
 {
   if (!Open(filename, MMIO_CREATE|MMIO_WRITE))
-    return PFalse;
+    return false;
 
   MMCKINFO mmChunk;
   mmChunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
@@ -85,16 +85,16 @@ PBoolean PMultiMediaFile::CreateWaveFile(const PFilePath & filename,
 
   // Create a RIFF chunk
   if (!CreateChunk(mmChunk, MMIO_CREATERIFF))
-    return PFalse;
+    return false;
 
   // Save the format sub-chunk
   mmChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
   mmChunk.cksize = waveFormat.GetSize();
   if (!CreateChunk(mmChunk))
-    return PFalse;
+    return false;
 
   if (!Write(waveFormat, waveFormat.GetSize()))
-    return PFalse;
+    return false;
 
   // Save the data sub-chunk
   mmChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
@@ -109,7 +109,7 @@ PBoolean PMultiMediaFile::OpenWaveFile(const PFilePath & filename,
 {
   // Open wave file
   if (!Open(filename, MMIO_READ | MMIO_ALLOCBUF))
-    return PFalse;
+    return false;
 
   MMCKINFO mmParentChunk, mmSubChunk;
   dwLastError = MMSYSERR_NOERROR;
@@ -117,20 +117,20 @@ PBoolean PMultiMediaFile::OpenWaveFile(const PFilePath & filename,
   // Locate a 'RIFF' chunk with a 'WAVE' form type
   mmParentChunk.fccType = mmioFOURCC('W', 'A', 'V', 'E');
   if (!Descend(MMIO_FINDRIFF, mmParentChunk))
-    return PFalse;
+    return false;
 
   // Find the format chunk
   mmSubChunk.ckid = mmioFOURCC('f', 'm', 't', ' ');
   if (!Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk))
-    return PFalse;
+    return false;
 
   // Get the size of the format chunk, allocate memory for it
   if (!waveFormat.SetSize(mmSubChunk.cksize))
-    return PFalse;
+    return false;
 
   // Read the format chunk
   if (!Read(waveFormat.GetPointer(), waveFormat.GetSize()))
-    return PFalse;
+    return false;
 
   // Ascend out of the format subchunk
   Ascend(mmSubChunk);
@@ -138,16 +138,16 @@ PBoolean PMultiMediaFile::OpenWaveFile(const PFilePath & filename,
   // Find the data subchunk
   mmSubChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
   if (!Descend(MMIO_FINDCHUNK, mmSubChunk, &mmParentChunk))
-    return PFalse;
+    return false;
 
   // Get the size of the data subchunk
   if (mmSubChunk.cksize == 0) {
     dwLastError = MMSYSERR_INVALPARAM;
-    return PFalse;
+    return false;
   }
 
   dataSize = mmSubChunk.cksize;
-  return PTrue;
+  return true;
 }
 
 
@@ -172,11 +172,11 @@ PBoolean PMultiMediaFile::Open(const PFilePath & filename,
 PBoolean PMultiMediaFile::Close(UINT wFlags)
 {
   if (hmmio == NULL)
-    return PFalse;
+    return false;
 
   mmioClose(hmmio, wFlags);
   hmmio = NULL;
-  return PTrue;
+  return true;
 }
 
 
@@ -388,7 +388,7 @@ PBoolean PSound::Load(const PFilePath & filename)
   DWORD dataSize;
   if (!mmio.OpenWaveFile(filename, waveFormat, dataSize)) {
     dwLastError = mmio.GetLastError();
-    return PFalse;
+    return false;
   }
 
   encoding = waveFormat->wFormatTag;
@@ -404,16 +404,16 @@ PBoolean PSound::Load(const PFilePath & filename)
   // Allocate and lock memory for the waveform data.
   if (!SetSize(dataSize)) {
     dwLastError = MMSYSERR_NOMEM;
-    return PFalse;
+    return false;
   }
 
   // Read the waveform data subchunk
   if (!mmio.Read(GetPointer(), GetSize())) {
     dwLastError = mmio.GetLastError();
-    return PFalse;
+    return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -431,15 +431,15 @@ PBoolean PSound::Save(const PFilePath & filename)
   PMultiMediaFile mmio;
   if (!mmio.CreateWaveFile(filename, waveFormat, GetSize())) {
     dwLastError = mmio.GetLastError();
-    return PFalse;
+    return false;
   }
 
   if (!mmio.Write(GetPointer(), GetSize())) {
     dwLastError = mmio.GetLastError();
-    return PFalse;
+    return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -448,9 +448,9 @@ PBoolean PSound::Play()
   PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
                         PSoundChannel::Player);
   if (!channel.IsOpen())
-    return PFalse;
+    return false;
 
-  return channel.PlaySound(*this, PTrue);
+  return channel.PlaySound(*this, true);
 }
 
 PBoolean PSound::Play(const PString & device)
@@ -459,9 +459,9 @@ PBoolean PSound::Play(const PString & device)
   PSoundChannel channel(device,
                        PSoundChannel::Player);
   if (!channel.IsOpen())
-    return PFalse;
+    return false;
 
-  return channel.PlaySound(*this, PTrue);
+  return channel.PlaySound(*this, true);
 }
 
 PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
@@ -581,7 +581,7 @@ void PSoundChannelWin32::Construct()
   direction = Player;
   hWaveOut = NULL;
   hWaveIn = NULL;
-  hEventDone = CreateEvent(NULL, PFalse, PFalse, NULL);
+  hEventDone = CreateEvent(NULL, false, false, NULL);
 
   waveFormat.SetFormat(1, 8000, 16);
 
@@ -722,7 +722,7 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
   if (deviceName.IsEmpty())
     return SetErrorValues(NotFound, MMSYSERR_BADDEVICEID|PWIN32ErrorFlag);
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannelWin32::Open(const PString & device,
@@ -735,7 +735,7 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
   unsigned id = 0;
 
   if( !GetDeviceID(device, dir, id) )
-    return PFalse;
+    return false;
 
   waveFormat.SetFormat(numChannels, sampleRate, bitsPerSample);
 
@@ -751,7 +751,7 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
   unsigned id = 0;
 
   if( !GetDeviceID(device, dir, id) )
-    return PFalse;
+    return false;
 
   waveFormat = format;
 
@@ -937,7 +937,7 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
 
 PBoolean PSoundChannelWin32::IsOpen() const
 { 
-  return opened ? PTrue : PFalse;
+  return opened ? true : false;
 }
 
 PBoolean PSoundChannelWin32::SetFormat(unsigned numChannels,
@@ -1008,7 +1008,7 @@ PBoolean PSoundChannelWin32::Close()
 
   opened = false;
   os_handle = -1;
-  return PTrue;
+  return true;
 }
 
 
@@ -1023,18 +1023,18 @@ PBoolean PSoundChannelWin32::SetBuffers(PINDEX size, PINDEX count)
 
   PTRACE(3, "WinSnd\tSetting sounds buffers to " << count << " x " << size);
 
-  PBoolean ok = PTrue;
+  PBoolean ok = true;
 
   PWaitAndSignal mutex(bufferMutex);
 
   if (!buffers.SetSize(count))
-    ok = PFalse;
+    ok = false;
   else {
     for (PINDEX i = 0; i < count; i++) {
       if (buffers.GetAt(i) == NULL)
         buffers.SetAt(i, new PWaveBuffer(size));
       if (!buffers[i].SetSize(size))
-        ok = PFalse;
+        ok = false;
     }
   }
 
@@ -1056,7 +1056,7 @@ PBoolean PSoundChannelWin32::GetBuffers(PINDEX & size, PINDEX & count)
   else
     size = buffers[0].GetSize();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1103,7 +1103,7 @@ PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
   if (size != 0)
     return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1111,7 +1111,7 @@ PBoolean PSoundChannelWin32::PlaySound(const PSound & sound, PBoolean wait)
 {
   Abort();
 
-  PBoolean ok = PFalse;
+  PBoolean ok = false;
 
   PINDEX bufferSize;
   PINDEX bufferCount;
@@ -1145,7 +1145,7 @@ PBoolean PSoundChannelWin32::PlaySound(const PSound & sound, PBoolean wait)
     }
     else {
       SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
-      ok = PFalse;
+      ok = false;
     }
 
     bufferMutex.Signal();
@@ -1174,7 +1174,7 @@ PBoolean PSoundChannelWin32::PlayFile(const PFilePath & filename, PBoolean wait)
   waveFormat = fileFormat;
   if (!OpenDevice(os_handle)) {
     SetFormat(numChannels, sampleRate, bitsPerSample);
-    return PFalse;
+    return false;
   }
 
   bufferMutex.Wait();
@@ -1223,7 +1223,7 @@ PBoolean PSoundChannelWin32::PlayFile(const PFilePath & filename, PBoolean wait)
     SetFormat(numChannels, sampleRate, bitsPerSample);
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1233,10 +1233,10 @@ PBoolean PSoundChannelWin32::HasPlayCompleted()
 
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
     if ((buffers[i].header.dwFlags&WHDR_DONE) == 0)
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1244,10 +1244,10 @@ PBoolean PSoundChannelWin32::WaitForPlayCompletion()
 {
   while (!HasPlayCompleted()) {
     if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1257,7 +1257,7 @@ PBoolean PSoundChannelWin32::StartRecording()
 
   // See if has started already.
   if (bufferByteOffset != P_MAX_INDEX)
-    return PTrue;
+    return true;
 
   DWORD osError;
 
@@ -1265,15 +1265,15 @@ PBoolean PSoundChannelWin32::StartRecording()
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
     PWaveBuffer & buffer = buffers[i];
     if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
-      return PFalse;
+      return false;
     if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
-      return PFalse;
+      return false;
   }
 
   bufferByteOffset = 0;
 
   if ((osError = waveInStart(hWaveIn)) == MMSYSERR_NOERROR) // start recording
-    return PTrue;
+    return true;
 
   bufferByteOffset = P_MAX_INDEX;
   return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
@@ -1288,13 +1288,13 @@ PBoolean PSoundChannelWin32::Read(void * data, PINDEX size)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   if (!WaitForRecordBufferFull())
-    return PFalse;
+    return false;
 
   PWaitAndSignal mutex(bufferMutex);
 
   // Check to see if Abort() was called in another thread
   if (bufferByteOffset == P_MAX_INDEX)
-    return PFalse;
+    return false;
 
   PWaveBuffer & buffer = buffers[bufferIndex];
 
@@ -1316,14 +1316,14 @@ PBoolean PSoundChannelWin32::Read(void * data, PINDEX size)
     bufferByteOffset = 0;
   }
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelWin32::RecordSound(PSound & sound)
 {
   if (!WaitForAllRecordBuffersFull())
-    return PFalse;
+    return false;
 
   sound.SetFormat(waveFormat->nChannels,
                   waveFormat->nSamplesPerSec,
@@ -1351,14 +1351,14 @@ PBoolean PSoundChannelWin32::RecordSound(PSound & sound)
     }
   }
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelWin32::RecordFile(const PFilePath & filename)
 {
   if (!WaitForAllRecordBuffersFull())
-    return PFalse;
+    return false;
 
   PWaitAndSignal mutex(bufferMutex);
 
@@ -1376,7 +1376,7 @@ PBoolean PSoundChannelWin32::RecordFile(const PFilePath & filename)
       return SetErrorValues(Miscellaneous, mmio.GetLastError()|PWIN32ErrorFlag, LastReadError);
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1396,46 +1396,46 @@ PBoolean PSoundChannelWin32::AreAllRecordBuffersFull()
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
     if ((buffers[i].header.dwFlags&WHDR_DONE) == 0 ||
          buffers[i].header.dwBytesRecorded    == 0)
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelWin32::WaitForRecordBufferFull()
 {
   if (!StartRecording())  // Start the first read, queue all the buffers
-    return PFalse;
+    return false;
 
   while (!IsRecordBufferFull()) {
     if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
-      return PFalse;
+      return false;
 
     PWaitAndSignal mutex(bufferMutex);
     if (bufferByteOffset == P_MAX_INDEX)
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelWin32::WaitForAllRecordBuffersFull()
 {
   if (!StartRecording())  // Start the first read, queue all the buffers
-    return PFalse;
+    return false;
 
   while (!AreAllRecordBuffersFull()) {
     if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
-      return PFalse;
+      return false;
 
     PWaitAndSignal mutex(bufferMutex);
     if (bufferByteOffset == P_MAX_INDEX)
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -1468,7 +1468,7 @@ PBoolean PSoundChannelWin32::Abort()
   if (osError != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
 
-  return PTrue;
+  return true;
 }
 
 

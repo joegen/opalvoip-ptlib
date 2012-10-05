@@ -79,7 +79,7 @@ XMPPFrame::XMPPFrame()
     m_Roster(new XMPP::Roster), m_Client(NULL)
 {
   m_Roster->RosterChangedHandlers().Add(new PCREATE_SMART_NOTIFIER(OnRosterChanged));
-  Show(PTrue);
+  Show(true);
 }
 
 
@@ -137,7 +137,7 @@ void XMPPFrame::OnDisconnect(wxCommandEvent& WXUNUSED(event))
 void XMPPFrame::OnQuit(wxCommandEvent& event)
 {
   OnDisconnect(event);
-  Close(PTrue);
+  Close(true);
 }
 
 

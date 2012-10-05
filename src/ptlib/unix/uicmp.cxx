@@ -110,7 +110,7 @@ PBoolean PICMPSocket::Ping(const PString & host)
 PBoolean PICMPSocket::Ping(const PString & host, PingInfo & info)
 {
   if (!WritePing(host, info))
-    return PFalse;
+    return false;
 
   return ReadPing(info);
 }
@@ -137,7 +137,7 @@ PBoolean PICMPSocket::WritePing(const PString & host, PingInfo & info)
   if (info.ttl != 0) {
     char ttl = (char)info.ttl;
     if (::setsockopt(os_handle, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
-      return PFalse;
+      return false;
   }
 #endif
 
@@ -166,7 +166,7 @@ PBoolean PICMPSocket::ReadPing(PingInfo & info)
     memset(&packet, 0, sizeof(packet));
 
     if (!ReadFrom(packet, sizeof(packet), info.remoteAddr, port))
-      return PFalse;
+      return false;
 
     now  = PTimer::Tick().GetMilliSeconds();
     ipHdr      = (IPHdr *)packet;
@@ -184,7 +184,7 @@ PBoolean PICMPSocket::ReadPing(PingInfo & info)
     }
 
     if (!timeout.IsRunning())
-      return PFalse;
+      return false;
   }
 
   info.remoteAddr = Address(ipHdr->sourceAddr[0], ipHdr->sourceAddr[1],
@@ -206,7 +206,7 @@ PBoolean PICMPSocket::ReadPing(PingInfo & info)
 
   info.sequenceNum = icmpPacket->sequence;
 
-  return PTrue;
+  return true;
 }
 
 

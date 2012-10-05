@@ -583,7 +583,7 @@ void PHTML::DefinitionItem::Output(PHTML & html) const
 PHTML::TableStart::TableStart(const char * attr)
   : Element("TABLE", attr, InTable, InBody, BothCRLF)
 {
-  borderFlag = PFalse;
+  borderFlag = false;
 }
 
 PHTML::TableStart::TableStart(BorderCodes border, const char * attr)
@@ -709,7 +709,7 @@ void PHTML::Select::AddAttr(PHTML & html) const
 PHTML::Option::Option(const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, Enabled)
 {
-  selectedFlag = PFalse;
+  selectedFlag = false;
 }
 
 PHTML::Option::Option(SelectionCodes select,
@@ -723,7 +723,7 @@ PHTML::Option::Option(DisableCodes disabled,
                       const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, disabled)
 {
-  selectedFlag = PFalse;
+  selectedFlag = false;
 }
 
 PHTML::Option::Option(SelectionCodes select,
@@ -937,7 +937,7 @@ PHTML::RadioButton::RadioButton(const char * fname,
   : InputField("radio", fname, Enabled, attr)
 {
   valueString = value;
-  checkedFlag = PFalse;
+  checkedFlag = false;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,
@@ -947,7 +947,7 @@ PHTML::RadioButton::RadioButton(const char * fname,
   : InputField("radio", fname, disabled, attr)
 {
   valueString = value;
-  checkedFlag = PFalse;
+  checkedFlag = false;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,

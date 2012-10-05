@@ -1945,7 +1945,7 @@ class PConstantString : public ParentString
   public:
     PConstantString(typename ParentString::Initialiser init)
       : ParentString(m_staticReference, init != NULL ? strlen(init) : 0)
-      , P_DISABLE_MSVC_WARNINGS(4355, m_staticReference(this->m_length+1, true))
+      , P_DISABLE_MSVC_WARNINGS(4267 4355, m_staticReference(this->m_length+1, true))
     {
       this->theArray = (char *)(init != NULL ? init : "");
     }

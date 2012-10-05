@@ -112,7 +112,7 @@ PBoolean PSoundChannelSunAudio::Open(const PString & device,
   resampleRate = 0;
 
   if (!ConvertOSError(os_handle = ::open(device, (dir == Player ? O_WRONLY : O_RDONLY), 0 )))
-    return PFalse;
+    return false;
 
   direction = dir;
 
@@ -126,7 +126,7 @@ PBoolean PSoundChannelSunAudio::Open(const PString & device,
   {
     ::close(os_handle);
     os_handle = -1;
-    return PFalse;
+    return false;
   }
 
   mDefaultPlayNumChannels = audio_info.play.channels; 
@@ -146,7 +146,7 @@ PBoolean PSoundChannelSunAudio::Open(const PString & device,
 PBoolean PSoundChannelSunAudio::Close()
 {
   if (os_handle < 0)
-    return PTrue;
+    return true;
   return PChannel::Close();
 }
 
@@ -185,14 +185,14 @@ PBoolean PSoundChannelSunAudio::SetFormat(unsigned numChannels,
   // The actual setting of the parameters
   err=::ioctl(os_handle,AUDIO_SETINFO,&audio_info);	
   if (err==EINVAL || err==EBUSY)
-    return PFalse;
+    return false;
 
   // Let's recheck the configuration...
   AUDIO_INITINFO(&audio_info);	
   err = ::ioctl(os_handle, AUDIO_GETINFO, &audio_info);	
   actualSampleRate =  (direction == Player) ? audio_info.play.sample_rate : audio_info.record.sample_rate;
 
-  return PTrue;
+  return true;
 }
 
 unsigned PSoundChannelSunAudio::GetChannels() const  
@@ -232,9 +232,9 @@ PBoolean PSoundChannelSunAudio::SetBuffers(PINDEX size, PINDEX count)
   // The actual setting of the parameters
   err = ::ioctl(os_handle,AUDIO_SETINFO,&audio_info);	
   if (err == EINVAL || err == EBUSY)
-    return PFalse;
+    return false;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -252,7 +252,7 @@ PBoolean PSoundChannelSunAudio::GetBuffers(PINDEX & size, PINDEX & count)
 
   err = ::ioctl(os_handle,AUDIO_GETINFO,&audio_info);
   if (err == EINVAL || err == EBUSY)
-    return PFalse;
+    return false;
 
   if (direction == Player)
     size = audio_info.play.buffer_size;
@@ -261,7 +261,7 @@ PBoolean PSoundChannelSunAudio::GetBuffers(PINDEX & size, PINDEX & count)
 
   count = 1;
 
-  return PTrue;
+  return true;
 }
 
 
@@ -280,7 +280,7 @@ PBoolean PSoundChannelSunAudio::Write(const void * buffer, PINDEX length)
     while (!ConvertOSError(bytes = ::write(os_handle, (void *)(((unsigned char *)buffer) + total), length-total))) {
       if ((GetErrorCode() != Interrupted) || ( os_handle < 0)) {
         PTRACE(6, "SunAudio\tWirte failed");
-        return PFalse;         
+        return false;         
       }
       PTRACE(6, "SunAudio\tWrite interrupted");       
     }
@@ -302,12 +302,12 @@ PBoolean PSoundChannelSunAudio::PlaySound(const PSound & sound, PBoolean wait)
     return SetErrorValues(NotOpen, EBADF);
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
-    return PFalse;
+    return false;
 
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -318,7 +318,7 @@ PBoolean PSoundChannelSunAudio::PlayFile(const PFilePath & filename, PBoolean wa
 
   PFile file(filename, PFile::ReadOnly);
   if (!file.IsOpen())
-    return PFalse;
+    return false;
 
   for (;;) {
     BYTE buffer[256];
@@ -336,7 +336,7 @@ PBoolean PSoundChannelSunAudio::PlayFile(const PFilePath & filename, PBoolean wa
   if (wait)
     return WaitForPlayCompletion();
 
-  return PTrue;
+  return true;
 }
 
 
@@ -378,7 +378,7 @@ PBoolean PSoundChannelSunAudio::Read(void * buffer, PINDEX length)
     while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned char *)buffer) + total), length-total))) {
       if ((GetErrorCode() != Interrupted) || (os_handle < 0)) {
         PTRACE(6, "SunAudio\tRead failed");
-        return PFalse;
+        return false;
       }
       PTRACE(6, "SunAudio\tRead interrupted");
     } 
@@ -395,25 +395,25 @@ PBoolean PSoundChannelSunAudio::Read(void * buffer, PINDEX length)
   else
     PTRACE(6, "SunAudio\tRead completed");
  
-  return PTrue;
+  return true;
 }
 
 
 PBoolean PSoundChannelSunAudio::RecordSound(PSound & sound)
 {
-   return PFalse;
+   return false;
 }
 
 
 PBoolean PSoundChannelSunAudio::RecordFile(const PFilePath & filename)
 {
-   return PFalse;
+   return false;
 }
 
 
 PBoolean PSoundChannelSunAudio::StartRecording()
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -462,7 +462,7 @@ PBoolean PSoundChannelSunAudio::Abort()
   if (os_handle < 0) 
   {
     PTRACE(1,"PSoundChannelSunAudio::Abort() os_handle is invalid");
-    return PFalse;
+    return false;
   }
 
   AUDIO_INITINFO(&audio_info);
@@ -480,9 +480,9 @@ PBoolean PSoundChannelSunAudio::Abort()
 
   err = ::ioctl(os_handle, AUDIO_SETINFO, &audio_info);	// Let's recheck the configuration...
   if (err==EINVAL || err==EBUSY)
-    return PFalse;
+    return false;
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PSoundChannelSunAudio::SetVolume(unsigned newVolume)
@@ -492,7 +492,7 @@ PBoolean PSoundChannelSunAudio::SetVolume(unsigned newVolume)
 
    /* Check if the new volume is valid or not */
    if ( newVolume < AUDIO_MIN_GAIN || newVolume > AUDIO_MAX_GAIN )
-     return PFalse;
+     return false;
 
    newVolume = (newVolume * (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN)) / 100;
 
@@ -506,10 +506,10 @@ PBoolean PSoundChannelSunAudio::SetVolume(unsigned newVolume)
    if (err==EINVAL || err==EBUSY)
    {
      PTRACE(1,  "PSoundChannelSunAudio::SetVolume failed : " << ::strerror(errno)) ;
-     return PFalse;
+     return false;
    }
 
-   return PTrue;
+   return true;
 }
 
 PBoolean  PSoundChannelSunAudio::GetVolume(unsigned & volume)
@@ -523,14 +523,14 @@ PBoolean  PSoundChannelSunAudio::GetVolume(unsigned & volume)
    if (err==EINVAL || err==EBUSY)
    {
      PTRACE(1,  "PSoundChannelSunAudio::GetVolume failed : " << ::strerror(errno)) ;
-     return PFalse;
+     return false;
    }
 
    volume =  ( direction == Player ) ?  audio_info.play.gain : audio_info.record.gain;
 
    volume = (volume * 100) / (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN);
 
-   return PTrue;
+   return true;
 }
 
 // End of file

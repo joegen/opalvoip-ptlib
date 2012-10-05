@@ -13,7 +13,7 @@
 
 PBoolean PXER_Stream::NullDecode(PASN_Null &)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -26,7 +26,7 @@ void PXER_Stream::NullEncode(const PASN_Null &)
 PBoolean PXER_Stream::BooleanDecode(PASN_Boolean & value)
 {
   value = (position->GetElement("true") != 0);
-  return PTrue;
+  return true;
 }
 
 
@@ -40,7 +40,7 @@ void PXER_Stream::BooleanEncode(const PASN_Boolean & value)
 PBoolean PXER_Stream::IntegerDecode(PASN_Integer & value)
 {
   value = position->GetData().AsInteger();
-  return PTrue;
+  return true;
 }
 
 
@@ -54,7 +54,7 @@ void PXER_Stream::IntegerEncode(const PASN_Integer & value)
 PBoolean PASN_Enumeration::DecodeXER(PXER_Stream & strm)
 {
   value = strm.GetCurrentElement()->GetData().AsInteger();
-  return PTrue;
+  return true;
 }
 
 
@@ -81,7 +81,7 @@ void PXER_Stream::EnumerationEncode(const PASN_Enumeration & value)
 PBoolean PXER_Stream::RealDecode(PASN_Real & value)
 {
   value = position->GetData().AsReal();
-  return PTrue;
+  return true;
 }
 
 
@@ -95,7 +95,7 @@ void PXER_Stream::RealEncode(const PASN_Real & value)
 PBoolean PXER_Stream::ObjectIdDecode(PASN_ObjectId & value)
 {
   value.SetValue(position->GetData());
-  return PTrue;
+  return true;
 }
 
 
@@ -118,10 +118,10 @@ PBoolean PXER_Stream::BitStringDecode(PASN_BitString & value)
     if (bits[i] == '1')
       value.Set(i);
     else if (bits[i] != '0')
-      return PFalse;
+      return false;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -146,7 +146,7 @@ PBoolean PXER_Stream::OctetStringDecode(PASN_OctetString & value)
   PINDEX len = data.GetLength();
 
   if (len % 2)
-    return PFalse;
+    return false;
 
   BYTE * bin = value.GetPointer(len / 2);
   unsigned octet;
@@ -159,7 +159,7 @@ PBoolean PXER_Stream::OctetStringDecode(PASN_OctetString & value)
     bin[j] = (BYTE)octet;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -181,7 +181,7 @@ void PXER_Stream::OctetStringEncode(const PASN_OctetString & value)
 PBoolean PXER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
 {
   value = position->GetData();
-  return PTrue;
+  return true;
 }
 
 
@@ -194,7 +194,7 @@ void PXER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
 
 PBoolean PXER_Stream::BMPStringDecode(PASN_BMPString &)
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -210,7 +210,7 @@ PBoolean PASN_Choice::DecodeXER(PXER_Stream & strm)
   PXMLElement * choice_elem = (PXMLElement *)elem->GetElement();
 
   if (!choice_elem || !choice_elem->IsElement())
-    return PFalse;
+    return false;
 
   for (unsigned int i = 0 ; i < namesCount ; i++)
   {
@@ -218,7 +218,7 @@ PBoolean PASN_Choice::DecodeXER(PXER_Stream & strm)
     {
       tag = names[i].value;
       if (!CreateObject())
-        return PFalse;
+        return false;
       strm.SetCurrentElement(choice_elem);
       PBoolean res = choice->Decode(strm);
       strm.SetCurrentElement(elem);
@@ -226,7 +226,7 @@ PBoolean PASN_Choice::DecodeXER(PXER_Stream & strm)
     }
   }
 
-  return PFalse;
+  return false;
 }
 
 
@@ -258,7 +258,7 @@ void PXER_Stream::ChoiceEncode(const PASN_Choice & value)
 
 PBoolean PASN_Sequence::PreambleDecodeXER(PXER_Stream &)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -269,7 +269,7 @@ void PASN_Sequence::PreambleEncodeXER(PXER_Stream &) const
 
 PBoolean PASN_Sequence::KnownExtensionDecodeXER(PXER_Stream &, PINDEX, PASN_Object &)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -280,7 +280,7 @@ void PASN_Sequence::KnownExtensionEncodeXER(PXER_Stream &, PINDEX, const PASN_Ob
 
 PBoolean PASN_Sequence::UnknownExtensionsDecodeXER(PXER_Stream &)
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -334,16 +334,16 @@ PBoolean PXER_Stream::ArrayDecode(PASN_Array & array)
   unsigned size = position->GetSize();
 
   if (!array.SetSize(size))
-    return PFalse;
+    return false;
 
   PXMLElement * elem = position;
-  PBoolean res = PTrue;
+  PBoolean res = true;
 
   for (PINDEX i = 0; i < (PINDEX)size; i++) {
     position = (PXMLElement *)elem->GetElement(i);
 
     if (!position->IsElement() || !array[i].Decode(*this)) {
-      res = PFalse;
+      res = false;
       break;
     }
   }
@@ -361,7 +361,7 @@ void PXER_Stream::ArrayEncode(const PASN_Array & array)
 
   for (PINDEX i = 0; i < (PINDEX)size; i++) {
     PString name = array[i].GetTypeAsString();
-    name.Replace(" ", "_", PTrue);
+    name.Replace(" ", "_", true);
     position = elem->AddChild(new PXMLElement(elem, name));
     array[i].Encode(*this);
   }
@@ -393,11 +393,11 @@ PXER_Stream::PXER_Stream(PXMLElement * elem, const BYTE * buf, PINDEX size)
 
 PBoolean PXER_Stream::Read(PChannel &)
 {
-  return PFalse;
+  return false;
 }
 
 
 PBoolean PXER_Stream::Write(PChannel &)
 {
-  return PFalse;
+  return false;
 }

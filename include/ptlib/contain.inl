@@ -213,7 +213,7 @@ PINLINE void PCollection::AllowDeleteObjects(PBoolean yes)
   { reference->deleteObjects = yes; }
 
 PINLINE void PCollection::DisallowDeleteObjects()
-  { AllowDeleteObjects(PFalse); }
+  { AllowDeleteObjects(false); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -332,7 +332,7 @@ PINLINE PStringSet & PStringSet::operator-=(const PString & str)
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractDictionary::PAbstractDictionary()
-  { hashTable->deleteKeys = PTrue; }
+  { hashTable->deleteKeys = true; }
   
 PINLINE PAbstractDictionary::PAbstractDictionary(int dummy,
                                                  const PAbstractDictionary * c)

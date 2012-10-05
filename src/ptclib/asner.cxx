@@ -438,7 +438,7 @@ void PASN_Integer::Encode(PASN_Stream & strm) const
 ///////////////////////////////////////////////////////////////////////
 
 PASN_Enumeration::PASN_Enumeration(unsigned val)
-: PASN_Object(UniversalEnumeration, UniversalTagClass, PFalse),names(NULL),namesCount(0)
+: PASN_Object(UniversalEnumeration, UniversalTagClass, false),names(NULL),namesCount(0)
 {
   value = val;
   maxEnumValue = UINT_MAX;
@@ -728,7 +728,7 @@ PBoolean PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
 
   // handle zero length strings correctly
   if (dataLen == 0)
-    return PTrue;
+    return true;
 
   unsigned subId;
 
@@ -740,7 +740,7 @@ PBoolean PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
     subId = 0;
     do {    /* shift and add in low order 7 bits */
       if (strm.IsAtEnd())
-        return PFalse;
+        return false;
       byte = strm.ByteDecode();
       subId = (subId << 7) + (byte & 0x7f);
       dataLen--;
@@ -768,7 +768,7 @@ PBoolean PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
     value[1] = subId-80;
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -910,17 +910,17 @@ void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 PBoolean PASN_BitString::SetSize(unsigned nBits)
 {
   if (!CheckByteOffset(nBits))
-    return PFalse;
+    return false;
 
   if (constraint == Unconstrained)
     totalBits = nBits;
   else if (totalBits < (unsigned)lowerLimit) {
     if (lowerLimit < 0)
-      return PFalse;
+      return false;
     totalBits = lowerLimit;
   } else if ((unsigned)totalBits > upperLimit) {
     if (upperLimit > (unsigned)MaximumSetSize)
-      return PFalse;
+      return false;
     totalBits = upperLimit;
   } else
     totalBits = nBits;
@@ -932,7 +932,7 @@ bool PASN_BitString::operator[](PINDEX bit) const
 {
   if ((unsigned)bit < totalBits)
     return (bitData[bit>>3] & (1 << (7 - (bit&7)))) != 0;
-  return PFalse;
+  return false;
 }
 
 
@@ -1187,16 +1187,16 @@ PINDEX PASN_OctetString::GetDataLength() const
 PBoolean PASN_OctetString::SetSize(PINDEX newSize)
 {
   if (!CheckByteOffset(newSize, MaximumStringSize))
-    return PFalse;
+    return false;
 
   if (constraint != Unconstrained) {
     if (newSize < (PINDEX)lowerLimit) {
       if (lowerLimit < 0)
-        return PFalse;
+        return false;
       newSize = lowerLimit;
     } else if ((unsigned)newSize > upperLimit) {
       if (upperLimit > (unsigned)MaximumStringSize)
-        return PFalse;
+        return false;
       newSize = upperLimit;
     }
   }
@@ -1479,23 +1479,23 @@ PASN_BMPString & PASN_BMPString::operator=(const PASN_BMPString & other)
 PBoolean PASN_BMPString::IsLegalCharacter(WORD ch)
 {
   if (ch < firstChar)
-    return PFalse;
+    return false;
 
   if (ch > lastChar)
-    return PFalse;
+    return false;
 
   if (characterSet.IsEmpty())
-    return PTrue;
+    return true;
 
   const wchar_t * wptr = characterSet;
   PINDEX count = characterSet.GetSize();
   while (count-- > 0) {
     if (*wptr == ch)
-      return PTrue;
+      return true;
     wptr++;
   }
 
-  return PFalse;
+  return false;
 }
 
 void PASN_BMPString::SetValueRaw(const wchar_t * array, PINDEX paramSize)
@@ -1845,7 +1845,7 @@ PString PASN_Choice::GetTagName() const
 PBoolean PASN_Choice::CheckCreate() const
 {
   if (choice != NULL)
-    return PTrue;
+    return true;
 
   return ((PASN_Choice *)this)->CreateObject();
 }
@@ -1961,7 +1961,7 @@ PBoolean PASN_Choice::IsPrimitive() const
 {
   if (CheckCreate())
     return choice->IsPrimitive();
-  return PFalse;
+  return false;
 }
 
 
@@ -2127,7 +2127,7 @@ PINDEX PASN_Sequence::GetDataLength() const
 
 PBoolean PASN_Sequence::IsPrimitive() const
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -2233,21 +2233,21 @@ PASN_Array & PASN_Array::operator=(const PASN_Array & other)
 PBoolean PASN_Array::SetSize(PINDEX newSize)
 {
   if (newSize > MaximumArraySize)
-    return PFalse;
+    return false;
 
   PINDEX originalSize = array.GetSize();
   if (!array.SetSize(newSize))
-    return PFalse;
+    return false;
 
   for (PINDEX i = originalSize; i < newSize; i++) {
     PASN_Object * obj = CreateObject();
     if (obj == NULL)
-      return PFalse;
+      return false;
 
     array.SetAt(i, obj);
   }
 
-  return PTrue;
+  return true;
 }
 
 
@@ -2301,7 +2301,7 @@ PINDEX PASN_Array::GetDataLength() const
 
 PBoolean PASN_Array::IsPrimitive() const
 {
-  return PFalse;
+  return false;
 }
 
 

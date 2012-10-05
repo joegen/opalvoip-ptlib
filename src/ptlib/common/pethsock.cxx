@@ -300,7 +300,7 @@ PBoolean PEthSocket::OpenSocket()
 PBoolean PEthSocket::Listen(unsigned, WORD, Reusability)
 {
   PAssertAlways(PUnimplementedFunction);
-  return PFalse;
+  return false;
 }
 
 

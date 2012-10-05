@@ -106,7 +106,7 @@ PWinSock::~PWinSock()
 
 PBoolean PWinSock::OpenSocket()
 {
-  return PFalse;
+  return false;
 }
 
 
@@ -196,7 +196,7 @@ PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 PBoolean PSocket::Close()
 {
   if (!IsOpen())
-    return PFalse;
+    return false;
   flush();
   return ConvertOSError(os_close());
 }
@@ -224,7 +224,7 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 
   DWORD fionbio = 1;
   if (!ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &fionbio)))
-    return PFalse;
+    return false;
   fionbio = 0;
 
   if (::connect(os_handle, addr, size) != SOCKET_ERROR)
@@ -331,14 +331,14 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount,
   if (readTimeout != PMaxTimeInterval) {
     DWORD available;
     if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
-      return PFalse;
+      return false;
 
     if (available == 0) {
       P_fd_set readfds = os_handle;
       P_timeval tv = readTimeout;
       int selval = ::select(0, readfds, NULL, NULL, tv);
       if (!ConvertOSError(selval, LastReadError))
-        return PFalse;
+        return false;
 
       if (selval == 0)
         return SetErrorValues(Timeout, EAGAIN, LastReadError);
@@ -370,7 +370,7 @@ bool PSocket::os_vwrite(const Slice * slices,
     P_timeval tv = writeTimeout;
     int selval = ::select(0, NULL, writefds, NULL, tv);
     if (selval < 0)
-      return PFalse;
+      return false;
 
     if (selval == 0) {
 #ifndef _WIN32_WCE
@@ -378,20 +378,20 @@ bool PSocket::os_vwrite(const Slice * slices,
 #else
       SetLastError(EAGAIN);
 #endif
-      return PFalse;
+      return false;
     }
   }
 
   DWORD bytesSent;
   int sendResult = ::WSASendTo(os_handle, (LPWSABUF)slices, sliceCount, &bytesSent, flags, to, tolen, NULL, NULL);
   if (!ConvertOSError(sendResult, LastWriteError))
-    return PFalse;
+    return false;
 
   if (sendResult != 0)
-    return PFalse;
+    return false;
 
   lastWriteCount = bytesSent;
-  return PTrue;
+  return true;
 }
 
 
@@ -569,19 +569,19 @@ PBoolean P_IsOldWin95()
 PBoolean PIPSocket::IsLocalHost(const PString & hostname)
 {
   if (hostname.IsEmpty())
-    return PTrue;
+    return true;
 
   if (hostname *= "localhost")
-    return PTrue;
+    return true;
 
   // lookup the host address using inet_addr, assuming it is a "." address
   PIPSocket::Address addr = hostname;
   if (addr.IsLoopback())  // Is 127.0.0.1 or ::1
-    return PTrue;
+    return true;
 
   if (addr == 0) {
     if (!GetHostAddress(hostname, addr))
-      return PFalse;
+      return false;
   }
 
   // Seb: Should check that it's really IPv4 aware.
@@ -594,49 +594,49 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
 #if P_HAS_IPV6
     if (host_info->h_length == 16) {
       if (addr == *(struct in6_addr *)host_info->h_addr_list[i])
-        return PTrue;
+        return true;
     }
     else
 #endif
     if (addr == *(struct in_addr *)host_info->h_addr_list[i])
-      return PTrue;
+      return true;
   }
-  return PFalse;
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
-PBoolean PUDPSocket::disableGQoS = PTrue;
+PBoolean PUDPSocket::disableGQoS = true;
 
 void PUDPSocket::EnableGQoS()
 {
-  disableGQoS = PFalse;
+  disableGQoS = false;
 }
 
 #if P_QOS
 PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & address)
 {
   if (disableGQoS)
-    return PFalse;
+    return false;
 
   if (!address.IsValid())
-    return PFalse;
+    return false;
 
   // Check to See if OS supportive
     OSVERSIONINFO versInfo;
     ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
     versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     if (!(GetVersionEx(&versInfo)))
-        return PFalse;
+        return false;
     else
     {
         if (versInfo.dwMajorVersion < 5)
-            return PFalse;  // Not Supported in Windows
+            return false;  // Not Supported in Windows
 
         if (versInfo.dwMajorVersion == 5 &&
             versInfo.dwMinorVersion == 0)
-            return PFalse;         //Windows 2000 does not always support QOS_DESTADDR
+            return false;         //Windows 2000 does not always support QOS_DESTADDR
     }
 
   // Need to put in a check to see if the NIC has 802.1p packet priority support 
@@ -646,14 +646,14 @@ PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & address)
   PString NICname =  PIPSocket::GetInterface(address);
 
   // For Now Assume it can.
-  return PTrue;
+  return true;
 }
 
 #else
 
 PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address &)
 {
-  return PFalse;
+  return false;
 }
 #endif  // P_QOS
 

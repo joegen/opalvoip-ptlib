@@ -157,13 +157,13 @@ PBoolean PContainer::SetMinSize(PINDEX minSize)
 PBoolean PContainer::MakeUnique()
 {
   if (IsUnique())
-    return PTrue;
+    return true;
 
   PContainerReference * oldReference = reference;
   reference = new PContainerReference(*reference);
   --oldReference->count;
 
-  return PFalse;
+  return false;
 }
 
 
@@ -203,7 +203,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
     memset(theArray, 0, GetSize() * elementSize);
   }
 
-  allocatedDynamically = PTrue;
+  allocatedDynamically = true;
 }
 
 
@@ -271,7 +271,7 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
   else
     memcpy(newArray, array->theArray, sizebytes);
   theArray = newArray;
-  allocatedDynamically = PTrue;
+  allocatedDynamically = true;
 }
 
 
@@ -340,7 +340,7 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 
 PBoolean PAbstractArray::SetSize(PINDEX newSize)
 {
-  return InternalSetSize(newSize, PFalse);
+  return InternalSetSize(newSize, false);
 }
 
 
@@ -353,7 +353,7 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
   PINDEX oldsizebytes = elementSize*GetSize();
 
   if (!force && (newsizebytes == oldsizebytes))
-    return PTrue;
+    return true;
 
   char * newArray;
 
@@ -363,7 +363,7 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
       newArray = NULL;
     else {
       if ((newArray = PAbstractArrayAllocator()->allocate(newsizebytes)) == NULL)
-        return PFalse;
+        return false;
   
       allocatedDynamically = true;
 
@@ -393,7 +393,7 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
     }
     else if (newsizebytes != 0) {
       if ((newArray = PAbstractArrayAllocator()->allocate(newsizebytes)) == NULL)
-        return PFalse;
+        return false;
     }
     else
       newArray = NULL;
@@ -405,7 +405,7 @@ PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
     memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
 
   theArray = newArray;
-  return PTrue;
+  return true;
 }
 
 void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
@@ -415,7 +415,7 @@ void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
 
   theArray = (char *)buffer;
   reference->size = bufferSize;
-  allocatedDynamically = PFalse;
+  allocatedDynamically = false;
 }
 
 
@@ -429,16 +429,16 @@ void * PAbstractArray::GetPointer(PINDEX minSize)
 PBoolean PAbstractArray::Concatenate(const PAbstractArray & array)
 {
   if (!allocatedDynamically || array.elementSize != elementSize)
-    return PFalse;
+    return false;
 
   PINDEX oldLen = GetSize();
   PINDEX addLen = array.GetSize();
 
   if (!SetSize(oldLen + addLen))
-    return PFalse;
+    return false;
 
   memcpy(theArray+oldLen*elementSize, array.theArray, addLen*elementSize);
-  return PTrue;
+  return true;
 }
 
 
@@ -593,13 +593,13 @@ PBoolean PBitArray::SetSize(PINDEX newSize)
 PBoolean PBitArray::SetAt(PINDEX index, PBoolean val)
 {
   if (!SetMinSize(index+1))
-    return PFalse;
+    return false;
 
   if (val)
     theArray[index>>3] |= (1 << (index&7));
   else
     theArray[index>>3] &= ~(1 << (index&7));
-  return PTrue;
+  return true;
 }
 
 
@@ -607,7 +607,7 @@ PBoolean PBitArray::GetAt(PINDEX index) const
 {
   PASSERTINDEX(index);
   if (index >= GetSize())
-    return PFalse;
+    return false;
 
   return (theArray[index>>3]&(1 << (index&7))) != 0;
 }
@@ -1195,10 +1195,10 @@ PBoolean PString::SetSize(PINDEX newSize)
 PBoolean PString::MakeUnique()
 {
   if (IsUnique())
-    return PTrue;
+    return true;
 
-  InternalSetSize(GetSize(), PTrue);
-  return PFalse;
+  InternalSetSize(GetSize(), true);
+  return false;
 }
 
 
@@ -1412,12 +1412,12 @@ PString PString::Mid(PINDEX start, PINDEX len) const
 bool PString::operator*=(const char * cstr) const
 {
   if (cstr == NULL)
-    return IsEmpty() != PFalse;
+    return IsEmpty() != false;
 
   const char * pstr = theArray;
   while (*pstr != '\0' && *cstr != '\0') {
     if (toupper(*pstr & 0xff) != toupper(*cstr & 0xff))
-      return PFalse;
+      return false;
     pstr++;
     cstr++;
   }
@@ -1662,14 +1662,14 @@ PBoolean PString::FindRegEx(const PRegularExpression & regex,
   }
   else {
     if (!regex.Execute(&theArray[offset], pos, len))
-      return PFalse;
+      return false;
   }
 
   pos += offset;
   if (pos+len > maxPos)
-    return PFalse;
+    return false;
 
-  return PTrue;
+  return true;
 }
 
 PBoolean PString::MatchesRegEx(const PRegularExpression & regex) const
@@ -1678,7 +1678,7 @@ PBoolean PString::MatchesRegEx(const PRegularExpression & regex) const
   PINDEX len = 0;
 
   if (!regex.Execute(theArray, pos, len))
-    return PFalse;
+    return false;
 
   return (pos == 0) && (len == GetLength());
 }

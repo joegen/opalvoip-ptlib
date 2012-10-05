@@ -94,7 +94,7 @@ PServiceProcess::PServiceProcess(const char * manuf,
                                          WORD buildNumber)
   : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
 {
-  isTerminating = PFalse;
+  isTerminating = false;
 }
 
 
@@ -185,7 +185,7 @@ int PServiceProcess::InitialiseService()
 {
 #ifndef P_VXWORKS
 #if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(PTrue);
+  PMemoryHeap::SetIgnoreAllocations(true);
 #endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 #if PTRACING
@@ -195,9 +195,9 @@ int PServiceProcess::InitialiseService()
   PTrace::SetLevel(GetLogLevel());
 #endif
 #if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(PFalse);
+  PMemoryHeap::SetIgnoreAllocations(false);
 #endif
-  debugMode = PFalse;
+  debugMode = false;
 
   // parse arguments so we can grab what we want
   PArgList & args = GetArguments();
@@ -366,7 +366,7 @@ int PServiceProcess::InitialiseService()
     PSystemLog::SetTarget(new PSystemLogToSyslog());
 
   // open the system logger for this program
-  PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(PTrue));
+  PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(true));
 
   // Set the gid we are running under
   if (args.HasOption('g')) {
@@ -519,7 +519,7 @@ void PServiceProcess::OnStop()
 
 PBoolean PServiceProcess::OnPause()
 {
-  return PTrue;
+  return true;
 }
 
 
@@ -539,9 +539,9 @@ void PServiceProcess::Terminate()
     return;
   }
 
-  isTerminating = PTrue;
+  isTerminating = true;
 
-  PSYSTEMLOG(Warning, "Stopping service process \"" << GetName() << "\" v" << GetVersion(PTrue));
+  PSYSTEMLOG(Warning, "Stopping service process \"" << GetName() << "\" v" << GetVersion(true));
 
   // Avoid strange errors caused by threads (and the process itself!) being destoyed 
   // before they have EVER been scheduled
@@ -591,13 +591,13 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   signal(SIGFPE, SIG_DFL);
   signal(SIGBUS, SIG_DFL);
 
-  static PBoolean inHandler = PFalse;
+  static PBoolean inHandler = false;
   if (inHandler) {
     raise(SIGQUIT); // Dump core
     _exit(-1); // Fail safe if raise() didn't dump core and exit
   }
 
-  inHandler = PTrue;
+  inHandler = true;
 
   {
     PThreadIdentifier tid = GetCurrentThreadId();

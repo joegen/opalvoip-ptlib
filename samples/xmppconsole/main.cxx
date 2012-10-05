@@ -33,7 +33,7 @@ XMPPFrame::XMPPFrame()
   : m_Roster(new XMPP::Roster), m_Client(NULL)
 {
   m_Roster->RosterChangedHandlers().Add(PCREATE_NOTIFIER(OnRosterChanged));
-  isReadyForUse = PFalse;
+  isReadyForUse = false;
 }
 
 
@@ -133,7 +133,7 @@ void XMPPFrame::OnReadyForUse(PTimer &, INT)
 {
   //  cout << "Called 1 second after session established " << endl;
 
-  isReadyForUse = PTrue;
+  isReadyForUse = true;
 }
 
 void XMPPFrame::OnSessionReleased(XMPP::C2S::StreamHandler& , INT)
@@ -241,7 +241,7 @@ void XMPPConsole::Main()
 #ifdef PMEMORY_CHECK
              "-setallocationbreakpoint:"
 #endif       
-	     , PFalse);
+	     , false);
   
   #if PMEMORY_CHECK
   if (args.HasOption("setallocationbreakpoint"))
@@ -281,7 +281,7 @@ void XMPPConsole::Main()
     cout << endl
 	 << "Product Name: " <<  (const char *)GetName() << endl
 	 << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-	 << "Version     : " <<  (const char *)GetVersion(PTrue) << endl
+	 << "Version     : " <<  (const char *)GetVersion(true) << endl
 	 << "System      : " <<  (const char *)GetOSName() << " - "
 	 << (const char *)GetOSHardware() << " - "
 	 << (const char *)GetOSVersion()  << endl
@@ -442,7 +442,7 @@ void UserInterface::ProcessDirectedMessage(PString & message)
     return;
   }
 
-  PStringArray bits = message.Tokenise(" ", PFalse);
+  PStringArray bits = message.Tokenise(" ", false);
   if (bits.GetSize() < 3) {
     cout << "a directed message consists of a node number to call, subject, and a message" << endl;
     return;
