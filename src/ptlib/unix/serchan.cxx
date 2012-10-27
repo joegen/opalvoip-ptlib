@@ -376,10 +376,13 @@ PBoolean PSerialChannel::SetSpeed(DWORD newBaudRate)
   // save new baud rate
   baudRate = newBaudRate;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU_HURD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
   // The BSD way
   Termio.c_ispeed = baud;
   Termio.c_ospeed = baud;
+#elif defined(P_GNU_HURD)
+  Termio.__ispeed = baud;
+  Termio.__ospeed = baud;
 #else
   // The Linux way
   Termio.c_cflag &= ~CBAUD;
