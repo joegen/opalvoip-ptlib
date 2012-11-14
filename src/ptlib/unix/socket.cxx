@@ -447,7 +447,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
         return lastReadCount > 0;
 
       PTRACE(4, "PTlib\tTruncated packet read, returning EMSGSIZE");
-      SetErrorValues(BufferTooSmall, EMSGSIZE);
+      SetErrorValues(BufferTooSmall, EMSGSIZE, LastReadError);
       return false;
     }
 
