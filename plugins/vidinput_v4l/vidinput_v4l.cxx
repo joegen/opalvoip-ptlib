@@ -1201,150 +1201,8 @@ PBoolean PVideoInputDevice_V4L::VerifyHardwareFrameSize(unsigned width, unsigned
   return true;
 }
 
-int PVideoInputDevice_V4L::GetBrightness() 
-{ 
-  if (!IsOpen())
-    return -1;
 
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return -1;
-  frameBrightness = vp.brightness;
-
-  return frameBrightness; 
-}
-
-
-int PVideoInputDevice_V4L::GetWhiteness() 
-{ 
-  if (!IsOpen())
-    return -1;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return -1;
-  frameWhiteness = vp.whiteness;
-
-  return frameWhiteness;
-}
-
-int PVideoInputDevice_V4L::GetColour() 
-{ 
-  if (!IsOpen())
-    return -1;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return -1;
-  frameColour = vp.colour;
-
-  return frameColour; 
-}
-
-
-
-int PVideoInputDevice_V4L::GetContrast() 
-{
-  if (!IsOpen())
-    return -1;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return -1;
-  frameContrast = vp.contrast;
-
- return frameContrast; 
-}
-
-int PVideoInputDevice_V4L::GetHue() 
-{
-  if (!IsOpen())
-    return -1;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return -1;
-  frameHue = vp.hue;
-
-  return frameHue; 
-}
-
-PBoolean PVideoInputDevice_V4L::SetBrightness(unsigned newBrightness) 
-{ 
-  if (!IsOpen())
-    return false;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return false;
-
-  vp.brightness = newBrightness;
-  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return false;
-
-  frameBrightness=newBrightness;
-  return true;
-}
-PBoolean PVideoInputDevice_V4L::SetWhiteness(unsigned newWhiteness) 
-{ 
-  if (!IsOpen())
-    return false;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return false;
-
-  vp.whiteness = newWhiteness;
-  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return false;
-
-  frameWhiteness = newWhiteness;
-  return true;
-}
-
-PBoolean PVideoInputDevice_V4L::SetColour(unsigned newColour) 
-{ 
-  if (!IsOpen())
-    return false;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return false;
-
-  vp.colour = newColour;
-  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return false;
-
-  frameColour = newColour;
-  return true;
-}
-PBoolean PVideoInputDevice_V4L::SetContrast(unsigned newContrast) 
-{ 
-  if (!IsOpen())
-    return false;
-
-  struct video_picture vp;
-
-  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return false;
-
-  vp.contrast = newContrast;
-  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return false;
-
-  frameContrast = newContrast;
-  return true;
-}
-
-PBoolean PVideoInputDevice_V4L::SetHue(unsigned newHue) 
+bool PVideoInputDevice_V4L::GetAttributes(Attributes & attrib)
 {
   if (!IsOpen())
     return false;
@@ -1352,44 +1210,34 @@ PBoolean PVideoInputDevice_V4L::SetHue(unsigned newHue)
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    return false;
-
-  vp.hue = newHue;
-  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
-    return false;
-
-   frameHue=newHue; 
+    return -1;
+  attrib.m_brightness = vp.brightness;
+  attrib.m_contrast = vp.contrast;
+  attrib.m_hue = vp.hue;
   return true;
 }
 
-PBoolean PVideoInputDevice_V4L::GetParameters (int *whiteness, int *brightness, 
-                                      int *colour, int *contrast, int *hue)
-{
+
+bool PVideoInputDevice_V4L::SetAttributes(const Attributes & attrib)
+{ 
   if (!IsOpen())
     return false;
 
   struct video_picture vp;
 
   if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
-    {
-      PTRACE(3, "GetParams bombs out!");
-      return false;
-    }
+    return false;
 
-  *brightness = vp.brightness;
-  *colour     = vp.colour;
-  *contrast   = vp.contrast;
-  *hue        = vp.hue;
-  *whiteness  = vp.whiteness;
+  vp.brightness = attrib.m_brightness;
+  vp.contrast = attrib.m_contrast;
+  vp.hue = attrib.m_hue;
 
-  frameBrightness = *brightness;
-  frameColour     = *colour;
-  frameContrast   = *contrast;
-  frameHue        = *hue;
-  frameWhiteness  = *whiteness;
- 
+  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
+    return false;
+
   return true;
 }
+
 
 PBoolean PVideoInputDevice_V4L::TestAllFormats()
 {
