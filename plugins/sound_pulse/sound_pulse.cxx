@@ -458,7 +458,37 @@ PBoolean PSoundChannelPulse::PlaySound(const PSound & sound, PBoolean wait)
 
 PBoolean PSoundChannelPulse::PlayFile(const PFilePath & filename, PBoolean wait)
 {
-  return false;
+  BYTE buffer [512];
+  PTRACE(1, "PULSE\tPlayFile " << filename);
+
+  if (!os_handle)
+    return SetErrorValues(NotOpen, EBADF);
+
+  /* use PWAVFile instead of PFile -> skips wav header bytes */
+  PWAVFile file(filename, PFile::ReadOnly,PWAVFile::fmt_NotKnown);
+
+  if (!file.IsOpen())
+    return false;
+
+  for (;;) {
+    if (!file.Read(buffer, 512))
+      break;
+
+    PINDEX len = file.GetLastReadCount();
+
+    if (len == 0)
+      break;
+
+    if (!Write(buffer, len))
+      break;
+  }
+
+  file.Close();
+
+  if (wait)
+   return WaitForPlayCompletion();
+
+  return true;
 }
 
 
