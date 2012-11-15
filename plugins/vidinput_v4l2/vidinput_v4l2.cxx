@@ -45,7 +45,6 @@ PCREATE_VIDINPUT_PLUGIN(V4L2);
 
 #include "vidinput_names.h" 
 
-
 #ifdef HAS_LIBV4L
 #include <libv4l2.h>
 #else
@@ -362,22 +361,16 @@ PBoolean PVideoInputDevice_V4L2::IsOpen()
 PBoolean PVideoInputDevice_V4L2::Close()
 {
   PTRACE(1,"PVidInDev\tClose()\tvideoFd:" << videoFd << "  started:" << started);
-  if (!IsOpen())
-    return true;
-
-  if (started)
+  if (IsOpen()){
     Stop();
 
-  if (v4l2_close(videoFd) < 0) {
-    PTRACE(2, "PVidInDev\tERROR errno = " << ::strerror(errno) << "(" << errno << ")");
+    if (v4l2_close(videoFd) < 0) {
+      PTRACE(2, "PVidInDev\tERROR errno = " << ::strerror(errno) << "(" << errno << ")");
+    }
+
+    Reset();
   }
 
-  Reset();
-  videoBufferCount = 0;
-  currentVideoBuffer = 0;
-  frameBytes = 0;
-
-  PTRACE(8,"PVidInDev\tClose()\tvideoFd:" << videoFd << "  started:" << started);
   return true;
 }
 
@@ -391,23 +384,25 @@ PBoolean PVideoInputDevice_V4L2::Start()
     return started;
   }
 
-  // automatically set mapping
-  if (!SetMapping()) {
-    ClearMapping();
-    canStream = false; // don't try again
-    return started;
-  }
+  if(canStream){
+    // automatically set mapping
+    if (!SetMapping()) {
+      ClearMapping();
+      canStream = false; // don't try again
+      return started;
+    }
 
-  /* Queue all buffers */
-  if (!QueueAllBuffers()) {
-    PTRACE(2, "PVidInDev\tCould not QueueBuffers for Video Input Device!");
-    return started;
-  }
+    /* Queue all buffers */
+    if (!QueueAllBuffers()) {
+      PTRACE(2, "PVidInDev\tCould not QueueBuffers for Video Input Device!");
+      return started;
+    }
 
-  /* Start streaming */
-  if (!StartStreaming()) {
-    PTRACE(2, "PVidInDev\tCould not StartStreaming for Video Input Device!");
-    return started;
+    /* Start streaming */
+    if (!StartStreaming()) {
+      PTRACE(2, "PVidInDev\tCould not StartStreaming for Video Input Device!");
+      return started;
+    }
   }
 
   started = true;
@@ -419,7 +414,6 @@ PBoolean PVideoInputDevice_V4L2::Start()
 PBoolean PVideoInputDevice_V4L2::Stop()
 {
   if (started) {
-    PWaitAndSignal m(stopMutex);
     PTRACE(6,"PVidInDev\tstop streaming, fd=" << videoFd);
 
     StopStreaming();
@@ -618,55 +612,59 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 
   videoFormat.fmt.pix.pixelformat = colourFormatTab[colourFormatIndex].code;
 
-  PBoolean resume = started;
-  if (started == true) {
-    Stop();
-  }
+  {
+    PWaitAndSignal m(stopMutex);
 
-  // set the colour format
-  if (v4l2_ioctl(videoFd, VIDIOC_S_FMT, &videoFormat) < 0) {
-    PTRACE(1,"PVidInDev\tS_FMT failed : " << ::strerror(errno));
-    PTRACE(1,"PVidInDev\tused code of " << videoFormat.fmt.pix.pixelformat << " for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
-    return false;
-  } else {
-    PTRACE(8,"PVidInDev\tS_FMT succeeded for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
-  }
+    PBoolean resume = started;
+    if (started == true) {
+      Stop();
+    }
 
-  // get the colour format again to be careful about broken drivers
-  if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
-    PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
-    return false;
-  } else {
-    PTRACE(8,"PVidInDev\tG_FMT succeeded");
-  }
-
-  if (videoFormat.fmt.pix.pixelformat != colourFormatTab[colourFormatIndex].code) {
-    PTRACE(3,"PVidInDev\tcolour format mismatch.");
-    return false;
-  } else {
-    colourFormat = newFormat;
-    PTRACE(8,"PVidInDev\tcolour format matches.");
-  }
-
-  // reset the frame rate because it may have been overridden by the call to S_FMT
-  if (fi_n == 0 || fi_d == 0 || v4l2_ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
-    PTRACE(3,"PVidInDev\tunable to reset frame rate.");
-  } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
-             streamParm.parm.capture.timeperframe.denominator  != fi_d) {
-    PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
-              << "/" << streamParm.parm.capture.timeperframe.denominator
-              << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
-  } else {
-    PTRACE(8,"PVidInDev\tS_PARM succeeded (preserving frame rate at " << fi_n << "/" << fi_d << ")");
-  }
-
-  frameBytes = videoFormat.fmt.pix.sizeimage;
-
-  PTRACE(6,"PVidInDev\tset colour format \"" << newFormat << "\" set for " << deviceName << ", fd=" << videoFd);
-
-  if (resume) {
-    if (false == Start()) {
+    // set the colour format
+    if (v4l2_ioctl(videoFd, VIDIOC_S_FMT, &videoFormat) < 0) {
+      PTRACE(1,"PVidInDev\tS_FMT failed : " << ::strerror(errno));
+      PTRACE(1,"PVidInDev\tused code of " << videoFormat.fmt.pix.pixelformat << " for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
       return false;
+    } else {
+      PTRACE(8,"PVidInDev\tS_FMT succeeded for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
+    }
+
+    // get the colour format again to be careful about broken drivers
+    if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
+      PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+      return false;
+    } else {
+      PTRACE(8,"PVidInDev\tG_FMT succeeded");
+    }
+
+    if (videoFormat.fmt.pix.pixelformat != colourFormatTab[colourFormatIndex].code) {
+      PTRACE(3,"PVidInDev\tcolour format mismatch.");
+      return false;
+    } else {
+      colourFormat = newFormat;
+      PTRACE(8,"PVidInDev\tcolour format matches.");
+    }
+
+    // reset the frame rate because it may have been overridden by the call to S_FMT
+    if (fi_n == 0 || fi_d == 0 || v4l2_ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
+      PTRACE(3,"PVidInDev\tunable to reset frame rate.");
+    } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
+               streamParm.parm.capture.timeperframe.denominator  != fi_d) {
+      PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
+                << "/" << streamParm.parm.capture.timeperframe.denominator
+                << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
+    } else {
+      PTRACE(8,"PVidInDev\tS_PARM succeeded (preserving frame rate at " << fi_n << "/" << fi_d << ")");
+    }
+
+    frameBytes = videoFormat.fmt.pix.sizeimage;
+
+    PTRACE(6,"PVidInDev\tset colour format \"" << newFormat << "\" set for " << deviceName << ", fd=" << videoFd);
+
+    if (resume) {
+      if (false == Start()) {
+        return false;
+      }
     }
   }
 
@@ -681,6 +679,8 @@ PBoolean PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
   if (canSetFrameRate) {
     videoStreamParm.parm.capture.timeperframe.numerator = 1;
     videoStreamParm.parm.capture.timeperframe.denominator = (rate ? rate : 1);
+
+    PWaitAndSignal m(stopMutex);
 
     PBoolean resume = started;
 
@@ -753,6 +753,16 @@ PBoolean PVideoInputDevice_V4L2::GetFrameSizeLimits(unsigned & minWidth,
 PBoolean PVideoInputDevice_V4L2::SetFrameSize(unsigned width, unsigned height) {
   unsigned requestedWidth = width;
   unsigned requestedHeight = height;
+
+  // Try first. If it succeeds, we may skip close and reopen the device.
+  if(TryFrameSize(requestedWidth, requestedHeight)){
+    if ((requestedWidth != width) || (requestedHeight != height))
+    {
+      PTRACE(4, "PVidInDev\t" << width << "x" << height << " requested but "
+                              << requestedWidth << "x" << requestedHeight << " returned");
+      return false;
+    }
+  }
 
   if (!VerifyHardwareFrameSize(requestedWidth, requestedHeight)) {
     PTRACE(5, "PVidInDev\tVerifyHardwareFrameSize failed for size " << width << "x" << height);
@@ -906,7 +916,30 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
 
   PWaitAndSignal m(stopMutex);
   if (!started)
+    return PFalse;
+
+  if (!canStream)
     return NormalReadProcess(buffer, bytesReturned);
+
+  // use select() here, because VIDIOC_DQBUF seems to block with some drivers
+  // and does never return.
+  fd_set rfds;
+
+  // Time interval is half the frame rate, so we want to wait max. two frames.
+  struct timeval tv; tv.tv_sec = 0; tv.tv_usec = 1/(GetFrameRate() * 2);
+
+  FD_ZERO(&rfds);
+  FD_SET(videoFd, &rfds);
+
+  int ret = select(videoFd+1, &rfds, NULL, NULL, &tv);
+
+  if(ret == -1){
+    PTRACE(1,"PVidInDev\tselect() failed : " << ::strerror(errno));
+    return PFalse;
+  } else if(ret == 0){
+    PTRACE(1,"PVidInDev\tNo data in outgoing queue. Skip.");
+    return PTrue;
+  }
 
   struct v4l2_buffer buf;
   CLEAR(buf);
@@ -917,10 +950,10 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
   if (v4l2_ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
     // strace resistance
     if (errno == EINTR) {
-        if (v4l2_ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
-          PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
-          return false;
-        }
+      if (v4l2_ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
+        PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
+        return false;
+      }
     }
   }
 
@@ -984,6 +1017,32 @@ PBoolean PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytes
   return true;
 }
 
+PBoolean PVideoInputDevice_V4L2::TryFrameSize(unsigned& width, unsigned& height){
+
+  struct v4l2_format videoFormat;
+  CLEAR(videoFormat);
+  videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  // get the frame size
+  if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
+    PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+    return false;
+  }
+
+  videoFormat.fmt.pix.width = width;
+  videoFormat.fmt.pix.height = height;
+
+  if(v4l2_ioctl(videoFd, VIDIOC_TRY_FMT, &videoFormat) < 0){
+    PTRACE(3,"PVidInDev\tTRY_FMT failed : " << ::strerror(errno));
+    return false;
+  }
+
+  width = videoFormat.fmt.pix.width;
+  height = videoFormat.fmt.pix.height;
+
+  return true;
+
+}
+
 PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsigned & height)
 {
   struct v4l2_format videoFormat;
@@ -1018,48 +1077,52 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
   videoFormat.fmt.pix.width = width;
   videoFormat.fmt.pix.height = height;
 
-  PBoolean resume = started;
+  {
+    PWaitAndSignal m(stopMutex);
 
-  if (started == true) {
-    Stop();
-  }
+    PBoolean resume = started;
 
-  PTRACE(4, "PVidInDev\tTry setting resolution: " << videoFormat.fmt.pix.width << "x" << videoFormat.fmt.pix.height);
-  if(!DoIOCTL(VIDIOC_S_FMT, &videoFormat, true)){
-    PTRACE(1,"PVidInDev\tS_FMT failed: " << ::strerror(errno));
-    return false;
-  }
+    if (started == true) {
+      Stop();
+    }
 
-  //
-  //	Double checking that the resolution change was successful (in case of a broken driver)
-  //
-  CLEAR(videoFormat);
-  videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-  if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
-    PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
-    return false;
-  } else {
-    frameBytes = videoFormat.fmt.pix.sizeimage;
-    PTRACE(8, "PVidInDev\tG_FMT returned resolution: "<< videoFormat.fmt.pix.width << "x" <<
-            videoFormat.fmt.pix.height);
-    width = videoFormat.fmt.pix.width;
-    height = videoFormat.fmt.pix.height;
-  }
-
-  // reset the frame rate because it may have been overridden by the call to S_FMT
-  if (fi_n == 0 || fi_d == 0 || v4l2_ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
-    PTRACE(3,"PVidInDev\tunable to reset frame rate.");
-  } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
-             streamParm.parm.capture.timeperframe.denominator  != fi_d) {
-    PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
-              << "/" << streamParm.parm.capture.timeperframe.denominator
-              << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
-  }
-
-  if (resume) {
-    if (false == Start()) {
+    PTRACE(4, "PVidInDev\tTry setting resolution: " << videoFormat.fmt.pix.width << "x" << videoFormat.fmt.pix.height);
+    if(!DoIOCTL(VIDIOC_S_FMT, &videoFormat, true)){
+      PTRACE(1,"PVidInDev\tS_FMT failed: " << ::strerror(errno));
       return false;
+    }
+
+    //
+    //	Double checking that the resolution change was successful (in case of a broken driver)
+    //
+    CLEAR(videoFormat);
+    videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+    if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
+      PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+      return false;
+    } else {
+      frameBytes = videoFormat.fmt.pix.sizeimage;
+      PTRACE(8, "PVidInDev\tG_FMT returned resolution: "<< videoFormat.fmt.pix.width << "x" <<
+              videoFormat.fmt.pix.height);
+      width = videoFormat.fmt.pix.width;
+      height = videoFormat.fmt.pix.height;
+    }
+
+    // reset the frame rate because it may have been overridden by the call to S_FMT
+    if (fi_n == 0 || fi_d == 0 || v4l2_ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
+      PTRACE(3,"PVidInDev\tunable to reset frame rate.");
+    } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
+               streamParm.parm.capture.timeperframe.denominator  != fi_d) {
+      PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
+                << "/" << streamParm.parm.capture.timeperframe.denominator
+                << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
+    }
+
+    if (resume) {
+      if (false == Start()) {
+        return false;
+      }
     }
   }
 

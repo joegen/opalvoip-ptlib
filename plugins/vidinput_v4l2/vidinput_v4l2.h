@@ -117,6 +117,7 @@ private:
   PBoolean SetMapping();
 
   PBoolean VerifyHardwareFrameSize(unsigned int & width, unsigned int & height);
+  PBoolean TryFrameSize(unsigned int& width, unsigned int& height);
 
   PBoolean QueueAllBuffers();
 
