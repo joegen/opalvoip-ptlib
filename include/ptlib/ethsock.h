@@ -341,6 +341,8 @@ class PEthSocketThread : public PObject
 
     virtual void Stop();
 
+    bool IsRunning() const { return m_running; }
+
     virtual PEthSocket * CreateEthSocket() const;
 
     void SetNotifier(
