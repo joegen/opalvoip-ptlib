@@ -414,8 +414,6 @@ PBoolean PVideoInputDevice_V4L2::Start()
 PBoolean PVideoInputDevice_V4L2::Stop()
 {
   if (started) {
-    PTRACE(6,"PVidInDev\tstop streaming, fd=" << videoFd);
-
     StopStreaming();
     ClearMapping();
 
@@ -897,7 +895,7 @@ void PVideoInputDevice_V4L2::ClearMapping()
 
   isMapped = false;
 
-  PTRACE(7,"PVidInDev\tclear mapping, fd=" << videoFd);
+  PTRACE(5,"PVidInDev\tVideo Input Device \"" << deviceName << "\" cleared mapping, fd=" << videoFd);
 }
 
 
@@ -921,12 +919,16 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
   if (!canStream)
     return NormalReadProcess(buffer, bytesReturned);
 
+  // Using streaming here. Return false, if streaming wasn't started, yet
+  if(!isStreaming)
+    return PFalse;
+
   // use select() here, because VIDIOC_DQBUF seems to block with some drivers
   // and does never return.
   fd_set rfds;
 
   // Time interval is half the frame rate, so we want to wait max. two frames.
-  struct timeval tv; tv.tv_sec = 0; tv.tv_usec = 1/(GetFrameRate() * 2);
+  struct timeval tv; tv.tv_sec = 0; tv.tv_usec = (2 * 1000 * 1000)/GetFrameRate();
 
   FD_ZERO(&rfds);
   FD_SET(videoFd, &rfds);
@@ -937,7 +939,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
     PTRACE(1,"PVidInDev\tselect() failed : " << ::strerror(errno));
     return PFalse;
   } else if(ret == 0){
-    PTRACE(1,"PVidInDev\tNo data in outgoing queue. Skip.");
+    PTRACE(4,"PVidInDev\tNo data in outgoing queue. Skip frame (@" << GetFrameRate() << "fps)");
     return PTrue;
   }
 
@@ -1295,14 +1297,12 @@ PBoolean PVideoInputDevice_V4L2::StartStreaming()
   }
 
   isStreaming = true;
-  PTRACE(8, "PVidInDev\tVideo Input Device \"" << deviceName << "\" successfully started streaming.");
+  PTRACE(5, "PVidInDev\tVideo Input Device \"" << deviceName << "\" successfully started streaming.");
   return isStreaming;
 }
 
 
 void PVideoInputDevice_V4L2::StopStreaming(){
-  PTRACE(8, "PVidInDev\tStop streaming for \"" << deviceName << "\" with fd=" << videoFd);
-
   if (false == isStreaming) {
     PTRACE(2, "PVidInDev\tVideo buffers already not streaming! Do StartStreaming() first.");
     return;
@@ -1316,7 +1316,7 @@ void PVideoInputDevice_V4L2::StopStreaming(){
   }
 
   isStreaming = false;
-  PTRACE(8, "PVidInDev\tVideo Input Device \"" << deviceName << "\" successfully stopped streaming.");
+  PTRACE(5, "PVidInDev\tVideo Input Device \"" << deviceName << "\" successfully stopped streaming.");
 }
 
 void PVideoInputDevice_V4L2::Reset(){
