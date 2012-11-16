@@ -276,7 +276,7 @@ class PXMLRPCStructBase : public PObject {
     PXMLRPCVariableBase * GetVariable(const char * name) const { return variablesByName.GetAt(name); }
 
     void AddVariable(PXMLRPCVariableBase * var);
-    static PXMLRPCStructBase & GetInitialiser() { return *PAssertNULL(initialiserInstance); }
+    static PXMLRPCStructBase & GetInitialiser();
 
   protected:
     void EndConstructor();
