@@ -41,14 +41,21 @@
 #include <ptlib/sockets.h>
 #include <ptlib/safecoll.h>
 #include <ptclib/pnat.h>
-#include <list>
-
-
-class PInterfaceMonitorClient;
-class PInterfaceFilter;
+#include <map>
 
 
 #define PINTERFACE_MONITOR_FACTORY_NAME "InterfaceMonitor"
+
+
+//////////////////////////////////////////////////
+
+class PInterfaceFilter : public PObject {
+  PCLASSINFO(PInterfaceFilter, PObject);
+  
+  public:
+    virtual PIPSocket::InterfaceTable FilterInterfaces(const PIPSocket::Address & destination,
+                                                       PIPSocket::InterfaceTable & interfaces) const = 0;
+};
 
 
 //////////////////////////////////////////////////
@@ -63,7 +70,7 @@ class PInterfaceFilter;
   */
 class PInterfaceMonitor : public PProcessStartup
 {
-  PCLASSINFO(PInterfaceMonitor, PProcessStartup);
+    PCLASSINFO(PInterfaceMonitor, PProcessStartup);
   public: 
     enum {
       DefaultRefreshInterval = 60000
@@ -133,15 +140,53 @@ class PInterfaceMonitor : public PProcessStartup
       const PString & iface,        ///< Interface descriptor
       const InterfaceEntry & entry  ///< Interface entry
     );
-    
+
+    /**Information on the interface change.
+      */
+    struct InterfaceChange : public InterfaceEntry
+    {
+      InterfaceChange(const InterfaceEntry & entry, bool added)
+        : InterfaceEntry(entry), m_added(added), m_natMethod(NULL) { }
+
+      const bool m_added;
+
+#if P_NAT
+      InterfaceChange(const PNatMethod * natMethod, bool added)
+        : m_added(added), m_natMethod(natMethod) { }
+
+      const PNatMethod * const m_natMethod;
+#endif
+    };
+
+    /// Type for disposition notifiers
+    typedef PNotifierTemplate<InterfaceChange> Notifier;
+
+    /// Macro to declare correctly typed interface notifier
+    #define PDECLARE_InterfaceNotifier(cls, fn) PDECLARE_NOTIFIER2(PInterfaceMonitor, cls, fn, PInterfaceMonitor::InterfaceChange)
+
+    /// Macro to create correctly typed interface notifier
+    #define PCREATE_InterfaceNotifier(fn) PCREATE_NOTIFIER2(fn, PInterfaceMonitor::InterfaceChange)
+
+    enum {
+      DefaultPriority = 50,
+    };
+
+    /**Add a notifier for interface changes.
+      */
+    void AddNotifier(
+      const Notifier & notifier,   ///< Notifier to be called by interface monitor
+      unsigned priority = DefaultPriority   ///< Priority for notification
+    );
+    void RemoveNotifier(
+      const Notifier & notifier    ///< Notifier to be called by interface monitor
+    );
+
     /** Sets the monitor's interface filter. Note that the monitor instance
         handles deletion of the filter.
       */
     void SetInterfaceFilter(PInterfaceFilter * filter);
     bool HasInterfaceFilter() const { return m_interfaceFilter != NULL; }
-    
-    virtual void RefreshInterfaceList();
-    
+
 #if P_NAT
     void OnRemoveNatMethod(const PNatMethod * natMethod);
 #endif
@@ -151,16 +196,12 @@ class PInterfaceMonitor : public PProcessStartup
 
     void UpdateThreadMain();
 
-    void AddClient(PInterfaceMonitorClient *);
-    void RemoveClient(PInterfaceMonitorClient *);
-    
+    virtual void RefreshInterfaceList();
     virtual void OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces, const PIPSocket::InterfaceTable & removedInterfaces);
 
-    typedef PSmartPtr<PInterfaceMonitorClient> ClientPtr;
-
-    typedef std::list<PInterfaceMonitorClient *> ClientList_T;
-    ClientList_T m_clients;
-    PMutex       m_clientsMutex;
+    typedef std::multimap<unsigned, Notifier> Notifiers;
+    Notifiers m_notifiers;
+    PMutex    m_notifiersMutex;
 
     PIPSocket::InterfaceTable m_interfaces;
     PMutex                    m_interfacesMutex;
@@ -179,96 +220,23 @@ class PInterfaceMonitor : public PProcessStartup
 
 //////////////////////////////////////////////////
 
-/** This is a base class for clients of the PInterfaceMonitor singleton object.
-    The OnAddInterface() and OnRemoveInterface() functions are called in the
-    context of a thread that is monitoring interfaces. The client object is
-    locked for Read/Write before these functions are called.
-  */
-class PInterfaceMonitorClient : public PSafeObject
-{
-  PCLASSINFO(PInterfaceMonitorClient, PSafeObject);
-  public:
-    enum {
-      DefaultPriority = 50,
-    };
-    PInterfaceMonitorClient(PINDEX priority = DefaultPriority);
-    ~PInterfaceMonitorClient();
-
-    typedef PIPSocket::InterfaceEntry InterfaceEntry;
-
-    /** Get an array of all current interface descriptors, possibly including
-        the loopback (127.0.0.1) interface. Note the names are of the form
-        ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0".
-        If destination is not 'any' and a filter is set, filters the interface list
-        before returning it.
-      */
-    virtual PStringArray GetInterfaces(
-      bool includeLoopBack = false,  ///< Flag for if loopback is to included in list
-      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
-                          ///< Optional destination for selecting specific interface
-    );
-
-    /** Return information about an active interface given the descriptor
-       string. Note that when searchin the descriptor may be a partial match
-       e.g. "10.0.1.11" or "%eth0" may be used.
-      */
-    virtual PBoolean GetInterfaceInfo(
-      const PString & iface,  ///< Interface desciptor name
-      InterfaceEntry & info   ///< Information on the interface
-    ) const;
-    
-    /**Returns the priority of this client. A higher value means higher priority.
-       Higher priority clients get their callback functions called first. Clients
-       with the same priority get called in the order of their insertion.
-      */
-    PINDEX GetPriority() const { return priority; }
-
-  protected:
-    /// Call back function for when an interface has been added to the system
-    virtual void OnAddInterface(const InterfaceEntry & entry) = 0;
-
-    /// Call back function for when an interface has been removed from the system
-    virtual void OnRemoveInterface(const InterfaceEntry & entry) = 0;
-    
-    /// Called when a NAT method is about to be destroyed
-#if P_NAT
-    virtual void OnRemoveNatMethod(const PNatMethod * /*natMethod*/) { }
-#endif
-    
-    PINDEX priority;
-
-  friend class PInterfaceMonitor;
-};
-
-
-//////////////////////////////////////////////////
-
-class PInterfaceFilter : public PObject {
-  PCLASSINFO(PInterfaceFilter, PObject);
-  
-  public:
-    virtual PIPSocket::InterfaceTable FilterInterfaces(const PIPSocket::Address & destination,
-                                                       PIPSocket::InterfaceTable & interfaces) const = 0;
-};
-
-
-//////////////////////////////////////////////////
-
 /** This is a base class for UDP socket(s) that are monitored for interface
     changes. Two derived classes are available, one that is permanently
     bound to an IP address and/or interface name. The second will dynamically
     open/close ports as interfaces are added and removed from the system.
   */
-class PMonitoredSockets : public PInterfaceMonitorClient
+class PMonitoredSockets : public PSafeObject
 {
-  PCLASSINFO(PMonitoredSockets, PInterfaceMonitorClient);
+    PCLASSINFO(PMonitoredSockets, PSafeObject);
   protected:
     PMonitoredSockets(
       bool reuseAddr    ///< Flag for sharing socket/exclusve use
-      P_NAT_PARAM(PNatMethod * natMethod)  ///< NET method to use to create sockets.
+      P_NAT_PARAM(PNatMethod * natMethod)  ///< NAT method to use to create sockets.
     );
 
   public:
+    typedef PIPSocket::InterfaceEntry InterfaceEntry;
+
     /** Open the socket(s) using the specified port. If port is zero then a
         system allocated port is used. In this case and when multiple
         interfaces are supported, all sockets use the same dynamic port value.
@@ -336,6 +304,27 @@ class PMonitoredSockets : public PInterfaceMonitorClient
     virtual void ReadFromBundle(
       BundleParams & param ///< Info on data to read
     ) = 0;
+
+    /** Get an array of all current interface descriptors, possibly including
+        the loopback (127.0.0.1) interface. Note the names are of the form
+        ip%name, eg "10.0.1.11%3Com 3C90x Ethernet Adapter" or "192.168.0.10%eth0".
+        If destination is not 'any' and a filter is set, filters the interface list
+        before returning it.
+      */
+    virtual PStringArray GetInterfaces(
+      bool includeLoopBack = false,  ///< Flag for if loopback is to included in list
+      const PIPSocket::Address & destination = PIPSocket::GetDefaultIpAny()
+                          ///< Optional destination for selecting specific interface
+    );
+
+    /** Return information about an active interface given the descriptor
+       string. Note that when searchin the descriptor may be a partial match
+       e.g. "10.0.1.11" or "%eth0" may be used.
+      */
+    virtual bool GetInterfaceInfo(
+      const PString & iface,  ///< Interface desciptor name
+      InterfaceEntry & info   ///< Information on the interface
+    ) const;
 
 #if P_NAT
     /// Set the NAT method, eg STUN client pointer
@@ -428,7 +417,7 @@ typedef PSafePtr<PMonitoredSockets> PMonitoredSocketsPtr;
   */
 class PMonitoredSocketChannel : public PChannel
 {
-  PCLASSINFO(PMonitoredSocketChannel, PChannel);
+    PCLASSINFO(PMonitoredSocketChannel, PChannel);
   public:
   /**@name Construction */
   //@{
@@ -605,11 +594,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
     );
 
   protected:
-    /// Call back function for when an interface has been added to the system
-    virtual void OnAddInterface(const InterfaceEntry & entry);
-
-    /// Call back function for when an interface has been removed from the system
-    virtual void OnRemoveInterface(const InterfaceEntry & entry);
+    PDECLARE_InterfaceNotifier(PMonitoredSocketBundle, OnInterfaceChange);
 
     typedef std::map<std::string, SocketInfo> SocketInfoMap_T;
 
@@ -691,11 +676,7 @@ class PSingleMonitoredSocket : public PMonitoredSockets
 
 
   protected:
-    /// Call back function for when an interface has been added to the system
-    virtual void OnAddInterface(const InterfaceEntry & entry);
-
-    /// Call back function for when an interface has been removed from the system
-    virtual void OnRemoveInterface(const InterfaceEntry & entry);
+    PDECLARE_InterfaceNotifier(PSingleMonitoredSocket, OnInterfaceChange);
 
     bool IsInterface(const PString & iface) const;
 

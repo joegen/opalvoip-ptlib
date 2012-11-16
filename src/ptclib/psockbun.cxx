@@ -55,33 +55,6 @@ PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PInterfaceMonitor);
 
 //////////////////////////////////////////////////
 
-PInterfaceMonitorClient::PInterfaceMonitorClient(PINDEX _priority)
-  : priority(_priority)
-{
-  PInterfaceMonitor::GetInstance().AddClient(this);
-}
-
-
-PInterfaceMonitorClient::~PInterfaceMonitorClient()
-{
-  PInterfaceMonitor::GetInstance().RemoveClient(this);
-}
-
-
-PStringArray PInterfaceMonitorClient::GetInterfaces(bool includeLoopBack, const PIPSocket::Address & destination)
-{
-  return PInterfaceMonitor::GetInstance().GetInterfaces(includeLoopBack, destination);
-}
-
-
-PBoolean PInterfaceMonitorClient::GetInterfaceInfo(const PString & iface, InterfaceEntry & info) const
-{
-  return PInterfaceMonitor::GetInstance().GetInterfaceInfo(iface, info);
-}
-
-
-//////////////////////////////////////////////////
-
 PInterfaceMonitor::PInterfaceMonitor(unsigned refresh, bool runMonitorThread)
   : m_runMonitorThread(runMonitorThread)
   , m_refreshInterval(refresh)
@@ -398,32 +371,31 @@ void PInterfaceMonitor::SetInterfaceFilter(PInterfaceFilter * filter)
 }
 
 
-void PInterfaceMonitor::AddClient(PInterfaceMonitorClient * client)
+void PInterfaceMonitor::AddNotifier(const Notifier & notifier, unsigned priority)
 {
-  PWaitAndSignal guard(m_clientsMutex);
+  PWaitAndSignal guard(m_notifiersMutex);
 
-  if (m_clients.empty()) {
+  if (m_notifiers.empty())
     Start();
-    m_clients.push_back(client);
-  }
-  else {
-    for (ClientList_T::iterator iter = m_clients.begin(); iter != m_clients.end(); ++iter) {
-      if ((*iter)->GetPriority() >= client->GetPriority()) {
-        m_clients.insert(iter, client);
-        return;
-      }
-    }
-    m_clients.push_back(client);
-  }
+
+  m_notifiers.insert(Notifiers::value_type(priority, notifier));
 }
 
 
-void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
+void PInterfaceMonitor::RemoveNotifier(const Notifier & notifier)
 {
-  m_clientsMutex.Wait();
-  m_clients.remove(client);
-  bool stop = m_clients.empty();
-  m_clientsMutex.Signal();
+  m_notifiersMutex.Wait();
+
+  for (Notifiers::iterator it = m_notifiers.begin(); it != m_notifiers.end(); ++it) {
+    if (it->second == notifier) {
+      m_notifiers.erase(it);
+      break;
+    }
+  }
+
+  bool stop = m_notifiers.empty();
+
+  m_notifiersMutex.Signal();
 
   if (stop)
     Stop();
@@ -432,34 +404,25 @@ void PInterfaceMonitor::RemoveClient(PInterfaceMonitorClient * client)
 void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & addedInterfaces,
                                             const PIPSocket::InterfaceTable & removedInterfaces)
 {
-  PWaitAndSignal guard(m_clientsMutex);
-  
-  for (ClientList_T::reverse_iterator iter = m_clients.rbegin(); iter != m_clients.rend(); ++iter) {
-    PInterfaceMonitorClient * client = *iter;
-    if (client->LockReadWrite()) {
-      for (PINDEX i = 0; i < addedInterfaces.GetSize(); i++)
-        client->OnAddInterface(addedInterfaces[i]);
-      for (PINDEX i = 0; i < removedInterfaces.GetSize(); i++)
-        client->OnRemoveInterface(removedInterfaces[i]);
-      client->UnlockReadWrite();
-    }
+  PWaitAndSignal guard(m_notifiersMutex);
+
+  for (Notifiers::iterator it = m_notifiers.begin(); it != m_notifiers.end(); ++it) {
+    for (PINDEX i = 0; i < addedInterfaces.GetSize(); i++)
+      it->second(*this, InterfaceChange(addedInterfaces[i], true));
+    for (PINDEX i = 0; i < removedInterfaces.GetSize(); i++)
+      it->second(*this, InterfaceChange(removedInterfaces[i], false));
   }
 }
 
 
 #if P_NAT
 
-void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod  * natMethod)
+void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod * natMethod)
 {
-  PWaitAndSignal guard(m_clientsMutex);
-  
-  for (ClientList_T::reverse_iterator iter = m_clients.rbegin(); iter != m_clients.rend(); ++iter) {
-    PInterfaceMonitorClient *client = *iter;
-    if (client->LockReadWrite()) {
-      client->OnRemoveNatMethod(natMethod);
-      client->UnlockReadWrite();
-    }
-  }
+  PWaitAndSignal guard(m_notifiersMutex);
+
+  for (Notifiers::iterator it = m_notifiers.begin(); it != m_notifiers.end(); ++it)
+    it->second(*this, InterfaceChange(natMethod, false));
 }
 
 #endif
@@ -476,6 +439,18 @@ PMonitoredSockets::PMonitoredSockets(bool reuseAddr P_NAT_PARAM(PNatMethod * nat
   , opened(false)
   , interfaceAddedSignal(localPort, PIPSocket::GetDefaultIpAddressFamily())
 {
+}
+
+
+PStringArray PMonitoredSockets::GetInterfaces(bool includeLoopBack, const PIPSocket::Address & destination)
+{
+  return PInterfaceMonitor::GetInstance().GetInterfaces(includeLoopBack, destination);
+}
+
+
+bool PMonitoredSockets::GetInterfaceInfo(const PString & iface, InterfaceEntry & info) const
+{
+  return PInterfaceMonitor::GetInstance().GetInterfaceInfo(iface, info);
 }
 
 
@@ -871,6 +846,8 @@ PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
   , m_fixedInterface(fixedInterface)
   , m_ipVersion(ipVersion)
 {
+  PInterfaceMonitor::GetInstance().AddNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
+
   PTRACE(4, "Created socket bundle for "
          << (fixedInterface.IsEmpty() ? "all" : "fixed")
          << (ipVersion != 4 ? ipVersion != 6 ? " " : " IPv6 " : " IPv4 " )
@@ -881,6 +858,8 @@ PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
 PMonitoredSocketBundle::~PMonitoredSocketBundle()
 {
   Close();
+
+  PInterfaceMonitor::GetInstance().RemoveNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
 }
 
 
@@ -1071,24 +1050,23 @@ void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
 }
 
 
-void PMonitoredSocketBundle::OnAddInterface(const InterfaceEntry & entry)
+void PMonitoredSocketBundle::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMonitor::InterfaceChange entry)
 {
-  // Already locked
-  if (opened) {
+  if (!opened || !LockReadWrite())
+    return;
+
+  if (entry.m_added) {
     OpenSocket(MakeInterfaceDescription(entry));
     PTRACE(3, "UDP socket bundle has added interface " << entry);
     interfaceAddedSignal.Close();
   }
-}
-
-
-void PMonitoredSocketBundle::OnRemoveInterface(const InterfaceEntry & entry)
-{
-  // Already locked
-  if (opened) {
+  else {
     CloseSocket(m_socketInfoMap.find(MakeInterfaceDescription(entry)));
     PTRACE(3, "UDP socket bundle has removed interface " << entry);
+    OnRemoveNatMethod(entry.m_natMethod);
   }
+
+  UnlockReadWrite();
 }
 
 
@@ -1098,6 +1076,8 @@ PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, boo
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
   , m_interface(theInterface)
 {
+  PInterfaceMonitor::GetInstance().AddNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
+
   PTRACE(4, "Created monitored socket for interface " << theInterface);
 }
 
@@ -1105,6 +1085,8 @@ PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, boo
 PSingleMonitoredSocket::~PSingleMonitoredSocket()
 {
   Close();
+
+  PInterfaceMonitor::GetInstance().RemoveNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
 }
 
 
@@ -1198,37 +1180,37 @@ void PSingleMonitoredSocket::ReadFromBundle(BundleParams & param)
 }
 
 
-void PSingleMonitoredSocket::OnAddInterface(const InterfaceEntry & entry)
+void PSingleMonitoredSocket::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMonitor::InterfaceChange entry)
 {
-  // Already locked
-
-  PIPSocket::Address addr;
-  PString name;
-  if (!SplitInterfaceDescription(m_interface, addr, name))
+  PSafeLockReadWrite guard(*this);
+  if (!guard.IsLocked() || !opened)
     return;
 
-  if ((!addr.IsValid() || entry.GetAddress() == addr) && entry.GetName().NumCompare(name) == EqualTo) {
-    m_entry = entry;
-    if (!Open(localPort))
-      m_entry = InterfaceEntry();
-    else {
-      interfaceAddedSignal.Close();
-      PTRACE(3, "Bound UDP socket UP event on interface " << m_entry);
+  if (entry.m_added) {
+    PIPSocket::Address addr;
+    PString name;
+    if (!SplitInterfaceDescription(m_interface, addr, name))
+      return;
+
+    if ((!addr.IsValid() || entry.GetAddress() == addr) && entry.GetName().NumCompare(name) == EqualTo) {
+      m_entry = entry;
+      if (!Open(localPort))
+        m_entry = InterfaceEntry();
+      else {
+        interfaceAddedSignal.Close();
+        PTRACE(3, "Bound UDP socket UP event on interface " << m_entry);
+      }
     }
   }
-}
+  else {
+    if (entry != m_entry)
+      return;
 
-
-void PSingleMonitoredSocket::OnRemoveInterface(const InterfaceEntry & entry)
-{
-  // Already locked
-
-  if (entry != m_entry)
-    return;
-
-  PTRACE(3, "Bound UDP socket DOWN event on interface " << m_entry);
-  m_entry = InterfaceEntry();
-  DestroySocket(m_info);
+    PTRACE(3, "Bound UDP socket DOWN event on interface " << m_entry);
+    m_entry = InterfaceEntry();
+    DestroySocket(m_info);
+    OnRemoveNatMethod(entry.m_natMethod);
+  }
 }
 
 
