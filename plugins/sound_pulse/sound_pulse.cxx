@@ -43,6 +43,7 @@
 #include <pulse/sample.h>
 #include <ptlib.h>
 #include <ptclib/random.h>
+#include <ptclib/pwavfile.h>
 
 #include "sound_pulse.h"
 
@@ -465,7 +466,7 @@ PBoolean PSoundChannelPulse::PlayFile(const PFilePath & filename, PBoolean wait)
     return SetErrorValues(NotOpen, EBADF);
 
   /* use PWAVFile instead of PFile -> skips wav header bytes */
-  PWAVFile file(filename, PFile::ReadOnly,PWAVFile::fmt_NotKnown);
+  PWAVFile file(filename, PFile::ReadOnly);
 
   if (!file.IsOpen())
     return false;
