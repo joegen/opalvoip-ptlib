@@ -1039,6 +1039,12 @@ PXMLRPCVariableBase::PXMLRPCVariableBase(const char * n, const char * t)
 }
 
 
+PXMLRPCStructBase & PXMLRPCStructBase::GetInitialiser()
+{
+  return *PAssertNULL(initialiserInstance);
+}
+
+
 PXMLRPCStructBase * PXMLRPCVariableBase::GetStruct(PINDEX) const
 {
   return NULL;
