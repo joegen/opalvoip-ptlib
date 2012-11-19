@@ -72,7 +72,7 @@ typedef std::map<PCaselessString, SymbolInfo> SortedSymbolList;
 std::ostream & operator<<(std::ostream & strm, const SortedSymbolList::iterator & it)
 {
   strm << "    " << it->first << " @" << it->second.GetOrdinal();
-  if (!it->second.NoName())
+  if (it->second.NoName())
     strm << " NONAME";
   return strm << '\n';
 }
@@ -89,7 +89,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 1, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 2, false, true)
 {
 }
 
