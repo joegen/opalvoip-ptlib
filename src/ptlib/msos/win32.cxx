@@ -1214,6 +1214,8 @@ PString PProcess::GetOSName()
               return "Vista";
             case 1 :
               return "7";
+			case 2 :
+              return "8";
           }
       }
   }

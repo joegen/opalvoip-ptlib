@@ -566,7 +566,7 @@ PBoolean PDNS::LookupSRV(
   PDNS::SRVRecordList srvRecords;
   PBoolean found = PDNS::GetRecords(srvLookupStr, srvRecords);
   if (found) {
-    PTRACE(5,"DNS\tSRV Record found " << srvLookupStr);
+    PTRACE(5,"DNS\tSRV Record found \"" << srvLookupStr << '"');
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
     while (recPtr != NULL) {
       PIPSocketAddressAndPort addrAndPort;
@@ -741,7 +741,8 @@ DNS_STATUS PDNS::Cached_DnsQuery(
     while (r != g_dnsCache.end()) {
       if ((now - r->second.m_time) < RESOLVER_CACHE_TIMEOUT)
         ++r;
-      else { 
+      else {
+        PTRACE(5, "DNS\tSRV aged \"" << r->first << '"');
         DnsRecordListFree(r->second.m_results, DnsFreeFlat);
         g_dnsCache.erase(r++);
       }
@@ -750,10 +751,11 @@ DNS_STATUS PDNS::Cached_DnsQuery(
 
   // see if cache contains the entry we need
   std::stringstream key;
-  key << name << '\n' << type << '\n' << options;
+  key << name << '\t' << type << '\t' << options;
 
   r = g_dnsCache.find(key.str());
   if (r == g_dnsCache.end()) {
+    PTRACE(5, "DNS\tSRV physical lookup \"" << key << '"');
 
     // else do the lookup and put it into the cache
     DNSCacheInfo info;
