@@ -812,7 +812,11 @@ PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
     bool haveControl = true;
     MIXERLINECONTROLS controls;
 
-    if ((direction == Recorder) && ((DWORD)(LOBYTE(LOWORD(GetVersion()))) < 6)) { //5=XP/win2003
+    if ((direction == Recorder)
+#ifndef _WIN32_WCE
+      && ((DWORD)(LOBYTE(LOWORD(GetVersion()))) < 6)
+#endif
+      ) { //5=XP/win2003
       /* There is no "master" for the recording side, so need to find the
          single selected input or at least individual microphone input
          No need to do all of these on Vista/Win7/Win2008 as there is
