@@ -253,20 +253,6 @@ void VidTest::Main()
 
   /////////////////////////////////////////////////////////////////////
 
-  if (!m_grabber->SetFrameRate(grabberInfo.GetFrameRate())) {
-    cerr << "Video input device could not be set to frame rate " << grabberInfo.GetFrameRate() << endl;
-    return;
-  }
-  cout << "Grabber frame rate set to " << m_grabber->GetFrameRate() << endl;
-
-
-  if (!m_grabber->SetFrameSizeConverter(grabberInfo.GetFrameWidth(), grabberInfo.GetFrameHeight(), grabberInfo.GetResizeMode())) {
-    cerr << "Video input device could not be set to size " << grabberInfo.GetFrameWidth() << 'x' << grabberInfo.GetFrameHeight() << endl;
-    return;
-  }
-  cout << "Grabber frame size set to " << m_grabber->GetFrameWidth() << 'x' << m_grabber->GetFrameHeight() << endl;
-
-
   if (!m_grabber->SetColourFormatConverter(grabberInfo.GetColourFormat()) ) {
     cerr << "Video input device could not be set to colour format \"" << grabberInfo.GetColourFormat() << '"' << endl;
     return;
@@ -280,19 +266,26 @@ void VidTest::Main()
   cout << ')' << endl;
 
 
-  /////////////////////////////////////////////////////////////////////
-
-  if  (!m_display->SetFrameSizeConverter(displayInfo.GetFrameWidth(), displayInfo.GetFrameHeight(), displayInfo.GetResizeMode())) {
-    cerr << "Video output device could not be set to size " << displayInfo.GetFrameWidth() << 'x' << displayInfo.GetFrameHeight() << endl;
+  if (!m_grabber->SetFrameSizeConverter(grabberInfo.GetFrameWidth(), grabberInfo.GetFrameHeight(), grabberInfo.GetResizeMode())) {
+    cerr << "Video input device could not be set to size " << grabberInfo.GetFrameWidth() << 'x' << grabberInfo.GetFrameHeight() << endl;
     return;
   }
+  cout << "Grabber frame size set to " << m_grabber->GetFrameWidth() << 'x' << m_grabber->GetFrameHeight() << endl;
 
-  cout << "Display frame size set to " << m_display->GetFrameWidth() << 'x' << m_display->GetFrameHeight() << endl;
+
+  if (!m_grabber->SetFrameRate(grabberInfo.GetFrameRate())) {
+    cerr << "Video input device could not be set to frame rate " << grabberInfo.GetFrameRate() << endl;
+    return;
+  }
+  cout << "Grabber frame rate set to " << m_grabber->GetFrameRate() << endl;
+
+
+  /////////////////////////////////////////////////////////////////////
 
   if (!m_display->SetColourFormatConverter(displayInfo.GetColourFormat())) {
     cerr << "Video output device could not be set to colour format \"" << displayInfo.GetColourFormat() << '"' << endl;
     return;
- }
+  }
 
   cout << "Diaplay colour format set to " << m_display->GetColourFormat() << " (";
   if (displayInfo.GetColourFormat() == m_display->GetColourFormat())
@@ -300,6 +293,14 @@ void VidTest::Main()
   else
     cout << "converted from " << displayInfo.GetColourFormat();
   cout << ')' << endl;
+
+
+  if  (!m_display->SetFrameSizeConverter(displayInfo.GetFrameWidth(), displayInfo.GetFrameHeight(), displayInfo.GetResizeMode())) {
+    cerr << "Video output device could not be set to size " << displayInfo.GetFrameWidth() << 'x' << displayInfo.GetFrameHeight() << endl;
+    return;
+  }
+
+  cout << "Display frame size set to " << m_display->GetFrameWidth() << 'x' << m_display->GetFrameHeight() << endl;
 
 
   /////////////////////////////////////////////////////////////////////
