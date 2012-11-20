@@ -47,10 +47,21 @@
   #include <windns.h>
   #include <ntverp.h>
 
-  #pragma comment(lib, "dnsapi.lib")
-
   // Accommodate spelling error in windns.h
   enum { DnsSectionAdditional = DnsSectionAddtional };
+
+  #if VER_PRODUCTBUILD < 6000
+    typedef struct
+    {
+        WORD            wOrder;
+        WORD            wPreference;
+        PSTR            pFlags;
+        PSTR            pService;
+        PSTR            pRegularExpression;
+        PSTR            pReplacement;
+    }
+    DNS_NAPTR_DATA;
+  #endif
 
 #else /* _WIN32 */
 
@@ -62,20 +73,6 @@
   #endif
 
 #endif  // _WIN32
-
-
-#if defined(_WIN32) && VER_PRODUCTBUILD < 6000
-typedef struct
-{
-    WORD            wOrder;
-    WORD            wPreference;
-    PSTR            pFlags;
-    PSTR            pService;
-    PSTR            pRegularExpression;
-    PSTR            pReplacement;
-}
-DNS_NAPTR_DATA;
-#endif
 
 
 #ifdef P_HAS_RESOLVER
