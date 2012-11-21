@@ -736,7 +736,7 @@ DNS_STATUS PDNS::Cached_DnsQuery(
       if ((now - r->second.m_time) < RESOLVER_CACHE_TIMEOUT)
         ++r;
       else {
-        PTRACE(5, "DNS\tSRV aged \"" << r->first << '"');
+        PTRACE(5, "DNS\tQuery aged \"" << r->first << '"');
         DnsRecordListFree(r->second.m_results, DnsFreeFlat);
         g_dnsCache.erase(r++);
       }
@@ -759,7 +759,16 @@ DNS_STATUS PDNS::Cached_DnsQuery(
                                (PIP4_ARRAY)NULL, 
                                &info.m_results, 
                                NULL);
-    PTRACE_IF(3, info.m_status != 0, "DNS\tSRV query failed, error=" << info.m_status);
+#if PTRACING
+    if (info.m_status != 0)
+      PTRACE(3, "DNS\tQuery failed: error=" << info.m_status);
+    else {
+      PTRACE(5, "DNS\tQuery success: " << info.m_results);
+      for (PDNS_RECORD rec = info.m_results; rec != NULL; rec = rec->pNext)
+        PTRACE(5, "DNS\tQuery: name=\"" << PString(rec->pName)
+               << "\", type=" << rec->wType << ", len=" << rec->wDataLength);
+    }
+#endif
 
     r = g_dnsCache.insert(DNSCache::value_type(key.str(), info)).first;
   }
