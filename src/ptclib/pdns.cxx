@@ -39,7 +39,6 @@
 
 #define new PNEW
 
-#define USE_RESOLVER_CACHING    1
 #define RESOLVER_CACHE_TIMEOUT  30000
 
 #if P_DNS
@@ -47,27 +46,10 @@
 #ifdef _WIN32
   #pragma comment(lib, "DnsAPI.Lib")
   #pragma message("DNS support enabled")
-#else
-  enum { DnsFreeFlat = 0 };
 #endif
 
 
 /////////////////////////////////////////////////
-
-#if defined(P_HAS_RESOLVER) ||  defined(USE_RESOLVER_CACHING)
-
-void PDnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
-{
-  while (rec != NULL) {
-    PDNS_RECORD next = rec->pNext;
-    free(rec);
-    rec = next;
-  }
-}
-
-#endif
-
-#if defined(USE_RESOLVER_CACHING) || (defined(P_HAS_RESOLVER) && !defined(P_HAS_RES_NINIT))
 
 static PMutex & GetDNSMutex()
 {
@@ -75,9 +57,6 @@ static PMutex & GetDNSMutex()
   return mutex;
 }
 
-#endif
-
-#if defined(USE_RESOLVER_CACHING) 
 
 struct DNSCacheInfo {
   DNSCacheInfo() : m_results(NULL), m_status(-1) { }
@@ -91,7 +70,7 @@ typedef std::map<std::string, DNSCacheInfo> DNSCache;
 static PTime g_lastAgeTime(0);
 static DNSCache g_dnsCache;
 
-#endif
+
 
 #ifdef P_HAS_RESOLVER
 
@@ -229,7 +208,7 @@ static PBoolean ProcessDNSRecords(
 DNS_STATUS DnsQuery_A(const char * service,
                               WORD requestType,
                              DWORD options,
-                            PIP4_ARRAY,
+                            void *,
                      PDNS_RECORD * results,
                             void *)
 {
@@ -294,7 +273,7 @@ DNS_STATUS DnsQuery_A(const char * service,
        ntohs(reply.hdr.nscount),
        ntohs(reply.hdr.arcount),
        results)) {
-    PDnsRecordListFree(*results, 0);
+    DnsRecordListFree(*results, DnsFreeRecordList);
     return -1;
   }
 
@@ -302,7 +281,40 @@ DNS_STATUS DnsQuery_A(const char * service,
 }
 
 
+PDNS_RECORD DnsRecordSetCopy(PDNS_RECORD src)
+{
+  PDNS_RECORD result = NULL;
+  PDNS_RECORD dst = NULL;
+  PDNS_RECORD rec;
+
+  while (src != NULL) {
+    rec = (PDNS_RECORD)malloc(sizeof(DNS_RECORD));
+    memcpy(rec, src, sizeof(DNS_RECORD));
+    if (result == NULL)
+      result = rec;
+    rec->pNext = NULL;
+    if (dst != NULL)
+      dst->pNext = rec;
+    src = src->pNext;
+    dst = rec;
+  }
+
+  return result;
+}
+
+
+void DnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
+{
+  while (rec != NULL) {
+    PDNS_RECORD next = rec->pNext;
+    free(rec);
+    rec = next;
+  }
+}
+
+
 #endif // P_HAS_RESOLVER
+
 
 PObject::Comparison PDNS::SRVRecord::Compare(const PObject & obj) const
 {
@@ -668,52 +680,6 @@ PDNS::MXRecord * PDNS::MXRecordList::GetNext()
 
 /////////////////////////////////////////////////////////////////
 
-#ifndef USE_RESOLVER_CACHING
-
-DNS_STATUS PDNS::Cached_DnsQuery(
-    const char * name,
-    WORD       type,
-    DWORD      ,
-    void *     ,
-    PDNS_RECORD * queryResults,
-    void * )
-{
-  return DnsQuery_A((const char *)name, 
-                               type,
-                               DNS_QUERY_STANDARD, 
-                               (PIP4_ARRAY)NULL, 
-                               queryResults, 
-                               NULL);
-}
-
-void PDNS::Cached_DnsRecordListFree(PDNS_RECORD results, int)
-{
-  DnsRecordListFree(results, 0);
-}
-
-#else  // ifndef USE_RESOLVER_CACHING
-
-static PDNS_RECORD DnsRecordListClone(PDNS_RECORD src)
-{
-  PDNS_RECORD result = NULL;
-  PDNS_RECORD dst = NULL;
-  PDNS_RECORD rec;
-
-  while (src != NULL) {
-    rec = (PDNS_RECORD)malloc(sizeof(DNS_RECORD));
-    memcpy(rec, src, sizeof(DNS_RECORD));
-    if (result == NULL)
-      result = rec;
-    rec->pNext = NULL;
-    if (dst != NULL)
-      dst->pNext = rec;
-    src = src->pNext;
-    dst = rec;
-  }
-
-  return result;
-}
-
 DNS_STATUS PDNS::Cached_DnsQuery(
     const char * name,
     WORD       type,
@@ -737,17 +703,21 @@ DNS_STATUS PDNS::Cached_DnsQuery(
         ++r;
       else {
         PTRACE(5, "DNS\tQuery aged \"" << r->first << '"');
-        DnsRecordListFree(r->second.m_results, DnsFreeFlat);
+        DnsRecordListFree(r->second.m_results, DnsFreeRecordList);
         g_dnsCache.erase(r++);
       }
     }
   }
 
   // see if cache contains the entry we need
-  std::stringstream key;
-  key << name << '\t' << type << '\t' << options;
+  string key;
+  {
+    std::stringstream strm;
+    strm << name << '\t' << type << '\t' << options;
+    key = strm.str();
+  }
 
-  r = g_dnsCache.find(key.str());
+  r = g_dnsCache.find(key);
   if (r == g_dnsCache.end()) {
     PTRACE(5, "DNS\tSRV physical lookup \"" << key << '"');
 
@@ -756,34 +726,28 @@ DNS_STATUS PDNS::Cached_DnsQuery(
     info.m_status = DnsQuery_A((const char *)name, 
                                type,
                                DNS_QUERY_STANDARD, 
-                               (PIP4_ARRAY)NULL, 
+                               NULL, 
                                &info.m_results, 
                                NULL);
 #if PTRACING
     if (info.m_status != 0)
       PTRACE(3, "DNS\tQuery failed: error=" << info.m_status);
     else {
-      PTRACE(5, "DNS\tQuery success: " << info.m_results);
+      PTRACE(6, "DNS\tQuery success: " << info.m_results);
       for (PDNS_RECORD rec = info.m_results; rec != NULL; rec = rec->pNext)
-        PTRACE(5, "DNS\tQuery: name=\"" << PString(rec->pName)
+        PTRACE(6, "DNS\tQuery: name=\"" << PString(rec->pName)
                << "\", type=" << rec->wType << ", len=" << rec->wDataLength);
+      PTRACE(6, "DNS\tQuery done");
     }
 #endif
 
-    r = g_dnsCache.insert(DNSCache::value_type(key.str(), info)).first;
+    r = g_dnsCache.insert(DNSCache::value_type(key, info)).first;
   }
 
-  *queryResults = DnsRecordListClone(r->second.m_results);
+  *queryResults = DnsRecordSetCopy(r->second.m_results);
   return r->second.m_status;
 }
 
-void PDNS::Cached_DnsRecordListFree(PDNS_RECORD results, int)
-{
-  PDnsRecordListFree(results, 0);
-}
-
-
-#endif  // ifndef USE_RESOLVER_CACHING
 
 /////////////////////////////////////////////////////////////////
 

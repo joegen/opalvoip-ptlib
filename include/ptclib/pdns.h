@@ -83,8 +83,6 @@
 // on non-Window systems
 //
 
-#define DnsRecordListFree  PDnsRecordListFree
-
 #ifndef T_SRV
 #define T_SRV   33
 #endif
@@ -100,7 +98,7 @@
 #define DNS_TYPE_A  T_A
 #define DNS_TYPE_AAAA  T_AAAA
 #define DNS_TYPE_NAPTR  T_NAPTR
-#define DnsFreeRecordList 0
+#define DnsFreeRecordList 1
 #define DNS_QUERY_STANDARD 0
 #define DNS_QUERY_BYPASS_CACHE 0
 
@@ -177,22 +175,13 @@ typedef DnsRecord DNS_RECORD;
 typedef DnsRecord * PDNS_RECORD;
 
 
-typedef DWORD   IP4_ADDRESS, *PIP4_ADDRESS;
-
-typedef struct  _IP4_ARRAY
-{
-    DWORD           AddrCount;
-    IP4_ADDRESS     AddrArray[1];
-}
-IP4_ARRAY, *PIP4_ARRAY;
-
-
-extern void PDnsRecordListFree(PDNS_RECORD rec, int FreeType);
+extern void DnsRecordListFree(PDNS_RECORD rec, int FreeType);
+extern PDNS_RECORD DnsRecordSetCopy(PDNS_RECORD src);
 
 extern DNS_STATUS DnsQuery_A(const char * service,
           WORD requestType,
           DWORD options,
-          PIP4_ARRAY,
+          void *,
           PDNS_RECORD * results,
           void *);
 
@@ -213,7 +202,6 @@ DNS_STATUS Cached_DnsQuery(
 );
 
 
-void Cached_DnsRecordListFree(PDNS_RECORD, int);
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -233,7 +221,7 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
   DNS_STATUS status = Cached_DnsQuery((const char *)name, 
                                       type,
                                       DNS_QUERY_STANDARD, 
-                                      (PIP4_ARRAY)NULL, 
+                                      NULL, 
                                       &results, 
                                       NULL);
   if (status != 0)
@@ -249,7 +237,7 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
   }
 
   if (results != NULL)
-    Cached_DnsRecordListFree(results, DnsFreeRecordList);
+    DnsRecordListFree(results, DnsFreeRecordList);
 
   return recordList.GetSize() != 0;
 }
