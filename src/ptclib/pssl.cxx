@@ -1382,7 +1382,7 @@ PBoolean PSSLChannel::ConvertOSError(int error, ErrorGroup group)
   DWORD osError = 0;
   if (SSL_get_error(m_ssl, error) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
     osError |= 0x80000000;
-    lastError = Miscellaneous;
+    lastError = AccessDenied;
   }
 
   return SetErrorValues(lastError, osError, group);
