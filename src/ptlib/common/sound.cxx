@@ -37,6 +37,8 @@
 
 #include <ptlib/sound.h>
 #include <ptlib/pluginmgr.h>
+#include <ptclib/delaychan.h>
+
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
 
@@ -562,3 +564,122 @@ PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
 
 
 #endif //_WIN32
+
+///////////////////////////////////////////////////////////////////////////
+
+static const PConstString NullAudio("Null Audio");
+
+class PSoundChannelNull : public PSoundChannel
+{
+ PCLASSINFO(PSoundChannelNull, PSoundChannel);
+ public:
+    PSoundChannelNull()
+      : m_sampleRate(0)
+    {
+    }
+
+    PSoundChannelNull(
+      const PString &device,
+      PSoundChannel::Directions dir,
+      unsigned numChannels,
+      unsigned sampleRate,
+      unsigned bitsPerSample
+    ) : m_sampleRate(0)
+    {
+      Open(device, dir, numChannels, sampleRate, bitsPerSample);
+    }
+
+    static PStringArray GetDeviceNames(PSoundChannel::Directions = Player)
+    {
+      return NullAudio;
+    }
+
+    PBoolean Open(const PString &,
+                  Directions dir,
+                  unsigned numChannels,
+                  unsigned sampleRate,
+                  unsigned bitsPerSample)
+    {
+      activeDirection = dir;
+      return SetFormat(numChannels, sampleRate, bitsPerSample);
+    }
+
+    virtual PString GetName() const
+    {
+      return NullAudio;
+    }
+
+    PBoolean Close()
+    {
+      m_sampleRate = 0;
+      return true;
+    }
+
+    PBoolean IsOpen() const
+    {
+      return m_sampleRate > 0;
+    }
+
+    PBoolean Write(const void *, PINDEX len)
+    {
+      if (m_sampleRate <= 0)
+        return false;
+
+      lastWriteCount = len;
+      m_Pacing.Delay(len/2*1000/m_sampleRate);
+      return true;
+    }
+
+    PBoolean Read(void * buf, PINDEX len)
+    {
+      if (m_sampleRate <= 0)
+        return false;
+
+      memset(buf, 0, len);
+      lastReadCount = len;
+      m_Pacing.Delay(len/2*1000/m_sampleRate);
+      return true;
+    }
+
+    PBoolean SetFormat(unsigned numChannels,
+                   unsigned sampleRate,
+                   unsigned bitsPerSample)
+    {
+      m_sampleRate = sampleRate;
+      return numChannels == 1 && bitsPerSample == 16;
+    }
+
+    unsigned GetChannels() const
+    {
+      return 1;
+    }
+
+    unsigned GetSampleRate() const
+    {
+      return m_sampleRate;
+    }
+
+    unsigned GetSampleSize() const
+    {
+      return 16;
+    }
+
+    PBoolean SetBuffers(PINDEX, PINDEX)
+    {
+      return true;
+    }
+
+    PBoolean GetBuffers(PINDEX & size, PINDEX & count)
+    {
+      size = 2;
+      count = 1;
+      return true;
+    }
+
+protected:
+    unsigned       m_sampleRate;
+    PAdaptiveDelay m_Pacing;
+};
+
+
+PCREATE_SOUND_PLUGIN(NullAudio, PSoundChannelNull)
