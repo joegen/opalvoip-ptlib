@@ -85,7 +85,7 @@ DEFINE_GUID(DSDEVID_DefaultVoiceCapture, 0xdef00003, 0x9c6d, 0x47ed, 0xaa, 0xf1,
 
 // Establish access to system-wide DirectSound device properties
 
-HRESULT DirectSoundPrivateCreate (OUT LPKSPROPERTYSET * outKsPropertySet) 
+static HRESULT DirectSoundPrivateCreate(OUT LPKSPROPERTYSET * outKsPropertySet) 
 { 
   HMODULE dSoundModule = LoadLibrary(TEXT("dsound.dll"));
   if (!dSoundModule)
@@ -121,7 +121,7 @@ HRESULT DirectSoundPrivateCreate (OUT LPKSPROPERTYSET * outKsPropertySet)
 
 // Enumerate all DSound devices, performing callback provided with context for each device
 
-HRESULT EnumerateDSoundDeviceInfo (LPFNDIRECTSOUNDDEVICEENUMERATECALLBACKA callback, LPVOID context)
+static HRESULT EnumerateDSoundDeviceInfo(LPFNDIRECTSOUNDDEVICEENUMERATECALLBACKA callback, LPVOID context)
 { 
   LPKSPROPERTYSET ksPropertySet = NULL;
   HRESULT result = DirectSoundPrivateCreate(&ksPropertySet);
@@ -145,62 +145,49 @@ HRESULT EnumerateDSoundDeviceInfo (LPFNDIRECTSOUNDDEVICEENUMERATECALLBACKA callb
 
 // Structures for working with DirectSound device properties
 
-typedef struct {
-  GUID DeviceId;                        // directSound id of device we want wave id for
-  PSoundChannelDirectSound::Directions Direction; // direction of the device
-  char Description[MAXPNAMELEN];        // device name
-  int WaveDeviceId;                     // matching multimedia system device id
+struct PDSoundDeviceInfo {
+  GUID m_DeviceId;                        // directSound id of device we want wave id for
+  PSoundChannelDirectSound::Directions m_Direction; // direction of the device
+  PString m_Description;        // device name
+  int m_WaveDeviceId;                     // matching multimedia system device id
+};
 
-  PString GetDescription (void)
-  {
-    return PString(Description); // convert from unicode if necessary
-  }
-  bool operator==(PString other)
-  {
-    return other == Description; // PStrings are always char
-  }
-  bool operator==(GUID other)
-  {
-    return IsEqualGUID(other, DeviceId) != 0;
-  }
-} DSoundDeviceInfo;
+typedef vector<PDSoundDeviceInfo> PDSoundDeviceInfoVector;
 
-typedef vector<DSoundDeviceInfo> DSoundDeviceInfoVector;
-
-typedef struct {
-  DSoundDeviceInfo filter;
-  DSoundDeviceInfoVector * result;
-} DSoundDeviceFilterInfo;
+struct PDSoundDeviceFilterInfo {
+  PDSoundDeviceInfo m_filter;
+  PDSoundDeviceInfoVector * m_result;
+};
 
 
 // DIRECTSOUNDDEVICE_ENUMERATE callback adds new DSoundDeviceInfo to results list
 
-BOOL CALLBACK DSoundDeviceEnumCallBackFilter (PDSPROPERTY_DIRECTSOUNDDEVICE_DESCRIPTION_A_DATA dsDescription, LPVOID context)
+static BOOL CALLBACK DeviceEnumCallBackFilter(PDSPROPERTY_DIRECTSOUNDDEVICE_DESCRIPTION_A_DATA dsDescription, LPVOID context)
 {
-  DSoundDeviceFilterInfo * filterInfo = (DSoundDeviceFilterInfo *)context;
-  if (filterInfo->result == NULL)
+  PDSoundDeviceFilterInfo * filterInfo = (PDSoundDeviceFilterInfo *)context;
+  if (filterInfo->m_result == NULL)
     return TRUE;
 
-  if (!IsEqualGUID(GUID_NULL, filterInfo->filter.DeviceId) && dsDescription->DeviceId != filterInfo->filter.DeviceId)
+  if (!IsEqualGUID(GUID_NULL, filterInfo->m_filter.m_DeviceId) && dsDescription->DeviceId != filterInfo->m_filter.m_DeviceId)
     return TRUE;  // reject unmatching DeviceId
 
   PSoundChannelDirectSound::Directions direction = (dsDescription->DataFlow == DIRECTSOUNDDEVICE_DATAFLOW_RENDER)? PSoundChannelDirectSound::Player
                                                                                                              : PSoundChannelDirectSound::Recorder;
-  if (filterInfo->filter.Direction != PSoundChannelDirectSound::Closed && direction != filterInfo->filter.Direction)
+  if (filterInfo->m_filter.m_Direction != PSoundChannelDirectSound::Closed && direction != filterInfo->m_filter.m_Direction)
     return TRUE;  // reject unmatching Direction
 
-  if (strlen(filterInfo->filter.Description) != 0 && strnicmp(dsDescription->Description, filterInfo->filter.Description, MAXPNAMELEN) != 0)
+  if (!filterInfo->m_filter.m_Description.IsEmpty() && filterInfo->m_filter.m_Description != dsDescription->Description)
     return TRUE;  // reject unmatching Description
 
-  if (filterInfo->filter.WaveDeviceId >= 0 && dsDescription->WaveDeviceId != (ULONG)filterInfo->filter.WaveDeviceId)
+  if (filterInfo->m_filter.m_WaveDeviceId >= 0 && dsDescription->WaveDeviceId != (ULONG)filterInfo->m_filter.m_WaveDeviceId)
     return TRUE;  // reject unmatching WaveDeviceId
 
-  DSoundDeviceInfo info;
-  info.DeviceId = dsDescription->DeviceId;
-  info.Direction = direction;
-  strncpy_s(info.Description, MAXPNAMELEN, dsDescription->Description, _TRUNCATE); // Make name compatible with MultiMedia version
-  info.WaveDeviceId = dsDescription->WaveDeviceId;
-  filterInfo->result->push_back(info);
+  PDSoundDeviceInfo info;
+  info.m_DeviceId = dsDescription->DeviceId;
+  info.m_Direction = direction;
+  info.m_Description = dsDescription->Description;
+  info.m_WaveDeviceId = dsDescription->WaveDeviceId;
+  filterInfo->m_result->push_back(info);
   return TRUE;
 }
 
@@ -211,19 +198,15 @@ BOOL CALLBACK DSoundDeviceEnumCallBackFilter (PDSPROPERTY_DIRECTSOUNDDEVICE_DESC
 // Specify empty name to accept any device name
 // Specify -1 to accept any WaveDeviceId
 
-HRESULT GetFilteredDSoundDeviceInfo (const GUID & deviceId, PSoundChannelDirectSound::Directions direction, PString name, int waveDeviceId, DSoundDeviceInfoVector & info)
+static HRESULT GetFilteredDSoundDeviceInfo(const GUID & deviceId, PSoundChannelDirectSound::Directions direction, PString name, int waveDeviceId, PDSoundDeviceInfoVector & info)
 { 
-  DSoundDeviceFilterInfo filterInfo;
-  filterInfo.filter.DeviceId = deviceId;
-  filterInfo.filter.Direction = direction;
-  if (name.GetLength())
-    strncpy_s(filterInfo.filter.Description, name.GetPointer(MAXPNAMELEN), MAXPNAMELEN);
-  else
-    filterInfo.filter.Description[0] = 0;
-
-  filterInfo.filter.WaveDeviceId = waveDeviceId;
-  filterInfo.result = &info;
-  return EnumerateDSoundDeviceInfo(DSoundDeviceEnumCallBackFilter, &filterInfo);
+  PDSoundDeviceFilterInfo filterInfo;
+  filterInfo.m_filter.m_DeviceId = deviceId;
+  filterInfo.m_filter.m_Direction = direction;
+  filterInfo.m_filter.m_Description = name;
+  filterInfo.m_filter.m_WaveDeviceId = waveDeviceId;
+  filterInfo.m_result = &info;
+  return EnumerateDSoundDeviceInfo(DeviceEnumCallBackFilter, &filterInfo);
 } 
 
 
@@ -314,7 +297,7 @@ PString PSoundChannelDirectSound::GetDefaultDevice (Directions dir) // static
     PTRACE(4, "dsound\tCould not find default device: " << GetErrorText(Miscellaneous, result));
     return PString();
   }
-  DSoundDeviceInfoVector devices;
+  PDSoundDeviceInfoVector devices;
   result = GetFilteredDSoundDeviceInfo(deviceGUID, dir, PString::Empty(), -1, devices);
   if (result != S_OK) {
     PTRACE(4, "dsound\tOpen: Could not retrieve device information: " << GetErrorText(Miscellaneous, result));
@@ -324,7 +307,7 @@ PString PSoundChannelDirectSound::GetDefaultDevice (Directions dir) // static
     PTRACE(4, "dsound\tOpen: Default device not found");
     return PString();
   }
-  return devices[0].GetDescription();
+  return devices[0].m_Description;
 }
 
 
@@ -332,7 +315,7 @@ PStringArray PSoundChannelDirectSound::GetDeviceNames (Directions dir) // static
 {
   PAssert(dir == Player || dir == Recorder, "Invalid device direction parameter");
 
-  DSoundDeviceInfoVector devices;
+  PDSoundDeviceInfoVector devices;
   HRESULT result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
   if (result != S_OK) {
     PTRACE(4, "dsound\tCould not get device list: " << GetErrorText(Miscellaneous, result));
@@ -347,9 +330,9 @@ PStringArray PSoundChannelDirectSound::GetDeviceNames (Directions dir) // static
     else
       names.AppendString("Default");
   }
-  DSoundDeviceInfoVector::const_iterator iterator = devices.begin();
+  PDSoundDeviceInfoVector::const_iterator iterator = devices.begin();
   while (iterator != devices.end()) {
-    names.AppendString(iterator->Description);
+    names.AppendString(iterator->m_Description);
     iterator++;
   }
   return names;
@@ -377,7 +360,7 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
   m_lost = 0ui64;
 
   // get info for all devices for direction
-  DSoundDeviceInfoVector devices;
+  PDSoundDeviceInfoVector devices;
   HRESULT result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
   if (result != S_OK) {
     SetErrorValues(Miscellaneous, result);
@@ -385,7 +368,11 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
     return false;
   }
   // validate the device name, use default if bad
-  DSoundDeviceInfoVector::iterator deviceInfo = find(devices.begin(), devices.end(), m_deviceName);
+  PDSoundDeviceInfoVector::iterator deviceInfo;
+  for (deviceInfo = devices.begin(); deviceInfo != devices.end(); ++deviceInfo) {
+    if (deviceInfo->m_Description == m_deviceName)
+      break;
+  }
   if (deviceInfo == devices.end()) {
     GUID deviceGUID;
     result = GetDefaultDeviceGUID(m_deviceName, activeDirection, deviceGUID);
@@ -394,12 +381,15 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
       PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Could not get default device ID: " << GetErrorText());
       return false;
     }
-    deviceInfo = find(devices.begin(), devices.end(), deviceGUID);
+    for (deviceInfo = devices.begin(); deviceInfo != devices.end(); ++deviceInfo) {
+      if (deviceInfo->m_DeviceId == deviceGUID)
+        break;
+    }
     if (deviceInfo == devices.end()) {
       PTRACE(4, "dsound\tOpen" << GetDirectionText() << ": Could not find default device");
       return SetErrorValues(NotFound, HRESULT_FROM_WIN32(ERROR_NOT_FOUND));
     }
-    m_deviceName = deviceInfo->GetDescription();
+    m_deviceName = deviceInfo->m_Description;
   }
   PTRACE(4, "dsound\tOpening " << GetDirectionText() << " device \"" << m_deviceName << '"');
 
@@ -407,14 +397,14 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
 
   // open for playback
   if (activeDirection == Player) {
-    if (!OpenPlayback(&deviceInfo->DeviceId))
+    if (!OpenPlayback(&deviceInfo->m_DeviceId))
       return false;
   }
   else { // open for recording
-    if (!OpenCapture(&deviceInfo->DeviceId))
+    if (!OpenCapture(&deviceInfo->m_DeviceId))
       return false;
   }
-  OpenMixer(deviceInfo->WaveDeviceId);
+  OpenMixer(deviceInfo->m_WaveDeviceId);
 
   if (m_notifier.GetObject() != NULL) { // notify that channel is starting
     m_notifier(*this, SOUNDNOTIFY_UNDERRUN);
