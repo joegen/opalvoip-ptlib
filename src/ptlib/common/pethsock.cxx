@@ -98,6 +98,7 @@ PStringArray PEthSocket::EnumInterfaces(bool detailed)
       interfaces += strm;
     }
     pcap_freealldevs(alldevs);
+    PTRACE(4, NULL, PTraceModule(), "Enumerated interfaces:\n" << setfill('\n') << interfaces);
   }
 
   return interfaces;
