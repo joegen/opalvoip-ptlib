@@ -100,7 +100,6 @@ PURL_LEGACY_SCHEME(h323s,     true,  false, true,  true,   false,  false, true, 
 PURL_LEGACY_SCHEME(rtmp,      false, false, true,  false,  false,  false, false, false, true,  false, DEFAULT_RTMP_PORT)
 PURL_LEGACY_SCHEME(sip,       true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIP_PORT)
 PURL_LEGACY_SCHEME(sips,      true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIPS_PORT)
-PURL_LEGACY_SCHEME(tel,       false, false, false, true,   false,  false, true,  false, false, false, 0)
 PURL_LEGACY_SCHEME(fax,       false, false, false, true,   false,  false, true,  false, false, false, 0)
 PURL_LEGACY_SCHEME(callto,    false, false, false, true,   false,  false, true,  false, false, false, 0)
 PURL_LEGACY_SCHEME(msrp,      false, false, true,  false,  false,  true,  true,  false, true,  false, DEFAULT_MSRP_PORT)
