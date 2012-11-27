@@ -1,6 +1,5 @@
-; Add the contents of this file to 
-;   C:\Program Files\Microsoft Visual Studio 8\Common7\Packages\Debugger\AUTOEXP.DAT
-;   C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\Packages\Debugger\AUTOEXP.DAT
+;Edit the file C:\Program Files*\Microsoft Visual Studio *\Common7\Packages\Debugger\AUTOEXP.DAT
+;and replace the line [Visualizer] with the contents of this file.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -33,13 +32,7 @@ OpalMediaOptionEnum=<m_name.theArray,s>=<m_value>
 OpalMediaOptionOctets=<m_name.theArray,s>=<m_value>
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-; For DevStudio 2005 you can also add after the [Visualizer] keyword
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+[Visualizer]
 
 ; from PTLib
 
