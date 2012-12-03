@@ -312,6 +312,7 @@ PEthSocket::Frame::Frame(PINDEX maxSize)
   , m_rawSize(0)
   , m_fragmentated(false)
   , m_fragmentProto(0)
+  , m_fragmentProcessed(false)
 {
 }
 
@@ -322,6 +323,7 @@ bool PEthSocket::Frame::Read(PChannel & channel, PINDEX packetSize)
     m_fragments.SetSize(0);
     m_fragmentated = false;
   }
+  m_fragmentProcessed = false;
 
   PINDEX size = std::min(packetSize, m_rawData.GetSize());
   do {
@@ -422,6 +424,17 @@ int PEthSocket::Frame::GetIP(PBYTEArray & payload)
 
 int PEthSocket::Frame::GetIP(PBYTEArray & payload, PIPSocket::Address & src, PIPSocket::Address & dst)
 {
+  // Already processed this frame as an IP fragment
+  if (m_fragmentProcessed) {
+    if (m_fragmentated) {
+      payload.Attach(m_fragments, m_fragments.GetSize());
+      return m_fragmentProto; // Next protocol layer
+    }
+
+    // Haven't got it all yet
+    return -1;
+  }
+
   PBYTEArray ip;
   if (GetDataLink(ip) != 0x800) // IPv4
     return -1;
@@ -442,22 +455,36 @@ int PEthSocket::Frame::GetIP(PBYTEArray & payload, PIPSocket::Address & src, PIP
   bool isFragment = (ip[6] & 0x20) != 0;
   int fragmentOffset = (((ip[6]&0x1f)<<8)+ip[7])*8;
   PINDEX fragmentsSize = m_fragments.GetSize();
-  if (!isFragment && fragmentsSize == 0)
-    return ip[9]; // Next protocol layer
 
-  if (fragmentsSize != fragmentOffset) {
-    PTRACE(2, "Missing IP fragment, expected " << fragmentsSize << ", got " << fragmentOffset);
-    m_fragments.SetSize(0);
-    return -1;
+  if (fragmentsSize > 0) {
+    /* Have a fragment re-assembly in progress, check if same IP pair. We are
+       ignoring fragments on other pairs, eventually it should be a std::map
+       of fragments for all IP pairs. But that is too hard for now.
+    */
+    if (m_fragmentSrcIP != src || m_fragmentDstIP != dst)
+      return ip[9]; // Next protocol layer
+
+    if (fragmentsSize != fragmentOffset) {
+      PTRACE(2, "Missing IP fragment, expected " << fragmentsSize << ", got " << fragmentOffset << " on " << src << " -> " << dst);
+      m_fragments.SetSize(0);
+      return -1;
+    }
+  }
+  else {
+    if (!isFragment)
+      return ip[9]; // Next protocol layer
+
+    // New fragmented IP start
+    m_fragmentProto = ip[9]; // Next protocol layer
+    m_fragmentSrcIP = src;
+    m_fragmentDstIP = dst;
   }
 
-  if (fragmentsSize == 0)
-    m_fragmentProto = ip[9]; // Next protocol layer
-
   m_fragments.Concatenate(payload);
+  m_fragmentProcessed = true;
 
   if (isFragment)
-    return -1;
+    return -1; // Haven't got it all yet
 
   payload.Attach(m_fragments, m_fragments.GetSize());
   m_fragmentated = true;
