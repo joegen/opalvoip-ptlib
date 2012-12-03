@@ -60,9 +60,6 @@
 #define IS_SUCCESS_RESP(msg_type)  (((msg_type) & 0x0110) == 0x0100)
 #define IS_ERR_RESP(msg_type)      (((msg_type) & 0x0110) == 0x0110)
 
-PFACTORY_CREATE(PFactory<PNatMethod>, PSTUNClient, "STUN");
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
 PSTUN::PSTUN()
@@ -853,6 +850,11 @@ bool PSTUNUDPSocket::InternalGetBaseAddress(PIPSocketAddressAndPort & addr)
 
 ///////////////////////////////////////////////////////////////////////
 
+typedef PSTUNClient PNatMethod_STUN;
+PCREATE_NAT_PLUGIN(STUN);
+
+static PConstCaselessString const STUNName("STUN");
+
 PSTUNClient::PSTUNClient()
   : m_socket(NULL)
   , numSocketsForPairing(DEFAULT_NUM_SOCKETS_FOR_PAIRING)
@@ -863,6 +865,19 @@ PSTUNClient::~PSTUNClient()
 {
   Close();
 }
+
+
+PString PSTUNClient::GetNatMethodName()
+{
+  return STUNName;
+}
+
+
+PString PSTUNClient::GetName() const
+{
+  return STUNName;
+}
+
 
 bool PSTUNClient::Open(const PIPSocket::Address & binding) 
 { 
@@ -930,22 +945,11 @@ PString PSTUNClient::GetServer() const
 }
 
 
-PNatMethod::NatTypes PSTUNClient::GetNatType(const PTimeInterval & maxAge)
+PNatMethod::NatTypes PSTUNClient::InternalGetNatType(bool force, const PTimeInterval & maxAge)
 {  
   PWaitAndSignal m(m_mutex);
 
-  if ((PTime() - m_timeAddressObtained) < maxAge)
-    return m_natType;
-
-  return GetNatType(true);
-}
-
-
-PNatMethod::NatTypes PSTUNClient::GetNatType(bool force)
-{
-  PWaitAndSignal m(m_mutex);
-
-  if (!force && m_externalAddress.IsValid())
+  if (!force && m_externalAddress.IsValid() && (PTime() - m_timeAddressObtained) < maxAge)
     return m_natType;
 
   if (!m_serverAddress.IsValid()) {
@@ -1099,7 +1103,7 @@ bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) con
 //
 // this function must be thread safe as it will be called from multple threads
 //
-bool PSTUNClient::InternalOpenSocket(BYTE component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo)
+bool PSTUNClient::InternalOpenSocket(Component component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo)
 {
   if (!m_serverAddress.IsValid()) {
     PTRACE(1, "STUN\tServer port not set.");
@@ -1137,11 +1141,7 @@ bool PSTUNClient::InternalOpenSocket(BYTE component, const PIPSocket::Address & 
 }
 
 
-void PSTUNClient::SetCredentials(const PString &, const PString &, const PString &)
-{
-}
-
-bool PSTUNClient::CreateSocket(BYTE component, PUDPSocket * & udpSocket, const PIPSocket::Address & binding, WORD port)
+bool PSTUNClient::CreateSocket(Component component, PUDPSocket * & udpSocket, const PIPSocket::Address & binding, WORD port)
 {
   PWaitAndSignal m(m_mutex);
 
@@ -1312,34 +1312,6 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 }
 
 
-PSTUNClient::RTPSupportTypes PSTUNClient::GetRTPSupport(bool force)
-{
-  PWaitAndSignal m(m_mutex);
-
-  switch (GetNatType(force)) {
-    // types that do support RTP 
-    case OpenNat:
-      return RTPSupported;
-
-    // types that support RTP if media sent first
-    case ConeNat:
-    case SymmetricFirewall:
-    case RestrictedNat:
-    case PortRestrictedNat:
-      return RTPIfSendMedia;
-
-    // types that do not support RTP
-    case BlockedNat:
-    case SymmetricNat:
-      return RTPUnsupported;
-
-    // types that have unknown RTP support
-    default:
-      return RTPUnknown;
-  }
-}
-
-
 //////////////////////////////////////////////////////////////////////
    
 void PTURNRequestedTransport::Initialise(BYTE protocol)
@@ -1354,12 +1326,28 @@ void PTURNRequestedTransport::Initialise(BYTE protocol)
 
 //////////////////////////////////////////////////////////////////////
 
-PFACTORY_CREATE(PFactory<PNatMethod>, PTURNClient, "TURN");
+typedef PTURNClient PNatMethod_TURN;
+PCREATE_NAT_PLUGIN(TURN);
+
+static PConstCaselessString TURNName("TURN");
 
 PTURNClient::PTURNClient()
   : PSTUNClient()
 {
 }
+
+
+PString PTURNClient::GetNatMethodName()
+{
+  return TURNName;
+}
+
+
+PString PTURNClient::GetName() const
+{
+  return TURNName;
+}
+
 
 bool PTURNClient::Open(const PIPSocket::Address & binding)
 {
@@ -1639,8 +1627,6 @@ bool PTURNUDPSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPSock
 
 PSTUNClient::RTPSupportTypes PTURNClient::GetRTPSupport(bool force)
 {
-  PWaitAndSignal m(m_mutex);
-
   switch (GetNatType(force)) {
     // types that do support RTP 
     case OpenNat:
@@ -1728,7 +1714,7 @@ void AllocateSocketFunctor::operator () (PThread &)
 
 typedef PThreadFunctor<AllocateSocketFunctor> AllocateSocketThread;
 
-bool PTURNClient::CreateSocket(BYTE component, PUDPSocket * & socket, const PIPSocket::Address & binding, WORD port)
+bool PTURNClient::CreateSocket(Component component, PUDPSocket * & socket, const PIPSocket::Address & binding, WORD port)
 {
   if (component != PNatMethod::eComponent_RTP && component != PNatMethod::eComponent_RTCP)
     return PSTUNClient::CreateSocket(component, socket, binding, port);
@@ -1745,7 +1731,7 @@ bool PTURNClient::CreateSocket(BYTE component, PUDPSocket * & socket, const PIPS
   else
     portInfo = &singlePortInfo;
 
-  AllocateSocketFunctor op(*this, component, m_interface, *portInfo);
+  AllocateSocketFunctor op(*this, (BYTE)component, m_interface, *portInfo);
 
   op.operator()(*PThread::Current());
 
