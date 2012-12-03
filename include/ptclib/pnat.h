@@ -45,35 +45,6 @@
 
 class PNATUDPSocket;
 
-//////////////////////////////////////////////////////////////////////////
-//
-// Extended NAT support
-//
-
-class PNatCandidate : public PObject
-{
-  PCLASSINFO(PNatCandidate, PObject);
-  public:
-    enum {
-      eType_Unknown,
-      eType_Host,
-      eType_ServerReflexive,
-      eType_PeerReflexive,
-      eType_Relay
-    };
-
-    PNatCandidate();
-    PNatCandidate(int type, BYTE component);
-
-    virtual PString AsString() const;
-
-    PIPSocketAddressAndPort m_baseAddress;
-    PIPSocketAddressAndPort m_transport;
-    int m_type;
-    BYTE m_component;
-};
-
-
 
 /** PNatMethod
     Base Network Address Traversal Method class
@@ -92,13 +63,13 @@ class PNatMethod  : public PObject
       NatPortEnd   = 65535
     };
 
-    enum {
+    enum Component {
       eComponent_RTP  = 1,
       eComponent_RTCP = 2,
       eComponent_Unknown = 255,
     };
 
-    enum NatTypes {
+    P_DECLARE_STREAMABLE_ENUM(NatTypes,
       UnknownNat,
       OpenNat,
       ConeNat,
@@ -107,9 +78,8 @@ class PNatMethod  : public PObject
       SymmetricNat,
       SymmetricFirewall,
       BlockedNat,
-      PartialBlockedNat,
-      NumNatTypes
-    };
+      PartialBlockedNat
+    );
 
   /**@name Construction */
   //@{
@@ -136,11 +106,8 @@ class PNatMethod  : public PObject
     /** Factory Create
     */
     static PNatMethod * Create(
-      const PString & name         ///< Feature Name Expression
-    );
-    static PNatMethod * Create(
-      const PString & name,        ///< Feature Name Expression
-      PPluginManager * pluginMgr   ///< Plugin Manager
+      const PString & name,             ///< Feature Name Expression
+      PPluginManager * pluginMgr = NULL ///< Plugin Manager
     );
 
     /**Get NatTypes enumeration as an English string for the type.
@@ -154,7 +121,6 @@ class PNatMethod  : public PObject
     virtual PString GetName() const = 0;
 
     /**Get the current server address name.
-       Defaults to be "address:port" string form.
       */
     virtual PString GetServer() const = 0;
 
@@ -163,19 +129,18 @@ class PNatMethod  : public PObject
     virtual bool GetServerAddress(
       PIPSocket::Address & address,   ///< Address of server
       WORD & port                     ///< Port server is using.
-    ) const
-    { PIPSocketAddressAndPort ap; address = ap.GetAddress(); port = ap.GetPort(); return true; }
+    ) const;
     virtual bool GetServerAddress(
       PIPSocketAddressAndPort & externalAddressAndPort 
-    ) const = 0;
+    ) const;
 
-    virtual NatTypes GetNatType(
+    __inline NatTypes GetNatType(
       const PTimeInterval & maxAge
-    ) = 0;
+    ) { return InternalGetNatType(false, maxAge); }
 
-    virtual NatTypes GetNatType(
+    __inline NatTypes GetNatType(
       bool force = false    ///< Force a new check
-    ) = 0;
+    ) { return InternalGetNatType(force, PMaxTimeInterval); }
 
     /**Determine via the STUN protocol the NAT type for the router.
        As for GetNatType() but returns an English string for the type.
@@ -187,26 +152,34 @@ class PNatMethod  : public PObject
     /**Set the current server address name.
        Defaults to be "address:port" string form.
       */
-    virtual bool SetServer(const PString & server) = 0;
+    virtual bool SetServer(const PString & server);
+
+    /**Set the authentication credientials.
+      */
+    virtual void SetCredentials(
+      const PString & username, 
+      const PString & password, 
+      const PString & realm
+    );
 
     /** Get the acquired External IP Address.
     */
     virtual bool GetExternalAddress(
       PIPSocket::Address & externalAddress, ///< External address of router
       const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
-    ) = 0;
+    );
 
     /**Return the interface NAT router is using.
       */
-    virtual bool  GetInterfaceAddress(
+    virtual bool GetInterfaceAddress(
       PIPSocket::Address & internalAddress  ///< NAT router internal address returned.
-    ) const = 0;
+    ) const;
 
     /**Open the NAT method.
       */
     virtual bool Open(
       const PIPSocket::Address & ifaceAddr
-    ) = 0;
+    );
 
     /**Close the NAT method
       */
@@ -229,13 +202,13 @@ class PNatMethod  : public PObject
       PUDPSocket * & socket,
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
       WORD localPort = 0
-      ) { return CreateSocket(eComponent_Unknown, socket, binding, localPort); }
+    ) { return CreateSocket(eComponent_Unknown, socket, binding, localPort); }
     virtual bool CreateSocket(
-      BYTE component,
+      Component component,
       PUDPSocket * & socket,
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
       WORD localPort = 0
-    ) = 0;
+    );
 
     /**Create a socket pair.
        The NAT traversal protocol is used to create a pair of sockets with
@@ -254,7 +227,7 @@ class PNatMethod  : public PObject
       PUDPSocket * & socket1,
       PUDPSocket * & socket2,
       const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
-    ) = 0;
+    );
 
     /**Create a socket pair.
        The NAT traversal protocol is used to create a pair of sockets with
@@ -307,7 +280,7 @@ class PNatMethod  : public PObject
     */
     virtual bool IsAvailable(
       const PIPSocket::Address & binding
-    ) = 0;
+    );
 
     /**Activate/DeActivate the NAT Method on a call by call basis
      Default does nothing
@@ -322,20 +295,19 @@ class PNatMethod  : public PObject
       void * userData = NULL            ///< User data to link to NAT handler.
     );
 
-    enum RTPSupportTypes {
+    P_DECLARE_ENUM(RTPSupportTypes,
       RTPSupported,
       RTPIfSendMedia,
       RTPUnsupported,
-      RTPUnknown,
-      NumRTPSupportTypes
-    };
+      RTPUnknown
+    );
 
     /**Return an indication if the current STUN type supports RTP
     Use the force variable to guarantee an up to date test
     */
     virtual RTPSupportTypes GetRTPSupport(
       bool force = false    ///< Force a new check
-    ) = 0;
+    );
 
     /**Set the port ranges to be used on local machine.
     Note that the ports used on the NAT router may not be the same unless
@@ -353,14 +325,6 @@ class PNatMethod  : public PObject
       WORD portPairBase = 0,  ///< Socket pair port number base
       WORD portPairMax = 0    ///< Socket pair port number max
     );
-
-    virtual void SetCredentials(
-      const PString & username, 
-      const PString & password, 
-      const PString & realm
-    ) = 0;
-
-
   //@}
 
     struct PortInfo {
@@ -380,6 +344,14 @@ class PNatMethod  : public PObject
         unsigned increment
       );
 
+      /** RandomPortPair
+	      This function returns a random port pair base number in the specified range for
+	      the creation of the RTP port pairs (this used to avoid issues with multiple
+	      NATed devices opening the same local ports and experiencing issues with
+	      the behaviour of the NAT device Refer: draft-jennings-behave-test-results-04 sect 3
+      */
+      WORD GetRandomPair();
+
       PMutex mutex;
       WORD   basePort;
       WORD   maxPort;
@@ -387,15 +359,9 @@ class PNatMethod  : public PObject
     } ;
 
   protected:
-    PortInfo singlePortInfo, pairedPortInfo;
+    virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge) = 0;
 
-	/** RandomPortPair
-		This function returns a random port pair base number in the specified range for
-		the creation of the RTP port pairs (this used to avoid issues with multiple
-		NATed devices opening the same local ports and experiencing issues with
-		the behaviour of the NAT device Refer: draft-jennings-behave-test-results-04 sect 3
-	*/
-	WORD RandomPortPair(unsigned int start, unsigned int end);
+    PortInfo singlePortInfo, pairedPortInfo;
 };
 
 /////////////////////////////////////////////////////////////
@@ -403,6 +369,30 @@ class PNatMethod  : public PObject
 PLIST(PNatList, PNatMethod);
 
 ////////////////////////////////////////////////////////////////////////////////
+
+class PNatCandidate : public PObject
+{
+  PCLASSINFO(PNatCandidate, PObject);
+  public:
+    enum {
+      eType_Unknown,
+      eType_Host,
+      eType_ServerReflexive,
+      eType_PeerReflexive,
+      eType_Relay
+    };
+
+    PNatCandidate();
+    PNatCandidate(int type, PNatMethod::Component component);
+
+    virtual PString AsString() const;
+
+    PIPSocketAddressAndPort m_baseAddress;
+    PIPSocketAddressAndPort m_transport;
+    int                     m_type;
+    PNatMethod::Component   m_component;
+};
+
 
 /**UDP socket that has been created by a NAT method.
   */
@@ -412,107 +402,58 @@ class PNATUDPSocket : public PUDPSocket
   PCLASSINFO(PNATUDPSocket, PUDPSocket);
 
   public:
-    PNATUDPSocket(PQoS * qos = NULL);
+    PNATUDPSocket(
+      PNatMethod::Component component = PNatMethod::eComponent_Unknown,
+      PQoS * qos = NULL
+    );
 
-    virtual PNatCandidate GetCandidateInfo() = 0;
+    virtual PNatCandidate GetCandidateInfo();
 
-    virtual PString GetBaseAddress()                                    { PIPSocketAddressAndPort ap; if (!InternalGetBaseAddress(ap)) return PString::Empty(); else return ap.AsString(); }
-    virtual bool GetBaseAddress(PIPSocketAddressAndPort & addrAndPort)  { return InternalGetBaseAddress(addrAndPort); }
+    virtual PString GetBaseAddress();
+    virtual bool GetBaseAddress(PIPSocketAddressAndPort & addrAndPort);
 
-    virtual BYTE GetComponent() const
+    PNatMethod::Component GetComponent() const
     { return m_component; }
 
-    virtual void SetComponent(BYTE component)
+    void SetComponent(PNatMethod::Component component)
     { m_component = component; }
 
   protected:
-    // overrides from PUDPSocket
-    virtual bool InternalGetBaseAddress(PIPSocketAddressAndPort & addrAndPort) = 0;
-    virtual bool InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort)   { return PUDPSocket::GetPeerAddress(addrAndPort); }
-    virtual bool InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort) = 0;
+    virtual bool InternalGetBaseAddress(PIPSocketAddressAndPort & addrAndPort);
 
-    BYTE m_component;
+    PNatMethod::Component m_component;
 };
+
 
 //////////////////////////////////////////////////////////////////////////
 //
 // NULL NAT support
 //
 
-class PNATUDPSocket_Null : public PNATUDPSocket
+class PNatMethod_Fixed  : public PNatMethod
 {
-  PCLASSINFO(PNATUDPSocket_Null, PNATUDPSocket);
+  PCLASSINFO(PNatMethod_Fixed, PNatMethod);
   public:
-    PNATUDPSocket_Null(BYTE component, PQoS * qos = NULL)
-      : PNATUDPSocket(qos)
-    { m_component = component; }
+    PNatMethod_Fixed();
 
-    PNatCandidate GetCandidateInfo()
-    { 
-      PNatCandidate cand(PNatCandidate::eType_Host, m_component); 
-      PUDPSocket::InternalGetLocalAddress(cand.m_baseAddress);
-      PIPSocket::InternalGetLocalAddress(cand.m_baseAddress);
-      return cand;
-    }
+    static PString GetNatMethodName();
+    virtual PString GetName() const;
+
+    virtual PString GetServer() const;
+    virtual bool SetServer(const PString & str);
+    virtual bool GetExternalAddress(PIPSocket::Address & addr ,const PTimeInterval &);
+    virtual bool GetInterfaceAddress(PIPSocket::Address & addr) const;
+    virtual bool Open(const PIPSocket::Address & addr);
+    virtual bool IsAvailable(const PIPSocket::Address &);
+
+    const PString & GetExternalHost() const { return m_externalHost; }
 
   protected:
-    bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr) { return PUDPSocket::InternalGetLocalAddress(addr); }
-    bool InternalGetBaseAddress(PIPSocketAddressAndPort & addr)  { return PUDPSocket::InternalGetLocalAddress(addr); }
-};
+    virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge);
 
-class PNatMethod_Null  : public PNatMethod
-{
-  PCLASSINFO(PNatMethod_Null, PNatMethod);
-  public:
-    virtual bool GetServerAddress(PIPSocket::Address & , WORD & ) const
-    { return false; }
-
-    static PStringList GetNatMethodName() { return PStringList("Null"); }
-
-    virtual PString GetName() const { return "Null"; }
-
-    virtual PString GetServer() const
-    { return m_server; }
-
-    virtual bool GetServerAddress(PIPSocketAddressAndPort &) const
-    { return false; }
-
-    virtual bool SetServer(const PString & str)
-    { m_server = str; return true; }
-
-    virtual NatTypes GetNatType(const PTimeInterval &)
-    { return OpenNat; }
-
-    virtual NatTypes GetNatType(bool = false)
-    { return OpenNat; }
-
-    virtual bool GetExternalAddress(PIPSocket::Address & addr ,const PTimeInterval &)
-    { addr = m_interface; return true; }
-
-    virtual bool GetInterfaceAddress(PIPSocket::Address & addr) const
-    { addr = m_interface; return true; }
-
-    virtual bool Open(const PIPSocket::Address & addr)
-    { m_interface = addr; return true; }
-
-    virtual bool CreateSocket(BYTE, PUDPSocket *&, const PIPSocket::Address & = PIPSocket::GetDefaultIpAny(), WORD = 0)
-    { return false; }
-
-    virtual bool CreateSocketPair(PUDPSocket *&,PUDPSocket *&, const PIPSocket::Address & = PIPSocket::GetDefaultIpAny())
-    { return false; }
-
-    virtual PNatMethod::RTPSupportTypes GetRTPSupport(bool)
-    { return RTPSupported; }
-
-    virtual void SetCredentials(const PString &,const PString &,const PString &)
-    { }
-
-    virtual bool IsAvailable(const PIPSocket::Address &)
-    { return true; }
-
-  protected:
     PIPSocket::Address m_interface;
-    PString m_server;
+    PString            m_externalHost;
+    NatTypes           m_type;
 };
 
 /////////////////////////////////////////////////////////////
@@ -603,17 +544,13 @@ private:
 // declare macros and structures needed for NAT plugins
 //
 
-template <class className> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
+template <class SVC> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return (PNatMethod *)new className; }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetNatMethodName(); }
-    virtual bool  ValidateDeviceName(const PString & deviceName, int /*userData*/) const { 
-	      return (deviceName == GetDeviceNames(0)[0]); 
-	} 
+    virtual PObject *    CreateInstance(int /*userData*/) const { return new SVC; }
+    virtual PStringArray GetDeviceNames(int /*userData*/) const { return SVC::GetNatMethodName(); }
+    virtual bool  ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return SVC::GetNatMethodName() *= deviceName; }
 };
-
-#define PDECLARE_NAT_METHOD(method, cls) PFACTORY_CREATE(PFactory<PNatMethod>, cls, #method)
 
 #define PCREATE_NAT_PLUGIN(name) \
   static PNatMethodServiceDescriptor<PNatMethod_##name> PNatMethod_##name##_descriptor; \
@@ -624,11 +561,11 @@ template <class className> class PNatMethodServiceDescriptor : public PDevicePlu
 
 
 #if P_STUN
-PFACTORY_LOAD(PSTUNClient);
+PPLUGIN_STATIC_LOAD(STUN, PNatMethod);
 #endif
 
 #if P_TURN
-PFACTORY_LOAD(PTURNClient);
+PPLUGIN_STATIC_LOAD(TURN, PNatMethod);
 #endif
 
 #else  // P_NAT
