@@ -364,7 +364,7 @@ PCLI::Context & PCLI::Arguments::WriteUsage()
 
 PCLI::Context & PCLI::Arguments::WriteError(const PString & error)
 {
-  m_context << m_command << m_context.GetCLI().GetCommandErrorPrefix();
+  m_context << GetCommandName() << m_context.GetCLI().GetCommandErrorPrefix();
   if (!error.IsEmpty())
     m_context << error << endl;
   return m_context;
@@ -565,7 +565,7 @@ void PCLI::OnReceivedLine(Arguments & args)
     CommandMap_t::iterator cmd = m_commands.find(names);
     if (cmd != m_commands.end()) {
       args.Shift(nesting);
-      args.m_command = cmd->first;
+      args.SetCommandName(cmd->first);
       args.m_usage = cmd->second.m_usage;
 
       if (!cmd->second.m_argSpec.IsEmpty()) {
