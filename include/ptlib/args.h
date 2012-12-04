@@ -125,6 +125,16 @@ class PArgList : public PObject
       const PStringArray & theArgs ///< A string array constituting the arguments
     );
 
+    /** Set the comand name
+      */
+    void SetCommandName(
+       const PString & name
+    ) { m_commandName = name; }
+
+    /** Get the command name
+      */
+    const PString & GetCommandName() const { return m_commandName; }
+
     /** Parse the arguments.
        Parse the standard C program arguments into an argument of options and
        parameters.
@@ -316,6 +326,7 @@ class PArgList : public PObject
   //@}
 
   protected:
+    PString m_commandName;
     PString m_parseError;         // An error was detected during parsing of arguments
     PStringArray m_argumentArray; // The original program arguments.
 

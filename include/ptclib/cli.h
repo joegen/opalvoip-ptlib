@@ -222,7 +222,6 @@ class PCLI : public PObject
 
       protected:
         Context & m_context;
-        PString   m_command;
         PString   m_usage;
 
       friend class PCLI;

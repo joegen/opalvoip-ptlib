@@ -191,7 +191,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   PTraceInfo()
     : m_currentLevel(0)
-    , m_thresholdLevel(1)
+    , m_thresholdLevel(0)
     , m_options(Blocks | Timestamp | Thread | FileAndLine)
 #ifdef __NUCLEUS_PLUS__
     , m_stream(NULL)
@@ -1181,7 +1181,7 @@ ostream & PArgList::Usage(ostream & strm, const char * usage) const
       break;
 
     case 1 :
-      strm << "usage: " << PProcess::Current().GetFile().GetTitle() << ' ' << usage << '\n';
+      strm << "usage: " << GetCommandName() << ' ' << usage << '\n';
       break;
 
     default :
@@ -1190,7 +1190,7 @@ ostream & PArgList::Usage(ostream & strm, const char * usage) const
       for (i = 0; i < usages.GetSize(); ++i) {
         if (usages[i].IsEmpty())
           break;
-        strm << "   " << PProcess::Current().GetFile().GetTitle() << ' ' << usages[i] << '\n';
+        strm << "   " << GetCommandName() << ' ' << usages[i] << '\n';
       }
 
       for (; i < usages.GetSize(); ++i)
@@ -1397,9 +1397,9 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
       // Check for duplicates
       for (size_t i = 0; i < m_options.size(); ++i) {
         if (InternalSpecificationError(opts.m_letter != '\0' && opts.m_letter == m_options[i].m_letter,
-                                                         "Duplicate option character in specification") ||
+                        "Duplicate option character '" + PString(opts.m_letter) + "' in specification") ||
             InternalSpecificationError(!opts.m_name.IsEmpty() && opts.m_name == m_options[i].m_name,
-                                                            "Duplicate option string in specification"))
+                           "Duplicate option string \"" + PString(opts.m_name) + "\" in specification"))
           return false;
       }
 
@@ -1746,6 +1746,7 @@ void PProcess::PreInitialise(int c, char ** v, char **)
     productName = executableFile.GetTitle().ToLower();
 
   arguments.SetArgs(c-1, v+1);
+  arguments.SetCommandName(executableFile.GetTitle());
 }
 
 

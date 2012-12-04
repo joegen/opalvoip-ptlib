@@ -155,7 +155,6 @@ endif # P_SHAREDLIB
 
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
-SYSLIBDIR	:= $(shell $(PTLIBDIR)/make/ptlib-config --libdir)
 
 endif # gnu
 

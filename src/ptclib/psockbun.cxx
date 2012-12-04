@@ -951,6 +951,11 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
     return;
   }
 
+  if (binding.IsAny() || binding.IsBroadcast()) {
+    PTRACE(4, "Interface \"" << iface << "\" has no IPv" << m_ipVersion << " address.");
+    return;
+  }
+
   SocketInfo info;
   if (CreateSocket(info, binding)) {
     if (localPort == 0) {
