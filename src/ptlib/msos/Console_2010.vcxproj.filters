@@ -933,6 +933,16 @@
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\Lib\Win32\ptbuildopts.h">
+      <Filter>Header Files\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h">
+      <Filter>Header Files\Win64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
@@ -942,9 +952,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\revision.h.in">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptbuildopts.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -999,6 +1006,12 @@
     </Filter>
     <Filter Include="Header Files\Android">
       <UniqueIdentifier>{94ace0fa-b2f4-478f-ad44-e32f7d1b27c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Win32">
+      <UniqueIdentifier>{188313e3-4811-4781-9de0-d6ee03d660d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Win64">
+      <UniqueIdentifier>{6acf23cc-1877-465f-88d0-44e837751ef9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

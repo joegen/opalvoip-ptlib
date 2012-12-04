@@ -1021,22 +1021,10 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\timer.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\udpsock.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\video.h" />
+    <ClInclude Include="..\..\..\Lib\Win32\ptbuildopts.h" />
+    <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h" />
     <ClInclude Include="..\..\..\revision.h" />
     <ClInclude Include="..\..\..\version.h" />
-    <CustomBuild Include="..\..\..\include\ptbuildopts.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
-      </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">
-      </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </Command>
-    </CustomBuild>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Array.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Channel.h" />
