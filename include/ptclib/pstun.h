@@ -443,11 +443,8 @@ class PSTUNClient : public PNatMethod, public PSTUN
 
     /**Get the NAT Method Name
      */
-    static PStringList GetNatMethodName() { return PStringList("STUN"); }
-
-    /** Get the NAT traversal method name
-    */
-    virtual PString GetName() const { return "STUN"; }
+    static PString GetNatMethodName();
+    virtual PString GetName() const;
 
     /**Set the STUN server to use.
        The server string may be of the form host:port. If :port is absent
@@ -487,25 +484,7 @@ class PSTUNClient : public PNatMethod, public PSTUN
 
     virtual void Close();
 
-    virtual void SetCredentials(
-      const PString & username, 
-      const PString & password, 
-      const PString & realm
-    );
-
-    /**Determine via the STUN protocol the NAT type for the router.
-      */
-    NatTypes GetNatType(
-      const PTimeInterval & maxAge
-    );
-
-    NatTypes GetNatType(
-      bool force = false    ///< Force a new check
-    );
-
     // new functions
-    bool InternalOpenSocket(BYTE component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo);
-
     NatTypes FindNatType(
       const PIPSocket::Address & binding
     );
@@ -523,7 +502,7 @@ class PSTUNClient : public PNatMethod, public PSTUN
        false.
       */
     bool CreateSocket(
-      BYTE component,
+      Component component,
       PUDPSocket * & socket,
       const PIPSocket::Address & = PIPSocket::GetDefaultIpAny(), 
       WORD port = 0
@@ -548,14 +527,11 @@ class PSTUNClient : public PNatMethod, public PSTUN
       const PIPSocket::Address & = PIPSocket::GetDefaultIpAny()
     );
 
-    /**Return an indication if the current STUN type supports RTP
-      Use the force variable to guarantee an up to date test
-      */
-    virtual RTPSupportTypes GetRTPSupport(
-      bool force = false    ///< Force a new check
-    );
+    bool InternalOpenSocket(Component component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo);
 
   protected:    
+    virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge);
+
     PSTUNUDPSocket * m_socket;
     PMutex m_mutex;
 
@@ -563,9 +539,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
     PIPSocketAddressAndPort m_externalAddress;
     PINDEX                  numSocketsForPairing;
 };
-
-
-inline ostream & operator<<(ostream & strm, PSTUNClient::NatTypes type) { return strm << PNatMethod::GetNatTypeString(type); }
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -685,16 +658,15 @@ class PTURNClient : public PSTUNClient
 
     /**Get the NAT Method Name
      */
-    static PStringList GetNatMethodName() { return PStringList("TURN"); }
-
-    /** Get the NAT traversal method name
-    */
-    virtual PString GetName() const { return "TURN"; }
+    static PString GetNatMethodName();
+    virtual PString GetName() const;
 
     PTURNClient();
 
     // overrides from PNatMethod
-    virtual bool Open(const PIPSocket::Address & iface);
+    virtual bool Open(
+      const PIPSocket::Address & iface
+    );
 
     virtual void SetCredentials(
       const PString & username, 
@@ -703,7 +675,7 @@ class PTURNClient : public PSTUNClient
     );
 
     bool CreateSocket(
-      BYTE component,
+      Component component,
       PUDPSocket * & socket,
       const PIPSocket::Address & = PIPSocket::GetDefaultIpAny(), 
       WORD port = 0

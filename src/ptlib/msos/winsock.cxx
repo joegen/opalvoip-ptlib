@@ -363,6 +363,9 @@ bool PSocket::os_vwrite(const Slice * slices,
                         struct sockaddr * to,
                         socklen_t tolen)
 {
+  if (!IsOpen())
+    return false;
+
   lastWriteCount = 0;
 
   if (writeTimeout != PMaxTimeInterval) {
@@ -382,8 +385,13 @@ bool PSocket::os_vwrite(const Slice * slices,
     }
   }
 
-  DWORD bytesSent;
-  int sendResult = ::WSASendTo(os_handle, (LPWSABUF)slices, sliceCount, &bytesSent, flags, to, tolen, NULL, NULL);
+  DWORD bytesSent = 0;
+  PWin32Overlapped overlap;
+  int sendResult = ::WSASendTo(os_handle, (LPWSABUF)slices, sliceCount, &bytesSent, flags, to, tolen, &overlap, NULL);
+  if (sendResult < 0 && GetLastError() == ERROR_IO_PENDING) {
+    DWORD resultFlags = 0;
+    sendResult = ::WSAGetOverlappedResult(os_handle, &overlap, &bytesSent, true, &resultFlags) ? 0 : -1;
+  }
   if (!ConvertOSError(sendResult, LastWriteError))
     return false;
 

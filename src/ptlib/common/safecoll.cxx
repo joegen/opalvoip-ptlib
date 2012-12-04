@@ -318,6 +318,21 @@ void PSafeCollection::RemoveAll(PBoolean synchronous)
 }
 
 
+bool PSafeCollection::SafeAddObject(PSafeObject * obj, PSafeObject * old)
+{
+  if (obj == old)
+    return false;
+
+  if (old != NULL)
+    old->SafeDereference();
+
+  if (obj == NULL)
+    return false;
+
+  return PAssert(collection->GetObjectsIndex(obj) == P_MAX_INDEX, "Cannot insert safe object twice") && obj->SafeReference();
+}
+
+
 void PSafeCollection::SafeRemoveObject(PSafeObject * obj)
 {
   if (obj == NULL)
