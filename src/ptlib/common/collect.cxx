@@ -185,9 +185,11 @@ PBoolean PArrayObjects::SetAt(PINDEX index, PObject * obj)
   if (!theArray->SetMinSize(index+1))
     return false;
   PObject * oldObj = theArray->GetAt(index);
-  if (oldObj != NULL && reference->deleteObjects)
-    delete oldObj;
-  (*theArray)[index] = obj;
+  if (oldObj != obj) {
+    if (oldObj != NULL && reference->deleteObjects)
+      delete oldObj;
+    (*theArray)[index] = obj;
+  }
   return true;
 }
 
@@ -1599,7 +1601,7 @@ PObject * PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
       hashTable->AppendElement(key.Clone(), obj);
       reference->size++;
     }
-    else {
+    else if (element->data != obj) {
       if (reference->deleteObjects) 
     	delete element->data;
       element->data = obj;
