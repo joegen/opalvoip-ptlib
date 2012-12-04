@@ -218,18 +218,6 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
   PTime now;
   stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
 
-  PThread * thread = PThread::Current();
-  PString threadName;
-  if (thread == NULL)
-    threadName.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
-  else
-    threadName = thread->GetThreadName();
-  if (threadName.GetLength() <= 23)
-    stream << setw(23) << threadName;
-  else
-    stream << threadName.Left(10) << "..." << threadName.Right(10);
-
-  stream << '\t';
   if (level < 0)
     stream << "Message";
   else {

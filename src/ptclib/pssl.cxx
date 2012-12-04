@@ -1608,8 +1608,8 @@ static int Psock_read(BIO * bio, char * out, int outl)
 
   switch (PSSLCHANNEL(bio)->GetErrorCode(PChannel::LastReadError)) {
     case PChannel::Interrupted :
-    case PChannel::Timeout :
       BIO_set_retry_read(bio);
+    case PChannel::Timeout :
       return -1;
 
     default :
@@ -1633,8 +1633,8 @@ static int Psock_write(BIO * bio, const char * in, int inl)
 
   switch (PSSLCHANNEL(bio)->GetErrorCode(PChannel::LastWriteError)) {
     case PChannel::Interrupted :
-    case PChannel::Timeout :
       BIO_set_retry_write(bio);
+    case PChannel::Timeout :
       return -1;
 
     default :
