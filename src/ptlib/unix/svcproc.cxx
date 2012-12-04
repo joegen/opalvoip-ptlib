@@ -190,7 +190,6 @@ int PServiceProcess::InitialiseService()
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 #if PTRACING
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
-  PTrace::ClearOptions(PTrace::FileAndLine);
   PTrace::SetOptions(PTrace::SystemLogStream);
   PTrace::SetLevel(GetLogLevel());
 #endif

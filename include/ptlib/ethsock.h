@@ -296,6 +296,9 @@ class PEthSocket : public PSocket
         PBYTEArray  m_fragments;
         bool        m_fragmentated;
         unsigned    m_fragmentProto;
+        bool        m_fragmentProcessed;
+        PIPSocket::Address m_fragmentSrcIP;
+        PIPSocket::Address m_fragmentDstIP;
     };
 
     /**Read a frame from the interface.
