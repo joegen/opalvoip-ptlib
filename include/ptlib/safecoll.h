@@ -443,6 +443,7 @@ class PSafeCollection : public PObject
   protected:
     void CopySafeCollection(PCollection * other);
     void CopySafeDictionary(PAbstractDictionary * other);
+    bool SafeAddObject(PSafeObject * obj, PSafeObject * old);
     void SafeRemoveObject(PSafeObject * obj);
     PDECLARE_NOTIFIER(PTimer, PSafeCollection, DeleteObjectsTimeout);
 
@@ -1025,8 +1026,7 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
       PSafetyMode mode = PSafeReference   ///< Safety mode for returned locked PSafePtr
     ) {
         PWaitAndSignal mutex(collectionMutex);
-        if (PAssert(collection->GetObjectsIndex(obj) == P_MAX_INDEX, "Cannot insert safe object twice") &&
-            obj->SafeReference())
+        if (SafeAddObject(obj, NULL))
           return PSafePtr<Base>(*this, mode, collection->Append(obj));
         return NULL;
       }
@@ -1178,9 +1178,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     virtual void SetAt(const Key & key, Base * obj)
       {
         collectionMutex.Wait();
-        SafeRemove(dynamic_cast<Coll &>(*collection).GetAt(key));
-        if (PAssert(collection->GetObjectsIndex(obj) == P_MAX_INDEX, "Cannot insert safe object twice") &&
-            obj->SafeReference())
+        if (SafeAddObject(obj, dynamic_cast<Coll &>(*collection).GetAt(key)))
           dynamic_cast<Coll &>(*collection).SetAt(key, obj);
         collectionMutex.Signal();
       }
