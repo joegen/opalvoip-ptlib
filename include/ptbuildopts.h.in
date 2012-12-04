@@ -912,8 +912,11 @@
   #pragma P_GSTREAMER_INCLUDE(gst/gstpluginfeature.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstmacros.h)
   #pragma P_GSTREAMER_INCLUDE(gst/app/gstappsrc.h)
+  #pragma P_GSTREAMER_INCLUDE(gst/app/gstappsink.h)
+  #pragma P_GSTREAMER_INCLUDE(gst/app/gstappbuffer.h)
   #pragma P_GSTREAMER_INCLUDE(gst/base/gstpushsrc.h)
   #pragma P_GSTREAMER_INCLUDE(gst/base/gstbasesrc.h)
+  #pragma P_GSTREAMER_INCLUDE(gst/base/gstbasesink.h)
 
   #define P_GLIB_INCLUDE(inc) include_alias(<inc>, <@GSTREAMER_DIR@/include/glib-2.0/inc>)
   #pragma P_GLIB_INCLUDE(glib.h)

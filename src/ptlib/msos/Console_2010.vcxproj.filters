@@ -298,9 +298,6 @@
     <ClCompile Include="directshow.cxx">
       <Filter>Source Files\MSOS</Filter>
     </ClCompile>
-    <ClCompile Include="ethsock.cxx">
-      <Filter>Source Files\MSOS</Filter>
-    </ClCompile>
     <ClCompile Include="icmp.cxx">
       <Filter>Source Files\MSOS</Filter>
     </ClCompile>
@@ -933,6 +930,9 @@
     <ClInclude Include="..\..\..\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
@@ -942,6 +942,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\revision.h.in">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\ptbuildopts.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
