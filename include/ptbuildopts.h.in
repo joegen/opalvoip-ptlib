@@ -248,7 +248,7 @@
 //
 
 #undef P_SSL
-//#undef P_SSL_WIN64  // Need to resolv how to have 32 and 64 bit DLL's at the same time
+#undef P_SSL_WIN64
 #undef P_SSL_WIN32
 #undef P_SSL_WINCE
 
@@ -333,11 +333,11 @@
     #endif
 
     #ifdef _DEBUG
-      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/libeay32MTd.lib"
-      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/ssleay32MTd.lib"
+      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/static/libeay32MDd.lib"
+      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/static/ssleay32MDd.lib"
     #else
-      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/libeay32MT.lib"
-      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/ssleay32MT.lib"
+      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/static/libeay32MD.lib"
+      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/static/ssleay32MD.lib"
     #endif
 
   #elif P_SSL_WIN32==2
