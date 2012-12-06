@@ -196,7 +196,6 @@
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBEAY32.DLL;SSLEAY32.DLL;LIBSASL.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>NotSet</SubSystem>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
     </Link>
@@ -235,7 +234,6 @@
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBEAY32.DLL;SSLEAY32.DLL;LIBSASL.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>NotSet</SubSystem>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -258,7 +256,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\..\include;..\..\..\include\opt_win_32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PTRACING=1;_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTRACING=2;_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -282,7 +280,6 @@
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBEAY32.DLL;SSLEAY32.DLL;LIBSASL.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -305,7 +302,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PTRACING=2;P_64BIT;_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTRACING=2;_DLL;NDEBUG;P_64BIT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -329,7 +326,6 @@
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBEAY32.DLL;SSLEAY32.DLL;LIBSASL.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -378,7 +374,6 @@
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBEAY32.DLL;SSLEAY32.DLL;LIBSASL.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
     </Link>
@@ -424,7 +419,6 @@
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBEAY32.DLL;SSLEAY32.DLL;LIBSASL.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
