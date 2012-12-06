@@ -53,6 +53,10 @@
 #include <signal.h>
 #endif
 
+#ifdef P_LINUX
+#include <net/if.h>
+#endif
+
 #include "uerror.h"
 
 static const PString RasStr      = "ras";
