@@ -222,7 +222,8 @@ PString V4L2Names::BuildUserFriendly(PString devname)
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_V4L2
 
-PVideoInputDevice_V4L2::PVideoInputDevice_V4L2()
+PVideoInputDevice_V4L2::PVideoInputDevice_V4L2():
+readyToReadMutex(0,1)		// Initially creating mutex blocked. Will unlock it in a Start() function.
 {
   Reset();
   areBuffersQueued = false;
@@ -362,7 +363,8 @@ PBoolean PVideoInputDevice_V4L2::Close()
 {
   PTRACE(1,"PVidInDev\tClose()\tvideoFd:" << videoFd << "  started:" << started);
   if (IsOpen()){
-    Stop();
+    if(IsCapturing())
+      Stop();
 
     if (v4l2_close(videoFd) < 0) {
       PTRACE(2, "PVidInDev\tERROR errno = " << ::strerror(errno) << "(" << errno << ")");
@@ -406,6 +408,7 @@ PBoolean PVideoInputDevice_V4L2::Start()
   }
 
   started = true;
+  readyToReadMutex.Signal();
 
   return started;
 }
@@ -414,6 +417,7 @@ PBoolean PVideoInputDevice_V4L2::Start()
 PBoolean PVideoInputDevice_V4L2::Stop()
 {
   if (started) {
+    readyToReadMutex.Wait();
     StopStreaming();
     ClearMapping();
 
@@ -611,8 +615,6 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   videoFormat.fmt.pix.pixelformat = colourFormatTab[colourFormatIndex].code;
 
   {
-    PWaitAndSignal m(stopMutex);
-
     PBoolean resume = started;
     if (started == true) {
       Stop();
@@ -677,8 +679,6 @@ PBoolean PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
   if (canSetFrameRate) {
     videoStreamParm.parm.capture.timeperframe.numerator = 1;
     videoStreamParm.parm.capture.timeperframe.denominator = (rate ? rate : 1);
-
-    PWaitAndSignal m(stopMutex);
 
     PBoolean resume = started;
 
@@ -912,7 +912,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
 {
   PTRACE(8,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
 
-  PWaitAndSignal m(stopMutex);
+  PWaitAndSignal m(readyToReadMutex);
   if (!started)
     return PFalse;
 
@@ -1080,8 +1080,6 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
   videoFormat.fmt.pix.height = height;
 
   {
-    PWaitAndSignal m(stopMutex);
-
     PBoolean resume = started;
 
     if (started == true) {
