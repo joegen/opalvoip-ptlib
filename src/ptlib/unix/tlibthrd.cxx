@@ -403,6 +403,10 @@ PThread::PThread(PINDEX stackSize,
 #endif
   PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 
+  // If need to be deleted automatically, make sure thread that does it runs.
+  if (m_autoDelete)
+    PProcess::Current().SignalTimerChange();
+
   PTRACE(5, "PTLib\tCreated thread " << this << ' ' << m_threadName);
 }
 
