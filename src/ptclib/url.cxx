@@ -759,6 +759,16 @@ void PURL::SetPort(WORD newPort)
 }
 
 
+PString PURL::GetHostPort() const
+{
+  PStringStream strm;
+  strm << hostname;
+  if (portSupplied)
+    strm << ':' << port;
+  return strm;
+}
+
+
 void PURL::SetPathStr(const PString & pathStr)
 {
   path = pathStr.Tokenise("/", true);
