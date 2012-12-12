@@ -510,7 +510,7 @@ PVideoDevice::OpenArgs::OpenArgs()
   : pluginMgr(NULL),
     deviceName("#1"),
     videoFormat(Auto),
-    channelNumber(0),
+    channelNumber(-1),
     colourFormat("YUV420P"),
     convertFormat(true),
     rate(0),
