@@ -39,17 +39,17 @@ PCREATE_PROCESS(Audio)
 void Audio::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("r.    "
-       "f.    "	     
-       "h.    "
+  args.Parse("r."
+             "f."	     
+             "h."
 #if PTRACING
-             "o-output:"             "-no-output."
-             "t-trace."              "-no-trace."
+             "o-output:"
+             "t-trace."
 #endif
-       "p:    "
-       "v.    "
-       "w:    "
-       "s:    ");
+             "p:"
+             "v."
+             "w:"
+             "s:");
  
   if (args.HasOption('h')) {
     cout << "usage: audio " 
