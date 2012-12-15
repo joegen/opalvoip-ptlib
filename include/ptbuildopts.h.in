@@ -272,11 +272,11 @@
     #define P_SSL_INCLUDE(inc) include_alias(<inc>, <@SSL_WIN64_DIR@/include/inc>)
 
     #ifdef _DEBUG
-      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/static/libeay32MDd.lib"
-      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/static/ssleay32MDd.lib"
+      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/libeay32MDd.lib"
+      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/ssleay32MDd.lib"
     #else
-      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/static/libeay32MD.lib"
-      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/static/ssleay32MD.lib"
+      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/libeay32MD.lib"
+      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/ssleay32MD.lib"
     #endif
 
   #elif P_SSL_WIN32==2
