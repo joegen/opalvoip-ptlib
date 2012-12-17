@@ -361,9 +361,8 @@ WORD PNatMethod::PortInfo::GetRandomPair()
 
 ////////////////////////////////////////////////////
 
-PNATUDPSocket::PNATUDPSocket(PNatMethod::Component component, PQoS * qos)
-  : PUDPSocket(qos)
-  , m_component(component)
+PNATUDPSocket::PNATUDPSocket(PNatMethod::Component component)
+  : m_component(component)
 {
 }
 

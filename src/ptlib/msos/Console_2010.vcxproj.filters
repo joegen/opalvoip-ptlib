@@ -211,9 +211,6 @@
     <ClCompile Include="..\..\ptclib\qchannel.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\qos.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\random.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
