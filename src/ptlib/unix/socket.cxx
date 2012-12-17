@@ -787,7 +787,7 @@ bool PIPSocket::SetQoS(const QoS & qos)
     46<<2  // ControlQoS
   };
   if (SetOption(IP_TOS, qos.m_dscp < 0 || qos.m_dscp > 63 ? DSCP[qos.m_type] : qos.m_dscp, IPPROTO_IP))
-    reutrn true;
+    return true;
 
   PTRACE(1, "Socket\tCould not set TOS field in IP header: " << GetErrorText());
   return false;
@@ -1922,22 +1922,6 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
 
 
 #include "../common/pethsock.cxx"
-
-//////////////////////////////////////////////////////////////////////////////
-// PUDPSocket
-
-#if P_QOS
-
-void PUDPSocket::EnableGQoS()
-{
-}
-
-PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & )
-{
-  return false;
-}
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
