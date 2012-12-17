@@ -326,7 +326,6 @@
     <ClCompile Include="..\common\ptime.cxx" />
     <ClCompile Include="ptlib.cxx" />
     <ClCompile Include="..\common\pvidchan.cxx" />
-    <ClCompile Include="..\common\qos.cxx" />
     <ClCompile Include="remconn.cxx" />
     <ClCompile Include="..\common\safecoll.cxx" />
     <ClCompile Include="..\Common\serial.cxx" />
