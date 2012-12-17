@@ -213,7 +213,26 @@ int PSocket::os_close()
 
 int PSocket::os_socket(int af, int type, int proto)
 {
-  return (int)::socket(af, type, proto);
+#if P_QOS
+  //Try to find a QOS-enabled protocol
+  DWORD bufferSize = 0;
+  int numProtocols = WSAEnumProtocols(NULL, NULL, &bufferSize);
+  if (numProtocols <= 0 && WSAGetLastError() != WSAENOBUFS) 
+    return -1;
+
+  PBYTEArray buffer(bufferSize);
+  LPWSAPROTOCOL_INFO qosProtocol = (LPWSAPROTOCOL_INFO)buffer.GetPointer();
+
+  numProtocols = WSAEnumProtocols(NULL, qosProtocol, &bufferSize);
+  for (int i = 0; i < numProtocols; qosProtocol++, i++) {
+    if (  qosProtocol->iSocketType == type &&
+          qosProtocol->iAddressFamily == af &&
+         (qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) != 0)
+      return (int)WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
+  }
+#endif
+
+  return (int)WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
 }
 
 
@@ -612,111 +631,6 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
   return false;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// PUDPSocket
-
-PBoolean PUDPSocket::disableGQoS = true;
-
-void PUDPSocket::EnableGQoS()
-{
-  disableGQoS = false;
-}
-
-#if P_QOS
-PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & address)
-{
-  if (disableGQoS)
-    return false;
-
-  if (!address.IsValid())
-    return false;
-
-  // Check to See if OS supportive
-    OSVERSIONINFO versInfo;
-    ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
-    versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    if (!(GetVersionEx(&versInfo)))
-        return false;
-    else
-    {
-        if (versInfo.dwMajorVersion < 5)
-            return false;  // Not Supported in Windows
-
-        if (versInfo.dwMajorVersion == 5 &&
-            versInfo.dwMinorVersion == 0)
-            return false;         //Windows 2000 does not always support QOS_DESTADDR
-    }
-
-  // Need to put in a check to see if the NIC has 802.1p packet priority support 
-  // This Requires access to the NIC driver and requires Windows DDK. To Be Done Sometime...
-  
-  // Get the name of the required NIC to check whether it supports 802.1p
-  PString NICname =  PIPSocket::GetInterface(address);
-
-  // For Now Assume it can.
-  return true;
-}
-
-#else
-
-PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address &)
-{
-  return false;
-}
-#endif  // P_QOS
-
-
-#if P_QOS
-
-PWinQoS::~PWinQoS()
-{
-    delete sa;
-}
-
-PWinQoS::PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen)
-{
-  QOS * qos = (QOS *)inBuf;
-    
-  if (pqos.GetTokenRate() == QOS_NOT_SPECIFIED)
-    qos->SendingFlowspec.ServiceType = SERVICETYPE_BESTEFFORT;
-  else
-    qos->SendingFlowspec.ServiceType = pqos.GetServiceType();
-    
-  qos->SendingFlowspec.TokenRate = pqos.GetTokenRate();
-  qos->SendingFlowspec.TokenBucketSize = pqos.GetTokenBucketSize();
-  qos->SendingFlowspec.PeakBandwidth = pqos.GetPeakBandwidth();
-  qos->SendingFlowspec.Latency = QOS_NOT_SPECIFIED;
-  qos->SendingFlowspec.DelayVariation = QOS_NOT_SPECIFIED;
-  qos->SendingFlowspec.MaxSduSize = QOS_NOT_SPECIFIED;
-  qos->SendingFlowspec.MinimumPolicedSize = QOS_NOT_SPECIFIED;
-
-  qos->ReceivingFlowspec.ServiceType = SERVICETYPE_BESTEFFORT|SERVICE_NO_QOS_SIGNALING;
-  qos->ReceivingFlowspec.TokenRate = QOS_NOT_SPECIFIED;
-  qos->ReceivingFlowspec.TokenBucketSize = QOS_NOT_SPECIFIED;
-  qos->ReceivingFlowspec.PeakBandwidth = QOS_NOT_SPECIFIED;
-  qos->ReceivingFlowspec.Latency = QOS_NOT_SPECIFIED;
-  qos->ReceivingFlowspec.DelayVariation = QOS_NOT_SPECIFIED;
-  qos->ReceivingFlowspec.MaxSduSize = QOS_NOT_SPECIFIED;
-  qos->ReceivingFlowspec.MinimumPolicedSize = QOS_NOT_SPECIFIED;
-
-  sa = new sockaddr;
-  *sa = *to;
-
-  QOS_DESTADDR qosdestaddr;
-  qosdestaddr.ObjectHdr.ObjectType = QOS_OBJECT_DESTADDR;
-  qosdestaddr.ObjectHdr.ObjectLength = sizeof(qosdestaddr);
-  qosdestaddr.SocketAddress = sa;
-  qosdestaddr.SocketAddressLength = sizeof(*sa);
-
-  qos->ProviderSpecific.len = sizeof(qosdestaddr);
-  qos->ProviderSpecific.buf = inBuf + sizeof(*qos);
-
-  memcpy(inBuf+sizeof(*qos),&qosdestaddr,sizeof(qosdestaddr));
-  bufLen = sizeof(*qos)+sizeof(qosdestaddr);
-}
-
-#endif // P_QOS
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -980,6 +894,83 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(int version)
   }
 
   return GetDefaultIpAny();
+}
+
+
+bool PIPSocket::SetQoS(const QoS & qos)
+{
+  m_qos = qos;
+
+  if (!IsOpen())
+    return false;
+
+#if P_QOS
+  QOS qosBuf;
+  memset(&qosBuf, 0, sizeof(qosBuf));
+
+  static DWORD const ServiceType[NumQoSType] = {
+    SERVICETYPE_BESTEFFORT,     // BackgroundQoS
+    SERVICETYPE_BESTEFFORT,     // BestEffortQoS
+    SERVICETYPE_CONTROLLEDLOAD, // ExcellentEffortQoS
+    SERVICETYPE_GUARANTEED,     // CriticalQoS
+    SERVICETYPE_CONTROLLEDLOAD, // VideoQoS
+    SERVICETYPE_GUARANTEED,     // VoiceQoS
+    SERVICETYPE_GUARANTEED      // ControlQoS
+  };
+  qosBuf.SendingFlowspec.ServiceType = ServiceType[qos.m_type];
+  qosBuf.SendingFlowspec.PeakBandwidth = qos.m_transmit.m_maxBandwidth;
+  qosBuf.SendingFlowspec.MaxSduSize = qos.m_transmit.m_maxPacketSize;
+  qosBuf.SendingFlowspec.Latency = qos.m_transmit.m_maxLatency;
+  qosBuf.SendingFlowspec.DelayVariation = qos.m_transmit.m_maxJitter;
+  qosBuf.SendingFlowspec.TokenBucketSize = qos.m_transmit.m_maxPacketSize*11/10 + 1;
+  qosBuf.SendingFlowspec.TokenRate = qos.m_transmit.m_maxBandwidth/qosBuf.SendingFlowspec.TokenBucketSize;
+
+  qosBuf.ReceivingFlowspec.ServiceType = ServiceType[qos.m_type];
+  qosBuf.ReceivingFlowspec.PeakBandwidth = qos.m_receive.m_maxBandwidth;
+  qosBuf.ReceivingFlowspec.MaxSduSize = qos.m_receive.m_maxPacketSize;
+  qosBuf.ReceivingFlowspec.Latency = qos.m_receive.m_maxLatency;
+  qosBuf.ReceivingFlowspec.DelayVariation = qos.m_receive.m_maxJitter;
+  qosBuf.ReceivingFlowspec.TokenBucketSize = qos.m_receive.m_maxPacketSize*11/10 + 1;
+  qosBuf.ReceivingFlowspec.TokenRate = qos.m_receive.m_maxBandwidth/qosBuf.ReceivingFlowspec.TokenBucketSize;
+
+  PWin32Overlapped overlap;
+  DWORD dummyBuf[1];
+  DWORD dummyLen = 0;
+  if (ConvertOSError(WSAIoctl(os_handle, SIO_SET_QOS, &qosBuf, sizeof(qosBuf), dummyBuf, sizeof(dummyBuf), &dummyLen, &overlap, NULL))) {
+    if (qos.m_dscp < 0)
+      return true;
+  }
+  else {
+    PTRACE(2, "Socket\tCould not SIO_SET_QOS: " << GetErrorText());
+  }
+#endif // P_QOS
+
+  static int const DSCP[NumQoSType] = {
+    0,     // BackgroundQoS
+    0,     // BestEffortQoS
+    8<<2,  // ExcellentEffortQoS
+    10<<2, // CriticalQoS
+    38<<2, // VideoQoS
+    44<<2, // VoiceQoS
+    48<<2  // ControlQoS
+  };
+  int new_tos = qos.m_dscp < 0 || qos.m_dscp > 63 ? DSCP[qos.m_type] : qos.m_dscp;
+  if (!SetOption(IP_TOS, new_tos, IPPROTO_IP)) {
+    PTRACE(2, "Socket\tCould not set TOS field in IP header: " << GetErrorText());
+    return false;
+  }
+
+  int actual_tos;
+  if (!GetOption(IP_TOS, actual_tos, IPPROTO_IP)) {
+    PTRACE(1, "Socket\tCould not get TOS field in IP header: " << GetErrorText());
+    return false;
+  }
+
+  if (new_tos == actual_tos)
+    return true;
+
+  PTRACE(2, "Socket\tSetting TOS field of IP header appeared successful, but was not really set.");
+  return false;
 }
 
 
