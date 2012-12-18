@@ -139,7 +139,7 @@
 
 #ifndef _WIN32_WCE
   #undef P_HAS_IPV6
-  #undef P_QOS
+  //#undef P_QOS  // disabled as seems to cause all sorts of lock ups
 #endif //  _WIN32_WCE
 
 
