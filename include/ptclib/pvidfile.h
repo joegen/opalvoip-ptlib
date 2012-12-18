@@ -88,6 +88,9 @@ class PVideoFile : public PVideoFrameInfo
     );
 
     const PFilePath & GetFilePath() const { return m_file.GetFilePath(); }
+    PChannel::Errors GetErrorCode(PChannel::ErrorGroup group = PChannel::NumErrorGroups) const { return m_file.GetErrorCode(group); }
+    int GetErrorNumber(PChannel::ErrorGroup group = PChannel::NumErrorGroups) const { return m_file.GetErrorNumber(group); }
+    PString GetErrorText(PChannel::ErrorGroup group = PChannel::NumErrorGroups) const { return m_file.GetErrorText(group); }
     PINDEX GetFrameBytes() const { return m_frameBytes; }
 
 
