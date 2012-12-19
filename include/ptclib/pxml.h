@@ -57,10 +57,11 @@ class PXMLBase : public PObject
   public:
     P_DECLARE_BITWISE_ENUM_EX(
       Options,
-      6,
+      7,
       (
         NoOptions,
         Indent,
+        IndentWithTabs,
         NewLineAfterElement,
         NoIgnoreWhiteSpace,
         CloseExtended,
@@ -88,6 +89,10 @@ class PXMLBase : public PObject
     virtual PBoolean IsNoIndentElement(const PString & /*elementName*/) const
       { return false; }
 
+    virtual bool OutputProgress() const { return true; }
+
+    bool OutputIndent(ostream & strm, int indent, const PString & elementName =  PString::Empty()) const;
+
   protected:
     Options m_options;
 };
@@ -110,19 +115,28 @@ class PXML : public PXMLBase
 
     bool IsDirty() const;
 
-    bool Load(const PString & data, Options options = NoOptions);
-    bool LoadFile(const PFilePath & fn, Options options = NoOptions);
+    bool Load(const PString & data);
+    bool Load(const PString & data, Options options);
+    bool LoadFile(const PFilePath & fn);
+    bool LoadFile(const PFilePath & fn, Options options);
 
     virtual bool OnLoadProgress(unsigned /*percent*/) const { return true; }
     virtual void OnLoaded() { }
 
-    bool Save(Options options = NoOptions);
-    PString AsString(Options options = NoOptions);
-    bool SaveFile(const PFilePath & fn, Options options = NoOptions);
+    bool Save();
+    bool Save(Options options);
+    PString AsString();
+    PString AsString(Options options);
+    bool SaveFile(const PFilePath & fn);
+    bool SaveFile(const PFilePath & fn, Options options);
+    virtual bool OnSaveProgress(unsigned /*percent*/) const { return true; }
+    virtual bool OutputProgress() const;
+
+    virtual PINDEX GetObjectCount() const;
 
     void RemoveAll();
 
-    PBoolean IsNoIndentElement(
+    virtual PBoolean IsNoIndentElement(
       const PString & elementName
     ) const;
 
@@ -227,6 +241,10 @@ class PXML : public PXMLBase
 
     PCaselessString m_defaultNameSpace;
 
+    PINDEX   m_totalObjects;
+    mutable PINDEX   m_savedObjects;
+    mutable unsigned m_percent;
+
   friend class PXMLParser;
 };
 
@@ -302,6 +320,8 @@ class PXMLObject : public PObject
 
     bool SetParent(PXMLElement * parent);
 
+    virtual PINDEX GetObjectCount() const { return 1; }
+
     PXMLObject * GetNextObject() const;
 
     PString AsString() const;
@@ -360,6 +380,8 @@ class PXMLElement : public PXMLObject
   public:
     PXMLElement(const char * name = NULL, const char * data = NULL);
 
+    virtual PINDEX GetObjectCount() const;
+
     PBoolean IsElement() const { return true; }
 
     void PrintOn(ostream & strm) const;
@@ -415,6 +437,7 @@ class PXMLElement : public PXMLObject
     PString GetData(bool trim = true) const;
     void SetData(const PString & data);
     virtual PXMLData * AddData(const PString & data);
+    virtual void EndData() { }
 
     PObject * Clone() const;
 
