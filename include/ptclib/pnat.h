@@ -403,8 +403,7 @@ class PNATUDPSocket : public PUDPSocket
 
   public:
     PNATUDPSocket(
-      PNatMethod::Component component = PNatMethod::eComponent_Unknown,
-      PQoS * qos = NULL
+      PNatMethod::Component component = PNatMethod::eComponent_Unknown
     );
 
     virtual PNatCandidate GetCandidateInfo();

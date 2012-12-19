@@ -215,7 +215,7 @@ int PVideoInputDevice_YUVFile::GetNumChannels()
 
 PBoolean PVideoInputDevice_YUVFile::SetChannel(int newChannel)
 {
-  return PVideoDevice::SetChannel(newChannel);
+  return newChannel < 0 || PVideoDevice::SetChannel(newChannel);
 }
 
 

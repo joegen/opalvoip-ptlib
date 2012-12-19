@@ -62,13 +62,28 @@ string ToLower(const string & str)
   return adjusted;
 }
 
-string GetFullPathNameString(const string & path)
+string GetFullPathNameString(const string & basePath)
 {
+  string translatedPath = basePath;
+  string::size_type pos = (string::size_type)-1;
+  while ((pos = translatedPath.find('%', pos+1)) != string::npos) {
+    string::size_type end;
+    if ((end = translatedPath.find('%', pos+1)) != string::npos) {
+      string::size_type len = end-pos;
+      string envVar(translatedPath, pos+1, len-1);
+      const char * envVal = getenv(envVar.c_str());
+      if (envVal != NULL) {
+        translatedPath.erase(pos, len+1);
+        translatedPath.insert(pos, envVal);
+      }
+    }
+  }
+
   string fullPath;
-  DWORD len = ::GetFullPathName(path.c_str(), 0, NULL, NULL);
+  DWORD len = ::GetFullPathName(translatedPath.c_str(), 0, NULL, NULL);
   if (len > 1) {
     fullPath.resize(len-1);
-    ::GetFullPathName(path.c_str(), len, &fullPath[0], NULL);
+    ::GetFullPathName(translatedPath.c_str(), len, &fullPath[0], NULL);
   }
   return ToLower(fullPath);
 }
@@ -401,7 +416,7 @@ void Feature::Adjust(string & line)
     }
   }
 
-  if (m_directorySymbol[0] != '\0') {
+  if (!m_directorySymbol.empty()) {
     string::size_type pos = line.find(m_directorySymbol);
     if (pos != string::npos)
       line.replace(pos, m_directorySymbol.length(), m_directory);
