@@ -1174,7 +1174,7 @@ class PURL_FileLoader : public PURLLoader
   public:
     virtual bool Load(const PURL & url, PString & str, const PString &, const PTimeInterval &)
     {
-      PTextFile file;
+      PFile file;
       if (!file.Open(url.AsFilePath()))
         return false;
       str = file.ReadString(file.GetLength());
