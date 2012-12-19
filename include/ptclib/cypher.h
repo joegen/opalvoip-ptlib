@@ -78,10 +78,12 @@ class PBase64 : public PObject
     PBase64();
 
     void StartEncoding(
-      bool useCRLFs = true  ///< Use CR, LF pairs in end of line characters.
+      bool useCRLFs = true,  ///< Use CR, LF pairs in end of line characters.
+      PINDEX width = 76      ///< Line widths if usCRLF true
     );
     void StartEncoding(
-      const char * endOfLine  ///< String to use for end of line.
+      const char * endOfLine,  ///< String to use for end of line.
+      PINDEX width = 76        ///< Line widths if endOfLine non empty
     );
     // Begin a base 64 encoding operation, initialising the object instance.
 
@@ -117,21 +119,25 @@ class PBase64 : public PObject
 
 
     static PString Encode(
-      const PString & str,          ///< String to be encoded to Base64
-      const char * endOfLine = "\n" ///< String to use for end of line.
+      const PString & str,            ///< String to be encoded to Base64
+      const char * endOfLine = "\n",  ///< String to use for end of line.
+      PINDEX width = 76               ///< Line widths if endOfLine non empty
     );
     static PString Encode(
-      const char * cstr,            ///< C String to be encoded to Base64
-      const char * endOfLine = "\n" ///< String to use for end of line.
+      const char * cstr,              ///< C String to be encoded to Base64
+      const char * endOfLine = "\n",  ///< String to use for end of line.
+      PINDEX width = 76               ///< Line widths if endOfLine non empty
     );
     static PString Encode(
-      const PBYTEArray & data,      ///< Data block to be encoded to Base64
-      const char * endOfLine = "\n" ///< String to use for end of line.
+      const PBYTEArray & data,        ///< Data block to be encoded to Base64
+      const char * endOfLine = "\n",  ///< String to use for end of line.
+      PINDEX width = 76               ///< Line widths if endOfLine non empty
     );
     static PString Encode(
-      const void * dataBlock,       ///< Pointer to data to be encoded to Base64
-      PINDEX length,                ///< Length of the data block.
-      const char * endOfLine = "\n" ///< String to use for end of line.
+      const void * dataBlock,         ///< Pointer to data to be encoded to Base64
+      PINDEX length,                  ///< Length of the data block.
+      const char * endOfLine = "\n",  ///< String to use for end of line.
+      PINDEX width = 76               ///< Line widths if endOfLine non empty
     );
     // Encode the data in memory to Base 64 data returnin the string.
 
@@ -204,8 +210,9 @@ class PBase64 : public PObject
     PString encodedString;
     BYTE    saveTriple[3];
     PINDEX  saveCount;
-    PINDEX  nextLine;
     PString endOfLine;
+    PINDEX  maxLineLength;
+    PINDEX  currentLineLength;
 
     bool       perfectDecode;
     PINDEX     quadPosition;
