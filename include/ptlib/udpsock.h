@@ -39,7 +39,6 @@
 #endif
 
 #include <ptlib/ipdsock.h>
-#include <ptlib/qos.h>
  
 /**
    A socket channel that uses the UDP transport on the Internet Protocol.
@@ -59,13 +58,7 @@ class PUDPSocket : public PIPDatagramSocket
       int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
-       PQoS * qos,              ///< Pointer to a QOS structure for the connection
-      WORD port = 0,            ///< Port number to use for the connection.
-      int iAddressFamily = AF_INET ///< Family
-    );
-    PUDPSocket(
       const PString & service,   ///< Service name to use for the connection.
-      PQoS * qos = NULL,         ///< Pointer to a QOS structure for the connection
       int iAddressFamily = AF_INET ///< Family
     );
     PUDPSocket(
@@ -153,26 +146,6 @@ class PUDPSocket : public PIPDatagramSocket
         injected.
      */
     virtual PBoolean DoPseudoRead(int & selectStatus);
-
-#if P_QOS
-    /** Change the QOS spec for the socket and try to apply the changes
-     */
-    virtual PBoolean ModifyQoSSpec(
-      PQoS * qos            ///< QoS specification to use
-    );
-
-    /** Get the QOS object for the socket.
-    */
-    virtual PQoS & GetQoSSpec();
-#endif
-
-    /** Check to See if the socket will support QoS on the given local Address
-     */
-    static PBoolean SupportQoS(const PIPSocket::Address & address);
-
-    /** Manually Enable GQoS Support
-     */
-    static void EnableGQoS();
   //@}
 
     // Normally, one would expect these to be protected, but they are just so darn
@@ -193,17 +166,7 @@ class PUDPSocket : public PIPDatagramSocket
 
     virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
 
-    // Create a QOS-enabled socket
-    virtual PBoolean OpenSocketGQOS(int af, int type, int proto);
-
-    // Modify the QOS settings
-    virtual PBoolean ApplyQoS();
-
     virtual const char * GetProtocolName() const;
-
-#if P_QOS
-    PQoS    qosSpec;
-#endif
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -219,29 +182,6 @@ class PUDPSocket : public PIPDatagramSocket
       Address m_lastReceiveAddress;
       WORD    m_lastReceivePort;
 };
-
-#if P_QOS
-
-#ifdef _WIN32
-#include <winbase.h>
-#include <winreg.h>
-
-class PWinQoS : public PObject
-{
-    PCLASSINFO(PWinQoS,PObject);
-
-public:
-    PWinQoS(PQoS & pqos, struct sockaddr * to, char * inBuf, DWORD & bufLen);
-    ~PWinQoS();
-    
-    //QOS qos;
-    //QOS_DESTADDR qosdestaddr;
-protected:
-    sockaddr * sa;
-};
-
-#endif  // _WIN32
-#endif // P_QOS
 
 
 #endif // PTLIB_UDPSOCKET_H
