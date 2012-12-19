@@ -997,14 +997,18 @@ PBoolean PFile::SetPosition(off_t pos, FilePositionOrigin origin)
 }
 
 
-PBoolean PFile::Copy(const PFilePath & oldname, const PFilePath & newname, PBoolean force)
+bool PFile::Copy(const PFilePath & oldname, const PFilePath & newname, bool force, bool recurse)
 {
   PFile oldfile(oldname, ReadOnly);
   if (!oldfile.IsOpen())
     return false;
 
-  PFile newfile(newname,
-                   WriteOnly, Create|Truncate|(force ? MustExist : Exclusive));
+  if (recurse && !newname.GetDirectory().Exists()) {
+    if (!newname.GetDirectory().Create(PFileInfo::DefaultDirPerms, true))
+      return false;
+  }
+
+  PFile newfile(newname, WriteOnly, Create|Truncate|(force ? MustExist : Exclusive));
   if (!newfile.IsOpen())
     return false;
 
@@ -1025,6 +1029,50 @@ PBoolean PFile::Copy(const PFilePath & oldname, const PFilePath & newname, PBool
     return false;
 
   return newfile.Close();
+}
+
+
+PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBoolean force)
+{
+  for (PINDEX i = 0; i< newname.GetLength(); ++i) {
+    if (PDirectory::IsSeparator(newname[i])) {
+#ifdef _WIN32_WCE
+      set_errno(EINVAL);
+#else
+      errno = EINVAL;
+#endif
+      return false;
+    }
+  }
+
+  return Move(oldname, oldname.GetDirectory() + newname, force);
+}
+
+
+bool PFile::Move(const PFilePath & oldname, const PFilePath & newname, bool force, bool recurse)
+{
+  if (rename(oldname, newname) == 0)
+    return true;
+
+  if (errno == ENOENT) {
+    if (!recurse)
+      return false;
+
+    if (!newname.GetDirectory().Create(PFileInfo::DefaultDirPerms, true))
+      return false;
+
+    return rename(oldname, newname) == 0;
+  }
+
+  if (force && Exists(newname)) {
+    if (!Remove(newname, true))
+      return false;
+
+    if (rename(oldname, newname) == 0)
+      return true;
+  }
+
+  return Copy(oldname, newname, force) && Remove(oldname);
 }
 
 
