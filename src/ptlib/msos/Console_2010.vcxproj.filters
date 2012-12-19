@@ -340,9 +340,6 @@
     <ClCompile Include="svcproc.cxx">
       <Filter>Source Files\MSOS</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\qos.cxx">
-      <Filter>Source Files\MSOS</Filter>
-    </ClCompile>
     <ClCompile Include="..\unix\channel.cxx">
       <Filter>Source Files\Android</Filter>
     </ClCompile>
@@ -943,6 +940,7 @@
     <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h">
       <Filter>Header Files\Win64</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
