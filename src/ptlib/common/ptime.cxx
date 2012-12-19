@@ -528,12 +528,10 @@ PString PTime::AsString(const char * format, int zone) const
 
       case 'z' :
       case 'Z' :
-        if (repeatCount == 1 && zone == 0) {
-          if (formatLetter == 'Z')
-            str << 'Z';
-          else
-            str << "GMT";
-        }
+        if (zone == 0 && formatLetter == 'Z')
+          str << 'Z';
+        else if (zone == 0 && repeatCount == 1)
+          str << "GMT";
         else {
           str << (zone < 0 ? '-' : '+');
           zone = PABS(zone);
