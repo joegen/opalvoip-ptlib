@@ -755,6 +755,25 @@ void PDirectory::CloneContents(const PDirectory * d)
 }
 
 
+bool PDirectory::Create(const PString & p, int perm, bool recurse)
+{
+  PAssert(!p.IsEmpty(), "attempt to create dir with empty name");
+
+  PDirectory dir = p;
+  
+#if defined(WIN32)
+  if (_mkdir(dir) == 0)
+#elif defined(P_VXWORKS)
+  if (mkdir(dir) == 0)
+#else    
+  if (mkdir(dir.Left(path.GetLength()-1), perm) == 0)
+#endif
+    return true;
+
+  return recurse && !dir.IsRoot() && dir.GetParent().Create(perm, true) && dir.Create(perm, false);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PSimpleTimer
 

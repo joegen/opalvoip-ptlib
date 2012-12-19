@@ -300,8 +300,8 @@ PINLINE PBoolean PDirectory::Exists() const
 PINLINE PBoolean PDirectory::Change() const
   { return Change(*this); }
 
-PINLINE PBoolean PDirectory::Create(int perm) const
-  { return Create(*this, perm); }
+PINLINE PBoolean PDirectory::Create(int perm, bool recurse) const
+  { return Create(*this, perm, recurse); }
 
 PINLINE PBoolean PDirectory::Remove()
   { Close(); return Remove(*this); }
@@ -352,8 +352,8 @@ PINLINE PBoolean PFile::Access(OpenMode mode)
 PINLINE PBoolean PFile::Remove(PBoolean force)
   { Close(); return ConvertOSError(Remove(path, force) ? 0 : -1); }
 
-PINLINE PBoolean PFile::Copy(const PFilePath & newname, PBoolean force)
-  { return ConvertOSError(Copy(path, newname, force) ? 0 : -1); }
+PINLINE bool PFile::Copy(const PFilePath & newname, bool force, bool recurse)
+  { return ConvertOSError(Copy(path, newname, force, recurse) ? 0 : -1); }
 
 PINLINE PBoolean PFile::GetInfo(PFileInfo & info)
   { return ConvertOSError(GetInfo(path, info) ? 0 : -1); }
