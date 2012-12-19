@@ -542,43 +542,6 @@ PBoolean PFile::Remove(const PString & name, PBoolean force)
 }
 
 
-PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBoolean force)
-{
-  if (newname.FindOneOf(":\\/") != P_MAX_INDEX) {
-#ifdef _WIN32_WCE
-    set_errno(EINVAL);
-#else
-    errno = EINVAL;
-#endif // _WIN32_WCE
-    return false;
-  }
-  PString fullname = oldname.GetDirectory() + newname;
-  if (rename(oldname, fullname) == 0)
-    return true;
-  if (!force || errno == ENOENT || !Exists(fullname))
-    return false;
-  if (!Remove(fullname, true))
-    return false;
-  return rename(oldname, fullname) == 0;
-}
-
-
-PBoolean PFile::Move(const PFilePath & oldname, const PFilePath & newname, PBoolean force)
-{
-  if (rename(oldname, newname) == 0)
-    return true;
-  if (errno == ENOENT)
-    return false;
-  if (force && Exists(newname)) {
-    if (!Remove(newname, true))
-      return false;
-    if (rename(oldname, newname) == 0)
-      return true;
-  }
-  return Copy(oldname, newname, force) && Remove(oldname);
-}
-
-
 #ifdef _WIN32_WCE
 time_t	FileTimeToTime(const FILETIME FileTime);
 time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);

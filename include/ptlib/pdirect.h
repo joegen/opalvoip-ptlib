@@ -327,17 +327,19 @@ class PDirectory : public PFilePathString
        @return
        true if directory created.
      */
-    PBoolean Create(
-      int perm = PFileInfo::DefaultDirPerms    // Permission on new directory.
+    bool Create(
+      int perm = PFileInfo::DefaultDirPerms,    // Permission on new directory.
+      bool recurse = false
     ) const;
     /**Create a new directory as specified with the specified permissions.
 
        @return
        true if directory created.
      */
-    static PBoolean Create(
+    static bool Create(
       const PString & p,   ///< Directory file path.
-      int perm = PFileInfo::DefaultDirPerms    ///< Permission on new directory.
+      int perm = PFileInfo::DefaultDirPerms,    // Permission on new directory.
+      bool recurse = false
     );
 
     /**Delete the directory.

@@ -459,20 +459,6 @@ PBoolean PDirectory::Exists(const PString & p)
 }
 
 
-PBoolean PDirectory::Create(const PString & p, int perm)
-{
-  PAssert(!p.IsEmpty(), "attempt to create dir with empty name");
-  PINDEX last = p.GetLength()-1;
-  PString str = p;
-  if (p[last] == '/')
-    str = p.Left(last);
-#ifdef P_VXWORKS
-  return mkdir(str) == 0;
-#else    
-  return mkdir(str, perm) == 0;
-#endif
-}
-
 PBoolean PDirectory::Remove(const PString & p)
 {
   PAssert(!p.IsEmpty(), "attempt to remove dir with empty name");
@@ -765,46 +751,6 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opt)
 PBoolean PFile::SetLength(off_t len)
 {
   return ConvertOSError(ftruncate(GetHandle(), len));
-}
-
-
-PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBoolean force)
-{
-  if (newname.Find('/') != P_MAX_INDEX) {
-    errno = EINVAL;
-    return false;
-  }
-
-  if (rename(oldname, oldname.GetPath() + newname) == 0)
-    return true;
-
-  if (!force || errno == ENOENT || !Exists(newname))
-    return false;
-
-  if (!Remove(newname, true))
-    return false;
-
-  return rename(oldname, oldname.GetPath() + newname) == 0;
-}
-
-
-PBoolean PFile::Move(const PFilePath & oldname, const PFilePath & newname, PBoolean force)
-{
-  PFilePath from = oldname.GetDirectory() + oldname.GetFileName();
-  PFilePath to = newname.GetDirectory() + newname.GetFileName();
-
-  if (rename(from, to) == 0)
-    return true;
-
-  if (errno == EXDEV)
-    return Copy(from, to, force) && Remove(from);
-
-  if (force && errno == EEXIST)
-    if (Remove(to, true))
-      if (rename(from, to) == 0)
-  return true;
-
-  return false;
 }
 
 
