@@ -309,6 +309,8 @@ void PXMLParser::EndElement(const char * name)
   if (m_currentElement == NULL || m_currentElement->GetName() != name)
     return;
 
+  m_currentElement->EndData();
+
   if (m_currentElement != m_document.m_rootElement)
     m_currentElement = m_currentElement->GetParent();
   else {
@@ -356,6 +358,9 @@ PXML::PXML(Options options, const char * noIndentElementsParam)
   , m_errorLine(0)
   , m_errorColumn(0)
   , m_noIndentElements(PString(noIndentElementsParam).Tokenise(' ', false))
+  , m_totalObjects(0)
+  , m_savedObjects(0)
+  , m_percent(0)
 {
   if (m_options & PXML::FragmentOnly)
     SetRootElement("");
@@ -370,6 +375,9 @@ PXML::PXML(const PXML & xml)
   , m_errorColumn(0)
   , m_noIndentElements(xml.m_noIndentElements)
   , m_defaultNameSpace(xml.m_defaultNameSpace)
+  , m_totalObjects(0)
+  , m_savedObjects(0)
+  , m_percent(0)
 {
   if (xml.m_rootElement != NULL)
     m_rootElement = new PXMLRootElement(*this, *xml.m_rootElement);
@@ -413,11 +421,17 @@ bool PXML::IsDirty() const
 
 bool PXML::LoadFile(const PFilePath & fn, PXML::Options options)
 {
+  m_options = options;
+  return LoadFile(fn);
+}
+
+
+bool PXML::LoadFile(const PFilePath & fn)
+{
   PTRACE(4, "XML\tLoading file " << fn);
 
   RemoveAll();
 
-  m_options = options;
   m_loadFilename = fn;
 
   PFile file;
@@ -432,21 +446,29 @@ bool PXML::LoadFile(const PFilePath & fn, PXML::Options options)
 
   PTRACE(4, "XML\tRead XML <" << GetDocumentType() << '>');
 
+  OnLoaded();
+
   return m_rootElement != NULL;
 }
 
 
 bool PXML::Load(const PString & data, PXML::Options options)
 {
+  m_options = options;
+  return Load(data);
+}
+
+
+bool PXML::Load(const PString & data)
+{
   RemoveAll();
 
-  m_options = options;
   m_loadFilename.MakeEmpty();
 
   m_errorString.MakeEmpty();
   m_errorLine = m_errorColumn = 0;
 
-  PXMLParser parser(*this, options, data.GetLength());
+  PXMLParser parser(*this, m_options, data.GetLength());
   if (!parser.Parse(data, data.GetLength(), true)) {
     parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
     return false;
@@ -466,7 +488,12 @@ bool PXML::Load(const PString & data, PXML::Options options)
 bool PXML::Save(PXML::Options options)
 {
   m_options = options;
+  return Save();
+}
 
+
+bool PXML::Save()
+{
   if (m_loadFilename.IsEmpty() || !IsDirty())
     return false;
 
@@ -476,25 +503,59 @@ bool PXML::Save(PXML::Options options)
 
 bool PXML::SaveFile(const PFilePath & fn, PXML::Options options)
 {
+  m_options = options;
+  return SaveFile(fn);
+}
+
+
+bool PXML::SaveFile(const PFilePath & fn)
+{
   PFile file;
   if (!file.Open(fn, PFile::WriteOnly)) 
     return false;
 
-  PString data = AsString(options);
-  if (data.IsEmpty())
-    return false;
+  m_totalObjects = GetObjectCount();
+  m_savedObjects = 0;
+  m_percent = 0;
 
-  return file.WriteString(data);
+  file << *this;
+  return file.good();
 }
 
 
 PString PXML::AsString(PXML::Options options)
 {
   m_options = options;
+  return AsString();
+}
 
+
+PString PXML::AsString()
+{
   PStringStream strm;
   strm << *this;
   return strm;
+}
+
+
+bool PXML::OutputProgress() const
+{
+  ++m_savedObjects;
+
+  unsigned newPercent = (unsigned)(m_savedObjects*100LL/m_totalObjects);
+  if (m_percent != newPercent) {
+    m_percent = newPercent;
+    if (!OnSaveProgress(newPercent))
+      return true;
+  }
+
+  return false;
+}
+
+
+PINDEX PXML::GetObjectCount() const
+{
+  return m_rootElement != NULL ? m_rootElement->GetObjectCount() : 0;
 }
 
 
@@ -560,27 +621,26 @@ void PXML::PrintOn(ostream & strm) const
 //<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
   if (!(m_options & PXML::FragmentOnly)) {
-    strm << "<?xml version=\"";
+    bool newLine = OutputIndent(strm, 0);
 
+    strm << "<?xml version=\"";
     if (m_version.IsEmpty())
       strm << "1.0";
     else
       strm << m_version;
 
     strm << "\" encoding=\"";
-
     if (m_encoding.IsEmpty())
       strm << "UTF-8";
     else
       strm << m_encoding;
-
-    strm << "\"";
+    strm << '"';
 
     switch (m_standAlone) {
-      case 0:
+      case NotStandAlone:
         strm << " standalone=\"no\"";
         break;
-      case 1:
+      case IsStandAlone:
         strm << " standalone=\"yes\"";
         break;
       default:
@@ -588,23 +648,25 @@ void PXML::PrintOn(ostream & strm) const
     }
 
     strm << "?>";
-    if ((m_options & PXML::NewLineAfterElement) != 0)
+    if (newLine)
       strm << '\n';
 
     if (!m_docType.IsEmpty()) {
       strm << "<!DOCTYPE " << m_docType;
       if (m_publicId.IsEmpty())
-        strm << " PUBLIC";
+        strm << " SYSTEM";
       else
-        strm << " \"" << m_publicId << '"';
+        strm << " PUBLIC \"" << m_publicId << '"';
       if (!m_dtdURI.IsEmpty())
         strm << " \"" << m_dtdURI << '"';
-      strm << '>' << endl;
+      strm << '>';
+      if (newLine)
+        strm << '\n';
     }
   }
 
   if (m_rootElement != NULL)
-    m_rootElement->Output(strm, *this, 2);
+    m_rootElement->Output(strm, *this, 0);
 }
 
 
@@ -1042,6 +1104,28 @@ PString PXMLObject::AsString() const
 
 ///////////////////////////////////////////////////////
 
+bool PXMLBase::OutputIndent(ostream & strm, int indent, const PString & elementName) const
+{
+  if (!elementName.IsEmpty() && IsNoIndentElement(elementName))
+    return false;
+
+  if (m_options & IndentWithTabs) {
+    for (int tab = 0; tab < indent; ++tab)
+      strm << '\t';
+    return true;
+  }
+
+  if (m_options & PXML::Indent) {
+    strm << setw((indent-1)*2) << " ";
+    return true;
+  }
+
+ return m_options & NewLineAfterElement;
+}
+
+
+///////////////////////////////////////////////////////
+
 PXMLData::PXMLData(const PString & value)
  : m_value(value)
 {
@@ -1056,16 +1140,12 @@ PXMLData::PXMLData(const char * data, int len)
 
 void PXMLData::Output(ostream & strm, const PXMLBase & xml, int indent) const
 {
-  PXML::Options options = xml.GetOptions();
-  if (xml.IsNoIndentElement(m_parent->GetName()))
-    options -= PXML::Indent;
-
-  if (options & PXML::Indent)
-    strm << setw(indent-1) << " ";
+  xml.OutputProgress();
+  bool newLine = xml.OutputIndent(strm, indent, m_parent->GetName());
 
   strm << m_value;
 
-  if ((options & (PXML::Indent|PXML::NewLineAfterElement)) != 0)
+  if (newLine)
     strm << endl;
 }
 
@@ -1260,6 +1340,15 @@ bool PXMLElement::HasAttribute(const PCaselessString & key) const
 }
 
 
+PINDEX PXMLElement::GetObjectCount() const
+{
+  PINDEX count = 1;
+  for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) 
+    count += m_subObjects[i].GetObjectCount();
+  return count;
+}
+
+
 void PXMLElement::PrintOn(ostream & strm) const
 {
   PXMLBase xml;
@@ -1269,12 +1358,12 @@ void PXMLElement::PrintOn(ostream & strm) const
 
 void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
 {
-  int options = xml.GetOptions();
+  xml.OutputProgress();
 
-  bool newLine = (options & (PXML::Indent|PXML::NewLineAfterElement)) != 0;
-
-  if ((options & PXML::Indent) != 0)
-    strm << setw(indent-1) << " ";
+  PString elementName;
+  if (m_parent != NULL)
+    elementName = m_parent->GetName();
+  bool newLine = xml.OutputIndent(strm, indent, elementName);
 
   strm << '<' << m_name;
 
@@ -1284,28 +1373,23 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
   }
 
   // this ensures empty elements use the shortened form
-  if (m_subObjects.IsEmpty()) {
+  if (m_subObjects.IsEmpty())
     strm << "/>";
-    if (newLine)
-      strm << endl;
-  }
   else {
-    bool indenting = (options & PXML::Indent) != 0 && !xml.IsNoIndentElement(m_name);
-
     strm << '>';
-    if (indenting)
+    if (newLine)
       strm << endl;
   
     for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) 
-      m_subObjects[i].Output(strm, xml, indent + 2);
+      m_subObjects[i].Output(strm, xml, indent + 1);
 
-    if (indenting)
-      strm << setw(indent-1) << " ";
+    xml.OutputIndent(strm, indent, elementName);
 
     strm << "</" << m_name << '>';
-    if (newLine)
-      strm << endl;
   }
+
+  if (newLine)
+    strm << endl;
 }
 
 
