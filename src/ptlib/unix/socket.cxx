@@ -763,6 +763,28 @@ PString PIPSocket::GetGatewayInterface(int version)
   return PString();
 }
 
+
+bool PIPSocket::SetQoS(const QoS & qos)
+{
+  m_qos = qos;
+
+  static int const DSCP[NumQoSType] = {
+    0,     // BackgroundQoS
+    0,     // BestEffortQoS
+    8<<2,  // ExcellentEffortQoS
+    10<<2, // CriticalQoS
+    38<<2, // VideoQoS
+    44<<2, // VoiceQoS
+    46<<2  // ControlQoS
+  };
+  if (SetOption(IP_TOS, qos.m_dscp < 0 || qos.m_dscp > 63 ? DSCP[qos.m_type] : qos.m_dscp, IPPROTO_IP))
+    return true;
+
+  PTRACE(1, "Socket\tCould not set TOS field in IP header: " << GetErrorText());
+  return false;
+}
+
+
 // bit setting inspired by Tim Ring on StackOverflow
 const unsigned char QuickByteMask[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
 void ResetBit(unsigned bit, BYTE *bitmap)
@@ -1884,22 +1906,6 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
 
 
 #include "../common/pethsock.cxx"
-
-//////////////////////////////////////////////////////////////////////////////
-// PUDPSocket
-
-#if P_QOS
-
-void PUDPSocket::EnableGQoS()
-{
-}
-
-PBoolean PUDPSocket::SupportQoS(const PIPSocket::Address & )
-{
-  return false;
-}
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

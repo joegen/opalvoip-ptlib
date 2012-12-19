@@ -50,24 +50,6 @@ extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
 #include <ConfigurationClass.h>
 #endif
 
-#if P_QOS
-
-#ifdef _WIN32
-#include <winbase.h>
-#include <winreg.h>
-
-#ifndef _WIN32_WCE
-
-void CALLBACK CompletionRoutine(DWORD dwError,
-                                DWORD cbTransferred,
-                                LPWSAOVERLAPPED lpOverlapped,
-                                DWORD dwFlags);
-                                
-
-#endif  // _WIN32_WCE
-#endif  // _WIN32
-#endif // P_QOS
-
 
 #if !defined(P_MINGW) && !defined(P_CYGWIN)
   #if P_HAS_IPV6 || defined(AI_NUMERICHOST)
@@ -902,28 +884,20 @@ PBoolean PSocket::Accept(PSocket &)
 
 PBoolean PSocket::SetOption(int option, int value, int level)
 {
-#ifdef _WIN32_WCE
-  if(option == SO_RCVBUF || option == SO_SNDBUF || option == IP_TOS)
-    return true;
-#endif
-
-  return ConvertOSError(::setsockopt(os_handle, level, option,
-                                     (char *)&value, sizeof(value)));
+  return ConvertOSError(::setsockopt(os_handle, level, option, (char *)&value, sizeof(value)));
 }
 
 
 PBoolean PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize, int level)
 {
-  return ConvertOSError(::setsockopt(os_handle, level, option,
-                                     (char *)valuePtr, valueSize));
+  return ConvertOSError(::setsockopt(os_handle, level, option, (char *)valuePtr, valueSize));
 }
 
 
 PBoolean PSocket::GetOption(int option, int & value, int level)
 {
   socklen_t valSize = sizeof(value);
-  return ConvertOSError(::getsockopt(os_handle, level, option,
-                                     (char *)&value, &valSize));
+  return ConvertOSError(::getsockopt(os_handle, level, option, (char *)&value, &valSize));
 }
 
 
@@ -1491,6 +1465,51 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
 
   port = sa.GetPort();
   return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+PIPSocket::QoS::QoS(QoSType type)
+  : m_type(type)
+  , m_dscp(-1)
+  , m_remote(PIPSocket::GetInvalidAddress())
+{
+}
+
+
+PIPSocket::QoS::QoS(const PString & str)
+  : m_type(BestEffortQoS)
+  , m_dscp(-1)
+  , m_remote(PIPSocket::GetInvalidAddress())
+{
+  PStringStream strm(str);
+  strm >> *this;
+}
+
+
+ostream & operator<<(ostream & strm, const PIPSocket::QoS & qos)
+{
+  if (qos.m_dscp >= 0)
+    strm << "0x" << hex << qos.m_dscp << dec;
+  else
+    strm << 'C' << (int)qos.m_type;
+
+  return strm;
+}
+
+
+istream & operator>>(istream & strm, PIPSocket::QoS & qos)
+{
+  if (strm.peek() != 'C')
+    strm >> qos.m_dscp;
+  else {
+    strm.ignore(1);
+    int i;
+    strm >> i;
+    qos.m_type = (PIPSocket::QoSType)i;
+  }
+  return strm;
 }
 
 
@@ -2520,13 +2539,6 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
 // PUDPSocket
 
 PUDPSocket::PUDPSocket(WORD newPort, int iAddressFamily)
-{
-  m_sendPort = 0;
-  SetPort(newPort);
-  OpenSocket(iAddressFamily);
-}
-
-PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
 #if P_HAS_IPV6
   : m_sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
     m_lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
@@ -2535,17 +2547,13 @@ PUDPSocket::PUDPSocket(PQoS * qos, WORD newPort, int iAddressFamily)
     m_lastReceiveAddress(loopback4)
 #endif
 {
-#if P_QOS
-  if (qos != NULL)
-      qosSpec = *qos;
-#endif
   m_sendPort = 0;
   SetPort(newPort);
   OpenSocket(iAddressFamily);
 }
 
 
-PUDPSocket::PUDPSocket(const PString & service, PQoS * qos, int iAddressFamily)
+PUDPSocket::PUDPSocket(const PString & service, int iAddressFamily)
 #if P_HAS_IPV6
   : m_sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
     m_lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
@@ -2554,10 +2562,6 @@ PUDPSocket::PUDPSocket(const PString & service, PQoS * qos, int iAddressFamily)
     m_lastReceiveAddress(loopback4)
 #endif
 {
-#if P_QOS
-  if (qos != NULL)
-      qosSpec = *qos;
-#endif
   m_sendPort = 0;
   SetPort(service);
   OpenSocket(iAddressFamily);
@@ -2579,201 +2583,6 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
   Connect(address);
 }
 
-#if P_QOS
-
-PBoolean PUDPSocket::ModifyQoSSpec(PQoS * qos)
-{
-  if (qos==NULL)
-    return false;
-
-  qosSpec = *qos;
-  return true;
-}
-
-
-PQoS & PUDPSocket::GetQoSSpec()
-{
-  return qosSpec;
-}
-
-#endif
-
-PBoolean PUDPSocket::ApplyQoS()
-{
-#if P_QOS
-  char DSCPval = 0;
-#ifndef _WIN32_WCE
-  if (qosSpec.GetDSCP() < 0 ||
-      qosSpec.GetDSCP() > 63) {
-    if (qosSpec.GetServiceType() == SERVICETYPE_PNOTDEFINED)
-      return true;
-    else {
-      switch (qosSpec.GetServiceType()) {
-        case SERVICETYPE_GUARANTEED:
-          DSCPval = PQoS::guaranteedDSCP;
-          break;
-        case SERVICETYPE_CONTROLLEDLOAD:
-          DSCPval = PQoS::controlledLoadDSCP;
-          break;
-        case SERVICETYPE_BESTEFFORT:
-        default:
-          DSCPval = PQoS::bestEffortDSCP;
-          break;
-      }
-    }
-  }
-  else
-    DSCPval = (char)qosSpec.GetDSCP();
-#else
-  DSCPval = 0x38;
-  disableGQoS = false;
-#endif
-
-#ifdef _WIN32
-  if (disableGQoS)
-    return false;
-
-#ifndef _WIN32_WCE
-  PBoolean usesetsockopt = false;
-
-  OSVERSIONINFO versInfo;
-  ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
-  versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-  if (!(GetVersionEx(&versInfo)))
-    usesetsockopt = true;
-  else {
-    if (versInfo.dwMajorVersion < 5)
-      usesetsockopt = true;
-
-    if (disableGQoS)
-          return false;
-
-    PBoolean usesetsockopt = false;
-
-    if (versInfo.dwMajorVersion == 5 &&
-        versInfo.dwMinorVersion == 0)
-      usesetsockopt = true;         //Windows 2000 does not always support QOS_DESTADDR
-  }
-#else
-  PBoolean usesetsockopt = true;
-#endif
-
-  PBoolean retval = false;
-  PIPSocketAddressAndPort sendAp;
-  if (!usesetsockopt && sendAp.IsValid() && sendAp.GetPort() != 0) {
-    sockaddr_in sa;
-    sa.sin_family = AF_INET;
-    sa.sin_port = htons(sendAp.GetPort());
-    sa.sin_addr = sendAp.GetAddress();
-    memset(sa.sin_zero,0,8);
-
-    char * inBuf = new char[2048];
-    memset(inBuf,0,2048);
-    DWORD bufLen = 0;
-    PWinQoS wqos(qosSpec, (struct sockaddr *)(&sa), inBuf, bufLen);
-
-    DWORD dummy = 0;
-    int irval = WSAIoctl(os_handle, SIO_SET_QOS, inBuf, bufLen, NULL, 0, &dummy, NULL, NULL);
-
-    delete[] inBuf;
-
-    return irval == 0;
-  }
-
-  if (!usesetsockopt)
-    return retval;
-
-#endif  // _WIN32
-
-  unsigned int setDSCP = DSCPval<<2;
-
-  int rv = 0;
-  unsigned int curval = 0;
-  socklen_t cursize = sizeof(curval);
-  rv = ::getsockopt(os_handle,IPPROTO_IP, IP_TOS, (char *)(&curval), &cursize);
-  if (curval == setDSCP)
-    return true;    //Required DSCP already set
-
-
-  rv = ::setsockopt(os_handle, IPPROTO_IP, IP_TOS, (char *)&setDSCP, sizeof(setDSCP));
-
-  if (rv != 0) {
-    int err;
-#ifdef _WIN32
-    err = WSAGetLastError();
-#else
-    err = errno;
-#endif
-    PTRACE(1, "QOS", "setsockopt failed with code " << err);
-    return false;
-  }
-#endif  // P_QOS
-
-  return true;
-}
-
-
-PBoolean PUDPSocket::OpenSocketGQOS(int af, int type, int proto)
-{
-#if defined(P_QOS) && defined(_WIN32)
-    
-  //Try to find a QOS-enabled protocol
-  DWORD bufferSize = 0;
-  DWORD numProtocols = WSAEnumProtocols(proto != 0 ? &proto : NULL, NULL, &bufferSize);
-  if (!ConvertOSError(numProtocols) && WSAGetLastError() != WSAENOBUFS) 
-    return false;
-
-  LPWSAPROTOCOL_INFO installedProtocols = (LPWSAPROTOCOL_INFO)(new BYTE[bufferSize]);
-  numProtocols = WSAEnumProtocols(proto != 0 ? &proto : NULL, installedProtocols, &bufferSize);
-  if (!ConvertOSError(numProtocols)) {
-    delete[] installedProtocols;
-    return false;
-  }
-
-  LPWSAPROTOCOL_INFO qosProtocol = installedProtocols;
-  for (DWORD i = 0; i < numProtocols; qosProtocol++, i++) {
-    if ((qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) &&
-        (qosProtocol->iSocketType == type) &&
-        (qosProtocol->iAddressFamily == af)) {
-      os_handle = (int)WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
-      break;
-    }
-  }
-
-  delete[] installedProtocols;
-
-  if (!IsOpen())
-    os_handle = (int)WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
-
-  return ConvertOSError(os_handle);
-
-#else  // P_QOS
-
-  return ConvertOSError(os_handle = os_socket(af, type, proto));
-
-#endif
-}
-
-
-#ifdef _WIN32
-
-#define COULD_HAVE_QOS
-
-static PBoolean CheckOSVersionFor(DWORD major, DWORD minor)
-{
-  OSVERSIONINFO versInfo;
-  ZeroMemory(&versInfo,sizeof(OSVERSIONINFO));
-  versInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-  if (GetVersionEx(&versInfo)) {
-    if (versInfo.dwMajorVersion > major ||
-       (versInfo.dwMajorVersion == major && versInfo.dwMinorVersion >= minor))
-      return true;
-  }
-  return false;
-}
-
-#endif // _WIN32
-
 
 PBoolean PUDPSocket::OpenSocket()
 {
@@ -2783,12 +2592,7 @@ PBoolean PUDPSocket::OpenSocket()
 
 PBoolean PUDPSocket::OpenSocket(int ipAdressFamily)
 {
-#ifdef COULD_HAVE_QOS
-  if (CheckOSVersionFor(5,1)) 
-    return OpenSocketGQOS(ipAdressFamily, SOCK_DGRAM, 0);
-#endif
-
-  return ConvertOSError(os_handle = os_socket(ipAdressFamily,SOCK_DGRAM, 0));
+  return ConvertOSError(os_handle = os_socket(ipAdressFamily, SOCK_DGRAM, 0));
 }
 
 
@@ -2879,7 +2683,6 @@ void PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr)
 {
   m_sendAddress = addr.GetAddress();
   m_sendPort    = addr.GetPort();
-  ApplyQoS();
 }
 
 
