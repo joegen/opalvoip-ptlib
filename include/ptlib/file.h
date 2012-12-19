@@ -330,11 +330,11 @@ class PFile : public PChannel
        @return
        true if the file was renamed.
      */
-    static PBoolean Copy(
+    static bool Copy(
       const PFilePath & oldname,  ///< Old name of the file.
       const PFilePath & newname,  ///< New name for the file.
-      PBoolean force = false
-        ///< Delete file if a destination exists with the same name.
+      bool force = false,         ///< Delete file if a destination exists with the same name.
+      bool recurse = false        ///< Recursively create all intermediate sub-directories
     );
 
     /**Make a copy of the current file.
@@ -342,10 +342,10 @@ class PFile : public PChannel
        @return
        true if the file was renamed.
      */
-    PBoolean Copy(
+    bool Copy(
       const PFilePath & newname,  ///< New name for the file.
-      PBoolean force = false
-        ///< Delete file if a destination exists with the same name.
+      bool force = false,         ///< Delete file if a destination exists with the same name.
+      bool recurse = false        ///< Recursively create all intermediate sub-directories
     );
 
     /**Move the specified file. This will move the file from one position in
@@ -357,11 +357,11 @@ class PFile : public PChannel
        @return
        true if the file was moved.
      */
-    static PBoolean Move(
+    static bool Move(
       const PFilePath & oldname,  ///< Old path and name of the file.
       const PFilePath & newname,  ///< New path and name for the file.
-      PBoolean force = false
-        ///< Delete file if a destination exists with the same name.
+      bool force = false,         ///< Delete file if a destination exists with the same name.
+      bool recurse = false        ///< Recursively create all intermediate sub-directories
     );
 
     /**Move the current file. This will move the file from one position in
@@ -373,10 +373,10 @@ class PFile : public PChannel
        @return
        true if the file was moved.
      */
-    PBoolean Move(
+    bool Move(
       const PFilePath & newname,  ///< New path and name for the file.
-      PBoolean force = false
-        ///< Delete file if a destination exists with the same name.
+      bool force = false,         ///< Delete file if a destination exists with the same name.
+      bool recurse = false        ///< Recursively create all intermediate sub-directories
     );
   //@}
 
