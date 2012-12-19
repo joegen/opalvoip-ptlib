@@ -40,15 +40,6 @@
 
 #include <ptlib/socket.h>
 
-#if P_QOS
-#ifdef _WIN32
-#ifdef P_KNOCKOUT_WINSOCK2
-   #include "IPExport.h"
-#endif // KNOCKOUT_WINSOCK2
-#endif // _WIN32
-#endif // P_QOS
-
-
 class PIPSocketAddressAndPort;
 
 
@@ -726,6 +717,52 @@ class PIPSocket : public PSocket
      */
     static PBoolean GetNetworkInterface(PIPSocket::Address & addr);
 
+    /// The types of QoS supported, based on IEEE P802.1p TrafficClass parameter
+    P_DECLARE_ENUM(QoSType,
+      BackgroundQoS,        ///< Reduced priority
+      BestEffortQoS,        ///< Effectively no QoS
+      ExcellentEffortQoS,   ///< Try a bit harder
+      CriticalQoS,          ///< Try really hard
+      VideoQoS,             ///< Video, < 100 ms latency and jitter
+      VoiceQoS,             ///< Voice, < 10 ms latency and jitter
+      ControlQoS            ///< Imprtant stuff, prioritise over everything
+    );
+  /**@name Quality of Service
+     This describes in a platform and as protocol independent way as possible
+     the quality of service. How it produces, for example, DiffServ and RSVP
+     is up to the underlying operating system.
+    */
+  //@{
+    struct QoS
+    {
+      QoS(QoSType type = BestEffortQoS);
+      QoS(const PString & str);
+
+      QoSType m_type;
+      int     m_dscp; // If between 0 and 63, is used instead of default for QoSType.
+
+      PIPSocket::Address m_remote;
+      struct Flow {
+        Flow() { memset(this, 0, sizeof(*this)); }
+        unsigned m_maxBandwidth;
+        unsigned m_maxPacketSize;
+        unsigned m_maxLatency;
+        unsigned m_maxJitter;
+      } m_transmit, m_receive;
+
+      friend ostream & operator<<(ostream & strm, const PIPSocket::QoS & qos);
+      friend istream & operator>>(istream & strm, PIPSocket::QoS & qos);
+    };
+
+    /// Set the current Quality of Service
+    virtual bool SetQoS(
+      const QoS & qos   ///< New quality of service specification
+    );
+
+    /// Get the current Quality of Service
+    const QoS & GetQoS() const { return m_qos; }
+  //@}
+
 // Include platform dependent part of class
 #ifdef _WIN32
 #include "msos/ptlib/ipsock.h"
@@ -736,6 +773,9 @@ class PIPSocket : public PSocket
     virtual bool InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort);
     virtual bool InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort);
     virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
+
+  protected:
+    QoS m_qos;
 };
 
 class PIPSocketAddressAndPort

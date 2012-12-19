@@ -154,7 +154,7 @@
 
 #ifndef _WIN32_WCE
   #undef P_HAS_IPV6
-  #undef P_QOS
+  //#undef P_QOS  // disabled as seems to cause all sorts of lock ups
 #endif //  _WIN32_WCE
 
 
@@ -281,147 +281,24 @@
 #if defined(_MSC_VER) && P_SSL
 
   #if P_64BIT
+
     #define P_SSL_USE_CONST 1
 
-    #pragma include_alias(<openssl/ssl.h>,        <@SSL_WIN64_DIR@/include/openssl/ssl.h>)
-    #pragma include_alias(<openssl/safestack.h>,  <@SSL_WIN64_DIR@/include/openssl/safestack.h>)
-    #pragma include_alias(<openssl/stack.h>,      <@SSL_WIN64_DIR@/include/openssl/stack.h>)
-    #pragma include_alias(<openssl/crypto.h>,     <@SSL_WIN64_DIR@/include/openssl/crypto.h>)
-    #pragma include_alias(<openssl/opensslv.h>,   <@SSL_WIN64_DIR@/include/openssl/opensslv.h>)
-    #pragma include_alias(<openssl/lhash.h>,      <@SSL_WIN64_DIR@/include/openssl/lhash.h>)
-    #pragma include_alias(<openssl/buffer.h>,     <@SSL_WIN64_DIR@/include/openssl/buffer.h>)
-    #pragma include_alias(<openssl/bio.h>,        <@SSL_WIN64_DIR@/include/openssl/bio.h>)
-    #pragma include_alias(<openssl/pem.h>,        <@SSL_WIN64_DIR@/include/openssl/pem.h>)
-    #pragma include_alias(<openssl/evp.h>,        <@SSL_WIN64_DIR@/include/openssl/evp.h>)
-    #pragma include_alias(<openssl/md2.h>,        <@SSL_WIN64_DIR@/include/openssl/md2.h>)
-    #pragma include_alias(<openssl/opensslconf.h>,<@SSL_WIN64_DIR@/include/openssl/opensslconf.h>)
-    #pragma include_alias(<openssl/md5.h>,        <@SSL_WIN64_DIR@/include/openssl/md5.h>)
-    #pragma include_alias(<openssl/sha.h>,        <@SSL_WIN64_DIR@/include/openssl/sha.h>)
-    #pragma include_alias(<openssl/ripemd.h>,     <@SSL_WIN64_DIR@/include/openssl/ripemd.h>)
-    #pragma include_alias(<openssl/des.h>,        <@SSL_WIN64_DIR@/include/openssl/des.h>)
-    #pragma include_alias(<openssl/e_os2.h>,      <@SSL_WIN64_DIR@/include/openssl/e_os2.h>)
-    #pragma include_alias(<openssl/rc4.h>,        <@SSL_WIN64_DIR@/include/openssl/rc4.h>)
-    #pragma include_alias(<openssl/rc2.h>,        <@SSL_WIN64_DIR@/include/openssl/rc2.h>)
-    #pragma include_alias(<openssl/rc5.h>,        <@SSL_WIN64_DIR@/include/openssl/rc5.h>)
-    #pragma include_alias(<openssl/blowfish.h>,   <@SSL_WIN64_DIR@/include/openssl/blowfish.h>)
-    #pragma include_alias(<openssl/cast.h>,       <@SSL_WIN64_DIR@/include/openssl/cast.h>)
-    #pragma include_alias(<openssl/idea.h>,       <@SSL_WIN64_DIR@/include/openssl/idea.h>)
-    #pragma include_alias(<openssl/mdc2.h>,       <@SSL_WIN64_DIR@/include/openssl/mdc2.h>)
-    #pragma include_alias(<openssl/rsa.h>,        <@SSL_WIN64_DIR@/include/openssl/rsa.h>)
-    #pragma include_alias(<openssl/bn.h>,         <@SSL_WIN64_DIR@/include/openssl/bn.h>)
-    #pragma include_alias(<openssl/dsa.h>,        <@SSL_WIN64_DIR@/include/openssl/dsa.h>)
-    #pragma include_alias(<openssl/dh.h>,         <@SSL_WIN64_DIR@/include/openssl/dh.h>)
-    #pragma include_alias(<openssl/objects.h>,    <@SSL_WIN64_DIR@/include/openssl/objects.h>)
-    #pragma include_alias(<openssl/asn1.h>,       <@SSL_WIN64_DIR@/include/openssl/asn1.h>)
-    #pragma include_alias(<openssl/x509.h>,       <@SSL_WIN64_DIR@/include/openssl/x509.h>)
-    #pragma include_alias(<openssl/x509_vfy.h>,   <@SSL_WIN64_DIR@/include/openssl/x509_vfy.h>)
-    #pragma include_alias(<openssl/x509v3.h>,     <@SSL_WIN64_DIR@/include/openssl/x509v3.h>)
-    #pragma include_alias(<openssl/conf.h>,       <@SSL_WIN64_DIR@/include/openssl/conf.h>)
-    #pragma include_alias(<openssl/pkcs7.h>,      <@SSL_WIN64_DIR@/include/openssl/pkcs7.h>)
-    #pragma include_alias(<openssl/pem2.h>,       <@SSL_WIN64_DIR@/include/openssl/pem2.h>)
-    #pragma include_alias(<openssl/ssl2.h>,       <@SSL_WIN64_DIR@/include/openssl/ssl2.h>)
-    #pragma include_alias(<openssl/ssl3.h>,       <@SSL_WIN64_DIR@/include/openssl/ssl3.h>)
-    #pragma include_alias(<openssl/tls1.h>,       <@SSL_WIN64_DIR@/include/openssl/tls1.h>)
-    #pragma include_alias(<openssl/ssl23.h>,      <@SSL_WIN64_DIR@/include/openssl/ssl23.h>)
-    #pragma include_alias(<openssl/err.h>,        <@SSL_WIN64_DIR@/include/openssl/err.h>)
-    #pragma include_alias(<openssl/rand.h>,       <@SSL_WIN64_DIR@/include/openssl/rand.h>)
-    #pragma include_alias(<openssl/symhacks.h>,   <@SSL_WIN64_DIR@/include/openssl/symhacks.h>)
-    #pragma include_alias(<openssl/comp.h>,       <@SSL_WIN64_DIR@/include/openssl/comp.h>)
-    #pragma include_alias(<openssl/ossl_typ.h>,   <@SSL_WIN64_DIR@/include/openssl/ossl_typ.h>)
-    #pragma include_alias(<openssl/md4.h>,        <@SSL_WIN64_DIR@/include/openssl/md4.h>)
-    #pragma include_alias(<openssl/des_old.h>,    <@SSL_WIN64_DIR@/include/openssl/des_old.h>)
-    #pragma include_alias(<openssl/ui_compat.h>,  <@SSL_WIN64_DIR@/include/openssl/ui_compat.h>)
-    #pragma include_alias(<openssl/ui.h>,         <@SSL_WIN64_DIR@/include/openssl/ui.h>)
-    #pragma include_alias(<openssl/aes.h>,        <@SSL_WIN64_DIR@/include/openssl/aes.h>)
-    #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_WIN64_DIR@/include/openssl/obj_mac.h>)
-    #pragma include_alias(<openssl/kssl.h>,       <@SSL_WIN64_DIR@/include/openssl/kssl.h>)
-    #pragma include_alias(<openssl/ec.h>,         <@SSL_WIN64_DIR@/include/openssl/ec.h>)
-    #pragma include_alias(<openssl/ecdsa.h>,      <@SSL_WIN64_DIR@/include/openssl/ecdsa.h>)
-    #pragma include_alias(<openssl/ecdh.h>,       <@SSL_WIN64_DIR@/include/openssl/ecdh.h>)
-    #pragma include_alias(<openssl/pq_compat.h>,  <@SSL_WIN64_DIR@/include/openssl/pq_compat.h>)
-    #pragma include_alias(<openssl/dtls1.h>,      <@SSL_WIN64_DIR@/include/openssl/dtls1.h>)
-    #pragma include_alias(<openssl/pqueue.h>,     <@SSL_WIN64_DIR@/include/openssl/pqueue.h>)
-    #pragma include_alias(<openssl/hmac.h>,       <@SSL_WIN64_DIR@/include/openssl/hmac.h>)
-
-    #ifdef P_SSL_AES
-      #pragma include_alias(<openssl/aes.h>,      <@SSL_WIN64_DIR@/include/openssl/aes.h>)
-    #endif
+    #define P_SSL_INCLUDE(inc) include_alias(<inc>, <@SSL_WIN64_DIR@/include/inc>)
 
     #ifdef _DEBUG
-      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/static/libeay32MDd.lib"
-      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/static/ssleay32MDd.lib"
+      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/libeay32MDd.lib"
+      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/ssleay32MDd.lib"
     #else
-      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/static/libeay32MD.lib"
-      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/static/ssleay32MD.lib"
+      #define P_SSL_LIB1 "@SSL_WIN64_DIR@/lib/VC/libeay32MD.lib"
+      #define P_SSL_LIB2 "@SSL_WIN64_DIR@/lib/VC/ssleay32MD.lib"
     #endif
 
   #elif P_SSL_WIN32==2
 
     #define P_SSL_USE_CONST 1
 
-    #pragma include_alias(<openssl/ssl.h>,        <@SSL_WIN32_DIR@/include/openssl/ssl.h>)
-    #pragma include_alias(<openssl/safestack.h>,  <@SSL_WIN32_DIR@/include/openssl/safestack.h>)
-    #pragma include_alias(<openssl/stack.h>,      <@SSL_WIN32_DIR@/include/openssl/stack.h>)
-    #pragma include_alias(<openssl/crypto.h>,     <@SSL_WIN32_DIR@/include/openssl/crypto.h>)
-    #pragma include_alias(<openssl/opensslv.h>,   <@SSL_WIN32_DIR@/include/openssl/opensslv.h>)
-    #pragma include_alias(<openssl/lhash.h>,      <@SSL_WIN32_DIR@/include/openssl/lhash.h>)
-    #pragma include_alias(<openssl/buffer.h>,     <@SSL_WIN32_DIR@/include/openssl/buffer.h>)
-    #pragma include_alias(<openssl/bio.h>,        <@SSL_WIN32_DIR@/include/openssl/bio.h>)
-    #pragma include_alias(<openssl/pem.h>,        <@SSL_WIN32_DIR@/include/openssl/pem.h>)
-    #pragma include_alias(<openssl/evp.h>,        <@SSL_WIN32_DIR@/include/openssl/evp.h>)
-    #pragma include_alias(<openssl/md2.h>,        <@SSL_WIN32_DIR@/include/openssl/md2.h>)
-    #pragma include_alias(<openssl/opensslconf.h>,<@SSL_WIN32_DIR@/include/openssl/opensslconf.h>)
-    #pragma include_alias(<openssl/md5.h>,        <@SSL_WIN32_DIR@/include/openssl/md5.h>)
-    #pragma include_alias(<openssl/sha.h>,        <@SSL_WIN32_DIR@/include/openssl/sha.h>)
-    #pragma include_alias(<openssl/ripemd.h>,     <@SSL_WIN32_DIR@/include/openssl/ripemd.h>)
-    #pragma include_alias(<openssl/des.h>,        <@SSL_WIN32_DIR@/include/openssl/des.h>)
-    #pragma include_alias(<openssl/e_os2.h>,      <@SSL_WIN32_DIR@/include/openssl/e_os2.h>)
-    #pragma include_alias(<openssl/rc4.h>,        <@SSL_WIN32_DIR@/include/openssl/rc4.h>)
-    #pragma include_alias(<openssl/rc2.h>,        <@SSL_WIN32_DIR@/include/openssl/rc2.h>)
-    #pragma include_alias(<openssl/rc5.h>,        <@SSL_WIN32_DIR@/include/openssl/rc5.h>)
-    #pragma include_alias(<openssl/blowfish.h>,   <@SSL_WIN32_DIR@/include/openssl/blowfish.h>)
-    #pragma include_alias(<openssl/cast.h>,       <@SSL_WIN32_DIR@/include/openssl/cast.h>)
-    #pragma include_alias(<openssl/idea.h>,       <@SSL_WIN32_DIR@/include/openssl/idea.h>)
-    #pragma include_alias(<openssl/mdc2.h>,       <@SSL_WIN32_DIR@/include/openssl/mdc2.h>)
-    #pragma include_alias(<openssl/rsa.h>,        <@SSL_WIN32_DIR@/include/openssl/rsa.h>)
-    #pragma include_alias(<openssl/bn.h>,         <@SSL_WIN32_DIR@/include/openssl/bn.h>)
-    #pragma include_alias(<openssl/dsa.h>,        <@SSL_WIN32_DIR@/include/openssl/dsa.h>)
-    #pragma include_alias(<openssl/dh.h>,         <@SSL_WIN32_DIR@/include/openssl/dh.h>)
-    #pragma include_alias(<openssl/objects.h>,    <@SSL_WIN32_DIR@/include/openssl/objects.h>)
-    #pragma include_alias(<openssl/asn1.h>,       <@SSL_WIN32_DIR@/include/openssl/asn1.h>)
-    #pragma include_alias(<openssl/x509.h>,       <@SSL_WIN32_DIR@/include/openssl/x509.h>)
-    #pragma include_alias(<openssl/x509_vfy.h>,   <@SSL_WIN32_DIR@/include/openssl/x509_vfy.h>)
-    #pragma include_alias(<openssl/x509v3.h>,     <@SSL_WIN32_DIR@/include/openssl/x509v3.h>)
-    #pragma include_alias(<openssl/conf.h>,       <@SSL_WIN32_DIR@/include/openssl/conf.h>)
-    #pragma include_alias(<openssl/pkcs7.h>,      <@SSL_WIN32_DIR@/include/openssl/pkcs7.h>)
-    #pragma include_alias(<openssl/pem2.h>,       <@SSL_WIN32_DIR@/include/openssl/pem2.h>)
-    #pragma include_alias(<openssl/ssl2.h>,       <@SSL_WIN32_DIR@/include/openssl/ssl2.h>)
-    #pragma include_alias(<openssl/ssl3.h>,       <@SSL_WIN32_DIR@/include/openssl/ssl3.h>)
-    #pragma include_alias(<openssl/tls1.h>,       <@SSL_WIN32_DIR@/include/openssl/tls1.h>)
-    #pragma include_alias(<openssl/ssl23.h>,      <@SSL_WIN32_DIR@/include/openssl/ssl23.h>)
-    #pragma include_alias(<openssl/err.h>,        <@SSL_WIN32_DIR@/include/openssl/err.h>)
-    #pragma include_alias(<openssl/rand.h>,       <@SSL_WIN32_DIR@/include/openssl/rand.h>)
-    #pragma include_alias(<openssl/symhacks.h>,   <@SSL_WIN32_DIR@/include/openssl/symhacks.h>)
-    #pragma include_alias(<openssl/comp.h>,       <@SSL_WIN32_DIR@/include/openssl/comp.h>)
-    #pragma include_alias(<openssl/ossl_typ.h>,   <@SSL_WIN32_DIR@/include/openssl/ossl_typ.h>)
-    #pragma include_alias(<openssl/md4.h>,        <@SSL_WIN32_DIR@/include/openssl/md4.h>)
-    #pragma include_alias(<openssl/des_old.h>,    <@SSL_WIN32_DIR@/include/openssl/des_old.h>)
-    #pragma include_alias(<openssl/ui_compat.h>,  <@SSL_WIN32_DIR@/include/openssl/ui_compat.h>)
-    #pragma include_alias(<openssl/ui.h>,         <@SSL_WIN32_DIR@/include/openssl/ui.h>)
-    #pragma include_alias(<openssl/aes.h>,        <@SSL_WIN32_DIR@/include/openssl/aes.h>)
-    #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_WIN32_DIR@/include/openssl/obj_mac.h>)
-    #pragma include_alias(<openssl/kssl.h>,       <@SSL_WIN32_DIR@/include/openssl/kssl.h>)
-    #pragma include_alias(<openssl/ec.h>,         <@SSL_WIN32_DIR@/include/openssl/ec.h>)
-    #pragma include_alias(<openssl/ecdsa.h>,      <@SSL_WIN32_DIR@/include/openssl/ecdsa.h>)
-    #pragma include_alias(<openssl/ecdh.h>,       <@SSL_WIN32_DIR@/include/openssl/ecdh.h>)
-    #pragma include_alias(<openssl/pq_compat.h>,  <@SSL_WIN32_DIR@/include/openssl/pq_compat.h>)
-    #pragma include_alias(<openssl/dtls1.h>,      <@SSL_WIN32_DIR@/include/openssl/dtls1.h>)
-    #pragma include_alias(<openssl/pqueue.h>,     <@SSL_WIN32_DIR@/include/openssl/pqueue.h>)
-    #pragma include_alias(<openssl/hmac.h>,       <@SSL_WIN32_DIR@/include/openssl/hmac.h>)
-
-    #ifdef P_SSL_AES
-      #pragma include_alias(<openssl/aes.h>,      <@SSL_WIN32_DIR@/include/openssl/aes.h>)
-    #endif
+    #define P_SSL_INCLUDE(inc) include_alias(<inc>, <@SSL_WIN32_DIR@/include/inc>)
 
     #ifdef _DEBUG
       #define P_SSL_LIB1 "@SSL_WIN32_DIR@/lib/VC/libeay32MTd.lib"
@@ -433,69 +310,7 @@
 
   #else
 
-    #pragma include_alias(<openssl/ssl.h>,        <@SSL_WIN32_DIR@/inc32/openssl/ssl.h>)
-    #pragma include_alias(<openssl/safestack.h>,  <@SSL_WIN32_DIR@/inc32/openssl/safestack.h>)
-    #pragma include_alias(<openssl/stack.h>,      <@SSL_WIN32_DIR@/inc32/openssl/stack.h>)
-    #pragma include_alias(<openssl/crypto.h>,     <@SSL_WIN32_DIR@/inc32/openssl/crypto.h>)
-    #pragma include_alias(<openssl/opensslv.h>,   <@SSL_WIN32_DIR@/inc32/openssl/opensslv.h>)
-    #pragma include_alias(<openssl/lhash.h>,      <@SSL_WIN32_DIR@/inc32/openssl/lhash.h>)
-    #pragma include_alias(<openssl/buffer.h>,     <@SSL_WIN32_DIR@/inc32/openssl/buffer.h>)
-    #pragma include_alias(<openssl/bio.h>,        <@SSL_WIN32_DIR@/inc32/openssl/bio.h>)
-    #pragma include_alias(<openssl/pem.h>,        <@SSL_WIN32_DIR@/inc32/openssl/pem.h>)
-    #pragma include_alias(<openssl/evp.h>,        <@SSL_WIN32_DIR@/inc32/openssl/evp.h>)
-    #pragma include_alias(<openssl/md2.h>,        <@SSL_WIN32_DIR@/inc32/openssl/md2.h>)
-    #pragma include_alias(<openssl/opensslconf.h>,<@SSL_WIN32_DIR@/inc32/openssl/opensslconf.h>)
-    #pragma include_alias(<openssl/md5.h>,        <@SSL_WIN32_DIR@/inc32/openssl/md5.h>)
-    #pragma include_alias(<openssl/sha.h>,        <@SSL_WIN32_DIR@/inc32/openssl/sha.h>)
-    #pragma include_alias(<openssl/ripemd.h>,     <@SSL_WIN32_DIR@/inc32/openssl/ripemd.h>)
-    #pragma include_alias(<openssl/des.h>,        <@SSL_WIN32_DIR@/inc32/openssl/des.h>)
-    #pragma include_alias(<openssl/e_os2.h>,      <@SSL_WIN32_DIR@/inc32/openssl/e_os2.h>)
-    #pragma include_alias(<openssl/rc4.h>,        <@SSL_WIN32_DIR@/inc32/openssl/rc4.h>)
-    #pragma include_alias(<openssl/rc2.h>,        <@SSL_WIN32_DIR@/inc32/openssl/rc2.h>)
-    #pragma include_alias(<openssl/rc5.h>,        <@SSL_WIN32_DIR@/inc32/openssl/rc5.h>)
-    #pragma include_alias(<openssl/blowfish.h>,   <@SSL_WIN32_DIR@/inc32/openssl/blowfish.h>)
-    #pragma include_alias(<openssl/cast.h>,       <@SSL_WIN32_DIR@/inc32/openssl/cast.h>)
-    #pragma include_alias(<openssl/idea.h>,       <@SSL_WIN32_DIR@/inc32/openssl/idea.h>)
-    #pragma include_alias(<openssl/mdc2.h>,       <@SSL_WIN32_DIR@/inc32/openssl/mdc2.h>)
-    #pragma include_alias(<openssl/rsa.h>,        <@SSL_WIN32_DIR@/inc32/openssl/rsa.h>)
-    #pragma include_alias(<openssl/bn.h>,         <@SSL_WIN32_DIR@/inc32/openssl/bn.h>)
-    #pragma include_alias(<openssl/dsa.h>,        <@SSL_WIN32_DIR@/inc32/openssl/dsa.h>)
-    #pragma include_alias(<openssl/dh.h>,         <@SSL_WIN32_DIR@/inc32/openssl/dh.h>)
-    #pragma include_alias(<openssl/objects.h>,    <@SSL_WIN32_DIR@/inc32/openssl/objects.h>)
-    #pragma include_alias(<openssl/asn1.h>,       <@SSL_WIN32_DIR@/inc32/openssl/asn1.h>)
-    #pragma include_alias(<openssl/x509.h>,       <@SSL_WIN32_DIR@/inc32/openssl/x509.h>)
-    #pragma include_alias(<openssl/x509_vfy.h>,   <@SSL_WIN32_DIR@/inc32/openssl/x509_vfy.h>)
-    #pragma include_alias(<openssl/x509v3.h>,     <@SSL_WIN32_DIR@/inc32/openssl/x509v3.h>)
-    #pragma include_alias(<openssl/conf.h>,       <@SSL_WIN32_DIR@/inc32/openssl/conf.h>)
-    #pragma include_alias(<openssl/pkcs7.h>,      <@SSL_WIN32_DIR@/inc32/openssl/pkcs7.h>)
-    #pragma include_alias(<openssl/pem2.h>,       <@SSL_WIN32_DIR@/inc32/openssl/pem2.h>)
-    #pragma include_alias(<openssl/ssl2.h>,       <@SSL_WIN32_DIR@/inc32/openssl/ssl2.h>)
-    #pragma include_alias(<openssl/ssl3.h>,       <@SSL_WIN32_DIR@/inc32/openssl/ssl3.h>)
-    #pragma include_alias(<openssl/tls1.h>,       <@SSL_WIN32_DIR@/inc32/openssl/tls1.h>)
-    #pragma include_alias(<openssl/ssl23.h>,      <@SSL_WIN32_DIR@/inc32/openssl/ssl23.h>)
-    #pragma include_alias(<openssl/err.h>,        <@SSL_WIN32_DIR@/inc32/openssl/err.h>)
-    #pragma include_alias(<openssl/rand.h>,       <@SSL_WIN32_DIR@/inc32/openssl/rand.h>)
-    #pragma include_alias(<openssl/symhacks.h>,   <@SSL_WIN32_DIR@/inc32/openssl/symhacks.h>)
-    #pragma include_alias(<openssl/comp.h>,       <@SSL_WIN32_DIR@/inc32/openssl/comp.h>)
-    #pragma include_alias(<openssl/ossl_typ.h>,   <@SSL_WIN32_DIR@/inc32/openssl/ossl_typ.h>)
-    #pragma include_alias(<openssl/md4.h>,        <@SSL_WIN32_DIR@/inc32/openssl/md4.h>)
-    #pragma include_alias(<openssl/des_old.h>,    <@SSL_WIN32_DIR@/inc32/openssl/des_old.h>)
-    #pragma include_alias(<openssl/ui_compat.h>,  <@SSL_WIN32_DIR@/inc32/openssl/ui_compat.h>)
-    #pragma include_alias(<openssl/ui.h>,         <@SSL_WIN32_DIR@/inc32/openssl/ui.h>)
-    #pragma include_alias(<openssl/aes.h>,        <@SSL_WIN32_DIR@/inc32/openssl/aes.h>)
-    #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_WIN32_DIR@/inc32/openssl/obj_mac.h>)
-    #pragma include_alias(<openssl/kssl.h>,       <@SSL_WIN32_DIR@/inc32/openssl/kssl.h>)
-    #pragma include_alias(<openssl/ec.h>,         <@SSL_WIN32_DIR@/inc32/openssl/ec.h>)
-    #pragma include_alias(<openssl/ecdsa.h>,      <@SSL_WIN32_DIR@/inc32/openssl/ecdsa.h>)
-    #pragma include_alias(<openssl/ecdh.h>,       <@SSL_WIN32_DIR@/inc32/openssl/ecdh.h>)
-    #pragma include_alias(<openssl/pq_compat.h>,  <@SSL_WIN32_DIR@/inc32/openssl/pq_compat.h>)
-    #pragma include_alias(<openssl/dtls1.h>,      <@SSL_WIN32_DIR@/inc32/openssl/dtls1.h>)
-    #pragma include_alias(<openssl/pqueue.h>,     <@SSL_WIN32_DIR@/inc32/openssl/pqueue.h>)
-    #pragma include_alias(<openssl/hmac.h>,       <@SSL_WIN32_DIR@/inc32/openssl/hmac.h>)
-
-    #ifdef P_SSL_AES
-      #pragma include_alias(<openssl/aes.h>,      <@SSL_WIN32_DIR@/inc32/openssl/aes.h>)
-    #endif
+    #define P_SSL_INCLUDE(inc) include_alias(<inc>, <@SSL_WIN32_DIR@/inc32/inc>)
 
     #ifdef _DEBUG
       #define P_SSL_LIBDIR "out32.dbg"
@@ -507,6 +322,68 @@
     #define P_SSL_LIB2 "@SSL_WIN32_DIR@/" P_SSL_LIBDIR "/libeay32.lib"
 
   #endif
+
+  #pragma P_SSL_INCLUDE(openssl/ssl.h)
+  #pragma P_SSL_INCLUDE(openssl/safestack.h)
+  #pragma P_SSL_INCLUDE(openssl/stack.h)
+  #pragma P_SSL_INCLUDE(openssl/crypto.h)
+  #pragma P_SSL_INCLUDE(openssl/opensslv.h)
+  #pragma P_SSL_INCLUDE(openssl/lhash.h)
+  #pragma P_SSL_INCLUDE(openssl/buffer.h)
+  #pragma P_SSL_INCLUDE(openssl/bio.h)
+  #pragma P_SSL_INCLUDE(openssl/pem.h)
+  #pragma P_SSL_INCLUDE(openssl/evp.h)
+  #pragma P_SSL_INCLUDE(openssl/md2.h)
+  #pragma P_SSL_INCLUDE(openssl/opensslconf.h)
+  #pragma P_SSL_INCLUDE(openssl/md5.h)
+  #pragma P_SSL_INCLUDE(openssl/sha.h)
+  #pragma P_SSL_INCLUDE(openssl/ripemd.h)
+  #pragma P_SSL_INCLUDE(openssl/des.h)
+  #pragma P_SSL_INCLUDE(openssl/e_os2.h)
+  #pragma P_SSL_INCLUDE(openssl/rc4.h)
+  #pragma P_SSL_INCLUDE(openssl/rc2.h)
+  #pragma P_SSL_INCLUDE(openssl/rc5.h)
+  #pragma P_SSL_INCLUDE(openssl/blowfish.h)
+  #pragma P_SSL_INCLUDE(openssl/cast.h)
+  #pragma P_SSL_INCLUDE(openssl/idea.h)
+  #pragma P_SSL_INCLUDE(openssl/mdc2.h)
+  #pragma P_SSL_INCLUDE(openssl/rsa.h)
+  #pragma P_SSL_INCLUDE(openssl/bn.h)
+  #pragma P_SSL_INCLUDE(openssl/dsa.h)
+  #pragma P_SSL_INCLUDE(openssl/dh.h)
+  #pragma P_SSL_INCLUDE(openssl/objects.h)
+  #pragma P_SSL_INCLUDE(openssl/asn1.h)
+  #pragma P_SSL_INCLUDE(openssl/x509.h)
+  #pragma P_SSL_INCLUDE(openssl/x509_vfy.h)
+  #pragma P_SSL_INCLUDE(openssl/x509v3.h)
+  #pragma P_SSL_INCLUDE(openssl/conf.h)
+  #pragma P_SSL_INCLUDE(openssl/pkcs7.h)
+  #pragma P_SSL_INCLUDE(openssl/pem2.h)
+  #pragma P_SSL_INCLUDE(openssl/ssl2.h)
+  #pragma P_SSL_INCLUDE(openssl/ssl3.h)
+  #pragma P_SSL_INCLUDE(openssl/tls1.h)
+  #pragma P_SSL_INCLUDE(openssl/ssl23.h)
+  #pragma P_SSL_INCLUDE(openssl/err.h)
+  #pragma P_SSL_INCLUDE(openssl/rand.h)
+  #pragma P_SSL_INCLUDE(openssl/symhacks.h)
+  #pragma P_SSL_INCLUDE(openssl/comp.h)
+  #pragma P_SSL_INCLUDE(openssl/ossl_typ.h)
+  #pragma P_SSL_INCLUDE(openssl/md4.h)
+  #pragma P_SSL_INCLUDE(openssl/des_old.h)
+  #pragma P_SSL_INCLUDE(openssl/ui_compat.h)
+  #pragma P_SSL_INCLUDE(openssl/ui.h)
+  #pragma P_SSL_INCLUDE(openssl/aes.h)
+  #pragma P_SSL_INCLUDE(openssl/obj_mac.h)
+  #pragma P_SSL_INCLUDE(openssl/kssl.h)
+  #pragma P_SSL_INCLUDE(openssl/ec.h)
+  #pragma P_SSL_INCLUDE(openssl/ecdsa.h)
+  #pragma P_SSL_INCLUDE(openssl/ecdh.h)
+  #pragma P_SSL_INCLUDE(openssl/pq_compat.h)
+  #pragma P_SSL_INCLUDE(openssl/dtls1.h)
+  #pragma P_SSL_INCLUDE(openssl/pqueue.h)
+  #pragma P_SSL_INCLUDE(openssl/hmac.h)
+  #pragma P_SSL_INCLUDE(openssl/srtp.h)
+  #pragma P_SSL_INCLUDE(openssl/aes.h)
 
 #endif
 

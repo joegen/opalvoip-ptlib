@@ -1080,7 +1080,7 @@ dnl As if that is not enough, autoconf gets very confused if configure.in
 dnl contains a AC_CHECK_HEADER directive that never gets used. So we have 
 dnl to ensure that it is always called
 
-dnl MSWIN_DISPLAY    openssl,Open SSL
+dnl MSWIN_DISPLAY    openssl,Open SSL (32 bit)
 dnl MSWIN_CHECK_FILE openssl,inc32\openssl\ssl.h,P_SSL_WIN32=1
 dnl MSWIN_CHECK_FILE openssl,include\openssl\ssl.h,P_SSL_WIN32=2
 dnl MSWIN_FIND_FILE  openssl,P_SSL_AES,aes.h,...
@@ -1089,16 +1089,21 @@ dnl MSWIN_CHECK_DIR  openssl,..\openssl\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
-dnl MSWIN_CHECK_DIR  openssl,\Program Files\OpenSSL\
-dnl MSWIN_CHECK_DIR  openssl,\Program Files (x86)\OpenSSL\
-dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
-dnl MSWIN_CHECK_DIR  openssl,c:\OpenSSL-Win32
+dnl MSWIN_CHECK_DIR  openssl,%ProgramFiles%\OpenSSL-Win32\
+dnl MSWIN_CHECK_DIR  openssl,%ProgramW6432%\OpenSSL-Win32\
+dnl MSWIN_CHECK_DIR  openssl,%ProgramFiles%\OpenSSL\
+dnl MSWIN_CHECK_DIR  openssl,%ProgramW6432%\OpenSSL\
+dnl MSWIN_CHECK_DIR  openssl,\openssl\
+dnl MSWIN_CHECK_DIR  openssl,\OpenSSL-Win32
 
 dnl MSWIN_DISPLAY    openssl64,Open SSL (64 bit)
 dnl MSWIN_CHECK_FILE openssl64,include\openssl\ssl.h,P_SSL_WIN64=1
 dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
-dnl MSWIN_CHECK_DIR  openssl64,\Program Files\OpenSSL64\
-dnl MSWIN_CHECK_DIR  openssl64,c:\OpenSSL-Win64
+dnl MSWIN_CHECK_DIR  openssl64,%ProgramFiles%\OpenSSL-Win64\
+dnl MSWIN_CHECK_DIR  openssl64,%ProgramW6432%\OpenSSL-Win64\
+dnl MSWIN_CHECK_DIR  openssl64,%ProgramFiles%\OpenSSL64\
+dnl MSWIN_CHECK_DIR  openssl64,%ProgramW6432%\OpenSSL64\
+dnl MSWIN_CHECK_DIR  openssl64,\OpenSSL-Win64
 
 AC_ARG_ENABLE(
    [openssl],
@@ -1186,8 +1191,8 @@ dnl MSWIN_DISPLAY    expat32,Expat XML (precompiled)
 dnl MSWIN_CHECK_FILE expat32,Source\lib\expat.h,P_EXPAT_WIN32=1
 dnl MSWIN_DIR_SYMBOL expat32,EXPAT_WIN32_DIR
 dnl MSWIN_FIND_FILE  expat32,P_EXPAT_LIBRARY,libexpatMT.lib,bin
-dnl MSWIN_CHECK_DIR  expat32,\Program Files\Expat 2.*
-dnl MSWIN_CHECK_DIR  expat32,\Program Files (x86)\Expat 2.*
+dnl MSWIN_CHECK_DIR  expat32,%ProgramFiles%\Expat 2.*
+dnl MSWIN_CHECK_DIR  expat32,%ProgramW6432%\Expat 2.*
 
 AC_ARG_ENABLE(
    [expat],
@@ -1217,8 +1222,8 @@ dnl look for Lua library
 dnl MSWIN_DISPLAY    lua,Lua interpreter
 dnl MSWIN_CHECK_FILE lua,include\lua.h,P_LUA_WIN32=1
 dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
-dnl MSWIN_CHECK_DIR  lua,\Program Files\Lua\5.1
-dnl MSWIN_CHECK_DIR  lua,\Program Files (x86)\Lua\5.1
+dnl MSWIN_CHECK_DIR  lua,%ProgramFiles%\Lua\5.1
+dnl MSWIN_CHECK_DIR  lua,%ProgramW6432%\Lua\5.1
 
 AC_ARG_ENABLE(
    [lua],
