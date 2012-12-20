@@ -646,6 +646,14 @@ class PHTTPClient : public PHTTP
       const PString & password
     );
 
+#if P_SSL
+    void SetSSLCredentials(
+      const PString & authority,
+      const PString & certificate,
+      const PString & privateKey
+    );
+#endif
+
     /// Set persistent connection mode
     void SetPersistent(
       bool persist = true
@@ -661,6 +669,11 @@ class PHTTPClient : public PHTTP
     bool    m_persist;
     PString m_userName;
     PString m_password;
+#if P_SSL
+    PString m_authority;    // Directory, file or data
+    PString m_certificate;  // File or data
+    PString m_privateKey;   // File or data
+#endif
     PHTTPClientAuthentication * m_authentication;
 };
 

@@ -154,6 +154,12 @@ class PSSLPrivateKey : public PObject
       */
     PString AsString() const;
 
+    /**Set the certificate from ASN1 DER base64 encoded data.
+      */
+    bool Parse(
+      const PString & keyStr
+    );
+
     /**Load private key from file.
        The type of the private key can be specified explicitly, or if
        PSSLFileTypeDEFAULT it will be determined from the file extension,
@@ -285,6 +291,12 @@ class PSSLCertificate : public PObject
     /**Get the certificate as ASN1 DER base64 encoded data.
       */
     PString AsString() const;
+
+    /**Set the certificate from ASN1 DER base64 encoded data.
+      */
+    bool Parse(
+      const PString & certStr
+    );
 
     /**Load certificate from file.
        The type of the certificate key can be specified explicitly, or if
@@ -499,12 +511,17 @@ class PSSLContext {
       */
     operator ssl_ctx_st *() const { return m_context; }
 
-    /**Set the locations for CA certificates used to verify peer
-       certificates.
+    /**Set the locations for CA certificates used to verify peer certificates.
       */
     bool SetVerifyLocations(
       const PFilePath & caFile, ///< File for CA certificates
       const PDirectory & caDir  ///< Directory for CA certificates
+    );
+
+    /**Set the CA certificate used to verify peer certificates.
+      */
+    bool SetVerifyCertificate(
+      const PSSLCertificate & cert
     );
 
     P_DECLARE_ENUM(VerifyMode,
@@ -517,7 +534,7 @@ class PSSLContext {
       */
     void SetVerifyMode(
       VerifyMode mode,    ///< New verification mode
-      unsigned depth = 9  ///< Verifiaction depth (max number of certs in chain)
+      unsigned depth = 9  ///< Verification depth (max number of certs in chain)
     );
 
     /**Set certificate verification mode for connection.
@@ -555,6 +572,15 @@ class PSSLContext {
       */
     bool SetCipherList(
       const PString & ciphers   ///< List of cipher names.
+    );
+
+    /**Set the credentials for the context.
+      */
+    bool SetCredentials(
+      const PString & authority,    ///< Certificate Authority directory, file or data
+      const PString & certificate,  ///< Local certificate file or data
+      const PString & privateKey,   ///< Private key file or data for local certificate
+      bool create = false           ///< If certificate/provateKey are file paths and do not exist, then create.
     );
 
   protected:

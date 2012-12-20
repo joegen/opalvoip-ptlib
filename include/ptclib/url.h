@@ -336,20 +336,43 @@ class PURL : public PObject
     PBoolean IsEmpty() const { return urlString.IsEmpty(); }
 
 
+    struct LoadParams {
+      LoadParams(
+        const PString & requiredContentType = PString::Empty(),
+        const PTimeInterval & timeout = PMaxTimeInterval
+      ) : m_requiredContentType(requiredContentType)
+        , m_timeout(timeout)
+      {
+      }
+
+      PString       m_requiredContentType;
+      PTimeInterval m_timeout;
+#if P_SSL
+      PString       m_authority;    // Directory, file or data
+      PString       m_certificate;  // File or data
+      PString       m_privateKey;   // File or data
+#endif
+    };
     /**Get the resource the URL is pointing at.
        The data returned is obtained according to the scheme and the factory
        PURLLoaderFactory.
       */
     bool LoadResource(
       PString & data,  ///< Resource data as a string
-      const PString & requiredContentType = PString::Empty(), ///< Expected content type where applicable
-      const PTimeInterval & timeout = PMaxTimeInterval        ///< Timeout to wait for resource
+      const LoadParams & params = LoadParams()  ///< Parameters for load
     ) const;
     bool LoadResource(
       PBYTEArray & data,  ///< Resource data as a binary blob
+      const LoadParams & params = LoadParams()  ///< Parameters for load
+    ) const;
+
+    // For backward compatibility
+    template <class T>
+    bool LoadResource(
+      T & data,  ///< Resource data as a string
       const PString & requiredContentType = PString::Empty(), ///< Expected content type where applicable
       const PTimeInterval & timeout = PMaxTimeInterval        ///< Timeout to wait for resource
-    ) const;
+    ) const { return LoadResource(data, LoadParams(requiredContentType, timeout)); }
 
     /**Open the URL in a browser.
 
@@ -507,8 +530,8 @@ class PURLLoader : public PObject
 {
   PCLASSINFO(PURLLoader, PObject);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType, const PTimeInterval & timeout) = 0;
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType, const PTimeInterval & timeout) = 0;
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params) = 0;
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params) = 0;
 };
 
 typedef PFactory<PURLLoader> PURLLoaderFactory;
