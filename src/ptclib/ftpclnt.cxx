@@ -90,11 +90,13 @@ bool PFTPClient::OpenHost(const PString & host, WORD port)
 }
 
 
+static const PConstString AnonymousUser("anonymous");
+
 PBoolean PFTPClient::LogIn(const PString & username, const PString & password)
 {
-  if (ExecuteCommand(USER, username)/100 != 3)
+  if (ExecuteCommand(USER, username.IsEmpty() ? AnonymousUser : username)/100 != 3)
     return false;
-  return ExecuteCommand(PASS, password)/100 == 2;
+  return password.IsEmpty() || ExecuteCommand(PASS, password)/100 == 2;
 }
 
 
@@ -343,6 +345,9 @@ class PURL_FtpLoader : public PURLLoader
     {
       PFTPClient ftp;
       ftp.SetReadTimeout(params.m_timeout);
+      if (!ftp.LogIn(params.m_username, params.m_password))
+        return false;
+
       PTCPSocket * socket = ftp.GetURL(url, PFTP::ASCII);
       if (socket == NULL)
         return false;
@@ -357,6 +362,9 @@ class PURL_FtpLoader : public PURLLoader
     {
       PFTPClient ftp;
       ftp.SetReadTimeout(params.m_timeout);
+      if (!ftp.LogIn(params.m_username, params.m_password))
+        return false;
+
       PTCPSocket * socket = ftp.GetURL(url, PFTP::Image);
       if (socket == NULL)
         return false;

@@ -1072,6 +1072,7 @@ class PURL_HttpLoader : public PURLLoader
       PHTTPClient http;
       http.SetPersistent(false);
       http.SetReadTimeout(params.m_timeout);
+      http.SetAuthenticationInfo(params.m_username, params.m_password);
 #if P_SSL
       http.SetSSLCredentials(params.m_authority, params.m_certificate, params.m_privateKey);
 #endif
@@ -1083,6 +1084,7 @@ class PURL_HttpLoader : public PURLLoader
       PHTTPClient http;
       http.SetPersistent(false);
       http.SetReadTimeout(params.m_timeout);
+      http.SetAuthenticationInfo(params.m_username, params.m_password);
 #if P_SSL
       http.SetSSLCredentials(params.m_authority, params.m_certificate, params.m_privateKey);
 #endif
