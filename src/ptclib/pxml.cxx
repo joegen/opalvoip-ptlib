@@ -865,6 +865,12 @@ bool PXML_HTTP::LoadURL(const PURL & url)
 
 bool PXML_HTTP::LoadURL(const PURL & url, const PTimeInterval & timeout, Options options)
 {
+  return LoadURL(url, PURL::LoadParams(PString::Empty(), timeout), options);
+}
+
+
+bool PXML_HTTP::LoadURL(const PURL & url, const PURL::LoadParams & params, Options options)
+{
   if (url.IsEmpty()) {
     m_errorString = "Cannot load empty URL";
     m_errorLine = m_errorColumn = 0;
@@ -874,7 +880,7 @@ bool PXML_HTTP::LoadURL(const PURL & url, const PTimeInterval & timeout, Options
   PTRACE(4, "XML\tLoading URL " << url);
 
   PString data;
-  if (url.LoadResource(data, PString::Empty(), timeout))
+  if (url.LoadResource(data, params))
     return Load(data, options);
 
   m_errorString = "Cannot load URL ";
