@@ -914,7 +914,7 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(PBoolean once)
 {
-  Stop(true);
+  Stop(false);
 
   PTimeInterval::operator=(m_resetTime);
   m_oneshot = once;
