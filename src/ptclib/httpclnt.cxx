@@ -1067,7 +1067,7 @@ class PURL_HttpLoader : public PURLLoader
 {
     PCLASSINFO(PURL_HttpLoader, PURLLoader);
   public:
-    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params)
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params) const
     {
       PHTTPClient http;
       http.SetPersistent(false);
@@ -1078,7 +1078,7 @@ class PURL_HttpLoader : public PURLLoader
       return http.GetTextDocument(url, str, params.m_requiredContentType);
     }
 
-    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params)
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params) const
     {
       PHTTPClient http;
       http.SetPersistent(false);
