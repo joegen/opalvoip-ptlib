@@ -347,6 +347,9 @@ class PURL : public PObject
 
       PString       m_requiredContentType;
       PTimeInterval m_timeout;
+
+      PString       m_username;     // Basic authentication
+      PString       m_password;
 #if P_SSL
       PString       m_authority;    // Directory, file or data
       PString       m_certificate;  // File or data
