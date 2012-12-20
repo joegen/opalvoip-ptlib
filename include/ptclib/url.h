@@ -530,8 +530,8 @@ class PURLLoader : public PObject
 {
   PCLASSINFO(PURLLoader, PObject);
   public:
-    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params) = 0;
-    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params) = 0;
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params) const = 0;
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params) const = 0;
 };
 
 typedef PFactory<PURLLoader> PURLLoaderFactory;
