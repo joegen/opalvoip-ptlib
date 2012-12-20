@@ -339,29 +339,29 @@ class PURL_FtpLoader : public PURLLoader
 {
     PCLASSINFO(PURL_FtpLoader, PURLLoader);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString &, const PTimeInterval & timeout)
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params) const
     {
       PFTPClient ftp;
-      ftp.SetReadTimeout(timeout);
+      ftp.SetReadTimeout(params.m_timeout);
       PTCPSocket * socket = ftp.GetURL(url, PFTP::ASCII);
       if (socket == NULL)
         return false;
 
-      socket->SetReadTimeout(timeout);
+      socket->SetReadTimeout(params.m_timeout);
       str = socket->ReadString(P_MAX_INDEX);
       delete socket;
       return true;
     }
 
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString &, const PTimeInterval & timeout)
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params) const
     {
       PFTPClient ftp;
-      ftp.SetReadTimeout(timeout);
+      ftp.SetReadTimeout(params.m_timeout);
       PTCPSocket * socket = ftp.GetURL(url, PFTP::Image);
       if (socket == NULL)
         return false;
 
-      socket->SetReadTimeout(timeout);
+      socket->SetReadTimeout(params.m_timeout);
       static const PINDEX chunk = 10000;
       PINDEX total = 0;
       BYTE * ptr = data.GetPointer(chunk);
