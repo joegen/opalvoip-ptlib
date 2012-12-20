@@ -1172,7 +1172,7 @@ class PURL_FileLoader : public PURLLoader
 {
     PCLASSINFO(PURL_FileLoader, PURLLoader);
   public:
-    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams &)
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams &) const
     {
       PFile file;
       if (!file.Open(url.AsFilePath()))
@@ -1181,7 +1181,7 @@ class PURL_FileLoader : public PURLLoader
       return true;
     }
 
-    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams &)
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams &) const
     {
       PFile file;
       if (!file.Open(url.AsFilePath()))
@@ -1201,7 +1201,7 @@ class PURL_DataLoader : public PURLLoader
 {
     PCLASSINFO(PURL_FileLoader, PURLLoader);
   public:
-    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params)
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params) const
     {
       if (!params.m_requiredContentType.IsEmpty()) {
         PCaselessString actualContentType = url.GetParamVars()("type");
@@ -1213,7 +1213,7 @@ class PURL_DataLoader : public PURLLoader
       return true;
     }
 
-    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params)
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params) const
     {
       if (!params.m_requiredContentType.IsEmpty()) {
         PCaselessString actualContentType = url.GetParamVars()("type");
