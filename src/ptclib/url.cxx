@@ -901,17 +901,17 @@ void PURL::SetContents(const PString & str)
 }
 
 
-bool PURL::LoadResource(PString & str, const PString & requiredContentType, const PTimeInterval & timeout) const
+bool PURL::LoadResource(PString & str, const LoadParams & params) const
 {
   PURLLoader * loader = PURLLoaderFactory::CreateInstance(GetScheme());
-  return loader != NULL && loader->Load(*this, str, requiredContentType, timeout);
+  return loader != NULL && loader->Load(str, *this, params);
 }
 
 
-bool PURL::LoadResource(PBYTEArray & data, const PString & requiredContentType, const PTimeInterval & timeout) const
+bool PURL::LoadResource(PBYTEArray & data, const LoadParams & params) const
 {
   PURLLoader * loader = PURLLoaderFactory::CreateInstance(GetScheme());
-  return loader != NULL && loader->Load(*this, data, requiredContentType, timeout);
+  return loader != NULL && loader->Load(data, *this, params);
 }
 
 
@@ -1172,7 +1172,7 @@ class PURL_FileLoader : public PURLLoader
 {
     PCLASSINFO(PURL_FileLoader, PURLLoader);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString &, const PTimeInterval &)
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams &)
     {
       PFile file;
       if (!file.Open(url.AsFilePath()))
@@ -1181,7 +1181,7 @@ class PURL_FileLoader : public PURLLoader
       return true;
     }
 
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString &, const PTimeInterval &)
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams &)
     {
       PFile file;
       if (!file.Open(url.AsFilePath()))
@@ -1201,11 +1201,11 @@ class PURL_DataLoader : public PURLLoader
 {
     PCLASSINFO(PURL_FileLoader, PURLLoader);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType, const PTimeInterval &)
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params)
     {
-      if (!requiredContentType.IsEmpty()) {
+      if (!params.m_requiredContentType.IsEmpty()) {
         PCaselessString actualContentType = url.GetParamVars()("type");
-        if (!actualContentType.IsEmpty() && requiredContentType != requiredContentType)
+        if (!actualContentType.IsEmpty() && actualContentType != params.m_requiredContentType)
           return false;
       }
 
@@ -1213,11 +1213,11 @@ class PURL_DataLoader : public PURLLoader
       return true;
     }
 
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType, const PTimeInterval &)
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params)
     {
-      if (!requiredContentType.IsEmpty()) {
+      if (!params.m_requiredContentType.IsEmpty()) {
         PCaselessString actualContentType = url.GetParamVars()("type");
-        if (!actualContentType.IsEmpty() && requiredContentType != requiredContentType)
+        if (!actualContentType.IsEmpty() && actualContentType != params.m_requiredContentType)
           return false;
       }
 
