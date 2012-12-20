@@ -637,7 +637,15 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
         return false;
       }
 
-      PSSLChannel * ssl = new PSSLChannel;
+      PSSLContext * context = new PSSLContext;
+      if (!context->SetCredentials(m_authority, m_certificate, m_privateKey)) {
+        lastResponseCode = -2;
+        lastResponseInfo = "Could not set certificates";
+        delete context;
+        return false;
+      }
+
+      PSSLChannel * ssl = new PSSLChannel(context);
       if (!ssl->Connect(tcp)) {
         lastResponseCode = -2;
         lastResponseInfo = ssl->GetErrorText();
@@ -676,15 +684,21 @@ PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
 }
 
 
-void PHTTPClient::SetAuthenticationInfo(
-  const PString & userName,
-  const PString & password
-)
+void PHTTPClient::SetAuthenticationInfo(const PString & userName,const PString & password)
 {
   m_userName = userName;
   m_password = password;
 }
 
+
+#if P_SSL
+void PHTTPClient::SetSSLCredentials(const PString & authority, const PString & certificate, const PString & privateKey)
+{
+  m_authority = authority;
+  m_certificate = certificate;
+  m_privateKey = privateKey;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -1053,27 +1067,33 @@ class PURL_HttpLoader : public PURLLoader
 {
     PCLASSINFO(PURL_HttpLoader, PURLLoader);
   public:
-    virtual bool Load(const PURL & url, PString & str, const PString & requiredContentType, const PTimeInterval & timeout)
+    virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams & params)
     {
       PHTTPClient http;
       http.SetPersistent(false);
-      http.SetReadTimeout(timeout);
-      return http.GetTextDocument(url, str, requiredContentType);
+      http.SetReadTimeout(params.m_timeout);
+#if P_SSL
+      http.SetSSLCredentials(params.m_authority, params.m_certificate, params.m_privateKey);
+#endif
+      return http.GetTextDocument(url, str, params.m_requiredContentType);
     }
 
-    virtual bool Load(const PURL & url, PBYTEArray & data, const PString & requiredContentType, const PTimeInterval & timeout)
+    virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams & params)
     {
       PHTTPClient http;
       http.SetPersistent(false);
-      http.SetReadTimeout(timeout);
+      http.SetReadTimeout(params.m_timeout);
+#if P_SSL
+      http.SetSSLCredentials(params.m_authority, params.m_certificate, params.m_privateKey);
+#endif
       PMIMEInfo outMIME, replyMIME;
       if (!http.GetDocument(url, outMIME, replyMIME))
         return false;
 
       PCaselessString actualContentType = replyMIME(PHTTP::ContentTypeTag());
-      if (!requiredContentType.IsEmpty() && !actualContentType.IsEmpty() &&
-            actualContentType.NumCompare(requiredContentType, requiredContentType.Find(';')) != EqualTo) {
-        PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << requiredContentType << ", got " << actualContentType);
+      if (!params.m_requiredContentType.IsEmpty() && !actualContentType.IsEmpty() &&
+            actualContentType.NumCompare(params.m_requiredContentType, params.m_requiredContentType.Find(';')) != EqualTo) {
+        PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << params.m_requiredContentType << ", got " << actualContentType);
         return false;
       }
 

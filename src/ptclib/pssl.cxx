@@ -325,6 +325,13 @@ PString PSSLPrivateKey::AsString() const
 }
 
 
+bool PSSLPrivateKey::Parse(const PString & keyStr)
+{
+  PBYTEArray keyData;
+  return PBase64::Decode(keyStr, keyData) && SetData(keyData);
+}
+
+
 PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
 {
   FreePrivateKey();
@@ -437,9 +444,7 @@ PSSLCertificate::PSSLCertificate(const PBYTEArray & certData)
 PSSLCertificate::PSSLCertificate(const PString & certStr)
   : m_certificate(NULL)
 {
-  PBYTEArray certData;
-  if (PBase64::Decode(certStr, certData))
-    SetData(certData);
+  Parse(certStr);
 }
 
 
@@ -604,6 +609,13 @@ PBYTEArray PSSLCertificate::GetData() const
 PString PSSLCertificate::AsString() const
 {
   return PBase64::Encode(GetData());
+}
+
+
+bool PSSLCertificate::Parse(const PString & certStr)
+{
+  PBYTEArray certData;
+  return PBase64::Decode(certStr, certData) && SetData(certData);
 }
 
 
@@ -1192,6 +1204,12 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
 }
 
 
+bool PSSLContext::SetVerifyCertificate(const PSSLCertificate & cert)
+{
+  return cert.IsValid() && SSL_CTX_add_extra_chain_cert(m_context, (X509 *)cert) == 1;
+}
+
+
 static int VerifyModeBits[PSSLContext::EndVerifyMode] = {
   SSL_VERIFY_NONE,
   SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE,
@@ -1267,6 +1285,96 @@ bool PSSLContext::SetCipherList(const PString & ciphers)
     return false;
 
   return SSL_CTX_set_cipher_list(m_context, (char *)(const char *)ciphers);
+}
+
+
+bool PSSLContext::SetCredentials(const PString & authority,
+                                 const PString & certificate,
+                                 const PString & privateKey,
+                                 bool create)
+{
+  if (!authority.IsEmpty()) {
+    bool ok;
+    if (PDirectory::Exists(authority))
+      ok = SetVerifyLocations(PString::Empty(), authority);
+    else if (PFile::Exists(authority))
+      ok = SetVerifyLocations(authority, PString::Empty());
+    else
+      ok = SetVerifyCertificate(PSSLCertificate(authority));
+    if (!ok) {
+      PTRACE(2, "SSL\tCould not find/parse certificate authority \"" << authority << '"');
+      return false;
+    }
+    SetVerifyMode(VerifyPeerMandatory);
+  }
+
+  if (certificate.IsEmpty() && privateKey.IsEmpty())
+    return true;
+
+  PSSLCertificate cert;
+  PSSLPrivateKey key;
+
+  if (PFile::Exists(certificate) && !cert.Load(certificate)) {
+    PTRACE(2, "SSL\tCould not load certificate file \"" << certificate << '"');
+    return false;
+  }
+
+  if (PFile::Exists(privateKey) && !key.Load(privateKey)) {
+    PTRACE(2, "SSL\tCould not load private key file \"" << privateKey << '"');
+    return false;
+  }
+
+  if (!key.IsValid() && !key.Parse(certificate)) {
+    PTRACE(2, "SSL\tCould not parse certificate \"" << certificate << '"');
+    return false;
+  }
+
+  if (!cert.IsValid() && !cert.Parse(privateKey)) {
+    PTRACE(2, "SSL\tCould not parse private key \"" << privateKey << '"');
+    return false;
+  }
+
+  if (!cert.IsValid() || !key.IsValid()) {
+
+    if (cert.IsValid() || key.IsValid()) {
+      PTRACE(2, "SSL\tRequire both certificate and private key");
+      return false;
+    }
+
+    if (!create) {
+      PTRACE(2, "SSL\tRequire certificate and private key");
+      return false;
+    }
+
+    PStringStream dn;
+    dn << "/O=" << PProcess::Current().GetManufacturer()
+       << "/CN=" << PIPSocket::GetHostName();
+
+    PSSLPrivateKey key(2048);
+    PSSLCertificate root;
+    if (!root.CreateRoot(dn, key)) {
+      PTRACE(1, "SSL\tCould not create certificate");
+      return false;
+    }
+
+    root.Save(certificate);
+    PTRACE(2, "SSL\tCreated new certificate file \"" << certificate << '"');
+
+    key.Save(privateKey, true);
+    PTRACE(2, "SSL\tCreated new private key file \"" << privateKey << '"');
+  }
+
+  if (!UseCertificate(cert)) {
+    PTRACE(1, "SSL\tCould not use certificate " << cert);
+    return false;
+  }
+
+  if (!UsePrivateKey(key)) {
+    PTRACE(1, "SSL\tCould not use private key " << key);
+    return false;
+  }
+
+  return true;
 }
 
 

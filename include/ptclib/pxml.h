@@ -272,6 +272,7 @@ class PXML_HTTP : public PXML
 
     bool LoadURL(const PURL & url);
     bool LoadURL(const PURL & url, const PTimeInterval & timeout, Options options = NoOptions);
+    bool LoadURL(const PURL & url, const PURL::LoadParams & params, Options options = NoOptions);
 
   protected:
     PDECLARE_NOTIFIER(PTimer,  PXML_HTTP, AutoReloadTimeout);
