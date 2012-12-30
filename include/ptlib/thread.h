@@ -635,8 +635,8 @@ class PThreadObj : public PThread
                 autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread,
                 priority,
                 name)
-      , m_object(obj)
       , m_function(function)
+      , m_object(obj)
     {
       PThread::Resume();
     }
@@ -647,8 +647,8 @@ class PThreadObj : public PThread
     }
 
   protected:
-    ObjType & m_object;
     ObjTypeFn m_function;
+    ObjType & m_object;
 };
 
 
