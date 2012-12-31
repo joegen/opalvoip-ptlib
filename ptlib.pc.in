@@ -13,8 +13,7 @@ objdir=obj/@target@
 Name: ptlib
 Description: PT Library
 Version: @PTLIB_VERSION@
-Libs: @LDFLAGS@ -L${libdir} -lpt${suffix}
-Libs.private: @ENDLDLIBS@
+Libs: @LDFLAGS@ -L${libdir} -lpt${suffix} @LIBS@ @ENDLDLIBS@
 Cflags: -I${includedir} @PTLIB_CFLAGS@
 
 PTLIB_IPV6=@PTLIB_IPV6@
