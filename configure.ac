@@ -1839,12 +1839,6 @@ if test "${HAS_DNS_RESOLVER:-unset}" != "unset" ; then
    ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
 fi
 
-dnl dl needs to be at the end
-if test "x${HAS_LIBDL}" = "x1" ; then
-   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
-   PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
-fi
-
 
 dnl ########################################################################
 dnl this reduces the size of all executables and libraries
@@ -1886,6 +1880,13 @@ case "$target_os" in
       PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
    ;;
 esac
+
+dnl dl needs to be at the end
+if test "x${HAS_LIBDL}" = "x1" ; then
+   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
+   PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
+fi
+
 
 if test "x$enable_plugins" != "xno" ; then
    AC_MSG_CHECKING(where plugins are being installed)
