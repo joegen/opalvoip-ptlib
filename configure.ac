@@ -2229,7 +2229,13 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 
 dnl ########################################################################
 dnl output header file
-AC_CONFIG_HEADERS($libdir/ptbuildopts.h:include/ptbuildopts.h.in)
+
+cfg_prefix=$exec_prefix
+if test "$cfg_prefix" = "NONE" ; then
+  cfg_prefix=./include
+fi
+
+AC_CONFIG_HEADERS([${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in])
 
 AC_OUTPUT()
 
