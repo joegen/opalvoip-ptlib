@@ -358,9 +358,11 @@ PString PDirectory::CreateFullPath(const PString & path, PBoolean isDirectory)
     partialpath.Delete(0, 1);
 
   LPSTR dummy;
-  PINDEX len = (PINDEX)GetFullPathName(partialpath, 0, NULL, &dummy)-1;
-  PString fullpath;
-  GetFullPathName(partialpath, len+1, fullpath.GetPointerAndSetLength(len), &dummy);
+  DWORD len = (PINDEX)GetFullPathName(partialpath, 0, NULL, &dummy);
+  if (len-- == 0)
+     return PString::Empty();
+   PString fullpath;
+   GetFullPathName(partialpath, len+1, fullpath.GetPointerAndSetLength(len), &dummy);
 #endif
   if (isDirectory && len > 0 && fullpath[len-1] != PDIR_SEPARATOR)
     fullpath += PDIR_SEPARATOR;
