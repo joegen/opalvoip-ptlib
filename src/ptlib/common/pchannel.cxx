@@ -1045,7 +1045,7 @@ PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBool
     }
   }
 
-  return Move(oldname, oldname.GetDirectory() + newname, force);
+  return Move(oldname, PFilePath(oldname.GetDirectory() + newname), force);
 }
 
 
