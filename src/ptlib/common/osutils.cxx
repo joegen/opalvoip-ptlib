@@ -766,7 +766,7 @@ bool PDirectory::Create(const PString & p, int perm, bool recurse)
 #elif defined(P_VXWORKS)
   if (mkdir(dir) == 0)
 #else    
-  if (mkdir(dir.Left(path.GetLength()-1), perm) == 0)
+  if (mkdir(dir.Left(p.GetLength()-1), perm) == 0)
 #endif
     return true;
 
