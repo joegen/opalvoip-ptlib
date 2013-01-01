@@ -28,9 +28,7 @@
 # $Date$
 #
 
-ifdef PTLIBDIR
-  override CFG_ARGS+=--prefix=$(PTLIBDIR)
-else
+ifndef PTLIBDIR
   export PTLIBDIR:=$(CURDIR)
   $(info Setting default PTLIBDIR to $(PTLIBDIR))
 endif
@@ -51,7 +49,7 @@ endif
 AUTOCONF       := autoconf
 ACLOCAL        := aclocal
 
-ifeq (,$(findstring $(MAKECMDGOALS),config clean distclean default_clean))
+ifeq (,$(findstring $(MAKECMDGOALS),config clean distclean default_clean sterile))
 $(MAKECMDGOALS): default
 endif
 
@@ -59,8 +57,8 @@ default: $(CONFIG_FILES)
 	@$(MAKE) -f $(TOP_LEVEL_MAKE) $(MAKECMDGOALS)
 
 .PHONY:config
-config: $(CONFIGURE)
-	$(CONFIGURE) $(CFG_ARGS)
+config: $(CONFIG_FILES)
+	$(CONFIGURE)
 
 .PHONY:clean
 clean:
@@ -74,25 +72,21 @@ default_clean:
 distclean:
 	@$(MAKE) -f $(TOP_LEVEL_MAKE) distclean
 
+.PHONY:sterile
+sterile:
+	@$(MAKE) -f $(TOP_LEVEL_MAKE) sterile
 
-# this complexity is so if any of CONFIG_FILES does not exist it is created
-# with ./configure only being executed once.
-FIRST_CONFIG := $(firstword $(CONFIG_FILES))
-OTHER_CONFIGS := $(wordlist 2,1000,$(CONFIG_FILES))
+$(CONFIG_FILES) : config.status $(addsuffix .in, $(CONFIG_FILES))
+	 ./config.status
 
-$(FIRST_CONFIG): $(OTHER_CONFIGS) $(CONFIGURE) $(PLUGIN_CONFIG) $(addsuffix .in, $(CONFIG_FILES))
-	$(CONFIGURE) $(CFG_ARGS)
-	touch $@
-
-$(OTHER_CONFIGS):
-	touch $@
-
+config.status:	 $(CONFIGURE) # $(addsuffix .in, $(CONFIG_FILES))
+	$(CONFIGURE)
 
 ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))
 ifneq (,$(shell which $(ACLOCAL)))
 
-$(CONFIGURE): $(CONFIGURE).ac $(ACLOCAL).m4 $(PTLIBDIR)/make/*.m4
+$(CONFIGURE): $(CONFIGURE).ac $(PTLIBDIR)/make/*.m4 $(ACLOCAL).m4
 	$(AUTOCONF)
 
 $(ACLOCAL).m4:
