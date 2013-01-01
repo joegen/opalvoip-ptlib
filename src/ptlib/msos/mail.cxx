@@ -100,6 +100,10 @@ PBoolean PMail::LogOn(const PString & username,
   #pragma warning(disable:4100)
 #endif
 
+#if _MSC_VER >= 1700
+  #pragma warning(disable:4100)
+#endif
+
 PBoolean PMail::LogOnCommonInterface(const char * username,
                                  const char * password,
                                  const char * service)
