@@ -75,7 +75,7 @@ $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	$(LDFLAGS) \
 	-o $@
 
-OBJS	 := $(patsubst %.c, $(OBJDIR)/%.o, $(patsubst %.cxx, $(OBJDIR)/%.o, $(notdir $(PLUGIN_SOURCES))))
+OBJS	 := $(patsubst %.c, $(OBJDIR)/%.o, $(patsubst %.cxx, $(OBJDIR)/%.o, $(patsubst %.cpp, $(OBJDIR)/%.o, $(notdir $(PLUGIN_SOURCES)))))
 
 CLEAN_FILES += $(OBJDIR)/$(PLUGIN_FILENAME)
 
