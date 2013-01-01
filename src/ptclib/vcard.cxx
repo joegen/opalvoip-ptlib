@@ -156,7 +156,7 @@ void PvCard::ParamValue::PrintOn(ostream & strm) const
   PINDEX lastPos = 0, pos;
   while ((pos = Find('"', lastPos)) != P_MAX_INDEX) {
     strm.iword(0) += pos - lastPos + 1;
-    strm << string(lastPos, pos-1) << "\\\"";
+    strm << Mid(lastPos, pos-1-lastPos) << "\\\"";
     lastPos = pos+1;
   }
 
