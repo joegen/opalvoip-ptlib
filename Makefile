@@ -48,12 +48,10 @@ ifneq (,$(findstring --disable-plugins,$(CFG_ARGS)))
                   $(PTLIBDIR)/plugins/vidinput_dc/Makefile
 endif
 
-
 AUTOCONF       := autoconf
 ACLOCAL        := aclocal
 
-
-ifneq ($(MAKECMDGOALS),config)
+ifeq (,$(findstring $(MAKECMDGOALS),config clean distclean default_clean))
 $(MAKECMDGOALS): default
 endif
 
@@ -63,6 +61,19 @@ default: $(CONFIG_FILES)
 .PHONY:config
 config: $(CONFIGURE)
 	$(CONFIGURE) $(CFG_ARGS)
+
+.PHONY:clean
+clean:
+	@$(MAKE) -f $(TOP_LEVEL_MAKE) clean
+
+.PHONY:default_clean
+default_clean:
+	@$(MAKE) -f $(TOP_LEVEL_MAKE) default_clean
+
+.PHONY:distclean
+distclean:
+	@$(MAKE) -f $(TOP_LEVEL_MAKE) distclean
+
 
 # this complexity is so if any of CONFIG_FILES does not exist it is created
 # with ./configure only being executed once.
