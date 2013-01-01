@@ -40,12 +40,16 @@
 
 #if defined(_WIN32) && !defined(_WIN64)
 
+#  if _MSC_VER < 1700
+
 #  ifndef P_HAS_MAPI
 #  define P_HAS_MAPI 1
 #  endif
 
 #  ifndef P_HAS_CMC
 #  define P_HAS_CMC 1
+#  endif
+
 #  endif
 
 #  if P_HAS_MAPI
