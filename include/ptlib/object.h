@@ -1969,10 +1969,12 @@ typedef PIntSameOrder<long double> PFloat80b;
 #endif
 
 
-#ifdef _MSC_VER
-#define P_PACK_FIELD(f) __declspec(align(1)) f
-#else
-#define P_PACK_FIELD(f) f __attribute__ ((packed))
+#if defined(_MSC_VER)
+#define P_ALIGN_FIELD(f,a) __declspec(align(a)) f
+#define P_PACK_FIELD(f)    __declspec(align(1)) f
+#elif defined(__GNUC__)
+#define P_ALIGN_FIELD(f,a) f __attribute__ ((aligned(a)))
+#define P_PACK_FIELD(f)    f __attribute__ ((packed))
 #endif
 
 
