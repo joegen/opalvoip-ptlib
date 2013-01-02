@@ -78,6 +78,8 @@ dnl ########################################################################
 
 AC_ARG_ENABLE(oss, [  --enable-oss            enable OSS audio support],,enable_oss=no)
 
+# GNU Hurd does not have audio support
+if test "$OSTYPE" != "gnu"; then
 if test "${enable_oss}z" = "yesz" ; then
   AC_CHECK_HEADER(sys/soundcard.h, OSSSNDCARDHDR=1)
   AC_MSG_CHECKING(for OSS sound support)
@@ -87,6 +89,7 @@ if test "${enable_oss}z" = "yesz" ; then
   else
     AC_MSG_RESULT(no)
   fi
+fi
 fi
 dnl #########################################################################
 
