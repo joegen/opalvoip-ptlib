@@ -1661,7 +1661,11 @@ PIPSocket::Address::Address(const PString & dotNotation)
 }
 
 
-PIPSocket::Address::Address(PINDEX len, const BYTE * bytes, int scope)
+PIPSocket::Address::Address(PINDEX len, const BYTE * bytes, int 
+#if P_HAS_IPV6
+							scope
+#endif
+							)
 {
   switch (len) {
 #if P_HAS_IPV6

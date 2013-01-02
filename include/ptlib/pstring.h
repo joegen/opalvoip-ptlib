@@ -38,6 +38,8 @@
 #pragma interface
 #endif
 
+P_PUSH_MSVC_WARNINGS(4250)
+
 #include <string>
 #include <vector>
 #include <ptlib/array.h>
