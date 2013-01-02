@@ -638,7 +638,7 @@ bool PSTUNMessage::CheckMessageIntegrity(BYTE * credentialsHash, PINDEX credenti
 void PSTUNMessage::CalculateMessageIntegrity(BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi, BYTE * checkHmac)
 {
   // calculate hash up to, but not including, MESSAGE_INTEGRITY attribute
-  int lengthWithoutMI = (BYTE *)mi - (BYTE *)theArray;
+  PINDEX lengthWithoutMI = (char *)mi - theArray;
 
   // calculate message integrity
   PHMAC_SHA1 hmac(credentialsHash, credentialsHashLen);
