@@ -138,18 +138,7 @@ void PSoundChannelALSA::UpdateDictionary(Directions dir)
             }
 
             devices.SetAt(uniqueName, cardNum);
-
-#ifdef snd_card_get_name_allocates_on_the_heap
-            /*snd_card_get_name is unclear on if the pointer returned is
-              static or on the heap. A web search shows that about half
-              the implemetations out there do the free() and half don't!
-
-              As it is causing at least one user a problem with "Block XXXX
-              not in heap!" errors being output to stderr, we take it out and
-              suffer the memory leak, if there is one ....
-             */
             free(rawName);
-#endif
           }
         }
       }
