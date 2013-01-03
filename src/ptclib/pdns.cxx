@@ -754,6 +754,13 @@ DNS_STATUS PDNS::Cached_DnsQuery(
 }
 
 
+PDNS::PDnsRecords::~PDnsRecords()
+{
+  if (m_records != NULL)
+    DnsRecordListFree(m_records, DnsFreeRecordList);
+}
+
+
 /////////////////////////////////////////////////////////////////
 
 #else
