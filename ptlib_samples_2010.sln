@@ -42,7 +42,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SortedListTest", "samples\s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ethernet", "samples\ether\ether_2010.vcxproj", "{0CE89CDE-443C-4D09-8CEA-DE61170AB44A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vidtest", "..\SVN-Trunk\ptlib\samples\vidtest\vidtest_2010.vcxproj", "{4F412B34-84BD-4FF9-B64D-81D7A5BBA99B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vidtest", "samples\vidtest\vidtest_2010.vcxproj", "{4F412B34-84BD-4FF9-B64D-81D7A5BBA99B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
