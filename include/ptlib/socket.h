@@ -48,7 +48,6 @@
 #include <sys/socket.h>
 #endif
 
-P_PUSH_MSVC_WARNINGS(4250)
 
 class PSocket;
 

@@ -38,7 +38,6 @@
 #pragma interface
 #endif
 
-P_PUSH_MSVC_WARNINGS(4250)
 
 #include <string>
 #include <vector>
@@ -1982,7 +1981,7 @@ typedef PConstantString<PCaselessString> PConstCaselessString;
    All of the standard stream I/O operators, manipulators etc will operate on
    the PStringStream class.
  */
-class PStringStream : public PString, public iostream
+class PStringStream : public PString, public P_IOSTREAM
 {
   PCLASSINFO(PStringStream, PString);
 
@@ -2094,7 +2093,7 @@ class PStringStream : public PString, public iostream
     virtual void AssignContents(const PContainer & cont);
 
   private:
-    PStringStream(int, const PStringStream &) : iostream(cout.rdbuf()) { }
+    PStringStream(int, const PStringStream &) : P_IOSTREAM(cout.rdbuf()) { }
 
     class Buffer : public streambuf {
       public:
