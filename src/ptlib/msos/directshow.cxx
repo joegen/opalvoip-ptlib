@@ -1428,7 +1428,7 @@ public:
 
   // We don't implement this one
   //
-  STDMETHODIMP SampleCB( double SampleTime, IMediaSample * pSample )
+  STDMETHODIMP SampleCB( double /*SampleTime*/, IMediaSample * /*pSample*/)
   {
     return 0;
   }
