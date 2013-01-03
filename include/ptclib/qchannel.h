@@ -36,7 +36,6 @@
 #pragma interface
 #endif
 
-P_PUSH_MSVC_WARNINGS(4250)
 
 /** Class for implementing a serial queue channel in memory.
     This implements a simple memory based First In First Out queue. Data

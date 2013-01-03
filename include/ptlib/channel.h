@@ -104,7 +104,7 @@ class PChannelStreamBuffer : public streambuf {
    resource. The act of opening a channel is a key event that may fail. In this
    case the channel remains closed and error values are set.
  */
-class PChannel : public PObject, public iostream {
+class PChannel : public PObject, public P_IOSTREAM {
   PCLASSINFO(PChannel, PObject);
 
   /**@name Construction */

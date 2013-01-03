@@ -2006,6 +2006,20 @@ typedef PIntSameOrder<long double> PFloat80b;
 #define PABS(v) std::abs(v)
 
 
+#if _MSC_VER >= 1700
+  class p_iostream : public std::iostream {
+    public:
+      p_iostream(std::streambuf * sbuf) : std::iostream(sbuf) { }
+    private:
+      virtual void __CLR_OR_THIS_CALL _Add_vtordisp1() { } // compiler bug workaround
+      virtual void __CLR_OR_THIS_CALL _Add_vtordisp2() { } // compiler bug workaround
+  };
+  #define P_IOSTREAM p_iostream
+#else
+  #define P_IOSTREAM std::iostream
+#endif
+
+
 #endif // PTLIB_OBJECT_H
 
 
