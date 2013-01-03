@@ -83,13 +83,13 @@ PJavaScript::~PJavaScript()
 }
 
 
-bool PJavaScript::LoadFile(const PFilePath & filename)
+bool PJavaScript::LoadFile(const PFilePath & /*filename*/)
 {
   return false;
 }
 
 
-bool PJavaScript::LoadText(const PString & text)
+bool PJavaScript::LoadText(const PString & /*text*/)
 {
   return false;
 }
@@ -130,7 +130,7 @@ bool PJavaScript::Run(const char * text)
 }
 
 
-bool PJavaScript::CreateComposite(const PString & name)
+bool PJavaScript::CreateComposite(const PString & /*name*/)
 {
   return false;
 }
@@ -242,7 +242,7 @@ bool PJavaScript::SetVar(const PString & name, const PVarType & var)
 
 #define GET_VALUE(v8Type, cppType, isFunc) \
   GET_VALUE_INTERNAL(v8Type, cppType, isFunc) \
-  return (static_cast<v8::v8Type *>(*value))->Value(); \
+  return static_cast<cppType>((static_cast<v8::v8Type *>(*value))->Value()); \
 
 
 bool PJavaScript::GetBoolean(const PString & name)
@@ -295,25 +295,25 @@ bool PJavaScript::SetString(const PString & name, const char * value)
 }
 
 
-bool PJavaScript::ReleaseVariable(const PString & name)
+bool PJavaScript::ReleaseVariable(const PString & /*name*/)
 {
   return false;
 }
 
 
-bool PJavaScript::Call(const PString & name, const char * signature, ...)
+bool PJavaScript::Call(const PString & /*name*/, const char * /*signature*/, ...)
 {
   return false;
 }
 
 
-bool PJavaScript::Call(const PString & name, Signature & signature)
+bool PJavaScript::Call(const PString & /*name*/, Signature & /*signature*/)
 {
   return false;
 }
 
 
-bool PJavaScript::SetFunction(const PString & name, const FunctionNotifier & func)
+bool PJavaScript::SetFunction(const PString & /*name*/, const FunctionNotifier & /*func*/)
 {
   return false;
 }

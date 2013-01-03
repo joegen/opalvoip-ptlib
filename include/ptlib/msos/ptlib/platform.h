@@ -38,14 +38,12 @@
 #ifdef _MSC_VER
 
   #pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
-  #pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
   #pragma warning(disable:4251)  // disable warning exported structs
+  #pragma warning(disable:4324)  // structure was padded due to __declspec(align())
   #pragma warning(disable:4511)  // default copy ctor not generated warning
   #pragma warning(disable:4512)  // default assignment op not generated warning
   #pragma warning(disable:4514)  // unreferenced inline removed
   #pragma warning(disable:4699)  // precompiled headers
-  #pragma warning(disable:4702)  // disable warning about unreachable code
-  #pragma warning(disable:4705)  // disable warning about statement has no effect
   #pragma warning(disable:4710)  // inline not expanded warning
   #pragma warning(disable:4711)  // auto inlining warning
   #pragma warning(disable:4786)  // identifier was truncated to '255' characters in the debug information
@@ -289,25 +287,6 @@ class RegistryKey
 #endif
 extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
-// used by various modules to disable the winsock2 include to avoid header file problems
-#ifndef P_KNOCKOUT_WINSOCK2
-
-  #if defined(_MSC_VER)
-    #pragma warning(push)
-    #pragma warning(disable:4127 4706)
-  #endif
-
-  #include <winsock2.h> // Version 2 of windows socket
-  #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
-
-  #if defined(_MSC_VER)
-    #pragma warning(pop)
-  #endif
-
-  typedef int socklen_t;
-
-#endif  // P_KNOCKOUT_WINSOCK2
-
 #if defined(_MSC_VER) && !defined(_WIN32)
   extern "C" int __argc;
   extern "C" char ** __argv;
@@ -330,9 +309,6 @@ typedef DWORD PProcessIdentifier;
   __inline void PBreakToDebugger() { }
 #endif
 
-#if defined(_MSC_VER)
-  #pragma warning(disable:4201)
-#endif
 
 #include <malloc.h>
 #include <mmsystem.h>
@@ -368,87 +344,11 @@ typedef DWORD PProcessIdentifier;
 
 #endif
 
-// preload <string> and kill warnings
-#if defined(_MSC_VER)
-  #pragma warning(push)
-  #include <yvals.h>    
-  #pragma warning(disable:4100)
-  #pragma warning(disable:4018)
-  #pragma warning(disable:4663)
-  #pragma warning(disable:4146)
-  #pragma warning(disable:4244)
-  #pragma warning(disable:4786)
-#endif
-#include <string>
-#if defined(_MSC_VER)
-  #pragma warning(pop)
-#endif
+// used by various modules to disable the winsock2 include to avoid header file problems
+#include <winsock2.h> // Version 2 of windows socket
+#include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
 
-// preload <vector> and kill warnings
-#if defined(_MSC_VER)
-  #pragma warning(push)
-  #include <yvals.h>    
-  #pragma warning(disable:4018)
-  #pragma warning(disable:4663)
-  #pragma warning(disable:4786)
-#endif
-#include <vector>
-#if defined(_MSC_VER)
-  #pragma warning(pop)
-#endif
-
-// preload <map> and kill warnings
-#if defined(_MSC_VER)
-  #pragma warning(push)
-  #include <yvals.h>    
-  #pragma warning(disable:4018)
-  #pragma warning(disable:4663)
-  #pragma warning(disable:4786)
-#endif
-#include <map>
-#if defined(_MSC_VER)
-  #pragma warning(pop)
-#endif
-
-// preload <utility> and kill warnings
-#if defined(_MSC_VER)
-  #pragma warning(push)
-  #include <yvals.h>    
-  #pragma warning(disable:4786)
-#endif
-#include <utility>
-#if defined(_MSC_VER)
-  #pragma warning(pop)
-#endif
-
-// preload <iterator> and kill warnings
-#if defined(_MSC_VER)
-  #pragma warning(push)
-  #include <yvals.h>    
-  #pragma warning(disable:4786)
-#endif
-#include <iterator>
-#if defined(_MSC_VER)
-  #pragma warning(pop)
-#endif
-
-// preload <algorithm> and kill warnings
-#include <algorithm>
-
-// preload <queue> and kill warnings
-#if defined(_MSC_VER)
-  #pragma warning(push)
-  #include <yvals.h>    
-  #pragma warning(disable:4284)
-#endif
-#include <queue>
-#if defined(_MSC_VER)
-  #pragma warning(pop)
-#endif
-
-#if defined(_MSC_VER)
-  #pragma warning(disable:4786)
-#endif
+typedef int socklen_t;
 
 
 #endif // PTLIB_PLATFORM_H
