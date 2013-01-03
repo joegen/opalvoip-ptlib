@@ -801,7 +801,7 @@ PBoolean PHTTPClientBasicAuthentication::Authorise(AuthObject & authObject) cons
   PBase64 digestor;
   digestor.StartEncoding();
   digestor.ProcessEncoding(username + ":" + password);
-  PString result = digestor.GetEncodedString();
+  PString result = digestor.CompleteEncoding();
 
   PStringStream auth;
   auth << "Basic " << result;
