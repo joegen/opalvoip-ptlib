@@ -1285,8 +1285,8 @@ if test "x$enable_v8" = "xno" ; then
    AC_MSG_NOTICE(V8 disabled by user)
 else
   AC_MSG_CHECKING(for V8 Javascript support)
-  SAVED_LDFLAGS=$LDFLAGS
-  LDFLAGS="$LDFLAGS -lv8"
+  SAVED_LIBS=$LIBS
+  LIBS="$LIBS -lv8"
   AC_LINK_IFELSE(
      [AC_LANG_PROGRAM([#include <v8.h>],
                       [int i = v8::HandleScope::NumberOfHandles()]
@@ -1294,7 +1294,7 @@ else
      [HAS_V8=1] ; [AC_MSG_RESULT([yes])],
      [HAS_V8=]  ; [AC_MSG_RESULT([no])]
   )
-  LDFLAGS=$SAVED_LDFLAGS
+  LIBS=$SAVED_LIBS
 fi
 
 if test "x${HAS_V8}" != "x" ; then
