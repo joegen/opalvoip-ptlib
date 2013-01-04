@@ -96,7 +96,7 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 
   bool needAuthentication = true;
   PURL adjustableURL = url;
-  for (PINDEX retry = 0; retry < 3; retry++) {
+  for (int retry = 3; retry > 0; --retry) {
     if (!AssureConnect(adjustableURL, outMIME))
       break;
 
@@ -112,47 +112,53 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 
     // Await a response, if all OK exit loop
     if (ReadResponse(replyMIME) && (lastResponseCode != Continue || ReadResponse(replyMIME))) {
+      if (IsOK(lastResponseCode))
+        return lastResponseCode;
+
       switch (lastResponseCode) {
         case MovedPermanently:
         case MovedTemporarily:
           adjustableURL = replyMIME("Location");
-          if (!adjustableURL.IsEmpty())
-            return lastResponseCode;
+          if (adjustableURL.IsEmpty())
+            continue;
           break;
 
         case UnAuthorised:
           if (needAuthentication && replyMIME.Contains("WWW-Authenticate") && !(m_userName.IsEmpty() && m_password.IsEmpty())) {
-            needAuthentication = false;
-
             // authenticate 
             PString errorMsg;
             PHTTPClientAuthentication * newAuth = PHTTPClientAuthentication::ParseAuthenticationRequired(false, replyMIME, errorMsg);
-            if (newAuth == NULL)
-              return false;
+            if (newAuth != NULL) {
+              newAuth->SetUsername(m_userName);
+              newAuth->SetPassword(m_password);
 
-            newAuth->SetUsername(m_userName);
-            newAuth->SetPassword(m_password);
+              delete m_authentication;
+              m_authentication = newAuth;
+              needAuthentication = false;
+              continue;
+            }
 
-            delete m_authentication;
-            m_authentication = newAuth;
-            break;
+            lastResponseInfo += " - " + errorMsg;
           }
           // Do next case
 
         default:
-          return lastResponseCode;
+          break;
       }
+
+      retry = 0; // No more retries
     }
     else {
       // If not persisting, we have no oppurtunity to write again, just error out
       if (!m_persist)
         break;
 
-      // ... we close the channel and allow AssureConnet() to reopen it.
+      // ... we close the channel and allow AssureConnect() to reopen it.
       Close();
     }
   }
 
+  PTRACE_IF(3, !IsOK(lastResponseCode), "HTTP", "Error " << lastResponseCode << ' ' << lastResponseInfo);
   return lastResponseCode;
 }
 
@@ -795,7 +801,7 @@ PBoolean PHTTPClientBasicAuthentication::Authorise(AuthObject & authObject) cons
   PBase64 digestor;
   digestor.StartEncoding();
   digestor.ProcessEncoding(username + ":" + password);
-  PString result = digestor.GetEncodedString();
+  PString result = digestor.CompleteEncoding();
 
   PStringStream auth;
   auth << "Basic " << result;
@@ -1003,29 +1009,40 @@ PBoolean PHTTPClientDigestAuthentication::Authorise(AuthObject & authObject) con
   return true;
 }
 
+
+static void AuthError(PString & errorMsg, const char * errText, const PString & scheme)
+{
+  if (!errorMsg.IsEmpty())
+    errorMsg += ", ";
+  errorMsg += errText;
+  errorMsg += " scheme \"";
+  errorMsg += scheme;
+  errorMsg += '"';
+}
+
+
 PHTTPClientAuthentication * PHTTPClientAuthentication::ParseAuthenticationRequired(bool isProxy, const PMIMEInfo & replyMIME, PString & errorMsg)
 {
-  PString line = replyMIME(isProxy ? "Proxy-Authenticate" : "WWW-Authenticate");
+  PStringArray lines = replyMIME(isProxy ? "Proxy-Authenticate" : "WWW-Authenticate").Lines();
 
   // find authentication
-  PINDEX pos = line.Find(' ');
-  PString scheme = line.Left(pos).Trim().ToLower();
-  PHTTPClientAuthentication * newAuth = PHTTPClientAuthenticationFactory::CreateInstance(scheme);
-  if (newAuth == NULL) {
-    delete newAuth;
-    errorMsg = "Unknown authentication scheme " + scheme;
-    return NULL;
+  for (PINDEX i = 0; i < lines.GetSize(); ++i) {
+    PString line = lines[i];
+    PString scheme = line.Left(line.Find(' ')).Trim().ToLower();
+    PHTTPClientAuthentication * newAuth = PHTTPClientAuthenticationFactory::CreateInstance(scheme);
+    if (newAuth == NULL)
+      AuthError(errorMsg, "Unknown authentication", scheme);
+    else {
+      // parse the new authentication scheme
+      if (newAuth->Parse(line, isProxy))
+        return newAuth;
+
+      delete newAuth;
+      AuthError(errorMsg, "Failed to parse authentication for", scheme);
+    }
   }
 
-  // parse the new authentication scheme
-  if (!newAuth->Parse(line, isProxy)) {
-    delete newAuth;
-    errorMsg = "Failed to parse authentication for scheme " + scheme;
-    return NULL;
-  }
-
-  // switch authentication schemes
-  return newAuth;
+  return NULL;
 }
 
 

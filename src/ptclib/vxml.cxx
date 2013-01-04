@@ -795,7 +795,7 @@ PTextToSpeech * PVXMLSession::SetTextToSpeech(PTextToSpeech * tts, PBoolean auto
 
 PTextToSpeech * PVXMLSession::SetTextToSpeech(const PString & ttsName)
 {
-  PFactory<PTextToSpeech>::Key_T name = ttsName;
+  PFactory<PTextToSpeech>::Key_T name = (const char *)ttsName;
   if (ttsName.IsEmpty()) {
     PFactory<PTextToSpeech>::KeyList_T engines = PFactory<PTextToSpeech>::GetKeyList();
     if (engines.empty())

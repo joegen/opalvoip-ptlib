@@ -357,7 +357,7 @@ int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address 
   src = header.src_addr;
   dst = header.dst_addr;
 
-  uint16_t len_or_type = ntohs(header.snap.length);
+  PINDEX len_or_type = ntohs(header.snap.length);
 
   // Ethernet II header
   if (len_or_type > 1500) {
