@@ -1428,7 +1428,7 @@ public:
 
   // We don't implement this one
   //
-  STDMETHODIMP SampleCB( double SampleTime, IMediaSample * pSample )
+  STDMETHODIMP SampleCB( double /*SampleTime*/, IMediaSample * /*pSample*/)
   {
     return 0;
   }
@@ -1436,7 +1436,7 @@ public:
   // The sample grabber is calling us back on its deliver thread.
   // This is NOT the main app thread!
   //
-  STDMETHODIMP BufferCB( double dblSampleTime, BYTE * buffer, long size )
+  STDMETHODIMP BufferCB( double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size )
   {
     PTRACE(6, "DShow\tBuffer callback: time=" << dblSampleTime
            << ", buf=" << (void *)buffer << ", size=" << size);

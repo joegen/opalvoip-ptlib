@@ -1206,7 +1206,14 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
 
 bool PSSLContext::SetVerifyCertificate(const PSSLCertificate & cert)
 {
-  return cert.IsValid() && SSL_CTX_add_extra_chain_cert(m_context, (X509 *)cert) == 1;
+  if (m_context == NULL || !cert.IsValid())
+    return false;
+
+  X509_STORE * store = SSL_CTX_get_cert_store(m_context);
+  if (store == NULL)
+    return false;
+
+  return X509_STORE_add_cert(store, cert);
 }
 
 

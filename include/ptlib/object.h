@@ -1969,10 +1969,12 @@ typedef PIntSameOrder<long double> PFloat80b;
 #endif
 
 
-#ifdef _MSC_VER
-#define P_PACK_FIELD(f) __declspec(align(1)) f
-#else
-#define P_PACK_FIELD(f) f __attribute__ ((packed))
+#if defined(_MSC_VER)
+#define P_ALIGN_FIELD(f,a) __declspec(align(a)) f
+#define P_PACK_FIELD(f)    __declspec(align(1)) f
+#elif defined(__GNUC__)
+#define P_ALIGN_FIELD(f,a) f __attribute__ ((aligned(a)))
+#define P_PACK_FIELD(f)    f __attribute__ ((packed))
 #endif
 
 
@@ -2002,6 +2004,20 @@ typedef PIntSameOrder<long double> PFloat80b;
    Maps to std::abs and is for backward compatibility only.
  */
 #define PABS(v) std::abs(v)
+
+
+#if _MSC_VER >= 1700
+  class p_iostream : public std::iostream {
+    public:
+      p_iostream(std::streambuf * sbuf) : std::iostream(sbuf) { }
+    private:
+      virtual void __CLR_OR_THIS_CALL _Add_vtordisp1() { } // compiler bug workaround
+      virtual void __CLR_OR_THIS_CALL _Add_vtordisp2() { } // compiler bug workaround
+  };
+  #define P_IOSTREAM p_iostream
+#else
+  #define P_IOSTREAM std::iostream
+#endif
 
 
 #endif // PTLIB_OBJECT_H

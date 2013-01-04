@@ -46,7 +46,7 @@ PCREATE_PROCESS(MyProcess)
 
 class MyClass : public PObject {
   public:
-    MyClass(PJavaScript & jscript, const char * str)
+    MyClass(PJavaScript & /*jscript*/, const char * str)
       : m_instance(str)
     {
     }

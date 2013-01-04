@@ -15,7 +15,7 @@
 /* SUPPRESS 287 on yaccpar_sccsid *//* Unused static variable */
 /* SUPPRESS 288 on yyerrlab *//* Label unused */
 
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
@@ -28,7 +28,7 @@
 
 #ifdef _WIN32
 #ifdef _MSC_VER
-#pragma warning(disable:4131 4701 4996)
+#pragma warning(disable:4131 4244 4267 4701)
 #endif
 #define STDAPICALLTYPE __stdcall
 #define MSDOS

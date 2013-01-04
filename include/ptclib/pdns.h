@@ -203,6 +203,20 @@ DNS_STATUS Cached_DnsQuery(
 
 
 
+class PDnsRecords
+{
+  public:
+    PDnsRecords() : m_records(NULL) { }
+    ~PDnsRecords();
+
+    operator PDNS_RECORD()  { return  m_records; }
+    operator PDNS_RECORD*() { return &m_records; }
+
+  protected:
+    PDNS_RECORD m_records;
+};
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 //  this template automates the creation of a list of records for
@@ -217,12 +231,12 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
 
   recordList.RemoveAll();
 
-  PDNS_RECORD results = NULL;
+  PDnsRecords results;
   DNS_STATUS status = Cached_DnsQuery((const char *)name, 
                                       type,
                                       DNS_QUERY_STANDARD, 
                                       NULL, 
-                                      &results, 
+                                      results,
                                       NULL);
   if (status != 0)
     return false;
@@ -235,9 +249,6 @@ PBoolean Lookup(const PString & name, RecordListType & recordList)
       recordList.Append(record);
     dnsRecord = dnsRecord->pNext;
   }
-
-  if (results != NULL)
-    DnsRecordListFree(results, DnsFreeRecordList);
 
   return recordList.GetSize() != 0;
 }
