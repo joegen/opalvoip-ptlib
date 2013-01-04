@@ -935,9 +935,10 @@ dnl on some systems, the resolver is in libc
 dnl but needs resolv.h included which defines res_search as __res_search
 
 dnl MSWIN_DISPLAY    resolver,DNS Resolver
-dnl MSWIN_CHECK_DIR  resolver,%ProgramFiles%\Windows Kits\8.0
 dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS_RESOLVER=1
 dnl MSWIN_CHECK_FILE resolver,include\um\windns.h,P_DNS_RESOLVER=1
+dnl MSWIN_CHECK_DIR  resolver,%ProgramFiles%\Windows Kits\8.0
+dnl MSWIN_CHECK_DIR  resolver,%ProgramW6432%\Windows Kits\8.0
 
 AC_ARG_ENABLE(
    [resolver],
@@ -1310,9 +1311,10 @@ dnl ########################################################################
 dnl look for IPV6 functions
 
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
-dnl MSWIN_CHECK_DIR  ipv6,%ProgramFiles%\Windows Kits\8.0
 dnl MSWIN_CHECK_FILE ipv6,include\ws2tcpip.h,P_HAS_IPV6=1
 dnl MSWIN_CHECK_FILE ipv6,include\um\ws2tcpip.h,P_HAS_IPV6=1
+dnl MSWIN_CHECK_DIR  ipv6,%ProgramFiles%\Windows Kits\8.0
+dnl MSWIN_CHECK_DIR  ipv6,%ProgramW6432%\Windows Kits\8.0
 
 AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[disable IPV6 support]))
 
@@ -1470,9 +1472,12 @@ PTLIB_NEW_OPTION(JABBER)
 
 dnl ########################################################################
 dnl Speech
-dnl MSWIN_DISPLAY       sapi,Speech API
-dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
-dnl MSWIN_DEFINE        sapi,P_TTS
+dnl MSWIN_DISPLAY    sapi,Speech API
+dnl MSWIN_CHECK_FILE sapi,include\sphelper.h,P_SAPI=1
+dnl MSWIN_CHECK_FILE sapi,include\um\sphelper.h,P_SAPI=1
+dnl MSWIN_DEFINE     sapi,P_TTS
+dnl MSWIN_CHECK_DIR  sapi,%ProgramFiles%\Windows Kits\8.0
+dnl MSWIN_CHECK_DIR  sapi,%ProgramW6432%\Windows Kits\8.0
 
 PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
 PTLIB_NEW_OPTION(TTS)
@@ -1816,6 +1821,9 @@ dnl look for ODBC code
 
 dnl MSWIN_DISPLAY    odbc,ODBC support
 dnl MSWIN_CHECK_FILE odbc,include\odbcinst.h,P_ODBC=1
+dnl MSWIN_CHECK_FILE odbc,include\um\odbcinst.h,P_ODBC=1
+dnl MSWIN_CHECK_DIR  odbc,%ProgramFiles%\Windows Kits\8.0
+dnl MSWIN_CHECK_DIR  odbc,%ProgramW6432%\Windows Kits\8.0
 
 AC_ARG_ENABLE(
    [odbc],
@@ -1939,8 +1947,11 @@ if test "x$enable_plugins" != "xno" ; then
 
       dnl MSWIN_DISPLAY    dsound,Direct Sound Support
       dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
+      dnl MSWIN_CHECK_FILE dsound,include\um\dsound.h,P_DIRECTSOUND=1
       dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_DXERR_H,dxerr.h,include
       dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_LIB,dsound.lib,lib
+      dnl MSWIN_CHECK_DIR  dsound,%ProgramFiles%\Windows Kits\8.0
+      dnl MSWIN_CHECK_DIR  dsound,%ProgramW6432%\Windows Kits\8.0
 
 
       dnl ########################################################################
@@ -1948,7 +1959,10 @@ if test "x$enable_plugins" != "xno" ; then
 
       dnl MSWIN_DISPLAY    dshow,Direct Show Support
       dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
+      dnl MSWIN_CHECK_FILE dshow,include\um\dshow.h,P_DIRECTSHOW=1
       dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_QEDIT_H,Qedit.h,include
+      dnl MSWIN_CHECK_DIR  dshow,%ProgramFiles%\Windows Kits\8.0
+      dnl MSWIN_CHECK_DIR  dshow,%ProgramW6432%\Windows Kits\8.0
 
 
       dnl #########################################################################
@@ -2244,7 +2258,7 @@ if test "$cfg_prefix" = "NONE" ; then
   cfg_prefix=./include
 fi
 
-AC_CONFIG_HEADERS([${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in])
+AC_CONFIG_HEADERS(${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in)
 
 AC_OUTPUT()
 

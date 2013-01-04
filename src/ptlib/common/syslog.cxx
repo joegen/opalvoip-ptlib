@@ -85,7 +85,7 @@ static struct PSystemLogTargetGlobal
 /////////////////////////////////////////////////////////////////////////////
 
 PSystemLog::PSystemLog(Level level)   ///< only messages at this level or higher will be logged
-  : iostream(cout.rdbuf())
+  : P_IOSTREAM(cout.rdbuf())
   , m_logLevel(level)
 { 
   m_buffer.m_log = this;
@@ -95,7 +95,7 @@ PSystemLog::PSystemLog(Level level)   ///< only messages at this level or higher
 
 PSystemLog::PSystemLog(const PSystemLog & other)
   : PObject(other)
-  , iostream(cout.rdbuf()) 
+  , P_IOSTREAM(cout.rdbuf()) 
 {
 }
 

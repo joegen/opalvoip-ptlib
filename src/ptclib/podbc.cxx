@@ -344,9 +344,10 @@ bool PODBC::Connect(const PString & source)
 
   short shortResult = 0;
   SQLCHAR szOutConnectString[1024];
+  static SQLINTEGER LoginTimeout = 5;
 
   if (SQLFailed(*this, SQL_HANDLE_DBC, m_link->m_hDBC,
-                SQLSetConnectOption(m_link->m_hDBC, SQL_LOGIN_TIMEOUT, 5)) ||
+                SQLSetConnectAttr(m_link->m_hDBC, SQL_LOGIN_TIMEOUT, &LoginTimeout, 0)) ||
       SQLFailed(*this, SQL_HANDLE_DBC, m_link->m_hDBC,
                  SQLDriverConnect(m_link->m_hDBC,
                                   NULL,
