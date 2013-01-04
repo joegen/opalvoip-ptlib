@@ -648,7 +648,7 @@ class PThreadObj : public PThread
 
   protected:
     ObjType & m_object;
-    ObjTypeFn m_function;
+    ObjTypeFn P_ALIGN_FIELD(m_function, 8);
 };
 
 
@@ -700,7 +700,7 @@ class PThreadObj1Arg : public PThread
 
   protected:
     ObjType & m_object;
-    ObjTypeFn m_function;
+    ObjTypeFn P_ALIGN_FIELD(m_function, 8);
     Arg1Type  m_arg1;
 };
 
@@ -738,7 +738,7 @@ class PThreadObj2Arg : public PThread
 
   protected:
     ObjType & m_object;
-    ObjTypeFn m_function;
+    ObjTypeFn P_ALIGN_FIELD(m_function, 8);
     Arg1Type  m_arg1;
     Arg2Type  m_arg2;
 };

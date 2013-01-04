@@ -212,9 +212,8 @@ PBoolean PFTPServer::DispatchCommand(PINDEX code, const PString & args)
       return OnREST(args);
     default:
       PAssertAlways("Registered FTP command not handled");
-      return false;
   }
-  return true;
+  return false;
 }
 
 
