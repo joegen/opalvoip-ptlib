@@ -43,6 +43,7 @@
 #include <map>
 #include <io.h>
 #include <direct.h>
+#include <errno.h>
 
 
 #define VERSION "1.23"
