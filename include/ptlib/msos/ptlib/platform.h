@@ -350,6 +350,10 @@ typedef DWORD PProcessIdentifier;
 
 typedef int socklen_t;
 
+#if _MSC_VER >= 1700
+#include <oleacc.h>
+//#include <dsound.h>
+#endif
 
 #endif // PTLIB_PLATFORM_H
 

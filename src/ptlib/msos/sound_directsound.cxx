@@ -47,6 +47,10 @@
 #include <tchar.h>
 #include <math.h>
 
+#if _MSC_VER >= 1700
+#include "initguid.h"
+#endif
+
 #include <ks.h>
 #include <dsconf.h>
 typedef HRESULT (STDAPICALLTYPE *LPFNDLLGETCLASSOBJECT )(REFCLSID, REFIID, LPVOID * );
@@ -60,6 +64,9 @@ typedef HRESULT (STDAPICALLTYPE *LPFNDLLGETCLASSOBJECT )(REFCLSID, REFIID, LPVOI
 
 #ifdef _MSC_VER
   #pragma comment(lib, "dsound.lib")
+  #if _MSC_VER >= 1700
+    #pragma comment(lib, "dxguid.lib")
+  #endif
   #pragma message("Direct Sound support enabled")
 #endif
 
