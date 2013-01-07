@@ -1249,6 +1249,12 @@ PString PProcess::GetOSHardware()
 
     case PROCESSOR_ARCHITECTURE_PPC :
       return "ppc";
+
+#ifdef PROCESSOR_ARCHITECTURE_AMD64
+    case PROCESSOR_ARCHITECTURE_AMD64:
+      return "AMD64";
+#endif
+
   }
   return "?";
 }
