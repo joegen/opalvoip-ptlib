@@ -368,7 +368,7 @@ int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address 
 
   // SNAP header
   if (header.snap.dsap == 0xaa && header.snap.ssap == 0xaa) {
-    if (len_or_type < sizeof(header.snap)-sizeof(header.snap.payload)) {
+    if (len_or_type < (PINDEX)(sizeof(header.snap)-sizeof(header.snap.payload))) {
       PTRACE(2, "Frame (SNAP) invalid, size=" << m_rawSize);
       return -1;
     }
@@ -394,7 +394,7 @@ int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address 
     return 0x8137;
   }
 
-  if (len_or_type < sizeof(header.snap.dsap)+sizeof(header.snap.ssap)+sizeof(header.snap.ctrl)) {
+  if (len_or_type < (PINDEX)(sizeof(header.snap.dsap)+sizeof(header.snap.ssap)+sizeof(header.snap.ctrl))) {
     PTRACE(2, "Frame (802.2) invalid, size=" << m_rawSize);
     return -1;
   }
