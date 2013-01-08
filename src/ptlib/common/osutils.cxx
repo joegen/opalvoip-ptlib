@@ -1863,6 +1863,11 @@ void PProcess::PreShutdown()
     m_houseKeeper = NULL;
   }
 
+  // Clean up factories
+  PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
+  for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it)
+    PProcessStartupFactory::CreateInstance(*it)->OnShutdown();
+
   Sleep(100);  // Give threads time to die a natural death
 
   m_threadMutex.Wait();
@@ -1882,11 +1887,6 @@ void PProcess::PreShutdown()
   m_activeThreads.clear();
 
   m_threadMutex.Signal();
-
-  // Clean up factories
-  PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
-  for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it)
-    PProcessStartupFactory::CreateInstance(*it)->OnShutdown();
 }
 
 
