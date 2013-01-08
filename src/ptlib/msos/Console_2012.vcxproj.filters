@@ -334,6 +334,12 @@
     <ClCompile Include="..\..\ptclib\jscript.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\tinyjpeg.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\jidctflt.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h">
