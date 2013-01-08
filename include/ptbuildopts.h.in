@@ -713,7 +713,7 @@
 //
 
 #undef P_MEDIALIB
-#undef P_TINY_JPEG
+#define P_TINY_JPEG   1
 
 /////////////////////////////////////////////////
 //

@@ -34,7 +34,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _MSC_VER
+#include "stdint.h"
+#else
 #include <inttypes.h>
+#endif
+
 #include <errno.h>
 
 #include "tinyjpeg.h"
@@ -91,7 +97,10 @@ enum std_markers {
 } while(0)
 #endif
 #else
-#if defined (P_SOLARIS) && !defined (__GNUC__)
+#if defined(_MSC_VER)
+#define error(fmt, ...) do { return -1; } while(0)
+#define trace(fmt, ...) do { } while (0)
+#elif (defined (P_SOLARIS) && !defined (__GNUC__))
 #define error(fmt, args,...) do { return -1; } while(0)
 #define trace(fmt, args,...) do { } while (0)
 #else
