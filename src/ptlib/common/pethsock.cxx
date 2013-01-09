@@ -714,7 +714,7 @@ PEthSocket * PEthSocketThread::CreateEthSocket() const
 
 void PEthSocketThread::MainLoop()
 {
-  PTRACE(4, "Ethernet sniffer thread started");
+  PTRACE(4, "Ethernet sniffer thread started, filter=\"" << m_socket->GetFilter() << '"');
 
   while (m_running) {
     if (m_socket->ReadFrame(m_frame))
