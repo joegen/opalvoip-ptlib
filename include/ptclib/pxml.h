@@ -102,6 +102,10 @@ class PXML : public PXMLBase
 {
     PCLASSINFO(PXML, PXMLBase);
   public:
+    enum {
+      DEFAULT_MAX_ENTITY_LENGTH = 4096
+    };
+
     PXML(
       Options options = NoOptions,
       const char * noIndentElements = NULL
@@ -241,6 +245,7 @@ class PXML : public PXMLBase
 
     PCaselessString m_defaultNameSpace;
 
+    unsigned int m_maxEntityLength;
     PINDEX   m_totalObjects;
     mutable PINDEX   m_savedObjects;
     mutable unsigned m_percent;
@@ -337,6 +342,8 @@ class PXMLObject : public PObject
     void GetFilePosition(unsigned & col, unsigned & line) const { col = m_column; line = m_lineNumber; }
     void SetFilePosition(unsigned   col, unsigned   line)       { m_column = col; m_lineNumber = line; }
 
+    virtual PXMLObject * Clone() const = 0;
+
   protected:
     PXMLElement * m_parent;
     bool          m_dirty;
@@ -364,7 +371,7 @@ class PXMLData : public PXMLObject
 
     void Output(ostream & strm, const PXMLBase & xml, int indent) const;
 
-    PObject * Clone() const;
+    PXMLObject * Clone() const;
 
   protected:
     PString m_value;
@@ -440,7 +447,7 @@ class PXMLElement : public PXMLObject
     virtual PXMLData * AddData(const PString & data);
     virtual void EndData() { }
 
-    PObject * Clone() const;
+    PXMLObject * Clone() const;
 
     void AddNamespace(const PString & prefix, const PString & uri);
     void RemoveNamespace(const PString & prefix);
@@ -456,7 +463,7 @@ class PXMLElement : public PXMLObject
     PStringToString m_nameSpaces;
     PCaselessString m_defaultNamespace;
 
-    PArray<PXMLElement> m_subObjects;
+    PArray<PXMLObject> m_subObjects;
 };
 
 
@@ -513,6 +520,8 @@ class PXMLParserBase
 
     bool IsParsing() const { return m_parsing; }
 
+    void SetMaxEntityLength(unsigned int v) { m_maxEntityLength = v; }
+
   protected:
     void *   m_context;
     bool     m_parsing;
@@ -520,6 +529,7 @@ class PXMLParserBase
     off_t    m_consumed;
     unsigned m_percent;
     bool     m_userAborted;
+    unsigned int m_maxEntityLength;
 };
 
 

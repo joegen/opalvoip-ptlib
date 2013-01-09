@@ -120,6 +120,7 @@ PXMLParserBase::PXMLParserBase(bool withNS)
   , m_consumed(0)
   , m_percent(0)
   , m_userAborted(false)
+  , m_maxEntityLength(PXML::DEFAULT_MAX_ENTITY_LENGTH)
 {
   if (withNS)
     m_context = XML_ParserCreateNS(NULL, '|');
@@ -324,6 +325,15 @@ void PXMLParser::EndElement(const char * name)
 
 void PXMLParser::AddCharacterData(const char * data, int len)
 {
+  unsigned checkLen = len + ((m_lastData != NULL) ? m_lastData->GetString().GetLength() : 0);
+  if (checkLen >= m_maxEntityLength) {
+    stringstream strm; strm << "Aborting XML parse at size " << m_maxEntityLength << " - possible 'billion laugh' attack";
+    PTRACE(2, "PXML\t" << strm.str());
+    cerr << strm.str() << endl;
+    XML_StopParser((XML_Parser)m_context, XML_FALSE);
+    return;
+  }
+
   if (m_lastData != NULL) {
     m_lastData->SetString(m_lastData->GetString() + PString(data, len), false);
     return;
@@ -361,6 +371,7 @@ PXML::PXML(Options options, const char * noIndentElementsParam)
   , m_totalObjects(0)
   , m_savedObjects(0)
   , m_percent(0)
+  , m_maxEntityLength(DEFAULT_MAX_ENTITY_LENGTH)
 {
   if (m_options & PXML::FragmentOnly)
     SetRootElement("");
@@ -378,6 +389,7 @@ PXML::PXML(const PXML & xml)
   , m_totalObjects(0)
   , m_savedObjects(0)
   , m_percent(0)
+  , m_maxEntityLength(DEFAULT_MAX_ENTITY_LENGTH)
 {
   if (xml.m_rootElement != NULL)
     m_rootElement = new PXMLRootElement(*this, *xml.m_rootElement);
@@ -441,6 +453,7 @@ bool PXML::LoadFile(const PFilePath & fn)
   }
 
   PXMLParser parser(*this, m_options, file.GetLength());
+  parser.SetMaxEntityLength(m_maxEntityLength);
   if (!parser.Parse(file))
     return false;
 
@@ -469,6 +482,7 @@ bool PXML::Load(const PString & data)
   m_errorLine = m_errorColumn = 0;
 
   PXMLParser parser(*this, m_options, data.GetLength());
+  parser.SetMaxEntityLength(m_maxEntityLength);
   if (!parser.Parse(data, data.GetLength(), true)) {
     parser.GetErrorInfo(m_errorString, m_errorColumn, m_errorLine);
     return false;
@@ -542,7 +556,7 @@ bool PXML::OutputProgress() const
 {
   ++m_savedObjects;
 
-  unsigned newPercent = (unsigned)(m_savedObjects*100LL/m_totalObjects);
+  unsigned newPercent = (m_totalObjects == 0) ? 0 : (unsigned)(m_savedObjects*100LL/m_totalObjects);
   if (m_percent != newPercent) {
     m_percent = newPercent;
     if (!OnSaveProgress(newPercent))
@@ -676,6 +690,7 @@ void PXML::ReadFrom(istream & strm)
   m_rootElement = NULL;
 
   PXMLParser parser(*this, m_options, 0);
+  parser.SetMaxEntityLength(m_maxEntityLength);
   if (!parser.Parse(strm))
     return;
 
@@ -1164,7 +1179,7 @@ void PXMLData::SetString(const PString & str, bool setDirty)
 }
 
 
-PObject * PXMLData::Clone() const
+PXMLObject * PXMLData::Clone() const
 {
   return new PXMLData(m_value);
 }
@@ -1188,7 +1203,7 @@ PXMLElement::PXMLElement(const PXMLElement & copy)
   m_dirty = copy.m_dirty;
 
   for (PINDEX idx = 0; idx < m_subObjects.GetSize(); idx++)
-    AddSubObject(dynamic_cast<PXMLObject *>(m_subObjects[idx].Clone()), false);
+    AddSubObject(m_subObjects[idx].Clone(), false);
 }
 
 
@@ -1443,7 +1458,7 @@ PXMLElement * PXMLElement::AddElement(const PString & name, const PString & attr
 }
 
 
-PObject * PXMLElement::Clone() const
+PXMLObject * PXMLElement::Clone() const
 {
   return new PXMLElement(*this);
 }
