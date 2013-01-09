@@ -488,7 +488,11 @@ public:
     */
   static void Initialise(
     const PArgList & args,                   ///< Command line arguments
-    unsigned options = Timestamp | Thread | Blocks, ///< Default #Options for tracing
+    unsigned options =
+#ifdef _DEBUG
+          FileAndLine |
+#endif
+                Timestamp | Thread | Blocks, ///< Default #Options for tracing
     const char * traceLevel = "trace",       ///< Argument option name for trace level
     const char * outputFile = "output",      ///< Argument option name for log output file
     const char * traceOpts  = "trace-option", ///< Argument option name for trace options
