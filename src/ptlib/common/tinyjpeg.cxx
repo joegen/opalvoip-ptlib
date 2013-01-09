@@ -68,7 +68,7 @@ enum std_markers {
 #define BLACK_U 127
 #define BLACK_V 127
 
-#if DEBUG
+#if TINY_JPEG_DEBUG
 #if LOG2FILE
 #define error(fmt, args...) do { \
    FILE *f = fopen("/tmp/jpeg.log", "a"); \
