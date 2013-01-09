@@ -132,8 +132,10 @@ void PSoundChannelALSA::UpdateDictionary(Directions dir)
           if (rawName != NULL) {
             int disambiguator = 1;
             PString uniqueName = rawName;
+            uniqueName = uniqueName + " [" + snd_pcm_info_get_name (pcminfo) + "]";
+            PString save = uniqueName;
             while (devices.Contains(uniqueName)) {
-              uniqueName = rawName;
+              uniqueName = save;
               uniqueName.sprintf(" (%d)", disambiguator++);
             }
 
