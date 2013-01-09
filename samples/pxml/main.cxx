@@ -15,161 +15,55 @@
 #include <ptlib.h>
 #include "main.h"
 
-
 PCREATE_PROCESS(PxmlTest);
-
-
 
 PxmlTest::PxmlTest()
   : PProcess("XML Testing Guru", "PxmlTest", 1, 0, AlphaCode, 1)
 {
 }
 
-static const PString XML_ID("<?xml version=\"1.0\"?>");
-static const PString LEThdr("<s:Envelope xmlns:s=\"http://schemas.letter.org/letter/envelope/\" s:encodingStyle=\"http://schemas.letter.org/letter/encoding/\"><s:Body>");
-static const PString LETtrl("</s:Body></s:Envelope>");
-static const PString SetNumHdr("<u:SetNum xmlns:u=\"urn:schemas-dustbowl:1\"><Num>");
-static const PString SetNumTrl("</Num></u:SetNum>");
+static const char * testXML =
+  "<note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don't forget me this weekend!</body></note>"
+  ;
 
-void printElement(int i,PXMLObject * el)
-{
-  if (el->IsElement())
-  {
-    cout << "("<<i++<<") "<< ((const PXMLElement *)el)->GetName() << endl;
-    if (((const PXMLElement *)el)->HasAttributes())
-    {
-      for (PINDEX j=0; j< ((const PXMLElement *)el)->GetNumAttributes(); ++j)
-      {
-        cout << " " << ((const PXMLElement *)el)->GetKeyAttribute(j) << "=" << ((const PXMLElement *)el)->GetDataAttribute(j);
-      }
-    }
-    cout << " " << ((const PXMLElement *)el)->GetData() << endl;
-    if (((const PXMLElement *)el)->HasSubObjects())
-    {
-      PXMLObjectArray obs = ((const PXMLElement *)el)->GetSubObjects();
-      for (PINDEX o=0;o<obs.GetSize();++o) 
-        printElement(i,&obs[o]);
-    }
-  }
-}
+static const char * billionLaughs = 
+"<?xml version=\"1.0\"?>"
+"<!DOCTYPE lolz ["
+" <!ENTITY lol \"lol\">"
+" <!ENTITY lol1 \"&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;\">"
+" <!ENTITY lol2 \"&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;\">"
+" <!ENTITY lol3 \"&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;\">"
+" <!ENTITY lol4 \"&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;\">"
+" <!ENTITY lol5 \"&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;\">"
+" <!ENTITY lol6 \"&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;\">"
+" <!ENTITY lol7 \"&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;\">"
+" <!ENTITY lol8 \"&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;\">"
+" <!ENTITY lol9 \"&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;\">"
+"]>"
+"<lolz>&lol9;</lolz>";
 
 void PxmlTest::Main()
 {
-  PString t("Color");
-  int num=5;
-   PString COLORVAL("<Color>5</Color>");
-   PString COLORT1("<Color>");
-   PString COLORT2("</Color>");
-   PString COLORT3("<Color/>");
+  PArgList & args = GetArguments();
+  args.Parse("f:b");
 
-  PString ns(PString::Signed,num);
-  PAssert((COLORT1 == PXML::CreateStartTag(t)),"PXML::CreateStartTag(t) failed");
-  PAssert((COLORT2 == PXML::CreateEndTag(t)),"PXML::CreateEndTag(t) failed");
-  PAssert((COLORT3 == PXML::CreateTagNoData(t)),"PXML::CreateTagNoData(t) failed");
-  PAssert((COLORVAL == PXML::CreateTag(t,ns)),"PXML::CreateTag(t,ns) failed");
-
-  PString ch = LEThdr + SetNumHdr + "23" + SetNumTrl + LETtrl;
-
-  PXML xml(PXMLParser::Indent | PXMLParser::NewLineAfterElement+PXMLParser::NoIgnoreWhiteSpace, ch);
-  PStringStream s;
-  s << xml;
-
-  //can we recreate the XML?
-
-  PXML revamp;
-  PString ROOTELE("s:Envelope");
-  PString ROOTATKEY1("xmlns:s");
-  PString ROOTATDAT1("http://schemas.letter.org/letter/envelope/");
-  PString ROOTATKEY2("s:encodingStyle");
-  PString ROOTATDAT2("http://schemas.letter.org/letter/encoding/");
-  PAssert((ROOTELE == xml.GetRootElement()->GetName()),"Root element name not as expected");
-  if (xml.GetRootElement()->HasAttributes()) {
-    for (PINDEX a=0; a<xml.GetRootElement()->GetNumAttributes(); ++a) {
-      PAssert((ROOTATKEY1 == xml.GetRootElement()->GetKeyAttribute(a) || 
-               ROOTATKEY2 == xml.GetRootElement()->GetKeyAttribute(a)),"Root element attribute key not as expected");
-      PAssert((ROOTATDAT1 == xml.GetRootElement()->GetDataAttribute(a) || 
-               ROOTATDAT2 == xml.GetRootElement()->GetDataAttribute(a)),"Root element attribute data not as expected");
-    }
+  PXML xml;
+ 
+  bool status;
+  if (args.HasOption('f')) {
+    status = xml.LoadFile(args.GetOptionString('f'));
   }
-  PAssert((PString() == xml.GetRootElement()->GetData()),"Root element data not as expected");
-
-#if 0
-  //===
-  // An example of printing elements -- see the function defined above
-  //===
-  for (PINDEX i=0; i<xml.GetNumElements(); ++i)
-  {
-    printElement(i,xml.GetElement(i));
+  else if (args.HasOption('b')) {
+    status = xml.Load(billionLaughs); 
+  }
+  else {
+    status = xml.Load(testXML); 
   }
 
-
-  //===
-  // Just checking reloading the same data in a different format
-  //===
-  PStringStream rs; xml.GetRootElement()->PrintOn(rs, -1, 0); 
-  cout << rs << endl;
-  revamp.Load(rs);;
-  cout << "Revamped XML" << revamp << endl;
-#endif
-
-  //===
-  // Extract a subset of the XML
-  // This can be used when the "data" of an XML element 
-  // is XML and you don't need that parsed yet :-)
-  //===
-  PStringStream ss;
-  xml.GetElement(0)->Output(ss, -1, 0);
-
-  PString EXCERPT("<s:Body>" + SetNumHdr + "23" + SetNumTrl + "</s:Body>");
-  PAssert((EXCERPT == ss),"XML subset data not as expected");
-
-
-  PXMLElement el(NULL, t);
-  PXMLData * d = new PXMLData(NULL,ns);
-  el.AddSubObject(d);
-  PAssert((PString("Color") == el.GetName()),"Element name not as expected");
-  PAssert((PString("5") == el.GetData()),"Element data not as expected");
-
-#if 0
-  //===
-  // Checkout these examples of the PXMLSettings class
-  //
-  //  Constructor with data and options
-  //===
-  PXMLSettings dgi(ch,PXML::Indent | PXML::NewLineAfterElement | PXML::NoIgnoreWhiteSpace);
-  cout << "PXMLSettings: " << dgi << endl;
-  //  Default Constructor
-  PXMLSettings opts;
-  PString optsect("Options");
-  PString comType("Comm Type");
-  PString val("FTP");
-  opts.SetAttribute(optsect,comType,val);
-  cout << "attributes==>" << opts.GetAttribute(optsect,comType) << "<==" << endl;
-  cout << "PXMLSettings: " << opts;
-  cout << "done" << endl;
-#endif
-
-  //  Constructor with PConfig and String
-  PFilePath fp("cfg.txt");
-  PConfig cfg(fp, "Options");
-  PXMLSettings xmlcfg(cfg);
-  PStringStream xc; 
-  xc << xmlcfg;
-  PFilePath fp2("cfgOut.txt");
-  PConfig * cfg2; cfg2 = new PConfig(fp2, "Root");
-  xmlcfg.ToConfig(*cfg2);
-  delete cfg2;
-  PTextFile tfp(fp2);
-  PString fxc;
-  char xcc;
-  while(tfp.Read((void *)&xcc,1)) 
-    fxc += xcc;
-  PXMLSettings xmlcfg2(cfg);
-  PStringStream xc2; 
-  xc2 << xmlcfg2;
-  PAssert((xc2 == xc),"Config not as expected");
-
-  cout << "*** Test Passed ***" << endl;
+  if (!status) 
+    cerr << "parse error: line " << xml.GetErrorLine() << ", col " << xml.GetErrorColumn() << ", " << xml.GetErrorString() << endl;
+  else
+    xml.PrintOn(cout);
 }
 
 // End of File ///////////////////////////////////////////////////////////////
