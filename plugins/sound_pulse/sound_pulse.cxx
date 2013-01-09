@@ -459,6 +459,7 @@ PBoolean PSoundChannelPulse::PlaySound(const PSound & sound, PBoolean wait)
 
 PBoolean PSoundChannelPulse::PlayFile(const PFilePath & filename, PBoolean wait)
 {
+#if P_WAVFILE
   BYTE buffer [512];
   PTRACE(1, "PULSE\tPlayFile " << filename);
 
@@ -490,6 +491,9 @@ PBoolean PSoundChannelPulse::PlayFile(const PFilePath & filename, PBoolean wait)
    return WaitForPlayCompletion();
 
   return true;
+#else
+  return false;
+#endif
 }
 
 
