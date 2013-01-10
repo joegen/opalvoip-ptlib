@@ -1034,10 +1034,14 @@ bool PIPSocket::SetQoS(const QoS & qos)
       }
 
       if (ok && new_tos >= 0) {
+#if P_QWAVE_DSCP
         DWORD dscp = qos.m_dscp;
         if (!QOSSetFlow(WinSock.m_hQoS, m_qosFlowId, QOSSetOutgoingDSCPValue, sizeof(dscp), &dscp, 0, NULL)) {
           PTRACE(1, "WinSock", "Could not set DSCP, error=" << ::GetLastError());
         }
+#else
+        ok = false;
+#endif // P_QWAVE_DSCP
       }
 
       if (ok)
