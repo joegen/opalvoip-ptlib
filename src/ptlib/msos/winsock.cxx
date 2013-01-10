@@ -36,10 +36,6 @@
 
 #include <svcguid.h>
 #include <iphlpapi.h>
-#ifdef _MSC_VER
-  #pragma comment(lib, "iphlpapi.lib")
-#endif
-
 
 #ifndef _WIN32_WCE
   #include <nspapi.h>
@@ -55,10 +51,17 @@
     #else
       #pragma message("IPv6 support DISABLED")
     #endif
-    #if P_QOS
-      #pragma message("QoS support enabled")
+
+    #if P_GQOS
+      #pragma message("GQOS support enabled")
     #else
-      #pragma message("QoS support DISABLED")
+      #pragma message("GQOS support DISABLED")
+    #endif
+
+    #if P_QWAVE
+      #pragma message("qWAVE support enabled")
+    #else
+      #pragma message("qWAVE support DISABLED")
     #endif
 
   #else
@@ -76,44 +79,62 @@
 
 #endif // !_WIN32_WCE
 
+#if P_QWAVE
+  #include <qos2.h>
+#endif
+
+#ifdef _MSC_VER
+  #pragma comment(lib, "iphlpapi.lib")
+  #if P_QWAVE
+    #pragma comment(lib, "qwave.lib")
+  #endif
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PWinSock
 
-PWinSock::PWinSock()
+// Must be one and one only instance of this class, and it must be static!.
+static struct PWinSock
 {
-  WSADATA winsock;
+  bool   m_useGQOS;
+  HANDLE m_hQoS;
 
-#if 0 // old WinSock version check
-  PAssert(WSAStartup(0x101, &winsock) == 0, POperatingSystemError);
-  PAssert(LOBYTE(winsock.wVersion) == 1 &&
-          HIBYTE(winsock.wVersion) == 1, POperatingSystemError);
+  PWinSock()
+    : m_useGQOS(false)
+    , m_hQoS(NULL)
+  {
+    // ensure we support QoS
+    WSADATA m_info;
+    PAssert(WSAStartup(0x0202, &m_info) == 0, POperatingSystemError);
+    PAssert(m_info.wVersion >= 0x0200, POperatingSystemError);
 
-#endif
+#if P_GQOS
+    OSVERSIONINFO info;
+    info.dwOSVersionInfoSize = sizeof(info);
+    GetVersionEx(&info);
+    // Use for NT (5.1) and Win2003 (5.2) but not Win2000 (5.0) or Vista and later (6.x)
+    m_useGQOS = info.dwMajorVersion == 5 && info.dwMinorVersion >= 1;
+#endif // P_GQOS
 
-  // ensure we support QoS
-  PAssert(WSAStartup(0x0202, &winsock) == 0, POperatingSystemError);
-  PAssert(LOBYTE(winsock.wVersion) >= 1 &&
-          HIBYTE(winsock.wVersion) >= 1, POperatingSystemError);
-}
+#if P_QWAVE
+    QOS_VERSION qosVersion;
+    qosVersion.MajorVersion = 1;
+    qosVersion.MinorVersion = 0;
+    PAssert(QOSCreateHandle(&qosVersion, &m_hQoS), POperatingSystemError);
+#endif // P_QWAVE
+  }
 
+  ~PWinSock()
+  {
+#if P_QWAVE
+    if (m_hQoS != NULL)
+      PAssert(QOSCloseHandle(m_hQoS), POperatingSystemError);
+#endif // P_QWAVE
 
-PWinSock::~PWinSock()
-{
-  WSACleanup();
-}
-
-
-PBoolean PWinSock::OpenSocket()
-{
-  return false;
-}
-
-
-const char * PWinSock::GetProtocolName() const
-{
-  return NULL;
-}
+    WSACleanup();
+  }
+} WinSock; // Assure winsock is initialised
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -213,24 +234,26 @@ int PSocket::os_close()
 
 int PSocket::os_socket(int af, int type, int proto)
 {
-#if P_QOS
-  //Try to find a QOS-enabled protocol
-  DWORD bufferSize = 0;
-  int numProtocols = WSAEnumProtocols(NULL, NULL, &bufferSize);
-  if (numProtocols <= 0 && WSAGetLastError() != WSAENOBUFS) 
-    return -1;
+#if P_GQOS
+  if (WinSock.m_useGQOS) {
+    //Try to find a QOS-enabled protocol
+    DWORD bufferSize = 0;
+    int numProtocols = WSAEnumProtocols(NULL, NULL, &bufferSize);
+    if (numProtocols <= 0 && WSAGetLastError() != WSAENOBUFS) 
+      return -1;
 
-  PBYTEArray buffer(bufferSize);
-  LPWSAPROTOCOL_INFO qosProtocol = (LPWSAPROTOCOL_INFO)buffer.GetPointer();
+    PBYTEArray buffer(bufferSize);
+    LPWSAPROTOCOL_INFO qosProtocol = (LPWSAPROTOCOL_INFO)buffer.GetPointer();
 
-  numProtocols = WSAEnumProtocols(NULL, qosProtocol, &bufferSize);
-  for (int i = 0; i < numProtocols; qosProtocol++, i++) {
-    if (  qosProtocol->iSocketType == type &&
-          qosProtocol->iAddressFamily == af &&
-         (qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) != 0)
-      return (int)WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
+    numProtocols = WSAEnumProtocols(NULL, qosProtocol, &bufferSize);
+    for (int i = 0; i < numProtocols; qosProtocol++, i++) {
+      if (  qosProtocol->iSocketType == type &&
+            qosProtocol->iAddressFamily == af &&
+           (qosProtocol->dwServiceFlags1 & XP1_QOS_SUPPORTED) != 0)
+        return (int)WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
+    }
   }
-#endif
+#endif // P_GQOS
 
   return (int)WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
 }
@@ -786,6 +809,27 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PIPSocket::PIPSocket()
+#if P_QWAVE
+  : m_qosFlowId(0)
+#endif
+{
+}
+
+
+#if P_QWAVE
+PBoolean PIPSocket::Close()
+{
+  if (IsOpen() && WinSock.m_hQoS != NULL && m_qosFlowId != 0) {
+    QOSRemoveSocketFromFlow(WinSock.m_hQoS, os_handle, m_qosFlowId, 0);
+    m_qosFlowId = 0;
+  }
+
+  return PSocket::Close();
+}
+#endif // P_QWAVE
+
+
 PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
 {
   if (version == 6) {
@@ -904,57 +948,119 @@ bool PIPSocket::SetQoS(const QoS & qos)
   if (!IsOpen())
     return false;
 
-#if P_QOS
-  QOS qosBuf;
-  memset(&qosBuf, 0, sizeof(qosBuf));
+  int new_tos = qos.m_dscp >= 0 || qos.m_dscp < 64 ? (qos.m_dscp<<2) : -1;
 
-  static DWORD const ServiceType[NumQoSType] = {
-    SERVICETYPE_BESTEFFORT,     // BackgroundQoS
-    SERVICETYPE_BESTEFFORT,     // BestEffortQoS
-    SERVICETYPE_CONTROLLEDLOAD, // ExcellentEffortQoS
-    SERVICETYPE_GUARANTEED,     // CriticalQoS
-    SERVICETYPE_CONTROLLEDLOAD, // VideoQoS
-    SERVICETYPE_GUARANTEED,     // VoiceQoS
-    SERVICETYPE_GUARANTEED      // ControlQoS
-  };
-  qosBuf.SendingFlowspec.ServiceType = ServiceType[qos.m_type];
-  qosBuf.SendingFlowspec.PeakBandwidth = qos.m_transmit.m_maxBandwidth;
-  qosBuf.SendingFlowspec.MaxSduSize = qos.m_transmit.m_maxPacketSize;
-  qosBuf.SendingFlowspec.Latency = qos.m_transmit.m_maxLatency;
-  qosBuf.SendingFlowspec.DelayVariation = qos.m_transmit.m_maxJitter;
-  qosBuf.SendingFlowspec.TokenBucketSize = qos.m_transmit.m_maxPacketSize*11/10 + 1;
-  qosBuf.SendingFlowspec.TokenRate = qos.m_transmit.m_maxBandwidth/qosBuf.SendingFlowspec.TokenBucketSize;
+#if P_GQOS
+  if (WinSock.m_useGQOS && new_tos < 0 && qos.m_type != BestEffortQoS) {
+    QOS qosBuf;
+    memset(&qosBuf, 0, sizeof(qosBuf));
 
-  qosBuf.ReceivingFlowspec.ServiceType = ServiceType[qos.m_type];
-  qosBuf.ReceivingFlowspec.PeakBandwidth = qos.m_receive.m_maxBandwidth;
-  qosBuf.ReceivingFlowspec.MaxSduSize = qos.m_receive.m_maxPacketSize;
-  qosBuf.ReceivingFlowspec.Latency = qos.m_receive.m_maxLatency;
-  qosBuf.ReceivingFlowspec.DelayVariation = qos.m_receive.m_maxJitter;
-  qosBuf.ReceivingFlowspec.TokenBucketSize = qos.m_receive.m_maxPacketSize*11/10 + 1;
-  qosBuf.ReceivingFlowspec.TokenRate = qos.m_receive.m_maxBandwidth/qosBuf.ReceivingFlowspec.TokenBucketSize;
+    static DWORD const ServiceType[NumQoSType] = {
+      SERVICETYPE_BESTEFFORT,     // BackgroundQoS
+      SERVICETYPE_BESTEFFORT,     // BestEffortQoS
+      SERVICETYPE_CONTROLLEDLOAD, // ExcellentEffortQoS
+      SERVICETYPE_GUARANTEED,     // CriticalQoS
+      SERVICETYPE_CONTROLLEDLOAD, // VideoQoS
+      SERVICETYPE_GUARANTEED,     // VoiceQoS
+      SERVICETYPE_GUARANTEED      // ControlQoS
+    };
+    qosBuf.SendingFlowspec.ServiceType = ServiceType[qos.m_type];
+    qosBuf.SendingFlowspec.PeakBandwidth = qos.m_transmit.m_maxBandwidth;
+    qosBuf.SendingFlowspec.MaxSduSize = qos.m_transmit.m_maxPacketSize;
+    qosBuf.SendingFlowspec.Latency = qos.m_transmit.m_maxLatency;
+    qosBuf.SendingFlowspec.DelayVariation = qos.m_transmit.m_maxJitter;
+    qosBuf.SendingFlowspec.TokenBucketSize = qos.m_transmit.m_maxPacketSize*11/10 + 1;
+    qosBuf.SendingFlowspec.TokenRate = qos.m_transmit.m_maxBandwidth/qosBuf.SendingFlowspec.TokenBucketSize;
 
-  PWin32Overlapped overlap;
-  DWORD dummyBuf[1];
-  DWORD dummyLen = 0;
-  if (ConvertOSError(WSAIoctl(os_handle, SIO_SET_QOS, &qosBuf, sizeof(qosBuf), dummyBuf, sizeof(dummyBuf), &dummyLen, &overlap, NULL))) {
-    if (qos.m_dscp < 0)
-      return true;
+    qosBuf.ReceivingFlowspec.ServiceType = ServiceType[qos.m_type];
+    qosBuf.ReceivingFlowspec.PeakBandwidth = qos.m_receive.m_maxBandwidth;
+    qosBuf.ReceivingFlowspec.MaxSduSize = qos.m_receive.m_maxPacketSize;
+    qosBuf.ReceivingFlowspec.Latency = qos.m_receive.m_maxLatency;
+    qosBuf.ReceivingFlowspec.DelayVariation = qos.m_receive.m_maxJitter;
+    qosBuf.ReceivingFlowspec.TokenBucketSize = qos.m_receive.m_maxPacketSize*11/10 + 1;
+    qosBuf.ReceivingFlowspec.TokenRate = qos.m_receive.m_maxBandwidth/qosBuf.ReceivingFlowspec.TokenBucketSize;
+
+    PWin32Overlapped overlap;
+    DWORD dummyBuf[1];
+    DWORD dummyLen = 0;
+    if (ConvertOSError(WSAIoctl(os_handle, SIO_SET_QOS, &qosBuf, sizeof(qosBuf), dummyBuf, sizeof(dummyBuf), &dummyLen, &overlap, NULL))) {
+      if (qos.m_dscp < 0)
+        return true;
+    }
+    else {
+      PTRACE(2, "Socket\tCould not SIO_SET_QOS: " << GetErrorText());
+    }
   }
-  else {
-    PTRACE(2, "Socket\tCould not SIO_SET_QOS: " << GetErrorText());
-  }
-#endif // P_QOS
+#endif // P_GQOS
 
-  static int const DSCP[NumQoSType] = {
-    0,     // BackgroundQoS
-    0,     // BestEffortQoS
-    8<<2,  // ExcellentEffortQoS
-    10<<2, // CriticalQoS
-    38<<2, // VideoQoS
-    44<<2, // VoiceQoS
-    48<<2  // ControlQoS
-  };
-  int new_tos = qos.m_dscp < 0 || qos.m_dscp > 63 ? DSCP[qos.m_type] : qos.m_dscp;
+#if P_QWAVE
+    PIPSocketAddressAndPort peer = qos.m_remote;
+    if (!peer.IsValid())
+      GetPeerAddress(peer);
+
+    if (WinSock.m_hQoS != NULL && peer.IsValid()) {
+      static QOS_TRAFFIC_TYPE const TrafficType[NumQoSType] = {
+        QOSTrafficTypeBackground,      // BackgroundQoS
+        QOSTrafficTypeBestEffort,      // BestEffortQoS
+        QOSTrafficTypeExcellentEffort, // ExcellentEffortQoS
+        QOSTrafficTypeControl,         // CriticalQoS
+        QOSTrafficTypeAudioVideo,      // VideoQoS
+        QOSTrafficTypeVoice,           // VoiceQoS
+        QOSTrafficTypeControl          // ControlQoS
+      };
+
+      bool ok = false;
+      if (m_qosFlowId == 0) {
+        if (qos.m_type != BestEffortQoS || new_tos >= 0 || qos.m_transmit.m_maxBandwidth > 0) {
+          ok = QOSAddSocketToFlow(WinSock.m_hQoS, os_handle,
+                                  peer.IsValid() ? (PSOCKADDR)sockaddr_wrapper(peer) : (PSOCKADDR)NULL,
+                                  TrafficType[qos.m_type], QOS_NON_ADAPTIVE_FLOW, &m_qosFlowId);
+          PTRACE_IF(1, !ok, "WinSock", "Could not add socket to QoS flow, error=" << ::GetLastError());
+        }
+      }
+      else {
+        ok = QOSSetFlow(WinSock.m_hQoS, m_qosFlowId, QOSSetTrafficType, sizeof(QOS_TRAFFIC_TYPE), (PVOID)&TrafficType[qos.m_type], 0, NULL);
+        PTRACE_IF(1, !ok, "WinSock", "Could not set QoS flow, error=" << ::GetLastError());
+      }
+
+      if (ok && qos.m_transmit.m_maxBandwidth > 0) {
+        QOS_FLOWRATE_OUTGOING out;
+        out.Bandwidth = qos.m_transmit.m_maxBandwidth;
+        out.ShapingBehavior = QOSUseNonConformantMarkings;
+        out.Reason = QOSFlowRateNotApplicable;
+        if (!QOSSetFlow(WinSock.m_hQoS, m_qosFlowId, QOSSetOutgoingRate, sizeof(out), &out, 0, NULL)) {
+          PTRACE(1, "WinSock", "Could not set QoS rates, error=" << ::GetLastError());
+        }
+      }
+
+      if (ok && new_tos >= 0) {
+        DWORD dscp = qos.m_dscp;
+        if (!QOSSetFlow(WinSock.m_hQoS, m_qosFlowId, QOSSetOutgoingDSCPValue, sizeof(dscp), &dscp, 0, NULL)) {
+          PTRACE(1, "WinSock", "Could not set DSCP, error=" << ::GetLastError());
+        }
+      }
+
+      if (ok)
+        return true;
+    }
+#endif // P_QWAVE
+
+  // Not explicitly set, so make a value up.
+  if (new_tos < 0) {
+    static int const DSCP[NumQoSType] = {
+      0,     // BackgroundQoS
+      0,     // BestEffortQoS
+      8<<2,  // ExcellentEffortQoS
+      10<<2, // CriticalQoS
+      38<<2, // VideoQoS
+      44<<2, // VoiceQoS
+      48<<2  // ControlQoS
+    };
+    new_tos = DSCP[qos.m_type];
+  }
+
+  // On Win7 and later this succeeds, does not actually do anything. Useless!
+
   if (!SetOption(IP_TOS, new_tos, IPPROTO_IP)) {
     PTRACE(2, "Socket\tCould not set TOS field in IP header: " << GetErrorText());
     return false;

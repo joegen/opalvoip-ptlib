@@ -48,10 +48,5 @@
     PBoolean ConvertOSError(int status, ErrorGroup group = LastGeneralError);
     static PBoolean ConvertOSError(int error, Errors & lastError, int & osError);
 
-  private:
-#ifdef PHAS_WINSOCK
-    static PBoolean WinSockStarted;
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////
