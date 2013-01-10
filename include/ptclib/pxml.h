@@ -66,6 +66,10 @@ class PXMLData;
 class PXMLBase : public PObject
 {
   public:
+    enum {
+      DEFAULT_MAX_ENTITY_LENGTH = 4096
+    };
+
     P_DECLARE_BITWISE_ENUM_EX(Options, 6,
                               (NoOptions, Indent, NewLineAfterElement, NoIgnoreWhiteSpace, CloseExtended, WithNS, FragmentOnly),
                               AllOptions = (1<<(6+1))-1);
@@ -77,12 +81,9 @@ class PXMLBase : public PObject
       IsStandAlone
     };
 
-    PXMLBase(Options opts = NoOptions)
-      : m_options(opts) { }
+    PXMLBase(Options opts = NoOptions);
 
-    void SetOptions(Options opts)
-      { m_options = opts; }
-
+    void SetOptions(Options opts) { m_options = opts; }
     Options GetOptions() const { return m_options; }
 
     virtual PBoolean IsNoIndentElement(
@@ -92,8 +93,12 @@ class PXMLBase : public PObject
       return false;
     }
 
+    void SetMaxEntityLength(unsigned len) { m_maxEntityLength = len; }
+    unsigned GetMaxEntityLength() const { return m_maxEntityLength; }
+
   protected:
-    Options m_options;
+    Options  m_options;
+    unsigned m_maxEntityLength;
 };
 
 
