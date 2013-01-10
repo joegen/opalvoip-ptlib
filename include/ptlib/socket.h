@@ -615,20 +615,6 @@ class P_timeval {
     PBoolean infinite;
 };
 
-#ifdef _WIN32
-class PWinSock : public PSocket
-{
-  PCLASSINFO(PWinSock, PSocket)
-// Must be one and one only instance of this class, and it must be static!.
-  public:
-    PWinSock();
-    ~PWinSock();
-  private:
-    virtual PBoolean OpenSocket();
-    virtual const char * GetProtocolName() const;
-};
-#endif
-
 
 #endif // PTLIB_SOCKET_H
 

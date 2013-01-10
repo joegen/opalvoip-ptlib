@@ -55,6 +55,10 @@ class PXMLBase : public PObject
 {
     PCLASSINFO(PXMLBase, PObject);
   public:
+    enum {
+      DEFAULT_MAX_ENTITY_LENGTH = 4096
+    };
+
     P_DECLARE_BITWISE_ENUM_EX(
       Options,
       7,
@@ -78,13 +82,13 @@ class PXMLBase : public PObject
       IsStandAlone
     };
 
-    PXMLBase(Options opts = NoOptions)
-      : m_options(opts) { }
+    PXMLBase(Options opts = NoOptions);
 
-    void SetOptions(Options opts)
-      { m_options = opts; }
-
+    void SetOptions(Options opts) { m_options = opts; }
     Options GetOptions() const { return m_options; }
+
+    void SetMaxEntityLength(unsigned len) { m_maxEntityLength = len; }
+    unsigned GetMaxEntityLength() const { return m_maxEntityLength; }
 
     virtual PBoolean IsNoIndentElement(const PString & /*elementName*/) const
       { return false; }
@@ -94,7 +98,8 @@ class PXMLBase : public PObject
     bool OutputIndent(ostream & strm, int indent, const PString & elementName =  PString::Empty()) const;
 
   protected:
-    Options m_options;
+    Options  m_options;
+    unsigned m_maxEntityLength;
 };
 
 
@@ -102,10 +107,6 @@ class PXML : public PXMLBase
 {
     PCLASSINFO(PXML, PXMLBase);
   public:
-    enum {
-      DEFAULT_MAX_ENTITY_LENGTH = 4096
-    };
-
     PXML(
       Options options = NoOptions,
       const char * noIndentElements = NULL
@@ -245,7 +246,6 @@ class PXML : public PXMLBase
 
     PCaselessString m_defaultNameSpace;
 
-    unsigned int m_maxEntityLength;
     PINDEX   m_totalObjects;
     mutable PINDEX   m_savedObjects;
     mutable unsigned m_percent;
@@ -520,8 +520,6 @@ class PXMLParserBase
 
     bool IsParsing() const { return m_parsing; }
 
-    void SetMaxEntityLength(unsigned int v) { m_maxEntityLength = v; }
-
   protected:
     void *   m_context;
     bool     m_parsing;
@@ -529,7 +527,6 @@ class PXMLParserBase
     off_t    m_consumed;
     unsigned m_percent;
     bool     m_userAborted;
-    unsigned int m_maxEntityLength;
 };
 
 

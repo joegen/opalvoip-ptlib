@@ -156,32 +156,27 @@ const PIPSocket::Address & PIPSocket::GetInvalidAddress()
 }
 
 
-class Psockaddr
+PIPSocket::sockaddr_wrapper::sockaddr_wrapper()
 {
-  public:
-    Psockaddr() : ptr(&storage) { memset(&storage, 0, sizeof(storage)); }
-    Psockaddr(const PIPSocket::Address & ip, WORD port);
-    sockaddr* operator->() const { return addr; }
-    operator sockaddr*()   const { return addr; }
-    socklen_t GetSize() const;
-    PIPSocket::Address GetIP() const;
-    WORD GetPort() const;
-  private:
-    sockaddr_storage storage;
-    union {
-      sockaddr_storage * ptr;
-      sockaddr         * addr;
-      sockaddr_in      * addr4;
-#if P_HAS_IPV6
-      sockaddr_in6     * addr6;
-#endif
-    };
-};
+  Construct(invalid, 0);
+}
 
 
-Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
- : ptr(&storage) 
+PIPSocket::sockaddr_wrapper::sockaddr_wrapper(const PIPSocket::AddressAndPort & ipPort)
 {
+  Construct(ipPort.GetAddress(), ipPort.GetPort());
+}
+
+
+PIPSocket::sockaddr_wrapper::sockaddr_wrapper(const PIPSocket::Address & ip, WORD port)
+{
+  Construct(ip, port);
+}
+
+
+void PIPSocket::sockaddr_wrapper::Construct(const PIPSocket::Address & ip, WORD port)
+{
+  ptr = &storage;
   memset(&storage, 0, sizeof(storage));
 
   switch (ip.GetVersion()) {
@@ -210,7 +205,7 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
 }
 
 
-socklen_t Psockaddr::GetSize() const
+socklen_t PIPSocket::sockaddr_wrapper::GetSize() const
 {
   switch (addr->sa_family) {
     case AF_INET :
@@ -227,7 +222,7 @@ socklen_t Psockaddr::GetSize() const
 }
 
 
-PIPSocket::Address Psockaddr::GetIP() const
+PIPSocket::Address PIPSocket::sockaddr_wrapper::GetIP() const
 {
   switch (addr->sa_family) {
     case AF_INET :
@@ -242,7 +237,7 @@ PIPSocket::Address Psockaddr::GetIP() const
 }
 
 
-WORD Psockaddr::GetPort() const
+WORD PIPSocket::sockaddr_wrapper::GetPort() const
 {
   switch (addr->sa_family) {
     case AF_INET :
@@ -256,11 +251,6 @@ WORD Psockaddr::GetPort() const
   }
 }
 
-
-
-#if (defined(_WIN32) || defined(WINDOWS)) && !defined(__NUCLEUS_MNT__)
-static PWinSock dummyForWinSock; // Assure winsock is initialised
-#endif
 
 #if (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)) || defined(__NUCLEUS_PLUS__)
 #define REENTRANT_BUFFER_LEN 1024
@@ -1095,11 +1085,6 @@ PChannel::Errors PSocket::Select(SelectList & read,
 //////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
-PIPSocket::PIPSocket()
-{
-}
-
-
 void PIPSocket::ClearNameCache()
 {
   pHostByName().mutex.Wait();
@@ -1123,7 +1108,7 @@ void PIPSocket::ClearNameCache()
 
 PString PIPSocket::GetName() const
 {
-  Psockaddr sa;
+  PIPSocket::sockaddr_wrapper sa;
   socklen_t size = sa.GetSize();
   if (getpeername(os_handle, sa, &size) != 0)
     return PString::Empty();
@@ -1257,7 +1242,7 @@ bool PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
 bool PIPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort)
 {
   Address   peerv4;
-  Psockaddr sa;
+  PIPSocket::sockaddr_wrapper sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getsockname(os_handle, sa, &size)))
     return false;
@@ -1313,7 +1298,7 @@ bool PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
 
 bool PIPSocket::InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort)
 {
-  Psockaddr sa;
+  PIPSocket::sockaddr_wrapper sa;
   socklen_t size = sa.GetSize();
   if (!ConvertOSError(::getpeername(os_handle, sa, &size)))
     return false;
@@ -1383,14 +1368,14 @@ PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address
   // make sure we have a port
   PAssert(port != 0, "Cannot connect socket without setting port");
 
-  Psockaddr sa(addr, port);
+  PIPSocket::sockaddr_wrapper sa(addr, port);
 
   // attempt to create a socket with the right family
   if (!OpenSocket(sa->sa_family))
     return false;
 
   if (localPort != 0 || iface.IsValid()) {
-    Psockaddr bind_sa(iface, localPort);
+    PIPSocket::sockaddr_wrapper bind_sa(iface, localPort);
 
     if (!SetOption(SO_REUSEADDR, 0)) {
       os_close();
@@ -1421,7 +1406,7 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
   if (newPort != 0)
     port = newPort;
 
-  Psockaddr sa(bindAddr, port);
+  PIPSocket::sockaddr_wrapper sa(bindAddr, port);
 
   // Always close and re-open as the bindAddr address family might change.
   os_close();
@@ -1832,7 +1817,7 @@ PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6),
     if (IsAny())
       return bracketIPv6 ? "[::]" : "::";
     char str[INET6_ADDRSTRLEN+3];
-    Psockaddr sa(*this, 0);
+    PIPSocket::sockaddr_wrapper sa(*this, 0);
     PAssertOS(getnameinfo(sa, sa.GetSize(), &str[bracketIPv6], INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST) == 0);
     if (bracketIPv6) {
       str[0] = '[';
@@ -2338,7 +2323,7 @@ PBoolean PTCPSocket::Accept(PSocket & socket)
 {
   PAssert(PIsDescendant(&socket, PIPSocket), "Invalid listener socket");
 
-  Psockaddr sa;
+  PIPSocket::sockaddr_wrapper sa;
   socklen_t size = sa.GetSize();
   if (!os_accept(socket, sa, &size))
     return false;
@@ -2421,7 +2406,7 @@ bool PIPDatagramSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPS
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-  Psockaddr sa;
+  PIPSocket::sockaddr_wrapper sa;
   socklen_t size = sa.GetSize();
   if (!os_vread(slices, sliceCount, 0, sa, &size))
     return false;
@@ -2525,7 +2510,7 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
   
 #else
   
-  Psockaddr sa(broadcast ? Address::GetBroadcast(addr.GetVersion()) : addr, port);
+  PIPSocket::sockaddr_wrapper sa(broadcast ? Address::GetBroadcast(addr.GetVersion()) : addr, port);
   bool ok = os_vwrite(slices, sliceCount, 0, sa, sa.GetSize());
   
 #endif // P_MACOSX
@@ -2770,7 +2755,7 @@ PBoolean PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
-PIPSocketAddressAndPort::PIPSocketAddressAndPort(char separator)
+PIPSocket::AddressAndPort::AddressAndPort(char separator)
   : m_address(PIPSocket::GetInvalidAddress())
   , m_port(0)
   , m_separator(separator)
@@ -2778,7 +2763,7 @@ PIPSocketAddressAndPort::PIPSocketAddressAndPort(char separator)
 }
 
 
-PIPSocketAddressAndPort::PIPSocketAddressAndPort(WORD defaultPort, char separator)
+PIPSocket::AddressAndPort::AddressAndPort(WORD defaultPort, char separator)
   : m_address(PIPSocket::GetInvalidAddress())
   , m_port(defaultPort)
   , m_separator(separator)
@@ -2786,7 +2771,7 @@ PIPSocketAddressAndPort::PIPSocketAddressAndPort(WORD defaultPort, char separato
 }
 
 
-PIPSocketAddressAndPort::PIPSocketAddressAndPort(const PString & str, WORD defaultPort, char separator, const char * proto)
+PIPSocket::AddressAndPort::AddressAndPort(const PString & str, WORD defaultPort, char separator, const char * proto)
   : m_address(PIPSocket::GetInvalidAddress())
   , m_port(defaultPort)
   , m_separator(separator)
@@ -2795,7 +2780,7 @@ PIPSocketAddressAndPort::PIPSocketAddressAndPort(const PString & str, WORD defau
 }
 
 
-PIPSocketAddressAndPort::PIPSocketAddressAndPort(const PIPSocket::Address & addr, WORD defaultPort, char separator)
+PIPSocket::AddressAndPort::AddressAndPort(const PIPSocket::Address & addr, WORD defaultPort, char separator)
   : m_address(addr)
   , m_port(defaultPort)
   , m_separator(separator)
@@ -2803,7 +2788,7 @@ PIPSocketAddressAndPort::PIPSocketAddressAndPort(const PIPSocket::Address & addr
 }
 
 
-PIPSocketAddressAndPort::PIPSocketAddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen)
+PIPSocketAddressAndPort::AddressAndPort(struct sockaddr *ai_addr, const int ai_addrlen)
   : m_address(ai_addr->sa_family, ai_addrlen, ai_addr)
   , m_port(ntohs((ai_addr->sa_family == AF_INET) ? ((sockaddr_in *)ai_addr)->sin_port : ((sockaddr_in6 *)ai_addr)->sin6_port))
   , m_separator(':')
@@ -2811,7 +2796,7 @@ PIPSocketAddressAndPort::PIPSocketAddressAndPort(struct sockaddr *ai_addr, const
 }
 
 
-PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char separator, const char * proto)
+bool PIPSocket::AddressAndPort::Parse(const PString & str, WORD port, char separator, const char * proto)
 {
   if (separator != '\0')
     m_separator = separator;
@@ -2830,7 +2815,7 @@ PBoolean PIPSocketAddressAndPort::Parse(const PString & str, WORD port, char sep
 }
 
 
-PString PIPSocketAddressAndPort::AsString(char separator) const
+PString PIPSocket::AddressAndPort::AsString(char separator) const
 {
   PString str;
 
@@ -2844,7 +2829,7 @@ PString PIPSocketAddressAndPort::AsString(char separator) const
 }
 
 
-void PIPSocketAddressAndPort::SetAddress(const PIPSocket::Address & addr, WORD port)
+void PIPSocket::AddressAndPort::SetAddress(const PIPSocket::Address & addr, WORD port)
 {
   m_address = addr;
   if (port != 0)
@@ -2852,7 +2837,7 @@ void PIPSocketAddressAndPort::SetAddress(const PIPSocket::Address & addr, WORD p
 }
 
 
-bool PIPSocketAddressAndPort::MatchWildcard(const PIPSocketAddressAndPort & wild) const
+bool PIPSocket::AddressAndPort::MatchWildcard(const AddressAndPort & wild) const
 {
   return (!wild.m_address.IsValid() || wild.m_address == m_address) &&
          ( wild.m_port == 0         || wild.m_port    == m_port);

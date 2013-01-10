@@ -62,6 +62,15 @@
 
 ////////////////////////////////////////////////////
 
+PXMLBase::PXMLBase(Options opts)
+  : m_options(opts)
+  , m_maxEntityLength(PXML::DEFAULT_MAX_ENTITY_LENGTH)
+{
+}
+
+
+////////////////////////////////////////////////////
+
 static void PXML_StartElement(void * userData, const char * name, const char ** attrs)
 {
   ((PXMLParserBase *)userData)->StartElement(name, attrs);
@@ -120,7 +129,6 @@ PXMLParserBase::PXMLParserBase(bool withNS)
   , m_consumed(0)
   , m_percent(0)
   , m_userAborted(false)
-  , m_maxEntityLength(PXML::DEFAULT_MAX_ENTITY_LENGTH)
 {
   if (withNS)
     m_context = XML_ParserCreateNS(NULL, '|');
@@ -327,9 +335,7 @@ void PXMLParser::AddCharacterData(const char * data, int len)
 {
   unsigned checkLen = len + ((m_lastData != NULL) ? m_lastData->GetString().GetLength() : 0);
   if (checkLen >= m_maxEntityLength) {
-    stringstream strm; strm << "Aborting XML parse at size " << m_maxEntityLength << " - possible 'billion laugh' attack";
-    PTRACE(2, "PXML\t" << strm.str());
-    cerr << strm.str() << endl;
+    PTRACE(2, "PXML\tAborting XML parse at size " << m_maxEntityLength << " - possible 'billion laugh' attack");
     XML_StopParser((XML_Parser)m_context, XML_FALSE);
     return;
   }
@@ -371,7 +377,6 @@ PXML::PXML(Options options, const char * noIndentElementsParam)
   , m_totalObjects(0)
   , m_savedObjects(0)
   , m_percent(0)
-  , m_maxEntityLength(DEFAULT_MAX_ENTITY_LENGTH)
 {
   if (m_options & PXML::FragmentOnly)
     SetRootElement("");
@@ -389,7 +394,6 @@ PXML::PXML(const PXML & xml)
   , m_totalObjects(0)
   , m_savedObjects(0)
   , m_percent(0)
-  , m_maxEntityLength(DEFAULT_MAX_ENTITY_LENGTH)
 {
   if (xml.m_rootElement != NULL)
     m_rootElement = new PXMLRootElement(*this, *xml.m_rootElement);
