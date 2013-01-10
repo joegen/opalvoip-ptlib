@@ -734,6 +734,11 @@ PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PIPSocket::PIPSocket()
+{
+}
+
+
 PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
 {
   RouteTable table;
