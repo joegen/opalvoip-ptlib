@@ -1637,10 +1637,12 @@ PTLIB_NEW_OPTION(WAVFILE)
 dnl ########################################################################
 dnl look for QoS functions
 
-dnl MSWIN_DISPLAY    qos,QoS Support
-dnl MSWIN_CHECK_FILE qos,include\qossp.h|QOS_DESTADDR,P_QOS=1
+dnl MSWIN_DISPLAY    gqos,Microsoft Windows GQOS Support
+dnl MSWIN_CHECK_FILE gqos,include\qossp.h|QOS_DESTADDR,P_GQOS=1
 
-PTLIB_SIMPLE_OPTION([qos], [QOS], [enable QOS support])
+dnl MSWIN_DISPLAY    qwave,Microsoft Windows qWAVE (QoS) Support
+dnl MSWIN_CHECK_FILE qwave,include\qos2.h,P_QWAVE=1
+
 
 dnl ########################################################################
 dnl check for video support
