@@ -527,8 +527,8 @@ ostream & PTraceInfo::InternalBegin(unsigned level, const char * fileName, int l
   if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
     unsigned rotateVal = GetRotateVal(m_options);
     if (rotateVal != m_lastRotate) {
-      OpenTraceFile(m_filename);
       m_lastRotate = rotateVal;
+      OpenTraceFile(m_filename);
       if (m_stream == NULL)
         SetStream(&cerr);
     }
