@@ -1642,6 +1642,7 @@ dnl MSWIN_CHECK_FILE gqos,include\qossp.h|QOS_DESTADDR,P_GQOS=1
 
 dnl MSWIN_DISPLAY    qwave,Microsoft Windows qWAVE (QoS) Support
 dnl MSWIN_CHECK_FILE qwave,include\qos2.h,P_QWAVE=1
+dnl MSWIN_CHECK_FILE qwave,include\qos2.h|QOSSetOutgoingDSCPValue,P_QWAVE_DSCP=1
 
 
 dnl ########################################################################
