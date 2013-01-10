@@ -146,7 +146,12 @@ class PInterfaceMonitor : public PProcessStartup
     struct InterfaceChange : public InterfaceEntry
     {
       InterfaceChange(const InterfaceEntry & entry, bool added)
-        : InterfaceEntry(entry), m_added(added), m_natMethod(NULL) { }
+        : InterfaceEntry(entry)
+        , m_added(added)
+#if P_NAT
+        , m_natMethod(NULL)
+#endif
+        { }
 
       const bool m_added;
 

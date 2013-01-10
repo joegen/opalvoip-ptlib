@@ -40,9 +40,6 @@
 
 #include <ptlib/socket.h>
 
-class PIPSocketAddressAndPort;
-
-
 
 /**This class describes a type of socket that will communicate using the
    Internet Protocol.
@@ -275,6 +272,87 @@ class PIPSocket : public PSocket
       friend istream & operator>>(istream & s, Address & a);
     };
 
+    /**A class describing an IP address and port number combination.
+     */
+    class AddressAndPort
+    {
+      public:
+        AddressAndPort(
+          char separator = ':'
+        );
+        AddressAndPort(
+          WORD defaultPort,
+          char separator = ':'
+        );
+        AddressAndPort(
+          const PString & str,
+          WORD defaultPort = 0,
+          char separator = ':',
+          const char * proto = NULL
+        );
+        AddressAndPort(
+          const PIPSocket::Address & addr,
+          WORD defaultPort = 0,
+          char separator = ':'
+        );
+        AddressAndPort(
+          struct sockaddr *ai_addr,
+          const int ai_addrlen
+        );
+
+        bool Parse(
+          const PString & str,
+          WORD defaultPort = 0,
+          char separator = ':',
+          const char * proto = NULL
+        );
+
+        PString AsString(char separator = 0) const;
+
+        const PIPSocket::Address & GetAddress() const { return m_address; }
+
+        void SetAddress(
+          const PIPSocket::Address & addr,
+          WORD port = 0
+        );
+
+        WORD GetPort() const { return m_port; }
+
+        void SetPort(
+          WORD port
+        ) { m_port = port; }
+
+        bool IsValid() const
+        {
+          return m_address.IsValid() && m_port != 0;
+        }
+
+        bool operator==(const AddressAndPort & obj) const
+        {
+          return m_port == obj.m_port && m_address == obj.m_address;
+        }
+
+        bool operator!=(const AddressAndPort & obj) const
+        {
+          return m_port != obj.m_port || m_address != obj.m_address;
+        }
+
+        friend ostream & operator<<(ostream & strm, const AddressAndPort & ap)
+        {
+          return strm << ap.AsString();
+        }
+
+        bool MatchWildcard(
+          const AddressAndPort & wild
+        ) const;
+
+      protected:
+        PIPSocket::Address m_address;
+        WORD               m_port;
+        char               m_separator;
+    };
+
+
     //**@name Overrides from class PChannel */
     //@{
     /**Get the platform and I/O channel type name of the channel. For an IP
@@ -469,7 +547,7 @@ class PIPSocket : public PSocket
       WORD & port        ///< Variable to receive peer hosts port number.
     );
     bool GetLocalAddress(
-      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
+      AddressAndPort & addr    ///< Variable to receive hosts IP address and port.
     )
     { return InternalGetLocalAddress(addr); }
 
@@ -488,7 +566,7 @@ class PIPSocket : public PSocket
       WORD & port        ///< Variable to receive peer hosts port number.
     );
     bool GetPeerAddress(
-      PIPSocketAddressAndPort & addr    ///< Variable to receive hosts IP address and port.
+      AddressAndPort & addr    ///< Variable to receive hosts IP address and port.
     )
     { return InternalGetPeerAddress(addr); }
 
@@ -725,7 +803,7 @@ class PIPSocket : public PSocket
       CriticalQoS,          ///< Try really hard
       VideoQoS,             ///< Video, < 100 ms latency and jitter
       VoiceQoS,             ///< Voice, < 10 ms latency and jitter
-      ControlQoS            ///< Imprtant stuff, prioritise over everything
+      ControlQoS            ///< Important stuff, prioritise over everything
     );
   /**@name Quality of Service
      This describes in a platform and as protocol independent way as possible
@@ -741,13 +819,14 @@ class PIPSocket : public PSocket
       QoSType m_type;
       int     m_dscp; // If between 0 and 63, is used instead of default for QoSType.
 
-      PIPSocket::Address m_remote;
+      AddressAndPort m_remote;
+
       struct Flow {
         Flow() { memset(this, 0, sizeof(*this)); }
-        unsigned m_maxBandwidth;
-        unsigned m_maxPacketSize;
-        unsigned m_maxLatency;
-        unsigned m_maxJitter;
+        unsigned m_maxBandwidth;    // bits/second, includes IP overhead
+        unsigned m_maxPacketSize;   // Bytes, includes IP overhead
+        unsigned m_maxLatency;      // Microseconds
+        unsigned m_maxJitter;       // Microseconds
       } m_transmit, m_receive;
 
       friend ostream & operator<<(ostream & strm, const PIPSocket::QoS & qos);
@@ -763,6 +842,10 @@ class PIPSocket : public PSocket
     const QoS & GetQoS() const { return m_qos; }
   //@}
 
+    virtual bool InternalGetLocalAddress(AddressAndPort & addrAndPort);
+    virtual bool InternalGetPeerAddress(AddressAndPort & addrAndPort);
+    virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
+
 // Include platform dependent part of class
 #ifdef _WIN32
 #include "msos/ptlib/ipsock.h"
@@ -770,93 +853,43 @@ class PIPSocket : public PSocket
 #include "unix/ptlib/ipsock.h"
 #endif
 
-    virtual bool InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort);
-    virtual bool InternalGetPeerAddress(PIPSocketAddressAndPort & addrAndPort);
-    virtual bool InternalListen(const Address & bind, unsigned queueSize, WORD port, Reusability reuse);
-
   protected:
     QoS m_qos;
+
+    class sockaddr_wrapper
+    {
+      public:
+        sockaddr_wrapper();
+        sockaddr_wrapper(const AddressAndPort & ipPort);
+        sockaddr_wrapper(const Address & ip, WORD port);
+
+        sockaddr* operator->() const { return addr; }
+        operator sockaddr*()   const { return addr; }
+        socklen_t GetSize() const;
+
+        PIPSocket::Address GetIP() const;
+        WORD GetPort() const;
+
+      private:
+        void Construct(const Address & ip, WORD port);
+
+        sockaddr_storage storage;
+        union {
+          sockaddr_storage * ptr;
+          sockaddr         * addr;
+          sockaddr_in      * addr4;
+    #if P_HAS_IPV6
+          sockaddr_in6     * addr6;
+    #endif
+        };
+    };
 };
 
-class PIPSocketAddressAndPort
-{
-  public:
-    PIPSocketAddressAndPort(
-      char separator = ':'
-    );
-    PIPSocketAddressAndPort(
-      WORD defaultPort,
-      char separator = ':'
-    );
-    PIPSocketAddressAndPort(
-      const PString & str,
-      WORD defaultPort = 0,
-      char separator = ':',
-      const char * proto = NULL
-    );
-    PIPSocketAddressAndPort(
-      const PIPSocket::Address & addr,
-      WORD defaultPort = 0,
-      char separator = ':'
-    );
-    PIPSocketAddressAndPort(
-      struct sockaddr *ai_addr,
-      const int ai_addrlen
-    );
+typedef PIPSocket::Address        PIPAddress;
+typedef PIPSocket::AddressAndPort PIPAddressAndPort;
+typedef PIPSocket::AddressAndPort PIPSocketAddressAndPort;
 
-    PBoolean Parse(
-      const PString & str,
-      WORD defaultPort = 0,
-      char separator = ':',
-      const char * proto = NULL
-    );
-
-    PString AsString(char separator = 0) const;
-
-    const PIPSocket::Address & GetAddress() const { return m_address; }
-
-    void SetAddress(
-      const PIPSocket::Address & addr,
-      WORD port = 0
-    );
-
-    WORD GetPort() const { return m_port; }
-
-    void SetPort(
-      WORD port
-    ) { m_port = port; }
-
-    bool IsValid() const
-    {
-      return m_address.IsValid() && m_port != 0;
-    }
-
-    bool operator==(const PIPSocketAddressAndPort & obj) const
-    {
-      return m_port == obj.m_port && m_address == obj.m_address;
-    }
-
-    bool operator!=(const PIPSocketAddressAndPort & obj) const
-    {
-      return m_port != obj.m_port || m_address != obj.m_address;
-    }
-
-    friend ostream & operator<<(ostream & strm, const PIPSocketAddressAndPort & ap)
-    {
-      return strm << ap.AsString();
-    }
-
-    bool MatchWildcard(
-      const PIPSocketAddressAndPort & wild
-    ) const;
-
-  protected:
-    PIPSocket::Address m_address;
-    WORD               m_port;
-    char               m_separator;
-};
-
-typedef std::vector<PIPSocketAddressAndPort> PIPSocketAddressAndPortVector;
+typedef std::vector<PIPSocket::AddressAndPort> PIPSocketAddressAndPortVector;
 
 
 #endif // PTLIB_IPSOCKET_H

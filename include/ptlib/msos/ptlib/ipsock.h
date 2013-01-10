@@ -31,36 +31,18 @@
  * $Date$
  */
 
-#ifndef EINPROGRESS
-#define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)
-#define ENOTSOCK                (WSAENOTSOCK|PWIN32ErrorFlag)
-#define EMSGSIZE                (WSAEMSGSIZE|PWIN32ErrorFlag)
-#define EOPNOTSUPP              (WSAEOPNOTSUPP|PWIN32ErrorFlag)
-#define EAFNOSUPPORT            (WSAEAFNOSUPPORT|PWIN32ErrorFlag)
-#define EADDRINUSE              (WSAEADDRINUSE|PWIN32ErrorFlag)
-#define EADDRNOTAVAIL           (WSAEADDRNOTAVAIL|PWIN32ErrorFlag)
-#define ENETDOWN                (WSAENETDOWN|PWIN32ErrorFlag)
-#define ENETUNREACH             (WSAENETUNREACH|PWIN32ErrorFlag)
-#define ENETRESET               (WSAENETRESET|PWIN32ErrorFlag)
-#define ECONNABORTED            (WSAECONNABORTED|PWIN32ErrorFlag)
-#define ECONNRESET              (WSAECONNRESET|PWIN32ErrorFlag)
-#define ENOBUFS                 (WSAENOBUFS|PWIN32ErrorFlag)
-#define EISCONN                 (WSAEISCONN|PWIN32ErrorFlag)
-#define ENOTCONN                (WSAENOTCONN|PWIN32ErrorFlag)
-#define ETIMEDOUT               (WSAETIMEDOUT|PWIN32ErrorFlag)
-#define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
-#define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
-#define EWOULDBLOCK             (WSAEWOULDBLOCK|PWIN32ErrorFlag)
-#endif
-
-
-#define NETDB_SUCCESS 0
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
-// nothing to do
+#if P_QWAVE
+
+  public:
+    virtual PBoolean Close();
+
+  protected:
+    ULONG m_qosFlowId;
+
+#endif // P_QWAVE
 
 
 // End Of File ///////////////////////////////////////////////////////////////
