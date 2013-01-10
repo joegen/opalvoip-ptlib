@@ -527,8 +527,8 @@ ostream & PTraceInfo::InternalBegin(unsigned level, const char * fileName, int l
   if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
     unsigned rotateVal = GetRotateVal(m_options);
     if (rotateVal != m_lastRotate) {
-      OpenTraceFile(m_filename);
       m_lastRotate = rotateVal;
+      OpenTraceFile(m_filename);
       if (m_stream == NULL)
         SetStream(&cerr);
     }
@@ -872,6 +872,7 @@ void PTimer::Construct()
 {
   m_timerList = PProcess::Current().GetTimerList();
   m_timerId = m_timerList->GetNewTimerId();
+  m_startedAtLeastOnce = false;
   m_state = Stopped;
 
   StartRunning(true);
@@ -914,12 +915,18 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(PBoolean once)
 {
-  Stop(false);
-
   PTimeInterval::operator=(m_resetTime);
   m_oneshot = once;
+  int oldState = m_state;
+  m_state = (m_resetTime == 0 ? Stopped : Running);
 
-  if (m_resetTime > 0) {
+  if (!IsRunning() && (oldState != Stopped)) 
+    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this);
+  else if (IsRunning()) {
+    if (oldState != Stopped)
+      m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, false);
+
+    m_startedAtLeastOnce = true;
     m_absoluteTime = Tick().GetMilliSeconds() + m_resetTime.GetMilliSeconds();
     m_timerList->QueueRequest(PTimerList::RequestType::Start, this, false);
   }
@@ -928,22 +935,33 @@ void PTimer::StartRunning(PBoolean once)
 
 void PTimer::Stop(bool wait)
 {
-  if (m_state != Stopped)
+  if (m_state != Stopped) {
+    m_state = Stopped;
     m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
+  }
+  else if (wait && m_startedAtLeastOnce) {
+    // ensure that timer is stopped correctly
+    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, true);
+  }
 }
 
 
 void PTimer::Pause()
 {
-  if (IsRunning())
-    m_timerList->QueueRequest(PTimerList::RequestType::Pause, this);
+  if (IsRunning()) {
+    m_state = Paused;
+    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this);
+  }
 }
 
 
 void PTimer::Resume()
 {
-  if (m_state == Stopped || m_state == Paused)
+  if (m_state == Stopped || m_state == Paused) {
+    m_state = Running;
+    m_startedAtLeastOnce = true;
     m_timerList->QueueRequest(PTimerList::RequestType::Start, this);
+  }
 }
 
 
@@ -962,10 +980,17 @@ void PTimer::OnTimeout()
 
 void PTimer::Process(PInt64 now)
 {
-  if (m_state == Running && m_absoluteTime <= now) {
-    m_state = InTimeout;
+  switch (m_state) {
+    case Running :
+      if (m_absoluteTime <= now) {
+        if (m_oneshot)
+          m_state = Stopped;
+        OnTimeout();
+      }
+      break;
 
-    OnTimeout();
+    default : // Stopped or Paused, do nothing.
+      break;
   }
 }
 
@@ -1016,29 +1041,20 @@ void PTimerList::ProcessTimerQueue()
       case PTimerList::RequestType::Start:
         if (it == m_activeTimers.end())
           m_activeTimers.insert(ActiveTimerInfoMap::value_type(request.m_id, ActiveTimerInfo(request.m_timer, request.m_serialNumber)));
-        else
+        else {
+          it->second.m_timer = request.m_timer;
           it->second.m_serialNumber = request.m_serialNumber;
+        }
         m_expiryList.insert(TimerExpiryInfo(request.m_id, request.m_absoluteTime, request.m_serialNumber));
-        request.m_timer->m_state = PTimer::Running;
         break;
-
       case PTimerList::RequestType::Stop:
         if (it != m_activeTimers.end())
           m_activeTimers.erase(it);
-        request.m_timer->m_state = PTimer::Stopped;
         break;
-
-      case PTimerList::RequestType::Pause:
-        if (it != m_activeTimers.end())
-          m_activeTimers.erase(it);
-        request.m_timer->m_state = PTimer::Paused;
-        break;
-
       default:
         PAssertAlways("unknown timer request code");
         break;
     }
-
     if (request.m_sync != NULL)
       request.m_sync->Signal();
 
@@ -1068,15 +1084,7 @@ PTimeInterval PTimerList::Process()
       ActiveTimerInfo & timer = t->second;
       if (expiry.m_serialNumber == timer.m_serialNumber) {
         timer.m_timer->Process(now);
-
-        PTimer::TimerState timerState = timer.m_timer->m_state;
-        if (timerState == PTimer::InTimeout)
-          timer.m_timer->m_state = timerState = (timer.m_timer->m_oneshot ? PTimer::Stopped : PTimer::Running);
-
-        // PTimer object can be destroyed between the above assignment to Stopped and the test below,
-        // so make sure is in temporary variable.
-
-        if (timerState != PTimer::Stopped)
+        if (timer.m_timer->m_state != PTimer::Stopped)
           m_expiryList.insert(TimerExpiryInfo(expiry.m_timerId, now + timer.m_timer->m_resetTime.GetMilliSeconds(), timer.m_serialNumber));
         else
           m_activeTimers.erase(t);

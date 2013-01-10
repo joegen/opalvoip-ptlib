@@ -1068,7 +1068,9 @@ void PMonitoredSocketBundle::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
   else {
     CloseSocket(m_socketInfoMap.find(MakeInterfaceDescription(entry)));
     PTRACE(3, "UDP socket bundle has removed interface " << entry);
+#if P_NAT
     OnRemoveNatMethod(entry.m_natMethod);
+#endif
   }
 
   UnlockReadWrite();
@@ -1214,7 +1216,9 @@ void PSingleMonitoredSocket::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
     PTRACE(3, "Bound UDP socket DOWN event on interface " << m_entry);
     m_entry = InterfaceEntry();
     DestroySocket(m_info);
+#if P_NAT
     OnRemoveNatMethod(entry.m_natMethod);
+#endif
   }
 }
 
