@@ -141,6 +141,7 @@
   #undef P_HAS_IPV6
   #undef P_GQOS
   #undef P_QWAVE
+  #undef P_QWAVE_DSCP
 #endif //  _WIN32_WCE
 
 
