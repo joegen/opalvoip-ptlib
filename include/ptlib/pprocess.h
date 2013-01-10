@@ -137,8 +137,7 @@ class PTimerList : public PObject
       public:
         enum Action {
           Stop,
-          Start,
-          Pause
+          Start
         } m_action;
 
         RequestType(Action act, PTimer * t)
