@@ -412,8 +412,6 @@ class PTimer : public PTimeInterval
 
     // Member variables
 
-    bool m_startedAtLeastOnce;
-
     // Callback function for expired timers.
     PNotifier m_callback;
 
@@ -423,8 +421,8 @@ class PTimer : public PTimeInterval
     // Timer operates once then stops.
     PBoolean m_oneshot;
 
-    // Timer state (or the next state which timer will reach).
-    enum TimerState { Stopped, Running, Paused } m_state;
+    // Timer state.
+    enum TimerState { Stopped, Running, Paused, InTimeout } m_state;
 
     friend class PTimerList;              // needed for Process
     class PTimerList * m_timerList;  
