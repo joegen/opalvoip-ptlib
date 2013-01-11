@@ -37,6 +37,7 @@
 
 #ifdef _MSC_VER
 #include "stdint.h"
+#pragma warning(disable:4100 4127 4244 4324 4611)
 #else
 #include <inttypes.h>
 #endif
