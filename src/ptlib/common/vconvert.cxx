@@ -42,7 +42,7 @@
 
 #include <ptlib/vconvert.h>
 
-#if  defined(__GNUC__) || defined(__sun) 
+#ifdef P_TINY_JPEG
 #include "tinyjpeg.h"
 #endif
 
@@ -58,19 +58,10 @@
 
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 
-PSYNONYM_COLOUR_CONVERTER(SBGGR8, SBGGR8);
-PSYNONYM_COLOUR_CONVERTER(Grey,   Grey);
-PSYNONYM_COLOUR_CONVERTER(RGB24,  RGB24);
-PSYNONYM_COLOUR_CONVERTER(BGR24,  BGR24);
-PSYNONYM_COLOUR_CONVERTER(RGB32,  RGB32);
-PSYNONYM_COLOUR_CONVERTER(BGR32,  BGR32);
-PSYNONYM_COLOUR_CONVERTER(UYVY422,UYVY422);
-PSYNONYM_COLOUR_CONVERTER(YUV411P,YUV411P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,IYUV);
 PSYNONYM_COLOUR_CONVERTER(IYUV,   YUV420P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,I420);
 PSYNONYM_COLOUR_CONVERTER(I420,   YUV420P);
-PSYNONYM_COLOUR_CONVERTER(YUY2,   YUY2);
 
 
 class PStandardColourConverter : public PColourConverter
@@ -81,9 +72,7 @@ class PStandardColourConverter : public PColourConverter
       const PVideoFrameInfo & src,
       const PVideoFrameInfo & dst
     ) : PColourConverter(src, dst)
-#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
-      , jdec(NULL)
-#endif
+    , m_isBlack(false)
     { }
 
     bool SBGGR8toYUV420P(
@@ -166,31 +155,21 @@ class PStandardColourConverter : public PColourConverter
       const BYTE *yuy2,
       BYTE *yuv420p
     ) const;
-    bool MJPEGtoYUV420PSameSize(
-      const BYTE *yuy2,
-      BYTE *yuv420p
-    );
 
-#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
-      /* Use by the jpeg decompressor */
-    struct jdec_private *jdec;
+#if defined(P_TINY_JPEG)
+    bool MJPEGToSameSize(
+      const BYTE *mjpeg,
+      BYTE * data,
+      int format
+    );
     bool MJPEGtoXXX(
       const BYTE *mjpeg,
             BYTE *output_data,
             PINDEX *bytesReturned,
             int format
     );
-    bool MJPEGtoYUV420P(
-      const BYTE *mjpeg,
-      BYTE *yuv420p,
-      PINDEX *bytesReturned
-    );
-    bool MJPEGtoXXXSameSize(
-      const BYTE *yuy2,
-      BYTE *rgb,
-      int format
-    );
 #endif
+    bool m_isBlack;
 };
 
 
@@ -2744,67 +2723,97 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
   return true;
 }
 
-#if (defined (__GNUC__) || defined (__sun)) && !defined(P_MACOSX)
-/*
- * Convert a MJPEG Buffer to one plane pixel format (RGB24, BGR24, GRAY)
- * image need to be same size.
- */
-bool PStandardColourConverter::MJPEGtoXXXSameSize(const BYTE *mjpeg, BYTE *rgb, int format)
+#if defined (P_TINY_JPEG)
+
+bool PStandardColourConverter::MJPEGToSameSize(const BYTE * mjpeg, BYTE * data, int format)
 {
-  BYTE *components[1];
+  BYTE *components[4];
 
-  struct jdec_private *jdec;
- 
-  components[0] = rgb;
- 
-  jdec = tinyjpeg_init();
+  components[0] = data;
+  int componentCount = 1;
 
+  if (format == TINYJPEG_FMT_YUV420P) {
+    componentCount = 4;
+    int npixels = m_srcFrameWidth * m_srcFrameHeight;
+    components[1] = data + npixels;
+    components[2] = data + npixels + npixels/4;
+    components[3] = NULL;
+  }
+ 
+  struct jdec_private * jdec = tinyjpeg_init();
   if (jdec == NULL) {
      PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
      return false;
   }
   tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
-  tinyjpeg_set_components(jdec, components, 1);
+  tinyjpeg_set_components(jdec, components, componentCount);
   if (tinyjpeg_parse_header(jdec, mjpeg, m_srcFrameBytes) < 0) {
      PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
      free(jdec);
      return false;
   }
-  if (tinyjpeg_decode(jdec, format) < 0) {
-     PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
-     free(jdec);
-     return false;
+
+  unsigned int w, h;
+  tinyjpeg_get_size(jdec, &w, &h);
+  if ((w == m_srcFrameWidth) && (h == m_srcFrameHeight)) {
+    bool stat = tinyjpeg_decode(jdec, format) >= 0;
+    if (!stat)
+       PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
+    else
+      m_isBlack = false;
+    free(jdec);
+    return stat;
   }
 
-  free(jdec);
+  if (format == TINYJPEG_FMT_YUV420P) {
+    if (!m_isBlack) {
+      FillYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, data, 0, 0, 0);
+      m_isBlack = true;
+    }
+  }
+
   return true;
 }
 
 
-bool PStandardColourConverter::MJPEGtoXXX(const BYTE *mjpeg,
-                                          BYTE *output_data,
+/*
+ * Convert a MJPEG or JPEG buffer to YUV420P
+ *
+ */
+bool PStandardColourConverter::MJPEGtoXXX(const BYTE * mjpeg,
+                                          BYTE       * data,
                                           PINDEX *bytesReturned,
                                           int format)
 {
-  if ((m_srcFrameWidth | m_dstFrameWidth | m_srcFrameHeight | m_dstFrameHeight) & 0xf) {
-    PTRACE(2,"PColCnv\tError MJPEG decoder need width and height to be a multiple of 16");
-    return false;
-  }
+  bool converted = false;
 
-  if ((m_srcFrameWidth == m_dstFrameWidth) && (m_srcFrameHeight == m_dstFrameHeight)) {
-     if (MJPEGtoXXXSameSize(mjpeg, output_data, format) == false)
-       return false;
-  } else {
-     /* not efficient (convert then resize) */
-     /* TODO: */
-     return false;
+  if ((m_srcFrameWidth == m_dstFrameWidth) && (m_srcFrameHeight == m_dstFrameHeight) && (((m_srcFrameWidth | m_dstFrameWidth | m_srcFrameHeight | m_dstFrameHeight) & 0xf) == 0)) {
+     PTRACE(4,"PColCnv\tMJPEG to YUV420P\n");
+     converted = MJPEGToSameSize(mjpeg, data, format);  // ignore errors, as returning false will close the channel
+  } 
+  else if (format == TINYJPEG_FMT_YUV420P) {
+    if (((m_srcFrameWidth | m_srcFrameHeight ) & 0xf) != 0) {
+      PTRACE(2, "PColCnv\tMJPEG converter called with src size not multiple of 16 - " << m_srcFrameWidth << "x" << m_srcFrameWidth);
+    }
+    else {
+     /* Very not efficient */
+     unsigned int frameBytes = m_srcFrameWidth * m_srcFrameHeight * 3 / 2;
+     BYTE *intermed = m_intermediateFrameStore.GetPointer(frameBytes);
+     converted = MJPEGToSameSize(mjpeg, intermed, format);  // ignore errors, as returning false will close the channel
+     if (converted && (format == TINYJPEG_FMT_YUV420P))
+       CopyYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, intermed,
+                   0, 0, m_dstFrameWidth, m_dstFrameHeight, m_dstFrameWidth, m_dstFrameHeight, data,
+                   m_resizeMode);
+    }
+  }
+  else {
+    PTRACE(2, "PColCnv\tMJPEG converter called with src size not multiple of 16 - " << m_srcFrameWidth << "x" << m_srcFrameWidth);
   }
 
   if (bytesReturned != NULL)
-    *bytesReturned = m_dstFrameBytes;
+    *bytesReturned = converted ? m_dstFrameBytes : 0;
   
   return true;
-
 }
 
 PSTANDARD_COLOUR_CONVERTER(MJPEG,RGB24)
@@ -2822,6 +2831,11 @@ PSTANDARD_COLOUR_CONVERTER(MJPEG,Grey)
   return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_GREY);
 }
 
+PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
+{
+  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_YUV420P);
+}
+
 PSTANDARD_COLOUR_CONVERTER(JPEG,RGB24)
 {
   return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_RGB24);
@@ -2837,94 +2851,9 @@ PSTANDARD_COLOUR_CONVERTER(JPEG,Grey)
   return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_GREY);
 }
 
-/*
- * Convert a MJPEG Buffer to YUV420P
- * image need to be same size.
- */
-bool PStandardColourConverter::MJPEGtoYUV420PSameSize(const BYTE *mjpeg, BYTE *yuv420p)
-{
-  BYTE *components[4];
-  struct jdec_private *jdec;
-
-  int npixels = m_srcFrameWidth * m_srcFrameHeight;
-
-  components[0] = yuv420p;
-  components[1] = yuv420p + npixels;
-  components[2] = yuv420p + npixels + npixels/4;
-  components[3] = NULL;
- 
-  jdec = tinyjpeg_init();
-
-  if (jdec == NULL) {
-    PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
-    return false;
-  }
-  tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
-  tinyjpeg_set_components(jdec, components, 4);
-  if (tinyjpeg_parse_header(jdec, mjpeg, m_srcFrameBytes) < 0) {
-     PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
-     free(jdec);
-     return false;
-  }
-  if (tinyjpeg_decode(jdec, TINYJPEG_FMT_YUV420P) < 0) {
-     PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
-     free(jdec);
-     return false;
-  }
-
-  free(jdec);
-  return true;
-}
-
-/*
- * Convert a MJPEG or JPEG buffer to YUV420P
- *
- */
-bool PStandardColourConverter::MJPEGtoYUV420P(const BYTE *mjpeg,
-                                              BYTE *yuv420p,
-                                              PINDEX *bytesReturned)
-{
-  if ((m_srcFrameWidth | m_dstFrameWidth | m_srcFrameHeight | m_dstFrameHeight) & 0xf) {
-    PTRACE(2,"PColCnv\tError in MJPEG to YUV420P converter, All size need to be a multiple of 16.");
-    return false;
-  }
-
-  if ((m_srcFrameWidth == m_dstFrameWidth) && (m_srcFrameHeight == m_dstFrameHeight)) {
-
-     PTRACE(2,"PColCnv\tMJPEG to YUV420P\n");
-     if (MJPEGtoYUV420PSameSize(mjpeg, yuv420p) == false)
-       return false;
-
-  } else {
-     /* Very not efficient */
-     unsigned int frameBytes = m_srcFrameWidth * m_srcFrameHeight * 3 / 2;
-     BYTE *intermed = m_intermediateFrameStore.GetPointer(frameBytes);
-     MJPEGtoYUV420PSameSize(mjpeg, intermed);
-     CopyYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, intermed,
-                 0, 0, m_dstFrameWidth, m_dstFrameHeight, m_dstFrameWidth, m_dstFrameHeight, yuv420p,
-                 m_resizeMode);
-  }
-
-  if (bytesReturned != NULL)
-    *bytesReturned = m_dstFrameBytes;
-  
-  return true;
-}
-
-/*
- * MJPEG to YUV420P
- */
-PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
-{
-  return MJPEGtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned);
-}
-
-/*
- * JPEG to YUV420P
- */
 PSTANDARD_COLOUR_CONVERTER(JPEG,YUV420P)
 {
-  return MJPEGtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned);
+  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_YUV420P);
 }
 
 

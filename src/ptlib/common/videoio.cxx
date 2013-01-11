@@ -708,7 +708,7 @@ PBoolean PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
 
     converter = PColourConverter::Create(src, dst);
     if (converter == NULL) {
-      PTRACE(2, "PVidDev\tSetColourFormatConverter failed to crate converter from " << src << " to " << dst);
+      PTRACE(2, "PVidDev\tSetColourFormatConverter failed to create converter from " << src << " to " << dst);
       return false;
     }
 
@@ -756,21 +756,32 @@ PBoolean PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, ResizeMode resizeMode)
 {
-  if (SetFrameSize(width, height)) {
-    if (nativeVerticalFlip && converter == NULL) {
-      converter = PColourConverter::Create(*this, *this);
-      if (PAssertNULL(converter) == NULL)
-        return false;
+  bool isMJPEGCapture = (PVideoFrameInfo::GetColourFormat() == "MJPEG") && CanCaptureVideo();
+
+  if (!isMJPEGCapture || (((width | height) & 0xf) == 0)) {
+    if (SetFrameSize(width, height)) {
+      if (nativeVerticalFlip && (converter == NULL))
+        converter = new PSynonymColour(*this, *this);
+      if (converter != NULL) {
+        converter->SetFrameSize(frameWidth, frameHeight);
+        converter->SetVFlipState(nativeVerticalFlip);
+      }
+      return true;
     }
-    if (converter != NULL) {
-      converter->SetFrameSize(frameWidth, frameHeight);
-      converter->SetVFlipState(nativeVerticalFlip);
-    }
-    return true;
+  }
+
+  int outW = width;
+  int outH = height;
+
+  if (isMJPEGCapture) {
+    outW = ((width + 15) / 16) * 16;
+    outH = ((height + 15) / 16) * 16;
+    if (resizeMode == eMaxResizeMode)
+      resizeMode = eCropCentre;
   }
 
   // Try and get the most compatible physical frame size to convert from/to
-  if (!SetNearestFrameSize(width, height)) {
+  if (!SetNearestFrameSize(outW, outH)) {
     PTRACE(1, "PVidDev\tCannot set an apropriate size to scale from.");
     return false;
   }
@@ -779,8 +790,9 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
   if (converter == NULL) {
     PVideoFrameInfo src = *this;
     PVideoFrameInfo dst = *this;
-    if (CanCaptureVideo())
+    if (CanCaptureVideo()) {
       dst.SetFrameSize(width, height);
+    }
     else
       src.SetFrameSize(width, height);
     dst.SetResizeMode(resizeMode);
@@ -1368,33 +1380,39 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
   if (!GetDeviceCapabilities(&caps))
     return false;
 
-  // First try and pick one with the same width
   std::list<PVideoFrameInfo>::iterator it;
-  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-    if (it->GetFrameWidth() == width)
-      return SetFrameSize(width, it->GetFrameHeight());
-  }
 
-  // Then try for the same height
-  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-    if (it->GetFrameHeight() == height)
-      return SetFrameSize(it->GetFrameWidth(), height);
-  }
+  bool isMJPEG = PVideoFrameInfo::GetColourFormat() == "MJPEG";
 
-  // Then try for double the size
-  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-    unsigned w, h;
-    it->GetFrameSize(w, h);
-    if (w == width*2 && h == height*2)
-      return SetFrameSize(w, h);
-  }
+  if (!isMJPEG) {
 
-  // Then try for half the size
-  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-    unsigned w, h;
-    it->GetFrameSize(w, h);
-    if (w == width/2 && h == height/2)
-      return SetFrameSize(w, h);
+    // First try and pick one with the same width
+    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+      if (it->GetFrameWidth() == width)
+        return SetFrameSize(width, it->GetFrameHeight());
+    }
+
+    // Then try for the same height
+    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+      if (it->GetFrameHeight() == height)
+        return SetFrameSize(it->GetFrameWidth(), height);
+    }
+
+    // Then try for double the size
+    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+      unsigned w, h;
+      it->GetFrameSize(w, h);
+      if (w == width*2 && h == height*2)
+        return SetFrameSize(w, h);
+    }
+
+    // Then try for half the size
+    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+      unsigned w, h;
+      it->GetFrameSize(w, h);
+      if (w == width/2 && h == height/2)
+        return SetFrameSize(w, h);
+    }
   }
 
   // Now try and pick one that has the nearest number of pixels in total.
@@ -1413,9 +1431,11 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
           ((w < width && h < height) || 
 	       (w > width && h > height))
     ) {
-      diff = d;
-      widthToUse = w;
-      heightToUse = h;
+      if (!isMJPEG || (((w | h) & 0xf) == 0)) {
+        diff = d;
+        widthToUse = w;
+        heightToUse = h;
+      }
     }
   }
 
