@@ -229,3 +229,12 @@ EXPORTS
 	__GUID_7fd52380_4e07_101b_ae2d_08002b2ec713 @0 NONAME
 	__GUID_b196b284_bab4_101a_b69c_00aa00341d07 @0 NONAME
 	__GUID_fc4801a3_2ba9_11cf_a229_00aa003d7352 @0 NONAME
+	_tinyjpeg_decode @0 NONAME
+	_tinyjpeg_free @0 NONAME
+	_tinyjpeg_get_components @0 NONAME
+	_tinyjpeg_get_errorstring @0 NONAME
+	_tinyjpeg_get_size @0 NONAME
+	_tinyjpeg_init @0 NONAME
+	_tinyjpeg_parse_header @0 NONAME
+	_tinyjpeg_set_components @0 NONAME
+	_tinyjpeg_set_flags @0 NONAME

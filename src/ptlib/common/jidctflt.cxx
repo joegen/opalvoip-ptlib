@@ -87,7 +87,12 @@
  *
  *
  */   
+#ifdef _MSC_VER
+#include "stdint.h"
+#else
 #include <inttypes.h>
+#endif
+
 #include "tinyjpeg-internal.h"
 #include "ptbuildopts.h"
 #ifdef P_MEDIALIB
@@ -132,7 +137,7 @@ static inline unsigned char descale_and_clamp(int x, int shift)
   else if (x<0)
     return 0;
   else 
-    return x;
+    return (unsigned char)x;
 }
 #endif
 
