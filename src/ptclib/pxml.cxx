@@ -59,6 +59,15 @@
 
 ////////////////////////////////////////////////////
 
+PXMLBase::PXMLBase(int opts)
+  : m_options(opts)
+  , m_maxEntityLength(PXML::DEFAULT_MAX_ENTITY_LENGTH)
+{
+}
+
+
+////////////////////////////////////////////////////
+
 static void PXML_StartElement(void * userData, const char * name, const char ** attrs)
 {
   ((PXMLParser *)userData)->StartElement(name, attrs);
@@ -198,6 +207,13 @@ void PXMLParser::EndElement(const char * /*name*/)
 
 void PXMLParser::AddCharacterData(const char * data, int len)
 {
+  unsigned checkLen = len + ((lastElement != NULL) ? lastElement->GetString().GetLength() : 0);
+  if (checkLen >= m_maxEntityLength) {
+    PTRACE(2, "PXML\tAborting XML parse at size " << m_maxEntityLength << " - possible 'billion laugh' attack");
+    XML_StopParser((XML_Parser)expat, XML_FALSE);
+    return;
+  }
+
   PString str(data, len);
 
   if (lastElement != NULL) {
@@ -376,6 +392,7 @@ bool PXML::Load(const PString & data, PXMLParser::Options options)
 
   {
     PXMLParser parser(options);
+    parser.SetMaxEntityLength(m_maxEntityLength);
     int done = 1;
     stat = parser.Parse(data, data.GetLength(), done) != 0;
   
@@ -562,6 +579,7 @@ void PXML::ReadFrom(istream & strm)
   rootMutex.Signal();
 
   PXMLParser parser(m_options);
+  parser.SetMaxEntityLength(m_maxEntityLength);
   while (strm.good()) {
     PString line;
     strm >> line;
