@@ -107,9 +107,9 @@ class PValidatedNotifierFunction : public PNotifierFunctionTemplate<ParamType>
 #define PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, ParamType) \
             PDECLARE_NOTIFIER_COMMON(notifier, notifiee, func, ParamType, PValidatedNotifierFunction<ParamType>)
 
-/// Declare validated PNotifier derived class with INT parameter. Uses PDECLARE_VALIDATED_NOTIFIER2 macro.
+/// Declare validated PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_VALIDATED_NOTIFIER2 macro.
 #define PDECLARE_VALIDATED_NOTIFIER(notifier, notifiee, func) \
-       PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, INT)
+       PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, P_INT_PTR)
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -228,9 +228,9 @@ class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParamType>
        void AsyncCall(PObject & note, ParamType extra) const \
        PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, PAsyncNotifierFunction<ParamType>) \
 
-/// Declare an asynchronous PNotifier derived class with INT parameter. Uses PDECLARE_ASYNC_NOTIFIER2 macro.
+/// Declare an asynchronous PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_ASYNC_NOTIFIER2 macro.
 #define PDECLARE_ASYNC_NOTIFIER(notifier, notifiee, func) \
-       PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, INT)
+       PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, P_INT_PTR)
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -287,7 +287,7 @@ class PNotifierListTemplate : public PObject
     }
 };
 
-typedef PNotifierListTemplate<INT> PNotifierList;
+typedef PNotifierListTemplate<P_INT_PTR> PNotifierList;
 
 
 #endif  // PTLIB_NOTIFIER_EXT_H
