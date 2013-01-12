@@ -150,6 +150,7 @@ class PContainer : public PObject
        @return number of objects in container.
      */
     virtual PINDEX GetSize() const;
+    virtual PINDEX size() const { return GetSize(); }
 
     /**Set the new current size of the container.
        The exact behavious of this is determined by the descendent class. For
@@ -509,6 +510,7 @@ class PCollection : public PContainer
        <code>(GetSize()-1)</code> toward the first at index zero.
      */
     virtual void RemoveAll();
+    virtual void clear()  { RemoveAll(); }
 
     /**Set the object at the specified ordinal position to the new value. This
        will overwrite the existing entry. If the AllowDeleteObjects option is
