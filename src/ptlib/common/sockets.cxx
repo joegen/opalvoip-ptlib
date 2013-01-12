@@ -733,6 +733,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 #elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)) || defined(__NUCLEUS_PLUS__)
 
+#if defined(P_GETHOSTBYNAME_R)
+
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
     do {
@@ -747,6 +749,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
     host_info = ::gethostbyaddr(addr.GetPointer(), addr.GetSize(), PF_INET);
     localErrNo = h_errno;
+
+#endif
 
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
     extern PBoolean P_IsOldWin95();
