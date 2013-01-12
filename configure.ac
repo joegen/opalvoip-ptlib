@@ -606,10 +606,9 @@ P_GETPWUID_R4=
 P_GETPWUID_R5=
 AC_MSG_CHECKING(for getpwuid_r with 4 arguments)
 AC_TRY_COMPILE([#include <sys/types.h>
-                #include <pwd.h>
-                #include <uuid/uuid.h>],
-               [uuid_t uuid; struct passwd * pwd; char * buffer; size_t bufsize; 
-                getpwuuid_r(uuid, pwd, buffer, bufsize); ], P_GETPWUID_R4=1)
+                #include <pwd.h>],
+               [uid_t uid; struct passwd * pwd; char * buffer; size_t bufsize; 
+                getpwuid_r(uid, pwd, buffer, bufsize); ], P_GETPWUID_R4=1)
 if test "x${P_GETPWUID_R4}" = "x1" ; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(P_GETPWUID_R4, 1)
@@ -617,10 +616,9 @@ else
   AC_MSG_RESULT(no)
   AC_MSG_CHECKING(for getpwuid_r with 5 arguments)
   AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <pwd.h>
-                  #include <uuid/uuid.h>],
-                 [uuid_t uuid; struct passwd * pwd; char * buffer; size_t bufsize; struct passwd *result;
-                  getpwuuid_r(uuid, pwd, buffer, bufsize, &result); ], P_GETPWUID_R5=1)
+                  #include <pwd.h>],
+                 [uid_t uid; struct passwd * pwd; char * buffer; size_t bufsize; struct passwd *result;
+                  getpwuid_r(uid, pwd, buffer, bufsize, &result); ], P_GETPWUID_R5=1)
   if test "x${P_GETPWUID_R5}" = "x1" ; then
     AC_MSG_RESULT(yes)
     AC_DEFINE(P_GETPWUID_R5, 1)
@@ -639,8 +637,7 @@ P_GETGRGID_R4=
 P_GETGRGID_R5=
 AC_MSG_CHECKING(for getgrgid_r with 4 arguments)
 AC_TRY_COMPILE([#include <sys/types.h>
-                #include <grp.h>
-                #include <uuid/uuid.h>],
+                #include <grp.h>],
                [gid_t gid; struct group * grp; char * buffer; size_t bufsize; 
                 getgrgid_r(gid, grp, buffer, bufsize); ], P_GETGRGID_R4=1)
 if test "x${P_GETGRGID_R4}" = "x1" ; then
@@ -650,8 +647,7 @@ else
   AC_MSG_RESULT(no)
   AC_MSG_CHECKING(for getgrgid_r with 5 arguments)
   AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <grp.h>
-                  #include <uuid/uuid.h>],
+                  #include <grp.h>],
                  [gid_t gid; struct group * grp; char * buffer; size_t bufsize; struct group *result;
                   getgrgid_r(gid, grp, buffer, bufsize, &result); ], P_GETGRGID_R5=1)
   if test "x${P_GETGRGID_R5}" = "x1" ; then
@@ -672,8 +668,7 @@ P_GETPWNAM_R4=
 P_GETPWNAM_R5=
 AC_MSG_CHECKING(for getpwnam_r with 4 arguments)
 AC_TRY_COMPILE([#include <sys/types.h>
-                #include <pwd.h>
-                #include <uuid/uuid.h>],
+                #include <pwd.h>],
                [const char * name; struct passwd * pwd; char * buffer; size_t bufsize; 
                 getpwnam_r(name, pwd, buffer, bufsize); ], P_GETPWNAM_R4=1)
 if test "x${P_GETPWNAM_R4}" = "x1" ; then
@@ -683,8 +678,7 @@ else
   AC_MSG_RESULT(no)
   AC_MSG_CHECKING(for getpwnam_r with 5 arguments)
   AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <pwd.h>
-                  #include <uuid/uuid.h>],
+                  #include <pwd.h>],
                  [const char * name; struct passwd * pwd; char * buffer; size_t bufsize; struct passwd *result;
                   getpwnam_r(name, pwd, buffer, bufsize, &result); ], P_GETPWNAM_R5=1)
   if test "x${P_GETPWNAM_R5}" = "x1" ; then
@@ -705,8 +699,7 @@ P_GETGRNAM_R4=
 P_GETGRNAM_R5=
 AC_MSG_CHECKING(for getgrnam_r with 4 arguments)
 AC_TRY_COMPILE([#include <sys/types.h>
-                #include <grp.h>
-                #include <uuid/uuid.h>],
+                #include <grp.h>],
                [const char * name; struct group * grp; char * buffer; size_t bufsize; 
                 getgrnam_r(name, pwd, buffer, bufsize); ], P_GETGRNAM_R4=1)
 if test "x${P_GETGRNAM_R4}" = "x1" ; then
@@ -716,8 +709,7 @@ else
   AC_MSG_RESULT(no)
   AC_MSG_CHECKING(for getgrnam_r with 5 arguments)
   AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <grp.h>
-                  #include <uuid/uuid.h>],
+                  #include <grp.h>],
                  [const char * name; struct group * grp; char * buffer; size_t bufsize; struct group *result;
                   getgrnam_r(name, grp, buffer, bufsize, &result); ], P_GETGRNAM_R5=1)
   if test "x${P_GETGRNAM_R5}" = "x1" ; then
