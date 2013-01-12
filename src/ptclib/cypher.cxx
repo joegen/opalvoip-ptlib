@@ -1035,11 +1035,11 @@ void PTEACypher::DecodeBlock(const void * in, void * out)
 void PHMAC::Initialise(const BYTE * key, PINDEX oldLen)
 {
   // ensure the key is at least one block long and pad out if necessary
-  if (oldLen < GetB()) {
+  if ((int)oldLen < GetB()) {
     m_key.SetSize(oldLen);
     memcpy(m_key.GetPointer(), key,  oldLen);
   }
-  else if (oldLen > GetB()) {
+  else if ((int)oldLen > GetB()) {
     Result result;
     Hash((const BYTE *)m_key, m_key.GetSize(), result);
     m_key.SetSize(result.GetSize());
@@ -1060,7 +1060,7 @@ void PHMAC::InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & resul
   d = buffer.GetPointer();
   for (i = 0; i < l; ++i)
     *d++ = 0x36 ^ *s++;
-  for (;i < GetB(); ++i)
+  for (;i < (PINDEX)GetB(); ++i)
     *d++ = 0x36;
 
   // append text
@@ -1077,7 +1077,7 @@ void PHMAC::InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & resul
   d = buffer.GetPointer();
   for (i = 0; i < l; ++i)
     *d++ = 0x5c ^ *s++;
-  for (;i < GetB(); ++i)
+  for (;i < (PINDEX)GetB(); ++i)
     *d++ = 0x5c;
 
   // append hash
