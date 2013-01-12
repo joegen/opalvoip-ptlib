@@ -94,7 +94,7 @@ PBoolean PMemoryFile::Read(void * buf, PINDEX len)
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-  if (m_position > m_data.GetSize()) {
+  if ((PINDEX)m_position > m_data.GetSize()) {
     lastReadCount = 0;
     return true;
   }
@@ -142,7 +142,7 @@ PBoolean PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
   switch (origin) {
     case Start:
-      if (pos > m_data.GetSize())
+      if (pos > (off_t)m_data.GetSize())
         return false;
       m_position = pos;
       break;
@@ -154,7 +154,7 @@ PBoolean PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
       break;
 
     case End:
-      if (-pos > m_data.GetSize())
+      if (-pos > (off_t)m_data.GetSize())
         return false;
       m_position = m_data.GetSize() - pos;
       break;
