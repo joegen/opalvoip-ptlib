@@ -600,6 +600,157 @@ fi
 
 
 dnl ########################################################################
+dnl check for arguments to getpwuid_r
+
+P_GETPWUID_R4=
+P_GETPWUID_R5=
+AC_MSG_CHECKING(for getpwuid_r with 4 arguments)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <pwd.h>
+                #include <uuid/uuid.h>],
+               [uuid_t uuid; struct passwd * pwd; char * buffer; size_t bufsize; 
+                getpwuuid_r(uuid, pwd, buffer, bufsize); ], P_GETPWUID_R4=1)
+if test "x${P_GETPWUID_R4}" = "x1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_GETPWUID_R4, 1)
+else
+  AC_MSG_RESULT(no)
+  AC_MSG_CHECKING(for getpwuid_r with 5 arguments)
+  AC_TRY_COMPILE([#include <sys/types.h>
+                  #include <pwd.h>
+                  #include <uuid/uuid.h>],
+                 [uuid_t uuid; struct passwd * pwd; char * buffer; size_t bufsize; struct passwd *result;
+                  getpwuuid_r(uuid, pwd, buffer, bufsize, &result); ], P_GETPWUID_R5=1)
+  if test "x${P_GETPWUID_R5}" = "x1" ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE(P_GETPWUID_R5, 1)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+AC_SUBST(P_GETPWUID_R4)
+AC_SUBST(P_GETPWUID_R5)
+
+
+dnl ########################################################################
+dnl check for arguments to getgrgid_r
+
+P_GETGRGID_R4=
+P_GETGRGID_R5=
+AC_MSG_CHECKING(for getgrgid_r with 4 arguments)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <grp.h>
+                #include <uuid/uuid.h>],
+               [gid_t gid; struct group * grp; char * buffer; size_t bufsize; 
+                getgrgid_r(gid, grp, buffer, bufsize); ], P_GETGRGID_R4=1)
+if test "x${P_GETGRGID_R4}" = "x1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_GETGRGID_R4, 1)
+else
+  AC_MSG_RESULT(no)
+  AC_MSG_CHECKING(for getgrgid_r with 5 arguments)
+  AC_TRY_COMPILE([#include <sys/types.h>
+                  #include <grp.h>
+                  #include <uuid/uuid.h>],
+                 [gid_t gid; struct group * grp; char * buffer; size_t bufsize; struct group *result;
+                  getgrgid_r(gid, grp, buffer, bufsize, &result); ], P_GETGRGID_R5=1)
+  if test "x${P_GETGRGID_R5}" = "x1" ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE(P_GETGRGID_R5, 1)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+AC_SUBST(P_GETGRGID_R4)
+AC_SUBST(P_GETGRGID_R5)
+
+
+dnl ########################################################################
+dnl check for arguments to getpwnam_r
+
+P_GETPWNAM_R4=
+P_GETPWNAM_R5=
+AC_MSG_CHECKING(for getpwnam_r with 4 arguments)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <pwd.h>
+                #include <uuid/uuid.h>],
+               [const char * name; struct passwd * pwd; char * buffer; size_t bufsize; 
+                getpwnam_r(name, pwd, buffer, bufsize); ], P_GETPWNAM_R4=1)
+if test "x${P_GETPWNAM_R4}" = "x1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_GETPWNAM_R4, 1)
+else
+  AC_MSG_RESULT(no)
+  AC_MSG_CHECKING(for getpwnam_r with 5 arguments)
+  AC_TRY_COMPILE([#include <sys/types.h>
+                  #include <pwd.h>
+                  #include <uuid/uuid.h>],
+                 [const char * name; struct passwd * pwd; char * buffer; size_t bufsize; struct passwd *result;
+                  getpwnam_r(name, pwd, buffer, bufsize, &result); ], P_GETPWNAM_R5=1)
+  if test "x${P_GETPWNAM_R5}" = "x1" ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE(P_GETPWNAM_R5, 1)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+AC_SUBST(P_GETPWNAM_R4)
+AC_SUBST(P_GETPWNAM_R5)
+
+
+dnl ########################################################################
+dnl check for arguments to getgrnam_r
+
+P_GETGRNAM_R4=
+P_GETGRNAM_R5=
+AC_MSG_CHECKING(for getgrnam_r with 4 arguments)
+AC_TRY_COMPILE([#include <sys/types.h>
+                #include <grp.h>
+                #include <uuid/uuid.h>],
+               [const char * name; struct group * grp; char * buffer; size_t bufsize; 
+                getgrnam_r(name, pwd, buffer, bufsize); ], P_GETGRNAM_R4=1)
+if test "x${P_GETGRNAM_R4}" = "x1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_GETGRNAM_R4, 1)
+else
+  AC_MSG_RESULT(no)
+  AC_MSG_CHECKING(for getgrnam_r with 5 arguments)
+  AC_TRY_COMPILE([#include <sys/types.h>
+                  #include <grp.h>
+                  #include <uuid/uuid.h>],
+                 [const char * name; struct group * grp; char * buffer; size_t bufsize; struct group *result;
+                  getgrnam_r(name, grp, buffer, bufsize, &result); ], P_GETGRNAM_R5=1)
+  if test "x${P_GETGRNAM_R5}" = "x1" ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE(P_GETGRNAM_R5, 1)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+AC_SUBST(P_GETGRNAM_R4)
+AC_SUBST(P_GETGRNAM_R5)
+
+
+dnl ########################################################################
+dnl check for gethostbyaddr_r
+
+P_GETHOSTBYADDR_R=
+AC_MSG_CHECKING(for gethostbyaddr_r)
+AC_TRY_COMPILE([#include <netdb.h>],
+               [const void *addr; socklen_t len; int type;
+               struct hostent *ret; char *buf; size_t buflen;
+               struct hostent **result; int *h_errnop;
+               gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, h_errnop); ], P_GETHOSTBYNAME_R=1)
+if test "x${P_GETHOSTBYNAME_R}" = "x1" ; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(P_GETHOSTBYNAME_R, 1)
+else
+  AC_MSG_RESULT(no)
+fi
+AC_SUBST(P_GETHOSTBYNAME_R)
+
+
+dnl ########################################################################
 dnl check for IPV6_ADD_MEMBERSHIP
 
 P_HAS_IPV6_ADD_MEMBERSHIP=
