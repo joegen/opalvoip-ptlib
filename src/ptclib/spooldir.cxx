@@ -143,7 +143,7 @@ void PSpoolDirectory::ProcessEntry()
 
   // process the entry
   if (!m_callback.IsNULL()) {
-    m_callback(*this, INT(&entry));
+    m_callback(*this, (P_INT_PTR)&entry);
   }
   else if (!OnProcess(entry)) {
     PTRACE(3, "PSpoolDirectory\tEntry '" << entry << "' skipped processing");

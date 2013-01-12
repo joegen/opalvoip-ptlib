@@ -527,7 +527,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
 #endif
   AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&File");
 
   menu = CreatePopupMenu();
   AppendMenu(menu, MF_STRING, CopyMenuID, "&Copy");
@@ -535,7 +535,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_STRING, DeleteMenuID, "&Delete");
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
   AppendMenu(menu, MF_STRING, SelectAllMenuID, "&Select All");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Edit");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&Edit");
 
   menu = CreatePopupMenu();
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdInstall, "&Install");
@@ -545,7 +545,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStop, "S&top");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdPause, "&Pause");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdResume, "R&esume");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&Control");
 
   menu = CreatePopupMenu();
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Fatal,   "&Fatal Error");
@@ -555,7 +555,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug,   "&Debug");
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug2,  "Debug &2");
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug3,  "Debug &3");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&Log Level");
 
   if (CreateWindow(GetName(),
                    GetName(),
@@ -782,7 +782,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             fileDlgInfo.nMaxCustFilter = sizeof(customFilter);
             fileDlgInfo.nMaxFile = sizeof(fileBuffer);
             fileDlgInfo.Flags = OFN_ENABLEHOOK|OFN_HIDEREADONLY|OFN_NOVALIDATE|OFN_EXPLORER|OFN_CREATEPROMPT;
-            fileDlgInfo.lCustData = (DWORD)this;
+            //fileDlgInfo.lCustData = (DWORD)this;
             if (GetSaveFileName(&fileDlgInfo)) {
               PFilePath newLogFile = fileBuffer;
               if (!PIsDescendant(&PSystemLog::GetTarget(), PSystemLogToFile) ||
@@ -916,6 +916,8 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
   return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
+static char emptyString[] = "";
+static char crlfString[] = "\r\n";
 
 void PServiceProcess::DebugOutput(const char * out)
 {
@@ -945,7 +947,7 @@ void PServiceProcess::DebugOutput(const char * out)
     SendMessage(debugWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&finish);
     SendMessage(debugWindow, EM_SETSEL, 0,
                 SendMessage(debugWindow, EM_LINEINDEX, 1, 0));
-    SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)"");
+    SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)emptyString);
     SendMessage(debugWindow, EM_SETSEL, start, finish);
     SendMessage(debugWindow, WM_SETREDRAW, true, 0);
   }
@@ -958,14 +960,14 @@ void PServiceProcess::DebugOutput(const char * out)
       prev = lf+1;
     else {
       *lf++ = '\0';
-      SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)out);
-      SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)"\r\n");
+      SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)out);
+      SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)crlfString);
       out = (const char *)lf;
       prev = lf;
     }
   }
   if (*out != '\0')
-    SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)out);
+    SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)out);
 }
 
 
@@ -1467,8 +1469,6 @@ bool NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
   error = ::GetLastError();
   return ok;
 }
-
-static char emptyString[] = "";
 
 bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
 {
