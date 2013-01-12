@@ -217,10 +217,12 @@ PDirectory PProcess::PXGetHomeDir ()
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
   struct passwd pwd;
   char buffer[1024];
-#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
+#if defined (P_GETPWUID_R5)
   ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
-#else
+#elif defined (P_GETPWUID_R4)
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
+#else
+  #error "Cannot identify getpwuid_r"
 #endif
 #else
   pw = ::getpwuid(geteuid());
@@ -263,16 +265,18 @@ PString PProcess::GetUserName() const
 #else
 
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
-  struct passwd pwd;
-  char buffer[1024];
   struct passwd * pw = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
+  char buffer[1024];
+#if defined (P_GETPWUID_R5)
+  struct passwd pwd;
   ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
-#else
+#elif defined (P_GETPWUID_R4)
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
+#else
+  #error "Cannot identify getpwuid_r"
 #endif
 #else
-  struct passwd * pw = ::getpwuid(geteuid());
+  pw = ::getpwuid(geteuid());
 #endif
 
   char * ptr;
@@ -307,10 +311,12 @@ PBoolean PProcess::SetUserName(const PString & username, PBoolean permanent)
     struct passwd pwd;
     char buffer[1024];
     struct passwd * pw = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
+#if defined(P_GETPWNAM_R5)
     ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
-#else
+#elif defined(P_GETPWNAM_R4)
     pw = ::getpwnam_r(username, &pwd, buffer, 1024);
+#else
+    #error "Cannot identify getpwnam_r"
 #endif
 #else
     struct passwd * pw = ::getpwnam(username);
@@ -354,10 +360,12 @@ PString PProcess::GetGroupName() const
   struct group grp;
   char buffer[1024];
   struct group * gr = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
+#if defined(P_GETGRGID_R5)
   ::getgrgid_r(getegid(), &grp, buffer, 1024, &gr);
-#else
+#elif defined(P_GETGRGID_R4)
   gr = ::getgrgid_r(getegid(), &grp, buffer, 1024);
+#else
+  #error "Cannot identify getgrgid_r"
 #endif
 #else
   struct group * gr = ::getgrgid(getegid());
@@ -395,10 +403,12 @@ PBoolean PProcess::SetGroupName(const PString & groupname, PBoolean permanent)
     struct group grp;
     char buffer[1024];
     struct group * gr = NULL;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
+#if defined (P_GETGRNAM_R5)
     ::getgrnam_r(groupname, &grp, buffer, 1024, &gr);
-#else
+#elif defined(P_GETGRNAM_R4)
     gr = ::getgrnam_r(groupname, &grp, buffer, 1024);
+#else
+    #error "Cannot identify getgrnam_r"
 #endif
 #else
     struct group * gr = ::getgrnam(groupname);

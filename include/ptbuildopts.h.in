@@ -151,6 +151,15 @@
 #undef P_HAS_UPAD128_T
 #undef P_HAS_INET_NTOP
 #undef P_HAS_IPV6_ADD_MEMBERSHIP
+#undef P_GETPWUID_R4
+#undef P_GETPWUID_R5
+#undef P_GETPWNAM_R4
+#undef P_GETPWNAM_R5
+#undef P_GETGRGID_R4
+#undef P_GETGRGID_R5
+#undef P_GETGRNAM_R4
+#undef P_GETGRNAM_R5
+#undef P_GETHOSTBYNAME_R
 
 #ifndef _WIN32_WCE
   #undef P_HAS_IPV6
