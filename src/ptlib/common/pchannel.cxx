@@ -191,7 +191,7 @@ PINDEX PChannel::HashFunction() const
 
 PBoolean PChannel::IsOpen() const
 {
-  return os_handle != -1;
+  return os_handle != (P_INT_PTR)-1;
 }
 
 PINDEX PChannel::GetLastReadCount() const
