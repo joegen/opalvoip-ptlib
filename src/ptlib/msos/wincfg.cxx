@@ -587,12 +587,18 @@ PStringArray PConfig::GetSections() const
       break;
 
     case NumSources :
-      PCharArray buffer = PGetPrivateProfileString(NULL, NULL, "", location);
-      char * ptr = buffer.GetPointer();
-      while (*ptr != '\0') {
-        sections.AppendString(ptr);
-        ptr += strlen(ptr)+1;
+      {
+        PCharArray buffer = PGetPrivateProfileString(NULL, NULL, "", location);
+        char * ptr = buffer.GetPointer();
+        while (*ptr != '\0') {
+          sections.AppendString(ptr);
+          ptr += strlen(ptr)+1;
+        }
       }
+      break;
+
+    case Environment :
+    case System :
       break;
   }
 
@@ -625,12 +631,18 @@ PStringArray PConfig::GetKeys(const PString & section) const
 
     case NumSources :
       PAssert(!section.IsEmpty(), PInvalidParameter);
-      PCharArray buffer = PGetPrivateProfileString(section, NULL, "", location);
-      char * ptr = buffer.GetPointer();
-      while (*ptr != '\0') {
-        keys.AppendString(ptr);
-        ptr += strlen(ptr)+1;
+      {
+        PCharArray buffer = PGetPrivateProfileString(section, NULL, "", location);
+        char * ptr = buffer.GetPointer();
+        while (*ptr != '\0') {
+          keys.AppendString(ptr);
+          ptr += strlen(ptr)+1;
+        }
       }
+      break;
+
+    case System :
+      break;
   }
 
   return keys;
@@ -650,6 +662,11 @@ void PConfig::DeleteSection(const PString & section)
     case NumSources :
       PAssert(!section.IsEmpty(), PInvalidParameter);
       PAssertOS(WritePrivateProfileString(section, NULL, NULL, location));
+      break;
+
+    case Environment :
+    case System :
+      break;
   }
 }
 
@@ -673,6 +690,10 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
       PAssert(!key.IsEmpty(), PInvalidParameter);
       PAssert(!section.IsEmpty(), PInvalidParameter);
       PAssertOS(WritePrivateProfileString(section, key, NULL, location));
+      break;
+
+    case System :
+      break;
   }
 }
 
@@ -695,6 +716,9 @@ PBoolean PConfig::HasKey(const PString & section, const PString & key) const
       PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
       static const char dflt[] = "<<<<<====---PConfig::DefaultValueString---====>>>>>";
       return PGetPrivateProfileString(section, key, dflt, location) != dflt;
+
+    case System :
+      break;
   }
 
   return false;
@@ -729,6 +753,10 @@ PString PConfig::GetString(const PString & section,
       PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
       str = PString(PGetPrivateProfileString(section, key, dflt, location));
       str.MakeMinimumSize();
+      break;
+
+    case System :
+      break;
   }
 
   return str;
@@ -754,6 +782,10 @@ void PConfig::SetString(const PString & section,
     case NumSources :
       PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
       PAssertOS(WritePrivateProfileString(section, key, value, location));
+      break;
+
+    case System :
+      break;
   }
 }
 

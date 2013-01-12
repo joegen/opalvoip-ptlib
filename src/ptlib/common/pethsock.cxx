@@ -453,7 +453,7 @@ int PEthSocket::Frame::GetIP(PBYTEArray & payload, PIPSocket::Address & src, PIP
 
   // Check for fragmentation
   bool isFragment = (ip[6] & 0x20) != 0;
-  int fragmentOffset = (((ip[6]&0x1f)<<8)+ip[7])*8;
+  PINDEX fragmentOffset = (((ip[6]&0x1f)<<8)+ip[7])*8;
   PINDEX fragmentsSize = m_fragments.GetSize();
 
   if (fragmentsSize > 0) {

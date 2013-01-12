@@ -733,7 +733,8 @@ class PChannel : public PObject, public P_IOSTREAM {
 
     // Member variables
     /// The operating system file handle return by standard open() function.
-    int os_handle;
+    P_INT_PTR os_handle;
+
     /// The platform independant error code.
     Errors lastErrorCode[NumErrorGroups+1];
     /// The operating system error number (eg as returned by errno).
