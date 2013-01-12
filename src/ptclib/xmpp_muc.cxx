@@ -164,7 +164,7 @@ void XMPP::MUC::Room::OnUserChanged(User& user)
 { m_UserChangedHandlers(user, 0); }
 
 
-void XMPP::MUC::Room::OnSessionReleased(C2S::StreamHandler&, INT)
+void XMPP::MUC::Room::OnSessionReleased(C2S::StreamHandler&, P_INT_PTR)
 {
   m_User.m_Role = XMPP::MUC::User::None;
   m_User.m_Affiliation = XMPP::MUC::User::None_a;
@@ -172,13 +172,13 @@ void XMPP::MUC::Room::OnSessionReleased(C2S::StreamHandler&, INT)
 }
 
 
-void XMPP::MUC::Room::OnMessage(XMPP::Message& msg, INT)
+void XMPP::MUC::Room::OnMessage(XMPP::Message& msg, P_INT_PTR)
 {
   OnMessage(msg);
 }
 
 
-void XMPP::MUC::Room::OnPresence(XMPP::Presence& msg, INT)
+void XMPP::MUC::Room::OnPresence(XMPP::Presence& msg, P_INT_PTR)
 {
   JID from = msg.GetFrom();
   PString res = from.GetResource();
