@@ -1002,7 +1002,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
 }
 
 
-void PVideoInputDevice_VideoForWindows::HandleCapture(PThread &, INT)
+void PVideoInputDevice_VideoForWindows::HandleCapture(PThread &, P_INT_PTR)
 {
   PBoolean initSucceeded = InitialiseCapture();
 
@@ -1554,7 +1554,7 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
 }
 
 
-void PVideoOutputDevice_Window::HandleDisplay(PThread &, INT)
+void PVideoOutputDevice_Window::HandleDisplay(PThread &, P_INT_PTR)
 {
   CreateDisplayWindow();
 
