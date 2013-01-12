@@ -160,7 +160,7 @@ class PPlugin_##serviceType##_##serviceName##_Registration { \
     int kill_warning; \
 }; \
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
 PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
