@@ -844,7 +844,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
 
   // As ConvertOSError tests for < 0 and some return values _sopen may be
   // negative, only pass -1 through.
-  return ConvertOSError(os_handle == -1 ? -1 : 0);
+  return ConvertOSError(os_handle == (P_INT_PTR)-1 ? -1 : 0);
 }
 
 
