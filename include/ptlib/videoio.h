@@ -1186,8 +1186,10 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
   static PVideoOutputPluginServiceDescriptor<PVideoOutputDevice_##name> PVideoOutputDevice_##name##_descriptor; \
   PCREATE_PLUGIN(name, PVideoOutputDevice, &PVideoOutputDevice_##name##_descriptor)
 
+#if P_VFW_CAPTURE
 #if _WIN32
   PPLUGIN_STATIC_LOAD(Window, PVideoOutputDevice);
+#endif
 #endif
 
 #if P_SDL
