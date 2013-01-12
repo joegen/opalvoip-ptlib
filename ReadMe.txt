@@ -39,7 +39,7 @@ before STL was standardized. Future versions of PTLib will see many of these
 classes replaced or supplemented by STL.
 
 The library was used extensively for all our in-house products. Then we decided
-to support the Open H323 project by throwing in some of the code written for
+to support OpenH323, and then Opal, by throwing in some of the code written for
 one of our products. Thus, required PTLib so it got thrown into the open source
 world as well.
 
@@ -78,14 +78,11 @@ with the words "Why did you..." as the answer is quite likely to be "Because!"
 There is a public SVN archive available at svn.sourceforge.net. To extract, use a
 command line like the following:
 
-    cvs -z3 -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co module
+    svn co http://opalvoip.svn.sourceforge.net/svnroot/opalvoip/ptlib/trunk
 
-where "module" is one of the module names specified above.
+If you would like see the structure of the SVN, then use the View SVN tool at:
 
-If you would like see the structure of the CVS, then use the View CVS tool at:
-
-    http://cvs.sourceforge.net/viewcvs.py/openh323/
-
+    http://opalvoip.svn.sourceforge.net/viewvc/opalvoip/
 
 ================================================================================
 
@@ -96,165 +93,19 @@ This library is multi-platform, however there are only two major build systems
 that are used. The Microsoft DevStudio environment for Windows and the GNU make
 system for all of the various unix systems.
 
-SPECIAL NOTE FOR MSVC 6 USERS:
-------------------------------
-If you are using MSVC 6 then please run the "msvc6_upgrade.bat" script in the 
-PTLib top directory before continuing. If you skip this step, you will not
-be able to compile PTLib on MSVC 6. If you change the build environment to bypass 
-this step, then DLL versions of PTLib will not function correctly. For more 
-information, please see:
-
-http://www.voxgratia.org/docs/ptlib_windows.html#msvc_headers 
-
-
-Actually, better yet, UPGRADE YOUR COMPILER!!!!
-
-
 4.1. For Windows
 ----------------
 
-Note that more complete instructions can be found at the following URL, but here 
-are the basics:
+See the online documentation at:
 
-    http://www.voxgratia.org/docs/ptlib_windows.html 
+   http://www.opalvoip.org/wiki/index.php?n=Main.BuildingPTLib
 
-1.  Note you will need the bison and flex tools to compile some parts of the
-    system. You can get a copy from http://www.openh323.org/bin/flexbison.zip,
-    follow the instructions included in that package and put the executables
-    somewhere in your path.
+4.2. For Linux/Unix
+-------------------
 
-2.  Start DevStudio .NET 2003 or .NET 2005. MSVC v6 may work, but is no longer
-    actively supported. If you have another compiler you are on your own! Add
-    these directories to the Include Files path as follows:
-    
-    In VisualStudio v7/8, go into the Tools menu, Options item. In the Options
-    dialog, open the Projects folder, VC++ Directories item. In the 'Show
-    Directories for:' list, select 'Include files'.
-	
-		C:\PTLib\Include
-		
-    Add the following to the Lib Files path and the Executable Files path:
-	
-		C:\PTLib\Lib
-		
-    The Lib folder is created as parts of PTLib are built. Also add this
-    directory to your PATH environment variable (so the MergeSym tool can 
-    be found).
+See the online documentation at:
 
-3.  Open the ptlib.sln or ptlib_2005.sln file for DevStudio 2003 or 2005
-    respectively.
-
-4.  Select Release mode and build MergeSym.
-
-    The build should automatically create a file ptlib/include/ptbuildopts.h
-    via the configure.exe program that should be in the ptlib directory. If
-    you have any problems try running the program directly from a command
-    line. Use ".\configure --help" to get information on options such as
-    forcing a feature or library dependency.
-
-    The above will search the entire hard disk(s) for software packages to
-    configure. This may take some time, so a useful feature is to set the
-    environment variable:
-
-	PTLIB_CONFIGURE_OPTIONS = --no-search
-
-    which will only search some "standard" locations. Not ethat you could
-    also include arguments to set the paths of packages that are not in
-    standard locations.
-
-    Note there are additional notes in the "Platform Specific Issues" on how
-    to compile the various libraries in a manner suitable for use by PTLib
-    under Windows.
-
-5.  You can then build the entire solution for Release, Debug and No Trace
-    versions as you require.
-
-5.  That's it, now you're on your own!
-
-
-
-These are the project relationships:
-
-project             dependencies                             output
--------             ------------                             ------
-Console             (none)                                   ptlibs.lib
-MergeSym            ptlibs.lib                               mergesym.exe
-PTLib               ptlibs.lib, mergesym.exe                 ptlib.dll & lib
-XMLRPC              ptlibs.lib, ptclib.lib                   xmlrpc.exe
-
-Debug versions append 'd' to filename, ie: ptlibsd.lib.
-
-MSDevWizard will not build in VisualStudio v7 and so is not included as a project.
-
-
-
---------------------------------------------------------------------------------
-4.2. For unix.
---------------
-
-1.	If you have not put ptlib it into your home directory (~/ptlib) then
-	you will have to define the environment variable PTLIBDIR to point to
-	the correct directory.
-
-        Also make sure you have added the PTLib lib directory (e.g.
-        $PTLIBDIR/lib_linux_x86) to your LD_LIBRARY_PATH environment variable
-        if you intend to use shared libraries (the default).
-
-2.	Build the debug and release versions of the PTLib library as follows:
-		cd ~/ptlib
-        ./configure
-		make
-	This may take some time. Note, you will need bison and flex for this to
-	compile, most unix systems have these. WARNING: there is a bug in most 
-	of the bison.simple files. See below for details.
-
-	PTLib requires GNU Make. If GNU Make (gmake) is not your default make
-	program (eg FreeBSD users), you will need to install GNU Make first
-	and then use
-		cd ~/ptlib
-        ./configure
-		gmake
-
-
-	If you are getting huge numbers of errors during the compile, then it 
-        is likely your platform is not supported, or you have incorrectly set 
-        the OSTYPE and MACHTYPE variables.
-
-3.	That's all there is to it, you are now on your own!
-
-
-
-Bison problem under Unix
-
-The bison.simple file on many releases will not compile with the options used 
-by the PTLib getdate.y grammar. The options are required to make the date 
-parser thread safe so it is necessary to edit the bison.simple file to fix the 
-problem.
-
-The file is usually at /usr/lib/bison.simple but in the tradition of unix 
-could actually be anywhere. We leave it up to you to find it.
-
-The code:
-
-	/* Prevent warning if -Wstrict-prototypes. */
-	#ifdef __GNUC__
-	int yyparse (void);
-	#endif
-
-should be changed to
-
-	/* Prevent warning if -Wstrict-prototypes. */
-	#ifdef __GNUC__
-	#ifndef YYPARSE_PARAM
-	int yyparse (void);
-	#endif
-	#endif
-
-To prevent the incorrect function prototype from being defined. The getdate.y 
-should then produce a getdate.tab.c file that will actually compile.
-
-
-
+   http://www.opalvoip.org/wiki/index.php?n=Main.BuildingPTLibUnix
 
 ================================================================================
 
@@ -355,8 +206,6 @@ pre-emptive on platforms that support it (Win32, platforms with pthreads eg
 Linux and FreeBSD) and cooperative on those that don't.
 
 
-
-
 ================================================================================
 
 6. IPv6 support in ptlib
@@ -369,104 +218,20 @@ When compiled with the IPv6 support, applications using only IPv4 are still
 fully backward compatible. PTLib is able to manage simultaneously IPv4 and
 IPv6 connections.
 
+6.1 Removed
+-----------
 
+6.2 Removed
+-----------
 
---------------------------------------------------------------------------------
-6.1. Windows platforms
-----------------------
-
-According to microsoft, IPv6 is not supported under 9x, experimental on Win2000, 
-supported on XP.
-You must use a compiler with IPv6 aware includes and libraries:
-  - VC6 must be patched to support RFC 2553 structure. (See 7.1 and 7.2 for patch)
-  - .Net should be ok (to be confirmed)
-The port as been performed with VC6 patched on a win2000 platform.
-
-For more informations about IPv6 support:
-  Microsoft IPv6 support: 
-    http://research.microsoft.com/msripv6/
-  IPv6 for win2000: 
-    http://msdn.microsoft.com/downloads/sdks/platform/tpipv6.asp
-  IPv6 for XP: 
-    http://www.microsoft.com/windowsxp/pro/techinfo/administration/ipv6/default.asp
-
-
-
-6.1.1. Windows platforms: Win2000
----------------------------------
-Go to Microsoft win2000 IPv6 tech preview web page.
-http://msdn.microsoft.com/downloads/sdks/platform/tpipv6.asp
-Download the 'tpipv6-001205.exe' file and read carrefully the faq.
-http://msdn.microsoft.com/downloads/sdks/platform/tpipv6/faq.asp
-
-This program is designed for win2000 English Service pack 1.
-To install it on newer Service pack, you have to modify some files.
-Again, read the Faq.
- 
-This install the IPv6 driver and the IPv6 includes.
-
-
-
-6.1.2. Windows platforms: XP
-----------------------------
-Read the IPv6 faq for windows XP
-http://www.microsoft.com/windowsxp/pro/techinfo/administration/ipv6/default.asp
-
-The 'ipv6 install' command installs only the IPv6 drivers.
-You need to install additionnals IPv6 includes for VC6.
-.NET should be ready. (to be confirmed ....)
-
-
-
-6.1.3. Compiling
-----------------
-To compile ptlib and openh323 with the IPv6 support you have to set an 
-environment variable:
-IPV6FLAG=1
-Set it using: [Start]/[Configuration pannel]/[System]/[Environment]
-
-Add the IPv6 SDK include path in your Visual C++ 6 environment:
-[Tools]/[Options]/[Directories]/[Include files]
-
-
-
---------------------------------------------------------------------------------
-6.2. Linux platforms
---------------------
-
-Recent Linux distributions support IPv6.
-2.4 kernels are IPv6 aware.
-
-Linux IPv6 Faq:
-http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO/
-
-
-
-6.2.1. Enabling IPv6 support
-----------------------------
-IPv6 can be compiled statically in the kernel or compiled as a module.
-To load the IPv6 module, as 'root'
-#modprobe ipv6
-
-
-
-6.2.2. Compiling
---------------
-Check that IPv6 is really on
-#ls /proc/net/if_inet6
-If this file exists, then IPv6 support is compiled in ptlib and openh323.
-
-
-
---------------------------------------------------------------------------------
 6.3. Testing
 ------------
 
-The test application sources can be found in the directory: openh323/samples/simple
+The test application sources can be found in the directory: opal/samples/simple
 Once compiled the binaries are in simple/debug, release, obj_linux_x86_d, or
 obj_linux_x86_r.
-Under windows, the test application is simple.exe
-Under linux, the test application is simh323
+Under windows, the test application is simpleopal.exe
+Under linux, the test application is simpleopal
 IPv6 support can be tested on only one machine. Just open two shell/command windows.
 
 
@@ -582,49 +347,11 @@ fail.
 6.5. Questions
 --------------
 
-6.5.1. How to patch my VC6 includes files ?
------------------------------------------
+6.5.1. Removed
+--------------
 
-To patch you Developper studio Visual C++ version 6, just edit the file
-"C:\Program Files\Microsoft Visual Studio\VC98\Include\ws2tcpip.h", and add
-the sin6_scope_id field in the sockadd_in6 structure.
-struct sockaddr_in6 {
-          short     sin6_family;         /* AF_INET6 */
-          u_short sin6_port;  /* Transport level port number */
-          u_long    sin6_flowinfo; /* IPv6 flow information */
-          struct in_addr6 sin6_addr; /* IPv6 address */
-          u_long    sin6_scope_id; /* scope id (new in RFC2553) */ <--- Add this one
-};
-
-This may have an impact on you system stability, use it only on
-experimental platforms. Using .NET compiler should be a better solution.
-
-
-
-6.5.2. Why do I need to modify my Visual C++6 include files ? 
------------------------------------------------------------
-
-Visual Studio C++ version 6 implements the old RFC 2133 in file "ws2tcpip.h".
-RFC 2133 defines a 24 byte sockaddr_in6 structure.
-struct sockaddr_in6 {
-          short     sin6_family;         /* AF_INET6 */
-          u_short sin6_port;  /* Transport level port number */
-          u_long    sin6_flowinfo; /* IPv6 flow information */
-          struct in_addr6 sin6_addr; /* IPv6 address */
-};
-
-
-This RFC as been replaced by RFC 2553.
-RFC 2133 defines a 28 byte addsock_in6 structure.
-struct sockaddr_in6 {
-          short     sin6_family;         /* AF_INET6 */
-          u_short sin6_port;  /* Transport level port number */
-          u_long    sin6_flowinfo; /* IPv6 flow information */
-          struct in_addr6 sin6_addr; /* IPv6 address */
-          u_long    sin6_scope_id; /* scope id (new in RFC2553) */
-};
-
-
+6.5.2. Removed
+--------------
 
 6.5.3. How to get an ipv6 address with a Global scope ?
 -----------------------------------------------------
@@ -674,13 +401,13 @@ IPv6 module is not loaded in the kernel.
 
 
 
-6.6.2. SimpleH323	TCP Could not open H.323 listener port on 1720
+6.6.2. SimpleOpal	TCP Could not open H.323 listener port on 1720
 --------------------------------------------------------------
 Add some traces: -t on the command line. 
 
 
 
-6.6.3. SimpleH323	TCP Listen on fe80::2b0:d0ff:fedf:d6bf:1720 failed: Invalid argument
+6.6.3. SimpleOpal	TCP Listen on fe80::2b0:d0ff:fedf:d6bf:1720 failed: Invalid argument
 ------------------------------------------------------------------------------------
 This address is a local scope address. As the scope_id field is always set to 0,
 its value is invalid.
@@ -694,188 +421,8 @@ Use address with global scope.
 
 7. Platform Specific Issues
 ---------------------------
-PTLib has been ported to several platforms. However on some systems not all of
-the functionality has been implemented. This could be due to lack of support
-at the OS level or simply due to lack of time or documentation when developing
-the port.
 
-
---------------------------------------------------------------------------------
-7.1. FreeBSD Issues
--------------------
-
-Port Maintained by Roger Hardiman <roger@freebsd.org>
-GetRouteTable() in socket.cxx has been added. It is used by
-OenH323Proxy, but is not fully tested.
-
-
---------------------------------------------------------------------------------
-7.2. OpenBSD Issues
--------------------
-
-Port Maintained by Roger Hardiman <roger@freebsd.org>
-GetRouteTable() in socket.cxx has been added. It is used by
-OenH323Proxy, but is not fully tested.
-
-
---------------------------------------------------------------------------------
-7.3. NetBSD Issues
-------------------
-
-Port Maintained by Roger Hardiman <roger@freebsd.org>
-GetRouteTable() in socket.cxx has been added. It is used by
-OenH323Proxy, but is not fully tested.
-
-There are now three ways to do pthreads in NetBSD.
-a) unproven threads - from the packages tree.
-b) GNU pth threads - from the packages tree.
-c) Native pthreads - added to the kernel on 15th January 2003.
-
-The choice can be made by editing ptlib/make/unix.mak
-Native threads is the default and the best solution.
-
---------------------------------------------------------------------------------
-7.4. Mac OS X (Darwin) Issues
------------------------------
-
-Port maintained by Roger Hardiman <roger@freebsd.org> but recently
-Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu> has been leading
-development.
-Threads cannot be suspended once they are running, and trying to Suspend
-a running thread will generate an Assertion Error.
-Theads can be created in 'suspended' mode and then started with Resume
-This is due to a lack of pthread_kill() in Dawrin 1.2
-See http://www.publicsource.apple.com/bugs/X/Libraries/2686231.html
-
-GetRouteTable() in socket.cxx has been added. It is used by
-OenH323Proxy, but is not fully tested.
-
-localtime_r() and gm_time() are missing.
-So in osutil.cxx I have implemented os_localtime() and os_gmtime()
-with localtime() and gm_time() which may not be thread safe.
-
-There is also no implementation for dynamic library functions.
-
-Audio is supported using the coreaudio library.
-
-Video support is being added by Shawn and users interested in this should
-check Shawn's web site at http://sourceforge.net/projects/xmeeting/
-
---------------------------------------------------------------------------------
-7.5. BeOS Issues
-----------------
-
-Port Maintained by Yuri Kiryanov <openh323@kiryanov.com>. 
-Current version supported is BeOS 5.0.2. 
-
-Most important issue is lack of variable sample frequency from system sound producer node.
-I made quite a few attempts to implement sound resampler in code, 
-even with help of Be engineers, but eventually decided to wait until new Media Kit
-with resampler built-in. 
-Also network code needed more things, as OOB, which was promised in BONE. 
-BONE will allow to make less #defines in network code as well.
-As update will hit the Net, I'll get back to it ASAP.  
-
-Look for more port-related info on http://www.dogsbone.com/be
-
-
---------------------------------------------------------------------------------
-7.6. Windows CE Issues
-----------------------
-
-There is a very old port that was maintained by Yuri Kiryanov <openh323@kiryanov.com>. 
-for 2.x and 3.x (PocketPC). But this is no longer supported. You are on your own.
-Look for more port-related info on http://www.pocketbone.com
-
-For Windows Mobile 5 and Windows Mobile 6 these are supoported via DevStudio 2005,
-just follow the normal isntractions for Windows builds.
-
-
---------------------------------------------------------------------------------
-7.7. Solaris Issues
--------------------
-On Solaris 8, you need to install GNU Ld (the loader) to get
-shared libraries to compile. (otherwise there is an error with -soname)
-You can get around this by using the static libraries and
-compiling with make optnoshared and make debugnoshared
-
-There is currently no implementation of GetRouteTable() in socket.cxx
-so OpenH323Proxy will not work.
-
-
---------------------------------------------------------------------------------
-7.8. Build libraries under Windows
-----------------------------------
-
-Unfortunately building libraries that were intended for Unix based systems
-under Windows can sometimes be difficult. Here are some notes on the subsystems
-that PTLib uses.
-
-7.8.1. OpenSSL under Windows
-----------------------------
-The standard build for OpenSSL off http://www.openssl.org does work though it
-is rather tricky and requires things like Perl to be installed on your
-Windows box. However the build does work and is correct for PTlib use. Make
-sure you build the non-DLL Debug and Release versions.
-
-7.8.2. EXPAT under Windows
----------------------------
-The easiest way is to get the one in the OpenH323 CVS. This is guranteed to
-work. Use the following command to do this:
-
-  cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co external/expat
-
-and then use the expat.dsw file to build the Debug and Release libraries.
-
-7.8.3. OpenLDAP under Windows
----------------------------
-To use OpenLDAP with PTLib you have to compile the OpenLDAP library as a DLL.
-Unfortunately, the standard distribution does not do this. So there is a file in
-PTLib called ptlib/tools/openldap-2.1.12-win32.zip which contains altered build
-files for that version of OpenLDAP. Note if you have a different version these
-files may not work.
-
-To build the DLL:
-
-   1   Get OpenLDAP v 2.1.17 via tar file at
-         ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/openldap-2.1.17.tgz
-       or anonymous CVS using tag at
-         :pserver:anonymous@cvs.OpenLDAP.org:/repo/OpenLDAP
-       using tag OPENLDAP_REL_ENG_2_1_17
-   2   Unpack it somewhere, eg c:\work\openldap
-   3   Unzip the openldap-2.1.17-win32.zip file that directory
-   4   Open openldap/build/main.dsw
-   5   use Batch build to and select the "dll" project and build the "DLL Debug"
-       and "DLL Release" targets.
-   6   Put the resulting openldap/DLLRelease/openldap.dll and
-       openldap/DLLDebug/openldapd.dll files in your path.
-
-7.8.4 SDL under Windows
------------------------
-Version 1.2.5 has support for Windows and MSVC so you just need to download it
-from http://www.libsdl.org/ and follow the build instructions.
-
-7.8.5 SASL under Windows
-------------------------
-The standard distribution of Cyrus SASL comes with makefiles for Windows and
-clear instructions on how to build the library. The current implementation
-in PTLib was tested with Cyrus SASL version 2.1.18. Tarballs can be downloaded
-from:
-
-    http://asg.web.cmu.edu/sasl/sasl-library.html
-
-
---------------------------------------------------------------------------------
-7.9. ESD (Esound)
------------------
-
-Most targets come with native sound support.
-However there is also support for the ESD (esound) daemon which provides
-full duplex audio via network sockets.
-To compile ptlib to use ESD, you need to set the ESDDIR environment variable
-to point to the directory you have installed ESD into.
-Then compile ptlib.
-
+See the Wiki at http://www.opalvoip.org/wiki/index.php?n=Main.HomePage
 
 ================================================================================
 
@@ -886,7 +433,7 @@ This package is far from a "product". There is very limited documentation and
 support will be on an ad-hoc basis, send us an e-mail and we will probably
 answer your question if it isn't too difficult.
 
-It is supplied mainly to support the open H323 project, but that shouldn't stop
+It is supplied mainly to support the Opal project, but that shouldn't stop
 you from using it in whatever project you have in mind if you so desire. We like
 it and use it all the time, and we don't want to get into any religious wars of
 this class library over that one.
@@ -955,12 +502,5 @@ license:
  * ----------------------------------------------------------------------------
 
 
-
-================================================================================
-Equivalence Pty. Ltd.
-Home of OpenH323 and the Open Phone Abstraction Library (OPAL)
-
-support@equival.com.au
-http://www.equival.com.au (US Mirror - http://www.equival.com)
 
 ================================================================================
