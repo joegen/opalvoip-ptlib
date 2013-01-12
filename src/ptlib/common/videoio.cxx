@@ -442,7 +442,7 @@ static struct {
 
 bool PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned & height)
 {
-  for (int i = 0; i < PARRAYSIZE(SizeTable); i++) {
+  for (size_t i = 0; i < PARRAYSIZE(SizeTable); i++) {
     if (str *= SizeTable[i].name) {
       width = SizeTable[i].width;
       height = SizeTable[i].height;
@@ -456,7 +456,7 @@ bool PVideoFrameInfo::ParseSize(const PString & str, unsigned & width, unsigned 
 
 PString PVideoFrameInfo::AsString(unsigned width, unsigned height)
 {
-  for (int i = 0; i < PARRAYSIZE(SizeTable); i++) {
+  for (size_t i = 0; i < PARRAYSIZE(SizeTable); i++) {
     if (SizeTable[i].width == width && SizeTable[i].height == height)
       return SizeTable[i].name;
   }
@@ -468,7 +468,7 @@ PString PVideoFrameInfo::AsString(unsigned width, unsigned height)
 PStringArray PVideoFrameInfo::GetSizeNames()
 {
   PStringArray names(PARRAYSIZE(SizeTable));
-  for (int i = 0; i < PARRAYSIZE(SizeTable); i++)
+  for (size_t i = 0; i < PARRAYSIZE(SizeTable); i++)
     names[i] = SizeTable[i].name;
   return names;
 }

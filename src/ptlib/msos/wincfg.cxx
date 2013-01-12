@@ -131,7 +131,7 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
   if (!InitializeSecurityDescriptor(&secdesc, SECURITY_DESCRIPTOR_REVISION))
     return GetLastError();
 
-  static SID_IDENTIFIER_AUTHORITY siaNTAuthority = SECURITY_NT_AUTHORITY;
+  static SID_IDENTIFIER_AUTHORITY siaNTAuthority = { SECURITY_NT_AUTHORITY };
   SecurityID adminID(&siaNTAuthority, 2,
                      SECURITY_BUILTIN_DOMAIN_RID,
                      DOMAIN_ALIAS_RID_ADMINS, 
@@ -139,14 +139,14 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
   if (!adminID.IsValid())
     return GetLastError();
 
-  static SID_IDENTIFIER_AUTHORITY siaSystemAuthority = SECURITY_NT_AUTHORITY;
+  static SID_IDENTIFIER_AUTHORITY siaSystemAuthority = { SECURITY_NT_AUTHORITY };
   SecurityID systemID(&siaSystemAuthority, 1,
                       SECURITY_LOCAL_SYSTEM_RID,
                       0, 0, 0, 0, 0, 0, 0);
   if (!systemID.IsValid())
     return GetLastError();
 
-  static SID_IDENTIFIER_AUTHORITY siaCreatorAuthority = SECURITY_CREATOR_SID_AUTHORITY;
+  static SID_IDENTIFIER_AUTHORITY siaCreatorAuthority = { SECURITY_CREATOR_SID_AUTHORITY };
   SecurityID creatorID(&siaCreatorAuthority, 1,
                        SECURITY_CREATOR_OWNER_RID,
                        0, 0, 0, 0, 0, 0, 0);
