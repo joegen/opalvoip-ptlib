@@ -1392,13 +1392,14 @@ else
       [
          AC_DEFINE(P_PCAP, 1, "PCAP found")
          ENDLDLIBS="$ENDLDLIBS -lpcap"
-         HAS_PCAP=yes
+         HAS_PCAP=1
       ],
-      [HAS_PCAP=no]
+      [HAS_PCAP=]
    )
    AC_MSG_RESULT($HAS_PCAP)
 fi
 PTLIB_NEW_OPTION(PCAP)
+AC_SUBST(HAS_PCAP)
 
 
 dnl ########################################################################
