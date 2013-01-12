@@ -2269,6 +2269,7 @@ class PStringArray : public PArray<PString>
     PINDEX AppendString(
       const PString & str ///< String to append.
     );
+    void push_back(const PString & str) { AppendString(str); }
 
     /**Concatenate a PString or PStringArray to the array
 
