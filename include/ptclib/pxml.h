@@ -64,6 +64,10 @@ class PXMLData;
 class PXMLBase : public PObject
 {
   public:
+    enum {
+      DEFAULT_MAX_ENTITY_LENGTH = 4096
+    };
+
     enum Options {
       NoOptions           = 0x0000,
       Indent              = 0x0001,
@@ -84,8 +88,7 @@ class PXMLBase : public PObject
       IsStandAlone
     };
 
-    PXMLBase(int opts = NoOptions)
-      : m_options(opts) { }
+    PXMLBase(int opts = NoOptions);
 
     void SetOptions(int opts)
       { m_options = opts; }
@@ -99,8 +102,12 @@ class PXMLBase : public PObject
       return false;
     }
 
+    void SetMaxEntityLength(unsigned len) { m_maxEntityLength = len; }
+    unsigned GetMaxEntityLength() const { return m_maxEntityLength; }
+
   protected:
     int m_options;
+    unsigned m_maxEntityLength;
 };
 
 
