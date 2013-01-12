@@ -204,7 +204,7 @@ typedef uint64_t PUInt64;
   #if _MSC_VER>=1400
     #define strcasecmp(s1,s2) _stricmp(s1,s2)
     #define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
-  #else
+  #elif defined(_MSC_VER)
     #define strcasecmp(s1,s2) stricmp(s1,s2)
     #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
   #endif
