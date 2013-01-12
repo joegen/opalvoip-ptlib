@@ -1973,6 +1973,12 @@ typedef PIntSameOrder<long double> PFloat80b;
 #endif
 
 
+#ifdef P_64BIT
+typedef int64_t P_INT_PTR;
+#else
+typedef int32_t P_INT_PTR;
+#endif
+
 #if defined(_MSC_VER)
 #define P_ALIGN_FIELD(f,a) __declspec(align(a)) f
 #define P_PACK_FIELD(f)    __declspec(align(1)) f

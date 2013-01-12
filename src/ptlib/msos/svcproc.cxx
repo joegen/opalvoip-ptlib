@@ -44,9 +44,11 @@
 #include <fcntl.h>
 #include <io.h>
 
+#ifdef _MSC_VER
 #pragma comment(lib,"advapi32.lib")
 #pragma comment(lib,"user32.lib")
 #pragma comment(lib,"comdlg32.lib")
+#endif
 
 #include <fstream>
 
@@ -215,7 +217,7 @@ class PSystemLogToEvent : public PSystemLogTarget
 
     char thrdbuf[16];
     if (threadName.IsEmpty())
-      sprintf(thrdbuf, "0x%08X", thread);
+      sprintf(thrdbuf, "0x%8p", (void *)thread);
     else {
       strncpy(thrdbuf, threadName, sizeof(thrdbuf)-1);
       thrdbuf[sizeof(thrdbuf)-1] = '\0';
@@ -223,7 +225,7 @@ class PSystemLogToEvent : public PSystemLogTarget
 
     char errbuf[25];
     if (level > PSystemLog::StdError && level < PSystemLog::Info && err != 0)
-      ::sprintf(errbuf, "Error code = %d", err);
+      ::sprintf(errbuf, "Error code = %lu", err);
     else
       errbuf[0] = '\0';
 
@@ -370,8 +372,9 @@ int PServiceProcess::InternalMain(void * arg)
     if (StartServiceCtrlDispatcher(dispatchTable))
       return GetTerminationValue();
 
-    if (GetLastError() != ERROR_FAILED_SERVICE_CONTROLLER_CONNECT)
+    if (GetLastError() != ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
       PSYSTEMLOG(Fatal, "StartServiceCtrlDispatcher failed.");
+    }
     ProcessCommand(ServiceCommandNames[SvcCmdDefault]);
     return 1;
   }
@@ -660,7 +663,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       break;
 
     case WM_ENDSESSION :
-      if (wParam && (debugMode || lParam != ENDSESSION_LOGOFF) && debugWindow != (HWND)-1)
+      if (wParam && (debugMode || lParam != (LPARAM)ENDSESSION_LOGOFF) && debugWindow != (HWND)-1)
         OnStop();
       return 0;
 
@@ -1465,6 +1468,7 @@ bool NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
   return ok;
 }
 
+static char emptyString[] = "";
 
 bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
 {
@@ -1473,7 +1477,7 @@ bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
 
   SC_ACTION scAction[4];
   PINDEX count;
-  for (count = 0; count < sizeof(scAction)/sizeof(scAction[0])-1; ++count) {
+  for (count = 0; count < (PINDEX)(sizeof(scAction)/sizeof(scAction[0])-1); ++count) {
     scAction[count].Type = action;
     scAction[count].Delay = 1000;
   }
@@ -1482,8 +1486,8 @@ bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
 
   SERVICE_FAILURE_ACTIONS sfActions;
   sfActions.dwResetPeriod = 300; // 5 minutes
-  sfActions.lpRebootMsg = "";
-  sfActions.lpCommand = "";
+  sfActions.lpRebootMsg = emptyString;
+  sfActions.lpCommand = emptyString;
   sfActions.cActions = ++count;
   sfActions.lpsaActions = scAction;
 

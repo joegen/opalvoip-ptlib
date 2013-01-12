@@ -429,7 +429,7 @@ PSTUNAttribute * PSTUNMessage::GetFirstAttribute() const
   PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
   PSTUNAttribute * ptr  = attr;
 
-  if ((CalcPaddedAttributeLength(attr->length) > GetSize()))
+  if ((CalcPaddedAttributeLength(attr->length) > (int)GetSize()))
     return NULL;
 
   while (ptr && 

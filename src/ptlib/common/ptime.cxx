@@ -578,9 +578,11 @@ PString PTime::AsString(const char * format, int zone) const
 extern "C" {
 
 #ifdef _WIN32
-#define STDAPICALLTYPE __stdcall
+#  ifndef STDAPICALLTYPE
+#  define STDAPICALLTYPE __stdcall
+#  endif
 #else
-#define STDAPICALLTYPE
+#  define STDAPICALLTYPE
 #endif
 
 // This funcctions implementation is in getdate_tab.c

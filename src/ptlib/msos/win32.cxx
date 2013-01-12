@@ -236,14 +236,14 @@ unsigned PTimer::Resolution()
     return 1;
 
 #ifndef _WIN32_WCE
-  DWORD err = ::GetLastError();
+  ::GetLastError();
   DWORD timeAdjustment;
   DWORD timeIncrement;
   BOOL timeAdjustmentDisabled;
   if (GetSystemTimeAdjustment(&timeAdjustment, &timeIncrement, &timeAdjustmentDisabled))
     return timeIncrement/10000;
 
-  err = ::GetLastError();
+  ::GetLastError();
 #endif
 
   return 55;
@@ -1837,7 +1837,8 @@ PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
   if (m_hDLL == NULL)
     return false;
 
-  func = (Function)GetProcAddress(m_hDLL, (LPTSTR)(DWORD)LOWORD(index));
+  LPCSTR ordinal = (LPCSTR)(DWORD_PTR)LOWORD(index);
+  func = (Function)GetProcAddress(m_hDLL, ordinal);
   if (func != NULL)
     return true;
 
