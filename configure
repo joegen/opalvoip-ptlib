@@ -650,7 +650,6 @@ PTLIB_VIDFILE
 HAS_VIDFILE
 PTLIB_VIDEO
 HAS_VIDEO
-HAS_QOS
 PTLIB_WAVFILE
 HAS_WAVFILE
 PTLIB_AUDIO
@@ -705,6 +704,7 @@ PTLIB_URL
 HAS_URL
 PTLIB_CONFIG_FILE
 HAS_CONFIG_FILE
+HAS_PCAP
 PTLIB_PCAP
 PTLIB_IPV6
 HAS_IPV6
@@ -870,7 +870,6 @@ enable_serial
 enable_pop3smtp
 enable_audio
 enable_wavfile
-enable_qos
 enable_video
 enable_vidfile
 enable_ffvdev
@@ -1588,7 +1587,6 @@ Optional Features:
   --enable-pop3smtp       enable POP3/SMTP support
   --enable-audio          enable audio support
   --enable-wavfile        enable WAVFILE support
-  --enable-qos            enable QOS support
   --enable-video          enable video device support
   --enable-vidfile        enable video file support
   --enable-ffvdev         enable FFMpeg video file support
@@ -9329,10 +9327,10 @@ if ac_fn_cxx_try_compile "$LINENO"; then :
 $as_echo "#define P_PCAP 1" >>confdefs.h
 
          ENDLDLIBS="$ENDLDLIBS -lpcap"
-         HAS_PCAP=yes
+         HAS_PCAP=1
 
 else
-  HAS_PCAP=no
+  HAS_PCAP=
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
@@ -9347,6 +9345,7 @@ fi
             PTLIB_PCAP=no
 
           fi
+
 
 
 
@@ -11153,58 +11152,6 @@ $as_echo "no" >&6; }
 
 
 
-
-
-          { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable QOS support" >&5
-$as_echo_n "checking enable QOS support... " >&6; }
-          # Check whether --enable-qos was given.
-if test "${enable_qos+set}" = set; then :
-  enableval=$enable_qos;
-                         if test "x$enableval" = "xyes"; then
-                           HAS_QOS=1
-                         else
-                           HAS_QOS=
-                         fi
-
-fi
-
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
-$as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-              HAS_QOS=
-            fi
-          fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
-$as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-              HAS_QOS=
-            fi
-          fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
-$as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-              HAS_QOS=
-            fi
-          fi
-
-          if test "x${HAS_QOS}" = "x1"; then
-
-$as_echo "#define P_QOS 1" >>confdefs.h
-
-            HAS_QOS=1
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-          else
-            HAS_QOS=
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-          fi
 
 
 

@@ -50,7 +50,7 @@ bool PSTUNServer::Open(WORD port)
     return false;
   }
 
-  int i;
+  PINDEX i;
   std::vector<PIPSocket::Address> interfaceAddresses;
 
   // find interfaces
@@ -199,7 +199,7 @@ bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketI
     return false;
 
   if (m_selectList.GetSize() == 0) {
-    for (int i = 0; i < m_sockets.GetSize(); ++i)
+    for (PINDEX i = 0; i < m_sockets.GetSize(); ++i)
       m_selectList += m_sockets[i];
 
     int r = PIPSocket::Select(m_selectList);
