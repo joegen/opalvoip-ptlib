@@ -88,7 +88,7 @@ class PNotifierFunctionTemplate : public PSmartObject
     void * m_target;
 };
 
-typedef PNotifierFunctionTemplate<INT> PNotifierFunction;
+typedef PNotifierFunctionTemplate<P_INT_PTR> PNotifierFunction;
 
 
 /**
@@ -146,7 +146,7 @@ class PNotifierTemplate : public PSmartPointer
 /** \class PNotifier
     Class specialisation for PNotifierTemplate<INT>
   */
-typedef PNotifierTemplate<INT> PNotifier;
+typedef PNotifierTemplate<P_INT_PTR> PNotifier;
 
 
 #define PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, BaseClass) \
@@ -200,7 +200,7 @@ typedef PNotifierTemplate<INT> PNotifier;
 
 /// Declare PNotifier derived class with INT parameter. Uses PDECLARE_NOTIFIER2 macro.
 #define PDECLARE_NOTIFIER(notifier, notifiee, func) \
-       PDECLARE_NOTIFIER2(notifier, notifiee, func, INT)
+       PDECLARE_NOTIFIER2(notifier, notifiee, func, P_INT_PTR)
 
 
 /** Create a PNotifier object instance.

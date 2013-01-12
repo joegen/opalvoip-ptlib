@@ -334,7 +334,7 @@ void PCLI::Context::OnCompletedLine()
 }
 
 
-void PCLI::Context::ThreadMain(PThread &, INT)
+void PCLI::Context::ThreadMain(PThread &, P_INT_PTR)
 {
   PTRACE(4, "PCLI\tContext thread started");
   Run();
@@ -797,7 +797,7 @@ bool PCLISocket::Listen(WORD port)
 }
 
 
-void PCLISocket::ThreadMain(PThread &, INT)
+void PCLISocket::ThreadMain(PThread &, P_INT_PTR)
 {
   PTRACE(4, "PCLI\tServer thread started on port " << GetPort());
 

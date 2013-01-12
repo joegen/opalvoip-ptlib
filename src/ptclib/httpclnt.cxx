@@ -203,7 +203,7 @@ PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
     if (PTrace::CanTrace(4)) {
       strm << '\n' << outMIME;
       if (!dataBody.IsEmpty()) {
-        int amt = PTrace::CanTrace(5) ? 10000 : 100;
+        PINDEX amt = PTrace::CanTrace(5) ? 10000 : 100;
         strm << dataBody.Left(amt);
         if (len > amt)
           strm << "\n....";
@@ -259,7 +259,7 @@ PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
       PString body;
       if (lastResponseCode >= 300) {
-        if (replyMIME.GetInteger(ContentLengthTag(), INT_MAX) <= MaxTraceContentSize)
+        if ((int)replyMIME.GetInteger(ContentLengthTag(), INT_MAX) <= MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
         else {
           PHTTPClient_DummyProcessor dummy;
