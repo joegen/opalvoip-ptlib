@@ -477,7 +477,7 @@ PPluginModuleManager::PPluginModuleManager(const char * _signatureFunctionName, 
     pluginMgr = &PPluginManager::GetPluginManager();
 }
 
-void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
+void PPluginModuleManager::OnLoadModule(PDynaLink & dll, P_INT_PTR code)
 {
   PDynaLink::Function dummyFunction;
   if (!dll.GetFunction(signatureFunctionName, dummyFunction))
