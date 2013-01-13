@@ -226,7 +226,8 @@ case "$target_os" in
       SHAREDLIBEXT="dylib"
       LDSOFLAGS="-dynamiclib"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -DHAVE_GETTIMEOFDAY  -D__MACOSX_CORE__"
-      ENDLDLIBS="-lresolv -framework CoreAudio -framework CoreFoundation -framework AudioUnit -lpthread -lm -framework CoreMidi -framework Carbon -framework AudioToolbox"
+      ENDLDLIBS="-framework AudioToolbox -framework AudioUnit -framework CoreAudio -framework CoreFoundation"
+      ENDLDLIBS="$ENDLDLIBS -lresolv -lpthread -lm"
    ;;
 
    beos )
@@ -1720,7 +1721,7 @@ else
                        HAS_SDL=1
                        AC_DEFINE(P_SDL, 1, "SDL found")
                        PTLIB_CFLAGS="$PTLIB_CFLAGS ${SDL_CFLAGS}"
-                       LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl`"
+                       LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl` `pkg-config --libs-only-other sdl`"
                        ENDLDLIBS="$ENDLDLIBS `pkg-config --libs-only-l sdl`"
                       ],[HAS_SDL=])
   fi

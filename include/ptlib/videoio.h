@@ -1191,6 +1191,7 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
 #endif
 
 #if P_SDL
+  #include <SDL_main.h>
   PPLUGIN_STATIC_LOAD(SDL, PVideoOutputDevice);
 #endif
 

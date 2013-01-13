@@ -1729,7 +1729,7 @@ int PProcess::InternalMain(void *)
 }
 
 
-void PProcess::PreInitialise(int c, char ** v, char **)
+void PProcess::PreInitialise(int c, char ** v)
 {
   if (executableFile.IsEmpty()) {
     PString execFile = v[0];
