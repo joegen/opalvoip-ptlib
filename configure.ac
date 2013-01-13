@@ -226,7 +226,7 @@ case "$target_os" in
       SHAREDLIBEXT="dylib"
       LDSOFLAGS="-dynamiclib"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -DHAVE_GETTIMEOFDAY  -D__MACOSX_CORE__"
-      ENDLDLIBS="-framework AudioToolbox -framework AudioUnit -framework CoreAudio -framework CoreFoundation"
+      ENDLDLIBS="-lresolv -framework CoreAudio -framework CoreFoundation -framework AudioUnit -lpthread -lm -framework CoreMidi -framework Carbon -framework AudioToolbox"
       ENDLDLIBS="$ENDLDLIBS -lresolv -lpthread -lm"
    ;;
 
