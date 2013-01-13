@@ -667,7 +667,6 @@ PTLIB_VIDFILE
 HAS_VIDFILE
 PTLIB_VIDEO
 HAS_VIDEO
-HAS_QOS
 PTLIB_WAVFILE
 HAS_WAVFILE
 PTLIB_AUDIO
@@ -887,7 +886,6 @@ enable_serial
 enable_pop3smtp
 enable_audio
 enable_wavfile
-enable_qos
 enable_video
 enable_vidfile
 enable_ffvdev
@@ -1600,7 +1598,6 @@ Optional Features:
   --enable-pop3smtp       enable POP3/SMTP support
   --enable-audio          enable audio support
   --enable-wavfile        enable WAVFILE support
-  --enable-qos            enable QOS support
   --enable-video          enable video device support
   --enable-vidfile        enable video file support
   --enable-ffvdev         enable FFMpeg video file support
@@ -5280,7 +5277,8 @@ $as_echo "${ptlib_fdsize}" >&6; }
       SHAREDLIBEXT="dylib"
       LDSOFLAGS="-dynamiclib"
       PTLIB_CFLAGS="$PTLIB_CFLAGS -DHAVE_GETTIMEOFDAY  -D__MACOSX_CORE__"
-      ENDLDLIBS="-lresolv -framework CoreAudio -framework CoreFoundation -framework AudioUnit -lpthread -lm -framework CoreMidi -framework Carbon -framework AudioToolbox"
+      ENDLDLIBS="-framework AudioToolbox -framework AudioUnit -framework CoreAudio -framework CoreFoundation"
+      ENDLDLIBS="$ENDLDLIBS -lresolv -lpthread -lm"
    ;;
 
    beos )
@@ -11161,58 +11159,6 @@ $as_echo "no" >&6; }
 
 
 
-          { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable QOS support" >&5
-$as_echo_n "checking enable QOS support... " >&6; }
-          # Check whether --enable-qos was given.
-if test "${enable_qos+set}" = set; then :
-  enableval=$enable_qos;
-                         if test "x$enableval" = "xyes"; then
-                           HAS_QOS=1
-                         else
-                           HAS_QOS=
-                         fi
-
-fi
-
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
-$as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-              HAS_QOS=
-            fi
-          fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
-$as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-              HAS_QOS=
-            fi
-          fi
-
-          if test "x" != "x"; then
-            if test "x$" != "x1"; then
-              { $as_echo "$as_me:${as_lineno-$LINENO}: qos support disabled due to disabled dependency " >&5
-$as_echo "$as_me: qos support disabled due to disabled dependency " >&6;}
-              HAS_QOS=
-            fi
-          fi
-
-          if test "x${HAS_QOS}" = "x1"; then
-
-$as_echo "#define P_QOS 1" >>confdefs.h
-
-            HAS_QOS=1
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-          else
-            HAS_QOS=
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-          fi
-
-
 
 
 
@@ -11630,7 +11576,7 @@ $as_echo "yes" >&6; }
 $as_echo "#define P_SDL 1" >>confdefs.h
 
                        PTLIB_CFLAGS="$PTLIB_CFLAGS ${SDL_CFLAGS}"
-                       LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl`"
+                       LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl` `pkg-config --libs-only-other sdl`"
                        ENDLDLIBS="$ENDLDLIBS `pkg-config --libs-only-l sdl`"
 
 fi
