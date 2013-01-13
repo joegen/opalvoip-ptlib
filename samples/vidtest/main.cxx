@@ -32,13 +32,11 @@
 #include "main.h"
 #include "version.h"
 
+#include  <ptlib/videoio.h>
+#include  <ptlib/vconvert.h>
+
 
 PCREATE_PROCESS(VidTest);
-
-#include  <ptlib/video.h>
-#include  <ptlib/vconvert.h>
-#include  <ptclib/vsdl.h>
-
 
 VidTest::VidTest()
   : PProcess("PwLib Video Example", "vidtest", 1, 0, ReleaseCode, 0)
