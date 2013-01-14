@@ -40,7 +40,7 @@
   extern "C" PDEFINE_WINMAIN(hInstance, , , ) \
     { \
       cls *pInstance = new cls(); \
-      pInstance->PreInitialise(__argc, __argv, _environ); \
+      pInstance->PreInitialise(__argc, __argv); \
       int terminationValue = pInstance->InternalMain(hInstance); \
       delete pInstance; \
       return terminationValue; \

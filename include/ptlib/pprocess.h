@@ -77,10 +77,10 @@ extern "C" {\
     }
 #else
 #define PCREATE_PROCESS(cls) \
-  int main(int argc, char ** argv, char ** envp) \
+  int main(int argc, char * argv[]) \
     { \
       cls *pInstance = new cls(); \
-      pInstance->PreInitialise(argc, argv, envp); \
+      pInstance->PreInitialise(argc, argv); \
       int terminationValue = pInstance->InternalMain(); \
       delete pInstance; \
       return terminationValue; \
@@ -636,8 +636,7 @@ class PProcess : public PThread
      */
     void PreInitialise(
       int argc,     // Number of program arguments.
-      char ** argv, // Array of strings for program arguments.
-      char ** envp  // Array of string for the system environment
+      char ** argv  // Array of strings for program arguments.
     );
 
     /**Internal shutdown function called directly from the ~PProcess

@@ -640,10 +640,12 @@
 
 #if defined(_MSC_VER) && P_SDL
   #if P_SDL==1
-    #pragma include_alias(<SDL.h>, <@SDL_DIR@/include/SDL.h>)
+    #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/inc>)
   #else
-    #pragma include_alias(<SDL.h>, <@SDL_DIR@/include/SDL/SDL.h>)
+    #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/SDL/inc>)
   #endif
+  #pragma P_SDL_INCLUDE(SDL.h)
+  #pragma P_SDL_INCLUDE(SDL_main.h)
 
   #undef P_SDL_LIBRARY
 
