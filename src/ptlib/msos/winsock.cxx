@@ -168,13 +168,13 @@ PSocket::~PSocket()
 
 HANDLE PSocket::GetAsyncReadHandle() const
 {
-  return IsOpen() ? (HANDLE)os_handle : INVALID_HANDLE_VALUE;
+  return IsOpen() ? (HANDLE)(UINT_PTR)os_handle : INVALID_HANDLE_VALUE;
 }
 
 
 HANDLE PSocket::GetAsyncWriteHandle() const
 {
-  return IsOpen() ? (HANDLE)os_handle : INVALID_HANDLE_VALUE;
+  return IsOpen() ? (HANDLE)(UINT_PTR)os_handle : INVALID_HANDLE_VALUE;
 }
 
 
