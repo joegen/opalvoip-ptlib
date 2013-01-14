@@ -767,7 +767,7 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
 }
 
 
-PBoolean PSoundChannelWin32::OpenDevice(unsigned id)
+PBoolean PSoundChannelWin32::OpenDevice(int id)
 {
   Close();
 
