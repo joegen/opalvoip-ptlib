@@ -695,7 +695,7 @@ class PChannel : public PObject, public P_IOSTREAM {
        @return true if there was no error.
      */
     virtual PBoolean ConvertOSError(
-      P_INT_PTR libcReturnValue,                ///< Return value from standard library
+      int libcReturnValue,                ///< Return value from standard library
       ErrorGroup group = LastGeneralError ///< Error group to set
     );
 
@@ -733,7 +733,7 @@ class PChannel : public PObject, public P_IOSTREAM {
 
     // Member variables
     /// The operating system file handle return by standard open() function.
-    P_INT_PTR os_handle;
+    int os_handle;
 
     /// The platform independant error code.
     Errors lastErrorCode[NumErrorGroups+1];

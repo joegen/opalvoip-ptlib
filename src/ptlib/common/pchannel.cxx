@@ -173,8 +173,8 @@ PChannel::~PChannel()
 PObject::Comparison PChannel::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PChannel), PInvalidCast);
-  int h1 = GetHandle();
-  int h2 = ((const PChannel&)obj).GetHandle();
+  P_INT_PTR h1 = GetHandle();
+  P_INT_PTR h2 = ((const PChannel&)obj).GetHandle();
   if (h1 < h2)
     return LessThan;
   if (h1 > h2)
@@ -191,7 +191,7 @@ PINDEX PChannel::HashFunction() const
 
 PBoolean PChannel::IsOpen() const
 {
-  return os_handle != (P_INT_PTR)-1;
+  return os_handle != -1;
 }
 
 PINDEX PChannel::GetLastReadCount() const
@@ -508,7 +508,7 @@ PString PChannel::GetErrorText(ErrorGroup group) const
 }
 
 
-PBoolean PChannel::ConvertOSError(P_INT_PTR status, ErrorGroup group)
+PBoolean PChannel::ConvertOSError(int status, ErrorGroup group)
 {
   Errors lastError;
   int osError;
@@ -908,7 +908,7 @@ PBoolean PFile::Close()
 #ifdef WOT_NO_FILESYSTEM
   PBoolean ok = true;
 #else
-  PBoolean ok = ConvertOSError(_close(os_handle));
+  PBoolean ok = ConvertOSError(_close(os_handle)) != 0;
 #endif
 
   os_handle = -1;
