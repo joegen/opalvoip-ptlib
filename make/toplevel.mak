@@ -77,6 +77,9 @@ endif
 ifdef HAS_PCAP
 SUBDIRS += samples/ether
 endif
+ifdef HAS_VIDEO
+SUBDIRS += samples/vidtest
+endif
 endif
 
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1
