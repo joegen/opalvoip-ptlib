@@ -175,7 +175,7 @@ PPipeChannel::~PPipeChannel()
 
 PBoolean PPipeChannel::IsOpen() const
 {
-  return os_handle != (P_INT_PTR)-1;
+  return os_handle != -1;
 }
 
 
