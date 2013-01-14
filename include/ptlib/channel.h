@@ -695,7 +695,7 @@ class PChannel : public PObject, public P_IOSTREAM {
        @return true if there was no error.
      */
     virtual PBoolean ConvertOSError(
-      int libcReturnValue,                ///< Return value from standard library
+      P_INT_PTR libcReturnValue,                ///< Return value from standard library
       ErrorGroup group = LastGeneralError ///< Error group to set
     );
 

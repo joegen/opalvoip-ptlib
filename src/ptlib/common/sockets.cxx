@@ -731,7 +731,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
                       &localErrNo);
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)) || defined(__NUCLEUS_PLUS__)
+#elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)) || defined(__NUCLEUS_PLUS__) || defined (_WIN32)
 
 #if defined(P_GETHOSTBYNAME_R)
 
