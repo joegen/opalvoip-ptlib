@@ -713,9 +713,11 @@ PBoolean PConfig::HasKey(const PString & section, const PString & key) const
     }
 
     case NumSources :
-      PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
-      static const char dflt[] = "<<<<<====---PConfig::DefaultValueString---====>>>>>";
-      return PGetPrivateProfileString(section, key, dflt, location) != dflt;
+      {
+        PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
+        static const char dflt[] = "<<<<<====---PConfig::DefaultValueString---====>>>>>";
+        return PGetPrivateProfileString(section, key, dflt, location) != dflt;
+      }
 
     case System :
       break;
