@@ -333,9 +333,11 @@ void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
 
 #include <syslog.h>
 
-PSystemLogToSyslog::PSystemLogToSyslog()
+PSystemLogToSyslog::PSystemLogToSyslog(const char * ident)
 {
-  openlog((char *)(const char *)PProcess::Current().GetName(), LOG_PID, LOG_DAEMON);
+  if (ident == NULL)
+    ident = (const char *)PProcess::Current().GetName();
+  openlog((char *)ident, LOG_PID, LOG_DAEMON);
 }
 
 PSystemLogToSyslog::~PSystemLogToSyslog()
