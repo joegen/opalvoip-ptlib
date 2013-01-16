@@ -335,8 +335,13 @@ class PSystemLogToSyslog : public PSystemLogTarget
   /**@name Construction */
   //@{
     PSystemLogToSyslog(
-      const char * ident = NULL   ///< Identification for openlog, default to PProcess::GetName()
+      const char * ident = NULL,  ///< Identification for openlog(), default to PProcess::GetName()
+      int priority = -1,          /**< Priority for syslog() call, if < 0, one derived from
+                                       PSystemLog::GetThresholdLevel() is used. */
+      int options = -1,           ///< Option flags for openlog(), -1 is use default (LOG_PID)
+      int facility = -1           ///< Facility codes for openlog(), -1 is use default (LOG_DAEMON)
     );
+
     ~PSystemLogToSyslog();
   //@}
 
@@ -349,6 +354,9 @@ class PSystemLogToSyslog : public PSystemLogTarget
       const char * msg          ///< Message to be logged
     );
   //@}
+
+  protected:
+    int m_priority;
 };
 #endif
 
