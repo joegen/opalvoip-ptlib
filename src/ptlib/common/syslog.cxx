@@ -333,12 +333,21 @@ void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
 
 #include <syslog.h>
 
-PSystemLogToSyslog::PSystemLogToSyslog(const char * ident)
+PSystemLogToSyslog::PSystemLogToSyslog(const char * ident, int priority, int options, int facility)
+  : m_priority(priority)
 {
-  if (ident == NULL)
+  if (ident == NULL || *ident == '\0')
     ident = (const char *)PProcess::Current().GetName();
-  openlog((char *)ident, LOG_PID, LOG_DAEMON);
+
+  if (options < 0)
+    options = LOG_PID;
+
+  if (facility < 0)
+    facility = LOG_DAEMON;
+
+  openlog((char *)ident, options, facility);
 }
+
 
 PSystemLogToSyslog::~PSystemLogToSyslog()
 {
@@ -351,26 +360,28 @@ void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
   if (level > m_thresholdLevel)
     return;
 
-  int syslog_level;
-  switch (level) {
-    case PSystemLog::Fatal :
-      syslog_level = LOG_CRIT;
-      break;
-    case PSystemLog::Error :
-      syslog_level = LOG_ERR;
-      break;
-    case PSystemLog::StdError :
-    case PSystemLog::Warning :
-      syslog_level = LOG_WARNING;
-      break;
-    case PSystemLog::Info :
-      syslog_level = LOG_INFO;
-      break;
-    default :
-      syslog_level = LOG_DEBUG;
+  int priority = m_priority;
+  if (priority < 0) {
+    switch (level) {
+      case PSystemLog::Fatal :
+        priority = LOG_CRIT;
+        break;
+      case PSystemLog::Error :
+        priority = LOG_ERR;
+        break;
+      case PSystemLog::StdError :
+      case PSystemLog::Warning :
+        priority = LOG_WARNING;
+        break;
+      case PSystemLog::Info :
+        priority = LOG_INFO;
+        break;
+      default :
+        priority = LOG_DEBUG;
+    }
   }
 
-  syslog(syslog_level, "%s", msg);
+  syslog(priority, "%s", msg);
 }
 #endif
 
