@@ -221,7 +221,7 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
   if (level < 0)
     stream << "Message";
   else {
-    static const char * const levelName[4] = {
+    static const char * const levelName[] = {
       "Fatal error",
       "Error",
       "Warning",
@@ -379,9 +379,20 @@ void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
       default :
         priority = LOG_DEBUG;
     }
+    syslog(priority, "%s", msg);
   }
-
-  syslog(priority, "%s", msg);
+  else {
+    static const char * const levelName[] = {
+        "FATAL",    // LogFatal,
+        "ERROR",    // LogError,
+        "WARNING",  // LogWarning,
+        "INFO",     // LogInfo,
+    };
+    if (level < PARRAYSIZE(levelName))
+      syslog(priority, "%-8s%s", levelName[level], msg);
+    else
+      syslog(priority, "DEBUG%-3u%s", level - PSystemLog::Info, msg);
+  }
 }
 #endif
 
