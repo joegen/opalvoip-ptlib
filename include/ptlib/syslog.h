@@ -334,7 +334,9 @@ class PSystemLogToSyslog : public PSystemLogTarget
   public:
   /**@name Construction */
   //@{
-    PSystemLogToSyslog();
+    PSystemLogToSyslog(
+      const char * ident = NULL   ///< Identification for openlog, default to PProcess::GetName()
+    );
     ~PSystemLogToSyslog();
   //@}
 
