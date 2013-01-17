@@ -477,7 +477,7 @@ void PTrace::SetOptions(unsigned options)
   PTRACE_IF(1, oldOptions != newOptions, NULL, "PTLib", "Trace options set to " << newOptions);
 
   if ((oldOptions&SystemLogStream) == 0 && (newOptions&SystemLogStream) != 0)
-    SetStream(new PSystemLog((PSystemLog::Level)info.m_currentLevel));
+    SetStream(new PSystemLog((PSystemLog::Level)info.m_thresholdLevel));
 }
 
 
