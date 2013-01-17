@@ -2189,9 +2189,11 @@ if test "x$enable_plugins" != "xno" ; then
 
       old_CFLAGS=$CFLAGS
       old_CPPFLAGS=$CPPFLAGS
+      old_LDFLAGS=$LDFLAGS
       if test "x$PORTAUDIO_DIR" != "x" ; then
         CFLAGS="-I ${PORTAUDIO_DIR}/include ${CFLAGS}"
         CPPFLAGS="-I ${PORTAUDIO_DIR}/include ${CPPFLAGS}"
+        LDFLAGS="-L${PORTAUDIO_DIR}/lib ${LDFLAGS}"
       fi
 
       AC_ARG_ENABLE(portaudio, AS_HELP_STRING([--disable-portaudio],[disable PortAudio support]))
@@ -2216,7 +2218,7 @@ if test "x$enable_plugins" != "xno" ; then
       if test "x$HAS_PORTAUDIO" = "x1" ; then
         if test "x$PORTAUDIO_DIR" != "x" ; then
           PTLIB_CFLAGS="-I${PORTAUDIO_DIR}/include ${PTLIB_CFLAGS}"
-          LDFLAGS="-L${PORTAUDIO_DIR}/lib ${LDFLAGS}"
+          old_LDFLAGS=$LDFLAGS
         fi
         if test "x$HAS_PORTMIXER" = "x1" ; then
           ENDLDLIBS="-lportmixer ${ENDLDLIBS}"
@@ -2226,7 +2228,7 @@ if test "x$enable_plugins" != "xno" ; then
 
       CFLAGS=$old_CFLAGS
       CPPFLAGS=$old_CPPFLAGS
-
+      LDFLAGS=$old_LDFLAGS
 
    fi # enable_audio
 
