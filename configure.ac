@@ -2203,6 +2203,9 @@ if test "x$enable_plugins" != "xno" ; then
             AC_DEFINE(P_PORTAUDIO, 1)
          ])
          if test "x$HAS_PORTAUDIO" = "x1" ; then
+           AC_CHECK_LIB([portaudio], [Pa_GetDefaultInputDevice], [HAS_PORTAUDIO=1],[HAS_PORTAUDIO=])
+         fi
+         if test "x$HAS_PORTAUDIO" = "x1" ; then
            AC_CHECK_HEADER([portmixer.h], [
               AC_SUBST(HAS_PORTMIXER, 1)
               AC_DEFINE(P_PORTMIXER, 1)
