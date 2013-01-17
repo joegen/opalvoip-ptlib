@@ -186,6 +186,7 @@ using namespace std; // Not a good practice (name space polution), but will take
   friend __inline name operator++(name & e, int) { PAssert(e <    End##name, PInvalidParameter); name o=e; e = (name)(e+1); return o; } \
   friend __inline name operator--(name & e     ) { PAssert(e >= Begin##name, PInvalidParameter); return    e = (name)(e-1);           } \
   friend __inline name operator--(name & e, int) { PAssert(e >= Begin##name, PInvalidParameter); name o=e; e = (name)(e-1); return o; } \
+  static __inline name name##FromInt(int v) { return (name)(v < Begin##name ? Begin##name : v >= End##name ? (End##name-1) : v); }
 
 /** This declares a standard enumeration (enum) of symbols with ++ and -- operators.
     The symbols Begin##name and End##name are automatically added to the enumeration
