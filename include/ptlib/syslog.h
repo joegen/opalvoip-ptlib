@@ -51,36 +51,23 @@ class PSystemLog : public PObject, public P_IOSTREAM
   /**@name Construction */
   //@{
     /// define the different error log levels
-    enum Level {
-      /// Log from standard error stream
-      StdError = -1,
-      /// Log a fatal error
-      Fatal,   
-      /// Log a non-fatal error
-      Error,    
-      /// Log a warning
-      Warning,  
-      /// Log general information
-      Info,     
-      /// Log debugging information
-      Debug,    
-      /// Log more debugging information
-      Debug2,   
-      /// Log even more debugging information
-      Debug3,   
-      /// Log a lot of debugging information
-      Debug4,   
-      /// Log a real lot of debugging information
-      Debug5,   
-      /// Log a bucket load of debugging information
-      Debug6,   
-
-      NumLogLevels
-    };
+    P_DECLARE_ENUM_EX(Level,NumLogLevels,
+      StdError,-1,  ///< Log from standard error stream
+      Fatal,        ///< Log a fatal error
+      Error,        ///< Log a non-fatal error
+      Warning,      ///< Log a warning
+      Info,         ///< Log general information
+      Debug,        ///< Log debugging information
+      Debug2,       ///< Log more debugging information
+      Debug3,       ///< Log even more debugging information
+      Debug4,       ///< Log a lot of debugging information
+      Debug5,       ///< Log a real lot of debugging information
+      Debug6        ///< Log a bucket load of debugging information
+    );
 
     /// Create a system log stream
     PSystemLog(
-     Level level   ///< only messages at this level or higher will be logged
+     Level level = NumLogLevels  ///< only messages at this level or higher (smaller) will be logged
     );
 
     /// Destroy the string stream, deleting the stream buffer
