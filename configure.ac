@@ -73,6 +73,8 @@ if test "${enable_minsize}x" = "yesx" ; then
   HAS_APPSHARE=
   HAS_VXML=
   HAS_SHM_VIDEO=
+  HAS_SHM_AUDIO=
+  HAS_PORTAUDIO=
   HAS_VFW_CAPTURE=
 else
   default_tracing=yes
@@ -118,7 +120,9 @@ else
   HAS_VIDFILE=1
   HAS_FFVDEV=1
   HAS_APPSHARE=
-  HAS_SHM_VIDEO=1
+  HAS_SHM_VIDEO=
+  HAS_SHM_AUDIO=
+  HAS_PORTAUDIO=
   HAS_VXML=1
   HAS_VFW_CAPTURE=
 fi
@@ -2160,7 +2164,7 @@ if test "x$enable_plugins" != "xno" ; then
       if test "x${enable_sunaudio}" = "xno" ; then
          AC_MSG_NOTICE(OSS audio disabled by user)
       else
-         AC_CHECK_HEADER([sys/mixer.h], [AC_SUBST(HAS_SUNAUDIO, 1)])
+         AC_CHECK_HEADER([sys/mixer.h], [AC_SUBST(HAS_SUN_AUDIO, 1)])
       fi
 
       dnl #########################################################################
@@ -2170,8 +2174,56 @@ if test "x$enable_plugins" != "xno" ; then
       if test "x${enable_shmaudio}" = "xno" ; then
          AC_MSG_NOTICE(shm audio disabled by user)
       else
-         AC_CHECK_FUNC([sem_timedwait], [AC_SUBST(HAS_AUDIOSHM, 1)])
+         AC_CHECK_FUNC([sem_timedwait], [AC_SUBST(HAS_SHM_AUDIO, 1)])
       fi
+
+      dnl #########################################################################
+      dnl check for portaudio sound support
+
+      PORTAUDIO_DIR=
+      P_PORTAUDIO=
+      P_PORTMIXER=
+      AC_ARG_WITH([portaudio-dir], 
+                 AS_HELP_STRING([--with-portaudio-dir],[set directory for PortAudio]),
+                 [PORTAUDIO_DIR=$with_portaudio_dir])
+
+      old_CFLAGS=$CFLAGS
+      old_CPPFLAGS=$CPPFLAGS
+      if test "x$PORTAUDIO_DIR" != "x" ; then
+        CFLAGS="-I ${PORTAUDIO_DIR}/include ${CFLAGS}"
+        CPPFLAGS="-I ${PORTAUDIO_DIR}/include ${CPPFLAGS}"
+      fi
+
+      AC_ARG_ENABLE(portaudio, AS_HELP_STRING([--disable-portaudio],[disable PortAudio support]))
+      if test "x${enable_portaudio}" = "xno" ; then
+         AC_MSG_NOTICE(PortAudio disabled by user)
+      else
+         AC_CHECK_HEADER([portaudio.h], [
+            AC_SUBST(HAS_PORTAUDIO, 1)
+            AC_DEFINE(P_PORTAUDIO, 1)
+         ])
+         if test "x$HAS_PORTAUDIO" = "x1" ; then
+           AC_CHECK_HEADER([portmixer.h], [
+              AC_SUBST(HAS_PORTMIXER, 1)
+              AC_DEFINE(P_PORTMIXER, 1)
+           ])
+         fi
+      fi
+
+      if test "x$HAS_PORTAUDIO" = "x1" ; then
+        if test "x$PORTAUDIO_DIR" != "x" ; then
+          PTLIB_CFLAGS="-I${PORTAUDIO_DIR}/include ${PTLIB_CFLAGS}"
+          LDFLAGS="-L${PORTAUDIO_DIR}/lib ${LDFLAGS}"
+        fi
+        if test "x$HAS_PORTMIXER" = "x1" ; then
+          ENDLDLIBS="-lportmixer ${ENDLDLIBS}"
+        fi
+        ENDLDLIBS="-lportaudio ${ENDLDLIBS}"
+      fi
+
+      CFLAGS=$old_CFLAGS
+      CPPFLAGS=$old_CPPFLAGS
+
 
    fi # enable_audio
 
