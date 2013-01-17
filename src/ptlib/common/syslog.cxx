@@ -332,10 +332,11 @@ void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
 #include <syslog.h>
 
 PSystemLogToSyslog::PSystemLogToSyslog(const char * ident, int priority, int options, int facility)
-  : m_priority(priority)
+  : m_ident(ident)
+  , m_priority(priority)
 {
-  if (ident == NULL || *ident == '\0')
-    ident = (const char *)PProcess::Current().GetName();
+  if (m_ident.IsEmpty())
+    m_ident = PProcess::Current().GetName();
 
   if (options < 0)
     options = LOG_PID;
@@ -343,7 +344,7 @@ PSystemLogToSyslog::PSystemLogToSyslog(const char * ident, int priority, int opt
   if (facility < 0)
     facility = LOG_DAEMON;
 
-  openlog((char *)ident, options, facility);
+  openlog(m_ident, options, facility);
 }
 
 
