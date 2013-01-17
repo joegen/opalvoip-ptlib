@@ -130,11 +130,15 @@ $(OBJDIR)/sound_win32.o: $(PLATFORM_SRC_DIR)/sound_win32.cxx
 	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
+ifdef HAS_PORTAUDIO
+SOURCES += $(COMPONENT_SRC_DIR)/portaudio.cxx
+endif
+
 # Although not an external plugin, the MacOSX
 # CoreAudio sound driver still is in plugin form
 # and requires the PPluginManager
 ifeq ($(target_os),Darwin)
-SOURCES	+= $(PLATFORM_SRC_DIR)/maccoreaudio.cxx
+#SOURCES	+= $(PLATFORM_SRC_DIR)/maccoreaudio.cxx
 endif # Darwin
 
 endif  # HAS_AUDIO
