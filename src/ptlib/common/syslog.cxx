@@ -282,24 +282,22 @@ void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 ///////////////////////////////////////////////////////////////
 
 PSystemLogToNetwork::PSystemLogToNetwork(const PIPSocket::Address & address, WORD port, unsigned facility)
-  : m_host(address)
-  , m_port(port)
+  : m_server(address, port)
   , m_facility(facility)
 {
 }
 
 
-PSystemLogToNetwork::PSystemLogToNetwork(const PString & hostname, WORD port, unsigned facility)
-  : m_port(port)
-  , m_facility(facility)
+PSystemLogToNetwork::PSystemLogToNetwork(const PString & server, WORD port, unsigned facility)
+  : m_facility(facility)
 {
-  PIPSocket::GetHostAddress(hostname, m_host);
+  m_server.Parse(server, port, ':', "udp");
 }
 
 
 void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
 {
-  if (level > m_thresholdLevel || m_port == 0 || !m_host.IsValid())
+  if (level > m_thresholdLevel || !m_server.IsValid())
     return;
 
   static int PwlibLogToSeverity[PSystemLog::NumLogLevels] = {
@@ -312,7 +310,7 @@ void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
     << PIPSocket::GetHostName() << ' '
     << PProcess::Current().GetName() << ' '
     << msg;
-  m_socket.WriteTo((const char *)str, str.GetLength(), m_host, m_port);
+  m_socket.WriteTo((const char *)str, str.GetLength(), m_server);
 }
 
 
