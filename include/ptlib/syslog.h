@@ -279,14 +279,14 @@ class PSystemLogToNetwork : public PSystemLogTarget
   /**@name Construction */
   //@{
     PSystemLogToNetwork(
-      const PIPSocket::Address & address, ///< Host to send data to
-      WORD port = RFC3164_Port,           ///< Port for UDP packet
-      unsigned facility = 16              ///< facility code
+      const PIPSocket::Address & address, ///< Host to which data is sent.
+      WORD port = RFC3164_Port,           ///< Port to which data is sent.
+      unsigned facility = 16              ///< Facility code
     );
     PSystemLogToNetwork(
-      const PString & hostname, ///< Host to send data to
-      WORD port = RFC3164_Port,           ///< Port for UDP packet
-      unsigned facility = 16              ///< facility code
+      const PString & server,             ///< Host/port to which data is sent.
+      WORD port = RFC3164_Port,           ///< Default port to which data is sent.
+      unsigned facility = 16              ///< Facility code
     );
   //@}
 
@@ -301,10 +301,9 @@ class PSystemLogToNetwork : public PSystemLogTarget
   //@}
 
   protected:
-    PIPSocket::Address m_host;
-    WORD               m_port;
-    unsigned           m_facility;
-    PUDPSocket         m_socket;
+    PIPSocket::AddressAndPort m_server;
+    unsigned                  m_facility;
+    PUDPSocket                m_socket;
 };
 
 
