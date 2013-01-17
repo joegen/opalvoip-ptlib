@@ -27,6 +27,8 @@
 #include "audio.h"
 #include <ptclib/pwavfile.h>
 
+#include "portaudio.h"
+
 Audio::Audio()
   : PProcess("Roger Hardiman & Derek Smithies code factory", "audio",
              MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
@@ -46,6 +48,7 @@ void Audio::Main()
              "o-output:"
              "t-trace."
 #endif
+             "V:"
              "p:"
              "v."
              "w:"
@@ -59,6 +62,7 @@ void Audio::Main()
          << "     -s  dev   : use this device in full duplex test " << endl
          << "     -h        : get help on usage " << endl
          << "     -p file   : play audio from the file out the specified sound device" << endl
+         << "     -V n      : set volume" << endl
          << "     -v        : report program version " << endl
 	 << "     -w file   : write the captured audio to this file" << endl
 #if PTRACING
@@ -192,13 +196,20 @@ void Audio::Main()
       
       if (sound.Open(devName, PSoundChannel::Player, 1, 8000, 16)) {
 	  PTRACE(3, "Open sound device " << devName << " to put audio to");
-	  cerr << devName << " opened fine for playing to" << endl;
+	  cerr << devName << " opened file for playing to" << endl;
       } else {
 	  cerr << "Failed to open play device (" 
 	       << devName << ") for putting audio to speaker" << endl;
 	  return;
       }
-      sound.SetBuffers(480, 3);
+      sound.SetBuffers(480, 4);
+
+      if (args.HasOption('V')) {
+        int volume = args.GetOptionString('V').AsInteger();
+        if (!sound.SetVolume(volume)) {
+          cerr << "Failed to set volume" << endl;
+        }
+      }
       
       PINDEX readCounter = 0;
       while (audioFile.Read(buffer, 480)) {
@@ -383,13 +394,13 @@ void TestAudioRead::Main()
 	  cerr << "Cannot create the file " << captureFileName << " to write audio to" << endl;
   }
 
-  PTRACE(3, "TestAduioRead\tSound device is now open, start running");
+  PTRACE(3, "TestAudioRead\tSound device is now open, start running");
 
   while ((!controller.DoEndNow()) && keepGoing) {
     PBYTEArray *data = new PBYTEArray(480);
     sound.Read(data->GetPointer(), data->GetSize());
     iterations++;
-    PTRACE(3, "TestAudioRead\t send one frame to the queue" << data->GetSize());
+    PTRACE(3, "TestAudioRead\t send one frame to the queue " << data->GetSize());
     PTRACE(5, "Written the frame " << endl << (*data));
 
     if (audioFile.IsOpen())
