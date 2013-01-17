@@ -89,7 +89,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 2, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 3, false, true)
 {
 }
 
@@ -323,6 +323,8 @@ void MergeSym::Main()
   for (it = def_symbols.begin(); it != def_symbols.end(); ++it) {
     if (lib_symbols.find(it->first) != lib_symbols.end() && !it->second.IsExternal())
       removed--;
+    else
+      ordinals_used[it->second.GetOrdinal()] = false;
   }
 
   PINDEX added = 0;
@@ -338,6 +340,7 @@ void MergeSym::Main()
         }
       }
       it->second.SetOrdinal(next_ordinal);
+      ordinals_used[next_ordinal] = true;
       added++;
     }
   }
