@@ -263,6 +263,25 @@ PTHREAD_MUTEX_RECURSIVE_NP
     return m_stream;
   }
 
+  bool AdjustOptions(unsigned addedOptions, unsigned removedOptions)
+  {
+    unsigned oldOptions = m_options;
+    m_options |= addedOptions;
+    m_options &= ~removedOptions;
+    if (m_options == oldOptions)
+      return false;
+
+    bool syslogBit = (m_options&SystemLogStream) != 0;
+    bool syslogStrm = dynamic_cast<PSystemLog *>(m_stream) != NULL;
+    if (syslogBit != syslogStrm) {
+      SetStream(syslogBit ? new PSystemLog : &cerr);
+      PSystemLog::GetTarget().SetThresholdLevel(PSystemLog::LevelFromInt(m_thresholdLevel));
+    }
+
+    return true;
+  }
+
+
   bool HasOption(unsigned options) const { return (m_options & options) != 0; }
 
   void OpenTraceFile(const char * newFilename)
@@ -271,6 +290,8 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
     m_filename = newFilename == NULL || *newFilename == '\0' ? "stderr" : newFilename;
     PStringArray tokens = m_filename.Tokenise(',');
+
+    AdjustOptions(0, SystemLogStream);
 
     if (m_filename == "stderr")
       SetStream(&cerr);
@@ -285,7 +306,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
                                                    tokens.GetSize() > 2 ? tokens[2].AsInteger() : -1,
                                                    tokens.GetSize() > 3 ? tokens[3].AsInteger() : -1,
                                                    tokens.GetSize() > 4 ? tokens[4].AsInteger() : -1));
-      SetOptions(SystemLogStream);
+      AdjustOptions(SystemLogStream, 0);
     }
 #endif
     else if (tokens[0] *= "network") {
@@ -301,7 +322,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
         default :
           PSystemLog::SetTarget(new PSystemLogToNetwork(tokens[1], PSystemLogToNetwork::RFC3164_Port, tokens[2].AsInteger()));
       }
-      SetOptions(SystemLogStream);
+      AdjustOptions(SystemLogStream, 0);
     }
     else {
       PFilePath fn(m_filename);
@@ -471,20 +492,16 @@ void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const
 void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
-  unsigned oldOptions = info.m_options;
-  unsigned newOptions = (info.m_options |= options);
-
-  PTRACE_IF(1, oldOptions != newOptions, NULL, "PTLib", "Trace options set to " << newOptions);
-
-  if ((oldOptions&SystemLogStream) == 0 && (newOptions&SystemLogStream) != 0)
-    SetStream(new PSystemLog((PSystemLog::Level)info.m_thresholdLevel));
+  if (info.AdjustOptions(options, 0))
+    PTRACE(1, NULL, "PTLib", "Trace options set to " << info.m_options);
 }
 
 
 void PTrace::ClearOptions(unsigned options)
 {
-  unsigned newOptions = (PTraceInfo::Instance().m_options &= ~options);
-  PTRACE(1, NULL, "PTLib", "Trace options set to " << newOptions);
+  PTraceInfo & info = PTraceInfo::Instance();
+  if (info.AdjustOptions(0, options))
+    PTRACE(1, NULL, "PTLib", "Trace options set to " << info.m_options);
 }
 
 
