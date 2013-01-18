@@ -167,12 +167,15 @@ class PChannel : public PObject, public P_IOSTREAM {
      */
     virtual PString GetName() const { return channelName; }
 
+    typedef intptr_t OSHandle;
+
     /** Get the integer operating system handle for the channel.
 
        @return
        standard OS descriptor integer.
      */
-    int GetHandle() const;
+    virtual OSHandle GetHandle() const;
+    int GetIntHandle() const { return (int)GetHandle(); }
 
     /** Get the base channel of channel indirection using PIndirectChannel.
        This function returns the eventual base channel for reading of a series
@@ -732,8 +735,12 @@ class PChannel : public PObject, public P_IOSTREAM {
 
 
     // Member variables
-    /// The operating system file handle return by standard open() function.
-    int os_handle;
+    /* The operating system file handle return by standard open() function.
+       Note, while often just a small integer, sometimes this is a Windows
+       HANDLE type which can be 64 bits wide, so this must be big enough for
+       it, or very strange errors occur. */
+    OSHandle os_handle;
+
     /// The platform independant error code.
     Errors lastErrorCode[NumErrorGroups+1];
     /// The operating system error number (eg as returned by errno).

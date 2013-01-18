@@ -370,11 +370,11 @@ PBoolean PSocksSocket::Accept(PSocket & socket)
 }
 
 
-int PSocksSocket::TransferHandle(PSocksSocket & destination)
+PChannel::OSHandle PSocksSocket::TransferHandle(PSocksSocket & destination)
 {
   // This "transfers" the socket from one onstance to another.
 
-  int the_handle = os_handle;
+  OSHandle the_handle = os_handle;
   destination.SetReadTimeout(readTimeout);
   destination.SetWriteTimeout(writeTimeout);
 
