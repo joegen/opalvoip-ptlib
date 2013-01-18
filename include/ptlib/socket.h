@@ -496,7 +496,7 @@ class PSocket : public PChannel
 
 
     int os_close();
-    int os_socket(int af, int type, int proto);
+    OSHandle os_socket(int af, int type, int proto);
     PBoolean os_connect(
       struct sockaddr * sin,
       socklen_t size

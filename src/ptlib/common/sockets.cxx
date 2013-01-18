@@ -720,11 +720,11 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     struct hostent hostEnt;
     do {
       ::gethostbyaddr_r(addr.GetPointer(), addr.GetSize(),
-                        PF_INET, 
-                        &hostEnt,
-                        buffer, REENTRANT_BUFFER_LEN,
-                        &host_info,
-                        &localErrNo);
+                      PF_INET, 
+                      &hostEnt,
+                      buffer, REENTRANT_BUFFER_LEN,
+                      &host_info,
+                      &localErrNo);
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
 #elif (defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)) || defined(__NUCLEUS_PLUS__)
@@ -2264,14 +2264,14 @@ PObject * PTCPSocket::Clone() const
 // By default IPv4 only adresses
 PBoolean PTCPSocket::OpenSocket()
 {
-  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0));
+  return ConvertOSError((os_handle = os_socket(AF_INET, SOCK_STREAM, 0)) != SOCKET_ERROR ? 0 : -1);
 }
 
 
 // ipAdressFamily should be AF_INET or AF_INET6
 PBoolean PTCPSocket::OpenSocket(int ipAdressFamily) 
 {
-  return ConvertOSError(os_handle = os_socket(ipAdressFamily, SOCK_STREAM, 0));
+  return ConvertOSError((os_handle = os_socket(ipAdressFamily, SOCK_STREAM, 0)) != SOCKET_ERROR ? 0 : -1);
 }
 
 
@@ -2577,7 +2577,7 @@ PBoolean PUDPSocket::OpenSocket()
 
 PBoolean PUDPSocket::OpenSocket(int ipAdressFamily)
 {
-  return ConvertOSError(os_handle = os_socket(ipAdressFamily, SOCK_DGRAM, 0));
+  return ConvertOSError((os_handle = os_socket(ipAdressFamily, SOCK_DGRAM, 0)) != SOCKET_ERROR ? 0 : -1);
 }
 
 
