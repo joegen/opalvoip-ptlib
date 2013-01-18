@@ -297,7 +297,7 @@ void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)
   PWaitAndSignal m(accessMutex);
 
   if (mpInput != NULL) {
-    if ((GetGrabWidth() != _width) || (GetGrabHeight() != _height))
+    if ((GetGrabWidth() != (PINDEX)_width) || (GetGrabHeight() != (PINDEX)_height))
       mpInput->SetFrameSize((unsigned)_width, (unsigned)_height);
   } 
 }

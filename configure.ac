@@ -10,6 +10,11 @@ AC_CONFIG_AUX_DIR(make)
 
 m4_include(make/ptlib.m4)
 
+OBJ_ARCH=
+if test "x$PTLIBDIR" != "x" ; then
+  ac_default_prefix=$PTLIBDIR
+  OBJ_ARCH=1
+fi
 
 PKG_PROG_PKG_CONFIG()
 if test -z "$PKG_CONFIG" ; then
@@ -126,7 +131,7 @@ HAS_EXCEPTIONS=
 dnl ########################################################################
 dnl set the PTLIB directory to the current directory
 
-if test "x$PTLIBDIR" = "x"; then
+if test "x$OBJ_ARCH" = "x"; then
   PTLIBDIR=`pwd`
 fi
 
@@ -271,11 +276,10 @@ fi
 
 dnl ########################################################################
 dnl set libdir with target if using PTLIBDIR as install prefix
-if test "$prefix" = "$PTLIBDIR"; then
+if test "x$OBJ_ARCH" != "x" ; then
    includedir=$PTLIBDIR/include
    libdir=$PTLIBDIR/lib_$target
 fi
-
 
 dnl ########################################################################
 dnl get the gcc version
@@ -2216,7 +2220,13 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 
 dnl ########################################################################
 dnl output header file
-AC_CONFIG_HEADERS(include/ptbuildopts.h)
+
+cfg_prefix=$exec_prefix
+if test "$cfg_prefix" = "NONE" ; then
+  cfg_prefix=./include
+fi
+
+AC_CONFIG_HEADERS(${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in)
 
 AC_OUTPUT()
 

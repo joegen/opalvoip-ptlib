@@ -44,9 +44,11 @@
 #include <fcntl.h>
 #include <io.h>
 
+#ifdef _MSC_VER
 #pragma comment(lib,"advapi32.lib")
 #pragma comment(lib,"user32.lib")
 #pragma comment(lib,"comdlg32.lib")
+#endif
 
 #include <fstream>
 
@@ -215,7 +217,7 @@ class PSystemLogToEvent : public PSystemLogTarget
 
     char thrdbuf[16];
     if (threadName.IsEmpty())
-      sprintf(thrdbuf, "0x%08X", thread);
+      sprintf(thrdbuf, "0x%8p", (void *)thread);
     else {
       strncpy(thrdbuf, threadName, sizeof(thrdbuf)-1);
       thrdbuf[sizeof(thrdbuf)-1] = '\0';
@@ -223,7 +225,7 @@ class PSystemLogToEvent : public PSystemLogTarget
 
     char errbuf[25];
     if (level > PSystemLog::StdError && level < PSystemLog::Info && err != 0)
-      ::sprintf(errbuf, "Error code = %d", err);
+      ::sprintf(errbuf, "Error code = %lu", err);
     else
       errbuf[0] = '\0';
 
@@ -370,8 +372,9 @@ int PServiceProcess::InternalMain(void * arg)
     if (StartServiceCtrlDispatcher(dispatchTable))
       return GetTerminationValue();
 
-    if (GetLastError() != ERROR_FAILED_SERVICE_CONTROLLER_CONNECT)
+    if (GetLastError() != ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
       PSYSTEMLOG(Fatal, "StartServiceCtrlDispatcher failed.");
+    }
     ProcessCommand(ServiceCommandNames[SvcCmdDefault]);
     return 1;
   }
@@ -524,7 +527,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
 #endif
   AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&File");
 
   menu = CreatePopupMenu();
   AppendMenu(menu, MF_STRING, CopyMenuID, "&Copy");
@@ -532,7 +535,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_STRING, DeleteMenuID, "&Delete");
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
   AppendMenu(menu, MF_STRING, SelectAllMenuID, "&Select All");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Edit");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&Edit");
 
   menu = CreatePopupMenu();
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdInstall, "&Install");
@@ -542,7 +545,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStop, "S&top");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdPause, "&Pause");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdResume, "R&esume");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&Control");
 
   menu = CreatePopupMenu();
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Fatal,   "&Fatal Error");
@@ -552,7 +555,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug,   "&Debug");
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug2,  "Debug &2");
   AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug3,  "Debug &3");
-  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
+  AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&Log Level");
 
   if (CreateWindow(GetName(),
                    GetName(),
@@ -660,7 +663,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       break;
 
     case WM_ENDSESSION :
-      if (wParam && (debugMode || lParam != ENDSESSION_LOGOFF) && debugWindow != (HWND)-1)
+      if (wParam && (debugMode || lParam != (LPARAM)ENDSESSION_LOGOFF) && debugWindow != (HWND)-1)
         OnStop();
       return 0;
 
@@ -779,7 +782,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             fileDlgInfo.nMaxCustFilter = sizeof(customFilter);
             fileDlgInfo.nMaxFile = sizeof(fileBuffer);
             fileDlgInfo.Flags = OFN_ENABLEHOOK|OFN_HIDEREADONLY|OFN_NOVALIDATE|OFN_EXPLORER|OFN_CREATEPROMPT;
-            fileDlgInfo.lCustData = (DWORD)this;
+            //fileDlgInfo.lCustData = (DWORD)this;
             if (GetSaveFileName(&fileDlgInfo)) {
               PFilePath newLogFile = fileBuffer;
               if (!PIsDescendant(&PSystemLog::GetTarget(), PSystemLogToFile) ||
@@ -913,6 +916,8 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
   return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
+static char emptyString[] = "";
+static char crlfString[] = "\r\n";
 
 void PServiceProcess::DebugOutput(const char * out)
 {
@@ -942,7 +947,7 @@ void PServiceProcess::DebugOutput(const char * out)
     SendMessage(debugWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&finish);
     SendMessage(debugWindow, EM_SETSEL, 0,
                 SendMessage(debugWindow, EM_LINEINDEX, 1, 0));
-    SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)"");
+    SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)emptyString);
     SendMessage(debugWindow, EM_SETSEL, start, finish);
     SendMessage(debugWindow, WM_SETREDRAW, true, 0);
   }
@@ -955,14 +960,14 @@ void PServiceProcess::DebugOutput(const char * out)
       prev = lf+1;
     else {
       *lf++ = '\0';
-      SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)out);
-      SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)"\r\n");
+      SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)out);
+      SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)crlfString);
       out = (const char *)lf;
       prev = lf;
     }
   }
   if (*out != '\0')
-    SendMessage(debugWindow, EM_REPLACESEL, false, (DWORD)out);
+    SendMessage(debugWindow, EM_REPLACESEL, false, (LPARAM)out);
 }
 
 
@@ -1465,7 +1470,6 @@ bool NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
   return ok;
 }
 
-
 bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
 {
   if (!Open(svc))
@@ -1473,7 +1477,7 @@ bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
 
   SC_ACTION scAction[4];
   PINDEX count;
-  for (count = 0; count < sizeof(scAction)/sizeof(scAction[0])-1; ++count) {
+  for (count = 0; count < (PINDEX)(sizeof(scAction)/sizeof(scAction[0])-1); ++count) {
     scAction[count].Type = action;
     scAction[count].Delay = 1000;
   }
@@ -1482,8 +1486,8 @@ bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
 
   SERVICE_FAILURE_ACTIONS sfActions;
   sfActions.dwResetPeriod = 300; // 5 minutes
-  sfActions.lpRebootMsg = "";
-  sfActions.lpCommand = "";
+  sfActions.lpRebootMsg = emptyString;
+  sfActions.lpCommand = emptyString;
   sfActions.cActions = ++count;
   sfActions.lpsaActions = scAction;
 

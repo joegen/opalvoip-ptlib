@@ -61,8 +61,7 @@ public:
 
   DWORD IcmpSendEcho(
     HANDLE   handle,           /* handle returned from IcmpCreateFile() */
-    u_long   destAddr,         /* destination IP address (in network order)
-/
+    u_long   destAddr,         /* destination IP address (in network order) */
     void   * sendBuffer,       /* pointer to buffer to send */
     WORD     sendLength,       /* length of data in buffer */
     IPINFO * requestOptions,   /* see structure definition above */

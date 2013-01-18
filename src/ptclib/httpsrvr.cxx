@@ -549,10 +549,10 @@ PBoolean PHTTPServer::StartResponse(StatusCode code,
     }
     else {
       // v1.1 or later, see if will use chunked output
-      chunked = bodySize == P_MAX_INDEX;
+      chunked = (PINDEX)bodySize == P_MAX_INDEX;
       if (chunked)
         headers.SetAt(TransferEncodingTag(), ChunkedTag());
-      else if (bodySize >= 0 && bodySize < P_MAX_INDEX)
+      else if ((bodySize >= 0) && ((PINDEX)bodySize < P_MAX_INDEX))
         headers.SetAt(ContentLengthTag(), bodySize);
     }
   }

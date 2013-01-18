@@ -463,7 +463,7 @@ bool PTones::PureTone(unsigned frequency1, unsigned milliseconds, unsigned volum
     short * tone = (short *)tone_2100;
     unsigned int toneLen  = sizeof(tone_2100) / 2;
     PINDEX length;
-    for (length = 0; length < samples; ++length) {
+    for (length = 0; length < (PINDEX)samples; ++length) {
       PINDEX length = GetSize();
       SetSize(length + 1);
       short sample = tone[length % toneLen];
