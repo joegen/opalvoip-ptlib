@@ -35,6 +35,10 @@
 
 #if P_DIRECTSOUND
 
+#if _MSC_VER >= 1700
+#include "initguid.h"
+#endif
+
 #define PTraceModule() "dsound"
 
 #include <ptlib/pprocess.h>
@@ -47,9 +51,11 @@
 #include <tchar.h>
 #include <math.h>
 
+
 #if _MSC_VER >= 1700
-#include "initguid.h"
+  #pragma comment(lib, "dxguid.lib")
 #endif
+
 
 #include <ks.h>
 #include <dsconf.h>
