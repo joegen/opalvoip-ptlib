@@ -2272,7 +2272,7 @@ PObject * PTCPSocket::Clone() const
 // By default IPv4 only adresses
 PBoolean PTCPSocket::OpenSocket()
 {
-  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0));
+  return ConvertOSError(os_handle = (P_INT_PTR)os_socket(AF_INET, SOCK_STREAM, 0));
 }
 
 

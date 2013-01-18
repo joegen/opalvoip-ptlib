@@ -401,7 +401,7 @@ class PSoundChannel : public PChannel
        @return
        integer value of the handle.
      */
-    virtual int GetHandle() const;
+    virtual P_INT_PTR GetHandle() const;
 
     /// Get the name of the open channel
     virtual PString GetName() const;
