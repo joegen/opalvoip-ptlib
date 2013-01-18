@@ -245,7 +245,7 @@ PBoolean PSoundChannel::Close()
 }
 
 
-PChannel::OSHandle PSoundChannel::GetHandle() const
+int PSoundChannel::GetHandle() const
 {
   PReadWaitAndSignal mutex(m_baseMutex);
   return m_baseChannel == NULL ? -1 : m_baseChannel->PChannel::GetHandle();

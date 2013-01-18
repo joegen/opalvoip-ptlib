@@ -232,7 +232,7 @@ int PSocket::os_close()
 }
 
 
-PChannel::OSHandle PSocket::os_socket(int af, int type, int proto)
+int PSocket::os_socket(int af, int type, int proto)
 {
 #if P_GQOS
   if (WinSock.m_useGQOS) {
@@ -255,7 +255,7 @@ PChannel::OSHandle PSocket::os_socket(int af, int type, int proto)
   }
 #endif // P_GQOS
 
-  return WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
+  return (int)WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
 }
 
 
@@ -359,7 +359,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
         return ConvertOSError(-1);
     }
   }
-  return ConvertOSError((os_handle = ::accept(listener.GetHandle(), addr, size)) != SOCKET_ERROR ? 0 : -1);
+  return ConvertOSError(os_handle = (int)::accept(listener.GetHandle(), addr, size));
 }
 
 
@@ -483,7 +483,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
   if (retval > 0) {
     sock = read.begin();
     while (sock != read.end()) {
-      OSHandle h = sock->GetHandle();
+      int h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
       if (readfds.IsPresent(h))
@@ -493,7 +493,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     }
     sock = write.begin();
     while ( sock != write.end()) {
-      OSHandle h = sock->GetHandle();
+      int h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
       if (writefds.IsPresent(h))
@@ -503,7 +503,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     }
     sock = except.begin();
     while ( sock != except.end()) {
-      OSHandle h = sock->GetHandle();
+      int h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
       if (exceptfds.IsPresent(h))

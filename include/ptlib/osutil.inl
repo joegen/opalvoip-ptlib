@@ -246,7 +246,7 @@ PINLINE void PChannel::SetWriteTimeout(const PTimeInterval & time)
 PINLINE PTimeInterval PChannel::GetWriteTimeout() const
   { return writeTimeout; }
 
-PINLINE PChannel::OSHandle PChannel::GetHandle() const
+PINLINE int PChannel::GetHandle() const
   { return os_handle; }
 
 PINLINE PChannel::Errors PChannel::GetErrorCode(ErrorGroup group) const
@@ -370,7 +370,7 @@ PINLINE PString PFile::GetName() const
   { return path; }
 
 PINLINE off_t PFile::GetPosition() const
-  { return _lseek(GetIntHandle(), 0, SEEK_CUR); }
+  { return _lseek(GetHandle(), 0, SEEK_CUR); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
