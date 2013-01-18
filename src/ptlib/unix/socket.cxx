@@ -179,7 +179,7 @@ static int SetNonBlocking(int fd)
 }
 
 
-int PSocket::os_socket(int af, int type, int protocol)
+PChannel::OSHandle PSocket::os_socket(int af, int type, int protocol)
 {
   int fd = ::socket(af, type, protocol);
 
