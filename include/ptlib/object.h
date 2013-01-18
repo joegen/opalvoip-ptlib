@@ -150,7 +150,7 @@ using namespace std; // Not a good practice (name space polution), but will take
 #endif
 
 #if P_USE_INLINES
-#define PINLINE inline
+#define PINLINE __inline
 #else
 #define PINLINE
 #endif
@@ -1968,6 +1968,7 @@ typedef PIntSameOrder<long double> PFloat80b;
 #endif
 #endif
 
+typedef intptr_t P_INT_PTR;
 
 #if defined(_MSC_VER)
 #define P_ALIGN_FIELD(f,a) __declspec(align(a)) f

@@ -44,7 +44,9 @@
 
 #if defined(_WIN32) && !defined(_WIN32_WCE)
 #include <shellapi.h>
+#ifdef _MSC_VER
 #pragma comment(lib,"shell32.lib")
+#endif
 #endif
 
 

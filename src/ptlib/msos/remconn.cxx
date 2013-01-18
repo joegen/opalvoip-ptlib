@@ -86,18 +86,18 @@ PRASDLL::PRASDLL()
   : PDynaLink("RASAPI16.DLL")
 #endif
 {
-  if (!GetFunction("RasDialA", (Function &)Dial) ||
-      !GetFunction("RasHangUpA", (Function &)HangUp) ||
+  if (!GetFunction("RasDialA",             (Function &)Dial) ||
+      !GetFunction("RasHangUpA",           (Function &)HangUp) ||
       !GetFunction("RasGetConnectStatusA", (Function &)GetConnectStatus) ||
-      !GetFunction("RasEnumConnectionsA", (Function &)EnumConnections) ||
-      !GetFunction("RasEnumEntriesA", (Function &)EnumEntries))
+      !GetFunction("RasEnumConnectionsA",  (Function &)EnumConnections) ||
+      !GetFunction("RasEnumEntriesA",      (Function &)EnumEntries))
     Close();
 
   GetFunction("RasGetEntryPropertiesA", (Function &)GetEntryProperties);
   GetFunction("RasSetEntryPropertiesA", (Function &)SetEntryProperties);
-  GetFunction("RasDeleteEntryA", (Function &)DeleteEntry);
-  GetFunction("RasValidateEntryNameA", (Function &)ValidateEntryName);
-  GetFunction("RasGetProjectionInfoA", (Function &)GetProjectionInfo);
+  GetFunction("RasDeleteEntryA",        (Function &)DeleteEntry);
+  GetFunction("RasValidateEntryNameA",  (Function &)ValidateEntryName);
+  GetFunction("RasGetProjectionInfoA",  (Function &)GetProjectionInfo);
 }
 
 
@@ -232,11 +232,11 @@ PBoolean PRemoteConnection::Open(PBoolean existing)
   params.dwSize = isVer401 ? sizeof(params) : SizeWin400_RASDIALPARAMS;
 
   if (remoteName[0] != '.') {
-    PAssert(remoteName.GetLength() < sizeof(params.szEntryName)-1, PInvalidParameter);
+    PAssert(remoteName.GetLength() < (PINDEX)sizeof(params.szEntryName)-1, PInvalidParameter);
     strcpy(params.szEntryName, remoteName);
   }
   else {
-    PAssert(remoteName.GetLength() < sizeof(params.szPhoneNumber), PInvalidParameter);
+    PAssert(remoteName.GetLength() < (PINDEX)sizeof(params.szPhoneNumber), PInvalidParameter);
     strcpy(params.szPhoneNumber, remoteName(1, P_MAX_INDEX));
   }
   strcpy(params.szUserName, userName);

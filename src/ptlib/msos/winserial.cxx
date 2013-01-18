@@ -193,6 +193,8 @@ PBoolean PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
     case SpaceParity :
       deviceControlBlock.Parity = SPACEPARITY;
       break;
+    case DefaultParity:
+      break;
   }
 
   switch (stop) {
@@ -217,6 +219,8 @@ PBoolean PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       deviceControlBlock.fRtsControl = RTS_CONTROL_HANDSHAKE;
       deviceControlBlock.fInX = false;
       break;
+    case DefaultFlowControl:
+      break;
   }
 
   switch (outputFlow) {
@@ -234,6 +238,8 @@ PBoolean PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       deviceControlBlock.fOutxCtsFlow = true;
       deviceControlBlock.fOutxDsrFlow = false;
       deviceControlBlock.fOutX = false;
+      break;
+    case DefaultFlowControl:
       break;
   }
 

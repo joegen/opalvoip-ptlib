@@ -264,7 +264,7 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
   PString value = strings[1];
   for (pos = 0; pos < value.GetLength(); pos++) {
     if (value[pos] == '\\' && pos < value.GetLength()-1) {
-      int var = value[pos+1]-'1'+1;   
+      PINDEX var = value[pos+1]-'1'+1;   
       PString str;
       if (var >= 0 && var < starts.GetSize() && var < ends.GetSize())
         str = orig(starts[var], ends[var]);
