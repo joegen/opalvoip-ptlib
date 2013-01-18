@@ -492,16 +492,18 @@ void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const
 void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
-  if (info.AdjustOptions(options, 0))
+  if (info.AdjustOptions(options, 0)) {
     PTRACE(1, NULL, "PTLib", "Trace options set to " << info.m_options);
+  }
 }
 
 
 void PTrace::ClearOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
-  if (info.AdjustOptions(0, options))
+  if (info.AdjustOptions(0, options)) {
     PTRACE(1, NULL, "PTLib", "Trace options set to " << info.m_options);
+  }
 }
 
 
