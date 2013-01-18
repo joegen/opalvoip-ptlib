@@ -1978,6 +1978,7 @@ typedef intptr_t P_INT_PTR;
 #define P_PACK_FIELD(f)    f __attribute__ ((packed))
 #endif
 
+typedef intptr_t P_INT_PTR;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Miscellaneous
