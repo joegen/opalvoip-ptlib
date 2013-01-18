@@ -149,7 +149,7 @@ class PPluginModuleManager : public PObject
     void LoadPluginDirectory(const PDirectory &directory)
     { if (pluginMgr != NULL) pluginMgr->LoadPluginDirectory(directory); }
 
-    virtual void OnLoadPlugin(PDynaLink & /*dll*/, INT /*code*/)
+    virtual void OnLoadPlugin(PDynaLink & /*dll*/, P_INT_PTR /*code*/)
     { }
 
     virtual PluginListType GetPluginList() const

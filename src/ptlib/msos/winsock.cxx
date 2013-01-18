@@ -362,7 +362,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
         return ConvertOSError(-1);
     }
   }
-  return ConvertOSError(os_handle = (int)::accept(listener.GetHandle(), addr, size));
+  return ConvertOSError(os_handle = ::accept(listener.GetHandle(), addr, size));
 }
 
 
@@ -486,7 +486,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
   if (retval > 0) {
     sock = read.begin();
     while (sock != read.end()) {
-      int h = sock->GetHandle();
+      P_INT_PTR h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
       if (readfds.IsPresent(h))
@@ -496,7 +496,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     }
     sock = write.begin();
     while ( sock != write.end()) {
-      int h = sock->GetHandle();
+      P_INT_PTR h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
       if (writefds.IsPresent(h))
@@ -506,7 +506,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     }
     sock = except.begin();
     while ( sock != except.end()) {
-      int h = sock->GetHandle();
+      P_INT_PTR h = sock->GetHandle();
       if (h < 0)
         return Interrupted;
       if (exceptfds.IsPresent(h))
@@ -525,7 +525,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
 }
 
 
-PBoolean PSocket::ConvertOSError(int status, ErrorGroup group)
+PBoolean PSocket::ConvertOSError(P_INT_PTR status, ErrorGroup group)
 {
   Errors lastError;
   int osError;
@@ -535,7 +535,7 @@ PBoolean PSocket::ConvertOSError(int status, ErrorGroup group)
 }
 
 
-PBoolean PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
+PBoolean PSocket::ConvertOSError(P_INT_PTR status, Errors & lastError, int & osError)
 {
   SetLastError(WSAGetLastError());
   return PChannel::ConvertOSError(status, lastError, osError);
