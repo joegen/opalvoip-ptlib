@@ -51,36 +51,23 @@ class PSystemLog : public PObject, public P_IOSTREAM
   /**@name Construction */
   //@{
     /// define the different error log levels
-    enum Level {
-      /// Log from standard error stream
-      StdError = -1,
-      /// Log a fatal error
-      Fatal,   
-      /// Log a non-fatal error
-      Error,    
-      /// Log a warning
-      Warning,  
-      /// Log general information
-      Info,     
-      /// Log debugging information
-      Debug,    
-      /// Log more debugging information
-      Debug2,   
-      /// Log even more debugging information
-      Debug3,   
-      /// Log a lot of debugging information
-      Debug4,   
-      /// Log a real lot of debugging information
-      Debug5,   
-      /// Log a bucket load of debugging information
-      Debug6,   
-
-      NumLogLevels
-    };
+    P_DECLARE_ENUM_EX(Level,NumLogLevels,
+      StdError,-1,  ///< Log from standard error stream
+      Fatal,        ///< Log a fatal error
+      Error,        ///< Log a non-fatal error
+      Warning,      ///< Log a warning
+      Info,         ///< Log general information
+      Debug,        ///< Log debugging information
+      Debug2,       ///< Log more debugging information
+      Debug3,       ///< Log even more debugging information
+      Debug4,       ///< Log a lot of debugging information
+      Debug5,       ///< Log a real lot of debugging information
+      Debug6        ///< Log a bucket load of debugging information
+    );
 
     /// Create a system log stream
     PSystemLog(
-     Level level   ///< only messages at this level or higher will be logged
+     Level level = NumLogLevels  ///< only messages at this level or higher (smaller) will be logged
     );
 
     /// Destroy the string stream, deleting the stream buffer
@@ -279,14 +266,14 @@ class PSystemLogToNetwork : public PSystemLogTarget
   /**@name Construction */
   //@{
     PSystemLogToNetwork(
-      const PIPSocket::Address & address, ///< Host to send data to
-      WORD port = RFC3164_Port,           ///< Port for UDP packet
-      unsigned facility = 16              ///< facility code
+      const PIPSocket::Address & address, ///< Host to which data is sent.
+      WORD port = RFC3164_Port,           ///< Port to which data is sent.
+      unsigned facility = 16              ///< Facility code
     );
     PSystemLogToNetwork(
-      const PString & hostname, ///< Host to send data to
-      WORD port = RFC3164_Port,           ///< Port for UDP packet
-      unsigned facility = 16              ///< facility code
+      const PString & server,             ///< Host/port to which data is sent.
+      WORD port = RFC3164_Port,           ///< Default port to which data is sent.
+      unsigned facility = 16              ///< Facility code
     );
   //@}
 
@@ -301,10 +288,9 @@ class PSystemLogToNetwork : public PSystemLogTarget
   //@}
 
   protected:
-    PIPSocket::Address m_host;
-    WORD               m_port;
-    unsigned           m_facility;
-    PUDPSocket         m_socket;
+    PIPSocket::AddressAndPort m_server;
+    unsigned                  m_facility;
+    PUDPSocket                m_socket;
 };
 
 
@@ -334,7 +320,14 @@ class PSystemLogToSyslog : public PSystemLogTarget
   public:
   /**@name Construction */
   //@{
-    PSystemLogToSyslog();
+    PSystemLogToSyslog(
+      const char * ident = NULL,  ///< Identification for openlog(), default to PProcess::GetName()
+      int priority = -1,          /**< Priority for syslog() call, if < 0, one derived from
+                                       PSystemLog::GetThresholdLevel() is used. */
+      int options = -1,           ///< Option flags for openlog(), -1 is use default (LOG_PID)
+      int facility = -1           ///< Facility codes for openlog(), -1 is use default (LOG_DAEMON)
+    );
+
     ~PSystemLogToSyslog();
   //@}
 
@@ -347,6 +340,10 @@ class PSystemLogToSyslog : public PSystemLogTarget
       const char * msg          ///< Message to be logged
     );
   //@}
+
+  protected:
+    PString m_ident;
+    int     m_priority;
 };
 #endif
 
