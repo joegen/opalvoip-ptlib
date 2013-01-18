@@ -16,7 +16,8 @@ follows:
 
    ./configre --with-portaudio-dir=/opt/portaudio
 
-This script has been verified on OSX Mountain Lion
+This script has been verified on OSX Mountain Lion and
+Ubuntu 12.01 for x64
 
     Craig (craigs@postincrement.com)
 
@@ -44,8 +45,7 @@ cd ..
 
 cd portmixer
 make clean
-echo ./configure --with-pa-include=${PREFIX}/include/ --prefix=${PREFIX}
-./configure --with-pa-include=../portaudio/include/ --prefix=${PREFIX}
+( export CFLAGS=-fPIC ; ./configure --with-pa-include=../portaudio/include/ --prefix=${PREFIX} )
 make
 sudo cp libportmixer.a ${PREFIX}/lib
 sudo cp include/portmixer.h ${PREFIX}/include
