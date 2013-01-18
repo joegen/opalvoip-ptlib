@@ -1113,7 +1113,7 @@ PBoolean PVXMLSession::Close()
 }
 
 
-void PVXMLSession::VXMLExecute(PThread &, INT)
+void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
 {
   PTRACE(4, "VXML\tExecution thread started");
 
@@ -2282,7 +2282,7 @@ void PVXMLGrammar::Start()
 }
 
 
-void PVXMLGrammar::OnTimeout(PTimer &, INT)
+void PVXMLGrammar::OnTimeout(PTimer &, P_INT_PTR)
 {
   PTRACE(3, "VXML\tTimeout for grammar " << *this);
   m_mutex.Wait();

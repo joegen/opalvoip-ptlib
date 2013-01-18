@@ -887,7 +887,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
 
 PBoolean PFile::SetLength(off_t len)
 {
-  return ConvertOSError(_chsize(GetHandle(), len));
+  return ConvertOSError(_chsize(GetOSHandleAsInt(), len));
 }
 
 

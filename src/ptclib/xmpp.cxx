@@ -328,12 +328,12 @@ PBoolean XMPP::BaseStreamHandler::Stop(const PString& _error)
 }
 
 
-void XMPP::BaseStreamHandler::OnOpen(XMPP::Stream&, INT)
+void XMPP::BaseStreamHandler::OnOpen(XMPP::Stream&, P_INT_PTR)
 {
 }
 
 
-void XMPP::BaseStreamHandler::OnClose(XMPP::Stream&, INT)
+void XMPP::BaseStreamHandler::OnClose(XMPP::Stream&, P_INT_PTR)
 {
 }
 

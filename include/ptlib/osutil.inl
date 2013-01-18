@@ -370,7 +370,7 @@ PINLINE PString PFile::GetName() const
   { return path; }
 
 PINLINE off_t PFile::GetPosition() const
-  { return _lseek(GetHandle(), 0, SEEK_CUR); }
+  { return _lseek(GetOSHandleAsInt(), 0, SEEK_CUR); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
