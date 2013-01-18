@@ -653,7 +653,7 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
 }
 
 
-PBoolean PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
+PBoolean PChannel::ConvertOSError(P_INT_PTR status, Errors & lastError, int & osError)
 {
   switch (status) {
     case -1 :
