@@ -45,8 +45,8 @@
   protected:
     virtual HANDLE GetAsyncReadHandle() const;
     virtual HANDLE GetAsyncWriteHandle() const;
-    PBoolean ConvertOSError(int status, ErrorGroup group = LastGeneralError);
-    static PBoolean ConvertOSError(int error, Errors & lastError, int & osError);
+    PBoolean ConvertOSError(P_INT_PTR status, ErrorGroup group = LastGeneralError);
+    static PBoolean ConvertOSError(P_INT_PTR error, Errors & lastError, int & osError);
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -1491,7 +1491,7 @@ PBoolean PSSLChannel::Close()
 }
 
 
-PBoolean PSSLChannel::ConvertOSError(int error, ErrorGroup group)
+PBoolean PSSLChannel::ConvertOSError(P_INT_PTR error, ErrorGroup group)
 {
   Errors lastError = NoError;
   DWORD osError = 0;
