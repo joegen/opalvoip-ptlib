@@ -204,7 +204,7 @@ class PSocksSocket : public PTCPSocket, public PSocksProtocol
 
   protected:
     virtual void SetErrorCodes(PChannel::Errors errCode, int osErr);
-    OSHandle TransferHandle(PSocksSocket & destination);
+    int TransferHandle(PSocksSocket & destination);
 
   private:
     virtual PBoolean Connect(WORD localPort, const Address & addr);

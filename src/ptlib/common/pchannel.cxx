@@ -173,8 +173,8 @@ PChannel::~PChannel()
 PObject::Comparison PChannel::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PChannel), PInvalidCast);
-  OSHandle h1 = GetHandle();
-  OSHandle h2 = ((const PChannel&)obj).GetHandle();
+  int h1 = GetHandle();
+  int h2 = ((const PChannel&)obj).GetHandle();
   if (h1 < h2)
     return LessThan;
   if (h1 > h2)
@@ -908,7 +908,7 @@ PBoolean PFile::Close()
 #ifdef WOT_NO_FILESYSTEM
   PBoolean ok = true;
 #else
-  PBoolean ok = ConvertOSError(_close(GetIntHandle()));
+  PBoolean ok = ConvertOSError(_close(os_handle));
 #endif
 
   os_handle = -1;
@@ -929,7 +929,7 @@ PBoolean PFile::Read(void * buffer, PINDEX amount)
 #ifdef WOT_NO_FILESYSTEM
   lastReadCount = 0;
 #else
-  lastReadCount = _read(GetIntHandle(), buffer, amount);
+  lastReadCount = _read(GetHandle(), buffer, amount);
 #endif
   return ConvertOSError(lastReadCount, LastReadError) && lastReadCount > 0;
 }
@@ -944,7 +944,7 @@ PBoolean PFile::Write(const void * buffer, PINDEX amount)
 #ifdef WOT_NO_FILESYSTEM
   lastWriteCount = amount;
 #else
-  lastWriteCount = _write(GetIntHandle(), buffer, amount);
+  lastWriteCount = _write(GetHandle(), buffer, amount);
 #endif
   return ConvertOSError(lastWriteCount, LastWriteError) && lastWriteCount >= amount;
 }
@@ -966,9 +966,9 @@ off_t PFile::GetLength() const
 #ifdef WOT_NO_FILESYSTEM
   return 0;
 #else
-  off_t pos = _lseek(GetIntHandle(), 0, SEEK_CUR);
-  off_t len = _lseek(GetIntHandle(), 0, SEEK_END);
-  PAssertOS(_lseek(GetIntHandle(), pos, SEEK_SET) != (off_t)-1);
+  off_t pos = _lseek(GetHandle(), 0, SEEK_CUR);
+  off_t len = _lseek(GetHandle(), 0, SEEK_END);
+  PAssertOS(_lseek(GetHandle(), pos, SEEK_SET) != (off_t)-1);
   return len;
 #endif
 }
@@ -992,7 +992,7 @@ PBoolean PFile::SetPosition(off_t pos, FilePositionOrigin origin)
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-  return _lseek(GetIntHandle(), pos, origin) != (off_t)-1;
+  return _lseek(GetHandle(), pos, origin) != (off_t)-1;
 #endif
 }
 
