@@ -418,8 +418,9 @@ bool PSoundChannelPortAudio::Write(const void * data, PINDEX size)
 #endif
 
   int err = Pa_WriteStream(m_stream, data, size / m_bytesPerSample);
-  if (err != paNoError)
+  if (err != paNoError) {
     PTRACE(1, "PortAudio\tWrite error " << Pa_GetErrorText(err));
+  }
 
   return err == paNoError;
 }
@@ -453,8 +454,9 @@ bool PSoundChannelPortAudio::Read(void * data, PINDEX size)
   lastReadCount = size;
 
   int err = Pa_ReadStream(m_stream, data, size / m_bytesPerSample);
-  if (err != paNoError)
+  if (err != paNoError) {
     PTRACE(1, "PortAudio\tRead error " << Pa_GetErrorText(err));
+  }
 
   if (m_mute || (m_volume == 0))
     memset(data, 0, size);
