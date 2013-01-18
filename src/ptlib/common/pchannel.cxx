@@ -508,7 +508,7 @@ PString PChannel::GetErrorText(ErrorGroup group) const
 }
 
 
-PBoolean PChannel::ConvertOSError(int status, ErrorGroup group)
+PBoolean PChannel::ConvertOSError(P_INT_PTR status, ErrorGroup group)
 {
   Errors lastError;
   int osError;

@@ -208,7 +208,7 @@ class PSoundChannelWin32: public PSoundChannel
     PMutex           bufferMutex;
 
   private:
-    PBoolean OpenDevice(int id);
+    PBoolean OpenDevice(P_INT_PTR id);
     PBoolean GetDeviceID(const PString & device, Directions dir, unsigned& id);
 };
 
