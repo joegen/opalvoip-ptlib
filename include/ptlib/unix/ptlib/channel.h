@@ -41,6 +41,7 @@
 
   protected:
     PBoolean PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout);
+    P_INT_PTR GetOSHandleAsInt() const { return os_handle; }
     int  PXClose();
 
     PMutex      px_threadMutex;
