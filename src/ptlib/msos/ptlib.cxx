@@ -72,7 +72,7 @@ ostream & operator<<(ostream & s, PUInt64 v)
 }
 
 
-const int MaxDigits = (64+2)/3+1; // Maximum is 22 digit octal number, plus sign
+const PINDEX MaxDigits = (64+2)/3+1; // Maximum is 22 digit octal number, plus sign
 
 static void GetDigits(PBoolean sign, istream & s, char * buffer)
 {
@@ -887,7 +887,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
 
 PBoolean PFile::SetLength(off_t len)
 {
-  return ConvertOSError(_chsize(GetHandle(), len));
+  return ConvertOSError(_chsize(GetIntHandle(), len));
 }
 
 
