@@ -908,7 +908,7 @@ PBoolean PFile::Close()
 #ifdef WOT_NO_FILESYSTEM
   PBoolean ok = true;
 #else
-  PBoolean ok = ConvertOSError(_close(os_handle)) != 0;
+  PBoolean ok = ConvertOSError(_close(GetOSHandleAsInt()));
 #endif
 
   os_handle = -1;
@@ -929,7 +929,7 @@ PBoolean PFile::Read(void * buffer, PINDEX amount)
 #ifdef WOT_NO_FILESYSTEM
   lastReadCount = 0;
 #else
-  lastReadCount = _read(GetHandle(), buffer, amount);
+  lastReadCount = _read(GetOSHandleAsInt(), buffer, amount);
 #endif
   return ConvertOSError(lastReadCount, LastReadError) && lastReadCount > 0;
 }
@@ -944,7 +944,7 @@ PBoolean PFile::Write(const void * buffer, PINDEX amount)
 #ifdef WOT_NO_FILESYSTEM
   lastWriteCount = amount;
 #else
-  lastWriteCount = _write(GetHandle(), buffer, amount);
+  lastWriteCount = _write(GetOSHandleAsInt(), buffer, amount);
 #endif
   return ConvertOSError(lastWriteCount, LastWriteError) && lastWriteCount >= amount;
 }
@@ -966,9 +966,9 @@ off_t PFile::GetLength() const
 #ifdef WOT_NO_FILESYSTEM
   return 0;
 #else
-  off_t pos = _lseek(GetHandle(), 0, SEEK_CUR);
-  off_t len = _lseek(GetHandle(), 0, SEEK_END);
-  PAssertOS(_lseek(GetHandle(), pos, SEEK_SET) != (off_t)-1);
+  off_t pos = _lseek(GetOSHandleAsInt(), 0, SEEK_CUR);
+  off_t len = _lseek(GetOSHandleAsInt(), 0, SEEK_END);
+  PAssertOS(_lseek(GetOSHandleAsInt(), pos, SEEK_SET) != (off_t)-1);
   return len;
 #endif
 }
@@ -992,7 +992,7 @@ PBoolean PFile::SetPosition(off_t pos, FilePositionOrigin origin)
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-  return _lseek(GetHandle(), pos, origin) != (off_t)-1;
+  return _lseek(GetOSHandleAsInt(), pos, origin) != (off_t)-1;
 #endif
 }
 

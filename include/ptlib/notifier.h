@@ -88,7 +88,7 @@ class PNotifierFunctionTemplate : public PSmartObject
     void * m_target;
 };
 
-typedef PNotifierFunctionTemplate<INT> PNotifierFunction;
+typedef PNotifierFunctionTemplate<P_INT_PTR> PNotifierFunction;
 
 
 /**
@@ -144,9 +144,9 @@ class PNotifierTemplate : public PSmartPointer
 };
 
 /** \class PNotifier
-    Class specialisation for PNotifierTemplate<INT>
+    Class specialisation for PNotifierTemplate<P_INT_PTR>
   */
-typedef PNotifierTemplate<INT> PNotifier;
+typedef PNotifierTemplate<P_INT_PTR> PNotifier;
 
 
 #define PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, BaseClass) \
@@ -189,7 +189,7 @@ typedef PNotifierTemplate<INT> PNotifier;
 
   This macro will also declare the member function itself. This will be:
 <pre><code>
-      void func(notifier & n, INT extra)     // for PNOTIFIER
+      void func(notifier & n, P_INT_PTR extra)     // for PNOTIFIER
       void func(notifier & n, void * extra)  // for PNOTIFIER2
 </code></pre>
 
@@ -198,9 +198,9 @@ typedef PNotifierTemplate<INT> PNotifier;
 #define PDECLARE_NOTIFIER2(notifier, notifiee, func, ParamType) \
   PDECLARE_NOTIFIER_COMMON(notifier, notifiee, func, ParamType, PNotifierFunctionTemplate<ParamType>)
 
-/// Declare PNotifier derived class with INT parameter. Uses PDECLARE_NOTIFIER2 macro.
+/// Declare PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_NOTIFIER2 macro.
 #define PDECLARE_NOTIFIER(notifier, notifiee, func) \
-       PDECLARE_NOTIFIER2(notifier, notifiee, func, INT)
+       PDECLARE_NOTIFIER2(notifier, notifiee, func, P_INT_PTR)
 
 
 /** Create a PNotifier object instance.
@@ -213,7 +213,7 @@ typedef PNotifierTemplate<INT> PNotifier;
  */
 #define PCREATE_NOTIFIER2_EXT(obj, notifiee, func, type) notifiee::func##_PNotifier::Create(obj)
 
-/// Create PNotifier object instance with INT parameter. Uses PCREATE_NOTIFIER2_EXT macro.
+/// Create PNotifier object instance with P_INT_PTR parameter. Uses PCREATE_NOTIFIER2_EXT macro.
 #define PCREATE_NOTIFIER_EXT( obj, notifiee, func) notifiee::func##_PNotifier::Create(obj)
 
 
@@ -227,7 +227,7 @@ typedef PNotifierTemplate<INT> PNotifier;
  */
 #define PCREATE_NOTIFIER2(func, type) P_DISABLE_MSVC_WARNINGS(4355, func##_PNotifier::Create(this))
 
-/// Create PNotifier object instance with INT parameter. Uses PCREATE_NOTIFIER2 macro.
+/// Create PNotifier object instance with P_INT_PTR parameter. Uses PCREATE_NOTIFIER2 macro.
 #define PCREATE_NOTIFIER(func) P_DISABLE_MSVC_WARNINGS(4355, func##_PNotifier::Create(this))
 
 
