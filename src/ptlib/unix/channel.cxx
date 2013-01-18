@@ -385,7 +385,7 @@ PString PChannel::GetErrorText(Errors normalisedError, int osError /* =0 */)
 }
 
 
-PBoolean PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
+PBoolean PChannel::ConvertOSError(P_INT_PTR err, Errors & lastError, int & osError)
 
 {
   osError = (err >= 0) ? 0 : errno;
