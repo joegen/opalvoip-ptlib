@@ -112,10 +112,6 @@ distclean: clean
 	cd $(PTLIBDIR)
 	rm -rf config.log config.err autom4te.cache config.status a.out aclocal.m4 lib*
 
-sterile: distclean
-	cd $(PTLIBDIR)
-	rm -rf configure ptlib.pc ptlib_cfg.dxy ptbuildopts.mak ptbuildopts.h
-
 
 ################################################################################
 
@@ -170,7 +166,7 @@ ifeq (1, $(HAS_PLUGINS))
 	(  for dir in ./* ;\
 		do mkdir -p $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		chmod 755 $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
-		(for fn in ./$$dir/*.$(SHAREDLIBEXT) ; \
+		(for fn in ./$$dir/*.so ; \
 			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir; \
 		done ); \
 	done ) ; \

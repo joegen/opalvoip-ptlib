@@ -189,8 +189,8 @@ typedef PNotifierTemplate<P_INT_PTR> PNotifier;
 
   This macro will also declare the member function itself. This will be:
 <pre><code>
-      void func(notifier & n, P_INT_PTR extra) // for PNOTIFIER
-      void func(notifier & n, void * extra)    // for PNOTIFIER2
+      void func(notifier & n, P_INT_PTR extra)     // for PNOTIFIER
+      void func(notifier & n, void * extra)  // for PNOTIFIER2
 </code></pre>
 
   The implementation of the function is left for the user.
