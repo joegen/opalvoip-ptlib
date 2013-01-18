@@ -767,7 +767,7 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
 }
 
 
-PBoolean PSoundChannelWin32::OpenDevice(int id)
+PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
 {
   Close();
 
@@ -780,10 +780,10 @@ PBoolean PSoundChannelWin32::OpenDevice(int id)
 
   MIXERLINE line;
 
-  DWORD osError = MMSYSERR_BADDEVICEID;
+  MMRESULT osError = MMSYSERR_BADDEVICEID;
   switch (direction) {
     case Player :
-      osError = waveOutOpen(&hWaveOut, id, format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveOutOpen(&hWaveOut, PtrToLong((void *)id), format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
       if (osError == MMSYSERR_NOERROR) {
         UINT mixerId; 
         osError = mixerGetID((HMIXEROBJ)hWaveOut, &mixerId, MIXER_OBJECTF_HWAVEOUT);
@@ -795,7 +795,7 @@ PBoolean PSoundChannelWin32::OpenDevice(int id)
       break;
 
     case Recorder :
-      osError = waveInOpen(&hWaveIn, id, format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveInOpen(&hWaveIn, PtrToLong((void *)id), format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
       if (osError == MMSYSERR_NOERROR) {
         UINT mixerId; 
         osError = mixerGetID((HMIXEROBJ)hWaveOut, &mixerId, MIXER_OBJECTF_HWAVEIN);
