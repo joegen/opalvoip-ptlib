@@ -39,5 +39,8 @@
     virtual HANDLE GetAsyncReadHandle() const;
     virtual HANDLE GetAsyncWriteHandle() const;
 
+   public:
+     int GetOSHandleAsInt() const { return PtrToLong((void*)os_handle); }
+
 
 // End Of File ///////////////////////////////////////////////////////////////
