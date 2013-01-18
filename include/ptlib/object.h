@@ -186,6 +186,7 @@ using namespace std; // Not a good practice (name space polution), but will take
   friend __inline name operator++(name & e, int) { PAssert(e <    End##name, PInvalidParameter); name o=e; e = (name)(e+1); return o; } \
   friend __inline name operator--(name & e     ) { PAssert(e >= Begin##name, PInvalidParameter); return    e = (name)(e-1);           } \
   friend __inline name operator--(name & e, int) { PAssert(e >= Begin##name, PInvalidParameter); name o=e; e = (name)(e-1); return o; } \
+  static __inline name name##FromInt(int v) { return (name)(v < Begin##name ? Begin##name : v >= End##name ? (End##name-1) : v); }
 
 /** This declares a standard enumeration (enum) of symbols with ++ and -- operators.
     The symbols Begin##name and End##name are automatically added to the enumeration
@@ -418,44 +419,29 @@ class PTrace
 public:
   /// Options for trace output.
   enum Options {
-    /**Include PTrace::Block constructs in output
-       If this is bit is clear, all PTrace::Block output is inhibited
-       regardless of the trace level. If set, the PTrace::Block may occur
-       provided the trace level is greater than zero.
-    */
-    Blocks = 1,
-    /// Include date and time in all output
-    DateAndTime = 2,
-    /// Include (millisecond) timestamp in all output
-    Timestamp = 4,
-    /// Include identifier for thread trace is made from in all output
-    Thread = 8,
-    /// Include trace level in all output
-    TraceLevel = 16,
-    /// Include the file and line for the trace call in all output
-    FileAndLine = 32,
-    /// Include thread object pointer address in all trace output
-    ThreadAddress = 64,
-    /// Append to log file rather than resetting every time
-    AppendToFile = 128,
-    /// Output timestamps in GMT time rather than local time
-    GMTTime = 256,
-    /// If set, log file will be rotated daily
-    RotateDaily = 512,
-    /// If set, log file will be rotated hourly
-    RotateHourly = 1024,
-    /// If set, log file will be rotated every minute
-    RotateMinutely = 2048,
-    /// Mask for all the rotate bits
-    RotateLogMask = RotateDaily + RotateHourly + RotateMinutely,
-    /// Include object instance in all trace output
-    ObjectInstance = 4096,
-    /// Include context identifier in all trace output
-    ContextIdentifier = 8192,
-    /** SystemLog flag for tracing within a PServiceProcess application. Must
-        be set in conjection with <code>#SetStream(new PSystemLog)</code>.
-      */
-    SystemLogStream = 32768
+    Blocks            = 0x0001,   /**< Include PTrace::Block constructs in output
+                                       If this is bit is clear, all PTrace::Block output is inhibited
+                                       regardless of the trace level. If set, the PTrace::Block may occur
+                                       provided the trace level is greater than zero.
+                                    */
+    DateAndTime       = 0x0002,   ///< Include date and time in all output
+    Timestamp         = 0x0004,   ///< Include (millisecond) timestamp in all output
+    Thread            = 0x0008,   ///< Include identifier for thread trace is made from in all output
+    TraceLevel        = 0x0010,   ///< Include trace level, as a numeric value, in all output
+    FileAndLine       = 0x0020,   ///< Include the file and line for the trace call in all output
+    ThreadAddress     = 0x0040,   ///< Include thread object pointer address in all trace output
+    AppendToFile      = 0x0080,   ///< Append to log file rather than resetting every time
+    GMTTime           = 0x0100,   ///< Output timestamps in GMT time rather than local time
+    RotateDaily       = 0x0200,   ///< If set, log file will be rotated daily
+    RotateHourly      = 0x0400,   ///< If set, log file will be rotated hourly
+    RotateMinutely    = 0x0800,   ///< If set, log file will be rotated every minute
+    RotateLogMask     = RotateDaily + RotateHourly + RotateMinutely,
+                                  ///< Mask for all the rotate bits
+    ObjectInstance    = 0x1000,   ///< Include object instance in all trace output
+    ContextIdentifier = 0x2000,   ///< Include context identifier in all trace output
+    SystemLogStream   = 0x8000    /**< SystemLog flag for tracing within a PServiceProcess
+                                       application. Setting this flag will automatically
+                                       execute <code>#SetStream(new PSystemLog)</code>. */
   };
 
 
@@ -509,31 +495,41 @@ public:
        <dt>"stderr"      <dd>Output to standard error
        <dt>"stdout"      <dd>Output to standard output
        <dt>"DEBUGSTREAM" <dd>Output to debugger (Windows only)
+       <dt>"syslog,ident,priority,options,facility"
+            <dd>Output to syslog (Unix variants only)
+                The ident, priority, options & facility components are optional,
+                so "syslog", "syslog,myappname", "syslog,myappname,3" are all
+                acceptable. See PSystemLogToSyslog for their exact meaning.
+       <dt>"network,host:port,facility"
+            <dd>Output to RFC3164 network log server.
+                The server and facility components are optional. The default
+                server would be "localhost" Also, the port is an optional
+                field for the server component, defaulting to the RFC3164
+                standard value. So, "network,10.0.1.1" or "network,fred:1234"
+                are acceptable. See PSystemLogToNetwork for more.
        </dl>
-     A trace output of the program name version and OS is written as well.
+
+     If \p rolloverPattern is not NULL it is used as the time format pattern
+     appended to filename if the #RotateLogMask bits are set. Default is
+     "yyyy_MM_dd".
+
+     A trace output of the program name, version, OS abnd other information is
+     written to the log immediately.
     */
   static void Initialise(
     unsigned level,                               ///< Level for tracing
     const char * filename = NULL,                 ///< Filename for log output
-    unsigned options = Timestamp | Thread | Blocks ///< #Options for tracing
+    unsigned options = Timestamp | Thread | Blocks, ///< #Options for tracing
+    const char * rolloverPattern = NULL             ///< Pattern for rolling over trace files
   );
 
-  /**Set the most common trace options.
-     If \p filename is not NULL then a PTextFile is created and attached the
-     trace output stream. This object is never closed or deleted until the
-     termination of the program.
-
-     If \p rolloverPatterm is not NULL it is used as the time format patterm
-     appended to filename if the #RotateDaily is set. Default is "yyyy_MM_dd".
-
-     A trace output of the program name version and OS is written as well.
-    */
+  // Deprecated - for backward compatibility
   static void Initialise(
-    unsigned level,                                 ///< Level for tracing
-    const char * filename,                          ///< Filename for log output
-    const char * rolloverPattern,                   ///< Pattern for rolling over trace files
-    unsigned options = Timestamp | Thread | Blocks  ///< #Options for tracing
-  );
+    unsigned level,
+    const char * filename,
+    const char * rolloverPattern,
+    unsigned options = Timestamp | Thread | Blocks
+  ) { Initialise(level, filename, options, rolloverPattern); }
 
   /** Set the trace options.
   The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that

@@ -221,7 +221,7 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
   if (level < 0)
     stream << "Message";
   else {
-    static const char * const levelName[4] = {
+    static const char * const levelName[] = {
       "Fatal error",
       "Error",
       "Warning",
@@ -282,24 +282,22 @@ void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 ///////////////////////////////////////////////////////////////
 
 PSystemLogToNetwork::PSystemLogToNetwork(const PIPSocket::Address & address, WORD port, unsigned facility)
-  : m_host(address)
-  , m_port(port)
+  : m_server(address, port)
   , m_facility(facility)
 {
 }
 
 
-PSystemLogToNetwork::PSystemLogToNetwork(const PString & hostname, WORD port, unsigned facility)
-  : m_port(port)
-  , m_facility(facility)
+PSystemLogToNetwork::PSystemLogToNetwork(const PString & server, WORD port, unsigned facility)
+  : m_facility(facility)
 {
-  PIPSocket::GetHostAddress(hostname, m_host);
+  m_server.Parse(server, port, ':', "udp");
 }
 
 
 void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
 {
-  if (level > m_thresholdLevel || m_port == 0 || !m_host.IsValid())
+  if (level > m_thresholdLevel || !m_server.IsValid())
     return;
 
   static int PwlibLogToSeverity[PSystemLog::NumLogLevels] = {
@@ -312,7 +310,7 @@ void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
     << PIPSocket::GetHostName() << ' '
     << PProcess::Current().GetName() << ' '
     << msg;
-  m_socket.WriteTo((const char *)str, str.GetLength(), m_host, m_port);
+  m_socket.WriteTo((const char *)str, str.GetLength(), m_server);
 }
 
 
@@ -333,10 +331,22 @@ void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
 
 #include <syslog.h>
 
-PSystemLogToSyslog::PSystemLogToSyslog()
+PSystemLogToSyslog::PSystemLogToSyslog(const char * ident, int priority, int options, int facility)
+  : m_ident(ident)
+  , m_priority(priority)
 {
-  openlog((char *)(const char *)PProcess::Current().GetName(), LOG_PID, LOG_DAEMON);
+  if (m_ident.IsEmpty())
+    m_ident = PProcess::Current().GetName();
+
+  if (options < 0)
+    options = LOG_PID;
+
+  if (facility < 0)
+    facility = LOG_DAEMON;
+
+  openlog(m_ident, options, facility);
 }
+
 
 PSystemLogToSyslog::~PSystemLogToSyslog()
 {
@@ -349,26 +359,39 @@ void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
   if (level > m_thresholdLevel)
     return;
 
-  int syslog_level;
-  switch (level) {
-    case PSystemLog::Fatal :
-      syslog_level = LOG_CRIT;
-      break;
-    case PSystemLog::Error :
-      syslog_level = LOG_ERR;
-      break;
-    case PSystemLog::StdError :
-    case PSystemLog::Warning :
-      syslog_level = LOG_WARNING;
-      break;
-    case PSystemLog::Info :
-      syslog_level = LOG_INFO;
-      break;
-    default :
-      syslog_level = LOG_DEBUG;
+  int priority = m_priority;
+  if (priority < 0) {
+    switch (level) {
+      case PSystemLog::Fatal :
+        priority = LOG_CRIT;
+        break;
+      case PSystemLog::Error :
+        priority = LOG_ERR;
+        break;
+      case PSystemLog::StdError :
+      case PSystemLog::Warning :
+        priority = LOG_WARNING;
+        break;
+      case PSystemLog::Info :
+        priority = LOG_INFO;
+        break;
+      default :
+        priority = LOG_DEBUG;
+    }
+    syslog(priority, "%s", msg);
   }
-
-  syslog(syslog_level, "%s", msg);
+  else {
+    static const char * const levelName[] = {
+        "FATAL",    // LogFatal,
+        "ERROR",    // LogError,
+        "WARNING",  // LogWarning,
+        "INFO",     // LogInfo,
+    };
+    if (level < PARRAYSIZE(levelName))
+      syslog(priority, "%-8s%s", levelName[level], msg);
+    else
+      syslog(priority, "DEBUG%-3u%s", level - PSystemLog::Info, msg);
+  }
 }
 #endif
 
