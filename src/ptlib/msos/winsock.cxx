@@ -67,7 +67,10 @@
   #else
 
     #define IPX_PTYPE 0x4000
-    #define NS_DEFAULT 0
+
+    #ifndef NS_DEFAULT
+      #define NS_DEFAULT 0
+    #endif
 
     #ifndef SVCID_NETWARE
     #define SVCID_NETWARE(_SapId) {(0x000B << 16)|(_SapId),0,0,{0xC0,0,0,0,0,0,0,0x46}}
@@ -165,13 +168,13 @@ PSocket::~PSocket()
 
 HANDLE PSocket::GetAsyncReadHandle() const
 {
-  return IsOpen() ? (HANDLE)os_handle : INVALID_HANDLE_VALUE;
+  return IsOpen() ? (HANDLE)(P_INT_PTR)os_handle : INVALID_HANDLE_VALUE;
 }
 
 
 HANDLE PSocket::GetAsyncWriteHandle() const
 {
-  return IsOpen() ? (HANDLE)os_handle : INVALID_HANDLE_VALUE;
+  return IsOpen() ? (HANDLE)(P_INT_PTR)os_handle : INVALID_HANDLE_VALUE;
 }
 
 

@@ -204,7 +204,7 @@ typedef uint64_t PUInt64;
   #if _MSC_VER>=1400
     #define strcasecmp(s1,s2) _stricmp(s1,s2)
     #define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
-  #else
+  #elif defined(_MSC_VER)
     #define strcasecmp(s1,s2) stricmp(s1,s2)
     #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
   #endif
@@ -370,6 +370,11 @@ typedef int socklen_t;
   #define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
   #define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
   #define EWOULDBLOCK             (WSAEWOULDBLOCK|PWIN32ErrorFlag)
+#endif
+
+
+#if _MSC_VER >= 1700
+  #include <oleacc.h>
 #endif
 
 #ifndef NETDB_SUCCESS

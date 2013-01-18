@@ -2132,7 +2132,7 @@ PString & PString::vsprintf(const char * fmt, va_list arg)
   PAssert(SetMinSize(2000), POutOfMemory);
   m_length = ::vsprintf(theArray+len, fmt, arg);
 #else
-  PINDEX providedSpace = 0;
+  int providedSpace = 0;
   int requiredSpace;
   do {
     providedSpace += 1000;

@@ -356,7 +356,6 @@ SOURCES	+= \
         $(PLATFORM_SRC_DIR)/winsock.cxx \
         $(PLATFORM_SRC_DIR)/win32.cxx \
         $(PLATFORM_SRC_DIR)/dllmain.cxx \
-        $(PLATFORM_SRC_DIR)/ethsock.cxx \
         $(COMMON_SRC_DIR)/pchannel.cxx \
         $(COMMON_SRC_DIR)/pethsock.cxx \
         $(COMMON_SRC_DIR)/pconfig.cxx

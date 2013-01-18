@@ -37,6 +37,8 @@
 #
 ######################################################################
 
+ORIGINAL_MAKEFILE = $(firstword $(MAKEFILE_LIST))
+
 # Submodules built with make lib
 ifdef PTLIBDIR
   LIBDIRS += $(PTLIBDIR)
@@ -173,9 +175,9 @@ endif
 ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
 $(TARGET_LIBS) :
 ifdef DEBUG
-	$(MAKE) -C $(PTLIBDIR) debug
+	$(MAKE) -f $(ORIGINAL_MAKEFILE) -C $(PTLIBDIR) debug
 else
-	$(MAKE) -C $(PTLIBDIR) opt
+	$(MAKE) -f $(ORIGINAL_MAKEFILE) -C $(PTLIBDIR) opt
 endif
 endif # have source
 
@@ -228,7 +230,7 @@ default_depend :: $(DEPS)
 
 libs ::
 ifneq ($(LIBDIRS),)
-	@set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i default_depend default_target; done
+	@set -e; for i in $(LIBDIRS); do $(MAKE) -f $(ORIGINAL_MAKEFILE) -C $$i default_depend default_target; done
 else
 	@true
 endif
@@ -273,47 +275,47 @@ bothdepend :: optdepend debugdepend
 bothlibs :: optlibs debuglibs
 
 opt ::
-	@$(MAKE) DEBUG= default_target
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= default_target
 
 optshared ::
-	@$(MAKE) DEBUG= P_SHAREDLIB=1 default_target
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= P_SHAREDLIB=1 default_target
 
 optstatic optnoshared ::
-	@$(MAKE) DEBUG= P_SHAREDLIB=0 default_target
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= P_SHAREDLIB=0 default_target
 
 optclean ::
-	@$(MAKE) DEBUG= default_clean
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= default_clean
 
 optstaticclean optnosharedclean ::
-	@$(MAKE) DEBUG= P_SHAREDLIB=0 default_clean
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= P_SHAREDLIB=0 default_clean
 
 optdepend ::
-	@$(MAKE) DEBUG= default_depend
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= default_depend
 
 optlibs ::
-	@$(MAKE) DEBUG= libs
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= libs
 
 
 debug :: 
-	@$(MAKE) DEBUG=1 default_target
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG=1 default_target
 
 debugshared ::
-	@$(MAKE) DEBUG=1 P_SHAREDLIB=1 default_target
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG=1 P_SHAREDLIB=1 default_target
 
 debugstatic debugnoshared ::
-	@$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_target
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG=1 P_SHAREDLIB=0 default_target
 
 debugclean ::
-	@$(MAKE) DEBUG=1 default_clean
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG=1 default_clean
 
 debugstaticclean debugnosharedclean ::
-	@$(MAKE) DEBUG=1 P_SHAREDLIB=0 default_clean
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG=1 P_SHAREDLIB=0 default_clean
 
 debugdepend ::
-	@$(MAKE) DEBUG=1 default_depend
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG=1 default_depend
 
 debuglibs ::
-	@$(MAKE) DEBUG=1 libs
+	@$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG=1 libs
 
 
 
@@ -400,7 +402,7 @@ ifdef DEBUG
 # Cannot do this in DEBUG mode, so do it without DEBUG
 
 release ::
-	$(MAKE) DEBUG= release
+	$(MAKE) -f $(ORIGINAL_MAKEFILE) DEBUG= release
 
 else
 

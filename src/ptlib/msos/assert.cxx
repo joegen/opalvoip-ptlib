@@ -48,6 +48,14 @@ void PProcess::WaitOnExitConsoleWindow()
 
 #define StackWalk(strm)
 
+#elif defined(__MINGW32__)
+
+void PProcess::WaitOnExitConsoleWindow()
+{
+}
+
+#define StackWalk(strm)
+
 #else
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
