@@ -342,8 +342,8 @@ class PSystemLogToSyslog : public PSystemLogTarget
   //@}
 
   protected:
-    PStrng m_ident;
-    int    m_priority;
+    PString m_ident;
+    int     m_priority;
 };
 #endif
 
