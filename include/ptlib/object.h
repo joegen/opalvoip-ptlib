@@ -1257,28 +1257,28 @@ at the begining of the source file, after all declarations that use the
 #else
 #define PSPECIAL_DELETE_FUNCTION \
     void operator delete(void * ptr, const char *, int) \
-      { PMemoryHeap::Deallocate(ptr, Class()); } \
+      { PMemoryHeap::Deallocate(ptr, this->Class()); } \
     void operator delete[](void * ptr, const char *, int) \
-      { PMemoryHeap::Deallocate(ptr, Class()); }
+      { PMemoryHeap::Deallocate(ptr, this->Class()); }
 #endif
 
 #define PNEW_AND_DELETE_FUNCTIONS \
     void * operator new(size_t nSize, const char * file, int line) \
-      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
+      { return PMemoryHeap::Allocate(nSize, file, line, this->Class()); } \
     void * operator new(size_t nSize) \
-      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, this->Class()); } \
     void operator delete(void * ptr) \
-      { PMemoryHeap::Deallocate(ptr, Class()); } \
+      { PMemoryHeap::Deallocate(ptr, this->Class()); } \
     void * operator new(size_t, void * placement) \
       { return placement; } \
     void operator delete(void *, void *) \
       { } \
     void * operator new[](size_t nSize, const char * file, int line) \
-      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
+      { return PMemoryHeap::Allocate(nSize, file, line, this->Class()); } \
     void * operator new[](size_t nSize) \
-      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, this->Class()); } \
     void operator delete[](void * ptr) \
-      { PMemoryHeap::Deallocate(ptr, Class()); } \
+      { PMemoryHeap::Deallocate(ptr, this->Class()); } \
     PSPECIAL_DELETE_FUNCTION
 
 
@@ -1485,9 +1485,9 @@ of compatibility with documentation systems.
     static inline const char * Class() \
       { return #cls; } \
     virtual PBoolean InternalIsDescendant(const char * clsName) const \
-      { return strcmp(clsName, cls::Class()) == 0 || par::InternalIsDescendant(clsName); } \
+      { return strcmp(clsName, this->Class()) == 0 || par::InternalIsDescendant(clsName); } \
     virtual const char * GetClass(unsigned ancestor = 0) const \
-      { return ancestor > 0 ? par::GetClass(ancestor-1) : cls::Class(); } \
+      { return ancestor > 0 ? par::GetClass(ancestor-1) : this->Class(); } \
     virtual PObject::Comparison CompareObjectMemoryDirect(const PObject & obj) const \
       { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
@@ -1500,7 +1500,7 @@ of compatibility with documentation systems.
 
 #if P_USE_ASSERTS
 template<class BaseClass> inline BaseClass * PAssertCast(BaseClass * obj, const char * file, int line) 
-  { if (obj == NULL) PAssertFunc(file, line, BaseClass::Class(), PInvalidCast); return obj; }
+  { if (obj == NULL) PAssertFunc(file, line, obj->Class(), PInvalidCast); return obj; }
 #define PDownCast(cls, ptr) PAssertCast<cls>(dynamic_cast<cls*>(ptr),__FILE__,__LINE__)
 #else
 #define PDownCast(cls, ptr) (dynamic_cast<cls*>(ptr))
@@ -1582,7 +1582,7 @@ class PObject {
 
        @return pointer to C string literal.
      */
-    virtual const char * GetClass(unsigned ancestor = 0) const { return ancestor > 0 ? "" : Class(); }
+    virtual const char * GetClass(unsigned ancestor = 0) const { return ancestor > 0 ? "" : this->Class(); }
 
     PBoolean IsClass(const char * cls) const 
     { return strcmp(cls, GetClass()) == 0; }
