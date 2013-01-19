@@ -1179,7 +1179,7 @@ PBoolean PSoundChannelCoreAudio::IsOpen() const
 /* gets never called, see sound.h:
  * baseChannel->PChannel::GetHandle(); 
  */
-int PSoundChannelCoreAudio::GetHandle() const
+P_INT_PTR PSoundChannelCoreAudio::GetHandle() const
 {
    //PTRACE(1, "GetHandle");
    //return os_handle; 
