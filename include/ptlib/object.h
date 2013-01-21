@@ -1257,28 +1257,28 @@ at the begining of the source file, after all declarations that use the
 #else
 #define PSPECIAL_DELETE_FUNCTION \
     void operator delete(void * ptr, const char *, int) \
-      { PMemoryHeap::Deallocate(ptr, this->Class()); } \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
     void operator delete[](void * ptr, const char *, int) \
-      { PMemoryHeap::Deallocate(ptr, this->Class()); }
+      { PMemoryHeap::Deallocate(ptr, Class()); }
 #endif
 
 #define PNEW_AND_DELETE_FUNCTIONS \
     void * operator new(size_t nSize, const char * file, int line) \
-      { return PMemoryHeap::Allocate(nSize, file, line, this->Class()); } \
+      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
     void * operator new(size_t nSize) \
-      { return PMemoryHeap::Allocate(nSize, NULL, 0, this->Class()); } \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
     void operator delete(void * ptr) \
-      { PMemoryHeap::Deallocate(ptr, this->Class()); } \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
     void * operator new(size_t, void * placement) \
       { return placement; } \
     void operator delete(void *, void *) \
       { } \
     void * operator new[](size_t nSize, const char * file, int line) \
-      { return PMemoryHeap::Allocate(nSize, file, line, this->Class()); } \
+      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
     void * operator new[](size_t nSize) \
-      { return PMemoryHeap::Allocate(nSize, NULL, 0, this->Class()); } \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
     void operator delete[](void * ptr) \
-      { PMemoryHeap::Deallocate(ptr, this->Class()); } \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
     PSPECIAL_DELETE_FUNCTION
 
 
