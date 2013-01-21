@@ -31,6 +31,10 @@
 #ifndef PTLIB_ATL_H
 #define PTLIB_ATL_H
 
+#ifdef P_WIN_COM
+
+#include <comdef.h>
+
 #ifdef P_ATL
   #pragma warning(disable:4127)
   #include <cguid.h>
@@ -118,6 +122,85 @@ template <class T> class CComPtr
 #endif
 };
 
+
 #endif // P_ATL
+
+class PComResult
+{
+  public:
+    PComResult(HRESULT result = ERROR_SUCCESS) : m_result(result) { }
+    PComResult & operator=(HRESULT result) { m_result = result; return *this; }
+
+    bool Succeeded() const
+    {
+      return SUCCEEDED(m_result);
+    }
+
+    bool Succeeded(HRESULT result)
+    {
+      m_result = result;
+      return Succeeded();
+    }
+
+    bool Failed() const
+    {
+      return FAILED(m_result);
+    }
+
+    bool Failed(HRESULT result)
+    {
+      m_result = result;
+      return Failed();
+    }
+
+    int GetErrorNumber() const { return (int)m_result; }
+
+    friend std::ostream & operator<<(std::ostream & strm, const PComResult & result);
+
+  #if PTRACING
+    bool Succeeded(HRESULT result, const char * fn)
+    {
+      if (Succeeded(result))
+        return true;
+
+      PTRACE(1, "Function \"" << fn << "\" failed : " << *this);
+      return false;
+    }
+    bool Failed(HRESULT result, const char * fn)
+    {
+      if (Succeeded(result))
+        return false;
+
+      PTRACE(1, "Function \"" << fn << "\" failed : " << *this);
+      return true;
+    }
+    #define PCOM_SUCCEEDED_EX(res,fn,args)  (res       ).Succeeded(fn args, #fn)
+    #define PCOM_FAILED_EX(res,fn,args)     (res       ).Failed(fn args, #fn)
+    #define PCOM_SUCCEEDED(fn,args)         PComResult().Succeeded(fn args, #fn)
+    #define PCOM_FAILED(fn,args)            PComResult().Failed(fn args, #fn)
+  #else
+    #define PCOM_SUCCEEDED_EX(res,fn,args)  (res).Succeeded(fn args)
+    #define PCOM_FAILED_EX(res,fn,args)     (res).Failed(fn args)
+    #define PCOM_SUCCEEDED(fn,args)         SUCCEEDED(fn args)
+    #define PCOM_FAILED(fn,args)            FAILED(fn args)
+  #endif
+  #define PCOM_RETURN_ON_FAILED(fn,args) if (PCOM_FAILED(fn,args)) return false
+
+  protected:
+    HRESULT m_result;
+};
+
+
+struct PComVariant : public VARIANT
+{
+  PComVariant() { VariantInit(this); }
+  ~PComVariant() { VariantClear(this); }
+
+  friend std::ostream & operator<<(std::ostream & strm, const PComVariant & var);
+
+  PString AsString() const { PStringStream s; s<<*this; return s; }
+};
+
+#endif // P_WIN_COM
 
 #endif //PTLIB_ATL_H

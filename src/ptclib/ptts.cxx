@@ -115,7 +115,7 @@ PFACTORY_CREATE(PFactory<PTextToSpeech>, PTextToSpeech_SAPI, "Microsoft SAPI", f
 PTextToSpeech_SAPI::PTextToSpeech_SAPI()
   : m_opened(false)
 {
-  ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  PThread::Current()->CoInitialise();
   PTRACE(5, "TTS\tPTextToSpeech_SAPI constructed");
 }
 
@@ -131,22 +131,24 @@ PBoolean PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
 {
   Close();
 
-  HRESULT hr = m_cpVoice.CoCreateInstance(CLSID_SpVoice);
-  if (FAILED(hr))
+  PComResult hr = m_cpVoice.CoCreateInstance(CLSID_SpVoice);
+  if (hr.Failed()) {
+    PTRACE(2, "TTS", "Could not start SAPI: " << hr);
     return false;
+  }
 
   CSpStreamFormat wavFormat;
   wavFormat.AssignFormat(SPSF_8kHz16BitMono);
 
   PWideString wfn = fn;
   hr = SPBindToFile(wfn, SPFM_CREATE_ALWAYS, &m_cpWavStream, &wavFormat.FormatId(), wavFormat.WaveFormatExPtr()); 
-  if (FAILED(hr)) {
+  if (hr.Failed()) {
     m_cpWavStream.Release();
     return false;
   }
 
   hr = m_cpVoice->SetOutput(m_cpWavStream, true);
-  m_opened = SUCCEEDED(hr);
+  m_opened = hr.Succeeded();
   return m_opened;
 }
 
@@ -180,32 +182,18 @@ PBoolean PTextToSpeech_SAPI::Speak(const PString & text, TextType hint)
       break;
   };
 
-  HRESULT hr = S_OK;
-
   if (m_CurrentVoice != NULL && !m_CurrentVoice.IsEmpty()) {
     PTRACE(4, "SAPI\tTrying to set voice \"" << m_CurrentVoice << "\""
               " of voices: " << setfill(',') << GetVoiceList());
 
     //Enumerate voice tokens with attribute "Name=<specified voice>"
     CComPtr<IEnumSpObjectTokens> cpEnum;
-    hr = SpEnumTokens(SPCAT_VOICES, m_CurrentVoice.AsUCS2(), NULL, &cpEnum);
-    if (FAILED(hr)) {
-      PTRACE(2, "SAPI\tSpEnumTokens failed: " << hr);
-    }
-    else {
+    if (PCOM_SUCCEEDED(SpEnumTokens,(SPCAT_VOICES, m_CurrentVoice.AsUCS2(), NULL, &cpEnum))) {
       //Get the closest token
       CComPtr<ISpObjectToken> cpVoiceToken;
-      hr = cpEnum->Next(1, &cpVoiceToken, NULL);
-      if (FAILED(hr)) {
-        PTRACE(2, "SAPI\tEnumerate next failed: " << hr);
-      }
-      else {
+      if (PCOM_SUCCEEDED(cpEnum->Next,(1, &cpVoiceToken, NULL))) {
         //set the voice
-        hr = m_cpVoice->SetVoice(cpVoiceToken);
-        if (FAILED(hr)) {
-          PTRACE(2, "SAPI\tSetVoice failed: " << hr);
-        }
-        else {
+        if (PCOM_SUCCEEDED(m_cpVoice->SetVoice,(cpVoiceToken))) {
           PTRACE(4, "SAPI\tSetVoice(" << m_CurrentVoice << ") OK!");
         }
       }
@@ -213,47 +201,38 @@ PBoolean PTextToSpeech_SAPI::Speak(const PString & text, TextType hint)
   }
 
   PTRACE(4, "SAPI\tSpeaking...");
-  hr = m_cpVoice->Speak(wtext, SPF_DEFAULT, NULL);
-  if (SUCCEEDED(hr))
-    return true;
-
-  PTRACE(2, "SAPI\tError speaking text: " << hr);
-  return false;
+  return PCOM_SUCCEEDED(m_cpVoice->Speak,(wtext, SPF_DEFAULT, NULL));
 }
 
 
 PStringArray PTextToSpeech_SAPI::GetVoiceList()
 {
+  //Enumerate the available voices 
   PStringArray voiceList;
 
-  CComPtr<ISpObjectToken> cpVoiceToken;
   CComPtr<IEnumSpObjectTokens> cpEnum;
   ULONG ulCount = 0;
-
-  //Enumerate the available voices 
-  HRESULT hr = SpEnumTokens(SPCAT_VOICES, NULL, NULL, &cpEnum);
+  PComResult hr;
 
   // Get the number of voices
-  if (SUCCEEDED(hr)) {
-    hr = cpEnum->GetCount(&ulCount);
-    PTRACE(4, "SAPI\tFound " << ulCount << " voices..");
-  }
-  // Obtain a list of available voice tokens, set the voice to the token, and call Speak
-  while (SUCCEEDED(hr) && ulCount--) {
+  if (PCOM_SUCCEEDED_EX(hr,SpEnumTokens,(SPCAT_VOICES, NULL, NULL, &cpEnum))) {
+    if (PCOM_SUCCEEDED_EX(hr,cpEnum->GetCount,(&ulCount))) {
+      PTRACE(4, "SAPI\tFound " << ulCount << " voices..");
 
-    cpVoiceToken.Release();
-
-    if (SUCCEEDED(hr))
-      hr = cpEnum->Next(1, &cpVoiceToken, NULL );
-
-    if (SUCCEEDED(hr)) {
-      voiceList.AppendString("voice");
-      PTRACE(4, "SAPI\tFound voice:" << cpVoiceToken);
+      // Obtain a list of available voice tokens, set the voice to the token, and call Speak
+      while (ulCount-- > 0) {
+        CComPtr<ISpObjectToken> cpVoiceToken;
+        if (hr.Succeeded(cpEnum->Next(1, &cpVoiceToken, NULL))) {
+          voiceList.AppendString("voice");
+          PTRACE(4, "SAPI\tFound voice:" << cpVoiceToken);
+        }
+      } 
     }
-  } 
+  }
 
   return voiceList;
 }
+
 
 PBoolean PTextToSpeech_SAPI::SetVoice(const PString & voice)
 {
