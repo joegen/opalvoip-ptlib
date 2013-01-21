@@ -288,59 +288,6 @@ static PString GUID2Format(GUID guid)
 }
 
 
-////////////////////////////////////////////////////////////////////
-// Some support functions/macros
-
-#if PTRACING
-static PString ErrorMessage(HRESULT hr)
-{
-  PVarString msg;
-  msg.SetSize(1000);
-  DWORD dwMsgLen = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
-                                 FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL,
-                                 hr,
-                                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                                 msg.GetPointerAndSetLength(0), msg.GetSize(),
-                                 NULL);
-  if (dwMsgLen > 0) {
-    msg.MakeMinimumSize();
-    return msg;
-  }
-
-#ifndef _WIN32_WCE
-  dwMsgLen = AMGetErrorTextA(hr, msg.GetPointerAndSetLength(0), msg.GetSize());
-  if (dwMsgLen > 0) {
-    msg.MakeMinimumSize();
-    return msg;
-  }
-#endif
-
-  char hex[20];
-  _snprintf(hex, sizeof(hex), "0x%08x", hr);
-  return hex;
-}
-#endif // PTRACING
-
-
-#if PTRACING
-static bool CheckError(HRESULT hr, const char * fn)
-{
-  if (SUCCEEDED(hr))
-    return false;
-
-  PTRACE(1, "DShow\tFunction \"" << fn << "\" failed : " << ErrorMessage(hr));
-  return true;
-}
-
-#define CHECK_ERROR(fn, action) if (CheckError(fn, #fn)) action
-#else
-#define CHECK_ERROR(fn, action) if (FAILED(fn)) action
-#endif
-
-#define CHECK_ERROR_RETURN(fn) CHECK_ERROR(fn, return false)
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 class MediaTypePtr
@@ -462,7 +409,7 @@ PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
 {
   PTRACE(4, "DShow\tVideo Device Instance");
 
-  CoInitializeEx(NULL,COINIT_MULTITHREADED);
+  PThread::Current()->CoInitialise();
 }
 
 
@@ -491,13 +438,13 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
 {
   CComPtr<IAMStreamConfig> pStreamConfig;
 #ifdef __MINGW32__
-  CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(IID_IAMStreamConfig, (void**)&pStreamConfig));
+  PCOM_RETURN_ON_FAILED(m_pCameraOutPin->QueryInterface,(IID_IAMStreamConfig, (void**)&pStreamConfig));
 #else
-  CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(&pStreamConfig));
+  PCOM_RETURN_ON_FAILED(m_pCameraOutPin->QueryInterface,(&pStreamConfig));
 #endif
 
   int iCount, iSize;
-  CHECK_ERROR_RETURN(pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize));
+  PCOM_RETURN_ON_FAILED(pStreamConfig->GetNumberOfCapabilities,(&iCount, &iSize));
 
   /* Sanity check: just to be sure that the Streamcaps is a VIDEOSTREAM and not AUDIOSTREAM */
   VIDEO_STREAM_CONFIG_CAPS scc;
@@ -541,28 +488,23 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
   if (m_pCameraControls != NULL) {
     // Retrieve information about the pan and tilt controls
     panInfo.type= PVideoControlInfo::ControlPan;
-    HRESULT hr = m_pCameraControls->GetRange(CameraControl_Pan, &panInfo.min, &panInfo.max, &panInfo.step, &panInfo.def, &panInfo.flags);
-    if (FAILED(hr)) {
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Pan.");
-    } else {
+    PComResult hr;
+    if (hr.Succeeded(m_pCameraControls->GetRange(CameraControl_Pan, &panInfo.min, &panInfo.max, &panInfo.step, &panInfo.def, &panInfo.flags)))
       caps->controls.push_back(panInfo);
-    }
+    else
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Pan: " << hr);
 
     tiltInfo.type= PVideoControlInfo::ControlTilt;
-    hr = m_pCameraControls->GetRange(CameraControl_Tilt, &tiltInfo.min, &tiltInfo.max, &tiltInfo.step, &tiltInfo.def, &tiltInfo.flags);
-    if (FAILED(hr)) {
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Tilt.");
-    } else {
+    if (hr.Succeeded(m_pCameraControls->GetRange(CameraControl_Tilt, &tiltInfo.min, &tiltInfo.max, &tiltInfo.step, &tiltInfo.def, &tiltInfo.flags)))
       caps->controls.push_back(tiltInfo);
-    }
+    else
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Tilt: " << hr);
 
     zoomInfo.type= PVideoControlInfo::ControlZoom;
-    hr = m_pCameraControls->GetRange(CameraControl_Zoom, &zoomInfo.min, &zoomInfo.max, &zoomInfo.step, &zoomInfo.def, &zoomInfo.flags);
-    if (FAILED(hr)) {
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support zoom.");
-    } else {
+    if (hr.Succeeded(m_pCameraControls->GetRange(CameraControl_Zoom, &zoomInfo.min, &zoomInfo.max, &zoomInfo.step, &zoomInfo.def, &zoomInfo.flags)))
       caps->controls.push_back(zoomInfo);
-    }
+    else
+      PTRACE(4, "DShow\tCamera " << deviceName << " does not support zoom: " << hr);
   }
 
 #endif
@@ -580,13 +522,13 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
 
   CComPtr<IAMStreamConfig> pStreamConfig;
 #ifdef __MINGW32__
-  CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(IID_IAMStreamConfig, (void**)&pStreamConfig));
+  PCOM_RETURN_ON_FAILED(m_pCameraOutPin->QueryInterface,(IID_IAMStreamConfig, (void**)&pStreamConfig));
 #else
-  CHECK_ERROR_RETURN(m_pCameraOutPin->QueryInterface(&pStreamConfig));
+  PCOM_RETURN_ON_FAILED(m_pCameraOutPin->QueryInterface,(&pStreamConfig));
 #endif
 
   int iCount = 0, iSize=0;
-  CHECK_ERROR_RETURN(pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize));
+  PCOM_RETURN_ON_FAILED(pStreamConfig->GetNumberOfCapabilities,(&iCount, &iSize));
 
   if (iSize != sizeof(VIDEO_STREAM_CONFIG_CAPS))
     return false;
@@ -613,11 +555,11 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
 
       bool running = IsCapturing();
       if (running)
-        CHECK_ERROR_RETURN(m_pMediaControl->Stop());
+        PCOM_RETURN_ON_FAILED(m_pMediaControl->Stop,());
 
       VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
       pVih->AvgTimePerFrame = 10000000 / frameRate;
-      CHECK_ERROR_RETURN(pStreamConfig->SetFormat(pMediaFormat));
+      PCOM_RETURN_ON_FAILED(pStreamConfig->SetFormat,(pMediaFormat));
 
       if (useDefaultColourOrSize >= 1) {
         colourFormat = GUID2Format(pMediaFormat->subtype);
@@ -631,7 +573,7 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
       m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
       if (running)
-        CHECK_ERROR_RETURN(m_pMediaControl->Run());
+        PCOM_RETURN_ON_FAILED(m_pMediaControl->Run,());
 
       PTRACE(4, "DShow\tCamera format set to " << *this);
       return true;
@@ -654,38 +596,38 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
   }
 
   // Get the interface for DirectShow's GraphBuilder
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_FilterGraph,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_IGraphBuilder,
-                                      (LPVOID *)&m_pGraphBuilder));
+  PCOM_RETURN_ON_FAILED(CoCreateInstance,(CLSID_FilterGraph,
+                                          NULL,
+                                          CLSCTX_INPROC_SERVER,
+                                          IID_IGraphBuilder,
+                                          (LPVOID *)&m_pGraphBuilder));
 
   // Create the capture graph builder
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_CaptureGraphBuilder2,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_ICaptureGraphBuilder2,
-                                      (LPVOID *)&m_pCaptureBuilder));
+  PCOM_RETURN_ON_FAILED(CoCreateInstance,(CLSID_CaptureGraphBuilder2,
+                                          NULL,
+                                          CLSCTX_INPROC_SERVER,
+                                          IID_ICaptureGraphBuilder2,
+                                          (LPVOID *)&m_pCaptureBuilder));
 
   // Bind the Camera Input
   if (!BindCaptureDevice(devName))
     return false;
 
   // Add Capture filter to our graph.
-  CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(m_pCaptureFilter, L"Video Capture"));
+  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->AddFilter,(m_pCaptureFilter, L"Video Capture"));
 
   // Attach the filter graph to the capture graph
-  CHECK_ERROR_RETURN(m_pCaptureBuilder->SetFiltergraph(m_pGraphBuilder));
+  PCOM_RETURN_ON_FAILED(m_pCaptureBuilder->SetFiltergraph,(m_pGraphBuilder));
 
   // Obtain interfaces for media control (start/stop capture)
-  CHECK_ERROR_RETURN(m_pGraphBuilder->QueryInterface(IID_IMediaControl, (void **)&m_pMediaControl));
+  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->QueryInterface,(IID_IMediaControl, (void **)&m_pMediaControl));
 
   // Get the camera output Pin 
   CComPtr<IEnumPins> pEnum;
-  CHECK_ERROR_RETURN(m_pCaptureFilter->EnumPins(&pEnum));
+  PCOM_RETURN_ON_FAILED(m_pCaptureFilter->EnumPins,(&pEnum));
 
-  CHECK_ERROR_RETURN(pEnum->Reset());
-  CHECK_ERROR_RETURN(pEnum->Next(1, &m_pCameraOutPin, NULL));
+  PCOM_RETURN_ON_FAILED(pEnum->Reset,());
+  PCOM_RETURN_ON_FAILED(pEnum->Next,(1, &m_pCameraOutPin, NULL));
 
   // Set the format of the Output pin of the camera
   if (!(SetPinFormat(0) || SetPinFormat(1) || SetPinFormat(2)))
@@ -755,7 +697,7 @@ PBoolean PVideoInputDevice_DirectShow::Start()
   if (IsCapturing())
     return true;
 
-  CHECK_ERROR_RETURN(m_pMediaControl->Run());
+  PCOM_RETURN_ON_FAILED(m_pMediaControl->Run,());
 
   PTRACE(4, "DShow\tVideo Started.");
   return true;
@@ -773,7 +715,7 @@ PBoolean PVideoInputDevice_DirectShow::Stop()
     return true;
 
   // Use Pause() not Stop() as the latter is to much of a stop and takes too long to restart
-  CHECK_ERROR_RETURN(m_pMediaControl->Pause());
+  PCOM_RETURN_ON_FAILED(m_pMediaControl->Pause,());
 
   PTRACE(3, "DShow\tVideo Stopped.");
   return true;
@@ -783,7 +725,7 @@ PBoolean PVideoInputDevice_DirectShow::Stop()
 PBoolean PVideoInputDevice_DirectShow::IsCapturing()
 {
   OAFilterState state;
-  CHECK_ERROR_RETURN(m_pMediaControl->GetState(0, &state));
+  PCOM_RETURN_ON_FAILED(m_pMediaControl->GetState,(0, &state));
   return state == State_Running;
 }
 
@@ -905,13 +847,16 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 int PVideoInputDevice_DirectShow::GetControlCommon(long control)
 {
   CComPtr<IAMVideoProcAmp> pVideoProcAmp;
-  CHECK_ERROR(m_pCaptureFilter->QueryInterface(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp), return -1);
+  if (PCOM_FAILED(m_pCaptureFilter->QueryInterface,(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp)))
+    return -1;
 
   long minimum, maximum, stepping, def, flags;
-  CHECK_ERROR(pVideoProcAmp->GetRange(control, &minimum, &maximum, &stepping, &def, &flags), return -1);
+  if (PCOM_FAILED(pVideoProcAmp->GetRange,(control, &minimum, &maximum, &stepping, &def, &flags)))
+    return -1;
 
   long value;
-  CHECK_ERROR(pVideoProcAmp->Get(control, &value, &flags), return -1);
+  if (PCOM_FAILED(pVideoProcAmp->Get,(control, &value, &flags)))
+    return -1;
 
   if (flags == VideoProcAmp_Flags_Auto)
     return -1;
@@ -940,12 +885,12 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
   PTRACE(4, "DShow\tSetControl() = " << newValue);
 
   CComPtr<IAMVideoProcAmp> pVideoProcAmp;
-  CHECK_ERROR_RETURN(m_pCaptureFilter->QueryInterface(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp));
+  PCOM_RETURN_ON_FAILED(m_pCaptureFilter->QueryInterface,(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp));
 
   long minimum, maximum, stepping, def, flags;
-  CHECK_ERROR_RETURN(pVideoProcAmp->GetRange(control, &minimum, &maximum, &stepping, &def, &flags));
+  PCOM_RETURN_ON_FAILED(pVideoProcAmp->GetRange,(control, &minimum, &maximum, &stepping, &def, &flags));
 
-  HRESULT hr;
+  PComResult hr;
   if (newValue == -1)
     hr = pVideoProcAmp->Set(control, 0, VideoProcAmp_Flags_Auto);
   else
@@ -953,7 +898,7 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
     long scaled = minimum + ((maximum-minimum) * newValue) / 65536;
     hr = pVideoProcAmp->Set(control, scaled, VideoProcAmp_Flags_Manual);
   }
-  PTRACE_IF(2, FAILED(hr), "DShow\tFailed to setRange interface on " << control << " : " << ErrorMessage(hr));
+  PTRACE_IF(2, hr.Failed(), "DShow\tFailed to setRange interface on " << control << " : " << hr);
 
   return true;
 }
@@ -1151,24 +1096,22 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * pData)
 bool PVideoInputDevice_DirectShow::BindCaptureDevice(const PString & devName)
 {
   // Create an instance of the video capture filter
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_VideoCapture,
+  PCOM_RETURN_ON_FAILED(CoCreateInstance(CLSID_VideoCapture,
                                       NULL,
                                       CLSCTX_INPROC,
                                       IID_IBaseFilter,
                                       (LPVOID *)&m_pCaptureFilter));
 
   CComPtr<IPersistPropertyBag> pPropertyBag;
-  CHECK_ERROR_RETURN(m_pCaptureFilter->QueryInterface(&pPropertyBag));
+  PCOM_RETURN_ON_FAILED(m_pCaptureFilter->QueryInterface(&pPropertyBag));
 
-  VARIANT varName;
+  PComVariant varName;
   varName.vt = VT_BSTR;
   varName.bstrVal = ::SysAllocString(devName.AsUCS2());
 
   CPropertyBag propBag;
-  CHECK_ERROR_RETURN(propBag.Write(_T("VCapName"), &varName));
-  CHECK_ERROR_RETURN(pPropertyBag->Load(&propBag, NULL));
-
-  VariantClear(&varName);
+  PCOM_RETURN_ON_FAILED(propBag.Write(_T("VCapName"), &varName));
+  PCOM_RETURN_ON_FAILED(pPropertyBag->Load(&propBag, NULL));
   return true;
 }
 
@@ -1184,17 +1127,17 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
 
   m_pSampleGrabber = grabber;
 
-  CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(dynamic_cast<IBaseFilter *>(grabber), L"Sampler"));
+  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->AddFilter(dynamic_cast<IBaseFilter *>(grabber), L"Sampler"));
 
   // Find the source's output pin and the renderer's input pin
   CComPtr<IPin> pCapturePinOut;
-  CHECK_ERROR_RETURN(m_pCaptureFilter->FindPin(L"Capture", &pCapturePinOut));
+  PCOM_RETURN_ON_FAILED(m_pCaptureFilter->FindPin(L"Capture", &pCapturePinOut));
 
   CComPtr<IPin> pGrabberPinIn;
-  CHECK_ERROR_RETURN(m_pSampleGrabber->FindPin(L"In", &pGrabberPinIn));
+  PCOM_RETURN_ON_FAILED(m_pSampleGrabber->FindPin(L"In", &pGrabberPinIn));
 
   // Connect these two filters pins
-  CHECK_ERROR_RETURN(m_pGraphBuilder->Connect(pCapturePinOut, pGrabberPinIn));
+  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->Connect(pCapturePinOut, pGrabberPinIn));
 
   return true;
 }
@@ -1216,13 +1159,16 @@ class PComEnumerator
     PComEnumerator()
     {
       // Create the system device enumerator
-      CHECK_ERROR(CoCreateInstance(CLSID_SystemDeviceEnum,
-                                   NULL,
-                                   CLSCTX_INPROC,
-                                   IID_ICreateDevEnum,
-                                   (LPVOID *)&m_pDevEnum), return);
+      if (PCOM_FAILED(CoCreateInstance,(CLSID_SystemDeviceEnum,
+                                        NULL,
+                                        CLSCTX_INPROC,
+                                        IID_ICreateDevEnum,
+                                        (LPVOID *)&m_pDevEnum)))
+        return;
+
       // Create an enumerator for the video capture devices
-      CHECK_ERROR(m_pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &m_pClassEnum, 0), return);
+      if (PCOM_FAILED(m_pDevEnum->CreateClassEnumerator,(CLSID_VideoInputDeviceCategory, &m_pClassEnum, 0)))
+        return;
 
       PTRACE_IF(2, m_pClassEnum == NULL, "DShow\tNo video capture device was detected.");
     }
@@ -1243,20 +1189,16 @@ class PComEnumerator
     PString GetMonikerName()
     {
       CComPtr<IPropertyBag> pPropBag;
-      CHECK_ERROR(m_pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag), return PString::Empty());
-
-      // Find the description or friendly name.
-      VARIANT varName;
-      varName.vt = VT_BSTR;
-      HRESULT hr = pPropBag->Read(L"Description", &varName, NULL);
-      if (FAILED(hr))
-        hr = pPropBag->Read(L"FriendlyName", &varName, NULL);
-      if (FAILED(hr))
+      if (PCOM_FAILED(m_pMoniker->BindToStorage,(0, 0, IID_IPropertyBag, (void **)&pPropBag)))
         return PString::Empty();
 
-      PString name = varName.bstrVal;
-      VariantClear(&varName);
-      return name;
+      // Find the description or friendly name.
+      PComVariant varName;
+      if (PCOM_FAILED(pPropBag->Read,(L"Description", &varName, NULL)) &&
+          PCOM_FAILED(pPropBag->Read,(L"FriendlyName", &varName, NULL)))
+        return PString::Empty();
+
+      return varName.AsString();
     }
 };
 
@@ -1284,26 +1226,26 @@ PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
 PVideoInputControl_DirectShow::PVideoInputControl_DirectShow(IAMCameraControl * _pCC)
   : t_pCC(_pCC)
 {
-  HRESULT  hr;
+  PComResult hr;
   PVideoControlInfo panInfo;
   PVideoControlInfo tiltInfo;
   PVideoControlInfo zoomInfo;
 
   // Retrieve information about the PTZ
   panInfo.type= ControlPan;
-  hr = t_pCC->GetRange(CameraControl_Pan, &panInfo.min, &panInfo.max, &panInfo.step, &panInfo.def, &panInfo.flags);
   panInfo.current = panInfo.def;
-  if (SUCCEEDED(hr)) m_info.push_back(panInfo);
+  if (hr.Succeeded(t_pCC->GetRange(CameraControl_Pan, &panInfo.min, &panInfo.max, &panInfo.step, &panInfo.def, &panInfo.flags)))
+    m_info.push_back(panInfo);
 
   tiltInfo.type= ControlTilt;
-  hr = t_pCC->GetRange(CameraControl_Tilt, &tiltInfo.min, &tiltInfo.max, &tiltInfo.step, &tiltInfo.def, &tiltInfo.flags);
   tiltInfo.current = tiltInfo.def;
-  if (SUCCEEDED(hr)) m_info.push_back(tiltInfo);
+  if (hr.Succeeded(t_pCC->GetRange(CameraControl_Tilt, &tiltInfo.min, &tiltInfo.max, &tiltInfo.step, &tiltInfo.def, &tiltInfo.flags)))
+    m_info.push_back(tiltInfo);
 
   zoomInfo.type= ControlZoom;
-  hr = t_pCC->GetRange(CameraControl_Zoom, &zoomInfo.min, &zoomInfo.max, &zoomInfo.step, &zoomInfo.def, &zoomInfo.flags);
   zoomInfo.current = zoomInfo.def;
-  if (SUCCEEDED(hr)) m_info.push_back(zoomInfo);
+  if (hr.Succeeded(t_pCC->GetRange(CameraControl_Zoom, &zoomInfo.min, &zoomInfo.max, &zoomInfo.step, &zoomInfo.def, &zoomInfo.flags)))
+    m_info.push_back(zoomInfo);
 
 }
 
@@ -1311,7 +1253,7 @@ bool PVideoInputControl_DirectShow::Pan(long value, bool absolute)
 {
   PWaitAndSignal m(ccmutex);
 
-  HRESULT  hr;
+  PComResult hr;
   PVideoControlInfo control;
   if (GetVideoControlInfo(PVideoControlInfo::ControlPan, control)) {
     long flags;
@@ -1320,13 +1262,12 @@ bool PVideoInputControl_DirectShow::Pan(long value, bool absolute)
     else
       flags = KSPROPERTY_CAMERACONTROL_FLAGS_RELATIVE | KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
 
-    hr = t_pCC->Set(CameraControl_Pan, value, flags);
-    if SUCCEEDED(hr) {
-      hr = t_pCC->Get(CameraControl_Pan, &control.current, &flags);
+    if (hr.Succeeded(t_pCC->Set(CameraControl_Pan, value, flags)) &&
+        hr.Succeeded(t_pCC->Get(CameraControl_Pan, &control.current, &flags))) {
       PTRACE(5, "DShow\tSet Pan to " << control.current);
       return true;
     }
-    PTRACE(2, "DShow\tFailed to pan to " << value);
+    PTRACE(2, "DShow\tFailed to pan to " << value << ": " << hr);
   }
   return false;
 }
@@ -1335,7 +1276,7 @@ bool PVideoInputControl_DirectShow::Tilt(long value, bool absolute)
 {
   PWaitAndSignal m(ccmutex);
 
-  HRESULT  hr;
+  PComResult hr;
   PVideoControlInfo control;
   if (GetVideoControlInfo(PVideoControlInfo::ControlTilt, control)) {
     long flags;
@@ -1344,13 +1285,12 @@ bool PVideoInputControl_DirectShow::Tilt(long value, bool absolute)
     else
       flags = KSPROPERTY_CAMERACONTROL_FLAGS_RELATIVE | KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
 
-    hr = t_pCC->Set(CameraControl_Tilt, value, flags);
-    if SUCCEEDED(hr) {
-      hr = t_pCC->Get(CameraControl_Tilt, &control.current, &flags);
+    if (hr.Succeeded(t_pCC->Set(CameraControl_Tilt, value, flags)) &&
+        hr.Succeeded(t_pCC->Get(CameraControl_Tilt, &control.current, &flags))) {
       PTRACE(5, "DShow\tSet tilt to " << control.current);
       return true;
     }
-    PTRACE(2, "DShow\tFailed to tilt to " << value);
+    PTRACE(2, "DShow\tFailed to tilt to " << value << ": " << hr);
   }    
   return false;
 }
@@ -1365,7 +1305,7 @@ bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
     return false;
   }
 
-  HRESULT  hr;
+  PComResult hr;
   PVideoControlInfo control;
   if (GetVideoControlInfo(PVideoControlInfo::ControlZoom, control)) {
     long flags;
@@ -1376,13 +1316,12 @@ bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
       control.current = control.current + value;
     }
 
-    hr = t_pCC->Set(CameraControl_Zoom, control.current, flags);
-    if SUCCEEDED(hr) {
+    if (hr.Succeeded(t_pCC->Set(CameraControl_Zoom, control.current, flags))) {
       PTRACE(5, "DShow\tSet Zoom to " << control.current);
       SetCurrentPosition(PVideoControlInfo::ControlZoom, control.current);
       return true;
     }
-    PTRACE(2, "DShow\tFailed to zoom to " << value);
+    PTRACE(2, "DShow\tFailed to zoom to " << value << ": " << hr);
   }
   return false;
 }
@@ -1589,44 +1528,44 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   PTRACE(5, "DShow\tBuilding Sample Grabber");
 
   CComPtr<IBaseFilter> pGrab; 
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_SampleGrabber,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_IBaseFilter,
-                                      (LPVOID *)&pGrab));
-  CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(pGrab, L"Sample Grabber"));
-  CHECK_ERROR_RETURN(pGrab->QueryInterface(IID_ISampleGrabber, (void **)&m_pSampleGrabber));
+  PCOM_RETURN_ON_FAILED(CoCreateInstance,(CLSID_SampleGrabber,
+                                          NULL,
+                                          CLSCTX_INPROC_SERVER,
+                                          IID_IBaseFilter,
+                                          (LPVOID *)&pGrab));
+  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->AddFilter,(pGrab, L"Sample Grabber"));
+  PCOM_RETURN_ON_FAILED(pGrab->QueryInterface,(IID_ISampleGrabber, (void **)&m_pSampleGrabber));
 
   AM_MEDIA_TYPE mt;
   ZeroMemory(&mt, sizeof(AM_MEDIA_TYPE));
   mt.majortype = MEDIATYPE_Video;
   mt.subtype = m_selectedGUID;
-  CHECK_ERROR_RETURN(m_pSampleGrabber->SetMediaType(&mt));
+  PCOM_RETURN_ON_FAILED(m_pSampleGrabber->SetMediaType,(&mt));
 
-  CHECK_ERROR_RETURN(m_pSampleGrabber->SetBufferSamples(true));
+  PCOM_RETURN_ON_FAILED(m_pSampleGrabber->SetBufferSamples,(true));
 
   PTRACE(5, "DShow\tSetting Sample Grabber Callback");
   m_pSampleGrabberCB = new CSampleGrabberCB();
-  CHECK_ERROR_RETURN(m_pSampleGrabber->SetCallback(m_pSampleGrabberCB, 1));
+  PCOM_RETURN_ON_FAILED(m_pSampleGrabber->SetCallback,(m_pSampleGrabberCB, 1));
 
   PTRACE(5, "DShow\tConnect sample grabber to camera");
-  CHECK_ERROR_RETURN(ConnectFilters(m_pGraphBuilder, m_pCameraOutPin, pGrab));
+  PCOM_RETURN_ON_FAILED(ConnectFilters,(m_pGraphBuilder, m_pCameraOutPin, pGrab));
 
   // Set the NULL Renderer
   PTRACE(5, "DShow\tBuilding NULL output filter");
-  CHECK_ERROR_RETURN(CoCreateInstance(CLSID_NullRenderer,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_IBaseFilter,
-                                      (LPVOID *)&m_pNullRenderer));
+  PCOM_RETURN_ON_FAILED(CoCreateInstance,(CLSID_NullRenderer,
+                                          NULL,
+                                          CLSCTX_INPROC_SERVER,
+                                          IID_IBaseFilter,
+                                          (LPVOID *)&m_pNullRenderer));
 
-  CHECK_ERROR_RETURN(m_pGraphBuilder->AddFilter(m_pNullRenderer, L"NULL Output"));
+  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->AddFilter,(m_pNullRenderer, L"NULL Output"));
 
   PTRACE(5, "DShow\tConnect Null Render to Grab filter Pin");
-  CHECK_ERROR_RETURN(ConnectFilters(m_pGraphBuilder, pGrab, m_pNullRenderer));
+  PCOM_RETURN_ON_FAILED(ConnectFilters,(m_pGraphBuilder, pGrab, m_pNullRenderer));
 
   PTRACE(5, "DShow\tChecking image flip");
-  CHECK_ERROR_RETURN(m_pSampleGrabber->GetConnectedMediaType(&mt));
+  PCOM_RETURN_ON_FAILED(m_pSampleGrabber->GetConnectedMediaType,(&mt));
 
   VIDEOINFOHEADER * pvih = (VIDEOINFOHEADER *)mt.pbFormat;
   if (pvih->bmiHeader.biHeight > 0) {
