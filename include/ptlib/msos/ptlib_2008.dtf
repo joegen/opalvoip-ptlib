@@ -2662,6 +2662,8 @@ EXPORTS
     ??0PColourConverter@@QAE@ABVPVideoFrameInfo@@0@Z @2653 NONAME
     ??0PColourConverterRegistration@@QAE@ABVPString@@0@Z @2654 NONAME
     ??0PComEnumerator@@QAE@XZ @2655 NONAME
+    ??0PComResult@@QAE@J@Z @23893 NONAME
+    ??0PComVariant@@QAE@XZ @23894 NONAME
     ??0PCondMutex@@QAE@XZ @2656 NONAME
     ??0PConfig@@QAE@ABVPFilePath@@ABVPString@@@Z @2657 NONAME
     ??0PConfig@@QAE@ABVPString@@W4Source@0@00@Z @2658 NONAME
@@ -4595,6 +4597,7 @@ EXPORTS
     ??1PColourConverter@@UAE@XZ @4561 NONAME
     ??1PColourConverterRegistration@@UAE@XZ @4562 NONAME
     ??1PComEnumerator@@QAE@XZ @4563 NONAME
+    ??1PComVariant@@QAE@XZ @23895 NONAME
     ??1PCondMutex@@UAE@XZ @4564 NONAME
     ??1PConfig@@UAE@XZ @4565 NONAME
     ??1PConfigArgs@@UAE@XZ @4566 NONAME
@@ -5421,6 +5424,7 @@ EXPORTS
     ??4PChannel@@IAEAAV0@ABV0@@Z @5369 NONAME
     ??4PChannelStreamBuffer@@QAEAAV0@ABV0@@Z @5370 NONAME
     ??4PCharArray@@QAEAAV0@ABV0@@Z @5371 NONAME
+    ??4PComResult@@QAEAAV0@J@Z @23896 NONAME
     ??4PContainer@@QAEAAV0@ABV0@@Z @5372 NONAME
     ??4PCriticalSection@@QAEAAV0@ABV0@@Z @5373 NONAME
     ??4PDirectory@@QAEAAV0@ABVPString@@@Z @5374 NONAME
@@ -5528,12 +5532,14 @@ EXPORTS
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AA_K@Z @5474 NONAME
     ??5PArgList@@QAEAAV0@H@Z @5475 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@AAVMSIPAddress@PILSSession@@@Z @5476 NONAME
+    ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABUPComVariant@@@Z @23897 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABUQoS@PIPSocket@@@Z @23393 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABUTimes@PThread@@@Z @5477 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABVAddress@PIPSocket@@@Z @5478 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABVAddressAndPort@PIPSocket@@@Z @23394 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABVElement@PHTML@@@Z @5479 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABVEscaped@PHTML@@@Z @5480 NONAME
+    ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABVPComResult@@@Z @23898 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABVPObject@@@Z @5482 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@ABVPString@@@Z @5483 NONAME
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@W4NatTypes@PNatMethod@@@Z @5484 NONAME
@@ -13497,6 +13503,7 @@ EXPORTS
     ?AsString@AddressAndPort@PIPSocket@@QBE?AVPString@@D@Z @23617 NONAME
     ?AsString@PASN_ObjectId@@QBE?AVPString@@XZ @13334 NONAME
     ?AsString@PASN_OctetString@@QBE?AVPString@@XZ @13335 NONAME
+    ?AsString@PComVariant@@QBE?AVPString@@XZ @23899 NONAME
     ?AsString@PGloballyUniqueID@@QBE?AVPString@@XZ @13336 NONAME
     ?AsString@PIpAccessControlEntry@@QBE?AVPString@@XZ @13337 NONAME
     ?AsString@PMIMEInfo@@QBE?AVPString@@XZ @13339 NONAME
@@ -13960,6 +13967,7 @@ EXPORTS
     ?Class@PBase64@@SAPBDXZ @13796 NONAME
     ?Class@PBER_Stream@@SAPBDXZ @13797 NONAME
     ?Class@PBitArray@@SAPBDXZ @13798 NONAME
+    ?Class@PBYTEArray@@SAPBDXZ @23900 NONAME
     ?Class@PCaselessString@@SAPBDXZ @13799 NONAME
     ?Class@PChannel@@SAPBDXZ @13800 NONAME
     ?Class@PCharArray@@SAPBDXZ @13801 NONAME
@@ -13993,6 +14001,7 @@ EXPORTS
     ?Class@PFTPServer@@SAPBDXZ @13829 NONAME
     ?Class@PGloballyUniqueID@@SAPBDXZ @13830 NONAME
     ?Class@PHashTable@@SAPBDXZ @13831 NONAME
+    ?Class@PHashTableInfo@@SAPBDXZ @23901 NONAME
     ?Class@PHTML@@SAPBDXZ @13832 NONAME
     ?Class@PHTTP@@SAPBDXZ @13833 NONAME
     ?Class@PHTTPAuthority@@SAPBDXZ @13834 NONAME
@@ -14192,6 +14201,7 @@ EXPORTS
     ?Class@PURLLoader@@SAPBDXZ @14029 NONAME
     ?Class@PURLScheme@@SAPBDXZ @14030 NONAME
     ?Class@PURL_CalltoScheme@@SAPBDXZ @14031 NONAME
+    ?Class@PURL_DataLoader@@SAPBDXZ @23902 NONAME
     ?Class@PURL_DataScheme@@SAPBDXZ @14032 NONAME
     ?Class@PURL_FileLoader@@SAPBDXZ @14033 NONAME
     ?Class@PURL_FtpLoader@@SAPBDXZ @14034 NONAME
@@ -14573,6 +14583,7 @@ EXPORTS
     ?Clr@PHTML@@QAEXW4ElementInSet@1@@Z @14410 NONAME
     ?CoCreateInstance@?$CComPtr@UISpObjectTokenCategory@@@@QAEJABU_GUID@@PAUIUnknown@@K0@Z @14411 NONAME
     ?CoCreateInstance@?$CComPtr@UISpVoice@@@@QAEJABU_GUID@@PAUIUnknown@@K0@Z @14412 NONAME
+    ?CoInitialise@PThread@@QAE_NXZ @23903 NONAME
     ?ColAttribute@Statement@PODBC@@QAE_NGGPAXFPAFPAJ@Z @14413 NONAME
     ?collate@?$_Locbase@H@std@@2HB @14414 NONAME
     ?Column@Row@PODBC@@QBEAAVField@2@ABVPString@@@Z @14415 NONAME
@@ -16491,6 +16502,8 @@ EXPORTS
     ?factory@?1???0PPlugin_PVideoOutputDevice_Window_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16308 NONAME
     ?factory@?1???0PPlugin_PVideoOutputDevice_YUVFile_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16309 NONAME
     ?failbit@?$_Iosb@H@std@@2W4_Iostate@12@B @16310 NONAME
+    ?Failed@PComResult@@QAE_NJPBD@Z @23904 NONAME
+    ?Failed@PComResult@@QBE_NXZ @23905 NONAME
     ?faultCodeToString@@YA?AVPString@@H@Z @16311 NONAME
     ?FetchScroll@Statement@PODBC@@QAE_NFJ@Z @16312 NONAME
     ?FileRead@PWAVFile@@QAE_NPAXH@Z @16313 NONAME
@@ -17429,6 +17442,7 @@ EXPORTS
     ?GetErrorInfo@PXMLParser@@QAEXAAVPString@@AAI1@Z @17242 NONAME
     ?GetErrorLine@PXML@@QBEIXZ @17243 NONAME
     ?GetErrorNumber@PChannel@@QBEHW4ErrorGroup@1@@Z @17244 NONAME
+    ?GetErrorNumber@PComResult@@QBEHXZ @23906 NONAME
     ?GetErrorString@PXML@@QBE?AVPString@@XZ @17245 NONAME
     ?GetErrorText@PChannel@@SA?AVPString@@W4Errors@1@H@Z @17246 NONAME
     ?GetErrorText@PChannel@@UBE?AVPString@@W4ErrorGroup@1@@Z @17247 NONAME
@@ -21788,6 +21802,9 @@ EXPORTS
     ?SubjectTag@Message@XMPP@@SAABVPCaselessString@@XZ @21595 NONAME
     ?SubjectTag@PRFC822Channel@@SAABVPCaselessString@@XZ @21596 NONAME
     ?SubstituteEquivalSequence@PHTTPServiceProcess@@UAE_NAAVPHTTPRequest@@ABVPString@@AAV3@@Z @21597 NONAME
+    ?Succeeded@PComResult@@QAE_NJ@Z @23907 NONAME
+    ?Succeeded@PComResult@@QAE_NJPBD@Z @23908 NONAME
+    ?Succeeded@PComResult@@QBE_NXZ @23909 NONAME
     ?Successor@PSortedListInfo@@QBEPAUPSortedListElement@@PAU2@@Z @21598 NONAME
     ?Suspend@PThread@@UAEX_N@Z @21600 NONAME
     ?SwapRedAndBlue@PStandardColourConverter@@IBE_NPBEPAEPAHII@Z @21601 NONAME
