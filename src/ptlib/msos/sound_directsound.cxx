@@ -307,15 +307,15 @@ PString PSoundChannelDirectSound::GetDefaultDevice (Directions dir) // static
   PAssert(dir == Player || dir == Recorder, "Invalid device direction parameter");
 
   GUID deviceGUID;
-  HRESULT result = GetDeviceID((dir == Player)? &DSDEVID_DefaultPlayback  : &DSDEVID_DefaultCapture, &deviceGUID);
-  if (result != S_OK) {
-    PTRACE(4, NULL, NULL, "Could not find default device: " << GetErrorText(Miscellaneous, result));
+  PComResult result = GetDeviceID((dir == Player)? &DSDEVID_DefaultPlayback  : &DSDEVID_DefaultCapture, &deviceGUID);
+  if (result.Failed()) {
+    PTRACE(4, NULL, NULL, "Could not find default device: " << result);
     return PString();
   }
   PDSoundDeviceInfoVector devices;
   result = GetFilteredDSoundDeviceInfo(deviceGUID, dir, PString::Empty(), -1, devices);
-  if (result != S_OK) {
-    PTRACE(4, NULL, NULL, "Open: Could not retrieve device information: " << GetErrorText(Miscellaneous, result));
+  if (result.Failed()) {
+    PTRACE(4, NULL, NULL, "Open: Could not retrieve device information: " << result);
     return PString();
   }
   if (devices.size() == 0) {
@@ -331,9 +331,9 @@ PStringArray PSoundChannelDirectSound::GetDeviceNames (Directions dir) // static
   PAssert(dir == Player || dir == Recorder, "Invalid device direction parameter");
 
   PDSoundDeviceInfoVector devices;
-  HRESULT result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
-  if (result != S_OK) {
-    PTRACE(4, NULL, NULL, "Could not get device list: " << GetErrorText(Miscellaneous, result));
+  PComResult result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
+  if (result.Failed()) {
+    PTRACE(4, NULL, NULL, "Could not get device list: " << result);
     return PString();
   }
   PStringArray names;
@@ -376,10 +376,10 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
 
   // get info for all devices for direction
   PDSoundDeviceInfoVector devices;
-  HRESULT result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
-  if (result != S_OK) {
-    SetErrorValues(Miscellaneous, result);
-    PTRACE(4, "Open" << GetDirectionText() << ": Could not get device list: " << GetErrorText());
+  PComResult result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
+  if (result.Failed()) {
+    SetErrorValues(Miscellaneous, GetErrorNumber());
+    PTRACE(4, "Open" << GetDirectionText() << ": Could not get device list: " << result);
     return false;
   }
   // validate the device name, use default if bad
@@ -391,9 +391,9 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
   if (deviceInfo == devices.end()) {
     GUID deviceGUID;
     result = GetDefaultDeviceGUID(m_deviceName, activeDirection, deviceGUID);
-    if (result != S_OK) {
-      SetErrorValues(Miscellaneous, result);
-      PTRACE(4, "Open" << GetDirectionText() << ": Could not get default device ID: " << GetErrorText());
+    if (result.Failed()) {
+      SetErrorValues(Miscellaneous, result.GetErrorNumber());
+      PTRACE(4, "Open" << GetDirectionText() << ": Could not get default device ID: " << result);
       return false;
     }
     for (deviceInfo = devices.begin(); deviceInfo != devices.end(); ++deviceInfo) {

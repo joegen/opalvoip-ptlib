@@ -35,16 +35,17 @@
 #include <ptlib/pprocess.h>
 
 #include <ptlib/msos/ptlib/debstrm.h>
+#include <ptlib/msos/ptlib/pt_atl.h>
 
 #include <process.h>
+#include <errors.h>
 
-#if defined(_MSC_VER) && !defined(_WIN32_WCE)
-  #pragma comment(lib, "mpr.lib")
-#endif
+#ifdef _MSC_VER
+  #ifndef _WIN32_WCE
+    #pragma comment(lib, "mpr.lib")
+  #endif
 
-#if defined(P_WIN_COM) 
-  #include <objbase.h>
-  #ifdef _MSC_VER
+  #ifdef P_WIN_COM
     #pragma comment(lib, "ole32.lib")
   #endif
 #endif
@@ -844,17 +845,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   process.InternalThreadStarted(thread);
 
-#if defined(P_WIN_COM)
-  ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
-#endif
-
   process.OnThreadStart(*thread);
   thread->Main();
   process.OnThreadEnded(*thread);
-
-#if defined(P_WIN_COM)
-  ::CoUninitialize();
-#endif
 
   return 0;
 }
@@ -875,6 +868,9 @@ PThread::PThread(bool isProcess)
   , m_autoDelete(!isProcess)
   , m_originalStackSize(0)
   , m_threadId(GetCurrentThreadId())
+#if defined(P_WIN_COM)
+  , m_comInitialised(false)
+#endif
 {
   if (isProcess) {
     m_threadHandle = GetCurrentThread();
@@ -895,6 +891,9 @@ PThread::PThread(PINDEX stackSize,
   , m_autoDelete(deletion == AutoDeleteThread)
   , m_originalStackSize(std::max(stackSize, (PINDEX)65535))
   , m_threadName(name)
+#if defined(P_WIN_COM)
+  , m_comInitialised(false)
+#endif
 {
   PAssert(m_originalStackSize > 0, PInvalidParameter);
 
@@ -909,6 +908,79 @@ PThread::PThread(PINDEX stackSize,
 
   SetPriority(priorityLevel);
 }
+
+
+#ifdef P_WIN_COM
+bool PThread::CoInitialise()
+{
+  if (m_comInitialised)
+    return true;
+
+  HRESULT result = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
+  if (FAILED(result)) {
+    PTRACE(1, "PTLib", "Could not initialise COM: error=0x" << hex << result);
+    return false;
+  }
+
+  result = ::CoInitializeSecurity(NULL, 
+                                  -1,                          // COM authentication
+                                  NULL,                        // Authentication services
+                                  NULL,                        // Reserved
+                                  RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
+                                  RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
+                                  NULL,                        // Authentication info
+                                  EOAC_NONE,                   // Additional capabilities 
+                                  NULL                         // Reserved
+                                  );
+  PTRACE_IF(2, FAILED(result), "PTLib", "Could not initialise COM security: error=0x" << hex << result);
+
+  m_comInitialised = true;
+  return true;
+}
+
+
+std::ostream & operator<<(std::ostream & strm, const PComResult & result)
+{
+  TCHAR msg[MAX_ERROR_TEXT_LEN+1];
+  DWORD dwMsgLen = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL,
+                                 result.m_result,
+                                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                                 msg, sizeof(msg),
+                                 NULL);
+  if (dwMsgLen > 0)
+    return strm << msg;
+
+#ifndef _WIN32_WCE
+  dwMsgLen = AMGetErrorText(result.m_result, msg, sizeof(msg));
+  if (dwMsgLen > 0)
+    return strm << msg;
+#endif
+
+  return strm << "0x" << hex << result.m_result << dec;
+}
+
+
+std::ostream & operator<<(std::ostream & strm, const PComVariant & var)
+{
+  switch (var.vt) {
+    case VT_BSTR :
+      return strm << PString(var.bstrVal);
+    case VT_I2 :
+      return strm << var.iVal;
+    case VT_I4 :
+      return strm << var.lVal;
+    case VT_I8 :
+      return strm << var.llVal;
+    case VT_R4 :
+      return strm << var.fltVal;
+    case VT_R8 :
+      return strm << var.dblVal;
+  }
+  return strm;
+}
+
+#endif // P_WIN_COM
 
 
 static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
@@ -944,6 +1016,11 @@ void PThread::InternalDestroy()
     m_threadHandle.Detach();
   else
     m_threadHandle.Close();
+
+#if defined(P_WIN_COM)
+  if (m_comInitialised)
+    ::CoUninitialize();
+#endif
 }
 
 

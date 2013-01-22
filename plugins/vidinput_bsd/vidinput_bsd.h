@@ -88,20 +88,7 @@ public:
   PBoolean SetFrameRate(unsigned int);
   PBoolean VerifyHardwareFrameSize(unsigned int, unsigned int);
 
-  PBoolean GetParameters(int*, int*, int*, int*, int*);
-
   PBoolean SetColourFormat(const PString&);
-
-  int GetContrast();
-  PBoolean SetContrast(unsigned int);
-  int GetBrightness();
-  PBoolean SetBrightness(unsigned int);
-//  int GetWhiteness();
-//  PBoolean SetWhiteness(unsigned int);
-//  int GetColour();
-//  PBoolean SetColour(unsigned int);
-  int GetHue();
-  PBoolean SetHue(unsigned int);
 
 //  PBoolean SetVideoChannelFormat(int, PVideoDevice::VideoFormat);
   PBoolean SetVideoFormat(PVideoDevice::VideoFormat);

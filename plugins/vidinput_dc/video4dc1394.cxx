@@ -99,7 +99,7 @@
  * src/ptlib/common/vconvert.cxx
  *
  * ToDo or Bugs:
- * This module does not implement GetBrightness() etc.  1394 cameras
+ * This module does not implement GetAttributes() etc.  1394 cameras
  * can do both automatic control and manual control of brightness
  * etc., and they are usually set to automatic
  * control. Get/SetBrightness() etc. cannot access manual/automatic
@@ -494,73 +494,6 @@ PBoolean PVideoInputDevice_1394DC::SetVideoFormat(VideoFormat newFormat)
     return false;
   }
   return true;
-}
-
-int PVideoInputDevice_1394DC::GetBrightness()
-{
-  return -1;
-}
-
-
-PBoolean PVideoInputDevice_1394DC::SetBrightness(unsigned newBrightness)
-{
-  return false;
-}
-
-
-int PVideoInputDevice_1394DC::GetHue()
-{
-  return -1;
-}
-
-
-PBoolean PVideoInputDevice_1394DC::SetHue(unsigned newHue)
-{
-  return false;
-}
-
-
-int PVideoInputDevice_1394DC::GetContrast()
-{
-  return -1;
-}
-
-
-PBoolean PVideoInputDevice_1394DC::SetContrast(unsigned newContrast)
-{
-  return false;
-}
-
-PBoolean PVideoInputDevice_1394DC::SetColour(unsigned newColour) 
-{
-  return -1;
-}
-
-int PVideoInputDevice_1394DC::GetColour()
-{
-  return -1;
-}
-
-
-PBoolean PVideoInputDevice_1394DC::SetWhiteness(unsigned newWhiteness) 
-{
-  return false;
-}
-
-int PVideoInputDevice_1394DC::GetWhiteness()
-{
-  return -1;
-}
-
-
-PBoolean PVideoInputDevice_1394DC::GetParameters (int *whiteness, int *brightness,
-                                       int *colour, int *contrast, int *hue)
-{
-  *whiteness = -1;
-  *brightness = -1;
-  *colour = -1;
-  *hue = -1;
-  return false;
 }
 
 
