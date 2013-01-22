@@ -92,7 +92,7 @@ class PSoundChannelCoreAudio : public PSoundChannel
    virtual PBoolean IsOpen() const;
    /* gets never called, see sound.h:
     * baseChannel->PChannel::GetHandle();*/
-   virtual int GetHandle() const;
+   virtual P_INT_PTR GetHandle() const;
 
    virtual PBoolean Abort();
    PSoundChannel *CreateOpenedChannel(const PString & driverName,

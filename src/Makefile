@@ -114,6 +114,14 @@ $(OBJDIR)/directshow.o: $(PLATFORM_SRC_DIR)/directshow.cxx
 	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
+ifeq ($(target_os),Darwin)
+OBJS	+= $(PLATFORM_SRC_DIR)/macvidcap.o
+ENDLDLIBS += -framework QTKit -framework CoreVideo -framework Foundation -lobjc
+$(OBJDIR)/macvidcap.o: $(PLATFORM_SRC_DIR)/macvidcap.mm
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+endif # Darwin
+
 endif # HAS_VIDEO
 
 ## SOUND DRIVERS

@@ -348,43 +348,15 @@ ifeq ($(target_os),Darwin)
  
 # MacOS X or later / Darwin
 
-
-# Quicktime support is still a long way off. But for development purposes,
-# I am inluding the flags to allow QuickTime to be linked.
-# Uncomment them if you wish, but it will do nothing for the time being.
-
-#HAS_QUICKTIMEX := 1
-#PTLIB_CFLAGS     += -DHAS_QUICKTIMEX
-#ENDLDLIBS      += -framework QuickTime
- 
 ifeq ($(target_cpu),x86)
 PTLIB_CFLAGS	+= -m486
 endif
 
-ARCHIVE			:= libtool -static -o
-P_USE_RANLIB	:= 0
+ARCHIVE      := libtool -static -o
+P_USE_RANLIB := 0
 
 endif # Darwin
 
-ifeq ($(target_os),Carbon)
-
-# MacOS 9 or X using Carbonlib calls
-
-PTLIB_CFLAGS	+= -DP_MACOS
-
-# I'm having no end of trouble with the debug memory allocator.
-MEMORY_CHECK    := 0
-
-# Carbon is only available for full Mac OS X, not pure Darwin, so the only
-# currently available architecture is PPC.
-P_MAC_MPTHREADS := 1
-PTLIB_CFLAGS	+= -DP_MAC_MPTHREADS
-LDLIBS		+= -prebind -framework CoreServices -framework QuickTime -framework Carbon
-  
-P_SHAREDLIB	:= 0 
-P_USE_RANLIB	:= 1
-
-endif # Carbon
 
 ####################################################
 

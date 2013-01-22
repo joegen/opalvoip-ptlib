@@ -107,56 +107,6 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
     );
 
 
-    /**Get the brightness of the image. 0xffff-Very bright.
-     */
-    int GetBrightness();
-
-    /**Set brightness of the image. 0xffff-Very bright.
-     */
-    PBoolean SetBrightness(unsigned newBrightness);
-
-
-    /**Get the whiteness of the image. 0xffff-Very white.
-     */
-    int GetWhiteness();
-
-    /**Set whiteness of the image. 0xffff-Very white.
-     */
-    PBoolean SetWhiteness(unsigned newWhiteness);
-
-
-    /**Get the colour of the image. 0xffff-lots of colour.
-     */
-    int GetColour();
-
-    /**Set colour of the image. 0xffff-lots of colour.
-     */
-    PBoolean SetColour(unsigned newColour);
-
-
-    /**Get the contrast of the image. 0xffff-High contrast.
-     */
-    int GetContrast();
-
-    /**Set contrast of the image. 0xffff-High contrast.
-     */
-    PBoolean SetContrast(unsigned newContrast);
-
-
-    /**Get the hue of the image. 0xffff-High hue.
-     */
-    int GetHue();
-
-    /**Set hue of the image. 0xffff-High hue.
-     */
-    PBoolean SetHue(unsigned newHue);
-    
-    
-    /**Return whiteness, brightness, colour, contrast and hue in one call.
-     */
-    PBoolean GetParameters (int *whiteness, int *brightness, 
-				int *colour, int *contrast, int *hue);
-
     /**Get the minimum & maximum size of a frame on the device.
     */
     PBoolean GetFrameSizeLimits(
