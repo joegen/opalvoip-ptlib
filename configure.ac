@@ -2114,17 +2114,18 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for AVC video support
 
-      AC_ARG_ENABLE(avc, AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]))
+#until avc lib header API change is solved, default to disabled.
+#      AC_ARG_ENABLE(avc, AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]))
+AC_ARG_ENABLE(avc, AS_HELP_STRING([--enable-avc],[enable IEEE1394/AVC video support - NOTE DOES NOT COMPILE!]),
+[enable_avc="$enableval"],[enable_avc=no])
       if test "x$enable_avc" = "xno" ; then
          AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)
       else
          AC_CHECK_HEADER(
             [libavc1394/avc1394.h],
-            [AC_SUBST(HAS_AVC1394, 1)],
             [
                AC_CHECK_HEADER(
                   [libdv/dv.h],
-                  [AC_SUBST(HAS_AVC1394, 1)],
                   [
                      AC_CHECK_HEADER(
                         [libraw1394/raw1394.h],
@@ -2139,13 +2140,15 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for DC video support
 
-      AC_ARG_ENABLE(dc, AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]))
+#until avc lib header API change is solved, default to disabled.
+#      AC_ARG_ENABLE(dc, AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]))
+AC_ARG_ENABLE(dc, AS_HELP_STRING([--enable-dc],[enable IEEE1394/DC video support - NOTE DOES NOT COMPILE!]),
+[enable_dc="$enableval"],[enable_dc=no])
       if test "x$enable_dc" = "xno" ; then
-         AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)
+         AC_MSG_NOTICE(IEEE1394/DC video disabled by user)
       else
          AC_CHECK_HEADER(
             [libdc1394/dc1394_control.h],
-            [AC_SUBST(HAS_DC1394, 1)],
             [
                AC_CHECK_HEADER(
                   [libraw1394/raw1394.h],
