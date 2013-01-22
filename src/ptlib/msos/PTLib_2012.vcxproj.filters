@@ -26,22 +26,22 @@
       <Filter>Win64</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib.ignore" />
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2010_x64.dtf">
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2012_x64.dtf">
       <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibd_2010_x64.dtf">
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibd_2012_x64.dtf">
       <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibn_2010_x64.dtf">
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibn_2012_x64.dtf">
       <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2010.dtf">
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib_2012_x86.dtf">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibd_2010.dtf">
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibd_2012_x86.dtf">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibn_2010.dtf">
+    <CustomBuild Include="..\..\..\include\ptlib\msos\ptlibn_2012_x86.dtf">
       <Filter>Win32</Filter>
     </CustomBuild>
   </ItemGroup>
