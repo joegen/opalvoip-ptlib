@@ -81,7 +81,6 @@ PVideoInputDevice_1394AVC::PVideoInputDevice_1394AVC()
 {
   handle = NULL;
   is_capturing = false;
-  dv_decoder = NULL;
 }
 
 PVideoInputDevice_1394AVC::~PVideoInputDevice_1394AVC()
@@ -246,66 +245,6 @@ PBoolean PVideoInputDevice_1394AVC::SetVideoFormat(VideoFormat newFormat)
   }
   else
     return true;
-}
-
-int PVideoInputDevice_1394AVC::GetBrightness()
-{
-  return -1;
-}
-
-PBoolean PVideoInputDevice_1394AVC::SetBrightness(unsigned newBrightness)
-{
-  return false;
-}
-
-int PVideoInputDevice_1394AVC::GetHue()
-{
-  return -1;
-}
-
-PBoolean PVideoInputDevice_1394AVC::SetHue(unsigned newHue)
-{
-  return false;
-}
-
-int PVideoInputDevice_1394AVC::GetContrast()
-{
-  return -1;
-}
-
-PBoolean PVideoInputDevice_1394AVC::SetContrast(unsigned newContrast)
-{
-  return false;
-}
-
-PBoolean PVideoInputDevice_1394AVC::SetColour(unsigned newColour) 
-{
-  return -1;
-}
-
-int PVideoInputDevice_1394AVC::GetColour()
-{
-  return -1;
-}
-
-PBoolean PVideoInputDevice_1394AVC::SetWhiteness(unsigned newWhiteness) 
-{
-  return false;
-}
-
-int PVideoInputDevice_1394AVC::GetWhiteness()
-{
-  return -1;
-}
-
-PBoolean PVideoInputDevice_1394AVC::GetParameters (int *whiteness, int *brightness,
-                                       int *colour, int *contrast, int *hue)
-{
-  *whiteness = -1;
-  *brightness = -1;
-  *colour = -1;
-  *hue = -1;
-  return false;
 }
 
 int PVideoInputDevice_1394AVC::GetNumChannels() 
