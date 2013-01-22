@@ -2995,6 +2995,18 @@ class PStringOptions : public PStringToString
     void SetInteger(const PCaselessString &   key,    long value);
     void SetInteger(const PCaselessString & (*key)(), long value) { SetInteger(key(), value); }
 
+    /// Get the option value as an enum.
+    template<typename E> E GetEnum(const char *              key,    E dflt) const { PConstCaselessString k(key); return GetEnum(k, dflt); }
+    template<typename E> E GetEnum(const PString         &   key,    E dflt) const { return GetEnum(PCaselessString(key), dflt); }
+    template<typename E> E GetEnum(const PCaselessString &   key,    E dflt) const { return (E)GetInteger(key, dflt); }
+    template<typename E> E GetEnum(const PCaselessString & (*key)(), E dflt) const { return GetEnum(key(), dflt); }
+
+    /// Set an enum value for the particular MIME info field.
+    template<typename E> void SetEnum(const char *              key,    E value) { PConstCaselessString k(key); SetInteger(k, value); }
+    template<typename E> void SetEnum(const PString         &   key,    E value) { SetInteger(PCaselessString(key), value); }
+    template<typename E> void SetEnum(const PCaselessString &   key,    E value) { SetInteger(key, value); }
+    template<typename E> void SetEnum(const PCaselessString & (*key)(), E value) { SetInteger(key(), value); }
+
     /// Get the option value as a floating point real.
     double GetReal(const char *              key,    double dflt = 0) const { PConstCaselessString k(key); return GetReal(k, dflt); }
     double GetReal(const PString         &   key,    double dflt = 0) const { return GetReal(PCaselessString(key), dflt); }

@@ -141,7 +141,8 @@ private:
   uint   videoBufferCount;
   uint   currentVideoBuffer;
 
-  PSemaphore readyToReadMutex;			/** Prevent Close() and reconfiguration operations while reading frame from another thread */
+  PSemaphore readyToReadMutex;			/** Allow frame reading only from the time Start() used until Stop() */
+  PMutex inCloseMutex;				/** Prevent GetFrameDataNoDelay() to stuck on readyToReadMutex in the middle of device closing operation */
   PBoolean isOpen;				/** Has the Video Input Device successfully been opened? */
   PBoolean areBuffersQueued;
   PBoolean isStreaming;
