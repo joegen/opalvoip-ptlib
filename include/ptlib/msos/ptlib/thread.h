@@ -47,5 +47,11 @@
   private:
     static UINT __stdcall MainFunction(void * thread);
 
+#if defined(P_WIN_COM)
+  public:
+    bool CoInitialise();
+  private:
+    bool m_comInitialised;
+#endif
   
 // End Of File ///////////////////////////////////////////////////////////////

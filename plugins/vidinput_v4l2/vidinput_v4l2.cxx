@@ -361,7 +361,8 @@ PBoolean PVideoInputDevice_V4L2::IsOpen()
 
 PBoolean PVideoInputDevice_V4L2::Close()
 {
-  PTRACE(1,"PVidInDev\tClose()\tvideoFd:" << videoFd << "  started:" << started);
+  PWaitAndSignal m(inCloseMutex);
+  PTRACE(1,"PVidInDev\tClose()\tvideoFd:" << videoFd << "  started:" << started << "  isOpen:" << isOpen);
   if (IsOpen()){
     if(IsCapturing())
       Stop();
@@ -911,6 +912,11 @@ PBoolean PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesRetur
 PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
   PTRACE(8,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
+  {
+    PWaitAndSignal m(inCloseMutex);
+    if (!isOpen)
+      return PFalse;
+  }
 
   PWaitAndSignal m(readyToReadMutex);
   if (!started)
