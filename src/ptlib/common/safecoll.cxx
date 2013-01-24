@@ -106,14 +106,14 @@ PBoolean PSafeObject::LockReadOnly() const
 
   safetyMutex.Signal();
   safeInUse->StartRead();
-  PTRACE(6, "SafeColl\tLocked read ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tLocked read ("<<(void *)this<<")");
   return true;
 }
 
 
 void PSafeObject::UnlockReadOnly() const
 {
-  PTRACE(6, "SafeColl\tUnlocked read ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tUnlocked read ("<<(void *)this<<")");
   safeInUse->EndRead();
 }
 
@@ -131,14 +131,14 @@ PBoolean PSafeObject::LockReadWrite()
 
   safetyMutex.Signal();
   safeInUse->StartWrite();
-  PTRACE(6, "SafeColl\tLocked readWrite ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tLocked readWrite ("<<(void *)this<<")");
   return true;
 }
 
 
 void PSafeObject::UnlockReadWrite()
 {
-  PTRACE(6, "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
   safeInUse->EndWrite();
 }
 
