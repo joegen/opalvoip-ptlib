@@ -56,7 +56,7 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
     return true;
   }
 
-  if (frameTime == 0)
+  if (frameTime <= 0)
     return true;
 
   // Set the new target
@@ -64,28 +64,23 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
 
   // Calculate the sleep time so we delay until the target time
   PTimeInterval delay = targetTime - PTime();
-  int sleep_time = (int)delay.GetMilliSeconds();
 
   // Catch up if we are too late and the featue is enabled
-  if (jitterLimit > 0 && sleep_time < -jitterLimit.GetMilliSeconds()) {
+  if (jitterLimit > 0 && delay < -jitterLimit.GetMilliSeconds()) {
     unsigned i = 0;
-    while (sleep_time < -jitterLimit.GetMilliSeconds()) { 
+    while (delay < 0) { 
       targetTime += frameTime;
-      sleep_time += frameTime;
+      delay += frameTime;
       i++;
     }
-    PTRACE (4, "AdaptiveDelay\tSkipped " << i << " frames");
+    PTRACE (4, "AdaptiveDelay\tResynchronise skipped " << i << " frames");
   }
 
   // Else sleep only if necessary
-  if (sleep_time > minimumDelay.GetMilliSeconds())
-#if defined(P_LINUX) || defined(P_MACOSX)
-    usleep(sleep_time * 1000);
-#else
-    PThread::Sleep(sleep_time);
-#endif
+  if (delay > minimumDelay)
+    PThread::Sleep(delay);
 
-  return sleep_time <= -frameTime;
+  return delay <= -frameTime;
 }
 
 /////////////////////////////////////////////////////////
