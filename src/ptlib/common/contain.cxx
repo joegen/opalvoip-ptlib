@@ -2906,9 +2906,9 @@ bool PStringOptions::GetBoolean(const PCaselessString & key, bool dflt) const
   if (str->IsEmpty() || str->AsUnsigned() != 0)
     return true;
 
-  static PConstCaselessString const synonymsForTrue[] = { "true", "yes", "enabled" };
+  static char const * const synonymsForTrue[] = { "true", "yes", "enabled" };
   for (PINDEX i = 0; i < PARRAYSIZE(synonymsForTrue); ++i) {
-    if (synonymsForTrue[i].NumCompare(*str) == EqualTo)
+    if (PConstCaselessString(synonymsForTrue[i]).NumCompare(*str) == EqualTo)
       return true;
   }
 
