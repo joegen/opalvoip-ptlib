@@ -495,7 +495,16 @@ class PSafeWork : public PSafePtrBase {
       PSafeObject * ptr
     ) : PSafePtrBase(ptr) { }
 
-    virtual void Work() = 0;
+    virtual void Work()
+    {
+      PSafeObject * ptr = this->GetObject();
+      if (ptr != NULL) {
+        PTRACE_CONTEXT_ID_PUSH_THREAD(ptr);
+        CallFunction(*ptr);
+      }
+    }
+
+    virtual void CallFunction(PSafeObject & obj) = 0;
 };
 
 
@@ -522,11 +531,9 @@ class PSafeWorkNoArg : public PSafeWork {
       , m_function(function)
     { }
 
-    virtual void Work()
+    virtual void CallFunction(PSafeObject & obj)
     {
-      PtrClass * p = this->GetObjectAs<PtrClass>();
-      if (p != NULL)
-        (p->*(this->m_function))();
+      (dynamic_cast<PtrClass&>(obj).*(this->m_function))();
     }
 };
 
@@ -556,11 +563,9 @@ class PSafeWorkArg1 : public PSafeWork {
       , m_arg1(arg1)
     { }
 
-    virtual void Work()
+    virtual void CallFunction(PSafeObject & obj)
     {
-      PtrClass * p = this->GetObjectAs<PtrClass>();
-      if (p != NULL)
-        (p->*(this->m_function))(m_arg1);
+      (dynamic_cast<PtrClass&>(obj).*(this->m_function))(m_arg1);
     }
 };
 
@@ -594,11 +599,9 @@ class PSafeWorkArg2 : public PSafeWork {
       , m_arg2(arg2)
     { }
 
-    virtual void Work()
+    virtual void CallFunction(PSafeObject & obj)
     {
-      PtrClass * p = this->GetObjectAs<PtrClass>();
-      if (p != NULL)
-        (p->*(this->m_function))(m_arg1, m_arg2);
+      (dynamic_cast<PtrClass&>(obj).*(this->m_function))(m_arg1, m_arg2);
     }
 };
 
@@ -636,11 +639,9 @@ class PSafeWorkArg3 : public PSafeWork {
       , m_arg3(arg3)
     { }
 
-    virtual void Work()
+    virtual void CallFunction(PSafeObject & obj)
     {
-      PtrClass * p = this->GetObjectAs<PtrClass>();
-      if (p != NULL)
-        (p->*(this->m_function))(m_arg1, m_arg2, m_arg3);
+      (dynamic_cast<PtrClass&>(obj).*(this->m_function))(m_arg1, m_arg2, m_arg3);
     }
 };
 
