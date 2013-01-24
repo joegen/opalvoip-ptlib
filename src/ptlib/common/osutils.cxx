@@ -634,10 +634,8 @@ ostream & PTraceInfo::InternalBegin(unsigned level, const char * fileName, int l
   }
 
   if (HasOption(ContextIdentifier)) {
-    unsigned id = 0;
-    if (instance != NULL)
-      id = instance->GetTraceContextIdentifier();
-    else if (thread != NULL)
+    unsigned id = instance != NULL ? instance->GetTraceContextIdentifier() : 0;
+    if (id == 0 && thread != NULL)
       id = thread->GetTraceContextIdentifier();
     if (id != 0)
       stream << setfill('0') << setw(13) << id << setfill(' ');
