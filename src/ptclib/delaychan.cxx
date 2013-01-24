@@ -37,22 +37,24 @@
 
 /////////////////////////////////////////////////////////
 
-PAdaptiveDelay::PAdaptiveDelay(unsigned _maximumSlip, unsigned _minimumDelay)
-  : jitterLimit(_maximumSlip), minimumDelay(_minimumDelay)
+PAdaptiveDelay::PAdaptiveDelay(unsigned maximumSlip, unsigned minimumDelay)
+  : m_jitterLimit(-(int)maximumSlip)
+  , m_minimumDelay(minimumDelay)
+  , m_targetTime(0)
+  , m_firstTime(true)
 {
-  firstTime = true;
 }
 
 void PAdaptiveDelay::Restart()
 {
-  firstTime = true;
+  m_firstTime = true;
 }
 
 PBoolean PAdaptiveDelay::Delay(int frameTime)
 {
-  if (firstTime) {
-    firstTime = false;
-    targetTime = PTime();   // targetTime is the time we want to delay to
+  if (m_firstTime) {
+    m_firstTime = false;
+    m_targetTime.SetCurrentTime();   // targetTime is the time we want to delay to
     return true;
   }
 
@@ -60,16 +62,16 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
     return true;
 
   // Set the new target
-  targetTime += frameTime;
+  m_targetTime += frameTime;
 
   // Calculate the sleep time so we delay until the target time
-  PTimeInterval delay = targetTime - PTime();
+  PTimeInterval delay = m_targetTime - PTime();
 
   // Catch up if we are too late and the featue is enabled
-  if (jitterLimit > 0 && delay < -jitterLimit.GetMilliSeconds()) {
+  if (m_jitterLimit < 0 && delay < m_jitterLimit) {
     unsigned i = 0;
     while (delay < 0) { 
-      targetTime += frameTime;
+      m_targetTime += frameTime;
       delay += frameTime;
       i++;
     }
@@ -77,11 +79,12 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
   }
 
   // Else sleep only if necessary
-  if (delay > minimumDelay)
+  if (delay > m_minimumDelay)
     PThread::Sleep(delay);
 
   return delay <= -frameTime;
 }
+
 
 /////////////////////////////////////////////////////////
 
