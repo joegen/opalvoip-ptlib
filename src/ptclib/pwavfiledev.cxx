@@ -83,7 +83,8 @@ PCREATE_PLUGIN(WAVFile, PSoundChannel, &PSoundChannel_WAVFile_descriptor);
 ///////////////////////////////////////////////////////////////////////////////
 
 PSoundChannel_WAVFile::PSoundChannel_WAVFile()
-  : m_autoRepeat(false)
+  : m_Pacing(1000)
+  , m_autoRepeat(false)
   , m_sampleRate(8000)
   , m_bufferSize(2)
   , m_samplePosition(P_MAX_INDEX)
@@ -355,4 +356,5 @@ PBoolean PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
 
 
 // End of File ///////////////////////////////////////////////////////////////
+
 
