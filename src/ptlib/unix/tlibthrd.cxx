@@ -699,27 +699,17 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 // Normal Posix threads version
 void PThread::Sleep(const PTimeInterval & timeout)
 {
-  PTime lastTime;
-  PTime targetTime = lastTime + timeout;
+  struct timespec ts;
+  ts.tv_sec = timeout.GetSeconds();
+  ts.tv_nsec = timeout.GetMilliSeconds()*1000000;
 
-#ifdef P_GNU_PTH
-// GNU PTH threads version (used by NetBSD)
-// Taken from NetBSD pkg patches
-  sched_yield();
-#endif
-
-  do {
-    P_timeval tval = targetTime - lastTime;
-    if (select(0, NULL, NULL, NULL, tval) < 0 && errno != EINTR)
-      break;
-
+  while (nanosleep(&ts, &ts) < 0 && errno == EINTR) {
 #if P_USE_THREAD_CANCEL
     pthread_testcancel();
 #endif
-
-    lastTime = PTime();
-  } while (lastTime < targetTime);
+  }
 }
+
 
 void PThread::Yield()
 {
