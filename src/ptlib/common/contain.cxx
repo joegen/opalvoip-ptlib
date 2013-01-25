@@ -2906,8 +2906,13 @@ bool PStringOptions::GetBoolean(const PCaselessString & key, bool dflt) const
   if (str->IsEmpty() || str->AsUnsigned() != 0)
     return true;
 
-  PCaselessString test(*str);
-  return test.NumCompare("t") == EqualTo || test.NumCompare("y") == EqualTo;
+  static char const * const synonymsForTrue[] = { "true", "yes", "enabled" };
+  for (PINDEX i = 0; i < PARRAYSIZE(synonymsForTrue); ++i) {
+    if (PConstCaselessString(synonymsForTrue[i]).NumCompare(*str) == EqualTo)
+      return true;
+  }
+
+  return false;
 }
 
 

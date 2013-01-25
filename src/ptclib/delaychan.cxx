@@ -37,56 +37,54 @@
 
 /////////////////////////////////////////////////////////
 
-PAdaptiveDelay::PAdaptiveDelay(unsigned _maximumSlip, unsigned _minimumDelay)
-  : jitterLimit(_maximumSlip), minimumDelay(_minimumDelay)
+PAdaptiveDelay::PAdaptiveDelay(unsigned maximumSlip, unsigned minimumDelay)
+  : m_jitterLimit(-(int)maximumSlip)
+  , m_minimumDelay(minimumDelay)
+  , m_targetTime(0)
+  , m_firstTime(true)
 {
-  firstTime = true;
 }
 
 void PAdaptiveDelay::Restart()
 {
-  firstTime = true;
+  m_firstTime = true;
 }
 
 PBoolean PAdaptiveDelay::Delay(int frameTime)
 {
-  if (firstTime) {
-    firstTime = false;
-    targetTime = PTime();   // targetTime is the time we want to delay to
+  if (m_firstTime) {
+    m_firstTime = false;
+    m_targetTime.SetCurrentTime();   // targetTime is the time we want to delay to
     return true;
   }
 
-  if (frameTime == 0)
+  if (frameTime <= 0)
     return true;
 
   // Set the new target
-  targetTime += frameTime;
+  m_targetTime += frameTime;
 
   // Calculate the sleep time so we delay until the target time
-  PTimeInterval delay = targetTime - PTime();
-  int sleep_time = (int)delay.GetMilliSeconds();
+  PTimeInterval delay = m_targetTime - PTime();
 
   // Catch up if we are too late and the featue is enabled
-  if (jitterLimit > 0 && sleep_time < -jitterLimit.GetMilliSeconds()) {
+  if (m_jitterLimit < 0 && delay < m_jitterLimit) {
     unsigned i = 0;
-    while (sleep_time < -jitterLimit.GetMilliSeconds()) { 
-      targetTime += frameTime;
-      sleep_time += frameTime;
+    while (delay < 0) { 
+      m_targetTime += frameTime;
+      delay += frameTime;
       i++;
     }
-    PTRACE (4, "AdaptiveDelay\tSkipped " << i << " frames");
+    PTRACE (4, "AdaptiveDelay\tResynchronise skipped " << i << " frames");
   }
 
   // Else sleep only if necessary
-  if (sleep_time > minimumDelay.GetMilliSeconds())
-#if defined(P_LINUX) || defined(P_MACOSX)
-    usleep(sleep_time * 1000);
-#else
-    PThread::Sleep(sleep_time);
-#endif
+  if (delay > m_minimumDelay)
+    PThread::Sleep(delay);
 
-  return sleep_time <= -frameTime;
+  return delay <= -frameTime;
 }
+
 
 /////////////////////////////////////////////////////////
 

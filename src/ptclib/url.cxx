@@ -634,17 +634,13 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
 {
   PStringStream str;
 
-  if (fmt == HostPortOnly && relativePath) {
-    if (schemeInfo->relativeImpliesScheme)
-      return PString::Empty();
-
+  if (fmt != RelativeOnly && !(relativePath && schemeInfo->relativeImpliesScheme))
     str << scheme << ':';
+
+  if (fmt == LocationOnly && relativePath)
     return str;
-  }
 
-  if (fmt != URIOnly && !relativePath) {
-    str << scheme << ':';
-
+  if (fmt != RelativeOnly && !relativePath) {
     if (schemeInfo->hasPath && schemeInfo->hasHostPort)
       str << "//";
 
@@ -671,11 +667,11 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
         str << ':' << port;
     }
 
-    if (fmt == HostPortOnly) {
+    if (fmt == LocationOnly) {
       // Problem was fixed for handling legacy schema like tel URI.
-      // HostPortOnly format: if there is no default user and host fields, only the schema itself is being returned.
-      // URIOnly only format: the pathStr will be retruned.
-      // The Recalculate() will merge both HostPortOnly and URIOnly formats for the completed uri string creation.
+      // LocationOnly format: if there is no default user and host fields, only the schema itself is being returned.
+      // RelativeOnly only format: the pathStr will be retruned.
+      // The Recalculate() will merge both LocationOnly and RelativeOnly formats for the completed uri string creation.
       if (schemeInfo->defaultToUserIfNoAt)
         return str;
 
@@ -687,7 +683,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     }
   }
 
-  // URIOnly and PathOnly
+  // RelativeOnly and PathOnly
   if (schemeInfo->hasPath) {
     for (PINDEX i = 0; i < path.GetSize(); i++) {
       if (i > 0 || !relativePath)
@@ -700,7 +696,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
   else
     str << TranslateString(m_contents, PathTranslation);
 
-  if (fmt == FullURL || fmt == URIOnly) {
+  if (fmt == FullURL || fmt == RelativeOnly) {
     if (!fragment)
       str << "#" << TranslateString(fragment, PathTranslation);
 
@@ -1030,7 +1026,7 @@ class PURL_CalltoScheme : public PURLScheme
 
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & url) const
     {
-      if (fmt == PURL::HostPortOnly)
+      if (fmt == PURL::LocationOnly)
         return PString::Empty();
 
       PStringStream strm;
@@ -1086,7 +1082,7 @@ class PURL_TelScheme : public PURLScheme
 
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & url) const
     {
-      if (fmt == PURL::HostPortOnly)
+      if (fmt == PURL::LocationOnly)
         return PString::Empty();
 
       PStringStream strm;
@@ -1130,7 +1126,7 @@ class PURL_DataScheme : public PURLScheme
 
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
     {
-      if (fmt == PURL::HostPortOnly)
+      if (fmt == PURL::LocationOnly)
         return PString::Empty();
 
       const PStringToString & params = purl.GetParamVars();

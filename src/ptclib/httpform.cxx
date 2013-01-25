@@ -2223,9 +2223,9 @@ PHTTPConfigSectionList::PHTTPConfigSectionList(const PURL & url,
   : PHTTPString(url, auth),
     sectionPrefix(prefix),
     additionalValueName(valueName),
-    newSectionLink(newSection.AsString(PURL::URIOnly)),
+    newSectionLink(newSection.AsString(PURL::RelativeOnly)),
     newSectionTitle(newTitle),
-    editSectionLink(editSection.AsString(PURL::URIOnly) +
+    editSectionLink(editSection.AsString(PURL::RelativeOnly) +
                       "?section=" + PURL::TranslateString(prefix, PURL::QueryTranslation))
 {
   if (heading.Is(PHTML::InBody))
