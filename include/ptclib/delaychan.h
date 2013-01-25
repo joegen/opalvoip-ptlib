@@ -75,12 +75,12 @@ class PAdaptiveDelay : public PObject
 
        If @a maximumSlip is 0, this feature is disabled.
       */
-    void SetMaximumSlip(PTimeInterval maximumSlip)
-    { jitterLimit = maximumSlip; }
+    void SetMaximumSlip(unsigned maximumSlip)
+    { m_jitterLimit = -(int)maximumSlip; }
 
     /**Get the current slip time. */
     PTimeInterval GetMaximumSlip() const
-    { return jitterLimit; }
+    { return -m_jitterLimit; }
   //@}
 
   /**@name Functionality */
@@ -108,11 +108,10 @@ class PAdaptiveDelay : public PObject
   //@}
  
   protected:
-    PBoolean   firstTime;
-    PTime  targetTime;
-
-    PTimeInterval  jitterLimit;
-    PTimeInterval  minimumDelay;
+    PTimeInterval  m_jitterLimit;
+    PTimeInterval  m_minimumDelay;
+    PTime          m_targetTime;
+    bool           m_firstTime;
 };
 
 
