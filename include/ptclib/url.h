@@ -52,6 +52,10 @@ class PURLLegacyScheme;
  This class describes a Universal Resource Locator.
  This is the desciption of a resource location as used by the World Wide
  Web and the <code>PHTTPSocket</code> class.
+
+ Note, this has been extended to be for URI's (Universal Resource  Identifier)
+ which is a superset of URL's. But for backward compatinility reasons the name
+ is still PURL.
  */
 class PURL : public PObject
 {
@@ -131,14 +135,14 @@ class PURL : public PObject
 
     /**Print/String output representation formats. */
     enum UrlFormat {
-      /// Translate to a string as a full URL
-      FullURL,      
-      /// Translate to a string as only path
-      PathOnly,     
-      /// Translate to a string with no scheme or host
-      URIOnly,      
-      /// Translate to a string with scheme and host/port
-      HostPortOnly  
+      FullURL,       ///< Output full URI
+      PathOnly,      ///< Translate to a string as only path
+      LocationOnly,  ///< Translate to a string with the location (scheme and user/pass/host/port)
+      RelativeOnly,  ///< Translate to a string with no scheme or host, just the relative part
+
+      // for backward compatibility
+      HostPortOnly = LocationOnly,
+      URIOnly = RelativeOnly
     };
 
     /**Convert the URL object into its string representation. The parameter

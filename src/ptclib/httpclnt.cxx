@@ -100,7 +100,7 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
     if (!AssureConnect(adjustableURL, outMIME))
       break;
 
-    if (!WriteCommand(cmdName, url.AsString(PURL::URIOnly), outMIME, dataBody)) {
+    if (!WriteCommand(cmdName, url.AsString(PURL::RelativeOnly), outMIME, dataBody)) {
       lastResponseCode = -1;
       lastResponseInfo = GetErrorText(LastWriteError);
       break;
