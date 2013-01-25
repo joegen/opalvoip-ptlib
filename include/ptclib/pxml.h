@@ -409,6 +409,9 @@ class PXMLElement : public PXMLObject {
     PXMLObjectArray  GetSubObjects() const
       { return subObjects; }
 
+    PXMLObject  * GetSubObject(PINDEX idx = 0) const
+      { return GetElement(idx); }
+
     PString GetData() const;
     void SetData(const PString & data);
     void AddData(const PString & data);
