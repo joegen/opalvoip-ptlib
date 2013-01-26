@@ -163,19 +163,19 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 }
 
 
-PBoolean PHTTPClient::WriteCommand(Commands cmd,
-                               const PString & url,
-                               PMIMEInfo & outMIME,
-                               const PString & dataBody)
+bool PHTTPClient::WriteCommand(Commands cmd,
+                        const PString & url,
+                            PMIMEInfo & outMIME,
+                        const PString & dataBody)
 {
   return WriteCommand(commandNames[cmd], url, outMIME, dataBody);
 }
 
 
-PBoolean PHTTPClient::WriteCommand(const PString & cmdName,
-                                   const PString & url,
-                                       PMIMEInfo & outMIME,
-                                   const PString & dataBody)
+bool PHTTPClient::WriteCommand(const PString & cmdName,
+                               const PString & url,
+                                   PMIMEInfo & outMIME,
+                               const PString & dataBody)
 {
   ostream & this_stream = *this;
   PINDEX len = dataBody.GetLength();
@@ -236,7 +236,7 @@ struct PHTTPClient_DummyProcessor : public PHTTPClient::ContentProcessor
   }
 };
 
-PBoolean PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
+bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
   PString http = ReadString(7);
   if (!http) {
@@ -325,7 +325,7 @@ struct PHTTPClient_StringProcessor : public PHTTPClient::ContentProcessor
   }
 };
 
-PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
+bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 {
   PHTTPClient_StringProcessor processor(body);
   return ReadContentBody(replyMIME, processor);
@@ -354,14 +354,14 @@ struct PHTTPClient_BinaryProcessor : public PHTTPClient::ContentProcessor
   }
 };
 
-PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
+bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 {
   PHTTPClient_BinaryProcessor processor(body);
   return ReadContentBody(replyMIME, processor);
 }
 
 
-PBoolean PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & processor)
+bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & processor)
 {
   PCaselessString encoding = replyMIME(TransferEncodingTag());
 
@@ -482,9 +482,9 @@ static bool CheckContentType(const PMIMEInfo & replyMIME, const PString & requir
 }
 
 
-PBoolean PHTTPClient::GetTextDocument(const PURL & url,
-                                      PString & document,
-                                      const PString & requiredContentType)
+bool PHTTPClient::GetTextDocument(const PURL & url,
+                                     PString & document,
+                               const PString & requiredContentType)
 {
   PMIMEInfo outMIME, replyMIME;
   if (!GetDocument(url, outMIME, replyMIME))
@@ -546,50 +546,60 @@ bool PHTTPClient::GetDocument(const PURL & url, PMIMEInfo & replyMIME)
 }
 
 
-bool PHTTPClient::GetDocument(const PURL & url,
-                              PMIMEInfo & outMIME,
-                              PMIMEInfo & replyMIME)
+bool PHTTPClient::GetDocument(const PURL & url, PMIMEInfo & outMIME, PMIMEInfo & replyMIME)
 {
   return IsOK(ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
-PBoolean PHTTPClient::GetHeader(const PURL & url,
-                            PMIMEInfo & replyMIME)
+bool PHTTPClient::GetHeader(const PURL & url, PMIMEInfo & replyMIME)
 {
   PMIMEInfo outMIME;
   return IsOK(ExecuteCommand(HEAD, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
-PBoolean PHTTPClient::GetHeader(const PURL & url,
-                            PMIMEInfo & outMIME,
-                            PMIMEInfo & replyMIME)
+bool PHTTPClient::GetHeader(const PURL & url, PMIMEInfo & outMIME, PMIMEInfo & replyMIME)
 {
   return IsOK(ExecuteCommand(HEAD, url, outMIME, PString::Empty(), replyMIME));
 }
 
 
-PBoolean PHTTPClient::PostData(const PURL & url,
-                           PMIMEInfo & outMIME,
-                           const PString & data,
-                           PMIMEInfo & replyMIME)
+bool PHTTPClient::PostData(const PURL & url, const PStringToString & data)
 {
-  PString dataBody = data;
-  if (!outMIME.Contains(ContentTypeTag())) {
+  PStringStream entityBody;
+  PURL::OutputVars(entityBody, data, '\0', '&', '=', PURL::QueryTranslation);
+  entityBody << "\r\n"; // Add CRLF for compatibility with some CGI servers.
+
+  PMIMEInfo outMIME;
+  return PostData(url, outMIME, entityBody);
+}
+
+
+bool PHTTPClient::PostData(const PURL & url, PMIMEInfo & outMIME, const PString & data)
+{
+  PMIMEInfo replyMIME;
+  return PostData(url, outMIME, data, replyMIME) && ReadContentBody(replyMIME);
+}
+
+
+bool PHTTPClient::PostData(const PURL & url,
+                            PMIMEInfo & outMIME,
+                        const PString & data,
+                            PMIMEInfo & replyMIME)
+{
+  if (!outMIME.Contains(ContentTypeTag()))
     outMIME.SetAt(ContentTypeTag(), "application/x-www-form-urlencoded");
-    dataBody += "\r\n"; // Add CRLF for compatibility with some CGI servers.
-  }
 
   return IsOK(ExecuteCommand(POST, url, outMIME, data, replyMIME));
 }
 
 
-PBoolean PHTTPClient::PostData(const PURL & url,
-                           PMIMEInfo & outMIME,
-                           const PString & data,
-                           PMIMEInfo & replyMIME,
-                           PString & body)
+bool PHTTPClient::PostData(const PURL & url,
+                            PMIMEInfo & outMIME,
+                        const PString & data,
+                            PMIMEInfo & replyMIME,
+                              PString & body)
 {
   return PostData(url, outMIME, data, replyMIME) && ReadContentBody(replyMIME, body);
 }
@@ -620,7 +630,7 @@ bool PHTTPClient::DeleteDocument(const PURL & url)
 }
 
 
-PBoolean PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
+bool PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
 {
   PString host = url.GetHostName();
 
