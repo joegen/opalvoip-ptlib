@@ -14,7 +14,7 @@ from the correct source repositories, build and install it
 into /opt/portaudio. Once this is done, configure ptlib as
 follows:
 
-   ./configre --with-portaudio-dir=/opt/portaudio
+   ./configure --with-portaudio-dir=/opt/portaudio
 
 This script has been verified on OSX Mountain Lion and
 Ubuntu 12.01 for x64
