@@ -112,6 +112,10 @@ distclean: clean
 	cd $(PTLIBDIR)
 	rm -rf config.log config.err autom4te.cache config.status a.out aclocal.m4 lib*
 
+sterile: distclean
+	cd $(PTLIBDIR)
+	rm -rf configure
+
 
 ################################################################################
 
