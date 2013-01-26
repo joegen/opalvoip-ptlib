@@ -76,11 +76,12 @@ distclean:
 sterile:
 	@$(MAKE) -f $(TOP_LEVEL_MAKE) sterile
 
-$(CONFIG_FILES) : config.status $(addsuffix .in, $(CONFIG_FILES))
-	 ./config.status
+ifneq (,$(shell which ./config.status))
+CONFIG_PARMS=$(shell ./config.status --config)
+endif
 
-config.status:	 $(CONFIGURE) # $(addsuffix .in, $(CONFIG_FILES))
-	$(CONFIGURE)
+$(CONFIG_FILES) : $(CONFIGURE) $(addsuffix .in, $(CONFIG_FILES))
+	$(CONFIGURE) $(CONFIG_PARMS)
 
 ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))
