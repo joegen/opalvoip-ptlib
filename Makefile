@@ -28,6 +28,7 @@
 # $Date$
 #
 
+ENV_PTLIBDIR := $(PTLIBDIR)
 ifndef PTLIBDIR
   export PTLIBDIR:=$(CURDIR)
   $(info Setting default PTLIBDIR to $(PTLIBDIR))
@@ -81,7 +82,7 @@ CONFIG_PARMS=$(shell ./config.status --config)
 endif
 
 $(CONFIG_FILES) : $(CONFIGURE) $(addsuffix .in, $(CONFIG_FILES))
-	$(CONFIGURE) $(CONFIG_PARMS)
+	PTLIBDIR=$(ENV_PTLIBDIR) $(CONFIGURE) $(CONFIG_PARMS)
 
 ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))
