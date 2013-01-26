@@ -5335,8 +5335,8 @@ fi
 
 
 if test "x$OBJ_ARCH" != "x" ; then
-   includedir=$PTLIBDIR/include
-   libdir=$PTLIBDIR/lib_$target
+   includedir=${prefix}/include
+   libdir=${prefix}/lib_$target
 fi
 
 
