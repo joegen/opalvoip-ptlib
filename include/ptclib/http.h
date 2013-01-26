@@ -475,13 +475,13 @@ class PHTTPClient : public PHTTP
     );
 
     /// Write a HTTP command to server
-    PBoolean WriteCommand(
+    bool WriteCommand(
       Commands cmd,
       const PString & url,
       PMIMEInfo & outMIME,
       const PString & dataBody
     );
-    PBoolean WriteCommand(
+    bool WriteCommand(
       const PString & cmdName,
       const PString & url,
       PMIMEInfo & outMIME,
@@ -489,7 +489,7 @@ class PHTTPClient : public PHTTP
     );
 
     /// Read a response from the server
-    PBoolean ReadResponse(
+    bool ReadResponse(
       PMIMEInfo & replyMIME
     );
 
@@ -507,16 +507,49 @@ class PHTTPClient : public PHTTP
       ContentProcessor & processor  ///< Processor for received body
     );
 
-    /// Read the body of the HTTP command
+    /// Read the body of the HTTP command, throwing it away
+    bool ReadContentBody(
+      PMIMEInfo & replyMIME   ///< Reply MIME from server
+    );
+
+    /// Read the body of the HTTP command as a string
     bool ReadContentBody(
       PMIMEInfo & replyMIME,        ///< Reply MIME from server
       PString & body                ///< Received body as a string
     );
 
-    /// Read the body of the HTTP command
+    /// Read the body of the HTTP command as a binary block
     bool ReadContentBody(
       PMIMEInfo & replyMIME,        ///< Reply MIME from server
       PBYTEArray & body             ///< Received body as binary data
+    );
+
+
+    /** Start getting the document specified by the URL.
+        This does not return until completed, and continuously calls the
+        ContentProcessor with chunks of data.
+
+       @return true if document has successfully been transferred.
+     */
+    bool GetDocument(
+      const PURL & url,             ///< Universal Resource Locator for document.
+      ContentProcessor & processor  ///< Processor for received body
+    );
+
+    /** Start getting the document specified by the URL.
+        It is expected that ReadContentBody() is called after this returns to
+        get, or throw away, the data body received.
+
+       @return true if document is being transferred.
+     */
+    bool GetDocument(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & outMIME,      ///< MIME info in request
+      PMIMEInfo & replyMIME     ///< MIME info in response
+    );
+    bool GetDocument(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & replyMIME     ///< MIME info in response
     );
 
 
@@ -525,8 +558,7 @@ class PHTTPClient : public PHTTP
         An empty string for the contentType parameter means that any content
         type is acceptable.
 
-       @return
-       true if document is being transferred.
+        @return true if document is being transferred.
      */
     bool GetTextDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
@@ -539,8 +571,7 @@ class PHTTPClient : public PHTTP
         An empty string for the contentType parameter means that any content
         type is acceptable.
 
-       @return
-       true if document is being transferred.
+        @return true if document is being transferred.
      */
     bool GetBinaryDocument(
       const PURL & url,         ///< Universal Resource Locator for document.
@@ -548,47 +579,51 @@ class PHTTPClient : public PHTTP
       const PString & contentType = PString::Empty() ///< Content-Type header to expect
     );
 
-    /** Start getting the document specified by the URL.
-
-       @return
-       true if document is being transferred.
-     */
-    bool GetDocument(
-      const PURL & url,             ///< Universal Resource Locator for document.
-      ContentProcessor & processor  ///< Processor for received body
-    );
-    bool GetDocument(
-      const PURL & url,         ///< Universal Resource Locator for document.
-      PMIMEInfo & replyMIME     ///< MIME info in response
-    );
-    bool GetDocument(
-      const PURL & url,         ///< Universal Resource Locator for document.
-      PMIMEInfo & outMIME,      ///< MIME info in request
-      PMIMEInfo & replyMIME     ///< MIME info in response
-    );
 
     /** Get the header for the document specified by the URL.
 
        @return
        true if document header is being transferred.
      */
-    PBoolean GetHeader(
-      const PURL & url,         ///< Universal Resource Locator for document.
-      PMIMEInfo & replyMIME     ///< MIME info in response
-    );
-    PBoolean GetHeader(
+    bool GetHeader(
       const PURL & url,         ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,      ///< MIME info in request
       PMIMEInfo & replyMIME     ///< MIME info in response
     );
+    bool GetHeader(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & replyMIME     ///< MIME info in response
+    );
 
+
+    /** Post the "application/x-www-form-urlencoded" data specified to the URL.
+        The data returned is thrown away.
+
+       @return true if document is being transferred.
+     */
+    bool PostData(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      const PStringToString & data  ///< Information posted to the HTTP server.
+    );
 
     /** Post the data specified to the URL.
+        The data returned is thrown away.
 
-       @return
-       true if document is being transferred.
+       @return true if document is being transferred.
      */
-    PBoolean PostData(
+    bool PostData(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & outMIME,      ///< MIME info in request
+      const PString & data    ///< Information posted to the HTTP server.
+    );
+
+    /** Start a post of the data specified to the URL.
+        It is expected that ReadContentBody() is called after this returns to
+        get, or throw away, the data body received.
+
+       @return true if document is being transferred.
+     */
+    bool PostData(
       const PURL & url,       ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,    ///< MIME info in request
       const PString & data,   ///< Information posted to the HTTP server.
@@ -596,11 +631,11 @@ class PHTTPClient : public PHTTP
     );
 
     /** Post the data specified to the URL.
+        The body of the reply is returned
 
-       @return
-       true if document is being transferred.
+       @return true if document is has been transferred.
      */
-    PBoolean PostData(
+    bool PostData(
       const PURL & url,       ///< Universal Resource Locator for document.
       PMIMEInfo & outMIME,    ///< MIME info in request
       const PString & data,   ///< Information posted to the HTTP server.
@@ -663,7 +698,7 @@ class PHTTPClient : public PHTTP
     bool GetPersistent() const { return m_persist; }
 
   protected:
-    PBoolean AssureConnect(const PURL & url, PMIMEInfo & outMIME);
+    bool AssureConnect(const PURL & url, PMIMEInfo & outMIME);
 
     PString m_userAgentName;
     bool    m_persist;
