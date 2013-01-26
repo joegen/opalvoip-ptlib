@@ -220,22 +220,6 @@ bool PHTTPClient::WriteCommand(const PString & cmdName,
 }
 
 
-struct PHTTPClient_DummyProcessor : public PHTTPClient::ContentProcessor
-{
-  BYTE m_body[4096];
-
-  virtual void * GetBuffer(PINDEX & size)
-  {
-    size = sizeof(m_body);
-    return m_body;
-  }
-
-  virtual bool Process(const void *, PINDEX)
-  {
-    return true;
-  }
-};
-
 bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
   PString http = ReadString(7);
@@ -261,10 +245,8 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       if (lastResponseCode >= 300) {
         if ((int)replyMIME.GetInteger(ContentLengthTag(), INT_MAX) <= MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
-        else {
-          PHTTPClient_DummyProcessor dummy;
-          ReadContentBody(replyMIME, dummy); // Waste body
-        }
+        else
+          ReadContentBody(replyMIME); // Waste body
       }
 
 #if PTRACING
@@ -303,6 +285,30 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 }
 
 
+struct PHTTPClient_DummyProcessor : public PHTTPClient::ContentProcessor
+{
+  BYTE m_body[4096];
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    size = sizeof(m_body);
+    return m_body;
+  }
+
+  virtual bool Process(const void *, PINDEX)
+  {
+    return true;
+  }
+};
+
+
+bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME)
+{
+  PHTTPClient_DummyProcessor processor;
+  return ReadContentBody(replyMIME, processor);
+}
+
+
 struct PHTTPClient_StringProcessor : public PHTTPClient::ContentProcessor
 {
   PString & m_body;
@@ -324,6 +330,7 @@ struct PHTTPClient_StringProcessor : public PHTTPClient::ContentProcessor
     return true;
   }
 };
+
 
 bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 {
@@ -491,8 +498,7 @@ bool PHTTPClient::GetTextDocument(const PURL & url,
     return false;
 
   if (!CheckContentType(replyMIME, requiredContentType)) {
-    PHTTPClient_DummyProcessor dummy;
-    ReadContentBody(replyMIME, dummy); // Waste body
+    ReadContentBody(replyMIME); // Waste body
     return false;
   }
 
@@ -516,8 +522,7 @@ bool PHTTPClient::GetBinaryDocument(const PURL & url,
     return false;
 
   if (!CheckContentType(replyMIME, requiredContentType)) {
-    PHTTPClient_DummyProcessor dummy;
-    ReadContentBody(replyMIME, dummy); // Waste body
+    ReadContentBody(replyMIME); // Waste body
     return false;
   }
 
