@@ -20024,6 +20024,8 @@ EXPORTS
     ?Post@PRegisterPage@@UEAA_NAEAVPHTTPRequest@@AEBVPStringToString@@AEAVPHTML@@@Z @20022 NONAME
     ?PostData@PHTTPClient@@QEAA_NAEBVPURL@@AEAVPMIMEInfo@@AEBVPString@@1@Z @20023 NONAME
     ?PostData@PHTTPClient@@QEAA_NAEBVPURL@@AEAVPMIMEInfo@@AEBVPString@@1AEAV4@@Z @20024 NONAME
+    ?PostData@PHTTPClient@@QEAA_NAEBVPURL@@AEAVPMIMEInfo@@AEBVPString@@@Z @23206 NONAME
+    ?PostData@PHTTPClient@@QEAA_NAEBVPURL@@AEBVPStringToString@@@Z @23207 NONAME
     ?PostShutdown@PProcess@@SAXXZ @20025 NONAME
     ?PPlugin_PNatMethod_Fixed_link@@YAHXZ @20026 NONAME
     ?PPlugin_PNatMethod_Fixed_Registration_Instance@@3VPPlugin_PNatMethod_Fixed_Registration@@A @20027 NONAME
@@ -20375,6 +20377,7 @@ EXPORTS
     ?ReadCharWithTimeout@PChannel@@IEAAHAEAVPTimeInterval@@@Z @20373 NONAME
     ?ReadCommand@PInternetProtocol@@UEAA_NAEA_KAEAVPString@@@Z @20374 NONAME
     ?ReadCommand@PInternetProtocol@@UEAA_NAEA_KAEAVPString@@AEAVPMIMEInfo@@@Z @20375 NONAME
+    ?ReadContentBody@PHTTPClient@@QEAA_NAEAVPMIMEInfo@@@Z @23208 NONAME
     ?ReadContentBody@PHTTPClient@@QEAA_NAEAVPMIMEInfo@@AEAUContentProcessor@1@@Z @20376 NONAME
     ?ReadContentBody@PHTTPClient@@QEAA_NAEAVPMIMEInfo@@AEAVPBYTEArray@@@Z @20377 NONAME
     ?ReadContentBody@PHTTPClient@@QEAA_NAEAVPMIMEInfo@@AEAVPString@@@Z @20378 NONAME
