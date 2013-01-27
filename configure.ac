@@ -285,8 +285,8 @@ fi
 dnl ########################################################################
 dnl set libdir with target if using PTLIBDIR as install prefix
 if test "x$OBJ_ARCH" != "x" ; then
-   includedir=$PTLIBDIR/include
-   libdir=$PTLIBDIR/lib_$target
+   includedir=${prefix}/include
+   libdir=${prefix}/lib_$target
 fi
 
 dnl ########################################################################
