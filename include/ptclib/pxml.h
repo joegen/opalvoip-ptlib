@@ -353,6 +353,7 @@ class PXMLObject : public PObject
   P_REMOVE_VIRTUAL(PXMLObject *, Clone(PXMLElement *) const, 0);
 };
 
+PARRAY(PXMLObjectArray, PXMLObject);
 
 ////////////////////////////////////////////////////////////
 
@@ -443,6 +444,13 @@ class PXMLElement : public PXMLObject
     template <class T> T * GetElementAs(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const { return dynamic_cast<T *>(GetElement(name, attr, attrval)); }
 
     PString GetData(bool trim = true) const;
+
+    PXMLObjectArray  GetSubObjects() const
+      { return m_subObjects; }
+
+    PXMLObject  * GetSubObject(PINDEX idx = 0) const
+      { return GetElement(idx); }
+
     void SetData(const PString & data);
     virtual PXMLData * AddData(const PString & data);
     virtual void EndData() { }

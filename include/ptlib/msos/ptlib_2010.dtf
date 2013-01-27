@@ -20359,6 +20359,8 @@ EXPORTS
     ?Post@PRegisterPage@@UAE_NAAVPHTTPRequest@@ABVPStringToString@@AAVPHTML@@@Z @20145 NONAME
     ?PostData@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@ABVPString@@1@Z @20146 NONAME
     ?PostData@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@ABVPString@@1AAV4@@Z @20147 NONAME
+    ?PostData@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@ABVPString@@@Z @27862 NONAME
+    ?PostData@PHTTPClient@@QAE_NABVPURL@@ABVPStringToString@@@Z @27863 NONAME
     ?PostEvent@PVideoOutputDevice_SDL@@AAEXI_N@Z @20148 NONAME
     ?PostShutdown@PProcess@@SAXXZ @20149 NONAME
     ?PPlugin_PNatMethod_Fixed_link@@YAHXZ @23790 NONAME
@@ -20752,6 +20754,7 @@ EXPORTS
     ?ReadCharWithTimeout@PChannel@@IAEHAAVPTimeInterval@@@Z @20538 NONAME
     ?ReadCommand@PInternetProtocol@@UAE_NAAHAAVPString@@@Z @20539 NONAME
     ?ReadCommand@PInternetProtocol@@UAE_NAAHAAVPString@@AAVPMIMEInfo@@@Z @20540 NONAME
+    ?ReadContentBody@PHTTPClient@@QAE_NAAVPMIMEInfo@@@Z @27864 NONAME
     ?ReadContentBody@PHTTPClient@@QAE_NAAVPMIMEInfo@@AAUContentProcessor@1@@Z @20541 NONAME
     ?ReadContentBody@PHTTPClient@@QAE_NAAVPMIMEInfo@@AAVPBYTEArray@@@Z @20542 NONAME
     ?ReadContentBody@PHTTPClient@@QAE_NAAVPMIMEInfo@@AAVPString@@@Z @20543 NONAME
