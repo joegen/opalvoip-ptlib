@@ -434,6 +434,7 @@ class PXMLElement : public PXMLObject
     bool HasAttributes() const      { return m_attributes.GetSize() > 0; }
     const PStringToString & GetAttributes() const { return m_attributes; }
 
+    PXMLObject  * GetSubObject(PINDEX idx) const;
     PXMLElement * GetElement(PINDEX idx = 0) const;
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLElement * GetElement(const PCaselessString & name, const PCaselessString & attr, const PString & attrval) const;
@@ -446,9 +447,6 @@ class PXMLElement : public PXMLObject
 
     PXMLObjectArray  GetSubObjects() const
       { return m_subObjects; }
-
-    PXMLObject  * GetSubObject(PINDEX idx = 0) const
-      { return GetElement(idx); }
 
     void SetData(const PString & data);
     virtual PXMLData * AddData(const PString & data);
