@@ -10,15 +10,23 @@ AC_CONFIG_AUX_DIR(make)
 
 m4_include(make/ptlib.m4)
 
-OBJ_ARCH=
-if test "x$PTLIBDIR" != "x" ; then
-  ac_default_prefix=$PTLIBDIR
-  OBJ_ARCH=1
-fi
 
 PKG_PROG_PKG_CONFIG()
 if test -z "$PKG_CONFIG" ; then
   AC_MSG_ERROR(PTLib must have pkg-config installed, 1)
+fi
+
+
+dnl ########################################################################
+dnl Check for non-installed "environment variable" mode
+OBJ_ARCH=
+if test "x$PTLIBDIR" != "x" ; then
+   AC_PREFIX_DEFAULT($PTLIBDIR)
+   if test "x$prefix" = "xNONE" ; then
+      OBJ_ARCH=1
+   fi
+else
+   PTLIBDIR=`pwd`
 fi
 
 
@@ -126,16 +134,6 @@ fi
 HAS_SAMPLES=no
 HAS_PLUGINS=1
 HAS_EXCEPTIONS=
-
-
-dnl ########################################################################
-dnl set the PTLIB directory to the current directory
-
-if test "x$OBJ_ARCH" = "x"; then
-  PTLIBDIR=`pwd`
-fi
-
-AC_SUBST(PTLIBDIR)
 
 
 dnl ########################################################################
@@ -277,8 +275,7 @@ fi
 dnl ########################################################################
 dnl set libdir with target if using PTLIBDIR as install prefix
 if test "x$OBJ_ARCH" != "x" ; then
-   includedir=${prefix}/include
-   libdir=${prefix}/lib_$target
+   libdir+=_$target
 fi
 
 dnl ########################################################################
