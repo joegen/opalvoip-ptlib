@@ -1287,7 +1287,7 @@ PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name_) con
 }
 
 
-PXMLObject * PXMLElement::GetObject(PINDEX idx) const
+PXMLObject * PXMLElement::GetSubObject(PINDEX idx) const
 {
   return idx < m_subObjects.GetSize() ? &m_subObjects[idx] : NULL;
 }
