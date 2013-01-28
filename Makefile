@@ -50,6 +50,11 @@ endif
 AUTOCONF       := autoconf
 ACLOCAL        := aclocal
 
+CONFIG_IN_FILES := $(addsuffix .in, $(CONFIG_FILES))
+ALLBUTFIRST = $(filter-out $(firstword $(CONFIG_FILES)), $(CONFIG_FILES))
+ALLBUTLAST = $(filter-out $(lastword $(CONFIG_FILES)), $(CONFIG_FILES))
+PAIRS = $(join $(ALLBUTLAST),$(addprefix :,$(ALLBUTFIRST)))
+
 ifeq (,$(findstring $(MAKECMDGOALS),config clean distclean default_clean sterile))
 $(MAKECMDGOALS): default
 endif
@@ -58,7 +63,7 @@ default: $(CONFIG_FILES)
 	@$(MAKE) -f $(TOP_LEVEL_MAKE) $(MAKECMDGOALS)
 
 .PHONY:config
-config: $(CONFIG_FILES)
+config: $(CONFIGURE) $(CONFIG_FILES)
 	$(CONFIGURE)
 
 .PHONY:clean
@@ -91,12 +96,16 @@ ifneq (,$(shell which ./config.status))
 CONFIG_PARMS=$(shell ./config.status --config)
 endif
 
-$(CONFIG_FILES) : $(CONFIGURE) $(addsuffix .in, $(CONFIG_FILES))
+$(firstword $(CONFIG_FILES)) : $(CONFIGURE) $(CONFIG_IN_FILES)
 	PTLIBDIR=$(ENV_PTLIBDIR) $(CONFIGURE) $(CONFIG_PARMS)
+	touch $(CONFIG_FILES)
 
 ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))
 ifneq (,$(shell which $(ACLOCAL)))
+
+.PHONY: serialise_configure
+serialise_configure:	$(CONFIGURE)
 
 $(CONFIGURE): $(CONFIGURE).ac $(PTLIBDIR)/make/*.m4 $(ACLOCAL).m4
 	$(AUTOCONF)
@@ -116,5 +125,7 @@ $(CONFIGURE): $(CONFIGURE).ac
 endif # aclocal installed
 endif # autoconf installed
 endif # autoconf enabled
+
+$(foreach pair,$(PAIRS),$(eval $(pair)))
 
 # End of Makefile.in
