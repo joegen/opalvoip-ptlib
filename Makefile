@@ -93,6 +93,7 @@ endif
 
 $(CONFIG_FILES) : $(CONFIGURE) $(addsuffix .in, $(CONFIG_FILES))
 	PTLIBDIR=$(ENV_PTLIBDIR) $(CONFIGURE) $(CONFIG_PARMS)
+	touch $(CONFIG_FILES)
 
 ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))
