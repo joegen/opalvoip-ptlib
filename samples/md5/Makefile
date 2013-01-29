@@ -1,21 +1,35 @@
-# Simple makefile to illustrate  md5 operation.
 #
-#  Copyright 2005 Indranet Technologies Ltd
+# Makefile
 #
-# $Log: Makefile,v $
-# Revision 1.1  2005/03/02 21:50:02  dereksmithies
-# Initial release of example code to calculate MD5 sums of a supplied string.
+# Copyright (c) 2000-2013 Equivalence Pty. Ltd.
 #
+# The contents of this file are subject to the Mozilla Public License
+# Version 1.0 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
 #
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+# the License for the specific language governing rights and limitations
+# under the License.
 #
+# The Original Code is Portable Tools Library.
+#
+# The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+#
+# Contributor(s): ______________________________________.
+#
+# $Revision$
+# $Author$
+# $Date$
+
 PROG    = md5
 SOURCES = encrypt.cxx
 
-
-ifndef PTLIBDIR
-PTLIBDIR=$(HOME)/ptlib
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
 endif
-
-include $(PTLIBDIR)/make/ptlib.mak
 
 # End of Makefile

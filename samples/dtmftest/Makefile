@@ -1,9 +1,7 @@
 #
 # Makefile
 #
-# Makefile for dtmftest
-#
-# Copyright (c) 2003 Equivalence Pty. Ltd.
+# Copyright (c) 2000-2013 Equivalence Pty. Ltd.
 #
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -15,23 +13,23 @@
 # the License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is Portable Windows Library.
+# The Original Code is Portable Tools Library.
 #
 # The Initial Developer of the Original Code is Equivalence Pty. Ltd.
 #
 # Contributor(s): ______________________________________.
 #
-# $Log: Makefile,v $
-# Revision 1.1  2004/09/10 01:59:35  dereksmithies
-# Initial release of program to test Dtmf creation and detection.
-#
-
-#
-#
-#
-
+# $Revision$
+# $Author$
+# $Date$
 
 PROG = dtmftest
 SOURCES := main.cxx precompile.cxx
 
-include $(PTLIBDIR)/make/ptlib.mak
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
+endif
+
+# End of Makefile
