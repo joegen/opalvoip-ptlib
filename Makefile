@@ -90,6 +90,8 @@ distclean: clean
 sterile: clean
 	@if test -e $(PTLIBDIR)/include/ptbuildopts.h ; then \
 	  $(MAKE) -f $(TOP_LEVEL_MAKE) sterile ; \
+	else \
+	  rm -f config.status config.log ; \
 	fi
 
 ifneq (,$(shell which ./config.status))
@@ -103,9 +105,6 @@ $(firstword $(CONFIG_FILES)) : $(CONFIGURE) $(CONFIG_IN_FILES)
 ifneq (,$(AUTOCONF))
 ifneq (,$(shell which $(AUTOCONF)))
 ifneq (,$(shell which $(ACLOCAL)))
-
-.PHONY: serialise_configure
-serialise_configure:	$(CONFIGURE)
 
 $(CONFIGURE): $(CONFIGURE).ac $(PTLIBDIR)/make/*.m4 $(ACLOCAL).m4
 	$(AUTOCONF)
