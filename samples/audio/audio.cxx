@@ -27,8 +27,6 @@
 #include "audio.h"
 #include <ptclib/pwavfile.h>
 
-#include "portaudio.h"
-
 Audio::Audio()
   : PProcess("Roger Hardiman & Derek Smithies code factory", "audio",
              MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)

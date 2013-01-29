@@ -3,7 +3,7 @@
 #
 # An PTLib/wxWidgets GUI application.
 #
-# Copyright (c) 2011 Vox Lucida
+# Copyright (c) 2011-2013 Vox Lucida Pty. ltd.
 #
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -40,31 +40,14 @@ CPPFLAGS += $(shell $(WX_CONFIG) --cxxflags)
 CFLAGS	 += $(shell $(WX_CONFIG) --cxxflags) -Wno-strict-aliasing -Wno-float-equal
 LDFLAGS  += $(shell $(WX_CONFIG) --libs)
 
-ifndef PTLIBDIR
-ifneq (,$(wildcard ../../version.h))
-PTLIBDIR=$(wildcard ../..)
-else
-ifneq (,$(wildcard $(HOME)/ptlib))
-PTLIBDIR=$(HOME)/opal
-else
-ifneq (,$(wildcard /usr/local/ptlib))
-PTLIBDIR=/usr/local/opal
-else
-default_target :
-	@echo Cannot find PTLIB in standard locations, you must set the PTLIBDIR
-	@echo environment variable to build this application.
-endif
-endif
-endif
-endif
-
-
 # Need this before the include
 default_target: bundle
 
 
 ifdef PTLIBDIR
-include $(PTLIBDIR)/make/ptlib.mak
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
 endif
 
 
@@ -114,3 +97,5 @@ endif
 	cp $(TARGET) $@/Contents/MacOS/$(PROG)
 
 endif
+
+# End of Makefile
