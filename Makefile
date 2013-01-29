@@ -71,7 +71,7 @@ clean:
 	if test -e $(PTLIBDIR)/include/ptbuildopts.h ; then \
 	  $(MAKE) -f $(TOP_LEVEL_MAKE) clean ; \
 	else \
-	  rm -f $(CONFIG_FILES) ; \
+	  rm -f $(CONFIG_FILES) \
 	fi
 
 .PHONY:default_clean
@@ -90,6 +90,8 @@ distclean: clean
 sterile: clean
 	@if test -e $(PTLIBDIR)/include/ptbuildopts.h ; then \
 	  $(MAKE) -f $(TOP_LEVEL_MAKE) sterile ; \
+	else \
+	  rm -f config.status config.log \
 	fi
 
 ifneq (,$(shell which ./config.status))
