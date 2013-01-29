@@ -1,9 +1,7 @@
 #
 # Makefile
 #
-# Simple makefile for the email test program
-#
-# Copyright (c) 2007 Derek J Smithies, Indranet Technologies Ltd
+# Copyright (c) 2000-2013 Equivalence Pty. Ltd.
 #
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -15,29 +13,23 @@
 # the License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is Portable Windows Library.
+# The Original Code is Portable Tools Library.
 #
 # The Initial Developer of the Original Code is Equivalence Pty. Ltd.
 #
 # Contributor(s): ______________________________________.
 #
-# $Log: Makefile,v $
-# Revision 1.1  2007/03/05 21:17:48  dereksmithies
-# Initial release of Makefile, so this program will compile & run on a unix box.
-#
-#
-#
-#
-#
-
+# $Revision$
+# $Author$
+# $Date$
 
 PROG    = emailtest
 SOURCES = main.cxx
 
-ifndef PTLIBDIR
-PTLIBDIR=$(HOME)/ptlib
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
 endif
-
-include $(PTLIBDIR)/make/ptlib.mak
 
 # End of Makefile
