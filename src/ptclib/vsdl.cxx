@@ -202,6 +202,10 @@ class PSDL_Window : public PMutex
           AdjustOverlays();
           break;
 
+        case SDL_ACTIVEEVENT :
+          PTRACE(4, "SDL\tWindow became active");
+          break;
+
         default :
           PTRACE(5, "SDL\tUnhandled event " << (unsigned)sdlEvent.type);
       }
