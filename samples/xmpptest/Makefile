@@ -1,9 +1,9 @@
 #
 # Makefile
 #
-# Make file for simple sample application for the xmpptest application in pwlib
+# Make file for application to test the XMPP classes
 #
-# Copyright (c) 2006 Derek J Smithies
+# Copyright (c) 2000-2013 Vox Lucida Pty. Ltd.
 #
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -15,19 +15,16 @@
 # the License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is Open Phone Abstraction Library.
+# The Original Code is Portable Tools Library.
 #
 # The Initial Developer of the Original Code is Equivalence Pty. Ltd.
 #
 # Contributor(s): ______________________________________.
 #
-# $Log: Makefile,v $
-# Revision 1.1  2006/07/23 03:39:49  dereksmithies
-# Modify main.cxx so it compiles under linux.
-# Add Makefile so it can be compiled under linux.
-#
-#
-#
+# $Revision$
+# $Author$
+# $Date$
+
 
 PROG		= xmpptest
 SOURCES		:= \
@@ -45,6 +42,10 @@ STDCCFLAGS += `wx-config --cxxflags`
 
 LDFLAGS += `wx-config  --libs`
 
-include $(PTLIBDIR)/make/ptlib.mak
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
+endif
 
-
+# End of Makefile

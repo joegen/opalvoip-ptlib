@@ -1,9 +1,7 @@
 #
 # Makefile
 #
-# Makefile for safe_test
-#
-# Copyright (c) 2003 Equivalence Pty. Ltd.
+# Copyright (c) 2000-2013 Equivalence Pty. Ltd.
 #
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -15,49 +13,23 @@
 # the License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is Portable Windows Library.
+# The Original Code is Portable Tools Library.
 #
 # The Initial Developer of the Original Code is Equivalence Pty. Ltd.
 #
 # Contributor(s): ______________________________________.
 #
-# $Log: Makefile,v $
-# Revision 1.3  2006/02/12 21:42:07  dereksmithies
-# Add lots of doxygen style comments, and an introductory page.
-#
-# Revision 1.2  2006/02/07 02:13:16  dereksmithies
-# change prgram name from safe_test to safetest
-#
-# Revision 1.1  2006/02/07 01:02:56  dereksmithies
-# Initial release of code to test the PSafeDictionary structure in pwlib.
-# Thanks to Indranet Technologies for supporting this work.
-#
-#
-#
-#
-#
-
+# $Revision$
+# $Author$
+# $Date$
 
 PROG = safetest
 SOURCES := main.cxx precompile.cxx
 
-include $(PTLIBDIR)/make/ptlib.mak
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
+endif
 
-###############################################################################
-
-distclean:
-	@rm -f *~;
-	@rm -f core*
-	@rm -fR obj*
-	@rm -fR html
-	@rm -f log*
-	@echo " "
-	@echo "removing all editor backup files, core files, obj files, and doc files"
-	@echo " "
-
-docs:
-	doxygen docs.cfg
-
-
-
-##################################################
+# End of Makefile

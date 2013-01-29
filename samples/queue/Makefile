@@ -3,7 +3,7 @@
 #
 # Make file for application to test the PQueueChannel class
 #
-# Copyright (c) 2006 Derek J Smithies
+# Copyright (c) 2000-2013 Vox Lucida Pty. Ltd.
 #
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -15,31 +15,23 @@
 # the License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is jester, jitter tester.
+# The Original Code is Portable Tools Library.
 #
-# The Initial Developer of the Original Code is Derek J Smithies
+# The Initial Developer of the Original Code is Equivalence Pty. Ltd.
 #
 # Contributor(s): ______________________________________.
 #
-# $Log: Makefile,v $
-# Revision 1.2  2006/12/07 20:49:39  dereksmithies
-# Add doxygen comments to this program.
-# Add doxygen configure file.
-#
-# Revision 1.1  2006/12/07 08:46:17  dereksmithies
-# Initial cut of code to test the operation of PQueueChannel class.
-#
-#
-#
+# $Revision$
+# $Author$
+# $Date$
 
 PROG		= queue
 SOURCES		:= main.cxx precompile.cxx
 
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
+endif
 
-
-include $(PTLIBDIR)/make/ptlib.mak
-
-
-docs: 
-	doxygen docs.cfg
-
+# End of Makefile
