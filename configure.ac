@@ -21,7 +21,8 @@ dnl ########################################################################
 dnl Check for non-installed "environment variable" mode
 OBJ_ARCH=
 if test "x$PTLIBDIR" != "x" ; then
-   AC_PREFIX_DEFAULT($PTLIBDIR)
+   AC_MSG_NOTICE(PTLIBDIR environment variable detected as $PTLIBDIR)
+   ac_default_prefix=$PTLIBDIR
    if test "x$prefix" = "xNONE" ; then
       OBJ_ARCH=1
    fi

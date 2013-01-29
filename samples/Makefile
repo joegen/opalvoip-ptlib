@@ -1,11 +1,7 @@
 #
 # Makefile
 #
-# Make file for pwlib library
-#
-# Portable Windows Library
-#
-# Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+# Copyright (c) 2000-2013 Equivalence Pty. Ltd.
 #
 # The contents of this file are subject to the Mozilla Public License
 # Version 1.0 (the "License"); you may not use this file except in
@@ -17,32 +13,23 @@
 # the License for the specific language governing rights and limitations
 # under the License.
 #
-# The Original Code is Portable Windows Library.
+# The Original Code is Portable Tools Library.
 #
 # The Initial Developer of the Original Code is Equivalence Pty. Ltd.
 #
-# Portions are Copyright (C) 1993 Free Software Foundation, Inc.
-# All Rights Reserved.
-# 
 # Contributor(s): ______________________________________.
 #
-# $Log: Makefile,v $
-# Revision 1.3  2006/06/20 09:23:56  csoutheren
-# Applied patch 1465192
-# Fix pwlib make files, and config for unix
-#
-# Revision 1.2  2004/09/13 01:14:08  dereksmithies
-# Add two new targets to unix build, dtmftest and threadex
-#
-# Revision 1.1  2003/01/07 09:41:38  rogerh
-# Makefile to build most of the pwlib sample programs
-#
-#
-
+# $Revision$
+# $Author$
+# $Date$
 
 all ::
 
-include ../make/ptlib.mak
+ifdef PTLIBDIR
+  include $(PTLIBDIR)/make/ptlib.mak
+else
+  include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
+endif
 
 #SUBDIRS += ThreadSafe audio find_ip hello_world netif thread threadex dtmftest
 SUBDIRS += audio find_ip ldaptest netif stunclient threadsafe dtmftest ipv6test md5 strtest thread timing
