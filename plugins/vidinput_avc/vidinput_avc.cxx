@@ -73,6 +73,25 @@ PCREATE_VIDINPUT_PLUGIN(1394AVC);
 static PMutex mutex;
 static PDictionary<PString, PString> *dico;
 static u_int8_t raw_buffer[RAW_BUFFER_SIZE];
+static BYTE const my_channel = 63;
+
+
+raw1394_iso_disposition RawISO_receiver(raw1394handle_t handle,
+ unsigned char* data,
+ unsigned int length,
+ unsigned char channel,
+ unsigned char tag,
+ unsigned char sy,
+ unsigned int cycle,
+ unsigned int dropped)
+{
+  if (length < RAW_BUFFER_SIZE) {
+    *(u_int32_t *) raw_buffer = length;
+    memcpy (raw_buffer + 4, data, length);
+  }
+  return RAW1394_ISO_OK;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInput1394AVC
@@ -161,9 +180,9 @@ PBoolean PVideoInputDevice_1394AVC::Start()
 {
   if (!IsOpen()) return false;
   if (IsCapturing()) return true;
-  
-  if (raw1394_set_iso_handler(handle, 63, &RawISOHandler)!= NULL) {
-    PTRACE (3, "Cannot set_iso_handler");
+
+  if (raw1394_iso_recv_init(handle, RawISO_receiver, 2000, 1234, my_channel, RAW1394_DMA_DEFAULT, -1)) {
+    PTRACE(3, "Cannot initialise for receiving on channel " << my_channel);	
     return false;
   }
   
@@ -175,6 +194,7 @@ PBoolean PVideoInputDevice_1394AVC::Stop()
 {
   if (IsCapturing()) {
     is_capturing = false;
+    raw1394_iso_shutdown(handle);
     return true;
   }
   else
@@ -310,8 +330,8 @@ PBoolean PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
   BYTE * capture_buffer_end = capture_buffer;
   
   // this starts the bytes' rain
-  if (raw1394_start_iso_rcv(handle, 63) < 0) {
-    PTRACE(3, "Cannot receive data on channel 63");
+  if (raw1394_iso_recv_start(handle, -1, -1, -1)) {
+    PTRACE(3, "Cannot start to receive data on channel " << my_channel);	
     return false;
   }
   // calling the raw1394 event manager, to get a frame:
@@ -354,7 +374,7 @@ PBoolean PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
     }
   }
   // stops the bytes from coming at us!
-  raw1394_stop_iso_rcv(handle, 63);
+  raw1394_iso_stop(handle);
   
   dv_decoder_t *dv;
   dv = dv_decoder_new(true, false, false);
@@ -436,15 +456,5 @@ PBoolean PVideoInputDevice_1394AVC::SetFrameSize(unsigned width, unsigned height
   frameBytes = PVideoDevice::CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   return true;
-}
-
-
-int RawISOHandler (raw1394handle_t handle, int channel, size_t length, u_int32_t * data)
-{
-  if (length < RAW_BUFFER_SIZE) {
-    *(u_int32_t *) raw_buffer = length;
-    memcpy (raw_buffer + 4, data, length);
-  }
-  return 0;
 }
 // End Of File ///////////////////////////////////////////////////////////////

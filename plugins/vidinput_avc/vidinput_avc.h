@@ -173,8 +173,6 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
     PBoolean SetupHandle();
 };
 
-int RawISOHandler (raw1394handle_t handle, int channel, size_t length, u_int32_t * data);
-
 #endif
 
 
