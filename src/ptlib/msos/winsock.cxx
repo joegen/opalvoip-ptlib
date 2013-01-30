@@ -140,7 +140,7 @@ static struct PWinSock
 }
 & WinSock()
 {
-  PWinSock instance; // Assure winsock is initialised
+  static PWinSock instance; // Assure winsock is initialised
   return instance;
 }
 
