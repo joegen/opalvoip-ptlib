@@ -356,7 +356,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     }
 
     if (m_thresholdLevel > 0) {
-      ostream & log = InternalBegin(UINT_MAX, NULL, 0, NULL, NULL) << '\t';
+      ostream & log = InternalBegin(false, 0, NULL, 0, NULL, NULL) << '\t';
 
       if (PProcess::IsInitialised()) {
         PProcess & process = PProcess::Current();
@@ -370,13 +370,13 @@ PTHREAD_MUTEX_RECURSIVE_NP
           << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
              " with PTLib (v" << PProcess::GetLibVersion() << ")"
              " at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu") << ","
-             " level=" << m_thresholdLevel << ", to \"" << m_filename << '"';
-      InternalEnd(log);
+             " level=" << m_thresholdLevel << ", to \"" << m_filename << '"'
+          << endl;
     }
   }
 
   void InternalInitialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options);
-  std::ostream & InternalBegin(unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module);
+  std::ostream & InternalBegin(bool topLevel, unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module);
   std::ostream & InternalEnd(std::ostream & stream);
 };
 
@@ -387,8 +387,7 @@ void PTrace::SetStream(ostream * s)
   ostream * before = info.GetStream();
   info.SetStream(s);
   ostream * after = info.GetStream();
-  if (before != after)
-    Begin(UINT_MAX, NULL, 0) << "PTLib\tTrace stream set to " << after << " (" << s << ')' << End;
+  PTRACE_IF(2, before != after, "PTLib\tTrace stream set to " << after << " (" << s << ')');
 }
 
 
@@ -493,7 +492,7 @@ void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(options, 0)) {
-    PTRACE(1, NULL, "PTLib", "Trace options set to " << info.m_options);
+    PTRACE(2, NULL, "PTLib", "Trace options set to " << info.m_options);
   }
 }
 
@@ -502,7 +501,7 @@ void PTrace::ClearOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(0, options)) {
-    PTRACE(1, NULL, "PTLib", "Trace options set to " << info.m_options);
+    PTRACE(2, NULL, "PTLib", "Trace options set to " << info.m_options);
   }
 }
 
@@ -518,7 +517,7 @@ void PTrace::SetLevel(unsigned level)
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.m_thresholdLevel != level) {
     info.m_thresholdLevel = level;
-    Begin(UINT_MAX, NULL, 0) << "PTLib\tTrace threshold set to " << level << End;
+    PTRACE(2, "PTLib\tTrace threshold set to " << level);
   }
 }
 
@@ -537,28 +536,30 @@ PBoolean PTrace::CanTrace(unsigned level)
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
 {
-  return PTraceInfo::Instance().InternalBegin(level, fileName, lineNum, instance, module);
+  return PTraceInfo::Instance().InternalBegin(true, level, fileName, lineNum, instance, module);
 }
 
 
-ostream & PTraceInfo::InternalBegin(unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
+ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
 {
   PThread * thread = NULL;
   PTraceInfo::ThreadLocalInfo * threadInfo = NULL;
   ostream * streamPtr = m_stream;
 
-  if (level != UINT_MAX && PProcess::IsInitialised()) {
-    thread = PThread::Current();
+  if (topLevel) {
+    if (PProcess::IsInitialised()) {
+      thread = PThread::Current();
 
-    threadInfo = m_threadStorage.Get();
-    if (threadInfo != NULL) {
-      PStringStream * stringStreamPtr = new PStringStream;
-      threadInfo->m_traceStreams.Push(stringStreamPtr);
-      streamPtr = stringStreamPtr;
+      threadInfo = m_threadStorage.Get();
+      if (threadInfo != NULL) {
+        PStringStream * stringStreamPtr = new PStringStream;
+        threadInfo->m_traceStreams.Push(stringStreamPtr);
+        streamPtr = stringStreamPtr;
+      }
     }
-  }
 
-  Lock();
+    Lock();
+  }
 
   ostream & stream = *streamPtr;
 
@@ -568,7 +569,7 @@ ostream & PTraceInfo::InternalBegin(unsigned level, const char * fileName, int l
   m_oldStreamFlags = stream.flags();
   m_oldPrecision   = stream.precision();
 
-  if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
+  if (topLevel && !m_filename.IsEmpty() && HasOption(RotateLogMask)) {
     unsigned rotateVal = GetRotateVal(m_options);
     if (rotateVal != m_lastRotate) {
       m_lastRotate = rotateVal;
