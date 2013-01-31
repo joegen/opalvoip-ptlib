@@ -5236,7 +5236,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\sound_directsound.cxx"
+					RelativePath=".\directsound.cxx"
 					>
 				</File>
 				<File
@@ -9229,7 +9229,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ptlib\msos\ptlib\sound_directsound.h"
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\directsound.h"
 					>
 				</File>
 				<File

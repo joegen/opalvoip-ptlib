@@ -1,5 +1,5 @@
 /*
- * sound_directsound.cxx
+ * directsound.cxx
  *
  * DirectX Sound driver implementation.
  *
@@ -29,7 +29,7 @@
  * $Date$
  */
 
-#pragma implementation "sound_directsound.h"
+#pragma implementation "directsound.h"
 
 #include <ptlib.h>
 
@@ -45,7 +45,7 @@
 #include <algorithm>
 
 #define INITGUID
-#include <ptlib/msos/ptlib/sound_directsound.h>
+#include <ptlib/msos/ptlib/directsound.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
 
 #include <tchar.h>
@@ -70,9 +70,6 @@ typedef HRESULT (STDAPICALLTYPE *LPFNDLLGETCLASSOBJECT )(REFCLSID, REFIID, LPVOI
 
 #ifdef _MSC_VER
   #pragma comment(lib, "dsound.lib")
-  #if _MSC_VER >= 1700
-    #pragma comment(lib, "dxguid.lib")
-  #endif
   #pragma message("Direct Sound support enabled")
 #endif
 
