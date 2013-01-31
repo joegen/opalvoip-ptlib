@@ -261,6 +261,8 @@ int PSocket::os_socket(int af, int type, int proto)
         return (int)WSASocket(af, type, proto, qosProtocol, 0, WSA_FLAG_OVERLAPPED);
     }
   }
+#else
+  WinSock();
 #endif // P_GQOS
 
   return (int)WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED);
