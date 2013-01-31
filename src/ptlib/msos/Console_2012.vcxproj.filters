@@ -319,7 +319,7 @@
     <ClCompile Include="sound_win32.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="sound_directsound.cxx">
+    <ClCompile Include="directsound.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\vcard.cxx">
@@ -705,7 +705,7 @@
     <ClInclude Include="..\..\..\include\ptclib\vxml.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\sound_directsound.h">
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\directsound.h">
       <Filter>Header Files\MSOS</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\safecoll.h">
