@@ -1,5 +1,5 @@
 /*
- * sound_directsound.h
+ * directsound.h
  *
  * DirectX Sound driver implementation.
  *
