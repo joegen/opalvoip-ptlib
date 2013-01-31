@@ -351,7 +351,7 @@
     <ClCompile Include="..\common\sfile.cxx" />
     <ClCompile Include="..\common\sockets.cxx" />
     <ClCompile Include="..\common\sound.cxx" />
-    <ClCompile Include="sound_directsound.cxx" />
+    <ClCompile Include="directsound.cxx" />
     <ClCompile Include="sound_win32.cxx" />
     <ClCompile Include="svcproc.cxx" />
     <ClCompile Include="..\common\syslog.cxx" />
@@ -786,7 +786,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\serchan.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\sfile.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\socket.h" />
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\sound_directsound.h" />
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\directsound.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\spxsock.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\svcproc.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\syncpoint.h" />

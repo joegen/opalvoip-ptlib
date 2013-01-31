@@ -137,7 +137,12 @@ static struct PWinSock
 
     WSACleanup();
   }
-} WinSock; // Assure winsock is initialised
+}
+& WinSock()
+{
+  static PWinSock instance; // Assure winsock is initialised
+  return instance;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -238,7 +243,7 @@ int PSocket::os_close()
 int PSocket::os_socket(int af, int type, int proto)
 {
 #if P_GQOS
-  if (WinSock.m_useGQOS) {
+  if (WinSock().m_useGQOS) {
     //Try to find a QOS-enabled protocol
     DWORD bufferSize = 0;
     int numProtocols = WSAEnumProtocols(NULL, NULL, &bufferSize);
@@ -823,8 +828,8 @@ PIPSocket::PIPSocket()
 #if P_QWAVE
 PBoolean PIPSocket::Close()
 {
-  if (IsOpen() && WinSock.m_hQoS != NULL && m_qosFlowId != 0) {
-    QOSRemoveSocketFromFlow(WinSock.m_hQoS, os_handle, m_qosFlowId, 0);
+  if (IsOpen() && WinSock().m_hQoS != NULL && m_qosFlowId != 0) {
+    QOSRemoveSocketFromFlow(WinSock().m_hQoS, os_handle, m_qosFlowId, 0);
     m_qosFlowId = 0;
   }
 
@@ -954,7 +959,7 @@ bool PIPSocket::SetQoS(const QoS & qos)
   int new_tos = qos.m_dscp >= 0 || qos.m_dscp < 64 ? (qos.m_dscp<<2) : -1;
 
 #if P_GQOS
-  if (WinSock.m_useGQOS && new_tos < 0 && qos.m_type != BestEffortQoS) {
+  if (WinSock().m_useGQOS && new_tos < 0 && qos.m_type != BestEffortQoS) {
     QOS qosBuf;
     memset(&qosBuf, 0, sizeof(qosBuf));
 
@@ -1001,7 +1006,7 @@ bool PIPSocket::SetQoS(const QoS & qos)
     if (!peer.IsValid())
       GetPeerAddress(peer);
 
-    if (WinSock.m_hQoS != NULL && peer.IsValid()) {
+    if (WinSock().m_hQoS != NULL && peer.IsValid()) {
       static QOS_TRAFFIC_TYPE const TrafficType[NumQoSType] = {
         QOSTrafficTypeBackground,      // BackgroundQoS
         QOSTrafficTypeBestEffort,      // BestEffortQoS
@@ -1015,14 +1020,14 @@ bool PIPSocket::SetQoS(const QoS & qos)
       bool ok = false;
       if (m_qosFlowId == 0) {
         if (qos.m_type != BestEffortQoS || new_tos >= 0 || qos.m_transmit.m_maxBandwidth > 0) {
-          ok = QOSAddSocketToFlow(WinSock.m_hQoS, os_handle,
+          ok = QOSAddSocketToFlow(WinSock().m_hQoS, os_handle,
                                   peer.IsValid() ? (PSOCKADDR)sockaddr_wrapper(peer) : (PSOCKADDR)NULL,
                                   TrafficType[qos.m_type], QOS_NON_ADAPTIVE_FLOW, &m_qosFlowId);
           PTRACE_IF(1, !ok, "WinSock", "Could not add socket to QoS flow, error=" << ::GetLastError());
         }
       }
       else {
-        ok = QOSSetFlow(WinSock.m_hQoS, m_qosFlowId, QOSSetTrafficType, sizeof(QOS_TRAFFIC_TYPE), (PVOID)&TrafficType[qos.m_type], 0, NULL);
+        ok = QOSSetFlow(WinSock().m_hQoS, m_qosFlowId, QOSSetTrafficType, sizeof(QOS_TRAFFIC_TYPE), (PVOID)&TrafficType[qos.m_type], 0, NULL);
         PTRACE_IF(1, !ok, "WinSock", "Could not set QoS flow, error=" << ::GetLastError());
       }
 
@@ -1031,7 +1036,7 @@ bool PIPSocket::SetQoS(const QoS & qos)
         out.Bandwidth = qos.m_transmit.m_maxBandwidth;
         out.ShapingBehavior = QOSUseNonConformantMarkings;
         out.Reason = QOSFlowRateNotApplicable;
-        if (!QOSSetFlow(WinSock.m_hQoS, m_qosFlowId, QOSSetOutgoingRate, sizeof(out), &out, 0, NULL)) {
+        if (!QOSSetFlow(WinSock().m_hQoS, m_qosFlowId, QOSSetOutgoingRate, sizeof(out), &out, 0, NULL)) {
           PTRACE(1, "WinSock", "Could not set QoS rates, error=" << ::GetLastError());
         }
       }
@@ -1039,7 +1044,7 @@ bool PIPSocket::SetQoS(const QoS & qos)
       if (ok && new_tos >= 0) {
 #if P_QWAVE_DSCP
         DWORD dscp = qos.m_dscp;
-        if (!QOSSetFlow(WinSock.m_hQoS, m_qosFlowId, QOSSetOutgoingDSCPValue, sizeof(dscp), &dscp, 0, NULL)) {
+        if (!QOSSetFlow(WinSock().m_hQoS, m_qosFlowId, QOSSetOutgoingDSCPValue, sizeof(dscp), &dscp, 0, NULL)) {
           PTRACE(1, "WinSock", "Could not set DSCP, error=" << ::GetLastError());
         }
 #else

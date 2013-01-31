@@ -233,61 +233,28 @@ PBoolean PVideoInputDevice_1394DC::Open(const PString & devName, PBoolean startI
     return false;
   }
 
-  /*-----------------------------------------------------------------------
-   *  Open ohci and asign handle to it
-   *-----------------------------------------------------------------------*/
-  handle = dc1394_create_handle(0);
+  handle = dc1394_new();
+
   if (handle==NULL)
   {
-    PTRACE(0, "Unable to aquire a raw1394 handle\ndid you insmod the drivers?\n");
+    PTRACE(0, "Unable to aquire a dc1394 handle, did you insmod the drivers?\n");
     return false;
   }
 
-  /*-----------------------------------------------------------------------
-   *  get the camera nodes and describe them as we find them
-   *-----------------------------------------------------------------------*/
-  int numNodes = raw1394_get_nodecount(handle);
-  camera_nodes = dc1394_get_camera_nodes(handle,&numCameras,0);
-  if (numCameras<1)
+  if (dc1394_camera_enumerate(handle, &camera_list))
   {
-    PTRACE(0, "no cameras found :(\n");
-    dc1394_destroy_handle(handle);
+    PTRACE(0, "Failed to enumerate cameras\n");
+    dc1394_free(handle);
     handle = NULL;
     return false;
   }
-
-  /*-----------------------------------------------------------------------
-   *  to prevent the iso-transfer bug from raw1394 system, check if
-   *  camera is highest node. For details see 
-   *  http://linux1394.sourceforge.net/faq.html#DCbusmgmt
-   *  and
-   *  http://sourceforge.net/tracker/index.php?func=detail&aid=435107&group_id=8157&atid=108157
-   *-----------------------------------------------------------------------*/
-  for (int i=0; i<numCameras; i++) {
-    if( camera_nodes[i] == numNodes-1) {
-      PTRACE(0,"Sorry, your camera is the highest numbered node\n"
-             "of the bus, and has therefore become the root node.\n"
-             "The root node is responsible for maintaining \n"
-             "the timing of isochronous transactions on the IEEE \n"
-             "1394 bus.  However, if the root node is not cycle master \n"
-             "capable (it doesn't have to be), then isochronous \n"
-             "transactions will not work.  The host controller card is \n"
-             "cycle master capable, however, most cameras are not.\n"
-             "\n"
-             "The quick solution is to add the parameter \n"
-             "attempt_root=1 when loading the OHCI driver as a \n"
-             "module.  So please do (as root):\n"
-             "\n"
-             "   rmmod ohci1394\n"
-             "   insmod ohci1394 attempt_root=1\n"
-             "\n"
-             "for more information see the FAQ at \n"
-             "http://linux1394.sourceforge.net/faq.html#DCbusmgmt\n"
-             "\n");
-      dc1394_destroy_handle(handle);
-      handle = NULL;
-      return false;
-    }
+  
+  if (camera_list->num == 0)
+  {
+    PTRACE(0, "no cameras found :(\n");
+    dc1394_free(handle);
+    handle = NULL;
+    return false;
   }
 
   frameHeight = 240;
@@ -296,6 +263,7 @@ PBoolean PVideoInputDevice_1394DC::Open(const PString & devName, PBoolean startI
   capturing_duration = 10000; // arbitrary large value suffices
   deviceName = devName;
 
+#if 0
   // select the specified input and video format
   if (!SetChannel(channelNumber) ||
       !SetVideoFormat(videoFormat)) {
@@ -312,6 +280,7 @@ PBoolean PVideoInputDevice_1394DC::Open(const PString & devName, PBoolean startI
   // Verify the format that the card accept
   quadlet_t supported_framerates;
   supportedFormat = 0;
+
   if (dc1394_query_supported_framerates(handle, camera_nodes[channelNumber],
 	FORMAT_VGA_NONCOMPRESSED, MODE_320x240_YUV422,
 	&supported_framerates) == DC1394_SUCCESS) {
@@ -323,7 +292,8 @@ PBoolean PVideoInputDevice_1394DC::Open(const PString & devName, PBoolean startI
 	&supported_framerates) == DC1394_SUCCESS) {
      supportedFormat |= DC1394_FORMAT_160x120;
   }
-  
+#endif
+
   PTRACE(3, "Successfully opended\n");
   return true;
 }
@@ -340,7 +310,7 @@ PBoolean PVideoInputDevice_1394DC::Close()
   if (IsOpen()) {
     if (IsCapturing())
       Stop();
-    dc1394_destroy_handle(handle);
+    dc1394_free(handle);
     handle = NULL;
     return true;
   } else
@@ -352,6 +322,8 @@ PBoolean PVideoInputDevice_1394DC::Start()
   int dc1394_mode;
   if (!IsOpen()) return false;
   if (is_capturing) return true;
+
+#if 0      
   if (frameWidth == 320 && frameHeight == 240)
     dc1394_mode = MODE_320x240_YUV422;
   else if (frameWidth == 160 && frameHeight == 120)
@@ -366,7 +338,7 @@ PBoolean PVideoInputDevice_1394DC::Start()
   if (dc1394_query_supported_framerates(handle, camera_nodes[channelNumber],
           FORMAT_VGA_NONCOMPRESSED, dc1394_mode,
           &supported_framerates) != DC1394_SUCCESS) {
-    PTRACE(1, "dc1394_query_supported_framerates() failed.");
+    PTRACE(1, "dc1394_video_get_supported_framerates() failed.");
     return false;
   }
 
@@ -409,6 +381,18 @@ PBoolean PVideoInputDevice_1394DC::Start()
                            P_DC1394_DEFAULT_SPEED,
                            framerate,
        &camera)!=DC1394_SUCCESS))
+#else
+  camera = dc1394_camera_new(handle, camera_list->ids[0].guid);
+
+  if (!camera)
+  {
+    PTRACE(0,"The camera \"" << camera_list->ids[0].guid
+             << "\"could not be selected.\n");
+    return false;
+  }
+    
+  if (dc1394_capture_setup(camera, 4, DC1394_CAPTURE_FLAGS_DEFAULT))
+#endif
   {
     PTRACE(0,"unable to setup camera-\n"
              "check " __FILE__ " to make sure\n"
@@ -420,6 +404,7 @@ PBoolean PVideoInputDevice_1394DC::Start()
   /*-----------------------------------------------------------------------
    *  have the camera start sending us data
    *-----------------------------------------------------------------------*/
+#if 0      
   if (dc1394_start_iso_transmission(handle,camera.node)
       !=DC1394_SUCCESS) 
   {
@@ -428,6 +413,11 @@ PBoolean PVideoInputDevice_1394DC::Start()
       dc1394_dma_release_camera(handle,&camera);
     else
       dc1394_release_camera(handle,&camera);
+#else
+  if (dc1394_video_set_transmission(camera, DC1394_ON))
+  {
+    PTRACE(0, "unable to start camera iso transmission\n");
+#endif
     return false;
   }
   is_capturing = true;
@@ -443,13 +433,20 @@ PBoolean PVideoInputDevice_1394DC::Start()
 PBoolean PVideoInputDevice_1394DC::Stop()
 {
   if (IsCapturing()) {
+#if 0      
     dc1394_stop_iso_transmission(handle,camera.node);
     if (UseDMA) {
     dc1394_dma_unlisten(handle, &camera);
     dc1394_dma_release_camera(handle,&camera);
     } else
       dc1394_release_camera(handle,&camera);
-    is_capturing = false;
+#else
+    dc1394_video_set_transmission(camera, DC1394_OFF);
+    dc1394_capture_stop(camera);
+    dc1394_camera_free(camera);
+#endif
+
+      is_capturing = false;
     return true;
   } else
     return false;
@@ -548,6 +545,7 @@ PBoolean PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
 {
   if (!IsCapturing()) return false;
 
+#if 0
   PTRACE(3, "We are going to single capture.\n");
   if ((UseDMA && dc1394_dma_single_capture(&camera)!=DC1394_SUCCESS) ||
       (!UseDMA && dc1394_single_capture(handle,&camera)!=DC1394_SUCCESS)){
@@ -565,6 +563,16 @@ PBoolean PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
     PTRACE(1, "Converter must exist. Something goes wrong.");
     return false;
   }
+#else
+  dc1394video_frame_t* frame;
+  
+  if (dc1394_capture_dequeue(camera, DC1394_CAPTURE_POLICY_WAIT, &frame)) {
+    PTRACE(1, "Could not capture a frame");
+    return false;
+  }
+  
+  // Is further data conversion needed?
+#endif
 
 #ifdef ESTIMATE_CAPTURE_PERFORMANCE
   ++num_captured;
@@ -573,8 +581,11 @@ PBoolean PVideoInputDevice_1394DC::GetFrameDataNoDelay(BYTE * buffer, PINDEX * b
   ::fprintf(stderr, "time %f, num_captured=%d, fps=%f\n", capturing_time, num_captured, num_captured/capturing_time);
 #endif
 
+#if 0
   if (UseDMA)
     dc1394_dma_done_with_buffer(&camera);
+#endif
+
   return true;
 }
 

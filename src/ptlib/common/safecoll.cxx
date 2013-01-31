@@ -57,8 +57,10 @@ PBoolean PSafeObject::SafeReference()
 
   {
     PWaitAndSignal mutex(safetyMutex);
-    if (safelyBeingRemoved)
+    if (safelyBeingRemoved) {
+      PTRACE(3, "SafeColl\tAttempt to reference object being removed: " << GetClass() << ' ' << (void *)this);
       return false;
+    }
     safeReferenceCount++;
 #if PTRACING
     tracedReferenceCount = safeReferenceCount;
