@@ -32,8 +32,7 @@
 #pragma interface
 #endif
 
-#include <libraw1394/raw1394.h>
-#include <libdc1394/dc1394_control.h>
+#include <dc1394/dc1394.h>
 #include <ptclib/delaychan.h>
 
 /** This class defines a video input device that
@@ -144,12 +143,12 @@ class PVideoInputDevice_1394DC : public PVideoInputDevice
 
  protected:
     PINDEX frameBytes;
-    raw1394handle_t handle;
+    dc1394_t* handle;
     PBoolean is_capturing;
     PBoolean UseDMA;
-    nodeid_t * camera_nodes;
+    dc1394camera_list_t* camera_list;
     int numCameras;
-    dc1394_cameracapture camera;
+    dc1394camera_t* camera;
     int capturing_duration;
     int supportedFormat;
     PAdaptiveDelay m_pacing;
