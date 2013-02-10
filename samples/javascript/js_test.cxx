@@ -95,10 +95,18 @@ void MyProcess::Main()
       cerr << jscript.GetLastErrorText() << " executing '" << args[arg] << "'" << endl;
   }
 
-  cout << "myString = " << jscript.GetString("myString") << endl
-       << "myInt    = " << jscript.GetInteger("myInt") << endl
+  if (!jscript.SetNumber("myObject.pi", 3.14))
+    cerr << "Cannot set number" << endl;
+
+  if (!jscript.SetNumber("myObject.subObject.e", 2.718))
+    cerr << "Cannot set number" << endl;
+
+  cout << "myString    = " << jscript.GetString("myString") << endl
+       << "myInt       = " << jscript.GetInteger("myInt") << endl
        << "myNumber    = " << jscript.GetNumber("myNumber") << endl
-       << "myBool    = " << jscript.GetBoolean("myBool") << endl
+       << "myBool      = " << jscript.GetBoolean("myBool") << endl
+       << "myObject.pi = " << jscript.GetNumber("myObject.pi") << endl
+       << "myObject.subObject.e = " << jscript.GetNumber("myObject.subObject.e") << endl;
        ;
 }
 

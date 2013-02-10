@@ -234,15 +234,7 @@ class PJavaScript : public PScriptLanguage
   //@}
 
   protected:
-    template <class v8Type, class cppType>
-    bool SetValue(const PString & name, const cppType & value)
-    {
-      v8::Locker locker;
-      v8::HandleScope handleScope;
-      v8::Context::Scope contextScope(m_context);
-      return m_context->Global()->Set(v8::String::New(name), v8Type::New(value));
-    }
-
+    v8::Handle<v8::Object> ParseKey(const PString & name, PString & lastName);
     v8::Persistent<v8::Context> m_context;
     PString m_resultText;
 };
