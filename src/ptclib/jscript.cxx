@@ -135,163 +135,222 @@ bool PJavaScript::CreateComposite(const PString & /*name*/)
   return false;
 }
 
+v8::Handle<v8::Object> PJavaScript::ParseKey(const PString & name, PString & lastName)
+{
+  PStringArray tokens = name.Tokenise('.', false);
+  if (tokens.GetSize() < 1) {
+    PTRACE(5, "V8\tParseKey:node '" << name << " is too short");
+    return v8::Handle<v8::Object>();
+  }
+  
+  v8::Local<v8::Value> value = m_context->Global();
+  v8::Local<v8::Object> object;
+
+  PString soFar;
+  PINDEX i = 0;
+  for (;;) {
+    if (value->IsNull() || !value->IsObject()) {
+      PTRACE(5, "V8\tParseKey:node '" << soFar << " is not an object");
+      return v8::Handle<v8::Object>();
+    }
+    object = value->ToObject();
+    if (i >= (tokens.GetSize()-1))
+      break;
+    //cerr << "  Getting node element " << i << " " << tokens[i] << endl;
+    value = object->Get(v8::String::New((const char *)tokens[i]));
+    if (!soFar.IsEmpty())
+      soFar += ".";
+    soFar += tokens[i];
+    ++i;
+  } 
+
+  lastName = tokens[i];
+
+  return object;
+}
+
 
 bool PJavaScript::GetVar(const PString & name, PVarType & var)
 {
   v8::Locker locker;
   v8::HandleScope handleScope;
   v8::Context::Scope contextScope(m_context);
-  v8::Local<v8::Value> value = m_context->Global()->Get(v8::String::New(name));
+
+  PString lastName;
+  v8::Handle<v8::Object> object = ParseKey(name, lastName);
+  if (object.IsEmpty()) {
+    PTRACE(5, "V8\tGetVar:node '" << name << " is not an object");
+    return false;
+  }
+
+  v8::Handle<v8::Value> value = object->Get(v8::String::New((const char *)lastName));
+
+  {
+    v8::String::AsciiValue ascii(value);
+    std::string txt = std::string(*ascii);
+    PTRACE(5, "V8\tExtracted '" << name << "' = " << txt);
+  }
+
+  if (value->IsInt32()) {
+    var = PVarType(value->Int32Value());
+    return true;
+  }
+
+  if (value->IsUint32()) {
+    var = PVarType(value->Uint32Value());
+    return true;
+  }
+
+  if (value->IsNumberObject()) {
+    var = PVarType(value->NumberValue());
+    return true;
+  }
+
+  if (value->IsBoolean()) {
+    var = PVarType(value->BooleanValue());
+    return true;
+  }
 
   if (value->IsString()) {
-    v8::String::AsciiValue ascii(value); 
-    var = PVarType(*ascii); 
+    v8::String::AsciiValue ascii(value->ToString()); 
+    var = PVarType(PString(*ascii)); 
+    return true;
   }
 
-  else if (value->IsInt32())
-    var = PVarType((static_cast<v8::Int32 *>(*value))->Value()); 
+  v8::String::AsciiValue ascii(value);
+  std::string txt = std::string(*ascii);
+  PTRACE(5, "V8\tUnable to determine type of '" << name << "' = " << txt);
 
-  else if (value->IsUint32())
-    var = PVarType((static_cast<v8::Uint32 *>(*value))->Value()); 
-
-  else if (value->IsBoolean())
-    var = PVarType((static_cast<v8::Boolean *>(*value))->Value()); 
-
-  else if (value->IsNumber())
-    var = PVarType((static_cast<v8::Number *>(*value))->Value()); 
-
-  else if (value->IsNull())
-    var = PVarType();
-
-/*
-  else if (value->IsDate()) {
-    v8::Date date(value); 
-    //??? unclear how to converter to date
-  }
-*/
-
-  else
-    return false;
-
-  return true;
+  return false;
 }
-
-bool PJavaScript::SetVar(const PString & name, const PVarType & var)
+  
+bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 {
   v8::Locker locker;
   v8::HandleScope handleScope;
   v8::Context::Scope contextScope(m_context);
 
-  v8::Local<v8::Object> global = m_context->Global();
-  v8::Handle<v8::String> key = v8::String::New(name);
+  PString lastName;
+  v8::Handle<v8::Object> object = ParseKey(key, lastName);
+  if (object.IsEmpty()) {
+    PTRACE(5, "V8\tSetVar:node '" << key << "' is not an object");
+    return false;
+  }
+
+  v8::Handle<v8::String> strKey = v8::String::New((const char *)lastName);
 
   switch (var.GetType()) {
     case PVarType::VarNULL:
-      global->Set(key, v8::Null());
+      //return object->Set(strKey, v8::Null::New());
       break;
 
     case PVarType::VarBoolean:
-      global->Set(key, v8::Boolean::New(var.AsBoolean()));
-      break;
+      return object->Set(strKey, v8::Boolean::New(var.AsBoolean()));
 
     case PVarType::VarChar:
     case PVarType::VarStaticString:
     case PVarType::VarFixedString:
     case PVarType::VarDynamicString:
     case PVarType::VarGUID:
-      global->Set(key, v8::String::New(var.AsString()));
-      break;
+      return object->Set(strKey, v8::String::New(var.AsString()));
 
     case PVarType::VarInt8:
     case PVarType::VarInt16:
     case PVarType::VarInt32:
-      global->Set(key, v8::Int32::New(var.AsInteger()));
-      break;
+      return object->Set(strKey, v8::Int32::New(var.AsInteger()));
 
     case PVarType::VarUInt8:
     case PVarType::VarUInt16:
     case PVarType::VarUInt32:
-      global->Set(key, v8::Uint32::New(var.AsUnsigned()));
-      break;
+      return object->Set(strKey, v8::Uint32::New(var.AsUnsigned()));
 
     case PVarType::VarInt64:
+      return object->Set(strKey, v8::NumberObject::New(var.AsInteger64()));
+
     case PVarType::VarUInt64:
-      // Until V8 has 64 bit integer type, use doube float
+      return object->Set(strKey, v8::NumberObject::New(var.AsUnsigned64()));
+
     case PVarType::VarFloatSingle:
     case PVarType::VarFloatDouble:
     case PVarType::VarFloatExtended:
-      global->Set(key, v8::Number::New(var.AsFloat()));
+  PTRACE(5, "V8\tSetting '" << key << "' to float '" << var << "'");
+      return object->Set(strKey, v8::NumberObject::New(var.AsFloat()));
       break;
 
     case PVarType::VarTime:
     case PVarType::VarStaticBinary:
     case PVarType::VarDynamicBinary:
     default:
-      return false;
+      break;
   }
-  return true;
+
+  PTRACE(5, "V8\tSetting '" << key << "' to unknown type '" << var << "'");
+
+  return false;
 }
-
-#define GET_VALUE_INTERNAL(v8Type, cppType, isFunc) \
-  v8::Locker locker; \
-  v8::HandleScope handleScope; \
-  v8::Context::Scope contextScope(m_context); \
-  v8::Local<v8::Value> value = m_context->Global()->Get(v8::String::New(name)); \
-  if (!value->isFunc()) \
-    return false; \
-
-#define GET_VALUE(v8Type, cppType, isFunc) \
-  GET_VALUE_INTERNAL(v8Type, cppType, isFunc) \
-  return static_cast<cppType>((static_cast<v8::v8Type *>(*value))->Value()); \
 
 
 bool PJavaScript::GetBoolean(const PString & name)
 {
-  GET_VALUE(Boolean, bool, IsBoolean);
+  PVarType var;
+  if (!GetVar(name, var))
+    return false;
+  return var.AsBoolean();
 }
 
 
 bool PJavaScript::SetBoolean(const PString & name, bool value)
 {
-  return SetValue<v8::Boolean, bool>(name, value);
+  PVarType var(value);
+  return SetVar(name, value);
 }
 
 
 int PJavaScript::GetInteger(const PString & name)
 {
-  GET_VALUE(Integer, int, IsInt32);
+  PVarType var;
+  if (!GetVar(name, var))
+    return 0;
+  return var.AsInteger();
 }
 
 
 bool PJavaScript::SetInteger(const PString & name, int value)
 {
-  return SetValue<v8::Integer, int>(name, value);
+  PVarType var(value);
+  return SetVar(name, value);
 }
 
 
 double PJavaScript::GetNumber(const PString & name)
 {
-  GET_VALUE(Number, double, IsNumber);
+  PVarType var;
+  if (!GetVar(name, var))
+    return 0.0;
+  return var.AsFloat();
 }
 
 
 bool PJavaScript::SetNumber(const PString & name, double value)
 {
-  return SetValue<v8::Number, double>(name, value);
+  PVarType var(value);
+  return SetVar(name, value);
 }
 
 
 PString PJavaScript::GetString(const PString & name)
 {
-  GET_VALUE_INTERNAL(String, PString, IsString);
-  v8::String::AsciiValue ascii(value); 
-  return PString(*ascii); 
+  PVarType var;
+  if (!GetVar(name, var))
+    return PString::Empty();
+  return var.AsString();
 }
 
 
 bool PJavaScript::SetString(const PString & name, const char * value)
 {
-  return SetValue<v8::String, PString>(name, value);
+  PVarType var(value);
+  return SetVar(name, value);
 }
 
 
