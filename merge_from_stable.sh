@@ -43,7 +43,7 @@ if test $doMerge = 1 ; then
 fi
 
 if test $doInfo = 1 ; then
-  RANGEINFO=`svn diff --depth empty . | grep "^   Merged"`
+  RANGEINFO=`svn diff --depth empty . | grep "^   Merged" | grep $STABLE_BRANCH`
   if test "x$RANGEINFO" = "x" ; then
     echo "error: cannot find range of changes"
     exit 255
