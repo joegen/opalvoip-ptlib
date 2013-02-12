@@ -515,6 +515,10 @@ class PHTTPClient : public PHTTP
       PMIMEInfo & outMIME,      ///< MIME info in request
       PMIMEInfo & replyMIME     ///< MIME info in response
     );
+    bool GetDocument(
+      const PURL & url,         ///< Universal Resource Locator for document.
+      PMIMEInfo & replyMIME     ///< MIME info in response
+    );
 
     /** Get the document specified by the URL.
 

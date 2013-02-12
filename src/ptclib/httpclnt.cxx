@@ -417,6 +417,13 @@ bool PHTTPClient::GetDocument(const PURL & url, PMIMEInfo & outMIME, PMIMEInfo &
 }
 
 
+bool PHTTPClient::GetDocument(const PURL & url, PMIMEInfo & replyMIME)
+{
+  PMIMEInfo outMIME;
+  return IsOK(ExecuteCommand(GET, url, outMIME, PString::Empty(), replyMIME));
+}
+
+
 bool PHTTPClient::GetHeader(const PURL & url, PMIMEInfo & outMIME, PMIMEInfo & replyMIME)
 {
   return IsOK(ExecuteCommand(HEAD, url, outMIME, PString::Empty(), replyMIME));
