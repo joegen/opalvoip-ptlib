@@ -144,9 +144,8 @@ PString PNatMethod::GetNatTypeString(NatTypes type)
     "Restricted NAT",
     "Port Restricted NAT",
     "Symmetric NAT",
-    "Symmetric Firewall",
+    "Partially Blocked",
     "Blocked",
-    "Partially Blocked"
   };
 
   if (type < NumNatTypes)
@@ -270,7 +269,6 @@ PNatMethod::RTPSupportTypes PNatMethod::GetRTPSupport(bool force)
 
     // types that support RTP if media sent first
     case ConeNat:
-    case SymmetricFirewall:
     case RestrictedNat:
     case PortRestrictedNat:
       return RTPIfSendMedia;
@@ -447,6 +445,8 @@ static PConstCaselessString const FixedName("Fixed");
 
 PNatMethod_Fixed::PNatMethod_Fixed()
   : m_type(OpenNat)
+  , m_interfaceAddress(PIPSocket::GetInvalidAddress())
+  , m_externalAddress(PIPSocket::GetInvalidAddress())
 {
 }
 
@@ -465,15 +465,33 @@ PString PNatMethod_Fixed::GetName() const
 
 PString PNatMethod_Fixed::GetServer() const
 {
-  return PSTRSTRM(m_type << ' ' << m_externalHost << ' ' << m_interface);
+  if (m_externalAddress.IsValid())
+    return PSTRSTRM(m_externalAddress << '/' << m_type);
+
+  return PString::Empty();
 }
 
 
 bool PNatMethod_Fixed::SetServer(const PString & str)
 {
-  PStringStream strm(str);
-  strm >> m_type >> m_externalHost >> m_interface;
-  return true;
+  if (str.IsEmpty()) {
+    m_type = OpenNat;
+    m_externalAddress = PIPSocket::GetInvalidAddress();
+    return true;
+  }
+
+  PINDEX pos = str.FindLast('/');
+  if (pos == P_MAX_INDEX) {
+    m_type = SymmetricNat;
+    return PIPSocket::GetHostAddress(str, m_externalAddress);
+  }
+
+  int newType = str.Mid(pos+1).AsInteger();
+  if (newType < 0 || newType >= NumNatTypes)
+    return false;
+
+  m_type = (NatTypes)newType;
+  return PIPSocket::GetHostAddress(str.Left(pos), m_externalAddress);
 }
 
 
@@ -485,28 +503,28 @@ PNatMethod::NatTypes PNatMethod_Fixed::InternalGetNatType(bool, const PTimeInter
 
 bool PNatMethod_Fixed::GetExternalAddress(PIPSocket::Address & addr ,const PTimeInterval &)
 {
-  addr = m_interface;
+  addr = m_externalAddress.IsValid() ? m_externalAddress : m_interfaceAddress;
   return true;
 }
 
 
 bool PNatMethod_Fixed::GetInterfaceAddress(PIPSocket::Address & addr) const
 {
-  addr = m_interface;
+  addr = m_interfaceAddress;
   return true;
 }
 
 
 bool PNatMethod_Fixed::Open(const PIPSocket::Address & addr)
 {
-  m_interface = addr;
-  return true;
+  m_interfaceAddress = addr;
+  return m_interfaceAddress.IsValid();
 }
 
 
 bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding)
 {
-  return binding == m_interface;
+  return binding == m_interfaceAddress;
 }
 
 
