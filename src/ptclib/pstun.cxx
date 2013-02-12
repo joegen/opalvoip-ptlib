@@ -160,7 +160,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   PTRACE(3, "STUN\tTest II response " << (testII ? "" : "not ") << "received");
 
   if (notNAT) {
-    m_natType = (testII ? PNatMethod::OpenNat : PNatMethod::SymmetricFirewall);
+    m_natType = (testII ? PNatMethod::OpenNat : PNatMethod::PartiallyBlocked);
     // Is not NAT or symmetric firewall
     PTRACE(2, "STUN\tTest I and II indicate nat is " << PNatMethod::GetNatTypeString(m_natType));
     return m_natType;
@@ -190,7 +190,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   if (!responseI2.Poll(*socket, requestI2, m_pollRetries)) {
     PTRACE(3, "STUN\tPoll of secondary server " << secondaryServer << ':' << secondaryPort
            << " failed, NAT partially blocked by firewall rules.");
-    return m_natType = PNatMethod::PartialBlockedNat;
+    return m_natType = PNatMethod::PartiallyBlocked;
   }
 
   mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
@@ -783,7 +783,7 @@ bool PSTUNUDPSocket::OpenSTUN(PSTUNClient & client)
       PTRACE(1, "STUN\tAllowing STUN to be used for non-RTP socket on Symmetric Nat");
       break;
  
-    default : // UnknownNet, SymmetricFirewall, BlockedNat
+    default :
       PTRACE(1, "STUN\tCannot create socket using NAT type " << client.GetNatTypeName());
       return false;
   }
@@ -823,14 +823,7 @@ PNatCandidate PSTUNUDPSocket::GetCandidateInfo()
       candidate.m_type = PNatCandidate::eType_ServerReflexive;
       break;
 
-    case PNatMethod::RestrictedNat:
-    case PNatMethod::PortRestrictedNat:
-    case PNatMethod::SymmetricNat:
-    case PNatMethod::SymmetricFirewall:
-    case PNatMethod::BlockedNat:
-    case PNatMethod::PartialBlockedNat:
-    case PNatMethod::NumNatTypes:
-    case PNatMethod::UnknownNat:
+    default :
       break;
   }
 
@@ -894,7 +887,6 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
     case RestrictedNat :
     case PortRestrictedNat :
     case SymmetricNat :
-    case SymmetricFirewall :
       break;
 
     default :
@@ -1220,7 +1212,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       }
       break;
 
-    default : // UnknownNet, SymmetricFirewall, BlockedNat
+    default :
       PTRACE(1, "STUN\tCannot create socket pair using NAT type " << GetNatTypeName());
       return false;
   }
@@ -1424,7 +1416,7 @@ int PTURNUDPSocket::OpenTURN(PTURNClient & client)
     case PNatMethod::RestrictedNat :
     case PNatMethod::PortRestrictedNat :
     case PNatMethod::SymmetricNat :
-    default : // UnknownNet, SymmetricFirewall, BlockedNat
+    default :
       break;
   }
 #endif
@@ -1632,13 +1624,11 @@ PSTUNClient::RTPSupportTypes PTURNClient::GetRTPSupport(bool force)
     case OpenNat:
     case SymmetricNat:
     case ConeNat:
-    case SymmetricFirewall:
     case RestrictedNat:
     case PortRestrictedNat:
       return RTPSupported;
 
     // types that do not support RTP
-    case BlockedNat:
     default:
       return RTPUnknown;
   }
@@ -1765,7 +1755,7 @@ bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
     case RestrictedNat :
     case PortRestrictedNat :
     case SymmetricNat :
-    default : // UnknownNet, SymmetricFirewall, BlockedNat
+    default :
       break;
   }
 #endif
