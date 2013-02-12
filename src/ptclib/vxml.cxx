@@ -1338,8 +1338,11 @@ bool PVXMLSession::ProcessGrammar()
       PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
       m_bargingIn = false;
 
-      bool nextNode = m_grammar->Process();
-      LoadGrammar(NULL);
+      PVXMLGrammar * grammar = m_grammar;
+      m_grammar = NULL;
+      PTRACE(2, "VXML\tProcessing grammar " << *grammar);
+      bool nextNode = grammar->Process();
+      delete grammar;
       return nextNode;
   }
 }
@@ -2053,13 +2056,14 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     else {
       for (PINDEX i = 0; i < namelist.GetSize(); ++i)
         url.SetQueryVar(namelist[i], GetVar(namelist[i]));
-  }
+    }
 
     PMIMEInfo replyMIME;
     if (client.GetDocument(url, replyMIME) && client.ReadContentBody(replyMIME))
       return true;
 
-    PTRACE(1, "VXML\t<submit> GET " << url << " failed with " << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo() );
+    PTRACE(1, "VXML\t<submit> GET " << url << " failed with "
+           << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
     return false;
   }
 
@@ -2067,27 +2071,27 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     PStringToString vars;
     if (namelist.IsEmpty())
       vars = GetVariables();
-  else {
+    else {
       for (PINDEX i = 0; i < namelist.GetSize(); ++i)
         vars.SetAt(namelist[i], GetVar(namelist[i]));
-  }
+    }
 
     if (client.PostData(url, vars))
       return true;
 
-    PTRACE(1, "VXML\t<submit> POST " << url << " failed with " << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo() );
-      return false;
-    }
+    PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
+           << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
+    return false;
+  }
 
-    PMIMEInfo sendMIME;
+  PMIMEInfo sendMIME;
 
   // Put in boundary
-    PString boundary = "--------012345678901234567890123458VXML";
-    sendMIME.SetAt( PHTTP::ContentTypeTag(), "multipart/form-data; boundary=" + boundary);
+  PString boundary = "--------012345678901234567890123458VXML";
+  sendMIME.SetAt( PHTTP::ContentTypeTag(), "multipart/form-data; boundary=" + boundary);
 
-    // After this all boundaries have a "--" prepended
-    boundary.Splice("--", 0, 0);
-
+  // After this all boundaries have a "--" prepended
+  boundary.Splice("--", 0, 0);
   PStringStream entityBody;
 
   for (PINDEX i = 0; i < namelist.GetSize(); ++i) {
@@ -2104,7 +2108,8 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
 
     PMIMEInfo part1, part2;
     part1.Set(PMIMEInfo::ContentTypeTag, "audio/wav");
-    part1.Set(PMIMEInfo::ContentDispositionTag, "form-data; name=\"voicemail\"; filename=\"" + file.GetFilePath().GetFileName() + '"');
+    part1.Set(PMIMEInfo::ContentDispositionTag,
+              "form-data; name=\"voicemail\"; filename=\"" + file.GetFilePath().GetFileName() + '"');
     // Make PHP happy?
     // Anyway, this shows how to add more variables, for when namelist containes more elements
     part2.Set(PMIMEInfo::ContentDispositionTag, "form-data; name=\"MAX_FILE_SIZE\"\r\n\r\n3000000");
@@ -2115,18 +2120,19 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
                << "--" << boundary << "\r\n"
                << part2
                << "\r\n";
-    }
+  }
 
   if (entityBody.IsEmpty()) {
     PTRACE(1, "VXML\t<submit> could not find anything to send using \"" << setfill(',') << namelist << '"');
-      return false;
-    }
+    return false;
+  }
 
   if (client.PostData(url, sendMIME, entityBody))
     return true;
 
-  PTRACE(1, "VXML\t<submit> POST " << url << " failed with " << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo() );
-      return false;
+  PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
+         << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
+  return false;
 }
 
 
@@ -2260,7 +2266,7 @@ PBoolean PVXMLSession::TraversePrompt(PXMLElement & element)
 
   // Update timeout of current recognition (if 'timeout' attribute is set)
   if (m_grammar != NULL)
-    m_grammar->SetTimeout(element.GetAttribute("timeout"));
+    m_grammar->SetTimeout(StringToTime(element.GetAttribute("timeout")));
 
   m_bargeIn = !(element.GetAttribute("bargein") *= "false"); // Defaults to true
   return true;
@@ -2318,9 +2324,11 @@ PVXMLGrammar::PVXMLGrammar(PVXMLSession & session, PXMLElement & field)
 
 void PVXMLGrammar::SetTimeout(const PTimeInterval & timeout)
 {
-  m_timeout = timeout;
-  if (m_timer.IsRunning())
-    m_timer = timeout;
+  if (timeout > 0) {
+    m_timeout = timeout;
+    if (m_timer.IsRunning())
+      m_timer = timeout;
+  }
 }
 
 
@@ -2328,7 +2336,7 @@ void PVXMLGrammar::Start()
 {
   m_state = Started;
   m_timer = m_timeout;
-  PTRACE(3, "VXML\tStarted grammar " << *this << ", timeout=" << m_timer);
+  PTRACE(3, "VXML\tStarted grammar " << *this << ", timeout=" << m_timeout);
 }
 
 
@@ -3111,8 +3119,7 @@ PBoolean TextToSpeech_Sample::Close()
       PTRACE(1, "TTS\tCannot create output file " << path);
       stat = false;
     }
-    else
-    {
+    else {
       std::vector<PFilePath>::const_iterator r;
       for (r = filenames.begin(); r != filenames.end(); ++r) {
         PFilePath f = *r;
