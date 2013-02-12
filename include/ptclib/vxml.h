@@ -81,6 +81,8 @@ class PVXMLGrammar : public PObject
 
     GrammarState GetState() const { return m_state; }
 
+    void SetTimeout(const PTimeInterval & timeout);
+
   protected:
     PDECLARE_NOTIFIER(PTimer, PVXMLGrammar, OnTimeout);
 
@@ -88,6 +90,7 @@ class PVXMLGrammar : public PObject
     PXMLElement  & m_field;
     PString        m_value;
     GrammarState   m_state;
+    PTimeInterval  m_timeout;
     PTimer         m_timer;
     PMutex         m_mutex;
 };
@@ -236,7 +239,7 @@ class PVXMLSession : public PIndirectChannel
     virtual void SetVar(const PString & ostr, const PString & val);
     virtual PString EvaluateExpr(const PString & oexpr);
 
-    static PTimeInterval StringToTime(const PString & str);
+    static PTimeInterval StringToTime(const PString & str, int dflt = 0);
 
     virtual PBoolean RetreiveResource(const PURL & url, PString & contentType, PFilePath & fn, PBoolean useCache = true);
 
@@ -270,6 +273,7 @@ class PVXMLSession : public PIndirectChannel
     virtual PBoolean TraverseForm(PXMLElement & element);
     virtual PBoolean TraversedForm(PXMLElement & element);
     virtual PBoolean TraversePrompt(PXMLElement & element);
+    virtual PBoolean TraversedPrompt(PXMLElement & element);
     virtual PBoolean TraverseField(PXMLElement & element);
     virtual PBoolean TraversedField(PXMLElement & element);
     virtual PBoolean TraverseTransfer(PXMLElement & element);
@@ -278,6 +282,8 @@ class PVXMLSession : public PIndirectChannel
     __inline PVXMLChannel * GetVXMLChannel() const { return (PVXMLChannel *)readChannel; }
 
   protected:
+    virtual bool InternalLoadVXML(const PString & xml, const PString & firstForm);
+
     virtual bool ProcessNode();
     virtual bool ProcessEvents();
     virtual bool ProcessGrammar();
@@ -302,6 +308,8 @@ class PVXMLSession : public PIndirectChannel
     PXMLObject  *    m_currentNode;
     bool             m_xmlChanged;
     bool             m_speakNodeData;
+    bool             m_bargeIn;
+    bool             m_bargingIn;
 
     PVXMLGrammar *   m_grammar;
     char             m_defaultMenuDTMF;
