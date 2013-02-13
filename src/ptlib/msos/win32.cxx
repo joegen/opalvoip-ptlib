@@ -249,14 +249,11 @@ unsigned PTimer::Resolution()
     return 1;
 
 #ifndef _WIN32_WCE
-  DWORD err = ::GetLastError();
   DWORD timeAdjustment;
   DWORD timeIncrement;
   BOOL timeAdjustmentDisabled;
   if (GetSystemTimeAdjustment(&timeAdjustment, &timeIncrement, &timeAdjustmentDisabled))
     return timeIncrement/10000;
-
-  err = ::GetLastError();
 #endif
 
   return 55;
@@ -801,8 +798,8 @@ PThread::PThread(bool isProcess)
   : m_isProcess(isProcess)
   , m_autoDelete(!isProcess)
   , m_originalStackSize(0)
-  , threadHandle(GetCurrentThread())
   , m_threadId(GetCurrentThreadId())
+  , threadHandle(GetCurrentThread())
 {
   if (isProcess)
     return;
