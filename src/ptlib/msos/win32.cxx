@@ -237,14 +237,11 @@ unsigned PTimer::Resolution()
     return 1;
 
 #ifndef _WIN32_WCE
-  ::GetLastError();
   DWORD timeAdjustment;
   DWORD timeIncrement;
   BOOL timeAdjustmentDisabled;
   if (GetSystemTimeAdjustment(&timeAdjustment, &timeIncrement, &timeAdjustmentDisabled))
     return timeIncrement/10000;
-
-  ::GetLastError();
 #endif
 
   return 55;
