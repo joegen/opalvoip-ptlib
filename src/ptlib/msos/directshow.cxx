@@ -882,24 +882,30 @@ bool PVideoInputDevice_DirectShow::GetAttributes(Attributes & attrib)
 
 PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
 {
-  PTRACE(4, "DShow\tSetControl() = " << newValue);
-
   CComPtr<IAMVideoProcAmp> pVideoProcAmp;
   PCOM_RETURN_ON_FAILED(m_pCaptureFilter->QueryInterface,(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp));
 
   long minimum, maximum, stepping, def, flags;
   PCOM_RETURN_ON_FAILED(pVideoProcAmp->GetRange,(control, &minimum, &maximum, &stepping, &def, &flags));
 
-  PComResult hr;
-  if (newValue == -1)
-    hr = pVideoProcAmp->Set(control, 0, VideoProcAmp_Flags_Auto);
-  else
-  {
-    long scaled = minimum + ((maximum-minimum) * newValue) / 65536;
-    hr = pVideoProcAmp->Set(control, scaled, VideoProcAmp_Flags_Manual);
+  if (newValue == -1) {
+    if ((flags&VideoProcAmp_Flags_Auto) == 0) {
+      PTRACE(2, "DShow\tAutomatic control for element " << control << " not supported");
+      return false;
+    }
+    PCOM_RETURN_ON_FAILED(pVideoProcAmp->Set,(control, 0, VideoProcAmp_Flags_Auto));
   }
-  PTRACE_IF(2, hr.Failed(), "DShow\tFailed to setRange interface on " << control << " : " << hr);
+  else {
+    if ((flags&VideoProcAmp_Flags_Manual) == 0) {
+      PTRACE(2, "DShow\tManual control for element " << control << " not supported");
+      return false;
+    }
 
+    long scaled = minimum + ((maximum-minimum) * newValue) / 65536;
+    PCOM_RETURN_ON_FAILED(pVideoProcAmp->Set,(control, scaled, VideoProcAmp_Flags_Manual));
+  }
+
+  PTRACE(4, "DShow\tSetControl: element=" << control << ", value=" << newValue);
   return true;
 }
 

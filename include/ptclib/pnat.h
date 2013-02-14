@@ -70,15 +70,65 @@ class PNatMethod  : public PObject
     };
 
     P_DECLARE_STREAMABLE_ENUM(NatTypes,
-      UnknownNat,
-      OpenNat,
-      ConeNat,
-      RestrictedNat,
-      PortRestrictedNat,
-      SymmetricNat,
-      SymmetricFirewall,
-      BlockedNat,
-      PartialBlockedNat
+      UnknownNat,         ///< NAT was not determined
+      OpenNat,            ///< No NAT was detected
+      ConeNat,            /**< Full cone NAT.
+                               Once an internal address (iAddr:iPort) is mapped
+                               to an external address (eAddr:ePort), any
+                               packets from iAddr:iPort will be sent through
+                               eAddr:ePort.
+                               
+                               Any external host can send packets to
+                               iAddr:iPort by sending packets to eAddr:ePort.
+                            */
+      RestrictedNat,      /**< Restricted cone NAT.
+                               Once an internal address (iAddr:iPort) is mapped
+                               to an external address (eAddr:ePort), any
+                               packets from iAddr:iPort will be sent through
+                               eAddr:ePort.
+
+                               An external host (hAddr:any) can send packets to
+                               iAddr:iPort by sending packets to eAddr:ePort
+                               only if iAddr:iPort has previously sent a packet
+                               to hAddr:any. "Any" means the port number
+                               doesn't matter.
+                            */
+      PortRestrictedNat,  /**< Port-restricted cone NAT.
+                               Like an address restricted cone NAT, but the
+                               restriction includes port numbers.
+
+                               Once an internal address (iAddr:iPort) is mapped
+                               to an external address (eAddr:ePort), any
+                               packets from iAddr:iPort will be sent through
+                               eAddr:ePort.
+
+                               An external host (hAddr:hPort) can send packets
+                               to iAddr:iPort by sending packets to eAddr:ePort
+                               only if iAddr:iPort has previously sent a packet
+                               to hAddr:hPort.
+                            */
+      SymmetricNat,       /**< Symmetric NAT
+                               Each request from the same internal IP address
+                               and port to a specific destination IP address
+                               and port is mapped to a unique external source
+                               IP address and port, if the same internal host
+                               sends a packet even with the same source address
+                               and port but to a different destination, a
+                               different mapping is used.
+
+                               Only an external host that receives a packet
+                               from an internal host can send a packet back.
+                            */
+      PartiallyBlocked,   /**< Partially blocked.
+                               A pathological condition where some packets get
+                               through and some do not causing confusion to the
+                               STUN protocol in particular. Usually indicates a
+                               badly configured firewall rules.
+                            */
+      BlockedNat          /**< Completely blocked.
+                               Packets cannot pass through the router on one
+                               or the other direction.
+                            */
     );
 
   /**@name Construction */
@@ -425,10 +475,26 @@ class PNATUDPSocket : public PUDPSocket
 
 
 //////////////////////////////////////////////////////////////////////////
-//
-// NULL NAT support
-//
 
+/** Fixed NAT support class.
+    This can be used in some specific circumstances where you may have no
+    NAT at all, or a "symmetric" port forwarding arrangement where STUN is
+    unecessary and the appropriate addressess and modes are "hard coded".
+
+    If no NAT is present, then you should use Open() with the interface
+    address being used, and not use SetServer(), or use
+    SetServer(PString::Empty()). This will create a "null" NAT support
+    handler.
+
+    If a NAT system is in use, and you know a priori it's type and addresses
+    then use SetServer(extern + '/' + type) to indicate the
+    parameters to use. The extern string is the address that will be
+    substituted for the interface address set in the Open() function.
+    The '/' is optional and if present is following by the numeric value of
+    that NatTypes enumeration. If absent SymmetricNat is used.
+
+    If you do not know the NAT type, then PSTUNClient should be used.
+  */
 class PNatMethod_Fixed  : public PNatMethod
 {
   PCLASSINFO(PNatMethod_Fixed, PNatMethod);
@@ -445,14 +511,12 @@ class PNatMethod_Fixed  : public PNatMethod
     virtual bool Open(const PIPSocket::Address & addr);
     virtual bool IsAvailable(const PIPSocket::Address &);
 
-    const PString & GetExternalHost() const { return m_externalHost; }
-
   protected:
     virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge);
 
-    PIPSocket::Address m_interface;
-    PString            m_externalHost;
     NatTypes           m_type;
+    PIPSocket::Address m_interfaceAddress;
+    PIPSocket::Address m_externalAddress;
 };
 
 /////////////////////////////////////////////////////////////
