@@ -102,9 +102,10 @@ $(firstword $(CONFIG_FILES)) : $(CONFIGURE) $(CONFIG_IN_FILES)
 	PTLIBDIR=$(ENV_PTLIBDIR) $(CONFIGURE) $(CONFIG_PARMS)
 	touch $(CONFIG_FILES)
 
-ifneq (,$(AUTOCONF))
-ifneq (,$(shell which $(AUTOCONF)))
-ifneq (,$(shell which $(ACLOCAL)))
+ifeq ($(shell which $(AUTOCONF) > /dev/null && \
+              which $(ACLOCAL) > /dev/null && \
+              test `autoconf --version | sed -n "s/autoconf.*2.\\([0-9]*\\)/\\1/p"` -ge 68 \
+              ; echo $$?),0)
 
 $(CONFIGURE): $(CONFIGURE).ac $(PTLIBDIR)/make/*.m4 $(ACLOCAL).m4
 	$(AUTOCONF)
@@ -112,18 +113,16 @@ $(CONFIGURE): $(CONFIGURE).ac $(PTLIBDIR)/make/*.m4 $(ACLOCAL).m4
 $(ACLOCAL).m4:
 	$(ACLOCAL)
 
-else # autoconf installed
+else # autoconf
 
 $(CONFIGURE): $(CONFIGURE).ac
 	@echo ---------------------------------------------------------------------
 	@echo The configure script requires updating but autoconf not is installed.
-	@echo Either install autoconf or execute the command:
+	@echo Either install autoconf v3.65 or later or execute the command:
 	@echo touch $@
 	@echo ---------------------------------------------------------------------
 
-endif # aclocal installed
-endif # autoconf installed
-endif # autoconf enabled
+endif # autoconf good
 
 $(foreach pair,$(PAIRS),$(eval $(pair)))
 
