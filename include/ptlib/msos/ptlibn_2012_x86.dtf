@@ -4449,7 +4449,6 @@ EXPORTS
     ??0PWideString@@QAE@ABVPString@@@Z @4447 NONAME
     ??0PWin32Handle@@QAE@PAX@Z @4448 NONAME
     ??0PWin32Overlapped@@QAE@XZ @4449 NONAME
-    ??0PWinSock@@QAE@XZ @4450 NONAME
     ??0PWrapHDC@@QAE@PAUHDC__@@@Z @4451 NONAME
     ??0PWrapHGDIOBJ@@QAE@PAX@Z @4452 NONAME
     ??0PWriteWaitAndSignal@@QAE@ABVPReadWriteMutex@@_N@Z @4453 NONAME
@@ -5896,7 +5895,6 @@ EXPORTS
     ??1PWideString@@UAE@XZ @5894 NONAME
     ??1PWin32Handle@@QAE@XZ @5895 NONAME
     ??1PWin32Overlapped@@QAE@XZ @5896 NONAME
-    ??1PWinSock@@QAE@XZ @5897 NONAME
     ??1PWrapHDC@@QAE@XZ @5898 NONAME
     ??1PWrapHGDIOBJ@@QAE@XZ @5899 NONAME
     ??1PWriteWaitAndSignal@@QAE@XZ @5900 NONAME
@@ -6337,7 +6335,6 @@ EXPORTS
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAVAddress@PIPSocket@@@Z @6335 NONAME
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAVMSIPAddress@PILSSession@@@Z @6336 NONAME
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAVPObject@@@Z @6337 NONAME
-    ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAW4NatTypes@PNatMethod@@@Z @6338 NONAME
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AA_J@Z @6339 NONAME
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AA_K@Z @6340 NONAME
     ??5PArgList@@QAEAAV0@H@Z @6341 NONAME
@@ -17452,6 +17449,7 @@ EXPORTS
     ?Finish@PVXMLTraverseField@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @17450 NONAME
     ?Finish@PVXMLTraverseForm@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @17451 NONAME
     ?Finish@PVXMLTraverseMenu@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @17452 NONAME
+    ?Finish@PVXMLTraversePrompt@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @24707 NONAME
     ?Finish@PVXMLTraverseRecord@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @17453 NONAME
     ?Finish@PVXMLTraverseTransfer@@EBE_NAAVPVXMLSession@@AAVPXMLElement@@@Z @17454 NONAME
     ?FinishRFC3489Discovery@PSTUN@@UAE?AW4NatTypes@PNatMethod@@AAVPSTUNMessage@@PAVPSTUNUDPSocket@@AAVAddressAndPort@PIPSocket@@@Z @17455 NONAME
@@ -19015,6 +19013,7 @@ EXPORTS
     ?GetSubjectElement@Message@XMPP@@UAEPAVPXMLElement@@ABVPString@@@Z @19013 NONAME
     ?GetSubjectName@PSSLCertificate@@QBE?AVPString@@XZ @19014 NONAME
     ?GetSubjectName@PSSLCertificate@@QBE_NAAVX509_Name@1@@Z @19015 NONAME
+    ?GetSubObject@PXMLElement@@QBEPAVPXMLObject@@H@Z @24708 NONAME
     ?GetSubObjects@PXMLElement@@QBE?AV?$PArray@VPXMLObject@@@@XZ @19016 NONAME
     ?GetSuppressCanonicalName@PIPSocket@@SA_NXZ @19017 NONAME
     ?GetSystemType@PFTPClient@@QAE?AVPString@@XZ @19018 NONAME
@@ -19150,6 +19149,7 @@ EXPORTS
     ?GetVar@PVXMLSession@@UBE?AVPCaselessString@@ABVPString@@@Z @19148 NONAME
     ?GetVariable@PXMLRPCStructBase@@QBEAAVPXMLRPCVariableBase@@H@Z @19149 NONAME
     ?GetVariable@PXMLRPCStructBase@@QBEPAVPXMLRPCVariableBase@@PBD@Z @19150 NONAME
+    ?GetVariables@PVXMLSession@@QAEABVPStringToString@@XZ @24709 NONAME
     ?GetVerifyMode@PSSLContext@@QBE?AW4VerifyMode@1@XZ @19151 NONAME
     ?GetVersion@Address@PIPSocket@@QBEIXZ @19152 NONAME
     ?GetVersion@PProcess@@UBE?AVPString@@_N@Z @19153 NONAME
@@ -19873,6 +19873,7 @@ EXPORTS
     ?InternalListen@PTCPSocket@@MAE_NABVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @19871 NONAME
     ?InternalListen@PUDPSocket@@MAE_NABVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @19872 NONAME
     ?InternalLoadHostsAccess@PIpAccessControlList@@AAE_NABVPString@@PBD_N@Z @19873 NONAME
+    ?InternalLoadVXML@PVXMLSession@@MAE_NABVPString@@0@Z @24710 NONAME
     ?InternalMain@PProcess@@UAEHPAX@Z @19874 NONAME
     ?InternalMain@PServiceProcess@@UAEHPAX@Z @19875 NONAME
     ?InternalOpenSocket@PSTUNClient@@QAE_NW4Component@PNatMethod@@ABVAddress@PIPSocket@@AAVPSTUNUDPSocket@@AAUPortInfo@3@@Z @19876 NONAME
@@ -22560,6 +22561,7 @@ EXPORTS
     ?SetTime@PConfig@@UAEXABVPString@@0ABVPTime@@@Z @22555 NONAME
     ?SetTime@PConfig@@UAEXABVPString@@ABVPTime@@@Z @22556 NONAME
     ?SetTimeout@PSTUN@@UAEXABVPTimeInterval@@@Z @22557 NONAME
+    ?SetTimeout@PVXMLGrammar@@QAEXABVPTimeInterval@@@Z @24711 NONAME
     ?SetTimestamp@PTime@@QAEX_JJ@Z @22558 NONAME
     ?SetTo@Stanza@XMPP@@UAEXABVPString@@@Z @22559 NONAME
     ?SetToAddress@PRFC822Channel@@QAEXABVPString@@@Z @22560 NONAME
@@ -22849,7 +22851,7 @@ EXPORTS
     ?strchr@@YAPADPADH@Z @22844 NONAME
     ?Strings@?1??Names@PEnumNames_NatTypes@PNatMethod@@SAPBQBDXZ@4QBQBDB @22845 NONAME
     ?stringToFaultCode@@YAHAAVPString@@@Z @22846 NONAME
-    ?StringToTime@PVXMLSession@@SA?AVPTimeInterval@@ABVPString@@@Z @22847 NONAME
+    ?StringToTime@PVXMLSession@@SA?AVPTimeInterval@@ABVPString@@H@Z @24712 NONAME
     ?STTag@PSSDP@@SAABVPCaselessString@@XZ @22848 NONAME
     ?SubjectTag@Message@XMPP@@SAABVPCaselessString@@XZ @22849 NONAME
     ?SubjectTag@PRFC822Channel@@SAABVPCaselessString@@XZ @22850 NONAME
@@ -22980,6 +22982,7 @@ EXPORTS
     ?TraversedForm@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @22975 NONAME
     ?TraverseDisconnect@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @22976 NONAME
     ?TraversedMenu@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @22977 NONAME
+    ?TraversedPrompt@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @24713 NONAME
     ?TraversedRecord@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @22978 NONAME
     ?TraversedTransfer@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @22979 NONAME
     ?TraverseExit@PVXMLSession@@UAE_NAAVPXMLElement@@@Z @22980 NONAME
