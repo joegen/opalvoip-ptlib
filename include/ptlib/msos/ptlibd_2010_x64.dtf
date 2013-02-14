@@ -7114,7 +7114,6 @@ EXPORTS
     ??5@YAAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@AEAV01@AEAUQoS@PIPSocket@@@Z @21392 NONAME
     ??5@YAAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@AEAV01@AEAVAddress@PIPSocket@@@Z @6074 NONAME
     ??5@YAAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@AEAV01@AEAVPObject@@@Z @6075 NONAME
-    ??5@YAAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@AEAV01@AEAW4NatTypes@PNatMethod@@@Z @21393 NONAME
     ??5@YAAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@AEAV01@AEA_J@Z @6076 NONAME
     ??5@YAAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@AEAV01@AEA_K@Z @6077 NONAME
     ??5PArgList@@QEAAAEAV0@H@Z @6078 NONAME
@@ -17614,6 +17613,7 @@ EXPORTS
     ?Finish@PVXMLTraverseField@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @23445 NONAME
     ?Finish@PVXMLTraverseForm@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @23446 NONAME
     ?Finish@PVXMLTraverseMenu@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @23447 NONAME
+    ?Finish@PVXMLTraversePrompt@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @24673 NONAME
     ?Finish@PVXMLTraverseRecord@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @23448 NONAME
     ?Finish@PVXMLTraverseTransfer@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @23449 NONAME
     ?FinishRFC3489Discovery@PSTUN@@UEAA?AW4NatTypes@PNatMethod@@AEAVPSTUNMessage@@PEAVPSTUNUDPSocket@@AEAVAddressAndPort@PIPSocket@@@Z @23450 NONAME
@@ -19130,6 +19130,7 @@ EXPORTS
     ?GetSubjectElement@Message@XMPP@@UEAAPEAVPXMLElement@@AEBVPString@@@Z @23725 NONAME
     ?GetSubjectName@PSSLCertificate@@QEBA?AVPString@@XZ @23726 NONAME
     ?GetSubjectName@PSSLCertificate@@QEBA_NAEAVX509_Name@1@@Z @23727 NONAME
+    ?GetSubObject@PXMLElement@@QEBAPEAVPXMLObject@@_K@Z @24674 NONAME
     ?GetSubObjects@PXMLElement@@QEBA?AV?$PArray@VPXMLObject@@@@XZ @23728 NONAME
     ?GetSuppressCanonicalName@PIPSocket@@SA_NXZ @16014 NONAME
     ?GetSystemType@PFTPClient@@QEAA?AVPString@@XZ @16015 NONAME
@@ -19262,6 +19263,7 @@ EXPORTS
     ?GetVar@PVXMLSession@@UEBA?AVPCaselessString@@AEBVPString@@@Z @23746 NONAME
     ?GetVariable@PXMLRPCStructBase@@QEBAAEAVPXMLRPCVariableBase@@_K@Z @23747 NONAME
     ?GetVariable@PXMLRPCStructBase@@QEBAPEAVPXMLRPCVariableBase@@PEBD@Z @23748 NONAME
+    ?GetVariables@PVXMLSession@@QEAAAEBVPStringToString@@XZ @24675 NONAME
     ?GetVerifyMode@PSSLContext@@QEBA?AW4VerifyMode@1@XZ @23749 NONAME
     ?GetVersion@Address@PIPSocket@@QEBAIXZ @16130 NONAME
     ?GetVersion@PProcess@@UEBA?AVPString@@_N@Z @16131 NONAME
@@ -19424,7 +19426,7 @@ EXPORTS
     ?IntegerEncode@PXER_Stream@@UEAAXAEBVPASN_Integer@@@Z @23778 NONAME
     ?internal@?$_Iosb@H@std@@2W4_Fmtflags@12@B @16265 NONAME
     ?InternalAddMIME@PMIMEInfo@@UEAA_NAEBVPString@@0@Z @16266 NONAME
-    ?InternalBegin@PTraceInfo@@QEAAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPEBDHPEBVPObject@@0@Z @16267 NONAME
+    ?InternalBegin@PTraceInfo@@QEAAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@_NIPEBDHPEBVPObject@@1@Z @24676 NONAME
     ?InternalBeginMessage@PSMTPClient@@AEAA_NXZ @16268 NONAME
     ?InternalClean@PRegularExpression@@IEAAXXZ @16269 NONAME
     ?InternalCleanAutoDeleteThreads@PProcess@@IEAAXXZ @16270 NONAME
@@ -19945,6 +19947,7 @@ EXPORTS
     ?InternalListen@PTCPSocket@@MEAA_NAEBVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @16688 NONAME
     ?InternalListen@PUDPSocket@@MEAA_NAEBVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @16689 NONAME
     ?InternalLoadHostsAccess@PIpAccessControlList@@AEAA_NAEBVPString@@PEBD_N@Z @16690 NONAME
+    ?InternalLoadVXML@PVXMLSession@@MEAA_NAEBVPString@@0@Z @24677 NONAME
     ?InternalMain@PProcess@@UEAAHPEAX@Z @16691 NONAME
     ?InternalMain@PServiceProcess@@UEAAHPEAX@Z @16692 NONAME
     ?InternalOpenSocket@PSTUNClient@@QEAA_NW4Component@PNatMethod@@AEBVAddress@PIPSocket@@AEAVPSTUNUDPSocket@@AEAUPortInfo@3@@Z @23894 NONAME
@@ -22216,6 +22219,7 @@ EXPORTS
     ?SetTime@PConfig@@UEAAXAEBVPString@@0AEBVPTime@@@Z @18576 NONAME
     ?SetTime@PConfig@@UEAAXAEBVPString@@AEBVPTime@@@Z @18577 NONAME
     ?SetTimeout@PSTUN@@UEAAXAEBVPTimeInterval@@@Z @18578 NONAME
+    ?SetTimeout@PVXMLGrammar@@QEAAXAEBVPTimeInterval@@@Z @24678 NONAME
     ?SetTimestamp@PTime@@QEAAX_JJ@Z @18579 NONAME
     ?SetTo@Stanza@XMPP@@UEAAXAEBVPString@@@Z @24356 NONAME
     ?SetToAddress@PRFC822Channel@@QEAAXAEBVPString@@@Z @18580 NONAME
@@ -22498,7 +22502,7 @@ EXPORTS
     ?strchr@@YAPEADPEADH@Z @18791 NONAME
     ?Strings@?1??Names@PEnumNames_NatTypes@PNatMethod@@SAPEBQEBDXZ@4QBQEBDB @24426 NONAME
     ?stringToFaultCode@@YA_KAEAVPString@@@Z @24427 NONAME
-    ?StringToTime@PVXMLSession@@SA?AVPTimeInterval@@AEBVPString@@@Z @24428 NONAME
+    ?StringToTime@PVXMLSession@@SA?AVPTimeInterval@@AEBVPString@@H@Z @24679 NONAME
     ?STTag@PSSDP@@SAAEBVPCaselessString@@XZ @18792 NONAME
     ?SubjectTag@Message@XMPP@@SAAEBVPCaselessString@@XZ @24429 NONAME
     ?SubjectTag@PRFC822Channel@@SAAEBVPCaselessString@@XZ @18793 NONAME
@@ -22623,6 +22627,7 @@ EXPORTS
     ?TraversedForm@PVXMLSession@@UEAA_NAEAVPXMLElement@@@Z @24444 NONAME
     ?TraverseDisconnect@PVXMLSession@@UEAA_NAEAVPXMLElement@@@Z @24445 NONAME
     ?TraversedMenu@PVXMLSession@@UEAA_NAEAVPXMLElement@@@Z @24446 NONAME
+    ?TraversedPrompt@PVXMLSession@@UEAA_NAEAVPXMLElement@@@Z @24680 NONAME
     ?TraversedRecord@PVXMLSession@@UEAA_NAEAVPXMLElement@@@Z @24447 NONAME
     ?TraversedTransfer@PVXMLSession@@UEAA_NAEAVPXMLElement@@@Z @24448 NONAME
     ?TraverseExit@PVXMLSession@@UEAA_NAEAVPXMLElement@@@Z @24449 NONAME
