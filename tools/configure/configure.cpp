@@ -46,7 +46,7 @@
 #include <errno.h>
 
 
-#define VERSION "1.23"
+#define VERSION "1.24"
 
 static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
 
@@ -864,17 +864,15 @@ int main(int argc, char* argv[])
     if ((pos = line.find("AC_CONFIG_FILES")) != string::npos ||
         (pos = line.find("AC_CONFIG_HEADERS")) != string::npos) {
       if ((pos = line.find('(', pos)) != string::npos) {
-        string::size_type end = line.find(')', pos);
-        if (end != string::npos && line.find('[', pos) == string::npos) {
-          string fn(line.substr(pos+1, end-pos-1));
-          size_t pos = fn.find(':');
-          if (pos != string::npos) {
-            fn = fn.substr(pos+1);
-            size_t len = fn.length();
-            if ((len > 3) && (fn.substr(len-3) == ".in"))
-              fn = fn.substr(0, len-3);
+        string::size_type end = line.rfind(')');
+        if (end != string::npos) {
+          string::size_type lbracket = line.find('[', pos);
+          string::size_type rbracket = line.find(']', lbracket);
+          if (lbracket != string::npos && rbracket != string::npos) {
+            pos = lbracket;
+            end = rbracket;
           }
-          headers.push_back(fn);
+          headers.push_back(line.substr(pos+1, end-pos-1));
         }
       }
     }
