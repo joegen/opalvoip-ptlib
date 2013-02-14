@@ -2,9 +2,9 @@ dnl
 dnl PTLib configuration
 dnl
 
-AC_INIT(include/ptlib.h)
-
 AC_PREREQ([2.65])
+
+AC_INIT([PTLib], [version 2.x])
 
 AC_CONFIG_AUX_DIR(make)
 
