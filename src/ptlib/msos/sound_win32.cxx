@@ -778,31 +778,26 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
 
   WAVEFORMATEX* format = (WAVEFORMATEX*) waveFormat;
 
+  UINT mixerId = UINT_MAX;
   MIXERLINE line;
 
   MMRESULT osError = MMSYSERR_BADDEVICEID;
   switch (direction) {
     case Player :
-      osError = waveOutOpen(&hWaveOut, PtrToLong((void *)id), format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
+      PTRACE(4, "WinSnd\twaveOutOpen, id=" << id);
+      osError = waveOutOpen(&hWaveOut, (UINT)id, format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
       if (osError == MMSYSERR_NOERROR) {
-        UINT mixerId; 
-        osError = mixerGetID((HMIXEROBJ)hWaveOut, &mixerId, MIXER_OBJECTF_HWAVEOUT);
-        if (osError == MMSYSERR_NOERROR) {
-          mixerOpen(&hMixer, mixerId, (DWORD_PTR)NULL, (DWORD_PTR)NULL, MIXER_OBJECTF_HWAVEOUT);
+        if (mixerGetID((HMIXEROBJ)hWaveOut, &mixerId, MIXER_OBJECTF_HWAVEOUT) == MMSYSERR_NOERROR)
           line.dwComponentType = MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT;
-        }
       }
       break;
 
     case Recorder :
-      osError = waveInOpen(&hWaveIn, PtrToLong((void *)id), format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
+      PTRACE(4, "WinSnd\twaveInOpen, id=" << id);
+      osError = waveInOpen(&hWaveIn, (UINT)id, format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
       if (osError == MMSYSERR_NOERROR) {
-        UINT mixerId; 
-        osError = mixerGetID((HMIXEROBJ)hWaveOut, &mixerId, MIXER_OBJECTF_HWAVEIN);
-        if (osError == MMSYSERR_NOERROR) {
-          mixerOpen(&hMixer, mixerId, (DWORD_PTR)NULL, (DWORD_PTR)NULL, MIXER_OBJECTF_HWAVEIN);
+        if (mixerGetID((HMIXEROBJ)hWaveIn, &mixerId, MIXER_OBJECTF_HWAVEIN) == MMSYSERR_NOERROR)
           line.dwComponentType = MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
-        }
       }
       break;
 
@@ -816,8 +811,13 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
   opened = true;
   os_handle = id;
 
-  if (hMixer == NULL) {
+  if (mixerId == UINT_MAX) {
     PTRACE(2, "WinSnd\tNo mixer available");
+    return true; // Still return true as have actual device
+  }
+
+  if ((osError = mixerOpen(&hMixer, mixerId, NULL, NULL, MIXER_OBJECTF_MIXER)) != MMSYSERR_NOERROR) {
+    PTRACE(2, "WinSnd\tFailed to open mixer, error=" << osError);
     return true; // Still return true as have actual device
   }
 
