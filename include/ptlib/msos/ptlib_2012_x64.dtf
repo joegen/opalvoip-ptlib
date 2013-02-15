@@ -2353,6 +2353,7 @@ EXPORTS
     ??0?$vector@VAddressAndPort@PIPSocket@@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QEAA@XZ @2351 NONAME
     ??0?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QEAA@XZ @2352 NONAME
     ??0?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QEAA@XZ @2353 NONAME
+    ??0?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @23425 NONAME
     ??0?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @2354 NONAME
     ??0?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @2355 NONAME
     ??0?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @2356 NONAME
@@ -4126,6 +4127,7 @@ EXPORTS
     ??0PWideString@@QEAA@AEBVPString@@@Z @4124 NONAME
     ??0PWin32Handle@@QEAA@PEAX@Z @4125 NONAME
     ??0PWin32Overlapped@@QEAA@XZ @4126 NONAME
+    ??0PWinSock@@QEAA@XZ @23426 NONAME
     ??0PWrapHDC@@QEAA@PEAUHDC__@@@Z @4128 NONAME
     ??0PWrapHGDIOBJ@@QEAA@PEAX@Z @4129 NONAME
     ??0PWriteWaitAndSignal@@QEAA@AEBVPReadWriteMutex@@_N@Z @4130 NONAME
@@ -4653,6 +4655,7 @@ EXPORTS
     ??1?$vector@VAddressAndPort@PIPSocket@@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QEAA@XZ @4652 NONAME
     ??1?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QEAA@XZ @4653 NONAME
     ??1?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QEAA@XZ @4654 NONAME
+    ??1?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UEAA@XZ @23427 NONAME
     ??1?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UEAA@XZ @4655 NONAME
     ??1?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UEAA@XZ @4656 NONAME
     ??1?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UEAA@XZ @4657 NONAME
@@ -5500,6 +5503,7 @@ EXPORTS
     ??1PWideString@@UEAA@XZ @5499 NONAME
     ??1PWin32Handle@@QEAA@XZ @5500 NONAME
     ??1PWin32Overlapped@@QEAA@XZ @5501 NONAME
+    ??1PWinSock@@UEAA@XZ @23428 NONAME
     ??1PWrapHDC@@QEAA@XZ @5503 NONAME
     ??1PWrapHGDIOBJ@@QEAA@XZ @5504 NONAME
     ??1PWriteWaitAndSignal@@QEAA@XZ @5505 NONAME
@@ -7163,6 +7167,7 @@ EXPORTS
     ??_7?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@6B@ @7164 NONAME
     ??_7?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@6B@ @7165 NONAME
     ??_7?$PVideoOutputPluginServiceDescriptor@VPVideoOutputDevice_NULLOutput@@@@6B@ @7166 NONAME
+    ??_7?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @23429 NONAME
     ??_7?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @7167 NONAME
     ??_7?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @7168 NONAME
     ??_7?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @7169 NONAME
@@ -7865,6 +7870,7 @@ EXPORTS
     ??_7PWAVFileFormatG7231_vivo@@6B@ @7866 NONAME
     ??_7PWAVFileFormatPCM@@6B@ @7867 NONAME
     ??_7PWideString@@6B@ @7868 NONAME
+    ??_7PWinSock@@6B@ @23430 NONAME
     ??_7PXER_Stream@@6B@ @7869 NONAME
     ??_7PXML@@6B@ @7870 NONAME
     ??_7PXMLBase@@6B@ @7871 NONAME
@@ -8298,6 +8304,7 @@ EXPORTS
     ??_R0?AUPHTTPClient_BinaryProcessor@@@8 @8299 NONAME
     ??_R0?AUPHTTPClient_DummyProcessor@@@8 @8300 NONAME
     ??_R0?AUPHTTPClient_StringProcessor@@@8 @8301 NONAME
+    ??_R0?AUPWinSock@@@8 @23431 NONAME
     ??_R0?AUTelephone@PvCard@@@8 @8302 NONAME
     ??_R0?AU_Container_base0@std@@@8 @8303 NONAME
     ??_R0?AV?$basic_filebuf@DU?$char_traits@D@std@@@std@@@8 @8304 NONAME
@@ -8459,6 +8466,7 @@ EXPORTS
     ??_R0?AV?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@@8 @8460 NONAME
     ??_R0?AV?$PVideoOutputPluginServiceDescriptor@VPVideoOutputDevice_NULLOutput@@@@@8 @8461 NONAME
     ??_R0?AV?$vector@PEAUSocketInfo@@V?$allocator@PEAUSocketInfo@@@std@@@std@@@8 @8462 NONAME
+    ??_R0?AV?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @23432 NONAME
     ??_R0?AV?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @8463 NONAME
     ??_R0?AV?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @8464 NONAME
     ??_R0?AV?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @8465 NONAME
@@ -9426,6 +9434,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@8 @9427 NONAME
     ??_R1A@?0A@EA@?$PVideoOutputPluginServiceDescriptor@VPVideoOutputDevice_NULLOutput@@@@8 @9428 NONAME
     ??_R1A@?0A@EA@?$vector@PEAUSocketInfo@@V?$allocator@PEAUSocketInfo@@@std@@@std@@8 @9429 NONAME
+    ??_R1A@?0A@EA@?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @23433 NONAME
     ??_R1A@?0A@EA@?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9430 NONAME
     ??_R1A@?0A@EA@?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9431 NONAME
     ??_R1A@?0A@EA@?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9432 NONAME
@@ -10065,6 +10074,7 @@ EXPORTS
     ??_R1A@?0A@EA@PWAVFileFormatG7231_vivo@@8 @10066 NONAME
     ??_R1A@?0A@EA@PWAVFileFormatPCM@@8 @10067 NONAME
     ??_R1A@?0A@EA@PWideString@@8 @10068 NONAME
+    ??_R1A@?0A@EA@PWinSock@@8 @23434 NONAME
     ??_R1A@?0A@EA@PXER_Stream@@8 @10069 NONAME
     ??_R1A@?0A@EA@PXML@@8 @10070 NONAME
     ??_R1A@?0A@EA@PXMLBase@@8 @10071 NONAME
@@ -10450,6 +10460,7 @@ EXPORTS
     ??_R2?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@8 @10451 NONAME
     ??_R2?$PVideoOutputPluginServiceDescriptor@VPVideoOutputDevice_NULLOutput@@@@8 @10452 NONAME
     ??_R2?$vector@PEAUSocketInfo@@V?$allocator@PEAUSocketInfo@@@std@@@std@@8 @10453 NONAME
+    ??_R2?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @23435 NONAME
     ??_R2?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @10454 NONAME
     ??_R2?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @10455 NONAME
     ??_R2?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @10456 NONAME
@@ -11089,6 +11100,7 @@ EXPORTS
     ??_R2PWAVFileFormatG7231_vivo@@8 @11090 NONAME
     ??_R2PWAVFileFormatPCM@@8 @11091 NONAME
     ??_R2PWideString@@8 @11092 NONAME
+    ??_R2PWinSock@@8 @23436 NONAME
     ??_R2PXER_Stream@@8 @11093 NONAME
     ??_R2PXML@@8 @11094 NONAME
     ??_R2PXMLBase@@8 @11095 NONAME
@@ -11419,6 +11431,7 @@ EXPORTS
     ??_R3?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@8 @11420 NONAME
     ??_R3?$PVideoOutputPluginServiceDescriptor@VPVideoOutputDevice_NULLOutput@@@@8 @11421 NONAME
     ??_R3?$vector@PEAUSocketInfo@@V?$allocator@PEAUSocketInfo@@@std@@@std@@8 @11422 NONAME
+    ??_R3?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @23437 NONAME
     ??_R3?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @11423 NONAME
     ??_R3?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @11424 NONAME
     ??_R3?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @11425 NONAME
@@ -12058,6 +12071,7 @@ EXPORTS
     ??_R3PWAVFileFormatG7231_vivo@@8 @12059 NONAME
     ??_R3PWAVFileFormatPCM@@8 @12060 NONAME
     ??_R3PWideString@@8 @12061 NONAME
+    ??_R3PWinSock@@8 @23438 NONAME
     ??_R3PXER_Stream@@8 @12062 NONAME
     ??_R3PXML@@8 @12063 NONAME
     ??_R3PXMLBase@@8 @12064 NONAME
@@ -12381,6 +12395,7 @@ EXPORTS
     ??_R4?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_FakeVideo@@@@6B@ @12382 NONAME
     ??_R4?$PVideoInputPluginServiceDescriptor@VPVideoInputDevice_VideoForWindows@@@@6B@ @12383 NONAME
     ??_R4?$PVideoOutputPluginServiceDescriptor@VPVideoOutputDevice_NULLOutput@@@@6B@ @12384 NONAME
+    ??_R4?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @23439 NONAME
     ??_R4?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @12385 NONAME
     ??_R4?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @12386 NONAME
     ??_R4?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @12387 NONAME
@@ -13083,6 +13098,7 @@ EXPORTS
     ??_R4PWAVFileFormatG7231_vivo@@6B@ @13084 NONAME
     ??_R4PWAVFileFormatPCM@@6B@ @13085 NONAME
     ??_R4PWideString@@6B@ @13086 NONAME
+    ??_R4PWinSock@@6B@ @23440 NONAME
     ??_R4PXER_Stream@@6B@ @13087 NONAME
     ??_R4PXML@@6B@ @13088 NONAME
     ??_R4PXMLBase@@6B@ @13089 NONAME
@@ -15419,6 +15435,7 @@ EXPORTS
     ?CopySafeCollection@PSafeCollection@@IEAAXPEAVPCollection@@@Z @15420 NONAME
     ?CopySafeDictionary@PSafeCollection@@IEAAXPEAVPAbstractDictionary@@@Z @15421 NONAME
     ?CopyYUV420P@PColourConverter@@SA_NIIIIIIPEBEIIIIIIPEAEW4ResizeMode@PVideoFrameInfo@@@Z @15422 NONAME
+    ?Create@?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MEBAPEAVPProcessStartup@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @23441 NONAME
     ?Create@?$Worker@V?$PDevicePluginAdapter@VPNatMethod@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MEBAPEAVPDevicePluginAdapterBase@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @15423 NONAME
     ?Create@?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MEBAPEAVPDevicePluginAdapterBase@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @15424 NONAME
     ?Create@?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MEBAPEAVPDevicePluginAdapterBase@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @15425 NONAME
@@ -16434,7 +16451,7 @@ EXPORTS
     ?factory@?1???0PPlugin_PVideoOutputDevice_Window_Registration@@QEAA@PEAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16435 NONAME
     ?factory@?1???0PPlugin_PVideoOutputDevice_YUVFile_Registration@@QEAA@PEAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16436 NONAME
     ?failbit@?$_Iosb@H@std@@2W4_Iostate@12@B @16437 NONAME
-    ?Failed@PComResult@@QEAA_NJPEBD@Z @16438 NONAME
+    ?Failed@PComResult@@QEAA_NJPEBD0HJJ@Z @23442 NONAME
     ?Failed@PComResult@@QEBA_NXZ @16439 NONAME
     ?faultCodeToString@@YA?AVPString@@_K@Z @16440 NONAME
     ?FetchScroll@Statement@PODBC@@QEAA_NF_J@Z @16441 NONAME
@@ -20470,6 +20487,8 @@ EXPORTS
     ?pvsprintf@@YA?AVPString@@PEBDPEAD@Z @20465 NONAME
     ?PWAVFileFormatPCM_instance@PFactoryLoader@@3V?$Worker@VPWAVFileFormatPCM@@@?$PFactory@VPWAVFileFormat@@I@@A @20466 NONAME
     ?PWAVFileFormatPCM_link@PFactoryLoader@@YAHXZ @20467 NONAME
+    ?PWinSock_instance@PFactoryLoader@@3V?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @23443 NONAME
+    ?PWinSock_link@PFactoryLoader@@YAHXZ @23444 NONAME
     ?PYUVFile_instance@PFactoryLoader@@3V?$Worker@VPYUVFile@@@?$PFactory@VPVideoFile@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @20468 NONAME
     ?PYUVFile_link@PFactoryLoader@@YAHXZ @20469 NONAME
     ?P_IsOldWin95@@YA_NXZ @20470 NONAME
@@ -21655,7 +21674,7 @@ EXPORTS
     ?SubjectTag@PRFC822Channel@@SAAEBVPCaselessString@@XZ @21648 NONAME
     ?SubstituteEquivalSequence@PHTTPServiceProcess@@UEAA_NAEAVPHTTPRequest@@AEBVPString@@AEAV3@@Z @21649 NONAME
     ?Succeeded@PComResult@@QEAA_NJ@Z @21650 NONAME
-    ?Succeeded@PComResult@@QEAA_NJPEBD@Z @21651 NONAME
+    ?Succeeded@PComResult@@QEAA_NJPEBD0HJJ@Z @23445 NONAME
     ?Succeeded@PComResult@@QEBA_NXZ @21652 NONAME
     ?Successor@PSortedListInfo@@QEBAPEAUPSortedListElement@@PEAU2@@Z @21653 NONAME
     ?Suspend@PThread@@UEAAX_N@Z @21654 NONAME
