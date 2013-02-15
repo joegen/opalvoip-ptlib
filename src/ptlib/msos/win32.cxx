@@ -958,6 +958,20 @@ std::ostream & operator<<(std::ostream & strm, const PComResult & result)
 }
 
 
+#if PTRACING
+bool PComResult::Succeeded(HRESULT result, const char * func, const char * file, int line, HRESULT nomsg1, HRESULT nomsg2)
+{
+  if (Succeeded(result))
+    return true;
+
+  static const int Level = 2;
+  if (result != nomsg1 && result != nomsg2 && PTrace::CanTrace(Level))
+    PTrace::Begin(Level, file, line) << "Function \"" << func << "\" failed : " << *this << PTrace::End;
+  return false;
+}
+#endif // PTRACING
+
+
 std::ostream & operator<<(std::ostream & strm, const PComVariant & var)
 {
   switch (var.vt) {
