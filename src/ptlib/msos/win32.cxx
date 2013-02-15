@@ -40,7 +40,7 @@
 #include <process.h>
 #include <errors.h>
 
-#ifdef _MSC_VER
+#ifdef WIN32
   #ifndef _WIN32_WCE
     #pragma comment(lib, "mpr.lib")
   #endif
