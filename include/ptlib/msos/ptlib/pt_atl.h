@@ -33,7 +33,9 @@
 
 #ifdef P_WIN_COM
 
+#ifndef __MINGW32__
 #include <comdef.h>
+#endif
 
 #ifdef P_ATL
   #pragma warning(disable:4127)
