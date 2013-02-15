@@ -251,7 +251,7 @@ case "$target_os" in
       PTLIB_CFLAGS="$PTLIB_CFLAGS -mms-bitfields"
       SHAREDLIBEXT="dll"
       LDSOFLAGS="-shared -Wl,--kill-at"
-      ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
+      ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz"
       HAS_SHM_VIDEO=
    ;;
 
