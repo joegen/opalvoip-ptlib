@@ -816,7 +816,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
     return true; // Still return true as have actual device
   }
 
-  if ((osError = mixerOpen(&hMixer, mixerId, NULL, NULL, MIXER_OBJECTF_MIXER)) != MMSYSERR_NOERROR) {
+  if ((osError = mixerOpen(&hMixer, mixerId, 0, 0, MIXER_OBJECTF_MIXER)) != MMSYSERR_NOERROR) {
     PTRACE(2, "WinSnd\tFailed to open mixer, error=" << osError);
     return true; // Still return true as have actual device
   }
