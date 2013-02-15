@@ -3026,6 +3026,7 @@ class PRegularExpression : public PObject
     };
     /// Flags for execution options.
     enum {
+      Normal = 0,
       /**If this bit is set, then the beginning-of-line operator doesn't match
          the beginning of the string (presumably because it's not the
          beginning of a line).
