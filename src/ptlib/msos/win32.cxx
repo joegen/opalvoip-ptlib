@@ -40,7 +40,7 @@
 #include <process.h>
 #include <errors.h>
 
-#ifdef _MSC_VER
+#ifdef WIN32
   #ifndef _WIN32_WCE
     #pragma comment(lib, "mpr.lib")
   #endif
@@ -956,6 +956,20 @@ std::ostream & operator<<(std::ostream & strm, const PComResult & result)
 
   return strm << "0x" << hex << result.m_result << dec;
 }
+
+
+#if PTRACING
+bool PComResult::Succeeded(HRESULT result, const char * func, const char * file, int line, HRESULT nomsg1, HRESULT nomsg2)
+{
+  if (Succeeded(result))
+    return true;
+
+  static const int Level = 2;
+  if (result != nomsg1 && result != nomsg2 && PTrace::CanTrace(Level))
+    PTrace::Begin(Level, file, line) << "Function \"" << func << "\" failed : " << *this << PTrace::End;
+  return false;
+}
+#endif // PTRACING
 
 
 std::ostream & operator<<(std::ostream & strm, const PComVariant & var)
