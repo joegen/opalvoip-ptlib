@@ -1200,8 +1200,8 @@ class PComEnumerator
 
       // Find the description or friendly name.
       PComVariant varName;
-      if (PCOM_FAILED(pPropBag->Read,(L"Description", &varName, NULL)) &&
-          PCOM_FAILED(pPropBag->Read,(L"FriendlyName", &varName, NULL)))
+      if (PCOM_FAILED(pPropBag->Read,(L"Description", &varName, NULL), ERROR_FILE_NOT_FOUND) &&
+          PCOM_FAILED(pPropBag->Read,(L"FriendlyName", &varName, NULL), ERROR_FILE_NOT_FOUND))
         return PString::Empty();
 
       return varName.AsString();
