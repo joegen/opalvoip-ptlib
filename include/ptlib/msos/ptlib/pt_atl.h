@@ -33,7 +33,9 @@
 
 #ifdef P_WIN_COM
 
+#ifndef __MINGW32__
 #include <comdef.h>
+#endif
 
 #ifdef P_ATL
   #pragma warning(disable:4127)
@@ -158,31 +160,20 @@ class PComResult
     friend std::ostream & operator<<(std::ostream & strm, const PComResult & result);
 
   #if PTRACING
-    bool Succeeded(HRESULT result, const char * fn)
+    bool Succeeded(HRESULT result, const char * func, const char * file, int line, HRESULT nomsg1 = ERROR_SUCCESS, HRESULT nomsg2 = ERROR_SUCCESS);
+    bool Failed   (HRESULT result, const char * func, const char * file, int line, HRESULT nomsg1 = ERROR_SUCCESS, HRESULT nomsg2 = ERROR_SUCCESS)
     {
-      if (Succeeded(result))
-        return true;
-
-      PTRACE(1, "Function \"" << fn << "\" failed : " << *this);
-      return false;
+      return !Succeeded(result, func, file, line, nomsg1, nomsg2);
     }
-    bool Failed(HRESULT result, const char * fn)
-    {
-      if (Succeeded(result))
-        return false;
-
-      PTRACE(1, "Function \"" << fn << "\" failed : " << *this);
-      return true;
-    }
-    #define PCOM_SUCCEEDED_EX(res,fn,args)  (res       ).Succeeded(fn args, #fn)
-    #define PCOM_FAILED_EX(res,fn,args)     (res       ).Failed(fn args, #fn)
-    #define PCOM_SUCCEEDED(fn,args)         PComResult().Succeeded(fn args, #fn)
-    #define PCOM_FAILED(fn,args)            PComResult().Failed(fn args, #fn)
+    #define PCOM_SUCCEEDED_EX(res,fn,args,...)  (res       ).Succeeded(fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
+    #define PCOM_FAILED_EX(res,fn,args,...)     (res       ).Failed   (fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
+    #define PCOM_SUCCEEDED(fn,args,...)         PComResult().Succeeded(fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
+    #define PCOM_FAILED(fn,args,...)            PComResult().Failed   (fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
   #else
-    #define PCOM_SUCCEEDED_EX(res,fn,args)  (res).Succeeded(fn args)
-    #define PCOM_FAILED_EX(res,fn,args)     (res).Failed(fn args)
-    #define PCOM_SUCCEEDED(fn,args)         SUCCEEDED(fn args)
-    #define PCOM_FAILED(fn,args)            FAILED(fn args)
+    #define PCOM_SUCCEEDED_EX(res,fn,args,...)  (res).Succeeded(fn args)
+    #define PCOM_FAILED_EX(res,fn,args,...)     (res).Failed(fn args)
+    #define PCOM_SUCCEEDED(fn,args,...)         SUCCEEDED(fn args)
+    #define PCOM_FAILED(fn,args,...)            FAILED(fn args)
   #endif
   #define PCOM_RETURN_ON_FAILED(fn,args) if (PCOM_FAILED(fn,args)) return false
 

@@ -2,9 +2,9 @@ dnl
 dnl PTLib configuration
 dnl
 
-AC_INIT(include/ptlib.h)
-
 AC_PREREQ([2.65])
+
+AC_INIT([PTLib], [version 2.x])
 
 AC_CONFIG_AUX_DIR(make)
 
@@ -259,7 +259,7 @@ case "$target_os" in
       PTLIB_CFLAGS="$PTLIB_CFLAGS -mms-bitfields"
       SHAREDLIBEXT="dll"
       LDSOFLAGS="-shared -Wl,--kill-at"
-      ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32"
+      ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz"
       HAS_SHM_VIDEO=
    ;;
 
@@ -2120,60 +2120,102 @@ if test "x$enable_plugins" != "xno" ; then
       dnl check for Alsa sound support
 
       AC_ARG_ENABLE(alsa, AS_HELP_STRING([--disable-alsa],[disable ALSA audio support]))
+      PTLIB_ALSA=no
       if test "x${enable_alsa}" = "xno" ; then
          AC_MSG_NOTICE(ALSA audio disabled by user)
       else
-         AC_CHECK_HEADER([alsa/asoundlib.h], [AC_SUBST(HAS_ALSA, 1)])
+         AC_CHECK_HEADER(
+            [alsa/asoundlib.h],
+            [
+               AC_SUBST(HAS_ALSA, 1)
+               PTLIB_ALSA=yes
+            ]
+         )
       fi
 
       dnl #########################################################################
       dnl check for ESD sound support
 
       AC_ARG_ENABLE(esd, AS_HELP_STRING([--disable-esd],[disable ESD audio support]))
+      PTLIB_ESD=no
       if test "x${enable_esd}" = "xno" ; then
          AC_MSG_NOTICE(ESD audio disabled by user)
       else
-         AC_CHECK_HEADER([esd.h], [AC_SUBST(HAS_ESD, 1)])
+         AC_CHECK_HEADER(
+            [esd.h],
+            [
+               AC_SUBST(HAS_ESD, 1)
+               PTLIB_ESD=yes
+            ]
+         )
       fi
 
       dnl #########################################################################
       dnl check for OSS sound support
 
       AC_ARG_ENABLE(oss, AS_HELP_STRING([--disable-oss],[disable OSS audio support]))
+      PTLIB_OSS=no
       if test "x${enable_oss}" = "xno" ; then
          AC_MSG_NOTICE(OSS audio disabled by user)
       else
-         AC_CHECK_HEADER([sys/soundcard.h], [AC_SUBST(HAS_OSS, 1)])
+         AC_CHECK_HEADER(
+            [sys/soundcard.h],
+            [
+               AC_SUBST(HAS_OSS, 1)
+               PTLIB_OSS=yes
+            ]
+         )
       fi
 
       dnl #########################################################################
       dnl check for Pulse sound support
 
       AC_ARG_ENABLE(pulse, AS_HELP_STRING([--disable-pulse],[disable Pulse audio support]))
+      PTLIB_PULSE=no
       if test "x${enable_pulse}" = "xno" ; then
          AC_MSG_NOTICE(OSS audio disabled by user)
       else
-         AC_CHECK_HEADER([pulse/simple.h], [AC_SUBST(HAS_PULSE, 1)])
+         AC_CHECK_HEADER(
+            [pulse/simple.h],
+            [
+               AC_SUBST(HAS_PULSE, 1)
+               PTLIB_PULSE=yes
+            ]
+         )
       fi
 
       dnl #########################################################################
       dnl check for sunaudio sound support
 
       AC_ARG_ENABLE(sunaudio, AS_HELP_STRING([--disable-sunaudio],[disable Sun audio support]))
+      PTLIB_SUNAUDIO=no
       if test "x${enable_sunaudio}" = "xno" ; then
          AC_MSG_NOTICE(OSS audio disabled by user)
       else
-         AC_CHECK_HEADER([sys/mixer.h], [AC_SUBST(HAS_SUN_AUDIO, 1)])
+         AC_CHECK_HEADER(
+            [sys/mixer.h],
+            [
+               AC_SUBST(HAS_SUN_AUDIO, 1)
+               PTLIB_SUNAUDIO=yes
+            ]
+         )
       fi
 
       dnl #########################################################################
       dnl check for shm sound support
 
       AC_ARG_ENABLE(shmaudio, AS_HELP_STRING([--disable-shmaudio],[disable shm audio support]))
+      PTLIB_AUDIOSHM=no
       if test "x${enable_shmaudio}" = "xno" ; then
          AC_MSG_NOTICE(shm audio disabled by user)
       else
-         AC_CHECK_FUNC([sem_timedwait], [AC_SUBST(HAS_SHM_AUDIO, 1)])
+         AC_CHECK_FUNC(
+            [sem_timedwait],
+            [
+               AC_SUBST(HAS_SHM_AUDIO, 1)
+               PTLIB_AUDIOSHM=yes
+            ]
+         )
       fi
 
       dnl #########################################################################
@@ -2237,10 +2279,17 @@ if test "x$enable_plugins" != "xno" ; then
       dnl check for V4L video support
 
       AC_ARG_ENABLE(v4l, AS_HELP_STRING([--disable-v4l],[disable V4L video support]))
+      PTLIB_V4L=no
       if test "x${enable_v4l}" = "xno" ; then
          AC_MSG_NOTICE(V4L video disabled by user)
       else
-         AC_CHECK_HEADER([linux/videodev.h], [AC_SUBST(HAS_V4L, 1)])
+         AC_CHECK_HEADER(
+            [linux/videodev.h],
+            [
+               AC_SUBST(HAS_V4L, 1)
+               PTLIB_V4L=yes
+            ]
+         )
       fi
 
       dnl #########################################################################
@@ -2300,9 +2349,11 @@ if test "x$enable_plugins" != "xno" ; then
         AC_MSG_CHECKING(for V4L2 video support)
         if test "x${HAS_V4L2}" = "x1"; then
           AC_MSG_RESULT(yes)
+          PTLIB_V4L2=yes
           AC_SUBST([V4L2_CXXFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
         else
           HAS_V4L2=
+          PTLIB_V4L2=no
           AC_MSG_RESULT(no)
         fi
         AC_SUBST(HAS_V4L2)
@@ -2346,6 +2397,11 @@ if test "x$enable_plugins" != "xno" ; then
             ]
          )
       fi
+      if test "x$HAS_BSDVIDEOCAP" = "x1"; then
+         PTLIB_BSDVIDEOCAP=yes
+      else
+         PTLIB_BSDVIDEOCAP=no
+      fi
 
       dnl #########################################################################
       dnl check for AVC video support
@@ -2354,6 +2410,7 @@ if test "x$enable_plugins" != "xno" ; then
 #      AC_ARG_ENABLE(avc, AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]))
 AC_ARG_ENABLE(avc, AS_HELP_STRING([--enable-avc],[enable IEEE1394/AVC video support - NOTE DOES NOT COMPILE!]),
 [enable_avc="$enableval"],[enable_avc=no])
+      PTLIB_AVC1394=no
       if test "x$enable_avc" = "xno" ; then
          AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)
       else
@@ -2365,7 +2422,10 @@ AC_ARG_ENABLE(avc, AS_HELP_STRING([--enable-avc],[enable IEEE1394/AVC video supp
                   [
                      AC_CHECK_HEADER(
                         [libraw1394/raw1394.h],
-                        [AC_SUBST(HAS_AVC1394, 1)]
+                        [
+                           AC_SUBST(HAS_AVC1394, 1)
+                           PTLIB_AVC1394=yes
+                        ]
                      )
                   ]
                )
@@ -2380,6 +2440,7 @@ AC_ARG_ENABLE(avc, AS_HELP_STRING([--enable-avc],[enable IEEE1394/AVC video supp
 #      AC_ARG_ENABLE(dc, AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]))
 AC_ARG_ENABLE(dc, AS_HELP_STRING([--enable-dc],[enable IEEE1394/DC video support - NOTE DOES NOT COMPILE!]),
 [enable_dc="$enableval"],[enable_dc=no])
+      PTLIB_DC1394=no
       if test "x$enable_dc" = "xno" ; then
          AC_MSG_NOTICE(IEEE1394/DC video disabled by user)
       else
@@ -2388,7 +2449,10 @@ AC_ARG_ENABLE(dc, AS_HELP_STRING([--enable-dc],[enable IEEE1394/DC video support
             [
                AC_CHECK_HEADER(
                   [libraw1394/raw1394.h],
-                  [AC_SUBST(HAS_DC1394, 1)],
+                  [
+                     AC_SUBST(HAS_DC1394, 1)
+                     PTLIB_DC1394=yes
+                  ],
                )
             ]
          )
@@ -2469,3 +2533,49 @@ AC_CONFIG_HEADERS(${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in)
 
 AC_OUTPUT()
 
+dnl ########################################################################
+dnl Summary
+dnl ########################################################################
+echo ""
+echo "=========================== Configuration =============================="
+echo "                          OS Type :  $target_os"
+echo "                     Machine Type :  $target_cpu"
+echo "                           prefix :  $prefix"
+echo "                      exec_prefix :  $exec_prefix"
+echo "                           libdir :  $libdir"
+
+echo ""
+
+echo "                     DNS Resolver :  ${PTLIB_DNS_RESOLVER}"
+echo "                             IPv6 :  ${PTLIB_IPV6}"
+echo "            Packet Capture (PCAP) :  ${PTLIB_PCAP}"
+echo "               Expat (XML parser) :  ${PTLIB_EXPAT}"
+echo "                          OpenSSL :  ${PTLIB_SSL}"
+echo "                             SASL :  ${PTLIB_SASL}"
+echo "                             LDAP :  ${PTLIB_LDAP}"
+echo "                             ODBC :  ${PTLIB_ODBC}"
+echo "                              Lua :  ${PTLIB_LUA}"
+echo "                             Java :  ${PTLIB_V8} (V8)"
+
+echo ""
+
+echo "                            Audio :  ${PTLIB_AUDIO}"
+echo "                             ALSA :  ${PTLIB_ALSA}"
+echo "                              ESD :  ${PTLIB_ESD}"
+echo "                              OSS :  ${PTLIB_OSS}"
+echo "                            Pulse :  ${PTLIB_PULSE}"
+echo "                              Sun :  ${PTLIB_SUNAUDIO}"
+echo "                              shm :  ${PTLIB_AUDIOSHM}"
+
+echo ""
+
+echo "                            Video :  ${PTLIB_VIDEO}"
+echo "                              SDL :  ${PTLIB_SDL}"
+echo "                     Video4linux  :  ${PTLIB_V4L}"
+echo "                     Video4linux2 :  ${PTLIB_V4L2}"
+echo "                              BSD :  ${PTLIB_BSDVIDEOCAP}"
+echo "                    IEEE-1394/AVC :  ${PTLIB_AVC1394}"
+echo "                    IEEE-1394/DC  :  ${PTLIB_DC1394}"
+
+echo ""
+echo "========================================================================"
