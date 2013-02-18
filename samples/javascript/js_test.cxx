@@ -106,7 +106,8 @@ void MyProcess::Main()
        << "myNumber    = " << jscript.GetNumber("myNumber") << endl
        << "myBool      = " << jscript.GetBoolean("myBool") << endl
        << "myObject.pi = " << jscript.GetNumber("myObject.pi") << endl
-       << "myObject.subObject.e = " << jscript.GetNumber("myObject.subObject.e") << endl;
+       << "myObject.subObject.e = " << jscript.GetNumber("myObject.subObject.e") << endl
+       << "myArray[0].element = " << jscript.GetNumber("myArray[0].element") << endl
        ;
 }
 
