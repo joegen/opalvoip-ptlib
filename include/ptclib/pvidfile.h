@@ -128,41 +128,8 @@ class PYUVFile : public PVideoFile
 
 PFACTORY_LOAD(PYUVFile);
 
-#ifdef P_TINY_JPEG
-
-#include "../tinyjpeg.h"
-#include "tinyjpeg-internal.h"
-
-/**
- * A file containing a JPEG image
- */
-
-class PJPEGFile : public PVideoFile
-{
-  PCLASSINFO(PJPEGFile, PVideoFile);
-  public:
-    PJPEGFile();
-
-    virtual PBoolean Open(
-      const PFilePath & name,    // Name of file to open.
-      PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
-      PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
-    );
-
-    virtual PBoolean WriteFrame(const void * frame);
-    virtual PBoolean ReadFrame(void * frame);
-
-  protected:
-    jdec_private * m_jdec;
-    unsigned char * m_fileData;
-};
-
-PFACTORY_LOAD(PJPEGFile);
-
-#endif // P_TINY_JPEG
-
-#endif  // P_VIDFILE
-#endif  // P_VIDEO
+#endif
+#endif
 
 #endif // PTLIB_PVIDFILE_H
 
