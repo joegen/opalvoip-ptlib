@@ -196,8 +196,16 @@ PBoolean PVideoInputDevice_YUVFile::IsCapturing()
 
 PStringArray PVideoInputDevice_YUVFile::GetInputDeviceNames()
 {
+  PStringArray names;
 
-  return PString(DefaultYUVFileName);
+  PFactory<PVideoFile>::KeyList_T keyList = PFactory<PVideoFile>::GetKeyList();
+  PFactory<PVideoFile>::KeyList_T::iterator r;
+  for (r = keyList.begin(); r != keyList.end(); ++r) {
+    PString ext = *r;
+    names.AppendString("*." + ext);
+  }
+
+  return names;
 }
 
 
