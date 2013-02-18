@@ -210,5 +210,102 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef P_TINY_JPEG
+
+#include "tinyjpeg.h"
+
+PFACTORY_CREATE(PFactory<PVideoFile>, PJPEGFile, "jpg", false);
+static PFactory<PVideoFile>::Worker<PJPEGFile> jpegFileFactory("jpeg");
+
+
+PJPEGFile::PJPEGFile()
+{
+  if (m_jpdec != NULL)
+    tinyjpeg_free(m_jpdec);
+  if (m_fileData != NULL)
+    delete[] m_fileData;
+}
+
+PJPEGFile::PJPEGFile()
+{
+  m_jpdec    = NULL;
+  m_fileData = NULL;
+}
+
+
+PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
+{
+  if (opts != PFile::ReadOnly)
+    return false;
+
+  if (!PVideoFile::Open(name, mode, opts))
+    return false;
+
+  // init tinyjpeg
+  m_jdec = tinyjpeg_init();
+  if (m_jdec == NULL) {
+    PTRACE(1, "PJPEGFile", "Not enough memory to initialize JPEG decoder");
+    return false;
+  }
+
+  // load the file data
+  off_t fileSize = m_file.GetLength();
+  m_fileData = new unsigned char[fileSize];
+  if (m_fileData == NULL) {
+    PTRACE(1, "PJPEGFile", "Not enough memory to load JPEG image");
+    return false;
+  }
+
+  if (!m_file.ReadBlock(m_fileData, fileSize))
+    return false;
+
+  // parse jpeg header
+  if (tinyjpeg_parse_header(m_jdec, m_fileData, fileSize) < 0) {
+    PTRACE(1, "PJPEGFile", "Failed to parse JPEG header: " << tinyjpeg_get_errorstring(jdec));
+    return false;
+  }
+
+  // get dimensions
+  uint w,h;
+  tinyjpeg_get_size(m_jdec, &w, &h);
+
+  // decode pixel data
+  if (tinyjpeg_decode(m_jdec, TINYJPEG_FMT_RGB24) < 0) {
+    PTRACE(1, "PJPEGFile", "Failed to parse JPEG header: " << tinyjpeg_get_errorstring(jdec));
+    return false;
+  }
+
+  // copy the pixel data
+  ubyte*[3] components;
+  tinyjpeg_get_components(jdec, components.ptr);
+  ubyte[] pixels = components[0][0..w*h*3].dup;
+  if (m_y4mMode) {
+    int ch;
+    do {
+      if ((ch = m_file.ReadChar()) < 0)
+        return false;
+    }
+    while (ch != '\n');
+    m_headerOffset = m_file.GetPosition();
+  }
+
+  return true;
+}
+
+
+PBoolean PJPEGFile::WriteFrame(const void * frame)
+{
+  return false;
+}
+
+
+PBoolean PJPEGFile::ReadFrame(void * frame)
+{
+  return false;
+}
+
+#endif  // P_TINY_JPEG
 #endif  // P_VIDFILE
 #endif  // P_VIDEO
