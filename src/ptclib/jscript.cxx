@@ -142,22 +142,60 @@ v8::Handle<v8::Object> PJavaScript::ParseKey(const PString & name, PString & las
     PTRACE(5, "V8\tParseKey:node '" << name << " is too short");
     return v8::Handle<v8::Object>();
   }
+  PINDEX i = 0;
+  while (i < tokens.GetSize()) {
+    PString element = tokens[i];
+PTRACE(5, "  Parsing element '" << element << "'");
+    PINDEX start = element.Find('[');
+    if (start == P_MAX_INDEX)
+      ++i;
+    else {
+      PINDEX end = element.Find(']', start+1);
+      if (end != P_MAX_INDEX) {
+        tokens[i] = element(0, start-1);
+        ++i;
+        tokens.InsertAt(i, new PString(element(start, end-1)));
+        if (end < element.GetLength()-1) {
+PTRACE(5, "  Split '" << element << "' into '" << element(0, start-1) << "','" << element(start,end-1) << "','" << element(end+1, P_MAX_INDEX) << "'");
+          i++;
+          tokens.InsertAt(i, new PString(element(end+1, P_MAX_INDEX)));
+        }
+        else {
+PTRACE(5, "  Split '" << element << "' into '" << element(0, start-1) << "','" << element(start,end-1) << "'");
+        }
+      }
+      ++i;
+    }
+  }
   
   v8::Local<v8::Value> value = m_context->Global();
   v8::Local<v8::Object> object;
 
   PString soFar;
-  PINDEX i = 0;
+  i = 0;
   for (;;) {
-    if (value->IsNull() || !value->IsObject()) {
-      PTRACE(5, "V8\tParseKey:node '" << soFar << " is not an object");
+    if (value->IsNull()) {
+      PTRACE(5, "V8\tParseKey:node '" << soFar << " not found");
       return v8::Handle<v8::Object>();
     }
-    object = value->ToObject();
     if (i >= (tokens.GetSize()-1))
       break;
+    if (value->IsObject() || value->IsArray()) {
+      object = value->ToObject();
+      if (tokens[i][0] == '[') {
+        value = object->Get(tokens[i].Mid(1).AsInteger());
+        PTRACE(5, "V8\tParseKey: array index = " << tokens[i]);
+      }
+      else {
+        value = object->Get(v8::String::New((const char *)tokens[i]));
+        PTRACE(5, "V8\tParseKey: object member = " << tokens[i]);
+      }
+    }
+    else {
+      PTRACE(5, "V8\tParseKey:node '" << soFar << "' is not a composite");
+      return v8::Handle<v8::Object>();
+    }
     //cerr << "  Getting node element " << i << " " << tokens[i] << endl;
-    value = object->Get(v8::String::New((const char *)tokens[i]));
     if (!soFar.IsEmpty())
       soFar += ".";
     soFar += tokens[i];
