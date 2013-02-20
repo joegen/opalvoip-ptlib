@@ -42,9 +42,6 @@
 \author  Derek J Smithies
 
 
-$Date$
-
-
 \section secContents Contents
 
 \li \ref secClassListings 
