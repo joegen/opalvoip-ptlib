@@ -524,7 +524,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\common\pvidchan.cxx" />
-    <ClCompile Include="remconn.cxx" />
+    <ClCompile Include="remconn.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\common\safecoll.cxx" />
     <ClCompile Include="..\Common\serial.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">true</ExcludedFromBuild>
@@ -907,7 +911,7 @@ configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --exclu
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">cd $(ProjectDir)\..\..\..
-configure -Dlibdir=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-android --disable-byteorder --disable-wstream --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc</Command>
+configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-android --disable-byteorder --disable-wstream --disable-resolver --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc --disable-gstreamer --disable-pcap --disable-lua --disable-v8</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">Configuring Build Options</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
@@ -915,9 +919,9 @@ configure -Dlibdir=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-an
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Android'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">cd $(ProjectDir)\..\..\..
-configure -Dlibdir=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-android --disable-byteorder --disable-wstream --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc</Command>
+configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-android --disable-byteorder --disable-wstream --disable-resolver --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc --disable-gstreamer --disable-pcap --disable-lua --disable-v8</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Android'">cd $(ProjectDir)\..\..\..
-configure -Dlibdir=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-android --disable-byteorder --disable-wstream --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc</Command>
+configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-android --disable-byteorder --disable-wstream --disable-resolver --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc --disable-gstreamer --disable-pcap --disable-lua --disable-v8</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
@@ -987,7 +991,6 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
-    <ClInclude Include="..\..\..\include\opt_android_arm\ptbuildopts.h" />
     <ClInclude Include="..\..\..\include\ptclib\gstreamer.h" />
     <ClInclude Include="..\..\..\include\ptclib\jscript.h" />
     <ClInclude Include="..\..\..\include\ptclib\script.h" />
@@ -1028,6 +1031,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\timer.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\udpsock.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\video.h" />
+    <ClInclude Include="..\..\..\Lib\Android\ptbuildopts.h" />
     <ClInclude Include="..\..\..\Lib\Win32\ptbuildopts.h" />
     <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h" />
     <ClInclude Include="..\..\..\revision.h" />

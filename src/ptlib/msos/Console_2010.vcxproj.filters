@@ -912,9 +912,6 @@
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\platform.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\opt_android_arm\ptbuildopts.h">
-      <Filter>Header Files\Android</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\serchan.h">
       <Filter>Header Files\MSOS</Filter>
     </ClInclude>
@@ -945,6 +942,11 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h">
       <Filter>Header Files\Win64</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\Lib\Android\ptbuildopts.h">
+      <Filter>Header Files\Android</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
   </ItemGroup>

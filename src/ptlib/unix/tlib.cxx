@@ -264,8 +264,8 @@ PString PProcess::GetUserName() const
 
 #else
 
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
   struct passwd * pw = NULL;
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
   char buffer[1024];
 #if defined (P_GETPWUID_R5)
   struct passwd pwd;
