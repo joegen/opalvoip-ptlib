@@ -25,6 +25,8 @@
 #    define P_DEFAULT_PLUGIN_DIR "\\Program Files\\PTLib Plug Ins"
 #  elif defined (_WIN32)
 #    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
+#  elif defined (P_ANDROID)
+#    define P_DEFAULT_PLUGIN_DIR ""
 #  else
 #    define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib:/usr/lib/pwlib"
 #  endif
@@ -130,7 +132,7 @@ PStringArray PPluginManager::GetPluginDirs()
     env = P_DEFAULT_PLUGIN_DIR + GetAdditionalPluginDirs();
 
   // split into directories on correct seperator
-  PStringArray dirs = env.Tokenise(PATH_SEP, true);
+  PStringArray dirs = env.Tokenise(PATH_SEP, false);
 #ifdef _WIN32_WCE
   PVarString moduleName;
   if (GetModuleFileName(GetModuleHandle(NULL), moduleName.GetPointer(1024), 1024) > 0) {

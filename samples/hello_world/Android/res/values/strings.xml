@@ -17,6 +17,6 @@
  */
 -->
 <resources>
-    <string name="hello">Hello, Android using native audio!</string>
-    <string name="app_name">NativeAudio</string>
+    <string name="hello">Hello, Android port of PTLib!</string>
+    <string name="app_name">PTLib Hello</string>
 </resources>

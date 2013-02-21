@@ -18,6 +18,7 @@ package com.ptlib.hello;
 import android.app.Activity;
 import android.widget.TextView;
 import android.os.Bundle;
+import android.content.Context;
 
 
 public class PTLibHello extends Activity
@@ -28,20 +29,22 @@ public class PTLibHello extends Activity
     {
         super.onCreate(savedInstanceState);
 
+        initialisePTLib(getFilesDir().getAbsolutePath(),
+                        getCacheDir().getAbsolutePath(),
+                        getApplicationInfo().nativeLibraryDir);
+
         /* Create a TextView and set its content.
          * the text is retrieved by calling a native
          * function.
          */
         TextView  tv = new TextView(this);
-        tv.setText( "Hello from PTLib version " + getVersion() );
+        tv.setText( "Hello (v" + getAppVersion() + ") from PTLib version " + getLibVersion());
         setContentView(tv);
     }
 
-    /* A native method that is implemented by the
-     * 'ptlib' native library, which is packaged
-     * with this application.
-     */
-    public native String getVersion();
+    public native void initialisePTLib(String cfgDir, String tmpDir, String pluginDir);
+    public native String getAppVersion();
+    public native String getLibVersion();
 
     /* this is used to load the 'ptlib' library on application
      * startup. The library has already been unpacked into
@@ -49,6 +52,6 @@ public class PTLibHello extends Activity
      * installation time by the package manager.
      */
     static {
-        System.loadLibrary("ptlib");
+        System.loadLibrary("hello_world_static");
     }
 }

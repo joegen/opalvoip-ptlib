@@ -31,8 +31,6 @@
  * $Date$
  */
 
-#define P_USE_THREAD_CANCEL 1
-
 #include <ptlib/socket.h>
 #include <sched.h>
 #include <pthread.h>
@@ -54,11 +52,21 @@
 static pthread_t baseThread;
 #elif defined(P_LINUX)
 #include <sys/syscall.h>
+#elif defined(P_ANDROID)
+#include <asm/page.h>
 #endif
 
 #ifdef P_HAS_SEMAPHORES_XPG6
 #include "semaphore.h"
 #endif
+
+#ifndef P_ANDROID
+#define P_USE_THREAD_CANCEL 1
+#endif
+
+
+static PINDEX const PThreadMinimumStack = 16*PTHREAD_STACK_MIN; // Set a decent stack size that won't eat all virtual memory, or crash
+
 
 int PX_NewHandle(const char *, int);
 
@@ -276,7 +284,7 @@ PThread::PThread(PINDEX stackSize,
                  const PString & name)
   : m_isProcess(false)
   , m_autoDelete(deletion == AutoDeleteThread)
-  , m_originalStackSize(std::max(stackSize, 16*PTHREAD_STACK_MIN)) // Set a decent (256K) stack size that won't eat all virtual memory
+  , m_originalStackSize(std::max(stackSize, PThreadMinimumStack))
   , m_threadName(name)
   , m_threadId(PNullThreadIdentifier)  // indicates thread has not started
   , PX_priority(priorityLevel)

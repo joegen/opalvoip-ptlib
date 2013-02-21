@@ -429,7 +429,6 @@
     <AntBuild />
     <AntBuild>
       <AntBuildPath>$(ProjectDir)/Android</AntBuildPath>
-      <AntLibraryName>lib$(TargetName)</AntLibraryName>
     </AntBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Android'">
@@ -445,7 +444,6 @@
     <AntBuild />
     <AntBuild>
       <AntBuildPath>$(ProjectDir)/Android</AntBuildPath>
-      <AntLibraryName>lib$(TargetName)</AntLibraryName>
     </AntBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
