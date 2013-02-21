@@ -1889,8 +1889,13 @@ void PProcess::Startup()
   list.insert(list.begin(), "SetTraceLevel");
   for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it) {
     PProcessStartup * startup = PProcessStartupFactory::CreateInstance(*it);
-    if (startup != NULL)
+    if (startup != NULL) {
+      PTRACE(5, "PTLib", "Startup factory " << *it);
       startup->OnStartup();
+    }
+    else {
+      PTRACE(1, "PTLib", "Could not create startup factory " << *it);
+    }
   }
 }
 
@@ -2090,6 +2095,7 @@ PString PProcess::GetLibVersion()
 void PProcess::SetConfigurationPath(const PString & path)
 {
   configurationPaths = path.Tokenise(";:", false);
+  PTRACE(3, "PTlib", "Configuration path set to " << setfill(';') << configurationPaths);
 }
 #endif
 
