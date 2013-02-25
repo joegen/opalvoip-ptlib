@@ -234,7 +234,7 @@ class PJavaScript : public PScriptLanguage
   //@}
 
   protected:
-    v8::Handle<v8::Object> ParseKey(const PString & name, PString & lastName);
+    PINDEX ParseKey(const PString & name, PStringArray & tokens);
     v8::Persistent<v8::Context> m_context;
     PString m_resultText;
 };
