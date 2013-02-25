@@ -36,6 +36,8 @@
 
 #include <ptbuildopts.h>
 
+#include <iomanip>
+
 #if P_V8
 
 #include <ptclib/jscript.h>
@@ -135,17 +137,16 @@ bool PJavaScript::CreateComposite(const PString & /*name*/)
   return false;
 }
 
-v8::Handle<v8::Object> PJavaScript::ParseKey(const PString & name, PString & lastName)
+PINDEX PJavaScript::ParseKey(const PString & name, PStringArray & tokens)
 {
-  PStringArray tokens = name.Tokenise('.', false);
+  tokens = name.Tokenise('.', false);
   if (tokens.GetSize() < 1) {
     PTRACE(5, "V8\tParseKey:node '" << name << " is too short");
-    return v8::Handle<v8::Object>();
+    return 0;
   }
   PINDEX i = 0;
   while (i < tokens.GetSize()) {
     PString element = tokens[i];
-PTRACE(5, "  Parsing element '" << element << "'");
     PINDEX start = element.Find('[');
     if (start == P_MAX_INDEX)
       ++i;
@@ -156,78 +157,95 @@ PTRACE(5, "  Parsing element '" << element << "'");
         ++i;
         tokens.InsertAt(i, new PString(element(start, end-1)));
         if (end < element.GetLength()-1) {
-PTRACE(5, "  Split '" << element << "' into '" << element(0, start-1) << "','" << element(start,end-1) << "','" << element(end+1, P_MAX_INDEX) << "'");
           i++;
           tokens.InsertAt(i, new PString(element(end+1, P_MAX_INDEX)));
         }
         else {
-PTRACE(5, "  Split '" << element << "' into '" << element(0, start-1) << "','" << element(start,end-1) << "'");
         }
       }
       ++i;
     }
   }
-  
-  v8::Local<v8::Value> value = m_context->Global();
-  v8::Local<v8::Object> object;
 
-  PString soFar;
-  i = 0;
-  for (;;) {
-    if (value->IsNull()) {
-      PTRACE(5, "V8\tParseKey:node '" << soFar << " not found");
-      return v8::Handle<v8::Object>();
-    }
-    if (i >= (tokens.GetSize()-1))
-      break;
-    if (value->IsObject() || value->IsArray()) {
-      object = value->ToObject();
-      if (tokens[i][0] == '[') {
-        value = object->Get(tokens[i].Mid(1).AsInteger());
-        PTRACE(5, "V8\tParseKey: array index = " << tokens[i]);
-      }
-      else {
-        value = object->Get(v8::String::New((const char *)tokens[i]));
-        PTRACE(5, "V8\tParseKey: object member = " << tokens[i]);
-      }
-    }
-    else {
-      PTRACE(5, "V8\tParseKey:node '" << soFar << "' is not a composite");
-      return v8::Handle<v8::Object>();
-    }
-    //cerr << "  Getting node element " << i << " " << tokens[i] << endl;
-    if (!soFar.IsEmpty())
-      soFar += ".";
-    soFar += tokens[i];
-    ++i;
-  } 
-
-  lastName = tokens[i];
-
-  return object;
+  return tokens.GetSize();
 }
 
 
-bool PJavaScript::GetVar(const PString & name, PVarType & var)
+static v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
+{
+  v8::HandleScope handleScope;
+  v8::Local<v8::Value> value;
+
+  // set flags if array access
+  if (name[0] == '[')
+    value = object->Get(name.Mid(1).AsInteger());
+  else
+    value = object->Get(v8::String::New((const char *)name));
+
+  return handleScope.Close(value);
+}
+
+
+static void SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
+{
+  v8::HandleScope handleScope;
+
+  // set flags if array access
+  if (name[0] == '[')
+    object->Set(name.Mid(1).AsInteger(), value);
+  else
+    object->Set(v8::String::New((const char *)name), value);
+}
+  
+
+bool PJavaScript::GetVar(const PString & key, PVarType & var)
 {
   v8::Locker locker;
   v8::HandleScope handleScope;
   v8::Context::Scope contextScope(m_context);
 
-  PString lastName;
-  v8::Handle<v8::Object> object = ParseKey(name, lastName);
-  if (object.IsEmpty()) {
-    PTRACE(5, "V8\tGetVar:node '" << name << " is not an object");
+  PStringArray tokens;
+  if (ParseKey(key, tokens) < 1) {
+    PTRACE(5, "V8\tGetVar '" << key << " is too short");
     return false;
   }
 
-  v8::Handle<v8::Value> value = object->Get(v8::String::New((const char *)lastName));
+  v8::Handle<v8::Value> value;
+  v8::Handle<v8::Object> object = m_context->Global();
 
-  {
-    v8::String::AsciiValue ascii(value);
-    std::string txt = std::string(*ascii);
-    PTRACE(5, "V8\tExtracted '" << name << "' = " << txt);
-  }
+  int i = 0;
+
+  for (;;)  {
+
+    // get the member variable
+    value = GetMember(object, tokens[i]);
+    if (value.IsEmpty()) {
+      PTRACE(5, "V8", "Cannot get element '" << tokens[i] << "'");
+      return false;
+    }
+
+    // see if end of path
+    if (i == (tokens.GetSize()-1)) 
+      break;
+
+    // terminals must not be composites, internal nodes must be composites
+    bool isObject = value->IsObject();
+    if (!isObject) {
+      tokens.SetSize(i+1);
+      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
+      return false;
+    }
+
+    // if path has ended, return error
+    object = value->ToObject();
+    if (object->IsNull()) {
+      tokens.SetSize(i+1);
+      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << " not found");
+      return false;
+    }
+
+    i++;
+  } 
 
   if (value->IsInt32()) {
     var = PVarType(value->Int32Value());
@@ -239,7 +257,7 @@ bool PJavaScript::GetVar(const PString & name, PVarType & var)
     return true;
   }
 
-  if (value->IsNumberObject()) {
+  if (value->IsNumber()) {
     var = PVarType(value->NumberValue());
     return true;
   }
@@ -257,25 +275,56 @@ bool PJavaScript::GetVar(const PString & name, PVarType & var)
 
   v8::String::AsciiValue ascii(value);
   std::string txt = std::string(*ascii);
-  PTRACE(5, "V8\tUnable to determine type of '" << name << "' = " << txt);
+  PTRACE(5, "V8\tUnable to determine type of '" << key << "' = " << txt);
 
   return false;
 }
-  
+
 bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 {
   v8::Locker locker;
   v8::HandleScope handleScope;
   v8::Context::Scope contextScope(m_context);
 
-  PString lastName;
-  v8::Handle<v8::Object> object = ParseKey(key, lastName);
-  if (object.IsEmpty()) {
-    PTRACE(5, "V8\tSetVar:node '" << key << "' is not an object");
+  PStringArray tokens;
+  if (ParseKey(key, tokens) < 1) {
+    PTRACE(5, "V8\tSetVar '" << key << " is too short");
     return false;
   }
 
-  v8::Handle<v8::String> strKey = v8::String::New((const char *)lastName);
+  v8::Handle<v8::Object> object = m_context->Global();
+
+  int i = 0;
+
+  while (i > 0) {
+
+    // get the member variable
+    v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
+    if (value.IsEmpty()) {
+      PTRACE(5, "V8", "Cannot get element '" << tokens[i] << "'");
+      return false;
+    }
+
+    // terminals must not be composites, internal nodes must be composites
+    bool isObject = value->IsObject();
+    if (!isObject) {
+      tokens.SetSize(i+1);
+      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
+      return false;
+    }
+
+    // if path has ended, return error
+    object = value->ToObject();
+    if (object->IsNull()) {
+      tokens.SetSize(i+1);
+      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << " not found");
+      return false;
+    }
+
+    i++;
+  } 
+
+  v8::Handle<v8::Value> value;
 
   switch (var.GetType()) {
     case PVarType::VarNULL:
@@ -283,36 +332,41 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
       break;
 
     case PVarType::VarBoolean:
-      return object->Set(strKey, v8::Boolean::New(var.AsBoolean()));
+      value = v8::Boolean::New(var.AsBoolean());
+      break;
 
     case PVarType::VarChar:
     case PVarType::VarStaticString:
     case PVarType::VarFixedString:
     case PVarType::VarDynamicString:
     case PVarType::VarGUID:
-      return object->Set(strKey, v8::String::New(var.AsString()));
+      value = v8::String::New(var.AsString());
+      break;
 
     case PVarType::VarInt8:
     case PVarType::VarInt16:
     case PVarType::VarInt32:
-      return object->Set(strKey, v8::Int32::New(var.AsInteger()));
+      value = v8::Int32::New(var.AsInteger());
+      break;
 
     case PVarType::VarUInt8:
     case PVarType::VarUInt16:
     case PVarType::VarUInt32:
-      return object->Set(strKey, v8::Uint32::New(var.AsUnsigned()));
+      value = v8::Uint32::New(var.AsUnsigned());
+      break;
 
     case PVarType::VarInt64:
-      return object->Set(strKey, v8::NumberObject::New(var.AsInteger64()));
+      value = v8::Number::New(var.AsInteger64());
+      break;
 
     case PVarType::VarUInt64:
-      return object->Set(strKey, v8::NumberObject::New(var.AsUnsigned64()));
+      value = v8::Number::New(var.AsUnsigned64());
+      break;
 
     case PVarType::VarFloatSingle:
     case PVarType::VarFloatDouble:
     case PVarType::VarFloatExtended:
-  PTRACE(5, "V8\tSetting '" << key << "' to float '" << var << "'");
-      return object->Set(strKey, v8::NumberObject::New(var.AsFloat()));
+      value = v8::Number::New(var.AsFloat());
       break;
 
     case PVarType::VarTime:
@@ -322,9 +376,8 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
       break;
   }
 
-  PTRACE(5, "V8\tSetting '" << key << "' to unknown type '" << var << "'");
-
-  return false;
+  SetMember(object, tokens[i], value); 
+  return true;
 }
 
 
