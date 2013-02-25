@@ -1,6 +1,4 @@
 /*
- * js_test.h
- *
  * Test for PTLib integration of JavaScript
  *
  * Portable Tools Library
@@ -76,17 +74,9 @@ void MyProcess::Main()
 
   PJavaScript jscript;
 
-  if (!jscript.SetString("myString", "hello, world"))
-    cerr << "Cannot set string" << endl;
-
-  if (!jscript.SetInteger("myInt", 42))
-    cerr << "Cannot set integer" << endl;
-
-  if (!jscript.SetNumber("myNumber", 3.14))
-    cerr << "Cannot set number" << endl;
-
-  if (!jscript.SetBoolean("myBool", true))
-    cerr << "Cannot set bool" << endl;
+  jscript.SetString ("myString", "before");
+  jscript.SetInteger("myInt",    -1);
+  jscript.SetNumber ("myNumber", -3.14);
 
   for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
     if (jscript.Run(args[arg]))
@@ -95,19 +85,19 @@ void MyProcess::Main()
       cerr << jscript.GetLastErrorText() << " executing '" << args[arg] << "'" << endl;
   }
 
-  if (!jscript.SetNumber("myObject.pi", 3.14))
-    cerr << "Cannot set number" << endl;
+  PVarType var;
+  jscript.GetVar("myArray[0].var", var);
 
-  if (!jscript.SetNumber("myObject.subObject.e", 2.718))
-    cerr << "Cannot set number" << endl;
-
-  cout << "myString    = " << jscript.GetString("myString") << endl
-       << "myInt       = " << jscript.GetInteger("myInt") << endl
-       << "myNumber    = " << jscript.GetNumber("myNumber") << endl
-       << "myBool      = " << jscript.GetBoolean("myBool") << endl
-       << "myObject.pi = " << jscript.GetNumber("myObject.pi") << endl
-       << "myObject.subObject.e = " << jscript.GetNumber("myObject.subObject.e") << endl
-       << "myArray[0].element = " << jscript.GetNumber("myArray[0].element") << endl
+  cout << "myString             = '" << jscript.GetString("myString") << "'" << endl
+       << "myInt                = "  << jscript.GetInteger("myInt") << endl
+       << "myNumber             = "  << jscript.GetNumber("myNumber") << endl
+       << "myBool               = "  << jscript.GetBoolean("myBool") << endl
+       << "myObject.pi          = "  << jscript.GetNumber("myObject.pi") << endl
+       << "myObject.subObject.e = "  << jscript.GetNumber("myObject.subObject.e") << endl
+       << "myArray[0].number    = "  << jscript.GetNumber("myArray[0].number") << endl
+       << "myArray[0].string    = "  << jscript.GetString("myArray[0].string") << endl
+       << "myArray[0].var       = "  << var << endl
+       << endl;
        ;
 }
 
