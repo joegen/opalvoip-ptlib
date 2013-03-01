@@ -62,7 +62,7 @@ public:
 extern "C" {
 
 void 
-Java_com_ptlib_hello_PTLibHello_initialisePTLib(JNIEnv* env,
+Java_org_opalvoip_ptlib_hello_PTLibHello_initialisePTLib(JNIEnv* env,
                                                 jobject thiz,
                                                 jstring cfgDir,
                                                 jstring tmpDir,
@@ -85,14 +85,14 @@ Java_com_ptlib_hello_PTLibHello_initialisePTLib(JNIEnv* env,
 
 
 jstring
-Java_com_ptlib_hello_PTLibHello_getAppVersion( JNIEnv* env,
+Java_org_opalvoip_ptlib_hello_PTLibHello_getAppVersion( JNIEnv* env,
                                                   jobject thiz )
 {
     return env->NewStringUTF(PProcess::Current().GetVersion());
 }
 
 jstring
-Java_com_ptlib_hello_PTLibHello_getLibVersion( JNIEnv* env,
+Java_org_opalvoip_ptlib_hello_PTLibHello_getLibVersion( JNIEnv* env,
                                                   jobject thiz )
 {
     return env->NewStringUTF(PProcess::GetLibVersion());
