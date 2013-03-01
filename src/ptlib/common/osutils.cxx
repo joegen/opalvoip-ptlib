@@ -1813,7 +1813,7 @@ void PProcess::PreInitialise(int c, char ** v)
 
 
 PProcess::PProcess(const char * manuf, const char * name,
-                   WORD major, WORD minor, CodeStatus stat, WORD build,
+                   unsigned major, unsigned minor, CodeStatus stat, unsigned build,
                    bool library, bool suppressStartup)
   : PThread(true)
   , m_library(library)

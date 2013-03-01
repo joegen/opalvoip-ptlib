@@ -245,10 +245,10 @@ class PProcess : public PThread
     PProcess(
       const char * manuf = "",         ///< Name of manufacturer
       const char * name = "",          ///< Name of product
-      WORD majorVersion = 1,           ///< Major version number of the product
-      WORD minorVersion = 0,           ///< Minor version number of the product
+      unsigned majorVersion = 1,       ///< Major version number of the product
+      unsigned minorVersion = 0,       ///< Minor version number of the product
       CodeStatus status = ReleaseCode, ///< Development status of the product
-      WORD buildNumber = 1,            ///< Build number of the product
+      unsigned buildNumber = 1,        ///< Build number of the product
       bool library = false,            ///< PProcess is a library rather than an application
       bool suppressStartup = false     ///< Do not execute Startup()
     );
@@ -714,10 +714,10 @@ class PProcess : public PThread
     PString manufacturer;             // Application manufacturer name.
     PString productName;              // Application executable base name from argv[0]
 
-    WORD       majorVersion;          // Major version number of the product
-    WORD       minorVersion;          // Minor version number of the product
+    unsigned   majorVersion;          // Major version number of the product
+    unsigned   minorVersion;          // Minor version number of the product
     CodeStatus status;                // Development status of the product
-    WORD       buildNumber;           // Build number of the product
+    unsigned   buildNumber;           // Build number of the product
 
     PFilePath    executableFile;      // Application executable file from argv[0] (not open)
     PStringArray configurationPaths;  // Explicit file or set of directories to find default PConfig
@@ -774,10 +774,10 @@ class PProcess : public PThread
     PLibraryProcess(
       const char * manuf = "",             ///< Name of manufacturer
       const char * name = "",              ///< Name of product
-      WORD majorVersionNum = 1,            ///< Major version number of the product
-      WORD minorVersionNum = 0,            ///< Minor version number of the product
+      unsigned majorVersionNum = 1,        ///< Major version number of the product
+      unsigned minorVersionNum = 0,        ///< Minor version number of the product
       CodeStatus statusCode = ReleaseCode, ///< Development status of the product
-      WORD buildNum = 1,                   ///< Build number of the product
+      unsigned buildNum = 1,               ///< Build number of the product
       bool suppressStartup = false         ///< Do not execute Startup()
     ) : PProcess(manuf, name, majorVersionNum, minorVersionNum, statusCode, buildNum, true, suppressStartup) { }
   //@}
