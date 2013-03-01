@@ -136,9 +136,9 @@
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath);</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath);</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath);</LibraryPath>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">hello_world_static</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">hello_world_static</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Android'">hello_world_static</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">hello_world</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">hello_world</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Android'">hello_world</TargetName>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\Lib\$(Platform);$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\Lib\$(Platform);$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\Lib\$(Platform);$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
@@ -447,7 +447,7 @@
     </AntBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Android\ptlib-jni.cpp">
+    <ClCompile Include="Android\src\ptlib-jni.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -514,7 +514,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
-    <None Include="Android\src\com\ptlib\hello\PTLibHello.java">
+    <None Include="Android\src\PTLibHello.java">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
