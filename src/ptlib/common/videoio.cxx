@@ -226,7 +226,7 @@ void PVideoFrameInfo::PrintOn(ostream & strm) const
 
 PBoolean PVideoFrameInfo::SetFrameSize(unsigned width, unsigned height)
 {
-  if (!PAssert(width >= 16 && height >= 16 && width < 65536 && height < 65536, PInvalidParameter))
+  if (!PAssert(width >= 1 && height >= 1 && width < 65536 && height < 65536, PInvalidParameter))
     return false;
 
   frameWidth = width;

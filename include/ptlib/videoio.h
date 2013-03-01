@@ -1162,7 +1162,7 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 #endif
 
 #if P_VIDFILE
-  PPLUGIN_STATIC_LOAD(YUVFile, PVideoInputDevice);
+  PPLUGIN_STATIC_LOAD(VideoFile, PVideoInputDevice);
 #endif
 
 #ifdef P_DIRECTSHOW

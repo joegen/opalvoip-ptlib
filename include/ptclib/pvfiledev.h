@@ -55,9 +55,9 @@
 // This class defines a video capture (input) device that reads video from a raw YUV file
 //
 
-class PVideoInputDevice_YUVFile : public PVideoInputDevice
+class PVideoInputDevice_VideoFile : public PVideoInputDevice
 {
-  PCLASSINFO(PVideoInputDevice_YUVFile, PVideoInputDevice);
+  PCLASSINFO(PVideoInputDevice_VideoFile, PVideoInputDevice);
   public:
     enum {
       Channel_PlayAndClose     = 0,
@@ -69,11 +69,11 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 
     /** Create a new file based video input device.
     */
-    PVideoInputDevice_YUVFile();
+    PVideoInputDevice_VideoFile();
 
     /** Destroy video input device.
     */
-    virtual ~PVideoInputDevice_YUVFile();
+    virtual ~PVideoInputDevice_VideoFile();
 
 
     /**Open the device given the device name.
@@ -225,18 +225,18 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
 // This class defines a video display (output) device that writes video to a raw YUV file
 //
 
-class PVideoOutputDevice_YUVFile : public PVideoOutputDevice
+class PVideoOutputDevice_VideoFile : public PVideoOutputDevice
 {
-  PCLASSINFO(PVideoOutputDevice_YUVFile, PVideoOutputDevice);
+  PCLASSINFO(PVideoOutputDevice_VideoFile, PVideoOutputDevice);
 
   public:
     /** Create a new video output device.
      */
-    PVideoOutputDevice_YUVFile();
+    PVideoOutputDevice_VideoFile();
 
     /** Destroy video output device.
      */
-    virtual ~PVideoOutputDevice_YUVFile();
+    virtual ~PVideoOutputDevice_VideoFile();
 
     /**Get a list of all of the drivers available.
       */
