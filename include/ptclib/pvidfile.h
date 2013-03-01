@@ -93,6 +93,8 @@ class PVideoFile : public PVideoFrameInfo
     PString GetErrorText(PChannel::ErrorGroup group = PChannel::NumErrorGroups) const { return m_file.GetErrorText(group); }
     PINDEX GetFrameBytes() const { return m_frameBytes; }
 
+    bool SetFrameSizeFromFilename(const PString & fn);
+    bool SetFPSFromFilename(const PString & fn);
 
   protected:
     bool   m_fixedFrameSize;
@@ -119,17 +121,56 @@ class PYUVFile : public PVideoFile
       PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
 
+    virtual PBoolean SetPosition(off_t pos, PFile::FilePositionOrigin origin);
     virtual PBoolean WriteFrame(const void * frame);
     virtual PBoolean ReadFrame(void * frame);
 
   protected:
-    bool m_y4mMode;
+    bool m_y4mMode; 
+    int  m_currPos;
 };
 
 PFACTORY_LOAD(PYUVFile);
 
-#endif
-#endif
+#ifdef P_LIBJPEG
+
+#include <jpeglib.h>
+
+/**
+ * A file containing a JPEG image
+ */
+
+class PJPEGFile : public PVideoFile
+{
+  PCLASSINFO(PJPEGFile, PVideoFile);
+  public:
+    PJPEGFile();
+    ~PJPEGFile();
+
+    virtual bool Open(
+      const PFilePath & name,    // Name of file to open.
+      PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
+      PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
+    );
+
+    virtual PBoolean WriteFrame(const void * frame);
+    virtual PBoolean ReadFrame(void * frame);
+
+    bool Close();
+    off_t GetLength() const;
+    off_t GetPosition() const;
+    bool SetPosition(off_t pos, PFile::FilePositionOrigin origin);
+
+  protected:
+    unsigned char * m_pixelData;
+    off_t m_pixelDataSize;
+};
+
+PFACTORY_LOAD(PJPEGFile);
+
+#endif  // P_LIBJPEG
+#endif  // P_VIDFILE
+#endif  // P_VIDEO
 
 #endif // PTLIB_PVIDFILE_H
 
