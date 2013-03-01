@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ptlib.hello;
+package org.opalvoip.ptlib.hello;
 
 import android.app.Activity;
 import android.widget.TextView;
@@ -38,7 +38,8 @@ public class PTLibHello extends Activity
          * function.
          */
         TextView  tv = new TextView(this);
-        tv.setText( "Hello (v" + getAppVersion() + ") from PTLib version " + getLibVersion());
+        tv.setText("Hello (v" + getAppVersion() + ") from PTLib version " + getLibVersion());
+//        tv.setText("Hello world");
         setContentView(tv);
     }
 
@@ -48,10 +49,10 @@ public class PTLibHello extends Activity
 
     /* this is used to load the 'ptlib' library on application
      * startup. The library has already been unpacked into
-     * /data/data/com.ptlib.Hello/lib/libhello-jni.so at
+     * /data/data/org.opalvoip.ptlib.hello/lib/libhello_world.so at
      * installation time by the package manager.
      */
     static {
-        System.loadLibrary("hello_world_static");
+        System.loadLibrary("hello_world");
     }
 }
