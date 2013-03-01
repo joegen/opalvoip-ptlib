@@ -88,10 +88,10 @@ static const unsigned TraceDownSignal = SIGUSR2;
 //
 PServiceProcess::PServiceProcess(const char * manuf,
                                  const char * name,
-                                         WORD majorVersion,
-                                         WORD minorVersion,
+                                     unsigned majorVersion,
+                                     unsigned minorVersion,
                                    CodeStatus status,
-                                         WORD buildNumber)
+                                     unsigned buildNumber)
   : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
 {
   isTerminating = false;
