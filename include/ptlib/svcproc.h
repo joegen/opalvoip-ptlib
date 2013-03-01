@@ -56,12 +56,12 @@ class PServiceProcess : public PProcess
     /** Create a new service process.
      */
     PServiceProcess(
-      const char * manuf,   ///< Name of manufacturer
-      const char * name,    ///< Name of product
-      WORD majorVersion,    ///< Major version number of the product
-      WORD minorVersion,    ///< Minor version number of the product
-      CodeStatus status,    ///< Development status of the product
-      WORD buildNumber      ///< Build number of the product
+      const char * manuf,     ///< Name of manufacturer
+      const char * name,      ///< Name of product
+      unsigned majorVersion,  ///< Major version number of the product
+      unsigned minorVersion,  ///< Minor version number of the product
+      CodeStatus status,      ///< Development status of the product
+      unsigned buildNumber    ///< Build number of the product
     );
   //@}
 

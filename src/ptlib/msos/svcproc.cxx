@@ -259,7 +259,7 @@ class PSystemLogToEvent : public PSystemLogTarget
 // PServiceProcess
 
 PServiceProcess::PServiceProcess(const char * manuf, const char * name,
-                           WORD major, WORD minor, CodeStatus stat, WORD build)
+                                 unsigned major, unsigned minor, CodeStatus stat, unsigned build)
   : PProcess(manuf, name, major, minor, stat, build)
 {
   controlWindow = debugWindow = NULL;
