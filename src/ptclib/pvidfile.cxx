@@ -57,21 +57,34 @@ PVideoFile::PVideoFile()
 
 PBoolean PVideoFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
 {
-  static PRegularExpression res("_(sqcif|qcif|cif|cif4|cif16|[0-9]+x[0-9]+)[^a-z0-9]", PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression fps("_[0-9]+fps[^a-z]",     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-
-  PINDEX pos, len;
-
-  if (name.FindRegEx(res, pos, len)) {
-    m_fixedFrameSize = Parse(name.Mid(pos+1, len-2));
-    if (m_fixedFrameSize)
-      m_frameBytes = CalculateFrameBytes();
-  }
-
-  if ((pos = name.FindRegEx(fps)) != P_MAX_INDEX)
-    m_fixedFrameRate = PVideoFrameInfo::SetFrameRate(name.Mid(pos+1).AsUnsigned());
-
   return m_file.Open(name, mode, opts);
+}
+
+
+bool PVideoFile::SetFrameSizeFromFilename(const PString & fn)
+{
+  static PRegularExpression res("_(sqcif|qcif|cif|cif4|cif16|[0-9]+x[0-9]+)[^a-z0-9]",
+                                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  PINDEX pos, len;
+  if (!fn.FindRegEx(res, pos, len) || !Parse(fn.Mid(pos+1, len-2)))
+    return false;
+
+  m_frameBytes = CalculateFrameBytes();
+  return true;
+}
+
+
+bool PVideoFile::SetFPSFromFilename(const PString & fn)
+{
+  static PRegularExpression fps("_[0-9]+fps[^a-z]",
+                                PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+
+  PINDEX pos;
+  if ((pos = fn.FindRegEx(fps)) == P_MAX_INDEX)
+    return false;
+
+  m_fixedFrameRate = PVideoFrameInfo::SetFrameRate(fn.Mid(pos+1).AsUnsigned());
+  return m_fixedFrameRate;
 }
 
 
@@ -83,7 +96,7 @@ PBoolean PVideoFile::WriteFrame(const void * frame)
 
 PBoolean PVideoFile::ReadFrame(void * frame)
 {
-  if (m_file.Read(frame, m_frameBytes) && m_file.GetLastReadCount() == m_frameBytes)
+  if (m_file.Read(frame, m_frameBytes) && (m_file.GetLastReadCount() == m_frameBytes))
     return true;
 
 #if PTRACING
@@ -93,6 +106,7 @@ PBoolean PVideoFile::ReadFrame(void * frame)
   else
     PTRACE(4, "VidFile\tEnd of file \"" << m_file.GetFilePath() << '"');
 #endif
+
   return false;
 }
 
@@ -170,22 +184,48 @@ PYUVFile::PYUVFile()
 
 PBoolean PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
 {
+  SetFrameSizeFromFilename(name);
+  SetFPSFromFilename(name);
+
   if (!PVideoFile::Open(name, mode, opts))
     return false;
 
-  m_y4mMode = name.GetType() *= ".y4m";
+  m_y4mMode        = name.GetType() *= ".y4m";
+  m_fixedFrameSize = !m_y4mMode;
 
   if (m_y4mMode) {
+    PString info;
     int ch;
-    do {
+    while (1) {
       if ((ch = m_file.ReadChar()) < 0)
         return false;
+      if (ch == '\n')
+        break;
+      info += ch;
     }
-    while (ch != '\n');
+    PTRACE(4, "VidFile\ty4m header \"" << info << "\"");
     m_headerOffset = m_file.GetPosition();
+    m_currPos      = 0;
   }
 
   return true;
+}
+
+
+PBoolean PYUVFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
+{
+  if (!m_y4mMode)
+    return PVideoFile::SetPosition(pos, origin);
+
+  if (origin != PFile::Start)
+    return false;
+
+  if (pos == 0) {
+    m_file.SetPosition(m_headerOffset, origin);
+    m_currPos = 0;
+  }
+
+  return (pos == m_currPos);
 }
 
 
@@ -200,15 +240,185 @@ PBoolean PYUVFile::WriteFrame(const void * frame)
 
 PBoolean PYUVFile::ReadFrame(void * frame)
 {
-  if (m_y4mMode) {
-    PString info;
-    info.ReadFrom(m_file);
-    PTRACE(4, "VidFile\ty4m \"" << info << '"');
-  }
+  if (!m_y4mMode)
+    return PVideoFile::ReadFrame(frame);
 
-  return PVideoFile::ReadFrame(frame);
+  PString info;
+  int ch;
+  while (1) {
+    if ((ch = m_file.ReadChar()) < 0)
+      return false;
+    if (ch == '\n')
+      break;
+    info += ch;
+  }
+  PTRACE(4, "VidFile\ty4m frame \"" << info << '"');
+
+  if (!PVideoFile::ReadFrame(frame))
+    return false;
+
+  ++m_currPos;
+
+  return true;
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef P_LIBJPEG
+
+#include <ptlib/vconvert.h>
+
+PFACTORY_CREATE(PFactory<PVideoFile>, PJPEGFile, "jpg", false);
+static PFactory<PVideoFile>::Worker<PJPEGFile> jpegFileFactory("jpeg");
+
+PJPEGFile::PJPEGFile()
+  : m_pixelData(NULL)
+{
+}
+
+
+PJPEGFile::~PJPEGFile()
+{
+  Close();
+}
+
+
+PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
+{
+  unsigned w;
+  unsigned h;
+  size_t srcSize;
+  unsigned char * jpegRGB = NULL;
+  bool stat = false;
+  PColourConverter * converter = NULL;
+  JSAMPLE * src = NULL;
+
+  if (opts != PFile::ReadOnly)
+    return false;
+
+  if (!PVideoFile::Open(name, mode, opts))
+    return false;
+
+  // open the JPEG decoder
+  FILE * file = ::fdopen(m_file.GetHandle(), (mode == PFile::ReadOnly) ? "rb" : "wb");
+  if (file == NULL) {
+    PTRACE(2, "JPEG", "Cannot open file '" << name << "'");
+    goto error1;
+  }
+
+  // declare and initialise the JPEG decoder
+  jpeg_decompress_struct jpegDecoder;
+  struct jpeg_error_mgr jerr;
+  jpegDecoder.err = jpeg_std_error(&jerr);
+
+  jpeg_create_decompress(&jpegDecoder);
+  jpeg_stdio_src(&jpegDecoder, file);
+
+  // read header 
+  (void)jpeg_read_header(&jpegDecoder, TRUE);
+
+  // set decompression parameters
+  jpegDecoder.out_color_space = JCS_RGB;
+  (void)jpeg_start_decompress(&jpegDecoder);
+
+  // get frame dimensions
+  w = jpegDecoder.output_width;
+  h = jpegDecoder.output_height;
+  if (!PVideoFile::SetFrameSize(w, h)) {
+    PTRACE(1, "PJPEGFile", "Cannot set frame dimensions");
+    goto error2;
+  }
+  m_pixelDataSize = (w * h * 3) / 2;
+  PTRACE(1, "PJPEGFILE", "Frame is " << w << "x" << h << " = " << m_pixelDataSize << " bytes");
+
+  // convert the file
+  srcSize = h * (w * 3);
+  jpegRGB = new unsigned char[srcSize];
+  src = jpegRGB;
+  while (jpegDecoder.output_scanline < jpegDecoder.output_height) {
+    jpeg_read_scanlines(&jpegDecoder, &src, 1);
+    src += w * 3;
+  }
+
+  //memset(jpegRGB, 0xc0, srcSize);
+
+  // create the colour converter
+  converter = PColourConverter::Create("RGB24", "YUV420P", w, h);
+  if (converter == NULL) {
+    PTRACE(1, "JPEG", "Could not create converter");
+    goto error3;
+  }
+
+  // create the YUV420P buffer
+  m_pixelData = new unsigned char[m_pixelDataSize];
+  if (m_pixelData == NULL) {
+    PTRACE(1, "JPEG", "Cannot allocate YUV420P image data");
+    goto error3;
+  }
+
+#if 0
+  PColourConverter::FillYUV420P(0, 0, w, h, w, h, m_pixelData, 0, 0, 0);
+  stat = true;
+#endif
+  
+  converter->SetDstFrameSize(w, h);
+  stat = converter->Convert(jpegRGB, m_pixelData, srcSize);
+  delete converter;
+  if (!stat) {
+    PTRACE(1, "JPEG", "Conversion failed");
+  }
+
+error3:
+  delete[] jpegRGB;
+error2:
+  jpeg_destroy_decompress(&jpegDecoder);
+error1:
+  fclose(file);
+  
+  return stat;
+}
+
+
+PBoolean PJPEGFile::Close()
+{
+  delete [] m_pixelData;
+  m_pixelData = NULL;
+
+  return m_file.Close();
+}
+
+
+off_t PJPEGFile::GetLength() const
+{
+  return 1;
+}
+
+
+off_t PJPEGFile::GetPosition() const
+{
+  return 0;
+}
+
+
+bool PJPEGFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
+{
+  return pos == 0;
+}
+
+
+bool PJPEGFile::WriteFrame(const void * frame)
+{
+  return false;
+}
+
+
+PBoolean PJPEGFile::ReadFrame(void * frame)
+{
+  memcpy(frame, m_pixelData, m_pixelDataSize);
+  return true;
+}
+
+#endif  // P_LIBJPEG
 #endif  // P_VIDFILE
 #endif  // P_VIDEO

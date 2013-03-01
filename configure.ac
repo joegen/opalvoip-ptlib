@@ -1070,6 +1070,27 @@ dnl MSWIN_DISPLAY dll,DLL Support
 dnl MSWIN_DEFINE  dll,P_DYNALINK
 
 
+dnl ########################################################################
+dnl check for libjpeg
+
+AC_ARG_ENABLE(
+   libjpeg,
+   AS_HELP_STRING([--disable-libjpeg],[disable libjpeg for file-based video input device])
+)
+
+if test "$enableval" = "no" ; then
+  AC_MSG_NOTICE(Disabling libjpeg)
+else
+  AC_MSG_CHECKING(for libjpeg)
+  AC_CHECK_HEADER([jpeglib.h],
+                  [
+                    AC_DEFINE(P_LIBJPEG)
+                    LDFLAGS="$LDFLAGS -ljpeg"
+                  ]
+                 )
+fi
+
+
 dnl #########################################################################
 dnl check to see if samples are enabled
 
