@@ -1204,7 +1204,13 @@ class PComEnumerator
           PCOM_FAILED(pPropBag->Read,(L"FriendlyName", &varName, NULL), ERROR_FILE_NOT_FOUND))
         return PString::Empty();
 
-      return varName.AsString();
+      PString name = varName.AsString();
+
+      PINDEX i = name.GetLength();
+      while ((i > 0) && !::isprint(name[i-1]))
+        name = name.Left(--i);
+
+      return name;
     }
 };
 
