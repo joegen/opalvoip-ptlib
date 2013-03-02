@@ -1223,7 +1223,7 @@ PSTANDARD_COLOUR_CONVERTER(BGR32,YUV420P)
  * off: 16  U00 U02 U20 U22
  * off: 20  V00 V02 V20 V22
  * 
- * So, we loose some bit of information when converting YUY2 to YUV420 
+ * So, we lose some bit of information when converting YUY2 to YUV420 
  *
  * NOTE: This algorithm works only if the width and the height is pair.
  */
@@ -1275,7 +1275,7 @@ void  PStandardColourConverter::YUY2toYUV420PSameSize(const BYTE *yuy2, BYTE *yu
  * off: 16  U00 U02 U20 U22
  * off: 20  V00 V02 V20 V22
  * 
- * So, we loose some bit of information when converting YUY2 to YUV420 
+ * So, we lose some bit of information when converting YUY2 to YUV420 
  *
  * NOTE: This algorithm works only if the width and the height are even numbers.
  */
@@ -1542,7 +1542,7 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
  * off: 16  U00 U02 U20 U22
  * off: 20  V00 V02 V20 V22
  * 
- * So, we loose some bit of information when converting YUY2 to YUV420 
+ * So, we lose some bit of information when converting YUY2 to YUV420 
  *
  */
 PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
@@ -2475,7 +2475,7 @@ void PStandardColourConverter::UYVY422WithCrop(const BYTE *src_uyvy, BYTE *dst_u
  * off: 16  U00 U02 U20 U22
  * off: 20  V00 V02 V20 V22
  * 
- * So, we loose some bit of information when converting UYVY to YUV420 
+ * So, we lose some bit of information when converting UYVY to YUV420 
  *
  * NOTE: This algorithm works only if the width and the height is pair.
  */
@@ -2528,7 +2528,7 @@ void  PStandardColourConverter::UYVY422toYUV420PSameSize(const BYTE *uyvy, BYTE 
  * off: 16  U00 U02 U20 U22
  * off: 20  V00 V02 V20 V22
  * 
- * So, we loose some bit of information when converting YUY2 to YUV420 
+ * So, we lose some bit of information when converting YUY2 to YUV420 
  *
  * NOTE: This algorithm works only if the width and the height is pair.
  */
