@@ -141,8 +141,8 @@ PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*s
         do {
           if (dir.GetEntryName().Right(extension.GetLength()) == (PString(".") + extension)) {
             fileName = dir.GetEntryName();
-            break;
             found = true;
+            break;
           }
         } while (dir.Next());
       }

@@ -1073,6 +1073,10 @@ dnl MSWIN_DEFINE  dll,P_DYNALINK
 dnl ########################################################################
 dnl check for libjpeg
 
+dnl MSWIN_DISPLAY    libjpeg,libjpeg support
+dnl MSWIN_CHECK_FILE libjpeg,include\jpeglib.h,P_LIBJPEG=1
+dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
+
 AC_ARG_ENABLE(
    libjpeg,
    AS_HELP_STRING([--disable-libjpeg],[disable libjpeg for file-based video input device])
