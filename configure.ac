@@ -1768,7 +1768,7 @@ PTLIB_NEW_OPTION(TELNET)
 
 dnl ########################################################################
 dnl check for enabling CLI support
-dnl MSWIN_DISPLAY    cli,Command ine interpreter support
+dnl MSWIN_DISPLAY    cli,Command line interpreter support
 dnl MSWIN_DEFINE     cli,P_CLI
 
 PTLIB_SIMPLE_OPTION([cli], [CLI], [enable command line interpreter support])
