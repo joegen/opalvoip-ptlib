@@ -196,12 +196,12 @@ PBoolean PYUVFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::Ope
   if (m_y4mMode) {
     PString info;
     int ch;
-    while (1) {
+    for (;;) {
       if ((ch = m_file.ReadChar()) < 0)
         return false;
       if (ch == '\n')
         break;
-      info += ch;
+      info += (char)ch;
     }
     PTRACE(4, "VidFile\ty4m header \"" << info << "\"");
     m_headerOffset = m_file.GetPosition();
@@ -245,12 +245,12 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 
   PString info;
   int ch;
-  while (1) {
+  for (;;) {
     if ((ch = m_file.ReadChar()) < 0)
       return false;
     if (ch == '\n')
       break;
-    info += ch;
+    info += (char)ch;
   }
   PTRACE(4, "VidFile\ty4m frame \"" << info << '"');
 
@@ -266,6 +266,10 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef P_LIBJPEG
+
+#ifdef _MSC_VER
+  #pragma comment(lib, P_LIBJPEG_LIBRARY)
+#endif
 
 #include <ptlib/vconvert.h>
 
@@ -341,8 +345,6 @@ PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::Op
     src += w * 3;
   }
 
-  //memset(jpegRGB, 0xc0, srcSize);
-
   // create the colour converter
   converter = PColourConverter::Create("RGB24", "YUV420P", w, h);
   if (converter == NULL) {
@@ -356,11 +358,6 @@ PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::Op
     PTRACE(1, "JPEG", "Cannot allocate YUV420P image data");
     goto error3;
   }
-
-#if 0
-  PColourConverter::FillYUV420P(0, 0, w, h, w, h, m_pixelData, 0, 0, 0);
-  stat = true;
-#endif
   
   converter->SetDstFrameSize(w, h);
   stat = converter->Convert(jpegRGB, m_pixelData, srcSize);
@@ -401,13 +398,13 @@ off_t PJPEGFile::GetPosition() const
 }
 
 
-bool PJPEGFile::SetPosition(off_t pos, PFile::FilePositionOrigin origin)
+bool PJPEGFile::SetPosition(off_t pos, PFile::FilePositionOrigin)
 {
   return pos == 0;
 }
 
 
-bool PJPEGFile::WriteFrame(const void * frame)
+bool PJPEGFile::WriteFrame(const void * )
 {
   return false;
 }
