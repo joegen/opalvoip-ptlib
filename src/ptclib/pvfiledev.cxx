@@ -82,7 +82,6 @@ class PVideoInputDevice_VideoFile_PluginServiceDescriptor : public PDevicePlugin
           adjustedDevice.Delete(length-1, 1);
         else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo)
           continue;
-cout << "checking extension " << ext << " with '" << adjustedDevice << "'" << endl;
         if (PFile::Access(adjustedDevice, PFile::ReadOnly)) 
           return true;
         //PTRACE(1, "Unable to access file '" << adjustedDevice << "' for use as a video input device");
