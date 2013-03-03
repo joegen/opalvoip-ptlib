@@ -1091,7 +1091,7 @@ else
   AC_CHECK_HEADER([jpeglib.h],
                   [
                     AC_DEFINE(P_LIBJPEG)
-                    LDFLAGS="$LDFLAGS -ljpeg"
+                    ENDLDLIBS="$ENDLDLIBS -ljpeg"
                   ]
                  )
 fi
