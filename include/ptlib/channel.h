@@ -174,6 +174,13 @@ class PChannel : public PObject, public P_IOSTREAM {
      */
     P_INT_PTR GetHandle() const;
 
+    /** Re-open the device using the stdio library. This closes the PChannel
+
+       @return
+       stdio FILE * handle for the opened device.
+     */
+    FILE * FDOpen(const char * mode);
+
     /** Get the base channel of channel indirection using PIndirectChannel.
        This function returns the eventual base channel for reading of a series
        of indirect channels provided by descendents of <code>PIndirectChannel</code>.

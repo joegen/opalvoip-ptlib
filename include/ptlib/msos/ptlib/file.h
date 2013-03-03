@@ -54,6 +54,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
+  public:
+    virtual FILE * FDOpen(const char * mode);
 
   protected:
     virtual PBoolean IsTextFile() const;
