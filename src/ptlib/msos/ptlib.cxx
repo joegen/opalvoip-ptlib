@@ -248,6 +248,11 @@ PBoolean PChannel::Close()
   return false;
 }
 
+FILE * PChannel::FDOpen(const char * mode)
+{
+  return NULL;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Directories
@@ -851,6 +856,14 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
 PBoolean PFile::SetLength(off_t len)
 {
   return ConvertOSError(_chsize(GetOSHandleAsInt(), len));
+}
+
+FILE * PFile::FDOpen(const char * mode)
+{
+  FILE * h = _fdopen(os_handle, mode);
+  if (h != NULL)
+    os_handle = -1;
+  return h;
 }
 
 
