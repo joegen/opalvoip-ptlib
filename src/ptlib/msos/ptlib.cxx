@@ -248,7 +248,7 @@ PBoolean PChannel::Close()
   return false;
 }
 
-FILE * PChannel::FDOpen(const char * mode)
+FILE * PChannel::FDOpen(const char * /*mode*/)
 {
   return NULL;
 }
