@@ -1076,6 +1076,8 @@ dnl check for libjpeg
 dnl MSWIN_DISPLAY    libjpeg,libjpeg support
 dnl MSWIN_CHECK_FILE libjpeg,include\jpeglib.h,P_LIBJPEG=1
 dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
+dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d\
+
 
 AC_ARG_ENABLE(
    libjpeg,

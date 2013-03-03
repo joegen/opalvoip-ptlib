@@ -157,6 +157,7 @@ class PJPEGFile : public PVideoFile
     virtual PBoolean ReadFrame(void * frame);
 
     bool Close();
+    PBoolean IsOpen() const;
     off_t GetLength() const;
     off_t GetPosition() const;
     bool SetPosition(off_t pos, PFile::FilePositionOrigin origin);

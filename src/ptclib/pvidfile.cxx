@@ -287,6 +287,19 @@ PJPEGFile::~PJPEGFile()
   Close();
 }
 
+PBoolean PJPEGFile::IsOpen() const 
+{ 
+  return m_pixelData != NULL; 
+}
+
+
+PBoolean PJPEGFile::Close() 
+{ 
+  delete [] m_pixelData;
+  m_pixelData = NULL;
+  return true;
+}
+
 
 PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
 {
@@ -305,7 +318,7 @@ PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::Op
     return false;
 
   // open the JPEG decoder
-  FILE * file = ::fdopen(m_file.GetHandle(), (mode == PFile::ReadOnly) ? "rb" : "wb");
+  FILE * file = m_file.FDOpen((mode == PFile::ReadOnly) ? "rb" : "wb");
   if (file == NULL) {
     PTRACE(2, "JPEG", "Cannot open file '" << name << "'");
     goto error1;
@@ -364,6 +377,8 @@ PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::Op
   delete converter;
   if (!stat) {
     PTRACE(1, "JPEG", "Conversion failed");
+    delete [] m_pixelData;
+    m_pixelData = NULL;
   }
 
 error3:
@@ -372,17 +387,9 @@ error2:
   jpeg_destroy_decompress(&jpegDecoder);
 error1:
   fclose(file);
-  
+  m_file.Close(); 
+
   return stat;
-}
-
-
-PBoolean PJPEGFile::Close()
-{
-  delete [] m_pixelData;
-  m_pixelData = NULL;
-
-  return m_file.Close();
 }
 
 

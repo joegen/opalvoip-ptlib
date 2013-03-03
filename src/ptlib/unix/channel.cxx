@@ -143,6 +143,14 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
   return SetErrorValues(Timeout, ETIMEDOUT, group);
 }
 
+FILE * PChannel::FDOpen(const char * mode)
+{
+  FILE * h = fdopen(os_handle, mode);
+  if (h != NULL)
+    os_handle = -1;
+  return h;
+}
+
 
 PBoolean PChannel::Read(void * buf, PINDEX len)
 {
