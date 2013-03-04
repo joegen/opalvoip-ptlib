@@ -356,12 +356,8 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
       break;
 
     case PVarType::VarInt64:
-      value = v8::Number::New(var.AsInteger64());
-      break;
-
     case PVarType::VarUInt64:
-      value = v8::Number::New(var.AsUnsigned64());
-      break;
+      // Until V8 suppies a 64 bit integer, we use double
 
     case PVarType::VarFloatSingle:
     case PVarType::VarFloatDouble:

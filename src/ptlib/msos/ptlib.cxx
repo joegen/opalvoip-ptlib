@@ -860,7 +860,7 @@ PBoolean PFile::SetLength(off_t len)
 
 FILE * PFile::FDOpen(const char * mode)
 {
-  FILE * h = _fdopen(os_handle, mode);
+  FILE * h = _fdopen((int)os_handle, mode);
   if (h != NULL)
     os_handle = -1;
   return h;
