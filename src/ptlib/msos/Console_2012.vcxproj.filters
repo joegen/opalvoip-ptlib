@@ -949,6 +949,7 @@
       <Filter>Header Files\Android</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
