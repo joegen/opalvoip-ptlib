@@ -787,7 +787,22 @@ PBoolean PThread::IsTerminated() const
 
   // See if thread is still running, copy variable in case changes between two statements
   pthread_t id = m_threadId;
-  return id == PNullThreadIdentifier || pthread_kill(id, 0) != 0;
+  if (id == PNullThreadIdentifier)
+    return true;
+
+  int error = pthread_kill(id, 0);
+  if (error == 0 || error == EPERM)
+    return false;
+
+#if PTRACING
+  if (error != ESRCH) {
+    // Output direct to stream, do not use PTRACE as it might cause an infinite recursion.
+    ostream * trace = PTrace::GetStream();
+    if (trace != NULL)
+      *trace << "Error " << error << " calling pthread_kill: thread=" << this << ", id=" << id << endl;
+  }
+#endif
+  return true;
 }
 
 
