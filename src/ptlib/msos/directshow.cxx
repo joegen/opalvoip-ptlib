@@ -1713,7 +1713,8 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data)
 {
   CSampleGrabberCB * cb = (CSampleGrabberCB *)&*m_pSampleGrabberCB;
 
-  if (!cb->frameready.Wait(2000)) {
+  // Live! Cam Optia AF (VC0100) webcam took 3.1 sec.
+  if (!cb->frameready.Wait(5000)) {
     PTRACE(1, "DShow\tTimeout awaiting next frame");
     return false;
   }
