@@ -2180,8 +2180,10 @@ void PProcess::InternalCleanAutoDeleteThreads()
   ThreadList::iterator thread = m_autoDeleteThreads.begin();
   while (thread != m_autoDeleteThreads.end()) {
     if (thread->IsAutoDelete() && thread->IsTerminated()) {
-      InternalThreadEnded(&*thread);
-      threadsToDelete.Append(&*thread);
+      PThread * threadPtr = &*thread;
+      PTRACE(5, "PTLib\tAuto-deleting terminated thread: " << threadPtr << ", id=" << threadPtr->GetThreadId());
+      InternalThreadEnded(threadPtr);
+      threadsToDelete.Append(threadPtr);
       m_autoDeleteThreads.erase(thread++);
     }
     else
