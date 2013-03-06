@@ -411,10 +411,11 @@ static void ClearOptionBit(unsigned & options, PTrace::Options option)
 
 void PTrace::Initialise(const PArgList & args,
                         unsigned options,
-                        const char * traceLevel,
+                        const char * traceCount,
                         const char * outputFile,
                         const char * traceOpts,
-                        const char * traceRollover)
+                        const char * traceRollover,
+                        const char * traceLevel)
 {
   PCaselessString optStr = args.GetOptionString(traceOpts);
   PINDEX pos = 0;
@@ -448,7 +449,8 @@ void PTrace::Initialise(const PArgList & args,
       operation(options, AppendToFile);
   }
 
-  PTraceInfo::Instance().InternalInitialise(args.GetOptionCount(traceLevel),
+  PTraceInfo::Instance().InternalInitialise(std::max((unsigned)args.GetOptionCount(traceCount),
+                                                     (unsigned)args.GetOptionString(traceLevel).AsUnsigned()),
                                             args.GetOptionString(outputFile),
                                             args.GetOptionString(traceRollover),
                                             options);
