@@ -461,12 +461,21 @@ public:
     "  minute   rotate output file every minute\r" \
     "  append   append to output file, otherwise overwrites"
 
-  #define PTRACE_ARGLIST \
-    "t-trace.               Trace enable (use multiple times for more detail)\n" \
-    "o-output:              Specify filename for trace output\n" \
-    "-trace-option:         Specify trace option(s),\r" PTRACE_ARGLIST_OPT_HELP "\n" \
-    "-trace-rollover:       Specify trace file rollover file name pattern\n"
+  #define PTRACE_ARG_TRACE    "trace"
+  #define PTRACE_ARG_LEVEL    "trace-level"
+  #define PTRACE_ARG_OUTPUT   "output"
+  #define PTRACE_ARG_ROLLOVER "trace-rollover"
+  #define PTRACE_ARG_OPTION   "trace-option"
 
+  #define PTRACE_ARGLIST_EXT(t,l,o,r,O) \
+    t"-"PTRACE_ARG_TRACE".     Trace enable (use multiple times for more detail).\n" \
+    l"-"PTRACE_ARG_LEVEL":     Specify trace detail level.\n" \
+    o"-"PTRACE_ARG_OUTPUT":    Specify filename for trace output\rMay be special value such as \"stderr\" dependent on platform.\n" \
+    r"-"PTRACE_ARG_ROLLOVER":  Specify trace file rollover file name pattern.\n" \
+    O"-"PTRACE_ARG_OPTION":    Specify trace option(s),\r" PTRACE_ARGLIST_OPT_HELP "\n"
+
+  #define PTRACE_ARGLIST PTRACE_ARGLIST_EXT("t","","o","","")
+  
   #define PTRACE_INITIALISE(...) PTrace::Initialise(__VA_ARGS__)
 
   /**Set the most common trace options.
@@ -479,10 +488,11 @@ public:
           FileAndLine |
 #endif
                 Timestamp | Thread | Blocks, ///< Default #Options for tracing
-    const char * traceLevel = "trace",       ///< Argument option name for trace level
-    const char * outputFile = "output",      ///< Argument option name for log output file
-    const char * traceOpts  = "trace-option", ///< Argument option name for trace options
-    const char * traceRollover  = "trace-rollover" ///< Argument option name for trace file roll over pattern
+    const char * traceCount = PTRACE_ARG_TRACE,       ///< Argument option name for trace count
+    const char * outputFile = PTRACE_ARG_OUTPUT,      ///< Argument option name for log output file
+    const char * traceOpts  = PTRACE_ARG_OPTION,      ///< Argument option name for trace options
+    const char * traceRollover = PTRACE_ARG_ROLLOVER, ///< Argument option name for trace file roll over pattern
+    const char * traceLevel = PTRACE_ARG_LEVEL        ///< Argument option name for trace level
   );
 
   /**Set the most common trace options.
