@@ -862,8 +862,12 @@ class PTraceSaveContextIdentifier
 
 #endif // PTRACING
 
+#ifndef PTRACE_ARGLIST_EXT
+#define PTRACE_ARGLIST_EXT(...) ""
+#endif
+
 #ifndef PTRACE_ARGLIST
-#define PTRACE_ARGLIST
+#define PTRACE_ARGLIST ""
 #endif
 
 #ifndef PTRACE_INITIALISE
