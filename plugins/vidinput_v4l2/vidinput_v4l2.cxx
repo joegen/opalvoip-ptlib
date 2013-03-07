@@ -337,12 +337,14 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean /* start
     canSetFrameRate = videoStreamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME;
     if (canSetFrameRate) {
       if (videoStreamParm.parm.capture.timeperframe.numerator == 0) {
-        PTRACE(1,"PVidInDev\tnumerator is zero and denominator is " << videoStreamParm.parm.capture.timeperframe.denominator << ", driver bug??");
+        PTRACE(1,"PVidInDev\tDriver/webcam bug: numerator is zero and denominator is " << videoStreamParm.parm.capture.timeperframe.denominator << ", I assume it cannot set frame rate");
+        canSetFrameRate = PFalse;
+      } else {
+        unsigned rate = videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator;
+        if(rate <= 0 || rate > 1000)
+          rate = 1;
+        PVideoDevice::SetFrameRate (rate);
       }
-      unsigned rate = videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator;
-      if(rate <= 0 || rate > 1000) 
-        rate = 1;
-      PVideoDevice::SetFrameRate (rate);
     }
   }
 
