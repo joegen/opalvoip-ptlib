@@ -296,7 +296,7 @@ class PVarType : public PObject
     BasicType m_type; ///< Type of parameter
 
     union Variant {
-      Variant() { memset(this, 0, sizeof(this)); }
+      Variant() { memset(this, 0, sizeof(*this)); }
       bool        boolean;
       char        character;
       int8_t      int8;
