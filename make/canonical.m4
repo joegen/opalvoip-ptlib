@@ -16,23 +16,24 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       target_vendor=apple
       target_os=iPhoneOS
       target_cpu=armv6
+      target_release=`xcodebuild -showsdks | sed -n 's/.*iphoneos\(.*\)/\1/p' | sort | tail -n 1`
    elif test "$enable_ios" = "simulator" ; then
       target_vendor=apple
       target_os=iPhoneSimulator
       target_cpu=i686
+      target_release=`xcodebuild -showsdks | sed -n 's/.*iphonesimulator\(.*\)/\1/p' | sort | tail -n 1`
    elif test "x$enable_ios" != "x" ; then
       AC_MSG_ERROR([Unknown iOS variant \"${enable_ios}\" - use either iphone or simulator])
    fi
 
    case "$target_os" in
       iPhone* )
-         target_release="`xcodebuild -showsdks | grep iphoneos | sort | tail -n 1 | awk '{ print $2}' `"
          if test "x$target_release" == "x" ; then
             AC_MSG_ERROR([Unable to determine iOS release number])
          fi
 
          IOS_DEVROOT="`xcode-select -print-path`/Platforms/${target_os}.platform/Developer"
-         IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${target_os}${patform_release}.sdk
+         IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${target_os}${target_release}.sdk
 
          CXX="${IOS_DEVROOT}/usr/bin/g++"
          CC="${IOS_DEVROOT}/usr/bin/gcc"
