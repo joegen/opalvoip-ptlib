@@ -2,11 +2,20 @@ dnl
 dnl PTLib configuration
 dnl
 
+AC_INIT([PTLib], m4_esyscmd([sed -n -e "s/^#define MAJOR_VERSION \\(.*\\)/\\1./p" \
+                                    -e "s/#define MINOR_VERSION \\(.*\\)/\\1/p" \
+									-e "s/#define BUILD_TYPE \\(.*\\)/\\1/p" \
+									-e "s/#define BUILD_NUMBER \\(.*\\)/\\1/p" version.h \
+							 | tr -d '\n' \
+							 | sed -e "s/AlphaCode/a/" \
+							       -e "s/BetaCode/b/" \
+								   -e "s/ReleaseCode/./"]))
+
 AC_PREREQ([2.65])
 
-AC_INIT([PTLib], [version 2.x])
-
 AC_CONFIG_AUX_DIR(make)
+
+AC_CONFIG_SRCDIR([include/ptlib.h])
 
 m4_include(make/ptlib.m4)
 
