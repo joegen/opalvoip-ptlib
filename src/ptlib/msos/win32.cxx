@@ -948,7 +948,7 @@ std::ostream & operator<<(std::ostream & strm, const PComResult & result)
   if (dwMsgLen > 0)
     return strm << msg;
 
-#ifndef _WIN32_WCE
+#if P_DIRECTSHOW
   dwMsgLen = AMGetErrorText(result.m_result, msg, sizeof(msg));
   if (dwMsgLen > 0)
     return strm << msg;
