@@ -8,7 +8,7 @@ target_os=@target_os@
 target=@target@
 cxxflags=@PTLIB_CXXFLAGS@
 suffix=
-objdir=obj/@target@
+objdir=obj/@target@$(suffix)
 
 Name: ptlib
 Description: PT Library
