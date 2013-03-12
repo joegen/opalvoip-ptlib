@@ -15,7 +15,7 @@ Description: PT Library
 Version: @PTLIB_VERSION@
 Libs: @LDFLAGS@ -L${libdir} -lpt${suffix}
 Libs.private: @ENDLDLIBS@
-Cflags: -I${includedir} @PTLIB_CFLAGS@
+Cflags: @PTLIB_CFLAGS@ -I${includedir}
 
 PTLIB_IPV6=@PTLIB_IPV6@
 PTLIB_DNS_RESOLVER=@PTLIB_DNS_RESOLVER@
