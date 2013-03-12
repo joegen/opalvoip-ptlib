@@ -154,8 +154,6 @@
 		A370C09411E995C8008AE956 /* sfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sfile.h; path = include/ptlib/unix/ptlib/sfile.h; sourceTree = "<group>"; };
 		A370C09511E995C8008AE956 /* shmvideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = shmvideo.h; path = include/ptlib/unix/ptlib/shmvideo.h; sourceTree = "<group>"; };
 		A370C09611E995C8008AE956 /* socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = socket.h; path = include/ptlib/unix/ptlib/socket.h; sourceTree = "<group>"; };
-		A370C09711E995C8008AE956 /* sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sound.h; path = include/ptlib/unix/ptlib/sound.h; sourceTree = "<group>"; };
-		A370C09811E995C8008AE956 /* svcproc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = svcproc.h; path = include/ptlib/unix/ptlib/svcproc.h; sourceTree = "<group>"; };
 		A370C09911E995C8008AE956 /* syncpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = syncpoint.h; path = include/ptlib/unix/ptlib/syncpoint.h; sourceTree = "<group>"; };
 		A370C09A11E995C8008AE956 /* tcpsock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tcpsock.h; path = include/ptlib/unix/ptlib/tcpsock.h; sourceTree = "<group>"; };
 		A370C09B11E995C8008AE956 /* textfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = textfile.h; path = include/ptlib/unix/ptlib/textfile.h; sourceTree = "<group>"; };

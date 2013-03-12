@@ -837,9 +837,6 @@
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\socket.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\sound.h">
-      <Filter>Header Files\Android</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\svcproc.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>

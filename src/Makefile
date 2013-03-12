@@ -378,8 +378,7 @@ SOURCES	+= \
 	$(PLATFORM_SRC_DIR)/udll.cxx \
 	$(PLATFORM_SRC_DIR)/channel.cxx \
 	$(PLATFORM_SRC_DIR)/osutil.cxx \
-	$(PLATFORM_SRC_DIR)/tlib.cxx \
-	$(PLATFORM_SRC_DIR)/switch.cxx
+	$(PLATFORM_SRC_DIR)/tlib.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
@@ -462,12 +461,6 @@ $(OBJDIR)/regerror.o: $(COMMON_SRC_DIR)/regex/regerror.c
 $(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
 	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
-
-ifdef REQUIRES_SEPARATE_SWITCH 
-$(OBJDIR)/switch.o: $(PLATFORM_SRC_DIR)/switch.cxx
-	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
-endif
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
 	$(Q_CC)$(CC) -Wno-write-strings $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
