@@ -233,12 +233,6 @@ alllibs:
 	$(MAKE) bothshared
 
 
-ifdef REQUIRES_SEPARATE_SWITCH 
-$(OBJDIR)/switch.o: ./switch.cxx
-	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
-	$(CXX) $(STDCCFLAGS) $(CFLAGS) -c $< -o $@
-endif
-
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE) $(GETDATE_SOURCE)
 
 $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx

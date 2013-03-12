@@ -1018,7 +1018,6 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\semaphor.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\serchan.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\socket.h" />
-    <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\sound.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\svcproc.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\syncpoint.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\tcpsock.h" />
