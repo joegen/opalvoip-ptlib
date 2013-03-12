@@ -137,10 +137,10 @@ endif
 install:
 	( for dir in $(DESTDIR)$(libdir) \
 		     $(DESTDIR)$(prefix)/bin \
-		     $(DESTDIR)$(prefix)/include/ptlib \
-                     $(DESTDIR)$(prefix)/include/ptlib/$(ARCH_INCLUDE)/ptlib \
-                     $(DESTDIR)$(prefix)/include/ptclib \
-                     $(DESTDIR)$(prefix)/share/ptlib/make ; \
+		     $(DESTDIR)$(includedir)/ptlib \
+                     $(DESTDIR)$(includedir)/ptlib/$(ARCH_INCLUDE)/ptlib \
+                     $(DESTDIR)$(includedir)/ptclib \
+                     $(DESTDIR)$(datarootdir)/ptlib/make ; \
 		do mkdir -p $$dir ; chmod 755 $$dir ; \
 	done )
 	( for lib in  $(PTLIB_LIBDIR)/$(PTLIB_SONAME) \
@@ -176,19 +176,19 @@ ifeq (1, $(HAS_PLUGINS))
 	done ) ; \
 	fi
 endif
-	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(prefix)/include
-	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(prefix)/include
+	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(includedir)
+	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(includedir)
 	(for fn in include/ptlib/*.h include/ptlib/*.inl; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/include/ptlib; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptlib; \
 	done)
 	(for fn in include/ptlib/$(ARCH_INCLUDE)/ptlib/*.h include/ptlib/$(ARCH_INCLUDE)/ptlib/*.inl ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/include/ptlib/$(ARCH_INCLUDE)/ptlib ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptlib/$(ARCH_INCLUDE)/ptlib ; \
 	done)
 	(for fn in include/ptclib/*.h ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/include/ptclib; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptclib; \
 	done)
 	(for fn in make/*.mak ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/share/ptlib/make; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(datarootdir)/ptlib/make; \
 	done)
 
 	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
@@ -196,20 +196,20 @@ endif
 	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(libdir)/pkgconfig/
 
 uninstall:
-	rm -rf $(DESTDIR)$(prefix)/include/ptlib \
-	       $(DESTDIR)$(prefix)/include/ptclib \
-	       $(DESTDIR)$(prefix)/include/ptlib.h \
-	       $(DESTDIR)$(prefix)/include/ptbuildopts.h \
-	       $(DESTDIR)$(prefix)/share/ptlib \
+	rm -rf $(DESTDIR)$(includedir)/ptlib \
+	       $(DESTDIR)$(includedir)/ptclib \
+	       $(DESTDIR)$(includedir)/ptlib.h \
+	       $(DESTDIR)$(includedir)/ptbuildopts.h \
+	       $(DESTDIR)$(datarootdir)/ptlib \
 	       $(DESTDIR)$(libdir)/$(PTLIB_PLUGIN_DIR) \
-	       $(DESTDIR)$(libdir)/pkgconfig/ptlib.pc
-	rm -f $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_s.a \
-	      $(DESTDIR)$(libdir)/$(PTLIB_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_SONAME) \
-	      $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_d_s.a \
-	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SONAME)
-
+	       $(DESTDIR)$(libdir)/pkgconfig/ptlib.pc \
+	       $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_s.a \
+	       $(DESTDIR)$(libdir)/$(PTLIB_FILE) \
+	       $(DESTDIR)$(libdir)/$(PTLIB_SONAME) \
+	       $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_d_s.a \
+	       $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_FILE) \
+	       $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SONAME)
+ 
 endif
 
 # End of Makefile.in
