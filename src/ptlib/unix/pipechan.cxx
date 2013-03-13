@@ -49,7 +49,7 @@
 
 #include "../common/pipechan.cxx"
 
-#if defined(P_MACOSX) && !defined(P_IPHONEOS)
+#if defined(P_MACOSX) && !defined(P_IOS)
 #  include <crt_externs.h>
 #  define environ (*_NSGetEnviron())
 #else
@@ -330,7 +330,7 @@ PBoolean PPipeChannel::IsRunning() const
   if (childPid == 0)
     return false;
 
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
+#if defined(P_PTHREADS)
 
   int err;
   int status;
@@ -371,7 +371,7 @@ int PPipeChannel::WaitForTermination()
 
   int err;
 
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
+#if defined(P_PTHREADS)
   int status;
   do {
     err = waitpid(childPid, &status, 0);
@@ -409,7 +409,7 @@ int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 
   int err;
 
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
+#if defined(P_PTHREADS)
   PAssert(timeout == PMaxTimeInterval, PUnimplementedFunction);
   int status;
   do {

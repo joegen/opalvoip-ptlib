@@ -86,7 +86,7 @@
 #include <sys/vfs.h>
 #define P_USE_STRFTIME
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS)
 #define P_USE_STRFTIME
 
 #include <sys/param.h>
@@ -297,7 +297,7 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
 
 PTimeInterval PTimer::Tick()
 {
-#if defined(_POSIX_MONOTONIC_CLOCK) && !defined(P_MACOSX)
+#if defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return ts.tv_sec*1000LL + ts.tv_nsec/1000000LL;
@@ -522,7 +522,7 @@ PString PDirectory::GetVolume() const
     }
     fclose(fp);
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS)
 
     struct statfs * mnt;
     int count = getmntinfo(&mnt, MNT_NOWAIT);
@@ -562,7 +562,7 @@ PString PDirectory::GetVolume() const
 
 PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_GNU_HURD) || defined(P_ANDROID)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_GNU_HURD) || defined(P_ANDROID)
 
   struct statfs fs;
 
@@ -1376,7 +1376,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(__BEOS__) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
   time_t t;
   time(&t);
   struct tm ts;
