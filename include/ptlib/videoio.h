@@ -1193,7 +1193,7 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
 #endif
 
 #if P_SDL
-  #if P_MACOSX
+  #if defined(P_MACOSX) || defined(P_IOS)
     #include <SDL_main.h>
   #endif
   PPLUGIN_STATIC_LOAD(SDL, PVideoOutputDevice);

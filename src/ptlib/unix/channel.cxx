@@ -219,10 +219,6 @@ PBoolean PChannel::Write(const void * buf, PINDEX len)
     len -= result;
   }
 
-#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
-  PThread::Yield(); // Starvation prevention
-#endif
-
   // Reset all the errors.
   return ConvertOSError(0, LastWriteError);
 }
@@ -345,7 +341,7 @@ int PChannel::PXClose()
   os_handle = -1;
   IOSTREAM_MUTEX_SIGNAL();
 
-#if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(P_MAC_MPTHREADS) && !defined(VX_TASKS)
+#if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(VX_TASKS)
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(handle);
 

@@ -332,9 +332,6 @@ PMemoryHeap::Wrapper::Wrapper()
 
 #if defined(_WIN32)
   EnterCriticalSection(&instance->mutex);
-#elif defined(P_MAC_MPTHREADS)
-  long err;
-  PAssertOS((err = MPEnterCriticalRegion(instance->mutex, kDurationForever)) == 0);
 #elif defined(P_PTHREADS)
   pthread_mutex_lock(&instance->mutex);
 #elif defined(P_VXWORKS)
@@ -350,9 +347,6 @@ PMemoryHeap::Wrapper::~Wrapper()
 
 #if defined(_WIN32)
   LeaveCriticalSection(&instance->mutex);
-#elif defined(P_MAC_MPTHREADS)
-  long err;
-  PAssertOS((err = MPExitCriticalRegion(instance->mutex)) == 0 || instance->isDestroyed);
 #elif defined(P_PTHREADS)
   pthread_mutex_unlock(&instance->mutex);
 #elif defined(P_VXWORKS)

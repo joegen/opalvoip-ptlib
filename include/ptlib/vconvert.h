@@ -34,9 +34,7 @@
 #define PTLIB_CONVERT_H
 
 #ifdef P_USE_PRAGMA
-#ifndef P_MACOSX
 #pragma interface
-#endif
 #endif
 
 #include <ptbuildopts.h>
