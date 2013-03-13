@@ -8372,7 +8372,7 @@ $as_echo_n "checking for OPENLDAP usability... " >&6; }
 int
 main ()
 {
-ldap_init("",0)
+ldap_create(0)
   ;
   return 0;
 }
@@ -12180,7 +12180,7 @@ $as_echo_n "checking for ODBC usability... " >&6; }
 int
 main ()
 {
-SQLFreeHandle(0, NULL)
+SQLFreeHandle(0, 0)
 
   ;
   return 0;
