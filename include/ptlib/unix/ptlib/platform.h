@@ -44,7 +44,6 @@
 #include <sys/termios.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
-#include <dlfcn.h>
 
 #include <limits>
 
@@ -75,7 +74,6 @@ typedef size_t socklen_t;
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <dlfcn.h>
 
 #define HAS_IFREQ
 
@@ -87,7 +85,6 @@ typedef size_t socklen_t;
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <dlfcn.h>
 #include <netinet/tcp.h>
 
 #define P_STRTOQ strtoll
@@ -106,7 +103,6 @@ typedef size_t socklen_t;
 #endif
 
 #include <paths.h>
-#include <dlfcn.h>
 #include <termios.h>
 #include <sys/fcntl.h>
 #include <sys/filio.h>
@@ -136,7 +132,6 @@ typedef int socklen_t;
 #endif
 
 #include <paths.h>
-#include <dlfcn.h>
 #include <termios.h>
 #include <sys/fcntl.h>
 #include <sys/filio.h>
@@ -162,7 +157,6 @@ typedef int socklen_t;
 #endif
 
 #include <paths.h>
-#include <dlfcn.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
@@ -196,7 +190,6 @@ typedef int socklen_t;
 #include <fcntl.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
-#include <dlfcn.h>
 #include <sys/sockio.h>
 
 #define P_STRTOQ strtoll
@@ -330,12 +323,12 @@ void *dlsym(void *handle, const char *symbol);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-#elif defined (P_MACOSX) || defined(P_MACOS)
+#elif defined (P_MACOSX) || defined(P_IOS)
 
 #include "Availability.h"
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED
-#define P_IPHONEOS 1
+#if defined(P_IOS)
+#define P_IPHONEOS P_IOS // For backward compatibility
 #endif
 
 #if defined(P_PTHREADS)
@@ -345,21 +338,6 @@ void *dlsym(void *handle, const char *symbol);
   #define P_THREAD_SAFE_CLIB
   #include <pthread.h>
 #endif
-#if defined(P_MAC_MPTHREADS)
-#include <CoreServices/CoreServices.h>
-// Blasted Mac <CoreServices.h> comes with 17 years of crufty history
-// crapping up the namespace, thankyouverymuch.  (What I really want is
-// just Multiprocessing.h, but that drags in nearly as much crap and isn't
-// readily available on Mac OS X.)
-// So:  undefine the troublespots as they occur.
-#undef nil // you morons.
-
-// Open Transport and UNIX networking headers don't get along.  Why did
-// Apple have to do this?  And what's worse, they are functionally equivalent
-// #defines, Apple could have easily made the headers compatible.  But no.
-#undef TCP_NODELAY
-#undef TCP_MAXSEG
-#endif // MPThreads
 
 #include <unistd.h>
 #include <paths.h>
@@ -400,7 +378,6 @@ typedef int socklen_t;
 #include <fcntl.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
-#include <dlfcn.h>
 #include <strings.h>
 
 #define P_STRTOQ strtoll
@@ -425,7 +402,6 @@ typedef int socklen_t;
 #include <fcntl.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
-#include <dlfcn.h>
 #include <sys/sockio.h>
 
 #define P_STRTOQ strtoll
@@ -520,7 +496,6 @@ extern "C" {
 #endif
 
 #include <paths.h>
-#include <dlfcn.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>

@@ -39,10 +39,7 @@
     unsigned initialVar;
     unsigned maxCountVar;
 
-#if defined(P_MAC_MPTHREADS)
-  protected:
-    mutable MPSemaphoreID semId;
-#elif defined(P_PTHREADS)
+#if defined(P_PTHREADS)
 
   protected:
 #if defined(P_HAS_SEMAPHORES)

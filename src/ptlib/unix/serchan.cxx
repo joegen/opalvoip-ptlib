@@ -43,7 +43,7 @@
 #define  TCSETATTR(f,t)  tcsetattr(f,TCSANOW,t)
 #define  TCGETATTR(f,t)  tcgetattr(f,t)
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_RTEMS)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_RTEMS)
 #include <sys/ttycom.h>
 #define TCGETA TIOCGETA
 #define TCSETAW TIOCSETAW
@@ -98,7 +98,7 @@ void PSerialChannel::Construct()
   Termio.c_iflag = IGNBRK | IGNPAR;
   Termio.c_cflag = CS8 | CSTOPB | CREAD | CLOCAL;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_IOS)
   Termio.c_ispeed = Termio.c_ospeed = B9600;
 #else
   Termio.c_cflag |= B9600;
@@ -376,7 +376,7 @@ PBoolean PSerialChannel::SetSpeed(DWORD newBaudRate)
   // save new baud rate
   baudRate = newBaudRate;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_IOS)
   // The BSD way
   Termio.c_ispeed = baud;
   Termio.c_ospeed = baud;

@@ -99,28 +99,6 @@
   public:
     int unblockPipe[2];
 
-#elif defined(P_MAC_MPTHREADS)
-  public:
-    void PXSetWaitingSemaphore(PSemaphore * sem);
-    static long PX_ThreadStart(void *);
-    static void PX_ThreadEnd(void *);
-    MPTaskID    PX_GetThreadId() const;
-
-  protected:
-    void PX_NewThread(PBoolean startSuspended);
-
-    PINDEX     PX_origStackSize;
-    int        PX_suspendCount;
-    PSemaphore *suspend_semaphore;
-    long       PX_signature;
-    enum { kMPThreadSig = 'THRD', kMPDeadSig = 'DEAD'};
-
-    MPTaskID   PX_threadId;
-    MPSemaphoreID PX_suspendMutex;
-
-    int unblockPipe[2];
-    friend class PSocket;
-
 #elif defined(VX_TASKS)
   public:
     SEM_ID syncPoint;

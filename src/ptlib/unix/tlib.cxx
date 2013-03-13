@@ -70,7 +70,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #elif defined(P_RTEMS)
@@ -819,24 +819,11 @@ void* POSIX_Init(void*);
 #endif // P_RTEMS
 
 
-//////////////////////////////////////////////////////////////////
-//
-//  Non-PTHREAD based routines
-//
-
 #if defined(P_PTHREADS)
-
 #include "tlibthrd.cxx"
-
-#else
-
-#if defined(P_MAC_MPTHREADS)
-#include "tlibmpthrd.cxx"
 #elif defined(BE_THREADS)
 #include "tlibbe.cxx"
 #elif defined(VX_TASKS)
 #include "tlibvx.cxx"
 #endif
-
-#endif // P_PTHREADS
 
