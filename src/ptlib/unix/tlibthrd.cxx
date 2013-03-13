@@ -43,7 +43,7 @@
 #define SUSPEND_SIG SIGVTALRM
 #endif
 
-#ifdef P_MACOSX
+#if defined(P_MACOSX)
 #include <mach/mach.h>
 #include <mach/thread_policy.h>
 #include <sys/param.h>

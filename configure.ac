@@ -26,6 +26,13 @@ if test -z "$PKG_CONFIG" ; then
 fi
 
 
+AC_PROG_CC
+AC_PROG_CXX
+AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
+
+AC_LANG(C++)
+
+
 dnl ########################################################################
 dnl Check for non-installed "environment variable" mode
 OBJ_ARCH=
@@ -48,15 +55,18 @@ AC_ARG_ENABLE(minsize, AS_HELP_STRING([--enable-minsize],[Minimise the size of t
 dnl these are the default configure settings, minimum or full
 if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
-  default_openldap=no
-  default_openssl=no
-  default_expat=no
-  default_sdl=no
+  DEFAULT_OPENLDAP=no
+  DEFAULT_OPENSSL=no
+  DEFAULT_EXPAT=no
+  DEFAULT_SDL=no
+  DEFAULT_GSTREAMER=no
   default_sasl=no
   default_mlib=no
   default_ipv6=no
   default_pcap=no
-  default_lua=no
+  DEFAULT_LUA=no
+  DEFAULT_V8=no
+  DEFAULT_ODBC=no
   HAS_TTS=
   HAS_ASN=1
   HAS_NAT=1
@@ -97,15 +107,18 @@ if test "${enable_minsize}x" = "yesx" ; then
 else
   default_tracing=yes
   default_resolver=yes
-  default_openldap=yes
-  default_openssl=yes
-  default_expat=yes
-  default_sdl=yes
+  DEFAULT_OPENLDAP=yes
+  DEFAULT_OPENSSL=yes
+  DEFAULT_EXPAT=yes
+  DEFAULT_SDL=yes
+  DEFAULT_GSTREAMER=yes
   default_sasl=yes
   default_mlib=no
   default_ipv6=yes
   default_pcap=yes
-  default_lua=yes
+  DEFAULT_LUA=yes
+  DEFAULT_V8=yes
+  DEFAULT_ODBC=yes
   HAS_TTS=1
   HAS_ASN=1
   HAS_NAT=1
@@ -194,14 +207,8 @@ dnl MSWIN_DEFAULT android,Disabled
 m4_include(make/canonical.m4)
 MY_CANONICAL_TARGET()
 
-AC_PROG_CC
-AC_PROG_CXX
-AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
-
-AC_LANG(C++)
-
-
 #default, most platforms do it this way
+PTLIB_CFLAGS="$CFLAGS"
 LDSOFLAGS="-shared -Wl,-soname,\$(PTLIB_SONAME)"
 
 case "$target_os" in
@@ -237,18 +244,47 @@ case "$target_os" in
       PTLIB_CFLAGS="$PTLIB_CFLAGS -D__inline=inline -DSOLARIS"
       LDSOFLAGS="-Bdynamic -G -h \$(PTLIB_SONAME)"
       need_pragma=yes
+
       dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
-      PTLIB_CHECK_UPAD128( [AC_DEFINE(P_HAS_UPAD128_T)] )
-      PTLIB_CHECK_FDSIZE()
+      PTLIB_COMPILE_IFELSE(
+         [for upad128_t],
+         [],
+         [#include <sys/types.h>],
+         [upad128_t upad; upad._q = 0.0;],
+         [AC_DEFINE(P_HAS_UPAD128_T)]
+      )
+
+      dnl check for select_large_fdset
+      ptlib_fdsize_file=/etc/system
+      ptlib_fdsize=`cat ${ptlib_fdsize_file} | grep rlim_fd_max | cut -c1`
+
+      if test "x${ptlib_fdsize}" = "x#"; then
+         ptlib_fdsize=4098
+      else
+         ptlib_fdsize=`cat ${ptlib_fdsize_file} | grep rlim_fd_max | cut -f2 -d'='`
+         if test "x${ptlib_fdsize}" = "x"; then
+            ptlib_fdsize=4098
+         fi
+      fi
+
+      if test "x${ptlib_fdsize}" != "x4098"; then
+         PTLIB_CFLAGS="$PTLIB_CFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
+      fi
    ;;
 
    Darwin )
       OS_TAG="P_MACOSX" 
       SHAREDLIBEXT="dylib"
       LDSOFLAGS="-dynamiclib"
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -DHAVE_GETTIMEOFDAY  -D__MACOSX_CORE__"
-      ENDLDLIBS="-lresolv -framework CoreAudio -framework CoreFoundation -framework AudioUnit -lpthread -lm -framework CoreMidi -framework Carbon -framework AudioToolbox"
-      ENDLDLIBS="$ENDLDLIBS -lresolv -lpthread -lm"
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__MACOSX_CORE__"
+      ENDLDLIBS="-framework CoreAudio -framework CoreFoundation -framework AudioUnit -framework CoreMidi -framework Carbon -framework AudioToolbox -lresolv -lpthread -lm"
+   ;;
+
+   iPhone* )
+      OS_TAG="P_IOS" 
+      SHAREDLIBEXT="dylib"
+      LDSOFLAGS="-dynamiclib"
+      ENDLDLIBS="$ENDLDLIBS -framework SystemConfiguration -framework CoreFoundation -lresolv -lpthread -lm"
    ;;
 
    beos )
@@ -379,78 +415,68 @@ fi
 
 dnl ########################################################################
 dnl look for compile flags
-AC_LANG_PUSH(C++)
 
-AC_MSG_CHECKING(if compiler accepts -felide-constructors)
-AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
-$CXX $CXXFLAGS -felide-constructors conftest.$ac_ext > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -felide-constructors"
-else
-  AC_MSG_RESULT(no)
-fi
+PTLIB_COMPILE_IFELSE(
+   [compiler -felide-constructors],
+   [-felide-constructors],
+   [],
+   [],
+   [PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -felide-constructors"]
+)
 
-AC_MSG_CHECKING(if linker accepts -Wreorder)
-AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
-$CXX $CXXFLAGS -Wreorder conftest.$ac_ext > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wreorder"
-else
-  AC_MSG_RESULT(no)
-fi
+PTLIB_COMPILE_IFELSE(
+   [compiler -Wreorder],
+   [-Wreorder],
+   [],
+   [],
+   [PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wreorder"]
+)
 
 
 AC_ARG_ENABLE(deprecated, AS_HELP_STRING([--disable-deprecated],[Stop compiler warning about deprecated functions]))
 
 if test "${enable_deprecated}" = "no" ; then
-  AC_MSG_CHECKING(if linker accepts -Wno-deprecated-declarations)
-  AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
-  $CXX $CXXFLAGS -Wno-deprecated-declarations conftest.$ac_ext > /dev/null 2>&1
-  if test $? = 0 ; then
-    AC_MSG_RESULT(yes)
-    PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wno-deprecated-declarations"
-  else
-    AC_MSG_RESULT(no)
-  fi
+   PTLIB_COMPILE_IFELSE(
+      [compiler -Wno-deprecated-declarations],
+      [-Wno-deprecated-declarations],
+      [],
+      [],
+      [PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wno-deprecated-declarations"]
+   )
 fi
 
 
 dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
-AC_MSG_CHECKING(if debug build accepts -g3 -ggdb -O0)
-AC_LANG_CONFTEST([AC_LANG_PROGRAM([[]],[[]])])
-$CXX  $CXXFLAGS  -g3 -ggdb -O0 conftest.$ac_ext > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  DEBUG_FLAG="-g3 -ggdb -O0"
-else
-  AC_MSG_RESULT(no)
-  DEBUG_FLAG="-g"
-fi
+PTLIB_COMPILE_IFELSE(
+   [debug build -g3 -ggdb -O0],
+   [-g3 -ggdb -O0],
+   [],
+   [],
+   [DEBUG_FLAG="-g3 -ggdb -O0"],
+   [DEBUG_FLAG="-g"]
+)
 
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
-AC_COMPILE_IFELSE(
-   [AC_LANG_SOURCE(
-      [],
-      [
-         class A
-         {
-           public:
-             virtual void fred() { }
-         };
-         class B : public A
-         {
-           public:
-             void fred() { }
-         };
-         B t;
-         A * p = dynamic_cast<A *>(&t);
-      ]
-   )],
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+   [
+      class A
+      {
+        public:
+          virtual void fred() { }
+      };
+      class B : public A
+      {
+        public:
+          virtual void fred() { }
+      };
+   ],
+   [
+      B t;
+      A * p = dynamic_cast<A *>(&t);
+   ])],
    [
       AC_MSG_RESULT(yes)
    ],
@@ -460,7 +486,6 @@ AC_COMPILE_IFELSE(
    ]
 )
 
-AC_LANG_POP(C++)
 
 dnl ########################################################################
 dnl check for the size of int
@@ -473,10 +498,6 @@ AC_C_LONG_DOUBLE
 if test $ac_cv_c_long_double != yes ; then
   AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
 fi
-
-dnl if test ${target_os} = Darwin ; then
-dnl   PTLIB_CFLAGS="$PTLIB_CFLAGS -Wno-long-double"
-dnl fi
 
 dnl ########################################################################
 dnl we need flex, so we better make sure it's there
@@ -504,415 +525,381 @@ AC_CHECK_TOOL(SVN, svn)
 
 dnl ########################################################################
 dnl check for number of parms to readdir
-AC_MSG_CHECKING(if readdir_r has 2 parms)
-AC_TRY_COMPILE([#define _POSIX_PTHREAD_SEMANTICS
-                #include <dirent.h>],
-               [DIR *s; struct dirent * e; readdir_r(s, e);], P_HAS_POSIX_READDIR_R=2, P_HAS_POSIX_READDIR_R=0)
-if test ${P_HAS_POSIX_READDIR_R} = 2 ; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-  AC_MSG_CHECKING(if readdir_r has 3 parms)
-  AC_TRY_COMPILE([#include <dirent.h>],
-                 [DIR *s; struct dirent * e; struct dirent * p; readdir_r(s, e, &p);], P_HAS_POSIX_READDIR_R=3, P_HAS_POSIX_READDIR_R=0)
-  if test ${P_HAS_POSIX_READDIR_R} = 3 ; then
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+PTLIB_COMPILE_IFELSE(
+   [if readdir_r has 2 parms],
+   [],
+   [
+      #define _POSIX_PTHREAD_SEMANTICS
+      #include <dirent.h>
+   ],
+   [
+      DIR *s;
+      struct dirent * e;
+      readdir_r(s, e);
+   ],
+   [P_HAS_POSIX_READDIR_R=2],
+   [
+      PTLIB_COMPILE_IFELSE(
+         [if readdir_r has 3 parms],
+         [],
+         [#include <dirent.h>],
+         [
+            DIR *s;
+            struct dirent * e;
+            struct dirent * p;
+            readdir_r(s, e, &p);
+         ],
+         [P_HAS_POSIX_READDIR_R=3],
+         [P_HAS_POSIX_READDIR_R=0]
+      )
+   ]
+)
 AC_DEFINE_UNQUOTED(P_HAS_POSIX_READDIR_R, ${P_HAS_POSIX_READDIR_R})
 
 
 
 dnl ########################################################################
-dnl check for tracing
-dnl
-
-AC_ARG_ENABLE(tracing, AS_HELP_STRING([--disable-tracing],[Remove PTRACE and all trace logging]))
-AC_ARG_ENABLE(trace-instance, AS_HELP_STRING([--disable-trace-instance],[Disable PTraceObjectInstance in trace logging]))
-
-if test "x${enable_tracing}" = "xno" ; then
-  AC_MSG_NOTICE(PTRACE and all trace logging removed)
-  PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
-else
-  if test "x${enable_trace_instance}" = "xno" ; then
-    AC_MSG_NOTICE(PTRACE without object instance trace logging included)
-    PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=1"
-  else
-    AC_MSG_NOTICE(PTRACE and all trace logging included)
-    PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=2"
-  fi
-fi
-
-
-dnl ########################################################################
-dnl check for Windows-like integer BOOL
-dnl
-dnl MSWIN_DISPLAY ansi-bool,ANSI C++ bool
-dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
-
-AC_ARG_ENABLE(ansi-bool, AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
-
-if test "x${enable_ansi_bool}" = "xno" ; then
-  AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
-else
-  AC_MSG_NOTICE(Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true))
-  AC_DEFINE(P_USE_STANDARD_CXX_BOOL)
-fi
-
-
-dnl ########################################################################
 dnl check for recvmsg
 
-P_HAS_RECVMSG=
-AC_MSG_CHECKING(for recvmsg)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <sys/socket.h>
-                #include <netinet/in.h>],
-               [ struct msghdr *msg; recvmsg(0, msg, 0);], P_HAS_RECVMSG=1)
-if test "x${P_HAS_RECVMSG}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_HAS_RECVMSG, 1)
-else
-  AC_MSG_RESULT(no)
-fi
+PTLIB_COMPILE_IFELSE(
+   [for recvmsg],
+   [],
+   [
+      #include <sys/types.h>
+      #include <sys/socket.h>
+      #include <netinet/in.h>
+   ],
+   [
+      struct msghdr *msg;
+      recvmsg(0, msg, 0);
+   ],
+   [AC_DEFINE(P_HAS_RECVMSG, 1)]
+)
+
+
+dnl ########################################################################
+dnl check for rt_msghdr
+
+PTLIB_COMPILE_IFELSE(
+   [for rt_msghdr],
+   [],
+   [
+      #include <net/route.h>
+   ],
+   [
+      struct rt_msghdr msg;
+      msg.rtm_msglen = 0;
+   ],
+   [AC_DEFINE(P_HAS_RT_MSGHDR, 1)]
+)
+
 
 dnl ########################################################################
 dnl check for recvmsg option MSG_ERRQUEUE
 
-P_HAS_RECVMSG_MSG_ERRQUEUE=
-AC_MSG_CHECKING(for recvmsg flag MSG_ERRQUEUE)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <sys/socket.h>
-                #include <netinet/in.h>],
-               [ int fd = -1; msghdr readData; ::recvmsg(fd, &readData, MSG_ERRQUEUE); ], P_HAS_RECVMSG_MSG_ERRQUEUE=1)
-if test "x${P_HAS_RECVMSG_MSG_ERRQUEUE}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_HAS_RECVMSG_MSG_ERRQUEUE, 1)
-else
-  AC_MSG_RESULT(no)
-fi
+PTLIB_COMPILE_IFELSE(
+   [for recvmsg flag MSG_ERRQUEUE],
+   [],
+   [
+      #include <sys/types.h>
+      #include <sys/socket.h>
+      #include <netinet/in.h>
+   ],
+   [
+      int fd = -1;
+      msghdr readData;
+      recvmsg(fd, &readData, MSG_ERRQUEUE);
+   ],
+   [AC_DEFINE(P_HAS_RECVMSG_MSG_ERRQUEUE, 1)]
+)
+
 
 dnl ########################################################################
 dnl check for recvmsg option IP_RECVERR
 
-P_HAS_RECVMSG_IP_RECVERR=
-AC_MSG_CHECKING(for sockopt option IP_RECVERR)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <sys/socket.h>
-                #include <netinet/in.h>],
-               [ int fd = -1; int v = 1; setsockopt(fd, IPPROTO_IP, IP_RECVERR, &v, sizeof(v));], P_HAS_RECVMSG_IP_RECVERR=1)
-if test "x${P_HAS_RECVMSG_IP_RECVERR}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_HAS_RECVMSG_IP_RECVERR, 1)
-else
-  AC_MSG_RESULT(no)
-fi
+PTLIB_COMPILE_IFELSE(
+   [for sockopt option IP_RECVERR],
+   [],
+   [
+      #include <sys/types.h>
+      #include <sys/socket.h>
+      #include <netinet/in.h>
+   ],
+   [
+      int fd = -1;
+      int v = 1;
+      setsockopt(fd, IPPROTO_IP, IP_RECVERR, &v, sizeof(v));
+   ],
+   [AC_DEFINE(P_HAS_RECVMSG_IP_RECVERR, 1)]
+)
 
 
 dnl ########################################################################
 dnl check for arguments to getpwuid_r
 
-P_GETPWUID_R4=
-P_GETPWUID_R5=
-AC_MSG_CHECKING(for getpwuid_r with 4 arguments)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <pwd.h>],
-               [uid_t uid; struct passwd * pwd; char * buffer; size_t bufsize; 
-                getpwuid_r(uid, pwd, buffer, bufsize); ], P_GETPWUID_R4=1)
-if test "x${P_GETPWUID_R4}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_GETPWUID_R4, 1)
-else
-  AC_MSG_RESULT(no)
-  AC_MSG_CHECKING(for getpwuid_r with 5 arguments)
-  AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <pwd.h>],
-                 [uid_t uid; struct passwd * pwd; char * buffer; size_t bufsize; struct passwd *result;
-                  getpwuid_r(uid, pwd, buffer, bufsize, &result); ], P_GETPWUID_R5=1)
-  if test "x${P_GETPWUID_R5}" = "x1" ; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(P_GETPWUID_R5, 1)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-AC_SUBST(P_GETPWUID_R4)
-AC_SUBST(P_GETPWUID_R5)
+PTLIB_COMPILE_IFELSE(
+   [for getpwuid_r with 4 arguments],
+   [],
+   [
+      #include <sys/types.h>
+      #include <pwd.h>
+   ],
+   [
+      uid_t uid;
+      struct passwd * pwd;
+      char * buffer;
+      size_t bufsize; 
+      getpwuid_r(uid, pwd, buffer, bufsize);
+   ],
+   [AC_DEFINE(P_GETPWUID_R4, 1)],
+   [PTLIB_COMPILE_IFELSE(
+      [for getpwuid_r with 5 arguments],
+      [],
+      [
+         #include <sys/types.h>
+         #include <pwd.h>
+      ],
+      [
+         uid_t uid;
+         struct passwd * pwd;
+         char * buffer;
+         size_t bufsize;
+         struct passwd *result;
+         getpwuid_r(uid, pwd, buffer, bufsize, &result);
+      ],
+      [AC_DEFINE(P_GETPWUID_R5, 1)]
+   )]
+)
 
 
 dnl ########################################################################
 dnl check for arguments to getgrgid_r
 
-P_GETGRGID_R4=
-P_GETGRGID_R5=
-AC_MSG_CHECKING(for getgrgid_r with 4 arguments)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <grp.h>],
-               [gid_t gid; struct group * grp; char * buffer; size_t bufsize; 
-                getgrgid_r(gid, grp, buffer, bufsize); ], P_GETGRGID_R4=1)
-if test "x${P_GETGRGID_R4}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_GETGRGID_R4, 1)
-else
-  AC_MSG_RESULT(no)
-  AC_MSG_CHECKING(for getgrgid_r with 5 arguments)
-  AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <grp.h>],
-                 [gid_t gid; struct group * grp; char * buffer; size_t bufsize; struct group *result;
-                  getgrgid_r(gid, grp, buffer, bufsize, &result); ], P_GETGRGID_R5=1)
-  if test "x${P_GETGRGID_R5}" = "x1" ; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(P_GETGRGID_R5, 1)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-AC_SUBST(P_GETGRGID_R4)
-AC_SUBST(P_GETGRGID_R5)
+PTLIB_COMPILE_IFELSE(
+   [for getgrgid_r with 4 arguments],
+   [],
+   [
+      #include <sys/types.h>
+      #include <grp.h>
+   ],
+   [
+      gid_t gid;
+      struct group * grp;
+      char * buffer;
+      size_t bufsize; 
+      getgrgid_r(gid, grp, buffer, bufsize);
+   ],
+   [AC_DEFINE(P_GETGRGID_R4, 1)],
+   [PTLIB_COMPILE_IFELSE(
+      [for getgrgid_r with 5 arguments],
+      [],
+      [
+         #include <sys/types.h>
+         #include <grp.h>
+      ],
+      [
+         gid_t gid;
+         struct group * grp;
+         char * buffer;
+         size_t bufsize;
+         struct group *result;
+         getgrgid_r(gid, grp, buffer, bufsize, &result);
+      ],
+      [AC_DEFINE(P_GETGRGID_R5, 1)]
+   )]
+)
 
 
 dnl ########################################################################
 dnl check for arguments to getpwnam_r
 
-P_GETPWNAM_R4=
-P_GETPWNAM_R5=
-AC_MSG_CHECKING(for getpwnam_r with 4 arguments)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <pwd.h>],
-               [const char * name; struct passwd * pwd; char * buffer; size_t bufsize; 
-                getpwnam_r(name, pwd, buffer, bufsize); ], P_GETPWNAM_R4=1)
-if test "x${P_GETPWNAM_R4}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_GETPWNAM_R4, 1)
-else
-  AC_MSG_RESULT(no)
-  AC_MSG_CHECKING(for getpwnam_r with 5 arguments)
-  AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <pwd.h>],
-                 [const char * name; struct passwd * pwd; char * buffer; size_t bufsize; struct passwd *result;
-                  getpwnam_r(name, pwd, buffer, bufsize, &result); ], P_GETPWNAM_R5=1)
-  if test "x${P_GETPWNAM_R5}" = "x1" ; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(P_GETPWNAM_R5, 1)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-AC_SUBST(P_GETPWNAM_R4)
-AC_SUBST(P_GETPWNAM_R5)
+PTLIB_COMPILE_IFELSE(
+   [for getpwnam_r with 4 arguments],
+   [],
+   [
+      #include <sys/types.h>
+      #include <pwd.h>
+   ],
+   [
+      const char * name;
+      struct passwd * pwd;
+      char * buffer;
+      size_t bufsize; 
+      getpwnam_r(name, pwd, buffer, bufsize);
+   ],
+   [AC_DEFINE(P_GETPWNAM_R4, 1)],
+   [PTLIB_COMPILE_IFELSE(
+      [for getpwnam_r with 5 arguments],
+      [],
+      [
+         #include <sys/types.h>
+         #include <pwd.h>
+      ],
+      [
+         const char * name;
+         struct passwd * pwd;
+         char * buffer;
+         size_t bufsize;
+         struct passwd *result;
+         getpwnam_r(name, pwd, buffer, bufsize, &result);
+      ],
+      [AC_DEFINE(P_GETPWNAM_R5, 1)]
+   )]
+)
 
 
 dnl ########################################################################
 dnl check for arguments to getgrnam_r
 
-P_GETGRNAM_R4=
-P_GETGRNAM_R5=
-AC_MSG_CHECKING(for getgrnam_r with 4 arguments)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <grp.h>],
-               [const char * name; struct group * grp; char * buffer; size_t bufsize; 
-                getgrnam_r(name, pwd, buffer, bufsize); ], P_GETGRNAM_R4=1)
-if test "x${P_GETGRNAM_R4}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_GETGRNAM_R4, 1)
-else
-  AC_MSG_RESULT(no)
-  AC_MSG_CHECKING(for getgrnam_r with 5 arguments)
-  AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <grp.h>],
-                 [const char * name; struct group * grp; char * buffer; size_t bufsize; struct group *result;
-                  getgrnam_r(name, grp, buffer, bufsize, &result); ], P_GETGRNAM_R5=1)
-  if test "x${P_GETGRNAM_R5}" = "x1" ; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(P_GETGRNAM_R5, 1)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-AC_SUBST(P_GETGRNAM_R4)
-AC_SUBST(P_GETGRNAM_R5)
+PTLIB_COMPILE_IFELSE(
+   [for getgrnam_r with 4 arguments],
+   [],
+   [
+      #include <sys/types.h>
+      #include <grp.h>
+   ],
+   [
+      const char * name;
+      struct group * grp;
+      char * buffer;
+      size_t bufsize; 
+      getgrnam_r(name, pwd, buffer, bufsize);
+   ],
+   [AC_DEFINE(P_GETGRNAM_R4, 1)],
+   [PTLIB_COMPILE_IFELSE(
+      [for getgrnam_r with 5 arguments],
+      [],
+      [
+         #include <sys/types.h>
+         #include <grp.h>
+      ],
+      [
+         const char * name;
+         struct group * grp;
+         char * buffer;
+         size_t bufsize;
+         struct group *result;
+         getgrnam_r(name, grp, buffer, bufsize, &result);
+      ],
+      [AC_DEFINE(P_GETGRNAM_R5, 1)]
+  )]
+)
 
 
 dnl ########################################################################
-dnl check for gethostbyaddr_r
-
-P_GETHOSTBYADDR_R=
-AC_MSG_CHECKING(for gethostbyaddr_r)
-AC_TRY_COMPILE([#include <netdb.h>],
-               [const void *addr; socklen_t len; int type;
-               struct hostent *ret; char *buf; size_t buflen;
-               struct hostent **result; int *h_errnop;
-               gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, h_errnop); ], P_GETHOSTBYNAME_R=1)
-if test "x${P_GETHOSTBYNAME_R}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_GETHOSTBYNAME_R, 1)
-else
-  AC_MSG_RESULT(no)
-fi
-AC_SUBST(P_GETHOSTBYNAME_R)
-
-
-dnl ########################################################################
-dnl check for IPV6_ADD_MEMBERSHIP
-
-P_HAS_IPV6_ADD_MEMBERSHIP=
-AC_MSG_CHECKING(for IPV6_ADD_MEMBERSHIP)
-AC_TRY_COMPILE([#include <netinet/in.h>],
-               [int x = IPV6_ADD_MEMBERSHIP;],
-               P_HAS_IPV6_ADD_MEMBERSHIP=1)
-if test "x${P_HAS_IPV6_ADD_MEMBERSHIP}" = "x1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_HAS_IPV6_ADD_MEMBERSHIP, 1)
-else
-  AC_MSG_RESULT(no)
-fi
-
-dnl ########################################################################
-dnl check for NetLink support
-
-P_HAS_NETLINK=0
-AC_MSG_CHECKING(for NetLink support)
-AC_TRY_COMPILE([#include <asm/types.h>
-                #include <sys/socket.h>
-                #include <linux/netlink.h>
-                #include <linux/rtnetlink.h>
-                #include <linux/genetlink.h>
-                #include <memory.h>],
-               [struct sockaddr_nl sa; memset(&sa, 0, sizeof(sa));
-                sa.nl_family = AF_NETLINK; sa.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
-                int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);], P_HAS_NETLINK=1)
-if test "${P_HAS_NETLINK}" = "1" ; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(P_HAS_NETLINK, 1)
-else
-  AC_MSG_RESULT(no)
-fi
+dnl check if setpgrp takes non or two arguments
+PTLIB_COMPILE_IFELSE(
+   [if setpgrp takes no parameters],
+   [],
+   [#include <unistd.h>],
+   [pid_t p = setpgrp();],
+   [AC_DEFINE(P_SETPGRP_NOPARM, 1)]
+)
+   
 
 dnl ########################################################################
 dnl see if using GNU glibc++, because then we have atomic integer operations
 
 AC_ARG_ENABLE(atomicity, AS_HELP_STRING([--disable-atomicity],[Do not use atomicity.h]))
 
-P_HAS_ATOMIC_INT=0
-P_NEEDS_GNU_CXX_NAMESPACE=0
 AC_MSG_CHECKING(if atomic integer available)
 if test "${enable_atomicity}" = "no" ; then
-  AC_MSG_RESULT(disabled)
+   AC_MSG_RESULT(disabled)
 else
-  AC_TRY_COMPILE([#include <bits/atomicity.h>],
-                 [_Atomic_word val;], P_HAS_ATOMIC_INT=1,
-                 AC_TRY_COMPILE([#include <ext/atomicity.h>],
-                                [_Atomic_word val;], P_HAS_ATOMIC_INT=2)
-  )
-  if test ${P_HAS_ATOMIC_INT} != 0 ; then
-    AC_MSG_RESULT(yes)
-    AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
-    if test ${P_HAS_ATOMIC_INT} = 1 ; then
-      AC_TRY_COMPILE([#include <bits/atomicity.h>],
-                     [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
-                     P_NEEDS_GNU_CXX_NAMESPACE=1)
-    else
-      P_HAS_ATOMIC_INT=1
-      AC_TRY_COMPILE([#include <ext/atomicity.h>],
-                     [_Atomic_word val; __gnu_cxx::__exchange_and_add(&val, 1)],
-                     P_NEEDS_GNU_CXX_NAMESPACE=1)
-    fi
-    if test ${P_NEEDS_GNU_CXX_NAMESPACE} = 1 ; then
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT(no)
-    fi
-  else
-    AC_MSG_RESULT(no)
-  fi
+   AC_TRY_COMPILE(
+      [#include <bits/atomicity.h>],
+      [_Atomic_word val;],
+      [
+         AC_MSG_RESULT(yes (bits/atomicity.h))
+         P_HAS_ATOMIC_INT=1
+      ],
+      [AC_TRY_COMPILE(
+         [#include <ext/atomicity.h>],
+         [_Atomic_word val;],
+         [
+            AC_MSG_RESULT(yes (ext/atomicity.h))
+            P_HAS_ATOMIC_INT=2
+         ],
+         [AC_MSG_RESULT(no)]
+      )]
+   )
+   if test ${P_HAS_ATOMIC_INT} != 0 ; then
+      AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
+      if test ${P_HAS_ATOMIC_INT} = 1 ; then
+         AC_TRY_COMPILE(
+            [#include <bits/atomicity.h>],
+            [
+               _Atomic_word val;
+               __gnu_cxx::__exchange_and_add(&val, 1);
+            ],
+            P_NEEDS_GNU_CXX_NAMESPACE=1
+         )
+      else
+         AC_TRY_COMPILE(
+            [#include <ext/atomicity.h>],
+            [
+               _Atomic_word val;
+               __gnu_cxx::__exchange_and_add(&val, 1)
+            ],
+            P_NEEDS_GNU_CXX_NAMESPACE=1
+         )
+      fi
+      if test ${P_NEEDS_GNU_CXX_NAMESPACE} = 1 ; then
+         AC_MSG_RESULT(yes)
+      else
+         AC_MSG_RESULT(no)
+      fi
+   fi
 fi
 
 AC_DEFINE_UNQUOTED(P_HAS_ATOMIC_INT, ${P_HAS_ATOMIC_INT})
 AC_DEFINE_UNQUOTED(P_NEEDS_GNU_CXX_NAMESPACE, ${P_NEEDS_GNU_CXX_NAMESPACE})
+
 
 dnl ########################################################################
 dnl Memory allocator optimisations
 
 AC_MSG_CHECKING(C++ memory allocator)
 
-AC_ARG_WITH(allocator, AS_HELP_STRING([--with-allocator=std,mt,bitmap],[Set the allocator type]), [], [withval="std"])
+AC_ARG_WITH(
+   [allocator],
+   AS_HELP_STRING([--with-allocator=std,mt,bitmap],[Set the allocator type]),
+   [],
+   [withval="std"]
+)
+
 if test "$withval" = "std"; then
-  AC_MSG_RESULT(std)
+   AC_MSG_RESULT(std)
 elif test "$withval" = "mt"; then
    AC_TRY_COMPILE(
-    [#include <ext/mt_allocator.h>],
-    [typedef __gnu_cxx::__mt_alloc<char> TestAllocator;],
-    [
-      AC_DEFINE(P_GNU_ALLOCATOR, 1)
-      AC_MSG_RESULT([mt])
-    ],
-    [
-      AC_MSG_RESULT([std (mt unavailable)])
-    ]
+      [#include <ext/mt_allocator.h>],
+      [typedef __gnu_cxx::__mt_alloc<char> TestAllocator;],
+      [
+         AC_DEFINE(P_GNU_ALLOCATOR, 1)
+         AC_MSG_RESULT([mt])
+      ],
+      [AC_MSG_RESULT([std (mt unavailable)])]
   )
 elif test "$withval" = "bitmap"; then
    AC_TRY_COMPILE(
-    [
-      #include <ext/mt_allocator.h>
-      #include <ext/bitmap_allocator.h>
-    ],
-    [
-      typedef __gnu_cxx::__mt_alloc<char> VariableAllocator;
-      typedef __gnu_cxx::bitmap_allocator<char> FixedAllocator;
-    ],
-    [
-      AC_DEFINE(P_GNU_ALLOCATOR, 2)
-      AC_MSG_RESULT(bitmap)
-    ],
-    [
-      AC_ERROR([bitmap_allocator not available])
-    ]
+      [
+         #include <ext/mt_allocator.h>
+         #include <ext/bitmap_allocator.h>
+      ],
+      [
+         typedef __gnu_cxx::__mt_alloc<char> VariableAllocator;
+         typedef __gnu_cxx::bitmap_allocator<char> FixedAllocator;
+      ],
+      [
+         AC_DEFINE(P_GNU_ALLOCATOR, 2)
+         AC_MSG_RESULT(bitmap)
+      ],
+      [AC_ERROR([bitmap_allocator not available])]
   )
 else
   AC_ERROR([Unknown allocator type $withval])
 fi
 
-
-dnl ########################################################################
-dnl check for Unix semaphores
-
-# mingw implements itself the semaphores in src/ptlib/msos/win32.cxx
-if test ${target_os} != mingw ; then
-
-dnl posix unnamed semaphore support in darwin/macosx is broken
-if test ${target_os} != Darwin ; then
-  AC_TRY_COMPILE([#include <semaphore.h>],
-                 [sem_t *s; sem_init(s, 0, 0);], P_HAS_SEMAPHORES=1)
-  AC_MSG_CHECKING(if Unix semaphores are available)
-  if test "${P_HAS_SEMAPHORES}x" != "x" ; then
-    AC_DEFINE(P_HAS_SEMAPHORES)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-
-if test "${P_HAS_SEMAPHORES}x" = "x" ; then
-
-  AC_TRY_COMPILE([#include <semaphore.h>],
-                 [sem_t *s = sem_open("test", O_CREAT)],
-                 P_HAS_NAMED_SEMAPHORES=1 )
-  AC_MSG_CHECKING(if named semaphores are available)
-  if test "${P_HAS_NAMED_SEMAPHORES}x" != "x"; then
-    AC_DEFINE(P_HAS_NAMED_SEMAPHORES)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-    AC_MSG_WARN(This host does not support semaphores which are essential)
-    AC_MSG_WARN(to implement 'critical sections'. This feature was added)
-    AC_MSG_WARN(in PWLib 1.7.0 and improves the stability of multithreaded)
-    AC_MSG_WARN(programs. This feature has been disabled for this host)
-  fi
-fi
-
-fi  # mingw
 
 dnl ########################################################################
 dnl check for pthreads library
@@ -956,72 +943,239 @@ fi
 
 
 dnl ########################################################################
+dnl check for Unix semaphores
+
+PTLIB_COMPILE_IFELSE(
+   [if has Unix semaphores],
+   [],
+   [#include <semaphore.h>],
+   [
+      sem_t *s;
+      sem_init(s, 0, 0);
+   ],
+   [AC_DEFINE(P_HAS_SEMAPHORES)],
+   [PTLIB_COMPILE_IFELSE(
+      [if named semaphores are available],
+      [],
+      [#include <semaphore.h>],
+      [sem_t *s = sem_open("test", O_CREAT)],
+      [AC_DEFINE(P_HAS_NAMED_SEMAPHORES)]
+   )]
+)
+   
+
+PTLIB_COMPILE_IFELSE(
+   [if has sem_timedwait],
+   [],
+   [#include <semaphore.h>],
+   [
+      sem_t *s;
+      const struct timespec * t;
+      sem_timedwait(s, t);
+   ],
+   [AC_DEFINE(P_HAS_SEMAPHORES_XPG6, 1, "Supports XPG6 Semaphores")]
+)
+
+
+dnl ########################################################################
 dnl check for XPG6 compliant pthreads (timed spinlocks)
 
-if test ${HAS_PTHREADS} = yes ; then
-  AC_MSG_CHECKING(if pthread_mutex_timedlock is available)
-  AC_TRY_COMPILE([#include <pthread.h>],
-                  [pthread_mutex_timedlock(NULL, NULL);], HAS_PTHREADS_XPG6=yes, HAS_PTHREADS_XPG6=no)
-  if test ${HAS_PTHREADS_XPG6} = yes ; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE(P_PTHREADS_XPG6, 1, "XPG6 compliant pthreads found")
-  else
-    AC_MSG_RESULT(no)
-  fi
+PTLIB_COMPILE_IFELSE(
+   [if has pthread_mutex_timedlock],
+   [],
+   [#include <pthread.h>],
+   [pthread_mutex_timedlock(NULL, NULL)],
+   [AC_DEFINE(P_PTHREADS_XPG6, 1, "XPG6 compliant pthreads found")]
+)
 
-  AC_CHECK_LIB(pthread, sem_timedwait, HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
-  if test ${HAS_SEMAPHORES_XPG6} = yes ; then
-    AC_MSG_CHECKING(if sem_timedwait is compilable)
-    AC_TRY_COMPILE([#include <semaphore.h>],
-                    [sem_t *s; const struct timespec * t; sem_timedwait(s, t);], HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
-    if test ${HAS_SEMAPHORES_XPG6} = yes ; then
-      AC_DEFINE(P_HAS_SEMAPHORES_XPG6, 1, "Supports XPG6 Semaphores")
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT(no)
-    fi
-  fi
-fi
 
 dnl ########################################################################
 dnl check for recursive mutexes
-P_HAS_RECURSIVE_MUTEX=0
-AC_MSG_CHECKING(if recursive mutexes are available)
-AC_TRY_COMPILE([#include <pthread.h>],
-               [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);], P_HAS_RECURSIVE_MUTEX=1)
-if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
-  AC_MSG_RESULT(PTHREAD_MUTEX_RECURSIVE_NP)
-else
-  AC_TRY_COMPILE([#include <pthread.h>],
-	   [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);], P_HAS_RECURSIVE_MUTEX=2)
-  if test ${P_HAS_RECURSIVE_MUTEX} = 2 ; then
-    AC_MSG_RESULT(PTHREAD_MUTEX_RECURSIVE)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
-AC_DEFINE_UNQUOTED(P_HAS_RECURSIVE_MUTEX, ${P_HAS_RECURSIVE_MUTEX})
+PTLIB_COMPILE_IFELSE(
+   [if has NP recursive mutexes],
+   [],
+   [#include <pthread.h>],
+   [
+      pthread_mutexattr_t attr;
+      pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+   ],
+   [AC_DEFINE(P_HAS_RECURSIVE_MUTEX, 1)],
+   [PTLIB_COMPILE_IFELSE(
+      [if has recursive mutexes],
+      [],
+      [#include <pthread.h>],
+      [
+         pthread_mutexattr_t attr;
+         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+      ],
+      [AC_DEFINE(P_HAS_RECURSIVE_MUTEX, 2)]
+   )]
+)
 
 
 dnl ########################################################################
-dnl check if setpgrp takes non or two arguments
-P_SETPGRP_SYSTEMV=0
-P_SETPGRP_NOPARM=0
-AC_MSG_CHECKING(if setpgrp takes no parameters)
-AC_TRY_COMPILE([#include <unistd.h>],
-               [pid_t p = setpgrp();], P_SETPGRP_NOPARM=1)
-if test ${P_SETPGRP_NOPARM} = 1 ; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
+dnl check for gethostbyaddr_r
+
+PTLIB_COMPILE_IFELSE(
+   [for gethostbyaddr_r],
+   [],
+   [#include <netdb.h>],
+   [
+      const void *addr;
+      socklen_t len;
+      int type;
+      struct hostent *ret;
+      char *buf;
+      size_t buflen;
+      struct hostent **result;
+      int *h_errnop;
+      gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, h_errnop);
+   ],
+   [AC_DEFINE(P_GETHOSTBYNAME_R, 1)]
+)
+
+
+dnl ########################################################################
+dnl check for NetLink support
+
+PTLIB_COMPILE_IFELSE(
+   [for NetLink support],
+   [],
+   [
+      #include <asm/types.h>
+      #include <sys/socket.h>
+      #include <linux/netlink.h>
+      #include <linux/rtnetlink.h>
+      #include <linux/genetlink.h>
+   ],
+   [
+      struct sockaddr_nl sa;
+      sa.nl_family = AF_NETLINK;
+      sa.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
+      int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+   ],
+   [AC_DEFINE(P_HAS_NETLINK, 1)]
+)
+
+
+dnl ########################################################################
+dnl look for IPV6 functions
+
+dnl MSWIN_DISPLAY    ipv6,IPv6 Support
+dnl MSWIN_CHECK_FILE ipv6,include\ws2tcpip.h,P_HAS_IPV6=1
+dnl MSWIN_CHECK_FILE ipv6,include\um\ws2tcpip.h,P_HAS_IPV6=1
+dnl MSWIN_CHECK_DIR  ipv6,%ProgramFiles%\Windows Kits\8.0
+dnl MSWIN_CHECK_DIR  ipv6,%ProgramW6432%\Windows Kits\8.0
+
+AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[disable IPV6 support]))
+
+if test "${enable_ipv6}z" = "z" ; then
+  enable_ipv6=$default_ipv6
 fi
-AC_DEFINE_UNQUOTED(P_SETPGRP_NOPARM, ${P_SETPGRP_NOPARM})
+
+HAS_IPV6=
+
+if test "$enable_ipv6" = "no" ; then
+   AC_MSG_NOTICE(IPV6 disabled)
+else
+   PTLIB_COMPILE_IFELSE(
+      [for IPv6 support],
+      [],
+      [
+         #include <sys/types.h>
+         #include <sys/socket.h>
+         #include <netinet/in.h>
+         #include <netdb.h>
+      ],
+      [
+         struct sockaddr_in6 s;
+         s.sin6_scope_id = 0;
+         getnameinfo(0, 0, 0, 0, 0, 0, 0);
+      ],
+      [
+         HAS_IPV6=1
+         AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
+      ],
+      HAS_IPV6=no
+   )
+fi
+
+PTLIB_SUBST(IPV6)
+
+
+PTLIB_COMPILE_IFELSE(
+   [for inet_ntop],
+   [],
+   [
+      #include <sys/types.h>
+      #include <netinet/in.h>
+      #include <arpa/inet.h>
+   ],
+   [
+      int af;
+      void * src;
+      char * dst;
+      socklen_t len;
+      inet_ntop(af, src, dst, len);
+   ],
+   [AC_DEFINE(P_HAS_INET_NTOP, 1)]
+)
+
+
+PTLIB_COMPILE_IFELSE(
+   [for IPV6_ADD_MEMBERSHIP],
+   [],
+   [#include <netinet/in.h>],
+   [int x = IPV6_ADD_MEMBERSHIP;],
+   [AC_DEFINE(P_HAS_IPV6_ADD_MEMBERSHIP, 1)]
+)
+
+
+dnl ########################################################################
+dnl look for pcap functions
+
+dnl MSWIN_DISPLAY    pcap,WinPCAP Support
+dnl MSWIN_CHECK_FILE pcap,include\pcap\pcap.h,P_PCAP_WIN32=1
+dnl MSWIN_CHECK_FILE pcap,lib\x64\wpcap.lib,P_PCAP_WIN64=1
+dnl MSWIN_DIR_SYMBOL pcap,PCAP_DIR
+dnl MSWIN_CHECK_DIR  pcap,..\WpdPack
+dnl MSWIN_CHECK_DIR  pcap,..\external\WpdPack*
+dnl MSWIN_CHECK_DIR  pcap,\WpdPack\
+dnl MSWIN_CHECK_DIR  pcap,c:\WpdPack\
+
+AC_ARG_ENABLE(
+   [pcap],
+   AS_HELP_STRING([--disable-pcap],[disable PCAP support]),
+   [],
+   [enable_pcap=$default_pcap]
+)
+
+HAS_PCAP=
+if test "$enable_pcap" = "no" ; then
+   AC_MSG_NOTICE(PCAP disabled)
+else
+   PTLIB_LINK_IFELSE(
+      [for PCAP support],
+      [],
+      [-lpcap],
+      [#include <pcap/pcap.h>],
+      [pcap_t *h],
+      [
+         AC_DEFINE(P_PCAP, 1, "PCAP found")
+         ENDLDLIBS="$ENDLDLIBS -lpcap"
+         HAS_PCAP=1
+      ]
+   )
+fi
+
+PTLIB_SUBST(PCAP)
 
 
 dnl ########################################################################
 dnl check for async I/O
 
 AC_CHECK_HEADERS(aio.h, [AC_DEFINE(P_HAS_AIO, 1)])
+
 
 dnl ########################################################################
 dnl check for wchar and friends
@@ -1042,12 +1196,54 @@ AC_CHECK_HEADERS(
 
 
 dnl ########################################################################
-dnl check for regex library
+dnl look for MEMORY_CHECK enabled.
 
-dnl yes this test needs to be outside the if below
-dnl because autoconf needs to initialise stuff. without this
-dnl all sorts of strange things happen
-AC_CHECK_HEADERS(regex.h, HAS_REGEX=yes)
+AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
+AC_MSG_NOTICE(Memory checking... $enable_memcheck)
+if test "$enable_memcheck" = "yes" ; then
+   AC_DEFINE(PMEMORY_CHECK, 1)
+fi
+
+
+dnl ########################################################################
+dnl check for tracing
+dnl
+
+AC_ARG_ENABLE(tracing, AS_HELP_STRING([--disable-tracing],[Remove PTRACE and all trace logging]))
+AC_ARG_ENABLE(trace-instance, AS_HELP_STRING([--disable-trace-instance],[Disable object instance in trace logging]))
+
+if test "x${enable_tracing}" = "xno" ; then
+   AC_MSG_NOTICE(PTRACE and all trace logging removed)
+   PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
+else
+   if test "x${enable_trace_instance}" = "xno" ; then
+      AC_MSG_NOTICE(PTRACE without object instance trace logging included)
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=1"
+   else
+      AC_MSG_NOTICE(PTRACE and all trace logging included)
+      PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=2"
+   fi
+fi
+
+
+dnl ########################################################################
+dnl check for Windows-like integer BOOL
+dnl
+dnl MSWIN_DISPLAY ansi-bool,ANSI C++ bool
+dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
+
+AC_ARG_ENABLE(ansi-bool, AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
+
+if test "x${enable_ansi_bool}" = "xno" ; then
+   AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
+else
+   AC_MSG_NOTICE(Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true))
+   AC_DEFINE(P_USE_STANDARD_CXX_BOOL)
+fi
+
+
+dnl ########################################################################
+dnl check for regex library
 
 AC_ARG_ENABLE(
    internalregex,
@@ -1055,21 +1251,21 @@ AC_ARG_ENABLE(
    internalregex=$enableval
 )
 if test "$internalregex" = "yes" ; then
-  AC_MSG_NOTICE(Forcing use of internal regex library)
+   AC_MSG_NOTICE(Forcing use of internal regex library)
 else
-  if test "$HAS_REGEX" = "yes" ; then
-    AC_CHECK_FUNC(regcomp, HAS_REGEX=yes)
-    if test "$HAS_REGEX" = "yes" ; then
-      AC_SUBST(HAS_REGEX, 1)
-      AC_DEFINE(P_REGEX, 1, "Regex library found")
-      if test ${target_os} = mingw ; then
-        ENDLDLIBS="$ENDLDLIBS -lregex"
-      fi
-    fi
-  fi
+   AC_CHECK_FUNC(
+      regcomp,
+      [
+         AC_SUBST(HAS_REGEX, 1)
+         AC_DEFINE(P_REGEX, 1, "Regex library found")
+         if test ${target_os} = mingw ; then
+            ENDLDLIBS="$ENDLDLIBS -lregex"
+         fi
+      ]
+   )
 fi
 
-PTLIB_NEW_OPTION(REGEX)
+PTLIB_SUBST(REGEX)
 
 
 dnl ########################################################################
@@ -1078,38 +1274,6 @@ dnl check for dynamic library code (dlopen and friends)
 dnl MSWIN_DISPLAY dll,DLL Support
 dnl MSWIN_DEFINE  dll,P_DYNALINK
 
-
-dnl ########################################################################
-dnl check for libjpeg
-
-dnl MSWIN_DISPLAY    libjpeg,libjpeg support
-dnl MSWIN_CHECK_FILE libjpeg,include\jpeglib.h,P_LIBJPEG=1
-dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
-dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d\
-
-
-AC_ARG_ENABLE(
-   libjpeg,
-   AS_HELP_STRING([--disable-libjpeg],[disable libjpeg for file-based video input device])
-)
-
-if test "$enableval" = "no" ; then
-  AC_MSG_NOTICE(Disabling libjpeg)
-else
-  AC_MSG_CHECKING(for libjpeg)
-  AC_CHECK_HEADER([jpeglib.h],
-                  [
-                    AC_DEFINE(P_LIBJPEG)
-                    ENDLDLIBS="$ENDLDLIBS -ljpeg"
-                  ]
-                 )
-fi
-
-
-dnl #########################################################################
-dnl check to see if samples are enabled
-
-PTLIB_SIMPLE_OPTION([samples], [SAMPLES], [enable samples build])
 
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
@@ -1131,73 +1295,96 @@ AC_ARG_ENABLE(
 
 HAS_DNS_RESOLVER=
 if test "$enable_resolver" = "no" ; then
-  AC_MSG_NOTICE(DNS resolver disabled)
+   AC_MSG_NOTICE(DNS resolver disabled)
 else
-  PTLIB_FIND_RESOLVER([HAS_DNS_RESOLVER=1], [HAS_DNS_RESOLVER=])
-
-  if test "x${HAS_DNS_RESOLVER}" = "x1" ; then
-    AC_DEFINE(P_DNS_RESOLVER, 1, "resolver libraries found")
-    if test "${HAS_RES_NINIT}z" != "z" ; then
-      AC_DEFINE(P_HAS_RES_NINIT)
-    fi
-  fi
+   AC_CHECK_FUNC(
+      [res_ninit],
+      [
+         HAS_DNS_RESOLVER=1
+         AC_DEFINE(P_HAS_RES_NINIT, 1)
+      ],
+      [PTLIB_LINK_IFELSE(
+         [for res_ninit in -lresolv],
+         [],
+         [-lresolv],
+         [
+            #include <netinet/in.h>
+            #include <resolv.h>
+         ],
+         [
+            res_state p;
+            res_ninit(p);
+         ],
+         [
+            HAS_DNS_RESOLVER=1
+            AC_DEFINE(P_HAS_RES_NINIT, 1)
+            ENDLDLIBS="$ENDLDLIBS -lresolv"
+         ],
+         [AC_CHECK_FUNC(
+            [res_search],
+            [HAS_DNS_RESOLVER=1],
+            [PTLIB_LINK_IFELSE(
+               [for res_search in -lresolv],
+               [],
+               [-lresolv],
+               [
+                  #include <netinet/in.h>
+                  #include <resolv.h>
+               ],
+               [res_search(NULL, 0, 0, NULL, 0)],
+               [
+                  HAS_DNS_RESOLVER=1
+                  ENDLDLIBS="$ENDLDLIBS -lresolv"
+               ],
+               [AC_SEARCH_LIBS(
+                  [__res_search],
+                  [resolv],
+                  [HAS_DNS_RESOLVER=1]
+                  [AC_CHECK_HEADER(
+                     [windns.h],
+                     [
+                        HAS_DNS_RESOLVER=1
+                        ENDLDLIBS="$ENDLDLIBS -ldnsapi"
+                     ],
+                     [],
+                     [#include <windows.h>]
+                  )]
+               )]
+            )]
+         )]
+      )]
+   )
 fi
 
-AC_SUBST(HAS_DNS_RESOLVER)
-PTLIB_NEW_OPTION(DNS_RESOLVER)
+AC_DEFINE_UNQUOTED(P_DNS_RESOLVER, $HAS_DNS_RESOLVER)
+PTLIB_SUBST(DNS_RESOLVER, $HAS_DNS_RESOLVER)
 
 
 dnl ########################################################################
-dnl Look for SASL
+dnl check for libjpeg
 
-dnl MSWIN_DISPLAY    sasl,Cyrus SASL
-dnl MSWIN_CHECK_FILE sasl,include\sasl.h,P_SASL_WIN32=1
-dnl MSWIN_DIR_SYMBOL sasl,SASL_DIR
-dnl MSWIN_CHECK_DIR  sasl,..\sasl\
-dnl MSWIN_CHECK_DIR  sasl,..\cyrus-sasl\
-dnl MSWIN_CHECK_DIR  sasl,..\external\sasl\
-dnl MSWIN_CHECK_DIR  sasl,..\external\cyrus-sasl\
-dnl MSWIN_CHECK_DIR  sasl,\sasl\
-dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
-dnl MSWIN_CHECK_DIR  sasl,c:\sasl\
-dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
-  
+dnl MSWIN_DISPLAY    libjpeg,libjpeg support
+dnl MSWIN_CHECK_FILE libjpeg,include\jpeglib.h,P_LIBJPEG=1
+dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
+dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d\
+
+
 AC_ARG_ENABLE(
-   [sasl],
-   AS_HELP_STRING([--disable-sasl],[disable SASL support]),
-   [enable_sasl=$enableval],
-   [enable_sasl=$default_sasl]
+   libjpeg,
+   AS_HELP_STRING([--disable-libjpeg],[disable libjpeg for file-based video input device])
 )
 
-if test "$enable_sasl" = "no" ; then
-  AC_MSG_NOTICE(SASL disabled)
-else 
-
-  AC_CHECK_LIB([sasl2], [sasl_version], [HAS_SASL2=1], [HAS_SASL2=])
-  AC_CHECK_LIB([sasl], [sasl_client_out], [HAS_SASL=1], [HAS_SASL=])
-
-  PTLIB_CHECK_SASL_INCLUDE([
-                            if test "x${SASL_HEADER}" = "xsasl" ; then
-                              AC_DEFINE(P_HAS_SASL_SASL_H)
-                            fi
-                           ],
-                           [
-                            HAS_SASL=
-                            HAS_SASL2=
-                           ])
-
-  if test "x${HAS_SASL2}" = "x1" ; then
-    ENDLDLIBS="$ENDLDLIBS -lsasl2"
-    AC_DEFINE_UNQUOTED(P_SASL,2)
-  elif test "x${HAS_SASL}" = "x1" ; then
-    ENDLDLIBS="$ENDLDLIBS -lsasl"
-    AC_DEFINE_UNQUOTED(P_SASL,1)
-  fi
-fi dnl disable_Sasl
-AC_SUBST(HAS_SASL2)
-PTLIB_NEW_OPTION(SASL2)
-AC_SUBST(HAS_SASL)
-PTLIB_NEW_OPTION(SASL)
+if test "$enableval" = "no" ; then
+   AC_MSG_NOTICE(Disabling libjpeg)
+else
+   AC_CHECK_HEADER(
+      [jpeglib.h],
+      [
+         AC_DEFINE(P_LIBJPEG)
+         ENDLDLIBS="$ENDLDLIBS -ljpeg"
+      ]
+   )
+fi
 
 
 dnl ########################################################################
@@ -1223,6 +1410,64 @@ else
   fi
 fi
 
+
+dnl ########################################################################
+dnl Look for SASL
+
+dnl MSWIN_DISPLAY    sasl,Cyrus SASL
+dnl MSWIN_CHECK_FILE sasl,include\sasl.h,P_SASL_WIN32=1
+dnl MSWIN_DIR_SYMBOL sasl,SASL_DIR
+dnl MSWIN_CHECK_DIR  sasl,..\sasl\
+dnl MSWIN_CHECK_DIR  sasl,..\cyrus-sasl\
+dnl MSWIN_CHECK_DIR  sasl,..\external\sasl\
+dnl MSWIN_CHECK_DIR  sasl,..\external\cyrus-sasl\
+dnl MSWIN_CHECK_DIR  sasl,\sasl\
+dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
+dnl MSWIN_CHECK_DIR  sasl,c:\sasl\
+dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
+  
+AC_ARG_ENABLE(
+   [sasl],
+   AS_HELP_STRING([--disable-sasl],[disable SASL support]),
+   [enable_sasl=$enableval],
+   [enable_sasl=$default_sasl]
+)
+
+if test "$enable_sasl" = "no" ; then
+   AC_MSG_NOTICE(SASL disabled)
+else 
+   AC_CHECK_LIB(
+      [sasl2],
+      [sasl_version],
+      [
+         HAS_SASL2=1
+         AC_DEFINE(P_SASL, 2)
+         ENDLDLIBS="$ENDLDLIBS -lsasl2"
+      ],
+      [
+         HAS_SASL2=
+         AC_CHECK_LIB(
+            [sasl],
+            [sasl_client_out],
+            [
+               HAS_SASL=1
+               AC_DEFINE(P_SASL, 1)
+               ENDLDLIBS="$ENDLDLIBS -lsasl"
+            ],
+            [HAS_SASL=]
+         )
+      ]
+   )
+
+   if test "x$HAS_SASL$HAS_SASL2" != "x" ; then
+      AC_CHECK_HEADER([sasl/sasl.h], [AC_DEFINE(P_HAS_SASL_SASL_H, 1)])
+   fi
+fi
+
+PTLIB_SUBST(SASL2)
+PTLIB_SUBST(SASL)
+
+
 dnl ########################################################################
 dnl look for OpenLDAP (requires SASL)
 
@@ -1235,27 +1480,19 @@ dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
 dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
-AC_ARG_ENABLE(
+PTLIB_MODULE_OPTION(
+   [OPENLDAP],
    [openldap],
-   AS_HELP_STRING([--disable-openldap],[disable OpenLDAP support]),
-   [enable_openldap=$enableval],
-   [enable_openldap=$default_openldap]
+   [OpenLDAP support],
+   [ldap],
+   [],
+   [-lldap],
+   [#include <ldap.h>],
+   [ldap_init("",0)],
+   [],
+   [],
+   [HAS_DNS_RESOLVER]
 )
-
-HAS_LDAP=
-if test "$enable_openldap" = "no" ; then
-  AC_MSG_NOTICE(OpenLDAP disabled)
-else 
-  PTLIB_FIND_OPENLDAP([HAS_LDAP=1], [HAS_LDAP=])
-  if test "x${HAS_LDAP}" = "x1" ; then
-    AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
-    ENDLDLIBS="$ENDLDLIBS $OPENLDAP_LIBS"
-    PTLIB_CFLAGS="$PTLIB_CFLAGS $OPENLDAP_CFLAGS"
-  fi
-fi
-
-AC_SUBST(HAS_LDAP)
-PTLIB_NEW_OPTION(LDAP)
 
 
 dnl ########################################################################
@@ -1294,60 +1531,56 @@ dnl MSWIN_CHECK_DIR  openssl64,%ProgramFiles%\OpenSSL64\
 dnl MSWIN_CHECK_DIR  openssl64,%ProgramW6432%\OpenSSL64\
 dnl MSWIN_CHECK_DIR  openssl64,\OpenSSL-Win64
 
-AC_ARG_ENABLE(
+PTLIB_MODULE_OPTION(
+   [OPENSSL], 
    [openssl],
-   AS_HELP_STRING([--disable-openssl],[disable OpenSSL support]),
-   [enable_openssl=$enableval],
-   [enable_openssl=$default_openssl]
+   [OpenSSL support],
+   [openssl], 
+   [],[],
+   [#include <openssl/ssl.h>],
+   [TLSv1_method()],
+   [
+      PTLIB_COMPILE_IFELSE(
+         [for OPENSSL const arg to d2i_AutoPrivateKey],
+         [$OPENSSL_CFLAGS],
+         [#include <openssl/evp.h>],
+         [
+            EVP_PKEY **a;
+            const unsigned char **p;
+            long l;
+            d2i_AutoPrivateKey(a, p, l);
+         ],
+         [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])]
+      )
+
+      PTLIB_COMPILE_IFELSE(
+         [for OPENSSL AES header],
+         [$OPENSSL_CFLAGS],
+         [#include <openssl/aes.h>],
+         [],
+         [
+            AC_DEFINE([P_SSL_AES], [1],[openssl with AES yes])
+            HAS_SSL_AES=1
+         ]
+      )
+
+      PTLIB_COMPILE_IFELSE(
+         [for OPENSSL d2i_DHparams_bio new variant],
+         [$OPENSSL_CFLAGS],
+         [
+            #include <openssl/dh.h>
+            #include <openssl/asn1.h>
+         ],
+         [
+            BIO * in;
+            d2i_DHparams_bio(in, NULL);
+         ],
+         [],
+         [AC_DEFINE(P_d2i_DHparams_bio_OLD, 1)]
+      )
+   ]
 )
-
-if test "$enable_openssl" = "no" ; then
-  AC_MSG_NOTICE(disabled)
-else
-  PKG_CHECK_MODULES([OPENSSL], 
-                    [openssl], 
-                    [
-                     HAS_SSL=1
-                     AC_DEFINE(P_SSL, 1, "OpenSSL found")
-                     PTLIB_CHECK_OPENSSL_AES([
-                                              AC_DEFINE([P_SSL_AES], [1],[openssl with AES yes])
-                                              HAS_SSL_AES=1
-                                            ])
-                     PTLIB_OPENSSL_CONST( [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])] )
-                     PTLIB_CFLAGS="$PTLIB_CFLAGS ${OPENSSL_CFLAGS}"
-                     ENDLDLIBS="$ENDLDLIBS ${OPENSSL_LIBS}"
-dnl                      PKG_REQUIRES="$PKG_REQUIRES ssl"
-                    ], 
-                    [HAS_SSL=])
-fi 
-
-AC_SUBST(HAS_SSL)
-PTLIB_NEW_OPTION(SSL)
-
-AC_SUBST(HAS_SSL_AES)
-PTLIB_NEW_OPTION(SSL_AES)
-
-dnl For now...
-AC_SUBST(P_STATIC_ENDLDLIBS)
-AC_SUBST(P_STATIC_LDFLAGS)
-
-
-
-dnl ########################################################################
-dnl check for variants of d2i_DHparams_bio from OpenSSL
-
-
-AC_MSG_CHECKING(for d2i_DHparams_bio variants)
-AC_TRY_COMPILE([#include <openssl/dh.h>
-                #include <openssl/asn1.h>],
-               [ BIO * in; d2i_DHparams_bio(in, NULL);],,P_d2i_DHparams_bio_OLD=1)
-if test "x$P_d2i_DHparams_bio_OLD" = "x1" ; then
-  AC_MSG_RESULT(old)
-  AC_DEFINE(P_d2i_DHparams_bio_OLD, 1)
-else
-  AC_MSG_RESULT(new)
-fi
-
+PTLIB_SUBST(SSL_AES)
 
 
 dnl ########################################################################
@@ -1383,27 +1616,16 @@ dnl MSWIN_FIND_FILE  expat32,P_EXPAT_LIBRARY,libexpatMT.lib,bin
 dnl MSWIN_CHECK_DIR  expat32,%ProgramFiles%\Expat 2.*
 dnl MSWIN_CHECK_DIR  expat32,%ProgramW6432%\Expat 2.*
 
-AC_ARG_ENABLE(
+PTLIB_MODULE_OPTION(
+   [EXPAT],
    [expat],
-   AS_HELP_STRING([--disable-expat],[disable expat XML support]),
-   [enable_expat=$enableval],
-   [enable_expat=$default_expat]
+   [expat XML support],
+   [expat],
+   [],
+   [-lexpat],
+   [#include <expat.h>],
+   [XML_ParserCreate(NULL)]
 )
-
-
-if test "$enable_expat" = "no" ; then
-  AC_MSG_NOTICE(Expat disabled)
-else
-  PTLIB_FIND_EXPAT([HAS_EXPAT=1], [HAS_EXPAT=])
-
-  if test "x${HAS_EXPAT}" = "x1" ; then
-    AC_DEFINE(P_EXPAT, 1, "expat found")
-    PTLIB_CFLAGS="$PTLIB_CFLAGS $EXPAT_CFLAGS"
-    ENDLDLIBS="$ENDLDLIBS $EXPAT_LIBS"
-  fi
-fi
-AC_SUBST(HAS_EXPAT)
-PTLIB_NEW_OPTION(EXPAT)
 
 
 dnl ########################################################################
@@ -1414,38 +1636,15 @@ dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
 dnl MSWIN_CHECK_DIR  lua,%ProgramFiles%\Lua\5.1
 dnl MSWIN_CHECK_DIR  lua,%ProgramW6432%\Lua\5.1
 
-AC_ARG_ENABLE(
+PTLIB_MODULE_OPTION(
+   [LUA],
    [lua],
-   AS_HELP_STRING([--disable-lua],[disable Lua script support]),
-   [enable_lua=$enableval],
-   [enable_lua=$default_lua]
+   [Lua script support],
+   [lua], 
+   [],[],
+   [#include <lua.hpp>],
+   [luaL_newstate()]
 )
-
-HAS_LUA=
-if test "x$enable_lua" = "xno" ; then
-   AC_MSG_NOTICE(LUA disabled by user)
-else
-   PKG_CHECK_MODULES(
-      [LUA], 
-      [lua5.1], 
-      [HAS_LUA=1],
-      [PKG_CHECK_MODULES(
-         [LUA], 
-         [lua], 
-         [HAS_LUA=1],
-         [HAS_LUA=]
-      )]
-   )
-fi
-
-if test "x${HAS_LUA}" != "x" ; then
-   AC_DEFINE(P_LUA, 1, "Lua found")
-   PTLIB_CFLAGS="$PTLIB_CFLAGS $LUA_CFLAGS"
-   LDFLAGS="$LDFLAGS $LUA_LDFLAGS"
-   ENDLDLIBS="$ENDLDLIBS $LUA_LIBS"
-fi
-AC_SUBST(HAS_LUA)
-PTLIB_NEW_OPTION(LUA)
 
 
 dnl ########################################################################
@@ -1455,134 +1654,16 @@ dnl MSWIN_CHECK_FILE v8,include\v8.h,P_V8_WIN32=1
 dnl MSWIN_DIR_SYMBOL v8,V8_DIR
 dnl MSWIN_CHECK_DIR  v8,..\external\v8
 
-AC_ARG_ENABLE(
+PTLIB_MODULE_OPTION(
+   [V8],
    [v8],
-   AS_HELP_STRING([--disable-v8],[disable V8 Javascript script support]),
-   [enable_v8=$enableval],
-   [enable_v8=$default_v8]
+   [V8 Javascript script support],
+   [v8],
+   [],
+   [-lv8],
+   [#include <v8.h>],
+   [int i = v8::HandleScope::NumberOfHandles()]
 )
-
-HAS_V8=
-if test "x$enable_v8" = "xno" ; then
-   AC_MSG_NOTICE(V8 disabled by user)
-else
-  AC_MSG_CHECKING(for V8 Javascript support)
-  SAVED_LIBS=$LIBS
-  LIBS="$LIBS -lv8"
-  AC_LINK_IFELSE(
-     [AC_LANG_PROGRAM([#include <v8.h>],
-                      [int i = v8::HandleScope::NumberOfHandles()]
-                    )],
-     [HAS_V8=1] ; [AC_MSG_RESULT([yes])],
-     [HAS_V8=]  ; [AC_MSG_RESULT([no])]
-  )
-  LIBS=$SAVED_LIBS
-fi
-
-if test "x${HAS_V8}" != "x" ; then
-  AC_DEFINE(P_V8, 1, "V8 found")
-  PTLIB_CFLAGS="$PTLIB_CFLAGS $V8_CFLAGS"
-  LDFLAGS="$LDFLAGS $V8_LDFLAGS"
-  ENDLDLIBS="$ENDLDLIBS -lv8"
-fi
-AC_SUBST(HAS_V8)
-PTLIB_NEW_OPTION(V8)
-
-
-dnl ########################################################################
-dnl look for IPV6 functions
-
-dnl MSWIN_DISPLAY    ipv6,IPv6 Support
-dnl MSWIN_CHECK_FILE ipv6,include\ws2tcpip.h,P_HAS_IPV6=1
-dnl MSWIN_CHECK_FILE ipv6,include\um\ws2tcpip.h,P_HAS_IPV6=1
-dnl MSWIN_CHECK_DIR  ipv6,%ProgramFiles%\Windows Kits\8.0
-dnl MSWIN_CHECK_DIR  ipv6,%ProgramW6432%\Windows Kits\8.0
-
-AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[disable IPV6 support]))
-
-if test "${enable_ipv6}z" = "z" ; then
-  enable_ipv6=$default_ipv6
-fi
-
-HAS_IPV6=
-
-if test "$enable_ipv6" = "no" ; then
-  AC_MSG_NOTICE(IPV6 disabled)
-else
-  AC_MSG_CHECKING(for IPv6 support)
-  AC_TRY_COMPILE([#include <sys/types.h>
-                  #include <netinet/in.h>],
-                  [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)
-  if test $HAS_IPV6 = no ; then
-    AC_MSG_RESULT(no)
-  else
-    AC_TRY_COMPILE([#include <sys/types.h>
-                     #include <sys/socket.h>
-                     #include <netdb.h>],
-                     [getnameinfo(0, 0, 0, 0, 0, 0, 0);], HAS_IPV6=yes, HAS_IPV6=no)
-    if test $HAS_IPV6 = no ; then
-      AC_MSG_RESULT(no)
-    else
-      AC_MSG_RESULT(yes)
-      AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
-      HAS_IPV6=1
-    fi
-  fi
-fi
-AC_SUBST(HAS_IPV6)
-PTLIB_NEW_OPTION(IPV6)
-
-HAS_INET_NTOP=
-AC_MSG_CHECKING(for inet_ntop)
-AC_TRY_COMPILE([#include <sys/types.h>
-                #include <netinet/in.h>
-                #include <arpa/inet.h>],
-                [int af; void * src; char * dst; socklen_t len; inet_ntop(af, src, dst, len);], HAS_INET_NTOP=yes, HAS_INET_NTOP=no)
-if test $HAS_INET_NTOP = no ; then
-  AC_MSG_RESULT(no)
-else
-  AC_DEFINE(P_HAS_INET_NTOP, 1)
-  AC_MSG_RESULT(yes)
-fi
-
-dnl ########################################################################
-dnl look for pcap functions
-
-dnl MSWIN_DISPLAY    pcap,WinPCAP Support
-dnl MSWIN_CHECK_FILE pcap,include\pcap\pcap.h,P_PCAP_WIN32=1
-dnl MSWIN_CHECK_FILE pcap,lib\x64\wpcap.lib,P_PCAP_WIN64=1
-dnl MSWIN_DIR_SYMBOL pcap,PCAP_DIR
-dnl MSWIN_CHECK_DIR  pcap,..\WpdPack
-dnl MSWIN_CHECK_DIR  pcap,..\external\WpdPack*
-dnl MSWIN_CHECK_DIR  pcap,\WpdPack\
-dnl MSWIN_CHECK_DIR  pcap,c:\WpdPack\
-
-AC_ARG_ENABLE(pcap, AS_HELP_STRING([--disable-pcap],[disable PCAP support]))
-
-if test "x$enable_pcap" = "x" ; then
-   enable_pcap=$default_pcap
-fi
-
-HAS_PCAP=
-if test "$enable_pcap" = "no" ; then
-   AC_MSG_NOTICE(PCAP disabled)
-else
-   AC_MSG_CHECKING(for PCAP support)
-   AC_TRY_COMPILE(
-      [#include <pcap.h>],
-      [pcap_t *h;],
-      [
-         AC_DEFINE(P_PCAP, 1, "PCAP found")
-         ENDLDLIBS="$ENDLDLIBS -lpcap"
-         HAS_PCAP=1
-      ],
-      [HAS_PCAP=]
-   )
-   AC_MSG_RESULT($HAS_PCAP)
-fi
-AC_SUBST(HAS_PCAP)
-PTLIB_NEW_OPTION(PCAP)
-AC_SUBST(HAS_PCAP)
 
 
 dnl ########################################################################
@@ -1591,7 +1672,6 @@ dnl MSWIN_DISPLAY    configfile,Config file protocol support
 dnl MSWIN_DEFINE     configfile,P_CONFIG_FILE
 
 PTLIB_SIMPLE_OPTION([configfile], [CONFIG_FILE], [enable config file support])
-PTLIB_NEW_OPTION(CONFIG_FILE)
 
 dnl ########################################################################
 dnl check for URL support
@@ -1599,7 +1679,6 @@ dnl MSWIN_DISPLAY    url,URL Support
 dnl MSWIN_DEFINE     url,P_URL
 
 PTLIB_SIMPLE_OPTION([url], [URL], [enable URL support])
-PTLIB_NEW_OPTION(URL)
 
 dnl ########################################################################
 dnl check for HTTP support
@@ -1608,7 +1687,6 @@ dnl MSWIN_DEFINE     http,P_HTTP
 dnl MSWIN_IF_FEATURE http,url
 
 PTLIB_SIMPLE_OPTION([http], [HTTP], [enable HTTP support], [HAS_URL])
-PTLIB_NEW_OPTION(HTTP)
 
 dnl ########################################################################
 dnl check for HTTPFORMS support
@@ -1617,7 +1695,6 @@ dnl MSWIN_DEFINE     httpforms,P_HTTPFORMS
 dnl MSWIN_IF_FEATURE httpforms,http&configfile
 
 PTLIB_SIMPLE_OPTION([httpforms], [HTTPFORMS], [enable HTTP forms support], [HAS_HTTP], [HAS_CONFIG_FILE])
-PTLIB_NEW_OPTION(HTTPFORMS)
 
 
 dnl ########################################################################
@@ -1627,7 +1704,6 @@ dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
 dnl MSWIN_IF_FEATURE httpsvc,httpforms
 
 PTLIB_SIMPLE_OPTION([httpsvc], [HTTPSVC], [enable HTTP server support], [HAS_HTTPFORMS])
-PTLIB_NEW_OPTION(HTTPSVC)
 
 dnl ########################################################################
 dnl check for SSDP support
@@ -1652,7 +1728,6 @@ dnl MSWIN_IF_FEATURE jabber,expat
 dnl MSWIN_IF_FEATURE jabber,expat32
 
 PTLIB_SIMPLE_OPTION([jabber], [JABBER], [enable Jabber support], [HAS_EXPAT])
-PTLIB_NEW_OPTION(JABBER)
 
 dnl ########################################################################
 dnl Speech
@@ -1664,7 +1739,6 @@ dnl MSWIN_CHECK_DIR  sapi,%ProgramFiles%\Windows Kits\8.0
 dnl MSWIN_CHECK_DIR  sapi,%ProgramW6432%\Windows Kits\8.0
 
 PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
-PTLIB_NEW_OPTION(TTS)
 
 dnl ########################################################################
 dnl VXML 
@@ -1674,7 +1748,6 @@ dnl MSWIN_IF_FEATURE vxml,http&sapi&expat
 dnl MSWIN_IF_FEATURE vxml,http&sapi&expat32
 
 PTLIB_SIMPLE_OPTION([vxml], [VXML], [enable VXML support], [HAS_EXPAT], [HAS_HTTP], [HAS_TTS])
-PTLIB_NEW_OPTION(VXML)
 
 dnl ########################################################################
 dnl XMLRPC
@@ -1684,7 +1757,6 @@ dnl MSWIN_IF_FEATURE xmlrpc,http&expat
 dnl MSWIN_IF_FEATURE xmlrpc,http&expat32
 
 PTLIB_SIMPLE_OPTION([xmlrpc], [XMLRPC], [enable XMLRPC support], [HAS_EXPAT], [HAS_HTTP])
-PTLIB_NEW_OPTION(XMLRPC)
 
 dnl ########################################################################
 dnl SOAP
@@ -1694,7 +1766,6 @@ dnl MSWIN_IF_FEATURE soap,http&expat
 dnl MSWIN_IF_FEATURE soap,http&expat32
 
 PTLIB_SIMPLE_OPTION([soap], [SOAP], [enable SOAP support], [HAS_EXPAT], [HAS_HTTP])
-PTLIB_NEW_OPTION(SOAP)
 
 dnl ########################################################################
 dnl MSWIN_DISPLAY       atl,Active Template Library
@@ -1706,7 +1777,6 @@ dnl MSWIN_DISPLAY    asn,ASN Support
 dnl MSWIN_DEFINE     asn,P_ASN
 
 PTLIB_SIMPLE_OPTION([asn], [ASN], [enable ASN decoding/encoding support])
-PTLIB_NEW_OPTION(ASN)
 
 dnl ########################################################################
 dnl check for enabling NAT support
@@ -1715,7 +1785,6 @@ dnl MSWIN_DEFINE     nat,P_NAT
 dnl MSWIN_DISPLAY    nat,NAT traversal support
  
 PTLIB_SIMPLE_OPTION([nat],     [NAT],     [enable NAT traversal support])
-PTLIB_NEW_OPTION(NAT)
 
 dnl ########################################################################
 dnl check for enabling STUN support
@@ -1725,9 +1794,7 @@ dnl MSWIN_DISPLAY    stunsrv,STUN server support
 dnl MSWIN_DEFINE     stunsrv,P_STUNSRVR
  
 PTLIB_SIMPLE_OPTION([stun],     [STUN],     [enable STUN support],        [HAS_NAT])
-PTLIB_NEW_OPTION(STUN)
 PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [enable STUN server support], [HAS_NAT])
-PTLIB_NEW_OPTION(STUNSRVR)
 
 dnl ########################################################################
 dnl check for enabling PIPECHAN support
@@ -1735,7 +1802,6 @@ dnl MSWIN_DISPLAY    pipechan,pipe channel Support
 dnl MSWIN_DEFINE     pipechan,P_PIPECHAN
 
 PTLIB_SIMPLE_OPTION([pipechan], [PIPECHAN], [enable pipechannel support])
-PTLIB_NEW_OPTION(PIPECHAN)
 
 dnl ########################################################################
 dnl check for enabling DTMF support
@@ -1743,7 +1809,6 @@ dnl MSWIN_DISPLAY  dtmf,DTMF encoding/decoding support
 dnl MSWIN_DEFINE   dtmf,P_DTMF
 
 PTLIB_SIMPLE_OPTION([dtmf], [DTMF], [enable DTMF protocol support])
-PTLIB_NEW_OPTION(DTMF)
 
 dnl ########################################################################
 dnl check for enabling SOCKS support
@@ -1751,7 +1816,6 @@ dnl MSWIN_DISPLAY    socks,SOCKS protocol support
 dnl MSWIN_DEFINE     socks,P_SOCKS
 
 PTLIB_SIMPLE_OPTION([socks], [SOCKS], [enable SOCKS protocol support])
-PTLIB_NEW_OPTION(SOCKS)
 
 dnl ########################################################################
 dnl check for enabling FTP support
@@ -1759,7 +1823,6 @@ dnl MSWIN_DISPLAY    ftp,FTP protocol support
 dnl MSWIN_DEFINE     ftp,P_FTP
 
 PTLIB_SIMPLE_OPTION([ftp], [FTP], [enable FTP protocol support])
-PTLIB_NEW_OPTION(FTP)
 
 dnl ########################################################################
 dnl check for enabling SNMP support
@@ -1767,7 +1830,6 @@ dnl MSWIN_DISPLAY    snmp,SNMP protocol support
 dnl MSWIN_DEFINE     snmp,P_SNMP
 
 PTLIB_SIMPLE_OPTION([snmp], [SNMP], [enable SNMP protocol support])
-PTLIB_NEW_OPTION(SNMP)
 
 dnl ########################################################################
 dnl check for enabling TELNET support
@@ -1775,7 +1837,6 @@ dnl MSWIN_DISPLAY    telnet,Telnet protocol support
 dnl MSWIN_DEFINE     telnet,P_TELNET
 
 PTLIB_SIMPLE_OPTION([telnet], [TELNET], [enable TELNET protocol support])
-PTLIB_NEW_OPTION(TELNET)
 
 dnl ########################################################################
 dnl check for enabling CLI support
@@ -1783,7 +1844,6 @@ dnl MSWIN_DISPLAY    cli,Command line interpreter support
 dnl MSWIN_DEFINE     cli,P_CLI
 
 PTLIB_SIMPLE_OPTION([cli], [CLI], [enable command line interpreter support])
-PTLIB_NEW_OPTION(CLI)
 
 dnl ########################################################################
 dnl check for enabling REMCONN support
@@ -1791,7 +1851,6 @@ dnl MSWIN_DISPLAY    remconn,remote connection support
 dnl MSWIN_DEFINE     remconn,P_REMCONN
 
 PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support], [HAS_CONFIG_FILE], [HAS_PIPECHAN])
-PTLIB_NEW_OPTION(REMCONN)
 
 dnl ########################################################################
 dnl check for enabling serial port handling
@@ -1799,7 +1858,6 @@ dnl MSWIN_DISPLAY    serial,Serial Support
 dnl MSWIN_DEFINE     serial,P_SERIAL
 
 PTLIB_SIMPLE_OPTION([serial], [SERIAL], [enable serial port support])
-PTLIB_NEW_OPTION(SERIAL)
 
 dnl ########################################################################
 dnl check for POP3/SMTP support
@@ -1807,7 +1865,6 @@ dnl MSWIN_DISPLAY    pop3smtp,POP3/SMTP Support
 dnl MSWIN_DEFINE     pop3smtp,P_POP3SMTP
 
 PTLIB_SIMPLE_OPTION([pop3smtp], [POP3SMTP], [enable POP3/SMTP support])
-PTLIB_NEW_OPTION(POP3SMTP)
 
 dnl ########################################################################
 dnl check for sound support
@@ -1815,7 +1872,6 @@ dnl MSWIN_DISPLAY audio,Sound support
 dnl MSWIN_DEFINE  audio,P_AUDIO
 
 PTLIB_SIMPLE_OPTION([audio], [AUDIO], [enable audio support])
-PTLIB_NEW_OPTION(AUDIO)
 
 dnl ########################################################################
 dnl check for enabling WAVFILE support
@@ -1823,7 +1879,6 @@ dnl MSWIN_DISPLAY    wavfile,WAV file support
 dnl MSWIN_DEFINE     wavfile,P_WAVFILE
 
 PTLIB_SIMPLE_OPTION([wavfile], [WAVFILE], [enable WAVFILE support], [HAS_AUDIO])
-PTLIB_NEW_OPTION(WAVFILE)
 
 
 dnl ########################################################################
@@ -1843,7 +1898,6 @@ dnl MSWIN_DISPLAY    video,Video Support
 dnl MSWIN_DEFINE     video,P_VIDEO
 
 PTLIB_SIMPLE_OPTION([video], [VIDEO], [enable video device support])
-PTLIB_NEW_OPTION(VIDEO)
 
 if test "x${HAS_VIDEO}" != "x1" ; then
   AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
@@ -1855,7 +1909,6 @@ dnl MSWIN_DISPLAY    vidfile,Video file support
 dnl MSWIN_DEFINE     vidfile,P_VIDFILE
 
 PTLIB_SIMPLE_OPTION([vidfile], [VIDFILE], [enable video file support], [HAS_VIDEO])
-PTLIB_NEW_OPTION(VIDFILE)
 
 dnl ########################################################################
 dnl check for enabling FFMpeg video file support
@@ -1863,7 +1916,6 @@ dnl MSWIN_DISPLAY    ffvdev,FFMpeg video file support
 dnl MSWIN_DEFINE     ffvdev,P_FFVDEV
 
 PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [enable FFMpeg video file support], [HAS_FFVDEV], [HAS_PIPECHAN])
-PTLIB_NEW_OPTION(FFVDEV)
 
 dnl ########################################################################
 dnl check for enabling app share support
@@ -1876,7 +1928,6 @@ dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
 
 PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [enable shared memory video devices])
-PTLIB_NEW_OPTION(SHM_VIDEO)
 
 dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
@@ -1892,74 +1943,21 @@ dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,\Program Files (x86)\OSSBuild\GStreamer\v0.10.6\sdk
 
-AC_ARG_ENABLE(
+PTLIB_MODULE_OPTION(
+   [SDL], 
    [sdl],
-   AS_HELP_STRING([--disable-sdl],[disable SDL support]),
-   [enable_sdl=$enableval],
-   [enable_sdl=$default_sdl]
+   [disable libSDL (video display) support],
+   [sdl], 
+   [],[],
+   [
+      #include <SDL.h>
+      #undef main
+   ],
+   [SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE)],
+   [],
+   [],
+   [HAS_VIDEO]
 )
-
-HAS_SDL=
-if test "x${HAS_VIDEO}" != "x1" ; then
-    AC_MSG_NOTICE(SDL disabled due to disabled dependency HAS_VIDEO)
-else
-  if test "$enable_sdl" = "no" ; then
-    AC_MSG_NOTICE(SDL disabled)
-  else
-    PKG_CHECK_MODULES([SDL], 
-                      [sdl], 
-                      [
-                       HAS_SDL=1
-                       AC_DEFINE(P_SDL, 1, "SDL found")
-                       PTLIB_CFLAGS="$PTLIB_CFLAGS ${SDL_CFLAGS}"
-                       LDFLAGS="$LDFLAGS `pkg-config --libs-only-L sdl` `pkg-config --libs-only-other sdl`"
-                       ENDLDLIBS="$ENDLDLIBS `pkg-config --libs-only-l sdl`"
-                      ],[HAS_SDL=])
-  fi
-fi
-AC_SUBST(HAS_SDL)
-PTLIB_NEW_OPTION(SDL)
-
-
-dnl ########################################################################
-dnl check for video capture support.
-dnl videodev.h on linux
-dnl machine/ioctl_meteor on FreeBSD
-dnl i386/ioctl_meteor on OpenBSD
-dnl dev/ic/bt8xx on NetBSD
-
-HAS_VIDEO_CAPTURE=
-if test "x${HAS_VIDEO}" = "x1" ; then
-  if test "x${HAS_PLUGINS}" = "x1" ; then
-    HAS_VIDEO_CAPTURE=1
-  fi
-  case "$target_os" in
-    cygwin* | mingw* )
-  	  PTLIB_FIND_DIRECTX([HAS_VIDEO_CAPTURE=1
-	 	              ENDLDLIBS="$ENDLDLIBS ${DIRECTX_LIBS}"
-			      PTLIB_CFLAGS="$PTLIB_CFLAGS ${DIRECTX_INCLUDES}"
-                              HAS_DIRECTSHOW=1
-                              HAS_DIRECTSOUND=1
-			      AC_DEFINE(P_DIRECTSHOW, 1)
-			      AC_DEFINE(P_DIRECTX, 1)
-			      AC_DEFINE(P_DIRECTSOUND, 1)
-		             ])
-		;;
-  esac
-
-  if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
-    AC_MSG_NOTICE(No Video Capture support)
-    AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
-  fi
-fi
-
-AC_SUBST(HAS_DIRECTSHOW)
-AC_SUBST(HAS_DIRECTSOUND)
-AC_SUBST(HAS_VIDEO_CAPTURE)
-PTLIB_NEW_OPTION(VIDEO_CAPTURE)
-
-PTLIB_SIMPLE_OPTION([vfw], [VFW_CAPTURE], [enable video for windows capture], [HAS_VIDEO])
-
 
 
 dnl ########################################################################
@@ -1971,36 +1969,15 @@ dnl MSWIN_DIR_SYMBOL gstreamer,GSTREAMER_DIR
 dnl MSWIN_CHECK_DIR  gstreamer,\Program Files\OSSBuild\GStreamer\v0.10.6\sdk
 dnl MSWIN_CHECK_DIR  gstreamer,\Program Files (x86)\OSSBuild\GStreamer\v0.10.6\sdk
 
-AC_ARG_ENABLE([gstreamer],
-	      AS_HELP_STRING([--disable-lgstreamerua],[disable GStreamer support]),
-	      [enable_gstreamer=$enableval],
-	      [enable_gstreamer=$default_lua]
-	     )
-
-if test "$enable_gstreamer" = "no" ; then
-  AC_MSG_NOTICE(GStreamer disabled)
-else
-  PKG_CHECK_MODULES([GSTREAMER], 
-                    [gstreamer-app-0.10], 
-                    [
-                      HAS_GSTREAMER=1
-                      AC_DEFINE(P_GSTREAMER, 1, "GStreamer found")
-                      STDCCFLAGS="$STDCCFLAGS $GSTREAMER_CFLAGS"
-                      ENDLDLIBS="$ENDLDLIBS $GSTREAMER_LIBS"
-                    ],
-		    [HAS_GSTREAMER=])
-fi
-AC_SUBST(HAS_GSTREAMER)
-
-
-dnl ########################################################################
-dnl look for MEMORY_CHECK enabled.
-
-AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
-AC_MSG_NOTICE(Memory checking... $enable_memcheck)
-if test "$enable_memcheck" = "yes" ; then
-  AC_DEFINE(PMEMORY_CHECK, 1)
-fi
+PTLIB_MODULE_OPTION(
+   [GSTREAMER], 
+   [gstreamer],
+   [GStreamer support],
+   [gstreamer-app-0.10], 
+   [],[],
+   [#include <gst/gst.h>],
+   [gst_version_string()]
+)
 
 
 dnl ########################################################################
@@ -2012,35 +1989,16 @@ dnl MSWIN_CHECK_FILE odbc,include\um\odbcinst.h,P_ODBC=1
 dnl MSWIN_CHECK_DIR  odbc,%ProgramFiles%\Windows Kits\8.0
 dnl MSWIN_CHECK_DIR  odbc,%ProgramW6432%\Windows Kits\8.0
 
-AC_ARG_ENABLE(
+PTLIB_MODULE_OPTION(
+   [ODBC],
    [odbc],
-   AS_HELP_STRING([--disable-odbc],[disable ODBC support]),
-   [enable_odbc=$enableval],
-   [enable_odbc=$default_odbc]
+   [ODBC database support],
+   [odbc],
+   [],
+   [-lodbc],
+   [#include <sql.h>],
+   [SQLFreeHandle(0, NULL)]
 )
-
-if test "$enable_odbc" = "no" ; then
-  AC_MSG_NOTICE(ODBC disabled)
-else
-  PTLIB_FIND_ODBC([HAS_ODBC=1], [HAS_ODBC=])
-
-  if test "x${HAS_ODBC}" = "x1" ; then
-    AC_DEFINE(P_ODBC, 1, "ODBC found")
-    PTLIB_CFLAGS="$PTLIB_CFLAGS $ODBC_CFLAGS"
-    ENDLDLIBS="$ENDLDLIBS $ODBC_LIBS"
-    AC_MSG_NOTICE(ODBC support enabled)
-  fi
-fi
-AC_SUBST(HAS_ODBC)
-PTLIB_NEW_OPTION(ODBC)
-
-dnl ########################################################################
-dnl output make directives
-
-dnl resolver needs to be at the end
-if test "${HAS_DNS_RESOLVER:-unset}" != "unset" ; then
-   ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
-fi
 
 
 dnl ########################################################################
@@ -2061,34 +2019,96 @@ esac
 
 
 dnl ########################################################################
+dnl check for Windows video capture support.
+
+PTLIB_SIMPLE_OPTION([vfw], [VFW_CAPTURE], [enable video for windows capture], [HAS_VIDEO])
+
+AC_ARG_WITH(
+   [directx-includedir],
+   AS_HELP_STRING([--with-directx-includedir=DIR],[Location of DirectX include files]),
+   [with_directx_dir="$withval"],
+   [with_directx_dir="include"]
+)
+
+if test "x${HAS_VIDEO}" = "x1" ; then
+  case "$target_os" in
+    cygwin* | mingw* )
+      old_CPPFLAGS="$CPPFLAGS"
+      CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
+
+      ptlib_has_directx=yes
+
+      AC_CHECK_HEADERS([control.h], [], [ptlib_has_directx=no])
+      AC_CHECK_HEADERS([ddraw.h], [], [ptlib_has_directx=no])
+      AC_CHECK_HEADERS([dshow.h], [], [ptlib_has_directx=no])
+      AC_CHECK_HEADERS([dsound.h], [], [ptlib_has_directx=no])
+      AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
+      dnl ##### the two following headers are included by other headers, so check only if they exist
+      AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [], [ptlib_has_directx=no])
+      AC_PREPROC_IFELSE([AC_LANG_SOURCE([[uuids.h]])], [], [ptlib_has_directx=no])
+
+      CPPFLAGS="$old_CPPFLAGS"
+
+      if test "x${ptlib_has_directx}" = "xyes" ; then
+         HAS_DIRECTSHOW=1
+         HAS_DIRECTSOUND=1
+         AC_DEFINE(P_DIRECTSHOW, 1)
+         AC_DEFINE(P_DIRECTX, 1)
+         AC_DEFINE(P_DIRECTSOUND, 1)
+         PTLIB_CFLAGS="$PTLIB_CFLAGS -I${with_directx_dir}"
+         ENDLDLIBS="$ENDLDLIBS -ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
+      fi
+    ;;
+  esac
+
+  if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
+    AC_MSG_NOTICE(No Video Capture support)
+    AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
+  fi
+fi
+
+AC_SUBST(HAS_DIRECTSHOW)
+AC_SUBST(HAS_DIRECTSOUND)
+
+
+dnl ########################################################################
 dnl Plug ins!
 dnl
 
 dnl MSWIN_DISPLAY plugins,Plugin Support
 dnl MSWIN_DEFINE  plugins,P_PLUGINS
 
+PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support])
+
+
 case "$target_os" in
    cygwin* | mingw* )
-      PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support])
       AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
    ;;
 
-   *)
-      PTLIB_FIND_LIBDL([HAS_LIBDL=1], [HAS_LIBDL=])
-      if test "x$HAS_LIBDL" = "x1" ; then
-         AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
-         dnl The rest is done further down...
-      fi
+   freebsd*|openbsd*|netbsd*|darwin*|beos*)
+      DL_LIBS="-lc"
+   ;;
 
-      PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
+   *)
+      DL_LIBS="-ldl"
    ;;
 esac
 
-dnl dl needs to be at the end
-if test "x${HAS_LIBDL}" = "x1" ; then
-   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
-   PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
-fi
+PTLIB_LINK_IFELSE(
+   [for dynamic libraries],
+   [],
+   [$DL_LIBS],
+   [#include <dlfcn.h>],
+   [dlopen("lib", 0)],
+   [
+      HAS_LIBDL=1
+      AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
+      PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
+      ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
+   ],
+   [HAS_LIBDL=]
+)
 
 
 if test "x$enable_plugins" != "xno" ; then
@@ -2246,7 +2266,7 @@ if test "x$enable_plugins" != "xno" ; then
          AC_MSG_NOTICE(shm audio disabled by user)
       else
          AC_CHECK_FUNC(
-            [sem_timedwait],
+            [shmifOpen],
             [
                AC_SUBST(HAS_SHM_AUDIO, 1)
                PTLIB_AUDIOSHM=yes
@@ -2539,6 +2559,12 @@ AC_ARG_ENABLE(dc, AS_HELP_STRING([--enable-dc],[enable IEEE1394/DC video support
 fi # enable_plugins
 
 
+dnl #########################################################################
+dnl check to see if samples are enabled
+
+PTLIB_SIMPLE_OPTION([samples], [SAMPLES], [enable samples build])
+
+
 dnl ########################################################################
 dnl final declarations
 
@@ -2586,9 +2612,9 @@ echo "                     DNS Resolver :  ${PTLIB_DNS_RESOLVER}"
 echo "                             IPv6 :  ${PTLIB_IPV6}"
 echo "            Packet Capture (PCAP) :  ${PTLIB_PCAP}"
 echo "               Expat (XML parser) :  ${PTLIB_EXPAT}"
-echo "                          OpenSSL :  ${PTLIB_SSL}"
+echo "                          OpenSSL :  ${PTLIB_OPENSSL}"
 echo "                       SASL/SASL2 :  ${PTLIB_SASL}/${PTLIB_SASL2}"
-echo "                             LDAP :  ${PTLIB_LDAP}"
+echo "                         OpenLDAP :  ${PTLIB_OPENLDAP}"
 echo "                             ODBC :  ${PTLIB_ODBC}"
 echo "                              Lua :  ${PTLIB_LUA}"
 echo "                             Java :  ${PTLIB_V8} (V8)"

@@ -53,6 +53,7 @@
 #undef    P_NETBSD
 #undef    P_SOLARIS
 #undef    P_MACOSX
+#undef    P_IOS
 #undef    P_CYGWIN
 #undef    P_MINGW
 #undef    P_GNU_HURD
@@ -138,6 +139,7 @@
   #undef P_HAS_RECVMSG
   #undef P_HAS_RECVMSG_MSG_ERRQUEUE
   #undef P_HAS_RECVMSG_IP_RECVERR
+  #undef P_HAS_RT_MSGHDR
   #undef P_HAS_NETLINK
   #undef P_SETPGRP_NOPARM
 #endif

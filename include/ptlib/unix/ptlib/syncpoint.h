@@ -34,7 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
-#if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS)
+#if defined(P_PTHREADS) || defined(__BEOS__)
   public:
     virtual ~PSyncPoint();
   private:

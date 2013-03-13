@@ -50,11 +50,11 @@
 #include <net/if.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_SOLARIS)
 #include <ifaddrs.h>
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_QNX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_QNX)
 #include <sys/sysctl.h>
 #endif
 
@@ -68,22 +68,22 @@
 #endif
 
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_IOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 #define ifr_netmask ifr_addr
 
 #include <net/if_dl.h>
 
-#if !defined(P_IPHONEOS)
+#if !defined(P_QNX) && !defined(P_IOS)
 #include <net/if_types.h>
-#include <net/route.h>
-#endif
-
-#if !defined(P_QNX) && !defined(P_IPHONEOS)
 #include <netinet/if_ether.h>
 #endif
 
 #endif
 
+
+#if defined(P_HAS_RT_MSGHDR)
+#include <net/route.h>
+#endif
 
 #if defined(SIOCGENADDR)
 #define SIO_Get_MAC_Address SIOCGENADDR
@@ -242,7 +242,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
 }
 
 
-#if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS) && !defined(P_BEOS)
+#if !defined(P_PTHREADS) && !defined(P_BEOS)
 
 PChannel::Errors PSocket::Select(SelectList & read,
                                  SelectList & write,
@@ -645,7 +645,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
         }
       }
       
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
       // move the ifName pointer along to the next ifreq entry
       ifName = (struct ifreq *)((char *)ifName + _SIZEOF_ADDR_IFREQ(*ifName));
 #elif !defined(P_NETBSD)
@@ -881,7 +881,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
   return !table.IsEmpty();
 }
 
-#elif (defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX)) && !defined(P_IPHONEOS)
+#elif defined(P_HAS_RT_MSGHDR)
 
 PBoolean process_rtentry(struct rt_msghdr *rtm, char *ptr, PIPSocket::Address & net_addr,
                      PIPSocket::Address & net_mask, PIPSocket::Address & dest_addr, int & metric);
@@ -1495,7 +1495,7 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
   return new NetLinkRouteTableDetector();
 }
 
-#elif defined(P_IPHONEOS)
+#elif defined(P_IOS)
 
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <SystemConfiguration/SCNetworkReachability.h>
@@ -1558,7 +1558,7 @@ class ReachabilityRouteTableDetector : public PIPSocket::RouteTableDetector
 			
 		target = SCNetworkReachabilityCreateWithName(NULL, anchor);
 				
-#if	!TARGET_OS_IPHONE
+#if !defined(P_IOS)
 		if (CFDictionaryGetCount(options) > 0) {
 
 			target = SCNetworkReachabilityCreateWithOptions(NULL, options);
@@ -1646,7 +1646,7 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 	return new ReachabilityRouteTableDetector();
 }
 
-#else // P_HAS_NETLINK, elif defined(P_IPHONEOS)
+#else // P_HAS_NETLINK, elif defined(P_IOS)
 
 class DummyRouteTableDetector : public PIPSocket::RouteTableDetector
 {
@@ -1671,12 +1671,12 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
   return new DummyRouteTableDetector();
 }
 
-#endif // P_HAS_NETLINK, elif defined(P_IPHONEOS)
+#endif // P_HAS_NETLINK, elif defined(P_IOS)
 
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDown)
 {
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined (P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_SOLARIS)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined (P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_SOLARIS)
   // tested on Linux 2.6.x, FreeBSD 8.2, NetBSD 5.1, OpenBSD 5.0, MacOS X 10.5.6 and Solaris 11
   struct ifaddrs *interfaces, *ifa;
 
@@ -1805,7 +1805,7 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
         }
       }
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
       // move the ifName pointer along to the next ifreq entry
       ifName = (struct ifreq *)((char *)ifName + _SIZEOF_ADDR_IFREQ(*ifName));
 #elif !defined(P_NETBSD)
