@@ -9,7 +9,7 @@ AC_INIT([PTLib], m4_esyscmd([sed -n \
                              -e "s/ *#define *BUILD_TYPE *BetaCode/beta/p" \
                              -e "s/ *#define *BUILD_TYPE *ReleaseCode/./p" \
                              -e "s/ *#define *BUILD_NUMBER *\\(.*\\)/\\1/p" \
-                             version.h | tr -u -d '\n']))
+                             version.h | tr -d '\n']))
 
 AC_PREREQ([2.65])
 
@@ -1488,7 +1488,7 @@ PTLIB_MODULE_OPTION(
    [],
    [-lldap],
    [#include <ldap.h>],
-   [ldap_init("",0)],
+   [ldap_create(0)],
    [],
    [],
    [HAS_DNS_RESOLVER]
@@ -1997,7 +1997,7 @@ PTLIB_MODULE_OPTION(
    [],
    [-lodbc],
    [#include <sql.h>],
-   [SQLFreeHandle(0, NULL)]
+   [SQLFreeHandle(0, 0)]
 )
 
 
