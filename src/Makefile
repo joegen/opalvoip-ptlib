@@ -29,8 +29,9 @@ ifndef PTLIBDIR
   $(error PTLIBDIR must be defined)
 endif
 
+PTLIB_BUILDING_ITSELF:=yes
+
 include $(PTLIBDIR)/make/ptbuildopts.mak
-include $(PTLIBDIR)/make/unix.mak
 
 OBJDIR	= $(PTLIB_OBJDIR)
 TARGET  = $(PTLIB_LIBDIR)/$(PTLIB_FILE)
@@ -77,7 +78,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 
 $(OBJDIR)/vsdl.o: $(COMPONENT_SRC_DIR)/vsdl.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 endif
 
@@ -97,7 +98,7 @@ SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
 
 $(OBJDIR)/vfakeio.o: $(COMMON_SRC_DIR)/vfakeio.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 ifeq ($(HAS_SHM_VIDEO),1)
 SOURCES	+= $(PLATFORM_SRC_DIR)/shmvideo.cxx
@@ -111,15 +112,15 @@ ifeq ($(HAS_DIRECTSHOW),1)
 SOURCES	+= $(PLATFORM_SRC_DIR)/directshow.cxx
 $(OBJDIR)/directshow.o: $(PLATFORM_SRC_DIR)/directshow.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 endif
 
 ifeq ($(target_os),Darwin)
 OBJS	+= $(PLATFORM_SRC_DIR)/macvidcap.o
-ENDLDLIBS += -framework QTKit -framework CoreVideo -framework Foundation -lobjc
+LDFLAGS += -framework QTKit -framework CoreVideo -framework Foundation -lobjc
 $(OBJDIR)/macvidcap.o: $(PLATFORM_SRC_DIR)/macvidcap.mm
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 endif # Darwin
 
 endif # HAS_VIDEO
@@ -135,7 +136,7 @@ ifeq ($(target_os),mingw)
 SOURCES += $(PLATFORM_SRC_DIR)/sound_win32.cxx
 $(OBJDIR)/sound_win32.o: $(PLATFORM_SRC_DIR)/sound_win32.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 endif
 
 ifdef HAS_PORTAUDIO
@@ -237,7 +238,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx
 
 $(OBJDIR)/pstun.o: $(COMPONENT_SRC_DIR)/pstun.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 endif
 
@@ -246,7 +247,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
 
 $(OBJDIR)/pstunsrvr.o: $(COMPONENT_SRC_DIR)/pstunsrvr.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 endif
 
 
@@ -273,7 +274,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pwavfile.cxx \
 
 $(OBJDIR)/pwavfiledev.o: $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 endif
 
 ifeq ($(HAS_DTMF),1)
@@ -348,7 +349,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pvidfile.cxx \
 
 $(OBJDIR)/pvfiledev.o: $(COMPONENT_SRC_DIR)/pvfiledev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 endif
 
@@ -357,7 +358,7 @@ SOURCES += $(COMPONENT_SRC_DIR)/pffvdev.cxx
 
 $(OBJDIR)/pffvdev.o: $(COMPONENT_SRC_DIR)/pffvdev.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) -DP_FORCE_STATIC_PLUGIN $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 endif
 
@@ -450,26 +451,26 @@ alllibs:
 
 
 $(OBJDIR)/regcomp.o: $(COMMON_SRC_DIR)/regex/regcomp.c
-	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(CPPFLAGS) -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/regexec.o: $(COMMON_SRC_DIR)/regex/regexec.c
-	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(CPPFLAGS) -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/regerror.o: $(COMMON_SRC_DIR)/regex/regerror.c
-	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(CPPFLAGS) -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
-	$(Q_CC)$(CC) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
+	$(Q_CC)$(CC) $(CPPFLAGS) -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
-	$(Q_CC)$(CC) -Wno-write-strings $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CC) $(CPPFLAGS) -Wno-write-strings $(CFLAGS) -c $< -o $@
 
 $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
-	$(Q_CC)$(CC) $(PTLIB_CFLAGS) -M $< >> $@
+	$(Q_CC)$(CC) $(CPPFLAGS) -M $< >> $@
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
-	bison $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
+	$(YACC) $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
 
 #######################################################
 
@@ -481,7 +482,7 @@ ifeq ($(P_SHAREDLIB),1)
 
   $(PTLIB_LIBDIR)/$(PTLIB_SONAME): $(STATIC_LIB_FILE)
 	@if [ ! -d $(dir $@) ] ; then mkdir $(dir $@) ; fi
-	$(Q_LD)$(LD) $(LDSOFLAGS) -o $@ $(EXTLIBS) $(OBJS) $(SYSLIBS) $(ENDLDLIBS)
+	$(Q_LD)$(LD) $(LDSOFLAGS:INSERT_SONAME=$(PTLIB_SONAME)) -o $@ $(EXTLIBS) $(OBJS) $(LDFLAGS)
 
   CLEAN_FILES += $(PTLIB_LIBDIR)/$(PTLIB_SONAME) $(PTLIB_LIBDIR)/$(PTLIB_FILE)
 
@@ -493,8 +494,8 @@ endif # P_SHAREDLIB
 
 $(STATIC_LIB_FILE): $(OBJS)
 	@if [ ! -d $(dir $@) ] ; then mkdir $(dir $@) ; fi
-	$(Q_AR)$(ARCHIVE) $(STATIC_LIB_FILE) $(OBJS)
-ifeq ($(P_USE_RANLIB),1)
+	$(Q_AR)$(AR) $(ARFLAGS) $(STATIC_LIB_FILE) $(OBJS)
+ifneq ($(RANLIB),)
 	$(RANLIB) $(STATIC_LIB_FILE)
 endif
 

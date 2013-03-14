@@ -38,7 +38,6 @@ else
 endif
 
 include $(PT_MAKE_DIR)/ptbuildopts.mak
-include $(PT_MAKE_DIR)/unix.mak
 include $(PT_MAKE_DIR)/common.mak
 
 # End of ptlib.mak

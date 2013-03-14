@@ -179,7 +179,7 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 
 #else
 
-#ifdef USE_GCC
+#ifdef __GNUC__
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
 static void __attribute__ (( constructor )) PWLIB_StaticLoader_##serviceName##_##serviceType() \
 { PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); } \

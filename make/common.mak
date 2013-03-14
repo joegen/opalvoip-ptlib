@@ -62,9 +62,9 @@ vpath %.dep $(DEPDIR)
 # add common directory to include path - must be after PT directories
 #
 ifdef PTLIBDIR
-  PTLIB_CFLAGS := -I$(PTLIBDIR)/include $(PTLIB_CFLAGS)
+  CPPFLAGS := -I$(PTLIBDIR)/include $(CPPFLAGS)
 else
-  PTLIB_CFLAGS := $(shell pkg-config ptlib --cflags-only-I) $(PTLIB_CFLAGS)
+  CPPFLAGS := $(shell pkg-config ptlib --cflags-only-I) $(CPPFLAGS)
 endif
 
 ifneq ($(P_SHAREDLIB),1)
@@ -72,14 +72,6 @@ ifneq ($(P_SHAREDLIB),1)
 #ifneq ($(target_os),Darwin) # Mac OS X does not really support -static
 #LDFLAGS += -static
 #endif
-
-ifneq ($(P_STATIC_LDFLAGS),)
-LDFLAGS += $(P_STATIC_LDFLAGS)
-endif
-
-ifneq ($(P_STATIC_ENDLDLIBS),)
-ENDLDLIBS += $(P_STATIC_ENDLDLIBS)
-endif
 
 endif
 
@@ -98,15 +90,15 @@ endif
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(PTLIB_CXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(PTLIB_CXXFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(Q_CC)$(CC) $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
+	$(Q_CC)$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 #
 # create list of object files 
@@ -124,7 +116,7 @@ SRC_DEPS := $(SOURCES:.c=.dep)
 SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
 SRC_DEPS := $(SRC_DEPS:.cpp=.dep)
 DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
-DEPFLAGS := $(subst $(DEBUG_FLAG),,$(PTLIB_CFLAGS))
+DEPFLAGS := $(subst $(DEBUG_FLAG),,$(CPPFLAGS))
 
 #
 # define rule for .dep files
@@ -170,7 +162,7 @@ ifeq ($(target_os),beos)
 # directory
 	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PTLIB_LIBDIR) lib; fi
 endif
-	$(Q_LD)$(LD) -o $@ $(OBJS) $(CFLAGS) $(LDFLAGS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
+	$(Q_LD)$(LD) -o $@ $(OBJS) $(CFLAGS) $(LDFLAGS)
 
 ifneq (,$(wildcard $(PTLIBDIR)/src/ptlib/unix))
 $(TARGET_LIBS) :
@@ -189,37 +181,11 @@ endif # PROG
 
 ######################################################################
 #
-# Precompiled headers (experimental)
-#
-
-USE_PCH:=no
-ifeq ($(USE_PCH),yes)
-
-vpath %.gch $(PTLIBDIR)/include
-
-$(PTLIBDIR)/include/ptlib.h.gch/$(PTLIB_OBJBASE): $(PTLIBDIR)/include/ptlib.h
-	@if [ ! -d `dirname $@` ] ; then mkdir -p `dirname $@` ; fi
-	$(CXX) $(PTLIB_CFLAGS) $(PTLIB_CXXFLAGS) $(CFLAGS) -x c++ -c $< -o $@
-
-PCH_FILES =	$(PTLIBDIR)/include/ptlib.h.gch/$(PTLIB_OBJBASE)
-CLEAN_FILES  += $(PCH_FILES)
-
-precompile: $(PCH_FILES)
-	@true
-
-else
-precompile:
-	@true
-endif
-
-
-######################################################################
-#
 # Main targets for build management
 #
 ######################################################################
 
-default_target : precompile $(TARGET)
+default_target : $(TARGET)
 
 default_clean :
 	rm -rf $(CLEAN_FILES)

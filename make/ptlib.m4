@@ -73,18 +73,16 @@ AC_DEFUN([PTLIB_SIMPLE_OPTION],[
 
 
 dnl PTLIB_COMPILE_IFELSE
-dnl As AC_COMPILE_IFELSE but saves and restores CFLAGS if fails
+dnl As AC_COMPILE_IFELSE but saves and restores CPPFLAGS if fails
 dnl $1 checking message
-dnl $2 CFLAGS
+dnl $2 CPPFLAGS
 dnl $3 program headers
 dnl $4 program main
 dnl $5 success code
 dnl $6 failure code
 AC_DEFUN([PTLIB_COMPILE_IFELSE],[
-   oldCFLAGS="$CFLAGS"
-   oldCXXFLAGS="$CXXFLAGS"
-   CFLAGS="$CFLAGS $2"
-   CXXFLAGS="$CXXFLAGS $2"
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS $2"
    AC_MSG_CHECKING([$1])
    AC_COMPILE_IFELSE(
       [AC_LANG_PROGRAM([[$3]],[[$4]])],
@@ -92,28 +90,25 @@ AC_DEFUN([PTLIB_COMPILE_IFELSE],[
       [usable=no]
    )
    AC_MSG_RESULT($usable)
-   CFLAGS="$oldCFLAGS"
-   CXXFLAGS="$oldCXXFLAGS"
+   CPPFLAGS="$oldCPPFLAGS"
    AS_IF([test AS_VAR_GET([usable]) = yes], [$5], [$6])[]
 ])
 
 
 dnl PTLIB_LINK_IFELSE
-dnl As AC_LINK_IFELSE but saves and restores CFLAGS & LDFLAGS if fails
+dnl As AC_LINK_IFELSE but saves and restores CPPFLAGS & LDFLAGS if fails
 dnl $1 checking message
-dnl $2 CFLAGS
+dnl $2 CPPFLAGS
 dnl $3 LIBS/LDFLAGS
 dnl $4 program headers
 dnl $5 program main
 dnl $6 success code
 dnl $7 failure code
 AC_DEFUN([PTLIB_LINK_IFELSE],[
-   oldCFLAGS="$CFLAGS"
-   oldCXXFLAGS="$CXXFLAGS"
+   oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
-   CFLAGS="$CFLAGS $2"
-   CXXFLAGS="$CXXFLAGS $2"
-   LDFLAGS="$LDFLAGS $3"
+   CPPFLAGS="$CPPFLAGS $2"
+   LDFLAGS="$3 $LDFLAGS"
    AC_MSG_CHECKING($1)
    AC_LINK_IFELSE(
       [AC_LANG_PROGRAM([[$4]],[[$5]])],
@@ -121,8 +116,7 @@ AC_DEFUN([PTLIB_LINK_IFELSE],[
       [usable=no]
    )
    AC_MSG_RESULT($usable)
-   CFLAGS="$oldCFLAGS"
-   CXXFLAGS="$oldCXXFLAGS"
+   CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
    AS_IF([test AS_VAR_GET([usable]) = yes], [$6], [$7])[]
 ])
@@ -147,8 +141,8 @@ AC_DEFUN([PTLIB_PKG_CHECK_MODULE],[
          [$3],
          [$4],
          [
-            PTLIB_CFLAGS="$PTLIB_CFLAGS $$1[_CFLAGS]"
-            ENDLDLIBS="$ENDLDLIBS $$1[_LIBS]"
+            CPPFLAGS="$CPPFLAGS $$1[_CFLAGS]"
+            LDFLAGS="$$1[_LIBS] $LDFLAGS"
          ]
       )],
       [usable=no]
@@ -163,7 +157,7 @@ dnl $1 module name
 dnl $2 option name
 dnl $3 option help text
 dnl $4 pkg name(s)
-dnl $5 default CFLAGS
+dnl $5 default CPPFLAGS
 dnl $6 default LIBS
 dnl $7 program headers
 dnl $8 program main
@@ -234,8 +228,8 @@ AC_DEFUN([PTLIB_MODULE_OPTION],[
             [$7],
             [$8],
             [
-               PTLIB_CFLAGS="$PTLIB_CFLAGS $$1[_CFLAGS]"
-               ENDLDLIBS="$ENDLDLIBS $$1[_LIBS]"
+               CPPFLAGS="$CPPFLAGS $$1[_CFLAGS]"
+               LDFLAGS="$$1[_LIBS] $LDFLAGS"
             ],
             [usable=no]
          )
