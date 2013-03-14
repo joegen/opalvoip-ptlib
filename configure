@@ -786,7 +786,8 @@ MAJOR_VERSION
 ARFLAGS
 STATICLIBEXT
 SHAREDLIBEXT
-LDSOFLAGS
+SHARED_LDFLAGS
+SHARED_CPPFLAGS
 AR
 RANLIB
 ac_ct_CXX
@@ -4378,7 +4379,9 @@ fi
 
 
 
-   LDSOFLAGS="-shared -Wl,-soname,INSERT_SONAME"
+   SHARED_CPPFLAGS="-fPIC"
+
+   SHARED_LDFLAGS="-shared -Wl,-soname,INSERT_SONAME"
 
    SHAREDLIBEXT="so"
 
@@ -4390,7 +4393,7 @@ fi
 
    case "$target_os" in
       darwin* | iPhone* )
-         LDSOFLAGS="-dynamiclib"
+         SHARED_LDFLAGS="-dynamiclib"
          SHAREDLIBEXT="dylib"
          AR="libtool"
          ARFLAGS="-static -o"
@@ -4398,7 +4401,7 @@ fi
       ;;
 
       cygwin* | mingw* )
-         LDSOFLAGS="-shared -Wl,--kill-at"
+         SHARED_LDFLAGS="-shared -Wl,--kill-at"
          SHAREDLIBEXT="dll"
          STATICLIBEXT="lib"
       ;;
@@ -4544,14 +4547,14 @@ fi
          target_os=solaris
          target_release=`uname -r | sed "s/5\.//g"`
          CPPFLAGS="$CPPFLAGS -D__inline=inline -DSOLARIS"
-         LDSOFLAGS="-Bdynamic -G -h INSERT_SONAME"
+         SHARED_LDFLAGS="-Bdynamic -G -h INSERT_SONAME"
       ;;
 
       beos* )
          target_os=beos
          CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format"
          LDFLAGS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
-         LDSOFLAGS="-shared -nostdlib -nostart"
+         SHARED_LDFLAGS="-shared -nostdlib -nostart"
       ;;
 
       cygwin* )
@@ -4657,11 +4660,11 @@ fi
       if test "$target_os" = "Darwin"; then
          CPPFLAGS="$CPPFLAGS -arch i386"
          LDFLAGS="$LDFLAGS -arch i386"
-         LDSOFLAGS="$LDSOFLAGS -arch i386"
+         SHARED_LDFLAGS="$SHARED_LDFLAGS -arch i386"
       else
          CPPFLAGS="$CPPFLAGS -m32"
          LDFLAGS="$LDFLAGS -m32"
-         LDSOFLAGS="$LDSOFLAGS -m32"
+         SHARED_LDFLAGS="$SHARED_LDFLAGS -m32"
       fi
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: Forcing 32 bit x86 compile" >&5
