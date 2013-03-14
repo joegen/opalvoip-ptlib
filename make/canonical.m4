@@ -46,7 +46,8 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
 
    dnl Most unix'ish platforms are like this
 
-   AC_SUBST(LDSOFLAGS, [["-shared -Wl,-soname,INSERT_SONAME"]])
+   AC_SUBST(SHARED_CPPFLAGS, "-fPIC")
+   AC_SUBST(SHARED_LDFLAGS, [["-shared -Wl,-soname,INSERT_SONAME"]])
    AC_SUBST(SHAREDLIBEXT, "so")
    AC_SUBST(STATICLIBEXT, "a")
 
@@ -54,7 +55,7 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
 
    case "$target_os" in
       darwin* | iPhone* )
-         LDSOFLAGS="-dynamiclib"
+         SHARED_LDFLAGS="-dynamiclib"
          SHAREDLIBEXT="dylib"
          AR="libtool"
          ARFLAGS="-static -o"
@@ -62,7 +63,7 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       ;;
 
       cygwin* | mingw* )
-         LDSOFLAGS="-shared -Wl,--kill-at"
+         SHARED_LDFLAGS="-shared -Wl,--kill-at"
          SHAREDLIBEXT="dll"
          STATICLIBEXT="lib"
       ;;
@@ -117,14 +118,14 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
          target_os=solaris
          target_release=`uname -r | sed "s/5\.//g"`
          CPPFLAGS="$CPPFLAGS -D__inline=inline -DSOLARIS"
-         LDSOFLAGS="-Bdynamic -G -h INSERT_SONAME"
+         SHARED_LDFLAGS="-Bdynamic -G -h INSERT_SONAME"
       ;;
 
       beos* )
          target_os=beos
          CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format"
          LDFLAGS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
-         LDSOFLAGS="-shared -nostdlib -nostart"
+         SHARED_LDFLAGS="-shared -nostdlib -nostart"
       ;;
 
       cygwin* )
@@ -215,11 +216,11 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       if test "$target_os" = "Darwin"; then
          CPPFLAGS="$CPPFLAGS -arch i386"
          LDFLAGS="$LDFLAGS -arch i386"
-         LDSOFLAGS="$LDSOFLAGS -arch i386"
+         SHARED_LDFLAGS="$SHARED_LDFLAGS -arch i386"
       else
          CPPFLAGS="$CPPFLAGS -m32"
          LDFLAGS="$LDFLAGS -m32"
-         LDSOFLAGS="$LDSOFLAGS -m32"
+         SHARED_LDFLAGS="$SHARED_LDFLAGS -m32"
       fi
 
       AC_MSG_NOTICE(Forcing 32 bit x86 compile)
