@@ -20,33 +20,6 @@ AC_CONFIG_SRCDIR([include/ptlib.h])
 m4_include(make/ptlib.m4)
 
 
-PKG_PROG_PKG_CONFIG()
-if test -z "$PKG_CONFIG" ; then
-  AC_MSG_ERROR(PTLib must have pkg-config installed, 1)
-fi
-
-
-AC_PROG_CC
-AC_PROG_CXX
-AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
-
-AC_LANG(C++)
-
-
-dnl ########################################################################
-dnl Check for non-installed "environment variable" mode
-OBJ_ARCH=
-if test "x$PTLIBDIR" != "x" ; then
-   AC_MSG_NOTICE(PTLIBDIR environment variable detected as $PTLIBDIR)
-   ac_default_prefix=$PTLIBDIR
-   if test "x$prefix" = "xNONE" ; then
-      OBJ_ARCH=1
-   fi
-else
-   PTLIBDIR=`pwd`
-fi
-
-
 dnl ########################################################################
 dnl check for minimum sizing
 
@@ -164,37 +137,6 @@ HAS_EXCEPTIONS=
 
 
 dnl ########################################################################
-dnl extract the PTLib version
-dnl MSWIN_DISPLAY version,Version
-dnl MSWIN_VERSION version,PTLIB_MAJOR=MAJOR_VERSION
-dnl MSWIN_VERSION version,PTLIB_MINOR=MINOR_VERSION
-dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
-dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
-
-MAJOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
-MINOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
-BUILD_NUMBER=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
-PTLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
-BUILD_TYPE=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
-
-AC_SUBST(MAJOR_VERSION)
-AC_SUBST(MINOR_VERSION)
-AC_SUBST(BUILD_NUMBER)
-AC_SUBST(PTLIB_VERSION)
-AC_SUBST(BUILD_TYPE)
-AC_SUBST(MAJOR_VERSION, $MAJOR_VERSION)
-AC_SUBST(MINOR_VERSION, $MINOR_VERSION)
-AC_SUBST(BUILD_NUMBER, $BUILD_NUMBER)
-
-AC_MSG_NOTICE(PTLib version is ${PTLIB_VERSION});
-
-AC_DEFINE_UNQUOTED([PTLIB_MAJOR],   [$MAJOR_VERSION], [Major version])
-AC_DEFINE_UNQUOTED([PTLIB_MINOR],   [$MINOR_VERSION], [Minor version])
-AC_DEFINE_UNQUOTED([PTLIB_BUILD],   [$BUILD_NUMBER], [Build number])
-AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
-
-
-dnl ########################################################################
 dnl Normalise target_os and target_cpu
 
 dnl MSWIN_DISPLAY winver,Advanced Windows API
@@ -207,43 +149,29 @@ dnl MSWIN_DEFAULT android,Disabled
 m4_include(make/canonical.m4)
 MY_CANONICAL_TARGET()
 
-#default, most platforms do it this way
-PTLIB_CFLAGS="$CFLAGS"
-LDSOFLAGS="-shared -Wl,-soname,\$(PTLIB_SONAME)"
-
 case "$target_os" in
    linux )
       OS_TAG="P_LINUX"
-      need_pragma=yes
    ;;
 
    gnu )
       OS_TAG="P_GNU_HURD"
-      need_pragma=yes
    ;;
 
    FreeBSD )
       OS_TAG="P_FREEBSD"
-      need_pragma=yes
    ;;
 
    OpenBSD )
       OS_TAG="P_OPENBSD"
-      ENDLDLIBS="-lossaudio"
-      need_pragma=yes
    ;;
 
    NetBSD )
       OS_TAG="P_NETBSD"
-      ENDLDLIBS="-lossaudio"
-      need_pragma=yes
    ;;
 
    solaris )
       OS_TAG="P_SOLARIS"
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__inline=inline -DSOLARIS"
-      LDSOFLAGS="-Bdynamic -G -h \$(PTLIB_SONAME)"
-      need_pragma=yes
 
       dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
       PTLIB_COMPILE_IFELSE(
@@ -268,49 +196,32 @@ case "$target_os" in
       fi
 
       if test "x${ptlib_fdsize}" != "x4098"; then
-         PTLIB_CFLAGS="$PTLIB_CFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
+         CPPFLAGS="$CPPFLAGS -DFD_SETSIZE=${ptlib_fdsize}"
       fi
    ;;
 
    Darwin )
       OS_TAG="P_MACOSX" 
-      SHAREDLIBEXT="dylib"
-      LDSOFLAGS="-dynamiclib"
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__MACOSX_CORE__"
-      ENDLDLIBS="-framework CoreAudio -framework CoreFoundation -framework AudioUnit -framework CoreMidi -framework Carbon -framework AudioToolbox -lresolv -lpthread -lm"
    ;;
 
    iPhone* )
       OS_TAG="P_IOS" 
-      SHAREDLIBEXT="dylib"
-      LDSOFLAGS="-dynamiclib"
-      ENDLDLIBS="$ENDLDLIBS -framework SystemConfiguration -framework CoreFoundation -lresolv -lpthread -lm"
    ;;
 
    beos )
       OS_TAG="P_BEOS"
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -D__BEOS__"
-      LDSOFLAGS="-shared -nostdlib -nostart"
-      ENDLDLIBS="-lstdc++.r4"
    ;;
 
    cygwin )
       OS_TAG="P_CYGWIN"
-      HAS_SHM_VIDEO=
    ;;
 
    mingw )
       OS_TAG="P_MINGW"
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -mms-bitfields"
-      SHAREDLIBEXT="dll"
-      LDSOFLAGS="-shared -Wl,--kill-at"
-      ENDLDLIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz"
-      HAS_SHM_VIDEO=
    ;;
 
    * )
       OS_TAG="P_TARGET_OS"
-   ;;
 esac
 
 AC_DEFINE_UNQUOTED($OS_TAG, $target_release)
@@ -318,7 +229,7 @@ AC_DEFINE_UNQUOTED($OS_TAG, $target_release)
 
 if test "$target_64bit" = "1" ; then
   AC_DEFINE([P_64BIT], [1], [64bit architecture])
-  PTLIB_CFLAGS="$PTLIB_CFLAGS -DP_64BIT"
+  CPPFLAGS="$CPPFLAGS -DP_64BIT"
 fi
 
 if test "$target_os" = "linux-gnulp" ; then
@@ -327,69 +238,85 @@ fi
 
 
 dnl ########################################################################
-dnl set libdir with target if using PTLIBDIR as install prefix
-if test "x$OBJ_ARCH" != "x" ; then
-   libdir+=_$target
-fi
-
-dnl ########################################################################
-dnl get the gcc version
-
-USE_GCC=
-USE_PCH=
-
-if test x$GXX = xyes ; then
-  USE_GCC=yes
-  gcc_version=`$CXX -dumpversion`
-  AC_MSG_NOTICE(gcc version is $gcc_version);
-  GXX_MAJOR=`echo $gcc_version | sed 's/\..*$//'`
-  GXX_MINOR=[`echo $gcc_version | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
-  GXX_PATCH=[`echo $gcc_version | sed -e 's/[0-9][0-9]*\.[0-9][0-9]*\.//' -e 's/\..*$//'`]
-
-  dnl only enable pragma for gcc 4.0 and later
-  AC_MSG_CHECKING(checking if pragma implementation should be used)
-  if test ${GXX_MAJOR} -lt 4 ; then
-    if test "${need_pragma}" = "yes" ; then
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -DP_USE_PRAGMA"
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT(no)
-    fi
-  else
-    AC_MSG_RESULT(no)
-  fi
-
-  dnl only enable PCH for gcc 4.0 and later
-  AC_MSG_CHECKING(checking if precompiled headers available)
-  if test ${GXX_MAJOR} -lt 4 ; then
-    enable_pch=no
-  else
-    AC_ARG_ENABLE(pch, AS_HELP_STRING([--enable-pch],[Enable precompiled headers]))
-  fi
-  if test "${enable_pch}" = "yes" ; then
-    AC_MSG_RESULT(yes)
-    USE_PCH=1
-  else
-    AC_MSG_RESULT(no)
-  fi
+dnl Check for non-installed "environment variable" mode
+if test "x$PTLIBDIR" != "x" ; then
+   AC_MSG_NOTICE(PTLIBDIR environment variable detected as $PTLIBDIR)
+   ac_default_prefix=$PTLIBDIR
+   if test "x$prefix" = "x" || test "x$prefix" = "xNONE" ; then
+      libdir+=_$target
+dnl      cfg_prefix=./lib_$target
+   fi
 else
-  USE_GCC=no
+   PTLIBDIR=`pwd`
 fi
 
-AC_SUBST(USE_GCC)
-AC_SUBST(USE_PCH)
 
 dnl ########################################################################
-dnl check if precompiled headers available, or disabled
+dnl extract the PTLib version
+dnl MSWIN_DISPLAY version,Version
+dnl MSWIN_VERSION version,PTLIB_MAJOR=MAJOR_VERSION
+dnl MSWIN_VERSION version,PTLIB_MINOR=MINOR_VERSION
+dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
+dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
+
+MAJOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
+MINOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
+BUILD_NUMBER=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
+PTLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
+BUILD_TYPE=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+
+AC_SUBST(MAJOR_VERSION)
+AC_SUBST(MINOR_VERSION)
+AC_SUBST(BUILD_NUMBER)
+AC_SUBST(PTLIB_VERSION)
+AC_SUBST(BUILD_TYPE)
+AC_SUBST(MAJOR_VERSION, $MAJOR_VERSION)
+AC_SUBST(MINOR_VERSION, $MINOR_VERSION)
+AC_SUBST(BUILD_NUMBER, $BUILD_NUMBER)
+
+AC_MSG_NOTICE(PTLib version is ${PTLIB_VERSION});
+
+AC_DEFINE_UNQUOTED([PTLIB_MAJOR],   [$MAJOR_VERSION],   [Major version])
+AC_DEFINE_UNQUOTED([PTLIB_MINOR],   [$MINOR_VERSION],   [Minor version])
+AC_DEFINE_UNQUOTED([PTLIB_BUILD],   [$BUILD_NUMBER],    [Build number])
+AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
+
 
 dnl ########################################################################
-dnl set the shared library extension, if not already set
+dnl Find programs we need
 
-if test "x${SHAREDLIBEXT}" = "x" ; then
-  SHAREDLIBEXT="so"
+PKG_PROG_PKG_CONFIG()
+if test -z "$PKG_CONFIG" ; then
+   AC_MSG_ERROR(pkg-config is required, 1)
 fi
-AC_SUBST(SHAREDLIBEXT, $SHAREDLIBEXT)
-AC_DEFINE([P_SHAREDLIBEXT], [$SHAREDLIBEXT], [shared library extension])
+
+AC_PROG_YACC()
+if test -z "$YACC" ; then
+   AC_MSG_ERROR(parser generator (e.g. bison) is required, 1)
+fi
+
+AC_PROG_INSTALL()
+AC_CHECK_PROG(SVN, svn)
+
+AC_LANG(C++)
+AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
+
+
+dnl ########################################################################
+dnl check for old gcc version
+
+AC_MSG_CHECKING(checking if pragma implementation should be used)
+
+gcc_version=`$CC -dumpversion`
+if test "x$gcc_version" != "x" ; then
+   if test `echo $gcc_version | sed 's/\..*$//'` -lt 4 ; then
+      CPPFLAGS="$CPPFLAGS -DP_USE_PRAGMA"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+   AC_MSG_NOTICE($CC version is $gcc_version);
+fi
 
 
 dnl ########################################################################
@@ -412,6 +339,30 @@ if test "$target_os" != "solaris"; then
 fi
 
 
+dnl add additional information for the debugger to ensure the user can indeed
+dnl debug coredumps and macros.
+
+AC_SUBST(DEBUG_FLAGS, "-D_DEBUG")
+PTLIB_COMPILE_IFELSE(
+   [debug build -g3 -ggdb -O0],
+   [-g3 -ggdb -O0],
+   [],
+   [],
+   [DEBUG_FLAGS="$DEBUG_FLAGS -g3 -ggdb -O0"],
+   [DEBUG_FLAGS="$DEBUG_FLAGS -g"]
+)
+
+
+AC_SUBST(OPT_FLAGS, "-DNDEBUG")
+PTLIB_COMPILE_IFELSE(
+   [optimised build -O3],
+   [-O3],
+   [],
+   [],
+   [OPT_FLAGS="$OPT_FLAGS -O3"],
+   [OPT_FLAGS="$OPT_FLAGS -O2"]
+)
+
 
 dnl ########################################################################
 dnl look for compile flags
@@ -421,7 +372,7 @@ PTLIB_COMPILE_IFELSE(
    [-felide-constructors],
    [],
    [],
-   [PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -felide-constructors"]
+   [CXXFLAGS="$CXXFLAGS -felide-constructors"]
 )
 
 PTLIB_COMPILE_IFELSE(
@@ -429,7 +380,7 @@ PTLIB_COMPILE_IFELSE(
    [-Wreorder],
    [],
    [],
-   [PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wreorder"]
+   [CXXFLAGS="$CXXFLAGS -Wreorder"]
 )
 
 
@@ -441,22 +392,9 @@ if test "${enable_deprecated}" = "no" ; then
       [-Wno-deprecated-declarations],
       [],
       [],
-      [PTLIB_CXXFLAGS="$PTLIB_CXXFLAGS -Wno-deprecated-declarations"]
+      [CPPFLAGS="$CPPFLAGS -Wno-deprecated-declarations"]
    )
 fi
-
-
-dnl add additional information for the debugger to ensure the user can indeed
-dnl debug coredumps and macros.
-
-PTLIB_COMPILE_IFELSE(
-   [debug build -g3 -ggdb -O0],
-   [-g3 -ggdb -O0],
-   [],
-   [],
-   [DEBUG_FLAG="-g3 -ggdb -O0"],
-   [DEBUG_FLAG="-g"]
-)
 
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
@@ -482,7 +420,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
    ],
    [
       AC_MSG_RESULT(no)
-      PTLIB_CXXFLAGS="$PTLIB_CFLAGS -frtti"
+      CPPFLAGS="$CPPFLAGS -frtti"
    ]
 )
 
@@ -498,30 +436,6 @@ AC_C_LONG_DOUBLE
 if test $ac_cv_c_long_double != yes ; then
   AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
 fi
-
-dnl ########################################################################
-dnl we need flex, so we better make sure it's there
-AC_PATH_PROG(FLEX, flex)
-if test -z "$FLEX" ; then
-        AC_MSG_ERROR(PTLib needs the GNU Project fast lexical analyzer generator flex, 1)
-fi
-
-dnl ########################################################################
-dnl most systems have "ar", but some use "gar"
-AC_CHECK_TOOL(AR, ar)
-if test -z "$AR" ; then
-  AC_CHECK_TOOL(AR, gar)
-fi
-
-dnl ########################################################################
-dnl we need bison, so we better make sure it's there
-AC_PATH_PROG(BISON, bison)
-if test -z "$BISON" ; then
-        AC_MSG_ERROR(PTLib needs the GNU Project parser generator bison, 1)
-fi
-
-dnl ########################################################################
-AC_CHECK_TOOL(SVN, svn)
 
 dnl ########################################################################
 dnl check for number of parms to readdir
@@ -912,15 +826,15 @@ dnl FreeBSD uses the -pthread compiler option and uses libc_r
 
 if test "${target_os}" = "FreeBSD" ; then
    HAS_PTHREADS=yes
-   ENDLDLIBS="$ENDLDLIBS -pthread"
-   PTLIB_CFLAGS="$PTLIB_CFLAGS -D_REENTRANT -pthread"
+   LDFLAGS="$LDFLAGS -pthread"
+   CPPFLAGS="$CPPFLAGS -D_REENTRANT -pthread"
    AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 else
    AC_CHECK_LIB(pthread, pthread_create,
       [
          HAS_PTHREADS=yes
-         ENDLDLIBS="$ENDLDLIBS -lpthread"
-         PTLIB_CFLAGS="$PTLIB_CFLAGS -D_REENTRANT"
+         LDFLAGS="$LDFLAGS -lpthread"
+         CPPFLAGS="$CPPFLAGS -D_REENTRANT"
          AC_DEFINE(P_PTHREADS, 1, "PThreads found")
       ],
       [
@@ -938,7 +852,7 @@ dnl check for rt library
 
 AC_CHECK_LIB(rt, clock_gettime, HAS_RT=yes, HAS_RT=no)
 if test ${HAS_RT} = yes ; then
-  ENDLDLIBS="$ENDLDLIBS -lrt"
+  LDFLAGS="$LDFLAGS -lrt"
 fi
 
 
@@ -1162,7 +1076,7 @@ else
       [pcap_t *h],
       [
          AC_DEFINE(P_PCAP, 1, "PCAP found")
-         ENDLDLIBS="$ENDLDLIBS -lpcap"
+         LDFLAGS="$LDFLAGS -lpcap"
          HAS_PCAP=1
       ]
    )
@@ -1214,14 +1128,14 @@ AC_ARG_ENABLE(trace-instance, AS_HELP_STRING([--disable-trace-instance],[Disable
 
 if test "x${enable_tracing}" = "xno" ; then
    AC_MSG_NOTICE(PTRACE and all trace logging removed)
-   PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
+   CPPFLAGS="$CPPFLAGS -DPTRACING=0 -DPASN_NOPRINTON -DPASN_LEANANDMEAN"
 else
    if test "x${enable_trace_instance}" = "xno" ; then
       AC_MSG_NOTICE(PTRACE without object instance trace logging included)
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=1"
+      CPPFLAGS="$CPPFLAGS -DPTRACING=1"
    else
       AC_MSG_NOTICE(PTRACE and all trace logging included)
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -DPTRACING=2"
+      CPPFLAGS="$CPPFLAGS -DPTRACING=2"
    fi
 fi
 
@@ -1259,7 +1173,7 @@ else
          AC_SUBST(HAS_REGEX, 1)
          AC_DEFINE(P_REGEX, 1, "Regex library found")
          if test ${target_os} = mingw ; then
-            ENDLDLIBS="$ENDLDLIBS -lregex"
+            LDFLAGS="$LDFLAGS -lregex"
          fi
       ]
    )
@@ -1318,7 +1232,7 @@ else
          [
             HAS_DNS_RESOLVER=1
             AC_DEFINE(P_HAS_RES_NINIT, 1)
-            ENDLDLIBS="$ENDLDLIBS -lresolv"
+            LDFLAGS="$LDFLAGS -lresolv"
          ],
          [AC_CHECK_FUNC(
             [res_search],
@@ -1334,7 +1248,7 @@ else
                [res_search(NULL, 0, 0, NULL, 0)],
                [
                   HAS_DNS_RESOLVER=1
-                  ENDLDLIBS="$ENDLDLIBS -lresolv"
+                  LDFLAGS="$LDFLAGS -lresolv"
                ],
                [AC_SEARCH_LIBS(
                   [__res_search],
@@ -1344,7 +1258,7 @@ else
                      [windns.h],
                      [
                         HAS_DNS_RESOLVER=1
-                        ENDLDLIBS="$ENDLDLIBS -ldnsapi"
+                        LDFLAGS="$LDFLAGS -ldnsapi"
                      ],
                      [],
                      [#include <windows.h>]
@@ -1381,7 +1295,7 @@ else
       [jpeglib.h],
       [
          AC_DEFINE(P_LIBJPEG)
-         ENDLDLIBS="$ENDLDLIBS -ljpeg"
+         LDFLAGS="$LDFLAGS -ljpeg"
       ]
    )
 fi
@@ -1404,7 +1318,7 @@ else
   if test $HAS_MEDIALIB = yes; then
     AC_MSG_NOTICE(SUN mlib enabled)
     AC_DEFINE(P_MEDIALIB)
-    ENDLDLIBS="-lmlib $ENDLDLIBS"
+    LDFLAGS="-lmlib $LDFLAGS"
   else
     AC_MSG_ERROR(SUN mlib not found, 1)
   fi
@@ -1442,7 +1356,7 @@ else
       [
          HAS_SASL2=1
          AC_DEFINE(P_SASL, 2)
-         ENDLDLIBS="$ENDLDLIBS -lsasl2"
+         LDFLAGS="$LDFLAGS -lsasl2"
       ],
       [
          HAS_SASL2=
@@ -1452,7 +1366,7 @@ else
             [
                HAS_SASL=1
                AC_DEFINE(P_SASL, 1)
-               ENDLDLIBS="$ENDLDLIBS -lsasl"
+               LDFLAGS="$LDFLAGS -lsasl"
             ],
             [HAS_SASL=]
          )
@@ -2010,9 +1924,9 @@ case "$target_os" in
     PTLIB_SIMPLE_OPTION([exceptions], [EXCEPTIONS], [enable C++ exceptions])
 
     if test "x${HAS_EXCEPTIONS}" = "x1" ; then
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -fexceptions"
+      CXXFLAGS="$CXXFLAGS -fexceptions"
     else
-      PTLIB_CFLAGS="$PTLIB_CFLAGS -fno-exceptions"
+      CXXFLAGS="$CXXFLAGS -fno-exceptions"
     fi
     ;;
 esac
@@ -2055,8 +1969,8 @@ if test "x${HAS_VIDEO}" = "x1" ; then
          AC_DEFINE(P_DIRECTSHOW, 1)
          AC_DEFINE(P_DIRECTX, 1)
          AC_DEFINE(P_DIRECTSOUND, 1)
-         PTLIB_CFLAGS="$PTLIB_CFLAGS -I${with_directx_dir}"
-         ENDLDLIBS="$ENDLDLIBS -ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
+         CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
+         LDFLAGS="$LDFLAGS -ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
       fi
     ;;
   esac
@@ -2104,8 +2018,8 @@ PTLIB_LINK_IFELSE(
    [
       HAS_LIBDL=1
       AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
-      PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
-      ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
+      CPPFLAGS="$CPPFLAGS $DL_CFLAGS"
+      LDFLAGS="$LDFLAGS $DL_LIBS"
    ],
    [HAS_LIBDL=]
 )
@@ -2277,55 +2191,24 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for portaudio sound support
 
-      PORTAUDIO_DIR=
-      P_PORTAUDIO=
-      P_PORTMIXER=
-      AC_ARG_WITH([portaudio-dir], 
-                 AS_HELP_STRING([--with-portaudio-dir],[set directory for PortAudio]),
-                 [PORTAUDIO_DIR=$with_portaudio_dir])
-
-      old_CFLAGS=$CFLAGS
-      old_CPPFLAGS=$CPPFLAGS
-      old_LDFLAGS=$LDFLAGS
-      if test "x$PORTAUDIO_DIR" != "x" ; then
-        CFLAGS="-I ${PORTAUDIO_DIR}/include ${CFLAGS}"
-        CPPFLAGS="-I ${PORTAUDIO_DIR}/include ${CPPFLAGS}"
-        LDFLAGS="-L${PORTAUDIO_DIR}/lib ${LDFLAGS}"
-      fi
-
-      AC_ARG_ENABLE(portaudio, AS_HELP_STRING([--disable-portaudio],[disable PortAudio support]))
-      if test "x${enable_portaudio}" = "xno" ; then
-         AC_MSG_NOTICE(PortAudio disabled by user)
-      else
-         AC_CHECK_HEADER([portaudio.h], [
-            AC_SUBST(HAS_PORTAUDIO, 1)
-            AC_DEFINE(P_PORTAUDIO, 1)
-         ])
-         if test "x$HAS_PORTAUDIO" = "x1" ; then
-           AC_CHECK_LIB([portaudio], [Pa_GetDefaultInputDevice], [HAS_PORTAUDIO=1],[HAS_PORTAUDIO=])
-         fi
-         if test "x$HAS_PORTAUDIO" = "x1" ; then
-           AC_CHECK_HEADER([portmixer.h], [
-              AC_SUBST(HAS_PORTMIXER, 1)
-              AC_DEFINE(P_PORTMIXER, 1)
-           ])
-         fi
-      fi
-
-      if test "x$HAS_PORTAUDIO" = "x1" ; then
-        if test "x$PORTAUDIO_DIR" != "x" ; then
-          PTLIB_CFLAGS="-I${PORTAUDIO_DIR}/include ${PTLIB_CFLAGS}"
-          old_LDFLAGS=$LDFLAGS
-        fi
-        if test "x$HAS_PORTMIXER" = "x1" ; then
-          ENDLDLIBS="-lportmixer ${ENDLDLIBS}"
-        fi
-        ENDLDLIBS="-lportaudio ${ENDLDLIBS}"
-      fi
-
-      CFLAGS=$old_CFLAGS
-      CPPFLAGS=$old_CPPFLAGS
-      LDFLAGS=$old_LDFLAGS
+      PTLIB_MODULE_OPTION(
+         [PORTAUDIO],
+         [portaudio],
+         [PortAudio library],
+         [portaudio],
+         [],
+         [-;portaudio],
+         [#include <portaudio.h>],
+         [Pa_GetDeviceCount()],
+         [AC_CHECK_HEADER(
+            [portmixer.h],
+            [
+               AC_SUBST(HAS_PORTMIXER, 1)
+               AC_DEFINE(P_PORTMIXER, 1)
+               LDFLAGS="-lportmixer ${LDFLAGS}"
+            ]
+         )]
+      )
 
    fi # enable_audio
 
@@ -2568,17 +2451,6 @@ PTLIB_SIMPLE_OPTION([samples], [SAMPLES], [enable samples build])
 dnl ########################################################################
 dnl final declarations
 
-AC_SUBST(CC)
-AC_SUBST(CXX)
-AC_SUBST(PTLIB_CFLAGS)
-AC_SUBST(PTLIB_CXXFLAGS)
-AC_SUBST(LDFLAGS)
-AC_SUBST(LDSOFLAGS)
-AC_SUBST(ENDLDLIBS)
-AC_SUBST(DEBUG_FLAG)
-
-AC_PROG_INSTALL
-
 AC_CONFIG_FILES(ptlib.pc)
 AC_CONFIG_FILES(ptlib_cfg.dxy)
 AC_CONFIG_FILES(make/ptbuildopts.mak)
@@ -2586,14 +2458,14 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 dnl ########################################################################
 dnl output header file
 
-cfg_prefix=$exec_prefix
-if test "$cfg_prefix" = "NONE" ; then
+if test "x$cfg_prefix" = "x" ; then
   cfg_prefix=./include
 fi
 
 AC_CONFIG_HEADERS(${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in)
 
 AC_OUTPUT()
+
 
 dnl ########################################################################
 dnl Summary
