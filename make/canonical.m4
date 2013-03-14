@@ -5,11 +5,28 @@ dnl  This generates "normalised" target_os, target_cpu, target_64bit and target
 dnl  variables. The standard ones are a little too detailed for our use. Also,
 dnl  we check for --enable-ios=X to preset above variables and compiler for
 dnl  correct cross compilation, easier to remember that the --host command.
+dnl  Finally, it defines the various compulsory progams (C, C++, ld, ar, etc)
+dnl  and flags that are used by pretty much any build.
 dnl
 
-AC_DEFUN([MY_CANONICAL_TARGET], [
-   AC_CANONICAL_TARGET()
+AC_CANONICAL_TARGET()
 
+AC_PROG_CC()
+AC_PROG_CXX()
+if test -z "$CXX" ; then
+   AC_MSG_ERROR(C++ compiler is required, 1)
+fi
+
+AC_PROG_RANLIB()
+
+AC_CHECK_TOOL(AR, ar)
+if test -z "$AR" ; then
+   AC_CHECK_TOOL(AR, gar)
+fi
+
+
+AC_DEFUN([MY_CANONICAL_TARGET], [
+   dnl Special case for iOS to make cross compiling simpler to remember
    AC_ARG_ENABLE([ios], [AS_HELP_STRING([--enable-ios=iphone|simulator],[enable iOS support])])
 
    if test "$enable_ios" = "iphone" ; then
@@ -26,6 +43,31 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       AC_MSG_ERROR([Unknown iOS variant \"${enable_ios}\" - use either iphone or simulator])
    fi
 
+
+   dnl Most unix'ish platforms are like this
+
+   AC_SUBST(LDSOFLAGS, [["-shared -Wl,-soname,INSERT_SONAME"]])
+   AC_SUBST(SHAREDLIBEXT, "so")
+   AC_SUBST(STATICLIBEXT, "a")
+
+   AC_SUBST(ARFLAGS, "rc")
+
+   case "$target_os" in
+      darwin* | iPhone* )
+         LDSOFLAGS="-dynamiclib"
+         SHAREDLIBEXT="dylib"
+         AR="libtool"
+         ARFLAGS="-static -o"
+         RANLIB=
+      ;;
+
+      cygwin* | mingw* )
+         LDSOFLAGS="-shared -Wl,--kill-at"
+         SHAREDLIBEXT="dll"
+         STATICLIBEXT="lib"
+      ;;
+   esac
+
    case "$target_os" in
       iPhone* )
          if test "x$target_release" == "x" ; then
@@ -38,9 +80,17 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
          CXX="${IOS_DEVROOT}/usr/bin/g++"
          CC="${IOS_DEVROOT}/usr/bin/gcc"
          LD="${IOS_DEVROOT}/usr/bin/ld"
-         CXXFLAGS="${CXXFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT}"
-         CFLAGS="${CFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT}"
-         LDFLAGS="${LDFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT} -L${IOS_SDKROOT}/usr/lib"
+         CPPFLAGS="${CPPFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT}"
+         LDFLAGS="${LDFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT} -L${IOS_SDKROOT}/usr/lib -framework SystemConfiguration -framework CoreFoundation"
+      ;;
+
+      darwin* )
+         target_os=Darwin
+         OS_MAJOR=`uname -r | sed 's/\..*$//'`
+         OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
+         target_release=`expr $OS_MAJOR \* 100 + $OS_MINOR`
+         CPPFLAGS="${CPPFLAGS} -D__MACOSX_CORE__"
+         LDFLAGS="${LDFLAGS} -framework CoreAudio -framework SystemConfiguration -framework CoreFoundation"
       ;;
 
       linux* | Linux* | uclibc* )
@@ -50,6 +100,7 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       freebsd* | kfreebsd* )
          target_os=FreeBSD
          target_release="`sysctl -n kern.osreldate`"
+         AC_CHECK_TOOL(RANLIB, ranlib)
       ;;
 
       openbsd* )
@@ -65,17 +116,15 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       solaris* | sunos* )
          target_os=solaris
          target_release=`uname -r | sed "s/5\.//g"`
-      ;;
-
-      darwin* )
-         target_os=Darwin
-         OS_MAJOR=`uname -r | sed 's/\..*$//'`
-         OS_MINOR=[`uname -r | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
-         target_release=`expr $OS_MAJOR \* 100 + $OS_MINOR`
+         CPPFLAGS="$CPPFLAGS -D__inline=inline -DSOLARIS"
+         LDSOFLAGS="-Bdynamic -G -h INSERT_SONAME"
       ;;
 
       beos* )
          target_os=beos
+         CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format"
+         LDFLAGS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
+         LDSOFLAGS="-shared -nostdlib -nostart"
       ;;
 
       cygwin* )
@@ -84,6 +133,8 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
 
       mingw* )
          target_os=mingw
+         CPPFLAGS="$CPPFLAGS -mms-bitfields"
+         LDFLAGS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz"
       ;;
 
       * )
@@ -162,11 +213,11 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
       target_64bit=0
 
       if test "$target_os" = "Darwin"; then
-         CFLAGS="$CFLAGS -arch i386"
+         CPPFLAGS="$CPPFLAGS -arch i386"
          LDFLAGS="$LDFLAGS -arch i386"
          LDSOFLAGS="$LDSOFLAGS -arch i386"
       else
-         CFLAGS="$CFLAGS -m32"
+         CPPFLAGS="$CPPFLAGS -m32"
          LDFLAGS="$LDFLAGS -m32"
          LDSOFLAGS="$LDSOFLAGS -m32"
       fi

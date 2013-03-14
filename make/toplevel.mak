@@ -87,7 +87,7 @@ optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 
 # all these targets are just passed to all subdirectories
 $(STANDARD_TARGETS) ::
-	set -e; $(foreach dir,$(addprefix $(PTLIBDIR)/,$(SUBDIRS)),if test -d $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
+	@set -e; $(foreach dir,$(addprefix $(PTLIBDIR)/,$(SUBDIRS)),if test -d $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
 
 
 ifneq (,$(SVN))

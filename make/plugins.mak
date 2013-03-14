@@ -33,7 +33,6 @@ ifndef PTLIBDIR
 endif
 
 include $(PTLIBDIR)/make/ptbuildopts.mak
-include $(PTLIBDIR)/make/unix.mak
 
 PLUGIN_FILENAME = $(PLUGIN_NAME)_pwplugin.$(LIB_SUFFIX)
 
@@ -55,21 +54,21 @@ endif
 
 
 ifeq ($(target_cpu),x86_64)
-  PTLIB_CFLAGS += -fPIC
+  CPPFLAGS += -fPIC
 endif
 
 ifeq ($(target_cpu),hppa)
-  PTLIB_CFLAGS += -fPIC
+  CPPFLAGS += -fPIC
 endif
 
 ifeq ($(P_SHAREDLIB),1)
   PLUGIN_LIBS += $(PTLIB_LIBDIR)/$(PTLIB_FILE)
-  CXXFLAGS += -DP_SHAREDLIB
+  CPPFLAGS += -DP_SHAREDLIB
 endif
 
 $(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
 	@mkdir -p $(OBJDIR)
-	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(CXXFLAGS) \
+	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
 	$(LDSOPTS) $^ \
 	$(PLUGIN_LIBS) \
 	$(LDFLAGS) \
