@@ -27,113 +27,59 @@ AC_ARG_ENABLE(minsize, AS_HELP_STRING([--enable-minsize],[Minimise the size of t
 
 dnl these are the default configure settings, minimum or full
 if test "${enable_minsize}x" = "yesx" ; then
-  default_resolver=no
+  DEFAULT_RESOLVER=no
   DEFAULT_OPENLDAP=no
   DEFAULT_OPENSSL=no
   DEFAULT_EXPAT=no
   DEFAULT_SDL=no
   DEFAULT_GSTREAMER=no
-  default_sasl=no
-  default_mlib=no
-  default_ipv6=no
-  default_pcap=no
+  DEFAULT_SASL=no
+  DEFAULT_MLIB=no
+  DEFAULT_PCAP=no
   DEFAULT_LUA=no
   DEFAULT_V8=no
   DEFAULT_ODBC=no
-  HAS_TTS=
-  HAS_ASN=1
-  HAS_NAT=1
-  HAS_STUN=1
-  HAS_STUNSRVR=
-  HAS_PIPECHAN=
-  HAS_DTMF=
-  HAS_WAVFILE=
-  HAS_SOCKS=
-  HAS_FTP=
-  HAS_SNMP=
-  HAS_TELNET=
-  HAS_CLI=
-  HAS_REMCONN=
-  HAS_SERIAL=
-  HAS_POP3SMTP=
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=
-  HAS_HTTPSVC=
-  HAS_SSDP=
-  HAS_VCARD=
-  HAS_SOAP=
-  HAS_XMLRPC=
-  HAS_JABBER=
-  HAS_CONFIG_FILE=0
-  HAS_QOS=
-  HAS_VIDFILE=
-  HAS_FFVDEV=
-  HAS_APPSHARE=
-  HAS_VXML=
-  HAS_SHM_VIDEO=
-  HAS_SHM_AUDIO=
-  HAS_PORTAUDIO=
-  HAS_VFW_CAPTURE=
-else
-  default_tracing=yes
-  default_resolver=yes
-  DEFAULT_OPENLDAP=yes
-  DEFAULT_OPENSSL=yes
-  DEFAULT_EXPAT=yes
-  DEFAULT_SDL=yes
-  DEFAULT_GSTREAMER=yes
-  default_sasl=yes
-  default_mlib=no
-  default_ipv6=yes
-  default_pcap=yes
-  DEFAULT_LUA=yes
-  DEFAULT_V8=yes
-  DEFAULT_ODBC=yes
-  HAS_TTS=1
-  HAS_ASN=1
-  HAS_NAT=1
-  HAS_STUN=1
-  HAS_STUNSRVR=1
-  HAS_PIPECHAN=1
-  HAS_DTMF=1
-  HAS_WAVFILE=1
-  HAS_SOCKS=1
-  HAS_FTP=1
-  HAS_SNMP=1
-  HAS_TELNET=1
-  HAS_CLI=1
-  HAS_REMCONN=1
-  HAS_SERIAL=1
-  HAS_POP3SMTP=1
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=1
-  HAS_HTTPSVC=1
-  HAS_SSDP=1
-  HAS_VCARD=1
-  HAS_SOAP=1
-  HAS_XMLRPC=1
-  HAS_JABBER=1
-  HAS_CONFIG_FILE=1
-  HAS_QOS=1
-  HAS_VIDFILE=1
-  HAS_FFVDEV=1
-  HAS_APPSHARE=
-  HAS_SHM_VIDEO=
-  HAS_SHM_AUDIO=
-  HAS_PORTAUDIO=
-  HAS_VXML=1
-  HAS_VFW_CAPTURE=
+  DEFAULT_TTS=no
+  DEAFULT_ASN=1
+  DEAFULT_NAT=no
+  DEAFULT_STUN=no
+  DEAFULT_STUNSRVR=no
+  DEAFULT_PIPECHAN=no
+  DEAFULT_DTMF=no
+  DEAFULT_WAVFILE=no
+  DEAFULT_SOCKS=no
+  DEAFULT_FTP=no
+  DEAFULT_SNMP=no
+  DEAFULT_TELNET=no
+  DEAFULT_CLI=no
+  DEAFULT_REMCONN=no
+  DEAFULT_SERIAL=no
+  DEAFULT_POP3SMTP=no
+  DEAFULT_VIDEO=no
+  DEAFULT_URL=no
+  DEAFULT_HTTP=no
+  DEAFULT_HTTPFORMS=no
+  DEAFULT_HTTPSVC=no
+  DEAFULT_SSDP=no
+  DEAFULT_VCARD=no
+  DEAFULT_SOAP=no
+  DEAFULT_XMLRPC=no
+  DEAFULT_JABBER=no
+  DEAFULT_CONFIG_FILE=no
+  DEAFULT_QOS=no
+  DEAFULT_VIDFILE=no
+  DEAFULT_FFVDEV=no
+  DEAFULT_VXML=no
 fi
 
-HAS_SAMPLES=no
-HAS_PLUGINS=1
-HAS_EXCEPTIONS=
+DEFAULT_APPSHARE=no
+DEFAULT_SHM_VIDEO=no
+DEFAULT_SHM_AUDIO=no
+DEFAULT_PORTAUDIO=no
+DEFAULT_VFW_CAPTURE=no
+DEFAULT_SAMPLES=no
+DEFAULT_PLUGINS=yes
+DEFAULT_EXCEPTIONS=no
 
 
 dnl ########################################################################
@@ -146,7 +92,6 @@ dnl MSWIN_DISPLAY android,Android build (using vs-android)
 dnl MSWIN_DEFINE  android,P_ANDROID
 dnl MSWIN_DEFAULT android,Disabled
 
-m4_include(make/canonical.m4)
 MY_CANONICAL_TARGET()
 
 case "$target_os" in
@@ -174,7 +119,7 @@ case "$target_os" in
       OS_TAG="P_SOLARIS"
 
       dnl According to Andre Schulze <as8@rncmm2.urz.tu-dresden.de>
-      PTLIB_COMPILE_IFELSE(
+      MY_COMPILE_IFELSE(
          [for upad128_t],
          [],
          [#include <sys/types.h>],
@@ -343,7 +288,7 @@ dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
 AC_SUBST(DEBUG_FLAGS, "-D_DEBUG")
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [debug build -g3 -ggdb -O0],
    [-g3 -ggdb -O0],
    [],
@@ -354,7 +299,7 @@ PTLIB_COMPILE_IFELSE(
 
 
 AC_SUBST(OPT_FLAGS, "-DNDEBUG")
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [optimised build -O3],
    [-O3],
    [],
@@ -367,7 +312,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl look for compile flags
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [compiler -felide-constructors],
    [-felide-constructors],
    [],
@@ -375,7 +320,7 @@ PTLIB_COMPILE_IFELSE(
    [CXXFLAGS="$CXXFLAGS -felide-constructors"]
 )
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [compiler -Wreorder],
    [-Wreorder],
    [],
@@ -387,7 +332,7 @@ PTLIB_COMPILE_IFELSE(
 AC_ARG_ENABLE(deprecated, AS_HELP_STRING([--disable-deprecated],[Stop compiler warning about deprecated functions]))
 
 if test "${enable_deprecated}" = "no" ; then
-   PTLIB_COMPILE_IFELSE(
+   MY_COMPILE_IFELSE(
       [compiler -Wno-deprecated-declarations],
       [-Wno-deprecated-declarations],
       [],
@@ -439,7 +384,7 @@ fi
 
 dnl ########################################################################
 dnl check for number of parms to readdir
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [if readdir_r has 2 parms],
    [],
    [
@@ -453,7 +398,7 @@ PTLIB_COMPILE_IFELSE(
    ],
    [P_HAS_POSIX_READDIR_R=2],
    [
-      PTLIB_COMPILE_IFELSE(
+      MY_COMPILE_IFELSE(
          [if readdir_r has 3 parms],
          [],
          [#include <dirent.h>],
@@ -475,7 +420,7 @@ AC_DEFINE_UNQUOTED(P_HAS_POSIX_READDIR_R, ${P_HAS_POSIX_READDIR_R})
 dnl ########################################################################
 dnl check for recvmsg
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for recvmsg],
    [],
    [
@@ -494,7 +439,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for rt_msghdr
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for rt_msghdr],
    [],
    [
@@ -511,7 +456,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for recvmsg option MSG_ERRQUEUE
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for recvmsg flag MSG_ERRQUEUE],
    [],
    [
@@ -531,7 +476,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for recvmsg option IP_RECVERR
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for sockopt option IP_RECVERR],
    [],
    [
@@ -551,7 +496,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for arguments to getpwuid_r
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for getpwuid_r with 4 arguments],
    [],
    [
@@ -566,7 +511,7 @@ PTLIB_COMPILE_IFELSE(
       getpwuid_r(uid, pwd, buffer, bufsize);
    ],
    [AC_DEFINE(P_GETPWUID_R4, 1)],
-   [PTLIB_COMPILE_IFELSE(
+   [MY_COMPILE_IFELSE(
       [for getpwuid_r with 5 arguments],
       [],
       [
@@ -589,7 +534,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for arguments to getgrgid_r
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for getgrgid_r with 4 arguments],
    [],
    [
@@ -604,7 +549,7 @@ PTLIB_COMPILE_IFELSE(
       getgrgid_r(gid, grp, buffer, bufsize);
    ],
    [AC_DEFINE(P_GETGRGID_R4, 1)],
-   [PTLIB_COMPILE_IFELSE(
+   [MY_COMPILE_IFELSE(
       [for getgrgid_r with 5 arguments],
       [],
       [
@@ -627,7 +572,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for arguments to getpwnam_r
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for getpwnam_r with 4 arguments],
    [],
    [
@@ -642,7 +587,7 @@ PTLIB_COMPILE_IFELSE(
       getpwnam_r(name, pwd, buffer, bufsize);
    ],
    [AC_DEFINE(P_GETPWNAM_R4, 1)],
-   [PTLIB_COMPILE_IFELSE(
+   [MY_COMPILE_IFELSE(
       [for getpwnam_r with 5 arguments],
       [],
       [
@@ -665,7 +610,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for arguments to getgrnam_r
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for getgrnam_r with 4 arguments],
    [],
    [
@@ -680,7 +625,7 @@ PTLIB_COMPILE_IFELSE(
       getgrnam_r(name, pwd, buffer, bufsize);
    ],
    [AC_DEFINE(P_GETGRNAM_R4, 1)],
-   [PTLIB_COMPILE_IFELSE(
+   [MY_COMPILE_IFELSE(
       [for getgrnam_r with 5 arguments],
       [],
       [
@@ -702,7 +647,7 @@ PTLIB_COMPILE_IFELSE(
 
 dnl ########################################################################
 dnl check if setpgrp takes non or two arguments
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [if setpgrp takes no parameters],
    [],
    [#include <unistd.h>],
@@ -859,7 +804,7 @@ fi
 dnl ########################################################################
 dnl check for Unix semaphores
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [if has Unix semaphores],
    [],
    [#include <semaphore.h>],
@@ -868,7 +813,7 @@ PTLIB_COMPILE_IFELSE(
       sem_init(s, 0, 0);
    ],
    [AC_DEFINE(P_HAS_SEMAPHORES)],
-   [PTLIB_COMPILE_IFELSE(
+   [MY_COMPILE_IFELSE(
       [if named semaphores are available],
       [],
       [#include <semaphore.h>],
@@ -878,7 +823,7 @@ PTLIB_COMPILE_IFELSE(
 )
    
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [if has sem_timedwait],
    [],
    [#include <semaphore.h>],
@@ -894,7 +839,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for XPG6 compliant pthreads (timed spinlocks)
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [if has pthread_mutex_timedlock],
    [],
    [#include <pthread.h>],
@@ -905,7 +850,7 @@ PTLIB_COMPILE_IFELSE(
 
 dnl ########################################################################
 dnl check for recursive mutexes
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [if has NP recursive mutexes],
    [],
    [#include <pthread.h>],
@@ -914,7 +859,7 @@ PTLIB_COMPILE_IFELSE(
       pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
    ],
    [AC_DEFINE(P_HAS_RECURSIVE_MUTEX, 1)],
-   [PTLIB_COMPILE_IFELSE(
+   [MY_COMPILE_IFELSE(
       [if has recursive mutexes],
       [],
       [#include <pthread.h>],
@@ -930,7 +875,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for gethostbyaddr_r
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for gethostbyaddr_r],
    [],
    [#include <netdb.h>],
@@ -952,7 +897,7 @@ PTLIB_COMPILE_IFELSE(
 dnl ########################################################################
 dnl check for NetLink support
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for NetLink support],
    [],
    [
@@ -983,16 +928,12 @@ dnl MSWIN_CHECK_DIR  ipv6,%ProgramW6432%\Windows Kits\8.0
 
 AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[disable IPV6 support]))
 
-if test "${enable_ipv6}z" = "z" ; then
-  enable_ipv6=$default_ipv6
-fi
-
 HAS_IPV6=
 
 if test "$enable_ipv6" = "no" ; then
    AC_MSG_NOTICE(IPV6 disabled)
 else
-   PTLIB_COMPILE_IFELSE(
+   MY_COMPILE_IFELSE(
       [for IPv6 support],
       [],
       [
@@ -1009,15 +950,14 @@ else
       [
          HAS_IPV6=1
          AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
-      ],
-      HAS_IPV6=no
+      ]
    )
 fi
 
 PTLIB_SUBST(IPV6)
 
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for inet_ntop],
    [],
    [
@@ -1036,7 +976,7 @@ PTLIB_COMPILE_IFELSE(
 )
 
 
-PTLIB_COMPILE_IFELSE(
+MY_COMPILE_IFELSE(
    [for IPV6_ADD_MEMBERSHIP],
    [],
    [#include <netinet/in.h>],
@@ -1061,14 +1001,14 @@ AC_ARG_ENABLE(
    [pcap],
    AS_HELP_STRING([--disable-pcap],[disable PCAP support]),
    [],
-   [enable_pcap=$default_pcap]
+   [enable_pcap=$DEFAULT_PCAP]
 )
 
 HAS_PCAP=
 if test "$enable_pcap" = "no" ; then
    AC_MSG_NOTICE(PCAP disabled)
 else
-   PTLIB_LINK_IFELSE(
+   MY_LINK_IFELSE(
       [for PCAP support],
       [],
       [-lpcap],
@@ -1204,7 +1144,7 @@ AC_ARG_ENABLE(
    [resolver],
    AS_HELP_STRING([--disable-resolver],[disable DNS resolver support]),
    [enable_resolver=$enableval],
-   [enable_resolver=$default_resolver]
+   [enable_resolver=${DEFAULT_RESOLVER:-yes}]
 )
 
 HAS_DNS_RESOLVER=
@@ -1217,7 +1157,7 @@ else
          HAS_DNS_RESOLVER=1
          AC_DEFINE(P_HAS_RES_NINIT, 1)
       ],
-      [PTLIB_LINK_IFELSE(
+      [MY_LINK_IFELSE(
          [for res_ninit in -lresolv],
          [],
          [-lresolv],
@@ -1237,7 +1177,7 @@ else
          [AC_CHECK_FUNC(
             [res_search],
             [HAS_DNS_RESOLVER=1],
-            [PTLIB_LINK_IFELSE(
+            [MY_LINK_IFELSE(
                [for res_search in -lresolv],
                [],
                [-lresolv],
@@ -1304,25 +1244,19 @@ fi
 dnl ########################################################################
 dnl check for SUN mediaLib library
 
-AC_ARG_ENABLE(
+MY_ARG_ENABLE(
    [mlib],
-   AS_HELP_STRING([--enable-mlib],[enable SUN mlib support]),
-   [enable_mlib=$enableval],
-   [enable_mlib=$default_mlib]
+   [SUN mlib support],
+   [$DEFAULT_MLIB],
+   [AC_CHECK_LIB(
+      [mlib],
+      [mlib_VideoColorJFIFYCC2RGB420_Nearest],
+      [
+         AC_DEFINE(P_MEDIALIB)
+         LDFLAGS="-lmlib $LDFLAGS"
+      ]
+   )]
 )
-if test "$enable_mlib" = "no" ; then
-  AC_MSG_NOTICE(SUN mlib disabled)
-else 
-  HAS_MEDIALIB=no
-  AC_CHECK_LIB(mlib, mlib_VideoColorJFIFYCC2RGB420_Nearest, HAS_MEDIALIB=yes, HAS_MEDIALIB=no)
-  if test $HAS_MEDIALIB = yes; then
-    AC_MSG_NOTICE(SUN mlib enabled)
-    AC_DEFINE(P_MEDIALIB)
-    LDFLAGS="-lmlib $LDFLAGS"
-  else
-    AC_MSG_ERROR(SUN mlib not found, 1)
-  fi
-fi
 
 
 dnl ########################################################################
@@ -1344,7 +1278,7 @@ AC_ARG_ENABLE(
    [sasl],
    AS_HELP_STRING([--disable-sasl],[disable SASL support]),
    [enable_sasl=$enableval],
-   [enable_sasl=$default_sasl]
+   [enable_sasl=$DEFAULT_SASL]
 )
 
 if test "$enable_sasl" = "no" ; then
@@ -1397,7 +1331,7 @@ dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 PTLIB_MODULE_OPTION(
    [OPENLDAP],
    [openldap],
-   [OpenLDAP support],
+   [Open LDAP support],
    [ldap],
    [],
    [-lldap],
@@ -1454,7 +1388,7 @@ PTLIB_MODULE_OPTION(
    [#include <openssl/ssl.h>],
    [TLSv1_method()],
    [
-      PTLIB_COMPILE_IFELSE(
+      MY_COMPILE_IFELSE(
          [for OPENSSL const arg to d2i_AutoPrivateKey],
          [$OPENSSL_CFLAGS],
          [#include <openssl/evp.h>],
@@ -1467,7 +1401,7 @@ PTLIB_MODULE_OPTION(
          [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])]
       )
 
-      PTLIB_COMPILE_IFELSE(
+      MY_COMPILE_IFELSE(
          [for OPENSSL AES header],
          [$OPENSSL_CFLAGS],
          [#include <openssl/aes.h>],
@@ -1478,7 +1412,7 @@ PTLIB_MODULE_OPTION(
          ]
       )
 
-      PTLIB_COMPILE_IFELSE(
+      MY_COMPILE_IFELSE(
          [for OPENSSL d2i_DHparams_bio new variant],
          [$OPENSSL_CFLAGS],
          [
@@ -1585,14 +1519,14 @@ dnl check for enabling config file support
 dnl MSWIN_DISPLAY    configfile,Config file protocol support
 dnl MSWIN_DEFINE     configfile,P_CONFIG_FILE
 
-PTLIB_SIMPLE_OPTION([configfile], [CONFIG_FILE], [enable config file support])
+PTLIB_SIMPLE_OPTION([configfile], [CONFIG_FILE], [config file support])
 
 dnl ########################################################################
 dnl check for URL support
 dnl MSWIN_DISPLAY    url,URL Support
 dnl MSWIN_DEFINE     url,P_URL
 
-PTLIB_SIMPLE_OPTION([url], [URL], [enable URL support])
+PTLIB_SIMPLE_OPTION([url], [URL], [URL support])
 
 dnl ########################################################################
 dnl check for HTTP support
@@ -1600,7 +1534,7 @@ dnl MSWIN_DISPLAY    http,HTTP Support
 dnl MSWIN_DEFINE     http,P_HTTP
 dnl MSWIN_IF_FEATURE http,url
 
-PTLIB_SIMPLE_OPTION([http], [HTTP], [enable HTTP support], [HAS_URL])
+PTLIB_SIMPLE_OPTION([http], [HTTP], [HTTP support], [HAS_URL])
 
 dnl ########################################################################
 dnl check for HTTPFORMS support
@@ -1608,7 +1542,7 @@ dnl MSWIN_DISPLAY    httpforms,HTTP forms Support
 dnl MSWIN_DEFINE     httpforms,P_HTTPFORMS
 dnl MSWIN_IF_FEATURE httpforms,http&configfile
 
-PTLIB_SIMPLE_OPTION([httpforms], [HTTPFORMS], [enable HTTP forms support], [HAS_HTTP], [HAS_CONFIG_FILE])
+PTLIB_SIMPLE_OPTION([httpforms], [HTTPFORMS], [HTTP forms support], [HAS_HTTP], [HAS_CONFIG_FILE])
 
 
 dnl ########################################################################
@@ -1617,7 +1551,7 @@ dnl MSWIN_DISPLAY    httpsvc,HTTP service Support
 dnl MSWIN_DEFINE     httpsvc,P_HTTPSVC
 dnl MSWIN_IF_FEATURE httpsvc,httpforms
 
-PTLIB_SIMPLE_OPTION([httpsvc], [HTTPSVC], [enable HTTP server support], [HAS_HTTPFORMS])
+PTLIB_SIMPLE_OPTION([httpsvc], [HTTPSVC], [HTTP server support], [HAS_HTTPFORMS])
 
 dnl ########################################################################
 dnl check for SSDP support
@@ -1625,14 +1559,14 @@ dnl MSWIN_DISPLAY    ssdp,SSDP support
 dnl MSWIN_DEFINE     ssdp,P_SSDP
 dnl MSWIN_IF_FEATURE ssdp,http
 
-PTLIB_SIMPLE_OPTION([ssdp], [SSDP], [enable SSDP support], [HAS_HTTP])
+PTLIB_SIMPLE_OPTION([ssdp], [SSDP], [SSDP support], [HAS_HTTP])
 
 dnl ########################################################################
 dnl check for VCard support
 dnl MSWIN_DISPLAY    vcard,VCard support
 dnl MSWIN_DEFINE     vcard,P_VCARD
 
-PTLIB_SIMPLE_OPTION([vcard], [VCARD], [enable VCard support], [HAS_URL])
+PTLIB_SIMPLE_OPTION([vcard], [VCARD], [VCard support], [HAS_URL])
 
 dnl ########################################################################
 dnl Jabber
@@ -1641,7 +1575,7 @@ dnl MSWIN_DEFINE     jabber,P_JABBER
 dnl MSWIN_IF_FEATURE jabber,expat
 dnl MSWIN_IF_FEATURE jabber,expat32
 
-PTLIB_SIMPLE_OPTION([jabber], [JABBER], [enable Jabber support], [HAS_EXPAT])
+PTLIB_SIMPLE_OPTION([jabber], [JABBER], [Jabber support], [HAS_EXPAT])
 
 dnl ########################################################################
 dnl Speech
@@ -1652,7 +1586,7 @@ dnl MSWIN_DEFINE     sapi,P_TTS
 dnl MSWIN_CHECK_DIR  sapi,%ProgramFiles%\Windows Kits\8.0
 dnl MSWIN_CHECK_DIR  sapi,%ProgramW6432%\Windows Kits\8.0
 
-PTLIB_SIMPLE_OPTION([tts], [TTS], [enable Text-To-Speech server support])
+PTLIB_SIMPLE_OPTION([tts], [TTS], [Text-To-Speech server support])
 
 dnl ########################################################################
 dnl VXML 
@@ -1661,7 +1595,7 @@ dnl MSWIN_DEFINE     vxml,P_VXML
 dnl MSWIN_IF_FEATURE vxml,http&sapi&expat
 dnl MSWIN_IF_FEATURE vxml,http&sapi&expat32
 
-PTLIB_SIMPLE_OPTION([vxml], [VXML], [enable VXML support], [HAS_EXPAT], [HAS_HTTP], [HAS_TTS])
+PTLIB_SIMPLE_OPTION([vxml], [VXML], [VXML support], [HAS_EXPAT], [HAS_HTTP], [HAS_TTS])
 
 dnl ########################################################################
 dnl XMLRPC
@@ -1670,7 +1604,7 @@ dnl MSWIN_DEFINE     xmlrpc,P_XMLRPC
 dnl MSWIN_IF_FEATURE xmlrpc,http&expat
 dnl MSWIN_IF_FEATURE xmlrpc,http&expat32
 
-PTLIB_SIMPLE_OPTION([xmlrpc], [XMLRPC], [enable XMLRPC support], [HAS_EXPAT], [HAS_HTTP])
+PTLIB_SIMPLE_OPTION([xmlrpc], [XMLRPC], [XMLRPC support], [HAS_EXPAT], [HAS_HTTP])
 
 dnl ########################################################################
 dnl SOAP
@@ -1679,7 +1613,7 @@ dnl MSWIN_DEFINE     soap,P_SOAP
 dnl MSWIN_IF_FEATURE soap,http&expat
 dnl MSWIN_IF_FEATURE soap,http&expat32
 
-PTLIB_SIMPLE_OPTION([soap], [SOAP], [enable SOAP support], [HAS_EXPAT], [HAS_HTTP])
+PTLIB_SIMPLE_OPTION([soap], [SOAP], [SOAP support], [HAS_EXPAT], [HAS_HTTP])
 
 dnl ########################################################################
 dnl MSWIN_DISPLAY       atl,Active Template Library
@@ -1690,7 +1624,7 @@ dnl check for enabling ASN support
 dnl MSWIN_DISPLAY    asn,ASN Support
 dnl MSWIN_DEFINE     asn,P_ASN
 
-PTLIB_SIMPLE_OPTION([asn], [ASN], [enable ASN decoding/encoding support])
+PTLIB_SIMPLE_OPTION([asn], [ASN], [ASN decoding/encoding support])
 
 dnl ########################################################################
 dnl check for enabling NAT support
@@ -1698,7 +1632,7 @@ dnl MSWIN_DISPLAY    nat,NAT Support
 dnl MSWIN_DEFINE     nat,P_NAT
 dnl MSWIN_DISPLAY    nat,NAT traversal support
  
-PTLIB_SIMPLE_OPTION([nat],     [NAT],     [enable NAT traversal support])
+PTLIB_SIMPLE_OPTION([nat],     [NAT],     [NAT traversal support])
 
 dnl ########################################################################
 dnl check for enabling STUN support
@@ -1707,92 +1641,92 @@ dnl MSWIN_DEFINE     stun,P_STUN
 dnl MSWIN_DISPLAY    stunsrv,STUN server support
 dnl MSWIN_DEFINE     stunsrv,P_STUNSRVR
  
-PTLIB_SIMPLE_OPTION([stun],     [STUN],     [enable STUN support],        [HAS_NAT])
-PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [enable STUN server support], [HAS_NAT])
+PTLIB_SIMPLE_OPTION([stun],     [STUN],     [STUN support],        [HAS_NAT])
+PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [STUN server support], [HAS_NAT])
 
 dnl ########################################################################
 dnl check for enabling PIPECHAN support
 dnl MSWIN_DISPLAY    pipechan,pipe channel Support
 dnl MSWIN_DEFINE     pipechan,P_PIPECHAN
 
-PTLIB_SIMPLE_OPTION([pipechan], [PIPECHAN], [enable pipechannel support])
+PTLIB_SIMPLE_OPTION([pipechan], [PIPECHAN], [sub-process (PPipeChannel) support])
 
 dnl ########################################################################
 dnl check for enabling DTMF support
 dnl MSWIN_DISPLAY  dtmf,DTMF encoding/decoding support
 dnl MSWIN_DEFINE   dtmf,P_DTMF
 
-PTLIB_SIMPLE_OPTION([dtmf], [DTMF], [enable DTMF protocol support])
+PTLIB_SIMPLE_OPTION([dtmf], [DTMF], [DTMF protocol support])
 
 dnl ########################################################################
 dnl check for enabling SOCKS support
 dnl MSWIN_DISPLAY    socks,SOCKS protocol support
 dnl MSWIN_DEFINE     socks,P_SOCKS
 
-PTLIB_SIMPLE_OPTION([socks], [SOCKS], [enable SOCKS protocol support])
+PTLIB_SIMPLE_OPTION([socks], [SOCKS], [SOCKS protocol support])
 
 dnl ########################################################################
 dnl check for enabling FTP support
 dnl MSWIN_DISPLAY    ftp,FTP protocol support
 dnl MSWIN_DEFINE     ftp,P_FTP
 
-PTLIB_SIMPLE_OPTION([ftp], [FTP], [enable FTP protocol support])
+PTLIB_SIMPLE_OPTION([ftp], [FTP], [FTP protocol support])
 
 dnl ########################################################################
 dnl check for enabling SNMP support
 dnl MSWIN_DISPLAY    snmp,SNMP protocol support
 dnl MSWIN_DEFINE     snmp,P_SNMP
 
-PTLIB_SIMPLE_OPTION([snmp], [SNMP], [enable SNMP protocol support])
+PTLIB_SIMPLE_OPTION([snmp], [SNMP], [SNMP protocol support])
 
 dnl ########################################################################
 dnl check for enabling TELNET support
 dnl MSWIN_DISPLAY    telnet,Telnet protocol support
 dnl MSWIN_DEFINE     telnet,P_TELNET
 
-PTLIB_SIMPLE_OPTION([telnet], [TELNET], [enable TELNET protocol support])
+PTLIB_SIMPLE_OPTION([telnet], [TELNET], [TELNET protocol support])
 
 dnl ########################################################################
 dnl check for enabling CLI support
 dnl MSWIN_DISPLAY    cli,Command line interpreter support
 dnl MSWIN_DEFINE     cli,P_CLI
 
-PTLIB_SIMPLE_OPTION([cli], [CLI], [enable command line interpreter support])
+PTLIB_SIMPLE_OPTION([cli], [CLI], [command line interpreter support])
 
 dnl ########################################################################
 dnl check for enabling REMCONN support
 dnl MSWIN_DISPLAY    remconn,remote connection support
 dnl MSWIN_DEFINE     remconn,P_REMCONN
 
-PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [enable remote connection support], [HAS_CONFIG_FILE], [HAS_PIPECHAN])
+PTLIB_SIMPLE_OPTION([remconn], [REMCONN], [remote connection support], [HAS_CONFIG_FILE], [HAS_PIPECHAN])
 
 dnl ########################################################################
 dnl check for enabling serial port handling
 dnl MSWIN_DISPLAY    serial,Serial Support
 dnl MSWIN_DEFINE     serial,P_SERIAL
 
-PTLIB_SIMPLE_OPTION([serial], [SERIAL], [enable serial port support])
+PTLIB_SIMPLE_OPTION([serial], [SERIAL], [serial port support])
 
 dnl ########################################################################
 dnl check for POP3/SMTP support
 dnl MSWIN_DISPLAY    pop3smtp,POP3/SMTP Support
 dnl MSWIN_DEFINE     pop3smtp,P_POP3SMTP
 
-PTLIB_SIMPLE_OPTION([pop3smtp], [POP3SMTP], [enable POP3/SMTP support])
+PTLIB_SIMPLE_OPTION([pop3smtp], [POP3SMTP], [POP3/SMTP support])
 
 dnl ########################################################################
 dnl check for sound support
 dnl MSWIN_DISPLAY audio,Sound support
 dnl MSWIN_DEFINE  audio,P_AUDIO
 
-PTLIB_SIMPLE_OPTION([audio], [AUDIO], [enable audio support])
+PTLIB_SIMPLE_OPTION([audio], [AUDIO], [audio support])
 
 dnl ########################################################################
 dnl check for enabling WAVFILE support
 dnl MSWIN_DISPLAY    wavfile,WAV file support
 dnl MSWIN_DEFINE     wavfile,P_WAVFILE
 
-PTLIB_SIMPLE_OPTION([wavfile], [WAVFILE], [enable WAVFILE support], [HAS_AUDIO])
+PTLIB_SIMPLE_OPTION([wavfile], [WAVFILE], [WAVFILE support], [HAS_AUDIO])
 
 
 dnl ########################################################################
@@ -1811,7 +1745,7 @@ dnl check for video support
 dnl MSWIN_DISPLAY    video,Video Support
 dnl MSWIN_DEFINE     video,P_VIDEO
 
-PTLIB_SIMPLE_OPTION([video], [VIDEO], [enable video device support])
+PTLIB_SIMPLE_OPTION([video], [VIDEO], [video device support])
 
 if test "x${HAS_VIDEO}" != "x1" ; then
   AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
@@ -1822,26 +1756,26 @@ dnl check for enabling video file support
 dnl MSWIN_DISPLAY    vidfile,Video file support
 dnl MSWIN_DEFINE     vidfile,P_VIDFILE
 
-PTLIB_SIMPLE_OPTION([vidfile], [VIDFILE], [enable video file support], [HAS_VIDEO])
+PTLIB_SIMPLE_OPTION([vidfile], [VIDFILE], [video file support], [HAS_VIDEO])
 
 dnl ########################################################################
 dnl check for enabling FFMpeg video file support
 dnl MSWIN_DISPLAY    ffvdev,FFMpeg video file support
 dnl MSWIN_DEFINE     ffvdev,P_FFVDEV
 
-PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [enable FFMpeg video file support], [HAS_FFVDEV], [HAS_PIPECHAN])
+PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [FFMpeg video file support], [HAS_VIDEO], [HAS_PIPECHAN])
 
 dnl ########################################################################
 dnl check for enabling app share support
 dnl MSWIN_DISPLAY    appshare,Application share support
 dnl MSWIN_DEFINE     appshare,P_APPSHARE
 
-PTLIB_SIMPLE_OPTION([appshare], [APPSHARE], [enable application sharing support], [HAS_VIDEO])
+PTLIB_SIMPLE_OPTION([appshare], [APPSHARE], [application sharing support], [HAS_VIDEO])
 
 dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
 
-PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [enable shared memory video devices])
+PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [shared memory video devices])
 
 dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
@@ -1992,7 +1926,7 @@ dnl
 dnl MSWIN_DISPLAY plugins,Plugin Support
 dnl MSWIN_DEFINE  plugins,P_PLUGINS
 
-PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support])
+PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [plugin support])
 
 
 case "$target_os" in
@@ -2009,7 +1943,7 @@ case "$target_os" in
    ;;
 esac
 
-PTLIB_LINK_IFELSE(
+MY_LINK_IFELSE(
    [for dynamic libraries],
    [],
    [$DL_LIBS],
