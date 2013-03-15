@@ -633,6 +633,7 @@ V4L2_CXXFLAGS
 HAS_V4L
 PTLIB_PORTAUDIO
 HAS_PORTAUDIO
+PORTAUDIO_USABLE
 HAS_PORTMIXER
 PORTAUDIO_LIBS
 PORTAUDIO_CFLAGS
@@ -654,14 +655,17 @@ PTLIB_EXCEPTIONS
 HAS_EXCEPTIONS
 PTLIB_ODBC
 HAS_ODBC
+ODBC_USABLE
 ODBC_LIBS
 ODBC_CFLAGS
 PTLIB_GSTREAMER
 HAS_GSTREAMER
+GSTREAMER_USABLE
 GSTREAMER_LIBS
 GSTREAMER_CFLAGS
 PTLIB_SDL
 HAS_SDL
+SDL_USABLE
 SDL_LIBS
 SDL_CFLAGS
 PTLIB_SHM_VIDEO
@@ -732,24 +736,29 @@ PTLIB_CONFIG_FILE
 HAS_CONFIG_FILE
 PTLIB_V8
 HAS_V8
+V8_USABLE
 V8_LIBS
 V8_CFLAGS
 PTLIB_LUA
 HAS_LUA
+LUA_USABLE
 LUA_LIBS
 LUA_CFLAGS
 PTLIB_EXPAT
 HAS_EXPAT
+EXPAT_USABLE
 EXPAT_LIBS
 EXPAT_CFLAGS
 PTLIB_SSL_AES
 HAS_SSL_AES
 PTLIB_OPENSSL
 HAS_OPENSSL
+OPENSSL_USABLE
 OPENSSL_LIBS
 OPENSSL_CFLAGS
 PTLIB_OPENLDAP
 HAS_OPENLDAP
+OPENLDAP_USABLE
 OPENLDAP_LIBS
 OPENLDAP_CFLAGS
 PTLIB_SASL
@@ -1602,59 +1611,59 @@ Optional Features:
   --disable-resolver      disable DNS resolver support
   --disable-libjpeg       disable libjpeg for file-based video input device
 
-  --enable-mlib           enable SUN mlib support
+  --disable-mlib          disable SUN mlib support
   --disable-sasl          disable SASL support
-  --disable-openldap      disable OpenLDAP support
-  --disable-openssl       disable OpenSSL support
-  --disable-expat         disable expat XML support
-  --disable-lua           disable Lua script support
-  --disable-v8            disable V8 Javascript script support
-  --enable-configfile     enable config file support
-  --enable-url            enable URL support
-  --enable-http           enable HTTP support
-  --enable-httpforms      enable HTTP forms support
-  --enable-httpsvc        enable HTTP server support
-  --enable-ssdp           enable SSDP support
-  --enable-vcard          enable VCard support
-  --enable-jabber         enable Jabber support
-  --enable-tts            enable Text-To-Speech server support
-  --enable-vxml           enable VXML support
-  --enable-xmlrpc         enable XMLRPC support
-  --enable-soap           enable SOAP support
-  --enable-asn            enable ASN decoding/encoding support
-  --enable-nat            enable NAT traversal support
-  --enable-stun           enable STUN support
-  --enable-stunsrvr       enable STUN server support
-  --enable-pipechan       enable pipechannel support
-  --enable-dtmf           enable DTMF protocol support
-  --enable-socks          enable SOCKS protocol support
-  --enable-ftp            enable FTP protocol support
-  --enable-snmp           enable SNMP protocol support
-  --enable-telnet         enable TELNET protocol support
-  --enable-cli            enable command line interpreter support
-  --enable-remconn        enable remote connection support
-  --enable-serial         enable serial port support
-  --enable-pop3smtp       enable POP3/SMTP support
-  --enable-audio          enable audio support
-  --enable-wavfile        enable WAVFILE support
-  --enable-video          enable video device support
-  --enable-vidfile        enable video file support
-  --enable-ffvdev         enable FFMpeg video file support
-  --enable-appshare       enable application sharing support
-  --enable-shmvideo       enable shared memory video devices
-  --disable-sdl           disable disable libSDL (video display) support
-  --disable-gstreamer     disable GStreamer support
-  --disable-odbc          disable ODBC database support
+  --enable-openldap       Open LDAP support enabled
+  --enable-openssl        OpenSSL support enabled
+  --enable-expat          expat XML support enabled
+  --enable-lua            Lua script support enabled
+  --enable-v8             V8 Javascript script support enabled
+  --disable-configfile    disable config file support
+  --disable-url           disable URL support
+  --disable-http          disable HTTP support
+  --disable-httpforms     disable HTTP forms support
+  --disable-httpsvc       disable HTTP server support
+  --disable-ssdp          disable SSDP support
+  --disable-vcard         disable VCard support
+  --disable-jabber        disable Jabber support
+  --disable-tts           disable Text-To-Speech server support
+  --disable-vxml          disable VXML support
+  --disable-xmlrpc        disable XMLRPC support
+  --disable-soap          disable SOAP support
+  --disable-asn           disable ASN decoding/encoding support
+  --disable-nat           disable NAT traversal support
+  --disable-stun          disable STUN support
+  --disable-stunsrvr      disable STUN server support
+  --disable-pipechan      disable sub-process (PPipeChannel) support
+  --disable-dtmf          disable DTMF protocol support
+  --disable-socks         disable SOCKS protocol support
+  --disable-ftp           disable FTP protocol support
+  --disable-snmp          disable SNMP protocol support
+  --disable-telnet        disable TELNET protocol support
+  --disable-cli           disable command line interpreter support
+  --disable-remconn       disable remote connection support
+  --disable-serial        disable serial port support
+  --disable-pop3smtp      disable POP3/SMTP support
+  --disable-audio         disable audio support
+  --disable-wavfile       disable WAVFILE support
+  --disable-video         disable video device support
+  --disable-vidfile       disable video file support
+  --disable-ffvdev        disable FFMpeg video file support
+  --disable-appshare      disable application sharing support
+  --disable-shmvideo      disable shared memory video devices
+  --enable-sdl            disable libSDL (video display) support enabled
+  --enable-gstreamer      GStreamer support enabled
+  --enable-odbc           ODBC database support enabled
   --enable-exceptions     enable C++ exceptions
   --enable-vfw            enable video for windows capture
-  --enable-plugins        enable plugin support
+  --disable-plugins       disable plugin support
   --disable-alsa          disable ALSA audio support
   --disable-esd           disable ESD audio support
   --disable-oss           disable OSS audio support
   --disable-pulse         disable Pulse audio support
   --disable-sunaudio      disable Sun audio support
   --disable-shmaudio      disable shm audio support
-  --disable-portaudio     disable PortAudio library
+  --enable-portaudio      PortAudio library enabled
   --disable-v4l           disable V4L video support
   --disable-v4l2          disable V4L2 video support
   --disable-bsdvideo      disable BSD video support
@@ -1670,7 +1679,7 @@ Optional Packages:
   --with-allocator=std,mt,bitmap
                           Set the allocator type
   --with-openldap-dir=<dir>
-                          location for OpenLDAP support
+                          location for Open LDAP support
   --with-expat-dir=<dir>  location for expat XML support
   --with-v8-dir=<dir>     location for V8 Javascript script support
   --with-odbc-dir=<dir>   location for ODBC database support
@@ -2763,147 +2772,6 @@ ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Check whether --enable-minsize was given.
-if test "${enable_minsize+set}" = set; then :
-  enableval=$enable_minsize;
-fi
-
-
-if test "${enable_minsize}x" = "yesx" ; then
-  default_resolver=no
-  DEFAULT_OPENLDAP=no
-  DEFAULT_OPENSSL=no
-  DEFAULT_EXPAT=no
-  DEFAULT_SDL=no
-  DEFAULT_GSTREAMER=no
-  default_sasl=no
-  default_mlib=no
-  default_ipv6=no
-  default_pcap=no
-  DEFAULT_LUA=no
-  DEFAULT_V8=no
-  DEFAULT_ODBC=no
-  HAS_TTS=
-  HAS_ASN=1
-  HAS_NAT=1
-  HAS_STUN=1
-  HAS_STUNSRVR=
-  HAS_PIPECHAN=
-  HAS_DTMF=
-  HAS_WAVFILE=
-  HAS_SOCKS=
-  HAS_FTP=
-  HAS_SNMP=
-  HAS_TELNET=
-  HAS_CLI=
-  HAS_REMCONN=
-  HAS_SERIAL=
-  HAS_POP3SMTP=
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=
-  HAS_HTTPSVC=
-  HAS_SSDP=
-  HAS_VCARD=
-  HAS_SOAP=
-  HAS_XMLRPC=
-  HAS_JABBER=
-  HAS_CONFIG_FILE=0
-  HAS_QOS=
-  HAS_VIDFILE=
-  HAS_FFVDEV=
-  HAS_APPSHARE=
-  HAS_VXML=
-  HAS_SHM_VIDEO=
-  HAS_SHM_AUDIO=
-  HAS_PORTAUDIO=
-  HAS_VFW_CAPTURE=
-else
-  default_tracing=yes
-  default_resolver=yes
-  DEFAULT_OPENLDAP=yes
-  DEFAULT_OPENSSL=yes
-  DEFAULT_EXPAT=yes
-  DEFAULT_SDL=yes
-  DEFAULT_GSTREAMER=yes
-  default_sasl=yes
-  default_mlib=no
-  default_ipv6=yes
-  default_pcap=yes
-  DEFAULT_LUA=yes
-  DEFAULT_V8=yes
-  DEFAULT_ODBC=yes
-  HAS_TTS=1
-  HAS_ASN=1
-  HAS_NAT=1
-  HAS_STUN=1
-  HAS_STUNSRVR=1
-  HAS_PIPECHAN=1
-  HAS_DTMF=1
-  HAS_WAVFILE=1
-  HAS_SOCKS=1
-  HAS_FTP=1
-  HAS_SNMP=1
-  HAS_TELNET=1
-  HAS_CLI=1
-  HAS_REMCONN=1
-  HAS_SERIAL=1
-  HAS_POP3SMTP=1
-  HAS_AUDIO=1
-  HAS_VIDEO=1
-  HAS_URL=1
-  HAS_HTTP=1
-  HAS_HTTPFORMS=1
-  HAS_HTTPSVC=1
-  HAS_SSDP=1
-  HAS_VCARD=1
-  HAS_SOAP=1
-  HAS_XMLRPC=1
-  HAS_JABBER=1
-  HAS_CONFIG_FILE=1
-  HAS_QOS=1
-  HAS_VIDFILE=1
-  HAS_FFVDEV=1
-  HAS_APPSHARE=
-  HAS_SHM_VIDEO=
-  HAS_SHM_AUDIO=
-  HAS_PORTAUDIO=
-  HAS_VXML=1
-  HAS_VFW_CAPTURE=
-fi
-
-HAS_SAMPLES=no
-HAS_PLUGINS=1
-HAS_EXCEPTIONS=
 
 
 
@@ -4357,6 +4225,105 @@ fi
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Check whether --enable-minsize was given.
+if test "${enable_minsize+set}" = set; then :
+  enableval=$enable_minsize;
+fi
+
+
+if test "${enable_minsize}x" = "yesx" ; then
+  DEFAULT_RESOLVER=no
+  DEFAULT_OPENLDAP=no
+  DEFAULT_OPENSSL=no
+  DEFAULT_EXPAT=no
+  DEFAULT_SDL=no
+  DEFAULT_GSTREAMER=no
+  DEFAULT_SASL=no
+  DEFAULT_MLIB=no
+  DEFAULT_PCAP=no
+  DEFAULT_LUA=no
+  DEFAULT_V8=no
+  DEFAULT_ODBC=no
+  DEFAULT_TTS=no
+  DEAFULT_ASN=1
+  DEAFULT_NAT=no
+  DEAFULT_STUN=no
+  DEAFULT_STUNSRVR=no
+  DEAFULT_PIPECHAN=no
+  DEAFULT_DTMF=no
+  DEAFULT_WAVFILE=no
+  DEAFULT_SOCKS=no
+  DEAFULT_FTP=no
+  DEAFULT_SNMP=no
+  DEAFULT_TELNET=no
+  DEAFULT_CLI=no
+  DEAFULT_REMCONN=no
+  DEAFULT_SERIAL=no
+  DEAFULT_POP3SMTP=no
+  DEAFULT_VIDEO=no
+  DEAFULT_URL=no
+  DEAFULT_HTTP=no
+  DEAFULT_HTTPFORMS=no
+  DEAFULT_HTTPSVC=no
+  DEAFULT_SSDP=no
+  DEAFULT_VCARD=no
+  DEAFULT_SOAP=no
+  DEAFULT_XMLRPC=no
+  DEAFULT_JABBER=no
+  DEAFULT_CONFIG_FILE=no
+  DEAFULT_QOS=no
+  DEAFULT_VIDFILE=no
+  DEAFULT_FFVDEV=no
+  DEAFULT_VXML=no
+fi
+
+DEFAULT_APPSHARE=no
+DEFAULT_SHM_VIDEO=no
+DEFAULT_SHM_AUDIO=no
+DEFAULT_PORTAUDIO=no
+DEFAULT_VFW_CAPTURE=no
+DEFAULT_SAMPLES=no
+DEFAULT_PLUGINS=yes
+DEFAULT_EXCEPTIONS=no
+
+
+
+
+
+
+
       # Check whether --enable-ios was given.
 if test "${enable_ios+set}" = set; then :
   enableval=$enable_ios;
@@ -4552,7 +4519,7 @@ fi
 
       beos* )
          target_os=beos
-         CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format"
+         CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -Wno-multichar -Wno-format"
          LDFLAGS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
          SHARED_LDFLAGS="-shared -nostdlib -nostart"
       ;;
@@ -4728,11 +4695,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_UPAD128_T 1" >>confdefs.h
 
 
 fi
+
 
 
             ptlib_fdsize_file=/etc/system
@@ -5859,12 +5828,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   DEBUG_FLAGS="$DEBUG_FLAGS -g3 -ggdb -O0"
 else
   DEBUG_FLAGS="$DEBUG_FLAGS -g"
 
 fi
+
 
 
 
@@ -5896,12 +5867,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   OPT_FLAGS="$OPT_FLAGS -O3"
 else
   OPT_FLAGS="$OPT_FLAGS -O2"
 
 fi
+
 
 
 
@@ -5932,10 +5905,12 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   CXXFLAGS="$CXXFLAGS -felide-constructors"
 
 fi
+
 
 
 
@@ -5964,10 +5939,12 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   CXXFLAGS="$CXXFLAGS -Wreorder"
 
 fi
+
 
 
 
@@ -6004,10 +5981,12 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   CPPFLAGS="$CPPFLAGS -Wno-deprecated-declarations"
 
 fi
+
 
 fi
 
@@ -6189,7 +6168,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   P_HAS_POSIX_READDIR_R=2
 else
 
@@ -6224,7 +6204,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   P_HAS_POSIX_READDIR_R=3
 else
   P_HAS_POSIX_READDIR_R=0
@@ -6233,7 +6214,9 @@ fi
 
 
 
+
 fi
+
 
 cat >>confdefs.h <<_ACEOF
 #define P_HAS_POSIX_READDIR_R ${P_HAS_POSIX_READDIR_R}
@@ -6276,11 +6259,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_RECVMSG 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -6316,11 +6301,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_RT_MSGHDR 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -6359,11 +6346,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_RECVMSG_MSG_ERRQUEUE 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -6402,11 +6391,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_RECVMSG_IP_RECVERR 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -6446,7 +6437,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETPWUID_R4 1" >>confdefs.h
 
 else
@@ -6486,14 +6478,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETPWUID_R5 1" >>confdefs.h
 
 
 fi
 
 
+
 fi
+
 
 
 
@@ -6533,7 +6528,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETGRGID_R4 1" >>confdefs.h
 
 else
@@ -6573,14 +6569,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETGRGID_R5 1" >>confdefs.h
 
 
 fi
 
 
+
 fi
+
 
 
 
@@ -6620,7 +6619,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETPWNAM_R4 1" >>confdefs.h
 
 else
@@ -6660,14 +6660,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETPWNAM_R5 1" >>confdefs.h
 
 
 fi
 
 
+
 fi
+
 
 
 
@@ -6707,7 +6710,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETGRNAM_R4 1" >>confdefs.h
 
 else
@@ -6747,14 +6751,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETGRNAM_R5 1" >>confdefs.h
 
 
 fi
 
 
+
 fi
+
 
 
 
@@ -6784,11 +6791,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_SETPGRP_NOPARM 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -7137,7 +7146,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_SEMAPHORES 1" >>confdefs.h
 
 else
@@ -7167,14 +7177,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_NAMED_SEMAPHORES 1" >>confdefs.h
 
 
 fi
 
 
+
 fi
+
 
 
 
@@ -7208,12 +7221,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
 $as_echo "#define P_HAS_SEMAPHORES_XPG6 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -7244,12 +7259,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
 $as_echo "#define P_PTHREADS_XPG6 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -7282,7 +7299,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_RECURSIVE_MUTEX 1" >>confdefs.h
 
 else
@@ -7315,14 +7333,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_RECURSIVE_MUTEX 2" >>confdefs.h
 
 
 fi
 
 
+
 fi
+
 
 
 
@@ -7363,11 +7384,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_GETHOSTBYNAME_R 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -7409,11 +7432,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_NETLINK 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -7424,10 +7449,6 @@ if test "${enable_ipv6+set}" = set; then :
   enableval=$enable_ipv6;
 fi
 
-
-if test "${enable_ipv6}z" = "z" ; then
-  enable_ipv6=$default_ipv6
-fi
 
 HAS_IPV6=
 
@@ -7470,42 +7491,42 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
          HAS_IPV6=1
 
 $as_echo "#define P_HAS_IPV6 1" >>confdefs.h
 
 
-else
-  HAS_IPV6=no
-
-fi
 
 fi
 
 
+fi
 
 
-   if test "x${HAS_IPV6}" = "xyes" ; then
+
+
+   if test "x$HAS_IPV6" = "xyes" ; then
       HAS_IPV6=1
    fi
 
-   if test "x${HAS_IPV6}" = "x0" || test "x${HAS_IPV6}" = "xno" ; then
+   if test "x$HAS_IPV6" = "x0" || test "x$HAS_IPV6" = "xno" ; then
       HAS_IPV6=
    fi
 
 
 
-   if test "x${HAS_IPV6}" = "x1" ; then
+   if test "x$HAS_IPV6" = "x1" ; then
       PTLIB_IPV6=yes
-
       $as_echo "#define P_IPV6 1" >>confdefs.h
 
    else
       PTLIB_IPV6=no
-
    fi
+
+
 
 
 
@@ -7545,11 +7566,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_INET_NTOP 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -7579,7 +7602,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   $as_echo "#define P_HAS_IPV6_ADD_MEMBERSHIP 1" >>confdefs.h
 
 
@@ -7589,11 +7613,12 @@ fi
 
 
 
+
 # Check whether --enable-pcap was given.
 if test "${enable_pcap+set}" = set; then :
   enableval=$enable_pcap;
 else
-  enable_pcap=$default_pcap
+  enable_pcap=$DEFAULT_PCAP
 
 fi
 
@@ -7633,7 +7658,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
 
 $as_echo "#define P_PCAP 1" >>confdefs.h
@@ -7644,30 +7670,31 @@ $as_echo "#define P_PCAP 1" >>confdefs.h
 
 fi
 
+
 fi
 
 
 
 
-   if test "x${HAS_PCAP}" = "xyes" ; then
+   if test "x$HAS_PCAP" = "xyes" ; then
       HAS_PCAP=1
    fi
 
-   if test "x${HAS_PCAP}" = "x0" || test "x${HAS_PCAP}" = "xno" ; then
+   if test "x$HAS_PCAP" = "x0" || test "x$HAS_PCAP" = "xno" ; then
       HAS_PCAP=
    fi
 
 
 
-   if test "x${HAS_PCAP}" = "x1" ; then
+   if test "x$HAS_PCAP" = "x1" ; then
       PTLIB_PCAP=yes
-
       $as_echo "#define P_PCAP 1" >>confdefs.h
 
    else
       PTLIB_PCAP=no
-
    fi
+
+
 
 
 
@@ -7802,25 +7829,25 @@ fi
 
 
 
-   if test "x${HAS_REGEX}" = "xyes" ; then
+   if test "x$HAS_REGEX" = "xyes" ; then
       HAS_REGEX=1
    fi
 
-   if test "x${HAS_REGEX}" = "x0" || test "x${HAS_REGEX}" = "xno" ; then
+   if test "x$HAS_REGEX" = "x0" || test "x$HAS_REGEX" = "xno" ; then
       HAS_REGEX=
    fi
 
 
 
-   if test "x${HAS_REGEX}" = "x1" ; then
+   if test "x$HAS_REGEX" = "x1" ; then
       PTLIB_REGEX=yes
-
       $as_echo "#define P_REGEX 1" >>confdefs.h
 
    else
       PTLIB_REGEX=no
-
    fi
+
+
 
 
 
@@ -7833,7 +7860,7 @@ fi
 if test "${enable_resolver+set}" = set; then :
   enableval=$enable_resolver; enable_resolver=$enableval
 else
-  enable_resolver=$default_resolver
+  enable_resolver=${DEFAULT_RESOLVER:-yes}
 
 fi
 
@@ -7887,7 +7914,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
             HAS_DNS_RESOLVER=1
             $as_echo "#define P_HAS_RES_NINIT 1" >>confdefs.h
@@ -7932,7 +7960,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                   HAS_DNS_RESOLVER=1
                   LDFLAGS="$LDFLAGS -lresolv"
@@ -8010,10 +8039,12 @@ fi
 fi
 
 
+
 fi
 
 
 fi
+
 
 
 fi
@@ -8027,25 +8058,25 @@ _ACEOF
 
    HAS_DNS_RESOLVER=$HAS_DNS_RESOLVER
 
-   if test "x${HAS_DNS_RESOLVER}" = "xyes" ; then
+   if test "x$HAS_DNS_RESOLVER" = "xyes" ; then
       HAS_DNS_RESOLVER=1
    fi
 
-   if test "x${HAS_DNS_RESOLVER}" = "x0" || test "x${HAS_DNS_RESOLVER}" = "xno" ; then
+   if test "x$HAS_DNS_RESOLVER" = "x0" || test "x$HAS_DNS_RESOLVER" = "xno" ; then
       HAS_DNS_RESOLVER=
    fi
 
 
 
-   if test "x${HAS_DNS_RESOLVER}" = "x1" ; then
+   if test "x$HAS_DNS_RESOLVER" = "x1" ; then
       PTLIB_DNS_RESOLVER=yes
-
       $as_echo "#define P_DNS_RESOLVER 1" >>confdefs.h
 
    else
       PTLIB_DNS_RESOLVER=no
-
    fi
+
+
 
 
 
@@ -8077,19 +8108,50 @@ fi
 
 
 
-# Check whether --enable-mlib was given.
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking SUN mlib support" >&5
+$as_echo_n "checking SUN mlib support... " >&6; }
+
+   # Check whether --enable-mlib was given.
 if test "${enable_mlib+set}" = set; then :
-  enableval=$enable_mlib; enable_mlib=$enableval
+  enableval=$enable_mlib;
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+         fi
+
 else
-  enable_mlib=$default_mlib
+
+         enableval=$DEFAULT_MLIB
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+         fi
+
 
 fi
 
-if test "$enable_mlib" = "no" ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: SUN mlib disabled" >&5
-$as_echo "$as_me: SUN mlib disabled" >&6;}
-else
-  HAS_MEDIALIB=no
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for mlib_VideoColorJFIFYCC2RGB420_Nearest in -lmlib" >&5
 $as_echo_n "checking for mlib_VideoColorJFIFYCC2RGB420_Nearest in -lmlib... " >&6; }
 if ${ac_cv_lib_mlib_mlib_VideoColorJFIFYCC2RGB420_Nearest+:} false; then :
@@ -8127,21 +8189,20 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_mlib_mlib_VideoColorJFIFYCC2RGB420_Nearest" >&5
 $as_echo "$ac_cv_lib_mlib_mlib_VideoColorJFIFYCC2RGB420_Nearest" >&6; }
 if test "x$ac_cv_lib_mlib_mlib_VideoColorJFIFYCC2RGB420_Nearest" = xyes; then :
-  HAS_MEDIALIB=yes
-else
-  HAS_MEDIALIB=no
+
+         $as_echo "#define P_MEDIALIB 1" >>confdefs.h
+
+         LDFLAGS="-lmlib $LDFLAGS"
+
+
 fi
 
-  if test $HAS_MEDIALIB = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: SUN mlib enabled" >&5
-$as_echo "$as_me: SUN mlib enabled" >&6;}
-    $as_echo "#define P_MEDIALIB 1" >>confdefs.h
 
-    LDFLAGS="-lmlib $LDFLAGS"
-  else
-    as_fn_error 1 "SUN mlib not found" "$LINENO" 5
-  fi
 fi
+
+
+   enable_mlib="$enableval"
+
 
 
 
@@ -8150,7 +8211,7 @@ fi
 if test "${enable_sasl+set}" = set; then :
   enableval=$enable_sasl; enable_sasl=$enableval
 else
-  enable_sasl=$default_sasl
+  enable_sasl=$DEFAULT_SASL
 
 fi
 
@@ -8272,47 +8333,45 @@ fi
 
 
 
-   if test "x${HAS_SASL2}" = "xyes" ; then
+   if test "x$HAS_SASL2" = "xyes" ; then
       HAS_SASL2=1
    fi
 
-   if test "x${HAS_SASL2}" = "x0" || test "x${HAS_SASL2}" = "xno" ; then
+   if test "x$HAS_SASL2" = "x0" || test "x$HAS_SASL2" = "xno" ; then
       HAS_SASL2=
    fi
 
 
 
-   if test "x${HAS_SASL2}" = "x1" ; then
+   if test "x$HAS_SASL2" = "x1" ; then
       PTLIB_SASL2=yes
-
       $as_echo "#define P_SASL2 1" >>confdefs.h
 
    else
       PTLIB_SASL2=no
-
    fi
 
 
 
 
-   if test "x${HAS_SASL}" = "xyes" ; then
+
+
+   if test "x$HAS_SASL" = "xyes" ; then
       HAS_SASL=1
    fi
 
-   if test "x${HAS_SASL}" = "x0" || test "x${HAS_SASL}" = "xno" ; then
+   if test "x$HAS_SASL" = "x0" || test "x$HAS_SASL" = "xno" ; then
       HAS_SASL=
    fi
 
 
 
-   if test "x${HAS_SASL}" = "x1" ; then
+   if test "x$HAS_SASL" = "x1" ; then
       PTLIB_SASL=yes
-
       $as_echo "#define P_SASL 1" >>confdefs.h
 
    else
       PTLIB_SASL=no
-
    fi
 
 
@@ -8320,24 +8379,27 @@ fi
 
 
 
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Open LDAP support enabled" >&5
+$as_echo_n "checking Open LDAP support enabled... " >&6; }
+
    # Check whether --enable-openldap was given.
 if test "${enable_openldap+set}" = set; then :
   enableval=$enable_openldap;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: OpenLDAP support disabled by user" >&5
-$as_echo "$as_me: OpenLDAP support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_OPENLDAP"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: OpenLDAP support disabled by default" >&5
-$as_echo "$as_me: OpenLDAP support disabled by default" >&6;}
+         enableval=${DEFAULT_OPENLDAP:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -8345,13 +8407,44 @@ fi
 
 
 
-      if test "x$HAS_DNS_RESOLVER" != "x1" ; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: OpenLDAP support disabled due to disabled dependency HAS_DNS_RESOLVER
+
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_DNS_RESOLVER" != "x1" && \
+            test "x$HAS_DNS_RESOLVER" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_DNS_RESOLVER
+=$HAS_DNS_RESOLVER
 " >&5
-$as_echo "$as_me: OpenLDAP support disabled due to disabled dependency HAS_DNS_RESOLVER
-" >&6;}
-         usable=no
+$as_echo "disabled due to disabled dependency HAS_DNS_RESOLVER
+=$HAS_DNS_RESOLVER
+" >&6; }
+         enableval=no
       fi
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_openldap="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -8359,8 +8452,8 @@ $as_echo "$as_me: OpenLDAP support disabled due to disabled dependency HAS_DNS_R
 # Check whether --with-openldap-dir was given.
 if test "${with_openldap_dir+set}" = set; then :
   withval=$with_openldap_dir;
-               { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for OpenLDAP support" >&5
-$as_echo "$as_me: Using directory $withval for OpenLDAP support" >&6;}
+               { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for Open LDAP support" >&5
+$as_echo "$as_me: Using directory $withval for Open LDAP support" >&6;}
                OPENLDAP_CFLAGS="-I$withval/include "
                OPENLDAP_LIBS="-L$withval/lib -lldap"
 
@@ -8454,8 +8547,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $OPENLDAP_CFLAGS"
    LDFLAGS="$OPENLDAP_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OPENLDAP usability" >&5
-$as_echo_n "checking for OPENLDAP usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Open LDAP support usability" >&5
+$as_echo_n "checking for Open LDAP support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <ldap.h>
@@ -8479,7 +8572,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $OPENLDAP_CFLAGS"
                LDFLAGS="$OPENLDAP_LIBS $LDFLAGS"
@@ -8489,32 +8583,36 @@ else
 
 fi
 
+
       fi
    fi
 
 
 
 
+
+   OPENLDAP_USABLE=$usable
+
+
+
    HAS_OPENLDAP=$usable
 
-   if test "x${HAS_OPENLDAP}" = "xyes" ; then
+   if test "x$HAS_OPENLDAP" = "xyes" ; then
       HAS_OPENLDAP=1
    fi
 
-   if test "x${HAS_OPENLDAP}" = "x0" || test "x${HAS_OPENLDAP}" = "xno" ; then
+   if test "x$HAS_OPENLDAP" = "x0" || test "x$HAS_OPENLDAP" = "xno" ; then
       HAS_OPENLDAP=
    fi
 
 
 
-   if test "x${HAS_OPENLDAP}" = "x1" ; then
+   if test "x$HAS_OPENLDAP" = "x1" ; then
       PTLIB_OPENLDAP=yes
-
       $as_echo "#define P_OPENLDAP 1" >>confdefs.h
 
    else
       PTLIB_OPENLDAP=no
-
    fi
 
 
@@ -8524,30 +8622,60 @@ fi
 
 
 
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking OpenSSL support enabled" >&5
+$as_echo_n "checking OpenSSL support enabled... " >&6; }
+
    # Check whether --enable-openssl was given.
 if test "${enable_openssl+set}" = set; then :
   enableval=$enable_openssl;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: OpenSSL support disabled by user" >&5
-$as_echo "$as_me: OpenSSL support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_OPENSSL"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: OpenSSL support disabled by default" >&5
-$as_echo "$as_me: OpenSSL support disabled by default" >&6;}
+         enableval=${DEFAULT_OPENSSL:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
 fi
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_openssl="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -8632,8 +8760,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $OPENSSL_CFLAGS"
    LDFLAGS="$OPENSSL_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OPENSSL usability" >&5
-$as_echo_n "checking for OPENSSL usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenSSL support usability" >&5
+$as_echo_n "checking for OpenSSL support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <openssl/ssl.h>
@@ -8657,7 +8785,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $OPENSSL_CFLAGS"
                LDFLAGS="$OPENSSL_LIBS $LDFLAGS"
@@ -8667,10 +8796,12 @@ else
 
 fi
 
+
       fi
    fi
 
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
 
    oldCPPFLAGS="$CPPFLAGS"
@@ -8703,12 +8834,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
 $as_echo "#define P_SSL_USE_CONST 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -8737,7 +8870,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
 
 $as_echo "#define P_SSL_AES 1" >>confdefs.h
@@ -8746,6 +8880,7 @@ $as_echo "#define P_SSL_AES 1" >>confdefs.h
 
 
 fi
+
 
 
 
@@ -8780,7 +8915,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
 else
   $as_echo "#define P_d2i_DHparams_bio_OLD 1" >>confdefs.h
@@ -8790,53 +8926,56 @@ fi
 
 
 
+
 fi
+
+
+   OPENSSL_USABLE=$usable
+
 
 
    HAS_OPENSSL=$usable
 
-   if test "x${HAS_OPENSSL}" = "xyes" ; then
+   if test "x$HAS_OPENSSL" = "xyes" ; then
       HAS_OPENSSL=1
    fi
 
-   if test "x${HAS_OPENSSL}" = "x0" || test "x${HAS_OPENSSL}" = "xno" ; then
+   if test "x$HAS_OPENSSL" = "x0" || test "x$HAS_OPENSSL" = "xno" ; then
       HAS_OPENSSL=
    fi
 
 
 
-   if test "x${HAS_OPENSSL}" = "x1" ; then
+   if test "x$HAS_OPENSSL" = "x1" ; then
       PTLIB_OPENSSL=yes
-
       $as_echo "#define P_OPENSSL 1" >>confdefs.h
 
    else
       PTLIB_OPENSSL=no
-
    fi
 
 
 
 
 
-   if test "x${HAS_SSL_AES}" = "xyes" ; then
+
+
+   if test "x$HAS_SSL_AES" = "xyes" ; then
       HAS_SSL_AES=1
    fi
 
-   if test "x${HAS_SSL_AES}" = "x0" || test "x${HAS_SSL_AES}" = "xno" ; then
+   if test "x$HAS_SSL_AES" = "x0" || test "x$HAS_SSL_AES" = "xno" ; then
       HAS_SSL_AES=
    fi
 
 
 
-   if test "x${HAS_SSL_AES}" = "x1" ; then
+   if test "x$HAS_SSL_AES" = "x1" ; then
       PTLIB_SSL_AES=yes
-
       $as_echo "#define P_SSL_AES 1" >>confdefs.h
 
    else
       PTLIB_SSL_AES=no
-
    fi
 
 
@@ -8845,30 +8984,60 @@ fi
 
 
 
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking expat XML support enabled" >&5
+$as_echo_n "checking expat XML support enabled... " >&6; }
+
    # Check whether --enable-expat was given.
 if test "${enable_expat+set}" = set; then :
   enableval=$enable_expat;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: expat XML support disabled by user" >&5
-$as_echo "$as_me: expat XML support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_EXPAT"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: expat XML support disabled by default" >&5
-$as_echo "$as_me: expat XML support disabled by default" >&6;}
+         enableval=${DEFAULT_EXPAT:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
 fi
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_expat="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -8971,8 +9140,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
    LDFLAGS="$EXPAT_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EXPAT usability" >&5
-$as_echo_n "checking for EXPAT usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for expat XML support usability" >&5
+$as_echo_n "checking for expat XML support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <expat.h>
@@ -8997,7 +9166,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
                LDFLAGS="$EXPAT_LIBS $LDFLAGS"
@@ -9007,32 +9177,36 @@ else
 
 fi
 
+
       fi
    fi
 
 
 
 
+
+   EXPAT_USABLE=$usable
+
+
+
    HAS_EXPAT=$usable
 
-   if test "x${HAS_EXPAT}" = "xyes" ; then
+   if test "x$HAS_EXPAT" = "xyes" ; then
       HAS_EXPAT=1
    fi
 
-   if test "x${HAS_EXPAT}" = "x0" || test "x${HAS_EXPAT}" = "xno" ; then
+   if test "x$HAS_EXPAT" = "x0" || test "x$HAS_EXPAT" = "xno" ; then
       HAS_EXPAT=
    fi
 
 
 
-   if test "x${HAS_EXPAT}" = "x1" ; then
+   if test "x$HAS_EXPAT" = "x1" ; then
       PTLIB_EXPAT=yes
-
       $as_echo "#define P_EXPAT 1" >>confdefs.h
 
    else
       PTLIB_EXPAT=no
-
    fi
 
 
@@ -9040,30 +9214,60 @@ fi
 
 
 
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Lua script support enabled" >&5
+$as_echo_n "checking Lua script support enabled... " >&6; }
+
    # Check whether --enable-lua was given.
 if test "${enable_lua+set}" = set; then :
   enableval=$enable_lua;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: Lua script support disabled by user" >&5
-$as_echo "$as_me: Lua script support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_LUA"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: Lua script support disabled by default" >&5
-$as_echo "$as_me: Lua script support disabled by default" >&6;}
+         enableval=${DEFAULT_LUA:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
 fi
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_lua="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -9148,8 +9352,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $LUA_CFLAGS"
    LDFLAGS="$LUA_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LUA usability" >&5
-$as_echo_n "checking for LUA usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Lua script support usability" >&5
+$as_echo_n "checking for Lua script support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <lua.hpp>
@@ -9174,7 +9378,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $LUA_CFLAGS"
                LDFLAGS="$LUA_LIBS $LDFLAGS"
@@ -9184,32 +9389,36 @@ else
 
 fi
 
+
       fi
    fi
 
 
 
 
+
+   LUA_USABLE=$usable
+
+
+
    HAS_LUA=$usable
 
-   if test "x${HAS_LUA}" = "xyes" ; then
+   if test "x$HAS_LUA" = "xyes" ; then
       HAS_LUA=1
    fi
 
-   if test "x${HAS_LUA}" = "x0" || test "x${HAS_LUA}" = "xno" ; then
+   if test "x$HAS_LUA" = "x0" || test "x$HAS_LUA" = "xno" ; then
       HAS_LUA=
    fi
 
 
 
-   if test "x${HAS_LUA}" = "x1" ; then
+   if test "x$HAS_LUA" = "x1" ; then
       PTLIB_LUA=yes
-
       $as_echo "#define P_LUA 1" >>confdefs.h
 
    else
       PTLIB_LUA=no
-
    fi
 
 
@@ -9217,30 +9426,60 @@ fi
 
 
 
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript script support enabled" >&5
+$as_echo_n "checking V8 Javascript script support enabled... " >&6; }
+
    # Check whether --enable-v8 was given.
 if test "${enable_v8+set}" = set; then :
   enableval=$enable_v8;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: V8 Javascript script support disabled by user" >&5
-$as_echo "$as_me: V8 Javascript script support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_V8"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: V8 Javascript script support disabled by default" >&5
-$as_echo "$as_me: V8 Javascript script support disabled by default" >&6;}
+         enableval=${DEFAULT_V8:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
 fi
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_v8="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -9343,8 +9582,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
    LDFLAGS="$V8_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for V8 usability" >&5
-$as_echo_n "checking for V8 usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for V8 Javascript script support usability" >&5
+$as_echo_n "checking for V8 Javascript script support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <v8.h>
@@ -9369,7 +9608,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
                LDFLAGS="$V8_LIBS $LDFLAGS"
@@ -9379,32 +9619,36 @@ else
 
 fi
 
+
       fi
    fi
 
+
+
+
+
+   V8_USABLE=$usable
 
 
 
    HAS_V8=$usable
 
-   if test "x${HAS_V8}" = "xyes" ; then
+   if test "x$HAS_V8" = "xyes" ; then
       HAS_V8=1
    fi
 
-   if test "x${HAS_V8}" = "x0" || test "x${HAS_V8}" = "xno" ; then
+   if test "x$HAS_V8" = "x0" || test "x$HAS_V8" = "xno" ; then
       HAS_V8=
    fi
 
 
 
-   if test "x${HAS_V8}" = "x1" ; then
+   if test "x$HAS_V8" = "x1" ; then
       PTLIB_V8=yes
-
       $as_echo "#define P_V8 1" >>confdefs.h
 
    else
       PTLIB_V8=no
-
    fi
 
 
@@ -9412,18 +9656,26 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable config file support" >&5
-$as_echo_n "checking enable config file support... " >&6; }
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking config file support" >&5
+$as_echo_n "checking config file support... " >&6; }
 
    # Check whether --enable-configfile was given.
 if test "${enable_configfile+set}" = set; then :
   enableval=$enable_configfile;
-         if test "x$enableval" = "xyes"; then
-            HAS_CONFIG_FILE=1
-         else
-            HAS_CONFIG_FILE=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_CONFIG_FILE:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9443,53 +9695,65 @@ fi
 
 
 
-   if test "x${HAS_CONFIG_FILE}" = "x1"; then
-
-$as_echo "#define P_CONFIG_FILE 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_CONFIG_FILE=1
 
-   if test "x${HAS_CONFIG_FILE}" = "xyes" ; then
+   if test "x$HAS_CONFIG_FILE" = "xyes" ; then
       HAS_CONFIG_FILE=1
    fi
 
-   if test "x${HAS_CONFIG_FILE}" = "x0" || test "x${HAS_CONFIG_FILE}" = "xno" ; then
+   if test "x$HAS_CONFIG_FILE" = "x0" || test "x$HAS_CONFIG_FILE" = "xno" ; then
       HAS_CONFIG_FILE=
    fi
 
 
 
-   if test "x${HAS_CONFIG_FILE}" = "x1" ; then
+   if test "x$HAS_CONFIG_FILE" = "x1" ; then
       PTLIB_CONFIG_FILE=yes
-
       $as_echo "#define P_CONFIG_FILE 1" >>confdefs.h
 
    else
       PTLIB_CONFIG_FILE=no
-
    fi
 
 
 
+else
+  HAS_CONFIG_FILE=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable URL support" >&5
-$as_echo_n "checking enable URL support... " >&6; }
+   enable_configfile="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking URL support" >&5
+$as_echo_n "checking URL support... " >&6; }
 
    # Check whether --enable-url was given.
 if test "${enable_url+set}" = set; then :
   enableval=$enable_url;
-         if test "x$enableval" = "xyes"; then
-            HAS_URL=1
-         else
-            HAS_URL=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_URL:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9509,53 +9773,65 @@ fi
 
 
 
-   if test "x${HAS_URL}" = "x1"; then
-
-$as_echo "#define P_URL 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_URL=1
 
-   if test "x${HAS_URL}" = "xyes" ; then
+   if test "x$HAS_URL" = "xyes" ; then
       HAS_URL=1
    fi
 
-   if test "x${HAS_URL}" = "x0" || test "x${HAS_URL}" = "xno" ; then
+   if test "x$HAS_URL" = "x0" || test "x$HAS_URL" = "xno" ; then
       HAS_URL=
    fi
 
 
 
-   if test "x${HAS_URL}" = "x1" ; then
+   if test "x$HAS_URL" = "x1" ; then
       PTLIB_URL=yes
-
       $as_echo "#define P_URL 1" >>confdefs.h
 
    else
       PTLIB_URL=no
-
    fi
 
 
 
+else
+  HAS_URL=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable HTTP support" >&5
-$as_echo_n "checking enable HTTP support... " >&6; }
+   enable_url="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking HTTP support" >&5
+$as_echo_n "checking HTTP support... " >&6; }
 
    # Check whether --enable-http was given.
 if test "${enable_http+set}" = set; then :
   enableval=$enable_http;
-         if test "x$enableval" = "xyes"; then
-            HAS_HTTP=1
-         else
-            HAS_HTTP=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_HTTP:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9564,10 +9840,12 @@ fi
 
 
 
-      if test "x${HAS_HTTP}" = "x1" && test "x$HAS_URL" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_URL" >&5
-$as_echo "disabled due to disabled dependency HAS_URL" >&6; }
-         HAS_HTTP=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_URL" != "x1" && \
+            test "x$HAS_URL" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_URL=$HAS_URL" >&5
+$as_echo "disabled due to disabled dependency HAS_URL=$HAS_URL" >&6; }
+         enableval=no
       fi
 
 
@@ -9581,53 +9859,65 @@ $as_echo "disabled due to disabled dependency HAS_URL" >&6; }
 
 
 
-   if test "x${HAS_HTTP}" = "x1"; then
-
-$as_echo "#define P_HTTP 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_HTTP=1
 
-   if test "x${HAS_HTTP}" = "xyes" ; then
+   if test "x$HAS_HTTP" = "xyes" ; then
       HAS_HTTP=1
    fi
 
-   if test "x${HAS_HTTP}" = "x0" || test "x${HAS_HTTP}" = "xno" ; then
+   if test "x$HAS_HTTP" = "x0" || test "x$HAS_HTTP" = "xno" ; then
       HAS_HTTP=
    fi
 
 
 
-   if test "x${HAS_HTTP}" = "x1" ; then
+   if test "x$HAS_HTTP" = "x1" ; then
       PTLIB_HTTP=yes
-
       $as_echo "#define P_HTTP 1" >>confdefs.h
 
    else
       PTLIB_HTTP=no
-
    fi
 
 
 
+else
+  HAS_HTTP=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable HTTP forms support" >&5
-$as_echo_n "checking enable HTTP forms support... " >&6; }
+   enable_http="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking HTTP forms support" >&5
+$as_echo_n "checking HTTP forms support... " >&6; }
 
    # Check whether --enable-httpforms was given.
 if test "${enable_httpforms+set}" = set; then :
   enableval=$enable_httpforms;
-         if test "x$enableval" = "xyes"; then
-            HAS_HTTPFORMS=1
-         else
-            HAS_HTTPFORMS=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_HTTPFORMS:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9636,19 +9926,23 @@ fi
 
 
 
-      if test "x${HAS_HTTPFORMS}" = "x1" && test "x$HAS_HTTP" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP" >&5
-$as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
-         HAS_HTTPFORMS=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_HTTP" != "x1" && \
+            test "x$HAS_HTTP" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&5
+$as_echo "disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&6; }
+         enableval=no
       fi
 
 
 
 
-      if test "x${HAS_HTTPFORMS}" = "x1" && test "x$HAS_CONFIG_FILE" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_CONFIG_FILE" >&5
-$as_echo "disabled due to disabled dependency HAS_CONFIG_FILE" >&6; }
-         HAS_HTTPFORMS=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_CONFIG_FILE" != "x1" && \
+            test "x$HAS_CONFIG_FILE" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_CONFIG_FILE=$HAS_CONFIG_FILE" >&5
+$as_echo "disabled due to disabled dependency HAS_CONFIG_FILE=$HAS_CONFIG_FILE" >&6; }
+         enableval=no
       fi
 
 
@@ -9659,54 +9953,66 @@ $as_echo "disabled due to disabled dependency HAS_CONFIG_FILE" >&6; }
 
 
 
-   if test "x${HAS_HTTPFORMS}" = "x1"; then
-
-$as_echo "#define P_HTTPFORMS 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_HTTPFORMS=1
 
-   if test "x${HAS_HTTPFORMS}" = "xyes" ; then
+   if test "x$HAS_HTTPFORMS" = "xyes" ; then
       HAS_HTTPFORMS=1
    fi
 
-   if test "x${HAS_HTTPFORMS}" = "x0" || test "x${HAS_HTTPFORMS}" = "xno" ; then
+   if test "x$HAS_HTTPFORMS" = "x0" || test "x$HAS_HTTPFORMS" = "xno" ; then
       HAS_HTTPFORMS=
    fi
 
 
 
-   if test "x${HAS_HTTPFORMS}" = "x1" ; then
+   if test "x$HAS_HTTPFORMS" = "x1" ; then
       PTLIB_HTTPFORMS=yes
-
       $as_echo "#define P_HTTPFORMS 1" >>confdefs.h
 
    else
       PTLIB_HTTPFORMS=no
-
    fi
 
 
 
+else
+  HAS_HTTPFORMS=
+fi
+
+
+   enable_httpforms="$enableval"
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable HTTP server support" >&5
-$as_echo_n "checking enable HTTP server support... " >&6; }
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking HTTP server support" >&5
+$as_echo_n "checking HTTP server support... " >&6; }
 
    # Check whether --enable-httpsvc was given.
 if test "${enable_httpsvc+set}" = set; then :
   enableval=$enable_httpsvc;
-         if test "x$enableval" = "xyes"; then
-            HAS_HTTPSVC=1
-         else
-            HAS_HTTPSVC=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_HTTPSVC:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9715,10 +10021,12 @@ fi
 
 
 
-      if test "x${HAS_HTTPSVC}" = "x1" && test "x$HAS_HTTPFORMS" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTPFORMS" >&5
-$as_echo "disabled due to disabled dependency HAS_HTTPFORMS" >&6; }
-         HAS_HTTPSVC=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_HTTPFORMS" != "x1" && \
+            test "x$HAS_HTTPFORMS" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTPFORMS=$HAS_HTTPFORMS" >&5
+$as_echo "disabled due to disabled dependency HAS_HTTPFORMS=$HAS_HTTPFORMS" >&6; }
+         enableval=no
       fi
 
 
@@ -9732,53 +10040,65 @@ $as_echo "disabled due to disabled dependency HAS_HTTPFORMS" >&6; }
 
 
 
-   if test "x${HAS_HTTPSVC}" = "x1"; then
-
-$as_echo "#define P_HTTPSVC 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_HTTPSVC=1
 
-   if test "x${HAS_HTTPSVC}" = "xyes" ; then
+   if test "x$HAS_HTTPSVC" = "xyes" ; then
       HAS_HTTPSVC=1
    fi
 
-   if test "x${HAS_HTTPSVC}" = "x0" || test "x${HAS_HTTPSVC}" = "xno" ; then
+   if test "x$HAS_HTTPSVC" = "x0" || test "x$HAS_HTTPSVC" = "xno" ; then
       HAS_HTTPSVC=
    fi
 
 
 
-   if test "x${HAS_HTTPSVC}" = "x1" ; then
+   if test "x$HAS_HTTPSVC" = "x1" ; then
       PTLIB_HTTPSVC=yes
-
       $as_echo "#define P_HTTPSVC 1" >>confdefs.h
 
    else
       PTLIB_HTTPSVC=no
-
    fi
 
 
 
+else
+  HAS_HTTPSVC=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable SSDP support" >&5
-$as_echo_n "checking enable SSDP support... " >&6; }
+   enable_httpsvc="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking SSDP support" >&5
+$as_echo_n "checking SSDP support... " >&6; }
 
    # Check whether --enable-ssdp was given.
 if test "${enable_ssdp+set}" = set; then :
   enableval=$enable_ssdp;
-         if test "x$enableval" = "xyes"; then
-            HAS_SSDP=1
-         else
-            HAS_SSDP=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_SSDP:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9787,10 +10107,12 @@ fi
 
 
 
-      if test "x${HAS_SSDP}" = "x1" && test "x$HAS_HTTP" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP" >&5
-$as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
-         HAS_SSDP=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_HTTP" != "x1" && \
+            test "x$HAS_HTTP" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&5
+$as_echo "disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&6; }
+         enableval=no
       fi
 
 
@@ -9804,53 +10126,65 @@ $as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
 
 
 
-   if test "x${HAS_SSDP}" = "x1"; then
-
-$as_echo "#define P_SSDP 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_SSDP=1
 
-   if test "x${HAS_SSDP}" = "xyes" ; then
+   if test "x$HAS_SSDP" = "xyes" ; then
       HAS_SSDP=1
    fi
 
-   if test "x${HAS_SSDP}" = "x0" || test "x${HAS_SSDP}" = "xno" ; then
+   if test "x$HAS_SSDP" = "x0" || test "x$HAS_SSDP" = "xno" ; then
       HAS_SSDP=
    fi
 
 
 
-   if test "x${HAS_SSDP}" = "x1" ; then
+   if test "x$HAS_SSDP" = "x1" ; then
       PTLIB_SSDP=yes
-
       $as_echo "#define P_SSDP 1" >>confdefs.h
 
    else
       PTLIB_SSDP=no
-
    fi
 
 
 
+else
+  HAS_SSDP=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable VCard support" >&5
-$as_echo_n "checking enable VCard support... " >&6; }
+   enable_ssdp="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking VCard support" >&5
+$as_echo_n "checking VCard support... " >&6; }
 
    # Check whether --enable-vcard was given.
 if test "${enable_vcard+set}" = set; then :
   enableval=$enable_vcard;
-         if test "x$enableval" = "xyes"; then
-            HAS_VCARD=1
-         else
-            HAS_VCARD=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_VCARD:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9859,10 +10193,12 @@ fi
 
 
 
-      if test "x${HAS_VCARD}" = "x1" && test "x$HAS_URL" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_URL" >&5
-$as_echo "disabled due to disabled dependency HAS_URL" >&6; }
-         HAS_VCARD=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_URL" != "x1" && \
+            test "x$HAS_URL" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_URL=$HAS_URL" >&5
+$as_echo "disabled due to disabled dependency HAS_URL=$HAS_URL" >&6; }
+         enableval=no
       fi
 
 
@@ -9876,53 +10212,65 @@ $as_echo "disabled due to disabled dependency HAS_URL" >&6; }
 
 
 
-   if test "x${HAS_VCARD}" = "x1"; then
-
-$as_echo "#define P_VCARD 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_VCARD=1
 
-   if test "x${HAS_VCARD}" = "xyes" ; then
+   if test "x$HAS_VCARD" = "xyes" ; then
       HAS_VCARD=1
    fi
 
-   if test "x${HAS_VCARD}" = "x0" || test "x${HAS_VCARD}" = "xno" ; then
+   if test "x$HAS_VCARD" = "x0" || test "x$HAS_VCARD" = "xno" ; then
       HAS_VCARD=
    fi
 
 
 
-   if test "x${HAS_VCARD}" = "x1" ; then
+   if test "x$HAS_VCARD" = "x1" ; then
       PTLIB_VCARD=yes
-
       $as_echo "#define P_VCARD 1" >>confdefs.h
 
    else
       PTLIB_VCARD=no
-
    fi
 
 
 
+else
+  HAS_VCARD=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable Jabber support" >&5
-$as_echo_n "checking enable Jabber support... " >&6; }
+   enable_vcard="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Jabber support" >&5
+$as_echo_n "checking Jabber support... " >&6; }
 
    # Check whether --enable-jabber was given.
 if test "${enable_jabber+set}" = set; then :
   enableval=$enable_jabber;
-         if test "x$enableval" = "xyes"; then
-            HAS_JABBER=1
-         else
-            HAS_JABBER=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_JABBER:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -9931,10 +10279,12 @@ fi
 
 
 
-      if test "x${HAS_JABBER}" = "x1" && test "x$HAS_EXPAT" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT" >&5
-$as_echo "disabled due to disabled dependency HAS_EXPAT" >&6; }
-         HAS_JABBER=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_EXPAT" != "x1" && \
+            test "x$HAS_EXPAT" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&5
+$as_echo "disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&6; }
+         enableval=no
       fi
 
 
@@ -9948,53 +10298,65 @@ $as_echo "disabled due to disabled dependency HAS_EXPAT" >&6; }
 
 
 
-   if test "x${HAS_JABBER}" = "x1"; then
-
-$as_echo "#define P_JABBER 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_JABBER=1
 
-   if test "x${HAS_JABBER}" = "xyes" ; then
+   if test "x$HAS_JABBER" = "xyes" ; then
       HAS_JABBER=1
    fi
 
-   if test "x${HAS_JABBER}" = "x0" || test "x${HAS_JABBER}" = "xno" ; then
+   if test "x$HAS_JABBER" = "x0" || test "x$HAS_JABBER" = "xno" ; then
       HAS_JABBER=
    fi
 
 
 
-   if test "x${HAS_JABBER}" = "x1" ; then
+   if test "x$HAS_JABBER" = "x1" ; then
       PTLIB_JABBER=yes
-
       $as_echo "#define P_JABBER 1" >>confdefs.h
 
    else
       PTLIB_JABBER=no
-
    fi
 
 
 
+else
+  HAS_JABBER=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable Text-To-Speech server support" >&5
-$as_echo_n "checking enable Text-To-Speech server support... " >&6; }
+   enable_jabber="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Text-To-Speech server support" >&5
+$as_echo_n "checking Text-To-Speech server support... " >&6; }
 
    # Check whether --enable-tts was given.
 if test "${enable_tts+set}" = set; then :
   enableval=$enable_tts;
-         if test "x$enableval" = "xyes"; then
-            HAS_TTS=1
-         else
-            HAS_TTS=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_TTS:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10014,53 +10376,65 @@ fi
 
 
 
-   if test "x${HAS_TTS}" = "x1"; then
-
-$as_echo "#define P_TTS 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_TTS=1
 
-   if test "x${HAS_TTS}" = "xyes" ; then
+   if test "x$HAS_TTS" = "xyes" ; then
       HAS_TTS=1
    fi
 
-   if test "x${HAS_TTS}" = "x0" || test "x${HAS_TTS}" = "xno" ; then
+   if test "x$HAS_TTS" = "x0" || test "x$HAS_TTS" = "xno" ; then
       HAS_TTS=
    fi
 
 
 
-   if test "x${HAS_TTS}" = "x1" ; then
+   if test "x$HAS_TTS" = "x1" ; then
       PTLIB_TTS=yes
-
       $as_echo "#define P_TTS 1" >>confdefs.h
 
    else
       PTLIB_TTS=no
-
    fi
 
 
 
+else
+  HAS_TTS=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable VXML support" >&5
-$as_echo_n "checking enable VXML support... " >&6; }
+   enable_tts="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking VXML support" >&5
+$as_echo_n "checking VXML support... " >&6; }
 
    # Check whether --enable-vxml was given.
 if test "${enable_vxml+set}" = set; then :
   enableval=$enable_vxml;
-         if test "x$enableval" = "xyes"; then
-            HAS_VXML=1
-         else
-            HAS_VXML=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_VXML:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10069,28 +10443,38 @@ fi
 
 
 
-      if test "x${HAS_VXML}" = "x1" && test "x$HAS_EXPAT" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT" >&5
-$as_echo "disabled due to disabled dependency HAS_EXPAT" >&6; }
-         HAS_VXML=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_EXPAT" != "x1" && \
+            test "x$HAS_EXPAT" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&5
+$as_echo "disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&6; }
+         enableval=no
       fi
 
 
 
 
-      if test "x${HAS_VXML}" = "x1" && test "x$HAS_HTTP" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP" >&5
-$as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
-         HAS_VXML=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_HTTP" != "x1" && \
+            test "x$HAS_HTTP" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&5
+$as_echo "disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&6; }
+         enableval=no
       fi
 
 
 
 
-      if test "x${HAS_VXML}" = "x1" && test "x$HAS_TTS" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_TTS" >&5
-$as_echo "disabled due to disabled dependency HAS_TTS" >&6; }
-         HAS_VXML=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_TTS" != "x1" && \
+            test "x$HAS_TTS" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_TTS
+   =$HAS_TTS
+   " >&5
+$as_echo "disabled due to disabled dependency HAS_TTS
+   =$HAS_TTS
+   " >&6; }
+         enableval=no
       fi
 
 
@@ -10098,53 +10482,65 @@ $as_echo "disabled due to disabled dependency HAS_TTS" >&6; }
 
 
 
-   if test "x${HAS_VXML}" = "x1"; then
-
-$as_echo "#define P_VXML 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_VXML=1
 
-   if test "x${HAS_VXML}" = "xyes" ; then
+   if test "x$HAS_VXML" = "xyes" ; then
       HAS_VXML=1
    fi
 
-   if test "x${HAS_VXML}" = "x0" || test "x${HAS_VXML}" = "xno" ; then
+   if test "x$HAS_VXML" = "x0" || test "x$HAS_VXML" = "xno" ; then
       HAS_VXML=
    fi
 
 
 
-   if test "x${HAS_VXML}" = "x1" ; then
+   if test "x$HAS_VXML" = "x1" ; then
       PTLIB_VXML=yes
-
       $as_echo "#define P_VXML 1" >>confdefs.h
 
    else
       PTLIB_VXML=no
-
    fi
 
 
 
+else
+  HAS_VXML=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable XMLRPC support" >&5
-$as_echo_n "checking enable XMLRPC support... " >&6; }
+   enable_vxml="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking XMLRPC support" >&5
+$as_echo_n "checking XMLRPC support... " >&6; }
 
    # Check whether --enable-xmlrpc was given.
 if test "${enable_xmlrpc+set}" = set; then :
   enableval=$enable_xmlrpc;
-         if test "x$enableval" = "xyes"; then
-            HAS_XMLRPC=1
-         else
-            HAS_XMLRPC=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_XMLRPC:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10153,19 +10549,23 @@ fi
 
 
 
-      if test "x${HAS_XMLRPC}" = "x1" && test "x$HAS_EXPAT" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT" >&5
-$as_echo "disabled due to disabled dependency HAS_EXPAT" >&6; }
-         HAS_XMLRPC=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_EXPAT" != "x1" && \
+            test "x$HAS_EXPAT" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&5
+$as_echo "disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&6; }
+         enableval=no
       fi
 
 
 
 
-      if test "x${HAS_XMLRPC}" = "x1" && test "x$HAS_HTTP" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP" >&5
-$as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
-         HAS_XMLRPC=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_HTTP" != "x1" && \
+            test "x$HAS_HTTP" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&5
+$as_echo "disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&6; }
+         enableval=no
       fi
 
 
@@ -10176,53 +10576,65 @@ $as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
 
 
 
-   if test "x${HAS_XMLRPC}" = "x1"; then
-
-$as_echo "#define P_XMLRPC 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_XMLRPC=1
 
-   if test "x${HAS_XMLRPC}" = "xyes" ; then
+   if test "x$HAS_XMLRPC" = "xyes" ; then
       HAS_XMLRPC=1
    fi
 
-   if test "x${HAS_XMLRPC}" = "x0" || test "x${HAS_XMLRPC}" = "xno" ; then
+   if test "x$HAS_XMLRPC" = "x0" || test "x$HAS_XMLRPC" = "xno" ; then
       HAS_XMLRPC=
    fi
 
 
 
-   if test "x${HAS_XMLRPC}" = "x1" ; then
+   if test "x$HAS_XMLRPC" = "x1" ; then
       PTLIB_XMLRPC=yes
-
       $as_echo "#define P_XMLRPC 1" >>confdefs.h
 
    else
       PTLIB_XMLRPC=no
-
    fi
 
 
 
+else
+  HAS_XMLRPC=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable SOAP support" >&5
-$as_echo_n "checking enable SOAP support... " >&6; }
+   enable_xmlrpc="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking SOAP support" >&5
+$as_echo_n "checking SOAP support... " >&6; }
 
    # Check whether --enable-soap was given.
 if test "${enable_soap+set}" = set; then :
   enableval=$enable_soap;
-         if test "x$enableval" = "xyes"; then
-            HAS_SOAP=1
-         else
-            HAS_SOAP=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_SOAP:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10231,19 +10643,23 @@ fi
 
 
 
-      if test "x${HAS_SOAP}" = "x1" && test "x$HAS_EXPAT" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT" >&5
-$as_echo "disabled due to disabled dependency HAS_EXPAT" >&6; }
-         HAS_SOAP=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_EXPAT" != "x1" && \
+            test "x$HAS_EXPAT" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&5
+$as_echo "disabled due to disabled dependency HAS_EXPAT=$HAS_EXPAT" >&6; }
+         enableval=no
       fi
 
 
 
 
-      if test "x${HAS_SOAP}" = "x1" && test "x$HAS_HTTP" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP" >&5
-$as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
-         HAS_SOAP=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_HTTP" != "x1" && \
+            test "x$HAS_HTTP" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&5
+$as_echo "disabled due to disabled dependency HAS_HTTP=$HAS_HTTP" >&6; }
+         enableval=no
       fi
 
 
@@ -10254,54 +10670,66 @@ $as_echo "disabled due to disabled dependency HAS_HTTP" >&6; }
 
 
 
-   if test "x${HAS_SOAP}" = "x1"; then
-
-$as_echo "#define P_SOAP 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_SOAP=1
 
-   if test "x${HAS_SOAP}" = "xyes" ; then
+   if test "x$HAS_SOAP" = "xyes" ; then
       HAS_SOAP=1
    fi
 
-   if test "x${HAS_SOAP}" = "x0" || test "x${HAS_SOAP}" = "xno" ; then
+   if test "x$HAS_SOAP" = "x0" || test "x$HAS_SOAP" = "xno" ; then
       HAS_SOAP=
    fi
 
 
 
-   if test "x${HAS_SOAP}" = "x1" ; then
+   if test "x$HAS_SOAP" = "x1" ; then
       PTLIB_SOAP=yes
-
       $as_echo "#define P_SOAP 1" >>confdefs.h
 
    else
       PTLIB_SOAP=no
-
    fi
 
 
 
+else
+  HAS_SOAP=
+fi
+
+
+   enable_soap="$enableval"
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable ASN decoding/encoding support" >&5
-$as_echo_n "checking enable ASN decoding/encoding support... " >&6; }
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ASN decoding/encoding support" >&5
+$as_echo_n "checking ASN decoding/encoding support... " >&6; }
 
    # Check whether --enable-asn was given.
 if test "${enable_asn+set}" = set; then :
   enableval=$enable_asn;
-         if test "x$enableval" = "xyes"; then
-            HAS_ASN=1
-         else
-            HAS_ASN=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_ASN:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10321,53 +10749,65 @@ fi
 
 
 
-   if test "x${HAS_ASN}" = "x1"; then
-
-$as_echo "#define P_ASN 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_ASN=1
 
-   if test "x${HAS_ASN}" = "xyes" ; then
+   if test "x$HAS_ASN" = "xyes" ; then
       HAS_ASN=1
    fi
 
-   if test "x${HAS_ASN}" = "x0" || test "x${HAS_ASN}" = "xno" ; then
+   if test "x$HAS_ASN" = "x0" || test "x$HAS_ASN" = "xno" ; then
       HAS_ASN=
    fi
 
 
 
-   if test "x${HAS_ASN}" = "x1" ; then
+   if test "x$HAS_ASN" = "x1" ; then
       PTLIB_ASN=yes
-
       $as_echo "#define P_ASN 1" >>confdefs.h
 
    else
       PTLIB_ASN=no
-
    fi
 
 
 
+else
+  HAS_ASN=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable NAT traversal support" >&5
-$as_echo_n "checking enable NAT traversal support... " >&6; }
+   enable_asn="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking NAT traversal support" >&5
+$as_echo_n "checking NAT traversal support... " >&6; }
 
    # Check whether --enable-nat was given.
 if test "${enable_nat+set}" = set; then :
   enableval=$enable_nat;
-         if test "x$enableval" = "xyes"; then
-            HAS_NAT=1
-         else
-            HAS_NAT=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_NAT:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10387,53 +10827,65 @@ fi
 
 
 
-   if test "x${HAS_NAT}" = "x1"; then
-
-$as_echo "#define P_NAT 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_NAT=1
 
-   if test "x${HAS_NAT}" = "xyes" ; then
+   if test "x$HAS_NAT" = "xyes" ; then
       HAS_NAT=1
    fi
 
-   if test "x${HAS_NAT}" = "x0" || test "x${HAS_NAT}" = "xno" ; then
+   if test "x$HAS_NAT" = "x0" || test "x$HAS_NAT" = "xno" ; then
       HAS_NAT=
    fi
 
 
 
-   if test "x${HAS_NAT}" = "x1" ; then
+   if test "x$HAS_NAT" = "x1" ; then
       PTLIB_NAT=yes
-
       $as_echo "#define P_NAT 1" >>confdefs.h
 
    else
       PTLIB_NAT=no
-
    fi
 
 
 
+else
+  HAS_NAT=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable STUN support" >&5
-$as_echo_n "checking enable STUN support... " >&6; }
+   enable_nat="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking STUN support" >&5
+$as_echo_n "checking STUN support... " >&6; }
 
    # Check whether --enable-stun was given.
 if test "${enable_stun+set}" = set; then :
   enableval=$enable_stun;
-         if test "x$enableval" = "xyes"; then
-            HAS_STUN=1
-         else
-            HAS_STUN=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_STUN:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10442,10 +10894,12 @@ fi
 
 
 
-      if test "x${HAS_STUN}" = "x1" && test "x$HAS_NAT" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_NAT" >&5
-$as_echo "disabled due to disabled dependency HAS_NAT" >&6; }
-         HAS_STUN=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_NAT" != "x1" && \
+            test "x$HAS_NAT" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_NAT=$HAS_NAT" >&5
+$as_echo "disabled due to disabled dependency HAS_NAT=$HAS_NAT" >&6; }
+         enableval=no
       fi
 
 
@@ -10459,51 +10913,63 @@ $as_echo "disabled due to disabled dependency HAS_NAT" >&6; }
 
 
 
-   if test "x${HAS_STUN}" = "x1"; then
-
-$as_echo "#define P_STUN 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_STUN=1
 
-   if test "x${HAS_STUN}" = "xyes" ; then
+   if test "x$HAS_STUN" = "xyes" ; then
       HAS_STUN=1
    fi
 
-   if test "x${HAS_STUN}" = "x0" || test "x${HAS_STUN}" = "xno" ; then
+   if test "x$HAS_STUN" = "x0" || test "x$HAS_STUN" = "xno" ; then
       HAS_STUN=
    fi
 
 
 
-   if test "x${HAS_STUN}" = "x1" ; then
+   if test "x$HAS_STUN" = "x1" ; then
       PTLIB_STUN=yes
-
       $as_echo "#define P_STUN 1" >>confdefs.h
 
    else
       PTLIB_STUN=no
-
    fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable STUN server support" >&5
-$as_echo_n "checking enable STUN server support... " >&6; }
+else
+  HAS_STUN=
+fi
+
+
+   enable_stun="$enableval"
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking STUN server support" >&5
+$as_echo_n "checking STUN server support... " >&6; }
 
    # Check whether --enable-stunsrvr was given.
 if test "${enable_stunsrvr+set}" = set; then :
   enableval=$enable_stunsrvr;
-         if test "x$enableval" = "xyes"; then
-            HAS_STUNSRVR=1
-         else
-            HAS_STUNSRVR=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_STUNSRVR:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10512,10 +10978,12 @@ fi
 
 
 
-      if test "x${HAS_STUNSRVR}" = "x1" && test "x$HAS_NAT" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_NAT" >&5
-$as_echo "disabled due to disabled dependency HAS_NAT" >&6; }
-         HAS_STUNSRVR=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_NAT" != "x1" && \
+            test "x$HAS_NAT" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_NAT=$HAS_NAT" >&5
+$as_echo "disabled due to disabled dependency HAS_NAT=$HAS_NAT" >&6; }
+         enableval=no
       fi
 
 
@@ -10529,53 +10997,65 @@ $as_echo "disabled due to disabled dependency HAS_NAT" >&6; }
 
 
 
-   if test "x${HAS_STUNSRVR}" = "x1"; then
-
-$as_echo "#define P_STUNSRVR 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_STUNSRVR=1
 
-   if test "x${HAS_STUNSRVR}" = "xyes" ; then
+   if test "x$HAS_STUNSRVR" = "xyes" ; then
       HAS_STUNSRVR=1
    fi
 
-   if test "x${HAS_STUNSRVR}" = "x0" || test "x${HAS_STUNSRVR}" = "xno" ; then
+   if test "x$HAS_STUNSRVR" = "x0" || test "x$HAS_STUNSRVR" = "xno" ; then
       HAS_STUNSRVR=
    fi
 
 
 
-   if test "x${HAS_STUNSRVR}" = "x1" ; then
+   if test "x$HAS_STUNSRVR" = "x1" ; then
       PTLIB_STUNSRVR=yes
-
       $as_echo "#define P_STUNSRVR 1" >>confdefs.h
 
    else
       PTLIB_STUNSRVR=no
-
    fi
 
 
 
+else
+  HAS_STUNSRVR=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable pipechannel support" >&5
-$as_echo_n "checking enable pipechannel support... " >&6; }
+   enable_stunsrvr="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking sub-process (PPipeChannel) support" >&5
+$as_echo_n "checking sub-process (PPipeChannel) support... " >&6; }
 
    # Check whether --enable-pipechan was given.
 if test "${enable_pipechan+set}" = set; then :
   enableval=$enable_pipechan;
-         if test "x$enableval" = "xyes"; then
-            HAS_PIPECHAN=1
-         else
-            HAS_PIPECHAN=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_PIPECHAN:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10595,53 +11075,65 @@ fi
 
 
 
-   if test "x${HAS_PIPECHAN}" = "x1"; then
-
-$as_echo "#define P_PIPECHAN 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_PIPECHAN=1
 
-   if test "x${HAS_PIPECHAN}" = "xyes" ; then
+   if test "x$HAS_PIPECHAN" = "xyes" ; then
       HAS_PIPECHAN=1
    fi
 
-   if test "x${HAS_PIPECHAN}" = "x0" || test "x${HAS_PIPECHAN}" = "xno" ; then
+   if test "x$HAS_PIPECHAN" = "x0" || test "x$HAS_PIPECHAN" = "xno" ; then
       HAS_PIPECHAN=
    fi
 
 
 
-   if test "x${HAS_PIPECHAN}" = "x1" ; then
+   if test "x$HAS_PIPECHAN" = "x1" ; then
       PTLIB_PIPECHAN=yes
-
       $as_echo "#define P_PIPECHAN 1" >>confdefs.h
 
    else
       PTLIB_PIPECHAN=no
-
    fi
 
 
 
+else
+  HAS_PIPECHAN=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable DTMF protocol support" >&5
-$as_echo_n "checking enable DTMF protocol support... " >&6; }
+   enable_pipechan="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking DTMF protocol support" >&5
+$as_echo_n "checking DTMF protocol support... " >&6; }
 
    # Check whether --enable-dtmf was given.
 if test "${enable_dtmf+set}" = set; then :
   enableval=$enable_dtmf;
-         if test "x$enableval" = "xyes"; then
-            HAS_DTMF=1
-         else
-            HAS_DTMF=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_DTMF:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10661,53 +11153,65 @@ fi
 
 
 
-   if test "x${HAS_DTMF}" = "x1"; then
-
-$as_echo "#define P_DTMF 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_DTMF=1
 
-   if test "x${HAS_DTMF}" = "xyes" ; then
+   if test "x$HAS_DTMF" = "xyes" ; then
       HAS_DTMF=1
    fi
 
-   if test "x${HAS_DTMF}" = "x0" || test "x${HAS_DTMF}" = "xno" ; then
+   if test "x$HAS_DTMF" = "x0" || test "x$HAS_DTMF" = "xno" ; then
       HAS_DTMF=
    fi
 
 
 
-   if test "x${HAS_DTMF}" = "x1" ; then
+   if test "x$HAS_DTMF" = "x1" ; then
       PTLIB_DTMF=yes
-
       $as_echo "#define P_DTMF 1" >>confdefs.h
 
    else
       PTLIB_DTMF=no
-
    fi
 
 
 
+else
+  HAS_DTMF=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable SOCKS protocol support" >&5
-$as_echo_n "checking enable SOCKS protocol support... " >&6; }
+   enable_dtmf="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking SOCKS protocol support" >&5
+$as_echo_n "checking SOCKS protocol support... " >&6; }
 
    # Check whether --enable-socks was given.
 if test "${enable_socks+set}" = set; then :
   enableval=$enable_socks;
-         if test "x$enableval" = "xyes"; then
-            HAS_SOCKS=1
-         else
-            HAS_SOCKS=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_SOCKS:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10727,53 +11231,65 @@ fi
 
 
 
-   if test "x${HAS_SOCKS}" = "x1"; then
-
-$as_echo "#define P_SOCKS 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_SOCKS=1
 
-   if test "x${HAS_SOCKS}" = "xyes" ; then
+   if test "x$HAS_SOCKS" = "xyes" ; then
       HAS_SOCKS=1
    fi
 
-   if test "x${HAS_SOCKS}" = "x0" || test "x${HAS_SOCKS}" = "xno" ; then
+   if test "x$HAS_SOCKS" = "x0" || test "x$HAS_SOCKS" = "xno" ; then
       HAS_SOCKS=
    fi
 
 
 
-   if test "x${HAS_SOCKS}" = "x1" ; then
+   if test "x$HAS_SOCKS" = "x1" ; then
       PTLIB_SOCKS=yes
-
       $as_echo "#define P_SOCKS 1" >>confdefs.h
 
    else
       PTLIB_SOCKS=no
-
    fi
 
 
 
+else
+  HAS_SOCKS=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable FTP protocol support" >&5
-$as_echo_n "checking enable FTP protocol support... " >&6; }
+   enable_socks="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking FTP protocol support" >&5
+$as_echo_n "checking FTP protocol support... " >&6; }
 
    # Check whether --enable-ftp was given.
 if test "${enable_ftp+set}" = set; then :
   enableval=$enable_ftp;
-         if test "x$enableval" = "xyes"; then
-            HAS_FTP=1
-         else
-            HAS_FTP=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_FTP:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10793,53 +11309,65 @@ fi
 
 
 
-   if test "x${HAS_FTP}" = "x1"; then
-
-$as_echo "#define P_FTP 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_FTP=1
 
-   if test "x${HAS_FTP}" = "xyes" ; then
+   if test "x$HAS_FTP" = "xyes" ; then
       HAS_FTP=1
    fi
 
-   if test "x${HAS_FTP}" = "x0" || test "x${HAS_FTP}" = "xno" ; then
+   if test "x$HAS_FTP" = "x0" || test "x$HAS_FTP" = "xno" ; then
       HAS_FTP=
    fi
 
 
 
-   if test "x${HAS_FTP}" = "x1" ; then
+   if test "x$HAS_FTP" = "x1" ; then
       PTLIB_FTP=yes
-
       $as_echo "#define P_FTP 1" >>confdefs.h
 
    else
       PTLIB_FTP=no
-
    fi
 
 
 
+else
+  HAS_FTP=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable SNMP protocol support" >&5
-$as_echo_n "checking enable SNMP protocol support... " >&6; }
+   enable_ftp="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking SNMP protocol support" >&5
+$as_echo_n "checking SNMP protocol support... " >&6; }
 
    # Check whether --enable-snmp was given.
 if test "${enable_snmp+set}" = set; then :
   enableval=$enable_snmp;
-         if test "x$enableval" = "xyes"; then
-            HAS_SNMP=1
-         else
-            HAS_SNMP=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_SNMP:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10859,53 +11387,65 @@ fi
 
 
 
-   if test "x${HAS_SNMP}" = "x1"; then
-
-$as_echo "#define P_SNMP 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_SNMP=1
 
-   if test "x${HAS_SNMP}" = "xyes" ; then
+   if test "x$HAS_SNMP" = "xyes" ; then
       HAS_SNMP=1
    fi
 
-   if test "x${HAS_SNMP}" = "x0" || test "x${HAS_SNMP}" = "xno" ; then
+   if test "x$HAS_SNMP" = "x0" || test "x$HAS_SNMP" = "xno" ; then
       HAS_SNMP=
    fi
 
 
 
-   if test "x${HAS_SNMP}" = "x1" ; then
+   if test "x$HAS_SNMP" = "x1" ; then
       PTLIB_SNMP=yes
-
       $as_echo "#define P_SNMP 1" >>confdefs.h
 
    else
       PTLIB_SNMP=no
-
    fi
 
 
 
+else
+  HAS_SNMP=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable TELNET protocol support" >&5
-$as_echo_n "checking enable TELNET protocol support... " >&6; }
+   enable_snmp="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking TELNET protocol support" >&5
+$as_echo_n "checking TELNET protocol support... " >&6; }
 
    # Check whether --enable-telnet was given.
 if test "${enable_telnet+set}" = set; then :
   enableval=$enable_telnet;
-         if test "x$enableval" = "xyes"; then
-            HAS_TELNET=1
-         else
-            HAS_TELNET=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_TELNET:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10925,53 +11465,65 @@ fi
 
 
 
-   if test "x${HAS_TELNET}" = "x1"; then
-
-$as_echo "#define P_TELNET 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_TELNET=1
 
-   if test "x${HAS_TELNET}" = "xyes" ; then
+   if test "x$HAS_TELNET" = "xyes" ; then
       HAS_TELNET=1
    fi
 
-   if test "x${HAS_TELNET}" = "x0" || test "x${HAS_TELNET}" = "xno" ; then
+   if test "x$HAS_TELNET" = "x0" || test "x$HAS_TELNET" = "xno" ; then
       HAS_TELNET=
    fi
 
 
 
-   if test "x${HAS_TELNET}" = "x1" ; then
+   if test "x$HAS_TELNET" = "x1" ; then
       PTLIB_TELNET=yes
-
       $as_echo "#define P_TELNET 1" >>confdefs.h
 
    else
       PTLIB_TELNET=no
-
    fi
 
 
 
+else
+  HAS_TELNET=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable command line interpreter support" >&5
-$as_echo_n "checking enable command line interpreter support... " >&6; }
+   enable_telnet="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking command line interpreter support" >&5
+$as_echo_n "checking command line interpreter support... " >&6; }
 
    # Check whether --enable-cli was given.
 if test "${enable_cli+set}" = set; then :
   enableval=$enable_cli;
-         if test "x$enableval" = "xyes"; then
-            HAS_CLI=1
-         else
-            HAS_CLI=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_CLI:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -10991,53 +11543,65 @@ fi
 
 
 
-   if test "x${HAS_CLI}" = "x1"; then
-
-$as_echo "#define P_CLI 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_CLI=1
 
-   if test "x${HAS_CLI}" = "xyes" ; then
+   if test "x$HAS_CLI" = "xyes" ; then
       HAS_CLI=1
    fi
 
-   if test "x${HAS_CLI}" = "x0" || test "x${HAS_CLI}" = "xno" ; then
+   if test "x$HAS_CLI" = "x0" || test "x$HAS_CLI" = "xno" ; then
       HAS_CLI=
    fi
 
 
 
-   if test "x${HAS_CLI}" = "x1" ; then
+   if test "x$HAS_CLI" = "x1" ; then
       PTLIB_CLI=yes
-
       $as_echo "#define P_CLI 1" >>confdefs.h
 
    else
       PTLIB_CLI=no
-
    fi
 
 
 
+else
+  HAS_CLI=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable remote connection support" >&5
-$as_echo_n "checking enable remote connection support... " >&6; }
+   enable_cli="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking remote connection support" >&5
+$as_echo_n "checking remote connection support... " >&6; }
 
    # Check whether --enable-remconn was given.
 if test "${enable_remconn+set}" = set; then :
   enableval=$enable_remconn;
-         if test "x$enableval" = "xyes"; then
-            HAS_REMCONN=1
-         else
-            HAS_REMCONN=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_REMCONN:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11046,19 +11610,23 @@ fi
 
 
 
-      if test "x${HAS_REMCONN}" = "x1" && test "x$HAS_CONFIG_FILE" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_CONFIG_FILE" >&5
-$as_echo "disabled due to disabled dependency HAS_CONFIG_FILE" >&6; }
-         HAS_REMCONN=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_CONFIG_FILE" != "x1" && \
+            test "x$HAS_CONFIG_FILE" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_CONFIG_FILE=$HAS_CONFIG_FILE" >&5
+$as_echo "disabled due to disabled dependency HAS_CONFIG_FILE=$HAS_CONFIG_FILE" >&6; }
+         enableval=no
       fi
 
 
 
 
-      if test "x${HAS_REMCONN}" = "x1" && test "x$HAS_PIPECHAN" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_PIPECHAN" >&5
-$as_echo "disabled due to disabled dependency HAS_PIPECHAN" >&6; }
-         HAS_REMCONN=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_PIPECHAN" != "x1" && \
+            test "x$HAS_PIPECHAN" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_PIPECHAN=$HAS_PIPECHAN" >&5
+$as_echo "disabled due to disabled dependency HAS_PIPECHAN=$HAS_PIPECHAN" >&6; }
+         enableval=no
       fi
 
 
@@ -11069,53 +11637,65 @@ $as_echo "disabled due to disabled dependency HAS_PIPECHAN" >&6; }
 
 
 
-   if test "x${HAS_REMCONN}" = "x1"; then
-
-$as_echo "#define P_REMCONN 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_REMCONN=1
 
-   if test "x${HAS_REMCONN}" = "xyes" ; then
+   if test "x$HAS_REMCONN" = "xyes" ; then
       HAS_REMCONN=1
    fi
 
-   if test "x${HAS_REMCONN}" = "x0" || test "x${HAS_REMCONN}" = "xno" ; then
+   if test "x$HAS_REMCONN" = "x0" || test "x$HAS_REMCONN" = "xno" ; then
       HAS_REMCONN=
    fi
 
 
 
-   if test "x${HAS_REMCONN}" = "x1" ; then
+   if test "x$HAS_REMCONN" = "x1" ; then
       PTLIB_REMCONN=yes
-
       $as_echo "#define P_REMCONN 1" >>confdefs.h
 
    else
       PTLIB_REMCONN=no
-
    fi
 
 
 
+else
+  HAS_REMCONN=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable serial port support" >&5
-$as_echo_n "checking enable serial port support... " >&6; }
+   enable_remconn="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking serial port support" >&5
+$as_echo_n "checking serial port support... " >&6; }
 
    # Check whether --enable-serial was given.
 if test "${enable_serial+set}" = set; then :
   enableval=$enable_serial;
-         if test "x$enableval" = "xyes"; then
-            HAS_SERIAL=1
-         else
-            HAS_SERIAL=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_SERIAL:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11135,53 +11715,65 @@ fi
 
 
 
-   if test "x${HAS_SERIAL}" = "x1"; then
-
-$as_echo "#define P_SERIAL 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_SERIAL=1
 
-   if test "x${HAS_SERIAL}" = "xyes" ; then
+   if test "x$HAS_SERIAL" = "xyes" ; then
       HAS_SERIAL=1
    fi
 
-   if test "x${HAS_SERIAL}" = "x0" || test "x${HAS_SERIAL}" = "xno" ; then
+   if test "x$HAS_SERIAL" = "x0" || test "x$HAS_SERIAL" = "xno" ; then
       HAS_SERIAL=
    fi
 
 
 
-   if test "x${HAS_SERIAL}" = "x1" ; then
+   if test "x$HAS_SERIAL" = "x1" ; then
       PTLIB_SERIAL=yes
-
       $as_echo "#define P_SERIAL 1" >>confdefs.h
 
    else
       PTLIB_SERIAL=no
-
    fi
 
 
 
+else
+  HAS_SERIAL=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable POP3/SMTP support" >&5
-$as_echo_n "checking enable POP3/SMTP support... " >&6; }
+   enable_serial="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking POP3/SMTP support" >&5
+$as_echo_n "checking POP3/SMTP support... " >&6; }
 
    # Check whether --enable-pop3smtp was given.
 if test "${enable_pop3smtp+set}" = set; then :
   enableval=$enable_pop3smtp;
-         if test "x$enableval" = "xyes"; then
-            HAS_POP3SMTP=1
-         else
-            HAS_POP3SMTP=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_POP3SMTP:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11201,53 +11793,65 @@ fi
 
 
 
-   if test "x${HAS_POP3SMTP}" = "x1"; then
-
-$as_echo "#define P_POP3SMTP 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_POP3SMTP=1
 
-   if test "x${HAS_POP3SMTP}" = "xyes" ; then
+   if test "x$HAS_POP3SMTP" = "xyes" ; then
       HAS_POP3SMTP=1
    fi
 
-   if test "x${HAS_POP3SMTP}" = "x0" || test "x${HAS_POP3SMTP}" = "xno" ; then
+   if test "x$HAS_POP3SMTP" = "x0" || test "x$HAS_POP3SMTP" = "xno" ; then
       HAS_POP3SMTP=
    fi
 
 
 
-   if test "x${HAS_POP3SMTP}" = "x1" ; then
+   if test "x$HAS_POP3SMTP" = "x1" ; then
       PTLIB_POP3SMTP=yes
-
       $as_echo "#define P_POP3SMTP 1" >>confdefs.h
 
    else
       PTLIB_POP3SMTP=no
-
    fi
 
 
 
+else
+  HAS_POP3SMTP=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable audio support" >&5
-$as_echo_n "checking enable audio support... " >&6; }
+   enable_pop3smtp="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking audio support" >&5
+$as_echo_n "checking audio support... " >&6; }
 
    # Check whether --enable-audio was given.
 if test "${enable_audio+set}" = set; then :
   enableval=$enable_audio;
-         if test "x$enableval" = "xyes"; then
-            HAS_AUDIO=1
-         else
-            HAS_AUDIO=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_AUDIO:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11267,53 +11871,65 @@ fi
 
 
 
-   if test "x${HAS_AUDIO}" = "x1"; then
-
-$as_echo "#define P_AUDIO 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_AUDIO=1
 
-   if test "x${HAS_AUDIO}" = "xyes" ; then
+   if test "x$HAS_AUDIO" = "xyes" ; then
       HAS_AUDIO=1
    fi
 
-   if test "x${HAS_AUDIO}" = "x0" || test "x${HAS_AUDIO}" = "xno" ; then
+   if test "x$HAS_AUDIO" = "x0" || test "x$HAS_AUDIO" = "xno" ; then
       HAS_AUDIO=
    fi
 
 
 
-   if test "x${HAS_AUDIO}" = "x1" ; then
+   if test "x$HAS_AUDIO" = "x1" ; then
       PTLIB_AUDIO=yes
-
       $as_echo "#define P_AUDIO 1" >>confdefs.h
 
    else
       PTLIB_AUDIO=no
-
    fi
 
 
 
+else
+  HAS_AUDIO=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable WAVFILE support" >&5
-$as_echo_n "checking enable WAVFILE support... " >&6; }
+   enable_audio="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking WAVFILE support" >&5
+$as_echo_n "checking WAVFILE support... " >&6; }
 
    # Check whether --enable-wavfile was given.
 if test "${enable_wavfile+set}" = set; then :
   enableval=$enable_wavfile;
-         if test "x$enableval" = "xyes"; then
-            HAS_WAVFILE=1
-         else
-            HAS_WAVFILE=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_WAVFILE:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11322,10 +11938,12 @@ fi
 
 
 
-      if test "x${HAS_WAVFILE}" = "x1" && test "x$HAS_AUDIO" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_AUDIO" >&5
-$as_echo "disabled due to disabled dependency HAS_AUDIO" >&6; }
-         HAS_WAVFILE=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_AUDIO" != "x1" && \
+            test "x$HAS_AUDIO" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_AUDIO=$HAS_AUDIO" >&5
+$as_echo "disabled due to disabled dependency HAS_AUDIO=$HAS_AUDIO" >&6; }
+         enableval=no
       fi
 
 
@@ -11339,39 +11957,42 @@ $as_echo "disabled due to disabled dependency HAS_AUDIO" >&6; }
 
 
 
-   if test "x${HAS_WAVFILE}" = "x1"; then
-
-$as_echo "#define P_WAVFILE 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_WAVFILE=1
 
-   if test "x${HAS_WAVFILE}" = "xyes" ; then
+   if test "x$HAS_WAVFILE" = "xyes" ; then
       HAS_WAVFILE=1
    fi
 
-   if test "x${HAS_WAVFILE}" = "x0" || test "x${HAS_WAVFILE}" = "xno" ; then
+   if test "x$HAS_WAVFILE" = "x0" || test "x$HAS_WAVFILE" = "xno" ; then
       HAS_WAVFILE=
    fi
 
 
 
-   if test "x${HAS_WAVFILE}" = "x1" ; then
+   if test "x$HAS_WAVFILE" = "x1" ; then
       PTLIB_WAVFILE=yes
-
       $as_echo "#define P_WAVFILE 1" >>confdefs.h
 
    else
       PTLIB_WAVFILE=no
-
    fi
 
 
 
+else
+  HAS_WAVFILE=
+fi
+
+
+   enable_wavfile="$enableval"
 
 
 
@@ -11379,18 +12000,27 @@ $as_echo "yes" >&6; }
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable video device support" >&5
-$as_echo_n "checking enable video device support... " >&6; }
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking video device support" >&5
+$as_echo_n "checking video device support... " >&6; }
 
    # Check whether --enable-video was given.
 if test "${enable_video+set}" = set; then :
   enableval=$enable_video;
-         if test "x$enableval" = "xyes"; then
-            HAS_VIDEO=1
-         else
-            HAS_VIDEO=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_VIDEO:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11410,36 +12040,42 @@ fi
 
 
 
-   if test "x${HAS_VIDEO}" = "x1"; then
-
-$as_echo "#define P_VIDEO 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_VIDEO=1
 
-   if test "x${HAS_VIDEO}" = "xyes" ; then
+   if test "x$HAS_VIDEO" = "xyes" ; then
       HAS_VIDEO=1
    fi
 
-   if test "x${HAS_VIDEO}" = "x0" || test "x${HAS_VIDEO}" = "xno" ; then
+   if test "x$HAS_VIDEO" = "x0" || test "x$HAS_VIDEO" = "xno" ; then
       HAS_VIDEO=
    fi
 
 
 
-   if test "x${HAS_VIDEO}" = "x1" ; then
+   if test "x$HAS_VIDEO" = "x1" ; then
       PTLIB_VIDEO=yes
-
       $as_echo "#define P_VIDEO 1" >>confdefs.h
 
    else
       PTLIB_VIDEO=no
-
    fi
+
+
+
+else
+  HAS_VIDEO=
+fi
+
+
+   enable_video="$enableval"
 
 
 
@@ -11451,18 +12087,24 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable video file support" >&5
-$as_echo_n "checking enable video file support... " >&6; }
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking video file support" >&5
+$as_echo_n "checking video file support... " >&6; }
 
    # Check whether --enable-vidfile was given.
 if test "${enable_vidfile+set}" = set; then :
   enableval=$enable_vidfile;
-         if test "x$enableval" = "xyes"; then
-            HAS_VIDFILE=1
-         else
-            HAS_VIDFILE=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_VIDFILE:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11471,10 +12113,12 @@ fi
 
 
 
-      if test "x${HAS_VIDFILE}" = "x1" && test "x$HAS_VIDEO" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO" >&5
-$as_echo "disabled due to disabled dependency HAS_VIDEO" >&6; }
-         HAS_VIDFILE=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_VIDEO" != "x1" && \
+            test "x$HAS_VIDEO" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&5
+$as_echo "disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&6; }
+         enableval=no
       fi
 
 
@@ -11488,53 +12132,65 @@ $as_echo "disabled due to disabled dependency HAS_VIDEO" >&6; }
 
 
 
-   if test "x${HAS_VIDFILE}" = "x1"; then
-
-$as_echo "#define P_VIDFILE 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_VIDFILE=1
 
-   if test "x${HAS_VIDFILE}" = "xyes" ; then
+   if test "x$HAS_VIDFILE" = "xyes" ; then
       HAS_VIDFILE=1
    fi
 
-   if test "x${HAS_VIDFILE}" = "x0" || test "x${HAS_VIDFILE}" = "xno" ; then
+   if test "x$HAS_VIDFILE" = "x0" || test "x$HAS_VIDFILE" = "xno" ; then
       HAS_VIDFILE=
    fi
 
 
 
-   if test "x${HAS_VIDFILE}" = "x1" ; then
+   if test "x$HAS_VIDFILE" = "x1" ; then
       PTLIB_VIDFILE=yes
-
       $as_echo "#define P_VIDFILE 1" >>confdefs.h
 
    else
       PTLIB_VIDFILE=no
-
    fi
 
 
 
+else
+  HAS_VIDFILE=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable FFMpeg video file support" >&5
-$as_echo_n "checking enable FFMpeg video file support... " >&6; }
+   enable_vidfile="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking FFMpeg video file support" >&5
+$as_echo_n "checking FFMpeg video file support... " >&6; }
 
    # Check whether --enable-ffvdev was given.
 if test "${enable_ffvdev+set}" = set; then :
   enableval=$enable_ffvdev;
-         if test "x$enableval" = "xyes"; then
-            HAS_FFVDEV=1
-         else
-            HAS_FFVDEV=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_FFVDEV:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11543,19 +12199,23 @@ fi
 
 
 
-      if test "x${HAS_FFVDEV}" = "x1" && test "x$HAS_FFVDEV" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_FFVDEV" >&5
-$as_echo "disabled due to disabled dependency HAS_FFVDEV" >&6; }
-         HAS_FFVDEV=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_VIDEO" != "x1" && \
+            test "x$HAS_VIDEO" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&5
+$as_echo "disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&6; }
+         enableval=no
       fi
 
 
 
 
-      if test "x${HAS_FFVDEV}" = "x1" && test "x$HAS_PIPECHAN" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_PIPECHAN" >&5
-$as_echo "disabled due to disabled dependency HAS_PIPECHAN" >&6; }
-         HAS_FFVDEV=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_PIPECHAN" != "x1" && \
+            test "x$HAS_PIPECHAN" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_PIPECHAN=$HAS_PIPECHAN" >&5
+$as_echo "disabled due to disabled dependency HAS_PIPECHAN=$HAS_PIPECHAN" >&6; }
+         enableval=no
       fi
 
 
@@ -11566,53 +12226,65 @@ $as_echo "disabled due to disabled dependency HAS_PIPECHAN" >&6; }
 
 
 
-   if test "x${HAS_FFVDEV}" = "x1"; then
-
-$as_echo "#define P_FFVDEV 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_FFVDEV=1
 
-   if test "x${HAS_FFVDEV}" = "xyes" ; then
+   if test "x$HAS_FFVDEV" = "xyes" ; then
       HAS_FFVDEV=1
    fi
 
-   if test "x${HAS_FFVDEV}" = "x0" || test "x${HAS_FFVDEV}" = "xno" ; then
+   if test "x$HAS_FFVDEV" = "x0" || test "x$HAS_FFVDEV" = "xno" ; then
       HAS_FFVDEV=
    fi
 
 
 
-   if test "x${HAS_FFVDEV}" = "x1" ; then
+   if test "x$HAS_FFVDEV" = "x1" ; then
       PTLIB_FFVDEV=yes
-
       $as_echo "#define P_FFVDEV 1" >>confdefs.h
 
    else
       PTLIB_FFVDEV=no
-
    fi
 
 
 
+else
+  HAS_FFVDEV=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable application sharing support" >&5
-$as_echo_n "checking enable application sharing support... " >&6; }
+   enable_ffvdev="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking application sharing support" >&5
+$as_echo_n "checking application sharing support... " >&6; }
 
    # Check whether --enable-appshare was given.
 if test "${enable_appshare+set}" = set; then :
   enableval=$enable_appshare;
-         if test "x$enableval" = "xyes"; then
-            HAS_APPSHARE=1
-         else
-            HAS_APPSHARE=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_APPSHARE:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11621,10 +12293,12 @@ fi
 
 
 
-      if test "x${HAS_APPSHARE}" = "x1" && test "x$HAS_VIDEO" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO" >&5
-$as_echo "disabled due to disabled dependency HAS_VIDEO" >&6; }
-         HAS_APPSHARE=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_VIDEO" != "x1" && \
+            test "x$HAS_VIDEO" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&5
+$as_echo "disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&6; }
+         enableval=no
       fi
 
 
@@ -11638,53 +12312,65 @@ $as_echo "disabled due to disabled dependency HAS_VIDEO" >&6; }
 
 
 
-   if test "x${HAS_APPSHARE}" = "x1"; then
-
-$as_echo "#define P_APPSHARE 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_APPSHARE=1
 
-   if test "x${HAS_APPSHARE}" = "xyes" ; then
+   if test "x$HAS_APPSHARE" = "xyes" ; then
       HAS_APPSHARE=1
    fi
 
-   if test "x${HAS_APPSHARE}" = "x0" || test "x${HAS_APPSHARE}" = "xno" ; then
+   if test "x$HAS_APPSHARE" = "x0" || test "x$HAS_APPSHARE" = "xno" ; then
       HAS_APPSHARE=
    fi
 
 
 
-   if test "x${HAS_APPSHARE}" = "x1" ; then
+   if test "x$HAS_APPSHARE" = "x1" ; then
       PTLIB_APPSHARE=yes
-
       $as_echo "#define P_APPSHARE 1" >>confdefs.h
 
    else
       PTLIB_APPSHARE=no
-
    fi
 
 
 
+else
+  HAS_APPSHARE=
+fi
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable shared memory video devices" >&5
-$as_echo_n "checking enable shared memory video devices... " >&6; }
+   enable_appshare="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking shared memory video devices" >&5
+$as_echo_n "checking shared memory video devices... " >&6; }
 
    # Check whether --enable-shmvideo was given.
 if test "${enable_shmvideo+set}" = set; then :
   enableval=$enable_shmvideo;
-         if test "x$enableval" = "xyes"; then
-            HAS_SHM_VIDEO=1
-         else
-            HAS_SHM_VIDEO=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_SHM_VIDEO:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11704,60 +12390,67 @@ fi
 
 
 
-   if test "x${HAS_SHM_VIDEO}" = "x1"; then
-
-$as_echo "#define P_SHM_VIDEO 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_SHM_VIDEO=1
 
-   if test "x${HAS_SHM_VIDEO}" = "xyes" ; then
+   if test "x$HAS_SHM_VIDEO" = "xyes" ; then
       HAS_SHM_VIDEO=1
    fi
 
-   if test "x${HAS_SHM_VIDEO}" = "x0" || test "x${HAS_SHM_VIDEO}" = "xno" ; then
+   if test "x$HAS_SHM_VIDEO" = "x0" || test "x$HAS_SHM_VIDEO" = "xno" ; then
       HAS_SHM_VIDEO=
    fi
 
 
 
-   if test "x${HAS_SHM_VIDEO}" = "x1" ; then
+   if test "x$HAS_SHM_VIDEO" = "x1" ; then
       PTLIB_SHM_VIDEO=yes
-
       $as_echo "#define P_SHM_VIDEO 1" >>confdefs.h
 
    else
       PTLIB_SHM_VIDEO=no
-
    fi
 
 
 
+else
+  HAS_SHM_VIDEO=
+fi
 
 
+   enable_shmvideo="$enableval"
+
+
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking disable libSDL (video display) support enabled" >&5
+$as_echo_n "checking disable libSDL (video display) support enabled... " >&6; }
 
    # Check whether --enable-sdl was given.
 if test "${enable_sdl+set}" = set; then :
   enableval=$enable_sdl;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: disable libSDL (video display) support disabled by user" >&5
-$as_echo "$as_me: disable libSDL (video display) support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_SDL"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: disable libSDL (video display) support disabled by default" >&5
-$as_echo "$as_me: disable libSDL (video display) support disabled by default" >&6;}
+         enableval=${DEFAULT_SDL:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -11765,13 +12458,44 @@ fi
 
 
 
-      if test "x$HAS_VIDEO" != "x1" ; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: disable libSDL (video display) support disabled due to disabled dependency HAS_VIDEO
+
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_VIDEO" != "x1" && \
+            test "x$HAS_VIDEO" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO
+=$HAS_VIDEO
 " >&5
-$as_echo "$as_me: disable libSDL (video display) support disabled due to disabled dependency HAS_VIDEO
-" >&6;}
-         usable=no
+$as_echo "disabled due to disabled dependency HAS_VIDEO
+=$HAS_VIDEO
+" >&6; }
+         enableval=no
       fi
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_sdl="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -11856,8 +12580,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
    LDFLAGS="$SDL_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL usability" >&5
-$as_echo_n "checking for SDL usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for disable libSDL (video display) support usability" >&5
+$as_echo_n "checking for disable libSDL (video display) support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -11884,7 +12608,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
                LDFLAGS="$SDL_LIBS $LDFLAGS"
@@ -11894,32 +12619,36 @@ else
 
 fi
 
+
       fi
    fi
 
 
 
 
+
+   SDL_USABLE=$usable
+
+
+
    HAS_SDL=$usable
 
-   if test "x${HAS_SDL}" = "xyes" ; then
+   if test "x$HAS_SDL" = "xyes" ; then
       HAS_SDL=1
    fi
 
-   if test "x${HAS_SDL}" = "x0" || test "x${HAS_SDL}" = "xno" ; then
+   if test "x$HAS_SDL" = "x0" || test "x$HAS_SDL" = "xno" ; then
       HAS_SDL=
    fi
 
 
 
-   if test "x${HAS_SDL}" = "x1" ; then
+   if test "x$HAS_SDL" = "x1" ; then
       PTLIB_SDL=yes
-
       $as_echo "#define P_SDL 1" >>confdefs.h
 
    else
       PTLIB_SDL=no
-
    fi
 
 
@@ -11928,30 +12657,60 @@ fi
 
 
 
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking GStreamer support enabled" >&5
+$as_echo_n "checking GStreamer support enabled... " >&6; }
+
    # Check whether --enable-gstreamer was given.
 if test "${enable_gstreamer+set}" = set; then :
   enableval=$enable_gstreamer;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: GStreamer support disabled by user" >&5
-$as_echo "$as_me: GStreamer support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_GSTREAMER"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: GStreamer support disabled by default" >&5
-$as_echo "$as_me: GStreamer support disabled by default" >&6;}
+         enableval=${DEFAULT_GSTREAMER:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
 fi
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_gstreamer="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -12036,8 +12795,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
    LDFLAGS="$GSTREAMER_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER usability" >&5
-$as_echo_n "checking for GSTREAMER usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GStreamer support usability" >&5
+$as_echo_n "checking for GStreamer support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <gst/gst.h>
@@ -12062,7 +12821,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
                LDFLAGS="$GSTREAMER_LIBS $LDFLAGS"
@@ -12072,32 +12832,36 @@ else
 
 fi
 
+
       fi
    fi
 
 
 
 
+
+   GSTREAMER_USABLE=$usable
+
+
+
    HAS_GSTREAMER=$usable
 
-   if test "x${HAS_GSTREAMER}" = "xyes" ; then
+   if test "x$HAS_GSTREAMER" = "xyes" ; then
       HAS_GSTREAMER=1
    fi
 
-   if test "x${HAS_GSTREAMER}" = "x0" || test "x${HAS_GSTREAMER}" = "xno" ; then
+   if test "x$HAS_GSTREAMER" = "x0" || test "x$HAS_GSTREAMER" = "xno" ; then
       HAS_GSTREAMER=
    fi
 
 
 
-   if test "x${HAS_GSTREAMER}" = "x1" ; then
+   if test "x$HAS_GSTREAMER" = "x1" ; then
       PTLIB_GSTREAMER=yes
-
       $as_echo "#define P_GSTREAMER 1" >>confdefs.h
 
    else
       PTLIB_GSTREAMER=no
-
    fi
 
 
@@ -12106,30 +12870,60 @@ fi
 
 
 
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ODBC database support enabled" >&5
+$as_echo_n "checking ODBC database support enabled... " >&6; }
+
    # Check whether --enable-odbc was given.
 if test "${enable_odbc+set}" = set; then :
   enableval=$enable_odbc;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: ODBC database support disabled by user" >&5
-$as_echo "$as_me: ODBC database support disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_ODBC"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: ODBC database support disabled by default" >&5
-$as_echo "$as_me: ODBC database support disabled by default" >&6;}
+         enableval=${DEFAULT_ODBC:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
 fi
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_odbc="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -12232,8 +13026,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
    LDFLAGS="$ODBC_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ODBC usability" >&5
-$as_echo_n "checking for ODBC usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ODBC database support usability" >&5
+$as_echo_n "checking for ODBC database support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sql.h>
@@ -12258,7 +13052,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
                LDFLAGS="$ODBC_LIBS $LDFLAGS"
@@ -12268,33 +13063,39 @@ else
 
 fi
 
+
       fi
    fi
 
 
 
 
+
+   ODBC_USABLE=$usable
+
+
+
    HAS_ODBC=$usable
 
-   if test "x${HAS_ODBC}" = "xyes" ; then
+   if test "x$HAS_ODBC" = "xyes" ; then
       HAS_ODBC=1
    fi
 
-   if test "x${HAS_ODBC}" = "x0" || test "x${HAS_ODBC}" = "xno" ; then
+   if test "x$HAS_ODBC" = "x0" || test "x$HAS_ODBC" = "xno" ; then
       HAS_ODBC=
    fi
 
 
 
-   if test "x${HAS_ODBC}" = "x1" ; then
+   if test "x$HAS_ODBC" = "x1" ; then
       PTLIB_ODBC=yes
-
       $as_echo "#define P_ODBC 1" >>confdefs.h
 
    else
       PTLIB_ODBC=no
-
    fi
+
+
 
 
 
@@ -12304,18 +13105,24 @@ case "$target_os" in
   solaris* | sunos* ) ;;
   *)
 
+
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable C++ exceptions" >&5
 $as_echo_n "checking enable C++ exceptions... " >&6; }
 
    # Check whether --enable-exceptions was given.
 if test "${enable_exceptions+set}" = set; then :
   enableval=$enable_exceptions;
-         if test "x$enableval" = "xyes"; then
-            HAS_EXCEPTIONS=1
-         else
-            HAS_EXCEPTIONS=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_EXCEPTIONS:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -12335,36 +13142,42 @@ fi
 
 
 
-   if test "x${HAS_EXCEPTIONS}" = "x1"; then
-
-$as_echo "#define P_EXCEPTIONS 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_EXCEPTIONS=1
 
-   if test "x${HAS_EXCEPTIONS}" = "xyes" ; then
+   if test "x$HAS_EXCEPTIONS" = "xyes" ; then
       HAS_EXCEPTIONS=1
    fi
 
-   if test "x${HAS_EXCEPTIONS}" = "x0" || test "x${HAS_EXCEPTIONS}" = "xno" ; then
+   if test "x$HAS_EXCEPTIONS" = "x0" || test "x$HAS_EXCEPTIONS" = "xno" ; then
       HAS_EXCEPTIONS=
    fi
 
 
 
-   if test "x${HAS_EXCEPTIONS}" = "x1" ; then
+   if test "x$HAS_EXCEPTIONS" = "x1" ; then
       PTLIB_EXCEPTIONS=yes
-
       $as_echo "#define P_EXCEPTIONS 1" >>confdefs.h
 
    else
       PTLIB_EXCEPTIONS=no
-
    fi
+
+
+
+else
+  HAS_EXCEPTIONS=
+fi
+
+
+   enable_exceptions="$enableval"
 
 
 
@@ -12379,18 +13192,24 @@ esac
 
 
 
+
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable video for windows capture" >&5
 $as_echo_n "checking enable video for windows capture... " >&6; }
 
    # Check whether --enable-vfw was given.
 if test "${enable_vfw+set}" = set; then :
   enableval=$enable_vfw;
-         if test "x$enableval" = "xyes"; then
-            HAS_VFW_CAPTURE=1
-         else
-            HAS_VFW_CAPTURE=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_VFW_CAPTURE:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -12399,10 +13218,12 @@ fi
 
 
 
-      if test "x${HAS_VFW_CAPTURE}" = "x1" && test "x$HAS_VIDEO" != "x1"; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO" >&5
-$as_echo "disabled due to disabled dependency HAS_VIDEO" >&6; }
-         HAS_VFW_CAPTURE=
+      if    test "x${enableval}" = "xyes" && \
+            test "x$HAS_VIDEO" != "x1" && \
+            test "x$HAS_VIDEO" != "xyes"; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&5
+$as_echo "disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&6; }
+         enableval=no
       fi
 
 
@@ -12416,36 +13237,42 @@ $as_echo "disabled due to disabled dependency HAS_VIDEO" >&6; }
 
 
 
-   if test "x${HAS_VFW_CAPTURE}" = "x1"; then
-
-$as_echo "#define P_VFW_CAPTURE 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_VFW_CAPTURE=1
 
-   if test "x${HAS_VFW_CAPTURE}" = "xyes" ; then
+   if test "x$HAS_VFW_CAPTURE" = "xyes" ; then
       HAS_VFW_CAPTURE=1
    fi
 
-   if test "x${HAS_VFW_CAPTURE}" = "x0" || test "x${HAS_VFW_CAPTURE}" = "xno" ; then
+   if test "x$HAS_VFW_CAPTURE" = "x0" || test "x$HAS_VFW_CAPTURE" = "xno" ; then
       HAS_VFW_CAPTURE=
    fi
 
 
 
-   if test "x${HAS_VFW_CAPTURE}" = "x1" ; then
+   if test "x$HAS_VFW_CAPTURE" = "x1" ; then
       PTLIB_VFW_CAPTURE=yes
-
       $as_echo "#define P_VFW_CAPTURE 1" >>confdefs.h
 
    else
       PTLIB_VFW_CAPTURE=no
-
    fi
+
+
+
+else
+  HAS_VFW_CAPTURE=
+fi
+
+
+   enable_vfw="$enableval"
 
 
 
@@ -12591,18 +13418,24 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable plugin support" >&5
-$as_echo_n "checking enable plugin support... " >&6; }
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking plugin support" >&5
+$as_echo_n "checking plugin support... " >&6; }
 
    # Check whether --enable-plugins was given.
 if test "${enable_plugins+set}" = set; then :
   enableval=$enable_plugins;
-         if test "x$enableval" = "xyes"; then
-            HAS_PLUGINS=1
-         else
-            HAS_PLUGINS=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_PLUGINS:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -12622,36 +13455,42 @@ fi
 
 
 
-   if test "x${HAS_PLUGINS}" = "x1"; then
-
-$as_echo "#define P_PLUGINS 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_PLUGINS=1
 
-   if test "x${HAS_PLUGINS}" = "xyes" ; then
+   if test "x$HAS_PLUGINS" = "xyes" ; then
       HAS_PLUGINS=1
    fi
 
-   if test "x${HAS_PLUGINS}" = "x0" || test "x${HAS_PLUGINS}" = "xno" ; then
+   if test "x$HAS_PLUGINS" = "x0" || test "x$HAS_PLUGINS" = "xno" ; then
       HAS_PLUGINS=
    fi
 
 
 
-   if test "x${HAS_PLUGINS}" = "x1" ; then
+   if test "x$HAS_PLUGINS" = "x1" ; then
       PTLIB_PLUGINS=yes
-
       $as_echo "#define P_PLUGINS 1" >>confdefs.h
 
    else
       PTLIB_PLUGINS=no
-
    fi
+
+
+
+else
+  HAS_PLUGINS=
+fi
+
+
+   enable_plugins="$enableval"
 
 
 
@@ -12702,7 +13541,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
       HAS_LIBDL=1
 
@@ -12715,6 +13555,7 @@ else
   HAS_LIBDL=
 
 fi
+
 
 
 
@@ -12917,30 +13758,58 @@ fi
 
 
 
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking PortAudio library enabled" >&5
+$as_echo_n "checking PortAudio library enabled... " >&6; }
+
    # Check whether --enable-portaudio was given.
 if test "${enable_portaudio+set}" = set; then :
   enableval=$enable_portaudio;
-         usable="$enableval"
-         if test "x$usable" = "xyes" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: PortAudio library disabled by user" >&5
-$as_echo "$as_me: PortAudio library disabled by user" >&6;}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
          fi
 
 else
 
-         usable="$DEFAULT_PORTAUDIO"
-         if test "x$usable" = "x" ; then
-            usable=no
-         fi
-         if test "x$usable" = "xno" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: PortAudio library disabled by default" >&5
-$as_echo "$as_me: PortAudio library disabled by default" >&6;}
+         enableval=${DEFAULT_PORTAUDIO:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
 fi
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_portaudio="$enableval"
 
 
    if test "x$usable" = "xyes" ; then
@@ -13043,8 +13912,8 @@ fi
    oldLDFLAGS="$LDFLAGS"
    CPPFLAGS="$CPPFLAGS $PORTAUDIO_CFLAGS"
    LDFLAGS="$PORTAUDIO_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PORTAUDIO usability" >&5
-$as_echo_n "checking for PORTAUDIO usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PortAudio library usability" >&5
+$as_echo_n "checking for PortAudio library usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <portaudio.h>
@@ -13068,7 +13937,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
    LDFLAGS="$oldLDFLAGS"
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
 
                CPPFLAGS="$CPPFLAGS $PORTAUDIO_CFLAGS"
                LDFLAGS="$PORTAUDIO_LIBS $LDFLAGS"
@@ -13078,10 +13948,12 @@ else
 
 fi
 
+
       fi
    fi
 
-   if test $usable = yes; then :
+
+   if test "x$usable" = "xyes"; then :
   ac_fn_cxx_check_header_mongrel "$LINENO" "portmixer.h" "ac_cv_header_portmixer_h" "$ac_includes_default"
 if test "x$ac_cv_header_portmixer_h" = xyes; then :
 
@@ -13099,27 +13971,31 @@ fi
 fi
 
 
+   PORTAUDIO_USABLE=$usable
+
+
+
    HAS_PORTAUDIO=$usable
 
-   if test "x${HAS_PORTAUDIO}" = "xyes" ; then
+   if test "x$HAS_PORTAUDIO" = "xyes" ; then
       HAS_PORTAUDIO=1
    fi
 
-   if test "x${HAS_PORTAUDIO}" = "x0" || test "x${HAS_PORTAUDIO}" = "xno" ; then
+   if test "x$HAS_PORTAUDIO" = "x0" || test "x$HAS_PORTAUDIO" = "xno" ; then
       HAS_PORTAUDIO=
    fi
 
 
 
-   if test "x${HAS_PORTAUDIO}" = "x1" ; then
+   if test "x$HAS_PORTAUDIO" = "x1" ; then
       PTLIB_PORTAUDIO=yes
-
       $as_echo "#define P_PORTAUDIO 1" >>confdefs.h
 
    else
       PTLIB_PORTAUDIO=no
-
    fi
+
+
 
 
 
@@ -13490,18 +14366,24 @@ fi # enable_plugins
 
 
 
+
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable samples build" >&5
 $as_echo_n "checking enable samples build... " >&6; }
 
    # Check whether --enable-samples was given.
 if test "${enable_samples+set}" = set; then :
   enableval=$enable_samples;
-         if test "x$enableval" = "xyes"; then
-            HAS_SAMPLES=1
-         else
-            HAS_SAMPLES=
+         if test "x$enableval" = "xno"; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
+         fi
+
+else
+
+         enableval=${DEFAULT_SAMPLES:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
          fi
 
 
@@ -13521,36 +14403,42 @@ fi
 
 
 
-   if test "x${HAS_SAMPLES}" = "x1"; then
-
-$as_echo "#define P_SAMPLES 1" >>confdefs.h
-
+   if test "x${enableval}" = "xyes"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
    fi
 
 
+   if test "x$enableval" = "xyes"; then :
 
+   HAS_SAMPLES=1
 
-   if test "x${HAS_SAMPLES}" = "xyes" ; then
+   if test "x$HAS_SAMPLES" = "xyes" ; then
       HAS_SAMPLES=1
    fi
 
-   if test "x${HAS_SAMPLES}" = "x0" || test "x${HAS_SAMPLES}" = "xno" ; then
+   if test "x$HAS_SAMPLES" = "x0" || test "x$HAS_SAMPLES" = "xno" ; then
       HAS_SAMPLES=
    fi
 
 
 
-   if test "x${HAS_SAMPLES}" = "x1" ; then
+   if test "x$HAS_SAMPLES" = "x1" ; then
       PTLIB_SAMPLES=yes
-
       $as_echo "#define P_SAMPLES 1" >>confdefs.h
 
    else
       PTLIB_SAMPLES=no
-
    fi
+
+
+
+else
+  HAS_SAMPLES=
+fi
+
+
+   enable_samples="$enableval"
 
 
 

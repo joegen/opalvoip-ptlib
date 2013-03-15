@@ -1,12 +1,8 @@
 dnl
-dnl  Modified AC_CANONICAL_TARGET
+dnl my_macros.m4
 dnl
-dnl  This generates "normalised" target_os, target_cpu, target_64bit and target
-dnl  variables. The standard ones are a little too detailed for our use. Also,
-dnl  we check for --enable-ios=X to preset above variables and compiler for
-dnl  correct cross compilation, easier to remember that the --host command.
-dnl  Finally, it defines the various compulsory progams (C, C++, ld, ar, etc)
-dnl  and flags that are used by pretty much any build.
+dnl A bunch of useful macros for doing complex configure.ac
+dnl scripts, especially when cross compiling.
 dnl
 
 AC_CANONICAL_TARGET()
@@ -25,6 +21,16 @@ if test -z "$AR" ; then
 fi
 
 
+dnl
+dnl  Modified AC_CANONICAL_TARGET
+dnl
+dnl  This generates "normalised" target_os, target_cpu, target_64bit and target
+dnl  variables. The standard ones are a little too detailed for our use. Also,
+dnl  we check for --enable-ios=X to preset above variables and compiler for
+dnl  correct cross compilation, easier to remember that the --host command.
+dnl  Finally, it defines the various compulsory progams (C, C++, ld, ar, etc)
+dnl  and flags that are used by pretty much any build.
+dnl
 AC_DEFUN([MY_CANONICAL_TARGET], [
    dnl Special case for iOS to make cross compiling simpler to remember
    AC_ARG_ENABLE([ios], [AS_HELP_STRING([--enable-ios=iphone|simulator],[enable iOS support])])
@@ -123,7 +129,7 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
 
       beos* )
          target_os=beos
-         CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format"
+         CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -Wno-multichar -Wno-format"
          LDFLAGS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
          SHARED_LDFLAGS="-shared -nostdlib -nostart"
       ;;
@@ -230,5 +236,212 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
    target=${target_os}_${target_cpu}
 
    AC_MSG_NOTICE([using \"$target_os\" release \"$target_release\" on \"$target_cpu\"])
+])
+
+
+dnl internal macro help
+AC_DEFUN([MY_IFELSE],[
+   m4_ifnblank([$2$3], [AS_IF([test "x$m4_normalize($1)" = "xyes"], [$2], [$3])])
+])
+
+
+dnl internal macro help
+AC_DEFUN([MY_ARG_DEPENDENCY],[
+   m4_ifnblank([$1],[
+      if    test "x${enableval}" = "xyes" && \
+            test "x$m4_normalize($1)" != "x1" && \
+            test "x$m4_normalize($1)" != "xyes"; then
+         AC_MSG_RESULT([disabled due to disabled dependency $1=$$1])
+         enableval=no
+      fi
+   ])
+])
+
+dnl MY_ARG_ENABLE
+dnl As AC_ARG_ENABLE, but with disable, defaults and dependecies
+dnl $1 command line option name
+dnl $2 command line help
+dnl $3 default state
+dnl $4 enabled script
+dnl $5 disabled script
+dnl $6..$9 dependency variable(s)
+dnl The variable enable_$1 is defined to yes/no
+AC_DEFUN([MY_ARG_ENABLE],[
+   AC_MSG_CHECKING([$2])
+
+   AC_ARG_ENABLE(
+      [$1],
+      [AC_HELP_STRING([--m4_bmatch([$2],[enable.*],[enable],[disable])-$1],
+                         m4_bmatch([$2],[enable.*],[],[disable ])[$2])],
+      [
+         if test "x$enableval" = "xno"; then
+            AC_MSG_RESULT([disabled by user])
+         fi
+      ],
+      [
+         enableval=m4_default([$3],m4_bmatch([$2],[enable.*],[no],[yes]))
+         if test "x$enableval" = "xno"; then
+            AC_MSG_RESULT([disabled by default])
+         fi
+      ]
+   )
+
+   MY_ARG_DEPENDENCY([$6])
+   MY_ARG_DEPENDENCY([$7])
+   MY_ARG_DEPENDENCY([$8])
+   MY_ARG_DEPENDENCY([$9])
+
+   if test "x${enableval}" = "xyes"; then
+      AC_MSG_RESULT([yes])
+   fi
+
+   MY_IFELSE([enableval], [$4], [$5])
+
+   enable_$1="$enableval"
+])
+
+
+dnl MY_COMPILE_IFELSE
+dnl As AC_COMPILE_IFELSE but saves and restores CPPFLAGS if fails
+dnl $1 checking message
+dnl $2 CPPFLAGS
+dnl $3 program headers
+dnl $4 program main
+dnl $5 success code
+dnl $6 failure code
+AC_DEFUN([MY_COMPILE_IFELSE],[
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS $2"
+   AC_MSG_CHECKING([$1])
+   AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([[$3]],[[$4]])],
+      [usable=yes],
+      [usable=no]
+   )
+   AC_MSG_RESULT($usable)
+   CPPFLAGS="$oldCPPFLAGS"
+   MY_IFELSE([usable], [$5], [$6])
+])
+
+
+dnl MY_LINK_IFELSE
+dnl As AC_LINK_IFELSE but saves and restores CPPFLAGS & LDFLAGS if fails
+dnl $1 checking message
+dnl $2 CPPFLAGS
+dnl $3 LIBS/LDFLAGS
+dnl $4 program headers
+dnl $5 program main
+dnl $6 success code
+dnl $7 failure code
+AC_DEFUN([MY_LINK_IFELSE],[
+   oldCPPFLAGS="$CPPFLAGS"
+   oldLDFLAGS="$LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $2"
+   LDFLAGS="$3 $LDFLAGS"
+   AC_MSG_CHECKING($1)
+   AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[$4]],[[$5]])],
+      [usable=yes],
+      [usable=no]
+   )
+   AC_MSG_RESULT($usable)
+   CPPFLAGS="$oldCPPFLAGS"
+   LDFLAGS="$oldLDFLAGS"
+   MY_IFELSE([usable], [$6], [$7])
+])
+
+
+dnl MY_PKG_CHECK_MODULE
+dnl As PKG_CHECK_MODULES but does test compile so works wit cross compilers
+dnl $1 module name
+dnl $2 pkg name
+dnl $3 program headers
+dnl $4 program main
+dnl $5 success code
+dnl $6 failure code
+AC_DEFUN([MY_PKG_CHECK_MODULE],[
+   PKG_CHECK_MODULES(
+      [$1],
+      [$2],
+      [MY_LINK_IFELSE(
+         [for $1 usability],
+         [$$1[_CFLAGS]],
+         [$$1[_LIBS]],
+         [$3],
+         [$4],
+         [
+            CPPFLAGS="$CPPFLAGS $$1[_CFLAGS]"
+            LDFLAGS="$$1[_LIBS] $LDFLAGS"
+         ]
+      )],
+      [usable=no]
+   )
+   MY_IFELSE([usable], [$5], [$6])
+])
+
+
+dnl MY_MODULE_OPTION
+dnl Check for modules existence, with --disable-XXX and optional --with-XXX-dir
+dnl $1 module name
+dnl $2 command line option name
+dnl $3 command line option help text
+dnl $4 pkg name(s)
+dnl $5 default CPPFLAGS
+dnl $6 default LIBS
+dnl $7 program headers
+dnl $8 program main
+dnl $9 success code
+dnl $10 failure code
+dnl $11 optional dependency
+AC_DEFUN([MY_MODULE_OPTION],[
+   MY_ARG_ENABLE([$2], [$3 enabled], [${DEFAULT_$1:-yes}], [usable=yes], [usable=no], [$11], [$12], [$13], [$14])
+
+   if test "x$usable" = "xyes" ; then
+      m4_ifnblank([$5$6],
+         [AC_ARG_WITH(
+            [$2-dir],
+            AS_HELP_STRING([--with-$2-dir=<dir>],[location for $3]),
+            [
+               AC_MSG_NOTICE(Using directory $withval for $3)
+               $1[_CFLAGS]="-I$withval/include $5"
+               $1[_LIBS]="-L$withval/lib $6"
+            ],
+            [PKG_CHECK_MODULES(
+               [$1],
+               [$4],
+               [],
+               [
+                  $1[_CFLAGS]="$5"
+                  $1[_LIBS]="$6"
+               ]
+            )]
+         )],
+         [PKG_CHECK_MODULES(
+            [$1],
+            [$4],
+            [],
+            [usable=no]
+         )]
+      )
+
+      if test "x$usable" = "xyes" ; then
+         MY_LINK_IFELSE(
+            [for $3 usability],
+            [$$1[_CFLAGS]],
+            [$$1[_LIBS]],
+            [$7],
+            [$8],
+            [
+               CPPFLAGS="$CPPFLAGS $$1[_CFLAGS]"
+               LDFLAGS="$$1[_LIBS] $LDFLAGS"
+            ],
+            [usable=no]
+         )
+      fi
+   fi
+
+   MY_IFELSE([usable], [$9], [$10])
+
+   AC_SUBST($1[_USABLE], $usable)
 ])
 
