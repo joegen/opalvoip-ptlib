@@ -204,44 +204,18 @@ dnl MSWIN_VERSION version,PTLIB_MINOR=MINOR_VERSION
 dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
 dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
 
-MAJOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
-MINOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
-BUILD_NUMBER=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
-PTLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
-BUILD_TYPE=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
-
-AC_SUBST(MAJOR_VERSION)
-AC_SUBST(MINOR_VERSION)
-AC_SUBST(BUILD_NUMBER)
-AC_SUBST(PTLIB_VERSION)
-AC_SUBST(BUILD_TYPE)
-AC_SUBST(MAJOR_VERSION, $MAJOR_VERSION)
-AC_SUBST(MINOR_VERSION, $MINOR_VERSION)
-AC_SUBST(BUILD_NUMBER, $BUILD_NUMBER)
-
+MY_VERSION_FILE([${PTLIBDIR}/version.h], [PTLIB])
 AC_MSG_NOTICE(PTLib version is ${PTLIB_VERSION});
-
-AC_DEFINE_UNQUOTED([PTLIB_MAJOR],   [$MAJOR_VERSION],   [Major version])
-AC_DEFINE_UNQUOTED([PTLIB_MINOR],   [$MINOR_VERSION],   [Minor version])
-AC_DEFINE_UNQUOTED([PTLIB_BUILD],   [$BUILD_NUMBER],    [Build number])
-AC_DEFINE_UNQUOTED([PTLIB_VERSION], ["$PTLIB_VERSION"], [PTLib version])
 
 
 dnl ########################################################################
 dnl Find programs we need
-
-PKG_PROG_PKG_CONFIG()
-if test -z "$PKG_CONFIG" ; then
-   AC_MSG_ERROR(pkg-config is required, 1)
-fi
 
 AC_PROG_YACC()
 if test -z "$YACC" ; then
    AC_MSG_ERROR(parser generator (e.g. bison) is required, 1)
 fi
 
-AC_PROG_INSTALL()
-AC_CHECK_PROG(SVN, svn)
 
 AC_LANG(C++)
 AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
@@ -282,31 +256,6 @@ dnl Solaris swab should not be used
 if test "$target_os" != "solaris"; then
    AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
 fi
-
-
-dnl add additional information for the debugger to ensure the user can indeed
-dnl debug coredumps and macros.
-
-AC_SUBST(DEBUG_FLAGS, "-D_DEBUG")
-MY_COMPILE_IFELSE(
-   [debug build -g3 -ggdb -O0],
-   [-g3 -ggdb -O0],
-   [],
-   [],
-   [DEBUG_FLAGS="$DEBUG_FLAGS -g3 -ggdb -O0"],
-   [DEBUG_FLAGS="$DEBUG_FLAGS -g"]
-)
-
-
-AC_SUBST(OPT_FLAGS, "-DNDEBUG")
-MY_COMPILE_IFELSE(
-   [optimised build -O3],
-   [-O3],
-   [],
-   [],
-   [OPT_FLAGS="$OPT_FLAGS -O3"],
-   [OPT_FLAGS="$OPT_FLAGS -O2"]
-)
 
 
 dnl ########################################################################
@@ -1920,6 +1869,15 @@ AC_SUBST(HAS_DIRECTSOUND)
 
 
 dnl ########################################################################
+dnl dynamic libraries
+
+MY_CHECK_DLFCN([
+   MY_ADD_MODULE_FLAGS([DLFCN])
+   PTLIB_SUBST([DYNALINK], 1)
+])
+
+
+dnl ########################################################################
 dnl Plug ins!
 dnl
 
@@ -1927,37 +1885,6 @@ dnl MSWIN_DISPLAY plugins,Plugin Support
 dnl MSWIN_DEFINE  plugins,P_PLUGINS
 
 PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [plugin support])
-
-
-case "$target_os" in
-   cygwin* | mingw* )
-      AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
-   ;;
-
-   freebsd*|openbsd*|netbsd*|darwin*|beos*)
-      DL_LIBS="-lc"
-   ;;
-
-   *)
-      DL_LIBS="-ldl"
-   ;;
-esac
-
-MY_LINK_IFELSE(
-   [for dynamic libraries],
-   [],
-   [$DL_LIBS],
-   [#include <dlfcn.h>],
-   [dlopen("lib", 0)],
-   [
-      HAS_LIBDL=1
-      AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
-      CPPFLAGS="$CPPFLAGS $DL_CFLAGS"
-      LDFLAGS="$LDFLAGS $DL_LIBS"
-   ],
-   [HAS_LIBDL=]
-)
-
 
 if test "x$enable_plugins" != "xno" ; then
    AC_MSG_CHECKING(where plugins are being installed)
