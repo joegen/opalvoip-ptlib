@@ -89,15 +89,15 @@ endif
 # define rule for .cxx, .cpp and .c files
 #
 $(OBJDIR)/%.o : %.cxx 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.cpp 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CC)$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 #
@@ -122,17 +122,17 @@ DEPFLAGS := $(subst $(DEBUG_FLAG),,$(CPPFLAGS))
 # define rule for .dep files
 #
 $(DEPDIR)/%.dep : %.cxx 
-	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(Q_DEP)$(CXX) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
-	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(Q_DEP)$(CXX) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
-	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(Q_DEP)$(CC) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
 
@@ -184,6 +184,16 @@ endif # PROG
 # Main targets for build management
 #
 ######################################################################
+
+STANDARD_TARGETS=\
+opt         debug         both \
+optdepend   debugdepend   bothdepend \
+optshared   debugshared   bothshared \
+optnoshared debugnoshared bothnoshared \
+optclean    debugclean    clean \
+release
+
+.PHONY: all $(STANDARD_TARGETS)
 
 default_target : $(TARGET)
 
@@ -398,7 +408,7 @@ release :: $(TARGET) releasefiles
 	rm -r $(RELEASEPROGDIR)
 
 releasefiles ::
-	-mkdir -p $(RELEASEPROGDIR)
+	-$(MKDIR_P) $(RELEASEPROGDIR)
 
 
 version:

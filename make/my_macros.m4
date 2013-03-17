@@ -7,13 +7,28 @@ dnl
 
 AC_CANONICAL_TARGET()
 
+PKG_PROG_PKG_CONFIG()
+if test -z "$PKG_CONFIG" ; then
+   AC_MSG_ERROR(pkg-config is required, 1)
+fi
+
 AC_PROG_CC()
 AC_PROG_CXX()
 if test -z "$CXX" ; then
    AC_MSG_ERROR(C++ compiler is required, 1)
 fi
 
+dnl Clear out the flags left behind by AC_PROC_CC/AC_PROG_CXX
+CFLAGS=
+CXXFLAGS=
+
+dnl Find some tools
+AC_PROG_LN_S()
 AC_PROG_RANLIB()
+AC_PROG_INSTALL()
+dnl AC_PROG_MKDIR_P()
+AC_SUBST(MKDIR_P, "mkdir -p")
+AC_CHECK_PROG(SVN, svn)
 
 AC_CHECK_TOOL(AR, ar)
 if test -z "$AR" ; then
@@ -52,6 +67,7 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
 
    dnl Most unix'ish platforms are like this
 
+   AC_SUBST(LD, $CXX)
    AC_SUBST(SHARED_CPPFLAGS, "-fPIC")
    AC_SUBST(SHARED_LDFLAGS, [["-shared -Wl,-soname,INSERT_SONAME"]])
    AC_SUBST(SHAREDLIBEXT, "so")
@@ -86,7 +102,7 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
 
          CXX="${IOS_DEVROOT}/usr/bin/g++"
          CC="${IOS_DEVROOT}/usr/bin/gcc"
-         LD="${IOS_DEVROOT}/usr/bin/ld"
+         LD="$CXX"
          CPPFLAGS="${CPPFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT}"
          LDFLAGS="${LDFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT} -L${IOS_SDKROOT}/usr/lib -framework SystemConfiguration -framework CoreFoundation"
       ;;
@@ -236,6 +252,29 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
    target=${target_os}_${target_cpu}
 
    AC_MSG_NOTICE([using \"$target_os\" release \"$target_release\" on \"$target_cpu\"])
+
+   dnl add additional information for the debugger to ensure the user can indeed
+   dnl debug coredumps and macros.
+
+   AC_SUBST(DEBUG_FLAGS, "-D_DEBUG")
+   MY_COMPILE_IFELSE(
+      [debug build -g3 -ggdb -O0],
+      [-g3 -ggdb -O0],
+      [],
+      [],
+      [DEBUG_FLAGS="$DEBUG_FLAGS -g3 -ggdb -O0"],
+      [DEBUG_FLAGS="$DEBUG_FLAGS -g"]
+   )
+
+   AC_SUBST(OPT_FLAGS, "-DNDEBUG")
+   MY_COMPILE_IFELSE(
+      [optimised build -O3],
+      [-O3],
+      [],
+      [],
+      [OPT_FLAGS="$OPT_FLAGS -O3"],
+      [OPT_FLAGS="$OPT_FLAGS -O2"]
+   )
 ])
 
 
@@ -380,8 +419,32 @@ AC_DEFUN([MY_PKG_CHECK_MODULE],[
 ])
 
 
+dnl MY_ADD_FLAGS
+dnl Add to CPPFLAGS, CFLAGS, CXXFLAGS & LDFLAGS new flags
+dnl $1 new LDFLAGS (prepended)
+dnl $2 new CPPFLAGS
+dnl $3 new CFLAGS
+dnl $4 new CXXFLAGS
+AC_DEFUN([MY_ADD_FLAGS],[
+   m4_ifnblank([$1], [LDFLAGS="$1 $LDFLAGS"])
+   m4_ifnblank([$2], [CPPFLAGS="$CPPFLAGS $2"])
+   m4_ifnblank([$3], [CFLAGS="$CPPFLAGS $3"])
+   m4_ifnblank([$4], [CXXFLAGS="$CPPFLAGS $4"])
+])
+
+
+dnl MY_ADD_MODULE_FLAGS
+dnl Add to CPPFLAGS, & LDFLAGS new flags from xxx_CFLAGS, xxx_LIBS
+dnl $1 module name
+AC_DEFUN([MY_ADD_MODULE_FLAGS],[
+   MY_ADD_FLAGS($$1[_LIBS], $$1[_CFLAGS])
+])
+
+
 dnl MY_MODULE_OPTION
 dnl Check for modules existence, with --disable-XXX and optional --with-XXX-dir
+dnl If one of the pkg names ($4) is local-source, then the --enable-local$1 option is
+dnl provided, which will set $1_SYSTEM to no
 dnl $1 module name
 dnl $2 command line option name
 dnl $3 command line option help text
@@ -392,51 +455,76 @@ dnl $7 program headers
 dnl $8 program main
 dnl $9 success code
 dnl $10 failure code
-dnl $11 optional dependency
+dnl $11..$14 optional dependency
+dnl returns $1_USABLE=yes/no, $1_SYSTEM=yes/no, $1_CFLAGS and $1_LIBS
 AC_DEFUN([MY_MODULE_OPTION],[
-   MY_ARG_ENABLE([$2], [$3 enabled], [${DEFAULT_$1:-yes}], [usable=yes], [usable=no], [$11], [$12], [$13], [$14])
+   AC_SUBST($1[_SYSTEM], "yes")
+
+   MY_ARG_ENABLE([$2], [$3], [${DEFAULT_$1:-yes}], [usable=yes], [usable=no], [$11], [$12], [$13], [$14])
 
    if test "x$usable" = "xyes" ; then
-      m4_ifnblank([$5$6],
-         [AC_ARG_WITH(
-            [$2-dir],
-            AS_HELP_STRING([--with-$2-dir=<dir>],[location for $3]),
+      m4_bmatch([$4], [.*local-source.*], [
+         AC_ARG_ENABLE(
+            [local$2],
+            [AC_HELP_STRING([--enable-local$2],[force use internal source for $3])],
             [
-               AC_MSG_NOTICE(Using directory $withval for $3)
-               $1[_CFLAGS]="-I$withval/include $5"
-               $1[_LIBS]="-L$withval/lib $6"
-            ],
+               if test "x$enableval" = "xyes" ; then
+                  $1[_SYSTEM]="no"
+                  AC_MSG_NOTICE(Forced use of internal source for $3)
+               else
+                  AC_MSG_NOTICE(Using system source for $3)
+               fi
+            ]
+         )
+      ])
+      if test "x$$1[_SYSTEM]" = "xyes" ; then
+         m4_ifnblank([$5$6],
+            [AC_ARG_WITH(
+               [$2-dir],
+               AS_HELP_STRING([--with-$2-dir=<dir>],[location for $3]),
+               [
+                  AC_MSG_NOTICE(Using directory $withval for $3)
+                  $1[_CFLAGS]="-I$withval/include $5"
+                  $1[_LIBS]="-L$withval/lib $6"
+               ],
+               [PKG_CHECK_MODULES(
+                  [$1],
+                  [m4_bpatsubsts([$4],[local-source], [])],
+                  [],
+                  [
+                     $1[_CFLAGS]="$5"
+                     $1[_LIBS]="$6"
+                  ]
+               )]
+            )],
             [PKG_CHECK_MODULES(
                [$1],
-               [$4],
+               [m4_bpatsubsts([$4],[local-source], [])],
                [],
-               [
-                  $1[_CFLAGS]="$5"
-                  $1[_LIBS]="$6"
-               ]
+               [usable=no]
             )]
-         )],
-         [PKG_CHECK_MODULES(
-            [$1],
-            [$4],
-            [],
-            [usable=no]
-         )]
-      )
-
-      if test "x$usable" = "xyes" ; then
-         MY_LINK_IFELSE(
-            [for $3 usability],
-            [$$1[_CFLAGS]],
-            [$$1[_LIBS]],
-            [$7],
-            [$8],
-            [
-               CPPFLAGS="$CPPFLAGS $$1[_CFLAGS]"
-               LDFLAGS="$$1[_LIBS] $LDFLAGS"
-            ],
-            [usable=no]
          )
+
+         if test "x$usable" = "xyes" ; then
+            MY_LINK_IFELSE(
+               [for $3 usability],
+               [$$1[_CFLAGS]],
+               [$$1[_LIBS]],
+               [$7],
+               [$8],
+               [MY_ADD_MODULE_FLAGS([$1])],
+               [usable=no]
+            )
+         fi
+
+         m4_bmatch([$4], [.*local-source.*], [
+            if test "x$usable" = "xno" ; then
+               $1[_SYSTEM]="no"
+               $1[_CFLAGS]=
+               $1[_LIBS]=
+               AC_MSG_NOTICE(Using internal source for $3)
+            fi
+         ])
       fi
    fi
 
@@ -444,4 +532,66 @@ AC_DEFUN([MY_MODULE_OPTION],[
 
    AC_SUBST($1[_USABLE], $usable)
 ])
+
+
+dnl MY_CHECK_DLFCN
+dnl Check for dlopen function and make sure library set in LDFLAGS
+dnl $1 action if found
+dnl $2 action of not found
+AC_DEFUN([MY_CHECK_DLFCN],[
+   case "$target_os" in
+      cygwin* | mingw* )
+         usable=yes
+      ;;
+
+      *)
+         AC_CHECK_LIB(
+            [dl],
+            [dlopen],
+            [
+               usable=yes
+               DLFCN_LIBS="-ldl"
+            ],
+               [AC_CHECK_LIB(
+               [c],
+               [dlopen],
+               [
+                  usable=yes
+                  DLFCN_LIBS-"-lc"
+               ],
+               [usable=no]
+            )]
+         )
+      ;;
+   esac
+
+   MY_IFELSE([usable], [$1], [$2])
+])
+
+
+dnl MY_VERSION_FILE
+dnl Parse version file and set variables
+dnl $1 file location
+dnl $2 variable prefix
+AC_DEFUN([MY_VERSION_FILE],[
+   major=`cat $1 | grep MAJOR_VERSION | cut -f3 -d' '`
+   minor=`cat $1 | grep MINOR_VERSION | cut -f3 -d' '`
+   build=`cat $1 | grep BUILD_NUMBER | cut -f3 -d' '`
+   stage=`cat $1 | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+   version="${major}.${minor}.${build}"
+
+   AC_SUBST($2[_MAJOR], $major)
+   AC_SUBST($2[_MINOR], $minor)
+   AC_SUBST($2[_BUILD], $build)
+   AC_SUBST($2[_STAGE], $stage)
+   AC_SUBST($2[_VERSION], "${major}.${minor}.${build}")
+
+   AC_DEFINE_UNQUOTED([$2[_MAJOR]],   [${major}], [Major version])
+   AC_DEFINE_UNQUOTED([$2[_MINOR]],   [${minor}], [Minor version])
+   AC_DEFINE_UNQUOTED([$2[_BUILD]],   [${build}], [Build number])
+   AC_DEFINE_UNQUOTED([$2[_VERSION]], ["$version"],[PTLib version])
+
+   AC_MSG_NOTICE("$2 version is $version")
+])
+
 

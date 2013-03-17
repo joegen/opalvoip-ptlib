@@ -637,6 +637,7 @@ PORTAUDIO_USABLE
 HAS_PORTMIXER
 PORTAUDIO_LIBS
 PORTAUDIO_CFLAGS
+PORTAUDIO_SYSTEM
 HAS_SHM_AUDIO
 HAS_SUN_AUDIO
 HAS_PULSE
@@ -647,6 +648,8 @@ DEV_PLUGIN_DIR
 PTLIB_PLUGIN_DIR
 PTLIB_PLUGINS
 HAS_PLUGINS
+PTLIB_DYNALINK
+HAS_DYNALINK
 HAS_DIRECTSOUND
 HAS_DIRECTSHOW
 PTLIB_VFW_CAPTURE
@@ -658,16 +661,19 @@ HAS_ODBC
 ODBC_USABLE
 ODBC_LIBS
 ODBC_CFLAGS
+ODBC_SYSTEM
 PTLIB_GSTREAMER
 HAS_GSTREAMER
 GSTREAMER_USABLE
 GSTREAMER_LIBS
 GSTREAMER_CFLAGS
+GSTREAMER_SYSTEM
 PTLIB_SDL
 HAS_SDL
 SDL_USABLE
 SDL_LIBS
 SDL_CFLAGS
+SDL_SYSTEM
 PTLIB_SHM_VIDEO
 HAS_SHM_VIDEO
 PTLIB_APPSHARE
@@ -739,16 +745,19 @@ HAS_V8
 V8_USABLE
 V8_LIBS
 V8_CFLAGS
+V8_SYSTEM
 PTLIB_LUA
 HAS_LUA
 LUA_USABLE
 LUA_LIBS
 LUA_CFLAGS
+LUA_SYSTEM
 PTLIB_EXPAT
 HAS_EXPAT
 EXPAT_USABLE
 EXPAT_LIBS
 EXPAT_CFLAGS
+EXPAT_SYSTEM
 PTLIB_SSL_AES
 HAS_SSL_AES
 PTLIB_OPENSSL
@@ -756,11 +765,13 @@ HAS_OPENSSL
 OPENSSL_USABLE
 OPENSSL_LIBS
 OPENSSL_CFLAGS
+OPENSSL_SYSTEM
 PTLIB_OPENLDAP
 HAS_OPENLDAP
 OPENLDAP_USABLE
 OPENLDAP_LIBS
 OPENLDAP_CFLAGS
+OPENLDAP_SYSTEM
 PTLIB_SASL
 HAS_SASL
 PTLIB_SASL2
@@ -773,32 +784,32 @@ PTLIB_PCAP
 HAS_PCAP
 PTLIB_IPV6
 HAS_IPV6
-OPT_FLAGS
-DEBUG_FLAGS
 EGREP
 GREP
 CXXCPP
-SVN
-INSTALL_DATA
-INSTALL_SCRIPT
-INSTALL_PROGRAM
 YFLAGS
 YACC
-PKG_CONFIG_LIBDIR
-PKG_CONFIG_PATH
-PKG_CONFIG
-BUILD_TYPE
 PTLIB_VERSION
-BUILD_NUMBER
-MINOR_VERSION
-MAJOR_VERSION
+PTLIB_STAGE
+PTLIB_BUILD
+PTLIB_MINOR
+PTLIB_MAJOR
+OPT_FLAGS
+DEBUG_FLAGS
 ARFLAGS
 STATICLIBEXT
 SHAREDLIBEXT
 SHARED_LDFLAGS
 SHARED_CPPFLAGS
+LD
 AR
+SVN
+MKDIR_P
+INSTALL_DATA
+INSTALL_SCRIPT
+INSTALL_PROGRAM
 RANLIB
+LN_S
 ac_ct_CXX
 CXXFLAGS
 CXX
@@ -809,6 +820,9 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
 target_os
 target_vendor
 target_cpu
@@ -947,6 +961,9 @@ enable_samples
       ac_precious_vars='build_alias
 host_alias
 target_alias
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
 CC
 CFLAGS
 LDFLAGS
@@ -955,9 +972,6 @@ CPPFLAGS
 CXX
 CXXFLAGS
 CCC
-PKG_CONFIG
-PKG_CONFIG_PATH
-PKG_CONFIG_LIBDIR
 YACC
 YFLAGS
 CXXCPP
@@ -1613,11 +1627,11 @@ Optional Features:
 
   --disable-mlib          disable SUN mlib support
   --disable-sasl          disable SASL support
-  --enable-openldap       Open LDAP support enabled
-  --enable-openssl        OpenSSL support enabled
-  --enable-expat          expat XML support enabled
-  --enable-lua            Lua script support enabled
-  --enable-v8             V8 Javascript script support enabled
+  --disable-openldap      disable Open LDAP support
+  --disable-openssl       disable OpenSSL support
+  --disable-expat         disable expat XML support
+  --disable-lua           disable Lua script support
+  --disable-v8            disable V8 Javascript script support
   --disable-configfile    disable config file support
   --disable-url           disable URL support
   --disable-http          disable HTTP support
@@ -1651,9 +1665,9 @@ Optional Features:
   --disable-ffvdev        disable FFMpeg video file support
   --disable-appshare      disable application sharing support
   --disable-shmvideo      disable shared memory video devices
-  --enable-sdl            disable libSDL (video display) support enabled
-  --enable-gstreamer      GStreamer support enabled
-  --enable-odbc           ODBC database support enabled
+  --disable-sdl           disable disable libSDL (video display) support
+  --disable-gstreamer     disable GStreamer support
+  --disable-odbc          disable ODBC database support
   --enable-exceptions     enable C++ exceptions
   --enable-vfw            enable video for windows capture
   --disable-plugins       disable plugin support
@@ -1663,7 +1677,7 @@ Optional Features:
   --disable-pulse         disable Pulse audio support
   --disable-sunaudio      disable Sun audio support
   --disable-shmaudio      disable shm audio support
-  --enable-portaudio      PortAudio library enabled
+  --disable-portaudio     disable PortAudio library
   --disable-v4l           disable V4L video support
   --disable-v4l2          disable V4L2 video support
   --disable-bsdvideo      disable BSD video support
@@ -1692,6 +1706,11 @@ Optional Packages:
                           location for PortAudio library
 
 Some influential environment variables:
+  PKG_CONFIG  path to pkg-config utility
+  PKG_CONFIG_PATH
+              directories to add to pkg-config's search path
+  PKG_CONFIG_LIBDIR
+              path overriding pkg-config's built-in search path
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -1701,11 +1720,6 @@ Some influential environment variables:
               you have headers in a nonstandard directory <include dir>
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
-  PKG_CONFIG  path to pkg-config utility
-  PKG_CONFIG_PATH
-              directories to add to pkg-config's search path
-  PKG_CONFIG_LIBDIR
-              path overriding pkg-config's built-in search path
   YACC        The `Yet Another Compiler Compiler' implementation to use.
               Defaults to the first program found out of: `bison -y', `byacc',
               `yacc'.
@@ -2889,6 +2903,130 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
+if test -z "$PKG_CONFIG" ; then
+   as_fn_error 1 "pkg-config is required" "$LINENO" 5
+fi
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3939,6 +4077,20 @@ if test -z "$CXX" ; then
    as_fn_error 1 "C++ compiler is required" "$LINENO" 5
 fi
 
+CFLAGS=
+CXXFLAGS=
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
+$as_echo_n "checking whether ln -s works... " >&6; }
+LN_S=$as_ln_s
+if test "$LN_S" = "ln -s"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no, using $LN_S" >&5
+$as_echo "no, using $LN_S" >&6; }
+fi
+
 if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
 set dummy ${ac_tool_prefix}ranlib; ac_word=$2
@@ -4030,6 +4182,138 @@ esac
 else
   RANLIB="$ac_cv_prog_RANLIB"
 fi
+
+# Find a good install program.  We prefer a C program (faster),
+# so one script is as good as another.  But avoid the broken or
+# incompatible versions:
+# SysV /etc/install, /usr/sbin/install
+# SunOS /usr/etc/install
+# IRIX /sbin/install
+# AIX /bin/install
+# AmigaOS /C/install, which installs bootblocks on floppy discs
+# AIX 4 /usr/bin/installbsd, which doesn't work without a -g flag
+# AFS /usr/afsws/bin/install, which mishandles nonexistent args
+# SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
+# OS/2's system install, which has a completely different semantic
+# ./install, which can be erroneously created by make from ./install.sh.
+# Reject install programs that cannot install multiple files.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for a BSD-compatible install" >&5
+$as_echo_n "checking for a BSD-compatible install... " >&6; }
+if test -z "$INSTALL"; then
+if ${ac_cv_path_install+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    # Account for people who put trailing slashes in PATH elements.
+case $as_dir/ in #((
+  ./ | .// | /[cC]/* | \
+  /etc/* | /usr/sbin/* | /usr/etc/* | /sbin/* | /usr/afsws/bin/* | \
+  ?:[\\/]os2[\\/]install[\\/]* | ?:[\\/]OS2[\\/]INSTALL[\\/]* | \
+  /usr/ucb/* ) ;;
+  *)
+    # OSF1 and SCO ODT 3.0 have their own names for install.
+    # Don't use installbsd from OSF since it installs stuff as root
+    # by default.
+    for ac_prog in ginstall scoinst install; do
+      for ac_exec_ext in '' $ac_executable_extensions; do
+	if as_fn_executable_p "$as_dir/$ac_prog$ac_exec_ext"; then
+	  if test $ac_prog = install &&
+	    grep dspmsg "$as_dir/$ac_prog$ac_exec_ext" >/dev/null 2>&1; then
+	    # AIX install.  It has an incompatible calling convention.
+	    :
+	  elif test $ac_prog = install &&
+	    grep pwplus "$as_dir/$ac_prog$ac_exec_ext" >/dev/null 2>&1; then
+	    # program-specific install script used by HP pwplus--don't use.
+	    :
+	  else
+	    rm -rf conftest.one conftest.two conftest.dir
+	    echo one > conftest.one
+	    echo two > conftest.two
+	    mkdir conftest.dir
+	    if "$as_dir/$ac_prog$ac_exec_ext" -c conftest.one conftest.two "`pwd`/conftest.dir" &&
+	      test -s conftest.one && test -s conftest.two &&
+	      test -s conftest.dir/conftest.one &&
+	      test -s conftest.dir/conftest.two
+	    then
+	      ac_cv_path_install="$as_dir/$ac_prog$ac_exec_ext -c"
+	      break 3
+	    fi
+	  fi
+	fi
+      done
+    done
+    ;;
+esac
+
+  done
+IFS=$as_save_IFS
+
+rm -rf conftest.one conftest.two conftest.dir
+
+fi
+  if test "${ac_cv_path_install+set}" = set; then
+    INSTALL=$ac_cv_path_install
+  else
+    # As a last resort, use the slow shell script.  Don't cache a
+    # value for INSTALL within a source directory, because that will
+    # break other packages using the cache if that directory is
+    # removed, or if the value is a relative name.
+    INSTALL=$ac_install_sh
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $INSTALL" >&5
+$as_echo "$INSTALL" >&6; }
+
+# Use test -z because SunOS4 sh mishandles braces in ${var-val}.
+# It thinks the first close brace ends the variable substitution.
+test -z "$INSTALL_PROGRAM" && INSTALL_PROGRAM='${INSTALL}'
+
+test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
+
+test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
+
+MKDIR_P="mkdir -p"
+
+# Extract the first word of "svn", so it can be a program name with args.
+set dummy svn; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_SVN+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$SVN"; then
+  ac_cv_prog_SVN="$SVN" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_SVN=""
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+SVN=$ac_cv_prog_SVN
+if test -n "$SVN"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SVN" >&5
+$as_echo "$SVN" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
 
 
 if test -n "$ac_tool_prefix"; then
@@ -4257,6 +4541,19 @@ fi
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Check whether --enable-minsize was given.
 if test "${enable_minsize+set}" = set; then :
   enableval=$enable_minsize;
@@ -4346,6 +4643,8 @@ fi
 
 
 
+   LD=$CXX
+
    SHARED_CPPFLAGS="-fPIC"
 
    SHARED_LDFLAGS="-shared -Wl,-soname,INSERT_SONAME"
@@ -4385,7 +4684,7 @@ fi
 
          CXX="${IOS_DEVROOT}/usr/bin/g++"
          CC="${IOS_DEVROOT}/usr/bin/gcc"
-         LD="${IOS_DEVROOT}/usr/bin/ld"
+         LD="$CXX"
          CPPFLAGS="${CPPFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT}"
          LDFLAGS="${LDFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT} -L${IOS_SDKROOT}/usr/lib -framework SystemConfiguration -framework CoreFoundation"
       ;;
@@ -4645,6 +4944,83 @@ $as_echo "$as_me: Forcing 32 bit x86 compile" >&6;}
 $as_echo "$as_me: using \"$target_os\" release \"$target_release\" on \"$target_cpu\"" >&6;}
 
 
+   DEBUG_FLAGS="-D_DEBUG"
+
+
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS -g3 -ggdb -O0"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking debug build -g3 -ggdb -O0" >&5
+$as_echo_n "checking debug build -g3 -ggdb -O0... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+
+   if test "x$usable" = "xyes"; then :
+  DEBUG_FLAGS="$DEBUG_FLAGS -g3 -ggdb -O0"
+else
+  DEBUG_FLAGS="$DEBUG_FLAGS -g"
+
+fi
+
+
+
+   OPT_FLAGS="-DNDEBUG"
+
+
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS -O3"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking optimised build -O3" >&5
+$as_echo_n "checking optimised build -O3... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+
+   if test "x$usable" = "xyes"; then :
+  OPT_FLAGS="$OPT_FLAGS -O3"
+else
+  OPT_FLAGS="$OPT_FLAGS -O2"
+
+fi
+
+
+
+
 case "$target_os" in
    linux )
       OS_TAG="P_LINUX"
@@ -4778,173 +5154,52 @@ fi
 
 
 
-MAJOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
-MINOR_VERSION=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
-BUILD_NUMBER=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
-PTLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
-BUILD_TYPE=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+
+   major=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
+   minor=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
+   build=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
+   stage=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+   version="${major}.${minor}.${build}"
+
+   PTLIB_MAJOR=$major
+
+   PTLIB_MINOR=$minor
+
+   PTLIB_BUILD=$build
+
+   PTLIB_STAGE=$stage
+
+   PTLIB_VERSION="${major}.${minor}.${build}"
 
 
 
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_MAJOR ${major}
+_ACEOF
 
 
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_MINOR ${minor}
+_ACEOF
 
-MAJOR_VERSION=$MAJOR_VERSION
 
-MINOR_VERSION=$MINOR_VERSION
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_BUILD ${build}
+_ACEOF
 
-BUILD_NUMBER=$BUILD_NUMBER
 
+cat >>confdefs.h <<_ACEOF
+#define PTLIB_VERSION "$version"
+_ACEOF
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: \"PTLIB version is $version\"" >&5
+$as_echo "$as_me: \"PTLIB version is $version\"" >&6;}
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: PTLib version is ${PTLIB_VERSION}" >&5
 $as_echo "$as_me: PTLib version is ${PTLIB_VERSION}" >&6;};
 
 
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_MAJOR $MAJOR_VERSION
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_MINOR $MINOR_VERSION
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_BUILD $BUILD_NUMBER
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define PTLIB_VERSION "$PTLIB_VERSION"
-_ACEOF
-
-
-
-
-
-
-
-
-
-
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-$as_echo "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
-if test -z "$PKG_CONFIG" ; then
-   as_fn_error 1 "pkg-config is required" "$LINENO" 5
-fi
 
 for ac_prog in 'bison -y' byacc
 do
@@ -4992,136 +5247,6 @@ test -n "$YACC" || YACC="yacc"
 if test -z "$YACC" ; then
    as_fn_error 1 "parser generator (e.g. bison) is required" "$LINENO" 5
 fi
-
-# Find a good install program.  We prefer a C program (faster),
-# so one script is as good as another.  But avoid the broken or
-# incompatible versions:
-# SysV /etc/install, /usr/sbin/install
-# SunOS /usr/etc/install
-# IRIX /sbin/install
-# AIX /bin/install
-# AmigaOS /C/install, which installs bootblocks on floppy discs
-# AIX 4 /usr/bin/installbsd, which doesn't work without a -g flag
-# AFS /usr/afsws/bin/install, which mishandles nonexistent args
-# SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
-# OS/2's system install, which has a completely different semantic
-# ./install, which can be erroneously created by make from ./install.sh.
-# Reject install programs that cannot install multiple files.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for a BSD-compatible install" >&5
-$as_echo_n "checking for a BSD-compatible install... " >&6; }
-if test -z "$INSTALL"; then
-if ${ac_cv_path_install+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    # Account for people who put trailing slashes in PATH elements.
-case $as_dir/ in #((
-  ./ | .// | /[cC]/* | \
-  /etc/* | /usr/sbin/* | /usr/etc/* | /sbin/* | /usr/afsws/bin/* | \
-  ?:[\\/]os2[\\/]install[\\/]* | ?:[\\/]OS2[\\/]INSTALL[\\/]* | \
-  /usr/ucb/* ) ;;
-  *)
-    # OSF1 and SCO ODT 3.0 have their own names for install.
-    # Don't use installbsd from OSF since it installs stuff as root
-    # by default.
-    for ac_prog in ginstall scoinst install; do
-      for ac_exec_ext in '' $ac_executable_extensions; do
-	if as_fn_executable_p "$as_dir/$ac_prog$ac_exec_ext"; then
-	  if test $ac_prog = install &&
-	    grep dspmsg "$as_dir/$ac_prog$ac_exec_ext" >/dev/null 2>&1; then
-	    # AIX install.  It has an incompatible calling convention.
-	    :
-	  elif test $ac_prog = install &&
-	    grep pwplus "$as_dir/$ac_prog$ac_exec_ext" >/dev/null 2>&1; then
-	    # program-specific install script used by HP pwplus--don't use.
-	    :
-	  else
-	    rm -rf conftest.one conftest.two conftest.dir
-	    echo one > conftest.one
-	    echo two > conftest.two
-	    mkdir conftest.dir
-	    if "$as_dir/$ac_prog$ac_exec_ext" -c conftest.one conftest.two "`pwd`/conftest.dir" &&
-	      test -s conftest.one && test -s conftest.two &&
-	      test -s conftest.dir/conftest.one &&
-	      test -s conftest.dir/conftest.two
-	    then
-	      ac_cv_path_install="$as_dir/$ac_prog$ac_exec_ext -c"
-	      break 3
-	    fi
-	  fi
-	fi
-      done
-    done
-    ;;
-esac
-
-  done
-IFS=$as_save_IFS
-
-rm -rf conftest.one conftest.two conftest.dir
-
-fi
-  if test "${ac_cv_path_install+set}" = set; then
-    INSTALL=$ac_cv_path_install
-  else
-    # As a last resort, use the slow shell script.  Don't cache a
-    # value for INSTALL within a source directory, because that will
-    # break other packages using the cache if that directory is
-    # removed, or if the value is a relative name.
-    INSTALL=$ac_install_sh
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $INSTALL" >&5
-$as_echo "$INSTALL" >&6; }
-
-# Use test -z because SunOS4 sh mishandles braces in ${var-val}.
-# It thinks the first close brace ends the variable substitution.
-test -z "$INSTALL_PROGRAM" && INSTALL_PROGRAM='${INSTALL}'
-
-test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
-
-test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
-
-# Extract the first word of "svn", so it can be a program name with args.
-set dummy svn; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_SVN+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$SVN"; then
-  ac_cv_prog_SVN="$SVN" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_SVN=""
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-SVN=$ac_cv_prog_SVN
-if test -n "$SVN"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SVN" >&5
-$as_echo "$SVN" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
 
 
 ac_ext=cpp
@@ -5797,85 +5922,6 @@ $as_echo "#define USE_SYSTEM_SWAB /**/" >>confdefs.h
 fi
 
 fi
-
-
-
-DEBUG_FLAGS="-D_DEBUG"
-
-
-   oldCPPFLAGS="$CPPFLAGS"
-   CPPFLAGS="$CPPFLAGS -g3 -ggdb -O0"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking debug build -g3 -ggdb -O0" >&5
-$as_echo_n "checking debug build -g3 -ggdb -O0... " >&6; }
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  usable=yes
-else
-  usable=no
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
-$as_echo "$usable" >&6; }
-   CPPFLAGS="$oldCPPFLAGS"
-
-   if test "x$usable" = "xyes"; then :
-  DEBUG_FLAGS="$DEBUG_FLAGS -g3 -ggdb -O0"
-else
-  DEBUG_FLAGS="$DEBUG_FLAGS -g"
-
-fi
-
-
-
-
-OPT_FLAGS="-DNDEBUG"
-
-
-   oldCPPFLAGS="$CPPFLAGS"
-   CPPFLAGS="$CPPFLAGS -O3"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking optimised build -O3" >&5
-$as_echo_n "checking optimised build -O3... " >&6; }
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  usable=yes
-else
-  usable=no
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
-$as_echo "$usable" >&6; }
-   CPPFLAGS="$oldCPPFLAGS"
-
-   if test "x$usable" = "xyes"; then :
-  OPT_FLAGS="$OPT_FLAGS -O3"
-else
-  OPT_FLAGS="$OPT_FLAGS -O2"
-
-fi
-
-
 
 
 
@@ -8382,9 +8428,12 @@ fi
 
 
 
+   OPENLDAP_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Open LDAP support enabled" >&5
-$as_echo_n "checking Open LDAP support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Open LDAP support" >&5
+$as_echo_n "checking Open LDAP support... " >&6; }
 
    # Check whether --enable-openldap was given.
 if test "${enable_openldap+set}" = set; then :
@@ -8449,13 +8498,15 @@ fi
 
    if test "x$usable" = "xyes" ; then
 
+      if test "x$OPENLDAP_SYSTEM" = "xyes" ; then
+
 # Check whether --with-openldap-dir was given.
 if test "${with_openldap_dir+set}" = set; then :
   withval=$with_openldap_dir;
-               { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for Open LDAP support" >&5
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for Open LDAP support" >&5
 $as_echo "$as_me: Using directory $withval for Open LDAP support" >&6;}
-               OPENLDAP_CFLAGS="-I$withval/include "
-               OPENLDAP_LIBS="-L$withval/lib -lldap"
+                  OPENLDAP_CFLAGS="-I$withval/include "
+                  OPENLDAP_LIBS="-L$withval/lib -lldap"
 
 else
 
@@ -8518,16 +8569,16 @@ fi
 	echo "$OPENLDAP_PKG_ERRORS" >&5
 
 
-                  OPENLDAP_CFLAGS=""
-                  OPENLDAP_LIBS="-lldap"
+                     OPENLDAP_CFLAGS=""
+                     OPENLDAP_LIBS="-lldap"
 
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
-                  OPENLDAP_CFLAGS=""
-                  OPENLDAP_LIBS="-lldap"
+                     OPENLDAP_CFLAGS=""
+                     OPENLDAP_LIBS="-lldap"
 
 
 else
@@ -8541,7 +8592,7 @@ fi
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -8575,13 +8626,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $OPENLDAP_CFLAGS"
-               LDFLAGS="$OPENLDAP_LIBS $LDFLAGS"
+
+   LDFLAGS="$OPENLDAP_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $OPENLDAP_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -8625,9 +8683,12 @@ fi
 
 
 
+   OPENSSL_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking OpenSSL support enabled" >&5
-$as_echo_n "checking OpenSSL support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking OpenSSL support" >&5
+$as_echo_n "checking OpenSSL support... " >&6; }
 
    # Check whether --enable-openssl was given.
 if test "${enable_openssl+set}" = set; then :
@@ -8679,6 +8740,8 @@ fi
 
 
    if test "x$usable" = "xyes" ; then
+
+      if test "x$OPENSSL_SYSTEM" = "xyes" ; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OPENSSL" >&5
@@ -8754,7 +8817,7 @@ $as_echo "yes" >&6; }
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -8788,13 +8851,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $OPENSSL_CFLAGS"
-               LDFLAGS="$OPENSSL_LIBS $LDFLAGS"
+
+   LDFLAGS="$OPENSSL_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $OPENSSL_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -8987,9 +9057,12 @@ fi
 
 
 
+   EXPAT_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking expat XML support enabled" >&5
-$as_echo_n "checking expat XML support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking expat XML support" >&5
+$as_echo_n "checking expat XML support... " >&6; }
 
    # Check whether --enable-expat was given.
 if test "${enable_expat+set}" = set; then :
@@ -9042,13 +9115,15 @@ fi
 
    if test "x$usable" = "xyes" ; then
 
+      if test "x$EXPAT_SYSTEM" = "xyes" ; then
+
 # Check whether --with-expat-dir was given.
 if test "${with_expat_dir+set}" = set; then :
   withval=$with_expat_dir;
-               { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for expat XML support" >&5
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for expat XML support" >&5
 $as_echo "$as_me: Using directory $withval for expat XML support" >&6;}
-               EXPAT_CFLAGS="-I$withval/include "
-               EXPAT_LIBS="-L$withval/lib -lexpat"
+                  EXPAT_CFLAGS="-I$withval/include "
+                  EXPAT_LIBS="-L$withval/lib -lexpat"
 
 else
 
@@ -9111,16 +9186,16 @@ fi
 	echo "$EXPAT_PKG_ERRORS" >&5
 
 
-                  EXPAT_CFLAGS=""
-                  EXPAT_LIBS="-lexpat"
+                     EXPAT_CFLAGS=""
+                     EXPAT_LIBS="-lexpat"
 
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
-                  EXPAT_CFLAGS=""
-                  EXPAT_LIBS="-lexpat"
+                     EXPAT_CFLAGS=""
+                     EXPAT_LIBS="-lexpat"
 
 
 else
@@ -9134,7 +9209,7 @@ fi
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -9169,13 +9244,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
-               LDFLAGS="$EXPAT_LIBS $LDFLAGS"
+
+   LDFLAGS="$EXPAT_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -9217,9 +9299,12 @@ fi
 
 
 
+   LUA_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Lua script support enabled" >&5
-$as_echo_n "checking Lua script support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Lua script support" >&5
+$as_echo_n "checking Lua script support... " >&6; }
 
    # Check whether --enable-lua was given.
 if test "${enable_lua+set}" = set; then :
@@ -9271,6 +9356,8 @@ fi
 
 
    if test "x$usable" = "xyes" ; then
+
+      if test "x$LUA_SYSTEM" = "xyes" ; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LUA" >&5
@@ -9346,7 +9433,7 @@ $as_echo "yes" >&6; }
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -9381,13 +9468,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $LUA_CFLAGS"
-               LDFLAGS="$LUA_LIBS $LDFLAGS"
+
+   LDFLAGS="$LUA_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $LUA_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -9429,9 +9523,12 @@ fi
 
 
 
+   V8_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript script support enabled" >&5
-$as_echo_n "checking V8 Javascript script support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript script support" >&5
+$as_echo_n "checking V8 Javascript script support... " >&6; }
 
    # Check whether --enable-v8 was given.
 if test "${enable_v8+set}" = set; then :
@@ -9484,13 +9581,15 @@ fi
 
    if test "x$usable" = "xyes" ; then
 
+      if test "x$V8_SYSTEM" = "xyes" ; then
+
 # Check whether --with-v8-dir was given.
 if test "${with_v8_dir+set}" = set; then :
   withval=$with_v8_dir;
-               { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for V8 Javascript script support" >&5
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for V8 Javascript script support" >&5
 $as_echo "$as_me: Using directory $withval for V8 Javascript script support" >&6;}
-               V8_CFLAGS="-I$withval/include "
-               V8_LIBS="-L$withval/lib -lv8"
+                  V8_CFLAGS="-I$withval/include "
+                  V8_LIBS="-L$withval/lib -lv8"
 
 else
 
@@ -9553,16 +9652,16 @@ fi
 	echo "$V8_PKG_ERRORS" >&5
 
 
-                  V8_CFLAGS=""
-                  V8_LIBS="-lv8"
+                     V8_CFLAGS=""
+                     V8_LIBS="-lv8"
 
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
-                  V8_CFLAGS=""
-                  V8_LIBS="-lv8"
+                     V8_CFLAGS=""
+                     V8_LIBS="-lv8"
 
 
 else
@@ -9576,7 +9675,7 @@ fi
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -9611,13 +9710,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
-               LDFLAGS="$V8_LIBS $LDFLAGS"
+
+   LDFLAGS="$V8_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -12433,9 +12539,12 @@ fi
 
 
 
+   SDL_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking disable libSDL (video display) support enabled" >&5
-$as_echo_n "checking disable libSDL (video display) support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking disable libSDL (video display) support" >&5
+$as_echo_n "checking disable libSDL (video display) support... " >&6; }
 
    # Check whether --enable-sdl was given.
 if test "${enable_sdl+set}" = set; then :
@@ -12499,6 +12608,8 @@ fi
 
 
    if test "x$usable" = "xyes" ; then
+
+      if test "x$SDL_SYSTEM" = "xyes" ; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL" >&5
@@ -12574,7 +12685,7 @@ $as_echo "yes" >&6; }
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -12611,13 +12722,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
-               LDFLAGS="$SDL_LIBS $LDFLAGS"
+
+   LDFLAGS="$SDL_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -12660,9 +12778,12 @@ fi
 
 
 
+   GSTREAMER_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking GStreamer support enabled" >&5
-$as_echo_n "checking GStreamer support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking GStreamer support" >&5
+$as_echo_n "checking GStreamer support... " >&6; }
 
    # Check whether --enable-gstreamer was given.
 if test "${enable_gstreamer+set}" = set; then :
@@ -12714,6 +12835,8 @@ fi
 
 
    if test "x$usable" = "xyes" ; then
+
+      if test "x$GSTREAMER_SYSTEM" = "xyes" ; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER" >&5
@@ -12789,7 +12912,7 @@ $as_echo "yes" >&6; }
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -12824,13 +12947,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
-               LDFLAGS="$GSTREAMER_LIBS $LDFLAGS"
+
+   LDFLAGS="$GSTREAMER_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -12873,9 +13003,12 @@ fi
 
 
 
+   ODBC_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ODBC database support enabled" >&5
-$as_echo_n "checking ODBC database support enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ODBC database support" >&5
+$as_echo_n "checking ODBC database support... " >&6; }
 
    # Check whether --enable-odbc was given.
 if test "${enable_odbc+set}" = set; then :
@@ -12928,13 +13061,15 @@ fi
 
    if test "x$usable" = "xyes" ; then
 
+      if test "x$ODBC_SYSTEM" = "xyes" ; then
+
 # Check whether --with-odbc-dir was given.
 if test "${with_odbc_dir+set}" = set; then :
   withval=$with_odbc_dir;
-               { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for ODBC database support" >&5
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for ODBC database support" >&5
 $as_echo "$as_me: Using directory $withval for ODBC database support" >&6;}
-               ODBC_CFLAGS="-I$withval/include "
-               ODBC_LIBS="-L$withval/lib -lodbc"
+                  ODBC_CFLAGS="-I$withval/include "
+                  ODBC_LIBS="-L$withval/lib -lodbc"
 
 else
 
@@ -12997,16 +13132,16 @@ fi
 	echo "$ODBC_PKG_ERRORS" >&5
 
 
-                  ODBC_CFLAGS=""
-                  ODBC_LIBS="-lodbc"
+                     ODBC_CFLAGS=""
+                     ODBC_LIBS="-lodbc"
 
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
-                  ODBC_CFLAGS=""
-                  ODBC_LIBS="-lodbc"
+                     ODBC_CFLAGS=""
+                     ODBC_LIBS="-lodbc"
 
 
 else
@@ -13020,7 +13155,7 @@ fi
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -13055,13 +13190,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
-               LDFLAGS="$ODBC_LIBS $LDFLAGS"
+
+   LDFLAGS="$ODBC_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi
@@ -13417,6 +13559,148 @@ fi
 
 
 
+   case "$target_os" in
+      cygwin* | mingw* )
+         usable=yes
+      ;;
+
+      *)
+         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
+$as_echo_n "checking for dlopen in -ldl... " >&6; }
+if ${ac_cv_lib_dl_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_dl_dlopen=yes
+else
+  ac_cv_lib_dl_dlopen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlopen" >&5
+$as_echo "$ac_cv_lib_dl_dlopen" >&6; }
+if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
+
+               usable=yes
+               DLFCN_LIBS="-ldl"
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -lc" >&5
+$as_echo_n "checking for dlopen in -lc... " >&6; }
+if ${ac_cv_lib_c_dlopen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lc  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
+int
+main ()
+{
+return dlopen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_c_dlopen=yes
+else
+  ac_cv_lib_c_dlopen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_dlopen" >&5
+$as_echo "$ac_cv_lib_c_dlopen" >&6; }
+if test "x$ac_cv_lib_c_dlopen" = xyes; then :
+
+                  usable=yes
+                  DLFCN_LIBS-"-lc"
+
+else
+  usable=no
+
+fi
+
+
+fi
+
+      ;;
+   esac
+
+
+   if test "x$usable" = "xyes"; then :
+
+
+
+   LDFLAGS="$DLFCN_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $DLFCN_CFLAGS"
+
+
+
+
+
+   HAS_DYNALINK=1
+
+   if test "x$HAS_DYNALINK" = "xyes" ; then
+      HAS_DYNALINK=1
+   fi
+
+   if test "x$HAS_DYNALINK" = "x0" || test "x$HAS_DYNALINK" = "xno" ; then
+      HAS_DYNALINK=
+   fi
+
+
+
+   if test "x$HAS_DYNALINK" = "x1" ; then
+      PTLIB_DYNALINK=yes
+      $as_echo "#define P_DYNALINK 1" >>confdefs.h
+
+   else
+      PTLIB_DYNALINK=no
+   fi
+
+
+
+
+fi
+
+
+
+
+
+
 
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking plugin support" >&5
@@ -13491,71 +13775,6 @@ fi
 
 
    enable_plugins="$enableval"
-
-
-
-
-case "$target_os" in
-   cygwin* | mingw* )
-
-$as_echo "#define P_DYNALINK 1" >>confdefs.h
-
-   ;;
-
-   freebsd*|openbsd*|netbsd*|darwin*|beos*)
-      DL_LIBS="-lc"
-   ;;
-
-   *)
-      DL_LIBS="-ldl"
-   ;;
-esac
-
-
-   oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
-   CPPFLAGS="$CPPFLAGS "
-   LDFLAGS="$DL_LIBS $LDFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dynamic libraries" >&5
-$as_echo_n "checking for dynamic libraries... " >&6; }
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <dlfcn.h>
-int
-main ()
-{
-dlopen("lib", 0)
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  usable=yes
-else
-  usable=no
-
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
-$as_echo "$usable" >&6; }
-   CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
-
-   if test "x$usable" = "xyes"; then :
-
-      HAS_LIBDL=1
-
-$as_echo "#define P_DYNALINK 1" >>confdefs.h
-
-      CPPFLAGS="$CPPFLAGS $DL_CFLAGS"
-      LDFLAGS="$LDFLAGS $DL_LIBS"
-
-else
-  HAS_LIBDL=
-
-fi
-
 
 
 
@@ -13759,9 +13978,12 @@ fi
 
 
 
+   PORTAUDIO_SYSTEM="yes"
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking PortAudio library enabled" >&5
-$as_echo_n "checking PortAudio library enabled... " >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking PortAudio library" >&5
+$as_echo_n "checking PortAudio library... " >&6; }
 
    # Check whether --enable-portaudio was given.
 if test "${enable_portaudio+set}" = set; then :
@@ -13814,13 +14036,15 @@ fi
 
    if test "x$usable" = "xyes" ; then
 
+      if test "x$PORTAUDIO_SYSTEM" = "xyes" ; then
+
 # Check whether --with-portaudio-dir was given.
 if test "${with_portaudio_dir+set}" = set; then :
   withval=$with_portaudio_dir;
-               { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for PortAudio library" >&5
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for PortAudio library" >&5
 $as_echo "$as_me: Using directory $withval for PortAudio library" >&6;}
-               PORTAUDIO_CFLAGS="-I$withval/include "
-               PORTAUDIO_LIBS="-L$withval/lib -;portaudio"
+                  PORTAUDIO_CFLAGS="-I$withval/include "
+                  PORTAUDIO_LIBS="-L$withval/lib -;portaudio"
 
 else
 
@@ -13883,16 +14107,16 @@ fi
 	echo "$PORTAUDIO_PKG_ERRORS" >&5
 
 
-                  PORTAUDIO_CFLAGS=""
-                  PORTAUDIO_LIBS="-;portaudio"
+                     PORTAUDIO_CFLAGS=""
+                     PORTAUDIO_LIBS="-;portaudio"
 
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
-                  PORTAUDIO_CFLAGS=""
-                  PORTAUDIO_LIBS="-;portaudio"
+                     PORTAUDIO_CFLAGS=""
+                     PORTAUDIO_LIBS="-;portaudio"
 
 
 else
@@ -13906,7 +14130,7 @@ fi
 fi
 
 
-      if test "x$usable" = "xyes" ; then
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLDFLAGS="$LDFLAGS"
@@ -13940,13 +14164,20 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-               CPPFLAGS="$CPPFLAGS $PORTAUDIO_CFLAGS"
-               LDFLAGS="$PORTAUDIO_LIBS $LDFLAGS"
+
+   LDFLAGS="$PORTAUDIO_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $PORTAUDIO_CFLAGS"
+
+
+
 
 else
   usable=no
 
 fi
+
+
+         fi
 
 
       fi

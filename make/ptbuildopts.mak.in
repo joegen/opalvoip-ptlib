@@ -31,42 +31,50 @@
 # $Date$
 #
 
-prefix      := @prefix@
-exec_prefix := @exec_prefix@
-libdir      := @libdir@
+PTLIB_MAJOR :=@PTLIB_MAJOR@
+PTLIB_MINOR :=@PTLIB_MINOR@
+PTLIB_STAGE :=@PTLIB_STAGE@
+PTLIB_BUILD :=@PTLIB_BUILD@
+
+# detected platform
 target      := @target@
 target_os   := @target_os@
 target_cpu  := @target_cpu@
 
-DEV_PLUGIN_DIR := @DEV_PLUGIN_DIR@
-PTLIB_PLUGIN_DIR := @PTLIB_PLUGIN_DIR@
+# The install directories
+prefix      := @prefix@
+exec_prefix := @exec_prefix@
+libdir      := @libdir@
+includedir       := @includedir@
+datarootdir      := @datarootdir@
 
+# Tool names detected by configure
 CC	:= @CC@
 CXX	:= @CXX@
-LD      := @CXX@
+LD      := @LD@
 AR	:= @AR@
 RANLIB  := @RANLIB@
+LN_S    := @LN_S@
+MKDIR_P := @MKDIR_P@
 YACC    := @YACC@
 INSTALL := @INSTALL@
 SVN     := @SVN@
 
-MAJOR_VERSION :=@MAJOR_VERSION@
-MINOR_VERSION :=@MINOR_VERSION@
-BUILD_TYPE    :=@BUILD_TYPE@
-BUILD_NUMBER  :=@BUILD_NUMBER@
-
-CPPFLAGS        += @CPPFLAGS@
-CXXFLAGS        += @CXXFLAGS@
-CFLAGS          += @CFLAGS@
-LDFLAGS	        += @LDFLAGS@
-SHARED_CPPFLAGS += @SHARED_CPPFLAGS@
-SHARED_LDFLAGS  += @SHARED_LDFLAGS@
-DEBUG_FLAGS     += @DEBUG_FLAGS@
-OPT_FLAGS       += @OPT_FLAGS@
-ARFLAGS         := @ARFLAGS@
+CPPFLAGS          := @CPPFLAGS@ $(CPPFLAGS)
+CXXFLAGS          := @CXXFLAGS@ $(CXXFLAGS)
+CFLAGS            := @CFLAGS@ $(CFGLAGS)
+LDFLAGS	          := @LDFLAGS@ $(LDFLAGS)
+SHARED_CPPFLAGS   := @SHARED_CPPFLAGS@
+SHARED_LDFLAGS    := @SHARED_LDFLAGS@
+DEBUG_FLAGS       := @DEBUG_FLAGS@
+OPT_FLAGS         := @OPT_FLAGS@
+ARFLAGS           := @ARFLAGS@
 
 SHAREDLIBEXT	  := @SHAREDLIBEXT@
 STATICLIBEXT	  := @STATICLIBEXT@
+
+DEV_PLUGIN_DIR    := @DEV_PLUGIN_DIR@
+PTLIB_PLUGIN_DIR  := @PTLIB_PLUGIN_DIR@
 
 HAS_IPV6          := @HAS_IPV6@
 HAS_DNS_RESOLVER  := @HAS_DNS_RESOLVER@
@@ -129,75 +137,49 @@ HAS_V8		  := @HAS_V8@
 
 ###############################################################################
 #
-# define some common stuff
+# Determine the library name
 #
-
-# Directories
 
 ifdef PTLIBDIR
-  PTLIB_LIBDIR	= $(PTLIBDIR)/lib_$(target)
+  PTLIB_INCDIR = $(PTLIBDIR)/include
+  PTLIB_LIBDIR = $(PTLIBDIR)/lib_$(target)
 else
-  PTLIB_LIBDIR	= $(shell pkg-config ptlib --variable=libdir)
+  PTLIB_INCDIR = $(shell pkg-config ptlib --variable=includedir)
+  PTLIB_LIBDIR = $(shell pkg-config ptlib --variable=libdir)
 endif
-
-# Targets defined by common.mak
-
-STANDARD_TARGETS=\
-opt         debug         both \
-optdepend   debugdepend   bothdepend \
-optshared   debugshared   bothshared \
-optnoshared debugnoshared bothnoshared \
-optclean    debugclean    clean \
-release
-
-.PHONY: all $(STANDARD_TARGETS)
-
-.SUFFIXES: .cxx .prc 
-
-
-###############################################################################
-#
-# Make sure some things are defined
-#
 
 ifndef P_SHAREDLIB
   P_SHAREDLIB=1
 endif
 
-ifndef OBJ_SUFFIX
-  ifdef	DEBUG
-    OBJ_SUFFIX	:= _d
-  else
-    OBJ_SUFFIX	:=
-  endif # DEBUG
-endif # OBJ_SUFFIX
-
-ifeq ($(P_SHAREDLIB),1)
-  LIB_SUFFIX	= $(SHAREDLIBEXT)
-  LIB_TYPE	=
-else   
-  LIB_SUFFIX	= a 
-  LIB_TYPE	= _s
-endif # P_SHAREDLIB
+ifdef DEBUG
+  OBJ_SUFFIX := _d
+else
+  OBJ_SUFFIX :=
+endif # DEBUG
 
 ifndef OBJDIR_SUFFIX
-  OBJDIR_SUFFIX = $(OBJ_SUFFIX)$(LIB_TYPE)
+  OBJDIR_SUFFIX = $(OBJ_SUFFIX)
 endif
 
+PTLIB_OBJDIR = $(PTLIB_LIBDIR)/obj$(OBJDIR_SUFFIX)
 
-# set name of the PT library
-PTLIB_BASE	= pt$(OBJ_SUFFIX)
-PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
-PTLIB_DEBUG_FILE= lib$(PTLIB_BASE)_d$(LIB_TYPE).$(LIB_SUFFIX)
-PTLIB_OBJBASE	= obj$(OBJDIR_SUFFIX)
-PTLIB_OBJDIR	= $(PTLIB_LIBDIR)/$(PTLIB_OBJBASE)
+PTLIB_PREFIX := pt
+PTLIB_STATIC_FILE = lib$(PTLIB_PREFIX)_s.$(STATICLIBEXT)
+PTLIB_SHARED_BASE = lib$(PTLIB_PREFIX)
+PTLIB_SHARED_LINK = $(PTLIB_SHARED_BASE).$(SHAREDLIBEXT)
+PTLIB_DEBUG_STATIC_FILE = lib$(PTLIB_PREFIX)_d_s.$(STATICLIBEXT)
+PTLIB_DEBUG_SHARED_BASE = lib$(PTLIB_PREFIX)_d
+PTLIB_DEBUG_SHARED_LINK = $(PTLIB_DEBUG_SHARED_BASE).$(SHAREDLIBEXT)
 
-ifeq (,$(findstring $(target_os),Darwin cygwin mingw))
-  PTLIB_SONAME = $(PTLIB_FILE).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
-  PTLIB_DEBUG_SONAME = $(PTLIB_DEBUG_FILE).$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
+PTLIB_FILE_VERSION = $(PTLIB_MAJOR).$(PTLIB_MINOR)$(PTLIB_STAGE)$(PTLIB_BUILD)
+
+ifneq (,$(findstring $(target_os),Darwin cygwin mingw))
+  PTLIB_SHARED_FILE = $(PTLIB_SHARED_BASE).$(PTLIB_FILE_VERSION).$(SHAREDLIBEXT)
+  PTLIB_DEBUG_SHARED_FILE = $(PTLIB_DEBUG_SHARED_BASE).$(PTLIB_FILE_VERSION).$(SHAREDLIBEXT)
 else
-  PTLIB_SONAME = $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER).$(LIB_SUFFIX),$(PTLIB_FILE))
-  PTLIB_DEBUG_SONAME = $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER).$(LIB_SUFFIX),$(PTLIB_DEBUG_FILE))
+  PTLIB_SHARED_FILE = $(PTLIB_SHARED_BASE).$(SHAREDLIBEXT).$(PTLIB_FILE_VERSION)
+  PTLIB_DEBUG_SHARED_FILE = $(PTLIB_DEBUG_SHARED_BASE).$(SHAREDLIBEXT).$(PTLIB_FILE_VERSION)
 endif
 
 
@@ -207,17 +189,12 @@ endif
 #
 
 ifdef	DEBUG
-  CPPFLAGS += $(DEBUG_FLAG)
-  LDFLAGS  += $(DEBUG_FLAG)
+  CPPFLAGS += $(DEBUG_FLAGS)
+  LDFLAGS  += $(DEBUG_FLAGS)
 else
   CPPFLAGS += $(OPT_FLAGS)
-  LDFLAGS  += $(OPT_FLAG)
+  LDFLAGS  += $(OPT_FLAGS)
 endif
-
-ifndef PTLIB_BUILDING_ITSELF
-  LDFLAGS += -L$(PTLIB_LIBDIR) -l$(PTLIB_BASE)$(LIB_TYPE)
-endif
-
 
 # End of ptbuildopts.mak
 

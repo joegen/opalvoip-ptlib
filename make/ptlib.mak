@@ -38,6 +38,15 @@ else
 endif
 
 include $(PT_MAKE_DIR)/ptbuildopts.mak
+
+CPPFLAGS += -I$(PTLIB_INCDIR)
+
+PTLIB_BASE = $(PTLIB_PREFIX)$(OBJ_SUFFIX)
+ifneq ($(P_SHAREDLIB),1)
+  PTLIB_BASE+=_s
+endif
+LDFLAGS := -L$(PTLIB_LIBDIR) -l$(PTLIB_BASE) $(LDFLAGS)
+
 include $(PT_MAKE_DIR)/common.mak
 
 # End of ptlib.mak
