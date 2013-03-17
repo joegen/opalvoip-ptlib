@@ -6,15 +6,15 @@ makedir=@datarootdir@/ptlib/make
 target_cpu=@target_cpu@
 target_os=@target_os@
 target=@target@
-cxxflags=@CXXFLAGS@
+cxxflags=-I${includedir} @CPPFLAGS@ @CXXFLAGS@
 suffix=
-objdir=obj/@target@
+objdir=obj/@target@$(suffix)
 
 Name: ptlib
 Description: PT Library
 Version: @PTLIB_VERSION@
 Libs: -L${libdir} -lpt${suffix} @LDFLAGS@
-Cflags: -I${includedir} @CPPFLAGS@
+Cflags: -I${includedir} @CPPFLAGS@ @CFLAGS@
 
 PTLIB_IPV6=@PTLIB_IPV6@
 PTLIB_DNS_RESOLVER=@PTLIB_DNS_RESOLVER@
