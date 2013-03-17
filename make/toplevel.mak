@@ -141,34 +141,32 @@ install:
                      $(DESTDIR)$(prefix)/include/ptlib/$(ARCH_INCLUDE)/ptlib \
                      $(DESTDIR)$(prefix)/include/ptclib \
                      $(DESTDIR)$(prefix)/share/ptlib/make ; \
-		do mkdir -p $$dir ; chmod 755 $$dir ; \
+		do $(MKDIR_P) $$dir ; chmod 755 $$dir ; \
 	done )
-	( for lib in  $(PTLIB_LIBDIR)/$(PTLIB_SONAME) \
-	              $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SONAME) \
-	              $(PTLIB_LIBDIR)/lib$(PTLIB_BASE)_s.a \
-	              $(PTLIB_LIBDIR)/lib$(PTLIB_BASE)_d_s.a ; \
+	( for lib in  $(PTLIB_LIBDIR)/$(PTLIB_SHARED_FILE) \
+	              $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_FILE) \
+	              $(PTLIB_LIBDIR)/$(PTLIB_STATIC_FILE) \
+	              $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_STATIC_FILE) ; \
           do \
 	  ( if test -e $$lib ; then \
 		$(INSTALL) -m 444 $$lib $(DESTDIR)$(libdir); \
 	  fi ) \
 	done )
-	( if test -e $(PTLIB_LIBDIR)/$(PTLIB_SONAME); then \
+	( if test -e $(DESTDIR)$(libdir)/$(PTLIB_SHARED_FILE); then \
 	    (cd $(DESTDIR)$(libdir) ; \
-		rm -f $(PTLIB_FILE) ; \
-		ln -sf $(PTLIB_SONAME) $(PTLIB_FILE) \
+		$(LN_S) -f $(PTLIB_SHARED_FILE) $(PTLIB_SHARED_FILE_BASE) \
 	    ) \
 	fi )
-	( if test -e $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SONAME); then \
+	( if test -e $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SHARED_FILE); then \
 	    (cd $(DESTDIR)$(libdir) ; \
-		rm -f $(PTLIB_DEBUG_FILE) ; \
-		ln -sf $(PTLIB_DEBUG_SONAME) $(PTLIB_DEBUG_FILE) \
+		$(LN_S) -f $(PTLIB_DEBUG_SHARED_FILE) $(PTLIB_DEBUG_SHARED_FILE_BASE) \
 	    ) \
 	fi )
 ifeq (1, $(HAS_PLUGINS))
 	if test -e $(PTLIB_LIBDIR)/device/; then \
 	cd $(PTLIB_LIBDIR)/device/; \
 	(  for dir in ./* ;\
-		do mkdir -p $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
+		do $(MKDIR_P) $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		chmod 755 $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		(for fn in ./$$dir/*.so ; \
 			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir; \
@@ -191,7 +189,7 @@ endif
 		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(prefix)/share/ptlib/make; \
 	done)
 
-	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
+	$(MKDIR_P) $(DESTDIR)$(libdir)/pkgconfig
 	chmod 755 $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(libdir)/pkgconfig/
 
@@ -203,12 +201,12 @@ uninstall:
 	       $(DESTDIR)$(prefix)/share/ptlib \
 	       $(DESTDIR)$(libdir)/$(PTLIB_PLUGIN_DIR) \
 	       $(DESTDIR)$(libdir)/pkgconfig/ptlib.pc
-	rm -f $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_s.a \
-	      $(DESTDIR)$(libdir)/$(PTLIB_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_SONAME) \
-	      $(DESTDIR)$(libdir)/lib$(PTLIB_BASE)_d_s.a \
-	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SONAME)
+	rm -f $(DESTDIR)$(libdir)/$(PTLIB_STATIC_FILE) \
+	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_STATIC_FILE) \
+	      $(DESTDIR)$(libdir)/$(PTLIB_SHARED_FILE) \
+	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SHARED_FILE) \
+	      $(DESTDIR)$(libdir)/$(PTLIB_SHARED_FILE_BASE) \
+	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SHARED_FILE_BASE)
 
 endif
 
