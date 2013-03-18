@@ -34,6 +34,13 @@
 #ifndef PTLIB_PLATFORM_H
 #define PTLIB_PLATFORM_H
 
+#ifdef HAVE_STDINT_H
+  #include <stdint.h>
+#elif defined(HAVE_INTTYPES_H)
+  #include <inttypes.h>
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
 
