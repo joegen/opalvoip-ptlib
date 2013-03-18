@@ -38,25 +38,18 @@ VERSION_FILE = $(PTLIBDIR)/version.h
 REVISION_FILE = $(PTLIBDIR)/revision.h
 
 ifdef DEBUG
-  SHARED_LIB_LINK  = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_LINK)
-  SHARED_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_FILE)
-  STATIC_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_STATIC_FILE)
-  LIB_SONAME       = $(PTLIB_DEBUG_SHARED_BASE)
+  STATIC_LIB_FILE = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_STATIC_FILE)
+  ifeq ($(P_SHAREDLIB),1)
+    SHARED_LIB_LINK  = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_LINK)
+    SHARED_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_FILE)
+  endif
 else
-  SHARED_LIB_LINK  = $(PTLIB_LIBDIR)/$(PTLIB_SHARED_LINK)
-  SHARED_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_SHARED_FILE)
-  STATIC_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_STATIC_FILE)
-  LIB_SONAME       = $(PTLIB_SHARED_BASE)
+  STATIC_LIB_FILE = $(PTLIB_LIBDIR)/$(PTLIB_STATIC_FILE)
+  ifeq ($(P_SHAREDLIB),1)
+    SHARED_LIB_LINK  = $(PTLIB_LIBDIR)/$(PTLIB_SHARED_LINK)
+    SHARED_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_SHARED_FILE)
+  endif
 endif
-
-ifeq ($(P_SHAREDLIB),1)
-  TARGET=$(SHARED_LIB_LINK)
-else
-  TARGET=$(STATIC_LIB_FILE)
-endif
-
-
-CLEAN_FILES += $(TARGET)
 
 
 ##########################################
@@ -492,28 +485,6 @@ $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 	$(YACC) $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
-
-
-
-#######################################################
-
-ifeq ($(P_SHAREDLIB),1)
-
-  $(SHARED_LIB_LINK): $(SHARED_LIB_FILE)
-	$Q cd $(dir $@) ; rm -f $@ ; $(LN_S) $(notdir $<) $(notdir $@)
-
-  $(SHARED_LIB_FILE): $(STATIC_LIB_FILE)
-	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_LD)$(LD) -o $@ $(SHARED_LDFLAGS:INSERT_SONAME=$(LIB_SONAME)) $(OBJS) $(LDFLAGS)
-
-endif
-
-$(STATIC_LIB_FILE): $(OBJS)
-	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_AR)$(AR) $(ARFLAGS) $@ $(OBJS)
-ifneq ($(RANLIB),)
-	$Q$(RANLIB) $@
-endif
 
 
 #######################################################
