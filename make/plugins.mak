@@ -34,48 +34,14 @@ endif
 
 include $(PTLIBDIR)/make/ptbuildopts.mak
 
-PLUGIN_FILENAME = $(PLUGIN_NAME)_pwplugin.$(LIB_SUFFIX)
-
+SOURCE = $(PLUGIN_SOURCES)
 OBJDIR = $(PTLIB_LIBDIR)/$(PLUGIN_FAMILY)
 
-TARGET = $(OBJDIR)/$(PLUGIN_FILENAME)
+SHARED_LIB_FILE = $(OBJDIR)/$(PLUGIN_NAME)$(PTLIB_PLUGIN_SUFFIX).$(SHAREDLIBEXT)
 
-ifeq ($(target_os),solaris)
-  LDSOPTS += -R$(PTLIB_LIBDIR) -G
-else
-  ifneq ($(target_os),Darwin)
-    LDSOPTS += -shared
-  endif
-endif
-
-ifeq ($(VERBOSE),)
-Q = @echo $@ ;
-endif
-
-
-ifeq ($(target_cpu),x86_64)
-  CPPFLAGS += -fPIC
-endif
-
-ifeq ($(target_cpu),hppa)
-  CPPFLAGS += -fPIC
-endif
-
-ifeq ($(P_SHAREDLIB),1)
-  PLUGIN_LIBS += $(PTLIB_LIBDIR)/$(PTLIB_FILE)
-  CPPFLAGS += -DP_SHAREDLIB
-endif
-
-$(OBJDIR)/$(PLUGIN_FILENAME): $(PLUGIN_SOURCES)
-	@mkdir -p $(OBJDIR)
-	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) \
-	$(LDSOPTS) $^ \
-	$(PLUGIN_LIBS) \
-	$(LDFLAGS) \
-	-o $@
-
-OBJS	 := $(patsubst %.c, $(OBJDIR)/%.o, $(patsubst %.cxx, $(OBJDIR)/%.o, $(patsubst %.cpp, $(OBJDIR)/%.o, $(notdir $(PLUGIN_SOURCES)))))
-
-CLEAN_FILES += $(OBJDIR)/$(PLUGIN_FILENAME)
+CPPFLAGS  += $(SHARED_CFLAGS)
 
 include $(PTLIBDIR)/make/common.mak
+
+
+# End of file
