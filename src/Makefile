@@ -64,12 +64,6 @@ PLATFORM_SRC_DIR        = ptlib/unix
 endif
 VPATH_CXX		:= $(PLATFORM_SRC_DIR) $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR) 
 
-ifeq ($(target_os),Darwin)
-SED_EXTREGEX_FLAG		= -E
-else
-SED_EXTREGEX_FLAG		= -r
-endif
-
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
@@ -446,7 +440,7 @@ else
 	  rm $@.tmp; \
 	else \
 	  mv -f $@.tmp $@; \
-	  echo "Revision file updated to `sed $(SED_EXTREGEX_FLAG) -n 's/.*SVN_REVISION(.*)/\1/p' $@`" ; \
+	  echo "Revision file updated to `sed -n 's/.*SVN_REVISION *\(.*\)/\1/p' $@`" ; \
 	fi
 
 .PHONY: $(REVISION_FILE)
