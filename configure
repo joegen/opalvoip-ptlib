@@ -7047,7 +7047,6 @@ fi
 
 
 
-
 if test "${target_os}" = "FreeBSD" ; then
    HAS_PTHREADS=yes
    LDFLAGS="$LDFLAGS -pthread"
@@ -7194,9 +7193,10 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  $as_echo "#define P_HAS_SEMAPHORES 1" >>confdefs.h
 
-else
+      $as_echo "#define P_HAS_SEMAPHORES 1" >>confdefs.h
+
+
 
    oldCPPFLAGS="$CPPFLAGS"
    CPPFLAGS="$CPPFLAGS "
@@ -7232,11 +7232,6 @@ fi
 
 
 
-fi
-
-
-
-
 
    oldCPPFLAGS="$CPPFLAGS"
    CPPFLAGS="$CPPFLAGS "
@@ -7249,9 +7244,9 @@ int
 main ()
 {
 
-      sem_t *s;
-      const struct timespec * t;
-      sem_timedwait(s, t);
+            sem_t *s;
+            const struct timespec * t;
+            sem_timedwait(s, t);
 
   ;
   return 0;
@@ -7271,6 +7266,11 @@ $as_echo "$usable" >&6; }
    if test "x$usable" = "xyes"; then :
 
 $as_echo "#define P_HAS_SEMAPHORES_XPG6 1" >>confdefs.h
+
+
+fi
+
+
 
 
 fi
