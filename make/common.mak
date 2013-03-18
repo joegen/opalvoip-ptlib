@@ -139,7 +139,8 @@ $(DEPDIR)/%.dep : %.c
 #
 # add in good files to delete
 #
-CLEAN_FILES += $(OBJS) $(DEPS) core
+CLEAN_FILES += $(OBJS) $(DEPS) core* $(TARGET)
+
 
 ######################################################################
 #
@@ -174,7 +175,50 @@ endif
 endif # have source
 
 
-CLEAN_FILES += $(TARGET)
+else # PROG
+
+  ifdef SHARED_LIB_LINK
+
+    ifndef TARGET
+      TARGET = $(SHARED_LIB_LINK)
+    endif
+
+    $(SHARED_LIB_LINK): $(SHARED_LIB_FILE)
+	$Q cd $(dir $@) ; rm -f $@ ; $(LN_S) $(notdir $<) $(notdir $@)
+
+  endif # SHARED_LIB_LINK
+
+
+  ifdef SHARED_LIB_FILE
+
+    ifndef TARGET
+      TARGET = $(SHARED_LIB_FILE)
+    endif
+
+    ifndef
+      LIB_SONAME = $(notdir $(SHARED_LIB_FILE))
+    endif
+
+    $(SHARED_LIB_FILE): $(STATIC_LIB_FILE)
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	$(Q_LD)$(LD) -o $@ $(SHARED_LDFLAGS:INSERT_SONAME=$(LIB_SONAME)) $(OBJS) $(LDFLAGS)
+
+  endif # SHARED_LIB_FILE
+
+
+  ifdef STATIC_LIB_FILE
+    ifndef TARGET
+      TARGET = $(STATIC_LIB_FILE)
+    endif
+
+    $(STATIC_LIB_FILE): $(OBJS)
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	$(Q_AR)$(AR) $(ARFLAGS) $@ $(OBJS)
+      ifneq ($(RANLIB),)
+	$Q$(RANLIB) $@
+     endif
+
+  endif # STATIC_LIB_FILE
 
 endif # PROG
 
