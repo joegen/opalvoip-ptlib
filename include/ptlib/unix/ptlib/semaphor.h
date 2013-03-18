@@ -32,35 +32,37 @@
  */
 
   public:
-    unsigned GetInitial() const { return initialVar; }
-    unsigned GetMaxCount() const     { return maxCountVar; }
+    unsigned GetInitial() const  { return m_initial; }
+    unsigned GetMaxCount() const { return m_maxCount; }
 
   protected:
-    unsigned initialVar;
-    unsigned maxCountVar;
+    unsigned m_initial;
+    unsigned m_maxCount;
+
+    void Construct();
 
 #if defined(P_PTHREADS)
 
-  protected:
-#if defined(P_HAS_SEMAPHORES)
-    mutable sem_t semId;
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-    mutable sem_t *semId;
-    sem_t *CreateSem(unsigned initialValue);
-#else
+  #if defined(P_HAS_SEMAPHORES)
+    mutable sem_t m_semaphore;
+    #if defined(P_HAS_NAMED_SEMAPHORES)
+      mutable sem_t * m_semId;
+      __inline sem_t * GetSemPtr() const { return m_semId != NULL ? m_semId : &m_semaphore; }
+    #else
+      __inline sem_t * GetSemPtr() const { return &m_semaphore; }
+    #endif
+  #else
     mutable pthread_mutex_t mutex;
     mutable pthread_cond_t  condVar;
     mutable unsigned currentCount;
-    mutable unsigned maximumCount;
     mutable unsigned queuedLocks;
-  friend void PThread::Terminate();
-#endif
+    friend void PThread::Terminate();
+  #endif
 
 #elif defined(__BEOS__)
 
   public:
     PSemaphore(PBoolean fNested); 
-    void Create(unsigned initial);
 
   protected:
     PBoolean mfNested; // Does it support recursive locks?
