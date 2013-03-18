@@ -712,9 +712,6 @@ fi
 dnl ########################################################################
 dnl check for pthreads library
 
-dnl MSWIN_DISPLAY semaphore,Semaphore Support
-dnl MSWIN_DEFINE  semaphore,P_HAS_SEMAPHORES
-
 dnl Linux, Mac OS X use libpthread and -lpthread
 dnl FreeBSD uses the -pthread compiler option and uses libc_r
 
@@ -751,7 +748,9 @@ fi
 
 
 dnl ########################################################################
-dnl check for Unix semaphores
+dnl check for semaphores
+dnl MSWIN_DISPLAY semaphore,Semaphore Support
+dnl MSWIN_DEFINE  semaphore,P_HAS_SEMAPHORES
 
 MY_COMPILE_IFELSE(
    [if has Unix semaphores],
@@ -761,29 +760,31 @@ MY_COMPILE_IFELSE(
       sem_t *s;
       sem_init(s, 0, 0);
    ],
-   [AC_DEFINE(P_HAS_SEMAPHORES)],
-   [MY_COMPILE_IFELSE(
-      [if named semaphores are available],
-      [],
-      [#include <semaphore.h>],
-      [sem_t *s = sem_open("test", O_CREAT)],
-      [AC_DEFINE(P_HAS_NAMED_SEMAPHORES)]
-   )]
+   [
+      AC_DEFINE(P_HAS_SEMAPHORES)
+
+      MY_COMPILE_IFELSE(
+         [if named semaphores are available],
+         [],
+         [#include <semaphore.h>],
+         [sem_t *s = sem_open("test", O_CREAT)],
+         [AC_DEFINE(P_HAS_NAMED_SEMAPHORES)]
+      )
+
+      MY_COMPILE_IFELSE(
+         [if has sem_timedwait],
+         [],
+         [#include <semaphore.h>],
+         [
+            sem_t *s;
+            const struct timespec * t;
+            sem_timedwait(s, t);
+         ],
+         [AC_DEFINE(P_HAS_SEMAPHORES_XPG6, 1, "Supports XPG6 Semaphores")]
+      )
+   ]
 )
    
-
-MY_COMPILE_IFELSE(
-   [if has sem_timedwait],
-   [],
-   [#include <semaphore.h>],
-   [
-      sem_t *s;
-      const struct timespec * t;
-      sem_timedwait(s, t);
-   ],
-   [AC_DEFINE(P_HAS_SEMAPHORES_XPG6, 1, "Supports XPG6 Semaphores")]
-)
-
 
 dnl ########################################################################
 dnl check for XPG6 compliant pthreads (timed spinlocks)
