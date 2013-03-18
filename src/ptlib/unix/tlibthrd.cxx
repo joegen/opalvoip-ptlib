@@ -753,7 +753,7 @@ void PThread::Terminate()
   if (WaitForTermination(20))
     return;
 
-#if !defined(P_HAS_SEMAPHORES) && !defined(P_HAS_NAMED_SEMAPHORES)
+#ifndef P_HAS_SEMAPHORES
   PAssertPTHREAD(pthread_mutex_lock, (&PX_WaitSemMutex));
   if (PX_waitingSemaphore != NULL) {
     PAssertPTHREAD(pthread_mutex_lock, (&PX_waitingSemaphore->mutex));
@@ -1081,57 +1081,31 @@ void PThread::PXAbortBlock() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
-  : initialVar(initial)
-  , maxCountVar(maxCount)
+  : m_initial(initial)
+  , m_maxCount(maxCount)
 {
-#if defined(P_HAS_SEMAPHORES)
-  PAssertPTHREAD(sem_init, (&semId, 0, initial));
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  semId = CreateSem(initialVar);
-#else
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
-  
-  PAssert(maxCount > 0, "Invalid semaphore maximum.");
-  if (initial > maxCount)
-    initial = maxCount;
-
-  currentCount = initial;
-  maximumCount = maxCount;
-  queuedLocks  = 0;
-#endif
+  Construct();
 }
 
 
 PSemaphore::PSemaphore(const PSemaphore & sem) 
-  : initialVar(sem.initialVar)
-  , maxCountVar(sem.maxCountVar)
+  : m_initial(sem.m_initial)
+  , m_maxCount(sem.m_maxCount)
 {
-#if defined(P_HAS_SEMAPHORES)
-  PAssertPTHREAD(sem_init, (&semId, 0, initialVar));
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  semId = CreateSem(initialVar);
-#else
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
-  
-  PAssert(maxCountVar > 0, "Invalid semaphore maximum.");
-  if (initialVar > maxCountVar)
-    initialVar = maxCountVar;
-
-  currentCount = initialVar;
-  maximumCount = maxCountVar;
-  queuedLocks  = 0;
-#endif
+  Construct();
 }
 
 
 PSemaphore::~PSemaphore()
 {
 #if defined(P_HAS_SEMAPHORES)
-  PAssertPTHREAD(sem_destroy, (&semId));
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  PAssertPTHREAD(sem_close, (semId));
+  #if defined(P_HAS_NAMED_SEMAPHORES)
+    if (m_semId != NULL) {
+      PAssertPTHREAD(sem_close, (m_semId));
+    }
+    else
+  #endif
+      PAssertPTHREAD(sem_destroy, (&m_semaphore));
 #else
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
   PAssertPTHREAD(pthread_mutex_destroy, (&mutex));
@@ -1140,35 +1114,50 @@ PSemaphore::~PSemaphore()
 }
 
 
-#if defined(P_HAS_NAMED_SEMAPHORES)
-sem_t * PSemaphore::CreateSem(unsigned initialValue)
+void PSemaphore::Construct()
 {
-  sem_t *sem;
+#if defined(P_HAS_SEMAPHORES)
+  #if defined(P_HAS_NAMED_SEMAPHORES)
+    if (sem_init(&m_semaphore, 0, m_initial) == 0)
+      m_semId = NULL;
+    else {
+      // Since sem_open and sem_unlink are two operations, there is a small
+      // window of opportunity that two simultaneous accesses may return
+      // the same semaphore. Therefore, the static mutex is used to
+      // prevent this.
+      static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
+      PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
+    
+      sem_unlink("/ptlib_sem");
+      m_semId = sem_open("/ptlib_sem", (O_CREAT | O_EXCL), 700, m_initial);
+  
+      PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
+  
+      if (!PAssert(m_semId != SEM_FAILED, "Couldn't create named semaphore"))
+        m_semId = NULL;
+    }
+  #else
+    PAssertPTHREAD(sem_init, (&m_semaphore, 0, m_initial));
+  #endif
+#else
+  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
 
-  // Since sem_open and sem_unlink are two operations, there is a small
-  // window of opportunity that two simultaneous accesses may return
-  // the same semaphore. Therefore, the static mutex is used to
-  // prevent this.
-  static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
-  PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
-  
-  sem_unlink("/ptlib_sem");
-  sem = sem_open("/ptlib_sem", (O_CREAT | O_EXCL), 700, initialValue);
-  
-  PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
-  
-  PAssert(sem != SEM_FAILED, "Couldn't create named semaphore");
-  return sem;
-}
+  PAssert(maxCount > 0, "Invalid semaphore maximum.");
+  if (initial > maxCount)
+    initial = maxCount;
+
+  currentCount = initial;
+  m_maxCOunt = maxCount;
+  queuedLocks  = 0;
 #endif
+}
 
 
 void PSemaphore::Wait() 
 {
 #if defined(P_HAS_SEMAPHORES)
-  PAssertPTHREAD(sem_wait, (&semId));
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  PAssertPTHREAD(sem_wait, (semId));
+  PAssertPTHREAD(sem_wait, (GetSemPtr()));
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
@@ -1202,50 +1191,37 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
   finishTime += waitTime;
 
 #if defined(P_HAS_SEMAPHORES)
-#ifdef P_HAS_SEMAPHORES_XPG6
-  // use proper timed spinlocks if supported.
-  // http://www.opengroup.org/onlinepubs/007904975/functions/sem_timedwait.html
+  #ifdef P_HAS_SEMAPHORES_XPG6
+    // use proper timed spinlocks if supported.
+    // http://www.opengroup.org/onlinepubs/007904975/functions/sem_timedwait.html
 
-  struct timespec absTime;
-  absTime.tv_sec  = finishTime.GetTimeInSeconds();
-  absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
+    struct timespec absTime;
+    absTime.tv_sec  = finishTime.GetTimeInSeconds();
+    absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-  do {
-    if (sem_timedwait(&semId, &absTime) == 0)
-      return true;
-  } while (errno == EINTR);
+    do {
+      if (sem_timedwait(GetSemPtr(), &absTime) == 0)
+        return true;
+    } while (errno == EINTR);
 
-  PAssert(errno == ETIMEDOUT, strerror(errno));
-  return false;
+    PAssert(errno == ETIMEDOUT, strerror(errno));
 
-#else
-  // loop until timeout, or semaphore becomes available
-  // don't use a PTimer, as this causes the housekeeping
-  // thread to get very busy
-  do {
-    if (sem_trywait(&semId) == 0)
-      return true;
+  #else
+    // loop until timeout, or semaphore becomes available
+    // don't use a PTimer, as this causes the housekeeping
+    // thread to get very busy
+    do {
+      if (sem_trywait(GetSemPtr()) == 0)
+        return true;
 
-#if defined(P_LINUX)
-  // sched_yield in a tight loop is bad karma
-  // for the linux scheduler: http://www.ussg.iu.edu/hypermail/linux/kernel/0312.2/1127.html
-    PThread::Current()->Sleep(10);
-#else
-    PThread::Yield();
-#endif
-  } while (PTime() < finishTime);
+      // tight loop is bad karma
+      // for the linux scheduler: http://www.ussg.iu.edu/hypermail/linux/kernel/0312.2/1127.html
+      PThread::Sleep(10);
+    } while (PTime() < finishTime);
+  #endif
 
-  return false;
+    return false;
 
-#endif
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  do {
-    if(sem_trywait(semId) == 0)
-      return true;
-    PThread::Current()->Sleep(10);
-  } while (PTime() < finishTime);
-  
-  return false;
 #else
 
   struct timespec absTime;
@@ -1285,13 +1261,11 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
 void PSemaphore::Signal()
 {
 #if defined(P_HAS_SEMAPHORES)
-  PAssertPTHREAD(sem_post, (&semId));
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  PAssertPTHREAD(sem_post, (semId));
+  PAssertPTHREAD(sem_post, (GetSemPtr()));
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
-  if (currentCount < maximumCount)
+  if (currentCount < m_maxCOunt)
     currentCount++;
 
   if (queuedLocks > 0) 
