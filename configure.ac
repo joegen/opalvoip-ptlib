@@ -11,7 +11,7 @@ AC_INIT([PTLib], m4_esyscmd([sed -n \
                              -e "s/ *#define *BUILD_NUMBER *\\(.*\\)/\\1/p" \
                              version.h | tr -d '\n']))
 
-AC_PREREQ([2.65])
+AC_PREREQ([2.66])
 
 AC_CONFIG_AUX_DIR(make)
 
@@ -91,8 +91,6 @@ dnl MSWIN_DEFINE  winver,WINVER=0x502
 dnl MSWIN_DISPLAY android,Android build (using vs-android)
 dnl MSWIN_DEFINE  android,P_ANDROID
 dnl MSWIN_DEFAULT android,Disabled
-
-MY_CANONICAL_TARGET()
 
 case "$target_os" in
    linux )
