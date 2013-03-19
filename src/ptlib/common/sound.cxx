@@ -41,6 +41,7 @@
 
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
+static const PConstString NullAudio("Null Audio");
 
 
 template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PDefaultPFactoryKey & type) const
@@ -158,15 +159,13 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 
   PStringArray devices = GetDeviceNames(dir);
 
-  if (devices.GetSize() == 0)
-    return PString::Empty();
-
   for (PINDEX i = 0; i < devices.GetSize(); ++i) {
-    if (!(devices[i] *= "NULL"))
+    PCaselessString device = devices[i];
+    if (device != NullAudio && device != "*.wav")
       return devices[i];
   }
 
-  return devices[0];
+  return NullAudio;
 }
 
 
@@ -562,8 +561,6 @@ PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
 #endif //_WIN32
 
 ///////////////////////////////////////////////////////////////////////////
-
-static const PConstString NullAudio("Null Audio");
 
 class PSoundChannelNull : public PSoundChannel
 {
