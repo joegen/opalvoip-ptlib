@@ -48,6 +48,10 @@
   #ifdef P_WIN_COM
     #pragma comment(lib, "ole32.lib")
   #endif
+
+  #if P_DIRECTSHOW
+    #pragma comment(lib, "quartz.lib")
+  #endif
 #endif
 
 
