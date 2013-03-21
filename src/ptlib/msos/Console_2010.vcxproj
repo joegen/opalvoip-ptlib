@@ -344,6 +344,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\SVN-Trunk-2010\ptlib\src\ptclib\tonedev.cxx" />
     <ClCompile Include="..\..\ptclib\gstreamer.cxx">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\include;C:\Program Files %28x86%29\OSSBuild\GStreamer\v0.10.6\sdk\include\gstreamer-0.10;C:\Program Files %28x86%29\OSSBuild\GStreamer\v0.10.6\sdk\include\glib-2.0;C:\Program Files\OSSBuild\GStreamer\v0.10.6\sdk\include\gstreamer-0.10;C:\Program Files\OSSBuild\GStreamer\v0.10.6\sdk\include\glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>

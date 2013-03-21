@@ -1,526 +1,259 @@
-//
-// audio.cxx
-//
-// Roger Hardiman
-//
-//
 /*
- * audio.cxx
- *
- * PWLib application source file for audio testing.
- *
- * Main program entry point.
- *
- * Copyright 2005 Roger Hardiman
- *
- * Copied by Derek Smithies, 1)Add soundtest code from ohphone.
- *                           2)Add headers.
- *
- * $Revision$
- * $Author$
- * $Date$
- */
+* audio.cxx
+*
+* PWLib application source file for audio testing.
+*
+* Main program entry point.
+*
+* Copyright 2005 Roger Hardiman
+*
+* Copied by Derek Smithies, 1)Add soundtest code from ohphone.
+*                           2)Add headers.
+*
+* $Revision$
+* $Author$
+* $Date$
+*/
 
 #include <ptlib.h>
 #include <ptlib/pprocess.h>
-#include "version.h"
-#include "audio.h"
-#include <ptclib/pwavfile.h>
+#include <ptlib/sound.h>
+#include <ptclib/cli.h>
 
-Audio::Audio()
-  : PProcess("Roger Hardiman & Derek Smithies code factory", "audio",
-             MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+
+#define PTraceModule() "AudioTest"
+
+
+class AudioTest : public PProcess
 {
+    PCLASSINFO(AudioTest, PProcess);
 
+  public:
+    AudioTest();
+
+    void Main();
+    void TestLoop();
+
+  private:
+    bool OpenSoundChannel(
+      PSoundChannel::Directions dir,
+      char driverArgLetter,
+      char deviceArgLetter,
+      char volumeArgLetter,
+      const char * bufferSizeArgString,
+      const char * bufferCountArgString,
+      const char * bufferCountDefault
+    );
+
+    PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, RecordVolume);
+    PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, PlayerVolume);
+    PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, Quit);
+
+    std::auto_ptr<PSoundChannel> m_soundChannel[2];
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+AudioTest::AudioTest()
+  : PProcess("Roger Hardiman & Derek Smithies code factory", "audio")
+{
 }
 
-PCREATE_PROCESS(Audio)
+PCREATE_PROCESS(AudioTest)
 
-void Audio::Main()
+
+void AudioTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("r."
-             "f."	     
-             "h."
-#if PTRACING
-             "o-output:"
-             "t-trace."
-#endif
-             "V:"
-             "p:"
-             "v."
-             "w:"
-             "s:");
- 
-  if (args.HasOption('h')) {
-    cout << "usage: audio " 
-         << endl
-         << "     -r        : report available sound devices" << endl
-         << "     -f        : do a full duplex sound test on a sound device" << endl
-         << "     -s  dev   : use this device in full duplex test " << endl
-         << "     -h        : get help on usage " << endl
-         << "     -p file   : play audio from the file out the specified sound device" << endl
-         << "     -V n      : set volume" << endl
-         << "     -v        : report program version " << endl
-	 << "     -w file   : write the captured audio to this file" << endl
-#if PTRACING
-         << "  -t --trace   : Enable trace, use multiple times for more detail" << endl
-         << "  -o --output  : File for trace output, default is stderr" << endl
-#endif
-         << endl;
+  args.Parse("l-list. list available sound devices\n"
+             "r-record-device: recording device\n"
+             "R-record-driver: recording driver\n"
+             "p-player-device: play back device\n"
+             "P-player-driver: play back driver\n"
+             "V-record-volume: set record volume (percent)\n"
+             "v-player-volume: set playback volume (percent)\n"
+             "s-sample-rate: set sample rate (default 8000)\n"
+             "-record-buffer-size: set record buffer size (default 320)\n"
+             "-record-buffer-count: set record buffer size (default 2)\n"
+             "-player-buffer-size: set play back buffer size (default 320)\n"
+             "-player-buffer-count: set play back buffer size (default 8)\n"
+             PTRACE_ARGLIST
+             "h-help. help");
+
+  if (!args.IsParsed() || args.HasOption('h')) {
+    args.Usage(cerr, "[options]");
     return;
   }
 
-
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-
-  if (args.HasOption('v')) {
-    cout << endl
-         << "Product Name: " <<  (const char *)GetName() << endl
-         << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(true) << endl
-         << "System      : " <<  (const char *)GetOSName() << '-'
-         <<  (const char *)GetOSHardware() << ' '
-         <<  (const char *)GetOSVersion() << endl
-         << endl;
-    return;
-  }
-  
+  PTRACE_INITIALISE(args);
 
   cout << "Audio Test Program\n\n";
 
-  PSoundChannel::Directions dir;
-  PStringArray namesPlay, namesRecord;
-  namesPlay = PSoundChannel::GetDeviceNames(PSoundChannel::Player);
-  namesRecord = PSoundChannel::GetDeviceNames(PSoundChannel::Recorder);
+  if (args.HasOption('l')) {
+    cout << "List of Record devices\n";
+    PStringArray names = PSoundChannel::GetDeviceNames(PSoundChannel::Recorder);
+    for (PINDEX i = 0; i < names.GetSize(); i++)
+      cout << "  \"" << names[i] << "\"\n";      
+    cout << "The default record device is \"" 
+      << PSoundChannel::GetDefaultDevice(PSoundChannel::Recorder) << "\"\n\n";
 
-  if (args.HasOption('r')) {
-      cout << "List of play devices\n";
-      for (PINDEX i = 0; i < namesPlay.GetSize(); i++)
-	  cout << "  \"" << namesPlay[i] << "\"\n";      
-      cout << "The default play device is \"" 
-	   << PSoundChannel::GetDefaultDevice(PSoundChannel::Player) << "\"\n";
-      
-      cout << "List of Record devices\n";
-      for (PINDEX i = 0; i < namesRecord.GetSize(); i++)
-	  cout << "  \"" << namesRecord[i] << "\"\n";      
-      cout << "The default record device is \"" 
-	   << PSoundChannel::GetDefaultDevice(PSoundChannel::Recorder) << "\"\n\n";
-  }
+    cout << "List of play devices\n";
+    names = PSoundChannel::GetDeviceNames(PSoundChannel::Player);
+    for (PINDEX i = 0; i < names.GetSize(); i++)
+      cout << "  \"" << names[i] << "\"\n";      
+    cout << "The default play device is \"" 
+      << PSoundChannel::GetDefaultDevice(PSoundChannel::Player) << "\"\n";
 
-  // Display the mixer settings for the default devices (or device if specified)
-  {
-      PSoundChannel sound;
-      dir = PSoundChannel::Player;
-      devName = args.GetOptionString('s');
-      if (devName.IsEmpty())
-	  devName = PSoundChannel::GetDefaultDevice(dir);
-      
-      if (sound.Open(devName, dir)) {     
-	  unsigned int vol;
-	  if (sound.GetVolume(vol))
-	      cout << "Play volume is (for " << devName << ")" << vol << endl;
-	  else
-	      cout << "Play volume cannot be obtained (for " << devName << ")" << endl;      
-	  sound.Close();
-      } else
-	  cerr << "Failed to open play device (" 
-	       << devName << ") to get volume settings" << endl;
-  }
-  {
-      PSoundChannel sound;
-      dir = PSoundChannel::Recorder;
-      devName = args.GetOptionString('s');
-      if (devName.IsEmpty())
-	  devName = PSoundChannel::GetDefaultDevice(dir);
-      if (sound.Open(devName, dir)) {     
-	  unsigned int vol;
-	  if (sound.GetVolume(vol))
-	      cout << "Record volume is (for " << devName << ")" << vol << endl;
-	  else
-	      cout << "Record volume cannot be obtained (for " << devName << ")" << endl;
-	  sound.Close();
-      } else
-	  cerr << "Failed to open record device (" 
-	       << devName << ") to get volume settings" << endl;
-  }
-
-  if (args.HasOption('f')) {
-    devName = args.GetOptionString('s');
-    if (devName.IsEmpty())
-      devName = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
-
-    PString capturedAudio = args.GetOptionString('w');
-
-    if (namesPlay.GetStringsIndex(devName) == P_MAX_INDEX) {
-      cout << "could not find " << devName << " in list of available play devices - abort test" << endl;
-      return;
-    }
-
-    if (namesRecord.GetStringsIndex(devName) == P_MAX_INDEX) {
-      cout << "could not find " << devName << " in list of available record devices - abort test" << endl;
-      return;
-    }
-
-    PTRACE(3, "Audio\tTest device " << devName);
-    
-    TestAudioDevice device;
-    device.Test(capturedAudio);
     return;
   }
 
-  if (args.HasOption('p')) {
-      PString playFileName = args.GetOptionString('p');
-      if (playFileName.IsEmpty()) {
-	  cerr << "The p option requires an arguement - the name of the file to play" << endl;
-	  cerr << "Terminating" << endl;
-	  return;
-      }
-
-      PWAVFile audioFile;
-      BYTE buffer[500];
-      if (!audioFile.Open(playFileName)) {
-	  cerr << "Failed to open the file \"" << playFileName << "\" to read audio from." << endl;
-	  return;
-      }
-
-      PSoundChannel sound;
-      dir = PSoundChannel::Player;
-      devName = args.GetOptionString('s');
-      if (devName.IsEmpty())
-	  devName = PSoundChannel::GetDefaultDevice(dir);
-      
-      if (sound.Open(devName, PSoundChannel::Player, 1, 8000, 16)) {
-	  PTRACE(3, "Open sound device " << devName << " to put audio to");
-	  cerr << devName << " opened file for playing to" << endl;
-      } else {
-	  cerr << "Failed to open play device (" 
-	       << devName << ") for putting audio to speaker" << endl;
-	  return;
-      }
-      sound.SetBuffers(480, 4);
-
-      if (args.HasOption('V')) {
-        int volume = args.GetOptionString('V').AsInteger();
-        if (!sound.SetVolume(volume)) {
-          cerr << "Failed to set volume" << endl;
-        }
-      }
-      
-      PINDEX readCounter = 0;
-      while (audioFile.Read(buffer, 480)) {
-	  PTRACE(3, "Read buffer " << readCounter << " from audio file " << playFileName);
-	  readCounter++;
-	  if (!sound.Write(buffer, 480)) {
-	      cerr << " failed to write a buffer to sound device. Ending" << endl;
-	      return;
-	  }
-      }
-	  
-  }
-#if PTRACING
-  if (args.GetOptionCount('t') > 0) {
-    PTrace::ClearOptions(0);
-    PTrace::SetLevel(0);
-  }
-#endif
-
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-TestAudioDevice::~TestAudioDevice()
-{
-  AllowDeleteObjects();
-  access.Wait();
-  RemoveAll();
-  endNow = true;
-  access.Signal();
-  PThread::Sleep(100);
-}
-
-void TestAudioDevice::Test(const PString & captureFileName)
-{
-   endNow = false;
-   PConsoleChannel console(PConsoleChannel::StandardInput);
-
-   AllowDeleteObjects(false);
-   PTRACE(3, "Start operation of TestAudioDevice");
-
-   TestAudioRead reader(*this, captureFileName);
-   TestAudioWrite writer(*this);   
-
-
-   PStringStream help;
-   help << "Select:\n";
-   help << "  X   : Exit program\n"
-        << "  Q   : Exit program\n"
-        << "  {}  : Increase/reduce record volume\n"
-        << "  []  : Increase/reduce playback volume\n"
-        << "  H   : Write this help out\n"
-	<< "  R   : Report the number of 30 ms long sound samples processed\n";
-   
-   PThread::Sleep(100);
-   if (reader.IsTerminated() || writer.IsTerminated()) {
-     reader.Terminate();
-     writer.Terminate();
-     
-     goto endAudioTest;
-   }
-
-  for (;;) {
-    // display the prompt
-    cout << "(testing sound device for full duplex) Command ? " << flush;
-
-    // terminate the menu loop if console finished
-    char ch = (char)console.peek();
-    if (console.eof()) {
-      cout << "\nConsole gone - menu disabled" << endl;
-      goto endAudioTest;
-    }
-
-    console >> ch;
-    PTRACE(3, "console in audio test is " << ch);
-    switch (tolower(ch)) {
-	case '{' : 
-	    reader.LowerVolume();
-	    break;
-	case '}' :
-	    reader.RaiseVolume();
-	    break;
-	case '[' :
-	    writer.LowerVolume();
-	    break;
-	case ']' : 
-	    writer.RaiseVolume();
-	    break;
-	case 'r' :
-	    reader.ReportIterations();
-	    writer.ReportIterations();
-	    break;
-	case 'q' :
-	case 'x' :
-	    goto endAudioTest;
-	case 'h' :
-	    cout << help ;
-	    break;
-        default:
-	    ;
-    }
-  }
-
-endAudioTest:
-  endNow = true;
-  cout  << "end audio test" << endl;
-
-  reader.WaitForTermination();
-  writer.WaitForTermination();
-}
-
-
-PBYTEArray *TestAudioDevice::GetNextAudioFrame()
-{
-  PBYTEArray *data = NULL;
-
-  while (data == NULL) {
-    {
-      PWaitAndSignal m(access);
-      if (GetSize() > 30)
-        data = (PBYTEArray *)RemoveAt(0);  
-      if (endNow)
-        return NULL;
-    }
-
-    if (data == NULL) {
-      PThread::Sleep(30);
-    }
-  }
-  
-  return data;
-}
-
-void TestAudioDevice::WriteAudioFrame(PBYTEArray *data)
-{
-  PWaitAndSignal mutex(access);
-  if (endNow) {
-    delete data;
+  if (!OpenSoundChannel(PSoundChannel::Recorder, 'R', 'r', 'V', "record-buffer-size", "record-buffer-count", "2"))
     return;
-  }
-  
-  PTRACE(5, "Buffer\tNow put one frame on the que");
-  Append(data);
-  if (GetSize() > 50) {
-    cout << "The audio reader thread is not working - exit now before memory is exhausted" << endl;
-    endNow = true;
-  }
-  return;
-}
 
-PBoolean TestAudioDevice::DoEndNow()
-{
-    return endNow;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-TestAudioRead::TestAudioRead(TestAudioDevice &master, const PString & _captureFileName)
-    :TestAudio(master),
-     captureFileName(_captureFileName)
-{    
-  PTRACE(3, "Reader\tInitiate thread for reading " );
-  Resume();
-}
-
-void TestAudioRead::ReportIterations()
-{
-    cout << "Captured " << iterations << " frames of 480 bytes to the sound card" << endl;
-}
-
-
-
-void TestAudioRead::Main()
-{
-  if (!OpenAudio(PSoundChannel::Recorder)) {
-    PTRACE(1, "TestAudioWrite\tFAILED to open read device");
+  if (!OpenSoundChannel(PSoundChannel::Player,   'P', 'p', 'v', "player-buffer-size", "player-buffer-count", "8"))
     return;
-  }
-  PWAVFile audioFile;
-  if (!captureFileName.IsEmpty()) {
-      if (!audioFile.Open(captureFileName, PFile::WriteOnly, PFile::Create | PFile::Truncate))
-	  cerr << "Cannot create the file " << captureFileName << " to write audio to" << endl;
-  }
 
-  PTRACE(3, "TestAudioRead\tSound device is now open, start running");
+  cout << "Starting record/play back thread" << endl;
+  PThreadObj<AudioTest> thread(*this, &AudioTest::TestLoop);
 
-  while ((!controller.DoEndNow()) && keepGoing) {
-    PBYTEArray *data = new PBYTEArray(480);
-    sound.Read(data->GetPointer(), data->GetSize());
-    iterations++;
-    PTRACE(3, "TestAudioRead\t send one frame to the queue " << data->GetSize());
-    PTRACE(5, "Written the frame " << endl << (*data));
+  PCLIStandard cli("Audio> ");
+  cli.SetCommand("quit", PCREATE_NOTIFIER(Quit), "Quit test");
+  cli.SetCommand("recvol", PCREATE_NOTIFIER(RecordVolume), "Set record volume", "<percent>");
+  cli.SetCommand("playvol", PCREATE_NOTIFIER(PlayerVolume), "Set play back volume", "<percent>");
+  cli.Start(false);
 
-    if (audioFile.IsOpen())
-	audioFile.Write(data->GetPointer(), data->GetSize());
+  for (PSoundChannel::Directions dir = PSoundChannel::Recorder; dir <= PSoundChannel::Player; ++dir)
+    m_soundChannel[dir]->Close();
 
-    controller.WriteAudioFrame(data);
-  }
-  
-  audioFile.Close();
-  PTRACE(3, "End audio read thread");
-}
-
-//////////////////////////////////////////////////////////////////////
-
-TestAudioWrite::TestAudioWrite(TestAudioDevice &master)
-   : TestAudio(master)
-{
-  PTRACE(3, "Reader\tInitiate thread for writing " );
-  Resume();
-}
-
-void TestAudioWrite::ReportIterations()
-{
-    cout << "Written " << iterations << " frames of 480 bytes to the sound card" << endl;
-}
-
-void TestAudioWrite::Main()
-{
-  if (!OpenAudio(PSoundChannel::Player)) {
-    PTRACE(1, "TestAudioWrite\tFAILED to open play device");
-    return;
-  }
-  PTRACE(3, "TestAudioWrite\tSound device is now open, start running");    
-  
-  while ((!controller.DoEndNow()) && keepGoing) {
-    PBYTEArray *data = controller.GetNextAudioFrame();
-    PTRACE(3, "TestAudioWrite\tHave read one audio frame ");
-    if (data != NULL) {
-      sound.Write(data->GetPointer(), data->GetSize());
-      iterations++;
-      delete data;
-    } else
-      PTRACE(1, "testAudioWrite\t next audio frame is NULL");    
-  }
-
-
-  PTRACE(3, "End audio write thread");
-}
-
-//////////////////////////////////////////////////////////////
-
-TestAudio::TestAudio(TestAudioDevice &master) 
-    :PThread(1000, NoAutoDeleteThread),
-     controller(master)
-{
-    iterations = 0;
-    keepGoing = true;
-}
-
-TestAudio::~TestAudio()
-{
-   sound.Close();
+  thread.WaitForTermination(1000);
 }
 
 
-PBoolean TestAudio::OpenAudio(enum PSoundChannel::Directions dir)
+bool AudioTest::OpenSoundChannel(PSoundChannel::Directions dir,
+                                 char driverArgLetter,
+                                 char deviceArgLetter,
+                                 char volumeArgLetter,
+                                 const char * bufferSizeArgString,
+                                 const char * bufferCountArgString,
+                                 const char * bufferCountDefault)
 {
-  if (dir == PSoundChannel::Recorder) 
-    name = "Recorder";
-  else
-    name = "Player";
-  
-  PThread::Current()->SetThreadName(name);
-  PString devName = Audio::Current().GetTestDeviceName();
-  PTRACE(3, "TestAudio\t open audio start for " << name << " and device name of " << devName);
+  PArgList & args = GetArguments();
 
-  PTRACE(3, "Open audio device for " << name << " and device name of " << devName);
-  if (!sound.Open(devName,
-      dir,
-      1, 8000, 16)) {
-      cerr <<  "Test:: Failed to open sound device  for " << name << endl;
-      cerr <<  "Please check that \"" << devName << "\" is a valid device name" << endl;
-      PTRACE(3, "TestAudio\tFailed to open device for " << name << " and device name of " << devName);
+  PString driver = args.GetOptionString(driverArgLetter);
+  PString device = args.GetOptionString(deviceArgLetter);
+  unsigned sampleRate = args.GetOptionString('s', "8000").AsUnsigned();
 
+  cout << dir << " opening ..." << endl;
+  PSoundChannel * channel = PSoundChannel::CreateOpenedChannel(driver, device, dir, 1, sampleRate);
+  if (channel == NULL) {
+    cerr << dir << " failed to open";
+    if (driver.IsEmpty() && device.IsEmpty())
+      cerr << " using default \"" << PSoundChannel::GetDefaultDevice(dir) << '"';
+    else {
+      if (!driver.IsEmpty()) {
+        cerr << ", driver \"" << driver << '"';
+        if (!device.IsEmpty())
+          cerr << ',';
+      }
+      if (!device.IsEmpty())
+        cerr << " device \"" << device << '"';
+    }
+    cerr << ", sample rate: " << sampleRate << endl;
     return false;
   }
-  
-  currentVolume = 90;
-  sound.SetVolume(currentVolume);
-  
-  sound.SetBuffers(480, 2);
+
+  m_soundChannel[dir].reset(channel);
+
+  PTRACE(3, channel, PTraceModule(), dir << " selected \"" << channel->GetName() << '"');
+  cout << dir << ": \"" << channel->GetName() << "\", sample rate: " << sampleRate << endl;
+
+  if (args.HasOption(volumeArgLetter))
+    channel->SetVolume(args.GetOptionString(volumeArgLetter).AsUnsigned());
+
+  cout << dir << " volume ";
+  unsigned int vol;
+  if (m_soundChannel[dir]->GetVolume(vol))
+    cout << "is " << vol << '%';
+  else
+    cout << "cannot be obtained.";
+  cout << endl;
+
+  PINDEX size = args.GetOptionString(bufferSizeArgString, "320").AsUnsigned();
+  PINDEX count = args.GetOptionString(bufferCountArgString, bufferCountDefault).AsUnsigned();
+  if (!channel->SetBuffers(size, count))
+    cout << dir << " could not set " << count << " buffers of " << size << " bytes." << endl;
+
+  cout << dir << ' ';
+  if (channel->GetBuffers(size, count))
+    cout << "is using " << count << " buffers of " << size << " bytes.\n";
+  else
+    cout << "cannot obtain buffer information.";
+  cout << endl;
+
   return true;
 }
 
 
-void TestAudio::RaiseVolume()
+void AudioTest::RecordVolume(PCLI::Arguments & args, INT)
 {
-   if ((currentVolume + 5) < 101)
-     currentVolume += 5;
-   sound.SetVolume(currentVolume);
-   cout << name << " volume is " << currentVolume << endl;
-   PTRACE(3, "TestAudio\tRaise volume for " << name << " to " << currentVolume);
+  if (args.GetCount() < 1)
+    args.Usage();
+  else
+    m_soundChannel[PSoundChannel::Recorder]->SetVolume(args[0].AsUnsigned());
 }
 
-void TestAudio::LowerVolume()
+
+void AudioTest::PlayerVolume(PCLI::Arguments & args, INT)
 {
-   if ((currentVolume - 5) >= 0)
-     currentVolume -= 5;
-   sound.SetVolume(currentVolume);
-   cout << name << " volume is " << currentVolume << endl;
-   PTRACE(3, "TestAudio\tLower volume for " << name << " to " << currentVolume);
+  if (args.GetCount() < 1)
+    args.Usage();
+  else
+    m_soundChannel[PSoundChannel::Player]->SetVolume(args[0].AsUnsigned());
 }
+
+
+void AudioTest::Quit(PCLI::Arguments & args, INT)
+{
+  args.GetContext().Stop();
+}
+
+
+
+void AudioTest::TestLoop()
+{
+  PTRACE(2, "Starting test loop");
+
+  PBYTEArray buffer(1000);
+  for (;;) {
+    if (!m_soundChannel[PSoundChannel::Recorder]->Read(buffer.GetPointer(), buffer.GetSize())) {
+      PTRACE(1, "Error reading from \"" << m_soundChannel[PSoundChannel::Recorder]->GetName() << '"');
+      break;
+    }
+
+    PINDEX count = m_soundChannel[PSoundChannel::Recorder]->GetLastReadCount();
+    PTRACE(5, "Read " << count << " bytes");
+
+    if (!m_soundChannel[PSoundChannel::Player]->Write(buffer.GetPointer(), count)) {
+      PTRACE(1, "Error writing to \"" << m_soundChannel[PSoundChannel::Player]->GetName() << '"');
+      break;
+    }
+  }
+
+  PTRACE(2, "Finished test loop");
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /* The comment below is magic for those who use emacs to edit this file. 
- * With the comment below, the tab key does auto indent to 4 spaces.     
- *
- *
- * Local Variables:
- * mode:c
- * c-basic-offset:4
- * End:
- */
+* With the comment below, the tab key does auto indent to 4 spaces.     
+*
+*
+* Local Variables:
+* mode:c
+* c-basic-offset:2
+* End:
+*/
 
-// End of hello.cxx
+// End of file
