@@ -370,7 +370,10 @@
     <ClCompile Include="..\common\jidctflt.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\SVN-Trunk-2010\ptlib\src\ptclib\tonedev.cxx">
+    <ClCompile Include="..\unix\opensl_es.cxx">
+      <Filter>Source Files\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\tonedev.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
