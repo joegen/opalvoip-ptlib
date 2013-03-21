@@ -1634,21 +1634,15 @@ bool PProcess::HostSystemURLHandlerInfo::Register()
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
-PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
-  : m_maxCountVal(maxCount)
-  , m_initialVal(std::min(initial, maxCount))
-  , m_handle(CreateSemaphore(NULL, m_initialVal, m_maxCountVal, NULL))
+void PSemaphore::Reset(unsigned initial, unsigned maximum)
 {
+  m_maximum = std::min(maximum, (unsigned)INT_MAX);
+  m_initial = std::min(initial, m_maximum);
+
+  m_handle = CreateSemaphore(NULL, m_initial, m_maximum, NULL);
   PAssertOS(m_handle.IsValid());
 }
 
-PSemaphore::PSemaphore(const PSemaphore & sem)
-  : m_maxCountVal(sem.m_maxCountVal)
-  , m_initialVal(sem.m_initialVal)
-  , m_handle(CreateSemaphore(NULL, m_initialVal, m_maxCountVal, NULL))
-{
-  PAssertOS(m_handle.IsValid());
-}
 
 PSemaphore::~PSemaphore()
 {
