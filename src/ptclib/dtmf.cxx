@@ -25,6 +25,9 @@
 
 #if P_DTMF
 
+#define PTraceModule() "Tones"
+
+
 /* Integer math scaling factor */
 #define FSC (1<<12)
 
@@ -68,7 +71,7 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples, unsign
     static int fd = -1;
     if (fd < 0) {
       fd = ::_open("dtmf.pcm", _O_BINARY | _O_CREAT | O_RDWR, 0777);
-      PTRACE(1, "DTMF\tdebug file opened");
+      PTRACE(1, "debug file opened");
     }
     if (fd >= 0) 
       ::_write(fd, sampleData, numSamples*2);
@@ -121,7 +124,7 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples, unsign
     else if (sampleCount++ == DetectSamples) {
       if (tonesDetected < 256) {
         if (key[tonesDetected] != '?') {
-          PTRACE(3,"DTMF\tDetected '" << key[tonesDetected] << "' in PCM-16 stream");
+          PTRACE(3,"DTMF", "Detected '" << key[tonesDetected] << "' in PCM-16 stream");
           keyString += key[tonesDetected];
         }
       }
@@ -133,7 +136,7 @@ PString PDTMFDecoder::Decode(const short * sampleData, PINDEX numSamples, unsign
           ch = 'Y';
 
         if (ch != 0) {
-          PTRACE(3,"DTMF\tDetected tone '" << ch << "' in PCM-16 stream");
+          PTRACE(3,"DTMF", "Detected tone '" << ch << "' in PCM-16 stream");
           keyString += ch;
         }
       }
@@ -240,24 +243,31 @@ static int sine(int angle, int freq)
 PTones::PTones(unsigned volume, unsigned sampleRate)
   : m_sampleRate(sampleRate)
   , m_masterVolume(volume)
+  , m_addPosition(0)
 {
-  Construct();
+  Reset();
 }
 
 
 PTones::PTones(const PString & descriptor, unsigned volume, unsigned sampleRate)
   : m_sampleRate(sampleRate)
   , m_masterVolume(volume)
+  , m_addPosition(0)
 {
-  Construct();
-
-  if (!Generate(descriptor)) {
-    PTRACE(1,"DTMF\tCannot encode tone \"" << descriptor << '"');
-  }
+  Generate(descriptor);
 }
 
 
-void PTones::Construct()
+PBoolean PTones::SetSize(PINDEX newSize)
+{
+  bool ok = PShortArray::SetSize(newSize);
+  if (m_addPosition > GetSize())
+    m_addPosition = GetSize();
+  return ok;
+}
+
+
+void PTones::Reset()
 {
   m_lastOperation = 0;
   m_lastFrequency1 = 0;
@@ -279,47 +289,115 @@ void PTones::Construct()
 }
 
 
-bool PTones::Generate(const PString & descriptor)
+bool PTones::Generate(const PString & descriptor, unsigned sampleRate, unsigned masterVolume)
 {
+  if (sampleRate != 0)
+    m_sampleRate = sampleRate;
+  if (masterVolume != 0)
+    m_masterVolume = masterVolume;
+  Reset();
+
   PStringArray toneChunks = descriptor.Tokenise('/');
-  if (toneChunks.IsEmpty())
+  if (toneChunks.IsEmpty()) {
+    PTRACE(3, "No '/' found in \"" << descriptor << '"');
     return false;
+  }
 
   for (PINDEX chunk = 0; chunk < toneChunks.GetSize(); chunk++) {
     // split frequency and cadence
-    PINDEX pos = toneChunks[chunk].Find(':');
-    if (pos == P_MAX_INDEX)
+    PString frequencyStr, cadenceStr;
+    if (!toneChunks[chunk].Split(':', frequencyStr, cadenceStr)) {
+      PTRACE(3, "No ':' found in \"" << descriptor << '"');
       return false;
+    }
 
-    PString frequencyStr = toneChunks[chunk].Left(pos).Trim();
-    PString cadenceStr = toneChunks[chunk].Mid(pos+1).Trim();
-
-    if (cadenceStr.IsEmpty())
+    if (cadenceStr.IsEmpty()) {
+      PTRACE(3, "No cadence found in \"" << descriptor << '"');
       return false;
+    }
+
+    PINDEX pos;
 
     // Do we have a volume?
     unsigned volume = 100;
     if ((pos = frequencyStr.Find('%')) != P_MAX_INDEX) {
         volume = frequencyStr.Left(pos).AsUnsigned();
-        if (volume < 1 || volume > 100)
+        if (volume < 1 || volume > 100) {
+          PTRACE(3, "Volume (" << volume << ") out of range in \"" << descriptor << '"');
           return false;
+        }
         frequencyStr.Delete(0, pos+1);
     }
 
-    if (frequencyStr.IsEmpty())
+    if (frequencyStr.IsEmpty()) {
+      PTRACE(3, "No frequency found in \"" << descriptor << '"');
       return false;
+    }
 
     // Parse the frequencies
     unsigned frequency1, frequency2;
-    char operation;
+    char operation = '-';
     if ((pos =  frequencyStr.FindOneOf("+-x")) != P_MAX_INDEX) {
       frequency1 = frequencyStr.Left(pos).AsUnsigned();
       frequency2 = frequencyStr.Mid(pos+1).AsUnsigned();
       operation = frequencyStr[pos];
     }
-    else {
+    else if (isdigit(frequencyStr[0]))
       frequency1 = frequency2 = frequencyStr.AsUnsigned();
-      operation = '-';
+    else {
+      int note = toupper(frequencyStr[0]) - 'A';
+      if (note < 0 || note > 7) {
+        PTRACE(3, "Illegal note code '" << frequencyStr[0] << "' found in \"" << descriptor << '"');
+        return false;
+      }
+
+      note = 3*note + 1; // Allow for sharps/flats
+
+      PINDEX octavePos = 2;
+
+      if (frequencyStr.GetLength() > 1) {
+        switch (frequencyStr[1]) {
+          case '#' :
+          case 'S' :
+          case 's' :
+            ++note;
+            break;
+
+          case 'F' :
+          case 'f' :
+            --note;
+            break;
+
+          case ' ' :
+          case 'N' :
+          case 'n' :
+            break;
+
+          default :
+            octavePos = 1;
+        }
+      }
+
+      int octave = frequencyStr.GetLength() > octavePos ? (frequencyStr[octavePos] - '0') : 4;
+      if (octave < 0 || octave > 9) {
+        PTRACE(3, "Invalid octave code '" << frequencyStr[octavePos] << "' found in \"" << descriptor << '"');
+        return false;
+      }
+
+      // Reference frequency is A4 == 440Hz, table is for octave zero in milliHertz
+      static unsigned const NoteFrequencies[] = {
+        /*Af0*/25957, /*A0*/27500, /*A#0*/29135,
+        /*Bf0*/29135, /*B0*/30868, /*B#0*/32703,
+        /*Cf0*/15434, /*C0*/16342, /*C#0*/17324,
+        /*Df0*/17324, /*D0*/18354, /*D#0*/19445,
+        /*Ef0*/19445, /*E0*/20602, /*E#0*/21827,
+        /*Ff0*/20602, /*F0*/21827, /*F#0*/23125,
+        /*Gf0*/23125, /*G0*/24500, /*G#0*/25957
+      };
+      unsigned f = NoteFrequencies[note];
+      while (octave-- > 0)
+        f *= 2;
+      frequency1 = frequency2 = (f+500)/1000;
     }
 
     // Parse the cadence
@@ -335,8 +413,10 @@ bool PTones::Generate(const PString & descriptor)
     pos = 0;
     while ((pos = cadenceStr.Find('-', pos)) != P_MAX_INDEX) {
       duration = cadenceStr.Mid(++pos).AsReal();
-      if (duration < 0 || duration > 60)
+      if (duration < 0 || duration > 60) {
+        PTRACE(3, "Duration (" << duration << ") out of range in \"" << descriptor << '"');
         return false;
+      }
 
       if (!Generate(operation, frequency1, frequency2, (unsigned)(duration*1000), volume))
         return false;
@@ -346,6 +426,7 @@ bool PTones::Generate(const PString & descriptor)
     }
   }
 
+  SetSize(m_addPosition);
   return true;
 }
 
@@ -377,19 +458,29 @@ bool PTones::Generate(char operation, unsigned frequency1, unsigned frequency2, 
       return Silence(milliseconds);
   }
 
+  PTRACE(3, "Illegal operation code '" << operation << '\'');
   return false;
 }
 
 
 bool PTones::Juxtapose(unsigned frequency1, unsigned frequency2, unsigned milliseconds, unsigned volume)
 {
-  if (frequency1 < MinFrequency || frequency1 > m_maxFrequency ||
-      frequency2 < MinFrequency || frequency2 > m_maxFrequency)
-    return false;
+  if (frequency1 == frequency2) {
+    if (frequency1 < MinFrequency || frequency1 > m_maxFrequency) {
+      PTRACE(3, "Frequency out of range: f=" << frequency1 << ", min=" << MinFrequency << ", max=" << m_maxFrequency);
+      return false;
+    }
+  }
+  else {
+    if (frequency1 < MinFrequency || frequency1 > m_maxFrequency ||
+        frequency2 < MinFrequency || frequency2 > m_maxFrequency) {
+      PTRACE(3, "Frequency out of range: f1=" << frequency1 << ", f2= << " << frequency2
+             << ", min=" << MinFrequency << ", max=" << m_maxFrequency);
+      return false;
+    }
+  }
 
-  // TODO this gived 8000 samples for 100 ms !!!
-  //unsigned samples = CalcSamples(milliseconds, frequency1, frequency2);
-  unsigned samples = milliseconds * m_sampleRate / 1000;
+  unsigned samples = CalcSamples(milliseconds, frequency1, frequency2);
   while (samples-- > 0) {
     int a1 = sine(m_angle1, m_sampleRate);
     int a2 = sine(m_angle2, m_sampleRate);
@@ -410,11 +501,17 @@ bool PTones::Juxtapose(unsigned frequency1, unsigned frequency2, unsigned millis
 
 bool PTones::Modulate(unsigned frequency1, unsigned modulator, unsigned milliseconds, unsigned volume)
 {
-  if (frequency1 > m_maxFrequency || frequency1 > m_maxFrequency || modulator < MinModulation || modulator >= frequency1/2)
+  if (frequency1 > m_maxFrequency || frequency1 > m_maxFrequency) {
+    PTRACE(3, "Frequency out of range: f=" << frequency1 << ", min=" << MinFrequency << ", max=" << m_maxFrequency);
     return false;
+  }
+
+  if (modulator < MinModulation || modulator >= frequency1/2) {
+    PTRACE(3, "Modulation out of range: m=" << modulator << ", min=" << MinModulation << ", max=" << (frequency1/2));
+    return false;
+  }
 
   unsigned samples = CalcSamples(milliseconds, frequency1, modulator);
-
   while (samples-- > 0) {
     int a1 = sine(m_angle1, m_sampleRate);   // -999 to 999
     int a2 = sine(m_angle2, m_sampleRate);   // -999 to 999
@@ -475,10 +572,12 @@ bool PTones::PureTone(unsigned frequency1, unsigned milliseconds, unsigned volum
     return true;
   }
 
-  if (frequency1 < MinFrequency || frequency1 > m_maxFrequency)
+  if (frequency1 < MinFrequency || frequency1 > m_maxFrequency) {
+    PTRACE(3, "Frequency out of range: f=" << frequency1 << ", min=" << MinFrequency << ", max=" << m_maxFrequency);
     return false;
+  }
 
-  unsigned samples = CalcSamples(milliseconds, frequency1);
+  unsigned samples = CalcSamples(milliseconds, frequency1, frequency1);
   while (samples-- > 0) {
     AddSample(sine(m_angle1, m_sampleRate), volume);
 
@@ -499,54 +598,38 @@ bool PTones::Silence(unsigned milliseconds)
 }
 
 
+static unsigned GreatestCommonDivisor(unsigned a, unsigned b)
+{
+  return b == 0 ? a : GreatestCommonDivisor(b, a % b);
+}
+
 unsigned PTones::CalcSamples(unsigned ms, unsigned f1, unsigned f2)
 {
-  // firstly, find the minimum time to repeat the waveform
-  unsigned v1 = 1;
-  unsigned v2 = 1;
+  // Calculate number of samples for one cycle at the frequency
+  unsigned s1 = m_sampleRate/f1;
+  unsigned s2 = m_sampleRate/f2;
 
-  if (f2 > 0)
-  {
-      while (v1*f2 != v2*f1) {
-        if (v1*f2 < v2*f1)
-          v1++;
-        else
-          v2++;
-      }
-  }
+  // Calculate least common multiple to assure zero crossing when mixed
+  unsigned lcm = s1*s2/GreatestCommonDivisor(s1, s2);
 
-  // v1 repetitions of f1 == v2 repetitions of f2
-  //cout << v1 << " cycles of " << f1 << "hz = " << v2 << " samples of " << f2 << "hz" << endl;
+  // Calculate sample to get desired milliseconds
+  unsigned samples = (ms > 0 ? ms : 1)*m_sampleRate/1000;
 
-  // now find the number of times we need to repeat this to match the sampling rate
-  unsigned n1 = 1;
-  unsigned n2 = 1;
-  while (n1*m_sampleRate*v1 != n2*f1) {
-    if (n1*m_sampleRate*v1 < n2*f1) 
-      n1++;
-    else
-      n2++;
-  }
-
-  // v1 repetitions of t == v2 repetitions sample frequency
-  //cout << n1*v1 << " cycles at " << f1 << "hz = "
-  //     << n1*v2 << " cycles at " << f2 << "hz = "
-  //     << n2    << " samples at " << m_sampleRate << "hz" << endl;
-
-  // Make sure we round up the number of milliseconds to even multiple of cycles
-  return ms == 0 ? n2 : ((ms * m_sampleRate/1000 + n2 - 1)/n2*n2);
+  // Now round up the milliseconds to have even number of zero crossing waveform
+  return (samples + lcm/2)/lcm * lcm;
 }
 
 
 void PTones::AddSample(int sample, unsigned volume)
 {
+  if (m_addPosition >= GetSize())
+    SetSize(GetSize() + m_addPosition + m_sampleRate); // Add one seconds worth
+
   // Sample added is value from -1000 to 1000, rescale to short range -32767 to +32767
-  PINDEX length = GetSize();
-  SetSize(length + 1);
   sample *= volume;
   sample *= m_masterVolume;
   sample /= SineScale*100*100/SHRT_MAX;
-  SetAt(length, (short)sample);
+  ((short *)theArray)[m_addPosition++] = (short)sample;
 }
 
 

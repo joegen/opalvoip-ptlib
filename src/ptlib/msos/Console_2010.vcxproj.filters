@@ -370,6 +370,9 @@
     <ClCompile Include="..\common\jidctflt.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\SVN-Trunk-2010\ptlib\src\ptclib\tonedev.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h">
@@ -945,6 +948,9 @@
     <ClInclude Include="..\..\..\Lib\Android\ptbuildopts.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
   </ItemGroup>
   <ItemGroup>
