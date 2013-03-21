@@ -791,17 +791,24 @@ PBoolean PThread::IsTerminated() const
     return true;
 
   int error = pthread_kill(id, 0);
-  if (error == 0 || error == EPERM)
-    return false;
+  switch (error) {
+    case 0 :
+    case EPERM : // Thread exists, even if we can't send signal
+     return false;
 
 #if PTRACING
-  if (error != ESRCH) {
-    // Output direct to stream, do not use PTRACE as it might cause an infinite recursion.
-    ostream * trace = PTrace::GetStream();
-    if (trace != NULL)
-      *trace << "Error " << error << " calling pthread_kill: thread=" << this << ", id=" << id << endl;
+    case ESRCH :  // Thread not running any more
+    case EINVAL : // Id has never been used for a thread
+      break;
+
+    default :
+      // Output direct to stream, do not use PTRACE as it might cause an infinite recursion.
+      ostream * trace = PTrace::GetStream();
+      if (trace != NULL)
+        *trace << "Error " << error << " calling pthread_kill: thread=" << this << ", id=" << id << endl;
   }
 #endif
+
   return true;
 }
 
