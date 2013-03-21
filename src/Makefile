@@ -286,7 +286,8 @@ $(OBJDIR)/pwavfiledev.o: $(COMPONENT_SRC_DIR)/pwavfiledev.cxx
 endif
 
 ifeq ($(HAS_DTMF),1)
-SOURCES += $(COMPONENT_SRC_DIR)/dtmf.cxx 
+SOURCES += $(COMPONENT_SRC_DIR)/dtmf.cxx \
+           $(COMPONENT_SRC_DIR)/tonedev.cxx 
 endif
 
 ifeq ($(HAS_VCARD),1)
