@@ -78,6 +78,11 @@ class PDTMFDecoder : public PObject
           freq1 'x' freq2   first frequency modulated by second frequency
           freq1 '-' freq2   Alternate frequencies, generated tone is freq1
                             used for compatibility with tone filters
+          Af0-G#9           Standard musical note codes, letters A to G
+                            followed by optional 'f' or '#' for flat or sharp,
+                            then on optional octave number from 0 to 9.
+                            A4 == 440Hz
+
       and cadence is
           mintime
           ontime '-' offtime [ '-' ontime '-' offtime [ ... ] ]
@@ -132,7 +137,9 @@ class PTones : public PShortArray
         See class general notes for format of the descriptor string.
       */
     bool Generate(
-      const PString & descriptor    ///< Descriptor string for tone(s). See class notes.
+      const PString & descriptor,   ///< Descriptor string for tone(s). See class notes.
+      unsigned sampleRate = 0,      ///< Sample rate of generated data
+      unsigned masterVolume = 0     ///< Percentage volume
     );
 
     /** Generate a tone using the specified values.
@@ -149,8 +156,18 @@ class PTones : public PShortArray
       unsigned volume = MaxVolume ///< Percentage volume
     );
 
+    /// Write tones to channel.
+    bool Write(
+      PChannel & channel
+    ) { return channel.Write(GetPointer(), GetSize()*sizeof(short)); }
+
+    ///< Get the sample rate for tones
+    unsigned GetSampleRate() const { return m_sampleRate; }
+
+    virtual PBoolean SetSize(PINDEX newSize);
+
   protected:
-    void Construct();
+    void Reset();
 
     bool Juxtapose(unsigned frequency1, unsigned frequency2, unsigned milliseconds, unsigned volume);
     bool Modulate (unsigned frequency, unsigned modulate, unsigned milliseconds, unsigned volume);
@@ -167,6 +184,7 @@ class PTones : public PShortArray
     char     m_lastOperation;
     unsigned m_lastFrequency1, m_lastFrequency2;
     int      m_angle1, m_angle2;
+    PINDEX   m_addPosition;
 };
 
 

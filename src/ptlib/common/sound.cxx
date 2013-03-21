@@ -161,7 +161,7 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 
   for (PINDEX i = 0; i < devices.GetSize(); ++i) {
     PCaselessString device = devices[i];
-    if (device != NullAudio && device != "*.wav")
+    if (device != NullAudio && device != "*.wav" && device.NumCompare("Tones") != EqualTo)
       return devices[i];
   }
 

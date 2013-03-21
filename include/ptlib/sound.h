@@ -255,11 +255,11 @@ class PSoundChannel : public PChannel
   public:
   /**@name Construction */
   //@{
-    enum Directions {
-      Closed = -1,
+    P_DECLARE_STREAMABLE_ENUM(Directions,
       Recorder,
-      Player
-    };
+      Player,
+      Closed
+    );
 
     /// Create a sound channel.
     PSoundChannel();
@@ -776,6 +776,10 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
 
 #if defined(P_WAVFILE)
   PPLUGIN_STATIC_LOAD(WAVFile, PSoundChannel)
+#endif
+
+#if P_DTMF
+  PPLUGIN_STATIC_LOAD(Tones, PSoundChannel)
 #endif
 
 
