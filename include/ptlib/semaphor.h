@@ -87,13 +87,13 @@ class PSemaphore : public PSync
        the maximum value.
      */
     PSemaphore(
-      unsigned initial, ///< Initial value for semaphore count.
-      unsigned maximum  ///< Maximum value for semaphore count.
-    );
+      unsigned initial = 0,         ///< Initial value for semaphore count.
+      unsigned maximum = UINT_MAX   ///< Maximum value for semaphore count.
+    ) { Reset(initial, maximum); }
 
     /** Create a new semaphore with the same initial and maximum values as the original.
      */
-    PSemaphore(const PSemaphore &);
+    PSemaphore(const PSemaphore & sem) { Reset(sem.m_initial, sem.m_maximum); }
 
     /**Destroy the semaphore. This will assert if there are still waiting
        threads on the semaphore.
@@ -123,7 +123,29 @@ class PSemaphore : public PSync
        maximum then increment the semaphore.
      */
     virtual void Signal();
+
+    /** Reset the semaphore to the specified inital and maximum values.
+        Note that the behaviour is undetermined if something is waiting on the
+        semaphire when this is called.
+      */
+    virtual void Reset(
+      unsigned initial = 0,         ///< Initial value for semaphore count.
+      unsigned maximum = UINT_MAX   ///< Maximum value for semaphore count.
+    );
+
+    /** Get the initial value semaphore was creted with.
+      */
+    unsigned GetInitial() const  { return m_initial; }
+
+    /** Get the initial value semaphore was creted with.
+      */
+    unsigned GetMaximum() const { return m_maximum; }
   //@}
+
+
+  protected:
+    unsigned m_maximum;
+    unsigned m_initial;
 
 
 // Include platform dependent part of class

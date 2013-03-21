@@ -1087,28 +1087,12 @@ void PThread::PXAbortBlock() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
-  : m_initial(initial)
-  , m_maxCount(maxCount)
-{
-  Construct();
-}
-
-
-PSemaphore::PSemaphore(const PSemaphore & sem) 
-  : m_initial(sem.m_initial)
-  , m_maxCount(sem.m_maxCount)
-{
-  Construct();
-}
-
-
 PSemaphore::~PSemaphore()
 {
 #if defined(P_HAS_SEMAPHORES)
   #if defined(P_HAS_NAMED_SEMAPHORES)
-    if (m_semId != NULL) {
-      PAssertPTHREAD(sem_close, (m_semId));
+    if (m_namedSemaphore.ptr != NULL) {
+      PAssertPTHREAD(sem_close, (m_namedSemaphore.ptr));
     }
     else
   #endif
@@ -1121,12 +1105,15 @@ PSemaphore::~PSemaphore()
 }
 
 
-void PSemaphore::Construct()
+void PSemaphore::Reset(unsigned initial, unsigned maximum)
 {
+  m_maximum = std::min(maximum, (unsigned)INT_MAX);
+  m_initial = std::min(initial, m_maximum);
+
 #if defined(P_HAS_SEMAPHORES)
   #if defined(P_HAS_NAMED_SEMAPHORES)
     if (sem_init(&m_semaphore, 0, m_initial) == 0)
-      m_semId = NULL;
+      m_namedSemaphore.ptr = NULL;
     else {
       // Since sem_open and sem_unlink are two operations, there is a small
       // window of opportunity that two simultaneous accesses may return
@@ -1136,12 +1123,12 @@ void PSemaphore::Construct()
       PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
     
       sem_unlink("/ptlib_sem");
-      m_semId = sem_open("/ptlib_sem", (O_CREAT | O_EXCL), 700, m_initial);
+      m_namedSemaphore.ptr = sem_open("/ptlib_sem", (O_CREAT | O_EXCL), 700, m_initial);
   
       PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
   
-      if (!PAssert(m_semId != SEM_FAILED, "Couldn't create named semaphore"))
-        m_semId = NULL;
+      if (!PAssert(m_namedSemaphore.ptr != SEM_FAILED, "Couldn't create named semaphore"))
+        m_namedSemaphore.ptr = NULL;
     }
   #else
     PAssertPTHREAD(sem_init, (&m_semaphore, 0, m_initial));
@@ -1149,13 +1136,7 @@ void PSemaphore::Construct()
 #else
   PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
   PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
-
-  PAssert(maxCount > 0, "Invalid semaphore maximum.");
-  if (initial > maxCount)
-    initial = maxCount;
-
   currentCount = initial;
-  m_maxCOunt = maxCount;
   queuedLocks  = 0;
 #endif
 }
