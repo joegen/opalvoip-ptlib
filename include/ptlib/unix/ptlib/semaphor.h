@@ -31,23 +31,17 @@
  * $Date$
  */
 
-  public:
-    unsigned GetInitial() const  { return m_initial; }
-    unsigned GetMaxCount() const { return m_maxCount; }
-
   protected:
-    unsigned m_initial;
-    unsigned m_maxCount;
-
-    void Construct();
-
 #if defined(P_PTHREADS)
 
   #if defined(P_HAS_SEMAPHORES)
     mutable sem_t m_semaphore;
     #if defined(P_HAS_NAMED_SEMAPHORES)
-      mutable sem_t * m_semId;
-      __inline sem_t * GetSemPtr() const { return m_semId != NULL ? m_semId : &m_semaphore; }
+      mutable struct SemPtr {
+        SemPtr() : ptr(NULL) { }
+        sem_t * ptr;
+      } m_namedSemaphore;
+      __inline sem_t * GetSemPtr() const { return m_namedSemaphore.ptr != NULL ? m_namedSemaphore.ptr : &m_semaphore; }
     #else
       __inline sem_t * GetSemPtr() const { return &m_semaphore; }
     #endif
