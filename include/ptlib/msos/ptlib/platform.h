@@ -373,10 +373,6 @@ typedef int socklen_t;
 #endif
 
 
-#if _MSC_VER >= 1700
-  #include <oleacc.h>
-#endif
-
 #ifndef NETDB_SUCCESS
   #define NETDB_SUCCESS 0
 #endif

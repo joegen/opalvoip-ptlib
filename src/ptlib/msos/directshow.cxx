@@ -45,13 +45,11 @@
 
 #include <ptlib/msos/ptlib/pt_atl.h>
 
+
 #ifdef _WIN32_WCE
 
   static const GUID MEDIASUBTYPE_IYUV = { 0x56555949, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 };
   #define CLSID_CaptureGraphBuilder2 CLSID_CaptureGraphBuilder
-
-  #pragma comment(lib, "strmbase.lib")
-  #pragma comment(lib, "mmtimer.lib")
 
   #ifdef DEBUG
     /* Only the release version is provided as a .lib file, so we need to
@@ -65,7 +63,6 @@
   #endif
 
   #include <dshow.h>
-  #include <initguid.h>
 
   class PSampleGrabber : public CBaseVideoRenderer
   {
@@ -81,9 +78,9 @@
       BYTE * m_sampleData;
   };
 
-  #ifdef _MSC_VER
-    #pragma comment(lib, "ddraw.lib")
-  #endif
+  #pragma comment(lib, "strmbase.lib")
+  #pragma comment(lib, "mmtimer.lib")
+  #pragma comment(lib, "ddraw.lib")
 
 #else // _WIN32_WCE
 
@@ -98,7 +95,6 @@
   #define STRSAFE_NO_DEPRECATE
 
   #include <dshow.h>
-  #include <initguid.h>
   #include <ks.h>
   #include <ksmedia.h>
 
