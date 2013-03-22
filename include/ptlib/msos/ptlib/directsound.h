@@ -40,9 +40,10 @@
 
 #include <ptlib/sound.h>
 
+#include <ptlib/msos/ptlib/pt_atl.h>
+
 #include <dsound.h>
 
-#include <ptlib/msos/ptlib/pt_atl.h>
 
 #ifdef _WIN32_WCE
 #define LPDIRECTSOUND8 LPDIRECTSOUND

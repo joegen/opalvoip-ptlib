@@ -44,21 +44,6 @@
 
 #if P_SAPI
 
-////////////////////////////////////////////////////////////
-//
-// Text to speech using Microsoft's Speech API (SAPI)
-
-#ifdef _MSC_VER
-  #pragma comment(lib, "sapi.lib")
-  #pragma message("SAPI support enabled")
-#endif
-
-#ifndef _WIN32_DCOM
-  #define _WIN32_DCOM 1
-#endif
-
-#include <ptlib/msos/ptlib/pt_atl.h>
-
 // Following defined by both stdint.h and intsafe.h
 #undef INT8_MIN
 #undef INT16_MIN
@@ -72,6 +57,19 @@
 #undef UINT32_MAX
 #undef INT64_MAX
 #undef UINT64_MAX
+
+#include <intsafe.h>
+
+#include <ptlib/msos/ptlib/pt_atl.h>
+
+////////////////////////////////////////////////////////////
+//
+// Text to speech using Microsoft's Speech API (SAPI)
+
+#ifdef _MSC_VER
+  #pragma comment(lib, "sapi.lib")
+  #pragma message("SAPI support enabled")
+#endif
 
 #include <sphelper.h>
 
