@@ -804,6 +804,9 @@
     <ClInclude Include="..\..\..\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\pt_atl.h">
+      <Filter>Header Files\MSOS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ptbuildopts.h">
