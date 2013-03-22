@@ -102,7 +102,7 @@
   {
       PCLASSINFO(PVideoInputControl_DirectShow, PVideoInputControl);
     public:
-      PVideoInputControl_DirectShow(IAMCameraControl * _pCC);
+      PVideoInputControl_DirectShow(IAMCameraControl * pCC);
 
       // overrides
       virtual bool Pan(long value, bool absolute = false);
@@ -110,7 +110,8 @@
       virtual bool Zoom(long value, bool absolute = false);
 
     protected:
-      IAMCameraControl * t_pCC;
+      bool Control(PVideoControlInfo::Types type, long value, bool absolute);
+      IAMCameraControl * m_pCC;
   };
 
 
@@ -172,6 +173,11 @@
   #pragma comment(lib, "strmiids.lib")
   #pragma message("Direct Show video support enabled")
 #endif
+
+
+static long const InputControlPropertyCode[PVideoControlInfo::NumTypes] = {
+  CameraControl_Pan, CameraControl_Tilt, CameraControl_Zoom
+};
 
 
 //////////////////////////////////////////////////////////////////////
@@ -475,34 +481,14 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
   }
 
 #ifndef _WIN32_WCE
-
-  PVideoControlInfo panInfo;
-  PVideoControlInfo tiltInfo;
-  PVideoControlInfo zoomInfo;
-
   // Query for camera controls
   if (m_pCameraControls != NULL) {
-    // Retrieve information about the pan and tilt controls
-    panInfo.type= PVideoControlInfo::ControlPan;
-    PComResult hr;
-    if (hr.Succeeded(m_pCameraControls->GetRange(CameraControl_Pan, &panInfo.min, &panInfo.max, &panInfo.step, &panInfo.def, &panInfo.flags)))
-      caps->controls.push_back(panInfo);
-    else
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Pan: " << hr);
-
-    tiltInfo.type= PVideoControlInfo::ControlTilt;
-    if (hr.Succeeded(m_pCameraControls->GetRange(CameraControl_Tilt, &tiltInfo.min, &tiltInfo.max, &tiltInfo.step, &tiltInfo.def, &tiltInfo.flags)))
-      caps->controls.push_back(tiltInfo);
-    else
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Tilt: " << hr);
-
-    zoomInfo.type= PVideoControlInfo::ControlZoom;
-    if (hr.Succeeded(m_pCameraControls->GetRange(CameraControl_Zoom, &zoomInfo.min, &zoomInfo.max, &zoomInfo.step, &zoomInfo.def, &zoomInfo.flags)))
-      caps->controls.push_back(zoomInfo);
-    else
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support zoom: " << hr);
+    PVideoInputControl_DirectShow controls(m_pCameraControls);
+    for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
+      if (controls.IsValid(type))
+        caps->controls.push_back(controls.GetControl(type));
+    }
   }
-
 #endif
 
   return true;
@@ -1225,107 +1211,73 @@ PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
 }
 
 
-PVideoInputControl_DirectShow::PVideoInputControl_DirectShow(IAMCameraControl * _pCC)
-  : t_pCC(_pCC)
+PVideoInputControl_DirectShow::PVideoInputControl_DirectShow(IAMCameraControl * pCC)
+  : m_pCC(pCC)
 {
   PComResult hr;
-  PVideoControlInfo panInfo;
-  PVideoControlInfo tiltInfo;
-  PVideoControlInfo zoomInfo;
 
-  // Retrieve information about the PTZ
-  panInfo.type= ControlPan;
-  panInfo.current = panInfo.def;
-  if (hr.Succeeded(t_pCC->GetRange(CameraControl_Pan, &panInfo.min, &panInfo.max, &panInfo.step, &panInfo.def, &panInfo.flags)))
-    m_info.push_back(panInfo);
-
-  tiltInfo.type= ControlTilt;
-  tiltInfo.current = tiltInfo.def;
-  if (hr.Succeeded(t_pCC->GetRange(CameraControl_Tilt, &tiltInfo.min, &tiltInfo.max, &tiltInfo.step, &tiltInfo.def, &tiltInfo.flags)))
-    m_info.push_back(tiltInfo);
-
-  zoomInfo.type= ControlZoom;
-  zoomInfo.current = zoomInfo.def;
-  if (hr.Succeeded(t_pCC->GetRange(CameraControl_Zoom, &zoomInfo.min, &zoomInfo.max, &zoomInfo.step, &zoomInfo.def, &zoomInfo.flags)))
-    m_info.push_back(zoomInfo);
-
+  for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
+    PVideoControlInfo & info = m_control[type];
+    info.m_type = type;
+    if (hr.Succeeded(pCC->GetRange(InputControlPropertyCode[type],
+                     &info.m_min, &info.m_max, &info.m_step, &info.m_default, &info.m_flags)))
+      info.m_current = info.m_default;
+    else {
+      PTRACE(4, "DShow\tCamera does not support " << type << ": " << hr);
+    }
+  }
 }
+
+
+bool PVideoInputControl_DirectShow::Control(PVideoControlInfo::Types type, long value, bool absolute)
+{
+  PWaitAndSignal mutex(m_mutex);
+
+  if (!IsValid(type))
+    return false;
+
+  long flags = KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
+  if (absolute)
+    flags |= KSPROPERTY_CAMERACONTROL_FLAGS_ABSOLUTE;
+  else
+    flags |= KSPROPERTY_CAMERACONTROL_FLAGS_RELATIVE;
+
+  PComResult hr;
+  if (hr.Succeeded(m_pCC->Set(InputControlPropertyCode[type], value, flags)) &&
+      hr.Succeeded(m_pCC->Get(InputControlPropertyCode[type], &m_control[type].m_current, &flags))) {
+    PTRACE(5, "DShow\tSet " << type << " to " << m_control[type].m_current);
+    return true;
+  }
+
+  PTRACE(2, "DShow\tFailed to " << type << " to " << value << ": " << hr);
+  return false;
+}
+
 
 bool PVideoInputControl_DirectShow::Pan(long value, bool absolute)
 {
-  PWaitAndSignal m(ccmutex);
-
-  PComResult hr;
-  PVideoControlInfo control;
-  if (GetVideoControlInfo(PVideoControlInfo::ControlPan, control)) {
-    long flags;
-    if (absolute)
-      flags = KSPROPERTY_CAMERACONTROL_FLAGS_ABSOLUTE | KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
-    else
-      flags = KSPROPERTY_CAMERACONTROL_FLAGS_RELATIVE | KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
-
-    if (hr.Succeeded(t_pCC->Set(CameraControl_Pan, value, flags)) &&
-        hr.Succeeded(t_pCC->Get(CameraControl_Pan, &control.current, &flags))) {
-      PTRACE(5, "DShow\tSet Pan to " << control.current);
-      return true;
-    }
-    PTRACE(2, "DShow\tFailed to pan to " << value << ": " << hr);
-  }
-  return false;
+  return Control(PVideoControlInfo::Pan, value, absolute);
 }
+
 
 bool PVideoInputControl_DirectShow::Tilt(long value, bool absolute)
 {
-  PWaitAndSignal m(ccmutex);
-
-  PComResult hr;
-  PVideoControlInfo control;
-  if (GetVideoControlInfo(PVideoControlInfo::ControlTilt, control)) {
-    long flags;
-    if (absolute)
-      flags = KSPROPERTY_CAMERACONTROL_FLAGS_ABSOLUTE | KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
-    else
-      flags = KSPROPERTY_CAMERACONTROL_FLAGS_RELATIVE | KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
-
-    if (hr.Succeeded(t_pCC->Set(CameraControl_Tilt, value, flags)) &&
-        hr.Succeeded(t_pCC->Get(CameraControl_Tilt, &control.current, &flags))) {
-      PTRACE(5, "DShow\tSet tilt to " << control.current);
-      return true;
-    }
-    PTRACE(2, "DShow\tFailed to tilt to " << value << ": " << hr);
-  }    
-  return false;
+  return Control(PVideoControlInfo::Tilt, value, absolute);
 }
+
 
 bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
 {
-  PWaitAndSignal m(ccmutex);
-
   // 50 is 100% and 200 is 4x zoom
   if (absolute && ((value < 50) || (value > 200))) {
     PTRACE(2, "DShow\tWrong zoom value received: " << value << " must be between 50 (1x) and 200 (4x).");
     return false;
   }
 
-  PComResult hr;
-  PVideoControlInfo control;
-  if (GetVideoControlInfo(PVideoControlInfo::ControlZoom, control)) {
-    long flags;
+  if (!absolute)
+    value += m_control[PVideoControlInfo::Zoom].m_current;
 
-    flags = KSPROPERTY_CAMERACONTROL_FLAGS_ABSOLUTE | KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
-
-    if (!absolute) {
-      control.current = control.current + value;
-    }
-
-    if (hr.Succeeded(t_pCC->Set(CameraControl_Zoom, control.current, flags))) {
-      PTRACE(5, "DShow\tSet Zoom to " << control.current);
-      SetCurrentPosition(PVideoControlInfo::ControlZoom, control.current);
-      return true;
-    }
-    PTRACE(2, "DShow\tFailed to zoom to " << value << ": " << hr);
-  }
-  return false;
+  return Control(PVideoControlInfo::Zoom, value, true);
 }
 
 
@@ -1576,23 +1528,9 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   }
 
   // Query for camera controls
-  PVideoControlInfo info;
   if (FAILED(m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void **)&m_pCameraControls))) {
     PTRACE(3, "DShow\tCamera " << deviceName << " does not support Camera Controls.");
     m_pCameraControls = NULL;
-  }
-  else {
-    if (FAILED(m_pCameraControls->GetRange(CameraControl_Pan, &info.min, &info.max, &info.step, &info.def, &info.flags))) {
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Pan. Controls DISABLED");
-    } 
-    if (FAILED(m_pCameraControls->GetRange(CameraControl_Tilt, &info.min, &info.max, &info.step, &info.def, &info.flags))) {
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support Tilt. Controls DISABLED");
-    } 
-    if (FAILED(m_pCameraControls->GetRange(CameraControl_Zoom, &info.min, &info.max, &info.step, &info.def, &info.flags))) {
-      PTRACE(4, "DShow\tCamera " << deviceName << " does not support zoom. Controls DISABLED");
-    }
-
-    PTRACE(3, "DShow\tCamera " << deviceName << " supports Camera Controls. Controls ENABLED");
   }
 
   return true;
