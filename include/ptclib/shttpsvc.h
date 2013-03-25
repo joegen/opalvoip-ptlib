@@ -52,9 +52,9 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
 
     virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
 
-    PBoolean SetServerCertificate(
+    bool SetServerCertificate(
       const PFilePath & certFile,
-      PBoolean create = false,
+      bool create = false,
       const char * dn = NULL
     );
 
@@ -63,9 +63,10 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
     virtual PString CreateNonSSLMessage(const PString & url);
     virtual PString CreateRedirectMessage(const PString & url);
 
+    void DisableSSL();
+
   protected:
-    PSSLContext * sslContext;
-    PBoolean          disableSSL;
+    PSSLContext * m_sslContext;
 };
 
 
