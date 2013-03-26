@@ -209,6 +209,26 @@ PVideoFrameInfo::PVideoFrameInfo(unsigned        width,
 }
 
 
+PObject::Comparison PVideoFrameInfo::Compare(const PObject & obj) const
+{
+  const PVideoFrameInfo & other = dynamic_cast<const PVideoFrameInfo &>(obj);
+
+  unsigned area = frameWidth*frameHeight;
+  unsigned otherArea = other.frameWidth*other.frameHeight;
+  if (area < otherArea)
+    return LessThan;
+  if (area > otherArea)
+    return GreaterThan;
+
+  if (frameRate < other.frameRate)
+    return LessThan;
+  if (frameRate > other.frameRate)
+    return GreaterThan;
+
+  return colourFormat.Compare(other.colourFormat);
+}
+
+
 void PVideoFrameInfo::PrintOn(ostream & strm) const
 {
   if (!colourFormat.IsEmpty())
