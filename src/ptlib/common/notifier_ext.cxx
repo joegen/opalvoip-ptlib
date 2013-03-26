@@ -126,7 +126,11 @@ PValidatedNotifierTarget::~PValidatedNotifierTarget()
 
 bool PValidatedNotifierTarget::Exists(PNotifierIdentifer id)
 {
-  return s_ValidatedTargets.Exists(id);
+  if (s_ValidatedTargets.Exists(id))
+    return true;
+
+  PTRACE(2, NULL, "Notify", "Target no longer valid, id=" << id);
+  return false;
 }
 
 
