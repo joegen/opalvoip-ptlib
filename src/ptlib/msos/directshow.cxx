@@ -336,69 +336,6 @@ class MediaTypePtr
     void operator=(const MediaTypePtr &) { }
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Bubble Sorting functions
-// This is used to sort the video frame sizes from largest to smallest (removing duplicates)
-// The optimum frame size can be selected by sorting down the list for a given bandwidth.
-// If there is a better way to do this then great but it very important in order the framesizes. - SH
-
-class PVideoFrameInfoSort
-{
-  public:
-    bool operator()(PVideoFrameInfo* const& f1, PVideoFrameInfo* const& f2)
-    {
-      if (f1->GetFrameWidth() > f2->GetFrameWidth())
-        return true;
-      if (f1->GetFrameWidth() == f2->GetFrameWidth() && f1->GetFrameHeight() > f2->GetFrameHeight())
-        return true;
-      return false;
-    }
-};
-
-class PVideoFrameInfoMatch
-{
-  public:
-    bool operator()(PVideoFrameInfo*& f1, PVideoFrameInfo*& f2)
-    {
-      return (f1->GetFrameWidth()  == f2->GetFrameWidth()) &&
-             (f1->GetFrameHeight() == f2->GetFrameHeight());
-    }
-};
-
-class PVideoFrameInfoArray : public std::vector<PVideoFrameInfo*>
-{
-  public:
-    ~PVideoFrameInfoArray()
-    {
-      for (iterator pItem=begin(); pItem != end(); ++pItem)
-        delete *pItem;
-    }
-
-    void ReIndex()
-    {
-      sort(begin(), end(), PVideoFrameInfoSort());
-      unique(begin(), end(), PVideoFrameInfoMatch());
-
-      unsigned lastWidth = UINT_MAX;
-      int pos = 0;
-      iterator r = begin();
-      while (r != end()) {
-        const PVideoFrameInfo* frame = *r;
-        if (frame->GetFrameWidth() > lastWidth)
-          break;
-        lastWidth = frame->GetFrameWidth();
-        ++pos; ++r;
-      }
-
-      int sz = size();
-      PINDEX i = sz-1;
-      while (i > pos-1) {
-        erase(begin()+i);
-        --i;
-      }
-    }
-};
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Input device
@@ -455,7 +392,8 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
     return false;
   }
 
-  PVideoFrameInfoArray fsizes;
+  // Set is ordered large to small, and unique
+  std::set<PVideoFrameInfo, std::greater<PVideoFrameInfo> > fsizes;
   for (int iFormat = 0; iFormat < iCount; iFormat++) {
     MediaTypePtr pMediaFormat;
     if (SUCCEEDED(pStreamConfig->GetStreamCaps(iFormat, &pMediaFormat, (BYTE *)&scc)) &&
@@ -463,21 +401,19 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
         pMediaFormat->formattype == FORMAT_VideoInfo &&
         pMediaFormat->pbFormat != NULL &&
         pMediaFormat->cbFormat >= sizeof(VIDEOINFOHEADER))
-      fsizes.push_back(new PVideoFrameInfo(scc.MaxOutputSize.cx,
-                                           scc.MaxOutputSize.cy,
-                                           GUID2Format(pMediaFormat->subtype),
-                                           10000000/(unsigned)scc.MinFrameInterval));
+      fsizes.insert(PVideoFrameInfo(scc.MaxOutputSize.cx,
+                                    scc.MaxOutputSize.cy,
+                                    GUID2Format(pMediaFormat->subtype),
+                                    10000000/(unsigned)scc.MinFrameInterval));
   }
 
   if (fsizes.empty())
     return false;
 
   // Sort so we have unique sizes from largest to smallest
-  fsizes.ReIndex();
-  caps->framesizes.clear();
-  for (std::vector<PVideoFrameInfo*>::iterator it = fsizes.begin(); it != fsizes.end(); ++it) {
-    PTRACE(5, "DShow\tFormat["<< caps->framesizes.size() << "] = (" << **it);
-    caps->framesizes.push_back(**it);
+  for (std::set<PVideoFrameInfo, std::greater<PVideoFrameInfo> >::iterator it = fsizes.begin(); it != fsizes.end(); ++it) {
+    PTRACE(5, "DShow\tFormat["<< caps->framesizes.size() << "] = " << *it);
+    caps->framesizes.push_back(*it);
   }
 
 #ifndef _WIN32_WCE

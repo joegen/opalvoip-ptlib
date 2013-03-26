@@ -83,6 +83,19 @@ class PVideoFrameInfo : public PObject
       ResizeMode      resizeMode = eScale
     );
 
+    /** Compare the two PVideoFrameInfo and return their relative rank.
+        This ranking is by the relative area of the frame resolution, and
+        frame rate if resolution equal. The final check for equality is on
+        the colourFormat. The SAR and resize mode take no part.
+
+       @return
+       <code>LessThan</code>, <code>EqualTo</code> or <code>GreaterThan</code>
+       according to the relative rank of the objects.
+     */
+    virtual Comparison Compare(
+      const PObject & obj   // Object to compare against.
+    ) const;
+
     /** Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
        primarily used by the standard <code>#operator<<</code> function.
