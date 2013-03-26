@@ -34,7 +34,8 @@
 #ifdef P_WIN_COM
 
 #ifndef __MINGW32__
-#include <comdef.h>
+  #include <comdef.h>
+  #include <initguid.h>
 #endif
 
 #ifdef P_ATL
@@ -42,12 +43,17 @@
   #include <cguid.h>
   #include <atlbase.h>
   #include <atlcomcli.h>
+  #include <oleacc.h>
   #pragma warning(default:4127)
 #else
 
 // We are using express edition of MSVC which does not come with ATL support
 // So hand implement just enough for some code (e.g. SAPI) to work.
 #define __ATLBASE_H__
+
+#ifndef _WIN32_DCOM
+  #define _WIN32_DCOM 1
+#endif
 
 #include <objbase.h>
 

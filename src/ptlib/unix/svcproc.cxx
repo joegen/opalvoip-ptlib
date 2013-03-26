@@ -196,7 +196,7 @@ int PServiceProcess::InitialiseService()
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(false);
 #endif
-  debugMode = false;
+  m_debugMode = false;
 
   // parse arguments so we can grab what we want
   PArgList & args = GetArguments();
@@ -347,7 +347,7 @@ int PServiceProcess::InitialiseService()
   // set flag for console messages
   if (args.HasOption('c')) {
     PSystemLog::SetTarget(new PSystemLogToStderr());
-    debugMode = true;
+    m_debugMode = true;
   }
   else if (args.HasOption('l')) {
     PFilePath fileName = args.GetOptionString('l');
@@ -418,7 +418,7 @@ int PServiceProcess::InitialiseService()
 #endif
 
   // We are a service, don't want to get blocked on input from stdin during asserts
-  if (!debugMode)
+  if (!m_debugMode)
     ::close(STDIN_FILENO);
 
 #if !defined(BE_THREADS) && !defined(P_RTEMS)
