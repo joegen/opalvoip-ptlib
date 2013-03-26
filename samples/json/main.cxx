@@ -19,9 +19,6 @@ class JSONTest : public PProcess
 PCREATE_PROCESS(JSONTest);
 
 
-ostream & operator << (ostream & strm, const PJSON & base)
-{ base.PrintOn(strm); return strm; }
-
 JSONTest::JSONTest()
   : PProcess("JSON Test Program", "JSONTest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
 {

@@ -128,4 +128,7 @@ class PJSON : public PObject
     json_object * m_json;
 };
 
+ostream & operator << (ostream & strm, const PJSON & base)
+{ base.PrintOn(strm); return strm; }
+
 #endif  // PTLIB_PJSON_H
