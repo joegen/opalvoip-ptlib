@@ -114,19 +114,24 @@ struct PWinSock : public PProcessStartup
     PAssert(WSAStartup(0x0202, &m_info) == 0, POperatingSystemError);
     PAssert(m_info.wVersion >= 0x0200, POperatingSystemError);
 
-#if P_GQOS
+#if P_GQOS || P_QWAVE
     OSVERSIONINFO info;
     info.dwOSVersionInfoSize = sizeof(info);
     GetVersionEx(&info);
+#endif
+
+#if P_GQOS
     // Use for NT (5.1) and Win2003 (5.2) but not Win2000 (5.0) or Vista and later (6.x)
     m_useGQOS = info.dwMajorVersion == 5 && info.dwMinorVersion >= 1;
 #endif // P_GQOS
 
 #if P_QWAVE
-    QOS_VERSION qosVersion;
-    qosVersion.MajorVersion = 1;
-    qosVersion.MinorVersion = 0;
-    PAssert(QOSCreateHandle(&qosVersion, &m_hQoS), POperatingSystemError);
+    if (info.dwMajorVersion >= 6) {
+      QOS_VERSION qosVersion;
+      qosVersion.MajorVersion = 1;
+      qosVersion.MinorVersion = 0;
+      PAssert(QOSCreateHandle(&qosVersion, &m_hQoS), POperatingSystemError);
+    }
 #endif // P_QWAVE
   }
 

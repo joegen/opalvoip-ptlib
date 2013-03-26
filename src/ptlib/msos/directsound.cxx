@@ -35,61 +35,53 @@
 
 #if P_DIRECTSOUND
 
-#if _MSC_VER >= 1700
-#include "initguid.h"
-#endif
-
 #define PTraceModule() "dsound"
 
 #include <ptlib/pprocess.h>
 #include <algorithm>
+#include <math.h>
 
-#define INITGUID
 #include <ptlib/msos/ptlib/directsound.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
 
-#include <tchar.h>
-#include <math.h>
-
-
-#if _MSC_VER >= 1700
-  #pragma comment(lib, "dxguid.lib")
-#endif
-
-
 #include <ks.h>
 #include <dsconf.h>
-typedef HRESULT (STDAPICALLTYPE *LPFNDLLGETCLASSOBJECT )(REFCLSID, REFIID, LPVOID * );
+
+
+#ifdef _MSC_VER
+  #if _MSC_VER >= 1700
+    #pragma comment(lib, "dxguid.lib")
+  #endif
+  #pragma comment(lib, "dsound.lib")
+  #pragma message("Direct Sound support enabled")
+#endif
 
 // It takes a lot of fiddling in configure to find dxerr.h
 // but don't worry about it, it's not essential, see GetErrorText
 #ifdef P_DIRECTSOUND_DXERR_H
-#include <dxerr.h>    // for DirectSound DXGetErrorDescription9
-#pragma comment(lib, "dxerr.lib")
+  #include <dxerr.h>    // for DirectSound DXGetErrorDescription9
+  #pragma comment(lib, "dxerr.lib")
 #endif
 
-#ifdef _MSC_VER
-  #pragma comment(lib, "dsound.lib")
-  #pragma message("Direct Sound support enabled")
-#endif
+
+typedef HRESULT (STDAPICALLTYPE *LPFNDLLGETCLASSOBJECT )(REFCLSID, REFIID, LPVOID * );
 
 // I made up these HRESULT facility codes to simplify MME error reporting in GetErrorText
 #define FACILITY_WAVEIN  100
 #define FACILITY_WAVEOUT 101
 
+#ifdef _WIN32_WCE
+  #define IID_IDirectSoundBuffer8 IID_IDirectSoundBuffer
+  #define IID_IDirectSoundCaptureBuffer8 IID_IDirectSoundCaptureBuffer
+  DEFINE_GUID(DSDEVID_DefaultPlayback, 0xdef00000, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+  DEFINE_GUID(DSDEVID_DefaultCapture, 0xdef00001, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+  DEFINE_GUID(DSDEVID_DefaultVoicePlayback, 0xdef00002, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+  DEFINE_GUID(DSDEVID_DefaultVoiceCapture, 0xdef00003, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
+#endif
+
+
 /* Instantiate the PWLIBsound plugin */ 
 PCREATE_SOUND_PLUGIN(DirectSound, PSoundChannelDirectSound)
-
-
-#ifdef _WIN32_WCE
-#include <initguid.h>
-#define IID_IDirectSoundBuffer8 IID_IDirectSoundBuffer
-#define IID_IDirectSoundCaptureBuffer8 IID_IDirectSoundCaptureBuffer
-DEFINE_GUID(DSDEVID_DefaultPlayback, 0xdef00000, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-DEFINE_GUID(DSDEVID_DefaultCapture, 0xdef00001, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-DEFINE_GUID(DSDEVID_DefaultVoicePlayback, 0xdef00002, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-DEFINE_GUID(DSDEVID_DefaultVoiceCapture, 0xdef00003, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

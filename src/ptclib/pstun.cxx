@@ -1036,16 +1036,20 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
       return m_natType = UnknownNat;
     }
 
-    // take the first one
-    if (!selectList.IsEmpty()) {
-      PSTUNUDPSocket & udp = (PSTUNUDPSocket &)selectList.front();
+    // take the first valid one
+    for (PSocket::SelectList::iterator it = selectList.begin(); it != selectList.end(); ++it) {
+      PSTUNUDPSocket & udp = dynamic_cast<PSTUNUDPSocket &>(*it);
       if (responseI.Read(udp) && responseI.Validate(requestI)) {
         m_socket = &udp;
-        sockets.AllowDeleteObjects(false);
-        sockets.Remove(m_socket);
-        sockets.AllowDeleteObjects(true);
         break;
       }
+    }
+
+    if (m_socket != NULL) {
+      sockets.AllowDeleteObjects(false);
+      sockets.Remove(m_socket);
+      sockets.AllowDeleteObjects(true);
+      break;
     }
   }
 

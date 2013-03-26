@@ -262,55 +262,60 @@ class PVideoControlInfo : public PObject
   PCLASSINFO(PVideoControlInfo, PObject);
 
  public:
+    P_DECLARE_STREAMABLE_ENUM(Types,
+      Pan,
+      Tilt,
+      Zoom
+    );
 
-    typedef enum {
-      ControlPan,
-      ControlTilt,
-      ControlZoom
-    } InputControlType;
+    Types m_type;
+    long  m_min;
+    long  m_max;
+    long  m_step;
+    long  m_default;
+    long  m_flags;
+    long  m_current;
 
-    static PString AsString(const InputControlType & type);
+    PVideoControlInfo()
+      : m_type(EndTypes)
+      , m_min(0)
+      , m_max(0)
+      , m_step(0)
+      , m_default(0)
+      , m_flags(0)
+      , m_current(0)
+    { }
 
-    InputControlType type;
-    long             min;
-    long             max;
-    long             step;
-    long             def;
-    long             flags;
-    long             current;
+    bool IsValid() const { return m_max > 0 && m_min < m_max; }
 };
 
 
 /**This class defines a video Input device control (Camera controls PTZ)
 */
 
-class PVideoInputControl : public PVideoControlInfo
+class PVideoInputControl : public PObject
 {
-    PCLASSINFO(PVideoInputControl, PVideoControlInfo);
+    PCLASSINFO(PVideoInputControl, PObject);
 
 public:
   ~PVideoInputControl();
 
-  virtual PBoolean Pan(long value, bool absolute = false );
+  virtual PBoolean Pan (long value, bool absolute = false);
   virtual PBoolean Tilt(long value, bool absolute = false);
   virtual PBoolean Zoom(long value, bool absolute = false);
 
-  long GetPan();
-  long GetTilt();
-  long GetZoom();
+  virtual long GetPan()  const { return m_control[PVideoControlInfo::Pan ].m_current; }
+  virtual long GetTilt() const { return m_control[PVideoControlInfo::Tilt].m_current; }
+  virtual long GetZoom() const { return m_control[PVideoControlInfo::Zoom].m_current; }
 
-  void Reset();
-  void SetCurrentPosition(const InputControlType ctype, long current);
+  virtual void Reset();
 
-  typedef std::list<PVideoControlInfo> InputDeviceControls;
+  bool IsValid(PVideoControlInfo::Types type) const { return m_control[type].IsValid(); }
+  const PVideoControlInfo & GetControl(PVideoControlInfo::Types type) const { return m_control[type]; }
 
 protected:
-  PBoolean GetVideoControlInfo(const InputControlType ctype, PVideoControlInfo & control);
-  PBoolean GetDefaultPosition(const InputControlType ctype, long & def);
-  PBoolean GetCurrentPosition(const InputControlType ctype, long & current);
-
-  std::list<PVideoControlInfo> m_info;
-  PMutex ccmutex;
+  PVideoControlInfo m_control[PVideoControlInfo::NumTypes];
+  PMutex            m_mutex;
 
 };
 
