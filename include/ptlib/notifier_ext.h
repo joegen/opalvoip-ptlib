@@ -63,13 +63,17 @@ class PValidatedNotifierTarget
     PValidatedNotifierTarget();
     virtual ~PValidatedNotifierTarget();
 
+    // Do not copy the id across
+    PValidatedNotifierTarget(const PValidatedNotifierTarget &);
+    void operator=(const PValidatedNotifierTarget &) { }
+
+    static bool Exists(PNotifierIdentifer id);
+
   private:
     PNotifierIdentifer m_validatedNotifierId;
 
   template <typename ParmType> friend class PValidatedNotifierFunction;
 };
-
-bool PValidatedNotifierTargetExists(PNotifierIdentifer id);
 
 
 /**
@@ -93,7 +97,7 @@ class PValidatedNotifierFunction : public PNotifierFunctionTemplate<ParamType>
 
     virtual void * GetTarget() const
     {
-      return PValidatedNotifierTargetExists(this->m_targetID) ? this->m_target : NULL;
+      return PValidatedNotifierTarget::Exists(this->m_targetID) ? this->m_target : NULL;
     }
 
   protected:
