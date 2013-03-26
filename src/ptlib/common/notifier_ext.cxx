@@ -52,6 +52,7 @@ class PValidatedNotifierSet : std::set<PNotifierIdentifer>
 public:
   PValidatedNotifierSet()
     : m_state(1)
+    , m_nextId(1)
   {
   }
 
@@ -70,7 +71,7 @@ public:
     m_mutex.Wait();
 
     do {
-      id = ++m_nextId;
+      id = m_nextId++;
     } while (!insert(value_type(id)).second);
 
     m_mutex.Signal();
@@ -111,13 +112,19 @@ PValidatedNotifierTarget::PValidatedNotifierTarget()
 }
 
 
+PValidatedNotifierTarget::PValidatedNotifierTarget(const PValidatedNotifierTarget&)
+{
+  m_validatedNotifierId = s_ValidatedTargets.Add();
+}
+
+
 PValidatedNotifierTarget::~PValidatedNotifierTarget()
 {
   s_ValidatedTargets.Remove(m_validatedNotifierId);
 }
 
 
-bool PValidatedNotifierTargetExists(PNotifierIdentifer id)
+bool PValidatedNotifierTarget::Exists(PNotifierIdentifer id)
 {
   return s_ValidatedTargets.Exists(id);
 }
@@ -204,7 +211,7 @@ public:
     m_mutex.Wait();
 
     do {
-      id = ++m_nextId;
+      id = m_nextId++;
     } while (!insert(value_type(id, target)).second);
 
     m_mutex.Signal();
