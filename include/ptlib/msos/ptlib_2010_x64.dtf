@@ -3647,7 +3647,6 @@ EXPORTS
     ??0sentry@?$basic_istream@DU?$char_traits@D@std@@@std@@QEAA@AEAV12@_N@Z @3152 NONAME
     ??0sentry@?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAA@AEAV12@@Z @3153 NONAME
     ??0Separator@PvCard@@QEAA@D@Z @3154 NONAME
-    ??0ServiceManager@@QEAA@XZ @3155 NONAME
     ??0SetTab@PHTML@@QEAA@PEBD0@Z @3156 NONAME
     ??0SimpleList@PHTML@@QEAA@PEBD@Z @3157 NONAME
     ??0Slice@PSocket@@QEAA@PEAX_K@Z @3158 NONAME
@@ -3710,7 +3709,6 @@ EXPORTS
     ??0Variant@PVarType@@QEAA@XZ @3202 NONAME
     ??0VXMLExecute_PNotifier@PVXMLSession@@QEAA@PEAV1@@Z @19112 NONAME
     ??0Win32RouteTableDetector@@QEAA@XZ @3203 NONAME
-    ??0Win95_ServiceManager@@QEAA@XZ @3204 NONAME
     ??0Worker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @3205 NONAME
     ??0Worker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @3206 NONAME
     ??0Worker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEAA@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @3207 NONAME
@@ -5223,7 +5221,6 @@ EXPORTS
     ??4PTimer@@QEAAAEAV0@AEBVPTimeInterval@@@Z @19380 NONAME
     ??4PURL@@QEAAAEAV0@AEBV0@@Z @4467 NONAME
     ??4PVarType@@QEAAAEAV0@AEBVPString@@@Z @4468 NONAME
-    ??4PVideoControlInfo@@QEAAAEAV0@AEBV0@@Z @4469 NONAME
     ??4PVideoFrameInfo@@QEAAAEAV0@AEBV0@@Z @4470 NONAME
     ??4PWaveBuffer@@AEAAAEAV0@AEBVPSound@@@Z @4471 NONAME
     ??4PWaveFormat@@QEAAAEAV0@AEBV0@@Z @4472 NONAME
@@ -5256,6 +5253,7 @@ EXPORTS
     ??6@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV01@AEBVPString@@@Z @4492 NONAME
     ??6@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV01@W4NatTypes@PNatMethod@@@Z @4493 NONAME
     ??6@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV01@W4ResizeMode@PVideoFrameInfo@@@Z @4494 NONAME
+    ??6@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV01@W4Types@PVideoControlInfo@@@Z @22689 NONAME
     ??6@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV01@W4VideoFormat@PVideoDevice@@@Z @4495 NONAME
     ??6@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV01@_J@Z @4496 NONAME
     ??6@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV01@_K@Z @4497 NONAME
@@ -5272,7 +5270,6 @@ EXPORTS
     ??8?$_List_const_iterator@V?$_List_val@PEBVLocalStorageBase@PThread@@V?$allocator@PEBVLocalStorageBase@PThread@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4509 NONAME
     ??8?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QEBA_NAEBV01@@Z @4510 NONAME
     ??8?$_List_const_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19388 NONAME
-    ??8?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4511 NONAME
     ??8?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4512 NONAME
     ??8?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVPThread@@@std@@@3@$0A@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4513 NONAME
     ??8?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@@std@@@4@$0A@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4514 NONAME
@@ -5349,7 +5346,6 @@ EXPORTS
     ??9?$_List_const_iterator@V?$_List_val@PEBVLocalStorageBase@PThread@@V?$allocator@PEBVLocalStorageBase@PThread@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4582 NONAME
     ??9?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QEBA_NAEBV01@@Z @4583 NONAME
     ??9?$_List_const_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19397 NONAME
-    ??9?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4584 NONAME
     ??9?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4585 NONAME
     ??9?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVPThread@@@std@@@3@$0A@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4586 NONAME
     ??9?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@@std@@@4@$0A@@std@@@std@@@std@@QEBA_NAEBV01@@Z @4587 NONAME
@@ -5643,7 +5639,6 @@ EXPORTS
     ??Bsentry@?$basic_istream@DU?$char_traits@D@std@@@std@@QEBAPEQ_Bool_struct@2@HXZ @4843 NONAME
     ??Bsentry@?$basic_ostream@DU?$char_traits@D@std@@@std@@QEBAPEQ_Bool_struct@2@HXZ @4844 NONAME
     ??Bsockaddr_wrapper@PIPSocket@@QEBAPEAUsockaddr@@XZ @19436 NONAME
-    ??C?$CComPtr@UIAMCameraControl@@@@QEBAPEAUIAMCameraControl@@XZ @4845 NONAME
     ??C?$CComPtr@UIAMStreamConfig@@@@QEBAPEAUIAMStreamConfig@@XZ @4846 NONAME
     ??C?$CComPtr@UIAMVideoProcAmp@@@@QEBAPEAUIAMVideoProcAmp@@XZ @4847 NONAME
     ??C?$CComPtr@UIBaseFilter@@@@QEBAPEAUIBaseFilter@@XZ @4848 NONAME
@@ -5672,10 +5667,8 @@ EXPORTS
     ??C?$PSingleton@V?$allocator@UPSortedListElement@@@std@@I@@QEBAPEAV?$allocator@UPSortedListElement@@@std@@XZ @4871 NONAME
     ??C?$PSingleton@V?$allocator@UPSortedListInfo@@@std@@I@@QEBAPEAV?$allocator@UPSortedListInfo@@@std@@XZ @4872 NONAME
     ??C?$PSingleton@V?$allocator@VPContainerReference@@@std@@I@@QEBAPEAV?$allocator@VPContainerReference@@@std@@XZ @4873 NONAME
-    ??C?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QEBAPEAVPVideoControlInfo@@XZ @4874 NONAME
     ??C?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QEBAPEAVPVideoFrameInfo@@XZ @4875 NONAME
     ??C?$_List_unchecked_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@U_Iterator_base0@2@@std@@QEBAPEBU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@1@XZ @4876 NONAME
-    ??C?$_List_unchecked_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@U_Iterator_base0@2@@std@@QEBAPEBVPVideoControlInfo@@XZ @4877 NONAME
     ??C?$_Tree_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVPThread@@@std@@@3@$0A@@std@@@std@@@std@@QEBAPEAU?$pair@$$CBIPEAVPThread@@@1@XZ @4878 NONAME
     ??C?$_Tree_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@@std@@@4@$0A@@std@@@std@@@std@@QEBAPEAU?$pair@$$CBIPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@@1@XZ @4879 NONAME
     ??C?$_Tree_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@AEBII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@AEBII@@@std@@@4@$0A@@std@@@std@@@std@@QEBAPEAU?$pair@$$CBIPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@AEBII@@@1@XZ @4880 NONAME
@@ -5751,15 +5744,12 @@ EXPORTS
     ??D?$_List_const_iterator@V?$_List_val@PEAVContext@PCLI@@V?$allocator@PEAVContext@PCLI@@@std@@@std@@@std@@QEBAAEBQEAVContext@PCLI@@XZ @4940 NONAME
     ??D?$_List_const_iterator@V?$_List_val@PEBVLocalStorageBase@PThread@@V?$allocator@PEBVLocalStorageBase@PThread@@@std@@@std@@@std@@QEBAAEBQEBVLocalStorageBase@PThread@@XZ @4942 NONAME
     ??D?$_List_const_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@std@@QEBAAEBV?$PNotifierTemplate@_J@@XZ @19451 NONAME
-    ??D?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QEBAAEBVPVideoControlInfo@@XZ @4943 NONAME
     ??D?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QEBAAEBVPVideoFrameInfo@@XZ @4944 NONAME
     ??D?$_List_iterator@V?$_List_val@PEAVContext@PCLI@@V?$allocator@PEAVContext@PCLI@@@std@@@std@@@std@@QEBAAEAPEAVContext@PCLI@@XZ @4945 NONAME
     ??D?$_List_iterator@V?$_List_val@PEBVLocalStorageBase@PThread@@V?$allocator@PEBVLocalStorageBase@PThread@@@std@@@std@@@std@@QEBAAEAPEBVLocalStorageBase@PThread@@XZ @4947 NONAME
     ??D?$_List_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@std@@QEBAAEAV?$PNotifierTemplate@_J@@XZ @19452 NONAME
-    ??D?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QEBAAEAVPVideoControlInfo@@XZ @4948 NONAME
     ??D?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QEBAAEAVPVideoFrameInfo@@XZ @4949 NONAME
     ??D?$_List_unchecked_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@U_Iterator_base0@2@@std@@QEBAAEBU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@1@XZ @4950 NONAME
-    ??D?$_List_unchecked_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@U_Iterator_base0@2@@std@@QEBAAEBVPVideoControlInfo@@XZ @4951 NONAME
     ??D?$_String_const_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEBAAEBDXZ @4953 NONAME
     ??D?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEBAAEADXZ @4954 NONAME
     ??D?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVPThread@@@std@@@3@$0A@@std@@@std@@@std@@QEBAAEBU?$pair@$$CBIPEAVPThread@@@1@XZ @4955 NONAME
@@ -5875,12 +5865,10 @@ EXPORTS
     ??E?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QEAAAEAV01@XZ @5054 NONAME
     ??E?$_List_const_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@std@@QEAA?AV01@H@Z @19470 NONAME
     ??E?$_List_const_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@std@@QEAAAEAV01@XZ @19471 NONAME
-    ??E?$_List_const_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QEAAAEAV01@XZ @5055 NONAME
     ??E?$_List_const_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QEAAAEAV01@XZ @5056 NONAME
     ??E?$_List_iterator@V?$_List_val@PEAVContext@PCLI@@V?$allocator@PEAVContext@PCLI@@@std@@@std@@@std@@QEAAAEAV01@XZ @5057 NONAME
     ??E?$_List_iterator@V?$_List_val@PEBVLocalStorageBase@PThread@@V?$allocator@PEBVLocalStorageBase@PThread@@@std@@@std@@@std@@QEAAAEAV01@XZ @5059 NONAME
     ??E?$_List_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@std@@QEAAAEAV01@XZ @19472 NONAME
-    ??E?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@std@@QEAAAEAV01@XZ @5060 NONAME
     ??E?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@std@@QEAAAEAV01@XZ @5061 NONAME
     ??E?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVPThread@@@std@@@3@$0A@@std@@@std@@@std@@QEAA?AV01@H@Z @5063 NONAME
     ??E?$_Tree_const_iterator@V?$_Tree_val@V?$_Tmap_traits@IPEAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPEAVPThread@@@std@@@3@$0A@@std@@@std@@@std@@QEAAAEAV01@XZ @5064 NONAME
@@ -6037,6 +6025,7 @@ EXPORTS
     ??E?$_Vector_iterator@V?$_Vector_val@PEAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PEAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@@std@@QEAAAEAV01@XZ @5198 NONAME
     ??E?$_Vector_iterator@V?$_Vector_val@UPDSoundDeviceInfo@@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@@std@@QEAAAEAV01@XZ @19493 NONAME
     ??E?$_Vector_iterator@V?$_Vector_val@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@QEAAAEAV01@XZ @5199 NONAME
+    ??E@YA?AW4Types@PVideoControlInfo@@AEAW401@@Z @22690 NONAME
     ??Econst_iterator@?$PDictionary@VPString@@V1@@@QEAA?AV01@XZ @5200 NONAME
     ??Econst_iterator@?$PList@VIdentity@Disco@XMPP@@@@QEAA?AV01@H@Z @19494 NONAME
     ??Econst_iterator@?$PList@VItem@Disco@XMPP@@@@QEAA?AV01@H@Z @19495 NONAME
@@ -7295,7 +7284,6 @@ EXPORTS
     ??_7Select@PHTML@@6B@ @6242 NONAME
     ??_7SelectList@PSocket@@6B@ @6243 NONAME
     ??_7Separator@PvCard@@6B@ @6244 NONAME
-    ??_7ServiceManager@@6B@ @6245 NONAME
     ??_7SetTab@PHTML@@6B@ @6246 NONAME
     ??_7SimpleList@PHTML@@6B@ @6247 NONAME
     ??_7SRVRecord@PDNS@@6B@ @6248 NONAME
@@ -7332,7 +7320,6 @@ EXPORTS
     ??_7User@MUC@XMPP@@6B@ @19733 NONAME
     ??_7VXMLExecute_PNotifier@PVXMLSession@@6B@ @19734 NONAME
     ??_7Win32RouteTableDetector@@6B@ @6270 NONAME
-    ??_7Win95_ServiceManager@@6B@ @6271 NONAME
     ??_7Worker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @6272 NONAME
     ??_7Worker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @6273 NONAME
     ??_7Worker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @6274 NONAME
@@ -8512,7 +8499,6 @@ EXPORTS
     ??_R0?AVSelect@PHTML@@@8 @7233 NONAME
     ??_R0?AVSelectList@PSocket@@@8 @7234 NONAME
     ??_R0?AVSeparator@PvCard@@@8 @7235 NONAME
-    ??_R0?AVServiceManager@@@8 @7236 NONAME
     ??_R0?AVSetTab@PHTML@@@8 @7237 NONAME
     ??_R0?AVSimpleList@PHTML@@@8 @7238 NONAME
     ??_R0?AVSRVRecord@PDNS@@@8 @7239 NONAME
@@ -8545,7 +8531,6 @@ EXPORTS
     ??_R0?AVUser@MUC@XMPP@@@8 @19971 NONAME
     ??_R0?AVVXMLExecute_PNotifier@PVXMLSession@@@8 @19972 NONAME
     ??_R0?AVWin32RouteTableDetector@@@8 @7260 NONAME
-    ??_R0?AVWin95_ServiceManager@@@8 @7261 NONAME
     ??_R0?AVWorker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7262 NONAME
     ??_R0?AVWorker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7263 NONAME
     ??_R0?AVWorker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7264 NONAME
@@ -9483,7 +9468,6 @@ EXPORTS
     ??_R1A@?0A@EA@Select@PHTML@@8 @8014 NONAME
     ??_R1A@?0A@EA@SelectList@PSocket@@8 @8015 NONAME
     ??_R1A@?0A@EA@Separator@PvCard@@8 @8016 NONAME
-    ??_R1A@?0A@EA@ServiceManager@@8 @8017 NONAME
     ??_R1A@?0A@EA@SetTab@PHTML@@8 @8018 NONAME
     ??_R1A@?0A@EA@SimpleList@PHTML@@8 @8019 NONAME
     ??_R1A@?0A@EA@SRVRecord@PDNS@@8 @8020 NONAME
@@ -9517,7 +9501,6 @@ EXPORTS
     ??_R1A@?0A@EA@User@MUC@XMPP@@8 @20172 NONAME
     ??_R1A@?0A@EA@VXMLExecute_PNotifier@PVXMLSession@@8 @20173 NONAME
     ??_R1A@?0A@EA@Win32RouteTableDetector@@8 @8042 NONAME
-    ??_R1A@?0A@EA@Win95_ServiceManager@@8 @8043 NONAME
     ??_R1A@?0A@EA@Worker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8044 NONAME
     ??_R1A@?0A@EA@Worker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8045 NONAME
     ??_R1A@?0A@EA@Worker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8046 NONAME
@@ -10501,7 +10484,6 @@ EXPORTS
     ??_R2Select@PHTML@@8 @8838 NONAME
     ??_R2SelectList@PSocket@@8 @8839 NONAME
     ??_R2Separator@PvCard@@8 @8840 NONAME
-    ??_R2ServiceManager@@8 @8841 NONAME
     ??_R2SetTab@PHTML@@8 @8842 NONAME
     ??_R2SimpleList@PHTML@@8 @8843 NONAME
     ??_R2SRVRecord@PDNS@@8 @8844 NONAME
@@ -10535,7 +10517,6 @@ EXPORTS
     ??_R2User@MUC@XMPP@@8 @20380 NONAME
     ??_R2VXMLExecute_PNotifier@PVXMLSession@@8 @20381 NONAME
     ??_R2Win32RouteTableDetector@@8 @8866 NONAME
-    ??_R2Win95_ServiceManager@@8 @8867 NONAME
     ??_R2Worker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8868 NONAME
     ??_R2Worker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8869 NONAME
     ??_R2Worker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8870 NONAME
@@ -11467,7 +11448,6 @@ EXPORTS
     ??_R3Select@PHTML@@8 @9614 NONAME
     ??_R3SelectList@PSocket@@8 @9615 NONAME
     ??_R3Separator@PvCard@@8 @9616 NONAME
-    ??_R3ServiceManager@@8 @9617 NONAME
     ??_R3SetTab@PHTML@@8 @9618 NONAME
     ??_R3SimpleList@PHTML@@8 @9619 NONAME
     ??_R3SRVRecord@PDNS@@8 @9620 NONAME
@@ -11501,7 +11481,6 @@ EXPORTS
     ??_R3User@MUC@XMPP@@8 @20581 NONAME
     ??_R3VXMLExecute_PNotifier@PVXMLSession@@8 @20582 NONAME
     ??_R3Win32RouteTableDetector@@8 @9642 NONAME
-    ??_R3Win95_ServiceManager@@8 @9643 NONAME
     ??_R3Worker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9644 NONAME
     ??_R3Worker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9645 NONAME
     ??_R3Worker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @9646 NONAME
@@ -12491,7 +12470,6 @@ EXPORTS
     ??_R4Select@PHTML@@6B@ @10440 NONAME
     ??_R4SelectList@PSocket@@6B@ @10441 NONAME
     ??_R4Separator@PvCard@@6B@ @10442 NONAME
-    ??_R4ServiceManager@@6B@ @10443 NONAME
     ??_R4SetTab@PHTML@@6B@ @10444 NONAME
     ??_R4SimpleList@PHTML@@6B@ @10445 NONAME
     ??_R4SRVRecord@PDNS@@6B@ @10446 NONAME
@@ -12528,7 +12506,6 @@ EXPORTS
     ??_R4User@MUC@XMPP@@6B@ @20794 NONAME
     ??_R4VXMLExecute_PNotifier@PVXMLSession@@6B@ @20795 NONAME
     ??_R4Win32RouteTableDetector@@6B@ @10468 NONAME
-    ??_R4Win95_ServiceManager@@6B@ @10469 NONAME
     ??_R4Worker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10470 NONAME
     ??_R4Worker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10471 NONAME
     ??_R4Worker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @10472 NONAME
@@ -12873,7 +12850,6 @@ EXPORTS
     ?AsString@PURL_TelScheme@@UEBA?AVPString@@W4UrlFormat@PURL@@AEBV4@@Z @10756 NONAME
     ?AsString@PVarType@@QEBA?AVPString@@XZ @10757 NONAME
     ?AsString@PvCard@@QEAA?AVPString@@W4Format@1@@Z @10758 NONAME
-    ?AsString@PVideoControlInfo@@SA?AVPString@@AEBW4InputControlType@1@@Z @10759 NONAME
     ?AsString@PVideoFrameInfo@@SA?AVPString@@II@Z @10760 NONAME
     ?AsString@PVideoInteractionInfo@@SA?AVPString@@AEBW4InputInteractType@1@@Z @10761 NONAME
     ?AsString@PXML@@QEAA?AVPString@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @20858 NONAME
@@ -12943,7 +12919,6 @@ EXPORTS
     ?begin@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QEBA?AV?$_List_const_iterator@V?$_List_val@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@2@XZ @10811 NONAME
     ?begin@?$list@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@QEAA?AV?$_List_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@2@XZ @20875 NONAME
     ?begin@?$list@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@QEBA?AV?$_List_const_iterator@V?$_List_val@V?$PNotifierTemplate@_J@@V?$allocator@V?$PNotifierTemplate@_J@@@std@@@std@@@2@XZ @20876 NONAME
-    ?begin@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QEAA?AV?$_List_iterator@V?$_List_val@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@@2@XZ @10812 NONAME
     ?begin@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QEAA?AV?$_List_iterator@V?$_List_val@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@@2@XZ @10813 NONAME
     ?begin@?$PDictionary@VPOrdinalKey@@VPString@@@@QEAA?AViterator@1@XZ @20877 NONAME
     ?begin@?$PDictionary@VPString@@V1@@@QEAA?AViterator@1@XZ @10814 NONAME
@@ -14578,6 +14553,7 @@ EXPORTS
     ?ContentTypeTag@PMIMEInfo@@SAAEBVPCaselessString@@XZ @12165 NONAME
     ?ContentTypeTag@PRFC822Channel@@SAAEBVPCaselessString@@XZ @12166 NONAME
     ?Control@NT_ServiceManager@@AEAA_NPEAVPServiceProcess@@K@Z @12167 NONAME
+    ?Control@PVideoInputControl_DirectShow@@IEAA_NW4Types@PVideoControlInfo@@J_N@Z @22691 NONAME
     ?ControlEntry@PServiceProcess@@AEAAXK@Z @12168 NONAME
     ?Convert@PSynonymColour@@UEAA_NPEBEPEAEIPEA_K@Z @12170 NONAME
     ?Convert@PSynonymColour@@UEAA_NPEBEPEAEPEA_K@Z @12171 NONAME
@@ -14836,7 +14812,6 @@ EXPORTS
     ?Create@ThreadMain_PNotifier@Context@PCLI@@SA?AV?$PNotifierTemplate@_J@@PEAV23@@Z @21271 NONAME
     ?Create@ThreadMain_PNotifier@PCLISocket@@SA?AV?$PNotifierTemplate@_J@@PEAV2@@Z @21272 NONAME
     ?Create@VXMLExecute_PNotifier@PVXMLSession@@SA?AV?$PNotifierTemplate@_J@@PEAV2@@Z @21273 NONAME
-    ?Create@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @12354 NONAME
     ?Create@Worker@?$PDevicePluginFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MEBAPEAVPNatMethod@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @12355 NONAME
     ?Create@Worker@?$PDevicePluginFactory@VPSoundChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MEBAPEAVPSoundChannel@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @12356 NONAME
     ?Create@Worker@?$PDevicePluginFactory@VPVideoInputDevice@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@MEBAPEAVPVideoInputDevice@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z @12357 NONAME
@@ -15272,6 +15247,7 @@ EXPORTS
     ?DisableDecode@PVideoChannel@@UEAA_NXZ @12719 NONAME
     ?DisableDecode@PVideoOutputDevice@@UEAA_NXZ @12720 NONAME
     ?DisableDecode@PVideoOutputDevice_NULLOutput@@UEAA_NXZ @12721 NONAME
+    ?DisableSSL@PSecureHTTPServiceProcess@@QEAAXXZ @22692 NONAME
     ?DisallowDeleteObjects@PCollection@@QEAAXXZ @12723 NONAME
     ?DisallowDeleteObjects@PSafeCollection@@QEAAXXZ @12724 NONAME
     ?Disconnect@PODBC@@QEAAXXZ @12725 NONAME
@@ -16393,6 +16369,7 @@ EXPORTS
     ?GetContentTypes@PMIMEInfo@@CAAEAVPStringToString@@XZ @13640 NONAME
     ?GetContext@Arguments@PCLI@@QEBAAEAVContext@2@XZ @13641 NONAME
     ?GetContrast@PVideoDevice@@EEAAHXZ @13642 NONAME
+    ?GetControl@PVideoInputControl@@QEBAAEBVPVideoControlInfo@@W4Types@2@@Z @22693 NONAME
     ?GetControlCommon@PVideoInputDevice_DirectShow@@IEAAHJ@Z @13643 NONAME
     ?GetCopyrightText@PHTTPServiceProcess@@UEAA?AVPString@@XZ @13644 NONAME
     ?GetCount@PArgList@@QEBA_KXZ @13645 NONAME
@@ -16401,7 +16378,6 @@ EXPORTS
     ?GetCurrentBufferSize@PVideoInputDevice_DirectShow@@IEAA_KXZ @13648 NONAME
     ?GetCurrentDirectoryA@PFTPClient@@QEAA?AVPString@@XZ @13649 NONAME
     ?GetCurrentElement@PXER_Stream@@QEAAPEAVPXMLElement@@XZ @21579 NONAME
-    ?GetCurrentPosition@PVideoInputControl@@IEAA_NW4InputControlType@PVideoControlInfo@@AEAJ@Z @13650 NONAME
     ?GetCurrentProcessID@PProcess@@SAKXZ @13651 NONAME
     ?GetCurrentThreadId@PThread@@SAIXZ @13652 NONAME
     ?GetCyclesPassed@PSoundChannelDirectSound@@AEAAKXZ @13653 NONAME
@@ -16449,7 +16425,6 @@ EXPORTS
     ?GetDefaultIpAddressFamily@PIPSocket@@SAHXZ @13692 NONAME
     ?GetDefaultIpAny@PIPSocket@@SAAEBVAddress@1@XZ @13693 NONAME
     ?GetDefaultNamespace@PXMLElement@@QEBA_NAEAVPCaselessString@@@Z @21583 NONAME
-    ?GetDefaultPosition@PVideoInputControl@@IEAA_NW4InputControlType@PVideoControlInfo@@AEAJ@Z @13694 NONAME
     ?GetDefaultSection@PConfig@@UEBA?AVPString@@XZ @13695 NONAME
     ?GetDefaultService@PInternetProtocol@@QEBAAEBVPString@@XZ @13696 NONAME
     ?GetDeinitString@PModem@@QEBA?AVPString@@XZ @13697 NONAME
@@ -16555,7 +16530,7 @@ EXPORTS
     ?GetEntityBody@PHTTPConnectionInfo@@QEBA?AVPString@@XZ @13785 NONAME
     ?GetEntityBodyLength@PHTTPConnectionInfo@@QEBAJXZ @13786 NONAME
     ?GetEntryName@PDirectory@@UEBA?AVPCaselessString@@XZ @13787 NONAME
-    ?GetError@ServiceManager@@QEBAKXZ @13788 NONAME
+    ?GetError@NT_ServiceManager@@QEBAKXZ @22694 NONAME
     ?GetErrorCode@PChannel@@QEBA?AW4Errors@1@W4ErrorGroup@1@@Z @13789 NONAME
     ?GetErrorCode@PMail@@QEBAHXZ @13790 NONAME
     ?GetErrorCode@PSTUNErrorCode@@QEBAHXZ @13791 NONAME
@@ -16979,7 +16954,7 @@ EXPORTS
     ?GetPageGraphic@PHTTPServiceProcess@@UEAA?AVPString@@XZ @14167 NONAME
     ?GetPageHeader@PHTTPServiceProcess@@QEAAXAEAVPHTML@@@Z @14168 NONAME
     ?GetPageHeader@PHTTPServiceProcess@@QEAAXAEAVPHTML@@AEBVPString@@@Z @14169 NONAME
-    ?GetPan@PVideoInputControl@@QEAAJXZ @14170 NONAME
+    ?GetPan@PVideoInputControl@@UEBAJXZ @22695 NONAME
     ?GetParam@PXMLRPCBlock@@QEAA_N_KAEAH@Z @21658 NONAME
     ?GetParam@PXMLRPCBlock@@QEAA_N_KAEAN@Z @21659 NONAME
     ?GetParam@PXMLRPCBlock@@QEAA_N_KAEAV?$PArray@VPStringToString@@@@@Z @21660 NONAME
@@ -17276,7 +17251,7 @@ EXPORTS
     ?GetThreadName@PProcess@@UEBA?AVPString@@XZ @14416 NONAME
     ?GetThreadName@PThread@@UEBA?AVPString@@XZ @14417 NONAME
     ?GetThresholdLevel@PSystemLogTarget@@QEBA?AW4Level@PSystemLog@@XZ @14418 NONAME
-    ?GetTilt@PVideoInputControl@@QEAAJXZ @14419 NONAME
+    ?GetTilt@PVideoInputControl@@UEBAJXZ @22696 NONAME
     ?GetTime@PConfig@@UEBA?AVPTime@@AEBVPString@@0@Z @14420 NONAME
     ?GetTime@PConfig@@UEBA?AVPTime@@AEBVPString@@0AEBV2@@Z @14421 NONAME
     ?GetTime@PConfig@@UEBA?AVPTime@@AEBVPString@@@Z @14422 NONAME
@@ -17397,7 +17372,6 @@ EXPORTS
     ?GetVFlipState@PColourConverter@@QEBA_NXZ @14521 NONAME
     ?GetVFlipState@PVideoDevice@@UEAA_NXZ @14522 NONAME
     ?GetVFlipState@PVideoOutputDevice_Window@@UEAA_NXZ @14523 NONAME
-    ?GetVideoControlInfo@PVideoInputControl@@IEAA_NW4InputControlType@PVideoControlInfo@@AEAV3@@Z @14524 NONAME
     ?GetVideoFormat@PVideoDevice@@UEBA?AW4VideoFormat@1@XZ @14525 NONAME
     ?GetVideoInputControls@PVideoInputDevice@@UEAAPEAVPVideoInputControl@@XZ @14526 NONAME
     ?GetVideoInputControls@PVideoInputDevice_DirectShow@@UEAAPEAVPVideoInputControl@@XZ @14527 NONAME
@@ -17425,7 +17399,7 @@ EXPORTS
     ?GetXMLTree@PXMLParser@@QEBAPEAVPXMLElement@@XZ @21746 NONAME
     ?GetY@PRasterDutyCycle@@QEBAIXZ @14545 NONAME
     ?GetYear@PTime@@QEBAHXZ @14546 NONAME
-    ?GetZoom@PVideoInputControl@@QEAAJXZ @14547 NONAME
+    ?GetZoom@PVideoInputControl@@UEBAJXZ @22697 NONAME
     ?get_allocator@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEBA?AV?$allocator@D@2@XZ @14548 NONAME
     ?get_allocator@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QEBA?AV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@XZ @14549 NONAME
     ?goodbit@?$_Iosb@H@std@@2W4_Iostate@12@B @14550 NONAME
@@ -18175,7 +18149,6 @@ EXPORTS
     ?IsGUIProcess@PProcess@@UEBA_NXZ @15162 NONAME
     ?IsInitialised@PProcess@@SA_NXZ @15163 NONAME
     ?IsInstalled@NT_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @15164 NONAME
-    ?IsInstalled@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @15165 NONAME
     ?IsInterface@PSingleMonitoredSocket@@IEBA_NAEBVPString@@@Z @15166 NONAME
     ?IsIpAddressFamilyV6Supported@PIPSocket@@SA_NXZ @15167 NONAME
     ?IsLegalCharacter@PASN_BMPString@@IEAA_NG@Z @15168 NONAME
@@ -18259,7 +18232,6 @@ EXPORTS
     ?IsRunning@PPipeChannel@@QEBA_NXZ @15236 NONAME
     ?IsRunning@PSimpleTimer@@QEBA_NXZ @15237 NONAME
     ?IsRunning@PTimer@@QEBA_NXZ @15238 NONAME
-    ?IsRunning@ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @15239 NONAME
     ?IsSeparator@PDirectory@@SA_ND@Z @15240 NONAME
     ?IsServiceProcess@PProcess@@UEBA_NXZ @15241 NONAME
     ?IsServiceProcess@PServiceProcess@@UEBA_NXZ @15242 NONAME
@@ -18294,6 +18266,8 @@ EXPORTS
     ?IsValid@PSSLPrivateKey@@QEBA_NXZ @21932 NONAME
     ?IsValid@PTime@@QEBA_NXZ @15260 NONAME
     ?IsValid@PvCard@@QEBA_NXZ @15261 NONAME
+    ?IsValid@PVideoControlInfo@@QEBA_NXZ @22698 NONAME
+    ?IsValid@PVideoInputControl@@QEBA_NW4Types@PVideoControlInfo@@@Z @22699 NONAME
     ?IsValid@PWAVFile@@QEBA_NXZ @21933 NONAME
     ?IsValid@PWin32Handle@@QEBA_NXZ @15262 NONAME
     ?IsValid@SecurityID@@QEBA_NXZ @15263 NONAME
@@ -18635,6 +18609,7 @@ EXPORTS
     ?MultipartMessage@PRFC822Channel@@QEAA_NAEBVPString@@@Z @15546 NONAME
     ?MXTag@PSSDP@@SAAEBVPCaselessString@@XZ @15547 NONAME
     ?Names@PEnumNames_NatTypes@PNatMethod@@SAPEBQEBDXZ @22007 NONAME
+    ?Names@PEnumNames_Types@PVideoControlInfo@@SAPEBQEBDXZ @22700 NONAME
     ?NamespaceTag@MUC@XMPP@@YAAEBVPCaselessString@@XZ @22008 NONAME
     ?NamespaceTag@User@MUC@XMPP@@SAAEBVPCaselessString@@XZ @22009 NONAME
     ?NamespaceTag@XMPP@@YAAEBVPCaselessString@@XZ @22010 NONAME
@@ -19114,7 +19089,6 @@ EXPORTS
     ?PassiveClientTransfer@PFTPClient@@IEAAPEAVPTCPSocket@@W4Commands@PFTP@@AEBVPString@@@Z @15913 NONAME
     ?Pause@NT_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @15914 NONAME
     ?Pause@PTimer@@QEAAXXZ @15915 NONAME
-    ?Pause@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @15916 NONAME
     ?pbackfail@?$basic_filebuf@DU?$char_traits@D@std@@@std@@MEAAHH@Z @15917 NONAME
     ?pbackfail@?$basic_stringbuf@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@MEAAHH@Z @15918 NONAME
     ?PBreakToDebugger@@YAXXZ @15919 NONAME
@@ -19693,7 +19667,6 @@ EXPORTS
     ?Remove@PIpAccessControlList@@QEAA_NAEBVPString@@@Z @16415 NONAME
     ?Remove@PIpAccessControlList@@QEAA_NVAddress@PIPSocket@@0@Z @16416 NONAME
     ?Remove@PValidatedNotifierSet@@QEAAXK@Z @16417 NONAME
-    ?Remove@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @16418 NONAME
     ?RemoveAll@PAbstractSortedList@@UEAAXXZ @16419 NONAME
     ?RemoveAll@PArrayObjects@@UEAAXXZ @16420 NONAME
     ?RemoveAll@PASN_Array@@QEAAXXZ @16421 NONAME
@@ -19759,7 +19732,7 @@ EXPORTS
     ?reserve@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@QEAAX_K@Z @22238 NONAME
     ?reserve@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QEAAX_K@Z @22239 NONAME
     ?Reset@PTimer@@QEAAXXZ @16470 NONAME
-    ?Reset@PVideoInputControl@@QEAAXXZ @16471 NONAME
+    ?Reset@PVideoInputControl@@UEAAXXZ @22701 NONAME
     ?Reset@PWin32Overlapped@@QEAAXXZ @16472 NONAME
     ?Reset@Stream@XMPP@@UEAAXXZ @22240 NONAME
     ?ResetDecoder@PASN_Stream@@QEAAXXZ @16473 NONAME
@@ -19778,7 +19751,6 @@ EXPORTS
     ?Resume@NT_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @16485 NONAME
     ?Resume@PThread@@UEAAXXZ @16486 NONAME
     ?Resume@PTimer@@QEAAXXZ @16487 NONAME
-    ?Resume@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @16488 NONAME
     ?RetreiveResource@PVXMLSession@@UEAA_NAEBVPURL@@AEAVPString@@AEAVPFilePath@@_N@Z @22242 NONAME
     ?ReturnPathTag@PRFC822Channel@@SAAEBVPCaselessString@@XZ @16489 NONAME
     ?ReverseBytes@?$PIntReversedOrder@G@@CAXAEBGAEAG@Z @16490 NONAME
@@ -20022,7 +19994,6 @@ EXPORTS
     ?SetCommunity@PSNMPClient@@QEAAXAEBVPString@@@Z @16697 NONAME
     ?SetComponent@PNATUDPSocket@@QEAAXW4Component@PNatMethod@@@Z @22277 NONAME
     ?SetConfig@NT_ServiceManager@@UEAA_NPEAVPServiceProcess@@W4_SC_ACTION_TYPE@@@Z @16699 NONAME
-    ?SetConfig@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@W4_SC_ACTION_TYPE@@@Z @16700 NONAME
     ?SetConfiguration@PRemoteConnection@@QEAA?AW4Status@1@AEBUConfiguration@1@_N@Z @16701 NONAME
     ?SetConfiguration@PRemoteConnection@@SA?AW4Status@1@AEBVPString@@AEBUConfiguration@1@_N@Z @16702 NONAME
     ?SetConfigurationPath@PProcess@@QEAAXAEBVPString@@@Z @16703 NONAME
@@ -20049,7 +20020,6 @@ EXPORTS
     ?SetCredentials@PTURNClient@@WJA@EAAXAEBVPString@@00@Z @16725 NONAME
     ?SetCurrentElement@PXER_Stream@@QEAAPEAVPXMLElement@@PEAV2@@Z @22280 NONAME
     ?SetCurrentForm@PVXMLSession@@QEAA_NAEBVPString@@_N@Z @22281 NONAME
-    ?SetCurrentPosition@PVideoInputControl@@QEAAXW4InputControlType@PVideoControlInfo@@J@Z @16726 NONAME
     ?SetCurrentTime@PTime@@QEAAXXZ @16727 NONAME
     ?SetData@PASN_BitString@@QEAAXIAEBVPBYTEArray@@@Z @16728 NONAME
     ?SetData@PASN_BitString@@QEAAXIPEBE_K@Z @16729 NONAME
@@ -20561,7 +20531,6 @@ EXPORTS
     ?Start@PVXMLTraverseValue@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @22402 NONAME
     ?Start@PVXMLTraverseVar@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @22403 NONAME
     ?Start@StreamHandler@C2S@XMPP@@UEAA_NPEAVTransport@3@@Z @22404 NONAME
-    ?Start@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @17126 NONAME
     ?StartAuthNegotiation@StreamHandler@C2S@XMPP@@MEAAXXZ @22405 NONAME
     ?StartAutoReloadURL@PXML_HTTP@@QEAA_NAEBVPURL@@AEBVPTimeInterval@@1V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @22406 NONAME
     ?StartContext@PCLI@@QEAAPEAVContext@1@PEAVPChannel@@0_N11@Z @17127 NONAME
@@ -20614,7 +20583,6 @@ EXPORTS
     ?Stop@PVideoOutputDevice_NULLOutput@@UEAA_NXZ @17166 NONAME
     ?Stop@PVideoOutputDevice_Window@@UEAA_NXZ @17167 NONAME
     ?Stop@PVideoOutputDevice_YUVFile@@UEAA_NXZ @17168 NONAME
-    ?Stop@Win95_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @17169 NONAME
     ?StopAutoReloadURL@PXML_HTTP@@QEAA_NXZ @22415 NONAME
     ?StopWorker@PThreadPoolBase@@IEAAXPEAVWorkerThreadBase@1@@Z @17170 NONAME
     ?StorageDestroyed@LocalStorageBase@PThread@@IEAAXXZ @17171 NONAME
@@ -20623,6 +20591,7 @@ EXPORTS
     ?str@?$basic_stringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ @17174 NONAME
     ?strchr@@YAPEADPEADH@Z @17175 NONAME
     ?Strings@?1??Names@PEnumNames_NatTypes@PNatMethod@@SAPEBQEBDXZ@4QBQEBDB @22416 NONAME
+    ?Strings@?1??Names@PEnumNames_Types@PVideoControlInfo@@SAPEBQEBDXZ@4QBQEBDB @22702 NONAME
     ?stringToFaultCode@@YA_KAEAVPString@@@Z @22417 NONAME
     ?StringToTime@PVXMLSession@@SA?AVPTimeInterval@@AEBVPString@@H@Z @22665 NONAME
     ?STTag@PSSDP@@SAAEBVPCaselessString@@XZ @17176 NONAME
@@ -22028,7 +21997,739 @@ EXPORTS
     ?_Xlen@?$vector@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@IEBAXXZ @22627 NONAME
     ?_Xlen@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@IEBAXXZ @22628 NONAME
     ?_Xran@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEBAXXZ @18400 NONAME
+    AMPROPSETID_Pin @22703 NONAME
+    AM_INTERFACESETID_Standard @22704 NONAME
+    AM_KSCATEGORY_AUDIO @22705 NONAME
+    AM_KSCATEGORY_CAPTURE @22706 NONAME
+    AM_KSCATEGORY_CROSSBAR @22707 NONAME
+    AM_KSCATEGORY_DATACOMPRESSOR @22708 NONAME
+    AM_KSCATEGORY_RENDER @22709 NONAME
+    AM_KSCATEGORY_SPLITTER @22710 NONAME
+    AM_KSCATEGORY_TVAUDIO @22711 NONAME
+    AM_KSCATEGORY_TVTUNER @22712 NONAME
+    AM_KSCATEGORY_VBICODEC @22713 NONAME
+    AM_KSCATEGORY_VIDEO @22714 NONAME
+    AM_KSPROPSETID_AC3 @22715 NONAME
+    AM_KSPROPSETID_CopyProt @22716 NONAME
+    AM_KSPROPSETID_DvdKaraoke @22717 NONAME
+    AM_KSPROPSETID_DvdSubPic @22718 NONAME
+    AM_KSPROPSETID_DVD_RateChange @22719 NONAME
+    AM_KSPROPSETID_FrameStep @22720 NONAME
+    AM_KSPROPSETID_MPEG4_MediaType_Attributes @22721 NONAME
+    AM_KSPROPSETID_TSRateChange @22722 NONAME
+    CAPTION_FORMAT_ATSC @22723 NONAME
+    CAPTION_FORMAT_DIRECTV @22724 NONAME
+    CAPTION_FORMAT_DVB @22725 NONAME
+    CAPTION_FORMAT_ECHOSTAR @22726 NONAME
+    CLSID_ACMWrapper @22727 NONAME
+    CLSID_ActiveMovieCategories @22728 NONAME
+    CLSID_AllocPresenter @22729 NONAME
+    CLSID_AllocPresenterDDXclMode @22730 NONAME
+    CLSID_AnalogVideoDecoderPropertyPage @22731 NONAME
+    CLSID_AsyncReader @22732 NONAME
+    CLSID_ATSCNetworkPropertyPage @22733 NONAME
+    CLSID_ATSCNetworkProvider @22734 NONAME
+    CLSID_AudioCompressorCategory @22735 NONAME
+    CLSID_AudioInputDeviceCategory @22736 NONAME
+    CLSID_AudioInputMixerProperties @22737 NONAME
+    CLSID_AudioProperties @22738 NONAME
+    CLSID_AudioRecord @22739 NONAME
+    CLSID_AudioRender @22740 NONAME
+    CLSID_AudioRendererAdvancedProperties @22741 NONAME
+    CLSID_AudioRendererCategory @22742 NONAME
+    CLSID_AVICo @22743 NONAME
+    CLSID_AVIDec @22744 NONAME
+    CLSID_AviDest @22745 NONAME
+    CLSID_AVIDoc @22746 NONAME
+    CLSID_AVIDraw @22747 NONAME
+    CLSID_AVIMIDIRender @22748 NONAME
+    CLSID_AviMuxProptyPage @22749 NONAME
+    CLSID_AviMuxProptyPage1 @22750 NONAME
+    CLSID_AviReader @22751 NONAME
+    CLSID_AviSplitter @22752 NONAME
+    CLSID_CAcmCoClassManager @22753 NONAME
+    CLSID_CameraControlPropertyPage @22754 NONAME
+    CLSID_CaptionsFilter @22755 NONAME
+    CLSID_CaptureGraphBuilder @22756 NONAME
+    CLSID_CaptureGraphBuilder2 @22757 NONAME
+    CLSID_CaptureProperties @22758 NONAME
+    CLSID_CCAFilter @22759 NONAME
+    CLSID_CDeviceMoniker @22760 NONAME
+    CLSID_CIcmCoClassManager @22761 NONAME
+    CLSID_CMidiOutClassManager @22762 NONAME
+    CLSID_CMpegAudioCodec @22763 NONAME
+    CLSID_CMpegVideoCodec @22764 NONAME
+    CLSID_Colour @22765 NONAME
+    CLSID_CQzFilterClassManager @22766 NONAME
+    CLSID_CrossbarFilterPropertyPage @22767 NONAME
+    CLSID_CVidCapClassManager @22768 NONAME
+    CLSID_CWaveinClassManager @22769 NONAME
+    CLSID_CWaveOutClassManager @22770 NONAME
+    CLSID_DeviceControlCategory @22771 NONAME
+    CLSID_DirectDraw @22772 NONAME
+    CLSID_DirectDraw7 @22773 NONAME
+    CLSID_DirectDrawClipper @22774 NONAME
+    CLSID_DirectDrawProperties @22775 NONAME
+    CLSID_DirectShowPluginControl @22776 NONAME
+    CLSID_Dither @22777 NONAME
+    CLSID_DShowTVEFilter @22778 NONAME
+    CLSID_DSoundRender @22779 NONAME
+    CLSID_DtvCcFilter @22780 NONAME
+    CLSID_DVBCNetworkProvider @22781 NONAME
+    CLSID_DVBSNetworkProvider @22782 NONAME
+    CLSID_DVBTNetworkProvider @22783 NONAME
+    CLSID_DVDecPropertiesPage @22784 NONAME
+    CLSID_DvdGraphBuilder @22785 NONAME
+    CLSID_DVDHWDecodersCategory @22786 NONAME
+    CLSID_DVDNavigator @22787 NONAME
+    CLSID_DVDState @22788 NONAME
+    CLSID_DVEncPropertiesPage @22789 NONAME
+    CLSID_DVMux @22790 NONAME
+    CLSID_DVMuxPropertyPage @22791 NONAME
+    CLSID_DVSplitter @22792 NONAME
+    CLSID_DVVideoCodec @22793 NONAME
+    CLSID_DVVideoEnc @22794 NONAME
+    CLSID_EnhancedVideoRenderer @22795 NONAME
+    CLSID_EVRPlaybackPipelineOptimizer @22796 NONAME
+    CLSID_EVRTearlessWindowPresenter9 @22797 NONAME
+    CLSID_FGControl @22798 NONAME
+    CLSID_FileSource @22799 NONAME
+    CLSID_FileWriter @22800 NONAME
+    CLSID_FilgraphManager @22801 NONAME
+    CLSID_FilterGraph @22802 NONAME
+    CLSID_FilterGraphNoThread @22803 NONAME
+    CLSID_FilterGraphPrivateThread @22804 NONAME
+    CLSID_FilterMapper @22805 NONAME
+    CLSID_FilterMapper2 @22806 NONAME
+    CLSID_ICodecAPIProxy @22807 NONAME
+    CLSID_InfTee @22808 NONAME
+    CLSID_IVideoEncoderCodecAPIProxy @22809 NONAME
+    CLSID_IVideoEncoderProxy @22810 NONAME
+    CLSID_LegacyAmFilterCategory @22811 NONAME
+    CLSID_Line21Decoder @22812 NONAME
+    CLSID_Line21Decoder2 @22813 NONAME
+    CLSID_MediaEncoderCategory @22814 NONAME
+    CLSID_MediaMultiplexerCategory @22815 NONAME
+    CLSID_MediaPropertyBag @22816 NONAME
+    CLSID_MemoryAllocator @22817 NONAME
+    CLSID_MFVideoMixer9 @22818 NONAME
+    CLSID_MFVideoPresenter9 @22819 NONAME
+    CLSID_MidiRendererCategory @22820 NONAME
+    CLSID_MjpegDec @22821 NONAME
+    CLSID_MJPGEnc @22822 NONAME
+    CLSID_MMSPLITTER @22823 NONAME
+    CLSID_ModexProperties @22824 NONAME
+    CLSID_ModexRenderer @22825 NONAME
+    CLSID_MOVReader @22826 NONAME
+    CLSID_MPEG1Doc @22827 NONAME
+    CLSID_MPEG1PacketPlayer @22828 NONAME
+    CLSID_MPEG1Splitter @22829 NONAME
+    CLSID_MPEG2Demultiplexer @22830 NONAME
+    CLSID_MPEG2Demultiplexer_NoClock @22831 NONAME
+    CLSID_Mpeg2VideoStreamAnalyzer @22832 NONAME
+    CLSID_NetworkProvider @22833 NONAME
+    CLSID_OverlayMixer @22834 NONAME
+    CLSID_PerformanceProperties @22835 NONAME
+    CLSID_PersistMonikerPID @22836 NONAME
+    CLSID_ProtoFilterGraph @22837 NONAME
+    CLSID_QTDec @22838 NONAME
+    CLSID_QualityProperties @22839 NONAME
+    CLSID_QuickTimeParser @22840 NONAME
+    CLSID_SBE2File @22841 NONAME
+    CLSID_SBE2FileScan @22842 NONAME
+    CLSID_SBE2MediaTypeProfile @22843 NONAME
+    CLSID_SBE2Sink @22844 NONAME
+    CLSID_SeekingPassThru @22845 NONAME
+    CLSID_SmartTee @22846 NONAME
+    CLSID_StreamBufferComposeRecording @22847 NONAME
+    CLSID_StreamBufferConfig @22848 NONAME
+    CLSID_StreamBufferPropertyHandler @22849 NONAME
+    CLSID_StreamBufferRecordingAttributes @22850 NONAME
+    CLSID_StreamBufferSink @22851 NONAME
+    CLSID_StreamBufferSource @22852 NONAME
+    CLSID_StreamBufferThumbnailHandler @22853 NONAME
+    CLSID_SubtitlesFilter @22854 NONAME
+    CLSID_SystemClock @22855 NONAME
+    CLSID_SystemDeviceEnum @22856 NONAME
+    CLSID_TextRender @22857 NONAME
+    CLSID_TransmitCategory @22858 NONAME
+    CLSID_TVAudioFilterPropertyPage @22859 NONAME
+    CLSID_TVEFilterCCProperties @22860 NONAME
+    CLSID_TVEFilterStatsProperties @22861 NONAME
+    CLSID_TVEFilterTuneProperties @22862 NONAME
+    CLSID_TVTunerFilterPropertyPage @22863 NONAME
+    CLSID_URLReader @22864 NONAME
+    CLSID_VBISurfaces @22865 NONAME
+    CLSID_VfwCapture @22866 NONAME
+    CLSID_VideoCompressorCategory @22867 NONAME
+    CLSID_VideoInputDeviceCategory @22868 NONAME
+    CLSID_VideoMixingRenderer @22869 NONAME
+    CLSID_VideoMixingRenderer9 @22870 NONAME
+    CLSID_VideoPortManager @22871 NONAME
+    CLSID_VideoProcAmpPropertyPage @22872 NONAME
+    CLSID_VideoRenderer @22873 NONAME
+    CLSID_VideoRendererDefault @22874 NONAME
+    CLSID_VideoStreamConfigPropertyPage @22875 NONAME
+    CLSID_VPObject @22876 NONAME
+    CLSID_VPVBIObject @22877 NONAME
+    CLSID_WMAsfReader @22878 NONAME
+    CLSID_WMAsfWriter @22879 NONAME
+    CLSID_WSTDecoder @22880 NONAME
+    CLSID_WstDecoderPropertyPage @22881 NONAME
+    CODECAPI_ALLSETTINGS @22882 NONAME
+    CODECAPI_AUDIO_ENCODER @22883 NONAME
+    CODECAPI_AVAudioChannelConfig @22884 NONAME
+    CODECAPI_AVAudioChannelCount @22885 NONAME
+    CODECAPI_AVAudioSampleRate @22886 NONAME
+    CODECAPI_AVDDSurroundMode @22887 NONAME
+    CODECAPI_AVDecAACDownmixMode @22888 NONAME
+    CODECAPI_AVDecAudioDualMono @22889 NONAME
+    CODECAPI_AVDecAudioDualMonoReproMode @22890 NONAME
+    CODECAPI_AVDecCommonInputFormat @22891 NONAME
+    CODECAPI_AVDecCommonMeanBitRate @22892 NONAME
+    CODECAPI_AVDecCommonMeanBitRateInterval @22893 NONAME
+    CODECAPI_AVDecCommonOutputFormat @22894 NONAME
+    CODECAPI_AVDecDDDynamicRangeScaleHigh @22895 NONAME
+    CODECAPI_AVDecDDDynamicRangeScaleLow @22896 NONAME
+    CODECAPI_AVDecDDMatrixDecodingMode @22897 NONAME
+    CODECAPI_AVDecDDOperationalMode @22898 NONAME
+    CODECAPI_AVDecHEAACDynamicRangeControl @22899 NONAME
+    CODECAPI_AVDecMmcssClass @22900 NONAME
+    CODECAPI_AVDecVideoAcceleration_H264 @22901 NONAME
+    CODECAPI_AVDecVideoAcceleration_MPEG2 @22902 NONAME
+    CODECAPI_AVDecVideoAcceleration_VC1 @22903 NONAME
+    CODECAPI_AVDecVideoCodecType @22904 NONAME
+    CODECAPI_AVDecVideoDropPicWithMissingRef @22905 NONAME
+    CODECAPI_AVDecVideoDXVABusEncryption @22906 NONAME
+    CODECAPI_AVDecVideoDXVAMode @22907 NONAME
+    CODECAPI_AVDecVideoFastDecodeMode @22908 NONAME
+    CODECAPI_AVDecVideoH264ErrorConcealment @22909 NONAME
+    CODECAPI_AVDecVideoImageSize @22910 NONAME
+    CODECAPI_AVDecVideoInputScanType @22911 NONAME
+    CODECAPI_AVDecVideoMPEG2ErrorConcealment @22912 NONAME
+    CODECAPI_AVDecVideoPixelAspectRatio @22913 NONAME
+    CODECAPI_AVDecVideoProcDeinterlaceCSC @22914 NONAME
+    CODECAPI_AVDecVideoSoftwareDeinterlaceMode @22915 NONAME
+    CODECAPI_AVDecVideoSWPowerLevel @22916 NONAME
+    CODECAPI_AVDecVideoThumbnailGenerationMode @22917 NONAME
+    CODECAPI_AVDSPLoudnessEqualization @22918 NONAME
+    CODECAPI_AVDSPSpeakerFill @22919 NONAME
+    CODECAPI_AVEncAudioDualMono @22920 NONAME
+    CODECAPI_AVEncAudioInputContent @22921 NONAME
+    CODECAPI_AVEncAudioIntervalToEncode @22922 NONAME
+    CODECAPI_AVEncAudioIntervalToSkip @22923 NONAME
+    CODECAPI_AVEncAudioMapDestChannel0 @22924 NONAME
+    CODECAPI_AVEncAudioMapDestChannel1 @22925 NONAME
+    CODECAPI_AVEncAudioMapDestChannel10 @22926 NONAME
+    CODECAPI_AVEncAudioMapDestChannel11 @22927 NONAME
+    CODECAPI_AVEncAudioMapDestChannel12 @22928 NONAME
+    CODECAPI_AVEncAudioMapDestChannel13 @22929 NONAME
+    CODECAPI_AVEncAudioMapDestChannel14 @22930 NONAME
+    CODECAPI_AVEncAudioMapDestChannel15 @22931 NONAME
+    CODECAPI_AVEncAudioMapDestChannel2 @22932 NONAME
+    CODECAPI_AVEncAudioMapDestChannel3 @22933 NONAME
+    CODECAPI_AVEncAudioMapDestChannel4 @22934 NONAME
+    CODECAPI_AVEncAudioMapDestChannel5 @22935 NONAME
+    CODECAPI_AVEncAudioMapDestChannel6 @22936 NONAME
+    CODECAPI_AVEncAudioMapDestChannel7 @22937 NONAME
+    CODECAPI_AVEncAudioMapDestChannel8 @22938 NONAME
+    CODECAPI_AVEncAudioMapDestChannel9 @22939 NONAME
+    CODECAPI_AVEncAudioMeanBitRate @22940 NONAME
+    CODECAPI_AVEncCodecType @22941 NONAME
+    CODECAPI_AVEncCommonBufferInLevel @22942 NONAME
+    CODECAPI_AVEncCommonBufferOutLevel @22943 NONAME
+    CODECAPI_AVEncCommonBufferSize @22944 NONAME
+    CODECAPI_AVEncCommonFormatConstraint @22945 NONAME
+    CODECAPI_AVEncCommonLowLatency @22946 NONAME
+    CODECAPI_AVEncCommonMaxBitRate @22947 NONAME
+    CODECAPI_AVEncCommonMeanBitRate @22948 NONAME
+    CODECAPI_AVEncCommonMeanBitRateInterval @22949 NONAME
+    CODECAPI_AVEncCommonMinBitRate @22950 NONAME
+    CODECAPI_AVEncCommonMultipassMode @22951 NONAME
+    CODECAPI_AVEncCommonPassEnd @22952 NONAME
+    CODECAPI_AVEncCommonPassStart @22953 NONAME
+    CODECAPI_AVEncCommonQuality @22954 NONAME
+    CODECAPI_AVEncCommonQualityVsSpeed @22955 NONAME
+    CODECAPI_AVEncCommonRateControlMode @22956 NONAME
+    CODECAPI_AVEncCommonRealTime @22957 NONAME
+    CODECAPI_AVEncCommonStreamEndHandling @22958 NONAME
+    CODECAPI_AVEncDDAtoDConverterType @22959 NONAME
+    CODECAPI_AVEncDDCentreDownMixLevel @22960 NONAME
+    CODECAPI_AVEncDDChannelBWLowPassFilter @22961 NONAME
+    CODECAPI_AVEncDDCopyright @22962 NONAME
+    CODECAPI_AVEncDDDCHighPassFilter @22963 NONAME
+    CODECAPI_AVEncDDDialogNormalization @22964 NONAME
+    CODECAPI_AVEncDDDigitalDeemphasis @22965 NONAME
+    CODECAPI_AVEncDDDynamicRangeCompressionControl @22966 NONAME
+    CODECAPI_AVEncDDHeadphoneMode @22967 NONAME
+    CODECAPI_AVEncDDLFELowPassFilter @22968 NONAME
+    CODECAPI_AVEncDDLoRoCenterMixLvl_x10 @22969 NONAME
+    CODECAPI_AVEncDDLoRoSurroundMixLvl_x10 @22970 NONAME
+    CODECAPI_AVEncDDLtRtCenterMixLvl_x10 @22971 NONAME
+    CODECAPI_AVEncDDLtRtSurroundMixLvl_x10 @22972 NONAME
+    CODECAPI_AVEncDDOriginalBitstream @22973 NONAME
+    CODECAPI_AVEncDDPreferredStereoDownMixMode @22974 NONAME
+    CODECAPI_AVEncDDProductionInfoExists @22975 NONAME
+    CODECAPI_AVEncDDProductionMixLevel @22976 NONAME
+    CODECAPI_AVEncDDProductionRoomType @22977 NONAME
+    CODECAPI_AVEncDDRFPreEmphasisFilter @22978 NONAME
+    CODECAPI_AVEncDDService @22979 NONAME
+    CODECAPI_AVEncDDSurround3dBAttenuation @22980 NONAME
+    CODECAPI_AVEncDDSurround90DegreeePhaseShift @22981 NONAME
+    CODECAPI_AVEncDDSurroundDownMixLevel @22982 NONAME
+    CODECAPI_AVEncDDSurroundExMode @22983 NONAME
+    CODECAPI_AVEncInputVideoSystem @22984 NONAME
+    CODECAPI_AVEncMP12MuxDVDNavPacks @22985 NONAME
+    CODECAPI_AVEncMP12MuxEarliestPTS @22986 NONAME
+    CODECAPI_AVEncMP12MuxInitialSCR @22987 NONAME
+    CODECAPI_AVEncMP12MuxLargestPacketSize @22988 NONAME
+    CODECAPI_AVEncMP12MuxMuxRate @22989 NONAME
+    CODECAPI_AVEncMP12MuxNumStreams @22990 NONAME
+    CODECAPI_AVEncMP12MuxPacketOverhead @22991 NONAME
+    CODECAPI_AVEncMP12MuxPackSize @22992 NONAME
+    CODECAPI_AVEncMP12MuxSysAudioLock @22993 NONAME
+    CODECAPI_AVEncMP12MuxSysCSPS @22994 NONAME
+    CODECAPI_AVEncMP12MuxSysFixed @22995 NONAME
+    CODECAPI_AVEncMP12MuxSysRateBound @22996 NONAME
+    CODECAPI_AVEncMP12MuxSysSTDBufferBound @22997 NONAME
+    CODECAPI_AVEncMP12MuxSysVideoLock @22998 NONAME
+    CODECAPI_AVEncMP12MuxTargetPacketizer @22999 NONAME
+    CODECAPI_AVEncMP12PktzCopyright @23000 NONAME
+    CODECAPI_AVEncMP12PktzInitialPTS @23001 NONAME
+    CODECAPI_AVEncMP12PktzOriginal @23002 NONAME
+    CODECAPI_AVEncMP12PktzPacketSize @23003 NONAME
+    CODECAPI_AVEncMP12PktzSTDBuffer @23004 NONAME
+    CODECAPI_AVEncMP12PktzStreamID @23005 NONAME
+    CODECAPI_AVEncMPACodingMode @23006 NONAME
+    CODECAPI_AVEncMPACopyright @23007 NONAME
+    CODECAPI_AVEncMPAEmphasisType @23008 NONAME
+    CODECAPI_AVEncMPAEnableRedundancyProtection @23009 NONAME
+    CODECAPI_AVEncMPALayer @23010 NONAME
+    CODECAPI_AVEncMPAOriginalBitstream @23011 NONAME
+    CODECAPI_AVEncMPAPrivateUserBit @23012 NONAME
+    CODECAPI_AVEncMPVAddSeqEndCode @23013 NONAME
+    CODECAPI_AVEncMPVDefaultBPictureCount @23014 NONAME
+    CODECAPI_AVEncMPVFrameFieldMode @23015 NONAME
+    CODECAPI_AVEncMPVGenerateHeaderPicDispExt @23016 NONAME
+    CODECAPI_AVEncMPVGenerateHeaderPicExt @23017 NONAME
+    CODECAPI_AVEncMPVGenerateHeaderSeqDispExt @23018 NONAME
+    CODECAPI_AVEncMPVGenerateHeaderSeqExt @23019 NONAME
+    CODECAPI_AVEncMPVGenerateHeaderSeqScaleExt @23020 NONAME
+    CODECAPI_AVEncMPVGOPOpen @23021 NONAME
+    CODECAPI_AVEncMPVGOPSInSeq @23022 NONAME
+    CODECAPI_AVEncMPVGOPSize @23023 NONAME
+    CODECAPI_AVEncMPVIntraDCPrecision @23024 NONAME
+    CODECAPI_AVEncMPVIntraVLCTable @23025 NONAME
+    CODECAPI_AVEncMPVLevel @23026 NONAME
+    CODECAPI_AVEncMPVProfile @23027 NONAME
+    CODECAPI_AVEncMPVQScaleType @23028 NONAME
+    CODECAPI_AVEncMPVQuantMatrixChromaIntra @23029 NONAME
+    CODECAPI_AVEncMPVQuantMatrixChromaNonIntra @23030 NONAME
+    CODECAPI_AVEncMPVQuantMatrixIntra @23031 NONAME
+    CODECAPI_AVEncMPVQuantMatrixNonIntra @23032 NONAME
+    CODECAPI_AVEncMPVScanPattern @23033 NONAME
+    CODECAPI_AVEncMPVSceneDetection @23034 NONAME
+    CODECAPI_AVEncMPVUseConcealmentMotionVectors @23035 NONAME
+    CODECAPI_AVEncMuxOutputStreamType @23036 NONAME
+    CODECAPI_AVEncStatAudioAverageBPS @23037 NONAME
+    CODECAPI_AVEncStatAudioAveragePCMValue @23038 NONAME
+    CODECAPI_AVEncStatAudioPeakPCMValue @23039 NONAME
+    CODECAPI_AVEncStatAverageBPS @23040 NONAME
+    CODECAPI_AVEncStatCommonCompletedPasses @23041 NONAME
+    CODECAPI_AVEncStatHardwareBandwidthUtilitization @23042 NONAME
+    CODECAPI_AVEncStatHardwareProcessorUtilitization @23043 NONAME
+    CODECAPI_AVEncStatMPVSkippedEmptyFrames @23044 NONAME
+    CODECAPI_AVEncStatVideoCodedFrames @23045 NONAME
+    CODECAPI_AVEncStatVideoOutputFrameRate @23046 NONAME
+    CODECAPI_AVEncStatVideoTotalFrames @23047 NONAME
+    CODECAPI_AVEncStatWMVCBAvg @23048 NONAME
+    CODECAPI_AVEncStatWMVCBMax @23049 NONAME
+    CODECAPI_AVEncStatWMVDecoderComplexityProfile @23050 NONAME
+    CODECAPI_AVEncVideoCBRMotionTradeoff @23051 NONAME
+    CODECAPI_AVEncVideoCodedVideoAccessUnitSize @23052 NONAME
+    CODECAPI_AVEncVideoDefaultUpperFieldDominant @23053 NONAME
+    CODECAPI_AVEncVideoDisplayDimension @23054 NONAME
+    CODECAPI_AVEncVideoEncodeDimension @23055 NONAME
+    CODECAPI_AVEncVideoEncodeOffsetOrigin @23056 NONAME
+    CODECAPI_AVEncVideoFieldSwap @23057 NONAME
+    CODECAPI_AVEncVideoForceSourceScanType @23058 NONAME
+    CODECAPI_AVEncVideoHeaderDropFrame @23059 NONAME
+    CODECAPI_AVEncVideoHeaderFrames @23060 NONAME
+    CODECAPI_AVEncVideoHeaderHours @23061 NONAME
+    CODECAPI_AVEncVideoHeaderMinutes @23062 NONAME
+    CODECAPI_AVEncVideoHeaderSeconds @23063 NONAME
+    CODECAPI_AVEncVideoInputChromaResolution @23064 NONAME
+    CODECAPI_AVEncVideoInputChromaSubsampling @23065 NONAME
+    CODECAPI_AVEncVideoInputColorLighting @23066 NONAME
+    CODECAPI_AVEncVideoInputColorNominalRange @23067 NONAME
+    CODECAPI_AVEncVideoInputColorPrimaries @23068 NONAME
+    CODECAPI_AVEncVideoInputColorTransferFunction @23069 NONAME
+    CODECAPI_AVEncVideoInputColorTransferMatrix @23070 NONAME
+    CODECAPI_AVEncVideoInverseTelecineEnable @23071 NONAME
+    CODECAPI_AVEncVideoInverseTelecineThreshold @23072 NONAME
+    CODECAPI_AVEncVideoMaxKeyframeDistance @23073 NONAME
+    CODECAPI_AVEncVideoNoOfFieldsToEncode @23074 NONAME
+    CODECAPI_AVEncVideoNoOfFieldsToSkip @23075 NONAME
+    CODECAPI_AVEncVideoOutputChromaResolution @23076 NONAME
+    CODECAPI_AVEncVideoOutputChromaSubsampling @23077 NONAME
+    CODECAPI_AVEncVideoOutputColorLighting @23078 NONAME
+    CODECAPI_AVEncVideoOutputColorNominalRange @23079 NONAME
+    CODECAPI_AVEncVideoOutputColorPrimaries @23080 NONAME
+    CODECAPI_AVEncVideoOutputColorTransferFunction @23081 NONAME
+    CODECAPI_AVEncVideoOutputColorTransferMatrix @23082 NONAME
+    CODECAPI_AVEncVideoOutputFrameRate @23083 NONAME
+    CODECAPI_AVEncVideoOutputFrameRateConversion @23084 NONAME
+    CODECAPI_AVEncVideoOutputScanType @23085 NONAME
+    CODECAPI_AVEncVideoPixelAspectRatio @23086 NONAME
+    CODECAPI_AVEncVideoSourceFilmContent @23087 NONAME
+    CODECAPI_AVEncVideoSourceIsBW @23088 NONAME
+    CODECAPI_AVEncWMVDecoderComplexity @23089 NONAME
+    CODECAPI_AVEncWMVInterlacedEncoding @23090 NONAME
+    CODECAPI_AVEncWMVKeyFrameBufferLevelMarker @23091 NONAME
+    CODECAPI_AVEncWMVKeyFrameDistance @23092 NONAME
+    CODECAPI_AVEncWMVProduceDummyFrames @23093 NONAME
+    CODECAPI_AVPriorityControl @23094 NONAME
+    CODECAPI_AVRealtimeControl @23095 NONAME
+    CODECAPI_CHANGELISTS @23096 NONAME
+    CODECAPI_CURRENTCHANGELIST @23097 NONAME
+    CODECAPI_GUID_AVDecAudioInputAAC @23098 NONAME
+    CODECAPI_GUID_AVDecAudioInputDolby @23099 NONAME
+    CODECAPI_GUID_AVDecAudioInputDolbyDigitalPlus @23100 NONAME
+    CODECAPI_GUID_AVDecAudioInputDTS @23101 NONAME
+    CODECAPI_GUID_AVDecAudioInputHEAAC @23102 NONAME
+    CODECAPI_GUID_AVDecAudioInputMPEG @23103 NONAME
+    CODECAPI_GUID_AVDecAudioInputPCM @23104 NONAME
+    CODECAPI_GUID_AVDecAudioInputWMA @23105 NONAME
+    CODECAPI_GUID_AVDecAudioInputWMAPro @23106 NONAME
+    CODECAPI_GUID_AVDecAudioOutputFormat_PCM @23107 NONAME
+    CODECAPI_GUID_AVDecAudioOutputFormat_PCM_Headphones @23108 NONAME
+    CODECAPI_GUID_AVDecAudioOutputFormat_PCM_Stereo_Auto @23109 NONAME
+    CODECAPI_GUID_AVDecAudioOutputFormat_PCM_Stereo_MatrixEncoded @23110 NONAME
+    CODECAPI_GUID_AVDecAudioOutputFormat_SPDIF_Bitstream @23111 NONAME
+    CODECAPI_GUID_AVDecAudioOutputFormat_SPDIF_PCM @23112 NONAME
+    CODECAPI_GUID_AVEncCommonFormatATSC @23113 NONAME
+    CODECAPI_GUID_AVEncCommonFormatDVB @23114 NONAME
+    CODECAPI_GUID_AVEncCommonFormatDVD_DashVR @23115 NONAME
+    CODECAPI_GUID_AVEncCommonFormatDVD_PlusVR @23116 NONAME
+    CODECAPI_GUID_AVEncCommonFormatDVD_V @23117 NONAME
+    CODECAPI_GUID_AVEncCommonFormatHighMAT @23118 NONAME
+    CODECAPI_GUID_AVEncCommonFormatHighMPV @23119 NONAME
+    CODECAPI_GUID_AVEncCommonFormatMP3 @23120 NONAME
+    CODECAPI_GUID_AVEncCommonFormatSVCD @23121 NONAME
+    CODECAPI_GUID_AVEncCommonFormatUnSpecified @23122 NONAME
+    CODECAPI_GUID_AVEncCommonFormatVCD @23123 NONAME
+    CODECAPI_GUID_AVEncDolbyDigitalConsumer @23124 NONAME
+    CODECAPI_GUID_AVEncDolbyDigitalPlus @23125 NONAME
+    CODECAPI_GUID_AVEncDolbyDigitalPro @23126 NONAME
+    CODECAPI_GUID_AVEncDTS @23127 NONAME
+    CODECAPI_GUID_AVEncDTSHD @23128 NONAME
+    CODECAPI_GUID_AVEncDV @23129 NONAME
+    CODECAPI_GUID_AVEncH264Video @23130 NONAME
+    CODECAPI_GUID_AVEncMLP @23131 NONAME
+    CODECAPI_GUID_AVEncMPEG1Audio @23132 NONAME
+    CODECAPI_GUID_AVEncMPEG1Video @23133 NONAME
+    CODECAPI_GUID_AVEncMPEG2Audio @23134 NONAME
+    CODECAPI_GUID_AVEncMPEG2Video @23135 NONAME
+    CODECAPI_GUID_AVEncPCM @23136 NONAME
+    CODECAPI_GUID_AVEncSDDS @23137 NONAME
+    CODECAPI_GUID_AVEncWMALossless @23138 NONAME
+    CODECAPI_GUID_AVEncWMAPro @23139 NONAME
+    CODECAPI_GUID_AVEncWMAVoice @23140 NONAME
+    CODECAPI_GUID_AVEncWMV @23141 NONAME
+    CODECAPI_GUID_AVEndMPEG4Video @23142 NONAME
+    CODECAPI_SETALLDEFAULTS @23143 NONAME
+    CODECAPI_SUPPORTSEVENTS @23144 NONAME
+    CODECAPI_VIDEO_ENCODER @23145 NONAME
+    DSATTRIB_CAPTURE_STREAMTIME @23146 NONAME
+    DSATTRIB_CC_CONTAINER_INFO @23147 NONAME
+    DSATTRIB_DSHOW_STREAM_DESC @23148 NONAME
+    DSATTRIB_OptionalVideoAttributes @23149 NONAME
+    DSATTRIB_PBDATAG_ATTRIBUTE @23150 NONAME
+    DSATTRIB_PicSampleSeq @23151 NONAME
+    DSATTRIB_SAMPLE_LIVE_STREAM_TIME @23152 NONAME
+    DSATTRIB_TRANSPORT_PROPERTIES @23153 NONAME
+    DSATTRIB_UDCRTag @23154 NONAME
+    ENCAPIPARAM_BITRATE @23155 NONAME
+    ENCAPIPARAM_BITRATE_MODE @23156 NONAME
+    ENCAPIPARAM_PEAK_BITRATE @23157 NONAME
+    ENCAPIPARAM_SAP_MODE @23158 NONAME
+    EVRConfig_AllowBatching @23159 NONAME
+    EVRConfig_AllowDropToBob @23160 NONAME
+    EVRConfig_AllowDropToHalfInterlace @23161 NONAME
+    EVRConfig_AllowDropToThrottle @23162 NONAME
+    EVRConfig_AllowScaling @23163 NONAME
+    EVRConfig_ForceBatching @23164 NONAME
+    EVRConfig_ForceBob @23165 NONAME
+    EVRConfig_ForceHalfInterlace @23166 NONAME
+    EVRConfig_ForceScaling @23167 NONAME
+    EVRConfig_ForceThrottle @23168 NONAME
+    FORMAT_525WSS @23169 NONAME
+    FORMAT_AnalogVideo @23170 NONAME
+    FORMAT_CAPTIONED_H264VIDEO @23171 NONAME
+    FORMAT_CAPTIONED_MPEG2VIDEO @23172 NONAME
+    FORMAT_CC_CONTAINER @23173 NONAME
+    FORMAT_DolbyAC3 @23174 NONAME
+    FORMAT_DVD_LPCMAudio @23175 NONAME
+    FORMAT_DvInfo @23176 NONAME
+    FORMAT_MPEG2Audio @23177 NONAME
+    FORMAT_MPEG2Video @23178 NONAME
+    FORMAT_MPEG2_VIDEO @23179 NONAME
+    FORMAT_MPEGStreams @23180 NONAME
+    FORMAT_MPEGVideo @23181 NONAME
+    FORMAT_None @23182 NONAME
+    FORMAT_VideoInfo @23183 NONAME
+    FORMAT_VideoInfo2 @23184 NONAME
+    FORMAT_WaveFormatEx @23185 NONAME
+    IID_IAMCollection @23186 NONAME
+    IID_IAMDirectSound @23187 NONAME
+    IID_IAMLine21Decoder @23188 NONAME
+    IID_IAMStats @23189 NONAME
+    IID_IAMWstDecoder @23190 NONAME
+    IID_IBaseVideoMixer @23191 NONAME
+    IID_IBasicAudio @23192 NONAME
+    IID_IBasicVideo @23193 NONAME
+    IID_IBasicVideo2 @23194 NONAME
+    IID_IDDVideoPortContainer @23195 NONAME
+    IID_IDeferredCommand @23196 NONAME
+    IID_IDirectDraw @23197 NONAME
+    IID_IDirectDraw2 @23198 NONAME
+    IID_IDirectDraw4 @23199 NONAME
+    IID_IDirectDraw7 @23200 NONAME
+    IID_IDirectDrawClipper @23201 NONAME
+    IID_IDirectDrawColorControl @23202 NONAME
+    IID_IDirectDrawGammaControl @23203 NONAME
+    IID_IDirectDrawKernel @23204 NONAME
+    IID_IDirectDrawPalette @23205 NONAME
+    IID_IDirectDrawSurface @23206 NONAME
+    IID_IDirectDrawSurface2 @23207 NONAME
+    IID_IDirectDrawSurface3 @23208 NONAME
+    IID_IDirectDrawSurface4 @23209 NONAME
+    IID_IDirectDrawSurface7 @23210 NONAME
+    IID_IDirectDrawSurfaceKernel @23211 NONAME
+    IID_IDirectDrawVideo @23212 NONAME
+    IID_IFilterInfo @23213 NONAME
+    IID_IFullScreenVideo @23214 NONAME
+    IID_IFullScreenVideoEx @23215 NONAME
+    IID_IKsControl @23216 NONAME
+    IID_IKsDataTypeHandler @23217 NONAME
+    IID_IKsInterfaceHandler @23218 NONAME
+    IID_IKsPin @23219 NONAME
+    IID_IKsPinFactory @23220 NONAME
+    IID_IMediaControl @23221 NONAME
+    IID_IMediaEvent @23222 NONAME
+    IID_IMediaEventEx @23223 NONAME
+    IID_IMediaPosition @23224 NONAME
+    IID_IMediaTypeInfo @23225 NONAME
+    IID_IMixerPinConfig @23226 NONAME
+    IID_IMixerPinConfig2 @23227 NONAME
+    IID_IMpegAudioDecoder @23228 NONAME
+    IID_IPinInfo @23229 NONAME
+    IID_IQualProp @23230 NONAME
+    IID_IQueueCommand @23231 NONAME
+    IID_IRegFilterInfo @23232 NONAME
+    IID_IVideoWindow @23233 NONAME
+    IID_IVPConfig @23234 NONAME
+    IID_IVPControl @23235 NONAME
+    IID_IVPNotify @23236 NONAME
+    IID_IVPNotify2 @23237 NONAME
+    IID_IVPObject @23238 NONAME
+    IID_IVPVBIConfig @23239 NONAME
+    IID_IVPVBINotify @23240 NONAME
+    IID_IVPVBIObject @23241 NONAME
+    LIBID_QuartzTypeLib @23242 NONAME
+    LOOK_DOWNSTREAM_ONLY @23243 NONAME
+    LOOK_UPSTREAM_ONLY @23244 NONAME
+    MEDIASUBTYPE_708_608Data @23245 NONAME
+    MEDIASUBTYPE_A2B10G10R10 @23246 NONAME
+    MEDIASUBTYPE_A2R10G10B10 @23247 NONAME
+    MEDIASUBTYPE_AI44 @23248 NONAME
+    MEDIASUBTYPE_AIFF @23249 NONAME
+    MEDIASUBTYPE_AnalogVideo_NTSC_M @23250 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_B @23251 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_D @23252 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_G @23253 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_H @23254 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_I @23255 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_M @23256 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_N @23257 NONAME
+    MEDIASUBTYPE_AnalogVideo_PAL_N_COMBO @23258 NONAME
+    MEDIASUBTYPE_AnalogVideo_SECAM_B @23259 NONAME
+    MEDIASUBTYPE_AnalogVideo_SECAM_D @23260 NONAME
+    MEDIASUBTYPE_AnalogVideo_SECAM_G @23261 NONAME
+    MEDIASUBTYPE_AnalogVideo_SECAM_H @23262 NONAME
+    MEDIASUBTYPE_AnalogVideo_SECAM_K @23263 NONAME
+    MEDIASUBTYPE_AnalogVideo_SECAM_K1 @23264 NONAME
+    MEDIASUBTYPE_AnalogVideo_SECAM_L @23265 NONAME
+    MEDIASUBTYPE_ARGB1555 @23266 NONAME
+    MEDIASUBTYPE_ARGB1555_D3D_DX7_RT @23267 NONAME
+    MEDIASUBTYPE_ARGB1555_D3D_DX9_RT @23268 NONAME
+    MEDIASUBTYPE_ARGB32 @23269 NONAME
+    MEDIASUBTYPE_ARGB32_D3D_DX7_RT @23270 NONAME
+    MEDIASUBTYPE_ARGB32_D3D_DX9_RT @23271 NONAME
+    MEDIASUBTYPE_ARGB4444 @23272 NONAME
+    MEDIASUBTYPE_ARGB4444_D3D_DX7_RT @23273 NONAME
+    MEDIASUBTYPE_ARGB4444_D3D_DX9_RT @23274 NONAME
+    MEDIASUBTYPE_Asf @23275 NONAME
+    MEDIASUBTYPE_AU @23276 NONAME
+    MEDIASUBTYPE_Avi @23277 NONAME
+    MEDIASUBTYPE_AYUV @23278 NONAME
+    MEDIASUBTYPE_CC_CONTAINER @23279 NONAME
+    MEDIASUBTYPE_CFCC @23280 NONAME
+    MEDIASUBTYPE_CLJR @23281 NONAME
+    MEDIASUBTYPE_CLPL @23282 NONAME
+    MEDIASUBTYPE_CPLA @23283 NONAME
+    MEDIASUBTYPE_DOLBY_AC3 @23284 NONAME
+    MEDIASUBTYPE_DOLBY_AC3_SPDIF @23285 NONAME
+    MEDIASUBTYPE_DRM_Audio @23286 NONAME
+    MEDIASUBTYPE_DssAudio @23287 NONAME
+    MEDIASUBTYPE_DssVideo @23288 NONAME
+    MEDIASUBTYPE_DTS @23289 NONAME
+    MEDIASUBTYPE_DtvCcData @23290 NONAME
+    MEDIASUBTYPE_dv25 @23291 NONAME
+    MEDIASUBTYPE_dv50 @23292 NONAME
+    MEDIASUBTYPE_DVB_SUBTITLES @23293 NONAME
+    MEDIASUBTYPE_DVCS @23294 NONAME
+    MEDIASUBTYPE_DVD_LPCM_AUDIO @23295 NONAME
+    MEDIASUBTYPE_DVD_NAVIGATION_DSI @23296 NONAME
+    MEDIASUBTYPE_DVD_NAVIGATION_PCI @23297 NONAME
+    MEDIASUBTYPE_DVD_NAVIGATION_PROVIDER @23298 NONAME
+    MEDIASUBTYPE_DVD_SUBPICTURE @23299 NONAME
+    MEDIASUBTYPE_dvh1 @23300 NONAME
+    MEDIASUBTYPE_dvhd @23301 NONAME
+    MEDIASUBTYPE_DVSD @23302 NONAME
+    MEDIASUBTYPE_dvsl @23303 NONAME
+    MEDIASUBTYPE_H264 @23304 NONAME
+    MEDIASUBTYPE_IA44 @23305 NONAME
+    MEDIASUBTYPE_IEEE_FLOAT @23306 NONAME
+    MEDIASUBTYPE_IF09 @23307 NONAME
+    MEDIASUBTYPE_IJPG @23308 NONAME
+    MEDIASUBTYPE_IMC1 @23309 NONAME
+    MEDIASUBTYPE_IMC2 @23310 NONAME
+    MEDIASUBTYPE_IMC3 @23311 NONAME
+    MEDIASUBTYPE_IMC4 @23312 NONAME
+    MEDIASUBTYPE_ISDB_CAPTIONS @23313 NONAME
+    MEDIASUBTYPE_ISDB_SUPERIMPOSE @23314 NONAME
+    MEDIASUBTYPE_IYUV @23315 NONAME
+    MEDIASUBTYPE_Line21_BytePair @23316 NONAME
+    MEDIASUBTYPE_Line21_GOPPacket @23317 NONAME
+    MEDIASUBTYPE_Line21_VBIRawData @23318 NONAME
+    MEDIASUBTYPE_MDVF @23319 NONAME
+    MEDIASUBTYPE_MJPG @23320 NONAME
+    MEDIASUBTYPE_MPEG1Audio @23321 NONAME
+    MEDIASUBTYPE_MPEG1AudioPayload @23322 NONAME
+    MEDIASUBTYPE_MPEG1Packet @23323 NONAME
+    MEDIASUBTYPE_MPEG1Payload @23324 NONAME
+    MEDIASUBTYPE_MPEG1System @23325 NONAME
+    MEDIASUBTYPE_MPEG1Video @23326 NONAME
+    MEDIASUBTYPE_MPEG1VideoCD @23327 NONAME
+    MEDIASUBTYPE_MPEG2_AUDIO @23328 NONAME
+    MEDIASUBTYPE_MPEG2_PBDA_TRANSPORT_PROCESSED @23329 NONAME
+    MEDIASUBTYPE_MPEG2_PBDA_TRANSPORT_RAW @23330 NONAME
+    MEDIASUBTYPE_MPEG2_PROGRAM @23331 NONAME
+    MEDIASUBTYPE_MPEG2_TRANSPORT @23332 NONAME
+    MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE @23333 NONAME
+    MEDIASUBTYPE_MPEG2_UDCR_TRANSPORT @23334 NONAME
+    MEDIASUBTYPE_MPEG2_VIDEO @23335 NONAME
+    MEDIASUBTYPE_MPEG2_WMDRM_TRANSPORT @23336 NONAME
+    MEDIASUBTYPE_None @23337 NONAME
+    MEDIASUBTYPE_NV11 @23338 NONAME
+    MEDIASUBTYPE_NV12 @23339 NONAME
+    MEDIASUBTYPE_NV24 @23340 NONAME
+    MEDIASUBTYPE_Overlay @23341 NONAME
+    MEDIASUBTYPE_P010 @23342 NONAME
+    MEDIASUBTYPE_P016 @23343 NONAME
+    MEDIASUBTYPE_P208 @23344 NONAME
+    MEDIASUBTYPE_P210 @23345 NONAME
+    MEDIASUBTYPE_P216 @23346 NONAME
+    MEDIASUBTYPE_P408 @23347 NONAME
+    MEDIASUBTYPE_PCM @23348 NONAME
+    MEDIASUBTYPE_PCMAudio_Obsolete @23349 NONAME
+    MEDIASUBTYPE_Plum @23350 NONAME
+    MEDIASUBTYPE_QTJpeg @23351 NONAME
+    MEDIASUBTYPE_QTMovie @23352 NONAME
+    MEDIASUBTYPE_QTRle @23353 NONAME
+    MEDIASUBTYPE_QTRpza @23354 NONAME
+    MEDIASUBTYPE_QTSmc @23355 NONAME
+    MEDIASUBTYPE_RAW_SPORT @23356 NONAME
+    MEDIASUBTYPE_RGB1 @23357 NONAME
+    MEDIASUBTYPE_RGB16_D3D_DX7_RT @23358 NONAME
+    MEDIASUBTYPE_RGB16_D3D_DX9_RT @23359 NONAME
+    MEDIASUBTYPE_RGB24 @23360 NONAME
+    MEDIASUBTYPE_RGB32 @23361 NONAME
+    MEDIASUBTYPE_RGB32_D3D_DX7_RT @23362 NONAME
+    MEDIASUBTYPE_RGB32_D3D_DX9_RT @23363 NONAME
+    MEDIASUBTYPE_RGB4 @23364 NONAME
+    MEDIASUBTYPE_RGB555 @23365 NONAME
+    MEDIASUBTYPE_RGB565 @23366 NONAME
+    MEDIASUBTYPE_RGB8 @23367 NONAME
+    MEDIASUBTYPE_S340 @23368 NONAME
+    MEDIASUBTYPE_S342 @23369 NONAME
+    MEDIASUBTYPE_SDDS @23370 NONAME
+    MEDIASUBTYPE_SPDIF_TAG_241h @23371 NONAME
+    MEDIASUBTYPE_TELETEXT @23372 NONAME
+    MEDIASUBTYPE_TVMJ @23373 NONAME
+    MEDIASUBTYPE_UYVY @23374 NONAME
+    MEDIASUBTYPE_VBI @23375 NONAME
+    MEDIASUBTYPE_VPS @23376 NONAME
+    MEDIASUBTYPE_VPVBI @23377 NONAME
+    MEDIASUBTYPE_VPVideo @23378 NONAME
+    MEDIASUBTYPE_WAKE @23379 NONAME
+    MEDIASUBTYPE_WAVE @23380 NONAME
+    MEDIASUBTYPE_WSS @23381 NONAME
+    MEDIASUBTYPE_XDS @23382 NONAME
+    MEDIASUBTYPE_Y210 @23383 NONAME
+    MEDIASUBTYPE_Y211 @23384 NONAME
+    MEDIASUBTYPE_Y216 @23385 NONAME
+    MEDIASUBTYPE_Y411 @23386 NONAME
+    MEDIASUBTYPE_Y41P @23387 NONAME
+    MEDIASUBTYPE_YUY2 @23388 NONAME
+    MEDIASUBTYPE_YUYV @23389 NONAME
+    MEDIASUBTYPE_YV12 @23390 NONAME
+    MEDIASUBTYPE_YVU9 @23391 NONAME
+    MEDIASUBTYPE_YVYU @23392 NONAME
+    MEDIATYPE_AnalogAudio @23393 NONAME
+    MEDIATYPE_AnalogVideo @23394 NONAME
+    MEDIATYPE_Audio @23395 NONAME
+    MEDIATYPE_AUXLine21Data @23396 NONAME
+    MEDIATYPE_AUXTeletextPage @23397 NONAME
+    MEDIATYPE_CC_CONTAINER @23398 NONAME
+    MEDIATYPE_DTVCCData @23399 NONAME
+    MEDIATYPE_DVD_ENCRYPTED_PACK @23400 NONAME
+    MEDIATYPE_DVD_NAVIGATION @23401 NONAME
+    MEDIATYPE_File @23402 NONAME
+    MEDIATYPE_Interleaved @23403 NONAME
+    MEDIATYPE_LMRT @23404 NONAME
+    MEDIATYPE_Midi @23405 NONAME
+    MEDIATYPE_MPEG1SystemStream @23406 NONAME
+    MEDIATYPE_MPEG2_PACK @23407 NONAME
+    MEDIATYPE_MPEG2_PES @23408 NONAME
+    MEDIATYPE_MSTVCaption @23409 NONAME
+    MEDIATYPE_ScriptCommand @23410 NONAME
+    MEDIATYPE_Stream @23411 NONAME
+    MEDIATYPE_Text @23412 NONAME
+    MEDIATYPE_Timecode @23413 NONAME
+    MEDIATYPE_URL_STREAM @23414 NONAME
+    MEDIATYPE_VBI @23415 NONAME
+    MEDIATYPE_Video @23416 NONAME
+    PIN_CATEGORY_ANALOGVIDEOIN @23417 NONAME
+    PIN_CATEGORY_CAPTURE @23418 NONAME
+    PIN_CATEGORY_CC @23419 NONAME
+    PIN_CATEGORY_EDS @23420 NONAME
+    PIN_CATEGORY_NABTS @23421 NONAME
+    PIN_CATEGORY_PREVIEW @23422 NONAME
+    PIN_CATEGORY_STILL @23423 NONAME
+    PIN_CATEGORY_TELETEXT @23424 NONAME
+    PIN_CATEGORY_TIMECODE @23425 NONAME
+    PIN_CATEGORY_VBI @23426 NONAME
+    PIN_CATEGORY_VIDEOPORT @23427 NONAME
+    PIN_CATEGORY_VIDEOPORT_VBI @23428 NONAME
     PtrToLong @22629 NONAME
+    TIME_FORMAT_BYTE @23429 NONAME
+    TIME_FORMAT_FIELD @23430 NONAME
+    TIME_FORMAT_FRAME @23431 NONAME
+    TIME_FORMAT_MEDIA_TIME @23432 NONAME
+    TIME_FORMAT_NONE @23433 NONAME
+    TIME_FORMAT_SAMPLE @23434 NONAME
     tinyjpeg_decode @22630 NONAME
     tinyjpeg_free @22631 NONAME
     tinyjpeg_get_components @22632 NONAME
@@ -22038,6 +22739,8 @@ EXPORTS
     tinyjpeg_parse_header @22636 NONAME
     tinyjpeg_set_components @22637 NONAME
     tinyjpeg_set_flags @22638 NONAME
+    UUID_UdriTagTables @23435 NONAME
+    UUID_WMDRMTagTables @23436 NONAME
     _CT??_R0?AVbad_alloc@std@@@8??0bad_alloc@std@@QEAA@AEBV01@@Z24 @18474 NONAME
     _CT??_R0?AVbad_cast@std@@@8??0bad_cast@std@@QEAA@AEBV01@@Z24 @18475 NONAME
     _CT??_R0?AVexception@std@@@8??0exception@std@@QEAA@AEBV01@@Z24 @18476 NONAME
