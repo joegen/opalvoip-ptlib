@@ -63,21 +63,27 @@ class HTTP_PSSLChannel : public PSSLChannel
 
 PSecureHTTPServiceProcess::PSecureHTTPServiceProcess(const Info & inf)
   : PHTTPServiceProcess(inf)
+  , m_sslContext(NULL)
 {
-  sslContext = new PSSLContext;
-  disableSSL = false;
 }
 
 
 PSecureHTTPServiceProcess::~PSecureHTTPServiceProcess()
 {
-  delete sslContext;
+  delete m_sslContext;
+}
+
+
+void PSecureHTTPServiceProcess::DisableSSL()
+{
+  delete m_sslContext;
+  m_sslContext = NULL;
 }
 
 
 PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 {
-  if (disableSSL)
+  if (m_sslContext == NULL)
     return PHTTPServiceProcess::CreateHTTPServer(socket);
 
 #ifdef SO_LINGER
@@ -85,7 +91,7 @@ PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
   socket.SetOption(SO_LINGER, &ling, sizeof(ling));
 #endif
 
-  PSSLChannel * ssl = new HTTP_PSSLChannel(this, sslContext);
+  PSSLChannel * ssl = new HTTP_PSSLChannel(this, m_sslContext);
 
   if (!ssl->Accept(socket)) {
     PSYSTEMLOG(Error, "HTTPS\tAccept failed: " << ssl->GetErrorText());
@@ -104,10 +110,13 @@ PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 }
 
 
-PBoolean PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certificateFile,
-                                                     PBoolean create,
+bool PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certificateFile,
+                                                     bool create,
                                                      const char * dn)
 {
+  if (m_sslContext == NULL)
+    m_sslContext = new PSSLContext;
+
   if (create && !PFile::Exists(certificateFile)) {
     PSSLPrivateKey key(1024);
     PSSLCertificate certificate;
@@ -126,8 +135,11 @@ PBoolean PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certi
     key.Save(certificateFile, true);
   }
 
-  return sslContext->UseCertificate(certificateFile) &&
-         sslContext->UsePrivateKey(certificateFile);
+  if (m_sslContext->UseCertificate(certificateFile) && m_sslContext->UsePrivateKey(certificateFile))
+    return true;
+
+  DisableSSL();
+  return false;
 }
 
 PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, const PString & line)

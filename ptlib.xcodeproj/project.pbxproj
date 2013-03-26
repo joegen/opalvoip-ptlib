@@ -716,6 +716,7 @@
 			};
 			buildConfigurationList = 1DEB919308733D9F0010E9CD /* Build configuration list for PBXProject "ptlib" */;
 			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -739,6 +740,7 @@
 				DEBUG = 1;
 				PRODUCT_NAME = ptlib;
 				PTLIBDIR = $SOURCE_ROOT;
+				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86_64;
 			};
 			name = Debug;
 		};
@@ -748,20 +750,21 @@
 				DEBUG = "";
 				PRODUCT_NAME = ptlib;
 				PTLIBDIR = $SOURCE_ROOT;
+				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86_64;
 			};
 			name = Release;
 		};
 		1DEB919408733D9F0010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86;
+				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86_64;
 			};
 			name = Debug;
 		};
 		1DEB919508733D9F0010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86;
+				SYMROOT = /Users/robertj/ptlib/lib_Darwin_x86_64;
 			};
 			name = Release;
 		};

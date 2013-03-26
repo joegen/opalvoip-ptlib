@@ -54,7 +54,7 @@
     virtual PBoolean IsServiceProcess() const;
 
   protected:
-    BOOL debugHidden; /// Flag to indicate service is run in simulation mode without showing the control window 
+    bool m_debugHidden; /// Flag to indicate service is run in simulation mode without showing the control window 
 
   private:
     static void __stdcall StaticMainEntry(DWORD argc, LPTSTR * argv);
@@ -115,14 +115,12 @@
     };
     friend class LogToWindow;
 
-    bool                  isWin95;
-    SERVICE_STATUS        status;
-    SERVICE_STATUS_HANDLE statusHandle;
-    HANDLE                startedEvent;
-    HANDLE                terminationEvent;
-    HWND                  controlWindow;
-    HWND                  debugWindow;
+    SERVICE_STATUS        m_status;
+    SERVICE_STATUS_HANDLE m_statusHandle;
+    HANDLE                m_startedEvent;
+    HANDLE                m_terminationEvent;
+    HWND                  m_controlWindow;
+    HWND                  m_debugWindow;
 
-  friend bool PAssertFunc(const char *);
 
 // End Of File ///////////////////////////////////////////////////////////////

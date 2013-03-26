@@ -1806,6 +1806,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\directsound.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\common\getdate.y"
 					>
 					<FileConfiguration
@@ -5234,10 +5238,6 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\directsound.cxx"
-					>
 				</File>
 				<File
 					RelativePath="sound_win32.cxx"
@@ -9149,6 +9149,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\directsound.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\dynalink.h"
 					>
 				</File>
@@ -9205,6 +9209,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ptlib\msos\ptlib\pt_atl.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\ptime.h"
 					>
 				</File>
@@ -9226,10 +9234,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\msos\ptlib\socket.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ptlib\msos\ptlib\directsound.h"
 					>
 				</File>
 				<File

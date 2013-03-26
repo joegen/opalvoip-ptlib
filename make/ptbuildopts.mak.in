@@ -37,6 +37,7 @@ PTLIB_STAGE :=@PTLIB_STAGE@
 PTLIB_BUILD :=@PTLIB_BUILD@
 
 # detected platform
+datarootdir := @datarootdir@
 target      := @target@
 target_os   := @target_os@
 target_cpu  := @target_cpu@

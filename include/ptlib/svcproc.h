@@ -154,7 +154,7 @@ class PServiceProcess : public PProcess
     PSyncPoint m_exitMain;
 
     /// Flag to indicate service is run in simulation mode.
-    PBoolean debugMode;
+    bool m_debugMode;
 
 // Include platform dependent part of class
 #ifdef _WIN32

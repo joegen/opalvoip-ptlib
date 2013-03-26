@@ -252,8 +252,6 @@ bool PAssertFunc(const char * msg)
 #ifndef _WIN32_WCE
   if (PProcess::Current().IsServiceProcess()) {
     PSYSTEMLOG(Fatal, str);
-    if (PServiceProcess::Current().debugMode)
-      PBreakToDebugger();;
     return false;
   }
 #endif // !_WIN32_WCE
