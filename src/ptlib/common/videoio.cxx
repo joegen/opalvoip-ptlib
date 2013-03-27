@@ -666,23 +666,26 @@ int PVideoDevice::GetChannel() const
 bool PVideoDevice::SetFrameInfoConverter(const PVideoFrameInfo & info)
 {
   if (!SetColourFormatConverter(info.GetColourFormat())) {
-    PTRACE(1, "PVidDev\tCould not set colour format in grabber to " << info);
+    PTRACE(1, "PVidDev\tCould not set colour format in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
     return false;
   }
 
   if (!SetFrameSizeConverter(info.GetFrameWidth(), info.GetFrameHeight())) {
-    PTRACE(1, "PVidDev\tCould not set frame size in grabber to " << info);
+    PTRACE(1, "PVidDev\tCould not set frame size in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
     return false;
   }
 
   if (info.GetFrameRate() != 0) {
     if (!SetFrameRate(info.GetFrameRate())) {
-      PTRACE(1, "PVidDev\tCould not set frame rate in grabber to " << info);
+      PTRACE(1, "PVidDev\tCould not set frame rate in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
       return false;
     }
   }
 
-  PTRACE(4, "PVidDev\tVideo grabber set to " << info);
+  PTRACE(4, "PVidDev\tVideo " << (CanCaptureVideo() ? "grabber" : "display") << " set to " << info);
   return true;
 }
 
