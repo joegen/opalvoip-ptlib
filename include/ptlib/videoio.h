@@ -517,6 +517,15 @@ class PVideoDevice : public PVideoFrameInfo
     */
     virtual int GetChannel() const;
 
+    /**Set the frame info to be used, trying converters if available.
+
+       This function will simply call SetColourFormatConverter(),
+       SetFrameSizeConverter() and SetFrameRate().
+    */
+    virtual bool SetFrameInfoConverter(
+      const PVideoFrameInfo & info // New frame infofor device.
+    );
+
     /**Set the colour format to be used, trying converters if available.
 
        This function will set the colour format on the device to one that
