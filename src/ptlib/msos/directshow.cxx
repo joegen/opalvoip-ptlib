@@ -45,6 +45,8 @@
 
 #include <ptlib/msos/ptlib/pt_atl.h>
 
+#include <functional>
+
 
 #ifdef _WIN32_WCE
 
