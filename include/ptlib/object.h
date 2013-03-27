@@ -1492,6 +1492,11 @@ of compatibility with documentation systems.
       { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
 
+/// Declare all the standard PTLib class information, plus Clone().
+#define PCLASSINFO_WITH_CLONE(cls, par) \
+    PCLASSINFO(cls, par) \
+    virtual PObject * Clone() const { return new cls(*this); }
+
 
 #define PIsDescendant(ptr, cls)    (dynamic_cast<const cls *>(ptr) != NULL) 
 #define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str)) 
