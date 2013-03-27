@@ -859,7 +859,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
   PAssertNULL(buf);
 
   char * src = (char *) buf;
-  while (lastWriteCount < len) {
+  while (len > 0) {
     // wait for output space to become available
     if (!WaitForPlayBufferFree())       // sets m_movePos and m_available
       return false;                     // aborted/closed
@@ -892,7 +892,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
       src += writeCount;
       len -= writeCount;
       lastWriteCount += writeCount;
-      m_movePos += lastWriteCount;
+      m_movePos += writeCount;
       m_movePos %= m_bufferSize;
       m_moved += writeCount;
                                           // tell DirectSound to play
@@ -1224,7 +1224,7 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
   PAssertNULL(buf);
 
   char * dest = (char *) buf;
-  while (lastReadCount < len) {
+  while (len > 0) {
     if (!WaitForRecordBufferFull())     // sets m_movePos and m_available
       return false;                     // aborted/closed
     {
