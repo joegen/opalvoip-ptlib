@@ -66,7 +66,12 @@ struct PEthFrameHeader {
 
 #if P_PCAP
 
-#include <pcap/pcap.h>
+#if P_PCAP_PCAP_H
+  #include <pcap/pcap.h>
+#else
+  #include <pcap.h>
+#endif
+
 
 #if _MSC_VER
   #pragma comment(lib, P_PCAP_LIBRARY1)
