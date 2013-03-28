@@ -399,10 +399,11 @@ function create_docs () {
   echo Creating documents...
   (
     PTLIBDIR=`pwd | xargs dirname`/ptlib
-    if [ "$base" != "$PTLIBDIR" ]; then
-      cd $PTLIBDIR
+    if [ "$base" != "ptlib" ]; then
+      pushd $PTLIBDIR
       ./configure --disable-plugins
       make
+      popd
     fi
 
     cd ${base}
