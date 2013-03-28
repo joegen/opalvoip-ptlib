@@ -245,7 +245,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     if (!searchPath)
       execve(subProgram, argv, envp);
     else {
-      #if __GLIBC_PREREQ(2,11)
+      #if __GLIBC__ >3 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 11
         execvpe(subProgram, argv, envp);
       #else
         // Need to search path manually
