@@ -397,7 +397,18 @@ function create_docs () {
   rm -f $DOC_ARCHIVE_TBZ2 $DOC_ARCHIVE_ZIP
 
   echo Creating documents...
-  ( cd ${base} ; pwd ; rm -rf html ; ./configure ; make graphdocs ) > docs.log 2>&1 
+  (
+    cd ${base}
+    pwd
+    rm -rf html
+    PTLIBDIR=`pwd | xargs dirname`/ptlib
+    if [ "$base" != "$PTLIBDIR" ]; then
+      make -C $PTLIBDIR
+    fi
+    if ./configure PTLIBDIR=$PTLIBDIR ; then
+      make graphdocs
+    fi
+  ) > docs.log 2>&1 
 
   if [ -d ${base}/html ]; then 
     echo Creating document archive $DOC_ARCHIVE_TBZ2
