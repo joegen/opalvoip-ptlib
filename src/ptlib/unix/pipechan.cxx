@@ -57,6 +57,9 @@ extern char ** environ;
 #endif
 
 
+#define PTraceModule() "PipeChannel"
+
+
 int PX_NewHandle(const char *, int);
 
 
@@ -67,9 +70,11 @@ int PX_NewHandle(const char *, int);
 
 PPipeChannel::PPipeChannel()
 {
-  toChildPipe[0] = toChildPipe[1] = -1;
-  fromChildPipe[0] = fromChildPipe[1] = -1;
-  stderrChildPipe[0] = stderrChildPipe[1] = -1;
+  m_childPID = -1;
+  m_toChildPipe[0] = m_toChildPipe[1] = -1;
+  m_fromChildPipe[0] = m_fromChildPipe[1] = -1;
+  m_stderrChildPipe[0] = m_stderrChildPipe[1] = -1;
+  m_returnCode = -1;
 }
 
 
@@ -82,77 +87,74 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
 {
 #if defined(P_VXWORKS) || defined(P_RTEMS)
   PAssertAlways("PPipeChannel::PlatformOpen");
-  return false;
 #else
   subProgName = subProgram;
 
   // setup the pipe to the child
   if (mode == ReadOnly)
-    toChildPipe[0] = toChildPipe[1] = -1;
+    m_toChildPipe[0] = m_toChildPipe[1] = -1;
   else {
-    PAssert(pipe(toChildPipe) == 0, POperatingSystemError);
-    PX_NewHandle("PPipeChannel toChildPipe", PMAX(toChildPipe[0], toChildPipe[1]));
+    PAssert(pipe(m_toChildPipe) == 0, POperatingSystemError);
+    PX_NewHandle("PPipeChannel m_toChildPipe", PMAX(m_toChildPipe[0], m_toChildPipe[1]));
   }
  
   // setup the pipe from the child
   if (mode == WriteOnly || mode == ReadWriteStd)
-    fromChildPipe[0] = fromChildPipe[1] = -1;
+    m_fromChildPipe[0] = m_fromChildPipe[1] = -1;
   else {
-    PAssert(pipe(fromChildPipe) == 0, POperatingSystemError);
-    PX_NewHandle("PPipeChannel fromChildPipe", PMAX(fromChildPipe[0], fromChildPipe[1]));
+    PAssert(pipe(m_fromChildPipe) == 0, POperatingSystemError);
+    PX_NewHandle("PPipeChannel m_fromChildPipe", PMAX(m_fromChildPipe[0], m_fromChildPipe[1]));
   }
 
   if (stderrSeparate)
-    PAssert(pipe(stderrChildPipe) == 0, POperatingSystemError);
+    PAssert(pipe(m_stderrChildPipe) == 0, POperatingSystemError);
   else {
-    stderrChildPipe[0] = stderrChildPipe[1] = -1;
-    PX_NewHandle("PPipeChannel stderrChildPipe", PMAX(stderrChildPipe[0], stderrChildPipe[1]));
-  }
-
-  // Set up new environment if one specified.
-  char ** exec_environ = environ;
-  if (environment != NULL || !searchPath) {
-    exec_environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
-    int index = 0;
-    for (PStringToString::const_iterator it = environment->begin(); it != environment->end(); ++it) {
-      PString key = it->first;
-      if (searchPath || (key != "PATH")) {
-        PString str = key + '=' + it->second;
-        exec_environ[index++] = strdup(str);
-      }
-    }
+    m_stderrChildPipe[0] = m_stderrChildPipe[1] = -1;
+    PX_NewHandle("PPipeChannel m_stderrChildPipe", PMAX(m_stderrChildPipe[0], m_stderrChildPipe[1]));
   }
 
   // fork to allow us to execute the child
 #if defined(__BEOS__) || defined(P_IRIX)
-  childPid = fork();
+  m_childPID = fork();
 #else
-  childPid = vfork();
+  m_childPID = vfork();
 #endif
-  if (childPid < 0)
+
+  if (m_childPID < 0) {
+    PTRACE(1, "Could not fork process: errno=" << errno);
     return false;
+  }
 
-  if (childPid > 0) {
+  if (m_childPID > 0) {
+#if PTRACING
+    static const int TraceLevel = 5;
+    if (PTrace::CanTrace(TraceLevel)) {
+      ostream & log = PTRACE_BEGIN(TraceLevel);
+      log << "Forked child process \"" << subProgram << '"';
+      for (PINDEX i = 0; i < argumentList.GetSize(); ++i)
+        log << " \"" << argumentList[i] << '"';
+      log << PTrace::End;
+    }
+#endif
+
     // setup the pipe to the child
-    if (toChildPipe[0] != -1) {
-      ::close(toChildPipe[0]);
-      toChildPipe[0] = -1;
+    if (m_toChildPipe[0] != -1) {
+      ::close(m_toChildPipe[0]);
+      m_toChildPipe[0] = -1;
     }
 
-    if (fromChildPipe[1] != -1) {
-      ::close(fromChildPipe[1]);
-      fromChildPipe[1] = -1;
+    if (m_fromChildPipe[1] != -1) {
+      ::close(m_fromChildPipe[1]);
+      m_fromChildPipe[1] = -1;
     }
  
-    if (stderrChildPipe[1] != -1) {
-      ::close(stderrChildPipe[1]);
-      stderrChildPipe[1] = -1;
+    if (m_stderrChildPipe[1] != -1) {
+      ::close(m_stderrChildPipe[1]);
+      m_stderrChildPipe[1] = -1;
     }
 
-    if (exec_environ != environ)
-      free(exec_environ);
- 
     os_handle = 0;
+    m_returnCode = -2; // Indicate are running
     return true;
   }
 
@@ -160,13 +162,14 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // if we need to write to the child, make sure the child's stdin
   // is redirected
-  if (toChildPipe[0] != -1) {
+  if (m_toChildPipe[0] != -1) {
     ::close(STDIN_FILENO);
-    if (::dup(toChildPipe[0]) == -1)
+    if (::dup(m_toChildPipe[0]) == -1)
       return false;
-    ::close(toChildPipe[0]);
-    ::close(toChildPipe[1]);  
-  } else {
+    ::close(m_toChildPipe[0]);
+    ::close(m_toChildPipe[1]);  
+  }
+  else {
     int fd = open("/dev/null", O_RDONLY);
     PAssertOS(fd >= 0);
     ::close(STDIN_FILENO);
@@ -177,17 +180,18 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // if we need to read from the child, make sure the child's stdout
   // and stderr is redirected
-  if (fromChildPipe[1] != -1) {
+  if (m_fromChildPipe[1] != -1) {
     ::close(STDOUT_FILENO);
-    if (::dup(fromChildPipe[1]) == -1)
+    if (::dup(m_fromChildPipe[1]) == -1)
       return false;
     ::close(STDERR_FILENO);
     if (!stderrSeparate)
-      if (::dup(fromChildPipe[1]) == -1)
+      if (::dup(m_fromChildPipe[1]) == -1)
         return false;
-    ::close(fromChildPipe[1]);
-    ::close(fromChildPipe[0]); 
-  } else if (mode != ReadWriteStd) {
+    ::close(m_fromChildPipe[1]);
+    ::close(m_fromChildPipe[0]); 
+  }
+  else if (mode != ReadWriteStd) {
     int fd = ::open("/dev/null", O_WRONLY);
     PAssertOS(fd >= 0);
     ::close(STDOUT_FILENO);
@@ -201,10 +205,10 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   }
 
   if (stderrSeparate) {
-    if (::dup(stderrChildPipe[1]) == -1)
+    if (::dup(m_stderrChildPipe[1]) == -1)
       return false;
-    ::close(stderrChildPipe[1]);
-    ::close(stderrChildPipe[0]); 
+    ::close(m_stderrChildPipe[1]);
+    ::close(m_stderrChildPipe[0]); 
   }
 
   // set the SIGINT and SIGQUIT to ignore so the child process doesn't
@@ -216,16 +220,31 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
   // from our parent's terminal (hopefully!)
   PSETPGRP();
 
-  // setup the arguments, not as we are about to execl or exit, we don't
-  // care about memory leaks, they are not real!
-  char ** args = argumentList.ToCharArray();
+  // setup the arguments and environment, note as we are about to exec or
+  // exit, we don't care about memory leaks, they are not real!
+  char ** argv;
+  if (argumentList[0] == subProgram)
+    argv = argumentList.ToCharArray();
+  else {
+    PStringArray withProgram(argumentList.GetSize()+1);
+    withProgram[0] = subProgram;
+    for (PINDEX i = 0; i < argumentList.GetSize(); ++i)
+      withProgram[i+1] = argumentList[i];
+    argv = withProgram.ToCharArray();
+  }
+  char ** envp = environment != NULL ? environment->ToCharArray(true) : environ;
 
-  // run the program
-  execve(subProgram, args, exec_environ);
+  // run the program, does not return
+  if (searchPath)
+    execvpe(subProgram, argv, envp);
+  else
+    execve(subProgram, argv, envp);
 
-  _exit(2);
-  return false;
+  // Returned! Error!
+  _exit(errno != 0 ? errno : 1);
 #endif // P_VXWORKS || P_RTEMS
+
+  return false;
 }
 
 
@@ -234,84 +253,93 @@ PBoolean PPipeChannel::Close()
   bool wasRunning = false;
 
   // close pipe from child
-  if (fromChildPipe[0] != -1) {
-    ::close(fromChildPipe[0]);
-    fromChildPipe[0] = -1;
+  if (m_fromChildPipe[0] != -1) {
+    ::close(m_fromChildPipe[0]);
+    m_fromChildPipe[0] = -1;
   }
 
-  if (fromChildPipe[1] != -1) {
-    ::close(fromChildPipe[1]);
-    fromChildPipe[1] = -1;
-  }
-
-  // close pipe to child
-  if (toChildPipe[0] != -1) {
-    ::close(toChildPipe[0]);
-    toChildPipe[0] = -1;
-  }
-
-  if (toChildPipe[1] != -1) {
-    ::close(toChildPipe[1]);
-    toChildPipe[1] = -1;
+  if (m_fromChildPipe[1] != -1) {
+    ::close(m_fromChildPipe[1]);
+    m_fromChildPipe[1] = -1;
   }
 
   // close pipe to child
-  if (stderrChildPipe[0] != -1) {
-    ::close(stderrChildPipe[0]);
-    stderrChildPipe[0] = -1;
+  if (m_toChildPipe[0] != -1) {
+    ::close(m_toChildPipe[0]);
+    m_toChildPipe[0] = -1;
   }
 
-  if (stderrChildPipe[1] != -1) {
-    ::close(stderrChildPipe[1]);
-    stderrChildPipe[1] = -1;
+  if (m_toChildPipe[1] != -1) {
+    ::close(m_toChildPipe[1]);
+    m_toChildPipe[1] = -1;
+  }
+
+  // close pipe to child
+  if (m_stderrChildPipe[0] != -1) {
+    ::close(m_stderrChildPipe[0]);
+    m_stderrChildPipe[0] = -1;
+  }
+
+  if (m_stderrChildPipe[1] != -1) {
+    ::close(m_stderrChildPipe[1]);
+    m_stderrChildPipe[1] = -1;
   }
 
   // kill the child process
   if (IsRunning()) {
     wasRunning = true;
-    PTRACE(4, "PipeChannel\tChild being sent SIGKILL");
-    kill(childPid, SIGKILL);
+    PTRACE(4, "Child being sent SIGKILL");
+    kill(m_childPID, SIGKILL);
     WaitForTermination();
   }
 
   // ensure this channel looks like it is closed
-  os_handle = -1;
-  childPid  = 0;
+  os_handle = m_childPID = -1;
+  if (m_returnCode == -2)
+    m_returnCode = -1;
 
   return wasRunning;
 }
 
+
 PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 {
-  PAssert(IsOpen(), "Attempt to read from closed pipe");
-  PAssert(fromChildPipe[0] != -1, "Attempt to read from write-only pipe");
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastReadError);;
 
-  os_handle = fromChildPipe[0];
-  PBoolean status = PChannel::Read(buffer, len);
-  os_handle = 0;
-  return status;
+  if (!PAssert(m_fromChildPipe[0] != -1, "Attempt to read from write-only pipe"))
+    return false;
+
+  os_handle = m_fromChildPipe[0];
+  return PChannel::Read(buffer, len);
 }
+
 
 PBoolean PPipeChannel::Write(const void * buffer, PINDEX len)
 {
-  PAssert(IsOpen(), "Attempt to write to closed pipe");
-  PAssert(toChildPipe[1] != -1, "Attempt to write to read-only pipe");
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);;
 
-  os_handle = toChildPipe[1];
-  PBoolean status = PChannel::Write(buffer, len);
-  os_handle = 0;
-  return status;
+  if (!PAssert(m_toChildPipe[1] != -1, "Attempt to write to read-only pipe"))
+    return false;
+
+  os_handle = m_toChildPipe[1];
+  return PChannel::Write(buffer, len);
 }
+
 
 PBoolean PPipeChannel::Execute()
 {
   flush();
   clear();
-  if (toChildPipe[1] != -1) {
-    ::close(toChildPipe[1]);
-    toChildPipe[1] = -1;
+
+  if (m_toChildPipe[1] != -1) {
+    ::close(m_toChildPipe[1]);
+    PTRACE(5, "Closed pipe to child: fd=" << m_toChildPipe[1]);
+    m_toChildPipe[1] = -1;
   }
-  return true;
+
+  return IsRunning();
 }
 
 
@@ -322,129 +350,66 @@ PPipeChannel::~PPipeChannel()
 
 int PPipeChannel::GetReturnCode() const
 {
-  return retVal;
+  return m_returnCode;
 }
+
 
 PBoolean PPipeChannel::IsRunning() const
 {
-  if (childPid == 0)
-    return false;
-
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
-
-  int err;
-  int status;
-  if ((err = waitpid(childPid, &status, WNOHANG)) == 0)
-    return true;
-
-  if (err != childPid)
-    return false;
-
-  PPipeChannel * thisW = (PPipeChannel *)this;
-  thisW->childPid = 0;
-
-  if (WIFEXITED(status)) {
-    thisW->retVal = WEXITSTATUS(status);
-    PTRACE(2, "PipeChannel\tChild exited with code " << retVal);
-  } else if (WIFSIGNALED(status)) {
-    PTRACE(2, "PipeChannel\tChild was signalled with " << WTERMSIG(status));
-    thisW->retVal = -1;
-  } else if (WIFSTOPPED(status)) {
-    PTRACE(2, "PipeChannel\tChild was stopped with " << WSTOPSIG(status));
-    thisW->retVal = -1;
-  } else {
-    PTRACE(2, "PipeChannel\tChild was stopped with unknown status" << status);
-    thisW->retVal = -1;
-  }
-
-  return false;
-
-#else
-  return kill(childPid, 0) == 0;
-#endif
+  return const_cast<PPipeChannel *>(this)->WaitForTermination(0) < -1;
 }
+
 
 int PPipeChannel::WaitForTermination()
 {
-  if (childPid == 0)
-    return retVal;
-
-  int err;
-
-#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
-  int status;
-  do {
-    err = waitpid(childPid, &status, 0);
-    if (err == childPid) {
-      childPid = 0;
-      if (WIFEXITED(status)) {
-        retVal = WEXITSTATUS(status);
-        PTRACE(2, "PipeChannel\tChild exited with code " << retVal);
-      } else if (WIFSIGNALED(status)) {
-        PTRACE(2, "PipeChannel\tChild was signalled with " << WTERMSIG(status));
-        retVal = -1;
-      } else if (WIFSTOPPED(status)) {
-        PTRACE(2, "PipeChannel\tChild was stopped with " << WSTOPSIG(status));
-        retVal = -1;
-      } else {
-        PTRACE(2, "PipeChannel\tChild was stopped with unknown status" << status);
-        retVal = -1;
-      }
-      return retVal;
-    }
-  } while (errno == EINTR);
-#else
-  if ((err = kill (childPid, 0)) == 0)
-    return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, PMaxTimeInterval);
-#endif
-
-  ConvertOSError(err);
-  return -1;
+  return WaitForTermination(PMaxTimeInterval);
 }
+
 
 int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 {
-  if (childPid == 0)
-    return retVal;
-
-  int err;
+  if (m_childPID < 0)
+    return m_returnCode;
 
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
-  PAssert(timeout == PMaxTimeInterval, PUnimplementedFunction);
-  int status;
-  do {
-    err = waitpid(childPid, &status, 0);
-    if (err == childPid) {
-      childPid = 0;
-      if (WIFEXITED(status)) {
-        retVal = WEXITSTATUS(status);
-        PTRACE(2, "PipeChannel\tChild exited with code " << retVal);
-      } else if (WIFSIGNALED(status)) {
-        PTRACE(2, "PipeChannel\tChild was signalled with " << WTERMSIG(status));
-        retVal = -1;
-      } else if (WIFSTOPPED(status)) {
-        PTRACE(2, "PipeChannel\tChild was stopped with " << WSTOPSIG(status));
-        retVal = -1;
-      } else {
-        PTRACE(2, "PipeChannel\tChild was stopped with unknown status" << status);
-        retVal = -1;
-      }
-      return retVal;
+  PAssert(timeout == 0 || timeout == PMaxTimeInterval, PUnimplementedFunction);
+  int result, status;
+  while ((result = waitpid(m_childPID, &status, timeout == 0 ? WNOHANG : 0)) != m_childPID) {
+    if (result == 0)
+      return -2; // Still running
+
+    if (errno != EINTR) {
+      ConvertOSError(-1);
+      return -1;
     }
-  } while (errno == EINTR);
+  }
+
+  m_childPID = -1;
+  if (WIFEXITED(status)) {
+    m_returnCode = WEXITSTATUS(status);
+    PTRACE(3, "Child exited with code " << m_returnCode);
+  }
+  else if (WIFSIGNALED(status)) {
+    PTRACE(3, "Child was terminated with signal " << WTERMSIG(status));
+    m_returnCode = WTERMSIG(status) + 256;
+  }
+  else {
+    PTRACE(3, "Child was stopped with unknown status" << status);
+    m_returnCode = 256;
+  }
+
 #else
-  if ((err = kill (childPid, 0)) == 0)
-    return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, timeout);
+  if (ConvertOSError(kill(m_childPID, 0)))
+    m_returnCode = PThread::Current()->PXBlockOnChildTerminate(m_childPID, timeout);
 #endif
 
-  ConvertOSError(err);
-  return -1;
+  return m_returnCode;
 }
 
 PBoolean PPipeChannel::Kill(int killType)
 {
-  PTRACE(4, "PipeChannel\tChild being sent signal " << killType);
-  return ConvertOSError(kill(childPid, killType));
+  PTRACE(4, "Child being sent signal " << killType);
+  return ConvertOSError(kill(m_childPID, killType));
 }
 
 PBoolean PPipeChannel::CanReadAndWrite()
@@ -455,15 +420,18 @@ PBoolean PPipeChannel::CanReadAndWrite()
 
 PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 {
-  PAssert(IsOpen(), "Attempt to read from closed pipe");
-  PAssert(stderrChildPipe[0] != -1, "Attempt to read from write-only pipe");
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastReadError);;
 
-  os_handle = stderrChildPipe[0];
+  if (!PAssert(m_stderrChildPipe[0] != -1, "Attempt to read from write-only pipe"))
+    return false;
+
+  os_handle = m_stderrChildPipe[0];
   
   PBoolean status = false;
 #ifndef BE_BONELESS
   int available;
-  if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
+  if (ConvertOSError(ioctl(m_stderrChildPipe[0], FIONREAD, &available))) {
     if (available != 0)
       status = PChannel::Read(errors.GetPointerAndSetLength(available+1), available);
     else if (wait) {
@@ -471,7 +439,7 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
       status = PChannel::Read(&firstByte, 1);
       if (status) {
         errors = firstByte;
-        if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
+        if (ConvertOSError(ioctl(m_stderrChildPipe[0], FIONREAD, &available))) {
           if (available != 0)
             status = PChannel::Read(errors.GetPointerAndSetLength(available+2)+1, available);
         }
@@ -480,7 +448,6 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
   }
 #endif
 
-  os_handle = 0;
   return status;
 }
 
