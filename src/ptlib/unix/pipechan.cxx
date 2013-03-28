@@ -232,13 +232,38 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
       withProgram[i+1] = argumentList[i];
     argv = withProgram.ToCharArray();
   }
-  char ** envp = environment != NULL ? environment->ToCharArray(true) : environ;
 
   // run the program, does not return
-  if (searchPath)
-    execvpe(subProgram, argv, envp);
-  else
-    execve(subProgram, argv, envp);
+  if (environment == NULL) {
+    if (searchPath)
+      execvp(subProgram, argv);
+    else
+      execv(subProgram, argv);
+  }
+  else {
+    char ** envp = environment != NULL ? environment->ToCharArray(true) : environ;
+    if (!searchPath)
+      execve(subProgram, argv, envp);
+    else {
+      #if __GLIBC_PREREQ(2,11)
+        execvpe(subProgram, argv, envp);
+      #else
+        // Need to search path manually
+        PString path(getenv("PATH"));
+        if (path.IsEmpty())
+          path = ".:/bin:/usr/bin";
+        PStringArray dir = path.Tokenise(':', false);
+        for (PINDEX i = 0; i < dir.GetSize(); ++i) {
+          PString progPath = dir[i] + '/' + subProgram;
+          if (PFile::Exists(progPath)) {
+            execve(progPath, argv, envp);
+            break;
+          }
+        }
+        execve(subProgram, argv, envp);
+      #endif
+    }
+  }
 
   // Returned! Error!
   _exit(errno != 0 ? errno : 1);
