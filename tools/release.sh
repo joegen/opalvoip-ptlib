@@ -398,13 +398,16 @@ function create_docs () {
 
   echo Creating documents...
   (
+    PTLIBDIR=`pwd | xargs dirname`/ptlib
+    if [ "$base" != "$PTLIBDIR" ]; then
+      cd $PTLIBDIR
+      ./configure --disable-plugins
+      make
+    fi
+
     cd ${base}
     pwd
     rm -rf html
-    PTLIBDIR=`pwd | xargs dirname`/ptlib
-    if [ "$base" != "$PTLIBDIR" ]; then
-      make -C $PTLIBDIR
-    fi
     if ./configure PTLIBDIR=$PTLIBDIR ; then
       make graphdocs
     fi
