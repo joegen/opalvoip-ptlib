@@ -103,10 +103,24 @@ endif
 ptlib:
 	$(MAKE) -C $(PTLIBDIR)/src both
 
+DOCS_DIR := $(PTLIBDIR)/html
+DOXYGEN_CFG := $(PTLIBDIR)/ptlib_cfg.dxy
+DOXYGEN_OUT := /tmp/ptlib_doxygen.out
+DOXYGEN_GRAPH_CFG := /tmp/ptlib_graph_cfg.dxy
+
+.PHONY:docs
 docs:
+	rm -rf $(DOCS_DIR)
 	cd $(PTLIBDIR)
-	rm -rf html
-	doxygen ptlib_cfg.dxy > doxygen.out 2>&1
+	doxygen $(DOXYGEN_CFG) > $(DOXYGEN_OUT) 2>&1
+
+.PHONY:graphdocs
+graphdocs:
+	rm -rf $(DOCS_DIR)
+	sed "s/HAVE_DOT.*=.*/HAVE_DOT=YES/" $(DOXYGEN_CFG) > $(DOXYGEN_GRAPH_CFG)
+	doxygen $(DOXYGEN_GRAPH_CFG) > $(DOXYGEN_OUT) 2>&1
+	rm $(DOXYGEN_GRAPH_CFG)
+
 
 distclean: clean
 	cd $(PTLIBDIR)
