@@ -40,6 +40,7 @@
 
 #ifdef P_DIRECTSHOW
 
+#include <set>
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
