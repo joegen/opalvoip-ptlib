@@ -1693,6 +1693,7 @@ void PTimedMutex::Wait()
     PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
            << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
     m_handle.Wait(INFINITE);
+    PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this);
   }
 #else
   m_handle.Wait(INFINITE);

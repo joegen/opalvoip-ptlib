@@ -261,6 +261,7 @@
 //
 
 #undef P_PCAP
+#undef P_PCAP_PCAP_H
 #undef P_PCAP_WIN64
 #undef P_PCAP_WIN32
 
@@ -273,7 +274,9 @@
   #pragma include_alias(<pcap/pcap.h>, <@PCAP_DIR@/include/pcap/pcap.h>)
   #pragma include_alias(<pcap/bpf.h>, <@PCAP_DIR@/include/pcap/bpf.h>)
   #pragma include_alias(<pcap-stdinc.h>, <@PCAP_DIR@/include/pcap-stdinc.h>)
-  
+
+  #define P_PCAP_PCAP_H 1
+
   #if defined(P_64BIT)
     #define P_PCAP_LIBRARY1 "@PCAP_DIR@/lib/x64/Packet.lib"
     #define P_PCAP_LIBRARY2 "@PCAP_DIR@/lib/x64/wpcap.lib"

@@ -276,23 +276,23 @@ static struct {
 PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean /* startImmediate */)
 {
   if (isOpen) {
-    PTRACE(1,"PVidInDev\tClosing " << deviceName << " already open on this instance, fd:" << videoFd);
+    PTRACE(1,"V4L2\tClosing " << deviceName << " already open on this instance, fd:" << videoFd);
     Close();
   }
 
   deviceName=GetNames().GetDeviceName(devName);
   userFriendlyDevName=devName;
   
-  PTRACE(5,"PVidInDev\tOpen()\tdevName:" << deviceName << "  videoFd:" << videoFd);
+  PTRACE(5,"V4L2\tOpen()\tdevName:" << deviceName << "  videoFd:" << videoFd);
   videoFd = ::v4l2_open((const char *)deviceName, O_RDWR);
   if (videoFd < 0) {
-    PTRACE(1,"PVidInDev\topen failed : " << ::strerror(errno));
+    PTRACE(1,"V4L2\topen failed : " << ::strerror(errno));
     return isOpen;
   }
 
   isOpen = true;
 
-  PTRACE(5,"PVidInDev\tNew handle for " << deviceName << ": fd=" << videoFd);
+  PTRACE(5,"V4L2\tNew handle for " << deviceName << ": fd=" << videoFd);
 
   // Don't share the camera device with subprocesses - they could cause
   // EBUSY errors on VIDIOC_STREAMON if the parent tries to close and reopen
@@ -311,7 +311,7 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean /* start
 
   // get the device capabilities
   if (v4l2_ioctl(videoFd, VIDIOC_QUERYCAP, &videoCapability) < 0) {
-    PTRACE(1,"PVidInDev\tQUERYCAP failed : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tQUERYCAP failed : " << ::strerror(errno));
     Close();
     return isOpen;
   }
@@ -329,7 +329,7 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean /* start
   videoStreamParm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (v4l2_ioctl(videoFd, VIDIOC_G_PARM, &videoStreamParm) < 0)  {
 
-    PTRACE(3,"PVidInDev\tG_PARM failed : " << ::strerror(errno));
+    PTRACE(3,"V4L2\tG_PARM failed : " << ::strerror(errno));
     canSetFrameRate = false;
 
   } else {
@@ -337,7 +337,7 @@ PBoolean PVideoInputDevice_V4L2::Open(const PString & devName, PBoolean /* start
     canSetFrameRate = videoStreamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME;
     if (canSetFrameRate) {
       if (videoStreamParm.parm.capture.timeperframe.numerator == 0) {
-        PTRACE(1,"PVidInDev\tDriver/webcam bug: numerator is zero and denominator is " << videoStreamParm.parm.capture.timeperframe.denominator << ", I assume it cannot set frame rate");
+        PTRACE(1,"V4L2\tDriver/webcam bug: numerator is zero and denominator is " << videoStreamParm.parm.capture.timeperframe.denominator << ", I assume it cannot set frame rate");
         canSetFrameRate = PFalse;
       } else {
         unsigned rate = videoStreamParm.parm.capture.timeperframe.denominator / videoStreamParm.parm.capture.timeperframe.numerator;
@@ -364,13 +364,13 @@ PBoolean PVideoInputDevice_V4L2::IsOpen()
 PBoolean PVideoInputDevice_V4L2::Close()
 {
   PWaitAndSignal m(inCloseMutex);
-  PTRACE(1,"PVidInDev\tClose()\tvideoFd:" << videoFd << "  started:" << started << "  isOpen:" << isOpen);
+  PTRACE(1,"V4L2\tClose()\tvideoFd:" << videoFd << "  started:" << started << "  isOpen:" << isOpen);
   if (IsOpen()){
     if(IsCapturing())
       Stop();
 
     if (v4l2_close(videoFd) < 0) {
-      PTRACE(2, "PVidInDev\tERROR errno = " << ::strerror(errno) << "(" << errno << ")");
+      PTRACE(2, "V4L2\tERROR errno = " << ::strerror(errno) << "(" << errno << ")");
     }
 
     Reset();
@@ -382,10 +382,10 @@ PBoolean PVideoInputDevice_V4L2::Close()
 
 PBoolean PVideoInputDevice_V4L2::Start()
 {
-  PTRACE(8, "PVidInDev\tStarting " << deviceName);
+  PTRACE(8, "V4L2\tStarting " << deviceName);
 
   if (started == true) {
-    PTRACE(2, "PVidInDev\tVideo Input Device already started");
+    PTRACE(2, "V4L2\tVideo Input Device already started");
     return started;
   }
 
@@ -399,13 +399,13 @@ PBoolean PVideoInputDevice_V4L2::Start()
 
     /* Queue all buffers */
     if (!QueueAllBuffers()) {
-      PTRACE(2, "PVidInDev\tCould not QueueBuffers for Video Input Device!");
+      PTRACE(2, "V4L2\tCould not QueueBuffers for Video Input Device!");
       return started;
     }
 
     /* Start streaming */
     if (!StartStreaming()) {
-      PTRACE(2, "PVidInDev\tCould not StartStreaming for Video Input Device!");
+      PTRACE(2, "V4L2\tCould not StartStreaming for Video Input Device!");
       return started;
     }
   }
@@ -447,7 +447,7 @@ PStringList PVideoInputDevice_V4L2::GetInputDeviceNames()
 
 PBoolean PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
 {
-  PTRACE(8,"PVidInDev\tSet video format " << newFormat);
+  PTRACE(8,"V4L2\tSet video format " << newFormat);
 
   if (newFormat == Auto) {
     PBoolean videoStandardSetCorrectly = false;
@@ -482,20 +482,20 @@ PBoolean PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
   carg = V4L2_STD_UNKNOWN;
 
   if (v4l2_ioctl(videoFd, VIDIOC_G_STD, &carg) < 0) {
-    PTRACE(3, "PVidInDev\tG_STD failed for fd=" << videoFd << " with error: " << ::strerror(errno));
+    PTRACE(3, "V4L2\tG_STD failed for fd=" << videoFd << " with error: " << ::strerror(errno));
     // Assume that if G_STD is not available, that the device still works correctly.
     return true;
   } else {
-    PTRACE(5, "PVidInDev\tG_STD succeeded for " << newFormat << ", carg = " << carg);
+    PTRACE(5, "V4L2\tG_STD succeeded for " << newFormat << ", carg = " << carg);
   }
 
   carg = fmt[newFormat].code;
 
   if (v4l2_ioctl(videoFd, VIDIOC_S_STD, &carg) < 0) {
-    PTRACE(2, "PVidInDev\tS_STD failed for " << newFormat << " with error: " << ::strerror(errno));
+    PTRACE(2, "V4L2\tS_STD failed for " << newFormat << " with error: " << ::strerror(errno));
     return false;
   } else {
-    PTRACE(5, "PVidInDev\tS_STD succeeded for " << newFormat << ", carg = " << carg);
+    PTRACE(5, "V4L2\tS_STD succeeded for " << newFormat << ", carg = " << carg);
   }
 
   if (!PVideoDevice::SetVideoFormat(newFormat)) {
@@ -509,7 +509,7 @@ PBoolean PVideoInputDevice_V4L2::SetVideoFormat(VideoFormat newFormat)
 
 int PVideoInputDevice_V4L2::GetNumChannels()
 {
-  PTRACE(8,"PVidInDev\tGet number of channels");
+  PTRACE(8,"V4L2\tGet number of channels");
   // if opened, return the capability value, else 1 as in videoio.cxx
   if (IsOpen ()) {
 
@@ -527,7 +527,7 @@ int PVideoInputDevice_V4L2::GetNumChannels()
 
 PBoolean PVideoInputDevice_V4L2::SetChannel(int newChannel)
 {
-  PTRACE(8,"PVidInDev\tSet channel #" << newChannel);
+  PTRACE(8,"V4L2\tSet channel #" << newChannel);
 
   if (!PVideoDevice::SetChannel(newChannel)) {
     PTRACE(1,"PVideoDevice::SetChannel failed for channel " << newChannel);
@@ -540,7 +540,7 @@ PBoolean PVideoInputDevice_V4L2::SetChannel(int newChannel)
     return false;
   }
 
-  PTRACE(6,"PVidInDev\tset channel " << newChannel << ", fd=" << videoFd);
+  PTRACE(6,"V4L2\tset channel " << newChannel << ", fd=" << videoFd);
 
   return true;
 }
@@ -548,7 +548,7 @@ PBoolean PVideoInputDevice_V4L2::SetChannel(int newChannel)
 
 PBoolean PVideoInputDevice_V4L2::SetVideoChannelFormat (int newChannel, VideoFormat videoFormat) 
 {
-  PTRACE(8,"PVidInDev\tSet channel #" << newChannel << " format \"" << videoFormat << "\"");
+  PTRACE(8,"V4L2\tSet channel #" << newChannel << " format \"" << videoFormat << "\"");
 
   if (!SetChannel(newChannel) ||
       !SetVideoFormat(videoFormat))
@@ -560,18 +560,18 @@ PBoolean PVideoInputDevice_V4L2::SetVideoChannelFormat (int newChannel, VideoFor
 
 PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 {
-  PTRACE(8,"PVidInDev\tSet colour format \"" << newFormat << "\"");
+  PTRACE(8,"V4L2\tSet colour format \"" << newFormat << "\"");
 
   PINDEX currentColourFormatIndex, colourFormatIndex = 0;
   while (newFormat != colourFormatTab[colourFormatIndex].colourFormat) {
-    PTRACE(9,"PVidInDev\tColourformat did not match " << colourFormatTab[colourFormatIndex].colourFormat);
+    PTRACE(9,"V4L2\tColourformat did not match " << colourFormatTab[colourFormatIndex].colourFormat);
     colourFormatIndex++;
     if (colourFormatIndex >= PARRAYSIZE(colourFormatTab))
       return false;
   }
 
   if (!PVideoDevice::SetColourFormat(newFormat)) {
-    PTRACE(3,"PVidInDev\tSetColourFormat failed for colour format " << newFormat);
+    PTRACE(3,"V4L2\tSetColourFormat failed for colour format " << newFormat);
     return false;
   }
 
@@ -588,17 +588,17 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
         (streamParm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME)) {
     fi_n = streamParm.parm.capture.timeperframe.numerator;
     fi_d = streamParm.parm.capture.timeperframe.denominator;
-    PTRACE(8,"PVidInDev\tG_PARM succeeded (preserving frame rate at " << fi_n << "/" << fi_d << ")");
+    PTRACE(8,"V4L2\tG_PARM succeeded (preserving frame rate at " << fi_n << "/" << fi_d << ")");
   } else {
-    PTRACE(1,"PVidInDev\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
   }
 
   // get the colour format
   if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
-    PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tG_FMT failed : " << ::strerror(errno));
     return false;
   } else {
-    PTRACE(8,"PVidInDev\tG_FMT succeeded");
+    PTRACE(8,"V4L2\tG_FMT succeeded");
   }
 
   // update colourFormat to current value so in case of VIDIOC_S_FMT failure will have corect one
@@ -611,7 +611,7 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   }
 
   if(videoFormat.fmt.pix.pixelformat == colourFormatTab[colourFormatIndex].code){
-    PTRACE(3,"PVidInDev\tcolour format already set.");
+    PTRACE(3,"V4L2\tcolour format already set.");
     return true;
   }
 
@@ -625,44 +625,44 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 
     // set the colour format
     if (v4l2_ioctl(videoFd, VIDIOC_S_FMT, &videoFormat) < 0) {
-      PTRACE(1,"PVidInDev\tS_FMT failed : " << ::strerror(errno));
-      PTRACE(1,"PVidInDev\tused code of " << videoFormat.fmt.pix.pixelformat << " for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
+      PTRACE(1,"V4L2\tS_FMT failed : " << ::strerror(errno));
+      PTRACE(1,"V4L2\tused code of " << videoFormat.fmt.pix.pixelformat << " for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
       return false;
     } else {
-      PTRACE(8,"PVidInDev\tS_FMT succeeded for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
+      PTRACE(8,"V4L2\tS_FMT succeeded for palette: " << colourFormatTab[colourFormatIndex].colourFormat);
     }
 
     // get the colour format again to be careful about broken drivers
     if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
-      PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+      PTRACE(1,"V4L2\tG_FMT failed : " << ::strerror(errno));
       return false;
     } else {
-      PTRACE(8,"PVidInDev\tG_FMT succeeded");
+      PTRACE(8,"V4L2\tG_FMT succeeded");
     }
 
     if (videoFormat.fmt.pix.pixelformat != colourFormatTab[colourFormatIndex].code) {
-      PTRACE(3,"PVidInDev\tcolour format mismatch.");
+      PTRACE(3,"V4L2\tcolour format mismatch.");
       return false;
     } else {
       colourFormat = newFormat;
-      PTRACE(8,"PVidInDev\tcolour format matches.");
+      PTRACE(8,"V4L2\tcolour format matches.");
     }
 
     // reset the frame rate because it may have been overridden by the call to S_FMT
     if (fi_n == 0 || fi_d == 0 || v4l2_ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
-      PTRACE(3,"PVidInDev\tunable to reset frame rate.");
+      PTRACE(3,"V4L2\tunable to reset frame rate.");
     } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
                streamParm.parm.capture.timeperframe.denominator  != fi_d) {
-      PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
+      PTRACE(3, "V4L2\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
                 << "/" << streamParm.parm.capture.timeperframe.denominator
                 << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
     } else {
-      PTRACE(8,"PVidInDev\tS_PARM succeeded (preserving frame rate at " << fi_n << "/" << fi_d << ")");
+      PTRACE(8,"V4L2\tS_PARM succeeded (preserving frame rate at " << fi_n << "/" << fi_d << ")");
     }
 
     frameBytes = videoFormat.fmt.pix.sizeimage;
 
-    PTRACE(6,"PVidInDev\tset colour format \"" << newFormat << "\" set for " << deviceName << ", fd=" << videoFd);
+    PTRACE(6,"V4L2\tset colour format \"" << newFormat << "\" set for " << deviceName << ", fd=" << videoFd);
 
     if (resume) {
       if (false == Start()) {
@@ -677,44 +677,40 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 
 PBoolean PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
 {
-  PTRACE(8,"PVidInDev\tSetFrameRate()\tvideoFd:" << videoFd << "  started:" << started);
-
-  if (canSetFrameRate) {
-    videoStreamParm.parm.capture.timeperframe.numerator = 1;
-    videoStreamParm.parm.capture.timeperframe.denominator = (rate ? rate : 1);
-
-    PBoolean resume = started;
-
-    if (started == true) {
-      Stop();
-    }
-
-    // set the stream parameters
-    if (!DoIOCTL(VIDIOC_S_PARM, &videoStreamParm, true))  {
-      PTRACE(1,"PVidInDev\tS_PARM failed : "<< ::strerror(errno));
-    }
-
-    if (resume) {
-      if (false == Start()) {
-        return false;
-      }
-    }
-
-    // The rate is 1/x * s^-1 where timeperframe is x * s, so we have to inverse the
-    // values.
-    rate = videoStreamParm.parm.capture.timeperframe.denominator /
-           videoStreamParm.parm.capture.timeperframe.numerator;
-
-    PTRACE(6,"PVidInDev\tset frame rate " << rate << "fps, fd=" << videoFd);
-  }
-
+  unsigned originalFrameRate = frameRate;
   if (!PVideoDevice::SetFrameRate(rate)) {
-    PTRACE(3,"PVidInDev\tSetFrameRate failed for rate " << rate);
+    PTRACE(3,"V4L2\tSetFrameRate failed for rate " << rate);
+    return false;
   }
 
-  PTRACE(8,"PVidInDev\tSetFrameRate()\tvideoFd:" << videoFd << "  started:" << started);
+  PTRACE(8,"V4L2\tSetFrameRate()\tvideoFd:" << videoFd << "  started:" << started);
 
-  return true;
+  if (!canSetFrameRate)
+    return true;
+
+  videoStreamParm.parm.capture.timeperframe.numerator = 1;
+  videoStreamParm.parm.capture.timeperframe.denominator = rate;
+
+  bool wasStarted = started;
+  if (wasStarted)
+    Stop();
+
+  // set the stream parameters
+  if (!DoIOCTL(VIDIOC_S_PARM, &videoStreamParm, true))  {
+    PTRACE(1,"V4L2\tS_PARM failed : "<< ::strerror(errno));
+    frameRate = originalFrameRate;
+    return false;
+  }
+
+  // The rate is 1/x * s^-1 where timeperframe is x * s, so we have to inverse the
+  // values.
+  v4l2_ioctl(videoFd, VIDIOC_G_PARM, &videoStreamParm);
+  rate = videoStreamParm.parm.capture.timeperframe.denominator /
+          videoStreamParm.parm.capture.timeperframe.numerator;
+  PTRACE_IF(2, rate != frameRate, "V4L2\tFrame rate mismatch, "
+            "wanted=" << frameRate << "fps, got=" << rate << "fps, fd=" << videoFd);
+
+  return !wasStarted || Start();
 }
 
 
@@ -745,7 +741,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameSizeLimits(unsigned & minWidth,
   maxWidth = fmt.fmt.pix.width;
   maxHeight = fmt.fmt.pix.height;
 
-  PTRACE(8,"PVidInDev\tFrame size limits: [" << minWidth << "," << maxWidth << "]" << "x"
+  PTRACE(8,"V4L2\tFrame size limits: [" << minWidth << "," << maxWidth << "]" << "x"
                                       << "[" << minWidth << "," << maxWidth << "]");
 
   return true;
@@ -759,25 +755,25 @@ PBoolean PVideoInputDevice_V4L2::SetFrameSize(unsigned width, unsigned height) {
   if(TryFrameSize(requestedWidth, requestedHeight)){
     if ((requestedWidth != width) || (requestedHeight != height))
     {
-      PTRACE(4, "PVidInDev\t" << width << "x" << height << " requested but "
+      PTRACE(4, "V4L2\t" << width << "x" << height << " requested but "
                               << requestedWidth << "x" << requestedHeight << " returned");
       return false;
     }
   }
 
   if (!VerifyHardwareFrameSize(requestedWidth, requestedHeight)) {
-    PTRACE(5, "PVidInDev\tVerifyHardwareFrameSize failed for size " << width << "x" << height);
-    PTRACE(4, "PVidInDev\tCurrent resolution " << requestedWidth << "x" << requestedHeight);
+    PTRACE(5, "V4L2\tVerifyHardwareFrameSize failed for size " << width << "x" << height);
+    PTRACE(4, "V4L2\tCurrent resolution " << requestedWidth << "x" << requestedHeight);
     return false;
   }
 
   if ((requestedWidth != width) || (requestedHeight != height)){
-    PTRACE(4, "PVidInDev\t" << width << "x" << height << " requested but "
+    PTRACE(4, "V4L2\t" << width << "x" << height << " requested but "
                             << requestedWidth << "x" << requestedHeight << " returned");
     return false;
   } else {
-    PTRACE(5, "PVidInDev\tVerifyHardwareFrameSize succeeded for size " << width << "x" << height);
-    PTRACE(4, "PVidInDev\tCurrent resolution " << requestedWidth << "x" << requestedHeight);
+    PTRACE(5, "V4L2\tVerifyHardwareFrameSize succeeded for size " << width << "x" << height);
+    PTRACE(4, "V4L2\tCurrent resolution " << requestedWidth << "x" << requestedHeight);
   }
 
   if(!PVideoDevice::SetFrameSize(requestedWidth, requestedHeight)){
@@ -792,13 +788,13 @@ PBoolean PVideoInputDevice_V4L2::SetNearestFrameSize(unsigned width, unsigned he
   unsigned requestedHeight = height;
 
   if (!VerifyHardwareFrameSize(requestedWidth, requestedHeight)) {
-    PTRACE(5, "PVidInDev\tVerifyHardwareFrameSize failed for size " << width << "x" << height);
-    PTRACE(4, "PVidInDev\tCurrent resolution " << requestedWidth << "x" << requestedHeight);
+    PTRACE(5, "V4L2\tVerifyHardwareFrameSize failed for size " << width << "x" << height);
+    PTRACE(4, "V4L2\tCurrent resolution " << requestedWidth << "x" << requestedHeight);
     return false;
   }
 
   if ((requestedWidth != width) || (requestedHeight != height)){
-    PTRACE(4, "PVidInDev\t" << width << "x" << height << " requested but "
+    PTRACE(4, "V4L2\t" << width << "x" << height << " requested but "
                             << requestedWidth << "x" << requestedHeight << " returned");
   }
 
@@ -819,7 +815,7 @@ PINDEX PVideoInputDevice_V4L2::GetMaxFrameBytes()
 PBoolean PVideoInputDevice_V4L2::SetMapping()
 {
   if (isMapped) {
-    PTRACE(2, "PVidInDev\tVideo buffers already mapped! Do ClearMapping() first!");
+    PTRACE(2, "V4L2\tVideo buffers already mapped! Do ClearMapping() first!");
     ClearMapping();
     if(isMapped)
       return false;
@@ -835,15 +831,15 @@ PBoolean PVideoInputDevice_V4L2::SetMapping()
   reqbuf.memory = V4L2_MEMORY_MMAP;
 
   if (v4l2_ioctl(videoFd, VIDIOC_REQBUFS, &reqbuf) < 0) {
-    PTRACE(3,"PVidInDev\tREQBUFS failed : " << ::strerror(errno));
+    PTRACE(3,"V4L2\tREQBUFS failed : " << ::strerror(errno));
     return isMapped;
   }
   if (reqbuf.count < 1) {
-    PTRACE(3,"PVidInDev\tNot enough video buffer available. (got " << reqbuf.count << ")");
+    PTRACE(3,"V4L2\tNot enough video buffer available. (got " << reqbuf.count << ")");
     return isMapped;
   }
   if (reqbuf.count > NUM_VIDBUF) {
-    PTRACE(3,"PVidInDev\tToo much video buffer allocated. (got " << reqbuf.count << ")");
+    PTRACE(3,"V4L2\tToo much video buffer allocated. (got " << reqbuf.count << ")");
     return isMapped;
   }
 
@@ -857,19 +853,19 @@ PBoolean PVideoInputDevice_V4L2::SetMapping()
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = i;
     if (v4l2_ioctl(videoFd, VIDIOC_QUERYBUF, &buf) < 0) {
-      PTRACE(3,"PVidInDev\tQUERYBUF failed : " << ::strerror(errno));
+      PTRACE(3,"V4L2\tQUERYBUF failed : " << ::strerror(errno));
       return isMapped;
     }
 
     if ((videoBuffer[buf.index] = (BYTE *)v4l2_mmap(0, buf.length, PROT_READ|PROT_WRITE, MAP_SHARED, videoFd, buf.m.offset)) == MAP_FAILED) {
-      PTRACE(3,"PVidInDev\tmmap failed for buffer " << buf.index << " with error " << ::strerror(errno) << "(" << errno << ")");
+      PTRACE(3,"V4L2\tmmap failed for buffer " << buf.index << " with error " << ::strerror(errno) << "(" << errno << ")");
       return isMapped;
     }
   }
 
   isMapped = true;
 
-  PTRACE(7,"PVidInDev\tset mapping for " << videoBufferCount << " buffers, fd=" << videoFd);
+  PTRACE(7,"V4L2\tset mapping for " << videoBufferCount << " buffers, fd=" << videoFd);
 
 
   return isMapped;
@@ -898,13 +894,13 @@ void PVideoInputDevice_V4L2::ClearMapping()
 
   isMapped = false;
 
-  PTRACE(5,"PVidInDev\tVideo Input Device \"" << deviceName << "\" cleared mapping, fd=" << videoFd);
+  PTRACE(5,"V4L2\tVideo Input Device \"" << deviceName << "\" cleared mapping, fd=" << videoFd);
 }
 
 
 PBoolean PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  PTRACE(8,"PVidInDev\tGetFrameData()");
+  PTRACE(8,"V4L2\tGetFrameData()");
 
   m_pacing.Delay(1000/GetFrameRate());
   return GetFrameDataNoDelay(buffer, bytesReturned);
@@ -913,7 +909,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesRetur
 
 PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
-  PTRACE(8,"PVidInDev\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
+  PTRACE(8,"V4L2\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
   {
     PWaitAndSignal m(inCloseMutex);
     if (!isOpen)
@@ -944,10 +940,10 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
   int ret = select(videoFd+1, &rfds, NULL, NULL, &tv);
 
   if(ret == -1){
-    PTRACE(1,"PVidInDev\tselect() failed : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tselect() failed : " << ::strerror(errno));
     return PFalse;
   } else if(ret == 0){
-    PTRACE(4,"PVidInDev\tNo data in outgoing queue. Skip frame (@" << GetFrameRate() << "fps)");
+    PTRACE(4,"V4L2\tNo data in outgoing queue. Skip frame (@" << GetFrameRate() << "fps)");
     return PTrue;
   }
 
@@ -961,7 +957,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
     // strace resistance
     if (errno == EINTR) {
       if (v4l2_ioctl(videoFd, VIDIOC_DQBUF, &buf) < 0) {
-        PTRACE(1,"PVidInDev\tDQBUF failed : " << ::strerror(errno));
+        PTRACE(1,"V4L2\tDQBUF failed : " << ::strerror(errno));
         return false;
       }
     }
@@ -982,12 +978,12 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
         *bytesReturned = buf.bytesused;
     }
 
-    PTRACE(8,"PVidInDev\tget frame data of " << buf.bytesused << "bytes, fd=" << videoFd);
+    PTRACE(8,"V4L2\tget frame data of " << buf.bytesused << "bytes, fd=" << videoFd);
   }
 
   // requeue the buffer
   if (v4l2_ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
-    PTRACE(1,"PVidInDev\tQBUF failed : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tQBUF failed : " << ::strerror(errno));
   }
 
   return true;
@@ -1009,12 +1005,12 @@ PBoolean PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytes
 
   if (bytesRead < 0) {
     
-    PTRACE(1,"PVidInDev\tread failed (read = "<<bytesRead<< " expected " << frameBytes <<")");
+    PTRACE(1,"V4L2\tread failed (read = "<<bytesRead<< " expected " << frameBytes <<")");
     bytesRead = frameBytes;
   }
 
   if ((PINDEX)bytesRead != frameBytes) {
-    PTRACE(1,"PVidInDev\tread returned fewer bytes than expected");
+    PTRACE(1,"V4L2\tread returned fewer bytes than expected");
     // May result from a compressed format, otherwise indicates an error.
   }
 
@@ -1034,7 +1030,7 @@ PBoolean PVideoInputDevice_V4L2::TryFrameSize(unsigned& width, unsigned& height)
   videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   // get the frame size
   if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
-    PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tG_FMT failed : " << ::strerror(errno));
     return false;
   }
 
@@ -1042,7 +1038,7 @@ PBoolean PVideoInputDevice_V4L2::TryFrameSize(unsigned& width, unsigned& height)
   videoFormat.fmt.pix.height = height;
 
   if(v4l2_ioctl(videoFd, VIDIOC_TRY_FMT, &videoFormat) < 0){
-    PTRACE(3,"PVidInDev\tTRY_FMT failed : " << ::strerror(errno));
+    PTRACE(3,"V4L2\tTRY_FMT failed : " << ::strerror(errno));
     return false;
   }
 
@@ -1065,7 +1061,7 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
 
   // get the frame size
   if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
-    PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tG_FMT failed : " << ::strerror(errno));
     return false;
   }
 
@@ -1076,11 +1072,11 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
     fi_n = streamParm.parm.capture.timeperframe.numerator;
     fi_d = streamParm.parm.capture.timeperframe.denominator;
   } else {
-    PTRACE(1,"PVidInDev\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
+    PTRACE(1,"V4L2\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
   }
 
   if(videoFormat.fmt.pix.width == width && videoFormat.fmt.pix.height == height){
-    PTRACE(3,"PVidInDev\tFrame size already set.");
+    PTRACE(3,"V4L2\tFrame size already set.");
     return true;
   }
 
@@ -1094,9 +1090,9 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
       Stop();
     }
 
-    PTRACE(4, "PVidInDev\tTry setting resolution: " << videoFormat.fmt.pix.width << "x" << videoFormat.fmt.pix.height);
+    PTRACE(4, "V4L2\tTry setting resolution: " << videoFormat.fmt.pix.width << "x" << videoFormat.fmt.pix.height);
     if(!DoIOCTL(VIDIOC_S_FMT, &videoFormat, true)){
-      PTRACE(1,"PVidInDev\tS_FMT failed: " << ::strerror(errno));
+      PTRACE(1,"V4L2\tS_FMT failed: " << ::strerror(errno));
       return false;
     }
 
@@ -1107,11 +1103,11 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
     videoFormat.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
     if (v4l2_ioctl(videoFd, VIDIOC_G_FMT, &videoFormat) < 0) {
-      PTRACE(1,"PVidInDev\tG_FMT failed : " << ::strerror(errno));
+      PTRACE(1,"V4L2\tG_FMT failed : " << ::strerror(errno));
       return false;
     } else {
       frameBytes = videoFormat.fmt.pix.sizeimage;
-      PTRACE(8, "PVidInDev\tG_FMT returned resolution: "<< videoFormat.fmt.pix.width << "x" <<
+      PTRACE(8, "V4L2\tG_FMT returned resolution: "<< videoFormat.fmt.pix.width << "x" <<
               videoFormat.fmt.pix.height);
       width = videoFormat.fmt.pix.width;
       height = videoFormat.fmt.pix.height;
@@ -1119,10 +1115,10 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
 
     // reset the frame rate because it may have been overridden by the call to S_FMT
     if (fi_n == 0 || fi_d == 0 || v4l2_ioctl(videoFd, VIDIOC_S_PARM, &streamParm) < 0) {
-      PTRACE(3,"PVidInDev\tunable to reset frame rate.");
+      PTRACE(3,"V4L2\tunable to reset frame rate.");
     } else if (streamParm.parm.capture.timeperframe.numerator != fi_n ||
                streamParm.parm.capture.timeperframe.denominator  != fi_d) {
-      PTRACE(3, "PVidInDev\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
+      PTRACE(3, "V4L2\tnew frame interval (" << streamParm.parm.capture.timeperframe.numerator
                 << "/" << streamParm.parm.capture.timeperframe.denominator
                 << ") differs from what was requested (" << fi_n << "/" << fi_d << ").");
     }
@@ -1137,32 +1133,21 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
   return true;
 }
 
-PBoolean PVideoInputDevice_V4L2::DoIOCTL(unsigned long int r, void * s, PBoolean retryOnBusy){
-  PBoolean ioctlSuccess = false;
+PBoolean PVideoInputDevice_V4L2::DoIOCTL(unsigned long int r, void * s, PBoolean retryOnBusy)
+{
+  if (v4l2_ioctl(videoFd, r, s) >= 0)
+    return true;
 
-  if (v4l2_ioctl(videoFd, r, s) < 0)  {
-    PTRACE(3,"PVidInDev\t IOCTL ("<< r <<") failed : "<< ::strerror(errno));
+  if (errno != EBUSY || !retryOnBusy)
+    return false;
 
-    if(errno == EBUSY && retryOnBusy){
-      Close();
-      Open(userFriendlyDevName, true);
+  PTRACE(3,"V4L2\tRetrying IOCTL ("<< r << ')');
+  Close();
+  Open(userFriendlyDevName, true);
 
-      if (v4l2_ioctl(videoFd, r, s) < 0)  {
-        PTRACE(1,"PVidInDev\tIOCTL ("<< r <<") failed : "<< ::strerror(errno));
-        ioctlSuccess = false;
-      } else {
-        PTRACE(8,"PVidInDev\tIOCTL ("<< r <<") succeeded after re-opening device");
-        ioctlSuccess = true;
-      }
-    } else {
-      ioctlSuccess = false;
-    }
-  } else {
-    PTRACE(8,"PVidInDev\tIOCTL ("<< r <<") succeeded");
-    ioctlSuccess = true;
-  }
-  return ioctlSuccess;
+  return v4l2_ioctl(videoFd, r, s) >= 0;
 }
+
 
 /**
  * Query the current control setting
@@ -1246,7 +1231,7 @@ bool PVideoInputDevice_V4L2::SetAttributes(const Attributes & attrib)
 PBoolean PVideoInputDevice_V4L2::QueueAllBuffers()
 {
   if (true == areBuffersQueued) {
-    PTRACE(3, "PVidInDev\tVideo buffers already queued!");
+    PTRACE(3, "V4L2\tVideo buffers already queued!");
     return areBuffersQueued;
   }
 
@@ -1267,24 +1252,24 @@ PBoolean PVideoInputDevice_V4L2::QueueAllBuffers()
     buf.index = i;
 
     if (v4l2_ioctl(videoFd, VIDIOC_QBUF, &buf) < 0) {
-      PTRACE(3, "PVidInDev\tVIDIOC_QBUF failed for buffer " << i << ": " << ::strerror(errno));
+      PTRACE(3, "V4L2\tVIDIOC_QBUF failed for buffer " << i << ": " << ::strerror(errno));
       return areBuffersQueued;
     }
-    PTRACE(6, "PVidInDev\tBuffer " << i << " queued");
+    PTRACE(6, "V4L2\tBuffer " << i << " queued");
   }
 
   areBuffersQueued = true;
-  PTRACE(8, "PVidInDev\t" << videoBufferCount << " buffers successfully queued.");
+  PTRACE(8, "V4L2\t" << videoBufferCount << " buffers successfully queued.");
   return areBuffersQueued;
 }
 
 
 PBoolean PVideoInputDevice_V4L2::StartStreaming()
 {
-  PTRACE(8, "PVidInDev\tStart streaming for \"" << deviceName << "\" with fd=" << videoFd);
+  PTRACE(8, "V4L2\tStart streaming for \"" << deviceName << "\" with fd=" << videoFd);
 
   if (true == isStreaming) {
-    PTRACE(4, "PVidInDev\tVideo buffers already streaming! Nothing to do.");
+    PTRACE(4, "V4L2\tVideo buffers already streaming! Nothing to do.");
     return isStreaming;
   }
 
@@ -1298,31 +1283,31 @@ PBoolean PVideoInputDevice_V4L2::StartStreaming()
   //
   enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (v4l2_ioctl(videoFd, VIDIOC_STREAMON, &type) < 0) {
-    PTRACE(2, "PVidInDev\tSTREAMON failed with error " << ::strerror(errno));
+    PTRACE(2, "V4L2\tSTREAMON failed with error " << ::strerror(errno));
     return isStreaming;
   }
 
   isStreaming = true;
-  PTRACE(5, "PVidInDev\tVideo Input Device \"" << deviceName << "\" successfully started streaming.");
+  PTRACE(5, "V4L2\tVideo Input Device \"" << deviceName << "\" successfully started streaming.");
   return isStreaming;
 }
 
 
 void PVideoInputDevice_V4L2::StopStreaming(){
   if (false == isStreaming) {
-    PTRACE(2, "PVidInDev\tVideo buffers already not streaming! Do StartStreaming() first.");
+    PTRACE(2, "V4L2\tVideo buffers already not streaming! Do StartStreaming() first.");
     return;
   }
 
   int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
   if (v4l2_ioctl(videoFd, VIDIOC_STREAMOFF, &type) < 0) {
-    PTRACE(2, "PVidInDev\tSTREAMOFF failed : " << ::strerror(errno));
+    PTRACE(2, "V4L2\tSTREAMOFF failed : " << ::strerror(errno));
     return;
   }
 
   isStreaming = false;
-  PTRACE(5, "PVidInDev\tVideo Input Device \"" << deviceName << "\" successfully stopped streaming.");
+  PTRACE(5, "V4L2\tVideo Input Device \"" << deviceName << "\" successfully stopped streaming.");
 }
 
 void PVideoInputDevice_V4L2::Reset(){
@@ -1361,7 +1346,7 @@ PBoolean PVideoInputDevice_V4L2::EnumFrameFormats(Capabilities & capabilities) c
 
   PVideoFrameInfo frameInfo;
 
-  PTRACE(4, "PVidInDev\tEnumerate all frame format information");
+  PTRACE(4, "V4L2\tEnumerate all frame format information");
 
   while ((retFmt = ioctl(videoFd, VIDIOC_ENUM_FMT, &fmt)) == 0) {
     // Set the frame format
@@ -1392,7 +1377,7 @@ PBoolean PVideoInputDevice_V4L2::EnumFrameFormats(Capabilities & capabilities) c
               frameInfo.SetFrameRate(fival.discrete.denominator/fival.discrete.numerator);
               capabilities.framesizes.push_back(frameInfo);
 
-              PTRACE(7, "PVidInDev\tAdded frame size capability: " << frameInfo);
+              PTRACE(7, "V4L2\tAdded frame size capability: " << frameInfo);
 
             } else if(fival.type == V4L2_FRMIVAL_TYPE_STEPWISE ||
                       fival.type == V4L2_FRMIVAL_TYPE_CONTINUOUS) {
@@ -1400,33 +1385,33 @@ PBoolean PVideoInputDevice_V4L2::EnumFrameFormats(Capabilities & capabilities) c
               frameInfo.SetFrameRate(fival.stepwise.min.denominator/fival.stepwise.min.numerator);
               capabilities.framesizes.push_back(frameInfo);
 
-              PTRACE(7, "PVidInDev\tAdded frame size capability: " << frameInfo);
+              PTRACE(7, "V4L2\tAdded frame size capability: " << frameInfo);
 
               frameInfo.SetFrameRate(fival.stepwise.max.denominator/fival.stepwise.max.numerator);
               capabilities.framesizes.push_back(frameInfo);
 
-              PTRACE(7, "PVidInDev\tAdded frame size capability: " << frameInfo);
+              PTRACE(7, "V4L2\tAdded frame size capability: " << frameInfo);
 
               break;
             }
             fival.index++;
           }
           if (retFps != 0 && errno != EINVAL) {
-            PTRACE(3, "PVidInDev\tError enumerating frame intervals");
+            PTRACE(3, "V4L2\tError enumerating frame intervals");
             return false;
           }
         }
         fsize.index++;
       }
       if (retSize != 0 && errno != EINVAL) {
-        PTRACE(3, "PVidInDev\tError enumerating frame sizes");
+        PTRACE(3, "V4L2\tError enumerating frame sizes");
         return false;
       }
     }
     fmt.index++;
   }
   if (errno != EINVAL) {
-    PTRACE(3, "PVidInDev\tError enumerating frame formats");
+    PTRACE(3, "V4L2\tError enumerating frame formats");
     return false;
   }
 
@@ -1439,7 +1424,7 @@ PBoolean PVideoInputDevice_V4L2::GetDeviceCapabilities(
 {
   //static Capabilities capabilities;
 
-  PTRACE(4, "PVidInDev\tGet device capabilities for " << deviceName);
+  PTRACE(4, "V4L2\tGet device capabilities for " << deviceName);
 
   if(!EnumFrameFormats(*caps) || !EnumControls(*caps))
     return false;
