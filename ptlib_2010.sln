@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "configure", "tools\configur
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World DLL", "samples\hello_world\helloDLL_2010.vcxproj", "{86680AA2-ACF3-4247-AF25-8E3D80855868}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVN Get Revision", "tools\svn_getrev\svn_getrev_2010.vcxproj", "{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Android = Debug|Android
@@ -109,6 +111,15 @@ Global
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|Win32.Build.0 = Release|Win32
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|x64.ActiveCfg = Release|x64
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|x64.Build.0 = Release|x64
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|Win32.Build.0 = Debug|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|x64.ActiveCfg = Debug|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|Win32.ActiveCfg = Release|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|Win32.Build.0 = Release|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|x64.ActiveCfg = Release|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|Win32.ActiveCfg = Release|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|Win32.Build.0 = Release|Win32
+		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
