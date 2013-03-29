@@ -859,45 +859,48 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
   PAssertNULL(buf);
 
   char * src = (char *) buf;
-  while (lastWriteCount < len) {
+  while (len > 0) {
     // wait for output space to become available
     if (!WaitForPlayBufferFree())       // sets m_movePos and m_available
       return false;                     // aborted/closed
-    {
-      PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while writing
-      LPVOID pointer1, pointer2;
-      DWORD length1, length2;
-      HRESULT Result = m_playbackBuffer->Lock(m_movePos, PMIN((PINDEX)m_available, len),
-                                              &pointer1, &length1, &pointer2, &length2, 0L);
-      if (Result == DSERR_BUFFERLOST) {   // Buffer was lost, need to restore it
-        m_playbackBuffer->Restore();
-        Result = m_playbackBuffer->Lock(m_movePos, PMIN((PINDEX)m_available, len),
-                                        &pointer1, &length1, &pointer2, &length2, 0L);
-      }
-      if (FAILED(Result)) {
-        SetErrorValues(Miscellaneous, Result, LastWriteError);
-        PTRACE(1, "Write failure: " << GetErrorText() << " len " << len << " pos " << m_movePos);
-        return false;
-      }
-      // Copy supplied buffer into locked DirectSound memory
-      memcpy((char *)pointer1, src, length1);
-      if (pointer2 != NULL)
-        memcpy(pointer2, (char *)src + length1, length2);
 
-      m_playbackBuffer->Unlock(pointer1, length1, pointer2, length2);
+    PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while writing
 
-      PTRACE_IF(4, m_moved == 0, "Playback starting");
-
-      PINDEX writeCount = length1 + length2;
-      src += writeCount;
-      len -= writeCount;
-      lastWriteCount += writeCount;
-      m_movePos += lastWriteCount;
-      m_movePos %= m_bufferSize;
-      m_moved += writeCount;
-                                          // tell DirectSound to play
-      m_playbackBuffer->Play(0, 0, m_isStreaming ? DSBPLAY_LOOPING : 0L);
+    LPVOID pointer1, pointer2;
+    DWORD length1, length2;
+    DWORD desiredWriteCount = std::min(m_available, (DWORD)len);
+    HRESULT result = m_playbackBuffer->Lock(m_movePos, desiredWriteCount,
+                                            &pointer1, &length1, &pointer2, &length2, 0L);
+    if (result == DSERR_BUFFERLOST) {   // Buffer was lost, need to restore it
+      m_playbackBuffer->Restore();
+      result = m_playbackBuffer->Lock(m_movePos, desiredWriteCount,
+                                      &pointer1, &length1, &pointer2, &length2, 0L);
     }
+
+    if (FAILED(result)) {
+      SetErrorValues(Miscellaneous, result, LastWriteError);
+      PTRACE(1, "Write failure: " << GetErrorText() << " len " << len << " pos " << m_movePos);
+      return false;
+    }
+
+    // Copy supplied buffer into locked DirectSound memory
+    memcpy((char *)pointer1, src, length1);
+    if (pointer2 != NULL)
+      memcpy(pointer2, (char *)src + length1, length2);
+
+    m_playbackBuffer->Unlock(pointer1, length1, pointer2, length2);
+
+    PTRACE_IF(4, m_moved == 0, "Playback starting");
+
+    PINDEX writeCount = length1 + length2;
+    src += writeCount;
+    len -= writeCount;
+    lastWriteCount += writeCount;
+    m_movePos += writeCount;
+    m_movePos %= m_bufferSize;
+    m_moved += writeCount;
+                                        // tell DirectSound to play
+    m_playbackBuffer->Play(0, 0, m_isStreaming ? DSBPLAY_LOOPING : 0L);
   }
   return true;
 }
@@ -1224,37 +1227,37 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
   PAssertNULL(buf);
 
   char * dest = (char *) buf;
-  while (lastReadCount < len) {
+  while (len > 0) {
     if (!WaitForRecordBufferFull())     // sets m_movePos and m_available
       return false;                     // aborted/closed
-    {
-      PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while active
 
-      // Read from device buffer minimum between the data required and data available
-      LPVOID pointer1, pointer2;
-      DWORD length1, length2;
-      HRESULT Result = m_captureBuffer->Lock(m_movePos, PMIN((PINDEX)m_available, len),
-                                             &pointer1, &length1, &pointer2, &length2, 0L);
-      if (FAILED(Result)) {
-        SetErrorValues(Miscellaneous, Result, LastReadError);
-        PTRACE(1, "Read Lock fail: " << GetErrorText());
-        return false;
-      }
-      // Copy from DirectSound locked memory into return buffer
-      memcpy((char *)dest, pointer1, length1);
-      if (pointer2 != NULL)
-        memcpy((char *)dest + length1, pointer2, length2);
+    PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while active
 
-      m_captureBuffer->Unlock(pointer1, length1, pointer2, length2);
-
-      PINDEX readCount = length1 + length2;
-      dest += readCount;
-      len -= readCount;
-      lastReadCount += readCount;
-      m_movePos += readCount;
-      m_movePos %= m_bufferSize;
-      m_moved += readCount;
+    // Read from device buffer minimum between the data required and data available
+    LPVOID pointer1, pointer2;
+    DWORD length1, length2;
+    HRESULT result = m_captureBuffer->Lock(m_movePos, std::min(m_available, (DWORD)len),
+                                           &pointer1, &length1, &pointer2, &length2, 0L);
+    if (FAILED(result)) {
+      SetErrorValues(Miscellaneous, result, LastReadError);
+      PTRACE(1, "Read Lock fail: " << GetErrorText());
+      return false;
     }
+
+    // Copy from DirectSound locked memory into return buffer
+    memcpy(dest, pointer1, length1);
+    if (pointer2 != NULL)
+      memcpy(dest + length1, pointer2, length2);
+
+    m_captureBuffer->Unlock(pointer1, length1, pointer2, length2);
+
+    PINDEX readCount = length1 + length2;
+    dest += readCount;
+    len -= readCount;
+    lastReadCount += readCount;
+    m_movePos += readCount;
+    m_movePos %= m_bufferSize;
+    m_moved += readCount;
   }
   return true;
 }

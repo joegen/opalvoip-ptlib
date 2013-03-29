@@ -209,6 +209,26 @@ PVideoFrameInfo::PVideoFrameInfo(unsigned        width,
 }
 
 
+PObject::Comparison PVideoFrameInfo::Compare(const PObject & obj) const
+{
+  const PVideoFrameInfo & other = dynamic_cast<const PVideoFrameInfo &>(obj);
+
+  unsigned area = frameWidth*frameHeight;
+  unsigned otherArea = other.frameWidth*other.frameHeight;
+  if (area < otherArea)
+    return LessThan;
+  if (area > otherArea)
+    return GreaterThan;
+
+  if (frameRate < other.frameRate)
+    return LessThan;
+  if (frameRate > other.frameRate)
+    return GreaterThan;
+
+  return colourFormat.Compare(other.colourFormat);
+}
+
+
 void PVideoFrameInfo::PrintOn(ostream & strm) const
 {
   if (!colourFormat.IsEmpty())
@@ -640,6 +660,33 @@ PBoolean PVideoDevice::SetChannel(int channelNum)
 int PVideoDevice::GetChannel() const
 {
   return channelNumber;
+}
+
+
+bool PVideoDevice::SetFrameInfoConverter(const PVideoFrameInfo & info)
+{
+  if (!SetColourFormatConverter(info.GetColourFormat())) {
+    PTRACE(1, "PVidDev\tCould not set colour format in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
+    return false;
+  }
+
+  if (!SetFrameSizeConverter(info.GetFrameWidth(), info.GetFrameHeight())) {
+    PTRACE(1, "PVidDev\tCould not set frame size in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
+    return false;
+  }
+
+  if (info.GetFrameRate() != 0) {
+    if (!SetFrameRate(info.GetFrameRate())) {
+      PTRACE(1, "PVidDev\tCould not set frame rate in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
+      return false;
+    }
+  }
+
+  PTRACE(4, "PVidDev\tVideo " << (CanCaptureVideo() ? "grabber" : "display") << " set to " << info);
+  return true;
 }
 
 
