@@ -60,7 +60,7 @@ FUNCTIONS=(    show_tags \
 #
 
 if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
-  echo "usage: $0 cmd(s) proj [ "stable" ] tag [ lasttag ]"
+  echo "usage: $0 cmd(s) proj [ "stable" ] tag [ prevtag ]"
   echo "  cmd may be one of: ${COMMAND_NAMES[*]}"
   echo "  proj may be one of: ptlib opal ipp-codecs"
   echo "  tag is either 'next' or 'last' or an aritrary name"
@@ -73,12 +73,16 @@ shift
 base=$1
 shift
 
+if [ -z "$SOURCEFORGE_USERNAME" ]; then
+  SOURCEFORGE_USERNAME=`whoami`
+fi
+
 case "$base" in
   ptlib | opal)
-    repository=https://opalvoip.svn.sourceforge.net/svnroot/opalvoip/$base
+    repository=svn+ssh://$SOURCEFORGE_USERNAME@svn.code.sf.net/p/opalvoip/code/$base
   ;;
   ipp-codecs)
-    repository=https://ippcodecs.svn.sourceforge.net/svnroot/ippcodecs
+    repository=svn+ssh://$SOURCEFORGE_USERNAME@svn.code.sf.net/p/ippcodecs/code
   ;;
   *)
     echo Unknown base project: $base
@@ -153,9 +157,9 @@ BASE_ZIP=${base}
 SOURCE_FORGE_FILES=( $SRC_ARCHIVE_TBZ2 $DOC_ARCHIVE_TBZ2 $SRC_ARCHIVE_ZIP $DOC_ARCHIVE_ZIP )
 
 CHANGELOG_BASE=ChangeLog-${base}-${release_tag}.txt
-CHANGELOG_FILE=${base}/$CHANGELOG_BASE
-VERSION_FILE=${base}/version.h
-REVISION_FILE=${base}/revision.h.in
+CHANGELOG_FILE="${base}/$CHANGELOG_BASE"
+VERSION_FILE="${base}/version.h"
+REVISION_FILE="${base}/revision.h.in"
 
 
 
@@ -238,33 +242,40 @@ function create_tag () {
     fi
   fi
 
-  if [ -n "$release_version" -a -e $VERSION_FILE ]; then
+  if [ -n "$release_version" -a -e "$VERSION_FILE" ]; then
     version_file_changed=0
-    file_version=`awk '/MAJOR_VERSION/{printf "%s ",$3};/MINOR_VERSION/{printf "%s ",$3};/BUILD_NUMBER/{printf "%s",$3}' $VERSION_FILE`
+    file_version=`awk '/MAJOR_VERSION/{printf "%s ",$3};/MINOR_VERSION/{printf "%s ",$3};/BUILD_NUMBER/{printf "%s",$3}' "$VERSION_FILE"`
     if [ "${release_version[*]}" = "${file_version[*]}" ]; then
       echo "Version file $VERSION_FILE already set to ${release_version[*]}"
     else
       echo "Adjusting $VERSION_FILE from ${file_version[*]} to ${release_version[*]}"
-      awk "/MAJOR_VERSION/{print \$1,\$2,\"${release_version[0]}\";next};/MINOR_VERSION/{print \$1,\$2,\"${release_version[1]}\";next};/BUILD_NUMBER/{print \$1,\$2,\"${release_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"ReleaseCode\";next};{print}" $VERSION_FILE > $VERSION_FILE.tmp
-      mv -f $VERSION_FILE.tmp $VERSION_FILE
+      awk "/MAJOR_VERSION/{print \$1,\$2,\"${release_version[0]}\";next};/MINOR_VERSION/{print \$1,\$2,\"${release_version[1]}\";next};/BUILD_NUMBER/{print \$1,\$2,\"${release_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"ReleaseCode\";next};{print}" "$VERSION_FILE" > "$VERSION_FILE.tmp"
+      mv -f "$VERSION_FILE.tmp" "$VERSION_FILE"
       version_file_changed=1
     fi
 
-    build_type=`awk '/BUILD_TYPE/{print $3}' $VERSION_FILE`
+    build_type=`awk '/BUILD_TYPE/{print $3}' "$VERSION_FILE"`
     if [ "$build_type" != "ReleaseCode" ]; then
       echo "Adjusting $VERSION_FILE from $build_type to ReleaseCode"
-      awk '/BUILD_TYPE/{print $1,$2,"ReleaseCode";next};{print}' $VERSION_FILE > $VERSION_FILE.tmp
-      mv -f $VERSION_FILE.tmp $VERSION_FILE
+      awk '/BUILD_TYPE/{print $1,$2,"ReleaseCode";next};{print}' "$VERSION_FILE" > "$VERSION_FILE.tmp"
+      mv -f "$VERSION_FILE.tmp" "$VERSION_FILE"
       version_file_changed=1
     fi
 
     if [ $version_file_changed ]; then
+      # Add or remove a space to force check in
+      if grep --quiet "revision.h " "$REVISION_FILE" ; then
+        sed --in-place "s/revision.h /revision.h/" "$REVISION_FILE"
+      else
+        sed --in-place "s/revision.h/revision.h /" "$REVISION_FILE"
+      fi
       msg="Update release version number to $release_verstr"
       if [ -n "$debug_tagging" ]; then
         echo $msg
-        cat $VERSION_FILE
+        $SVN diff "$VERSION_FILE" "$REVISION_FILE"
+        $SVN revert "$VERSION_FILE" "$REVISION_FILE"
       else
-        $SVN commit -m "$msg" $VERSION_FILE
+        $SVN commit --message "$msg" "$VERSION_FILE" "$REVISION_FILE"
       fi
     fi
   fi
@@ -276,24 +287,19 @@ function create_tag () {
     $SVN copy ${repository}/$release_branch ${repository}/tags/$release_tag -m "Tagging $release_tag"
   fi
   
-  if [ -e $VERSION_FILE ]; then
+  if [ -e "$VERSION_FILE" ]; then
     new_version=( ${release_version[*]} )
     let new_version[2]++
     echo "Adjusting $VERSION_FILE from ${release_version[*]} ReleaseCode to ${new_version[*]} BetaCode"
-    awk "/BUILD_NUMBER/{print \$1,\$2,\"${new_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"BetaCode\";next};{print}" $VERSION_FILE > $VERSION_FILE.tmp
-    mv -f $VERSION_FILE.tmp $VERSION_FILE
+    awk "/BUILD_NUMBER/{print \$1,\$2,\"${new_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"BetaCode\";next};{print}" "$VERSION_FILE" > "$VERSION_FILE.tmp"
+    mv -f "$VERSION_FILE.tmp" "$VERSION_FILE"
     msg="Update version number for beta v${new_version[0]}.${new_version[1]}.${new_version[2]}"
     if [ -n "$debug_tagging" ]; then
       echo $msg
-      cat $VERSION_FILE
-      $SVN revert $VERSION_FILE
+      $SVN diff "$VERSION_FILE"
+      $SVN revert "$VERSION_FILE"
     else
-      if [ -e $REVISION_FILE ]; then
-        sed -i "s/\$Revision.*\$/\$Revision\$/" $REVISION_FILE
-        $SVN commit -m "$msg" $VERSION_FILE $REVISION_FILE
-      else
-        $SVN commit -m "$msg" $VERSION_FILE
-      fi
+      $SVN commit --message "$msg" "$VERSION_FILE"
     fi
   fi
 }
@@ -320,7 +326,7 @@ function create_changelog () {
     return
   fi
 
-  last_rev=`svn log --stop-on-copy ${repository}/tags/${previous_tag} | tail -4 | head -1 | awk '{print substr($1,2,100)}'`
+  last_rev=`$SVN log --stop-on-copy ${repository}/tags/${previous_tag} | tail -4 | head -1 | awk '{print substr($1,2,100)}'`
   if [ -z $last_rev ]; then
     echo "Tag $previous_tag in $base does not exist!"
     return
@@ -334,7 +340,7 @@ function create_changelog () {
     output_name=--stdout
   fi
 
-  release_rev=`svn log --stop-on-copy ${repository}/tags/${release_tag} 2>/dev/null | tail -4 | head -1 | awk '{print substr($1,2,100)}'`
+  release_rev=`$SVN log --stop-on-copy ${repository}/tags/${release_tag} 2>/dev/null | tail -4 | head -1 | awk '{print substr($1,2,100)}'`
   if [ -z $release_rev ]; then
     release_rev=HEAD
     echo "Creating $CHANGELOG_FILE between $release_branch HEAD and tag $previous_tag (rev $last_rev)"
@@ -351,26 +357,13 @@ function create_changelog () {
 
 function create_archive () {
 
-  switch_to_version
-
-  rm -f $SRC_ARCHIVE_TBZ2 \
-        $SRC_ARCHIVE_ZIP \
-        ${base}/config.status \
-        ${base}/config.log \
-        ${base}/Makefile \
-        ${base}/plugins/config.status \
-        ${base}/plugins/config.log \
-        ${base}/plugins/Makefile \
-        ${base}/include/ptbuildopts.h \
-        ${base}/make/ptbuildopts.mak \
-        ${base}/make/ptlib-config
-  rm -rf ${base}/html ${base}/lib* ${base}/bin*
+  check_out
 
   echo Creating source archive $SRC_ARCHIVE_TBZ2
   if [ "${base}" != "${BASE_TAR}" ]; then
     mv ${base} ${BASE_TAR}
   fi
-  exclusions="--exclude=.svn --exclude=.cvsignore --exclude=a.out --exclude=*.pc --exclude=*_cfg.dxy --exclude=opal.spec --exclude=opal_defs.mak"
+  exclusions="--exclude=.svn --exclude=.cvsignore"
   $TAR -cjf $SRC_ARCHIVE_TBZ2 $exclusions ${BASE_TAR} >/dev/null
   if [ "${base}" != "${BASE_TAR}" ]; then
     mv ${BASE_TAR} ${base}
@@ -380,7 +373,7 @@ function create_archive () {
   if [ "${base}" != "${BASE_ZIP}" ]; then
     mv ${base} ${BASE_ZIP}
   fi
-  exclusions="-x *.svn* -x .cvsignore -x a.out -x *.pc -x *_cfg.dxy -x opal.spec -x opal_defs.mak"
+  exclusions="-x *.svn* -x .cvsignore"
   for ext in ${BINARY_EXT[*]} ; do
     files=`find ${BASE_ZIP} -name \*.${ext}`
     if [ -n "$files" ]; then
@@ -404,12 +397,27 @@ function create_docs () {
   rm -f $DOC_ARCHIVE_TBZ2 $DOC_ARCHIVE_ZIP
 
   echo Creating documents...
-  ( cd ${base} ; rm -rf html ; ./configure ; make docs ) > docs.log 2>&1 
+  (
+    PTLIBDIR=`pwd | xargs dirname`/ptlib
+    if [ "$base" != "ptlib" ]; then
+      pushd $PTLIBDIR
+      ./configure --disable-plugins
+      make
+      popd
+    fi
+
+    cd ${base}
+    pwd
+    rm -rf html
+    if ./configure PTLIBDIR=$PTLIBDIR ; then
+      make graphdocs
+    fi
+  ) > docs.log 2>&1 
 
   if [ -d ${base}/html ]; then 
     echo Creating document archive $DOC_ARCHIVE_TBZ2
     ( cd ${base} ; $TAR -cjf ../$DOC_ARCHIVE_TBZ2 html )
-    echo Creating document archive $DOC_ARCHIVE_TBZ2
+    echo Creating document archive $DOC_ARCHIVE_ZIP
     ( cd ${base} ; $ZIP -r ../$DOC_ARCHIVE_ZIP html ) > /dev/null
   else
     echo Documents not created for $base
@@ -431,9 +439,6 @@ function upload_to_sourceforge () {
     echo "Cannot find any of ${SOURCE_FORGE_FILES[*]}"
   else
     echo "Uploading files to SourceForge"
-    if [ -z "$SOURCEFORGE_USERNAME" ]; then
-      SOURCEFORGE_USERNAME=`whoami`
-    fi
     read -p "Source Forge sub-directory: "
     rsync -avP -e ssh $files "${SOURCEFORGE_USERNAME},opalvoip@frs.sourceforge.net:/home/frs/project/o/op/opalvoip/${REPLY}"
   fi
@@ -445,9 +450,9 @@ function upload_to_sourceforge () {
 #
 
 function update_website () {
-  if [ -e $CHANGELOG_FILE ]; then
+  if [ -e "$CHANGELOG_FILE" ]; then
     echo "Copying $CHANGELOG_FILE to $WEB_CHANGELOG_DIR"
-    cp $CHANGELOG_FILE $WEB_CHANGELOG_DIR
+    cp "$CHANGELOG_FILE" $WEB_CHANGELOG_DIR
   else
     echo "No $CHANGELOG_FILE, use 'log' command to generate."
   fi

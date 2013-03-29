@@ -32,10 +32,10 @@
  */
 
   protected:
-    int toChildPipe[2];
-    int fromChildPipe[2];
-    int stderrChildPipe[2];
-    int childPid;
-    int retVal;
+    int m_toChildPipe[2];
+    int m_fromChildPipe[2];
+    int m_stderrChildPipe[2];
+    int m_childPID;
+    int m_returnCode;
 
 // End Of File ////////////////////////////////////////////////////////////////

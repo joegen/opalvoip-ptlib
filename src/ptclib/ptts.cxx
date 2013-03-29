@@ -114,7 +114,7 @@ PTextToSpeech_SAPI::PTextToSpeech_SAPI()
   : m_opened(false)
 {
   PThread::Current()->CoInitialise();
-  PTRACE(5, "TTS\tPTextToSpeech_SAPI constructed");
+  PTRACE(5, "SAPI-TTS", "Constructed");
 }
 
 
@@ -131,7 +131,7 @@ PBoolean PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
 
   PComResult hr = m_cpVoice.CoCreateInstance(CLSID_SpVoice);
   if (hr.Failed()) {
-    PTRACE(2, "TTS", "Could not start SAPI: " << hr);
+    PTRACE(2, "SAPI-TTS", "Could not start SAPI: " << hr);
     return false;
   }
 
@@ -181,7 +181,7 @@ PBoolean PTextToSpeech_SAPI::Speak(const PString & text, TextType hint)
   };
 
   if (m_CurrentVoice != NULL && !m_CurrentVoice.IsEmpty()) {
-    PTRACE(4, "SAPI\tTrying to set voice \"" << m_CurrentVoice << "\""
+    PTRACE(4, "SAPI-TTS", "Trying to set voice \"" << m_CurrentVoice << "\""
               " of voices: " << setfill(',') << GetVoiceList());
 
     //Enumerate voice tokens with attribute "Name=<specified voice>"
@@ -192,13 +192,13 @@ PBoolean PTextToSpeech_SAPI::Speak(const PString & text, TextType hint)
       if (PCOM_SUCCEEDED(cpEnum->Next,(1, &cpVoiceToken, NULL))) {
         //set the voice
         if (PCOM_SUCCEEDED(m_cpVoice->SetVoice,(cpVoiceToken))) {
-          PTRACE(4, "SAPI\tSetVoice(" << m_CurrentVoice << ") OK!");
+          PTRACE(4, "SAPI-TTS", "SetVoice(" << m_CurrentVoice << ") OK!");
         }
       }
     } 
   }
 
-  PTRACE(4, "SAPI\tSpeaking...");
+  PTRACE(4, "SAPI-TTS", "Speaking...");
   return PCOM_SUCCEEDED(m_cpVoice->Speak,(wtext, SPF_DEFAULT, NULL));
 }
 
@@ -215,14 +215,14 @@ PStringArray PTextToSpeech_SAPI::GetVoiceList()
   // Get the number of voices
   if (PCOM_SUCCEEDED_EX(hr,SpEnumTokens,(SPCAT_VOICES, NULL, NULL, &cpEnum))) {
     if (PCOM_SUCCEEDED_EX(hr,cpEnum->GetCount,(&ulCount))) {
-      PTRACE(4, "SAPI\tFound " << ulCount << " voices..");
+      PTRACE(4, "SAPI-TTS", "Found " << ulCount << " voices..");
 
       // Obtain a list of available voice tokens, set the voice to the token, and call Speak
       while (ulCount-- > 0) {
         CComPtr<ISpObjectToken> cpVoiceToken;
         if (hr.Succeeded(cpEnum->Next(1, &cpVoiceToken, NULL))) {
           voiceList.AppendString("voice");
-          PTRACE(4, "SAPI\tFound voice:" << cpVoiceToken);
+          PTRACE(4, "SAPI-TTS", "Found voice:" << cpVoiceToken);
         }
       } 
     }
@@ -295,115 +295,163 @@ class PTextToSpeech_Festival : public PTextToSpeech
 
     PBoolean OpenFile(const PFilePath & fn);
     PBoolean OpenChannel(PChannel * channel);
-    PBoolean IsOpen()    { return opened; }
+    PBoolean IsOpen()    { return m_opened; }
 
     PBoolean Close();
     PBoolean Speak(const PString & str, TextType hint);
 
   protected:
-    PBoolean Invoke(const PString & str, const PFilePath & fn);
-
-    PMutex mutex;
-    PBoolean opened;
-    PBoolean usingFile;
-    PString text;
-    PFilePath path;
-    unsigned volume, rate;
+    PMutex    m_mutex;
+    bool      m_opened;
+    PString   m_text;
+    PFilePath m_filePath;
+    unsigned  m_volume;
+    unsigned  m_sampleRate;
 };
 
 #define new PNEW
 
 PFACTORY_CREATE(PFactory<PTextToSpeech>, PTextToSpeech_Festival, "Festival", false);
 
+
 PTextToSpeech_Festival::PTextToSpeech_Festival()
+  : m_opened(false)
+  , m_volume(100)
+  , m_sampleRate(8000)
 {
-  PWaitAndSignal m(mutex);
-  usingFile = opened = false;
-  rate = 8000;
-  volume = 100;
-  PTRACE(4, "TTS\tPTextToSpeech_Festival constructed");
+  PTRACE(5, "Festival-TTS", "Constructed");
 }
 
 
 PTextToSpeech_Festival::~PTextToSpeech_Festival()
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal mutex(m_mutex);
+  PTRACE(5, "Festival-TTS", "Destroyed");
 }
+
 
 PBoolean PTextToSpeech_Festival::OpenChannel(PChannel *)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal mutex(m_mutex);
 
   Close();
-  usingFile = false;
-  opened = false;
 
-  return true;
+  m_text.MakeEmpty();
+  m_filePath.MakeEmpty();
+
+  return false;
 }
 
 
 PBoolean PTextToSpeech_Festival::OpenFile(const PFilePath & fn)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal mutex(m_mutex);
 
   Close();
-  usingFile = true;
-  path = fn;
-  opened = true;
 
-  PTRACE(3, "TTS\tWriting speech to " << fn);
+  m_text.MakeEmpty();
+  m_filePath = fn;
+  m_opened = true;
+
+  PTRACE(4, "Festival-TTS", "Writing speech to \"" << fn << '"');
 
   return true;
 }
 
+
 PBoolean PTextToSpeech_Festival::Close()
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal mutex(m_mutex);
 
-  if (!opened)
+  if (!m_opened)
     return true;
 
-  PBoolean stat = false;
+  m_opened = false;
 
-  if (usingFile)
-    stat = Invoke(text, path);
-
-  text = PString();
-
-  opened = false;
-
-  return stat;
-}
-
-
-PBoolean PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
-{
-  PWaitAndSignal m(mutex);
-
-  if (!IsOpen()) {
-    PTRACE(2, "TTS\tAttempt to speak whilst engine not open");
+  if (m_filePath.IsEmpty()) {
+    PTRACE(1, "Festival-TTS", "Stream mode not supported (yet)");
     return false;
   }
 
-  PString str = ostr;
+  if (m_text.IsEmpty()) {
+    PTRACE(1, "Festival-TTS", "Nothing spoken");
+    return false;
+  }
+
+  PFile wav;
+  if (!wav.Open(m_filePath, PFile::WriteOnly)) {
+    PTRACE(1, "Festival-TTS", "Could not create WAV file: \"" << m_filePath << '"');
+    return false;
+  }
+
+  PStringStream cmdLine;
+  cmdLine << "text2wave -scale " << std::fixed << m_volume/100.0 << " -F " << m_sampleRate;
+
+  PTRACE(4, "Festival-TTS", "Creating \"" << m_filePath << "\" from \"" << m_text << "\" using \"" << cmdLine << '"');
+  PPipeChannel cmd(cmdLine, PPipeChannel::ReadWrite, true, true);
+
+  cmd << m_text << '\n';
+  if (!cmd.Execute()) { // Flushes stream and sends EOF
+    PTRACE(1, "Festival-TTS", "Festival Generation failed: code=" << cmd.WaitForTermination());
+    wav.Remove();
+    return false;
+  }
+
+  char buf[1000];
+  while (cmd.Read(buf, sizeof(buf))) {
+    if (!wav.Write(buf, cmd.GetLastReadCount())) {
+      PTRACE(1, "Festival-TTS", "Could not write to WAV file: \"" << m_filePath << '"');
+      wav.Remove();
+      return false;
+    }
+  }
+
+  int result = cmd.WaitForTermination();
+
+#if PTRACING
+  PString error;
+  if (cmd.ReadStandardError(error, false)) {
+    PTRACE(2, "Festival-TTS", "Error: \"" << error.Trim() << '"');
+    result = 1;
+  }
+  else if (result != 0) {
+    PTRACE(2, "Festival-TTS", "Error from sub-process: result=" << result);
+  }
+  else {
+    PTRACE(5, "Festival-TTS", "Generation complete: " << wav.GetLength() << " bytes");
+  }
+#endif
+
+  return result == 0;
+}
+
+
+PBoolean PTextToSpeech_Festival::Speak(const PString & str, TextType hint)
+{
+  PWaitAndSignal mutex(m_mutex);
+
+  if (!IsOpen()) {
+    PTRACE(2, "Festival-TTS", "Attempt to speak whilst engine not open");
+    return false;
+  }
+
+  if (m_filePath.IsEmpty()) {
+    PTRACE(1, "Festival-TTS", "Stream mode not supported (yet)");
+    return false;
+  }
+
+  PTRACE(4, "Festival-TTS", "Speaking \"" << str << "\", hint=" << hint);
 
   // do various things to the string, depending upon the hint
   switch (hint) {
     case Digits:
     default:
-    ;
-  };
-
-  if (usingFile) {
-    PTRACE(3, "TTS\tSpeaking " << ostr);
-    text = text & str;
-    return true;
+      m_text = m_text & str;
   }
 
-  PTRACE(1, "TTS\tStream mode not supported for Festival");
-
-  return false;
+  return true;
 }
+
 
 PStringArray PTextToSpeech_Festival::GetVoiceList()
 {
@@ -412,61 +460,38 @@ PStringArray PTextToSpeech_Festival::GetVoiceList()
   return voiceList;
 }
 
+
 PBoolean PTextToSpeech_Festival::SetVoice(const PString & v)
 {
   return v == "default";
 }
 
+
 PBoolean PTextToSpeech_Festival::SetRate(unsigned v)
 {
-  rate = v;
+  m_sampleRate = v;
   return true;
 }
+
 
 unsigned PTextToSpeech_Festival::GetRate()
 {
-  return rate;
+  return m_sampleRate;
 }
+
 
 PBoolean PTextToSpeech_Festival::SetVolume(unsigned v)
 {
-  volume = v;
+  m_volume = v;
   return true;
 }
 
+
 unsigned PTextToSpeech_Festival::GetVolume()
 {
-  return volume;
+  return m_volume;
 }
 
-PBoolean PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fname)
-{
-  PString text = otext;
-  text.Replace('\n', ' ', true);
-  text.Replace('\"', '\'', true);
-  text.Replace('\\', ' ', true);
-  text = "\"" + text + "\"";
-
-  PString cmdLine = "echo " + text + " | ./text2wave -F " + PString(PString::Unsigned, rate) + " -otype riff > " + fname;
-
-  PPipeChannel cmd;
-  if (!cmd.Open(cmdLine, PPipeChannel::ReadWriteStd)) {
-    PTRACE(1, "TTS\tCannot execute command " << cmd);
-    return false;
-  }
-
-  PTRACE(3, "TTS\tCreating " << fname << " using " << cmdLine);
-  cmd.Execute();
-  int code = -1;
-  code = cmd.WaitForTermination();
-  if (code >= 0) {
-    PTRACE(4, "TTS\tdata generated");
-  } else {
-    PTRACE(1, "TTS\tgeneration failed");
-  }
-
-  return code == 0;
-}
 
 #endif // P_PIPECHAN
 

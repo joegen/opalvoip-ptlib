@@ -98,6 +98,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
+      <DelayLoadDLLs>qwave.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -137,6 +138,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
+      <DelayLoadDLLs>qwave.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Message>Copying symbol merge utility to ptlib/lib directory.</Message>
@@ -176,6 +178,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
+      <DelayLoadDLLs>qwave.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>
