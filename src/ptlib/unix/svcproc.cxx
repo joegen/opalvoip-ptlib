@@ -559,11 +559,6 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   // summarily exits the program. Allow PXOnSignal() to do orderly exit.
 
   switch (sig) {
-    case SIGINT :
-    case SIGTERM :
-    case SIGHUP :
-      return;
-
     case SIGSEGV :
       sigmsg = "segmentation fault (SIGSEGV)";
       break;
@@ -632,14 +627,13 @@ void PServiceProcess::PXOnSignal(int sig)
     "Debug6",
   };
 
-  PProcess::PXOnSignal(sig);
   switch (sig) {
     case SIGINT :
     case SIGHUP :
     case SIGTERM :
       PTRACE(3, "PTLib", "Starting thread to terminate service process, signal " << sig);
       new PThreadObj<PServiceProcess>(*this, &PServiceProcess::Terminate);
-      break;
+      return;
 
     case TraceUpSignal :
       if (GetLogLevel() < PSystemLog::NumLogLevels-1) {
@@ -657,5 +651,7 @@ void PServiceProcess::PXOnSignal(int sig)
       }
       break;
   }
+
+  PProcess::PXOnSignal(sig);
 }
 
