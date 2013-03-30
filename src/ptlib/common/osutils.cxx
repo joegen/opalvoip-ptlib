@@ -1963,13 +1963,13 @@ void PProcess::PostShutdown()
 {
   PTRACE(4, PProcessInstance, "PTLib", "Completed process destruction.");
 
+  PFactoryBase::GetFactories().DestroySingletons();
+  PProcessInstance = NULL;
+
   // Can't do any more tracing after this ...
 #if PTRACING
   PTrace::SetStream(NULL);
 #endif
-
-  PFactoryBase::GetFactories().DestroySingletons();
-  PProcessInstance = NULL;
 }
 
 

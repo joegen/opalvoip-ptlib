@@ -100,12 +100,6 @@ PServiceProcess::PServiceProcess(const char * manuf,
 
 PServiceProcess::~PServiceProcess()
 {
-  PSetErrorStream(NULL);
-#if PTRACING
-  PTrace::SetStream(NULL);
-  PTrace::ClearOptions(PTrace::SystemLogStream);
-#endif
-
   if (!pidFileToRemove)
     PFile::Remove(pidFileToRemove);
 }
@@ -120,10 +114,12 @@ PServiceProcess & PServiceProcess::Current()
 
 
 #ifndef P_VXWORKS
-static int KillProcess(int pid, int sig)
+static int KillProcess(int pid, unsigned timeout, int sig)
 {
-  if (kill(pid, sig) != 0)
+  if (kill(pid, sig) != 0) {
+    cout << "Could not stop process " << pid << " - " << strerror(errno) << endl;
     return -1;
+  }
 
   cout << "Sent SIG";
   if (sig == SIGTERM)
@@ -132,16 +128,16 @@ static int KillProcess(int pid, int sig)
     cout << "KILL";
   cout << " to daemon at pid " << pid << ' ' << flush;
 
-  for (PINDEX retry = 1; retry <= 10; retry++) {
-    PThread::Sleep(1000);
+  for (unsigned retry = 1; retry <= timeout; ++retry) {
+    cout << '.' << flush;
+    usleep(1000000);
     if (kill(pid, 0) != 0) {
       cout << "\nDaemon stopped." << endl;
       return 0;
     }
-    cout << '.' << flush;
   }
-  cout << "\nDaemon has not stopped." << endl;
 
+  cout << "\nDaemon has not stopped." << endl;
   return 1;
 }
 #endif // !P_VXWORKS
@@ -230,6 +226,7 @@ int PServiceProcess::InitialiseService()
              "s-status.           check to see if daemon is running\n"
              "t-terminate.        orderly terminate process in pid file (SIGTERM)\n"
              "k-kill.             preemptively kill process in pid file (SIGKILL)\n"
+             "T-timeout:          timeout for terminate/kill (default 30 seconds)\n"
              "U-trace-up.         increase the trace log level\n"
              "D-trace-down.       reduce the trace log level\n"
              , false);
@@ -320,28 +317,25 @@ int PServiceProcess::InitialiseService()
       return 0;
     }
 
-    switch (KillProcess(pid, SIGTERM)) {
+    switch (KillProcess(pid, args.GetOptionString('T', "30").AsUnsigned(), SIGTERM)) {
       case -1 :
-        break;
-      case 0 :
-        PFile::Remove(pidfilename);
-        return 0;
+        return 1;
+
       case 1 :
-        if (args.HasOption('k')) {
-          switch (KillProcess(pid, SIGKILL)) {
-            case -1 :
-              break;
-            case 0 :
-              PFile::Remove(pidfilename);
-              return 0;
-          }
+        if (!args.HasOption('k'))
+          return 2;
+
+        switch (KillProcess(pid, 5, SIGKILL)) {
+          case -1 :
+            return 1;
+
+          case 1 :
+            return 3;
         }
-        cout << "Process " << pid << " did not stop.\n";
-        return 2;
     }
 
-    cout << "Could not stop process " << pid << " - " << strerror(errno) << endl;
-    return 1;
+    PFile::Remove(pidfilename);
+    return 0;
   }
 
   // set flag for console messages
@@ -466,6 +460,8 @@ int PServiceProcess::InitialiseService()
       return 0;
   }
 
+  PTRACE(3, "PTLib", "Forked to PID " << getpid());
+
   // Set ourselves as out own process group so we don't get signals
   // from our parent's terminal (hopefully!)
   PSETPGRP();
@@ -563,11 +559,6 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   // summarily exits the program. Allow PXOnSignal() to do orderly exit.
 
   switch (sig) {
-    case SIGINT :
-    case SIGTERM :
-    case SIGHUP :
-      return;
-
     case SIGSEGV :
       sigmsg = "segmentation fault (SIGSEGV)";
       break;
@@ -636,13 +627,13 @@ void PServiceProcess::PXOnSignal(int sig)
     "Debug6",
   };
 
-  PProcess::PXOnSignal(sig);
   switch (sig) {
     case SIGINT :
     case SIGHUP :
     case SIGTERM :
+      PTRACE(3, "PTLib", "Starting thread to terminate service process, signal " << sig);
       new PThreadObj<PServiceProcess>(*this, &PServiceProcess::Terminate);
-      break;
+      return;
 
     case TraceUpSignal :
       if (GetLogLevel() < PSystemLog::NumLogLevels-1) {
@@ -660,5 +651,7 @@ void PServiceProcess::PXOnSignal(int sig)
       }
       break;
   }
+
+  PProcess::PXOnSignal(sig);
 }
 
