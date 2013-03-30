@@ -310,7 +310,7 @@ __inline PAtomicInteger::IntegerType PAtomicInteger::operator++()     { return E
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator++(int)  { return EXCHANGE_AND_ADD(&m_value,  1); }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--()     { return EXCHANGE_AND_ADD(&m_value, -1)-1; }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--(int)  { return EXCHANGE_AND_ADD(&m_value, -1); }
-__inline bool PAtomicBoolean::TestAndSet(bool value)                  { IntegerType previous = EXCHANGE_AND_ADD(&m_value, value?1:-1); m_value = value?1:0; return previous > 0; }
+__inline bool PAtomicBoolean::TestAndSet(bool value)                  { IntegerType previous = value ? __sync_fetch_and_or(&m_value, 1) : __sync_fetch_and_and(&m_value, 0); return previous != 0; }
 #else
 __inline PAtomicBase::PAtomicBase(IntegerType value) : m_value(value) { pthread_mutex_init(&m_mutex, NULL); }
 __inline PAtomicBase::~PAtomicBase()                                  { pthread_mutex_destroy(&m_mutex); }
