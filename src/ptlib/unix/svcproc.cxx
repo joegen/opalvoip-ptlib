@@ -114,7 +114,7 @@ PServiceProcess & PServiceProcess::Current()
 
 
 #ifndef P_VXWORKS
-static int KillProcess(int pid, int sig)
+static int KillProcess(int pid, unsigned timeout, int sig)
 {
   if (kill(pid, sig) != 0) {
     cout << "Could not stop process " << pid << " - " << strerror(errno) << endl;
@@ -128,7 +128,7 @@ static int KillProcess(int pid, int sig)
     cout << "KILL";
   cout << " to daemon at pid " << pid << ' ' << flush;
 
-  for (int retry = 1; retry <= 10; ++retry) {
+  for (unsigned retry = 1; retry <= timeout; ++retry) {
     cout << '.' << flush;
     usleep(1000000);
     if (kill(pid, 0) != 0) {
@@ -226,6 +226,7 @@ int PServiceProcess::InitialiseService()
              "s-status.           check to see if daemon is running\n"
              "t-terminate.        orderly terminate process in pid file (SIGTERM)\n"
              "k-kill.             preemptively kill process in pid file (SIGKILL)\n"
+             "T-timeout:          timeout for terminate/kill (default 30 seconds)\n"
              "U-trace-up.         increase the trace log level\n"
              "D-trace-down.       reduce the trace log level\n"
              , false);
@@ -316,7 +317,7 @@ int PServiceProcess::InitialiseService()
       return 0;
     }
 
-    switch (KillProcess(pid, SIGTERM)) {
+    switch (KillProcess(pid, args.GetOptionString('T', "30").AsUnsigned(), SIGTERM)) {
       case -1 :
         return 1;
 
@@ -324,7 +325,7 @@ int PServiceProcess::InitialiseService()
         if (!args.HasOption('k'))
           return 2;
 
-        switch (KillProcess(pid, SIGKILL)) {
+        switch (KillProcess(pid, 5, SIGKILL)) {
           case -1 :
             return 1;
 
