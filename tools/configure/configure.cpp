@@ -48,8 +48,6 @@
 
 #define VERSION "1.24"
 
-static char * VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE" };
-
 using namespace std;
 
 bool DirExcluded(const string & dir);
@@ -117,10 +115,7 @@ class Feature
     string m_featureName;
     string m_displayName;
     string m_directorySymbol;
-    string m_simpleDefineName;
-    string m_simpleDefineValue;
     map<string, string> m_defines;
-    map<string, string> m_defineValues;
 
     struct CheckFileInfo {
       CheckFileInfo()
@@ -165,6 +160,9 @@ list<string> g_excludeDirList;
 vector<string> g_envConfigureList;
 map<string, string> g_predefines;
 bool g_verbose = false;
+
+static const std::string VersionTagPrefix("##");
+
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -211,17 +209,18 @@ void Feature::Parse(const string & optionName, const string & optionValue)
   else if (optionName == "DEFINE") {
     string::size_type equal = optionValue.find('=');
     if (equal == string::npos)
-      m_simpleDefineName = optionValue;
-    else {
-      m_simpleDefineName.assign(optionValue, 0, equal);
-      m_simpleDefineValue.assign(optionValue, equal+1, INT_MAX);
-    }
+      m_defines[optionValue] = "1";
+    else
+      m_defines[optionValue.substr(0, equal)].assign(optionValue, equal+1, INT_MAX);
   }
 
   else if (optionName == "VERSION") {
+    // The ##var will get swited for the it->second when version file read
     string::size_type equal = optionValue.find('=');
-    if (equal != string::npos)
-      m_defines.insert(pair<string,string>(optionValue.substr(0, equal), optionValue.substr(equal+1)));
+    if (equal == string::npos)
+      m_defines[VersionTagPrefix+optionValue] = optionValue;
+    else
+      m_defines[VersionTagPrefix+optionValue.substr(equal+1)].assign(optionValue, 0, equal);
   }
 
   else if (optionName == "CHECK_FILE") {
@@ -383,36 +382,39 @@ static bool CompareName(const string & line, const string & name)
 
 void Feature::Adjust(string & line)
 {
-  string::size_type undefPos = line.find("#undef");
-  if (m_state == Enabled && undefPos != string::npos) {
-    if (!m_simpleDefineName.empty() && CompareName(line, m_simpleDefineName)) {
-      line.replace(undefPos, INT_MAX, "#define " + m_simpleDefineName + ' ');
-      if (m_simpleDefineValue.empty())
-        line += '1';
-      else
-        line += m_simpleDefineValue;
-    }
-
-    map<string,string>::iterator r, s;
-    for (r = m_defines.begin(); r != m_defines.end(); ++r) {
-      if (CompareName(line, r->first)) {
-        s = m_defineValues.find(r->second);
-        if (s != m_defineValues.end())
-          line.replace(undefPos, INT_MAX, "#define " + r->first + ' ' + s->second);
+  if (m_state == Enabled) {
+    static struct {
+      const char * search;
+      const char * prefix;
+      const char * infix;
+      const char * suffix;
+      bool replace(string & line, size_t pos, const string & var, const string & val) const
+      {
+        if (!CompareName(line, var))
+          return false;
+        line.replace(pos, INT_MAX, prefix + var + infix + val + suffix);
+        return true;
       }
-    }
+    } const SearchInfo[] = {
+      { "#undef",   "#define ",  " ", ""    },
+      { "<?define", "<?define ", "=", " ?>" }
+    };
+    for (size_t i = 0; i < sizeof(SearchInfo)/sizeof(SearchInfo[0]); ++i) {
+      string::size_type undefPos = line.find(SearchInfo[i].search);
+      if (undefPos != string::npos) {
+        map<string,string>::iterator r, s;
+        for (r = m_defines.begin(); r != m_defines.end(); ++r)
+          SearchInfo[i].replace(line, undefPos, r->first, r->second);
 
-    for (list<CheckFileInfo>::iterator file = m_checkFiles.begin(); file != m_checkFiles.end(); file++) {
-      if (file->m_found && CompareName(line, file->m_defineName)) {
-        line.replace(undefPos, INT_MAX, "#define " + file->m_defineName + ' ' + file->m_defineValue);
-        break;
-      }
-    }
+        for (list<CheckFileInfo>::iterator file = m_checkFiles.begin(); file != m_checkFiles.end(); file++) {
+          if (file->m_found && SearchInfo[i].replace(line, undefPos, file->m_defineName, file->m_defineValue))
+            break;
+        }
 
-    for (list<FindFileInfo>::iterator file = m_findFiles.begin(); file != m_findFiles.end(); file++) {
-      if (!file->m_fullname.empty() && CompareName(line, file->m_symbol)) {
-        line.replace(undefPos, INT_MAX, "#define " + file->m_symbol + " \"" + file->m_fullname + '"');
-        break;
+        for (list<FindFileInfo>::iterator file = m_findFiles.begin(); file != m_findFiles.end(); file++) {
+          if (!file->m_fullname.empty() && SearchInfo[i].replace(line, undefPos, file->m_symbol, "\"" + file->m_fullname + "\""))
+            break;
+        }
       }
     }
   }
@@ -912,46 +914,39 @@ int main(int argc, char* argv[])
   if (feature != g_features.end()) {
     ifstream version("version.h", ios::in);
     if (version.is_open()) {
+      static const char * const VersionTags[] = { "MAJOR_VERSION", "MINOR_VERSION", "BUILD_NUMBER", "BUILD_TYPE", "VERSION" };
+      static const size_t VersionTagCount = sizeof(VersionTags)/sizeof(VersionTags[0]);
+      string version_parts[VersionTagCount] = { "1", "0", "0" };
+
       while (version.good()) {
         string line;
         getline(version, line);
-        string::size_type pos;
-        int i;
-        for (i = 0; i < (sizeof(VersionTags)/sizeof(VersionTags[0])); ++i) {
-          size_t tagLen = strlen(VersionTags[i]);
-          if ((pos = line.find(VersionTags[i])) != string::npos) {
-            string::size_type space = line.find(' ', pos+tagLen);
-            if (space != string::npos) {
-              while (line[space] == ' ')
-                space++;
-              string version = line.substr(space);
-              while (::iswspace(version[0]))
-                version.erase(0);
-              while (version.length() > 0 && ::iswspace(version[version.length()-1]))
-                version.erase(version.length()-1);
-              feature->m_defineValues.insert(pair<string,string>(VersionTags[i], version));
-            }
+
+        for (size_t i = 0; i < VersionTagCount; ++i) {
+          string::size_type pos;
+          if ((pos = line.find(VersionTags[i])) != string::npos &&
+              ::iswspace(line[pos-1]) &&
+              ::iswspace(line[pos+=strlen(VersionTags[i])])) {
+            while (::iswspace(line[pos]))
+              ++pos;
+            string::size_type end = line.length()-1;
+            while (end > pos && ::iswspace(line[end]))
+              --end;
+            version_parts[i].assign(line, pos, end-pos+1);
           }
         }
       }
-      string version("\"");
-      map<string,string>::iterator ver;
-      if ((ver = feature->m_defineValues.find(VersionTags[0])) != feature->m_defineValues.end())
-        version += ver->second;
-      else
-        version += "0";
-      version += ".";
-      if ((ver = feature->m_defineValues.find(VersionTags[1])) != feature->m_defineValues.end())
-        version += ver->second;
-      else
-        version += "0";
-      version += ".";
-      if ((ver = feature->m_defineValues.find(VersionTags[2])) != feature->m_defineValues.end())
-        version += ver->second;
-      else
-        version += "0";
-      version += "\"";
-      feature->m_defineValues.insert(pair<string,string>("VERSION", version));
+
+      if (version_parts[4].empty())
+        version_parts[4] = version_parts[0] + "." + version_parts[1] + "." + version_parts[2];
+
+      for (size_t i = 0; i < VersionTagCount; ++i) {
+        map<string,string>::iterator it = feature->m_defines.find(VersionTagPrefix+VersionTags[i]);
+        if (it != feature->m_defines.end()) {
+          feature->m_defines[it->second] = version_parts[i];
+          feature->m_defines.erase(it);
+        }
+      }
     }
   }
 
