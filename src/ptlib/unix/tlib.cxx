@@ -33,7 +33,8 @@
 
 #define _OSUTIL_CXX
 
-//#define SIGNALS_DEBUG
+#define SIGNALS_DEBUG(fmt,...) //fprintf(stderr, fmt, ##__VA_ARGS__)
+
 
 #pragma implementation "args.h"
 #pragma implementation "pprocess.h"
@@ -485,30 +486,22 @@ void PProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 
 void PXSignalHandler(int sig)
 {
-#ifdef SIGNALS_DEBUG
-  fprintf(stderr,"\nSIGNAL<%u>\n",sig);
-#endif
-
-  PProcess & process = PProcess::Current();
-  process.pxSignals |= 1 << sig;
-  process.PXOnAsyncSignal(sig);
-  process.SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
+  SIGNALS_DEBUG("\nSIGNAL<%u>\n",sig);
+  PProcess::Current().PXOnAsyncSignal(sig);
   signal(sig, PXSignalHandler);
 }
 
 void PProcess::PXCheckSignals()
 {
-  if (pxSignals == 0)
+  if (m_pxSignals == 0)
     return;
 
-#ifdef SIGNALS_DEBUG
-  fprintf(stderr,"\nCHKSIG<%x>\n",pxSignals);
-#endif
+  PTRACE(3, "PTLib", "Checking signals: 0x" << hex << m_pxSignals << dec);
 
-  for (int sig = 0; sig < 32; sig++) {
+  for (int sig = 0; sig < 32; ++sig) {
     int bit = 1 << sig;
-    if ((pxSignals&bit) != 0) {
-      pxSignals &= ~bit;
+    if (m_pxSignals&bit) {
+      m_pxSignals &= ~bit;
       PXOnSignal(sig);
     }
   }
@@ -517,9 +510,7 @@ void PProcess::PXCheckSignals()
 
 void SetSignals(void (*handler)(int))
 {
-#ifdef SIGNALS_DEBUG
-  fprintf(stderr,"\nSETSIG<%x>\n",(INT)handler);
-#endif
+  SIGNALS_DEBUG("\nSETSIG<%p>\n",handler);
 
   if (handler == NULL)
     handler = SIG_DFL;
@@ -553,59 +544,60 @@ void SetSignals(void (*handler)(int))
 
 void PProcess::PXOnAsyncSignal(int sig)
 {
-#ifdef SIGNALS_DEBUG
-  fprintf(stderr,"\nASYNCSIG<%u>\n",sig);
-#endif
+  SIGNALS_DEBUG("\nASYNCSIG<%u>\n",sig);
 
   switch (sig) {
     case SIGINT:
     case SIGHUP:
     case SIGTERM:
-      if (!OnInterrupt(sig == SIGTERM))
-        raise(SIGKILL);
-      // Do next case
-    default:
-      return;
+      if (OnInterrupt(sig == SIGTERM))
+        return;
   }
+
+  m_pxSignals |= 1 << sig;
+  SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
 }
 
 void PProcess::PXOnSignal(int sig)
 {
+  SIGNALS_DEBUG("\nSYNCSIG<%u>\n",sig);
+  PTRACE(3, "PTLib", "Handling signal " << sig);
+
+  switch (sig) {
+    case SIGINT:
+    case SIGHUP:
+    case SIGTERM:
+      raise(SIGKILL);
+
 #ifdef _DEBUG
-#ifdef SIGNALS_DEBUG
-  fprintf(stderr,"\nSYNCSIG<%u>\n",sig);
-#endif
-  if (sig == 28) {
-#if PMEMORY_CHECK
-    PBoolean oldIgnore = PMemoryHeap::SetIgnoreAllocations(true);
-    static PMemoryHeap::State state;
-    PMemoryHeap::GetState(state);
-#endif
-    PStringStream strm;
-    m_threadMutex.Wait();
-    strm << "===============\n"
-         << m_activeThreads.size() << " active threads\n";
-    for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it)
-      strm << "  " << *it->second << "\n";
-#if PMEMORY_CHECK
-    strm << "---------------\n";
-    PMemoryHeap::DumpObjectsSince(state, strm);
-    PMemoryHeap::GetState(state);
-#endif
-    strm << "===============\n";
-    m_threadMutex.Signal();
-    fprintf(stderr, "%s", (const char *)strm);
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(oldIgnore);
-#endif
+    case 28 :
+      #if PMEMORY_CHECK
+        PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+        static PMemoryHeap::State state;
+        PMemoryHeap::GetState(state);
+      #endif // PMEMORY_CHECK
+      PStringStream strm;
+      m_threadMutex.Wait();
+      strm << "===============\n"
+           << m_activeThreads.size() << " active threads\n";
+      for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it)
+        strm << "  " << *it->second << "\n";
+      #if PMEMORY_CHECK
+        strm << "---------------\n";
+        PMemoryHeap::DumpObjectsSince(state, strm);
+        PMemoryHeap::GetState(state);
+      #endif // PMEMORY_CHECK
+      strm << "===============\n";
+      m_threadMutex.Signal();
+      fprintf(stderr, "%s", (const char *)strm);
+#endif // _DEBUG
   }
-#endif
 }
 
 void PProcess::CommonConstruct()
 {
   // Setup signal handlers
-  pxSignals = 0;
+  m_pxSignals = 0;
 
   if (!m_library)
     SetSignals(&PXSignalHandler);
@@ -629,6 +621,8 @@ void PProcess::CommonDestruct()
 
   if (!m_library)
     SetSignals(NULL);
+
+  m_keepingHouse = false;
 }
 
 // rtems fixes
