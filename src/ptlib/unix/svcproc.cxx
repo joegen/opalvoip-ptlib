@@ -100,12 +100,6 @@ PServiceProcess::PServiceProcess(const char * manuf,
 
 PServiceProcess::~PServiceProcess()
 {
-  PSetErrorStream(NULL);
-#if PTRACING
-  PTrace::SetStream(NULL);
-  PTrace::ClearOptions(PTrace::SystemLogStream);
-#endif
-
   if (!pidFileToRemove)
     PFile::Remove(pidFileToRemove);
 }
@@ -122,8 +116,10 @@ PServiceProcess & PServiceProcess::Current()
 #ifndef P_VXWORKS
 static int KillProcess(int pid, int sig)
 {
-  if (kill(pid, sig) != 0)
+  if (kill(pid, sig) != 0) {
+    cout << "Could not stop process " << pid << " - " << strerror(errno) << endl;
     return -1;
+  }
 
   cout << "Sent SIG";
   if (sig == SIGTERM)
@@ -132,16 +128,16 @@ static int KillProcess(int pid, int sig)
     cout << "KILL";
   cout << " to daemon at pid " << pid << ' ' << flush;
 
-  for (PINDEX retry = 1; retry <= 10; retry++) {
-    PThread::Sleep(1000);
+  for (int retry = 1; retry <= 10; ++retry) {
+    cout << '.' << flush;
+    usleep(1000000);
     if (kill(pid, 0) != 0) {
       cout << "\nDaemon stopped." << endl;
       return 0;
     }
-    cout << '.' << flush;
   }
-  cout << "\nDaemon has not stopped." << endl;
 
+  cout << "\nDaemon has not stopped." << endl;
   return 1;
 }
 #endif // !P_VXWORKS
@@ -322,26 +318,23 @@ int PServiceProcess::InitialiseService()
 
     switch (KillProcess(pid, SIGTERM)) {
       case -1 :
-        break;
-      case 0 :
-        PFile::Remove(pidfilename);
-        return 0;
+        return 1;
+
       case 1 :
-        if (args.HasOption('k')) {
-          switch (KillProcess(pid, SIGKILL)) {
-            case -1 :
-              break;
-            case 0 :
-              PFile::Remove(pidfilename);
-              return 0;
-          }
+        if (!args.HasOption('k'))
+          return 2;
+
+        switch (KillProcess(pid, SIGKILL)) {
+          case -1 :
+            return 1;
+
+          case 1 :
+            return 3;
         }
-        cout << "Process " << pid << " did not stop.\n";
-        return 2;
     }
 
-    cout << "Could not stop process " << pid << " - " << strerror(errno) << endl;
-    return 1;
+    PFile::Remove(pidfilename);
+    return 0;
   }
 
   // set flag for console messages
@@ -465,6 +458,8 @@ int PServiceProcess::InitialiseService()
       }
       return 0;
   }
+
+  PTRACE(3, "PTLib", "Forked to PID " << getpid());
 
   // Set ourselves as out own process group so we don't get signals
   // from our parent's terminal (hopefully!)
@@ -641,6 +636,7 @@ void PServiceProcess::PXOnSignal(int sig)
     case SIGINT :
     case SIGHUP :
     case SIGTERM :
+      PTRACE(3, "PTLib", "Starting thread to terminate service process, signal " << sig);
       new PThreadObj<PServiceProcess>(*this, &PServiceProcess::Terminate);
       break;
 
