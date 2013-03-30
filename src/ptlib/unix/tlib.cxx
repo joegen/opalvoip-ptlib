@@ -482,7 +482,7 @@ void PXSignalHandler(int sig)
 #endif
 
   PProcess & process = PProcess::Current();
-  process.pxSignals |= 1 << sig;
+  process.m_pxSignals |= 1 << sig;
   process.PXOnAsyncSignal(sig);
   process.SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
   signal(sig, PXSignalHandler);
@@ -490,17 +490,15 @@ void PXSignalHandler(int sig)
 
 void PProcess::PXCheckSignals()
 {
-  if (pxSignals == 0)
+  if (m_pxSignals == 0)
     return;
 
-#ifdef SIGNALS_DEBUG
-  fprintf(stderr,"\nCHKSIG<%x>\n",pxSignals);
-#endif
+  PTRACE(3, "PTLib", "Checking signals: 0x" << hex << m_pxSignals << dec);
 
-  for (int sig = 0; sig < 32; sig++) {
+  for (int sig = 0; sig < 32; ++sig) {
     int bit = 1 << sig;
-    if ((pxSignals&bit) != 0) {
-      pxSignals &= ~bit;
+    if (m_pxSignals&bit) {
+      m_pxSignals &= ~bit;
       PXOnSignal(sig);
     }
   }
@@ -563,10 +561,9 @@ void PProcess::PXOnAsyncSignal(int sig)
 
 void PProcess::PXOnSignal(int sig)
 {
+  PTRACE(3, "PTLib", "Handling signal " << sig);
+
 #ifdef _DEBUG
-#ifdef SIGNALS_DEBUG
-  fprintf(stderr,"\nSYNCSIG<%u>\n",sig);
-#endif
   if (sig == 28) {
 #if PMEMORY_CHECK
     PBoolean oldIgnore = PMemoryHeap::SetIgnoreAllocations(true);
@@ -597,7 +594,7 @@ void PProcess::PXOnSignal(int sig)
 void PProcess::CommonConstruct()
 {
   // Setup signal handlers
-  pxSignals = 0;
+  m_pxSignals = 0;
 
   if (!m_library)
     SetSignals(&PXSignalHandler);
@@ -621,6 +618,8 @@ void PProcess::CommonDestruct()
 
   if (!m_library)
     SetSignals(NULL);
+
+  m_keepingHouse = false;
 }
 
 // rtems fixes
