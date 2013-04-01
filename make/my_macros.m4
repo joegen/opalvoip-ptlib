@@ -383,7 +383,7 @@ AC_PROG_RANLIB()
 AC_PROG_INSTALL()
 dnl AC_PROG_MKDIR_P()
 AC_SUBST(MKDIR_P, "mkdir -p")
-AC_CHECK_PROG(SVN, svn)
+AC_PATH_PROG(SVN, svn)
 
 AC_CHECK_TOOL(AR, ar)
 if test -z "$AR" ; then
