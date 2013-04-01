@@ -8062,6 +8062,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\ptclib\tonedev.cxx"
+					>
+				</File>
+				<File
 					RelativePath="..\..\ptclib\pxml.cxx"
 					>
 				</File>
