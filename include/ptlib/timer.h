@@ -481,10 +481,11 @@ class PPoolTimer : public PTimer
     {
       Work_T * work = CreateWork();
       if (work != NULL)
-        m_pool.AddWork(work);
+        m_pool.AddWork(work, GetGroup(*work));
     }
 
     virtual Work_T * CreateWork() = 0;
+    virtual const char * GetGroup(const Work_T & /*work*/) const { return NULL; }
 
     PTIMER_OPERATORS(PPoolTimer);
 };
