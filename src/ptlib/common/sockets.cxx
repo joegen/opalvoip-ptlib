@@ -2742,6 +2742,27 @@ PBoolean PUDPSocket::DoPseudoRead(int & /*selectStatus*/)
    return false;
 }
 
+
+PBoolean PUDPSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
+{
+  if (PIPDatagramSocket::ConvertOSError(libcReturnValue, group))
+    return true;
+
+  switch (GetErrorNumber(group)) {
+    case ECONNRESET :
+    case ECONNREFUSED :
+    case EHOSTUNREACH :
+    case ENETUNREACH :
+      return SetErrorValues(Unavailable, lastErrorNumber[group], group);
+
+    case EMSGSIZE :
+      return SetErrorValues(BufferTooSmall, lastErrorNumber[group], group);
+  }
+
+  return false;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 PBoolean PICMPSocket::OpenSocket(int)
