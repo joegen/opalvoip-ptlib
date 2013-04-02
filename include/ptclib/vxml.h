@@ -185,7 +185,7 @@ class PVXMLSession : public PIndirectChannel
     PTextToSpeech * SetTextToSpeech(const PString & ttsName);
     PTextToSpeech * GetTextToSpeech() const { return m_textToSpeech; }
 
-    void SetCache(PVXMLCache & cache) { m_ttsCache = &cache; }
+    void SetCache(PVXMLCache & cache);
     PVXMLCache & GetCache();
 
     virtual PBoolean Load(const PString & source);
