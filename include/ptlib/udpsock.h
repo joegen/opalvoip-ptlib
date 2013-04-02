@@ -156,6 +156,8 @@ class PUDPSocket : public PIPDatagramSocket
     virtual void InternalGetLastReceiveAddress(PIPSocketAddressAndPort & addr) const;
 
   protected:
+    virtual PBoolean ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group = LastGeneralError);
+
     // Open an IPv4 socket (for backward compatibility)
     virtual PBoolean OpenSocket();
 

@@ -126,7 +126,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
     PTRACE_IF(6, readTimeout > 0, "QChan\tBlocking on empty queue");
     if (!unempty.Wait(readTimeout)) {
       PTRACE(6, "QChan\tRead timeout on empty queue");
-      return SetErrorValues(Timeout, EAGAIN, LastReadError);
+      return SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
     }
 
     // relock the data
@@ -207,7 +207,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
     PTRACE_IF(6, writeTimeout > 0, "QChan\tBlocking on full queue");
     if (!unfull.Wait(writeTimeout)) {
       PTRACE(6, "QChan\tWrite timeout on full queue");
-      return SetErrorValues(Timeout, EAGAIN, LastWriteError);
+      return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
     }
 
     mutex.Wait();

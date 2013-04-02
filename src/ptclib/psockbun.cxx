@@ -611,21 +611,17 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
   if (ok)
     return;
 
-  switch (param.m_errorNumber) {
-    case ECONNRESET :
-    case ECONNREFUSED :
+  switch (param.m_errorCode) {
+    case PChannel::Unavailable :
       PTRACE(2, "UDP Port on remote not ready.");
       param.m_errorCode = PChannel::NoError;
       return;
 
-    case EMSGSIZE :
+    case PChannel::BufferTooSmall :
       PTRACE(2, "Read UDP packet too large for buffer of " << param.m_length << " bytes.");
-      param.m_errorCode = PChannel::BufferTooSmall;
       return;
 
-    case EBADF : // Interface went down
-    case EINTR :
-    case EAGAIN : // Shouldn't happen, but it does.
+    case PChannel::NotFound : // Interface went down
       param.m_errorCode = PChannel::Interrupted;
       return;
   }
