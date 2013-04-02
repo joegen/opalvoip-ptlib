@@ -644,8 +644,12 @@ PFilePath PVXMLCache::CreateFilename(const PString & prefix, const PString & key
     }
   }
 
+  PMessageDigest5::Result digest;
+  PMessageDigest5::Encode(key, digest);
+
   PStringStream filename;
-  filename << m_directory << prefix << '_' << PMessageDigest5::Encode(key);
+  filename << m_directory << prefix << '_' << hex << digest;
+
   if (fileType.IsEmpty())
     filename << ".dat";
   else {

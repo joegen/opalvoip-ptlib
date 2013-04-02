@@ -221,15 +221,12 @@ class PMessageDigest : public PObject
     /// Create a new message digestor
     PMessageDigest();
 
-    class Result {
+    class Result : public PBYTEArray {
       public:
-        PINDEX GetSize() const          { return value.GetSize(); }
-        const BYTE * GetPointer() const { return (const BYTE *)value; }
+        virtual void PrintOn(ostream & strm) const;
 
-      private:
-        PBYTEArray value;
-        friend class PMessageDigest5;
-        friend class PMessageDigestSHA1;
+        PString AsBase64() const { return PBase64::Encode(*this, ""); }
+        PString AsHex() const;
     };
 
     /// Begin a Message Digest operation, initialising the object instance.
