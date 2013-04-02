@@ -801,6 +801,14 @@ PTextToSpeech * PVXMLSession::SetTextToSpeech(const PString & ttsName)
 }
 
 
+void PVXMLSession::SetCache(PVXMLCache & cache)
+{
+  m_sessionMutex.Wait();
+  m_ttsCache = &cache;
+  m_sessionMutex.Signal();
+}
+
+
 PVXMLCache & PVXMLSession::GetCache()
 {
   PWaitAndSignal mutex(m_sessionMutex);
