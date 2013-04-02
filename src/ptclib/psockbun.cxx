@@ -615,20 +615,21 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
     case PChannel::Unavailable :
       PTRACE(2, "UDP Port on remote not ready.");
       param.m_errorCode = PChannel::NoError;
-      return;
+      break;
 
     case PChannel::BufferTooSmall :
       PTRACE(2, "Read UDP packet too large for buffer of " << param.m_length << " bytes.");
-      return;
+      break;
 
     case PChannel::NotFound : // Interface went down
       param.m_errorCode = PChannel::Interrupted;
-      return;
-  }
+      break;
 
-  PTRACE(1, "Socket read UDP error ("
-         << socket->GetErrorNumber(PChannel::LastReadError) << "): "
-         << socket->GetErrorText(PChannel::LastReadError));
+    default :
+      PTRACE(1, "Socket read UDP error ("
+             << socket->GetErrorNumber(PChannel::LastReadError) << "): "
+             << socket->GetErrorText(PChannel::LastReadError));
+  }
 }
 
 
