@@ -1034,7 +1034,7 @@ int PSocket::Select(PSocket & sock1,
 
   Errors lastError;
   int osError;
-  if (!ConvertOSError(Select(read, dummy1, dummy2, timeout), lastError, osError))
+  if (!PChannel::ConvertOSError(Select(read, dummy1, dummy2, timeout), lastError, osError))
     return lastError;
 
   switch (read.GetSize()) {
@@ -2749,6 +2749,28 @@ PBoolean PUDPSocket::DoPseudoRead(int & /*selectStatus*/)
 {
    return false;
 }
+
+
+PBoolean PUDPSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
+{
+  if (PIPDatagramSocket::ConvertOSError(libcReturnValue, group))
+    return true;
+
+  switch (lastErrorNumber[group]) {
+    case ECONNRESET :
+    case ECONNREFUSED :
+    case EHOSTUNREACH :
+    case ENETUNREACH :
+      SetErrorValues(Unavailable, lastErrorNumber[group], group);
+      break;
+
+    case EMSGSIZE :
+      return SetErrorValues(BufferTooSmall, lastErrorNumber[group], group);
+  }
+
+  return false;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 
