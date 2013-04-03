@@ -649,7 +649,8 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
         str << TranslateString(username, LoginTranslation);
         if (schemeInfo->hasPassword && !password)
           str << ':' << TranslateString(password, LoginTranslation);
-        str << '@';
+        if (schemeInfo->hasHostPort && !hostname.IsEmpty())
+          str << '@';
       }
     }
 
