@@ -282,7 +282,7 @@ class PURL : public PObject
 
     /// Change segment in the path field of the URL.
     void ChangePath(
-      const PString & segment, ///< New value for segment
+      const PString & segment, ///< New value for segment, empty means remove
       PINDEX idx = P_MAX_INDEX ///< Segment index, P_MAX_INDEX means last segment
     );
 
