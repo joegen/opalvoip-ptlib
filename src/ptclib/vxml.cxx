@@ -909,6 +909,11 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
 
     m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
 
+    PURL pathURL = m_rootURL;
+    pathURL.ChangePath(PString::Empty()); // Remove last element of root URL
+    SetVar("path", pathURL);
+    SetVar("uri", m_rootURL);
+
     {
       PINDEX idx = 0;
       PXMLElement * element;
@@ -924,6 +929,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     }
   }
 
+  PTRACE(4, "VXML\tStarting with variables:\n" << m_variables);
   return Execute();
 }
 
