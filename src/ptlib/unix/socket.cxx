@@ -348,11 +348,11 @@ PChannel::Errors PSocket::Select(SelectList & read,
     } while (result < 0 && errno == EINTR);
 
     int osError;
-    if (ConvertOSError(result, lastError, osError)) {
+    if (PChannel::ConvertOSError(result, lastError, osError)) {
       if (fds[0].IsPresent(unblockPipe)) {
         PTRACE2(6, NULL, "PTLib\tSelect unblocked fd=" << unblockPipe);
         BYTE ch;
-        if (ConvertOSError(::read(unblockPipe, &ch, 1), lastError, osError))
+        if (PChannel::ConvertOSError(::read(unblockPipe, &ch, 1), lastError, osError))
           lastError = Interrupted;
       }
     }
@@ -390,30 +390,30 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
 #if P_HAS_RECVMSG_MSG_ERRQUEUE
   #include "linux/errqueue.h"
-  static void SetErrorFromQueue(SOCKET handle, PChannel::Errors & errorCode, int & errorNumber)
+  PBoolean PSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
   {
-    msghdr errorData;
-    memset(&errorData, 0, sizeof(errorData));
+    if (libcReturnValue < 0) {
+      msghdr errorData;
+      memset(&errorData, 0, sizeof(errorData));
 
-    char control_data[50];
-    errorData.msg_control    = control_data;
-    errorData.msg_controllen = sizeof(control_data);
+      char control_data[50];
+      errorData.msg_control    = control_data;
+      errorData.msg_controllen = sizeof(control_data);
 
-    if (::recvmsg(handle, &errorData, MSG_ERRQUEUE) < 0)
-      return;
-
-    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&errorData); cmsg != NULL; cmsg = CMSG_NXTHDR(&errorData, cmsg)) {
-      if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
-        struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
-        PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
-                  "PTLib\tICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
-        errno = sock_error->ee_errno;
-        PChannel::ConvertOSError(-1, errorCode, errorNumber);
+      if (::recvmsg(os_handle, &errorData, MSG_ERRQUEUE) >= 0) {
+        for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&errorData); cmsg != NULL; cmsg = CMSG_NXTHDR(&errorData, cmsg)) {
+          if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
+            struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
+            PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
+                      "PTLib\tICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
+            errno = sock_error->ee_errno;
+          }
+        }
       }
     }
+
+    return PChannel::ConvertOSError(libcReturnValue, group);
   }
-#else
-  #define SetErrorFromQueue(handle, errorCode, errorNumber)
 #endif
 
 bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t * addrlen)
@@ -441,12 +441,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
       SetErrorValues(BufferTooSmall, EMSGSIZE, LastReadError);
       return false;
     }
-
-    if (lastErrorNumber[LastReadError] != EWOULDBLOCK) {
-      SetErrorFromQueue(os_handle, lastErrorCode[LastReadError], lastErrorNumber[LastReadError]);
-      return false;
-    }
-  } while (PXSetIOBlock(PXReadBlock, readTimeout));
+  } while (lastErrorNumber[LastReadError] == EWOULDBLOCK && PXSetIOBlock(PXReadBlock, readTimeout));
 
   return false;
 }
@@ -475,12 +470,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
       lastWriteCount = result;
       return true;
     }
-
-    if (lastErrorNumber[LastWriteError] != EWOULDBLOCK) {
-      SetErrorFromQueue(os_handle, lastErrorCode[LastWriteError], lastErrorNumber[LastWriteError]);
-      return false;
-    }
-  } while (PXSetIOBlock(PXWriteBlock, writeTimeout));
+  } while (lastErrorNumber[LastWriteError] == EWOULDBLOCK && PXSetIOBlock(PXWriteBlock, writeTimeout));
 
   return false;
 }
