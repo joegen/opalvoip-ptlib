@@ -395,7 +395,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount,
         return false;
 
       if (selval == 0)
-        return SetErrorValues(Timeout, EAGAIN, LastReadError);
+        return SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
     }
   }
 
@@ -426,17 +426,11 @@ bool PSocket::os_vwrite(const Slice * slices,
     P_fd_set writefds = os_handle;
     P_timeval tv = writeTimeout;
     int selval = ::select(0, NULL, writefds, NULL, tv);
-    if (selval < 0)
+    if (!ConvertOSError(selval, LastWriteError))
       return false;
 
-    if (selval == 0) {
-#ifndef _WIN32_WCE
-      errno = EAGAIN;
-#else
-      SetLastError(EAGAIN);
-#endif
-      return false;
-    }
+    if (selval == 0)
+      return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
   }
 
   DWORD bytesSent = 0;
