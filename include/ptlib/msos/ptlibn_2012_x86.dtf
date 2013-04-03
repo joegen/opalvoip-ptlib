@@ -4371,7 +4371,7 @@ EXPORTS
     ??0PVideoOutputDevice_Window_PluginServiceDescriptor@@QAE@XZ @4389 NONAME
     ??0PVideoOutputDevice_YUVFile@@QAE@XZ @4390 NONAME
     ??0PVideoOutputDevice_YUVFile_PluginServiceDescriptor@@QAE@XZ @4391 NONAME
-    ??0PVXMLCache@@QAE@ABVPDirectory@@@Z @4392 NONAME
+    ??0PVXMLCache@@QAE@XZ @24847 NONAME
     ??0PVXMLChannel@@QAE@IH@Z @4393 NONAME
     ??0PVXMLChannelG7231@@QAE@XZ @4394 NONAME
     ??0PVXMLChannelG729@@QAE@XZ @4395 NONAME
@@ -5990,7 +5990,7 @@ EXPORTS
     ??1RecordSet@PODBC@@UAE@XZ @6005 NONAME
     ??1RegistryKey@@QAE@XZ @6006 NONAME
     ??1ResetButton@PHTML@@UAE@XZ @6007 NONAME
-    ??1Result@PMessageDigest@@QAE@XZ @6008 NONAME
+    ??1Result@PMessageDigest@@UAE@XZ @24848 NONAME
     ??1Room@MUC@XMPP@@UAE@XZ @6009 NONAME
     ??1Roster@XMPP@@UAE@XZ @6010 NONAME
     ??1RouteEntry@PIPSocket@@UAE@XZ @6011 NONAME
@@ -6220,6 +6220,7 @@ EXPORTS
     ??4PComResult@@QAEAAV0@J@Z @6235 NONAME
     ??4PContainer@@QAEAAV0@ABV0@@Z @6236 NONAME
     ??4PCriticalSection@@QAEAAV0@ABV0@@Z @6237 NONAME
+    ??4PDirectory@@QAEAAV0@ABV0@@Z @24849 NONAME
     ??4PDirectory@@QAEAAV0@ABVPString@@@Z @6238 NONAME
     ??4PDirectory@@QAEAAV0@PBD@Z @6239 NONAME
     ??4PFilePath@@QAEAAV0@ABV0@@Z @6240 NONAME
@@ -8488,6 +8489,7 @@ EXPORTS
     ??_7RadioButton@PHTML@@6B@ @8516 NONAME
     ??_7RecordSet@PODBC@@6B@ @8517 NONAME
     ??_7ResetButton@PHTML@@6B@ @8518 NONAME
+    ??_7Result@PMessageDigest@@6B@ @24850 NONAME
     ??_7Room@MUC@XMPP@@6BPObject@@@ @8519 NONAME
     ??_7Room@MUC@XMPP@@6BPValidatedNotifierTarget@@@ @8520 NONAME
     ??_7Roster@XMPP@@6B@ @8521 NONAME
@@ -9762,6 +9764,7 @@ EXPORTS
     ??_R0?AVRadioButton@PHTML@@@8 @9790 NONAME
     ??_R0?AVRecordSet@PODBC@@@8 @9791 NONAME
     ??_R0?AVResetButton@PHTML@@@8 @9792 NONAME
+    ??_R0?AVResult@PMessageDigest@@@8 @24851 NONAME
     ??_R0?AVRoom@MUC@XMPP@@@8 @9793 NONAME
     ??_R0?AVRoster@XMPP@@@8 @9794 NONAME
     ??_R0?AVRouteEntry@PIPSocket@@@8 @9795 NONAME
@@ -10792,6 +10795,7 @@ EXPORTS
     ??_R1A@?0A@EA@RadioButton@PHTML@@8 @10820 NONAME
     ??_R1A@?0A@EA@RecordSet@PODBC@@8 @10821 NONAME
     ??_R1A@?0A@EA@ResetButton@PHTML@@8 @10822 NONAME
+    ??_R1A@?0A@EA@Result@PMessageDigest@@8 @24852 NONAME
     ??_R1A@?0A@EA@Room@MUC@XMPP@@8 @10823 NONAME
     ??_R1A@?0A@EA@Roster@XMPP@@8 @10824 NONAME
     ??_R1A@?0A@EA@RouteEntry@PIPSocket@@8 @10825 NONAME
@@ -11858,6 +11862,7 @@ EXPORTS
     ??_R2RadioButton@PHTML@@8 @11886 NONAME
     ??_R2RecordSet@PODBC@@8 @11887 NONAME
     ??_R2ResetButton@PHTML@@8 @11888 NONAME
+    ??_R2Result@PMessageDigest@@8 @24853 NONAME
     ??_R2Room@MUC@XMPP@@8 @11889 NONAME
     ??_R2Roster@XMPP@@8 @11890 NONAME
     ??_R2RouteEntry@PIPSocket@@8 @11891 NONAME
@@ -12875,6 +12880,7 @@ EXPORTS
     ??_R3RadioButton@PHTML@@8 @12903 NONAME
     ??_R3RecordSet@PODBC@@8 @12904 NONAME
     ??_R3ResetButton@PHTML@@8 @12905 NONAME
+    ??_R3Result@PMessageDigest@@8 @24854 NONAME
     ??_R3Room@MUC@XMPP@@8 @12906 NONAME
     ??_R3Roster@XMPP@@8 @12907 NONAME
     ??_R3RouteEntry@PIPSocket@@8 @12908 NONAME
@@ -13948,6 +13954,7 @@ EXPORTS
     ??_R4RadioButton@PHTML@@6B@ @13976 NONAME
     ??_R4RecordSet@PODBC@@6B@ @13977 NONAME
     ??_R4ResetButton@PHTML@@6B@ @13978 NONAME
+    ??_R4Result@PMessageDigest@@6B@ @24855 NONAME
     ??_R4Room@MUC@XMPP@@6BPObject@@@ @13979 NONAME
     ??_R4Room@MUC@XMPP@@6BPValidatedNotifierTarget@@@ @13980 NONAME
     ??_R4Roster@XMPP@@6B@ @13981 NONAME
@@ -14357,6 +14364,7 @@ EXPORTS
     ?ArrayEncode@PBER_Stream@@UAEXABVPASN_Array@@@Z @14387 NONAME
     ?ArrayEncode@PPER_Stream@@UAEXABVPASN_Array@@@Z @14388 NONAME
     ?ArrayEncode@PXER_Stream@@UAEXABVPASN_Array@@@Z @14389 NONAME
+    ?AsBase64@Result@PMessageDigest@@QBE?AVPString@@XZ @24856 NONAME
     ?AsBoolean@PVarType@@QBE_NXZ @14390 NONAME
     ?Ascend@PMultiMediaFile@@QAE_NAAU_MMCKINFO@@I@Z @14391 NONAME
     ?AsFilePath@PURL@@QBE?AVPFilePath@@XZ @14392 NONAME
@@ -14364,6 +14372,7 @@ EXPORTS
     ?AsGUID@PVarType@@QBE?AVPGloballyUniqueID@@XZ @14394 NONAME
     ?AsHex@PHTTPClientAuthentication@@QBE?AVPString@@AAVCode@PMessageDigest5@@@Z @14395 NONAME
     ?AsHex@PHTTPClientAuthentication@@QBE?AVPString@@ABVPBYTEArray@@@Z @14396 NONAME
+    ?AsHex@Result@PMessageDigest@@QBE?AVPString@@XZ @24857 NONAME
     ?AsInt64@PString@@QBE_JI@Z @14397 NONAME
     ?AsInteger64@PVarType@@QBE_JXZ @14398 NONAME
     ?AsInteger@PString@@QBEJI@Z @14399 NONAME
@@ -16244,7 +16253,7 @@ EXPORTS
     ?ConvertOSError@PSocket@@KA_NHAAW4Errors@PChannel@@AAH@Z @16272 NONAME
     ?ConvertOSError@PSocket@@MAE_NHW4ErrorGroup@PChannel@@@Z @16273 NONAME
     ?ConvertOSError@PSSLChannel@@UAE_NHW4ErrorGroup@PChannel@@@Z @16274 NONAME
-    ?ConvertTextToFilenameList@PVXMLSession@@QAE_NABVPString@@W4TextType@PTextToSpeech@@AAVPStringArray@@_N@Z @16275 NONAME
+    ?ConvertOSError@PUDPSocket@@MAE_NHW4ErrorGroup@PChannel@@@Z @24858 NONAME
     ?CookieTag@PHTTP@@SAABVPCaselessString@@XZ @16276 NONAME
     ?copy@?$char_traits@D@std@@SAPADPADPBDI@Z @16277 NONAME
     ?Copy@Dynamic@Variant@PVarType@@QAEXABU123@@Z @16278 NONAME
@@ -16491,7 +16500,7 @@ EXPORTS
     ?CreateFactory@?$PDevicePluginAdapter@VPSoundChannel@@@@UAEXABVPString@@@Z @16519 NONAME
     ?CreateFactory@?$PDevicePluginAdapter@VPVideoInputDevice@@@@UAEXABVPString@@@Z @16520 NONAME
     ?CreateFactory@?$PDevicePluginAdapter@VPVideoOutputDevice@@@@UAEXABVPString@@@Z @16521 NONAME
-    ?CreateFilename@PVXMLCache@@QAE?AVPFilePath@@ABVPString@@00@Z @16522 NONAME
+    ?CreateFilename@PVXMLCache@@MAE?AVPFilePath@@ABVPString@@00@Z @24859 NONAME
     ?CreateFullPath@PDirectory@@SA?AVPString@@ABV2@_N@Z @16523 NONAME
     ?CreateHeader@PWAVFileFormatG7231@@UAEXAAUFMTChunk@PWAV@@AAVPBYTEArray@@@Z @16524 NONAME
     ?CreateHeader@PWAVFileFormatPCM@@UAEXAAUFMTChunk@PWAV@@AAVPBYTEArray@@@Z @16525 NONAME
@@ -17430,6 +17439,7 @@ EXPORTS
     ?FinishRFC3489Discovery@PSTUN@@UAE?AW4NatTypes@PNatMethod@@AAVPSTUNMessage@@PAVPSTUNUDPSocket@@AAVAddressAndPort@PIPSocket@@@Z @17455 NONAME
     ?First@Row@PODBC@@QAE_NXZ @17456 NONAME
     ?fixed@?$_Iosb@H@std@@2W4_Fmtflags@12@B @17457 NONAME
+    ?fixed@std@@YAAAVios_base@1@AAV21@@Z @24860 NONAME
     ?floatfield@?$_Iosb@H@std@@2W4_Fmtflags@12@B @17458 NONAME
     ?FlowControl@PChannel@@UAE_NPBX@Z @17459 NONAME
     ?FlowControl@PVideoChannel@@UAE_NPBX@Z @17460 NONAME
@@ -17488,7 +17498,7 @@ EXPORTS
     ?GenerateKey@PTEACypher@@SAXAAUKey@1@@Z @17513 NONAME
     ?generic_category@std@@YAABVerror_category@1@XZ @17514 NONAME
     ?Get@PStringOptions@@QBE?AVPString@@P6AABVPCaselessString@@XZPBD@Z @17515 NONAME
-    ?Get@PVXMLCache@@QAE_NABVPString@@00AAV2@AAVPFilePath@@@Z @17516 NONAME
+    ?Get@PVXMLCache@@UAE_NABVPString@@00AAVPFilePath@@@Z @24861 NONAME
     ?GetAbsoluteTime@PTimer@@QBE_JXZ @17517 NONAME
     ?GetAddress@AddressAndPort@PIPSocket@@QBEABVAddress@2@XZ @17518 NONAME
     ?GetAddress@InterfaceEntry@PIPSocket@@QBE?AVAddress@2@XZ @17519 NONAME
@@ -17594,6 +17604,7 @@ EXPORTS
     ?GetBuffers@PSoundChannel_WAVFile@@UAE_NAAH0@Z @17619 NONAME
     ?GetBusyString@PModem@@QBE?AVPString@@XZ @17620 NONAME
     ?GetBytesPerSecond@PWAVFile@@UBEIXZ @17621 NONAME
+    ?GetCache@PVXMLSession@@QAEAAVPVXMLCache@@XZ @24862 NONAME
     ?GetCallback@PAsyncNotifierQueue@@QAEPAUPAsyncNotifierCallback@@PAVPAsyncNotifierTarget@@ABVPTimeInterval@@@Z @17622 NONAME
     ?GetCandidateInfo@PNATUDPSocket@@UAE?AVPNatCandidate@@XZ @17623 NONAME
     ?GetCandidateInfo@PSTUNUDPSocket@@UAE?AVPNatCandidate@@XZ @17624 NONAME
@@ -18785,7 +18796,6 @@ EXPORTS
     ?GetPointer@PVarType@@QBEPBXXZ @18810 NONAME
     ?GetPointer@PWaveFormat@@QBEPAXXZ @18811 NONAME
     ?GetPointer@PWin32Handle@@QAEPAPAXXZ @18812 NONAME
-    ?GetPointer@Result@PMessageDigest@@QBEPBEXZ @18813 NONAME
     ?GetPointerAndSetLength@PString@@QAEPADH@Z @18814 NONAME
     ?GetPort@AddressAndPort@PIPSocket@@QBEGXZ @18815 NONAME
     ?GetPort@PSocket@@QBEGXZ @18816 NONAME
@@ -18818,7 +18828,6 @@ EXPORTS
     ?GetProtocolName@PUDPSocket@@MBEPBDXZ @18843 NONAME
     ?GetQuery@PURL@@QBE?AVPString@@XZ @18844 NONAME
     ?GetQueryVars@PURL@@QBEABVPStringOptions@@XZ @18845 NONAME
-    ?GetRandomFilename@PVXMLCache@@QAE?AVPFilePath@@ABVPString@@0@Z @18846 NONAME
     ?GetRandomPair@PortInfo@PNatMethod@@QAEGXZ @18847 NONAME
     ?GetRate@PTextToSpeech_Festival@@UAEIXZ @18848 NONAME
     ?GetRate@PTextToSpeech_SAPI@@UAEIXZ @18849 NONAME
@@ -18853,7 +18862,6 @@ EXPORTS
     ?GetResizeMode@PVideoFrameInfo@@QBE?AW4ResizeMode@1@XZ @18878 NONAME
     ?GetResource@BareJID@XMPP@@UBE?AVPString@@XZ @18879 NONAME
     ?GetResource@JID@XMPP@@UBE?AVPString@@XZ @18880 NONAME
-    ?GetResourceCache@PVXMLCache@@SAAAV1@XZ @18881 NONAME
     ?GetResponseHandlers@IQ@XMPP@@UAE?AV?$PNotifierListTemplate@H@@XZ @18882 NONAME
     ?GetRetries@PSTUN@@UBEHXZ @18883 NONAME
     ?GetReturnCode@PPipeChannel@@QBEHXZ @18884 NONAME
@@ -18939,7 +18947,6 @@ EXPORTS
     ?GetSize@PXMLElement@@QBEHXZ @18964 NONAME
     ?GetSize@PXMLRPCArrayBase@@UBEHXZ @18965 NONAME
     ?GetSize@PXMLRPCVariableBase@@UBEHXZ @18966 NONAME
-    ?GetSize@Result@PMessageDigest@@QBEHXZ @18967 NONAME
     ?GetSize@sockaddr_wrapper@PIPSocket@@QBEHXZ @18968 NONAME
     ?GetSizeNames@PVideoFrameInfo@@SA?AVPStringArray@@XZ @18969 NONAME
     ?GetSocket@PInternetProtocol@@QBEPAVPIPSocket@@XZ @18970 NONAME
@@ -19902,7 +19909,6 @@ EXPORTS
     ?InternalWriteTo@PTURNUDPSocket@@MAE_NPBUSlice@PSocket@@IABVAddressAndPort@PIPSocket@@@Z @19922 NONAME
     ?Intersection@PAbstractSet@@SA_NABV1@0PAV1@@Z @19923 NONAME
     ?Invert@PASN_BitString@@QAEXI@Z @19924 NONAME
-    ?Invoke@PTextToSpeech_Festival@@IAE_NABVPString@@ABVPFilePath@@@Z @19925 NONAME
     ?IQNamespaceHandlers@StreamHandler@C2S@XMPP@@QAEAAV?$PNotifierListTemplate@H@@ABVPString@@@Z @19926 NONAME
     ?IQQueryTag@XMPP@@YAABVPCaselessString@@XZ @19927 NONAME
     ?IQStanzaTag@XMPP@@YAABVPCaselessString@@XZ @19928 NONAME
@@ -21452,6 +21458,7 @@ EXPORTS
     ?PrintOn@PXMLElement@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @21473 NONAME
     ?PrintOn@PXMLRPCArrayBase@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @21474 NONAME
     ?PrintOn@PXMLRPCStructBase@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @21475 NONAME
+    ?PrintOn@Result@PMessageDigest@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24863 NONAME
     ?PrintOn@Separator@PvCard@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @21476 NONAME
     ?PrintOn@SRVRecord@PDNS@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @21477 NONAME
     ?PrintOn@SRVRecordList@PDNS@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @21478 NONAME
@@ -21566,10 +21573,10 @@ EXPORTS
     ?push_back@?$vector@VAddressAndPort@PIPSocket@@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QAEXABVAddressAndPort@PIPSocket@@@Z @21588 NONAME
     ?push_back@?$vector@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@QAEXABVPFilePath@@@Z @21589 NONAME
     ?push_front@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEXABQAUPAsyncNotifierCallback@@@Z @21590 NONAME
-    ?Put@PVXMLCache@@QAEXABVPString@@000ABVPFilePath@@AAV3@@Z @21591 NONAME
     ?PutDocument@PHTTPClient@@QAE_NABVPURL@@AAVPMIMEInfo@@1@Z @21592 NONAME
     ?PutFile@PFTPClient@@QAEPAVPTCPSocket@@ABVPString@@W4DataChannelType@PFTP@@@Z @21593 NONAME
     ?PutTextDocument@PHTTPClient@@QAE_NABVPURL@@ABVPString@@1@Z @21594 NONAME
+    ?PutWithLock@PVXMLCache@@UAE_NABVPString@@00AAVPFile@@@Z @24864 NONAME
     ?PVideoInputDevice_Application_descriptor@@3VPVideoInputDevice_Application_PluginServiceDescriptor@@A @21596 NONAME
     ?PVideoInputDevice_FFMPEG_descriptor@@3VPVideoInputDevice_FFMPEG_PluginServiceDescriptor@@A @21597 NONAME
     ?PVideoInputDevice_YUVFile_descriptor@@3VPVideoInputDevice_YUVFile_PluginServiceDescriptor@@A @21598 NONAME
@@ -21933,7 +21940,6 @@ EXPORTS
     ?Resume@NT_ServiceManager@@UAE_NPAVPServiceProcess@@@Z @21955 NONAME
     ?Resume@PThread@@UAEXXZ @21956 NONAME
     ?Resume@PTimer@@QAEXXZ @21957 NONAME
-    ?RetreiveResource@PVXMLSession@@UAE_NABVPURL@@AAVPString@@AAVPFilePath@@_N@Z @21959 NONAME
     ?ReturnPathTag@PRFC822Channel@@SAABVPCaselessString@@XZ @21960 NONAME
     ?ReverseBytes@?$PIntReversedOrder@G@@CAXABGAAG@Z @21961 NONAME
     ?ReverseBytes@?$PIntReversedOrder@K@@CAXABKAAK@Z @21962 NONAME
@@ -22163,6 +22169,7 @@ EXPORTS
     ?SetBufferSize@PChannelStreamBuffer@@IAE_NH@Z @22186 NONAME
     ?SetBusyString@PModem@@QAEXABVPString@@@Z @22187 NONAME
     ?SetBytesPerSecond@PWAVFile@@UAEXI@Z @22188 NONAME
+    ?SetCache@PVXMLSession@@QAEXAAVPVXMLCache@@@Z @24865 NONAME
     ?SetCaptureMode@PVideoInputDevice@@UAE_NI@Z @22189 NONAME
     ?SetCaptureMode@PVideoInputDevice_VideoForWindows@@UAE_NI@Z @22190 NONAME
     ?SetCC@PRFC822Channel@@QAEXABVPString@@@Z @22191 NONAME
@@ -22246,6 +22253,7 @@ EXPORTS
     ?SetDefaultSection@PConfig@@UAEXABVPString@@@Z @22271 NONAME
     ?SetDefaultValues@Field@PODBC@@QAEXXZ @22272 NONAME
     ?SetDeinitString@PModem@@QAEXABVPString@@@Z @22273 NONAME
+    ?SetDirectory@PVXMLCache@@QAEXABVPDirectory@@@Z @24866 NONAME
     ?SetDirty@Item@Roster@XMPP@@QAEX_N@Z @22274 NONAME
     ?SetDirty@PXMLObject@@QAEXXZ @22275 NONAME
     ?SetDstFrameInfo@PColourConverter@@UAE_NABVPVideoFrameInfo@@@Z @22276 NONAME
@@ -23239,7 +23247,7 @@ EXPORTS
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@CPA@AEXXZ @23262 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DBA@AEXXZ @23263 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DGA@AEXXZ @23264 NONAME
-    ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@EGA@AEXXZ @23265 NONAME
+    ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@EGI@AEXXZ @24867 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@FAI@AEXXZ @23266 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@FI@AEXXZ @23267 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@HA@AEXXZ @23268 NONAME
@@ -23288,7 +23296,7 @@ EXPORTS
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@CPA@AEXXZ @23311 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DBA@AEXXZ @23312 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DGA@AEXXZ @23313 NONAME
-    ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@EGA@AEXXZ @23314 NONAME
+    ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@EGI@AEXXZ @24868 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@FAI@AEXXZ @23315 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@FI@AEXXZ @23316 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@HA@AEXXZ @23317 NONAME
