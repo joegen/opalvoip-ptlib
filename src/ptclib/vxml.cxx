@@ -588,7 +588,8 @@ bool PVXMLRecordableFilename::OnStart(PVXMLChannel & outgoingChannel)
     }
   }
 
-  PTRACE(3, "VXML\tRecording to file \"" << m_fileName << '"');
+  PTRACE(3, "VXML\tRecording to file \"" << m_fileName << "\","
+            " duration=" << m_maxDuration << ", silence=" << m_finalSilence);
   outgoingChannel.SetWriteChannel(file, true);
 
   m_silenceTimer = m_finalSilence;
@@ -909,6 +910,11 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
 
     m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
 
+    PURL pathURL = m_rootURL;
+    pathURL.ChangePath(PString::Empty()); // Remove last element of root URL
+    SetVar("path", pathURL);
+    SetVar("uri", m_rootURL);
+
     {
       PINDEX idx = 0;
       PXMLElement * element;
@@ -924,6 +930,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     }
   }
 
+  PTRACE(4, "VXML\tStarting with variables:\n" << m_variables);
   return Execute();
 }
 
@@ -1157,7 +1164,11 @@ bool PVXMLSession::ProcessEvents()
 {
   // m_sessionMutex already locked
 
-  if (m_abortVXML)
+  if (m_abortVXML || !IsOpen())
+    return false;
+
+  PVXMLChannel * vxmlChannel = GetVXMLChannel();
+  if (PAssertNULL(vxmlChannel) == NULL)
     return false;
 
   char ch;
@@ -1173,23 +1184,26 @@ bool PVXMLSession::ProcessEvents()
   m_userInputMutex.Signal();
 
   if (ch != '\0') {
-    if (m_recordStopOnDTMF)
-      EndRecording();
-
-    if (m_bargeIn && IsOpen()) {
+    if (m_recordingStatus == RecordingInProgress) {
+      if (m_recordStopOnDTMF && vxmlChannel->EndRecording(false)) {
+        if (!m_recordingName.IsEmpty())
+          SetVar(m_recordingName + "$.termchar", ch);
+      }
+    }
+    else if (m_bargeIn) {
       PTRACE(4, "VXML\tBarging in");
       m_bargingIn = true;
-      GetVXMLChannel()->FlushQueue();
+      vxmlChannel->FlushQueue();
     }
 
     if (m_grammar != NULL)
       m_grammar->OnUserInput(ch);
   }
 
-  if (IsOpen() && GetVXMLChannel()->IsPlaying()) {
+  if (vxmlChannel->IsPlaying()) {
     PTRACE(4, "VXML\tIs playing, awaiting event");
   }
-  else if (IsOpen() && GetVXMLChannel()->IsRecording()) {
+  else if (vxmlChannel->IsRecording()) {
     PTRACE(4, "VXML\tIs recording, awaiting event");
   }
   else if (m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started) {
@@ -1259,7 +1273,9 @@ bool PVXMLSession::NextNode(bool processChildren)
     PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
     if (handler != NULL) {
       if (!handler->Finish(*this, *element)) {
-        PTRACE(4, "VXML\tContinue processing VoiceXML element: <" << nodeType << '>');
+        PTRACE(4, "VXML\t"
+               << (element != m_currentNode ? "Exception handling for" : "Continue processing")
+               << " VoiceXML element: <" << nodeType << '>');
         return true;
       }
       PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
@@ -1363,7 +1379,7 @@ PBoolean PVXMLSession::TraverseRecord(PXMLElement &)
 PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
 {
   if (m_abortVXML)
-    return true;
+    return true; // True is not "good" but "done", that is move to next element in VXML.
 
   switch (m_recordingStatus) {
     case RecordingInProgress :
@@ -1376,6 +1392,16 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
       break;
   }
 
+  static const PConstString supportedFileType(".wav");
+  PCaselessString typeMIME = element.GetAttribute("type");
+  if (typeMIME.IsEmpty())
+    typeMIME = PMIMEInfo::GetContentType(supportedFileType);
+
+  if (typeMIME != PMIMEInfo::GetContentType(supportedFileType)) {
+    PTRACE(2, "VXML\tCannot save to file type \"" << typeMIME << '"');
+    return true;
+  }
+
   // see if we need a beep
   if (element.GetAttribute("beep").ToLower() *= "true") {
     PBYTEArray beepData;
@@ -1384,27 +1410,60 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
       PlayData(beepData);
   }
 
-  // Get the destination filename (dest)
-  PURL destURL;
-  if (element.HasAttribute("dest"))
-    destURL = element.GetAttribute("dest");
+  m_recordingName = element.GetAttribute("name");
 
-  if (destURL.IsEmpty())
-    destURL.Parse("recording_" + PTime().AsString("yyyyMMdd_hhmmss") + ".wav", "file");
+  PFilePath destination;
 
-  // Get max record time (maxtime)
-  PTimeInterval maxTime = StringToTime(element.GetAttribute("maxtime"), INT_MAX);
+  // Get the destination filename (dest) which is a private extension, not standard VXML
+  if (element.HasAttribute("dest")) {
+    PURL uri;
+    if (uri.Parse(element.GetAttribute("dest"), "file"))
+      destination = uri.AsFilePath();
+  }
 
-  // Get terminating silence duration (finalsilence)
-  PTimeInterval termTime = StringToTime(element.GetAttribute("finalsilence"), 3000);
+  if (destination.IsEmpty()) {
+    if (!m_recordDirectory.Create()) {
+      PTRACE(2, "VXML\tCould not create recording directory \"" << m_recordDirectory << '"');
+    }
 
-  // Get dtmf term (dtmfterm)
-  PBoolean dtmfTerm = true;
-  if (element.HasAttribute("dtmfterm"))
-    dtmfTerm = !(element.GetAttribute("dtmfterm").ToLower() *= "false");
+    PStringStream fn;
+    fn << m_recordDirectory;
+    if (m_recordingName.IsEmpty())
+      fn << "recording";
+    else
+      fn << m_recordingName;
+    fn << '_' << PTime().AsString("yyyyMMdd_hhmmss") << supportedFileType;
+    destination = fn;
+  }
 
-  // create a semaphore, and then wait for the recording to terminate
-  return !StartRecording(destURL.AsFilePath(), dtmfTerm, maxTime, termTime);
+  if (!m_recordingName.IsEmpty()) {
+    SetVar(m_recordingName + "$.type", typeMIME);
+    SetVar(m_recordingName + "$.uri", PURL(destination));
+    SetVar(m_recordingName + "$.maxtime", "false");
+    SetVar(m_recordingName + "$.termchar", ' ');
+    SetVar(m_recordingName + "$.duration" , '0');
+    SetVar(m_recordingName + "$.size", '0');
+  }
+
+  m_recordStopOnDTMF = element.HasAttribute("dtmfterm")|| !(element.GetAttribute("dtmfterm") *= "false");
+
+  PFile::Remove(destination);
+
+  PVXMLRecordableFilename * recordable = new PVXMLRecordableFilename();
+  if (!recordable->Open(destination)) {
+    delete recordable;
+    return true;
+  }
+
+  recordable->SetFinalSilence(StringToTime(element.GetAttribute("finalsilence"), 3000));
+  recordable->SetMaxDuration(StringToTime(element.GetAttribute("maxtime"), INT_MAX));
+
+  if (!GetVXMLChannel()->QueueRecordable(recordable))
+    return true;
+
+  m_recordingStatus = RecordingInProgress;
+  m_recordingStartTime.SetCurrentTime();
+  return false; // Are recording, stay in <record> element
 }
 
 
@@ -1664,39 +1723,6 @@ void PVXMLSession::SetPause(PBoolean pause)
 }
 
 
-PBoolean PVXMLSession::StartRecording(const PFilePath & recordFn,
-                                               PBoolean recordDTMFTerm,
-                                  const PTimeInterval & recordMaxTime,
-                                  const PTimeInterval & recordFinalSilence)
-{
-  if (!IsOpen())
-    return false;
-
-  if (recordFn.IsEmpty()) {
-    PTRACE(1, "VXML\tNo destination file location");
-    return true;
-  }
-
-  PFile::Remove(recordFn);
-
-  m_recordStopOnDTMF = recordDTMFTerm;
-
-  if (!GetVXMLChannel()->StartRecording(recordFn,
-                                        (unsigned)recordFinalSilence.GetMilliSeconds(),
-                                        (unsigned)recordMaxTime.GetMilliSeconds()))
-    return false;
-
-  m_recordingStatus = RecordingInProgress;
-  return true;
-}
-
-
-PBoolean PVXMLSession::EndRecording()
-{
-  return m_recordingStatus == RecordingInProgress && IsOpen() && GetVXMLChannel()->EndRecording();
-}
-
-
 PBoolean PVXMLSession::TraverseAudio(PXMLElement & element)
 {
   return !PlayElement(element);
@@ -1828,13 +1854,12 @@ bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & event
   for (;;) {
     for (int testCount = actualCount; testCount >= 0; --testCount) {
       // Check for an explicit hander - i.e. <error>, <filled>, <noinput>, <nomatch>, <help>
-      PINDEX index = 0;
       if ((handler = level->GetElement(eventName)) != NULL &&
               handler->GetAttribute("count").AsInteger() == testCount)
         goto gotHandler;
 
       // Check for a <catch>
-      index = 0;
+      PINDEX index = 0;
       while ((handler = level->GetElement("catch", index++)) != NULL) {
         if ((handler->GetAttribute("event") *= eventName) &&
                 handler->GetAttribute("count").AsInteger() == testCount)
@@ -2057,8 +2082,8 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
   PStringStream entityBody;
 
   for (PINDEX i = 0; i < namelist.GetSize(); ++i) {
-    if (GetVar(namelist[i] + ".type") != "audio/x-wav" ) {
-      PTRACE(1, "VXML\t<submit> does not (yet) support submissions of types other than \"audio/x-wav\"");
+    if (GetVar(namelist[i] + ".type") != "audio/wav" ) {
+      PTRACE(1, "VXML\t<submit> does not (yet) support submissions of types other than \"audio/wav\"");
       continue;
     }
 
@@ -2254,11 +2279,14 @@ PBoolean PVXMLSession::TraversedField(PXMLElement &)
 }
 
 
-void PVXMLSession::OnEndRecording()
+void PVXMLSession::OnEndRecording(PINDEX bytesRecorded, bool timedOut)
 {
-  //SetVar(channelName + ".size", PString(incomingChannel->GetWAVFile()->GetDataLength() ) );
-  //SetVar(channelName + ".type", "audio/x-wav" );
-  //SetVar(channelName + ".filename", incomingChannel->GetWAVFile()->GetName() );
+  if (!m_recordingName.IsEmpty()) {
+    SetVar(m_recordingName + "$.duration" , (PTime() - m_recordingStartTime).GetMilliSeconds());
+    SetVar(m_recordingName + "$.size", bytesRecorded);
+    SetVar(m_recordingName + "$.maxtime", timedOut ? "true" : "false");
+  }
+
   m_recordingStatus = RecordingComplete;
   Trigger();
 }
@@ -2465,7 +2493,7 @@ PBoolean PVXMLChannel::Close()
   if (!m_closed) {
     PTRACE(4, "VXML\tClosing channel " << this);
 
-    EndRecording();
+    EndRecording(true);
     FlushQueue();
 
     m_closed = true;
@@ -2556,7 +2584,7 @@ PBoolean PVXMLChannel::Write(const void * buf, PINDEX len)
 
   // let the recordable do silence detection
   if (m_recordable != NULL && m_recordable->OnFrame(IsSilenceFrame(buf, len)))
-    EndRecording();
+    EndRecording(true);
 
   m_channelWriteMutex.Signal();
 
@@ -2564,7 +2592,7 @@ PBoolean PVXMLChannel::Write(const void * buf, PINDEX len)
   if (WriteFrame(buf, len))
     m_totalData += lastWriteCount;
   else {
-    EndRecording();
+    EndRecording(true);
     lastWriteCount = len;
     Wait(len, nextWriteTick);
   }
@@ -2573,26 +2601,12 @@ PBoolean PVXMLChannel::Write(const void * buf, PINDEX len)
 }
 
 
-PBoolean PVXMLChannel::StartRecording(const PFilePath & fn, unsigned _finalSilence, unsigned _maxDuration)
-{
-  PVXMLRecordableFilename * recordable = new PVXMLRecordableFilename();
-  if (!recordable->Open(fn)) {
-    delete recordable;
-    return false;
-  }
-
-  recordable->SetFinalSilence(_finalSilence);
-  recordable->SetMaxDuration(_maxDuration);
-  return QueueRecordable(recordable);
-}
-
-
 PBoolean PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
 {
   m_totalData = 0;
 
   // shutdown any existing recording
-  EndRecording();
+  EndRecording(true);
 
   // insert the new recordable
   PWaitAndSignal mutex(m_channelWriteMutex);
@@ -2603,7 +2617,7 @@ PBoolean PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
 }
 
 
-PBoolean PVXMLChannel::EndRecording()
+PBoolean PVXMLChannel::EndRecording(bool timedOut)
 {
   PWaitAndSignal mutex(m_channelWriteMutex);
 
@@ -2611,10 +2625,11 @@ PBoolean PVXMLChannel::EndRecording()
     return false;
 
   PTRACE(3, "VXML\tFinished recording " << m_totalData << " bytes");
+  SetWriteChannel(NULL, false, true);
   m_recordable->OnStop();
   delete m_recordable;
   m_recordable = NULL;
-  m_vxmlSession->OnEndRecording();
+  m_vxmlSession->OnEndRecording(m_totalData, timedOut);
 
   return true;
 }
