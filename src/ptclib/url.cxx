@@ -134,6 +134,7 @@ PURL::PURL(const PString & str, const char * defaultScheme)
 
 PURL::PURL(const PFilePath & filePath)
   : schemeInfo(PURLSchemeFactory::CreateInstance(FILE_SCHEME))
+  , scheme(FILE_SCHEME)
   , port(0)
   , portSupplied(false)
   , relativePath(false)
@@ -649,7 +650,8 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
         str << TranslateString(username, LoginTranslation);
         if (schemeInfo->hasPassword && !password)
           str << ':' << TranslateString(password, LoginTranslation);
-        str << '@';
+        if (schemeInfo->hasHostPort && !hostname.IsEmpty())
+          str << '@';
       }
     }
 
@@ -800,8 +802,8 @@ PString PURL::GetPathStr() const
 
 void PURL::SetPath(const PStringArray & p)
 {
-  path.MakeUnique();
   path = p;
+  path.MakeUnique();
   Recalculate();
 }
 
@@ -817,14 +819,21 @@ void PURL::AppendPath(const PString & segment)
 void PURL::ChangePath(const PString & segment, PINDEX idx)
 {
   path.MakeUnique();
-  if (path.IsEmpty())
-    AppendPath(segment);
+
+  if (path.IsEmpty()) {
+    if (!segment.IsEmpty())
+      path.AppendString(segment);
+  }
   else {
     if (idx >= path.GetSize())
       idx = path.GetSize()-1;
-    path[idx] = segment;
-    Recalculate();
+    if (segment.IsEmpty())
+      path.RemoveAt(idx);
+    else
+      path[idx] = segment;
   }
+
+  Recalculate();
 }
 
 

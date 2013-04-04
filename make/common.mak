@@ -246,7 +246,6 @@ default_clean :
 
 .DELETE_ON_ERROR : default_depend
 default_depend :: $(DEPS)
-	@echo Created dependencies.
 
 libs ::
 ifneq ($(LIBDIRS),)
