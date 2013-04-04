@@ -7603,6 +7603,7 @@ EXPORTS
     ??BPSSL_BIO@@QBEPAUbio_st@@XZ @7615 NONAME
     ??BPString@@QBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ @7616 NONAME
     ??BPString@@QBEPBEXZ @7617 NONAME
+    ??BPURL@@QBE?AVPString@@XZ @25950 NONAME
     ??BPWaveFormat@@QBEPAUtWAVEFORMATEX@@XZ @7618 NONAME
     ??BPWin32Handle@@QBEPAXXZ @7619 NONAME
     ??BPWrapHDC@@QBEPAUHDC__@@XZ @7620 NONAME
@@ -17997,8 +17998,7 @@ EXPORTS
     ?EndNest@PReadWriteMutex@@IAEXXZ @17884 NONAME
     ?EndRead@PHTTPSpace@@QBEXXZ @17885 NONAME
     ?EndRead@PReadWriteMutex@@QAEXXZ @17886 NONAME
-    ?EndRecording@PVXMLChannel@@QAE_NXZ @17887 NONAME
-    ?EndRecording@PVXMLSession@@UAE_NXZ @17888 NONAME
+    ?EndRecording@PVXMLChannel@@QAE_N_N@Z @25951 NONAME
     ?EndWrite@PHTTPSpace@@QBEXXZ @17889 NONAME
     ?EndWrite@PReadWriteMutex@@QAEXXZ @17890 NONAME
     ?Enqueue@?$PQueue@VPVXMLPlayable@@@@UAEXPAVPVXMLPlayable@@@Z @17891 NONAME
@@ -21511,7 +21511,7 @@ EXPORTS
     ?OnElement@BaseStreamHandler@XMPP@@UAEXAAVPXML@@@Z @21380 NONAME
     ?OnElement@StreamHandler@C2S@XMPP@@MAEXAAVPXML@@@Z @21381 NONAME
     ?OnEndDialog@PVXMLSession@@UAEXXZ @21382 NONAME
-    ?OnEndRecording@PVXMLSession@@UAEXXZ @21383 NONAME
+    ?OnEndRecording@PVXMLSession@@UAEXH_N@Z @25952 NONAME
     ?OnEndSession@PVXMLSession@@UAEXXZ @21384 NONAME
     ?OnError@PFTPServer@@UAEXHHPBD@Z @21385 NONAME
     ?OnError@PHTTPServer@@UAE_NW4StatusCode@PHTTP@@ABVPCaselessString@@ABVPHTTPConnectionInfo@@@Z @21386 NONAME
@@ -22924,7 +22924,7 @@ EXPORTS
     ?SetFilePath@PFile@@QAEXABVPString@@@Z @22797 NONAME
     ?SetFilePosition@PXMLElement@@QAEXII@Z @22798 NONAME
     ?SetFilter@PEthSocket@@QAE_NABVPString@@@Z @22799 NONAME
-    ?SetFinalSilence@PVXMLRecordable@@QAEXI@Z @22800 NONAME
+    ?SetFinalSilence@PVXMLRecordable@@QAEXABVPTimeInterval@@@Z @25953 NONAME
     ?SetFormat@PSound@@QAEXIII@Z @22801 NONAME
     ?SetFormat@PSoundChannel@@UAE_NIII@Z @22802 NONAME
     ?SetFormat@PSoundChannelDirectSound@@UAE_NIII@Z @22803 NONAME
@@ -23016,7 +23016,7 @@ EXPORTS
     ?SetLocalEcho@PIndirectChannel@@UAE_N_N@Z @22887 NONAME
     ?SetLocalEcho@PTelnetSocket@@UAE_N_N@Z @22888 NONAME
     ?SetLogLevel@PServiceProcess@@QAEXW4Level@PSystemLog@@@Z @22889 NONAME
-    ?SetMaxDuration@PVXMLRecordable@@QAEXI@Z @22890 NONAME
+    ?SetMaxDuration@PVXMLRecordable@@QAEXABVPTimeInterval@@@Z @25954 NONAME
     ?SetMaxEntityLength@PXMLBase@@QAEXI@Z @25718 NONAME
     ?SetMaxHandles@PProcess@@QAE_NH@Z @22892 NONAME
     ?SetMaximumArraySize@PASN_Object@@SAXH@Z @22893 NONAME
@@ -23444,8 +23444,6 @@ EXPORTS
     ?StartRecording@PSoundChannelDirectSound@@UAE_NXZ @23312 NONAME
     ?StartRecording@PSoundChannelWin32@@UAE_NXZ @23313 NONAME
     ?StartRecording@PSoundChannel_WAVFile@@UAE_NXZ @23314 NONAME
-    ?StartRecording@PVXMLChannel@@QAE_NABVPFilePath@@II@Z @23315 NONAME
-    ?StartRecording@PVXMLSession@@UAE_NABVPFilePath@@_NABVPTimeInterval@@2@Z @23316 NONAME
     ?StartRegistration@StreamHandler@C2S@XMPP@@MAEXXZ @23317 NONAME
     ?StartResponse@PHTTPServer@@QAE_NW4StatusCode@PHTTP@@AAVPMIMEInfo@@J@Z @23318 NONAME
     ?StartRunning@PTimer@@AAEX_N@Z @23319 NONAME
