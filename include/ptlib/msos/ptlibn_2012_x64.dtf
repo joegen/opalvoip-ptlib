@@ -6252,6 +6252,7 @@ EXPORTS
     ??BPSSL_BIO@@QEBAPEAUbio_st@@XZ @6270 NONAME
     ??BPString@@QEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ @6271 NONAME
     ??BPString@@QEBAPEBEXZ @6272 NONAME
+    ??BPURL@@QEBA?AVPString@@XZ @24130 NONAME
     ??BPWaveFormat@@QEBAPEAUtWAVEFORMATEX@@XZ @6273 NONAME
     ??BPWin32Handle@@QEBAPEAXXZ @6274 NONAME
     ??BPWrapHDC@@QEBAPEAUHDC__@@XZ @6275 NONAME
@@ -16110,8 +16111,7 @@ EXPORTS
     ?EndNest@PReadWriteMutex@@IEAAXXZ @16129 NONAME
     ?EndRead@PHTTPSpace@@QEBAXXZ @16130 NONAME
     ?EndRead@PReadWriteMutex@@QEAAXXZ @16131 NONAME
-    ?EndRecording@PVXMLChannel@@QEAA_NXZ @16132 NONAME
-    ?EndRecording@PVXMLSession@@UEAA_NXZ @16133 NONAME
+    ?EndRecording@PVXMLChannel@@QEAA_N_N@Z @24131 NONAME
     ?EndWrite@PHTTPSpace@@QEBAXXZ @16134 NONAME
     ?EndWrite@PReadWriteMutex@@QEAAXXZ @16135 NONAME
     ?Enqueue@?$PQueue@VPVXMLPlayable@@@@UEAAXPEAVPVXMLPlayable@@@Z @16136 NONAME
@@ -19530,7 +19530,7 @@ EXPORTS
     ?OnElement@BaseStreamHandler@XMPP@@UEAAXAEAVPXML@@@Z @19544 NONAME
     ?OnElement@StreamHandler@C2S@XMPP@@MEAAXAEAVPXML@@@Z @19545 NONAME
     ?OnEndDialog@PVXMLSession@@UEAAXXZ @19546 NONAME
-    ?OnEndRecording@PVXMLSession@@UEAAXXZ @19547 NONAME
+    ?OnEndRecording@PVXMLSession@@UEAAX_K_N@Z @24132 NONAME
     ?OnEndSession@PVXMLSession@@UEAAXXZ @19548 NONAME
     ?OnError@PFTPServer@@UEAAX_K0PEBD@Z @19549 NONAME
     ?OnError@PHTTPServer@@UEAA_NW4StatusCode@PHTTP@@AEBVPCaselessString@@AEBVPHTTPConnectionInfo@@@Z @19550 NONAME
@@ -20909,7 +20909,7 @@ EXPORTS
     ?SetFilePath@PFile@@QEAAXAEBVPString@@@Z @20926 NONAME
     ?SetFilePosition@PXMLElement@@QEAAXII@Z @20927 NONAME
     ?SetFilter@PEthSocket@@QEAA_NAEBVPString@@@Z @20928 NONAME
-    ?SetFinalSilence@PVXMLRecordable@@QEAAXI@Z @20929 NONAME
+    ?SetFinalSilence@PVXMLRecordable@@QEAAXAEBVPTimeInterval@@@Z @24133 NONAME
     ?SetFormat@PSound@@QEAAXIII@Z @20930 NONAME
     ?SetFormat@PSoundChannel@@UEAA_NIII@Z @20931 NONAME
     ?SetFormat@PSoundChannelDirectSound@@UEAA_NIII@Z @20932 NONAME
@@ -20990,7 +20990,7 @@ EXPORTS
     ?SetLocalEcho@PIndirectChannel@@UEAA_N_N@Z @21006 NONAME
     ?SetLocalEcho@PTelnetSocket@@UEAA_N_N@Z @21007 NONAME
     ?SetLogLevel@PServiceProcess@@QEAAXW4Level@PSystemLog@@@Z @21008 NONAME
-    ?SetMaxDuration@PVXMLRecordable@@QEAAXI@Z @21009 NONAME
+    ?SetMaxDuration@PVXMLRecordable@@QEAAXAEBVPTimeInterval@@@Z @24134 NONAME
     ?SetMaxEntityLength@PXMLBase@@QEAAXI@Z @21010 NONAME
     ?SetMaxHandles@PProcess@@QEAA_NH@Z @21011 NONAME
     ?SetMaximumArraySize@PASN_Object@@SAX_K@Z @21012 NONAME
@@ -21395,8 +21395,6 @@ EXPORTS
     ?StartRecording@PSoundChannelDirectSound@@UEAA_NXZ @21411 NONAME
     ?StartRecording@PSoundChannelWin32@@UEAA_NXZ @21412 NONAME
     ?StartRecording@PSoundChannel_WAVFile@@UEAA_NXZ @21413 NONAME
-    ?StartRecording@PVXMLChannel@@QEAA_NAEBVPFilePath@@II@Z @21414 NONAME
-    ?StartRecording@PVXMLSession@@UEAA_NAEBVPFilePath@@_NAEBVPTimeInterval@@2@Z @21415 NONAME
     ?StartRegistration@StreamHandler@C2S@XMPP@@MEAAXXZ @21416 NONAME
     ?StartResponse@PHTTPServer@@QEAA_NW4StatusCode@PHTTP@@AEAVPMIMEInfo@@J@Z @21417 NONAME
     ?StartRunning@PTimer@@AEAAX_N@Z @21418 NONAME
@@ -21853,7 +21851,7 @@ EXPORTS
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DIA@EAAXXZ @21868 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DII@EAAXXZ @21869 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DJA@EAAXXZ @21870 NONAME
-    ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DKI@EAAXXZ @21871 NONAME
+    ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DKA@EAAXXZ @24135 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@DNI@EAAXXZ @21872 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@EBA@EAAXXZ @21873 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@ECA@EAAXXZ @21874 NONAME
@@ -21861,7 +21859,7 @@ EXPORTS
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@EJA@EAAXXZ @21876 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@FIA@EAAXXZ @21877 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@GBA@EAAXXZ @21878 NONAME
-    ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@HLI@EAAXXZ @24128 NONAME
+    ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@JJI@EAAXXZ @24136 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@KI@EAAXXZ @21880 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@LA@EAAXXZ @21881 NONAME
     ?_Add_vtordisp1@p_iostream@@$0PPPPPPPM@OI@EAAXXZ @21882 NONAME
@@ -21902,7 +21900,7 @@ EXPORTS
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DIA@EAAXXZ @21917 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DII@EAAXXZ @21918 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DJA@EAAXXZ @21919 NONAME
-    ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DKI@EAAXXZ @21920 NONAME
+    ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DKA@EAAXXZ @24137 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@DNI@EAAXXZ @21921 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@EBA@EAAXXZ @21922 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@ECA@EAAXXZ @21923 NONAME
@@ -21910,7 +21908,7 @@ EXPORTS
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@EJA@EAAXXZ @21925 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@FIA@EAAXXZ @21926 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@GBA@EAAXXZ @21927 NONAME
-    ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@HLI@EAAXXZ @24129 NONAME
+    ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@JJI@EAAXXZ @24138 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@KI@EAAXXZ @21929 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@LA@EAAXXZ @21930 NONAME
     ?_Add_vtordisp2@p_iostream@@$0PPPPPPPM@OI@EAAXXZ @21931 NONAME
