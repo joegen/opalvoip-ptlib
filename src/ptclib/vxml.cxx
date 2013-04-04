@@ -2626,6 +2626,7 @@ PBoolean PVXMLChannel::EndRecording(bool timedOut)
     return false;
 
   PTRACE(3, "VXML\tFinished recording " << m_totalData << " bytes");
+  SetWriteChannel(NULL, false, true);
   m_recordable->OnStop();
   delete m_recordable;
   m_recordable = NULL;
