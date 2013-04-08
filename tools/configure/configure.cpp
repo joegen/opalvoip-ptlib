@@ -46,7 +46,7 @@
 #include <errno.h>
 
 
-#define VERSION "1.24"
+#define VERSION "1.25"
 
 using namespace std;
 
@@ -840,7 +840,7 @@ void Feature::RunDependencies()
 int main(int argc, char* argv[])
 {
   // open and scan configure.ac
-  cout << "PWLib Configure " VERSION " - ";
+  cout << "PTLib Configure " VERSION " - ";
   ifstream conf("configure.ac", ios::in);
   if (conf.is_open()) {
     cout << "opened configure.ac" << endl;
@@ -850,7 +850,9 @@ int main(int argc, char* argv[])
     if (conf.is_open()) {
       cout << "opened " << "configure.in" << endl;
     } else {
-      cerr << "could not open configure.ac/configure.in" << endl;
+      char dir[_MAX_PATH];
+      getcwd(dir, sizeof(dir));
+      cerr << "could not open configure.ac/configure.in in " << dir << endl;
       return 1;
     }
   }
@@ -866,17 +868,15 @@ int main(int argc, char* argv[])
     if ((pos = line.find("AC_CONFIG_FILES")) != string::npos ||
         (pos = line.find("AC_CONFIG_HEADERS")) != string::npos) {
       if ((pos = line.find('(', pos)) != string::npos) {
-        string::size_type end = line.find(')', pos);
-        if (end != string::npos && line.find('[', pos) == string::npos) {
-          string fn(line.substr(pos+1, end-pos-1));
-          size_t pos = fn.find(':');
-          if (pos != string::npos) {
-            fn = fn.substr(pos+1);
-            size_t len = fn.length();
-            if ((len > 3) && (fn.substr(len-3) == ".in"))
-              fn = fn.substr(0, len-3);
+        string::size_type end = line.rfind(')');
+        if (end != string::npos) {
+          string::size_type lbracket = line.find('[', pos);
+          string::size_type rbracket = line.find(']', lbracket);
+          if (lbracket != string::npos && rbracket != string::npos) {
+            pos = lbracket;
+            end = rbracket;
           }
-          headers.push_back(fn);
+          headers.push_back(line.substr(pos+1, end-pos-1));
         }
       }
     }
