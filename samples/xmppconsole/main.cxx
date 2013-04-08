@@ -68,7 +68,7 @@ void XMPPFrame::OnDisconnect()
   m_Client = NULL;
 }
 
-void XMPPFrame::OnError(XMPP::Message & msg, INT)
+void XMPPFrame::OnError(XMPP::Message & msg, P_INT_PTR)
 {
   cout << "There has been an error with a XMPP Message " << endl;
   cout << "The XMPP Message was " << msg << endl;
@@ -80,12 +80,12 @@ void XMPPFrame::OnQuit()
   OnDisconnect();
 }
 
-void XMPPFrame::OnIQ(XMPP::IQ& , INT)
+void XMPPFrame::OnIQ(XMPP::IQ& , P_INT_PTR)
 {
   // cout << "On IQ for " << pdu << endl;
 }
 
-void XMPPFrame::OnPresence(XMPP::Presence& pdu, INT)
+void XMPPFrame::OnPresence(XMPP::Presence& pdu, P_INT_PTR)
 {
   otherParty = pdu.GetFrom();
   localParty = pdu.GetTo();
@@ -119,7 +119,7 @@ void XMPPFrame::OnPresence(XMPP::Presence& pdu, INT)
 #endif
 }
 
-void XMPPFrame::OnSessionEstablished(XMPP::C2S::StreamHandler& , INT)
+void XMPPFrame::OnSessionEstablished(XMPP::C2S::StreamHandler& , P_INT_PTR)
 {
   cout << "On Session Established." << endl;
 
@@ -129,21 +129,21 @@ void XMPPFrame::OnSessionEstablished(XMPP::C2S::StreamHandler& , INT)
   onReadyForUseTimer.SetNotifier(PCREATE_NOTIFIER(OnReadyForUse));
 }
 
-void XMPPFrame::OnReadyForUse(PTimer &, INT)
+void XMPPFrame::OnReadyForUse(PTimer &, P_INT_PTR)
 {
   //  cout << "Called 1 second after session established " << endl;
 
   isReadyForUse = true;
 }
 
-void XMPPFrame::OnSessionReleased(XMPP::C2S::StreamHandler& , INT)
+void XMPPFrame::OnSessionReleased(XMPP::C2S::StreamHandler& , P_INT_PTR)
 {
   cout << "Disconnected" << endl;
   m_Roster->Detach();
 }
 
 
-void XMPPFrame::OnMessage(XMPP::Message& msg, INT)
+void XMPPFrame::OnMessage(XMPP::Message& msg, P_INT_PTR)
 {
   // If it's valid and it's not in-band data
   // cout << "On message called, " << msg << endl;
@@ -151,7 +151,7 @@ void XMPPFrame::OnMessage(XMPP::Message& msg, INT)
     cout << " Message received. Subject:" << msg.GetSubject() << "    body:" << msg.GetBody() << "  from: " << msg.GetFrom() << endl;
 }
 
-void XMPPFrame::OnRosterChanged(XMPP::Roster& , INT)
+void XMPPFrame::OnRosterChanged(XMPP::Roster& , P_INT_PTR)
 {
   //  cout << " ON Roster changed " << endl;
   //cout << endl;
