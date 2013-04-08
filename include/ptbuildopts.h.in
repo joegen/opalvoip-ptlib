@@ -116,6 +116,10 @@
   #endif
 #endif
 
+#if defined(_WIN64) && !defined(P_64BIT)
+  #define P_64BIT 1
+#endif
+
 
 /////////////////////////////////////////////////
 //

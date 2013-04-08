@@ -934,13 +934,13 @@
       <Filter>Header Files</Filter>
     </ClInclude>
 
-    <ClInclude Include="..\..\..\Lib\Win32\ptbuildopts.h">
+    <ClInclude Include="..\..\..\Lib\Win32\include\ptbuildopts.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h">
+    <ClInclude Include="..\..\..\Lib\x64\include\ptbuildopts.h">
       <Filter>Header Files\Win64</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Lib\Android\ptbuildopts.h">
+    <ClInclude Include="..\..\..\Lib\Android\include\ptbuildopts.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\pt_atl.h">
