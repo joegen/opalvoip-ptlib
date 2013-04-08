@@ -46,7 +46,7 @@
 #include <errno.h>
 
 
-#define VERSION "1.24"
+#define VERSION "1.25"
 
 using namespace std;
 
@@ -711,12 +711,27 @@ bool ProcessHeader(const string & headerFileSpec)
     return false;
   }
 
-  for (map<string, string>::iterator it = g_predefines.begin(); it != g_predefines.end(); ++it) {
-    size_t var;
-    while ((var = outFilename.find(it->first)) != string::npos &&
-            (it->first[1] == '{' || !isalnum(outFilename[var+it->first.length()]))) {
-      outFilename.erase(var, it->first.length());
-      outFilename.insert(var, it->second);
+  size_t pos;
+  while ((pos = outFilename.find('$')) != string::npos) {
+    size_t len = outFilename.length() - pos;
+    if (outFilename[pos+1] == '{') {
+      size_t brace = outFilename.find('}', pos);
+      if (brace != string::npos)
+        len = brace - pos + 1;
+    }
+    else {
+      size_t nextChar = outFilename.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", pos);
+      if (nextChar != string::npos)
+        len = nextChar - pos;
+    }
+    string var(outFilename, pos, len);
+    outFilename.erase(pos, len);
+
+    for (map<string, string>::iterator it = g_predefines.begin(); it != g_predefines.end(); ++it) {
+      if (var == it->first) {
+        outFilename.insert(pos, it->second);
+        break;
+      }
     }
   }
 
@@ -840,7 +855,7 @@ void Feature::RunDependencies()
 int main(int argc, char* argv[])
 {
   // open and scan configure.ac
-  cout << "PWLib Configure " VERSION " - ";
+  cout << "PTLib Configure " VERSION " - ";
   ifstream conf("configure.ac", ios::in);
   if (conf.is_open()) {
     cout << "opened configure.ac" << endl;
@@ -850,7 +865,9 @@ int main(int argc, char* argv[])
     if (conf.is_open()) {
       cout << "opened " << "configure.in" << endl;
     } else {
-      cerr << "could not open configure.ac/configure.in" << endl;
+      char dir[_MAX_PATH];
+      getcwd(dir, sizeof(dir));
+      cerr << "could not open configure.ac/configure.in in " << dir << endl;
       return 1;
     }
   }
