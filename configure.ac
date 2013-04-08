@@ -2295,7 +2295,7 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 dnl ########################################################################
 dnl output header file
 
-if test "$exec_prefix" != "NONE" ; then
+if test -n "$exec_profix" -a "$exec_prefix" != "NONE" ; then
   cfg_prefix=$exec_prefix/
 fi
 
