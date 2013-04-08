@@ -127,18 +127,18 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\Lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(OutDir)$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(OutDir)$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\Lib;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\Lib;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\Lib;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\Lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\Lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\Lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\Lib;$(LibraryPath)</LibraryPath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ptlibs</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ptlib64s</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ptlibsd</TargetName>
@@ -148,7 +148,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\$(Configuration)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\</OutDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">libptlibsd</TargetName>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath)</LibraryPath>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\</OutDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">libptlibsn</TargetName>
@@ -156,8 +156,8 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Android'">libptlibs</TargetName>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath)</LibraryPath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath)</LibraryPath>
   </PropertyGroup>
@@ -916,8 +916,8 @@ configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform)\ --no-search --excl
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd $(ProjectDir)\..\..\..
@@ -928,8 +928,8 @@ configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform)\ --no-search --excl
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd $(ProjectDir)\..\..\..
@@ -940,14 +940,14 @@ configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform)\ --no-search --excl
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">cd $(ProjectDir)\..\..\..
 configure -Dcfg_prefix=$(ProjectDir)..\..\..\Lib\$(Platform) --no-search --enable-android --disable-byteorder --disable-wstream --disable-resolver --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc --disable-gstreamer --disable-pcap --disable-lua --disable-v8</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">Configuring Build Options</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptbuildopts.h</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Android'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">cd $(ProjectDir)\..\..\..
@@ -1063,9 +1063,9 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\timer.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\udpsock.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\video.h" />
-    <ClInclude Include="..\..\..\Lib\Android\ptbuildopts.h" />
-    <ClInclude Include="..\..\..\Lib\Win32\ptbuildopts.h" />
-    <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h" />
+    <ClInclude Include="..\..\..\Lib\Android\include\ptbuildopts.h" />
+    <ClInclude Include="..\..\..\Lib\Win32\include\ptbuildopts.h" />
+    <ClInclude Include="..\..\..\Lib\x64\include\ptbuildopts.h" />
     <ClInclude Include="..\..\..\revision.h" />
     <ClInclude Include="..\..\..\version.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Args.h" />

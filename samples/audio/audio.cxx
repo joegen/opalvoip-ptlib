@@ -195,7 +195,7 @@ bool AudioTest::OpenSoundChannel(PSoundChannel::Directions dir,
 }
 
 
-void AudioTest::RecordVolume(PCLI::Arguments & args, INT)
+void AudioTest::RecordVolume(PCLI::Arguments & args, P_INT_PTR)
 {
   if (args.GetCount() < 1)
     args.Usage();
@@ -204,7 +204,7 @@ void AudioTest::RecordVolume(PCLI::Arguments & args, INT)
 }
 
 
-void AudioTest::PlayerVolume(PCLI::Arguments & args, INT)
+void AudioTest::PlayerVolume(PCLI::Arguments & args, P_INT_PTR)
 {
   if (args.GetCount() < 1)
     args.Usage();
@@ -213,7 +213,7 @@ void AudioTest::PlayerVolume(PCLI::Arguments & args, INT)
 }
 
 
-void AudioTest::Quit(PCLI::Arguments & args, INT)
+void AudioTest::Quit(PCLI::Arguments & args, P_INT_PTR)
 {
   args.GetContext().Stop();
 }
