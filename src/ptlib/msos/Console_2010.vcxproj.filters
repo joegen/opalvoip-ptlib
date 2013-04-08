@@ -933,7 +933,6 @@
     <ClInclude Include="..\..\..\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-
     <ClInclude Include="..\..\..\Lib\Win32\ptbuildopts.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
