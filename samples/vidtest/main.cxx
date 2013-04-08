@@ -375,7 +375,7 @@ void VidTest::Main()
 }
 
 
-void VidTest::GrabAndDisplay(PThread &, INT)
+void VidTest::GrabAndDisplay(PThread &, P_INT_PTR)
 {
   std::vector<PBYTEArray> frames;
   unsigned frameCount = 0;

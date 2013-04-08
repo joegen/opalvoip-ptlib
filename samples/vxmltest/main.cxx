@@ -140,7 +140,7 @@ void Vxmltest::Main()
   cout << "Media finished" << endl;
 }
 
-void Vxmltest::InputThread(PThread &, INT)
+void Vxmltest::InputThread(PThread &, P_INT_PTR)
 {
   PConsoleChannel console(PConsoleChannel::StandardInput);
 

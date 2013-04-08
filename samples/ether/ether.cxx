@@ -208,7 +208,7 @@ void TestThread::Main()
     cout << ' ';
 
     if (m_binary)
-      cout << PBYTEArray(payload, std::min(payload.GetSize(), 16), false);
+      cout << PBYTEArray(payload, std::min(payload.GetSize(), (PINDEX)16), false);
     else {
       PString str((const char *)(const BYTE *)payload, payload.GetSize());
       cout << str.Left(str.FindOneOf("\r\n"));
