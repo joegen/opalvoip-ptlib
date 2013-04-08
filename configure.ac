@@ -2295,12 +2295,11 @@ AC_CONFIG_FILES(make/ptbuildopts.mak)
 dnl ########################################################################
 dnl output header file
 
-cfg_prefix=$exec_prefix
-if test "$cfg_prefix" = "NONE" ; then
-  cfg_prefix=./include
+if test "$exec_prefix" != "NONE" ; then
+  cfg_prefix=$exec_prefix/
 fi
 
-AC_CONFIG_HEADERS(${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in)
+AC_CONFIG_HEADERS(${cfg_prefix}include/ptbuildopts.h:include/ptbuildopts.h.in)
 
 AC_OUTPUT()
 
