@@ -370,6 +370,12 @@
     <ClCompile Include="..\common\jidctflt.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\unix\opensl_es.cxx">
+      <Filter>Source Files\Android</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\tonedev.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h">
@@ -927,26 +933,19 @@
     <ClInclude Include="..\..\..\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+
     <ClInclude Include="..\..\..\Lib\Win32\ptbuildopts.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Lib\x64\ptbuildopts.h">
       <Filter>Header Files\Win64</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
     <ClInclude Include="..\..\..\Lib\Android\ptbuildopts.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\pt_atl.h">
+      <Filter>Header Files\MSOS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
