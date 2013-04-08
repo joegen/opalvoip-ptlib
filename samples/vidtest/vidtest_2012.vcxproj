@@ -66,15 +66,15 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
-    <IncludePath>..\..\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\lib;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

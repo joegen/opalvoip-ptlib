@@ -110,13 +110,13 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">false</LinkIncremental>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\lib;$(ExecutablePath)</ExecutablePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\lib;$(ExecutablePath)</ExecutablePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\lib;$(ExecutablePath)</ExecutablePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
