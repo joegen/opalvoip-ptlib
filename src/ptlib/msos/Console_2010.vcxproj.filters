@@ -945,8 +945,9 @@
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\pt_atl.h">
       <Filter>Header Files\MSOS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\include\ptlib\id_generator.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">

@@ -1022,7 +1022,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <None Include="..\..\..\include\ptlib\unix\ptlib\ptlib.inl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
+    <ClInclude Include="..\..\..\include\ptlib\id_generator.h" />
     <ClInclude Include="..\..\..\include\ptclib\gstreamer.h" />
     <ClInclude Include="..\..\..\include\ptclib\jscript.h" />
     <ClInclude Include="..\..\..\include\ptclib\script.h" />
@@ -1030,7 +1030,6 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <ClInclude Include="..\..\..\include\ptclib\ssdp.h" />
     <ClInclude Include="..\..\..\include\ptclib\vcard.h" />
     <ClInclude Include="..\..\..\include\ptlib\bitwise_enum.h" />
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\pt_atl.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\channel.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\config.h" />
