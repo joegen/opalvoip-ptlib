@@ -17,37 +17,6 @@
 
 #include <ptlib/plugin.h>
 
-class PPluginSuffix {
-  private:
-    int dummy;
-};
-
-template <class C>
-void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * suffix = NULL)
-{
-  PDirectory dir = directory;
-  if (!dir.Open()) {
-    PTRACE(4, "Cannot open plugin directory " << dir);
-    return;
-  }
-  PTRACE(4, "Enumerating plugin directory " << dir);
-  do {
-    PString entry = dir + dir.GetEntryName();
-    PDirectory subdir = entry;
-    if (subdir.Open())
-      PLoadPluginDirectory<C>(obj, entry, suffix);
-    else {
-      PFilePath fn(entry);
-      if (
-           (fn.GetType() *= PDynaLink::GetExtension()) &&
-           (
-             (suffix == NULL) || (fn.GetTitle().Right(strlen(suffix)) *= suffix)
-           )
-         )
-        obj.LoadPlugin(entry);
-    }
-  } while (dir.Next());
-}
 
 //////////////////////////////////////////////////////
 //
@@ -56,12 +25,26 @@ void PLoadPluginDirectory(C & obj, const PDirectory & directory, const char * su
 
 class PPluginManager : public PObject
 {
-  PCLASSINFO(PPluginManager, PObject);
-
+    PCLASSINFO(PPluginManager, PObject);
   public:
+    // static functions for accessing global instances of plugin managers
+    static PPluginManager & GetPluginManager();
+
+    // Add a directory to the list of plugin directories (used by OPAL)
+    void AddDirectory(const PDirectory & dir);
+
+    /* Set the list of plugin directories using ':' (or ';' for Windows) separated string. */
+    void SetDirectories(const PString & dirs);
+
+    /* Set the list of plugin directories. */
+    void SetDirectories(const PStringArray & dirs);
+
+    // Load the plugins in the directories.
+    void LoadDirectories();
+    void LoadDirectory(const PDirectory & dir);
+
     // functions to load/unload a dynamic plugin 
-    PBoolean LoadPlugin (const PString & fileName);
-    void LoadPluginDirectory (const PDirectory & dir);
+    PBoolean LoadPlugin(const PString & fileName);
 
     void OnShutdown();
   
@@ -77,14 +60,6 @@ class PPluginManager : public PObject
     // function to register a service (used by the plugins themselves)
     PBoolean RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
 
-    // Add a directory to the list of plugin directories (used by OPAL)
-    static bool AddPluginDirs(const PString & dirs);
-
-    // Get the list of plugin directories
-    static PStringArray GetPluginDirs();
-
-    // static functions for accessing global instances of plugin managers
-    static PPluginManager & GetPluginManager();
 
     enum NotificationCode {
       LoadingPlugIn,
@@ -118,8 +93,12 @@ class PPluginManager : public PObject
     );
 
   protected:
-    void LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes);
+    PPluginManager();
+
     void CallNotifier(PDynaLink & dll, NotificationCode code);
+
+    PList<PDirectory> m_directories;
+    PStringList       m_suffixes;
 
     PMutex            m_pluginsMutex;
     PArray<PDynaLink> m_plugins;
@@ -142,12 +121,6 @@ class PPluginModuleManager : public PObject
     typedef PDictionary<PString, PDynaLink> PluginListType;
 
     PPluginModuleManager(const char * signatureFunctionName, PPluginManager * pluginMgr = NULL);
-
-    PBoolean LoadPlugin(const PString & fileName)
-    { if (pluginMgr == NULL) return false; else return pluginMgr->LoadPlugin(fileName); }
-
-    void LoadPluginDirectory(const PDirectory &directory)
-    { if (pluginMgr != NULL) pluginMgr->LoadPluginDirectory(directory); }
 
     virtual void OnLoadPlugin(PDynaLink & /*dll*/, P_INT_PTR /*code*/)
     { }

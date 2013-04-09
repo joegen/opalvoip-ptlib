@@ -1808,10 +1808,7 @@ PProcess::PProcess(const char * manuf, const char * name,
     executableFile.Replace("\\\\?\\", ""); // Name can contain \\?\ prefix, remove it
   }
 
-#ifndef __MINGW32__
-  PPluginManager::AddPluginDirs(executableFile.GetDirectory());
-#endif
-#endif
+#endif // _WIN32
 
   if (productName.IsEmpty())
     productName = executableFile.GetTitle().ToLower();
@@ -1831,6 +1828,8 @@ PProcess::PProcess(const char * manuf, const char * name,
 void PProcess::Startup()
 {
   PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+
+  PPluginManager::GetPluginManager().AddDirectory(executableFile.GetDirectory());
 
   // create one instance of each class registered in the PProcessStartup abstract factory
   // But make sure we have plugins first, to avoid bizarre behaviour where static objects

@@ -33,9 +33,9 @@
 #endif
 
 #ifdef  _WIN32
-#define PATH_SEP   ";"
+#define PATH_SEP   ';'
 #else
-#define PATH_SEP   ":"
+#define PATH_SEP   ':'
 #endif
 
 #ifndef PDIR_SEPARATOR 
@@ -69,21 +69,64 @@ class PluginLoaderStartup : public PProcessStartup
 
 //////////////////////////////////////////////////////
 
-void PPluginManager::LoadPluginDirectory (const PDirectory & directory)
-{ 
-  PStringList suffixes;
-  suffixes.AppendString(PTPLUGIN_SUFFIX);
-  suffixes.AppendString(PWPLUGIN_SUFFIX);
+PPluginManager::PPluginManager()
+{
+  PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
+  if (env.IsEmpty())
+    env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
+  if (env.IsEmpty())
+    env = P_DEFAULT_PLUGIN_DIR;
+  SetDirectories(env);
 
-  PFactory<PPluginSuffix>::KeyList_T keys = PFactory<PPluginSuffix>::GetKeyList();
-  PFactory<PPluginSuffix>::KeyList_T::const_iterator r;
-  for (r = keys.begin(); r != keys.end(); ++r)
-    suffixes.AppendString(*r);
+#ifdef _WIN32
+  TCHAR moduleName[_MAX_PATH];
+  if (GetModuleFileName(GetModuleHandle(NULL), moduleName, sizeof(moduleName)) > 0)
+    AddDirectory(PFilePath(moduleName).GetDirectory());
+#endif // _WIN32
 
-  LoadPluginDirectory(directory, suffixes);
+  m_suffixes.AppendString(PTPLUGIN_SUFFIX);
+  m_suffixes.AppendString(PWPLUGIN_SUFFIX);
 }
 
-void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PStringList & suffixes)
+
+PPluginManager & PPluginManager::GetPluginManager()
+{
+  static PPluginManager systemPluginMgr;
+  return systemPluginMgr;
+}
+
+
+void PPluginManager::SetDirectories(const PString & dirs)
+{
+  SetDirectories(dirs.Tokenise(PATH_SEP, false)); // split into directories on correct seperator
+}
+
+
+void PPluginManager::SetDirectories(const PStringArray & dirs)
+{
+  m_directories.RemoveAll();
+
+  for (PINDEX i = 0; i < dirs.GetSize(); ++i)
+    AddDirectory(dirs[i]);
+}
+
+
+void PPluginManager::AddDirectory(const PDirectory & dir)
+{
+  if (m_directories.GetValuesIndex(dir) == P_MAX_INDEX)
+    m_directories.Append(new PDirectory(dir));
+}
+
+
+void PPluginManager::LoadDirectories()
+{
+  PTRACE(4, "PLUGIN\tEnumerating plugin directories " << setfill(PATH_SEP) << m_directories);
+  for (PList<PDirectory>::iterator it = m_directories.begin(); it != m_directories.end(); ++it)
+    LoadDirectory(*it);
+}
+
+
+void PPluginManager::LoadDirectory(const PDirectory & directory)
 {
   PDirectory dir = directory;
   if (!dir.Open()) {
@@ -95,11 +138,11 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PS
     PString entry = dir + dir.GetEntryName();
     PDirectory subdir = entry;
     if (subdir.Open())
-      LoadPluginDirectory(entry, suffixes);
+      LoadDirectory(entry);
     else {
       PFilePath fn(entry);
-      for (PStringList::const_iterator i = suffixes.begin(); i != suffixes.end(); ++i) {
-        PString suffix = *i;
+      for (PStringList::iterator it = m_suffixes.begin(); it != m_suffixes.end(); ++it) {
+        PString suffix = *it;
         PTRACE(5, "PLUGIN\tChecking " << fn << " against suffix " << suffix);
         if ((fn.GetType() *= PDynaLink::GetExtension()) && (fn.GetTitle().Right(strlen(suffix)) *= suffix)) 
           LoadPlugin(entry);
@@ -108,46 +151,6 @@ void PPluginManager::LoadPluginDirectory (const PDirectory & directory, const PS
   } while (dir.Next());
 }
 
-
-static PString & GetAdditionalPluginDirs()
-{
-  static PString additionalPluginDirs;
-  return additionalPluginDirs;
-}
-
-
-bool PPluginManager::AddPluginDirs(const PString & dirs)
-{
-  GetAdditionalPluginDirs() += PATH_SEP + dirs;
-  return true;
-}
-
-
-PStringArray PPluginManager::GetPluginDirs()
-{
-  PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
-  if (env.IsEmpty())
-    env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
-  if (env.IsEmpty())
-    env = P_DEFAULT_PLUGIN_DIR + GetAdditionalPluginDirs();
-
-  // split into directories on correct seperator
-  PStringArray dirs = env.Tokenise(PATH_SEP, false);
-#ifdef _WIN32_WCE
-  PVarString moduleName;
-  if (GetModuleFileName(GetModuleHandle(NULL), moduleName.GetPointer(1024), 1024) > 0) {
-    PFilePath modulePath = moduleName;
-    dirs.AppendString(modulePath.GetDirectory());
-  }
-#endif // _WIN32
-  return dirs;
-}
-
-PPluginManager & PPluginManager::GetPluginManager()
-{
-  static PPluginManager systemPluginMgr;
-  return systemPluginMgr;
-}
 
 PBoolean PPluginManager::LoadPlugin(const PString & fileName)
 {
@@ -507,10 +510,7 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, P_INT_PTR code)
 void PluginLoaderStartup::OnStartup()
 { 
   // load the actual DLLs, which will also load the system plugins
-  PStringArray dirs = PPluginManager::GetPluginDirs();
-  PPluginManager & mgr = PPluginManager::GetPluginManager();
-  for (PINDEX i = 0; i < dirs.GetSize(); i++) 
-    mgr.LoadPluginDirectory(dirs[i]);
+  PPluginManager::GetPluginManager().LoadDirectories();
 
   // load the plugin module managers
   PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
