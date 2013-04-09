@@ -4324,6 +4324,10 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
          target_64bit=0
       ;;
 
+      aarch64* )
+         target_64bit=1
+      ;;
+
       * )
          { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: CPU \"$target_cpu\" not recognized - assuming 32 bit" >&5
 $as_echo "$as_me: WARNING: CPU \"$target_cpu\" not recognized - assuming 32 bit" >&2;}
