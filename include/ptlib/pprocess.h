@@ -43,8 +43,6 @@
 #include <ptlib/thread.h>
 #include <ptlib/pfactory.h>
 
-#include <queue>
-#include <set>
 
 /**Create a process.
    This macro is used to create the components necessary for a user PWLib
@@ -101,111 +99,6 @@ extern "C" {\
     private: \
       virtual void Main(); \
   };
-
-
-class PTimerList : public PObject
-/* This class defines a list of <code>PTimer</code> objects. It is primarily used
-   internally by the library and the user should never create an instance of
-   it. The <code>PProcess</code> instance for the application maintains an instance
-   of all of the timers created so that it may decrements them at regular
-   intervals.
- */
-{
-  PCLASSINFO(PTimerList, PObject);
-
-  public:
-    // Create a new timer list
-    PTimerList();
-
-    /* Decrement all the created timers and dispatch to their callback
-       functions if they have expired. The <code>PTimer::Tick()</code> function
-       value is used to determine the time elapsed since the last call to
-       Process().
-
-       The return value is the number of milliseconds until the next timer
-       needs to be despatched. The function need not be called again for this
-       amount of time, though it can (and usually is).
-       
-       @return
-       maximum time interval before function should be called again.
-     */
-    PTimeInterval Process();
-
-    PTimer::IDType GetNewTimerId() const { return ++timerId; }
-
-    class RequestType {
-      public:
-        enum Action {
-          Stop,
-          Start,
-          Pause
-        } m_action;
-
-        RequestType(Action act, PTimer * t)
-          : m_action(act)
-          , m_timer(t)
-          , m_id(t->GetTimerId())
-          , m_absoluteTime(t->GetAbsoluteTime())
-          , m_serialNumber(t->GetNextSerialNumber())
-          , m_sync(NULL)
-        { }
-
-        PTimer *                    m_timer;
-        PTimer::IDType              m_id;
-        PInt64                      m_absoluteTime;
-        PAtomicInteger::IntegerType m_serialNumber;
-        PSyncPoint *                m_sync;
-    };
-
-    void QueueRequest(RequestType::Action action, PTimer * timer, bool isSync = true);
-
-    void ProcessTimerQueue();
-
-  private:
-    // queue of timer action requests
-    PMutex m_queueMutex;
-    typedef std::queue<RequestType> RequestQueueType;
-    RequestQueueType m_requestQueue;
-
-    //  counter to keep track of timer IDs
-    mutable PAtomicInteger timerId; 
-
-    // map used to store active timer information
-    struct ActiveTimerInfo {
-      ActiveTimerInfo(PTimer * t, PAtomicInteger::IntegerType serialNumber) 
-        : m_timer(t), m_serialNumber(serialNumber) { }
-      PTimer * m_timer;
-      PAtomicInteger::IntegerType m_serialNumber;
-    };
-    typedef std::map<PTimer::IDType, ActiveTimerInfo> ActiveTimerInfoMap;
-    ActiveTimerInfoMap m_activeTimers;
-
-    // set used to store timer expiry times, in order
-    struct TimerExpiryInfo {
-      TimerExpiryInfo(PTimer::IDType id, PInt64 expireTime, PAtomicInteger::IntegerType serialNumber)
-        : m_timerId(id), m_expireTime(expireTime), m_serialNumber(serialNumber) { }
-      PTimer::IDType m_timerId;
-      PInt64 m_expireTime;
-      PAtomicInteger::IntegerType m_serialNumber;
-    };
-
-	  struct TimerExpiryInfo_compare
-		  : public binary_function<TimerExpiryInfo, TimerExpiryInfo, bool>
-	  {	
-	    bool operator()(const TimerExpiryInfo & _Left, const TimerExpiryInfo & _Right) const
-		  {	return (_Left.m_expireTime < _Right.m_expireTime); }
-	  };
-
-    typedef std::multiset<TimerExpiryInfo, TimerExpiryInfo_compare> TimerExpiryInfoList;
-    TimerExpiryInfoList m_expiryList;
-
-    // The last system timer tick value that was used to process timers.
-    PTimeInterval m_lastSample;
-
-    // thread that handles the timer stuff
-    PThread * m_timerThread;
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
@@ -623,14 +516,6 @@ class PProcess : public PThread
     static PString GetLibVersion();
   //@}
 
-    /**Get the list of timers handled by the application. This is an internal
-       function and should not need to be called by the user.
-       
-       @return
-       list of timers.
-     */
-    PTimerList * GetTimerList();
-
     /**Internal initialisation function called directly from
        <code>InternalMain()</code>. The user should never call this function.
      */
@@ -744,7 +629,8 @@ class PProcess : public PThread
     PSyncPoint     m_signalHouseKeeper;
     void HouseKeeping();
 
-    PTimerList m_timers;
+    PTimer::List m_timers;
+    friend PTimer::List & PTimer::TimerList() const;
 
     PProcessIdentifier m_processID;
 

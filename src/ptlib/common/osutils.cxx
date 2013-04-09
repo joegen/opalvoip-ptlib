@@ -39,6 +39,7 @@
 
 #include <ctype.h>
 #include <ptlib/pfactory.h>
+#include <ptlib/id_generator.h>
 #include <ptlib/pprocess.h>
 #include <ptlib/svcproc.h>
 #include <ptlib/pluginmgr.h>
@@ -892,6 +893,8 @@ PTimeInterval PSimpleTimer::GetRemaining() const
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
+PIdGenerator PTimer::Guard::Data::s_handleGenerator;
+
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : m_resetTime(millisecs, seconds, minutes, hours, days)
 {
@@ -913,19 +916,21 @@ PTimer::PTimer(const PTimer & timer)
 }
 
 
+PTimer::List& PTimer::TimerList() const
+{
+  return PProcess::Current().m_timers;
+}
+
+
 void PTimer::Construct()
 {
-  m_timerList = PProcess::Current().GetTimerList();
-  m_timerId = m_timerList->GetNewTimerId();
-  m_state = Stopped;
-
   StartRunning(true);
 }
 
 
 PInt64 PTimer::GetMilliSeconds() const
 {
-  PInt64 diff = m_absoluteTime - Tick().GetMilliSeconds();
+  PInt64 diff = GetAbsoluteTime() - Tick().GetMilliSeconds();
   if (diff < 0)
     diff = 0;
   return diff;
@@ -934,8 +939,8 @@ PInt64 PTimer::GetMilliSeconds() const
 
 PTimer::~PTimer()
 {
-  // queue a request to remove this timer, and always do it synchronously
-  Stop(true);
+  Stop();
+  PAssert(!m_guard.InTimeout(), "Timer is destroying from OnTimeout!");
 }
 
 
@@ -945,6 +950,7 @@ void PTimer::SetInterval(PInt64 milliseconds,
                          long hours,
                          int days)
 {
+  Stop(); // We need to call it here because we need stop before m_resetTime has changed.
   m_resetTime.SetInterval(milliseconds, seconds, minutes, hours, days);
   StartRunning(m_oneshot);
 }
@@ -952,6 +958,7 @@ void PTimer::SetInterval(PInt64 milliseconds,
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
+  Stop(); // We need to call it here because we need stop before m_resetTime has changed.
   m_resetTime = time;
   StartRunning(false);
 }
@@ -959,36 +966,29 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(PBoolean once)
 {
-  Stop(false);
+  Stop();
 
   PTimeInterval::operator=(m_resetTime);
   m_oneshot = once;
 
   if (m_resetTime > 0) {
     m_absoluteTime = Tick().GetMilliSeconds() + m_resetTime.GetMilliSeconds();
-    m_timerList->QueueRequest(PTimerList::RequestType::Start, this, false);
+    TimerList().RegisterTimer(this);
   }
 }
 
 
-void PTimer::Stop(bool wait)
+void PTimer::Stop(bool /* wait */)
 {
-  if (m_state != Stopped)
-    m_timerList->QueueRequest(PTimerList::RequestType::Stop, this, wait);
-}
-
-
-void PTimer::Pause()
-{
-  if (IsRunning())
-    m_timerList->QueueRequest(PTimerList::RequestType::Pause, this);
-}
-
-
-void PTimer::Resume()
-{
-  if (m_state == Stopped || m_state == Paused)
-    m_timerList->QueueRequest(PTimerList::RequestType::Start, this);
+  // New implementation doesn't need sync mode any more, because implementation guarantees that
+  // OnTimeout will never be called after Stop() is finished.
+  Guard tempGuard = m_guard; // Prevent guard destruction
+  m_guard.Reset(); // Free guard for current PTimer instance
+  if (tempGuard)
+  {
+    if (!TimerList().IsTimerThread()) // If not housekeeper thread wait for OnTimeout has finished (if we need it)
+      tempGuard.WaitAndReset();
+  }
 }
 
 
@@ -996,6 +996,7 @@ void PTimer::Reset()
 {
   StartRunning(m_oneshot);
 }
+
 
 // called only from the timer thread
 void PTimer::OnTimeout()
@@ -1005,146 +1006,90 @@ void PTimer::OnTimeout()
 }
 
 
-void PTimer::Process(PInt64 now)
-{
-  if (m_state == Running && m_absoluteTime <= now) {
-    m_state = InTimeout;
-
-    OnTimeout();
-  }
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
-// PTimerList
+// PTimer::List
 
-PTimerList::PTimerList()
+PTimer::List::List()
+  : m_ticks(0)
+  , m_timerThread(NULL)
+  , m_mininalInterval(20)
 {
-  m_timerThread = NULL;
-}
-
-void PTimerList::QueueRequest(RequestType::Action action, PTimer * timer, bool isSync)
-{
-  bool inTimerThread = m_timerThread == PThread::Current();
-
-  RequestType request(action, timer);
-
-  // set synchronisation point
-  PSyncPoint sync;
-  if (!inTimerThread && isSync)
-    request.m_sync = &sync;
-
-  // queue the request
-  m_queueMutex.Wait();
-  m_requestQueue.push(request);
-  m_queueMutex.Signal();
-
-  // wait for synchronisation point
-  if (!inTimerThread && PProcess::Current().SignalTimerChange() && isSync)
-    sync.Wait();
 }
 
 
-void PTimerList::ProcessTimerQueue()
+void PTimer::List::RegisterTimer(PTimer *aTimer)
 {
-  m_queueMutex.Wait();
+  if (!aTimer)
+    return;
 
-  // process the requests in the timer request queue
-  while (!m_requestQueue.empty()) {
+  m_insertMutex.Wait();
+  m_eventsForInsertion.push_back(PreparedEventInfo(aTimer));
+  m_insertMutex.Signal();
 
-    RequestType request(m_requestQueue.front());
-    m_requestQueue.pop();
-    m_queueMutex.Signal();
+  if ((!IsTimerThread() && m_timerThread) || m_timerThread == 0)
+    PProcess::Current().SignalTimerChange();
+}
 
-    ActiveTimerInfoMap::iterator it = m_activeTimers.find(request.m_id);
-    switch (request.m_action) {
-      case PTimerList::RequestType::Start:
-        if (it == m_activeTimers.end())
-          m_activeTimers.insert(ActiveTimerInfoMap::value_type(request.m_id, ActiveTimerInfo(request.m_timer, request.m_serialNumber)));
-        else
-          it->second.m_serialNumber = request.m_serialNumber;
-        m_expiryList.insert(TimerExpiryInfo(request.m_id, request.m_absoluteTime, request.m_serialNumber));
-        request.m_timer->m_state = PTimer::Running;
-        break;
 
-      case PTimerList::RequestType::Stop:
-        if (it != m_activeTimers.end())
-          m_activeTimers.erase(it);
-        request.m_timer->m_state = PTimer::Stopped;
-        break;
+void PTimer::List::ProcessInsertion()
+{
+  PWaitAndSignal locker(m_insertMutex);
+  while (m_eventsForInsertion.size() > 0)
+  {
+    EventsForInsertion::iterator it = m_eventsForInsertion.begin();
+    PIdGenerator::Handle handle = it->emitter->GetHandle();
+    m_events[handle] = it->emitter;
+    m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + it->msecs, handle));
+    m_eventsForInsertion.erase(it);
+  }
+}
 
-      case PTimerList::RequestType::Pause:
-        if (it != m_activeTimers.end())
-          m_activeTimers.erase(it);
-        request.m_timer->m_state = PTimer::Paused;
-        break;
 
-      default:
-        PAssertAlways("unknown timer request code");
-        break;
+bool PTimer::List::IsTimerThread() const
+{
+  return (m_timerThread == PThread::Current());
+}
+
+
+PTimeInterval PTimer::List::Process()
+{
+  if (!m_timerThread)
+    m_timerThread = PThread::Current();
+
+  m_ticks = PTimer::Tick().GetMilliSeconds();
+
+  ProcessInsertion();
+
+  //PTRACE(5, "Begin PTimer::List::Process: " << m_timeToEventRelations.size());
+  TimerEventRelations::iterator it = m_timeToEventRelations.begin();
+  while ((it != m_timeToEventRelations.end()) && (it->first <= m_ticks)) {
+    Events::iterator eventIt = m_events.find(it->second);
+    if (eventIt != m_events.end()) {
+      //PTRACE(5, "Proccess timer event, handle=" << it->second <<  ", emitter=" << (*eventIt).second.GetObject());
+      PIdGenerator::Handle currentHandle =(*eventIt).second->Timeout();
+      PInt64 interval = (*eventIt).second->GetRepeat();
+      // If timer is repeatable and valid add it again
+      if (interval > 0 && PIdGenerator::Invalid != currentHandle) 
+        m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + interval, it->second));
+      else
+        m_events.erase(eventIt); // One shot or stopped timer - remove it
     }
-
-    if (request.m_sync != NULL)
-      request.m_sync->Signal();
-
-    m_queueMutex.Wait();
+    m_timeToEventRelations.erase(it++);
   }
 
-  m_queueMutex.Signal();
-}
-
-PTimeInterval PTimerList::Process()
-{
-  m_timerThread = PThread::Current();
-
-  PTRACE(6, "PTLib\tMONITOR: timers=" << m_activeTimers.size() << ", expiries=" << m_expiryList.size());
-
-  // process the timer queue
-  ProcessTimerQueue();
-
-  // process timers that have expired
-  PInt64 now = PTimer::Tick().GetMilliSeconds();
-  while ((m_expiryList.size() > 0) && (m_expiryList.begin()->m_expireTime <= now)) {
-    TimerExpiryInfo expiry = *m_expiryList.begin();
-    m_expiryList.erase(m_expiryList.begin());
-
-    ActiveTimerInfoMap::iterator t = m_activeTimers.find(expiry.m_timerId);
-    if (t != m_activeTimers.end()) {
-      ActiveTimerInfo & timer = t->second;
-      if (expiry.m_serialNumber == timer.m_serialNumber) {
-        timer.m_timer->Process(now);
-
-        PTimer::TimerState timerState = timer.m_timer->m_state;
-        if (timerState == PTimer::InTimeout)
-          timer.m_timer->m_state = timerState = (timer.m_timer->m_oneshot ? PTimer::Stopped : PTimer::Running);
-
-        // PTimer object can be destroyed between the above assignment to Stopped and the test below,
-        // so make sure is in temporary variable.
-
-        if (timerState != PTimer::Stopped)
-          m_expiryList.insert(TimerExpiryInfo(expiry.m_timerId, now + timer.m_timer->m_resetTime.GetMilliSeconds(), timer.m_serialNumber));
-        else
-          m_activeTimers.erase(t);
-      }
-    }
+  // Calculate interval before next Process() call
+  PTimeInterval nextInterval = 1000;
+  it = m_timeToEventRelations.begin();
+  if (it != m_timeToEventRelations.end())
+  {
+    nextInterval = m_ticks - it->first;
+    if (nextInterval.GetMilliSeconds() < PTimer::Resolution())
+      nextInterval = PTimer::Resolution();
+    if (nextInterval.GetMilliSeconds() < m_mininalInterval)
+      nextInterval = m_mininalInterval;
   }
 
-  // process the timer queue again
-  ProcessTimerQueue();
-
-  // use oldest timer to calculate minimum time left
-  PTimeInterval minTimeLeft;
-  if (m_expiryList.size() == 0) 
-    minTimeLeft = 1000;
-  else {
-    minTimeLeft = m_expiryList.begin()->m_expireTime - now;
-    if (minTimeLeft.GetMilliSeconds() < PTimer::Resolution())
-      minTimeLeft = PTimer::Resolution();
-    if (minTimeLeft < 25)
-      minTimeLeft = 25;
-  }
-
-  return minTimeLeft;
+  return nextInterval;
 }
 
 
@@ -2860,6 +2805,67 @@ PWriteWaitAndSignal::PWriteWaitAndSignal(const PReadWriteMutex & rw, PBoolean st
 PWriteWaitAndSignal::~PWriteWaitAndSignal()
 {
   mutex.EndWrite();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PIdGenerator
+
+const PIdGenerator::Handle PIdGenerator::Invalid = 0;
+
+PIdGenerator::PIdGenerator()
+  : m_nextId(1)
+  , m_mutex(new PCriticalSection)
+{
+}
+
+
+PIdGenerator::~PIdGenerator()
+{
+  delete m_mutex;
+  m_mutex = NULL;
+}
+
+
+PIdGenerator::Handle PIdGenerator::Create()
+{
+  if (m_mutex == NULL) // Before construction or after destruction
+    return Invalid;
+
+  Handle id;
+
+  m_mutex->Wait();
+
+  do {
+    id = m_nextId++;
+  } while (!m_inUse.insert(id).second);
+
+  m_mutex->Signal();
+
+  return id;
+}
+
+
+void PIdGenerator::Release(Handle id)
+{
+  if (m_mutex == NULL) // Before construction or after destruction
+    return;
+
+  m_mutex->Wait();
+
+  m_inUse.erase(id);
+
+  m_mutex->Signal();
+}
+
+
+bool PIdGenerator::IsValid(Handle id) const
+{
+  if (m_mutex == NULL) // Before construction or after destruction
+    return false;
+
+  PWaitAndSignal mutex(*m_mutex);
+  return m_inUse.find(id) != m_inUse.end();
 }
 
 // End Of File ///////////////////////////////////////////////////////////////
