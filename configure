@@ -15298,11 +15298,11 @@ ac_config_files="$ac_config_files make/ptbuildopts.mak"
 
 
 
-if test "x$cfg_prefix" = "x" ; then
-  cfg_prefix=./include
+if test -n "$exec_profix" -a "$exec_prefix" != "NONE" ; then
+  cfg_prefix=$exec_prefix/
 fi
 
-ac_config_headers="$ac_config_headers ${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in"
+ac_config_headers="$ac_config_headers ${cfg_prefix}include/ptbuildopts.h:include/ptbuildopts.h.in"
 
 
 cat >confcache <<\_ACEOF
@@ -16002,7 +16002,7 @@ do
     "ptlib.pc") CONFIG_FILES="$CONFIG_FILES ptlib.pc" ;;
     "ptlib_cfg.dxy") CONFIG_FILES="$CONFIG_FILES ptlib_cfg.dxy" ;;
     "make/ptbuildopts.mak") CONFIG_FILES="$CONFIG_FILES make/ptbuildopts.mak" ;;
-    "${cfg_prefix}/ptbuildopts.h") CONFIG_HEADERS="$CONFIG_HEADERS ${cfg_prefix}/ptbuildopts.h:include/ptbuildopts.h.in" ;;
+    "${cfg_prefix}include/ptbuildopts.h") CONFIG_HEADERS="$CONFIG_HEADERS ${cfg_prefix}include/ptbuildopts.h:include/ptbuildopts.h.in" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
