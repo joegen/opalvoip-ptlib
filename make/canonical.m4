@@ -144,6 +144,10 @@ AC_DEFUN([MY_CANONICAL_TARGET], [
          target_64bit=0
       ;;
 
+      aarch64* )
+         target_64bit=1
+      ;;
+
       * )
          AC_MSG_WARN([CPU \"$target_cpu\" not recognized - assuming 32 bit])
          target_64bit=0
