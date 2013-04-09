@@ -40,7 +40,12 @@
 
 
 #include <ptlib/notifier.h>
+#include <ptlib/id_generator.h>
 #include <ptclib/threadpool.h>
+
+#include <queue>
+#include <set>
+#include <map>
 
 
 // To avoid ambiguous operator error we need a one for every integer variant
@@ -175,7 +180,7 @@ class PSimpleTimer : public PTimeInterval
    instance and the timeout functions are executed in the context of a single
    thread of execution. There are many consequences of this: only one timeout
    function can be executed at a time and thus a user should not execute a
-   lot of code in the timeout call-back functions or it will dealy the timely
+   lot of code in the timeout call-back functions or it will delay the timely
    execution of other timers call-back functions.
 
    Also timers are not very accurate in sub-second delays, even though you can
@@ -185,8 +190,11 @@ class PSimpleTimer : public PTimeInterval
 
    Another trap is you cannot destroy a timer in its own call-back. There is
    code to cause an assert if you try but it is very easy to accidentally do
-   this when you delete an object that contains an onject that contains the
+   this when you delete an object that contains an object that contains the
    timer!
+
+   When you subclass PTimer you MUST call Stop() in destructor. This guarantees
+   that object not destroyed in OnTimeout execution.
 
    Finally static timers cause race conditions on start up and termination and
    should be avoided.
@@ -196,7 +204,6 @@ class PTimer : public PTimeInterval
   PCLASSINFO(PTimer, PTimeInterval);
 
   public:
-    typedef unsigned IDType;
 
   /**@name Construction */
   //@{
@@ -231,8 +238,7 @@ class PTimer : public PTimeInterval
 
     PTIMER_OPERATORS(PTimer);
 
-    /** Destroy the timer object, removing it from the applications timer list
-       if it was running.
+    /** Destroy the timer object, stops timer if it is running.
      */
     virtual ~PTimer();
   //@}
@@ -270,16 +276,13 @@ class PTimer : public PTimeInterval
        and is reset back to the original timer value. Thus when the timer
        is restarted it begins again from the beginning.
 
-       The wait flag indicates that the function should wait for the timeout
-       callback to complete before returning. That way external logic can be
-       assured there is no race condition. However, under some circumstances
-       this can cause a deadlock if the timeout function tries to acquire a
-       mutex the calling thread already has, so an aysnchronouse version is
-       provided. It is then the responsibility of the caller to handle the
-       race condition with the timeout function.
-     */
+       While OnTimeout() is running this method will wait until OnTimeout()
+       will finish.
+       
+       The wait flag is deprecated and not used in this implementation.
+       */
     void Stop(
-      bool wait = true  
+      bool wait = true
     );
 
     /** Determine if the timer is currently running. This really is only useful
@@ -289,25 +292,6 @@ class PTimer : public PTimeInterval
        true if timer is still counting.
      */
     PBoolean IsRunning() const;
-
-    /** Pause a running timer. This differs from the <code>Stop()</code> function in
-       that the timer may be resumed at the point that it left off. That is
-       time is "frozen" while the timer is paused.
-     */
-    void Pause();
-
-    /** Restart a paused timer continuing at the time it was paused. The time
-       left at the moment the timer was paused is the time until the next
-       call to the notification function.
-     */
-    void Resume();
-
-    /** Determine if the timer is currently paused.
-
-       @return
-       true if timer paused.
-     */
-    PBoolean IsPaused() const;
 
     /** Restart a timer continuing from the time it was initially.
      */
@@ -388,9 +372,268 @@ class PTimer : public PTimeInterval
     PInt64 GetAbsoluteTime() const { return m_absoluteTime; }
   //@}
 
-    // Internal functions.
-    IDType GetTimerId() const { return m_timerId; }
-    PAtomicInteger::IntegerType GetNextSerialNumber() { return ++m_serialNumber; }
+
+    class Guard
+    {
+      class Data : public PSmartObject
+      {
+        PAtomicInteger           m_invokeState;
+        PIdGenerator::Handle m_handle;
+        static PIdGenerator  s_handleGenerator;
+
+      public:
+        Data()
+          : m_invokeState(0)
+          , m_handle(s_handleGenerator.Create())
+        {
+        }
+
+        ~Data()
+        {
+          ResetHandle();
+        }
+
+        /* Is valid only if PTimer and PtimerEmitter objects own same TimerGuard object.
+        */ 
+        bool IsValid() const
+        {
+          return (2 <= referenceCount && s_handleGenerator.IsValid(m_handle));
+        }
+
+        void AddRef()
+        {
+          ++m_invokeState;
+        }
+
+        void ReleaseRef()
+        {
+          --m_invokeState;
+        }
+
+        void WaitForInvokeFinished()
+        {
+          while (!m_invokeState.IsZero())
+            PThread::Sleep(25);
+        }
+        bool IsInvoking()
+        {
+          return (!m_invokeState.IsZero());
+        }
+
+        PIdGenerator::Handle GetHandle() const
+        {
+          return m_handle;
+        }
+
+        void ResetHandle()
+        {
+          PIdGenerator::Handle current = GetHandle();
+          m_handle = PIdGenerator::Invalid;
+          s_handleGenerator.Release(current);
+        }
+      };
+
+      typedef PSmartPtr<Data> DataPtr;
+
+      DataPtr m_guard;
+
+      bool IsValid() const
+      {
+        return (!m_guard.IsNULL() && m_guard->IsValid());
+      }
+
+    public:
+      void Init()
+      {
+        m_guard = new Data();
+      }
+
+      void Reset()
+      {
+        m_guard = DataPtr();
+      }
+
+      typedef DataPtr Guard::*unspecified_bool_type;
+
+      operator unspecified_bool_type() const // never throws
+      {
+        return (IsValid() ? &Guard::m_guard : 0);
+      }
+
+      bool TryLock()
+      {
+        if (IsValid())
+        {
+          m_guard->AddRef();
+          return true;
+        }
+        return false;
+      }
+
+      void Unlock()
+      {
+        m_guard->ReleaseRef();
+      }
+
+      void WaitAndReset()
+      {
+        if (IsValid())
+          m_guard->WaitForInvokeFinished();
+        Reset();
+      }
+
+      bool InTimeout() const
+      {
+        return (IsValid() && m_guard->IsInvoking());
+      }
+
+      PIdGenerator::Handle GetHandle() const
+      {
+        if (IsValid())
+          return m_guard->GetHandle();
+        return PIdGenerator::Invalid;
+      }
+
+      void ResetHandle()
+      {
+        if (IsValid())
+          m_guard->ResetHandle();
+      }
+    };
+
+
+    class Emitter : public PSmartObject
+    {
+      PInt64 m_repeatMSecs;
+      PTimer::Guard m_guard;
+      PTimer* m_timer;
+    public:
+      typedef PSmartPtr<Emitter> Ptr;
+
+      Emitter(PTimer* aTimer)
+        : m_repeatMSecs(-1)
+        , m_timer(aTimer)
+      {
+        m_guard.Init();
+        if (m_timer)
+        {
+          m_timer->m_guard = GetGuard();
+          if (!m_timer->m_oneshot)
+            SetRepeat(m_timer->GetResetTime().GetMilliSeconds());
+        }
+      }
+
+      ~Emitter()
+      {
+        GetGuard().ResetHandle(); // There we can free used handle
+      }
+
+      PIdGenerator::Handle Timeout()
+      {
+        if (GetGuard().TryLock())
+        {
+          m_timer->OnTimeout();
+          GetGuard().Unlock();
+        }
+        return GetHandle(); // returns valid timer handle or -1
+      }
+
+      inline void SetRepeat(PInt64 aRepeatMSecs)
+      {
+        m_repeatMSecs = aRepeatMSecs;
+      }
+      inline PInt64 GetRepeat() const
+      {
+        return m_repeatMSecs;
+      }
+
+      inline const PTimer::Guard& GetGuard() const
+      {
+        return m_guard;
+      }
+
+      inline PTimer::Guard& GetGuard()
+      {
+        return m_guard;
+      }
+
+      inline PIdGenerator::Handle GetHandle() const
+      {
+        return GetGuard().GetHandle();
+      }
+    };
+
+
+    /* This class defines a list of <code>PTimer</code> objects. It is primarily used
+       internally by the library and the user should never create an instance of
+       it. The <code>PProcess</code> instance for the application maintains an instance
+       of all of the timers created so that it may decrements them at regular
+       intervals.
+     */
+    class List
+    {
+      public:
+        // Create a new timer list
+        List();
+
+        /* Decrement all the created timers and dispatch to their callback
+           functions if they have expired. The <code>PTimer::Tick()</code> function
+           value is used to determine the time elapsed since the last call to
+           Process().
+
+           The return value is the number of milliseconds until the next timer
+           needs to be dispatched. The function need not be called again for this
+           amount of time, though it can (and usually is).
+       
+           @return
+           maximum time interval before function should be called again.
+         */
+        PTimeInterval Process();
+
+      private:
+        /* Register new timer event.
+           This method creates all stuff for new timer event and add it to registration queue.
+           This queue will be processed by <code>PTimer::List::ProcessInsertion()</code>
+      
+           Method is tread safe.
+        */
+        void RegisterTimer(PTimer *aTimer);
+
+        bool IsTimerThread() const;
+        void ProcessInsertion();
+
+        struct PreparedEventInfo
+        {
+          Emitter * emitter;
+          PInt64    msecs;
+
+          PreparedEventInfo(PTimer* aTimer)
+            : emitter(new Emitter(aTimer))
+            , msecs(aTimer->GetResetTime().GetMilliSeconds())
+          {
+          }
+        };
+
+        typedef std::multimap<PInt64, PIdGenerator::Handle>   TimerEventRelations;
+        typedef std::map<PIdGenerator::Handle, Emitter::Ptr>  Events;
+        typedef std::list<PIdGenerator::Handle>               EventsForRemoval;
+        typedef std::list<PreparedEventInfo>                  EventsForInsertion;
+
+        PMutex              m_insertMutex;          // Mutex for new timers queue
+        PInt64              m_ticks;                // Internal timer ticks 
+        Events              m_events;               // Active timer events
+        TimerEventRelations m_timeToEventRelations; // Pending events ordered by timeout.
+        EventsForRemoval    m_eventsForRemoval;     // Queue of removal timers
+        EventsForInsertion  m_eventsForInsertion;   // Queue of new timers
+        const int           m_mininalInterval;      // Minimal interval between internal processing 
+
+        PThread * m_timerThread;
+
+      friend class PTimer;
+    };
+
+    List & TimerList() const;
+
 
   private:
     void Construct();
@@ -402,34 +645,14 @@ class PTimer : public PTimeInterval
       PBoolean once   // Flag for one shot or continuous.
     );
 
-    /* Process the timer decrementing it by the delta amount and calling the
-       <code>OnTimeout()</code> when zero. This is used internally by the
-       <code>PTimerList::Process()</code> function.
-     */
-    void Process(
-      PInt64 now             // time consider as "now"
-    );
-
     // Member variables
+    PNotifier     m_callback;     // Callback function for expired timers.
+    PTimeInterval m_resetTime;    // The time to reset a timer to when RunContinuous() is called.
+    bool          m_oneshot;      // Timer operates once then stops.
+    PInt64        m_absoluteTime;
+    Guard         m_guard;
 
-    // Callback function for expired timers.
-    PNotifier m_callback;
-
-    // The time to reset a timer to when RunContinuous() is called.
-    PTimeInterval m_resetTime;
-
-    // Timer operates once then stops.
-    PBoolean m_oneshot;
-
-    // Timer state.
-    enum TimerState { Stopped, Running, Paused, InTimeout } m_state;
-
-    friend class PTimerList;              // needed for Process
-    class PTimerList * m_timerList;  
-
-    IDType m_timerId;
-    PAtomicInteger m_serialNumber;
-    PInt64 m_absoluteTime;
+    friend class Emitter;
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -441,7 +664,7 @@ class PTimer : public PTimeInterval
 
 
 /**Template abstract class for a PTimer that queues a work item to a thread pool.
-   THis allows for load balancing of timer actions and, in complex muti-threading
+   This allows for load balancing of timer actions and, in complex muti-threading
    sytems, it is very easy for a deadlock to occur with the usual PNotifier
    method of executing a PTimer call back. This tries to largely avoid the
    issue by the housekeeper thread queuing a PThreadPool "work item" for later

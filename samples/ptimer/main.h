@@ -174,7 +174,7 @@ class PTimerTest : public PProcess
     static PTimerTest & Current()
       { return (PTimerTest &)PProcess::Current(); }
     
-    void TooSoon(PTimeInterval & elapsed);
+    void TooSoon(const PTimeInterval & elapsed, const PTimeInterval& expected);
 
  protected:
 
@@ -187,12 +187,25 @@ class PTimerTest : public PProcess
 
     /**Code to run the second test supported by this application. */
     void RunSecondTest();
+    void StressTest();
+    void MultiTimerlTest();
+    void LongOnTimeoutTest();
+    void MassStopTest();
+    void StartStopTest();
+    void PullCheck();
+    void CallbackCheck();
+    void DestroyCheck();
+    void TestStopInTimeout();
+    void DoubleStopTest();
+
 
   /**First internal timer that we manage */
   PTimer firstTimer;
 
   /**Second internal timer that we manage */
   PTimer secondTimer;
+
+  PTimer* thirdTimer;
 
 #ifdef DOC_PLUS_PLUS
   /**A pwlib callback function which is activated when the first timer
@@ -228,6 +241,17 @@ class PTimerTest : public PProcess
     virtual void RestartSecondTimerMain(PThread &, INT);
 #else
     PDECLARE_NOTIFIER(PThread, PTimerTest, RestartSecondTimerMain);
+#endif
+
+#ifdef DOC_PLUS_PLUS
+    /**This Thread will continually restart the second timer. If
+       there is a bug in pwlib, it will eventually lock up and do no more. At
+       which point, the monitor thread will fire, and say, nothing is
+       happening. This thread sets the value of an atomic integer every time
+       it runs, to indicate activity.*/
+    virtual void RestartThirdTimerMain(PThread &, INT);
+#else
+    PDECLARE_NOTIFIER(PThread, PTimerTest, RestartThirdTimerMain);
 #endif
 
 /**The integer that is set, to indicate activity of the RestartTimer thread */

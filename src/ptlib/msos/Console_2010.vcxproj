@@ -1019,6 +1019,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
     <None Include="..\..\..\include\ptlib\unix\ptlib\ptlib.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\ptlib\id_generator.h" />
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
     <ClInclude Include="..\..\..\include\ptclib\gstreamer.h" />
     <ClInclude Include="..\..\..\include\ptclib\jscript.h" />

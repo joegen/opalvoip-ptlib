@@ -35,6 +35,7 @@
 #include <ptlib.h>
 #include <ptlib/notifier_ext.h>
 #include <ptlib/semaphor.h>
+#include <ptlib/id_generator.h>
 
 #include <set>
 #include <map>
@@ -43,90 +44,30 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-class PValidatedNotifierSet : std::set<PNotifierIdentifer>
-{
-  unsigned m_state; // 0 = pre-constructor, 1 = active, 2 = destroyed
-  unsigned m_nextId;
-  PMutex   m_mutex;
-
-public:
-  PValidatedNotifierSet()
-    : m_state(1)
-    , m_nextId(1)
-  {
-  }
-
-  ~PValidatedNotifierSet()
-  {
-    m_state = 2;
-  }
-
-  PNotifierIdentifer Add()
-  {
-    if (m_state != 1)
-      return 0;
-
-    PNotifierIdentifer id;
-
-    m_mutex.Wait();
-
-    do {
-      id = m_nextId++;
-    } while (!insert(value_type(id)).second);
-
-    m_mutex.Signal();
-
-    return id;
-  }
-
-
-  void Remove(PNotifierIdentifer id)
-  {
-    if (m_state != 1)
-      return;
-
-    m_mutex.Wait();
-
-    erase(id);
-
-    m_mutex.Signal();
-  }
-
-
-  bool Exists(PNotifierIdentifer id)
-  {
-    if (m_state != 1)
-      return false;
-
-    PWaitAndSignal mutex(m_mutex);
-    return find(id) != end();
-  }
-};
-
-static PValidatedNotifierSet s_ValidatedTargets;
+static PIdGenerator s_ValidatedTargets;
 
 
 PValidatedNotifierTarget::PValidatedNotifierTarget()
 {
-  m_validatedNotifierId = s_ValidatedTargets.Add();
+  m_validatedNotifierId = s_ValidatedTargets.Create();
 }
 
 
 PValidatedNotifierTarget::PValidatedNotifierTarget(const PValidatedNotifierTarget&)
 {
-  m_validatedNotifierId = s_ValidatedTargets.Add();
+  m_validatedNotifierId = s_ValidatedTargets.Create();
 }
 
 
 PValidatedNotifierTarget::~PValidatedNotifierTarget()
 {
-  s_ValidatedTargets.Remove(m_validatedNotifierId);
+  s_ValidatedTargets.Release(m_validatedNotifierId);
 }
 
 
 bool PValidatedNotifierTarget::Exists(PNotifierIdentifer id)
 {
-  if (s_ValidatedTargets.Exists(id))
+  if (s_ValidatedTargets.IsValid(id))
     return true;
 
   PTRACE(2, NULL, "Notify", "Target no longer valid, id=" << id);
