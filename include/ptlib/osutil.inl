@@ -204,10 +204,7 @@ PINLINE PSimpleTimer::operator bool() const
 // PTimer
 
 PINLINE PBoolean PTimer::IsRunning() const
-  { return m_state == Running; }
-
-PINLINE PBoolean PTimer::IsPaused() const
-  { return m_state == Paused; }
+  { return (m_guard && m_resetTime.GetMilliSeconds() > 0 ); }
 
 PINLINE const PTimeInterval & PTimer::GetResetTime() const
   { return m_resetTime; }
@@ -528,9 +525,6 @@ PINLINE const PFilePath & PProcess::GetFile() const
 
 PINLINE int PProcess::GetMaxHandles() const
   { return maxHandles; }
-
-PINLINE PTimerList * PProcess::GetTimerList()
-  { return &m_timers; }
 
 PINLINE void PProcess::SetTerminationValue(int value)
   { terminationValue = value; }
