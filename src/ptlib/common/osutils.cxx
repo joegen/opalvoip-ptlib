@@ -1832,10 +1832,14 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 #ifdef _WIN32
   // Try to get the real image path for this process
-  TCHAR moduleName[_MAX_PATH];
-  if (GetModuleFileName(GetModuleHandle(NULL), moduleName, sizeof(moduleName)) > 0) {
-    executableFile = moduleName;
-    executableFile.Replace("\\??\\","");
+  TCHAR shortName[_MAX_PATH];
+  if (GetModuleFileName(GetModuleHandle(NULL), shortName, sizeof(shortName)) > 0) {
+    TCHAR longName[32768]; // Space for long image path
+    if (GetLongPathName(shortName, longName, sizeof(longName)) > 0)
+      executableFile = longName;
+    else
+      executableFile = shortName;
+    executableFile.Replace("\\\\?\\", ""); // Name can contain \\?\ prefix, remove it
   }
 
 #ifndef __MINGW32__
