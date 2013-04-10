@@ -1011,8 +1011,8 @@ void PTimer::OnTimeout()
 
 PTimer::List::List()
   : m_ticks(0)
-  , m_timerThread(NULL)
   , m_mininalInterval(20)
+  , m_timerThread(NULL)
 {
 }
 
