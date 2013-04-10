@@ -114,6 +114,8 @@ extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
 
 #define ROUNDUP(a) ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 
+#define PTraceModule() "Socket"
+
 
 //////////////////////////////////////////////////////////////////////////////
 // P_fd_set
@@ -221,7 +223,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
 
 #if defined(E_PROTO)
       case EPROTO :
-        PTRACE(3, "PTLib\tAccept on " << listener << " failed with EPROTO - retrying");
+        PTRACE(3, "Accept on " << listener << " failed with EPROTO - retrying");
         break;
 #endif
 
@@ -350,7 +352,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     int osError;
     if (PChannel::ConvertOSError(result, lastError, osError)) {
       if (fds[0].IsPresent(unblockPipe)) {
-        PTRACE2(6, NULL, "PTLib\tSelect unblocked fd=" << unblockPipe);
+        PTRACE2(6, NULL, "Select unblocked fd=" << unblockPipe);
         BYTE ch;
         if (PChannel::ConvertOSError(::read(unblockPipe, &ch, 1), lastError, osError))
           lastError = Interrupted;
@@ -405,7 +407,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
           if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
             struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
             PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
-                      "PTLib\tICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
+                      "ICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
             errno = sock_error->ee_errno;
           }
         }
@@ -437,7 +439,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
       if ((readData.msg_flags&MSG_TRUNC) == 0)
         return lastReadCount > 0;
 
-      PTRACE(4, "PTlib\tTruncated packet read, returning EMSGSIZE");
+      PTRACE(4, "Truncated packet read, returning EMSGSIZE");
       SetErrorValues(BufferTooSmall, EMSGSIZE, LastReadError);
       return false;
     }
@@ -775,7 +777,7 @@ bool PIPSocket::SetQoS(const QoS & qos)
   if (SetOption(IP_TOS, qos.m_dscp < 0 || qos.m_dscp > 63 ? DSCP[qos.m_type] : qos.m_dscp, IPPROTO_IP))
     return true;
 
-  PTRACE(1, "Socket\tCould not set TOS field in IP header: " << GetErrorText());
+  PTRACE(1, "Could not set TOS field in IP header: " << GetErrorText());
   return false;
 }
 
@@ -1405,7 +1407,7 @@ class NetLinkRouteTableDetector : public PIPSocket::RouteTableDetector
       if (pipe(m_fdCancel) == -1)
         m_fdCancel[0] = m_fdCancel[1] = -1;
 
-      PTRACE(3, "PTLIB\tOpened NetLink socket");
+      PTRACE(3, "Opened NetLink socket");
     }
 
     ~NetLinkRouteTableDetector()
@@ -1466,7 +1468,7 @@ class NetLinkRouteTableDetector : public PIPSocket::RouteTableDetector
           switch (nlmsg->nlmsg_type) {
             case RTM_NEWADDR :
             case RTM_DELADDR :
-              PTRACE(3, "PTLIB\tInterface table change detected via NetLink");
+              PTRACE(3, "Interface table change detected via NetLink");
               return true;
           }
         }
@@ -1567,19 +1569,8 @@ class ReachabilityRouteTableDetector : public PIPSocket::RouteTableDetector
 	  
 	static void callout(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info)
 	{
-		struct tm	tm_now;
-		struct timeval	tv_now;
-
-		(void)gettimeofday(&tv_now, NULL);
-		(void)localtime_r(&tv_now.tv_sec, &tm_now);
-
-		PTRACE(1, psprintf("Reachability changed at: %2d:%02d:%02d.%03d, now it is %sreachable",
-			tm_now.tm_hour,
-			tm_now.tm_min,
-			tm_now.tm_sec,
-			tv_now.tv_usec / 1000,
-			flags & kSCNetworkReachabilityFlagsReachable? "" : "not ")
-			);
+		PTRACE(3, "Reachability changed to "
+                  << ((flags & kSCNetworkReachabilityFlagsReachable) != 0 ? "" : "un") << "reachable");
 
 		ReachabilityRouteTableDetector* d = (ReachabilityRouteTableDetector*) info;	
 		d->Cancel();
@@ -1593,19 +1584,19 @@ class ReachabilityRouteTableDetector : public PIPSocket::RouteTableDetector
 		
 		target_async = _setupReachability(&context);
 		if (target_async == NULL) {
-			PTRACE(1, psprintf("  Could not determine status: %s\n", SCErrorString(SCError())));
+			PTRACE(1, "Could not determine status: " << SCErrorString(SCError()));
 			return;
 		}
 		
 		context.info = (void*) this;
 		
 		if (!SCNetworkReachabilitySetCallback(target_async, ReachabilityRouteTableDetector::callout, &context)) {
-			PTRACE(1, psprintf("SCNetworkReachabilitySetCallback() failed: %s\n", SCErrorString(SCError())));
+			PTRACE(1, "SCNetworkReachabilitySetCallback() failed: " << SCErrorString(SCError()));
 			return;
 		}
 
 		if (!SCNetworkReachabilityScheduleWithRunLoop(target_async, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
-			PTRACE(1, psprintf("SCNetworkReachabilityScheduleWithRunLoop() failed: %s\n", SCErrorString(SCError()) ) );
+			PTRACE(1, "SCNetworkReachabilityScheduleWithRunLoop() failed: " << SCErrorString(SCError()));
 			return;
 		}
 	}
@@ -1900,6 +1891,7 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
 #endif // P_VXWORKS
 
 
+#undef PTraceModule
 #include "../common/pethsock.cxx"
 
 ///////////////////////////////////////////////////////////////////////////////
