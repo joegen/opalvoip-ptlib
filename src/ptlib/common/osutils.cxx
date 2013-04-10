@@ -1829,7 +1829,8 @@ void PProcess::Startup()
 {
   PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
-  PPluginManager::GetPluginManager().AddDirectory(executableFile.GetDirectory());
+  if (!executableFile.IsEmpty())
+    PPluginManager::GetPluginManager().AddDirectory(executableFile.GetDirectory());
 
   // create one instance of each class registered in the PProcessStartup abstract factory
   // But make sure we have plugins first, to avoid bizarre behaviour where static objects
