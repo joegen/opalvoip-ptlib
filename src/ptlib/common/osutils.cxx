@@ -182,11 +182,13 @@ PTHREAD_MUTEX_RECURSIVE_NP
     ThreadLocalInfo()
       : m_traceLevel(1)
       , m_traceBlockIndentLevel(0)
+      , m_prefixLength(0)
     { }
 
     PStack<PStringStream> m_traceStreams;
     unsigned              m_traceLevel;
     unsigned              m_traceBlockIndentLevel;
+    PINDEX                m_prefixLength;
   };
   PThreadLocalStorage<ThreadLocalInfo> m_threadStorage;
 
@@ -657,6 +659,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     m_currentLevel = level;
   else {
     threadInfo->m_traceLevel = level;
+    threadInfo->m_prefixLength = threadInfo->m_traceStreams.Top().GetLength();
     Unlock();
   }
 
@@ -684,6 +687,12 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
     if (!PAssert(&paramStream == stackStream, PLogicError))
       return paramStream;
     *stackStream << ends << flush;
+    PINDEX tab = stackStream->Find('\t', threadInfo->m_prefixLength);
+    if (tab != P_MAX_INDEX) {
+      PINDEX len = tab - threadInfo->m_prefixLength;
+      if (len < 8)
+        stackStream->Splice("      ", tab, 0);
+    }
     Lock();
     *m_stream << *stackStream;
     delete stackStream;
