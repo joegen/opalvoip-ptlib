@@ -3,7 +3,31 @@
  *
  * Plugin Manager Class
  *
- * Portable Windows Library
+ * Search path for PLugin is defined in this class, using the following 
+ * define variables: P_DEFAULT_PLUGIN_DIR
+ *
+ * Configure setup in ptbuildopts.h.in:
+ *   #define P_DEFAULT_PLUGIN_DIR "/usr/local/lib/ptlib-2.13.0"
+ * if not defined pluginmgr.cxx set it to:
+ *   #define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib:/usr/lib/pwlib"
+ * or windows:
+ *   #define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
+ *
+ * Also the following Environment variables:  "PTLIBPLUGINDIR" and "PWLIBPLUGINDIR"
+ * It check 1st if PTLIBPLUGINDIR is defined, 
+ * if not then check PWLIBPLUGINDIR is defined. 
+ * If not use P_DEFAULT_PLUGIN_DIR (hard coded as DEFINE).
+ *
+ * Plugin must have suffixes:
+ * #define PTPLUGIN_SUFFIX       "_ptplugin"
+ * #define PWPLUGIN_SUFFIX       "_pwplugin"
+ * 
+ * Debugging plugin issue, set Trace level based on the following:
+ * PTRACE
+ * level 2 = list plugin that are not compatible (old version, not a PWLIB plugin etc).
+ * level 4 = list directories.
+ * level 5 = list plugin before checking suffix .
+ *  * Portable Windows Library
  *
  * Contributor(s): Snark at GnomeMeeting
  *
