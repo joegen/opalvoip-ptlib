@@ -116,32 +116,32 @@ void TimingTest::Main()
     count++;                      // Count the changes in tick
   } ;
 
-  cout << "Actual resolution is " << 1000000/count << "us" << endl;
+  cout << "Actual resolution is " << 1000000/count << "us\n"
+          "Current tick: \"" << newTick << '"' << endl;
 
   oldTick = 123456;
-  cout << "TimeInterval output: \"" << setw(15) << newTick << '"' << endl;
-  cout << "TimeInterval output: \"" << setw(15) << oldTick << '"' << endl;
-  int p;
-  for (p = 3; p < 10; p++)
-    cout << "TimeInterval output: " << p << " \""
-           << setiosflags(ios::scientific)
-           << setw(p) << setprecision(2) << oldTick
-           << resetiosflags(ios::scientific) << '"' << endl;
-  for (p = 3; p < 20; p++)
-    cout << "TimeInterval output: " << p << " \""
-           << setw(p) << setprecision(2) << oldTick << '"' << endl;
+  int w, p;
+  for (w = 1; w <= 10; w++)
+    for (p = 0; p < 4; p++)
+      cout << "TimeInterval output, width " << w << ", precision " << p << ": \""
+           << setw(w) << setprecision(p) << oldTick << '"' << endl;
+  for (w = 1; w <= 8; w++)
+    for (p = 0; p < 4; p++)
+      cout << "TimeInterval scientific, width " << w << ", precision " << p << ": \""
+             << setiosflags(ios::scientific)
+             << setw(w) << setprecision(p) << oldTick
+             << resetiosflags(ios::scientific) << '"' << endl;
 
   cout << "\nTesting sleep function" << endl;
   PTime start_time1;
   PINDEX loop;
-  for(loop = 0; loop < 10; loop++) {
-    Sleep(10 * 1000);     //10 seconds, or 10 * 1000ms
-    PTime now1;
-    cout << now1-start_time1 << endl;
+  for (loop = 1; loop < 5; loop++) {
+    cout << "Sleeping " << loop << " seconds" << endl;
+    PSimpleTimer then;
+    PThread::Sleep(PTimeInterval(0, loop));
+    cout << then.GetElapsed() << ' ' << (PTime()-start_time1) << endl;
   }
-  PTime end_time1;
-
-  cout << "The first loop took "<< end_time1-start_time1 << " milliseconds." << endl;
+  cout << "The first loop took " << (PTime()-start_time1) << " seconds." << endl;
 
 
   cout << "\nTesting adaptive delay function" << endl;
