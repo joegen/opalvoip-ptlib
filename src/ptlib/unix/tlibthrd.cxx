@@ -709,9 +709,9 @@ void PThread::Sleep(const PTimeInterval & timeout)
 {
   struct timespec ts;
   ts.tv_sec = timeout.GetSeconds();
-  ts.tv_nsec = timeout.GetMilliSeconds()*1000000;
+  ts.tv_nsec = (timeout.GetMilliSeconds()%1000)*1000000;
 
-  while (nanosleep(&ts, &ts) < 0 && errno == EINTR) {
+  while (nanosleep(&ts, &ts) < 0 && PAssert(errno == EINTR || errno == EAGAIN, POperatingSystemError)) {
 #if P_USE_THREAD_CANCEL
     pthread_testcancel();
 #endif
