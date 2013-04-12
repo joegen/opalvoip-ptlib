@@ -768,6 +768,8 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
   PPLUGIN_STATIC_LOAD(WindowsMultimedia, PSoundChannel);
 #elif defined(P_ANDROID)
   PPLUGIN_STATIC_LOAD(OpenSL_ES, PSoundChannel);
+#elif defined(P_MACOSX) || defined(P_IOS)
+  PPLUGIN_STATIC_LOAD(Apple, PSoundChannel);
 #elif defined(__BEOS__)
   PPLUGIN_STATIC_LOAD(BeOS, PSoundChannel);
 #endif
