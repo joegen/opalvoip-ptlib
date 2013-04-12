@@ -32,11 +32,12 @@
 
 #if P_VIDEO
 
-#include <ptlib/vconvert.h>
-
+#define P_FORCE_STATIC_PLUGIN
 #include <ptlib/pluginmgr.h>
-#include <ptlib/pprocess.h>
+
 #include <ptlib/videoio.h>
+#include <ptlib/vconvert.h>
+#include <ptlib/pprocess.h>
 #include <ptclib/delaychan.h>
 #include <ptclib/random.h>
 

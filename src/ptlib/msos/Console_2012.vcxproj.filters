@@ -1,18 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\ptclib\asnber.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\asner.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\asnper.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\asnxer.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\cli.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -43,49 +31,10 @@
     <ClCompile Include="..\common\regex\regcomp.c">
       <Filter>Regex</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\dtmf.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\enum.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\ftp.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\ftpclnt.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\ftpsrvr.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\guid.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\html.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\http.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\httpclnt.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\httpform.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\httpsrvr.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\httpsvc.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\inetmail.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\inetprot.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\ipacl.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\lua.cxx">
@@ -97,9 +46,6 @@
     <ClCompile Include="..\..\ptclib\pasn.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\pils.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\pldap.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -109,25 +55,10 @@
     <ClCompile Include="..\..\ptclib\podbc.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\psasl.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\psnmp.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\psoap.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\psockbun.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pssl.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pstun.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pstunsrvr.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\ptts.cxx">
@@ -141,9 +72,6 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pxmlrpcs.cxx">
       <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\modem.cxx">
-      <Filter>Source Files\Console</Filter>
     </ClCompile>
     <ClCompile Include="..\common\notifier_ext.cxx">
       <Filter>Source Files\Console</Filter>
@@ -160,40 +88,13 @@
     <ClCompile Include="..\Common\pconfig.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\pffvdev.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\pluginmgr.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pnat.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
     <ClCompile Include="..\common\ptime.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\pvfiledev.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\pvidchan.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pvidfile.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pwavfile.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pwavfiledev.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\qchannel.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\random.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\rfc1155.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
     <ClCompile Include="..\common\safecoll.cxx">
@@ -202,46 +103,16 @@
     <ClCompile Include="..\Common\serial.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\shttpsvc.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\snmp.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\snmpclnt.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\snmpserv.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\sockets.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\socks.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
     <ClCompile Include="..\common\sound.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\telnet.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\threadpool.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\url.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\xmpp_roster.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\xmpp_muc.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\xmpp_c2s.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\xmpp.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\vartype.cxx">
@@ -265,16 +136,10 @@
     <ClCompile Include="..\..\ptclib\vcard.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\ssdp.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="vidinput_app.cxx">
       <Filter>Source Files\MSOS</Filter>
     </ClCompile>
     <ClCompile Include="winsock.cxx">
-      <Filter>Source Files\MSOS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\vsdl.cxx">
       <Filter>Source Files\MSOS</Filter>
     </ClCompile>
     <ClCompile Include="win32.cxx">
@@ -299,9 +164,6 @@
       <Filter>Source Files\MSOS</Filter>
     </ClCompile>
     <ClCompile Include="icmp.cxx">
-      <Filter>Source Files\MSOS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\pethsock.cxx">
       <Filter>Source Files\MSOS</Filter>
     </ClCompile>
     <ClCompile Include="assert.cxx">
@@ -355,9 +217,6 @@
     <ClCompile Include="..\unix\udll.cxx">
       <Filter>Source Files\Android</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\gstreamer.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\script.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -367,14 +226,155 @@
     <ClCompile Include="..\common\tinyjpeg.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\jidctflt.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\unix\opensl_es.cxx">
       <Filter>Source Files\Android</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\tonedev.cxx">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pstunsrvr.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pstun.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\modem.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\pethsock.cxx">
+      <Filter>Source Files\Console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pnat.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\rfc1155.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\qchannel.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\random.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\shttpsvc.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\socks.cxx">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\enum.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\ftp.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\ftpclnt.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\ftpsrvr.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\html.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\http.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\httpclnt.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\httpform.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\httpsrvr.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\inetmail.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\inetprot.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\ssdp.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\telnet.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\snmpserv.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\snmpclnt.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\snmp.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\gstreamer.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\dtmf.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\jidctflt.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pffvdev.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pvfiledev.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pvidfile.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pwavfile.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pwavfiledev.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\vsdl.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\asnber.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\asnxer.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\asner.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\asnper.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\psasl.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\psnmp.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\psoap.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pils.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\ipacl.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\xmpp.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\xmpp_roster.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\xmpp_c2s.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\xmpp_muc.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -948,6 +948,7 @@
     <ClInclude Include="..\..\..\include\ptlib\id_generator.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
@@ -1017,6 +1018,12 @@
     </Filter>
     <Filter Include="Header Files\Win64">
       <UniqueIdentifier>{6acf23cc-1877-465f-88d0-44e837751ef9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Protocols">
+      <UniqueIdentifier>{7afd2e59-56f0-4776-89b3-88d96202aadd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components\Media">
+      <UniqueIdentifier>{8acbe72a-b725-49d6-a81c-070e3e2ecf91}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
