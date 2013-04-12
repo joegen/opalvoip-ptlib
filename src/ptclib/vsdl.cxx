@@ -33,9 +33,12 @@
 #endif
 
 #include <ptlib.h>
-#include <ptlib/vconvert.h>
+
+#define P_FORCE_STATIC_PLUGIN
 #include <ptlib/pluginmgr.h>
+
 #include <ptclib/vsdl.h>
+#include <ptlib/vconvert.h>
 
 #define new PNEW
 

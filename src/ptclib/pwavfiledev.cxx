@@ -36,9 +36,14 @@
 #endif
 
 #include <ptlib.h>
-#include <ptclib/pwavfiledev.h>
 
 #if P_WAVFILE
+
+#define P_FORCE_STATIC_PLUGIN
+#include <ptlib/pluginmgr.h>
+
+#include <ptclib/pwavfiledev.h>
+
 
 class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {

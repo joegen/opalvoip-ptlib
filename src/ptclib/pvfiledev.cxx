@@ -40,11 +40,11 @@
 #if P_VIDEO
 #if P_VIDFILE
 
-#include <ptlib/vconvert.h>
+#define P_FORCE_STATIC_PLUGIN
+#include <ptlib/pluginmgr.h>
+
 #include <ptclib/pvfiledev.h>
 #include <ptlib/pfactory.h>
-#include <ptlib/pluginmgr.h>
-#include <ptlib/videoio.h>
 
 
 #define new PNEW
