@@ -42,6 +42,8 @@
 static const PConstString OpenSL_EL("OpenSL ES");
 
 #define PTraceModule() "OpenSLES"
+#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
+
 
 #ifdef __ANDROID__
 static struct {
@@ -150,10 +152,11 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     SLDataFormat_PCM m_format_pcm;
 
     std::vector< std::vector<SLuint16> > m_buffers;
-    size_t     m_bufferPos;
-    size_t     m_bufferLen;
-    PSemaphore m_bufferReady;
-    PMutex     m_bufferMutex;
+    size_t        m_bufferPos;
+    size_t        m_bufferLen;
+    PSemaphore    m_bufferReady;
+    PTimeInterval m_bufferTimeout;
+    PMutex        m_bufferMutex;
 
 
     bool EnqueueBuffer(PINDEX index)
@@ -161,7 +164,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       const void * ptr = &m_buffers[index][0];
       size_t count = m_buffers[index].size();
       PAssert(count > 0, PLogicError);
-      PTRACE(5, "Queuing: index=" << index << ", ptr=" << ptr << ", bytes=" << count);
+      PTRACE_DETAILED(5, "Queuing: index=" << index << ", ptr=" << ptr << ", bytes=" << count);
       return CHECK_SL_SUCCESS(m_bufferQueue.Enqueue, (ptr, count));
     }
 
@@ -172,7 +175,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     void PlayBufferCallback()
     {
-      PTRACE(5, "Play buffer callback");
+      PTRACE_DETAILED(5, "Play buffer callback");
       m_bufferReady.Signal();
     }
 
@@ -194,31 +197,145 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
         m_bufferReady.Signal();
       }
 
-      PTRACE(5, "Record buffer callback: m_bufferPos=" << m_bufferPos << ", m_bufferLen=" << m_bufferLen);
+      PTRACE_DETAILED(5, "Record buffer callback: m_bufferPos=" << m_bufferPos << ", m_bufferLen=" << m_bufferLen);
 
       m_bufferMutex.Signal();
     }
 
+  
+    bool InternalOpen()
+    {
+      if (CHECK_SL_ERROR(slCreateEngine, (m_object.GetPtr(), 0, NULL, 0, NULL, NULL)))
+        return false;
+      
+      if (CHECK_SL_ERROR(m_object.Realize, (SL_BOOLEAN_FALSE)))
+        return false;
+      
+      if (CHECK_SL_ERROR(m_engine.Create, (m_object)))
+        return false;
+      
+      switch (activeDirection) {
+        case Player :
+          if (CHECK_SL_ERROR(m_engine.CreateOutputMix, (m_outputMix, OpenSLES::Interfaces())))
+            return false;
+          
+          if (CHECK_SL_ERROR(m_outputMix.Realize, (SL_BOOLEAN_FALSE)))
+            return false;
+          
+          {
+            OpenSLES::BufferQueue::Locator bufferLocation(m_buffers.size());
+            SLDataSource source = { &bufferLocation, &m_format_pcm };
+            
+            SLDataLocator_OutputMix mixerLocation = { SL_DATALOCATOR_OUTPUTMIX, m_outputMix };
+            SLDataSink sink = { &mixerLocation, NULL };
+            
+            OpenSLES::Interfaces playIfs;
+            playIfs.Add<OpenSLES::BufferQueue>().Add<OpenSLES::Volume>(SL_BOOLEAN_FALSE);
+#ifdef __ANDROID__
+            playIfs.Add<OpenSLES::AndroidConfiguration>();
+#endif
+            if (CHECK_SL_ERROR(m_engine.CreateAudioPlayer,(m_audioOut, source, sink, playIfs)))
+              return false;
+          }
+          
+#ifdef __ANDROID__
+          {
+            OpenSLES::AndroidConfiguration androidConfig;
+            if (CHECK_SL_SUCCESS(androidConfig.Create, (m_audioOut))) {
+              for (PINDEX i = 0; i < PARRAYSIZE(StreamTypes); ++i) {
+                if (deviceName *= StreamTypes[i].m_name) {
+                  CHECK_SL_ERROR(androidConfig.SetStreamType, (StreamTypes[i].m_type));
+                  break;
+                }
+              }
+            }
+          }
+#endif
+          
+          if (CHECK_SL_ERROR(m_audioOut.Realize, (SL_BOOLEAN_FALSE)))
+            return false;
+          
+          if (CHECK_SL_ERROR(m_bufferQueue.Create, (m_audioOut)))
+            return false;
+          
+          if (CHECK_SL_ERROR(m_bufferQueue.RegisterCallback, (&PSoundChannel_OpenSL_ES::PlayBufferCallback, this)))
+            return false;
+          
+          if (CHECK_SL_ERROR(m_player.Create, (m_audioOut)))
+            return false;
+          
+          m_volume.Create(m_audioOut);
+          break;
+          
+        case Recorder :
+          {
+            SLDataLocator_IODevice deviceLocation = {
+              SL_DATALOCATOR_IODEVICE,
+              SL_IODEVICE_AUDIOINPUT,
+              SL_DEFAULTDEVICEID_AUDIOINPUT,
+              NULL
+            };
+            SLDataSource source = { &deviceLocation, NULL};
+            
+            OpenSLES::BufferQueue::Locator bufferLocation(m_buffers.size());
+            SLDataSink sink = { &bufferLocation, &m_format_pcm };
+            
+            OpenSLES::Interfaces recIfs;
+            recIfs.Add<OpenSLES::BufferQueue>().Add<OpenSLES::Volume>(SL_BOOLEAN_FALSE);
+#ifdef __ANDROID__
+            recIfs.Add<OpenSLES::AndroidConfiguration>();
+#endif
+            if (CHECK_SL_ERROR(m_engine.CreateAudioRecorder,(m_audioIn, source, sink, recIfs)))
+              return false;
+          }
+            
+#ifdef __ANDROID__
+          {
+            OpenSLES::AndroidConfiguration androidConfig;
+  #if __ANDROID_API__ >= 14
+    #define MY_ANDROID_RECORDING_STREAM SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION
+  #else
+    #define MY_ANDROID_RECORDING_STREAM SL_ANDROID_RECORDING_PRESET_GENERIC
+  #endif
+            if (CHECK_SL_SUCCESS(androidConfig.Create, (m_audioIn)))
+              CHECK_SL_ERROR(androidConfig.SetRecordinPreset, (MY_ANDROID_RECORDING_STREAM));
+          }
+#endif
+          
+          if (CHECK_SL_ERROR(m_audioIn.Realize, (SL_BOOLEAN_FALSE)))
+            return false;
+          
+          if (CHECK_SL_ERROR(m_recorder.Create, (m_audioIn)))
+            return false;
+          
+          if (CHECK_SL_ERROR(m_bufferQueue.Create, (m_audioIn)))
+            return false;
+          
+          if (CHECK_SL_ERROR(m_bufferQueue.RegisterCallback, (&PSoundChannel_OpenSL_ES::RecordBufferCallback, this)))
+            return false;
+          
+          m_volume.Create(m_audioIn);
+          break;
+          
+        default :
+          PAssertAlways(PInvalidParameter);
+          return false;
+      }
+      
+      m_bufferTimeout.SetInterval(m_bufferSize*1000/GetSampleRate()); // double the time for a buffer to be processed
+
+      PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
+      os_handle = 1;
+      return true;
+    }
+  
+  
   public:
     PSoundChannel_OpenSL_ES()
       : m_bufferReady(0, UINT_MAX)
     {
       SetBuffers(320, 2);
       SetFormat(1, 8000, 16);
-    }
-
-
-    PSoundChannel_OpenSL_ES(
-      const PString &device,
-      PSoundChannel::Directions dir,
-      unsigned numChannels,
-      unsigned sampleRate,
-      unsigned bitsPerSample
-    )
-      : m_bufferReady(0, UINT_MAX)
-    {
-      SetBuffers(320, 2);
-      Open(device, dir, numChannels, sampleRate, bitsPerSample);
     }
 
 
@@ -254,158 +371,36 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     }
 
 
-    PBoolean Open(const PString & deviceName,
-                  Directions dir,
-                  unsigned numChannels,
-                  unsigned sampleRate,
-                  unsigned bitsPerSample)
+    virtual PBoolean Open(const PString & deviceName,
+                          Directions dir,
+                          unsigned numChannels,
+                          unsigned sampleRate,
+                          unsigned bitsPerSample)
     {
       Close();
 
       PTRACE(4, "Open(" << deviceName << ',' << dir << ',' << numChannels << ',' << sampleRate << ',' << bitsPerSample << ')');
 
       activeDirection = dir;
-
-      SetFormat(numChannels, sampleRate, bitsPerSample);
-
-      if (CHECK_SL_ERROR(slCreateEngine, (m_object.GetPtr(), 0, NULL, 0, NULL, NULL)))
-        return false;
-
-      if (CHECK_SL_ERROR(m_object.Realize, (SL_BOOLEAN_FALSE)))
-        return false;
-
-      if (CHECK_SL_ERROR(m_engine.Create, (m_object)))
-        return false;
-
-      switch (dir) {
-        case Player :
-          if (CHECK_SL_ERROR(m_engine.CreateOutputMix, (m_outputMix, OpenSLES::Interfaces())))
-            return false;
-
-          if (CHECK_SL_ERROR(m_outputMix.Realize, (SL_BOOLEAN_FALSE)))
-            return false;
-
-          {
-            OpenSLES::BufferQueue::Locator bufferLocation(m_buffers.size());
-PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
-            SLDataSource source = { &bufferLocation, &m_format_pcm };
-
-            SLDataLocator_OutputMix mixerLocation = { SL_DATALOCATOR_OUTPUTMIX, m_outputMix };
-            SLDataSink sink = { &mixerLocation, NULL };
-
-            OpenSLES::Interfaces playIfs;
-            playIfs.Add<OpenSLES::BufferQueue>().Add<OpenSLES::Volume>(SL_BOOLEAN_FALSE);
-#ifdef __ANDROID__
-            playIfs.Add<OpenSLES::AndroidConfiguration>();
-#endif
-            if (CHECK_SL_ERROR(m_engine.CreateAudioPlayer,(m_audioOut, source, sink, playIfs)))
-              return false;
-          }
-
-#ifdef __ANDROID__
-          {
-            OpenSLES::AndroidConfiguration androidConfig;
-            if (CHECK_SL_SUCCESS(androidConfig.Create, (m_audioOut))) {
-              for (PINDEX i = 0; i < PARRAYSIZE(StreamTypes); ++i) {
-                if (deviceName *= StreamTypes[i].m_name) {
-                  CHECK_SL_ERROR(androidConfig.SetStreamType, (StreamTypes[i].m_type));
-                  break;
-                }
-              }
-            }
-          }
-#endif
-
-          if (CHECK_SL_ERROR(m_audioOut.Realize, (SL_BOOLEAN_FALSE)))
-            return false;
-
-          if (CHECK_SL_ERROR(m_bufferQueue.Create, (m_audioOut)))
-            return false;
-
-          if (CHECK_SL_ERROR(m_bufferQueue.RegisterCallback, (&PSoundChannel_OpenSL_ES::PlayBufferCallback, this)))
-            return false;
-
-          if (CHECK_SL_ERROR(m_player.Create, (m_audioOut)))
-            return false;
-
-          m_volume.Create(m_audioOut);
-          break;
-
-        case Recorder :
-          {
-            SLDataLocator_IODevice deviceLocation = {
-              SL_DATALOCATOR_IODEVICE,
-              SL_IODEVICE_AUDIOINPUT,
-              SL_DEFAULTDEVICEID_AUDIOINPUT,
-              NULL
-            };
-            SLDataSource source = { &deviceLocation, NULL};
-
-            OpenSLES::BufferQueue::Locator bufferLocation(m_buffers.size());
-            SLDataSink sink = { &bufferLocation, &m_format_pcm };
-
-            OpenSLES::Interfaces recIfs;
-            recIfs.Add<OpenSLES::BufferQueue>().Add<OpenSLES::Volume>(SL_BOOLEAN_FALSE);
-#ifdef __ANDROID__
-            recIfs.Add<OpenSLES::AndroidConfiguration>();
-#endif
-            if (CHECK_SL_ERROR(m_engine.CreateAudioRecorder,(m_audioIn, source, sink, recIfs)))
-              return false;
-          }
-
-#ifdef __ANDROID__
-          {
-            OpenSLES::AndroidConfiguration androidConfig;
-            #if __ANDROID_API__ >= 14
-              #define MY_ANDROID_RECORDING_STREAM SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION
-            #else
-              #define MY_ANDROID_RECORDING_STREAM SL_ANDROID_RECORDING_PRESET_GENERIC
-            #endif
-            if (CHECK_SL_SUCCESS(androidConfig.Create, (m_audioIn)))
-              CHECK_SL_ERROR(androidConfig.SetRecordinPreset, (MY_ANDROID_RECORDING_STREAM));
-          }
-#endif
-
-          if (CHECK_SL_ERROR(m_audioIn.Realize, (SL_BOOLEAN_FALSE)))
-            return false;
-
-          if (CHECK_SL_ERROR(m_recorder.Create, (m_audioIn)))
-            return false;
-
-          if (CHECK_SL_ERROR(m_bufferQueue.Create, (m_audioIn)))
-            return false;
-
-          if (CHECK_SL_ERROR(m_bufferQueue.RegisterCallback, (&PSoundChannel_OpenSL_ES::RecordBufferCallback, this)))
-            return false;
-
-          m_volume.Create(m_audioIn);
-          break;
-
-        default :
-          PAssertAlways(PInvalidParameter);
-          return false;
-      }
-
       m_deviceName = deviceName;
-      PTRACE(3, "Opened \"" << deviceName << '"');
-      os_handle = 1;
-      return true;
+
+      return SetFormat(numChannels, sampleRate, bitsPerSample) && InternalOpen();
     }
-
-
+  
+  
     virtual PString GetName() const
     {
       return m_deviceName;
     }
 
 
-    PBoolean IsOpen() const
+    virtual PBoolean IsOpen() const
     {
       return m_bufferQueue.IsValid();
     }
 
 
-    PBoolean Close()
+    virtual PBoolean Close()
     {
       PTRACE_IF(4, IsOpen(), "Closing \"" << GetName() << '"');
 
@@ -425,12 +420,12 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean Abort()
+    virtual PBoolean Abort()
     {
       if (!IsOpen())
         return false;
 
-      bool ok =true;
+      bool ok = true;
 
       switch (activeDirection) {
         case Player :
@@ -457,7 +452,7 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean Write(const void * buf, PINDEX len)
+    virtual PBoolean Write(const void * buf, PINDEX len)
     {
       if (!IsOpen())
         return false;
@@ -478,8 +473,12 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
 
       const uint8_t * ptr = (const uint8_t *)buf;
       while (len > 0) {
-        PTRACE(5, "Awaiting play buffer ready");
-        m_bufferReady.Wait();
+        PTRACE_DETAILED(5, "Awaiting play buffer ready");
+        if (!m_bufferReady.Wait(m_bufferTimeout)) {
+          PTRACE(1, "Timed out waiting for play out: " << m_bufferTimeout);
+          return false;
+        }
+        
         if (!IsOpen())
           return false;
 
@@ -498,17 +497,17 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean HasPlayCompleted()
+    virtual PBoolean HasPlayCompleted()
     {
       return m_bufferLen == 0;
     }
 
 
-    PBoolean WaitForPlayCompletion()
+    virtual PBoolean WaitForPlayCompletion()
     {
       while (!HasPlayCompleted()) {
         PTRACE(5, "Awaiting buffer ready for completion");
-        if (!m_bufferReady.Wait(m_buffers[0].size()))
+        if (!m_bufferReady.Wait(m_bufferTimeout))
           return false;
       }
 
@@ -516,14 +515,18 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean Read(void * buf, PINDEX len)
+    virtual PBoolean Read(void * buf, PINDEX len)
     {
       if (!StartRecording())
         return false;
 
       while (m_bufferLen == 0) {
-        PTRACE(5, "Awaiting record buffer ready");
-        m_bufferReady.Wait();
+        PTRACE_DETAILED(5, "Awaiting record buffer ready");
+        if (!m_bufferReady.Wait(m_bufferTimeout)) {
+          PTRACE(1, "Timed out waiting for recorded data: " << m_bufferTimeout);
+          return false;
+        }
+        
         if (!IsOpen())
           return false;
       }
@@ -543,7 +546,7 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean StartRecording()
+    virtual PBoolean StartRecording()
     {
       if (!IsOpen())
         return false;
@@ -574,12 +577,13 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
+    virtual PBoolean SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
     {
-      bool notOpen = !IsOpen();
-
-      Close();
-
+      if (IsOpen()) {
+        Close();
+        return InternalOpen();
+      }
+      
       m_format_pcm.formatType = SL_DATAFORMAT_PCM;
       m_format_pcm.numChannels = numChannels;
       m_format_pcm.samplesPerSec = sampleRate*1000; // yeah, member name is bogus, is really milliHertz
@@ -588,29 +592,29 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
       m_format_pcm.channelMask = SL_SPEAKER_FRONT_CENTER;
       m_format_pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
 
-      return notOpen || Open(GetName(), GetDirection(), GetChannels(), GetSampleRate(), GetSampleSize());
+      return true;
     }
 
 
-    unsigned GetChannels() const
+    virtual unsigned GetChannels() const
     {
       return m_format_pcm.numChannels;
     }
 
 
-    unsigned GetSampleRate() const
+    virtual unsigned GetSampleRate() const
     {
       return m_format_pcm.samplesPerSec/1000; // yeah, member name is bogus, is really milliHertz
     }
 
 
-    unsigned GetSampleSize() const
+    virtual unsigned GetSampleSize() const
     {
       return m_format_pcm.bitsPerSample;
     }
 
 
-    PBoolean SetBuffers(PINDEX size, PINDEX count)
+    virtual PBoolean SetBuffers(PINDEX size, PINDEX count)
     {
       bool notOpen = !IsOpen();
 
@@ -622,11 +626,11 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
 
       m_bufferPos = m_bufferLen = 0;
 
-      return notOpen || Open(GetName(), GetDirection(), GetChannels(), GetSampleRate(), GetSampleSize());
+      return notOpen || InternalOpen();
     }
 
 
-    PBoolean GetBuffers(PINDEX & size, PINDEX & count)
+    virtual PBoolean GetBuffers(PINDEX & size, PINDEX & count)
     {
       size = m_buffers[0].size();
       count = m_buffers.size();
@@ -634,7 +638,7 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean SetVolume(unsigned newVolume)
+    virtual PBoolean SetVolume(unsigned newVolume)
     {
       if (!m_volume.IsValid())
         return false;
@@ -647,7 +651,7 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    PBoolean GetVolume(unsigned & oldVolume)
+    virtual PBoolean GetVolume(unsigned & oldVolume)
     {
       if (!m_volume.IsValid())
         return false;
@@ -665,7 +669,7 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    bool SetMute(bool newMute)
+    virtual bool SetMute(bool newMute)
     {
       if (!m_volume.IsValid())
         return false;
@@ -674,7 +678,7 @@ PTRACE(1, "bufferLocation.numBuffers=" << bufferLocation.numBuffers);
     }
 
 
-    bool GetMute(bool & oldMute)
+    virtual bool GetMute(bool & oldMute)
     {
       if (!m_volume.IsValid())
         return false;

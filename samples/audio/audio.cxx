@@ -123,10 +123,11 @@ void AudioTest::Main()
   cli.SetCommand("playvol", PCREATE_NOTIFIER(PlayerVolume), "Set play back volume", "<percent>");
   cli.Start(false);
 
+  cout << "Closing record/play back channels, waiting for thread to terminate ..." << endl;
   for (PSoundChannel::Directions dir = PSoundChannel::Recorder; dir <= PSoundChannel::Player; ++dir)
     m_soundChannel[dir]->Close();
 
-  thread.WaitForTermination(1000);
+  thread.WaitForTermination(5000);
 }
 
 
