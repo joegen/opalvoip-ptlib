@@ -34,9 +34,12 @@
 
 #include <ptlib.h>
 
-#include <ptclib/pstun.h>
-
 #if P_STUN
+
+#define P_FORCE_STATIC_PLUGIN
+#include <ptlib/pluginmgr.h>
+
+#include <ptclib/pstun.h>
 
 #include <ptclib/random.h>
 #include <ptclib/cypher.h>

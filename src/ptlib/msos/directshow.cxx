@@ -40,6 +40,9 @@
 
 #ifdef P_DIRECTSHOW
 
+#define P_FORCE_STATIC_PLUGIN
+#include <ptlib/pluginmgr.h>
+
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 

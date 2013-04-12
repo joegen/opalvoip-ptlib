@@ -8,9 +8,12 @@
 
 #include <ptlib.h>
 
-#include <ptclib/pstunsrvr.h>
-
 #if P_STUNSRVR
+
+#define P_FORCE_STATIC_PLUGIN
+#include <ptlib/pluginmgr.h>
+
+#include <ptclib/pstunsrvr.h>
 
 #define new PNEW
 
