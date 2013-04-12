@@ -146,6 +146,11 @@
 #include <langinfo.h>
 #endif
 
+#if defined(P_MACOSX) || defined(P_IOS)
+  #include <mach/mach_time.h>
+#endif
+
+
 #define  LINE_SIZE_STEP  100
 
 #define  DEFAULT_FILE_MODE  (S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
@@ -301,6 +306,13 @@ PTimeInterval PTimer::Tick()
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return ts.tv_sec*1000LL + ts.tv_nsec/1000000LL;
+#elif defined(P_MACOSX) || defined(P_IOS)
+  static mach_timebase_info_data_t timebaseInfo;
+  if (timebaseInfo.denom == 0) {
+    mach_timebase_info(&timebaseInfo);
+    timebaseInfo.denom *= 1000000; // Want milliseconds, not nanoseconds
+  }
+  return mach_absolute_time() * timebaseInfo.numer / timebaseInfo.denom;
 #else
   #warning System does not have clock_gettime with CLOCK_MONOTONIC, using gettimeofday
   struct timeval tv;
