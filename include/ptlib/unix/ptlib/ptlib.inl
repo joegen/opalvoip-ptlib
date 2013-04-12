@@ -57,15 +57,7 @@ PINLINE PProcessIdentifier PProcess::GetCurrentProcessID()
 
 PINLINE unsigned PTimer::Resolution()
 {
-#if defined(P_SUN4)
-  return 1000;
-#elif defined(P_RTEMS)
-  rtems_interval ticks_per_sec; 
-  rtems_clock_get(RTEMS_CLOCK_GET_TICKS_PER_SECOND, &ticks_per_sec); 
-  return (unsigned)(1000/ticks_per_sec);
-#else
-  return (unsigned)(1000/CLOCKS_PER_SEC);
-#endif
+  return 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
