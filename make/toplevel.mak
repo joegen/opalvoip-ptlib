@@ -48,6 +48,7 @@ SUBDIRS += samples/hello_world \
            samples/map_dict \
            samples/netif \
            samples/sockbundle \
+           samples/timing \
            samples/thread
 ifdef HAS_IPV6
 SUBDIRS += samples/ipv6test
@@ -77,6 +78,9 @@ endif
 ifdef HAS_PCAP
 SUBDIRS += samples/ether
 endif
+ifdef HAS_AUDIO
+SUBDIRS += samples/audio
+endif
 ifdef HAS_VIDEO
 SUBDIRS += samples/vidtest
 endif
@@ -88,7 +92,13 @@ optnoshared debugnoshared bothnoshared :: P_SHAREDLIB=0
 # all these targets are just passed to all subdirectories
 $(STANDARD_TARGETS) ::
 	@echo OS=$(target_os), CPU=$(target_cpu)
-	@set -e; $(foreach dir,$(addprefix $(PTLIBDIR)/,$(SUBDIRS)),if test -d $(dir) ; then $(MAKE) -C $(dir) $@; fi; )
+	@set -e; $(foreach dir,$(addprefix $(PTLIBDIR)/,$(SUBDIRS)), \
+          if test -d $(dir) ; then \
+            $(MAKE) -C $(dir) $@; \
+          else \
+            echo Directory $(dir) does not exist; \
+          fi; \
+        )
 
 
 ifneq (,$(SVN))
