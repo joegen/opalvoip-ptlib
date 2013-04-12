@@ -54,6 +54,7 @@ endif
 
 vpath %.cxx $(VPATH_CXX)
 vpath %.cpp $(VPATH_CXX)
+vpath %.mm  $(VPATH_MM)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
 vpath %.dep $(DEPDIR)
@@ -96,6 +97,10 @@ $(OBJDIR)/%.o : %.cpp
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
+$(OBJDIR)/%.o : %.mm 
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CC)$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
@@ -104,6 +109,7 @@ $(OBJDIR)/%.o : %.c
 # create list of object files 
 #
 SRC_OBJS := $(SOURCES:.c=.o)
+SRC_OBJS := $(SRC_OBJS:.mm=.o)
 SRC_OBJS := $(SRC_OBJS:.cxx=.o)
 SRC_OBJS := $(SRC_OBJS:.cpp=.o)
 OBJS	 := $(strip $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(OBJS))))
@@ -113,6 +119,7 @@ OBJS	 := $(strip $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_O
 #
 DEPDIR	 := $(OBJDIR)
 SRC_DEPS := $(SOURCES:.c=.dep)
+SRC_DEPS := $(SRC_DEPS:.mm=.dep)
 SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
 SRC_DEPS := $(SRC_DEPS:.cpp=.dep)
 DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
@@ -127,6 +134,11 @@ $(DEPDIR)/%.dep : %.cxx
 	$(Q_DEP)$(CXX) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	@printf %s $(OBJDIR)/ > $@
+	$(Q_DEP)$(CXX) $(DEPFLAGS) $(CFLAGS) -M $< >> $@
+
+$(DEPDIR)/%.dep : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(Q_DEP)$(CXX) $(DEPFLAGS) $(CFLAGS) -M $< >> $@

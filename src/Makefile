@@ -63,6 +63,7 @@ else
   PLATFORM_SRC_DIR := ptlib/unix
 endif
 VPATH_CXX          := $(PLATFORM_SRC_DIR) $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR) 
+VPATH_MM           := $(PLATFORM_SRC_DIR)
 
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
@@ -111,11 +112,7 @@ ifeq ($(HAS_VIDEO),1)
   endif
 
   ifeq ($(target_os),Darwin)
-    OBJS    += $(PLATFORM_SRC_DIR)/macvidcap.o
-    LDFLAGS += -framework QTKit -framework CoreVideo -framework Foundation -lobjc
-    $(OBJDIR)/macvidcap.o: $(PLATFORM_SRC_DIR)/macvidcap.mm
-	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CC)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+    SOURCES += $(PLATFORM_SRC_DIR)/macvidcap.mm
   endif # Darwin
 
 endif # HAS_VIDEO
@@ -134,8 +131,8 @@ ifeq ($(HAS_AUDIO),1)
     SOURCES += $(COMPONENT_SRC_DIR)/portaudio.cxx
   endif
 
-  ifeq ($(target_os),Darwin)
-    #SOURCES += $(PLATFORM_SRC_DIR)/maccoreaudio.cxx
+  ifneq (,$findstring $(target_os),Darwin iPhoneOS iPhoneSimulator)
+    SOURCES += $(PLATFORM_SRC_DIR)/macaudio.mm
   endif # Darwin
 
 endif  # HAS_AUDIO
