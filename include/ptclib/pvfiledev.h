@@ -38,12 +38,9 @@
 #pragma interface
 #endif
 
-#include <ptlib.h>
-
 #if P_VIDEO
 #if P_VIDFILE
 
-#include <ptlib.h>
 #include <ptlib/video.h>
 #include <ptlib/vconvert.h>
 #include <ptclib/pvidfile.h>
