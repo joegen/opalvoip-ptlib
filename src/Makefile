@@ -140,8 +140,9 @@ endif  # HAS_AUDIO
 
 ## Various modules
 
+SOURCES += $(COMPONENT_SRC_DIR)/pxml.cxx  # Outside HAS_EXPAT as need PXML::EscapeSpecialChars()
+
 ifeq ($(HAS_EXPAT),1)
-  SOURCES += $(COMPONENT_SRC_DIR)/pxml.cxx 
 
   ifeq ($(HAS_XMLRPC),1)
     SOURCES += $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
