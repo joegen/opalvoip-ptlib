@@ -50,9 +50,13 @@ static bool CheckError(OSStatus status, const char * fn)
   if (status == 0 || !PTrace::CanTrace(1))
     return false;
  
-  PTrace::Begin(1, __FILE__, __LINE__) << "Error \""
+  PTrace::Begin(1, __FILE__, __LINE__) << "Error "
+#if TARGET_IPHONE_SIMULATOR
+         "0x" << hex << status << dec
+#else
          << [[[NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil] localizedDescription] UTF8String]
-  << "\" in function " << fn << PTrace::End;
+#endif
+         << " in function " << fn << PTrace::End;
   return true;
 }
 #define CHECK_SUCCESS(fn, args) (!CheckError(fn args, #fn))
