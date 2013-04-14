@@ -243,7 +243,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
             OpenSLES::AndroidConfiguration androidConfig;
             if (CHECK_SL_SUCCESS(androidConfig.Create, (m_audioOut))) {
               for (PINDEX i = 0; i < PARRAYSIZE(StreamTypes); ++i) {
-                if (deviceName *= StreamTypes[i].m_name) {
+                if (m_deviceName *= StreamTypes[i].m_name) {
                   CHECK_SL_ERROR(androidConfig.SetStreamType, (StreamTypes[i].m_type));
                   break;
                 }
@@ -321,8 +321,9 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
           PAssertAlways(PInvalidParameter);
           return false;
       }
-      
-      m_bufferTimeout.SetInterval(m_bufferSize*1000/GetSampleRate()); // double the time for a buffer to be processed
+
+      // double the time for a buffer to be processed, minimum 1 second
+      m_bufferTimeout.SetInterval(std::max(1000U, m_buffers[0].size()*1000/GetSampleRate()));
 
       PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
       os_handle = 1;
