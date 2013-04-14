@@ -131,7 +131,7 @@ ifeq ($(HAS_AUDIO),1)
     SOURCES += $(COMPONENT_SRC_DIR)/portaudio.cxx
   endif
 
-  ifneq (,$findstring $(target_os),Darwin iPhoneOS iPhoneSimulator)
+  ifneq (,$(findstring $(target_os),Darwin iPhoneOS iPhoneSimulator))
     SOURCES += $(PLATFORM_SRC_DIR)/macaudio.mm
   endif # Darwin
 
