@@ -60,6 +60,8 @@
 #include <gst/app/gstappsink.h>
 #include <gst/app/gstappbuffer.h>
 
+#include <glib-object.h>
+
 
 class PGError
 {
@@ -77,6 +79,7 @@ public:
   }
 
   GError ** operator&() { return &m_error; }
+  operator bool() const  { return m_error != NULL; }
   bool operator!() const { return m_error == NULL; }
 
   friend ostream & operator<<(ostream & strm, const PGError & error)
@@ -91,7 +94,7 @@ public:
 
 #if PTRACING
 static void LogFunction(GstDebugCategory * /*category*/,
-                        GstDebugLevel level,
+                        GstDebugLevel gstLevel,
                         const gchar *file,
                         const gchar *function,
                         gint line,
@@ -99,11 +102,14 @@ static void LogFunction(GstDebugCategory * /*category*/,
                         GstDebugMessage *message,
                         gpointer /*data*/)
 {
-  PTrace::Begin(level, file+1, line, NULL)
-        << "GStreamer\t"
-        << function << ": "
-        << gst_debug_message_get(message)
-        << PTrace::End;
+  // GStreamers DEBUG level is a little too verbose for our level 5
+  unsigned ptLevel = gstLevel >= GST_LEVEL_DEBUG ? 6 : gstLevel;
+  if (PTrace::CanTrace(ptLevel))
+    PTrace::Begin(ptLevel, file+1, line, NULL)
+          << "GStreamer\t"
+          << function << ": "
+          << gst_debug_message_get(message)
+          << PTrace::End;
 }
 #endif
 
@@ -135,7 +141,7 @@ class PGstInitialiser : public PProcessStartup
 
 #if PTRACING
       gst_debug_set_active(false);
-      gst_debug_add_log_function(NULL, NULL);
+      gst_debug_remove_log_function(LogFunction);
 #endif
     }
 };
@@ -158,6 +164,13 @@ void * PGBaseObject::Detach()
   void * object = m_object;
   m_object = NULL;
   return object;
+}
+
+
+void PGBaseObject::SetNULL()
+{
+  Unreference();
+  m_object = NULL;
 }
 
 
@@ -324,6 +337,18 @@ PGstElement::PGstElement(const char * factoryName, const char * name)
 }
 
 
+PString PGstElement::GetName() const
+{
+  return IsValid() ? gst_element_get_name(As<GstElement>()) : PString::Empty();
+}
+
+
+bool PGstElement::SetName(const PString & name)
+{
+  return gst_element_set_name(As<GstElement>(), name);
+}
+
+
 bool PGstElement::Link(const PGstElement & dest)
 {
   return IsValid() && dest.IsValid() && gst_element_link(As<GstElement>(), dest.As<GstElement>());
@@ -363,9 +388,65 @@ PGstElement::StateResult PGstElement::WaitStateChange(const PTimeInterval & time
 
 ///////////////////////////////////////////////////////////////////////
 
+PGstBaseIterator::PGstBaseIterator(PGBaseObject & valueRef)
+  : m_valueRef(valueRef)
+  , m_lastResult(Done)
+{
+}
+
+
+bool PGstBaseIterator::Attach(void * object)
+{
+  if (!PGBaseObject::Attach(object))
+    return false;
+
+  InternalNext();
+  return true;
+}
+
+
+void PGstBaseIterator::Unreference()
+{
+  if (IsValid())
+    gst_iterator_free(As<GstIterator>());
+}
+
+
+void PGstBaseIterator::Resync()
+{
+  if (IsValid())
+    gst_iterator_resync(As<GstIterator>());
+}
+
+
+PGstBaseIterator::Result PGstBaseIterator::InternalNext()
+{
+  gpointer valuePtr;
+  m_lastResult = (Result)gst_iterator_next(As<GstIterator>(), &valuePtr);
+  if (m_lastResult == Success)
+    m_valueRef.Attach(valuePtr);
+  return m_lastResult;
+}
+
+
+///////////////////////////////////////////////////////////////////////
+
 bool PGstBin::AddElement(const PGstElement & element)
 {
   return IsValid() && element.IsValid() && gst_bin_add(As<GstBin>(), element.As<GstElement>());
+}
+
+
+bool PGstBin::GetByName(const char * name, PGstElement & element) const
+{
+  return IsValid() && element.Attach(gst_bin_get_by_name(As<GstBin>(), name));
+}
+
+
+bool PGstBin::GetElements(PGstIterator<PGstElement> & iterator, bool recursive) const
+{
+  return IsValid() && iterator.Attach(recursive ? gst_bin_iterate_recurse(As<GstBin>())
+                                                : gst_bin_iterate_elements(As<GstBin>()));
 }
 
 
@@ -373,8 +454,7 @@ bool PGstBin::AddElement(const PGstElement & element)
 
 PGstAppSrc::PGstAppSrc(const PGstBin & bin, const char * name)
 {
-  if (bin.IsValid())
-    Attach(gst_bin_get_by_name(bin.As<GstBin>(), name));
+  bin.GetByName(name, *this);
 }
 
 
@@ -409,20 +489,20 @@ bool PGstAppSrc::EndStream()
 
 PGstAppSink::PGstAppSink(const PGstBin & bin, const char * name)
 {
-  if (bin.IsValid())
-    Attach(gst_bin_get_by_name(bin.As<GstBin>(), name));
+  bin.GetByName(name, *this);
 }
 
 
 bool PGstAppSink::Pull(void * data, PINDEX & size)
 {
+  if (!IsValid() || IsEndStream())
+    return false;
+
   GstBuffer * buffer = gst_app_sink_pull_buffer(As<GstAppSink>());
   if (buffer == NULL)
     return false;
 
-  if (size > (PINDEX)buffer->size)
-    size = buffer->size;
-
+  size = std::min(size, (PINDEX)GST_BUFFER_SIZE(buffer));
   memcpy(data, buffer->data, size);
   gst_buffer_unref(buffer);
   return true;
@@ -431,7 +511,7 @@ bool PGstAppSink::Pull(void * data, PINDEX & size)
 
 bool PGstAppSink::IsEndStream()
 {
-  return gst_app_sink_is_eos(As<GstAppSink>()) == GST_FLOW_OK;
+  return gst_app_sink_is_eos(As<GstAppSink>());
 }
 
 
@@ -444,21 +524,19 @@ PGstPipeline::PGstPipeline(const char * name)
 }
 
 
-bool PGstPipeline::Parse(const char * pipeline)
+bool PGstPipeline::Parse(const char * description)
 {
+  if (description == NULL || *description == '\0')
+    return false;
+
   PGError error;
-  if (!Attach(gst_parse_launch(pipeline, &error))) {
-    PTRACE(1, "GStreamer\tCould not parse pipline \"" << pipeline << "\", error: " << error);
+  if (!Attach(gst_parse_launch(description, &error)) || error) {
+    PTRACE(1, "GStreamer\tCould not parse pipline \"" << description << "\", error: " << error);
     return false;
   }
 
-  if (!error) {
-    PTRACE(4, "GStreamer\tParsed pipline \"" << pipeline << '"');
-    return true;
-  }
-
-  PTRACE(2, "GStreamer\tError parsing pipline \"" << pipeline << "\": " << error);
-  return false;
+  PTRACE(4, "GStreamer\tParsed pipline \"" << description << '"');
+  return true;
 }
 
 
@@ -551,7 +629,7 @@ bool PGstBus::Pop(PGstMessage & message)
 }
 
 
-bool PGstBus::POp(PGstMessage & message, PTimeInterval & wait)
+bool PGstBus::Pop(PGstMessage & message, PTimeInterval & wait)
 {
   return IsValid() && message.Attach(gst_bus_timed_pop(As<GstBus>(), wait.GetMilliSeconds()*1000000));
 }
