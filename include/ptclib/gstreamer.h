@@ -45,8 +45,8 @@
 //////////////////////////////////////////////////////////////////////////////
 // GStreamer classes
 
-/** GLib object.
- */
+
+/// GLib object base wrapper class.
 class PGBaseObject : public PObject
 {
     PCLASSINFO(PGBaseObject, PObject)
@@ -64,8 +64,9 @@ class PGBaseObject : public PObject
     operator bool() const { return m_object != NULL; }
     bool operator!() const { return m_object == NULL; }
 
-    bool Attach(void * object);
+    virtual bool Attach(void * object);
     void * Detach();
+    void SetNULL();
 
   protected:
     virtual void Unreference() = 0;
@@ -75,6 +76,9 @@ class PGBaseObject : public PObject
 };
 
 
+/**GLib object wrapper class.
+   https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html
+  */
 class PGObject : public PGBaseObject
 {
     PCLASSINFO(PGObject, PGBaseObject)
@@ -101,6 +105,9 @@ class PGObject : public PGBaseObject
 };
 
 
+/**GLib mini-object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMiniObject.html
+  */
 class PGstMiniObject : public PGBaseObject
 {
     PCLASSINFO(PGstMiniObject, PGBaseObject)
@@ -117,6 +124,9 @@ class PGstMiniObject : public PGBaseObject
 };
 
 
+/**GStreamer object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstObject.html
+  */
 class PGstObject : public PGObject
 {
     PCLASSINFO(PGstObject, PGObject)
@@ -126,6 +136,9 @@ class PGstObject : public PGObject
 };
 
 
+/**GStreamer plug in feature object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPluginFeature.html
+  */
 class PGstPluginFeature : public PGstObject
 {
     PCLASSINFO(PGstPluginFeature, PGstObject)
@@ -139,6 +152,9 @@ class PGstPluginFeature : public PGstObject
 };
 
 
+/**GStreamer element factory object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElementFactory.html
+  */
 class PGstElementFactory : public PGstPluginFeature
 {
     PCLASSINFO(PGstElementFactory, PGstPluginFeature)
@@ -152,6 +168,9 @@ class PGstElementFactory : public PGstPluginFeature
 };
 
 
+/**GStreamer element object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstElement.html
+  */
 class PGstElement : public PGstObject
 {
     PCLASSINFO(PGstElement, PGstObject)
@@ -161,6 +180,9 @@ class PGstElement : public PGstObject
       const char * factoryName,
       const char * name
     );
+
+    PString GetName() const;
+    bool SetName(const PString & name);
 
     bool Link(
       const PGstElement & dest
@@ -196,6 +218,56 @@ class PGstElement : public PGstObject
 };
 
 
+/**GStreamer iterator object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstIterator.html
+  */
+class PGstBaseIterator : public PGBaseObject
+{
+    PCLASSINFO(PGstBaseIterator, PGBaseObject)
+  public:
+    ~PGstBaseIterator() { Unreference(); }
+
+    virtual bool Attach(void * object);
+
+    enum Result {
+      Done,
+      Success,
+      NeedResync,
+      Error
+    };
+    Result operator++() { return InternalNext(); }
+
+    Result GetLastResult() const { return m_lastResult; }
+
+    void Resync();
+
+  protected:
+    PGstBaseIterator(PGBaseObject & valueRef);
+
+    virtual void Unreference();
+    Result InternalNext();
+
+    PGBaseObject & m_valueRef;
+    Result         m_lastResult;
+};
+
+
+template <class T>
+class PGstIterator : public PGstBaseIterator
+{
+    PCLASSINFO(PGstIterator, PGstBaseIterator)
+  public:
+    PGstIterator() : PGstBaseIterator(m_value) { }
+    const T * operator->() const { return &m_value; }
+    const T & operator*() const  { return  m_value; }
+  protected:
+    T m_value;
+};
+
+
+/**GStreamer bin object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBin.html
+  */
 class PGstBin : public PGstElement
 {
     PCLASSINFO(PGstBin, PGstElement)
@@ -203,13 +275,27 @@ class PGstBin : public PGstElement
     bool AddElement(
       const PGstElement & element
     );
+
+    bool GetByName(
+      const char * name,
+      PGstElement & element
+    ) const;
+
+    bool GetElements(
+      PGstIterator<PGstElement> & iterator,
+      bool recursive = false
+    ) const;
 };
 
 
+/**GStreamer appsrc object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-libs/html/gst-plugins-base-libs-appsrc.html
+  */
 class PGstAppSrc : public PGstElement
 {
     PCLASSINFO(PGstAppSrc, PGstElement)
   public:
+    PGstAppSrc() { }
     PGstAppSrc(
       const PGstBin & bin,
       const char * name
@@ -232,10 +318,14 @@ class PGstAppSrc : public PGstElement
 };
 
 
+/**GStreamer appsink object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gst-plugins-base-libs/html/gst-plugins-base-libs-appsink.html
+  */
 class PGstAppSink : public PGstElement
 {
     PCLASSINFO(PGstAppSink, PGstElement)
   public:
+    PGstAppSink() { }
     PGstAppSink(
       const PGstBin & bin,
       const char * name
@@ -250,6 +340,9 @@ class PGstAppSink : public PGstElement
 };
 
 
+/**GStreamer pipeline object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstPipeline.html
+  */
 class PGstPipeline : public PGstBin
 {
     PCLASSINFO(PGstPipeline, PGstBin)
@@ -259,11 +352,14 @@ class PGstPipeline : public PGstBin
     );
 
     bool Parse(
-      const char * pipeline
+      const char * description
     );
 };
 
 
+/**GStreamer message object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/gstreamer-GstMessage.html
+  */
 class PGstMessage : public PGstMiniObject
 {
     PCLASSINFO(PGstMessage, PGstMiniObject)
@@ -275,6 +371,9 @@ class PGstMessage : public PGstMiniObject
 };
 
 
+/**GStreamer bus object wrapper class.
+   http://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer/html/GstBus.html
+  */
 class PGstBus : public PGstObject
 {
     PCLASSINFO(PGstBus, PGstObject)
@@ -287,7 +386,7 @@ class PGstBus : public PGstObject
     bool HavePending();
     bool Peek(PGstMessage & message);
     bool Pop(PGstMessage & message);
-    bool POp(PGstMessage & message, PTimeInterval & wait);
+    bool Pop(PGstMessage & message, PTimeInterval & wait);
 
     typedef PNotifierTemplate<PGstMessage> Notifier;
     #define PDECLARE_GstBusNotifier(cls, fn) PDECLARE_NOTIFIER2(PGstBus, cls, fn, PGstMessage)
