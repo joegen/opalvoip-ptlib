@@ -41,6 +41,8 @@
 
 #if P_GSTREAMER
 
+#pragma message("GStreamer support enabled")
+
 #ifdef _MSC_VER
   #pragma warning(disable:4127)
   #include <gst/gst.h>
@@ -50,7 +52,6 @@
   #pragma comment(lib, P_GST_APP_LIBRARY)
   #pragma comment(lib, P_GOBJECT_LIBRARY)
   #pragma comment(lib, P_GLIB_LIBRARY)
-  #pragma message("GStreamer support enabled")
 #else
   #include <gst/gst.h>
 #endif
@@ -584,11 +585,7 @@ bool PGstBus::SetNotifier(Notifier & notifier)
 ///////////////////////////////////////////////////////////////////////
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("GStreamer support DISABLED")
-  #endif
-
+  #pragma message("GStreamer support DISABLED")
 #endif // P_GSTREAMER
 
 

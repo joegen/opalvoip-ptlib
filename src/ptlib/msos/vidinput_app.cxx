@@ -30,6 +30,9 @@
 
 #if P_APPSHARE
 
+#pragma message("Application sharing video support enabled")
+
+
 #include <ptlib/vconvert.h>
 #include <ptclib/delaychan.h>
 #include <ptlib/msos/ptlib/vidinput_app.h>
@@ -38,10 +41,6 @@
 static const char TopWindowPrefix[] = "TopWindow:";
 static const PINDEX TopWindowPrefixLen = sizeof(TopWindowPrefix)-1;
 
-
-#ifdef _MSC_VER
-  #pragma message("Application sharing video support enabled")
-#endif
 
 
 /* Convert bitmap colour format to format name 
@@ -422,9 +421,5 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
 
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("Application sharing video support DISABLED")
-  #endif
-
+  #pragma message("Application sharing video support DISABLED")
 #endif  // P_APPSHARE
