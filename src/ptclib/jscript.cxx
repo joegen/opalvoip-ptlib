@@ -40,13 +40,14 @@
 
 #if P_V8
 
+#pragma message("JavaScript support enabled")
+
 #include <ptclib/jscript.h>
 
 #ifdef _MSC_VER
   #pragma comment(lib, P_V8_LIBRARY1)
   #pragma comment(lib, P_V8_LIBRARY2)
   #pragma comment(lib, "winmm.lib")
-  #pragma message("JavaScript support enabled")
 #endif
 
 
@@ -466,10 +467,6 @@ bool PJavaScript::SetFunction(const PString & /*name*/, const FunctionNotifier &
 
 
 #else // P_V8
-
-  #ifdef _MSC_VER
-    #pragma message("JavaScript support DISABLED")
-  #endif
-
+  #pragma message("JavaScript support DISABLED")
 #endif // P_V8
 

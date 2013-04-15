@@ -39,13 +39,14 @@
 
 #if P_LUA
 
+#pragma message("Lua scripting support enabled")
+
 #include <ptclib/lua.h>
 #include <lua.hpp>
 
 
 #ifdef _MSC_VER
   #pragma comment(lib, P_LUA_LIBRARY)
-  #pragma message("Lua scripting support enabled")
 #endif
 
 
@@ -811,9 +812,5 @@ void PLua::ParamVector::Pop(void * data)
 
 
 #else // P_LUA
-
-  #ifdef _MSC_VER
-    #pragma message("Lua scripting support DISABLED")
-  #endif
-
+  #pragma message("Lua scripting support DISABLED")
 #endif // P_LUA

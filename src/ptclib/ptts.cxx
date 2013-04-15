@@ -44,6 +44,9 @@
 
 #if P_SAPI
 
+#pragma message("SAPI support enabled")
+
+
 // Following defined by both stdint.h and intsafe.h
 #undef INT8_MIN
 #undef INT16_MIN
@@ -68,7 +71,6 @@
 
 #ifdef _MSC_VER
   #pragma comment(lib, "sapi.lib")
-  #pragma message("SAPI support enabled")
 #endif
 
 #include <sphelper.h>
@@ -259,11 +261,7 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 }
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("SAPI support DISABLED")
-  #endif
-
+  #pragma message("SAPI support DISABLED")
 #endif // P_SAPI
 
 
