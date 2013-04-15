@@ -44,13 +44,14 @@
 
 #if P_SDL
 
+#pragma message("SDL video support enabled")
+
 extern "C" {
   #include <SDL.h>
 };
 
 #ifdef _MSC_VER
   #pragma comment(lib, P_SDL_LIBRARY)
-  #pragma message("SDL video support enabled")
 #endif
 
 
@@ -507,11 +508,7 @@ void PVideoOutputDevice_SDL::PostEvent(unsigned code, bool wait)
 
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("SDL video support DISABLED")
-  #endif
-
+  #pragma message("SDL video support DISABLED")
 #endif // P_SDL
 
 

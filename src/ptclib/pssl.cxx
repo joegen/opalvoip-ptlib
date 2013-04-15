@@ -92,6 +92,8 @@
 
 #if P_SSL
 
+#pragma message("SSL support (via OpenSSL) enabled")
+
 #define USE_SOCKETS
 
 extern "C" {
@@ -111,7 +113,6 @@ extern "C" {
 #ifdef _MSC_VER
   #pragma comment(lib, P_SSL_LIB1)
   #pragma comment(lib, P_SSL_LIB2)
-  #pragma message("SSL support (via OpenSSL) enabled")
 #endif
 
 
@@ -1815,11 +1816,7 @@ PBoolean PSSLChannel::OnOpen()
 
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("SSL support (via OpenSSL) DISABLED")
-  #endif
-
+  #pragma message("SSL support (via OpenSSL) DISABLED")
 #endif // P_SSL
 
 

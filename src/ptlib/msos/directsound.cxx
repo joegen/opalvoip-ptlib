@@ -35,6 +35,9 @@
 
 #if P_DIRECTSOUND
 
+#pragma message("Direct Sound support enabled")
+
+
 #define PTraceModule() "dsound"
 
 #include <ptlib/pprocess.h>
@@ -53,7 +56,6 @@
     #pragma comment(lib, "dxguid.lib")
   #endif
   #pragma comment(lib, "dsound.lib")
-  #pragma message("Direct Sound support enabled")
 #endif
 
 // It takes a lot of fiddling in configure to find dxerr.h
@@ -1407,9 +1409,5 @@ PBoolean PSoundChannelDirectSound::GetVolume (unsigned & devVol) // public
 
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("Direct Sound support DISABLED")
-  #endif
-
+  #pragma message("Direct Sound support DISABLED")
 #endif // P_DIRECTSOUND
