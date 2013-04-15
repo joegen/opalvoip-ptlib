@@ -35,7 +35,7 @@
 #pragma implementation "sfile.h"
 #endif
 
-#pragma message ("sfile.cxx is deprecated - please remove from the build")
+#error "sfile.cxx is deprecated - please remove from the build"
 
 #include <ptlib.h>
 

@@ -42,13 +42,14 @@
 
 #if P_LDAP
 
+#pragma message("LDAP support enabled")
+
 #define LDAP_DEPRECATED 1
 #include <ldap.h>
 
 
 #if defined(_MSC_VER)
   #pragma comment(lib, P_LDAP_LIBRARY)
-  #pragma message("LDAP support enabled")
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1062,11 +1063,7 @@ void PLDAPSchema::OnSendSchema(PArray<PLDAPSession::ModAttrib> & attrib, PLDAPSe
 
 
 #else
-
-  #if defined(_MSC_VER)
-    #pragma message("LDAP support DISABLED")
-  #endif
-
+  #pragma message("LDAP support DISABLED")
 #endif // P_LDAP
 
 

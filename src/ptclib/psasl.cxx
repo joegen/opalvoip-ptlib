@@ -39,6 +39,8 @@
 
 #if P_SASL
 
+#pragma message("SASL support enabled")
+
 extern "C" {
 
 #if P_HAS_SASL_SASL_H
@@ -52,7 +54,6 @@ extern "C" {
 
 #ifdef _MSC_VER
   #pragma comment(lib, P_SASL_LIBRARY)
-  #pragma message("SASL support enabled")
 #endif
 
 ///////////////////////////////////////////////////////
@@ -339,11 +340,7 @@ PBoolean PSASLClient::End()
 
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("SASL support DISABLED")
-  #endif
-
+  #pragma message("SASL support DISABLED")
 #endif // P_SASL
 
 // End of File ///////////////////////////////////////////////////////////////

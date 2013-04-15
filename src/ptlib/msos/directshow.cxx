@@ -40,6 +40,9 @@
 
 #ifdef P_DIRECTSHOW
 
+#pragma message("Direct Show video support enabled")
+
+
 #define P_FORCE_STATIC_PLUGIN
 #include <ptlib/pluginmgr.h>
 
@@ -176,7 +179,6 @@
 
 #ifdef _MSC_VER
   #pragma comment(lib, "strmiids.lib")
-  #pragma message("Direct Show video support enabled")
 #endif
 
 
@@ -1526,9 +1528,5 @@ PVideoInputControl * PVideoInputDevice_DirectShow::GetVideoInputControls()
 
 
 #else
-
-  #ifdef _MSC_VER
-    #pragma message("Direct Show video support DISABLED")
-  #endif
-
+  #pragma message("Direct Show video support DISABLED")
 #endif  // P_DIRECTSHOW

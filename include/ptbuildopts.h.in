@@ -296,14 +296,15 @@
 // OpenSSL library for secure sockets layer
 //
 
-#undef P_SSL
+#undef P_OPENSSL
 #undef P_SSL_WIN64
 #undef P_SSL_WIN32
 #undef P_SSL_WINCE
 
 #if (defined(P_SSL_WIN64) &&  defined(P_64BIT)                        ) || \
     (defined(P_SSL_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_SSL_WINCE)                      &&  defined(_WIN32_WCE))
+    (defined(P_SSL_WINCE)                      &&  defined(_WIN32_WCE)) || \
+    P_OPENSSL
   #define P_SSL 1
 #endif
 
