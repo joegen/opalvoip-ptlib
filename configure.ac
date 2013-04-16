@@ -2350,6 +2350,7 @@ echo "                         OpenLDAP :  ${PTLIB_OPENLDAP}"
 echo "                             ODBC :  ${PTLIB_ODBC}"
 echo "                              Lua :  ${PTLIB_LUA}"
 echo "                             Java :  ${PTLIB_V8} (V8)"
+echo "                        GStreamer :  ${PTLIB_GSTREAMER}"
 
 echo ""
 
