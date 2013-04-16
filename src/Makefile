@@ -85,6 +85,10 @@ ifeq ($(HAS_SDL),1)
   SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 endif
 
+ifeq ($(HAS_GSTREAMER),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/gstreamer.cxx
+endif
+
 ifeq ($(HAS_ODBC),1)
   SOURCES += $(COMPONENT_SRC_DIR)/podbc.cxx
 endif

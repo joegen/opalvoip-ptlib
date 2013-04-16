@@ -339,7 +339,7 @@ PGstElement::PGstElement(const char * factoryName, const char * name)
 
 PString PGstElement::GetName() const
 {
-  return IsValid() ? gst_element_get_name(As<GstElement>()) : PString::Empty();
+  return IsValid() ? PString(gst_element_get_name(As<GstElement>())) : PString::Empty();
 }
 
 
