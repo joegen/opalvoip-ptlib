@@ -355,9 +355,33 @@ bool PGstElement::Link(const PGstElement & dest)
 }
 
 
-PGstElement::StateResult PGstElement::SetState(States newState)
+PGstElement::StateResult PGstElement::SetState(States newState, const PTimeInterval & timeout)
 {
-  return IsValid() ? (StateResult)gst_element_set_state(As<GstElement>(), (GstState)newState) : Failed;
+  if (!IsValid())
+    return Failed;
+
+  StateResult result = (StateResult)gst_element_set_state(As<GstElement>(), (GstState)newState);
+
+  if (timeout > 0) {
+    PSimpleTimer timer = timeout;
+    while (result == PGstElement::Changing && timer.IsRunning()) {
+      States pendingState, currentState;
+      if (GetPendingState(pendingState) == Failed || GetState(currentState) == Failed)
+        return Failed;
+      if (currentState == newState)
+        return Success;
+
+      if (pendingState != newState) {
+        PTRACE(2, "State change inconsistency: intended=" << newState << ", actual=" << pendingState);
+        return Changing;
+      }
+
+      PTRACE(4, "Awaiting state change from " << currentState << " to " << pendingState << ", timeout=" << timeout);
+      result = WaitStateChange(timeout);
+    }
+  }
+
+  return result;
 }
 
 

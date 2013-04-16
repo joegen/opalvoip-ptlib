@@ -188,22 +188,23 @@ class PGstElement : public PGstObject
       const PGstElement & dest
     );
 
-    enum States {
+    P_DECLARE_TRACED_ENUM(States,
       VoidPending,
       Null,
       Ready,
       Paused,
       Playing
-    };
+    );
 
-    enum StateResult {
+    P_DECLARE_TRACED_ENUM(StateResult,
       Failed,
       Success,
       Changing,
       NoPreRoll
-    };
+    );
     StateResult SetState(
-      States newState
+      States newState,
+      const PTimeInterval & timeout = 0
     );
     StateResult GetState(
       States & state
@@ -229,12 +230,12 @@ class PGstBaseIterator : public PGBaseObject
 
     virtual bool Attach(void * object);
 
-    enum Result {
+    P_DECLARE_TRACED_ENUM(Result,
       Done,
       Success,
       NeedResync,
       Error
-    };
+    );
     Result operator++() { return InternalNext(); }
 
     Result GetLastResult() const { return m_lastResult; }
@@ -301,11 +302,11 @@ class PGstAppSrc : public PGstElement
       const char * name
     );
 
-    enum Types {
+    P_DECLARE_TRACED_ENUM(Types,
       Stream,
       Seekable,
       RandomAccess
-    };
+    );
     void SetType(Types type);
     Types GetType() const;
 
