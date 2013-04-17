@@ -588,6 +588,7 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
       if (!interfaceAddedSignal.IsOpen()) {
         interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
         param.m_errorCode = PChannel::Interrupted;
+        PTRACE(4, "Interfaces changed");
         return;
       }
       // Do next case
@@ -613,15 +614,15 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
 
   switch (param.m_errorCode) {
     case PChannel::Unavailable :
-      PTRACE(2, "UDP Port on remote not ready.");
-      param.m_errorCode = PChannel::NoError;
+      PTRACE(3, "UDP Port on remote not ready.");
       break;
 
     case PChannel::BufferTooSmall :
       PTRACE(2, "Read UDP packet too large for buffer of " << param.m_length << " bytes.");
       break;
 
-    case PChannel::NotFound : // Interface went down
+    case PChannel::NotFound :
+      PTRACE(4, "Interface went down");
       param.m_errorCode = PChannel::Interrupted;
       break;
 
