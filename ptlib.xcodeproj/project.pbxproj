@@ -808,6 +808,7 @@
 			buildPhases = (
 			);
 			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "";
 			dependencies = (
 			);
 			name = PTLib;
@@ -900,11 +901,13 @@
 		A3E5E1F917167F2D00DF539E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEBUG = 1;
 				DEBUGGING_SYMBOLS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
+				PATH = "$PATH:/opt/local/bin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -912,8 +915,10 @@
 		A3E5E1FA17167F2D00DF539E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEBUG = "";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
+				PATH = "$PATH:/opt/local/bin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
