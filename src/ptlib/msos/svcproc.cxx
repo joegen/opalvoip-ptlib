@@ -447,6 +447,7 @@ int PServiceProcess::InternalMain(void * arg)
   m_threadMutex.Wait();
   m_activeThreads.erase(m_threadId);
   m_threadId = GetCurrentThreadId();
+  m_threadHandle.Detach();
   m_threadHandle = GetCurrentThread();
   m_activeThreads[m_threadId] = this;
   m_threadMutex.Signal();
