@@ -377,7 +377,7 @@ class PTimer : public PTimeInterval
     {
       class Data : public PSmartObject
       {
-        PAtomicInteger           m_invokeState;
+        PAtomicInteger       m_invokeState;
         PIdGenerator::Handle m_handle;
         static PIdGenerator  s_handleGenerator;
 
@@ -393,7 +393,7 @@ class PTimer : public PTimeInterval
           ResetHandle();
         }
 
-        /* Is valid only if PTimer and PtimerEmitter objects own same TimerGuard object.
+        /* It's valid only if PTimer and PTimerEmitter objects own the same TimerGuard object.
         */ 
         bool IsValid() const
         {
@@ -410,12 +410,13 @@ class PTimer : public PTimeInterval
           --m_invokeState;
         }
 
-        void WaitForInvokeFinished()
+        void WaitForInvokeFinished() const
         {
           while (!m_invokeState.IsZero())
             PThread::Sleep(25);
         }
-        bool IsInvoking()
+
+        bool IsInvoking() const
         {
           return (!m_invokeState.IsZero());
         }
@@ -506,11 +507,11 @@ class PTimer : public PTimeInterval
     {
       PInt64 m_repeatMSecs;
       PTimer::Guard m_guard;
-      PTimer* m_timer;
+      PTimer * m_timer;
     public:
       typedef PSmartPtr<Emitter> Ptr;
 
-      Emitter(PTimer* aTimer)
+      Emitter(PTimer * aTimer)
         : m_repeatMSecs(-1)
         , m_timer(aTimer)
       {
@@ -525,7 +526,7 @@ class PTimer : public PTimeInterval
 
       ~Emitter()
       {
-        GetGuard().ResetHandle(); // There we can free used handle
+        GetGuard().ResetHandle(); // here we can free used handle
       }
 
       PIdGenerator::Handle Timeout()
@@ -535,13 +536,14 @@ class PTimer : public PTimeInterval
           m_timer->OnTimeout();
           GetGuard().Unlock();
         }
-        return GetHandle(); // returns valid timer handle or -1
+        return GetHandle(); // returns valid timer handle or PIdGenerator::Invalid
       }
 
-      inline void SetRepeat(PInt64 aRepeatMSecs)
+      inline void SetRepeat(PInt64 repeatMSecs)
       {
-        m_repeatMSecs = aRepeatMSecs;
+        m_repeatMSecs = repeatMSecs;
       }
+
       inline PInt64 GetRepeat() const
       {
         return m_repeatMSecs;
@@ -597,17 +599,17 @@ class PTimer : public PTimeInterval
       
            Method is tread safe.
         */
-        void RegisterTimer(PTimer *aTimer);
+        void RegisterTimer(PTimer * aTimer);
 
         bool IsTimerThread() const;
         void ProcessInsertion();
 
         struct PreparedEventInfo
         {
-          Emitter * emitter;
-          PInt64    msecs;
+          Emitter::Ptr emitter;
+          PInt64       msecs;
 
-          PreparedEventInfo(PTimer* aTimer)
+          PreparedEventInfo(PTimer * aTimer)
             : emitter(new Emitter(aTimer))
             , msecs(aTimer->GetResetTime().GetMilliSeconds())
           {
@@ -616,14 +618,12 @@ class PTimer : public PTimeInterval
 
         typedef std::multimap<PInt64, PIdGenerator::Handle>   TimerEventRelations;
         typedef std::map<PIdGenerator::Handle, Emitter::Ptr>  Events;
-        typedef std::list<PIdGenerator::Handle>               EventsForRemoval;
         typedef std::list<PreparedEventInfo>                  EventsForInsertion;
 
         PMutex              m_insertMutex;          // Mutex for new timers queue
-        PInt64              m_ticks;                // Internal timer ticks 
+        PInt64              m_ticks;                // Internal timer ticks
         Events              m_events;               // Active timer events
-        TimerEventRelations m_timeToEventRelations; // Pending events ordered by timeout.
-        EventsForRemoval    m_eventsForRemoval;     // Queue of removal timers
+        TimerEventRelations m_timeToEventRelations; // Pending events ordered by timeout
         EventsForInsertion  m_eventsForInsertion;   // Queue of new timers
         const int           m_mininalInterval;      // Minimal interval between internal processing 
 
