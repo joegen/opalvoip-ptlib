@@ -959,7 +959,6 @@ void PTimer::SetInterval(PInt64 milliseconds,
                          long hours,
                          int days)
 {
-  Stop(); // We need to call it here because we need stop before m_resetTime has changed.
   m_resetTime.SetInterval(milliseconds, seconds, minutes, hours, days);
   StartRunning(m_oneshot);
 }
@@ -967,7 +966,6 @@ void PTimer::SetInterval(PInt64 milliseconds,
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  Stop(); // We need to call it here because we need stop before m_resetTime has changed.
   m_resetTime = time;
   StartRunning(false);
 }
@@ -1011,7 +1009,7 @@ void PTimer::Reset()
 void PTimer::OnTimeout()
 {
   if (!m_callback.IsNULL())
-    m_callback(*this, IsRunning());
+    m_callback(*this, !m_oneshot);
 }
 
 
@@ -1075,7 +1073,7 @@ PTimeInterval PTimer::List::Process()
       PIdGenerator::Handle currentHandle =(*eventIt).second->Timeout();
       PInt64 interval = (*eventIt).second->GetRepeat();
       // If timer is repeatable and valid add it again
-      if (interval > 0 && PIdGenerator::Invalid != currentHandle) 
+      if (interval > 0 && PIdGenerator::Invalid != currentHandle)
         m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + interval, it->second));
       else
         m_events.erase(eventIt); // One shot or stopped timer - remove it
