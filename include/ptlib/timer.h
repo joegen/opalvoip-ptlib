@@ -397,7 +397,7 @@ class PTimer : public PTimeInterval
         */ 
         bool IsValid() const
         {
-          return (2 <= referenceCount && s_handleGenerator.IsValid(m_handle));
+          return (2 <= referenceCount);
         }
 
         void AddRef()
