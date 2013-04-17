@@ -890,7 +890,7 @@ PBoolean PMonitoredSocketBundle::Open(WORD port)
   for (PINDEX i = 0; i < interfaces.GetSize(); ++i)
     OpenSocket(interfaces[i]);
 
-  return true;
+  return !m_socketInfoMap.empty(); // any of the sockets are opened
 }
 
 
