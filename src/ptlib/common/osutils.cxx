@@ -1020,22 +1020,21 @@ void PTimer::OnTimeout()
 
 PTimer::List::List()
   : m_ticks(0)
-  , m_mininalInterval(20)
+  , m_mininalInterval(25)
   , m_timerThread(NULL)
 {
 }
 
 
-void PTimer::List::RegisterTimer(PTimer *aTimer)
+void PTimer::List::RegisterTimer(PTimer * aTimer)
 {
-  if (!aTimer)
-    return;
+  PAssert(aTimer != NULL, "Timer is NULL!");
 
   m_insertMutex.Wait();
   m_eventsForInsertion.push_back(PreparedEventInfo(aTimer));
   m_insertMutex.Signal();
 
-  if ((!IsTimerThread() && m_timerThread) || m_timerThread == 0)
+  if (!IsTimerThread())
     PProcess::Current().SignalTimerChange();
 }
 
@@ -1069,12 +1068,10 @@ PTimeInterval PTimer::List::Process()
 
   ProcessInsertion();
 
-  //PTRACE(5, "Begin PTimer::List::Process: " << m_timeToEventRelations.size());
   TimerEventRelations::iterator it = m_timeToEventRelations.begin();
   while ((it != m_timeToEventRelations.end()) && (it->first <= m_ticks)) {
     Events::iterator eventIt = m_events.find(it->second);
     if (eventIt != m_events.end()) {
-      //PTRACE(5, "Proccess timer event, handle=" << it->second <<  ", emitter=" << (*eventIt).second.GetObject());
       PIdGenerator::Handle currentHandle =(*eventIt).second->Timeout();
       PInt64 interval = (*eventIt).second->GetRepeat();
       // If timer is repeatable and valid add it again
