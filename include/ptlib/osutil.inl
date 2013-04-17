@@ -204,7 +204,7 @@ PINLINE PSimpleTimer::operator bool() const
 // PTimer
 
 PINLINE PBoolean PTimer::IsRunning() const
-  { return (m_guard && m_resetTime.GetMilliSeconds() > 0 ); }
+  { return m_guard; }
 
 PINLINE const PTimeInterval & PTimer::GetResetTime() const
   { return m_resetTime; }
