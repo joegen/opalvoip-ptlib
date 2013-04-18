@@ -212,7 +212,7 @@ PSystemLogTarget & PSystemLogTarget::operator=(const PSystemLogTarget &)
 
 void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level, const char * msg)
 {
-  if (level > m_thresholdLevel)
+  if (level > m_thresholdLevel || !PProcess::IsInitialised())
     return;
 
   PTime now;
@@ -260,7 +260,8 @@ PSystemLogToTrace::PSystemLogToTrace()
 
 void PSystemLogToTrace::Output(PSystemLog::Level level, const char * msg)
 {
-  PTrace::Begin(level, NULL, 0) << msg << PTrace::End;
+  if (PTrace::CanTrace(level))
+    PTrace::Begin(level, NULL, 0) << msg << PTrace::End;
 }
 #endif
 
@@ -297,7 +298,7 @@ PSystemLogToNetwork::PSystemLogToNetwork(const PString & server, WORD port, unsi
 
 void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
 {
-  if (level > m_thresholdLevel || !m_server.IsValid())
+  if (level > m_thresholdLevel || !m_server.IsValid() || !PProcess::IsInitialised())
     return;
 
   static int PwlibLogToSeverity[PSystemLog::NumLogLevels] = {
@@ -319,7 +320,7 @@ void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
 #ifdef WIN32
 void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
 {
-  if (level > m_thresholdLevel)
+  if (level > m_thresholdLevel || !PProcess::IsInitialised())
     return;
 
   PStringStream strm;
@@ -356,7 +357,7 @@ PSystemLogToSyslog::~PSystemLogToSyslog()
 
 void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
 {
-  if (level > m_thresholdLevel)
+  if (level > m_thresholdLevel || !PProcess::IsInitialised())
     return;
 
   int priority = m_priority;

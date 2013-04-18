@@ -179,7 +179,7 @@ static bool TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand cmd)
 
 void PServiceProcess::LogToWindow::Output(PSystemLog::Level level, const char * msg)
 {
-  if (msg == NULL || *msg == '\0')
+  if (msg == NULL || *msg == '\0' || !PProcess::IsInitialised())
     return;
 
   PServiceProcess & process = PServiceProcess::Current();
@@ -201,6 +201,9 @@ class PSystemLogToEvent : public PSystemLogTarget
 {
   virtual void Output(PSystemLog::Level level, const char * msg)
   {
+    if (!PProcess::IsInitialised())
+      return;
+
     DWORD err = GetLastError();
 
     // Use event logging to log the error.
@@ -447,6 +450,7 @@ int PServiceProcess::InternalMain(void * arg)
   m_threadMutex.Wait();
   m_activeThreads.erase(m_threadId);
   m_threadId = GetCurrentThreadId();
+  m_threadHandle.Detach();
   m_threadHandle = GetCurrentThread();
   m_activeThreads[m_threadId] = this;
   m_threadMutex.Signal();
