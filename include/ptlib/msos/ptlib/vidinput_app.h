@@ -25,7 +25,7 @@
  * $Date$
  */
 
-#include <ptbuildopts.h>
+#include <ptlib.h>
 
 #ifdef P_APPSHARE
 

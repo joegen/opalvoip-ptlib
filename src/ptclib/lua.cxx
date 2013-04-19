@@ -35,8 +35,6 @@
 
 #include <ptlib.h>
 
-#include <ptbuildopts.h>
-
 #if P_LUA
 
 #pragma message("Lua scripting support enabled")

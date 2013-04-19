@@ -37,8 +37,6 @@
 
 #include <ptlib.h>
 
-#include <ptbuildopts.h>
-
 #ifdef P_EXPAT
 
 #include <ptlib/bitwise_enum.h>

@@ -32,7 +32,6 @@
  */
 
 #include <ptlib.h>
-#include <ptbuildopts.h>
 #include <ptlib/sockets.h>
 
 #include <ctype.h>

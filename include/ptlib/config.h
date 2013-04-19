@@ -39,7 +39,7 @@
 #pragma interface
 #endif
 
-#include "ptbuildopts.h"
+#include "ptlib.h"
 #ifdef P_CONFIG_FILE
 
 class PXConfig;

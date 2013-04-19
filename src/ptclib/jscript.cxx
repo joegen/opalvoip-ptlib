@@ -34,8 +34,6 @@
 
 #include <ptlib.h>
 
-#include <ptbuildopts.h>
-
 #include <iomanip>
 
 #if P_V8

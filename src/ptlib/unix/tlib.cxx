@@ -801,7 +801,7 @@ struct rtems_bsdnet_config rtems_bsdnet_config = {
 #define CONFIGURE_POSIX_INIT_THREAD_TABLE
 #define CONFIGURE_INIT_TASK_INITIAL_MODES (RTEMS_PREEMPT | RTEMS_TIMESLICE)
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #define STACK_CHECKER_ON
 #endif
 

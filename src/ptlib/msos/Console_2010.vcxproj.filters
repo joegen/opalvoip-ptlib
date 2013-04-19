@@ -933,13 +933,13 @@
     <ClInclude Include="..\..\..\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Lib\Win32\include\ptbuildopts.h">
+    <ClInclude Include="..\..\..\Lib\Win32\include\ptlib_config.h">
       <Filter>Header Files\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Lib\x64\include\ptbuildopts.h">
+    <ClInclude Include="..\..\..\Lib\x64\include\ptlib_config.h">
       <Filter>Header Files\Win64</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Lib\Android\include\ptbuildopts.h">
+    <ClInclude Include="..\..\..\Lib\Android\include\ptlib_config.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\pt_atl.h">
@@ -954,7 +954,7 @@
     <CustomBuild Include="..\common\getdate.y">
       <Filter>Source Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ptbuildopts.h.in">
+    <CustomBuild Include="..\..\..\include\ptlib_config.h.in">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\revision.h.in">

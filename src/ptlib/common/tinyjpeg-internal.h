@@ -36,7 +36,7 @@
 #define __TINYJPEG_INTERNAL_H_
 
 #include <setjmp.h>
-#include <ptbuildopts.h>
+#include <ptlib_config.h>
 
 #define SANITY_CHECK 1
 

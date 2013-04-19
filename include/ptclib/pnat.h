@@ -34,7 +34,7 @@
 #ifndef PTLIB_PNAT_H
 #define PTLIB_PNAT_H
 
-#include <ptbuildopts.h>
+#include <ptlib.h>
 
 #if P_NAT
 
