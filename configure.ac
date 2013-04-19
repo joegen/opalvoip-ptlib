@@ -187,7 +187,6 @@ if test "x$PTLIBDIR" != "x" ; then
    ac_default_prefix=$PTLIBDIR
    if test "x$prefix" = "x" || test "x$prefix" = "xNONE" ; then
       libdir+=_$target
-dnl      cfg_prefix=./lib_$target
    fi
 else
    PTLIBDIR=`pwd`
@@ -2149,7 +2148,7 @@ if test "x$enable_plugins" != "xno" ; then
         if test "x${HAS_V4L2}" = "x1"; then
           AC_MSG_RESULT(yes)
           PTLIB_V4L2=yes
-          AC_SUBST([V4L2_CXXFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
+          AC_SUBST([V4L2_CFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
         else
           HAS_V4L2=
           PTLIB_V4L2=no
@@ -2295,10 +2294,6 @@ AC_ARG_ENABLE(dc, AS_HELP_STRING([--enable-dc],[enable IEEE1394/DC video support
    fi
    dnl end of test for video
 
-   AC_CONFIG_FILES(plugins/Makefile)
-   AC_CONFIG_FILES(plugins/vidinput_v4l2/Makefile)
-   AC_CONFIG_FILES(plugins/vidinput_dc/Makefile)
-
 fi # enable_plugins
 
 
@@ -2309,20 +2304,26 @@ PTLIB_SIMPLE_OPTION([samples], [SAMPLES], [enable samples build])
 
 
 dnl ########################################################################
-dnl final declarations
+dnl output files
 
-AC_CONFIG_FILES(ptlib.pc)
-AC_CONFIG_FILES(ptlib_cfg.dxy)
-AC_CONFIG_FILES(make/ptbuildopts.mak)
+AC_CONFIG_FILES(ptlib.pc ptlib_cfg.dxy make/ptlib_config.mak)
+AC_CONFIG_HEADERS(${ac_top_build_prefix}include/ptlib_config.h:include/ptlib_config.h.in)
 
 dnl ########################################################################
-dnl output header file
+dnl Add a Makefile in the platform dependent output directory, if necessary
 
-if test -n "$exec_profix" -a "$exec_prefix" != "NONE" ; then
-  cfg_prefix=$exec_prefix/
-fi
+AC_CONFIG_COMMANDS(
+  [Platform-Makefile],
+  [
+    if test -n "${srcdir}" && test `cd ${srcdir} ; pwd` != `pwd`; then
+      echo "all: ; @\$(MAKE) --file=${srcdir}/Makefile \$(MAKECMDGOALS)" > ${ac_top_build_prefix}Makefile
+    fi
+  ]
+)
 
-AC_CONFIG_HEADERS(${cfg_prefix}include/ptbuildopts.h:include/ptbuildopts.h.in)
+
+dnl ########################################################################
+dnl Do it!
 
 AC_OUTPUT()
 

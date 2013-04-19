@@ -6,7 +6,7 @@
  * Search path for PLugin is defined in this class, using the following 
  * define variables: P_DEFAULT_PLUGIN_DIR
  *
- * Configure setup in ptbuildopts.h.in:
+ * Configure setup in ptlib_config.h.in:
  *   #define P_DEFAULT_PLUGIN_DIR "/usr/local/lib/ptlib-2.13.0"
  * if not defined pluginmgr.cxx set it to:
  *   #define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib:/usr/lib/pwlib"

@@ -34,7 +34,7 @@
 
 #include <ptlib/sockets.h>
 #include <ptclib/url.h>
-#include <ptbuildopts.h>
+
 
 PCREATE_PROCESS(IPV6Test);
 

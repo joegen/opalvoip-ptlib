@@ -35,7 +35,7 @@
 #pragma warning(disable:4201 4514)
 #endif
 
-#include <ptbuildopts.h>
+#include <ptlib.h>
 
 // Include header files for everything that uses factories or plugins
 #include <ptlib.h>

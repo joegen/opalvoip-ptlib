@@ -28,11 +28,11 @@
 # $Date$
 #
 
-ifndef PTLIBDIR
-  $(error Must have PTLIBDIR defined to build plugins)
-endif
+PT_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-include $(PTLIBDIR)/make/ptbuildopts.mak
+# Same place as this make file
+include $(PT_MAKE_DIR)/pre.mak
+
 
 SOURCE = $(PLUGIN_SOURCES)
 OBJDIR = $(PTLIB_LIBDIR)/$(PLUGIN_FAMILY)
@@ -41,7 +41,7 @@ SHARED_LIB_FILE = $(OBJDIR)/$(PLUGIN_NAME)$(PTLIB_PLUGIN_SUFFIX).$(SHAREDLIBEXT)
 
 CPPFLAGS  += $(SHARED_CFLAGS)
 
-include $(PTLIBDIR)/make/common.mak
+include $(PT_MAKE_DIR)/post.mak
 
 
 # End of file

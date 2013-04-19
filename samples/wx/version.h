@@ -29,8 +29,6 @@
 #ifndef _APP_VERSION_H
 #define _APP_VERSION_H
 
-#include <ptbuildopts.h>
-
 #define	PRODUCT_NAME_TEXT	"wxSample"
 #define	EXE_NAME_TEXT	        "wxsample"
 #define	MANUFACTURER_TEXT	"Vox Lucida"

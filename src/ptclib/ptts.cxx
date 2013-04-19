@@ -34,8 +34,6 @@
 
 #include <ptlib.h>
 
-#include "ptbuildopts.h"
-
 #if P_TTS
 
 #include <ptclib/ptts.h>

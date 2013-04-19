@@ -35,8 +35,6 @@
 
 #include <ptlib.h>
 
-#include <ptbuildopts.h>
-
 #include <ptclib/script.h>
 
 #define new PNEW

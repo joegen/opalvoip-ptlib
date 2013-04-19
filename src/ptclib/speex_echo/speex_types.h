@@ -22,7 +22,7 @@
 #ifndef _SPEEX_TYPES_H
 #define _SPEEX_TYPES_H
 
-#include "ptbuildopts.h"
+#include "ptlib_config.h"
 
 #if defined(_WIN32) 
 

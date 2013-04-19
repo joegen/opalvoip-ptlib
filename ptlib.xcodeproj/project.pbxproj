@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		A31D2AB317167FF600C588F9 /* ptbuildopts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ptbuildopts.h; sourceTree = "<group>"; };
-		A31D2AB417167FF600C588F9 /* ptbuildopts.h.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptbuildopts.h.in; sourceTree = "<group>"; };
+		A31D2AB317167FF600C588F9 /* ptlib_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ptlib_config.h; sourceTree = "<group>"; };
+		A31D2AB417167FF600C588F9 /* ptlib_config.h.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib_config.h.in; sourceTree = "<group>"; };
 		A31D2AB617167FF600C588F9 /* asnber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asnber.h; sourceTree = "<group>"; };
 		A31D2AB717167FF600C588F9 /* asner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asner.h; sourceTree = "<group>"; };
 		A31D2AB817167FF600C588F9 /* asnper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asnper.h; sourceTree = "<group>"; };
@@ -339,8 +339,8 @@
 		A31D2CD71716802800C588F9 /* install-sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "install-sh"; sourceTree = "<group>"; };
 		A31D2CD81716802800C588F9 /* my_macros.m4 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = my_macros.m4; sourceTree = "<group>"; };
 		A31D2CD91716802800C588F9 /* plugins.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = plugins.mak; sourceTree = "<group>"; };
-		A31D2CDA1716802800C588F9 /* ptbuildopts.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = ptbuildopts.mak; sourceTree = "<group>"; };
-		A31D2CDB1716802800C588F9 /* ptbuildopts.mak.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptbuildopts.mak.in; sourceTree = "<group>"; };
+		A31D2CDA1716802800C588F9 /* ptlib_config.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = ptlib_config.mak; sourceTree = "<group>"; };
+		A31D2CDB1716802800C588F9 /* ptlib_config.mak.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib_config.mak.in; sourceTree = "<group>"; };
 		A31D2CDC1716802800C588F9 /* ptlib.m4 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib.m4; sourceTree = "<group>"; };
 		A31D2CDD1716802800C588F9 /* ptlib.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = ptlib.mak; sourceTree = "<group>"; };
 		A31D2CDE1716802800C588F9 /* toplevel.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = toplevel.mak; sourceTree = "<group>"; };
@@ -354,8 +354,8 @@
 			children = (
 				A31D2AFB17167FF700C588F9 /* ptlib */,
 				A31D2AB517167FF600C588F9 /* ptclib */,
-				A31D2AB317167FF600C588F9 /* ptbuildopts.h */,
-				A31D2AB417167FF600C588F9 /* ptbuildopts.h.in */,
+				A31D2AB317167FF600C588F9 /* ptlib_config.h */,
+				A31D2AB417167FF600C588F9 /* ptlib_config.h.in */,
 				A31D2BD917167FF700C588F9 /* ptlib.h */,
 			);
 			path = include;
@@ -714,8 +714,8 @@
 				A31D2CD71716802800C588F9 /* install-sh */,
 				A31D2CD81716802800C588F9 /* my_macros.m4 */,
 				A31D2CD91716802800C588F9 /* plugins.mak */,
-				A31D2CDA1716802800C588F9 /* ptbuildopts.mak */,
-				A31D2CDB1716802800C588F9 /* ptbuildopts.mak.in */,
+				A31D2CDA1716802800C588F9 /* ptlib_config.mak */,
+				A31D2CDB1716802800C588F9 /* ptlib_config.mak.in */,
 				A31D2CDC1716802800C588F9 /* ptlib.m4 */,
 				A31D2CDD1716802800C588F9 /* ptlib.mak */,
 				A31D2CDE1716802800C588F9 /* toplevel.mak */,

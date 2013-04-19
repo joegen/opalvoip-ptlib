@@ -29,7 +29,7 @@
 #ifndef PTLIB_PJSON_H
 #define PTLIB_PJSON_H
 
-#include <ptbuildopts.h>
+#include <ptlib.h>
 
 #include <json/json.h>
 
