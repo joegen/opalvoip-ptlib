@@ -33,7 +33,6 @@
 #endif
 
 #include <ptlib.h>
-#include <ptbuildopts.h>
 
 #ifdef P_SNMP
 #include <ptclib/psnmp.h>

@@ -94,7 +94,7 @@
 #endif
 
 #include "tinyjpeg-internal.h"
-#include "ptbuildopts.h"
+#include "ptlib_config.h"
 #ifdef P_MEDIALIB
 #include <mlib.h>
 #endif

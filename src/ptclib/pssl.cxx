@@ -88,8 +88,6 @@
 #include <ptclib/pssl.h>
 #include <ptclib/mime.h>
 
-#include <ptbuildopts.h>
-
 #if P_SSL
 
 #pragma message("SSL support (via OpenSSL) enabled")

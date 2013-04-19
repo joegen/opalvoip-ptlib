@@ -34,7 +34,6 @@
 
 
 #include <ptlib.h>
-#include <ptbuildopts.h>
 
 #if defined(P_DIRECTSOUND)
 
