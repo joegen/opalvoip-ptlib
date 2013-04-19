@@ -42,7 +42,7 @@
 #include "nucpp.h"
 #endif
 
-#include "ptbuildopts.h"
+#include <ptlib_config.h>
 
 #include <ptlib/object.h>
 #include <ptlib/contain.h>

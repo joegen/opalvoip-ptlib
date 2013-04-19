@@ -29,7 +29,7 @@
  * $Id: osutil.inl 19426 2008-02-09 03:19:51Z rjongbloed $
  */
 
-#include "ptbuildopts.h"
+#include "ptlib.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval

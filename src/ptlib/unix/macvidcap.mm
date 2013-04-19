@@ -28,7 +28,7 @@
  * $Date$
  */
 
-#include <ptbuildopts.h>
+#include <ptlib.h>
 
 #if P_VIDEO
 

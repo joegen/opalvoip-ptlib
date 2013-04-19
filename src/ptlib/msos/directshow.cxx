@@ -59,13 +59,13 @@
   static const GUID MEDIASUBTYPE_IYUV = { 0x56555949, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 };
   #define CLSID_CaptureGraphBuilder2 CLSID_CaptureGraphBuilder
 
-  #ifdef DEBUG
+  #ifdef _DEBUG
     /* Only the release version is provided as a .lib file, so we need to
        make sure that the compilation does NOT have the extra fields/functions
        that are added when DEBUG version. */
-    #undef DEBUG
+    #undef _DEBUG
     #include <streams.h>
-    #define DEBUG
+    #define _DEBUG
   #else
     #include <streams.h>
   #endif

@@ -36,7 +36,6 @@
 #endif
 
 #include <ptlib.h>
-#include <ptbuildopts.h>
 
 #if P_V8
 

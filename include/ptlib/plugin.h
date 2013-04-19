@@ -198,10 +198,8 @@ static int PWLIB_StaticLoader_##serviceName##_##serviceType() \
   extern int PPlugin_##serviceType##_##serviceName##_link(); \
   int const PPlugin_##serviceType##_##serviceName##_loader = PPlugin_##serviceType##_##serviceName##_link();
 
-#ifndef P_SHAREDLIB
 #ifndef P_FORCE_STATIC_PLUGIN
   #define P_FORCE_STATIC_PLUGIN 1
-#endif
 #endif
 
 #endif

@@ -31,22 +31,20 @@
 # $Date$
 #
 
-ifdef PTLIBDIR
-  PT_MAKE_DIR := $(PTLIBDIR)/make
-else
-  PT_MAKE_DIR := $(shell pkg-config ptlib --variable=makedir)
-endif
+# Same place as this make file
+PTLIB_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-include $(PT_MAKE_DIR)/ptbuildopts.mak
+include $(PTLIB_MAKE_DIR)/pre.mak
 
-CPPFLAGS += -I$(PTLIB_INCDIR)
 
 PTLIB_BASE = $(PTLIB_PREFIX)$(OBJ_SUFFIX)
-ifneq ($(P_SHAREDLIB),1)
+ifeq ($(STATIC_BUILD),yes)
   PTLIB_BASE+=_s
 endif
 LDFLAGS := -L$(PTLIB_LIBDIR) -l$(PTLIB_BASE) $(LDFLAGS)
 
-include $(PT_MAKE_DIR)/common.mak
+
+include $(PTLIB_MAKE_DIR)/post.mak
+
 
 # End of ptlib.mak

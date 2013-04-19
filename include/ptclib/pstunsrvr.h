@@ -35,7 +35,7 @@
 #pragma interface
 #endif
 
-#include <ptbuildopts.h>
+#include <ptlib.h>
 
 #if P_STUNSRVR
 
