@@ -37,8 +37,6 @@ endif
 
 include $(PTLIB_TOP_LEVEL_DIR)/make/pre.mak
 
-.DEFAULT_GOAL := opt
-
 
 ###############################################################################
 
@@ -143,15 +141,9 @@ REVISION_FILE = $(PTLIB_TOP_LEVEL_DIR)/revision.h
 
 DOXYGEN_CFG := $(PTLIB_TOP_LEVEL_DIR)/ptlib_cfg.dxy
 
-ifeq ($(DEBUG_BUILD),yes)
-  STATIC_LIB_FILE = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_STATIC_FILE)
-  SHARED_LIB_LINK  = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_LINK)
-  SHARED_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_FILE)
-else
-  STATIC_LIB_FILE = $(PTLIB_LIBDIR)/$(PTLIB_STATIC_FILE)
-  SHARED_LIB_LINK  = $(PTLIB_LIBDIR)/$(PTLIB_SHARED_LINK)
-  SHARED_LIB_FILE  = $(PTLIB_LIBDIR)/$(PTLIB_SHARED_FILE)
-endif
+STATIC_LIB_FILE = $(PTLIB_STATIC_LIB_FILE)
+SHARED_LIB_LINK = $(PTLIB_SHARED_LIB_LINK)
+SHARED_LIB_FILE = $(PTLIB_SHARED_LIB_FILE)
 
 
 COMPONENT_SRC_DIR  := $(PTLIB_TOP_LEVEL_DIR)/src/ptclib
@@ -476,7 +468,7 @@ endif
 
 CPPFLAGS += $(SHARED_CPPFLAGS)
 
-internal_shared internal_static ::
+internal_build ::
 	@echo PTLib build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
 
 include $(PTLIB_TOP_LEVEL_DIR)/make/post.mak

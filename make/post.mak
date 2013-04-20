@@ -49,7 +49,8 @@ STANDARD_TARGETS +=\
 .PHONY: $(STANDARD_TARGETS) all help internal_shared internal_static internal_build internal_clean internal_depend internal_libs
 
 # Default goal
-opt ::
+default_goal : internal_depend internal_build
+	@echo DEBUG_BUILD=$(DEBUG_BUILD) $(OBJDIR)
 
 
 help :
@@ -116,9 +117,9 @@ debugnoshared :: debugstatic
 
 ifndef OBJDIR
   ifndef OBJDIR_PREFIX
-    OBJDIR_PREFIX=.
+    OBJDIR_PREFIX := $(CURDIR)
   endif
-  OBJDIR = $(OBJDIR_PREFIX)/obj_$(target)$(OBJ_SUFFIX)
+  OBJDIR = $(OBJDIR_PREFIX)/obj_$(target)$(OBJDIR_SUFFIX)
 endif
 
 #
@@ -126,19 +127,19 @@ endif
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CXX)$(CXX) $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $< -o $@
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CXX)$(CXX) $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $< -o $@
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CC)$(CXX) $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $< -o $@
+	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CC)$(CC) $(strip $(CPPFLAGS) $(CFLAGS)) -c $< -o $@
+	$(Q_CC)$(CC) -o $@ $(strip $(CPPFLAGS) $(CFLAGS)) -c $<
 
 #
 # create list of object files 
@@ -204,7 +205,7 @@ ifdef PROG
 
   $(TARGET) : $(OBJS) $(TARGET_LIBS)
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_LD)$(LD) -o $@ $(OBJS) $(CFLAGS) $(LDFLAGS)
+	$(Q_LD)$(LD) -o $@ $(OBJS) $(LDFLAGS)
 
 else # PROG -  so must be a library
 
@@ -284,7 +285,7 @@ internal_libs ::
 # all the targets are passed to all subdirectories
 
 ifneq (,$(SUBDIRS))
-  export CC CXX LD AR RANLIB CPPFLAGS CFLAGS CXXFLAGS LDFLAGS ARFLAGS target target_os target_cpu LIBDIRS_EXCLUDE
+  export CC CXX LD AR RANLIB ARFLAGS target target_os target_cpu LIBDIRS_EXCLUDE
   $(STANDARD_TARGETS) ::
 	$(Q)set -e; $(foreach dir,$(SUBDIRS), $(MAKE) --print-directory --directory="$(dir)" $@;)
 endif
