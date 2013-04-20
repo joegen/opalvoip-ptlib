@@ -175,7 +175,6 @@
 		A31D2BC617167FF700C588F9 /* videoio1394dc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = videoio1394dc.h; sourceTree = "<group>"; };
 		A31D2BD817167FF700C588F9 /* wxstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wxstring.h; sourceTree = "<group>"; };
 		A31D2BD917167FF700C588F9 /* ptlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ptlib.h; sourceTree = "<group>"; };
-		A31D2BDB1716801200C588F9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		A31D2BDD1716801200C588F9 /* asnber.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = asnber.cxx; sourceTree = "<group>"; };
 		A31D2BDE1716801200C588F9 /* asner.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = asner.cxx; sourceTree = "<group>"; };
 		A31D2BDF1716801200C588F9 /* asnper.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = asnper.cxx; sourceTree = "<group>"; };
@@ -333,10 +332,6 @@
 		A31D2CC91716801300C588F9 /* uerror.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uerror.h; sourceTree = "<group>"; };
 		A31D2CCA1716801300C588F9 /* uicmp.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicmp.cxx; sourceTree = "<group>"; };
 		A31D2CD21716802700C588F9 /* configure.ac */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = configure.ac; path = ../configure.ac; sourceTree = "<group>"; };
-		A31D2CD41716802700C588F9 /* common.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = common.mak; sourceTree = "<group>"; };
-		A31D2CD51716802700C588F9 /* config.guess */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = config.guess; sourceTree = "<group>"; };
-		A31D2CD61716802700C588F9 /* config.sub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = config.sub; sourceTree = "<group>"; };
-		A31D2CD71716802800C588F9 /* install-sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "install-sh"; sourceTree = "<group>"; };
 		A31D2CD81716802800C588F9 /* my_macros.m4 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = my_macros.m4; sourceTree = "<group>"; };
 		A31D2CD91716802800C588F9 /* plugins.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = plugins.mak; sourceTree = "<group>"; };
 		A31D2CDA1716802800C588F9 /* ptlib_config.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = ptlib_config.mak; sourceTree = "<group>"; };
@@ -345,6 +340,10 @@
 		A31D2CDD1716802800C588F9 /* ptlib.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = ptlib.mak; sourceTree = "<group>"; };
 		A31D2CDE1716802800C588F9 /* toplevel.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = toplevel.mak; sourceTree = "<group>"; };
 		A31D2CDF1716802800C588F9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../Makefile; sourceTree = "<group>"; };
+		A3981AB417216D8200871F96 /* post.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = post.mak; sourceTree = "<group>"; };
+		A3981AB517216D8200871F96 /* pre.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = pre.mak; sourceTree = "<group>"; };
+		A3981AB717216EAA00871F96 /* ptlib.pc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib.pc; sourceTree = SOURCE_ROOT; };
+		A3981AB817216EAB00871F96 /* ptlib.pc.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib.pc.in; sourceTree = SOURCE_ROOT; };
 		A3DD3BDE17182B7D007D5F24 /* macaudio.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macaudio.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -352,11 +351,11 @@
 		A31D2AB217167FF600C588F9 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				A31D2BD917167FF700C588F9 /* ptlib.h */,
+				A31D2AB417167FF600C588F9 /* ptlib_config.h.in */,
+				A31D2AB317167FF600C588F9 /* ptlib_config.h */,
 				A31D2AFB17167FF700C588F9 /* ptlib */,
 				A31D2AB517167FF600C588F9 /* ptclib */,
-				A31D2AB317167FF600C588F9 /* ptlib_config.h */,
-				A31D2AB417167FF600C588F9 /* ptlib_config.h.in */,
-				A31D2BD917167FF700C588F9 /* ptlib.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -493,7 +492,6 @@
 		A31D2BDA1716801200C588F9 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				A31D2BDB1716801200C588F9 /* Makefile */,
 				A31D2BDC1716801200C588F9 /* ptclib */,
 				A31D2C371716801200C588F9 /* ptlib */,
 			);
@@ -706,19 +704,19 @@
 		A31D2CD31716802700C588F9 /* make */ = {
 			isa = PBXGroup;
 			children = (
-				A31D2CD21716802700C588F9 /* configure.ac */,
 				A31D2CDF1716802800C588F9 /* Makefile */,
-				A31D2CD41716802700C588F9 /* common.mak */,
-				A31D2CD51716802700C588F9 /* config.guess */,
-				A31D2CD61716802700C588F9 /* config.sub */,
-				A31D2CD71716802800C588F9 /* install-sh */,
-				A31D2CD81716802800C588F9 /* my_macros.m4 */,
-				A31D2CD91716802800C588F9 /* plugins.mak */,
-				A31D2CDA1716802800C588F9 /* ptlib_config.mak */,
-				A31D2CDB1716802800C588F9 /* ptlib_config.mak.in */,
-				A31D2CDC1716802800C588F9 /* ptlib.m4 */,
-				A31D2CDD1716802800C588F9 /* ptlib.mak */,
 				A31D2CDE1716802800C588F9 /* toplevel.mak */,
+				A31D2CDD1716802800C588F9 /* ptlib.mak */,
+				A31D2CD91716802800C588F9 /* plugins.mak */,
+				A3981AB517216D8200871F96 /* pre.mak */,
+				A3981AB417216D8200871F96 /* post.mak */,
+				A31D2CDB1716802800C588F9 /* ptlib_config.mak.in */,
+				A31D2CDA1716802800C588F9 /* ptlib_config.mak */,
+				A3981AB817216EAB00871F96 /* ptlib.pc.in */,
+				A3981AB717216EAA00871F96 /* ptlib.pc */,
+				A31D2CD21716802700C588F9 /* configure.ac */,
+				A31D2CD81716802800C588F9 /* my_macros.m4 */,
+				A31D2CDC1716802800C588F9 /* ptlib.m4 */,
 			);
 			path = make;
 			sourceTree = "<group>";
@@ -901,25 +899,31 @@
 		A3E5E1F917167F2D00DF539E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEBUG = 1;
 				DEBUGGING_SYMBOLS = YES;
+				DEBUG_BUILD = yes;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				HAS_SAMPLES = 0;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PATH = "$PATH:/opt/local/bin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PTLIBDIR = $SOURCE_ROOT;
+				VERBOSE = 1;
 			};
 			name = Debug;
 		};
 		A3E5E1FA17167F2D00DF539E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEBUG = "";
+				DEBUG_BUILD = no;
+				HAS_SAMPLES = 0;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PATH = "$PATH:/opt/local/bin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PTLIBDIR = $SOURCE_ROOT;
+				VERBOSE = 1;
 			};
 			name = Release;
 		};

@@ -36,13 +36,7 @@ PTLIB_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 include $(PTLIB_MAKE_DIR)/pre.mak
 
-
-PTLIB_BASE = $(PTLIB_PREFIX)$(OBJ_SUFFIX)
-ifeq ($(STATIC_BUILD),yes)
-  PTLIB_BASE+=_s
-endif
-LDFLAGS := -L$(PTLIB_LIBDIR) -l$(PTLIB_BASE) $(LDFLAGS)
-
+LDFLAGS := -L$(PTLIB_LIBDIR) -l$(PTLIB_LIB_BASE)$(LIB_DEBUG_SUFFIX)$(LIB_STATIC_SUFFIX) $(LDFLAGS)
 
 include $(PTLIB_MAKE_DIR)/post.mak
 
