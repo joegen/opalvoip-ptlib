@@ -117,18 +117,28 @@ static void LogFunction(GstDebugCategory * /*category*/,
 class PGstInitialiser : public PProcessStartup
 {
     PCLASSINFO(PGstInitialiser, PProcessStartup)
+  private:
+    bool m_initialised;
   public:
+    PGstInitialiser()
+      : m_initialised(false)
+    {
+    }
+
     virtual void OnStartup()
     {
-#if PTRACING
-      gst_debug_add_log_function(LogFunction, NULL);
-      gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
-      gst_debug_set_active(true);
-#endif
-
       PGError error;
       if (gst_init_check(NULL, NULL, &error)) {
         PTRACE(3, "GStreamer\tUsing version " << gst_version_string());
+
+#if PTRACING
+        gst_debug_remove_log_function(NULL);
+        gst_debug_add_log_function(LogFunction, this);
+        gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
+        gst_debug_set_active(true);
+#endif
+
+        m_initialised = true;
       }
       else {
         PTRACE(1, "GStreamer\tCould not initialise, error: " << error);
@@ -137,12 +147,14 @@ class PGstInitialiser : public PProcessStartup
 
     virtual void OnShutdown()
     {
-      gst_deinit();
+      if (m_initialised) {
+        gst_deinit();
 
 #if PTRACING
-      gst_debug_set_active(false);
-      gst_debug_remove_log_function(LogFunction);
+        gst_debug_set_active(false);
+        gst_debug_remove_log_function(LogFunction);
 #endif
+      }
     }
 };
 
