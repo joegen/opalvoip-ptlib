@@ -340,6 +340,7 @@
 		A31D2CDD1716802800C588F9 /* ptlib.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = ptlib.mak; sourceTree = "<group>"; };
 		A31D2CDE1716802800C588F9 /* toplevel.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = toplevel.mak; sourceTree = "<group>"; };
 		A31D2CDF1716802800C588F9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../Makefile; sourceTree = "<group>"; };
+		A35F08791724CAE500D26E9A /* autoconf.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = autoconf.mak; sourceTree = "<group>"; };
 		A3981AB417216D8200871F96 /* post.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = post.mak; sourceTree = "<group>"; };
 		A3981AB517216D8200871F96 /* pre.mak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = pre.mak; sourceTree = "<group>"; };
 		A3981AB717216EAA00871F96 /* ptlib.pc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib.pc; sourceTree = SOURCE_ROOT; };
@@ -705,6 +706,7 @@
 			isa = PBXGroup;
 			children = (
 				A31D2CDF1716802800C588F9 /* Makefile */,
+				A35F08791724CAE500D26E9A /* autoconf.mak */,
 				A31D2CDE1716802800C588F9 /* toplevel.mak */,
 				A31D2CDD1716802800C588F9 /* ptlib.mak */,
 				A31D2CD91716802800C588F9 /* plugins.mak */,
