@@ -40,10 +40,6 @@ ifndef CONFIGURE
   CONFIGURE := $(TOP_LEVEL_DIR)/configure
 endif
 
-ifndef CONFIG_STATUS
-  CONFIG_STATUS := $(CURDIR)/config.status
-endif
-
 ifndef AUTOCONF
   AUTOCONF := autoconf
 endif
@@ -60,15 +56,73 @@ ifndef ACLOCAL_M4
   ACLOCAL_M4 := $(TOP_LEVEL_DIR)/aclocal.m4
 endif
 
+
+# XCode sets this, don't want it
+ifeq ($(OS),MACOS)
+  OS:=
+endif
+
+ifeq ($(OS),)
+
+  ifneq ($(CPU),)
+    $(error Must define an OS for CPU=$(CPU))
+  endif
+  
+  TARGET_DIR := $(CURDIR)
+  
+else # OS
+  
+  # Of course, Apple are always different
+  ifeq ($(OS),iPhoneOS)
+    CPU := armv7
+    VENDOR := apple
+    HOST_CONFIG_PARAM := --enable-ios=iphone
+  else ifeq ($(OS),iPhoneSimulator)
+    CPU := x86
+    VENDOR := apple
+    HOST_CONFIG_PARAM := --enable-ios=simulator
+  else ifeq ($(CPU),)
+    $(error Must define a CPU for OS=$(OS))
+  endif
+
+  ifeq ($(VENDOR),)
+    VENDOR := none
+  endif
+  
+  ifeq ($(HOST),)
+    HOST := $(CPU)-$(VENDOR)-$(OS)
+  endif
+
+  ifndef HOST_CONFIG_PARAM
+    HOST_CONFIG_PARAM := --host=$(HOST)
+  endif
+  
+  TARGET_DIR := $(CURDIR)/lib_$(OS)_$(CPU)
+  
+  $(info Cross compile: OS=$(OS), CPU=$(CPU), VENDOR=$(VENDOR), HOST=$(HOST))
+endif # OS
+
+
+ifndef CONFIG_STATUS
+  CONFIG_STATUS := $(TARGET_DIR)/config.status
+endif
+
 ifndef CONFIG_PARMS
   ifneq (,$(wildcard $(CONFIG_STATUS)))
     CONFIG_PARMS = $(shell $(CONFIG_STATUS) --config)
   endif
 endif
 
-ifndef PRIMARY_CONFIG_FILE
-  PRIMARY_CONFIG_FILE := $(firstword $(CONFIG_FILES))
-endif
+CONFIG_FILE_PATHS := $(addprefix $(TARGET_DIR)/, $(CONFIG_FILES))
+
+CONFIGURE_CMD := \
+  if test ! -d "$(TARGET_DIR)" ; then \
+    mkdir $(TARGET_DIR); \
+  fi; \
+  cd $(TARGET_DIR); \
+  $(CONFIGURE) $(HOST_CONFIG_PARAM) $(CONFIG_PARMS)
+
+
 
 ifeq ($(V)$(VERBOSE),)
   Q := @
@@ -81,16 +135,16 @@ NO_CONFIG_GOALS += clean distclean config
 
 # Everything other than the NO_CONFIG_GOALS depends on the configuration
 ifneq (,$(MAKECMDGOALS))
-  $(filter-out $(NO_CONFIG_GOALS),$(MAKECMDGOALS)) : $(CONFIG_FILES) build_top_level
+  $(filter-out $(NO_CONFIG_GOALS),$(MAKECMDGOALS)) : $(CONFIG_STATUS) build_top_level
 else
-  .PHONY:default
-  default : $(CONFIG_FILES) build_top_level
+  .PHONY:default_goal
+  default_goal : $(CONFIG_STATUS) build_top_level
 endif
 
 
 .PHONY:clean
 .PHONY:distclean
-ifneq (,$(wildcard $(PRIMARY_CONFIG_FILE)))
+ifneq (,$(wildcard $(CONFIG_STATUS)))
   clean distclean :: build_top_level
 else
   clean ::
@@ -98,25 +152,25 @@ else
 endif
 
 distclean ::
-	rm -f $(CONFIG_FILES)
+	rm -f $(CONFIG_FILE_PATHS)
 
 
 .PHONY:config
 config : $(CONFIGURE)
-	$(CONFIGURE) $(CONFIG_PARMS)
+	$(CONFIGURE_CMD)
 
 
 .PHONY:build_top_level
 build_top_level:
-	$(Q)$(MAKE) -f $(TOP_LEVEL_MAKE) $(MAKECMDGOALS)
+	$(Q)$(MAKE) --file="$(TOP_LEVEL_MAKE)" --directory="$(TARGET_DIR)" $(MAKECMDGOALS)
 
 
-$(PRIMARY_CONFIG_FILE) : $(CONFIGURE) \
-                         $(addsuffix .in,$(subst $(CURDIR),$(TOP_LEVEL_DIR),$(CONFIG_FILES)))
-	$(CONFIGURE) $(CONFIG_PARMS)
-	touch $(CONFIG_FILES)
+$(CONFIG_STATUS) : $(CONFIGURE) $(CONFIG_FILE_PATHS)
+	$(CONFIGURE_CMD)
+	touch $(CONFIG_FILE_PATHS)
+	touch $(CONFIG_STATUS)
 
-$(filter-out $(PRIMARY_CONFIG_FILE), $(CONFIG_FILES)) : $(PRIMARY_CONFIG_FILE)
+$(CONFIG_FILE_PATHS) : $(addprefix $(TOP_LEVEL_DIR)/,$(addsuffix .in,$(CONFIG_FILES)))
 
 
 ifeq ($(shell which $(AUTOCONF) > /dev/null && \
@@ -130,7 +184,7 @@ endif
 
 ifeq ($(AUTOCONF_AVAILABLE),yes)
 
-  $(CONFIGURE): $(subst $(CURDIR),$(TOP_LEVEL_DIR),$(CONFIGURE)).ac $(M4_FILES) $(ACLOCAL_M4)
+  $(CONFIGURE): $(CONFIGURE).ac $(M4_FILES) $(ACLOCAL_M4)
 	$(AUTOCONF)
 
   $(ACLOCAL_M4):

@@ -82,7 +82,6 @@ help :
 	@echo "  make release       Package up optimised version int tar.gz file"
 
 
-LIBDIRS := $(filter-out $(LIBDIRS_EXCLUDE), $(LIBDIRS))
 ifneq ($(LIBDIRS),)
   all :: bothlibs
 endif
@@ -285,7 +284,7 @@ internal_libs ::
 # all the targets are passed to all subdirectories
 
 ifneq (,$(SUBDIRS))
-  export CC CXX LD AR RANLIB ARFLAGS target target_os target_cpu LIBDIRS_EXCLUDE
+  export CC CXX LD AR RANLIB ARFLAGS target target_os target_cpu
   $(STANDARD_TARGETS) ::
 	$(Q)set -e; $(foreach dir,$(SUBDIRS), $(MAKE) --print-directory --directory="$(dir)" $@;)
 endif

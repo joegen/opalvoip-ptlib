@@ -31,11 +31,12 @@
 # autoconf.mak uses this for if we are run as "make -f ../Makefile"
 TOP_LEVEL_DIR := $(abspath $(dir $(firstword $(MAKEFILE_LIST))))
 
-# All the configure outputs are relative to current directory not $(TOP_LEVEL_DIR)
-CONFIG_FILES := $(CURDIR)/include/ptlib_config.h \
-                $(CURDIR)/make/ptlib_config.mak \
-                $(CURDIR)/ptlib_cfg.dxy \
-                $(CURDIR)/ptlib.pc \
+# All the configure outputs are relative to $(TARGET_DIR) not $(TOP_LEVEL_DIR)
+# Note: TARGET_DIR is defined by autoconf.mak so must be relative paths
+CONFIG_FILES := include/ptlib_config.h \
+                make/ptlib_config.mak \
+                ptlib_cfg.dxy \
+                ptlib.pc \
 
 
 include $(TOP_LEVEL_DIR)/make/autoconf.mak

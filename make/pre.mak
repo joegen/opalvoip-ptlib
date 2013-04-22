@@ -32,12 +32,14 @@ ifndef PTLIB_PRE_INCLUDED
 PTLIB_PRE_INCLUDED:=1
 
 PTLIB_CONFIG_MAK := ptlib_config.mak
-ifneq (,$(PTLIB_PLATFORM_DIR))
-  include $(PTLIB_PLATFORM_DIR)/make/$(PTLIB_CONFIG_MAK)
-else ifdef PTLIBDIR
-  include $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
-else
+ifeq ($(PTLIB_BUILDING_ITSELF),yes)
+  include $(CURDIR)/make/$(PTLIB_CONFIG_MAK)
+else ifndef PTLIBDIR
   include $(shell pkg-config ptlib --variable=makedir)/$(PTLIB_CONFIG_MAK)
+else ifneq (,$(wildcard $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)))
+  include $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
+else
+  include $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
 endif
 
 
@@ -139,9 +141,11 @@ else
 endif
 
 
-ifdef PTLIBDIR
-  # Submodules built with make lib
-  LIBDIRS += $(PTLIBDIR)
+ifneq ($(PTLIB_BUILDING_ITSELF),yes)
+  ifdef PTLIBDIR
+    # Submodules built with make lib
+    LIBDIRS += $(PTLIBDIR)
+  endif
 endif
 
 
