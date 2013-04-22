@@ -29,12 +29,11 @@
 #
 
 PTLIB_TOP_LEVEL_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
-
 ifneq ($(CURDIR),$(PTLIB_TOP_LEVEL_DIR))
-  export PTLIB_PLATFORM_DIR := $(CURDIR)
-  $(info Doing out-of-source build in $(PTLIB_PLATFORM_DIR))
+  $(info Doing out-of-source PTLib build in $(CURDIR))
 endif
 
+PTLIB_BUILDING_ITSELF := yes
 include $(PTLIB_TOP_LEVEL_DIR)/make/pre.mak
 
 
@@ -157,7 +156,6 @@ endif
 VPATH_CXX          := $(PLATFORM_SRC_DIR) $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR) 
 VPATH_MM           := $(PLATFORM_SRC_DIR)
 
-LIBDIRS_EXCLUDE    += $(PTLIB_TOP_LEVEL_DIR)
 DIST_CLEAN_FILES   += $(PTLIB_TOP_LEVEL_DIR)/include/ptlib_config.h $(PTLIB_TOP_LEVEL_DIR)/make/ptlib_config.mak
 
 

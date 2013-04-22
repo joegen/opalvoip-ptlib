@@ -188,9 +188,14 @@ if test "x$PTLIBDIR" != "x" ; then
    if test "x$prefix" = "x" || test "x$prefix" = "xNONE" ; then
       libdir+=_$target
    fi
+   makedir="$PTLIBDIR/make"
+   VERSION_DIR="$PTLIBDIR"
 else
-   PTLIBDIR=`pwd`
+   makedir="\${datarootdir}/opal/make"
+   VERSION_DIR="."
 fi
+
+AC_SUBST(makedir)
 
 
 dnl ########################################################################
@@ -201,7 +206,7 @@ dnl MSWIN_VERSION version,PTLIB_MINOR=MINOR_VERSION
 dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
 dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
 
-MY_VERSION_FILE([${PTLIBDIR}/version.h], [PTLIB])
+MY_VERSION_FILE([$VERSION_DIR/version.h], [PTLIB])
 AC_MSG_NOTICE(PTLib version is ${PTLIB_VERSION});
 
 

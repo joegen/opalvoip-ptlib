@@ -792,6 +792,7 @@ PTLIB_STAGE
 PTLIB_BUILD
 PTLIB_MINOR
 PTLIB_MAJOR
+makedir
 EGREP
 GREP
 CPP
@@ -6023,18 +6024,27 @@ $as_echo "$as_me: PTLIBDIR environment variable detected as $PTLIBDIR" >&6;}
    if test "x$prefix" = "x" || test "x$prefix" = "xNONE" ; then
       libdir+=_$target
    fi
+   makedir="$PTLIBDIR/make"
+   VERSION_DIR="$PTLIBDIR"
 else
-   PTLIBDIR=`pwd`
+   makedir="\${datarootdir}/opal/make"
+   VERSION_DIR="."
 fi
 
 
 
 
-   major=`cat ${PTLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
-   minor=`cat ${PTLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
-   build=`cat ${PTLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
-   stage=`cat ${PTLIBDIR}/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+
+
+   major=`cat $VERSION_DIR/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
+   minor=`cat $VERSION_DIR/version.h | grep MINOR_VERSION | cut -f3 -d' '`
+   build=`cat $VERSION_DIR/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
+   stage=`cat $VERSION_DIR/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
    version="${major}.${minor}.${build}"
+
+   if test -z "$major" -o -z "$minor" -o -z "$build"; then
+      as_fn_error $? "Could not determine version number from $VERSION_DIR/version.h" "$LINENO" 5
+   fi
 
    PTLIB_MAJOR=$major
 
