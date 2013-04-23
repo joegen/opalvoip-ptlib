@@ -191,7 +191,7 @@ if test "x$PTLIBDIR" != "x" ; then
    makedir="$PTLIBDIR/make"
    VERSION_DIR="$PTLIBDIR"
 else
-   makedir="\${datarootdir}/opal/make"
+   makedir="\${datarootdir}/ptlib/make"
    VERSION_DIR="."
 fi
 

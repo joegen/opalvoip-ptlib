@@ -2,6 +2,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+datarootdir=${prefix}/share
 makedir=@makedir@
 target_cpu=@target_cpu@
 target_os=@target_os@
