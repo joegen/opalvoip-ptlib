@@ -32,14 +32,23 @@ ifndef PTLIB_PRE_INCLUDED
 PTLIB_PRE_INCLUDED:=1
 
 PTLIB_CONFIG_MAK := ptlib_config.mak
-ifeq ($(PTLIB_BUILDING_ITSELF),yes)
-  include $(CURDIR)/make/$(PTLIB_CONFIG_MAK)
+ifneq ($(PTLIB_PLATFORM_DIR),)
+  include $(PTLIB_PLATFORM_DIR)/make/$(PTLIB_CONFIG_MAK)
+  PTLIB_INCFLAGS := -I$(PTLIB_PLATFORM_DIR)/include
+  PTLIB_LIBDIR = $(PTLIB_PLATFORM_DIR)/lib_$(target)
 else ifndef PTLIBDIR
   include $(shell pkg-config ptlib --variable=makedir)/$(PTLIB_CONFIG_MAK)
-else ifneq (,$(wildcard $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)))
-  include $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
+  PTLIB_INCFLAGS := $(shell pkg-config ptlib --cflags-only-I)
+  PTLIB_LIBDIR := $(shell pkg-config ptlib --variable=libdir)
 else
-  include $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
+  ifneq (,$(wildcard $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)))
+    include $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
+  else
+    include $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
+  endif
+  PTLIB_INCFLAGS := -I$(PTLIBDIR)/include
+  PTLIB_LIBDIR = $(PTLIBDIR)/lib_$(target)
+  LIBDIRS += $(PTLIBDIR)  # Submodules built with make lib
 endif
 
 
@@ -100,15 +109,6 @@ ifeq ($(OBJDIR_SUFFIX)$(DEBUG_BUILD),yes)
   OBJDIR_SUFFIX := $(DEBUG_SUFFIX)
 endif
 
-ifneq (,$(PTLIB_PLATFORM_DIR))
-  PTLIB_LIBDIR = $(PTLIB_PLATFORM_DIR)
-else ifdef PTLIBDIR
-  PTLIB_LIBDIR = $(PTLIBDIR)/lib_$(target)
-else
-  PTLIB_LIBDIR = $(shell pkg-config ptlib --variable=libdir)
-endif
-
-
 PTLIB_OBJDIR = $(PTLIB_LIBDIR)/obj$(OBJDIR_SUFFIX)
 
 PTLIB_LIB_BASE           := pt
@@ -141,25 +141,14 @@ else
 endif
 
 
-ifneq ($(PTLIB_BUILDING_ITSELF),yes)
-  ifdef PTLIBDIR
-    # Submodules built with make lib
-    LIBDIRS += $(PTLIBDIR)
-  endif
-endif
-
-
 ###############################################################################
-#
 # Add common directory to include path
 # Note also have include directory that is always relative to the
 # ptlib_config.mak file in PTLIB_PLATFORM_INC_DIR
 #
 
-ifdef PTLIBDIR
-  CPPFLAGS := -I$(PTLIBDIR)/include $(CPPFLAGS)
-else
-  CPPFLAGS := $(shell pkg-config ptlib --cflags-only-I) $(CPPFLAGS)
+ifeq (,$(findstring $(PTLIB_INCFLAGS),$(CPPFLAGS)))
+  CPPFLAGS := $(PTLIB_INCFLAGS) $(CPPFLAGS)
 endif
 
 ifeq (,$(findstring $(PTLIB_PLATFORM_INC_DIR),$(CPPFLAGS)))
