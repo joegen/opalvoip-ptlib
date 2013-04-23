@@ -45,7 +45,7 @@ ifndef AUTOCONF
 endif
 
 ifndef AUTOCONF_VERSION
-  AUTOCONF_VERSION :=38
+  AUTOCONF_VERSION :=68
 endif
 
 ifndef ACLOCAL
