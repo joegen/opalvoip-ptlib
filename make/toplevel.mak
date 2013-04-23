@@ -33,7 +33,8 @@ ifneq ($(CURDIR),$(PTLIB_TOP_LEVEL_DIR))
   $(info Doing out-of-source PTLib build in $(CURDIR))
 endif
 
-PTLIB_BUILDING_ITSELF := yes
+export PTLIBDIR := $(PTLIB_TOP_LEVEL_DIR)
+export PTLIB_PLATFORM_DIR := $(CURDIR)
 include $(PTLIB_TOP_LEVEL_DIR)/make/pre.mak
 
 
@@ -510,70 +511,69 @@ install uninstall:
 else # PTLIBDIR
 
 ifeq ($(target_os),mingw)
-  ARCH_INCLUDE=msos
+  OS_INCLUDE=msos
 else
-  ARCH_INCLUDE=unix
+  OS_INCLUDE=unix
 endif
 
 
 install:
-	( for dir in $(DESTDIR)$(libdir) \
-		     $(DESTDIR)$(prefix)/bin \
-		     $(DESTDIR)$(includedir)/ptlib \
-                     $(DESTDIR)$(includedir)/ptlib/$(ARCH_INCLUDE)/ptlib \
-                     $(DESTDIR)$(includedir)/ptclib \
-                     $(DESTDIR)$(datarootdir)/ptlib/make ; \
-		do $(MKDIR_P) $$dir ; chmod 755 $$dir ; \
-	done )
-	( for lib in  $(PTLIB_LIBDIR)/$(PTLIB_SHARED_FILE) \
-	              $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_SHARED_FILE) \
-	              $(PTLIB_LIBDIR)/$(PTLIB_STATIC_FILE) \
-	              $(PTLIB_LIBDIR)/$(PTLIB_DEBUG_STATIC_FILE) ; \
-          do \
-	  ( if test -e $$lib ; then \
-		$(INSTALL) -m 444 $$lib $(DESTDIR)$(libdir); \
-	  fi ) \
-	done )
-	( if test -e $(DESTDIR)$(libdir)/$(PTLIB_SHARED_FILE); then \
-	    (cd $(DESTDIR)$(libdir) ; \
-		$(LN_S) -f $(PTLIB_SHARED_FILE) $(PTLIB_SHARED_FILE_BASE) \
-	    ) \
-	fi )
-	( if test -e $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SHARED_FILE); then \
-	    (cd $(DESTDIR)$(libdir) ; \
-		$(LN_S) -f $(PTLIB_DEBUG_SHARED_FILE) $(PTLIB_DEBUG_SHARED_FILE_BASE) \
-	    ) \
-	fi )
+	for dir in $(DESTDIR)$(libdir) \
+	           $(DESTDIR)$(libdir)/pkgconfig \
+		   $(DESTDIR)$(prefix)/bin \
+		   $(DESTDIR)$(includedir)/ptlib \
+                   $(DESTDIR)$(includedir)/ptlib/$(OS_INCLUDE)/ptlib \
+                   $(DESTDIR)$(includedir)/ptclib \
+                   $(DESTDIR)$(datarootdir)/ptlib/make ; \
+	do \
+	    $(MKDIR_P) $$dir ; \
+	    chmod 755 $$dir ; \
+	done
+	for lib in $(PTLIB_OPT_SHARED_FILE) \
+	           $(PTLIB_DEBUG_SHARED_FILE) \
+	           $(PTLIB_OPT_STATIC_FILE) \
+	           $(PTLIB_DEBUG_STATIC_FILE) ; \
+	do \
+	   if test -e $$lib ; then \
+	      $(INSTALL) -m 444 $$lib $(DESTDIR)$(libdir); \
+	   fi \
+	done
+	cd $(DESTDIR)$(libdir) ; \
+	$(LN_S) -f $(notdir $(PTLIB_OPT_SHARED_FILE)) $(notdir $(PTLIB_OPT_SHARED_LINK))
+	if test -e $(PTLIB_DEBUG_SHARED_FILE); then \
+	   cd $(DESTDIR)$(libdir) ; \
+	   $(LN_S) -f $(notdir $(PTLIB_DEBUG_SHARED_FILE)) $(notdir $(PTLIB_DEBUG_SHARED_LINK)) ; \
+	fi
 ifeq (1, $(HAS_PLUGINS))
 	if test -e $(PTLIB_LIBDIR)/device/; then \
-	cd $(PTLIB_LIBDIR)/device/; \
-	(  for dir in ./* ;\
-		do $(MKDIR_P) $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
-		chmod 755 $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
-		(for fn in ./$$dir/*.so ; \
-			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir; \
-		done ); \
-	done ) ; \
+	   cd $(PTLIB_LIBDIR)/device/; \
+	   for dir in ./* ;\
+	   do \
+	      $(MKDIR_P) $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
+	      chmod 755 $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
+	      for fn in ./$$dir/*.so ; \
+	      do \
+	         $(INSTALL) -m 444 $$fn $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir; \
+	      done ; \
+	   done ; \
 	fi
 endif
 	$(INSTALL) -m 444 include/ptlib.h $(DESTDIR)$(includedir)
 	$(INSTALL) -m 444 include/ptlib_config.h $(DESTDIR)$(includedir)
-	(for fn in include/ptlib/*.h include/ptlib/*.inl; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptlib; \
-	done)
-	(for fn in include/ptlib/$(ARCH_INCLUDE)/ptlib/*.h include/ptlib/$(ARCH_INCLUDE)/ptlib/*.inl ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptlib/$(ARCH_INCLUDE)/ptlib ; \
-	done)
-	(for fn in include/ptclib/*.h ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptclib; \
-	done)
-	(for fn in make/*.mak ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(datarootdir)/ptlib/make; \
-	done)
+	for fn in include/ptlib/*.h include/ptlib/*.inl; \
+	   do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptlib; \
+	done
+	for fn in include/ptlib/$(OS_INCLUDE)/ptlib/*.h include/ptlib/$(OS_INCLUDE)/ptlib/*.inl ; \
+	   do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptlib/$(OS_INCLUDE)/ptlib ; \
+	done
+	for fn in include/ptclib/*.h ; \
+	   do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptclib; \
+	done
+	for fn in make/*.mak ; \
+	   do $(INSTALL) -m 444 $$fn $(DESTDIR)$(datarootdir)/ptlib/make; \
+	done
+	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(libdir)/pkgconfig
 
-	$(MKDIR_P) $(DESTDIR)$(libdir)/pkgconfig
-	chmod 755 $(DESTDIR)$(libdir)/pkgconfig
-	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(libdir)/pkgconfig/
 
 uninstall:
 	rm -rf $(DESTDIR)$(includedir)/ptlib \
@@ -584,12 +584,12 @@ uninstall:
 	       $(DESTDIR)$(datarootdir)/ptlib \
 	       $(DESTDIR)$(libdir)/$(PTLIB_PLUGIN_DIR) \
 	       $(DESTDIR)$(libdir)/pkgconfig/ptlib.pc
-	rm -f $(DESTDIR)$(libdir)/$(PTLIB_STATIC_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_STATIC_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_SHARED_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SHARED_FILE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_SHARED_FILE_BASE) \
-	      $(DESTDIR)$(libdir)/$(PTLIB_DEBUG_SHARED_FILE_BASE)
+	rm -f $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_STATIC_FILE)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_STATIC_FILE)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_FILE)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_FILE)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_LINK)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_LINK))
 
 endif # PTLIBDIR
 

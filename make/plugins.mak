@@ -28,10 +28,10 @@
 # $Date$
 #
 
-PT_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+PTLIB_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 # Same place as this make file
-include $(PT_MAKE_DIR)/pre.mak
+include $(PTLIB_MAKE_DIR)/pre.mak
 
 
 SOURCE = $(PLUGIN_SOURCES)
@@ -41,7 +41,7 @@ SHARED_LIB_FILE = $(OBJDIR)/$(PLUGIN_NAME)$(PTLIB_PLUGIN_SUFFIX).$(SHAREDLIBEXT)
 
 CPPFLAGS  += $(SHARED_CFLAGS)
 
-include $(PT_MAKE_DIR)/post.mak
+include $(PTLIB_MAKE_DIR)/post.mak
 
 
 # End of file
