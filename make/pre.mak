@@ -34,7 +34,7 @@ PTLIB_PRE_INCLUDED:=1
 PTLIB_CONFIG_MAK := ptlib_config.mak
 ifneq ($(PTLIB_PLATFORM_DIR),)
   include $(PTLIB_PLATFORM_DIR)/make/$(PTLIB_CONFIG_MAK)
-  PTLIB_INCFLAGS := -I$(PTLIB_PLATFORM_DIR)/include
+  PTLIB_INCFLAGS := -I$(PTLIB_TOP_LEVEL_DIR)/include
   PTLIB_LIBDIR = $(PTLIB_PLATFORM_DIR)/lib_$(target)
 else ifndef PTLIBDIR
   include $(shell pkg-config ptlib --variable=makedir)/$(PTLIB_CONFIG_MAK)
@@ -147,6 +147,7 @@ endif
 # ptlib_config.mak file in PTLIB_PLATFORM_INC_DIR
 #
 
+$(warning ******************** added $(PTLIB_INCFLAGS))
 ifeq (,$(findstring $(PTLIB_INCFLAGS),$(CPPFLAGS)))
   CPPFLAGS := $(PTLIB_INCFLAGS) $(CPPFLAGS)
 endif
