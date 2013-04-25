@@ -1302,7 +1302,7 @@ template <class K, class D>
           if (position >= this->m_keys.GetSize()) {
             this->m_position = P_MAX_INDEX;
             this->m_internal_first = NULL;
-            this->m_internal_second = NULL;
+            this->m_internal_second.SetNULL();
             return false;
           }
 
