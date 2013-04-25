@@ -1345,7 +1345,7 @@ template <class K, class D>
         const iterator_pair * operator->() const { return  reinterpret_cast<const iterator_pair *>(this); }
         const iterator_pair & operator* () const { return *reinterpret_cast<const iterator_pair *>(this); }
 
-      friend dict_type;
+      friend class PSafeDictionary<K, D>;
     };
 
     iterator begin() { return iterator(this); }
@@ -1370,7 +1370,7 @@ template <class K, class D>
         const iterator_pair * operator->() const { return  reinterpret_cast<const iterator_pair *>(this); }
         const iterator_pair & operator* () const { return *reinterpret_cast<const iterator_pair *>(this); }
 
-      friend dict_type;
+      friend class PSafeDictionary<K, D>;
     };
 
     const_iterator begin() const { return const_iterator(this); }
