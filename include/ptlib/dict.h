@@ -47,28 +47,32 @@
 /**This class is used when an ordinal index value is the key for <code>PSet</code>
    and <code>PDictionary</code> classes.
  */
-class POrdinalKey : public PObject
+template <typename T>
+class PKey : public PObject
 {
-  PCLASSINFO(POrdinalKey, PObject);
-
+    PCLASSINFO(PKey, PObject);
   public:
+    typedef T value_type;
+    typedef PKey<T> my_type;
+
   /**@name Construction */
   //@{
     /** Create a new key for ordinal index values.
      */
-    PINLINE POrdinalKey(
-      PINDEX newKey = 0   ///< Ordinal index value to use as a key.
-    );
+    PINLINE PKey(
+      value_type newKey = 0   ///< Ordinal index value to use as a key.
+    ) : m_key(newKey) { }
 
     /**Operator to assign the ordinal.
       */
-    PINLINE POrdinalKey & operator=(PINDEX);
+    PINLINE PKey & operator=(value_type newKey)
+    { m_key = newKey; return *this; }
   //@}
 
   /**@name Overrides from class PObject */
   //@{
-    /// Create a duplicate of the POrdinalKey.
-    virtual PObject * Clone() const;
+    /// Create a duplicate of the PKey.
+    virtual PObject * Clone() const { return new PKey(m_key); }
 
     /* Get the relative rank of the ordinal index. This is a simpel comparison
        of the objects PINDEX values.
@@ -79,7 +83,20 @@ class POrdinalKey : public PObject
        object and <code>GreaterThan</code> for \p obj logically
        greater than the object.
      */
-    virtual Comparison Compare(const PObject & obj) const;
+    virtual Comparison Compare(const PObject & obj) const
+    {
+      const my_type * other = dynamic_cast<const my_type *>(&obj);
+      if (!PAssert(other != NULL, PInvalidCast))
+        return GreaterThan;
+
+      if (m_key < other->m_key)
+        return LessThan;
+
+      if (m_key > other->m_key)
+        return GreaterThan;
+
+      return EqualTo;
+    }
 
     /**This function calculates a hash table index value for the implementation
        of <code>PSet</code> and <code>PDictionary</code> classes.
@@ -87,7 +104,7 @@ class POrdinalKey : public PObject
        @return
        hash table bucket number.
      */
-    virtual PINDEX HashFunction() const;
+    virtual PINDEX HashFunction() const { return PABSINDEX(m_key)%23; }
 
     /**Output the ordinal index to the specified stream. This is identical to
        outputting the PINDEX, i.e. integer, value.
@@ -95,43 +112,45 @@ class POrdinalKey : public PObject
        @return
        stream that the index was output to.
      */
-    virtual void PrintOn(ostream & strm) const;
+    virtual void PrintOn(ostream & strm) const { strm << m_key; }
   //@}
 
   /**@name New functions for class */
   //@{
-    /** Operator so that a POrdinalKey can be used as a PINDEX value.
+    /** Operator so that a PKey can be used as a PINDEX value.
      */
-    PINLINE operator PINDEX() const;
+    PINLINE operator value_type() const  { return m_key; }
 
     /**Operator to pre-increment the ordinal.
       */
-    PINLINE PINDEX operator++();
+    PINLINE value_type operator++() { return ++m_key; }
 
     /**Operator to post-increment the ordinal.
       */
-    PINLINE PINDEX operator++(int);
+    PINLINE value_type operator++(int) { return m_key++; }
 
     /**Operator to pre-decrement the ordinal.
       */
-    PINLINE PINDEX operator--();
+    PINLINE value_type operator--() { return --m_key; }
 
     /**Operator to post-decrement the ordinal.
       */
-    PINLINE PINDEX operator--(int);
+    PINLINE value_type operator--(int) { return m_key--; }
 
     /**Operator to add the ordinal.
       */
-    PINLINE POrdinalKey & operator+=(PINDEX);
+    PINLINE PKey & operator+=(value_type) { m_key += add; return *this; }
 
     /**Operator to subtract from the ordinal.
       */
-    PINLINE POrdinalKey & operator-=(PINDEX );
+    PINLINE PKey & operator-=(value_type) { m_key -= minus; return *this; }
   //@}
 
   private:
-    PINDEX theKey;
+    value_type m_key;
 };
+
+typedef PKey<PINDEX> POrdinalKey;
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -949,6 +968,10 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
   PCLASSINFO(PDictionary, PAbstractDictionary);
 
   public:
+    typedef K key_type;
+    typedef D data_type;
+    typedef PDictionary<K, D> dict_type;
+
   /**@name Construction */
   //@{
     /**Create a new, empty, dictionary.
@@ -1093,50 +1116,67 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     class const_iterator;
     class iterator_base {
       protected:
+        K * m_internal_first;  // Must be first two members
+        D * m_internal_second;
+
+        PHashTableInfo    * m_table;
+        PHashTableElement * m_element;
+
         iterator_base()
-          : table(NULL)
-          , element(NULL)
-          { }
-        iterator_base(PHashTableInfo * t)
-          : table(t)
-          , element(t->GetElementAt((PINDEX)0))
-          { }
-        iterator_base(PHashTableInfo * t, const K & k)
-          : table(t)
-          , element(t->GetElementAt(k))
-          { }
+          : m_internal_first(NULL)
+          , m_internal_second(NULL)
+          , m_table(NULL)
+          , m_element(NULL)
+        {
+        }
 
-        PHashTableInfo    * table;
-        PHashTableElement * element;
-        BYTE storage[sizeof(K&)+sizeof(D&)];
+        iterator_base(const dict_type * dict)
+          : m_table(dict->hashTable)
+        {
+          this->SetElement(this->m_table->GetElementAt((PINDEX)0));
+        }
+        
+        iterator_base(const dict_type * dict, const K & key)
+          : m_table(dict->hashTable)
+        {
+          this->SetElement(this->m_table->GetElementAt(key));
+        }
 
-        void Next() { this->element = PAssertNULL(this->table)->NextElement(this->element); }
-        void Prev() { this->element = PAssertNULL(this->table)->PrevElement(this->element); }
+        void SetElement(PHashTableElement * element)
+        {
+          this->m_element = element;
+          if (element != NULL) {
+            this->m_internal_first  = dynamic_cast<K *>(element->key);
+            this->m_internal_second = dynamic_cast<D *>(element->data);
+          }
+          else {
+            this->m_internal_first = NULL;
+            this->m_internal_second = NULL;
+          }
+        }
+
+        void Next() { this->SetElement(PAssertNULL(this->m_table)->NextElement(this->m_element)); }
+        void Prev() { this->SetElement(PAssertNULL(this->m_table)->PrevElement(this->m_element)); }
 
       public:
-        bool operator==(const iterator_base & it) const { return this->element == it.element; }
-        bool operator!=(const iterator_base & it) const { return this->element != it.element; }
+        bool operator==(const iterator_base & it) const { return this->m_element == it.m_element; }
+        bool operator!=(const iterator_base & it) const { return this->m_element != it.m_element; }
     };
 
+    template<class CK, class CD>
     class iterator_pair {
-      protected:
-        iterator_pair(PHashTableElement * element)
-          : first(dynamic_cast<K &>(*element->key))
-          , second(dynamic_cast<D &>(*element->data))
-          { }
-
       public:
-        K & first;
-        D & second;
+        CK & first;
+        CD & second;
 
-      friend class PDictionary<K,D>::iterator;
+      private:
+        iterator_pair() : first(reinterpret_cast<CK&>(0)), second(reinterpret_cast<CD&>(0)) { }
     };
-    class iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, iterator_pair> {
-      protected:
-        iterator(PHashTableInfo * t) : iterator_base(t) { }
-        iterator(PHashTableInfo * t, const K & k) : iterator_base(t, k) { }
 
-        const iterator_pair * Ptr() const { return new ((void *)this->storage) iterator_pair(this->element); }
+    class iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, iterator_pair<K,D> > {
+      protected:
+        iterator(dict_type * dict) : iterator_base(dict) { }
+        iterator(dict_type * dict, const K & key) : iterator_base(dict, key) { }
 
       public:
         iterator() { }
@@ -1146,57 +1186,45 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
         iterator operator++(int) { iterator it = *this; this->Next(); return it;    }
         iterator operator--(int) { iterator it = *this; this->Prev(); return it;    }
 
-        const iterator_pair * operator->() const { return  this->Ptr(); }
-        const iterator_pair & operator* () const { return *this->Ptr(); }
+        typedef iterator_pair<K,D> pair;
+        const pair * operator->() const { return  reinterpret_cast<const pair *>(this); }
+        const pair & operator* () const { return *reinterpret_cast<const pair *>(this); }
 
-      friend class PDictionary<K,D>;
+      friend dict_type;
     };
 
-    iterator begin() { return iterator(this->hashTable); }
+    iterator begin() { return iterator(this); }
     iterator end()   { return iterator(); }
-    iterator find(const K & k) { return iterator(this->hashTable, k); }
+    iterator find(const K & key) { return iterator(this, key); }
 
 
-    class const_iterator_pair {
+    class const_iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, iterator_pair<const K,const D> > {
       protected:
-        const_iterator_pair(const PHashTableElement * element)
-          : first(dynamic_cast<K &>(*element->key))
-          , second(dynamic_cast<D &>(*element->data))
-          { }
-
-      public:
-        const K & first;
-        const D & second;
-
-      friend class PDictionary<K,D>::const_iterator;
-    };
-    class const_iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, const_iterator_pair> {
-      protected:
-        const_iterator(PHashTableInfo * t) : iterator_base(t) { }
-        const_iterator(PHashTableInfo * t, const K & k) : iterator_base(t, k) { }
-
-        const const_iterator_pair * Ptr() const { return new ((void *)this->storage) const_iterator_pair(this->element); }
+        const_iterator(const dict_type * dict) : iterator_base(dict) { }
+        const_iterator(const dict_type * dict, const K & key) : iterator_base(dict, key) { }
 
       public:
         const_iterator() { }
+        const_iterator(iterator it) : iterator_base(it) { }
 
         const_iterator operator++()    {                            this->Next(); return *this; }
         const_iterator operator--()    {                            this->Prev(); return *this; }
         const_iterator operator++(int) { const_iterator it = *this; this->Next(); return it;    }
         const_iterator operator--(int) { const_iterator it = *this; this->Prev(); return it;    }
 
-        const const_iterator_pair * operator->() const { return  this->Ptr(); }
-        const const_iterator_pair & operator* () const { return *this->Ptr(); }
+        typedef iterator_pair<const K, const D> pair;
+        const pair * operator->() const { return  reinterpret_cast<const pair *>(this); }
+        const pair & operator* () const { return *reinterpret_cast<const pair *>(this); }
 
-      friend class PDictionary<K,D>;
+      friend dict_type;
     };
 
-    const_iterator begin() const { return const_iterator(this->hashTable); }
+    const_iterator begin() const { return const_iterator(this); }
     const_iterator end()   const { return const_iterator(); }
-    const_iterator find(const K & k) const { return const_iterator(this->hashTable, k); }
+    const_iterator find(const K & k) const { return const_iterator(this, k); }
 
-    void erase(const       iterator & it) { this->AbstractSetAt(*it.element->key, NULL); }
-    void erase(const const_iterator & it) { this->AbstractSetAt(*it.element->key, NULL); }
+    void erase(const       iterator & it) { this->AbstractSetAt(*it.m_element->key, NULL); }
+    void erase(const const_iterator & it) { this->AbstractSetAt(*it.m_element->key, NULL); }
   //@}
 
   protected:

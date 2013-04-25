@@ -1112,41 +1112,6 @@ void PAbstractSortedList::DeleteSubTrees(PSortedListElement * node, PBoolean del
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PObject * POrdinalKey::Clone() const
-{
-  return new POrdinalKey(theKey);
-}
-
-
-PObject::Comparison POrdinalKey::Compare(const PObject & obj) const
-{
-  PAssert(PIsDescendant(&obj, POrdinalKey), PInvalidCast);
-  const POrdinalKey & other = (const POrdinalKey &)obj;
-  
-  if (theKey < other.theKey)
-    return LessThan;
-
-  if (theKey > other.theKey)
-    return GreaterThan;
-
-  return EqualTo;
-}
-
-
-PINDEX POrdinalKey::HashFunction() const
-{
-  return PABSINDEX(theKey)%23;
-}
-
-
-void POrdinalKey::PrintOn(ostream & strm) const
-{
-  strm << theKey;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 void PHashTableInfo::DestroyContents()
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
