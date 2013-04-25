@@ -276,36 +276,6 @@ PINLINE PINDEX PSortedStringList::GetStringsIndex(const PString & str) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE POrdinalKey::POrdinalKey(PINDEX newKey)
-  : theKey(newKey) { }
-
-PINLINE POrdinalKey & POrdinalKey::operator=(PINDEX newKey)
-  { theKey = newKey; return *this; }
-
-PINLINE POrdinalKey::operator PINDEX() const
-  { return theKey; }
-
-PINLINE PINDEX POrdinalKey::operator++()
-  { return ++theKey; }
-
-PINLINE PINDEX POrdinalKey::operator++(int)
-  { return theKey++; }
-
-PINLINE PINDEX POrdinalKey::operator--()
-  { return --theKey; }
-
-PINLINE PINDEX POrdinalKey::operator--(int)
-  { return theKey--; }
-
-PINLINE POrdinalKey & POrdinalKey::operator+=(PINDEX add)
-  { theKey += add; return *this; }
-
-PINLINE POrdinalKey & POrdinalKey::operator-=(PINDEX minus)
-  { theKey -= minus; return *this; }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 PINLINE PBoolean PHashTable::AbstractContains(const PObject & key) const
   { return hashTable->GetElementAt(key) != NULL; }
 
