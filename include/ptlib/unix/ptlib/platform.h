@@ -627,16 +627,15 @@ typedef uintptr_t    UINT;
 
 // Create "Windows" style definitions.
 
+typedef void     VOID;
+typedef char     CHAR;
 typedef uint8_t  BYTE;
 typedef uint16_t WORD;
 typedef uint32_t DWORD;
 
-typedef void                    VOID;
-typedef char                    CHAR;
-
-#ifdef P_HAS_WCHAR
-typedef wchar_t                 WCHAR;
-#endif
+#if P_ODBC
+  #include <sqltypes.h>
+#else
 
 typedef signed char             SCHAR;
 typedef unsigned char           UCHAR;
@@ -648,14 +647,8 @@ typedef uint16_t                UWORD;
 typedef long                    LONG;
 typedef signed long             SLONG;
 typedef unsigned long           ULONG;
-
-#if P_64BIT
-typedef int32_t                 SDWORD;
 typedef uint32_t                UDWORD;
-#else
-typedef signed long int         SDWORD;
-typedef unsigned long int       UDWORD;
-#endif
+typedef int32_t                 SDWORD;
 
 typedef float                   SFLOAT;
 typedef double                  SDOUBLE;
@@ -665,17 +658,21 @@ typedef void *                  PTR;
 typedef void *                  LPVOID;
 typedef CHAR *                  LPSTR;
 
-#ifdef P_HAS_WCHAR
-typedef WCHAR *                 LPWSTR;
-typedef const WCHAR *           LPCWSTR;
-#endif
-
 typedef const CHAR *            LPCSTR;
 typedef DWORD *                 LPDWORD;
 #define FAR
 
 typedef signed short            RETCODE;
 typedef void *                  HWND;
+
+#endif
+
+#ifdef P_HAS_WCHAR
+typedef wchar_t                 WCHAR;
+typedef WCHAR *                 LPWSTR;
+typedef const WCHAR *           LPCWSTR;
+#endif
+
 
 #ifndef INT64_MAX
 #define INT64_MAX	std::numeric_limits<PInt64>::max()
