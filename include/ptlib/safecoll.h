@@ -1253,10 +1253,133 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
   See the PSafeObject class for more details. Especially in regard to
   enumeration of collections.
  */
-template <class Key, class Base> class PSafeDictionary : public PSafeDictionaryBase<PDictionary<Key, Base>, Key, Base>
+template <class K, class D>
+ class PSafeDictionary : public PSafeDictionaryBase<PDictionary<K, D>, K, D>
 {
   public:
-    typedef PSafePtr<Base> value_type;
+    typedef K key_type;
+    typedef D data_type;
+    typedef PSafePtr<D> value_type;
+    typedef PSafeDictionary<K, D> dict_type;
+
+  /**@name Iterators */
+  //@{
+    class iterator;
+    class const_iterator;
+    class iterator_base {
+      protected:
+        K * m_internal_first;  // Must be first two members
+        value_type m_internal_second;
+
+        const dict_type * m_dictionary;
+        PArray<K>   m_keys;
+        PINDEX      m_position;
+
+        iterator_base()
+          : m_internal_first(NULL)
+          , m_internal_second(NULL)
+          , m_dictionary(NULL)
+          , m_position(P_MAX_INDEX)
+        {
+        }
+
+        iterator_base(const dict_type * dict)
+          : m_dictionary(dict)
+          , m_keys(dict->GetKeys())
+        {
+          this->SetPosition(0);
+        }
+
+        iterator_base(const dict_type * dict, const K & key)
+          : m_dictionary(dict)
+          , m_keys(dict->GetKeys())
+        {
+          this->SetPosition(m_keys.GetValuesIndex(key));
+        }
+
+        bool SetPosition(PINDEX position)
+        {
+          if (position >= this->m_keys.GetSize()) {
+            this->m_position = P_MAX_INDEX;
+            this->m_internal_first = NULL;
+            this->m_internal_second = NULL;
+            return false;
+          }
+
+          this->m_position = position;
+          this->m_internal_first  = &this->m_keys[position];
+          this->m_internal_second = this->m_dictionary->FindWithLock(*this->m_internal_first, PSafeReference);
+          return this->m_internal_second == NULL;
+        }
+
+        void Next() { while (this->SetPosition(this->m_position+1)); }
+        void Prev() { while (this->SetPosition(this->m_position > 0 ? this->m_position+1 : P_MAX_INDEX)); }
+
+      public:
+        bool operator==(const iterator_base & it) const { return this->m_position == it.m_position; }
+        bool operator!=(const iterator_base & it) const { return this->m_position != it.m_position; }
+    };
+
+    class iterator_pair {
+      public:
+        const K & first;
+        value_type second;
+
+      private:
+        iterator_pair() : first(reinterpret_cast<const K &>(0)) { }
+    };
+
+    class iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, iterator_pair> {
+      protected:
+        iterator(dict_type * dict) : iterator_base(dict) { }
+        iterator(dict_type * dict, const K & key) : iterator_base(dict, key) { }
+
+      public:
+        iterator() { }
+
+        iterator operator++()    {                      this->Next(); return *this; }
+        iterator operator--()    {                      this->Prev(); return *this; }
+        iterator operator++(int) { iterator it = *this; this->Next(); return it;    }
+        iterator operator--(int) { iterator it = *this; this->Prev(); return it;    }
+
+        const iterator_pair * operator->() const { return  reinterpret_cast<const iterator_pair *>(this); }
+        const iterator_pair & operator* () const { return *reinterpret_cast<const iterator_pair *>(this); }
+
+      friend dict_type;
+    };
+
+    iterator begin() { return iterator(this); }
+    iterator end()   { return iterator(); }
+    iterator find(const K & key) { return iterator(this, key); }
+
+
+    class const_iterator : public iterator_base, public std::iterator<std::forward_iterator_tag, iterator_pair> {
+      protected:
+        const_iterator(const dict_type * dict) : iterator_base(dict) { }
+        const_iterator(const dict_type * dict, const K & key) : iterator_base(dict, key) { }
+
+      public:
+        const_iterator() { }
+        const_iterator(const typename dict_type::iterator & it) : iterator_base(it) { }
+
+        const_iterator operator++()    {                            this->Next(); return *this; }
+        const_iterator operator--()    {                            this->Prev(); return *this; }
+        const_iterator operator++(int) { const_iterator it = *this; this->Next(); return it;    }
+        const_iterator operator--(int) { const_iterator it = *this; this->Prev(); return it;    }
+
+        const iterator_pair * operator->() const { return  reinterpret_cast<const iterator_pair *>(this); }
+        const iterator_pair & operator* () const { return *reinterpret_cast<const iterator_pair *>(this); }
+
+      friend dict_type;
+    };
+
+    const_iterator begin() const { return const_iterator(this); }
+    const_iterator end()   const { return const_iterator(); }
+    const_iterator find(const K & key) const { return const_iterator(this, key); }
+
+    void erase(const       iterator & it) { this->RemoveAt(it->first); }
+    void erase(const const_iterator & it) { this->RemoveAt(it->first); }
+  //@}
 };
 
 
