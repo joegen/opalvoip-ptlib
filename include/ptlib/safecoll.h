@@ -1302,7 +1302,7 @@ template <class K, class D>
           if (position >= this->m_keys.GetSize()) {
             this->m_position = P_MAX_INDEX;
             this->m_internal_first = NULL;
-            this->m_internal_second = NULL;
+            this->m_internal_second.SetNULL();
             return false;
           }
 
@@ -1345,7 +1345,7 @@ template <class K, class D>
         const iterator_pair * operator->() const { return  reinterpret_cast<const iterator_pair *>(this); }
         const iterator_pair & operator* () const { return *reinterpret_cast<const iterator_pair *>(this); }
 
-      friend dict_type;
+      friend class PSafeDictionary<K, D>;
     };
 
     iterator begin() { return iterator(this); }
@@ -1370,7 +1370,7 @@ template <class K, class D>
         const iterator_pair * operator->() const { return  reinterpret_cast<const iterator_pair *>(this); }
         const iterator_pair & operator* () const { return *reinterpret_cast<const iterator_pair *>(this); }
 
-      friend dict_type;
+      friend class PSafeDictionary<K, D>;
     };
 
     const_iterator begin() const { return const_iterator(this); }
