@@ -31,11 +31,17 @@
 ifndef PTLIB_PRE_INCLUDED
 PTLIB_PRE_INCLUDED:=1
 
+PTLIB_TOP_LEVEL_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
+
 PTLIB_CONFIG_MAK := ptlib_config.mak
 ifneq ($(PTLIB_PLATFORM_DIR),)
   include $(PTLIB_PLATFORM_DIR)/make/$(PTLIB_CONFIG_MAK)
   PTLIB_INCFLAGS := -I$(PTLIB_TOP_LEVEL_DIR)/include
-  PTLIB_LIBDIR = $(PTLIB_PLATFORM_DIR)/lib_$(target)
+  ifeq ($(PTLIB_TOP_LEVEL_DIR),$(PTLIB_PLATFORM_DIR))
+    PTLIB_LIBDIR = $(PTLIB_PLATFORM_DIR)/lib_$(target)
+  else
+    PTLIB_LIBDIR = $(PTLIB_PLATFORM_DIR)
+  endif
 else ifndef PTLIBDIR
   include $(shell pkg-config ptlib --variable=makedir)/$(PTLIB_CONFIG_MAK)
   PTLIB_INCFLAGS := $(shell pkg-config ptlib --cflags-only-I)
