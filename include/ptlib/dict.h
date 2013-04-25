@@ -66,13 +66,13 @@ class PKey : public PObject
     /**Operator to assign the ordinal.
       */
     PINLINE PKey & operator=(value_type newKey)
-    { m_key = newKey; return *this; }
+    { this->m_key = newKey; return *this; }
   //@}
 
   /**@name Overrides from class PObject */
   //@{
     /// Create a duplicate of the PKey.
-    virtual PObject * Clone() const { return new PKey(m_key); }
+    virtual PObject * Clone() const { return new PKey(this->m_key); }
 
     /* Get the relative rank of the ordinal index. This is a simpel comparison
        of the objects PINDEX values.
@@ -89,10 +89,10 @@ class PKey : public PObject
       if (!PAssert(other != NULL, PInvalidCast))
         return GreaterThan;
 
-      if (m_key < other->m_key)
+      if (this->m_key < other->m_key)
         return LessThan;
 
-      if (m_key > other->m_key)
+      if (this->m_key > other->m_key)
         return GreaterThan;
 
       return EqualTo;
@@ -104,7 +104,7 @@ class PKey : public PObject
        @return
        hash table bucket number.
      */
-    virtual PINDEX HashFunction() const { return PABSINDEX(m_key)%23; }
+    virtual PINDEX HashFunction() const { return PABSINDEX(this->m_key)%23; }
 
     /**Output the ordinal index to the specified stream. This is identical to
        outputting the PINDEX, i.e. integer, value.
@@ -112,38 +112,38 @@ class PKey : public PObject
        @return
        stream that the index was output to.
      */
-    virtual void PrintOn(ostream & strm) const { strm << m_key; }
+    virtual void PrintOn(ostream & strm) const { strm << this->m_key; }
   //@}
 
   /**@name New functions for class */
   //@{
     /** Operator so that a PKey can be used as a PINDEX value.
      */
-    PINLINE operator value_type() const  { return m_key; }
+    PINLINE operator value_type() const  { return this->m_key; }
 
     /**Operator to pre-increment the ordinal.
       */
-    PINLINE value_type operator++() { return ++m_key; }
+    PINLINE value_type operator++() { return ++this->m_key; }
 
     /**Operator to post-increment the ordinal.
       */
-    PINLINE value_type operator++(int) { return m_key++; }
+    PINLINE value_type operator++(int) { return this->m_key++; }
 
     /**Operator to pre-decrement the ordinal.
       */
-    PINLINE value_type operator--() { return --m_key; }
+    PINLINE value_type operator--() { return --this->m_key; }
 
     /**Operator to post-decrement the ordinal.
       */
-    PINLINE value_type operator--(int) { return m_key--; }
+    PINLINE value_type operator--(int) { return this->m_key--; }
 
     /**Operator to add the ordinal.
       */
-    PINLINE PKey & operator+=(value_type) { m_key += add; return *this; }
+    PINLINE PKey & operator+=(value_type add) { this->m_key += add; return *this; }
 
     /**Operator to subtract from the ordinal.
       */
-    PINLINE PKey & operator-=(value_type) { m_key -= minus; return *this; }
+    PINLINE PKey & operator-=(value_type minus) { this->m_key -= minus; return *this; }
   //@}
 
   private:
@@ -1190,7 +1190,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
         const pair * operator->() const { return  reinterpret_cast<const pair *>(this); }
         const pair & operator* () const { return *reinterpret_cast<const pair *>(this); }
 
-      friend dict_type;
+      friend class PDictionary<K, D>;
     };
 
     iterator begin() { return iterator(this); }
@@ -1216,7 +1216,7 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
         const pair * operator->() const { return  reinterpret_cast<const pair *>(this); }
         const pair & operator* () const { return *reinterpret_cast<const pair *>(this); }
 
-      friend dict_type;
+      friend class PDictionary<K, D>;
     };
 
     const_iterator begin() const { return const_iterator(this); }
