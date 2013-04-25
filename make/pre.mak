@@ -147,7 +147,6 @@ endif
 # ptlib_config.mak file in PTLIB_PLATFORM_INC_DIR
 #
 
-$(warning ******************** added $(PTLIB_INCFLAGS))
 ifeq (,$(findstring $(PTLIB_INCFLAGS),$(CPPFLAGS)))
   CPPFLAGS := $(PTLIB_INCFLAGS) $(CPPFLAGS)
 endif
