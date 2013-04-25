@@ -649,12 +649,12 @@ typedef long                    LONG;
 typedef signed long             SLONG;
 typedef unsigned long           ULONG;
 
-#if defined(__APPLE__)
-typedef signed long int         SDWORD;
-typedef unsigned long int       UDWORD;
-#else
+#if P_64BIT
 typedef int32_t                 SDWORD;
 typedef uint32_t                UDWORD;
+#else
+typedef signed long int         SDWORD;
+typedef unsigned long int       UDWORD;
 #endif
 
 typedef float                   SFLOAT;
