@@ -655,6 +655,7 @@ PString::PString(const PCharArray & buf)
 
 
 PString::PString(const PBYTEArray & buf)
+  : m_length(0)
 {
   PINDEX bufSize = buf.GetSize();
   if (bufSize > 0) {
