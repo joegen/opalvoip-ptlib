@@ -1312,8 +1312,8 @@ template <class K, class D>
           return this->m_internal_second == NULL;
         }
 
-        void Next() { while (this->SetPosition(this->m_position+1)); }
-        void Prev() { while (this->SetPosition(this->m_position > 0 ? this->m_position+1 : P_MAX_INDEX)); }
+        void Next() { while (this->SetPosition(this->m_position+1)) { } }
+        void Prev() { while (this->SetPosition(this->m_position > 0 ? this->m_position+1 : P_MAX_INDEX)) { } }
 
       public:
         bool operator==(const iterator_base & it) const { return this->m_position == it.m_position; }
