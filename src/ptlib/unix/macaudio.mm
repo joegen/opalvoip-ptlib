@@ -41,7 +41,7 @@
 
 
 #define PTraceModule() "MacAudio"
-#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
+#define PTRACE_DETAILED(...) //PTRACE(__VA_ARGS__)
 
 
 #if PTRACING
@@ -288,6 +288,8 @@ public:
   
   virtual PBoolean Write(const void * buf, PINDEX len)
   {
+    lastWriteCount = 0;
+    
     if (!IsOpen()) {
       PTRACE(1, "Audio channel not open");
       return false;
@@ -351,6 +353,8 @@ public:
   
   virtual PBoolean Read(void * buf, PINDEX len)
   {
+    lastReadCount = 0;
+    
     if (!IsOpen()) {
       PTRACE(1, "Audio channel not open");
       return false;
