@@ -39,6 +39,8 @@
 #import <Foundation/NSLock.h>
 #import <QTKit/QTKit.h>
 
+#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
+
 
 @interface PVideoInputDevice_MacFrame : NSObject
 {
@@ -70,36 +72,36 @@
         withSampleBuffer:(QTSampleBuffer *)sampleBuffer
         fromConnection:(QTCaptureConnection *)connection
 {
-  PTRACE(6, "MacVideo", "Frame received");
+  PTRACE_DETAILED(5, "MacVideo", "Frame received: m_frameData=" << m_frameData);
   
   // If we already have an image we should use that instead
-  if (m_frameData != nil)
-    return;
-  
-  // Retain the videoFrame so it won't disappear
-  // don't forget to release!
-  CVBufferRetain(videoFrame);
-  
-  // The Apple docs state that this action must be synchronized
-  // as this method will be run on another thread
-  @synchronized (self) {
-    m_frameData = [sampleBuffer bytesForAllSamples];
-    m_frameSize = [sampleBuffer lengthForAllSamples];
-    [m_grabbed signal];
+  if (m_frameData == nil) {
+    // Retain the videoFrame so it won't disappear
+    // don't forget to release!
+    CVBufferRetain(videoFrame);
+    
+    // The Apple docs state that this action must be synchronized
+    // as this method will be run on another thread
+    @synchronized (self) {
+      m_frameData = [sampleBuffer bytesForAllSamples];
+      m_frameSize = [sampleBuffer lengthForAllSamples];
+    }
   }
+  
+  [m_grabbed signal];
 }
 
 
 - (void)close
 {
-  PTRACE(6, "MacVideo", "Breaking grab block");
+  PTRACE_DETAILED(5, "MacVideo", "Breaking grab block");
   [m_grabbed signal];
 }
 
 
 - (void)waitFrame
 {
-  PTRACE(6, "MacVideo", "Waiting");
+  PTRACE_DETAILED(5, "MacVideo", "Waiting");
   [m_grabbed wait];
 }
 
@@ -340,7 +342,10 @@ PBoolean PVideoInputDevice_Mac::Start()
 {
   if (!IsOpen())
     return false;
-  
+
+  if ([m_session isRunning])
+    return true;
+
   [m_session startRunning];
   PTRACE(3, "MacVideo", "Started \"" << deviceName << '"');
   return [m_session isRunning];
@@ -476,12 +481,13 @@ PBoolean PVideoInputDevice_Mac::GetFrameData(BYTE * buffer, PINDEX * bytesReturn
  
 PBoolean PVideoInputDevice_Mac::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
+  PTRACE_DETAILED(5, "MacVideo", "Get frame, converter=" << converter);
+  
   if (!IsCapturing())
     return false;
   
-  if (converter == NULL)
-    [m_captureFrame grabFrame:destFrame withWidth:frameWidth andHeight:frameHeight];
-  else {
+  [m_captureFrame grabFrame:destFrame withWidth:frameWidth andHeight:frameHeight];
+  if (converter != NULL) {
     if (!converter->Convert(destFrame, destFrame, bytesReturned))
       return false;
   }
