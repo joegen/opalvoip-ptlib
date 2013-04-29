@@ -70,7 +70,7 @@
         withSampleBuffer:(QTSampleBuffer *)sampleBuffer
         fromConnection:(QTCaptureConnection *)connection
 {
-  PTRACE(5, "MacVideo", "Frame received");
+  PTRACE(6, "MacVideo", "Frame received");
   
   // If we already have an image we should use that instead
   if (m_frameData != nil)
@@ -92,14 +92,14 @@
 
 - (void)close
 {
-  PTRACE(5, "MacVideo", "Breaking grab block");
+  PTRACE(6, "MacVideo", "Breaking grab block");
   [m_grabbed signal];
 }
 
 
 - (void)waitFrame
 {
-  PTRACE(5, "MacVideo", "Waiting");
+  PTRACE(6, "MacVideo", "Waiting");
   [m_grabbed wait];
 }
 
