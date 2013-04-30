@@ -2504,11 +2504,8 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
     }
     
   } else {
-    sockaddr_in sockAddr;
-    sockAddr.sin_family = AF_INET;
-    sockAddr.sin_addr = addr;
-    sockAddr.sin_port = htons(port);
-    ok = os_vwrite(slices, sliceCount, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0;
+    PIPSocket::sockaddr_wrapper sa(addr, port);
+    ok = os_vwrite(slices, sliceCount, 0, sa, sa.GetSize();
   }
   
 #else
