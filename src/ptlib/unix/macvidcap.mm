@@ -39,7 +39,7 @@
 #import <Foundation/NSLock.h>
 #import <QTKit/QTKit.h>
 
-#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
+#define PTRACE_DETAILED(...) //PTRACE(__VA_ARGS__)
 
 
 @interface PVideoInputDevice_MacFrame : NSObject
