@@ -44,9 +44,9 @@
 
 @interface PVideoInputDevice_MacFrame : NSObject
 {
-  NSCondition * m_grabbed;
-  const void  * m_frameData;
-  size_t        m_frameSize;
+  PSyncPoint   m_grabbed;
+  const void * m_frameData;
+  size_t       m_frameSize;
 }
 
 @end
@@ -59,7 +59,6 @@
   if ((self = [super init]))
   {
     m_frameData = nil;
-    m_grabbed = [[NSCondition alloc] init];
   }
   
   return self;
@@ -85,24 +84,23 @@
     @synchronized (self) {
       m_frameData = [sampleBuffer bytesForAllSamples];
       m_frameSize = [sampleBuffer lengthForAllSamples];
+      m_grabbed.Signal();
     }
   }
-  
-  [m_grabbed signal];
 }
 
 
 - (void)close
 {
   PTRACE_DETAILED(5, "MacVideo", "Breaking grab block");
-  [m_grabbed signal];
+  m_grabbed.Signal();
 }
 
 
 - (void)waitFrame
 {
   PTRACE_DETAILED(5, "MacVideo", "Waiting");
-  [m_grabbed wait];
+  m_grabbed.Wait();
 }
 
 
