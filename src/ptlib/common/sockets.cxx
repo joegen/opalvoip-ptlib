@@ -2505,7 +2505,7 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
     
   } else {
     PIPSocket::sockaddr_wrapper sa(addr, port);
-    ok = os_vwrite(slices, sliceCount, 0, sa, sa.GetSize();
+    ok = os_vwrite(slices, sliceCount, 0, sa, sa.GetSize());
   }
   
 #else
