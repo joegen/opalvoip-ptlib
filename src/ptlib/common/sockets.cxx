@@ -1377,7 +1377,7 @@ PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address
   if (!OpenSocket(sa->sa_family))
     return false;
 
-  if (localPort != 0 || iface.IsValid()) {
+  if (localPort != 0 || (iface.IsValid() && !iface.IsAny())) {
     PIPSocket::sockaddr_wrapper bind_sa(iface, localPort);
 
     if (!SetOption(SO_REUSEADDR, 0)) {
