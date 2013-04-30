@@ -1330,15 +1330,12 @@ bool PSSLContext::SetCredentials(const PString & authority,
     return false;
   }
 
-  if (!key.IsValid() && !key.Parse(certificate)) {
-    PTRACE(2, "SSL\tCould not parse certificate \"" << certificate << '"');
-    return false;
-  }
+  // Can put the base64 doirectly into string, rather than file path
+  if (!key.IsValid())
+    key.Parse(certificate);
 
-  if (!cert.IsValid() && !cert.Parse(privateKey)) {
-    PTRACE(2, "SSL\tCould not parse private key \"" << privateKey << '"');
-    return false;
-  }
+  if (!cert.IsValid())
+    cert.Parse(privateKey);
 
   if (!cert.IsValid() || !key.IsValid()) {
 
@@ -1356,17 +1353,24 @@ bool PSSLContext::SetCredentials(const PString & authority,
     dn << "/O=" << PProcess::Current().GetManufacturer()
        << "/CN=" << PIPSocket::GetHostName();
 
-    PSSLPrivateKey key(2048);
-    PSSLCertificate root;
-    if (!root.CreateRoot(dn, key)) {
+    if (!key.Create(2048)) {
+      PTRACE(1, "SSL\tCould not create private key");
+      return false;
+    }
+
+    if (!cert.CreateRoot(dn, key)) {
       PTRACE(1, "SSL\tCould not create certificate");
       return false;
     }
 
-    root.Save(certificate);
+    if (!cert.Save(certificate))
+      return false;
+
     PTRACE(2, "SSL\tCreated new certificate file \"" << certificate << '"');
 
-    key.Save(privateKey, true);
+    if (!key.Save(privateKey, true))
+      return false;
+
     PTRACE(2, "SSL\tCreated new private key file \"" << privateKey << '"');
   }
 
