@@ -90,9 +90,9 @@
 }
 
 
-- (void)close
+- (void)stop
 {
-  PTRACE_DETAILED(5, "MacVideo", "Breaking grab block");
+  PTRACE(4, "MacVideo", "Breaking grab block");
   m_grabbed.Signal();
 }
 
@@ -304,8 +304,6 @@ PBoolean PVideoInputDevice_Mac::Close()
   PTRACE_IF(4, IsOpen(), "MacVideo", "Closing \"" << deviceName << '"');
   
   Stop();
-
-  [m_captureFrame close];
   
   if (m_device != nil && [m_device isOpen])
     [m_device close];
@@ -357,6 +355,7 @@ PBoolean PVideoInputDevice_Mac::Stop()
   
   PTRACE(3, "MacVideo", "Stopping \"" << deviceName << '"');
   [m_session stopRunning];
+  [m_captureFrame stop];
   return ![m_session isRunning];
 }
 
