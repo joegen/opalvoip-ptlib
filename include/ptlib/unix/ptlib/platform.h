@@ -623,7 +623,6 @@ typedef unsigned long long int PUInt64; // 64 bit
 
 // Integer type that is same size as a pointer type.
 typedef intptr_t      INT;
-typedef uintptr_t    UINT;
 
 // Create "Windows" style definitions.
 
@@ -637,41 +636,41 @@ typedef uint32_t DWORD;
   #include <sqltypes.h>
 #else
 
-typedef signed char             SCHAR;
-typedef unsigned char           UCHAR;
-typedef short                   SHORT;
-typedef signed short            SSHORT;
-typedef unsigned short          USHORT;
-typedef  int16_t                SWORD;
-typedef uint16_t                UWORD;
-typedef long                    LONG;
-typedef signed long             SLONG;
-typedef unsigned long           ULONG;
-typedef uint32_t                UDWORD;
-typedef int32_t                 SDWORD;
+  typedef signed char             SCHAR;
+  typedef unsigned char           UCHAR;
+  typedef short                   SHORT;
+  typedef signed short            SSHORT;
+  typedef unsigned short          USHORT;
+  typedef  int16_t                SWORD;
+  typedef uint16_t                UWORD;
+  typedef long                    LONG;
+  typedef signed long             SLONG;
+  typedef unsigned long           ULONG;
+  typedef uint32_t                UDWORD;
+  typedef int32_t                 SDWORD;
 
-typedef float                   SFLOAT;
-typedef double                  SDOUBLE;
-typedef double                  LDOUBLE;
+  typedef float                   SFLOAT;
+  typedef double                  SDOUBLE;
+  typedef double                  LDOUBLE;
 
-typedef void *                  PTR;
-typedef void *                  LPVOID;
-typedef CHAR *                  LPSTR;
+  typedef void *                  PTR;
+  typedef void *                  LPVOID;
+  typedef CHAR *                  LPSTR;
 
-typedef const CHAR *            LPCSTR;
-typedef DWORD *                 LPDWORD;
-#define FAR
+  typedef const CHAR *            LPCSTR;
+  typedef DWORD *                 LPDWORD;
+  #define FAR
 
-typedef signed short            RETCODE;
-typedef void *                  HWND;
+  typedef signed short            RETCODE;
+  typedef void *                  HWND;
 
-#endif
+  #ifdef P_HAS_WCHAR
+    typedef wchar_t                 WCHAR;
+    typedef WCHAR *                 LPWSTR;
+    typedef const WCHAR *           LPCWSTR;
+  #endif
 
-#ifdef P_HAS_WCHAR
-typedef wchar_t                 WCHAR;
-typedef WCHAR *                 LPWSTR;
-typedef const WCHAR *           LPCWSTR;
-#endif
+#endif // P_ODBC
 
 
 #ifndef INT64_MAX
@@ -681,13 +680,6 @@ typedef const WCHAR *           LPCWSTR;
 #ifndef UINT64_MAX
 #define UINT64_MAX	std::numeric_limits<PUInt64>::max()
 #endif
-
-// For sqltypes.h, prevent it from redefining the above
-#define ALLREADY_HAVE_WINDOWS_TYPE 1
-
-typedef SCHAR SQLSCHAR;
-typedef HWND SQLHWND;
-#define SQL_API
 
 
 ///////////////////////////////////////////
