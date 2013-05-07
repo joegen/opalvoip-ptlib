@@ -160,7 +160,7 @@ PStringArray PSoundChannel_Tones::GetDeviceNames(Directions dir)
 {
   PStringArray devices;
   if (dir == Player)
-    devices.AppendString(TonePrefix + ":440/1.0");
+    devices.AppendString(TonePrefix + "440:0.5/880:1.0");
   return devices;
 }
 
