@@ -253,7 +253,7 @@ class PURL : public PObject
     /// Get the port field of the URL.
     WORD GetPort() const { return port; }
 
-    /// Set the port field in the URL.
+    /// Set the port field in the URL. Zero resets to default.
     void SetPort(WORD newPort);
     
     /// Get if explicit port is specified.
@@ -431,6 +431,7 @@ class PURLScheme : public PObject
   public:
     virtual bool Parse(const char * cstr, PURL & url) const = 0;
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const = 0;
+    virtual WORD GetDefaultPort() const { return 0; }
 };
 
 typedef PFactory<PURLScheme> PURLSchemeFactory;
@@ -477,6 +478,8 @@ class PURLLegacyScheme : public PURLScheme
     {
       return url.LegacyAsString(fmt, this);
     }
+
+    virtual WORD GetDefaultPort() const { return defaultPort; }
 
     bool hasUsername;
     bool hasPassword;
