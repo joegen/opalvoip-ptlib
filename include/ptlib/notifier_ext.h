@@ -209,7 +209,7 @@ class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParamType>
         ParamType       m_extra;
 
       public:
-        TypedCallback(const Target & target, PObject & notifier, const ParamType & extra)
+        TypedCallback(const Target & target, PObject & notifier, ParamType extra)
           : m_target(target)
           , m_notifier(notifier)
           , m_extra(extra)
