@@ -89,8 +89,12 @@ else # OS
     VENDOR := none
   endif
   
+  ifeq ($(ABI),)
+    ABI=gnueabi
+  endif
+
   ifeq ($(HOST),)
-    HOST := $(CPU)-$(VENDOR)-$(OS)
+    HOST := $(CPU)-$(VENDOR)-$(OS)-$(ABI)
   endif
 
   ifndef HOST_CONFIG_PARAM
@@ -99,7 +103,7 @@ else # OS
   
   TARGET_DIR := $(CURDIR)/lib_$(OS)_$(CPU)
   
-  $(info Cross compile: OS=$(OS), CPU=$(CPU), VENDOR=$(VENDOR), HOST=$(HOST))
+  $(info Cross compile: OS=$(OS), CPU=$(CPU), HOST=$(HOST))
 endif # OS
 
 
