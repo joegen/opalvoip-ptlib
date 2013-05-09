@@ -336,8 +336,9 @@ fi
 
 dnl ########################################################################
 dnl check for headers
-AC_CHECK_HEADERS(limits.h signal.h fcntl.h sys/time.h termios.h sys/termios.h ioctl.h sys/ioctl.h \
-                 sys/socket.h netdb.h net/if.h netinet/in.h arpa/inet.h ifaddrs.h sys/sysctl.h \
+AC_CHECK_HEADERS(limits.h signal.h fcntl.h sys/time.h termios.h sys/termios.h \
+                 ioctl.h sys/ioctl.h sys/socket.h netdb.h arpa/inet.h \
+                 netinet/in.h netinet/tcp.h ifaddrs.h sys/sysctl.h net/if.h \
                  net/if_dl.h net/if_types.h netinet/if_ether.h linux/errqueue.h)
  AC_HEADER_DIRENT()
 

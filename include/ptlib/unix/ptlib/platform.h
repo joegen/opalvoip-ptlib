@@ -125,6 +125,10 @@
 #include <netinet/in.h>
 #endif
 
+#ifdef HAVE_NETINET_TCP_H
+#include <netinet/tcp.h>
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
