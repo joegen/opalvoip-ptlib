@@ -45,43 +45,52 @@
 #include <ptlib/sockets.h>
 
 
-#if !defined(P_CYGWIN)
-#include <net/if.h>
+#if HAVE_IOCTL_H
+  #include <ioctl.h>
+#elif HAVE_SYS_IOCTL_H
+  #include <sys/ioctl.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_NETBSD) || defined(P_OPENBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_SOLARIS)
-#include <ifaddrs.h>
+#ifdef HAVE_NET_IF_H
+  #include <net/if.h>
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_QNX)
-#include <sys/sysctl.h>
+#ifdef HAVE_IFADDRS_H
+  #include <ifaddrs.h>
+#endif
+
+#ifdef HAVE_SYS_SYSCTL_H
+  #include <sys/sysctl.h>
 #endif
 
 #ifdef P_RTEMS
-#include <bsp.h>
+  #include <bsp.h>
 #endif
 
-#if (defined(P_LINUX) || defined(P_ANDROID)) && P_HAS_RECVMSG && P_HAS_RECVMSG_MSG_ERRQUEUE
+#ifdef HAVE_LINUX_ERRQUEUE_H
   #include <asm/types.h>
   #include <linux/errqueue.h>
 #endif
 
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_IOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
-#define ifr_netmask ifr_addr
-
-#include <net/if_dl.h>
-
-#if !defined(P_QNX) && !defined(P_IOS)
-#include <net/if_types.h>
-#include <netinet/if_ether.h>
+  #define ifr_netmask ifr_addr
 #endif
 
+#ifdef HAVE_NET_IF_DL_H
+  #include <net/if_dl.h>
 #endif
 
+#ifdef HAVE_NET_IF_TYPES_H
+  #include <net/if_types.h>
+#endif
+
+#ifdef HAVE_NETINET_IF_ETHER_H
+  #include <netinet/if_ether.h>
+#endif
 
 #if defined(P_HAS_RT_MSGHDR)
-#include <net/route.h>
+  #include <net/route.h>
 #endif
 
 #if defined(SIOCGENADDR)
