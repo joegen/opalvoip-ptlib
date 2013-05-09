@@ -156,6 +156,7 @@
   #define HAVE_SYS_SOCKET_H 1
   #define HAVE_NETDB_H 1
   #define HAVE_NETINET_IN_H 1
+  #define HAVE_NETINET_TCP_H 1
   #define HAVE_ARPA_INET_H 1
   #define HAVE_NET_IF_H 1
   #define HAVE_IFADDRS_H 1
@@ -198,6 +199,7 @@
   #undef HAVE_SYS_SOCKET_H
   #undef HAVE_NETDB_H
   #undef HAVE_NETINET_IN_H
+  #undef HAVE_NETINET_TCP_H
   #undef HAVE_ARPA_INET_H
   #undef HAVE_NET_IF_H
   #undef HAVE_IFADDRS_H
