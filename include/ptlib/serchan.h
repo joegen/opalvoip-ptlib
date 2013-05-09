@@ -41,6 +41,12 @@
 
 class PConfig;
 
+#if HAVE_TERMIOS_H
+  #include <termios.h>
+#elif HAVE_SYS_TERMIOS_H
+  #include <sys/termios.h>
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Serial Channel

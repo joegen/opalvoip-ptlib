@@ -137,6 +137,32 @@
 //
 
 #if P_ANDROID
+
+  // configure is not run in Android/Visual Studio, so hard code it
+  #define HAVE_LIMITS_H 1
+  #define HAVE_UNISTD_H 1
+  #define HAVE_SYS_TYPES_H 1
+  #define HAVE_DIRENT_H 1
+  #define HAVE_SYS_STAT_H 1
+  #define STDC_HEADERS 1
+  #define HAVE_STDLIB_H 1
+  #define HAVE_STRING_H 1
+  #define HAVE_STRINGS_H 1
+  #define HAVE_SIGNAL_H 1
+  #define HAVE_FCNTL_H 1
+  #define HAVE_TERMIOS_H 1
+  #define HAVE_SYS_IOCTL_H 1
+  #define HAVE_SYS_TIME_H 1
+  #define HAVE_SYS_SOCKET_H 1
+  #define HAVE_NETDB_H 1
+  #define HAVE_NETINET_IN_H 1
+  #define HAVE_ARPA_INET_H 1
+  #define HAVE_NET_IF_H 1
+  #define HAVE_IFADDRS_H 1
+  #define HAVE_SYS_SYSCTL_H 1
+  #define HAVE_LINUX_ERRQUEUE_H 1
+  #define HAVE_NETINET_IF_ETHER_H 1
+
   #define P_PTHREADS 1
   #define P_HAS_SEMAPHORES 1
   #define P_HAS_ATOMIC_INT 1
@@ -147,7 +173,40 @@
   #define P_HAS_RECVMSG_IP_RECVERR 1
   #define P_HAS_NETLINK 1
   #define P_SETPGRP_NOPARM 1
-#else
+
+#else // P_ANDROID
+
+  #undef HAVE_LIMITS_H
+  #undef HAVE_UNISTD_H
+  #undef HAVE_SYS_TYPES_H
+  #undef HAVE_DIRENT_H
+  #undef HAVE_SYS_NDIR_H
+  #undef HAVE_SYS_DIR_H
+  #undef HAVE_NDIR_H
+  #undef HAVE_SYS_STAT_H
+  #undef STDC_HEADERS
+  #undef HAVE_STDLIB_H
+  #undef HAVE_STRING_H
+  #undef HAVE_STRINGS_H
+  #undef HAVE_SIGNAL_H
+  #undef HAVE_FCNTL_H
+  #undef HAVE_TERMIOS_H
+  #undef HAVE_SYS_TERMIOS_H
+  #undef HAVE_IOCTL_H
+  #undef HAVE_SYS_IOCTL_H
+  #undef HAVE_SYS_TIME_H
+  #undef HAVE_SYS_SOCKET_H
+  #undef HAVE_NETDB_H
+  #undef HAVE_NETINET_IN_H
+  #undef HAVE_ARPA_INET_H
+  #undef HAVE_NET_IF_H
+  #undef HAVE_IFADDRS_H
+  #undef HAVE_SYS_SYSCTL_H
+  #undef HAVE_LINUX_ERRQUEUE_H
+  #undef HAVE_NET_IF_DL_H
+  #undef HAVE_NET_IF_TYPES_H
+  #undef HAVE_NETINET_IF_ETHER_H
+
   #undef P_PTHREADS
   #undef P_HAS_SEMAPHORES
   #undef P_HAS_ATOMIC_INT
@@ -159,26 +218,27 @@
   #undef P_HAS_RT_MSGHDR
   #undef P_HAS_NETLINK
   #undef P_SETPGRP_NOPARM
-#endif
 
-#undef P_GNU_ALLOCATOR
-#undef P_HAS_NAMED_SEMAPHORES
-#undef P_PTHREADS_XPG6      
-#undef P_HAS_SEMAPHORES_XPG6
-#undef P_HAS_AIO
-#undef P_HAS_POSIX_READDIR_R
-#undef P_HAS_UPAD128_T
-#undef P_HAS_INET_NTOP
-#undef P_HAS_IPV6_ADD_MEMBERSHIP
-#undef P_GETPWUID_R4
-#undef P_GETPWUID_R5
-#undef P_GETPWNAM_R4
-#undef P_GETPWNAM_R5
-#undef P_GETGRGID_R4
-#undef P_GETGRGID_R5
-#undef P_GETGRNAM_R4
-#undef P_GETGRNAM_R5
-#undef P_GETHOSTBYNAME_R
+  #undef P_GNU_ALLOCATOR
+  #undef P_HAS_NAMED_SEMAPHORES
+  #undef P_PTHREADS_XPG6      
+  #undef P_HAS_SEMAPHORES_XPG6
+  #undef P_HAS_AIO
+  #undef P_HAS_POSIX_READDIR_R
+  #undef P_HAS_UPAD128_T
+  #undef P_HAS_INET_NTOP
+  #undef P_HAS_IPV6_ADD_MEMBERSHIP
+  #undef P_GETPWUID_R4
+  #undef P_GETPWUID_R5
+  #undef P_GETPWNAM_R4
+  #undef P_GETPWNAM_R5
+  #undef P_GETGRGID_R4
+  #undef P_GETGRGID_R5
+  #undef P_GETGRNAM_R4
+  #undef P_GETGRNAM_R5
+  #undef P_GETHOSTBYNAME_R
+
+#endif //P_ANDROID
 
 #ifndef _WIN32_WCE
   #undef P_HAS_IPV6
