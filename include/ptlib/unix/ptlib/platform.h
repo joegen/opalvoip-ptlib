@@ -40,19 +40,94 @@
   #include <inttypes.h>
 #endif
 
+#ifdef HAVE_LIMITS_H
+  #include <limits.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+  #include <sys/types.h>
+#endif
+
+#ifdef HAVE_DIRENT_H
+  #include <dirent.h>
+  #define NAMLEN(dirent) strlen ((dirent)->d_name)
+#else
+  #define dirent direct
+  #define NAMLEN(dirent) ((dirent)->d_namlen)
+  #ifdef HAVE_SYS_NDIR_H
+    #include <sys/ndir.h>
+  #endif
+  #ifdef HAVE_SYS_DIR_H
+    #include <sys/dir.h>
+  #endif
+  #ifdef HAVE_NDIR_H
+    #include <ndir.h>
+  #endif
+#endif
+
+#ifdef HAVE_SYS_STAT_H
+  #include <sys/stat.h>
+#endif
+
+#ifdef STDC_HEADERS
+  #include <stdlib.h>
+  #include <stddef.h>
+#else
+  #ifdef HAVE_STDLIB_H
+    #include <stdlib.h>
+  #endif
+#endif
+
+#ifdef HAVE_STRING_H
+  #if !defined STDC_HEADERS && defined HAVE_MEMORY_H
+     #include <memory.h>
+  #endif
+  #include <string.h>
+#endif
+
+#ifdef HAVE_STRINGS_H
+  #include <strings.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+  #include <unistd.h>
+#endif
+
+#ifdef HAVE_SIGNAL_H
+  #include <signal.h>
+#else
+  #include <sys/signal.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
+  #include <fcntl.h>
+#else
+  #include <sys/fcntl.h>
+#endif
+
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+#ifdef HAVE_NETDB_H
+  #include <netdb.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
-
-#include <paths.h>
-#include <signal.h>
-#include <sys/ioctl.h>
-#include <sys/fcntl.h>
-#include <sys/termios.h>
-#include <unistd.h>
-#include <netinet/tcp.h>
-
-#include <limits>
 
 #define P_STRTOQ strtoq
 #define P_STRTOUQ strtouq
@@ -60,27 +135,11 @@
 #define HAS_IFREQ
 
 #if __GNU_LIBRARY__ < 6
-#define P_LINUX_LIB_OLD
-typedef int socklen_t;
-#endif
-
-#ifdef PPC
-typedef size_t socklen_t;
+  typedef int socklen_t;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_GNU)
-
-#include <paths.h>
-#include <errno.h>
-#include <signal.h>
-#include <sys/ioctl.h>
-#include <sys/fcntl.h>
-#include <sys/termios.h>
-#include <unistd.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
 
 #define HAS_IFREQ
 
@@ -90,63 +149,24 @@ typedef size_t socklen_t;
 #define P_THREAD_SAFE_LIBC
 #define P_NO_CANCEL
 
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <netinet/tcp.h>
-
 #define P_STRTOQ strtoll
 #define P_STRTOUQ strtoull
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_FREEBSD)
 
-#if defined(P_PTHREADS)
-#ifndef _THREAD_SAFE
-#define _THREAD_SAFE
-#endif
-#define P_THREAD_SAFE_CLIB
-
-#include <pthread.h>
-#endif
-
-#include <paths.h>
-#include <termios.h>
-#include <sys/fcntl.h>
-#include <sys/filio.h>
-#include <sys/socket.h>
-#include <sys/sockio.h>
-#include <sys/signal.h>
-#include <netinet/tcp.h>
-
 #define P_STRTOQ strtoq
 #define P_STRTOUQ strtouq
 
 /* socklen_t is defined in FreeBSD 3.4-STABLE, 4.0-RELEASE and above */
 #if (P_FREEBSD <= 340000)
-typedef int socklen_t;
+  typedef int socklen_t;
 #endif
 
 #define HAS_IFREQ
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_OPENBSD)
-
-#if defined(P_PTHREADS)
-#define _THREAD_SAFE
-#define P_THREAD_SAFE_CLIB
-
-#include <pthread.h>
-#endif
-
-#include <paths.h>
-#include <termios.h>
-#include <sys/fcntl.h>
-#include <sys/filio.h>
-#include <sys/socket.h>
-#include <sys/sockio.h>
-#include <sys/ioctl.h>
-#include <sys/signal.h>
-#include <netinet/tcp.h>
 
 #define P_STRTOQ strtoq
 #define P_STRTOUQ strtouq
@@ -156,24 +176,6 @@ typedef int socklen_t;
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_NETBSD)
 
-#if defined(P_PTHREADS)
-#define _THREAD_SAFE
-#define P_THREAD_SAFE_CLIB
-
-#include <pthread.h>
-#endif
-
-#include <paths.h>
-#include <termios.h>
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <sys/filio.h>
-#include <sys/socket.h>
-#include <sys/sockio.h>
-#include <sys/ioctl.h>
-#include <sys/signal.h>
-#include <netinet/tcp.h>
-
 #define P_STRTOQ strtoq
 #define P_STRTOUQ strtouq
 
@@ -182,59 +184,35 @@ typedef int socklen_t;
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_SOLARIS)
 
-#include <alloca.h>
-#include <sys/sockio.h>
-#include <sys/ioctl.h>
-#include <sys/fcntl.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/termios.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/filio.h>
-#include <sys/wait.h>
-#include <sys/uio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <netinet/tcp.h>
-#include <sys/sockio.h>
-
 #define P_STRTOQ strtoll
 #define P_STRTOUQ strtoull
 
 #if !defined(P_HAS_UPAD128_T)
-typedef union {
-  long double _q;
-  uint32_t _l[4];
-} upad128_t;
+  typedef union {
+    long double _q;
+    uint32_t _l[4];
+  } upad128_t;
 #endif
 
 #if !defined(INADDR_NONE)
-#define INADDR_NONE     -1
+  #define INADDR_NONE     -1
 #endif
 #if P_SOLARIS < 7
-typedef int socklen_t;
+  typedef int socklen_t;
 #endif
 
 #define HAS_IFREQ
 
 #if __GNUC__ < 3
-extern "C" {
-
-int ftime (struct timeb *);
-pid_t wait3(int *status, int options, struct rusage *rusage);
-int gethostname(char *, int);
-
-};
+  extern "C" {
+    int ftime (struct timeb *);
+    pid_t wait3(int *status, int options, struct rusage *rusage);
+    int gethostname(char *, int);
+  };
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_SUN4)
-
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/sockio.h>
 
 #define P_STRTOQ strtoq
 #define P_STRTOUQ strtouq
@@ -243,42 +221,39 @@ int gethostname(char *, int);
 #define raise(s)    kill(getpid(),s)
 
 extern "C" {
+  char *mktemp(char *);
+  int accept(int, struct sockaddr *, int *);
+  int connect(int, struct sockaddr *, int);
+  int ioctl(int, int, void *);
+  int recv(int, void *, int, int);
+  int recvfrom(int, void *, int, int, struct sockaddr *, int *);
+  int select(int, fd_set *, fd_set *, fd_set *, struct timeval *);
+  int sendto(int, const void *, int, int, const struct sockaddr *, int);
+  int send(int, const void *, int, int);
+  int shutdown(int, int);
+  int socket(int, int, int);
+  int vfork();
+  void bzero(void *, int);
+  void closelog();
+  void gettimeofday(struct timeval * tv, struct timezone * tz);
+  void openlog(const char *, int, int);
+  void syslog(int, char *, ...);
+  int setpgrp(int, int);
+  pid_t wait3(int *status, int options, struct rusage *rusage);
+  int bind(int, struct sockaddr *, int);
+  int listen(int, int);
+  int getsockopt(int, int, int, char *, int *);
+  int setsockopt(int, int, int, char *, int);
+  int getpeername(int, struct sockaddr *, int *);
+  int gethostname(char *, int);
+  int getsockname(int, struct sockaddr *, int *);
+  char * inet_ntoa(struct in_addr);
+  int ftime (struct timeb *);
+  struct hostent * gethostbyname(const char *);
+  struct hostent * gethostbyaddr(const char *, int, int);
+  struct servent * getservbyname(const char *, const char *);
+};
 
-char *mktemp(char *);
-int accept(int, struct sockaddr *, int *);
-int connect(int, struct sockaddr *, int);
-int ioctl(int, int, void *);
-int recv(int, void *, int, int);
-int recvfrom(int, void *, int, int, struct sockaddr *, int *);
-int select(int, fd_set *, fd_set *, fd_set *, struct timeval *);
-int sendto(int, const void *, int, int, const struct sockaddr *, int);
-int send(int, const void *, int, int);
-int shutdown(int, int);
-int socket(int, int, int);
-int vfork();
-void bzero(void *, int);
-void closelog();
-void gettimeofday(struct timeval * tv, struct timezone * tz);
-void openlog(const char *, int, int);
-void syslog(int, char *, ...);
-int setpgrp(int, int);
-pid_t wait3(int *status, int options, struct rusage *rusage);
-int bind(int, struct sockaddr *, int);
-int listen(int, int);
-int getsockopt(int, int, int, char *, int *);
-int setsockopt(int, int, int, char *, int);
-int getpeername(int, struct sockaddr *, int *);
-int gethostname(char *, int);
-int getsockname(int, struct sockaddr *, int *);
-char * inet_ntoa(struct in_addr);
-
-int ftime (struct timeb *);
-
-struct hostent * gethostbyname(const char *);
-struct hostent * gethostbyaddr(const char *, int, int);
-struct servent * getservbyname(const char *, const char *);
-
-#include <sys/termios.h>
 #undef NL0
 #undef NL1
 #undef CR0
@@ -298,14 +273,11 @@ struct servent * getservbyname(const char *, const char *);
 #undef TOSTOP
 #undef FLUSHO
 #undef PENDIN
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif __BEOS__
 
-#include <termios.h>
-#include <sys/socket.h>
 #include <OS.h>
 #include <cpp/stl.h>
 
@@ -324,9 +296,9 @@ int setegid(gid_t gid);
 
 #define RTLD_NOW        0x2
 extern "C" {
-void *dlopen(const char *path, int mode);
-int dlclose(void *handle);
-void *dlsym(void *handle, const char *symbol);
+  void *dlopen(const char *path, int mode);
+  int dlclose(void *handle);
+  void *dlsym(void *handle, const char *symbol);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -338,29 +310,8 @@ void *dlsym(void *handle, const char *symbol);
 #define P_IPHONEOS P_IOS // For backward compatibility
 #endif
 
-#if defined(P_PTHREADS)
-  #ifndef _THREAD_SAFE
-    #define _THREAD_SAFE
-  #endif
-  #define P_THREAD_SAFE_CLIB
-  #include <pthread.h>
-#endif
-
-#include <unistd.h>
-#include <paths.h>
-#include <termios.h>
-#include <sys/fcntl.h>
-#include <sys/filio.h>
-#include <sys/socket.h>
-#include <sys/sockio.h>
-#include <sys/signal.h>
-#include <signal.h>
-#include <net/if.h>
-#include <netinet/tcp.h>
-#include <sys/ioctl.h>
-
 #if defined (P_MACOSX) && (P_MACOSX < 800)
-typedef int socklen_t;
+  typedef int socklen_t;
 #endif
  
 #define P_STRTOQ strtoq
@@ -372,21 +323,6 @@ typedef int socklen_t;
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_AIX)
 
-#include <termios.h>
-#include <fcntl.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <sys/uio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <netinet/tcp.h>
-#include <strings.h>
-
 #define P_STRTOQ strtoll
 #define P_STRTOUQ strtoull
 
@@ -394,22 +330,6 @@ typedef int socklen_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_IRIX)
-
-#include <sys/sockio.h>
-#include <sys/ioctl.h>
-#include <sys/fcntl.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/termios.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/filio.h>
-#include <sys/wait.h>
-#include <sys/uio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <netinet/tcp.h>
-#include <sys/sockio.h>
 
 #define P_STRTOQ strtoll
 #define P_STRTOUQ strtoull
@@ -424,14 +344,10 @@ typedef int socklen_t;
 #include <sysLib.h>
 #include <time.h>
 #include <ioLib.h>
-#include <unistd.h>
 #include <selectLib.h>
 #include <inetLib.h>
 #include <hostLib.h>
 #include <ioctl.h>
-#include <netinet/tcp.h>
-#include <sys/socket.h>
-#include <sys/times.h>
 #include <socklib.h>
 
 // Prevent conflict between net/mbuf.h and some ASN.1 header files
@@ -460,19 +376,11 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 
 #define P_HAS_SEMAPHORES
 #define _THREAD_SAFE
-#define P_THREAD_SAFE_CLIB
 #define P_THREADIDENTIFIER long
 
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_RTEMS)
-
-#include <sys/termios.h>
-#include <sys/errno.h>
-#include <sys/fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <netinet/tcp.h>
 
 #define P_STRTOQ strtol
 #define P_STRTOUQ strtoul
@@ -494,25 +402,7 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_QNX)
 
-#if defined(P_PTHREADS)
-#define _THREAD_SAFE
-#define P_THREAD_SAFE_CLIB
-
-#include <pthread.h>
-#include <resolv.h> /* for pthread's h_errno */
-#endif
-
-#include <paths.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <strings.h>
-#include <sys/select.h>
-#include <sys/termio.h>
-#include <sys/socket.h>
 #include <sys/sockio.h>
-#include <sys/ioctl.h>
-#include <netinet/tcp.h>
 
 #define P_STRTOQ strtoll
 #define P_STRTOUQ strtoull
@@ -521,9 +411,6 @@ extern "C" {
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_CYGWIN)
-#include <sys/termios.h>
-#include <sys/ioctl.h>
-#include <sys/fcntl.h>
 
 #define P_STRTOQ strtoq
 #define P_STRTOUQ strtouq
@@ -546,19 +433,6 @@ extern "C" {
   #include <aio.h>
 #endif
 
-#include <netdb.h>
-#include <dirent.h>
-
-#include <sys/socket.h>
-#ifndef P_VXWORKS
-#include <sys/time.h>
-#endif
-
-#ifndef __BEOS__
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#endif
-
 typedef int SOCKET;
 
 #ifndef PSETPGRP
@@ -572,6 +446,9 @@ typedef int SOCKET;
 typedef pid_t PProcessIdentifier;
 
 #ifdef P_PTHREADS
+  #ifndef _THREAD_SAFE
+    #define _THREAD_SAFE 1
+  #endif
 
   #include <pthread.h>
   typedef pthread_t PThreadIdentifier;
@@ -684,8 +561,6 @@ typedef uint32_t DWORD;
 
 ///////////////////////////////////////////
 // Type used for array indexes and sizes
-
-#include <limits.h>
 
 typedef int PINDEX;
 #define P_MAX_INDEX INT_MAX
