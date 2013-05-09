@@ -325,13 +325,22 @@ dnl ########################################################################
 dnl check for the size of int
 AC_CHECK_SIZEOF(int)
 
+
 dnl ########################################################################
 dnl check for long double
-
 AC_C_LONG_DOUBLE
 if test $ac_cv_c_long_double != yes ; then
   AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
 fi
+
+
+dnl ########################################################################
+dnl check for headers
+AC_CHECK_HEADERS(limits.h signal.h fcntl.h sys/time.h termios.h sys/termios.h ioctl.h sys/ioctl.h \
+                 sys/socket.h netdb.h net/if.h netinet/in.h arpa/inet.h ifaddrs.h sys/sysctl.h \
+                 net/if_dl.h net/if_types.h netinet/if_ether.h linux/errqueue.h)
+ AC_HEADER_DIRENT()
+
 
 dnl ########################################################################
 dnl check for number of parms to readdir
