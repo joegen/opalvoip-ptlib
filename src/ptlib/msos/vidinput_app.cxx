@@ -38,9 +38,20 @@
 #include <ptlib/msos/ptlib/vidinput_app.h>
 
 
-static const char TopWindowPrefix[] = "TopWindow:";
-static const PINDEX TopWindowPrefixLen = sizeof(TopWindowPrefix)-1;
 
+static const PConstCaselessString DesktopWindowName("Desktop");
+static const PConstCaselessString TopWindowPrefix("TopWindow:");
+
+static HWND FindTopWindow(const PString & deviceName)
+{
+  if (DesktopWindowName == deviceName)
+    return GetDesktopWindow();
+
+  if (TopWindowPrefix.NumCompare(deviceName, TopWindowPrefix.GetLength()) == PObject::EqualTo)
+    return ::FindWindow(NULL, deviceName.Mid(TopWindowPrefix.GetLength()));
+
+  return NULL;
+}
 
 
 /* Convert bitmap colour format to format name 
@@ -82,8 +93,7 @@ class PVideoInputDevice_Application_PluginServiceDescriptor : public PDevicePlug
 
     virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {
-      return (deviceName *= "Desktop") ||
-            ((deviceName.Left(TopWindowPrefixLen) *= TopWindowPrefix) && (FindWindow(NULL, deviceName.Mid(TopWindowPrefixLen)) != NULL));
+      return FindTopWindow(deviceName) != NULL;
     }
 } PVideoInputDevice_Application_descriptor;
 
@@ -126,11 +136,9 @@ PStringArray PVideoInputDevice_Application::GetDeviceNames() const
 
 static BOOL CALLBACK AddWindowName(HWND hWnd, LPARAM userData)
 {
-  CHAR name[200];
-  if (IsWindowVisible(hWnd) && GetWindowText(hWnd, name, sizeof(name))) {
-    PStringArray * names = (PStringArray *)userData;
-    names->AppendString(PString(TopWindowPrefix) + name);
-  }
+  WCHAR wideName[200];
+  if (IsWindowVisible(hWnd) && GetWindowTextW(hWnd, wideName, sizeof(wideName)))
+    reinterpret_cast<PStringArray *>(userData)->AppendString(TopWindowPrefix + wideName);
   return TRUE;
 }
 
@@ -139,7 +147,7 @@ PStringArray PVideoInputDevice_Application::GetInputDeviceNames()
 {
   PStringArray names;
 
-  names += "Desktop";
+  names += DesktopWindowName;
 
   ::EnumWindows(AddWindowName, (LPARAM)&names);
 
@@ -159,12 +167,7 @@ PBoolean PVideoInputDevice_Application::Open(const PString & deviceName, PBoolea
 
   m_client = false;
 
-  if (deviceName.Left(TopWindowPrefixLen) *= TopWindowPrefix)
-    m_hWnd = FindWindow(NULL, deviceName.Mid(TopWindowPrefixLen));
-  else if (deviceName *= "desktop")
-    m_hWnd = GetDesktopWindow();
-
-  if (m_hWnd == NULL) {
+  if ((m_hWnd = FindTopWindow(deviceName)) == NULL) {
     PTRACE(4,"AppInput/tCannot open specified window");
     return false;
   }
