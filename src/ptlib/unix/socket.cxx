@@ -44,7 +44,6 @@
 
 #include <ptlib/sockets.h>
 
-
 #if HAVE_IOCTL_H
   #include <ioctl.h>
 #elif HAVE_SYS_IOCTL_H
