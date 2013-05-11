@@ -38,23 +38,18 @@
 #include <ptlib/remconn.h>
 #include <ptlib/pprocess.h>
 
-#include <stdio.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#ifdef P_VXWORKS
-#include <socklib.h>
-#endif // P_VXWORKS
-
-#ifdef P_SOLARIS
-#include <signal.h>
+#if HAVE_IOCTL_H
+  #include <ioctl.h>
+#elif HAVE_SYS_IOCTL_H
+  #include <sys/ioctl.h>
 #endif
 
-#ifdef P_BEOS
-#include <signal.h>
-#endif
-
-#ifdef P_LINUX
+#ifdef HAVE_NET_IF_H
 #include <net/if.h>
+#endif
+
+#ifdef HAVE_SYS_SOCKIO_H
+#include <sys/sockio.h>
 #endif
 
 #include "uerror.h"
