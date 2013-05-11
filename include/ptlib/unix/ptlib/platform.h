@@ -351,7 +351,6 @@ typedef int socklen_t;
 #include <selectLib.h>
 #include <inetLib.h>
 #include <hostLib.h>
-#include <ioctl.h>
 #include <socklib.h>
 
 // Prevent conflict between net/mbuf.h and some ASN.1 header files
@@ -405,8 +404,6 @@ extern "C" {
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_QNX)
-
-#include <sys/sockio.h>
 
 #define P_STRTOQ strtoll
 #define P_STRTOUQ strtoull

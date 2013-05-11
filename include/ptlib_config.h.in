@@ -201,6 +201,7 @@
   #undef HAVE_ARPA_INET_H
   #undef HAVE_NET_IF_H
   #undef HAVE_IFADDRS_H
+  #undef HAVE_SYS_SOCKIO_H
   #undef HAVE_SYS_SYSCTL_H
   #undef HAVE_LINUX_ERRQUEUE_H
   #undef HAVE_NET_IF_DL_H
