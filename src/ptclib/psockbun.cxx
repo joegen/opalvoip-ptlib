@@ -918,18 +918,17 @@ PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
                                         PBoolean usingNAT) const
 {
   PIPSocket::InterfaceEntry info;
-  if (!GetInterfaceInfo(iface, info)) {
-    address = PIPSocket::Address::GetAny(m_ipVersion);
-    port = localPort;
-    return true;
+  if (GetInterfaceInfo(iface, info)) {
+    PSafeLockReadOnly guard(*this);
+    if (guard.IsLocked()) {
+      SocketInfoMap_T::const_iterator iter = m_socketInfoMap.find(MakeInterfaceDescription(info));
+      return iter != m_socketInfoMap.end() && GetSocketAddress(iter->second, address, port, usingNAT);
+    }
   }
 
-  PSafeLockReadOnly guard(*this);
-  if (!guard.IsLocked())
-    return false;
-
-  SocketInfoMap_T::const_iterator iter = m_socketInfoMap.find(MakeInterfaceDescription(info));
-  return iter != m_socketInfoMap.end() && GetSocketAddress(iter->second, address, port, usingNAT);
+  address = PIPSocket::Address::GetAny(m_ipVersion);
+  port = localPort;
+  return false;
 }
 
 
