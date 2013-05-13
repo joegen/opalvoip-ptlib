@@ -89,6 +89,13 @@ class PIndirectChannel : public PChannel
      */
     virtual PString GetName() const;
 
+    /**Get the OS specific handle for the PSoundChannel.
+
+       @return
+       integer value of the handle.
+     */
+    virtual P_INT_PTR GetHandle() const;
+
     /**Close the channel. This will detach itself from the read and write
        channels and delete both of them if they are auto delete.
 

@@ -631,6 +631,20 @@ PString PIndirectChannel::GetName() const
 }
 
 
+P_INT_PTR PIndirectChannel::GetHandle() const
+{
+  PReadWaitAndSignal mutex(channelPointerMutex);
+
+  if (readChannel != NULL)
+    return readChannel->GetHandle();
+
+  if (writeChannel != NULL)
+    return writeChannel->GetHandle();
+
+  return -1;
+}
+
+
 PBoolean PIndirectChannel::Close()
 {
   PBoolean retval = true;

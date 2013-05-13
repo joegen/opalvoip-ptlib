@@ -10,6 +10,8 @@
 * Copied by Derek Smithies, 1)Add soundtest code from ohphone.
 *                           2)Add headers.
 *
+* Updated by Robert Jongbloed (robertj@voxlucida.com.au)
+*
 * $Revision$
 * $Author$
 * $Date$
@@ -19,6 +21,7 @@
 #include <ptlib/pprocess.h>
 #include <ptlib/sound.h>
 #include <ptclib/cli.h>
+#include <ptclib/qchannel.h>
 
 
 #define PTraceModule() "AudioTest"
@@ -32,24 +35,47 @@ class AudioTest : public PProcess
     AudioTest();
 
     void Main();
-    void TestLoop();
 
   private:
-    bool OpenSoundChannel(
-      PSoundChannel::Directions dir,
-      char driverArgLetter,
-      char deviceArgLetter,
-      char volumeArgLetter,
-      const char * bufferSizeArgString,
-      const char * bufferCountArgString,
-      const char * bufferCountDefault
-    );
-
     PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, RecordVolume);
     PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, PlayerVolume);
+    PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, Statistics);
     PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, Quit);
 
-    std::auto_ptr<PSoundChannel> m_soundChannel[2];
+    PQueueChannel m_queue;
+
+    class AudioInfo : public PSoundChannel {
+      PQueueChannel & m_queue;
+      PTimeInterval   m_avgTime;
+      unsigned        m_avgCount;
+      PTimeInterval   m_lastTime;
+      PTimeInterval   m_minTime;
+      PTimeInterval   m_maxTime;
+      PMutex          m_mutex;
+
+    public:
+      AudioInfo(PQueueChannel & queue)
+        : m_queue(queue)
+        , m_avgCount(0)
+        , m_minTime(0,1)
+      { }
+
+      bool OpenSoundChannel(
+        PSoundChannel::Directions dir,
+        const PArgList & args,
+        char driverArgLetter,
+        char deviceArgLetter,
+        char volumeArgLetter,
+        const char * bufferSizeArgString,
+        const char * bufferCountArgString,
+        const char * bufferCountDefault
+      );
+
+      void ReadLoop();
+      void WriteLoop();
+      void AccumulateStatistics();
+      void DisplayStatistics();
+    } m_recorder, m_player;
 };
 
 
@@ -57,6 +83,9 @@ class AudioTest : public PProcess
 
 AudioTest::AudioTest()
   : PProcess("Roger Hardiman & Derek Smithies code factory", "audio")
+  , m_queue(8000)
+  , m_recorder(m_queue)
+  , m_player(m_queue)
 {
 }
 
@@ -108,46 +137,47 @@ void AudioTest::Main()
     return;
   }
 
-  if (!OpenSoundChannel(PSoundChannel::Recorder, 'R', 'r', 'V', "record-buffer-size", "record-buffer-count", "2"))
+  if (!m_recorder.OpenSoundChannel(PSoundChannel::Recorder, args, 'R', 'r', 'V', "record-buffer-size", "record-buffer-count", "2"))
     return;
 
-  if (!OpenSoundChannel(PSoundChannel::Player,   'P', 'p', 'v', "player-buffer-size", "player-buffer-count", "8"))
+  if (!  m_player.OpenSoundChannel(PSoundChannel::Player,   args, 'P', 'p', 'v', "player-buffer-size", "player-buffer-count", "8"))
     return;
 
   cout << "Starting record/play back thread" << endl;
-  PThreadObj<AudioTest> thread(*this, &AudioTest::TestLoop);
+  PThreadObj<AudioInfo> recordThread(m_recorder, &AudioInfo::ReadLoop);
+  PThread::Sleep(100);
+  PThreadObj<AudioInfo> playThread(m_player, &AudioInfo::WriteLoop);
 
   PCLIStandard cli("Audio> ");
-  cli.SetCommand("quit", PCREATE_NOTIFIER(Quit), "Quit test");
+  cli.SetCommand("quit\nq", PCREATE_NOTIFIER(Quit), "Quit test");
+  cli.SetCommand("stats\ns", PCREATE_NOTIFIER(Statistics), "Show statistics");
   cli.SetCommand("recvol", PCREATE_NOTIFIER(RecordVolume), "Set record volume", "<percent>");
   cli.SetCommand("playvol", PCREATE_NOTIFIER(PlayerVolume), "Set play back volume", "<percent>");
   cli.Start(false);
 
-  cout << "Closing record/play back channels, waiting for thread to terminate ..." << endl;
-  for (PSoundChannel::Directions dir = PSoundChannel::Recorder; dir <= PSoundChannel::Player; ++dir)
-    m_soundChannel[dir]->Close();
+  cout << "Closing record channel, waiting for thread to terminate ..." << endl;
+  m_recorder.Close();
 
-  thread.WaitForTermination(5000);
+  recordThread.WaitForTermination(5000);
+  playThread.WaitForTermination(5000);
 }
 
 
-bool AudioTest::OpenSoundChannel(PSoundChannel::Directions dir,
-                                 char driverArgLetter,
-                                 char deviceArgLetter,
-                                 char volumeArgLetter,
-                                 const char * bufferSizeArgString,
-                                 const char * bufferCountArgString,
-                                 const char * bufferCountDefault)
+bool AudioTest::AudioInfo::OpenSoundChannel(PSoundChannel::Directions dir, 
+                                            const PArgList & args,
+                                            char driverArgLetter,
+                                            char deviceArgLetter,
+                                            char volumeArgLetter,
+                                            const char * bufferSizeArgString,
+                                            const char * bufferCountArgString,
+                                            const char * bufferCountDefault)
 {
-  PArgList & args = GetArguments();
-
   PString driver = args.GetOptionString(driverArgLetter);
   PString device = args.GetOptionString(deviceArgLetter);
   unsigned sampleRate = args.GetOptionString('s', "8000").AsUnsigned();
 
-  cout << dir << " opening ..." << endl;
-  PSoundChannel * channel = PSoundChannel::CreateOpenedChannel(driver, device, dir, 1, sampleRate);
-  if (channel == NULL) {
+  std::cout << dir << " opening ..." << endl;
+  if (!Open(driver + '\t' + device, dir, 1, sampleRate)) {
     cerr << dir << " failed to open";
     if (driver.IsEmpty() && device.IsEmpty())
       cerr << " using default \"" << PSoundChannel::GetDefaultDevice(dir) << '"';
@@ -164,33 +194,33 @@ bool AudioTest::OpenSoundChannel(PSoundChannel::Directions dir,
     return false;
   }
 
-  m_soundChannel[dir].reset(channel);
-
-  PTRACE(3, channel, PTraceModule(), dir << " selected \"" << channel->GetName() << '"');
-  cout << dir << ": \"" << channel->GetName() << "\", sample rate: " << sampleRate << endl;
+  PTRACE(3, dir << " selected \"" << GetName() << '"');
+  std::cout << dir << ": \"" << GetName() << "\", sample rate: " << sampleRate << endl;
 
   if (args.HasOption(volumeArgLetter))
-    channel->SetVolume(args.GetOptionString(volumeArgLetter).AsUnsigned());
+    SetVolume(args.GetOptionString(volumeArgLetter).AsUnsigned());
 
-  cout << dir << " volume ";
+  std::cout << dir << " volume ";
   unsigned int vol;
-  if (m_soundChannel[dir]->GetVolume(vol))
-    cout << "is " << vol << '%';
+  if (GetVolume(vol))
+    std::cout << "is " << vol << '%';
   else
-    cout << "cannot be obtained.";
-  cout << endl;
+    std::cout << "cannot be obtained.";
+  std::cout << endl;
 
   PINDEX size = args.GetOptionString(bufferSizeArgString, "320").AsUnsigned();
   PINDEX count = args.GetOptionString(bufferCountArgString, bufferCountDefault).AsUnsigned();
-  if (!channel->SetBuffers(size, count))
-    cout << dir << " could not set " << count << " buffers of " << size << " bytes." << endl;
+  if (!SetBuffers(size, count))
+    std::cout << dir << " could not set " << count << " buffers of " << size << " bytes." << endl;
 
-  cout << dir << ' ';
-  if (channel->GetBuffers(size, count))
-    cout << "is using " << count << " buffers of " << size << " bytes.\n";
-  else
-    cout << "cannot obtain buffer information.";
-  cout << endl;
+  std::cout << dir << ' ';
+  if (GetBuffers(size, count))
+    std::cout << "is using " << count << " buffers of " << size << " bytes.\n";
+  else {
+    std::cout << "cannot obtain buffer information.";
+    return false;
+  }
+  std::cout << endl;
 
   return true;
 }
@@ -201,7 +231,7 @@ void AudioTest::RecordVolume(PCLI::Arguments & args, P_INT_PTR)
   if (args.GetCount() < 1)
     args.Usage();
   else
-    m_soundChannel[PSoundChannel::Recorder]->SetVolume(args[0].AsUnsigned());
+    m_recorder.SetVolume(args[0].AsUnsigned());
 }
 
 
@@ -210,7 +240,14 @@ void AudioTest::PlayerVolume(PCLI::Arguments & args, P_INT_PTR)
   if (args.GetCount() < 1)
     args.Usage();
   else
-    m_soundChannel[PSoundChannel::Player]->SetVolume(args[0].AsUnsigned());
+    m_player.SetVolume(args[0].AsUnsigned());
+}
+
+
+void AudioTest::Statistics(PCLI::Arguments &, P_INT_PTR)
+{
+  m_recorder.DisplayStatistics();
+  m_player.DisplayStatistics();
 }
 
 
@@ -220,28 +257,104 @@ void AudioTest::Quit(PCLI::Arguments & args, P_INT_PTR)
 }
 
 
-
-void AudioTest::TestLoop()
+void AudioTest::AudioInfo::ReadLoop()
 {
-  PTRACE(2, "Starting test loop");
+  PTRACE(2, "Starting read loop");
 
-  PBYTEArray buffer(1000);
+  PINDEX size, count;
+  GetBuffers(size, count);
+  PBYTEArray buffer(size);
+
+  m_avgTime = m_lastTime = PTimer::Tick();
   for (;;) {
-    if (!m_soundChannel[PSoundChannel::Recorder]->Read(buffer.GetPointer(), buffer.GetSize())) {
-      PTRACE(1, "Error reading from \"" << m_soundChannel[PSoundChannel::Recorder]->GetName() << '"');
+    if (!Read(buffer.GetPointer(), buffer.GetSize())) {
+      PTRACE_IF(1, IsOpen(), "Error reading from \"" << GetName() << "\" - " << GetErrorText(LastReadError));
       break;
     }
 
-    PINDEX count = m_soundChannel[PSoundChannel::Recorder]->GetLastReadCount();
+    AccumulateStatistics();
+
+    PINDEX count = GetLastReadCount();
     PTRACE(5, "Read " << count << " bytes");
-
-    if (!m_soundChannel[PSoundChannel::Player]->Write(buffer.GetPointer(), count)) {
-      PTRACE(1, "Error writing to \"" << m_soundChannel[PSoundChannel::Player]->GetName() << '"');
-      break;
-    }
+    PAssert(m_queue.Write(buffer.GetPointer(), count), PLogicError);
   }
 
-  PTRACE(2, "Finished test loop");
+  // Close queue to write thread exits
+  m_queue.Close();
+
+  PTRACE(2, "Finished read loop");
+}
+
+
+void AudioTest::AudioInfo::WriteLoop()
+{
+  PTRACE(2, "Starting write loop");
+
+  PINDEX size, count;
+  GetBuffers(size, count);
+  PBYTEArray buffer(size);
+
+  m_avgTime = m_lastTime = PTimer::Tick();
+  for (;;) {
+    if (!m_queue.Read(buffer.GetPointer(), buffer.GetSize())) {
+      PTRACE_IF(1, m_queue.IsOpen(), "Error reading from queue");
+      break;
+    }
+
+    PINDEX count = m_queue.GetLastReadCount();
+    PTRACE(5, "Writing " << count << " bytes");
+
+    if (!Write(buffer.GetPointer(), count)) {
+      PTRACE(1, "Error writing to \"" << GetName() << "\" - " << GetErrorText(LastWriteError));
+      break;
+    }
+
+    AccumulateStatistics();
+  }
+
+  PTRACE(2, "Awaiting last of audio to be played");
+  WaitForPlayCompletion();
+
+  PTRACE(2, "Finished write loop");
+}
+
+
+void AudioTest::AudioInfo::AccumulateStatistics()
+{
+  m_mutex.Wait();
+
+  PTimeInterval tick = PTimer::Tick();
+  PTimeInterval delta = tick - m_lastTime;
+  m_lastTime = tick;
+
+  if (m_minTime > delta)
+    m_minTime = delta;
+  if (m_maxTime < delta)
+    m_maxTime = delta;
+
+  ++m_avgCount;
+
+  m_mutex.Signal();
+}
+
+
+void AudioTest::AudioInfo::DisplayStatistics()
+{
+  m_mutex.Wait();
+
+  std::cout << activeDirection << " min=" << m_minTime << ", max=" << m_maxTime << ", avg=";
+  if (m_avgCount == 0)
+    std::cout << "n/a";
+  else
+    std::cout << (PTimer::Tick() - m_avgTime)/m_avgCount;
+  std::cout << endl;
+
+  m_avgTime = PTimer::Tick();
+  m_avgCount = 0;
+  m_minTime.SetInterval(0,1);
+  m_maxTime = 0;
+
+  m_mutex.Signal();
 }
 
 

@@ -172,7 +172,7 @@ class PChannel : public PObject, public P_IOSTREAM {
        @return
        standard OS descriptor integer.
      */
-    P_INT_PTR GetHandle() const;
+    virtual P_INT_PTR GetHandle() const;
 
     /** Re-open the device using the stdio library. This closes the PChannel
 
@@ -342,7 +342,7 @@ class PChannel : public PObject, public P_IOSTREAM {
        @return
        the number of bytes read.
      */
-    virtual PINDEX GetLastReadCount() const;
+    PINDEX GetLastReadCount() const;
 
     /** Read a single 8 bit byte from the channel. If one was not available
        within the read timeout period, or an I/O error occurred, then the
