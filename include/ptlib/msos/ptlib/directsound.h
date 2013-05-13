@@ -68,10 +68,10 @@ public:
   /** Initialise and open device
     */
   PSoundChannelDirectSound(const PString &device,
-			     PSoundChannel::Directions dir,
-			     unsigned numChannels,
-			     unsigned sampleRate,
-			     unsigned bitsPerSample);
+                 PSoundChannel::Directions dir,
+                 unsigned numChannels,
+                 unsigned sampleRate,
+                 unsigned bitsPerSample);
 
   ~PSoundChannelDirectSound();
   //@}
@@ -79,8 +79,8 @@ public:
   /**@name Open functions */
   //@{
     /**Get the name for the default sound device for this driver.
-	   Note that a named device may not necessarily do both playing and
-	   recording so the name returned with the <code>dir</code>
+       Note that a named device may not necessarily do both playing and
+       recording so the name returned with the <code>dir</code>
        parameter in each value is not necessarily the same.
 
        @return
@@ -136,8 +136,8 @@ public:
 
   /** Configure the device's transfer buffers.
       Read and write functions wait for input or space (blocking thread)
-	  in increments of buffer size.
-	  Best to make size the same as the len to be given to Read or Write.
+      in increments of buffer size.
+      Best to make size the same as the len to be given to Read or Write.
       Best performance requires count of 4
       Can be called while open, but Aborts I/O
     */
@@ -170,10 +170,10 @@ public:
   //@{
     static PString GetErrorText(Errors lastError, int error);
 
-	/** Get error message description.
+    /** Get error message description.
         Return a string indicating the error message that may be displayed to
        the user. The error for the last I/O operation in this object is used.
-	   Override of PChannel method.
+       Override of PChannel method.
        @return Operating System error description string.
      */
     virtual PString GetErrorText(
@@ -190,15 +190,15 @@ public:
 
   /** Resets I/O, changes audio format to match sound and configures the 
       device's transfer buffers into one huge buffer, into which the entire
-	  sound is loaded and started playing.
-	  Returns immediately when wait is false, so you can do other stuff while
-	  sound plays.
+      sound is loaded and started playing.
+      Returns immediately when wait is false, so you can do other stuff while
+      sound plays.
     */
   PBoolean PlaySound(const PSound & sound, PBoolean wait);
 
   /** Resets I/O, changes audio format to match file and reconfigures the
       device's transfer buffers. Accepts .wav files. Wait refers to waiting 
-	  for completion of last chunk.
+      for completion of last chunk.
     */
   PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
 
@@ -209,7 +209,7 @@ public:
   /**@name Record functions */
   //@{
   /** Read specified number of bytes from capture device into buf
-	  Blocks thread until number of bytes have been received
+      Blocks thread until number of bytes have been received
     */
   PBoolean Read(void * buf, PINDEX len);
 
@@ -228,15 +228,15 @@ public:
    */
   void SetNotifier (PNotifier & notifier)
   {
-	  m_notifier = notifier;
+      m_notifier = notifier;
   }
 
-  enum  // notification codes
-  {
-    SOUNDNOTIFY_NOTHING = 0,
-    SOUNDNOTIFY_ERROR = 1,      // call GetError...
-    SOUNDNOTIFY_UNDERRUN = 2,   // check GetxLost
-    SOUNDNOTIFY_OVERRUN = 3     // check GetxLost
+  enum CheckBufferState {
+    SOUNDNOTIFY_AVAILABLE,
+    SOUNDNOTIFY_NOTHING = SOUNDNOTIFY_AVAILABLE, // Backward compatibility
+    SOUNDNOTIFY_ERROR,      // call GetError...
+    SOUNDNOTIFY_UNDERRUN,   // check GetxLost
+    SOUNDNOTIFY_OVERRUN     // check GetxLost
   };
 
   /** Total number of bytes/samples transferred between card and the world
@@ -248,15 +248,12 @@ public:
   
   unsigned __int64 GetSamplesBuffered (void) const
   {
-    if (m_waveFormat.nBlockAlign == 0)
-      return 0;
-
-    return m_dsMoved / m_waveFormat.nBlockAlign;
+    return m_waveFormat.nBlockAlign == 0 ? 0 : (m_dsMoved / m_waveFormat.nBlockAlign);
   }
 
   /** Total number of bytes/samples moved between card and application by Read/Write.
       This is rarely the same as GetxBuffered after closing because usually the very
-	  last written data is not played or the last captured data is not read.
+      last written data is not played or the last captured data is not read.
    */
   unsigned __int64 GetBytesMoved (void) const
   {
@@ -265,10 +262,7 @@ public:
   
   unsigned __int64 GetSamplesMoved (void) const
   {
-    if (m_waveFormat.nBlockAlign == 0)
-      return 0;
-
-    return m_moved / m_waveFormat.nBlockAlign;
+    return m_waveFormat.nBlockAlign == 0 ? 0 : (m_moved / m_waveFormat.nBlockAlign);
   }
 
   /** Accumulated number of bytes/samples lost due to Write overrun / Read underrun
@@ -277,7 +271,7 @@ public:
       Notifier(extra=OVERRUN) is called when this value changes for recording
       Notifier(extra=UNDERRUN) is called when this value changes for playback
       Notifier(extra=OVERRUN) is called by Player too, but it does not change this value,
-	  Player OVERRUN just means that the player is waiting for space to write into.
+      Player OVERRUN just means that the player is waiting for space to write into.
    */
   unsigned __int64 GetBytesLost (void) const
   {
@@ -286,17 +280,14 @@ public:
 
   unsigned __int64 GetSamplesLost (void) const
   {
-    if (m_waveFormat.nBlockAlign == 0)
-      return 0;
-
-    return m_lost / m_waveFormat.nBlockAlign;
+    return m_waveFormat.nBlockAlign == 0 ? 0 : (m_lost / m_waveFormat.nBlockAlign);
   }
   //@}
 
 protected:
   /** Repeatedly checks until there's space to fit buffer.
       Yields thread between checks.
-	  Loop can be ended by calling Abort()(from another thread!)
+      Loop can be ended by calling Abort()(from another thread!)
     */
   PBoolean WaitForPlayBufferFree();
 
@@ -321,21 +312,21 @@ private:
   PBoolean OpenPlaybackBuffer (void);
   void ClosePlayback(void);
 
-  /** Checks space available for writing audio to play.
-	  Returns true if space enough for one buffer as set by SetBuffers.
-	  Sets 'm_available' (space) and (possibly) m_movePos members for use by Write.
+  /* Checks space available for writing audio to play.
+      Returns true if space enough for one buffer as set by SetBuffers.
+      Sets 'm_available' (space) and (possibly) m_movePos members for use by Write.
     */
-  PBoolean CheckPlayBuffer (int & notification);
+  CheckBufferState CheckPlayBuffer();
 
   PBoolean OpenCapture(LPCGUID deviceId);
   PBoolean OpenCaptureBuffer(void);
   void CloseCapture(void);
 
   /** Checks for input available from recorder
-	  Returns true if enough input to fill one buffer as set by SetBuffers.
-	  Sets 'm_available' (input) and (possibly) m_movePos members for use by Read.
+      Returns true if enough input to fill one buffer as set by SetBuffers.
+      Sets 'm_available' (input) and (possibly) m_movePos members for use by Read.
     */
-  PBoolean CheckCaptureBuffer(int & notification);
+  CheckBufferState CheckCaptureBuffer();
 
   PBoolean m_isStreaming;   // causes play to loop old audio when no new audio submitted
   PINDEX m_bufferSectionCount;
@@ -343,8 +334,8 @@ private:
   PINDEX m_bufferSize;      // directSound buffer is divided into Count notification sections, each of Size
   DWORD m_movePos;          // byte offset from start of buffer to where we can write or read
   DWORD m_available;        // number of bytes space available to write into, or number of bytes available to read
-  DWORD m_dsPos;			// DirectSound read/write byte position in buffer
-  PTimeInterval m_tick;		// time of last buffer poll
+  DWORD m_dsPos;            // DirectSound read/write byte position in buffer
+  PTimeInterval m_tick;        // time of last buffer poll
   unsigned __int64 m_dsMoved;// total number of bytes transferred between card and the world
   unsigned __int64 m_moved; // total number of bytes moved between card and application by Read/Write
   unsigned __int64 m_lost;  // bytes lost due to Write overrun / Read underrun

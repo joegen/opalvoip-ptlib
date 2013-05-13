@@ -248,9 +248,9 @@ class PSound : public PBYTEArray
    conversion is performed on data to/from the channel.
 
  */
-class PSoundChannel : public PChannel
+class PSoundChannel : public PIndirectChannel
 {
-  PCLASSINFO(PSoundChannel, PChannel);
+  PCLASSINFO(PSoundChannel, PIndirectChannel);
 
   public:
   /**@name Construction */
@@ -274,10 +274,6 @@ class PSoundChannel : public PChannel
       unsigned sampleRate = 8000,   ///< Samples per second
       unsigned bitsPerSample = 16   ///< Number of bits per sample
     );
-    // 
-
-    virtual ~PSoundChannel();
-    // Destroy and close the sound driver
   //@}
 
   /**@name Open functions */
@@ -383,38 +379,16 @@ class PSoundChannel : public PChannel
       unsigned bitsPerSample = 16   ///< Number of bits per sample
     );
 
-    /**Test if this instance of PSoundChannel is open.
-
-       @return
-       true if this instance is open.
-     */
-    virtual PBoolean IsOpen() const;
-
-    /** Close the channel, shutting down the link to the data source. 
-
-       @return true if the channel successfully closed.
-     */
-    virtual PBoolean Close();
-
-    /**Get the OS specific handle for the PSoundChannel.
-
-       @return
-       integer value of the handle.
-     */
-    virtual P_INT_PTR GetHandle() const;
-
-    /// Get the name of the open channel
-    virtual PString GetName() const;
-
     /// Get the direction of the channel
     Directions GetDirection() const
     {
       return activeDirection;
     }
 
-    /// Get text representing the direction of the channel
+    /// Get text representing the direction of a channel
     static const char * GetDirectionText(Directions dir);
 
+    /// Get text representing the direction of the channel
     virtual const char * GetDirectionText() const
     {
       return GetDirectionText(activeDirection);
@@ -529,33 +503,6 @@ class PSoundChannel : public PChannel
 
   /**@name Play functions */
   //@{
-
-    /** Low level write (or play) to the channel. 
-
-        It will generate a logical assertion if you attempt write to a
-        channel set up for recording.
-
-        @param buf is a pointer to the data to be written to the
-        channel.  It is an error for this pointer to be NULL. A logical
-        assert will be generated when buf is NULL.
-
-        @param len Nr of bytes to send. If len equals the buffer size
-        set by SetBuffers() it will block for
-        (1000*len)/(samplesize*samplerate) ms. Typically, the sample
-        size is 2 bytes.  If len == 0, this will return immediately,
-        where the return value is equal to the value of IsOpen().
- 
-        @return true if len bytes were written to the channel,
-        otherwise false. The GetErrorCode() function should be 
-        consulted after Write() returns false to determine what 
-        caused the failure.
-     */
-    virtual PBoolean Write(const void * buf, PINDEX len);
-
-
-    /** Get number of bytes written in last Write() operation. */
-    virtual PINDEX GetLastWriteCount() const;
-
     /**Play a sound to the open device. If the <code>wait</code> parameter is
        true then the function does not return until the file has been played.
        If false then the sound play is begun asynchronously and the function
@@ -612,47 +559,10 @@ class PSoundChannel : public PChannel
        true if the sound has successfully completed playing.
      */
     virtual PBoolean WaitForPlayCompletion();
-
   //@}
 
   /**@name Record functions */
   //@{
-    /** Low level read from the channel. This function may block until the
-       requested number of characters were read or the read timeout was
-       reached. The GetLastReadCount() function returns the actual number
-       of bytes read.
-
-       It will generate a logical assertion if you attempt to read
-       from a PSoundChannel that is setup for playing.
-
-       The GetErrorCode() function should be consulted after Read() returns
-       false to determine what caused the failure.
-
-       @param len Nr of bytes to endeaveour to read from the sound
-       device. If len equals the buffer size set by SetBuffers() it
-       will block for (1000*len)/(samplesize*samplerate)
-       ms. Typically, the sample size is 2 bytes.  If len == 0, this
-       will return immediately, where the return value is equal to
-       the value of IsOpen().
-
-       @param buf is a pointer to the empty data area, which will
-       contain the data collected from the sound device.  It is an
-       error for this pointer to be NULL. A logical assert will be
-       generated when buf is NULL.
-
-       @return true indicates that at least one character was read
-       from the channel.  false means no bytes were read due to some
-       I/O error, (which includes timeout or some other thread closed
-       the device).
-     */
-    virtual PBoolean Read(
-      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
-      PINDEX len    ///< Maximum number of bytes to read into the buffer.
-    );
-
-    /** Return number of bytes read in last Read() call. */
-    PINDEX GetLastReadCount() const;
-
     /**Record into the sound object all of the buffer's of sound data. Use the
        SetBuffers() function to determine how long the recording will be made.
 
@@ -738,8 +648,7 @@ class PSoundChannel : public PChannel
   //@}
 
   protected:
-    PSoundChannel * m_baseChannel;
-    PReadWriteMutex m_baseMutex;
+    PSoundChannel * GetSoundChannel() const { return dynamic_cast<PSoundChannel *>(readChannel); }
 
     /**This is the direction that this sound channel is opened for use
        in.  Should the user attempt to used this opened class instance

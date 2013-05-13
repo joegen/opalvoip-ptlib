@@ -497,7 +497,7 @@ PBoolean PSoundChannelDirectSound::SetFormat (unsigned numChannels, // public
     else if (activeDirection == Recorder) {
       if (!OpenCaptureBuffer()) // if this fails, channel is closed
         return false;
-	}
+    }
   }
   else // Closed, no buffers yet
     SetWaveFormat(m_waveFormat, numChannels, sampleRate, bitsPerSample);
@@ -539,7 +539,7 @@ PBoolean PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count) // pub
     else if (activeDirection == Recorder) {
       if (!OpenCaptureBuffer()) // if this fails, channel is closed
         return false;
-	}
+    }
   }
   else
     SetBufferSections(size, count);
@@ -669,7 +669,7 @@ PBoolean PSoundChannelDirectSound::OpenPlayback (LPCGUID deviceId) // private
   if (result != S_OK) {
     SetErrorValues(Miscellaneous, result);
     PTRACE(4, "Open Playback: Could not set cooperative level: " << GetErrorText());
-	ClosePlayback();
+    ClosePlayback();
     return false;
   }
   return OpenPlaybackBuffer();
@@ -701,7 +701,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
     PTRACE(4, "OpenPlaybackBuffer: CreateSoundBuffer fail: " << GetErrorText());
-	ClosePlayback();
+    ClosePlayback();
     return false;
   } 
   IDirectSoundNotify * notify; // temporary pointer to the interface
@@ -709,7 +709,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
     PTRACE(4, "OpenPlaybackBuffer: notify interface query fail: " << GetErrorText());
-	ClosePlayback();
+    ClosePlayback();
     return false;
   }
   PTRACE(4, "Open Playback: Setting up notification for " << m_bufferSectionCount << " blocks of " << m_bufferSectionSize << " bytes");
@@ -718,7 +718,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
     SetErrorValues(NoMemory, E_OUTOFMEMORY);
     PTRACE(4, "OpenPlaybackBuffer: notify allocation fail");
     notify->Release();
-	ClosePlayback();
+    ClosePlayback();
     return false;
   }
   DWORD blockOffset = m_bufferSectionSize - 1;
@@ -732,7 +732,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   if (FAILED(result)) { 
     SetErrorValues(Miscellaneous, result);
     PTRACE(4, "OpenPlaybackBuffer: Notify interface query fail: " << GetErrorText());
-	ClosePlayback();
+    ClosePlayback();
     return false;
   }
   delete [] position;
@@ -745,32 +745,32 @@ void PSoundChannelDirectSound::ClosePlayback() // private
 {
   if (m_playbackBuffer != NULL) {
     m_playbackBuffer->Stop();
-    int notification;
-    CheckPlayBuffer(notification); // last effort to see how many bytes played
+    CheckPlayBuffer(); // last effort to see how many bytes played
   }
   m_playbackBuffer.Release();
   m_playbackDevice.Release();
 }
 
 
-PBoolean PSoundChannelDirectSound::CheckPlayBuffer (int & notification) // private
+PSoundChannelDirectSound::CheckBufferState PSoundChannelDirectSound::CheckPlayBuffer() // private
 {
-  notification = SOUNDNOTIFY_NOTHING;
   PWaitAndSignal mutex(m_bufferMutex); // make Close & SetBuffers wait
 
   if (!m_playbackBuffer) { // closed
     PTRACE(4, "Playback closed while checking");
-    return false;
-  }               // Write is ahead of Play, DirectSound is playing data from Play to Write - do not put data between them.
+    return SOUNDNOTIFY_ERROR;
+  }
+  
+                  // Write is ahead of Play, DirectSound is playing data from Play to Write - do not put data between them.
                   // we can write ahead of Write, from m_movePos to PlayPos
   DWORD playPos;  // circular buffer byte offset to start of section DirectSound is playing (end of where we can write)
   DWORD writePos; // circular buffer byte offset ahead of which it is safe to write data (start of where we can write)
   HRESULT result = m_playbackBuffer->GetCurrentPosition(&playPos, &writePos);
   if (FAILED(result)) {
     SetErrorValues(Miscellaneous, result, LastWriteError);
-    notification = SOUNDNOTIFY_ERROR;
-    return false;
+    return SOUNDNOTIFY_ERROR;
   }
+
   // Record the driver performance, include check for writer getting way behind player
   // bytes played since last check
   DWORD played = (playPos + m_bufferSize - m_dsPos) % m_bufferSize;
@@ -784,50 +784,49 @@ PBoolean PSoundChannelDirectSound::CheckPlayBuffer (int & notification) // priva
   result = m_playbackBuffer->GetStatus(&status);
   if (FAILED(result)) {
     SetErrorValues(Miscellaneous, result, LastWriteError);
-    notification = SOUNDNOTIFY_ERROR;
-    return false;
+    return SOUNDNOTIFY_ERROR;
   }
+
   if ((status & DSBSTATUS_PLAYING) == 0) { // not started yet, or we let it run empty (not looping)
     m_available = m_bufferSize;
-    return true;
+    return SOUNDNOTIFY_AVAILABLE;
   }
-  // check for underrun
-  if (m_dsMoved > m_moved + m_lost)
-  { // Write has been delayed so much that card is playing from empty or old space
-    unsigned underruns = (unsigned)(m_dsMoved - (m_moved + m_lost));
-    m_lost += underruns;
-    PTRACE(3, "Playback underrun: wrote " << GetSamplesMoved() << " played " << GetSamplesBuffered() << " replayed " << underruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
-    notification = SOUNDNOTIFY_UNDERRUN;
-    m_movePos = writePos;
-  }
+
   // calculate available space in circular buffer (between our last write position and DirectSound read position)
   m_available = (playPos + m_bufferSize - m_movePos) % m_bufferSize;
-  if (m_available >= (unsigned)m_bufferSectionSize)
-    return true;
+  if (m_available < (unsigned)m_bufferSectionSize) {
+    // some space, but not enough yet
+    PTRACE(6, "Player buffer overrun, waiting for space");
+    return SOUNDNOTIFY_OVERRUN;
+  }
 
-  // some space, but not enough yet
-  PTRACE(6, "Player buffer overrun, waiting for space");
-  notification = SOUNDNOTIFY_OVERRUN;
-  return false;
+  // check for underrun
+  if (m_dsMoved < m_moved + m_lost)
+    return SOUNDNOTIFY_AVAILABLE;
+
+  // Write has been delayed so much that card is playing from empty or old space
+  unsigned underruns = (unsigned)(m_dsMoved - (m_moved + m_lost));
+  m_lost += underruns;
+  PTRACE(3, "Playback underrun: wrote " << GetSamplesMoved() << " played " << GetSamplesBuffered() << " replayed " << underruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
+  m_movePos = writePos;
+  return SOUNDNOTIFY_UNDERRUN;
 }
 
 
 PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree () // protected
 {
   ResetEvent(m_triggerEvent[SOUNDEVENT_SOUND]);
-  int notification;
   do {
-    notification = SOUNDNOTIFY_NOTHING;
-    PBoolean isSpaceAvailable = CheckPlayBuffer(notification);
+    CheckBufferState notification = CheckPlayBuffer();
     // report errors
-    if (notification != SOUNDNOTIFY_NOTHING && m_notifier.GetObject() != NULL)
+    if (notification != SOUNDNOTIFY_AVAILABLE && m_notifier.GetObject() != NULL)
       m_notifier(*this, notification); // can close here!
 
     if (!m_playbackBuffer) { // closed
       PTRACE(4, "Playback closed while writing");
       return SetErrorValues(NotOpen, EBADF, LastWriteError);
     }
-    if (isSpaceAvailable) // Ok to write
+    if (notification == SOUNDNOTIFY_AVAILABLE || notification == SOUNDNOTIFY_UNDERRUN) // Ok to write
       return true;
   }  // wait for DirectSound to notify us that space is available
   while (WaitForMultipleObjects(2, m_triggerEvent, FALSE, INFINITE) == WAIT_OBJECT_0);
@@ -837,8 +836,8 @@ PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree () // protected
     PTRACE(4, "Playback write abort");
     if (m_playbackBuffer != NULL) { // still open
       m_playbackBuffer->Stop();
-      CheckPlayBuffer(notification);
-	}
+      CheckPlayBuffer();
+    }
   }
   return SetErrorValues(Interrupted, EINTR, LastWriteError);
 }
@@ -910,19 +909,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
 
 PBoolean PSoundChannelDirectSound::HasPlayCompleted () // public
 {
-  // only works for non-streaming player
-  PWaitAndSignal mutex(m_bufferMutex); // prevent closing while active
-
-  if (!m_playbackBuffer)
-    return true;
-
-  DWORD status;
-  HRESULT result = m_playbackBuffer->GetStatus(&status);
-  if (FAILED(result)) {
-    SetErrorValues(Miscellaneous, result, LastWriteError);
-    return true; // it's done if we get an error here
-  }
-  return ((status & DSBSTATUS_PLAYING) == 0);
+  return CheckPlayBuffer() != SOUNDNOTIFY_AVAILABLE;
 }
 
 
@@ -1081,8 +1068,7 @@ void PSoundChannelDirectSound::CloseCapture () // private
 {
   if (m_captureBuffer != NULL) {
     m_captureBuffer->Stop();
-    int notification;
-    CheckCaptureBuffer(notification); // last effort to see how many bytes played
+    CheckCaptureBuffer(); // last effort to see how many bytes played
   }
   m_captureBuffer.Release();
   m_captureDevice.Release();
@@ -1119,22 +1105,24 @@ PBoolean PSoundChannelDirectSound::StartRecording () // public
 }
 
 
-PBoolean PSoundChannelDirectSound::CheckCaptureBuffer (int & notification) // private
+PSoundChannelDirectSound::CheckBufferState PSoundChannelDirectSound::CheckCaptureBuffer() // private
 {
-  notification = SOUNDNOTIFY_NOTHING;
   PWaitAndSignal mutex(m_bufferMutex); // make Abort wait
 
   if (!m_captureBuffer) { // closed
     PTRACE(4, "Recording closed while checking");
-    return false;
-  }                 // Capture is ahead of Read, do not get data from between them. Data for us is at m_movePos behind Read.
+    return SOUNDNOTIFY_ERROR;
+  }
+
+                    // Capture is ahead of Read, do not get data from between them. Data for us is at m_movePos behind Read.
   DWORD readPos;    // circular buffer byte offset to the end of the data that has been fully captured (end of what we can read)
   DWORD capturePos; // circular buffer byte offset to the head of the block that card has locked for new data
   HRESULT result = m_captureBuffer->GetCurrentPosition(&capturePos, &readPos);
   if (FAILED(result)) {
-    notification = SOUNDNOTIFY_ERROR;
-    return SetErrorValues(Miscellaneous, result, LastReadError);
+    SetErrorValues(Miscellaneous, result, LastReadError);
+    return SOUNDNOTIFY_ERROR;
   }
+
   // Record the driver performance, include check for reader getting way behind recorder
   // bytes recorded since last check (this count includes stuff we can't even read yet)
   DWORD captured = (capturePos + m_bufferSize - m_dsPos) % m_bufferSize;
@@ -1145,20 +1133,24 @@ PBoolean PSoundChannelDirectSound::CheckCaptureBuffer (int & notification) // pr
   // count bytes recorded since open
   m_dsMoved += captured;
 
-  // check for overrun
-  if (m_dsMoved > m_moved + m_lost + m_bufferSize)
-  { // Read has been delayed so much that card is writing into space that we have not read yet
-    // overruns are what will never be read
-    unsigned overruns = (unsigned)((m_dsMoved - m_bufferSize) - (m_moved + m_lost));
-    m_lost += overruns;
-    PTRACE(3, "Recorder overrun: captured " << GetSamplesBuffered() << " read " << GetSamplesMoved() << " lost " << overruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
-    notification = SOUNDNOTIFY_OVERRUN;
-    // Move read position to DirectSound's capture position, where audio has not been overwritten yet
-    m_movePos = m_dsPos;
-  }
   // calculate available data in circular buffer (between our last write position and DirectSound read position)
   m_available = (readPos + m_bufferSize - m_movePos) % m_bufferSize;
-  return m_available >= (unsigned)m_bufferSectionSize;
+
+  if (m_available < (unsigned)m_bufferSectionSize)
+    return SOUNDNOTIFY_UNDERRUN;
+
+  // check for overrun
+  if (m_dsMoved <= m_moved + m_lost + m_bufferSize)
+    return SOUNDNOTIFY_AVAILABLE;
+
+  // Read has been delayed so much that card is writing into space that we have not read yet
+  // overruns are what will never be read
+  unsigned overruns = (unsigned)((m_dsMoved - m_bufferSize) - (m_moved + m_lost));
+  m_lost += overruns;
+  PTRACE(3, "Recorder overrun: captured " << GetSamplesBuffered() << " read " << GetSamplesMoved() << " lost " << overruns / m_waveFormat.nBlockAlign << " total loss " << GetSamplesLost() << " samples");
+  // Move read position to DirectSound's capture position, where audio has not been overwritten yet
+  m_movePos = m_dsPos;
+  return SOUNDNOTIFY_OVERRUN;
 }
 
 
@@ -1167,13 +1159,12 @@ PBoolean PSoundChannelDirectSound::IsRecordBufferFull () // public
   if (!StartRecording()) // Start the first read
     return false;
 
-  int notification = SOUNDNOTIFY_NOTHING;
-  PBoolean isDataAvailable = CheckCaptureBuffer(notification);
+  CheckBufferState notification = CheckCaptureBuffer();
   // report errors
-  if (notification != SOUNDNOTIFY_NOTHING && m_notifier.GetObject() != NULL)
+  if (notification != SOUNDNOTIFY_AVAILABLE && m_notifier.GetObject() != NULL)
     m_notifier(*this, notification); // can close here!
 
-  return m_captureBuffer != NULL && isDataAvailable;
+  return m_captureBuffer != NULL && (notification == SOUNDNOTIFY_AVAILABLE || notification == SOUNDNOTIFY_OVERRUN);
 }
 
 
@@ -1182,20 +1173,9 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull () // public
   if (!StartRecording()) // Start the first read
     return false;
 
-  int notification;
   ResetEvent(m_triggerEvent[SOUNDEVENT_SOUND]);
   do {
-    notification = SOUNDNOTIFY_NOTHING;
-    PBoolean isDataAvailable = CheckCaptureBuffer(notification);
-    // report errors
-    if (notification != SOUNDNOTIFY_NOTHING && m_notifier.GetObject() != NULL)
-      m_notifier(*this, notification); // can close here!
-
-    if (!m_captureBuffer) { // closed
-      PTRACE(4, "Recording closed while reading");
-      return SetErrorValues(NotOpen, EBADF, LastReadError);
-    }
-    if (isDataAvailable) // Ok to read
+    if (IsRecordBufferFull())
       return true;
   }  // wait for DirectSound to notify us that space is available
   while (WaitForMultipleObjects(2, m_triggerEvent, FALSE, INFINITE) == WAIT_OBJECT_0);
@@ -1205,8 +1185,8 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull () // public
     PTRACE(4, "Recording read abort");
     if (m_captureBuffer != NULL) { // still open
       m_captureBuffer->Stop();
-      CheckCaptureBuffer(notification);
-	}
+      CheckCaptureBuffer();
+    }
   }
   return SetErrorValues(Interrupted, EINTR, LastReadError);
 }
@@ -1307,14 +1287,14 @@ PBoolean PSoundChannelDirectSound::OpenMixer (UINT waveDeviceId)
   mixerOpen(&m_mixer, waveDeviceId, NULL, NULL, (activeDirection == Player)? MIXER_OBJECTF_WAVEOUT : MIXER_OBJECTF_WAVEIN);
   if (m_mixer == NULL) {
     PTRACE(4, "Open" << GetDirectionText() << ": Failed to open mixer - volume control will not function");
-	return false;
+    return false;
   }
   MIXERLINE line = { sizeof(MIXERLINE) };
   line.dwComponentType = (activeDirection == Player)? MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT : MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
   if (mixerGetLineInfo((HMIXEROBJ)m_mixer, &line, MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE) != MMSYSERR_NOERROR) {
     PTRACE(4, "Open" << GetDirectionText() << ": Failed to access mixer line - volume control will not function");
     CloseMixer();
-	return false;
+    return false;
   }
   m_volumeControl.cbStruct = sizeof(m_volumeControl);
 
@@ -1329,7 +1309,7 @@ PBoolean PSoundChannelDirectSound::OpenMixer (UINT waveDeviceId)
   if (mixerGetLineControls((HMIXEROBJ)m_mixer, &controls, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE) != MMSYSERR_NOERROR) {
     PTRACE(4, "Open" << GetDirectionText() << ": Failed to configure volume control - volume control will not function");
     CloseMixer();
-	return false;
+    return false;
   }
   return true;
 }
