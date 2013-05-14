@@ -11963,12 +11963,6 @@ if test "${HAS_DNS_RESOLVER:-unset}" != "unset" ; then
    ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
 fi
 
-if test "x${HAS_LIBDL}" = "x1" ; then
-   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
-   PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
-fi
-
-
 
 case "$target_os" in
   solaris* | sunos* ) ;;
@@ -12255,7 +12249,9 @@ fi
 
 $as_echo "#define P_DYNALINK 1" >>confdefs.h
 
-               fi
+         ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
+         PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
+      fi
 
 
           { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable plugin support" >&5
