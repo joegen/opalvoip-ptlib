@@ -1223,8 +1223,6 @@ EXPORTS
     ??0?$PArray@VPXMLObject@@@@QAE@H@Z @1281 NONAME
     ??0?$PArray@VPXMLRPCVariableBase@@@@IAE@HPBV0@@Z @1282 NONAME
     ??0?$PArray@VPXMLRPCVariableBase@@@@QAE@H@Z @1283 NONAME
-    ??0?$PArray@VRouteEntry@PIPSocket@@@@IAE@HPBV0@@Z @1284 NONAME
-    ??0?$PArray@VRouteEntry@PIPSocket@@@@QAE@H@Z @1285 NONAME
     ??0?$PArray@VTextValue@PvCard@@@@IAE@HPBV0@@Z @1286 NONAME
     ??0?$PArray@VTextValue@PvCard@@@@QAE@H@Z @1287 NONAME
     ??0?$PBaseArray@D@@IAE@AAVPContainerReference@@@Z @1288 NONAME
@@ -1274,19 +1272,21 @@ EXPORTS
     ??0?$PDevicePluginAdapter@VPSoundChannel@@@@QAE@XZ @1332 NONAME
     ??0?$PDevicePluginAdapter@VPVideoInputDevice@@@@QAE@XZ @1333 NONAME
     ??0?$PDevicePluginAdapter@VPVideoOutputDevice@@@@QAE@XZ @1334 NONAME
+    ??0?$PDictionary@V?$PKey@H@@VPString@@@@IAE@HPBV0@@Z @24062 NONAME
+    ??0?$PDictionary@V?$PKey@H@@VPString@@@@QAE@XZ @24063 NONAME
     ??0?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@IAE@HPBV0@@Z @1335 NONAME
     ??0?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@QAE@XZ @1336 NONAME
     ??0?$PDictionary@VPCaselessString@@VPIPCacheData@@@@IAE@HPBV0@@Z @1337 NONAME
     ??0?$PDictionary@VPCaselessString@@VPIPCacheData@@@@QAE@XZ @1338 NONAME
     ??0?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@IAE@HPBV0@@Z @1339 NONAME
     ??0?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@QAE@XZ @1340 NONAME
-    ??0?$PDictionary@VPOrdinalKey@@VPString@@@@IAE@HPBV0@@Z @1341 NONAME
-    ??0?$PDictionary@VPOrdinalKey@@VPString@@@@QAE@XZ @1342 NONAME
     ??0?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@IAE@HPBV0@@Z @1343 NONAME
     ??0?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@QAE@XZ @1344 NONAME
     ??0?$PDictionary@VPString@@V1@@@IAE@HPBV0@@Z @1345 NONAME
     ??0?$PDictionary@VPString@@V1@@@QAE@ABV0@@Z @1346 NONAME
     ??0?$PDictionary@VPString@@V1@@@QAE@XZ @1347 NONAME
+    ??0?$PDictionary@VPString@@V?$PKey@H@@@@IAE@HPBV0@@Z @24064 NONAME
+    ??0?$PDictionary@VPString@@V?$PKey@H@@@@QAE@XZ @24065 NONAME
     ??0?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@IAE@HPBV0@@Z @1348 NONAME
     ??0?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@QAE@XZ @1349 NONAME
     ??0?$PDictionary@VPString@@VPDynaLink@@@@IAE@HPBV0@@Z @1350 NONAME
@@ -1294,8 +1294,6 @@ EXPORTS
     ??0?$PDictionary@VPString@@VPDynaLink@@@@QAE@XZ @1352 NONAME
     ??0?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@HPBV0@@Z @1353 NONAME
     ??0?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QAE@XZ @1354 NONAME
-    ??0?$PDictionary@VPString@@VPOrdinalKey@@@@IAE@HPBV0@@Z @1355 NONAME
-    ??0?$PDictionary@VPString@@VPOrdinalKey@@@@QAE@XZ @1356 NONAME
     ??0?$PDictionary@VPString@@VPresence@XMPP@@@@IAE@HPBV0@@Z @1357 NONAME
     ??0?$PDictionary@VPString@@VPresence@XMPP@@@@QAE@XZ @1358 NONAME
     ??0?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@IAE@HPBV0@@Z @1359 NONAME
@@ -1356,6 +1354,7 @@ EXPORTS
     ??0?$PIntSameOrder@H@@QAE@XZ @1414 NONAME
     ??0?$PIntSameOrder@K@@QAE@XZ @1415 NONAME
     ??0?$PIntSameOrder@_K@@QAE@_K@Z @1416 NONAME
+    ??0?$PKey@H@@QAE@H@Z @24066 NONAME
     ??0?$PList@V?$PNotifierTemplate@H@@@@IAE@HPBV0@@Z @1417 NONAME
     ??0?$PList@V?$PNotifierTemplate@H@@@@QAE@XZ @1418 NONAME
     ??0?$PList@VIdentity@Disco@XMPP@@@@IAE@HPBV0@@Z @1419 NONAME
@@ -1456,8 +1455,8 @@ EXPORTS
     ??0?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@QAE@XZ @1508 NONAME
     ??0?$PStack@VPStringStream@@@@IAE@HPBV0@@Z @1509 NONAME
     ??0?$PStack@VPStringStream@@@@QAE@XZ @1510 NONAME
-    ??0?$PStringDictionary@VPOrdinalKey@@@@IAE@HPBV0@@Z @1511 NONAME
-    ??0?$PStringDictionary@VPOrdinalKey@@@@QAE@XZ @1512 NONAME
+    ??0?$PStringDictionary@V?$PKey@H@@@@IAE@HPBV0@@Z @24067 NONAME
+    ??0?$PStringDictionary@V?$PKey@H@@@@QAE@XZ @24068 NONAME
     ??0?$PStringDictionary@VPString@@@@IAE@HPBV0@@Z @1513 NONAME
     ??0?$PStringDictionary@VPString@@@@QAE@ABV0@@Z @1514 NONAME
     ??0?$PStringDictionary@VPString@@@@QAE@XZ @1515 NONAME
@@ -2133,9 +2132,9 @@ EXPORTS
     ??0CMCDLL@PMail@@QAE@XZ @2182 NONAME
     ??0CMC_message_reference_ptr@@QAE@ABVPString@@@Z @2183 NONAME
     ??0Code@PMessageDigest5@@QAE@XZ @2184 NONAME
-    ??0const_iterator@?$PDictionary@VPString@@V1@@@IAE@PAVPHashTableInfo@@@Z @2185 NONAME
+    ??0const_iterator@?$PDictionary@VPString@@V1@@@IAE@PBV1@@Z @24069 NONAME
     ??0const_iterator@?$PDictionary@VPString@@V1@@@QAE@XZ @2186 NONAME
-    ??0const_iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PAVPHashTableInfo@@@Z @2187 NONAME
+    ??0const_iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PBV1@@Z @24070 NONAME
     ??0const_iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QAE@XZ @2188 NONAME
     ??0const_iterator@?$PList@VIdentity@Disco@XMPP@@@@QAE@PAUPListElement@@@Z @2189 NONAME
     ??0const_iterator@?$PList@VItem@Disco@XMPP@@@@QAE@PAUPListElement@@@Z @2190 NONAME
@@ -2213,8 +2212,6 @@ EXPORTS
     ??0const_iterator@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@PBV12@@Z @2261 NONAME
     ??0const_iterator@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@2@PBV12@@Z @2262 NONAME
     ??0const_iterator@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@2@PBV12@@Z @23970 NONAME
-    ??0const_iterator_pair@?$PDictionary@VPString@@V1@@@IAE@PBUPHashTableElement@@@Z @2263 NONAME
-    ??0const_iterator_pair@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PBUPHashTableElement@@@Z @2264 NONAME
     ??0ContentProcessor@PHTTPClient@@QAE@XZ @2265 NONAME
     ??0Context@PCLI@@QAE@AAV1@@Z @2266 NONAME
     ??0Credit@PHTML@@QAE@PBD@Z @2267 NONAME
@@ -2304,11 +2301,11 @@ EXPORTS
     ??0Item@Roster@XMPP@@QAE@PAVPXMLElement@@@Z @2346 NONAME
     ??0ItemList@Disco@XMPP@@IAE@HPBV012@@Z @2347 NONAME
     ??0ItemList@Disco@XMPP@@QAE@PAVPXMLElement@@@Z @2348 NONAME
-    ??0iterator@?$PDictionary@VPOrdinalKey@@VPString@@@@IAE@PAVPHashTableInfo@@@Z @2349 NONAME
-    ??0iterator@?$PDictionary@VPOrdinalKey@@VPString@@@@QAE@XZ @2350 NONAME
-    ??0iterator@?$PDictionary@VPString@@V1@@@IAE@PAVPHashTableInfo@@@Z @2351 NONAME
+    ??0iterator@?$PDictionary@V?$PKey@H@@VPString@@@@IAE@PAV1@@Z @24071 NONAME
+    ??0iterator@?$PDictionary@V?$PKey@H@@VPString@@@@QAE@XZ @24072 NONAME
+    ??0iterator@?$PDictionary@VPString@@V1@@@IAE@PAV1@@Z @24073 NONAME
     ??0iterator@?$PDictionary@VPString@@V1@@@QAE@XZ @2352 NONAME
-    ??0iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PAVPHashTableInfo@@@Z @2353 NONAME
+    ??0iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PAV1@@Z @24074 NONAME
     ??0iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QAE@XZ @2354 NONAME
     ??0iterator@?$PList@V?$PNotifierTemplate@H@@@@QAE@PAUPListElement@@@Z @2355 NONAME
     ??0iterator@?$PList@VItem@Roster@XMPP@@@@QAE@PAUPListElement@@@Z @2356 NONAME
@@ -2365,11 +2362,11 @@ EXPORTS
     ??0iterator@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@2@PBV12@@Z @2406 NONAME
     ??0iterator@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@2@PBV12@@Z @2407 NONAME
     ??0iterator@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@2@PBV12@@Z @23971 NONAME
-    ??0iterator_base@?$PDictionary@VPOrdinalKey@@VPString@@@@IAE@PAVPHashTableInfo@@@Z @2408 NONAME
-    ??0iterator_base@?$PDictionary@VPOrdinalKey@@VPString@@@@IAE@XZ @2409 NONAME
-    ??0iterator_base@?$PDictionary@VPString@@V1@@@IAE@PAVPHashTableInfo@@@Z @2410 NONAME
+    ??0iterator_base@?$PDictionary@V?$PKey@H@@VPString@@@@IAE@PBV1@@Z @24075 NONAME
+    ??0iterator_base@?$PDictionary@V?$PKey@H@@VPString@@@@IAE@XZ @24076 NONAME
+    ??0iterator_base@?$PDictionary@VPString@@V1@@@IAE@PBV1@@Z @24077 NONAME
     ??0iterator_base@?$PDictionary@VPString@@V1@@@IAE@XZ @2411 NONAME
-    ??0iterator_base@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PAVPHashTableInfo@@@Z @2412 NONAME
+    ??0iterator_base@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PBV1@@Z @24078 NONAME
     ??0iterator_base@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@XZ @2413 NONAME
     ??0iterator_base@?$PList@V?$PNotifierTemplate@H@@@@IAE@PAUPListElement@@@Z @2414 NONAME
     ??0iterator_base@?$PList@VIdentity@Disco@XMPP@@@@IAE@PAUPListElement@@@Z @2415 NONAME
@@ -2386,9 +2383,6 @@ EXPORTS
     ??0iterator_base@?$PList@VStanza@XMPP@@@@IAE@PAUPListElement@@@Z @2426 NONAME
     ??0iterator_base@?$PSet@VPString@@@@IAE@PAVPHashTableInfo@@@Z @2427 NONAME
     ??0iterator_base@?$PSet@VPString@@@@IAE@XZ @2428 NONAME
-    ??0iterator_pair@?$PDictionary@VPOrdinalKey@@VPString@@@@IAE@PAUPHashTableElement@@@Z @2429 NONAME
-    ??0iterator_pair@?$PDictionary@VPString@@V1@@@IAE@PAUPHashTableElement@@@Z @2430 NONAME
-    ??0iterator_pair@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAE@PAUPHashTableElement@@@Z @2431 NONAME
     ??0IUnknown@@QAE@XZ @2432 NONAME
     ??0JID@XMPP@@QAE@ABV01@@Z @2433 NONAME
     ??0JID@XMPP@@QAE@ABVPString@@00@Z @2434 NONAME
@@ -2791,6 +2785,7 @@ EXPORTS
     ??0PIpAccessControlEntry@@QAE@ABVPString@@@Z @2823 NONAME
     ??0PIpAccessControlEntry@@QAE@VAddress@PIPSocket@@0_N@Z @2824 NONAME
     ??0PIpAccessControlList@@QAE@_N@Z @2825 NONAME
+    ??0PIPAdaptersAddressTable@@QAE@K@Z @24079 NONAME
     ??0PIPCacheData@@QAE@PAUaddrinfo@@PBD@Z @2826 NONAME
     ??0PIPCacheData@@QAE@PAUhostent@@PBD@Z @2827 NONAME
     ??0PIPCacheKey@@QAE@ABV0@@Z @2828 NONAME
@@ -2798,6 +2793,7 @@ EXPORTS
     ??0PIPDatagramSocket@@IAE@XZ @2830 NONAME
     ??0PIPInterfaceAddressTable@@QAE@XZ @2831 NONAME
     ??0PIPRouteTable@@QAE@XZ @2832 NONAME
+    ??0PIPRouteTableIPv6@@QAE@XZ @24080 NONAME
     ??0PIPSocket@@IAE@XZ @2833 NONAME
     ??0PJavaScript@@QAE@XZ @2840 NONAME
     ??0PLDAPAttributeBase@@QAE@PBDPAXH@Z @2841 NONAME
@@ -2868,7 +2864,6 @@ EXPORTS
     ??0PObject@@IAE@XZ @2906 NONAME
     ??0PObject@@QAE@ABV0@@Z @2907 NONAME
     ??0PODBC@@QAE@XZ @2908 NONAME
-    ??0POrdinalKey@@QAE@H@Z @2909 NONAME
     ??0POrdinalToString@@IAE@HPBV0@@Z @2910 NONAME
     ??0POrdinalToString@@QAE@HPBUInitialiser@0@@Z @2911 NONAME
     ??0POrdinalToString@@QAE@XZ @2912 NONAME
@@ -3815,7 +3810,6 @@ EXPORTS
     ??1?$PArray@VPWaveBuffer@@@@UAE@XZ @3835 NONAME
     ??1?$PArray@VPXMLObject@@@@UAE@XZ @3836 NONAME
     ??1?$PArray@VPXMLRPCVariableBase@@@@UAE@XZ @3837 NONAME
-    ??1?$PArray@VRouteEntry@PIPSocket@@@@UAE@XZ @3838 NONAME
     ??1?$PArray@VTextValue@PvCard@@@@UAE@XZ @3839 NONAME
     ??1?$PBaseArray@D@@UAE@XZ @3840 NONAME
     ??1?$PBaseArray@E@@UAE@XZ @3841 NONAME
@@ -3836,16 +3830,16 @@ EXPORTS
     ??1?$PDevicePluginAdapter@VPSoundChannel@@@@UAE@XZ @3856 NONAME
     ??1?$PDevicePluginAdapter@VPVideoInputDevice@@@@UAE@XZ @3857 NONAME
     ??1?$PDevicePluginAdapter@VPVideoOutputDevice@@@@UAE@XZ @3858 NONAME
+    ??1?$PDictionary@V?$PKey@H@@VPString@@@@UAE@XZ @24081 NONAME
     ??1?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UAE@XZ @3859 NONAME
     ??1?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UAE@XZ @3860 NONAME
     ??1?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UAE@XZ @3861 NONAME
-    ??1?$PDictionary@VPOrdinalKey@@VPString@@@@UAE@XZ @3862 NONAME
     ??1?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UAE@XZ @3863 NONAME
     ??1?$PDictionary@VPString@@V1@@@UAE@XZ @3864 NONAME
+    ??1?$PDictionary@VPString@@V?$PKey@H@@@@UAE@XZ @24082 NONAME
     ??1?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UAE@XZ @3865 NONAME
     ??1?$PDictionary@VPString@@VPDynaLink@@@@UAE@XZ @3866 NONAME
     ??1?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UAE@XZ @3867 NONAME
-    ??1?$PDictionary@VPString@@VPOrdinalKey@@@@UAE@XZ @3868 NONAME
     ??1?$PDictionary@VPString@@VPresence@XMPP@@@@UAE@XZ @3869 NONAME
     ??1?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UAE@XZ @3870 NONAME
     ??1?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @3871 NONAME
@@ -3889,6 +3883,7 @@ EXPORTS
     ??1?$PFactoryTemplate@VPWAVFileFormat@@ABII@@MAE@XZ @3909 NONAME
     ??1?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@MAE@XZ @3910 NONAME
     ??1?$PHMACTemplate@VPMessageDigestSHA1@@@@UAE@XZ @3911 NONAME
+    ??1?$PKey@H@@UAE@XZ @24083 NONAME
     ??1?$PList@V?$PNotifierTemplate@H@@@@UAE@XZ @3912 NONAME
     ??1?$PList@VIdentity@Disco@XMPP@@@@UAE@XZ @3913 NONAME
     ??1?$PList@VItem@Disco@XMPP@@@@UAE@XZ @3914 NONAME
@@ -3940,7 +3935,7 @@ EXPORTS
     ??1?$PSoundChannelPluginServiceDescriptor@VPSoundChannelNull@@@@UAE@XZ @23346 NONAME
     ??1?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@UAE@XZ @3956 NONAME
     ??1?$PStack@VPStringStream@@@@UAE@XZ @3957 NONAME
-    ??1?$PStringDictionary@VPOrdinalKey@@@@UAE@XZ @3958 NONAME
+    ??1?$PStringDictionary@V?$PKey@H@@@@UAE@XZ @24084 NONAME
     ??1?$PStringDictionary@VPString@@@@UAE@XZ @3959 NONAME
     ??1?$PThreadFunctor@UAllocateSocketFunctor@@@@UAE@XZ @3960 NONAME
     ??1?$PThreadLocalStorage@UThreadLocalInfo@PTraceInfo@@@@UAE@XZ @3961 NONAME
@@ -4643,11 +4638,13 @@ EXPORTS
     ??1PInternetProtocol@@UAE@XZ @4647 NONAME
     ??1PIpAccessControlEntry@@UAE@XZ @4648 NONAME
     ??1PIpAccessControlList@@UAE@XZ @4649 NONAME
+    ??1PIPAdaptersAddressTable@@QAE@XZ @24085 NONAME
     ??1PIPCacheData@@UAE@XZ @4650 NONAME
     ??1PIPCacheKey@@UAE@XZ @4651 NONAME
     ??1PIPDatagramSocket@@UAE@XZ @4652 NONAME
     ??1PIPInterfaceAddressTable@@QAE@XZ @4653 NONAME
     ??1PIPRouteTable@@QAE@XZ @4654 NONAME
+    ??1PIPRouteTableIPv6@@QAE@XZ @24086 NONAME
     ??1PIPSocket@@UAE@XZ @4655 NONAME
     ??1PJavaScript@@UAE@XZ @4657 NONAME
     ??1PLDAPAttributeBase@@UAE@XZ @4658 NONAME
@@ -4703,7 +4700,6 @@ EXPORTS
     ??1PNullChannel@@UAE@XZ @4708 NONAME
     ??1PObject@@UAE@XZ @4709 NONAME
     ??1PODBC@@UAE@XZ @4710 NONAME
-    ??1POrdinalKey@@UAE@XZ @4711 NONAME
     ??1POrdinalToString@@UAE@XZ @4712 NONAME
     ??1PortInfo@PNatMethod@@QAE@XZ @4713 NONAME
     ??1PPER_Stream@@UAE@XZ @4714 NONAME
@@ -5286,9 +5282,9 @@ EXPORTS
     ??4?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@QAEAAV0@ABV0@@Z @5275 NONAME
     ??4?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QAEAAV0@W4OpenOptions_Bits@PFile@@@Z @5276 NONAME
     ??4?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@QAEAAV0@ABV0@@Z @5277 NONAME
-    ??4?$PDictionary@VPOrdinalKey@@VPString@@@@QAEAAV0@ABV0@@Z @5278 NONAME
+    ??4?$PDictionary@V?$PKey@H@@VPString@@@@QAEAAV0@ABV0@@Z @24087 NONAME
     ??4?$PDictionary@VPString@@V1@@@QAEAAV0@ABV0@@Z @5279 NONAME
-    ??4?$PDictionary@VPString@@VPOrdinalKey@@@@QAEAAV0@ABV0@@Z @5280 NONAME
+    ??4?$PDictionary@VPString@@V?$PKey@H@@@@QAEAAV0@ABV0@@Z @24088 NONAME
     ??4?$PIntReversedOrder@G@@QAEAAU0@ABU0@@Z @5281 NONAME
     ??4?$PIntReversedOrder@G@@QAEAAU0@G@Z @5282 NONAME
     ??4?$PIntReversedOrder@K@@QAEAAU0@K@Z @5283 NONAME
@@ -5309,7 +5305,7 @@ EXPORTS
     ??4?$PScalarArray@K@@QAEAAV0@ABV0@@Z @5298 NONAME
     ??4?$PSet@VPString@@@@QAEAAV0@ABV0@@Z @5299 NONAME
     ??4?$PSortedList@VPString@@@@QAEAAV0@ABV0@@Z @5300 NONAME
-    ??4?$PStringDictionary@VPOrdinalKey@@@@QAEAAV0@ABV0@@Z @5301 NONAME
+    ??4?$PStringDictionary@V?$PKey@H@@@@QAEAAV0@ABV0@@Z @24089 NONAME
     ??4?$PStringDictionary@VPString@@@@QAEAAV0@ABV0@@Z @5302 NONAME
     ??4?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QAEAAV01@ABV01@@Z @5303 NONAME
     ??4Address@PEthSocket@@QAEAAT01@ABT01@@Z @5304 NONAME
@@ -5402,7 +5398,6 @@ EXPORTS
     ??4PLDAPStructBase@@IAEAAV0@ABVPStringArray@@@Z @5388 NONAME
     ??4PLDAPStructBase@@IAEAAV0@ABVPStringToString@@@Z @5389 NONAME
     ??4PObject@@QAEAAV0@ABV0@@Z @5390 NONAME
-    ??4POrdinalKey@@QAEAAV0@H@Z @5391 NONAME
     ??4POrdinalToString@@QAEAAV0@ABV0@@Z @5392 NONAME
     ??4PPER_Stream@@QAEAAV0@ABVPBYTEArray@@@Z @5393 NONAME
     ??4PRegularExpression@@QAEAAV0@ABV0@@Z @5395 NONAME
@@ -5653,7 +5648,7 @@ EXPORTS
     ??9const_iterator@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QBE_NABV012@@Z @5639 NONAME
     ??9const_iterator@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QBE_NABV012@@Z @5640 NONAME
     ??9const_iterator@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QBE_NABV012@@Z @23982 NONAME
-    ??9iterator_base@?$PDictionary@VPOrdinalKey@@VPString@@@@QBE_NABV01@@Z @5641 NONAME
+    ??9iterator_base@?$PDictionary@V?$PKey@H@@VPString@@@@QBE_NABV01@@Z @24090 NONAME
     ??9iterator_base@?$PDictionary@VPString@@V1@@@QBE_NABV01@@Z @5642 NONAME
     ??9iterator_base@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QBE_NABV01@@Z @5643 NONAME
     ??9iterator_base@?$PList@V?$PNotifierTemplate@H@@@@QBE_NABV01@@Z @5644 NONAME
@@ -5718,7 +5713,6 @@ EXPORTS
     ??A?$PArray@VPWaveBuffer@@@@QBEAAVPWaveBuffer@@H@Z @5704 NONAME
     ??A?$PArray@VPXMLObject@@@@QBEAAVPXMLObject@@H@Z @5705 NONAME
     ??A?$PArray@VPXMLRPCVariableBase@@@@QBEAAVPXMLRPCVariableBase@@H@Z @5706 NONAME
-    ??A?$PArray@VRouteEntry@PIPSocket@@@@QBEAAVRouteEntry@PIPSocket@@H@Z @5707 NONAME
     ??A?$PArray@VTextValue@PvCard@@@@QBEAAVTextValue@PvCard@@H@Z @5708 NONAME
     ??A?$PBaseArray@D@@QAEAADH@Z @5709 NONAME
     ??A?$PBaseArray@D@@QBEDH@Z @5710 NONAME
@@ -5807,6 +5801,7 @@ EXPORTS
     ??B?$PIntSameOrder@G@@QBEGXZ @5793 NONAME
     ??B?$PIntSameOrder@H@@QBEHXZ @5794 NONAME
     ??B?$PIntSameOrder@K@@QBEKXZ @5795 NONAME
+    ??B?$PKey@H@@QBEHXZ @24091 NONAME
     ??B?$PSafePtr@VPMonitoredSockets@@VPSafePtrBase@@@@QBEPAVPMonitoredSockets@@XZ @5796 NONAME
     ??BAddress@PEthSocket@@QBE?AVPString@@XZ @5797 NONAME
     ??BAddress@PIPSocket@@QBE?AUin6_addr@@XZ @5798 NONAME
@@ -5855,7 +5850,6 @@ EXPORTS
     ??BPAtomicInteger@@QBEJXZ @5841 NONAME
     ??BPDnsRecords@PDNS@@QAEPAPAU_DnsRecordA@@XZ @23403 NONAME
     ??BPDnsRecords@PDNS@@QAEPAU_DnsRecordA@@XZ @23404 NONAME
-    ??BPOrdinalKey@@QBEHXZ @5842 NONAME
     ??BPRandom@@QAEIXZ @5843 NONAME
     ??BPRFC1155_ApplicationSyntax@@QAEAAVPRFC1155_Counter@@XZ @5844 NONAME
     ??BPRFC1155_ApplicationSyntax@@QAEAAVPRFC1155_Gauge@@XZ @5845 NONAME
@@ -5942,8 +5936,8 @@ EXPORTS
     ??C?$_Vector_const_iterator@VAddressAndPort@PIPSocket@@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QBEPBVAddressAndPort@PIPSocket@@XZ @23407 NONAME
     ??C?$_Vector_iterator@UPDSoundDeviceInfo@@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@QBEPAUPDSoundDeviceInfo@@XZ @23408 NONAME
     ??C?$_Vector_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@QBEPAVPVarType@@XZ @5930 NONAME
-    ??Cconst_iterator@?$PDictionary@VPString@@V1@@@QBEPBVconst_iterator_pair@1@XZ @5931 NONAME
-    ??Cconst_iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QBEPBVconst_iterator_pair@1@XZ @5932 NONAME
+    ??Cconst_iterator@?$PDictionary@VPString@@V1@@@QBEPBV?$iterator_pair@$$CBVPString@@$$CBV1@@1@XZ @24092 NONAME
+    ??Cconst_iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QBEPBV?$iterator_pair@$$CBVPString@@$$CBVPLDAPAttributeBase@@@1@XZ @24093 NONAME
     ??Cconst_iterator@?$PList@VIdentity@Disco@XMPP@@@@QBEPBVIdentity@Disco@XMPP@@XZ @5933 NONAME
     ??Cconst_iterator@?$PList@VItem@Disco@XMPP@@@@QBEPBVItem@Disco@XMPP@@XZ @5934 NONAME
     ??Cconst_iterator@?$_Tree@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@QBEPBU?$pair@$$CBIPAVPThread@@@2@XZ @5935 NONAME
@@ -5956,9 +5950,9 @@ EXPORTS
     ??Cconst_iterator@?$_Tree@V?$_Tmap_traits@VPString@@VPBYTEArray@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@VPBYTEArray@@@std@@@4@$0A@@std@@@std@@QBEPBU?$pair@$$CBVPString@@VPBYTEArray@@@2@XZ @5942 NONAME
     ??Cconst_iterator@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@std@@QBEPBU?$pair@$$CBVToken@PvCard@@UExtendedType@2@@2@XZ @5943 NONAME
     ??Cconst_iterator@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QBEPBU?$pair@$$CBVToken@PvCard@@VParamValues@2@@2@XZ @5944 NONAME
-    ??Citerator@?$PDictionary@VPOrdinalKey@@VPString@@@@QBEPBViterator_pair@1@XZ @5945 NONAME
-    ??Citerator@?$PDictionary@VPString@@V1@@@QBEPBViterator_pair@1@XZ @5946 NONAME
-    ??Citerator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QBEPBViterator_pair@1@XZ @5947 NONAME
+    ??Citerator@?$PDictionary@V?$PKey@H@@VPString@@@@QBEPBV?$iterator_pair@V?$PKey@H@@VPString@@@1@XZ @24094 NONAME
+    ??Citerator@?$PDictionary@VPString@@V1@@@QBEPBV?$iterator_pair@VPString@@V1@@1@XZ @24095 NONAME
+    ??Citerator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QBEPBV?$iterator_pair@VPString@@VPLDAPAttributeBase@@@1@XZ @24096 NONAME
     ??Citerator@?$PList@VItem@Roster@XMPP@@@@QBEPAVItem@Roster@XMPP@@XZ @5948 NONAME
     ??Citerator@?$PList@VPHTTPServiceThread@@@@QBEPAVPHTTPServiceThread@@XZ @5949 NONAME
     ??Citerator@?$PList@VPNatMethod@@@@QBEPAVPNatMethod@@XZ @5950 NONAME
@@ -6003,6 +5997,7 @@ EXPORTS
     ??CMediaTypePtr@@QBEPAU_AMMediaType@@XZ @5988 NONAME
     ??CPIPInterfaceAddressTable@@QBEPBU_MIB_IPADDRTABLE@@XZ @5989 NONAME
     ??CPIPRouteTable@@QBEPBU_MIB_IPFORWARDTABLE@@XZ @5990 NONAME
+    ??CPIPRouteTableIPv6@@QBEPBU_MIB_IPFORWARD_TABLE2@@XZ @24097 NONAME
     ??CPSTUNMessage@@QBEPBUPSTUNMessageHeader@@XZ @5992 NONAME
     ??CPVideoDeviceBitmap@@QBEPAUtagBITMAPINFO@@XZ @5993 NONAME
     ??CPWaveFormat@@QBEPAUtWAVEFORMATEX@@XZ @5994 NONAME
@@ -6138,6 +6133,7 @@ EXPORTS
     ??Diterator@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QBEAAU?$pair@$$CBVToken@PvCard@@VParamValues@2@@2@XZ @6127 NONAME
     ??Diterator@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QBEAAUTimerExpiryInfo@PTimerList@@XZ @6128 NONAME
     ??Diterator@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QBEAAVPVideoFrameInfo@@XZ @23984 NONAME
+    ??DPIPAdaptersAddressTable@@QBEABU_IP_ADAPTER_ADDRESSES_XP@@XZ @24098 NONAME
     ??DPTimeInterval@@QBE?AV0@H@Z @6129 NONAME
     ??E?$reverse_iterator@V?$_Vector_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@@std@@QAEAAV01@XZ @6131 NONAME
     ??E?$_Const_iterator@$00@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE?AV012@H@Z @6132 NONAME
@@ -6261,7 +6257,7 @@ EXPORTS
     ??Econst_iterator@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QAEAAV012@XZ @6254 NONAME
     ??Econst_iterator@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QAE?AV012@H@Z @23985 NONAME
     ??Econst_iterator@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QAEAAV012@XZ @23986 NONAME
-    ??Eiterator@?$PDictionary@VPOrdinalKey@@VPString@@@@QAE?AV01@XZ @6255 NONAME
+    ??Eiterator@?$PDictionary@V?$PKey@H@@VPString@@@@QAE?AV01@XZ @24099 NONAME
     ??Eiterator@?$PDictionary@VPString@@V1@@@QAE?AV01@XZ @6256 NONAME
     ??Eiterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QAE?AV01@XZ @6257 NONAME
     ??Eiterator@?$PList@V?$PNotifierTemplate@H@@@@QAE?AV01@H@Z @6258 NONAME
@@ -6318,8 +6314,6 @@ EXPORTS
     ??EPAtomicInteger@@QAEJH@Z @6307 NONAME
     ??EPAtomicInteger@@QAEJXZ @6308 NONAME
     ??EPIntCondMutex@@QAEAAV0@XZ @6309 NONAME
-    ??EPOrdinalKey@@QAEHH@Z @6310 NONAME
-    ??EPOrdinalKey@@QAEHXZ @6311 NONAME
     ??F?$_Const_iterator@$00@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAEAAV012@XZ @6313 NONAME
     ??F?$_Vector_const_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@QAEAAV01@XZ @6315 NONAME
     ??F?$_Vector_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@QAEAAV01@XZ @6316 NONAME
@@ -6403,8 +6397,6 @@ EXPORTS
     ??Fiterator@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QAEAAV012@XZ @23989 NONAME
     ??FPAtomicInteger@@QAEJXZ @6391 NONAME
     ??FPIntCondMutex@@QAEAAV0@XZ @6392 NONAME
-    ??FPOrdinalKey@@QAEHH@Z @6393 NONAME
-    ??FPOrdinalKey@@QAEHXZ @6394 NONAME
     ??G?$_Deque_const_iterator@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@$00@std@@QBEHABV01@@Z @6395 NONAME
     ??G?$_Vector_const_iterator@PAUSocketInfo@@V?$allocator@PAUSocketInfo@@@std@@@std@@QBEHABV01@@Z @6396 NONAME
     ??G?$_Vector_const_iterator@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBEHABV01@@Z @6398 NONAME
@@ -6551,7 +6543,6 @@ EXPORTS
     ??YPFilePath@@QAEAAV0@ABVPString@@@Z @6543 NONAME
     ??YPFilePath@@QAEAAV0@PBD@Z @6544 NONAME
     ??YPIntCondMutex@@QAEAAV0@H@Z @6545 NONAME
-    ??YPOrdinalKey@@QAEAAV0@H@Z @6546 NONAME
     ??YPString@@QAEAAV0@ABV0@@Z @6547 NONAME
     ??YPString@@QAEAAV0@D@Z @6548 NONAME
     ??YPString@@QAEAAV0@PBD@Z @6549 NONAME
@@ -6565,7 +6556,6 @@ EXPORTS
     ??YP_fd_set@@QAEAAV0@I@Z @6557 NONAME
     ??YSelectList@PSocket@@QAEXAAV1@@Z @6558 NONAME
     ??ZPIntCondMutex@@QAEAAV0@H@Z @6559 NONAME
-    ??ZPOrdinalKey@@QAEAAV0@H@Z @6560 NONAME
     ??ZPStringSet@@QAEAAV0@ABVPString@@@Z @6561 NONAME
     ??ZPTime@@QAEAAV0@ABVPTimeInterval@@@Z @6562 NONAME
     ??ZPTimeInterval@@QAEAAV0@ABV0@@Z @6563 NONAME
@@ -6591,7 +6581,6 @@ EXPORTS
     ??_7?$PArray@VPWaveBuffer@@@@6B@ @6583 NONAME
     ??_7?$PArray@VPXMLObject@@@@6B@ @6584 NONAME
     ??_7?$PArray@VPXMLRPCVariableBase@@@@6B@ @6585 NONAME
-    ??_7?$PArray@VRouteEntry@PIPSocket@@@@6B@ @6586 NONAME
     ??_7?$PArray@VTextValue@PvCard@@@@6B@ @6587 NONAME
     ??_7?$PBaseArray@D@@6B@ @6588 NONAME
     ??_7?$PBaseArray@E@@6B@ @6589 NONAME
@@ -6612,16 +6601,16 @@ EXPORTS
     ??_7?$PDevicePluginAdapter@VPSoundChannel@@@@6B@ @6604 NONAME
     ??_7?$PDevicePluginAdapter@VPVideoInputDevice@@@@6B@ @6605 NONAME
     ??_7?$PDevicePluginAdapter@VPVideoOutputDevice@@@@6B@ @6606 NONAME
+    ??_7?$PDictionary@V?$PKey@H@@VPString@@@@6B@ @24100 NONAME
     ??_7?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@6B@ @6607 NONAME
     ??_7?$PDictionary@VPCaselessString@@VPIPCacheData@@@@6B@ @6608 NONAME
     ??_7?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@6B@ @6609 NONAME
-    ??_7?$PDictionary@VPOrdinalKey@@VPString@@@@6B@ @6610 NONAME
     ??_7?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@6B@ @6611 NONAME
     ??_7?$PDictionary@VPString@@V1@@@6B@ @6612 NONAME
+    ??_7?$PDictionary@VPString@@V?$PKey@H@@@@6B@ @24101 NONAME
     ??_7?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@6B@ @6613 NONAME
     ??_7?$PDictionary@VPString@@VPDynaLink@@@@6B@ @6614 NONAME
     ??_7?$PDictionary@VPString@@VPLDAPAttributeBase@@@@6B@ @6615 NONAME
-    ??_7?$PDictionary@VPString@@VPOrdinalKey@@@@6B@ @6616 NONAME
     ??_7?$PDictionary@VPString@@VPresence@XMPP@@@@6B@ @6617 NONAME
     ??_7?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@6B@ @6618 NONAME
     ??_7?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @6619 NONAME
@@ -6665,6 +6654,7 @@ EXPORTS
     ??_7?$PFactoryTemplate@VPWAVFileFormat@@ABII@@6B@ @6657 NONAME
     ??_7?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@6B@ @6658 NONAME
     ??_7?$PHMACTemplate@VPMessageDigestSHA1@@@@6B@ @6659 NONAME
+    ??_7?$PKey@H@@6B@ @24102 NONAME
     ??_7?$PList@V?$PNotifierTemplate@H@@@@6B@ @6660 NONAME
     ??_7?$PList@VIdentity@Disco@XMPP@@@@6B@ @6661 NONAME
     ??_7?$PList@VItem@Disco@XMPP@@@@6B@ @6662 NONAME
@@ -6716,7 +6706,7 @@ EXPORTS
     ??_7?$PSoundChannelPluginServiceDescriptor@VPSoundChannelNull@@@@6B@ @23439 NONAME
     ??_7?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@6B@ @6704 NONAME
     ??_7?$PStack@VPStringStream@@@@6B@ @6705 NONAME
-    ??_7?$PStringDictionary@VPOrdinalKey@@@@6B@ @6706 NONAME
+    ??_7?$PStringDictionary@V?$PKey@H@@@@6B@ @24103 NONAME
     ??_7?$PStringDictionary@VPString@@@@6B@ @6707 NONAME
     ??_7?$PThreadFunctor@UAllocateSocketFunctor@@@@6B@ @6708 NONAME
     ??_7?$PThreadLocalStorage@UThreadLocalInfo@PTraceInfo@@@@6B@ @6709 NONAME
@@ -7137,7 +7127,6 @@ EXPORTS
     ??_7PNullChannel@@6BPObject@@@ @7124 NONAME
     ??_7PObject@@6B@ @7125 NONAME
     ??_7PODBC@@6B@ @7126 NONAME
-    ??_7POrdinalKey@@6B@ @7127 NONAME
     ??_7POrdinalToString@@6B@ @7128 NONAME
     ??_7PPER_Stream@@6B@ @7129 NONAME
     ??_7PPipeChannel@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @7130 NONAME
@@ -7957,7 +7946,6 @@ EXPORTS
     ??_R0?AV?$PArray@VPWaveBuffer@@@@@8 @7926 NONAME
     ??_R0?AV?$PArray@VPXMLObject@@@@@8 @7927 NONAME
     ??_R0?AV?$PArray@VPXMLRPCVariableBase@@@@@8 @7928 NONAME
-    ??_R0?AV?$PArray@VRouteEntry@PIPSocket@@@@@8 @7929 NONAME
     ??_R0?AV?$PArray@VTextValue@PvCard@@@@@8 @7930 NONAME
     ??_R0?AV?$PBaseArray@D@@@8 @7931 NONAME
     ??_R0?AV?$PBaseArray@E@@@8 @7932 NONAME
@@ -7978,16 +7966,16 @@ EXPORTS
     ??_R0?AV?$PDevicePluginAdapter@VPSoundChannel@@@@@8 @7947 NONAME
     ??_R0?AV?$PDevicePluginAdapter@VPVideoInputDevice@@@@@8 @7948 NONAME
     ??_R0?AV?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@8 @7949 NONAME
+    ??_R0?AV?$PDictionary@V?$PKey@H@@VPString@@@@@8 @24104 NONAME
     ??_R0?AV?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@@8 @7950 NONAME
     ??_R0?AV?$PDictionary@VPCaselessString@@VPIPCacheData@@@@@8 @7951 NONAME
     ??_R0?AV?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@@8 @7952 NONAME
-    ??_R0?AV?$PDictionary@VPOrdinalKey@@VPString@@@@@8 @7953 NONAME
     ??_R0?AV?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@@8 @7954 NONAME
     ??_R0?AV?$PDictionary@VPString@@V1@@@@8 @7955 NONAME
+    ??_R0?AV?$PDictionary@VPString@@V?$PKey@H@@@@@8 @24105 NONAME
     ??_R0?AV?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@@8 @7956 NONAME
     ??_R0?AV?$PDictionary@VPString@@VPDynaLink@@@@@8 @7957 NONAME
     ??_R0?AV?$PDictionary@VPString@@VPLDAPAttributeBase@@@@@8 @7958 NONAME
-    ??_R0?AV?$PDictionary@VPString@@VPOrdinalKey@@@@@8 @7959 NONAME
     ??_R0?AV?$PDictionary@VPString@@VPresence@XMPP@@@@@8 @7960 NONAME
     ??_R0?AV?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@@8 @7961 NONAME
     ??_R0?AV?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@8 @7962 NONAME
@@ -8031,6 +8019,7 @@ EXPORTS
     ??_R0?AV?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@8 @8000 NONAME
     ??_R0?AV?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@@8 @8001 NONAME
     ??_R0?AV?$PHMACTemplate@VPMessageDigestSHA1@@@@@8 @8002 NONAME
+    ??_R0?AV?$PKey@H@@@8 @24106 NONAME
     ??_R0?AV?$PList@V?$PNotifierTemplate@H@@@@@8 @8003 NONAME
     ??_R0?AV?$PList@VIdentity@Disco@XMPP@@@@@8 @8004 NONAME
     ??_R0?AV?$PList@VItem@Disco@XMPP@@@@@8 @8005 NONAME
@@ -8085,7 +8074,7 @@ EXPORTS
     ??_R0?AV?$PSoundChannelPluginServiceDescriptor@VPSoundChannelNull@@@@@8 @23475 NONAME
     ??_R0?AV?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@@8 @8050 NONAME
     ??_R0?AV?$PStack@VPStringStream@@@@@8 @8051 NONAME
-    ??_R0?AV?$PStringDictionary@VPOrdinalKey@@@@@8 @8052 NONAME
+    ??_R0?AV?$PStringDictionary@V?$PKey@H@@@@@8 @24107 NONAME
     ??_R0?AV?$PStringDictionary@VPString@@@@@8 @8053 NONAME
     ??_R0?AV?$PThreadFunctor@UAllocateSocketFunctor@@@@@8 @8054 NONAME
     ??_R0?AV?$PThreadLocalStorage@UThreadLocalInfo@PTraceInfo@@@@@8 @8055 NONAME
@@ -8460,7 +8449,6 @@ EXPORTS
     ??_R0?AVPNullChannel@@@8 @8425 NONAME
     ??_R0?AVPObject@@@8 @8426 NONAME
     ??_R0?AVPODBC@@@8 @8427 NONAME
-    ??_R0?AVPOrdinalKey@@@8 @8428 NONAME
     ??_R0?AVPOrdinalToString@@@8 @8429 NONAME
     ??_R0?AVPPER_Stream@@@8 @8430 NONAME
     ??_R0?AVPPipeChannel@@@8 @8431 NONAME
@@ -8962,7 +8950,6 @@ EXPORTS
     ??_R1A@?0A@EA@?$PArray@VPWaveBuffer@@@@8 @8915 NONAME
     ??_R1A@?0A@EA@?$PArray@VPXMLObject@@@@8 @8916 NONAME
     ??_R1A@?0A@EA@?$PArray@VPXMLRPCVariableBase@@@@8 @8917 NONAME
-    ??_R1A@?0A@EA@?$PArray@VRouteEntry@PIPSocket@@@@8 @8918 NONAME
     ??_R1A@?0A@EA@?$PArray@VTextValue@PvCard@@@@8 @8919 NONAME
     ??_R1A@?0A@EA@?$PBaseArray@D@@8 @8920 NONAME
     ??_R1A@?0A@EA@?$PBaseArray@E@@8 @8921 NONAME
@@ -8983,16 +8970,16 @@ EXPORTS
     ??_R1A@?0A@EA@?$PDevicePluginAdapter@VPSoundChannel@@@@8 @8936 NONAME
     ??_R1A@?0A@EA@?$PDevicePluginAdapter@VPVideoInputDevice@@@@8 @8937 NONAME
     ??_R1A@?0A@EA@?$PDevicePluginAdapter@VPVideoOutputDevice@@@@8 @8938 NONAME
+    ??_R1A@?0A@EA@?$PDictionary@V?$PKey@H@@VPString@@@@8 @24108 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@8 @8939 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@8 @8940 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@8 @8941 NONAME
-    ??_R1A@?0A@EA@?$PDictionary@VPOrdinalKey@@VPString@@@@8 @8942 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@8 @8943 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPString@@V1@@@8 @8944 NONAME
+    ??_R1A@?0A@EA@?$PDictionary@VPString@@V?$PKey@H@@@@8 @24109 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@8 @8945 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPString@@VPDynaLink@@@@8 @8946 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@8 @8947 NONAME
-    ??_R1A@?0A@EA@?$PDictionary@VPString@@VPOrdinalKey@@@@8 @8948 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPString@@VPresence@XMPP@@@@8 @8949 NONAME
     ??_R1A@?0A@EA@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@8 @8950 NONAME
     ??_R1A@?0A@EA@?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @8951 NONAME
@@ -9036,6 +9023,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@8 @8989 NONAME
     ??_R1A@?0A@EA@?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@8 @8990 NONAME
     ??_R1A@?0A@EA@?$PHMACTemplate@VPMessageDigestSHA1@@@@8 @8991 NONAME
+    ??_R1A@?0A@EA@?$PKey@H@@8 @24110 NONAME
     ??_R1A@?0A@EA@?$PList@V?$PNotifierTemplate@H@@@@8 @8992 NONAME
     ??_R1A@?0A@EA@?$PList@VIdentity@Disco@XMPP@@@@8 @8993 NONAME
     ??_R1A@?0A@EA@?$PList@VItem@Disco@XMPP@@@@8 @8994 NONAME
@@ -9087,7 +9075,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelNull@@@@8 @23501 NONAME
     ??_R1A@?0A@EA@?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@8 @9036 NONAME
     ??_R1A@?0A@EA@?$PStack@VPStringStream@@@@8 @9037 NONAME
-    ??_R1A@?0A@EA@?$PStringDictionary@VPOrdinalKey@@@@8 @9038 NONAME
+    ??_R1A@?0A@EA@?$PStringDictionary@V?$PKey@H@@@@8 @24111 NONAME
     ??_R1A@?0A@EA@?$PStringDictionary@VPString@@@@8 @9039 NONAME
     ??_R1A@?0A@EA@?$PThreadFunctor@UAllocateSocketFunctor@@@@8 @9040 NONAME
     ??_R1A@?0A@EA@?$PThreadLocalStorage@UThreadLocalInfo@PTraceInfo@@@@8 @9041 NONAME
@@ -9498,7 +9486,6 @@ EXPORTS
     ??_R1A@?0A@EA@PNullChannel@@8 @9446 NONAME
     ??_R1A@?0A@EA@PObject@@8 @9447 NONAME
     ??_R1A@?0A@EA@PODBC@@8 @9448 NONAME
-    ??_R1A@?0A@EA@POrdinalKey@@8 @9449 NONAME
     ??_R1A@?0A@EA@POrdinalToString@@8 @9450 NONAME
     ??_R1A@?0A@EA@PPER_Stream@@8 @9451 NONAME
     ??_R1A@?0A@EA@PPipeChannel@@8 @9452 NONAME
@@ -10035,7 +10022,6 @@ EXPORTS
     ??_R2?$PArray@VPWaveBuffer@@@@8 @9970 NONAME
     ??_R2?$PArray@VPXMLObject@@@@8 @9971 NONAME
     ??_R2?$PArray@VPXMLRPCVariableBase@@@@8 @9972 NONAME
-    ??_R2?$PArray@VRouteEntry@PIPSocket@@@@8 @9973 NONAME
     ??_R2?$PArray@VTextValue@PvCard@@@@8 @9974 NONAME
     ??_R2?$PBaseArray@D@@8 @9975 NONAME
     ??_R2?$PBaseArray@E@@8 @9976 NONAME
@@ -10056,16 +10042,16 @@ EXPORTS
     ??_R2?$PDevicePluginAdapter@VPSoundChannel@@@@8 @9991 NONAME
     ??_R2?$PDevicePluginAdapter@VPVideoInputDevice@@@@8 @9992 NONAME
     ??_R2?$PDevicePluginAdapter@VPVideoOutputDevice@@@@8 @9993 NONAME
+    ??_R2?$PDictionary@V?$PKey@H@@VPString@@@@8 @24112 NONAME
     ??_R2?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@8 @9994 NONAME
     ??_R2?$PDictionary@VPCaselessString@@VPIPCacheData@@@@8 @9995 NONAME
     ??_R2?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@8 @9996 NONAME
-    ??_R2?$PDictionary@VPOrdinalKey@@VPString@@@@8 @9997 NONAME
     ??_R2?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@8 @9998 NONAME
     ??_R2?$PDictionary@VPString@@V1@@@8 @9999 NONAME
+    ??_R2?$PDictionary@VPString@@V?$PKey@H@@@@8 @24113 NONAME
     ??_R2?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@8 @10000 NONAME
     ??_R2?$PDictionary@VPString@@VPDynaLink@@@@8 @10001 NONAME
     ??_R2?$PDictionary@VPString@@VPLDAPAttributeBase@@@@8 @10002 NONAME
-    ??_R2?$PDictionary@VPString@@VPOrdinalKey@@@@8 @10003 NONAME
     ??_R2?$PDictionary@VPString@@VPresence@XMPP@@@@8 @10004 NONAME
     ??_R2?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@8 @10005 NONAME
     ??_R2?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @10006 NONAME
@@ -10109,6 +10095,7 @@ EXPORTS
     ??_R2?$PFactoryTemplate@VPWAVFileFormat@@ABII@@8 @10044 NONAME
     ??_R2?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@8 @10045 NONAME
     ??_R2?$PHMACTemplate@VPMessageDigestSHA1@@@@8 @10046 NONAME
+    ??_R2?$PKey@H@@8 @24114 NONAME
     ??_R2?$PList@V?$PNotifierTemplate@H@@@@8 @10047 NONAME
     ??_R2?$PList@VIdentity@Disco@XMPP@@@@8 @10048 NONAME
     ??_R2?$PList@VItem@Disco@XMPP@@@@8 @10049 NONAME
@@ -10160,7 +10147,7 @@ EXPORTS
     ??_R2?$PSoundChannelPluginServiceDescriptor@VPSoundChannelNull@@@@8 @23531 NONAME
     ??_R2?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@8 @10091 NONAME
     ??_R2?$PStack@VPStringStream@@@@8 @10092 NONAME
-    ??_R2?$PStringDictionary@VPOrdinalKey@@@@8 @10093 NONAME
+    ??_R2?$PStringDictionary@V?$PKey@H@@@@8 @24115 NONAME
     ??_R2?$PStringDictionary@VPString@@@@8 @10094 NONAME
     ??_R2?$PThreadFunctor@UAllocateSocketFunctor@@@@8 @10095 NONAME
     ??_R2?$PThreadLocalStorage@UThreadLocalInfo@PTraceInfo@@@@8 @10096 NONAME
@@ -10571,7 +10558,6 @@ EXPORTS
     ??_R2PNullChannel@@8 @10501 NONAME
     ??_R2PObject@@8 @10502 NONAME
     ??_R2PODBC@@8 @10503 NONAME
-    ??_R2POrdinalKey@@8 @10504 NONAME
     ??_R2POrdinalToString@@8 @10505 NONAME
     ??_R2PPER_Stream@@8 @10506 NONAME
     ??_R2PPipeChannel@@8 @10507 NONAME
@@ -11060,7 +11046,6 @@ EXPORTS
     ??_R3?$PArray@VPWaveBuffer@@@@8 @10977 NONAME
     ??_R3?$PArray@VPXMLObject@@@@8 @10978 NONAME
     ??_R3?$PArray@VPXMLRPCVariableBase@@@@8 @10979 NONAME
-    ??_R3?$PArray@VRouteEntry@PIPSocket@@@@8 @10980 NONAME
     ??_R3?$PArray@VTextValue@PvCard@@@@8 @10981 NONAME
     ??_R3?$PBaseArray@D@@8 @10982 NONAME
     ??_R3?$PBaseArray@E@@8 @10983 NONAME
@@ -11081,16 +11066,16 @@ EXPORTS
     ??_R3?$PDevicePluginAdapter@VPSoundChannel@@@@8 @10998 NONAME
     ??_R3?$PDevicePluginAdapter@VPVideoInputDevice@@@@8 @10999 NONAME
     ??_R3?$PDevicePluginAdapter@VPVideoOutputDevice@@@@8 @11000 NONAME
+    ??_R3?$PDictionary@V?$PKey@H@@VPString@@@@8 @24116 NONAME
     ??_R3?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@8 @11001 NONAME
     ??_R3?$PDictionary@VPCaselessString@@VPIPCacheData@@@@8 @11002 NONAME
     ??_R3?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@8 @11003 NONAME
-    ??_R3?$PDictionary@VPOrdinalKey@@VPString@@@@8 @11004 NONAME
     ??_R3?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@8 @11005 NONAME
     ??_R3?$PDictionary@VPString@@V1@@@8 @11006 NONAME
+    ??_R3?$PDictionary@VPString@@V?$PKey@H@@@@8 @24117 NONAME
     ??_R3?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@8 @11007 NONAME
     ??_R3?$PDictionary@VPString@@VPDynaLink@@@@8 @11008 NONAME
     ??_R3?$PDictionary@VPString@@VPLDAPAttributeBase@@@@8 @11009 NONAME
-    ??_R3?$PDictionary@VPString@@VPOrdinalKey@@@@8 @11010 NONAME
     ??_R3?$PDictionary@VPString@@VPresence@XMPP@@@@8 @11011 NONAME
     ??_R3?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@8 @11012 NONAME
     ??_R3?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@8 @11013 NONAME
@@ -11134,6 +11119,7 @@ EXPORTS
     ??_R3?$PFactoryTemplate@VPWAVFileFormat@@ABII@@8 @11051 NONAME
     ??_R3?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@8 @11052 NONAME
     ??_R3?$PHMACTemplate@VPMessageDigestSHA1@@@@8 @11053 NONAME
+    ??_R3?$PKey@H@@8 @24118 NONAME
     ??_R3?$PList@V?$PNotifierTemplate@H@@@@8 @11054 NONAME
     ??_R3?$PList@VIdentity@Disco@XMPP@@@@8 @11055 NONAME
     ??_R3?$PList@VItem@Disco@XMPP@@@@8 @11056 NONAME
@@ -11185,7 +11171,7 @@ EXPORTS
     ??_R3?$PSoundChannelPluginServiceDescriptor@VPSoundChannelNull@@@@8 @23558 NONAME
     ??_R3?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@8 @11098 NONAME
     ??_R3?$PStack@VPStringStream@@@@8 @11099 NONAME
-    ??_R3?$PStringDictionary@VPOrdinalKey@@@@8 @11100 NONAME
+    ??_R3?$PStringDictionary@V?$PKey@H@@@@8 @24119 NONAME
     ??_R3?$PStringDictionary@VPString@@@@8 @11101 NONAME
     ??_R3?$PThreadFunctor@UAllocateSocketFunctor@@@@8 @11102 NONAME
     ??_R3?$PThreadLocalStorage@UThreadLocalInfo@PTraceInfo@@@@8 @11103 NONAME
@@ -11596,7 +11582,6 @@ EXPORTS
     ??_R3PNullChannel@@8 @11508 NONAME
     ??_R3PObject@@8 @11509 NONAME
     ??_R3PODBC@@8 @11510 NONAME
-    ??_R3POrdinalKey@@8 @11511 NONAME
     ??_R3POrdinalToString@@8 @11512 NONAME
     ??_R3PPER_Stream@@8 @11513 NONAME
     ??_R3PPipeChannel@@8 @11514 NONAME
@@ -12079,7 +12064,6 @@ EXPORTS
     ??_R4?$PArray@VPWaveBuffer@@@@6B@ @11978 NONAME
     ??_R4?$PArray@VPXMLObject@@@@6B@ @11979 NONAME
     ??_R4?$PArray@VPXMLRPCVariableBase@@@@6B@ @11980 NONAME
-    ??_R4?$PArray@VRouteEntry@PIPSocket@@@@6B@ @11981 NONAME
     ??_R4?$PArray@VTextValue@PvCard@@@@6B@ @11982 NONAME
     ??_R4?$PBaseArray@D@@6B@ @11983 NONAME
     ??_R4?$PBaseArray@E@@6B@ @11984 NONAME
@@ -12100,16 +12084,16 @@ EXPORTS
     ??_R4?$PDevicePluginAdapter@VPSoundChannel@@@@6B@ @11999 NONAME
     ??_R4?$PDevicePluginAdapter@VPVideoInputDevice@@@@6B@ @12000 NONAME
     ??_R4?$PDevicePluginAdapter@VPVideoOutputDevice@@@@6B@ @12001 NONAME
+    ??_R4?$PDictionary@V?$PKey@H@@VPString@@@@6B@ @24120 NONAME
     ??_R4?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@6B@ @12002 NONAME
     ??_R4?$PDictionary@VPCaselessString@@VPIPCacheData@@@@6B@ @12003 NONAME
     ??_R4?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@6B@ @12004 NONAME
-    ??_R4?$PDictionary@VPOrdinalKey@@VPString@@@@6B@ @12005 NONAME
     ??_R4?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@6B@ @12006 NONAME
     ??_R4?$PDictionary@VPString@@V1@@@6B@ @12007 NONAME
+    ??_R4?$PDictionary@VPString@@V?$PKey@H@@@@6B@ @24121 NONAME
     ??_R4?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@6B@ @12008 NONAME
     ??_R4?$PDictionary@VPString@@VPDynaLink@@@@6B@ @12009 NONAME
     ??_R4?$PDictionary@VPString@@VPLDAPAttributeBase@@@@6B@ @12010 NONAME
-    ??_R4?$PDictionary@VPString@@VPOrdinalKey@@@@6B@ @12011 NONAME
     ??_R4?$PDictionary@VPString@@VPresence@XMPP@@@@6B@ @12012 NONAME
     ??_R4?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@6B@ @12013 NONAME
     ??_R4?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@6B@ @12014 NONAME
@@ -12153,6 +12137,7 @@ EXPORTS
     ??_R4?$PFactoryTemplate@VPWAVFileFormat@@ABII@@6B@ @12052 NONAME
     ??_R4?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@6B@ @12053 NONAME
     ??_R4?$PHMACTemplate@VPMessageDigestSHA1@@@@6B@ @12054 NONAME
+    ??_R4?$PKey@H@@6B@ @24122 NONAME
     ??_R4?$PList@V?$PNotifierTemplate@H@@@@6B@ @12055 NONAME
     ??_R4?$PList@VIdentity@Disco@XMPP@@@@6B@ @12056 NONAME
     ??_R4?$PList@VItem@Disco@XMPP@@@@6B@ @12057 NONAME
@@ -12204,7 +12189,7 @@ EXPORTS
     ??_R4?$PSoundChannelPluginServiceDescriptor@VPSoundChannelNull@@@@6B@ @23585 NONAME
     ??_R4?$PSoundChannelPluginServiceDescriptor@VPSoundChannelWin32@@@@6B@ @12099 NONAME
     ??_R4?$PStack@VPStringStream@@@@6B@ @12100 NONAME
-    ??_R4?$PStringDictionary@VPOrdinalKey@@@@6B@ @12101 NONAME
+    ??_R4?$PStringDictionary@V?$PKey@H@@@@6B@ @24123 NONAME
     ??_R4?$PStringDictionary@VPString@@@@6B@ @12102 NONAME
     ??_R4?$PThreadFunctor@UAllocateSocketFunctor@@@@6B@ @12103 NONAME
     ??_R4?$PThreadLocalStorage@UThreadLocalInfo@PTraceInfo@@@@6B@ @12104 NONAME
@@ -12625,7 +12610,6 @@ EXPORTS
     ??_R4PNullChannel@@6BPObject@@@ @12519 NONAME
     ??_R4PObject@@6B@ @12520 NONAME
     ??_R4PODBC@@6B@ @12521 NONAME
-    ??_R4POrdinalKey@@6B@ @12522 NONAME
     ??_R4POrdinalToString@@6B@ @12523 NONAME
     ??_R4PPER_Stream@@6B@ @12524 NONAME
     ??_R4PPipeChannel@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @12525 NONAME
@@ -13426,7 +13410,6 @@ EXPORTS
     ?AsInteger@PString@@QBEJI@Z @13302 NONAME
     ?AsInteger@PVarType@@QBEHXZ @13303 NONAME
     ?ASNTypeToType@PASNObject@@1PAEA @13304 NONAME
-    ?AsNumeric@PIPSocket@@SAIVAddress@1@@Z @13305 NONAME
     ?AsReal@PString@@QBENXZ @13306 NONAME
     ?Assign@PSafePtrBase@@UAEXABV1@@Z @13307 NONAME
     ?Assign@PSafePtrBase@@UAEXABVPSafeCollection@@@Z @13308 NONAME
@@ -13549,7 +13532,7 @@ EXPORTS
     ?begin@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QBE?AV?$_Const_iterator@$00@12@XZ @13427 NONAME
     ?begin@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE?AV?$_Iterator@$00@12@XZ @13428 NONAME
     ?begin@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAE?AV?$_Iterator@$00@12@XZ @13430 NONAME
-    ?begin@?$PDictionary@VPOrdinalKey@@VPString@@@@QAE?AViterator@1@XZ @13431 NONAME
+    ?begin@?$PDictionary@V?$PKey@H@@VPString@@@@QAE?AViterator@1@XZ @24124 NONAME
     ?begin@?$PDictionary@VPString@@V1@@@QAE?AViterator@1@XZ @13432 NONAME
     ?begin@?$PDictionary@VPString@@V1@@@QBE?AVconst_iterator@1@XZ @13433 NONAME
     ?begin@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QAE?AViterator@1@XZ @13434 NONAME
@@ -13778,7 +13761,6 @@ EXPORTS
     ?Class@?$PArray@VPWaveBuffer@@@@SAPBDXZ @13657 NONAME
     ?Class@?$PArray@VPXMLObject@@@@SAPBDXZ @13658 NONAME
     ?Class@?$PArray@VPXMLRPCVariableBase@@@@SAPBDXZ @13659 NONAME
-    ?Class@?$PArray@VRouteEntry@PIPSocket@@@@SAPBDXZ @13660 NONAME
     ?Class@?$PArray@VTextValue@PvCard@@@@SAPBDXZ @13661 NONAME
     ?Class@?$PBaseArray@D@@SAPBDXZ @13662 NONAME
     ?Class@?$PBaseArray@E@@SAPBDXZ @13663 NONAME
@@ -13793,18 +13775,19 @@ EXPORTS
     ?Class@?$PBaseArray@PAVPObject@@@@SAPBDXZ @13672 NONAME
     ?Class@?$PBaseArray@PBD@@SAPBDXZ @13673 NONAME
     ?Class@?$PBaseArray@_W@@SAPBDXZ @13674 NONAME
+    ?Class@?$PDictionary@V?$PKey@H@@VPString@@@@SAPBDXZ @24125 NONAME
     ?Class@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@SAPBDXZ @13675 NONAME
     ?Class@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@SAPBDXZ @13676 NONAME
     ?Class@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@SAPBDXZ @13677 NONAME
-    ?Class@?$PDictionary@VPOrdinalKey@@VPString@@@@SAPBDXZ @13678 NONAME
     ?Class@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@SAPBDXZ @13679 NONAME
     ?Class@?$PDictionary@VPString@@V1@@@SAPBDXZ @13680 NONAME
+    ?Class@?$PDictionary@VPString@@V?$PKey@H@@@@SAPBDXZ @24126 NONAME
     ?Class@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@SAPBDXZ @13681 NONAME
     ?Class@?$PDictionary@VPString@@VPDynaLink@@@@SAPBDXZ @13682 NONAME
     ?Class@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@SAPBDXZ @13683 NONAME
-    ?Class@?$PDictionary@VPString@@VPOrdinalKey@@@@SAPBDXZ @13684 NONAME
     ?Class@?$PDictionary@VPString@@VPresence@XMPP@@@@SAPBDXZ @13685 NONAME
     ?Class@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@SAPBDXZ @13686 NONAME
+    ?Class@?$PKey@H@@SAPBDXZ @24127 NONAME
     ?Class@?$PList@V?$PNotifierTemplate@H@@@@SAPBDXZ @13687 NONAME
     ?Class@?$PList@VIdentity@Disco@XMPP@@@@SAPBDXZ @13688 NONAME
     ?Class@?$PList@VItem@Disco@XMPP@@@@SAPBDXZ @13689 NONAME
@@ -13842,7 +13825,7 @@ EXPORTS
     ?Class@?$PSortedList@VSRVRecord@PDNS@@@@SAPBDXZ @13719 NONAME
     ?Class@?$PSortedList@VUser@MUC@XMPP@@@@SAPBDXZ @13720 NONAME
     ?Class@?$PStack@VPStringStream@@@@SAPBDXZ @13721 NONAME
-    ?Class@?$PStringDictionary@VPOrdinalKey@@@@SAPBDXZ @13722 NONAME
+    ?Class@?$PStringDictionary@V?$PKey@H@@@@SAPBDXZ @24128 NONAME
     ?Class@?$PStringDictionary@VPString@@@@SAPBDXZ @13723 NONAME
     ?Class@?$PThreadFunctor@UAllocateSocketFunctor@@@@SAPBDXZ @13724 NONAME
     ?Class@?$PThreadObj@VPEthSocketThread@@@@SAPBDXZ @13725 NONAME
@@ -14029,7 +14012,6 @@ EXPORTS
     ?Class@PNullChannel@@SAPBDXZ @13904 NONAME
     ?Class@PObject@@SAPBDXZ @13905 NONAME
     ?Class@PODBC@@SAPBDXZ @13906 NONAME
-    ?Class@POrdinalKey@@SAPBDXZ @13907 NONAME
     ?Class@POrdinalToString@@SAPBDXZ @13908 NONAME
     ?Class@PPER_Stream@@SAPBDXZ @13909 NONAME
     ?Class@PPipeChannel@@SAPBDXZ @13910 NONAME
@@ -14317,7 +14299,6 @@ EXPORTS
     ?Clone@?$PArray@VPWaveBuffer@@@@UBEPAVPObject@@XZ @14192 NONAME
     ?Clone@?$PArray@VPXMLObject@@@@UBEPAVPObject@@XZ @14193 NONAME
     ?Clone@?$PArray@VPXMLRPCVariableBase@@@@UBEPAVPObject@@XZ @14194 NONAME
-    ?Clone@?$PArray@VRouteEntry@PIPSocket@@@@UBEPAVPObject@@XZ @14195 NONAME
     ?Clone@?$PArray@VTextValue@PvCard@@@@UBEPAVPObject@@XZ @14196 NONAME
     ?Clone@?$PBaseArray@D@@UBEPAVPObject@@XZ @14197 NONAME
     ?Clone@?$PBaseArray@E@@UBEPAVPObject@@XZ @14198 NONAME
@@ -14332,18 +14313,19 @@ EXPORTS
     ?Clone@?$PBaseArray@PAVPObject@@@@UBEPAVPObject@@XZ @14207 NONAME
     ?Clone@?$PBaseArray@PBD@@UBEPAVPObject@@XZ @14208 NONAME
     ?Clone@?$PBaseArray@_W@@UBEPAVPObject@@XZ @14209 NONAME
+    ?Clone@?$PDictionary@V?$PKey@H@@VPString@@@@UBEPAVPObject@@XZ @24129 NONAME
     ?Clone@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UBEPAVPObject@@XZ @14210 NONAME
     ?Clone@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEPAVPObject@@XZ @14211 NONAME
     ?Clone@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBEPAVPObject@@XZ @14212 NONAME
-    ?Clone@?$PDictionary@VPOrdinalKey@@VPString@@@@UBEPAVPObject@@XZ @14213 NONAME
     ?Clone@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UBEPAVPObject@@XZ @14214 NONAME
     ?Clone@?$PDictionary@VPString@@V1@@@UBEPAVPObject@@XZ @14215 NONAME
+    ?Clone@?$PDictionary@VPString@@V?$PKey@H@@@@UBEPAVPObject@@XZ @24130 NONAME
     ?Clone@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UBEPAVPObject@@XZ @14216 NONAME
     ?Clone@?$PDictionary@VPString@@VPDynaLink@@@@UBEPAVPObject@@XZ @14217 NONAME
     ?Clone@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UBEPAVPObject@@XZ @14218 NONAME
-    ?Clone@?$PDictionary@VPString@@VPOrdinalKey@@@@UBEPAVPObject@@XZ @14219 NONAME
     ?Clone@?$PDictionary@VPString@@VPresence@XMPP@@@@UBEPAVPObject@@XZ @14220 NONAME
     ?Clone@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UBEPAVPObject@@XZ @14221 NONAME
+    ?Clone@?$PKey@H@@UBEPAVPObject@@XZ @24131 NONAME
     ?Clone@?$PList@V?$PNotifierTemplate@H@@@@UBEPAVPObject@@XZ @14222 NONAME
     ?Clone@?$PList@VIdentity@Disco@XMPP@@@@UBEPAVPObject@@XZ @14223 NONAME
     ?Clone@?$PList@VItem@Disco@XMPP@@@@UBEPAVPObject@@XZ @14224 NONAME
@@ -14373,7 +14355,7 @@ EXPORTS
     ?Clone@?$PSortedList@VSRVRecord@PDNS@@@@UBEPAVPObject@@XZ @14248 NONAME
     ?Clone@?$PSortedList@VUser@MUC@XMPP@@@@UBEPAVPObject@@XZ @14249 NONAME
     ?Clone@?$PStack@VPStringStream@@@@UBEPAVPObject@@XZ @14250 NONAME
-    ?Clone@?$PStringDictionary@VPOrdinalKey@@@@UBEPAVPObject@@XZ @14251 NONAME
+    ?Clone@?$PStringDictionary@V?$PKey@H@@@@UBEPAVPObject@@XZ @24132 NONAME
     ?Clone@?$PStringDictionary@VPString@@@@UBEPAVPObject@@XZ @14252 NONAME
     ?Clone@Address@PIPSocket@@UBEPAVPObject@@XZ @14253 NONAME
     ?Clone@BareJID@XMPP@@UBEPAVPObject@@XZ @14254 NONAME
@@ -14417,7 +14399,6 @@ EXPORTS
     ?Clone@PHTTPSimpleAuth@@UBEPAVPObject@@XZ @14292 NONAME
     ?Clone@PIPCacheKey@@UBEPAVPObject@@XZ @14293 NONAME
     ?Clone@PObject@@UBEPAV1@XZ @14294 NONAME
-    ?Clone@POrdinalKey@@UBEPAVPObject@@XZ @14295 NONAME
     ?Clone@POrdinalToString@@UBEPAVPObject@@XZ @14296 NONAME
     ?Clone@PRFC1155_ApplicationSyntax@@UBEPAVPObject@@XZ @14297 NONAME
     ?Clone@PRFC1155_Counter@@UBEPAVPObject@@XZ @14298 NONAME
@@ -14551,6 +14532,7 @@ EXPORTS
     ?Commit@Statement@PODBC@@QAE_NI@Z @14423 NONAME
     ?CommonDecode@PASN_ObjectId@@QAE_NAAVPASN_Stream@@I@Z @14424 NONAME
     ?CommonEncode@PASN_ObjectId@@QBEXAAVPBYTEArray@@@Z @14425 NONAME
+    ?Compare@?$PKey@H@@UBE?AW4Comparison@PObject@@ABV3@@Z @24133 NONAME
     ?Compare@Address@PIPSocket@@UBE?AW4Comparison@PObject@@ABV4@@Z @14426 NONAME
     ?Compare@BareJID@XMPP@@UBE?AW4Comparison@PObject@@ABV4@@Z @14427 NONAME
     ?Compare@JID@XMPP@@UBE?AW4Comparison@PObject@@ABV4@@Z @14428 NONAME
@@ -14584,7 +14566,6 @@ EXPORTS
     ?Compare@PIpAccessControlEntry@@UBE?AW4Comparison@PObject@@ABV3@@Z @14456 NONAME
     ?Compare@PMemoryFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @14457 NONAME
     ?Compare@PObject@@UBE?AW4Comparison@1@ABV1@@Z @14458 NONAME
-    ?Compare@POrdinalKey@@UBE?AW4Comparison@PObject@@ABV3@@Z @14459 NONAME
     ?Compare@PPipeChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @14460 NONAME
     ?Compare@PProcess@@UBE?AW4Comparison@PObject@@ABV3@@Z @14461 NONAME
     ?Compare@PRemoteConnection@@UBE?AW4Comparison@PObject@@ABV3@@Z @14462 NONAME
@@ -14621,7 +14602,6 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PArray@VPWaveBuffer@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14492 NONAME
     ?CompareObjectMemoryDirect@?$PArray@VPXMLObject@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14493 NONAME
     ?CompareObjectMemoryDirect@?$PArray@VPXMLRPCVariableBase@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14494 NONAME
-    ?CompareObjectMemoryDirect@?$PArray@VRouteEntry@PIPSocket@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14495 NONAME
     ?CompareObjectMemoryDirect@?$PArray@VTextValue@PvCard@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14496 NONAME
     ?CompareObjectMemoryDirect@?$PBaseArray@D@@UBE?AW4Comparison@PObject@@ABV3@@Z @14497 NONAME
     ?CompareObjectMemoryDirect@?$PBaseArray@E@@UBE?AW4Comparison@PObject@@ABV3@@Z @14498 NONAME
@@ -14636,18 +14616,19 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PBaseArray@PAVPObject@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14507 NONAME
     ?CompareObjectMemoryDirect@?$PBaseArray@PBD@@UBE?AW4Comparison@PObject@@ABV3@@Z @14508 NONAME
     ?CompareObjectMemoryDirect@?$PBaseArray@_W@@UBE?AW4Comparison@PObject@@ABV3@@Z @14509 NONAME
+    ?CompareObjectMemoryDirect@?$PDictionary@V?$PKey@H@@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @24134 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14510 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14511 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14512 NONAME
-    ?CompareObjectMemoryDirect@?$PDictionary@VPOrdinalKey@@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14513 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14514 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPString@@V1@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14515 NONAME
+    ?CompareObjectMemoryDirect@?$PDictionary@VPString@@V?$PKey@H@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @24135 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14516 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPString@@VPDynaLink@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14517 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14518 NONAME
-    ?CompareObjectMemoryDirect@?$PDictionary@VPString@@VPOrdinalKey@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14519 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPString@@VPresence@XMPP@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14520 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14521 NONAME
+    ?CompareObjectMemoryDirect@?$PKey@H@@UBE?AW4Comparison@PObject@@ABV3@@Z @24136 NONAME
     ?CompareObjectMemoryDirect@?$PList@V?$PNotifierTemplate@H@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14522 NONAME
     ?CompareObjectMemoryDirect@?$PList@VIdentity@Disco@XMPP@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14523 NONAME
     ?CompareObjectMemoryDirect@?$PList@VItem@Disco@XMPP@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14524 NONAME
@@ -14685,7 +14666,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PSortedList@VSRVRecord@PDNS@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14554 NONAME
     ?CompareObjectMemoryDirect@?$PSortedList@VUser@MUC@XMPP@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14555 NONAME
     ?CompareObjectMemoryDirect@?$PStack@VPStringStream@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14556 NONAME
-    ?CompareObjectMemoryDirect@?$PStringDictionary@VPOrdinalKey@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14557 NONAME
+    ?CompareObjectMemoryDirect@?$PStringDictionary@V?$PKey@H@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @24137 NONAME
     ?CompareObjectMemoryDirect@?$PStringDictionary@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14558 NONAME
     ?CompareObjectMemoryDirect@?$PThreadFunctor@UAllocateSocketFunctor@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14559 NONAME
     ?CompareObjectMemoryDirect@?$PThreadObj@VPEthSocketThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @14560 NONAME
@@ -14872,7 +14853,6 @@ EXPORTS
     ?CompareObjectMemoryDirect@PNullChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @14741 NONAME
     ?CompareObjectMemoryDirect@PObject@@UBE?AW4Comparison@1@ABV1@@Z @14742 NONAME
     ?CompareObjectMemoryDirect@PODBC@@UBE?AW4Comparison@PObject@@ABV3@@Z @14743 NONAME
-    ?CompareObjectMemoryDirect@POrdinalKey@@UBE?AW4Comparison@PObject@@ABV3@@Z @14744 NONAME
     ?CompareObjectMemoryDirect@POrdinalToString@@UBE?AW4Comparison@PObject@@ABV3@@Z @14745 NONAME
     ?CompareObjectMemoryDirect@PPER_Stream@@UBE?AW4Comparison@PObject@@ABV3@@Z @14746 NONAME
     ?CompareObjectMemoryDirect@PPipeChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @14747 NONAME
@@ -16184,7 +16164,7 @@ EXPORTS
     ?end@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE?AV?$_Iterator@$00@12@XZ @16033 NONAME
     ?end@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE?AV?$_Iterator@$00@12@XZ @16034 NONAME
     ?end@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAE?AV?$_Iterator@$00@12@XZ @16035 NONAME
-    ?end@?$PDictionary@VPOrdinalKey@@VPString@@@@QAE?AViterator@1@XZ @16036 NONAME
+    ?end@?$PDictionary@V?$PKey@H@@VPString@@@@QAE?AViterator@1@XZ @24138 NONAME
     ?end@?$PDictionary@VPString@@V1@@@QAE?AViterator@1@XZ @16037 NONAME
     ?end@?$PDictionary@VPString@@V1@@@QBE?AVconst_iterator@1@XZ @16038 NONAME
     ?end@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@QAE?AViterator@1@XZ @16039 NONAME
@@ -16615,7 +16595,7 @@ EXPORTS
     ?GetAllNames@PHTTPCompositeField@@UBEXAAVPStringArray@@@Z @16455 NONAME
     ?GetAllNames@PHTTPField@@UBEXAAVPStringArray@@@Z @16456 NONAME
     ?GetAndLockVXMLChannel@PVXMLSession@@QAEPAVPVXMLChannel@@XZ @16457 NONAME
-    ?GetAny@Address@PIPSocket@@SAABV12@H@Z @16458 NONAME
+    ?GetAny@Address@PIPSocket@@SAABV12@I@Z @24139 NONAME
     ?GetArguments@PProcess@@QAEAAVPArgList@@XZ @16459 NONAME
     ?GetASNHeaderLength@PASNObject@@SAGG@Z @16460 NONAME
     ?GetASNIntegerLength@PASNObject@@SAGH@Z @16461 NONAME
@@ -16639,16 +16619,16 @@ EXPORTS
     ?GetAt@?$PBaseArray@PAVPObject@@@@QBEPAVPObject@@H@Z @16479 NONAME
     ?GetAt@?$PBaseArray@PBD@@QBEPBDH@Z @16480 NONAME
     ?GetAt@?$PBaseArray@_W@@QBE_WH@Z @16481 NONAME
+    ?GetAt@?$PDictionary@V?$PKey@H@@VPString@@@@UBEPAVPString@@ABV?$PKey@H@@@Z @24140 NONAME
     ?GetAt@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UBEPAV?$PNotifierListTemplate@H@@ABVJID@XMPP@@@Z @16482 NONAME
     ?GetAt@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEPAVPIPCacheData@@ABVPCaselessString@@@Z @16483 NONAME
     ?GetAt@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBEPAVPIPCacheData@@ABVPIPCacheKey@@@Z @16484 NONAME
-    ?GetAt@?$PDictionary@VPOrdinalKey@@VPString@@@@UBEPAVPString@@ABVPOrdinalKey@@@Z @16485 NONAME
     ?GetAt@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UBEPAVPRFC1155_ObjectSyntax@@ABVPRFC1155_ObjectName@@@Z @16486 NONAME
     ?GetAt@?$PDictionary@VPString@@V1@@@UBEPAVPString@@ABV2@@Z @16487 NONAME
+    ?GetAt@?$PDictionary@VPString@@V?$PKey@H@@@@UBEPAV?$PKey@H@@ABVPString@@@Z @24141 NONAME
     ?GetAt@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UBEPAV?$PNotifierListTemplate@H@@ABVPString@@@Z @16488 NONAME
     ?GetAt@?$PDictionary@VPString@@VPDynaLink@@@@UBEPAVPDynaLink@@ABVPString@@@Z @16489 NONAME
     ?GetAt@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UBEPAVPLDAPAttributeBase@@ABVPString@@@Z @16490 NONAME
-    ?GetAt@?$PDictionary@VPString@@VPOrdinalKey@@@@UBEPAVPOrdinalKey@@ABVPString@@@Z @16491 NONAME
     ?GetAt@?$PDictionary@VPString@@VPresence@XMPP@@@@UBEPAVPresence@XMPP@@ABVPString@@@Z @16492 NONAME
     ?GetAt@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UBEPAVPXMLRPCVariableBase@@ABVPString@@@Z @16493 NONAME
     ?GetAt@PAbstractDictionary@@UBEPAVPObject@@H@Z @16494 NONAME
@@ -16698,7 +16678,7 @@ EXPORTS
     ?GetBoolean@PLua@@UAE_NABVPString@@@Z @16538 NONAME
     ?GetBoolean@PStringOptions@@QBE_NABVPCaselessString@@_N@Z @16539 NONAME
     ?GetBrightness@PVideoDevice@@EAEHXZ @16540 NONAME
-    ?GetBroadcast@Address@PIPSocket@@SA?BV12@H@Z @16541 NONAME
+    ?GetBroadcast@Address@PIPSocket@@SA?BV12@I@Z @24142 NONAME
     ?GetBuffer@PHTTPClient_BinaryProcessor@@UAEPAXAAH@Z @16542 NONAME
     ?GetBuffer@PHTTPClient_DummyProcessor@@UAEPAXAAH@Z @16543 NONAME
     ?GetBuffer@PHTTPClient_StringProcessor@@UAEPAXAAH@Z @16544 NONAME
@@ -16746,7 +16726,6 @@ EXPORTS
     ?GetClass@?$PArray@VPWaveBuffer@@@@UBEPBDI@Z @16582 NONAME
     ?GetClass@?$PArray@VPXMLObject@@@@UBEPBDI@Z @16583 NONAME
     ?GetClass@?$PArray@VPXMLRPCVariableBase@@@@UBEPBDI@Z @16584 NONAME
-    ?GetClass@?$PArray@VRouteEntry@PIPSocket@@@@UBEPBDI@Z @16585 NONAME
     ?GetClass@?$PArray@VTextValue@PvCard@@@@UBEPBDI@Z @16586 NONAME
     ?GetClass@?$PBaseArray@D@@UBEPBDI@Z @16587 NONAME
     ?GetClass@?$PBaseArray@E@@UBEPBDI@Z @16588 NONAME
@@ -16761,18 +16740,19 @@ EXPORTS
     ?GetClass@?$PBaseArray@PAVPObject@@@@UBEPBDI@Z @16597 NONAME
     ?GetClass@?$PBaseArray@PBD@@UBEPBDI@Z @16598 NONAME
     ?GetClass@?$PBaseArray@_W@@UBEPBDI@Z @16599 NONAME
+    ?GetClass@?$PDictionary@V?$PKey@H@@VPString@@@@UBEPBDI@Z @24143 NONAME
     ?GetClass@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UBEPBDI@Z @16600 NONAME
     ?GetClass@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBEPBDI@Z @16601 NONAME
     ?GetClass@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBEPBDI@Z @16602 NONAME
-    ?GetClass@?$PDictionary@VPOrdinalKey@@VPString@@@@UBEPBDI@Z @16603 NONAME
     ?GetClass@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UBEPBDI@Z @16604 NONAME
     ?GetClass@?$PDictionary@VPString@@V1@@@UBEPBDI@Z @16605 NONAME
+    ?GetClass@?$PDictionary@VPString@@V?$PKey@H@@@@UBEPBDI@Z @24144 NONAME
     ?GetClass@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UBEPBDI@Z @16606 NONAME
     ?GetClass@?$PDictionary@VPString@@VPDynaLink@@@@UBEPBDI@Z @16607 NONAME
     ?GetClass@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UBEPBDI@Z @16608 NONAME
-    ?GetClass@?$PDictionary@VPString@@VPOrdinalKey@@@@UBEPBDI@Z @16609 NONAME
     ?GetClass@?$PDictionary@VPString@@VPresence@XMPP@@@@UBEPBDI@Z @16610 NONAME
     ?GetClass@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UBEPBDI@Z @16611 NONAME
+    ?GetClass@?$PKey@H@@UBEPBDI@Z @24145 NONAME
     ?GetClass@?$PList@V?$PNotifierTemplate@H@@@@UBEPBDI@Z @16612 NONAME
     ?GetClass@?$PList@VIdentity@Disco@XMPP@@@@UBEPBDI@Z @16613 NONAME
     ?GetClass@?$PList@VItem@Disco@XMPP@@@@UBEPBDI@Z @16614 NONAME
@@ -16810,7 +16790,7 @@ EXPORTS
     ?GetClass@?$PSortedList@VSRVRecord@PDNS@@@@UBEPBDI@Z @16644 NONAME
     ?GetClass@?$PSortedList@VUser@MUC@XMPP@@@@UBEPBDI@Z @16645 NONAME
     ?GetClass@?$PStack@VPStringStream@@@@UBEPBDI@Z @16646 NONAME
-    ?GetClass@?$PStringDictionary@VPOrdinalKey@@@@UBEPBDI@Z @16647 NONAME
+    ?GetClass@?$PStringDictionary@V?$PKey@H@@@@UBEPBDI@Z @24146 NONAME
     ?GetClass@?$PStringDictionary@VPString@@@@UBEPBDI@Z @16648 NONAME
     ?GetClass@?$PThreadFunctor@UAllocateSocketFunctor@@@@UBEPBDI@Z @16649 NONAME
     ?GetClass@?$PThreadObj@VPEthSocketThread@@@@UBEPBDI@Z @16650 NONAME
@@ -16997,7 +16977,6 @@ EXPORTS
     ?GetClass@PNullChannel@@UBEPBDI@Z @16831 NONAME
     ?GetClass@PObject@@UBEPBDI@Z @16832 NONAME
     ?GetClass@PODBC@@UBEPBDI@Z @16833 NONAME
-    ?GetClass@POrdinalKey@@UBEPBDI@Z @16834 NONAME
     ?GetClass@POrdinalToString@@UBEPBDI@Z @16835 NONAME
     ?GetClass@PPER_Stream@@UBEPBDI@Z @16836 NONAME
     ?GetClass@PPipeChannel@@UBEPBDI@Z @16837 NONAME
@@ -17291,6 +17270,8 @@ EXPORTS
     ?GetDefaultIpAddressFamily@PIPSocket@@SAHXZ @17127 NONAME
     ?GetDefaultIpAny@PIPSocket@@SAABVAddress@1@XZ @17128 NONAME
     ?GetDefaultNamespace@PXMLElement@@QBE_NAAVPCaselessString@@@Z @17129 NONAME
+    ?GetDefaultPort@PURLLegacyScheme@@UBEGXZ @24147 NONAME
+    ?GetDefaultPort@PURLScheme@@UBEGXZ @24148 NONAME
     ?GetDefaultSection@PConfig@@UBE?AVPString@@XZ @17131 NONAME
     ?GetDefaultService@PInternetProtocol@@QBEABVPString@@XZ @17132 NONAME
     ?GetDeinitString@PModem@@QBE?AVPString@@XZ @17133 NONAME
@@ -17517,9 +17498,9 @@ EXPORTS
     ?GetFromSystem@HostSystemURLHandlerInfo@PProcess@@QAE_NXZ @17350 NONAME
     ?GetFunction@PDynaLink@@QAE_NABVPString@@AAP6AXXZ@Z @17351 NONAME
     ?GetFunction@PDynaLink@@QAE_NHAAP6AXXZ@Z @17352 NONAME
-    ?GetGatewayAddress@PIPSocket@@SA_NAAVAddress@1@H@Z @17353 NONAME
-    ?GetGatewayInterface@PIPSocket@@SA?AVPString@@H@Z @17354 NONAME
-    ?GetGatewayInterfaceAddress@PIPSocket@@SA?AVAddress@1@H@Z @17355 NONAME
+    ?GetGatewayAddress@PIPSocket@@SA?AVAddress@1@I@Z @24149 NONAME
+    ?GetGatewayInterface@PIPSocket@@SA?AVPString@@I@Z @24150 NONAME
+    ?GetGatewayInterfaceAddress@PIPSocket@@SA?AVAddress@1@I@Z @24151 NONAME
     ?GetGoodbyeString@PFTPServer@@UBE?AVPString@@ABV2@@Z @17356 NONAME
     ?GetGrabHeight@PVideoChannel@@UAEHXZ @17357 NONAME
     ?GetGrabWidth@PVideoChannel@@UAEHXZ @17358 NONAME
@@ -17609,9 +17590,9 @@ EXPORTS
     ?GetInteger@PLua@@UAEHABVPString@@@Z @17440 NONAME
     ?GetInteger@PStringOptions@@QBEJABVPCaselessString@@J@Z @17441 NONAME
     ?GetInteger@PStringOptions@@QBEJP6AABVPCaselessString@@XZJ@Z @17442 NONAME
-    ?GetInterface@PIPSocket@@SA?AVPString@@VAddress@1@@Z @17443 NONAME
+    ?GetInterface@PIPSocket@@SA?AVPString@@ABVAddress@1@@Z @24152 NONAME
     ?GetInterface@PMonitoredSocketChannel@@QAE?AVPString@@XZ @17444 NONAME
-    ?GetInterface@RouteEntry@PIPSocket@@QBEABVPString@@XZ @17445 NONAME
+    ?GetInterfaceAddress@PIPSocket@@SA?AVAddress@1@ABVPString@@I@Z @24153 NONAME
     ?GetInterfaceAddress@PNatMethod@@UBE_NAAVAddress@PIPSocket@@@Z @23713 NONAME
     ?GetInterfaceAddress@PNatMethod_Fixed@@UBE_NAAVAddress@PIPSocket@@@Z @23714 NONAME
     ?GetInterfaceAddress@PSTUNClient@@UBE_NAAVAddress@PIPSocket@@@Z @17447 NONAME
@@ -17684,7 +17665,7 @@ EXPORTS
     ?GetLocalAddress@PSocksUDPSocket@@UAE_NAAVAddress@PIPSocket@@AAG@Z @17514 NONAME
     ?GetLocalHostName@PIPSocket@@QAE?AVPString@@XZ @17515 NONAME
     ?GetLogLevel@PServiceProcess@@QBE?AW4Level@PSystemLog@@XZ @17516 NONAME
-    ?GetLoopback@Address@PIPSocket@@SAABV12@H@Z @17517 NONAME
+    ?GetLoopback@Address@PIPSocket@@SAABV12@I@Z @24154 NONAME
     ?GetMACAddress@InterfaceEntry@PIPSocket@@QBEABVPString@@XZ @17518 NONAME
     ?GetMacroKeyword@PHTTPServiceProcess@@QBEABVPString@@XZ @17519 NONAME
     ?GetMajorVersion@PHTTPConnectionInfo@@QBEHXZ @17520 NONAME
@@ -17768,9 +17749,7 @@ EXPORTS
     ?GetNatTypeName@PNatMethod@@QAE?AVPString@@_N@Z @17597 NONAME
     ?GetNatTypeString@PNatMethod@@SA?AVPString@@W4NatTypes@1@@Z @17598 NONAME
     ?GetNest@PReadWriteMutex@@IAEPAUNest@1@XZ @17599 NONAME
-    ?GetNetMask@RouteEntry@PIPSocket@@QBE?AVAddress@2@XZ @17600 NONAME
-    ?GetNetwork@RouteEntry@PIPSocket@@QBE?AVAddress@2@XZ @17601 NONAME
-    ?GetNetworkInterface@PIPSocket@@SA_NAAVAddress@1@@Z @17602 NONAME
+    ?GetNetworkInterface@PIPSocket@@SA?AVAddress@1@I@Z @24155 NONAME
     ?GetNewLine@PCLI@@QBEABVPString@@XZ @17603 NONAME
     ?GetNewTimerId@PTimerList@@QBEIXZ @17604 NONAME
     ?GetNext@MXRecordList@PDNS@@QAEPAVMXRecord@2@XZ @17605 NONAME
@@ -17988,7 +17967,6 @@ EXPORTS
     ?GetRing@PSerialChannel@@QAE_NXZ @17822 NONAME
     ?GetRoot@PDirectory@@QBE?AV1@XZ @17823 NONAME
     ?GetRootElement@PXML@@QBEPAVPXMLElement@@XZ @17824 NONAME
-    ?GetRouteAddress@PIPSocket@@SA?AVAddress@1@V21@@Z @17825 NONAME
     ?GetRouteInterfaceAddress@PIPSocket@@SA?AVAddress@1@V21@@Z @17826 NONAME
     ?GetRouteTable@PIPSocket@@SA_NAAV?$PArray@VRouteEntry@PIPSocket@@@@@Z @17827 NONAME
     ?GetRTPSupport@PNatMethod@@UAE?AW4RTPSupportTypes@1@_N@Z @23733 NONAME
@@ -18345,11 +18323,11 @@ EXPORTS
     ?HasExpired@PSimpleTimer@@QBE_NXZ @18182 NONAME
     ?Hash@?$PHMACTemplate@VPMessageDigestSHA1@@@@UAEXPBEHAAVResult@PMessageDigest@@@Z @18183 NONAME
     ?HasHeapObjectTag@Internals@internal@v8@@SA_NPAVObject@23@@Z @18184 NONAME
+    ?HashFunction@?$PKey@H@@UBEHXZ @24156 NONAME
     ?HashFunction@PChannel@@UBEHXZ @18185 NONAME
     ?HashFunction@PGloballyUniqueID@@UBEHXZ @18186 NONAME
     ?HashFunction@PIPCacheKey@@UBEHXZ @18187 NONAME
     ?HashFunction@PObject@@UBEHXZ @18188 NONAME
-    ?HashFunction@POrdinalKey@@UBEHXZ @18189 NONAME
     ?HashFunction@PRemoteConnection@@UBEHXZ @18190 NONAME
     ?HashFunction@PString@@UBEHXZ @18191 NONAME
     ?HashFunction@PURL@@UBEHXZ @18192 NONAME
@@ -18579,7 +18557,6 @@ EXPORTS
     ?InternalIsDescendant@?$PArray@VPWaveBuffer@@@@UBE_NPBD@Z @18415 NONAME
     ?InternalIsDescendant@?$PArray@VPXMLObject@@@@UBE_NPBD@Z @18416 NONAME
     ?InternalIsDescendant@?$PArray@VPXMLRPCVariableBase@@@@UBE_NPBD@Z @18417 NONAME
-    ?InternalIsDescendant@?$PArray@VRouteEntry@PIPSocket@@@@UBE_NPBD@Z @18418 NONAME
     ?InternalIsDescendant@?$PArray@VTextValue@PvCard@@@@UBE_NPBD@Z @18419 NONAME
     ?InternalIsDescendant@?$PBaseArray@D@@UBE_NPBD@Z @18420 NONAME
     ?InternalIsDescendant@?$PBaseArray@E@@UBE_NPBD@Z @18421 NONAME
@@ -18594,18 +18571,19 @@ EXPORTS
     ?InternalIsDescendant@?$PBaseArray@PAVPObject@@@@UBE_NPBD@Z @18430 NONAME
     ?InternalIsDescendant@?$PBaseArray@PBD@@UBE_NPBD@Z @18431 NONAME
     ?InternalIsDescendant@?$PBaseArray@_W@@UBE_NPBD@Z @18432 NONAME
+    ?InternalIsDescendant@?$PDictionary@V?$PKey@H@@VPString@@@@UBE_NPBD@Z @24157 NONAME
     ?InternalIsDescendant@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UBE_NPBD@Z @18433 NONAME
     ?InternalIsDescendant@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UBE_NPBD@Z @18434 NONAME
     ?InternalIsDescendant@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UBE_NPBD@Z @18435 NONAME
-    ?InternalIsDescendant@?$PDictionary@VPOrdinalKey@@VPString@@@@UBE_NPBD@Z @18436 NONAME
     ?InternalIsDescendant@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UBE_NPBD@Z @18437 NONAME
     ?InternalIsDescendant@?$PDictionary@VPString@@V1@@@UBE_NPBD@Z @18438 NONAME
+    ?InternalIsDescendant@?$PDictionary@VPString@@V?$PKey@H@@@@UBE_NPBD@Z @24158 NONAME
     ?InternalIsDescendant@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UBE_NPBD@Z @18439 NONAME
     ?InternalIsDescendant@?$PDictionary@VPString@@VPDynaLink@@@@UBE_NPBD@Z @18440 NONAME
     ?InternalIsDescendant@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UBE_NPBD@Z @18441 NONAME
-    ?InternalIsDescendant@?$PDictionary@VPString@@VPOrdinalKey@@@@UBE_NPBD@Z @18442 NONAME
     ?InternalIsDescendant@?$PDictionary@VPString@@VPresence@XMPP@@@@UBE_NPBD@Z @18443 NONAME
     ?InternalIsDescendant@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UBE_NPBD@Z @18444 NONAME
+    ?InternalIsDescendant@?$PKey@H@@UBE_NPBD@Z @24159 NONAME
     ?InternalIsDescendant@?$PList@V?$PNotifierTemplate@H@@@@UBE_NPBD@Z @18445 NONAME
     ?InternalIsDescendant@?$PList@VIdentity@Disco@XMPP@@@@UBE_NPBD@Z @18446 NONAME
     ?InternalIsDescendant@?$PList@VItem@Disco@XMPP@@@@UBE_NPBD@Z @18447 NONAME
@@ -18643,7 +18621,7 @@ EXPORTS
     ?InternalIsDescendant@?$PSortedList@VSRVRecord@PDNS@@@@UBE_NPBD@Z @18477 NONAME
     ?InternalIsDescendant@?$PSortedList@VUser@MUC@XMPP@@@@UBE_NPBD@Z @18478 NONAME
     ?InternalIsDescendant@?$PStack@VPStringStream@@@@UBE_NPBD@Z @18479 NONAME
-    ?InternalIsDescendant@?$PStringDictionary@VPOrdinalKey@@@@UBE_NPBD@Z @18480 NONAME
+    ?InternalIsDescendant@?$PStringDictionary@V?$PKey@H@@@@UBE_NPBD@Z @24160 NONAME
     ?InternalIsDescendant@?$PStringDictionary@VPString@@@@UBE_NPBD@Z @18481 NONAME
     ?InternalIsDescendant@?$PThreadFunctor@UAllocateSocketFunctor@@@@UBE_NPBD@Z @18482 NONAME
     ?InternalIsDescendant@?$PThreadObj@VPEthSocketThread@@@@UBE_NPBD@Z @18483 NONAME
@@ -18830,7 +18808,6 @@ EXPORTS
     ?InternalIsDescendant@PNullChannel@@UBE_NPBD@Z @18664 NONAME
     ?InternalIsDescendant@PObject@@UBE_NPBD@Z @18665 NONAME
     ?InternalIsDescendant@PODBC@@UBE_NPBD@Z @18666 NONAME
-    ?InternalIsDescendant@POrdinalKey@@UBE_NPBD@Z @18667 NONAME
     ?InternalIsDescendant@POrdinalToString@@UBE_NPBD@Z @18668 NONAME
     ?InternalIsDescendant@PPER_Stream@@UBE_NPBD@Z @18669 NONAME
     ?InternalIsDescendant@PPipeChannel@@UBE_NPBD@Z @18670 NONAME
@@ -19110,7 +19087,6 @@ EXPORTS
     ?IsActive@PHTTPAuthority@@UBE_NXZ @18946 NONAME
     ?IsActive@PHTTPMultiSimpAuth@@UBE_NXZ @18947 NONAME
     ?IsActive@PHTTPSimpleAuth@@UBE_NXZ @18948 NONAME
-    ?IsAddressReachable@PIPSocket@@SA_NVAddress@1@00@Z @18949 NONAME
     ?IsAligned@PPER_Stream@@QBE_NXZ @18950 NONAME
     ?IsAllowed@PIpAccessControlEntry@@QBE_NXZ @18951 NONAME
     ?IsAllowed@PIpAccessControlList@@QBE_NAAVPTCPSocket@@@Z @18952 NONAME
@@ -19353,7 +19329,7 @@ EXPORTS
     ?LengthDecode@PPER_Stream@@QAE_NIIAAI@Z @19186 NONAME
     ?LengthEncode@PPER_Stream@@QAEXIII@Z @19187 NONAME
     ?LevelFromInt@PSystemLog@@SA?AW4Level@1@H@Z @23778 NONAME
-    ?levelType@?O@??Output@PSystemLogToEvent@@EAEXW4Level@PSystemLog@@PBD@Z@4QBGB @19188 NONAME
+    ?levelType@?BA@??Output@PSystemLogToEvent@@EAEXW4Level@PSystemLog@@PBD@Z@4QBGB @24161 NONAME
     ?Lines@PString@@QBE?AVPStringArray@@XZ @19189 NONAME
     ?list@PServiceMacro@@1PAV1@A @19190 NONAME
     ?Listen@PCLISocket@@QAE_NG@Z @19191 NONAME
@@ -19700,7 +19676,7 @@ EXPORTS
     ?NewMessage@PRFC822Channel@@QAEXW4Direction@1@@Z @19529 NONAME
     ?NewRow@RecordSet@PODBC@@QAEAAVRow@2@XZ @19530 NONAME
     ?NewWorker@PThreadPoolBase@@UAEPAVWorkerThreadBase@1@XZ @19531 NONAME
-    ?Next@iterator_base@?$PDictionary@VPOrdinalKey@@VPString@@@@IAEXXZ @19532 NONAME
+    ?Next@iterator_base@?$PDictionary@V?$PKey@H@@VPString@@@@IAEXXZ @24162 NONAME
     ?Next@iterator_base@?$PDictionary@VPString@@V1@@@IAEXXZ @19533 NONAME
     ?Next@iterator_base@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAEXXZ @19534 NONAME
     ?Next@iterator_base@?$PList@V?$PNotifierTemplate@H@@@@IAEXXZ @19535 NONAME
@@ -20312,6 +20288,7 @@ EXPORTS
     ?PrintElementOn@?$PBaseArray@PBD@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @20136 NONAME
     ?PrintElementOn@?$PBaseArray@_W@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @20137 NONAME
     ?PrintElementOn@PAbstractArray@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @20138 NONAME
+    ?PrintOn@?$PKey@H@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24163 NONAME
     ?PrintOn@Address@PvCard@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20139 NONAME
     ?PrintOn@EMail@PvCard@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20140 NONAME
     ?PrintOn@InlineValue@PvCard@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20141 NONAME
@@ -20384,7 +20361,6 @@ EXPORTS
     ?PrintOn@PMIMEInfo@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20208 NONAME
     ?PrintOn@PNatMethod@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20209 NONAME
     ?PrintOn@PObject@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20210 NONAME
-    ?PrintOn@POrdinalKey@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20211 NONAME
     ?PrintOn@PRegularExpression@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20212 NONAME
     ?PrintOn@PSafeCollection@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20213 NONAME
     ?PrintOn@PSafePtrBase@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20214 NONAME
@@ -20408,6 +20384,7 @@ EXPORTS
     ?PrintOn@PXMLRPCArrayBase@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20232 NONAME
     ?PrintOn@PXMLRPCStructBase@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20233 NONAME
     ?PrintOn@Result@PMessageDigest@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24053 NONAME
+    ?PrintOn@RouteEntry@PIPSocket@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @24164 NONAME
     ?PrintOn@Separator@PvCard@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20234 NONAME
     ?PrintOn@SRVRecord@PDNS@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20235 NONAME
     ?PrintOn@SRVRecordList@PDNS@@UBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @20236 NONAME
@@ -20469,11 +20446,6 @@ EXPORTS
     ?PTextToSpeech_SAPI_instance@PFactoryLoader@@3V?$Worker@VPTextToSpeech_SAPI@@@?$PFactory@VPTextToSpeech@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @20294 NONAME
     ?PTextToSpeech_SAPI_link@PFactoryLoader@@YAHXZ @20295 NONAME
     ?PTimeToISO8601@PXMLRPC@@SA?AVPString@@ABVPTime@@@Z @20296 NONAME
-    ?Ptr@const_iterator@?$PDictionary@VPString@@V1@@@IBEPBVconst_iterator_pair@2@XZ @20297 NONAME
-    ?Ptr@const_iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IBEPBVconst_iterator_pair@2@XZ @20298 NONAME
-    ?Ptr@iterator@?$PDictionary@VPOrdinalKey@@VPString@@@@IBEPBViterator_pair@2@XZ @20299 NONAME
-    ?Ptr@iterator@?$PDictionary@VPString@@V1@@@IBEPBViterator_pair@2@XZ @20300 NONAME
-    ?Ptr@iterator@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IBEPBViterator_pair@2@XZ @20301 NONAME
     ?Ptr@iterator_base@?$PList@V?$PNotifierTemplate@H@@@@IBEPAV?$PNotifierTemplate@H@@XZ @20302 NONAME
     ?Ptr@iterator_base@?$PList@VIdentity@Disco@XMPP@@@@IBEPAVIdentity@Disco@XMPP@@XZ @20303 NONAME
     ?Ptr@iterator_base@?$PList@VItem@Disco@XMPP@@@@IBEPAVItem@Disco@XMPP@@XZ @20304 NONAME
@@ -20488,8 +20460,10 @@ EXPORTS
     ?Ptr@iterator_base@?$PList@VPThread@@@@IBEPAVPThread@@XZ @20313 NONAME
     ?Ptr@iterator_base@?$PList@VStanza@XMPP@@@@IBEPAVStanza@XMPP@@XZ @20314 NONAME
     ?Ptr@iterator_base@?$PSet@VPString@@@@IBEPAVPString@@XZ @20315 NONAME
+    ?Ptr@PIPAdaptersAddressTable@@QBEPBU_IP_ADAPTER_ADDRESSES_XP@@XZ @24165 NONAME
     ?Ptr@PIPInterfaceAddressTable@@QBEPBU_MIB_IPADDRTABLE@@XZ @20316 NONAME
     ?Ptr@PIPRouteTable@@QBEPBU_MIB_IPFORWARDTABLE@@XZ @20317 NONAME
+    ?Ptr@PIPRouteTableIPv6@@QBEPBU_MIB_IPFORWARD_TABLE2@@XZ @24166 NONAME
     ?PTraceModule@@YAPBDXZ @20318 NONAME
     ?PTraceObjectInstance@@YAPBVPObject@@XZ @20319 NONAME
     ?PTraceObjectInstance@PObject@@QBEPBV1@XZ @20320 NONAME
@@ -20821,16 +20795,16 @@ EXPORTS
     ?RemoveAll@PSNMPVarBindingList@@QAEXXZ @20652 NONAME
     ?RemoveAll@PXML@@QAEXXZ @20653 NONAME
     ?RemoveAllFields@PHTTPForm@@QAEXXZ @20654 NONAME
+    ?RemoveAt@?$PDictionary@V?$PKey@H@@VPString@@@@UAEPAVPString@@ABV?$PKey@H@@@Z @24167 NONAME
     ?RemoveAt@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UAEPAV?$PNotifierListTemplate@H@@ABVJID@XMPP@@@Z @20655 NONAME
     ?RemoveAt@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UAEPAVPIPCacheData@@ABVPCaselessString@@@Z @20656 NONAME
     ?RemoveAt@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UAEPAVPIPCacheData@@ABVPIPCacheKey@@@Z @20657 NONAME
-    ?RemoveAt@?$PDictionary@VPOrdinalKey@@VPString@@@@UAEPAVPString@@ABVPOrdinalKey@@@Z @20658 NONAME
     ?RemoveAt@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UAEPAVPRFC1155_ObjectSyntax@@ABVPRFC1155_ObjectName@@@Z @20659 NONAME
     ?RemoveAt@?$PDictionary@VPString@@V1@@@UAEPAVPString@@ABV2@@Z @20660 NONAME
+    ?RemoveAt@?$PDictionary@VPString@@V?$PKey@H@@@@UAEPAV?$PKey@H@@ABVPString@@@Z @24168 NONAME
     ?RemoveAt@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UAEPAV?$PNotifierListTemplate@H@@ABVPString@@@Z @20661 NONAME
     ?RemoveAt@?$PDictionary@VPString@@VPDynaLink@@@@UAEPAVPDynaLink@@ABVPString@@@Z @20662 NONAME
     ?RemoveAt@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UAEPAVPLDAPAttributeBase@@ABVPString@@@Z @20663 NONAME
-    ?RemoveAt@?$PDictionary@VPString@@VPOrdinalKey@@@@UAEPAVPOrdinalKey@@ABVPString@@@Z @20664 NONAME
     ?RemoveAt@?$PDictionary@VPString@@VPresence@XMPP@@@@UAEPAVPresence@XMPP@@ABVPString@@@Z @20665 NONAME
     ?RemoveAt@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UAEPAVPXMLRPCVariableBase@@ABVPString@@@Z @20666 NONAME
     ?RemoveAt@PAbstractDictionary@@UAEPAVPObject@@H@Z @20667 NONAME
@@ -21035,20 +21009,20 @@ EXPORTS
     ?SetAt@?$PBaseArray@J@@QAE_NHJ@Z @20868 NONAME
     ?SetAt@?$PBaseArray@K@@QAE_NHK@Z @20869 NONAME
     ?SetAt@?$PBaseArray@PAUPHashTableElement@@@@QAE_NHPAUPHashTableElement@@@Z @20870 NONAME
+    ?SetAt@?$PDictionary@V?$PKey@H@@VPString@@@@UAE_NABV?$PKey@H@@PAVPString@@@Z @24169 NONAME
     ?SetAt@?$PDictionary@VJID@XMPP@@V?$PNotifierListTemplate@H@@@@UAE_NABVJID@XMPP@@PAV?$PNotifierListTemplate@H@@@Z @20871 NONAME
     ?SetAt@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UAE_NABVPCaselessString@@PAVPIPCacheData@@@Z @20872 NONAME
     ?SetAt@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UAE_NABVPIPCacheKey@@PAVPIPCacheData@@@Z @20873 NONAME
-    ?SetAt@?$PDictionary@VPOrdinalKey@@VPString@@@@UAE_NABVPOrdinalKey@@PAVPString@@@Z @20874 NONAME
     ?SetAt@?$PDictionary@VPRFC1155_ObjectName@@VPRFC1155_ObjectSyntax@@@@UAE_NABVPRFC1155_ObjectName@@PAVPRFC1155_ObjectSyntax@@@Z @20875 NONAME
     ?SetAt@?$PDictionary@VPString@@V1@@@UAE_NABVPString@@PAV2@@Z @20876 NONAME
+    ?SetAt@?$PDictionary@VPString@@V?$PKey@H@@@@UAE_NABVPString@@PAV?$PKey@H@@@Z @24170 NONAME
     ?SetAt@?$PDictionary@VPString@@V?$PNotifierListTemplate@H@@@@UAE_NABVPString@@PAV?$PNotifierListTemplate@H@@@Z @20877 NONAME
     ?SetAt@?$PDictionary@VPString@@VPDynaLink@@@@UAE_NABVPString@@PAVPDynaLink@@@Z @20878 NONAME
     ?SetAt@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@UAE_NABVPString@@PAVPLDAPAttributeBase@@@Z @20879 NONAME
-    ?SetAt@?$PDictionary@VPString@@VPOrdinalKey@@@@UAE_NABVPString@@PAVPOrdinalKey@@@Z @20880 NONAME
     ?SetAt@?$PDictionary@VPString@@VPresence@XMPP@@@@UAE_NABVPString@@PAVPresence@XMPP@@@Z @20881 NONAME
     ?SetAt@?$PDictionary@VPString@@VPXMLRPCVariableBase@@@@UAE_NABVPString@@PAVPXMLRPCVariableBase@@@Z @20882 NONAME
     ?SetAt@?$POrdinalDictionary@VPString@@@@UAE_NABVPString@@H@Z @20883 NONAME
-    ?SetAt@?$PStringDictionary@VPOrdinalKey@@@@UAE_NABVPOrdinalKey@@ABVPString@@@Z @20884 NONAME
+    ?SetAt@?$PStringDictionary@V?$PKey@H@@@@UAE_NABV?$PKey@H@@ABVPString@@@Z @24171 NONAME
     ?SetAt@?$PStringDictionary@VPString@@@@UAE_NABVPString@@0@Z @20885 NONAME
     ?SetAt@PAbstractDictionary@@UAE_NHPAVPObject@@@Z @20886 NONAME
     ?SetAt@PAbstractList@@UAE_NHPAVPObject@@@Z @20887 NONAME
@@ -21190,6 +21164,9 @@ EXPORTS
     ?SetDstFrameSize@PColourConverter@@UAE_NII_N@Z @21025 NONAME
     ?SetDTR@PSerialChannel@@QAEX_N@Z @21026 NONAME
     ?SetDynamicString@PVarType@@QAEAAV1@PBD@Z @21027 NONAME
+    ?SetElement@iterator_base@?$PDictionary@V?$PKey@H@@VPString@@@@IAEXPAUPHashTableElement@@@Z @24172 NONAME
+    ?SetElement@iterator_base@?$PDictionary@VPString@@V1@@@IAEXPAUPHashTableElement@@@Z @24173 NONAME
+    ?SetElement@iterator_base@?$PDictionary@VPString@@VPLDAPAttributeBase@@@@IAEXPAUPHashTableElement@@@Z @24174 NONAME
     ?SetEncrypt@PAESContext@@QAEXPBXH@Z @21028 NONAME
     ?SetENUMServers@PDNS@@YAXABVPStringArray@@@Z @21029 NONAME
     ?SetErrorCode@PSTUNErrorCode@@QAEXHABVPString@@@Z @21030 NONAME
@@ -21966,6 +21943,7 @@ EXPORTS
     ?Validate@PSTUNMessage@@QAE_NXZ @21793 NONAME
     ?Validate@PXML@@QAE_NPBUValidationInfo@1@@Z @21794 NONAME
     ?Validate@Token@PvCard@@AAEXXZ @21795 NONAME
+    ?ValidateAddress@PIPRouteTableIPv6@@QAE_NKPAUsockaddr@@@Z @24175 NONAME
     ?ValidateAll@PHTTPCompositeField@@UBE_NABVPStringToString@@AAVPStringStream@@@Z @21796 NONAME
     ?ValidateAll@PHTTPField@@UBE_NABVPStringToString@@AAVPStringStream@@@Z @21797 NONAME
     ?Validated@PHTTPDateField@@UBE_NABVPString@@AAVPStringStream@@@Z @21798 NONAME
