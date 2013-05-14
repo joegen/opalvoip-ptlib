@@ -1598,7 +1598,7 @@ PIPSocket::Address::operator in6_addr() const
 #endif // P_HAS_IPV6
 
 
-const PIPSocket::Address & PIPSocket::Address::GetLoopback(int IPV6_PARAM(version))
+const PIPSocket::Address & PIPSocket::Address::GetLoopback(unsigned IPV6_PARAM(version))
 {
 #if P_HAS_IPV6
   if (version == 6)
@@ -1608,7 +1608,7 @@ const PIPSocket::Address & PIPSocket::Address::GetLoopback(int IPV6_PARAM(versio
 }
 
 
-const PIPSocket::Address & PIPSocket::Address::GetAny(int IPV6_PARAM(version))
+const PIPSocket::Address & PIPSocket::Address::GetAny(unsigned IPV6_PARAM(version))
 {
 #if P_HAS_IPV6
   switch (version) {
@@ -1626,7 +1626,7 @@ const PIPSocket::Address & PIPSocket::Address::GetAny(int IPV6_PARAM(version))
 }
 
 
-const PIPSocket::Address PIPSocket::Address::GetBroadcast(int IPV6_PARAM(version))
+const PIPSocket::Address PIPSocket::Address::GetBroadcast(unsigned IPV6_PARAM(version))
 {
 #if P_HAS_IPV6
   if (version == 6)
@@ -1810,6 +1810,9 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6),
                                      bool IPV6_PARAM(excludeScope)) const
 {
+  if (m_version == 0)
+    return PString::Empty();
+
 #if defined(P_VXWORKS)
   char ipStorage[INET_ADDR_LEN];
   inet_ntoa_b(v.four, ipStorage);
@@ -2136,6 +2139,18 @@ void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 }
 
 
+void PIPSocket::RouteEntry::PrintOn(ostream & strm) const
+{
+  strm << network << '/' << net_mask;
+  if (destination.IsValid())
+    strm << " gw=" << destination;
+  if (!interfaceName.IsEmpty())
+    strm << " if=" << interfaceName;
+  if (metric > 0)
+    strm << " metric=" << metric;
+}
+
+
 #ifdef __NUCLEUS_NET__
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table)
 {
@@ -2156,69 +2171,31 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table)
 #endif
 
 
-PBoolean PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
+PIPSocket::Address PIPSocket::GetInterfaceAddress(const PString & ifName, unsigned version)
 {
   PIPSocket::InterfaceTable interfaceTable;
   if (PIPSocket::GetInterfaceTable(interfaceTable)) {
-    PINDEX i;
-    for (i = 0; i < interfaceTable.GetSize(); ++i) {
-      PIPSocket::Address localAddr = interfaceTable[i].GetAddress();
-      if (!localAddr.IsLoopback() && (!localAddr.IsRFC1918() || !addr.IsRFC1918()))
-        addr = localAddr;
+    for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+      if (interfaceTable[i].GetName() == ifName && interfaceTable[i].GetAddress().GetVersion() == version)
+        return interfaceTable[i].GetAddress();
     }
   }
-  return addr.IsValid();
+  return GetInvalidAddress();
 }
 
 
-PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remoteAddress)
+PIPSocket::Address PIPSocket::GetNetworkInterface(unsigned version)
 {
-  PIPSocket::InterfaceTable hostInterfaceTable;
-  PIPSocket::GetInterfaceTable(hostInterfaceTable);
-
-  PIPSocket::RouteTable hostRouteTable;
-  PIPSocket::GetRouteTable(hostRouteTable);
-
-  if (hostInterfaceTable.IsEmpty())
-    return PIPSocket::GetDefaultIpAny();
-
-  for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
-    if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
-      PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
-              << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
-              << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
-      return hostInterfaceTable[IfaceIdx].GetAddress();
+  PIPSocket::InterfaceTable interfaceTable;
+  if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+    for (PINDEX i = 0; i < interfaceTable.GetSize(); ++i) {
+      PIPSocket::Address localAddr = interfaceTable[i].GetAddress();
+      if (localAddr.GetVersion() == version && !localAddr.IsLoopback() && !localAddr.IsRFC1918())
+        return localAddr;
     }
   }
-
-  PIPSocket::RouteEntry * route = NULL;
-  for (PINDEX routeIdx = 0; routeIdx < hostRouteTable.GetSize(); routeIdx++) {
-    PIPSocket::RouteEntry & routeEntry = hostRouteTable[routeIdx];
-
-    DWORD network = (DWORD) routeEntry.GetNetwork();
-    DWORD mask = (DWORD) routeEntry.GetNetMask();
-
-    if (((DWORD)remoteAddress & mask) == network) {
-      if (route == NULL)
-        route = &routeEntry;
-      else if ((DWORD)routeEntry.GetNetMask() > (DWORD)route->GetNetMask())
-        route = &routeEntry;
-    }
-  }
-
-  if (route != NULL) {
-    for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
-      if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
-        PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
-                << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
-                << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
-        return hostInterfaceTable[IfaceIdx].GetAddress();
-      }
-    }
-  }
-
-  return PIPSocket::GetDefaultIpAny();
-}
+  return GetInvalidAddress();
+} 
 
 
 //////////////////////////////////////////////////////////////////////////////

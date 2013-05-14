@@ -237,16 +237,16 @@ class PIPSocket : public PSocket
         /// Check for v4 mapped in v6 address ::ffff:a.b.c.d.
         bool IsV4Mapped() const;
 
-		    /// Check for link-local address 
+            /// Check for link-local address 
         bool IsLinkLocal() const;
 
         //// Check for site-local address
         bool IsSiteLocal() const;
 #endif
 
-        static const Address & GetLoopback(int m_version = 4);
-        static const Address & GetAny(int m_version = 4);
-        static const Address GetBroadcast(int m_version = 4);
+        static const Address & GetLoopback(unsigned version = 4);
+        static const Address & GetAny(unsigned version = 4);
+        static const Address GetBroadcast(unsigned version = 4);
 
       protected:
         /// Runtime test of IP addresse type.
@@ -587,78 +587,6 @@ class PIPSocket : public PSocket
      */
     static void ClearNameCache();
 
-    /**Get the IP address that is being used as the gateway, that is, the
-       computer that packets on the default route will be sent.
-
-       The string returned may be used in the Connect() function to open that
-       interface.
-
-       Note that the driver does not need to be open for this function to work.
-
-       @return
-       true if there was a gateway.
-     */
-    static PBoolean GetGatewayAddress(
-      Address & addr,     ///< Variable to receive the IP address.
-	  int version = 4     ///< IP version number
-    );
-
-    /**Get the name for the interface that is being used as the gateway,
-       that is, the interface that packets on the default route will be sent.
-
-       The string returned may be used in the Connect() function to open that
-       interface.
-
-       Note that the driver does not need to be open for this function to work.
-
-       @return
-       String name of the gateway device, or empty string if there is none.
-     */
-    static PString GetGatewayInterface(int version = 4);
-
-    /**Get the interface address that will be used to reach the specified
-       remote address. Uses longest prefix match when multiple matching interfaces
-       are found.
-
-       @return
-       Network interface address.
-      */
-    static PIPSocket::Address GetRouteInterfaceAddress(PIPSocket::Address remoteAddress);
-
-#ifdef _WIN32
-    /**Get the IP address for the interface that is being used as the gateway,
-       that is, the interface that packets on the default route will be sent.
-
-       This Function can be used to Bind the Listener to only the default Packet
-       route in DHCP Environs.
-
-       Note that the driver does not need to be open for this function to work.
-
-       @return
-       The Local Interface IP Address for Gatway Access.
-     */
-    static PIPSocket::Address GetGatewayInterfaceAddress(int version = 4);
-
-    /**Retrieve the Local IP Address for which packets would have be routed to the to reach the remote Address.
-       @return Local Address.
-    */
-    static PIPSocket::Address GetRouteAddress(PIPSocket::Address RemoteAddress);
-
-    /**IP Address to a Numerical Representation.
-     */
-    static unsigned AsNumeric(Address addr);
-
-    /**Check if packets on Interface Address can reach the remote IP Address.
-     */
-    static PBoolean IsAddressReachable(PIPSocket::Address LocalIP,
-                                   PIPSocket::Address LocalMask,
-                                   PIPSocket::Address RemoteIP);
-
-    /**Get the Interface Name for a given local Interface Address.
-     */
-    static PString GetInterface(PIPSocket::Address addr);
-    //@}
- #endif
     /**Describe a route table entry.
      */
     class RouteEntry : public PObject
@@ -683,6 +611,9 @@ class PIPSocket : public PSocket
         /// Get the network metric associated with the route table entry.
         long GetMetric() const { return metric; }
 
+        ///< Print the route table entry
+        void PrintOn(ostream & strm) const;
+
       protected:
         Address network;
         Address net_mask;
@@ -702,7 +633,7 @@ class PIPSocket : public PSocket
      */
     static PBoolean GetRouteTable(
       RouteTable & table      ///< Route table
-	);
+    );
 
     /// Class for detector of Route Table changes
     class RouteTableDetector
@@ -788,11 +719,84 @@ class PIPSocket : public PSocket
       PBoolean includeDown = false     ///< Include interfaces that are down
     );
 
-    /**Get the address of an interface that corresponds to a real network.
-       @return
-       false if only loopback interfaces could be found, else true.
+    /**Get the interface name for the specified local IP address.
+      */
+    static PString GetInterface(
+      const Address & addr    ///< IP address of interface
+    );
+
+    /**Get the interface name for the specified local IP address.
+      */
+    static Address GetInterfaceAddress(
+      const PString & ifName,   ///< Name of interface
+      unsigned version = 4      ///< IP version number
+    );
+
+    /**Get the address of the first interface to the "Internet".
+       This searches the interfaces for one that has a "public" IP address and
+       thus would be access to the Internet.
+
+       @return false if only loopback/private interfaces could be found.
      */
-    static PBoolean GetNetworkInterface(PIPSocket::Address & addr);
+    static Address GetNetworkInterface(
+      unsigned version = 4  ///< IP version number
+    );
+
+    /**Get the IP address that is being used as the gateway, that is, the
+       computer that packets on the default route will be sent.
+
+       The string returned may be used in the Connect() function to open that
+       interface.
+
+       Note that the driver does not need to be open for this function to work.
+
+       @return
+       true if there was a gateway.
+     */
+    static Address GetGatewayAddress(
+      unsigned version = 4  ///< IP version number
+    );
+
+    /**Get the name for the interface that is being used as the gateway,
+       that is, the interface that packets on the default route will be sent.
+
+       The string returned may be used in the Connect() function to open that
+       interface.
+
+       Note that the driver does not need to be open for this function to work.
+
+       @return
+       String name of the gateway device, or empty string if there is none.
+     */
+    static PString GetGatewayInterface(
+      unsigned version = 4  ///< IP version number
+    );
+
+    /**Get the IP address for the interface that is being used as the gateway,
+       that is, the interface that packets on the default route will be sent.
+
+       This Function can be used to Bind the Listener to only the default Packet
+       route in DHCP Environs.
+
+       Note that the driver does not need to be open for this function to work.
+
+       @return
+       The Local Interface IP Address for Gatway Access.
+     */
+    static Address GetGatewayInterfaceAddress(
+      unsigned version = 4  ///< IP version number
+    );
+
+    /**Get the interface address that will be used to reach the specified
+       remote address. Uses longest prefix match when multiple matching interfaces
+       are found.
+
+       @return
+       Network interface address.
+      */
+    static Address GetRouteInterfaceAddress(
+      Address remoteAddress    ///< Remote address to route
+    );
 
     /// The types of QoS supported, based on IEEE P802.1p TrafficClass parameter
     P_DECLARE_ENUM(QoSType,
