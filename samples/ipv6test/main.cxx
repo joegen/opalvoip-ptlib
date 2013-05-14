@@ -218,54 +218,50 @@ void IPV6Test::Main()
     cout << "\n\ntest #8: check if interface table contains IPV6 addresses";
 
     PIPSocket::InterfaceTable if_table;
-    PIPSocket::GetInterfaceTable( if_table );
+    if (!PIPSocket::GetInterfaceTable(if_table))
+      cout << "Could not get interface table." << endl;
 
     // Display the interface table
     cout << endl;
-    cout << "The interface table has " << if_table.GetSize()
-         <<" entries" << endl;
+    cout << "The interface table has " << if_table.GetSize() <<" entries" << endl;
 
+    bool hasIPv6 = false;
     for (PINDEX i=0; i < if_table.GetSize(); i++) {
       PIPSocket::InterfaceEntry if_entry = if_table[i];
-      cout << i << " " << if_entry << endl;
-    }
-    cout << "Examining IPV6 entries\n";
-    for (PINDEX i=0; i < if_table.GetSize(); i++) {
-      PIPSocket::InterfaceEntry if_entry = if_table[i];
+      cout << i << '\t' << if_entry;
+
       if (if_entry.GetAddress().GetVersion() == 6) {
+        hasIPv6 = true;
+
         PIPSocket::Address ipv6 = if_entry.GetAddress();
-        cout << " Entry " << i << " is IPV6: is link local = " << (ipv6.IsLinkLocal() ? "yes" : "no") << ", scope = " << ipv6.GetIPV6Scope() << endl;
-        PString str = ipv6.AsString();
-        PIPSocket::Address ipv6_2;
-        if (!ipv6_2.FromString(str))
-          cout << "   ERROR: Could not convert '" << str << "' back to address" << endl;
-        else if (ipv6_2 != ipv6)
-          cout << "   ERROR: '" << str << "' converted to different address '" << ipv6_2 << "'" << endl;
-        else
-          cout << "   '" << str << "' correct converted to back to address '" << ipv6_2 << "'" << endl;
+        if (ipv6.IsLinkLocal())
+          cout << ", \"link local\"";
+        cout << ", scope = " << ipv6.GetIPV6Scope();
       }
+
+      cout << '\n';
     }
-    cout << "Please do manual check ...";
-    cout << endl;
+    cout << "Interface table " << (hasIPv6 ? "has" : "doesn't have") << " IPv6 entries" << endl;
   }
   {
     // test #8b - check if route table contains IPV6 addresses
-    cout << "\n\ntest #8b: check if route table contains IPV6 addresses";
+    cout << "\n\ntest #8b: check if route table contains IPV6 addresses" << endl;
 
     PIPSocket::RouteTable rt_table;
-    PIPSocket::GetRouteTable( rt_table );
+    if (!PIPSocket::GetRouteTable(rt_table))
+      cout << "Could not get route table." << endl;
 
     // Display the route table
-    cout << endl;
-    cout << "The route table has " << rt_table.GetSize()
-         <<" entries" << endl;
+    cout << "The route table has " << rt_table.GetSize() <<" entries" << endl;
 
+    bool hasIPv6 = false;
     for (PINDEX i=0; i < rt_table.GetSize(); i++) {
       PIPSocket::RouteEntry rt_entry = rt_table[i];
-      cout << i << "\t" << rt_entry.GetNetwork() << "\t" << rt_entry.GetNetMask() << "\t" << rt_entry.GetDestination() << "\t" << rt_entry.GetInterface() << endl;
+      if (rt_entry.GetDestination().GetVersion() == 6)
+        hasIPv6 = true;
+      cout << i << '\t' << rt_entry << '\n';
     }
-    cout << "Please do manual check ...";
-    cout << endl;
+    cout << "Route table " << (hasIPv6 ? "has" : "doesn't have") << " IPv6 entries" << endl;
   }
 #if P_URL
   {
@@ -275,23 +271,21 @@ void IPV6Test::Main()
     PURL url("h323:@[::ffff:220.244.81.10]:1234");
     PString addrStr = url.GetHostName();
     PIPSocket::Address addr;
-    PIPSocket::GetHostAddress(addrStr, addr);
+    if (!PIPSocket::GetHostAddress(addrStr, addr))
+      cout << "Could not get IP address for " << addrStr << endl;
     WORD port = url.GetPort();
     cout << "  host string = " << addrStr << " (should be [::ffff:220.244.81.10])\n"
          << "  address     = " << addr    << " (should be ::ffff:220.244.81.10)\n"
          << "  port        = " << port    << " (should be 1234)\n";
   }
 #endif // P_URL
-  {
-    // test #10 - check PIPSocket::GetGatewayAddress()
-    cout << "test #10: PIPSocket::GetGatewayAddress() ";
-	PIPSocket::Address gw;
-    if (PIPSocket::GetGatewayAddress(gw, 6) && (gw.GetVersion() != 6))
-        cout << "failed";	// IPv6 GW found, but GW is not version 6
-    else
-        cout << "OK";
-    cout << endl;
-  }
+
+  // test #10 - check PIPSocket::GetGatewayAddress()
+  cout << "test #10: PIPSocket::GetGatewayAddress() - IPv4="
+        << PIPSocket::GetGatewayAddress(4)
+        << ", IPv6="
+        << PIPSocket::GetGatewayAddress(6)
+        << endl;
 #endif // P_HAS_IPV6
 }
 

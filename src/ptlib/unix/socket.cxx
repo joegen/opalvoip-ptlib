@@ -738,36 +738,6 @@ PIPSocket::PIPSocket()
 }
 
 
-PBoolean PIPSocket::GetGatewayAddress(Address & addr, int version)
-{
-  RouteTable table;
-  if (GetRouteTable(table)) {
-    for (PINDEX i = 0; i < table.GetSize(); i++) {
-      if ((table[i].GetNetwork() == 0)
-          && (table[i].GetDestination().GetVersion() == (unsigned)version)) {
-        addr = table[i].GetDestination();
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-
-
-PString PIPSocket::GetGatewayInterface(int version)
-{
-  RouteTable table;
-  if (GetRouteTable(table)) {
-    for (PINDEX i = 0; i < table.GetSize(); i++) {
-      if (table[i].GetNetwork() == 0)
-        return table[i].GetInterface();
-    }
-  }
-  return PString();
-}
-
-
 bool PIPSocket::SetQoS(const QoS & qos)
 {
   m_qos = qos;
@@ -1866,6 +1836,103 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
 
   return true;
 }
+
+
+PString PIPSocket::GetInterface(const Address & addr)
+{
+  PIPSocket::InterfaceTable interfaceTable;
+  if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+    for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+      if (interfaceTable[i].GetAddress() == addr)
+        return interfaceTable[i].GetName();
+    }
+  }
+  return PString::Empty();
+}
+
+
+PIPSocket::Address PIPSocket::GetGatewayAddress(unsigned version)
+{
+  RouteTable table;
+  if (GetRouteTable(table)) {
+    for (PINDEX i = 0; i < table.GetSize(); i++) {
+      if (table[i].GetNetwork().IsAny() && table[i].GetDestination().GetVersion() == version)
+        return table[i].GetDestination();
+    }
+  }
+  return GetInvalidAddress();
+}
+
+
+
+PString PIPSocket::GetGatewayInterface(unsigned version)
+{
+  RouteTable routes;
+  if (GetRouteTable(routes)) {
+    for (PINDEX i = 0; i < routes.GetSize(); i++) {
+      if (routes[i].GetNetwork().IsAny() && routes[i].GetDestination().GetVersion() == version)
+        return routes[i].GetInterface();
+    }
+  }
+  return PString::Empty();
+}
+
+
+PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(unsigned version)
+{
+  return GetInterfaceAddress(GetGatewayInterface(version));
+}
+
+
+PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(Address remoteAddress)
+{
+  InterfaceTable hostInterfaceTable;
+  GetInterfaceTable(hostInterfaceTable);
+
+  RouteTable hostRouteTable;
+  GetRouteTable(hostRouteTable);
+
+  if (hostInterfaceTable.IsEmpty())
+    return GetDefaultIpAny();
+
+  for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
+    if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
+      PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
+              << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+              << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+      return hostInterfaceTable[IfaceIdx].GetAddress();
+    }
+  }
+
+  RouteEntry * route = NULL;
+  for (PINDEX routeIdx = 0; routeIdx < hostRouteTable.GetSize(); routeIdx++) {
+    RouteEntry & routeEntry = hostRouteTable[routeIdx];
+
+    DWORD network = (DWORD) routeEntry.GetNetwork();
+    DWORD mask = (DWORD) routeEntry.GetNetMask();
+
+    if (((DWORD)remoteAddress & mask) == network) {
+      if (route == NULL)
+        route = &routeEntry;
+      else if ((DWORD)routeEntry.GetNetMask() > (DWORD)route->GetNetMask())
+        route = &routeEntry;
+    }
+  }
+
+  if (route != NULL) {
+    for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
+      if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
+        PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
+                << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+                << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
+        return hostInterfaceTable[IfaceIdx].GetAddress();
+      }
+    }
+  }
+
+  return GetDefaultIpAny();
+}
+
 
 #ifdef P_VXWORKS
 
