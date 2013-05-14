@@ -1831,13 +1831,6 @@ if test "${HAS_DNS_RESOLVER:-unset}" != "unset" ; then
    ENDLDLIBS="$ENDLDLIBS ${RESOLVER_LIBS}"
 fi
 
-dnl dl needs to be at the end
-if test "x${HAS_LIBDL}" = "x1" ; then
-   ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
-   PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
-fi
-
-
 dnl ########################################################################
 dnl this reduces the size of all executables and libraries
 
@@ -1872,7 +1865,8 @@ case "$target_os" in
       PTLIB_FIND_LIBDL([HAS_LIBDL=1], [HAS_LIBDL=])
       if test "x$HAS_LIBDL" = "x1" ; then
          AC_DEFINE(P_DYNALINK, 1, "Support for dynamic loading of libraries")
-         dnl The rest is done further down...
+         ENDLDLIBS="$ENDLDLIBS $DL_LIBS"
+         PTLIB_CFLAGS="$PTLIB_CFLAGS $DL_CFLAGS"
       fi
 
       PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [enable plugin support], [HAS_LIBDL])
