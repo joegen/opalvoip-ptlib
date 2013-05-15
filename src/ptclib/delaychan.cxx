@@ -55,7 +55,6 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
   if (m_firstTime) {
     m_firstTime = false;
     m_targetTime.SetCurrentTime();   // targetTime is the time we want to delay to
-    return true;
   }
 
   if (frameTime <= 0)
