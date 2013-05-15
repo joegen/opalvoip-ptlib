@@ -349,11 +349,6 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
       err = GetLastError();
   }
 
-  if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR) {
-    if (err == 0)
-      err = GetLastError();
-  }
-
   SetLastError(err);
   return ConvertOSError(err == 0 ? 0 : SOCKET_ERROR);
 }
@@ -385,21 +380,19 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount,
 {
   lastReadCount = 0;
 
-  if (readTimeout != PMaxTimeInterval) {
-    DWORD available;
-    if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
+  DWORD available;
+  if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
+    return false;
+
+  if (available == 0) {
+    P_fd_set readfds = os_handle;
+    P_timeval tv = readTimeout;
+    int selval = ::select(0, readfds, NULL, NULL, tv);
+    if (!ConvertOSError(selval, LastReadError))
       return false;
 
-    if (available == 0) {
-      P_fd_set readfds = os_handle;
-      P_timeval tv = readTimeout;
-      int selval = ::select(0, readfds, NULL, NULL, tv);
-      if (!ConvertOSError(selval, LastReadError))
-        return false;
-
-      if (selval == 0)
-        return SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
-    }
+    if (selval == 0)
+      return SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
   }
 
   DWORD receivedCount;
@@ -420,21 +413,19 @@ bool PSocket::os_vwrite(const Slice * slices,
                         struct sockaddr * to,
                         socklen_t tolen)
 {
+  lastWriteCount = 0;
+
   if (!IsOpen())
     return false;
 
-  lastWriteCount = 0;
+  P_fd_set writefds = os_handle;
+  P_timeval tv = writeTimeout;
+  int selval = ::select(0, NULL, writefds, NULL, tv);
+  if (!ConvertOSError(selval, LastWriteError))
+    return false;
 
-  if (writeTimeout != PMaxTimeInterval) {
-    P_fd_set writefds = os_handle;
-    P_timeval tv = writeTimeout;
-    int selval = ::select(0, NULL, writefds, NULL, tv);
-    if (!ConvertOSError(selval, LastWriteError))
-      return false;
-
-    if (selval == 0)
-      return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
-  }
+  if (selval == 0)
+    return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
 
   DWORD bytesSent = 0;
   PWin32Overlapped overlap;
