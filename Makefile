@@ -55,6 +55,12 @@ ALLBUTFIRST = $(filter-out $(firstword $(CONFIG_FILES)), $(CONFIG_FILES))
 ALLBUTLAST = $(filter-out $(lastword $(CONFIG_FILES)), $(CONFIG_FILES))
 PAIRS = $(join $(ALLBUTLAST),$(addprefix :,$(ALLBUTFIRST)))
 
+ifndef CFG_ARGS
+  ifneq (,$(shell which ./config.status))
+    CFG_ARGS=$(shell ./config.status --config)
+  endif
+endif
+
 # The following goals do not generate a call to configure
 NO_CONFIG_GOALS += clean distclean config
 
@@ -70,7 +76,7 @@ default: $(CONFIG_FILES)
 
 .PHONY:config
 config: $(CONFIGURE) $(CONFIG_FILES)
-	$(CONFIGURE)
+	$(CONFIGURE) $(CFG_ARGS)
 
 .PHONY:clean
 clean:
@@ -99,12 +105,6 @@ sterile: clean
 	else \
 	  rm -f config.status config.log ; \
 	fi
-
-ifndef CFG_ARGS
-  ifneq (,$(shell which ./config.status))
-    CFG_ARGS=$(shell ./config.status --config)
-  endif
-endif
 
 $(firstword $(CONFIG_FILES)) : $(CONFIGURE) $(CONFIG_IN_FILES)
 	PTLIBDIR=$(ENV_PTLIBDIR) $(CONFIGURE) $(CFG_ARGS)
