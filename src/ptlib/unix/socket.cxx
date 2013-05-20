@@ -558,7 +558,7 @@ PBoolean PIPSocket::IsLocalHost(const PString & hostname)
     return true;
 
   // lookup the host address using inet_addr, assuming it is a "." address
-  Address addr = hostname;
+  Address addr(hostname);
   if (addr.IsLoopback())  // Is 127.0.0.1
     return true;
   if (!addr.IsValid())
