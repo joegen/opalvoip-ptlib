@@ -1,7 +1,7 @@
 /*
- * macvideo.cxx
+ * macaudio.mm
  *
- * Classes to support streaming video input (grabbing) and output.
+ * Classes to support audio input and output.
  *
  * Portable Tools Library
  *
@@ -33,151 +33,485 @@
 #if P_AUDIO
 
 #include <ptlib/sound.h>
+#include <ptclib/qchannel.h>
 
-#include <AudioToolbox/AudioQueue.h>
-#include <AudioToolbox/AudioFormat.h>
-#include <Foundation/NSError.h>
-#include <Foundation/NSString.h>
+#include <AudioUnit/AudioUnit.h>
+#ifdef P_MACOSX
+  #include <CoreAudio/CoreAudio.h>
+  #include <AudioToolbox/AudioConverter.h>
+#else
+  #include <AudioToolbox/AudioSession.h>
+  #include <AudioToolbox/AudioServices.h>
+  typedef UInt32 AudioDeviceID;
+#endif
 
 
 #define PTraceModule() "MacAudio"
-#define PTRACE_DETAILED(...) //PTRACE(__VA_ARGS__)
+#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
+
+
+// These two values are pretty fundamental, but missing from system headers
+#define kAudioUnitOutputBus 0
+#define kAudioUnitInputBus  1
+
+static PConstCaselessString const DefaultDeviceName("Default");
 
 
 #if PTRACING
-static bool CheckError(OSStatus status, const char * fn)
+
+static bool CheckError(OSStatus status, const char * fn, const char * prop = NULL)
 {
   if (status == 0 || !PTrace::CanTrace(1))
     return false;
- 
-  PTrace::Begin(1, __FILE__, __LINE__) << "Error "
-#if TARGET_IPHONE_SIMULATOR
-         "0x" << hex << status << dec
-#else
-         << [[[NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil] localizedDescription] UTF8String]
-#endif
-         << " in function " << fn << PTrace::End;
+
+  static POrdinalToString::Initialiser ErrorMessagesInit[] = {
+    { -50,                                    "Invalid Parameter(s)" },
+    { kAudioUnitErr_InvalidProperty,          "Invalid Property" },
+    { kAudioUnitErr_InvalidParameter,         "Invalid Parameter" },
+    { kAudioUnitErr_FormatNotSupported,       "Format Not Supported" },
+    { kAudioUnitErr_PropertyNotWritable,      "Property Not Writable" },
+    { kAudioUnitErr_CannotDoInCurrentContext, "Cannot Do In Current Context" },
+    { kAudioUnitErr_InvalidPropertyValue,     "Invalid Property Value" }
+  };
+  static POrdinalToString const ErrorMessages(PARRAYSIZE(ErrorMessagesInit), ErrorMessagesInit);
+
+  const char * errCode = (const char *)&status;
+
+  ostream & trace = PTRACE_BEGIN(1);
+  trace << "Error ";
+  if (ErrorMessages.Contains(status))
+    trace << '"' << ErrorMessages[status] << "\" (" << status << ')';
+  else if (status > -100000 && status < 100000)
+    trace << status;
+  else if (isprint(errCode[0]) && isprint(errCode[1]) && isprint(errCode[2]) && isprint(errCode[3]))
+    trace << '\'' << errCode[0] << errCode[1] << errCode[2] << errCode[3] << '\'';
+  else
+    trace << "0x" << hex << status << dec;
+  trace << " in function " << fn;
+  if (prop != NULL)
+    trace << ", property " << prop;
+  trace << PTrace::End;
   return true;
 }
+
 #define CHECK_SUCCESS(fn, args) (!CheckError(fn args, #fn))
 #define CHECK_ERROR(fn, args)     CheckError(fn args, #fn)
+#define CHECK_ERROR_AudioSessionSetProperty(prop,size,ptr) \
+            CheckError(AudioSessionSetProperty(prop,size,ptr), "AudioSessionSetProperty", #prop)
+#define CHECK_ERROR_AudioSessionGetProperty(prop,size,ptr) \
+            CheckError(AudioSessionGetProperty(prop,size,ptr), "AudioSessionGetProperty", #prop)
+#define CHECK_ERROR_AudioUnitSetProperty(audioUnit,prop,scope,bus,ptr,size) \
+            CheckError(AudioUnitSetProperty(audioUnit,prop,scope,bus,ptr,size), "AudioUnitSetProperty", #prop)
+#define CHECK_ERROR_AudioUnitGetProperty(audioUnit,prop,scope,bus,ptr,size) \
+            CheckError(AudioUnitGetProperty(audioUnit,prop,scope,bus,ptr,size), "AudioUnitGetProperty", #prop)
+
 #else
+
 #define CHECK_SUCCESS(fn, args) (fn args == 0)
 #define CHECK_ERROR(fn, args)   (fn args != 0)
-#endif
+#define CHECK_ERROR_AudioSessionSetProperty(prop,size,ptr) \
+            AudioSessionSetProperty(subFn,size,ptr),
+#define CHECK_ERROR_AudioSessionGetProperty(prop,size,ptr) \
+            AudioSessionGetProperty(subFn,size,ptr)
+#define CHECK_ERROR_AudioUnitSetProperty(audioUnit,prop,scope,bus,ptr,size) \
+            AudioUnitSetProperty(audioUnit,prop,scope,bus,ptr,size)
+#define CHECK_ERROR_AudioUnitGetProperty(audioUnit,prop,scope,bus,ptr,size) \
+            AudioUnitGetProperty(audioUnit,prop,scope,bus,ptr,size)
 
+#endif
 
 
 class PSoundChannel_Apple : public PSoundChannel
 {
   PCLASSINFO(PSoundChannel_Apple, PSoundChannel);
 protected:
-  PString                          m_deviceName;
-  AudioStreamBasicDescription      m_dataFormat;
-  AudioQueueRef                    m_queue;
-  PINDEX                           m_bufferSize;
-  std::vector<AudioQueueBufferRef> m_buffers;
-  PINDEX                           m_bufferPos;
-  PAtomicInteger                   m_buffersInUse;
-  PSemaphore                       m_bufferReady;
-  PTimeInterval                    m_bufferTimeout;
-  bool                             m_running;
+  PString                     m_deviceName;
+  AudioStreamBasicDescription m_dataFormat;
+  AudioComponentInstance      m_audioUnit;
+#ifdef P_MACOSX
+  AudioConverterRef           m_resampler;
+  std::vector<uint8_t>        m_resampleBuffer;
+#endif
+  PQueueChannel               m_queue;
+  PTimeInterval               m_timeout;
+  PINDEX                      m_bufferSize;
+  PINDEX                      m_bufferCount;
+
+
+  class Devices : public std::map<PCaselessString, AudioDeviceID>
+  {
+    public:
+      Devices(Directions dir)
+      {
+#ifdef P_MACOSX
+        UInt32 size = 0;
+        static const AudioObjectPropertyAddress DevicesAddr =
+            { kAudioHardwarePropertyDevices, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+        
+        if (CHECK_SUCCESS(AudioObjectGetPropertyDataSize,(kAudioObjectSystemObject, &DevicesAddr, 0, NULL, &size))) {
+          std::vector<AudioDeviceID> devIDs(size/sizeof(AudioDeviceID));
+          CHECK_ERROR(AudioObjectGetPropertyData,(kAudioObjectSystemObject, &DevicesAddr, 0, NULL, &size, devIDs.data()));
+          
+          for (size_t i = 0; i < devIDs.size(); ++i) {
+            static const AudioObjectPropertyAddress InputStreamsAddr =
+                { kAudioDevicePropertyStreams, kAudioDevicePropertyScopeInput, kAudioObjectPropertyElementMaster };
+            static const AudioObjectPropertyAddress OutputStreamsAddr =
+                { kAudioDevicePropertyStreams, kAudioDevicePropertyScopeOutput, kAudioObjectPropertyElementMaster };
+            if (CHECK_SUCCESS(AudioObjectGetPropertyDataSize,(devIDs[i],
+                                                              dir == Recorder ? &InputStreamsAddr
+                                                                              : &OutputStreamsAddr
+                                                              , 0, NULL, &size)) && size >= sizeof(AudioStreamID)) {
+              static const AudioObjectPropertyAddress DeviceNameAddr =
+                  { kAudioDevicePropertyDeviceName, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+              
+              char name[100];
+              size = sizeof(name);
+              if (CHECK_SUCCESS(AudioObjectGetPropertyData,(devIDs[i], &DeviceNameAddr, 0, NULL, &size, name))) {
+                PString devName(name, size);
+                insert(value_type(devName, devIDs[i]));
+              }
+            }
+          }
+        }
+        
+        static const AudioObjectPropertyAddress DefaultInputDeviceAddr =
+            { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+        static const AudioObjectPropertyAddress DefaultOutputDeviceAddr =
+            { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+
+        AudioDeviceID defID;
+        size = sizeof(AudioDeviceID);
+        if (CHECK_SUCCESS(AudioObjectGetPropertyData,(kAudioObjectSystemObject,
+                                                      dir == Recorder ? &DefaultInputDeviceAddr
+                                                                      : &DefaultOutputDeviceAddr,
+                                                      0, NULL, &size, &defID)))
+          insert(value_type(DefaultDeviceName, defID));
+#else
+        insert(value_type(DefaultDeviceName, 0));
+#endif
+      }
+  };
+
+  
+  static OSStatus PlayerCallback(void                       *inRefCon,
+                                 AudioUnitRenderActionFlags *ioActionFlags,
+                                 const AudioTimeStamp       *inTimeStamp,
+                                 UInt32                      inBusNumber,
+                                 UInt32                      inNumberFrames,
+                                 AudioBufferList            *ioData)
+  {
+    reinterpret_cast<PSoundChannel_Apple *>(inRefCon)->PlayerCallback(inNumberFrames, ioData);
+    return noErr;
+  }
+
+  void PlayerCallback(UInt32 inNumberFrames,
+                      AudioBufferList *ioData)
+  {
+    UInt32 bytes = inNumberFrames*m_dataFormat.mBytesPerFrame;
+    uint8_t * data = (uint8_t *)ioData->mBuffers[0].mData;
+    m_queue.Read(data, bytes);
+    PINDEX count = m_queue.GetLastReadCount();
+    PTRACE_DETAILED(5, "PlayerCallback: bytes needed=" << bytes << ", have=" << count);
+    if (count < bytes) {
+      PTRACE_IF(4, m_queue.IsOpen(), "Underflow: count=" << count << ", needed=" << bytes);
+      memset(data+count, 0, bytes-count);
+    }
+  }
+  
+  static OSStatus RecordCallback(void                       *inRefCon,
+                                 AudioUnitRenderActionFlags *ioActionFlags,
+                                 const AudioTimeStamp       *inTimeStamp,
+                                 UInt32                      inBusNumber,
+                                 UInt32                      inNumberFrames,
+                                 AudioBufferList            *ioData)
+  {
+    reinterpret_cast<PSoundChannel_Apple *>(inRefCon)->RecordCallback(ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames);
+    return noErr;
+  }
+
+  void RecordCallback(AudioUnitRenderActionFlags *ioActionFlags,
+                      const AudioTimeStamp *inTimeStamp,
+                      UInt32 inBusNumber,
+                      UInt32 inNumberFrames)
+  {
+    UInt32 bytes = inNumberFrames*m_dataFormat.mBytesPerFrame;
+
+    AudioBufferList bufferList;
+    bufferList.mNumberBuffers = 1;
+    bufferList.mBuffers[0].mNumberChannels = m_dataFormat.mChannelsPerFrame;
+    bufferList.mBuffers[0].mDataByteSize = bytes;
+    bufferList.mBuffers[0].mData = NULL;
+
+    if (CHECK_ERROR(AudioUnitRender,(m_audioUnit,
+                                     ioActionFlags,
+                                     inTimeStamp,
+                                     inBusNumber,
+                                     inNumberFrames,
+                                    &bufferList)))
+      return;
+
+    if (!m_queue.Write(bufferList.mBuffers[0].mData, bytes))
+      PTRACE_IF(4, m_queue.IsOpen(), "Overflow, queue full");
+
+    PTRACE_DETAILED(5, "RecordCallback: bytes offerred=" << bytes << ", saved=" << m_queue.GetLastWriteCount());
+  }
   
 
-  static void PlayerCallback(void * inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
+#ifdef P_MACOSX
+  static OSStatus ConverterCallback(AudioConverterRef             inAudioConverter,
+                                    UInt32                        *ioNumberDataPackets,
+                                    AudioBufferList               *ioData,
+                                    AudioStreamPacketDescription **outDataPacketDescription,
+                                    void                          *inUserData)
   {
-    reinterpret_cast<PSoundChannel_Apple *>(inUserData)->PlayerCallback(inAQ, inBuffer);
+    reinterpret_cast<PSoundChannel_Apple *>(inUserData)->ConverterCallback(ioNumberDataPackets, ioData);
+    return noErr;
+  }
+
+  void ConverterCallback(UInt32 *ioNumberDataPackets, AudioBufferList *ioData)
+  {
+    if (m_queue.Read(m_resampleBuffer.data(),
+                     std::min((UInt32)m_resampleBuffer.size(),
+                              *ioNumberDataPackets * m_dataFormat.mBytesPerPacket))) {
+      UInt32 packets = m_queue.GetLastReadCount()/m_dataFormat.mBytesPerPacket;
+      if (*ioNumberDataPackets > packets)
+        *ioNumberDataPackets = packets;
+
+      ioData->mNumberBuffers = 1;
+      ioData->mBuffers[0].mNumberChannels = m_dataFormat.mChannelsPerFrame;
+      ioData->mBuffers[0].mData = m_resampleBuffer.data();
+      ioData->mBuffers[0].mDataByteSize = packets*m_dataFormat.mBytesPerPacket;
+    }
+    else {
+      *ioNumberDataPackets = 0;
+      ioData->mNumberBuffers = 0;
+    }
+  }
+#endif // P_MACOSX
+
+
+  bool InternalOpenDevice(AudioUnitElement busElement)
+  {
+    Devices devices(activeDirection);
+    Devices::iterator it = devices.find(m_deviceName);
+    if (it != devices.end())
+      return !CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                               kAudioOutputUnitProperty_CurrentDevice,
+                                               kAudioUnitScope_Global,
+                                               busElement,
+                                               &it->second,
+                                               sizeof(it->second));
+
+    PTRACE(1, "No such device as \"" << m_deviceName << '"');
+    return false;
+  }
+
+
+  bool InternalOpenPlayer()
+  {
+    // Must enable I/O before setting device or it fails.
+    UInt32 flag = 1;
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioOutputUnitProperty_EnableIO,
+                                         kAudioUnitScope_Output,
+                                         kAudioUnitOutputBus,
+                                         &flag, sizeof(flag)))
+      return false;
+
+    // Set the specific device
+    if (!InternalOpenDevice(kAudioUnitOutputBus))
+      return false;
+
+    // The player will take our PCM-16 sample format as is
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioUnitProperty_StreamFormat,
+                                         kAudioUnitScope_Input,
+                                         kAudioUnitOutputBus,
+                                         &m_dataFormat, sizeof(m_dataFormat)))
+      return false;
+
+    // Call back when it needs data from m_queue
+    AURenderCallbackStruct callback;
+    callback.inputProcRefCon = this;
+    callback.inputProc = PlayerCallback;
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioUnitProperty_SetRenderCallback,
+                                         kAudioUnitScope_Global,
+                                         kAudioUnitOutputBus,
+                                         &callback, sizeof(callback)))
+      return false;
+
+    m_queue.Open(m_bufferSize*m_bufferCount);
+    
+    // Don't block the call back eading from queue
+    m_queue.SetReadTimeout(0);
+    return true;
   }
   
-  void PlayerCallback(AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
+
+  bool InternalOpenRecorder()
   {
-    PTRACE_DETAILED(5, "PlayerCallback " << m_bufferPos << ' ' << m_buffersInUse);
-    --m_buffersInUse;
-    m_bufferReady.Signal();
-  }
-  
-  
-  static void RecorderCallback(void                                *inUserData,
-                               AudioQueueRef                       inAQ,
-                               AudioQueueBufferRef                 inBuffer,
-                               const AudioTimeStamp                *inStartTime,
-                               UInt32                              inNumberPackets,
-                               const AudioStreamPacketDescription  *inPacketDescs)
-  {
-    reinterpret_cast<PSoundChannel_Apple *>(inUserData)->RecorderCallback(inAQ,
-                                                                          inBuffer,
-                                                                          inStartTime,
-                                                                          inNumberPackets,
-                                                                          inPacketDescs);
-  }
-  
-  void RecorderCallback(AudioQueueRef                       inAQ,
-                        AudioQueueBufferRef                 inBuffer,
-                        const AudioTimeStamp                *inStartTime,
-                        UInt32                              inNumberPackets,
-                        const AudioStreamPacketDescription  *inPacketDescs)
-  {
-    PTRACE_DETAILED(5, "RecorderCallback " << m_bufferPos << ' ' << m_buffersInUse);
-    ++m_buffersInUse;
-    m_bufferReady.Signal();
+    // Must enable I/O before setting device or it fails.
+    UInt32 flag = 1;
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioOutputUnitProperty_EnableIO,
+                                         kAudioUnitScope_Input,
+                                         kAudioUnitInputBus,
+                                         &flag, sizeof(flag)))
+      return false;
+    
+    // When recording, disable the output side of pipeline, which is enabled by default
+    flag = 0;
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioOutputUnitProperty_EnableIO,
+                                         kAudioUnitScope_Output,
+                                         kAudioUnitOutputBus,
+                                         &flag, sizeof(flag)))
+      return false;
+    
+    if (!InternalOpenDevice(kAudioUnitInputBus))
+      return false;
+    
+#ifdef P_MACOSX
+    // In OS-X we need to convert the sample rate, so need to get it ...
+    AudioStreamBasicDescription deviceFormat;
+    UInt32 size = sizeof(deviceFormat);
+    if (CHECK_ERROR_AudioUnitGetProperty(m_audioUnit,
+                                         kAudioUnitProperty_StreamFormat,
+                                         kAudioUnitScope_Input,
+                                         kAudioUnitInputBus,
+                                         &deviceFormat, &size))
+      return false;
+
+    // Switch in all the other format parameters
+    Float64 deviceSampleRate = deviceFormat.mSampleRate;
+    deviceFormat = m_dataFormat;
+
+    // Put back the devices sample rate
+    deviceFormat.mSampleRate = deviceSampleRate;
+
+    // And set that.
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioUnitProperty_StreamFormat,
+                                         kAudioUnitScope_Output,
+                                         kAudioUnitInputBus,
+                                         &deviceFormat, sizeof(deviceFormat)))
+      return false;
+
+    // Get it back just in case it did not set exactly the same value.
+    size = sizeof(deviceFormat);
+    if (CHECK_ERROR_AudioUnitGetProperty(m_audioUnit,
+                                         kAudioUnitProperty_StreamFormat,
+                                         kAudioUnitScope_Output,
+                                         kAudioUnitInputBus,
+                                         &deviceFormat, &size))
+      return false;
+
+    if (deviceFormat.mSampleRate == m_dataFormat.mSampleRate) {
+      if (!m_queue.Open(m_bufferSize*m_bufferCount))
+        return false;
+    }
+    else {
+      // Create converted from actual sample rate, format etc to ours.
+      if (CHECK_ERROR(AudioConverterNew,(&deviceFormat, &m_dataFormat, &m_resampler)))
+        return false;
+
+      if (!m_queue.Open(m_bufferSize*m_bufferCount*deviceFormat.mSampleRate/m_dataFormat.mSampleRate))
+        return false;
+
+      m_resampleBuffer.resize(m_dataFormat.mBytesPerPacket*deviceFormat.mSampleRate/m_dataFormat.mSampleRate);
+    }
+#else
+    // Weirdly iOS is easier the OS-X! We can simply set record sample rate
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioUnitProperty_StreamFormat,
+                                         kAudioUnitScope_Output,
+                                         kAudioUnitInputBus,
+                                         &m_dataFormat, sizeof(m_dataFormat)))
+      return false;
+
+    if (!m_queue.Open(m_bufferSize*m_bufferCount))
+      return false;
+#endif // P_MACOSX
+
+    // Call back for when devices has data to queue up
+    AURenderCallbackStruct callback;
+    callback.inputProcRefCon = this;
+    callback.inputProc = RecordCallback;
+    if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                         kAudioOutputUnitProperty_SetInputCallback,
+                                         kAudioUnitScope_Global,
+                                         kAudioUnitInputBus,
+                                         &callback, sizeof(callback)))
+      return false;
+
+    // Make sure queue does not block the callback
+    m_queue.SetWriteTimeout(0);
+    return true;
   }
   
   
   bool InternalOpen()
   {
+    AudioComponentDescription desc;
+    desc.componentType = kAudioUnitType_Output;
+    desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+    desc.componentFlagsMask = 0;
+    desc.componentFlags = 0;
+#ifdef P_MACOSX
+    desc.componentSubType = kAudioUnitSubType_HALOutput;
+#else
+    desc.componentSubType = kAudioUnitSubType_RemoteIO;
+    
+    {
+      if (CHECK_ERROR(AudioSessionInitialize,(NULL, NULL, NULL, NULL)))
+        return false;
+      
+      // We want to be able to open playback and recording streams
+      UInt32 audioCategory = kAudioSessionCategory_PlayAndRecord;
+      if (CHECK_ERROR_AudioSessionSetProperty(kAudioSessionProperty_AudioCategory,
+                                               sizeof(audioCategory), &audioCategory))
+        return false;
+      
+      Float32 bufferDuration = m_bufferSize/2 * 1000/GetSampleRate();
+      if (CHECK_ERROR_AudioSessionSetProperty(kAudioSessionProperty_PreferredHardwareIOBufferDuration,
+                                               sizeof(bufferDuration), &bufferDuration))
+        return false;
+    }
+#endif
+    
+    AudioComponent component = AudioComponentFindNext(NULL, &desc);
+    if (component == NULL)
+      return false;
+
+    if (CHECK_ERROR(AudioComponentInstanceNew,(component, &m_audioUnit)))
+      return false;
+
     switch (activeDirection) {
       case Player :
-        if (CHECK_ERROR(AudioQueueNewOutput,(&m_dataFormat,
-                                             &PSoundChannel_Apple::PlayerCallback,  this,
-                                             NULL, kCFRunLoopCommonModes, 0, &m_queue)))
+        if (!InternalOpenPlayer())
           return false;
-        m_bufferReady.Reset(m_buffers.size(), m_buffers.size());
         break;
         
       case Recorder :
-        if (CHECK_ERROR(AudioQueueNewInput,(&m_dataFormat,
-                                            &PSoundChannel_Apple::RecorderCallback,  this,
-                                            NULL, kCFRunLoopCommonModes, 0, &m_queue)))
+        if (!InternalOpenRecorder())
           return false;
-        
-        {
-          AudioStreamBasicDescription dataFormat;
-          memset(&dataFormat, 0, sizeof(dataFormat));
-          UInt32 sz = sizeof(dataFormat);
-#define CHK_PARAM(p) \
-   setw(18) << #p << ':' << m_dataFormat.p << (m_dataFormat.p == dataFormat.p ? '=' : '!') << '=' << dataFormat.p << '\n'
-          if (CHECK_SUCCESS(AudioQueueGetProperty,(m_queue, kAudioQueueProperty_StreamDescription, &dataFormat, &sz)))
-            PTRACE(4, "Opened with parameters:\n"
-                   << std::setiosflags(ios::fixed) << std::setprecision(0) << std::right
-                   << std::hex
-                   << CHK_PARAM(mFormatID)
-                   << std::dec
-                   << CHK_PARAM(mChannelsPerFrame)
-                   << CHK_PARAM(mSampleRate)
-                   << CHK_PARAM(mBitsPerChannel)
-                   << CHK_PARAM(mFramesPerPacket)
-                   << CHK_PARAM(mBytesPerFrame)
-                   << CHK_PARAM(mBytesPerPacket)
-                   << CHK_PARAM(mFormatFlags));
-        }
-        m_bufferReady.Reset(0, m_buffers.size());
         break;
         
       default :
-        break;
-    }
-    
-    for (size_t i = 0; i < m_buffers.size(); ++i) {
-      if (CHECK_ERROR(AudioQueueAllocateBuffer,(m_queue, m_bufferSize, &m_buffers[i]))) {
-        AudioQueueDispose(m_queue, true);
         return false;
-      }
     }
-    
-    m_bufferPos = 0;
-    m_buffersInUse = 0;
-    m_bufferTimeout.SetInterval(std::max(1000U, m_bufferSize*1000U/GetSampleRate()));
-    
+
+    // Finally have everything, initialise it
+    if (CHECK_ERROR(AudioUnitInitialize,(m_audioUnit)))
+      return false;
+
+#ifndef P_MACOSX
+    AudioSessionSetActive(true);
+#endif
+
+    m_timeout.SetInterval(std::max(1000, (int)(m_bufferSize*1000/GetSampleRate())));
+
     PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
     os_handle = 1;
     return true;
@@ -186,11 +520,15 @@ protected:
   
 public:
   PSoundChannel_Apple()
-    : m_bufferReady(0, UINT_MAX)
-    , m_running(false)
+    : m_audioUnit(NULL)
+#ifdef P_MACOSX
+    , m_resampler(NULL)
+#endif
+    , m_bufferSize(320)
+    , m_bufferCount(2)
   {
-    SetBuffers(320, 2);
     SetFormat(1, 8000, 16);
+    PIndirectChannel::Open(m_queue);
   }
 
 
@@ -202,22 +540,21 @@ public:
   
   static PStringArray GetDeviceNames(PSoundChannel::Directions dir)
   {
-    PStringArray devices;
+    Devices devices(dir);
     
-    switch (dir) {
-      case Player :
-        devices += "speaker";
-        break;
-        
-      case Recorder :
-        devices += "microphone";
-        break;
-        
-      default :
-        break;
+    PStringArray names(devices.size());
+
+    PINDEX count = 0;
+    Devices::iterator it = devices.find(DefaultDeviceName);
+    if (it != devices.end())
+      names[count++] = DefaultDeviceName;
+
+    for (it = devices.begin(); it != devices.end(); ++it) {
+      if (DefaultDeviceName != it->first)
+        names[count++] = it->first;
     }
-    
-    return devices;
+
+    return names;
   }
   
   
@@ -252,19 +589,20 @@ public:
   
   virtual PBoolean Close()
   {
-    if (!IsOpen())
-      return false;
-    
-    PTRACE(4, "Closing \"" << GetName() << '"');
+    PTRACE_IF(4, IsOpen(), "Closing \"" << GetName() << '"');
 
     os_handle = -1;
+
+    if (m_audioUnit != NULL)
+      CHECK_SUCCESS(AudioComponentInstanceDispose,(m_audioUnit));
     
-    CHECK_SUCCESS(AudioQueueDispose,(m_queue, true));
-    
-    m_running = false;
+#ifdef P_MACOSX
+    if (m_resampler != NULL)
+      CHECK_SUCCESS(AudioConverterDispose,(m_resampler));
+#endif
     
     // Break any read/write block
-    m_bufferReady.Signal();
+    m_queue.Close();
     return true;
   }
   
@@ -276,12 +614,10 @@ public:
 
     PTRACE(4, activeDirection << " aborted");
     
-    CHECK_SUCCESS(AudioQueueStop,(m_queue, true));
+    CHECK_SUCCESS(AudioOutputUnitStop,(m_audioUnit));
 
-    m_running = false;
-    
     // Break any read/write block
-    m_bufferReady.Signal();
+    m_queue.Close();
     return true;
   }
   
@@ -290,63 +626,41 @@ public:
   {
     lastWriteCount = 0;
     
-    if (!IsOpen()) {
-      PTRACE(1, "Audio channel not open");
-      return false;
-    }
-    
     if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
       return false;
 
-    const uint8_t * ptr = (const uint8_t *)buf;
-    while (len > 0) {
-      PTRACE_DETAILED(5, "Awaiting play buffer ready");
-      if (!m_bufferReady.Wait(m_bufferTimeout)) {
-        PTRACE(1, "Timed out waiting for play out: " << m_bufferTimeout);
-        return false;
-      }
-      
-      if (!IsOpen())
-        return false;
-
-      PINDEX chunkSize = std::min(len, m_bufferSize);
-      memcpy(m_buffers[m_bufferPos]->mAudioData, ptr, chunkSize);
-      m_buffers[m_bufferPos]->mAudioDataByteSize = chunkSize;
-      if (CHECK_ERROR(AudioQueueEnqueueBuffer,(m_queue, m_buffers[m_bufferPos], 0, NULL)))
-        return false;
-      
-      m_bufferPos = (m_bufferPos+1)%m_buffers.size();
-      ++m_buffersInUse;
-      
-      if (!m_running) {
-        if (CHECK_ERROR(AudioQueueStart,(m_queue, NULL)))
-          return false;
-        m_running = true;
-      }
-      
-      lastWriteCount += chunkSize;
-      ptr += chunkSize;
-      len -= chunkSize;
-    }
+    UInt32 isRunning;
+    UInt32 size = sizeof(isRunning);
+    if (CHECK_ERROR_AudioUnitGetProperty(m_audioUnit,
+                                         kAudioOutputUnitProperty_IsRunning,
+                                         kAudioUnitScope_Global, kAudioUnitInputBus,
+                                         &isRunning, &size))
+      return false;
     
-    return true;
+    if (!isRunning) {
+      if (CHECK_ERROR(AudioOutputUnitStart,(m_audioUnit)))
+        return false;
+      
+      SetWriteTimeout(m_timeout);
+    }
+
+    return PIndirectChannel::Write(buf, len);
   }
   
   
   virtual PBoolean HasPlayCompleted()
   {
-    return m_buffersInUse == 0;
+    return m_queue.GetLength() == 0;
   }
   
   
   virtual PBoolean WaitForPlayCompletion()
   {
     while (!HasPlayCompleted()) {
-      PTRACE_DETAILED(5, "Awaiting buffer ready for completion");
-      if (!m_bufferReady.Wait(m_bufferTimeout))
+      PThread::Sleep(m_bufferSize*1000/GetSampleRate());
+      if (!IsOpen())
         return false;
     }
-    
     return true;
   }
   
@@ -355,63 +669,62 @@ public:
   {
     lastReadCount = 0;
     
-    if (!IsOpen()) {
-      PTRACE(1, "Audio channel not open");
-      return false;
-    }
-    
     if (!PAssert(activeDirection == Recorder, "Trying to read from player"))
       return false;
     
     if (!StartRecording())
       return false;
-    
-    while (m_buffersInUse == 0) {
-      PTRACE_DETAILED(5, "Awaiting buffer ready for completion");
-      if (!m_bufferReady.Wait(m_bufferTimeout)) {
-        PTRACE(1, "Timed out waiting for recorded data: " << m_bufferTimeout);
+
+#ifdef P_MACOSX
+    if (m_resampler != NULL) {
+      AudioBufferList bufferList;
+      bufferList.mNumberBuffers = 1;
+      bufferList.mBuffers[0].mNumberChannels = m_dataFormat.mChannelsPerFrame;
+      bufferList.mBuffers[0].mDataByteSize = len;
+      bufferList.mBuffers[0].mData = buf;
+
+      UInt32 ioOutputDataPacketSize = len/m_dataFormat.mBytesPerPacket;
+      if (CHECK_ERROR(AudioConverterFillComplexBuffer,(m_resampler,
+                                                       ConverterCallback, this,
+                                                       &ioOutputDataPacketSize, &bufferList, NULL)))
         return false;
-      }
-          
-      if (!IsOpen())
-        return false;
+
+      lastReadCount = ioOutputDataPacketSize*m_dataFormat.mBytesPerPacket;
+      return true;
     }
+#endif
     
-    lastReadCount = std::min(len, (PINDEX)m_buffers[m_bufferPos]->mAudioDataByteSize);
-    memcpy(buf, m_buffers[m_bufferPos]->mAudioData, lastReadCount);
-
-    // Requeue it
-    if (CHECK_ERROR(AudioQueueEnqueueBuffer,(m_queue, m_buffers[m_bufferPos], 0, NULL)))
-      return false;
-
-    m_bufferPos = (m_bufferPos+1)%m_buffers.size();
-    --m_buffersInUse;
-
-    PTRACE_DETAILED(5, "Read " << lastReadCount << " bytes.");
-    return true;
+    return PIndirectChannel::Read(buf, len);
   }
   
   
   virtual PBoolean StartRecording()
   {
-    if (!IsOpen())
+    if (!IsOpen() || !PAssert(activeDirection == Recorder, "Trying to start recording from player"))
       return false;
-    
-    if (m_running)
-      return true;
 
-    m_bufferPos = 0;
-    m_buffersInUse = 0;
-    
-    for (size_t i = 0; i < m_buffers.size(); ++i) {
-      if (CHECK_ERROR(AudioQueueEnqueueBuffer,(m_queue, m_buffers[i], 0, NULL)))
-        return false;
-    }
-    
-    if (CHECK_ERROR(AudioQueueStart,(m_queue, NULL)))
+    UInt32 isRunning;
+    UInt32 size = sizeof(isRunning);
+    if (CHECK_ERROR_AudioUnitGetProperty(m_audioUnit,
+                                         kAudioOutputUnitProperty_IsRunning,
+                                         kAudioUnitScope_Global, kAudioUnitInputBus,
+                                         &isRunning, &size))
       return false;
+
+    if (isRunning)
+      return true;
     
-    m_running = true;
+    m_queue.Open(m_queue.GetSize());
+
+#ifdef P_MACOSX
+    if (CHECK_ERROR(AudioConverterReset,(m_resampler)))
+      return false;
+#endif
+
+    if (CHECK_ERROR(AudioOutputUnitStart,(m_audioUnit)))
+      return false;
+
+    SetReadTimeout(m_timeout);
     PTRACE(5, "Started recording");
     return true;
   }
@@ -431,7 +744,7 @@ public:
     m_dataFormat.mSampleRate       = sampleRate;
     m_dataFormat.mBitsPerChannel   = bitsPerSample;
     m_dataFormat.mFramesPerPacket  = 1;
-    m_dataFormat.mBytesPerFrame    = m_dataFormat.mChannelsPerFrame * sizeof(SInt16);
+    m_dataFormat.mBytesPerFrame    = m_dataFormat.mChannelsPerFrame * (bitsPerSample+7)/8;
     m_dataFormat.mBytesPerPacket   = m_dataFormat.mBytesPerFrame * m_dataFormat.mFramesPerPacket;
     m_dataFormat.mFormatFlags      = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
 
@@ -459,18 +772,21 @@ public:
   
   virtual PBoolean SetBuffers(PINDEX size, PINDEX count)
   {
-    if (size == m_bufferSize && count == m_buffers.size())
+    if (count == m_bufferCount && size == m_bufferSize)
       return true;
+
+    if (!PAssert(size > 80 && count > 1, PInvalidParameter))
+      return false;
     
     bool notOpen = !IsOpen();
     
     PTRACE(4, "SetBuffers(" << size << ',' << count << ')' << (notOpen ? " closed" : " open"));
     
     Close();
-
-    m_bufferSize = size;
-    m_buffers.resize(count);
     
+    m_bufferSize = size;
+    m_bufferCount = count;
+
     return notOpen || InternalOpen();
   }
   
@@ -478,20 +794,52 @@ public:
   virtual PBoolean GetBuffers(PINDEX & size, PINDEX & count)
   {
     size = m_bufferSize;
-    count = m_buffers.size();
+    count = m_bufferCount;
     return true;
   }
   
   
   virtual PBoolean SetVolume(unsigned newVolume)
   {
-    return false;
+    if (!IsOpen() || activeDirection != Player)
+      return false;
+
+    Float32 volume = newVolume/100.0;
+#ifdef P_MACOSX
+    return !CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
+                                             kAudioDevicePropertyVolumeScalar,
+                                             kAudioUnitScope_Output, kAudioUnitOutputBus,
+                                             &volume, sizeof(Float32));
+#else
+    return !CHECK_ERROR_AudioSessionSetProperty(kAudioSessionProperty_CurrentHardwareOutputVolume,
+                                                sizeof(Float32), &volume);
+#endif
   }
   
   
   virtual PBoolean GetVolume(unsigned & oldVolume)
   {
-    return false;
+    oldVolume = 0;
+    
+    if (!IsOpen() || activeDirection != Player)
+      return false;
+    
+    Float32 volume = 0;
+    UInt32 size = sizeof(volume);
+#ifdef P_MACOSX
+    if (CHECK_ERROR_AudioUnitGetProperty(m_audioUnit,
+                                         kAudioDevicePropertyVolumeScalar,
+                                         kAudioUnitScope_Output, kAudioUnitOutputBus,
+                                         &volume, &size))
+      return false;
+#else
+    if (CHECK_ERROR_AudioSessionGetProperty(kAudioSessionProperty_CurrentHardwareOutputVolume,
+                                            &size, &volume))
+      return false;
+#endif
+
+    oldVolume = (unsigned)100*volume;
+    return true;
   }
   
   
