@@ -511,10 +511,6 @@ void PThread::Suspend(PBoolean susp)
     return;
   }
 
-#if defined(P_MACOSX) && (P_MACOSX <= 55)
-  // Suspend - warn the user with an Assertion
-  PAssertAlways("Cannot suspend threads on Mac OS X due to lack of pthread_kill()");
-#else
   if (!IsTerminated()) {
 
     // if suspending, then see if already suspended
@@ -542,7 +538,6 @@ void PThread::Suspend(PBoolean susp)
   }
 
   PAssertPTHREAD(pthread_mutex_unlock, (&PX_suspendMutex));
-#endif // P_MACOSX
 }
 
 

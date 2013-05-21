@@ -68,7 +68,7 @@
   #define  P_HAS_RESOLV_H 1         // set if using Unix-style DNS routines
   #include <arpa/nameser.h>
   #include <resolv.h>
-  #if (defined(P_MACOSX) && (P_MACOSX >= 700)) || defined(P_IOS)
+  #if defined(P_MACOSX) || defined(P_IOS)
     #include <arpa/nameser_compat.h>
   #endif
 
