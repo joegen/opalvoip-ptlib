@@ -287,7 +287,6 @@ protected:
       ioData->mNumberBuffers = 0;
     }
   }
-#endif // P_MACOSX
 
 
   bool InternalOpenDevice(AudioUnitElement busElement)
@@ -305,6 +304,7 @@ protected:
     PTRACE(1, "No such device as \"" << m_deviceName << '"');
     return false;
   }
+#endif // P_MACOSX
 
 
   bool InternalOpenPlayer()
@@ -318,9 +318,11 @@ protected:
                                          &flag, sizeof(flag)))
       return false;
 
+#ifdef P_MACOSX
     // Set the specific device
     if (!InternalOpenDevice(kAudioUnitOutputBus))
       return false;
+#endif
 
     // The player will take our PCM-16 sample format as is
     if (CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
@@ -369,10 +371,10 @@ protected:
                                          &flag, sizeof(flag)))
       return false;
     
+#ifdef P_MACOSX
     if (!InternalOpenDevice(kAudioUnitInputBus))
       return false;
     
-#ifdef P_MACOSX
     // In OS-X we need to convert the sample rate, so need to get it ...
     AudioStreamBasicDescription deviceFormat;
     UInt32 size = sizeof(deviceFormat);
@@ -464,8 +466,12 @@ protected:
     desc.componentSubType = kAudioUnitSubType_RemoteIO;
     
     {
-      if (CHECK_ERROR(AudioSessionInitialize,(NULL, NULL, NULL, NULL)))
-        return false;
+      static bool sessionInitialised;
+      if (!sessionInitialised) {
+        if (CHECK_ERROR(AudioSessionInitialize,(NULL, NULL, NULL, NULL)))
+          return false;
+        sessionInitialised = true;
+      }
       
       // We want to be able to open playback and recording streams
       UInt32 audioCategory = kAudioSessionCategory_PlayAndRecord;
@@ -593,12 +599,16 @@ public:
 
     os_handle = -1;
 
-    if (m_audioUnit != NULL)
+    if (m_audioUnit != NULL) {
       CHECK_SUCCESS(AudioComponentInstanceDispose,(m_audioUnit));
+      m_audioUnit = NULL;
+    }
     
 #ifdef P_MACOSX
-    if (m_resampler != NULL)
+    if (m_resampler != NULL) {
       CHECK_SUCCESS(AudioConverterDispose,(m_resampler));
+      m_resampler = NULL;
+    }
 #endif
     
     // Break any read/write block
