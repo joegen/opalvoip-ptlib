@@ -76,10 +76,12 @@ else # OS
   ifeq ($(OS),iPhoneOS)
     CPU := armv7
     VENDOR := apple
+    ABI = Mach-O
     HOST_CONFIG_PARAM := --enable-ios=iphone
   else ifeq ($(OS),iPhoneSimulator)
     CPU := x86
     VENDOR := apple
+    ABI = Mach-O
     HOST_CONFIG_PARAM := --enable-ios=simulator
   else ifeq ($(CPU),)
     $(error Must define a CPU for OS=$(OS))
