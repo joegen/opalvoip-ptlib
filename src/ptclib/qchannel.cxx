@@ -64,21 +64,21 @@ PQueueChannel::~PQueueChannel()
 
 PBoolean PQueueChannel::Open(PINDEX size)
 {
-  if (size == 0)
-    Close();
-  else {
-    mutex.Wait();
-    if (queueBuffer != NULL)
-      delete [] queueBuffer;
-    queueBuffer = new BYTE[size];
-    queueSize = size;
-    queueLength = enqueuePos = dequeuePos = 0;
-    os_handle = 1;
-    mutex.Signal();
+  Close();
 
-    unempty.Signal();
-    unfull.Signal();
-  }
+  if (size == 0)
+    return false;
+
+  mutex.Wait();
+
+  if ((queueBuffer = new BYTE[size]) == NULL)
+    return false;
+
+  queueSize = size;
+  queueLength = enqueuePos = dequeuePos = 0;
+  os_handle = 1;
+
+  mutex.Signal();
 
   return true;
 }
@@ -142,41 +142,43 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
   // should always have data now
   PAssert(queueLength > 0, "read queue signalled without data");
 
-  // To make things simpler, limit to amount to copy out of queue to till
-  // the end of the linear part of memory. Another loop around will get
-  // rest of data to dequeue
-  PINDEX copyLen = queueSize - dequeuePos;
+  while (queueLength > 0 && count > 0) {
+    // To make things simpler, limit to amount to copy out of queue to till
+    // the end of the linear part of memory. Another loop around will get
+    // rest of data to dequeue
+    PINDEX copyLen = queueSize - dequeuePos;
 
-  // But do not copy more than has actually been queued
-  if (copyLen > queueLength)
-    copyLen = queueLength;
+    // But do not copy more than has actually been queued
+    if (copyLen > queueLength)
+      copyLen = queueLength;
 
-  // Or more than has been requested
-  if (copyLen > count)
-    copyLen = count;
+    // Or more than has been requested
+    if (copyLen > count)
+      copyLen = count;
 
-  PAssert(copyLen > 0, "zero copy length");
+    PAssert(copyLen > 0, "zero copy length");
 
-  // Copy data out and increment pointer, decrement bytes yet to dequeue
-  memcpy(buffer, queueBuffer+dequeuePos, copyLen);
-  lastReadCount += copyLen;
-  buffer += copyLen;
-  count -= copyLen;
+    // Copy data out and increment pointer, decrement bytes yet to dequeue
+    memcpy(buffer, queueBuffer+dequeuePos, copyLen);
+    lastReadCount += copyLen;
+    buffer += copyLen;
+    count -= copyLen;
 
-  // Move the queue pointer along, wrapping to beginning
-  dequeuePos += copyLen;
-  if (dequeuePos >= queueSize)
-    dequeuePos = 0;
+    // Move the queue pointer along, wrapping to beginning
+    dequeuePos += copyLen;
+    if (dequeuePos >= queueSize)
+      dequeuePos = 0;
 
-  // If buffer was full, signal possibly blocked write of data to queue
-  // that it can write to queue now.
-  if (queueLength == queueSize) {
-    PTRACE(6, "QChan\tSignalling queue no longer full");
-    unfull.Signal();
+    // If buffer was full, signal possibly blocked write of data to queue
+    // that it can write to queue now.
+    if (queueLength == queueSize) {
+      PTRACE(6, "QChan\tSignalling queue no longer full");
+      unfull.Signal();
+    }
+
+    // Now decrement queue length by the amount we copied
+    queueLength -= copyLen;
   }
-
-  // Now decrement queue length by the amount we copied
-  queueLength -= copyLen;
 
   // unlock the buffer
   mutex.Signal();
@@ -197,66 +199,67 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
   }
 
   const BYTE * buffer = (BYTE *)buf;
-
-  /* If queue is full then we should block for the time specifed in the
-      write timeout.
-    */
-  while (queueLength == queueSize) {
-    mutex.Signal();
-
-    PTRACE_IF(6, writeTimeout > 0, "QChan\tBlocking on full queue");
-    if (!unfull.Wait(writeTimeout)) {
-      PTRACE(6, "QChan\tWrite timeout on full queue");
-      return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
-    }
-
-    mutex.Wait();
-
-    if (!IsOpen()) {
+  while (count > 0) {
+    /* If queue is full then we should block for the time specifed in the
+        write timeout.
+      */
+    while (queueLength == queueSize) {
       mutex.Signal();
-      return SetErrorValues(Interrupted, EINTR, LastWriteError);
+
+      PTRACE_IF(6, writeTimeout > 0, "QChan\tBlocking on full queue");
+      if (!unfull.Wait(writeTimeout)) {
+        PTRACE(6, "QChan\tWrite timeout on full queue");
+        return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
+      }
+
+      mutex.Wait();
+
+      if (!IsOpen()) {
+        mutex.Signal();
+        return SetErrorValues(Interrupted, EINTR, LastWriteError);
+      }
+    }
+
+    // Calculate number of bytes to copy
+    PINDEX copyLen = count;
+
+    // First don't copy more than are availble in queue
+    PINDEX bytesLeftInQueue = queueSize - queueLength;
+    if (copyLen > bytesLeftInQueue)
+      copyLen = bytesLeftInQueue;
+
+    // Then to make things simpler, limit to amount left till the end of the
+    // linear part of memory. Another loop around will get rest of data to queue
+    PINDEX bytesLeftInUnwrapped = queueSize - enqueuePos;
+    if (copyLen > bytesLeftInUnwrapped)
+      copyLen = bytesLeftInUnwrapped;
+
+    PAssert(copyLen > 0, "attempt to write zero bytes");
+
+    // Move the data in and increment pointer, decrement bytes yet to queue
+    memcpy(queueBuffer + enqueuePos, buffer, copyLen);
+    lastWriteCount += copyLen;
+    buffer += copyLen;
+    count -= copyLen;
+
+    // Move the queue pointer along, wrapping to beginning
+    enqueuePos += copyLen;
+    if (enqueuePos >= queueSize)
+      enqueuePos = 0;
+
+    // see if we need to signal reader that queue was empty
+    PBoolean queueWasEmpty = queueLength == 0;
+
+    // increment queue length by the amount we copied
+    queueLength += copyLen;
+
+    // signal reader if necessary
+    if (queueWasEmpty) {
+      PTRACE(6, "QChan\tSignalling queue no longer empty");
+      unempty.Signal();
     }
   }
-
-  // Calculate number of bytes to copy
-  PINDEX copyLen = count;
-
-  // First don't copy more than are availble in queue
-  PINDEX bytesLeftInQueue = queueSize - queueLength;
-  if (copyLen > bytesLeftInQueue)
-    copyLen = bytesLeftInQueue;
-
-  // Then to make things simpler, limit to amount left till the end of the
-  // linear part of memory. Another loop around will get rest of data to queue
-  PINDEX bytesLeftInUnwrapped = queueSize - enqueuePos;
-  if (copyLen > bytesLeftInUnwrapped)
-    copyLen = bytesLeftInUnwrapped;
-
-  PAssert(copyLen > 0, "attempt to write zero bytes");
-
-  // Move the data in and increment pointer, decrement bytes yet to queue
-  memcpy(queueBuffer + enqueuePos, buffer, copyLen);
-  lastWriteCount += copyLen;
-  buffer += copyLen;
-  count -= copyLen;
-
-  // Move the queue pointer along, wrapping to beginning
-  enqueuePos += copyLen;
-  if (enqueuePos >= queueSize)
-    enqueuePos = 0;
-
-  // see if we need to signal reader that queue was empty
-  PBoolean queueWasEmpty = queueLength == 0;
-
-  // increment queue length by the amount we copied
-  queueLength += copyLen;
-
-  // signal reader if necessary
-  if (queueWasEmpty) {
-    PTRACE(6, "QChan\tSignalling queue no longer empty");
-    unempty.Signal();
-  }
-
+  
   mutex.Signal();
 
   return true;

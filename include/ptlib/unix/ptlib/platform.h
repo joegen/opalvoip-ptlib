@@ -314,10 +314,6 @@ extern "C" {
 #define P_IPHONEOS P_IOS // For backward compatibility
 #endif
 
-#if defined (P_MACOSX) && (P_MACOSX < 800)
-  typedef int socklen_t;
-#endif
- 
 #define P_STRTOQ strtoq
 #define P_STRTOUQ strtouq
 
