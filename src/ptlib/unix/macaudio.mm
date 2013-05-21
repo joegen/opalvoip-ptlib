@@ -137,7 +137,46 @@ protected:
   PINDEX                      m_bufferSize;
   PINDEX                      m_bufferCount;
 
+  
+#ifndef P_MACOSX
+  struct Session
+  {
+    set<PSoundChannel_Apple *> m_channels;
 
+    Session()
+    {
+      CHECK_ERROR(AudioSessionInitialize,(NULL, NULL, NULL, NULL));
+
+      // We want to be able to open playback and recording streams
+      UInt32 audioCategory = kAudioSessionCategory_PlayAndRecord;
+      CHECK_ERROR_AudioSessionSetProperty(kAudioSessionProperty_AudioCategory,
+                                          sizeof(audioCategory), &audioCategory);
+    }
+    
+    void CreatedChannel(PSoundChannel_Apple * channel)
+    {
+      if (m_channels.empty())
+        CHECK_ERROR(AudioSessionSetActive,(true));
+
+      m_channels.insert(channel);
+    }
+
+    void DestroyedChannel(PSoundChannel_Apple * channel)
+    {
+      m_channels.erase(channel);
+      
+      if ( m_channels.empty())
+        CHECK_ERROR(AudioSessionSetActive,(false));
+    }
+  };
+  
+  static Session & GetSession()
+  {
+    static Session session;
+    return session;
+  }
+#endif
+  
   class Devices : public std::map<PCaselessString, AudioDeviceID>
   {
     public:
@@ -464,28 +503,15 @@ protected:
     desc.componentSubType = kAudioUnitSubType_HALOutput;
 #else
     desc.componentSubType = kAudioUnitSubType_RemoteIO;
-    
+
     {
-      static bool sessionInitialised;
-      if (!sessionInitialised) {
-        if (CHECK_ERROR(AudioSessionInitialize,(NULL, NULL, NULL, NULL)))
-          return false;
-        sessionInitialised = true;
-      }
-      
-      // We want to be able to open playback and recording streams
-      UInt32 audioCategory = kAudioSessionCategory_PlayAndRecord;
-      if (CHECK_ERROR_AudioSessionSetProperty(kAudioSessionProperty_AudioCategory,
-                                               sizeof(audioCategory), &audioCategory))
-        return false;
-      
       Float32 bufferDuration = m_bufferSize/2 * 1000/GetSampleRate();
       if (CHECK_ERROR_AudioSessionSetProperty(kAudioSessionProperty_PreferredHardwareIOBufferDuration,
                                                sizeof(bufferDuration), &bufferDuration))
         return false;
     }
 #endif
-    
+
     AudioComponent component = AudioComponentFindNext(NULL, &desc);
     if (component == NULL)
       return false;
@@ -512,10 +538,6 @@ protected:
     if (CHECK_ERROR(AudioUnitInitialize,(m_audioUnit)))
       return false;
 
-#ifndef P_MACOSX
-    AudioSessionSetActive(true);
-#endif
-
     m_timeout.SetInterval(std::max(1000, (int)(m_bufferSize*1000/GetSampleRate())));
 
     PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
@@ -533,6 +555,10 @@ public:
     , m_bufferSize(320)
     , m_bufferCount(2)
   {
+#ifndef P_MACOSX
+    GetSession().CreatedChannel(this);
+#endif
+
     SetFormat(1, 8000, 16);
     PIndirectChannel::Open(m_queue);
   }
@@ -541,6 +567,10 @@ public:
   ~PSoundChannel_Apple()
   {
     Close();
+
+#ifndef P_MACOSX
+    GetSession().DestroyedChannel(this);
+#endif
   }
   
   
@@ -572,11 +602,16 @@ public:
   {
     Close();
     
-    PTRACE(4, "Open(" << deviceName << ',' << dir << ',' << numChannels << ',' << sampleRate << ',' << bitsPerSample << ')');
-    
+    PTRACE(4, "Open("
+           << deviceName << ','
+           << dir << ','
+           << numChannels << ','
+           << sampleRate << ','
+           << bitsPerSample << ')');
+
     activeDirection = dir;
     m_deviceName = deviceName;
-    
+
     return SetFormat(numChannels, sampleRate, bitsPerSample) && InternalOpen();    
   }
   
