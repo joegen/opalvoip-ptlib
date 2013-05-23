@@ -189,7 +189,7 @@ bool PHTTPServiceProcess::ListenForHTTP(const PString & interfaces,
 
   bool atLeastOne = false;
   for (PINDEX i = 0; i < ifaces.GetSize(); ++i) {
-    PIPSocket::Address binding = ifaces[i];
+    PIPSocket::Address binding(ifaces[i]);
     if (binding.IsValid()) {
       PTCPSocket * listener = new PTCPSocket(port);
       if (listener->Listen(binding, 5, 0, reuse)) {

@@ -89,7 +89,7 @@ class PwxString : public wxString
     inline operator PURL() const { return ToUTF8().data(); }
 #endif
 #if defined(PTLIB_IPSOCKET_H)
-    inline operator PIPSocket::Address() const { return PString(ToUTF8().data()); }
+    inline operator PIPSocket::Address() const { return PIPSocket::Address(PString(ToUTF8().data())); }
 #endif
     inline friend ostream & operator<<(ostream & stream, const PwxString & string) { return stream << string.ToUTF8(); }
     inline friend wostream & operator<<(wostream & stream, const PwxString & string) { return stream << string.c_str(); }
