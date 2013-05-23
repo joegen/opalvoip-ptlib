@@ -72,7 +72,7 @@ class PIPSocket : public PSocket
         /**Create an IP address from string notation,
            eg dot notation x.x.x.x. for IPv4, or colon notation x:x:x::xxx for IPv6.
           */
-        Address(const PString & dotNotation);
+        explicit Address(const PString & dotNotation);
 
         /// Create an IPv4 or IPv6 address from 4 or 16 byte values.
         Address(PINDEX len, const BYTE * bytes, int scope = 0);

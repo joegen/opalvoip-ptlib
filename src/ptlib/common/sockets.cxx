@@ -1133,7 +1133,7 @@ PString PIPSocket::GetHostName()
 PString PIPSocket::GetHostName(const PString & hostname)
 {
   // lookup the host address using inet_addr, assuming it is a "." address
-  Address temp = hostname;
+  Address temp(hostname);
   if (temp.IsValid())
     return GetHostName(temp);
 
@@ -1192,7 +1192,7 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   PStringArray aliases;
 
   // lookup the host address using inet_addr, assuming it is a "." address
-  Address addr = hostname;
+  Address addr(hostname);
   if (addr.IsValid())
     pHostByAddr().GetHostAliases(addr, aliases);
   else
