@@ -3227,6 +3227,9 @@ int PReadEnum(std::istream & strm, int begin, int end, char const * const * name
     strm.putback(name[--i]);
   } while (i > 0);
 
+  strm.clear();
+  strm.setstate(ios::failbit);
+
   return end;
 }
 
