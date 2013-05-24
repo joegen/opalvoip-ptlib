@@ -132,7 +132,7 @@ class PGstInitialiser : public PProcessStartup
         PTRACE(3, "GStreamer\tUsing version " << gst_version_string());
 
 #if PTRACING
-        gst_debug_remove_log_function(NULL);
+        gst_debug_remove_log_function(gst_debug_log_default);
         gst_debug_add_log_function(LogFunction, this);
         gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
         gst_debug_set_active(true);
@@ -148,12 +148,13 @@ class PGstInitialiser : public PProcessStartup
     virtual void OnShutdown()
     {
       if (m_initialised) {
-        gst_deinit();
-
 #if PTRACING
         gst_debug_set_active(false);
+        gst_debug_set_default_threshold(GST_LEVEL_NONE);
         gst_debug_remove_log_function(LogFunction);
 #endif
+
+        gst_deinit();
       }
     }
 };
