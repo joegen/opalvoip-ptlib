@@ -497,7 +497,7 @@ $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 	$(Q_CC)$(CC) $(CPPFLAGS) -M $< >> $@
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
-	$(YACC) $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
+	$(YACC) -o $(COMMON_SRC_DIR)/getdate.tab.c $(COMMON_SRC_DIR)/getdate.y
 
 
 ################################################################################

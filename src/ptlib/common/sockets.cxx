@@ -717,7 +717,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     struct hostent hostEnt;
     host_info = Vx_gethostbyaddr(addr.GetPointer(), &hostEnt);
 
-#elif defined P_LINUX || defined(P_GNU_HURD)
+#elif defined P_LINUX || defined(P_GNU_HURD) || defined(P_FREEBSD)
 
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
