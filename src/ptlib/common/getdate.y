@@ -105,20 +105,27 @@ struct Variables {
 #define VARIABLE ((struct Variables*)parseParam)
 
 
-#define YYPURE		1
 #define YYLEX_PARAM	VARIABLE
 #define YYPARSE_PARAM	parseParam
 
 #define yyparse		PTime_yyparse
-#define yylex		PTime_yylex
 #define yyerror		PTime_yyerror
 
-#define GCC_VERSION (__GNUC__ * 10000 \
-                    + __GNUC_MINOR__ * 100 \
-                    + __GNUC_PATCHLEVEL__)
+#ifdef YYBISON
+  #define yylex		PTime_yylex
+  #define LOCK()
+  #define UNLOCK()
+#else
+  #define yylex()	PTime_yylex(&yylval, VARIABLE)
+
+  #include <pthread.h>
+  static pthread_mutex_t PTime_mutex = PTHREAD_MUTEX_INITIALIZER;
+  #define LOCK()   pthread_mutex_lock(&PTime_mutex);
+  #define UNLOCK() pthread_mutex_unlock(&PTime_mutex);
+#endif
+
 
 static int yyparse(void *); 
-static int yylex();
 
 #ifdef __GNUC__
 static int yyerror(char const *msg);
@@ -132,7 +139,6 @@ static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
 
 %}
 
-%pure_parser
 
 %union {
     time_t		Number;
@@ -727,7 +733,7 @@ static int LookupWord(char * buff, YYSTYPE * yylval, struct Variables * vars)
 #ifndef __GNUC__
 static
 #endif
-int yylex(YYSTYPE * yylval, struct Variables * vars)
+int PTime_yylex(YYSTYPE * yylval, struct Variables * vars)
 {
     register char	*p;
     char		buff[20];
@@ -978,7 +984,9 @@ time_t STDAPICALLTYPE PTimeParse(void * inputStream, struct tm * now, int timezo
     var.yyHaveTime = 0;
     var.yyHaveZone = 0;
 
+    LOCK();
     yyparse(&var);
+    UNLOCK();
 
     if (var.yyHaveTime > 1 || var.yyHaveZone > 1 ||
 	var.yyHaveDate > 1 || var.yyHaveDay > 1)
