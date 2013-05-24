@@ -47,6 +47,13 @@ else ifndef PTLIBDIR
   PTLIB_INCFLAGS := $(shell pkg-config ptlib --cflags-only-I)
   PTLIB_LIBDIR := $(shell pkg-config ptlib --variable=libdir)
 else
+  ifeq (,$(target))
+    ifneq (,$(OS))
+      ifneq (,$(CPU))
+        target = $(OS)_$(CPU)
+      endif
+    endif
+  endif
   ifneq (,$(wildcard $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)))
     include $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
   else
