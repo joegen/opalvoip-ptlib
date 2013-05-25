@@ -280,6 +280,7 @@
 #undef P_TELNET
 #undef P_CLI
 #undef P_ODBC
+#undef P_ODBC_DEFINES_WINDOWS_TYPES
 #undef P_SERIAL
 #undef P_POP3SMTP
 #undef P_CONFIG_FILE
