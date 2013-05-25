@@ -1811,7 +1811,14 @@ PTLIB_MODULE_OPTION(
    [],
    [-lodbc],
    [#include <sql.h>],
-   [SQLFreeHandle(0, 0)]
+   [SQLFreeHandle(0, 0)],
+   [MY_COMPILE_IFELSE(
+      [ODBC defines Windows types],
+      [$ODBC_CFLAGS],
+      [#include <sqltypes.h>],
+      [DWORD dw = 0],
+      [AC_DEFINE(P_ODBC_DEFINES_WINDOWS_TYPES, 1)]
+   )]
 )
 
 
