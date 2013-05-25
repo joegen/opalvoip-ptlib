@@ -217,6 +217,9 @@ AC_PROG_YACC()
 if test -z "$YACC" ; then
    AC_MSG_ERROR(parser generator (e.g. bison) is required, 1)
 fi
+if test "$YACC" = "bison -y" ; then
+  YACC="$YACC -Dapi.pure=full"
+fi
 
 
 AC_LANG(C++)
