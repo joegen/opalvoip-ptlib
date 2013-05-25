@@ -107,12 +107,11 @@ struct Variables {
     time_t	yyRelSeconds;
 };
 
-#define VARIABLE ((struct Variables*)parseParam)
+static int PTime_yyparse(void *);
 
-
-#define YYLEX_PARAM	VARIABLE
+#define VARIABLE	((struct Variables*)parseParam)
 #define YYPARSE_PARAM	parseParam
-
+#define YYLEX_PARAM	YYPARSE_PARAM,VARIABLE
 #define yyparse		PTime_yyparse
 #define yyerror		PTime_yyerror
 
@@ -139,7 +138,6 @@ struct Variables {
 %{
 static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
 static int PTime_yylex(YYSTYPE * yylval, struct Variables * vars);
-static int yyparse(void *);
 static int yyerror(char const *msg);
 %}
 
