@@ -37,10 +37,9 @@
 #endif
 
 
-#ifdef YYPURE
-#undef YYPURE
-#endif
+#ifndef YYPURE
 #define YYPURE 1
+#endif
 
 extern int  STDAPICALLTYPE PTimeGetChar(void * stream);
 extern void STDAPICALLTYPE PTimeUngetChar(void * stream, int c);
@@ -110,8 +109,8 @@ struct Variables {
 static int PTime_yyparse(void *);
 
 #define VARIABLE	((struct Variables*)parseParam)
+#define YYLEX_PARAM	VARIABLE
 #define YYPARSE_PARAM	parseParam
-#define YYLEX_PARAM	YYPARSE_PARAM,VARIABLE
 #define yyparse		PTime_yyparse
 #define yyerror		PTime_yyerror
 
@@ -138,7 +137,7 @@ static int PTime_yyparse(void *);
 %{
 static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
 static int PTime_yylex(YYSTYPE * yylval, struct Variables * vars);
-static int yyerror(char const *msg);
+static void yyerror(char const *msg);
 %}
 
 %token	tAGO tDAY tDAYZONE tID tMERIDIAN tMINUTE_UNIT tMONTH tMONTH_UNIT
@@ -1018,9 +1017,8 @@ time_t STDAPICALLTYPE PTimeParse(void * inputStream, struct tm * now, int timezo
 #pragma warning(disable:4028 4100 4211)
 #endif
 
-int yyerror(const char * s)
+void yyerror(const char * s)
 {
-  return 0;
 }
 
 #ifdef _MSC_VER
