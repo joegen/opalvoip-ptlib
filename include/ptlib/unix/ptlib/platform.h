@@ -500,15 +500,14 @@ typedef intptr_t      INT;
 
 // Create "Windows" style definitions.
 
-typedef void     VOID;
-typedef char     CHAR;
-typedef uint8_t  BYTE;
-typedef uint16_t WORD;
-typedef uint32_t DWORD;
-
-#if P_ODBC
+#if P_ODBC_DEFINES_WINDOWS_TYPES
   #include <sqltypes.h>
 #else
+  typedef void     VOID;
+  typedef char     CHAR;
+  typedef uint8_t  BYTE;
+  typedef uint16_t WORD;
+  typedef uint32_t DWORD;
 
   typedef signed char             SCHAR;
   typedef unsigned char           UCHAR;
@@ -544,7 +543,7 @@ typedef uint32_t DWORD;
     typedef const WCHAR *           LPCWSTR;
   #endif
 
-#endif // P_ODBC
+#endif // P_ODBC_DEFINES_WINDOWS_TYPES
 
 
 #ifndef INT64_MAX
