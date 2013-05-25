@@ -37,11 +37,16 @@
 #endif
 
 
+#ifdef YYPURE
+#undef YYPURE
+#endif
+#define YYPURE 1
+
 extern int  STDAPICALLTYPE PTimeGetChar(void * stream);
 extern void STDAPICALLTYPE PTimeUngetChar(void * stream, int c);
-int STDAPICALLTYPE PTimeGetDateOrder();
-int STDAPICALLTYPE PTimeIsMonthName(const char *, int, int);
-int STDAPICALLTYPE PTimeIsDayName(const char *, int, int);
+extern int  STDAPICALLTYPE PTimeGetDateOrder();
+extern int  STDAPICALLTYPE PTimeIsMonthName(const char *, int, int);
+extern int  STDAPICALLTYPE PTimeIsDayName(const char *, int, int);
 
 
 #define EPOCH		1970
@@ -124,26 +129,19 @@ struct Variables {
   #define UNLOCK() pthread_mutex_unlock(&PTime_mutex);
 #endif
 
-
-static int yyparse(void *); 
-
-#ifdef __GNUC__
-static int yyerror(char const *msg);
-#else
-static void yyerror(char const *msg);
-#endif
-
-
-static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
-
-
 %}
-
 
 %union {
     time_t		Number;
     enum _MERIDIAN	Meridian;
 }
+
+%{
+static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
+static int PTime_yylex(YYSTYPE * yylval, struct Variables * vars);
+static int yyparse(void *);
+static int yyerror(char const *msg);
+%}
 
 %token	tAGO tDAY tDAYZONE tID tMERIDIAN tMINUTE_UNIT tMONTH tMONTH_UNIT
 %token	tSNUMBER tS4DIGITNUMBER tUNUMBER t4DIGITNUMBER t6DIGITNUMBER t8DIGITNUMBER
@@ -730,10 +728,7 @@ static int LookupWord(char * buff, YYSTYPE * yylval, struct Variables * vars)
 #pragma warning(disable:4211)
 #endif
 
-#ifndef __GNUC__
-static
-#endif
-int PTime_yylex(YYSTYPE * yylval, struct Variables * vars)
+static int PTime_yylex(YYSTYPE * yylval, struct Variables * vars)
 {
     register char	*p;
     char		buff[20];
@@ -1025,16 +1020,10 @@ time_t STDAPICALLTYPE PTimeParse(void * inputStream, struct tm * now, int timezo
 #pragma warning(disable:4028 4100 4211)
 #endif
 
-#ifdef __GNUC__
 int yyerror(const char * s)
 {
   return 0;
 }
-#else
-static void yyerror(const char * s)
-{
-}
-#endif
 
 #ifdef _MSC_VER
 #pragma warning(default:4028 4100 4211)
