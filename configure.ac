@@ -218,7 +218,7 @@ if test -z "$YACC" ; then
    AC_MSG_ERROR(parser generator (e.g. bison) is required, 1)
 fi
 if test "$YACC" = "bison -y" ; then
-  YACC="$YACC -Dapi.pure=full"
+  YACC="$YACC -Dapi.pure=true"
 fi
 
 

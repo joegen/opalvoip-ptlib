@@ -6142,7 +6142,7 @@ if test -z "$YACC" ; then
    as_fn_error 1 "parser generator (e.g. bison) is required" "$LINENO" 5
 fi
 if test "$YACC" = "bison -y" ; then
-  YACC="$YACC -Dapi.pure=full"
+  YACC="$YACC -Dapi.pure=true"
 fi
 
 
