@@ -255,9 +255,9 @@ AC_DEFUN([MY_MODULE_OPTION],[
       fi
    fi
 
-   MY_IFELSE([usable], [$9], [$10])
-
    AC_SUBST($1[_USABLE], $usable)
+
+   MY_IFELSE([usable], [$9], [$10])
 ])
 
 
