@@ -68,6 +68,6 @@ dnl $10 failure code
 dnl $11 optional dependency
 AC_DEFUN([PTLIB_MODULE_OPTION],[
    MY_MODULE_OPTION([$1],[$2],[$3],[$4],[$5],[$6],[$7],[$8],[$9],[$10],[$11])
-   PTLIB_SUBST($1, $usable)
+   PTLIB_SUBST([$1], [$$1[_USABLE]])
 ])
 

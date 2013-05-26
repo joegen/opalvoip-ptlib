@@ -1816,7 +1816,7 @@ PTLIB_MODULE_OPTION(
       [ODBC defines Windows types],
       [$ODBC_CFLAGS],
       [#include <sqltypes.h>],
-      [DWORD dw = 0],
+      [BYTE b],
       [AC_DEFINE(P_ODBC_DEFINES_WINDOWS_TYPES, 1)]
    )]
 )

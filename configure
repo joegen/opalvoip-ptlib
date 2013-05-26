@@ -633,8 +633,8 @@ V4L2_CFLAGS
 HAS_V4L
 PTLIB_PORTAUDIO
 HAS_PORTAUDIO
-PORTAUDIO_USABLE
 HAS_PORTMIXER
+PORTAUDIO_USABLE
 PORTAUDIO_LIBS
 PORTAUDIO_CFLAGS
 PORTAUDIO_SYSTEM
@@ -9468,15 +9468,15 @@ fi
       fi
    fi
 
-
-
-
-
    OPENLDAP_USABLE=$usable
 
 
 
-   HAS_OPENLDAP=$usable
+
+
+
+
+   HAS_OPENLDAP=$OPENLDAP_USABLE
 
    if test "x$HAS_OPENLDAP" = "xyes" ; then
       HAS_OPENLDAP=1
@@ -9693,6 +9693,9 @@ fi
       fi
    fi
 
+   OPENSSL_USABLE=$usable
+
+
 
    if test "x$usable" = "xyes"; then :
 
@@ -9823,11 +9826,8 @@ fi
 fi
 
 
-   OPENSSL_USABLE=$usable
 
-
-
-   HAS_OPENSSL=$usable
+   HAS_OPENSSL=$OPENSSL_USABLE
 
    if test "x$HAS_OPENSSL" = "xyes" ; then
       HAS_OPENSSL=1
@@ -10086,15 +10086,15 @@ fi
       fi
    fi
 
-
-
-
-
    EXPAT_USABLE=$usable
 
 
 
-   HAS_EXPAT=$usable
+
+
+
+
+   HAS_EXPAT=$EXPAT_USABLE
 
    if test "x$HAS_EXPAT" = "xyes" ; then
       HAS_EXPAT=1
@@ -10310,15 +10310,15 @@ fi
       fi
    fi
 
-
-
-
-
    LUA_USABLE=$usable
 
 
 
-   HAS_LUA=$usable
+
+
+
+
+   HAS_LUA=$LUA_USABLE
 
    if test "x$HAS_LUA" = "xyes" ; then
       HAS_LUA=1
@@ -10552,15 +10552,15 @@ fi
       fi
    fi
 
-
-
-
-
    V8_USABLE=$usable
 
 
 
-   HAS_V8=$usable
+
+
+
+
+   HAS_V8=$V8_USABLE
 
    if test "x$HAS_V8" = "xyes" ; then
       HAS_V8=1
@@ -13564,15 +13564,15 @@ fi
       fi
    fi
 
-
-
-
-
    SDL_USABLE=$usable
 
 
 
-   HAS_SDL=$usable
+
+
+
+
+   HAS_SDL=$SDL_USABLE
 
    if test "x$HAS_SDL" = "xyes" ; then
       HAS_SDL=1
@@ -13789,15 +13789,15 @@ fi
       fi
    fi
 
-
-
-
-
    GSTREAMER_USABLE=$usable
 
 
 
-   HAS_GSTREAMER=$usable
+
+
+
+
+   HAS_GSTREAMER=$GSTREAMER_USABLE
 
    if test "x$HAS_GSTREAMER" = "xyes" ; then
       HAS_GSTREAMER=1
@@ -14031,6 +14031,9 @@ fi
       fi
    fi
 
+   ODBC_USABLE=$usable
+
+
 
    if test "x$usable" = "xyes"; then :
 
@@ -14044,7 +14047,7 @@ $as_echo_n "checking ODBC defines Windows types... " >&6; }
 int
 main ()
 {
-DWORD dw = 0
+BYTE b
   ;
   return 0;
 }
@@ -14071,11 +14074,8 @@ fi
 fi
 
 
-   ODBC_USABLE=$usable
 
-
-
-   HAS_ODBC=$usable
+   HAS_ODBC=$ODBC_USABLE
 
    if test "x$HAS_ODBC" = "xyes" ; then
       HAS_ODBC=1
@@ -15041,6 +15041,9 @@ fi
       fi
    fi
 
+   PORTAUDIO_USABLE=$usable
+
+
 
    if test "x$usable" = "xyes"; then :
   ac_fn_cxx_check_header_mongrel "$LINENO" "portmixer.h" "ac_cv_header_portmixer_h" "$ac_includes_default"
@@ -15060,11 +15063,8 @@ fi
 fi
 
 
-   PORTAUDIO_USABLE=$usable
 
-
-
-   HAS_PORTAUDIO=$usable
+   HAS_PORTAUDIO=$PORTAUDIO_USABLE
 
    if test "x$HAS_PORTAUDIO" = "xyes" ; then
       HAS_PORTAUDIO=1
