@@ -10120,6 +10120,7 @@ fi
 
 
 
+LUA_PKG=`pkg-config --list-all | sed -n "s/\(lua[0-9\.-]*\).*/\1/p" | head -1`
 
 
    LUA_SYSTEM="yes"
@@ -10190,12 +10191,12 @@ if test -n "$LUA_CFLAGS"; then
     pkg_cv_LUA_CFLAGS="$LUA_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lua\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "lua") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$LUA_PKG\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$LUA_PKG") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LUA_CFLAGS=`$PKG_CONFIG --cflags "lua" 2>/dev/null`
+  pkg_cv_LUA_CFLAGS=`$PKG_CONFIG --cflags "$LUA_PKG" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -10207,12 +10208,12 @@ if test -n "$LUA_LIBS"; then
     pkg_cv_LUA_LIBS="$LUA_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lua\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "lua") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$LUA_PKG\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$LUA_PKG") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LUA_LIBS=`$PKG_CONFIG --libs "lua" 2>/dev/null`
+  pkg_cv_LUA_LIBS=`$PKG_CONFIG --libs "$LUA_PKG" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -10233,9 +10234,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LUA_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "lua" 2>&1`
+	        LUA_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "$LUA_PKG" 2>&1`
         else
-	        LUA_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "lua" 2>&1`
+	        LUA_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "$LUA_PKG" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LUA_PKG_ERRORS" >&5
