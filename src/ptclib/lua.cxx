@@ -47,6 +47,9 @@
   #pragma comment(lib, P_LUA_LIBRARY)
 #endif
 
+#if LUA_VERSION_NUM > 501
+  #define lua_objlen lua_rawlen
+#endif
 
 #define PTraceModule() "Lua"
 
