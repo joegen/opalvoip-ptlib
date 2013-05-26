@@ -503,44 +503,40 @@ typedef intptr_t      INT;
 #if P_ODBC_DEFINES_WINDOWS_TYPES
   #include <sqltypes.h>
 #else
-  typedef void     VOID;
-  typedef char     CHAR;
-  typedef uint8_t  BYTE;
-  typedef uint16_t WORD;
-  typedef uint32_t DWORD;
+  typedef void            VOID;
+  typedef uint8_t         BYTE;
+  typedef uint16_t        WORD;
+  typedef uint32_t        DWORD;
 
-  typedef signed char             SCHAR;
-  typedef unsigned char           UCHAR;
-  typedef short                   SHORT;
-  typedef signed short            SSHORT;
-  typedef unsigned short          USHORT;
-  typedef  int16_t                SWORD;
-  typedef uint16_t                UWORD;
-  typedef long                    LONG;
-  typedef signed long             SLONG;
-  typedef unsigned long           ULONG;
-  typedef uint32_t                UDWORD;
-  typedef int32_t                 SDWORD;
+  typedef char            CHAR;
+  typedef signed char     SCHAR;
+  typedef unsigned char   UCHAR;
+  typedef short           SHORT;
+  typedef signed short    SSHORT;
+  typedef unsigned short  USHORT;
+  typedef long            LONG;
+  typedef signed long     SLONG;
+  typedef unsigned long   ULONG;
 
-  typedef float                   SFLOAT;
-  typedef double                  SDOUBLE;
-  typedef double                  LDOUBLE;
+  typedef float           SFLOAT;
+  typedef double          SDOUBLE;
+  typedef double          LDOUBLE;
 
-  typedef void *                  PTR;
-  typedef void *                  LPVOID;
-  typedef CHAR *                  LPSTR;
+  typedef void *          PTR;
+  typedef void *          LPVOID;
+  typedef CHAR *          LPSTR;
 
-  typedef const CHAR *            LPCSTR;
-  typedef DWORD *                 LPDWORD;
+  typedef const CHAR *    LPCSTR;
+  typedef DWORD *         LPDWORD;
   #define FAR
 
-  typedef signed short            RETCODE;
-  typedef void *                  HWND;
+  typedef signed short    RETCODE;
+  typedef void *          HWND;
 
   #ifdef P_HAS_WCHAR
-    typedef wchar_t                 WCHAR;
-    typedef WCHAR *                 LPWSTR;
-    typedef const WCHAR *           LPCWSTR;
+    typedef wchar_t       WCHAR;
+    typedef WCHAR *       LPWSTR;
+    typedef const WCHAR * LPCWSTR;
   #endif
 
 #endif // P_ODBC_DEFINES_WINDOWS_TYPES
