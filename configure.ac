@@ -1450,11 +1450,12 @@ dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
 dnl MSWIN_CHECK_DIR  lua,%ProgramFiles%\Lua\5.1
 dnl MSWIN_CHECK_DIR  lua,%ProgramW6432%\Lua\5.1
 
+LUA_PKG=`pkg-config --list-all | sed -n "s/\(lua[[0-9\.-]]*\).*/\1/p" | head -1`
 PTLIB_MODULE_OPTION(
    [LUA],
    [lua],
    [Lua script support],
-   [lua], 
+   [$LUA_PKG], 
    [],[],
    [#include <lua.hpp>],
    [luaL_newstate()]
