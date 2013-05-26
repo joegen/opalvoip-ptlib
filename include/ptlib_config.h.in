@@ -648,14 +648,15 @@
 // OpenLDAP
 //
 
-#undef P_LDAP
+#undef P_OPENLDAP
 #undef P_LDAP_WIN64
 #undef P_LDAP_WIN32
 #undef P_LDAP_WINCE
 
 #if (defined(P_LDAP_WIN64) &&  defined(P_64BIT)                        ) || \
     (defined(P_LDAP_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_LDAP_WINCE)                      &&  defined(_WIN32_WCE))
+    (defined(P_LDAP_WINCE)                      &&  defined(_WIN32_WCE)) || \
+             P_OPENLDAP
   #define P_LDAP 1
 #endif
 
