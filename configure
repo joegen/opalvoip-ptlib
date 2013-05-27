@@ -6037,7 +6037,7 @@ $as_echo "$as_me: PTLIBDIR environment variable detected as $PTLIBDIR" >&6;}
    VERSION_DIR="$PTLIBDIR"
 else
    makedir="\${datarootdir}/ptlib/make"
-   VERSION_DIR="."
+   VERSION_DIR="$srcdir"
 fi
 
 
