@@ -192,7 +192,7 @@ if test "x$PTLIBDIR" != "x" ; then
    VERSION_DIR="$PTLIBDIR"
 else
    makedir="\${datarootdir}/ptlib/make"
-   VERSION_DIR="."
+   VERSION_DIR="$srcdir"
 fi
 
 AC_SUBST(makedir)
