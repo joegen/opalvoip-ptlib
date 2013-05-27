@@ -128,8 +128,8 @@ static unsigned redistribute(unsigned value, unsigned minimum, unsigned maximum)
 {
   if (minimum >= maximum)
     return maximum;
-  unsigned range = maximum - minimum;
-  while (value > range)
+  unsigned range = maximum - minimum + 1;
+  while (value >= range)
     value = (value/range) ^ (value%range);
   return value + minimum;
 }
