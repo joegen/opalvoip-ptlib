@@ -67,7 +67,8 @@ PBoolean PSafeObject::SafeReference()
 #endif
   }
 
-  PTRACE(7, "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
   return true;
 }
 
@@ -89,7 +90,8 @@ PBoolean PSafeObject::SafeDereference()
 #endif
   safetyMutex.Signal();
 
-  PTRACE(7, "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
 
   return mayBeDeleted;
 }
@@ -97,7 +99,8 @@ PBoolean PSafeObject::SafeDereference()
 
 PBoolean PSafeObject::LockReadOnly() const
 {
-  PTRACE(7, "SafeColl\tWaiting read ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tWaiting read ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
@@ -108,21 +111,24 @@ PBoolean PSafeObject::LockReadOnly() const
 
   safetyMutex.Signal();
   safeInUse->StartRead();
-  PTRACE(7, "SafeColl\tLocked read ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tLocked read ("<<(void *)this<<")");
   return true;
 }
 
 
 void PSafeObject::UnlockReadOnly() const
 {
-  PTRACE(7, "SafeColl\tUnlocked read ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tUnlocked read ("<<(void *)this<<")");
   safeInUse->EndRead();
 }
 
 
 PBoolean PSafeObject::LockReadWrite()
 {
-  PTRACE(7, "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
@@ -133,14 +139,16 @@ PBoolean PSafeObject::LockReadWrite()
 
   safetyMutex.Signal();
   safeInUse->StartWrite();
-  PTRACE(7, "SafeColl\tLocked readWrite ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tLocked readWrite ("<<(void *)this<<")");
   return true;
 }
 
 
 void PSafeObject::UnlockReadWrite()
 {
-  PTRACE(7, "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
   safeInUse->EndWrite();
 }
 
