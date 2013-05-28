@@ -1301,7 +1301,7 @@ PTLIB_MODULE_OPTION(
    [Open LDAP support],
    [ldap],
    [],
-   [-lldap],
+   [-lldap -llber],
    [#include <ldap.h>],
    [ldap_create(0)],
    [],
