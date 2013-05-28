@@ -111,12 +111,12 @@ struct Variables {
 static int PTime_yyparse(void *);
 
 #define VARIABLE	((struct Variables*)parseParam)
-#define YYLEX_PARAM	VARIABLE
 #define YYPARSE_PARAM	parseParam
 #define yyparse		PTime_yyparse
 #define yyerror		PTime_yyerror
 
-#ifdef YYPURE
+#if YYPURE
+  #define YYLEX_PARAM	VARIABLE
   #define yylex		PTime_yylex
   #define LOCK()
   #define UNLOCK()
