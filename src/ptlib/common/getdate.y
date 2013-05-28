@@ -37,8 +37,10 @@
 #endif
 
 
-#ifndef YYPURE
-#define YYPURE 1
+#ifdef YYBISON
+  #ifndef YYPURE
+    #define YYPURE 1
+  #endif
 #endif
 
 extern int  STDAPICALLTYPE PTimeGetChar(void * stream);
@@ -114,7 +116,7 @@ static int PTime_yyparse(void *);
 #define yyparse		PTime_yyparse
 #define yyerror		PTime_yyerror
 
-#ifdef YYBISON
+#ifdef YYPURE
   #define yylex		PTime_yylex
   #define LOCK()
   #define UNLOCK()
