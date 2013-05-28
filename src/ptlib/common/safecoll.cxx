@@ -244,7 +244,7 @@ void PSafeLockReadWrite::Unlock()
 PSafeCollection::PSafeCollection(PCollection * coll)
   : m_deleteObjectsTimer(NULL)
 {
-  collection = coll;
+  collection = PAssertNULL(coll);
   collection->DisallowDeleteObjects();
   toBeRemoved.DisallowDeleteObjects();
   deleteObjects = true;
@@ -462,7 +462,7 @@ PSafePtrBase::PSafePtrBase(const PSafeCollection & safeCollection,
                            PSafetyMode mode,
                            PINDEX idx)
 {
-  collection = &safeCollection;
+  collection = safeCollection.CloneAs<PSafeCollection>();
   currentObject = NULL;
   lockMode = mode;
 
@@ -474,7 +474,7 @@ PSafePtrBase::PSafePtrBase(const PSafeCollection & safeCollection,
                            PSafetyMode mode,
                            PSafeObject * obj)
 {
-  collection = &safeCollection;
+  collection = safeCollection.CloneAs<PSafeCollection>();
   currentObject = NULL;
   lockMode = mode;
 
@@ -484,7 +484,7 @@ PSafePtrBase::PSafePtrBase(const PSafeCollection & safeCollection,
 
 PSafePtrBase::PSafePtrBase(const PSafePtrBase & enumerator)
 {
-  collection = enumerator.collection;
+  collection = enumerator.collection != NULL ? enumerator.collection->CloneAs<PSafeCollection>() : NULL;
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
 
@@ -495,6 +495,7 @@ PSafePtrBase::PSafePtrBase(const PSafePtrBase & enumerator)
 PSafePtrBase::~PSafePtrBase()
 {
   ExitSafetyMode(WithDereference);
+  delete collection;
 }
 
 
@@ -526,7 +527,8 @@ void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
   // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
 
-  collection = enumerator.collection;
+  delete collection;
+  collection = enumerator.collection != NULL ? enumerator.collection->CloneAs<PSafeCollection>() : NULL;
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
 
@@ -539,7 +541,8 @@ void PSafePtrBase::Assign(const PSafeCollection & safeCollection)
   // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
 
-  collection = &safeCollection;
+  delete collection;
+  collection = safeCollection.CloneAs<PSafeCollection>();
   currentObject = NULL;
   lockMode = PSafeReadWrite;
 
@@ -567,6 +570,7 @@ void PSafePtrBase::Assign(PSafeObject * newObj)
 
   if (collection->collection->GetObjectsIndex(newObj) == P_MAX_INDEX) {
     collection->collectionMutex.Signal();
+    delete collection;
     collection = NULL;
     lockMode = PSafeReference;
     if (!EnterSafetyMode(WithReference))
@@ -675,6 +679,7 @@ void PSafePtrBase::SetNULL()
   // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
 
+  delete collection;
   collection = NULL;
   currentObject = NULL;
   lockMode = PSafeReference;
@@ -782,7 +787,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
 {
   LockPtr();
 
-  collection = &safeCollection;
+  collection = safeCollection.CloneAs<PSafeCollection>();
   Assign(idx);
 
   UnlockPtr();
@@ -797,7 +802,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
 {
   LockPtr();
 
-  collection = &safeCollection;
+  collection = safeCollection.CloneAs<PSafeCollection>();
   Assign(obj);
 
   UnlockPtr();
@@ -810,7 +815,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enume
   LockPtr();
   enumerator.m_mutex.Wait();
 
-  collection = enumerator.collection;
+  collection = enumerator.collection != NULL ? enumerator.collection->CloneAs<PSafeCollection>() : NULL;
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
 
