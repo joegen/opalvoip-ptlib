@@ -217,8 +217,9 @@ AC_PROG_YACC()
 if test -z "$YACC" ; then
    AC_MSG_ERROR(parser generator (e.g. bison) is required, 1)
 fi
-if test "$YACC" = "bison -y" ; then
-  YACC="$YACC -Dapi.pure=true"
+YACC_VER=`$YACC --version | sed -n "s/bison.* 2\.\([[0-9]]\).*/\1/p"`
+if test -n "$YACC_VER" && test $YACC_VER -ge 5 ; then
+  YFLAGS="$YFLAGS -Dapi.pure=true"
 fi
 
 
