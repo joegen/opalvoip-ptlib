@@ -593,10 +593,6 @@ class PSafePtrBase : public PObject
     virtual PBoolean SetSafetyMode(
       PSafetyMode mode  ///< New locking mode
     );
-
-    /**Get the associated collection this pointer may be contained in.
-      */
-    const PSafeCollection * GetCollection() const { return collection; }
   //@}
 
     virtual void Assign(const PSafePtrBase & ptr);
@@ -980,7 +976,7 @@ PSafePtr<Derived> PSafePtrCast(const PSafePtr<Base> & oldPtr)
  */
 template <class Coll, class Base> class PSafeColl : public PSafeCollection
 {
-    PCLASSINFO(PSafeColl, PSafeCollection);
+    PCLASSINFO_WITH_CLONE(PSafeColl, PSafeCollection);
   public:
   /**@name Construction */
   //@{
@@ -1135,7 +1131,7 @@ template <class Base> class PSafeSortedList : public PSafeColl<PSortedList<Base>
  */
 template <class Coll, class Key, class Base> class PSafeDictionaryBase : public PSafeCollection
 {
-    PCLASSINFO(PSafeDictionaryBase, PSafeCollection);
+    PCLASSINFO_WITH_CLONE(PSafeDictionaryBase, PSafeCollection);
   public:
   /**@name Construction */
   //@{
