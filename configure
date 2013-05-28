@@ -6141,8 +6141,9 @@ test -n "$YACC" || YACC="yacc"
 if test -z "$YACC" ; then
    as_fn_error 1 "parser generator (e.g. bison) is required" "$LINENO" 5
 fi
-if test "$YACC" = "bison -y" ; then
-  YACC="$YACC -Dapi.pure=true"
+YACC_VER=`$YACC --version | sed -n "s/bison.* 2\.\([0-9]\).*/\1/p"`
+if test -n "$YACC_VER" && test $YACC_VER -ge 5 ; then
+  YFLAGS="$YFLAGS -Dapi.pure=true"
 fi
 
 
