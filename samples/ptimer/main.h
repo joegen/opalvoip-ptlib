@@ -197,7 +197,10 @@ class PTimerTest : public PProcess
     void DestroyCheck();
     void TestStopInTimeout();
     void DoubleStopTest();
-
+    void DestroyWhenTimeoutCheck();
+    void OneShotStopOnTimeoutTest();
+    void ContinuousStopOnTimeoutTest();
+    void OneShotToContinuousSwitchTest();
 
   /**First internal timer that we manage */
   PTimer firstTimer;
