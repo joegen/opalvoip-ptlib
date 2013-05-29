@@ -274,11 +274,11 @@ PString PGstPluginFeature::GetName() const
 }
 
 
-PStringList PGstPluginFeature::Inspect(const char * klassRegex, bool detailed)
+PStringList PGstPluginFeature::Inspect(const char * theRegex, InspectSearchField searchField, bool detailed)
 {
   PStringList elements;
 
-  PRegularExpression regex(klassRegex == NULL || *klassRegex == '\0' ? "*" : klassRegex);
+  PRegularExpression regex(theRegex == NULL || *theRegex == '\0' ? ".*" : theRegex);
 
   GstRegistry * registry = gst_registry_get_default();
 
@@ -292,8 +292,22 @@ PStringList PGstPluginFeature::Inspect(const char * klassRegex, bool detailed)
 
       if (GST_IS_ELEMENT_FACTORY(feature)) {
         GstElementFactory * factory = GST_ELEMENT_FACTORY(feature);
-        PINDEX dummy;
-        if (regex.Execute(factory->details.klass, dummy)) {
+        PINDEX found = P_MAX_INDEX;
+        switch (searchField) {
+          case ByKlass :
+            regex.Execute(factory->details.klass, found);
+            break;
+          case ByName :
+            regex.Execute(GST_PLUGIN_FEATURE_NAME(factory), found);
+            break;
+          case ByLongName :
+            regex.Execute(factory->details.longname, found);
+            break;
+          case ByDescription :
+            regex.Execute(factory->details.description, found);
+            break;
+        }
+        if (found != P_MAX_INDEX) {
           PStringStream info;
           info << GST_PLUGIN_FEATURE_NAME(factory);
           if (detailed) {

@@ -145,10 +145,21 @@ class PGstPluginFeature : public PGstObject
   public:
     PString GetName() const;
 
+    enum InspectSearchField {
+      ByKlass,
+      ByName,
+      ByLongName,
+      ByDescription
+    };
     static PStringList Inspect(
-      const char * klassRegex,
-      bool detailed
+      const char * regex,
+      InspectSearchField searchField,
+      bool detailed = true
     );
+    static PStringList Inspect(
+      const char * regex,
+      bool detailed = true
+    ) { return Inspect(regex, ByKlass, detailed); }
 };
 
 
