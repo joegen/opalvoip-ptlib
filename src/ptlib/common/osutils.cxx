@@ -989,11 +989,12 @@ void PTimer::Stop(bool /* wait */)
 {
   // New implementation doesn't need sync mode any more, because implementation guarantees that
   // OnTimeout will never be called after Stop() is finished.
-  Guard tempGuard = m_guard; // Prevent guard destruction
-  m_guard.Reset(); // Free guard for current PTimer instance
-  if (tempGuard)
+  m_guard.Stop();
+  if (!TimerList().IsTimerThread())
   {
-    if (!TimerList().IsTimerThread()) // If not housekeeper thread wait for OnTimeout has finished (if we need it)
+    Guard tempGuard = m_guard; // Prevent guard destruction
+    m_guard.Reset(); // Free guard for current PTimer instance
+    if (tempGuard)
       tempGuard.WaitAndReset();
   }
 }
@@ -1009,7 +1010,7 @@ void PTimer::Reset()
 void PTimer::OnTimeout()
 {
   if (!m_callback.IsNULL())
-    m_callback(*this, !m_oneshot);
+    m_callback(*this, IsRunning());
 }
 
 
@@ -1070,8 +1071,8 @@ PTimeInterval PTimer::List::Process()
   while ((it != m_timeToEventRelations.end()) && (it->first <= m_ticks)) {
     Events::iterator eventIt = m_events.find(it->second);
     if (eventIt != m_events.end()) {
-      PIdGenerator::Handle currentHandle =(*eventIt).second->Timeout();
-      PInt64 interval = (*eventIt).second->GetRepeat();
+      PIdGenerator::Handle currentHandle = eventIt->second->Timeout();
+      PInt64 interval = eventIt->second->GetRepeat();
       // If timer is repeatable and valid add it again
       if (interval > 0 && PIdGenerator::Invalid != currentHandle)
         m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + interval, it->second));
@@ -1086,7 +1087,7 @@ PTimeInterval PTimer::List::Process()
   it = m_timeToEventRelations.begin();
   if (it != m_timeToEventRelations.end())
   {
-    nextInterval = m_ticks - it->first;
+    nextInterval = it->first - m_ticks;
     if (nextInterval.GetMilliSeconds() < PTimer::Resolution())
       nextInterval = PTimer::Resolution();
     if (nextInterval.GetMilliSeconds() < m_mininalInterval)

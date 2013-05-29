@@ -128,6 +128,10 @@ void PTimerTest::Main()
   TestStopInTimeout();
   DoubleStopTest();
   DestroyCheck();
+  DestroyWhenTimeoutCheck();
+  OneShotStopOnTimeoutTest();
+  ContinuousStopOnTimeoutTest();
+  OneShotToContinuousSwitchTest();
 
   if (args.HasOption("z"))
     LongOnTimeoutTest();
@@ -168,6 +172,140 @@ void PTimerTest::Main()
   ui.Resume();
   ui.WaitForTermination();
 }
+
+
+class TestTimer
+  : public PTimer
+{
+  static bool destroyed;
+public:
+  TestTimer()
+    : PTimer(1000)
+  {
+  }
+  virtual ~TestTimer()
+  {
+    Stop();
+    destroyed = true;
+  }
+protected:
+  virtual void OnTimeout()
+  {
+    Sleep(5000);
+    if (TestTimer::destroyed)
+    {
+      cerr << "Destroyed timer while timeout is running" << endl;
+    }
+  }
+};
+
+bool TestTimer::destroyed = false;
+
+void PTimerTest::DestroyWhenTimeoutCheck()
+{
+  TestTimer* t = new TestTimer();
+  Sleep(1500);
+  delete t;
+  Sleep(5000);
+}
+
+class TestTimer1
+  : public PTimer
+{
+public:
+  TestTimer1()
+    : PTimer(1000)
+  {
+  }
+protected:
+  virtual void OnTimeout()
+  {
+    if (IsRunning())
+      cerr << "Error!!! One shot timer must be stopped in OnTimeout" << endl;
+  }
+};
+
+void PTimerTest::OneShotStopOnTimeoutTest()
+{
+  TestTimer1 t;
+  if (!t.IsRunning())
+    cerr << "Error!!! IsRunning() must be true" << endl;
+  Sleep(2000);
+  if (t.IsRunning())
+    cerr << "Error!!! IsRunning() must be false" << endl;
+}
+
+class TestTimer2
+  : public PTimer
+{
+public:
+  TestTimer2()
+    : PTimer(0)
+  {
+    RunContinuous(1000);
+  }
+protected:
+  virtual void OnTimeout()
+  {
+    if (!IsRunning())
+      cerr << "Error!!! Continuous timer must be running in OnTimeout" << endl;
+  }
+};
+
+void PTimerTest::ContinuousStopOnTimeoutTest()
+{
+  TestTimer2 t;
+  if (!t.IsRunning())
+    cerr << "Error!!! IsRunning() must be true" << endl;
+  Sleep(4000);
+  if (!t.IsRunning())
+    cerr << "Error!!! IsRunning() must be true" << endl;
+}
+
+class TestTimer3
+  : public PTimer
+{
+  PSyncPoint& m_sync;
+  int m_shots;
+public:
+  TestTimer3(PSyncPoint& sync)
+    : PTimer(500)
+    , m_sync(sync)
+    , m_shots(4)
+  {
+  }
+protected:
+  virtual void OnTimeout()
+  {
+    if (m_shots > 0)
+    {
+      if (m_shots == 4)
+      {
+        if (IsRunning())
+          cerr << "Error!!! OneShot timer must be stopped in OnTimeout" << endl;
+        RunContinuous(500);
+        if (!IsRunning())
+          cerr << "Error!!! Continuous timer must be running in OnTimeout" << endl;
+      }
+      else if (m_shots == 1)
+      {
+        m_sync.Signal();
+        return;
+      }
+      --m_shots;
+    }
+  }
+};
+
+void PTimerTest::OneShotToContinuousSwitchTest()
+{
+  PSyncPoint sync;
+  TestTimer3 t(sync);
+  sync.Wait();
+  if (!t.IsRunning())
+    cerr << "Error!!! IsRunning() must be true" << endl;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 void PTimerTest::RunSecondTest()
 {
@@ -613,8 +751,10 @@ void PTimerTest::TestStopInTimeout()
   PSyncPoint sp;
   TimerWithStopInTimeout timer(sp, 1000);
   sp.Wait();
+  if (timer.IsRunning())
+    cerr << "Error. Timer must be stopped.";
   // Timer restarts in OnTimeout must be true
-  cout << "timer.IsRunning() ==" << (timer.IsRunning() ? "false" : "true") << endl;
+  //cout << "timer.IsRunning() ==" << (timer.IsRunning() ? "false" : "true") << endl;
 }
 
 class TimerWithStopAndSleepInTimeout
