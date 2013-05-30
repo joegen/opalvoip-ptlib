@@ -867,6 +867,9 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
 
     PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while writing
 
+    if (m_playbackBuffer == NULL)
+      return false;
+
     LPVOID pointer1, pointer2;
     DWORD length1, length2;
     DWORD desiredWriteCount = std::min(m_available, (DWORD)len);
@@ -1214,6 +1217,9 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
       return false;                     // aborted/closed
 
     PWaitAndSignal mutex(m_bufferMutex);  // prevent closing while active
+
+    if (m_captureBuffer == NULL)
+      return false;
 
     // Read from device buffer minimum between the data required and data available
     LPVOID pointer1, pointer2;
