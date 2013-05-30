@@ -559,6 +559,17 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     }
 
     Lock();
+
+    if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
+      unsigned rotateVal = GetRotateVal(m_options);
+      if (rotateVal != m_lastRotate) {
+        m_lastRotate = rotateVal;
+        OpenTraceFile(m_filename);
+        if (m_stream == NULL)
+          SetStream(&cerr);
+        streamPtr = m_stream;
+      }
+    }
   }
 
   ostream & stream = *streamPtr;
@@ -568,16 +579,6 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
 
   m_oldStreamFlags = stream.flags();
   m_oldPrecision   = stream.precision();
-
-  if (topLevel && !m_filename.IsEmpty() && HasOption(RotateLogMask)) {
-    unsigned rotateVal = GetRotateVal(m_options);
-    if (rotateVal != m_lastRotate) {
-      m_lastRotate = rotateVal;
-      OpenTraceFile(m_filename);
-      if (m_stream == NULL)
-        SetStream(&cerr);
-    }
-  }
 
   if (!HasOption(SystemLogStream)) {
     if (HasOption(DateAndTime)) {
