@@ -243,32 +243,16 @@ PDirectory PProcess::PXGetHomeDir ()
 #endif
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// PProcess
-//
-// Return the effective user name of the process, eg "root" etc.
 
 PString PProcess::GetUserName() const
-
 {
-#ifdef P_VXWORKS
+#ifndef P_VXWORKS
 
-  char pnamebuf[1024];
-  int len = 1024;
-  STATUS gethostresult;
-  gethostresult =::gethostname(pnamebuf,len);  
-  if (gethostresult == OK)
-    return PString(pnamebuf,len);
-  else
-    return PString("VxWorks");
-
-#else
+  struct passwd * pw = NULL;
 
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-  struct passwd * pw = NULL;
 #if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
   ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
 #else
@@ -278,14 +262,16 @@ PString PProcess::GetUserName() const
   struct passwd * pw = ::getpwuid(geteuid());
 #endif
 
-  char * ptr;
   if (pw != NULL && pw->pw_name != NULL)
-    return PString(pw->pw_name);
-  else if ((ptr = getenv("USER")) != NULL)
-    return PString(ptr);
-  else
-    return PString("user");
+    return pw->pw_name;
+
+  const char * user;
+  if ((user = getenv("USER")) != NULL)
+    return user;
+
 #endif // P_VXWORKS
+
+  return GetName();
 }
 
 
@@ -335,6 +321,37 @@ PBoolean PProcess::SetUserName(const PString & username, PBoolean permanent)
     
   return seteuid(uid) != -1;
 #endif // P_VXWORKS
+}
+
+
+PDirectory PProcess::GetHomeDirectory() const
+{
+#ifndef P_VXWORKS
+
+  const char * home = getenv("HOME");
+  if (home != NULL)
+    return home;
+
+  struct passwd * pw = NULL;
+
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+  struct passwd pwd;
+  char buffer[1024];
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
+  ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
+#else
+  pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
+#endif
+#else
+  struct passwd * pw = ::getpwuid(geteuid());
+#endif
+
+  if (pw != NULL && pw->pw_dir != NULL)
+    return pw->pw_dir;
+
+#endif // P_VXWORKS
+
+  return ".";
 }
 
 

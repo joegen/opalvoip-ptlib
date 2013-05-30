@@ -43,8 +43,6 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 
     ~PProcess();
 
-    PDirectory PXGetHomeDir ();
-
     friend void PXSigHandler(int);
     virtual void PXOnSignal(int);
     virtual void PXOnAsyncSignal(int);
