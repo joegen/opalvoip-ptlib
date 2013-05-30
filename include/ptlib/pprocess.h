@@ -370,6 +370,12 @@ class PProcess : public PThread
       PBoolean permanent = false    ///< Flag for if effective or real user
     );
 
+    /**Get the "home" directory for the logged in user.
+       This checke dthe environment variable HOME first, and if not set tries
+       to determine the home directory in a platform dependent manner.
+      */
+    PDirectory GetHomeDirectory() const;
+
     /**Get the effective group name of the owner of the process, eg "root" etc.
        This is a platform dependent string only provided by platforms that are
        multi-user. Note that some value may be returned as a "simulated" user.
