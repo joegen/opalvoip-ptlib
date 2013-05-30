@@ -361,7 +361,7 @@ static PBoolean LocateFile(const PString & baseName,
 PString PProcess::GetConfigurationFile()
 {
   if (configurationPaths.IsEmpty()) {
-    configurationPaths.AppendString(PXGetHomeDir() + APP_CONFIG_DIR);
+    configurationPaths.AppendString(GetHomeDirectory() + APP_CONFIG_DIR);
     configurationPaths.AppendString(SYS_CONFIG_DIR);
   }
 
