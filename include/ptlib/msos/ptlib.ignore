@@ -993,6 +993,7 @@ EXPORTS
     regfree
     ResetEvent
     SetEvent
+    _SID_SCommandBarState
     __tcsncpy_s
     __tcsnicmp
     __TI2?AVbad_alloc@std@@
