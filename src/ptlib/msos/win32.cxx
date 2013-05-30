@@ -39,10 +39,12 @@
 
 #include <process.h>
 #include <errors.h>
+#include <Shlobj.h>
 
 #ifdef WIN32
   #ifndef _WIN32_WCE
     #pragma comment(lib, "mpr.lib")
+    #pragma comment(lib, "Shell32.lib")
   #endif
 
   #ifdef P_WIN_COM
@@ -1432,8 +1434,28 @@ PBoolean PProcess::SetUserName(const PString & username, PBoolean)
   if (username.IsEmpty())
     return false;
 
+  if (username == GetUserName())
+    return true;
+
   PAssertAlways(PUnimplementedFunction);
   return false;
+}
+
+
+PDirectory PProcess::GetHomeDirectory() const
+{
+  const char * dir;
+  if ((dir = getenv("HOME")) != NULL)
+    return dir;
+
+  TCHAR szPath[MAX_PATH];
+  if (SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, szPath) == S_OK)
+    return szPath;
+
+  if ((dir = getenv("USERPROFILE")) != NULL)
+    return dir;
+
+  return ".";
 }
 
 
