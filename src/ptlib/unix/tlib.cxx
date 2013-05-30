@@ -205,44 +205,6 @@ PDirectory PProcess::GetOSConfigDir()
 #endif // P_VXWORKS
 }
 
-PDirectory PProcess::PXGetHomeDir ()
-
-{
-#ifdef P_VXWORKS
-  return "./";
-#else
-  PString dest;
-  char *ptr;
-  struct passwd *pw = NULL;
-
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
-  struct passwd pwd;
-  char buffer[1024];
-#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS) || defined(P_GNU_HURD)
-  ::getpwuid_r(geteuid(), &pwd,
-               buffer, 1024,
-               &pw);
-#else
-  pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
-#endif
-#else
-  pw = ::getpwuid(geteuid());
-#endif
-
-  if (pw != NULL && pw->pw_dir != NULL) 
-    dest = pw->pw_dir;
-  else if ((ptr = getenv ("HOME")) != NULL) 
-    dest = ptr;
-  else 
-    dest = ".";
-
-  if (dest.GetLength() > 0 && dest[dest.GetLength()-1] != '/')
-    dest += "/";
-
-  return dest;
-#endif
-}
-
 
 PString PProcess::GetUserName() const
 {
