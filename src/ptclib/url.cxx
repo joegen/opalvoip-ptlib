@@ -430,7 +430,7 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   }
 
   // if we could not match a scheme, then use the specified default scheme
-  if (schemeInfo == NULL && defaultScheme != NULL) {
+  if (schemeInfo == NULL && defaultScheme != NULL && *defaultScheme != '\0') {
     scheme = defaultScheme;
     schemeInfo = PURLSchemeFactory::CreateInstance(defaultScheme);
     PAssert(schemeInfo != NULL, "Default scheme " + scheme + " not available");
