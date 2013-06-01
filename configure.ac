@@ -1188,6 +1188,8 @@ dnl MSWIN_DISPLAY    libjpeg,libjpeg support
 dnl MSWIN_CHECK_FILE libjpeg,include\jpeglib.h,P_LIBJPEG=1
 dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
 dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d\
+dnl MSWIN_CHECK_DIR  libjpeg,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
+dnl MSWIN_CHECK_DIR  libjpeg,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
 
 
 AC_ARG_ENABLE(
@@ -1757,7 +1759,8 @@ dnl MSWIN_CHECK_DIR  libsdl,..\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
-dnl MSWIN_CHECK_DIR  libsdl,\Program Files (x86)\OSSBuild\GStreamer\v0.10.6\sdk
+dnl MSWIN_CHECK_DIR  libsdl,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
+dnl MSWIN_CHECK_DIR  libsdl,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
 
 PTLIB_MODULE_OPTION(
    [SDL], 
@@ -1782,8 +1785,8 @@ dnl check for GStreamer library
 dnl MSWIN_DISPLAY    gstreamer,GStreamer (OSSBuild)
 dnl MSWIN_CHECK_FILE gstreamer,include\gstreamer-0.10\gst\gst.h,P_GSTREAMER_WIN32=1
 dnl MSWIN_DIR_SYMBOL gstreamer,GSTREAMER_DIR
-dnl MSWIN_CHECK_DIR  gstreamer,\Program Files\OSSBuild\GStreamer\v0.10.6\sdk
-dnl MSWIN_CHECK_DIR  gstreamer,\Program Files (x86)\OSSBuild\GStreamer\v0.10.6\sdk
+dnl MSWIN_CHECK_DIR  gstreamer,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
+dnl MSWIN_CHECK_DIR  gstreamer,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
 
 PTLIB_MODULE_OPTION(
    [GSTREAMER], 
