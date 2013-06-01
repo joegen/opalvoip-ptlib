@@ -1189,9 +1189,11 @@ dnl check for libjpeg
 
 dnl MSWIN_DISPLAY    libjpeg,libjpeg support
 dnl MSWIN_CHECK_FILE libjpeg,include\jpeglib.h,P_LIBJPEG=1
+dnl MSWIN_CHECK_FILE libjpeg,lib\win32\libjpeg.lib,P_LIBJEG_WIN32=1
+dnl MSWIN_CHECK_FILE libjpeg,lib\x64\libjpeg.lib,P_LIBJEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
 dnl MSWIN_FIND_FILE  libjpeg,P_LIBJPEG_LIBRARY,jpeg.lib,lib
-dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d\
+dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
 
@@ -1212,6 +1214,8 @@ PTLIB_MODULE_OPTION(
    ]
 )
 
+AC_DEFINE(P_LIBJEG_WIN32)
+AC_DEFINE(P_LIBJEG_WIN64)
 
 dnl ########################################################################
 dnl check for SUN mediaLib library

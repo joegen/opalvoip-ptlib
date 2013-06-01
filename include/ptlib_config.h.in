@@ -773,12 +773,23 @@
   #pragma include_alias("jconfig.h", "@LIBJPEG_DIR@/include/jconfig.h")
   #pragma include_alias("jmorecfg.h", "@LIBJPEG_DIR@/include/jmorecfg.h")
 
+  #undef P_LIBJEG_WIN32
+  #undef P_LIBJEG_WIN64
+
+  #if defined(P_64BIT) && defined(P_LIBJEG_WIN64)
+    #define P_LIBJPEG_BUILD "x64/"
+  #elif !defined(P_64BIT) && defined(P_LIBJEG_WIN32)
+    #define P_LIBJPEG_BUILD "win32/"
+  #else
+    #define P_LIBJPEG_BUILD ""
+  #endif 
+
   #undef P_LIBJPEG_LIBRARY
   #ifndef P_LIBJPEG_LIBRARY
     #ifdef _DEBUG
-      #define P_LIBJPEG_LIBRARY "@LIBJPEG_DIR@/lib/libjpeg_d.lib"
+      #define P_LIBJPEG_LIBRARY "@LIBJPEG_DIR@/lib/" P_LIBJPEG_BUILD "libjpeg_d.lib"
     #else
-      #define P_LIBJPEG_LIBRARY "@LIBJPEG_DIR@/lib/libjpeg.lib"
+      #define P_LIBJPEG_LIBRARY "@LIBJPEG_DIR@/lib/" P_LIBJPEG_BUILD "libjpeg.lib"
     #endif
   #endif
 #endif
