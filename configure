@@ -776,6 +776,12 @@ PTLIB_SASL
 HAS_SASL
 PTLIB_SASL2
 HAS_SASL2
+PTLIB_LIBJPEG
+HAS_LIBJPEG
+LIBJPEG_USABLE
+LIBJPEG_LIBS
+LIBJPEG_CFLAGS
+LIBJPEG_SYSTEM
 PTLIB_DNS_RESOLVER
 HAS_DNS_RESOLVER
 PTLIB_REGEX
@@ -893,6 +899,7 @@ enable_ansi_bool
 enable_internalregex
 enable_resolver
 enable_libjpeg
+with_libjpeg_dir
 enable_mlib
 enable_sasl
 enable_openldap
@@ -978,6 +985,8 @@ CPP
 YACC
 YFLAGS
 CXXCPP
+LIBJPEG_CFLAGS
+LIBJPEG_LIBS
 OPENLDAP_CFLAGS
 OPENLDAP_LIBS
 OPENSSL_CFLAGS
@@ -1626,8 +1635,7 @@ Optional Features:
   --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool
   --enable-internalregex  Force internal regex library
   --disable-resolver      disable DNS resolver support
-  --disable-libjpeg       disable libjpeg for file-based video input device
-
+  --disable-libjpeg       disable libJPEG support
   --disable-mlib          disable SUN mlib support
   --disable-sasl          disable SASL support
   --disable-openldap      disable Open LDAP support
@@ -1695,6 +1703,8 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-allocator=std,mt,bitmap
                           Set the allocator type
+  --with-libjpeg-dir=<dir>
+                          location for libJPEG support
   --with-openldap-dir=<dir>
                           location for Open LDAP support
   --with-expat-dir=<dir>  location for expat XML support
@@ -1731,6 +1741,10 @@ Some influential environment variables:
               This script will default YFLAGS to the empty string to avoid a
               default value of `-d' given by some make applications.
   CXXCPP      C++ preprocessor
+  LIBJPEG_CFLAGS
+              C compiler flags for LIBJPEG, overriding pkg-config
+  LIBJPEG_LIBS
+              linker flags for LIBJPEG, overriding pkg-config
   OPENLDAP_CFLAGS
               C compiler flags for OPENLDAP, overriding pkg-config
   OPENLDAP_LIBS
@@ -5984,6 +5998,8 @@ fi
 
    Darwin )
       OS_TAG="P_MACOSX"
+            CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+      LDFLAGS="-L/opt/local/lib $LDFLAGS"
    ;;
 
    iPhone* )
@@ -8953,28 +8969,250 @@ _ACEOF
 
 
 
-# Check whether --enable-libjpeg was given.
+
+   LIBJPEG_SYSTEM="yes"
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking libJPEG support" >&5
+$as_echo_n "checking libJPEG support... " >&6; }
+
+   # Check whether --enable-libjpeg was given.
 if test "${enable_libjpeg+set}" = set; then :
   enableval=$enable_libjpeg;
-fi
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+         fi
 
-
-if test "$enableval" = "no" ; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: Disabling libjpeg" >&5
-$as_echo "$as_me: Disabling libjpeg" >&6;}
 else
-   ac_fn_cxx_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
-if test "x$ac_cv_header_jpeglib_h" = xyes; then :
 
-         $as_echo "#define P_LIBJPEG 1" >>confdefs.h
+         enableval=${DEFAULT_LIBJPEG:-yes}
+         if test "x$enableval" = "xno"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+         fi
 
-         LDFLAGS="$LDFLAGS -ljpeg"
 
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x${enableval}" = "xyes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+   fi
+
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_libjpeg="$enableval"
+
+
+   if test "x$usable" = "xyes" ; then
+
+      if test "x$LIBJPEG_SYSTEM" = "xyes" ; then
+
+# Check whether --with-libjpeg-dir was given.
+if test "${with_libjpeg_dir+set}" = set; then :
+  withval=$with_libjpeg_dir;
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for libJPEG support" >&5
+$as_echo "$as_me: Using directory $withval for libJPEG support" >&6;}
+                  LIBJPEG_CFLAGS="-I$withval/include "
+                  LIBJPEG_LIBS="-L$withval/lib -ljpeg"
+
+else
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBJPEG" >&5
+$as_echo_n "checking for LIBJPEG... " >&6; }
+
+if test -n "$LIBJPEG_CFLAGS"; then
+    pkg_cv_LIBJPEG_CFLAGS="$LIBJPEG_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libjpeg\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libjpeg") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBJPEG_CFLAGS=`$PKG_CONFIG --cflags "libjpeg" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBJPEG_LIBS"; then
+    pkg_cv_LIBJPEG_LIBS="$LIBJPEG_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libjpeg\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libjpeg") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBJPEG_LIBS=`$PKG_CONFIG --libs "libjpeg" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
+        else
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBJPEG_PKG_ERRORS" >&5
+
+
+                     LIBJPEG_CFLAGS=""
+                     LIBJPEG_LIBS="-ljpeg"
+
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+                     LIBJPEG_CFLAGS=""
+                     LIBJPEG_LIBS="-ljpeg"
+
+
+else
+	LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
+	LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
 
 fi
 
 
+         if test "x$usable" = "xyes" ; then
+
+   oldCPPFLAGS="$CPPFLAGS"
+   oldLDFLAGS="$LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $LIBJPEG_CFLAGS"
+   LDFLAGS="$LIBJPEG_LIBS $LDFLAGS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libJPEG support usability" >&5
+$as_echo_n "checking for libJPEG support usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <stdio.h>
+      #include <jpeglib.h>
+
+int
+main ()
+{
+
+     j_compress_ptr p;
+     jpeg_create_compress(p);
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
 fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+   LDFLAGS="$oldLDFLAGS"
+
+   if test "x$usable" = "xyes"; then :
+
+
+   LDFLAGS="$LIBJPEG_LIBS $LDFLAGS"
+   CPPFLAGS="$CPPFLAGS $LIBJPEG_CFLAGS"
+
+
+
+
+else
+  usable=no
+
+fi
+
+
+         fi
+
+
+      fi
+   fi
+
+   LIBJPEG_USABLE=$usable
+
+
+
+
+
+
+
+   HAS_LIBJPEG=$LIBJPEG_USABLE
+
+   if test "x$HAS_LIBJPEG" = "xyes" ; then
+      HAS_LIBJPEG=1
+   fi
+
+   if test "x$HAS_LIBJPEG" = "x0" || test "x$HAS_LIBJPEG" = "xno" ; then
+      HAS_LIBJPEG=
+   fi
+
+
+
+   if test "x$HAS_LIBJPEG" = "x1" ; then
+      PTLIB_LIBJPEG=yes
+      $as_echo "#define P_LIBJPEG 1" >>confdefs.h
+
+   else
+      PTLIB_LIBJPEG=no
+   fi
+
+
+
+
 
 
 
@@ -9330,7 +9568,7 @@ if test "${with_openldap_dir+set}" = set; then :
                   { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for Open LDAP support" >&5
 $as_echo "$as_me: Using directory $withval for Open LDAP support" >&6;}
                   OPENLDAP_CFLAGS="-I$withval/include "
-                  OPENLDAP_LIBS="-L$withval/lib -lldap"
+                  OPENLDAP_LIBS="-L$withval/lib -lldap -llber"
 
 else
 
@@ -9394,7 +9632,7 @@ fi
 
 
                      OPENLDAP_CFLAGS=""
-                     OPENLDAP_LIBS="-lldap"
+                     OPENLDAP_LIBS="-lldap -llber"
 
 
 elif test $pkg_failed = untried; then
@@ -9402,7 +9640,7 @@ elif test $pkg_failed = untried; then
 $as_echo "no" >&6; }
 
                      OPENLDAP_CFLAGS=""
-                     OPENLDAP_LIBS="-lldap"
+                     OPENLDAP_LIBS="-lldap -llber"
 
 
 else
@@ -16881,6 +17119,7 @@ echo "                     Video4linux2 :  ${PTLIB_V4L2}"
 echo "                              BSD :  ${PTLIB_BSDVIDEOCAP}"
 echo "                    IEEE-1394/AVC :  ${PTLIB_AVC1394}"
 echo "                    IEEE-1394/DC  :  ${PTLIB_DC1394}"
+echo "                       JPEG File  :  ${PTLIB_LIBJPEG}"
 
 echo ""
 echo "========================================================================"
