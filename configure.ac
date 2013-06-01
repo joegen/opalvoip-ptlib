@@ -145,6 +145,9 @@ case "$target_os" in
 
    Darwin )
       OS_TAG="P_MACOSX" 
+      dnl Where "port" libraries live
+      CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+      LDFLAGS="-L/opt/local/lib $LDFLAGS"
    ;;
 
    iPhone* )
@@ -1192,23 +1195,22 @@ dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d\
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
 
-
-AC_ARG_ENABLE(
-   libjpeg,
-   AS_HELP_STRING([--disable-libjpeg],[disable libjpeg for file-based video input device])
+PTLIB_MODULE_OPTION(
+   [LIBJPEG],
+   [libjpeg],
+   [libJPEG support],
+   [libjpeg],
+   [],
+   [-ljpeg],
+   [
+      #include <stdio.h>
+      #include <jpeglib.h>
+   ],
+   [
+     j_compress_ptr p;
+     jpeg_create_compress(p);
+   ]
 )
-
-if test "$enableval" = "no" ; then
-   AC_MSG_NOTICE(Disabling libjpeg)
-else
-   AC_CHECK_HEADER(
-      [jpeglib.h],
-      [
-         AC_DEFINE(P_LIBJPEG)
-         LDFLAGS="$LDFLAGS -ljpeg"
-      ]
-   )
-fi
 
 
 dnl ########################################################################
@@ -2404,6 +2406,7 @@ echo "                     Video4linux2 :  ${PTLIB_V4L2}"
 echo "                              BSD :  ${PTLIB_BSDVIDEOCAP}"
 echo "                    IEEE-1394/AVC :  ${PTLIB_AVC1394}"
 echo "                    IEEE-1394/DC  :  ${PTLIB_DC1394}"
+echo "                       JPEG File  :  ${PTLIB_LIBJPEG}"
 
 echo ""
 echo "========================================================================"
