@@ -33,10 +33,7 @@
 
 #pragma implementation "remconn.h"
 
-#include <ptlib.h>
-#include <ptlib/pipechan.h>
-#include <ptlib/remconn.h>
-#include <ptlib/pprocess.h>
+#include <ptlib_config.h>
 
 #if HAVE_IOCTL_H
   #include <ioctl.h>
@@ -45,14 +42,19 @@
 #endif
 
 #ifdef HAVE_NET_IF_H
-#include <net/if.h>
+  #include <net/if.h>
 #endif
 
 #ifdef HAVE_SYS_SOCKIO_H
-#include <sys/sockio.h>
+  #include <sys/sockio.h>
 #endif
 
 #include "uerror.h"
+
+#include <ptlib.h>
+#include <ptlib/pipechan.h>
+#include <ptlib/remconn.h>
+#include <ptlib/pprocess.h>
 
 static const PString RasStr      = "ras";
 static const PString NumberStr   = "Number";
