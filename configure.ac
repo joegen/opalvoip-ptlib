@@ -1201,7 +1201,7 @@ dnl ########################################################################
 dnl check for libjpeg
 
 dnl MSWIN_DISPLAY    libjpeg,libjpeg support
-dnl MSWIN_CHECK_FILE libjpeg,include\jpeglib.h,P_LIBJPEG=1
+dnl MSWIN_CHECK_FILE libjpeg,lib\jpeg.lib,P_LIBJEG_WIN32=1
 dnl MSWIN_CHECK_FILE libjpeg,lib\win32\libjpeg.lib,P_LIBJEG_WIN32=1
 dnl MSWIN_CHECK_FILE libjpeg,lib\x64\libjpeg.lib,P_LIBJEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
