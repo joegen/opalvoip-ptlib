@@ -40,9 +40,7 @@
 #pragma implementation "ethsock.h"
 #pragma implementation "qos.h"
 
-#include <ptlib.h>
-
-#include <ptlib/sockets.h>
+#include <ptlib_config.h>
 
 #if HAVE_IOCTL_H
   #include <ioctl.h>
@@ -76,6 +74,11 @@
   #define ifr_netmask ifr_addr
 #endif
 
+#if defined(P_SOLARIS)
+  #include <sys/filio.h>
+  #include <sys/sockio.h>
+#endif
+
 #ifdef HAVE_NET_IF_DL_H
   #include <net/if_dl.h>
 #endif
@@ -91,6 +94,10 @@
 #if defined(P_HAS_RT_MSGHDR)
   #include <net/route.h>
 #endif
+
+#include <ptlib.h>
+
+#include <ptlib/sockets.h>
 
 #if defined(SIOCGENADDR)
 #define SIO_Get_MAC_Address SIOCGENADDR
