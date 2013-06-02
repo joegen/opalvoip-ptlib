@@ -47,6 +47,10 @@
 #include <termio.h>
 #endif
 
+#if defined(P_SOLARIS)
+  #include <sys/filio.h>
+#endif
+
 #include "../common/pipechan.cxx"
 
 #if defined(P_MACOSX) && !defined(P_IOS)

@@ -37,6 +37,9 @@
 #include <ptlib.h>
 #include <sys/ioctl.h>
 
+#if defined(P_SOLARIS)
+  #include <sys/filio.h>
+#endif
 
 #include "../common/pchannel.cxx"
 
