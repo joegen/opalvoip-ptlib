@@ -226,6 +226,9 @@ if test -n "$YACC_VER" && test $YACC_VER -ge 5 ; then
 fi
 
 
+dnl ########################################################################
+dnl Mostly, we are C++
+
 AC_LANG(C++)
 AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
 
@@ -245,27 +248,6 @@ if test "x$gcc_version" != "x" ; then
    fi
    AC_MSG_NOTICE($CC version is $gcc_version);
 fi
-
-
-dnl ########################################################################
-dnl check the endianness
-
-dnl MSWIN_DISPLAY byteorder,Byte Order
-dnl MSWIN_DEFINE  byteorder,PBYTE_ORDER=PLITTLE_ENDIAN
-
-AC_C_BIGENDIAN()
-if test "x${ac_cv_c_bigendian}" = "xyes" ; then
-   AC_DEFINE_UNQUOTED(PBYTE_ORDER, PBIG_ENDIAN, "byte order")
-else
-   AC_DEFINE_UNQUOTED(PBYTE_ORDER, PLITTLE_ENDIAN, "byte order")
-fi
-
-
-dnl Solaris swab should not be used
-if test "$target_os" != "solaris"; then
-   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
-fi
-
 
 dnl ########################################################################
 dnl look for compile flags
@@ -326,6 +308,99 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
       CPPFLAGS="$CPPFLAGS -frtti"
    ]
 )
+
+
+dnl ########################################################################
+dnl this reduces the size of all executables and libraries
+
+PTLIB_SIMPLE_OPTION([exceptions], [EXCEPTIONS], [enable C++ exceptions])
+
+if test "x${HAS_EXCEPTIONS}" = "x1" ; then
+   CXXFLAGS="$CXXFLAGS -fexceptions"
+else
+   CXXFLAGS="$CXXFLAGS -fno-exceptions"
+fi
+
+
+dnl ########################################################################
+dnl Memory allocator optimisations
+
+AC_MSG_CHECKING(C++ memory allocator)
+
+AC_ARG_WITH(
+   [allocator],
+   AS_HELP_STRING([--with-allocator=std,mt,bitmap],[Set the allocator type]),
+   [],
+   [withval="std"]
+)
+
+if test "$withval" = "std"; then
+   AC_MSG_RESULT(std)
+elif test "$withval" = "mt"; then
+   AC_TRY_COMPILE(
+      [#include <ext/mt_allocator.h>],
+      [typedef __gnu_cxx::__mt_alloc<char> TestAllocator;],
+      [
+         AC_DEFINE(P_GNU_ALLOCATOR, 1)
+         AC_MSG_RESULT([mt])
+      ],
+      [AC_MSG_RESULT([std (mt unavailable)])]
+  )
+elif test "$withval" = "bitmap"; then
+   AC_TRY_COMPILE(
+      [
+         #include <ext/mt_allocator.h>
+         #include <ext/bitmap_allocator.h>
+      ],
+      [
+         typedef __gnu_cxx::__mt_alloc<char> VariableAllocator;
+         typedef __gnu_cxx::bitmap_allocator<char> FixedAllocator;
+      ],
+      [
+         AC_DEFINE(P_GNU_ALLOCATOR, 2)
+         AC_MSG_RESULT(bitmap)
+      ],
+      [AC_ERROR([bitmap_allocator not available])]
+  )
+else
+  AC_ERROR([Unknown allocator type $withval])
+fi
+
+
+dnl ########################################################################
+dnl check for Windows-like integer BOOL
+dnl
+dnl MSWIN_DISPLAY ansi-bool,ANSI C++ bool
+dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
+
+AC_ARG_ENABLE(ansi-bool, AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
+
+if test "x${enable_ansi_bool}" = "xno" ; then
+   AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
+else
+   AC_MSG_NOTICE(Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true))
+   AC_DEFINE(P_USE_STANDARD_CXX_BOOL)
+fi
+
+
+dnl ########################################################################
+dnl check the endianness
+
+dnl MSWIN_DISPLAY byteorder,Byte Order
+dnl MSWIN_DEFINE  byteorder,PBYTE_ORDER=PLITTLE_ENDIAN
+
+AC_C_BIGENDIAN()
+if test "x${ac_cv_c_bigendian}" = "xyes" ; then
+   AC_DEFINE_UNQUOTED(PBYTE_ORDER, PBIG_ENDIAN, "byte order")
+else
+   AC_DEFINE_UNQUOTED(PBYTE_ORDER, PLITTLE_ENDIAN, "byte order")
+fi
+
+
+dnl Solaris swab should not be used
+if test "$target_os" != "solaris"; then
+   AC_CHECK_FUNC([swab], [AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()] )] )
+fi
 
 
 dnl ########################################################################
@@ -636,96 +711,50 @@ if test "${enable_atomicity}" = "no" ; then
 else
    AC_TRY_COMPILE(
       [#include <bits/atomicity.h>],
-      [_Atomic_word val;],
-      [
-         AC_MSG_RESULT(yes (bits/atomicity.h))
-         P_HAS_ATOMIC_INT=1
-      ],
+      [_Atomic_word val],
+      [P_ATOMICITY_HEADER="<bits/atomicity.h>"],
       [AC_TRY_COMPILE(
          [#include <ext/atomicity.h>],
-         [_Atomic_word val;],
-         [
-            AC_MSG_RESULT(yes (ext/atomicity.h))
-            P_HAS_ATOMIC_INT=2
-         ],
-         [AC_MSG_RESULT(no)]
+         [_Atomic_word val],
+         [P_ATOMICITY_HEADER="<ext/atomicity.h>"],
+         [AC_MSG_ERROR(Must have atomicity)]
       )]
    )
-   if test ${P_HAS_ATOMIC_INT} != 0 ; then
+
+   if test -z "$P_ATOMICITY_HEADER" ; then
+      AC_MSG_RESULT(no)
+   else
+      AC_MSG_RESULT(yes $P_ATOMICITY_HEADER)
+      AC_DEFINE_UNQUOTED(P_ATOMICITY_HEADER, $P_ATOMICITY_HEADER)
+
       AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
-      if test ${P_HAS_ATOMIC_INT} = 1 ; then
-         AC_TRY_COMPILE(
-            [#include <bits/atomicity.h>],
-            [
-               _Atomic_word val;
-               __gnu_cxx::__exchange_and_add(&val, 1);
-            ],
-            P_NEEDS_GNU_CXX_NAMESPACE=1
-         )
-      else
-         AC_TRY_COMPILE(
-            [#include <ext/atomicity.h>],
-            [
-               _Atomic_word val;
-               __gnu_cxx::__exchange_and_add(&val, 1)
-            ],
-            P_NEEDS_GNU_CXX_NAMESPACE=1
-         )
-      fi
-      if test ${P_NEEDS_GNU_CXX_NAMESPACE} = 1 ; then
-         AC_MSG_RESULT(yes)
-      else
-         AC_MSG_RESULT(no)
-      fi
+      AC_TRY_COMPILE(
+         [#include $P_ATOMICITY_HEADER],
+         [
+            _Atomic_word val;
+            __gnu_cxx::__exchange_and_add(&val, 1);
+         ],
+         [
+            AC_MSG_RESULT(yes)
+            AC_DEFINE_UNQUOTED(P_ATOMICITY_NAMESPACE, __gnu_cxx::)
+         ],
+         [AC_MSG_RESULT(no)]
+      )
+
+      AC_MSG_CHECKING(if __sync_fetch_and_or exists)
+      AC_TRY_COMPILE(
+         [#include $P_ATOMICITY_HEADER],
+         [
+            _Atomic_word val;
+            __sync_fetch_and_or(&val, 1);
+         ],
+         [
+            AC_MSG_RESULT(yes)
+            AC_DEFINE(P_ATOMICITY_HAS_OR, 1)
+         ],
+         [AC_MSG_RESULT(no)]
+      )
    fi
-fi
-
-AC_DEFINE_UNQUOTED(P_HAS_ATOMIC_INT, ${P_HAS_ATOMIC_INT})
-AC_DEFINE_UNQUOTED(P_NEEDS_GNU_CXX_NAMESPACE, ${P_NEEDS_GNU_CXX_NAMESPACE})
-
-
-dnl ########################################################################
-dnl Memory allocator optimisations
-
-AC_MSG_CHECKING(C++ memory allocator)
-
-AC_ARG_WITH(
-   [allocator],
-   AS_HELP_STRING([--with-allocator=std,mt,bitmap],[Set the allocator type]),
-   [],
-   [withval="std"]
-)
-
-if test "$withval" = "std"; then
-   AC_MSG_RESULT(std)
-elif test "$withval" = "mt"; then
-   AC_TRY_COMPILE(
-      [#include <ext/mt_allocator.h>],
-      [typedef __gnu_cxx::__mt_alloc<char> TestAllocator;],
-      [
-         AC_DEFINE(P_GNU_ALLOCATOR, 1)
-         AC_MSG_RESULT([mt])
-      ],
-      [AC_MSG_RESULT([std (mt unavailable)])]
-  )
-elif test "$withval" = "bitmap"; then
-   AC_TRY_COMPILE(
-      [
-         #include <ext/mt_allocator.h>
-         #include <ext/bitmap_allocator.h>
-      ],
-      [
-         typedef __gnu_cxx::__mt_alloc<char> VariableAllocator;
-         typedef __gnu_cxx::bitmap_allocator<char> FixedAllocator;
-      ],
-      [
-         AC_DEFINE(P_GNU_ALLOCATOR, 2)
-         AC_MSG_RESULT(bitmap)
-      ],
-      [AC_ERROR([bitmap_allocator not available])]
-  )
-else
-  AC_ERROR([Unknown allocator type $withval])
 fi
 
 
@@ -956,46 +985,6 @@ MY_COMPILE_IFELSE(
 
 
 dnl ########################################################################
-dnl look for pcap functions
-
-dnl MSWIN_DISPLAY    pcap,WinPCAP Support
-dnl MSWIN_CHECK_FILE pcap,include\pcap\pcap.h,P_PCAP_WIN32=1
-dnl MSWIN_CHECK_FILE pcap,lib\x64\wpcap.lib,P_PCAP_WIN64=1
-dnl MSWIN_DIR_SYMBOL pcap,PCAP_DIR
-dnl MSWIN_CHECK_DIR  pcap,..\WpdPack
-dnl MSWIN_CHECK_DIR  pcap,..\external\WpdPack*
-dnl MSWIN_CHECK_DIR  pcap,\WpdPack\
-dnl MSWIN_CHECK_DIR  pcap,c:\WpdPack\
-
-AC_ARG_ENABLE(
-   [pcap],
-   AS_HELP_STRING([--disable-pcap],[disable PCAP support]),
-   [],
-   [enable_pcap=$DEFAULT_PCAP]
-)
-
-HAS_PCAP=
-if test "$enable_pcap" = "no" ; then
-   AC_MSG_NOTICE(PCAP disabled)
-else
-   MY_LINK_IFELSE(
-      [for PCAP support],
-      [],
-      [-lpcap],
-      [#include <pcap/pcap.h>],
-      [pcap_t *h],
-      [
-         AC_DEFINE(P_PCAP, 1, "PCAP found")
-         LDFLAGS="$LDFLAGS -lpcap"
-         HAS_PCAP=1
-      ]
-   )
-fi
-
-PTLIB_SUBST(PCAP)
-
-
-dnl ########################################################################
 dnl check for async I/O
 
 AC_CHECK_HEADERS(aio.h, [AC_DEFINE(P_HAS_AIO, 1)])
@@ -1047,22 +1036,6 @@ else
       AC_MSG_NOTICE(PTRACE and all trace logging included)
       CPPFLAGS="$CPPFLAGS -DPTRACING=2"
    fi
-fi
-
-
-dnl ########################################################################
-dnl check for Windows-like integer BOOL
-dnl
-dnl MSWIN_DISPLAY ansi-bool,ANSI C++ bool
-dnl MSWIN_DEFINE  ansi-bool,P_USE_STANDARD_CXX_BOOL
-
-AC_ARG_ENABLE(ansi-bool, AS_HELP_STRING([--disable-ansi-bool],[Use Windows-like integer BOOL over ANSI C++ bool]))
-
-if test "x${enable_ansi_bool}" = "xno" ; then
-   AC_MSG_NOTICE(Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1))
-else
-   AC_MSG_NOTICE(Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true))
-   AC_DEFINE(P_USE_STANDARD_CXX_BOOL)
 fi
 
 
@@ -1185,6 +1158,46 @@ PTLIB_SUBST(DNS_RESOLVER, $HAS_DNS_RESOLVER)
 
 
 dnl ########################################################################
+dnl look for pcap functions
+
+dnl MSWIN_DISPLAY    pcap,WinPCAP Support
+dnl MSWIN_CHECK_FILE pcap,include\pcap\pcap.h,P_PCAP_WIN32=1
+dnl MSWIN_CHECK_FILE pcap,lib\x64\wpcap.lib,P_PCAP_WIN64=1
+dnl MSWIN_DIR_SYMBOL pcap,PCAP_DIR
+dnl MSWIN_CHECK_DIR  pcap,..\WpdPack
+dnl MSWIN_CHECK_DIR  pcap,..\external\WpdPack*
+dnl MSWIN_CHECK_DIR  pcap,\WpdPack\
+dnl MSWIN_CHECK_DIR  pcap,c:\WpdPack\
+
+AC_ARG_ENABLE(
+   [pcap],
+   AS_HELP_STRING([--disable-pcap],[disable PCAP support]),
+   [],
+   [enable_pcap=$DEFAULT_PCAP]
+)
+
+HAS_PCAP=
+if test "$enable_pcap" = "no" ; then
+   AC_MSG_NOTICE(PCAP disabled)
+else
+   MY_LINK_IFELSE(
+      [for PCAP support],
+      [],
+      [-lpcap],
+      [#include <pcap/pcap.h>],
+      [pcap_t *h],
+      [
+         AC_DEFINE(P_PCAP, 1, "PCAP found")
+         LDFLAGS="$LDFLAGS -lpcap"
+         HAS_PCAP=1
+      ]
+   )
+fi
+
+PTLIB_SUBST(PCAP)
+
+
+dnl ########################################################################
 dnl check for libjpeg
 
 dnl MSWIN_DISPLAY    libjpeg,libjpeg support
@@ -1196,6 +1209,8 @@ dnl MSWIN_FIND_FILE  libjpeg,P_LIBJPEG_LIBRARY,jpeg.lib,lib
 dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
+
+AC_LANG_PUSH(C)
 
 PTLIB_MODULE_OPTION(
    [LIBJPEG],
@@ -1214,8 +1229,8 @@ PTLIB_MODULE_OPTION(
    ]
 )
 
-AC_DEFINE(P_LIBJEG_WIN32)
-AC_DEFINE(P_LIBJEG_WIN64)
+AC_LANG_POP(C)
+
 
 dnl ########################################################################
 dnl check for SUN mediaLib library
@@ -1272,7 +1287,7 @@ else
          HAS_SASL2=
          AC_CHECK_LIB(
             [sasl],
-            [sasl_client_out],
+            [sasl_client_init],
             [
                HAS_SASL=1
                AC_DEFINE(P_SASL, 1)
@@ -1304,19 +1319,23 @@ dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
 dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
+AC_LANG_PUSH(C)
+
 PTLIB_MODULE_OPTION(
    [OPENLDAP],
    [openldap],
    [Open LDAP support],
    [ldap],
    [],
-   [-lldap -llber],
+   [-lldap],
    [#include <ldap.h>],
-   [ldap_create(0)],
+   [ldap_init("localhost", 1234)],
    [],
    [],
    [HAS_DNS_RESOLVER]
 )
+
+AC_LANG_POP(C)
 
 
 dnl ########################################################################
@@ -1460,6 +1479,8 @@ dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
 dnl MSWIN_CHECK_DIR  lua,%ProgramFiles%\Lua\5.1
 dnl MSWIN_CHECK_DIR  lua,%ProgramW6432%\Lua\5.1
 
+AC_LANG_PUSH(C)
+
 LUA_PKG=`pkg-config --list-all | sed -n "s/\(lua[[0-9\.-]]*\).*/\1/p" | head -1`
 PTLIB_MODULE_OPTION(
    [LUA],
@@ -1467,9 +1488,11 @@ PTLIB_MODULE_OPTION(
    [Lua script support],
    [$LUA_PKG], 
    [],[],
-   [#include <lua.hpp>],
-   [luaL_newstate()]
+   [#include <lua.h>],
+   [lua_newstate(NULL, NULL)]
 )
+
+AC_LANG_POP(C)
 
 
 dnl ########################################################################
@@ -1815,6 +1838,8 @@ dnl MSWIN_CHECK_FILE odbc,include\um\odbcinst.h,P_ODBC=1
 dnl MSWIN_CHECK_DIR  odbc,%ProgramFiles%\Windows Kits\8.0
 dnl MSWIN_CHECK_DIR  odbc,%ProgramW6432%\Windows Kits\8.0
 
+AC_LANG_PUSH(C)
+
 PTLIB_MODULE_OPTION(
    [ODBC],
    [odbc],
@@ -1824,31 +1849,30 @@ PTLIB_MODULE_OPTION(
    [-lodbc],
    [#include <sql.h>],
    [SQLFreeHandle(0, 0)],
-   [MY_COMPILE_IFELSE(
+   [],
+   [PTLIB_MODULE_OPTION(
+      [ODBC],
+      [odbc],
+      [unixODBC database support],
+      [unixODBC],
+      [],
+      [-lodbc],
+      [#include <sql.h>],
+      [SQLFreeHandle(0, 0)]
+   )]
+)
+
+if test "$HAS_ODBC" = "1"; then
+   MY_COMPILE_IFELSE(
       [ODBC defines Windows types],
       [$ODBC_CFLAGS],
       [#include <sqltypes.h>],
       [BYTE b],
       [AC_DEFINE(P_ODBC_DEFINES_WINDOWS_TYPES, 1)]
-   )]
-)
+   )
+fi
 
-
-dnl ########################################################################
-dnl this reduces the size of all executables and libraries
-
-case "$target_os" in
-  solaris* | sunos* ) ;;
-  *)
-    PTLIB_SIMPLE_OPTION([exceptions], [EXCEPTIONS], [enable C++ exceptions])
-
-    if test "x${HAS_EXCEPTIONS}" = "x1" ; then
-      CXXFLAGS="$CXXFLAGS -fexceptions"
-    else
-      CXXFLAGS="$CXXFLAGS -fno-exceptions"
-    fi
-    ;;
-esac
+AC_LANG_POP(C)
 
 
 dnl ########################################################################
