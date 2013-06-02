@@ -488,12 +488,8 @@ typedef  int16_t  PInt16; // 16 bit
 typedef uint16_t PUInt16; // 16 bit
 typedef  int32_t  PInt32; // 32 bit
 typedef uint32_t PUInt32; // 32 bit
-
-#ifndef P_NEEDS_INT64
-typedef   signed long long int  PInt64; // 64 bit
-typedef unsigned long long int PUInt64; // 64 bit
-#endif
-
+typedef  int64_t  PInt64; // 64 bit
+typedef uint64_t PUInt64; // 64 bit
 
 // Integer type that is same size as a pointer type.
 typedef intptr_t      INT;
@@ -501,6 +497,8 @@ typedef intptr_t      INT;
 // Create "Windows" style definitions.
 
 #if P_ODBC_DEFINES_WINDOWS_TYPES
+  #define  ODBCINT64  int64_t
+  #define UODBCINT64 uint64_t
   #include <sqltypes.h>
 #else
   typedef void            VOID;
