@@ -33,27 +33,9 @@
 
 #include <ptlib/psync.h>
 
-#if defined(SOLARIS) && !defined(__GNUC__)
-#include <atomic.h>
+#ifdef P_ATOMICITY_HEADER
+  #include P_ATOMICITY_HEADER
 #endif
-
-#if P_HAS_ATOMIC_INT
-
-#if defined(__GNUC__)
-#  if __GNUC__ >= 4 && __GNUC_MINOR__ >= 2
-#     include <ext/atomicity.h>
-#  else
-#     include <bits/atomicity.h>
-#  endif
-#endif
-
-#if P_NEEDS_GNU_CXX_NAMESPACE
-#define EXCHANGE_AND_ADD(v,i)   __gnu_cxx::__exchange_and_add(v,i)
-#else
-#define EXCHANGE_AND_ADD(v,i)   __exchange_and_add(v,i)
-#endif
-
-#endif // P_HAS_ATOMIC_INT
 
 
 /** This class implements critical section mutexes using the most
@@ -303,14 +285,19 @@ __inline PAtomicInteger::IntegerType PAtomicInteger::operator++(int)  { return a
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--()     { return atomic_add_32_nv(&m_value, -1); }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--(int)  { return atomic_add_32_nv(&m_value, -1)+1; }
 __inline bool PAtomicBoolean::TestAndSet(bool value)                  { return atomic_swap_32  (&m_value, value) != 0; }
-#elif defined(__GNUC__) && P_HAS_ATOMIC_INT
+#elif defined(P_ATOMICITY_HEADER)
+#define EXCHANGE_AND_ADD P_ATOMICITY_NAMESPACE __exchange_and_add
 __inline PAtomicBase::PAtomicBase(IntegerType value) : m_value(value) { }
 __inline PAtomicBase::~PAtomicBase()                                  { }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator++()     { return EXCHANGE_AND_ADD(&m_value,  1)+1; }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator++(int)  { return EXCHANGE_AND_ADD(&m_value,  1); }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--()     { return EXCHANGE_AND_ADD(&m_value, -1)-1; }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--(int)  { return EXCHANGE_AND_ADD(&m_value, -1); }
+#if P_ATOMICITY_HAS_OR
 __inline bool PAtomicBoolean::TestAndSet(bool value)                  { IntegerType previous = value ? __sync_fetch_and_or(&m_value, 1) : __sync_fetch_and_and(&m_value, 0); return previous != 0; }
+#else
+__inline bool PAtomicBoolean::TestAndSet(bool value)                  { IntegerType previous = EXCHANGE_AND_ADD(&m_value, value?1:-1); m_value = value?1:0; return previous > 0; }
+#endif
 #else
 __inline PAtomicBase::PAtomicBase(IntegerType value) : m_value(value) { pthread_mutex_init(&m_mutex, NULL); }
 __inline PAtomicBase::~PAtomicBase()                                  { pthread_mutex_destroy(&m_mutex); }
