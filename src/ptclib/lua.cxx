@@ -40,7 +40,12 @@
 #pragma message("Lua scripting support enabled")
 
 #include <ptclib/lua.h>
-#include <lua.hpp>
+
+extern "C" {
+  #include <lua.h>
+  #include <lualib.h>
+  #include <lauxlib.h>
+}
 
 
 #ifdef _MSC_VER
