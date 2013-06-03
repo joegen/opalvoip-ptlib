@@ -100,7 +100,8 @@
 #undef uint64_t
 #undef uintptr_t
 
-#undef PNO_LONG_DOUBLE
+#undef HAVE_LONG_LONG_INT
+#undef HAVE_LONG_DOUBLE
 
 #undef P_HAS_WCHAR
 #if P_HAS_WCHAR
