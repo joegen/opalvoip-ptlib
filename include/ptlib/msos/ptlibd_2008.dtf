@@ -118,6 +118,7 @@ EXPORTS
     ??$?6U?$char_traits@D@std@@@std@@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@0@AAV10@PBE@Z @115 NONAME
     ??$?8V?$_Vector_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@V01@@std@@YA_NABV?$reverse_iterator@V?$_Vector_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@@0@0@Z @117 NONAME
     ??$?9V?$_Vector_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@V01@@std@@YA_NABV?$reverse_iterator@V?$_Vector_iterator@VPVarType@@V?$allocator@VPVarType@@@std@@@std@@@0@0@Z @119 NONAME
+    ??$CloneAs@VPSafeCollection@@@PObject@@QBEPAVPSafeCollection@@XZ @26082 NONAME
     ??$CreateFactory@V?$PFactory@VPDevicePluginAdapterBase@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@PFactoryBase@@KAPAV0@XZ @120 NONAME
     ??$CreateFactory@V?$PFactory@VPHTTPClientAuthentication@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@PFactoryBase@@KAPAV0@XZ @121 NONAME
     ??$CreateFactory@V?$PFactory@VPNatMethod@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@@PFactoryBase@@KAPAV0@XZ @122 NONAME
@@ -7213,6 +7214,8 @@ EXPORTS
     ??7?$CComPtr@UIDirectSoundBuffer@@@@QBE_NXZ @7229 NONAME
     ??7?$CComPtr@UIDirectSoundCaptureBuffer@@@@QBE_NXZ @7230 NONAME
     ??7PString@@QBE_NXZ @7231 NONAME
+    ??8?$CComPtr@UIDirectSoundBuffer@@@@QBE_NPAUIDirectSoundBuffer@@@Z @26083 NONAME
+    ??8?$CComPtr@UIDirectSoundCaptureBuffer@@@@QBE_NPAUIDirectSoundCaptureBuffer@@@Z @26084 NONAME
     ??8?$CComPtr@UIEnumMoniker@@@@QBE_NPAUIEnumMoniker@@@Z @7232 NONAME
     ??8?$CComPtr@UIPin@@@@QBE_NPAUIPin@@@Z @7233 NONAME
     ??8?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QBE_NW4OpenOptions_Bits@PFile@@@Z @7234 NONAME
@@ -19236,6 +19239,7 @@ EXPORTS
     ?GetHelpCommand@PCLI@@QBEABVPCaselessString@@XZ @19128 NONAME
     ?GetHelpOnHelp@PCLI@@QBEABVPString@@XZ @19129 NONAME
     ?GetHistoryCommand@PCLI@@QBEABVPCaselessString@@XZ @19130 NONAME
+    ?GetHomeDirectory@PProcess@@QBE?AVPDirectory@@XZ @26085 NONAME
     ?GetHomePage@PHTTPServiceProcess@@QBEABVPString@@XZ @19131 NONAME
     ?GetHost@PHostByAddr@@AAEPAVPIPCacheData@@ABVAddress@PIPSocket@@@Z @19132 NONAME
     ?GetHost@PHostByName@@AAEPAVPIPCacheData@@ABVPString@@@Z @19133 NONAME
