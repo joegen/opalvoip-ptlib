@@ -132,9 +132,7 @@ class PYUVFile : public PVideoFile
 
 PFACTORY_LOAD(PYUVFile);
 
-#ifdef P_LIBJPEG
-
-#include <jpeglib.h>
+#if P_LIBJPEG
 
 /**
  * A file containing a JPEG image
