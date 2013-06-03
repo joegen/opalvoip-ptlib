@@ -265,13 +265,16 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef P_LIBJPEG
+#if P_LIBJPEG
+#pragma message("JPEG file video device enabled")
 
 #ifdef _MSC_VER
   #pragma comment(lib, P_LIBJPEG_LIBRARY)
 #endif
 
 #include <ptlib/vconvert.h>
+#include <jpeglib.h>
+
 
 PFACTORY_CREATE(PFactory<PVideoFile>, PJPEGFile, "jpg", false);
 static PFactory<PVideoFile>::Worker<PJPEGFile> jpegFileFactory("jpeg");
@@ -423,6 +426,8 @@ PBoolean PJPEGFile::ReadFrame(void * frame)
   return true;
 }
 
+#else
+  #pragma message("JPEG file video device DISABLED")
 #endif  // P_LIBJPEG
 #endif  // P_VIDFILE
 #endif  // P_VIDEO
