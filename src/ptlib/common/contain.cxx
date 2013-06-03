@@ -863,46 +863,62 @@ template <typename S, typename U> PINDEX p_signed2string(S value, unsigned base,
 }
 
 
-PString::PString(int16_t n)
-  : PCharArray(sizeof(int16_t)*3+2)
+PString::PString(short n)
+  : PCharArray(sizeof(short)*3+2)
   , m_length(p_signed2string<signed int, unsigned>(n, 10, theArray))
 {
 }
 
 
-PString::PString(uint16_t n)
-  : PCharArray(sizeof(uint16_t)*3+1)
+PString::PString(unsigned short n)
+  : PCharArray(sizeof(unsigned short)*3+1)
   , m_length(p_unsigned2string<unsigned int>(n, 10, theArray))
 {
 }
 
 
-PString::PString(int32_t n)
-  : PCharArray(sizeof(int32_t)*3+2)
+PString::PString(int n)
+  : PCharArray(sizeof(int)*3+2)
   , m_length(p_signed2string<signed int, unsigned>(n, 10, theArray))
 {
 }
 
 
-PString::PString(uint32_t n)
-  : PCharArray(sizeof(uint32_t)*3+1)
+PString::PString(unsigned int n)
+  : PCharArray(sizeof(unsigned int)*3+1)
   , m_length(p_unsigned2string<unsigned int>(n, 10, theArray))
 {
 }
 
 
-PString::PString(int64_t n)
-  : PCharArray(sizeof(int64_t)*3+2)
+PString::PString(long n)
+  : PCharArray(sizeof(long)*3+2)
+  , m_length(p_signed2string<signed long, unsigned long>(n, 10, theArray))
+{
+}
+
+
+PString::PString(unsigned long n)
+  : PCharArray(sizeof(unsigned long)*3+1)
+  , m_length(p_unsigned2string<unsigned long>(n, 10, theArray))
+{
+}
+
+
+#ifndef P_64BIT
+PString::PString(PInt64 n)
+  : PCharArray(sizeof(PInt64)*3+2)
   , m_length(p_signed2string<PInt64, PUInt64>(n, 10, theArray))
 {
 }
 
 
-PString::PString(uint64_t n)
-  : PCharArray(sizeof(uint64_t)*3+1)
+PString::PString(PUInt64 n)
+  : PCharArray(sizeof(PUInt64)*3+1)
   , m_length(p_unsigned2string<PUInt64>(n, 10, theArray))
 {
 }
+#endif
 
 
 static const char siTable[] = { 'f', 'p', 'n', 'u', 'm', '\0', 'k', 'M', 'G', 'T', 'E' };
@@ -976,14 +992,17 @@ PString::PString(ConversionType type, paramType value, unsigned param) \
   m_length = p_convert<signedType, unsignedType>(type, value, param, theArray); \
 }
 
-PSTRING_CONV_CTOR( int8_t,  int8_t,  uint8_t);
-PSTRING_CONV_CTOR(uint8_t,  int8_t,  uint8_t);
-PSTRING_CONV_CTOR( int16_t, int16_t, uint16_t);
-PSTRING_CONV_CTOR(uint16_t, int16_t, uint16_t);
-PSTRING_CONV_CTOR( int32_t, int32_t, uint32_t);
-PSTRING_CONV_CTOR(uint32_t, int32_t, uint32_t);
-PSTRING_CONV_CTOR( int64_t, int64_t, uint64_t);
-PSTRING_CONV_CTOR(uint64_t, int64_t, uint64_t);
+PSTRING_CONV_CTOR(unsigned char,  char,   unsigned char);
+PSTRING_CONV_CTOR(         short, short,  unsigned short);
+PSTRING_CONV_CTOR(unsigned short, short,  unsigned short);
+PSTRING_CONV_CTOR(         int,   int,    unsigned int);
+PSTRING_CONV_CTOR(unsigned int,   int,    unsigned int);
+PSTRING_CONV_CTOR(         long,  long,   unsigned long);
+PSTRING_CONV_CTOR(unsigned long,  long,   unsigned long);
+#ifndef P_64BIT
+PSTRING_CONV_CTOR(       PInt64,  PInt64, PUInt64);
+PSTRING_CONV_CTOR(      PUInt64,  PInt64, PUInt64);
+#endif
 
 
 PString::PString(ConversionType type, double value, unsigned places)
@@ -1019,52 +1038,70 @@ PString::PString(ConversionType type, double value, unsigned places)
 }
 
 
-PString & PString::operator=(int16_t n)
+PString & PString::operator=(short n)
 {
-  SetMinSize(sizeof(int16_t)*3+1);
+  SetMinSize(sizeof(short)*3+1);
   m_length = p_signed2string<signed int, unsigned int>(n, 10, theArray);
   return *this;
 }
 
 
-PString & PString::operator=(uint16_t n)
+PString & PString::operator=(unsigned short n)
 {
-  SetMinSize(sizeof(uint16_t)*3+1);
+  SetMinSize(sizeof(unsigned short)*3+1);
   m_length = p_unsigned2string<unsigned int>(n, 10, theArray);
   return *this;
 }
 
 
-PString & PString::operator=(int32_t n)
+PString & PString::operator=(int n)
 {
-  SetMinSize(sizeof(int32_t)*3+1);
+  SetMinSize(sizeof(int)*3+1);
   m_length = p_signed2string<signed int, unsigned int>(n, 10, theArray);
   return *this;
 }
 
 
-PString & PString::operator=(uint32_t n)
+PString & PString::operator=(unsigned int n)
 {
-  SetMinSize(sizeof(uint32_t)*3+1);
+  SetMinSize(sizeof(unsigned int)*3+1);
   m_length = p_unsigned2string<unsigned int>(n, 10, theArray);
   return *this;
 }
 
 
-PString & PString::operator=(int64_t n)
+PString & PString::operator=(long n)
 {
-  SetMinSize(sizeof(int64_t)*3+1);
+  SetMinSize(sizeof(long)*3+1);
+  m_length = p_signed2string<signed long,  unsigned long>(n, 10, theArray);
+  return *this;
+}
+
+
+PString & PString::operator=(unsigned long n)
+{
+  SetMinSize(sizeof(unsigned long)*3+1);
+  m_length = p_unsigned2string<unsigned long>(n, 10, theArray);
+  return *this;
+}
+
+
+#ifndef P_64BIT
+PString & PString::operator=(PInt64 n)
+{
+  SetMinSize(sizeof(PInt64)*3+1);
   m_length = p_signed2string<PInt64, PUInt64>(n, 10, theArray);
   return *this;
 }
 
 
-PString & PString::operator=(uint64_t n)
+PString & PString::operator=(PUInt64 n)
 {
-  SetMinSize(sizeof(uint64_t)*3+1);
+  SetMinSize(sizeof(PUInt64)*3+1);
   m_length = p_unsigned2string<PUInt64>(n, 10, theArray);
   return *this;
 }
+#endif
 
 
 void PString::AssignContents(const PContainer & cont)
