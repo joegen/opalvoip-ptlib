@@ -86,22 +86,36 @@
 // Integer/char types
 //
 
-#undef SIZEOF_INT
-#undef HAVE_INTTYPES_H
-#undef HAVE_STDINT_H
-#undef int8_t
-#undef int16_t
-#undef int32_t
-#undef int64_t
-#undef intptr_t
-#undef uint8_t
-#undef uint16_t
-#undef uint32_t
-#undef uint64_t
-#undef uintptr_t
+#if defined(_WIN64) && !defined(P_64BIT)
+  #define P_64BIT 1
+#endif
 
-#undef HAVE_LONG_LONG_INT
-#undef HAVE_LONG_DOUBLE
+#ifdef _MSC_VER
+  #if P_64BIT
+    #define SIZEOF_INT 8
+  #else
+    #define SIZEOF_INT 4
+  #endif
+  #define HAVE_LONG_LONG_INT 1
+  #define HAVE_LONG_DOUBLE 1
+#else
+  #undef SIZEOF_INT
+  #undef HAVE_INTTYPES_H
+  #undef HAVE_STDINT_H
+  #undef int8_t
+  #undef int16_t
+  #undef int32_t
+  #undef int64_t
+  #undef intptr_t
+  #undef uint8_t
+  #undef uint16_t
+  #undef uint32_t
+  #undef uint64_t
+  #undef uintptr_t
+
+  #undef HAVE_LONG_LONG_INT
+  #undef HAVE_LONG_DOUBLE
+#endif
 
 #undef P_HAS_WCHAR
 #if P_HAS_WCHAR
@@ -115,10 +129,6 @@
   #else
     #define PBYTE_ORDER PLITTLE_ENDIAN
   #endif
-#endif
-
-#if defined(_WIN64) && !defined(P_64BIT)
-  #define P_64BIT 1
 #endif
 
 
