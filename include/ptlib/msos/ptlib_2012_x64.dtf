@@ -317,6 +317,7 @@ EXPORTS
     ??$advance@V?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PEAUPAsyncNotifierCallback@@@std@@@std@@@std@@_J@std@@YAXAEAV?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PEAUPAsyncNotifierCallback@@@std@@@std@@@0@_J@Z @315 NONAME
     ??$advance@V?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@std@@@std@@_J@std@@YAXAEAV?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@std@@@0@_J@Z @316 NONAME
     ??$assign@V?$_String_iterator@V?$_String_val@U?$_Simple_types@D@std@@@std@@@std@@@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV01@V?$_String_iterator@V?$_String_val@U?$_Simple_types@D@std@@@std@@@1@0@Z @317 NONAME
+    ??$CloneAs@VPSafeCollection@@@PObject@@QEBAPEAVPSafeCollection@@XZ @24461 NONAME
     ??$construct@DD@?$allocator@D@std@@QEAAXPEAD$$QEAD@Z @318 NONAME
     ??$construct@DD@?$allocator_traits@V?$allocator@D@std@@@std@@SAXAEAV?$allocator@D@1@PEAD$$QEAD@Z @319 NONAME
     ??$construct@DD@?$_Wrap_alloc@V?$allocator@D@std@@@std@@QEAAXPEAD$$QEAD@Z @320 NONAME
@@ -5931,6 +5932,8 @@ EXPORTS
     ??7?$CComPtr@UIDirectSoundBuffer@@@@QEBA_NXZ @5949 NONAME
     ??7?$CComPtr@UIDirectSoundCaptureBuffer@@@@QEBA_NXZ @5950 NONAME
     ??7PString@@QEBA_NXZ @5951 NONAME
+    ??8?$CComPtr@UIDirectSoundBuffer@@@@QEBA_NPEAUIDirectSoundBuffer@@@Z @24462 NONAME
+    ??8?$CComPtr@UIDirectSoundCaptureBuffer@@@@QEBA_NPEAUIDirectSoundCaptureBuffer@@@Z @24463 NONAME
     ??8?$CComPtr@UIEnumMoniker@@@@QEBA_NPEAUIEnumMoniker@@@Z @5952 NONAME
     ??8?$CComPtr@UIPin@@@@QEBA_NPEAUIPin@@@Z @5953 NONAME
     ??8?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QEBA_NW4OpenOptions_Bits@PFile@@@Z @5954 NONAME
@@ -17432,6 +17435,7 @@ EXPORTS
     ?GetHelpCommand@PCLI@@QEBAAEBVPCaselessString@@XZ @17462 NONAME
     ?GetHelpOnHelp@PCLI@@QEBAAEBVPString@@XZ @17463 NONAME
     ?GetHistoryCommand@PCLI@@QEBAAEBVPCaselessString@@XZ @17464 NONAME
+    ?GetHomeDirectory@PProcess@@QEBA?AVPDirectory@@XZ @24464 NONAME
     ?GetHomePage@PHTTPServiceProcess@@QEBAAEBVPString@@XZ @17465 NONAME
     ?GetHost@PHostByAddr@@AEAAPEAVPIPCacheData@@AEBVAddress@PIPSocket@@@Z @17466 NONAME
     ?GetHost@PHostByName@@AEAAPEAVPIPCacheData@@AEBVPString@@@Z @17467 NONAME
@@ -24122,6 +24126,7 @@ EXPORTS
     PIN_CATEGORY_VIDEOPORT @24209 NONAME
     PIN_CATEGORY_VIDEOPORT_VBI @24210 NONAME
     PtrToLong @23394 NONAME
+    SID_SCommandBarState @24465 NONAME
     TIME_FORMAT_BYTE @24211 NONAME
     TIME_FORMAT_FIELD @24212 NONAME
     TIME_FORMAT_FRAME @24213 NONAME
