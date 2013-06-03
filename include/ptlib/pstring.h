@@ -238,7 +238,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      int16_t n   ///< Integer to convert
+      short n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -246,7 +246,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      uint16_t n   ///< Integer to convert
+      unsigned short n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -254,7 +254,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      int32_t n   ///< Integer to convert
+      int n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -262,7 +262,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      uint32_t n   ///< Integer to convert
+      unsigned int n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -270,7 +270,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      int64_t n   ///< Integer to convert
+      long n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -278,8 +278,26 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      uint64_t n   ///< Integer to convert
+      unsigned long n   ///< Integer to convert
     );
+
+#ifndef P_64BIT
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      PInt64 n   ///< Integer to convert
+    );
+
+    /**Create a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString(
+      PUInt64 n   ///< Integer to convert
+    );
+#endif
 
  
     /* Type of conversion to make in the conversion constructors.
@@ -305,21 +323,27 @@ class PString : public PCharArray
       const char * str,    ///< String to convert.
       ...                 ///< Extra parameters for <code>sprintf()</code> call.
     );
+
+#ifndef P_64BIT
     PString(
       ConversionType type, ///< Type of data source for conversion.
-      int64_t value,        ///< Large integer value to convert.
+      PInt64 value,        ///< Large integer value to convert.
       unsigned param = 10  /**< For Signed/Unsigned, this is number base
                                 to use for the integer conversion.
                                 For ScaleSI, this is the number of significant
                                 figures to be used, maiximum 4. */
     );
-    PString(ConversionType type, uint64_t value, unsigned param = 10);
-    PString(ConversionType type,  int32_t value, unsigned param = 10);
-    PString(ConversionType type, uint32_t value, unsigned param = 10);
-    PString(ConversionType type,  int16_t value, unsigned param = 10);
-    PString(ConversionType type, uint16_t value, unsigned param = 10);
-    PString(ConversionType type,  int8_t  value, unsigned param = 10);
-    PString(ConversionType type, uint8_t  value, unsigned param = 10);
+    PString(ConversionType type, PUInt64        value, unsigned param = 10);
+#endif
+
+    PString(ConversionType type, unsigned long  value, unsigned param = 10);
+    PString(ConversionType type,   signed long  value, unsigned param = 10);
+    PString(ConversionType type, unsigned int   value, unsigned param = 10);
+    PString(ConversionType type,   signed int   value, unsigned param = 10);
+    PString(ConversionType type, unsigned short value, unsigned param = 10);
+    PString(ConversionType type,   signed short value, unsigned param = 10);
+    PString(ConversionType type, unsigned char  value, unsigned param = 10);
+    PString(ConversionType type,   signed char  value, unsigned param = 10);
 
     /* Contruct a new string converting from the spcified data source into
        a string array.
@@ -382,7 +406,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      int16_t n   ///< Integer to convert
+      short n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -390,7 +414,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      uint16_t n   ///< Integer to convert
+      unsigned short n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -398,7 +422,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      int32_t n   ///< Integer to convert
+      int n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -406,7 +430,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      uint32_t n   ///< Integer to convert
+      unsigned int n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -414,7 +438,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      int64_t n   ///< Integer to convert
+      long n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -422,8 +446,26 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      uint64_t n   ///< Integer to convert
+      unsigned long n   ///< Integer to convert
     );
+
+#ifndef P_64BIT
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      PInt64 n   ///< Integer to convert
+    );
+
+    /**Assign a string from the integer type.
+       This will create a simple base 10, shortest length conversion of the
+       integer (with sign character if appropriate) into the string.
+      */
+    PString & operator=(
+      PUInt64 n   ///< Integer to convert
+    );
+#endif
 
     /**Make the current string empty
       */
