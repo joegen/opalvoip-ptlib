@@ -150,6 +150,10 @@
 #if P_ANDROID
 
   // configure is not run in Android/Visual Studio, so hard code it
+  #define SIZEOF_INT 4
+  #define HAVE_LONG_LONG_INT 1
+  #define HAVE_LONG_DOUBLE 1
+
   #define HAVE_LIMITS_H 1
   #define HAVE_UNISTD_H 1
   #define HAVE_SYS_TYPES_H 1
@@ -175,7 +179,7 @@
 
   #define P_PTHREADS 1
   #define P_HAS_SEMAPHORES 1
-  #define P_ATOMICITY_HEADER <bits/atomicity.h>
+  #define P_ATOMICITY_HEADER <ext/atomicity.h>
   #define P_ATOMICITY_NAMESPACE __gnu_cxx::
   #define P_ATOMICITY_HAS_OR 1
   #define P_HAS_RECURSIVE_MUTEX 1
