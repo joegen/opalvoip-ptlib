@@ -333,7 +333,7 @@ class PString : public PCharArray
                                 For ScaleSI, this is the number of significant
                                 figures to be used, maiximum 4. */
     );
-    PString(ConversionType type, PUInt64        value, unsigned param = 10);
+    PString(ConversionType type, unsigned long long value, unsigned param = 10);
 #endif
 
     PString(ConversionType type, unsigned long  value, unsigned param = 10);
