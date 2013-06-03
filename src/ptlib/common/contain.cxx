@@ -905,17 +905,17 @@ PString::PString(unsigned long n)
 }
 
 
-#ifndef P_64BIT
-PString::PString(PInt64 n)
-  : PCharArray(sizeof(PInt64)*3+2)
-  , m_length(p_signed2string<PInt64, PUInt64>(n, 10, theArray))
+#ifdef HAVE_LONG_LONG_INT
+PString::PString(long long n)
+  : PCharArray(sizeof(long long)*3+2)
+  , m_length(p_signed2string<signed long long, unsigned long long>(n, 10, theArray))
 {
 }
 
 
-PString::PString(PUInt64 n)
-  : PCharArray(sizeof(PUInt64)*3+1)
-  , m_length(p_unsigned2string<PUInt64>(n, 10, theArray))
+PString::PString(unsigned long long n)
+  : PCharArray(sizeof(unsigned long long)*3+1)
+  , m_length(p_unsigned2string<unsigned long long>(n, 10, theArray))
 {
 }
 #endif
@@ -999,9 +999,9 @@ PSTRING_CONV_CTOR(         int,   int,    unsigned int);
 PSTRING_CONV_CTOR(unsigned int,   int,    unsigned int);
 PSTRING_CONV_CTOR(         long,  long,   unsigned long);
 PSTRING_CONV_CTOR(unsigned long,  long,   unsigned long);
-#ifndef P_64BIT
-PSTRING_CONV_CTOR(       PInt64,  PInt64, PUInt64);
-PSTRING_CONV_CTOR(      PUInt64,  PInt64, PUInt64);
+#ifdef HAVE_LONG_LONG_INT
+PSTRING_CONV_CTOR(         long long, long long, unsigned long long);
+PSTRING_CONV_CTOR(unsigned long long, long long, unsigned long long);
 #endif
 
 
@@ -1086,19 +1086,19 @@ PString & PString::operator=(unsigned long n)
 }
 
 
-#ifndef P_64BIT
-PString & PString::operator=(PInt64 n)
+#ifndef HAVE_LONG_LONG_INT
+PString & PString::operator=(long long n)
 {
-  SetMinSize(sizeof(PInt64)*3+1);
-  m_length = p_signed2string<PInt64, PUInt64>(n, 10, theArray);
+  SetMinSize(sizeof(long long)*3+1);
+  m_length = p_signed2string<signed long long, unsigned long long>(n, 10, theArray);
   return *this;
 }
 
 
-PString & PString::operator=(PUInt64 n)
+PString & PString::operator=(unsigned long long n)
 {
-  SetMinSize(sizeof(PUInt64)*3+1);
-  m_length = p_unsigned2string<PUInt64>(n, 10, theArray);
+  SetMinSize(sizeof(unsigned long long)*3+1);
+  m_length = p_unsigned2string<unsigned long long>(n, 10, theArray);
   return *this;
 }
 #endif
