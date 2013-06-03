@@ -513,10 +513,10 @@ typedef PQueuedThreadPool<PSafeWork> PSafeThreadPool;
 
 
 /// A PSafeWork thread pool item where call back has no arguments.
-template <class PtrClass>
+template <class PtrClass, typename FuncRet = void>
 class PSafeWorkNoArg : public PSafeWork {
   public:
-    typedef void (PtrClass::*Function)();
+    typedef FuncRet (PtrClass::*Function)();
 
   protected:
 #pragma pack(16)
@@ -541,11 +541,12 @@ class PSafeWorkNoArg : public PSafeWork {
 /// A PSafeWork thread pool item where call back has 1 argument.
 template <
   class PtrClass,
-  typename Arg1Type
+  typename Arg1Type,
+  typename FuncRet = void
 >
 class PSafeWorkArg1 : public PSafeWork {
   public:
-    typedef void (PtrClass::*Function)(Arg1Type arg1);
+    typedef FuncRet (PtrClass::*Function)(Arg1Type arg1);
 
   protected:
 #pragma pack(16)
@@ -574,11 +575,12 @@ class PSafeWorkArg1 : public PSafeWork {
 template <
   class PtrClass,
   typename Arg1Type,
-  typename Arg2Type
+  typename Arg2Type,
+  typename FuncRet = void
 >
 class PSafeWorkArg2 : public PSafeWork {
   public:
-    typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2);
+    typedef FuncRet (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2);
 
   protected:
 #pragma pack(16)
@@ -611,11 +613,12 @@ template <
   class PtrClass,
   typename Arg1Type,
   typename Arg2Type,
-  typename Arg3Type
+  typename Arg3Type,
+  typename FuncRet = void
 >
 class PSafeWorkArg3 : public PSafeWork {
   public:
-    typedef void (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3);
+    typedef FuncRet (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3);
 
   protected:
 #pragma pack(16)
