@@ -280,6 +280,7 @@ EXPORTS
     ??$addressof@VPVideoFrameInfo@@@std@@YAPAVPVideoFrameInfo@@AAV1@@Z @276 NONAME
     ??$advance@V?$_Deque_iterator@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@H@std@@YAXAAV?$_Deque_iterator@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@0@H@Z @277 NONAME
     ??$advance@V?$_Vector_iterator@V?$_Vector_val@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@H@std@@YAXAAV?$_Vector_iterator@V?$_Vector_val@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@0@H@Z @278 NONAME
+    ??$CloneAs@VPSafeCollection@@@PObject@@QBEPAVPSafeCollection@@XZ @28122 NONAME
     ??$construct@AAK@?$allocator@K@std@@QAEXPAKAAK@Z @279 NONAME
     ??$construct@AAPAVWorkerThreadBase@PThreadPoolBase@@@?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@QAEXPAPAVWorkerThreadBase@PThreadPoolBase@@AAPAV23@@Z @281 NONAME
     ??$construct@AAU?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@std@@QAEXPAU?$pair@$$CBVToken@PvCard@@VParamValues@2@@1@AAU21@@Z @282 NONAME
@@ -5616,6 +5617,8 @@ EXPORTS
     ??7?$CComPtr@UIDirectSoundBuffer@@@@QBE_NXZ @5582 NONAME
     ??7?$CComPtr@UIDirectSoundCaptureBuffer@@@@QBE_NXZ @5583 NONAME
     ??7PString@@QBE_NXZ @5584 NONAME
+    ??8?$CComPtr@UIDirectSoundBuffer@@@@QBE_NPAUIDirectSoundBuffer@@@Z @28123 NONAME
+    ??8?$CComPtr@UIDirectSoundCaptureBuffer@@@@QBE_NPAUIDirectSoundCaptureBuffer@@@Z @28124 NONAME
     ??8?$CComPtr@UIEnumMoniker@@@@QBE_NPAUIEnumMoniker@@@Z @5585 NONAME
     ??8?$CComPtr@UIPin@@@@QBE_NPAUIPin@@@Z @5586 NONAME
     ??8?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QBE_NW4OpenOptions_Bits@PFile@@@Z @5587 NONAME
@@ -17684,6 +17687,7 @@ EXPORTS
     ?GetHelpCommand@PCLI@@QBEABVPCaselessString@@XZ @17514 NONAME
     ?GetHelpOnHelp@PCLI@@QBEABVPString@@XZ @17515 NONAME
     ?GetHistoryCommand@PCLI@@QBEABVPCaselessString@@XZ @17516 NONAME
+    ?GetHomeDirectory@PProcess@@QBE?AVPDirectory@@XZ @28125 NONAME
     ?GetHomePage@PHTTPServiceProcess@@QBEABVPString@@XZ @17517 NONAME
     ?GetHost@PHostByAddr@@AAEPAVPIPCacheData@@ABVAddress@PIPSocket@@@Z @17518 NONAME
     ?GetHost@PHostByName@@AAEPAVPIPCacheData@@ABVPString@@@Z @17519 NONAME
