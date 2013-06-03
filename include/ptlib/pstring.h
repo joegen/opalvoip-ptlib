@@ -281,13 +281,13 @@ class PString : public PCharArray
       unsigned long n   ///< Integer to convert
     );
 
-#ifndef P_64BIT
+#ifdef HAVE_LONG_LONG_INT
     /**Create a string from the integer type.
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      PInt64 n   ///< Integer to convert
+      long long n   ///< Integer to convert
     );
 
     /**Create a string from the integer type.
@@ -295,7 +295,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString(
-      PUInt64 n   ///< Integer to convert
+      unsigned long long n   ///< Integer to convert
     );
 #endif
 
@@ -324,10 +324,10 @@ class PString : public PCharArray
       ...                 ///< Extra parameters for <code>sprintf()</code> call.
     );
 
-#ifndef P_64BIT
+#ifdef HAVE_LONG_LONG_INT
     PString(
       ConversionType type, ///< Type of data source for conversion.
-      PInt64 value,        ///< Large integer value to convert.
+      long long value,     ///< Large integer value to convert.
       unsigned param = 10  /**< For Signed/Unsigned, this is number base
                                 to use for the integer conversion.
                                 For ScaleSI, this is the number of significant
@@ -449,13 +449,13 @@ class PString : public PCharArray
       unsigned long n   ///< Integer to convert
     );
 
-#ifndef P_64BIT
+#ifdef HAVE_LONG_LONG_INT
     /**Assign a string from the integer type.
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      PInt64 n   ///< Integer to convert
+      long long n   ///< Integer to convert
     );
 
     /**Assign a string from the integer type.
@@ -463,7 +463,7 @@ class PString : public PCharArray
        integer (with sign character if appropriate) into the string.
       */
     PString & operator=(
-      PUInt64 n   ///< Integer to convert
+      unsigned long long n   ///< Integer to convert
     );
 #endif
 

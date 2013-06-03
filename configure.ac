@@ -404,19 +404,6 @@ fi
 
 
 dnl ########################################################################
-dnl check for the size of int
-AC_CHECK_SIZEOF(int)
-
-
-dnl ########################################################################
-dnl check for long double
-AC_C_LONG_DOUBLE
-if test $ac_cv_c_long_double != yes ; then
-  AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
-fi
-
-
-dnl ########################################################################
 dnl check for headers
 AC_CHECK_HEADERS(limits.h signal.h fcntl.h sys/time.h termios.h sys/termios.h \
                  ioctl.h sys/ioctl.h sys/sockio.h sys/sysctl.h sys/socket.h \
