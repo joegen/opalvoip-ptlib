@@ -241,9 +241,14 @@ PBoolean PSocket::Close()
 int PSocket::os_close()
 {
   clear();
+
   SOCKET s = os_handle;
   os_handle = -1;
-  return closesocket(s);
+
+  int retval;
+  while ((retval = closesocket(s)) < 0 && GetLastError() == WSAEWOULDBLOCK)
+    PThread::Sleep(10);
+  return retval;
 }
 
 
@@ -282,71 +287,69 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
   DWORD fionbio = 1;
   if (!ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &fionbio)))
     return false;
+
+  DWORD err = ERROR_SUCCESS;
+
+  if (::connect(os_handle, addr, size) == SOCKET_ERROR && (err = GetLastError()) == WSAEWOULDBLOCK) {
+    P_fd_set writefds = os_handle;
+    P_fd_set exceptfds = os_handle;
+    P_timeval tv;
+
+    /* To avoid some strange behaviour on various windows platforms, do a zero
+        timeout select first to pick up errors. Then do real timeout. */
+    int selerr = ::select(1, NULL, writefds, exceptfds, tv);
+    if (selerr == 0) {
+      writefds = os_handle;
+      exceptfds = os_handle;
+      tv = readTimeout;
+      selerr = ::select(1, NULL, writefds, exceptfds, tv);
+    }
+
+    switch (selerr) {
+      case 1 :
+        if (writefds.IsPresent(os_handle)) {
+          // The following is to avoid a bug in Win32 sockets. The getpeername() function doesn't
+          // work for some period of time after a connect, saying it is not connected yet!
+          for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
+            sockaddr_in address;
+            int sz = sizeof(address);
+            if (::getpeername(os_handle, (struct sockaddr *)&address, &sz) == 0) {
+              if (address.sin_port != 0)
+                break;
+            }
+            ::Sleep(0);
+          }
+
+          err = 0;
+        }
+        else {
+          // The following is to avoid a bug in Win32 sockets. The getsockopt() function
+          // doesn't work for some period of time after a connect, saying no error!
+          for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
+            int sz = sizeof(err);
+            if (::getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&err, &sz) == 0) {
+              if (err != 0)
+                break;
+            }
+            ::Sleep(0);
+          }
+          if (err == 0)
+            err = WSAEFAULT; // Need to have something!
+        }
+        break;
+
+      case 0 :
+        err = WSAETIMEDOUT;
+        break;
+
+      default :
+        err = GetLastError();
+    }
+  }
+
   fionbio = 0;
-
-  if (::connect(os_handle, addr, size) != SOCKET_ERROR)
-    return ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &fionbio));
-
-  DWORD err = GetLastError();
-  if (err != WSAEWOULDBLOCK) {
-    ::ioctlsocket(os_handle, FIONBIO, &fionbio);
-    SetLastError(err);
-    return ConvertOSError(-1);
-  }
-
-  P_fd_set writefds = os_handle;
-  P_fd_set exceptfds = os_handle;
-  P_timeval tv;
-
-  /* To avoid some strange behaviour on various windows platforms, do a zero
-     timeout select first to pick up errors. Then do real timeout. */
-  int selerr = ::select(1, NULL, writefds, exceptfds, tv);
-  if (selerr == 0) {
-    writefds = os_handle;
-    exceptfds = os_handle;
-    tv = readTimeout;
-    selerr = ::select(1, NULL, writefds, exceptfds, tv);
-  }
-
-  switch (selerr) {
-    case 1 :
-      if (writefds.IsPresent(os_handle)) {
-        // The following is to avoid a bug in Win32 sockets. The getpeername() function doesn't
-        // work for some period of time after a connect, saying it is not connected yet!
-        for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
-          sockaddr_in address;
-          int sz = sizeof(address);
-          if (::getpeername(os_handle, (struct sockaddr *)&address, &sz) == 0) {
-            if (address.sin_port != 0)
-              break;
-          }
-          ::Sleep(0);
-        }
-
-        err = 0;
-      }
-      else {
-        // The following is to avoid a bug in Win32 sockets. The getsockopt() function
-        // doesn't work for some period of time after a connect, saying no error!
-        for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
-          int sz = sizeof(err);
-          if (::getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&err, &sz) == 0) {
-            if (err != 0)
-              break;
-          }
-          ::Sleep(0);
-        }
-        if (err == 0)
-          err = WSAEFAULT; // Need to have something!
-      }
-      break;
-
-    case 0 :
-      err = WSAETIMEDOUT;
-      break;
-
-    default :
-      err = GetLastError();
+  if (::ioctlsocket(os_handle, FIONBIO, &fionbio) < 0) {
+    PTRACE(1, "Socket\tCOuld nto reset FIONBIO mode, error=" << GetLastError());
   }
 
   SetLastError(err);
