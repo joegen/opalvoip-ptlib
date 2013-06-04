@@ -91,11 +91,7 @@
 #endif
 
 #ifdef _MSC_VER
-  #if P_64BIT
-    #define SIZEOF_INT 8
-  #else
-    #define SIZEOF_INT 4
-  #endif
+  #define SIZEOF_INT 4
   #define HAVE_LONG_LONG_INT 1
   #define HAVE_LONG_DOUBLE 1
 #else
