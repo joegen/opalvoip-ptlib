@@ -317,7 +317,8 @@ void PSystemLogToNetwork::Output(PSystemLog::Level level, const char * msg)
 
 ///////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#if defined(_WIN32)
+
 void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
 {
   if (level > m_thresholdLevel || !PProcess::IsInitialised())
@@ -328,7 +329,62 @@ void PSystemLogToDebug::Output(PSystemLog::Level level, const char * msg)
   PVarString str = strm;
   OutputDebugString(str);
 }
-#else
+
+#elif defined(P_ANDROID)
+
+#include <android/log.h>
+
+PSystemLogToSyslog::PSystemLogToSyslog(const char * ident, int priority, int options, int facility)
+  : m_ident(ident)
+  , m_priority(priority)
+{
+  if (m_ident.IsEmpty() && PProcess::IsInitialised())
+    m_ident = PProcess::Current().GetName();
+}
+
+
+PSystemLogToSyslog::~PSystemLogToSyslog()
+{
+}
+
+
+void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
+{
+  if (level > m_thresholdLevel || !PProcess::IsInitialised())
+    return;
+
+  android_LogPriority priority;
+  switch (level) {
+    case PSystemLog::Fatal :
+      priority = ANDROID_LOG_FATAL;
+      break;
+    case PSystemLog::Error :
+      priority = ANDROID_LOG_ERROR;
+      break;
+    case PSystemLog::StdError :
+    case PSystemLog::Warning :
+      priority = ANDROID_LOG_WARN;
+      break;
+    case PSystemLog::Info :
+      priority = ANDROID_LOG_INFO;
+      break;
+    case PSystemLog::Debug :
+      priority = ANDROID_LOG_DEBUG;
+      break;
+    default :
+      priority = ANDROID_LOG_VERBOSE;
+  }
+
+  const char * tag = m_ident;
+  if (m_ident.IsEmpty() && PProcess::IsInitialised())
+    tag = PProcess::Current().GetName();
+  else
+    tag = m_ident;
+
+  __android_log_write(priority, tag, msg);
+}
+
+#else // _WIN32/P_ANDROID
 
 #include <syslog.h>
 
@@ -394,7 +450,8 @@ void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
       syslog(priority, "DEBUG%-3u%s", level - PSystemLog::Info, msg);
   }
 }
-#endif
+
+#endif // _WIN32/P_ANDROID
 
 
 // End Of File ///////////////////////////////////////////////////////////////
