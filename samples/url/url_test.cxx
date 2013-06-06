@@ -49,32 +49,16 @@ void Test::Main()
   cout << "URL Test Utility" << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("p:"
-#if PTRACING
-             "o-output:"
-             "t-trace."
-#endif
-    );
-
-  if (args.GetCount() < 1) {
-    cerr << "usage: " << GetFile().GetTitle() << " [ options ] <url> [ <filename> ]\n"
-#if PTRACING
-         << "  -t --trace         : Enable trace, use multiple times for more detail\n"
-         << "  -o --output        : File for trace output, default is stderr\n"
-#endif
-         << endl;
+  if (!args.Parse("T-time: time PURL parsing for number of iterations\n" PTRACE_ARGLIST)) {
+    args.Usage(cerr);
     return;
   }
 
-#if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-#endif
+  PTRACE_INITIALISE(args);
 
   PURL url;
 
-  unsigned total = args.GetOptionString('p').AsUnsigned();
+  unsigned total = args.GetOptionString('T').AsUnsigned();
   if (total == 0) {
     if (!url.Parse(args[0], "http")) {
       cerr << "Could not parse URL \"" << args[0] << '"' << endl;

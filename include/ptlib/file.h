@@ -91,15 +91,16 @@ class PFile : public PChannel
           \arg \c WriteOnly <code>Create | Truncate</code>
           \arg \c ReadWrite <code>Create</code>
      */
-    P_DECLARE_BITWISE_ENUM_EX(OpenOptions, 6,
-        (MustExist,       ///< File open fails if file does not exist.
+    P_DECLARE_BITWISE_ENUM_EX(OpenOptions, 7,
+        (NoOptions,       ///< No options selected
+         MustExist,       ///< File open fails if file does not exist.
          Create,          ///< File is created if it does not exist.
          Truncate,        ///< File is set to zero length if it already exists.
          Exclusive,       ///< File open fails if file already exists.
          Temporary,       ///< File is temporary and is to be deleted when closed.
          DenySharedRead,  ///< File may not be read by another process.
          DenySharedWrite  ///< File may not be written by another process.
-        ), 
+        ),
         ModeDefault = -1  ///< File options depend on the OpenMode parameter.
     );
 
@@ -415,12 +416,22 @@ class PFile : public PChannel
     );
 
     /**Open the specified file name in the specified mode and with
+       the specified options and permissions. If the file object already has an open file then
+       it is closed.
+       
+       @return
+       true if the file was successfully opened.
+     */
+    virtual PBoolean Open(
+      OpenMode mode,                      ///< Mode in which to open the file.
+      OpenOptions opts,                   ///< <code>OpenOptions</code> enum# for open operation.
+      PFileInfo::Permissions permissions  ///< Permission for file if created
+    );
+
+    /**Open the specified file name in the specified mode and with
        the specified options. If the file object already has an open file then
        it is closed.
        
-       Note: if <code>mode</code> is StandardInput, StandardOutput or StandardError,
-       then the <code>name</code> parameter is ignored.
-
        @return
        true if the file was successfully opened.
      */
@@ -429,7 +440,21 @@ class PFile : public PChannel
       OpenMode mode = ReadWrite, // Mode in which to open the file.
       OpenOptions opts = ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
-      
+
+    /**Open the specified file name in the specified mode and with
+       the specified options and permissions. If the file object already has an open file then
+       it is closed.
+       
+       @return
+       true if the file was successfully opened.
+     */
+    virtual PBoolean Open(
+      const PFilePath & name,             ///< Name of file to open.
+      OpenMode mode,                      ///< Mode in which to open the file.
+      OpenOptions opts,                   ///< <code>OpenOptions</code> enum# for open operation.
+      PFileInfo::Permissions permissions  ///< Permission for file if created
+    );
+
     /**Get the current size of the file.
 
        @return
