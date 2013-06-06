@@ -264,9 +264,55 @@ class PSoundChannel : public PIndirectChannel
     /// Create a sound channel.
     PSoundChannel();
 
+    enum {
+      DefaultBufferSize = 320, // 20ms at 8kHz
+      DefaultBufferCount = 2
+    };
+
+    /// Parameters for opening a sound channel
+    struct Params {
+      Params(
+        Directions dir = Player,
+        const PString & device = PString::Empty(),
+        const PString & driver = PString::Empty(),
+        unsigned channels = 1,
+        unsigned sampleRate = 8000,
+        unsigned bitsPerSample = 16,
+        unsigned bufferSize =   DefaultBufferSize,
+        unsigned bufferCount = DefaultBufferCount,
+        PPluginManager * pluginMgr = NULL
+      ) : m_direction(dir)
+        , m_device(device)
+        , m_driver(driver)
+        , m_channels(channels)
+        , m_sampleRate(sampleRate)
+        , m_bitsPerSample(bitsPerSample)
+        , m_bufferSize(bufferSize)
+        , m_bufferCount(bufferCount)
+        , m_pluginMgr(pluginMgr)
+      { }
+
+      Directions m_direction;     ///< Sound I/O direction
+      PString    m_device;        ///< Name of sound device
+      PString    m_driver;        ///< Name of sound driver
+      unsigned   m_channels;      ///< Number of channels eg mono/stereo
+      unsigned   m_sampleRate;    ///< Samples per second
+      unsigned   m_bitsPerSample; ///< Number of bits per sample
+      unsigned   m_bufferSize;    /**< Size of the internal buffer in bytes, typically
+                                       the smallest amount of data channel can read or
+                                       written in one go. */
+      unsigned   m_bufferCount;   ///< Number of buffers to queue.
+      PPluginManager * m_pluginMgr;
+    };
+
     /** Create a sound channel.
         Create a reference to the sound drivers for the platform.
       */
+    PSoundChannel(
+      const Params & params  ///< Parameters for opening channel
+    );
+
+    // Backward compatibility
     PSoundChannel(
       const PString & device,       ///< Name of sound driver/device
       Directions dir,               ///< Sound I/O direction
@@ -327,6 +373,11 @@ class PSoundChannel : public PIndirectChannel
        from GetAllDeviceNames().
      */
     static PSoundChannel * CreateOpenedChannel(
+      const Params & params   ///< Parameters for opening channel
+    );
+
+    // For backward compatibility
+    static PSoundChannel * CreateOpenedChannel(
       const PString & driverName,         ///< Name of driver
       const PString & deviceName,         ///< Name of device
       Directions direction,               ///< Direction for device (record or play)
@@ -371,12 +422,18 @@ class PSoundChannel : public PIndirectChannel
        @return
        true if the sound device is valid for playing/recording.
      */
-    virtual PBoolean Open(
+    virtual bool Open(
+      const Params & params   ///< Parameters for opening channel
+    );
+
+    // For backward compatibility
+    bool Open(
       const PString & device,       ///< Name of sound driver/device
       Directions dir,               ///< Sound I/O direction
       unsigned numChannels = 1,     ///< Number of channels eg mono/stereo
       unsigned sampleRate = 8000,   ///< Samples per second
-      unsigned bitsPerSample = 16   ///< Number of bits per sample
+      unsigned bitsPerSample = 16,  ///< Number of bits per sample
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
 
     /// Get the direction of the channel
@@ -439,7 +496,7 @@ class PSoundChannel : public PIndirectChannel
        true if the sound device is valid for playing/recording.
      */
     virtual PBoolean SetBuffers(
-      PINDEX size,      ///< Size of each buffer
+      PINDEX size,      ///< Size of each buffer in bytes
       PINDEX count = 2  ///< Number of buffers
     );
 
@@ -449,7 +506,7 @@ class PSoundChannel : public PIndirectChannel
        true if the buffer size were obtained.
      */
     virtual PBoolean GetBuffers(
-      PINDEX & size,    // Size of each buffer
+      PINDEX & size,    // Size of each buffer in bytes
       PINDEX & count    // Number of buffers
     );
 
@@ -559,6 +616,21 @@ class PSoundChannel : public PIndirectChannel
        true if the sound has successfully completed playing.
      */
     virtual PBoolean WaitForPlayCompletion();
+
+    /**Test the specified device for playing.
+       A series of tones are played to the channel and the result return as a
+       string. The string will start with "Success" or "Error" with the former
+       having some statistics on the performace of the palyer and the latter
+       containing whatever error information is available.
+
+       @return
+       true if the sound device is valid for playing/recording.
+     */
+    static PString TestPlayer(
+      const Params & params,        ///< Parameters for opening channel
+      const PNotifier & progress = PNotifier(), ///< Call back for progress in playback
+      const char * toneSpec = NULL  ///< Tones as used by PTones class.
+    );
   //@}
 
   /**@name Record functions */
@@ -645,6 +717,20 @@ class PSoundChannel : public PIndirectChannel
        true if the sound driver has filled a buffer.
      */
     virtual PBoolean WaitForAllRecordBuffersFull();
+
+    /**Test the specified device for playing.
+       A recording of a number of seconds of audio is made, and is played back
+       using the second set of parameters.
+
+       @return
+       true if the sound device is valid for playing/recording.
+     */
+    static PString TestRecorder(
+      const Params & recorderParams,  ///< Parameters for opening channel
+      const Params & playerParams,    ///< Parameters for opening channel
+      const PNotifier & progress = PNotifier(), ///< Call back for progress in playback
+      unsigned seconds = 5            ///< Seconds to record
+    );
   //@}
 
   protected:
@@ -654,7 +740,9 @@ class PSoundChannel : public PIndirectChannel
        in.  Should the user attempt to used this opened class instance
        in a direction opposite to that specified in activeDirection,
        an assert happens. */
-    Directions      activeDirection;
+    Directions activeDirection;
+
+    P_REMOVE_VIRTUAL(PBoolean, Open(const PString &,Directions,unsigned,unsigned,unsigned),false);
 };
 
 

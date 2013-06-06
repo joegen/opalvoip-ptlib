@@ -51,20 +51,9 @@ class PSoundChannel_Tones : public PSoundChannel
     PCLASSINFO(PSoundChannel_Tones, PSoundChannel);
   public:
     PSoundChannel_Tones();
-    PSoundChannel_Tones(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-                     unsigned bitsPerSample);
     ~PSoundChannel_Tones();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    PBoolean Open(
-      const PString & device,
-      Directions dir,
-      unsigned numChannels,
-      unsigned sampleRate,
-      unsigned bitsPerSample
-    );
+    bool Open(const Params & params);
     virtual PString GetName() const;
     PBoolean Close();
     PBoolean IsOpen() const;
@@ -109,8 +98,11 @@ class PSoundChannel_Tones_PluginServiceDescriptor : public PDevicePluginServiceD
     }
     virtual bool ValidateDeviceName(const PString & deviceName, int userData) const
     {
+      if (TonePrefix != deviceName.Left(TonePrefix.GetLength()))
+        return false;
+
       PSoundChannel_Tones test;
-      return test.Open(deviceName, (PSoundChannel::Directions)userData, 1, 8000, 16);
+      return test.Open(PSoundChannel::Params((PSoundChannel::Directions)userData, deviceName));
     }
 } PSoundChannel_Tones_descriptor;
 
@@ -128,19 +120,6 @@ PSoundChannel_Tones::PSoundChannel_Tones()
   , m_bufferSize(320)
   , m_bufferPosition(0)
 {
-}
-
-
-PSoundChannel_Tones::PSoundChannel_Tones(const PString & device,
-                                         Directions dir,
-                                         unsigned numChannels,
-                                         unsigned sampleRate,
-                                         unsigned bitsPerSample)
-  : m_autoClose(false)
-  , m_bufferSize(320)
-  , m_bufferPosition(0)
-{
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
 
@@ -165,22 +144,18 @@ PStringArray PSoundChannel_Tones::GetDeviceNames(Directions dir)
 }
 
 
-PBoolean PSoundChannel_Tones::Open(const PString & deviceName,
-                                   Directions dir,
-                                   unsigned numChannels,
-                                   unsigned sampleRate,
-                                   unsigned bitsPerSample)
+bool PSoundChannel_Tones::Open(const Params & params)
 {
   Close();
-
-  if (dir != Recorder || !SetFormat(numChannels, sampleRate, bitsPerSample))
-    return false;
-
-  if (PCaselessString(deviceName).NumCompare(TonePrefix) != EqualTo)
-    return false;
-
   m_bufferPosition = 0;
-  m_descriptor = deviceName.Mid(TonePrefix.GetLength());
+
+  if (params.m_direction != Recorder || !SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample))
+    return false;
+
+  if (PCaselessString(params.m_device).NumCompare(TonePrefix) != EqualTo)
+    m_descriptor = params.m_device;
+  else
+    m_descriptor = params.m_device.Mid(TonePrefix.GetLength());
   if (m_descriptor.IsEmpty())
     return false;
 

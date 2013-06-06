@@ -57,20 +57,9 @@ class PSoundChannel_WAVFile : public PSoundChannel
  PCLASSINFO(PSoundChannel_WAVFile, PSoundChannel);
  public:
     PSoundChannel_WAVFile();
-    PSoundChannel_WAVFile(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-                     unsigned bitsPerSample);
     ~PSoundChannel_WAVFile();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    PBoolean Open(
-      const PString & device,
-      Directions dir,
-      unsigned numChannels,
-      unsigned sampleRate,
-      unsigned bitsPerSample
-    );
+    bool Open(const Params & params);
     virtual PString GetName() const;
     PBoolean Close();
     PBoolean IsOpen() const;

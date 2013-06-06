@@ -24,6 +24,9 @@
 #include <ptclib/qchannel.h>
 
 
+// -tttttodebugstream -v 10 -r "Tones:425x25:5/400+450:0.4-0.2-0.4-2-0.4-0.2-0.4-2-0.4-0.2-0.4-2-0.4-0.2-0.4-2-0.4-0.2-0.4-2"
+
+
 #define PTraceModule() "AudioTest"
 
 
@@ -43,6 +46,19 @@ class AudioTest : public PProcess
     PDECLARE_NOTIFIER(PCLI::Arguments, AudioTest, Quit);
 
     PQueueChannel m_queue;
+
+    class AudioParams : public PSoundChannel::Params {
+    public:
+      AudioParams(
+        PSoundChannel::Directions dir,
+        const PArgList & args,
+        char driverArgLetter,
+        char deviceArgLetter,
+        const char * bufferSizeArgString,
+        const char * bufferCountArgString,
+        const char * bufferCountDefault
+      );
+    };
 
     class AudioInfo : public PSoundChannel {
       PQueueChannel & m_queue;
@@ -107,6 +123,8 @@ void AudioTest::Main()
              "-record-buffer-count: set record buffer size (default 2)\n"
              "-player-buffer-size: set play back buffer size (default 320)\n"
              "-player-buffer-count: set play back buffer size (default 8)\n"
+             "-test-player. perform standard player test\n"
+             "-test-recorder. perform standard recorder test\n"
              PTRACE_ARGLIST
              "h-help. help");
 
@@ -137,6 +155,17 @@ void AudioTest::Main()
     return;
   }
 
+  if (args.HasOption("test-player")) {
+    cout << PSoundChannel::TestPlayer(AudioParams(PSoundChannel::Player, args, 'P', 'p', "player-buffer-size", "player-buffer-count", "8")) << endl;
+    return;
+  }
+
+  if (args.HasOption("test-recorder")) {
+    cout << PSoundChannel::TestRecorder(AudioParams(PSoundChannel::Recorder, args, 'R', 'r', "record-buffer-size", "record-buffer-count", "2"),
+                                        AudioParams(PSoundChannel::Player,   args, 'P', 'p', "player-buffer-size", "player-buffer-count", "8")) << endl;
+    return;
+  }
+
   if (!m_recorder.OpenSoundChannel(PSoundChannel::Recorder, args, 'R', 'r', 'V', "record-buffer-size", "record-buffer-count", "2"))
     return;
 
@@ -163,6 +192,25 @@ void AudioTest::Main()
 }
 
 
+AudioTest::AudioParams::AudioParams(PSoundChannel::Directions dir, 
+                                            const PArgList & args,
+                                            char driverArgLetter,
+                                            char deviceArgLetter,
+                                            const char * bufferSizeArgString,
+                                            const char * bufferCountArgString,
+                                            const char * bufferCountDefault)
+  : PSoundChannel::Params(dir,
+                          args.GetOptionString(deviceArgLetter),
+                          args.GetOptionString(driverArgLetter),
+                          1,
+                          args.GetOptionString('s', "8000").AsUnsigned(),
+                          16,
+                          args.GetOptionString(bufferSizeArgString, "320").AsUnsigned(),
+                          args.GetOptionString(bufferCountArgString, bufferCountDefault).AsUnsigned())
+{
+}
+
+
 bool AudioTest::AudioInfo::OpenSoundChannel(PSoundChannel::Directions dir, 
                                             const PArgList & args,
                                             char driverArgLetter,
@@ -172,30 +220,28 @@ bool AudioTest::AudioInfo::OpenSoundChannel(PSoundChannel::Directions dir,
                                             const char * bufferCountArgString,
                                             const char * bufferCountDefault)
 {
-  PString driver = args.GetOptionString(driverArgLetter);
-  PString device = args.GetOptionString(deviceArgLetter);
-  unsigned sampleRate = args.GetOptionString('s', "8000").AsUnsigned();
+  AudioParams params(dir, args, driverArgLetter, deviceArgLetter, bufferSizeArgString, bufferCountArgString, bufferCountDefault);
 
   std::cout << dir << " opening ..." << endl;
-  if (!Open(driver + '\t' + device, dir, 1, sampleRate)) {
+  if (!Open(params)) {
     cerr << dir << " failed to open";
-    if (driver.IsEmpty() && device.IsEmpty())
+    if (params.m_driver.IsEmpty() && params.m_device.IsEmpty())
       cerr << " using default \"" << PSoundChannel::GetDefaultDevice(dir) << '"';
     else {
-      if (!driver.IsEmpty()) {
-        cerr << ", driver \"" << driver << '"';
-        if (!device.IsEmpty())
+      if (!params.m_driver.IsEmpty()) {
+        cerr << ", driver \"" << params.m_driver << '"';
+        if (!params.m_device.IsEmpty())
           cerr << ',';
       }
-      if (!device.IsEmpty())
-        cerr << " device \"" << device << '"';
+      if (!params.m_device.IsEmpty())
+        cerr << " device \"" << params.m_device << '"';
     }
-    cerr << ", sample rate: " << sampleRate << endl;
+    cerr << ", sample rate: " << params.m_sampleRate << endl;
     return false;
   }
 
   PTRACE(3, dir << " selected \"" << GetName() << '"');
-  std::cout << dir << ": \"" << GetName() << "\", sample rate: " << sampleRate << endl;
+  std::cout << dir << ": \"" << GetName() << "\", sample rate: " << params.m_sampleRate << endl;
 
   if (args.HasOption(volumeArgLetter))
     SetVolume(args.GetOptionString(volumeArgLetter).AsUnsigned());
@@ -208,12 +254,8 @@ bool AudioTest::AudioInfo::OpenSoundChannel(PSoundChannel::Directions dir,
     std::cout << "cannot be obtained.";
   std::cout << endl;
 
-  PINDEX size = args.GetOptionString(bufferSizeArgString, "320").AsUnsigned();
-  PINDEX count = args.GetOptionString(bufferCountArgString, bufferCountDefault).AsUnsigned();
-  if (!SetBuffers(size, count))
-    std::cout << dir << " could not set " << count << " buffers of " << size << " bytes." << endl;
-
   std::cout << dir << ' ';
+  PINDEX size, count;
   if (GetBuffers(size, count))
     std::cout << "is using " << count << " buffers of " << size << " bytes.\n";
   else {
