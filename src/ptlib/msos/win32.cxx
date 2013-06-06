@@ -925,17 +925,20 @@ bool PThread::CoInitialise()
     return false;
   }
 
-  result = ::CoInitializeSecurity(NULL, 
-                                  -1,                          // COM authentication
-                                  NULL,                        // Authentication services
-                                  NULL,                        // Reserved
-                                  RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
-                                  RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
-                                  NULL,                        // Authentication info
-                                  EOAC_NONE,                   // Additional capabilities 
-                                  NULL                         // Reserved
-                                  );
-  PTRACE_IF(2, FAILED(result), "PTLib", "Could not initialise COM security: error=0x" << hex << result);
+  static PAtomicBoolean securityInitialised;
+  if (!securityInitialised.TestAndSet(true)) {
+    result = ::CoInitializeSecurity(NULL, 
+                                    -1,                          // COM authentication
+                                    NULL,                        // Authentication services
+                                    NULL,                        // Reserved
+                                    RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication 
+                                    RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation  
+                                    NULL,                        // Authentication info
+                                    EOAC_NONE,                   // Additional capabilities 
+                                    NULL                         // Reserved
+                                    );
+    PTRACE_IF(2, result, "PTLib", "Could not initialise COM security: error=0x" << hex << result);
+  }
 
   m_comInitialised = true;
   return true;
