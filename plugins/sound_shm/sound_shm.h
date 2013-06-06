@@ -46,20 +46,10 @@ class SoundHandleEntry : public PObject {
 class PSoundChannelSHM : public PSoundChannel {
  public:
   PSoundChannelSHM();
-  void Construct();
-  PSoundChannelSHM(const PString &device,
-		   PSoundChannel::Directions dir,
-		   unsigned numChannels,
-		   unsigned sampleRate,
-		   unsigned bitsPerSample);
   ~PSoundChannelSHM();
   static PStringArray GetDeviceNames(PSoundChannel::Directions);
   static PString GetDefaultDevice(PSoundChannel::Directions);
-  PBoolean Open(const PString & _device,
-       Directions _dir,
-       unsigned _numChannels,
-       unsigned _sampleRate,
-       unsigned _bitsPerSample);
+  bool Open(const Params & params);
   PBoolean Setup();
   PBoolean Close();
   PBoolean Write(const void * buf, PINDEX len);
@@ -93,7 +83,6 @@ class PSoundChannelSHM : public PSoundChannel {
 
   static void UpdateDictionary(PSoundChannel::Directions);
   PBoolean Volume (PBoolean, unsigned, unsigned &);
-  PSoundChannel::Directions direction;
   PString device;
   unsigned mNumChannels;
   unsigned mSampleRate;

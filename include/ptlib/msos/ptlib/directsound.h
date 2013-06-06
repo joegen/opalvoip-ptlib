@@ -65,14 +65,7 @@ public:
    */
   PSoundChannelDirectSound();
 
-  /** Initialise and open device
-    */
-  PSoundChannelDirectSound(const PString &device,
-                 PSoundChannel::Directions dir,
-                 unsigned numChannels,
-                 unsigned sampleRate,
-                 unsigned bitsPerSample);
-
+  /// Destroy channel
   ~PSoundChannelDirectSound();
   //@}
 
@@ -98,13 +91,9 @@ public:
   /** Open a device with format specifications
       Device name corresponds to Multimedia name (first 32 characters)
     */
-  PBoolean Open(const PString & device,
-            Directions dir,
-            unsigned numChannels,
-            unsigned sampleRate,
-            unsigned bitsPerSample);
+  bool Open(const Params & params);
 
-  PString GetName() const { return m_deviceName; }
+  PString GetName() const;
 
   PBoolean IsOpen() const
   {

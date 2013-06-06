@@ -124,33 +124,10 @@ public:
 PSoundChannelPulse::PSoundChannelPulse()
 {
   PTRACE(6, "Pulse\tConstructor for no args");
-  PSoundChannelPulse::Construct();
-  setenv ("PULSE_PROP_media.role", "phone", true);
-}
-
-
-PSoundChannelPulse::PSoundChannelPulse(const PString & device,
-				       Directions dir,
-				       unsigned numChannels,
-				       unsigned sampleRate,
-				       unsigned bitsPerSample)
-{
-  PTRACE(6, "Pulse\tConstructor with many args\n");
-
-  PAssert((bitsPerSample == 16), PInvalidParameter);
-  Construct();
-  ss.rate = sampleRate;
-  ss.channels = numChannels;
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
-void PSoundChannelPulse::Construct()
-{
-  PTRACE(6, "Pulse\tConstruct ");
   os_handle = -1;
   s = NULL;
   ss.format =  PA_SAMPLE_S16LE;
+  setenv ("PULSE_PROP_media.role", "phone", true);
 }
 
 
@@ -218,20 +195,15 @@ static void stream_write_cb(pa_stream* s,size_t nbytes,void *userdata) {
   PulseContext::signal();
 }
 
-PBoolean PSoundChannelPulse::Open(const PString & _device,
-				  Directions _dir,
-				  unsigned _numChannels,
-				  unsigned _sampleRate,
-				  unsigned _bitsPerSample)
+bool PSoundChannelPulse::Open(const Params & params)
 {
   PWaitAndSignal m(deviceMutex);
-  PTRACE(6, "Pulse\t Open on device name of " << _device);
+  PTRACE(6, "Pulse\t Open on device name of " << params.m_device);
   Close();
-  direction = _dir;
-  mNumChannels = _numChannels;
-  mSampleRate = _sampleRate;
-  mBitsPerSample = _bitsPerSample;
-  Construct();
+  activeDirection = params.m_direction;
+  mNumChannels = params.m_channels;
+  mSampleRate = params.m_sampleRate;
+  mBitsPerSample = params.m_bitsPerSample;
 
   PulseLock lock;
   char *app = getenv ("PULSE_PROP_application.name");
@@ -245,8 +217,8 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
   else
     streamName << ::hex << PRandom::Number();
 
-  ss.rate = _sampleRate;
-  ss.channels = _numChannels;
+  ss.rate = params.m_sampleRate;
+  ss.channels = params.m_numChannels;
   ss.format =  PA_SAMPLE_S16LE;  
 
   const char* dev;
@@ -267,7 +239,7 @@ PBoolean PSoundChannelPulse::Open(const PString & _device,
     return false;
   }
 
-  if (_dir == Player) {
+  if (activeDirection == Player) {
     int err=pa_stream_connect_playback(s,dev,NULL,PA_STREAM_NOFLAGS,NULL,NULL);
     if (err) {
       PTRACE(2, ": pa_connect_playback() failed: " << pa_strerror(err));
@@ -571,14 +543,14 @@ PBoolean PSoundChannelPulse::SetVolume(unsigned newVal)
     int dev=pa_stream_get_device_index(s);
     pa_operation* operation;
     pa_cvolume volume;
-    if (direction==Player) {
+    if (activeDirection==Player) {
       operation=pa_context_get_sink_info_by_index(context,dev,sink_volume_cb,&volume);
     } else {
       operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);
     }
     if (!lock.waitFor(operation)) return false;
     pa_cvolume_scale(&volume,newVal*PA_VOLUME_NORM/100);
-    if (direction==Player) {
+    if (activeDirection==Player) {
       pa_context_set_sink_volume_by_index(context,dev,&volume,NULL,NULL);
     } else {
       pa_context_set_source_volume_by_index(context,dev,&volume,NULL,NULL);
@@ -594,7 +566,7 @@ PBoolean  PSoundChannelPulse::GetVolume(unsigned &devVol)
     int dev=pa_stream_get_device_index(s);
     pa_operation* operation;
     pa_cvolume volume;
-    if (direction==Player) {
+    if (activeDirection==Player) {
       operation=pa_context_get_sink_info_by_index(context,dev,sink_volume_cb,&volume);
     } else {
       operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);

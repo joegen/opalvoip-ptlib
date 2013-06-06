@@ -135,44 +135,6 @@ PSoundChannelSHM::PSoundChannelSHM()
 }
 
 
-PSoundChannelSHM::PSoundChannelSHM (const PString &device,
-                                          Directions dir,
-                                            unsigned numChannels,
-                                            unsigned sampleRate,
-                                            unsigned bitsPerSample)
-{
-  card_nr = 0;
-  os_handle = NULL;
-//printf("ashm constructor2\n");
-  Open (device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
-void
-PSoundChannelSHM::Construct()
-{
-//printf("ashm construc()\n");
-
-  int val = 0;
-#if PBYTE_ORDER == PLITTLE_ENDIAN
-  val = (mBitsPerSample == 16) ? 16 : 8;
-#else
-  val = (mBitsPerSample == 16) ? 16 : 8;
-#endif
-
-  frameBytes = (mNumChannels * (val / 8));
-
-  storedPeriods = 4;
-  storedSize = frameBytes * 3;
-
-DPRINT(("ashm construc() frameBytes=%d 4x=storedSize=%d val=%d\n", frameBytes,storedSize,val ));
-
-  card_nr = 0;
-  os_handle = NULL;
-  isInitialised = false;
-}
-
-
 PSoundChannelSHM::~PSoundChannelSHM()
 {
 //printf("ashm destructor\n");
@@ -216,30 +178,42 @@ DPRINT(("ashm getdefaultdevice \n"));
 
 int prinCounter = 20;
 
-PBoolean PSoundChannelSHM::Open (const PString & _device,
-                              Directions _dir,
-                              unsigned _numChannels,
-                              unsigned _sampleRate,
-                              unsigned _bitsPerSample)
+bool PSoundChannelSHM::Open(const Params & params)
 {
 
-DPRINT(("ashm Open %s: dir=%d :%s:\n", AIPMVERSION, _dir, (const unsigned char *)_device));
+DPRINT(("ashm Open %s: dir=%d :%s:\n", AIPMVERSION, params.m_direction, (const unsigned char *)params.m_device));
 DPRINT(("ashm Open channel=%d sampleRate=%d bitsperSample=%d\n", 
-                        _numChannels, _sampleRate, _bitsPerSample ));
+                        params.m__numChannels, params.m__sampleRate, params.m__bitsPerSample ));
   Close();
 
   prinCounter = 20;
-  direction = _dir;
-  mNumChannels = _numChannels;
-  mSampleRate = _sampleRate;
-  mBitsPerSample = _bitsPerSample;
+  activeDirection = params.m_direction;
+  mNumChannels = params.m_numChannels;
+  mSampleRate = params.m_sampleRate;
+  mBitsPerSample = params.m_bitsPerSample;
 
-  Construct();
+  int val = 0;
+#if PBYTE_ORDER == PLITTLE_ENDIAN
+  val = (mBitsPerSample == 16) ? 16 : 8;
+#else
+  val = (mBitsPerSample == 16) ? 16 : 8;
+#endif
+
+  frameBytes = (mNumChannels * (val / 8));
+
+  storedPeriods = 4;
+  storedSize = frameBytes * 3;
+
+DPRINT(("ashm construc() frameBytes=%d 4x=storedSize=%d val=%d\n", frameBytes,storedSize,val ));
+
+  card_nr = 0;
+  os_handle = NULL;
+  isInitialised = false;
 
   PWaitAndSignal m(device_mutex);
 
-  if (_device != "shm") {
-      DPRINT(("ashm Open() device %s not supported\n", (const unsigned char *)_device ));
+  if (params.m_device != "shm") {
+      DPRINT(("ashm Open() device %s not supported\n", (const unsigned char *)params.m_device ));
       return false;
   }
   /* save internal parameters */

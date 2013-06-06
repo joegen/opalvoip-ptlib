@@ -33,20 +33,10 @@ class PSoundChannelPulse: public PSoundChannel
 {
  public:
     PSoundChannelPulse();
-    void Construct();
-    PSoundChannelPulse(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-		     unsigned bitsPerSample);
     ~PSoundChannelPulse();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     static PString GetDefaultDevice(PSoundChannel::Directions);
-    PBoolean Open(const PString & _device,
-              Directions _dir,
-              unsigned _numChannels,
-              unsigned _sampleRate,
-              unsigned _bitsPerSample);
+    bool Open(const Params & params);
     PBoolean Setup();
     PBoolean Close();
     PBoolean IsOpen() const;
@@ -80,7 +70,6 @@ class PSoundChannelPulse: public PSoundChannel
     unsigned mSampleRate;
     unsigned mBitsPerSample;
     unsigned actualSampleRate;
-    Directions direction;
     PString device;
     PBoolean isInitialised;
     unsigned resampleRate;

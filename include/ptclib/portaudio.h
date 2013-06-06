@@ -45,21 +45,9 @@ class PSoundChannelPortAudio: public PSoundChannel
 {
  public:
     PSoundChannelPortAudio();
-    void Construct();
-    PSoundChannelPortAudio(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-                     unsigned bitsPerSample);
     ~PSoundChannelPortAudio();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    bool Open(
-      const PString & device,
-      Directions dir,
-      unsigned numChannels,
-      unsigned sampleRate,
-      unsigned bitsPerSample
-    );
+    bool Open(const Params & params);
     bool Setup();
     bool Close();
     bool IsOpen() const;
@@ -117,7 +105,6 @@ class PSoundChannelPortAudio: public PSoundChannel
     const PaDeviceInfo * m_deviceInfo;
     int                  m_deviceId;
     PString              m_deviceName;
-    Directions           m_direction;
     bool                 m_started;
     bool                 m_mute;
     unsigned char *      m_muteBuffer;

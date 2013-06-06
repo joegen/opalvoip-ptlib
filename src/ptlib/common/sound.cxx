@@ -38,6 +38,10 @@
 #include <ptlib/sound.h>
 #include <ptlib/pluginmgr.h>
 #include <ptclib/delaychan.h>
+#include <ptclib/dtmf.h>
+
+#include <math.h>
+
 
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
@@ -101,25 +105,81 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const PString & driverName,
                                                    unsigned bitsPerSample,
                                                    PPluginManager * pluginMgr)
 {
-  PString adjustedDeviceName = deviceName;
-  PSoundChannel * sndChan;
-  if (driverName.IsEmpty() || driverName == "*") {
-    if (deviceName.IsEmpty() || deviceName == "*")
-      adjustedDeviceName = PSoundChannel::GetDefaultDevice(dir);
-    sndChan = CreateChannelByName(adjustedDeviceName, dir, pluginMgr);
-  }
-  else {
-    if (deviceName.IsEmpty() || deviceName == "*") {
-      PStringArray devices = PSoundChannel::GetDriversDeviceNames(driverName, PSoundChannel::Player);
-      if (devices.IsEmpty())
-        return NULL;
-      adjustedDeviceName = devices[0];
+  return CreateOpenedChannel(Params(dir,
+                                    deviceName,
+                                    driverName,
+                                    numChannels,
+                                    sampleRate,
+                                    bitsPerSample,
+                                    DefaultBufferSize,
+                                    DefaultBufferCount,
+                                    pluginMgr));
+}
+
+
+PSoundChannel * PSoundChannel::CreateOpenedChannel(const Params & params)
+{
+  Params adjustedParams = params;
+
+  if (adjustedParams.m_driver == "*")
+    adjustedParams.m_driver.MakeEmpty();
+
+  if (adjustedParams.m_device == "*")
+    adjustedParams.m_device.MakeEmpty();
+
+  if (adjustedParams.m_device.IsEmpty()) {
+    if (adjustedParams.m_driver.IsEmpty())
+      adjustedParams.m_device = PSoundChannel::GetDefaultDevice(params.m_direction);
+    else {
+      PStringArray devices = PSoundChannel::GetDriversDeviceNames(adjustedParams.m_driver, PSoundChannel::Player);
+      if (!devices.IsEmpty())
+        adjustedParams.m_device = devices[0];
     }
-    sndChan = CreateChannel(driverName, pluginMgr);
   }
 
-  if (sndChan != NULL && sndChan->Open(adjustedDeviceName, dir, numChannels, sampleRate, bitsPerSample))
+  PTRACE(5, NULL, "Sound",
+         params.m_direction << " finding"
+         " driver=\"" << adjustedParams.m_driver << "\", "
+         " device=\"" << adjustedParams.m_device << '"');
+
+  PSoundChannel * sndChan = NULL;
+
+  if (!adjustedParams.m_driver.IsEmpty())
+    sndChan = CreateChannel(adjustedParams.m_driver, params.m_pluginMgr);
+  else {
+    PINDEX sep = adjustedParams.m_device.Find(PDevicePluginServiceDescriptor::SeparatorChar);
+    if (sep != P_MAX_INDEX) {
+      adjustedParams.m_driver = adjustedParams.m_device.Left(sep);
+      adjustedParams.m_device.Delete(0, sep+1);
+      sndChan = CreateChannel(adjustedParams.m_driver, params.m_pluginMgr);
+    }
+    else {
+      if ((sep = adjustedParams.m_device.Find(':')) != P_MAX_INDEX) {
+        PString trialDriver = adjustedParams.m_device.Left(sep);
+        sndChan = CreateChannel(trialDriver, params.m_pluginMgr);
+        if (sndChan != NULL) {
+          adjustedParams.m_driver = adjustedParams.m_driver;
+          adjustedParams.m_device.Delete(0, sep+1);
+        }
+      }
+      if (sndChan == NULL)
+        sndChan = CreateChannelByName(adjustedParams.m_device, params.m_direction, params.m_pluginMgr);
+    }
+  }
+
+  if (sndChan != NULL && sndChan->Open(adjustedParams))
     return sndChan;
+
+  PTRACE_IF(5, sndChan != NULL, sndChan, "Sound",
+         params.m_direction << " opening, "
+         " driver=\"" << adjustedParams.m_driver << "\", "
+         " device=\"" << adjustedParams.m_device << '"');
+
+  PTRACE(2, sndChan, "Sound",
+         params.m_direction << " could not be opened,"
+         " driver=\"" << adjustedParams.m_driver << "\", "
+         " device=\"" << adjustedParams.m_device << "\": " <<
+         (sndChan != NULL ? sndChan->GetErrorText() : PConstString("Unknown driver or device type")));
 
   delete sndChan;
   return NULL;
@@ -174,6 +234,14 @@ PSoundChannel::PSoundChannel()
 {
 }
 
+
+PSoundChannel::PSoundChannel(const Params & params)
+  : activeDirection(Closed)
+{
+  Open(params);
+}
+
+
 PSoundChannel::PSoundChannel(const PString & device,
                              Directions dir,
                              unsigned numChannels,
@@ -181,7 +249,7 @@ PSoundChannel::PSoundChannel(const PString & device,
                              unsigned bitsPerSample)
   : activeDirection(dir)
 {
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
+  Open(Params(dir, device, PString::Empty(), numChannels, sampleRate, bitsPerSample));
 }
 
 
@@ -189,24 +257,18 @@ PBoolean PSoundChannel::Open(const PString & devSpec,
                          Directions dir,
                          unsigned numChannels,
                          unsigned sampleRate,
-                         unsigned bitsPerSample)
+                         unsigned bitsPerSample,
+                         PPluginManager * pluginMgr)
 {
-  PString driver, device;
-  PINDEX colon = devSpec.FindOneOf("\t:");
-  if (colon == P_MAX_INDEX)
-    device = devSpec;
-  else {
-    driver = devSpec.Left(colon);
-    device = devSpec.Mid(colon+1).Trim();
-  }
+  return Open(Params(dir, devSpec, PString::Empty(), numChannels, sampleRate, bitsPerSample, DefaultBufferSize, DefaultBufferCount, pluginMgr));
+}
 
+
+bool PSoundChannel::Open(const Params & params)
+{
   channelPointerMutex.StartWrite();
-
-  activeDirection = dir;
-
-  if (!PIndirectChannel::Open(CreateOpenedChannel(driver, device, dir, numChannels, sampleRate, bitsPerSample)) && !driver.IsEmpty())
-    PIndirectChannel::Open(CreateOpenedChannel(PString::Empty(), devSpec, dir, numChannels, sampleRate, bitsPerSample));
-
+  activeDirection = params.m_direction;
+  PIndirectChannel::Open(CreateOpenedChannel(params));
   channelPointerMutex.EndWrite();
 
   return readChannel != NULL;
@@ -393,6 +455,171 @@ const char * PSoundChannel::GetDirectionText(Directions dir)
 }
 
 
+static PString SuccessfulTestResult(std::vector<int64_t> & times, PSoundChannel & channel)
+{
+  // Skip first few chunks as they are not indicative, being very fast filling queues
+  PINDEX size, count;
+  channel.GetBuffers(size, count);
+  size_t base = count*4;
+  
+  // Calculate times for each read/write
+  for (size_t i = times.size()-1; i >= base; --i)
+    times[i] -= times[i-1];
+  
+  // Calculate mean
+  double average = 0;
+  for (size_t i = base; i < times.size(); ++i)
+    average += times[i];
+  average /= times.size() - base;
+  
+  // Calculate standard deviation
+  double variance = 0;
+  for (size_t i = base; i < times.size(); ++i) {
+    double diff = times[i] - average;
+    variance += diff * diff;
+  }
+  variance /= times.size() - base - 1;
+
+  PStringStream text;
+  text << "Success: ";
+
+  PString driver, device;
+  if (channel.GetName().Split(PDevicePluginServiceDescriptor::SeparatorChar, driver, device))
+    text << " driver=\"" << driver << "\", device=\"" << device << '"';
+  else
+    text << '"' << channel.GetName() << '"';
+
+  text << '\n'
+       << std::fixed << std::setprecision(2)
+       << "expected=" << (size/2*1000/channel.GetSampleRate()) << "ms, "
+          "average=" << average << "ms, "
+          "deviation=" << sqrt(variance) << "ms";
+  PTRACE(3, "Sound", text);
+  return text;
+}
+
+
+PString PSoundChannel::TestPlayer(const Params & params, const PNotifier & progress, const char * toneSpec)
+{
+  if (params.m_direction != Player || params.m_channels != 1 || params.m_bitsPerSample != 16)
+    return "Error: Invalid parameters";
+
+  PTones tones(toneSpec != NULL ? toneSpec :
+               "C:0.2/D:0.2/E:0.2/F:0.2/G:0.2/A:0.2/B:0.2/C5:0.2/"
+               "C5:0.2/B:0.2/A:0.2/G:0.2/F:0.2/E:0.2/D:0.2/C:2.0",
+               PTones::MaxVolume, params.m_sampleRate);
+
+  unsigned samplesPerBuffer = params.m_bufferSize/2;
+  unsigned totalBuffers = (tones.GetSize()+samplesPerBuffer-1)/samplesPerBuffer;
+
+  tones.SetSize(samplesPerBuffer*totalBuffers); // Pad out with silence so exact match of writes
+  
+  PTRACE(3, &tones, "Sound", "Tones using " << tones.GetSize() << " samples, "
+          << PTimeInterval(1000*tones.GetSize()/tones.GetSampleRate()) << " seconds, "
+          << totalBuffers << 'x' << samplesPerBuffer << " sample buffers");
+
+  std::vector<int64_t> times(totalBuffers+1);
+
+  PSoundChannel player;
+  if (!progress.IsNULL())
+    progress(player, totalBuffers);
+
+  if (!player.Open(params)) {
+    PTRACE(2, &player, "Sound", "Error opening channel: " << player.GetErrorText());
+    return "Error: Could not use sound player device: " + player.GetErrorText();
+  }
+
+#if PTRACING
+  PTime then;
+#endif
+
+  for (unsigned i = 0; i < totalBuffers; ++i) {
+    if (!progress.IsNULL())
+      progress(player, i);
+
+    times[i] = PTimer::Tick().GetMilliSeconds();
+
+    if (!player.Write(tones.GetPointer()+i*samplesPerBuffer, params.m_bufferSize))
+      return "Error: Could not write to sound player device: " + player.GetErrorText(PChannel::LastReadError);
+  }
+
+  times[totalBuffers] = PTimer::Tick().GetMilliSeconds();
+
+  PTRACE(3, &tones, "Sound", "Audio queued, waiting for completion");
+  player.WaitForPlayCompletion();
+  PTRACE(3, &tones, "Sound", "Finished tone output: " << PTime() - then << " seconds");
+
+  return SuccessfulTestResult(times, player);
+}
+
+
+PString PSoundChannel::TestRecorder(const Params & recorderParams,
+                                    const Params & playerParams,
+                                    const PNotifier & progress,
+                                    unsigned seconds)
+{
+  if (recorderParams.m_channels      != playerParams.m_channels ||
+      recorderParams.m_sampleRate    != playerParams.m_sampleRate ||
+      recorderParams.m_bitsPerSample != playerParams.m_bitsPerSample ||
+      recorderParams.m_bufferSize    != playerParams.m_bufferSize ||
+      recorderParams.m_direction != Recorder || playerParams.m_direction != Player)
+    return "Error: Invalid parameters";
+
+  PBYTEArray recording(seconds*recorderParams.m_sampleRate*recorderParams.m_channels*recorderParams.m_bitsPerSample/8);
+
+  unsigned totalBuffers = (recording.GetSize()+recorderParams.m_bufferSize-1)/recorderParams.m_bufferSize;
+
+  std::vector<int64_t> times(totalBuffers+1);
+
+  PSoundChannel recorder;
+  if (!progress.IsNULL())
+    progress(recorder, totalBuffers);
+
+  if (!recorder.Open(recorderParams)) {
+    PTRACE(2, &recorder, "Sound", "Error opening channel: " << recorder.GetErrorText());
+    return "Error: Could not use sound recorder device: " + recorder.GetErrorText();
+  }
+  
+#if PTRACING
+  PTime then;
+#endif
+
+  PTRACE(1, &recorder, "Sound", "Started recording");
+  for (unsigned i = 0; i < totalBuffers; ++i) {
+    if (!progress.IsNULL())
+      progress(recorder, i);
+
+    times[i] = PTimer::Tick().GetMilliSeconds();
+
+    if (!recorder.ReadBlock(recording.GetPointer()+i*recorderParams.m_bufferSize, recorderParams.m_bufferSize))
+      return "Error: Could not read from sound player device: " + recorder.GetErrorText(PChannel::LastWriteError);
+  }
+  times[totalBuffers] = PTimer::Tick().GetMilliSeconds();
+  PTRACE(1, &recorder, "Sound", "Finished recording " << PTime() - then << " seconds");
+
+  PSoundChannel player;
+  if (!progress.IsNULL())
+    progress(player, totalBuffers);
+
+  if (!player.Open(playerParams))
+    return "Error: Could not use sound player device: " + player.GetErrorText();
+
+  PTRACE(1, &recorder, "Sound", "Started play back");
+  then.SetCurrentTime();
+  for (unsigned i = 0; i < totalBuffers; ++i) {
+      if (!progress.IsNULL())
+        progress(player, i);
+
+    if (!player.Write(recording.GetPointer()+i*recorderParams.m_bufferSize, recorderParams.m_bufferSize))
+      return "Error: Could not write to sound player device: " + player.GetErrorText(PChannel::LastReadError);
+  }
+  player.WaitForPlayCompletion();
+  PTRACE(1, &recorder, "Sound", "Finished play back " << PTime() - then << " seconds");
+
+  return SuccessfulTestResult(times, recorder);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////
 
 #if !defined(_WIN32) && !defined(__BEOS__) && !defined(__APPLE__)
@@ -495,30 +722,15 @@ class PSoundChannelNull : public PSoundChannel
     {
     }
 
-    PSoundChannelNull(
-      const PString &device,
-      PSoundChannel::Directions dir,
-      unsigned numChannels,
-      unsigned sampleRate,
-      unsigned bitsPerSample
-    ) : m_sampleRate(0)
-    {
-      Open(device, dir, numChannels, sampleRate, bitsPerSample);
-    }
-
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player)
     {
       return NullAudio;
     }
 
-    PBoolean Open(const PString &,
-                  Directions dir,
-                  unsigned numChannels,
-                  unsigned sampleRate,
-                  unsigned bitsPerSample)
+    bool Open(const Params & params)
     {
-      activeDirection = dir;
-      return SetFormat(numChannels, sampleRate, bitsPerSample);
+      activeDirection = params.m_direction;
+      return SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
     }
 
     virtual PString GetName() const

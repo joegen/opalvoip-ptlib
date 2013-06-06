@@ -8,24 +8,10 @@
 class PSoundChannelALSA : public PSoundChannel {
  public:
   PSoundChannelALSA();
-  void Construct();
-  PSoundChannelALSA(
-    const PString &device,
-    PSoundChannel::Directions dir,
-    unsigned numChannels,
-    unsigned sampleRate,
-    unsigned bitsPerSample
-  );
   ~PSoundChannelALSA();
   static PStringArray GetDeviceNames(PSoundChannel::Directions);
   static PString GetDefaultDevice(PSoundChannel::Directions);
-  PBoolean Open(
-    const PString & device,
-    Directions dir,
-    unsigned numChannels,
-    unsigned sampleRate,
-    unsigned bitsPerSample
-  );
+  bool Open(const Params & params);
   PBoolean Setup();
   PBoolean Close();
   PBoolean Write(const void * buf, PINDEX len);
@@ -57,7 +43,6 @@ class PSoundChannelALSA : public PSoundChannel {
   bool SetHardwareParams();
   PBoolean Volume(PBoolean, unsigned, unsigned &);
 
-  PSoundChannel::Directions direction;
   PString device;
   unsigned mNumChannels;
   unsigned mSampleRate;
