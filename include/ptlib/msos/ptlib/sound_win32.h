@@ -131,21 +131,9 @@ class PSoundChannelWin32: public PSoundChannel
 {
  public:
     PSoundChannelWin32();
-    void Construct();
-    PSoundChannelWin32(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-                     unsigned bitsPerSample);
     ~PSoundChannelWin32();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    PBoolean Open(
-      const PString & device,
-      Directions dir,
-      unsigned numChannels,
-      unsigned sampleRate,
-      unsigned bitsPerSample
-    );
+    bool Open(const Params & params);
     PBoolean Setup();
     PBoolean Close();
     PBoolean IsOpen() const;
@@ -192,7 +180,6 @@ class PSoundChannelWin32: public PSoundChannel
 
   protected:
     PString      deviceName;
-    Directions   direction;
     HWAVEIN      hWaveIn;
     HWAVEOUT     hWaveOut;
     HMIXER       hMixer;

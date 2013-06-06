@@ -27,20 +27,10 @@ class PSoundChannelESD: public PSoundChannel
 {
  public:
     PSoundChannelESD();
-    void Construct();
-    PSoundChannelESD(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-                     unsigned bitsPerSample);
     ~PSoundChannelESD();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     static PString GetDefaultDevice(PSoundChannel::Directions);
-    PBoolean Open(const PString & _device,
-              Directions _dir,
-              unsigned _numChannels,
-              unsigned _sampleRate,
-              unsigned _bitsPerSample);
+    bool Open(const Params & params);
     PBoolean Setup();
     PBoolean Close();
 //    PBoolean IsOpen() const;
