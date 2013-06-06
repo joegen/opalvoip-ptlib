@@ -688,7 +688,7 @@ void PFile::SetFilePath(const PString & newName)
 }
 
 
-PBoolean PFile::Open(OpenMode mode, OpenOptions opt)
+PBoolean PFile::Open(OpenMode mode, OpenOptions opt, PFileInfo::Permissions permissions)
 
 {
   Close();
@@ -748,7 +748,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opt)
       oflags |= O_TRUNC;
 
 
-    if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), ::open(path, oflags, DEFAULT_FILE_MODE))))
+    if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), ::open(path, oflags, permissions))))
       return false;
   }
 

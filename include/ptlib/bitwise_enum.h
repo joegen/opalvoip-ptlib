@@ -65,6 +65,7 @@ class PBitwiseEnum
     __inline operator const Enumeration&() const { return m_enum; }
     __inline Enumeration * operator&()           { return &m_enum; }
     __inline unsigned AsBits() const             { return m_enum; }
+    __inline PBitwiseEnum & FromBits(unsigned b) { m_enum = (Enumeration)(b&((MaxValue<<1)-1)); return *this; }
 
     PBitwiseEnum operator++()
     {
@@ -145,7 +146,8 @@ class PBitwiseEnum
 #define P_DECLARE_BITWISE_ENUM_5(_0,_1,_2,_3,_4,_5)P_DECLARE_BITWISE_ENUM_4(_0,_1,_2,_3,_4),_5=16
 #define P_DECLARE_BITWISE_ENUM_6(_0,_1,_2,_3,_4,_5,_6)P_DECLARE_BITWISE_ENUM_5(_0,_1,_2,_3,_4,_5),_6=32
 #define P_DECLARE_BITWISE_ENUM_7(_0,_1,_2,_3,_4,_5,_6,_7)P_DECLARE_BITWISE_ENUM_6(_0,_1,_2,_3,_4,_5,_6),_7=64
-#define P_DECLARE_BITWISE_ENUM_8(_0,_1,_2,_3,_4,_5,_6,_7,_8)P_DECLARE_BITWISE_ENUM_6(_0,_1,_2,_3,_4,_5,_6,_7),_8=128
+#define P_DECLARE_BITWISE_ENUM_8(_0,_1,_2,_3,_4,_5,_6,_7,_8)P_DECLARE_BITWISE_ENUM_7(_0,_1,_2,_3,_4,_5,_6,_7),_8=128
+#define P_DECLARE_BITWISE_ENUM_9(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9)P_DECLARE_BITWISE_ENUM_8(_0,_1,_2,_3,_4,_5,_6,_7,_8),_9=256
 
 #define P_DECLARE_BITWISE_NAMES_1(_0,_1)#_0,#_1
 #define P_DECLARE_BITWISE_NAMES_2(_0,_1,_2)P_DECLARE_BITWISE_NAMES_1(_0,_1),#_2
@@ -154,7 +156,8 @@ class PBitwiseEnum
 #define P_DECLARE_BITWISE_NAMES_5(_0,_1,_2,_3,_4,_5)P_DECLARE_BITWISE_NAMES_4(_0,_1,_2,_3,_4),#_5
 #define P_DECLARE_BITWISE_NAMES_6(_0,_1,_2,_3,_4,_5,_6)P_DECLARE_BITWISE_NAMES_5(_0,_1,_2,_3,_4,_5),#_6
 #define P_DECLARE_BITWISE_NAMES_7(_0,_1,_2,_3,_4,_5,_6,_7)P_DECLARE_BITWISE_NAMES_6(_0,_1,_2,_3,_4,_5,_6),#_7
-#define P_DECLARE_BITWISE_NAMES_8(_0,_1,_2,_3,_4,_5,_6,_7,_8)P_DECLARE_BITWISE_NAMES_6(_0,_1,_2,_3,_4,_5,_6,_7),#_8
+#define P_DECLARE_BITWISE_NAMES_8(_0,_1,_2,_3,_4,_5,_6,_7,_8)P_DECLARE_BITWISE_NAMES_7(_0,_1,_2,_3,_4,_5,_6,_7),#_8
+#define P_DECLARE_BITWISE_NAMES_9(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9)P_DECLARE_BITWISE_NAMES_8(_0,_1,_2,_3,_4,_5,_6,_7,_8),#_9
 
 #define P_DECLARE_BITWISE_ENUM_FRIENDS(name) \
   __inline friend name##_Bits operator+(name##_Bits lhs, name##_Bits rhs) \
@@ -166,7 +169,7 @@ class PBitwiseEnum
 
 #define P_DECLARE_BITWISE_ENUM_END(name, count) \
   P_DECLARE_BITWISE_ENUM_FRIENDS(name) \
-  typedef PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> name
+  typedef PBitwiseEnum<name##_Bits, (name##_Bits)(1<<(count-1))> name
 
 
 /**This macro can be used to declare a bit wise enumeration, using the
