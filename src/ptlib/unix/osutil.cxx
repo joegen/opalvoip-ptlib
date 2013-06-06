@@ -748,7 +748,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opt, PFileInfo::Permissions perm
       oflags |= O_TRUNC;
 
 
-    if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), ::open(path, oflags, permissions))))
+    if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), ::open(path, oflags, permissions.AsBits()))))
       return false;
   }
 
