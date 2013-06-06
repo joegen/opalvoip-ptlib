@@ -972,6 +972,21 @@ PBoolean PFile::Open(const PFilePath & name, OpenMode  mode, OpenOptions opts)
 }
 
 
+PBoolean PFile::Open(const PFilePath & name, OpenMode  mode, OpenOptions opts, PFileInfo::Permissions permissions)
+{
+  Close();
+  SetFilePath(name);
+  return Open(mode, opts, permissions);
+}
+
+
+PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
+{
+  Close();
+  return Open(mode, opts, PFileInfo::DefaultPerms);
+}
+
+
 off_t PFile::GetLength() const
 {
   if (!IsOpen())

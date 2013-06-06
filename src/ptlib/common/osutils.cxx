@@ -195,7 +195,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
   PTraceInfo()
     : m_currentLevel(0)
     , m_thresholdLevel(0)
-    , m_options(Blocks | Timestamp | Thread | FileAndLine)
+    , m_options(Blocks | Timestamp | Thread | FileAndLine | HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift))
 #ifdef __NUCLEUS_PLUS__
     , m_stream(NULL)
 #else
@@ -225,7 +225,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     if (env == NULL)
       env = getenv("PTLIB_TRACE_OPTIONS");
     if (env != NULL)
-      m_options = atoi(env);
+      AdjustOptions(atoi(env), UINT_MAX);
 
     env = getenv("PWLIB_TRACE_FILE");
     if (env == NULL)
@@ -269,10 +269,13 @@ PTHREAD_MUTEX_RECURSIVE_NP
   bool AdjustOptions(unsigned addedOptions, unsigned removedOptions)
   {
     unsigned oldOptions = m_options;
-    m_options |= addedOptions;
     m_options &= ~removedOptions;
+    m_options |= addedOptions;
     if (m_options == oldOptions)
       return false;
+
+    if ((m_options & HasFilePermissions) == 0)
+      m_options = HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
 
     bool syslogBit = (m_options&SystemLogStream) != 0;
     bool syslogStrm = dynamic_cast<PSystemLog *>(m_stream) != NULL;
@@ -337,13 +340,15 @@ PTHREAD_MUTEX_RECURSIVE_NP
              PTime().AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local)) +
              fn.GetType();
 
-      ofstream * traceOutput;
-      if (m_options & AppendToFile) 
-        traceOutput = new ofstream((const char *)fn, ios_base::out | ios_base::app);
-      else 
-        traceOutput = new ofstream((const char *)fn, ios_base::out | ios_base::trunc);
+      PFile::OpenOptions options = PFile::Create;
+      if ((m_options & AppendToFile) == 0)
+        options |= PFile::Truncate;
+      PFileInfo::Permissions permissions = PFileInfo::DefaultPerms;
+      if ((m_options & HasFilePermissions) != 0)
+        permissions.FromBits((m_options&FilePermissionMask)>>FilePermissionShift);
 
-      if (traceOutput->is_open())
+      PFile * traceOutput = new PTextFile();
+      if (traceOutput->Open(fn, PFile::WriteOnly, options, permissions))
         SetStream(traceOutput);
       else {
         PStringStream msgstrm;
@@ -400,13 +405,13 @@ ostream * PTrace::GetStream()
 }
 
 
-static void SetOptionBit(unsigned & options, PTrace::Options option)
+static void SetOptionBit(unsigned & options, unsigned option)
 {
   options |= option;
 }
 
 
-static void ClearOptionBit(unsigned & options, PTrace::Options option)
+static void ClearOptionBit(unsigned & options, unsigned option)
 {
   options &= ~option;
 }
@@ -420,10 +425,13 @@ void PTrace::Initialise(const PArgList & args,
                         const char * traceRollover,
                         const char * traceLevel)
 {
+  if ((options & HasFilePermissions) == 0)
+    options = HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
+
   PCaselessString optStr = args.GetOptionString(traceOpts);
   PINDEX pos = 0;
   while ((pos = optStr.FindOneOf("+-", pos)) != P_MAX_INDEX) {
-    void (*operation)(unsigned & options, Options option) = optStr[pos++] == '+' ? SetOptionBit : ClearOptionBit;
+    void (*operation)(unsigned & options, unsigned option) = optStr[pos++] == '+' ? SetOptionBit : ClearOptionBit;
     if (optStr.NumCompare("block", P_MAX_INDEX, pos) == PObject::EqualTo)
       operation(options, Blocks);
     else if (optStr.NumCompare("date", P_MAX_INDEX, pos) == PObject::EqualTo)
@@ -450,6 +458,30 @@ void PTrace::Initialise(const PArgList & args,
       operation(options, RotateMinutely);
     else if (optStr.NumCompare("append", P_MAX_INDEX, pos) == PObject::EqualTo)
       operation(options, AppendToFile);
+    else if (optStr.NumCompare("ax", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, (PFileInfo::WorldExecute|PFileInfo::GroupExecute|PFileInfo::UserExecute) << FilePermissionShift);
+    else if (optStr.NumCompare("aw", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, (PFileInfo::WorldWrite|PFileInfo::GroupWrite|PFileInfo::UserWrite) << FilePermissionShift);
+    else if (optStr.NumCompare("ar", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, (PFileInfo::WorldRead|PFileInfo::GroupRead|PFileInfo::UserRead) << FilePermissionShift);
+    else if (optStr.NumCompare("ox", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::WorldExecute << FilePermissionShift);
+    else if (optStr.NumCompare("ow", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::WorldWrite << FilePermissionShift);
+    else if (optStr.NumCompare("or", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::WorldRead << FilePermissionShift);
+    else if (optStr.NumCompare("gx", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::GroupExecute << FilePermissionShift);
+    else if (optStr.NumCompare("gw", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::GroupWrite << FilePermissionShift);
+    else if (optStr.NumCompare("gr", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::GroupRead << FilePermissionShift);
+    else if (optStr.NumCompare("ux", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::UserExecute << FilePermissionShift);
+    else if (optStr.NumCompare("uw", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::UserWrite << FilePermissionShift);
+    else if (optStr.NumCompare("ur", P_MAX_INDEX, pos) == PObject::EqualTo)
+      operation(options, PFileInfo::UserRead << FilePermissionShift);
   }
 
   PTraceInfo::Instance().InternalInitialise(std::max((unsigned)args.GetOptionCount(traceCount),
@@ -481,7 +513,7 @@ static unsigned GetRotateVal(unsigned options)
 
 void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options)
 {
-  m_options = options;
+  AdjustOptions(options, UINT_MAX);
   m_thresholdLevel = level;
   m_rolloverPattern = rolloverPattern;
   if (m_rolloverPattern.IsEmpty())
