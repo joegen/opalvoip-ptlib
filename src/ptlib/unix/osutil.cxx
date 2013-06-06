@@ -186,7 +186,7 @@ static int highWaterMark = 0;
   
 int PX_NewHandle(const char * clsName, int fd)
 {
-  if (fd < 0)
+  if (fd < 0 || !PProcess::IsInitialised())
     return fd;
 
   PWaitAndSignal m(waterMarkMutex);

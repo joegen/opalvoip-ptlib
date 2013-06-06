@@ -1963,7 +1963,7 @@ void PProcess::PostShutdown()
 PProcess & PProcess::Current()
 {
   if (PProcessInstance == NULL) {
-    fputs("Catastrophic failure, PProcess::Current() = NULL!!\n", stderr);
+    PAssertFunc("Catastrophic failure, PProcess::Current() = NULL!!");
     PBreakToDebugger();
     _exit(1);
   }
