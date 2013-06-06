@@ -594,25 +594,23 @@ public:
   }
   
   
-  virtual PBoolean Open(const PString & deviceName,
-                        Directions dir,
-                        unsigned numChannels,
-                        unsigned sampleRate,
-                        unsigned bitsPerSample)
+  virtual bool Open(const Params & params)
   {
     Close();
     
     PTRACE(4, "Open("
-           << deviceName << ','
-           << dir << ','
-           << numChannels << ','
-           << sampleRate << ','
-           << bitsPerSample << ')');
+           << params.m_device << ','
+           << params.m_direction << ','
+           << params.m_channels << ','
+           << params.m_sampleRate << ','
+           << params.m_bitsPerSample << ')');
 
-    activeDirection = dir;
-    m_deviceName = deviceName;
+    activeDirection = params.m_direction;
+    m_deviceName = params.m_device;
 
-    return SetFormat(numChannels, sampleRate, bitsPerSample) && InternalOpen();    
+    return SetBuffers(params.m_bufferSize, params.m_bufferCount) &&
+           SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample) &&
+           InternalOpen();    
   }
   
   
