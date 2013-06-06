@@ -747,8 +747,11 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opt, PFileInfo::Permissions perm
     if (opt & Truncate)
       oflags |= O_TRUNC;
 
-
-    if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), ::open(path, oflags, permissions.AsBits()))))
+    // We really want the permissions we specify
+    mode_t oldMask = umask(0);
+    int h = ::open(path, oflags, permissions.AsBits());
+    umask(oldMask);
+    if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), h)))
       return false;
   }
 
