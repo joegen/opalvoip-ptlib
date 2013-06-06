@@ -39,6 +39,9 @@
 #pragma interface
 #endif
 
+#include <ptlib/bitwise_enum.h>
+
+
 #ifdef Fifo
 #undef Fifo
 #endif
@@ -52,6 +55,7 @@ typedef PCaselessString PFilePathString;
 #define P_MAX_PATH    (_POSIX_PATH_MAX)
 typedef PString PFilePathString;
 #endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // File System
@@ -112,33 +116,29 @@ class PFileInfo : public PObject
     PUInt64 size;
 
     /// File access permissions for the file.
-    enum Permissions {
-      /// File has world execute permission
-      WorldExecute = 1,   
-      /// File has world write permission
-      WorldWrite = 2,     
-      /// File has world read permission
-      WorldRead = 4,      
-      /// File has group execute permission
-      GroupExecute = 8,   
-      /// File has group write permission
-      GroupWrite = 16,    
-      /// File has group read permission
-      GroupRead = 32,     
-      /// File has owner execute permission
-      UserExecute = 64,   
-      /// File has owner write permission
-      UserWrite = 128,    
-      /// File has owner read permission
-      UserRead = 256,     
-      /// All possible permissions.
-      AllPermissions = 0x1ff,   
+    P_DECLARE_BITWISE_ENUM_EX(Permissions,9,
+      (
+        NoPermissions, ///< No permissions selected
+        WorldExecute,  ///< File has world execute permission
+        WorldWrite,    ///< File has world write permission
+        WorldRead,     ///< File has world read permission
+        GroupExecute,  ///< File has group execute permission
+        GroupWrite,    ///< File has group write permission
+        GroupRead,     ///< File has group read permission
+        UserExecute,   ///< File has owner execute permission
+        UserWrite,     ///< File has owner write permission
+        UserRead       ///< File has owner read permission
+      ),
+
+      ///< All possible permissions.
+      AllPermissions = 0x1ff,
+
       /// Owner read & write plus group and world read permissions.
       DefaultPerms = UserRead|UserWrite|GroupRead|WorldRead,
+
       /// Owner read & write & execute plus group and world read & exectute permissions.
       DefaultDirPerms = DefaultPerms|UserExecute|GroupExecute|WorldExecute
-      
-    };
+    );
 
     /**A bit mask of all the file acces permissions. See the
        <code>Permissions</code> enum# for the possible bit values.

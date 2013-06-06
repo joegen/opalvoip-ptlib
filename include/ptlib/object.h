@@ -439,9 +439,13 @@ public:
                                   ///< Mask for all the rotate bits
     ObjectInstance    = 0x1000,   ///< Include object instance in all trace output
     ContextIdentifier = 0x2000,   ///< Include context identifier in all trace output
-    SystemLogStream   = 0x8000    /**< SystemLog flag for tracing within a PServiceProcess
+    SystemLogStream   = 0x8000,   /**< SystemLog flag for tracing within a PServiceProcess
                                        application. Setting this flag will automatically
                                        execute <code>#SetStream(new PSystemLog)</code>. */
+    HasFilePermissions = 0x8000000, ///< Flag indicating file permissions are to be set
+    FilePermissionMask = 0x7ff0000, /**< Mask for setting standard file permission mask as used in
+                                         open() or creat() system function calls. */
+    FilePermissionShift = 16
   };
 
 
@@ -459,7 +463,10 @@ public:
     "  daily    rotate output file daily\r" \
     "  hour     rotate output file hourly\r" \
     "  minute   rotate output file every minute\r" \
-    "  append   append to output file, otherwise overwrites"
+    "  append   append to output file, otherwise overwrites\r" \
+    "  <perm>   file permission similar to unix chmod, but starts\r" \
+    "           with +/- and only has one combination at a time,\r" \
+    "           e.g. +uw is user write, +or is other read, etc"
 
   #define PTRACE_ARG_TRACE    "trace"
   #define PTRACE_ARG_LEVEL    "trace-level"

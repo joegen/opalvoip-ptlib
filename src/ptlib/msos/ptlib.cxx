@@ -795,7 +795,7 @@ PBoolean PFile::IsTextFile() const
 }
 
 
-PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
+PBoolean PFile::Open(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
 {
   Close();
   clear();
@@ -845,7 +845,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
   else if (opts & (DenySharedRead|DenySharedWrite))
     sflags = _SH_DENYWR;
 
-  os_handle = _sopen(path, oflags, sflags, S_IREAD|S_IWRITE);
+  os_handle = _sopen(path, oflags, sflags, permissions);
 
   // As ConvertOSError tests for < 0 and some return values _sopen may be
   // negative, only pass -1 through.
