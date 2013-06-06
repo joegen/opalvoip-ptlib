@@ -275,7 +275,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       return false;
 
     if ((m_options & HasFilePermissions) == 0)
-      m_options = HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
+      m_options |= HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
 
     bool syslogBit = (m_options&SystemLogStream) != 0;
     bool syslogStrm = dynamic_cast<PSystemLog *>(m_stream) != NULL;
