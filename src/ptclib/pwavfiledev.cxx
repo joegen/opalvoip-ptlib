@@ -97,17 +97,6 @@ PSoundChannel_WAVFile::PSoundChannel_WAVFile()
 }
 
 
-PSoundChannel_WAVFile::PSoundChannel_WAVFile(const PString & device,
-                                             Directions dir,
-                                             unsigned numChannels,
-                                             unsigned sampleRate,
-                                             unsigned bitsPerSample)
-  : m_autoRepeat(false)
-{
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
 PSoundChannel_WAVFile::~PSoundChannel_WAVFile()
 {
   Close();
@@ -128,23 +117,19 @@ PStringArray PSoundChannel_WAVFile::GetDeviceNames(Directions)
 }
 
 
-PBoolean PSoundChannel_WAVFile::Open(const PString & device,
-                                 Directions dir,
-                                 unsigned numChannels,
-                                 unsigned sampleRate,
-                                 unsigned bitsPerSample)
+bool PSoundChannel_WAVFile::Open(const Params & params)
 {
   Close();
 
-  if (dir == PSoundChannel::Player) {
-    SetFormat(numChannels, sampleRate, bitsPerSample);
-    if (m_WAVFile.Open(device, PFile::WriteOnly))
+  if (params.m_direction == PSoundChannel::Player) {
+    SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
+    if (m_WAVFile.Open(params.m_device, PFile::WriteOnly))
       return true;
     SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber());
     return false;
   }
 
-  PString adjustedDevice = device;
+  PString adjustedDevice = params.m_device;
   PINDEX lastCharPos = adjustedDevice.GetLength()-1;
   if (adjustedDevice[lastCharPos] == '*') {
     adjustedDevice.Delete(lastCharPos, 1);
@@ -156,11 +141,11 @@ PBoolean PSoundChannel_WAVFile::Open(const PString & device,
     return false;
   }
 
-  m_sampleRate = sampleRate;
+  m_sampleRate = params.m_sampleRate;
 
-  if (m_WAVFile.GetChannels() == numChannels &&
+  if (m_WAVFile.GetChannels() == params.m_channels &&
       m_sampleRate >= 8000 &&
-      m_WAVFile.GetSampleSize() == bitsPerSample)
+      m_WAVFile.GetSampleSize() == params.m_bitsPerSample)
     return true;
 
   Close();
@@ -361,5 +346,3 @@ PBoolean PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
 
 
 // End of File ///////////////////////////////////////////////////////////////
-
-

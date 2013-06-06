@@ -561,35 +561,16 @@ DWORD PWaveBuffer::Release()
 
 
 PSoundChannelWin32::PSoundChannelWin32()
+  : hWaveIn(NULL)
+  , hWaveOut(NULL)
+  , hMixer(NULL)
+  , hEventDone(CreateEvent(NULL, false, false, NULL))
+  , opened(false)
+  , bufferIndex(0)
+  , bufferByteOffset(P_MAX_INDEX)
 {
-  Construct();
-}
-
-
-PSoundChannelWin32::PSoundChannelWin32(const PString & device,
-                             Directions dir,
-                             unsigned numChannels,
-                             unsigned sampleRate,
-                             unsigned bitsPerSample)
-{
-  Construct();
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
-void PSoundChannelWin32::Construct()
-{
-  opened = false;
-  direction = Player;
-  hWaveOut = NULL;
-  hWaveIn = NULL;
-  hEventDone = CreateEvent(NULL, false, false, NULL);
-
   waveFormat.SetFormat(1, 8000, 16);
-
-  bufferByteOffset = P_MAX_INDEX;
-
-  SetBuffers(32768, 3);
+  SetBuffers(32768, 2);
 }
 
 
@@ -604,7 +585,7 @@ PSoundChannelWin32::~PSoundChannelWin32()
 
 PString PSoundChannelWin32::GetName() const
 {
-  return deviceName;
+  return PConstString("WindowsMultimedia") + PDevicePluginServiceDescriptor::SeparatorChar + deviceName;
 }
 
 
@@ -734,21 +715,19 @@ PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir,
   return true;
 }
 
-PBoolean PSoundChannelWin32::Open(const PString & device,
-                                  Directions dir,
-                                  unsigned numChannels,
-                                  unsigned sampleRate,
-                                  unsigned bitsPerSample)
+
+bool PSoundChannelWin32::Open(const Params & params)
 {
   Close();
   unsigned id = 0;
 
-  if( !GetDeviceID(device, dir, id) )
+  if( !GetDeviceID(params.m_device, params.m_direction, id) )
     return false;
 
-  waveFormat.SetFormat(numChannels, sampleRate, bitsPerSample);
+  waveFormat.SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
+  SetBuffers(params.m_bufferSize, params.m_bufferCount);
 
-  direction = dir;
+  activeDirection = params.m_direction;
   return OpenDevice(id);
 }
 
@@ -764,7 +743,7 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
 
   waveFormat = format;
 
-  direction = dir;
+  activeDirection = dir;
   return OpenDevice(id);
 }
 
@@ -784,7 +763,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
   MIXERLINE line;
 
   MMRESULT osError = MMSYSERR_BADDEVICEID;
-  switch (direction) {
+  switch (activeDirection) {
     case Player :
       PTRACE(4, "WinSnd\twaveOutOpen, id=" << id);
       osError = waveOutOpen(&hWaveOut, (UINT)id, format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
@@ -832,7 +811,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
     bool haveControl = true;
     MIXERLINECONTROLS controls;
 
-    if ((direction == Recorder)
+    if ((activeDirection == Recorder)
 #ifndef _WIN32_WCE
       && ((DWORD)(LOBYTE(LOWORD(GetVersion()))) < 6)
 #endif
@@ -946,7 +925,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
         if ((osError = mixerGetLineControls((HMIXEROBJ)hMixer, &controls,
                 MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE)) != MMSYSERR_NOERROR) {
           PTRACE(2, "WinSnd\tFailed to get mixer line mute control ("
-                 << (direction == Recorder ? "Recorder" : "Player") << "), error=" << osError);
+                 << (activeDirection == Recorder ? "Recorder" : "Player") << "), error=" << osError);
         }
         return true;
       }
@@ -1504,7 +1483,7 @@ PString PSoundChannelWin32::GetErrorText(ErrorGroup group) const
     return PChannel::GetErrorText(group);
 
   DWORD osError = lastErrorNumber[group]&~PWIN32ErrorFlag;
-  if (direction == Recorder) {
+  if (activeDirection == Recorder) {
     if (waveInGetErrorText(osError, str, sizeof(str)) != MMSYSERR_NOERROR)
       return PChannel::GetErrorText(group);
   }

@@ -151,7 +151,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     SLDataFormat_PCM m_format_pcm;
 
-    std::vector< std::vector<SLuint16> > m_buffers;
+    std::vector< std::vector<uint8_t> > m_buffers;
     size_t        m_bufferPos;
     size_t        m_bufferLen;
     PSemaphore    m_bufferReady;
@@ -161,7 +161,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     bool EnqueueBuffer(PINDEX index)
     {
-      const void * ptr = &m_buffers[index][0];
+      const void * ptr = m_buffers[index].data();
       size_t count = m_buffers[index].size();
       PAssert(count > 0, PLogicError);
       PTRACE_DETAILED(5, "Queuing: index=" << index << ", ptr=" << ptr << ", bytes=" << count);
@@ -323,7 +323,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       }
 
       // double the time for a buffer to be processed, minimum 1 second
-      m_bufferTimeout.SetInterval(std::max(1000U, m_buffers[0].size()*1000/GetSampleRate()));
+      m_bufferTimeout.SetInterval(std::max(1000U, m_buffers[0].size()/2*1000/GetSampleRate()));
 
       PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
       os_handle = 1;
@@ -372,20 +372,24 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     }
 
 
-    virtual PBoolean Open(const PString & deviceName,
-                          Directions dir,
-                          unsigned numChannels,
-                          unsigned sampleRate,
-                          unsigned bitsPerSample)
+    virtual bool Open(const Params & params)
     {
       Close();
 
-      PTRACE(4, "Open(" << deviceName << ',' << dir << ',' << numChannels << ',' << sampleRate << ',' << bitsPerSample << ')');
+      PTRACE(4, "Open: " << params.m_device << ','
+                        << params.m_direction << ','
+                        << params.m_channels << ','
+                        << params.m_sampleRate << ','
+                        << params.m_bitsPerSample << ','
+                        << params.m_bufferSize << ','
+                        << params.m_bufferCount);
 
-      activeDirection = dir;
-      m_deviceName = deviceName;
+      activeDirection = params.m_direction;
+      m_deviceName = params.m_device;
 
-      return SetFormat(numChannels, sampleRate, bitsPerSample) && InternalOpen();
+      return SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample) &&
+             SetBuffers(params.m_bufferSize, params.m_bufferCount) &&
+             InternalOpen();
     }
   
   
@@ -485,7 +489,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
         PINDEX chunkSize = std::min(len, (PINDEX)m_buffers[m_bufferPos].size());
         m_buffers[m_bufferPos].resize(chunkSize);
-        memcpy(&m_buffers[m_bufferPos][0], ptr, chunkSize);
+        memcpy(m_buffers[m_bufferPos].data(), ptr, chunkSize);
         EnqueueBuffer(m_bufferPos);
         m_bufferPos = (m_bufferPos+1)%m_buffers.size();
 
@@ -535,7 +539,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       m_bufferMutex.Wait();
 
       lastReadCount = std::min((size_t)len, m_buffers[m_bufferPos].size());
-      memcpy(buf, &m_buffers[m_bufferPos][0], lastReadCount);
+      memcpy(buf, m_buffers[m_bufferPos].data(), lastReadCount);
 
       m_bufferPos = (m_bufferPos+1)%m_buffers.size();
       --m_bufferLen;

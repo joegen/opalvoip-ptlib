@@ -238,34 +238,19 @@ static HRESULT GetDefaultDeviceGUID(const PCaselessString & name, PSoundChannelD
 ///////////////////////////////////////////////////////////////////////////////
 // Construction
 
-PSoundChannelDirectSound::PSoundChannelDirectSound ()
+PSoundChannelDirectSound::PSoundChannelDirectSound()
+  : m_isStreaming(true)
+  , m_bufferSectionCount(0)
+  , m_bufferSectionSize(0)
+  , m_bufferSize(0)
+  , m_movePos(0)
+  , m_available(0)
+  , m_dsPos(0)
+  , m_dsMoved(0)
+  , m_moved(0)
+  , m_lost(0)
+  , m_mixer(NULL)
 {
-  Construct();
-}
-
-
-PSoundChannelDirectSound::PSoundChannelDirectSound (const PString &device,
-                                                    Directions dir,
-                                                    unsigned numChannels,
-                                                    unsigned sampleRate,
-                                                    unsigned bitsPerSample)
-{
-  Construct();
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
-void PSoundChannelDirectSound::Construct () // private
-{
-  m_captureDevice = NULL;
-  m_captureBuffer = NULL;
-
-  m_playbackDevice = NULL;
-  m_playbackBuffer = NULL;
-
-  m_isStreaming = true;
-  m_bufferSize = 0;
-  m_mixer = NULL;
 
   memset(&m_waveFormat, 0, sizeof(m_waveFormat)); 
 
@@ -276,7 +261,7 @@ void PSoundChannelDirectSound::Construct () // private
 }
 
 
-PSoundChannelDirectSound::~PSoundChannelDirectSound ()
+PSoundChannelDirectSound::~PSoundChannelDirectSound()
 {
   Close();
   if (m_triggerEvent[SOUNDEVENT_SOUND] != NULL)
@@ -345,21 +330,12 @@ PStringArray PSoundChannelDirectSound::GetDeviceNames (Directions dir) // static
 }
 
 
-PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
-                                         Directions dir,
-                                         unsigned numChannels,
-                                         unsigned sampleRate,
-                                         unsigned bitsPerSample)
+bool PSoundChannelDirectSound::Open(const Params & params)
 {
-  PAssert(dir == Player || dir == Recorder, "Invalid device direction parameter");
-
   Close();
 
-  // remove the driver name prefix
-  PINDEX tab = device.Find(PDevicePluginServiceDescriptor::SeparatorChar);
-  m_deviceName = (tab == P_MAX_INDEX)? device : device.Mid(tab+1).Trim();
-
-  activeDirection = dir;
+  m_deviceName = params.m_device;
+  activeDirection = params.m_direction;
   m_available = 0;
   m_dsMoved = 0ui64;
   m_moved = 0ui64;
@@ -367,7 +343,7 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
 
   // get info for all devices for direction
   PDSoundDeviceInfoVector devices;
-  PComResult result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
+  PComResult result = GetFilteredDSoundDeviceInfo(GUID_NULL, activeDirection, PString::Empty(), -1, devices);
   if (result.Failed()) {
     SetErrorValues(Miscellaneous, GetErrorNumber());
     PTRACE(4, "Open" << GetDirectionText() << ": Could not get device list: " << result);
@@ -399,7 +375,7 @@ PBoolean PSoundChannelDirectSound::Open (const PString & device, // public
   }
   PTRACE(4, "Opening " << GetDirectionText() << " device \"" << m_deviceName << '"');
 
-  SetFormat(numChannels, sampleRate, bitsPerSample);
+  SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
 
   // open for playback
   if (activeDirection == Player) {
@@ -456,6 +432,12 @@ PBoolean PSoundChannelDirectSound::Close () // public
   CloseMixer();
   activeDirection = Closed;
   return true;
+}
+
+
+PString PSoundChannelDirectSound::GetName() const
+{
+  return PConstString("DirectSound") + PDevicePluginServiceDescriptor::SeparatorChar + m_deviceName;
 }
 
 

@@ -53,24 +53,6 @@ PCREATE_SOUND_PLUGIN(SunAudio, PSoundChannelSunAudio);
 
 PSoundChannelSunAudio::PSoundChannelSunAudio()
 {
-  Construct();
-}
-
-
-PSoundChannelSunAudio::PSoundChannelSunAudio(const PString & device,
-                             Directions dir,
-                             unsigned numChannels,
-                             unsigned sampleRate,
-                             unsigned bitsPerSample)
-{
-  Construct();
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
-void PSoundChannelSunAudio::Construct()
-{
-   os_handle = -1;
 }
 
 
@@ -98,11 +80,7 @@ PString PSoundChannelSunAudio::GetDefaultDevice(Directions /*dir*/)
 }
 
 
-PBoolean PSoundChannelSunAudio::Open(const PString & device,
-                         Directions dir,
-                         unsigned numChannels,
-                         unsigned sampleRate,
-                         unsigned bitsPerSample)
+bool PSoundChannelSunAudio::Open(const Params & params)
 {
   audio_info_t audio_info;
   int err;
@@ -111,10 +89,10 @@ PBoolean PSoundChannelSunAudio::Open(const PString & device,
   os_handle = -1;
   resampleRate = 0;
 
-  if (!ConvertOSError(os_handle = ::open(device, (dir == Player ? O_WRONLY : O_RDONLY), 0 )))
+  if (!ConvertOSError(os_handle = ::open(params.m_device, (params.m_direction == Player ? O_WRONLY : O_RDONLY), 0 )))
     return false;
 
-  direction = dir;
+  activeDirection = params.m_dir;
 
   err = ::ioctl(os_handle,AUDIO_MIXER_MULTIPLE_OPEN);
 
@@ -139,7 +117,7 @@ PBoolean PSoundChannelSunAudio::Open(const PString & device,
   mDefaultRecordEncoding = audio_info.record.encoding;
   mDefaultRecordPort = audio_info.record.port;
 
-  return SetFormat(numChannels, sampleRate, bitsPerSample);
+  return SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
 }
 
 
@@ -167,7 +145,7 @@ PBoolean PSoundChannelSunAudio::SetFormat(unsigned numChannels,
 
   // Change only the values needed below
   AUDIO_INITINFO(&audio_info);	
-  if (direction == Player){
+  if (activeDirection == Player){
     // sett parameters for playing sound
     mSampleRate = audio_info.play.sample_rate = sampleRate;	
     mNumChannels = audio_info.play.channels = numChannels;
@@ -190,7 +168,7 @@ PBoolean PSoundChannelSunAudio::SetFormat(unsigned numChannels,
   // Let's recheck the configuration...
   AUDIO_INITINFO(&audio_info);	
   err = ::ioctl(os_handle, AUDIO_GETINFO, &audio_info);	
-  actualSampleRate =  (direction == Player) ? audio_info.play.sample_rate : audio_info.record.sample_rate;
+  actualSampleRate =  (activeDirection == Player) ? audio_info.play.sample_rate : audio_info.record.sample_rate;
 
   return true;
 }
@@ -224,7 +202,7 @@ PBoolean PSoundChannelSunAudio::SetBuffers(PINDEX size, PINDEX count)
   /* There is just one buffer for audio on solaris */
   AUDIO_INITINFO(&audio_info);
 
-  if (direction == Player)
+  if (activeDirection == Player)
     audio_info.play.buffer_size = count*size;	
   else
     audio_info.record.buffer_size = count*size;	// Recorder
@@ -254,7 +232,7 @@ PBoolean PSoundChannelSunAudio::GetBuffers(PINDEX & size, PINDEX & count)
   if (err == EINVAL || err == EBUSY)
     return false;
 
-  if (direction == Player)
+  if (activeDirection == Player)
     size = audio_info.play.buffer_size;
   else 
     size = audio_info.record.buffer_size;
@@ -497,7 +475,7 @@ PBoolean PSoundChannelSunAudio::SetVolume(unsigned newVolume)
    newVolume = (newVolume * (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN)) / 100;
 
    AUDIO_INITINFO(&audio_info);
-   if ( direction == Player )
+   if (activeDirection == Player)
      audio_info.play.gain = newVolume;
    else 
      audio_info.record.gain = newVolume; 
@@ -526,7 +504,7 @@ PBoolean  PSoundChannelSunAudio::GetVolume(unsigned & volume)
      return false;
    }
 
-   volume =  ( direction == Player ) ?  audio_info.play.gain : audio_info.record.gain;
+   volume =  (activeDirection == Player) ?  audio_info.play.gain : audio_info.record.gain;
 
    volume = (volume * 100) / (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN);
 

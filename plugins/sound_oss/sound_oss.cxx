@@ -62,24 +62,6 @@ SoundHandleEntry::SoundHandleEntry()
 
 PSoundChannelOSS::PSoundChannelOSS()
 {
-  PSoundChannelOSS::Construct();
-}
-
-
-PSoundChannelOSS::PSoundChannelOSS(const PString & device,
-                                        Directions dir,
-                                          unsigned numChannels,
-                                          unsigned sampleRate,
-                                          unsigned bitsPerSample)
-{
-  Construct();
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
-void PSoundChannelOSS::Construct()
-{
-  os_handle = -1;
 }
 
 
@@ -282,11 +264,8 @@ PString PSoundChannelOSS::GetDefaultDevice(Directions dir)
   return devicenames[0];
 }
 
-PBoolean PSoundChannelOSS::Open(const PString & _device,
-                              Directions _dir,
-                                unsigned _numChannels,
-                                unsigned _sampleRate,
-                                unsigned _bitsPerSample)
+
+bool PSoundChannelOSS::Open(const Params & params)
 {
 
   Close();
@@ -296,12 +275,12 @@ PBoolean PSoundChannelOSS::Open(const PString & _device,
   PWaitAndSignal mutex(dictMutex);
 
   // make the direction value 1 or 2
-  int dir = _dir + 1;
+  int dir = params.m_direction + 1;
 
   // if this device is in the dictionary
-  if (handleDict().Contains(_device)) {
+  if (handleDict().Contains(params.m_device)) {
 
-    SoundHandleEntry & entry = handleDict()[_device];
+    SoundHandleEntry & entry = handleDict()[params.m_device];
 
     // see if the sound channel is already open in this direction
     if ((entry.direction & dir) != 0) {
@@ -317,7 +296,7 @@ PBoolean PSoundChannelOSS::Open(const PString & _device,
     // this is the first time this device has been used
     // open the device in read/write mode always
     // open the device in non-blocking mode to avoid hang if already open
-    os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
+    os_handle = ::open((const char *)params.m_device, O_RDWR | O_NONBLOCK);
 
     if ((os_handle < 0) && (errno != EWOULDBLOCK)) 
       return ConvertOSError(os_handle);
@@ -332,19 +311,19 @@ PBoolean PSoundChannelOSS::Open(const PString & _device,
 
     // save the information into the dictionary entry
     entry->handle        = os_handle;
-    entry->direction     = dir;
-    entry->numChannels   = mNumChannels     = _numChannels;
-    entry->sampleRate    = actualSampleRate = mSampleRate    = _sampleRate;
-    entry->bitsPerSample = mBitsPerSample   = _bitsPerSample;
+    entry->direction     = params.m_direction;
+    entry->numChannels   = mNumChannels     = params.m_channels;
+    entry->sampleRate    = actualSampleRate = mSampleRate    = params.m_sampleRate;
+    entry->bitsPerSample = mBitsPerSample   = params.m_bitsPerSample;
     entry->isInitialised = false;
     entry->fragmentValue = 0x7fff0008;
     entry->resampleRate  = 0;
   }
    
   // save the direction and device
-  direction     = _dir;
-  device        = _device;
-  isInitialised = false;
+  activeDirection = params.m_direction;
+  device          = params.m_device;
+  isInitialised   = false;
 
   return true;
 }
@@ -899,7 +878,7 @@ PBoolean PSoundChannelOSS::SetVolume(unsigned newVal)
 
   int rc, deviceVol = (newVal << 8) | newVal;
 
-  if (direction  == Player) 
+  if (activeDirection == Player) 
     rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_VOLUME), &deviceVol);
    else 
     rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_MIC), &deviceVol);
@@ -918,7 +897,7 @@ PBoolean  PSoundChannelOSS::GetVolume(unsigned &devVol)
     return false;
   
   int vol, rc;
-  if (direction == Player)
+  if (activeDirection == Player)
     rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_VOLUME), &vol);
   else
     rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_MIC), &vol);

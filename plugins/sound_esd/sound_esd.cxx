@@ -46,23 +46,6 @@ PCREATE_SOUND_PLUGIN(ESD, PSoundChannelESD);
 
 PSoundChannelESD::PSoundChannelESD()
 {
-  Construct();
-}
-
-
-PSoundChannelESD::PSoundChannelESD(const PString & device,
-                             Directions dir,
-                             unsigned numChannels,
-                             unsigned sampleRate,
-                             unsigned bitsPerSample)
-{
-  Construct();
-  Open(device, dir, numChannels, sampleRate, bitsPerSample);
-}
-
-
-void PSoundChannelESD::Construct()
-{
 }
 
 
@@ -87,11 +70,7 @@ PString PSoundChannelESD::GetDefaultDevice(Directions /*dir*/)
   return "ESound";
 }
 
-PBoolean PSoundChannelESD::Open(const PString & device,
-                         Directions dir,
-                         unsigned numChannels,
-                         unsigned sampleRate,
-                         unsigned bitsPerSample)
+bool PSoundChannelESD::Open(const Params & params)
 {
   int bits, channels, rate, mode, func;
   esd_format_t format;
@@ -100,7 +79,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
   Close();
 
   // make sure we have proper bits per sample
-  switch (bitsPerSample) {
+  switch (params.m_bitsPerSample) {
   case 16:
     bits = ESD_BITS16;
     break;
@@ -112,7 +91,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
   }
 
   // make sure we have proper number of channels
-  switch (numChannels) {
+  switch (params.m_numChannels) {
   case 2:
     channels = ESD_STEREO;
     break;
@@ -123,11 +102,11 @@ PBoolean PSoundChannelESD::Open(const PString & device,
     return (false);
   }
 
-  rate = sampleRate;
+  rate = params.m_sampleRate;
   mode = ESD_STREAM;
 
   // a separate stream for Player and Recorder
-  switch (dir) {
+  switch (params.m_direction) {
   case Recorder:
     func = ESD_RECORD;
     break;
@@ -139,7 +118,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
   }
 
   format = bits | channels | mode | func;
-  if (dir == Recorder) 
+  if (params.m_direction == Recorder) 
     os_handle = esd_record_stream_fallback( format, rate, host, name );
   else
     os_handle = esd_play_stream_fallback( format, rate, host, name );
@@ -147,7 +126,7 @@ PBoolean PSoundChannelESD::Open(const PString & device,
   if ( os_handle <= 0 ) 
     return (false);
 
-  return SetFormat(numChannels, sampleRate, bitsPerSample);
+  return SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
 }
 
 PBoolean PSoundChannelESD::SetVolume(unsigned newVal)
