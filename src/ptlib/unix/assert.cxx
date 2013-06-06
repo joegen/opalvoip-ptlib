@@ -39,8 +39,54 @@
 #include <stdexcept>
 #include <ptlib/pprocess.h>
 
-#ifndef P_BEOS
-#ifndef P_VXWORKS
+#define PTRACE_WITH_STDERR(msg) \
+    PTRACE_IF(0, PTrace::GetStream() != &PError, NULL, "PTLib", msg); \
+    PError << msg << endl
+
+
+
+#if defined(P_ANDROID)
+
+#include <android/log.h>
+
+bool PAssertFunc(const char * msg)
+{
+  PTRACE_WITH_STDERR(msg);
+  __android_log_assert("", PProcess::Current().GetName(), "%s", msg);
+  return false;
+}
+
+#elif defined(P_BEOS)
+
+bool PAssertFunc(const char * msg)
+{
+  // Print location in Eddie-compatible format
+  PTRACE_WITH_STDERR(msg);
+
+  // Pop up the debugger dialog that gives the user the necessary choices
+  // "Ignore" is not supported on BeOS but you can instruct the
+  // debugger to continue executing.
+  // Note: if you choose "debug" you get a debug prompt. Type bdb to
+  // start the Be Debugger.
+  debugger(msg);
+
+  return false;
+}
+
+#elif defined(P_VXWORKS)
+
+bool PAssertFunc(const char * msg)
+{
+  PTRACE_WITH_STDERR(msg);
+
+  PThread::Trace(); // Get debugging dump
+  exit(1);
+  kill(taskIdSelf(), SIGABRT);
+
+  return false;
+}
+
+#else
 
 static PBoolean PAssertAction(int c, const char * msg)
 {
@@ -87,35 +133,16 @@ static PBoolean PAssertAction(int c, const char * msg)
   }
   return false;
 }
-#endif
-#endif
+
 
 bool PAssertFunc(const char * msg)
-
 {
   static PBoolean inAssert;
   if (inAssert)
     return false;
   inAssert = true;
 
-#ifdef P_BEOS
-  // Print location in Eddie-compatible format
-  PError << msg << endl;
-  // Pop up the debugger dialog that gives the user the necessary choices
-  // "Ignore" is not supported on BeOS but you can instruct the
-  // debugger to continue executing.
-  // Note: if you choose "debug" you get a debug prompt. Type bdb to
-  // start the Be Debugger.
-  debugger(msg);
-#else
-#if PTRACING
-  if (PTrace::GetStream() != &PError) {
-    ostream & trace = PTrace::Begin(0, __FILE__, __LINE__);
-    trace << "PTLib\t" << msg << PTrace::End;
-  }
-#endif
-
-  PError << msg << endl;
+  PTRACE_WITH_STDERR(msg);
 
   char *env;
 
@@ -129,7 +156,6 @@ bool PAssertFunc(const char * msg)
   }
 #endif
   
-#ifndef P_VXWORKS
   env = ::getenv("PTLIB_ASSERT_ACTION");
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
@@ -154,23 +180,15 @@ bool PAssertFunc(const char * msg)
 #endif
            << ", <I>gnore? " << flush;
 
-    int c = getchar();
-
-    if (PAssertAction(c, msg))
+    if (PAssertAction(getchar(), msg))
       break;
    }
    inAssert = false;
 
-#else // P_VXWORKS
-
-  PThread::Trace(); // Get debugging dump
-  exit(1);
-  kill(taskIdSelf(), SIGABRT);
-
-#endif // P_VXWORKS
-#endif // P_BEOS
-
   return false;
 }
+
+#endif // P_ANDROID || P_VXWORKS || P_BEOS
+
 
 // End Of File ///////////////////////////////////////////////////////////////
