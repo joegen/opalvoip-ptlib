@@ -647,11 +647,12 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
     case PChannel::NotFound : // Interface went down
       param.m_errorCode = PChannel::Interrupted;
       return;
-  }
 
-  PTRACE(1, "MonSock\tSocket read UDP error ("
-         << socket->GetErrorNumber(PChannel::LastReadError) << "): "
-         << socket->GetErrorText(PChannel::LastReadError));
+    default :
+      PTRACE(1, "MonSock\tSocket read UDP error ("
+             << socket->GetErrorNumber(PChannel::LastReadError) << "): "
+             << socket->GetErrorText(PChannel::LastReadError));
+  }
 }
 
 
