@@ -203,33 +203,21 @@ class PChannel : public PObject, public iostream {
         The error result of the last file I/O operation in this object.
      */
     enum Errors {
-      NoError,
-      /// Open fail due to device or file not found
-      NotFound,       
-      /// Open fail due to file already existing
-      FileExists,     
-      /// Write fail due to disk full
-      DiskFull,       
-      /// Operation fail due to insufficient privilege
-      AccessDenied,   
-      /// Open fail due to device already open for exclusive use
-      DeviceInUse,    
-      /// Operation fail due to bad parameters
-      BadParameter,   
-      /// Operation fail due to insufficient memory
-      NoMemory,       
-      /// Operation fail due to channel not being open yet
-      NotOpen,        
-      /// Operation failed due to a timeout
-      Timeout,        
-      /// Operation was interrupted
-      Interrupted,    
-      /// Operations buffer was too small for data.
-      BufferTooSmall, 
-      /// Miscellaneous error.
-      Miscellaneous,
-      /// High level protocol failure
-      ProtocolFailure,
+      NoError,        ///< No error
+      NotFound,       ///< Open fail due to device or file not found
+      FileExists,     ///< Open fail due to file already existing
+      DiskFull,       ///< Write fail due to disk full
+      AccessDenied,   ///< Operation fail due to insufficient privilege
+      DeviceInUse,    ///< Open fail due to device already open for exclusive use
+      BadParameter,   ///< Operation fail due to bad parameters
+      NoMemory,       ///< Operation fail due to insufficient memory
+      NotOpen,        ///< Operation fail due to channel not being open yet
+      Timeout,        ///< Operation failed due to a timeout
+      Interrupted,    ///< Operation was interrupted
+      BufferTooSmall, ///< Operations buffer was too small for data.
+      Miscellaneous,  ///< Miscellaneous error.
+      ProtocolFailure,///< High level protocol failure
+      Unavailable,    ///< Cannot use channel at this time
       NumNormalisedErrors
     };
 
