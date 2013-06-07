@@ -270,7 +270,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
         break;
 
       if (timeout.HasExpired()) {
-        SetErrorValues(Timeout, EAGAIN, LastReadError);
+        SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
         return false;
       }
 

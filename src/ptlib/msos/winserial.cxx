@@ -112,7 +112,7 @@ PBoolean PSerialChannel::Read(void * buf, PINDEX len)
         return ConvertOSError(-2, LastReadError);
       DWORD err = ::WaitForSingleObject(overlap.hEvent, timeToGo);
       if (err == WAIT_TIMEOUT) {
-        SetErrorValues(Timeout, EAGAIN, LastReadError);
+        SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
         ::CancelIo(commsResource);
         return lastReadCount > 0;
       }
