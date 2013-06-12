@@ -221,7 +221,7 @@ PString PProcess::GetUserName() const
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
 #endif
 #else
-  struct passwd * pw = ::getpwuid(geteuid());
+  pw = ::getpwuid(geteuid());
 #endif
 
   if (pw != NULL && pw->pw_name != NULL)
@@ -305,7 +305,7 @@ PDirectory PProcess::GetHomeDirectory() const
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
 #endif
 #else
-  struct passwd * pw = ::getpwuid(geteuid());
+  pw = ::getpwuid(geteuid());
 #endif
 
   if (pw != NULL && pw->pw_dir != NULL)
