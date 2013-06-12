@@ -206,23 +206,31 @@ PDirectory PProcess::GetOSConfigDir()
 }
 
 
+#if defined(P_VXWORKS)
+  #undef GETPWUID
+#elif defined(P_GETPWUID_R5)
+  #define GETPWUID(pw) \
+    struct passwd pwd; \
+    char buffer[1024]; \
+    if (::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw) < 0) \
+      pw = NULL
+#elif defined(P_GETPWUID_R4)
+  #define GETPWUID(pw) \
+    struct passwd pwd; \
+    char buffer[1024]; \
+    pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
+#else
+  #define GETPWUID(pw) \
+    pw = ::getpwuid(geteuid());
+#endif
+
+
 PString PProcess::GetUserName() const
 {
-#ifndef P_VXWORKS
+#ifdef GETPWUID
 
-
-#if defined(P_GETPWUID_R5)
-  struct passwd pwd;
-  char buffer[1024];
-  struct passwd * pw = NULL;
-  ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
-#elif defined(P_GETPWUID_R4)
-  struct passwd pwd;
-  char buffer[1024];
-  struct passwd * pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
-#else
-  pw = ::getpwuid(geteuid());
-#endif
+  struct passwd * pw;
+  GETPWUID(pw);
 
   if (pw != NULL && pw->pw_name != NULL)
     return pw->pw_name;
@@ -231,7 +239,7 @@ PString PProcess::GetUserName() const
   if ((user = getenv("USER")) != NULL)
     return user;
 
-#endif // P_VXWORKS
+#endif // GETPWUID
 
   return GetName();
 }
@@ -254,22 +262,21 @@ PBoolean PProcess::SetUserName(const PString & username, PBoolean permanent)
       uid = s.AsInteger();
   }
   else {
-#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_LIBC)
+    struct passwd * pw;
+#if defined(P_GETPWNAM_R5)
     struct passwd pwd;
     char buffer[1024];
-    struct passwd * pw = NULL;
-#if defined(P_GETPWNAM_R5)
-    ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
+    if (::getpwnam_r(username, &pwd, buffer, 1024, &pw) < 0)
+      pw = NULL;
 #elif defined(P_GETPWNAM_R4)
+    struct passwd pwd;
+    char buffer[1024];
     pw = ::getpwnam_r(username, &pwd, buffer, 1024);
 #else
-    #error "Cannot identify getpwnam_r"
-#endif
-#else
-    struct passwd * pw = ::getpwnam(username);
+    pw = ::getpwnam(username);
 #endif
 
-    if (pw != NULL && pw->pw_name != NULL)
+    if (pw != NULL)
       uid = pw->pw_uid;
     else {
       if (username.FindSpan("1234567890") == P_MAX_INDEX)
@@ -290,29 +297,19 @@ PBoolean PProcess::SetUserName(const PString & username, PBoolean permanent)
 
 PDirectory PProcess::GetHomeDirectory() const
 {
-#ifndef P_VXWORKS
+#ifdef GETPWUID
 
   const char * home = getenv("HOME");
   if (home != NULL)
     return home;
 
-#if defined(P_GETPWUID_R5)
-  struct passwd pwd;
-  char buffer[1024];
-  struct passwd * pw = NULL;
-  ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
-#elif defined(P_GETPWUID_R4)
-  struct passwd pwd;
-  char buffer[1024];
-  struct passwd * pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
-#else
-  pw = ::getpwuid(geteuid());
-#endif
+  struct passwd * pw;
+  GETPWUID(pw);
 
   if (pw != NULL && pw->pw_dir != NULL)
     return pw->pw_dir;
 
-#endif // P_VXWORKS
+#endif // GETPWUID
 
   return ".";
 }
