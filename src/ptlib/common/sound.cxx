@@ -605,7 +605,9 @@ PString PSoundChannel::TestRecorder(const Params & recorderParams,
     return "Error: Could not use sound player device: " + player.GetErrorText();
 
   PTRACE(1, &recorder, "Sound", "Started play back");
+#if PTRACING
   then.SetCurrentTime();
+#endif
   for (unsigned i = 0; i < totalBuffers; ++i) {
       if (!progress.IsNULL())
         progress(player, i);
