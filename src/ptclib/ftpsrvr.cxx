@@ -668,8 +668,8 @@ void PFTPServer::SendToClient(const PFilePath & filename)
         if (!file.IsOpen())
           WriteResponse(450, filename + ": cannot open file");
         else {
-          PString fileSize(PString::Unsigned, file.GetLength());
-          WriteResponse(150, PString("Opening ASCII data connection for " + filename.GetFileName() + "(" + fileSize + " bytes)"));
+          WriteResponse(150, PSTRSTRM("Opening ASCII data connection for "
+                        << filename.GetFileName() << '(' << file.GetLength() << " bytes)"));
           PString line;
           PBoolean ok = true;
           while (ok && file.ReadLine(line)) {
@@ -685,8 +685,8 @@ void PFTPServer::SendToClient(const PFilePath & filename)
         if (!file.IsOpen())
           WriteResponse(450, filename + ": cannot open file");
         else {
-          PString fileSize(PString::Unsigned, file.GetLength());
-          WriteResponse(150, PString("Opening BINARY data connection for " + filename.GetFileName() + "(" + fileSize + " bytes)"));
+          WriteResponse(150, PSTRSTRM("Opening BINARY data connection for "
+                        << filename.GetFileName() << '(' << file.GetLength() << " bytes)"));
           BYTE buffer[2048];
           PBoolean ok = true;
           while (ok && file.Read(buffer, 2048)) {
