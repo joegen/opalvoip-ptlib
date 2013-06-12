@@ -687,53 +687,55 @@ PString PVarType::AsString() const
 {
   const_cast<PVarType *>(this)->OnGetValue();
 
+  PStringStream strm;
+
   switch (m_type) {
     case VarNULL :
       break;
     case VarBoolean :
-      return PString(m_.boolean ? "true" : "false");
+      strm << (m_.boolean ? "true" : "false"); break;
     case VarChar :
-      return PString(m_.character);
+      strm << m_.character; break;
     case VarInt8 :
-      return PString((int)m_.int8);
+      strm << m_.int8; break;
     case VarInt16 :
-      return PString(m_.int16);
+      strm << m_.int16; break;
     case VarInt32 :
-      return PString(m_.int32);
+      strm << m_.int32; break;
     case VarInt64 :
-      return PString(m_.int64);
+      strm << m_.int64; break;
     case VarUInt8 :
-      return PString((unsigned)m_.uint8);
+      strm << m_.uint8; break;
     case VarUInt16 :
-      return PString(m_.uint16);
+      strm << m_.uint16; break;
     case VarUInt32 :
-      return PString(m_.uint32);
+      strm << m_.uint32; break;
     case VarUInt64 :
-      return PString(m_.uint64);
+      strm << m_.uint64; break;
     case VarFloatSingle :
-      { PStringStream strm; strm << m_.floatSingle; return strm; }
+      strm << m_.floatSingle; break;
     case VarFloatDouble :
-      { PStringStream strm; strm << m_.floatDouble; return strm; }
+      strm << m_.floatDouble; break;
     case VarFloatExtended :
-      { PStringStream strm; strm << m_.floatExtended; return strm; }
+      strm << m_.floatExtended; break;
     case VarTime :
-      return PTime(m_.time.seconds).AsString(m_.time.format);
+      strm << PTime(m_.time.seconds).AsString(m_.time.format); break;
     case VarGUID :
-      return PGloballyUniqueID(m_.guid, sizeof(m_.guid)).AsString();
+      strm << PGloballyUniqueID(m_.guid, sizeof(m_.guid)); break;
     case VarStaticString :
-      return m_.staticString;
+      strm << m_.staticString; break;
     case VarFixedString :
     case VarDynamicString :
-      return PString(m_.dynamic.data);
+      strm << m_.dynamic.data; break;
     case VarStaticBinary :
-      return PString(m_.staticBinary.data, m_.staticBinary.size);
+      strm << PString(m_.staticBinary.data, m_.staticBinary.size); break;
     case VarDynamicBinary :
-      return PString(m_.dynamic.data, m_.dynamic.size);
+      strm << PString(m_.dynamic.data, m_.dynamic.size); break;
     default :
       PAssertAlways("Invalid PVarType");
   }
 
-  return PString::Empty();
+  return strm;
 }
 
 

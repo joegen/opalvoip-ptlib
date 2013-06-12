@@ -93,6 +93,7 @@
 #ifdef _MSC_VER
   #define SIZEOF_INT 4
   #define HAVE_LONG_LONG_INT 1
+  #define HAVE_UNSIGNED_LONG_LONG_INT 1
   #define HAVE_LONG_DOUBLE 1
 #else
   #undef SIZEOF_INT
@@ -110,6 +111,7 @@
   #undef uintptr_t
 
   #undef HAVE_LONG_LONG_INT
+  #undef HAVE_UNSIGNED_LONG_LONG_INT
   #undef HAVE_LONG_DOUBLE
 #endif
 
@@ -148,6 +150,7 @@
   // configure is not run in Android/Visual Studio, so hard code it
   #define SIZEOF_INT 4
   #define HAVE_LONG_LONG_INT 1
+  #define HAVE_UNSIGNED_LONG_LONG_INT 1
   #define HAVE_LONG_DOUBLE 1
 
   #define HAVE_LIMITS_H 1
