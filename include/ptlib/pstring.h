@@ -289,7 +289,9 @@ class PString : public PCharArray
     PString(
       long long n   ///< Integer to convert
     );
+#endif
 
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
     /**Create a string from the integer type.
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
@@ -324,7 +326,7 @@ class PString : public PCharArray
       ...                 ///< Extra parameters for <code>sprintf()</code> call.
     );
 
-#ifdef HAVE_LONG_LONG_INT
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
     PString(
       ConversionType type, ///< Type of data source for conversion.
       long long value,     ///< Large integer value to convert.
@@ -457,7 +459,9 @@ class PString : public PCharArray
     PString & operator=(
       long long n   ///< Integer to convert
     );
+#endif
 
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
     /**Assign a string from the integer type.
        This will create a simple base 10, shortest length conversion of the
        integer (with sign character if appropriate) into the string.
