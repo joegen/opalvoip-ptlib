@@ -426,7 +426,7 @@ void PTrace::Initialise(const PArgList & args,
                         const char * traceLevel)
 {
   if ((options & HasFilePermissions) == 0)
-    options = HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
+    options |= HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
 
   PCaselessString optStr = args.GetOptionString(traceOpts);
   PINDEX pos = 0;
