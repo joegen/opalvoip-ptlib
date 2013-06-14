@@ -625,8 +625,12 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
           file = fileName;
       }
     }
+    stream << setw(16) << file;
 
-    stream << setw(16) << file << '(' << lineNum << ")\t";
+    if (lineNum > 0)
+      stream << '(' << lineNum << ')';
+
+    stream << '\t';
   }
 
   if (HasOption(ObjectInstance)) {
