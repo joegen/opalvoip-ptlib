@@ -155,6 +155,7 @@
 
   #define HAVE_LIMITS_H 1
   #define HAVE_UNISTD_H 1
+  #define HAVE_ALLOCA_H 1
   #define HAVE_SYS_TYPES_H 1
   #define HAVE_DIRENT_H 1
   #define HAVE_SYS_STAT_H 1
@@ -192,6 +193,7 @@
 
   #undef HAVE_LIMITS_H
   #undef HAVE_UNISTD_H
+  #undef HAVE_ALLOCA_H
   #undef HAVE_SYS_TYPES_H
   #undef HAVE_DIRENT_H
   #undef HAVE_SYS_NDIR_H
