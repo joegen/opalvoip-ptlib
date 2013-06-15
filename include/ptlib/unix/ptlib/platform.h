@@ -93,6 +93,10 @@
   #include <unistd.h>
 #endif
 
+#ifdef HAVE_ALLOCA_H
+  #include <alloca.h>
+#endif
+
 #ifdef HAVE_SIGNAL_H
   #include <signal.h>
 #else
