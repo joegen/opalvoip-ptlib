@@ -802,8 +802,10 @@ makedir
 EGREP
 GREP
 CPP
-OPT_FLAGS
-DEBUG_FLAGS
+OPT_CFLAGS
+OPT_CPPFLAGS
+DEBUG_CFLAGS
+DEBUG_CPPFLAGS
 AR
 SVN
 MKDIR_P
@@ -5240,7 +5242,7 @@ $as_echo "$as_me: using \"$target_os\" release \"$target_release\" on \"$target_
 
 
 
-DEBUG_FLAGS="-D_DEBUG"
+DEBUG_CPPFLAGS="-D_DEBUG"
 
 
    oldCPPFLAGS="$CPPFLAGS"
@@ -5270,15 +5272,16 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  DEBUG_FLAGS="$DEBUG_FLAGS -g3 -ggdb -O0"
+  DEBUG_CFLAGS="$DEBUG_CFLAGS -g3 -ggdb -O0"
 else
-  DEBUG_FLAGS="$DEBUG_FLAGS -g"
+  DEBUG_CFLAGS="$DEBUG_CFLAGS -g"
 
 fi
 
 
 
-OPT_FLAGS="-DNDEBUG"
+
+OPT_CPPFLAGS="-DNDEBUG"
 
 
    oldCPPFLAGS="$CPPFLAGS"
@@ -5308,11 +5311,12 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  OPT_FLAGS="$OPT_FLAGS -O3"
+  OPT_CFLAGS="$OPT_FLAGS -O3"
 else
-  OPT_FLAGS="$OPT_FLAGS -O2"
+  OPT_CFLAGS="$OPT_FLAGS -O2"
 
 fi
+
 
 
 
@@ -7155,7 +7159,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-for ac_header in limits.h signal.h fcntl.h sys/time.h termios.h sys/termios.h \
+for ac_header in limits.h alloca.h signal.h fcntl.h sys/time.h termios.h sys/termios.h \
                  ioctl.h sys/ioctl.h sys/sockio.h sys/sysctl.h sys/socket.h \
                  arpa/inet.h netdb.h ifaddrs.h netinet/in.h netinet/tcp.h \
                  net/if_types.h net/if_dl.h netinet/if_ether.h linux/errqueue.h
