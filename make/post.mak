@@ -158,7 +158,6 @@ SRC_DEPS := $(SRC_DEPS:.mm=.dep)
 SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
 SRC_DEPS := $(SRC_DEPS:.cpp=.dep)
 DEPS	  = $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS)))
-DEPFLAGS := $(subst $(DEBUG_FLAG),,$(CPPFLAGS))
 
 #
 # define rule for .dep files
@@ -166,22 +165,22 @@ DEPFLAGS := $(subst $(DEBUG_FLAG),,$(CPPFLAGS))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(DEPFLAGS) $(CFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(DEPFLAGS) $(CFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(DEPFLAGS) $(CFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CC) $(strip $(DEPFLAGS) $(CFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CC) $(strip $(CPPFLAGS)) -M $< >> $@
 
 vpath %.cxx $(VPATH_CXX)
 vpath %.cpp $(VPATH_CXX)
