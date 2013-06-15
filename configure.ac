@@ -405,7 +405,7 @@ fi
 
 dnl ########################################################################
 dnl check for headers
-AC_CHECK_HEADERS(limits.h signal.h fcntl.h sys/time.h termios.h sys/termios.h \
+AC_CHECK_HEADERS(limits.h alloca.h signal.h fcntl.h sys/time.h termios.h sys/termios.h \
                  ioctl.h sys/ioctl.h sys/sockio.h sys/sysctl.h sys/socket.h \
                  arpa/inet.h netdb.h ifaddrs.h netinet/in.h netinet/tcp.h \
                  net/if_types.h net/if_dl.h netinet/if_ether.h linux/errqueue.h)
