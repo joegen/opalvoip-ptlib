@@ -235,8 +235,7 @@ PProcess::~PProcess()
 //
 
 PThread::PThread(bool isProcess)
-  : m_isProcess(isProcess)
-  , m_autoDelete(!isProcess)
+  : m_type(isProcess ? e_IsProcess : e_IsExternal)
   , m_originalStackSize(0) // 0 indicates external thread
   , m_threadId(pthread_self())
   , PX_priority(NormalPriority)
@@ -274,8 +273,7 @@ PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority priorityLevel,
                  const PString & name)
-  : m_isProcess(false)
-  , m_autoDelete(deletion == AutoDeleteThread)
+  : m_type(deletion == AutoDeleteThread ? e_IsAutoDelete : e_IsManualDelete)
   , m_originalStackSize(std::max(stackSize, 16*PTHREAD_STACK_MIN)) // Set a decent (256K) stack size that won't eat all virtual memory
   , m_threadName(name)
   , m_threadId(PNullThreadIdentifier)  // indicates thread has not started
@@ -301,7 +299,7 @@ PThread::PThread(PINDEX stackSize,
   PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 
   // If need to be deleted automatically, make sure thread that does it runs.
-  if (m_autoDelete)
+  if (m_type == e_IsAutoDelete)
     PProcess::Current().SignalTimerChange();
 
   PTRACE(5, "PTLib\tCreated thread " << this << ' ' << m_threadName);
@@ -771,7 +769,7 @@ void PThread::Terminate()
 
 PBoolean PThread::IsTerminated() const
 {
-  if (m_isProcess)
+  if (m_type == e_IsProcess)
     return false; // Process is always still running
 
   if (PX_state == PX_finished)
