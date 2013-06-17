@@ -2300,13 +2300,27 @@ void PThread::SetThreadName(const PString & name)
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
 {
-  PAssert(!m_isProcess, PLogicError);
+  switch (m_type) {
+    case e_IsAutoDelete :
+      if (deletion == AutoDeleteThread)
+        return;
+      break;
 
-  bool newAutoDelete = (deletion == AutoDeleteThread);
-  if (m_autoDelete == newAutoDelete)
-    return;
+    case e_IsManualDelete :
+      if (deletion != AutoDeleteThread)
+        return;
+      break;
 
-  m_autoDelete = newAutoDelete;
+    case e_IsProcess :
+      PAssert(deletion != AutoDeleteThread, PInvalidParameter);
+      return;
+
+    case e_IsExternal :
+      PAssert(deletion == AutoDeleteThread, PInvalidParameter);
+      return;
+  }
+
+  m_type = deletion == AutoDeleteThread ? e_IsAutoDelete : e_IsManualDelete;
 
   PProcess::Current().InternalSetAutoDeleteThread(this);
 }
@@ -2337,7 +2351,7 @@ PThread * PThread::Create(const PNotifier & notifier,
 
 PThread::~PThread()
 {
-  if (!m_isProcess && !IsTerminated())
+  if (m_type != e_IsProcess && m_type != e_IsExternal)
     Terminate();
 
   PTRACE(5, "PTLib\tDestroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
@@ -2348,7 +2362,7 @@ PThread::~PThread()
   for (LocalStorageList::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
     (*it)->ThreadDestroyed(this);
 
-  if (!m_isProcess && !m_autoDelete)
+  if (m_type != e_IsProcess && m_type != e_IsAutoDelete)
     PProcess::Current().InternalThreadEnded(this);
 }
 

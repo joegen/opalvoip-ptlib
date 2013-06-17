@@ -354,7 +354,7 @@ class PThread : public PObject
     ) { return Create(notifier, 0, NoAutoDeleteThread, NormalPriority, threadName); }
   //@}
   
-    bool IsAutoDelete() const { return m_autoDelete; }
+    bool IsAutoDelete() const { return m_type == e_IsAutoDelete; }
 
     /// Thread local storage base class, see PThreadLocalStorage for template.
     class LocalStorageBase
@@ -393,8 +393,8 @@ class PThread : public PObject
     // Empty assignment operator to prevent copying of thread instances.
 
   protected:
-    bool   m_isProcess;
-    bool   m_autoDelete; // Automatically delete the thread on completion.
+    enum Type { e_IsAutoDelete, e_IsManualDelete, e_IsProcess, e_IsExternal } m_type;
+
     PINDEX m_originalStackSize;
 
     PString m_threadName; // Give the thread a name for debugging purposes.
