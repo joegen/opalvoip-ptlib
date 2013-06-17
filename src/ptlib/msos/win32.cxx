@@ -867,8 +867,7 @@ void PThread::Win32AttachThreadInput()
 
 
 PThread::PThread(bool isProcess)
-  : m_isProcess(isProcess)
-  , m_autoDelete(!isProcess)
+  : m_type(isProcess ? e_IsProcess : e_IsExternal)
   , m_originalStackSize(0)
   , m_threadId(GetCurrentThreadId())
 #if defined(P_WIN_COM)
@@ -890,8 +889,7 @@ PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority priorityLevel,
                  const PString & name)
-  : m_isProcess(false)
-  , m_autoDelete(deletion == AutoDeleteThread)
+  : m_type(deletion == AutoDeleteThread ? e_IsAutoDelete : e_IsManualDelete)
   , m_originalStackSize(std::max(stackSize, (PINDEX)65535))
   , m_threadName(name)
 #if defined(P_WIN_COM)
@@ -1032,7 +1030,7 @@ bool PThread::GetTimes(Times & times)
 
 void PThread::InternalDestroy()
 {
-  if (m_isProcess)
+  if (m_type == e_IsProcess)
     m_threadHandle.Detach();
   else
     m_threadHandle.Close();
@@ -1064,13 +1062,12 @@ void PThread::Restart()
 
 void PThread::Terminate()
 {
-  if (!PAssert(!m_isProcess, "Cannot terminate the process!"))
-    return;
-
-  if (GetThreadId() == GetCurrentThreadId())
-    ExitThread(0);
-  else if (m_threadHandle.IsValid())
+  if (PAssert(m_type != e_IsProcess, "Cannot terminate the process!") &&
+      m_threadHandle.IsValid() &&
+      m_threadHandle.Wait(0)) {
+    PTRACE(2, "PTLib\tTerminating thread " << *this);
     TerminateThread(m_threadHandle, 1);
+  }
 }
 
 
