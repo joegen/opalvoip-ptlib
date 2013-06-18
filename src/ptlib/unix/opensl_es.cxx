@@ -31,6 +31,7 @@
 #include <ptlib.h>
 
 #include <ptlib/sound.h>
+#include <ptclib/qchannel.h>
 
 #ifdef __ANDROID__
   #include <android\api-level.h>
@@ -137,8 +138,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 {
     PCLASSINFO(PSoundChannel_OpenSL_ES, PSoundChannel);
   protected:
-    PString m_deviceName;
-
+    PString               m_deviceName;
     OpenSLES::Object      m_object;
     OpenSLES::Engine      m_engine;
     OpenSLES::Object      m_outputMix;
@@ -148,24 +148,22 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     OpenSLES::Object      m_audioIn;
     OpenSLES::Record      m_recorder;
     OpenSLES::BufferQueue m_bufferQueue;
-
-    SLDataFormat_PCM m_format_pcm;
-
-    std::vector< std::vector<uint8_t> > m_buffers;
-    size_t        m_bufferPos;
-    size_t        m_bufferLen;
-    PSemaphore    m_bufferReady;
-    PTimeInterval m_bufferTimeout;
-    PMutex        m_bufferMutex;
+    SLDataFormat_PCM      m_format_pcm;
+    PQueueChannel         m_queue;
+    std::vector<uint8_t>  m_buffers[2];
+    size_t                m_bufferPos;
 
 
-    bool EnqueueBuffer(PINDEX index)
+    bool EnqueueBuffer()
     {
-      const void * ptr = m_buffers[index].data();
-      size_t count = m_buffers[index].size();
+      const void * ptr = m_buffers[m_bufferPos].data();
+      size_t count = m_buffers[m_bufferPos].size();
       PAssert(count > 0, PLogicError);
-      PTRACE_DETAILED(5, "Queuing: index=" << index << ", ptr=" << ptr << ", bytes=" << count);
-      return CHECK_SL_SUCCESS(m_bufferQueue.Enqueue, (ptr, count));
+      if (CHECK_SL_ERROR(m_bufferQueue.Enqueue, (ptr, count)))
+        return false;
+
+      m_bufferPos = (m_bufferPos+1)%PARRAYSIZE(m_buffers);
+      return true;
     }
 
     static void PlayBufferCallback(OpenSLES::BufferQueue::ItfType, void * context)
@@ -175,8 +173,19 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     void PlayBufferCallback()
     {
-      PTRACE_DETAILED(5, "Play buffer callback");
-      m_bufferReady.Signal();
+      PINDEX bytes = m_buffers[m_bufferPos].size();
+      uint8_t * data = m_buffers[m_bufferPos].data();
+      m_queue.Read(data, bytes);
+      PINDEX count = m_queue.GetLastReadCount();
+      if (count < bytes) {
+        PTRACE_IF(4, m_queue.IsOpen(), "PlayerCallback underflow: count=" << count << ", needed=" << bytes);
+        memset(data+count, 0, bytes-count);
+      }
+      else {
+        PTRACE_DETAILED(5, "PlayerCallback: count=" << count << ", bufferPos=" << m_bufferPos);
+      }
+
+      EnqueueBuffer();
     }
 
 
@@ -187,24 +196,20 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     void RecordBufferCallback()
     {
-      m_bufferMutex.Wait();
+      PTRACE_DETAILED(5, "RecordCallback: size=" << m_buffers[m_bufferPos].size() << ", bufferPos=" << m_bufferPos);
 
-      EnqueueBuffer((m_bufferPos+m_bufferLen)%m_buffers.size());
-
-      // Check for overflow
-      if (m_bufferLen < m_buffers.size()) {
-        ++m_bufferLen;
-        m_bufferReady.Signal();
+      if (!m_queue.Write(m_buffers[m_bufferPos].data(), m_buffers[m_bufferPos].size())) {
+        PTRACE_IF(4, m_queue.IsOpen(), "Overflow, queue full");
       }
 
-      PTRACE_DETAILED(5, "Record buffer callback: m_bufferPos=" << m_bufferPos << ", m_bufferLen=" << m_bufferLen);
-
-      m_bufferMutex.Signal();
+      EnqueueBuffer();
     }
 
   
     bool InternalOpen()
     {
+      PTRACE(5, "Opening " << activeDirection<< " \"" << m_deviceName << '"');
+
       if (CHECK_SL_ERROR(slCreateEngine, (m_object.GetPtr(), 0, NULL, 0, NULL, NULL)))
         return false;
       
@@ -223,7 +228,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
             return false;
           
           {
-            OpenSLES::BufferQueue::Locator bufferLocation(m_buffers.size());
+            OpenSLES::BufferQueue::Locator bufferLocation(PARRAYSIZE(m_buffers));
             SLDataSource source = { &bufferLocation, &m_format_pcm };
             
             SLDataLocator_OutputMix mixerLocation = { SL_DATALOCATOR_OUTPUTMIX, m_outputMix };
@@ -265,6 +270,12 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
             return false;
           
           m_volume.Create(m_audioOut);
+
+          // Don't block the call back eading from queue
+          m_queue.SetReadTimeout(0);
+
+          // double the time for a buffer to be processed, minimum 1 second
+          SetWriteTimeout(PTimeInterval(std::max(1000U, m_buffers[0].size()/2*1000/GetSampleRate())));
           break;
           
         case Recorder :
@@ -277,7 +288,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
             };
             SLDataSource source = { &deviceLocation, NULL};
             
-            OpenSLES::BufferQueue::Locator bufferLocation(m_buffers.size());
+            OpenSLES::BufferQueue::Locator bufferLocation(PARRAYSIZE(m_buffers));
             SLDataSink sink = { &bufferLocation, &m_format_pcm };
             
             OpenSLES::Interfaces recIfs;
@@ -315,15 +326,18 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
             return false;
           
           m_volume.Create(m_audioIn);
+
+          // Make sure queue does not block the callback
+          m_queue.SetWriteTimeout(0);
+
+          // double the time for a buffer to be processed, minimum 1 second
+          SetReadTimeout(PTimeInterval(std::max(1000U, m_buffers[0].size()/2*1000/GetSampleRate())));
           break;
-          
+
         default :
           PAssertAlways(PInvalidParameter);
           return false;
       }
-
-      // double the time for a buffer to be processed, minimum 1 second
-      m_bufferTimeout.SetInterval(std::max(1000U, m_buffers[0].size()/2*1000/GetSampleRate()));
 
       PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
       os_handle = 1;
@@ -333,16 +347,17 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
   
   public:
     PSoundChannel_OpenSL_ES()
-      : m_bufferReady(0, UINT_MAX)
     {
-      SetBuffers(320, 2);
-      SetFormat(1, 8000, 16);
+      InternalSetBuffers(320, 2);
+      InternalSetFormat(1, 8000, 16);
+      PIndirectChannel::Open(m_queue);
     }
 
 
     ~PSoundChannel_OpenSL_ES()
     {
       Close();
+      PIndirectChannel::Close();
     }
 
 
@@ -375,14 +390,6 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     virtual bool Open(const Params & params)
     {
       Close();
-
-      PTRACE(4, "Open: " << params.m_device << ','
-                        << params.m_direction << ','
-                        << params.m_channels << ','
-                        << params.m_sampleRate << ','
-                        << params.m_bitsPerSample << ','
-                        << params.m_bufferSize << ','
-                        << params.m_bufferCount);
 
       activeDirection = params.m_direction;
       m_deviceName = params.m_device;
@@ -421,6 +428,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       m_object.Destroy();
 
       os_handle = -1;
+      PTRACE_IF(5, !GetName().IsEmpty(), activeDirection << " closed \"" << GetName() << '"');
       return true;
     }
 
@@ -451,7 +459,8 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
         ok = false;
 
       // Break any read/write block
-      m_bufferReady.Signal();
+      m_queue.Close();
+
       PTRACE(5, activeDirection << " aborted: ok=" << ok);
       return ok;
     }
@@ -459,95 +468,68 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     virtual PBoolean Write(const void * buf, PINDEX len)
     {
+      lastWriteCount = 0;
+
       if (!IsOpen())
+        return false;
+
+      if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
         return false;
 
       SLuint32 state;
       if (CHECK_SL_ERROR(m_player.GetPlayState, (&state)))
         return false;
 
+      PTRACE_DETAILED(5, "Write: size=" << len << ", qlen=" << m_queue.GetLength() << ", bufferPos=" << m_bufferPos);
+      if (!PIndirectChannel::Write(buf, len))
+        return false;
+
       // See if first time in
-      if (state != SL_PLAYSTATE_PLAYING) {
-        PTRACE(5, "Starting playback");
-        // First time, start it up
-        if (CHECK_SL_ERROR(m_player.SetPlayState, (SL_PLAYSTATE_PLAYING)))
-          return false;
+      if (state == SL_PLAYSTATE_PLAYING)
+        return true;
 
-        m_bufferReady.Reset(m_buffers.size(), m_buffers.size());
+      PTRACE(5, "Starting playback");
+      for (size_t i = 0; i < PARRAYSIZE(m_buffers); ++i) {
+        if (!EnqueueBuffer())
+          return false;
       }
 
-      const uint8_t * ptr = (const uint8_t *)buf;
-      while (len > 0) {
-        PTRACE_DETAILED(5, "Awaiting play buffer ready");
-        if (!m_bufferReady.Wait(m_bufferTimeout)) {
-          PTRACE(1, "Timed out waiting for play out: " << m_bufferTimeout);
-          return false;
-        }
-        
-        if (!IsOpen())
-          return false;
-
-        PINDEX chunkSize = std::min(len, (PINDEX)m_buffers[m_bufferPos].size());
-        m_buffers[m_bufferPos].resize(chunkSize);
-        memcpy(m_buffers[m_bufferPos].data(), ptr, chunkSize);
-        EnqueueBuffer(m_bufferPos);
-        m_bufferPos = (m_bufferPos+1)%m_buffers.size();
-
-        lastWriteCount += chunkSize;
-        ptr += chunkSize;
-        len -= chunkSize;
-      }
-
-      return true;
+      return CHECK_SL_SUCCESS(m_player.SetPlayState, (SL_PLAYSTATE_PLAYING));
     }
 
 
     virtual PBoolean HasPlayCompleted()
     {
-      return m_bufferLen == 0;
+      return m_queue.GetLength() == 0;
     }
 
 
     virtual PBoolean WaitForPlayCompletion()
     {
       while (!HasPlayCompleted()) {
-        PTRACE(5, "Awaiting buffer ready for completion");
-        if (!m_bufferReady.Wait(m_bufferTimeout))
+        PThread::Sleep(m_buffers[0].size()*1000/GetSampleRate());
+        if (!IsOpen())
           return false;
       }
-
       return true;
     }
 
 
     virtual PBoolean Read(void * buf, PINDEX len)
     {
+      lastReadCount = 0;
+
+      if (!IsOpen())
+        return false;
+
+      if (!PAssert(activeDirection == Recorder, "Trying to read from player"))
+        return false;
+
       if (!StartRecording())
         return false;
 
-      while (m_bufferLen == 0) {
-        PTRACE_DETAILED(5, "Awaiting record buffer ready");
-        if (!m_bufferReady.Wait(m_bufferTimeout)) {
-          PTRACE(1, "Timed out waiting for recorded data: " << m_bufferTimeout);
-          return false;
-        }
-        
-        if (!IsOpen())
-          return false;
-      }
-
-      m_bufferMutex.Wait();
-
-      lastReadCount = std::min((size_t)len, m_buffers[m_bufferPos].size());
-      memcpy(buf, m_buffers[m_bufferPos].data(), lastReadCount);
-
-      m_bufferPos = (m_bufferPos+1)%m_buffers.size();
-      --m_bufferLen;
-
-      m_bufferMutex.Signal();
-
-      PTRACE(5, "Read " << lastReadCount << " bytes.");
-      return true;
+      PTRACE_DETAILED(5, "Read: size=" << len << ", qlen=" << m_queue.GetLength() << ", bufferPos=" << m_bufferPos);
+      return PIndirectChannel::Read(buf, len);
     }
 
 
@@ -563,14 +545,12 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       if (state == SL_RECORDSTATE_RECORDING)
         return true;
 
-      PWaitAndSignal mutex(m_bufferMutex);
+      m_queue.Open(m_queue.GetSize()); // Effectively flush
 
-      m_bufferReady.Reset(0, m_buffers.size());
+      m_bufferPos = 0;
 
-      m_bufferPos = m_bufferLen = 0;
-
-      for (size_t i = 0; i < m_buffers.size(); ++i) {
-        if (!EnqueueBuffer(i))
+      for (size_t i = 0; i < PARRAYSIZE(m_buffers); ++i) {
+        if (!EnqueueBuffer())
           return false;
       }
 
@@ -584,11 +564,26 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     virtual PBoolean SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
     {
-      if (IsOpen()) {
-        Close();
-        return InternalOpen();
-      }
-      
+      if (numChannels == GetChannels()&&
+          sampleRate == GetSampleRate() &&
+          bitsPerSample == GetSampleSize())
+        return true;
+
+      if (!PAssert(numChannels > 0 && sampleRate >= 8000 && bitsPerSample >= 8, PInvalidParameter))
+        return false;
+
+      bool notOpen = !IsOpen();
+
+      PTRACE(4, "SetFormat(" << numChannels << ',' << sampleRate << ',' << bitsPerSample << (notOpen ? ") closed" : ") open"));
+
+      Close();
+
+      return notOpen || InternalOpen();
+    }
+
+
+    void InternalSetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
+    {
       m_format_pcm.formatType = SL_DATAFORMAT_PCM;
       m_format_pcm.numChannels = numChannels;
       m_format_pcm.samplesPerSec = sampleRate*1000; // yeah, member name is bogus, is really milliHertz
@@ -596,8 +591,6 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       m_format_pcm.containerSize = bitsPerSample;
       m_format_pcm.channelMask = SL_SPEAKER_FRONT_CENTER;
       m_format_pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
-
-      return true;
     }
 
 
@@ -621,24 +614,35 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     virtual PBoolean SetBuffers(PINDEX size, PINDEX count)
     {
+      if (size ==  m_buffers[0].size() && count == m_queue.GetSize()/size)
+        return true;
+
+      if (!PAssert(size > 80 && count > 1, PInvalidParameter))
+        return false;
+
       bool notOpen = !IsOpen();
-
+      PTRACE(4, "SetBuffers(" << size << ',' << count << (notOpen ? ") closed" : ") open"));
       Close();
+      InternalSetBuffers(size, count);
+      return notOpen || InternalOpen();
+    }
 
-      m_buffers.resize(count);
-      for (size_t i = 0; i < m_buffers.size(); ++i)
+
+    void InternalSetBuffers(PINDEX size, PINDEX count)
+    {
+      m_queue.Open(count*size);
+
+      for (size_t i = 0; i < PARRAYSIZE(m_buffers); ++i)
         m_buffers[i].resize(size);
 
-      m_bufferPos = m_bufferLen = 0;
-
-      return notOpen || InternalOpen();
+      m_bufferPos = 0;
     }
 
 
     virtual PBoolean GetBuffers(PINDEX & size, PINDEX & count)
     {
       size = m_buffers[0].size();
-      count = m_buffers.size();
+      count = m_queue.GetSize()/size;
       return true;
     }
 
