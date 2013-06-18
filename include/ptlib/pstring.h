@@ -326,7 +326,7 @@ class PString : public PCharArray
       ...                 ///< Extra parameters for <code>sprintf()</code> call.
     );
 
-#ifdef HAVE_UNSIGNED_LONG_LONG_INT
+#ifdef HAVE_LONG_LONG_INT
     PString(
       ConversionType type, ///< Type of data source for conversion.
       long long value,     ///< Large integer value to convert.
@@ -335,6 +335,8 @@ class PString : public PCharArray
                                 For ScaleSI, this is the number of significant
                                 figures to be used, maiximum 4. */
     );
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
     PString(ConversionType type, unsigned long long value, unsigned param = 10);
 #endif
 
