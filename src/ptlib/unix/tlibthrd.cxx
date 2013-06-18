@@ -54,6 +54,7 @@ static pthread_t baseThread;
 #include <sys/syscall.h>
 #elif defined(P_ANDROID)
 #include <asm/page.h>
+#include <jni.h>
 #endif
 
 #ifdef P_HAS_SEMAPHORES_XPG6
@@ -61,7 +62,14 @@ static pthread_t baseThread;
 #endif
 
 #ifndef P_ANDROID
-#define P_USE_THREAD_CANCEL 1
+  #define P_USE_THREAD_CANCEL 1
+#else
+  static JavaVM * AndroidJavaVM;
+  JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
+  {
+    AndroidJavaVM = vm;
+    return JNI_VERSION_1_6;
+  }
 #endif
 
 
@@ -365,6 +373,9 @@ void PThread::PX_ThreadBegin()
 #endif
 
   PProcess::Current().OnThreadStart(*this);
+
+  if (PX_priority != NormalPriority)
+    SetPriority(PX_priority);
 }
 
 
@@ -458,13 +469,6 @@ void PThread::PX_StartThread()
   process.InternalThreadStarted(this);
 
   pthread_attr_destroy(&threadAttr);
-
-#ifdef P_MACOSX
-  if (PX_priority == HighestPriority) {
-    PTRACE(1, "set thread to have the highest priority (MACOSX)");
-    SetPriority(HighestPriority);
-  }
-#endif
 }
 
 
@@ -605,6 +609,7 @@ GetThreadBasePriority ()
 
 void PThread::SetPriority(Priority priorityLevel)
 {
+  PTRACE(4, "PTLib", "Setting thread priority to " << priorityLevel);
   PX_priority = priorityLevel;
 
   if (IsTerminated())
@@ -613,6 +618,57 @@ void PThread::SetPriority(Priority priorityLevel)
 #if defined(P_LINUX)
   struct sched_param params;
   PAssertPTHREAD(pthread_setschedparam, (m_threadId, GetSchedParam(priorityLevel, params), &params));
+
+#elif defined(P_ANDROID)
+  if (Current() != this) {
+    PTRACE(2, "JNI", "Can only set priority for current thread.");
+    return;
+  }
+
+  if (AndroidJavaVM == NULL) {
+    PTRACE(2, "JNI", "JavaVM not set.");
+    return;
+  }
+
+  JNIEnv *jni = NULL;
+  bool detach = false;
+
+  jint err = AndroidJavaVM->GetEnv((void **)&jni, JNI_VERSION_1_6);
+  switch (err) {
+    case JNI_EDETACHED :
+      if ((err = AndroidJavaVM->AttachCurrentThread(&jni, NULL)) != JNI_OK) {
+        PTRACE(2, "JNI", "Could not attach JNI environment, error=" << err);
+        return;
+      }
+      detach = true;
+
+    case JNI_OK :
+      break;
+
+    default :
+      PTRACE(2, "JNI", "Could not get JNI environment, error=" << err);
+      return;
+  }
+
+  //Get pointer to the java class
+  jclass androidOsProcess = (jclass)jni->NewGlobalRef(jni->FindClass("android/os/Process"));
+  if (androidOsProcess != NULL) {
+    jmethodID setThreadPriority = jni->GetStaticMethodID(androidOsProcess, "setThreadPriority", "(I)V");
+    if (setThreadPriority != NULL) {
+      static const int Priorities[NumPriorities] = { 19, 10, 0,  -10, -19 };
+      jni->CallStaticIntMethod(androidOsProcess, setThreadPriority, Priorities[priorityLevel]);
+      PTRACE(5, "JNI", "setThreadPriority " << Priorities[priorityLevel]);
+    }
+    else {
+      PTRACE(2, "JNI", "Could not find setThreadPriority");
+    }
+  }
+  else {
+    PTRACE(2, "JNI", "Could not find android.os.Process");
+  }
+
+  if (detach)
+    AndroidJavaVM->DetachCurrentThread();
 
 #elif defined(P_MACOSX)
   if (priorityLevel == HighestPriority) {
