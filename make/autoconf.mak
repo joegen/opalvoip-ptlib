@@ -171,12 +171,11 @@ build_top_level:
 	$(Q)$(MAKE) --file="$(TOP_LEVEL_MAKE)" --directory="$(TARGET_DIR)" $(MAKECMDGOALS)
 
 
-$(CONFIG_STATUS) : $(CONFIGURE) $(CONFIG_FILE_PATHS)
+$(CONFIG_STATUS) : $(CONFIGURE) $(addprefix $(TOP_LEVEL_DIR)/,$(addsuffix .in,$(CONFIG_FILES)))
 	$(CONFIGURE_CMD)
 	touch $(CONFIG_FILE_PATHS)
 	touch $(CONFIG_STATUS)
 
-$(CONFIG_FILE_PATHS) : $(addprefix $(TOP_LEVEL_DIR)/,$(addsuffix .in,$(CONFIG_FILES)))
 
 
 ifeq ($(shell which $(AUTOCONF) > /dev/null && \
