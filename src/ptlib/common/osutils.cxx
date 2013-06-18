@@ -567,7 +567,8 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
         OpenTraceFile(m_filename);
         if (m_stream == NULL)
           SetStream(&cerr);
-        streamPtr = m_stream;
+        if (threadInfo == NULL)
+          streamPtr = m_stream;
       }
     }
   }
