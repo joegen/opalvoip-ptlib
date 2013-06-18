@@ -133,7 +133,6 @@ protected:
   std::vector<uint8_t>        m_resampleBuffer;
 #endif
   PQueueChannel               m_queue;
-  PTimeInterval               m_timeout;
   PINDEX                      m_bufferSize;
   PINDEX                      m_bufferCount;
 
@@ -386,6 +385,7 @@ protected:
     
     // Don't block the call back eading from queue
     m_queue.SetReadTimeout(0);
+    SetWriteTimeout(PTimeInterval(std::max(1000, (int)(m_bufferSize*1000/GetSampleRate()))));
     return true;
   }
   
@@ -488,12 +488,15 @@ protected:
 
     // Make sure queue does not block the callback
     m_queue.SetWriteTimeout(0);
+    SetReadTimeout(PTimeInterval(std::max(1000, (int)(m_bufferSize*1000/GetSampleRate()))));
     return true;
   }
   
   
   bool InternalOpen()
   {
+    PTRACE(5, "Opening " << activeDirection<< " \"" << m_deviceName << '"');
+
     AudioComponentDescription desc;
     desc.componentType = kAudioUnitType_Output;
     desc.componentManufacturer = kAudioUnitManufacturer_Apple;
@@ -538,8 +541,6 @@ protected:
     if (CHECK_ERROR(AudioUnitInitialize,(m_audioUnit)))
       return false;
 
-    m_timeout.SetInterval(std::max(1000, (int)(m_bufferSize*1000/GetSampleRate())));
-
     PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
     os_handle = 1;
     return true;
@@ -559,7 +560,7 @@ public:
     GetSession().CreatedChannel(this);
 #endif
 
-    SetFormat(1, 8000, 16);
+    InternalSetFormat(1, 8000, 16);
     PIndirectChannel::Open(m_queue);
   }
 
@@ -567,6 +568,7 @@ public:
   ~PSoundChannel_Apple()
   {
     Close();
+    PIndirectChannel::Close();
 
 #ifndef P_MACOSX
     GetSession().DestroyedChannel(this);
@@ -598,13 +600,6 @@ public:
   {
     Close();
     
-    PTRACE(4, "Open("
-           << params.m_device << ','
-           << params.m_direction << ','
-           << params.m_channels << ','
-           << params.m_sampleRate << ','
-           << params.m_bitsPerSample << ')');
-
     activeDirection = params.m_direction;
     m_deviceName = params.m_device;
 
@@ -683,8 +678,6 @@ public:
     if (!isRunning) {
       if (CHECK_ERROR(AudioOutputUnitStart,(m_audioUnit)))
         return false;
-      
-      SetWriteTimeout(m_timeout);
     }
 
     return PIndirectChannel::Write(buf, len);
@@ -767,7 +760,6 @@ public:
     if (CHECK_ERROR(AudioOutputUnitStart,(m_audioUnit)))
       return false;
 
-    SetReadTimeout(m_timeout);
     PTRACE(5, "Started recording");
     return true;
   }
@@ -775,11 +767,26 @@ public:
   
   virtual PBoolean SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
   {
-    if (IsOpen()) {
-      Close();
-      return InternalOpen();
-    }
-    
+    if (numChannels == GetChannels()&&
+        sampleRate == GetSampleRate() &&
+        bitsPerSample == GetSampleSize())
+      return true;
+
+    if (!PAssert(numChannels > 0 && sampleRate >= 8000 && bitsPerSample >= 8, PInvalidParameter))
+      return false;
+
+    bool notOpen = !IsOpen();
+
+    PTRACE(4, "SetFormat(" << numChannels << ',' << sampleRate << ',' << bitsPerSample << (notOpen ? ") closed" : ") open"));
+
+    Close();
+    InternalSetFormat(numChannels, sampleRate, bitsPerSample);
+    return notOpen || InternalOpen();
+  }
+  
+  
+  void InternalSetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
+  {
     memset(&m_dataFormat, 0, sizeof(m_dataFormat));
     
     m_dataFormat.mFormatID         = kAudioFormatLinearPCM;
@@ -790,8 +797,6 @@ public:
     m_dataFormat.mBytesPerFrame    = m_dataFormat.mChannelsPerFrame * (bitsPerSample+7)/8;
     m_dataFormat.mBytesPerPacket   = m_dataFormat.mBytesPerFrame * m_dataFormat.mFramesPerPacket;
     m_dataFormat.mFormatFlags      = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
-
-    return true;
   }
   
   
