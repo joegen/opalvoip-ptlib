@@ -36,8 +36,6 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 
   protected:
     int pxSignals;
-    void CreateConfigFilesDictionary();
-    PAbstractDictionary * configFiles;
     void DoArgs(void);
 
 #endif
