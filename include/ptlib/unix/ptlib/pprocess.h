@@ -58,9 +58,5 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
     uint32_t m_pxSignals;
 
-  protected:
-    void CreateConfigFilesDictionary();
-    PAbstractDictionary * configFiles;
-
 
 // End Of File ////////////////////////////////////////////////////////////////

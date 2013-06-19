@@ -579,19 +579,10 @@ void PProcess::CommonConstruct()
   // initialise the timezone information
   tzset();
 #endif
-
-#ifdef P_CONFIG_FILE
-  CreateConfigFilesDictionary();
-#endif
 }
 
 void PProcess::CommonDestruct()
 {
-#ifdef P_CONFIG_FILE
-  delete configFiles;
-#endif
-  configFiles = NULL;
-
   if (!m_library)
     SetSignals(NULL);
 

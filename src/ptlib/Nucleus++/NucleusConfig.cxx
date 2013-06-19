@@ -145,12 +145,6 @@ PXConfigDictionary * configDict;
 
 //////////////////////////////////////////////////////
 
-void PProcess::CreateConfigFilesDictionary()
-{
-  configFiles = new PXConfigDictionary(0);
-}
-
-
 PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
   : PThread(10000, AutoDeleteThread),
     stop(s)

@@ -141,12 +141,6 @@ typedef PSingleton<PXConfigDictionary, PAtomicInteger> PXConfigData;
 
 //////////////////////////////////////////////////////
 
-void PProcess::CreateConfigFilesDictionary()
-{
-  configFiles = new PXConfigDictionary;
-}
-
-
 PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
   : PThread(10000, NoAutoDeleteThread, NormalPriority, "PXConfigWriteThread"),
     stop(s)
