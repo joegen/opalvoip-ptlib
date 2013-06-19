@@ -482,8 +482,6 @@ PProcess::~PProcess()
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
 
-  delete configFiles;
-
   PostShutdown();
 }
 

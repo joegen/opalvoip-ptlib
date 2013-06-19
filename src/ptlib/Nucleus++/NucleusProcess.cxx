@@ -106,7 +106,6 @@ void PProcess::Construct()
 // PProcess::CommonConstruct!).
 
 // Normally in CommonConstruct
-  CreateConfigFilesDictionary();
 
 #pragma message("PProcess::Construct() looks a little light relative to the Unix version!")
   }
