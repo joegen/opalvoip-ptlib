@@ -803,7 +803,7 @@
 /* Begin PBXLegacyTarget section */
 		A32754331774659900936064 /* PTLib iOS */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "OS=$OS $(ACTION)";
+			buildArgumentsString = "$(ACTION)";
 			buildConfigurationList = A32754341774659900936064 /* Build configuration list for PBXLegacyTarget "PTLib iOS" */;
 			buildPhases = (
 			);
@@ -817,7 +817,7 @@
 		};
 		A3E5E1F517167F2D00DF539E /* PTLib */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "OS=$OS $(ACTION)";
+			buildArgumentsString = "$(ACTION)";
 			buildConfigurationList = A3E5E1F817167F2D00DF539E /* Build configuration list for PBXLegacyTarget "PTLib" */;
 			buildPhases = (
 			);
@@ -873,6 +873,7 @@
 				PRODUCT_NAME = "PTLib copy";
 				PTLIBDIR = $SOURCE_ROOT;
 				SDKROOT = iphoneos;
+				STATIC_BUILD = yes;
 				VERBOSE = 1;
 			};
 			name = Debug;
@@ -891,6 +892,7 @@
 				PRODUCT_NAME = "PTLib copy";
 				PTLIBDIR = $SOURCE_ROOT;
 				SDKROOT = iphoneos;
+				STATIC_BUILD = yes;
 				VERBOSE = 1;
 			};
 			name = Release;
