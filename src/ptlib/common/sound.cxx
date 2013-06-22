@@ -48,6 +48,13 @@ static const char soundPluginBaseClass[] = "PSoundChannel";
 static const PConstString NullAudio("Null Audio");
 
 
+void PSoundChannel::Params::SetBufferCountFromMS(unsigned milliseconds)
+{
+  unsigned msPerBuffer = m_bufferSize*1000/m_sampleRate*8/m_bitsPerSample;
+  m_bufferCount = (milliseconds+msPerBuffer-1)/msPerBuffer;
+}
+
+
 template <> PSoundChannel * PDevicePluginFactory<PSoundChannel>::Worker::Create(const PDefaultPFactoryKey & type) const
 {
   return PSoundChannel::CreateChannel(type);
