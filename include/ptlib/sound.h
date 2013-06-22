@@ -303,6 +303,8 @@ class PSoundChannel : public PIndirectChannel
                                        written in one go. */
       unsigned   m_bufferCount;   ///< Number of buffers to queue.
       PPluginManager * m_pluginMgr;
+      
+      void SetBufferCountFromMS(unsigned milliseconds);
     };
 
     /** Create a sound channel.
