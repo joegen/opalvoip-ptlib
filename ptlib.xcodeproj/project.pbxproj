@@ -801,9 +801,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
+		A32754331774659900936064 /* PTLib iOS */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "OS=$OS $(ACTION)";
+			buildConfigurationList = A32754341774659900936064 /* Build configuration list for PBXLegacyTarget "PTLib iOS" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "";
+			dependencies = (
+			);
+			name = "PTLib iOS";
+			passBuildSettingsInEnvironment = 1;
+			productName = PTLib;
+		};
 		A3E5E1F517167F2D00DF539E /* PTLib */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
+			buildArgumentsString = "OS=$OS $(ACTION)";
 			buildConfigurationList = A3E5E1F817167F2D00DF539E /* Build configuration list for PBXLegacyTarget "PTLib" */;
 			buildPhases = (
 			);
@@ -836,11 +850,51 @@
 			projectRoot = "";
 			targets = (
 				A3E5E1F517167F2D00DF539E /* PTLib */,
+				A32754331774659900936064 /* PTLib iOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin XCBuildConfiguration section */
+		A32754351774659900936064 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUGGING_SYMBOLS = YES;
+				DEBUG_BUILD = yes;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HAS_SAMPLES = 0;
+				OS = "";
+				"OS[sdk=iphoneos*]" = iPhoneOS;
+				"OS[sdk=iphonesimulator*]" = iPhoneSimulator;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PATH = "$PATH:/opt/local/bin";
+				PRODUCT_NAME = "PTLib copy";
+				PTLIBDIR = $SOURCE_ROOT;
+				SDKROOT = iphoneos;
+				VERBOSE = 1;
+			};
+			name = Debug;
+		};
+		A32754361774659900936064 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_BUILD = no;
+				HAS_SAMPLES = 0;
+				OS = "";
+				"OS[sdk=iphoneos*]" = iPhoneOS;
+				"OS[sdk=iphonesimulator*]" = iPhoneSimulator;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PATH = "$PATH:/opt/local/bin";
+				PRODUCT_NAME = "PTLib copy";
+				PTLIBDIR = $SOURCE_ROOT;
+				SDKROOT = iphoneos;
+				VERBOSE = 1;
+			};
+			name = Release;
+		};
 		A3E5E1F617167F2D00DF539E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -906,6 +960,9 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HAS_SAMPLES = 0;
+				OS = "";
+				"OS[sdk=iphoneos*]" = iPhoneOS;
+				"OS[sdk=iphonesimulator*]" = iPhoneSimulator;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PATH = "$PATH:/opt/local/bin";
@@ -920,6 +977,9 @@
 			buildSettings = {
 				DEBUG_BUILD = no;
 				HAS_SAMPLES = 0;
+				OS = "";
+				"OS[sdk=iphoneos*]" = iPhoneOS;
+				"OS[sdk=iphonesimulator*]" = iPhoneSimulator;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PATH = "$PATH:/opt/local/bin";
@@ -932,6 +992,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A32754341774659900936064 /* Build configuration list for PBXLegacyTarget "PTLib iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A32754351774659900936064 /* Debug */,
+				A32754361774659900936064 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A3E5E1F417167F2D00DF539E /* Build configuration list for PBXProject "ptlib" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
