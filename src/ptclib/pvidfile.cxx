@@ -273,7 +273,10 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 #endif
 
 #include <ptlib/vconvert.h>
-#include <jpeglib.h>
+
+extern"C" {
+  #include <jpeglib.h>
+};
 
 
 PFACTORY_CREATE(PFactory<PVideoFile>, PJPEGFile, "jpg", false);
