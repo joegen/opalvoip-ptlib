@@ -188,6 +188,7 @@ class PVideoInputDevice_Mac : public PVideoInputDevice
     PVideoInputDevice_MacFrame * m_captureFrame;
   
     PINDEX m_frameSizeBytes;
+    PMutex m_mutex;
 };
 
 PCREATE_VIDINPUT_PLUGIN(Mac);
@@ -304,7 +305,9 @@ PBoolean PVideoInputDevice_Mac::Close()
   PTRACE_IF(4, IsOpen(), "MacVideo", "Closing \"" << deviceName << '"');
   
   Stop();
-  
+
+  m_mutex.Wait();
+
   if (m_device != nil && [m_device isOpen])
     [m_device close];
 
@@ -329,7 +332,9 @@ PBoolean PVideoInputDevice_Mac::Close()
     [m_device release];
     m_device = nil;
   }
-  
+
+  m_mutex.Signal();
+
   return true;
 }
 
@@ -482,7 +487,9 @@ PBoolean PVideoInputDevice_Mac::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * by
   
   if (!IsCapturing())
     return false;
-  
+
+  PWaitAndSignal mutex(m_mutex);
+
   [m_captureFrame grabFrame:destFrame withWidth:frameWidth andHeight:frameHeight];
   if (converter != NULL) {
     if (!converter->Convert(destFrame, destFrame, bytesReturned))
