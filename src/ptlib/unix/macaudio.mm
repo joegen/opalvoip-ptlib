@@ -627,6 +627,11 @@ public:
 
     os_handle = -1;
 
+    // Break any read/write block
+    m_queue.Close();
+    
+    channelPointerMutex.StartWrite();
+    
     if (m_audioUnit != NULL) {
       CHECK_SUCCESS(AudioComponentInstanceDispose,(m_audioUnit));
       m_audioUnit = NULL;
@@ -638,9 +643,8 @@ public:
       m_resampler = NULL;
     }
 #endif
-    
-    // Break any read/write block
-    m_queue.Close();
+
+    channelPointerMutex.EndWrite();
     return true;
   }
   
@@ -667,6 +671,8 @@ public:
     if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
       return false;
 
+    PReadWaitAndSignal mutex(channelPointerMutex);
+    
     UInt32 isRunning;
     UInt32 size = sizeof(isRunning);
     if (CHECK_ERROR_AudioUnitGetProperty(m_audioUnit,
@@ -708,6 +714,8 @@ public:
     if (!PAssert(activeDirection == Recorder, "Trying to read from player"))
       return false;
     
+    PReadWaitAndSignal mutex(channelPointerMutex);
+    
     if (!StartRecording())
       return false;
 
@@ -739,6 +747,8 @@ public:
     if (!IsOpen() || !PAssert(activeDirection == Recorder, "Trying to start recording from player"))
       return false;
 
+    PReadWaitAndSignal mutex(channelPointerMutex);
+    
     UInt32 isRunning;
     UInt32 size = sizeof(isRunning);
     if (CHECK_ERROR_AudioUnitGetProperty(m_audioUnit,
