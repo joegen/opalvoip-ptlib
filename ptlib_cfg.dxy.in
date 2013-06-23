@@ -1268,7 +1268,7 @@ PREDEFINED             = DOCPLUSLUS \
                          DOC_PLUS_PLUS \
                          P_AUDIO P_DNS_RESOLVER P_DTMF P_EXPAT P_FTP P_HTTP P_JABBER \
                          P_LDAP P_ODBC P_QOS P_SNMP P_SOAP P_STUN P_URL P_VIDEO \
-                         P_VXML P_XMLRPC P_CONFIG_FILE P_SASL2 P_HTTPFORMS \
+                         P_VXML P_XMLRPC P_CONFIG_FILE P_SASL P_HTTPFORMS \
                          PMEMORY_CHECK
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
