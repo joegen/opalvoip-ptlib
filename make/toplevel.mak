@@ -164,7 +164,7 @@ DIST_CLEAN_FILES   += $(PTLIB_TOP_LEVEL_DIR)/include/ptlib_config.h $(PTLIB_TOP_
 
 ###############################################################################
 
-ifeq ($(HAS_SASL2),1)
+ifeq ($(HAS_SASL)$(HAS_SASL2),1)
   SOURCES += $(COMPONENT_SRC_DIR)/psasl.cxx 
 endif
 
@@ -257,7 +257,7 @@ ifeq ($(HAS_EXPAT),1)
     SOURCES += $(COMPONENT_SRC_DIR)/vxml.cxx 
   endif
 
-  ifeq ($(HAS_SASL2),1)
+  ifeq ($(HAS_SASL)$(HAS_SASL2),1)
     SOURCES += $(COMPONENT_SRC_DIR)/xmpp.cxx \
                $(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
                $(COMPONENT_SRC_DIR)/xmpp_muc.cxx \
