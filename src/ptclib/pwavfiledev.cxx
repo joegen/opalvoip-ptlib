@@ -284,6 +284,12 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
     if (!ReadSamples(data, size))
       return false;
     lastReadCount = m_WAVFile.GetLastReadCount();
+    PINDEX pad = ((lastReadCount+m_bufferSize-1)/m_bufferSize)*m_bufferSize - lastReadCount;
+    if (lastReadCount+pad > size)
+      pad = size - lastReadCount;
+    PTRACE(6, "WAVFileDev", "Direct read of " << lastReadCount << " bytes, pad=" << pad << ", pos=" << m_WAVFile.GetPosition());
+    memset((char *)data+lastReadCount, 0, pad);
+    lastReadCount += pad;
   }
 
   m_Pacing.Delay(lastReadCount*8/m_WAVFile.GetSampleSize()*1000/m_sampleRate);
@@ -310,9 +316,17 @@ bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
   if (m_WAVFile.Read(data, size))
     return true;
 
-  if (!m_autoRepeat)
+  if (m_WAVFile.GetErrorCode(LastReadError) != NoError) {
+    PTRACE(2, "WAVFileDev", "Error reading file: " << m_WAVFile.GetErrorText(LastReadError));
     return false;
+  }
 
+  if (!m_autoRepeat) {
+    PTRACE(3, "WAVFileDev", "End of file, stopping");
+    return false;
+  }
+
+  PTRACE(4, "WAVFileDev", "End of file, repeating");
   m_WAVFile.SetPosition(0);
   return m_WAVFile.Read(data, size);
 }
