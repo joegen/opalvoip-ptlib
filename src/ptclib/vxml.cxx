@@ -1297,6 +1297,8 @@ bool PVXMLSession::ProcessGrammar()
     return true;
   }
 
+  m_grammar->SetSessionTimeout();
+
   switch (m_grammar->GetState()) {
     case PVXMLGrammar::Idle :
       m_grammar->Start();
@@ -2306,9 +2308,15 @@ PVXMLGrammar::PVXMLGrammar(PVXMLSession & session, PXMLElement & field)
   : m_session(session)
   , m_field(field)
   , m_state(Idle)
-  , m_timeout(PVXMLSession::StringToTime(session.GetVar("property.timeout"), 10000))
 {
   m_timer.SetNotifier(PCREATE_NOTIFIER(OnTimeout));
+  SetSessionTimeout();
+}
+
+
+void PVXMLGrammar::SetSessionTimeout()
+{
+  SetTimeout(PVXMLSession::StringToTime(m_session.GetVar("property.timeout"), 10000));
 }
 
 
