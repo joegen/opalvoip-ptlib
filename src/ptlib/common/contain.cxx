@@ -3217,15 +3217,24 @@ int PReadEnum(std::istream & strm, int begin, int end, char const * const * name
   if (strm.fail() || strm.bad())
     return end;
 
+  size_t len = strlen(name);
+  int match = end;
   for (int value = begin; value < end; ++value) {
-    if (strcmp(name, names[value-begin]) == 0)
-      return value;
+    if (strncmp(name, names[value-begin], len) == 0) {
+      if (match < end) {
+        match = end; // Not unique for the length
+        break;
+      }
+      match = value;
+    }
   }
 
-  size_t i = strlen(name);
+  if (match < end)
+    return match;
+
   do {
-    strm.putback(name[--i]);
-  } while (i > 0);
+    strm.putback(name[--len]);
+  } while (len > 0);
 
   strm.clear();
   strm.setstate(ios::failbit);
