@@ -362,7 +362,7 @@ bool PXML::LoadFile(const PFilePath & fn, PXMLParser::Options options)
     return false;
   }
 
-  return Load(data);
+  return Load(data, options);
 }
 
 
@@ -1128,28 +1128,31 @@ bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessSt
   return false;
 }
 
-PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name_) const
+PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name) const
 {
-  PCaselessString name(name_);
-  PCaselessString newPrefix;
-  PINDEX pos;
-  if ((pos = name.FindLast(':')) == P_MAX_INDEX) {
-    if (GetDefaultNamespace(newPrefix))
-      name = newPrefix + "|" + name.Right(pos);
+  if (name.Find('|') == P_MAX_INDEX) {
+    PCaselessString newPrefix;
+    PINDEX pos = name.FindLast(':');
+    if (pos == P_MAX_INDEX) {
+      if (GetDefaultNamespace(newPrefix))
+        return newPrefix + '|' + name;
+    }
+    else {
+      if (GetNamespace(name.Left(pos), newPrefix))
+        return newPrefix + '|' + name.Mid(pos+1);
+    }
   }
-  else if (GetNamespace(name.Left(pos), newPrefix))
-    name = newPrefix + "|" + name.Right(pos);
 
   return name;
 }
 
-PXMLElement * PXMLElement::GetElement(const PCaselessString & name_, const PCaselessString & attr, const PString & attrval) const
+PXMLElement * PXMLElement::GetElement(const PCaselessString & nameToFind, const PCaselessString & attr, const PString & attrval) const
 {
-  PCaselessString name(PrependNamespace(name_));
+  PCaselessString nameWithNS(PrependNamespace(nameToFind));
   for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
     if (subObjects[i].IsElement()) {
       PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
-      if (name == subElement.GetName() && attrval == subElement.GetAttribute(attr))
+      if (nameWithNS == subElement.GetName() && attrval == subElement.GetAttribute(attr))
         return &subElement;
     }
   }
@@ -1157,13 +1160,13 @@ PXMLElement * PXMLElement::GetElement(const PCaselessString & name_, const PCase
 }
 
 
-PXMLElement * PXMLElement::GetElement(const PCaselessString & name_, PINDEX index) const
+PXMLElement * PXMLElement::GetElement(const PCaselessString & nameToFind, PINDEX index) const
 {
-  PCaselessString name(PrependNamespace(name_));
+  PCaselessString nameWithNS(PrependNamespace(nameToFind));
   for (PINDEX i = 0; i < subObjects.GetSize(); i++) {
     if (subObjects[i].IsElement()) {
       PXMLElement & subElement = ((PXMLElement &)subObjects[i]);
-      if (name == subElement.GetName()) {
+      if (nameWithNS == subElement.GetName()) {
         if (index == 0)
           return &subElement;
         --index;
