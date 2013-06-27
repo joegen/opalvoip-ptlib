@@ -190,7 +190,10 @@ class PAtomicInteger : PAtomicBase
     __inline bool IsZero() const { return m_value == 0; }
 
     /// Test if atomic integer has a non-zero value.
-    __inline bool operator!() const { return m_value != 0; }
+    __inline operator bool() const { return m_value != 0; }
+
+    /// Test if atomic integer has a zero value.
+    __inline bool operator!() const { return m_value == 0; }
 
     friend __inline ostream & operator<<(ostream & strm, const PAtomicInteger & i)
     {
