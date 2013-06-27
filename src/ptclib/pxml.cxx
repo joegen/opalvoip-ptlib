@@ -1273,17 +1273,20 @@ bool PXMLElement::GetURIForNamespace(const PCaselessString & prefix, PCaselessSt
 }
 
 
-PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name_) const
+PCaselessString PXMLElement::PrependNamespace(const PCaselessString & name) const
 {
-  PCaselessString name(name_);
-  PCaselessString newPrefix;
-  PINDEX pos;
-  if ((pos = name.FindLast(':')) == P_MAX_INDEX) {
-    if (GetDefaultNamespace(newPrefix))
-      name = newPrefix + "|" + name.Right(pos);
+  if (name.Find('|') == P_MAX_INDEX) {
+    PCaselessString newPrefix;
+    PINDEX pos = name.FindLast(':');
+    if (pos == P_MAX_INDEX) {
+      if (GetDefaultNamespace(newPrefix))
+        return newPrefix + '|' + name;
+    }
+    else {
+      if (GetNamespace(name.Left(pos), newPrefix))
+        return newPrefix + '|' + name.Mid(pos+1);
+    }
   }
-  else if (GetNamespace(name.Left(pos), newPrefix))
-    name = newPrefix + "|" + name.Right(pos);
 
   return name;
 }
