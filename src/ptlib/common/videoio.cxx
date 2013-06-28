@@ -442,8 +442,10 @@ static struct {
     { "HD480",  PVideoDevice::HD480Width, PVideoDevice::HD480Height },
     { "HDTVP",  PVideoDevice::HD720Width, PVideoDevice::HD720Height },
     { "HD720",  PVideoDevice::HD720Width, PVideoDevice::HD720Height },
+    { "720p",   PVideoDevice::HD720Width, PVideoDevice::HD720Height },
     { "HDTVI",  PVideoDevice::HD1080Width,PVideoDevice::HD1080Height},
     { "HD1080", PVideoDevice::HD1080Width,PVideoDevice::HD1080Height},
+    { "1080p",  PVideoDevice::HD1080Width,PVideoDevice::HD1080Height},
 
     { "CGA",    320,                      240                       },
     { "VGA",    640,                      480                       },

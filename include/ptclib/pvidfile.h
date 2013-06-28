@@ -101,6 +101,7 @@ class PVideoFile : public PVideoFrameInfo
     bool   m_fixedFrameRate;
     PINDEX m_frameBytes;
     off_t  m_headerOffset;
+    off_t  m_frameHeaderLen;
     PFile  m_file;
 };
 
@@ -121,13 +122,11 @@ class PYUVFile : public PVideoFile
       PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
 
-    virtual PBoolean SetPosition(off_t pos, PFile::FilePositionOrigin origin);
     virtual PBoolean WriteFrame(const void * frame);
     virtual PBoolean ReadFrame(void * frame);
 
   protected:
     bool m_y4mMode; 
-    int  m_currPos;
 };
 
 PFACTORY_LOAD(PYUVFile);
