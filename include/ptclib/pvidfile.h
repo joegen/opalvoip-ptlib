@@ -99,6 +99,7 @@ class PVideoFile : public PVideoFrameInfo
     bool   m_fixedFrameRate;
     PINDEX m_frameBytes;
     off_t  m_headerOffset;
+    off_t  m_frameHeaderLen;
     PFile  m_file;
 };
 
