@@ -618,22 +618,14 @@
 #endif
 
 #if defined(_MSC_VER) && P_SDL
-  #if P_SDL==1
-    #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/inc>)
-  #else
-    #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/SDL/inc>)
-  #endif
+  #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/inc>)
   #pragma P_SDL_INCLUDE(SDL.h)
   #pragma P_SDL_INCLUDE(SDL_main.h)
 
-  #undef P_SDL_LIBRARY
-
-  #ifndef P_SDL_LIBRARY
-    #ifdef _DEBUG
-      #define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Debug/SDL.lib"
-    #else
-      #define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Release/SDL.lib"
-    #endif
+  #ifdef P_64BIT
+    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x64/SDL.lib"
+  #else
+    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x86/SDL.lib"
   #endif
 
 #endif
