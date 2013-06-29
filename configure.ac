@@ -1768,10 +1768,9 @@ dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
 
 dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
-dnl MSWIN_CHECK_FILE libsdl,include\SDL.h,P_SDL_WIN32=1
-dnl MSWIN_CHECK_FILE libsdl,include\SDL\SDL.h,P_SDL_WIN32=2
+dnl MSWIN_CHECK_FILE libsdl,lib\x86\SDL.lib,P_SDL_WIN32=1
+dnl MSWIN_CHECK_FILE libsdl,lib\x64\SDL.lib,P_SDL_WIN64=1
 dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
-dnl MSWIN_FIND_FILE  libsdl,P_SDL_LIBRARY,SDL.lib,lib
 dnl MSWIN_CHECK_DIR  libsdl,..\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl*
 dnl MSWIN_CHECK_DIR  libsdl,\sdl\
@@ -1802,8 +1801,9 @@ dnl check for GStreamer library
 dnl MSWIN_DISPLAY    gstreamer,GStreamer (OSSBuild)
 dnl MSWIN_CHECK_FILE gstreamer,include\gstreamer-0.10\gst\gst.h,P_GSTREAMER_WIN32=1
 dnl MSWIN_DIR_SYMBOL gstreamer,GSTREAMER_DIR
-dnl MSWIN_CHECK_DIR  gstreamer,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
-dnl MSWIN_CHECK_DIR  gstreamer,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
+dnl MSWIN_CHECK_DIR  gstreamer,\gstreamer-sdk\0.10\x86
+dnl MSWIN_CHECK_DIR  gstreamer,%ProgramFiles%\gstreamer-sdk\0.10\x86
+dnl MSWIN_CHECK_DIR  gstreamer,%ProgramW6432%\gstreamer-sdk\0.10\x86
 
 PTLIB_MODULE_OPTION(
    [GSTREAMER], 
