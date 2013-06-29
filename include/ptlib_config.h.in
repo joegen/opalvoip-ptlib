@@ -744,22 +744,14 @@
 #endif
 
 #if defined(_MSC_VER) && P_SDL
-  #if P_SDL==1
-    #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/inc>)
-  #else
-    #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/SDL/inc>)
-  #endif
+  #define P_SDL_INCLUDE(inc) include_alias(<inc>, <@SDL_DIR@/include/inc>)
   #pragma P_SDL_INCLUDE(SDL.h)
   #pragma P_SDL_INCLUDE(SDL_main.h)
 
-  #undef P_SDL_LIBRARY
-
-  #ifndef P_SDL_LIBRARY
-    #ifdef _DEBUG
-      #define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Debug/SDL.lib"
-    #else
-      #define P_SDL_LIBRARY "@SDL_DIR@/VisualC/SDL/Release/SDL.lib"
-    #endif
+  #ifdef P_64BIT
+    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x64/SDL.lib"
+  #else
+    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x86/SDL.lib"
   #endif
 
 #endif
@@ -892,12 +884,14 @@
   #pragma P_GSTREAMER_INCLUDE(gst/glib-compat.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstenumtypes.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstversion.h)
+  #pragma P_GSTREAMER_INCLUDE(gst/gstatomicqueue.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstbin.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstbuffer.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstbufferlist.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstcaps.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstchildproxy.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstclock.h)
+  #pragma P_GSTREAMER_INCLUDE(gst/gstdatetime.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstdebugutils.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gstelement.h)
   #pragma P_GSTREAMER_INCLUDE(gst/gsterror.h)
@@ -953,7 +947,6 @@
   #define P_GLIB_INCLUDE(inc) include_alias(<inc>, <@GSTREAMER_DIR@/include/glib-2.0/inc>)
   #pragma P_GLIB_INCLUDE(glib.h)
   #pragma P_GLIB_INCLUDE(gmodule.h)
-  #pragma P_GLIB_INCLUDE(glibconfig.h)
   #pragma P_GLIB_INCLUDE(glib-object.h)
   #pragma P_GLIB_INCLUDE(glib/galloca.h)
   #pragma P_GLIB_INCLUDE(glib/garray.h)
@@ -1015,6 +1008,24 @@
   #pragma P_GLIB_INCLUDE(glib/gvarianttype.h)
   #pragma P_GLIB_INCLUDE(glib/gvariant.h)
   #pragma P_GLIB_INCLUDE(glib/gwin32.h)
+  #pragma P_GLIB_INCLUDE(glib/gversionmacros.h)
+  #pragma P_GLIB_INCLUDE(glib/gbytes.h)
+  #pragma P_GLIB_INCLUDE(glib/gcharset.h)
+  #pragma P_GLIB_INCLUDE(glib/gdatetime.h)
+  #pragma P_GLIB_INCLUDE(glib/gtimezone.h)
+  #pragma P_GLIB_INCLUDE(glib/genviron.h)
+  #pragma P_GLIB_INCLUDE(glib/ggettext.h)
+  #pragma P_GLIB_INCLUDE(glib/ghmac.h)
+  #pragma P_GLIB_INCLUDE(glib/gstringchunk.h)
+  #pragma P_GLIB_INCLUDE(glib/gtrashstack.h)
+  #pragma P_GLIB_INCLUDE(glib/gversion.h)
+  #pragma P_GLIB_INCLUDE(glib/deprecated/gallocator.h)
+  #pragma P_GLIB_INCLUDE(glib/deprecated/gcache.h)
+  #pragma P_GLIB_INCLUDE(glib/deprecated/gcompletion.h)
+  #pragma P_GLIB_INCLUDE(glib/deprecated/gmain.h)
+  #pragma P_GLIB_INCLUDE(glib/deprecated/grel.h)
+  #pragma P_GLIB_INCLUDE(glib/deprecated/gthread.h)
+  #pragma P_GLIB_INCLUDE(gobject/gbinding.h)
   #pragma P_GLIB_INCLUDE(gobject/gboxed.h)
   #pragma P_GLIB_INCLUDE(gobject/genums.h)
   #pragma P_GLIB_INCLUDE(gobject/gobject.h)
@@ -1030,7 +1041,10 @@
   #pragma P_GLIB_INCLUDE(gobject/gvaluetypes.h)
   #pragma P_GLIB_INCLUDE(gobject/gclosure.h)
   #pragma P_GLIB_INCLUDE(gobject/gmarshal.h)
-
+  #pragma P_GLIB_INCLUDE(gobject/glib-types.h)
+  
+  #pragma include_alias(<glibconfig.h>, <@GSTREAMER_DIR@/lib/glib-2.0/include/glibconfig.h>)
+  
   #define P_LIBXML_INCLUDE(inc) include_alias(<inc>, <@GSTREAMER_DIR@/include/libxml2/inc>)
   #pragma P_LIBXML_INCLUDE(libxml/parser.h)
   #pragma P_LIBXML_INCLUDE(libxml/xmlversion.h)
