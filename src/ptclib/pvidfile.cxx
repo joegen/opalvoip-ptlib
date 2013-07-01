@@ -303,7 +303,6 @@ PBoolean PYUVFile::ReadFrame(void * frame)
       return false;
     }
     PTRACE(6, "y4m \"" << info << '"');
-    PTRACE(4, "VidFile\ty4m frame \"" << info << '"');
   }
 
   return PVideoFile::ReadFrame(frame);
