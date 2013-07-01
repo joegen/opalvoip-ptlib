@@ -81,7 +81,7 @@ void PTimerTest::Main()
 #if PTRACING
              "o-output:"
              "t-trace."
-#endif	     
+#endif
              "v-version."
   );
 #if PTRACING
@@ -132,6 +132,7 @@ void PTimerTest::Main()
   OneShotStopOnTimeoutTest();
   ContinuousStopOnTimeoutTest();
   OneShotToContinuousSwitchTest();
+  ContinuousRestartInTimeout();
 
   if (args.HasOption("z"))
     LongOnTimeoutTest();
@@ -191,7 +192,7 @@ public:
 protected:
   virtual void OnTimeout()
   {
-    Sleep(5000);
+    PThread::Sleep(5000);
     if (TestTimer::destroyed)
     {
       cerr << "Destroyed timer while timeout is running" << endl;
@@ -204,9 +205,9 @@ bool TestTimer::destroyed = false;
 void PTimerTest::DestroyWhenTimeoutCheck()
 {
   TestTimer* t = new TestTimer();
-  Sleep(1500);
+  PThread::Sleep(1500);
   delete t;
-  Sleep(5000);
+  PThread::Sleep(5000);
 }
 
 class TestTimer1
@@ -230,7 +231,7 @@ void PTimerTest::OneShotStopOnTimeoutTest()
   TestTimer1 t;
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
-  Sleep(2000);
+  PThread::Sleep(2000);
   if (t.IsRunning())
     cerr << "Error!!! IsRunning() must be false" << endl;
 }
@@ -257,7 +258,7 @@ void PTimerTest::ContinuousStopOnTimeoutTest()
   TestTimer2 t;
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
-  Sleep(4000);
+  PThread::Sleep(4000);
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
 }
@@ -304,6 +305,65 @@ void PTimerTest::OneShotToContinuousSwitchTest()
   sync.Wait();
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
+}
+
+class TestTimer4
+  : public PTimer
+{
+  PSyncPoint& m_sync;
+  int m_shots;
+public:
+  TestTimer4(PSyncPoint& sync, int shots)
+    : PTimer()
+    , m_sync(sync)
+    , m_shots(shots)
+  {
+  }
+
+  int GetShots() const
+  {
+    return m_shots;
+  }
+
+protected:
+  virtual void OnTimeout()
+  {
+    m_sync.Signal();
+    if (m_shots == 0)
+    {
+      cerr << "Error! Unexpected call to OnTimeout()!" << endl;
+    }
+    else if (m_shots > 0)
+    {
+      if (!IsRunning())
+      {
+        cerr << "Error! Timer should be running here!" << endl;
+      }
+      RunContinuous(50);
+      --m_shots;
+    }
+  }
+};
+
+void PTimerTest::ContinuousRestartInTimeout()
+{
+  static const int shotsCount = 20;
+
+  PSyncPoint sync;
+  TestTimer4 t(sync, shotsCount);
+  for (int i = 0; i < shotsCount; ++i)
+  {
+    t.RunContinuous(50);
+    sync.Wait();
+  }
+  t.Stop();
+  if (t.IsRunning())
+  {
+    cerr << "Error! Timer should be stopped here!" << endl;
+  }
+  PThread::Sleep(1000);
+  if (t.GetShots() != 0)
+    cerr << "Error! Shots count must be 0!" << endl;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -447,7 +507,7 @@ public:
         s_timers[index].first.RunContinuous(randomTime(5));
       }
       s_timers[index].second.Signal();
-      Sleep(randomTime(3));
+      PThread::Sleep(randomTime(3));
     }
     --m_counter;
   }
@@ -470,7 +530,7 @@ void PTimerTest::StressTest()
   }
 
   while (TimerTestThread::m_counter > 0)
-    Sleep(1000);
+    PThread::Sleep(1000);
 
   threads.clear();
   TimerTestThread::s_timers.clear();
@@ -701,7 +761,7 @@ void PTimerTest::PullCheck()
   cout << "Starting 5 second timer for poll check..." << endl;
   PTimer timer(5000);
   while (timer.IsRunning())
-    Sleep(25);
+    PThread::Sleep(25);
   PInt64 duration = (PTime() - then).GetMilliSeconds();
   if (duration < 5000)
     cout << "Too fast - duration = " << duration << " ms" << endl;
