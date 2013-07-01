@@ -159,10 +159,6 @@ class PAtomicBase
   public:
     /// Destroy the atomic integer
     ~PAtomicBase();
-
-    /// Test if atomic integer has a zero value.
-    __inline bool operator!() const { return m_value == 0; }
-
 };
 
 
@@ -210,6 +206,9 @@ class PAtomicInteger : PAtomicBase
        @return true if the integer has a value of zero.
       */
     __inline bool IsZero() const { return m_value == 0; }
+
+    /// Test if atomic integer has a zero value.
+    __inline bool operator!() const { return m_value == 0; }
 
     /**
       * atomically pre-increment the integer value
@@ -263,6 +262,9 @@ class PAtomicBoolean : PAtomicBase
 
     /// Assign a value to the atomic boolean
     __inline PAtomicBoolean & operator=(bool value) { m_value = value ? 1 : 0; return *this; }
+
+    /// Test if atomic integer has a zero value.
+    __inline bool operator!() const { return m_value == 0; }
 
     /** Test Set the value of the atomic boolean.
         @Returns the previous value.
