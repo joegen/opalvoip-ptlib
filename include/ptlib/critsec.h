@@ -159,6 +159,10 @@ class PAtomicBase
   public:
     /// Destroy the atomic integer
     ~PAtomicBase();
+
+    /// Test if atomic integer has a zero value.
+    __inline bool operator!() const { return m_value == 0; }
+
 };
 
 
@@ -207,14 +211,6 @@ class PAtomicInteger : PAtomicBase
       */
     __inline bool IsZero() const { return m_value == 0; }
 
-    /// Test if atomic integer has a zero value.
-    __inline bool operator!() const { return m_value == 0; }
-
-    friend __inline ostream & operator<<(ostream & strm, const PAtomicInteger & i)
-    {
-      return strm << i.m_value;
-    }
-
     /**
       * atomically pre-increment the integer value
       *
@@ -242,6 +238,12 @@ class PAtomicInteger : PAtomicBase
       * @return Returns the value of the integer before the decrement
       */
     IntegerType operator--(int);
+
+
+    friend __inline ostream & operator<<(ostream & strm, const PAtomicInteger & i)
+    {
+      return strm << i.m_value;
+    }
 };
 
 
@@ -259,9 +261,6 @@ class PAtomicBoolean : PAtomicBase
     /// @return Returns the value of the atomic boolean
     __inline operator bool() const { return m_value != 0; }
 
-    /// Test if atomic integer has a non-zero value.
-    __inline bool operator!() const { return m_value != 0; }
-
     /// Assign a value to the atomic boolean
     __inline PAtomicBoolean & operator=(bool value) { m_value = value ? 1 : 0; return *this; }
 
@@ -271,6 +270,7 @@ class PAtomicBoolean : PAtomicBase
     bool TestAndSet(
       bool value  ///< value to set
     );
+
 
     friend __inline ostream & operator<<(ostream & strm, const PAtomicBoolean & b)
     {
