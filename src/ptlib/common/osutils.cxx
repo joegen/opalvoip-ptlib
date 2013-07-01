@@ -940,7 +940,7 @@ PTimeInterval PSimpleTimer::GetRemaining() const
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-PIdGenerator PTimer::Guard::Data::s_handleGenerator;
+PIdGenerator PTimer::Guard::s_handleGenerator;
 
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : m_resetTime(millisecs, seconds, minutes, hours, days)
@@ -984,10 +984,20 @@ PInt64 PTimer::GetMilliSeconds() const
 }
 
 
+PBoolean PTimer::IsRunning() const
+{
+  Guard::Ptr guard = m_guard;
+  if (!guard.IsNULL())
+    return guard->IsValid();
+  return false;
+}
+
+
 PTimer::~PTimer()
 {
   Stop();
-  PAssert(!m_guard.InTimeout(), "Timer is destroying from OnTimeout!");
+  Guard::Ptr guard = m_guard;
+  PAssert((guard.IsNULL() || !guard->IsInvoking()), "Timer is destroying from OnTimeout!");
 }
 
 
@@ -1027,13 +1037,13 @@ void PTimer::Stop(bool /* wait */)
 {
   // New implementation doesn't need sync mode any more, because implementation guarantees that
   // OnTimeout will never be called after Stop() is finished.
-  m_guard.Stop();
-  if (!TimerList().IsTimerThread())
-  {
-    Guard tempGuard = m_guard; // Prevent guard destruction
-    m_guard.Reset(); // Free guard for current PTimer instance
-    if (tempGuard)
-      tempGuard.WaitAndReset();
+  Guard::Ptr guard = m_guard;
+  if (!guard.IsNULL()) {
+    guard->Stop();
+    if (!TimerList().IsTimerThread()) {
+      guard->WaitForInvokeFinished();
+      m_guard = NULL;
+    }
   }
 }
 
@@ -1083,8 +1093,10 @@ void PTimer::List::ProcessInsertion()
   {
     EventsForInsertion::iterator it = m_eventsForInsertion.begin();
     PIdGenerator::Handle handle = it->emitter->GetHandle();
-    m_events[handle] = it->emitter;
-    m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + it->msecs, handle));
+    if (handle != PIdGenerator::Invalid) {
+      m_events[handle] = it->emitter;
+      m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + it->msecs, handle));
+    }
     m_eventsForInsertion.erase(it);
   }
 }

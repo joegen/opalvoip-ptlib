@@ -201,6 +201,7 @@ class PTimerTest : public PProcess
     void OneShotStopOnTimeoutTest();
     void ContinuousStopOnTimeoutTest();
     void OneShotToContinuousSwitchTest();
+    void ContinuousRestartInTimeout();
 
   /**First internal timer that we manage */
   PTimer firstTimer;
