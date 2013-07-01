@@ -373,166 +373,95 @@ class PTimer : public PTimeInterval
   //@}
 
 
-    class Guard
+    class Guard : public PSmartObject
     {
-      class Data : public PSmartObject
+      PAtomicInteger       m_invokeState;
+      PAtomicBoolean       m_stopped;
+      PIdGenerator::Handle m_handle;
+      static PIdGenerator  s_handleGenerator;
+
+      void AddRef()
       {
-        PAtomicInteger       m_invokeState;
-        PAtomicBoolean       m_stopped;
-        PIdGenerator::Handle m_handle;
-        static PIdGenerator  s_handleGenerator;
+        ++m_invokeState;
+      }
 
-      public:
-        Data()
-          : m_invokeState(0)
-          , m_stopped(false)
-          , m_handle(s_handleGenerator.Create())
-        {
-        }
-
-        ~Data()
-        {
-          ResetHandle();
-        }
-
-        /* It's valid only if PTimer and PTimer::Emitter objects own the same PTimer::Guard object.
-        */
-        bool IsValid() const
-        {
-          return (2 <= referenceCount);
-        }
-
-        void AddRef()
-        {
-          ++m_invokeState;
-        }
-
-        void ReleaseRef()
-        {
-          --m_invokeState;
-        }
-
-        void WaitForInvokeFinished() const
-        {
-          while (!m_invokeState.IsZero())
-            PThread::Sleep(25);
-        }
-
-        bool IsInvoking() const
-        {
-          return (!m_invokeState.IsZero());
-        }
-
-        PIdGenerator::Handle GetHandle() const
-        {
-          // If timer has been stopped then handle is invalid
-          if (m_stopped)
-            return PIdGenerator::Invalid;
-          return m_handle;
-        }
-
-        void ResetHandle()
-        {
-          PIdGenerator::Handle current = m_handle;
-          m_handle = PIdGenerator::Invalid;
-          s_handleGenerator.Release(current);
-        }
-
-        void Stop()
-        {
-          m_stopped = true;
-        }
-
-        bool IsRunning() const
-        {
-          return !m_stopped;
-        }
-      };
-
-      typedef PSmartPtr<Data> DataPtr;
-
-      DataPtr m_guardData;
-
-      bool IsValid() const
+      void ReleaseRef()
       {
-        return (!m_guardData.IsNULL() && m_guardData->IsValid());
+        --m_invokeState;
       }
 
     public:
-      void Init()
+      typedef PSmartPtr<Guard> Ptr;
+
+      Guard()
+        : m_invokeState(0)
+        , m_stopped(false)
+        , m_handle(s_handleGenerator.Create())
       {
-        m_guardData = new Data();
       }
 
-      void Stop()
+      ~Guard()
       {
-        if (IsValid())
-          m_guardData->Stop();
+        ResetHandle();
       }
 
-      void Reset()
+      /* It's valid if PTimer is not stopped *and*
+         PTimer and PTimer::Emitter own the same Guard object.
+      */
+      bool IsValid() const
       {
-        m_guardData = DataPtr();
+        return !m_stopped && referenceCount >= 2;
       }
 
-      typedef DataPtr Guard::*unspecified_bool_type;
-
-      operator unspecified_bool_type() const // never throws
+      void WaitForInvokeFinished() const
       {
-        return (IsValid() ? &Guard::m_guardData : 0);
+        while (!m_invokeState.IsZero())
+          PThread::Sleep(25);
       }
 
-      bool TryLock()
+      bool IsInvoking() const
       {
-        if (IsValid())
-        {
-          m_guardData->AddRef();
-          return true;
-        }
-        return false;
-      }
-
-      void Unlock()
-      {
-        m_guardData->ReleaseRef();
-      }
-
-      void WaitAndReset()
-      {
-        if (IsValid())
-          m_guardData->WaitForInvokeFinished();
-        Reset();
-      }
-
-      bool InTimeout() const
-      {
-        return (IsValid() && m_guardData->IsInvoking());
+        return (!m_invokeState.IsZero());
       }
 
       PIdGenerator::Handle GetHandle() const
       {
         if (IsValid())
-          return m_guardData->GetHandle();
+          return m_handle;
         return PIdGenerator::Invalid;
       }
 
       void ResetHandle()
       {
-        if (IsValid())
-          m_guardData->ResetHandle();
+        PIdGenerator::Handle current = m_handle;
+        m_handle = PIdGenerator::Invalid;
+        s_handleGenerator.Release(current);
       }
 
-      bool IsRunning() const
+      void Stop()
       {
-        return (IsValid() && m_guardData->IsRunning());
+        m_stopped = true;
+      }
+
+      bool TryLock()
+      {
+        AddRef(); // We need to add reference before IsValid test
+        if (IsValid())
+          return true;
+        ReleaseRef();
+        return false;
+      }
+
+      void Unlock()
+      {
+        ReleaseRef();
       }
     };
-
 
     class Emitter : public PSmartObject
     {
       PInt64 m_repeatMSecs;
-      PTimer::Guard m_guard;
+      Guard::Ptr m_guard; // Emitter should use only 1 reference to PTimer::Guard
       PTimer * m_timer;
     public:
       typedef PSmartPtr<Emitter> Ptr;
@@ -541,8 +470,8 @@ class PTimer : public PTimeInterval
         : m_repeatMSecs(-1)
         , m_timer(aTimer)
       {
-        m_guard.Init();
-        if (m_timer)
+        m_guard = new Guard();
+        if (m_timer != NULL)
         {
           m_timer->m_guard = m_guard;
           if (!m_timer->m_oneshot)
@@ -552,18 +481,18 @@ class PTimer : public PTimeInterval
 
       ~Emitter()
       {
-        m_guard.ResetHandle(); // here we can free used handle
+        m_guard->ResetHandle(); // here we can free used handle
       }
 
       PIdGenerator::Handle Timeout()
       {
-        if (m_guard.TryLock()) {
+        if (m_guard->TryLock()) {
           // One shot timer must be stopped before OnTimeout() call
           if (m_timer->m_oneshot)
-            m_guard.Stop();
+            m_guard->Stop();
 
           m_timer->OnTimeout();
-          m_guard.Unlock();
+          m_guard->Unlock();
         }
         return GetHandle(); // returns valid timer handle or PIdGenerator::Invalid
       }
@@ -580,7 +509,7 @@ class PTimer : public PTimeInterval
 
       inline PIdGenerator::Handle GetHandle() const
       {
-        return m_guard.GetHandle();
+        return m_guard->GetHandle();
       }
     };
 
@@ -669,7 +598,7 @@ class PTimer : public PTimeInterval
     PTimeInterval m_resetTime;    // The time to reset a timer to when RunContinuous() is called.
     bool          m_oneshot;      // Timer operates once then stops.
     PInt64        m_absoluteTime;
-    Guard         m_guard;
+    Guard::Ptr    m_guard;
 
     friend class Emitter;
 
