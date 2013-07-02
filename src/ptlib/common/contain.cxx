@@ -36,6 +36,7 @@
 
 #include <ostream>
 #include <limits>
+#include <math.h>
 
 #ifdef __NUCLEUS_PLUS__
 extern "C" int vsprintf(char *, const char *, va_list);
