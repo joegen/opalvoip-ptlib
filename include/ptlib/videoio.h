@@ -680,7 +680,7 @@ class PVideoDevice : public PVideoFrameInfo
   protected:
     PINDEX GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const;
 
-    PString      deviceName;
+    PCaselessString deviceName;
     int          lastError;
     VideoFormat  videoFormat;
     int          channelNumber;
