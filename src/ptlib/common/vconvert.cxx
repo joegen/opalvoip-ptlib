@@ -2788,7 +2788,7 @@ bool PStandardColourConverter::MJPEGtoXXX(const BYTE * mjpeg,
   bool converted = false;
 
   if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
-     PTRACE(6,"PColCnv\tMJPEG to YUV420P\n");
+     PTRACE(6,"PColCnv\tMJPEG to YUV420P");
      converted = MJPEGToSameSize(mjpeg, data, format);  // ignore errors, as returning false will close the channel
   } 
   else if (format == TINYJPEG_FMT_YUV420P) {
