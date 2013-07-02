@@ -2801,27 +2801,22 @@ bool PStandardColourConverter::MJPEGtoXXX(const BYTE * mjpeg,
 {
   bool converted = false;
 
-  if ((m_srcFrameWidth == m_dstFrameWidth) && (m_srcFrameHeight == m_dstFrameHeight) && (((m_srcFrameWidth | m_dstFrameWidth | m_srcFrameHeight | m_dstFrameHeight) & 0xf) == 0)) {
-     PTRACE(4,"PColCnv\tMJPEG to YUV420P\n");
+  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
+     PTRACE(6,"PColCnv\tMJPEG to YUV420P");
      converted = MJPEGToSameSize(mjpeg, data, format);  // ignore errors, as returning false will close the channel
   } 
   else if (format == TINYJPEG_FMT_YUV420P) {
-    if (((m_srcFrameWidth | m_srcFrameHeight ) & 0xf) != 0) {
-      PTRACE(2, "PColCnv\tMJPEG converter called with src size not multiple of 16 - " << m_srcFrameWidth << "x" << m_srcFrameWidth);
-    }
-    else {
-     /* Very not efficient */
-     unsigned int frameBytes = m_srcFrameWidth * m_srcFrameHeight * 3 / 2;
-     BYTE *intermed = m_intermediateFrameStore.GetPointer(frameBytes);
-     converted = MJPEGToSameSize(mjpeg, intermed, format);  // ignore errors, as returning false will close the channel
-     if (converted && (format == TINYJPEG_FMT_YUV420P))
-       CopyYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, intermed,
-                   0, 0, m_dstFrameWidth, m_dstFrameHeight, m_dstFrameWidth, m_dstFrameHeight, data,
-                   m_resizeMode);
-    }
+    /* Very not efficient */
+    unsigned int frameBytes = m_srcFrameWidth * m_srcFrameHeight * 3 / 2;
+    BYTE *intermed = m_intermediateFrameStore.GetPointer(frameBytes);
+    converted = MJPEGToSameSize(mjpeg, intermed, format);  // ignore errors, as returning false will close the channel
+    if (converted && (format == TINYJPEG_FMT_YUV420P))
+      CopyYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, intermed,
+                  0, 0, m_dstFrameWidth, m_dstFrameHeight, m_dstFrameWidth, m_dstFrameHeight, data,
+                  m_resizeMode);
   }
   else {
-    PTRACE(2, "PColCnv\tMJPEG converter called with src size not multiple of 16 - " << m_srcFrameWidth << "x" << m_srcFrameWidth);
+    PTRACE(2, "PColCnv\tMJPEG converter cannot resize unless to YUV420P");
   }
 
   if (bytesReturned != NULL)
