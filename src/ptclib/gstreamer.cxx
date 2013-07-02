@@ -132,15 +132,14 @@ class PGstInitialiser : public PProcessStartup
         PTRACE(3, "GStreamer\tUsing version " << gst_version_string());
 
 #if PTRACING
-        #ifdef gst_debug_remove_log_function
-          #undef gst_debug_remove_log_function
-        #endif
-        gst_debug_remove_log_function(NULL);
-
-        #ifdef gst_debug_add_log_function
-          #undef gst_debug_add_log_function
-        #endif
+  #ifdef _MSC_VER
+    #pragma warning(disable:4127)
+  #endif
+        gst_debug_remove_log_function(gst_debug_log_default);
         gst_debug_add_log_function(LogFunction, this);
+  #ifdef _MSC_VER
+    #pragma warning(default:4127)
+  #endif
 
         gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
         gst_debug_set_active(true);
