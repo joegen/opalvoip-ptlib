@@ -1013,19 +1013,22 @@ PString::PString(ConversionType type, double value, unsigned places)
       break;
 
     case ScaleSI :
-    {
-      // Scale it according to SI multipliers
-      double multiplier = 1e-18;
-      for (size_t i = 0; i < sizeof(siTable); ++i) {
-        multiplier *= 1000;
-        if (( value > multiplier &&  value < multiplier*1000) ||
-            (-value > multiplier && -value < multiplier*1000)) {
-          sprintf("%0.*f%c", (int)places, value/multiplier, siTable[i]);
-          break;
+      if (value == 0)
+        sprintf("%0.*f", (int)places, value);
+      else {
+        // Scale it according to SI multipliers
+        double multiplier = 1e-15;
+        double absValue = fabs(value);
+        size_t i;
+        for (i = 0; i < sizeof(siTable)-1; ++i) {
+          double nextMultiplier = multiplier * 1000;
+          if (absValue < nextMultiplier)
+            break;
+          multiplier = nextMultiplier;
         }
+        sprintf("%0.*f%c", (int)places, value/multiplier, siTable[i]);
       }
       break;
-    }
 
     default :
       PAssertAlways(PInvalidParameter);
