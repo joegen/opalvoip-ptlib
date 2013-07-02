@@ -31,6 +31,7 @@
  *
  */
 
+#define _CRT_SECURE_NO_WARNINGS 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,7 @@
 #ifdef _MSC_VER
 #include "stdint.h"
 #pragma warning(disable:4100 4127 4244 4324 4611)
+#define snprintf _snprintf
 #else
 #include <inttypes.h>
 #endif
@@ -71,14 +73,6 @@ enum std_markers {
 
 #if TINY_JPEG_DEBUG
 #if LOG2FILE
-#define error(fmt, args...) do { \
-   FILE *f = fopen("/tmp/jpeg.log", "a"); \
-   fprintf(f, fmt, ## args); \
-   fflush(f); \
-   fclose(f); \
-   return -1; \
-} while(0)
-
 #define trace(fmt, args...) do { \
    FILE *f = fopen("/tmp/jpeg.log", "a"); \
    fprintf(f, fmt, ## args); \
@@ -87,28 +81,20 @@ enum std_markers {
 } while(0)
 
 #else
-#define error(fmt, args...) do { \
-   snprintf(error_string, sizeof(error_string), fmt, ## args); \
-   return -1; \
-} while(0)
-
 #define trace(fmt, args...) do { \
    fprintf(stderr, fmt, ## args); \
    fflush(stderr); \
 } while(0)
 #endif
 #else
-#if defined(_MSC_VER)
-#define error(fmt, ...) do { return -1; } while(0)
-#define trace(fmt, ...) do { } while (0)
-#elif (defined (P_SOLARIS) && !defined (__GNUC__))
-#define error(fmt, args,...) do { return -1; } while(0)
-#define trace(fmt, args,...) do { } while (0)
-#else
-#define error(fmt, args...) do { return -1; } while(0)
-#define trace(fmt, args...) do { } while (0)
+#define trace(...) do { } while (0)
 #endif
-#endif
+
+#define error(fmt, ...) do { \
+   snprintf(error_string, sizeof(error_string), fmt, ## __VA_ARGS__); \
+   trace("%s", error_string); \
+   return -1; \
+} while(0)
 
 #if 0
 static char *print_bits(unsigned int value, char *bitstr)
@@ -1661,10 +1647,10 @@ static int parse_SOF(struct jdec_private *priv, const unsigned char *stream)
     error("Width and Height (%dx%d) seems suspicious\n", width, height);
   if (nr_components != 3)
     error("We only support YUV images\n");
-  if (height%16)
-    error("Height need to be a multiple of 16 (current height is %d)\n", height);
-  if (width%16)
-    error("Width need to be a multiple of 16 (current Width is %d)\n", width);
+  if (height%8)
+    error("Height need to be a multiple of 8 (current height is %d)\n", height);
+  if (width%8)
+    error("Width need to be a multiple of 8 (current Width is %d)\n", width);
 #endif
   stream += 8;
   for (i=0; i<nr_components; i++) {
