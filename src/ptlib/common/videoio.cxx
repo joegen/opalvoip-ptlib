@@ -108,7 +108,7 @@ static struct {
   { "UYV444",  24 },
   { "SBGGR8",   8 },
   { "JPEG",    24 },
-  { "MJPEG",   24 }
+  { "MJPEG",    8 }
 };
 
 
@@ -440,11 +440,11 @@ static struct {
     { "NTSC",   720,                      480                       },
     { "PAL",    768,                      576                       },
     { "HD480",  PVideoDevice::HD480Width, PVideoDevice::HD480Height },
-    { "HDTVP",  PVideoDevice::HD720Width, PVideoDevice::HD720Height },
     { "HD720",  PVideoDevice::HD720Width, PVideoDevice::HD720Height },
+    { "HDTVP",  PVideoDevice::HD720Width, PVideoDevice::HD720Height },
     { "720p",   PVideoDevice::HD720Width, PVideoDevice::HD720Height },
-    { "HDTVI",  PVideoDevice::HD1080Width,PVideoDevice::HD1080Height},
     { "HD1080", PVideoDevice::HD1080Width,PVideoDevice::HD1080Height},
+    { "HDTVI",  PVideoDevice::HD1080Width,PVideoDevice::HD1080Height},
     { "1080p",  PVideoDevice::HD1080Width,PVideoDevice::HD1080Height},
 
     { "CGA",    320,                      240                       },
@@ -819,18 +819,8 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
     }
   }
 
-  int outW = width;
-  int outH = height;
-
-  if (isMJPEGCapture) {
-    outW = ((width + 15) / 16) * 16;
-    outH = ((height + 15) / 16) * 16;
-    if (resizeMode == eMaxResizeMode)
-      resizeMode = eCropCentre;
-  }
-
   // Try and get the most compatible physical frame size to convert from/to
-  if (!SetNearestFrameSize(outW, outH)) {
+  if (!SetNearestFrameSize(width, height)) {
     PTRACE(1, "PVidDev\tCannot set an apropriate size to scale from.");
     return false;
   }

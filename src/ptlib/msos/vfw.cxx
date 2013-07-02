@@ -38,6 +38,9 @@
 #include <ptlib/pluginmgr.h>
 #include <ptclib/delaychan.h>
 
+#include <Windowsx.h>
+
+
 #if P_VFW_CAPTURE
 
 #ifdef _MSC_VER
@@ -63,6 +66,7 @@ BOOL VFWAPI capGetDriverDescriptionA (WORD wDriverIndex, LPSTR lpszName,
 #endif // __MINGW32
 
 
+#define PTraceModule() "VfW Grab"
 
 /**This class defines a video input device.
  */
@@ -288,7 +292,7 @@ PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow)
   PINDEX sz = capGetVideoFormatSize(hCaptureWindow);
   SetSize(sz);
   if (!capGetVideoFormat(hCaptureWindow, theArray, sz)) { 
-    PTRACE(1, "PVidInp\tcapGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
+    PTRACE(1, "capGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
     SetSize(0);
     return;
   }
@@ -299,7 +303,7 @@ PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow, WORD bpp)
   PINDEX sz = capGetVideoFormatSize(hCaptureWindow);
   SetSize(sz);
   if (!capGetVideoFormat(hCaptureWindow, theArray, sz)) { 
-    PTRACE(1, "PVidInp\tcapGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
+    PTRACE(1, "capGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
     SetSize(0);
     return;
   }
@@ -332,7 +336,7 @@ PBoolean PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & for
 #endif
 
   if (capSetVideoFormat(hWnd, theArray, GetSize())) {
-    PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
+    PTRACE(3, "capSetVideoFormat succeeded: "
             << PString(formatTableEntry.colourFormat) << ' '
             << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
             << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
@@ -342,7 +346,7 @@ PBoolean PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & for
   if (formatTableEntry.negHeight) {
     bmi.bmiHeader.biHeight = height; 
     if (capSetVideoFormat(hWnd, theArray, GetSize())) {
-      PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
+      PTRACE(3, "capSetVideoFormat succeeded: "
               << PString(formatTableEntry.colourFormat) << ' '
               << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
               << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime));
@@ -350,7 +354,7 @@ PBoolean PVideoDeviceBitmap::ApplyFormat(HWND hWnd, const FormatTableEntry & for
     }
   }
 
-  PTRACE(1, "PVidInp\tcapSetVideoFormat failed: "
+  PTRACE(1, "capSetVideoFormat failed: "
           << (formatTableEntry.colourFormat != NULL ? formatTableEntry.colourFormat : "NO-COLOUR-FORMAT") << ' '
           << bmi.bmiHeader.biWidth << "x" << bmi.bmiHeader.biHeight
           << " sz=" << bmi.bmiHeader.biSizeImage << " time=" << (PTimer::Tick() - startTime)
@@ -366,7 +370,7 @@ PCapStatus::PCapStatus(HWND hWnd)
   if (capGetStatus(hWnd, this, sizeof(*this)))
     return;
 
-  PTRACE(1, "PVidInp\tcapGetStatus: failed - " << ::GetLastError());
+  PTRACE(1, "capGetStatus: failed - " << ::GetLastError());
 }
 
 
@@ -412,7 +416,7 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
 
   if (!result) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tFailed to set callback on VfW - " << lastError);
+    PTRACE(1, "Failed to set callback on VfW - " << lastError);
     return false;
   }
 
@@ -420,7 +424,7 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
   memset(&parms, 0, sizeof(parms));
   if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapCaptureGetSetup: failed - " << lastError);
+    PTRACE(1, "capCaptureGetSetup: failed - " << lastError);
     return false;
   }
 
@@ -436,7 +440,7 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
 
   if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapCaptureSetSetup: failed - " << lastError);
+    PTRACE(1, "capCaptureSetSetup: failed - " << lastError);
     return false;
   }
 
@@ -500,7 +504,7 @@ PBoolean PVideoInputDevice_VideoForWindows::Close()
       // Any of the two ios better than just hanging
       captureThread->Terminate();
       hCaptureWindow = NULL;
-      PTRACE(1, "PVidInp\tCapture thread failed to stop. Terminated");
+      PTRACE(1, "Capture thread failed to stop. Terminated");
   }
 
   delete captureThread;
@@ -561,7 +565,7 @@ PBoolean PVideoInputDevice_VideoForWindows::Start()
   }
 
   lastError = ::GetLastError();
-  PTRACE(1, "PVidInp\tcapCaptureSequenceNoFile: failed - " << lastError);
+  PTRACE(1, "capCaptureSequenceNoFile: failed - " << lastError);
   return false;
 }
 
@@ -583,7 +587,7 @@ PBoolean PVideoInputDevice_VideoForWindows::Stop()
     return true;
 
   lastError = ::GetLastError();
-  PTRACE(1, "PVidInp\tcapCaptureStop: failed - " << lastError);
+  PTRACE(1, "capCaptureStop: failed - " << lastError);
   return false;
 }
 
@@ -664,7 +668,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 
   if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapCaptureGetSetup: failed - " << lastError);
+    PTRACE(1, "capCaptureGetSetup: failed - " << lastError);
     return false;
   }
 
@@ -681,7 +685,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 
   if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapCaptureSetSetup: failed - " << lastError);
+    PTRACE(1, "capCaptureSetSetup: failed - " << lastError);
     return false;
   }
     
@@ -704,7 +708,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigne
     Stop();
 
   PVideoDeviceBitmap bi(hCaptureWindow); 
-  PTRACE(5, "PVidInp\tChanging frame size from "
+  PTRACE(5, "Changing frame size from "
          << bi->bmiHeader.biWidth << 'x' << bi->bmiHeader.biHeight << " to " << width << 'x' << height);
 
   PINDEX i = 0;
@@ -800,7 +804,7 @@ PBoolean PVideoInputDevice_VideoForWindows::GetFrameData(BYTE * buffer, PINDEX *
 PBoolean PVideoInputDevice_VideoForWindows::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
   if (!frameAvailable.Wait(1000)) {
-    PTRACE(1, "PVidInp\tTimeout waiting for frame grab!");
+    PTRACE(1, "Timeout waiting for frame grab!");
     return false;
   }
 
@@ -839,10 +843,7 @@ LRESULT CALLBACK PVideoInputDevice_VideoForWindows::ErrorHandler(HWND hWnd, int 
 
 LRESULT PVideoInputDevice_VideoForWindows::HandleError(int id, LPCSTR PTRACE_PARAM(err))
 {
-  if (id != 0) {
-    PTRACE(1, "PVidInp\tErrorHandler: [id="<< id << "] " << err);
-  }
-
+  PTRACE_IF(1, id != 0, "ErrorHandler: [id="<< id << "] " << err);
   return true;
 }
 
@@ -900,7 +901,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
                                                (HWND)0,
                                                0)) == NULL) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapCreateCaptureWindow failed - " << lastError);
+    PTRACE(1, "capCreateCaptureWindow failed - " << lastError);
     return false;
   }
 
@@ -914,7 +915,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
 
   if (!result) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tFailed to set callback on VfW - " << lastError);
+    PTRACE(1, "Failed to set callback on VfW - " << lastError);
     return false;
   }
 
@@ -923,7 +924,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
 #if PTRACING
   if (PTrace::CanTrace(4)) { // list available video capture drivers
     ostream & trace = PTRACE_BEGIN(5);
-    trace << "PVidInp\tEnumerating available video capture drivers:\n";
+    trace << "Enumerating available video capture drivers:\n";
     for (devId = 0; devId < 10; devId++) { 
       char name[100];
       char version[200];
@@ -951,7 +952,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   // Use first driver available.
   if (!capDriverConnect(hCaptureWindow, devId)) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapDriverConnect failed - " << lastError);
+    PTRACE(1, "capDriverConnect failed - " << lastError);
     return false;
   }
 
@@ -959,11 +960,11 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   memset(&driverCaps, 0, sizeof(driverCaps));
   if (!capDriverGetCaps(hCaptureWindow, &driverCaps, sizeof(driverCaps))) {
     lastError = ::GetLastError();
-    PTRACE(1, "PVidInp\tcapGetDriverCaps failed - " << lastError);
+    PTRACE(1, "capGetDriverCaps failed - " << lastError);
     return false;
   }
 
-  PTRACE(6, "PVidInp\tEnumerating CAPDRIVERCAPS values:\n"
+  PTRACE(6, "Enumerating CAPDRIVERCAPS values:\n"
             "  driverCaps.wDeviceIndex           = " << driverCaps.wDeviceIndex        << "\n"
             "  driverCaps.fHasOverlay            = " << driverCaps.fHasOverlay         << "\n"
             "  driverCaps.fHasDlgVideoSource     = " << driverCaps.fHasDlgVideoSource  << "\n"
@@ -1014,14 +1015,14 @@ void PVideoInputDevice_VideoForWindows::HandleCapture(PThread &, P_INT_PTR)
       ::DispatchMessage(&msg);
   }
 
-  PTRACE(5, "PVidInp\tDisconnecting driver");
+  PTRACE(5, "Disconnecting driver");
   capDriverDisconnect(hCaptureWindow);
   capSetUserData(hCaptureWindow, NULL);
 
   capSetCallbackOnError(hCaptureWindow, NULL);
   capSetCallbackOnVideoStream(hCaptureWindow, NULL);
 
-  PTRACE(5, "PVidInp\tDestroying VIDCAP window");
+  PTRACE(5, "Destroying VIDCAP window");
   DestroyWindow(hCaptureWindow);
   hCaptureWindow = NULL;
 
@@ -1151,10 +1152,12 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
   protected:
     PDECLARE_NOTIFIER(PThread, PVideoOutputDevice_Window, HandleDisplay);
     void CreateDisplayWindow();
-    void SetWindowSize();
+    void SetMyWindowSize(unsigned width, unsigned height, bool fullScreen);
     void Draw(HDC hDC);
 
     HWND       m_hWnd;
+    DWORD      m_dwStyle;
+    DWORD      m_dwExStyle;
     PThread  * m_thread;
     PMutex     m_openCloseMutex;
     PSyncPoint m_started;
@@ -1162,56 +1165,23 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     bool       m_flipped;
     POINT      m_lastPosition;
     SIZE       m_fixedSize;
+    bool       m_fullScreen;
+    bool       m_showInfo;
+    unsigned   m_frameCount;
+    unsigned   m_observedFrameRate;
+    PSimpleTimer m_rateTimer;
 };
 
 
 #define DEFAULT_STYLE (WS_POPUP|WS_BORDER|WS_SYSMENU|WS_CAPTION)
 #define DEFAULT_TITLE "Video Output"
 
-static bool ParseWindowDeviceName(const PString & deviceName, DWORD * dwStylePtr = NULL, HWND * hWndParentPtr = NULL)
-{
-  if (deviceName.Find("MSWIN") != 0)
-    return false;
-
-  PINDEX pos = deviceName.Find("STYLE=");
-  DWORD dwStyle = pos == P_MAX_INDEX ? DEFAULT_STYLE : strtoul(((const char *)deviceName)+pos+6, NULL, 0);
-  if ((dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
-    PTRACE(1, "VidOut\tWindow must be WS_POPUP or WS_CHILD window.");
-    return false;
-  }
-
-  HWND hWndParent = NULL;
-  pos = deviceName.Find("PARENT=");
-  if (pos != P_MAX_INDEX) {
-    hWndParent = (HWND)strtoul(((const char *)deviceName)+pos+7, NULL, 0);
-    if (!::IsWindow(hWndParent)) {
-      PTRACE(2, "VidOut\tIllegal parent window " << hWndParent << " specified.");
-      hWndParent = NULL;
-    }
-  }
-
-  // Have parsed out style & parent, see if legal combination
-  if (hWndParent == NULL && (dwStyle&WS_POPUP) == 0) {
-    PTRACE(1, "VidOut\tWindow must be WS_POPUP if parent window not specified.");
-    return false;
-  }
-
-  if (dwStylePtr != NULL)
-    *dwStylePtr = dwStyle;
-
-  if (hWndParentPtr != NULL)
-    *hWndParentPtr = hWndParent;
-
-  return true;
-}
-
-
 class PVideoOutputDevice_Window_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
     virtual PObject *    CreateInstance(int /*userData*/) const { return PNEW PVideoOutputDevice_Window; }
     virtual PStringArray GetDeviceNames(int /*userData*/) const { return PVideoOutputDevice_Window::GetOutputDeviceNames(); }
-    virtual bool         ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return ParseWindowDeviceName(deviceName); }
+    virtual bool         ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return deviceName.NumCompare("MSWIN") == PObject::EqualTo; }
 } PVideoOutputDevice_Window_descriptor;
 
 PCREATE_PLUGIN(Window, PVideoOutputDevice, &PVideoOutputDevice_Window_descriptor);
@@ -1220,11 +1190,20 @@ PCREATE_PLUGIN(Window, PVideoOutputDevice, &PVideoOutputDevice_Window_descriptor
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDeviceRGB
 
+#undef PTraceModule
+#define PTraceModule() "MSWIN"
+
 PVideoOutputDevice_Window::PVideoOutputDevice_Window()
+  : m_hWnd(NULL)
+  , m_dwStyle(DEFAULT_STYLE)
+  , m_dwExStyle(0)
+  , m_thread(NULL)
+  , m_flipped(false)
+  , m_fullScreen(false)
+  , m_showInfo(false)
+  , m_frameCount(0)
+  , m_observedFrameRate(0)
 {
-  m_hWnd = NULL;
-  m_thread = NULL;
-  m_flipped = false;
   m_lastPosition.x = 0;
   m_lastPosition.y = 0;
   m_fixedSize.cx = 0;
@@ -1258,6 +1237,9 @@ PStringArray PVideoOutputDevice_Window::GetOutputDeviceNames()
 
 PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImmediate)
 {
+  if (name.NumCompare("MSWIN") != EqualTo)
+    return false;
+
   Close();
 
   m_openCloseMutex.Wait();
@@ -1270,7 +1252,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
     m_openCloseMutex.Signal();
     m_started.Wait();     
   }
-  else {    
+  else {
     /* Description: child windows should be created on the same thread as the
       parent window (well, not necessarily, but it is much less error prone
       that way) so I am adding another method to handle creating child
@@ -1380,24 +1362,61 @@ PBoolean PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height
   }
 
   // Must be outside of mutex
-  SetWindowSize();
+  SetMyWindowSize(m_fixedSize.cx, m_fixedSize.cy, m_fullScreen);
 
   return true;
 }
 
 
-void PVideoOutputDevice_Window::SetWindowSize()
+void PVideoOutputDevice_Window::SetMyWindowSize(unsigned width, unsigned height, bool wantFullScreen)
 {
   if (m_hWnd == NULL)
     return;
 
-  RECT rect;
-  rect.top = 0;
-  rect.left = 0;
-  rect.bottom = m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight;
-  rect.right = m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth;
-  ::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), false, GetWindowLong(m_hWnd, GWL_EXSTYLE));
-  ::SetWindowPos(m_hWnd, HWND_TOP, 0, 0, rect.right-rect.left, rect.bottom-rect.top, SWP_NOMOVE);
+  int x = m_lastPosition.x;
+  int y = m_lastPosition.y;
+  int w = width > 0 ? width : frameWidth;
+  int h = height > 0 ? height : frameHeight;
+  UINT flags = SWP_SHOWWINDOW;
+
+  if (m_fullScreen) {
+    if (wantFullScreen)
+      return;
+
+    SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle);
+    SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwExStyle);
+    flags |= SWP_FRAMECHANGED;
+    m_fullScreen = false;
+  }
+  else if (wantFullScreen) {
+    HMONITOR hmon = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi = { sizeof(mi) };
+    if (GetMonitorInfo(hmon, &mi)) {
+      SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle & ~(WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_THICKFRAME));
+      SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwExStyle & ~(WS_EX_DLGMODALFRAME|WS_EX_CLIENTEDGE|WS_EX_STATICEDGE|WS_EX_WINDOWEDGE));
+      x = mi.rcWork.left;
+      y = mi.rcWork.top;
+      w = mi.rcWork.right - mi.rcWork.left;
+      h = mi.rcWork.bottom - mi.rcWork.top;
+      flags |= SWP_FRAMECHANGED;
+      m_fullScreen = true;
+    }
+  }
+
+  if (!m_fullScreen) {
+    RECT rect;
+    rect.top = 0;
+    rect.left = 0;
+    rect.bottom = h;
+    rect.right = w;
+    if (AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle)) {
+      w = rect.right - rect.left;
+      h = rect.bottom - rect.top;
+    }
+  }
+
+  PTRACE(4, "SetWindowPos(" << x << 'x' << y << ".." << w << 'x' << h << ')');
+  ::SetWindowPos(m_hWnd, HWND_TOP, x, y, w, h, flags);
 }
 
 
@@ -1426,17 +1445,10 @@ PBoolean PVideoOutputDevice_Window::GetPosition(int & x, int & y) const
 
 bool PVideoOutputDevice_Window::SetPosition(int x, int y)
 {
-  if (m_hWnd != NULL) {
-    RECT rect;
-    rect.top = y;
-    rect.left = x;
-    rect.bottom = y;
-    rect.right = x;
-    ::AdjustWindowRectEx(&rect, GetWindowLong(m_hWnd, GWL_STYLE), false, GetWindowLong(m_hWnd, GWL_EXSTYLE));
-    ::SetWindowPos(m_hWnd, HWND_TOP, x+(x-rect.left), y, 0, 0, SWP_NOSIZE);
-  }
+  if (m_hWnd == NULL)
+    return false;
 
-  return true;
+  return ::SetWindowPos(m_hWnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
 }
 
 
@@ -1452,20 +1464,69 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
                                0, 0, 0, frameHeight,
                                frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
   else {
+    int frameAspect = 1000*frameWidth/frameHeight;
+    int windowAspect = 1000*rect.right/rect.bottom;
+    int x,y,w,h;
+    if (frameAspect < windowAspect) {
+      w = frameWidth*rect.bottom/frameHeight;
+      h = rect.bottom;
+      x = (rect.right - w)/2;
+      y = 0;
+      Rectangle(hDC, 0,            0, x,          rect.bottom);
+      Rectangle(hDC, rect.right-x, 0, rect.right, rect.bottom);
+    }
+    else if (frameAspect > windowAspect) {
+      w = rect.right;
+      h = frameHeight*rect.right/frameWidth;
+      x = 0;
+      y = (rect.bottom - h)/2;
+      Rectangle(hDC, 0, 0,             rect.right, y);
+      Rectangle(hDC, 0, rect.bottom-y, rect.right, rect.bottom);
+    }
+    else {
+      x = y = 0;
+      w = rect.right;
+      h = rect.bottom;
+    }
+
 #ifdef _WIN32_WCE
     SetStretchBltMode(hDC, COLORONCOLOR);
 #else
     SetStretchBltMode(hDC, STRETCH_DELETESCANS);
 #endif
     result = StretchDIBits(hDC,
-                           0, 0, rect.right, rect.bottom,
+                           x, y, w, h,
                            0, 0, frameWidth, frameHeight,
                            frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS, SRCCOPY);
   }
 
-  if (result == 0) {
+  if (result != (int)frameHeight) {
     lastError = ::GetLastError();
-    PTRACE(2, "VidOut\tDrawing image failed, error=" << lastError);
+    PTRACE(2, "Drawing image failed, error=" << lastError);
+  }
+
+  if (m_showInfo) {
+    PStringStream strm;
+    strm << " Video: " << frameWidth << 'x' << frameHeight;
+
+    ++m_frameCount;
+    if (m_rateTimer.HasExpired()) {
+      m_rateTimer.SetInterval(0, 1);
+      m_observedFrameRate = m_frameCount;
+      m_frameCount = 0;
+    }
+
+    if (m_observedFrameRate > 0)
+      strm << " @ " << m_observedFrameRate << "fps";
+
+    if (frameWidth != (unsigned)rect.right && frameHeight != (unsigned)rect.bottom)
+      strm << " Window: " << rect.right << 'x' << rect.bottom;
+
+    SetTextColor(hDC, RGB(192,192,192));
+    SetBkMode(hDC, TRANSPARENT);
+    rect.left += 8;
+    rect.right -= 8;
+    DrawText(hDC, strm, strm.GetLength(), &rect, DT_TOP|DT_RIGHT|DT_SINGLELINE|DT_END_ELLIPSIS);
   }
 }
 
@@ -1516,14 +1577,31 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
     PAssertOS(RegisterClass(&wndClass));
   }
 
-  DWORD dwStyle;
-  HWND hParent;
-
-  if (!ParseWindowDeviceName(deviceName, &dwStyle, &hParent))
+  PINDEX pos = deviceName.Find("STYLE=");
+  m_dwStyle = pos == P_MAX_INDEX ? DEFAULT_STYLE : strtoul(((const char *)deviceName)+pos+6, NULL, 0);
+  if ((m_dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
+    PTRACE(1, "Window must be WS_POPUP or WS_CHILD window.");
     return;
+  }
+
+  HWND hParent = NULL;
+  pos = deviceName.Find("PARENT=");
+  if (pos != P_MAX_INDEX) {
+    hParent = (HWND)strtoul(((const char *)deviceName)+pos+7, NULL, 0);
+    if (!::IsWindow(hParent)) {
+      PTRACE(2, "Illegal parent window " << hParent << " specified.");
+      return;
+    }
+  }
+
+  // Have parsed out style & parent, see if legal combination
+  if (hParent == NULL && (m_dwStyle&WS_POPUP) == 0) {
+    PTRACE(1, "Window must be WS_POPUP if parent window not specified.");
+    return;
+  }
 
   PVarString title = DEFAULT_TITLE;
-  PINDEX pos = deviceName.Find("TITLE=\"");
+  pos = deviceName.Find("TITLE=\"");
   if (pos != P_MAX_INDEX)
     title = PString(PString::Literal, deviceName.Mid(pos+6));
 
@@ -1545,12 +1623,17 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
     }
   }
   
-  m_hWnd = CreateWindow(wndClassName,
-                        title, 
-                        dwStyle,
-                        m_lastPosition.x , m_lastPosition.y, frameWidth, frameHeight,
-                        hParent, NULL, GetModuleHandle(NULL), this);
-  SetWindowSize();
+  if ((m_hWnd = CreateWindow(wndClassName,
+                             title, 
+                             m_dwStyle,
+                             m_lastPosition.x , m_lastPosition.y, frameWidth, frameHeight,
+                             hParent, NULL, GetModuleHandle(NULL), this)) == NULL)
+    return;
+
+  m_dwExStyle = GetWindowLong(m_hWnd, GWL_EXSTYLE);
+  SetMyWindowSize(m_fixedSize.cx, m_fixedSize.cy, deviceName.Find("FULLSCREEN") != P_MAX_INDEX);
+
+  m_showInfo = deviceName.Find("SHOWINFO") != P_MAX_INDEX;
 }
 
 
@@ -1583,27 +1666,83 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
       }
 
     case WM_MOVE :
-      if (m_hWnd != NULL) {
+      if (m_hWnd != NULL && !m_fullScreen) {
         RECT rect;
-        GetWindowRect(m_hWnd, &rect);
+        rect.left = rect.right = GET_X_LPARAM(lParam);
+        rect.top = rect.bottom = GET_Y_LPARAM(lParam);
+        ::AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle);
         m_lastPosition.x = rect.left;
         m_lastPosition.y = rect.top;
+        PTRACE(4, "Moved to " << m_lastPosition.x << 'x' << m_lastPosition.y);
       }
       break;
 
     case WM_LBUTTONDBLCLK :
-      if (m_fixedSize.cx < 10000 && m_fixedSize.cy < 10000) {
-        m_fixedSize.cx = 2*(m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth);
-        m_fixedSize.cy = 2*(m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight);
-        SetWindowSize();
-      }
+      if (m_fixedSize.cx < 10000 && m_fixedSize.cy < 10000)
+        SetMyWindowSize(2*(m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth),
+                        2*(m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight),
+                        false);
       break;
 
     case WM_RBUTTONDBLCLK :
-      if ((m_fixedSize.cx&1) == 0 && (m_fixedSize.cy&1) == 0) {
-        m_fixedSize.cx = (m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth)/2;
-        m_fixedSize.cy = (m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight)/2;
-        SetWindowSize();
+      if ((m_fixedSize.cx&1) == 0 && (m_fixedSize.cy&1) == 0)
+        SetMyWindowSize((m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth)/2,
+                        (m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight)/2,
+                        false);
+      break;
+
+    case WM_RBUTTONDOWN :
+      {
+        HMENU hMenu = CreatePopupMenu();
+        AppendMenu(hMenu,
+                   MF_ENABLED|MF_STRING|(m_fullScreen ? MF_CHECKED : 0),
+                   1, "Full screen");
+        AppendMenu(hMenu,
+                   MF_ENABLED|MF_STRING|(m_fixedSize.cx == (LONG)frameWidth &&
+                                         m_fixedSize.cy == (LONG)frameHeight &&
+                                        !m_fullScreen ? MF_CHECKED : 0),
+                   2, "Normal size");
+        AppendMenu(hMenu,
+                   MF_ENABLED|MF_STRING|(m_fixedSize.cx == (LONG)frameWidth/2 &&
+                                         m_fixedSize.cy == (LONG)frameHeight/2 &&
+                                        !m_fullScreen ? MF_CHECKED : 0),
+                   3, "Half size");
+        AppendMenu(hMenu,
+                   MF_ENABLED|MF_STRING|(m_fixedSize.cx == (LONG)frameWidth*2 &&
+                                         m_fixedSize.cy == (LONG)frameHeight*2 &&
+                                        !m_fullScreen ? MF_CHECKED : 0),
+                   4, "Double size");
+        AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+        AppendMenu(hMenu,
+                   MF_ENABLED|MF_STRING|(m_showInfo ? MF_CHECKED : 0),
+                   5, "Show Info");
+
+        POINT pt;
+        pt.x = GET_X_LPARAM(lParam);
+        pt.y = GET_Y_LPARAM(lParam);
+        ClientToScreen(m_hWnd, &pt);
+        switch (TrackPopupMenu(hMenu, TPM_RIGHTBUTTON|TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, NULL)) {
+          case 1 :
+            SetMyWindowSize(0, 0, true);
+            break;
+
+          case 2 :
+            SetMyWindowSize(frameWidth, frameHeight, false);
+            break;
+
+          case 3 :
+            SetMyWindowSize(frameWidth/2, frameHeight/2, false);
+            break;
+
+          case 4 :
+            SetMyWindowSize(frameWidth*2, frameHeight*2, false);
+            break;
+
+          case 5 :
+            m_showInfo = !m_showInfo;
+            InvalidateRect(m_hWnd, NULL, false);
+        }
+        DestroyMenu(hMenu);
       }
       break;
 
