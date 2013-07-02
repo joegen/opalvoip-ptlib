@@ -175,6 +175,42 @@
     #pragma comment(lib, "quartz.lib")
   #endif
 
+  class CSampleGrabberCB : public ISampleGrabberCB 
+  {
+    private:
+      PBYTEArray m_buffer;
+      PINDEX     m_actualSize;
+      PMutex     m_mutex;
+      PSyncPoint m_frameReady;
+      PINDEX     m_skipInitialGrabs;
+    #if PTRACING
+      unsigned     m_totalFrames;
+      PSimpleTimer m_totalTime;
+    #endif
+
+    public:
+      CSampleGrabberCB();
+      ~CSampleGrabberCB();
+    #if PTRACING
+      void BeginFrameRateCheck() { m_totalTime = 0; }
+      void PrintActualFramRate();
+    #endif
+
+      // Fake out any COM ref counting
+      STDMETHODIMP_(ULONG) AddRef() { return 2; }
+      STDMETHODIMP_(ULONG) Release() { return 1; }
+
+      // Fake out any COM QI'ing
+      STDMETHODIMP QueryInterface(REFIID riid, void ** ppv);
+
+      // We don't implement this one
+      STDMETHODIMP SampleCB( double /*SampleTime*/, IMediaSample * /*pSample*/) { return 0; }
+
+      // The sample grabber is calling us back on its deliver thread.
+      STDMETHODIMP BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size);
+      bool GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize);
+  };
+
 #endif // _WIN32_WCE
 
 #ifdef _MSC_VER
@@ -228,7 +264,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     bool BindCaptureDevice(const PString & devName);
     bool PlatformOpen();
     PINDEX GetCurrentBufferSize();
-    bool GetCurrentBufferData(BYTE * data);
+    bool GetCurrentBufferData(BYTE * data, PINDEX & bufferSize);
     bool SetPinFormat(unsigned useDefaultColourOrSize = 0);
     bool SetControlCommon(long control, int newValue);
     int GetControlCommon(long control);
@@ -503,6 +539,14 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
       PTRACE(4, "DShow\tCamera format set to " << *this);
       return true;
     }
+    else {
+      PTRACE(6, "DShow\tTested format: "
+             << GUID2Format(pMediaFormat->subtype) << ' '
+             << scc.MinOutputSize.cx << 'x' << scc.MinOutputSize.cy
+             << ".."
+             << scc.MaxOutputSize.cx << 'x' << scc.MaxOutputSize.cy << ' '
+             << scc.MinFrameInterval << ".." << scc.MaxFrameInterval);
+    }
   }
 
   PTRACE(2, "DShow\tCamera formats available could not be matched to " << *this);
@@ -586,6 +630,8 @@ PBoolean PVideoInputDevice_DirectShow::Close()
   // Stop Camera Graph
   Stop();
 
+  m_lastFrameMutex.Wait();
+
   // Release filters
 #ifdef _WIN32_WCE
   if (m_pSampleGrabber != NULL) {
@@ -608,6 +654,8 @@ PBoolean PVideoInputDevice_DirectShow::Close()
   // Relase DirectShow Graph
   m_pGraphBuilder.Release(); 
 
+  m_lastFrameMutex.Signal();
+
   return true;
 }
 
@@ -624,6 +672,10 @@ PBoolean PVideoInputDevice_DirectShow::Start()
 
   PCOM_RETURN_ON_FAILED(m_pMediaControl->Run,());
 
+#if PTRACING
+  ((CSampleGrabberCB *)&*m_pSampleGrabberCB)->BeginFrameRateCheck();
+#endif
+
   PTRACE(4, "DShow\tVideo Started.");
   return true;
 }
@@ -638,6 +690,10 @@ PBoolean PVideoInputDevice_DirectShow::Stop()
 
   if (!IsCapturing())
     return true;
+
+#if PTRACING
+  ((CSampleGrabberCB *)&*m_pSampleGrabberCB)->PrintActualFramRate();
+#endif
 
   // Use Pause() not Stop() as the latter is to much of a stop and takes too long to restart
   PCOM_RETURN_ON_FAILED(m_pMediaControl->Pause,());
@@ -751,7 +807,7 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 
   PINDEX bufferSize = GetCurrentBufferSize();
   if (converter != NULL) {
-    if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize)))
+    if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize), bufferSize))
       return false;
     if (!converter->Convert(m_tempFrame, destFrame, bufferSize, bytesReturned))
       return false;
@@ -759,7 +815,7 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
   else {
     if (!PAssert(bufferSize <= m_maxFrameBytes, PLogicError))
       return false;
-    if (!GetCurrentBufferData(destFrame))
+    if (!GetCurrentBufferData(destFrame, bufferSize))
       return false;
     if (bytesReturned != NULL)
       *bytesReturned = bufferSize;
@@ -1231,95 +1287,102 @@ bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
 
 
 // Implementation of CSampleGrabberCB object
-class CSampleGrabberCB : public ISampleGrabberCB 
+CSampleGrabberCB::CSampleGrabberCB()
+  : m_actualSize(0)
+  , m_skipInitialGrabs(4)
+#if PTRACING
+  , m_totalFrames(0)
+#endif
 {
-public:
-  CSampleGrabberCB()
-  {
-    bufferSize = 0;
-    pBuffer = NULL; 
-    cInd = 0;
+}
+
+
+CSampleGrabberCB::~CSampleGrabberCB()
+{
+  m_frameReady.Signal();
+}
+
+
+#if PTRACING
+void CSampleGrabberCB::PrintActualFramRate()
+{
+  static const int Level = 3;
+  if (PTrace::CanTrace(Level)) {
+    int64_t ms = m_totalTime.GetElapsed().GetMilliSeconds();
+    if (ms > 0)
+      PTRACE_BEGIN(Level) << "DShow\tGrabber frames/second=" << fixed << setprecision(2) << m_totalFrames*1000.0/ms << PTrace::End;
   }
-
-  ~CSampleGrabberCB()
-  {
-    bufferSize = 0;
-    delete pBuffer;
-    frameready.Signal();
-  }
-
-  // Fake out any COM ref counting
-  //
-  STDMETHODIMP_(ULONG) AddRef() { return 2; }
-  STDMETHODIMP_(ULONG) Release() { return 1; }
-
-  // Fake out any COM QI'ing
-  //
-  STDMETHODIMP QueryInterface(REFIID riid, void ** ppv)
-  {
-
-    if( riid == IID_ISampleGrabberCB || riid == IID_IUnknown ) 
-    {
-      *ppv = (void *) static_cast<ISampleGrabberCB*> ( this );
-      return NOERROR;
-    }    
-
-    return E_NOINTERFACE;
-  }
+}
+#endif
 
 
-  // We don't implement this one
-  //
-  STDMETHODIMP SampleCB( double /*SampleTime*/, IMediaSample * /*pSample*/)
-  {
-    return 0;
-  }
+// Fake out any COM QI'ing
+//
+STDMETHODIMP CSampleGrabberCB::QueryInterface(REFIID riid, void ** ppv)
+{
+  if( riid == IID_ISampleGrabberCB || riid == IID_IUnknown ) {
+    *ppv = (void *) static_cast<ISampleGrabberCB*> ( this );
+    return NOERROR;
+  }    
 
-  // The sample grabber is calling us back on its deliver thread.
-  // This is NOT the main app thread!
-  //
-  STDMETHODIMP BufferCB( double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size )
-  {
-    PTRACE(6, "DShow\tBuffer callback: time=" << dblSampleTime
-           << ", buf=" << (void *)buffer << ", size=" << size);
+  return E_NOINTERFACE;
+}
 
-    static int skipFrames = 4;
-    if (cInd < skipFrames) {
-      cInd++;
-      return S_OK;
-    }
 
-    PWaitAndSignal m(mbuf);
+// The sample grabber is calling us back on its deliver thread.
+// This is NOT the main app thread!
+//
+STDMETHODIMP CSampleGrabberCB::BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size)
+{
+  PTRACE(6, "DShow\tBuffer callback: time=" << dblSampleTime
+          << ", buf=" << (void *)buffer << ", size=" << size);
 
-    if (size == 0)
-      return S_OK;
+  if (size == 0)
+    return S_OK;
 
-    if (bufferSize != size) {
-      bufferSize = size;
-      delete pBuffer;
-      pBuffer = new BYTE[bufferSize];
-      memset(pBuffer,0,bufferSize);
-    }
-
-    if (!buffer)
-      return E_POINTER;
-
-    memcpy(pBuffer,buffer, bufferSize);
-
-    frameready.Signal();
-
+  if (m_skipInitialGrabs > 0) {
+    --m_skipInitialGrabs;
     return S_OK;
   }
 
+  PWaitAndSignal mutex(m_mutex);
 
-  long bufferSize;
-  BYTE * pBuffer;
+  if (m_buffer.GetSize() != (PINDEX)size) {
+    if (!m_buffer.SetMinSize(size))
+      return E_POINTER;
+  }
 
-  PMutex mbuf;
-  PSyncPoint frameready;
-  PINDEX cInd;
+  memcpy(m_buffer.GetPointer(), buffer, size);
+  m_actualSize = size;
 
-};
+  m_frameReady.Signal();
+
+#if PTRACING
+  ++m_totalFrames;
+#endif
+  return S_OK;
+}
+
+
+bool CSampleGrabberCB::GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize)
+{
+  // Live! Cam Optia AF (VC0100) webcam took 3.1 sec.
+  if (!m_frameReady.Wait(5000)) {
+    PTRACE(1, "DShow\tTimeout awaiting next frame");
+    return false;
+  }
+
+  PWaitAndSignal mutex(m_mutex);
+
+  if (m_actualSize > maxSize) {
+    PTRACE(1, "DShow\tNot copying, m_maxFrameBytes (" << m_actualSize << " > " << maxSize << ')');
+    return false;
+  }
+
+  memcpy(data, m_buffer, m_actualSize);
+  actualSize = m_actualSize;
+  return true;
+}
 
 
 static HRESULT GetUnconnectedPin(IBaseFilter *pFilter,   // Pointer to the filter.
@@ -1492,27 +1555,10 @@ PINDEX PVideoInputDevice_DirectShow::GetCurrentBufferSize()
 }
 
 
-bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data)
+bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bufferSize)
 {
   CSampleGrabberCB * cb = (CSampleGrabberCB *)&*m_pSampleGrabberCB;
-
-  // Live! Cam Optia AF (VC0100) webcam took 3.1 sec.
-  if (!cb->frameready.Wait(5000)) {
-    PTRACE(1, "DShow\tTimeout awaiting next frame");
-    return false;
-  }
-
-  if (PAssertNULL(cb->pBuffer) == NULL)
-    return false;
-
-  if (cb->bufferSize <= m_maxFrameBytes) {
-    cb->mbuf.Wait();
-    memcpy(data, cb->pBuffer, cb->bufferSize);
-    cb->mbuf.Signal();
-  } else
-    PTRACE(1, "DShow\tNot copying, since bufferSize is greater than m_maxFrameBytes (" << cb->bufferSize << " > " << m_maxFrameBytes << ")");
-
-  return true;
+  return cb != NULL && cb->GetData(data, m_maxFrameBytes, bufferSize);
 }
 
 
