@@ -1188,14 +1188,14 @@ dnl ########################################################################
 dnl check for libjpeg
 
 dnl MSWIN_DISPLAY    libjpeg,libjpeg support
-dnl MSWIN_CHECK_FILE libjpeg,lib\jpeg.lib,P_LIBJEG_WIN32=1
-dnl MSWIN_CHECK_FILE libjpeg,lib\win32\libjpeg.lib,P_LIBJEG_WIN32=1
-dnl MSWIN_CHECK_FILE libjpeg,lib\x64\libjpeg.lib,P_LIBJEG_WIN64=1
+dnl MSWIN_CHECK_FILE libjpeg,lib\jpeg.lib,P_LIBJPEG_WIN32=1
+dnl MSWIN_CHECK_FILE libjpeg,lib\win32\libjpeg.lib,P_LIBJPEG_WIN32=1
+dnl MSWIN_CHECK_FILE libjpeg,lib\x64\libjpeg.lib,P_LIBJPEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
 dnl MSWIN_FIND_FILE  libjpeg,P_LIBJPEG_LIBRARY,jpeg.lib,lib
+dnl MSWIN_CHECK_DIR  libjpeg,\libjpeg-turbo
+dnl MSWIN_CHECK_DIR  libjpeg,..\external\libjpeg-turbo
 dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d
-dnl MSWIN_CHECK_DIR  libjpeg,%ProgramFiles%\OSSBuild\GStreamer\v0.10.6\sdk
-dnl MSWIN_CHECK_DIR  libjpeg,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
 
 AC_LANG_PUSH(C)
 
@@ -1235,6 +1235,18 @@ MY_ARG_ENABLE(
       ]
    )]
 )
+
+dnl ########################################################################
+dnl look for Intel Integrated Performance Primitives
+
+dnl MSWIN_DISPLAY    ipp,Intel Integrated Performance Primitives
+dnl MSWIN_CHECK_FILE ipp,include/ipp.h,P_IPP=1
+dnl MSWIN_FIND_FILE  ipp,P_IPP_CC_LIB32,ippcc.lib,lib/ia32
+dnl MSWIN_FIND_FILE  ipp,P_IPP_CC_LIB64,ippcc.lib,lib/intel64
+dnl MSWIN_FIND_FILE  ipp,P_IPP_CORE_LIB32,ippcore.lib,lib/ia32
+dnl MSWIN_FIND_FILE  ipp,P_IPP_CORE_LIB64,ippcore.lib,lib/intel64
+dnl MSWIN_DIR_SYMBOL ipp,IPP_DIR
+dnl MSWIN_CHECK_DIR  ipp,%IPPROOT%
 
 
 dnl ########################################################################
