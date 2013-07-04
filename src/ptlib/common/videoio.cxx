@@ -805,20 +805,6 @@ PBoolean PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, ResizeMode resizeMode)
 {
-  bool isMJPEGCapture = (PVideoFrameInfo::GetColourFormat() == "MJPEG") && CanCaptureVideo();
-
-  if (!isMJPEGCapture || (((width | height) & 0xf) == 0)) {
-    if (SetFrameSize(width, height)) {
-      if (nativeVerticalFlip && (converter == NULL))
-        converter = new PSynonymColour(*this, *this);
-      if (converter != NULL) {
-        converter->SetFrameSize(frameWidth, frameHeight);
-        converter->SetVFlipState(nativeVerticalFlip);
-      }
-      return true;
-    }
-  }
-
   // Try and get the most compatible physical frame size to convert from/to
   if (!SetNearestFrameSize(width, height)) {
     PTRACE(1, "PVidDev\tCannot set an apropriate size to scale from.");
@@ -829,9 +815,8 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
   if (converter == NULL) {
     PVideoFrameInfo src = *this;
     PVideoFrameInfo dst = *this;
-    if (CanCaptureVideo()) {
+    if (CanCaptureVideo())
       dst.SetFrameSize(width, height);
-    }
     else
       src.SetFrameSize(width, height);
     dst.SetResizeMode(resizeMode);
@@ -1328,37 +1313,32 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
 
   std::list<PVideoFrameInfo>::iterator it;
 
-  bool isMJPEG = PVideoFrameInfo::GetColourFormat() == "MJPEG";
+  // First try and pick one with the same width
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    if (it->GetFrameWidth() == width)
+      return SetFrameSize(width, it->GetFrameHeight());
+  }
 
-  if (!isMJPEG) {
+  // Then try for the same height
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    if (it->GetFrameHeight() == height)
+      return SetFrameSize(it->GetFrameWidth(), height);
+  }
 
-    // First try and pick one with the same width
-    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-      if (it->GetFrameWidth() == width)
-        return SetFrameSize(width, it->GetFrameHeight());
-    }
+  // Then try for double the size
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    unsigned w, h;
+    it->GetFrameSize(w, h);
+    if (w == width*2 && h == height*2)
+      return SetFrameSize(w, h);
+  }
 
-    // Then try for the same height
-    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-      if (it->GetFrameHeight() == height)
-        return SetFrameSize(it->GetFrameWidth(), height);
-    }
-
-    // Then try for double the size
-    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-      unsigned w, h;
-      it->GetFrameSize(w, h);
-      if (w == width*2 && h == height*2)
-        return SetFrameSize(w, h);
-    }
-
-    // Then try for half the size
-    for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
-      unsigned w, h;
-      it->GetFrameSize(w, h);
-      if (w == width/2 && h == height/2)
-        return SetFrameSize(w, h);
-    }
+  // Then try for half the size
+  for (it = caps.framesizes.begin(); it != caps.framesizes.end(); ++it) {
+    unsigned w, h;
+    it->GetFrameSize(w, h);
+    if (w == width/2 && h == height/2)
+      return SetFrameSize(w, h);
   }
 
   // Now try and pick one that has the nearest number of pixels in total.
@@ -1371,17 +1351,12 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
     int d = w*h - pixels;
     if (d < 0)
       d = -d;
-    if (diff > d && 
-          // Ensure we don't pick one dimension greater and one 
-          // lower because we can't shrink one and grow the other.
-          ((w < width && h < height) || 
-	       (w > width && h > height))
-    ) {
-      if (!isMJPEG || (((w | h) & 0xf) == 0)) {
-        diff = d;
-        widthToUse = w;
-        heightToUse = h;
-      }
+    // Ensure we don't pick one dimension greater and one 
+    // lower because we can't shrink one and grow the other.
+    if (diff > d && ((w < width && h < height) || (w > width && h > height))) {
+      diff = d;
+      widthToUse = w;
+      heightToUse = h;
     }
   }
 
