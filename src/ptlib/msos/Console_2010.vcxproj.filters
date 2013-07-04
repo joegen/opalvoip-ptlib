@@ -127,9 +127,6 @@
     <ClCompile Include="..\common\vfakeio.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\vconvert.cxx">
-      <Filter>Source Files\Console</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\syslog.cxx">
       <Filter>Source Files\Console</Filter>
     </ClCompile>
@@ -375,6 +372,9 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\xmpp_muc.cxx">
       <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\vconvert.cxx">
+      <Filter>Source Files\Components\Media</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

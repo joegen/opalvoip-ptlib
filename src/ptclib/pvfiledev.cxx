@@ -56,8 +56,6 @@
 class PVideoInputDevice_VideoFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    typedef PFactory<PVideoFile> FileTypeFactory_T;
-
     virtual PObject * CreateInstance(int /*userData*/) const
     {
       return new PVideoInputDevice_VideoFile;
@@ -70,24 +68,8 @@ class PVideoInputDevice_VideoFile_PluginServiceDescriptor : public PDevicePlugin
 
     virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {
-      PCaselessString adjustedDevice = deviceName;
-
-      FileTypeFactory_T::KeyList_T keyList = FileTypeFactory_T::GetKeyList();
-      FileTypeFactory_T::KeyList_T::iterator r;
-      for (r = keyList.begin(); r != keyList.end(); ++r) {
-        PString ext = *r;
-        PINDEX extLen = ext.GetLength();
-        PINDEX length = adjustedDevice.GetLength();
-        if (length > (2+extLen) && adjustedDevice.NumCompare(PString(".") + ext + "*", 2+extLen, length-(2+extLen)) == PObject::EqualTo)
-          adjustedDevice.Delete(length-1, 1);
-        else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo)
-          continue;
-        if (PFile::Access(adjustedDevice, PFile::ReadOnly)) 
-          return true;
-        //PTRACE(1, "Unable to access file '" << adjustedDevice << "' for use as a video input device");
-        //return false;
-      }
-      return false;
+      PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
+      return std::find(keyList.begin(), keyList.end(), PFilePath(deviceName).GetType()) != keyList.end();
     }
 } PVideoInputDevice_VideoFile_descriptor;
 
@@ -113,52 +95,46 @@ PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*s
 {
   Close();
 
-  PFilePath fileName;
-  PString extension;
+  if (devName.IsEmpty())
+    return false;
 
-  if (devName.Left(2) != "*.") {
-    fileName = devName;
-    PINDEX pos = fileName.GetLength()-1;
-    if (fileName[pos] == '*') {
-      fileName.Delete(pos, 1);
-      SetChannel(Channel_PlayAndRepeat);
-    }
-    extension = fileName.GetType();
-    if (extension[0] == '.')
-      extension = extension.Mid(1);
-    PTRACE(1, "VidFileDev", "Opening file " << devName << "(" << fileName << ") with extension " << extension);
-  }
+  PFilePath filePath;
+
+  PINDEX pos = devName.GetLength()-1;
+  if (devName[pos] != '*')
+    filePath = devName;
   else {
-    PTRACE(1, "VidFileDev", "Opening dir " << devName);
-    PFactory<PVideoFile>::KeyList_T keyList = PFactory<PVideoFile>::GetKeyList();
-    PFactory<PVideoFile>::KeyList_T::iterator r;
-    bool found = false;
-    for (r = keyList.begin(); !found && (r != keyList.end()); ++r) {
-      extension = *r;
-      PDirectory dir;
-      if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
-        do {
-          if (dir.GetEntryName().Right(extension.GetLength()) == (PString(".") + extension)) {
-            fileName = dir.GetEntryName();
-            found = true;
-            break;
-          }
-        } while (dir.Next());
-      }
+    filePath = devName.Left(pos);
+    SetChannel(Channel_PlayAndRepeat);
+  }
+
+  if (filePath.Find('*') != P_MAX_INDEX) {
+    bool noFilesOfType = true;
+    PDirectory dir = filePath.GetDirectory();
+    PTRACE(1, "VidFileDev", "Searching directory \"" << dir << '"');
+    if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
+      do {
+        PFilePath dirFile = dir + dir.GetEntryName();
+        if (dirFile.GetType() == filePath.GetType()) {
+          filePath = dirFile;
+          noFilesOfType = false;
+          break;
+        }
+      } while (dir.Next());
     }
-    if (fileName.IsEmpty()) {
+    if (noFilesOfType) {
       PTRACE(1, "VidFileDev\tCannot find any file using " << PDirectory()  << " as source for video input device");
       return false;
     }
   }
 
-  PTRACE(1, "VidFileDev", "Opening file with extension " << extension);
-
-  m_file = PFactory<PVideoFile>::CreateInstance(extension);
-  if (m_file == NULL || !m_file->Open(fileName, PFile::ReadOnly, PFile::MustExist)) {
-    PTRACE(1, "VidFileDev\tCannot open file " << fileName << " as video input device");
+  m_file = PVideoFileFactory::CreateInstance(filePath.GetType());
+  if (m_file == NULL || !m_file->Open(filePath, PFile::ReadOnly, PFile::MustExist)) {
+    PTRACE(1, "VidFileDev\tCannot open file \"" << filePath << "\" as video input device");
     return false;
   }
+
+  PTRACE(3, "VidFileDev", "Opening file " << filePath);
 
   *static_cast<PVideoFrameInfo *>(this) = *static_cast<PVideoFrameInfo *>(m_file);
 
@@ -211,12 +187,9 @@ PStringArray PVideoInputDevice_VideoFile::GetInputDeviceNames()
 {
   PStringArray names;
 
-  PFactory<PVideoFile>::KeyList_T keyList = PFactory<PVideoFile>::GetKeyList();
-  PFactory<PVideoFile>::KeyList_T::iterator r;
-  for (r = keyList.begin(); r != keyList.end(); ++r) {
-    PString ext = *r;
-    names.AppendString("*." + ext);
-  }
+  PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
+  for (PVideoFileFactory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
+    names.AppendString("*" + *it);
 
   return names;
 }
@@ -444,7 +417,7 @@ PBoolean PVideoOutputDevice_VideoFile::Open(const PString & devName, PBoolean /*
     } while (PFile::Exists(fileName));
   }
 
-  m_file = PFactory<PVideoFile>::CreateInstance("yuv");
+  m_file = PVideoFileFactory::CreateInstance(fileName.GetType());
   if (m_file == NULL || !m_file->Open(fileName, PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
     PTRACE(1, "VideoFile\tCannot create file " << fileName << " as video output device");
     return false;
@@ -489,12 +462,9 @@ PStringArray PVideoOutputDevice_VideoFile::GetOutputDeviceNames()
 {
   PStringArray names;
 
-  PFactory<PVideoFile>::KeyList_T keyList = PFactory<PVideoFile>::GetKeyList();
-  PFactory<PVideoFile>::KeyList_T::iterator r;
-  for (r = keyList.begin(); r != keyList.end(); ++r) {
-    PString ext = *r;
-    names.AppendString("*." + ext);
-  }
+  PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
+  for (PVideoFileFactory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
+    names.AppendString("*" + *it);
 
   return names;
 }

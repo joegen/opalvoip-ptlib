@@ -776,16 +776,25 @@
 //
 
 #undef P_LIBJPEG
-#undef P_LIBJEG_WIN32
-#undef P_LIBJEG_WIN64
+#undef P_LIBJPEG_WIN32
+#undef P_LIBJPEG_WIN64
 
-#if (defined(P_LIBJEG_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_LIBJEG_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
+#if (defined(P_LIBJPEG_WIN64) &&  defined(P_64BIT)                        ) || \
+    (defined(P_LIBJPEG_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
   #define P_LIBJPEG 1
 #endif
 
+#if P_LIBJPEG
+  #define P_JPEG_DECODER 1
+#else
+  #define P_TINY_JPEG 1
+  #if P_TINY_JPEG
+    #define P_JPEG_DECODER 1
+  #endif
+#endif
 
-#if defined(P_LIBJPEG) && defined(_MSC_VER)
+
+#if defined(_MSC_VER) && P_LIBJPEG
   #pragma include_alias(<jpeglib.h>, <@LIBJPEG_DIR@/include/jpeglib.h>)
 
   #pragma include_alias("jconfig.h", "@LIBJPEG_DIR@/include/jconfig.h")
@@ -806,6 +815,7 @@
     #endif
   #endif
 #endif
+
 
 /////////////////////////////////////////////////
 //
@@ -859,7 +869,16 @@
 //
 
 #undef P_MEDIALIB
-#define P_TINY_JPEG   1
+#undef P_IPP
+
+#if defined(_MSC_VER) && defined(P_IPP)
+  #define P_IPP_INCLUDE(inc) include_alias(<inc>, <@IPP_DIR@/include/inc>)
+  #pragma P_IPP_INCLUDE(ippcc.h)
+  #undef P_IPP_CC_LIB32
+  #undef P_IPP_CC_LIB64
+  #undef P_IPP_CORE_LIB32
+  #undef P_IPP_CORE_LIB64
+#endif
 
 
 /////////////////////////////////////////////////

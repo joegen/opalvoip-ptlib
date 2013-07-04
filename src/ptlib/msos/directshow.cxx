@@ -809,7 +809,8 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
   if (converter != NULL) {
     if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize), bufferSize))
       return false;
-    if (!converter->Convert(m_tempFrame, destFrame, bufferSize, bytesReturned))
+    converter->SetSrcFrameBytes(bufferSize);
+    if (!converter->Convert(m_tempFrame, destFrame, bytesReturned))
       return false;
   }
   else {

@@ -129,9 +129,12 @@ class PYUVFile : public PVideoFile
     bool m_y4mMode; 
 };
 
+typedef PFactory<PVideoFile, PFilePathString> PVideoFileFactory;
+
 PFACTORY_LOAD(PYUVFile);
 
-#if P_LIBJPEG
+
+#if P_JPEG_DECODER
 
 /**
  * A file containing a JPEG image
@@ -160,14 +163,15 @@ class PJPEGFile : public PVideoFile
     bool SetPosition(off_t pos, PFile::FilePositionOrigin origin);
 
   protected:
-    unsigned char * m_pixelData;
-    off_t m_pixelDataSize;
+    PBYTEArray m_pixelData;
 };
 
 PFACTORY_LOAD(PJPEGFile);
 
-#endif  // P_LIBJPEG
+#endif  // P_JPEG_DECODER
+
 #endif  // P_VIDFILE
+
 #endif  // P_VIDEO
 
 #endif // PTLIB_PVIDFILE_H

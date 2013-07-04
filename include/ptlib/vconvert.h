@@ -182,25 +182,32 @@ class PColourConverter : public PObject
 
     /**Get the source colour format.
       */
-    const PString & GetSrcColourFormat() { return m_srcColourFormat; }
+    const PString & GetSrcColourFormat() const { return m_srcColourFormat; }
 
     /**Get the destination colour format.
       */
-    const PString & GetDstColourFormat() { return m_dstColourFormat; }
+    const PString & GetDstColourFormat() const { return m_dstColourFormat; }
 
     /**Get the maximum frame size in bytes for source frames.
 
        Note a particular device may be able to provide variable length
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
-    PINDEX GetMaxSrcFrameBytes() { return m_srcFrameBytes; }
+    PINDEX GetMaxSrcFrameBytes() const { return m_srcFrameBytes; }
+
+    /**Set the actual frame size in bytes for source frames.
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    void SetSrcFrameBytes(PINDEX frameBytes) { m_srcFrameBytes = frameBytes; }
 
     /**Get the maximum frame size in bytes for destination frames.
 
        Note a particular device may be able to provide variable length
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
-    PINDEX GetMaxDstFrameBytes() { return m_dstFrameBytes; }
+    PINDEX GetMaxDstFrameBytes() const { return m_dstFrameBytes; }
 
 
     /**Convert from one colour format to another.
@@ -215,13 +222,6 @@ class PColourConverter : public PObject
     virtual PBoolean Convert(
       const BYTE * srcFrameBuffer,  ///< Frame store for source pixels
       BYTE * dstFrameBuffer,        ///< Frame store for destination pixels
-      PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
-    ) = 0;
-
-    virtual PBoolean Convert(
-      const BYTE * srcFrameBuffer,  ///< Frame store for source pixels
-      BYTE * dstFrameBuffer,        ///< Frame store for destination pixels
-      unsigned int srcFrameBytes,   ///< Bytes used in source frame buffer
       PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
     ) = 0;
 
@@ -354,6 +354,8 @@ class PColourConverter : public PObject
 
     PBYTEArray m_intermediateFrameStore;
 
+  P_REMOVE_VIRTUAL(PBoolean,Convert(const BYTE*,BYTE*,unsigned,PINDEX*),false);
+
   friend class PColourConverterRegistration;
 };
 
@@ -369,7 +371,6 @@ class cls : public ancestor { \
   cls(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) \
     : ancestor(src, dst) { } \
   virtual PBoolean Convert(const BYTE *, BYTE *, PINDEX * = NULL); \
-  virtual PBoolean Convert(const BYTE *, BYTE *, unsigned int , PINDEX * = NULL); \
 }; \
 static class cls##_Registration : public PColourConverterRegistration { \
   public: cls##_Registration() \
@@ -378,9 +379,7 @@ static class cls##_Registration : public PColourConverterRegistration { \
 } p_##cls##_registration_instance; \
 PColourConverter * cls##_Registration::Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const \
   { return new cls(src, dst); } \
-PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, unsigned int srcFrameBytes, PINDEX * bytesReturned) \
-  { m_srcFrameBytes = srcFrameBytes;return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned); } \
-PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned)
+PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned) \
 
 
 /**Declare a colour converter class with Convert() function.
@@ -404,7 +403,6 @@ class PSynonymColour : public PColourConverter {
       const PVideoFrameInfo & dst
     ) : PColourConverter(src, dst) { }
     virtual PBoolean Convert(const BYTE *, BYTE *, PINDEX * = NULL);
-    virtual PBoolean Convert(const BYTE *, BYTE *, unsigned int , PINDEX * = NULL);
 };
 
 
@@ -431,6 +429,32 @@ class PSynonymColourRegistration : public PColourConverterRegistration {
 #define PSYNONYM_COLOUR_CONVERTER(from,to) \
   static PSynonymColourRegistration p_##from##_##to##_registration_instance(#from,#to)
 
+
+#if P_JPEG_DECODER
+
+class PJPEGConverter : public PColourConverter
+{
+  protected:
+    struct Context;
+    Context * m_context;
+
+  public:
+    PJPEGConverter(const PVideoFrameInfo & src, const PVideoFrameInfo & dst);
+    ~PJPEGConverter();
+
+    virtual PBoolean Convert(
+      const BYTE * srcFrameBuffer,  ///< Frame store for source pixels
+      BYTE * dstFrameBuffer,        ///< Frame store for destination pixels
+      PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
+    );
+
+    bool Load(
+      PFile & file,
+      PBYTEArray & dstFrameBuffer
+    );
+};
+
+#endif  // P_JPEG_DECODER
 
 #endif // P_VIDEO
 
