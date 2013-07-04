@@ -42,19 +42,46 @@
 
 #include <ptlib/vconvert.h>
 
-#ifdef P_TINY_JPEG
-#include "tinyjpeg.h"
+#if P_TINY_JPEG
+  #include "tinyjpeg.h"
 #endif
 
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4244)
+#if P_LIBJPEG
+  extern"C" {
+    #include <jpeglib.h>
+  };
+  #ifdef _MSC_VER
+    #pragma comment(lib, P_LIBJPEG_LIBRARY)
+  #endif
 #endif
-
 
 #ifdef P_MEDIALIB
-#include <mlib.h>
+  #include <mlib.h>
 #endif
+
+#if P_IPP
+  #include <ippcc.h>
+  #ifdef _MSC_VER
+    #if P_64BIT
+      #pragma comment(lib, P_IPP_CC_LIB64)
+      #pragma comment(lib, P_IPP_CORE_LIB64)
+    #else
+      #pragma comment(lib, P_IPP_CC_LIB32)
+      #pragma comment(lib, P_IPP_CORE_LIB32)
+    #endif
+  #endif
+#endif
+
+
+#if _MSC_VER
+  #pragma intrinsic(memcpy)
+  #define PRAGMA_OPTIMISE_ON()        __pragma(optimize("tgy", on)) __pragma(runtime_checks("scu", off))
+  #define PRAGMA_OPTIMISE_DEFAULT()   __pragma(optimize("", on))    __pragma(runtime_checks("", restore))
+#else
+  #define PRAGMA_OPTIMISE_ON()
+  #define PRAGMA_OPTIMISE_DEFAULT()
+#endif
+
 
 static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
 
@@ -62,20 +89,6 @@ PSYNONYM_COLOUR_CONVERTER(YUV420P,IYUV);
 PSYNONYM_COLOUR_CONVERTER(IYUV,   YUV420P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,I420);
 PSYNONYM_COLOUR_CONVERTER(I420,   YUV420P);
-
-//PSYNONYM_COLOUR_CONVERTER(SBGGR8, SBGGR8);
-//PSYNONYM_COLOUR_CONVERTER(Grey,   Grey);
-//PSYNONYM_COLOUR_CONVERTER(RGB24,  RGB24);
-//PSYNONYM_COLOUR_CONVERTER(BGR24,  BGR24);
-//PSYNONYM_COLOUR_CONVERTER(RGB32,  RGB32);
-//PSYNONYM_COLOUR_CONVERTER(BGR32,  BGR32);
-//PSYNONYM_COLOUR_CONVERTER(UYVY422,UYVY422);
-//PSYNONYM_COLOUR_CONVERTER(YUV411P,YUV411P);
-//PSYNONYM_COLOUR_CONVERTER(YUY2,   YUY2);
-
-//#ifdef P_TINY_JPEG
-//PSYNONYM_COLOUR_CONVERTER(MJPEG,   MJPEG);
-//#endif
 
 
 class PStandardColourConverter : public PColourConverter
@@ -86,7 +99,6 @@ class PStandardColourConverter : public PColourConverter
       const PVideoFrameInfo & src,
       const PVideoFrameInfo & dst
     ) : PColourConverter(src, dst)
-    , m_isBlack(false)
     { }
 
     bool SBGGR8toYUV420P(
@@ -169,21 +181,6 @@ class PStandardColourConverter : public PColourConverter
       const BYTE *yuy2,
       BYTE *yuv420p
     ) const;
-
-#if defined(P_TINY_JPEG)
-    bool MJPEGToSameSize(
-      const BYTE *mjpeg,
-      BYTE * data,
-      int format
-    );
-    bool MJPEGtoXXX(
-      const BYTE *mjpeg,
-            BYTE *output_data,
-            PINDEX *bytesReturned,
-            int format
-    );
-#endif
-    bool m_isBlack;
 };
 
 
@@ -565,6 +562,7 @@ class PRasterDutyCycle
 // Grow and Shrink utilise the Variable Duty Cycle algorithm, currently
 // no interpolation is used, just pixel dropping or doubling
 
+PRAGMA_OPTIMISE_ON()
 static void GrowYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigned srcHeight,
                         unsigned srcFrameWidth, const BYTE * srcYUV,
                         unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
@@ -640,6 +638,7 @@ static void ShrinkYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsig
     dstPtr += dstFrameWidth;
   }
 }
+PRAGMA_OPTIMISE_DEFAULT()
 
 
 static void CropYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigned srcHeight,
@@ -795,6 +794,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
 }
 
 
+PRAGMA_OPTIMISE_ON()
 bool PColourConverter::RotateYUV420P(int angle, unsigned width, unsigned height, BYTE * srcYUV, BYTE * dstYUV)
 {
   if (!PAssert(width > 16 && height > 16, PInvalidParameter))
@@ -909,6 +909,7 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
 
   return true;
 }
+PRAGMA_OPTIMISE_DEFAULT()
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -926,15 +927,8 @@ PColourConverter * PSynonymColourRegistration::Create(const PVideoFrameInfo & sr
   return new PSynonymColour(src, dst);
 }
 
-PBoolean PSynonymColour::Convert(const BYTE *srcFrameBuffer,
-                             BYTE *dstFrameBuffer,
-                             unsigned int srcFrameBytes,
-                             PINDEX * bytesReturned)
-{
-  m_srcFrameBytes = srcFrameBytes;
-  return Convert(srcFrameBuffer, dstFrameBuffer, bytesReturned);
-}
 
+PRAGMA_OPTIMISE_ON()
 PBoolean PSynonymColour::Convert(const BYTE *srcFrameBuffer,
                              BYTE *dstFrameBuffer,
                              PINDEX * bytesReturned)
@@ -1564,8 +1558,6 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 }
 
 
-__inline static BYTE Clamp8(int value) { return value < 0 ? 0 : (value > 255 ? 255 : value); }
-
 static inline int clip(int a, int limit) {
   return a<limit?a:limit;
 }
@@ -1760,9 +1752,19 @@ bool PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
 }
 
 
-#define SCALEBITS 12
-#define ONE_HALF  (1UL << (SCALEBITS - 1))
-#define FIX(x)    ((int) ((x) * (1UL<<SCALEBITS) + 0.5))
+typedef int FixedPoint; // Best to be native integer size
+#define ScaleBitShift 12
+static FixedPoint const HalfFixedScaling = 1 << (ScaleBitShift - 1);
+
+#define ROUND(x) ((x) + HalfFixedScaling)
+#define CLAMP(x) (BYTE)(((x) < 0 ? 0 : ((x) >= (255<<ScaleBitShift) ? 255 : ((x)>>ScaleBitShift))))
+
+#define FIX_FROM_FLOAT(x)    ((int) ((x) * (1UL<<ScaleBitShift) + 0.5))
+static FixedPoint const YUVtoR_Coeff  =  FIX_FROM_FLOAT(1.40200);
+static FixedPoint const YUVtoG_Coeff1 = -FIX_FROM_FLOAT(0.34414);
+static FixedPoint const YUVtoG_Coeff2 =  FIX_FROM_FLOAT(0.71414);
+static FixedPoint const YUVtoB_Coeff  =  FIX_FROM_FLOAT(1.77200);
+#undef FIX_FROM_FLOAT
 
 /* 
  * Please note when converting colorspace from YUV to RGB.
@@ -1794,18 +1796,42 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     return false;
   }
 
-  static const unsigned greenOffset = 1;
-
-  unsigned srcPixpos[4] = { 0, 1, m_srcFrameWidth, m_srcFrameWidth + 1 };
-  unsigned dstPixpos[4] = { 0, rgbIncrement, m_dstFrameWidth*rgbIncrement, (m_dstFrameWidth+1)*rgbIncrement };
-
   unsigned yPlaneSize = m_srcFrameWidth*m_srcFrameHeight;
   const BYTE * scanLinePtrY = srcFrameBuffer;            // 1 byte Y (luminance) for each pixel
   const BYTE * scanLinePtrU = scanLinePtrY+yPlaneSize;   // 1 byte U for a block of 4 pixels
   const BYTE * scanLinePtrV = scanLinePtrU+yPlaneSize/4; // 1 byte V for a block of 4 pixels
 
+#if P_IPP
+  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
+    const Ipp8u * srcPlanes[3] = { scanLinePtrY, scanLinePtrU, scanLinePtrV };
+    int srcStep[3] = { m_srcFrameWidth, m_srcFrameWidth/2, m_srcFrameWidth/2 };
+    int dstStep = m_srcFrameWidth*rgbIncrement;
+    IppiSize size;
+    size.width = m_srcFrameWidth;
+    size.height = m_srcFrameHeight;
+    IppStatus status;
+    if (blueOffset == 0) {
+      if (rgbIncrement == 3)
+        status = ippiYCbCr420ToBGR_8u_P3C3R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size);
+      else
+        status = ippiYCbCr420ToBGR_8u_P3C4R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size, 0);
+    }
+    else {
+      if (rgbIncrement == 3)
+        status = ippiYUV420ToRGB_8u_P3C3(srcPlanes, dstFrameBuffer, size);
+      else
+        status = ippiYUV420ToRGB_8u_P3AC4R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size);
+    }
+    if (status == ippStsNoErr)
+      return true;
+  }
+#endif
+
+  unsigned srcPixpos[4] = { 0, 1, m_srcFrameWidth, m_srcFrameWidth + 1 };
+  unsigned dstPixpos[4] = { 0, rgbIncrement, m_dstFrameWidth*rgbIncrement, (m_dstFrameWidth+1)*rgbIncrement };
+
   BYTE * scanLinePtrRGB = dstFrameBuffer;
-  int scanLineSizeRGB = 2*rgbIncrement*m_dstFrameWidth;
+  int scanLineSizeRGB = rgbIncrement*m_dstFrameWidth;
 
   if (m_verticalFlip) {
     scanLinePtrRGB += (m_dstFrameHeight - 2) * m_dstFrameWidth * rgbIncrement;
@@ -1816,59 +1842,90 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     dstPixpos[3] = rgbIncrement;
   }
 
-  unsigned scanLineSizeY = m_srcFrameWidth*2; // Actually two scan lines
-  unsigned scanLineSizeUV = m_srcFrameWidth/2;
+  static const unsigned greenOffset = 1;
 
-  PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 2);
-  do {
-    while (raster.HasDutyY()) {
-      BYTE * pixelRGB = scanLinePtrRGB;
-      const BYTE * pixelY = scanLinePtrY;
-      const BYTE * pixelU = scanLinePtrU;
-      const BYTE * pixelV = scanLinePtrV;
+#define YUV420PtoRGB_PIXEL_UV(pixelU, pixelV) \
+    FixedPoint cb = *pixelU - 128; \
+    FixedPoint cr = *pixelV - 128; \
+    FixedPoint rd = ROUND(YUVtoR_Coeff * cr); \
+    FixedPoint gd = ROUND(YUVtoG_Coeff1 * cb - YUVtoG_Coeff2 * cr); \
+    FixedPoint bd = ROUND(YUVtoB_Coeff * cb);
+#define YUV420PtoRGB_PIXEL_RGB(pixelY) \
+    FixedPoint yvalue = pixelY[srcPixpos[p]] << ScaleBitShift; \
+    FixedPoint rvalue = yvalue + rd; \
+    FixedPoint gvalue = yvalue + gd; \
+    FixedPoint bvalue = yvalue + bd; \
+    rgbPtr[redOffset]   = CLAMP(rvalue); \
+    rgbPtr[greenOffset] = CLAMP(gvalue); \
+    rgbPtr[blueOffset]  = CLAMP(bvalue);
 
-      do {
-        // The RGB value without luminance
-        long cb = *pixelU - 128;
-        long cr = *pixelV - 128;
-        long rd = FIX(1.40200) * cr + ONE_HALF;
-        long gd = -FIX(0.34414) * cb -FIX(0.71414) * cr + ONE_HALF;
-        long bd = FIX(1.77200) * cb + ONE_HALF;
+  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
+    for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
+      for (unsigned x = 0; x < m_srcFrameWidth; x += 2) {
+        YUV420PtoRGB_PIXEL_UV(scanLinePtrU, scanLinePtrV);
+        for (unsigned p = 0; p < 4; p++) {
+          BYTE * rgbPtr = scanLinePtrRGB + dstPixpos[p];
+          YUV420PtoRGB_PIXEL_RGB(scanLinePtrY);
+          if (rgbIncrement == 4)
+            rgbPtr[3] = 0;
+        }
+        scanLinePtrRGB += rgbIncrement*2;
+        scanLinePtrY += 2;
+        scanLinePtrU++;
+        scanLinePtrV++;
+      }
+      scanLinePtrRGB += scanLineSizeRGB;
+      scanLinePtrY += m_srcFrameWidth;
+    }
+  }
+  else {
+    unsigned scanLineSizeY = m_srcFrameWidth*2; // Actually two scan lines
+    unsigned scanLineSizeUV = m_srcFrameWidth/2;
+    scanLineSizeRGB *= 2;
 
-        while (raster.HasDutyX()) {
-          // Add luminance to each of the 4 pixels
-          for (unsigned p = 0; p < 4; p++) {
-            BYTE * rgbPtr = pixelRGB + dstPixpos[p];
+    PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 2);
+    do {
+      while (raster.HasDutyY()) {
+        BYTE * pixelRGB = scanLinePtrRGB;
+        const BYTE * pixelY = scanLinePtrY;
+        const BYTE * pixelU = scanLinePtrU;
+        const BYTE * pixelV = scanLinePtrV;
 
-            if (raster.IsBlack())
-              rgbPtr[0] = rgbPtr[1] = rgbPtr[2] = 0;
-            else {
-              int yvalue = pixelY[srcPixpos[p]] << SCALEBITS;
+        do {
+          // The RGB value without luminance
+          YUV420PtoRGB_PIXEL_UV(pixelU, pixelV);
 
-              rgbPtr[redOffset]   = Clamp8((yvalue+rd)>>SCALEBITS);
-              rgbPtr[greenOffset] = Clamp8((yvalue+gd)>>SCALEBITS);
-              rgbPtr[blueOffset]  = Clamp8((yvalue+bd)>>SCALEBITS);
+          while (raster.HasDutyX()) {
+            // Add luminance to each of the 4 pixels
+            for (unsigned p = 0; p < 4; p++) {
+              BYTE * rgbPtr = pixelRGB + dstPixpos[p];
+
+              if (raster.IsBlack())
+                rgbPtr[0] = rgbPtr[1] = rgbPtr[2] = 0;
+              else {
+                YUV420PtoRGB_PIXEL_RGB(pixelY);
+              }
+
+              if (rgbIncrement == 4)
+                rgbPtr[3] = 0;
             }
 
-            if (rgbIncrement == 4)
-              rgbPtr[3] = 0;
+            pixelRGB += rgbIncrement*2;
           }
 
-          pixelRGB += rgbIncrement*2;
-        }
+          pixelY += 2;
+          pixelU++;
+          pixelV++;
+        } while (raster.RunningX());
 
-        pixelY += 2;
-        pixelU++;
-        pixelV++;
-      } while (raster.RunningX());
+        scanLinePtrRGB += scanLineSizeRGB;
+      }
 
-      scanLinePtrRGB += scanLineSizeRGB;
-    }
-
-    scanLinePtrY += scanLineSizeY;
-    scanLinePtrU += scanLineSizeUV;
-    scanLinePtrV += scanLineSizeUV;
-  } while (raster.RunningY());
+      scanLinePtrY += scanLineSizeY;
+      scanLinePtrU += scanLineSizeUV;
+      scanLinePtrV += scanLineSizeUV;
+    } while (raster.RunningY());
+  }
 
   if (bytesReturned != NULL)
     *bytesReturned = m_dstFrameBytes;
@@ -1915,19 +1972,22 @@ PBoolean PStandardColourConverter::YUV420PtoRGB565(const BYTE * srcFrameBuffer,
     for (unsigned x = 0; x < width; x += 2)
     {
       // The RGB value without luminance
-      long cb = *uplane-128;
-      long cr = *vplane-128;
-      long rd = FIX(1.40200) * cr + ONE_HALF;
-      long gd = -FIX(0.34414) * cb -FIX(0.71414) * cr + ONE_HALF;
-      long bd = FIX(1.77200) * cb + ONE_HALF;
+      FixedPoint cb = *uplane-128;
+      FixedPoint cr = *vplane-128;
+      FixedPoint rd = ROUND(YUVtoR_Coeff * cr);
+      FixedPoint gd = ROUND(YUVtoG_Coeff1 * cb - YUVtoG_Coeff2 * cr);
+      FixedPoint bd = ROUND(YUVtoB_Coeff * cb);
 
       // Add luminance to each of the 4 pixels
 
       for (unsigned p = 0; p < 4; p++) {
-        int yvalue = *(yplane + srcPixpos[p]) << SCALEBITS;
-        *(WORD *)(dstPixelGroup + dstPixpos[p]) = (((((Clamp8((yvalue+rd)>>SCALEBITS)) >> 3) & 0x001f) << 11) & (0xf800))
-                                                | (((((Clamp8((yvalue+gd)>>SCALEBITS)) >> 2) & 0x003f) << 5 ) & (0x07e0))
-                                                | (((((Clamp8((yvalue+bd)>>SCALEBITS)) >> 3) & 0x001f) ) & (0x001f));
+        FixedPoint yvalue = *(yplane + srcPixpos[p]) << ScaleBitShift;
+        FixedPoint rvalue = yvalue + rd;
+        FixedPoint gvalue = yvalue + gd;
+        FixedPoint bvalue = yvalue + bd;
+        *(WORD *)(dstPixelGroup + dstPixpos[p]) = ((((CLAMP(rvalue) >> 3) & 0x001f) << 11) & (0xf800))
+                                                | ((((CLAMP(gvalue) >> 2) & 0x003f) << 5 ) & (0x07e0))
+                                                | ((((CLAMP(bvalue) >> 3) & 0x001f) ) & (0x001f));
       }
 
       yplane += 2;
@@ -2736,142 +2796,364 @@ PSTANDARD_COLOUR_CONVERTER(UYV444,YUV420P)
     *bytesReturned = m_dstFrameBytes;
   return true;
 }
+PRAGMA_OPTIMISE_DEFAULT()
 
-#if defined (P_TINY_JPEG)
 
-bool PStandardColourConverter::MJPEGToSameSize(const BYTE * mjpeg, BYTE * data, int format)
+///////////////////////////////////////////////////////////////////////////////
+
+#if P_JPEG_DECODER
+
+struct PJPEGConverter::Context
 {
-  BYTE *components[4];
+#if P_TINY_JPEG
 
-  components[0] = data;
-  int componentCount = 1;
+  typedef int ColourSpace;
+  #define MY_JPEG_Grey      TINYJPEG_FMT_GREY
+  #define MY_JPEG_RGB24     TINYJPEG_FMT_RGB24
+  #define MY_JPEG_BGR24     TINYJPEG_FMT_BGR24
+  #define MY_JPEG_YUV420P   TINYJPEG_FMT_YUV420P
+  #define MY_JPEG_RGB32     -1
+  #define MY_JPEG_BGR32     -2
 
-  if (format == TINYJPEG_FMT_YUV420P) {
-    componentCount = 4;
-    int npixels = m_srcFrameWidth * m_srcFrameHeight;
-    components[1] = data + npixels;
-    components[2] = data + npixels + npixels/4;
-    components[3] = NULL;
-  }
- 
-  struct jdec_private * jdec = tinyjpeg_init();
-  if (jdec == NULL) {
-     PTRACE(2, "PColCnv\tJpeg error: Can't allocate memory");
-     return false;
-  }
-  tinyjpeg_set_flags(jdec, TINYJPEG_FLAGS_MJPEG_TABLE);
-  tinyjpeg_set_components(jdec, components, componentCount);
-  if (tinyjpeg_parse_header(jdec, mjpeg, m_srcFrameBytes) < 0) {
-     PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
-     free(jdec);
-     return false;
-  }
+  jdec_private * m_decoder;
 
-  unsigned int w, h;
-  tinyjpeg_get_size(jdec, &w, &h);
-  if ((w == m_srcFrameWidth) && (h == m_srcFrameHeight)) {
-    bool stat = tinyjpeg_decode(jdec, format) >= 0;
-    if (!stat)
-       PTRACE(2, "PColCnv\tJpeg error: " << tinyjpeg_get_errorstring(jdec));
-    else
-      m_isBlack = false;
-    free(jdec);
-    return stat;
-  }
-
-  if (format == TINYJPEG_FMT_YUV420P) {
-    if (!m_isBlack) {
-      FillYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, data, 0, 0, 0);
-      m_isBlack = true;
+  Context()
+  {
+    m_decoder = tinyjpeg_init();
+    if (m_decoder == NULL) {
+      PTRACE(2, NULL, "PColCnv", "TinyJpeg error: Can't allocate memory");
+      return;
     }
+
+    tinyjpeg_set_flags(m_decoder, TINYJPEG_FLAGS_MJPEG_TABLE);
   }
 
-  return true;
-}
 
-
-/*
- * Convert a MJPEG or JPEG buffer to YUV420P
- *
- */
-bool PStandardColourConverter::MJPEGtoXXX(const BYTE * mjpeg,
-                                          BYTE       * data,
-                                          PINDEX *bytesReturned,
-                                          int format)
-{
-  bool converted = false;
-
-  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
-     PTRACE(6,"PColCnv\tMJPEG to YUV420P");
-     converted = MJPEGToSameSize(mjpeg, data, format);  // ignore errors, as returning false will close the channel
-  } 
-  else if (format == TINYJPEG_FMT_YUV420P) {
-    /* Very not efficient */
-    unsigned int frameBytes = m_srcFrameWidth * m_srcFrameHeight * 3 / 2;
-    BYTE *intermed = m_intermediateFrameStore.GetPointer(frameBytes);
-    converted = MJPEGToSameSize(mjpeg, intermed, format);  // ignore errors, as returning false will close the channel
-    if (converted && (format == TINYJPEG_FMT_YUV420P))
-      CopyYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, intermed,
-                  0, 0, m_dstFrameWidth, m_dstFrameHeight, m_dstFrameWidth, m_dstFrameHeight, data,
-                  m_resizeMode);
-  }
-  else {
-    PTRACE(2, "PColCnv\tMJPEG converter cannot resize unless to YUV420P");
+  ~Context()
+  {
+    if (m_decoder != NULL)
+      free(m_decoder);
   }
 
-  if (bytesReturned != NULL)
-    *bytesReturned = converted ? m_dstFrameBytes : 0;
-  
-  return true;
-}
 
-PSTANDARD_COLOUR_CONVERTER(MJPEG,RGB24)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_RGB24);
-}
+  bool Start(const BYTE * srcFrameBuffer, PINDEX srcFrameBytes, unsigned & width, unsigned & height)
+  {
+    if (tinyjpeg_parse_header(m_decoder, srcFrameBuffer, srcFrameBytes) < 0) {
+      PTRACE(2, NULL, "PColCnv", "Parse JPEG header error: " << tinyjpeg_get_errorstring(m_decoder));
+      return false;
+    }
 
-PSTANDARD_COLOUR_CONVERTER(MJPEG,BGR24)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_BGR24);
-}
-
-PSTANDARD_COLOUR_CONVERTER(MJPEG,Grey)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_GREY);
-}
-
-PSTANDARD_COLOUR_CONVERTER(MJPEG,YUV420P)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_YUV420P);
-}
-
-PSTANDARD_COLOUR_CONVERTER(JPEG,RGB24)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_RGB24);
-}
-
-PSTANDARD_COLOUR_CONVERTER(JPEG,BGR24)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_BGR24);
-}
-
-PSTANDARD_COLOUR_CONVERTER(JPEG,Grey)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_GREY);
-}
-
-PSTANDARD_COLOUR_CONVERTER(JPEG,YUV420P)
-{
-  return MJPEGtoXXX(srcFrameBuffer, dstFrameBuffer, bytesReturned, TINYJPEG_FMT_YUV420P);
-}
+    tinyjpeg_get_size(m_decoder, &width, &height);
+    return true;
+  }
 
 
-#endif // __GNUC__
+  bool Finish(BYTE * dstFrameBuffer, unsigned width, unsigned height)
+  {
+    int componentCount = 1;
+    BYTE *components[4];
+    components[0] = dstFrameBuffer;
 
-#ifdef _MSC_VER
-#pragma warning(default : 4244)
+    if (m_colourSpace == TINYJPEG_FMT_YUV420P) {
+      componentCount = 4;
+      int npixels = width * height;
+      components[1] = dstFrameBuffer + npixels;
+      components[2] = dstFrameBuffer + npixels + npixels/4;
+      components[3] = NULL;
+    }
+ 
+    tinyjpeg_set_components(m_decoder, components, componentCount);
+
+    if (tinyjpeg_decode(m_decoder, m_colourSpace) >= 0)
+      return true;
+
+    PTRACE(2, NULL, "PColCnv", "JPEG decode error: " << tinyjpeg_get_errorstring(m_decoder));
+    return false;
+  }
+
+
+  bool Convert(const BYTE * srcFrameBuffer, PINDEX srcFrameBytes, BYTE * dstFrameBuffer, unsigned width, unsigned height)
+  {
+    if (m_decoder == NULL)
+      return false;
+
+    unsigned jpegWidth, jpegHeight;
+    return Start(srcFrameBuffer, srcFrameBytes, jpegWidth, jpegHeight) &&
+           jpegWidth == width && jpegHeight == height &&
+           Finish(dstFrameBuffer, width, height);
+  }
+
+#elif P_LIBJPEG
+
+  typedef J_COLOR_SPACE ColourSpace;
+  #define MY_JPEG_Grey    JCS_GRAYSCALE
+  #define MY_JPEG_RGB24   JCS_EXT_RGB
+  #define MY_JPEG_BGR24   JCS_EXT_BGR
+  #define MY_JPEG_YUV420P JCS_YCbCr
+  #define MY_JPEG_RGB32   JCS_EXT_RGBX
+  #define MY_JPEG_BGR32   JCS_EXT_BGRX
+
+  jpeg_error_mgr         m_error_mgr;
+  jpeg_decompress_struct m_decoder;
+  PBYTEArray             m_scan_line;
+
+
+  Context()
+  {
+    m_decoder.err = jpeg_std_error(&m_error_mgr);
+    jpeg_create_decompress(&m_decoder);
+  }
+
+
+  ~Context()
+  {
+    jpeg_destroy_decompress(&m_decoder);
+  }
+
+
+  void Error()
+  {
+#if PTRACING
+    if (PTrace::CanTrace(2)) {
+      ostream & trace = PTRACE_BEGIN(2, NULL, "PColConv");
+      trace << "Turbo-JPEG failed: ";
+      switch (m_error_mgr.last_jpeg_message) {
+        case 0 :
+          trace << "unknown error";
+          break;
+        case 1 :
+          trace << *m_error_mgr.jpeg_message_table;
+          break;
+        default :
+          for (int msg = 0; msg < m_error_mgr.last_jpeg_message; ++msg)
+            trace << "\n  Error " << (msg+1) << ": " << m_error_mgr.jpeg_message_table[msg];
+      }
+      trace << PTrace::End;
+    }
+#endif
+  }
+
+
+  bool Start(const BYTE * srcFrameBuffer, PINDEX srcFrameBytes, unsigned & width, unsigned & height)
+  {
+    jpeg_mem_src(&m_decoder, const_cast<unsigned char *>(srcFrameBuffer), srcFrameBytes);
+
+    if (jpeg_read_header(&m_decoder, TRUE) == JPEG_HEADER_OK) {
+      m_decoder.out_color_space = m_colourSpace;
+      m_decoder.dct_method = JDCT_IFAST;
+      if (jpeg_start_decompress(&m_decoder)) {
+        if (width > m_decoder.output_width)
+          width = m_decoder.output_width;
+        if (height > m_decoder.output_height)
+          height = m_decoder.output_height;
+        return true;
+      }
+    }
+
+    Error();
+    return false;
+  }
+
+
+  bool Finish(BYTE * dstFrameBuffer, unsigned width, unsigned height)
+  {
+    JSAMPROW row, y, u, v;
+    row = y = u = v = dstFrameBuffer;
+
+    if (m_colourSpace == JCS_YCbCr) {
+      row = m_scan_line.GetPointer(m_decoder.output_width*3); // Do not sue width here, it could be smaller.
+      u += width*height;
+      v += width*height*5/4;
+    }
+
+    while (jpeg_read_scanlines(&m_decoder, &row, 1) == 1) {
+      switch (m_colourSpace) {
+        default :
+          PAssertAlways(PUnsupportedFeature);
+          return false;
+
+        case JCS_EXT_RGB :
+        case JCS_EXT_BGR :
+          row += width*3;
+          break;
+
+        case JCS_EXT_RGBX :
+        case JCS_EXT_BGRX :
+          row += width*4;
+          break;
+
+        case JCS_GRAYSCALE :
+          row += width;
+          break;
+
+        case JCS_YCbCr :
+          if (m_decoder.output_scanline < height) {
+            for (JDIMENSION x = 0; x < width; ++x) {
+              *y++ = row[0];
+              if (((m_decoder.output_scanline|x) & 1) == 0) {
+                *u++ = row[1];
+                *v++ = row[2];
+              }
+              row += 3;
+            }
+            row = m_scan_line.GetPointer();
+          }
+      }
+
+      if (m_decoder.output_scanline >= m_decoder.output_height) {
+        jpeg_finish_decompress(&m_decoder);
+        return true;
+      }
+    }
+
+    Error();
+    return false;
+  }
+
 #endif
 
+
+  ColourSpace m_colourSpace;
+
+  bool SetColourSpace(const PCaselessString & colourFormat)
+  {
+    if (colourFormat == "YUV420P")
+      m_colourSpace = MY_JPEG_YUV420P;
+    else if (colourFormat == "RGB24")
+      m_colourSpace = MY_JPEG_RGB24;
+    else if (colourFormat == "BGR24")
+      m_colourSpace = MY_JPEG_BGR24;
+    else if (colourFormat == "RGB32")
+      m_colourSpace = MY_JPEG_RGB32;
+    else if (colourFormat == "BGR32")
+      m_colourSpace = MY_JPEG_BGR32;
+    else if (colourFormat == "Grey")
+      m_colourSpace = MY_JPEG_Grey;
+    else {
+      PTRACE(2, NULL, "PColConv", "Unsupported colout format: " << colourFormat);
+      return false;
+    }
+
+    return true;
+  }
+
+
+  bool Convert(const BYTE * srcFrameBuffer, PINDEX srcFrameBytes,
+               BYTE * dstFrameBuffer, PINDEX dstFrameBytes,
+               unsigned width, unsigned height,
+               PINDEX * bytesReturned, ColourSpace colourSpace)
+  {
+    m_colourSpace = colourSpace;
+
+    if (bytesReturned != NULL)
+      *bytesReturned = dstFrameBytes;
+
+    return Start(srcFrameBuffer, srcFrameBytes, width, height) && Finish(dstFrameBuffer, width, height);
+  }
+
+
+  bool Load(PFile & file, PBYTEArray & frameBuffer, unsigned & width, unsigned & height)
+  {
+    PBYTEArray jpegData;
+    if (!PAssert(jpegData.SetSize(file.GetLength()),POutOfMemory))
+      return false;
+
+    if (!file.Read(jpegData.GetPointer(), jpegData.GetSize())) {
+      PTRACE(2, NULL, "PColCnv", "JPEG file read error: " << file.GetErrorText());
+      return false;
+    }
+
+    if (!Start(jpegData, jpegData.GetSize(), width, height))
+      return false;
+
+    PINDEX frameBufferSize;
+    switch (m_colourSpace) {
+      case MY_JPEG_RGB24 :
+      case MY_JPEG_BGR24 :
+        frameBufferSize = width*height*3;
+        break;
+
+      case MY_JPEG_RGB32 :
+      case MY_JPEG_BGR32 :
+        frameBufferSize = width*height*4;
+        break;
+
+      case MY_JPEG_Grey :
+        frameBufferSize = width*height;
+        break;
+
+      case MY_JPEG_YUV420P :
+        frameBufferSize = width*height*3/2;
+        break;
+
+      default :
+        PAssertAlways(PInvalidParameter);
+        return false;
+    }
+
+    if (!PAssert(frameBuffer.SetSize(frameBufferSize),POutOfMemory))
+      return false;
+
+    return Finish(frameBuffer.GetPointer(), width, height);
+  }
+};
+
+
+PJPEGConverter::PJPEGConverter(const PVideoFrameInfo & src, const PVideoFrameInfo & dst)
+  : PColourConverter(src, dst)
+  , m_context(new Context)
+{
+}
+
+
+PJPEGConverter::~PJPEGConverter()
+{
+  delete m_context;
+}
+
+
+PBoolean PJPEGConverter::Convert(const BYTE * srcFrameBuffer, BYTE * dstFrameBuffer, PINDEX * bytesReturned)
+{
+  if (!m_context->SetColourSpace(m_dstColourFormat))
+    return false;
+
+  return m_context->Convert(srcFrameBuffer, m_srcFrameBytes,
+                            dstFrameBuffer, m_dstFrameBytes,
+                            m_dstFrameWidth, m_dstFrameHeight,
+                            bytesReturned, m_context->m_colourSpace);
+}
+
+
+bool PJPEGConverter::Load(PFile & file, PBYTEArray & dstFrameBuffer)
+{
+  if (!m_context->SetColourSpace(m_dstColourFormat))
+    return false;
+
+  return m_context->Load(file, dstFrameBuffer, m_dstFrameWidth, m_dstFrameHeight);
+}
+
+
+#define JPEG_CONVERTER(from,to) \
+  PCOLOUR_CONVERTER2(P_##from##_##to,PJPEGConverter,#from,#to) \
+  { return m_context->Convert(srcFrameBuffer, m_srcFrameBytes, dstFrameBuffer, m_dstFrameBytes, m_dstFrameWidth, m_dstFrameHeight, bytesReturned, MY_JPEG_##to); }
+
+JPEG_CONVERTER(MJPEG, RGB24)
+JPEG_CONVERTER(MJPEG, BGR24)
+JPEG_CONVERTER(MJPEG, Grey)
+JPEG_CONVERTER(MJPEG, YUV420P)
+JPEG_CONVERTER(JPEG,  RGB24)
+JPEG_CONVERTER(JPEG,  BGR24)
+JPEG_CONVERTER(JPEG,  Grey)
+JPEG_CONVERTER(JPEG,  YUV420P)
+#if P_LIBJPEG
+JPEG_CONVERTER(MJPEG, RGB32)
+JPEG_CONVERTER(MJPEG, BGR32)
+JPEG_CONVERTER(JPEG,  RGB32)
+JPEG_CONVERTER(JPEG,  BGR32)
 #endif
+
+#endif // P_JPEG_DECODER
+
+#endif // P_VIDEO
 
 // End Of File ///////////////////////////////////////////////////////////////

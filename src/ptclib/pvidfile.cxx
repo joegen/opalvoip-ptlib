@@ -175,8 +175,8 @@ PBoolean PVideoFile::SetFrameRate(unsigned rate)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PFACTORY_CREATE(PFactory<PVideoFile>, PYUVFile, "yuv", false);
-static PFactory<PVideoFile>::Worker<PYUVFile> y4mFileFactory("y4m");
+PFACTORY_CREATE(PVideoFileFactory, PYUVFile, ".yuv", false);
+static PVideoFileFactory::Worker<PYUVFile> y4mFileFactory(".y4m");
 
 
 PYUVFile::PYUVFile()
@@ -311,26 +311,17 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if P_LIBJPEG
+#if P_JPEG_DECODER
 #pragma message("JPEG file video device enabled")
-
-#ifdef _MSC_VER
-  #pragma comment(lib, P_LIBJPEG_LIBRARY)
-#endif
 
 #include <ptlib/vconvert.h>
 
-extern"C" {
-  #include <jpeglib.h>
-};
-
-
-PFACTORY_CREATE(PFactory<PVideoFile>, PJPEGFile, "jpg", false);
-static PFactory<PVideoFile>::Worker<PJPEGFile> jpegFileFactory("jpeg");
+PFACTORY_CREATE(PVideoFileFactory, PJPEGFile, ".jpg", false);
+static PVideoFileFactory::Worker<PJPEGFile> jpegFileFactory(".jpeg");
 
 PJPEGFile::PJPEGFile()
-  : m_pixelData(NULL)
 {
+  frameWidth = frameHeight = INT_MAX;
 }
 
 
@@ -341,107 +332,31 @@ PJPEGFile::~PJPEGFile()
 
 PBoolean PJPEGFile::IsOpen() const 
 { 
-  return m_pixelData != NULL; 
+  return !m_pixelData.IsEmpty();
 }
 
 
 PBoolean PJPEGFile::Close() 
 { 
-  delete [] m_pixelData;
-  m_pixelData = NULL;
+  m_pixelData.SetSize(0);
   return true;
 }
 
 
 PBoolean PJPEGFile::Open(const PFilePath & name, PFile::OpenMode mode, PFile::OpenOptions opts)
 {
-  unsigned w;
-  unsigned h;
-  size_t srcSize;
-  unsigned char * jpegRGB = NULL;
-  bool stat = false;
-  PColourConverter * converter = NULL;
-  JSAMPLE * src = NULL;
-
-  if (opts != PFile::ReadOnly)
+  if (mode != PFile::ReadOnly)
     return false;
 
   if (!PVideoFile::Open(name, mode, opts))
     return false;
 
-  // open the JPEG decoder
-  FILE * file = m_file.FDOpen((mode == PFile::ReadOnly) ? "rb" : "wb");
-  if (file == NULL) {
-    PTRACE(2, "JPEG", "Cannot open file '" << name << "'");
-    goto error1;
-  }
+  PJPEGConverter decoder(PVideoFrameInfo(frameWidth, frameHeight, "JPEG"), *this);
+  if (!decoder.Load(m_file, m_pixelData))
+    return false;
 
-  // declare and initialise the JPEG decoder
-  jpeg_decompress_struct jpegDecoder;
-  struct jpeg_error_mgr jerr;
-  jpegDecoder.err = jpeg_std_error(&jerr);
-
-  jpeg_create_decompress(&jpegDecoder);
-  jpeg_stdio_src(&jpegDecoder, file);
-
-  // read header 
-  (void)jpeg_read_header(&jpegDecoder, TRUE);
-
-  // set decompression parameters
-  jpegDecoder.out_color_space = JCS_RGB;
-  (void)jpeg_start_decompress(&jpegDecoder);
-
-  // get frame dimensions
-  w = jpegDecoder.output_width;
-  h = jpegDecoder.output_height;
-  if (!PVideoFile::SetFrameSize(w, h)) {
-    PTRACE(1, "PJPEGFile", "Cannot set frame dimensions");
-    goto error2;
-  }
-  m_pixelDataSize = (w * h * 3) / 2;
-  PTRACE(1, "PJPEGFILE", "Frame is " << w << "x" << h << " = " << m_pixelDataSize << " bytes");
-
-  // convert the file
-  srcSize = h * (w * 3);
-  jpegRGB = new unsigned char[srcSize];
-  src = jpegRGB;
-  while (jpegDecoder.output_scanline < jpegDecoder.output_height) {
-    jpeg_read_scanlines(&jpegDecoder, &src, 1);
-    src += w * 3;
-  }
-
-  // create the colour converter
-  converter = PColourConverter::Create("RGB24", "YUV420P", w, h);
-  if (converter == NULL) {
-    PTRACE(1, "JPEG", "Could not create converter");
-    goto error3;
-  }
-
-  // create the YUV420P buffer
-  m_pixelData = new unsigned char[m_pixelDataSize];
-  if (m_pixelData == NULL) {
-    PTRACE(1, "JPEG", "Cannot allocate YUV420P image data");
-    goto error3;
-  }
-  
-  converter->SetDstFrameSize(w, h);
-  stat = converter->Convert(jpegRGB, m_pixelData, srcSize);
-  delete converter;
-  if (!stat) {
-    PTRACE(1, "JPEG", "Conversion failed");
-    delete [] m_pixelData;
-    m_pixelData = NULL;
-  }
-
-error3:
-  delete[] jpegRGB;
-error2:
-  jpeg_destroy_decompress(&jpegDecoder);
-error1:
-  fclose(file);
-  m_file.Close(); 
-
-  return stat;
+  decoder.GetDstFrameInfo(*this);
+  return true;
 }
 
 
@@ -471,12 +386,12 @@ bool PJPEGFile::WriteFrame(const void * )
 
 PBoolean PJPEGFile::ReadFrame(void * frame)
 {
-  memcpy(frame, m_pixelData, m_pixelDataSize);
+  memcpy(frame, m_pixelData, m_pixelData.GetSize());
   return true;
 }
 
 #else
   #pragma message("JPEG file video device DISABLED")
-#endif  // P_LIBJPEG
+#endif  // P_JPEG_DECODER
 #endif  // P_VIDFILE
 #endif  // P_VIDEO
