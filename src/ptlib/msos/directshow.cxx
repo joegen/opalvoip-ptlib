@@ -293,6 +293,8 @@ PCREATE_VIDINPUT_PLUGIN(DirectShow);
 
 ////////////////////////////////////////////////////////////////////
 
+static const GUID MEDIASUBTYPE_I420 = { 0x30323449, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 };
+
 static struct {
     const char * m_colourFormat;
     GUID         m_guid;
@@ -304,6 +306,7 @@ static struct {
     { "RGB565",  MEDIASUBTYPE_RGB565 },
     { "RGB555",  MEDIASUBTYPE_RGB555 },
     { "YUV420P", MEDIASUBTYPE_IYUV   },  // aka I420
+    { "YUV420P", MEDIASUBTYPE_I420   },
     { "YUV420P", MEDIASUBTYPE_YV12   },
     { "YUV411",  MEDIASUBTYPE_Y411   },
     { "YUV411P", MEDIASUBTYPE_Y41P   },
@@ -364,10 +367,10 @@ class MediaTypePtr
       CoTaskMemFree(pointer);
     }
 
-    operator AM_MEDIA_TYPE *()        const { return  pointer; }
-    AM_MEDIA_TYPE & operator*()       const { return *pointer; }
-    AM_MEDIA_TYPE** operator&()             { return &pointer; }
-	AM_MEDIA_TYPE* operator->()       const { return  pointer; }
+    operator AM_MEDIA_TYPE *()  const { return  pointer; }
+    AM_MEDIA_TYPE & operator*() const { return *pointer; }
+    AM_MEDIA_TYPE** operator&()       { return &pointer; }
+    AM_MEDIA_TYPE* operator->() const { return  pointer; }
 
   private:
     MediaTypePtr(const MediaTypePtr &) { }
