@@ -813,6 +813,11 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
 
   // Now create the converter ( if not already exist)
   if (converter == NULL) {
+    if (frameWidth == width && frameHeight == height) {
+      PTRACE(3,"PVidDev\tNo converter required for " << width << 'x' << height);
+      return true;
+    }
+
     PVideoFrameInfo src = *this;
     PVideoFrameInfo dst = *this;
     if (CanCaptureVideo())
@@ -826,8 +831,7 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
       return false;
     }
   }
-  else
-  {
+  else {
     if (CanCaptureVideo())
       converter->SetDstFrameSize(width, height);
     else
