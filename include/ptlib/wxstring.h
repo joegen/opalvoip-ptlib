@@ -31,9 +31,6 @@
 #ifndef PTLIB_WXSTRING_H
 #define PTLIB_WXSTRING_H
 
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
 
 /**This class defines a class to bridge WX Widgets strings to PTLib strings.
  */
