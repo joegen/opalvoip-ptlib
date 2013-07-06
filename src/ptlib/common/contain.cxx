@@ -906,14 +906,16 @@ PString::PString(unsigned long n)
 }
 
 
-#if defined(HAVE_LONG_LONG_INT) || defined(HAVE_UNSIGNED_LONG_LONG_INT)
+#ifdef HAVE_LONG_LONG_INT
 PString::PString(long long n)
   : PCharArray(sizeof(long long)*3+2)
   , m_length(p_signed2string<signed long long, unsigned long long>(n, 10, theArray))
 {
 }
+#endif
 
 
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
 PString::PString(unsigned long long n)
   : PCharArray(sizeof(unsigned long long)*3+1)
   , m_length(p_unsigned2string<unsigned long long>(n, 10, theArray))
@@ -1000,8 +1002,10 @@ PSTRING_CONV_CTOR(         int,   int,    unsigned int);
 PSTRING_CONV_CTOR(unsigned int,   int,    unsigned int);
 PSTRING_CONV_CTOR(         long,  long,   unsigned long);
 PSTRING_CONV_CTOR(unsigned long,  long,   unsigned long);
-#if defined(HAVE_LONG_LONG_INT) || defined(HAVE_UNSIGNED_LONG_LONG_INT)
+#ifdef HAVE_LONG_LONG_INT
 PSTRING_CONV_CTOR(         long long, long long, unsigned long long);
+#endif
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
 PSTRING_CONV_CTOR(unsigned long long, long long, unsigned long long);
 #endif
 
@@ -1090,15 +1094,17 @@ PString & PString::operator=(unsigned long n)
 }
 
 
-#if defined(HAVE_LONG_LONG_INT) || defined(HAVE_UNSIGNED_LONG_LONG_INT)
+#ifdef HAVE_LONG_LONG_INT
 PString & PString::operator=(long long n)
 {
   SetMinSize(sizeof(long long)*3+1);
   m_length = p_signed2string<signed long long, unsigned long long>(n, 10, theArray);
   return *this;
 }
+#endif
 
 
+#ifdef HAVE_UNSIGNED_LONG_LONG_INT
 PString & PString::operator=(unsigned long long n)
 {
   SetMinSize(sizeof(unsigned long long)*3+1);
