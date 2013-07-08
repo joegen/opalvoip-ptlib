@@ -536,6 +536,11 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
       m_selectedGUID = pMediaFormat->subtype;
       m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
+      if (pVih->bmiHeader.biHeight > 0 && colourFormat.NumCompare("BGR") == EqualTo) {
+        nativeVerticalFlip = true;
+        PTRACE(3, "DShow\tImage up side down");
+      }
+
       if (running)
         PCOM_RETURN_ON_FAILED(m_pMediaControl->Run,());
 
@@ -1536,12 +1541,6 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
 
   PTRACE(5, "DShow\tChecking image flip");
   PCOM_RETURN_ON_FAILED(m_pSampleGrabber->GetConnectedMediaType,(&mt));
-
-  VIDEOINFOHEADER * pvih = (VIDEOINFOHEADER *)mt.pbFormat;
-  if (pvih->bmiHeader.biHeight > 0) {
-    nativeVerticalFlip = true;
-    PTRACE(3, "DShow\tImage up side down");
-  }
 
   // Query for camera controls
   if (FAILED(m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void **)&m_pCameraControls))) {
