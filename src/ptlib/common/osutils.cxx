@@ -61,7 +61,7 @@ class PExternalThread : public PThread
     PExternalThread()
       : PThread(false)
     {
-      SetThreadName(PString::Empty());
+      SetThreadName("External thread");
       PTRACE(5, "PTLib\tCreated external thread " << this << ", id=" << GetCurrentThreadId());
     }
 
@@ -1949,7 +1949,7 @@ void PProcess::PreShutdown()
   PTRACE(4, "PTLib\tTerminating " << m_activeThreads.size()-1 << " remaining threads.");
   for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it) {
     PThread & thread = *it->second;
-    if (this != &thread && !thread.IsTerminated()) {
+    if ((thread.m_type == e_IsAutoDelete || thread.m_type == e_IsManualDelete) && !thread.IsTerminated()) {
       PTRACE(3, "PTLib\tTerminating thread " << thread);
       thread.Terminate();  // With extreme prejudice
     }
@@ -2180,6 +2180,7 @@ void PProcess::InternalCleanAutoDeleteThreads()
 {
   ThreadList threadsToDelete;
 
+  PTRACE_IF(6, !m_autoDeleteThreads.IsEmpty(), "PTLib\tCleaning " << m_autoDeleteThreads.GetSize() <<" AutoDelete threads");
   m_threadMutex.Wait();
 
   ThreadList::iterator thread = m_autoDeleteThreads.begin();
