@@ -813,7 +813,7 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
 
   // Now create the converter ( if not already exist)
   if (converter == NULL) {
-    if (frameWidth == width && frameHeight == height) {
+    if (!nativeVerticalFlip && frameWidth == width && frameHeight == height) {
       PTRACE(3,"PVidDev\tNo converter required for " << width << 'x' << height);
       return true;
     }
@@ -838,6 +838,8 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
       converter->SetSrcFrameSize(width, height);
     converter->SetResizeMode(resizeMode);
   }
+
+  converter->SetVFlipState(nativeVerticalFlip);
 
   PTRACE(3,"PVidDev\tColour converter used from " << converter->GetSrcFrameWidth() << 'x' << converter->GetSrcFrameHeight() << " [" << converter->GetSrcColourFormat() << "]" << " to " << converter->GetDstFrameWidth() << 'x' << converter->GetDstFrameHeight() << " [" << converter->GetDstColourFormat() << "]");
 
