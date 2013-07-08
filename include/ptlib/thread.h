@@ -354,7 +354,7 @@ class PThread : public PObject
     ) { return Create(notifier, 0, NoAutoDeleteThread, NormalPriority, threadName); }
   //@}
   
-    bool IsAutoDelete() const { return m_type == e_IsAutoDelete; }
+    bool IsAutoDelete() const { return m_type == e_IsAutoDelete || m_type == e_IsExternal; }
 
     /// Thread local storage base class, see PThreadLocalStorage for template.
     class LocalStorageBase
