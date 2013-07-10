@@ -738,6 +738,7 @@ EXPORTS
     _IID_IVPVBIConfig
     _IID_IVPVBINotify
     _IID_IVPVBIObject
+    _IIS_ControlAccessible
     _IIS_IsOleaccProxy
     _IN6_IS_ADDR_LINKLOCAL
     IN6_IS_ADDR_LINKLOCAL
