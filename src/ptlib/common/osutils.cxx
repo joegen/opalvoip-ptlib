@@ -1606,7 +1606,7 @@ PString PArgList::GetOptionString(const PString & option, const char * dflt) con
 
 PString PArgList::InternalGetOptionStringByIndex(size_t idx, const char * dflt) const
 {
-  if (idx < m_options.size() && !m_options[idx].m_string.IsEmpty())
+  if (idx < m_options.size() && m_options[idx].m_count > 0)
     return m_options[idx].m_string;
 
   if (dflt != NULL)
