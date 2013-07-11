@@ -1432,8 +1432,6 @@ PSSLChannel::~PSSLChannel()
 
 PBoolean PSSLChannel::Read(void * buf, PINDEX len)
 {
-  flush();
-
   channelPointerMutex.StartRead();
 
   lastReadCount = 0;
