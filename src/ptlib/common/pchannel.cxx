@@ -102,16 +102,7 @@ streambuf::int_type PChannelStreamBuffer::underflow()
 
 int PChannelStreamBuffer::sync()
 {
-  if (egptr() > gptr()) {
-    setg(eback(), egptr(), egptr());
-    if (PIsDescendant(channel, PFile))
-      ((PFile *)channel)->SetPosition((off_t)(gptr() - egptr()), PFile::Current);
-  }
-
-  if (pptr() > pbase())
-    return overflow();
-
-  return 0;
+  return pptr() > pbase() ? overflow() : 0;
 }
 
 
@@ -685,8 +676,6 @@ PBoolean PIndirectChannel::IsOpen() const
 
 PBoolean PIndirectChannel::Read(void * buf, PINDEX len)
 {
-  flush();
-
   PReadWaitAndSignal mutex(channelPointerMutex);
 
   if (readChannel == NULL) {
@@ -925,7 +914,6 @@ PBoolean PFile::Read(void * buffer, PINDEX amount)
   if (!IsOpen())
     return SetErrorValues(NotOpen, EBADF);
 
-  flush();
 #ifdef WOT_NO_FILESYSTEM
   lastReadCount = 0;
 #else
