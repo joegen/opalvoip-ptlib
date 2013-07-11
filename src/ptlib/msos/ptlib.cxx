@@ -925,8 +925,6 @@ PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
   if (!m_hConsole.IsValid())
     return ConvertOSError(-2, LastReadError);
 
-  flush();
-
   DWORD readBytes;
   if (ReadFile(m_hConsole, buffer, length, &readBytes, NULL)) {
     lastReadCount = readBytes;

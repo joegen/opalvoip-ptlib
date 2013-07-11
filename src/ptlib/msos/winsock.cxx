@@ -192,7 +192,6 @@ HANDLE PSocket::GetAsyncWriteHandle() const
 
 PBoolean PSocket::Read(void * buf, PINDEX len)
 {
-  flush();
   lastReadCount = 0;
 
   if (len == 0)
@@ -206,7 +205,6 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
 
 PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 {
-  flush();
   lastReadCount = 0;
 
   os_vread(slices, sliceCount, 0, NULL, NULL);
