@@ -4539,6 +4539,7 @@ EXPORTS
     ??1ContentProcessor@PHTTPClient@@UAE@XZ @4530 NONAME
     ??1Context@PCLI@@UAE@XZ @4531 NONAME
     ??1Credit@PHTML@@UAE@XZ @4532 NONAME
+    ??1CSampleGrabberCB@@QAE@XZ @28126 NONAME
     ??1CSpStreamFormat@@QAE@XZ @4533 NONAME
     ??1DefinitionItem@PHTML@@UAE@XZ @4534 NONAME
     ??1DefinitionList@PHTML@@UAE@XZ @4535 NONAME
@@ -13822,6 +13823,7 @@ EXPORTS
     ?Begin@PTrace@@SAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPBDH0PBVPObject@@0@Z @13692 NONAME
     ?Begin@PTrace@@SAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPBDHPBVPObject@@0@Z @13693 NONAME
     ?BeginEncoding@PASN_Stream@@QAEXXZ @13694 NONAME
+    ?BeginFrameRateCheck@CSampleGrabberCB@@QAEXXZ @28127 NONAME
     ?BeginMessage@PPOP3Client@@QAE_NH@Z @13695 NONAME
     ?BeginMessage@PSMTPClient@@QAE_NABVPString@@0_N@Z @13696 NONAME
     ?BeginMessage@PSMTPClient@@QAE_NABVPString@@ABVPStringList@@_N@Z @13697 NONAME
@@ -16225,9 +16227,11 @@ EXPORTS
     ?empty@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBE_NXZ @16070 NONAME
     ?empty@?$vector@UOptionSpec@PArgList@@V?$allocator@UOptionSpec@PArgList@@@std@@@std@@QBE_NXZ @16071 NONAME
     ?empty@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBE_NXZ @26653 NONAME
+    ?empty@?$_Tree@V?$_Tmap_traits@IUActiveTimerInfo@PTimerList@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUActiveTimerInfo@PTimerList@@@std@@@4@$0A@@std@@@std@@QBE_NXZ @28128 NONAME
     ?empty@?$_Tree@V?$_Tmap_traits@IUNest@PReadWriteMutex@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIUNest@PReadWriteMutex@@@std@@@4@$0A@@std@@@std@@QBE_NXZ @16073 NONAME
     ?empty@?$_Tree@V?$_Tmap_traits@IV?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIV?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@@std@@@3@$00@std@@@std@@QBE_NXZ @23665 NONAME
     ?empty@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@@std@@@2@$0A@@std@@@std@@QBE_NXZ @16074 NONAME
+    ?empty@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QBE_NXZ @28129 NONAME
     ?empty@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QBE_NXZ @27952 NONAME
     ?Empty@PString@@SAABV1@XZ @16075 NONAME
     ?EnableAccess@PVideoChannel@@QAEXXZ @16076 NONAME
@@ -17388,13 +17392,14 @@ EXPORTS
     ?GetCopyrightText@PHTTPServiceProcess@@UAE?AVPString@@XZ @17219 NONAME
     ?GetCount@PArgList@@QBEHXZ @17220 NONAME
     ?GetCTS@PSerialChannel@@QAE_NXZ @17221 NONAME
-    ?GetCurrentBufferData@PVideoInputDevice_DirectShow@@IAE_NPAE@Z @17222 NONAME
+    ?GetCurrentBufferData@PVideoInputDevice_DirectShow@@IAE_NPAEAAH@Z @28130 NONAME
     ?GetCurrentBufferSize@PVideoInputDevice_DirectShow@@IAEHXZ @17223 NONAME
     ?GetCurrentDirectoryA@PFTPClient@@QAE?AVPString@@XZ @17224 NONAME
     ?GetCurrentElement@PXER_Stream@@QAEPAVPXMLElement@@XZ @26854 NONAME
     ?GetCurrentProcessID@PProcess@@SAKXZ @17227 NONAME
     ?GetCurrentThreadId@PThread@@SAIXZ @17228 NONAME
     ?GetCyclesPassed@PSoundChannelDirectSound@@AAEKXZ @17229 NONAME
+    ?GetData@CSampleGrabberCB@@QAE_NPAEHAAH@Z @28131 NONAME
     ?GetData@PSSLCertificate@@QBE?AVPBYTEArray@@XZ @17230 NONAME
     ?GetData@PSSLPrivateKey@@QBE?AVPBYTEArray@@XZ @17231 NONAME
     ?GetData@PXMLElement@@QBE?AVPString@@XZ @26855 NONAME
@@ -20381,6 +20386,7 @@ EXPORTS
     ?Previous@PSafePtrBase@@MAEXXZ @20204 NONAME
     ?Previous@PSafePtrMultiThreaded@@MAEXXZ @20205 NONAME
     ?Previous@Row@PODBC@@QAE_NXZ @20206 NONAME
+    ?PrintActualFramRate@CSampleGrabberCB@@QAEXXZ @28132 NONAME
     ?PrintContents@PMIMEInfo@@UBEAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV23@@Z @20207 NONAME
     ?PrintElementOn@?$PBaseArray@D@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @20208 NONAME
     ?PrintElementOn@?$PBaseArray@E@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @20209 NONAME
@@ -21409,6 +21415,7 @@ EXPORTS
     ?SetMinSize@PContainer@@QAE_NH@Z @21241 NONAME
     ?SetMute@PSoundChannel@@UAE_N_N@Z @21242 NONAME
     ?SetMute@PSoundChannelWin32@@UAE_N_N@Z @21243 NONAME
+    ?SetMyWindowSize@PVideoOutputDevice_Window@@IAEXII_N@Z @28133 NONAME
     ?SetName@Item@Roster@XMPP@@UAEXABVPString@@_N@Z @27560 NONAME
     ?SetName@PHTTPCompositeField@@UAEXABVPString@@@Z @21245 NONAME
     ?SetName@PHTTPField@@UAEXABVPString@@@Z @21246 NONAME
@@ -21518,6 +21525,7 @@ EXPORTS
     ?SetServer@PSocksProtocol@@QAE_NABVPString@@PBD@Z @21349 NONAME
     ?SetServer@PSTUNClient@@UAE_NABVPString@@@Z @21350 NONAME
     ?SetServerCertificate@PSecureHTTPServiceProcess@@QAE_NABVPFilePath@@_NPBD@Z @21351 NONAME
+    ?SetSessionTimeout@PVXMLGrammar@@QAEXXZ @28134 NONAME
     ?SetShow@Presence@XMPP@@UAEXABVPString@@@Z @27581 NONAME
     ?SetShow@Presence@XMPP@@UAEXW4ShowType@12@@Z @27582 NONAME
     ?SetSilence@PVXMLChannel@@QAEXI@Z @27583 NONAME
@@ -21658,7 +21666,6 @@ EXPORTS
     ?SetWaveFormat@@YAXAAUtWAVEFORMATEX@@III@Z @21486 NONAME
     ?SetWhiteness@PVideoDevice@@EAE_NI@Z @21487 NONAME
     ?SetWindowSize@PTelnetSocket@@QAEXGG@Z @21488 NONAME
-    ?SetWindowSize@PVideoOutputDevice_Window@@IAEXXZ @21489 NONAME
     ?SetWriteChannel@PIndirectChannel@@QAE_NPAVPChannel@@_N1@Z @21491 NONAME
     ?SetWriteTimeout@PChannel@@QAEXABVPTimeInterval@@@Z @21492 NONAME
     ?SetXMLTree@PXMLParser@@QAEPAVPXMLElement@@PAV2@@Z @27612 NONAME
@@ -21736,7 +21743,6 @@ EXPORTS
     ?size@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QBEIXZ @21565 NONAME
     ?size@?$_Tree@V?$_Tset_traits@UTimerExpiryInfo@PTimerList@@UTimerExpiryInfo_compare@2@V?$allocator@UTimerExpiryInfo@PTimerList@@@std@@$00@std@@@std@@QBEIXZ @21566 NONAME
     ?size@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QBEIXZ @27961 NONAME
-    ?skipFrames@?4??BufferCB@CSampleGrabberCB@@UAGJNPAEJ@Z@4HA @21567 NONAME
     ?skipws@?$_Iosb@H@std@@2W4_Fmtflags@12@B @21568 NONAME
     ?Sleep@PThread@@SAXABVPTimeInterval@@@Z @21569 NONAME
     ?SmallUnsignedDecode@PPER_Stream@@QAE_NAAI@Z @21570 NONAME
