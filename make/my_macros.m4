@@ -101,9 +101,9 @@ dnl $6 success code
 dnl $7 failure code
 AC_DEFUN([MY_LINK_IFELSE],[
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $2"
-   LDFLAGS="$3 $LDFLAGS"
+   LIBS="$3 $LIBS"
    AC_MSG_CHECKING($1)
    AC_LINK_IFELSE(
       [AC_LANG_PROGRAM([[$4]],[[$5]])],
@@ -112,7 +112,7 @@ AC_DEFUN([MY_LINK_IFELSE],[
    )
    AC_MSG_RESULT($usable)
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
    MY_IFELSE([usable], [$6], [$7])
 ])
 
@@ -137,7 +137,7 @@ AC_DEFUN([MY_PKG_CHECK_MODULE],[
          [$4],
          [
             CPPFLAGS="$CPPFLAGS $$1[_CFLAGS]"
-            LDFLAGS="$$1[_LIBS] $LDFLAGS"
+            LIBS="$$1[_LIBS] $LIBS"
          ]
       )],
       [usable=no]
@@ -153,7 +153,7 @@ dnl $2 new CPPFLAGS
 dnl $3 new CFLAGS
 dnl $4 new CXXFLAGS
 AC_DEFUN([MY_ADD_FLAGS],[
-   m4_ifnblank([$1], [LDFLAGS="$1 $LDFLAGS"])
+   m4_ifnblank([$1], [LIBS="$1 $LIBS"])
    m4_ifnblank([$2], [CPPFLAGS="$CPPFLAGS $2"])
    m4_ifnblank([$3], [CFLAGS="$CPPFLAGS $3"])
    m4_ifnblank([$4], [CXXFLAGS="$CPPFLAGS $4"])
@@ -185,7 +185,10 @@ dnl $10 failure code
 dnl $11..$14 optional dependency
 dnl returns $1_USABLE=yes/no, $1_SYSTEM=yes/no, $1_CFLAGS and $1_LIBS
 AC_DEFUN([MY_MODULE_OPTION],[
+
    AC_SUBST($1[_SYSTEM], "yes")
+
+   AC_MSG_NOTICE([[MY_MODULE_OPTION libs $6]])
 
    MY_ARG_ENABLE([$2], [$3], [${DEFAULT_$1:-yes}], [usable=yes], [usable=no], [$11], [$12], [$13], [$14])
 
@@ -236,7 +239,7 @@ AC_DEFUN([MY_MODULE_OPTION],[
             MY_LINK_IFELSE(
                [for $3 usability],
                [$$1[_CFLAGS]],
-               [$$1[_LIBS]],
+               [$$1[_LIBS]],     
                [$7],
                [$8],
                [MY_ADD_MODULE_FLAGS([$1])],
@@ -418,7 +421,7 @@ case "$target_os" in
       AR="libtool"
       ARFLAGS="-static -o"
       RANLIB=
-      LDFLAGS="${LDFLAGS} -framework AudioToolbox -framework CoreAudio -framework SystemConfiguration -framework Foundation -lobjc"
+      LIBS="${LIBS} -framework AudioToolbox -framework CoreAudio -framework SystemConfiguration -framework Foundation -lobjc"
    ;;
 
    cygwin* | mingw* )
@@ -493,7 +496,7 @@ case "$target_os" in
    beos* )
       target_os=beos
       CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -Wno-multichar -Wno-format"
-      LDFLAGS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
+      LIBS="$LIBS -lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
       SHARED_LDFLAGS="-shared -nostdlib -nostart"
    ;;
 
@@ -504,7 +507,7 @@ case "$target_os" in
    mingw* )
       target_os=mingw
       CPPFLAGS="$CPPFLAGS -mms-bitfields"
-      LDFLAGS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz"
+      LIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz $LIBS"
    ;;
 
    * )
