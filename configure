@@ -17542,7 +17542,7 @@ echo "                       SASL/SASL2 :  ${PTLIB_SASL}/${PTLIB_SASL2}"
 echo "                         OpenLDAP :  ${PTLIB_OPENLDAP}"
 echo "                             ODBC :  ${PTLIB_ODBC}"
 echo "                              Lua :  ${PTLIB_LUA}"
-echo "                             Java :  ${PTLIB_V8} (V8)"
+echo "                       Javascript :  ${PTLIB_V8} (V8)"
 echo "                        GStreamer :  ${PTLIB_GSTREAMER}"
 
 echo ""
