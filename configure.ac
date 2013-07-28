@@ -1471,10 +1471,6 @@ PTLIB_MODULE_OPTION(
    [XML_ParserCreate(NULL)]
 )
 
-if test "x$HAS_EXPAT" = "x" ; then
-  AC_CHECK_HEADERS([expat.h], [PTLIB_SUBST(EXPAT, yes)])
-fi
-
 
 dnl ########################################################################
 dnl look for Lua library
