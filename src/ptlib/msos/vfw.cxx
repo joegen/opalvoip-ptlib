@@ -841,7 +841,7 @@ LRESULT CALLBACK PVideoInputDevice_VideoForWindows::ErrorHandler(HWND hWnd, int 
 }
 
 
-LRESULT PVideoInputDevice_VideoForWindows::HandleError(int id, LPCSTR PTRACE_PARAM(err))
+LRESULT PVideoInputDevice_VideoForWindows::HandleError(int PTRACE_PARAM(id), LPCSTR PTRACE_PARAM(err))
 {
   PTRACE_IF(1, id != 0, "ErrorHandler: [id="<< id << "] " << err);
   return true;
