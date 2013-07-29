@@ -843,8 +843,9 @@ PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
   , m_fixedInterface(fixedInterface)
   , m_ipVersion(ipVersion)
+  , m_onInterfaceChange(PCREATE_InterfaceNotifier(OnInterfaceChange))
 {
-  PInterfaceMonitor::GetInstance().AddNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
+  PInterfaceMonitor::GetInstance().AddNotifier(m_onInterfaceChange);
 
   PTRACE(4, "Created socket bundle for "
          << (fixedInterface.IsEmpty() ? "all" : "fixed")
@@ -857,7 +858,7 @@ PMonitoredSocketBundle::~PMonitoredSocketBundle()
 {
   Close();
 
-  PInterfaceMonitor::GetInstance().RemoveNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
+  PInterfaceMonitor::GetInstance().RemoveNotifier(m_onInterfaceChange);
 }
 
 
@@ -1079,8 +1080,9 @@ void PMonitoredSocketBundle::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
 PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
   , m_interface(theInterface)
+  , m_onInterfaceChange(PCREATE_InterfaceNotifier(OnInterfaceChange))
 {
-  PInterfaceMonitor::GetInstance().AddNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
+  PInterfaceMonitor::GetInstance().AddNotifier(m_onInterfaceChange);
 
   PTRACE(4, "Created monitored socket for interface " << theInterface);
 }
@@ -1090,7 +1092,7 @@ PSingleMonitoredSocket::~PSingleMonitoredSocket()
 {
   Close();
 
-  PInterfaceMonitor::GetInstance().RemoveNotifier(PCREATE_InterfaceNotifier(OnInterfaceChange));
+  PInterfaceMonitor::GetInstance().RemoveNotifier(m_onInterfaceChange);
 }
 
 
