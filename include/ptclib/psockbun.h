@@ -600,6 +600,7 @@ class PMonitoredSocketBundle : public PMonitoredSockets
 
   protected:
     PDECLARE_InterfaceNotifier(PMonitoredSocketBundle, OnInterfaceChange);
+    PInterfaceMonitor::Notifier m_onInterfaceChange;
 
     typedef std::map<std::string, SocketInfo> SocketInfoMap_T;
 
@@ -682,6 +683,7 @@ class PSingleMonitoredSocket : public PMonitoredSockets
 
   protected:
     PDECLARE_InterfaceNotifier(PSingleMonitoredSocket, OnInterfaceChange);
+    PInterfaceMonitor::Notifier m_onInterfaceChange;
 
     bool IsInterface(const PString & iface) const;
 
