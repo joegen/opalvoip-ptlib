@@ -707,8 +707,9 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
         rowFunction = GrowYUV420P;
       break;
 
+    default :
     case PVideoFrameInfo::eCropTopLeft :
-      if (srcWidth < dstWidth) {
+      if (srcWidth <= dstWidth) {
         FillYUV420P(dstX + srcWidth, dstY, dstWidth - srcWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
         if (srcHeight < dstHeight)
           FillYUV420P(dstX, dstY + srcHeight, dstWidth, dstHeight - srcHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
@@ -721,9 +722,8 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       }
       break;
 
-    default :
     case PVideoFrameInfo::eCropCentre :
-      if (srcWidth < dstWidth) {
+      if (srcWidth <= dstWidth) {
         unsigned deltaX = (dstWidth - srcWidth)/2;
         unsigned deltaY = (dstHeight - srcHeight)/2;
         FillYUV420P(dstX, dstY, deltaX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
