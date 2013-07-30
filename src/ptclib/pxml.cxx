@@ -1407,13 +1407,17 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
     strm << "/>";
   else {
     strm << '>';
-    if (newLine)
+
+    bool complexElement = m_subObjects.GetSize() != 1 || m_subObjects[0].IsElement();
+
+    if (newLine && complexElement)
       strm << endl;
   
     for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) 
       m_subObjects[i].Output(strm, xml, indent + 1);
 
-    xml.OutputIndent(strm, indent, elementName);
+    if (complexElement)
+      xml.OutputIndent(strm, indent, elementName);
 
     strm << "</" << m_name << '>';
   }
