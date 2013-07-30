@@ -1440,10 +1440,7 @@ PXMLObject * PXMLElement::AddSubObject(PXMLObject * obj, bool setDirty)
 
 PXMLElement * PXMLElement::CreateElement(const PCaselessString & name, const char * data)
 {
-  if (PAssertNULL(m_parent) == NULL)
-    return NULL;
-
-  return m_parent->CreateElement(name, data);
+  return m_parent != NULL ? m_parent->CreateElement(name, data) : new PXMLElement(name, data);
 }
 
 
