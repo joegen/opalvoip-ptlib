@@ -1242,6 +1242,7 @@ dnl ########################################################################
 dnl look for Intel Integrated Performance Primitives
 
 dnl MSWIN_DISPLAY    ipp,Intel Integrated Performance Primitives
+dnl MSWIN_IF_FEATURE ipp,!android
 dnl MSWIN_CHECK_FILE ipp,include/ipp.h,P_IPP=1
 dnl MSWIN_FIND_FILE  ipp,P_IPP_CC_LIB32,ippcc.lib,lib/ia32
 dnl MSWIN_FIND_FILE  ipp,P_IPP_CC_LIB64,ippcc.lib,lib/intel64
