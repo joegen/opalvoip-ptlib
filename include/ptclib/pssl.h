@@ -54,6 +54,10 @@ enum PSSLFileTypes {
 };
 
 
+typedef PNotifierTemplate<bool> PSSLPasswordNotifier;
+#define PDECLARE_SSLPasswordNotifier(cls, fn) PDECLARE_NOTIFIER2(PString, cls, fn, bool)
+
+
 /**Private key for SSL.
    This class embodies a common environment for all private keys used by the
    PSSLContext and PSSLChannel classes.
@@ -167,7 +171,8 @@ class PSSLPrivateKey : public PObject
       */
     PBoolean Load(
       const PFilePath & keyFile,  ///< Private key file
-      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT,  ///< Type of file to read
+      const PSSLPasswordNotifier & notifier = PSSLPasswordNotifier()  ///< Call back for asking of password
     );
 
     /**Save private key to file.
@@ -477,7 +482,9 @@ class PSHA1Context : public PObject
    using the PSSLChannel class. It includes such things as the version of SSL
    and certificates, CA's etc.
   */
-class PSSLContext {
+class PSSLContext : public PObject
+{
+    PCLASSINFO(PSSLContext, PObject);
   public:
     enum Method {
       SSLv23,
@@ -583,9 +590,16 @@ class PSSLContext {
       bool create = false           ///< If certificate/provateKey are file paths and do not exist, then create.
     );
 
+    /// Set the notifier for when SSL needs to get a password to unlock a private key.
+    void SetPasswordNotifier(
+      const PSSLPasswordNotifier & notifier   ///< Notifier to be called
+    );
+
   protected:
     void Construct(Method method, const void * sessionId, PINDEX idSize);
+
     ssl_ctx_st * m_context;
+    PSSLPasswordNotifier m_passwordNotifier;
 };
 
 
