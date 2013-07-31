@@ -794,6 +794,12 @@ else
    )
 fi
 
+AC_ARG_ENABLE(
+   pthread_kill,
+   AS_HELP_STRING([--disable-pthread_kill],[Disable use of pthread_kill for checking on thread terminated]),
+   [AC_DEFINE(P_NO_PTHREAD_KILL, 1, "No pthread_kill")]
+)
+
 
 dnl ########################################################################
 dnl check for rt library
