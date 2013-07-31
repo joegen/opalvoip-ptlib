@@ -172,6 +172,28 @@ class PSSL_BIO
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static int PasswordCallback(char *buf, int size, int rwflag, void *userdata)
+{
+  if (!PAssert(userdata != NULL, PLogicError))
+    return 0;
+
+  PSSLPasswordNotifier & notifier = *reinterpret_cast<PSSLPasswordNotifier *>(userdata);
+  if (!PAssert(!notifier.IsNULL(), PLogicError))
+    return 0;
+
+  PString password;
+  notifier(password, rwflag != 0);
+
+  int len = password.GetLength()+1;
+  if (len > size)
+    len = size;
+  memcpy(buf, password.GetPointer(), len); // Include '\0'
+  return len-1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PSSLPrivateKey::PSSLPrivateKey()
   : m_pkey(NULL)
 {
@@ -331,7 +353,7 @@ bool PSSLPrivateKey::Parse(const PString & keyStr)
 }
 
 
-PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
+PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType, const PSSLPasswordNotifier & notifier)
 {
   FreePrivateKey();
 
@@ -339,6 +361,17 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
   if (!in.OpenRead(keyFile)) {
     PTRACE(2, "SSL\tCould not open private key file \"" << keyFile << '"');
     return false;
+  }
+
+  pem_password_cb *cb;
+  void *ud;
+  if (notifier.IsNULL()) {
+    cb = NULL;
+    ud = NULL;
+  }
+  else {
+    cb = PasswordCallback;
+    ud = (void *)&notifier;
   }
 
   switch (fileType) {
@@ -351,7 +384,7 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
       return false;
 
     case PSSLFileTypePEM :
-      m_pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, NULL);
+      m_pkey = PEM_read_bio_PrivateKey(in, NULL, cb, ud);
       if (m_pkey != NULL)
         break;
 
@@ -359,7 +392,7 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType)
       return false;
 
     default :
-      m_pkey = PEM_read_bio_PrivateKey(in, NULL, NULL, NULL);
+      m_pkey = PEM_read_bio_PrivateKey(in, NULL, cb, ud);
       if (m_pkey != NULL)
         break;
 
@@ -1325,7 +1358,7 @@ bool PSSLContext::SetCredentials(const PString & authority,
     return false;
   }
 
-  if (PFile::Exists(privateKey) && !key.Load(privateKey)) {
+  if (PFile::Exists(privateKey) && !key.Load(privateKey, PSSLFileTypeDEFAULT, m_passwordNotifier)) {
     PTRACE(2, "SSL\tCould not load private key file \"" << privateKey << '"');
     return false;
   }
@@ -1385,6 +1418,21 @@ bool PSSLContext::SetCredentials(const PString & authority,
   }
 
   return true;
+}
+
+
+void PSSLContext::SetPasswordNotifier(const PSSLPasswordNotifier & notifier)
+{
+  if (m_context == NULL)
+    return;
+
+  m_passwordNotifier = notifier;
+  if (notifier.IsNULL())
+    SSL_CTX_set_default_passwd_cb(m_context, NULL);
+  else {
+    SSL_CTX_set_default_passwd_cb(m_context, PasswordCallback);
+    SSL_CTX_set_default_passwd_cb_userdata(m_context, &m_passwordNotifier);
+  }
 }
 
 
