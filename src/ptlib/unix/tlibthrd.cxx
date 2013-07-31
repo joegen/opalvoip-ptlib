@@ -775,9 +775,21 @@ PBoolean PThread::IsTerminated() const
   if (PX_state == PX_finished)
     return true;
 
+#if P_NO_PTHREAD_KILL
+  /* Some flavours of Linux crash in pthread_kill() if the thread id
+     is invalid. Now, IMHO, a pthread function that is not itself
+     thread safe is utter madness, but apparently, the authors would
+     rather change the Posix standard than fix the problem!  What is
+     the point of an ESRCH error return for invalid id if it can
+     crash on an invalid id? As I said, complete madness. */
+  char fn[100];
+  snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), PX_linuxId);
+  return access(fn, R_OK) != 0;
+#else
   // See if thread is still running, copy variable in case changes between two statements
   pthread_t id = m_threadId;
   return id == PNullThreadIdentifier || pthread_kill(id, 0) != 0;
+#endif
 }
 
 
