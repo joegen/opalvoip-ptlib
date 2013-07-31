@@ -2475,6 +2475,7 @@ EXPORTS
     ??0?$PNotifierTemplate@H@@QAE@PAV?$PNotifierFunctionTemplate@H@@@Z @2495 NONAME
     ??0?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@QAE@ABV0@@Z @2496 NONAME
     ??0?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@QAE@PAV?$PNotifierFunctionTemplate@UInterfaceChange@PInterfaceMonitor@@@@@Z @2497 NONAME
+    ??0?$PNotifierTemplate@_N@@QAE@PAV?$PNotifierFunctionTemplate@_N@@@Z @25220 NONAME
     ??0?$POrdinalDictionary@VPString@@@@IAE@HPBV0@@Z @2498 NONAME
     ??0?$POrdinalDictionary@VPString@@@@QAE@XZ @2499 NONAME
     ??0?$PPtrVector@USocketInfo@@@@QAE@XZ @2500 NONAME
@@ -4954,6 +4955,7 @@ EXPORTS
     ??1?$PNotifierTemplate@AAVFrame@PEthSocket@@@@UAE@XZ @4977 NONAME
     ??1?$PNotifierTemplate@H@@UAE@XZ @4978 NONAME
     ??1?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@UAE@XZ @4979 NONAME
+    ??1?$PNotifierTemplate@_N@@UAE@XZ @25221 NONAME
     ??1?$POrdinalDictionary@VPString@@@@UAE@XZ @4980 NONAME
     ??1?$PPtrVector@USocketInfo@@@@UAE@XZ @4981 NONAME
     ??1?$PQueue@VPVXMLPlayable@@@@UAE@XZ @4982 NONAME
@@ -5754,7 +5756,7 @@ EXPORTS
     ??1PSSDP@@UAE@XZ @5770 NONAME
     ??1PSSLCertificate@@UAE@XZ @5771 NONAME
     ??1PSSLChannel@@UAE@XZ @5772 NONAME
-    ??1PSSLContext@@QAE@XZ @5773 NONAME
+    ??1PSSLContext@@UAE@XZ @25222 NONAME
     ??1PSSLDiffieHellman@@UAE@XZ @5774 NONAME
     ??1PSSLInitialiser@@UAE@XZ @5775 NONAME
     ??1PSSLPrivateKey@@UAE@XZ @5776 NONAME
@@ -6185,6 +6187,7 @@ EXPORTS
     ??4?$PList@VPString@@@@QAEAAV0@ABV0@@Z @6202 NONAME
     ??4?$PNotifierTemplate@AAUSignature@PScriptLanguage@@@@QAEAAV0@ABV0@@Z @6203 NONAME
     ??4?$PNotifierTemplate@H@@QAEAAV0@ABV0@@Z @6204 NONAME
+    ??4?$PNotifierTemplate@_N@@QAEAAV0@ABV0@@Z @25223 NONAME
     ??4?$POrdinalDictionary@VPString@@@@QAEAAV0@ABV0@@Z @6205 NONAME
     ??4?$PScalarArray@F@@QAEAAV0@ABV0@@Z @6206 NONAME
     ??4?$PScalarArray@G@@QAEAAV0@ABV0@@Z @6207 NONAME
@@ -7481,6 +7484,7 @@ EXPORTS
     ??R?$PNotifierTemplate@AAVFrame@PEthSocket@@@@UBEXAAVPObject@@AAVFrame@PEthSocket@@@Z @7508 NONAME
     ??R?$PNotifierTemplate@H@@UBEXAAVPObject@@H@Z @7509 NONAME
     ??R?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@UBEXAAVPObject@@UInterfaceChange@PInterfaceMonitor@@@Z @7510 NONAME
+    ??R?$PNotifierTemplate@_N@@UBEXAAVPObject@@_N@Z @25224 NONAME
     ??R?$PStringDictionary@VPString@@@@QBE?AVPString@@ABV1@PBD@Z @7511 NONAME
     ??RAllocateSocketFunctor@@QAEXAAVPThread@@@Z @7512 NONAME
     ??RIsObj@?$PNotifierListTemplate@H@@QBE_NAAV?$PNotifierTemplate@H@@@Z @7513 NONAME
@@ -7657,6 +7661,7 @@ EXPORTS
     ??_7?$PNotifierTemplate@AAVFrame@PEthSocket@@@@6B@ @7690 NONAME
     ??_7?$PNotifierTemplate@H@@6B@ @7691 NONAME
     ??_7?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@6B@ @7692 NONAME
+    ??_7?$PNotifierTemplate@_N@@6B@ @25225 NONAME
     ??_7?$POrdinalDictionary@VPString@@@@6B@ @7693 NONAME
     ??_7?$PPtrVector@USocketInfo@@@@6B@ @7694 NONAME
     ??_7?$PQueue@VPVXMLPlayable@@@@6B@ @7695 NONAME
@@ -8259,6 +8264,7 @@ EXPORTS
     ??_7PSSLCertificate@@6B@ @8292 NONAME
     ??_7PSSLChannel@@6BPObject@@@ @8293 NONAME
     ??_7PSSLChannel@@6Bp_iostream@@@ @8294 NONAME
+    ??_7PSSLContext@@6B@ @25226 NONAME
     ??_7PSSLDiffieHellman@@6B@ @8295 NONAME
     ??_7PSSLInitialiser@@6B@ @8296 NONAME
     ??_7PSSLPrivateKey@@6B@ @8297 NONAME
@@ -9033,12 +9039,14 @@ EXPORTS
     ??_R0?AV?$PNotifierFunctionTemplate@AAVFrame@PEthSocket@@@@@8 @9065 NONAME
     ??_R0?AV?$PNotifierFunctionTemplate@H@@@8 @9066 NONAME
     ??_R0?AV?$PNotifierFunctionTemplate@UInterfaceChange@PInterfaceMonitor@@@@@8 @9067 NONAME
+    ??_R0?AV?$PNotifierFunctionTemplate@_N@@@8 @25227 NONAME
     ??_R0?AV?$PNotifierListTemplate@H@@@8 @9068 NONAME
     ??_R0?AV?$PNotifierTemplate@AAUSignature@PScriptLanguage@@@@@8 @9069 NONAME
     ??_R0?AV?$PNotifierTemplate@AAVAsyncContext@PChannel@@@@@8 @9070 NONAME
     ??_R0?AV?$PNotifierTemplate@AAVFrame@PEthSocket@@@@@8 @9071 NONAME
     ??_R0?AV?$PNotifierTemplate@H@@@8 @9072 NONAME
     ??_R0?AV?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@@8 @9073 NONAME
+    ??_R0?AV?$PNotifierTemplate@_N@@@8 @25228 NONAME
     ??_R0?AV?$POrdinalDictionary@VPString@@@@@8 @9074 NONAME
     ??_R0?AV?$PPtrVector@USocketInfo@@@@@8 @9075 NONAME
     ??_R0?AV?$PQueue@VPVXMLPlayable@@@@@8 @9076 NONAME
@@ -9565,6 +9573,7 @@ EXPORTS
     ??_R0?AVPSSDP@@@8 @9597 NONAME
     ??_R0?AVPSSLCertificate@@@8 @9598 NONAME
     ??_R0?AVPSSLChannel@@@8 @9599 NONAME
+    ??_R0?AVPSSLContext@@@8 @25229 NONAME
     ??_R0?AVPSSLDiffieHellman@@@8 @9600 NONAME
     ??_R0?AVPSSLInitialiser@@@8 @9601 NONAME
     ??_R0?AVPSSLPrivateKey@@@8 @9602 NONAME
@@ -10042,6 +10051,7 @@ EXPORTS
     ??_R1A@?0A@EA@?$PNotifierTemplate@AAVFrame@PEthSocket@@@@8 @10075 NONAME
     ??_R1A@?0A@EA@?$PNotifierTemplate@H@@8 @10076 NONAME
     ??_R1A@?0A@EA@?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@8 @10077 NONAME
+    ??_R1A@?0A@EA@?$PNotifierTemplate@_N@@8 @25230 NONAME
     ??_R1A@?0A@EA@?$POrdinalDictionary@VPString@@@@8 @10078 NONAME
     ??_R1A@?0A@EA@?$PPtrVector@USocketInfo@@@@8 @10079 NONAME
     ??_R1A@?0A@EA@?$PQueue@VPVXMLPlayable@@@@8 @10080 NONAME
@@ -10602,6 +10612,7 @@ EXPORTS
     ??_R1A@?0A@EA@PSSDP@@8 @10635 NONAME
     ??_R1A@?0A@EA@PSSLCertificate@@8 @10636 NONAME
     ??_R1A@?0A@EA@PSSLChannel@@8 @10637 NONAME
+    ??_R1A@?0A@EA@PSSLContext@@8 @25231 NONAME
     ??_R1A@?0A@EA@PSSLDiffieHellman@@8 @10638 NONAME
     ??_R1A@?0A@EA@PSSLInitialiser@@8 @10639 NONAME
     ??_R1A@?0A@EA@PSSLPrivateKey@@8 @10640 NONAME
@@ -11116,6 +11127,7 @@ EXPORTS
     ??_R2?$PNotifierTemplate@AAVFrame@PEthSocket@@@@8 @11149 NONAME
     ??_R2?$PNotifierTemplate@H@@8 @11150 NONAME
     ??_R2?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@8 @11151 NONAME
+    ??_R2?$PNotifierTemplate@_N@@8 @25232 NONAME
     ??_R2?$POrdinalDictionary@VPString@@@@8 @11152 NONAME
     ??_R2?$PPtrVector@USocketInfo@@@@8 @11153 NONAME
     ??_R2?$PQueue@VPVXMLPlayable@@@@8 @11154 NONAME
@@ -11676,6 +11688,7 @@ EXPORTS
     ??_R2PSSDP@@8 @11709 NONAME
     ??_R2PSSLCertificate@@8 @11710 NONAME
     ??_R2PSSLChannel@@8 @11711 NONAME
+    ??_R2PSSLContext@@8 @25233 NONAME
     ??_R2PSSLDiffieHellman@@8 @11712 NONAME
     ??_R2PSSLInitialiser@@8 @11713 NONAME
     ??_R2PSSLPrivateKey@@8 @11714 NONAME
@@ -12141,6 +12154,7 @@ EXPORTS
     ??_R3?$PNotifierTemplate@AAVFrame@PEthSocket@@@@8 @12174 NONAME
     ??_R3?$PNotifierTemplate@H@@8 @12175 NONAME
     ??_R3?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@8 @12176 NONAME
+    ??_R3?$PNotifierTemplate@_N@@8 @25234 NONAME
     ??_R3?$POrdinalDictionary@VPString@@@@8 @12177 NONAME
     ??_R3?$PPtrVector@USocketInfo@@@@8 @12178 NONAME
     ??_R3?$PQueue@VPVXMLPlayable@@@@8 @12179 NONAME
@@ -12701,6 +12715,7 @@ EXPORTS
     ??_R3PSSDP@@8 @12734 NONAME
     ??_R3PSSLCertificate@@8 @12735 NONAME
     ??_R3PSSLChannel@@8 @12736 NONAME
+    ??_R3PSSLContext@@8 @25235 NONAME
     ??_R3PSSLDiffieHellman@@8 @12737 NONAME
     ??_R3PSSLInitialiser@@8 @12738 NONAME
     ??_R3PSSLPrivateKey@@8 @12739 NONAME
@@ -13160,6 +13175,7 @@ EXPORTS
     ??_R4?$PNotifierTemplate@AAVFrame@PEthSocket@@@@6B@ @13193 NONAME
     ??_R4?$PNotifierTemplate@H@@6B@ @13194 NONAME
     ??_R4?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@6B@ @13195 NONAME
+    ??_R4?$PNotifierTemplate@_N@@6B@ @25236 NONAME
     ??_R4?$POrdinalDictionary@VPString@@@@6B@ @13196 NONAME
     ??_R4?$PPtrVector@USocketInfo@@@@6B@ @13197 NONAME
     ??_R4?$PQueue@VPVXMLPlayable@@@@6B@ @13198 NONAME
@@ -13762,6 +13778,7 @@ EXPORTS
     ??_R4PSSLCertificate@@6B@ @13795 NONAME
     ??_R4PSSLChannel@@6BPObject@@@ @13796 NONAME
     ??_R4PSSLChannel@@6Bp_iostream@@@ @13797 NONAME
+    ??_R4PSSLContext@@6B@ @25237 NONAME
     ??_R4PSSLDiffieHellman@@6B@ @13798 NONAME
     ??_R4PSSLInitialiser@@6B@ @13799 NONAME
     ??_R4PSSLPrivateKey@@6B@ @13800 NONAME
@@ -14889,6 +14906,7 @@ EXPORTS
     ?Class@?$PNotifierTemplate@AAVFrame@PEthSocket@@@@SAPBDXZ @14923 NONAME
     ?Class@?$PNotifierTemplate@H@@SAPBDXZ @14924 NONAME
     ?Class@?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@SAPBDXZ @14925 NONAME
+    ?Class@?$PNotifierTemplate@_N@@SAPBDXZ @25238 NONAME
     ?Class@?$POrdinalDictionary@VPString@@@@SAPBDXZ @14926 NONAME
     ?Class@?$PQueue@VPVXMLPlayable@@@@SAPBDXZ @14927 NONAME
     ?Class@?$PQueue@VPXML@@@@SAPBDXZ @14928 NONAME
@@ -15169,6 +15187,7 @@ EXPORTS
     ?Class@PSSDP@@SAPBDXZ @15203 NONAME
     ?Class@PSSLCertificate@@SAPBDXZ @15204 NONAME
     ?Class@PSSLChannel@@SAPBDXZ @15205 NONAME
+    ?Class@PSSLContext@@SAPBDXZ @25239 NONAME
     ?Class@PSSLDiffieHellman@@SAPBDXZ @15206 NONAME
     ?Class@PSSLInitialiser@@SAPBDXZ @15207 NONAME
     ?Class@PSSLPrivateKey@@SAPBDXZ @15208 NONAME
@@ -15738,6 +15757,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PNotifierTemplate@AAVFrame@PEthSocket@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @15771 NONAME
     ?CompareObjectMemoryDirect@?$PNotifierTemplate@H@@UBE?AW4Comparison@PObject@@ABV3@@Z @15772 NONAME
     ?CompareObjectMemoryDirect@?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @15773 NONAME
+    ?CompareObjectMemoryDirect@?$PNotifierTemplate@_N@@UBE?AW4Comparison@PObject@@ABV3@@Z @25240 NONAME
     ?CompareObjectMemoryDirect@?$POrdinalDictionary@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @15774 NONAME
     ?CompareObjectMemoryDirect@?$PQueue@VPVXMLPlayable@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @15775 NONAME
     ?CompareObjectMemoryDirect@?$PQueue@VPXML@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @15776 NONAME
@@ -16018,6 +16038,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PSSDP@@UBE?AW4Comparison@PObject@@ABV3@@Z @16051 NONAME
     ?CompareObjectMemoryDirect@PSSLCertificate@@UBE?AW4Comparison@PObject@@ABV3@@Z @16052 NONAME
     ?CompareObjectMemoryDirect@PSSLChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @16053 NONAME
+    ?CompareObjectMemoryDirect@PSSLContext@@UBE?AW4Comparison@PObject@@ABV3@@Z @25241 NONAME
     ?CompareObjectMemoryDirect@PSSLDiffieHellman@@UBE?AW4Comparison@PObject@@ABV3@@Z @16054 NONAME
     ?CompareObjectMemoryDirect@PSSLInitialiser@@UBE?AW4Comparison@PObject@@ABV3@@Z @16055 NONAME
     ?CompareObjectMemoryDirect@PSSLPrivateKey@@UBE?AW4Comparison@PObject@@ABV3@@Z @16056 NONAME
@@ -17807,6 +17828,7 @@ EXPORTS
     ?GetClass@?$PNotifierTemplate@AAVFrame@PEthSocket@@@@UBEPBDI@Z @17833 NONAME
     ?GetClass@?$PNotifierTemplate@H@@UBEPBDI@Z @17834 NONAME
     ?GetClass@?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@UBEPBDI@Z @17835 NONAME
+    ?GetClass@?$PNotifierTemplate@_N@@UBEPBDI@Z @25242 NONAME
     ?GetClass@?$POrdinalDictionary@VPString@@@@UBEPBDI@Z @17836 NONAME
     ?GetClass@?$PQueue@VPVXMLPlayable@@@@UBEPBDI@Z @17837 NONAME
     ?GetClass@?$PQueue@VPXML@@@@UBEPBDI@Z @17838 NONAME
@@ -18087,6 +18109,7 @@ EXPORTS
     ?GetClass@PSSDP@@UBEPBDI@Z @18113 NONAME
     ?GetClass@PSSLCertificate@@UBEPBDI@Z @18114 NONAME
     ?GetClass@PSSLChannel@@UBEPBDI@Z @18115 NONAME
+    ?GetClass@PSSLContext@@UBEPBDI@Z @25243 NONAME
     ?GetClass@PSSLDiffieHellman@@UBEPBDI@Z @18116 NONAME
     ?GetClass@PSSLInitialiser@@UBEPBDI@Z @18117 NONAME
     ?GetClass@PSSLPrivateKey@@UBEPBDI@Z @18118 NONAME
@@ -19586,6 +19609,7 @@ EXPORTS
     ?InternalIsDescendant@?$PNotifierTemplate@AAVFrame@PEthSocket@@@@UBE_NPBD@Z @19613 NONAME
     ?InternalIsDescendant@?$PNotifierTemplate@H@@UBE_NPBD@Z @19614 NONAME
     ?InternalIsDescendant@?$PNotifierTemplate@UInterfaceChange@PInterfaceMonitor@@@@UBE_NPBD@Z @19615 NONAME
+    ?InternalIsDescendant@?$PNotifierTemplate@_N@@UBE_NPBD@Z @25244 NONAME
     ?InternalIsDescendant@?$POrdinalDictionary@VPString@@@@UBE_NPBD@Z @19616 NONAME
     ?InternalIsDescendant@?$PQueue@VPVXMLPlayable@@@@UBE_NPBD@Z @19617 NONAME
     ?InternalIsDescendant@?$PQueue@VPXML@@@@UBE_NPBD@Z @19618 NONAME
@@ -19866,6 +19890,7 @@ EXPORTS
     ?InternalIsDescendant@PSSDP@@UBE_NPBD@Z @19893 NONAME
     ?InternalIsDescendant@PSSLCertificate@@UBE_NPBD@Z @19894 NONAME
     ?InternalIsDescendant@PSSLChannel@@UBE_NPBD@Z @19895 NONAME
+    ?InternalIsDescendant@PSSLContext@@UBE_NPBD@Z @25245 NONAME
     ?InternalIsDescendant@PSSLDiffieHellman@@UBE_NPBD@Z @19896 NONAME
     ?InternalIsDescendant@PSSLInitialiser@@UBE_NPBD@Z @19897 NONAME
     ?InternalIsDescendant@PSSLPrivateKey@@UBE_NPBD@Z @19898 NONAME
@@ -20362,7 +20387,7 @@ EXPORTS
     ?Load@PSound@@QAE_NABVPFilePath@@@Z @20390 NONAME
     ?Load@PSSLCertificate@@QAE_NABVPFilePath@@W4PSSLFileTypes@@@Z @20391 NONAME
     ?Load@PSSLDiffieHellman@@QAE_NABVPFilePath@@W4PSSLFileTypes@@@Z @20392 NONAME
-    ?Load@PSSLPrivateKey@@QAE_NABVPFilePath@@W4PSSLFileTypes@@@Z @20393 NONAME
+    ?Load@PSSLPrivateKey@@QAE_NABVPFilePath@@W4PSSLFileTypes@@ABV?$PNotifierTemplate@_N@@@Z @25246 NONAME
     ?Load@PURL_DataLoader@@UBE_NAAVPBYTEArray@@ABVPURL@@ABULoadParams@3@@Z @20394 NONAME
     ?Load@PURL_DataLoader@@UBE_NAAVPString@@ABVPURL@@ABULoadParams@3@@Z @20395 NONAME
     ?Load@PURL_FileLoader@@UBE_NAAVPBYTEArray@@ABVPURL@@ABULoadParams@3@@Z @20396 NONAME
@@ -22576,6 +22601,7 @@ EXPORTS
     ?SetParity@PSerialChannel@@QAE_NW4Parity@1@@Z @22602 NONAME
     ?SetPassword@PHTTPClientAuthentication@@UAEXABVPString@@@Z @22603 NONAME
     ?SetPassword@PURL@@QAEXABVPString@@@Z @22604 NONAME
+    ?SetPasswordNotifier@PSSLContext@@QAEXABV?$PNotifierTemplate@_N@@@Z @25247 NONAME
     ?SetPath@PURL@@QAEXABVPStringArray@@@Z @22605 NONAME
     ?SetPathStr@PURL@@QAEXABVPString@@@Z @22606 NONAME
     ?SetPause@PVXMLChannel@@QAEX_N@Z @22607 NONAME
