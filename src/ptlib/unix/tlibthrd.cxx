@@ -775,6 +775,16 @@ PBoolean PThread::IsTerminated() const
   if (PX_state == PX_finished)
     return true;
 
+  // See if thread is still running, copy variable in case changes between two statements
+  pthread_t id = m_threadId;
+  if (id == PNullThreadIdentifier)
+    return true;
+
+  /* If thread is external, than PTLib doesn't track it state and
+     needs to use additional methods to check it is terminated. */
+  if (m_type != e_IsExternal)
+    return false;
+
 #if P_NO_PTHREAD_KILL
   /* Some flavours of Linux crash in pthread_kill() if the thread id
      is invalid. Now, IMHO, a pthread function that is not itself
@@ -786,9 +796,7 @@ PBoolean PThread::IsTerminated() const
   snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), PX_linuxId);
   return access(fn, R_OK) != 0;
 #else
-  // See if thread is still running, copy variable in case changes between two statements
-  pthread_t id = m_threadId;
-  return id == PNullThreadIdentifier || pthread_kill(id, 0) != 0;
+    return pthread_kill(id, 0) != 0;
 #endif
 }
 
