@@ -855,11 +855,6 @@ PBoolean PThread::IsTerminated() const
   snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), PX_linuxId);
   return access(fn, R_OK) != 0;
 #else
-  // See if thread is still running, copy variable in case changes between two statements
-  pthread_t id = m_threadId;
-  if (id == PNullThreadIdentifier)
-    return true;
-
   int error = pthread_kill(id, 0);
   switch (error) {
     case 0 :
