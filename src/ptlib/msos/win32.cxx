@@ -1063,8 +1063,8 @@ void PThread::Restart()
 void PThread::Terminate()
 {
   if (PAssert(m_type != e_IsProcess, "Cannot terminate the process!") &&
-      m_threadHandle.IsValid() &&
-      m_threadHandle.Wait(0)) {
+       m_threadHandle.IsValid() &&
+      !m_threadHandle.Wait(0)) {
     PTRACE(2, "PTLib\tTerminating thread " << *this);
     TerminateThread(m_threadHandle, 1);
   }
