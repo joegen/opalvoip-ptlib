@@ -137,9 +137,14 @@ PStringArray PVideoInputDevice_Application::GetDeviceNames() const
 
 static BOOL CALLBACK AddWindowName(HWND hWnd, LPARAM userData)
 {
-  WCHAR wideName[200];
-  if (IsWindowVisible(hWnd) && GetWindowTextW(hWnd, wideName, sizeof(wideName)))
-    reinterpret_cast<PStringArray *>(userData)->AppendString(TopWindowPrefix + wideName);
+  if (IsWindowVisible(hWnd)) {
+    int len = GetWindowTextLengthW(hWnd);
+    if (len > 0) {
+      PWideString wideName;
+      if (GetWindowTextW(hWnd, wideName.GetPointer(len+1), len+1))
+        reinterpret_cast<PStringArray *>(userData)->AppendString(TopWindowPrefix + wideName);
+    }
+  }
   return TRUE;
 }
 
