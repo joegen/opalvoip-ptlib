@@ -37,17 +37,26 @@ PTLIB_STAGE :=@PTLIB_STAGE@
 PTLIB_BUILD :=@PTLIB_BUILD@
 
 # detected platform
-datarootdir := @datarootdir@
 target      := @target@
 target_os   := @target_os@
 target_cpu  := @target_cpu@
 
 # The install directories
-prefix      := @prefix@
-exec_prefix := @exec_prefix@
-libdir      := @libdir@
-includedir       := @includedir@
-datarootdir      := @datarootdir@
+ifndef prefix
+  prefix := @prefix@
+endif
+ifndef exec_prefix
+  exec_prefix := @exec_prefix@
+endif
+ifndef libdir
+  libdir := @libdir@
+endif
+ifndef includedir
+  includedir := @includedir@
+endif
+ifndef datarootdir
+  datarootdir := @datarootdir@
+endif
 
 # Tool names detected by configure
 CC      := @CC@
