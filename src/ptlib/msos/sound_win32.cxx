@@ -1082,6 +1082,21 @@ PBoolean PSoundChannelWin32::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
+bool PSoundChannelWin32::WaitEvent()
+{
+  switch (WaitForSingleObject(hEventDone, buffers[0].GetSize())) {
+    case WAIT_OBJECT_0 :
+      return true;
+
+    case WAIT_TIMEOUT :
+      return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
+
+    default :
+      return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, LastWriteError);
+  }
+}
+
+
 PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
 {
   lastWriteCount = 0;
@@ -1099,8 +1114,8 @@ PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
       bufferMutex.Signal();
       // No free buffers, so wait for one
-      if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
-        return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, LastWriteError);
+      if (!WaitEvent())
+        return false;
       bufferMutex.Wait();
     }
 
@@ -1207,11 +1222,8 @@ PBoolean PSoundChannelWin32::PlayFile(const PFilePath & filename, PBoolean wait)
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
       bufferMutex.Signal();
       // No free buffers, so wait for one
-      if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
-        osError = ::GetLastError();
-        SetFormat(numChannels, sampleRate, bitsPerSample);
-        return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
-      }
+      if (!WaitEvent())
+        return false;
       bufferMutex.Wait();
     }
 
@@ -1265,7 +1277,7 @@ PBoolean PSoundChannelWin32::HasPlayCompleted()
 PBoolean PSoundChannelWin32::WaitForPlayCompletion()
 {
   while (!HasPlayCompleted()) {
-    if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+    if (!WaitEvent())
       return false;
   }
 
@@ -1431,7 +1443,7 @@ PBoolean PSoundChannelWin32::WaitForRecordBufferFull()
     return false;
 
   while (!IsRecordBufferFull()) {
-    if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+    if (!WaitEvent())
       return false;
 
     PWaitAndSignal mutex(bufferMutex);
@@ -1449,7 +1461,7 @@ PBoolean PSoundChannelWin32::WaitForAllRecordBuffersFull()
     return false;
 
   while (!AreAllRecordBuffersFull()) {
-    if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+    if (!WaitEvent())
       return false;
 
     PWaitAndSignal mutex(bufferMutex);

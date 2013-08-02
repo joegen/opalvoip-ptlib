@@ -210,6 +210,7 @@ class PSoundChannelWin32: public PSoundChannel
   private:
     PBoolean OpenDevice(P_INT_PTR id);
     PBoolean GetDeviceID(const PString & device, Directions dir, unsigned& id);
+    bool WaitEvent();
 };
 
 
