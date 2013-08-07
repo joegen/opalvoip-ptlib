@@ -955,10 +955,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
 template <class Base, class Derived>
 PSafePtr<Derived> PSafePtrCast(const PSafePtr<Base> & oldPtr)
 {
-//  return PSafePtr<Derived>::DownCast<Base>(oldPtr);
     PSafePtr<Derived> newPtr;
-    Base * realPtr = oldPtr;
-    if (realPtr != NULL && PIsDescendant(realPtr, Derived))
+    if (dynamic_cast<Derived *>(&*oldPtr) != NULL)
       newPtr.Assign(oldPtr);
     return newPtr;
 }
