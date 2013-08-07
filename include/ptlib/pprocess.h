@@ -272,22 +272,6 @@ class PProcess : public PThread
     /**Terminate the process. Usually only used in abnormal abort situation.
      */
     virtual void Terminate();
-
-    /** Get the name of the thread. Thread names are a optional debugging aid.
-
-       @return
-       current thread name.
-     */
-    virtual PString GetThreadName() const;
-
-    /** Change the name of the thread. Thread names are a optional debugging aid.
-
-       @return
-       current thread name.
-     */
-    virtual void SetThreadName(
-      const PString & name        ///< New name for the thread.
-    );
   //@}
 
   /**@name Process information functions */
