@@ -4556,6 +4556,7 @@ EXPORTS
     ??0PWAVFileFormatG7231_vivo@@QEAA@XZ @4553 NONAME
     ??0PWAVFileFormatPCM@@QEAA@XZ @4554 NONAME
     ??0PWideString@@QEAA@AEBVPString@@@Z @4555 NONAME
+    ??0PWideString@@QEAA@XZ @26711 NONAME
     ??0PWin32Handle@@QEAA@PEAX@Z @4556 NONAME
     ??0PWin32Overlapped@@QEAA@XZ @4557 NONAME
     ??0PWinSock@@QEAA@XZ @25447 NONAME
@@ -19990,7 +19991,6 @@ EXPORTS
     ?GetThread@Message@XMPP@@UEAA?AVPString@@XZ @19898 NONAME
     ?GetThread@PProcess@@QEBAPEAVPThread@@I@Z @19899 NONAME
     ?GetThreadId@PThread@@UEBAIXZ @19900 NONAME
-    ?GetThreadName@PProcess@@UEBA?AVPString@@XZ @19901 NONAME
     ?GetThreadName@PThread@@UEBA?AVPString@@XZ @19902 NONAME
     ?GetThresholdLevel@PSystemLogTarget@@QEBA?AW4Level@PSystemLog@@XZ @19903 NONAME
     ?GetTilt@PVideoInputControl@@UEBAJXZ @25475 NONAME
@@ -23338,7 +23338,6 @@ EXPORTS
     ?SetTextToSpeech@PVXMLSession@@QEAAPEAVPTextToSpeech@@PEAV2@_N@Z @23214 NONAME
     ?SetTheirOption@PTelnetSocket@@QEAAXE_N@Z @23215 NONAME
     ?SetThread@Message@XMPP@@UEAAXAEBVPString@@@Z @23216 NONAME
-    ?SetThreadName@PProcess@@UEAAXAEBVPString@@@Z @23217 NONAME
     ?SetThreadName@PThread@@UEAAXAEBVPString@@@Z @23218 NONAME
     ?SetThresholdLevel@PSystemLogTarget@@QEAAXW4Level@PSystemLog@@@Z @23219 NONAME
     ?SetTime@PConfig@@UEAAXAEBVPString@@0AEBVPTime@@@Z @23220 NONAME
@@ -23897,6 +23896,7 @@ EXPORTS
     ?Wait@PWin32Handle@@QEBA_NK@Z @23772 NONAME
     ?Wait@Win32RouteTableDetector@@UEAA_NAEBVPTimeInterval@@@Z @23773 NONAME
     ?WaitCondition@PCondMutex@@UEAAXXZ @23774 NONAME
+    ?WaitEvent@PSoundChannelWin32@@AEAA_NXZ @26712 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannel@@UEAA_NXZ @23775 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelDirectSound@@UEAA_NXZ @23776 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelWin32@@UEAA_NXZ @23777 NONAME
