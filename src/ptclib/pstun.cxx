@@ -1040,6 +1040,7 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
     for (PSocket::SelectList::iterator it = selectList.begin(); it != selectList.end(); ++it) {
       PSTUNUDPSocket & udp = dynamic_cast<PSTUNUDPSocket &>(*it);
       if (responseI.Read(udp) && responseI.Validate(requestI)) {
+        delete m_socket;
         m_socket = &udp;
         break;
       }
