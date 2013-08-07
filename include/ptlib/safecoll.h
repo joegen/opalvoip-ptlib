@@ -956,7 +956,7 @@ template <class Base, class Derived>
 PSafePtr<Derived> PSafePtrCast(const PSafePtr<Base> & oldPtr)
 {
     PSafePtr<Derived> newPtr;
-    if (dynamic_cast<Derived *>(&*oldPtr) != NULL)
+    if (oldPtr.GetObjectAs<Derived>() != NULL)
       newPtr.Assign(oldPtr);
     return newPtr;
 }
