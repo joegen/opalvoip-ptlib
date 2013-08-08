@@ -952,11 +952,15 @@ std::ostream & operator<<(std::ostream & strm, const PComResult & result)
                                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                                  msg, sizeof(msg),
                                  NULL);
+  while (dwMsgLen > 0 && isspace(msg[dwMsgLen-1]))
+    msg[--dwMsgLen] = '\0';
   if (dwMsgLen > 0)
     return strm << msg;
 
 #if P_DIRECTSHOW
   dwMsgLen = AMGetErrorText(result.m_result, msg, sizeof(msg));
+  while (dwMsgLen > 0 && isspace(msg[dwMsgLen-1]))
+    msg[--dwMsgLen] = '\0';
   if (dwMsgLen > 0)
     return strm << msg;
 #endif
