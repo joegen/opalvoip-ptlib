@@ -1868,6 +1868,8 @@ PProcess::PProcess(const char * manuf, const char * name,
   if (productName.IsEmpty())
     productName = executableFile.GetTitle().ToLower();
 
+  SetThreadName(GetName());
+
   Construct();
 
   if (!suppressStartup)
@@ -2064,16 +2066,6 @@ void PProcess::Terminate()
 #endif
 }
 
-
-PString PProcess::GetThreadName() const
-{
-  return GetName(); 
-}
- 
- 
-void PProcess::SetThreadName(const PString & /*name*/)
-{
-}
 
 PTime PProcess::GetStartTime() const
 { 
