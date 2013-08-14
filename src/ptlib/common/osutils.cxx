@@ -652,7 +652,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
   }
 
   if (module != NULL)
-    stream << left << setw(8) << module << '\t';
+    stream << left << setw(8) << module << right << '\t';
 
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex or is thread local
