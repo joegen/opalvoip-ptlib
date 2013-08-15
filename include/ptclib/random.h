@@ -67,54 +67,59 @@ class PRandom
        get the same sequence of values on each run. Useful for debugging.
       */
     PRandom(
-      DWORD seed    ///< New seed value, must not be zero
+      uint32_t seed    ///< New seed value, must not be zero
     );
 
     /**Set the seed for the random number generator.
       */
     void SetSeed(
-      DWORD seed    ///< New seed value, must not be zero
+      uint32_t seed    ///< New seed value, must not be zero
     );
 
     /**Get the next psuedo-random number in sequence.
        This generates one pseudorandom unsigned integer (32bit) which is
        uniformly distributed among 0 to 2^32-1 for each call.
       */
-    unsigned Generate();
+    uint32_t Generate();
 
     /**Get the next psuedo-random number in sequence.
        This generates one pseudorandom unsigned integer from 0 to maximum.
        Uses the Generate() function and scales accordingly.
       */
-    unsigned Generate(unsigned maximum);
+    uint32_t Generate(uint32_t maximum);
 
     /**Get the next psuedo-random number in sequence.
        This generates one pseudorandom unsigned integer from minimum to maximum.
        Uses the Generate() function and scales and shifts accordingly.
       */
-    unsigned Generate(unsigned minimum, unsigned maximum);
+    uint32_t Generate(uint32_t minimum, uint32_t maximum);
 
     /**Get the next psuedo-random number in sequence.
        This generates one pseudorandom unsigned integer which is
        uniformly distributed among 0 to maximum for each call. Uses
        Generate()
       */
-    inline operator unsigned() { return Generate(); }
+    inline operator uint32_t() { return Generate(); }
 
 
     /**Get the next psuedo-random number in sequence.
        This utilises a single system wide thread safe PRandom variable. All
        threads etc will share the same psuedo-random sequence.
       */
-    static unsigned Number();
+    static uint32_t Number();
 
     /** Get a random number between zero and maximum
     */
-    static unsigned Number(unsigned maximum);
+    static uint32_t Number(unsigned maximum);
 
     /** Get a random number between minimum and maximum
     */
-    static unsigned Number(unsigned minimum, unsigned maximum);
+    static uint32_t Number(unsigned minimum, unsigned maximum);
+
+    /** Get a random set of bits.
+    */
+    static void Octets(PBYTEArray & octets, PINDEX size = 0);
+    static void Octets(BYTE *  octets, PINDEX size);
 
   protected:
     enum {
@@ -122,12 +127,12 @@ class PRandom
       RandSize = 1<<RandBits
     };
 
-    DWORD randcnt;
-    DWORD randrsl[RandSize];
-    DWORD randmem[RandSize];
-    DWORD randa;
-    DWORD randb;
-    DWORD randc;
+    uint32_t randcnt;
+    uint32_t randrsl[RandSize];
+    uint32_t randmem[RandSize];
+    uint32_t randa;
+    uint32_t randb;
+    uint32_t randc;
 };
 
 
