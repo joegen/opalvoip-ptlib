@@ -47,7 +47,7 @@
 
 
 #define PTraceModule() "MacAudio"
-#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
+#define PTRACE_DETAILED(...) // PTRACE(__VA_ARGS__)
 
 
 // These two values are pretty fundamental, but missing from system headers
