@@ -101,6 +101,7 @@ extern "C" {
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <openssl/x509v3.h>
+#include <openssl/evp.h>
 
 #ifdef P_SSL_AES
   #include <openssl/aes.h>
@@ -121,6 +122,8 @@ extern "C" {
 #endif
 #endif
 
+#define PTraceModule() "SSL"
+
 
 class PSSLInitialiser : public PProcessStartup
 {
@@ -137,6 +140,18 @@ class PSSLInitialiser : public PProcessStartup
 };
 
 PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PSSLInitialiser);
+
+
+static PString PSSLError(const char * prefix = "", unsigned long err = ERR_peek_error())
+{
+  char buf[120]; // As per documentation
+  ERR_error_string(err, buf);
+  if (buf[0] == '\0')
+    sprintf(buf, "code=%lu", err);
+  return PConstString(prefix) + buf;
+}
+
+#define PSSLAssert(prefix) PAssertAlways(PSSLError(prefix))
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -359,7 +374,7 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType,
 
   PSSL_BIO in;
   if (!in.OpenRead(keyFile)) {
-    PTRACE(2, "SSL\tCould not open private key file \"" << keyFile << '"');
+    PTRACE(2, "Could not open private key file \"" << keyFile << '"');
     return false;
   }
 
@@ -380,7 +395,7 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType,
       if (m_pkey != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid ASN.1 private key file \"" << keyFile << '"');
+      PTRACE(2, "Invalid ASN.1 private key file \"" << keyFile << '"');
       return false;
 
     case PSSLFileTypePEM :
@@ -388,7 +403,7 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType,
       if (m_pkey != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid PEM private key file \"" << keyFile << '"');
+      PTRACE(2, "Invalid PEM private key file \"" << keyFile << '"');
       return false;
 
     default :
@@ -400,11 +415,11 @@ PBoolean PSSLPrivateKey::Load(const PFilePath & keyFile, PSSLFileTypes fileType,
       if (m_pkey != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid private key file \"" << keyFile << '"');
+      PTRACE(2, "Invalid private key file \"" << keyFile << '"');
       return false;
   }
 
-  PTRACE(4, "SSL\tLoaded private key file \"" << keyFile << '"');
+  PTRACE(4, "Loaded private key file \"" << keyFile << '"');
   return true;
 }
 
@@ -416,7 +431,7 @@ PBoolean PSSLPrivateKey::Save(const PFilePath & keyFile, PBoolean append, PSSLFi
 
   PSSL_BIO out;
   if (!(append ? out.OpenAppend(keyFile) : out.OpenWrite(keyFile))) {
-    PTRACE(2, "SSL\tCould not " << (append ? "append to" : "create") << " private key file \"" << keyFile << '"');
+    PTRACE(2, "Could not " << (append ? "append to" : "create") << " private key file \"" << keyFile << '"');
     return false;
   }
 
@@ -439,7 +454,7 @@ PBoolean PSSLPrivateKey::Save(const PFilePath & keyFile, PBoolean append, PSSLFi
       return false;
   }
 
-  PTRACE(2, "SSL\tError writing certificate file \"" << keyFile << '"');
+  PTRACE(2, "Error writing certificate file \"" << keyFile << '"');
   return false;
 }
 
@@ -657,7 +672,7 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
 
   PSSL_BIO in;
   if (!in.OpenRead(certFile)) {
-    PTRACE(2, "SSL\tCould not open certificate file \"" << certFile << '"');
+    PTRACE(2, "Could not open certificate file \"" << certFile << '"');
     return false;
   }
 
@@ -667,7 +682,7 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
       if (m_certificate != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid ASN.1 certificate file \"" << certFile << '"');
+      PTRACE(2, "Invalid ASN.1 certificate file \"" << certFile << '"');
       return false;
 
     case PSSLFileTypePEM :
@@ -675,7 +690,7 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
       if (m_certificate != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid PEM certificate file \"" << certFile << '"');
+      PTRACE(2, "Invalid PEM certificate file \"" << certFile << '"');
       return false;
 
     default :
@@ -687,11 +702,11 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
       if (m_certificate != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid certificate file \"" << certFile << '"');
+      PTRACE(2, "Invalid certificate file \"" << certFile << '"');
       return false;
   }
 
-  PTRACE(4, "SSL\tLoaded certificate file \"" << certFile << '"');
+  PTRACE(4, "Loaded certificate file \"" << certFile << '"');
   return true;
 }
 
@@ -703,7 +718,7 @@ PBoolean PSSLCertificate::Save(const PFilePath & certFile, PBoolean append, PSSL
 
   PSSL_BIO out;
   if (!(append ? out.OpenAppend(certFile) : out.OpenWrite(certFile))) {
-    PTRACE(2, "SSL\tCould not " << (append ? "append to" : "create") << " certificate file \"" << certFile << '"');
+    PTRACE(2, "Could not " << (append ? "append to" : "create") << " certificate file \"" << certFile << '"');
     return false;
   }
 
@@ -726,7 +741,7 @@ PBoolean PSSLCertificate::Save(const PFilePath & certFile, PBoolean append, PSSL
       return false;
   }
 
-  PTRACE(2, "SSL\tError writing certificate file \"" << certFile << '"');
+  PTRACE(2, "Error writing certificate file \"" << certFile << '"');
   return false;
 }
 
@@ -902,6 +917,433 @@ void PAESContext::Decrypt(const void * in, void * out)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PSSLCipherContext::PSSLCipherContext(bool encrypt)
+  : m_padMode(PadPKCS)
+  , m_context(new EVP_CIPHER_CTX)
+{
+  EVP_CIPHER_CTX_init(m_context);
+  m_context->encrypt = encrypt;
+  EVP_CIPHER_CTX_set_padding(m_context, 1);
+}
+
+
+PSSLCipherContext::~PSSLCipherContext()
+{
+  EVP_CIPHER_CTX_cleanup(m_context);
+  delete m_context;
+}
+
+
+PString PSSLCipherContext::GetAlgorithm() const
+{
+  const EVP_CIPHER * cipher = EVP_CIPHER_CTX_cipher(m_context);
+  if (cipher == NULL)
+    return PString::Empty();
+  return EVP_CIPHER_name(cipher);
+}
+
+
+bool PSSLCipherContext::SetAlgorithm(const PString & name)
+{
+  const EVP_CIPHER * cipher = EVP_get_cipherbyname(name);
+  if (cipher == NULL) {
+    cipher = EVP_get_cipherbyobj(OBJ_txt2obj(name, 1));
+    if (cipher == NULL) {
+      PTRACE(2, "Unknown cipher algorithm \"" << name << '"');
+      return false;
+    }
+  }
+
+  if (EVP_CipherInit_ex(m_context, cipher, NULL, NULL, NULL, m_context->encrypt)) {
+    PTRACE(4, "Set cipher algorithm \"" << GetAlgorithm() << "\" from \"" << name << '"');
+    return true;
+  }
+
+  PTRACE(2, "Could not set cipher algorithm: " << PSSLError());
+  return false;
+}
+
+
+bool PSSLCipherContext::SetKey(const BYTE * keyPtr, PINDEX keyLen)
+{
+  PTRACE(4, "Setting key: " << hex << fixed << setfill('0') << PBYTEArray(keyPtr, keyLen, false));
+
+  if (keyLen < EVP_CIPHER_CTX_key_length(m_context)) {
+    PTRACE(2, "Incorrect key length for encryption");
+    return false;
+  }
+
+  if (EVP_CipherInit_ex(m_context, NULL, NULL, keyPtr, NULL, m_context->encrypt))
+    return true;
+
+  PTRACE(2, "Could not set key: " << PSSLError());
+  return false;
+}
+
+
+bool PSSLCipherContext::SetPadding(PadMode pad)
+{
+  m_padMode = pad;
+  return EVP_CIPHER_CTX_set_padding(m_context, pad != NoPadding) != 0;
+}
+
+
+bool PSSLCipherContext::SetIV(const BYTE * ivPtr, PINDEX ivLen)
+{
+  if (ivLen < EVP_CIPHER_CTX_iv_length(m_context)) {
+    PTRACE(2, "Incorrect inital vector length for encryption");
+    return false;
+  }
+
+  if (EVP_CipherInit_ex(m_context, NULL, NULL, NULL, ivPtr, m_context->encrypt))
+    return true;
+
+  PTRACE(2, "Could not set initial vector: " << PSSLError());
+  return false;
+}
+
+
+bool PSSLCipherContext::Process(const PBYTEArray & in, PBYTEArray & out)
+{
+  if (!out.SetMinSize(GetBlockedDataSize(in.GetSize())))
+    return false;
+
+  PINDEX outLen = out.GetSize();
+  if (!Process(in, in.GetSize(), out.GetPointer(), outLen))
+    return false;
+
+  return out.SetSize(outLen);
+}
+
+
+// ciphertext stealing code based on a OpenSSL patch by An-Cheng Huang
+// Note: This ciphertext stealing implementation doesn't seem to always produce
+// compatible results, avoid when encrypting:
+
+int EVP_CipherUpdate_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl,
+                      const unsigned char *in, int inl)
+{
+    int bl = ctx->cipher->block_size;
+    int leftover = 0;
+    OPENSSL_assert(bl <= (int)sizeof(ctx->buf));
+    *outl = 0;
+
+    if ((ctx->buf_len + inl) <= bl) {
+        /* new plaintext is no more than 1 block */
+        /* copy the in data into the buffer and return */
+        memcpy(&(ctx->buf[ctx->buf_len]), in, inl);
+        ctx->buf_len += inl;
+        *outl = 0;
+        return 1;
+    }
+
+    /* more than 1 block of new plaintext available */
+    /* encrypt the previous plaintext, if any */
+    if (ctx->final_used) {
+        if (!(ctx->cipher->do_cipher(ctx, out, ctx->final, bl))) {
+          return 0;
+        }
+        out += bl;
+        *outl += bl;
+        ctx->final_used = 0;
+    }
+
+    /* we already know ctx->buf_len + inl must be > bl */
+    memcpy(&(ctx->buf[ctx->buf_len]), in, (bl - ctx->buf_len));
+    in += (bl - ctx->buf_len);
+    inl -= (bl - ctx->buf_len);
+    ctx->buf_len = bl;
+
+    if (inl <= bl) {
+        memcpy(ctx->final, ctx->buf, bl);
+        ctx->final_used = 1;
+        memcpy(ctx->buf, in, inl);
+        ctx->buf_len = inl;
+        return 1;
+    } else {
+        if (!(ctx->cipher->do_cipher(ctx, out, ctx->buf, bl))) {
+            return 0;
+        }
+        out += bl;
+        *outl += bl;
+        ctx->buf_len = 0;
+
+        leftover = inl & ctx->block_mask;
+        if (leftover) {
+            inl -= (bl + leftover);
+            memcpy(ctx->buf, &(in[(inl + bl)]), leftover);
+            ctx->buf_len = leftover;
+        } else {
+            inl -= (2 * bl);
+             memcpy(ctx->buf, &(in[(inl + bl)]), bl);
+             ctx->buf_len = bl;
+        }
+        memcpy(ctx->final, &(in[inl]), bl);
+        ctx->final_used = 1;
+        if (!(ctx->cipher->do_cipher(ctx, out, in, inl))) {
+            return 0;
+        }
+        out += inl;
+        *outl += inl;
+    }
+
+    return 1;
+}
+
+int EVP_EncryptFinal_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl)
+{
+    unsigned char tmp[EVP_MAX_BLOCK_LENGTH];
+    int bl = ctx->cipher->block_size;
+    int leftover = 0;
+    *outl = 0;
+
+    if (!ctx->final_used) {
+        PTRACE(1, "CTS Error: expecting previous ciphertext");
+        return 0;
+    }
+    if (ctx->buf_len == 0) {
+        PTRACE(1, "CTS Error: expecting previous plaintext");
+        return 0;
+    }
+
+    /* handle leftover bytes */
+    leftover = ctx->buf_len;
+
+    switch (EVP_CIPHER_CTX_mode(ctx)) {
+        case EVP_CIPH_ECB_MODE: {
+            /* encrypt => C_{n} plus C' */
+            if (!(ctx->cipher->do_cipher(ctx, tmp, ctx->final, bl))) {
+                 return 0;
+            }
+
+            /* P_n plus C' */
+            memcpy(&(ctx->buf[leftover]), &(tmp[leftover]), (bl - leftover));
+            /* encrypt => C_{n-1} */
+            if (!(ctx->cipher->do_cipher(ctx, out, ctx->buf, bl))) {
+                return 0;
+            }
+
+            memcpy((out + bl), tmp, leftover);
+            *outl += (bl + leftover);
+            return 1;
+        }
+        case EVP_CIPH_CBC_MODE: {
+            /* encrypt => C_{n} plus C' */
+            if (!(ctx->cipher->do_cipher(ctx, tmp, ctx->final, bl))) {
+                return 0;
+            }
+
+            /* P_n plus 0s */
+            memset(&(ctx->buf[leftover]), 0, (bl - leftover));
+
+            /* note that in cbc encryption, plaintext will be xor'ed with the previous
+             * ciphertext, which is what we want.
+             */
+            /* encrypt => C_{n-1} */
+            if (!(ctx->cipher->do_cipher(ctx, out, ctx->buf, bl))) {
+                return 0;
+            }
+
+            memcpy((out + bl), tmp, leftover);
+            *outl += (bl + leftover);
+            return 1;
+        }
+        default:
+            PTRACE(1, "CTS Error: unsupported mode");
+            return 0;
+    }
+}
+
+int EVP_DecryptFinal_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl)
+{
+    unsigned char tmp[EVP_MAX_BLOCK_LENGTH];
+    int bl = ctx->cipher->block_size;
+    int leftover = 0;
+    *outl = 0;
+
+    if (!ctx->final_used) {
+        PTRACE(1, "CTS Error: expecting previous ciphertext");
+        return 0;
+    }
+    if (ctx->buf_len == 0) {
+        PTRACE(1, "CTS Error: expecting previous ciphertext");
+        return 0;
+    }
+
+    /* handle leftover bytes */
+    leftover = ctx->buf_len;
+
+    switch (EVP_CIPHER_CTX_mode(ctx)) {
+        case EVP_CIPH_ECB_MODE: {
+            /* decrypt => P_n plus C' */
+            if (!(ctx->cipher->do_cipher(ctx, tmp, ctx->final, bl))) {
+                return 0;
+            }
+
+            /* C_n plus C' */
+            memcpy(&(ctx->buf[leftover]), &(tmp[leftover]), (bl - leftover));
+            /* decrypt => P_{n-1} */
+            if (!(ctx->cipher->do_cipher(ctx, out, ctx->buf, bl))) {
+                return 0;
+            }
+
+            memcpy((out + bl), tmp, leftover);
+            *outl += (bl + leftover);
+            return 1;
+        }
+        case EVP_CIPH_CBC_MODE: {
+            int i = 0;
+            unsigned char C_n_minus_2[EVP_MAX_BLOCK_LENGTH];
+
+            memcpy(C_n_minus_2, ctx->iv, bl);
+
+            /* C_n plus 0s in ctx->buf */
+            memset(&(ctx->buf[leftover]), 0, (bl - leftover));
+
+            /* ctx->final is C_{n-1} */
+            /* decrypt => (P_n plus C')'' */
+            if (!(ctx->cipher->do_cipher(ctx, tmp, ctx->final, bl))) {
+                return 0;
+            }
+            /* XOR'ed with C_{n-2} => (P_n plus C')' */
+            for (i = 0; i < bl; i++) {
+                tmp[i] = tmp[i] ^ C_n_minus_2[i];
+            }
+            /* XOR'ed with (C_n plus 0s) => P_n plus C' */
+            for (i = 0; i < bl; i++) {
+                tmp[i] = tmp[i] ^ ctx->buf[i];
+            }
+
+            /* C_n plus C' in ctx->buf */
+            memcpy(&(ctx->buf[leftover]), &(tmp[leftover]), (bl - leftover));
+            /* decrypt => P_{n-1}'' */
+            if (!(ctx->cipher->do_cipher(ctx, out, ctx->buf, bl))) {
+                return 0;
+            }
+            /* XOR'ed with C_{n-1} => P_{n-1}' */
+            for (i = 0; i < bl; i++) {
+                out[i] = out[i] ^ ctx->final[i];
+            }
+            /* XOR'ed with C_{n-2} => P_{n-1} */
+            for (i = 0; i < bl; i++) {
+                out[i] = out[i] ^ C_n_minus_2[i];
+            }
+
+            memcpy((out + bl), tmp, leftover);
+            *outl += (bl + leftover);
+            return 1;
+        }
+        default:
+            PTRACE(1, "CTS Error: unsupported mode");
+            return 0;
+    }
+}
+
+
+bool PSSLCipherContext::Process(const BYTE * inPtr, PINDEX inLen, BYTE * outPtr, PINDEX & outLen, bool partial)
+{
+  if (outLen < (m_context->encrypt ? GetBlockedDataSize(inLen) : inLen))
+    return false;
+
+  int len = -1;
+  if (m_padMode == PadCipherStealing) {
+    if (!EVP_CipherUpdate_cts(m_context, outPtr, &len, inPtr, inLen))
+      return false;
+  }
+  else {
+    if (!EVP_CipherUpdate(m_context, outPtr, &len, inPtr, inLen)) {
+      PTRACE(2, "Could not update data: " << PSSLError());
+      return false;
+    }
+  }
+
+  outLen = len;
+
+  if (partial)
+    return true;
+
+  switch (m_padMode) {
+    case NoPadding :
+      if (inLen != outLen) {
+        PTRACE(2, "No padding selected and data required padding");
+        return false;
+      }
+      len = 0;
+      break;
+
+    case PadPKCS :
+      if (!EVP_CipherFinal(m_context, outPtr+len, &len)) {
+        PTRACE(2, "Could not finalise data: " << PSSLError());
+        return false;
+      }
+      break;
+
+    // Polycom endpoints (eg. m100 and PVX) don't fill the pading properly, so we have to disable some checks
+    case PadLoosePKCS :
+      if (m_context->buf_len != 0 || m_context->final_used == 0) {
+        PTRACE(2, "Decrypt error: wrong final block length:"
+                       " buf_len=" << m_context->buf_len <<
+                    " final_used=" << m_context->final_used);
+        return false;
+      }
+      else {
+        int b = m_context->cipher->block_size;
+        int n = m_context->final[b-1];
+        if (n == 0 || n > b) {
+          PTRACE(1, "Decrypt error: bad decrypt");
+          return false;
+        }
+        len = b - n;
+        for (n = 0; n < len; n++)
+          outPtr[outLen+n] = m_context->final[n];
+      }
+      break;
+
+    case PadCipherStealing :
+      if (!(m_context->encrypt ? EVP_EncryptFinal_cts(m_context, outPtr+len, &len)
+                               : EVP_DecryptFinal_cts(m_context, outPtr+len, &len)))
+        return false;
+      break;
+  }
+
+  outLen += len;
+  return true;
+}
+
+
+bool PSSLCipherContext::IsEncrypt() const
+{
+  return m_context->encrypt != 0;
+}
+
+
+PINDEX PSSLCipherContext::GetKeyLength() const
+{
+  return EVP_CIPHER_CTX_key_length(m_context);
+}
+
+
+PINDEX PSSLCipherContext::GetIVLength() const
+{
+  return EVP_CIPHER_CTX_iv_length(m_context);
+}
+
+
+PINDEX PSSLCipherContext::GetBlockSize() const
+{
+  return EVP_CIPHER_CTX_block_size(m_context);
+}
+
+
+PINDEX PSSLCipherContext::GetBlockedDataSize(PINDEX size) const
+{
+  PINDEX blockSize = EVP_CIPHER_CTX_block_size(m_context);
+  return ((size+blockSize-1)/blockSize)*blockSize;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PSHA1Context::PSHA1Context()
   : m_context(new SHA_CTX)
 {
@@ -936,55 +1378,121 @@ void PSHA1Context::Process(const void * data, PINDEX length, Digest result)
 ///////////////////////////////////////////////////////////////////////////////
 
 PSSLDiffieHellman::PSSLDiffieHellman()
+  : m_dh(NULL)
 {
-  dh = NULL;
 }
 
 
-PSSLDiffieHellman::PSSLDiffieHellman(const PFilePath & dhFile,
-                                     PSSLFileTypes fileType)
+PSSLDiffieHellman::PSSLDiffieHellman(const PFilePath & dhFile, PSSLFileTypes fileType)
+  : m_dh(NULL)
 {
-  dh = NULL;
   Load(dhFile, fileType);
 }
 
 
-PSSLDiffieHellman::PSSLDiffieHellman(const BYTE * pData, PINDEX pSize,
-                                     const BYTE * gData, PINDEX gSize)
+PSSLDiffieHellman::PSSLDiffieHellman(PINDEX numBits, const BYTE * pData, const BYTE * gData, const BYTE * pubKey)
+  : m_dh(DH_new())
 {
-  dh = DH_new();
-  if (dh == NULL)
+  if (PAssertNULL(m_dh) == NULL)
     return;
 
-  dh->p = BN_bin2bn(pData, pSize, NULL);
-  dh->g = BN_bin2bn(gData, gSize, NULL);
-  if (dh->p != NULL && dh->g != NULL)
+  PINDEX numBytes = numBits/8;
+  if (Construct(pData, numBytes, gData, numBytes, pubKey, numBytes))
     return;
 
-  DH_free(dh);
-  dh = NULL;
+  DH_free(m_dh);
+  m_dh = NULL;
+}
+
+
+PSSLDiffieHellman::PSSLDiffieHellman(const PBYTEArray & pData,
+                                     const PBYTEArray & gData,
+                                     const PBYTEArray & pubKey)
+  : m_dh(DH_new())
+{
+  if (PAssertNULL(m_dh) == NULL)
+    return;
+
+  if (Construct(pData, pData.GetSize(), gData, gData.GetSize(), pubKey, pubKey.GetSize()))
+    return;
+
+  DH_free(m_dh);
+  m_dh = NULL;
+}
+
+
+bool PSSLDiffieHellman::Construct(const BYTE * pData, PINDEX pSize,
+                                  const BYTE * gData, PINDEX gSize,
+                                  const BYTE * kData, PINDEX kSize)
+{
+  if (!PAssert(pSize >= 64 && pSize%4 == 0 && gSize <= pSize && gSize%4 == 0, PInvalidParameter))
+    return false;
+
+  if ((m_dh->p = BN_bin2bn(pData, pSize, NULL)) == NULL)
+    return false;
+
+  if ((m_dh->g = BN_bin2bn(gData, gSize, NULL)) == NULL)
+    return false;
+
+  int err = -1;
+  if (DH_check(m_dh, &err)) {
+    switch (err) {
+      case DH_CHECK_P_NOT_PRIME:
+        PTRACE(2, "The p value is not prime");
+        break;
+      case DH_CHECK_P_NOT_SAFE_PRIME:
+        PTRACE(2, "The p value is not a safe prime");
+        break;
+      case DH_UNABLE_TO_CHECK_GENERATOR:
+        PTRACE(2, "Unable to check the generator value");
+        break;
+      case DH_NOT_SUITABLE_GENERATOR:
+        PTRACE(2, "The g value is not a suitable generator");
+        break;
+      default :
+        PTRACE(1, "Diffie-Hellman check failed: code=" << err);
+        return false;
+    }
+  }
+
+  if (kData == NULL) {
+    if (DH_generate_key(m_dh))
+      return true;
+
+    PSSLAssert("DH key generate failed: ");
+    return false;
+  }
+
+  if (!PAssert(kSize <= pSize && kSize%4 == 0, PInvalidParameter))
+    return false;
+
+  if ((m_dh->pub_key = BN_bin2bn(kData, kSize, NULL)) != NULL)
+    return true;
+
+  PSSLAssert("DH public key invalid: ");
+  return false;
 }
 
 
 PSSLDiffieHellman::PSSLDiffieHellman(const PSSLDiffieHellman & diffie)
 {
-  dh = diffie.dh;
+  m_dh = diffie.m_dh;
 }
 
 
 PSSLDiffieHellman & PSSLDiffieHellman::operator=(const PSSLDiffieHellman & diffie)
 {
-  if (dh != NULL)
-    DH_free(dh);
-  dh = diffie.dh;
+  if (m_dh != NULL)
+    DH_free(m_dh);
+  m_dh = diffie.m_dh;
   return *this;
 }
 
 
 PSSLDiffieHellman::~PSSLDiffieHellman()
 {
-  if (dh != NULL)
-    DH_free(dh);
+  if (m_dh != NULL)
+    DH_free(m_dh);
 }
 
 #ifdef P_d2i_DHparams_bio_OLD
@@ -1004,49 +1512,108 @@ PSSLDiffieHellman::~PSSLDiffieHellman()
 
 PBoolean PSSLDiffieHellman::Load(const PFilePath & dhFile, PSSLFileTypes fileType)
 {
-  if (dh != NULL) {
-    DH_free(dh);
-    dh = NULL;
+  if (m_dh != NULL) {
+    DH_free(m_dh);
+    m_dh = NULL;
   }
 
   PSSL_BIO in;
   if (!in.OpenRead(dhFile)) {
-    PTRACE(2, "SSL\tCould not open DH file \"" << dhFile << '"');
+    PTRACE(2, "Could not open DH file \"" << dhFile << '"');
     return false;
   }
 
   switch (fileType) {
     case PSSLFileTypeASN1 :
-      dh = d2i_DHparams_bio(in, NULL);
-      if (dh != NULL)
+      m_dh = d2i_DHparams_bio(in, NULL);
+      if (m_dh != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid ASN.1 DH file \"" << dhFile << '"');
+      PTRACE(2, "Invalid ASN.1 DH file \"" << dhFile << '"');
       return false;
 
     case PSSLFileTypePEM :
-      dh = PEM_read_bio_DHparams(in, NULL, NULL, NULL);
-      if (dh != NULL)
+      m_dh = PEM_read_bio_DHparams(in, NULL, NULL, NULL);
+      if (m_dh != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid PEM DH file \"" << dhFile << '"');
+      PTRACE(2, "Invalid PEM DH file \"" << dhFile << '"');
       return false;
 
     default :
-      dh = PEM_read_bio_DHparams(in, NULL, NULL, NULL);
-      if (dh != NULL)
+      m_dh = PEM_read_bio_DHparams(in, NULL, NULL, NULL);
+      if (m_dh != NULL)
         break;
 
-      dh = d2i_DHparams_bio(in, NULL);
-      if (dh != NULL)
+      m_dh = d2i_DHparams_bio(in, NULL);
+      if (m_dh != NULL)
         break;
 
-      PTRACE(2, "SSL\tInvalid DH file \"" << dhFile << '"');
+      PTRACE(2, "Invalid DH file \"" << dhFile << '"');
       return false;
   }
 
-  PTRACE(4, "SSL\tLoaded DH file \"" << dhFile << '"');
+  PTRACE(4, "Loaded DH file \"" << dhFile << '"');
   return false;
+}
+
+
+PINDEX PSSLDiffieHellman::GetNumBits() const
+{
+  return m_dh != NULL ? BN_num_bits(m_dh->p) : 0;
+}
+
+
+static PBYTEArray GetBigNum(BIGNUM * bn, PINDEX numBits)
+{
+  PBYTEArray bytes;
+
+  if (bn == NULL)
+    return bytes;
+
+  PINDEX numBytes = numBits/8;
+  if (BN_bn2bin(bn, bytes.GetPointer(numBytes) + numBytes - BN_num_bytes(bn)) > 0)
+    return bytes;
+
+  bytes.SetSize(0);
+  return bytes;
+}
+
+
+PBYTEArray PSSLDiffieHellman::GetModulus() const
+{
+  return GetBigNum(m_dh != NULL ? m_dh->p : NULL, GetNumBits());
+}
+
+
+PBYTEArray PSSLDiffieHellman::GetGenerator() const
+{
+  return GetBigNum(m_dh != NULL ? m_dh->g : NULL, GetNumBits());
+}
+
+
+PBYTEArray PSSLDiffieHellman::GetHalfKey() const
+{
+  return GetBigNum(m_dh != NULL ? m_dh->pub_key : NULL, GetNumBits());
+}
+
+
+bool PSSLDiffieHellman::ComputeSessionKey(const PBYTEArray & otherHalf)
+{
+  if (m_dh == NULL)
+    return false;
+
+  BIGNUM * obn = BN_bin2bn(otherHalf, otherHalf.GetSize(), NULL);
+  int result = DH_compute_key(m_sessionKey.GetPointer(DH_size(m_dh)), obn, m_dh);
+  if (result > 0)
+    m_sessionKey.SetSize(result);
+  else {
+    PTRACE(2, "Could not calculate session key: " << PSSLError());
+    m_sessionKey.SetSize(0);
+  }
+  BN_free(obn);
+
+  return !m_sessionKey.IsEmpty();
 }
 
 
@@ -1091,31 +1658,30 @@ void PSSLInitialiser::LockingCallback(int mode, int n)
 }
 
 
-static void InfoCallback(const SSL * PTRACE_PARAM(ssl), int PTRACE_PARAM(where), int PTRACE_PARAM(ret))
+static void InfoCallback(const SSL * PTRACE_PARAM(ssl), int PTRACE_PARAM(location), int PTRACE_PARAM(ret))
 {
 #if PTRACING
   static const unsigned Level = 4;
   if (PTrace::GetLevel() >= Level) {
     ostream & trace = PTRACE_BEGIN(Level);
-    trace << "SSL\t";
 
-    if (where & SSL_CB_ALERT) {
+    if (location & SSL_CB_ALERT) {
       trace << "Alert "
-            << ((where & SSL_CB_READ) ? "read" : "write")
+            << ((location & SSL_CB_READ) ? "read" : "write")
             << ' ' << SSL_alert_type_string_long(ret)
             << ": " << SSL_alert_desc_string_long(ret);
     }
     else {
-      if (where & SSL_ST_CONNECT)
+      if (location & SSL_ST_CONNECT)
         trace << "Connect";
-      else if (where & SSL_ST_ACCEPT)
+      else if (location & SSL_ST_ACCEPT)
         trace << "Accept";
       else
         trace << "General";
 
       trace << ": ";
 
-      if (where & SSL_CB_EXIT) {
+      if (location & SSL_CB_EXIT) {
         if (ret == 0)
           trace << "failed in ";
         else if (ret < 0)
@@ -1143,7 +1709,7 @@ static int VerifyCallback(int ok, X509_STORE_CTX * PTRACE_PARAM(ctx))
     cert.GetSubjectName(subject);
 
     PTRACE_BEGIN(Level)
-        << "SSL\tVerify callback: depth="
+        << "Verify callback: depth="
         << depth
         << ", err=" << err << " - " << X509_verify_cert_error_string(err)
         << "\n  Subject:\n" << subject.AsString(4)
@@ -1153,16 +1719,6 @@ static int VerifyCallback(int ok, X509_STORE_CTX * PTRACE_PARAM(ctx))
 #endif // PTRACING
 
   return ok;
-}
-
-
-static void PSSLAssert(const char * msg)
-{
-  char buf[256];
-  strcpy(buf, msg);
-  ERR_error_string(ERR_peek_error(), &buf[strlen(msg)]);
-  PTRACE(1, "SSL\t" << buf);
-  PAssertAlways(buf);
 }
 
 
@@ -1227,11 +1783,11 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
   PString caPath = caDir.Left(caDir.GetLength()-1);
   if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
                                                caPath.IsEmpty() ? NULL : (const char *)caPath)) {
-    PTRACE(4, "SSL\tSet context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+    PTRACE(4, "Set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
     return true;
   }
 
-  PTRACE(2, "SSL\tCould not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+  PTRACE(2, "Could not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
   return SSL_CTX_set_default_verify_paths(m_context);
 }
 
@@ -1341,7 +1897,7 @@ bool PSSLContext::SetCredentials(const PString & authority,
     else
       ok = SetVerifyCertificate(PSSLCertificate(authority));
     if (!ok) {
-      PTRACE(2, "SSL\tCould not find/parse certificate authority \"" << authority << '"');
+      PTRACE(2, "Could not find/parse certificate authority \"" << authority << '"');
       return false;
     }
     SetVerifyMode(VerifyPeerMandatory);
@@ -1354,12 +1910,12 @@ bool PSSLContext::SetCredentials(const PString & authority,
   PSSLPrivateKey key;
 
   if (PFile::Exists(certificate) && !cert.Load(certificate)) {
-    PTRACE(2, "SSL\tCould not load certificate file \"" << certificate << '"');
+    PTRACE(2, "Could not load certificate file \"" << certificate << '"');
     return false;
   }
 
   if (PFile::Exists(privateKey) && !key.Load(privateKey, PSSLFileTypeDEFAULT, m_passwordNotifier)) {
-    PTRACE(2, "SSL\tCould not load private key file \"" << privateKey << '"');
+    PTRACE(2, "Could not load private key file \"" << privateKey << '"');
     return false;
   }
 
@@ -1373,12 +1929,12 @@ bool PSSLContext::SetCredentials(const PString & authority,
   if (!cert.IsValid() || !key.IsValid()) {
 
     if (cert.IsValid() || key.IsValid()) {
-      PTRACE(2, "SSL\tRequire both certificate and private key");
+      PTRACE(2, "Require both certificate and private key");
       return false;
     }
 
     if (!create) {
-      PTRACE(2, "SSL\tRequire certificate and private key");
+      PTRACE(2, "Require certificate and private key");
       return false;
     }
 
@@ -1387,33 +1943,33 @@ bool PSSLContext::SetCredentials(const PString & authority,
        << "/CN=" << PIPSocket::GetHostName();
 
     if (!key.Create(2048)) {
-      PTRACE(1, "SSL\tCould not create private key");
+      PTRACE(1, "Could not create private key");
       return false;
     }
 
     if (!cert.CreateRoot(dn, key)) {
-      PTRACE(1, "SSL\tCould not create certificate");
+      PTRACE(1, "Could not create certificate");
       return false;
     }
 
     if (!cert.Save(certificate))
       return false;
 
-    PTRACE(2, "SSL\tCreated new certificate file \"" << certificate << '"');
+    PTRACE(2, "Created new certificate file \"" << certificate << '"');
 
     if (!key.Save(privateKey, true))
       return false;
 
-    PTRACE(2, "SSL\tCreated new private key file \"" << privateKey << '"');
+    PTRACE(2, "Created new private key file \"" << privateKey << '"');
   }
 
   if (!UseCertificate(cert)) {
-    PTRACE(1, "SSL\tCould not use certificate " << cert);
+    PTRACE(1, "Could not use certificate " << cert);
     return false;
   }
 
   if (!UsePrivateKey(key)) {
-    PTRACE(1, "SSL\tCould not use private key " << key);
+    PTRACE(1, "Could not use private key " << key);
     return false;
   }
 
@@ -1850,7 +2406,7 @@ PBoolean PSSLChannel::OnOpen()
 {
   BIO * bio = BIO_new(&methods_Psock);
   if (bio == NULL) {
-    PTRACE(2, "SSL\tCould not open BIO");
+    PTRACE(2, "Could not open BIO");
     return false;
   }
 
