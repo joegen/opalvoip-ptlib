@@ -413,9 +413,12 @@ class PASN_BitString : public PASN_ConstrainedObject
     PASN_BitString(const PASN_BitString & other);
     PASN_BitString & operator=(const PASN_BitString & other);
 
+    void SetData(const PBYTEArray & bytes) { SetData(bytes.GetSize()*8, bytes); }
+    void SetData(const BYTE * buf, PINDEX size) { SetData(size*8, buf, size); }
     void SetData(unsigned nBits, const PBYTEArray & bytes);
     void SetData(unsigned nBits, const BYTE * buf, PINDEX size = 0);
 
+    const PBYTEArray & GetData() const { return bitData; }
     const BYTE * GetDataPointer() const { return bitData; }
 
     unsigned GetSize() const { return totalBits; }
@@ -475,6 +478,7 @@ class PASN_OctetString : public PASN_ConstrainedObject
     void SetValue(const PBYTEArray & arr) { operator=(arr); }
     void SetValue(const BYTE * data, PINDEX len);
     const PBYTEArray & GetValue() const { return value; }
+    PBYTEArray & GetWritableValue() { return value; }
     operator const PBYTEArray &() const { return value; }
     operator const BYTE *() const { return value; }
     PString AsString() const;
