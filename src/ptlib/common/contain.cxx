@@ -501,6 +501,10 @@ void PBYTEArray::PrintOn(ostream & strm) const
 
   PINDEX val_width = ((strm.flags()&ios::basefield) == ios::hex) ? 2 : 3;
 
+  ios::fmtflags oldFlags = strm.flags();
+  if (strm.fill() == '0')
+    strm.setf(ios::right, ios::adjustfield);
+
   PINDEX i = 0;
   while (i < GetSize()) {
     if (i > 0)
@@ -534,6 +538,8 @@ void PBYTEArray::PrintOn(ostream & strm) const
     }
     i += line_width;
   }
+
+  strm.flags(oldFlags);
 }
 
 
