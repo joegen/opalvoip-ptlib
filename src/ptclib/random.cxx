@@ -49,7 +49,7 @@ PRandom::PRandom()
 }
 
 
-PRandom::PRandom(DWORD seed)
+PRandom::PRandom(uint32_t seed)
 {
   SetSeed(seed);
 }
@@ -68,11 +68,11 @@ PRandom::PRandom(DWORD seed)
 }
 
 
-void PRandom::SetSeed(DWORD seed)
+void PRandom::SetSeed(uint32_t seed)
 {
    int i;
-   DWORD a,b,c,d,e,f,g,h;
-   DWORD *m,*r;
+   uint32_t a,b,c,d,e,f,g,h;
+   uint32_t *m,*r;
    randa = randb = randc = 0;
    m=randmem;
    r=randrsl;
@@ -113,7 +113,7 @@ void PRandom::SetSeed(DWORD seed)
 }
 
 
-#define ind(mm,x)  (*(DWORD *)((BYTE *)(mm) + ((x) & ((RandSize-1)<<2))))
+#define ind(mm,x)  (*(uint32_t *)((BYTE *)(mm) + ((x) & ((RandSize-1)<<2))))
 
 #define rngstep(mix,a,b,mm,m,m2,r,x) \
 { \
@@ -124,21 +124,21 @@ void PRandom::SetSeed(DWORD seed)
 }
 
 
-static unsigned redistribute(unsigned value, unsigned minimum, unsigned maximum)
+static uint32_t redistribute(uint32_t value, uint32_t minimum, uint32_t maximum)
 {
   if (minimum >= maximum)
     return maximum;
-  unsigned range = maximum - minimum + 1;
+  uint32_t range = maximum - minimum + 1;
   while (value >= range)
     value = (value/range) ^ (value%range);
   return value + minimum;
 }
 
 
-unsigned PRandom::Generate()
+uint32_t PRandom::Generate()
 {
   if (randcnt-- == 0) {
-    register DWORD a,b,x,y,*m,*mm,*m2,*r,*mend;
+    register uint32_t a,b,x,y,*m,*mm,*m2,*r,*mend;
     mm=randmem; r=randrsl;
     a = randa; b = randb + (++randc);
     for (m = mm, mend = m2 = m+(RandSize/2); m<mend; )
@@ -164,19 +164,19 @@ unsigned PRandom::Generate()
 }
 
 
-unsigned PRandom::Generate(unsigned maximum)
+uint32_t PRandom::Generate(uint32_t maximum)
 {
   return redistribute(Generate(), 0, maximum);
 }
 
 
-unsigned PRandom::Generate(unsigned minimum, unsigned maximum)
+uint32_t PRandom::Generate(uint32_t minimum, uint32_t maximum)
 {
   return redistribute(Generate(), minimum, maximum);
 }
 
 
-unsigned PRandom::Number()
+uint32_t PRandom::Number()
 {
   static PMutex mutex;
   PWaitAndSignal wait(mutex);
@@ -185,15 +185,45 @@ unsigned PRandom::Number()
   return rand;
 }
 
-unsigned int PRandom::Number(unsigned maximum)
+uint32_t PRandom::Number(uint32_t maximum)
 {
   return redistribute(Number(), 0, maximum);
 }
 
 
-unsigned int PRandom::Number(unsigned minimum, unsigned maximum)
+uint32_t PRandom::Number(uint32_t minimum, uint32_t maximum)
 {
   return redistribute(Number(), minimum, maximum);
+}
+
+
+void PRandom::Octets(PBYTEArray & octets, PINDEX size)
+{
+  if (size != 0)
+    Octets(octets.GetPointer(size), size);
+  else
+    Octets(octets.GetPointer(), octets.GetSize());
+}
+
+
+void PRandom::Octets(BYTE * octets, PINDEX size)
+{
+  if (octets == NULL || size == 0)
+    return;
+
+  static PMutex mutex;
+  PWaitAndSignal wait(mutex);
+
+  static PRandom rand;
+
+  uint32_t * uintPtr = (uint32_t *)octets;
+
+  PINDEX i;
+  for (i = sizeof(uint32_t); i <= size; i += sizeof(uint32_t))
+    *uintPtr++ = rand.Generate();
+
+  for (i -= sizeof(uint32_t); i < size; ++i)
+    octets[i] = (BYTE)rand.Generate(0, 255);
 }
 
 
