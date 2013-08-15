@@ -986,13 +986,14 @@ void PASN_BitString::PrintOn(ostream & strm) const
          << hex << setfill('0') << resetiosflags(ios::floatfield) << setiosflags(ios::fixed)
          << setw(16) << setprecision(indent) << bitData
          << dec << setfill(' ') << resetiosflags(ios::floatfield)
-         << setw(indent-1) << "}";
+         << '\n' << setw(indent-1) << "}";
   else if (totalBits > 32)
-    strm << "Hex:"
+    strm << "Hex: "
          << hex << setfill('0') << resetiosflags(ios::floatfield) << setiosflags(ios::fixed)
          << setprecision(2) << setw(16) << bitData
          << dec << setfill(' ') << resetiosflags(ios::floatfield);
   else {
+    strm << "Bits: ";
     BYTE mask = 0x80;
     PINDEX offset = 0;
     for (unsigned i = 0; i < totalBits; i++) {
