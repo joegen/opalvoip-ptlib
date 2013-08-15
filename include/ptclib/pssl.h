@@ -43,6 +43,7 @@ struct ssl_ctx_st;
 struct x509_st;
 struct X509_name_st;
 struct evp_pkey_st;
+struct evp_cipher_ctx_st;
 struct dh_st;
 struct aes_key_st;
 struct SHAstate_st;
@@ -365,9 +366,9 @@ class PSSLCertificate : public PObject
 };
 
 
-/**Diffie-Hellman parameters for SSL.
-   This class embodies a set of Diffie Helman parameters as used by
-   PSSLContext and PSSLChannel classes.
+/**Diffie-Hellman key exchange conteext.
+   This class embodies a set of Diffie Helman key exchange parameters and
+   context.
   */
 class PSSLDiffieHellman : public PObject
 {
@@ -388,12 +389,24 @@ class PSSLDiffieHellman : public PObject
     );
 
     /**Create a set of Diffie-Hellman parameters.
+       If \p pubKey is NULL, it is automatically generated.
+
+       Note, all three buffers (if not NULL) must point to numBits/8 bytes.
       */
     PSSLDiffieHellman(
-      const BYTE * pData, ///< P data
-      PINDEX pSize,       ///< Size of P data
-      const BYTE * gData, ///< G data
-      PINDEX gSize        ///< Size of G data
+      PINDEX numBits,            ///< Number of bits
+      const BYTE * pData,        ///< Modulus data (numBits/8 bytes)
+      const BYTE * gData,        ///< Generator data (numBits/8 bytes)
+      const BYTE * pubKey = NULL ///< Public key data (numBits/8 bytes)
+    );
+
+    /**Create a set of Diffie-Hellman parameters.
+       If \p pubKey is empty, it is automatically generated.
+      */
+    PSSLDiffieHellman(
+      const PBYTEArray & pData,   ///< Modulus data
+      const PBYTEArray & gData,   ///< Generator data
+      const PBYTEArray & pubKey   ///< Public key data
     );
 
     /**Create a copy of the Diffie-Hellman parameters.
@@ -412,9 +425,13 @@ class PSSLDiffieHellman : public PObject
       */
     ~PSSLDiffieHellman();
 
+    /**Return true if is a valid Diffie-Hellman context.
+     */
+    bool IsValid() const { return m_dh != NULL; }
+
     /**Get internal OpenSSL DH structure.
       */
-    operator dh_st *() const { return dh; }
+    operator dh_st *() const { return m_dh; }
 
     /**Load Diffie-Hellman parameters from file.
        The type of the file can be specified explicitly, or if
@@ -426,8 +443,37 @@ class PSSLDiffieHellman : public PObject
       PSSLFileTypes fileType = PSSLFileTypeDEFAULT  ///< Type of file to read
     );
 
+    /**Get number of bits being used.
+      */
+    PINDEX GetNumBits() const;
+
+    /**Get the P value
+      */
+    PBYTEArray GetModulus() const;
+
+    /**Get the G value
+      */
+    PBYTEArray GetGenerator() const;
+
+    /**Get the "half-key" value
+      */
+    PBYTEArray GetHalfKey() const;
+
+    /**Compute the session key, geven other half-key
+      */
+    bool ComputeSessionKey(const PBYTEArray & otherHalf);
+
+    /**Get the session key value
+      */
+    const PBYTEArray & GetSessionKey() const { return m_sessionKey; }
+
   protected:
-    dh_st * dh;
+    bool Construct(const BYTE * pData, PINDEX pSize,
+                   const BYTE * gData, PINDEX gSize,
+                   const BYTE * kData, PINDEX kSize);
+
+    dh_st    * m_dh;
+    PBYTEArray m_sessionKey;
 };
 
 
@@ -453,6 +499,104 @@ class PAESContext : public PObject
 #endif // P_SSL_AES
 
 
+/// Encryption/decryption context
+class PSSLCipherContext : public PObject
+{
+    PCLASSINFO(PSSLCipherContext, PObject);
+  public:
+    PSSLCipherContext(
+      bool encrypt
+    );
+    
+    ~PSSLCipherContext();
+
+    /**Get internal OpenSSL cipher context structure.
+      */
+    operator evp_cipher_ctx_st *() const { return m_context; }
+
+    /// Indicate we are encrypting data
+    bool IsEncrypt() const;
+
+    /**Get selected algorithm
+      */
+    PString GetAlgorithm() const;
+
+    /** Set encryption/decryption algorithm.
+        The \p 
+      */
+    bool SetAlgorithm(
+      const PString & name  ///< Name or OID for the algorithm.
+    );
+
+    /** Set encryption/decryption key.
+      */
+    bool SetKey(const PBYTEArray & key) { return SetKey(key, key.GetSize()); }
+    bool SetKey(const BYTE * keyPtr, PINDEX keyLen);
+
+    /** Set encryption/decryption initial vector.
+      */
+    bool SetIV(const PBYTEArray & iv) { return SetIV(iv, iv.GetSize()); }
+    bool SetIV(const BYTE * ivPtr, PINDEX ivLen);
+
+    enum PadMode {
+      NoPadding,
+      PadPKCS,
+      PadLoosePKCS,
+      PadCipherStealing
+    };
+
+    /**Set padding mode.
+       If NoPadding, then buffers supplied to Process() must be exact multiple
+       of the block size.
+      */
+    bool SetPadding(PadMode pad);
+
+    /**Get padding mode.
+       If NoPadding, then buffers supplied to Process() must be exact multiple
+       of the block size.
+      */
+    PadMode GetPadding() const { return m_padMode; }
+
+    /** Encrypt/Decrypt a block of data.
+      */
+    bool Process(
+      const PBYTEArray & in,  ///< Data to be encrypted
+      PBYTEArray & out        ///< Encrypted data
+    );
+    bool Process(
+      const BYTE * inPtr,     ///< Data to be encrypted
+      PINDEX inLen,           ///< Length of data to be encrypted
+      BYTE * outPtr,          ///< Encrypted data
+      PINDEX & outLen,        ///< Max output space on input, then actual output data size
+      bool partial = false    ///< Partial data, more to come
+    );
+
+    /** Get the cipher key length
+      */
+    PINDEX GetKeyLength() const;
+
+    /** Get the cipher initial vector length
+      */
+    PINDEX GetIVLength() const;
+
+    /** Get the cipher block size
+      */
+    PINDEX GetBlockSize() const;
+
+    /** Calculate the rounded up size for encrypted data
+      */
+    PINDEX GetBlockedDataSize(PINDEX size) const;
+
+  protected:
+    PadMode             m_padMode;
+    evp_cipher_ctx_st * m_context;
+
+  private:
+    PSSLCipherContext(const PSSLCipherContext &) { }
+    void operator=(const PSSLCipherContext &) { }
+};
+
+
 /// SHA1 digest scheme
 class PSHA1Context : public PObject
 {
@@ -474,6 +618,10 @@ class PSHA1Context : public PObject
 
   protected:
     SHAstate_st * m_context;
+
+  private:
+    PSHA1Context(const PSHA1Context &) { }
+    void operator=(const PSHA1Context &) { }
 };
 
 
@@ -600,6 +748,10 @@ class PSSLContext : public PObject
 
     ssl_ctx_st * m_context;
     PSSLPasswordNotifier m_passwordNotifier;
+
+  private:
+    PSSLContext(const PSSLContext &) { }
+    void operator=(const PSSLContext &) { }
 };
 
 
@@ -739,6 +891,7 @@ class PSSLChannel : public PIndirectChannel
     bool          m_autoDeleteContext;
     ssl_st      * m_ssl;
 };
+
 
 #endif // PTLIB_PSSL_H
 
