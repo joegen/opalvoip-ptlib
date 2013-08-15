@@ -524,13 +524,17 @@
 #undef P_EXPAT_LIBRARY_W64_DEBUG
 #undef P_EXPAT_LIBRARY_W64_RELEASE
 
-#if (defined(P_EXPAT_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_EXPAT_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_EXPAT_WINCE)                      &&  defined(_WIN32_WCE)) || \
-    (defined(P_EXPAT_LIBRARY_W64_DEBUG) &&  defined(P_64BIT)) || \
-    (defined(P_EXPAT_LIBRARY_W32_DEBUG) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_EXPAT_LIBRARY_WM5_DEBUG)                      &&  defined(_WIN32_WCE)) || \
-    (defined(P_EXPAT_LIBRARY_WM6_DEBUG)                      &&  defined(_WIN32_WCE))
+#if (defined(P_EXPAT_WIN64)                 &&  defined(P_64BIT)                        ) || \
+    (defined(P_EXPAT_WIN32)                 && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
+    (defined(P_EXPAT_WINCE)                                      &&  defined(_WIN32_WCE)) || \
+    ((defined(P_EXPAT_LIBRARY_W64_DEBUG)                                                  || \
+      defined(P_EXPAT_LIBRARY_W64_RELEASE)) &&  defined(P_64BIT))                         || \
+    ((defined(P_EXPAT_LIBRARY_W32_DEBUG)                                                  || \
+      defined(P_EXPAT_LIBRARY_W32_RELEASE)) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
+    ((defined(P_EXPAT_LIBRARY_WM5_DEBUG)                                                  || \
+      defined(P_EXPAT_LIBRARY_WM5_RELEASE))                      &&  defined(_WIN32_WCE)) || \
+    ((defined(P_EXPAT_LIBRARY_WM6_DEBUG)                                                  || \
+      defined(P_EXPAT_LIBRARY_WM6_RELEASE))                      &&  defined(_WIN32_WCE))
   #define P_EXPAT 1
 #endif
 
