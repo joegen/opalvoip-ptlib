@@ -841,9 +841,9 @@ PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
                                                bool reuseAddr
                                                P_NAT_PARAM(PNatMethod * natMethod))
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
+  , m_onInterfaceChange(PCREATE_InterfaceNotifier(OnInterfaceChange))
   , m_fixedInterface(fixedInterface)
   , m_ipVersion(ipVersion)
-  , m_onInterfaceChange(PCREATE_InterfaceNotifier(OnInterfaceChange))
 {
   PInterfaceMonitor::GetInstance().AddNotifier(m_onInterfaceChange);
 
@@ -1079,8 +1079,8 @@ void PMonitoredSocketBundle::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
 
 PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
   : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
-  , m_interface(theInterface)
   , m_onInterfaceChange(PCREATE_InterfaceNotifier(OnInterfaceChange))
+  , m_interface(theInterface)
 {
   PInterfaceMonitor::GetInstance().AddNotifier(m_onInterfaceChange);
 
