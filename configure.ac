@@ -2376,7 +2376,9 @@ PTLIB_SIMPLE_OPTION([samples], [SAMPLES], [enable samples build])
 dnl ########################################################################
 dnl output files
 
-AC_CONFIG_FILES(ptlib.pc ptlib_cfg.dxy make/ptlib_config.mak)
+AC_CONFIG_FILES(ptlib.pc)
+AC_CONFIG_FILES(ptlib_cfg.dxy)
+AC_CONFIG_FILES(make/ptlib_config.mak)
 AC_CONFIG_HEADERS(${ac_top_build_prefix}include/ptlib_config.h:include/ptlib_config.h.in)
 
 dnl ########################################################################
