@@ -31,13 +31,15 @@
 #pragma warning(disable:4786)
 #pragma warning(disable:4996)
 
+#include <windows.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <string>
 
 
-#define VERSION "1.02"
+#define VERSION "1.03"
 
 using namespace std;
 
@@ -55,6 +57,42 @@ int main(int argc, char* argv[])
     cerr << "Input and output files must be different." << endl;
     return 1;
   }
+
+  HANDLE hFile = CreateFile(argv[1],               // file to open
+                            GENERIC_READ,          // open for reading
+                            FILE_SHARE_READ,       // share for reading
+                            NULL,                  // default security
+                            OPEN_EXISTING,         // existing file only
+                            FILE_ATTRIBUTE_NORMAL, // normal file
+                            NULL);                 // no attr. template
+  if (hFile == INVALID_HANDLE_VALUE) {
+    cerr << "Could not open input file \"" << argv[1] << "\", error=" << GetLastError() << endl;
+    return 1;
+  }
+
+  DWORD length = GetFinalPathNameByHandle(hFile, NULL, 0, FILE_NAME_NORMALIZED);
+  if (length == 0) {
+    cerr << "Could not resolve directory path \"" << argv[1] << "\", error=" << GetLastError() << endl;
+    return 1;
+  }
+
+  char * buf = (char *)alloca(length+1);
+  GetFinalPathNameByHandle(hFile, buf, length+1, FILE_NAME_NORMALIZED);
+
+  string path;
+  if (buf[0] == '\\' && buf[1] == '\\' && buf[3] == '\\')
+    path = buf+4;
+  else
+    path = buf;
+
+  CloseHandle(hFile);
+
+  ostringstream cmd;
+  cmd << "SubWCRev " << path.substr(0, path.rfind('\\')) << ' ' << argv[1] << ' ' << argv[2];
+
+  if (system(cmd.str().c_str()) == 0)
+    return 0;
+
 
   const char * define = argc < 4 ? "SVN_REVISION" : argv[3];
 
