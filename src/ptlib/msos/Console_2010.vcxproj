@@ -960,9 +960,7 @@ configure -Dac_top_build_prefix=$(ProjectDir)..\..\..\Lib\$(Platform)\ --no-sear
     <None Include="..\..\..\configure.ac" />
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">del %(RootDir)%(Directory)%(Filename)
-SubWCRev %(RootDir)%(Directory) %(FullPath) %(RootDir)%(Directory)%(Filename)
-if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\svn_getrev "%(FullPath)" "%(RootDir)%(Directory)%(Filename)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">del %(RootDir)%(Directory)%(Filename)
 SubWCRev %(RootDir)%(Directory) %(FullPath) %(RootDir)%(Directory)%(Filename)
 if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
@@ -970,9 +968,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Checking SVN revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">del %(RootDir)%(Directory)%(Filename)
-SubWCRev %(RootDir)%(Directory) %(FullPath) %(RootDir)%(Directory)%(Filename)
-if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\svn_getrev "%(FullPath)" "%(RootDir)%(Directory)%(Filename)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">del %(RootDir)%(Directory)%(Filename)
 SubWCRev %(RootDir)%(Directory) %(FullPath) %(RootDir)%(Directory)%(Filename)
 if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
@@ -980,9 +976,7 @@ if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directo
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Checking SVN revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">del %(RootDir)%(Directory)%(Filename)
-SubWCRev %(RootDir)%(Directory) %(FullPath) %(RootDir)%(Directory)%(Filename)
-if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\svn_getrev "%(FullPath)" "%(RootDir)%(Directory)%(Filename)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">del %(RootDir)%(Directory)%(Filename)
 SubWCRev %(RootDir)%(Directory) %(FullPath) %(RootDir)%(Directory)%(Filename)
 if errorlevel 1 $(ProjectDir)..\..\..\svn_getrev %(FullPath) %(RootDir)%(Directory)%(Filename)</Command>
