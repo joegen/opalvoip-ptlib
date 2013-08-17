@@ -51,14 +51,14 @@ static pthread_mutex_t g_DLLMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 PDynaLink::PDynaLink()
-  : dllHandle(NULL)
+  : m_dll(NULL)
 {
 }
 
-PDynaLink::PDynaLink(const PString & _name)
-  : dllHandle(NULL)
+PDynaLink::PDynaLink(const PString & names)
+  : m_dll(NULL)
 {
-  Open(_name);
+  Open(names);
 }
 
 PDynaLink::~PDynaLink()
@@ -75,101 +75,108 @@ PString PDynaLink::GetExtension()
 #endif
 }
 
-PBoolean PDynaLink::Open(const PString & _name)
+PBoolean PDynaLink::Open(const PString & names)
 {
   m_lastError.MakeEmpty();
 
   Close();
 
-  if (_name.IsEmpty())
-    return false;
+  PStringArray filenames = names.Lines();
+  for (PINDEX i = 0; i < filenames.GetSize(); ++i) {
+    m_name = filenames[i];
+    PTRACE(4, "UDLL\topening " << m_name);
 
-  PTRACE(4, "UDLL\topening " << _name);
-
-  name = _name;
-
-  LOCK_DLFCN();
+    LOCK_DLFCN();
 
 #if defined(P_OPENBSD)
-    dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
+      m_dll = dlopen((char *)(const char *)m_name, RTLD_NOW);
 #else
-    dllHandle = dlopen((const char *)name, RTLD_NOW);
+      m_dll = dlopen((const char *)m_name, RTLD_NOW);
 #endif
 
-  if (dllHandle == NULL) {
-    m_lastError = dlerror();
-    PTRACE(1, "DLL\tError loading DLL: " << m_lastError);
+    if (m_dll != NULL) {
+      UNLOCK_DLFCN();
+      return true;
+    }
   }
 
+  m_lastError = dlerror();
   UNLOCK_DLFCN();
 
-  return IsLoaded();
+  PTRACE(1, "DLL\tError loading DLL: " << m_lastError);
+  return false;
 }
 
 void PDynaLink::Close()
 {
 // without the hack to force late destruction of the DLL mutex this may crash for static PDynaLink instances
-  if (dllHandle == NULL)
+  if (m_dll == NULL)
     return;
 
-  PTRACE(4, "UDLL\tClosing " << name);
-  name.MakeEmpty();
+  PTRACE(4, "UDLL\tClosing " << m_name);
+  m_name.MakeEmpty();
 
   LOCK_DLFCN();
-  dlclose(dllHandle);
-  dllHandle = NULL;
+  dlclose(m_dll);
+  m_dll = NULL;
   UNLOCK_DLFCN();
 }
 
 PBoolean PDynaLink::IsLoaded() const
 {
-  return dllHandle != NULL;
+  return m_dll != NULL;
 }
 
 PString PDynaLink::GetName(PBoolean full) const
 {
   if (!IsLoaded())
-    return "";
+    return PString::Empty();
 
   if (full)
-    return name;
+    return m_name;
 
-  PString str = name;
-  if (!full) {
-    PINDEX pos = str.FindLast('/');
-    if (pos != P_MAX_INDEX)
-      str = str.Mid(pos+1);
-    pos = str.FindLast(".so");
-    if (pos != P_MAX_INDEX)
-      str = str.Left(pos);
-  }
+  PString str = m_name;
+
+  PINDEX pos = str.FindLast('/');
+  if (pos != P_MAX_INDEX)
+    str = str.Mid(pos+1);
+  pos = str.FindLast(".so");
+  if (pos != P_MAX_INDEX)
+    str = str.Left(pos);
 
   return str;
 }
 
 
-PBoolean PDynaLink::GetFunction(PINDEX, Function &)
+PBoolean PDynaLink::GetFunction(PINDEX, Function &, bool)
 {
   return false;
 }
 
-PBoolean PDynaLink::GetFunction(const PString & fn, Function & func)
+PBoolean PDynaLink::GetFunction(const PString & fn, Function & func, bool compulsory)
 {
   m_lastError.MakeEmpty();
+  func = NULL;
 
-  if (dllHandle == NULL)
+  if (m_dll == NULL)
     return false;
 
   LOCK_DLFCN();
 #if defined(P_OPENBSD)
-  func = (Function)dlsym(dllHandle, (char *)(const char *)fn);
+  func = (Function)dlsym(m_dll, (char *)(const char *)fn);
 #else
-  func = (Function)dlsym(dllHandle, (const char *)fn);
+  func = (Function)dlsym(m_dll, (const char *)fn);
 #endif
   m_lastError = dlerror();
   UNLOCK_DLFCN();
 
-  return func != NULL;
+  if (func != NULL)
+    return true;
+
+  if (compulsory)
+    Close();
+
+  return false;
 }
 
 #else // P_DYNALINK
