@@ -1891,18 +1891,21 @@ PString PDynaLink::GetExtension()
 }
 
 
-PBoolean PDynaLink::Open(const PString & name)
+PBoolean PDynaLink::Open(const PString & names)
 {
   m_lastError.MakeEmpty();
 
-  PVarString filename = name;
+  PStringArray filenames = names.Lines();
+  for (PINDEX i = 0; i < filenames.GetSize(); ++i) {
+    PVarString filename = filenames[i];
 #ifndef _WIN32_WCE
-  m_hDLL = LoadLibraryEx(filename, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+    m_hDLL = LoadLibraryEx(filename, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 #else
-  m_hDLL = LoadLibrary(filename);
+    m_hDLL = LoadLibrary(filename);
 #endif
-  if (m_hDLL != NULL)
-    return true;
+    if (m_hDLL != NULL)
+      return true;
+  }
 
   m_lastError.sprintf("0x%x", ::GetLastError());
   PTRACE(1, "DLL\tError loading DLL: " << m_lastError);
@@ -1943,9 +1946,10 @@ PString PDynaLink::GetName(PBoolean full) const
 }
 
 
-PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
+PBoolean PDynaLink::GetFunction(PINDEX index, Function & func, bool compulsory)
 {
   m_lastError.MakeEmpty();
+  func = NULL;
 
   if (m_hDLL == NULL)
     return false;
@@ -1955,14 +1959,18 @@ PBoolean PDynaLink::GetFunction(PINDEX index, Function & func)
   if (func != NULL)
     return true;
 
+  if (compulsory)
+    Close();
+
   m_lastError.sprintf("0x%x", ::GetLastError());
   return false;
 }
 
 
-PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
+PBoolean PDynaLink::GetFunction(const PString & name, Function & func, bool compulsory)
 {
   m_lastError.MakeEmpty();
+  func = NULL;
 
   if (m_hDLL == NULL)
     return false;
@@ -1971,6 +1979,9 @@ PBoolean PDynaLink::GetFunction(const PString & name, Function & func)
   func = (Function)GetProcAddress(m_hDLL, funcname);
   if (func != NULL)
     return true;
+
+  if (compulsory)
+    Close();
 
   m_lastError.sprintf("0x%x", ::GetLastError());
   return false;

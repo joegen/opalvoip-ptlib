@@ -35,8 +35,8 @@
 // PDynaLink
 
   protected:
-    void * dllHandle;
-    PString name;
+    void *  m_dll;
+    PString m_name;
 
 #endif // !P_VXWORKS && !P_RTEMS
 
