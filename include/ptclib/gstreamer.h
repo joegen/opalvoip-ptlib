@@ -51,7 +51,7 @@ class PGBaseObject : public PObject
 {
     PCLASSINFO(PGBaseObject, PObject)
   protected:
-    PGBaseObject() : m_object(NULL) { }
+    PGBaseObject();
 
   private:
     PGBaseObject(const PGBaseObject &) { }
