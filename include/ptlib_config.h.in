@@ -879,10 +879,6 @@
 #if defined(_MSC_VER) && defined(P_IPP)
   #define P_IPP_INCLUDE(inc) include_alias(<inc>, <@IPP_DIR@/include/inc>)
   #pragma P_IPP_INCLUDE(ippcc.h)
-  #undef P_IPP_CC_LIB32
-  #undef P_IPP_CC_LIB64
-  #undef P_IPP_CORE_LIB32
-  #undef P_IPP_CORE_LIB64
 #endif
 
 
