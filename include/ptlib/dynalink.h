@@ -74,12 +74,14 @@ class PDynaLink : public PObject
   /**@name Load/Unload function */
   //@{
     /* Open a new dyna-link, loading the specified module.
+       The \p names string is a '\n' separated list of DLL names to attempt
+       to load. The first one found is used.
 
        @return
        true if the library was loaded.
      */
     virtual PBoolean Open(
-      const PString & name    ///< Name of the dynamically loadable module.
+      const PString & names    ///< Name(s) of the dynamically loadable module.
     );
 
     /**Close the dyna-link library.
@@ -123,8 +125,9 @@ class PDynaLink : public PObject
        true if function was found.
      */
     PBoolean GetFunction(
-      PINDEX index,    ///< Ordinal number of the function to get.
-      Function & func  ///< Refrence to point to function to get.
+      PINDEX index,           ///< Ordinal number of the function to get.
+      Function & func,        ///< Reference to point to function to get.
+      bool compulsory = false ///< if true, close DLL if not present
     );
 
     /**Get a pointer to the function in the dynamically loadable module.
@@ -134,12 +137,39 @@ class PDynaLink : public PObject
      */
     PBoolean GetFunction(
       const PString & name,  ///< Name of the function to get.
-      Function & func        ///< Refrence to point to function to get.
+      Function & func,        ///< Reference to point to function to get.
+      bool compulsory = false ///< if true, close DLL if not present
     );
 
     ///< Return OS error code for last operation
     const PString & GetLastError() const { return m_lastError; }
   //@}
+
+    /**Helper class for creating members to functions in the DLL.
+       An entry point is a function within the DLL. If \p compulsory
+       is true, then if the function is not found the DLL is closed.
+       IsLoaded() can then be used to test for success.
+     */
+    template <typename FuncPtr>
+    class EntryPoint {
+      protected:
+        FuncPtr m_function;
+      public :
+        EntryPoint(
+          PDynaLink & dll,
+          const char * name,
+          bool compulsory = true
+        ) {
+          dll.GetFunction(name, (Function &)m_function, compulsory);
+        }
+
+        bool IsPresent() const { return m_function != NULL; }
+        operator FuncPtr() const { return PAssertNULL(m_function); }
+    };
+    /// Constructor for entry point
+    #define P_DYNALINK_ENTRY_POINT(name) P_DISABLE_MSVC_WARNINGS(4355, name(*this, #name))
+    /// Constructor for optional entry point
+    #define P_DYNALINK_OPTIONAL_ENTRY_POINT(name) P_DISABLE_MSVC_WARNINGS(4355, name(*this, #name, false))
 
   protected:
     PString m_lastError;
