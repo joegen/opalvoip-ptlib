@@ -61,15 +61,23 @@
 
 #if P_IPP
   #include <ippcc.h>
-  #ifdef _MSC_VER
-    #if P_64BIT
-      #pragma comment(lib, P_IPP_CC_LIB64)
-      #pragma comment(lib, P_IPP_CORE_LIB64)
-    #else
-      #pragma comment(lib, P_IPP_CC_LIB32)
-      #pragma comment(lib, P_IPP_CORE_LIB32)
-    #endif
-  #endif
+  static struct P_IPP_DLL : PDynaLink
+  {
+    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3], int srcStep[3], Ipp8u * pDst, int dstStep, IppiSize roiSize)>              ippiYCbCr420ToBGR_8u_P3C3R;
+    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3], int srcStep[3], Ipp8u * pDst, int dstStep, IppiSize roiSize, Ipp8u avail)> ippiYCbCr420ToBGR_8u_P3C4R;
+    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3],                 Ipp8u * pDst,              IppiSize roiSize)>              ippiYUV420ToRGB_8u_P3C3;
+    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3], int srcStep[3], Ipp8u * pDst, int dstStep, IppiSize roiSize)>              ippiYUV420ToRGB_8u_P3AC4R;
+
+    P_IPP_DLL()
+      : PDynaLink("ippcc-8.0.dll\nippcc-7.1.dll\nippcc-7.0.dll")
+      , P_DYNALINK_ENTRY_POINT(ippiYCbCr420ToBGR_8u_P3C3R)
+      , P_DYNALINK_ENTRY_POINT(ippiYCbCr420ToBGR_8u_P3C4R)
+      , P_DYNALINK_ENTRY_POINT(ippiYUV420ToRGB_8u_P3C3)
+      , P_DYNALINK_ENTRY_POINT(ippiYUV420ToRGB_8u_P3AC4R)
+    {
+    }
+
+  } g_intel;
 #endif
 
 
@@ -1802,7 +1810,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   const BYTE * scanLinePtrV = scanLinePtrU+yPlaneSize/4; // 1 byte V for a block of 4 pixels
 
 #if P_IPP
-  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
+  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight && g_intel.IsLoaded()) {
     const Ipp8u * srcPlanes[3] = { scanLinePtrY, scanLinePtrU, scanLinePtrV };
     int srcStep[3] = { m_srcFrameWidth, m_srcFrameWidth/2, m_srcFrameWidth/2 };
     int dstStep = m_srcFrameWidth*rgbIncrement;
@@ -1812,15 +1820,15 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     IppStatus status;
     if (blueOffset == 0) {
       if (rgbIncrement == 3)
-        status = ippiYCbCr420ToBGR_8u_P3C3R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size);
+        status = g_intel.ippiYCbCr420ToBGR_8u_P3C3R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size);
       else
-        status = ippiYCbCr420ToBGR_8u_P3C4R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size, 0);
+        status = g_intel.ippiYCbCr420ToBGR_8u_P3C4R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size, 0);
     }
     else {
       if (rgbIncrement == 3)
-        status = ippiYUV420ToRGB_8u_P3C3(srcPlanes, dstFrameBuffer, size);
+        status = g_intel.ippiYUV420ToRGB_8u_P3C3(srcPlanes, dstFrameBuffer, size);
       else
-        status = ippiYUV420ToRGB_8u_P3AC4R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size);
+        status = g_intel.ippiYUV420ToRGB_8u_P3AC4R(srcPlanes, srcStep, dstFrameBuffer, dstStep, size);
     }
     if (status == ippStsNoErr)
       return true;
