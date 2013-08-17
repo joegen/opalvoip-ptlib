@@ -114,62 +114,61 @@ static void LogFunction(GstDebugCategory * /*category*/,
 #endif
 
 
-class PGstInitialiser : public PProcessStartup
+static PAtomicBoolean g_initialised;
+
+static int DeinitialiseGstreamer()
 {
-    PCLASSINFO(PGstInitialiser, PProcessStartup)
-  private:
-    bool m_initialised;
-  public:
-    PGstInitialiser()
-      : m_initialised(false)
-    {
-    }
-
-    virtual void OnStartup()
-    {
-      PGError error;
-      if (gst_init_check(NULL, NULL, &error)) {
-        PTRACE(3, "GStreamer\tUsing version " << gst_version_string());
-
 #if PTRACING
-  #ifdef _MSC_VER
-    #pragma warning(disable:4127)
-  #endif
-        gst_debug_remove_log_function(gst_debug_log_default);
-        gst_debug_add_log_function(LogFunction, this);
-  #ifdef _MSC_VER
-    #pragma warning(default:4127)
-  #endif
-
-        gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
-        gst_debug_set_active(true);
+  gst_debug_set_active(false);
+  gst_debug_set_default_threshold(GST_LEVEL_NONE);
+  gst_debug_remove_log_function(LogFunction);
 #endif
 
-        m_initialised = true;
-      }
-      else {
-        PTRACE(1, "GStreamer\tCould not initialise, error: " << error);
-      }
-    }
+  gst_deinit();
 
-    virtual void OnShutdown()
-    {
-      if (m_initialised) {
+  return 0;
+}
+
+
+static void InitialiseGstreamer()
+{
+  if (g_initialised.TestAndSet(true))
+    return;
+
+  PGError error;
+  if (gst_init_check(NULL, NULL, &error)) {
+    PTRACE(3, "GStreamer\tUsing version " << gst_version_string());
+
 #if PTRACING
-        gst_debug_set_active(false);
-        gst_debug_set_default_threshold(GST_LEVEL_NONE);
-        gst_debug_remove_log_function(LogFunction);
+#ifdef _MSC_VER
+#pragma warning(disable:4127)
+#endif
+    gst_debug_remove_log_function(gst_debug_log_default);
+    gst_debug_add_log_function(LogFunction, NULL);
+#ifdef _MSC_VER
+#pragma warning(default:4127)
 #endif
 
-        gst_deinit();
-      }
-    }
-};
+    gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
+    gst_debug_set_active(true);
+#endif
 
-static PFactory<PProcessStartup>::Worker<PGstInitialiser> PGstInitialiserInstance("GStreamer", true);
+    onexit(DeinitialiseGstreamer);
+  }
+  else {
+    PTRACE(1, "GStreamer\tCould not initialise, error: " << error);
+  }
+}
 
 
 ///////////////////////////////////////////////////////////////////////
+
+PGBaseObject::PGBaseObject()
+  : m_object(NULL)
+{
+  InitialiseGstreamer();
+}
+
 
 bool PGBaseObject::Attach(void * object)
 {
@@ -284,6 +283,8 @@ PString PGstPluginFeature::GetName() const
 PStringList PGstPluginFeature::Inspect(const char * theRegex, InspectSearchField searchField, bool detailed)
 {
   PStringList elements;
+
+  InitialiseGstreamer();
 
   PRegularExpression regex(theRegex == NULL || *theRegex == '\0' ? ".*" : theRegex);
 
