@@ -116,7 +116,7 @@ static void LogFunction(GstDebugCategory * /*category*/,
 
 static PAtomicBoolean g_initialised;
 
-static int DeinitialiseGstreamer()
+static void DeinitialiseGstreamer()
 {
 #if PTRACING
   gst_debug_set_active(false);
@@ -125,8 +125,6 @@ static int DeinitialiseGstreamer()
 #endif
 
   gst_deinit();
-
-  return 0;
 }
 
 
@@ -153,7 +151,7 @@ static void InitialiseGstreamer()
     gst_debug_set_active(true);
 #endif
 
-    onexit(DeinitialiseGstreamer);
+    atexit(DeinitialiseGstreamer);
   }
   else {
     PTRACE(1, "GStreamer\tCould not initialise, error: " << error);
