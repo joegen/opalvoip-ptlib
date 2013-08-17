@@ -63,10 +63,10 @@
   #include <ippcc.h>
   static struct P_IPP_DLL : PDynaLink
   {
-    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3], int srcStep[3], Ipp8u * pDst, int dstStep, IppiSize roiSize)>              ippiYCbCr420ToBGR_8u_P3C3R;
-    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3], int srcStep[3], Ipp8u * pDst, int dstStep, IppiSize roiSize, Ipp8u avail)> ippiYCbCr420ToBGR_8u_P3C4R;
-    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3],                 Ipp8u * pDst,              IppiSize roiSize)>              ippiYUV420ToRGB_8u_P3C3;
-    EntryPoint<IppStatus (*)(const Ipp8u * pSrc[3], int srcStep[3], Ipp8u * pDst, int dstStep, IppiSize roiSize)>              ippiYUV420ToRGB_8u_P3AC4R;
+    EntryPoint<IppStatus(__STDCALL*)(const Ipp8u*pSrc[3],int srcStep[3],Ipp8u*,int,IppiSize)>       ippiYCbCr420ToBGR_8u_P3C3R;
+    EntryPoint<IppStatus(__STDCALL*)(const Ipp8u*pSrc[3],int srcStep[3],Ipp8u*,int,IppiSize,Ipp8u)> ippiYCbCr420ToBGR_8u_P3C4R;
+    EntryPoint<IppStatus(__STDCALL*)(const Ipp8u*pSrc[3],               Ipp8u*,    IppiSize)>       ippiYUV420ToRGB_8u_P3C3;
+    EntryPoint<IppStatus(__STDCALL*)(const Ipp8u*pSrc[3],int srcStep[3],Ipp8u*,int,IppiSize)>       ippiYUV420ToRGB_8u_P3AC4R;
 
     P_IPP_DLL()
       : PDynaLink("ippcc-8.0.dll\nippcc-7.1.dll\nippcc-7.0.dll")
