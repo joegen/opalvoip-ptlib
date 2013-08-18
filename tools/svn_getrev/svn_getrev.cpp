@@ -43,6 +43,13 @@
 
 using namespace std;
 
+typedef DWORD (WINAPI *GetFinalPathNameByHandleFn)(
+  _In_   HANDLE hFile,
+  _Out_  LPTSTR lpszFilePath,
+  _In_   DWORD cchFilePath,
+  _In_   DWORD dwFlags
+);
+
 
 int main(int argc, char* argv[])
 {
@@ -58,34 +65,41 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  HANDLE hFile = CreateFile(argv[1],               // file to open
-                            GENERIC_READ,          // open for reading
-                            FILE_SHARE_READ,       // share for reading
-                            NULL,                  // default security
-                            OPEN_EXISTING,         // existing file only
-                            FILE_ATTRIBUTE_NORMAL, // normal file
-                            NULL);                 // no attr. template
-  if (hFile == INVALID_HANDLE_VALUE) {
-    cerr << "Could not open input file \"" << argv[1] << "\", error=" << GetLastError() << endl;
-    return 1;
-  }
-
-  DWORD length = GetFinalPathNameByHandle(hFile, NULL, 0, FILE_NAME_NORMALIZED);
-  if (length == 0) {
-    cerr << "Could not resolve directory path \"" << argv[1] << "\", error=" << GetLastError() << endl;
-    return 1;
-  }
-
-  char * buf = (char *)alloca(length+1);
-  GetFinalPathNameByHandle(hFile, buf, length+1, FILE_NAME_NORMALIZED);
-
   string path;
-  if (buf[0] == '\\' && buf[1] == '\\' && buf[3] == '\\')
-    path = buf+4;
-  else
-    path = buf;
+  if (LOBYTE(LOWORD(GetVersion())) < 6)
+    path = argv[1];
+  else {
+    HANDLE hFile = CreateFile(argv[1],               // file to open
+                              GENERIC_READ,          // open for reading
+                              FILE_SHARE_READ,       // share for reading
+                              NULL,                  // default security
+                              OPEN_EXISTING,         // existing file only
+                              FILE_ATTRIBUTE_NORMAL, // normal file
+                              NULL);                 // no attr. template
+    if (hFile == INVALID_HANDLE_VALUE) {
+      cerr << "Could not open input file \"" << argv[1] << "\", error=" << GetLastError() << endl;
+      return 1;
+    }
 
-  CloseHandle(hFile);
+    HMODULE hDLL = LoadLibrary("Kernel32.dll");
+    GetFinalPathNameByHandleFn pGetFinalPathNameByHandle = (GetFinalPathNameByHandleFn)GetProcAddress(hDLL, "GetFinalPathNameByHandleA");
+
+    DWORD length = pGetFinalPathNameByHandle(hFile, NULL, 0, FILE_NAME_NORMALIZED);
+    if (length == 0) {
+      cerr << "Could not resolve directory path \"" << argv[1] << "\", error=" << GetLastError() << endl;
+      return 1;
+    }
+
+    char * buf = (char *)alloca(length+1);
+    pGetFinalPathNameByHandle(hFile, buf, length+1, FILE_NAME_NORMALIZED);
+
+    if (buf[0] == '\\' && buf[1] == '\\' && buf[3] == '\\')
+      path = buf+4;
+    else
+      path = buf;
+
+    CloseHandle(hFile);
+  }
 
   ostringstream cmd;
   cmd << "SubWCRev " << path.substr(0, path.rfind('\\')) << ' ' << argv[1] << ' ' << argv[2];
