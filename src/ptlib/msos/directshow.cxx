@@ -175,7 +175,7 @@
     #pragma comment(lib, "quartz.lib")
   #endif
 
-  class CSampleGrabberCB : public ISampleGrabberCB 
+  class PSampleGrabberCB : public ISampleGrabberCB 
   {
     private:
       PBYTEArray m_buffer;
@@ -189,8 +189,8 @@
     #endif
 
     public:
-      CSampleGrabberCB();
-      ~CSampleGrabberCB();
+      PSampleGrabberCB();
+      ~PSampleGrabberCB();
     #if PTRACING
       void BeginFrameRateCheck() { m_totalTime = 0; }
       void PrintActualFramRate();
@@ -208,6 +208,7 @@
 
       // The sample grabber is calling us back on its deliver thread.
       STDMETHODIMP BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size);
+
       bool GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize);
   };
 
@@ -281,13 +282,14 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PSampleGrabber               * m_pSampleGrabber;
 #else
     CComPtr<ISampleGrabber>        m_pSampleGrabber;
-    CComPtr<ISampleGrabberCB>      m_pSampleGrabberCB;
+    CComPtr<PSampleGrabberCB>      m_pSampleGrabberCB;
     CComPtr<IAMCameraControl>      m_pCameraControls;
 #endif
     CComPtr<IBaseFilter>           m_pNullRenderer;
     CComPtr<IMediaControl>         m_pMediaControl;
 
     PINDEX     m_maxFrameBytes;
+    bool       m_fixedSizeFrames; // Not JPEG
     PBYTEArray m_tempFrame;
     PMutex     m_lastFrameMutex;
 };
@@ -388,6 +390,7 @@ class MediaTypePtr
 
 PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
   : m_maxFrameBytes(0)
+  , m_fixedSizeFrames(true)
 #ifdef _WIN32_WCE
   , m_pSampleGrabber(NULL)
 #endif
@@ -535,6 +538,7 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
 
       m_selectedGUID = pMediaFormat->subtype;
       m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+      m_fixedSizeFrames = colourFormat.Find("JPEG") == P_MAX_INDEX;
 
       if (pVih->bmiHeader.biHeight > 0 && colourFormat.NumCompare("BGR") == EqualTo) {
         nativeVerticalFlip = true;
@@ -681,7 +685,7 @@ PBoolean PVideoInputDevice_DirectShow::Start()
   PCOM_RETURN_ON_FAILED(m_pMediaControl->Run,());
 
 #if PTRACING
-  ((CSampleGrabberCB *)&*m_pSampleGrabberCB)->BeginFrameRateCheck();
+  m_pSampleGrabberCB->BeginFrameRateCheck();
 #endif
 
   PTRACE(4, "DShow\tVideo Started.");
@@ -700,7 +704,7 @@ PBoolean PVideoInputDevice_DirectShow::Stop()
     return true;
 
 #if PTRACING
-  ((CSampleGrabberCB *)&*m_pSampleGrabberCB)->PrintActualFramRate();
+  m_pSampleGrabberCB->PrintActualFramRate();
 #endif
 
   // Use Pause() not Stop() as the latter is to much of a stop and takes too long to restart
@@ -811,9 +815,9 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 {
   PWaitAndSignal mutex(m_lastFrameMutex);
 
-  PTRACE(6, "DShow\tGrabbing Frame");
-
   PINDEX bufferSize = GetCurrentBufferSize();
+  PTRACE(6, "DShow\tGrabbing Frame " << frameWidth << 'x' << frameHeight << " (" << bufferSize << ')');
+
   if (converter != NULL) {
     if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize), bufferSize))
       return false;
@@ -1295,8 +1299,8 @@ bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
 }
 
 
-// Implementation of CSampleGrabberCB object
-CSampleGrabberCB::CSampleGrabberCB()
+// Implementation of PSampleGrabberCB object
+PSampleGrabberCB::PSampleGrabberCB()
   : m_actualSize(0)
   , m_skipInitialGrabs(4)
 #if PTRACING
@@ -1306,14 +1310,14 @@ CSampleGrabberCB::CSampleGrabberCB()
 }
 
 
-CSampleGrabberCB::~CSampleGrabberCB()
+PSampleGrabberCB::~PSampleGrabberCB()
 {
   m_frameReady.Signal();
 }
 
 
 #if PTRACING
-void CSampleGrabberCB::PrintActualFramRate()
+void PSampleGrabberCB::PrintActualFramRate()
 {
   static const int Level = 3;
   if (PTrace::CanTrace(Level)) {
@@ -1327,7 +1331,7 @@ void CSampleGrabberCB::PrintActualFramRate()
 
 // Fake out any COM QI'ing
 //
-STDMETHODIMP CSampleGrabberCB::QueryInterface(REFIID riid, void ** ppv)
+STDMETHODIMP PSampleGrabberCB::QueryInterface(REFIID riid, void ** ppv)
 {
   if( riid == IID_ISampleGrabberCB || riid == IID_IUnknown ) {
     *ppv = (void *) static_cast<ISampleGrabberCB*> ( this );
@@ -1341,7 +1345,7 @@ STDMETHODIMP CSampleGrabberCB::QueryInterface(REFIID riid, void ** ppv)
 // The sample grabber is calling us back on its deliver thread.
 // This is NOT the main app thread!
 //
-STDMETHODIMP CSampleGrabberCB::BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size)
+STDMETHODIMP PSampleGrabberCB::BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size)
 {
   PTRACE(6, "DShow\tBuffer callback: time=" << dblSampleTime
           << ", buf=" << (void *)buffer << ", size=" << size);
@@ -1373,7 +1377,7 @@ STDMETHODIMP CSampleGrabberCB::BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE
 }
 
 
-bool CSampleGrabberCB::GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize)
+bool PSampleGrabberCB::GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize)
 {
   // Live! Cam Optia AF (VC0100) webcam took 3.1 sec.
   if (!m_frameReady.Wait(5000)) {
@@ -1520,7 +1524,7 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
   PCOM_RETURN_ON_FAILED(m_pSampleGrabber->SetBufferSamples,(true));
 
   PTRACE(5, "DShow\tSetting Sample Grabber Callback");
-  m_pSampleGrabberCB = new CSampleGrabberCB();
+  m_pSampleGrabberCB = new PSampleGrabberCB();
   PCOM_RETURN_ON_FAILED(m_pSampleGrabber->SetCallback,(m_pSampleGrabberCB, 1));
 
   PTRACE(5, "DShow\tConnect sample grabber to camera");
@@ -1560,8 +1564,16 @@ PINDEX PVideoInputDevice_DirectShow::GetCurrentBufferSize()
 
 bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bufferSize)
 {
-  CSampleGrabberCB * cb = (CSampleGrabberCB *)&*m_pSampleGrabberCB;
-  return cb != NULL && cb->GetData(data, m_maxFrameBytes, bufferSize);
+  if (m_pSampleGrabberCB == NULL)
+    return false;
+
+  do {
+    if (!m_pSampleGrabberCB->GetData(data, m_maxFrameBytes, bufferSize))
+      return false;
+    // Sometimes on changing resolution, we get some frames at old size, ignore them.
+  } while (m_fixedSizeFrames && bufferSize < m_maxFrameBytes);
+
+  return true;
 }
 
 
