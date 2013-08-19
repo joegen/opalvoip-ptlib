@@ -1502,7 +1502,9 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
 
   if (result != (int)frameHeight) {
     lastError = ::GetLastError();
-    PTRACE(2, "Drawing image failed, error=" << lastError);
+    PTRACE(2, "Drawing image failed: resolution=" << frameWidth << 'x' << frameHeight
+           << ", bitmap=" << m_bitmap.bmiHeader.biWidth << 'x' << m_bitmap.bmiHeader.biHeight
+           << ", size=" << m_bitmap.bmiHeader.biSizeImage << ", result=" << result << ", error=" << lastError);
   }
 
   if (m_showInfo) {
