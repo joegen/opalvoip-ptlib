@@ -919,7 +919,7 @@ bool PThread::CoInitialise()
 
   HRESULT result = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
   if (FAILED(result)) {
-    PTRACE(1, "PTLib", "Could not initialise COM: error=0x" << hex << result);
+    PTRACE_IF(1, result != RPC_E_CHANGED_MODE, "PTLib", "Could not initialise COM: error=0x" << hex << result);
     return false;
   }
 
@@ -975,9 +975,17 @@ bool PComResult::Succeeded(HRESULT result, const char * func, const char * file,
   if (Succeeded(result))
     return true;
 
+  // Don't look at "Facility" code when filterring errors.
+  if (nomsg1 >= 0 && LOWORD(result) == LOWORD(nomsg1))
+    return false;
+
+  if (nomsg2 >= 0 && LOWORD(result) == LOWORD(nomsg2))
+    return false;
+
   static const int Level = 2;
-  if (result != nomsg1 && result != nomsg2 && PTrace::CanTrace(Level))
-    PTrace::Begin(Level, file, line) << "Function \"" << func << "\" failed : " << *this << PTrace::End;
+  if (PTrace::CanTrace(Level))
+    PTrace::Begin(Level, file, line) << "Function \"" << func << "\" failed, "
+           "error=0x" << hex << result << dec << " : " << *this << PTrace::End;
   return false;
 }
 #endif // PTRACING
