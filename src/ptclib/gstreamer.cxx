@@ -588,11 +588,11 @@ bool PGstPipeline::Parse(const char * description)
 
   PGError error;
   if (!Attach(gst_parse_launch(description, &error)) || error) {
-    PTRACE(1, "GStreamer\tCould not parse pipline \"" << description << "\", error: " << error);
+    PTRACE(1, "GStreamer\tCould not parse pipeline \"" << description << "\", error: " << error);
     return false;
   }
 
-  PTRACE(4, "GStreamer\tParsed pipline \"" << description << '"');
+  PTRACE(4, "GStreamer\tParsed pipeline \"" << description << '"');
   return true;
 }
 
