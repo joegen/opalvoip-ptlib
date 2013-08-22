@@ -1343,15 +1343,8 @@ PTLIB_MODULE_OPTION(
    [HAS_DNS_RESOLVER]
 )
 
-echo HAS_OPENLDAP = $HAS_OPENLDAP
-echo OS_TAG       = $OS_TAG
-
-if test "x$HAS_OPENLDAP" = "x1" ; then
-  if test "x$OS_TAG" = "xP_MACOSX" ; then
-echo "Woohoo!"
-    LDFLAGS+=" -llber"
-echo $LDFLAGS
-  fi
+if test "x$HAS_OPENLDAP" = "x1" && test "x$OS_TAG" = "xP_MACOSX" ; then
+   LDFLAGS+=" -llber"
 fi
 
 
