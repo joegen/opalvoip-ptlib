@@ -5,6 +5,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib Static", "src\ptlib\msos\Console_2010.vcxproj", "{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib DLL", "src\ptlib\msos\PTLib_2010.vcxproj", "{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F34BE504-015A-42E6-9342-3800EAD5F561} = {F34BE504-015A-42E6-9342-3800EAD5F561}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MergeSym", "tools\MergeSym\MergeSym_2010.vcxproj", "{F34BE504-015A-42E6-9342-3800EAD5F561}"
 EndProject
@@ -86,13 +89,11 @@ Global
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|x64.ActiveCfg = Release|x64
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|x64.Build.0 = Release|x64
 		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|Win32.Build.0 = Debug|Win32
 		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|x64.ActiveCfg = Debug|Win32
 		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|Win32.ActiveCfg = Release|Win32
 		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|Win32.Build.0 = Release|Win32
 		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|x64.ActiveCfg = Release|Win32
 		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|Win32.ActiveCfg = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|Win32.Build.0 = Release|Win32
 		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
