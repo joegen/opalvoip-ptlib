@@ -138,7 +138,7 @@ PString PSoundChannel_Tones::GetName() const
 PStringArray PSoundChannel_Tones::GetDeviceNames(Directions dir)
 {
   PStringArray devices;
-  if (dir == Player)
+  if (dir == Recorder)
     devices.AppendString(TonePrefix + "440:0.5/880:1.0");
   return devices;
 }
