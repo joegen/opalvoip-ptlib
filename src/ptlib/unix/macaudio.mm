@@ -47,7 +47,7 @@
 
 
 #define PTraceModule() "MacAudio"
-#define PTRACE_DETAILED(...) // PTRACE(__VA_ARGS__)
+#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
 
 
 // These two values are pretty fundamental, but missing from system headers
@@ -689,6 +689,7 @@ public:
       return false;
     
     if (!isRunning) {
+      PTRACE(4, "Starting playback");
       if (CHECK_ERROR(AudioOutputUnitStart,(m_audioUnit)))
         return false;
     }
@@ -872,7 +873,7 @@ public:
   {
     if (!IsOpen() || activeDirection != Player)
       return false;
-
+    
     Float32 volume = newVolume/100.0;
 #ifdef P_MACOSX
     return !CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
