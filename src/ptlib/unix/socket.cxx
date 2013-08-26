@@ -1890,8 +1890,8 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(Address remoteAddress)
 
   for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
     if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
-      PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
-              << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+      PTRACE(5, NULL, PTraceModule(), "Route for " << remoteAddress
+              << " is over interface " << hostInterfaceTable[IfaceIdx].GetName()
               << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
       return hostInterfaceTable[IfaceIdx].GetAddress();
     }
@@ -1915,8 +1915,8 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(Address remoteAddress)
   if (route != NULL) {
     for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
       if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
-        PTRACE(5, NULL, NULL, "Route packet for " << remoteAddress
-                << " over interface " << hostInterfaceTable[IfaceIdx].GetName()
+        PTRACE(5, NULL, PTraceModule(), "Route for " << remoteAddress
+                << " is over interface " << hostInterfaceTable[IfaceIdx].GetName()
                 << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
         return hostInterfaceTable[IfaceIdx].GetAddress();
       }
