@@ -679,6 +679,7 @@ class PVideoDevice : public PVideoFrameInfo
     
   protected:
     PINDEX GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const;
+    PString GetDeviceNameFromOpenArgs(const OpenArgs & args) const;
 
     PCaselessString deviceName;
     int          lastError;

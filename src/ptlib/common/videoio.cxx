@@ -545,21 +545,24 @@ PVideoDevice::OpenArgs::OpenArgs()
 }
 
 
+PString PVideoDevice::GetDeviceNameFromOpenArgs(const OpenArgs & args) const
+{
+  if (args.deviceName[0] != '#')
+    return args.deviceName;
+  
+  PStringArray devices = GetDeviceNames();
+  PINDEX id = args.deviceName.Mid(1).AsUnsigned();
+  if (id == 0 || id > devices.GetSize())
+    return PString::Empty();
+  
+  return devices[id-1];
+}
+
+
 PBoolean PVideoDevice::OpenFull(const OpenArgs & args, PBoolean startImmediate)
 {
-  if (args.deviceName[0] == '#') {
-    PStringArray devices = GetDeviceNames();
-    PINDEX id = args.deviceName.Mid(1).AsUnsigned();
-    if (id == 0 || id > devices.GetSize())
-      return false;
-
-    if (!Open(devices[id-1], false))
-      return false;
-  }
-  else {
-    if (!Open(args.deviceName, false))
-      return false;
-  }
+  if (!Open(GetDeviceNameFromOpenArgs(args), false))
+    return false;
 
   if (!SetVideoFormat(args.videoFormat))
     return false;
