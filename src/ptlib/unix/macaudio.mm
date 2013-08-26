@@ -135,6 +135,7 @@ protected:
   PQueueChannel               m_queue;
   PINDEX                      m_bufferSize;
   PINDEX                      m_bufferCount;
+  bool                        m_muted;
 
   
 #ifndef P_MACOSX
@@ -555,6 +556,7 @@ public:
 #endif
     , m_bufferSize(320)
     , m_bufferCount(2)
+    , m_muted(false)
   {
 #ifndef P_MACOSX
     GetSession().CreatedChannel(this);
@@ -671,6 +673,11 @@ public:
     if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
       return false;
 
+    if (m_muted) {
+      lastWriteCount = len;
+      return true;
+    }
+    
     PReadWaitAndSignal mutex(channelPointerMutex);
     
     UInt32 isRunning;
@@ -734,11 +741,15 @@ public:
         return false;
 
       lastReadCount = ioOutputDataPacketSize*m_dataFormat.mBytesPerPacket;
-      return true;
     }
+    else
 #endif
-    
-    return PIndirectChannel::Read(buf, len);
+    if (!PIndirectChannel::Read(buf, len))
+      return false;
+
+    if (m_muted)
+      memset(buf, 0, len);
+    return true;
   }
   
   
@@ -903,13 +914,15 @@ public:
   
   virtual bool SetMute(bool newMute)
   {
-    return false;
+    m_muted = newMute;
+    return true;
   }
   
   
   virtual bool GetMute(bool & oldMute)
   {
-    return false;
+    oldMute = m_muted;
+    return true;
   }
 };
 
