@@ -1063,17 +1063,17 @@ PBoolean PSoundChannelWin32::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
-bool PSoundChannelWin32::WaitEvent()
+bool PSoundChannelWin32::WaitEvent(ErrorGroup group)
 {
-  switch (WaitForSingleObject(hEventDone, buffers[0].GetSize())) {
+  switch (WaitForSingleObject(hEventDone, std::max(buffers[0].GetSize(),1000))) {
     case WAIT_OBJECT_0 :
       return true;
 
     case WAIT_TIMEOUT :
-      return SetErrorValues(Timeout, ETIMEDOUT, LastWriteError);
+      return SetErrorValues(Timeout, ETIMEDOUT, group);
 
     default :
-      return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, LastWriteError);
+      return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, group);
   }
 }
 
@@ -1095,7 +1095,7 @@ PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
       bufferMutex.Signal();
       // No free buffers, so wait for one
-      if (!WaitEvent())
+      if (!WaitEvent(LastWriteError))
         return false;
       bufferMutex.Wait();
     }
@@ -1203,7 +1203,7 @@ PBoolean PSoundChannelWin32::PlayFile(const PFilePath & filename, PBoolean wait)
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
       bufferMutex.Signal();
       // No free buffers, so wait for one
-      if (!WaitEvent())
+      if (!WaitEvent(LastWriteError))
         return false;
       bufferMutex.Wait();
     }
@@ -1258,7 +1258,7 @@ PBoolean PSoundChannelWin32::HasPlayCompleted()
 PBoolean PSoundChannelWin32::WaitForPlayCompletion()
 {
   while (!HasPlayCompleted()) {
-    if (!WaitEvent())
+    if (!WaitEvent(LastWriteError))
       return false;
   }
 
@@ -1424,7 +1424,7 @@ PBoolean PSoundChannelWin32::WaitForRecordBufferFull()
     return false;
 
   while (!IsRecordBufferFull()) {
-    if (!WaitEvent())
+    if (!WaitEvent(LastReadError))
       return false;
 
     PWaitAndSignal mutex(bufferMutex);
@@ -1442,7 +1442,7 @@ PBoolean PSoundChannelWin32::WaitForAllRecordBuffersFull()
     return false;
 
   while (!AreAllRecordBuffersFull()) {
-    if (!WaitEvent())
+    if (!WaitEvent(LastReadError))
       return false;
 
     PWaitAndSignal mutex(bufferMutex);
