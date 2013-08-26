@@ -1163,7 +1163,7 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull () // public
     if (IsRecordBufferFull())
       return true;
   }  // wait for DirectSound to notify us that space is available
-  while (WaitForMultipleObjects(2, m_triggerEvent, FALSE, INFINITE) == WAIT_OBJECT_0);
+  while (WaitForMultipleObjects(2, m_triggerEvent, FALSE, std::max(m_bufferSectionSize,1000)) == WAIT_OBJECT_0);
 
   { // Aborted
     PWaitAndSignal mutex(m_bufferMutex);
