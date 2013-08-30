@@ -1084,7 +1084,7 @@ PBoolean PSoundChannelWin32::GetBuffers(PINDEX & size, PINDEX & count)
 
 bool PSoundChannelWin32::WaitEvent(ErrorGroup group)
 {
-  switch (WaitForSingleObject(hEventDone, std::max(buffers[0].GetSize(),1000))) {
+  switch (WaitForSingleObject(hEventDone, std::max((int)buffers[0].GetSize(),1000))) {
     case WAIT_OBJECT_0 :
       return true;
 
