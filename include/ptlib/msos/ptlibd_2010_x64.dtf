@@ -1502,11 +1502,11 @@ EXPORTS
     ??0?$CComPtr@UIPin@@@@QEAA@XZ @1378 NONAME
     ??0?$CComPtr@UIPropertyBag@@@@QEAA@XZ @1379 NONAME
     ??0?$CComPtr@UISampleGrabber@@@@QEAA@XZ @1380 NONAME
-    ??0?$CComPtr@UISampleGrabberCB@@@@QEAA@XZ @1381 NONAME
     ??0?$CComPtr@UISpObjectToken@@@@QEAA@XZ @1382 NONAME
     ??0?$CComPtr@UISpObjectTokenCategory@@@@QEAA@XZ @1383 NONAME
     ??0?$CComPtr@UISpStream@@@@QEAA@XZ @1384 NONAME
     ??0?$CComPtr@UISpVoice@@@@QEAA@XZ @1385 NONAME
+    ??0?$CComPtr@VPSampleGrabberCB@@@@QEAA@XZ @25869 NONAME
     ??0?$deque@DV?$allocator@D@std@@@std@@QEAA@XZ @20393 NONAME
     ??0?$deque@PEAUPAsyncNotifierCallback@@V?$allocator@PEAUPAsyncNotifierCallback@@@std@@@std@@QEAA@AEBV01@@Z @1386 NONAME
     ??0?$deque@PEAUPAsyncNotifierCallback@@V?$allocator@PEAUPAsyncNotifierCallback@@@std@@@std@@QEAA@XZ @1387 NONAME
@@ -2811,7 +2811,6 @@ EXPORTS
     ??0ContentProcessor@PHTTPClient@@QEAA@XZ @2484 NONAME
     ??0Context@PCLI@@QEAA@AEAV1@@Z @2485 NONAME
     ??0Credit@PHTML@@QEAA@PEBD@Z @2486 NONAME
-    ??0CSampleGrabberCB@@QEAA@XZ @2487 NONAME
     ??0CSpStreamFormat@@QEAA@XZ @2488 NONAME
     ??0DefinitionItem@PHTML@@QEAA@PEBD@Z @2489 NONAME
     ??0DefinitionList@PHTML@@QEAA@PEBD@Z @2490 NONAME
@@ -3466,6 +3465,7 @@ EXPORTS
     ??0PSafePtrMultiThreaded@@IEAA@AEBVPSafeCollection@@W4PSafetyMode@@PEAVPSafeObject@@@Z @3075 NONAME
     ??0PSafePtrMultiThreaded@@IEAA@AEBVPSafeCollection@@W4PSafetyMode@@_K@Z @3076 NONAME
     ??0PSafePtrMultiThreaded@@IEAA@PEAVPSafeObject@@W4PSafetyMode@@@Z @3077 NONAME
+    ??0PSampleGrabberCB@@QEAA@XZ @25870 NONAME
     ??0PScriptLanguage@@QEAA@XZ @3078 NONAME
     ??0PSDL_Window@@AEAA@XZ @25713 NONAME
     ??0PSecureConfig@@QEAA@AEBUKey@PTEACypher@@AEBVPStringArray@@W4Source@PConfig@@@Z @3079 NONAME
@@ -4166,11 +4166,11 @@ EXPORTS
     ??1?$CComPtr@UIPin@@@@QEAA@XZ @3632 NONAME
     ??1?$CComPtr@UIPropertyBag@@@@QEAA@XZ @3633 NONAME
     ??1?$CComPtr@UISampleGrabber@@@@QEAA@XZ @3634 NONAME
-    ??1?$CComPtr@UISampleGrabberCB@@@@QEAA@XZ @3635 NONAME
     ??1?$CComPtr@UISpObjectToken@@@@QEAA@XZ @3636 NONAME
     ??1?$CComPtr@UISpObjectTokenCategory@@@@QEAA@XZ @3637 NONAME
     ??1?$CComPtr@UISpStream@@@@QEAA@XZ @3638 NONAME
     ??1?$CComPtr@UISpVoice@@@@QEAA@XZ @3639 NONAME
+    ??1?$CComPtr@VPSampleGrabberCB@@@@QEAA@XZ @25871 NONAME
     ??1?$deque@DV?$allocator@D@std@@@std@@QEAA@XZ @20847 NONAME
     ??1?$deque@PEAUPAsyncNotifierCallback@@V?$allocator@PEAUPAsyncNotifierCallback@@@std@@@std@@QEAA@XZ @3640 NONAME
     ??1?$deque@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QEAA@XZ @3641 NONAME
@@ -5025,7 +5025,6 @@ EXPORTS
     ??1ContentProcessor@PHTTPClient@@UEAA@XZ @4348 NONAME
     ??1Context@PCLI@@UEAA@XZ @4349 NONAME
     ??1Credit@PHTML@@UEAA@XZ @4350 NONAME
-    ??1CSampleGrabberCB@@QEAA@XZ @25724 NONAME
     ??1CSpStreamFormat@@QEAA@XZ @4351 NONAME
     ??1DefinitionItem@PHTML@@UEAA@XZ @4352 NONAME
     ??1DefinitionList@PHTML@@UEAA@XZ @4353 NONAME
@@ -5332,6 +5331,7 @@ EXPORTS
     ??1PSafeObject@@UEAA@XZ @4624 NONAME
     ??1PSafePtrBase@@UEAA@XZ @4625 NONAME
     ??1PSafePtrMultiThreaded@@UEAA@XZ @4626 NONAME
+    ??1PSampleGrabberCB@@QEAA@XZ @25872 NONAME
     ??1PScriptLanguage@@UEAA@XZ @4627 NONAME
     ??1PSDL_Window@@UEAA@XZ @25725 NONAME
     ??1PSecureConfig@@UEAA@XZ @4628 NONAME
@@ -6792,7 +6792,7 @@ EXPORTS
     ??4?$CComPtr@UIDirectSoundBuffer@@@@QEAAAEAV0@PEAUIDirectSoundBuffer@@@Z @5770 NONAME
     ??4?$CComPtr@UIDirectSoundCapture@@@@QEAAAEAV0@PEAUIDirectSoundCapture@@@Z @5771 NONAME
     ??4?$CComPtr@UIDirectSoundCaptureBuffer@@@@QEAAAEAV0@PEAUIDirectSoundCaptureBuffer@@@Z @5772 NONAME
-    ??4?$CComPtr@UISampleGrabberCB@@@@QEAAAEAV0@PEAUISampleGrabberCB@@@Z @5773 NONAME
+    ??4?$CComPtr@VPSampleGrabberCB@@@@QEAAAEAV0@PEAVPSampleGrabberCB@@@Z @25873 NONAME
     ??4?$map@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@@std@@QEAAAEAV01@AEBV01@@Z @5774 NONAME
     ??4?$PArray@VInterfaceEntry@PIPSocket@@@@QEAAAEAV0@AEBV0@@Z @5775 NONAME
     ??4?$PArray@VParamValue@PvCard@@@@QEAAAEAV0@AEBV0@@Z @5776 NONAME
@@ -7153,6 +7153,7 @@ EXPORTS
     ??8?$CComPtr@UIDirectSoundCaptureBuffer@@@@QEBA_NPEAUIDirectSoundCaptureBuffer@@@Z @25687 NONAME
     ??8?$CComPtr@UIEnumMoniker@@@@QEBA_NPEAUIEnumMoniker@@@Z @6095 NONAME
     ??8?$CComPtr@UIPin@@@@QEBA_NPEAUIPin@@@Z @6096 NONAME
+    ??8?$CComPtr@VPSampleGrabberCB@@@@QEBA_NPEAVPSampleGrabberCB@@@Z @25874 NONAME
     ??8?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QEBA_NW4OpenOptions_Bits@PFile@@@Z @6097 NONAME
     ??8?$_Deque_const_iterator@PEAUPAsyncNotifierCallback@@V?$allocator@PEAUPAsyncNotifierCallback@@@std@@@std@@QEBA_NAEBV01@@Z @6098 NONAME
     ??8?$_Deque_unchecked_const_iterator@PEAUPAsyncNotifierCallback@@V?$allocator@PEAUPAsyncNotifierCallback@@@std@@@std@@QEBA_NAEBV01@@Z @6099 NONAME
@@ -7413,9 +7414,9 @@ EXPORTS
     ??B?$CComPtr@UIGraphBuilder@@@@QEBAPEAUIGraphBuilder@@XZ @6327 NONAME
     ??B?$CComPtr@UIMoniker@@@@QEBAPEAUIMoniker@@XZ @6328 NONAME
     ??B?$CComPtr@UIPin@@@@QEBAPEAUIPin@@XZ @6329 NONAME
-    ??B?$CComPtr@UISampleGrabberCB@@@@QEBAPEAUISampleGrabberCB@@XZ @6330 NONAME
     ??B?$CComPtr@UISpObjectToken@@@@QEBAPEAUISpObjectToken@@XZ @6331 NONAME
     ??B?$CComPtr@UISpStream@@@@QEBAPEAUISpStream@@XZ @6332 NONAME
+    ??B?$CComPtr@VPSampleGrabberCB@@@@QEBAPEAVPSampleGrabberCB@@XZ @25875 NONAME
     ??B?$fpos@H@std@@QEBA_JXZ @6333 NONAME
     ??B?$PBaseArray@D@@QEBAPEBDXZ @6334 NONAME
     ??B?$PBaseArray@E@@QEBAPEBEXZ @6335 NONAME
@@ -7551,6 +7552,7 @@ EXPORTS
     ??C?$CComPtr@UISampleGrabber@@@@QEBAPEAUISampleGrabber@@XZ @6456 NONAME
     ??C?$CComPtr@UISpObjectTokenCategory@@@@QEBAPEAUISpObjectTokenCategory@@XZ @6457 NONAME
     ??C?$CComPtr@UISpVoice@@@@QEBAPEAUISpVoice@@XZ @6458 NONAME
+    ??C?$CComPtr@VPSampleGrabberCB@@@@QEBAPEAVPSampleGrabberCB@@XZ @25876 NONAME
     ??C?$PSafePtr@VPMonitoredSockets@@VPSafePtrBase@@@@QEBAPEAVPMonitoredSockets@@XZ @6459 NONAME
     ??C?$PSingleton@V?$allocator@D@std@@I@@QEBAPEAV?$allocator@D@std@@XZ @6460 NONAME
     ??C?$PSingleton@V?$allocator@UPHashTableElement@@@std@@I@@QEBAPEAV?$allocator@UPHashTableElement@@@std@@XZ @6461 NONAME
@@ -7625,7 +7627,6 @@ EXPORTS
     ??CPVideoDeviceBitmap@@QEBAPEAUtagBITMAPINFO@@XZ @6524 NONAME
     ??CPWaveFormat@@QEBAPEAUtWAVEFORMATEX@@XZ @6525 NONAME
     ??Csockaddr_wrapper@PIPSocket@@QEBAPEAUsockaddr@@XZ @21456 NONAME
-    ??D?$CComPtr@UISampleGrabberCB@@@@QEBAAEAUISampleGrabberCB@@XZ @6526 NONAME
     ??D?$_Deque_const_iterator@DV?$allocator@D@std@@@std@@QEBAAEBDXZ @21457 NONAME
     ??D?$_Deque_const_iterator@PEAUPAsyncNotifierCallback@@V?$allocator@PEAUPAsyncNotifierCallback@@@std@@@std@@QEBAAEBQEAUPAsyncNotifierCallback@@XZ @6527 NONAME
     ??D?$_Deque_const_iterator@VRequestType@PTimerList@@V?$allocator@VRequestType@PTimerList@@@std@@@std@@QEBAAEBVRequestType@PTimerList@@XZ @6528 NONAME
@@ -8469,7 +8470,6 @@ EXPORTS
     ??_7Context@PCLI@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @7251 NONAME
     ??_7Context@PCLI@@6BPObject@@@ @7252 NONAME
     ??_7Credit@PHTML@@6B@ @7253 NONAME
-    ??_7CSampleGrabberCB@@6B@ @7254 NONAME
     ??_7DefinitionItem@PHTML@@6B@ @7255 NONAME
     ??_7DefinitionList@PHTML@@6B@ @7256 NONAME
     ??_7DefinitionTerm@PHTML@@6B@ @7257 NONAME
@@ -8772,6 +8772,7 @@ EXPORTS
     ??_7PSafeObject@@6B@ @7529 NONAME
     ??_7PSafePtrBase@@6B@ @7530 NONAME
     ??_7PSafePtrMultiThreaded@@6B@ @7531 NONAME
+    ??_7PSampleGrabberCB@@6B@ @25877 NONAME
     ??_7PScriptLanguage@@6B@ @7532 NONAME
     ??_7PSDL_Window@@6B@ @25741 NONAME
     ??_7PSecureConfig@@6B@ @7533 NONAME
@@ -9773,7 +9774,6 @@ EXPORTS
     ??_R0?AVCheckBox@PHTML@@@8 @8311 NONAME
     ??_R0?AVContext@PCLI@@@8 @8312 NONAME
     ??_R0?AVCredit@PHTML@@@8 @8313 NONAME
-    ??_R0?AVCSampleGrabberCB@@@8 @8314 NONAME
     ??_R0?AVDefinitionItem@PHTML@@@8 @8315 NONAME
     ??_R0?AVDefinitionList@PHTML@@@8 @8316 NONAME
     ??_R0?AVDefinitionTerm@PHTML@@@8 @8317 NONAME
@@ -10043,6 +10043,7 @@ EXPORTS
     ??_R0?AVPSafeObject@@@8 @8558 NONAME
     ??_R0?AVPSafePtrBase@@@8 @8559 NONAME
     ??_R0?AVPSafePtrMultiThreaded@@@8 @8560 NONAME
+    ??_R0?AVPSampleGrabberCB@@@8 @25878 NONAME
     ??_R0?AVPScriptLanguage@@@8 @8561 NONAME
     ??_R0?AVPSDL_Window@@@8 @25748 NONAME
     ??_R0?AVPSecureConfig@@@8 @8562 NONAME
@@ -10739,7 +10740,6 @@ EXPORTS
     ??_R1A@?0A@EA@ContentProcessor@PHTTPClient@@8 @9085 NONAME
     ??_R1A@?0A@EA@Context@PCLI@@8 @9086 NONAME
     ??_R1A@?0A@EA@Credit@PHTML@@8 @9087 NONAME
-    ??_R1A@?0A@EA@CSampleGrabberCB@@8 @9088 NONAME
     ??_R1A@?0A@EA@DefinitionItem@PHTML@@8 @9089 NONAME
     ??_R1A@?0A@EA@DefinitionList@PHTML@@8 @9090 NONAME
     ??_R1A@?0A@EA@DefinitionTerm@PHTML@@8 @9091 NONAME
@@ -11017,6 +11017,7 @@ EXPORTS
     ??_R1A@?0A@EA@PSafeObject@@8 @9339 NONAME
     ??_R1A@?0A@EA@PSafePtrBase@@8 @9340 NONAME
     ??_R1A@?0A@EA@PSafePtrMultiThreaded@@8 @9341 NONAME
+    ??_R1A@?0A@EA@PSampleGrabberCB@@8 @25879 NONAME
     ??_R1A@?0A@EA@PScriptLanguage@@8 @9342 NONAME
     ??_R1A@?0A@EA@PSDL_Window@@8 @25752 NONAME
     ??_R1A@?0A@EA@PSecureConfig@@8 @9343 NONAME
@@ -11761,7 +11762,6 @@ EXPORTS
     ??_R2ContentProcessor@PHTTPClient@@8 @9909 NONAME
     ??_R2Context@PCLI@@8 @9910 NONAME
     ??_R2Credit@PHTML@@8 @9911 NONAME
-    ??_R2CSampleGrabberCB@@8 @9912 NONAME
     ??_R2DefinitionItem@PHTML@@8 @9913 NONAME
     ??_R2DefinitionList@PHTML@@8 @9914 NONAME
     ??_R2DefinitionTerm@PHTML@@8 @9915 NONAME
@@ -12039,6 +12039,7 @@ EXPORTS
     ??_R2PSafeObject@@8 @10163 NONAME
     ??_R2PSafePtrBase@@8 @10164 NONAME
     ??_R2PSafePtrMultiThreaded@@8 @10165 NONAME
+    ??_R2PSampleGrabberCB@@8 @25880 NONAME
     ??_R2PScriptLanguage@@8 @10166 NONAME
     ??_R2PSDL_Window@@8 @25756 NONAME
     ??_R2PSecureConfig@@8 @10167 NONAME
@@ -12731,7 +12732,6 @@ EXPORTS
     ??_R3ContentProcessor@PHTTPClient@@8 @10685 NONAME
     ??_R3Context@PCLI@@8 @10686 NONAME
     ??_R3Credit@PHTML@@8 @10687 NONAME
-    ??_R3CSampleGrabberCB@@8 @10688 NONAME
     ??_R3DefinitionItem@PHTML@@8 @10689 NONAME
     ??_R3DefinitionList@PHTML@@8 @10690 NONAME
     ??_R3DefinitionTerm@PHTML@@8 @10691 NONAME
@@ -13009,6 +13009,7 @@ EXPORTS
     ??_R3PSafeObject@@8 @10939 NONAME
     ??_R3PSafePtrBase@@8 @10940 NONAME
     ??_R3PSafePtrMultiThreaded@@8 @10941 NONAME
+    ??_R3PSampleGrabberCB@@8 @25881 NONAME
     ??_R3PScriptLanguage@@8 @10942 NONAME
     ??_R3PSDL_Window@@8 @25760 NONAME
     ??_R3PSecureConfig@@8 @10943 NONAME
@@ -13689,7 +13690,6 @@ EXPORTS
     ??_R4Context@PCLI@@6B?$basic_iostream@DU?$char_traits@D@std@@@std@@@ @11449 NONAME
     ??_R4Context@PCLI@@6BPObject@@@ @11450 NONAME
     ??_R4Credit@PHTML@@6B@ @11451 NONAME
-    ??_R4CSampleGrabberCB@@6B@ @11452 NONAME
     ??_R4DefinitionItem@PHTML@@6B@ @11453 NONAME
     ??_R4DefinitionList@PHTML@@6B@ @11454 NONAME
     ??_R4DefinitionTerm@PHTML@@6B@ @11455 NONAME
@@ -13992,6 +13992,7 @@ EXPORTS
     ??_R4PSafeObject@@6B@ @11727 NONAME
     ??_R4PSafePtrBase@@6B@ @11728 NONAME
     ??_R4PSafePtrMultiThreaded@@6B@ @11729 NONAME
+    ??_R4PSampleGrabberCB@@6B@ @25882 NONAME
     ??_R4PScriptLanguage@@6B@ @11730 NONAME
     ??_R4PSDL_Window@@6B@ @25764 NONAME
     ??_R4PSecureConfig@@6B@ @11731 NONAME
@@ -14587,7 +14588,7 @@ EXPORTS
     ?AddParameter@PSOAPMessage@@QEAAXPEAVPXMLElement@@_N@Z @22845 NONAME
     ?AddParameter@PSOAPMessage@@QEAAXVPString@@00@Z @22846 NONAME
     ?AddPluginDirs@PPluginManager@@SA_NAEBVPString@@@Z @12173 NONAME
-    ?AddRef@CSampleGrabberCB@@UEAAKXZ @12174 NONAME
+    ?AddRef@PSampleGrabberCB@@UEAAKXZ @25883 NONAME
     ?AddRegisteredText@PHTTPServiceProcess@@UEAAXAEAVPHTML@@@Z @12175 NONAME
     ?AddResource@PHTTPSpace@@QEAA_NPEAVPHTTPResource@@W4AddOptions@1@@Z @12176 NONAME
     ?AddSample@PTones@@IEAAXHI@Z @12177 NONAME
@@ -14821,7 +14822,7 @@ EXPORTS
     ?Attach@?$CComPtr@UIDirectSoundBuffer@@@@QEAAXPEAUIDirectSoundBuffer@@@Z @12376 NONAME
     ?Attach@?$CComPtr@UIDirectSoundCapture@@@@QEAAXPEAUIDirectSoundCapture@@@Z @12377 NONAME
     ?Attach@?$CComPtr@UIDirectSoundCaptureBuffer@@@@QEAAXPEAUIDirectSoundCaptureBuffer@@@Z @12378 NONAME
-    ?Attach@?$CComPtr@UISampleGrabberCB@@@@QEAAXPEAUISampleGrabberCB@@@Z @12379 NONAME
+    ?Attach@?$CComPtr@VPSampleGrabberCB@@@@QEAAXPEAVPSampleGrabberCB@@@Z @25884 NONAME
     ?Attach@?$PBaseArray@D@@QEAAXPEBD_K@Z @12380 NONAME
     ?Attach@?$PBaseArray@E@@QEAAXPEBE_K@Z @12381 NONAME
     ?Attach@?$PBaseArray@F@@QEAAXPEBF_K@Z @12382 NONAME
@@ -14939,7 +14940,7 @@ EXPORTS
     ?Begin@PTrace@@SAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPEBDH0PEBVPObject@@0@Z @12474 NONAME
     ?Begin@PTrace@@SAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPEBDHPEBVPObject@@0@Z @12475 NONAME
     ?BeginEncoding@PASN_Stream@@QEAAXXZ @12476 NONAME
-    ?BeginFrameRateCheck@CSampleGrabberCB@@QEAAXXZ @25773 NONAME
+    ?BeginFrameRateCheck@PSampleGrabberCB@@QEAAXXZ @25885 NONAME
     ?BeginMessage@PPOP3Client@@QEAA_N_K@Z @12477 NONAME
     ?BeginMessage@PSMTPClient@@QEAA_NAEBVPString@@0_N@Z @12478 NONAME
     ?BeginMessage@PSMTPClient@@QEAA_NAEBVPString@@AEBVPStringList@@_N@Z @12479 NONAME
@@ -14971,7 +14972,7 @@ EXPORTS
     ?BooleanEncode@PPER_Stream@@UEAAXAEBVPASN_Boolean@@@Z @12500 NONAME
     ?BooleanEncode@PXER_Stream@@UEAAXAEBVPASN_Boolean@@@Z @22909 NONAME
     ?Broadcast@PCLI@@QEBAXAEBVPString@@@Z @12501 NONAME
-    ?BufferCB@CSampleGrabberCB@@UEAAJNPEAEJ@Z @12502 NONAME
+    ?BufferCB@PSampleGrabberCB@@UEAAJNPEAEJ@Z @25886 NONAME
     ?BuildError@IQ@XMPP@@UEBAPEAV12@AEBVPString@@0@Z @22910 NONAME
     ?BuildHTML@PHTTPForm@@QEAAXAEAVPHTML@@W4BuildOptions@1@@Z @12503 NONAME
     ?BuildHTML@PHTTPForm@@QEAAXAEBVPString@@@Z @12504 NONAME
@@ -18362,7 +18363,7 @@ EXPORTS
     ?GetCurrentProcessID@PProcess@@SAKXZ @15262 NONAME
     ?GetCurrentThreadId@PThread@@SAIXZ @15263 NONAME
     ?GetCyclesPassed@PSoundChannelDirectSound@@AEAAKXZ @15264 NONAME
-    ?GetData@CSampleGrabberCB@@QEAA_NPEAE_KAEA_K@Z @25794 NONAME
+    ?GetData@PSampleGrabberCB@@QEAA_NPEAE_KAEA_K@Z @25887 NONAME
     ?GetData@PSSLCertificate@@QEBA?AVPBYTEArray@@XZ @23590 NONAME
     ?GetData@PSSLPrivateKey@@QEBA?AVPBYTEArray@@XZ @23591 NONAME
     ?GetData@PXMLElement@@QEBA?AVPString@@XZ @23592 NONAME
@@ -21212,7 +21213,7 @@ EXPORTS
     ?Previous@PSafePtrBase@@MEAAXXZ @17626 NONAME
     ?Previous@PSafePtrMultiThreaded@@MEAAXXZ @17627 NONAME
     ?Previous@Row@PODBC@@QEAA_NXZ @17628 NONAME
-    ?PrintActualFramRate@CSampleGrabberCB@@QEAAXXZ @25813 NONAME
+    ?PrintActualFramRate@PSampleGrabberCB@@QEAAXXZ @25888 NONAME
     ?PrintContents@PMIMEInfo@@UEBAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV23@@Z @17629 NONAME
     ?PrintElementOn@?$PBaseArray@D@@MEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@_K@Z @17630 NONAME
     ?PrintElementOn@?$PBaseArray@E@@MEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@_K@Z @17631 NONAME
@@ -21431,7 +21432,7 @@ EXPORTS
     ?PYUVFile_link@PFactoryLoader@@YAHXZ @17817 NONAME
     ?P_IsOldWin95@@YA_NXZ @17818 NONAME
     ?Query@RecordSet@PODBC@@QEAA_NAEBVPString@@@Z @17819 NONAME
-    ?QueryInterface@CSampleGrabberCB@@UEAAJAEBU_GUID@@PEAPEAX@Z @17820 NONAME
+    ?QueryInterface@PSampleGrabberCB@@UEAAJAEBU_GUID@@PEAPEAX@Z @25889 NONAME
     ?QueryValue@RegistryKey@@QEAAHAEBVPString@@AEAKH@Z @17821 NONAME
     ?QueryValue@RegistryKey@@QEAAHAEBVPString@@AEAV2@@Z @17822 NONAME
     ?Queue@PAsyncNotifierCallback@@SAXKPEAU1@@Z @17823 NONAME
@@ -21641,13 +21642,13 @@ EXPORTS
     ?Release@?$CComPtr@UIPin@@@@QEAAXXZ @18004 NONAME
     ?Release@?$CComPtr@UIPropertyBag@@@@QEAAXXZ @18005 NONAME
     ?Release@?$CComPtr@UISampleGrabber@@@@QEAAXXZ @18006 NONAME
-    ?Release@?$CComPtr@UISampleGrabberCB@@@@QEAAXXZ @18007 NONAME
     ?Release@?$CComPtr@UISpObjectToken@@@@QEAAXXZ @18008 NONAME
     ?Release@?$CComPtr@UISpObjectTokenCategory@@@@QEAAXXZ @18009 NONAME
     ?Release@?$CComPtr@UISpStream@@@@QEAAXXZ @18010 NONAME
     ?Release@?$CComPtr@UISpVoice@@@@QEAAXXZ @18011 NONAME
-    ?Release@CSampleGrabberCB@@UEAAKXZ @18012 NONAME
+    ?Release@?$CComPtr@VPSampleGrabberCB@@@@QEAAXXZ @25890 NONAME
     ?Release@MediaTypePtr@@QEAAXXZ @18013 NONAME
+    ?Release@PSampleGrabberCB@@UEAAKXZ @25891 NONAME
     ?Release@PWaveBuffer@@AEAAKXZ @18014 NONAME
     ?remove@?$list@PEAVPVideoOutputDevice_SDL@@V?$allocator@PEAVPVideoOutputDevice_SDL@@@std@@@std@@QEAAXAEBQEAVPVideoOutputDevice_SDL@@@Z @25816 NONAME
     ?remove@?$list@PEBVLocalStorageBase@PThread@@V?$allocator@PEBVLocalStorageBase@PThread@@@std@@@std@@QEAAXAEBQEBVLocalStorageBase@PThread@@@Z @18016 NONAME
@@ -21781,7 +21782,7 @@ EXPORTS
     ?SafeRemove@PSafeObject@@QEAAXXZ @18128 NONAME
     ?SafeRemoveAt@PSafeCollection@@MEAA_N_K@Z @18129 NONAME
     ?SafeRemoveObject@PSafeCollection@@IEAAXPEAVPSafeObject@@@Z @18130 NONAME
-    ?SampleCB@CSampleGrabberCB@@UEAAJNPEAUIMediaSample@@@Z @18131 NONAME
+    ?SampleCB@PSampleGrabberCB@@UEAAJNPEAUIMediaSample@@@Z @25892 NONAME
     ?sampleTTSFactory@@3V?$Worker@VTextToSpeech_Sample@@@?$PFactory@VPTextToSpeech@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @24255 NONAME
     ?SanitiseName@InterfaceEntry@PIPSocket@@SAXAEAVPString@@@Z @18132 NONAME
     ?Save@PConfigArgs@@QEAAXAEBVPString@@@Z @18133 NONAME
@@ -22863,7 +22864,7 @@ EXPORTS
     ?Wait@PWin32Handle@@QEBA_NK@Z @18988 NONAME
     ?Wait@Win32RouteTableDetector@@UEAA_NAEBVPTimeInterval@@@Z @18989 NONAME
     ?WaitCondition@PCondMutex@@UEAAXXZ @18990 NONAME
-    ?WaitEvent@PSoundChannelWin32@@AEAA_NXZ @25868 NONAME
+    ?WaitEvent@PSoundChannelWin32@@AEAA_NW4ErrorGroup@PChannel@@@Z @25893 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannel@@UEAA_NXZ @18991 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelDirectSound@@UEAA_NXZ @18992 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelWin32@@UEAA_NXZ @18993 NONAME
