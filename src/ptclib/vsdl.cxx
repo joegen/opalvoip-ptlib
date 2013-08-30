@@ -38,6 +38,8 @@
 #include <ptclib/vsdl.h>
 
 #define new PNEW
+#define PTraceModule() "SDL"
+
 
 #if P_SDL
 
@@ -50,6 +52,8 @@ extern "C" {
   #pragma message("SDL video support enabled")
 #endif
 
+static PConstString SDLName("SDL");
+
 
 class PVideoOutputDevice_SDL_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
@@ -61,12 +65,12 @@ class PVideoOutputDevice_SDL_PluginServiceDescriptor : public PDevicePluginServi
 
     virtual PStringArray GetDeviceNames(int /*userData*/) const
     {
-      return PString("SDL");
+      return SDLName;
     }
 
     virtual bool         ValidateDeviceName(const PString & deviceName, int /*userData*/) const
     {
-      return deviceName.NumCompare("SDL") == PObject::EqualTo;
+      return deviceName.NumCompare(SDLName) == PObject::EqualTo;
     }
 } PVideoOutputDevice_SDL_descriptor;
 
@@ -96,7 +100,7 @@ class PSDL_Window : public PMutex
     void Run()
     {
       if (m_thread == NULL) {
-        m_thread = new PThreadObj<PSDL_Window>(*this, &PSDL_Window::MainLoop, true, "SDL");
+        m_thread = new PThreadObj<PSDL_Window>(*this, &PSDL_Window::MainLoop, true, SDLName);
         m_started.Wait();
       }
     }
@@ -120,12 +124,12 @@ class PSDL_Window : public PMutex
     virtual void MainLoop()
     {
 #if PTRACING
-      PTRACE(4, "SDL\tStart of event thread");
+      PTRACE(4, "Start of event thread");
 
       SDL_version v1;
       SDL_VERSION(&v1);
       const SDL_version * v2 = SDL_Linked_Version();
-      PTRACE(3, "SDL\tCompiled version: "
+      PTRACE(3, "Compiled version: "
              << (unsigned)v1.major << '.' << (unsigned)v1.minor << '.' << (unsigned)v1.patch
              << "  Run-Time version: "
              << (unsigned)v2->major << '.' << (unsigned)v2->minor << '.' << (unsigned)v2->patch);
@@ -133,7 +137,7 @@ class PSDL_Window : public PMutex
 
       // initialise the SDL library
       if (::SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE) < 0) {
-        PTRACE(1, "SDL\tCouldn't initialize SDL: " << ::SDL_GetError());
+        PTRACE(1, "Couldn't initialize SDL: " << ::SDL_GetError());
         return;
       }
 
@@ -150,7 +154,7 @@ class PSDL_Window : public PMutex
       m_surface = NULL;
       m_thread = NULL;
 
-      PTRACE(4, "SDL\tEnd of event thread");
+      PTRACE(4, "End of event thread");
     }
 
 
@@ -158,7 +162,7 @@ class PSDL_Window : public PMutex
     {
       SDL_Event sdlEvent;
       if (!::SDL_WaitEvent(&sdlEvent)) {
-        PTRACE(1, "SDL\tError getting event: " << ::SDL_GetError());
+        PTRACE(1, "Error getting event: " << ::SDL_GetError());
         return false;
       }
 
@@ -185,12 +189,12 @@ class PSDL_Window : public PMutex
               break;
 
             default :
-              PTRACE(5, "SDL\tUnhandled user event " << sdlEvent.user.code);
+              PTRACE(5, "Unhandled user event " << sdlEvent.user.code);
           }
           break;
 
         case SDL_QUIT :
-          PTRACE(3, "SDL\tUser closed window");
+          PTRACE(3, "User closed window");
           for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it)
             (*it)->FreeOverlay();
 
@@ -198,12 +202,16 @@ class PSDL_Window : public PMutex
           return false;
 
         case SDL_VIDEORESIZE :
-          PTRACE(4, "SDL\tResize window to " << sdlEvent.resize.w << " x " << sdlEvent.resize.h);
+          PTRACE(4, "Resize window to " << sdlEvent.resize.w << " x " << sdlEvent.resize.h);
           AdjustOverlays();
           break;
 
+        case SDL_ACTIVEEVENT :
+          PTRACE(4, "Window became active");
+          break;
+
         default :
-          PTRACE(5, "SDL\tUnhandled event " << (unsigned)sdlEvent.type);
+          PTRACE(5, "Unhandled event " << (unsigned)sdlEvent.type);
       }
 
       return true;
@@ -230,7 +238,7 @@ class PSDL_Window : public PMutex
         m_surface = ::SDL_SetVideoMode(device->GetFrameWidth(),
                                        device->GetFrameHeight(),
                                        0, SDL_SWSURFACE /* | SDL_RESIZABLE */);
-        PTRACE_IF(1, m_surface == NULL, "SDL\tCouldn't create SDL surface: " << ::SDL_GetError());
+        PTRACE_IF(1, m_surface == NULL, "Couldn't create SDL surface: " << ::SDL_GetError());
       }
 
       AdjustOverlays();
@@ -295,7 +303,7 @@ class PSDL_Window : public PMutex
       ::SDL_WM_SetCaption(title, NULL);
 
       if (::SDL_SetVideoMode(fullWidth, fullHeight, 0, SDL_SWSURFACE /* | SDL_RESIZABLE */) != m_surface) {
-        PTRACE(1, "SDL\tCouldn't resize surface: " << ::SDL_GetError());
+        PTRACE(1, "Couldn't resize surface: " << ::SDL_GetError());
       }
 
       for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it)
@@ -323,7 +331,7 @@ PVideoOutputDevice_SDL::~PVideoOutputDevice_SDL()
 
 PStringArray PVideoOutputDevice_SDL::GetDeviceNames() const
 {
-  return PString("SDL");
+  return SDLName;
 }
 
 
@@ -335,7 +343,6 @@ PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImme
 
   PSDL_Window::GetInstance().Run();
   PostEvent(PSDL_Window::e_AddDevice, true);
-
   return IsOpen();
 }
 
@@ -350,9 +357,8 @@ PBoolean PVideoOutputDevice_SDL::Close()
 {
   if (!IsOpen())
     return false;
-
+  
   PostEvent(PSDL_Window::e_RemoveDevice, true);
-
   return true;
 }
 
@@ -459,7 +465,7 @@ void PVideoOutputDevice_SDL::CreateOverlay(struct SDL_Surface * surface)
 
   m_overlay = ::SDL_CreateYUVOverlay(frameWidth, frameHeight, SDL_IYUV_OVERLAY, surface);
   if (m_overlay == NULL) {
-    PTRACE(1, "VSDL\tCouldn't create SDL overlay: " << ::SDL_GetError());
+    PTRACE(1, "Couldn't create SDL overlay: " << ::SDL_GetError());
     return;
   }
 
@@ -489,13 +495,14 @@ void PVideoOutputDevice_SDL::PostEvent(unsigned code, bool wait)
   sdlEvent.user.data1 = this;
   sdlEvent.user.data2 = NULL;
   if (::SDL_PushEvent(&sdlEvent) < 0) {
-    PTRACE(1, "SDL\tCouldn't post user event " << (unsigned)sdlEvent.user.code << ": " << ::SDL_GetError());
+    PTRACE(1, "Couldn't post user event " << (unsigned)sdlEvent.user.code << ": " << ::SDL_GetError());
+    return;
   }
-  else {
-    PTRACE(5, "SDL\tPosted user event " << (unsigned)sdlEvent.user.code);
-    if (wait)
-      m_operationComplete.Wait();
-  }
+
+  PTRACE(5, "Posted user event " << (unsigned)sdlEvent.user.code);
+  if (wait)
+    PAssert(m_operationComplete.Wait(10000),
+            PSTRSTRM("Couldn't process user event " << (unsigned)sdlEvent.user.code));
 }
 
 
