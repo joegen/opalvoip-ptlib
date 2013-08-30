@@ -673,7 +673,7 @@ bool PVideoDevice::SetFrameInfoConverter(const PVideoFrameInfo & info)
     return false;
   }
 
-  if (!SetFrameSizeConverter(info.GetFrameWidth(), info.GetFrameHeight())) {
+  if (!SetFrameSizeConverter(info.GetFrameWidth(), info.GetFrameHeight(), info.GetResizeMode())) {
     PTRACE(1, "PVidDev\tCould not set frame size in "
            << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
     return false;
