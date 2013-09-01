@@ -49,7 +49,7 @@
 
 
 #ifdef _MSC_VER
-  #if _MSC_VER >= 1700
+  #if _MSC_VER >= 1700 && !defined(_USING_V110_SDK71_)
     #pragma comment(lib, "dxguid.lib")
   #endif
   #pragma comment(lib, "dsound.lib")
