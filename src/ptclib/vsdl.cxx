@@ -266,7 +266,7 @@ class PSDL_Window : public PMutex
 
     void AdjustOverlays()
     {
-      if (m_surface == NULL)
+      if (m_surface == NULL || m_devices.empty())
         return;
 
       PString title;
@@ -324,12 +324,14 @@ PVideoOutputDevice_SDL::PVideoOutputDevice_SDL()
   , m_y(0)
 {
   colourFormat = "YUV420P";
+  PTRACE(5, "Constructed.");
 }
 
 
 PVideoOutputDevice_SDL::~PVideoOutputDevice_SDL()
 { 
   Close();
+  PTRACE(5, "Destroyed.");
 }
 
 
