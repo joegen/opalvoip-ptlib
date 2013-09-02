@@ -473,8 +473,11 @@ PBoolean PSerialChannel::SetParity(Parity parity)
     case OddParity:
       flags = PARODD | PARENB;
       break;
+
     case EvenParity:
       flags = PARENB;
+      break;
+
     case NoParity:
     case DefaultParity:
       flags = IGNPAR;
