@@ -52,7 +52,7 @@
 
 
 #ifdef _MSC_VER
-  #if _MSC_VER >= 1700
+  #if _MSC_VER >= 1700 && !defined(_USING_V110_SDK71_)
     #pragma comment(lib, "dxguid.lib")
   #endif
   #pragma comment(lib, "dsound.lib")
@@ -1163,7 +1163,7 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull () // public
     if (IsRecordBufferFull())
       return true;
   }  // wait for DirectSound to notify us that space is available
-  while (WaitForMultipleObjects(2, m_triggerEvent, FALSE, std::max(m_bufferSectionSize,1000)) == WAIT_OBJECT_0);
+  while (WaitForMultipleObjects(2, m_triggerEvent, FALSE, std::max((int)m_bufferSectionSize,1000)) == WAIT_OBJECT_0);
 
   { // Aborted
     PWaitAndSignal mutex(m_bufferMutex);

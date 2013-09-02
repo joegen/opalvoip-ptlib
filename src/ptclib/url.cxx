@@ -304,12 +304,16 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
     PCaselessString key, data;
 
     PINDEX sep2pos = str.Find(sep2, sep1prev);
-    if (sep2pos > sep1next)
-      key = str(sep1prev, sep1next-1);
+    if (sep2pos > sep1next) {
+      if (sep1next > 0)
+        key = str(sep1prev, sep1next-1);
+    }
     else {
       key = str(sep1prev, sep2pos-1);
-      if (type != QuotedParameterTranslation)
-        data = str(sep2pos+1, sep1next-1);
+      if (type != QuotedParameterTranslation) {
+        if (sep1next > 0)
+          data = str(sep2pos+1, sep1next-1);
+      }
       else {
         while (isspace(str[++sep2pos]))
           ;
