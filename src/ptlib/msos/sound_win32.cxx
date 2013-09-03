@@ -566,6 +566,7 @@ PSoundChannelWin32::PSoundChannelWin32()
   , hMixer(NULL)
   , hEventDone(CreateEvent(NULL, false, false, NULL))
   , opened(false)
+  , m_reopened(false)
   , bufferIndex(0)
   , bufferByteOffset(P_MAX_INDEX)
 {
@@ -1018,7 +1019,7 @@ PBoolean PSoundChannelWin32::Close()
 PBoolean PSoundChannelWin32::SetBuffers(PINDEX size, PINDEX count)
 {
   if (count == buffers.GetSize() && size == buffers[0].GetSize())
-	  return true;
+      return true;
 
   Abort();
 
@@ -1063,18 +1064,37 @@ PBoolean PSoundChannelWin32::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
-bool PSoundChannelWin32::WaitEvent(ErrorGroup group)
+int PSoundChannelWin32::WaitEvent(ErrorGroup group)
 {
-  switch (WaitForSingleObject(hEventDone, std::max((int)buffers[0].GetSize(),1000))) {
+  switch (WaitForSingleObject(hEventDone, std::max((int)buffers[0].GetSize(), 1000))) {
     case WAIT_OBJECT_0 :
-      return true;
+      PTRACE_IF(3, m_reopened, "WinSnd\tRecovered from stuck device");
+      m_reopened = false;
+      return 1;
 
     case WAIT_TIMEOUT :
-      return SetErrorValues(Timeout, ETIMEDOUT, group);
+      if (!IsOpen())
+        return false;
 
-    default :
-      return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, group);
+      if (m_reopened) {
+        PTRACE(2, "WinSnd\tCould not recover from stuck device");
+        return SetErrorValues(Timeout, ETIMEDOUT, group);
+      }
+
+      PTRACE(3, "WinSnd\tTimeout, reopening stuck device");
+      if (!OpenDevice(os_handle))
+        return false;
+
+      // Throw away signal that is executed in Close() (via OpenDevice())
+      if (WaitForSingleObject(hEventDone, 0) == WAIT_OBJECT_0) {
+        m_reopened = true;
+        return -1;
+      }
+
+      PTRACE(2, "WinSnd\tUnexpected error waiting for event, code=" << ::GetLastError());
   }
+
+  return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, group);
 }
 
 
@@ -1095,8 +1115,14 @@ PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
       bufferMutex.Signal();
       // No free buffers, so wait for one
-      if (!WaitEvent(LastWriteError))
-        return false;
+      switch (WaitEvent(LastWriteError)) {
+        case 0 :
+          return false;
+        case -1 :
+          return Write(data, size);
+        case 1 :
+          break;
+      }
       bufferMutex.Wait();
     }
 
@@ -1424,12 +1450,20 @@ PBoolean PSoundChannelWin32::WaitForRecordBufferFull()
     return false;
 
   while (!IsRecordBufferFull()) {
-    if (!WaitEvent(LastReadError))
-      return false;
+    switch (WaitEvent(LastReadError)) {
+      case 0 :
+        return false;
 
-    PWaitAndSignal mutex(bufferMutex);
-    if (bufferByteOffset == P_MAX_INDEX)
-      return false;
+      case -1 :
+        if (StartRecording())  // Restart the read
+          break;
+        return false;
+
+      case  1 :
+        PWaitAndSignal mutex(bufferMutex);
+        if (bufferByteOffset == P_MAX_INDEX)
+          return false;
+    }
   }
 
   return true;
@@ -1442,12 +1476,20 @@ PBoolean PSoundChannelWin32::WaitForAllRecordBuffersFull()
     return false;
 
   while (!AreAllRecordBuffersFull()) {
-    if (!WaitEvent(LastReadError))
-      return false;
+    switch (WaitEvent(LastReadError)) {
+      case 0 :
+        return false;
 
-    PWaitAndSignal mutex(bufferMutex);
-    if (bufferByteOffset == P_MAX_INDEX)
-      return false;
+      case -1 :
+        if (StartRecording())  // Restart the read
+          break;
+        return false;
+
+      case  1 :
+        PWaitAndSignal mutex(bufferMutex);
+        if (bufferByteOffset == P_MAX_INDEX)
+          return false;
+    }
   }
 
   return true;

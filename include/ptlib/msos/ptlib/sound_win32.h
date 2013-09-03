@@ -188,6 +188,7 @@ class PSoundChannelWin32: public PSoundChannel
     HANDLE       hEventDone;
     PWaveFormat  waveFormat;
     bool         opened;
+    bool         m_reopened;
 
     PWaveBufferArray buffers;
     PINDEX           bufferIndex;
@@ -197,7 +198,7 @@ class PSoundChannelWin32: public PSoundChannel
   private:
     PBoolean OpenDevice(P_INT_PTR id);
     PBoolean GetDeviceID(const PString & device, Directions dir, unsigned& id);
-    bool WaitEvent(ErrorGroup group);
+    int WaitEvent(ErrorGroup group);
 };
 
 
