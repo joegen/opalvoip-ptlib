@@ -23306,7 +23306,7 @@ EXPORTS
     ?Wait@PWin32Handle@@QBE_NK@Z @23306 NONAME
     ?Wait@Win32RouteTableDetector@@UAE_NABVPTimeInterval@@@Z @23307 NONAME
     ?WaitCondition@PCondMutex@@UAEXXZ @23308 NONAME
-    ?WaitEvent@PSoundChannelWin32@@AAE_NW4ErrorGroup@PChannel@@@Z @25274 NONAME
+    ?WaitEvent@PSoundChannelWin32@@AAEHW4ErrorGroup@PChannel@@@Z @25275 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannel@@UAE_NXZ @23309 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelDirectSound@@UAE_NXZ @23310 NONAME
     ?WaitForAllRecordBuffersFull@PSoundChannelWin32@@UAE_NXZ @23311 NONAME
