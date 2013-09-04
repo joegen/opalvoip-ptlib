@@ -233,6 +233,8 @@ class PEthSocket : public PSocket
           PINDEX packetSize = P_MAX_INDEX
         );
 
+        void PreRead();
+
         /** Extract the data link payload.
             @return the protocol identifier for the payload.
          */
