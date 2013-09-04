@@ -324,13 +324,19 @@ PEthSocket::Frame::Frame(PINDEX maxSize)
 }
 
 
-bool PEthSocket::Frame::Read(PChannel & channel, PINDEX packetSize)
+void PEthSocket::Frame::PreRead()
 {
   if (m_fragmentated) {
     m_fragments.SetSize(0);
     m_fragmentated = false;
   }
   m_fragmentProcessed = false;
+}
+
+
+bool PEthSocket::Frame::Read(PChannel & channel, PINDEX packetSize)
+{
+  PreRead();
 
   PINDEX size = std::min(packetSize, m_rawData.GetSize());
   do {
