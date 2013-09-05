@@ -1204,7 +1204,6 @@ dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
 dnl MSWIN_FIND_FILE  libjpeg,P_LIBJPEG_LIBRARY,jpeg.lib,lib
 dnl MSWIN_CHECK_DIR  libjpeg,\libjpeg-turbo
 dnl MSWIN_CHECK_DIR  libjpeg,..\external\libjpeg-turbo
-dnl MSWIN_CHECK_DIR  libjpeg,\libs\jpeg8d
 
 AC_LANG_PUSH(C)
 
