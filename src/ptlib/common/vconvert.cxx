@@ -83,7 +83,11 @@
 
 #if _MSC_VER
   #pragma intrinsic(memcpy)
+#if P_64BIT
+  #define PRAGMA_OPTIMISE_ON()        __pragma(optimize("tg", on)) __pragma(runtime_checks("scu", off))
+#else
   #define PRAGMA_OPTIMISE_ON()        __pragma(optimize("tgy", on)) __pragma(runtime_checks("scu", off))
+#endif
   #define PRAGMA_OPTIMISE_DEFAULT()   __pragma(optimize("", on))    __pragma(runtime_checks("", restore))
 #else
   #define PRAGMA_OPTIMISE_ON()
