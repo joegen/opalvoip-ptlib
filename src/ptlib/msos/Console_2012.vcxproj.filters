@@ -34,9 +34,6 @@
     <ClCompile Include="..\..\ptclib\guid.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\httpsvc.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\lua.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -65,12 +62,6 @@
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pxml.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pxmlrpc.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pxmlrpcs.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\common\notifier_ext.cxx">
@@ -220,20 +211,8 @@
     <ClCompile Include="..\..\ptclib\jscript.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\tinyjpeg.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\unix\opensl_es.cxx">
       <Filter>Source Files\Android</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\tonedev.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pstunsrvr.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\pstun.cxx">
-      <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\modem.cxx">
       <Filter>Source Files\Components</Filter>
@@ -251,9 +230,6 @@
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\random.cxx">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ptclib\shttpsvc.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\socks.cxx">
@@ -375,6 +351,30 @@
     </ClCompile>
     <ClCompile Include="..\common\vconvert.cxx">
       <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\tinyjpeg.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\httpsvc.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\tonedev.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pxmlrpc.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pxmlrpcs.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pstun.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\pstunsrvr.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\shttpsvc.cxx">
+      <Filter>Source Files\Components\Protocols</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
