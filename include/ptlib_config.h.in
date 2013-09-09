@@ -298,6 +298,7 @@
 #undef P_FTP
 #undef P_TELNET
 #undef P_CLI
+#undef P_CURSES
 #undef P_ODBC
 #undef P_ODBC_DEFINES_WINDOWS_TYPES
 #undef P_SERIAL
