@@ -40,6 +40,11 @@
 
 #include <ptclib/telnet.h>
 
+#if P_CURSES==1
+  #include <ncurses.h>
+#elif P_CURSES==2
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -891,6 +896,452 @@ PTCPSocket * PCLITelnet::CreateSocket()
 }
 
 #endif // P_TELNET
+
+///////////////////////////////////////////////////////////////////////////////
+
+#if P_CURSES==1
+
+class PCLICursesWindow : public PCLICurses::Window
+{
+protected:
+  WINDOW * m_window;
+
+public:
+  PCLICursesWindow(PCLICurses & owner, unsigned row, unsigned col, unsigned rows, unsigned cols)
+    : PCLICurses::Window(owner)
+    , m_window(NULL)
+  {
+    SetPositionAndSize(rows, cols, row, col);
+    Clear();
+  }
+
+
+  virtual PBoolean WriteChar(char ch)
+  {
+    return waddch(m_window, ch) != ERR;
+  }
+
+
+  void SetPositionAndSize(unsigned rows, unsigned cols, unsigned row, unsigned col)
+  {
+    unsigned maxRows, maxCols;
+    m_owner.GetScreenSize(maxRows, maxCols);
+
+    if (row >= maxRows)
+      row = maxRows-1;
+    if (col >= maxCols)
+      col = maxCols-1;
+
+    if (row + rows > maxRows)
+      rows = maxRows - row;
+    if (col + cols > maxCols)
+      cols = maxCols - col;
+
+    if (m_window != NULL)
+      delwin(m_window);
+    m_window = newwin(rows, cols, row, col);
+  }
+
+
+  virtual void SetPosition(unsigned row, unsigned col)
+  {
+    unsigned rows, cols;
+    GetSize(rows, cols);
+    SetPositionAndSize(rows, cols, row, col);
+}
+
+
+  virtual void GetPosition(unsigned & row, unsigned & col)
+  {
+    getbegyx(m_window, row, col);
+  }
+
+
+  virtual void SetSize(unsigned rows, unsigned cols)
+  {
+    unsigned row, col;
+    GetPosition(row, col);
+    SetPositionAndSize(rows, cols, row, col);
+  }
+
+
+  virtual void GetSize(unsigned & rows, unsigned & cols)
+  {
+    getmaxyx(m_window, rows, cols);
+  }
+
+
+  virtual void SetCursor(unsigned row, unsigned col)
+  {
+    wmove(m_window, row, col);
+  }
+
+
+  virtual void GetCursor(unsigned & row, unsigned & col)
+  {
+    getyx(m_window, row, col);
+  }
+
+
+  virtual void Clear()
+  {
+    werase(m_window);
+  }
+
+
+  virtual void Scroll(int n)
+  {
+    if (n == 1)
+      scroll(m_window);
+    else
+      wscrl(m_window, n);
+  }
+};
+
+
+///////////////////////////////////////
+
+PCLICurses::PCLICurses()
+{
+  initscr();
+  getmaxyx(stdscr, m_maxRows, m_maxCols);
+  Construct();
+}
+
+
+PCLICurses::~PCLICurses()
+{
+  m_windows.RemoveAll();
+  endwin();
+}
+
+
+void PCLICurses::Refresh()
+{
+  refresh();
+}
+
+
+///////////////////////////////////////
+
+#elif P_CURSES==2
+
+class PCLICursesWindow : public PCLICurses::Window
+{
+protected:
+  HANDLE   m_hStdOut;
+  unsigned m_positionRow;
+  unsigned m_positionCol;
+  unsigned m_sizeRows;
+  unsigned m_sizeCols;
+  unsigned m_cursorRow;
+  unsigned m_cursorCol;
+
+public:
+  PCLICursesWindow(PCLICurses & owner, unsigned row, unsigned col, unsigned rows, unsigned cols)
+    : PCLICurses::Window(owner)
+    , m_hStdOut(GetStdHandle(STD_OUTPUT_HANDLE))
+    , m_positionRow(row)
+    , m_positionCol(col)
+    , m_sizeRows(rows)
+    , m_sizeCols(cols)
+    , m_cursorRow(0)
+    , m_cursorCol(0)
+  {
+    Clear();
+  }
+
+
+  virtual PBoolean WriteChar(char ch)
+  {
+    SetCursor(m_cursorRow, m_cursorCol);
+
+    DWORD cWritten;
+    if (WriteFile(m_hStdOut, &ch, 1, &cWritten, NULL))
+      return true;
+
+    PTRACE(2, "PCLI\tCannot write to console");
+    return false;
+  }
+
+
+  virtual void SetPosition(unsigned row, unsigned col)
+  {
+    unsigned maxRows, maxCols;
+    m_owner.GetScreenSize(maxRows, maxCols);
+
+    m_positionRow = std::min(row, maxRows-1);
+    m_positionCol = std::min(col, maxCols-1);
+
+    if (m_positionRow+m_sizeRows > maxRows)
+      m_sizeRows = maxRows - m_positionRow;
+    if (m_positionCol+m_sizeCols > maxCols)
+      m_sizeCols = maxCols - m_positionCol;
+  }
+
+
+  virtual void GetPosition(unsigned & row, unsigned & col)
+  {
+    row = m_positionRow;
+    col = m_positionCol;
+  }
+
+
+  virtual void SetSize(unsigned rows, unsigned cols)
+  {
+    unsigned maxRows, maxCols;
+    m_owner.GetScreenSize(maxRows, maxCols);
+
+    maxRows -= m_positionRow;
+    maxCols -= m_positionCol;
+
+    m_sizeRows = std::min(rows, maxRows);
+    m_sizeCols = std::min(cols, maxCols);
+  }
+
+
+  virtual void GetSize(unsigned & rows, unsigned & cols)
+  {
+    rows = m_sizeRows;
+    cols = m_sizeCols;
+  }
+
+
+  virtual void SetCursor(unsigned row, unsigned col)
+  {
+    m_cursorRow = std::min(row, m_sizeRows);
+    m_cursorCol = std::min(col, m_sizeCols);
+
+    COORD pos = { (SHORT)(m_positionCol+m_cursorCol), (SHORT)(m_positionRow+m_cursorRow) };
+    if (!SetConsoleCursorPosition(m_hStdOut, pos)) {
+      PTRACE(2, "PCLI\tCannot set console cursor position");
+    }
+  }
+
+
+  virtual void GetCursor(unsigned & row, unsigned & col)
+  {
+    row = m_cursorRow;
+    col = m_cursorCol;
+  }
+
+
+  virtual void Clear()
+  {
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    if (!GetConsoleScreenBufferInfo(m_hStdOut, &csbiInfo)) {
+      PTRACE(2, "PCLI\tCannot obtain console info");
+    }
+
+    COORD pos = { (SHORT)m_positionRow, (SHORT)m_positionCol };
+
+    for (unsigned row = 0; row < m_sizeRows; ++row,++pos.Y) {
+      DWORD cCharsWritten;
+      if (!FillConsoleOutputAttribute(m_hStdOut, ' ', m_sizeCols, pos, &cCharsWritten)) {
+        PTRACE(2, "PCLI\tCannot clear console");
+      }
+      if (!FillConsoleOutputAttribute(m_hStdOut, csbiInfo.wAttributes, m_sizeCols, pos, &cCharsWritten )) {
+        PTRACE(2, "PCLI\tCannot clear console attributes");
+      }
+    }
+
+    m_cursorRow = m_cursorCol = 0;
+  }
+
+
+  virtual void Scroll(int n)
+  {
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(m_hStdOut, &csbi)) {
+      PTRACE(2, "PCLI\tCannot obtain console info");
+    }
+
+    SMALL_RECT rect = { (SHORT)m_positionCol, (SHORT)m_positionRow, (SHORT)(m_positionCol + m_sizeCols), (SHORT)(m_positionRow + m_sizeRows) };
+    COORD to = { (SHORT)m_positionCol, (SHORT)(m_positionRow-n) };
+    CHAR_INFO fill = { ' ', csbi.wAttributes };
+    if (ScrollConsoleScreenBuffer(m_hStdOut, &rect, &rect, to, &fill))
+      return;
+
+    PTRACE(2, "PCLI\tCannot scroll console buffer");
+  }
+};
+
+
+///////////////////////////////////////
+
+PCLICurses::PCLICurses()
+{
+  CONSOLE_SCREEN_BUFFER_INFO csbi; 
+  if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+    PTRACE(2, "PCLI\tCannot obtain console screen buffer");
+    m_maxRows = m_maxCols = 0;
+    return;
+  }
+
+  m_maxRows = csbi.srWindow.Bottom - csbi.srWindow.Top;
+  m_maxCols = csbi.srWindow.Right - csbi.srWindow.Left;
+
+  Construct();
+}
+
+
+PCLICurses::~PCLICurses()
+{
+  m_windows.RemoveAll();
+}
+
+
+void PCLICurses::Refresh()
+{
+}
+
+
+#endif // P_CURSES
+
+///////////////////////////////////////
+
+#if P_CURSES
+
+void PCLICurses::Construct()
+{
+  m_pageWaitPrompt = "Press a key for more ...";
+  NewWindow(0, 0, m_maxRows-1, m_maxCols).SetPageMode(true);
+  NewWindow(m_maxRows-1, 0, 1, m_maxCols);
+
+  StartContext(new PConsoleChannel(PConsoleChannel::StandardInput), &m_windows[0], true, false, false);
+}
+
+
+class PCLICursesContext : public PCLI::Context
+{
+  PCLICurses & m_cli;
+public:
+  PCLICursesContext(PCLICurses & cli)
+    : PCLI::Context(cli)
+    , m_cli(cli)
+  {
+  }
+
+  virtual bool WritePrompt()
+  {
+    PCLICurses::Window & wnd = m_cli.GetWindow(m_cli.GetWindowCount() > 1 ? 1 : 0);
+    wnd.Clear();
+    return wnd.WriteString(m_cli.GetPrompt());
+  }
+};
+
+
+PCLI::Context * PCLICurses::StartForeground()
+{
+  return m_contextList.front();
+}
+
+
+PCLI::Context * PCLICurses::CreateContext()
+{
+  return m_contextList.empty() ? new PCLICursesContext(*this) : NULL;
+}
+
+
+PCLICurses::Window & PCLICurses::NewWindow(unsigned row, unsigned col, unsigned rows, unsigned cols)
+{
+  Window * wnd = new PCLICursesWindow(*this, row, col, rows, cols);
+  m_windows.Append(wnd);
+  return *wnd;
+}
+
+
+void PCLICurses::RemoveWindow(Window & wnd)
+{
+  if (&wnd != &m_windows[0])
+    m_windows.Remove(&wnd);
+}
+
+
+void PCLICurses::RemoveWindow(PINDEX idx)
+{
+  if (idx > 0)
+    m_windows.RemoveAt(0);
+}
+
+
+bool PCLICurses::WaitPage()
+{
+  PCLICurses::Window & wnd = GetWindow(GetWindowCount() > 1 ? 1 : 0);
+  wnd.Clear();
+  if (!wnd.WriteString(GetPageWaitPrompt()))
+    return false;
+
+  m_contextList.front()->ReadChar();
+  wnd.Clear();
+  return true;
+}
+
+
+///////////////////////////////////////
+
+PCLICurses::Window::Window(PCLICurses & owner)
+  : m_owner(owner)
+  , m_pageMode(false)
+  , m_pagedRows(0)
+{
+}
+
+
+PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
+{
+  lastWriteCount = 0;
+
+  unsigned row, col;
+  GetCursor(row, col);
+
+  unsigned rows, cols;
+  GetSize(rows, cols);
+
+  PINDEX count;
+  const char * ptr = (const char *)data;
+  for (count = 0; count < length; ++count, ++ptr) {
+    switch (*ptr) {
+      case '\r' :
+        col = 0;
+        break;
+
+      default :
+        if (!WriteChar(*ptr))
+          return false;
+
+        if (++col < cols)
+          break;
+        // Do new line case as wrapped at end of line
+
+      case '\n' :
+        col = 0;
+        ++row;
+
+        if (m_pageMode && ++m_pagedRows >= rows) {
+          m_pagedRows = 0;
+          m_owner.Refresh();
+          if (!m_owner.WaitPage())
+            return false;
+        }
+        break;
+    }
+
+    if (row >= rows) {
+      Scroll();
+      --row;
+    }
+
+    SetCursor(row, col);
+  }
+
+  lastWriteCount = count;
+  m_owner.Refresh();
+  return true;
+}
+
+
+#endif // P_CURSES
 
 #endif // P_CLI
 
