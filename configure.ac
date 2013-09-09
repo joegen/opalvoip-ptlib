@@ -1793,7 +1793,31 @@ dnl enable shared memory video devices (static video plugin)
 PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [shared memory video devices])
 
 dnl ########################################################################
-dnl look for SDL, but only if we have pthreads
+dnl enable shared memory video devices (static video plugin)
+
+PTLIB_SIMPLE_OPTION([shmvideo], [SHM_VIDEO], [shared memory video devices])
+
+
+dnl ########################################################################
+dnl look for Curses
+dnl MS-Windows uses it's own API indicated by P_CURSES=2. Unix uses ncurses.
+
+dnl MSWIN_DISPLAY    curses,Curses (text mode windows) support
+dnl MSWIN_DEFINE     curses,P_CURSES=2
+
+PTLIB_MODULE_OPTION(
+   [CURSES], 
+   [curses],
+   [disable Curses (text mode windows) support],
+   [ncurses], 
+   [],[],
+   [#include <ncurses.h>],
+   [initscr()]
+)
+
+
+dnl ########################################################################
+dnl look for SDL
 
 dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
 dnl MSWIN_CHECK_FILE libsdl,lib\x86\SDL.lib,P_SDL_WIN32=1
@@ -2430,6 +2454,7 @@ echo "                         OpenLDAP :  ${PTLIB_OPENLDAP}"
 echo "                             ODBC :  ${PTLIB_ODBC}"
 echo "                              Lua :  ${PTLIB_LUA}"
 echo "                       Javascript :  ${PTLIB_V8} (V8)"
+echo "                           Curses :  ${PTLIB_CURSES}"
 echo "                        GStreamer :  ${PTLIB_GSTREAMER}"
 
 echo ""

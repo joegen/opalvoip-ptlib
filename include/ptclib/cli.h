@@ -756,6 +756,136 @@ class PCLITelnet : public PCLISocket
 };
 #endif // P_TELNET
 
+
+#if P_CURSES
+/**Command Line Interpreter within a text mode windowing environment.
+   This class allows creation of a command line interpreter which is in a text
+   mode windowing system, allowing output to happen in a cursor addressable
+   manner.
+  */
+class PCLICurses : public PCLI
+{
+  public:
+  /**@name Construction */
+  //@{
+    PCLICurses();
+    ~PCLICurses();
+  //@}
+
+  /**@name Overrides from PCLI */
+  //@{
+    /** Start default foreground context.
+        Default behaviour returns a context using stdin/stdout.
+      */
+    virtual Context * StartForeground();
+
+    /**Create a new context.
+       Users may use this to create derived classes for their own use.
+      */
+    virtual Context * CreateContext();
+  //@}
+
+    class Window : public PChannel
+    {
+    protected:
+      PCLICurses & m_owner;
+      bool         m_pageMode;
+      unsigned     m_pagedRows;
+
+      Window(PCLICurses & owner);
+
+    public:
+      virtual PBoolean Write(const void * data, PINDEX length);
+      virtual PBoolean WriteChar(char ch) = 0;
+
+      virtual void SetPosition(
+        unsigned row,
+        unsigned col
+      ) = 0;
+      virtual void GetPosition(
+        unsigned & row,
+        unsigned & col
+      ) = 0;
+
+      virtual void SetSize(
+        unsigned rows,
+        unsigned cols
+      ) = 0;
+      virtual void GetSize(
+        unsigned & rows,
+        unsigned & cols
+      ) = 0;
+
+      virtual void SetCursor(
+        unsigned row,
+        unsigned col
+      ) = 0;
+      virtual void GetCursor(
+        unsigned & row,
+        unsigned & col
+      ) = 0;
+
+      virtual void Clear() = 0;
+      virtual void Scroll(int n = 1) = 0;
+
+      void SetPageMode(
+        bool on = true
+      ) { m_pageMode = on; }
+
+      bool GetPageMode() const { return m_pageMode; }
+    };
+
+    Window & NewWindow(
+      unsigned row,
+      unsigned col,
+      unsigned rows,
+      unsigned cols
+    );
+
+    void RemoveWindow(
+      Window & wnd
+    );
+
+    void RemoveWindow(
+      PINDEX idx
+    );
+
+    PINDEX GetWindowCount() const { return m_windows.GetSize(); }
+
+    Window & GetWindow(
+      PINDEX idx
+    ) { return m_windows[idx]; }
+
+    void GetScreenSize(
+      unsigned & rows,
+      unsigned & cols
+    ) { rows = m_maxRows; cols = m_maxCols; }
+
+    virtual void Refresh();
+
+    virtual bool WaitPage();
+
+    /**Get prompt used for waiting on a page of display output.
+       Default is "Press a key for more ...".
+      */
+    const PString & GetPageWaitPrompt() const { return m_pageWaitPrompt; }
+
+    /**Set prompt used for waiting on a page of display output.
+       Default is "Press a key for more ...".
+      */
+    void SetPageWaitPrompt(const PString & prompt) { m_pageWaitPrompt = prompt; }
+
+  protected:
+    void Construct();
+
+    PString        m_pageWaitPrompt;
+
+    PArray<Window> m_windows;
+    unsigned       m_maxRows;
+    unsigned       m_maxCols;
+};
+#endif // P_CURSES
+
 #endif // P_CLI
 
 #endif // PTLIB_CLI_H
