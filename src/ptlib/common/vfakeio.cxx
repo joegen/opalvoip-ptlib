@@ -56,14 +56,14 @@ enum {
 };
 
 static const char * const FakeDeviceNames[] = {
-  "Fake/MovingBlocks",
-  "Fake/MovingLine",
-  "Fake/BouncingBoxes",
-  "Fake/SolidColour",
+  P_FAKE_VIDEO_MOVING_BLOCKS,
+  P_FAKE_VIDEO_MOVING_LINE,
+  P_FAKE_VIDEO_BOUNCING_BOXES,
+  P_FAKE_VIDEO_SOLID_COLOUR,
   "Fake/OriginalMovingBlocks",
-  "Fake/Text",
-  "Fake/NTSCTest",
-  "fake" // Always last
+  P_FAKE_VIDEO_TEXT,
+  P_FAKE_VIDEO_NTSC,
+  "fake" // Always last, ancient history
 };
 
 /****
@@ -2185,14 +2185,15 @@ PCREATE_VIDOUTPUT_PLUGIN(NULLOutput);
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevice_NULLOutput
 
+static PConstString const NullVideoOut(P_NULL_VIDEO_DEVICE);
+
 PVideoOutputDevice_NULLOutput::PVideoOutputDevice_NULLOutput()
 {
-  deviceName = "NULL";
+  deviceName = NullVideoOut;
 }
 
 
-PBoolean PVideoOutputDevice_NULLOutput::Open(const PString & /*deviceName*/,
-                                  PBoolean /*startImmediate*/)
+PBoolean PVideoOutputDevice_NULLOutput::Open(const PString & /*deviceName*/, PBoolean /*startImmediate*/)
 {
   return true;
 }
@@ -2220,7 +2221,7 @@ PBoolean PVideoOutputDevice_NULLOutput::IsOpen()
 
 PStringArray PVideoOutputDevice_NULLOutput::GetOutputDeviceNames()
 {
-  return PString("NULL");
+  return NullVideoOut;
 }
 
 
