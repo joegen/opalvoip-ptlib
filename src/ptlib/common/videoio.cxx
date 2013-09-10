@@ -132,7 +132,29 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
 
       // Give precedence to drivers like camera grabbers, Window
       static const char * prioritisedDrivers[] = {
-        "Window", "SDL", "DirectShow", "VideoForWindows", "V4L", "V4L2", "1394DC", "1394AVC", "BSDCAPTURE", "FakeVideo", "NULLOutput"
+#ifdef P_DIRECTSHOW
+        P_DIRECT_SHOW_DRIVER,
+#endif
+#ifdef WIN32
+        P_MSWIN_VIDEO_DRIVER,
+        P_VIDEO_FOR_WINDOWS_DRIVER,
+#endif
+        "V4L",
+        "V4L2",
+        "1394DC",
+        "1394AVC",
+        "BSDCAPTURE",
+#if P_SDL
+        P_SDL_VIDEO_DRIVER,
+#endif
+        P_FAKE_VIDEO_DRIVER,
+        P_NULL_VIDEO_DRIVER,
+#ifdef P_APPSHARE
+        P_APPLICATION_VIDEO_DRIVER,
+#endif
+#if P_VIDFILE
+        P_VIDEO_FILE_DRIVER,
+#endif
       };
       for (PINDEX i = 0; i < PARRAYSIZE(prioritisedDrivers); i++) {
         PINDEX driverIndex = drivers.GetValuesIndex(PString(prioritisedDrivers[i]));

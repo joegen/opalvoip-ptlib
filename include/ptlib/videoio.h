@@ -1178,9 +1178,20 @@ template <class className> class PVideoInputPluginServiceDescriptor : public PDe
   static PVideoInputPluginServiceDescriptor<PVideoInputDevice_##name> PVideoInputDevice_##name##_descriptor; \
   PCREATE_PLUGIN(name, PVideoInputDevice, &PVideoInputDevice_##name##_descriptor)
 
+
+#define P_FAKE_VIDEO_DRIVER         "FakeVideo"
+#define P_FAKE_VIDEO_PREFIX         "Fake/"
+#define P_FAKE_VIDEO_MOVING_BLOCKS  P_FAKE_VIDEO_PREFIX"MovingBlocks"
+#define P_FAKE_VIDEO_MOVING_LINE    P_FAKE_VIDEO_PREFIX"MovingLine"
+#define P_FAKE_VIDEO_BOUNCING_BOXES P_FAKE_VIDEO_PREFIX"BouncingBoxes"
+#define P_FAKE_VIDEO_SOLID_COLOUR   P_FAKE_VIDEO_PREFIX"SolidColour"
+#define P_FAKE_VIDEO_TEXT           P_FAKE_VIDEO_PREFIX"Text"
+#define P_FAKE_VIDEO_NTSC           P_FAKE_VIDEO_PREFIX"NTSCTest"
+
 PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 
 #ifdef P_APPSHARE
+  #define P_APPLICATION_VIDEO_DRIVER "Application"
   PPLUGIN_STATIC_LOAD(Application, PVideoInputDevice);
 #endif
 
@@ -1189,10 +1200,17 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 #endif
 
 #if P_VIDFILE
+  #define P_VIDEO_FILE_DRIVER "YUVFile"
   PPLUGIN_STATIC_LOAD(YUVFile, PVideoInputDevice);
 #endif
 
+#ifdef WIN32
+  #define P_VIDEO_FOR_WINDOWS_DRIVER "VideoForWindows"
+  PPLUGIN_STATIC_LOAD(VideoForWindows, PVideoInputDevice);
+#endif
+
 #ifdef P_DIRECTSHOW
+  #define P_DIRECT_SHOW_DRIVER "DirectShow"
   PPLUGIN_STATIC_LOAD(DirectShow, PVideoInputDevice);
 #endif
 
@@ -1213,8 +1231,16 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
   static PVideoOutputPluginServiceDescriptor<PVideoOutputDevice_##name> PVideoOutputDevice_##name##_descriptor; \
   PCREATE_PLUGIN(name, PVideoOutputDevice, &PVideoOutputDevice_##name##_descriptor)
 
+#define P_NULL_VIDEO_DRIVER "NULLOutput"
+#define P_NULL_VIDEO_DEVICE "Null Video Out"
+PPLUGIN_STATIC_LOAD(NULLOutput, PVideoOutputDevice);
+
+
 #if P_VFW_CAPTURE
 #if _WIN32
+  #define P_MSWIN_VIDEO_DRIVER "Window"
+  #define P_MSWIN_VIDEO_PREFIX "MSWIN"
+  #define P_MSWIN_VIDEO_DEVICE(x,y,width,height) P_MSWIN_VIDEO_PREFIX " X=" x " Y=" y " WIDTH=" width " HEIGHT=" height
   PPLUGIN_STATIC_LOAD(Window, PVideoOutputDevice);
 #endif
 #endif
@@ -1223,6 +1249,9 @@ template <class className> class PVideoOutputPluginServiceDescriptor : public PD
   #if P_MACOSX
     #include <SDL_main.h>
   #endif
+  #define P_SDL_VIDEO_DRIVER "SDL"
+  #define P_SDL_VIDEO_PREFIX "SDL"
+  #define P_SDL_VIDEO_DEVICE(x,y,width,height) P_SDL_VIDEO_PREFIX " X=" x " Y=" y " WIDTH=" width " HEIGHT=" height
   PPLUGIN_STATIC_LOAD(SDL, PVideoOutputDevice);
 #endif
 
