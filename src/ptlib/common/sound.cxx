@@ -563,7 +563,7 @@ PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
 
 ///////////////////////////////////////////////////////////////////////////
 
-static const PConstString NullAudio("Null Audio");
+static const PConstString NullAudio(P_NULL_AUDIO_DEVICE);
 
 class PSoundChannelNull : public PSoundChannel
 {
