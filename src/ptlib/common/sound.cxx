@@ -45,7 +45,7 @@
 
 
 static const char soundPluginBaseClass[] = "PSoundChannel";
-static const PConstString NullAudio("Null Audio");
+static const PConstString NullAudio(P_NULL_AUDIO_DEVICE);
 
 
 void PSoundChannel::Params::SetBufferCountFromMS(unsigned milliseconds)
