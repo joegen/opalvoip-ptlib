@@ -763,7 +763,12 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
   static PSoundChannelPluginServiceDescriptor<className> className##_descriptor; \
   PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
 
+#define P_NULL_AUDIO_DRIVER "NullAudio"
+#define P_NULL_AUDIO_DEVICE "Null Audio"
+PPLUGIN_STATIC_LOAD(NullAudio, PSoundChannel)
+
 #ifdef _WIN32
+  #define P_WINDOWS_MULTIMEDIA_DRIVER "WindowsMultimedia"
   PPLUGIN_STATIC_LOAD(WindowsMultimedia, PSoundChannel);
 #elif defined(P_ANDROID)
   PPLUGIN_STATIC_LOAD(OpenSL_ES, PSoundChannel);
@@ -774,10 +779,12 @@ template <class className> class PSoundChannelPluginServiceDescriptor : public P
 #endif
 
 #if defined(P_DIRECTSOUND)
+  #define P_DIRECT_SOUND_DRIVER "DirectSound"
   PPLUGIN_STATIC_LOAD(DirectSound, PSoundChannel);
 #endif
 
 #if defined(P_WAVFILE)
+  #define P_WAV_FILE_DRIVER "WAVFile"
   PPLUGIN_STATIC_LOAD(WAVFile, PSoundChannel)
 #endif
 
