@@ -2117,7 +2117,7 @@ class PStringStream : public PString, public P_IOSTREAM
         virtual int_type overflow(int_type = EOF);
         virtual int_type underflow();
         virtual int sync();
-        virtual pos_type seekoff(off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out);
+        virtual pos_type seekoff(std::streamoff, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out);
         virtual pos_type seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out);
         PCharArray & string;
         PBoolean     fixedBufferSize;
