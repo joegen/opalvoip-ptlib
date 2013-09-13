@@ -2302,11 +2302,11 @@ int PStringStream::Buffer::sync()
   return 0;
 }
 
-streambuf::pos_type PStringStream::Buffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode mode)
+streambuf::pos_type PStringStream::Buffer::seekoff(streamoff off, ios_base::seekdir dir, ios_base::openmode mode)
 {
-  off_type len = (off_type)strlen(string);
-  off_type gpos = (off_type)(gptr() - eback());
-  off_type ppos = (off_type)(pptr() - pbase());
+  streamoff len = (off_type)strlen(string);
+  streamoff gpos = (off_type)(gptr() - eback());
+  streamoff ppos = (off_type)(pptr() - pbase());
   char * newgptr;
   char * newpptr;
   switch (dir) {
