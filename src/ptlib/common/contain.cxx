@@ -2304,9 +2304,9 @@ int PStringStream::Buffer::sync()
 
 streambuf::pos_type PStringStream::Buffer::seekoff(streamoff off, ios_base::seekdir dir, ios_base::openmode mode)
 {
-  streamoff len = (off_type)strlen(string);
-  streamoff gpos = (off_type)(gptr() - eback());
-  streamoff ppos = (off_type)(pptr() - pbase());
+  streamoff len = (streamoff)strlen(string);
+  streamoff gpos = (streamoff)(gptr() - eback());
+  streamoff ppos = (streamoff)(pptr() - pbase());
   char * newgptr;
   char * newpptr;
   switch (dir) {
