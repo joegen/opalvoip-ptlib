@@ -76,7 +76,7 @@ LD=
 
 ####################################################
 
-PTLIB_CFLAGS += -Wformat -Wformat-security -D_FORTIFY_SOURCE=2 
+PTLIB_CFLAGS += -Wformat -Wformat-security
 
 ifeq ($(target_os),linux)
 
@@ -588,7 +588,7 @@ LDFLAGS		+= $(DEBLDFLAGS)
 
 else
 
-PTLIB_CFLAGS	+= -DNDEBUG
+PTLIB_CFLAGS	+= -DNDEBUG -D_FORTIFY_SOURCE=2
 
 ifneq ($(target_os),Darwin)
   ifeq ($(target_os),solaris)
