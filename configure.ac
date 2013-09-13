@@ -1219,8 +1219,8 @@ PTLIB_MODULE_OPTION(
       #include <jpeglib.h>
    ],
    [
-     jpeg_decompress_struct d;
-     unsigned char * s;
+     struct jpeg_decompress_struct d;
+     unsigned char * b;
      unsigned long s;
      jpeg_mem_src(&d, b, s);
    ]
