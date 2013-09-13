@@ -106,7 +106,7 @@ int PChannelStreamBuffer::sync()
 }
 
 
-PChannelStreamBuffer::pos_type PChannelStreamBuffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode)
+PChannelStreamBuffer::pos_type PChannelStreamBuffer::seekoff(std::streamoff off, ios_base::seekdir dir, ios_base::openmode)
 {
   sync();
   if (PIsDescendant(channel, PFile)) {
