@@ -9039,9 +9039,9 @@ if test "x$ac_cv_func_res_ninit" = xyes; then :
 else
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS "
-   LDFLAGS="-lresolv $LDFLAGS"
+   LIBS="-lresolv $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for res_ninit in -lresolv" >&5
 $as_echo_n "checking for res_ninit in -lresolv... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -9072,7 +9072,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -9088,9 +9088,9 @@ if test "x$ac_cv_func_res_search" = xyes; then :
 else
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS "
-   LDFLAGS="-lresolv $LDFLAGS"
+   LIBS="-lresolv $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for res_search in -lresolv" >&5
 $as_echo_n "checking for res_search in -lresolv... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -9118,7 +9118,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -9257,9 +9257,9 @@ $as_echo "$as_me: PCAP disabled" >&6;}
 else
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS "
-   LDFLAGS="-lpcap $LDFLAGS"
+   LIBS="-lpcap $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PCAP support" >&5
 $as_echo_n "checking for PCAP support... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -9284,7 +9284,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -9495,9 +9495,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_libjpeg" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $LIBJPEG_CFLAGS"
-   LDFLAGS="$LIBJPEG_LIBS $LDFLAGS"
+   LIBS="$LIBJPEG_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libJPEG support usability" >&5
 $as_echo_n "checking for libJPEG support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -9510,8 +9510,8 @@ int
 main ()
 {
 
-     jpeg_decompress_struct d;
-     unsigned char * s;
+     struct jpeg_decompress_struct d;
+     unsigned char * b;
      unsigned long s;
      jpeg_mem_src(&d, b, s);
 
@@ -9531,7 +9531,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -10053,9 +10053,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_openldap" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $OPENLDAP_CFLAGS"
-   LDFLAGS="$OPENLDAP_LIBS $LDFLAGS"
+   LIBS="$OPENLDAP_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Open LDAP support usability" >&5
 $as_echo_n "checking for Open LDAP support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -10080,7 +10080,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -10298,9 +10298,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_openssl" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $OPENSSL_CFLAGS"
-   LDFLAGS="$OPENSSL_LIBS $LDFLAGS"
+   LIBS="$OPENSSL_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenSSL support usability" >&5
 $as_echo_n "checking for OpenSSL support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -10325,7 +10325,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -10698,9 +10698,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_expat" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
-   LDFLAGS="$EXPAT_LIBS $LDFLAGS"
+   LIBS="$EXPAT_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for expat XML support usability" >&5
 $as_echo_n "checking for expat XML support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -10726,7 +10726,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -10938,9 +10938,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_lua" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $LUA_CFLAGS"
-   LDFLAGS="$LUA_LIBS $LDFLAGS"
+   LIBS="$LUA_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Lua script support usability" >&5
 $as_echo_n "checking for Lua script support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -10966,7 +10966,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -11195,9 +11195,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_v8" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
-   LDFLAGS="$V8_LIBS $LDFLAGS"
+   LIBS="$V8_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for V8 Javascript script support usability" >&5
 $as_echo_n "checking for V8 Javascript script support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -11223,7 +11223,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -14280,9 +14280,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_curses" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $CURSES_CFLAGS"
-   LDFLAGS="$CURSES_LIBS $LDFLAGS"
+   LIBS="$CURSES_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for disable Curses (text mode windows) support usability" >&5
 $as_echo_n "checking for disable Curses (text mode windows) support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14308,7 +14308,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -14525,9 +14525,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_sdl" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
-   LDFLAGS="$SDL_LIBS $LDFLAGS"
+   LIBS="$SDL_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for disable libSDL (video display) support usability" >&5
 $as_echo_n "checking for disable libSDL (video display) support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14555,7 +14555,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -14760,9 +14760,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_gstreamer" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
-   LDFLAGS="$GSTREAMER_LIBS $LDFLAGS"
+   LIBS="$GSTREAMER_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GStreamer support usability" >&5
 $as_echo_n "checking for GStreamer support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14788,7 +14788,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -15018,9 +15018,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_odbc" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
-   LDFLAGS="$ODBC_LIBS $LDFLAGS"
+   LIBS="$ODBC_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ODBC database support usability" >&5
 $as_echo_n "checking for ODBC database support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15045,7 +15045,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -15240,9 +15240,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_odbc" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
-   LDFLAGS="$ODBC_LIBS $LDFLAGS"
+   LIBS="$ODBC_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for unixODBC database support usability" >&5
 $as_echo_n "checking for unixODBC database support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -15268,7 +15268,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
@@ -16205,9 +16205,9 @@ fi
          if test "x$usable" = "xyes" && test "x$test_portaudio" != "xno" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
-   oldLDFLAGS="$LDFLAGS"
+   oldLIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $PORTAUDIO_CFLAGS"
-   LDFLAGS="$PORTAUDIO_LIBS $LDFLAGS"
+   LIBS="$PORTAUDIO_LIBS $LIBS"
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PortAudio library usability" >&5
 $as_echo_n "checking for PortAudio library usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -16232,7 +16232,7 @@ rm -f core conftest.err conftest.$ac_objext \
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
 $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
-   LDFLAGS="$oldLDFLAGS"
+   LIBS="$oldLIBS"
 
    if test "x$usable" = "xyes"; then :
 
