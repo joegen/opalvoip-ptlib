@@ -152,7 +152,7 @@ PString PSoundChannelALSA::GetDefaultDevice(Directions dir)
 }
 
 
-bool PSoundChannelALSA::Open(const params & params)
+bool PSoundChannelALSA::Open(const Params & params)
 {
   Close();
 
@@ -186,9 +186,9 @@ bool PSoundChannelALSA::Open(const params & params)
     card_nr = -2;
   }
   else {
-    PStringToOrdinal & devices = dir == Recorder ? capture_devices : playback_devices;
+    PStringToOrdinal & devices = activeDirection == Recorder ? capture_devices : playback_devices;
     if (devices.IsEmpty())
-      UpdateDictionary(dir);
+      UpdateDictionary(activeDirection);
 
     POrdinalKey * index = devices.GetAt(params.m_device);
     if (index == NULL) {
@@ -203,7 +203,7 @@ bool PSoundChannelALSA::Open(const params & params)
   /* Open in NONBLOCK mode */
   if (snd_pcm_open(&pcm_handle,
                    real_device_name,
-                   dir == Recorder ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK,
+                   activeDirection == Recorder ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK,
                    SND_PCM_NONBLOCK) < 0) {
     PTRACE(1, "ALSA\tOpen Failed");
     return false;

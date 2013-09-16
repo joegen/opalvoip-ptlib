@@ -38,6 +38,7 @@
 #pragma implementation "vidinput_v4l2.h"
 
 #include "vidinput_v4l2.h"
+#include <sys/ioctl.h>
 #include <sys/utsname.h>
 
 PCREATE_VIDINPUT_PLUGIN(V4L2);
@@ -970,8 +971,10 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
   if(buf.bytesused){
     // If converting on the fly do it from frame store to output buffer,
     // otherwise do straight copy.
-    if (converter != NULL)
-      converter->Convert(videoBuffer[buf.index], buffer, buf.bytesused, bytesReturned);
+    if (converter != NULL) {
+      converter->SetSrcFrameBytes(buf.bytesused);
+      converter->Convert(videoBuffer[buf.index], buffer, bytesReturned);
+    }
     else {
       memcpy(buffer, videoBuffer[buf.index], buf.bytesused);
       if (bytesReturned != NULL)
