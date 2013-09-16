@@ -35,6 +35,9 @@
 
 #include "sound_oss.h"
 
+#include <sys/ioctl.h>
+
+
 PCREATE_SOUND_PLUGIN(OSS, PSoundChannelOSS);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -307,7 +310,7 @@ bool PSoundChannelOSS::Open(const Params & params)
 
     // add the device to the dictionary
     SoundHandleEntry * entry = PNEW SoundHandleEntry;
-    handleDict().SetAt(_device, entry); 
+    handleDict().SetAt(params.m_device, entry); 
 
     // save the information into the dictionary entry
     entry->handle        = os_handle;
@@ -450,7 +453,7 @@ PBoolean PSoundChannelOSS::Close()
   PAssert((entry = handleDict().GetAt(device)) != NULL, "Unknown sound device \"" + device + "\" found");
 
   // modify the directions bit mask in the dictionary
-  entry->direction ^= (direction+1);
+  entry->direction ^= (activeDirection+1);
 
   // if this is the last usage of this entry, then remove it
   if (entry->direction == 0) {

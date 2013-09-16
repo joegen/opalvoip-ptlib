@@ -212,21 +212,21 @@ bool PSoundChannelPulse::Open(const Params & params)
     appName << app;
   else
     appName << "PTLib plugin ";
-  if (_dir == Player) 
+  if (activeDirection == Player) 
     streamName << ::hex << PRandom::Number();
   else
     streamName << ::hex << PRandom::Number();
 
   ss.rate = params.m_sampleRate;
-  ss.channels = params.m_numChannels;
+  ss.channels = params.m_channels;
   ss.format =  PA_SAMPLE_S16LE;  
 
   const char* dev;
-  if (_device=="PulseAudio") {
+  if (params.m_device=="PulseAudio") {
     /* Default device */
     dev=NULL;
   } else {
-    dev=_device;
+    dev=params.m_device;
   }
   s=pa_stream_new(context,appName.GetPointer(),&ss,NULL);
   pa_stream_set_state_callback(s,stream_notify_cb,NULL);
