@@ -642,7 +642,10 @@ HAS_SHM_AUDIO
 HAS_SUN_AUDIO
 HAS_PULSE
 HAS_OSS
+PTLIB_ESD
 HAS_ESD
+ESD_LIBS
+ESD_CFLAGS
 HAS_ALSA
 DEV_PLUGIN_DIR
 PTLIB_PLUGIN_DIR
@@ -1026,6 +1029,8 @@ GSTREAMER_CFLAGS
 GSTREAMER_LIBS
 ODBC_CFLAGS
 ODBC_LIBS
+ESD_CFLAGS
+ESD_LIBS
 PORTAUDIO_CFLAGS
 PORTAUDIO_LIBS'
 
@@ -1817,6 +1822,8 @@ Some influential environment variables:
               linker flags for GSTREAMER, overriding pkg-config
   ODBC_CFLAGS C compiler flags for ODBC, overriding pkg-config
   ODBC_LIBS   linker flags for ODBC, overriding pkg-config
+  ESD_CFLAGS  C compiler flags for ESD, overriding pkg-config
+  ESD_LIBS    linker flags for ESD, overriding pkg-config
   PORTAUDIO_CFLAGS
               C compiler flags for PORTAUDIO, overriding pkg-config
   PORTAUDIO_LIBS
@@ -15934,12 +15941,143 @@ fi
          { $as_echo "$as_me:${as_lineno-$LINENO}: ESD audio disabled by user" >&5
 $as_echo "$as_me: ESD audio disabled by user" >&6;}
       else
-         ac_fn_cxx_check_header_mongrel "$LINENO" "esd.h" "ac_cv_header_esd_h" "$ac_includes_default"
-if test "x$ac_cv_header_esd_h" = xyes; then :
 
-               HAS_ESD=1
 
-               PTLIB_ESD=yes
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ESD" >&5
+$as_echo_n "checking for ESD... " >&6; }
+
+if test -n "$ESD_CFLAGS"; then
+    pkg_cv_ESD_CFLAGS="$ESD_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"esound\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "esound") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ESD_CFLAGS=`$PKG_CONFIG --cflags "esound" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$ESD_LIBS"; then
+    pkg_cv_ESD_LIBS="$ESD_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"esound\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "esound") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ESD_LIBS=`$PKG_CONFIG --libs "esound" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        ESD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "esound" 2>&1`
+        else
+	        ESD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "esound" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$ESD_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	ESD_CFLAGS=$pkg_cv_ESD_CFLAGS
+	ESD_LIBS=$pkg_cv_ESD_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+   oldCPPFLAGS="$CPPFLAGS"
+   oldLIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $ESD_CFLAGS"
+   LIBS="$ESD_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ESD usability" >&5
+$as_echo_n "checking for ESD usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <esd.h>
+int
+main ()
+{
+esd_get_server_info(0)
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+   LIBS="$oldLIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+            CPPFLAGS="$CPPFLAGS $ESD_CFLAGS"
+            LIBS="$ESD_LIBS $LIBS"
+
+
+fi
+
+
+fi
+
+   if test "x$usable" = "xyes"; then :
+
+   HAS_ESD=yes
+
+   if test "x$HAS_ESD" = "xyes" ; then
+      HAS_ESD=1
+   fi
+
+   if test "x$HAS_ESD" = "x0" || test "x$HAS_ESD" = "xno" ; then
+      HAS_ESD=
+   fi
+
+
+
+   if test "x$HAS_ESD" = "x1" ; then
+      PTLIB_ESD=yes
+      $as_echo "#define P_ESD 1" >>confdefs.h
+
+   else
+      PTLIB_ESD=no
+   fi
+
+
 
 
 fi
