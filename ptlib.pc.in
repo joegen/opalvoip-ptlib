@@ -17,7 +17,7 @@ objdir=obj/@target@$(suffix)
 cppflags=-I${includedir} @CPPFLAGS@
 cxxflags=-I${includedir} @CPPFLAGS@ @CXXFLAGS@
 Cflags: -I${includedir} @CPPFLAGS@ @CFLAGS@
-Libs: -L${libdir} -lpt${suffix} @LDFLAGS@
+Libs: @LDFLAGS@ -L${libdir} -lpt${suffix} @LIBS@
 
 PTLIB_IPV6=@PTLIB_IPV6@
 PTLIB_DNS_RESOLVER=@PTLIB_DNS_RESOLVER@
