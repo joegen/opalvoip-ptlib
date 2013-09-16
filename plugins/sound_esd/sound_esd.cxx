@@ -91,7 +91,7 @@ bool PSoundChannelESD::Open(const Params & params)
   }
 
   // make sure we have proper number of channels
-  switch (params.m_numChannels) {
+  switch (params.m_channels) {
   case 2:
     channels = ESD_STEREO;
     break;
@@ -195,7 +195,7 @@ PBoolean PSoundChannelESD::Write(const void * buf, PINDEX len)
     // Sends data to esd.
     rval = ::write(os_handle, buf, len);
     if (rval > 0) {
-#if defined(P_MACOSX)
+#if 0 //defined(P_MACOSX)
       // Mac OS X's esd has a big input buffer so we need to simulate
       // writing data out at the correct rate.
       writeDelay.Delay(len/16);
