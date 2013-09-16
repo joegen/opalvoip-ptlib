@@ -2071,12 +2071,12 @@ if test "x$enable_plugins" != "xno" ; then
       if test "x${enable_esd}" = "xno" ; then
          AC_MSG_NOTICE(ESD audio disabled by user)
       else
-         AC_CHECK_HEADER(
-            [esd.h],
-            [
-               AC_SUBST(HAS_ESD, 1)
-               PTLIB_ESD=yes
-            ]
+         MY_PKG_CHECK_MODULE(
+            [ESD],
+            [esound],
+            [#include <esd.h>],
+            [esd_get_server_info(0)],
+            [PTLIB_SUBST([ESD], [yes])]
          )
       fi
 
