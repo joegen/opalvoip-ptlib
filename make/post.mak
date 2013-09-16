@@ -225,15 +225,13 @@ else # PROG -  so must be a library
       TARGET = $(SHARED_LIB_FILE)
     endif
 
-    ifndef
+    ifndef LIB_SONAME
       LIB_SONAME = $(notdir $(SHARED_LIB_FILE))
     endif
 
-    LDFLAGS := $(SHARED_LDFLAGS:INSERT_SONAME=$(LIB_SONAME)) $(LDFLAGS)
-
-    $(SHARED_LIB_FILE): $(STATIC_LIB_FILE)
+    $(SHARED_LIB_FILE): $(STATIC_LIB_FILE) $(OBJS)
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_LD)$(LD) -o $@ $(strip $(LDFLAGS) $(OBJS) $(LIBS))
+	$(Q_LD)$(LD) -o $@ $(strip $(SHARED_LDFLAGS) $(LDFLAGS) $(OBJS) $(LIBS))
 
   endif # SHARED_LIB_FILE
 
