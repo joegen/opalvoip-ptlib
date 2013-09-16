@@ -147,7 +147,7 @@ case "$target_os" in
       OS_TAG="P_MACOSX" 
       dnl Where "port" libraries live
       CPPFLAGS="$CPPFLAGS -I/opt/local/include"
-      LDFLAGS="-L/opt/local/lib $LDFLAGS"
+      LIBS="-L/opt/local/lib $LIBS"
    ;;
 
    iPhone* )
@@ -763,7 +763,7 @@ else
    AC_CHECK_LIB(pthread, pthread_create,
       [
          HAS_PTHREADS=yes
-         LDFLAGS="$LDFLAGS -lpthread"
+         LIBS="-lpthread $LIBS"
          CPPFLAGS="$CPPFLAGS -D_REENTRANT"
          AC_DEFINE(P_PTHREADS, 1, "PThreads found")
       ],
@@ -788,7 +788,7 @@ dnl check for rt library
 
 AC_CHECK_LIB(rt, clock_gettime, HAS_RT=yes, HAS_RT=no)
 if test ${HAS_RT} = yes ; then
-  LDFLAGS="$LDFLAGS -lrt"
+  LIBS="-lrt $LIBS"
 fi
 
 
@@ -1052,7 +1052,7 @@ else
          AC_SUBST(HAS_REGEX, 1)
          AC_DEFINE(P_REGEX, 1, "Regex library found")
          if test ${target_os} = mingw ; then
-            LDFLAGS="$LDFLAGS -lregex"
+            LIBS="-lregex $LIBS"
          fi
       ]
    )
@@ -1111,7 +1111,7 @@ else
          [
             HAS_DNS_RESOLVER=1
             AC_DEFINE(P_HAS_RES_NINIT, 1)
-            LDFLAGS="$LDFLAGS -lresolv"
+            LIBS="-lresolv $LIBS"
          ],
          [AC_CHECK_FUNC(
             [res_search],
@@ -1127,7 +1127,7 @@ else
                [res_search(NULL, 0, 0, NULL, 0)],
                [
                   HAS_DNS_RESOLVER=1
-                  LDFLAGS="$LDFLAGS -lresolv"
+                  LIBS="-lresolv $LIBS"
                ],
                [AC_SEARCH_LIBS(
                   [__res_search],
@@ -1137,7 +1137,7 @@ else
                      [windns.h],
                      [
                         HAS_DNS_RESOLVER=1
-                        LDFLAGS="$LDFLAGS -ldnsapi"
+                        LIBS="-ldnsapi $LIBS"
                      ],
                      [],
                      [#include <windows.h>]
@@ -1184,7 +1184,7 @@ else
       [pcap_t *h],
       [
          AC_DEFINE(P_PCAP, 1, "PCAP found")
-         LDFLAGS="$LDFLAGS -lpcap"
+         LIBS="-lpcap $LIBS"
          HAS_PCAP=1
       ]
    )
@@ -1241,7 +1241,7 @@ MY_ARG_ENABLE(
       [mlib_VideoColorJFIFYCC2RGB420_Nearest],
       [
          AC_DEFINE(P_MEDIALIB)
-         LDFLAGS="-lmlib $LDFLAGS"
+         LIBS="-lmlib $LIBS"
       ]
    )]
 )
@@ -1291,7 +1291,7 @@ else
       [
          HAS_SASL2=1
          AC_DEFINE(P_SASL, 2)
-         LDFLAGS="$LDFLAGS -lsasl2"
+         LIBS="-lsasl2 $LIBS"
       ],
       [
          HAS_SASL2=
@@ -1301,7 +1301,7 @@ else
             [
                HAS_SASL=1
                AC_DEFINE(P_SASL, 1)
-               LDFLAGS="$LDFLAGS -lsasl"
+               LIBS="-lsasl $LIBS"
             ],
             [HAS_SASL=]
          )
@@ -1346,7 +1346,7 @@ PTLIB_MODULE_OPTION(
 )
 
 if test "x$HAS_OPENLDAP" = "x1" && test "x$OS_TAG" = "xP_MACOSX" ; then
-   LDFLAGS+=" -llber"
+   LIBS+="-llber $LIBS"
 fi
 
 
@@ -1952,7 +1952,7 @@ if test "x${HAS_VIDEO}" = "x1" ; then
          AC_DEFINE(P_DIRECTX, 1)
          AC_DEFINE(P_DIRECTSOUND, 1)
          CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
-         LDFLAGS="$LDFLAGS -ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
+         LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz $LIBS"
       fi
     ;;
   esac
@@ -2165,7 +2165,7 @@ if test "x$enable_plugins" != "xno" ; then
             [
                AC_SUBST(HAS_PORTMIXER, 1)
                AC_DEFINE(P_PORTMIXER, 1)
-               LDFLAGS="-lportmixer ${LDFLAGS}"
+               LIBS="-lportmixer $LIBS"
             ]
          )]
       )

@@ -203,7 +203,7 @@ ifdef PROG
 
   $(TARGET) : $(OBJS) $(TARGET_LIBS)
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_LD)$(LD) -o $@ $(OBJS) $(LDFLAGS)
+	$(Q_LD)$(LD) -o $@ $(strip $(LDFLAGS) $(OBJS) $(LIBS))
 
 else # PROG -  so must be a library
 
@@ -229,9 +229,11 @@ else # PROG -  so must be a library
       LIB_SONAME = $(notdir $(SHARED_LIB_FILE))
     endif
 
+    LDFLAGS := $(SHARED_LDFLAGS:INSERT_SONAME=$(LIB_SONAME)) $(LDFLAGS)
+
     $(SHARED_LIB_FILE): $(STATIC_LIB_FILE)
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_LD)$(LD) -o $@ $(strip $(SHARED_LDFLAGS:INSERT_SONAME=$(LIB_SONAME)) $(OBJS) $(LDFLAGS))
+	$(Q_LD)$(LD) -o $@ $(strip $(LDFLAGS) $(OBJS) $(LIBS))
 
   endif # SHARED_LIB_FILE
 
