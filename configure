@@ -5824,7 +5824,7 @@ case "$target_os" in
       AR="libtool"
       ARFLAGS="-static -o"
       RANLIB=
-      LDFLAGS="${LDFLAGS} -framework AudioToolbox -framework CoreAudio -framework SystemConfiguration -framework Foundation -lobjc"
+      LIBS="-framework AudioToolbox -framework CoreAudio -framework SystemConfiguration -framework Foundation -lobjc $LIBS"
    ;;
 
    cygwin* | mingw* )
@@ -5852,7 +5852,8 @@ case "$target_os" in
       CC="${IOS_DEVROOT}/usr/bin/gcc"
       LD="$CXX"
       CPPFLAGS="${CPPFLAGS} -arch $target_cpu -isysroot ${IOS_SDKROOT} -miphoneos-version-min=$MIN_IOS_VER"
-      LDFLAGS="-arch $target_cpu -isysroot ${IOS_SDKROOT} -L${IOS_SDKROOT}/usr/lib $LDFLAGS"
+      LDFLAGS="-arch $target_cpu -isysroot ${IOS_SDKROOT} $LDFLAGS"
+      LIBS="-L${IOS_SDKROOT}/usr/lib $LIBS"
    ;;
 
    darwin* )
@@ -5865,7 +5866,7 @@ case "$target_os" in
       fi
 
       CPPFLAGS="${CPPFLAGS} -mmacosx-version-min=$MIN_MACOSX_VER"
-      LDFLAGS="-framework QTKit -framework CoreVideo -framework AudioUnit $LDFLAGS"
+      LIBS="-framework QTKit -framework CoreVideo -framework AudioUnit $LIBS"
    ;;
 
    linux* | Linux* | uclibc* )
@@ -5989,7 +5990,7 @@ fi
    beos* )
       target_os=beos
       CPPFLAGS="$CPPFLAGS D__BEOS__ -DBE_THREADS -Wno-multichar -Wno-format"
-      LDFLAGS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl"
+      LIBS="-lstdc++.r4 -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl $LIBS"
       SHARED_LDFLAGS="-shared -nostdlib -nostart"
    ;;
 
@@ -6000,7 +6001,7 @@ fi
    mingw* )
       target_os=mingw
       CPPFLAGS="$CPPFLAGS -mms-bitfields"
-      LDFLAGS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz"
+      LIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz $LIBS"
    ;;
 
    * )
@@ -6358,7 +6359,7 @@ fi
    Darwin )
       OS_TAG="P_MACOSX"
             CPPFLAGS="$CPPFLAGS -I/opt/local/include"
-      LDFLAGS="-L/opt/local/lib $LDFLAGS"
+      LIBS="-L/opt/local/lib $LIBS"
    ;;
 
    iPhone* )
@@ -8302,7 +8303,7 @@ $as_echo "$ac_cv_lib_pthread_pthread_create" >&6; }
 if test "x$ac_cv_lib_pthread_pthread_create" = xyes; then :
 
          HAS_PTHREADS=yes
-         LDFLAGS="$LDFLAGS -lpthread"
+         LIBS="-lpthread $LIBS"
          CPPFLAGS="$CPPFLAGS -D_REENTRANT"
 
 $as_echo "#define P_PTHREADS 1" >>confdefs.h
@@ -8374,7 +8375,7 @@ else
 fi
 
 if test ${HAS_RT} = yes ; then
-  LDFLAGS="$LDFLAGS -lrt"
+  LIBS="-lrt $LIBS"
 fi
 
 
@@ -8977,7 +8978,7 @@ if test "x$ac_cv_func_regcomp" = xyes; then :
 $as_echo "#define P_REGEX 1" >>confdefs.h
 
          if test ${target_os} = mingw ; then
-            LDFLAGS="$LDFLAGS -lregex"
+            LIBS="-lregex $LIBS"
          fi
 
 
@@ -9079,7 +9080,7 @@ $as_echo "$usable" >&6; }
             HAS_DNS_RESOLVER=1
             $as_echo "#define P_HAS_RES_NINIT 1" >>confdefs.h
 
-            LDFLAGS="$LDFLAGS -lresolv"
+            LIBS="-lresolv $LIBS"
 
 else
   ac_fn_cxx_check_func "$LINENO" "res_search" "ac_cv_func_res_search"
@@ -9123,7 +9124,7 @@ $as_echo "$usable" >&6; }
    if test "x$usable" = "xyes"; then :
 
                   HAS_DNS_RESOLVER=1
-                  LDFLAGS="$LDFLAGS -lresolv"
+                  LIBS="-lresolv $LIBS"
 
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing __res_search" >&5
@@ -9186,7 +9187,7 @@ if test "$ac_res" != no; then :
 if test "x$ac_cv_header_windns_h" = xyes; then :
 
                         HAS_DNS_RESOLVER=1
-                        LDFLAGS="$LDFLAGS -ldnsapi"
+                        LIBS="-ldnsapi $LIBS"
 
 fi
 
@@ -9291,7 +9292,7 @@ $as_echo "$usable" >&6; }
 
 $as_echo "#define P_PCAP 1" >>confdefs.h
 
-         LDFLAGS="$LDFLAGS -lpcap"
+         LIBS="-lpcap $LIBS"
          HAS_PCAP=1
 
 
@@ -9546,7 +9547,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$LIBJPEG_LIBS $LDFLAGS"
+   LIBS="$LIBJPEG_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $LIBJPEG_CFLAGS"
 
 
@@ -9683,7 +9684,7 @@ if test "x$ac_cv_lib_mlib_mlib_VideoColorJFIFYCC2RGB420_Nearest" = xyes; then :
 
          $as_echo "#define P_MEDIALIB 1" >>confdefs.h
 
-         LDFLAGS="-lmlib $LDFLAGS"
+         LIBS="-lmlib $LIBS"
 
 
 fi
@@ -9754,7 +9755,7 @@ if test "x$ac_cv_lib_sasl2_sasl_version" = xyes; then :
          HAS_SASL2=1
          $as_echo "#define P_SASL 2" >>confdefs.h
 
-         LDFLAGS="$LDFLAGS -lsasl2"
+         LIBS="-lsasl2 $LIBS"
 
 else
 
@@ -9800,7 +9801,7 @@ if test "x$ac_cv_lib_sasl_sasl_client_init" = xyes; then :
                HAS_SASL=1
                $as_echo "#define P_SASL 1" >>confdefs.h
 
-               LDFLAGS="$LDFLAGS -lsasl"
+               LIBS="-lsasl $LIBS"
 
 else
   HAS_SASL=
@@ -10095,7 +10096,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$OPENLDAP_LIBS $LDFLAGS"
+   LIBS="$OPENLDAP_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $OPENLDAP_CFLAGS"
 
 
@@ -10140,7 +10141,7 @@ fi
 
 
 if test "x$HAS_OPENLDAP" = "x1" && test "x$OS_TAG" = "xP_MACOSX" ; then
-   LDFLAGS+=" -llber"
+   LIBS+="-llber $LIBS"
 fi
 
 
@@ -10340,7 +10341,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$OPENSSL_LIBS $LDFLAGS"
+   LIBS="$OPENSSL_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $OPENSSL_CFLAGS"
 
 
@@ -10741,7 +10742,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$EXPAT_LIBS $LDFLAGS"
+   LIBS="$EXPAT_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
 
 
@@ -10981,7 +10982,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$LUA_LIBS $LDFLAGS"
+   LIBS="$LUA_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $LUA_CFLAGS"
 
 
@@ -11238,7 +11239,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$V8_LIBS $LDFLAGS"
+   LIBS="$V8_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
 
 
@@ -14323,7 +14324,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$CURSES_LIBS $LDFLAGS"
+   LIBS="$CURSES_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $CURSES_CFLAGS"
 
 
@@ -14570,7 +14571,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$SDL_LIBS $LDFLAGS"
+   LIBS="$SDL_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
 
 
@@ -14803,7 +14804,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$GSTREAMER_LIBS $LDFLAGS"
+   LIBS="$GSTREAMER_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
 
 
@@ -15060,7 +15061,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$ODBC_LIBS $LDFLAGS"
+   LIBS="$ODBC_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
 
 
@@ -15283,7 +15284,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$ODBC_LIBS $LDFLAGS"
+   LIBS="$ODBC_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
 
 
@@ -15607,7 +15608,7 @@ rm -f conftest.err conftest.i conftest.$ac_ext
          $as_echo "#define P_DIRECTSOUND 1" >>confdefs.h
 
          CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
-         LDFLAGS="$LDFLAGS -ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz"
+         LIBS="-ldsound -ldxerr9 -ldxguid -lstrmiids -lole32 -luuid -loleaut32 -lquartz $LIBS"
       fi
     ;;
   esac
@@ -15732,7 +15733,7 @@ fi
 
 
 
-   LDFLAGS="$DLFCN_LIBS $LDFLAGS"
+   LIBS="$DLFCN_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $DLFCN_CFLAGS"
 
 
@@ -16247,7 +16248,7 @@ fi
          if test "x$usable" = "xyes" ; then
 
 
-   LDFLAGS="$PORTAUDIO_LIBS $LDFLAGS"
+   LIBS="$PORTAUDIO_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $PORTAUDIO_CFLAGS"
 
 
@@ -16271,7 +16272,7 @@ if test "x$ac_cv_header_portmixer_h" = xyes; then :
 
                $as_echo "#define P_PORTMIXER 1" >>confdefs.h
 
-               LDFLAGS="-lportmixer ${LDFLAGS}"
+               LIBS="-lportmixer $LIBS"
 
 
 fi
