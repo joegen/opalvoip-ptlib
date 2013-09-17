@@ -34,6 +34,7 @@
 #include <ptlib/pstring.h>
 #include <ptlib/pluginmgr.h>
 #include "vidinput_v4l.h"
+#include <sys/ioctl.h>
 #include <sys/utsname.h>
 
 PCREATE_VIDINPUT_PLUGIN(V4L);
