@@ -2824,8 +2824,6 @@ struct PJPEGConverter::Context
   #define MY_JPEG_RGB24     TINYJPEG_FMT_RGB24
   #define MY_JPEG_BGR24     TINYJPEG_FMT_BGR24
   #define MY_JPEG_YUV420P   TINYJPEG_FMT_YUV420P
-  #define MY_JPEG_RGB32     -1
-  #define MY_JPEG_BGR32     -2
 
   jdec_private * m_decoder;
 
@@ -2899,11 +2897,13 @@ struct PJPEGConverter::Context
 
   typedef J_COLOR_SPACE ColourSpace;
   #define MY_JPEG_Grey    JCS_GRAYSCALE
-  #define MY_JPEG_RGB24   JCS_EXT_RGB
-  #define MY_JPEG_BGR24   JCS_EXT_BGR
+  #define MY_JPEG_RGB24   JCS_RGB
   #define MY_JPEG_YUV420P JCS_YCbCr
+#if JCS_EXTENSIONS
+  #define MY_JPEG_BGR24   JCS_EXT_BGR
   #define MY_JPEG_RGB32   JCS_EXT_RGBX
   #define MY_JPEG_BGR32   JCS_EXT_BGRX
+#endif
 
   jpeg_error_mgr         m_error_mgr;
   jpeg_decompress_struct m_decoder;
@@ -2984,14 +2984,17 @@ struct PJPEGConverter::Context
           PAssertAlways(PUnsupportedFeature);
           return false;
 
-        case JCS_EXT_RGB :
-        case JCS_EXT_BGR :
-          row += width*3;
-          break;
-
+#if JCS_EXTENSIONS
         case JCS_EXT_RGBX :
         case JCS_EXT_BGRX :
           row += width*4;
+          break;
+          
+        case JCS_EXT_RGB :
+        case JCS_EXT_BGR :
+#endif
+        case JCS_RGB :
+          row += width*3;
           break;
 
         case JCS_GRAYSCALE :
@@ -3033,12 +3036,18 @@ struct PJPEGConverter::Context
       m_colourSpace = MY_JPEG_YUV420P;
     else if (colourFormat == "RGB24")
       m_colourSpace = MY_JPEG_RGB24;
+#ifdef MY_JPEG_BGR24
     else if (colourFormat == "BGR24")
       m_colourSpace = MY_JPEG_BGR24;
+#endif
+#ifdef MY_JPEG_RGB32
     else if (colourFormat == "RGB32")
       m_colourSpace = MY_JPEG_RGB32;
+#endif
+#ifdef MY_JPEG_BGR32
     else if (colourFormat == "BGR32")
       m_colourSpace = MY_JPEG_BGR32;
+#endif
     else if (colourFormat == "Grey")
       m_colourSpace = MY_JPEG_Grey;
     else {
@@ -3081,14 +3090,22 @@ struct PJPEGConverter::Context
     PINDEX frameBufferSize;
     switch (m_colourSpace) {
       case MY_JPEG_RGB24 :
+#ifdef MY_JPEG_BGR24
       case MY_JPEG_BGR24 :
+#endif
         frameBufferSize = width*height*3;
         break;
 
+#ifdef MY_JPEG_RGB32
       case MY_JPEG_RGB32 :
+#endif
+#ifdef MY_JPEG_BGR32
       case MY_JPEG_BGR32 :
+#endif
+#if defined(MY_JPEG_RGB32) || defined(MY_JPEG_BGR32)
         frameBufferSize = width*height*4;
         break;
+#endif
 
       case MY_JPEG_Grey :
         frameBufferSize = width*height;
@@ -3150,17 +3167,21 @@ bool PJPEGConverter::Load(PFile & file, PBYTEArray & dstFrameBuffer)
   { return m_context->Convert(srcFrameBuffer, m_srcFrameBytes, dstFrameBuffer, m_dstFrameBytes, m_dstFrameWidth, m_dstFrameHeight, bytesReturned, MY_JPEG_##to); }
 
 JPEG_CONVERTER(MJPEG, RGB24)
+#ifdef MY_JPEG_BGR24
 JPEG_CONVERTER(MJPEG, BGR24)
+JPEG_CONVERTER(JPEG,  BGR24)
+#endif
 JPEG_CONVERTER(MJPEG, Grey)
 JPEG_CONVERTER(MJPEG, YUV420P)
 JPEG_CONVERTER(JPEG,  RGB24)
-JPEG_CONVERTER(JPEG,  BGR24)
 JPEG_CONVERTER(JPEG,  Grey)
 JPEG_CONVERTER(JPEG,  YUV420P)
-#if P_LIBJPEG
+#ifdef MY_JPEG_RGB32
 JPEG_CONVERTER(MJPEG, RGB32)
-JPEG_CONVERTER(MJPEG, BGR32)
 JPEG_CONVERTER(JPEG,  RGB32)
+#endif
+#ifdef MY_JPEG_BGR32
+JPEG_CONVERTER(MJPEG, BGR32)
 JPEG_CONVERTER(JPEG,  BGR32)
 #endif
 
