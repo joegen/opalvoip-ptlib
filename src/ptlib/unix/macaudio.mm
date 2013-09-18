@@ -32,6 +32,8 @@
 
 #if P_AUDIO
 
+#define P_FORCE_STATIC_PLUGIN 1
+
 #include <ptlib/sound.h>
 #include <ptclib/qchannel.h>
 
