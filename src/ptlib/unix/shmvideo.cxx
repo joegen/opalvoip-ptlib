@@ -17,9 +17,10 @@
  * $Date$
  */
 
-#define P_FORCE_STATIC_PLUGIN
-
 #include <ptlib.h>
+
+#define P_FORCE_STATIC_PLUGIN 1
+
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/unix/ptlib/shmvideo.h>

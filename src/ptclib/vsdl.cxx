@@ -34,8 +34,11 @@
 
 #include <ptlib.h>
 
-#define P_FORCE_STATIC_PLUGIN
-#include <ptlib/pluginmgr.h>
+#if P_SDL
+
+#pragma message("SDL video support enabled")
+
+#define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptclib/vsdl.h>
 #include <ptlib/vconvert.h>
@@ -43,10 +46,6 @@
 #define new PNEW
 #define PTraceModule() "SDL"
 
-
-#if P_SDL
-
-#pragma message("SDL video support enabled")
 
 extern "C" {
   #include <SDL.h>
@@ -62,17 +61,17 @@ static PConstString SDLName("SDL");
 class PVideoOutputDevice_SDL_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const
+    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
     {
       return new PVideoOutputDevice_SDL;
     }
 
-    virtual PStringArray GetDeviceNames(int /*userData*/) const
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
     {
       return SDLName;
     }
 
-    virtual bool         ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
     {
       return deviceName.NumCompare(SDLName) == PObject::EqualTo;
     }
