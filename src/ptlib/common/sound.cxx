@@ -35,8 +35,9 @@
 
 #include <ptlib.h>
 
+#define P_FORCE_STATIC_PLUGIN 1
+
 #include <ptlib/sound.h>
-#include <ptlib/pluginmgr.h>
 #include <ptclib/delaychan.h>
 #include <ptclib/dtmf.h>
 

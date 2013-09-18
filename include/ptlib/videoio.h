@@ -1169,8 +1169,8 @@ class PVideoInputDevice : public PVideoDevice
 template <class className> class PVideoInputPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetInputDeviceNames(); }
+    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return className::GetInputDeviceNames(); }
     virtual bool         GetDeviceCapabilities(const PString & deviceName, void * caps) const
       { return className::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); }
 };
@@ -1224,8 +1224,8 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 template <class className> class PVideoOutputPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::GetOutputDeviceNames(); }
+    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return className::GetOutputDeviceNames(); }
 };
 
 #define PCREATE_VIDOUTPUT_PLUGIN(name) \

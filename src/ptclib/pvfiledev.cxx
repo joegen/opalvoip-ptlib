@@ -40,8 +40,7 @@
 #if P_VIDEO
 #if P_VIDFILE
 
-#define P_FORCE_STATIC_PLUGIN
-#include <ptlib/pluginmgr.h>
+#define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptclib/pvfiledev.h>
 #include <ptlib/pfactory.h>
@@ -56,17 +55,17 @@
 class PVideoInputDevice_VideoFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject * CreateInstance(int /*userData*/) const
+    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
     {
       return new PVideoInputDevice_VideoFile;
     }
 
-    virtual PStringArray GetDeviceNames(int /*userData*/) const
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
     {
       return PVideoInputDevice_VideoFile::GetInputDeviceNames();
     }
 
-    virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
     {
       PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
       return std::find(keyList.begin(), keyList.end(), PFilePath(deviceName).GetType()) != keyList.end();
@@ -373,15 +372,15 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
 class PVideoOutputDevice_VideoFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject * CreateInstance(int /*userData*/) const
+    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
     {
         return new PVideoOutputDevice_VideoFile;
     }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
     {
         return PVideoOutputDevice_VideoFile::GetOutputDeviceNames();
     }
-    virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
     {
       return (deviceName.Right(4) *= ".yuv") && (!PFile::Exists(deviceName) || PFile::Access(deviceName, PFile::WriteOnly));
     }

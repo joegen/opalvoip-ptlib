@@ -39,8 +39,7 @@
 
 #if P_WAVFILE
 
-#define P_FORCE_STATIC_PLUGIN
-#include <ptlib/pluginmgr.h>
+#define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptclib/pwavfiledev.h>
 
@@ -48,15 +47,15 @@
 class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject * CreateInstance(int /*userData*/) const
+    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
     {
         return new PSoundChannel_WAVFile;
     }
-    virtual PStringArray GetDeviceNames(int userData) const
+    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const
     {
         return PSoundChannel_WAVFile::GetDeviceNames((PSoundChannel::Directions)userData);
     }
-    virtual bool ValidateDeviceName(const PString & deviceName, int userData) const
+    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
     {
       PFilePath pathname = deviceName;
       if (pathname.GetTitle().IsEmpty())

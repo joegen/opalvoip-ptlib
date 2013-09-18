@@ -37,8 +37,9 @@
 
 #pragma message("Direct Sound support enabled")
 
-
 #define PTraceModule() "dsound"
+
+#define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptlib/pprocess.h>
 #include <algorithm>

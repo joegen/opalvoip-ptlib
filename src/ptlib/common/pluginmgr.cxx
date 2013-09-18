@@ -314,7 +314,7 @@ PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
 }
 
 
-bool PDevicePluginServiceDescriptor::ValidateDeviceName(const PString & deviceName, int userData) const
+bool PDevicePluginServiceDescriptor::ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
 {
   PStringArray devices = GetDeviceNames(userData);
   if (

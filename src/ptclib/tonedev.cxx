@@ -36,9 +36,12 @@
 #endif
 
 #include <ptlib.h>
-#include <ptclib/dtmf.h>
 
 #if P_DTMF
+
+#define P_FORCE_STATIC_PLUGIN 1
+
+#include <ptclib/dtmf.h>
 
 #include <ptlib/sound.h>
 #include <ptclib/delaychan.h>
@@ -88,15 +91,15 @@ protected:
 class PSoundChannel_Tones_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject * CreateInstance(int /*userData*/) const
+    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
     {
         return new PSoundChannel_Tones;
     }
-    virtual PStringArray GetDeviceNames(int userData) const
+    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const
     {
         return PSoundChannel_Tones::GetDeviceNames((PSoundChannel::Directions)userData);
     }
-    virtual bool ValidateDeviceName(const PString & deviceName, int userData) const
+    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
     {
       if (TonePrefix != deviceName.Left(TonePrefix.GetLength()))
         return false;
