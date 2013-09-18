@@ -40,6 +40,8 @@
 #if P_VIDEO
 #if P_FFVDEV
 
+#define P_FORCE_STATIC_PLUGIN 1
+
 #include <ptlib/vconvert.h>
 #include <ptclib/pffvdev.h>
 #include <ptlib/pfactory.h>
@@ -68,15 +70,15 @@ static const char * ffmpegExe = "ffmpeg";
 class PVideoInputDevice_FFMPEG_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject * CreateInstance(int /*userData*/) const
+    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
     {
       return new PVideoInputDevice_FFMPEG;
     }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
     {
        return PVideoInputDevice_FFMPEG::GetInputDeviceNames();
     }
-    virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
     {
       PCaselessString adjustedDevice = deviceName;
 

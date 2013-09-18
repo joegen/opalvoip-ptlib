@@ -33,6 +33,8 @@
 
 #if P_VIDEO
 
+#define P_FORCE_STATIC_PLUGIN 1
+
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/pluginmgr.h>
@@ -1179,9 +1181,9 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
 class PVideoOutputDevice_Window_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return PNEW PVideoOutputDevice_Window; }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const { return PVideoOutputDevice_Window::GetOutputDeviceNames(); }
-    virtual bool         ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return deviceName.NumCompare("MSWIN") == PObject::EqualTo; }
+    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return PNEW PVideoOutputDevice_Window; }
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return PVideoOutputDevice_Window::GetOutputDeviceNames(); }
+    virtual bool         ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const { return deviceName.NumCompare("MSWIN") == PObject::EqualTo; }
 } PVideoOutputDevice_Window_descriptor;
 
 PCREATE_PLUGIN(Window, PVideoOutputDevice, &PVideoOutputDevice_Window_descriptor);

@@ -755,8 +755,8 @@ class PSoundChannel : public PIndirectChannel
 template <class className> class PSoundChannelPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(int userData) const { return className::GetDeviceNames((PSoundChannel::Directions)userData); }
+    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const { return className::GetDeviceNames((PSoundChannel::Directions)userData); }
 };
 
 #define PCREATE_SOUND_PLUGIN(name, className) \

@@ -27,11 +27,11 @@
 
 #include <ptlib.h>
 
-
 #if P_APPSHARE
 
 #pragma message("Application sharing video support enabled")
 
+#define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptlib/vconvert.h>
 #include <ptclib/delaychan.h>
@@ -82,16 +82,16 @@ static bool GetBitmapColourFormat(BITMAP bitmap, PString & colourFormat) {
 class PVideoInputDevice_Application_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return new PVideoInputDevice_Application; }
+    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new PVideoInputDevice_Application; }
 
-    virtual PStringArray GetDeviceNames(int /*userData*/) const { return PVideoInputDevice_Application::GetInputDeviceNames(); }
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return PVideoInputDevice_Application::GetInputDeviceNames(); }
 
     virtual bool         GetDeviceCapabilities(const PString & deviceName, void * caps) const
     {
       return PVideoInputDevice_Application::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps);
     }
 
-    virtual bool ValidateDeviceName(const PString & deviceName, int /*userData*/) const
+    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
     {
       return FindTopWindow(deviceName) != NULL;
     }
