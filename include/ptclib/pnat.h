@@ -610,9 +610,10 @@ private:
 template <class SVC> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return new SVC; }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const { return SVC::GetNatMethodName(); }
-    virtual bool  ValidateDeviceName(const PString & deviceName, int /*userData*/) const { return SVC::GetNatMethodName() *= deviceName; }
+    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new SVC; }
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return SVC::GetNatMethodName(); }
+    virtual bool  ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+      { return SVC::GetNatMethodName() *= deviceName; }
 };
 
 #define PCREATE_NAT_PLUGIN(name) \

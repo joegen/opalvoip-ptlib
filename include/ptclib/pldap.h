@@ -555,8 +555,8 @@ class PLDAPSchema : public PObject
 template <class className> class LDAPPluginServiceDescriptor : public PDevicePluginServiceDescriptor
 {
   public:
-    virtual PObject *    CreateInstance(int /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(int /*userData*/) const { return className::SchemaName(); } 
+    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
+    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return className::SchemaName(); } 
 };
 
 #define LDAP_Schema(name)    \

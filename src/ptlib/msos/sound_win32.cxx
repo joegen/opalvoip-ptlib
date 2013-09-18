@@ -33,8 +33,7 @@
 
 #include <ptlib.h>
 
-#define P_FORCE_STATIC_PLUGIN
-#include <ptlib/pluginmgr.h>
+#define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptlib/sound.h>
 #include <ptlib/msos/ptlib/sound_win32.h>

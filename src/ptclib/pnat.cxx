@@ -33,9 +33,11 @@
 
 #include <ptlib.h>
 
-#include <ptclib/pnat.h>
-
 #if P_NAT
+
+#define P_FORCE_STATIC_PLUGIN 1
+
+#include <ptclib/pnat.h>
 
 #include <ptclib/random.h>
 

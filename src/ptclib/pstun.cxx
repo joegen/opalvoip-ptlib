@@ -36,8 +36,7 @@
 
 #if P_STUN
 
-#define P_FORCE_STATIC_PLUGIN
-#include <ptlib/pluginmgr.h>
+#define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptclib/pstun.h>
 
