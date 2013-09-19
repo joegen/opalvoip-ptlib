@@ -256,6 +256,14 @@ dnl ########################################################################
 dnl look for compile flags
 
 MY_COMPILE_IFELSE(
+   [compiler -fno-diagnostics-show-caret],
+   [-fno-diagnostics-show-caret],
+   [],
+   [],
+   [CPPFLAGS="$CPPFLAGS -fno-diagnostics-show-caret"]
+)
+
+MY_COMPILE_IFELSE(
    [compiler -felide-constructors],
    [-felide-constructors],
    [],
