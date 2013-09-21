@@ -259,7 +259,9 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 }
 
 #else
-  #pragma message("SAPI support DISABLED")
+  #ifndef __clang__
+    #pragma message("SAPI support DISABLED")
+  #endif
 #endif // P_SAPI
 
 
