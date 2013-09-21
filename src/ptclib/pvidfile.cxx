@@ -312,7 +312,10 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 ///////////////////////////////////////////////////////////////////////////////
 
 #if P_JPEG_DECODER
-#pragma message("JPEG file video device enabled")
+
+#ifndef __clang__
+  #pragma message("JPEG file video device enabled")
+#endif
 
 #include <ptlib/vconvert.h>
 

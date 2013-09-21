@@ -39,7 +39,9 @@
 
 #if P_SASL
 
-#pragma message("SASL support enabled")
+#ifndef __clang__
+  #pragma message("SASL support enabled")
+#endif
 
 extern "C" {
 
