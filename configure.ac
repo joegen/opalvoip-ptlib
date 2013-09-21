@@ -1541,7 +1541,10 @@ PTLIB_MODULE_OPTION(
    [],
    [-lv8],
    [#include <v8.h>],
-   [v8::Isolate * isolate = v8::Isolate::GetCurrent()]
+   [
+      v8::Isolate * isolate;
+      v8::HandleScope::HandleScope scope(isolate);
+   ]
 )
 
 
