@@ -11280,7 +11280,10 @@ $as_echo_n "checking for V8 Javascript script support usability... " >&6; }
 int
 main ()
 {
-v8::Isolate * isolate = v8::Isolate::GetCurrent()
+
+      v8::Isolate * isolate;
+      v8::HandleScope::HandleScope scope(isolate);
+
 
   ;
   return 0;
