@@ -43,7 +43,9 @@
 
 #if P_DNS_RESOLVER
 
-#pragma message("DNS support enabled")
+#ifndef __clang__
+  #pragma message("DNS support enabled")
+#endif
 
 #ifdef _MSC_VER
   #pragma comment(lib, "DnsAPI.Lib")

@@ -291,8 +291,9 @@ protected:
                                     &bufferList)))
       return;
 
-    if (!m_queue.Write(bufferList.mBuffers[0].mData, bytes))
+    if (!m_queue.Write(bufferList.mBuffers[0].mData, bytes)) {
       PTRACE_IF(4, m_queue.IsOpen(), "Overflow, queue full");
+    }
 
     PTRACE_DETAILED(5, "RecordCallback: bytes offerred=" << bytes << ", saved=" << m_queue.GetLastWriteCount());
   }

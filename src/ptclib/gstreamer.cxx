@@ -41,7 +41,9 @@
 
 #if P_GSTREAMER
 
-#pragma message("GStreamer support enabled")
+#ifndef __clang__
+  #pragma message("GStreamer support enabled")
+#endif
 
 #ifdef _MSC_VER
   #pragma warning(disable:4127)
@@ -629,8 +631,6 @@ void PGstMessage::PrintOn(ostream & strm) const
   gchar * debug = NULL;
 
   switch (GST_MESSAGE_TYPE(msg)) {
-    case GST_MESSAGE_EOS :
-      break;
     case GST_MESSAGE_ERROR :
       gst_message_parse_error(msg, &error, &debug);
       break;
@@ -648,6 +648,9 @@ void PGstMessage::PrintOn(ostream & strm) const
              <<     ", new=" << gst_element_state_get_name(newstate)
              << ", pending=" << gst_element_state_get_name(pending);
       }
+      break;
+    case GST_MESSAGE_EOS :
+    default :
       break;
   }
 

@@ -187,7 +187,7 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const Params & params)
          params.m_direction << " could not be opened,"
          " driver=\"" << adjustedParams.m_driver << "\", "
          " device=\"" << adjustedParams.m_device << "\": " <<
-         (sndChan != NULL ? sndChan->GetErrorText() : PConstString("Unknown driver or device type")));
+         (sndChan != NULL ? sndChan->GetErrorText() : "Unknown driver or device type"));
 
   delete sndChan;
   return NULL;
@@ -457,9 +457,9 @@ const char * PSoundChannel::GetDirectionText(Directions dir)
       return "Recording";
     case Closed :
       return "Closed";
+    default :
+      return "<Unknown>";
   }
-
-  return "<Unknown>";
 }
 
 

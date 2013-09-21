@@ -42,16 +42,6 @@
 #include <ptclib/script.h>
 #include <ptclib/vartype.h>
 
-#ifdef _MSC_VER
-  #pragma warning(disable:4100 4127)
-#endif
-
-#include <v8.h>
-
-#ifdef _MSC_VER
-#pragma warning(default:4100 4127)
-#endif
-
 
 //////////////////////////////////////////////////////////////
 
@@ -234,8 +224,10 @@ class PJavaScript : public PScriptLanguage
 
   protected:
     PINDEX ParseKey(const PString & name, PStringArray & tokens);
-    v8::Persistent<v8::Context> m_context;
-    PString m_resultText;
+  
+    struct Private;
+    Private * m_private;
+    PString   m_resultText;
 };
 
 
