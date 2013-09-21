@@ -42,7 +42,9 @@
 
 #if P_LDAP
 
-#pragma message("LDAP support enabled")
+#ifndef __clang__
+  #pragma message("LDAP support enabled")
+#endif
 
 #define LDAP_DEPRECATED 1
 #include <ldap.h>

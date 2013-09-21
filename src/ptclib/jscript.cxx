@@ -34,13 +34,21 @@
 
 #include <ptlib.h>
 
-#include <iomanip>
-
 #if P_V8
 
-#pragma message("JavaScript support enabled")
+#ifndef __clang__
+  #pragma message("JavaScript support enabled")
+#endif
+
+#ifdef _MSC_VER
+  #pragma warning(disable:4100 4127)
+#endif
 
 #include <ptclib/jscript.h>
+
+#include <iomanip>
+
+#include <v8.h>
 
 #ifdef _MSC_VER
   #pragma comment(lib, P_V8_LIBRARY1)
@@ -51,7 +59,42 @@
 
 #define PTraceModule() "JavaScript"
 
+
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
+
+
+struct PJavaScript::Private {
+  v8::Isolate * m_isolate;
+  v8::Handle<v8::Context> m_context;
+
+  
+  v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
+  {
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Value> value;
+    
+    // set flags if array access
+    if (name[0] == '[')
+      value = object->Get(name.Mid(1).AsInteger());
+    else
+      value = object->Get(v8::String::New((const char *)name));
+    
+    return handleScope.Close(value);
+  }
+  
+  
+  void SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
+  {
+    v8::HandleScope handleScope(m_isolate);
+    
+    // set flags if array access
+    if (name[0] == '[')
+      object->Set(name.Mid(1).AsInteger(), value);
+    else
+      object->Set(v8::String::New((const char *)name), value);
+  }
+};
+
 
 #define new PNEW
 
@@ -59,28 +102,31 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
 ///////////////////////////////////////////////////////////////////////////////
 
 PJavaScript::PJavaScript()
+  : m_private(new Private)
 {
+  v8::V8::InitializeICU();
+  m_private->m_isolate = v8::Isolate::GetCurrent();
+
   // V8 is full of globals, so we have to lock it. Sigh....
-  v8::Locker locker;
+  v8::Locker locker(m_private->m_isolate);
 
   // create a V8 handle scope
-  v8::HandleScope handleScope;
+  v8::HandleScope handleScope(m_private->m_isolate);
 
   // create a V8 context
-  m_context = v8::Context::New();
+  m_private->m_context = v8::Context::New(m_private->m_isolate);
 
-  // make context scope availabke
-  v8::Context::Scope contextScope(m_context);
+  // make context scope available
+  v8::Context::Scope contextScope(m_private->m_context);
 }
 
 
 PJavaScript::~PJavaScript()
 {
   // V8 is full of globals, so we have to lock it. Sigh....
-  v8::Locker locker;
+  v8::Locker locker(m_private->m_isolate);
 
-  // dispose of the global context
-  m_context.Dispose();
+  delete m_private;
 }
 
 
@@ -99,13 +145,13 @@ bool PJavaScript::LoadText(const PString & /*text*/)
 bool PJavaScript::Run(const char * text)
 {
   // V8 is full of globals, so we have to lock it. Sigh....
-  v8::Locker locker;
+  v8::Locker locker(m_private->m_isolate);
 
   // create a V8 handle scope
-  v8::HandleScope handleScope;
+  v8::HandleScope handleScope(m_private->m_isolate);
 
   // make context scope availabke
-  v8::Context::Scope contextScope(m_context);
+  v8::Context::Scope contextScope(m_private->m_context);
 
   // create V8 string to hold the source
   v8::Handle<v8::String> source = v8::String::New(text);
@@ -170,38 +216,11 @@ PINDEX PJavaScript::ParseKey(const PString & name, PStringArray & tokens)
 }
 
 
-static v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
-{
-  v8::HandleScope handleScope;
-  v8::Local<v8::Value> value;
-
-  // set flags if array access
-  if (name[0] == '[')
-    value = object->Get(name.Mid(1).AsInteger());
-  else
-    value = object->Get(v8::String::New((const char *)name));
-
-  return handleScope.Close(value);
-}
-
-
-static void SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
-{
-  v8::HandleScope handleScope;
-
-  // set flags if array access
-  if (name[0] == '[')
-    object->Set(name.Mid(1).AsInteger(), value);
-  else
-    object->Set(v8::String::New((const char *)name), value);
-}
-  
-
 bool PJavaScript::GetVar(const PString & key, PVarType & var)
 {
-  v8::Locker locker;
-  v8::HandleScope handleScope;
-  v8::Context::Scope contextScope(m_context);
+  v8::Locker locker(m_private->m_isolate);
+  v8::HandleScope handleScope(m_private->m_isolate);
+  v8::Context::Scope contextScope(m_private->m_context);
 
   PStringArray tokens;
   if (ParseKey(key, tokens) < 1) {
@@ -210,14 +229,14 @@ bool PJavaScript::GetVar(const PString & key, PVarType & var)
   }
 
   v8::Handle<v8::Value> value;
-  v8::Handle<v8::Object> object = m_context->Global();
+  v8::Handle<v8::Object> object = m_private->m_context->Global();
 
   int i = 0;
 
   for (;;)  {
 
     // get the member variable
-    value = GetMember(object, tokens[i]);
+    value = m_private->GetMember(object, tokens[i]);
     if (value.IsEmpty()) {
       PTRACE(5, "V8", "Cannot get element '" << tokens[i] << "'");
       return false;
@@ -281,9 +300,9 @@ bool PJavaScript::GetVar(const PString & key, PVarType & var)
 
 bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 {
-  v8::Locker locker;
-  v8::HandleScope handleScope;
-  v8::Context::Scope contextScope(m_context);
+  v8::Locker locker(m_private->m_isolate);
+  v8::HandleScope handleScope(m_private->m_isolate);
+  v8::Context::Scope contextScope(m_private->m_context);
 
   PStringArray tokens;
   if (ParseKey(key, tokens) < 1) {
@@ -291,14 +310,14 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
     return false;
   }
 
-  v8::Handle<v8::Object> object = m_context->Global();
+  v8::Handle<v8::Object> object = m_private->m_context->Global();
 
   int i = 0;
 
   while (i > 0) {
 
     // get the member variable
-    v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
+    v8::Handle<v8::Value> value = m_private->GetMember(object, tokens[i]);
     if (value.IsEmpty()) {
       PTRACE(5, "V8", "Cannot get element '" << tokens[i] << "'");
       return false;
@@ -371,7 +390,7 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
       break;
   }
 
-  SetMember(object, tokens[i], value); 
+  m_private->SetMember(object, tokens[i], value); 
   return true;
 }
 

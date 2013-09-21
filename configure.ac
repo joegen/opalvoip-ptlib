@@ -225,7 +225,7 @@ YACC_MIN_VER=`$YACC --version | sed -n "s/bison.* [[0-9]]\.\([[0-9]]\).*/\1/p"`
 AC_MSG_NOTICE(Found $YACC version ${YACC_MAJ_VER}.${YACC_MIN_VER})
 if test -n "$YACC_MAJ_VER" && test -n "$YACC_MIN_VER" && \
 	test $YACC_MAJ_VER -gt 2 -o \( $YACC_MAJ_VER -eq 2 -a $YACC_MIN_VER -ge 5 \) ; then
-  YFLAGS="$YFLAGS -Dapi.pure=true"
+  YFLAGS="-Dapi.pure=true"
 fi
 
 
@@ -1541,7 +1541,7 @@ PTLIB_MODULE_OPTION(
    [],
    [-lv8],
    [#include <v8.h>],
-   [int i = v8::HandleScope::NumberOfHandles()]
+   [v8::Isolate * isolate = v8::Isolate::GetCurrent()]
 )
 
 

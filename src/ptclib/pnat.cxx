@@ -318,7 +318,7 @@ void PNatMethod::PortInfo::SetPorts(WORD start, WORD end)
     maxPort = end;
 
   if (basePort == maxPort)
-    currentPort = currentPort;
+    currentPort = basePort;
   else
     currentPort = (WORD)PRandom::Number(basePort, maxPort-1);
 }
