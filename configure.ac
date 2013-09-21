@@ -257,15 +257,23 @@ dnl look for compile flags
 
 MY_COMPILE_IFELSE(
    [compiler -fno-diagnostics-show-caret],
-   [-fno-diagnostics-show-caret],
+   [-Werror -fno-diagnostics-show-caret],
    [],
    [],
    [CPPFLAGS="$CPPFLAGS -fno-diagnostics-show-caret"]
 )
 
 MY_COMPILE_IFELSE(
+   [compiler -fno-caret-diagnostics],
+   [-Werror -fno-caret-diagnostics],
+   [],
+   [],
+   [CPPFLAGS="$CPPFLAGS -fno-caret-diagnostics"]
+)
+
+MY_COMPILE_IFELSE(
    [compiler -felide-constructors],
-   [-felide-constructors],
+   [-Werror -felide-constructors],
    [],
    [],
    [CXXFLAGS="$CXXFLAGS -felide-constructors"]
@@ -273,7 +281,7 @@ MY_COMPILE_IFELSE(
 
 MY_COMPILE_IFELSE(
    [compiler -Wreorder],
-   [-Wreorder],
+   [-Werror -Wreorder],
    [],
    [],
    [CXXFLAGS="$CXXFLAGS -Wreorder"]
@@ -285,7 +293,7 @@ AC_ARG_ENABLE(deprecated, AS_HELP_STRING([--disable-deprecated],[Stop compiler w
 if test "${enable_deprecated}" = "no" ; then
    MY_COMPILE_IFELSE(
       [compiler -Wno-deprecated-declarations],
-      [-Wno-deprecated-declarations],
+      [-Werror -Wno-deprecated-declarations],
       [],
       [],
       [CPPFLAGS="$CPPFLAGS -Wno-deprecated-declarations"]
