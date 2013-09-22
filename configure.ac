@@ -1543,7 +1543,7 @@ PTLIB_MODULE_OPTION(
    [#include <v8.h>],
    [int i = v8::HandleScope::NumberOfHandles()],
    [MY_COMPILE_IFELSE(
-      [Need Isolate],
+      [V8 Javascript API needs Isolate],
       [$V8_CFLAGS],
       [#include <v8.h>],
       [
