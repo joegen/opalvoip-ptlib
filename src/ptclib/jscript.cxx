@@ -60,7 +60,7 @@
 #define PTraceModule() "JavaScript"
 
 #if P_V8_NEED_ISOLATE
-  #define V8_HANDLE_SCOPE(variable, isolate) v8::HandleScope var(isolate)
+  #define V8_HANDLE_SCOPE(variable, isolate) v8::HandleScope variable(isolate)
   #define V8_NEW(cls, isolate)               v8::cls::New(isolate)
 #else
   #define V8_HANDLE_SCOPE(variable, isolate) v8::HandleScope variable
