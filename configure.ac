@@ -1541,10 +1541,17 @@ PTLIB_MODULE_OPTION(
    [],
    [-lv8],
    [#include <v8.h>],
-   [
-      v8::Isolate * isolate;
-      v8::HandleScope::HandleScope scope(isolate);
-   ]
+   [int i = v8::HandleScope::NumberOfHandles()],
+   [MY_COMPILE_IFELSE(
+      [Need Isolate],
+      [$V8_CFLAGS],
+      [#include <v8.h>],
+      [
+         v8::Isolate * isolate;
+         v8::HandleScope::HandleScope scope(isolate);
+      ],
+      [AC_DEFINE(P_V8_NEED_ISOLATE)]
+   )]
 )
 
 

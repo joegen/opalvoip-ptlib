@@ -620,6 +620,7 @@
 #undef P_V8
 #undef P_V8_WIN64
 #undef P_V8_WIN32
+#undef P_V8_NEED_ISOLATE
 
 #if (defined(P_V8_WIN64) &&  defined(P_64BIT)) || \
     (defined(P_V8_WIN32) && !defined(P_64BIT))
