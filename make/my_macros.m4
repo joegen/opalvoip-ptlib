@@ -458,10 +458,6 @@ case "$target_os" in
       IOS_DEVROOT="`xcode-select -print-path`/Platforms/${target_os}.platform/Developer"
       IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${target_os}${target_release}.sdk
       IOS_FLAGS="-arch $target_cpu -miphoneos-version-min=$MIN_IOS_VER -isysroot ${IOS_SDKROOT}"
-
-      CXX="${IOS_DEVROOT}/usr/bin/g++"
-      CC="${IOS_DEVROOT}/usr/bin/gcc"
-      LD="$CXX"
       CPPFLAGS="${CPPFLAGS} ${IOS_FLAGS}"
       LDFLAGS="${IOS_FLAGS} -L${IOS_SDKROOT}/usr/lib $LDFLAGS"
    ;;
