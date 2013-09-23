@@ -41,9 +41,7 @@
 
 #if P_GSTREAMER
 
-#ifndef __clang__
-  #pragma message("GStreamer support enabled")
-#endif
+#pragma message("GStreamer support enabled")
 
 #ifdef _MSC_VER
   #pragma warning(disable:4127)

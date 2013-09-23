@@ -90,9 +90,7 @@
 
 #if P_SSL
 
-#ifndef __clang__
-  #pragma message("SSL support (via OpenSSL) enabled")
-#endif
+#pragma message("SSL support (via OpenSSL) enabled")
 
 #define USE_SOCKETS
 
