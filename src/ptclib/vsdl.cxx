@@ -36,9 +36,7 @@
 
 #if P_SDL
 
-#ifndef __clang__
-  #pragma message("SDL video support enabled")
-#endif
+#pragma message("SDL video support enabled")
 
 #define P_FORCE_STATIC_PLUGIN 1
 

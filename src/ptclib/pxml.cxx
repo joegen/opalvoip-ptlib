@@ -41,9 +41,7 @@
 
 #ifdef P_EXPAT
 
-#ifndef __clang__
-  #pragma message( "XML support (via Expat) enabled")
-#endif
+#pragma message( "XML support (via Expat) enabled")
 
 #define XML_STATIC 1
 

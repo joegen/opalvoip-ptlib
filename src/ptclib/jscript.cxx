@@ -36,9 +36,7 @@
 
 #if P_V8
 
-#ifndef __clang__
-  #pragma message("JavaScript support enabled")
-#endif
+#pragma message("JavaScript support enabled")
 
 #ifdef _MSC_VER
   #pragma warning(disable:4100 4127)
