@@ -272,6 +272,14 @@ MY_COMPILE_IFELSE(
 )
 
 MY_COMPILE_IFELSE(
+   [compiler -Wno-pragma-messages],
+   [-Werror -Wno-#pragma-messages],
+   [],
+   [],
+   [CPPFLAGS="$CPPFLAGS -Wno-\#pragma-messages"]
+)
+
+MY_COMPILE_IFELSE(
    [compiler -felide-constructors],
    [-Werror -felide-constructors],
    [],

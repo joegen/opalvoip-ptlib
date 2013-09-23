@@ -37,9 +37,7 @@
 
 #if P_LUA
 
-#ifndef __clang__
-  #pragma message("Lua scripting support enabled")
-#endif
+#pragma message("Lua scripting support enabled")
 
 #include <ptclib/lua.h>
 
