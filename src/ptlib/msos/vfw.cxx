@@ -1459,54 +1459,58 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
   RECT rect;
   GetClientRect(m_hWnd, &rect);
 
-  int result;
-  if (frameWidth == (unsigned)rect.right && frameHeight == (unsigned)rect.bottom)
-    result = SetDIBitsToDevice(hDC,
-                               0, 0, frameWidth, frameHeight,
-                               0, 0, 0, frameHeight,
-                               frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
+  if (frameStore.IsEmpty())
+    FillRect(hDC, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
   else {
-    int frameAspect = 1000*frameWidth/frameHeight;
-    int windowAspect = 1000*rect.right/rect.bottom;
-    int x,y,w,h;
-    if (frameAspect < windowAspect) {
-      w = frameWidth*rect.bottom/frameHeight;
-      h = rect.bottom;
-      x = (rect.right - w)/2;
-      y = 0;
-      Rectangle(hDC, 0,            0, x,          rect.bottom);
-      Rectangle(hDC, rect.right-x, 0, rect.right, rect.bottom);
-    }
-    else if (frameAspect > windowAspect) {
-      w = rect.right;
-      h = frameHeight*rect.right/frameWidth;
-      x = 0;
-      y = (rect.bottom - h)/2;
-      Rectangle(hDC, 0, 0,             rect.right, y);
-      Rectangle(hDC, 0, rect.bottom-y, rect.right, rect.bottom);
-    }
+    int result;
+    if (frameWidth == (unsigned)rect.right && frameHeight == (unsigned)rect.bottom)
+      result = SetDIBitsToDevice(hDC,
+                                 0, 0, frameWidth, frameHeight,
+                                 0, 0, 0, frameHeight,
+                                 frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
     else {
-      x = y = 0;
-      w = rect.right;
-      h = rect.bottom;
-    }
+      int frameAspect = 1000*frameWidth/frameHeight;
+      int windowAspect = 1000*rect.right/rect.bottom;
+      int x,y,w,h;
+      if (frameAspect < windowAspect) {
+        w = frameWidth*rect.bottom/frameHeight;
+        h = rect.bottom;
+        x = (rect.right - w)/2;
+        y = 0;
+        Rectangle(hDC, 0,            0, x,          rect.bottom);
+        Rectangle(hDC, rect.right-x, 0, rect.right, rect.bottom);
+      }
+      else if (frameAspect > windowAspect) {
+        w = rect.right;
+        h = frameHeight*rect.right/frameWidth;
+        x = 0;
+        y = (rect.bottom - h)/2;
+        Rectangle(hDC, 0, 0,             rect.right, y);
+        Rectangle(hDC, 0, rect.bottom-y, rect.right, rect.bottom);
+      }
+      else {
+        x = y = 0;
+        w = rect.right;
+        h = rect.bottom;
+      }
 
 #ifdef _WIN32_WCE
-    SetStretchBltMode(hDC, COLORONCOLOR);
+      SetStretchBltMode(hDC, COLORONCOLOR);
 #else
-    SetStretchBltMode(hDC, STRETCH_DELETESCANS);
+      SetStretchBltMode(hDC, STRETCH_DELETESCANS);
 #endif
-    result = StretchDIBits(hDC,
-                           x, y, w, h,
-                           0, 0, frameWidth, frameHeight,
-                           frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS, SRCCOPY);
-  }
+      result = StretchDIBits(hDC,
+                             x, y, w, h,
+                             0, 0, frameWidth, frameHeight,
+                             frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS, SRCCOPY);
+    }
 
-  if (result != (int)frameHeight) {
-    lastError = ::GetLastError();
-    PTRACE(2, "Drawing image failed: resolution=" << frameWidth << 'x' << frameHeight
-           << ", bitmap=" << m_bitmap.bmiHeader.biWidth << 'x' << m_bitmap.bmiHeader.biHeight
-           << ", size=" << m_bitmap.bmiHeader.biSizeImage << ", result=" << result << ", error=" << lastError);
+    if (result != (int)frameHeight) {
+      lastError = ::GetLastError();
+      PTRACE(2, "Drawing image failed: resolution=" << frameWidth << 'x' << frameHeight
+             << ", bitmap=" << m_bitmap.bmiHeader.biWidth << 'x' << m_bitmap.bmiHeader.biHeight
+             << ", size=" << m_bitmap.bmiHeader.biSizeImage << ", result=" << result << ", error=" << lastError);
+    }
   }
 
   if (m_showInfo) {
@@ -1522,6 +1526,8 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
 
     if (m_observedFrameRate > 0)
       strm << " @ " << m_observedFrameRate << "fps";
+    else
+      strm << " (stalled)";
 
     if (frameWidth != (unsigned)rect.right && frameHeight != (unsigned)rect.bottom)
       strm << " Window: " << rect.right << 'x' << rect.bottom;
