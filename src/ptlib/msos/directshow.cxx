@@ -105,22 +105,6 @@
   #include <ks.h>
   #include <ksmedia.h>
 
-  class PVideoInputControl_DirectShow : public PVideoInputControl
-  {
-      PCLASSINFO(PVideoInputControl_DirectShow, PVideoInputControl);
-    public:
-      PVideoInputControl_DirectShow(IAMCameraControl * pCC);
-
-      // overrides
-      virtual bool Pan(long value, bool absolute = false);
-      virtual bool Tilt(long value, bool absolute = false);
-      virtual bool Zoom(long value, bool absolute = false);
-
-    protected:
-      bool Control(PVideoControlInfo::Types type, long value, bool absolute);
-      IAMCameraControl * m_pCC;
-  };
-
 
   #ifdef P_DIRECTSHOW_QEDIT_H
 
@@ -219,7 +203,7 @@
 
 
 static long const InputControlPropertyCode[PVideoControlInfo::NumTypes] = {
-  CameraControl_Pan, CameraControl_Tilt, CameraControl_Zoom
+  CameraControl_Pan, CameraControl_Tilt, CameraControl_Zoom, CameraControl_Focus
 };
 
 
@@ -240,7 +224,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     static PBoolean GetDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
     virtual bool GetDeviceCapabilities(Capabilities * capabilities) const;
 #ifndef _WIN32_WCE
-    virtual PVideoInputControl * GetVideoInputControls();
+    virtual bool SetControl(PVideoControlInfo::Types type, int value, ControlMode mode);
 #endif
 
     virtual PBoolean Open(const PString & deviceName, PBoolean startImmediate);
@@ -266,8 +250,8 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PINDEX GetCurrentBufferSize();
     bool GetCurrentBufferData(BYTE * data, PINDEX & bufferSize);
     bool SetPinFormat(unsigned useDefaultColourOrSize = 0);
-    bool SetControlCommon(long control, int newValue);
-    int GetControlCommon(long control);
+    bool SetAttributeCommon(long control, int newValue);
+    int GetAttributeCommon(long control);
 
 
     // DirectShow 
@@ -465,13 +449,9 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
   }
 
 #ifndef _WIN32_WCE
-  // Query for camera controls
-  if (m_pCameraControls != NULL) {
-    PVideoInputControl_DirectShow controls(m_pCameraControls);
-    for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
-      if (controls.IsValid(type))
-        caps->controls.push_back(controls.GetControl(type));
-    }
+  for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
+    if (m_controlInfo[type].IsValid())
+      caps->controls.push_back(m_controlInfo[type]);
   }
 #endif
 
@@ -837,7 +817,7 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 }
 
 
-int PVideoInputDevice_DirectShow::GetControlCommon(long control)
+int PVideoInputDevice_DirectShow::GetAttributeCommon(long control)
 {
   CComPtr<IAMVideoProcAmp> pVideoProcAmp;
   if (PCOM_FAILED(m_pCaptureFilter->QueryInterface,(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp)))
@@ -863,17 +843,17 @@ bool PVideoInputDevice_DirectShow::GetAttributes(Attributes & attrib)
   if (!IsOpen())
     return false;
 
-  attrib.m_brightness = GetControlCommon(VideoProcAmp_Brightness);
-  attrib.m_contrast   = GetControlCommon(VideoProcAmp_Contrast);
-  attrib.m_saturation = GetControlCommon(VideoProcAmp_Saturation);
-  attrib.m_hue        = GetControlCommon(VideoProcAmp_Hue);
-  attrib.m_gamma      = GetControlCommon(VideoProcAmp_Gamma);
+  attrib.m_brightness = GetAttributeCommon(VideoProcAmp_Brightness);
+  attrib.m_contrast   = GetAttributeCommon(VideoProcAmp_Contrast);
+  attrib.m_saturation = GetAttributeCommon(VideoProcAmp_Saturation);
+  attrib.m_hue        = GetAttributeCommon(VideoProcAmp_Hue);
+  attrib.m_gamma      = GetAttributeCommon(VideoProcAmp_Gamma);
 
   return true;
 }
 
 
-PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newValue)
+PBoolean PVideoInputDevice_DirectShow::SetAttributeCommon(long control, int newValue)
 {
   CComPtr<IAMVideoProcAmp> pVideoProcAmp;
   PCOM_RETURN_ON_FAILED(m_pCaptureFilter->QueryInterface,(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp));
@@ -904,11 +884,11 @@ PBoolean PVideoInputDevice_DirectShow::SetControlCommon(long control, int newVal
 
 PBoolean PVideoInputDevice_DirectShow::SetAttributes(const Attributes & attrib)
 {
-  return SetControlCommon(VideoProcAmp_Brightness, attrib.m_brightness) &&
-         SetControlCommon(VideoProcAmp_Saturation, attrib.m_saturation) &&
-         SetControlCommon(VideoProcAmp_Contrast, attrib.m_contrast) &&
-         SetControlCommon(VideoProcAmp_Hue, attrib.m_hue) &&
-         SetControlCommon(VideoProcAmp_Gamma, attrib.m_gamma);
+  return SetAttributeCommon(VideoProcAmp_Brightness, attrib.m_brightness) &&
+         SetAttributeCommon(VideoProcAmp_Saturation, attrib.m_saturation) &&
+         SetAttributeCommon(VideoProcAmp_Contrast, attrib.m_contrast) &&
+         SetAttributeCommon(VideoProcAmp_Hue, attrib.m_hue) &&
+         SetAttributeCommon(VideoProcAmp_Gamma, attrib.m_gamma);
 }
 
 
@@ -1228,73 +1208,40 @@ PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
 }
 
 
-PVideoInputControl_DirectShow::PVideoInputControl_DirectShow(IAMCameraControl * pCC)
-  : m_pCC(pCC)
+bool PVideoInputDevice_DirectShow::SetControl(PVideoControlInfo::Types type, int value, ControlMode mode)
 {
-  PComResult hr;
-
-  for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
-    PVideoControlInfo & info = m_control[type];
-    info.m_type = type;
-    if (hr.Succeeded(pCC->GetRange(InputControlPropertyCode[type],
-                     &info.m_min, &info.m_max, &info.m_step, &info.m_default, &info.m_flags)))
-      info.m_current = info.m_default;
-    else {
-      PTRACE(4, "DShow\tCamera does not support " << type << ": " << hr);
-    }
-  }
-}
-
-
-bool PVideoInputControl_DirectShow::Control(PVideoControlInfo::Types type, long value, bool absolute)
-{
-  PWaitAndSignal mutex(m_mutex);
-
-  if (!IsValid(type))
+  if (m_pCameraControls == NULL) {
+    PTRACE(2, "DShow\tNo controls available to " << type);
     return false;
+  }
 
   long flags = KSPROPERTY_CAMERACONTROL_FLAGS_MANUAL;
-  if (absolute)
-    flags |= KSPROPERTY_CAMERACONTROL_FLAGS_ABSOLUTE;
-  else
-    flags |= KSPROPERTY_CAMERACONTROL_FLAGS_RELATIVE;
+  switch (mode) {
+    case AutomaticControl :
+      flags = KSPROPERTY_CAMERACONTROL_FLAGS_AUTO;
+      break;
 
-  PComResult hr;
-  if (hr.Succeeded(m_pCC->Set(InputControlPropertyCode[type], value, flags)) &&
-      hr.Succeeded(m_pCC->Get(InputControlPropertyCode[type], &m_control[type].m_current, &flags))) {
-    PTRACE(5, "DShow\tSet " << type << " to " << m_control[type].m_current);
-    return true;
+    case AbsoluteControl :
+      value = m_controlInfo[type].SetCurrent(value);
+      break;
+
+    case RelativeControl :
+      value = m_controlInfo[type].SetCurrent(m_controlInfo[type].GetCurrent() + value);
+      break;
+
+    case ResetControl :
+      value = m_controlInfo[type].Reset();
+      break;
   }
 
-  PTRACE(2, "DShow\tFailed to " << type << " to " << value << ": " << hr);
-  return false;
-}
-
-
-bool PVideoInputControl_DirectShow::Pan(long value, bool absolute)
-{
-  return Control(PVideoControlInfo::Pan, value, absolute);
-}
-
-
-bool PVideoInputControl_DirectShow::Tilt(long value, bool absolute)
-{
-  return Control(PVideoControlInfo::Tilt, value, absolute);
-}
-
-
-bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
-{
-  // 50 is 100% and 200 is 4x zoom
-  if (absolute && ((value < 50) || (value > 200))) {
-    PTRACE(2, "DShow\tWrong zoom value received: " << value << " must be between 50 (1x) and 200 (4x).");
+  PComResult hr;
+  if (!hr.Succeeded(m_pCameraControls->Set(InputControlPropertyCode[type], value, flags))) {
+    PTRACE(2, "DShow\tFailed to set " << type << " to " << value << ": " << hr);
     return false;
   }
 
-  if (!absolute)
-    value += m_control[PVideoControlInfo::Zoom].m_current;
-
-  return Control(PVideoControlInfo::Zoom, value, true);
+  PTRACE(4, "DShow\tSet " << type << " to " << value);
+  return true;
 }
 
 
@@ -1551,6 +1498,16 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
     m_pCameraControls = NULL;
   }
 
+  for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
+    PComResult hr;
+    long minimum, maximum, step, reset, flags;
+    if (hr.Succeeded(m_pCameraControls->GetRange(InputControlPropertyCode[type], &minimum, &maximum, &step, &reset, &flags)))
+      m_controlInfo[type] = PVideoControlInfo(type, minimum, maximum, step, reset);
+    else {
+      PTRACE(4, "DShow\tCamera does not support " << type << ": " << hr);
+    }
+  }
+
   return true;
 }
 
@@ -1573,14 +1530,6 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bu
   } while (m_fixedSizeFrames && bufferSize < m_maxFrameBytes);
 
   return true;
-}
-
-
-PVideoInputControl * PVideoInputDevice_DirectShow::GetVideoInputControls()
-{
-  if (m_pCameraControls != NULL)
-    return new PVideoInputControl_DirectShow(m_pCameraControls);
-  return NULL; 
 }
 
 
