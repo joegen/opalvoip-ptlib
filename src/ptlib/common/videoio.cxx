@@ -970,60 +970,39 @@ PStringArray PVideoDevice::GetDeviceNames() const
   return PStringArray();
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+int PVideoControlInfo::SetCurrent(int current)
+{
+  if (current < m_minimum)
+    m_current = m_minimum;
+  else if (current > m_maximum)
+    m_current = m_maximum;
+  else
+    m_current = current;
+  return m_current;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 PString PVideoInteractionInfo::AsString(const InputInteractType & ctype)
 {
-	switch (ctype) {
-		case InteractKey:
-			return "Remote Key Press";
-		case InteractMouse:
-			return "Remote Mouse Move/Click";
-		case InteractNavigate:
-			return "Remote Navigation";
-		case InteractRTSP:
-			return "Remote RTSP Commands";
-		case InteractOther:
-			return "Custom/Other";
-	}
-	return PString();
+  switch (ctype) {
+    case InteractKey:
+      return "Remote Key Press";
+    case InteractMouse:
+      return "Remote Mouse Move/Click";
+    case InteractNavigate:
+      return "Remote Navigation";
+    case InteractRTSP:
+      return "Remote RTSP Commands";
+    case InteractOther:
+      return "Custom/Other";
+  }
+  return PString();
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-PVideoInputControl::~PVideoInputControl()  
-{ 
-  Reset(); 
-}
-
-
-PBoolean PVideoInputControl::Pan(long /*value*/, bool /*absolute*/)  
-{
-  return false; 
-}
-
-
-PBoolean PVideoInputControl::Tilt(long /*value*/, bool /*absolute*/)  
-{ 
-  return false; 
-}
-
-
-PBoolean PVideoInputControl::Zoom(long /*value*/, bool /*absolute*/)  
-{ 
-  return false; 
-}
-
-
-void PVideoInputControl::Reset()
-{
-  PTRACE(4,"CC\tResetting camera to default position.");
-
-  Pan (m_control[PVideoControlInfo::Pan ].m_default, true);
-  Tilt(m_control[PVideoControlInfo::Tilt].m_default, true);
-  Zoom(m_control[PVideoControlInfo::Zoom].m_default, true);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevice
@@ -1292,11 +1271,6 @@ PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, co
   return pluginMgr->GetPluginsDeviceCapabilities(videoInputPluginBaseClass,driverName,deviceName, caps);
 }
 
-PVideoInputControl * PVideoInputDevice::GetVideoInputControls()
-{
-	return NULL;
-}
-
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driverName,
                                                           const PString & deviceName,
@@ -1441,6 +1415,12 @@ int PVideoInputDevice::GetCaptureMode() const
 }
 
 
+bool PVideoInputDevice::SetControl(PVideoControlInfo::Types, int, ControlMode)
+{
+  return false;
+}
+
+
 PBoolean PVideoOutputDevice::SetFrameData(
       unsigned x,
       unsigned y,
@@ -1465,7 +1445,7 @@ PBoolean PVideoOutputDevice::SetFrameData(
       const BYTE * data,
       PBoolean endFrame,
       bool & keyFrameNeeded,
-	  const void * /*mark*/
+    const void * /*mark*/
 )
 {
   return SetFrameData(x, y, width, height, data, endFrame, keyFrameNeeded);
@@ -1474,7 +1454,7 @@ PBoolean PVideoOutputDevice::SetFrameData(
 
 PBoolean PVideoOutputDevice::DisableDecode() 
 {
-	return false;
+  return false;
 }
 
 

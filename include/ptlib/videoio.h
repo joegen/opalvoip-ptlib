@@ -278,79 +278,59 @@ class PVideoControlInfo : public PObject
     P_DECLARE_STREAMABLE_ENUM(Types,
       Pan,
       Tilt,
-      Zoom
+      Zoom,
+      Focus
     );
 
-    Types m_type;
-    long  m_min;
-    long  m_max;
-    long  m_step;
-    long  m_default;
-    long  m_flags;
-    long  m_current;
-
-    PVideoControlInfo()
-      : m_type(EndTypes)
-      , m_min(0)
-      , m_max(0)
-      , m_step(0)
-      , m_default(0)
-      , m_flags(0)
-      , m_current(0)
+    PVideoControlInfo(
+      Types type = EndTypes,
+      int minimum = 0,
+      int maximum = 100,
+      int step = 1,
+      int reset = 0
+    ) : m_type(type)
+      , m_minimum(minimum)
+      , m_maximum(maximum)
+      , m_step(step)
+      , m_reset(reset)
+      , m_current(reset)
     { }
 
-    bool IsValid() const { return m_max > 0 && m_min < m_max; }
+    bool IsValid() const   { return m_type != EndTypes; }
+
+    Types GetType() const  { return m_type; }
+    int GetStep()    const { return m_step; }
+    int Reset()            { return m_current = m_reset; }
+    int GetCurrent() const { return m_current; }
+    int SetCurrent(int current);
+
+  protected:
+    Types m_type;
+    int   m_minimum;
+    int   m_maximum;
+    int   m_step;
+    int   m_reset;
+    int   m_current;
 };
 
-
-/**This class defines a video Input device control (Camera controls PTZ)
-*/
-
-class PVideoInputControl : public PObject
-{
-    PCLASSINFO(PVideoInputControl, PObject);
-
-public:
-  ~PVideoInputControl();
-
-  virtual PBoolean Pan (long value, bool absolute = false);
-  virtual PBoolean Tilt(long value, bool absolute = false);
-  virtual PBoolean Zoom(long value, bool absolute = false);
-
-  virtual long GetPan()  const { return m_control[PVideoControlInfo::Pan ].m_current; }
-  virtual long GetTilt() const { return m_control[PVideoControlInfo::Tilt].m_current; }
-  virtual long GetZoom() const { return m_control[PVideoControlInfo::Zoom].m_current; }
-
-  virtual void Reset();
-
-  bool IsValid(PVideoControlInfo::Types type) const { return m_control[type].IsValid(); }
-  const PVideoControlInfo & GetControl(PVideoControlInfo::Types type) const { return m_control[type]; }
-
-protected:
-  PVideoControlInfo m_control[PVideoControlInfo::NumTypes];
-  PMutex            m_mutex;
-
-};
 
 /**This class defines a video Input device Interactions (Remote Inputs/Controls)
 */
 class PVideoInteractionInfo : public PObject
 {
-  PCLASSINFO(PVideoInteractionInfo, PObject);
+    PCLASSINFO(PVideoInteractionInfo, PObject);
+  public:
+    P_DECLARE_ENUM(InputInteractType,
+      InteractKey,       /// Register remote KeyPresses
+      InteractMouse,     /// Register remote Mouse Movement Clicks
+      InteractNavigate,  /// Register remote Navigation commands
+      InteractRTSP,      /// Register remote RTSP (Real Time Streaming Protocol) Inputs
+      InteractOther      /// Register remote application specific Inputs
+    );
 
- public:
+    static PString AsString(const InputInteractType & type);
 
-   typedef enum {
-        InteractKey,    /// Register remote KeyPresses
-        InteractMouse,    /// Register remote Mouse Movement Clicks
-        InteractNavigate,  /// Register remote Navigation commands
-    InteractRTSP,    /// Register remote RTSP (Real Time Streaming Protocol) Inputs
-    InteractOther    /// Register remote application specific Inputs
-     } InputInteractType;
-
-   static PString AsString(const InputInteractType & type);
-
-  InputInteractType type;
+    InputInteractType type;
 };
 
 
@@ -1038,8 +1018,8 @@ class PVideoInputDevice : public PVideoDevice
     );
 
   typedef struct {
-     std::list<PVideoFrameInfo> framesizes;
-     std::list<PVideoControlInfo> controls;
+     std::list<PVideoFrameInfo>       framesizes;
+     std::list<PVideoControlInfo>     controls;
      std::list<PVideoInteractionInfo> interactions;
   } Capabilities;
 
@@ -1065,11 +1045,6 @@ class PVideoInputDevice : public PVideoDevice
       Capabilities * caps,                  ///< List of supported capabilities
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
     );
-
-    /**Get the devices video Input controls
-        By Default return NULL;
-      */
-    virtual PVideoInputControl * GetVideoInputControls();
 
     /**Open the device given the device name.
       */
@@ -1156,6 +1131,20 @@ class PVideoInputDevice : public PVideoDevice
     */
     virtual int GetCaptureMode() const;
 
+    enum ControlMode {
+      AutomaticControl,
+      AbsoluteControl,
+      RelativeControl,
+      ResetControl
+    };
+
+    virtual bool SetControl(PVideoControlInfo::Types type, int value, ControlMode mode);
+    virtual const PVideoControlInfo & GetControlInfo(PVideoControlInfo::Types type) const { return m_controlInfo[type]; }
+
+  protected:
+    PVideoControlInfo m_controlInfo[PVideoControlInfo::NumTypes];
+
+  private:
     P_REMOVE_VIRTUAL(PBoolean, GetFrameData(BYTE *, PINDEX *, unsigned &), false);
     P_REMOVE_VIRTUAL(PBoolean, GetFrameDataNoDelay(BYTE *, PINDEX *, unsigned &), false);
 };
