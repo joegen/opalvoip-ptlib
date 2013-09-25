@@ -1000,8 +1000,9 @@ PString PVideoInteractionInfo::AsString(const InputInteractType & ctype)
       return "Remote RTSP Commands";
     case InteractOther:
       return "Custom/Other";
+    default :
+      return PString::Empty();
   }
-  return PString();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
