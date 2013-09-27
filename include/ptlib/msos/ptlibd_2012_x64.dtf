@@ -22217,6 +22217,7 @@ EXPORTS
     ?PrepareCommon@PWaveBuffer@@AEAAX_K@Z @22105 NONAME
     ?Prepend@PAbstractList@@UEAAXPEAVPObject@@@Z @22106 NONAME
     ?PrependNamespace@PXMLElement@@QEBA?AVPCaselessString@@AEBV2@@Z @22107 NONAME
+    ?PreRead@Frame@PEthSocket@@QEAAXXZ @26739 NONAME
     ?PresenceHandlers@StreamHandler@C2S@XMPP@@QEAAAEAV?$PNotifierListTemplate@_J@@XZ @22108 NONAME
     ?PresenceStanzaTag@XMPP@@YAAEBVPCaselessString@@XZ @22109 NONAME
     ?PreShutdown@PProcess@@QEAAXXZ @22110 NONAME
