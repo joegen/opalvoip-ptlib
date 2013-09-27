@@ -18,6 +18,7 @@ AC_CONFIG_AUX_DIR(make)
 AC_CONFIG_SRCDIR([include/ptlib.h])
 
 m4_include(make/ptlib.m4)
+m4_include(make/m4_ax_pthread.m4)
 
 
 dnl ########################################################################
@@ -775,29 +776,18 @@ fi
 dnl ########################################################################
 dnl check for pthreads library
 
-dnl Linux, Mac OS X use libpthread and -lpthread
-dnl FreeBSD uses the -pthread compiler option and uses libc_r
+AX_PTHREAD([], [AC_MSG_ERROR(Must have pthreads!)])
 
-if test "${target_os}" = "FreeBSD" ; then
-   HAS_PTHREADS=yes
-   LDFLAGS="$LDFLAGS -pthread"
-   CPPFLAGS="$CPPFLAGS -D_REENTRANT -pthread"
-   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-else
-   AC_CHECK_LIB(pthread, pthread_create,
-      [
-         HAS_PTHREADS=yes
-         LIBS="-lpthread $LIBS"
-         CPPFLAGS="$CPPFLAGS -D_REENTRANT"
-         AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-      ],
-      [
-         if test "${target_os}" != "mingw" ; then
-            AC_MSG_ERROR(must have pthreads!)
-         fi
-         HAS_PTHREADS=no
-      ]
-   )
+HAS_PTHREADS=yes
+AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+
+LIBS="$PTHREAD_LIBS $LIBS"
+CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
+if test "$CC" != "$PTHREAD_CC"; then
+    AC_MSG_WARN([Overriding default CC to $PTHREAD_CC])
+    CC="$PTHREAD_CC"
 fi
 
 AC_ARG_ENABLE(
