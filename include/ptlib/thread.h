@@ -505,8 +505,13 @@ class PThread1Arg : public PThread
   public:
     typedef void (*FnType)(Arg1Type arg1);
 
-    PThread1Arg(Arg1Type arg1, FnType function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+    PThread1Arg(
+      Arg1Type arg1,
+      FnType function,
+      bool autoDel = false,
+      const char * name = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, priority, name)
       , m_function(function)
       , m_arg1(arg1)
     {
@@ -542,8 +547,14 @@ class PThread2Arg : public PThread
     PCLASSINFO(PThread2Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2); 
-    PThread2Arg(Arg1Type arg1, Arg2Type arg2, FnType function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+    PThread2Arg(
+      Arg1Type arg1,
+      Arg2Type arg2,
+      FnType function,
+      bool autoDel = false,
+      const char * name = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, priority, name)
       , m_function(function)
       , m_arg1(arg1)
       , m_arg2(arg2)
@@ -580,8 +591,15 @@ class PThread3Arg : public PThread
   PCLASSINFO(PThread3Arg, PThread);
   public:
     typedef void (*FnType)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3); 
-    PThread3Arg(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3, FnType function, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+    PThread3Arg(
+      Arg1Type arg1,
+      Arg2Type arg2,
+      Arg3Type arg3,
+      FnType function,
+      bool autoDel = false,
+      const char * name = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    ) : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, priority, name)
       , m_function(function)
       , m_arg1(arg1)
       , m_arg2(arg2)
