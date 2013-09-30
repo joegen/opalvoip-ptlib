@@ -173,22 +173,22 @@
   {
     private:
       PBYTEArray m_buffer;
+      bool       m_stopped;
       PINDEX     m_actualSize;
       PMutex     m_mutex;
       PSyncPoint m_frameReady;
       PINDEX     m_skipInitialGrabs;
-    #if PTRACING
+#if PTRACING
       unsigned     m_totalFrames;
       PSimpleTimer m_totalTime;
-    #endif
+#endif
 
     public:
       PSampleGrabberCB();
       ~PSampleGrabberCB();
-    #if PTRACING
-      void BeginFrameRateCheck() { m_totalTime = 0; }
-      void PrintActualFramRate();
-    #endif
+
+      void Start();
+      void Stop();
 
       // Fake out any COM ref counting
       STDMETHODIMP_(ULONG) AddRef() { return 2; }
@@ -679,9 +679,7 @@ PBoolean PVideoInputDevice_DirectShow::Start()
 
   PCOM_RETURN_ON_FAILED(m_pMediaControl->Run,());
 
-#if PTRACING
-  m_pSampleGrabberCB->BeginFrameRateCheck();
-#endif
+  m_pSampleGrabberCB->Start();
 
   PTRACE(4, "DShow\tVideo Started.");
   return true;
@@ -698,14 +696,10 @@ PBoolean PVideoInputDevice_DirectShow::Stop()
   if (!IsCapturing())
     return true;
 
-#if PTRACING
-  m_pSampleGrabberCB->PrintActualFramRate();
-#endif
-
   // Use Pause() not Stop() as the latter is to much of a stop and takes too long to restart
   PCOM_RETURN_ON_FAILED(m_pMediaControl->Pause,());
 
-  PTRACE(3, "DShow\tVideo Stopped.");
+  m_pSampleGrabberCB->Stop();
   return true;
 }
 
@@ -714,7 +708,7 @@ PBoolean PVideoInputDevice_DirectShow::IsCapturing()
 {
   OAFilterState state;
   PCOM_RETURN_ON_FAILED(m_pMediaControl->GetState,(0, &state));
-  return state == State_Running;
+  return state != State_Stopped;
 }
 
 
@@ -1295,7 +1289,8 @@ bool PVideoInputControl_DirectShow::Zoom(long value, bool absolute)
 
 // Implementation of PSampleGrabberCB object
 PSampleGrabberCB::PSampleGrabberCB()
-  : m_actualSize(0)
+  : m_stopped(true)
+  , m_actualSize(0)
   , m_skipInitialGrabs(4)
 #if PTRACING
   , m_totalFrames(0)
@@ -1310,17 +1305,32 @@ PSampleGrabberCB::~PSampleGrabberCB()
 }
 
 
-#if PTRACING
-void PSampleGrabberCB::PrintActualFramRate()
+void PSampleGrabberCB::Start()
 {
+#if PTRACING
+  m_totalTime = 0;
+#endif
+  m_stopped = false;
+}
+
+
+void PSampleGrabberCB::Stop()
+{
+#if PTRACING
   static const int Level = 3;
   if (PTrace::CanTrace(Level)) {
     int64_t ms = m_totalTime.GetElapsed().GetMilliSeconds();
+    ostream & trace = PTRACE_BEGIN(Level);
+    trace << "DShow\tGrabber Stopped";
     if (ms > 0)
-      PTRACE_BEGIN(Level) << "DShow\tGrabber frames/second=" << fixed << setprecision(2) << m_totalFrames*1000.0/ms << PTrace::End;
+      trace << ", frames/second=" << fixed << setprecision(2) << m_totalFrames*1000.0/ms;
+    trace << PTrace::End;
   }
-}
 #endif
+
+  m_stopped = true;
+  m_frameReady.Signal();
+}
 
 
 // Fake out any COM QI'ing
@@ -1344,7 +1354,7 @@ STDMETHODIMP PSampleGrabberCB::BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE
   PTRACE(6, "DShow\tBuffer callback: time=" << dblSampleTime
           << ", buf=" << (void *)buffer << ", size=" << size);
 
-  if (size == 0)
+  if (size == 0 || m_stopped)
     return S_OK;
 
   if (m_skipInitialGrabs > 0) {
@@ -1380,6 +1390,11 @@ bool PSampleGrabberCB::GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize)
   }
 
   PWaitAndSignal mutex(m_mutex);
+
+  if (m_stopped) {
+    PTRACE(4, "DShow\tStopped");
+    return false;
+  }
 
   if (m_actualSize > maxSize) {
     PTRACE(1, "DShow\tNot copying, m_maxFrameBytes (" << m_actualSize << " > " << maxSize << ')');
@@ -1562,6 +1577,9 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bu
     return false;
 
   do {
+    if (!IsCapturing())
+      return false;
+
     if (!m_pSampleGrabberCB->GetData(data, m_maxFrameBytes, bufferSize))
       return false;
     // Sometimes on changing resolution, we get some frames at old size, ignore them.
