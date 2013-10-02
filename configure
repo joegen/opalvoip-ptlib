@@ -916,22 +916,16 @@ enable_internalregex
 enable_resolver
 enable_pcap
 enable_libjpeg
-enable_test_libjpeg
 with_libjpeg_dir
 enable_mlib
 enable_sasl
 enable_openldap
-enable_test_openldap
 with_openldap_dir
 enable_openssl
-enable_test_openssl
 enable_expat
-enable_test_expat
 with_expat_dir
 enable_lua
-enable_test_lua
 enable_v8
-enable_test_v8
 with_v8_dir
 enable_configfile
 enable_url
@@ -967,13 +961,9 @@ enable_ffvdev
 enable_appshare
 enable_shmvideo
 enable_curses
-enable_test_curses
 enable_sdl
-enable_test_sdl
 enable_gstreamer
-enable_test_gstreamer
 enable_odbc
-enable_test_odbc
 with_odbc_dir
 enable_vfw
 with_directx_includedir
@@ -986,7 +976,6 @@ enable_pulse
 enable_sunaudio
 enable_shmaudio
 enable_portaudio
-enable_test_portaudio
 with_portaudio_dir
 enable_v4l
 enable_v4l2
@@ -1671,20 +1660,13 @@ Optional Features:
   --disable-resolver      disable DNS resolver support
   --disable-pcap          disable PCAP support
   --disable-libjpeg       disable libJPEG support
-  --disable-test-libjpeg  disable compile/link test for libJPEG support
   --disable-mlib          disable SUN mlib support
   --disable-sasl          disable SASL support
   --disable-openldap      disable Open LDAP support
-  --disable-test-openldap disable compile/link test for Open LDAP support
   --disable-openssl       disable OpenSSL support
-  --disable-test-openssl  disable compile/link test for OpenSSL support
   --disable-expat         disable expat XML support
-  --disable-test-expat    disable compile/link test for expat XML support
   --disable-lua           disable Lua script support
-  --disable-test-lua      disable compile/link test for Lua script support
   --disable-v8            disable V8 Javascript script support
-  --disable-test-v8       disable compile/link test for V8 Javascript script
-                          support
   --disable-configfile    disable config file support
   --disable-url           disable URL support
   --disable-http          disable HTTP support
@@ -1719,19 +1701,10 @@ Optional Features:
   --disable-appshare      disable application sharing support
   --disable-shmvideo      disable shared memory video devices
   --disable-curses        disable disable Curses (text mode windows) support
-  --disable-test-curses   disable compile/link test for disable Curses (text
-                          mode windows) support
   --disable-sdl           disable disable libSDL (video display) support
-  --disable-test-sdl      disable compile/link test for disable libSDL (video
-                          display) support
   --disable-gstreamer     disable GStreamer support
-  --disable-test-gstreamer
-                          disable compile/link test for GStreamer support
   --disable-odbc          disable ODBC database support
-  --disable-test-odbc     disable compile/link test for ODBC database support
   --disable-odbc          disable unixODBC database support
-  --disable-test-odbc     disable compile/link test for unixODBC database
-                          support
   --enable-vfw            enable video for windows capture
   --disable-plugins       disable plugin support
   --disable-alsa          disable ALSA audio support
@@ -1741,8 +1714,6 @@ Optional Features:
   --disable-sunaudio      disable Sun audio support
   --disable-shmaudio      disable shm audio support
   --disable-portaudio     disable PortAudio library
-  --disable-test-portaudio
-                          disable compile/link test for PortAudio library
   --disable-v4l           disable V4L video support
   --disable-v4l2          disable V4L2 video support
   --disable-bsdvideo      disable BSD video support
@@ -9966,11 +9937,6 @@ fi
 
    enable_libjpeg="$enableval"
 
-   # Check whether --enable-test-libjpeg was given.
-if test "${enable_test_libjpeg+set}" = set; then :
-  enableval=$enable_test_libjpeg; test_libjpeg=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -10067,7 +10033,8 @@ fi
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_libjpeg" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -10110,21 +10077,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$LIBJPEG_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $LIBJPEG_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -10524,11 +10487,6 @@ fi
 
    enable_openldap="$enableval"
 
-   # Check whether --enable-test-openldap was given.
-if test "${enable_test_openldap+set}" = set; then :
-  enableval=$enable_test_openldap; test_openldap=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -10625,7 +10583,8 @@ fi
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_openldap" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -10659,21 +10618,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$OPENLDAP_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $OPENLDAP_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -10787,11 +10742,6 @@ fi
 
    enable_openssl="$enableval"
 
-   # Check whether --enable-test-openssl was given.
-if test "${enable_test_openssl+set}" = set; then :
-  enableval=$enable_test_openssl; test_openssl=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -10870,7 +10820,8 @@ $as_echo "yes" >&6; }
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_openssl" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -10904,21 +10855,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$OPENSSL_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $OPENSSL_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -11169,11 +11116,6 @@ fi
 
    enable_expat="$enableval"
 
-   # Check whether --enable-test-expat was given.
-if test "${enable_test_expat+set}" = set; then :
-  enableval=$enable_test_expat; test_expat=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -11270,7 +11212,8 @@ fi
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_expat" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -11305,21 +11248,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$EXPAT_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -11427,11 +11366,6 @@ fi
 
    enable_lua="$enableval"
 
-   # Check whether --enable-test-lua was given.
-if test "${enable_test_lua+set}" = set; then :
-  enableval=$enable_test_lua; test_lua=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -11510,7 +11444,8 @@ $as_echo "yes" >&6; }
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_lua" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -11545,21 +11480,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$LUA_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $LUA_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -11666,11 +11597,6 @@ fi
 
    enable_v8="$enableval"
 
-   # Check whether --enable-test-v8 was given.
-if test "${enable_test_v8+set}" = set; then :
-  enableval=$enable_test_v8; test_v8=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -11767,7 +11693,8 @@ fi
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_v8" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -11801,21 +11728,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$V8_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -14807,11 +14730,6 @@ fi
 
    enable_curses="$enableval"
 
-   # Check whether --enable-test-curses was given.
-if test "${enable_test_curses+set}" = set; then :
-  enableval=$enable_test_curses; test_curses=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -14890,7 +14808,8 @@ $as_echo "yes" >&6; }
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_curses" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -14925,21 +14844,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$CURSES_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $CURSES_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -15052,11 +14967,6 @@ fi
 
    enable_sdl="$enableval"
 
-   # Check whether --enable-test-sdl was given.
-if test "${enable_test_sdl+set}" = set; then :
-  enableval=$enable_test_sdl; test_sdl=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -15135,7 +15045,8 @@ $as_echo "yes" >&6; }
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_sdl" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -15172,21 +15083,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$SDL_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -15287,11 +15194,6 @@ fi
 
    enable_gstreamer="$enableval"
 
-   # Check whether --enable-test-gstreamer was given.
-if test "${enable_test_gstreamer+set}" = set; then :
-  enableval=$enable_test_gstreamer; test_gstreamer=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -15370,7 +15272,8 @@ $as_echo "yes" >&6; }
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_gstreamer" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -15405,21 +15308,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$GSTREAMER_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -15527,11 +15426,6 @@ fi
 
    enable_odbc="$enableval"
 
-   # Check whether --enable-test-odbc was given.
-if test "${enable_test_odbc+set}" = set; then :
-  enableval=$enable_test_odbc; test_odbc=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -15628,7 +15522,8 @@ fi
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_odbc" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -15662,21 +15557,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$ODBC_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -15748,11 +15639,6 @@ fi
 
 
    enable_odbc="$enableval"
-
-   # Check whether --enable-test-odbc was given.
-if test "${enable_test_odbc+set}" = set; then :
-  enableval=$enable_test_odbc; test_odbc=$enableval
-fi
 
 
    if test "x$usable" = "xyes" ; then
@@ -15850,7 +15736,8 @@ fi
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_odbc" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -15885,21 +15772,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$ODBC_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $ODBC_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
@@ -16845,11 +16728,6 @@ fi
 
    enable_portaudio="$enableval"
 
-   # Check whether --enable-test-portaudio was given.
-if test "${enable_test_portaudio+set}" = set; then :
-  enableval=$enable_test_portaudio; test_portaudio=$enableval
-fi
-
 
    if test "x$usable" = "xyes" ; then
 
@@ -16946,7 +16824,8 @@ fi
 
 fi
 
-         if test "x$usable" = "xyes" && test "x$test_portaudio" != "xno" ; then
+
+         if test "x$usable" = "xyes" ; then
 
    oldCPPFLAGS="$CPPFLAGS"
    oldLIBS="$LIBS"
@@ -16980,21 +16859,17 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-else
-  usable=no
-
-fi
-
-
-         fi
-
-         if test "x$usable" = "xyes" ; then
-
 
    LIBS="$PORTAUDIO_LIBS $LIBS"
    CPPFLAGS="$CPPFLAGS $PORTAUDIO_CFLAGS"
 
 
+
+
+else
+  usable=no
+
+fi
 
 
          fi
