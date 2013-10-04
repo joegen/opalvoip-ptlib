@@ -422,6 +422,19 @@ class PVideoDevice : public PVideoFrameInfo
       ResizeMode  resizeMode;
       bool        flip;
       Attributes  m_attributes;
+
+      template<class PVideoXxxDevice>
+      bool Validate(PVideoDevice::OpenArgs & validated) const
+      {
+        // Check that the input device is legal
+        PVideoXxxDevice * pDevice = PVideoXxxDevice::CreateDeviceByName(deviceName, driverName, pluginMgr);
+        if (pDevice == NULL)
+          return false;
+
+        delete pDevice;
+        validated = *this;
+        return true;
+      }
     };
 
     /**Open the device given the device name.
