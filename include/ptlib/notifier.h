@@ -164,7 +164,7 @@ typedef PNotifierTemplate<P_INT_PTR> PNotifier;
       static PNotifierTemplate<ParamType> Create(notifiee & obj) { return new func##_PNotifier(&obj); } \
   }; \
   friend class func##_PNotifier; \
-  virtual void func(notifier & note, ParamType extra) \
+  virtual void func(notifier & from, ParamType extra) \
 
 #define PDECLARE_NOTIFIER_COMMON(notifier, notifiee, func, ParamType, BaseClass) \
        PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, BaseClass) \
