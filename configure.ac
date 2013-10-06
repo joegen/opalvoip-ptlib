@@ -1827,6 +1827,7 @@ dnl look for Curses
 dnl MS-Windows uses it's own API indicated by P_CURSES=2. Unix uses ncurses.
 
 dnl MSWIN_DISPLAY    curses,Curses (text mode windows) support
+dnl MSWIN_IF_FEATURE curses,!android
 dnl MSWIN_DEFINE     curses,P_CURSES=2
 
 PTLIB_MODULE_OPTION(
