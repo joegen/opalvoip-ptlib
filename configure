@@ -905,7 +905,6 @@ enable_minsize
 enable_deprecated
 enable_exceptions
 with_allocator
-enable_ansi_bool
 enable_atomicity
 enable_pthread_kill
 enable_ipv6
@@ -1647,7 +1646,6 @@ Optional Features:
                           options
   --disable-deprecated    Stop compiler warning about deprecated functions
   --enable-exceptions     enable C++ exceptions
-  --disable-ansi-bool     Use Windows-like integer BOOL over ANSI C++ bool
   --disable-atomicity     Do not use atomicity.h
   --disable-pthread_kill  Disable use of pthread_kill for checking on thread
                           terminated
@@ -7056,24 +7054,6 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 else
   as_fn_error $? "Unknown allocator type $withval" "$LINENO" 5
-fi
-
-
-
-# Check whether --enable-ansi-bool was given.
-if test "${enable_ansi_bool+set}" = set; then :
-  enableval=$enable_ansi_bool;
-fi
-
-
-if test "x${enable_ansi_bool}" = "xno" ; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&5
-$as_echo "$as_me: Using Windows-like integer BOOL for PBoolean: (PFalse=0 PTrue=1)" >&6;}
-else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true)" >&5
-$as_echo "$as_me: Using ANSI C++ bool for PBoolean: (PFalse=false PTrue=true)" >&6;}
-   $as_echo "#define P_USE_STANDARD_CXX_BOOL 1" >>confdefs.h
-
 fi
 
 
