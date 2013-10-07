@@ -72,11 +72,6 @@
 // Language stuff
 //
 
-#undef  P_USE_STANDARD_CXX_BOOL
-#if !defined(P_USE_STANDARD_CXX_BOOL)
-  #define P_USE_INTEGER_BOOL 1
-#endif
-
 #undef P_EXCEPTIONS
 #define P_USE_ASSERTS 1
 
