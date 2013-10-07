@@ -400,6 +400,7 @@ PCLI::PCLI(const char * prompt)
   , m_commandUsagePrefix("Usage: ")
   , m_commandErrorPrefix(": error: ")
   , m_unknownCommandError("Unknown command")
+  , m_ambiguousCommandError("Ambiguous command")
 {
 }
 
@@ -560,33 +561,68 @@ void PCLI::GarbageCollection()
 }
 
 
+bool PCLI::InternalCommand::operator<(const InternalCommand & other) const
+{
+  PINDEX count = std::min(m_words.GetSize(), other.m_words.GetSize());
+  for (PINDEX i = 0; i < count; ++i) {
+    switch (m_words[i].Compare(other.m_words[i])) {
+      case LessThan :
+        return true;
+      case GreaterThan :
+        return false;
+      default :
+        break;
+    }
+  }
+
+  return m_words.GetSize() < other.m_words.GetSize();
+}
+
+
+bool PCLI::InternalCommand::IsMatch(const PArgList & args) const
+{
+  for (PINDEX i = 0; i < m_words.GetSize(); ++i) {
+    if (m_words[i].NumCompare(args[i]) != EqualTo)
+      return false;
+  }
+
+  return true;
+}
+
 void PCLI::OnReceivedLine(Arguments & args)
 {
-  for (PINDEX nesting = 1; nesting <= args.GetCount(); ++nesting) {
-    PString names;
-    for (PINDEX i = 0; i < nesting; ++i)
-      names &= args[i];
+  Commands_t::iterator cmd;
+  for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
+    if (cmd->IsMatch(args))
+      break;
+  }
 
-    CommandMap_t::iterator cmd = m_commands.find(names);
-    if (cmd != m_commands.end()) {
-      args.Shift(nesting);
-      args.SetCommandName(cmd->first);
-      args.m_usage = cmd->second.m_usage;
+  if (cmd == m_commands.end()) {
+    args.GetContext() << GetUnknownCommandError() << endl;
+    return;
+  }
 
-      if (!cmd->second.m_argSpec.IsEmpty()) {
-        args.Parse(cmd->second.m_argSpec, true);
-        if (!args.IsParsed()) {
-          args.WriteUsage() << args.GetParseError();
-          return;
-        }
-      }
-
-      cmd->second.m_notifier(args, 0);
+  {
+    Commands_t::iterator nextCmd = cmd;
+    if (++nextCmd != m_commands.end() && nextCmd->IsMatch(args)) {
+      args.GetContext() << GetAmbiguousCommandError() << endl;
       return;
     }
   }
 
-  args.GetContext() << GetUnknownCommandError() << endl;
+  args.Shift(cmd->m_words.GetSize());
+  args.SetCommandName(cmd->m_command);
+  args.m_usage = cmd->m_usage;
+
+  if (!cmd->m_argSpec.IsEmpty()) {
+    args.Parse(cmd->m_argSpec, true);
+    if (!args.IsParsed()) {
+      args.WriteUsage() << args.GetParseError();
+      return;
+    }
+  }
+
+  cmd->m_notifier(args, 0);
 }
 
 
@@ -604,6 +640,24 @@ void PCLI::Broadcast(const PString & message) const
 }
 
 
+PCLI::InternalCommand::InternalCommand(const PString & words,
+                                       const PNotifier & notifier,
+                                       const char * help,
+                                       const char * usage,
+                                       const char * argSpec)
+  : m_words(words.Tokenise(' ', false))
+  , m_notifier(notifier)
+  , m_help(help)
+  , m_argSpec(argSpec)
+{
+  for (PINDEX i = 0; i < m_words.GetSize(); ++i)
+    m_command &= m_words[i];
+
+  if (usage != NULL && *usage != '\0')
+    m_usage = m_command & usage;
+}
+
+
 bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const char * help, const char * usage, const char * argSpec)
 {
   if (!PAssert(command != NULL && *command != '\0' && !notifier.IsNULL(), PInvalidParameter))
@@ -615,21 +669,8 @@ bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const ch
   for (PINDEX s = 0; s < synonymArray.GetSize(); ++s) {
     // Normalise command to remove any duplicate spaces, should only
     // have one as in " conf  show   members   " -> "conf show members"
-    PStringArray nameArray = synonymArray[s].Tokenise(' ', false);
-    PString names;
-    for (PINDEX n = 0; n < nameArray.GetSize(); ++n)
-      names &= nameArray[n];
-
-    if (m_commands.find(names) != m_commands.end())
+    if (!m_commands.insert(InternalCommand(synonymArray[s], notifier, help, usage, argSpec)).second)
       good = false;
-    else {
-      InternalCommand & cmd = m_commands[names];
-      cmd.m_notifier = notifier;
-      cmd.m_help = help;
-      if (usage != NULL && *usage != '\0')
-        cmd.m_usage = names & usage;
-      cmd.m_argSpec = argSpec;
-    }
   }
 
   return good;
@@ -639,11 +680,11 @@ bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const ch
 void PCLI::ShowHelp(Context & context)
 {
   PINDEX i;
-  CommandMap_t::const_iterator cmd;
+  Commands_t::const_iterator cmd;
 
   PINDEX maxCommandLength = GetHelpCommand().GetLength();
   for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
-    PINDEX len = cmd->first.GetLength();
+    PINDEX len = cmd->m_command.GetLength();
     if (maxCommandLength < len)
       maxCommandLength = len;
   }
@@ -653,21 +694,21 @@ void PCLI::ShowHelp(Context & context)
     context << lines[i] << '\n';
 
   for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
-    if (cmd->second.m_help.IsEmpty() && cmd->second.m_usage.IsEmpty())
-      context << cmd->first;
+    if (cmd->m_help.IsEmpty() && cmd->m_usage.IsEmpty())
+      context << cmd->m_command;
     else {
-      context << left << setw(maxCommandLength) << cmd->first << "   ";
+      context << left << setw(maxCommandLength) << cmd->m_command << "   ";
 
-      if (cmd->second.m_help.IsEmpty())
+      if (cmd->m_help.IsEmpty())
         context << GetCommandUsagePrefix(); // Earlier conditon says must have usage
       else {
-        lines = cmd->second.m_help.Lines();
+        lines = cmd->m_help.Lines();
         context << lines[0];
         for (i = 1; i < lines.GetSize(); ++i)
           context << '\n' << setw(maxCommandLength+3) << ' ' << lines[i];
       }
 
-      lines = cmd->second.m_usage.Lines();
+      lines = cmd->m_usage.Lines();
       for (i = 0; i < lines.GetSize(); ++i)
         context << '\n' << setw(maxCommandLength+5) << ' ' << lines[i];
     }
@@ -1054,14 +1095,23 @@ public:
 
   virtual PBoolean WriteChar(char ch)
   {
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    if (!GetConsoleScreenBufferInfo(m_hStdOut, &csbiInfo)) {
+      PTRACE(2, "PCLI\tCannot obtain console info");
+    }
+
     SetCursor(m_cursorRow, m_cursorCol);
 
     DWORD cWritten;
-    if (WriteFile(m_hStdOut, &ch, 1, &cWritten, NULL))
-      return true;
+    if (!WriteFile(m_hStdOut, &ch, 1, &cWritten, NULL)) {
+      PTRACE(2, "PCLI\tCannot write to console");
+      return false;
+    }
 
-    PTRACE(2, "PCLI\tCannot write to console");
-    return false;
+    if (!m_focus)
+      SetConsoleCursorPosition(m_hStdOut, csbiInfo.dwCursorPosition);
+
+    return true;
   }
 
 
@@ -1133,7 +1183,7 @@ public:
       PTRACE(2, "PCLI\tCannot obtain console info");
     }
 
-    COORD pos = { (SHORT)m_positionRow, (SHORT)m_positionCol };
+    COORD pos = { (SHORT)m_positionCol, (SHORT)m_positionRow };
 
     for (unsigned row = 0; row < m_sizeRows; ++row,++pos.Y) {
       DWORD cCharsWritten;
@@ -1206,7 +1256,7 @@ void PCLICurses::Construct()
 {
   m_pageWaitPrompt = "Press a key for more ...";
   NewWindow(0, 0, m_maxRows-1, m_maxCols).SetPageMode(true);
-  NewWindow(m_maxRows-1, 0, 1, m_maxCols);
+  NewWindow(m_maxRows-1, 0, 1, m_maxCols).SetFocus();
 
   StartContext(new PConsoleChannel(PConsoleChannel::StandardInput), &m_windows[0], true, false, false);
 }
@@ -1224,7 +1274,7 @@ public:
 
   virtual bool WritePrompt()
   {
-    PCLICurses::Window & wnd = m_cli.GetWindow(m_cli.GetWindowCount() > 1 ? 1 : 0);
+    PCLICurses::Window & wnd = m_cli[m_cli.GetWindowCount() > 1 ? 1 : 0];
     wnd.Clear();
     return wnd.WriteString(m_cli.GetPrompt());
   }
@@ -1267,7 +1317,7 @@ void PCLICurses::RemoveWindow(PINDEX idx)
 
 bool PCLICurses::WaitPage()
 {
-  PCLICurses::Window & wnd = GetWindow(GetWindowCount() > 1 ? 1 : 0);
+  PCLICurses::Window & wnd = m_windows[m_windows.GetSize() > 1 ? 1 : 0];
   wnd.Clear();
   if (!wnd.WriteString(GetPageWaitPrompt()))
     return false;
@@ -1282,6 +1332,7 @@ bool PCLICurses::WaitPage()
 
 PCLICurses::Window::Window(PCLICurses & owner)
   : m_owner(owner)
+  , m_focus(false)
   , m_pageMode(false)
   , m_pagedRows(0)
 {
@@ -1338,6 +1389,15 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
   lastWriteCount = count;
   m_owner.Refresh();
   return true;
+}
+
+
+void PCLICurses::Window::SetFocus()
+{
+  for (PINDEX i = 0; i < m_owner.GetWindowCount(); ++i) {
+    Window * wnd = m_owner.GetWindow(i);
+    wnd->m_focus = wnd == this;
+  }
 }
 
 

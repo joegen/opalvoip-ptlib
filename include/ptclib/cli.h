@@ -578,6 +578,16 @@ class PCLI : public PObject
        Default is "Unknown command".
       */
     void SetUnknownCommandError(const PString & unknownCommandError) { m_unknownCommandError = unknownCommandError; }
+
+    /**Get error message for if ambiguous command is entered.
+       Default is "Ambiguous command".
+      */
+    const PString & GetAmbiguousCommandError() const { return m_ambiguousCommandError; }
+
+    /**Set error message for if ambiguous command is entered.
+       Default is "Ambiguous command".
+      */
+    void SetAmbiguousCommandError(const PString & ambiguousCommandError) { m_ambiguousCommandError = ambiguousCommandError; }
   //@}
 
 
@@ -600,15 +610,22 @@ class PCLI : public PObject
     PString         m_commandUsagePrefix;
     PString         m_commandErrorPrefix;
     PString         m_unknownCommandError;
+    PString         m_ambiguousCommandError;
 
     struct InternalCommand {
-      PNotifier m_notifier;
-      PString   m_help;
-      PString   m_usage;
-      PString   m_argSpec;
+      InternalCommand(const PString & words, const PNotifier & notifier, const char * help, const char * usage, const char * argSpec);
+      bool IsMatch(const PArgList & args) const;
+      bool operator<(const InternalCommand & other) const;
+
+      PStringArray m_words;
+      PString      m_command;
+      PNotifier    m_notifier;
+      PString      m_help;
+      PString      m_usage;
+      PString      m_argSpec;
     };
-    typedef std::map<PString, InternalCommand> CommandMap_t;
-    CommandMap_t m_commands;
+    typedef std::set<InternalCommand> Commands_t;
+    Commands_t m_commands;
 
     typedef std::list<Context *> ContextList_t;
     ContextList_t m_contextList;
@@ -789,6 +806,7 @@ class PCLICurses : public PCLI
     {
     protected:
       PCLICurses & m_owner;
+      bool         m_focus;
       bool         m_pageMode;
       unsigned     m_pagedRows;
 
@@ -833,6 +851,8 @@ class PCLICurses : public PCLI
       ) { m_pageMode = on; }
 
       bool GetPageMode() const { return m_pageMode; }
+
+      virtual void SetFocus();
     };
 
     Window & NewWindow(
@@ -852,9 +872,11 @@ class PCLICurses : public PCLI
 
     PINDEX GetWindowCount() const { return m_windows.GetSize(); }
 
-    Window & GetWindow(
+    Window * GetWindow(
       PINDEX idx
-    ) { return m_windows[idx]; }
+    ) { return dynamic_cast<Window *>(m_windows.GetAt(idx)); }
+
+    Window & operator[](PINDEX idx) const { return m_windows[idx]; }
 
     void GetScreenSize(
       unsigned & rows,
