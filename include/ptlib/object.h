@@ -115,9 +115,8 @@ using namespace std; // Not a good practice (name space polution), but will take
 #define P_DISABLE_MSVC_WARNINGS(warnings, statement) P_PUSH_MSVC_WARNINGS(warnings) statement P_POP_MSVC_WARNINGS()
 
 
-// P_USE_INTEGER_BOOL is the default and gives the old behaviour (it
-// is also used for C translation units).
-// without P_USE_INTEGER_BOOL, the ANSI C++ bool is used.
+// We are gradually converting over to standard C++ names, these
+// are for backward compatibility only
 
 #ifndef FALSE
 #define FALSE 0
@@ -126,15 +125,9 @@ using namespace std; // Not a good practice (name space polution), but will take
 #define TRUE 1
 #endif
 
-#if defined(P_USE_INTEGER_BOOL) || !defined(__cplusplus)
-  typedef BOOL   PBoolean;
-  #define PTrue  TRUE
-  #define PFalse FALSE
-#else
-  typedef bool   PBoolean;
-  #define PTrue  true
-  #define PFalse false
-#endif
+typedef bool   PBoolean;
+#define PTrue  true
+#define PFalse false
 
 
 ///////////////////////////////////////////////////////////////////////////////
