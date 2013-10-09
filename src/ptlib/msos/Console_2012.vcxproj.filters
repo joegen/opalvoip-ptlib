@@ -31,9 +31,6 @@
     <ClCompile Include="..\..\ptclib\delaychan.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\getdate_tab.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\regex\regerror.c">
       <Filter>Regex</Filter>
     </ClCompile>
@@ -339,6 +336,9 @@
     </ClCompile>
     <ClCompile Include="..\common\jidctflt.cxx">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\getdate.tab.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
