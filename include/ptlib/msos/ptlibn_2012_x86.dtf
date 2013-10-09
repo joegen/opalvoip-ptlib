@@ -22740,6 +22740,7 @@ EXPORTS
     ?Start@PInterfaceMonitor@@QAEXXZ @22745 NONAME
     ?Start@PMessageDigest5@@UAEXXZ @22746 NONAME
     ?Start@PMessageDigestSHA1@@UAEXXZ @22747 NONAME
+    ?Start@PSampleGrabberCB@@QAEXXZ @25057 NONAME
     ?Start@PSASLClient@@IAE_NABVPString@@PAPBDAAI@Z @22748 NONAME
     ?Start@PSASLClient@@QAE_NABVPString@@AAV2@@Z @22749 NONAME
     ?Start@PVideoDevice@@UAE_NXZ @22750 NONAME
@@ -22813,6 +22814,7 @@ EXPORTS
     ?Stop@PCLISocket@@UAEXXZ @22821 NONAME
     ?Stop@PEthSocketThread@@UAEXXZ @22822 NONAME
     ?Stop@PInterfaceMonitor@@QAEXXZ @22823 NONAME
+    ?Stop@PSampleGrabberCB@@QAEXXZ @25058 NONAME
     ?Stop@PSimpleTimer@@QAEXXZ @22824 NONAME
     ?Stop@PTimer@@QAEX_N@Z @22825 NONAME
     ?Stop@PVideoDevice@@UAE_NXZ @22826 NONAME
