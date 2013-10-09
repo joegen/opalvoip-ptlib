@@ -430,7 +430,7 @@ else
              $(PLATFORM_SRC_DIR)/tlib.cxx
 endif
 
-GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
+GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.c
 CLEAN_FILES = $(GETDATE_SOURCE)
 
 SOURCES	+= \
@@ -492,14 +492,21 @@ $(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
 	$(Q_CC)$(CC) $(CPPFLAGS) -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex $(CFLAGS) -o $@ -c $<
 
 
-$(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
+$(OBJDIR)/getdate.o: $(GETDATE_SOURCE)
 	$(Q_CC)$(CC) $(CPPFLAGS) -Wno-write-strings $(CFLAGS) -c $< -o $@
 
-$(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
+$(DEPDIR)/getdate.dep: $(GETDATE_SOURCE)
 	$(Q_CC)$(CC) $(CPPFLAGS) -M $< >> $@
 
-$(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
-	$(YACC) $(YFLAGS) -o $(COMMON_SRC_DIR)/getdate.tab.c $(COMMON_SRC_DIR)/getdate.y
+GETDATE_TAB_C := $(COMMON_SRC_DIR)/getdate.tab.c
+
+$(GETDATE_SOURCE): $(GETDATE_TAB_C)
+	cp $< $@
+
+ifdef BISON
+$(GETDATE_TAB_C): $(COMMON_SRC_DIR)/getdate.y
+	$(BISON) -o $@ $<
+endif
 
 
 ################################################################################

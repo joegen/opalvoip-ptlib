@@ -804,8 +804,7 @@ ax_pthread_config
 CXXCPP
 PTLIB_EXCEPTIONS
 HAS_EXCEPTIONS
-YFLAGS
-YACC
+BISON
 PTLIB_VERSION
 PTLIB_STAGE
 PTLIB_BUILD
@@ -998,8 +997,6 @@ CXX
 CXXFLAGS
 CCC
 CPP
-YACC
-YFLAGS
 CXXCPP
 LIBJPEG_CFLAGS
 LIBJPEG_LIBS
@@ -1758,12 +1755,6 @@ Some influential environment variables:
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
   CPP         C preprocessor
-  YACC        The `Yet Another Compiler Compiler' implementation to use.
-              Defaults to the first program found out of: `bison -y', `byacc',
-              `yacc'.
-  YFLAGS      The list of arguments that will be passed by default to $YACC.
-              This script will default YFLAGS to the empty string to avoid a
-              default value of `-d' given by some make applications.
   CXXCPP      C++ preprocessor
   LIBJPEG_CFLAGS
               C compiler flags for LIBJPEG, overriding pkg-config
@@ -6551,26 +6542,26 @@ $as_echo "$as_me: PTLib version is ${PTLIB_VERSION}" >&6;};
 
 
 
-for ac_prog in 'bison -y' byacc
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
+# Extract the first word of "bison", so it can be a program name with args.
+set dummy bison; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_YACC+:} false; then :
+if ${ac_cv_path_BISON+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$YACC"; then
-  ac_cv_prog_YACC="$YACC" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+  case $BISON in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_BISON="$BISON" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
 do
   IFS=$as_save_IFS
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_YACC="$ac_prog"
+    ac_cv_path_BISON="$as_dir/$ac_word$ac_exec_ext"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6578,33 +6569,19 @@ done
   done
 IFS=$as_save_IFS
 
+  ;;
+esac
 fi
-fi
-YACC=$ac_cv_prog_YACC
-if test -n "$YACC"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $YACC" >&5
-$as_echo "$YACC" >&6; }
+BISON=$ac_cv_path_BISON
+if test -n "$BISON"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $BISON" >&5
+$as_echo "$BISON" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-  test -n "$YACC" && break
-done
-test -n "$YACC" || YACC="yacc"
-
-if test -z "$YACC" ; then
-   as_fn_error 1 "parser generator (e.g. yacc or bison) is required" "$LINENO" 5
-fi
-YACC_MAJ_VER=`$YACC --version | sed -n "s/bison.* \([0-9]\)\.[0-9].*/\1/p"`
-YACC_MIN_VER=`$YACC --version | sed -n "s/bison.* [0-9]\.\([0-9]\).*/\1/p"`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: Found $YACC version ${YACC_MAJ_VER}.${YACC_MIN_VER}" >&5
-$as_echo "$as_me: Found $YACC version ${YACC_MAJ_VER}.${YACC_MIN_VER}" >&6;}
-if test -n "$YACC_MAJ_VER" && test -n "$YACC_MIN_VER" && \
-	test $YACC_MAJ_VER -gt 2 -o \( $YACC_MAJ_VER -eq 2 -a $YACC_MIN_VER -ge 5 \) ; then
-  YFLAGS="-Dapi.pure=true"
-fi
 
 
 
