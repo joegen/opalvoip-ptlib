@@ -373,6 +373,9 @@
     <ClCompile Include="..\common\vconvert.cxx">
       <Filter>Source Files\Components\Media</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\getdate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h">
