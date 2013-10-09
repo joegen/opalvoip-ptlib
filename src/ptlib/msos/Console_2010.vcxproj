@@ -289,6 +289,26 @@
     <ClCompile Include="..\..\ptclib\script.cxx" />
     <ClCompile Include="..\..\ptclib\ssdp.cxx" />
     <ClCompile Include="..\..\ptclib\vcard.cxx" />
+    <CustomBuild Include="..\common\getdate.tab.c">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+    </CustomBuild>
     <ClCompile Include="..\common\jidctflt.cxx">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -321,7 +341,7 @@
     </ClCompile>
     <ClCompile Include="..\common\collect.cxx" />
     <ClCompile Include="..\common\contain.cxx" />
-    <ClCompile Include="..\common\getdate_tab.c">
+    <ClCompile Include="..\common\getdate.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -603,27 +623,24 @@
   <ItemGroup>
     <CustomBuild Include="..\common\getdate.y">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PATH=%PATH%;C:\Tools
-bison -o ../common/getdate_tab.c ../common/getdate.y
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bison -o ../common/getdate_tab.c ../common/getdate.y
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bison "%(FullPath)" -o "%(RootDir)%(Directory)%(Filename).tab.c"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bison "%(FullPath)" -o "%(RootDir)%(Directory)%(Filename).tab.c"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../common/getdate_tab.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../common/getdate_tab.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">PATH=%PATH%;C:\Tools
-bison -o ../common/getdate_tab.c ../common/getdate.y
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">bison -o ../common/getdate_tab.c ../common/getdate.y
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">bison "%(FullPath)" -o "%(RootDir)%(Directory)%(Filename).tab.c"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">bison "%(FullPath)" -o "%(RootDir)%(Directory)%(Filename).tab.c"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">../common/getdate_tab.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">../common/getdate_tab.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PATH=%PATH%;C:\Tools
-bison -o ../common/getdate_tab.c ../common/getdate.y
-</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bison -o ../common/getdate_tab.c ../common/getdate.y
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bison "%(FullPath)" -o "%(RootDir)%(Directory)%(Filename).tab.c"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bison "%(FullPath)" -o "%(RootDir)%(Directory)%(Filename).tab.c"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../common/getdate_tab.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../common/getdate_tab.c;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptbuildopts.h.in">
       <FileType>Document</FileType>
