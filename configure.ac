@@ -217,17 +217,7 @@ AC_MSG_NOTICE(PTLib version is ${PTLIB_VERSION});
 dnl ########################################################################
 dnl Find programs we need
 
-AC_PROG_YACC()
-if test -z "$YACC" ; then
-   AC_MSG_ERROR(parser generator (e.g. yacc or bison) is required, 1)
-fi
-YACC_MAJ_VER=`$YACC --version | sed -n "s/bison.* \([[0-9]]\)\.[[0-9]].*/\1/p"`
-YACC_MIN_VER=`$YACC --version | sed -n "s/bison.* [[0-9]]\.\([[0-9]]\).*/\1/p"`
-AC_MSG_NOTICE(Found $YACC version ${YACC_MAJ_VER}.${YACC_MIN_VER})
-if test -n "$YACC_MAJ_VER" && test -n "$YACC_MIN_VER" && \
-	test $YACC_MAJ_VER -gt 2 -o \( $YACC_MAJ_VER -eq 2 -a $YACC_MIN_VER -ge 5 \) ; then
-  YFLAGS="-Dapi.pure=true"
-fi
+AC_PATH_PROG(BISON, bison)
 
 
 dnl ########################################################################
