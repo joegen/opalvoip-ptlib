@@ -11126,6 +11126,7 @@ if test -n "$EXPAT_CFLAGS"; then
   test $ac_status = 0; }; then
   pkg_cv_EXPAT_CFLAGS=`$PKG_CONFIG --cflags "expat" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -11142,6 +11143,7 @@ if test -n "$EXPAT_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_EXPAT_LIBS=`$PKG_CONFIG --libs "expat" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -11366,6 +11368,7 @@ if test -n "$LUA_CFLAGS"; then
   test $ac_status = 0; }; then
   pkg_cv_LUA_CFLAGS=`$PKG_CONFIG --cflags "$LUA_PKG" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -11382,6 +11385,7 @@ if test -n "$LUA_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LUA_LIBS=`$PKG_CONFIG --libs "$LUA_PKG" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -11607,6 +11611,7 @@ if test -n "$V8_CFLAGS"; then
   test $ac_status = 0; }; then
   pkg_cv_V8_CFLAGS=`$PKG_CONFIG --cflags "v8" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
+		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -11623,6 +11628,7 @@ if test -n "$V8_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_V8_LIBS=`$PKG_CONFIG --libs "v8" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes

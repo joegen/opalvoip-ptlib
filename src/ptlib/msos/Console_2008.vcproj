@@ -1810,325 +1810,362 @@
 					>
 				</File>
 				<File
-					RelativePath="..\common\getdate.y"
+					RelativePath="..\common\getdate.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 6 Standard SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
+							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 6 Standard SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 6 Standard SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCustomBuildTool"
-							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
-							Outputs="../common/getdate_tab.c"
+							Name="VCCLCompilerTool"
+							Optimization="2"
+							InlineFunctionExpansion="0"
+							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
+							PreprocessorDefinitions=""
+							UsePrecompiledHeader="0"
 						/>
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\common\getdate_tab.c"
+					RelativePath="..\common\getdate.tab.c"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
+							Name="VCCustomBuildTool"
+							Description="Using default getdate bison file."
+							CommandLine="copy &quot;$(InputPath)&quot; &quot;$(InputDir)getdate.c&quot;"
+							Outputs="$(InputDir)getdate.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							Description="Using default getdate bison file."
+							CommandLine="copy &quot;$(InputPath)&quot; &quot;$(InputDir)getdate.c&quot;"
+							Outputs="$(InputDir)getdate.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Win32"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							Description="Using default getdate bison file."
+							CommandLine="copy &quot;$(InputPath)&quot; &quot;$(InputDir)getdate.c&quot;"
+							Outputs="$(InputDir)getdate.c"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\common\getdate.y"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine=""
+							Outputs=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine=""
+							Outputs=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="No Trace|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine=""
+							Outputs=""
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 6 Professional SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 5.0 Smartphone SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Windows Mobile 6 Standard SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
-							BrowseInformation="1"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Windows Mobile 6 Standard SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="No Trace|Windows Mobile 6 Standard SDK (ARMV4I)"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="2"
-							InlineFunctionExpansion="0"
-							AdditionalIncludeDirectories="..\..\..\include\ptlib\wm"
-							PreprocessorDefinitions=""
-							UsePrecompiledHeader="0"
+							Name="VCCustomBuildTool"
+							CommandLine="bison -o ../common/getdate_tab.c ../common/getdate.y&#x0D;&#x0A;"
+							Outputs="../common/getdate_tab.c"
 						/>
 					</FileConfiguration>
 				</File>
@@ -8753,7 +8790,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir).svn\wc.db"
 						Outputs="$(InputDir)revision.h"
 					/>
@@ -8764,7 +8801,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir).svn\wc.db"
 						Outputs="$(InputDir)revision.h"
 					/>
@@ -8775,7 +8812,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Setting SVN revision include file."
-						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h"
+						CommandLine="$(ProjectDir)..\..\..\svn_getrev $(InputPath) $(InputDir)revision.h&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir).svn\wc.db"
 						Outputs="$(InputDir)revision.h"
 					/>

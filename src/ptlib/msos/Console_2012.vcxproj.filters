@@ -16,9 +16,6 @@
     <ClCompile Include="..\..\ptclib\delaychan.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\getdate_tab.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\regex\regerror.c">
       <Filter>Regex</Filter>
     </ClCompile>
@@ -375,6 +372,9 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\shttpsvc.cxx">
       <Filter>Source Files\Components\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\getdate.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -959,6 +959,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\revision.h.in">
       <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\common\getdate.tab.c">
+      <Filter>Source Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
