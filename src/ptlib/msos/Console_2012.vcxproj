@@ -364,6 +364,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\ptclib\tonedev.cxx" />
+    <ClCompile Include="..\common\getdate.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\unix\opensl_es.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
@@ -383,6 +391,35 @@
     <ClCompile Include="..\..\ptclib\script.cxx" />
     <ClCompile Include="..\..\ptclib\ssdp.cxx" />
     <ClCompile Include="..\..\ptclib\vcard.cxx" />
+    <CustomBuild Include="..\common\getdate.tab.c">
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Android'">copy "%(FullPath)" "%(RootDir)%(Directory)getdate.c"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Android'">Using default getdate bison file.</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Android'">%(RootDir)%(Directory)getdate.c;%(Outputs)</Outputs>
+    </CustomBuild>
     <ClCompile Include="..\common\jidctflt.cxx">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -501,20 +538,6 @@
     </ClCompile>
     <ClCompile Include="..\common\collect.cxx" />
     <ClCompile Include="..\common\contain.cxx" />
-    <ClCompile Include="..\common\getdate_tab.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="icmp.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">true</ExcludedFromBuild>
@@ -918,6 +941,15 @@ bison -o ../common/getdate_tab.c ../common/getdate.y
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">bison -o ../common/getdate_tab.c ../common/getdate.y</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">bison -o ../common/getdate_tab.c ../common/getdate.y</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Android'">bison -o ../common/getdate_tab.c ../common/getdate.y</Command>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android'">true</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptlib_config.h.in">
       <FileType>Document</FileType>
