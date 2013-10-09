@@ -27,21 +27,23 @@
 
 
 #ifdef _WIN32
-#ifdef _MSC_VER
-#pragma warning(disable:4131 4244 4267 4701)
-#endif
-#define STDAPICALLTYPE __stdcall
-#define MSDOS
+  #ifdef _MSC_VER
+    #pragma warning(disable:4127 4131 4244 4267 4701 4702)
+  #endif
+  #define STDAPICALLTYPE __stdcall
+  #define MSDOS
+  #define YYMALLOC malloc
+  #define YYFREE free
 #else
-#define STDAPICALLTYPE
+  #define STDAPICALLTYPE
 #endif
 
 
 extern int  STDAPICALLTYPE PTimeGetChar(void * stream);
 extern void STDAPICALLTYPE PTimeUngetChar(void * stream, int c);
-int STDAPICALLTYPE PTimeGetDateOrder();
-int STDAPICALLTYPE PTimeIsMonthName(const char *, int, int);
-int STDAPICALLTYPE PTimeIsDayName(const char *, int, int);
+extern int STDAPICALLTYPE PTimeGetDateOrder();
+extern int STDAPICALLTYPE PTimeIsMonthName(const char *, int, int);
+extern int STDAPICALLTYPE PTimeIsDayName(const char *, int, int);
 
 
 #define EPOCH		1970
