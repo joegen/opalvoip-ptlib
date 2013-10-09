@@ -1,3 +1,5 @@
+%define api.pure
+
 %{
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
