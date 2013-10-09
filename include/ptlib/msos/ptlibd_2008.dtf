@@ -15352,7 +15352,6 @@ EXPORTS
     ?Begin@PTrace@@SAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPBDH0PBVPObject@@0@Z @15258 NONAME
     ?Begin@PTrace@@SAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPBDHPBVPObject@@0@Z @15259 NONAME
     ?BeginEncoding@PASN_Stream@@QAEXXZ @15260 NONAME
-    ?BeginFrameRateCheck@PSampleGrabberCB@@QAEXXZ @26145 NONAME
     ?BeginMessage@PPOP3Client@@QAE_NH@Z @15261 NONAME
     ?BeginMessage@PSMTPClient@@QAE_NABVPString@@0_N@Z @15262 NONAME
     ?BeginMessage@PSMTPClient@@QAE_NABVPString@@ABVPStringList@@_N@Z @15263 NONAME
@@ -22031,7 +22030,6 @@ EXPORTS
     ?Previous@PSafePtrBase@@MAEXXZ @21880 NONAME
     ?Previous@PSafePtrMultiThreaded@@MAEXXZ @21881 NONAME
     ?Previous@Row@PODBC@@QAE_NXZ @21882 NONAME
-    ?PrintActualFramRate@PSampleGrabberCB@@QAEXXZ @26148 NONAME
     ?PrintContents@PMIMEInfo@@UBEAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV23@@Z @21883 NONAME
     ?PrintElementOn@?$PBaseArray@D@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @21884 NONAME
     ?PrintElementOn@?$PBaseArray@E@@MBEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@H@Z @21885 NONAME
@@ -23404,6 +23402,7 @@ EXPORTS
     ?Start@PInterfaceMonitor@@QAEXXZ @23256 NONAME
     ?Start@PMessageDigest5@@UAEXXZ @23257 NONAME
     ?Start@PMessageDigestSHA1@@UAEXXZ @23258 NONAME
+    ?Start@PSampleGrabberCB@@QAEXXZ @26156 NONAME
     ?Start@PSASLClient@@IAE_NABVPString@@PAPBDAAI@Z @23259 NONAME
     ?Start@PSASLClient@@QAE_NABVPString@@AAV2@@Z @23260 NONAME
     ?Start@PVideoDevice@@UAE_NXZ @23261 NONAME
@@ -23478,6 +23477,7 @@ EXPORTS
     ?Stop@PCLISocket@@UAEXXZ @23333 NONAME
     ?Stop@PEthSocketThread@@UAEXXZ @23334 NONAME
     ?Stop@PInterfaceMonitor@@QAEXXZ @23335 NONAME
+    ?Stop@PSampleGrabberCB@@QAEXXZ @26157 NONAME
     ?Stop@PSimpleTimer@@QAEXXZ @23336 NONAME
     ?Stop@PTimer@@QAEX_N@Z @23337 NONAME
     ?Stop@PVideoDevice@@UAE_NXZ @23338 NONAME

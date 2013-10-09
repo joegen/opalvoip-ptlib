@@ -21482,6 +21482,7 @@ EXPORTS
     ?Start@PInterfaceMonitor@@QEAAXXZ @21358 NONAME
     ?Start@PMessageDigest5@@UEAAXXZ @21359 NONAME
     ?Start@PMessageDigestSHA1@@UEAAXXZ @21360 NONAME
+    ?Start@PSampleGrabberCB@@QEAAXXZ @24453 NONAME
     ?Start@PVideoDevice@@UEAA_NXZ @21361 NONAME
     ?Start@PVideoInputDevice_Application@@UEAA_NXZ @21362 NONAME
     ?Start@PVideoInputDevice_DirectShow@@UEAA_NXZ @21363 NONAME
@@ -21552,6 +21553,7 @@ EXPORTS
     ?Stop@PCLISocket@@UEAAXXZ @21431 NONAME
     ?Stop@PEthSocketThread@@UEAAXXZ @21432 NONAME
     ?Stop@PInterfaceMonitor@@QEAAXXZ @21433 NONAME
+    ?Stop@PSampleGrabberCB@@QEAAXXZ @24454 NONAME
     ?Stop@PSimpleTimer@@QEAAXXZ @21434 NONAME
     ?Stop@PTimer@@QEAAX_N@Z @21435 NONAME
     ?Stop@PVideoDevice@@UEAA_NXZ @21436 NONAME
