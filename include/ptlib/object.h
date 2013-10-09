@@ -1407,11 +1407,6 @@ class PSingleton
       : __gnu_cxx::__pool<_Thread>(t)
     {
     }
-
-    ~PMemoryPool() throw()
-    {
-      this->_M_destroy();
-    }
   };
 
   /*Do this template class specialisation so each type has it's own separate
