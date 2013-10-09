@@ -27,13 +27,15 @@
 
 
 #ifdef _WIN32
-#ifdef _MSC_VER
-#pragma warning(disable:4131 4244 4267 4701)
-#endif
-#define STDAPICALLTYPE __stdcall
-#define MSDOS
+  #ifdef _MSC_VER
+    #pragma warning(disable:4127 4131 4244 4267 4701 4702)
+  #endif
+  #define STDAPICALLTYPE __stdcall
+  #define MSDOS
+  #define YYMALLOC malloc
+  #define YYFREE free
 #else
-#define STDAPICALLTYPE
+  #define STDAPICALLTYPE
 #endif
 
 
