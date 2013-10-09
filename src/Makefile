@@ -378,7 +378,7 @@ SOURCES	+= \
 	$(PLATFORM_SRC_DIR)/switch.cxx
 endif
 
-GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
+GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.c
 
 SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/spooldir.cxx \
@@ -465,14 +465,25 @@ $(OBJDIR)/switch.o: $(PLATFORM_SRC_DIR)/switch.cxx
 	$(Q_CC)$(CXX) $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 endif
 
-$(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
+
+#######################################################
+
+$(OBJDIR)/getdate.o: $(GETDATE_SOURCE)
 	$(Q_CC)$(CC) -Wno-write-strings $(PTLIB_CFLAGS) $(CFLAGS) -c $< -o $@
 
-$(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
+$(DEPDIR)/getdate.dep: $(GETDATE_SOURCE)
 	$(Q_CC)$(CC) $(PTLIB_CFLAGS) -M $< >> $@
 
-$(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
-	bison $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
+GETDATE_TAB_C := $(COMMON_SRC_DIR)/getdate.tab.c
+
+$(GETDATE_SOURCE): $(GETDATE_TAB_C)
+	cp $< $@
+
+ifdef BISON
+$(GETDATE_TAB_C): $(COMMON_SRC_DIR)/getdate.y
+	$(BISON) -o $@ $<
+endif
+
 
 #######################################################
 

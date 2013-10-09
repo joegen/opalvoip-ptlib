@@ -485,11 +485,8 @@ if test -z "$AR" ; then
 fi
 
 dnl ########################################################################
-dnl we need bison, so we better make sure it's there
+dnl See if we have bison
 AC_PATH_PROG(BISON, bison)
-if test -z "$BISON" ; then
-        AC_MSG_ERROR(PTLib needs the GNU Project parser generator bison, 1)
-fi
 
 dnl ########################################################################
 AC_CHECK_TOOL(SVN, svn)

@@ -1,3 +1,5 @@
+%define api.pure
+
 %{
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
@@ -107,7 +109,6 @@ struct Variables {
 #define VARIABLE ((struct Variables*)parseParam)
 
 
-#define YYPURE		1
 #define YYLEX_PARAM	VARIABLE
 #define YYPARSE_PARAM	parseParam
 
@@ -134,7 +135,6 @@ static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
 
 %}
 
-%pure_parser
 
 %union {
     time_t		Number;
