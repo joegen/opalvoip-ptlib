@@ -66,7 +66,7 @@ AR      := @AR@
 RANLIB  := @RANLIB@
 LN_S    := @LN_S@
 MKDIR_P := @MKDIR_P@
-YACC    := @YACC@
+BISON   := @BISON@
 INSTALL := @INSTALL@
 SVN     := @SVN@
 
