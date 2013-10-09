@@ -910,6 +910,15 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">bison -o ../common/getdate_tab.c ../common/getdate.y</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">bison -o ../common/getdate_tab.c ../common/getdate.y</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Android'">bison -o ../common/getdate_tab.c ../common/getdate.y</Command>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptlib_config.h.in">
       <FileType>Document</FileType>
