@@ -158,23 +158,31 @@ typedef PKey<PINDEX> POrdinalKey;
 // Member variables
 struct PHashTableElement
 {
-    PObject * key;
-    PObject * data;
-    PHashTableElement * next;
-    PHashTableElement * prev;
-    PINDEX bucket;
+    PObject           * m_key;
+    PObject           * m_data;
+    PHashTableElement * m_next;
+    PHashTableElement * m_prev;
+    PINDEX              m_bucket;
 
     PDECLARE_POOL_ALLOCATOR();
 };
 
-class PHashTableInfo : public PBaseArray<PHashTableElement *>
+struct PHashTableList
 {
-    typedef PBaseArray<PHashTableElement *> ParentClass;
+  PHashTableList() : m_head(NULL), m_tail(NULL) { }
+  PHashTableElement * m_head;
+  PHashTableElement * m_tail;
+};
+__inline std::ostream & operator<<(std::ostream & strm, const PHashTableList & hash) { return strm << (void *)hash.m_head; }
+
+class PHashTableInfo : public PBaseArray<PHashTableList>
+{
+    typedef PBaseArray<PHashTableList> ParentClass;
     PCLASSINFO(PCharArray, ParentClass);
   public:
     PHashTableInfo(PINDEX initialSize = 0)
       : ParentClass(initialSize) { }
-    PHashTableInfo(PHashTableElement * const * buffer, PINDEX length, PBoolean dynamic = true)
+    PHashTableInfo(PHashTableList const * buffer, PINDEX length, PBoolean dynamic = true)
       : ParentClass(buffer, length, dynamic) { }
     virtual PObject * Clone() const { return PNEW PHashTableInfo(*this, GetSize()); }
     virtual ~PHashTableInfo() { Destruct(); }
@@ -190,7 +198,6 @@ class PHashTableInfo : public PBaseArray<PHashTableElement *>
 
     PBoolean deleteKeys;
 
-  typedef PHashTableElement Element;
   friend class PHashTable;
   friend class PAbstractSet;
 };
@@ -304,9 +311,6 @@ class PHashTable : public PCollection
     ) const;
   //@}
 
-    // The type below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
-    typedef PHashTableElement Element;
-    typedef PHashTableInfo Table;
     PHashTableInfo * hashTable;
 };
 
@@ -636,7 +640,7 @@ template <class T> class PSet : public PAbstractSet
         void Next() { this->element = PAssertNULL(this->table)->NextElement(this->element); }
         void Prev() { this->element = PAssertNULL(this->table)->PrevElement(this->element); }
 
-        T * Ptr() const { return dynamic_cast<T *>(PAssertNULL(this->element)->key); }
+        T * Ptr() const { return dynamic_cast<T *>(PAssertNULL(this->element)->m_key); }
 
       public:
         bool operator==(const iterator_base & it) const { return this->element == it.element; }
@@ -1146,8 +1150,8 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
         {
           this->m_element = element;
           if (element != NULL) {
-            this->m_internal_first  = dynamic_cast<K *>(element->key);
-            this->m_internal_second = dynamic_cast<D *>(element->data);
+            this->m_internal_first  = dynamic_cast<K *>(element->m_key);
+            this->m_internal_second = dynamic_cast<D *>(element->m_data);
           }
           else {
             this->m_internal_first = NULL;
@@ -1223,8 +1227,8 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
     const_iterator end()   const { return const_iterator(); }
     const_iterator find(const K & k) const { return const_iterator(this, k); }
 
-    void erase(const       iterator & it) { this->AbstractSetAt(*it.m_element->key, NULL); }
-    void erase(const const_iterator & it) { this->AbstractSetAt(*it.m_element->key, NULL); }
+    void erase(const       iterator & it) { this->AbstractSetAt(*it.m_element->m_key, NULL); }
+    void erase(const const_iterator & it) { this->AbstractSetAt(*it.m_element->m_key, NULL); }
   //@}
 
   protected:

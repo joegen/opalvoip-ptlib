@@ -332,7 +332,7 @@ template <class T> class PBaseArray : public PAbstractArray
       PINDEX index  ///< Position on the array to get value from.
     ) const {
       PASSERTINDEX(index);
-      return index < GetSize() ? ((T *)theArray)[index] : (T)0;
+      return index < GetSize() ? (reinterpret_cast<T *>(theArray))[index] : T();
     }
 
     /**Attach a pointer to a static block to the base array type. The pointer
