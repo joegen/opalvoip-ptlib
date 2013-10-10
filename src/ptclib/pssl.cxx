@@ -1425,7 +1425,7 @@ bool PSSLDiffieHellman::Construct(const BYTE * pData, PINDEX pSize,
                                   const BYTE * gData, PINDEX gSize,
                                   const BYTE * kData, PINDEX kSize)
 {
-  if (!PAssert(pSize >= 64 && pSize%4 == 0 && gSize <= pSize && gSize%4 == 0, PInvalidParameter))
+  if (!PAssert(pSize >= 64 && pSize%4 == 0 && gSize <= pSize && kSize <= pSize, PInvalidParameter))
     return false;
 
   if ((m_dh->p = BN_bin2bn(pData, pSize, NULL)) == NULL)

@@ -406,7 +406,7 @@ class PSSLDiffieHellman : public PObject
     PSSLDiffieHellman(
       const PBYTEArray & pData,   ///< Modulus data
       const PBYTEArray & gData,   ///< Generator data
-      const PBYTEArray & pubKey   ///< Public key data
+      const PBYTEArray & pubKey = PBYTEArray() ///< Public key data
     );
 
     /**Create a copy of the Diffie-Hellman parameters.
