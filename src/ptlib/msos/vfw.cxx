@@ -1086,6 +1086,31 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     virtual PStringArray GetDeviceNames() const
     { return GetOutputDeviceNames(); }
 
+    enum SizeMode {
+      NormalSize,
+      HalfSize,
+      DoubleSize,
+      FullScreen,
+      FixedSize,
+      NumSizeModes
+    };
+
+    /**Get the number of video channels available on the device.
+    */
+    virtual int GetNumChannels() { return NumSizeModes; }
+
+    /**Set the video channel to be used on the device.
+       The channel number is an integer from 0 to GetNumChannels()-1. The
+       special value of -1 will find the first working channel number.
+    */
+    virtual PBoolean SetChannel(
+      int channelNumber  ///< New channel number for device.
+    );
+
+    /**Get the video channel to be used on the device.
+    */
+    virtual int GetChannel() const { return m_sizeMode; }
+
     /**Set the colour format to be used.
        Note that this function does not do any conversion. If it returns true
        then the video device does the colour format in native mode.
@@ -1154,7 +1179,6 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
   protected:
     PDECLARE_NOTIFIER(PThread, PVideoOutputDevice_Window, HandleDisplay);
     void CreateDisplayWindow();
-    void SetMyWindowSize(unsigned width, unsigned height, bool fullScreen);
     void Draw(HDC hDC);
 
     HWND       m_hWnd;
@@ -1167,7 +1191,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     bool       m_flipped;
     POINT      m_lastPosition;
     SIZE       m_fixedSize;
-    bool       m_fullScreen;
+    SizeMode   m_sizeMode;
     bool       m_showInfo;
     unsigned   m_frameCount;
     unsigned   m_observedFrameRate;
@@ -1201,7 +1225,7 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   , m_dwExStyle(0)
   , m_thread(NULL)
   , m_flipped(false)
-  , m_fullScreen(false)
+  , m_sizeMode(NormalSize)
   , m_showInfo(false)
   , m_frameCount(0)
   , m_observedFrameRate(0)
@@ -1318,6 +1342,78 @@ PBoolean PVideoOutputDevice_Window::Stop()
 }
 
 
+PBoolean PVideoOutputDevice_Window::SetChannel(int channelNumber)
+{
+  if (channelNumber < NormalSize || channelNumber >= NumSizeModes)
+    return false;
+
+  if (m_hWnd != NULL) {
+    UINT flags = SWP_SHOWWINDOW;
+
+    if (m_sizeMode == FullScreen) {
+      if (channelNumber == FullScreen)
+        return true;
+
+      SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle);
+      SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwExStyle);
+      flags |= SWP_FRAMECHANGED;
+    }
+
+    RECT rect;
+    rect.right = rect.left = m_lastPosition.x;
+    rect.bottom = rect.top = m_lastPosition.y;
+    bool adjust = true;
+    switch (channelNumber) {
+      case NormalSize :
+        rect.right += frameWidth;
+        rect.bottom += frameHeight;
+        break;
+
+      case HalfSize :
+        rect.right += frameWidth/2;
+        rect.bottom += frameHeight/2;
+        break;
+
+      case DoubleSize :
+        rect.right += frameWidth*2;
+        rect.bottom += frameHeight*2;
+        break;
+
+      case FixedSize :
+        rect.right += m_fixedSize.cx;
+        rect.bottom += m_fixedSize.cy;
+        break;
+
+      case FullScreen :
+        HMONITOR hmon = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO mi = { sizeof(mi) };
+        if (GetMonitorInfo(hmon, &mi)) {
+          SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle & ~(WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_THICKFRAME));
+          SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwExStyle & ~(WS_EX_DLGMODALFRAME|WS_EX_CLIENTEDGE|WS_EX_STATICEDGE|WS_EX_WINDOWEDGE));
+          rect = mi.rcWork;
+          flags |= SWP_FRAMECHANGED;
+          adjust = false;
+        }
+        else {
+          rect.left = 0;
+          rect.top = 0;
+          rect.right = GetSystemMetrics(SM_CXFULLSCREEN);
+          rect.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
+        }
+    }
+
+    if (adjust)
+      AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle);
+
+    PTRACE(4, "SetWindowPos: t" << rect.left << 'x' << rect.top << ".." << rect.right-rect.left << 'x' << rect.bottom-rect.top << ')');
+    ::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, flags);
+  }
+
+  m_sizeMode = (SizeMode)channelNumber;
+  return true;
+}
+
+
 PBoolean PVideoOutputDevice_Window::SetColourFormat(const PString & colourFormat)
 {
   PWaitAndSignal m(mutex);
@@ -1364,61 +1460,9 @@ PBoolean PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height
   }
 
   // Must be outside of mutex
-  SetMyWindowSize(m_fixedSize.cx, m_fixedSize.cy, m_fullScreen);
+  SetChannel(GetChannel());
 
   return true;
-}
-
-
-void PVideoOutputDevice_Window::SetMyWindowSize(unsigned width, unsigned height, bool wantFullScreen)
-{
-  if (m_hWnd == NULL)
-    return;
-
-  int x = m_lastPosition.x;
-  int y = m_lastPosition.y;
-  int w = width > 0 ? width : frameWidth;
-  int h = height > 0 ? height : frameHeight;
-  UINT flags = SWP_SHOWWINDOW;
-
-  if (m_fullScreen) {
-    if (wantFullScreen)
-      return;
-
-    SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle);
-    SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwExStyle);
-    flags |= SWP_FRAMECHANGED;
-    m_fullScreen = false;
-  }
-  else if (wantFullScreen) {
-    HMONITOR hmon = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
-    MONITORINFO mi = { sizeof(mi) };
-    if (GetMonitorInfo(hmon, &mi)) {
-      SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle & ~(WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_THICKFRAME));
-      SetWindowLong(m_hWnd, GWL_EXSTYLE, m_dwExStyle & ~(WS_EX_DLGMODALFRAME|WS_EX_CLIENTEDGE|WS_EX_STATICEDGE|WS_EX_WINDOWEDGE));
-      x = mi.rcWork.left;
-      y = mi.rcWork.top;
-      w = mi.rcWork.right - mi.rcWork.left;
-      h = mi.rcWork.bottom - mi.rcWork.top;
-      flags |= SWP_FRAMECHANGED;
-      m_fullScreen = true;
-    }
-  }
-
-  if (!m_fullScreen) {
-    RECT rect;
-    rect.top = 0;
-    rect.left = 0;
-    rect.bottom = h;
-    rect.right = w;
-    if (AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle)) {
-      w = rect.right - rect.left;
-      h = rect.bottom - rect.top;
-    }
-  }
-
-  PTRACE(4, "SetWindowPos(" << x << 'x' << y << ".." << w << 'x' << h << ')');
-  ::SetWindowPos(m_hWnd, HWND_TOP, x, y, w, h, flags);
 }
 
 
@@ -1620,6 +1664,15 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
   m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
   m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
 
+  if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
+    m_sizeMode = FullScreen;
+  else if (deviceName.Find("HALF") != P_MAX_INDEX)
+    m_sizeMode = HalfSize;
+  else if (deviceName.Find("DOUBLE") != P_MAX_INDEX)
+    m_sizeMode = DoubleSize;
+  else if (m_fixedSize.cx > 0 && m_fixedSize.cy > 0)
+    m_sizeMode = FixedSize;
+
   if (m_lastPosition.x == CW_USEDEFAULT && m_lastPosition.y == CW_USEDEFAULT) {
     if (hParent != NULL) {
       RECT rect;
@@ -1641,7 +1694,7 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
     return;
 
   m_dwExStyle = GetWindowLong(m_hWnd, GWL_EXSTYLE);
-  SetMyWindowSize(m_fixedSize.cx, m_fixedSize.cy, deviceName.Find("FULLSCREEN") != P_MAX_INDEX);
+  SetChannel(GetChannel());
 
   m_showInfo = deviceName.Find("SHOWINFO") != P_MAX_INDEX;
 }
@@ -1676,81 +1729,80 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
       }
 
     case WM_MOVE :
-      if (m_hWnd != NULL && !m_fullScreen) {
+      if (m_hWnd != NULL && m_sizeMode != FullScreen) {
+#if 0
         RECT rect;
         rect.left = rect.right = GET_X_LPARAM(lParam);
         rect.top = rect.bottom = GET_Y_LPARAM(lParam);
         ::AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle);
         m_lastPosition.x = rect.left;
         m_lastPosition.y = rect.top;
+#else
+        m_lastPosition.x = GET_X_LPARAM(lParam);
+        m_lastPosition.y = GET_Y_LPARAM(lParam);
+#endif
         PTRACE(4, "Moved to " << m_lastPosition.x << 'x' << m_lastPosition.y);
       }
       break;
 
     case WM_LBUTTONDBLCLK :
-      if (m_fixedSize.cx < 10000 && m_fixedSize.cy < 10000)
-        SetMyWindowSize(2*(m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth),
-                        2*(m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight),
-                        false);
+      switch (m_sizeMode) {
+        default :
+          SetChannel(NormalSize);
+          break;
+
+        case NormalSize :
+          SetChannel(DoubleSize);
+          break;
+
+        case FixedSize :
+          if (m_fixedSize.cx < 10000 && m_fixedSize.cy < 10000) {
+            m_fixedSize.cx *= 2;
+            m_fixedSize.cy *= 2;
+            SetChannel(FixedSize);
+          }
+      }
       break;
 
     case WM_RBUTTONDBLCLK :
-      if ((m_fixedSize.cx&1) == 0 && (m_fixedSize.cy&1) == 0)
-        SetMyWindowSize((m_fixedSize.cx > 0 ? m_fixedSize.cx : frameWidth)/2,
-                        (m_fixedSize.cy > 0 ? m_fixedSize.cy : frameHeight)/2,
-                        false);
+      switch (m_sizeMode) {
+        default :
+          SetChannel(NormalSize);
+          break;
+
+        case NormalSize :
+          SetChannel(HalfSize);
+          break;
+
+        case FixedSize :
+          if (m_fixedSize.cx > 64 && m_fixedSize.cy > 36 && (m_fixedSize.cx&1) == 0 && (m_fixedSize.cy&1) == 0) {
+            m_fixedSize.cx /= 2;
+            m_fixedSize.cy /= 2;
+            SetChannel(FixedSize);
+          }
+      }
       break;
 
     case WM_RBUTTONDOWN :
       {
         HMENU hMenu = CreatePopupMenu();
-        AppendMenu(hMenu,
-                   MF_ENABLED|MF_STRING|(m_fullScreen ? MF_CHECKED : 0),
-                   1, "Full screen");
-        AppendMenu(hMenu,
-                   MF_ENABLED|MF_STRING|(m_fixedSize.cx == (LONG)frameWidth &&
-                                         m_fixedSize.cy == (LONG)frameHeight &&
-                                        !m_fullScreen ? MF_CHECKED : 0),
-                   2, "Normal size");
-        AppendMenu(hMenu,
-                   MF_ENABLED|MF_STRING|(m_fixedSize.cx == (LONG)frameWidth/2 &&
-                                         m_fixedSize.cy == (LONG)frameHeight/2 &&
-                                        !m_fullScreen ? MF_CHECKED : 0),
-                   3, "Half size");
-        AppendMenu(hMenu,
-                   MF_ENABLED|MF_STRING|(m_fixedSize.cx == (LONG)frameWidth*2 &&
-                                         m_fixedSize.cy == (LONG)frameHeight*2 &&
-                                        !m_fullScreen ? MF_CHECKED : 0),
-                   4, "Double size");
+        AppendMenu(hMenu, MF_ENABLED|MF_STRING|(m_sizeMode == NormalSize ? MF_CHECKED : 0), 100+NormalSize, "Normal size");
+        AppendMenu(hMenu, MF_ENABLED|MF_STRING|(m_sizeMode == FullScreen ? MF_CHECKED : 0), 100+FullScreen, "Full screen");
+        AppendMenu(hMenu, MF_ENABLED|MF_STRING|(m_sizeMode == HalfSize   ? MF_CHECKED : 0), 100+HalfSize,   "Half size"  );
+        AppendMenu(hMenu, MF_ENABLED|MF_STRING|(m_sizeMode == DoubleSize ? MF_CHECKED : 0), 100+DoubleSize, "Double size");
         AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-        AppendMenu(hMenu,
-                   MF_ENABLED|MF_STRING|(m_showInfo ? MF_CHECKED : 0),
-                   5, "Show Info");
+        AppendMenu(hMenu, MF_ENABLED|MF_STRING|(m_showInfo ? MF_CHECKED : 0), 10, "Show Info");
 
         POINT pt;
         pt.x = GET_X_LPARAM(lParam);
         pt.y = GET_Y_LPARAM(lParam);
         ClientToScreen(m_hWnd, &pt);
-        switch (TrackPopupMenu(hMenu, TPM_RIGHTBUTTON|TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, NULL)) {
-          case 1 :
-            SetMyWindowSize(0, 0, true);
-            break;
-
-          case 2 :
-            SetMyWindowSize(frameWidth, frameHeight, false);
-            break;
-
-          case 3 :
-            SetMyWindowSize(frameWidth/2, frameHeight/2, false);
-            break;
-
-          case 4 :
-            SetMyWindowSize(frameWidth*2, frameHeight*2, false);
-            break;
-
-          case 5 :
-            m_showInfo = !m_showInfo;
-            InvalidateRect(m_hWnd, NULL, false);
+        int menu = TrackPopupMenu(hMenu, TPM_RIGHTBUTTON|TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, NULL);
+        if (menu >= 100)
+          SetChannel(menu-100);
+        else {
+          m_showInfo = !m_showInfo;
+          InvalidateRect(m_hWnd, NULL, false);
         }
         DestroyMenu(hMenu);
       }
