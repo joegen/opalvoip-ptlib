@@ -1217,6 +1217,10 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
   PPLUGIN_STATIC_LOAD(DirectShow, PVideoInputDevice);
 #endif
 
+#if defined(P_MACOSX) || defined(P_IOS)
+  PPLUGIN_STATIC_LOAD(Mac, PVideoInputDevice);
+#endif
+
 
 ////////////////////////////////////////////////////////
 //
