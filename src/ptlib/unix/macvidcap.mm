@@ -32,6 +32,8 @@
 
 #if P_VIDEO
 
+#define P_FORCE_STATIC_PLUGIN 1
+
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
