@@ -343,8 +343,10 @@ PBoolean PVideoInputDevice_Mac::Close()
 
   PLocalMemoryPool localPool;
 
-  if (m_device != nil && [m_device isOpen])
+  if (m_device != nil) {
     [m_device close];
+    m_device = nil;
+  }
 
   if (m_captureInput != nil) {
     [m_session removeInput:m_captureInput];
@@ -359,16 +361,11 @@ PBoolean PVideoInputDevice_Mac::Close()
     m_captureOutput = nil;
   }
 
-  if (m_device != nil) {
-    [m_device release];
-    m_device = nil;
-  }
-
   if (m_captureFrame != nil) {
     [m_captureFrame release];
     m_captureFrame = nil;
   }
-
+  
   if (m_session != nil) {
     [m_session release];
     m_session = nil;
