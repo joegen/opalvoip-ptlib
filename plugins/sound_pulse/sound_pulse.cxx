@@ -34,19 +34,16 @@
 
 #pragma implementation "sound_pulse.h"
 
+#include "sound_pulse.h"
+
 #include <pulse/context.h>
 #include <pulse/error.h>
 #include <pulse/introspect.h>
 #include <pulse/thread-mainloop.h>
 #include <pulse/volume.h>
-//#include <pulse/gccmacro.h>
 #include <pulse/sample.h>
-#include <ptlib.h>
+
 #include <ptclib/random.h>
-#include <ptclib/pwavfile.h>
-
-#include "sound_pulse.h"
-
 
 
 PCREATE_SOUND_PLUGIN(Pulse, PSoundChannelPulse);
@@ -86,7 +83,6 @@ public:
   static void signal() {
     pa_threaded_mainloop_signal(paloop,0);
   }
-
 };
 
 static PulseContext pamain;
@@ -161,7 +157,6 @@ static void source_info_cb(pa_context *c, const pa_source_info *i, int eol, void
 
 PStringArray PSoundChannelPulse::GetDeviceNames(Directions dir)
 {
-  PTRACE2(6, NULL, "Pulse\tReport devicenames as \"PulseAudio\"");
   PulseLock lock;
   PStringArray devices;
   devices.AppendString("PulseAudio"); // Default device
@@ -174,17 +169,16 @@ PStringArray PSoundChannelPulse::GetDeviceNames(Directions dir)
       pa_context_get_source_info_list(context,source_info_cb,&devices);
   }
   lock.waitFor(operation);
+
+  PTRACE2(5, NULL, "Pulse\t" << dir << " devices: " << setfill(',') << devices);
   return devices;
 }
 
 
 PString PSoundChannelPulse::GetDefaultDevice(Directions dir)
 {
-  PTRACE2(6, NULL, "Pulse\t report default device as \"PulseAudio\"");
-  PStringArray devicenames;
-  devicenames = PSoundChannelPulse::GetDeviceNames(dir);
-
-  return devicenames[0];
+  PStringArray devices = PSoundChannelPulse::GetDeviceNames(dir);
+  return devices[0];
 }
 
 static void stream_notify_cb(pa_stream *s, void *userdata) {
@@ -212,10 +206,7 @@ bool PSoundChannelPulse::Open(const Params & params)
     appName << app;
   else
     appName << "PTLib plugin ";
-  if (activeDirection == Player) 
-    streamName << ::hex << PRandom::Number();
-  else
-    streamName << ::hex << PRandom::Number();
+  streamName << ::hex << PRandom::Number();
 
   ss.rate = params.m_sampleRate;
   ss.channels = params.m_channels;
@@ -422,53 +413,6 @@ PBoolean PSoundChannelPulse::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
-PBoolean PSoundChannelPulse::PlaySound(const PSound & sound, PBoolean wait)
-{
-
-  return false;
-}
-
-
-PBoolean PSoundChannelPulse::PlayFile(const PFilePath & filename, PBoolean wait)
-{
-#if P_WAVFILE
-  BYTE buffer [512];
-  PTRACE(1, "PULSE\tPlayFile " << filename);
-
-  if (!os_handle)
-    return SetErrorValues(NotOpen, EBADF);
-
-  /* use PWAVFile instead of PFile -> skips wav header bytes */
-  PWAVFile file(filename, PFile::ReadOnly);
-
-  if (!file.IsOpen())
-    return false;
-
-  for (;;) {
-    if (!file.Read(buffer, 512))
-      break;
-
-    PINDEX len = file.GetLastReadCount();
-
-    if (len == 0)
-      break;
-
-    if (!Write(buffer, len))
-      break;
-  }
-
-  file.Close();
-
-  if (wait)
-   return WaitForPlayCompletion();
-
-  return true;
-#else
-  return false;
-#endif
-}
-
-
 PBoolean PSoundChannelPulse::HasPlayCompleted()
 {
   return true;
@@ -478,18 +422,6 @@ PBoolean PSoundChannelPulse::HasPlayCompleted()
 PBoolean PSoundChannelPulse::WaitForPlayCompletion()
 {
   return true;
-}
-
-
-PBoolean PSoundChannelPulse::RecordSound(PSound & sound)
-{
-  return false;
-}
-
-
-PBoolean PSoundChannelPulse::RecordFile(const PFilePath & filename)
-{
-  return false;
 }
 
 

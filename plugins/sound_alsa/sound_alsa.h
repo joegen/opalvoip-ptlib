@@ -12,7 +12,7 @@ class PSoundChannelALSA : public PSoundChannel {
   static PStringArray GetDeviceNames(PSoundChannel::Directions);
   static PString GetDefaultDevice(PSoundChannel::Directions);
   bool Open(const Params & params);
-  PBoolean Setup();
+  PString GetName() const { return device; }
   PBoolean Close();
   PBoolean Write(const void * buf, PINDEX len);
   PBoolean Read(void * buf, PINDEX len);
@@ -22,12 +22,8 @@ class PSoundChannelALSA : public PSoundChannel {
   unsigned GetSampleSize() const;
   PBoolean SetBuffers(PINDEX size, PINDEX count);
   PBoolean GetBuffers(PINDEX & size, PINDEX & count);
-  PBoolean PlaySound(const PSound & sound, PBoolean wait);
-  PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
   PBoolean HasPlayCompleted();
   PBoolean WaitForPlayCompletion();
-  PBoolean RecordSound(PSound & sound);
-  PBoolean RecordFile(const PFilePath & filename);
   PBoolean StartRecording();
   PBoolean IsRecordBufferFull();
   PBoolean AreAllRecordBuffersFull();
