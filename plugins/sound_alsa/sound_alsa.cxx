@@ -273,7 +273,6 @@ bool PSoundChannelALSA::SetHardwareParams()
     return false;
   }
 
-#if 0
   int dir = 0;
   int totalBufferSize = m_bufferSize*m_bufferCount;
   snd_pcm_uframes_t desiredPeriodSize = m_bufferSize/frameBytes;
@@ -299,7 +298,6 @@ bool PSoundChannelALSA::SetHardwareParams()
   else {
     PTRACE(5, "ALSA\tSuccessfully set periods to " << desiredPeriods);
   }
-#endif
 
   for (unsigned retry = 0; retry < 100; ++retry) {
     if ((err = snd_pcm_hw_params(pcm_handle, hw_params)) >= 0) {
