@@ -31,25 +31,20 @@ class PSoundChannelESD: public PSoundChannel
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     static PString GetDefaultDevice(PSoundChannel::Directions);
     bool Open(const Params & params);
-    PBoolean Setup();
     PBoolean Close();
-//    PBoolean IsOpen() const;
+    PString GetName() const { GetDefaultDevice(activeDirection); }
     PBoolean Write(const void * buf, PINDEX len);
     PBoolean Read(void * buf, PINDEX len);
     PBoolean SetFormat(unsigned numChannels,
                    unsigned sampleRate,
                    unsigned bitsPerSample);
-//    unsigned GetChannels() const;
-//    unsigned GetSampleRate() const;
-//    unsigned GetSampleSize() const;
+    unsigned GetChannels() const { return mNumChannels; }
+    unsigned GetSampleRate() const { return mSampleRate; }
+    unsigned GetSampleSize() const { return mBitsPerSample; }
     PBoolean SetBuffers(PINDEX size, PINDEX count);
     PBoolean GetBuffers(PINDEX & size, PINDEX & count);
-    PBoolean PlaySound(const PSound & sound, PBoolean wait);
-    PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
     PBoolean HasPlayCompleted();
     PBoolean WaitForPlayCompletion();
-    PBoolean RecordSound(PSound & sound);
-    PBoolean RecordFile(const PFilePath & filename);
     PBoolean StartRecording();
     PBoolean IsRecordBufferFull();
     PBoolean AreAllRecordBuffersFull();
@@ -63,8 +58,4 @@ class PSoundChannelESD: public PSoundChannel
     unsigned mNumChannels;
     unsigned mSampleRate;
     unsigned mBitsPerSample;
-    unsigned actualSampleRate;
-    Directions direction;
-    PString device;
-    PBoolean isInitialised;
 };
