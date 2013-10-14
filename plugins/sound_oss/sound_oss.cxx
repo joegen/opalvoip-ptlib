@@ -192,7 +192,7 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
 }
 
 
-PStringArray PSoundChannelOSS::GetDeviceNames(Directions /*dir*/)
+PStringArray PSoundChannelOSS::GetDeviceNames(Directions dir)
 {
   // First locate sound cards. On Linux with devfs and on the other platforms
   // (eg FreeBSD), we search for filenames with dspN or mixerN.
@@ -253,6 +253,7 @@ PStringArray PSoundChannelOSS::GetDeviceNames(Directions /*dir*/)
     }
   }
 
+  PTRACE2(5, NULL, "OSS\t" << dir << " devices: " << setfill(',') << devices);
   return devices;
 }
 
@@ -726,52 +727,6 @@ PBoolean PSoundChannelOSS::GetBuffers(PINDEX & size, PINDEX & count)
 }
 
 
-PBoolean PSoundChannelOSS::PlaySound(const PSound & sound, PBoolean wait)
-{
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF);
-
-  Abort();
-
-  if (!Write((const BYTE *)sound, sound.GetSize()))
-    return false;
-
-  if (wait)
-    return WaitForPlayCompletion();
-
-  return true;
-}
-
-
-PBoolean PSoundChannelOSS::PlayFile(const PFilePath & filename, PBoolean wait)
-{
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF);
-
-  PFile file(filename, PFile::ReadOnly);
-  if (!file.IsOpen())
-    return false;
-
-  for (;;) {
-    BYTE buffer[256];
-    if (!file.Read(buffer, 256))
-      break;
-    PINDEX len = file.GetLastReadCount();
-    if (len == 0)
-      break;
-    if (!Write(buffer, len))
-      break;
-  }
-
-  file.Close();
-
-  if (wait)
-    return WaitForPlayCompletion();
-
-  return true;
-}
-
-
 PBoolean PSoundChannelOSS::HasPlayCompleted()
 {
   if (os_handle < 0)
@@ -791,24 +746,6 @@ PBoolean PSoundChannelOSS::WaitForPlayCompletion()
     return SetErrorValues(NotOpen, EBADF);
 
   return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SYNC, NULL));
-}
-
-
-PBoolean PSoundChannelOSS::RecordSound(PSound & sound)
-{
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF);
-
-  return false;
-}
-
-
-PBoolean PSoundChannelOSS::RecordFile(const PFilePath & filename)
-{
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF);
-
-  return false;
 }
 
 

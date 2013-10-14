@@ -50,12 +50,8 @@ class PSoundChannelPulse: public PSoundChannel
     unsigned GetSampleSize() const;
     PBoolean SetBuffers(PINDEX size, PINDEX count);
     PBoolean GetBuffers(PINDEX & size, PINDEX & count);
-    PBoolean PlaySound(const PSound & sound, PBoolean wait);
-    PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
     PBoolean HasPlayCompleted();
     PBoolean WaitForPlayCompletion();
-    PBoolean RecordSound(PSound & sound);
-    PBoolean RecordFile(const PFilePath & filename);
     PBoolean StartRecording();
     PBoolean IsRecordBufferFull();
     PBoolean AreAllRecordBuffersFull();

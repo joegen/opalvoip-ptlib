@@ -45,6 +45,9 @@ PCREATE_SOUND_PLUGIN(ESD, PSoundChannelESD);
 ///////////////////////////////////////////////////////////////////////////////
 
 PSoundChannelESD::PSoundChannelESD()
+  : mNumChannels(1)
+  , mSampleRate(8000)
+  , mBitsPerSample(16)
 {
 }
 
@@ -55,13 +58,10 @@ PSoundChannelESD::~PSoundChannelESD()
 }
 
 
-PStringArray PSoundChannelESD::GetDeviceNames(Directions /*dir*/)
+PStringArray PSoundChannelESD::GetDeviceNames(Directions dir)
 {
-  PStringArray array;
-
-  array[0] = "ESound";
-
-  return array;
+  PTRACE2(5, NULL, "ESound\t" << dir << " devices: ESound");
+  return GetDefaultDevice(dir);
 }
 
 
@@ -72,56 +72,57 @@ PString PSoundChannelESD::GetDefaultDevice(Directions /*dir*/)
 
 bool PSoundChannelESD::Open(const Params & params)
 {
-  int bits, channels, rate, mode, func;
-  esd_format_t format;
+  int mode;
+  esd_format_t format = ESD_STREAM;
   char *host = NULL, *name = NULL;
 
   Close();
 
+  mSampleRate = params.m_sampleRate;
+
   // make sure we have proper bits per sample
   switch (params.m_bitsPerSample) {
   case 16:
-    bits = ESD_BITS16;
+    format |= ESD_BITS16;
     break;
   case 8:
-    bits = ESD_BITS8;
+    format |= ESD_BITS8;
     break;
   default:
     return (false);
   }
+  mBitsPerSample = params.m_bitsPerSample;
 
   // make sure we have proper number of channels
   switch (params.m_channels) {
   case 2:
-    channels = ESD_STEREO;
+    format |= ESD_STEREO;
     break;
   case 1:
-    channels = ESD_MONO;
+    format |= ESD_MONO;
     break;
   default:
     return (false);
   }
-
-  rate = params.m_sampleRate;
-  mode = ESD_STREAM;
+  mNumChannels = params.m_channels;
 
   // a separate stream for Player and Recorder
   switch (params.m_direction) {
   case Recorder:
-    func = ESD_RECORD;
+    format |= ESD_RECORD;
     break;
   case Player:
-    func = ESD_PLAY;
+    format |= ESD_PLAY;
     break;
   default:
     return (false);
   }
+  activeDirection = params.m_direction;
 
-  format = bits | channels | mode | func;
   if (params.m_direction == Recorder) 
-    os_handle = esd_record_stream_fallback( format, rate, host, name );
+    os_handle = esd_record_stream_fallback( format, mSampleRate, host, name );
   else
-    os_handle = esd_play_stream_fallback( format, rate, host, name );
+    os_handle = esd_play_stream_fallback( format, mSampleRate, host, name );
 
   if ( os_handle <= 0 ) 
     return (false);
@@ -208,26 +209,6 @@ PBoolean PSoundChannelESD::Write(const void * buf, PINDEX len)
 }
 
 
-PBoolean PSoundChannelESD::PlaySound(const PSound & sound, PBoolean wait)
-{
-  Abort();
-
-  if (!Write((const BYTE *)sound, sound.GetSize()))
-    return false;
-
-  if (wait)
-    return WaitForPlayCompletion();
-
-  return true;
-}
-
-
-PBoolean PSoundChannelESD::PlayFile(const PFilePath & filename, PBoolean wait)
-{
-  return true;
-}
-
-
 PBoolean PSoundChannelESD::HasPlayCompleted()
 {
   return false;
@@ -253,18 +234,6 @@ PBoolean PSoundChannelESD::Read(void * buf, PINDEX len)
     lastReadCount += retval;
   }
   return (true);
-}
-
-
-PBoolean PSoundChannelESD::RecordSound(PSound & sound)
-{
-  return true;
-}
-
-
-PBoolean PSoundChannelESD::RecordFile(const PFilePath & filename)
-{
-  return true;
 }
 
 
