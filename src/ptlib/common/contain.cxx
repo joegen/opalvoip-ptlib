@@ -3231,7 +3231,7 @@ void PPrintEnum(std::ostream & strm, int value, int begin, int end, char const *
 }
 
 
-int PReadEnum(std::istream & strm, int begin, int end, char const * const * names)
+int PReadEnum(std::istream & strm, int begin, int end, char const * const * names, bool matchCase)
 {
   char name[100]; // If someone has an enumeration longer than this, it deserves to fail!
   strm >> ws;
@@ -3242,7 +3242,8 @@ int PReadEnum(std::istream & strm, int begin, int end, char const * const * name
   size_t len = strlen(name);
   int match = end;
   for (int value = begin; value < end; ++value) {
-    if (strncmp(name, names[value-begin], len) == 0) {
+    const char * cmp = names[value-begin];
+    if ((matchCase ? strncmp(name, cmp, len) : strncasecmp(name, cmp, len)) == 0) {
       if (match < end) {
         match = end; // Not unique for the length
         break;
@@ -3262,6 +3263,14 @@ int PReadEnum(std::istream & strm, int begin, int end, char const * const * name
   strm.setstate(ios::failbit);
 
   return end;
+}
+
+
+int PParseEnum(const char * str, int begin, int end, char const * const * names, bool matchCase)
+{
+  std::stringstream strm;
+  strm.str(str);
+  return PReadEnum(strm, begin, end, names, matchCase);
 }
 
 
