@@ -467,10 +467,6 @@ class PVideoDevice : public PVideoFrameInfo
     virtual PBoolean Stop() = 0;
 
 
-#if PTRACING
-    friend ostream & operator<<(ostream &, VideoFormat);
-#endif
-
     /**Set the video format to be used.
 
        Default behaviour sets the value of the videoFormat variable and then
