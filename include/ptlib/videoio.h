@@ -377,13 +377,12 @@ class PVideoDevice : public PVideoFrameInfo
      */
     virtual ~PVideoDevice();
 
-    enum VideoFormat {
+    P_DECLARE_STREAMABLE_ENUM(VideoFormat,
       PAL,
       NTSC,
       SECAM,
-      Auto,
-      NumVideoFormats
-    };
+      Auto
+    );
 
     /**Get the device name of the open device.
       */
