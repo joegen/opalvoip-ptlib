@@ -58,26 +58,6 @@ template <> PVideoOutputDevice * PDevicePluginFactory<PVideoOutputDevice>::Worke
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if PTRACING
-ostream & operator<<(ostream & strm, PVideoDevice::VideoFormat fmt)
-{
-  static const char * const VideoFormatNames[PVideoDevice::NumVideoFormats] = {
-    "PAL",
-    "NTSC",
-    "SECAM",
-    "Auto"
-  };
-
-  if (fmt < PVideoDevice::NumVideoFormats && VideoFormatNames[fmt] != NULL)
-    strm << VideoFormatNames[fmt];
-  else
-    strm << "VideoFormat<" << (unsigned)fmt << '>';
-
-  return strm;
-}
-#endif
-
-
 //Colour format bit per pixel table.
 // These are in rough order of colour gamut size and "popularity"
 static struct {
