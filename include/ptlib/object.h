@@ -248,9 +248,9 @@ extern int PParseEnum(const char * str, int begin, int end, char const * const *
     static char const * const * Names() { static char const * const Strings[] = \
       { #firstName, P_ENUM_NAMES_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__)) }; return Strings; } \
   }; \
-  friend __inline static std::ostream & operator<<(std::ostream & strm, name e) \
+  friend __inline std::ostream & operator<<(std::ostream & strm, name e) \
     { PPrintEnum(strm, e, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
-  friend __inline static std::istream & operator>>(std::istream & strm, name & e) \
+  friend __inline std::istream & operator>>(std::istream & strm, name & e) \
     { e = (name)PReadEnum(strm, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
   static __inline name name##FromString(const char * str, bool matchCase = true) { return (name)PParseEnum(str, Begin##name, End##name, PEnumNames_##name::Names(), matchCase); }
 
