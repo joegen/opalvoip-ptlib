@@ -294,6 +294,9 @@ PTHREAD_MUTEX_RECURSIVE_NP
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
+    if ((m_options & RotateLogMask) == 0 && m_filename == newFilename)
+      return;
+
     m_filename = newFilename == NULL || *newFilename == '\0' ? "stderr" : newFilename;
     PStringArray tokens = m_filename.Tokenise(',');
 
