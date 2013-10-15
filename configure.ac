@@ -2199,76 +2199,25 @@ if test "x$enable_plugins" != "xno" ; then
       if test "x$enable_v4l2" = "xno" ; then
         AC_MSG_NOTICE(V4L2 video disabled by user)
       else
-         case "$target_os" in
-            solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
-            netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
-            * )	        V4L2_HEADER="linux/videodev2.h" ; ;;
-         esac
-
          AC_CHECK_HEADER(
-            [$V4L2_HEADER], 
-            [HAS_V4L2=1],
-            [
-		          # We can't use AC_CHECK_HEADER again because
-                          # the value is cached, perhaps we have another
-                          # method to do this more cleanly ?
-		          AC_MSG_CHECKING([for $V4L2_HEADER with sys/types.h])
-		          AC_TRY_COMPILE([
-					      #ifdef __linux__
-					      #include <sys/types.h>
-					      #include <linux/types.h>
-                                              #else
-                                              #ifdef __sun
-                                              #include <sys/types.h>
-                                              #include <sys/time.h>
-                                              #else
-					      #error "not supported"
-					      #endif
-					      #endif
-					      #include "$V4L2_HEADER"
-				          ],
-				          [
-				              return 0;
-				          ],
-				          [
-				              HAS_V4L2=1
-				              AC_MSG_RESULT(yes)
-				          ],
-                                          [
-				              HAS_V4L2=
-				              AC_MSG_RESULT(no)
-                                          ])
-                        ], 
-		      [
-		      #ifdef __linux__
-		      #include <linux/types.h>
-		      #endif
-		      ])
-        AC_MSG_CHECKING(for V4L2 video support)
-        if test "x${HAS_V4L2}" = "x1"; then
-          AC_MSG_RESULT(yes)
-          PTLIB_V4L2=yes
-          AC_SUBST([V4L2_CFLAGS],[-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'])
-        else
-          HAS_V4L2=
-          PTLIB_V4L2=no
-          AC_MSG_RESULT(no)
-        fi
-        AC_SUBST(HAS_V4L2)
+            ["linux/videodev2.h"],
+            [V4L2_HEADER="linux/videodev2.h"],
+            [AC_CHECK_HEADER(
+               ["sys/videodev2.h"],
+               [V4L2_HEADER="sys/videodev2.h"],
+               [AC_CHECK_HEADER(
+                  ["sys/videoio.h"],
+                  [V4L2_HEADER="sys/videoio.h"]
+               )]
+            )]
+         )
 
-        if test "x${HAS_V4L2}" = "x1"; then
-          AC_CHECK_HEADER([libv4l2.h], 
-                          [AC_CHECK_LIB([v4l2], [v4l2_fd_open], [HAS_LIBV4L=1])]
-                         )
-                   
-          AC_MSG_CHECKING([for libv4l2 support])
-          if test "x${HAS_LIBV4L}" = "x1"; then
-            AC_MSG_RESULT(yes)
-          else
-            AC_MSG_RESULT(no)
-          fi
-          AC_SUBST(HAS_LIBV4L)
-        fi
+         if test "x$V4L2_HEADER" != "x" ; then
+            AC_SUBST([V4L2_CFLAGS],[-DV4L2_HEADER="\"\\\"$V4L2_HEADER\\\"\""])
+            AC_SUBST([V4L2_LIBS],[])
+            AC_SUBST(HAS_V4L2, 1)
+            PTLIB_V4L2=yes
+         fi
       fi
 
       dnl #########################################################################
