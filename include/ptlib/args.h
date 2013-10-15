@@ -260,13 +260,26 @@ class PArgList : public PObject
     /** Get option string. */
     virtual PString GetOptionString(
       const char * optionStr,   ///< String letter code for the option 
-      const char * dflt = NULL  ///<Default value of the option string 
+      const char * dflt = NULL  ///< Default value of the option string 
     ) const;
     /** Get option string. */
     virtual PString GetOptionString(
       const PString & optionName, ///< String code for the option 
       const char * dflt = NULL    ///< Default value of the option string 
     ) const;
+
+    /** Get option as specicied type.
+      */
+    template <typename ValueType, typename OptionType>
+    ValueType GetOptionAs(
+      OptionType option,   ///< String letter code for the option 
+      ValueType value = 0   ///< Default value of the option 
+    ) const {
+      PStringStream strm(GetOptionString(option));
+      if (!strm.IsEmpty())
+        strm >> value;
+      return value;
+    }
 
     /** Get the argument count.
        Get the number of parameters that may be obtained via the
