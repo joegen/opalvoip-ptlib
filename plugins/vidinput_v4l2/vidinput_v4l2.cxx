@@ -663,7 +663,8 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
 
     frameBytes = videoFormat.fmt.pix.sizeimage;
 
-    PTRACE(6,"V4L2\tset colour format \"" << newFormat << "\" set for " << deviceName << ", fd=" << videoFd);
+    PTRACE(4,"V4L2\tset colour format \"" << newFormat << "\" set for " << deviceName
+           << ", size=" << frameBytes << ", fd=" << videoFd);
 
     if (resume) {
       if (false == Start()) {
@@ -1078,11 +1079,6 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
     PTRACE(1,"V4L2\tG_PARM failed (preserving frame rate may not work) : " << ::strerror(errno));
   }
 
-  if(videoFormat.fmt.pix.width == width && videoFormat.fmt.pix.height == height){
-    PTRACE(3,"V4L2\tFrame size already set.");
-    return true;
-  }
-
   videoFormat.fmt.pix.width = width;
   videoFormat.fmt.pix.height = height;
 
@@ -1110,8 +1106,8 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
       return false;
     } else {
       frameBytes = videoFormat.fmt.pix.sizeimage;
-      PTRACE(8, "V4L2\tG_FMT returned resolution: "<< videoFormat.fmt.pix.width << "x" <<
-              videoFormat.fmt.pix.height);
+      PTRACE(5, "V4L2\tG_FMT returned resolution: "<< videoFormat.fmt.pix.width << "x" <<
+              videoFormat.fmt.pix.height << ", size=" << frameBytes);
       width = videoFormat.fmt.pix.width;
       height = videoFormat.fmt.pix.height;
     }

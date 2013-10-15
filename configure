@@ -627,8 +627,8 @@ DC_CFLAGS
 HAS_DC1394
 HAS_AVC1394
 HAS_BSDVIDEOCAP
-HAS_LIBV4L
 HAS_V4L2
+V4L2_LIBS
 V4L2_CFLAGS
 HAS_V4L
 PTLIB_PORTAUDIO
@@ -11103,7 +11103,6 @@ if test -n "$EXPAT_CFLAGS"; then
   test $ac_status = 0; }; then
   pkg_cv_EXPAT_CFLAGS=`$PKG_CONFIG --cflags "expat" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -11120,7 +11119,6 @@ if test -n "$EXPAT_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_EXPAT_LIBS=`$PKG_CONFIG --libs "expat" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -11345,7 +11343,6 @@ if test -n "$LUA_CFLAGS"; then
   test $ac_status = 0; }; then
   pkg_cv_LUA_CFLAGS=`$PKG_CONFIG --cflags "$LUA_PKG" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -11362,7 +11359,6 @@ if test -n "$LUA_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_LUA_LIBS=`$PKG_CONFIG --libs "$LUA_PKG" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -11588,7 +11584,6 @@ if test -n "$V8_CFLAGS"; then
   test $ac_status = 0; }; then
   pkg_cv_V8_CFLAGS=`$PKG_CONFIG --cflags "v8" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
-		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
 fi
@@ -11605,7 +11600,6 @@ if test -n "$V8_LIBS"; then
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_V8_LIBS=`$PKG_CONFIG --libs "v8" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -16927,147 +16921,41 @@ fi
         { $as_echo "$as_me:${as_lineno-$LINENO}: V4L2 video disabled by user" >&5
 $as_echo "$as_me: V4L2 video disabled by user" >&6;}
       else
-         case "$target_os" in
-            solaris* | sunos* ) V4L2_HEADER="sys/videodev2.h"   ; ;;
-            netbsd* )           V4L2_HEADER="sys/videoio.h"     ; ;;
-            * )	        V4L2_HEADER="linux/videodev2.h" ; ;;
-         esac
-
-         as_ac_Header=`$as_echo "ac_cv_header_$V4L2_HEADER" | $as_tr_sh`
-ac_fn_cxx_check_header_compile "$LINENO" "$V4L2_HEADER" "$as_ac_Header" "
-		      #ifdef __linux__
-		      #include <linux/types.h>
-		      #endif
-
-"
+         as_ac_Header=`$as_echo "ac_cv_header_"linux/videodev2.h"" | $as_tr_sh`
+ac_fn_cxx_check_header_mongrel "$LINENO" ""linux/videodev2.h"" "$as_ac_Header" "$ac_includes_default"
 if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  HAS_V4L2=1
+  V4L2_HEADER="linux/videodev2.h"
 else
-
-		          # We can't use AC_CHECK_HEADER again because
-                          # the value is cached, perhaps we have another
-                          # method to do this more cleanly ?
-		          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $V4L2_HEADER with sys/types.h" >&5
-$as_echo_n "checking for $V4L2_HEADER with sys/types.h... " >&6; }
-		          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-					      #ifdef __linux__
-					      #include <sys/types.h>
-					      #include <linux/types.h>
-                                              #else
-                                              #ifdef __sun
-                                              #include <sys/types.h>
-                                              #include <sys/time.h>
-                                              #else
-					      #error "not supported"
-					      #endif
-					      #endif
-					      #include "$V4L2_HEADER"
-
-int
-main ()
-{
-
-				              return 0;
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-
-				              HAS_V4L2=1
-				              { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
+  as_ac_Header=`$as_echo "ac_cv_header_"sys/videodev2.h"" | $as_tr_sh`
+ac_fn_cxx_check_header_mongrel "$LINENO" ""sys/videodev2.h"" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  V4L2_HEADER="sys/videodev2.h"
 else
-
-				              HAS_V4L2=
-				              { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  as_ac_Header=`$as_echo "ac_cv_header_"sys/videoio.h"" | $as_tr_sh`
+ac_fn_cxx_check_header_mongrel "$LINENO" ""sys/videoio.h"" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  V4L2_HEADER="sys/videoio.h"
 
 fi
 
-
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for V4L2 video support" >&5
-$as_echo_n "checking for V4L2 video support... " >&6; }
-        if test "x${HAS_V4L2}" = "x1"; then
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-          PTLIB_V4L2=yes
-          V4L2_CFLAGS=-DV4L2_HEADER=\'\"$V4L2_HEADER\"\'
-
-        else
-          HAS_V4L2=
-          PTLIB_V4L2=no
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-        fi
-
-
-        if test "x${HAS_V4L2}" = "x1"; then
-          ac_fn_cxx_check_header_mongrel "$LINENO" "libv4l2.h" "ac_cv_header_libv4l2_h" "$ac_includes_default"
-if test "x$ac_cv_header_libv4l2_h" = xyes; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for v4l2_fd_open in -lv4l2" >&5
-$as_echo_n "checking for v4l2_fd_open in -lv4l2... " >&6; }
-if ${ac_cv_lib_v4l2_v4l2_fd_open+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lv4l2  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char v4l2_fd_open ();
-int
-main ()
-{
-return v4l2_fd_open ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_lib_v4l2_v4l2_fd_open=yes
-else
-  ac_cv_lib_v4l2_v4l2_fd_open=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_v4l2_v4l2_fd_open" >&5
-$as_echo "$ac_cv_lib_v4l2_v4l2_fd_open" >&6; }
-if test "x$ac_cv_lib_v4l2_v4l2_fd_open" = xyes; then :
-  HAS_LIBV4L=1
-fi
 
 
 fi
 
 
 
-          { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libv4l2 support" >&5
-$as_echo_n "checking for libv4l2 support... " >&6; }
-          if test "x${HAS_LIBV4L}" = "x1"; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-          else
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-          fi
+fi
 
-        fi
+
+
+         if test "x$V4L2_HEADER" != "x" ; then
+            V4L2_CFLAGS=-DV4L2_HEADER="\"\\\"$V4L2_HEADER\\\"\""
+
+
+            HAS_V4L2=1
+
+            PTLIB_V4L2=yes
+         fi
       fi
 
 
