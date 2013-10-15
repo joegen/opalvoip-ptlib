@@ -425,70 +425,76 @@ void PTrace::Initialise(const PArgList & args,
                         const char * traceRollover,
                         const char * traceLevel)
 {
-  if ((options & HasFilePermissions) == 0)
-    options |= HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
+  PTraceInfo & info = PTraceInfo::Instance();
 
   PCaselessString optStr = args.GetOptionString(traceOpts);
-  PINDEX pos = 0;
-  while ((pos = optStr.FindOneOf("+-", pos)) != P_MAX_INDEX) {
-    void (*operation)(unsigned & options, unsigned option) = optStr[pos++] == '+' ? SetOptionBit : ClearOptionBit;
-    if (optStr.NumCompare("block", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, Blocks);
-    else if (optStr.NumCompare("date", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, DateAndTime);
-    else if (optStr.NumCompare("time", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, Timestamp);
-    else if (optStr.NumCompare("thread", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, Thread);
-    else if (optStr.NumCompare("level", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, TraceLevel);
-    else if (optStr.NumCompare("file", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, FileAndLine);
-    else if (optStr.NumCompare("object", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, ObjectInstance);
-    else if (optStr.NumCompare("context", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, ContextIdentifier);
-    else if (optStr.NumCompare("gmt", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, GMTTime);
-    else if (optStr.NumCompare("daily", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, RotateDaily);
-    else if (optStr.NumCompare("hour", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, RotateHourly);
-    else if (optStr.NumCompare("minute", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, RotateMinutely);
-    else if (optStr.NumCompare("append", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, AppendToFile);
-    else if (optStr.NumCompare("ax", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, (PFileInfo::WorldExecute|PFileInfo::GroupExecute|PFileInfo::UserExecute) << FilePermissionShift);
-    else if (optStr.NumCompare("aw", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, (PFileInfo::WorldWrite|PFileInfo::GroupWrite|PFileInfo::UserWrite) << FilePermissionShift);
-    else if (optStr.NumCompare("ar", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, (PFileInfo::WorldRead|PFileInfo::GroupRead|PFileInfo::UserRead) << FilePermissionShift);
-    else if (optStr.NumCompare("ox", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::WorldExecute << FilePermissionShift);
-    else if (optStr.NumCompare("ow", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::WorldWrite << FilePermissionShift);
-    else if (optStr.NumCompare("or", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::WorldRead << FilePermissionShift);
-    else if (optStr.NumCompare("gx", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::GroupExecute << FilePermissionShift);
-    else if (optStr.NumCompare("gw", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::GroupWrite << FilePermissionShift);
-    else if (optStr.NumCompare("gr", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::GroupRead << FilePermissionShift);
-    else if (optStr.NumCompare("ux", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::UserExecute << FilePermissionShift);
-    else if (optStr.NumCompare("uw", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::UserWrite << FilePermissionShift);
-    else if (optStr.NumCompare("ur", P_MAX_INDEX, pos) == PObject::EqualTo)
-      operation(options, PFileInfo::UserRead << FilePermissionShift);
+  if (optStr.IsEmpty())
+    options = info.m_options;
+  else {
+    if ((options & HasFilePermissions) == 0)
+      options |= HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
+
+    PINDEX pos = 0;
+    while ((pos = optStr.FindOneOf("+-", pos)) != P_MAX_INDEX) {
+      void (*operation)(unsigned & options, unsigned option) = optStr[pos++] == '+' ? SetOptionBit : ClearOptionBit;
+      if (optStr.NumCompare("block", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, Blocks);
+      else if (optStr.NumCompare("date", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, DateAndTime);
+      else if (optStr.NumCompare("time", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, Timestamp);
+      else if (optStr.NumCompare("thread", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, Thread);
+      else if (optStr.NumCompare("level", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, TraceLevel);
+      else if (optStr.NumCompare("file", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, FileAndLine);
+      else if (optStr.NumCompare("object", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, ObjectInstance);
+      else if (optStr.NumCompare("context", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, ContextIdentifier);
+      else if (optStr.NumCompare("gmt", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, GMTTime);
+      else if (optStr.NumCompare("daily", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, RotateDaily);
+      else if (optStr.NumCompare("hour", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, RotateHourly);
+      else if (optStr.NumCompare("minute", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, RotateMinutely);
+      else if (optStr.NumCompare("append", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, AppendToFile);
+      else if (optStr.NumCompare("ax", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, (PFileInfo::WorldExecute|PFileInfo::GroupExecute|PFileInfo::UserExecute) << FilePermissionShift);
+      else if (optStr.NumCompare("aw", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, (PFileInfo::WorldWrite|PFileInfo::GroupWrite|PFileInfo::UserWrite) << FilePermissionShift);
+      else if (optStr.NumCompare("ar", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, (PFileInfo::WorldRead|PFileInfo::GroupRead|PFileInfo::UserRead) << FilePermissionShift);
+      else if (optStr.NumCompare("ox", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::WorldExecute << FilePermissionShift);
+      else if (optStr.NumCompare("ow", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::WorldWrite << FilePermissionShift);
+      else if (optStr.NumCompare("or", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::WorldRead << FilePermissionShift);
+      else if (optStr.NumCompare("gx", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::GroupExecute << FilePermissionShift);
+      else if (optStr.NumCompare("gw", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::GroupWrite << FilePermissionShift);
+      else if (optStr.NumCompare("gr", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::GroupRead << FilePermissionShift);
+      else if (optStr.NumCompare("ux", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::UserExecute << FilePermissionShift);
+      else if (optStr.NumCompare("uw", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::UserWrite << FilePermissionShift);
+      else if (optStr.NumCompare("ur", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, PFileInfo::UserRead << FilePermissionShift);
+    }
   }
 
-  PTraceInfo::Instance().InternalInitialise(std::max((unsigned)args.GetOptionCount(traceCount),
-                                                     (unsigned)args.GetOptionString(traceLevel).AsUnsigned()),
-                                            args.GetOptionString(outputFile),
-                                            args.GetOptionString(traceRollover),
-                                            options);
+  info.InternalInitialise(std::max((unsigned)args.GetOptionCount(traceCount),
+                                             args.GetOptionAs(traceLevel, info.m_thresholdLevel)),
+                                             args.GetOptionString(outputFile, info.m_filename),
+                                             args.GetOptionString(traceRollover),
+                                             options);
 }
 
 
