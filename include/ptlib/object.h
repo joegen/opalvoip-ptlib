@@ -195,7 +195,8 @@ typedef bool   PBoolean;
 #define P_DECLARE_ENUM(name, first, ...) P_DECLARE_ENUM_EX(name, Num##name, first, 0, __VA_ARGS__)
 
 extern void PPrintEnum(std::ostream & strm, int e, int begin, int end, char const * const * names);
-extern int PReadEnum(std::istream & strm, int begin, int end, char const * const * names);
+extern int PReadEnum(std::istream & strm, int begin, int end, char const * const * names, bool matchCase = true);
+extern int PParseEnum(const char * str, int begin, int end, char const * const * names, bool matchCase = true);
 
 #define P_ENUM_NAMES_PART1(narg, args)P_ENUM_NAMES_PART2(narg, args)
 #define P_ENUM_NAMES_PART2(narg, args) P_ENUM_NAMES_ARG_##narg args
@@ -247,10 +248,11 @@ extern int PReadEnum(std::istream & strm, int begin, int end, char const * const
     static char const * const * Names() { static char const * const Strings[] = \
       { #firstName, P_ENUM_NAMES_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__)) }; return Strings; } \
   }; \
-  friend __inline std::ostream & operator<<(std::ostream & strm, name e) \
+  friend __inline static std::ostream & operator<<(std::ostream & strm, name e) \
     { PPrintEnum(strm, e, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
-  friend __inline std::istream & operator>>(std::istream & strm, name & e) \
+  friend __inline static std::istream & operator>>(std::istream & strm, name & e) \
     { e = (name)PReadEnum(strm, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
+  static __inline name name##FromString(const char * str, bool matchCase = true) { return (name)PParseEnum(str, Begin##name, End##name, PEnumNames_##name::Names(), matchCase); }
 
 /// This declares a standard enumeration (enum) of symbols with ++, --, << and >> operators
 #define P_DECLARE_STREAMABLE_ENUM(name, first, ...) P_DECLARE_STREAMABLE_ENUM_EX(name, Num##name, first, 0, __VA_ARGS__)
