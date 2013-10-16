@@ -696,7 +696,7 @@ PBoolean PVideoInputDevice_V4L2::SetFrameRate(unsigned rate)
     Stop();
 
   // set the stream parameters
-  if (!DoIOCTL(VIDIOC_S_PARM, &videoStreamParm, true))  {
+  if (!DoIOCTL(VIDIOC_S_PARM, &videoStreamParm, sizeof(videoStreamParm), true))  {
     PTRACE(1,"V4L2\tS_PARM failed : "<< ::strerror(errno));
     frameRate = originalFrameRate;
     return false;
@@ -1091,7 +1091,7 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
     }
 
     PTRACE(4, "V4L2\tTry setting resolution: " << videoFormat.fmt.pix.width << "x" << videoFormat.fmt.pix.height);
-    if(!DoIOCTL(VIDIOC_S_FMT, &videoFormat, true)){
+    if(!DoIOCTL(VIDIOC_S_FMT, &videoFormat, sizeof(videoFormat), true)){
       PTRACE(1,"V4L2\tS_FMT failed: " << ::strerror(errno));
       return false;
     }
@@ -1133,19 +1133,31 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
   return true;
 }
 
-PBoolean PVideoInputDevice_V4L2::DoIOCTL(unsigned long int r, void * s, PBoolean retryOnBusy)
+PBoolean PVideoInputDevice_V4L2::DoIOCTL(unsigned long int r, void * s, int structSize, PBoolean retryOnBusy)
 {
-  if (v4l2_ioctl(videoFd, r, s) >= 0)
-    return true;
+  PBoolean retval = false;
+  void *structCopy = NULL;
+
+  if(!(structCopy = malloc(structSize)))
+    goto end;
+  memcpy(structCopy, s, structSize);
+  
+  if ((retval = (v4l2_ioctl(videoFd, r, s) >= 0)))
+    goto end;
 
   if (errno != EBUSY || !retryOnBusy)
-    return false;
+    goto end;
 
-  PTRACE(3,"V4L2\tRetrying IOCTL ("<< r << ')');
+  PTRACE(3,"V4L2\tReopening device and retrying IOCTL ("<< r << ')');
   Close();
   Open(userFriendlyDevName, true);
 
-  return v4l2_ioctl(videoFd, r, s) >= 0;
+  memcpy(s, structCopy, structSize);
+  retval = (v4l2_ioctl(videoFd, r, s) >= 0);
+
+end:
+  free(structCopy);
+  return retval;
 }
 
 
