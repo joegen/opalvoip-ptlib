@@ -1260,11 +1260,7 @@ PProcess::~PProcess()
 {
   // do whatever needs to shutdown
   PreShutdown();
-
-#if _DEBUG
   WaitOnExitConsoleWindow();
-#endif
-
   PostShutdown();
 }
 
