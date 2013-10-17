@@ -71,7 +71,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
     return true;
 
   PTRACE(4, "PTLib\tAwaiting key press on exit.");
-  cerr << "\nPress a key to continue . . .";
+  cerr << "\nPress a key to exit . . .";
   cerr.flush();
 
   HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
@@ -86,7 +86,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 
 void PProcess::WaitOnExitConsoleWindow()
 {
-  if (!m_library)
+  if (m_waitOnExitConsoleWindow && !m_library)
     EnumWindows(EnumWindowsProc, GetCurrentProcessId());
 }
 

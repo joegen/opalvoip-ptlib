@@ -41,8 +41,11 @@
     virtual PBoolean IsServiceProcess() const;
     virtual PBoolean IsGUIProcess() const;
     void WaitOnExitConsoleWindow();
+    void SetWaitOnExitConsoleWindow(bool b) { m_waitOnExitConsoleWindow = b; }
 
   private:
+    bool m_waitOnExitConsoleWindow;
+
   friend PThread * PThread::Current();
   friend UINT __stdcall PThread::MainFunction(void * thread);
   friend class PServiceProcess;

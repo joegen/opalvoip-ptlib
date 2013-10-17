@@ -1011,6 +1011,7 @@ void SignalHandler(int sig)
 
 void PProcess::Construct()
 {
+  m_waitOnExitConsoleWindow = true;
   PSetErrorStream(&cerr);
 
 #if !defined(_WIN32) && defined(_MSC_VER) && defined(_WINDOWS)
