@@ -149,6 +149,13 @@ class PCLI : public PObject
         virtual bool ProcessInput(int ch);
         virtual bool ProcessInput(const PString & line);
 
+        /**Echo character from input.
+           This is only called if m_cli.GetRequireEcho() returns true.
+           It should also handle a DEL ('\x7f') character as erase character
+           to the left of the cursor. Often this is "\b \b".
+          */
+        virtual bool EchoInput(char ch);
+
         /**Call back for a command line was completed and ENTER pressed.
            The default behaviour processes the line into a PArgList and deals
            with the command history and help.
@@ -802,19 +809,42 @@ class PCLICurses : public PCLI
     virtual Context * CreateContext();
   //@}
 
+    void GetScreenSize(
+      unsigned & rows,
+      unsigned & cols
+    ) { rows = m_maxRows; cols = m_maxCols; }
+
+    P_DECLARE_ENUM(Borders,
+      NoBorder,
+      FullBorder,
+      BorderAbove,
+      BorderBelow,
+      BorderLeft,
+      BorderRight
+    );
+
     class Window : public PChannel
     {
     protected:
       PCLICurses & m_owner;
+      Borders      m_border;
       bool         m_focus;
       bool         m_pageMode;
       unsigned     m_pagedRows;
 
-      Window(PCLICurses & owner);
+      Window(PCLICurses & owner, Borders border);
 
     public:
+      // Overrides from PChannel
       virtual PBoolean Write(const void * data, PINDEX length);
-      virtual PBoolean WriteChar(char ch) = 0;
+
+      // New functions
+      virtual bool FillChar(
+        unsigned row,
+        unsigned col,
+        char ch,
+        unsigned count
+      ) = 0;
 
       virtual void SetPosition(
         unsigned row,
@@ -827,11 +857,13 @@ class PCLICurses : public PCLI
 
       virtual void SetSize(
         unsigned rows,
-        unsigned cols
+        unsigned cols,
+        Borders border = NumBorders
       ) = 0;
       virtual void GetSize(
         unsigned & rows,
-        unsigned & cols
+        unsigned & cols,
+        bool includeBorder
       ) = 0;
 
       virtual void SetCursor(
@@ -843,23 +875,29 @@ class PCLICurses : public PCLI
         unsigned & col
       ) = 0;
 
+      virtual void Refresh() = 0;
       virtual void Clear() = 0;
       virtual void Scroll(int n = 1) = 0;
 
       void SetPageMode(
         bool on = true
-      ) { m_pageMode = on; }
+      );
 
       bool GetPageMode() const { return m_pageMode; }
 
       virtual void SetFocus();
+      bool HasFocus() const { return m_focus; }
     };
 
+    /** Create a new window.
+        Note dimensions include the border.
+      */
     Window & NewWindow(
       unsigned row,
       unsigned col,
       unsigned rows,
-      unsigned cols
+      unsigned cols,
+      Borders border = NoBorder
     );
 
     void RemoveWindow(
@@ -878,10 +916,7 @@ class PCLICurses : public PCLI
 
     Window & operator[](PINDEX idx) const { return m_windows[idx]; }
 
-    void GetScreenSize(
-      unsigned & rows,
-      unsigned & cols
-    ) { rows = m_maxRows; cols = m_maxCols; }
+    Window * GetFocusWindow() const;
 
     virtual void Refresh();
 
