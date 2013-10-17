@@ -46,6 +46,9 @@
 #endif
 
 
+#define PTraceModule() "CLI"
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PCLI::Context::Context(PCLI & cli)
@@ -104,7 +107,7 @@ PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
 bool PCLI::Context::Start()
 {
   if (!IsOpen()) {
-    PTRACE(2, "PCLI\tCannot start context, not open.");
+    PTRACE(2, "Cannot start context, not open.");
     return false;
   }
 
@@ -178,7 +181,7 @@ bool PCLI::Context::ReadAndProcessInput()
 
   int ch = ReadChar();
   if (ch < 0) {
-    PTRACE(2, "PCLI\tRead error: " << GetErrorText(PChannel::LastReadError));
+    PTRACE(2, "Read error: " << GetErrorText(PChannel::LastReadError));
     return false;
   }
   
@@ -209,7 +212,7 @@ bool PCLI::Context::ProcessInput(int ch)
       if (!m_commandLine.IsEmpty()) {
         m_commandLine.Delete(m_commandLine.GetLength()-1, 1);
         if (m_cli.GetRequireEcho() && m_state != e_Password) {
-          if (!WriteString("\b \b"))
+          if (!EchoInput('\x7f'))
             return false;
         }
       }
@@ -218,7 +221,7 @@ bool PCLI::Context::ProcessInput(int ch)
       m_commandLine += (char)ch;
 
       if (m_cli.GetRequireEcho() && m_state != e_Password) {
-        if (!WriteChar(ch))
+        if (!EchoInput((char)ch))
           return false;
       }
     }
@@ -247,7 +250,7 @@ bool PCLI::Context::ProcessInput(int ch)
       break;
 
     case e_Password :
-      if (!WriteString(m_cli.GetNewLine()))
+      if (!EchoInput('\n'))
         return false;
 
       if (m_cli.OnLogIn(m_enteredUsername, m_commandLine))
@@ -268,6 +271,21 @@ bool PCLI::Context::ProcessInput(int ch)
 }
 
 
+bool PCLI::Context::EchoInput(char ch)
+{
+  switch (ch) {
+    case '\n' :
+      return WriteString(m_cli.GetNewLine());
+
+    case '\x7f' :
+      return WriteString("\b \b");
+
+    default :
+      return WriteChar(ch);
+  }
+}
+
+
 static bool CheckInternalCommand(const PCaselessString & line, const PCaselessString & cmds)
 {
   PINDEX pos = cmds.Find(line);
@@ -284,7 +302,7 @@ void PCLI::Context::OnCompletedLine()
   if (line.IsEmpty())
     return;
 
-  PTRACE(4, "PCLI\tProcessing command line \"" << line << '"');
+  PTRACE(4, "Processing command line \"" << line << '"');
 
   if (CheckInternalCommand(line, m_cli.GetExitCommand())) {
     Stop();
@@ -341,9 +359,9 @@ void PCLI::Context::OnCompletedLine()
 
 void PCLI::Context::ThreadMain(PThread &, P_INT_PTR)
 {
-  PTRACE(4, "PCLI\tContext thread started");
+  PTRACE(4, "Context thread started");
   Run();
-  PTRACE(4, "PCLI\tContext thread ended");
+  PTRACE(4, "Context thread ended");
 }
 
 
@@ -414,7 +432,7 @@ PCLI::~PCLI()
 bool PCLI::Start(bool runInBackground)
 {
   if (runInBackground) {
-    PTRACE(4, "PCLI\tStarting background contexts");
+    PTRACE(4, "Starting background contexts");
     m_contextMutex.Wait();
     for (ContextList_t::iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
       (*iter)->Start();
@@ -426,14 +444,14 @@ bool PCLI::Start(bool runInBackground)
     StartForeground();
 
   if (m_contextList.size() != 1) {
-    PTRACE(2, "PCLI\tCan only start in foreground if have one context.");
+    PTRACE(2, "Can only start in foreground if have one context.");
     return false;
   }
 
   Context * context = m_contextList.front();
   bool result = context->Run();
   RemoveContext(context);
-  PTRACE_IF(2, !result, "PCLI\tCannot start foreground processing, context not open.");
+  PTRACE_IF(2, !result, "Cannot start foreground processing, context not open.");
   return result;
 }
 
@@ -460,7 +478,7 @@ PCLI::Context * PCLI::StartContext(PChannel * readChannel,
     return NULL;
   
   if (!context->Open(readChannel, writeChannel, autoDeleteRead, autoDeleteWrite)) {
-    PTRACE(2, "PCLI\tCould not open context: " << context->GetErrorText());
+    PTRACE(2, "Could not open context: " << context->GetErrorText());
     RemoveContext(context);
     return NULL;
   }
@@ -508,7 +526,7 @@ PCLI::Context * PCLI::AddContext(Context * context)
   if (context == NULL) {
     context = CreateContext();
     if (context == NULL) {
-      PTRACE(2, "PCLI\tCould not create a context!");
+      PTRACE(2, "Could not create a context!");
       return context;
     }
   }
@@ -636,7 +654,7 @@ void PCLI::Broadcast(const PString & message) const
 {
   for (ContextList_t::const_iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
     **iter << message << endl;
-  PTRACE(4, "PCLI\tBroadcast \"" << message << '"');
+  PTRACE(4, "Broadcast \"" << message << '"');
 }
 
 
@@ -833,24 +851,24 @@ void PCLISocket::RemoveContext(Context * context)
 bool PCLISocket::Listen(WORD port)
 {
   if (!m_listenSocket.Listen(5, port, PSocket::CanReuseAddress)) {
-    PTRACE(2, "PCLI\tCannot open PCLI socket on port " << port
+    PTRACE(2, "Cannot open PCLI socket on port " << port
            << ", error: " << m_listenSocket.GetErrorText());
     return false;
   }
 
-  PTRACE(4, "PCLI\tCLI socket opened on port " << m_listenSocket.GetPort());
+  PTRACE(4, "CLI socket opened on port " << m_listenSocket.GetPort());
   return true;
 }
 
 
 void PCLISocket::ThreadMain(PThread &, P_INT_PTR)
 {
-  PTRACE(4, "PCLI\tServer thread started on port " << GetPort());
+  PTRACE(4, "Server thread started on port " << GetPort());
 
   while (m_singleThreadForAll ? HandleSingleThreadForAll() : HandleIncoming())
     GarbageCollection();
 
-  PTRACE(4, "PCLI\tServer thread ended for port " << GetPort());
+  PTRACE(4, "Server thread ended for port " << GetPort());
 }
 
 
@@ -897,7 +915,7 @@ bool PCLISocket::HandleIncoming()
 {
   PTCPSocket * socket = CreateSocket();
   if (socket->Accept(m_listenSocket)) {
-    PTRACE(3, "PCLI\tIncoming connection from " << socket->GetPeerHostName());
+    PTRACE(3, "Incoming connection from " << socket->GetPeerHostName());
     Context * context = CreateContext();
     if (context != NULL && context->Open(socket, true)) {
       if (m_singleThreadForAll)
@@ -909,7 +927,7 @@ bool PCLISocket::HandleIncoming()
     }
   }
 
-  PTRACE(2, "PCLI\tError accepting connection: " << m_listenSocket.GetErrorText());
+  PTRACE(2, "Error accepting connection: " << m_listenSocket.GetErrorText());
   delete socket;
   return false;
 }
@@ -945,25 +963,35 @@ PTCPSocket * PCLITelnet::CreateSocket()
 class PCLICursesWindow : public PCLICurses::Window
 {
 protected:
-  WINDOW * m_window;
+  WINDOW * m_outer;
+  WINDOW * m_inner;
 
 public:
-  PCLICursesWindow(PCLICurses & owner, unsigned row, unsigned col, unsigned rows, unsigned cols)
-    : PCLICurses::Window(owner)
-    , m_window(NULL)
+  PCLICursesWindow(PCLICurses & owner, unsigned row, unsigned col, unsigned rows, unsigned cols, PCLICurses::Borders border)
+    : PCLICurses::Window(owner, border)
+    , m_outer(NULL)
+    , m_inner(NULL)
   {
-    SetPositionAndSize(rows, cols, row, col);
+    PTRACE(5, "Constructed window " << this);
+    SetPositionAndSize(rows, cols, row, col, border);
     Clear();
   }
 
 
-  virtual PBoolean WriteChar(char ch)
+  virtual bool FillChar(unsigned row, unsigned col, char ch, unsigned count)
   {
-    return waddch(m_window, ch) != ERR;
+    while (count-- > 0) {
+      if (mvwaddch(m_inner, row, col++, ch) == ERR) {
+        PTRACE(2, "Write failed: errno=" << errno);
+        return false;
+      }
+    }
+
+    return true;
   }
 
 
-  void SetPositionAndSize(unsigned rows, unsigned cols, unsigned row, unsigned col)
+  void SetPositionAndSize(unsigned rows, unsigned cols, unsigned row, unsigned col, PCLICurses::Borders border)
   {
     unsigned maxRows, maxCols;
     m_owner.GetScreenSize(maxRows, maxCols);
@@ -978,64 +1006,114 @@ public:
     if (col + cols > maxCols)
       cols = maxCols - col;
 
-    if (m_window != NULL)
-      delwin(m_window);
-    m_window = newwin(rows, cols, row, col);
+    if (m_outer != NULL)
+      delwin(m_outer);
+    if (m_inner != NULL)
+      delwin(m_inner);
+
+    PTRACE(4, "New window " << this << ": row=" << row << " col=" << col << " rows=" << rows << " cols=" << cols);
+
+    m_outer = newwin(rows, cols, row, col);
+    switch (m_border) {
+      case PCLICurses::FullBorder :
+        box(m_outer, 0, 0);
+        ++row;
+        ++col;
+        rows -= 2;
+        cols -= 2;
+        break;
+
+      case PCLICurses::BorderAbove :
+        mvwhline(m_outer, 0, 0, 0, cols);
+        ++row;
+        --rows;
+        break;
+
+      case PCLICurses::BorderBelow :
+        mvwhline(m_outer, rows-1, 0, 0, cols);
+        --rows;
+        break;
+
+      case PCLICurses::BorderLeft :
+        mvwvline(m_outer, 0, 0, 0, rows);
+        ++col;
+        --cols;
+        break;
+
+      case PCLICurses::BorderRight :
+        mvwvline(m_outer, 0, cols-1, 0, rows);
+        --cols;
+        break;
+
+      default :
+        break;
+    }
+    wrefresh(m_outer);
+
+    m_inner = newwin(rows, cols, row, col);
   }
 
 
   virtual void SetPosition(unsigned row, unsigned col)
   {
     unsigned rows, cols;
-    GetSize(rows, cols);
-    SetPositionAndSize(rows, cols, row, col);
+    getmaxyx(m_outer, rows, cols);
+    SetPositionAndSize(rows, cols, row, col, m_border);
 }
 
 
   virtual void GetPosition(unsigned & row, unsigned & col)
   {
-    getbegyx(m_window, row, col);
+    getbegyx(m_outer, row, col);
   }
 
 
-  virtual void SetSize(unsigned rows, unsigned cols)
+  virtual void SetSize(unsigned rows, unsigned cols, PCLICurses::Borders border)
   {
     unsigned row, col;
-    GetPosition(row, col);
-    SetPositionAndSize(rows, cols, row, col);
+    getbegyx(m_outer, row, col);
+    SetPositionAndSize(rows, cols, row, col, border);
   }
 
 
-  virtual void GetSize(unsigned & rows, unsigned & cols)
+  virtual void GetSize(unsigned & rows, unsigned & cols, bool includeBorder)
   {
-    getmaxyx(m_window, rows, cols);
+    getmaxyx(includeBorder ? m_outer : m_inner, rows, cols);
   }
 
 
   virtual void SetCursor(unsigned row, unsigned col)
   {
-    wmove(m_window, row, col);
+    wmove(m_inner, row, col);
   }
 
 
   virtual void GetCursor(unsigned & row, unsigned & col)
   {
-    getyx(m_window, row, col);
+    getyx(m_inner, row, col);
+  }
+
+
+  void Refresh()
+  {
+    PTRACE(5, "Refresh for window " << this);
+    flush();
+    wrefresh(m_outer);
+    wrefresh(m_inner);
   }
 
 
   virtual void Clear()
   {
-    werase(m_window);
+    werase(m_inner);
   }
 
 
   virtual void Scroll(int n)
   {
-    if (n == 1)
-      scroll(m_window);
-    else
-      wscrl(m_window, n);
+    scrollok(m_inner, TRUE);
+    wscrl(m_inner, n);
+    scrollok(m_inner, FALSE);
   }
 };
 
@@ -1044,7 +1122,13 @@ public:
 
 PCLICurses::PCLICurses()
 {
-  initscr();
+  initscr();            // Initialise curses
+  nonl();               // Don't automaticall wrap at end of line
+  cbreak();             // Do not wait for new line on input
+  noecho();             // Do not echo user input, we will do so
+  keypad(stdscr, TRUE); // Enable special keys (arrows, keypad etc)
+  refresh();            // the wrefresh() for a window is not enough, must do this first. Weird.
+
   getmaxyx(stdscr, m_maxRows, m_maxCols);
   Construct();
 }
@@ -1054,12 +1138,7 @@ PCLICurses::~PCLICurses()
 {
   m_windows.RemoveAll();
   endwin();
-}
-
-
-void PCLICurses::Refresh()
-{
-  refresh();
+  PTRACE(5, "Destroyed curses");
 }
 
 
@@ -1078,9 +1157,11 @@ protected:
   unsigned m_cursorRow;
   unsigned m_cursorCol;
 
+  CONSOLE_SCREEN_BUFFER_INFO m_screenBufferInfo;
+
 public:
-  PCLICursesWindow(PCLICurses & owner, unsigned row, unsigned col, unsigned rows, unsigned cols)
-    : PCLICurses::Window(owner)
+  PCLICursesWindow(PCLICurses & owner, unsigned row, unsigned col, unsigned rows, unsigned cols, PCLICurses::Borders border)
+    : PCLICurses::Window(owner, border)
     , m_hStdOut(GetStdHandle(STD_OUTPUT_HANDLE))
     , m_positionRow(row)
     , m_positionCol(col)
@@ -1089,29 +1170,13 @@ public:
     , m_cursorRow(0)
     , m_cursorCol(0)
   {
+    if (!GetConsoleScreenBufferInfo(m_hStdOut, &m_screenBufferInfo)) {
+      PTRACE(2, "Cannot obtain screen buffer info");
+    }
+
+    DrawBorder(false);
     Clear();
-  }
-
-
-  virtual PBoolean WriteChar(char ch)
-  {
-    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
-    if (!GetConsoleScreenBufferInfo(m_hStdOut, &csbiInfo)) {
-      PTRACE(2, "PCLI\tCannot obtain console info");
-    }
-
-    SetCursor(m_cursorRow, m_cursorCol);
-
-    DWORD cWritten;
-    if (!WriteFile(m_hStdOut, &ch, 1, &cWritten, NULL)) {
-      PTRACE(2, "PCLI\tCannot write to console");
-      return false;
-    }
-
-    if (!m_focus)
-      SetConsoleCursorPosition(m_hStdOut, csbiInfo.dwCursorPosition);
-
-    return true;
+    PTRACE(5, "New window " << this << ": row=" << row << " col=" << col << " rows=" << rows << " cols=" << cols);
   }
 
 
@@ -1137,7 +1202,7 @@ public:
   }
 
 
-  virtual void SetSize(unsigned rows, unsigned cols)
+  virtual void SetSize(unsigned rows, unsigned cols, PCLICurses::Borders border)
   {
     unsigned maxRows, maxCols;
     m_owner.GetScreenSize(maxRows, maxCols);
@@ -1147,24 +1212,71 @@ public:
 
     m_sizeRows = std::min(rows, maxRows);
     m_sizeCols = std::min(cols, maxCols);
+
+    if (border != PCLICurses::NumBorders) {
+      DrawBorder(true);
+      m_border = border;
+      DrawBorder(false);
+    }
   }
 
 
-  virtual void GetSize(unsigned & rows, unsigned & cols)
+  virtual void GetSize(unsigned & rows, unsigned & cols, bool includeBorder)
   {
     rows = m_sizeRows;
     cols = m_sizeCols;
+
+    if (includeBorder)
+      return;
+
+    switch (m_border) {
+      case PCLICurses::FullBorder :
+        cols -= 2;
+        rows -= 2;
+        break;
+
+      case PCLICurses::BorderAbove :
+      case PCLICurses::BorderBelow :
+        --rows;
+        break;
+
+      case PCLICurses::BorderLeft :
+      case PCLICurses::BorderRight :
+        --cols;
+        break;
+
+      default :
+        break;
+    }
   }
 
+
+  COORD GetAbsoluteCoord(int row, int col)
+  {
+    COORD pos = { (SHORT)(m_positionCol+col), (SHORT)(m_positionRow+row) };
+    switch (m_border) {
+      case PCLICurses::FullBorder :
+        ++pos.X;
+        ++pos.Y;
+        break;
+      case PCLICurses::BorderAbove :
+        ++pos.Y;
+        break;
+      case PCLICurses::BorderLeft :
+        ++pos.X;
+        break;
+      default :
+        break;
+    }
+    return pos;
+  }
 
   virtual void SetCursor(unsigned row, unsigned col)
   {
     m_cursorRow = std::min(row, m_sizeRows);
     m_cursorCol = std::min(col, m_sizeCols);
-
-    COORD pos = { (SHORT)(m_positionCol+m_cursorCol), (SHORT)(m_positionRow+m_cursorRow) };
-    if (!SetConsoleCursorPosition(m_hStdOut, pos)) {
-      PTRACE(2, "PCLI\tCannot set console cursor position");
+    if (!SetConsoleCursorPosition(m_hStdOut, GetAbsoluteCoord(m_cursorRow, m_cursorCol))) {
+      PTRACE(2, "Cannot set console cursor position");
     }
   }
 
@@ -1176,24 +1288,42 @@ public:
   }
 
 
+  virtual bool FillChar(unsigned row, unsigned col, char ch, unsigned count)
+  {
+    return InternalFillChar(GetAbsoluteCoord(row, col), ch, count);
+  }
+
+
+  bool InternalFillChar(COORD pos, char ch, unsigned count)
+  {
+    DWORD cCharsWritten;
+    if (!FillConsoleOutputAttribute(m_hStdOut, m_screenBufferInfo.wAttributes, count, pos, &cCharsWritten )) {
+      PTRACE(2, "Cannot clear console attributes");
+      return false;
+    }
+
+    if (!FillConsoleOutputCharacter(m_hStdOut, ch, count, pos, &cCharsWritten)) {
+      PTRACE(2, "Cannot clear console");
+      return false;
+    }
+
+    return true;
+  }
+
+
+  void Refresh()
+  {
+    flush();
+  }
+
+
   virtual void Clear()
   {
-    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
-    if (!GetConsoleScreenBufferInfo(m_hStdOut, &csbiInfo)) {
-      PTRACE(2, "PCLI\tCannot obtain console info");
-    }
+    unsigned rows, cols;
+    GetSize(rows, cols, false);
 
-    COORD pos = { (SHORT)m_positionCol, (SHORT)m_positionRow };
-
-    for (unsigned row = 0; row < m_sizeRows; ++row,++pos.Y) {
-      DWORD cCharsWritten;
-      if (!FillConsoleOutputAttribute(m_hStdOut, ' ', m_sizeCols, pos, &cCharsWritten)) {
-        PTRACE(2, "PCLI\tCannot clear console");
-      }
-      if (!FillConsoleOutputAttribute(m_hStdOut, csbiInfo.wAttributes, m_sizeCols, pos, &cCharsWritten )) {
-        PTRACE(2, "PCLI\tCannot clear console attributes");
-      }
-    }
+    for (unsigned row = 0; row < rows; ++row)
+      FillChar(row, 0, ' ', cols);
 
     m_cursorRow = m_cursorCol = 0;
   }
@@ -1201,18 +1331,73 @@ public:
 
   virtual void Scroll(int n)
   {
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    if (!GetConsoleScreenBufferInfo(m_hStdOut, &csbi)) {
-      PTRACE(2, "PCLI\tCannot obtain console info");
-    }
+    unsigned rows, cols;
+    GetSize(rows, cols, false);
 
-    SMALL_RECT rect = { (SHORT)m_positionCol, (SHORT)m_positionRow, (SHORT)(m_positionCol + m_sizeCols), (SHORT)(m_positionRow + m_sizeRows) };
-    COORD to = { (SHORT)m_positionCol, (SHORT)(m_positionRow-n) };
-    CHAR_INFO fill = { ' ', csbi.wAttributes };
+    COORD to = GetAbsoluteCoord(0, 0);
+    SMALL_RECT rect = { to.X, to.Y, (SHORT)(to.X + cols - 1), (SHORT)(to.Y + rows - 1) };
+    to.Y -= (SHORT)n;
+    CHAR_INFO fill = { ' ', m_screenBufferInfo.wAttributes };
     if (ScrollConsoleScreenBuffer(m_hStdOut, &rect, &rect, to, &fill))
       return;
 
-    PTRACE(2, "PCLI\tCannot scroll console buffer");
+    PTRACE(2, "Cannot scroll console buffer");
+  }
+
+
+  virtual void DrawBorder(bool erase)
+  {
+    static const char TopLeftCorner     = '\xda';
+    static const char TopRightCorner    = '\xbf';
+    static const char BottomLeftCorner  = '\xc0';
+    static const char BottomRightCorner = '\xd9';
+    static const char HorizontalLine    = '\xc4';
+    static const char VerticalLine      = '\xb3';
+
+    COORD pos = { (SHORT)m_positionCol, (SHORT)m_positionRow };
+    switch (m_border) {
+      case PCLICurses::FullBorder :
+        InternalFillChar(pos, erase ? ' ' : TopLeftCorner, 1);
+        ++pos.X;
+        InternalFillChar(pos, erase ? ' ' : HorizontalLine, m_sizeCols-2);
+        pos.X += (SHORT)(m_sizeCols-2);
+        InternalFillChar(pos, erase ? ' ' : TopRightCorner, 1);
+        for (unsigned row = 1; row < m_sizeRows-1; ++row, ++pos.Y) {
+          pos.X -= (SHORT)(m_sizeCols-1);
+          InternalFillChar(pos, erase ? ' ' : VerticalLine, 1);
+          pos.X += (SHORT)(m_sizeCols-1);
+          InternalFillChar(pos, erase ? ' ' : VerticalLine, 1);
+        }
+        InternalFillChar(pos, erase ? ' ' : BottomLeftCorner, 1);
+        ++pos.X;
+        InternalFillChar(pos, erase ? ' ' : HorizontalLine, m_sizeCols-2);
+        pos.X += (SHORT)(m_sizeCols-2);
+        InternalFillChar(pos, erase ? ' ' : BottomRightCorner, 1);
+        break;
+
+      case PCLICurses::BorderAbove :
+        InternalFillChar(pos, erase ? ' ' : HorizontalLine, m_sizeCols);
+        break;
+
+      case PCLICurses::BorderBelow :
+        pos.Y += (SHORT)(m_sizeRows-1);
+        InternalFillChar(pos, erase ? ' ' : HorizontalLine, m_sizeCols);
+        break;
+
+      case PCLICurses::BorderLeft :
+        for (unsigned row = 0; row < m_sizeRows; ++row, ++pos.Y)
+          InternalFillChar(pos, erase ? ' ' : VerticalLine, 1);
+        break;
+
+      case PCLICurses::BorderRight :
+        pos.X += (SHORT)(m_sizeCols-1);
+        for (unsigned row = 0; row < m_sizeRows; ++row, ++pos.Y)
+          InternalFillChar(pos, erase ? ' ' : VerticalLine, 1);
+        break;
+
+      default :
+        break;
+    }
   }
 };
 
@@ -1221,15 +1406,24 @@ public:
 
 PCLICurses::PCLICurses()
 {
+  HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
   CONSOLE_SCREEN_BUFFER_INFO csbi; 
-  if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
-    PTRACE(2, "PCLI\tCannot obtain console screen buffer");
+  if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) {
+    PTRACE(2, "Cannot obtain console screen buffer");
     m_maxRows = m_maxCols = 0;
     return;
   }
 
-  m_maxRows = csbi.srWindow.Bottom - csbi.srWindow.Top;
-  m_maxCols = csbi.srWindow.Right - csbi.srWindow.Left;
+  m_maxRows = (csbi.srWindow.Bottom - csbi.srWindow.Top)+1;
+  m_maxCols = (csbi.srWindow.Right - csbi.srWindow.Left)+1;
+
+  COORD size = { (SHORT)m_maxCols, (SHORT)m_maxRows };
+  SetConsoleScreenBufferSize(hStdOut, size);
+
+  // Turn off most processing.
+  SetConsoleMode(hStdOut, 0);
+  SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS);
 
   Construct();
 }
@@ -1238,15 +1432,11 @@ PCLICurses::PCLICurses()
 PCLICurses::~PCLICurses()
 {
   m_windows.RemoveAll();
+  PTRACE(5, "Destroyed curses");
 }
 
 
-void PCLICurses::Refresh()
-{
-}
-
-
-#endif // P_CURSES
+#endif // P_CURSES==2
 
 ///////////////////////////////////////
 
@@ -1254,11 +1444,15 @@ void PCLICurses::Refresh()
 
 void PCLICurses::Construct()
 {
+  m_requireEcho = true;
+
   m_pageWaitPrompt = "Press a key for more ...";
-  NewWindow(0, 0, m_maxRows-1, m_maxCols).SetPageMode(true);
-  NewWindow(m_maxRows-1, 0, 1, m_maxCols).SetFocus();
+  NewWindow(0, 0, m_maxRows-2, m_maxCols, NoBorder).SetPageMode(true);
+  NewWindow(m_maxRows-2, 0, 2, m_maxCols, BorderAbove).SetFocus();
 
   StartContext(new PConsoleChannel(PConsoleChannel::StandardInput), &m_windows[0], true, false, false);
+
+  PTRACE(4, "Constructed curses: maxRows=" << m_maxRows << " maxCols=" << m_maxCols);
 }
 
 
@@ -1274,9 +1468,22 @@ public:
 
   virtual bool WritePrompt()
   {
+    PTRACE(4, "Writing prompt");
+
     PCLICurses::Window & wnd = m_cli[m_cli.GetWindowCount() > 1 ? 1 : 0];
     wnd.Clear();
-    return wnd.WriteString(m_cli.GetPrompt());
+    if (!wnd.WriteString(m_cli.GetPrompt()))
+      return false;
+
+    m_cli[0].SetPageMode();
+    m_cli.Refresh();
+    return true;
+  }
+
+
+  virtual bool EchoInput(char ch)
+  {
+    return m_cli[m_cli.GetWindowCount() > 1 ? 1 : 0].WriteChar(ch);
   }
 };
 
@@ -1293,9 +1500,9 @@ PCLI::Context * PCLICurses::CreateContext()
 }
 
 
-PCLICurses::Window & PCLICurses::NewWindow(unsigned row, unsigned col, unsigned rows, unsigned cols)
+PCLICurses::Window & PCLICurses::NewWindow(unsigned row, unsigned col, unsigned rows, unsigned cols, Borders border)
 {
-  Window * wnd = new PCLICursesWindow(*this, row, col, rows, cols);
+  Window * wnd = new PCLICursesWindow(*this, row, col, rows, cols, border);
   m_windows.Append(wnd);
   return *wnd;
 }
@@ -1315,6 +1522,17 @@ void PCLICurses::RemoveWindow(PINDEX idx)
 }
 
 
+PCLICurses::Window * PCLICurses::GetFocusWindow() const
+{
+  for (PINDEX i = 0; i < m_windows.GetSize(); ++i) {
+    if (m_windows[i].HasFocus())
+      return &m_windows[i];
+  }
+
+  return NULL;
+}
+
+
 bool PCLICurses::WaitPage()
 {
   PCLICurses::Window & wnd = m_windows[m_windows.GetSize() > 1 ? 1 : 0];
@@ -1328,10 +1546,18 @@ bool PCLICurses::WaitPage()
 }
 
 
+void PCLICurses::Refresh()
+{
+  for (PINDEX i = 0; i < m_windows.GetSize(); ++i)
+    m_windows[i].Refresh();
+}
+
+
 ///////////////////////////////////////
 
-PCLICurses::Window::Window(PCLICurses & owner)
+PCLICurses::Window::Window(PCLICurses & owner, PCLICurses::Borders border)
   : m_owner(owner)
+  , m_border(border)
   , m_focus(false)
   , m_pageMode(false)
   , m_pagedRows(0)
@@ -1347,20 +1573,23 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
   GetCursor(row, col);
 
   unsigned rows, cols;
-  GetSize(rows, cols);
+  GetSize(rows, cols, false);
 
-  PINDEX count;
   const char * ptr = (const char *)data;
-  for (count = 0; count < length; ++count, ++ptr) {
+  while (length-- > 0) {
     switch (*ptr) {
+      case '\x7f' :
+        if (col > 0 && !FillChar(row, --col, ' ', 1))
+          return false;
+        break;
+
       case '\r' :
         col = 0;
         break;
 
       default :
-        if (!WriteChar(*ptr))
+        if (!FillChar(row, col, *ptr, 1))
           return false;
-
         if (++col < cols)
           break;
         // Do new line case as wrapped at end of line
@@ -1371,7 +1600,7 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
 
         if (m_pageMode && ++m_pagedRows >= rows) {
           m_pagedRows = 0;
-          m_owner.Refresh();
+          Refresh();
           if (!m_owner.WaitPage())
             return false;
         }
@@ -1383,17 +1612,27 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
       --row;
     }
 
-    SetCursor(row, col);
+    ++lastWriteCount;
+    ++ptr;
   }
 
-  lastWriteCount = count;
-  m_owner.Refresh();
+  SetCursor(row, col);
+
+  Refresh();
   return true;
+}
+
+
+void PCLICurses::Window::SetPageMode(bool on)
+{
+  m_pageMode = on;
+  m_pagedRows = 0;
 }
 
 
 void PCLICurses::Window::SetFocus()
 {
+  PTRACE(4, "SetFocus " << this);
   for (PINDEX i = 0; i < m_owner.GetWindowCount(); ++i) {
     Window * wnd = m_owner.GetWindow(i);
     wnd->m_focus = wnd == this;
