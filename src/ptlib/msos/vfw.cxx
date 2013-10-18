@@ -1342,6 +1342,9 @@ PBoolean PVideoOutputDevice_Window::Stop()
 
 PBoolean PVideoOutputDevice_Window::SetChannel(int channelNumber)
 {
+  if (channelNumber)
+    return true;
+
   if (channelNumber < NormalSize || channelNumber >= NumSizeModes)
     return false;
 
