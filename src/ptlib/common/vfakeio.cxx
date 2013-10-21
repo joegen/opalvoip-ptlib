@@ -59,7 +59,7 @@ static const char * const FakeDeviceNames[] = {
   P_FAKE_VIDEO_MOVING_LINE,
   P_FAKE_VIDEO_BOUNCING_BOXES,
   P_FAKE_VIDEO_SOLID_COLOUR,
-  "Fake/OriginalMovingBlocks",
+  P_FAKE_VIDEO_PREFIX"OriginalMovingBlocks",
   P_FAKE_VIDEO_TEXT,
   P_FAKE_VIDEO_NTSC,
   "fake" // Always last, ancient history
@@ -1423,20 +1423,15 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     );
 
     /**Get the number of video channels available on the device.
-
-       Default behaviour returns 1.
     */
-    virtual int GetNumChannels() ;
+    virtual int GetNumChannels();
 
-    /**Set the video channel to be used on the device.
+    /**Get the names of video channels available on the device.
 
-       Default behaviour sets the value of the channelNumber variable and then
-       returns the IsOpen() status.
+       Default behaviour returns 'A', 'B' up to GetNumChannels().
     */
-    virtual PBoolean SetChannel(
-         int channelNumber  /// New channel number for device.
-    );
-    
+    virtual PStringArray GetChannelNames();
+
     /**Set the colour format to be used.
 
        Default behaviour sets the value of the colourFormat variable and then
@@ -1522,7 +1517,7 @@ PBoolean PVideoInputDevice_FakeVideo::Open(const PString & devName, PBoolean /*s
   PINDEX i;
   for (i = 0; i < PARRAYSIZE(FakeDeviceNames)-1; ++i) {
     if (devName *= FakeDeviceNames[i]) {
-      PVideoDevice::SetChannel(i);
+      SetChannel(i);
       break;
     }
   }
@@ -1582,12 +1577,12 @@ int PVideoInputDevice_FakeVideo::GetNumChannels()
 }
 
 
-PBoolean PVideoInputDevice_FakeVideo::SetChannel(int newChannel)
+PStringArray PVideoInputDevice_FakeVideo::GetChannelNames()
 {
-  if (newChannel < 0 || deviceName != FakeDeviceNames[PARRAYSIZE(FakeDeviceNames)-1])
-    return true; // No change for -1 or explicit channel in device name
-
-  return PVideoDevice::SetChannel(newChannel);
+  PStringArray names(PARRAYSIZE(FakeDeviceNames)-1, FakeDeviceNames);
+  for (PINDEX i = 0; i < names.GetSize(); ++i)
+    names[i].Replace(P_FAKE_VIDEO_PREFIX, PString::Empty());
+  return names;
 }
 
 

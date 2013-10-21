@@ -141,18 +141,6 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
       VideoFormat videoFormat   /// New video format
     );
 
-    /**Get the number of video channels available on the device.
-
-       Default behaviour returns 1.
-    */
-    virtual int GetNumChannels() ;
-
-    /**Set the video channel to be used on the device. 
-    */
-    virtual PBoolean SetChannel(
-         int channelNumber  /// New channel number for device.
-    );
-    
     /**Set the colour format to be used.
 
        Default behaviour sets the value of the colourFormat variable and then

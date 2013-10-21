@@ -206,9 +206,14 @@ int PVideoInputDevice_VideoFile::GetNumChannels()
 }
 
 
-PBoolean PVideoInputDevice_VideoFile::SetChannel(int newChannel)
+PStringArray PVideoInputDevice_VideoFile::GetChannelNames()
 {
-  return newChannel < 0 || PVideoDevice::SetChannel(newChannel);
+  PStringArray names(ChannelCount);
+  names[0] = "Once, then close";
+  names[1] = "Repeat";
+  names[2] = "Once, then still";
+  names[3] = "Once, then black";
+  return names;
 }
 
 
