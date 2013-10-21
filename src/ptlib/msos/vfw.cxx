@@ -1099,6 +1099,10 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     */
     virtual int GetNumChannels() { return NumSizeModes; }
 
+    /**Get the names of video channels available on the device.
+    */
+    virtual PStringArray GetChannelNames();
+
     /**Set the video channel to be used on the device.
        The channel number is an integer from 0 to GetNumChannels()-1. The
        special value of -1 will find the first working channel number.
@@ -1342,12 +1346,21 @@ PBoolean PVideoOutputDevice_Window::Stop()
 }
 
 
-PBoolean PVideoOutputDevice_Window::SetChannel(int channelNumber)
+PStringArray PVideoOutputDevice_Window::GetChannelNames()
 {
-  if (channelNumber)
-    return true;
+  PStringArray names(NumSizeModes);
+  names[NormalSize] = "Normal size";
+  names[HalfSize] = "Half size";
+  names[DoubleSize] = "Double size";
+  names[FullScreen] = "Full screen";
+  names[FixedSize] = "Fixed size";
+  return names;
+}
 
-  if (channelNumber < NormalSize || channelNumber >= NumSizeModes)
+
+PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
+{
+  if (!PVideoOutputDeviceRGB::SetChannel(newChannelNumber))
     return false;
 
   if (m_hWnd != NULL) {
