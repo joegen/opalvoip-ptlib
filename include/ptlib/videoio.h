@@ -488,6 +488,10 @@ class PVideoDevice : public PVideoFrameInfo
     */
     virtual int GetNumChannels();
 
+    /**Get the names of video channels available on the device.
+    */
+    virtual PStringArray GetChannelNames();
+
     /**Set the video channel to be used on the device.
        The channel number is an integer from 0 to GetNumChannels()-1. The
        special value of -1 will find the first working channel number.
