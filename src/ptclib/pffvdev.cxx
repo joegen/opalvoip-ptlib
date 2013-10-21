@@ -236,17 +236,6 @@ PBoolean PVideoInputDevice_FFMPEG::SetVideoFormat(VideoFormat newFormat)
 }
 
 
-int PVideoInputDevice_FFMPEG::GetNumChannels() 
-{
-  return 1;  
-}
-
-
-PBoolean PVideoInputDevice_FFMPEG::SetChannel(int newChannel)
-{
-  return PVideoDevice::SetChannel(newChannel);
-}
-
 PBoolean PVideoInputDevice_FFMPEG::SetColourFormat(const PString & newFormat)
 {
   if (!(newFormat *= "YUV420P"))

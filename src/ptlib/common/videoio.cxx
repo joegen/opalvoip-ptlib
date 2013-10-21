@@ -661,22 +661,39 @@ int PVideoDevice::GetNumChannels()
 }
 
 
-PBoolean PVideoDevice::SetChannel(int channelNum)
+PStringArray PVideoDevice::GetChannelNames()
 {
-  if (channelNum < 0) { // Seek out the first available channel
-    for (int c = 0; c < GetNumChannels(); c++) {
+  int numChannels = GetNumChannels();
+  PStringArray names(numChannels);
+  for (int c = 0; c < numChannels; ++c)
+    names[c] = PString((char)('A'+c));
+  return names;
+}
+
+
+PBoolean PVideoDevice::SetChannel(int newChannelNumber)
+{
+  if (newChannelNumber < 0) { // No change
+    int numChannels = GetNumChannels();
+    if (channelNumber >= 0 && channelNumber < numChannels)
+      return true;
+
+    // Must change
+    for (int c = 0; c < numChannels; c++) {
       if (SetChannel(c))
         return true;
     }
+
+    PTRACE(2, "PVidDev\tCannot set any possible channel number!");
     return false;
   }
 
-  if (channelNum >= GetNumChannels()) {
-    PTRACE(2, "PVidDev\tSetChannel number (" << channelNum << ") too large.");
+  if (newChannelNumber >= GetNumChannels()) {
+    PTRACE(2, "PVidDev\tSetChannel number (" << newChannelNumber << ") too large.");
     return false;
   }
 
-  channelNumber = channelNum;
+  channelNumber = newChannelNumber;
   return true;
 }
 

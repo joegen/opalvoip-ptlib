@@ -153,24 +153,19 @@ class PVideoInputDevice_YUVFile : public PVideoInputDevice
     );
 
     /**Get the number of video channels available on the device.
-
-       Default behaviour returns 1.
-    */
-    virtual int GetNumChannels() ;
-
-    /**Set the video channel to be used on the device. Channels have the following meanings:
         0 (default) = play file and close device
         1           = play file and repeat
         2           = play file and replay last frame
         3           = play file and display black frame
 
-       Default behaviour sets the value of the channelNumber variable and then
-       returns the IsOpen() status.
+       Default behaviour returns 4.
     */
-    virtual PBoolean SetChannel(
-         int channelNumber  /// New channel number for device.
-    );
-    
+    virtual int GetNumChannels();
+
+    /**Get the names of video channels available on the device.
+    */
+    virtual PStringArray GetChannelNames();
+
     /**Set the colour format to be used.
 
        Default behaviour sets the value of the colourFormat variable and then
