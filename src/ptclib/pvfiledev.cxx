@@ -213,9 +213,14 @@ int PVideoInputDevice_YUVFile::GetNumChannels()
 }
 
 
-PBoolean PVideoInputDevice_YUVFile::SetChannel(int newChannel)
+PStringArray PVideoInputDevice_YUVFile::GetChannelNames()
 {
-  return newChannel < 0 || PVideoDevice::SetChannel(newChannel);
+  PStringArray names(ChannelCount);
+  names[0] = "Once, then close";
+  names[1] = "Repeat";
+  names[2] = "Once, then still";
+  names[3] = "Once, then black";
+  return names;
 }
 
 
