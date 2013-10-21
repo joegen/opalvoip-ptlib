@@ -18616,6 +18616,10 @@ EXPORTS
     ?GetChangePort@PSTUNChangeRequest@@QEBA_NXZ @18528 NONAME
     ?GetChannel@PVideoDevice@@UEBAHXZ @18529 NONAME
     ?GetChannel@PVideoOutputDevice_Window@@UEBAHXZ @26742 NONAME
+    ?GetChannelNames@PVideoDevice@@UEAA?AVPStringArray@@XZ @26745 NONAME
+    ?GetChannelNames@PVideoInputDevice_FakeVideo@@UEAA?AVPStringArray@@XZ @26746 NONAME
+    ?GetChannelNames@PVideoInputDevice_YUVFile@@UEAA?AVPStringArray@@XZ @26747 NONAME
+    ?GetChannelNames@PVideoOutputDevice_Window@@UEAA?AVPStringArray@@XZ @26748 NONAME
     ?GetChannels@PSound@@QEBAIXZ @18530 NONAME
     ?GetChannels@PSoundChannel@@UEBAIXZ @18531 NONAME
     ?GetChannels@PSoundChannelDirectSound@@UEBAIXZ @18532 NONAME
@@ -19659,7 +19663,6 @@ EXPORTS
     ?GetNotify@PSSDP@@QEAA_NAEAVPMIMEInfo@@AEBVPString@@@Z @19561 NONAME
     ?GetNumChannels@PVideoDevice@@UEAAHXZ @19562 NONAME
     ?GetNumChannels@PVideoInputDevice_FakeVideo@@UEAAHXZ @19563 NONAME
-    ?GetNumChannels@PVideoInputDevice_FFMPEG@@UEAAHXZ @19564 NONAME
     ?GetNumChannels@PVideoInputDevice_YUVFile@@UEAAHXZ @19565 NONAME
     ?GetNumChannels@PVideoOutputDevice_Window@@UEAAHXZ @26743 NONAME
     ?GetNumElements@PXML@@QEBA_KXZ @19566 NONAME
@@ -22986,9 +22989,6 @@ EXPORTS
     ?SetChangeIP@PSTUNChangeRequest@@QEAAX_N@Z @22868 NONAME
     ?SetChangePort@PSTUNChangeRequest@@QEAAX_N@Z @22869 NONAME
     ?SetChannel@PVideoDevice@@UEAA_NH@Z @22870 NONAME
-    ?SetChannel@PVideoInputDevice_FakeVideo@@UEAA_NH@Z @22871 NONAME
-    ?SetChannel@PVideoInputDevice_FFMPEG@@UEAA_NH@Z @22872 NONAME
-    ?SetChannel@PVideoInputDevice_YUVFile@@UEAA_NH@Z @22873 NONAME
     ?SetChannel@PVideoOutputDevice_Window@@UEAA_NH@Z @26744 NONAME
     ?SetChannels@PWAVFile@@UEAAXI@Z @22874 NONAME
     ?SetCharacterSet@PASN_BMPString@@QEAAXW4ConstraintType@PASN_Object@@AEBV?$PBaseArray@_W@@@Z @22875 NONAME
