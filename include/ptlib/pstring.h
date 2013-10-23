@@ -1574,6 +1574,11 @@ class PString : public PCharArray
     );
 
 
+    /**Convert the string to any type that can be converted using a stream.
+       @return value for the string.
+     */
+    template <typename T> __inline T As(T t = T()) const;
+
     /**Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
        converted. Case is not significant for bases greater than 10.
@@ -2137,6 +2142,15 @@ class PStringStream : public PString, public P_IOSTREAM
 </code></pre>
  */
 #define PSTRSTRM(arg) dynamic_cast<const PString &>(PStringStream() << std::flush << arg)
+
+
+// Definition for template PString memeber function, needs to be after PStringStream
+template <typename T> __inline T PString::As(T t) const
+{
+  PStringStream strm(*this);
+  strm >> t;
+  return t;
+}
 
 
 class PStringList;
