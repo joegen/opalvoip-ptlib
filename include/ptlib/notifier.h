@@ -149,26 +149,26 @@ class PNotifierTemplate : public PSmartPointer
 typedef PNotifierTemplate<P_INT_PTR> PNotifier;
 
 
-#define PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, BaseClass) \
+#define PDECLARE_NOTIFIER_COMMON1(notifierType, notifiee, func, ParamType, BaseClass) \
   class func##_PNotifier : public BaseClass { \
     public: \
       func##_PNotifier(notifiee * target) : BaseClass(target, target) { } \
       virtual void Call(PObject & note, ParamType extra) const \
 
-#define PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, BaseClass) \
+#define PDECLARE_NOTIFIER_COMMON2(notifierType, notifierArg, notifiee, func, ParamType, ParamArg, BaseClass) \
         { notifiee * target = reinterpret_cast<notifiee *>(this->GetTarget()); \
           if (target != NULL) \
-            target->func(reinterpret_cast<notifier &>(note), extra); \
+            target->func(reinterpret_cast<notifierType &>(note), extra); \
         } \
       static PNotifierTemplate<ParamType> Create(notifiee * obj) { return new func##_PNotifier(obj); } \
       static PNotifierTemplate<ParamType> Create(notifiee & obj) { return new func##_PNotifier(&obj); } \
   }; \
   friend class func##_PNotifier; \
-  virtual void func(notifier & from, ParamType extra) \
+  virtual void func(notifierType & notifierArg, ParamType ParamArg) \
 
-#define PDECLARE_NOTIFIER_COMMON(notifier, notifiee, func, ParamType, BaseClass) \
-       PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, BaseClass) \
-       PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, BaseClass)
+#define PDECLARE_NOTIFIER_COMMON(notifierType, notifierArg, notifiee, func, ParamType, ParamArg, BaseClass) \
+       PDECLARE_NOTIFIER_COMMON1(notifierType, notifiee, func, ParamType, BaseClass) \
+       PDECLARE_NOTIFIER_COMMON2(notifierType, notifierArg, notifiee, func, ParamType, ParamArg, BaseClass)
 
 
 /** Declare a notifier object class.
@@ -195,12 +195,16 @@ typedef PNotifierTemplate<P_INT_PTR> PNotifier;
 
   The implementation of the function is left for the user.
  */
-#define PDECLARE_NOTIFIER2(notifier, notifiee, func, ParamType) \
-  PDECLARE_NOTIFIER_COMMON(notifier, notifiee, func, ParamType, PNotifierFunctionTemplate<ParamType>)
+#define PDECLARE_NOTIFIER_EXT(notifierType, notifierArg, notifiee, func, ParamType, ParamArg) \
+     PDECLARE_NOTIFIER_COMMON(notifierType, notifierArg, notifiee, func, ParamType, ParamArg, PNotifierFunctionTemplate<ParamType>)
 
-/// Declare PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_NOTIFIER2 macro.
-#define PDECLARE_NOTIFIER(notifier, notifiee, func) \
-       PDECLARE_NOTIFIER2(notifier, notifiee, func, P_INT_PTR)
+/// Declare PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_NOTIFIER_EXT macro.
+#define PDECLARE_NOTIFIER2(notifierType,   notifiee, func, ParamType  ) \
+     PDECLARE_NOTIFIER_EXT(notifierType, , notifiee, func, ParamType, )
+
+/// Declare PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_NOTIFIER_EXT macro.
+#define PDECLARE_NOTIFIER(notifierType, notifiee, func) \
+       PDECLARE_NOTIFIER2(notifierType, notifiee, func, P_INT_PTR)
 
 
 /** Create a PNotifier object instance.

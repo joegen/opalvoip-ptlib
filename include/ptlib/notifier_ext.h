@@ -108,12 +108,18 @@ class PValidatedNotifierFunction : public PNotifierFunctionTemplate<ParamType>
 /** Declare a validated notifier object class.
     See PDECLARE_NOTIFIER2 for more information.
   */
-#define PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, ParamType) \
-            PDECLARE_NOTIFIER_COMMON(notifier, notifiee, func, ParamType, PValidatedNotifierFunction<ParamType>)
+#define PDECLARE_VALIDATED_NOTIFIER_EXT(notifierType, notifierArg, notifiee, func, ParamType, ParamArg) \
+            PDECLARE_NOTIFIER_COMMON(notifierType, notifierArg, notifiee, func, ParamType, ParamArg, PValidatedNotifierFunction<ParamType>)
+
+/** Declare a validated notifier object class.
+    See PDECLARE_NOTIFIER2 for more information.
+  */
+#define PDECLARE_VALIDATED_NOTIFIER2(notifierType,   notifiee, func, ParamType  ) \
+     PDECLARE_VALIDATED_NOTIFIER_EXT(notifierType, , notifiee, func, ParamType, )
 
 /// Declare validated PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_VALIDATED_NOTIFIER2 macro.
-#define PDECLARE_VALIDATED_NOTIFIER(notifier, notifiee, func) \
-       PDECLARE_VALIDATED_NOTIFIER2(notifier, notifiee, func, P_INT_PTR)
+#define PDECLARE_VALIDATED_NOTIFIER(notifierType, notifiee, func) \
+       PDECLARE_VALIDATED_NOTIFIER2(notifierType, notifiee, func, P_INT_PTR)
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -224,17 +230,23 @@ class PAsyncNotifierFunction : public PNotifierFunctionTemplate<ParamType>
 
 
 /** Declare an asynchronous notifier object class.
-    See PDECLARE_NOTIFIER2 for more information.
+    See PDECLARE_NOTIFIER_EXT for more information.
   */
-#define PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, ParamType) \
-       PDECLARE_NOTIFIER_COMMON1(notifier, notifiee, func, ParamType, PAsyncNotifierFunction<ParamType>) \
+#define PDECLARE_ASYNC_NOTIFIER_EXT(notifierType, notifierArg, notifiee, func, ParamType, ParamArg) \
+       PDECLARE_NOTIFIER_COMMON1(notifierType, notifiee, func, ParamType, PAsyncNotifierFunction<ParamType>) \
        { PAsyncNotifierCallback::Queue(m_targetID, new TypedCallback<func##_PNotifier>(*this, note, extra)); } \
        void AsyncCall(PObject & note, ParamType extra) const \
-       PDECLARE_NOTIFIER_COMMON2(notifier, notifiee, func, ParamType, PAsyncNotifierFunction<ParamType>) \
+       PDECLARE_NOTIFIER_COMMON2(notifierType, notifierArg, notifiee, func, ParamType, ParamArg, PAsyncNotifierFunction<ParamType>)
 
-/// Declare an asynchronous PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_ASYNC_NOTIFIER2 macro.
-#define PDECLARE_ASYNC_NOTIFIER(notifier, notifiee, func) \
-       PDECLARE_ASYNC_NOTIFIER2(notifier, notifiee, func, P_INT_PTR)
+/** Declare an asynchronous notifier object class.
+    See PDECLARE_NOTIFIER_EXT for more information.
+  */
+#define PDECLARE_ASYNC_NOTIFIER2(notifierType, notifiee, func, ParamType) \
+       PDECLARE_ASYNC_NOTIFIER_EXT(notifierType, , notifiee, func, ParamType, )
+
+/// Declare an asynchronous PNotifier derived class with P_INT_PTR parameter. Uses PDECLARE_NOTIFIER_EXT macro.
+#define PDECLARE_ASYNC_NOTIFIER(notifierType, notifiee, func) \
+       PDECLARE_ASYNC_NOTIFIER2(notifierType, notifiee, func, P_INT_PTR)
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -260,7 +272,7 @@ class PNotifierListTemplate : public PObject
       this->m_list.push_back(handler);
     }
 
-    /// REmove notifier from teh list
+    /// Remove notifier from teh list
     void Remove(const Notifier & handler)
     {
       this->m_list.remove(handler);
