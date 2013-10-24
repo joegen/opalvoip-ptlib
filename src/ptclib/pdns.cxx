@@ -559,11 +559,20 @@ PBoolean PDNS::LookupSRV(
     return false;
   }
 
+  PString addr = domain;
+  PINDEX colon = addr.FindLast(':');
+  if (colon != P_MAX_INDEX && (addr.Find('[') == P_MAX_INDEX || addr.Find(']') < colon))
+    addr.Delete(colon, P_MAX_INDEX);
+
+  if (PIPSocket::Address(addr).IsValid()) {
+    PTRACE(4, "DNS\tSRV lookup failed - domain is IP address");
+    return false;
+  }
+
   PString srvLookupStr = service;
-  if (srvLookupStr.Right(1) != ".")
-    srvLookupStr += ".";
-  srvLookupStr += domain;
-  
+  if (srvLookupStr[srvLookupStr.GetLength()-1] != '.')
+    srvLookupStr += '.';
+  srvLookupStr += addr;
   PTRACE(4,"DNS\tSRV Lookup \"" << srvLookupStr << '"');
   return LookupSRV(srvLookupStr, defaultPort, addrList);
 }
@@ -574,17 +583,16 @@ PBoolean PDNS::LookupSRV(
               PIPSocketAddressAndPortVector & addrList
 )
 {
-
   PDNS::SRVRecordList srvRecords;
-  PBoolean found = PDNS::GetRecords(srvLookupStr, srvRecords);
-  if (found) {
+  bool found = false;
+  if (PDNS::GetRecords(srvLookupStr, srvRecords)) {
     PTRACE(5,"DNS\tSRV Record found \"" << srvLookupStr << '"');
     PDNS::SRVRecord * recPtr = srvRecords.GetFirst();
     while (recPtr != NULL) {
       PIPSocketAddressAndPort addrAndPort;
       addrAndPort.SetAddress(recPtr->hostAddress, recPtr->port > 0 ? recPtr->port : defaultPort);
       addrList.push_back(addrAndPort);
-
+      found = true;
       recPtr = srvRecords.GetNext();
     }
   } 
