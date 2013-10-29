@@ -49,16 +49,28 @@ class PPluginManager : public PObject
     void OnShutdown();
   
     // functions to access the plugins' services 
-    PStringArray GetPluginTypes() const;
-    PStringArray GetPluginsProviding(const PString & serviceType) const;
-    PPluginServiceDescriptor * GetServiceDescriptor(const PString & serviceName, const PString & serviceType) const;
-    PObject * CreatePluginsDevice(const PString & serviceName, const PString & serviceType, int userData = 0) const;
-    PObject * CreatePluginsDeviceByName(const PString & deviceName, const PString & serviceType, int userData = 0, const PString & serviceName = PString::Empty()) const;
-    PStringArray GetPluginsDeviceNames(const PString & serviceName, const PString & serviceType, int userData = 0) const;
+    PStringArray GetServiceTypes() const;
+    const PPluginServiceDescriptor * GetServiceDescriptor(const PString & serviceName, const PString & serviceType) const;
+
+    static PStringArray GetPluginsProviding(PPluginManager * pluginMgr, const PString & serviceType, bool friendlyNames)
+    { return (pluginMgr != NULL ? pluginMgr : &GetPluginManager())->GetPluginsProviding(serviceType, friendlyNames); }
+
+    PStringArray GetPluginsProviding(const PString & serviceType, bool friendlyNames) const;
+
+    template <class T> static T * CreatePluginAs(PPluginManager * pluginMgr, const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0)
+    { return dynamic_cast<T *>((pluginMgr != NULL ? pluginMgr : &GetPluginManager())->CreatePlugin(serviceName, serviceType, userData)); }
+
+    PObject * CreatePlugin(const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0) const;
+
+    static PStringArray GetPluginDeviceNames(PPluginManager * pluginMgr, const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0)
+    { return (pluginMgr != NULL ? pluginMgr : &GetPluginManager())->GetPluginDeviceNames(serviceName, serviceType, userData); }
+
+    PStringArray GetPluginDeviceNames(const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0) const;
+
     PBoolean GetPluginsDeviceCapabilities(const PString & serviceType,const PString & serviceName,const PString & deviceName,void * capabilities) const;
 
     // function to register a service (used by the plugins themselves)
-    PBoolean RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
+    bool RegisterService(const char * name);
 
 
     enum NotificationCode {
@@ -92,6 +104,10 @@ class PPluginManager : public PObject
       const PNotifier & filterFunction
     );
 
+    // For backward compatibility
+    P_DEPRECATED PObject * CreatePluginsDevice(const PString & serviceName, const PString & serviceType, int userData = 0) const { return CreatePlugin(serviceName, serviceType, userData); }
+    P_DEPRECATED PObject * CreatePluginsDeviceByName(const PString & deviceName, const PString & serviceType, int userData = 0, const PString & serviceName = PString::Empty()) const { return CreatePlugin(serviceName.IsEmpty() ? deviceName : serviceName, serviceType, userData); }
+
   protected:
     PPluginManager();
 
@@ -102,9 +118,10 @@ class PPluginManager : public PObject
 
     PMutex            m_pluginsMutex;
     PArray<PDynaLink> m_plugins;
-    
-    PMutex                 m_servicesMutex;
-    PArray<PPluginService> m_services;
+
+    typedef std::multimap<PCaselessString, const PPluginServiceDescriptor &> ServiceMap;
+    ServiceMap m_services;
+    PMutex     m_servicesMutex;
 
     PMutex           m_notifiersMutex;
     PList<PNotifier> m_notifiers;

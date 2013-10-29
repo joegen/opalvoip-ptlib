@@ -1206,22 +1206,25 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
 #define DEFAULT_STYLE (WS_POPUP|WS_BORDER|WS_SYSMENU|WS_CAPTION)
 #define DEFAULT_TITLE "Video Output"
 
-class PVideoOutputDevice_Window_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return PNEW PVideoOutputDevice_Window; }
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return PVideoOutputDevice_Window::GetOutputDeviceNames(); }
-    virtual bool         ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const { return deviceName.NumCompare("MSWIN") == PObject::EqualTo; }
-} PVideoOutputDevice_Window_descriptor;
+PCREATE_VIDOUTPUT_PLUGIN_EX(Window,
 
-PCREATE_PLUGIN(Window, PVideoOutputDevice, &PVideoOutputDevice_Window_descriptor);
+  virtual const char * GetFriendlyName() const
+  {
+    return "Microsoft Windows Video Output";
+  }
+
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    return deviceName.NumCompare(GetServiceName()) == PObject::EqualTo;
+  }
+)
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDeviceRGB
 
 #undef PTraceModule
-#define PTraceModule() "MSWIN"
+#define PTraceModule() PPlugin_PVideoOutputDevice_Window::ServiceName()
 
 PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   : m_hWnd(NULL)
@@ -1267,7 +1270,7 @@ PStringArray PVideoOutputDevice_Window::GetOutputDeviceNames()
 
 PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImmediate)
 {
-  if (name.NumCompare("MSWIN") != EqualTo)
+  if (name.NumCompare(PPlugin_PVideoOutputDevice_Window::ServiceName()) != EqualTo)
     return false;
 
   Close();

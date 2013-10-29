@@ -515,8 +515,8 @@ class PLDAPSchema : public PObject
     typedef std::list<Attribute> attributeList;
 
     static PLDAPSchema * CreateSchema(const PString & schemaname, PPluginManager * pluginMgr = NULL);
-    static PStringList GetSchemaNames(PPluginManager * pluginMgr = NULL);
-    static PStringList GetSchemaFriendlyNames(const PString & schema, PPluginManager * pluginMgr = NULL);
+    static PStringArray GetSchemaNames(PPluginManager * pluginMgr = NULL);
+    static PStringArray GetSchemaFriendlyNames(PPluginManager * pluginMgr = NULL);
 
     void OnReceivedAttribute(const PString & attribute, const PString & value);
 
@@ -552,16 +552,10 @@ class PLDAPSchema : public PObject
 };
 
 
-template <class className> class LDAPPluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return className::SchemaName(); } 
-};
+PCREATE_PLUGIN_SERVICE(PLDAPSchema);
 
-#define LDAP_Schema(name)    \
-  static LDAPPluginServiceDescriptor<name##_schema> name##_schema_descriptor; \
-  PCREATE_PLUGIN(name##_schema, PLDAPSchema, &name##_schema_descriptor)
+#define LDAP_Schema(name) PCREATE_PLUGIN(name, PLDAPSchema)
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 

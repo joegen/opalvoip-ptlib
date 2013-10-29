@@ -43,14 +43,6 @@
 
 
 static const char PNatMethodBaseClass[] = "PNatMethod";
-template <> PNatMethod * PDevicePluginFactory<PNatMethod>::Worker::Create(const PDefaultPFactoryKey & method) const
-{
-   return PNatMethod::Create(method);
-}
-
-typedef PDevicePluginAdapter<PNatMethod> PDevicePluginPNatMethod;
-PFACTORY_CREATE(PFactory<PDevicePluginAdapterBase>, PDevicePluginPNatMethod, PNatMethodBaseClass, true);
-
 
 PNatStrategy::PNatStrategy()
 {
@@ -111,18 +103,14 @@ void PNatStrategy::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase,
 }
 
 
-PNatMethod * PNatStrategy::LoadNatMethod(const PString & name)
+PNatMethod * PNatStrategy::LoadNatMethod(const PString & name, PPluginManager * plugMgr)
 {
-   if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass);
+   return PPluginManager::CreatePluginAs<PNatMethod>(plugMgr, name, PNatMethodBaseClass);
 }
 
-PStringArray PNatStrategy::GetRegisteredList()
+PStringArray PNatStrategy::GetRegisteredList(bool friendlyName, PPluginManager * plugMgr)
 {
-  PPluginManager * plugMgr = &PPluginManager::GetPluginManager();
-  return plugMgr->GetPluginsProviding(PNatMethodBaseClass);
+  return PPluginManager::GetPluginsProviding(plugMgr, PNatMethodBaseClass, friendlyName);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -159,10 +147,7 @@ PString PNatMethod::GetNatTypeString(NatTypes type)
 
 PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return (PNatMethod *)pluginMgr->CreatePluginsDeviceByName(name, PNatMethodBaseClass,0);
+  return PPluginManager::CreatePluginAs<PNatMethod>(pluginMgr, name, PNatMethodBaseClass);
 }
 
 

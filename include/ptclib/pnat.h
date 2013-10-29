@@ -591,9 +591,9 @@ public :
      */
     PNatList & GetNATList() {  return natlist; };
 
-	PNatMethod * LoadNatMethod(const PString & name);
+	PNatMethod * LoadNatMethod(const PString & name, PPluginManager * plugMgr = NULL);
 
-    static PStringArray GetRegisteredList();
+    static PStringArray GetRegisteredList(bool friendlyName, PPluginManager * plugMgr = NULL);
 
   //@}
 
@@ -602,23 +602,15 @@ private:
   PPluginManager * pluginMgr;
 };
 
+
 ////////////////////////////////////////////////////////
 //
 // declare macros and structures needed for NAT plugins
 //
 
-template <class SVC> class PNatMethodServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new SVC; }
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return SVC::GetNatMethodName(); }
-    virtual bool  ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
-      { return SVC::GetNatMethodName() *= deviceName; }
-};
+PCREATE_PLUGIN_SERVICE(PNatMethod);
 
-#define PCREATE_NAT_PLUGIN(name) \
-  static PNatMethodServiceDescriptor<PNatMethod_##name> PNatMethod_##name##_descriptor; \
-  PCREATE_PLUGIN(name, PNatMethod, &PNatMethod_##name##_descriptor) \
+#define PCREATE_NAT_PLUGIN(name) PCREATE_PLUGIN(name, PNatMethod)
 
 
 #define P_NAT_PARAM(...) ,__VA_ARGS__

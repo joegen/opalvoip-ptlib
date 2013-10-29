@@ -52,27 +52,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_VideoFile
 
-class PVideoInputDevice_VideoFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
-    {
-      return new PVideoInputDevice_VideoFile;
-    }
+PCREATE_VIDINPUT_PLUGIN_EX(VideoFile,
 
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
-    {
-      return PVideoInputDevice_VideoFile::GetInputDeviceNames();
-    }
+  virtual const char * GetFriendlyName() const
+  {
+    return "Raw YUV File Video Input";
+  }
 
-    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
-    {
-      PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
-      return std::find(keyList.begin(), keyList.end(), PFilePath(deviceName).GetType()) != keyList.end();
-    }
-} PVideoInputDevice_VideoFile_descriptor;
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
+    return std::find(keyList.begin(), keyList.end(), PFilePath(deviceName).GetType()) != keyList.end();
+  }
+);
 
-PCREATE_PLUGIN(VideoFile, PVideoInputDevice, &PVideoInputDevice_VideoFile_descriptor);
+
 
 PVideoInputDevice_VideoFile::PVideoInputDevice_VideoFile()
   : m_file(NULL)
@@ -374,24 +368,18 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevice_VideoFile
 
-class PVideoOutputDevice_VideoFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
-    {
-        return new PVideoOutputDevice_VideoFile;
-    }
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
-    {
-        return PVideoOutputDevice_VideoFile::GetOutputDeviceNames();
-    }
-    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
-    {
-      return (deviceName.Right(4) *= ".yuv") && (!PFile::Exists(deviceName) || PFile::Access(deviceName, PFile::WriteOnly));
-    }
-} PVideoOutputDevice_VideoFile_descriptor;
+PCREATE_VIDOUTPUT_PLUGIN_EX(VideoFile,
 
-PCREATE_PLUGIN(VideoFile, PVideoOutputDevice, &PVideoOutputDevice_VideoFile_descriptor);
+  virtual const char * GetFriendlyName() const
+  {
+    return "Raw YUV File Video Output";
+  }
+
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    return (deviceName.Right(4) *= ".yuv") && (!PFile::Exists(deviceName) || PFile::Access(deviceName, PFile::WriteOnly));
+  }
+);
 
 
 PVideoOutputDevice_VideoFile::PVideoOutputDevice_VideoFile()

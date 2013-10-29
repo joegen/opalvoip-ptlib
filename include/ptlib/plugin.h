@@ -22,58 +22,17 @@
 
 #include <ptlib/pfactory.h>
 
-template <class AbstractClass, typename KeyType = PDefaultPFactoryKey>
-class PDevicePluginFactory : public PFactory<AbstractClass, KeyType>
-{
-  public:
-    typedef PFactory<AbstractClass, KeyType> Base_T;
-    typedef typename Base_T::WorkerBase WorkerBase_T;
-
-    class Worker : protected WorkerBase_T
-    {
-      public:
-        Worker(const KeyType & key, bool singleton = false)
-          : WorkerBase_T(singleton)
-        {
-          Base_T::Register(key, this);
-        }
-
-        ~Worker()
-        {
-          Base_T::Unregister(this);
-        }
-
-      protected:
-        virtual AbstractClass * Create(const KeyType & key) const;
-    };
-};
-
-class PDevicePluginAdapterBase
-{
-  public:
-    PDevicePluginAdapterBase()
-    { }
-    virtual ~PDevicePluginAdapterBase()
-    { }
-    virtual void CreateFactory(const PString & device) = 0;
-};
-
-template <typename DeviceBase>
-class PDevicePluginAdapter : public PDevicePluginAdapterBase
-{
-  public:
-    typedef PDevicePluginFactory<DeviceBase> Factory_T;
-    typedef typename Factory_T::Worker Worker_T;
-    void CreateFactory(const PString & device)
-    {
-      if (!(Factory_T::IsRegistered(device)))
-        new Worker_T(device, false);
-    }
-};
-
-
-#ifndef PWLIB_PLUGIN_API_VERSION
-#define PWLIB_PLUGIN_API_VERSION 0
+#ifdef PWLIB_PLUGIN_API_VERSION
+  #ifdef PTLIB_PLUGIN_API_VERSION
+    #warning Ignoring PWLIB_PLUGIN_API_VERSION as PTLIB_PLUGIN_API_VERSION is defined!
+    #undef PWLIB_PLUGIN_API_VERSION
+  #else
+    #define PTLIB_PLUGIN_API_VERSION PWLIB_PLUGIN_API_VERSION
+  #endif
+#else
+  #ifndef PTLIB_PLUGIN_API_VERSION
+    #define PTLIB_PLUGIN_API_VERSION 1
+  #endif
 #endif
 
 
@@ -85,138 +44,109 @@ class PDevicePluginAdapter : public PDevicePluginAdapterBase
 class PPluginServiceDescriptor 
 {
   public:
-    PPluginServiceDescriptor() { version = PWLIB_PLUGIN_API_VERSION; }
+    static const char SeparatorChar;
+
+    PPluginServiceDescriptor()
+      : m_version(PTLIB_PLUGIN_API_VERSION)
+      { }
+
     virtual ~PPluginServiceDescriptor() { }
 
-    virtual unsigned GetPluginAPIVersion() const { return version; }
+    virtual unsigned GetPluginAPIVersion() const { return m_version; }
+    virtual const char * GetServiceType() const = 0;
+    virtual const char * GetServiceName() const = 0;
+    virtual const char * GetFriendlyName() const { return GetServiceName(); }
+    virtual bool  ValidateServiceName(const PString & name, P_INT_PTR userData) const;
+    virtual PObject * CreateInstance(P_INT_PTR userData) const = 0;
 
   protected:
-    unsigned version;
+    unsigned m_version;
 };
 
 
-class PDevicePluginServiceDescriptor : public PPluginServiceDescriptor
+typedef PFactory<PPluginServiceDescriptor> PPluginFactory;
+
+
+class PPluginDeviceDescriptor : public PPluginServiceDescriptor
 {
   public:
-    static const char SeparatorChar;
+    virtual bool         ValidateServiceName(const PString & name, P_INT_PTR userData) const;
 
-    virtual PObject *    CreateInstance(P_INT_PTR userData) const = 0;
-    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const = 0;
+    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const;
     virtual bool         ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const;
     virtual bool         GetDeviceCapabilities(const PString & deviceName, void * capabilities) const;
 };
 
-
-//////////////////////////////////////////////////////
-//
-// Define a service provided by a plugin, which consists of the following:
-//
-//    serviceType - the base class name of the service which is used to identify
-//                  the service type, such as PSoundChannel, 
-//
-//    serviceName - the name of the service provided by the plugin. This will usually
-//                  be related to the class implementing the service, such as:
-//                       service name = OSS, class name = PSoundChannelOSS
-//
-//    descriptor  - a pointer to a class containing pointers to any static functions
-//                  for this class
-//   
-//
-
-class PPluginService: public PObject
-{
-  public:
-    PPluginService(const PString & name,
-                   const PString & type,
-                   PPluginServiceDescriptor * desc)
-      : serviceName(name)
-      , serviceType(type)
-      , descriptor(desc)
-    {
-    }
-
-    PString serviceName;
-    PString serviceType;
-    PPluginServiceDescriptor * descriptor;
-};
+typedef PPluginDeviceDescriptor PDevicePluginServiceDescriptor;   // Backward compatibility
 
 
 //////////////////////////////////////////////////////
-//
-//  These crazy macros are needed to cause automatic registration of 
-//  static plugins. They are made more complex by the arcane behaviour
-//  of the Windows link system that requires an external reference in the
-//  object module before it will instantiate any globals in in it
-//
 
-#define PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
-class PPlugin_##serviceType##_##serviceName##_Registration { \
-  public: \
-    PPlugin_##serviceType##_##serviceName##_Registration(PPluginManager * pluginMgr) \
-    { \
-      static PDevicePluginFactory<serviceType>::Worker factory(#serviceName); \
-      pluginMgr->RegisterService(#serviceName, #serviceType, descriptor); \
-    } \
-    int kill_warning; \
-}; \
+#define PCREATE_PLUGIN_SERVICE_EX(serviceType, BaseClass, extra) \
+        class PPlugin_##serviceType : public BaseClass { \
+          public: \
+            static  const char * ServiceType() { return #serviceType; } \
+            virtual const char * GetServiceType() const { return ServiceType(); } \
+            extra \
+        }
+
+#define PCREATE_PLUGIN_SERVICE(serviceType) \
+        PCREATE_PLUGIN_SERVICE_EX(serviceType, PPluginServiceDescriptor, )
+
+#define PCREATE_PLUGIN_DEVICE(serviceType) \
+        PCREATE_PLUGIN_SERVICE_EX(serviceType, PPluginDeviceDescriptor, )
 
 
-#ifdef _WIN32
+//////////////////////////////////////////////////////
 
-  #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
-    PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
-    PPlugin_##serviceType##_##serviceName##_Registration \
-        PPlugin_##serviceType##_##serviceName##_Registration_Instance(&PPluginManager::GetPluginManager()); \
-    int PPlugin_##serviceType##_##serviceName##_link() { return 0; }
+#define PCREATE_PLUGIN_ARG_5(serviceName, serviceType, InstanceClass, DescriptorClass, extra) \
+        class PPlugin_##serviceType##_##serviceName : public DescriptorClass { \
+          public: \
+            static  const char * ServiceName() { return #serviceName; } \
+            virtual const char * GetServiceName() const { return ServiceName(); } \
+            virtual PObject * CreateInstance(P_INT_PTR) const { return new InstanceClass; } \
+            extra \
+        }; \
+        PFACTORY_CREATE(PPluginFactory, PPlugin_##serviceType##_##serviceName, #serviceType #serviceName, true)
 
-  // always define static plugins in Windows, since otherwise they seem not to work
-  #ifndef P_FORCE_STATIC_PLUGIN
-    #define P_FORCE_STATIC_PLUGIN 1
-  #endif
+#define PCREATE_PLUGIN_ARG_4(serviceName, serviceType, InstanceClass, DescriptorClass) \
+        PCREATE_PLUGIN_ARG_5(serviceName, serviceType, InstanceClass, DescriptorClass, )
 
-#elif defined(__GNUC__)
+#define PCREATE_PLUGIN_ARG_3(serviceName, serviceType, InstanceClass) \
+        PCREATE_PLUGIN_ARG_4(serviceName, serviceType, InstanceClass, PPlugin_##serviceType)
 
-  #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
-    static void __attribute__ (( constructor )) PWLIB_StaticLoader_##serviceName##_##serviceType() \
-      { PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); } \
-    int PPlugin_##serviceType##_##serviceName##_link() { return 0; }
+#define PCREATE_PLUGIN_ARG_2(serviceName, serviceType) \
+        PCREATE_PLUGIN_ARG_3(serviceName, serviceType, serviceType##_##serviceName)
 
-#else
+#define PCREATE_PLUGIN_PART1(narg, args) PCREATE_PLUGIN_PART2(narg, args)
+#define PCREATE_PLUGIN_PART2(narg, args) PCREATE_PLUGIN_ARG_##narg args
 
-  #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
-    extern int PWLIB_gStaticLoader__##serviceName##_##serviceType; \
-    static int PWLIB_StaticLoader_##serviceName##_##serviceType() \
-      { PPluginManager::GetPluginManager().RegisterService(#serviceName, #serviceType, descriptor); return 1; } \
-    int PWLIB_gStaticLoader__##serviceName##_##serviceType =  PWLIB_StaticLoader_##serviceName##_##serviceType(); \
-    int PPlugin_##serviceType##_##serviceName##_link() { return 0; }
+#define PCREATE_PLUGIN_STATIC(...) PCREATE_PLUGIN_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
+
+#define PPLUGIN_STATIC_LOAD(serviceName, serviceType) PFACTORY_LOAD(PPlugin_##serviceType##_##serviceName)
+
+
+#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
+  #define P_FORCE_STATIC_PLUGIN 1  // always define static plugins in Windows, since otherwise they seem not to work
 #endif
 
-#define PPLUGIN_STATIC_LOAD(serviceName, serviceType) \
-  extern int PPlugin_##serviceType##_##serviceName##_link(); \
-  int const PPlugin_##serviceType##_##serviceName##_loader = PPlugin_##serviceType##_##serviceName##_link();
+#if defined(P_PLUGINS) && !defined(P_FORCE_STATIC_PLUGIN)
 
-
-//////////////////////////////////////////////////////
-
-#if defined(P_PLUGINS) && ! defined(P_FORCE_STATIC_PLUGIN)
-
-  #define PCREATE_PLUGIN(serviceName, serviceType, descriptor) \
-    PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
-    extern "C" void PWLibPlugin_TriggerRegister (PPluginManager * pluginMgr) \
-      { PPlugin_##serviceType##_##serviceName##_Registration \
-          pplugin_##serviceType##_##serviceName##_Registration_Instance(pluginMgr); \
-          pplugin_##serviceType##_##serviceName##_Registration_Instance.kill_warning = 0; \
-      } \
+  #define PCREATE_PLUGIN(serviceName, serviceType, ...) \
+    PCREATE_PLUGIN_STATIC(serviceName, serviceType, __VA_ARGS__) \
+    extern "C" void PWLibPlugin_TriggerRegister(PPluginManager * pluginMgr) \
+      { pluginMgr->RegisterService(#serviceType #serviceName); } \
     extern "C" unsigned PWLibPlugin_GetAPIVersion (void) \
-      { return PWLIB_PLUGIN_API_VERSION; }
+      { return PTLIB_PLUGIN_API_VERSION; }
 
 #else
 
-  #define PCREATE_PLUGIN(serviceName, serviceType, descriptor) \
-          PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor)
+  #define PCREATE_PLUGIN(...) \
+          PCREATE_PLUGIN_STATIC(__VA_ARGS__)
 
 #endif
+
 
 //////////////////////////////////////////////////////
 

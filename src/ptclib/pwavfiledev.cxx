@@ -44,41 +44,35 @@
 #include <ptclib/pwavfiledev.h>
 
 
-class PSoundChannel_WAVFile_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
-    {
-        return new PSoundChannel_WAVFile;
-    }
-    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const
-    {
-        return PSoundChannel_WAVFile::GetDeviceNames((PSoundChannel::Directions)userData);
-    }
-    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
-    {
-      PFilePath pathname = deviceName;
-      if (pathname.GetTitle().IsEmpty())
-        return false;
+PCREATE_SOUND_PLUGIN_EX(WAVFile, PSoundChannel_WAVFile,
 
-      PINDEX last = pathname.GetLength()-1;
-      if (userData == PSoundChannel::Recorder && pathname[last] == '*')
-        pathname.Delete(last, 1);
+  virtual const char * GetFriendlyName() const
+  {
+    return "Microsoft WAV File Sound Channel";
+  }
 
-      if (pathname.GetType() != ".wav")
-        return false;
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
+  {
+    PFilePath pathname = deviceName;
+    if (pathname.GetTitle().IsEmpty())
+      return false;
 
-      if (userData == PSoundChannel::Recorder)
-        return PFile::Access(pathname, PFile::ReadOnly);
+    PINDEX last = pathname.GetLength()-1;
+    if (userData == PSoundChannel::Recorder && pathname[last] == '*')
+      pathname.Delete(last, 1);
 
-      if (PFile::Exists(pathname))
-        return PFile::Access(pathname, PFile::WriteOnly);
+    if (pathname.GetType() != ".wav")
+      return false;
 
-      return PFile::Access(pathname.GetDirectory(), PFile::WriteOnly);
-    }
-} PSoundChannel_WAVFile_descriptor;
+    if (userData == PSoundChannel::Recorder)
+      return PFile::Access(pathname, PFile::ReadOnly);
 
-PCREATE_PLUGIN(WAVFile, PSoundChannel, &PSoundChannel_WAVFile_descriptor);
+    if (PFile::Exists(pathname))
+      return PFile::Access(pathname, PFile::WriteOnly);
+
+    return PFile::Access(pathname.GetDirectory(), PFile::WriteOnly);
+  }
+);
 
 
 #define new PNEW
