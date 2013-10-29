@@ -76,7 +76,7 @@
 #define PTPLUGIN_SUFFIX       "_ptplugin"
 #define PWPLUGIN_SUFFIX       "_pwplugin"
 
-const char PDevicePluginServiceDescriptor::SeparatorChar = '\t';
+const char PPluginServiceDescriptor::SeparatorChar = '\t';
 
 
 class PluginLoaderStartup : public PProcessStartup
@@ -89,6 +89,47 @@ class PluginLoaderStartup : public PProcessStartup
 
 
 #define new PNEW
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool PPluginServiceDescriptor::ValidateServiceName(const PString & name, P_INT_PTR) const
+{
+  return GetServiceName() == name;
+}
+
+
+bool PPluginDeviceDescriptor::ValidateServiceName(const PString & name, P_INT_PTR userData) const
+{
+  return ValidateDeviceName(name, userData);
+}
+
+
+PStringArray PPluginDeviceDescriptor::GetDeviceNames(P_INT_PTR) const
+{
+  return GetServiceName();
+}
+
+
+bool PPluginDeviceDescriptor::ValidateDeviceName(const PString & name, P_INT_PTR userData) const
+{
+  PStringArray devices = GetDeviceNames(userData);
+  if (name.GetLength() == 2 && name[0] == '#' && isdigit(name[1]) && (name[1]-'0') < devices.GetSize())
+    return true;
+
+  for (PINDEX i = 0; i < devices.GetSize(); i++) {
+    if (devices[i] *= name)
+      return true;
+  }
+
+  return false;
+}
+
+
+bool PPluginDeviceDescriptor::GetDeviceCapabilities(const PString & /*deviceName*/, void * /*capabilities*/) const
+{
+  return false;
+}
 
 
 //////////////////////////////////////////////////////
@@ -229,151 +270,103 @@ PBoolean PPluginManager::LoadPlugin(const PString & fileName)
 }
 
 
-PStringArray PPluginManager::GetPluginTypes() const
+PStringArray PPluginManager::GetServiceTypes() const
 {
   PWaitAndSignal mutex(m_servicesMutex);
 
-  PStringArray result;
-  for (PINDEX i = 0; i < m_services.GetSize(); i++) {
-    PString serviceType = m_services[i].serviceType;
-    if (result.GetStringsIndex(serviceType) == P_MAX_INDEX)
-      result.AppendString(serviceType);
-  }
+  PStringSet distinct;
+  for (ServiceMap::const_iterator it = m_services.begin(); it != m_services.end(); ++it)
+    distinct += it->first;
+
+  PINDEX count = 0;
+  PStringArray result(distinct.GetSize());
+  for (PStringSet::iterator it = distinct.begin(); it != distinct.end(); ++it)
+    result[count++] = *it;
+
   return result;
 }
 
 
-PStringArray PPluginManager::GetPluginsProviding(const PString & serviceType) const
+PStringArray PPluginManager::GetPluginsProviding(const PString & serviceType, bool friendlyName) const
 {
   PWaitAndSignal mutex(m_servicesMutex);
 
   PStringArray result;
-  for (PINDEX i = 0; i < m_services.GetSize(); i++) {
-    if (m_services[i].serviceType *= serviceType)
-      result.AppendString(m_services[i].serviceName);
-  }
+  for (ServiceMap::const_iterator it = m_services.find(serviceType); it != m_services.end() && it->first == serviceType; ++it)
+    result.AppendString(friendlyName ? it->second.GetFriendlyName() : it->second.GetServiceName());
+
   return result;
 }
 
 
-PPluginServiceDescriptor * PPluginManager::GetServiceDescriptor(const PString & serviceName,
-                                                                const PString & serviceType) const
+const PPluginServiceDescriptor * PPluginManager::GetServiceDescriptor(const PString & serviceName,
+                                                                      const PString & serviceType) const
 {
   PWaitAndSignal mutex(m_servicesMutex);
 
-  for (PINDEX i = 0; i < m_services.GetSize(); i++) {
-    if ((m_services[i].serviceName *= serviceName) &&
-        (m_services[i].serviceType *= serviceType))
-      return m_services[i].descriptor;
+  for (ServiceMap::const_iterator it = m_services.find(serviceType); it != m_services.end() && it->first == serviceType; ++it) {
+    if (it->second.GetServiceName() == serviceName)
+      return &it->second;
   }
   return NULL;
 }
 
 
-PObject * PPluginManager::CreatePluginsDevice(const PString & serviceName,
-                                              const PString & serviceType,
-                                              int userData) const
+PObject * PPluginManager::CreatePlugin(const PString & serviceName,
+                                       const PString & serviceType,
+                                       P_INT_PTR userData) const
 {
-  PDevicePluginServiceDescriptor * descr = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
-  if (descr != NULL)
-    return descr->CreateInstance(userData);
-
-  return NULL;
-}
-
-
-PObject * PPluginManager::CreatePluginsDeviceByName(const PString & deviceName,
-                                                    const PString & serviceType,
-                                                    int userData,
-                                                    const PString & serviceName) const
-{
-  // If have tab character, then have explicit driver name in device
-  PINDEX tab = deviceName.Find(PDevicePluginServiceDescriptor::SeparatorChar);
-  if (tab != P_MAX_INDEX)
-    return CreatePluginsDevice(deviceName.Left(tab), serviceType, userData);
-
   PWaitAndSignal mutex(m_servicesMutex);
 
-  // If we know the service name of the device we want to create.
-  if (!serviceName) {
-    PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
-    if (desc != NULL && desc->ValidateDeviceName(deviceName, userData))
-      return desc->CreateInstance(userData);
+  {
+    // If have tab character, then have explicit driver name in device
+    PINDEX tab = serviceName.Find(PPluginServiceDescriptor::SeparatorChar);
+    const PPluginServiceDescriptor * descriptor = GetServiceDescriptor(tab != P_MAX_INDEX ? serviceName.Left(tab) : serviceName, serviceType);
+    if (descriptor != NULL)
+      return descriptor->CreateInstance(userData);
   }
 
-  for (PINDEX i = 0; i < m_services.GetSize(); i++) {
-    const PPluginService & service = m_services[i];
-    if (service.serviceType *= serviceType) {
-      PDevicePluginServiceDescriptor * descriptor = (PDevicePluginServiceDescriptor *)service.descriptor;
-      if (PAssertNULL(descriptor) != NULL && descriptor->ValidateDeviceName(deviceName, userData))
-        return descriptor->CreateInstance(userData);
-    }
+  for (ServiceMap::const_iterator it = m_services.find(serviceType); it != m_services.end() && it->first == serviceType; ++it) {
+    if (it->second.ValidateServiceName(serviceName, userData))
+      return it->second.CreateInstance(userData);
   }
 
   return NULL;
 }
 
 
-bool PDevicePluginServiceDescriptor::ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
-{
-  PStringArray devices = GetDeviceNames(userData);
-  if (
-      (deviceName.GetLength() == 2) && 
-      (deviceName[0] == '#') && 
-       isdigit(deviceName[1]) && 
-       ((deviceName[1]-'0') < devices.GetSize())
-      )
-    return true;
-      
-  for (PINDEX j = 0; j < devices.GetSize(); j++) {
-    if (devices[j] *= deviceName)
-      return true;
-  }
-
-  return false;
-}
-
-
-bool PDevicePluginServiceDescriptor::GetDeviceCapabilities(const PString & /*deviceName*/,
-                                                           void * /*capabilities*/) const
-{
-  return false;
-}
-
-
-PStringArray PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
-                                                   const PString & serviceType,
-                                                   int userData) const
+PStringArray PPluginManager::GetPluginDeviceNames(const PString & serviceName,
+                                                  const PString & serviceType,
+                                                  P_INT_PTR userData) const
 {
   PStringArray allDevices;
 
   if (serviceName.IsEmpty() || serviceName == "*") {
     PWaitAndSignal mutex(m_servicesMutex);
 
-    PINDEX i;
     PStringToString deviceToPluginMap;  
 
     // First we run through all of the drivers and their lists of devices and
     // use the dictionary to assure all names are unique
-    for (i = 0; i < m_services.GetSize(); i++) {
-      const PPluginService & service = m_services[i];
-      if (service.serviceType *= serviceType) {
-        PStringArray devices = ((PDevicePluginServiceDescriptor *)service.descriptor)->GetDeviceNames(userData);
+    for (ServiceMap::const_iterator it = m_services.find(serviceType); it != m_services.end() && it->first == serviceType; ++it) {
+      const PPluginDeviceDescriptor * descriptor = dynamic_cast<const PPluginDeviceDescriptor *>(&it->second);
+      if (descriptor != NULL) {
+        PStringArray devices = descriptor->GetDeviceNames(userData);
         for (PINDEX j = 0; j < devices.GetSize(); j++) {
           PCaselessString device = devices[j];
           if (deviceToPluginMap.Contains(device)) {
             PString oldPlugin = deviceToPluginMap[device];
             if (!oldPlugin.IsEmpty()) {
               // Make name unique by prepending driver name and a tab character
-              deviceToPluginMap.SetAt(oldPlugin+PDevicePluginServiceDescriptor::SeparatorChar+device, service.serviceName);
+              deviceToPluginMap.SetAt(oldPlugin+PPluginServiceDescriptor::SeparatorChar+device, descriptor->GetServiceName());
               // Reset the original to empty string so we dont add it multiple times
               deviceToPluginMap.SetAt(device, "");
             }
             // Now add the new one
-            deviceToPluginMap.SetAt(service.serviceName+PDevicePluginServiceDescriptor::SeparatorChar+device, service.serviceName);
+            deviceToPluginMap.SetAt(descriptor->GetServiceName()+PPluginServiceDescriptor::SeparatorChar+device, descriptor->GetServiceName());
           }
           else
-            deviceToPluginMap.SetAt(device, service.serviceName);
+            deviceToPluginMap.SetAt(device, descriptor->GetServiceName());
         }
       }
     }
@@ -384,9 +377,9 @@ PStringArray PPluginManager::GetPluginsDeviceNames(const PString & serviceName,
     }
   }
   else {
-    PDevicePluginServiceDescriptor * descr = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
-    if (descr != NULL)
-      allDevices = descr->GetDeviceNames(userData);
+    const PPluginDeviceDescriptor * descriptor = dynamic_cast<const PPluginDeviceDescriptor *>(GetServiceDescriptor(serviceName, serviceType));
+    if (descriptor != NULL)
+      allDevices = descriptor->GetDeviceNames(userData);
   }
 
   return allDevices;
@@ -403,17 +396,14 @@ PBoolean PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceTyp
 
   if (serviceName.IsEmpty() || serviceName == "*") {
     PWaitAndSignal mutex(m_servicesMutex);
-    for (PINDEX i = 0; i < m_services.GetSize(); i++) {
-      const PPluginService & service = m_services[i];
-      if (service.serviceType *= serviceType) { 
-        PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)service.descriptor;
-        if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
-          return desc->GetDeviceCapabilities(deviceName,capabilities);
-      }
+    for (ServiceMap::const_iterator it = m_services.find(serviceType); it != m_services.end() && it->first == serviceType; ++it) {
+      const PPluginDeviceDescriptor * desc = dynamic_cast<const PPluginDeviceDescriptor *>(&it->second);
+      if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
+        return desc->GetDeviceCapabilities(deviceName,capabilities);
     }
   }
   else {
-    PDevicePluginServiceDescriptor * desc = (PDevicePluginServiceDescriptor *)GetServiceDescriptor(serviceName, serviceType);
+    const PPluginDeviceDescriptor * desc = dynamic_cast<const PPluginDeviceDescriptor *>(GetServiceDescriptor(serviceName, serviceType));
     if (desc != NULL && desc->ValidateDeviceName(deviceName, 0))
       return desc->GetDeviceCapabilities(deviceName,capabilities);
   }
@@ -422,28 +412,23 @@ PBoolean PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceTyp
 }
 
 
-PBoolean PPluginManager::RegisterService(const PString & serviceName,
-                                         const PString & serviceType,
-                                         PPluginServiceDescriptor * descriptor)
+bool PPluginManager::RegisterService(const char * name)
 {
+  PPluginServiceDescriptor * descriptor = PPluginFactory::CreateInstance(name);
+  if (descriptor == NULL)
+    return false;
+
   PWaitAndSignal mutex(m_servicesMutex);
 
   // first, check if it something didn't already register that name and type
-  for (PINDEX i = 0; i < m_services.GetSize(); i++) {
-    if (m_services[i].serviceName == serviceName &&
-        m_services[i].serviceType == serviceType)
-      return false;
-  }  
+  if (GetServiceDescriptor(descriptor->GetServiceName(), descriptor->GetServiceType()) != NULL)
+    return false;
 
-  PPluginService * service = new PPluginService(serviceName, serviceType, descriptor);
-  m_services.Append(service);
-
-  PDevicePluginAdapterBase * adapter = PFactory<PDevicePluginAdapterBase>::CreateInstance(serviceType);
-  if (adapter != NULL)
-    adapter->CreateFactory(serviceName);
+  m_services.insert(ServiceMap::value_type(descriptor->GetServiceType(), *descriptor));
 
   return true;
 }
+
 
 void PPluginManager::OnShutdown()
 {
@@ -455,7 +440,9 @@ void PPluginManager::OnShutdown()
   m_notifiersMutex.Wait();
   m_notifiers.RemoveAll();
   m_notifiersMutex.Signal();
-  
+
+  m_services.clear();
+
   m_plugins.RemoveAll();
 }
 
@@ -541,6 +528,11 @@ void PluginLoaderStartup::OnStartup()
   PFactory<PPluginModuleManager>::KeyList_T::const_iterator it;
   for (it = keyList.begin(); it != keyList.end(); ++it)
     PFactory<PPluginModuleManager>::CreateInstance(*it)->OnStartup();
+
+  // load the static plug in services/devices
+  PPluginFactory::KeyList_T keys = PPluginFactory::GetKeyList();
+  for (PPluginFactory::KeyList_T::iterator it = keys.begin(); it != keys.end(); ++it)
+    PPluginManager::GetPluginManager().RegisterService(it->c_str());
 }
 
 

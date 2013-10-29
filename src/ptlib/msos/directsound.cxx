@@ -438,7 +438,7 @@ PBoolean PSoundChannelDirectSound::Close () // public
 
 PString PSoundChannelDirectSound::GetName() const
 {
-  return PConstString("DirectSound") + PDevicePluginServiceDescriptor::SeparatorChar + m_deviceName;
+  return PConstString("DirectSound") + PPluginServiceDescriptor::SeparatorChar + m_deviceName;
 }
 
 

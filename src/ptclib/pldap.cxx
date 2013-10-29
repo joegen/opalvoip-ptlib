@@ -916,11 +916,6 @@ void PLDAPStructBase::EndConstructor()
 
 static const char PLDAPSchemaPluginBaseClass[] = "PLDAPSchema";
 
-template <> PLDAPSchema * PDevicePluginFactory<PLDAPSchema>::Worker::Create(const PDefaultPFactoryKey & type) const
-{
-  return PLDAPSchema::CreateSchema(type);
-}
-
 PLDAPSchema::PLDAPSchema()
 {
 }
@@ -935,28 +930,19 @@ void PLDAPSchema::LoadSchema()
 	AttributeList(attributelist); 
 }
 
-PLDAPSchema * PLDAPSchema::CreateSchema(const PString & schemaname, PPluginManager * pluginMgr)
+PLDAPSchema * PLDAPSchema::CreateSchema(const PString & schemaName, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return (PLDAPSchema *)pluginMgr->CreatePluginsDeviceByName(schemaname, PLDAPSchemaPluginBaseClass);
+  return PPluginManager::CreatePluginAs<PLDAPSchema>(pluginMgr, schemaName, PLDAPSchemaPluginBaseClass);
 }
 
-PStringList PLDAPSchema::GetSchemaNames(PPluginManager * pluginMgr)
+PStringArray PLDAPSchema::GetSchemaNames(PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return pluginMgr->GetPluginsProviding(PLDAPSchemaPluginBaseClass);
+  return PPluginManager::GetPluginsProviding(pluginMgr, PLDAPSchemaPluginBaseClass, false);
 }
 
-PStringList PLDAPSchema::GetSchemaFriendlyNames(const PString & schema, PPluginManager * pluginMgr)
+PStringArray PLDAPSchema::GetSchemaFriendlyNames(PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return pluginMgr->GetPluginsDeviceNames(schema, PLDAPSchemaPluginBaseClass);
+  return PPluginManager::GetPluginsProviding(pluginMgr, PLDAPSchemaPluginBaseClass, true);
 }
 
 void PLDAPSchema::OnReceivedAttribute(const PString & attribute, const PString & value)

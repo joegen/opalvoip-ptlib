@@ -50,6 +50,13 @@
 
 static const char NoIndentElements[] = "methodName name string int boolean double dateTime.iso8601";
 
+static PConstString const StringType("string");
+static PConstString const IntType("int");
+static PConstString const DoubleType("double");
+static PConstString const DateTimeType("dateTime.iso8601");
+static PConstString const ArrayType("array");
+static PConstString const DataType("data");
+
 
 /////////////////////////////////////////////////////////////////
 
@@ -121,25 +128,25 @@ PXMLElement * PXMLRPCBlock::CreateScalar(const PString & type, const PString & v
 
 PXMLElement * PXMLRPCBlock::CreateScalar(const PString & value) 
 { 
-  return CreateScalar("string", value);
+  return CreateScalar(StringType, value);
 }
 
 
 PXMLElement * PXMLRPCBlock::CreateScalar(int value) 
 {
-  return CreateScalar("int", PString(PString::Unsigned, value)); 
+  return CreateScalar(IntType, PString(PString::Unsigned, value)); 
 }
 
 
 PXMLElement * PXMLRPCBlock::CreateScalar(double value)
 { 
-  return CreateScalar("double", psprintf("%lf", value)); 
+  return CreateScalar(DoubleType, psprintf("%lf", value)); 
 }
 
 
 PXMLElement * PXMLRPCBlock::CreateDateAndTime(const PTime & time)
 {
-  return CreateScalar("dateTime.iso8601", PXMLRPC::PTimeToISO8601(time)); 
+  return CreateScalar(DateTimeType, PXMLRPC::PTimeToISO8601(time)); 
 }
 
 
@@ -158,7 +165,7 @@ PXMLElement * PXMLRPCBlock::CreateStruct(PXMLElement * & structElement)
 
 PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict)
 {
-  return CreateStruct(dict, "string");
+  return CreateStruct(dict, StringType);
 }
 
 
@@ -213,8 +220,8 @@ PXMLElement * PXMLRPCBlock::CreateMember(const PString & name, PXMLElement * val
 
 PXMLElement * PXMLRPCBlock::CreateArray(PXMLElement * & dataElement)
 {
-  PXMLElement * arrayElement = CreateElement("array");
-  dataElement  = CreateElement("data");
+  PXMLElement * arrayElement = CreateElement(ArrayType);
+  dataElement  = CreateElement(DataType);
   arrayElement->AddSubObject(dataElement);
   return CreateValueElement(arrayElement);
 }
@@ -222,14 +229,14 @@ PXMLElement * PXMLRPCBlock::CreateArray(PXMLElement * & dataElement)
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array)
 {
-  return CreateArray(array, "string");
+  return CreateArray(array, StringType);
 }
 
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PString & typeStr)
 {
-  PXMLElement * arrayElement = CreateElement("array");
-  PXMLElement * dataElement  = CreateElement("data");
+  PXMLElement * arrayElement = CreateElement(ArrayType);
+  PXMLElement * dataElement  = CreateElement(DataType);
   arrayElement->AddSubObject(dataElement);
 
   for (PINDEX i = 0; i < array.GetSize(); i++)
@@ -241,8 +248,8 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PStrin
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PStringArray & types)
 {
-  PXMLElement * arrayElement = CreateElement("array");
-  PXMLElement * dataElement  = CreateElement("data");
+  PXMLElement * arrayElement = CreateElement(ArrayType);
+  PXMLElement * dataElement  = CreateElement(DataType);
   arrayElement->AddSubObject(dataElement);
 
   PINDEX i;
@@ -255,8 +262,8 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PStringArray & array, const PStrin
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PArray<PStringToString> & array)
 {
-  PXMLElement * arrayElement = CreateElement("array");
-  PXMLElement * dataElement = CreateElement("data");
+  PXMLElement * arrayElement = CreateElement(ArrayType);
+  PXMLElement * dataElement = CreateElement(DataType);
   arrayElement->AddSubObject(dataElement);
 
   PINDEX i;
@@ -269,8 +276,8 @@ PXMLElement * PXMLRPCBlock::CreateArray(const PArray<PStringToString> & array)
 
 PXMLElement * PXMLRPCBlock::CreateArray(const PXMLRPCVariableBase & array)
 {
-  PXMLElement * arrayElement = CreateElement("array");
-  PXMLElement * dataElement = CreateElement("data");
+  PXMLElement * arrayElement = CreateElement(ArrayType);
+  PXMLElement * dataElement = CreateElement(DataType);
   arrayElement->AddSubObject(dataElement);
 
   PINDEX i;
@@ -328,7 +335,7 @@ void PXMLRPCBlock::AddParam(const PXMLRPCStructBase & data)
 
 void PXMLRPCBlock::AddStruct(const PStringToString & dict)
 {
-  AddParam(CreateStruct(dict, "string"));
+  AddParam(CreateStruct(dict, StringType));
 }
 
 void PXMLRPCBlock::AddStruct(const PStringToString & dict, const PString & typeStr)
@@ -338,7 +345,7 @@ void PXMLRPCBlock::AddStruct(const PStringToString & dict, const PString & typeS
 
 void PXMLRPCBlock::AddArray(const PStringArray & array)
 {
-  AddParam(CreateArray(array, "string"));
+  AddParam(CreateArray(array, StringType));
 }
 
 void PXMLRPCBlock::AddArray(const PStringArray & array, const PString & typeStr)
@@ -566,7 +573,7 @@ PBoolean PXMLRPCBlock::ParseStruct(PXMLElement * structElement, PXMLRPCStructBas
             if (!ParseScalar(element, type, value))
               return false;
 
-            if (type != "string" && type != variable->GetType()) {
+            if (type != StringType && type != variable->GetType()) {
               PTRACE(2, "RPCXML\tMember " << i << " is not of expected type: " << variable->GetType());
               return false;
             }
@@ -591,15 +598,15 @@ static PXMLElement * ParseArrayBase(PXMLRPCBlock & block, PXMLElement * element)
     return NULL;
 
   if (element->GetName() == "value")
-    element = element->GetElement("array");
+    element = element->GetElement(ArrayType);
 
   if (element == NULL)
     block.SetFault(PXMLRPC::ParamNotArray, "array not present");
   else {
-    if (element->GetName() != "array")
+    if (element->GetName() != ArrayType)
       block.SetFault(PXMLRPC::ParamNotArray, "Param is not array");
     else {
-      element = element->GetElement("data");
+      element = element->GetElement(DataType);
       if (element != NULL)
         return element;
       block.SetFault(PXMLRPC::ParamNotArray, "Array param has no data");
@@ -675,7 +682,7 @@ PBoolean PXMLRPCBlock::ParseArray(PXMLElement * arrayElement, PXMLRPCVariableBas
       PString value;
       PCaselessString type;
       if (ParseScalar(element, type, value)) {
-        if (type != "string" && type != array.GetType())
+        if (type != StringType && type != array.GetType())
           PTRACE(2, "RPCXML\tArray entry " << i << " is not of expected type: " << array.GetType());
         else
           array.FromString(count++, value);
@@ -801,7 +808,7 @@ PBoolean PXMLRPCBlock::GetExpectedParam(PINDEX idx, const PString & expectedType
 
 PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PString & result)
 {
-  return GetExpectedParam(idx, "string", result); 
+  return GetExpectedParam(idx, StringType, result); 
 }
 
 PBoolean PXMLRPCBlock::GetParam(PINDEX idx, int & val)
@@ -811,7 +818,7 @@ PBoolean PXMLRPCBlock::GetParam(PINDEX idx, int & val)
     return false;
 
   if ((type != "i4") && 
-      (type != "int") &&
+      (type != IntType) &&
       (type != "boolean")) {
     PTRACE(2, "XMLRPC\tExpected parm " << idx << " to be intger compatible, was " << type);
     return false;
@@ -824,7 +831,7 @@ PBoolean PXMLRPCBlock::GetParam(PINDEX idx, int & val)
 PBoolean PXMLRPCBlock::GetParam(PINDEX idx, double & val)
 {
   PString result; 
-  if (!GetExpectedParam(idx, "double", result))
+  if (!GetExpectedParam(idx, DoubleType, result))
     return false;
 
   val = result.AsReal();
@@ -837,7 +844,7 @@ PBoolean PXMLRPCBlock::GetParam(PINDEX idx, double & val)
 PBoolean PXMLRPCBlock::GetParam(PINDEX idx, PTime & val, int tz)
 {
   PString result; 
-  if (!GetExpectedParam(idx, "dateTime.iso8601", result))
+  if (!GetExpectedParam(idx, DateTimeType, result))
     return false;
 
   return PXMLRPC::ISO8601ToPTime(result, val, tz);
@@ -1026,7 +1033,7 @@ PString PXMLRPC::PTimeToISO8601(const PTime & time)
 
 PXMLRPCVariableBase::PXMLRPCVariableBase(const char * n, const char * t)
   : m_name(n)
-  , m_type(t != NULL ? t : "string")
+  , m_type(t != NULL ? t : (const char *)StringType)
 {
   PXMLRPCStructBase::GetInitialiser().AddVariable(this);
 }

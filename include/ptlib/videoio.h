@@ -1167,18 +1167,15 @@ class PVideoInputDevice : public PVideoDevice
 // declare macros and structures needed for video input plugins
 //
 
-template <class className> class PVideoInputPluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return className::GetInputDeviceNames(); }
-    virtual bool         GetDeviceCapabilities(const PString & deviceName, void * caps) const
-      { return className::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); }
-};
+PCREATE_PLUGIN_DEVICE(PVideoInputDevice);
 
-#define PCREATE_VIDINPUT_PLUGIN(name) \
-  static PVideoInputPluginServiceDescriptor<PVideoInputDevice_##name> PVideoInputDevice_##name##_descriptor; \
-  PCREATE_PLUGIN(name, PVideoInputDevice, &PVideoInputDevice_##name##_descriptor)
+#define PCREATE_VIDINPUT_PLUGIN_EX(name, extra) \
+    PCREATE_PLUGIN(name, PVideoInputDevice, PVideoInputDevice_##name, PPlugin_PVideoInputDevice, \
+      virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return PVideoInputDevice_##name::GetInputDeviceNames(); } \
+      virtual bool GetDeviceCapabilities(const PString & deviceName, void * caps) const { return PVideoInputDevice_##name::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps); } \
+      extra)
+
+#define PCREATE_VIDINPUT_PLUGIN(name) PCREATE_VIDINPUT_PLUGIN_EX(name, )
 
 
 #define P_FAKE_VIDEO_DRIVER         "FakeVideo"
@@ -1226,16 +1223,14 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 // declare macros and structures needed for video output plugins
 //
 
-template <class className> class PVideoOutputPluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return className::GetOutputDeviceNames(); }
-};
+PCREATE_PLUGIN_DEVICE(PVideoOutputDevice);
 
-#define PCREATE_VIDOUTPUT_PLUGIN(name) \
-  static PVideoOutputPluginServiceDescriptor<PVideoOutputDevice_##name> PVideoOutputDevice_##name##_descriptor; \
-  PCREATE_PLUGIN(name, PVideoOutputDevice, &PVideoOutputDevice_##name##_descriptor)
+#define PCREATE_VIDOUTPUT_PLUGIN_EX(name, extra) \
+    PCREATE_PLUGIN(name, PVideoOutputDevice, PVideoOutputDevice_##name, PPlugin_PVideoOutputDevice, \
+      virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return PVideoOutputDevice_##name::GetOutputDeviceNames(); } \
+    extra)
+
+#define PCREATE_VIDOUTPUT_PLUGIN(name) PCREATE_VIDOUTPUT_PLUGIN_EX(name,)
 
 #define P_NULL_VIDEO_DRIVER "NULLOutput"
 #define P_NULL_VIDEO_DEVICE "Null Video Out"
