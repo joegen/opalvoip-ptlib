@@ -1321,11 +1321,9 @@ PString PArgList::Usage() const
 }
 
 
-void PArgList::SetArgs(const PString & argStr)
+void PArgList::SetArgs(const char * str)
 {
   m_argumentArray.SetSize(0);
-
-  const char * str = argStr;
 
   for (;;) {
     while (isspace(*str)) // Skip leading whitespace

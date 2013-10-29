@@ -2462,6 +2462,13 @@ PStringArray::PStringArray(const PString & str)
 }
 
 
+PStringArray::PStringArray(const char * cstr)
+{
+  SetSize(1);
+  (*theArray)[0] = new PString(cstr);
+}
+
+
 PStringArray::PStringArray(const PStringList & list)
 {
   SetSize(list.GetSize());
@@ -2584,6 +2591,12 @@ PStringList::PStringList(const PString & str)
 }
 
 
+PStringList::PStringList(const char * cstr)
+{
+  AppendString(cstr);
+}
+
+
 PStringList::PStringList(const PStringArray & array)
 {
   for (PINDEX i = 0; i < array.GetSize(); i++)
@@ -2642,6 +2655,12 @@ PSortedStringList::PSortedStringList(PINDEX count,
 PSortedStringList::PSortedStringList(const PString & str)
 {
   AppendString(str);
+}
+
+
+PSortedStringList::PSortedStringList(const char * cstr)
+{
+  AppendString(cstr);
 }
 
 
@@ -2737,6 +2756,13 @@ PStringSet::PStringSet(const PString & str)
   : BaseClass(true)
 {
   Include(str);
+}
+
+
+PStringSet::PStringSet(const char * cstr)
+  : BaseClass(true)
+{
+  Include(cstr);
 }
 
 

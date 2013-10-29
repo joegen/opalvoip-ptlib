@@ -227,9 +227,6 @@ PINLINE PArrayObjects::PArrayObjects(PINDEX initialSize)
 PINLINE PINDEX PStringArray::AppendString(const PString & str)
   { return Append(str.Clone()); }
 
-PINLINE PStringArray & PStringArray::operator += (const PString & str)
-  { Append(str.Clone()); return *this; }
-
 PINLINE PStringArray PStringArray::operator + (const PStringArray & v)
   { PStringArray arr = *this; arr += v; return arr; }
 
@@ -252,9 +249,6 @@ PINLINE PINDEX PStringList::AppendString(const PString & str)
 PINLINE PINDEX PStringList::InsertString(
                                    const PString & before, const PString & str)
   { return Insert(before, str.Clone()); }
-
-PINLINE PStringList & PStringList::operator += (const PString & str)
-  { Append(str.Clone()); return *this; }
 
 PINLINE PStringList PStringList::operator + (const PStringList & v)
   { PStringList arr = *this; arr += v; return arr; }

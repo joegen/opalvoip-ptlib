@@ -114,6 +114,9 @@ class PArgList : public PObject
     */
     void SetArgs(
       const PString & theArgStr ///< A string constituting the arguments 
+    ) { SetArgs((const char *)theArgStr); }
+    void SetArgs(
+      const char * theArgStr ///< A string constituting the arguments 
     );
     /** Set the internal copy of the program arguments. */
     void SetArgs(
