@@ -79,25 +79,18 @@ static bool GetBitmapColourFormat(BITMAP bitmap, PString & colourFormat) {
 //////////////////////////////////////////////////////////////////////
 // Video Input device
 
-class PVideoInputDevice_Application_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new PVideoInputDevice_Application; }
+PCREATE_VIDINPUT_PLUGIN_EX(Application,
 
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const { return PVideoInputDevice_Application::GetInputDeviceNames(); }
+  virtual const char * GetFriendlyName() const
+  {
+    return "Application Window Video Grabber";
+  }
 
-    virtual bool         GetDeviceCapabilities(const PString & deviceName, void * caps) const
-    {
-      return PVideoInputDevice_Application::GetDeviceCapabilities(deviceName, (PVideoInputDevice::Capabilities *)caps);
-    }
-
-    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
-    {
-      return FindTopWindow(deviceName) != NULL;
-    }
-} PVideoInputDevice_Application_descriptor;
-
-PCREATE_PLUGIN(Application, PVideoInputDevice, &PVideoInputDevice_Application_descriptor);
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    return FindTopWindow(deviceName) != NULL;
+  }
+);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

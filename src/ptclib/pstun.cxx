@@ -1328,8 +1328,6 @@ void PTURNRequestedTransport::Initialise(BYTE protocol)
 typedef PTURNClient PNatMethod_TURN;
 PCREATE_NAT_PLUGIN(TURN);
 
-static PConstCaselessString TURNName("TURN");
-
 PTURNClient::PTURNClient()
   : PSTUNClient()
 {
@@ -1338,13 +1336,13 @@ PTURNClient::PTURNClient()
 
 PString PTURNClient::GetNatMethodName()
 {
-  return TURNName;
+  return PPlugin_PNatMethod_TURN::ServiceName();
 }
 
 
 PString PTURNClient::GetName() const
 {
-  return TURNName;
+  return GetNatMethodName();
 }
 
 

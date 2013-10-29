@@ -88,28 +88,22 @@ protected:
 };
 
 
-class PSoundChannel_Tones_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
-    {
-        return new PSoundChannel_Tones;
-    }
-    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const
-    {
-        return PSoundChannel_Tones::GetDeviceNames((PSoundChannel::Directions)userData);
-    }
-    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
-    {
-      if (TonePrefix != deviceName.Left(TonePrefix.GetLength()))
-        return false;
+PCREATE_SOUND_PLUGIN_EX(Tones, PSoundChannel_Tones,
 
-      PSoundChannel_Tones test;
-      return test.Open(PSoundChannel::Params((PSoundChannel::Directions)userData, deviceName));
-    }
-} PSoundChannel_Tones_descriptor;
+  virtual const char * GetFriendlyName() const
+  {
+    return "Tone Generator Sound Input Channel";
+  }
 
-PCREATE_PLUGIN(Tones, PSoundChannel, &PSoundChannel_Tones_descriptor);
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR userData) const
+  {
+    if (TonePrefix != deviceName.Left(TonePrefix.GetLength()))
+      return false;
+
+    PSoundChannel_Tones test;
+    return test.Open(PSoundChannel::Params((PSoundChannel::Directions)userData, deviceName));
+  }
+);
 
 
 #define new PNEW

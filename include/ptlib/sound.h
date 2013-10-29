@@ -752,16 +752,15 @@ class PSoundChannel : public PIndirectChannel
 
 // define the sound plugin service descriptor
 
-template <class className> class PSoundChannelPluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject *    CreateInstance(P_INT_PTR /*userData*/) const { return new className; }
-    virtual PStringArray GetDeviceNames(P_INT_PTR userData) const { return className::GetDeviceNames((PSoundChannel::Directions)userData); }
-};
+PCREATE_PLUGIN_DEVICE(PSoundChannel);
 
-#define PCREATE_SOUND_PLUGIN(name, className) \
-  static PSoundChannelPluginServiceDescriptor<className> className##_descriptor; \
-  PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
+#define PCREATE_SOUND_PLUGIN_EX(name, InstanceClass, extra) \
+   PCREATE_PLUGIN(name, PSoundChannel, InstanceClass, PPlugin_PSoundChannel, \
+      virtual PStringArray GetDeviceNames(P_INT_PTR userData) const { return InstanceClass::GetDeviceNames((PSoundChannel::Directions)userData); } \
+      extra)
+
+#define PCREATE_SOUND_PLUGIN(name, InstanceClass) PCREATE_SOUND_PLUGIN_EX(name, InstanceClass, )
+
 
 #define P_NULL_AUDIO_DRIVER "NullAudio"
 #define P_NULL_AUDIO_DEVICE "Null Audio"

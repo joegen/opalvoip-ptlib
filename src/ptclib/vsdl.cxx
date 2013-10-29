@@ -55,29 +55,19 @@ extern "C" {
   #pragma comment(lib, P_SDL_LIBRARY)
 #endif
 
-static PConstString SDLName("SDL");
 
+PCREATE_VIDOUTPUT_PLUGIN_EX(SDL,
 
-class PVideoOutputDevice_SDL_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
-    {
-      return new PVideoOutputDevice_SDL;
-    }
+  virtual const char * GetFriendlyName() const
+  {
+    return "Simple DirectMedia Layer Video Output";
+  }
 
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
-    {
-      return SDLName;
-    }
-
-    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
-    {
-      return deviceName.NumCompare(SDLName) == PObject::EqualTo;
-    }
-} PVideoOutputDevice_SDL_descriptor;
-
-PCREATE_PLUGIN(SDL, PVideoOutputDevice, &PVideoOutputDevice_SDL_descriptor);
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    return deviceName.NumCompare(GetServiceName()) == PObject::EqualTo;
+  }
+);
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -103,7 +93,7 @@ class PSDL_Window : public PMutex
     void Run()
     {
       if (m_thread == NULL) {
-        m_thread = new PThreadObj<PSDL_Window>(*this, &PSDL_Window::MainLoop, true, SDLName);
+        m_thread = new PThreadObj<PSDL_Window>(*this, &PSDL_Window::MainLoop, true, "SDL");
         m_started.Wait();
       }
     }
@@ -334,9 +324,15 @@ PVideoOutputDevice_SDL::~PVideoOutputDevice_SDL()
 }
 
 
+PStringArray PVideoOutputDevice_SDL::GetOutputDeviceNames()
+{
+  return PPlugin_PVideoOutputDevice_SDL::ServiceName();
+}
+
+
 PStringArray PVideoOutputDevice_SDL::GetDeviceNames() const
 {
-  return SDLName;
+  return GetOutputDeviceNames();
 }
 
 

@@ -585,7 +585,7 @@ PSoundChannelWin32::~PSoundChannelWin32()
 
 PString PSoundChannelWin32::GetName() const
 {
-  return PConstString("WindowsMultimedia") + PDevicePluginServiceDescriptor::SeparatorChar + deviceName;
+  return PConstString("WindowsMultimedia") + PPluginServiceDescriptor::SeparatorChar + deviceName;
 }
 
 
@@ -656,7 +656,7 @@ PStringArray PSoundChannelWin32::GetDeviceNames(Directions dir)
 
 PBoolean PSoundChannelWin32::GetDeviceID(const PString & device, Directions dir, unsigned& id)
 {
-  PINDEX offset = device.Find(PDevicePluginServiceDescriptor::SeparatorChar);
+  PINDEX offset = device.Find(PPluginServiceDescriptor::SeparatorChar);
   if (offset == P_MAX_INDEX)
     offset = 0;
   else

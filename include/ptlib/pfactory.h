@@ -380,11 +380,18 @@ class PFactory : public PFactoryTemplate<AbstractClass, const KeyType &, KeyType
     template <class ConcreteClass>
     class Worker : protected WorkerBase_T
     {
+      private:
+        Key_T m_key;
       public:
         Worker(const Key_T & key, bool singleton = false)
           : WorkerBase_T(singleton)
+          , m_key(key)
         {
           Register(key, this);
+        }
+        ~Worker()
+        {
+          Unregister(m_key);
         }
 
       protected:
