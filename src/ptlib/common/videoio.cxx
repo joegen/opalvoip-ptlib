@@ -41,21 +41,6 @@
 #include <ptlib/vconvert.h>
 
 
-namespace PWLib {
-  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoInputDevice> > vidinChannelFactoryAdapter("PVideoInputDevice", true);
-  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoOutputDevice> > vidoutChannelFactoryAdapter("PVideoOutputDevice", true);
-};
-
-template <> PVideoInputDevice * PDevicePluginFactory<PVideoInputDevice>::Worker::Create(const PDefaultPFactoryKey & type) const
-{
-  return PVideoInputDevice::CreateDevice(type);
-}
-
-template <> PVideoOutputDevice * PDevicePluginFactory<PVideoOutputDevice>::Worker::Create(const PDefaultPFactoryKey & type) const
-{
-  return PVideoOutputDevice::CreateDevice(type);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 //Colour format bit per pixel table.
@@ -1221,37 +1206,25 @@ static const char videoInputPluginBaseClass[] = "PVideoInputDevice";
 
 PStringArray PVideoInputDevice::GetDriverNames(PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return pluginMgr->GetPluginsProviding(videoInputPluginBaseClass);
+  return PPluginManager::GetPluginsProviding(pluginMgr, videoInputPluginBaseClass, false);
 }
 
 
 PStringArray PVideoInputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return pluginMgr->GetPluginsDeviceNames(driverName, videoInputPluginBaseClass);
+  return PPluginManager::GetPluginDeviceNames(pluginMgr, driverName, videoInputPluginBaseClass);
 }
 
 
 PVideoInputDevice * PVideoInputDevice::CreateDevice(const PString &driverName, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return (PVideoInputDevice *)pluginMgr->CreatePluginsDevice(driverName, videoInputPluginBaseClass);
+  return PPluginManager::CreatePluginAs<PVideoInputDevice>(pluginMgr, driverName, videoInputPluginBaseClass);
 }
 
 
 PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & deviceName, const PString & driverName, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return (PVideoInputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoInputPluginBaseClass,0,driverName);
+  return PPluginManager::CreatePluginAs<PVideoInputDevice>(pluginMgr, driverName.IsEmpty() ? deviceName : driverName, videoInputPluginBaseClass);
 }
 
 
@@ -1463,37 +1436,25 @@ static const char videoOutputPluginBaseClass[] = "PVideoOutputDevice";
 
 PStringArray PVideoOutputDevice::GetDriverNames(PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return pluginMgr->GetPluginsProviding(videoOutputPluginBaseClass);
+  return PPluginManager::GetPluginsProviding(pluginMgr, videoOutputPluginBaseClass, false);
 }
 
 
 PStringArray PVideoOutputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return pluginMgr->GetPluginsDeviceNames(driverName, videoOutputPluginBaseClass);
+  return PPluginManager::GetPluginDeviceNames(pluginMgr, driverName, videoOutputPluginBaseClass);
 }
 
 
 PVideoOutputDevice * PVideoOutputDevice::CreateDevice(const PString & driverName, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return (PVideoOutputDevice *)pluginMgr->CreatePluginsDevice(driverName, videoOutputPluginBaseClass);
+  return PPluginManager::CreatePluginAs<PVideoOutputDevice>(pluginMgr, driverName, videoOutputPluginBaseClass);
 }
 
 
 PVideoOutputDevice * PVideoOutputDevice::CreateDeviceByName(const PString & deviceName, const PString & driverName, PPluginManager * pluginMgr)
 {
-  if (pluginMgr == NULL)
-    pluginMgr = &PPluginManager::GetPluginManager();
-
-  return (PVideoOutputDevice *)pluginMgr->CreatePluginsDeviceByName(deviceName, videoOutputPluginBaseClass, 0, driverName);
+  return PPluginManager::CreatePluginAs<PVideoOutputDevice>(pluginMgr, driverName.IsEmpty() ? deviceName : driverName, videoOutputPluginBaseClass);
 }
 
 

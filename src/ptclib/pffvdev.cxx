@@ -67,42 +67,38 @@ static const char * ffmpegExe = "ffmpeg.exe";
 static const char * ffmpegExe = "ffmpeg";
 #endif
 
-class PVideoInputDevice_FFMPEG_PluginServiceDescriptor : public PDevicePluginServiceDescriptor
-{
-  public:
-    virtual PObject * CreateInstance(P_INT_PTR /*userData*/) const
-    {
-      return new PVideoInputDevice_FFMPEG;
-    }
-    virtual PStringArray GetDeviceNames(P_INT_PTR /*userData*/) const
-    {
-       return PVideoInputDevice_FFMPEG::GetInputDeviceNames();
-    }
-    virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
-    {
-      PCaselessString adjustedDevice = deviceName;
 
-      PINDEX r = 0;
-      while (ffmpegExtensions[r] != NULL) {
-        PString ext = ffmpegExtensions[r];
-        PINDEX extLen = ext.GetLength();
-        PINDEX length = adjustedDevice.GetLength();
-        if (length > (2+extLen) && adjustedDevice.NumCompare(PString(".") + ext + "*", 2+extLen, length-(2+extLen)) == PObject::EqualTo)
-          adjustedDevice.Delete(length-1, 1);
-        else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo) {
-          ++r;
-          continue;
-        }
-        if (PFile::Access(adjustedDevice, PFile::ReadOnly)) 
-          return true;
-        PTRACE(1, "FFVDev\tUnable to access file '" << adjustedDevice << "' for use as a video input device");
-        return false;
+PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
+
+  virtual const char * GetFriendlyName() const
+  {
+    return "File Video source using FFMPEG";
+  }
+
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    PCaselessString adjustedDevice = deviceName;
+
+    PINDEX r = 0;
+    while (ffmpegExtensions[r] != NULL) {
+      PString ext = ffmpegExtensions[r];
+      PINDEX extLen = ext.GetLength();
+      PINDEX length = adjustedDevice.GetLength();
+      if (length > (2+extLen) && adjustedDevice.NumCompare(PString(".") + ext + "*", 2+extLen, length-(2+extLen)) == PObject::EqualTo)
+        adjustedDevice.Delete(length-1, 1);
+      else if (length < (2+extLen) || adjustedDevice.NumCompare(PString(".") + ext, 1+extLen, length-(1+extLen)) != PObject::EqualTo) {
+        ++r;
+        continue;
       }
+      if (PFile::Access(adjustedDevice, PFile::ReadOnly)) 
+        return true;
+      PTRACE(1, "FFVDev\tUnable to access file '" << adjustedDevice << "' for use as a video input device");
       return false;
     }
-} PVideoInputDevice_FFMPEG_descriptor;
+    return false;
+  }
+);
 
-PCREATE_PLUGIN(FFMPEG, PVideoInputDevice, &PVideoInputDevice_FFMPEG_descriptor);
 
 
 PVideoInputDevice_FFMPEG::PVideoInputDevice_FFMPEG()
