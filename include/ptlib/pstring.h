@@ -2198,6 +2198,11 @@ class PStringArray : public PArray<PString>
     PStringArray(
       const PString & str  ///< Single string to convert to an array of one.
     );
+    /**Create a PStringArray of length one from the single string.
+     */
+    PStringArray(
+      const char * cstr  ///< Single string to convert to an array of one.
+    );
     /**Create a PStringArray from the list of strings.
      */
     PStringArray(
@@ -2305,7 +2310,8 @@ class PStringArray : public PArray<PString>
        The PStringArray with the new items appended
      */
     PStringArray & operator +=(const PStringArray & array);
-    PStringArray & operator +=(const PString & str);
+    PStringArray & operator +=(const PString & str) { AppendString(str);  return *this; }
+    PStringArray & operator +=(const char * cstr)   { AppendString(cstr); return *this; }
 
 
     /**Create a new PStringArray, and add PString or PStringArray to it
@@ -2372,6 +2378,11 @@ class PStringList : public PList<PString>
     PStringList(
       const PString & str  ///< Single string to convert to a list of one.
     );
+    /**Create a PStringList of length one from the single string.
+     */
+    PStringList(
+      const char * cstr  ///< Single string to convert to a list of one.
+    );
     /**Create a PStringList from the array of strings.
      */
     PStringList(
@@ -2430,7 +2441,8 @@ class PStringList : public PList<PString>
        The PStringArray with the new items appended
      */
     PStringList & operator +=(const PStringList & list);
-    PStringList & operator +=(const PString & str);
+    PStringList & operator +=(const PString & str) { AppendString(str);  return *this; }
+    PStringList & operator +=(const char * cstr)   { AppendString(cstr); return *this; }
 
 
     /**Create a new PStringList, and add PString or PStringList to it
@@ -2488,6 +2500,11 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
      */
     PSortedStringList(
       const PString & str  ///< Single string to convert to a list of one.
+    );
+    /**Create a PSortedStringList of length one from the single string.
+     */
+    PSortedStringList(
+      const char * cstr  ///< Single string to convert to a list of one.
     );
     /**Create a PSortedStringList from the array of strings.
      */
@@ -2594,6 +2611,11 @@ class PStringSet : public PSet<PString>
      */
     PStringSet(
       const PString & str  ///< Single string to convert to a set of one.
+    );
+    /**Create a PStringSet containing the single string.
+     */
+    PStringSet(
+      const char * cstr  ///< Single string to convert to a set of one.
     );
     /**Create a PStringSet containing the strings.
      */
