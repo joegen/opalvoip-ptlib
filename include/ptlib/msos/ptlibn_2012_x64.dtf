@@ -5990,6 +5990,7 @@ EXPORTS
     ??8?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VAddressAndPort@PIPSocket@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @5958 NONAME
     ??8?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPCriticalSection@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @5959 NONAME
     ??8?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPFilePath@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @5960 NONAME
+    ??8@YA_NPEBDAEBVPString@@@Z @24462 NONAME
     ??8Address@PEthSocket@@QEBA_NPEBE@Z @5961 NONAME
     ??8Address@PIPSocket@@QEBA_NAEAUin6_addr@@@Z @5962 NONAME
     ??8Address@PIPSocket@@QEBA_NAEAUin_addr@@@Z @5963 NONAME
@@ -6002,7 +6003,7 @@ EXPORTS
     ??8PASN_ObjectId@@QEBA_NAEBV0@@Z @5970 NONAME
     ??8PASN_ObjectId@@QEBA_NPEBD@Z @5971 NONAME
     ??8PObject@@QEBA_NAEBV0@@Z @5972 NONAME
-    ??8PString@@QEBA_NAEBVPObject@@@Z @5973 NONAME
+    ??8PString@@QEBA_NAEBV0@@Z @24463 NONAME
     ??8PString@@QEBA_NPEBD@Z @5974 NONAME
     ??8PTimeInterval@@QEBA_NAEBV0@@Z @5975 NONAME
     ??8PTimeInterval@@QEBA_NJ@Z @5976 NONAME
@@ -6069,6 +6070,7 @@ EXPORTS
     ??9?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VAddressAndPort@PIPSocket@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @6037 NONAME
     ??9?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPCriticalSection@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @6038 NONAME
     ??9?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPFilePath@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @6039 NONAME
+    ??9@YA_NPEBDAEBVPString@@@Z @24464 NONAME
     ??9Address@PEthSocket@@QEBA_NPEBE@Z @6040 NONAME
     ??9Address@PIPSocket@@QEBA_NAEBV01@@Z @6041 NONAME
     ??9Address@PIPSocket@@QEBA_NH@Z @6042 NONAME
@@ -6091,7 +6093,7 @@ EXPORTS
     ??9iterator_base@?$PList@VStanza@XMPP@@@@QEBA_NAEBV01@@Z @6059 NONAME
     ??9iterator_base@?$PSet@VPString@@@@QEBA_NAEBV01@@Z @6060 NONAME
     ??9PObject@@QEBA_NAEBV0@@Z @6061 NONAME
-    ??9PString@@QEBA_NAEBVPObject@@@Z @6062 NONAME
+    ??9PString@@QEBA_NAEBV0@@Z @24465 NONAME
     ??9PString@@QEBA_NPEBD@Z @6063 NONAME
     ??9PTimeInterval@@QEBA_NAEBV0@@Z @6064 NONAME
     ??9PTimeInterval@@QEBA_NJ@Z @6065 NONAME
@@ -6895,23 +6897,25 @@ EXPORTS
     ??IPString@@QEBA?AV0@PEBD@Z @6869 NONAME
     ??KPTimeInterval@@QEBA?AV0@H@Z @6870 NONAME
     ??KPTimeInterval@@QEBAHAEBV0@@Z @6871 NONAME
+    ??M@YA_NPEBDAEBVPString@@@Z @24466 NONAME
     ??MPObject@@QEBA_NAEBV0@@Z @6872 NONAME
-    ??MPString@@QEBA_NAEBVPObject@@@Z @6873 NONAME
+    ??MPString@@QEBA_NAEBV0@@Z @24467 NONAME
     ??MPString@@QEBA_NPEBD@Z @6874 NONAME
     ??MPTimeInterval@@QEBA_NAEBV0@@Z @6875 NONAME
     ??MPTimeInterval@@QEBA_NJ@Z @6876 NONAME
-    ??NPObject@@QEBA_NAEBV0@@Z @6877 NONAME
-    ??NPString@@QEBA_NAEBVPObject@@@Z @6878 NONAME
+    ??N@YA_NPEBDAEBVPString@@@Z @24468 NONAME
+    ??NPString@@QEBA_NAEBV0@@Z @24469 NONAME
     ??NPString@@QEBA_NPEBD@Z @6879 NONAME
     ??NPTimeInterval@@QEBA_NAEBV0@@Z @6880 NONAME
     ??NPTimeInterval@@QEBA_NJ@Z @6881 NONAME
+    ??O@YA_NPEBDAEBVPString@@@Z @24470 NONAME
     ??OPObject@@QEBA_NAEBV0@@Z @6882 NONAME
-    ??OPString@@QEBA_NAEBVPObject@@@Z @6883 NONAME
+    ??OPString@@QEBA_NAEBV0@@Z @24471 NONAME
     ??OPString@@QEBA_NPEBD@Z @6884 NONAME
     ??OPTimeInterval@@QEBA_NAEBV0@@Z @6885 NONAME
     ??OPTimeInterval@@QEBA_NJ@Z @6886 NONAME
-    ??PPObject@@QEBA_NAEBV0@@Z @6887 NONAME
-    ??PPString@@QEBA_NAEBVPObject@@@Z @6888 NONAME
+    ??P@YA_NPEBDAEBVPString@@@Z @24472 NONAME
+    ??PPString@@QEBA_NAEBV0@@Z @24473 NONAME
     ??PPString@@QEBA_NPEBD@Z @6889 NONAME
     ??PPTimeInterval@@QEBA_NAEBV0@@Z @6890 NONAME
     ??PPTimeInterval@@QEBA_NJ@Z @6891 NONAME
@@ -6940,6 +6944,7 @@ EXPORTS
     ??U@YA?AW4CompileOptions_Bits@PRegularExpression@@W401@0@Z @6914 NONAME
     ??U@YA?AW4OpenOptions_Bits@PFile@@W401@0@Z @6915 NONAME
     ??U@YA?AW4Options_Bits@PXMLBase@@W401@0@Z @6916 NONAME
+    ??X@YA_NPEBDAEBVPString@@@Z @24474 NONAME
     ??XAddress@PIPSocket@@QEBA_NAEBV01@@Z @6917 NONAME
     ??XPString@@QEBA_NAEBV0@@Z @6918 NONAME
     ??XPString@@QEBA_NPEBD@Z @6919 NONAME

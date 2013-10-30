@@ -8410,6 +8410,7 @@ EXPORTS
     ??8?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPCriticalSection@@@std@@@std@@@std@@QBE_NABV01@@Z @8440 NONAME
     ??8?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPFilePath@@@std@@@std@@@std@@QBE_NABV01@@Z @8441 NONAME
     ??8?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPVarType@@@std@@@std@@@std@@QBE_NABV01@@Z @8442 NONAME
+    ??8@YA_NPBDABVPString@@@Z @27486 NONAME
     ??8Address@PEthSocket@@QBE_NPBE@Z @8443 NONAME
     ??8Address@PIPSocket@@QBE_NAAUin6_addr@@@Z @8444 NONAME
     ??8Address@PIPSocket@@QBE_NAAUin_addr@@@Z @8445 NONAME
@@ -8422,7 +8423,7 @@ EXPORTS
     ??8PASN_ObjectId@@QBE_NABV0@@Z @8452 NONAME
     ??8PASN_ObjectId@@QBE_NPBD@Z @8453 NONAME
     ??8PObject@@QBE_NABV0@@Z @8454 NONAME
-    ??8PString@@QBE_NABVPObject@@@Z @8455 NONAME
+    ??8PString@@QBE_NABV0@@Z @27487 NONAME
     ??8PString@@QBE_NPBD@Z @8456 NONAME
     ??8PTimeInterval@@QBE_NABV0@@Z @8457 NONAME
     ??8PTimeInterval@@QBE_NJ@Z @8458 NONAME
@@ -8494,6 +8495,7 @@ EXPORTS
     ??9?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPCriticalSection@@@std@@@std@@@std@@QBE_NABV01@@Z @8525 NONAME
     ??9?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPFilePath@@@std@@@std@@@std@@QBE_NABV01@@Z @8526 NONAME
     ??9?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPVarType@@@std@@@std@@@std@@QBE_NABV01@@Z @8527 NONAME
+    ??9@YA_NPBDABVPString@@@Z @27488 NONAME
     ??9Address@PEthSocket@@QBE_NPBE@Z @8528 NONAME
     ??9Address@PIPSocket@@QBE_NABV01@@Z @8529 NONAME
     ??9Address@PIPSocket@@QBE_NH@Z @8530 NONAME
@@ -8517,7 +8519,7 @@ EXPORTS
     ??9iterator_base@?$PList@VStanza@XMPP@@@@QBE_NABV01@@Z @8548 NONAME
     ??9iterator_base@?$PSet@VPString@@@@QBE_NABV01@@Z @8549 NONAME
     ??9PObject@@QBE_NABV0@@Z @8550 NONAME
-    ??9PString@@QBE_NABVPObject@@@Z @8551 NONAME
+    ??9PString@@QBE_NABV0@@Z @27489 NONAME
     ??9PString@@QBE_NPBD@Z @8552 NONAME
     ??9PTimeInterval@@QBE_NABV0@@Z @8553 NONAME
     ??9PTimeInterval@@QBE_NJ@Z @8554 NONAME
@@ -9406,23 +9408,25 @@ EXPORTS
     ??M?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPCriticalSection@@@std@@@std@@@std@@QBE_NABV01@@Z @9448 NONAME
     ??M?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPFilePath@@@std@@@std@@@std@@QBE_NABV01@@Z @9449 NONAME
     ??M?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@VPVarType@@@std@@@std@@@std@@QBE_NABV01@@Z @9450 NONAME
+    ??M@YA_NPBDABVPString@@@Z @27490 NONAME
     ??MPObject@@QBE_NABV0@@Z @9451 NONAME
-    ??MPString@@QBE_NABVPObject@@@Z @9452 NONAME
+    ??MPString@@QBE_NABV0@@Z @27491 NONAME
     ??MPString@@QBE_NPBD@Z @9453 NONAME
     ??MPTimeInterval@@QBE_NABV0@@Z @9454 NONAME
     ??MPTimeInterval@@QBE_NJ@Z @9455 NONAME
-    ??NPObject@@QBE_NABV0@@Z @9456 NONAME
-    ??NPString@@QBE_NABVPObject@@@Z @9457 NONAME
+    ??N@YA_NPBDABVPString@@@Z @27492 NONAME
+    ??NPString@@QBE_NABV0@@Z @27493 NONAME
     ??NPString@@QBE_NPBD@Z @9458 NONAME
     ??NPTimeInterval@@QBE_NABV0@@Z @9459 NONAME
     ??NPTimeInterval@@QBE_NJ@Z @9460 NONAME
+    ??O@YA_NPBDABVPString@@@Z @27494 NONAME
     ??OPObject@@QBE_NABV0@@Z @9461 NONAME
-    ??OPString@@QBE_NABVPObject@@@Z @9462 NONAME
+    ??OPString@@QBE_NABV0@@Z @27495 NONAME
     ??OPString@@QBE_NPBD@Z @9463 NONAME
     ??OPTimeInterval@@QBE_NABV0@@Z @9464 NONAME
     ??OPTimeInterval@@QBE_NJ@Z @9465 NONAME
-    ??PPObject@@QBE_NABV0@@Z @9466 NONAME
-    ??PPString@@QBE_NABVPObject@@@Z @9467 NONAME
+    ??P@YA_NPBDABVPString@@@Z @27496 NONAME
+    ??PPString@@QBE_NABV0@@Z @27497 NONAME
     ??PPString@@QBE_NPBD@Z @9468 NONAME
     ??PPTimeInterval@@QBE_NABV0@@Z @9469 NONAME
     ??PPTimeInterval@@QBE_NJ@Z @9470 NONAME
@@ -9452,6 +9456,7 @@ EXPORTS
     ??U@YA?AW4CompileOptions_Bits@PRegularExpression@@W401@0@Z @9494 NONAME
     ??U@YA?AW4OpenOptions_Bits@PFile@@W401@0@Z @9495 NONAME
     ??U@YA?AW4Options_Bits@PXMLBase@@W401@0@Z @9496 NONAME
+    ??X@YA_NPBDABVPString@@@Z @27498 NONAME
     ??XAddress@PIPSocket@@QBE_NABV01@@Z @9497 NONAME
     ??XPString@@QBE_NABV0@@Z @9498 NONAME
     ??XPString@@QBE_NPBD@Z @9499 NONAME
