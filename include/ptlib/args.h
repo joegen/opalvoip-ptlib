@@ -189,7 +189,7 @@ class PArgList : public PObject
 
     /**Determine if already parsed at least once.
       */
-    bool IsParsed() const { return !m_options.empty(); }
+    bool IsParsed() const { return m_parsed; }
 
     /**Return error message after a call to Parse().
        The return value will be an empty string if there was no error in
@@ -327,6 +327,7 @@ class PArgList : public PObject
 
   protected:
     PString m_commandName;
+    bool    m_parsed;
     PString m_parseError;         // An error was detected during parsing of arguments
     PStringArray m_argumentArray; // The original program arguments.
 
