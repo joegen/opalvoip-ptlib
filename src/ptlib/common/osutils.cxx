@@ -476,8 +476,6 @@ static unsigned GetRotateVal(unsigned options)
 
 void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const char * rolloverPattern, unsigned options)
 {
-  m_options = options;
-  m_thresholdLevel = level;
   m_rolloverPattern = rolloverPattern;
   if (m_rolloverPattern.IsEmpty())
     m_rolloverPattern = DefaultRollOverPattern;
@@ -485,6 +483,8 @@ void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const
   // between os_gmtime and os_localtime?
   m_lastRotate = GetRotateVal(options);
   OpenTraceFile(filename);
+  m_options = options;
+  m_thresholdLevel = level;
 }
 
 
