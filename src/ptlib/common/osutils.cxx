@@ -1367,6 +1367,7 @@ void PArgList::SetArgs(const PStringArray & theArgs)
   if (!theArgs.IsEmpty())
     m_argumentArray = theArgs;
 
+  m_parsed = false;
   m_shift = 0;
   m_options.clear();
   m_parameterIndex.SetSize(m_argumentArray.GetSize());
@@ -1383,13 +1384,13 @@ bool PArgList::InternalSpecificationError(bool isError, const PString & msg)
 
   m_parseError = msg;
   PAssertAlways(msg);
-  m_options.clear();
   return true;
 }
 
 
 bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
 {
+  m_parsed = false;
   m_parseError.MakeEmpty();
 
   // Find starting point, start at shift if first Parse() call.
@@ -1521,6 +1522,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
   if (optionsBeforeParams)
     m_argsParsed = arg;
 
+  m_parsed = true;
   return param > 0;
 }
 
@@ -1539,32 +1541,33 @@ size_t PArgList::InternalFindOption(const PString & name) const
 int PArgList::InternalParseOption(const PString & optStr, PINDEX offset, PINDEX & arg)
 {
   size_t idx = InternalFindOption(optStr);
-  if (idx >= m_options.size()) {
-    m_parseError = "Unknown option \"" + optStr + "\".";
-    m_options.clear();
-    return -1;
+  if (idx >= m_options.size())
+    m_parseError = "Unknown option ";
+  else {
+    OptionSpec & opt = m_options[idx];
+    ++opt.m_count;
+    if (opt.m_type == NoString)
+      return 0;
+
+    if (!opt.m_string)
+      opt.m_string += '\n';
+
+    if (offset != 0 && (opt.m_type == StringWithLetter || m_argumentArray[arg][offset] != '\0')) {
+      opt.m_string += m_argumentArray[arg].Mid(offset);
+      return 1;
+    }
+
+    if (++arg < m_argumentArray.GetSize()) {
+      opt.m_string += m_argumentArray[arg];
+      return 1;
+    }
+
+    m_parseError = "Argument required for option ";
   }
 
-  OptionSpec & opt = m_options[idx];
-  ++opt.m_count;
-  if (opt.m_type == NoString)
-    return 0;
-
-  if (!opt.m_string)
-    opt.m_string += '\n';
-
-  if (offset != 0 && (opt.m_type == StringWithLetter || m_argumentArray[arg][offset] != '\0')) {
-    opt.m_string += m_argumentArray[arg].Mid(offset);
-    return 1;
-  }
-
-  if (++arg < m_argumentArray.GetSize()) {
-    opt.m_string += m_argumentArray[arg];
-    return 1;
-  }
-
-  m_parseError = "Option \"" + optStr + "\" requires an argument.";
-  m_options.clear();
+  m_parseError += offset == 0 ? "\"--" : "\"-";
+  m_parseError += optStr;
+  m_parseError += '"';
   return -1;
 }
 
