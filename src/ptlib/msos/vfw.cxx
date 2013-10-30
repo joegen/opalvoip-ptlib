@@ -1215,7 +1215,7 @@ PCREATE_VIDOUTPUT_PLUGIN_EX(Window,
 
   virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
   {
-    return deviceName.NumCompare(GetServiceName()) == PObject::EqualTo;
+    return deviceName.NumCompare(P_MSWIN_VIDEO_PREFIX) == PObject::EqualTo;
   }
 )
 
