@@ -1431,6 +1431,7 @@ PCLICurses::PCLICurses()
 
 PCLICurses::~PCLICurses()
 {
+  Stop();
   m_windows.RemoveAll();
   PTRACE(5, "Destroyed curses");
 }
