@@ -5274,6 +5274,7 @@ EXPORTS
     ??8?$_Vector_const_iterator@V?$_Vector_val@VAddressAndPort@PIPSocket@@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19207 NONAME
     ??8?$_Vector_const_iterator@V?$_Vector_val@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19208 NONAME
     ??8?$_Vector_const_iterator@V?$_Vector_val@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19209 NONAME
+    ??8@YA_NPEBDAEBVPString@@@Z @23625 NONAME
     ??8Address@PEthSocket@@QEBA_NPEBE@Z @4507 NONAME
     ??8Address@PIPSocket@@QEBA_NAEAUin6_addr@@@Z @4508 NONAME
     ??8Address@PIPSocket@@QEBA_NAEAUin_addr@@@Z @4509 NONAME
@@ -5284,7 +5285,7 @@ EXPORTS
     ??8PASN_ObjectId@@QEBA_NAEBV0@@Z @4516 NONAME
     ??8PASN_ObjectId@@QEBA_NPEBD@Z @4517 NONAME
     ??8PObject@@QEBA_NAEBV0@@Z @4518 NONAME
-    ??8PString@@QEBA_NAEBVPObject@@@Z @4519 NONAME
+    ??8PString@@QEBA_NAEBV0@@Z @23626 NONAME
     ??8PString@@QEBA_NPEBD@Z @4520 NONAME
     ??8PTimeInterval@@QEBA_NAEBV0@@Z @4521 NONAME
     ??8PTimeInterval@@QEBA_NJ@Z @4522 NONAME
@@ -5351,6 +5352,7 @@ EXPORTS
     ??9?$_Vector_const_iterator@V?$_Vector_val@VAddressAndPort@PIPSocket@@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19216 NONAME
     ??9?$_Vector_const_iterator@V?$_Vector_val@VPCriticalSection@@V?$allocator@VPCriticalSection@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19217 NONAME
     ??9?$_Vector_const_iterator@V?$_Vector_val@VPFilePath@@V?$allocator@VPFilePath@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @19218 NONAME
+    ??9@YA_NPEBDAEBVPString@@@Z @23627 NONAME
     ??9Address@PEthSocket@@QEBA_NPEBE@Z @4580 NONAME
     ??9Address@PIPSocket@@QEBA_NAEBV01@@Z @4581 NONAME
     ??9Address@PIPSocket@@QEBA_NH@Z @4582 NONAME
@@ -5373,7 +5375,7 @@ EXPORTS
     ??9iterator_base@?$PList@VStanza@XMPP@@@@QEBA_NAEBV01@@Z @19226 NONAME
     ??9iterator_base@?$PSet@VPString@@@@QEBA_NAEBV01@@Z @19227 NONAME
     ??9PObject@@QEBA_NAEBV0@@Z @4594 NONAME
-    ??9PString@@QEBA_NAEBVPObject@@@Z @4595 NONAME
+    ??9PString@@QEBA_NAEBV0@@Z @23628 NONAME
     ??9PString@@QEBA_NPEBD@Z @4596 NONAME
     ??9PTimeInterval@@QEBA_NAEBV0@@Z @4597 NONAME
     ??9PTimeInterval@@QEBA_NJ@Z @4598 NONAME
@@ -6178,23 +6180,25 @@ EXPORTS
     ??IPString@@QEBA?AV0@PEBD@Z @5323 NONAME
     ??KPTimeInterval@@QEBA?AV0@H@Z @5324 NONAME
     ??KPTimeInterval@@QEBAHAEBV0@@Z @5325 NONAME
+    ??M@YA_NPEBDAEBVPString@@@Z @23629 NONAME
     ??MPObject@@QEBA_NAEBV0@@Z @5326 NONAME
-    ??MPString@@QEBA_NAEBVPObject@@@Z @5327 NONAME
+    ??MPString@@QEBA_NAEBV0@@Z @23630 NONAME
     ??MPString@@QEBA_NPEBD@Z @5328 NONAME
     ??MPTimeInterval@@QEBA_NAEBV0@@Z @5329 NONAME
     ??MPTimeInterval@@QEBA_NJ@Z @5330 NONAME
-    ??NPObject@@QEBA_NAEBV0@@Z @5331 NONAME
-    ??NPString@@QEBA_NAEBVPObject@@@Z @5332 NONAME
+    ??N@YA_NPEBDAEBVPString@@@Z @23631 NONAME
+    ??NPString@@QEBA_NAEBV0@@Z @23632 NONAME
     ??NPString@@QEBA_NPEBD@Z @5333 NONAME
     ??NPTimeInterval@@QEBA_NAEBV0@@Z @5334 NONAME
     ??NPTimeInterval@@QEBA_NJ@Z @5335 NONAME
+    ??O@YA_NPEBDAEBVPString@@@Z @23633 NONAME
     ??OPObject@@QEBA_NAEBV0@@Z @5336 NONAME
-    ??OPString@@QEBA_NAEBVPObject@@@Z @5337 NONAME
+    ??OPString@@QEBA_NAEBV0@@Z @23634 NONAME
     ??OPString@@QEBA_NPEBD@Z @5338 NONAME
     ??OPTimeInterval@@QEBA_NAEBV0@@Z @5339 NONAME
     ??OPTimeInterval@@QEBA_NJ@Z @5340 NONAME
-    ??PPObject@@QEBA_NAEBV0@@Z @5341 NONAME
-    ??PPString@@QEBA_NAEBVPObject@@@Z @5342 NONAME
+    ??P@YA_NPEBDAEBVPString@@@Z @23635 NONAME
+    ??PPString@@QEBA_NAEBV0@@Z @23636 NONAME
     ??PPString@@QEBA_NPEBD@Z @5343 NONAME
     ??PPTimeInterval@@QEBA_NAEBV0@@Z @5344 NONAME
     ??PPTimeInterval@@QEBA_NJ@Z @5345 NONAME
@@ -6223,6 +6227,7 @@ EXPORTS
     ??U@YA?AW4CompileOptions_Bits@PRegularExpression@@W401@0@Z @5365 NONAME
     ??U@YA?AW4OpenOptions_Bits@PFile@@W401@0@Z @5366 NONAME
     ??U@YA?AW4Options_Bits@PXMLBase@@W401@0@Z @19336 NONAME
+    ??X@YA_NPEBDAEBVPString@@@Z @23637 NONAME
     ??XAddress@PIPSocket@@QEBA_NAEBV01@@Z @5367 NONAME
     ??XPString@@QEBA_NAEBV0@@Z @5368 NONAME
     ??XPString@@QEBA_NPEBD@Z @5369 NONAME
