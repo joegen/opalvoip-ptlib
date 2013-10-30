@@ -867,7 +867,7 @@ class PString : public PCharArray
        true if equal.
      */
     bool operator==(
-      const PObject & str  ///< PString object to compare against.
+      const PString & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the <code>PObject::Compare()</code> function. This
@@ -878,7 +878,7 @@ class PString : public PCharArray
        true if not equal.
      */
     bool operator!=(
-      const PObject & str  ///< PString object to compare against.
+      const PString & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the <code>PObject::Compare()</code> function. This
@@ -889,7 +889,7 @@ class PString : public PCharArray
        true if less than.
      */
     bool operator<(
-      const PObject & str  ///< PString object to compare against.
+      const PString & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the <code>PObject::Compare()</code> function. This
@@ -900,7 +900,7 @@ class PString : public PCharArray
        true if greater than.
      */
     bool operator>(
-      const PObject & str  ///< PString object to compare against.
+      const PString & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the <code>PObject::Compare()</code> function. This
@@ -911,7 +911,7 @@ class PString : public PCharArray
        true if less than or equal.
      */
     bool operator<=(
-      const PObject & str  ///< PString object to compare against.
+      const PString & str  ///< PString object to compare against.
     ) const;
 
     /**Compare two strings using the <code>PObject::Compare()</code> function. This
@@ -922,7 +922,7 @@ class PString : public PCharArray
        true if greater than or equal.
      */
     bool operator>=(
-      const PObject & str  ///< PString object to compare against.
+      const PString & str  ///< PString object to compare against.
     ) const;
 
 
@@ -930,7 +930,7 @@ class PString : public PCharArray
        function. The <code>cstr</code> parameter is typically a literal string,
        eg:
 <pre><code>
-          if (myStr == "fred")
+          if (myStr *= "fred")
 </code></pre>
 
        @return
@@ -1023,6 +1023,111 @@ class PString : public PCharArray
     bool operator>=(
       const char * cstr  ///< C string to compare against.
     ) const;
+
+    /**Compare a PString to a C string using a case insensitive compare
+       function. The <code>cstr</code> parameter is typically a literal string,
+       eg:
+<pre><code>
+          if ("fred" *= myStr)
+</code></pre>
+
+       @return
+       true if equal.
+     */
+    friend bool operator*=(
+      const char * cstr,  ///< C string to compare against.
+      const PString & str ///< String to compare against
+    );
+
+    /**Compare a PString to a C string using the <code>Compare()</code>
+       function. The <code>cstr</code> parameter is typically a literal string,
+       eg:
+<pre><code>
+          if ("fred" == myStr)
+</code></pre>
+
+       @return
+       true if equal.
+     */
+    friend bool operator==(
+      const char * cstr,  ///< C string to compare against.
+      const PString & str ///< String to compare against
+    );
+
+    /**Compare a PString to a C string using the <code>PObject::Compare()</code>
+       function. The <code>cstr</code> parameter is typically a literal
+       string, eg:
+<pre><code>
+          if ("fred" != myStr)
+</code></pre>
+
+       @return
+       true if not equal.
+     */
+    friend bool operator!=(
+      const char * cstr,  ///< C string to compare against.
+      const PString & str ///< String to compare against
+    );
+
+    /**Compare a PString to a C string using the <code>PObject::Compare()</code>
+       function. The <code>cstr</code> parameter is typically a literal
+       string, eg:
+<pre><code>
+          if ("fred" < myStr)
+</code></pre>
+
+       @return
+       true if less than.
+     */
+    friend bool operator<(
+      const char * cstr,  ///< C string to compare against.
+      const PString & str ///< String to compare against
+    );
+
+    /**Compare a PString to a C string using the <code>PObject::Compare()</code>
+       function. The <code>cstr</code> parameter is typically a literal
+       string, eg:
+<pre><code>
+          if ("fred" > myStr)
+</code></pre>
+
+       @return
+       true if greater than.
+     */
+    friend bool operator>(
+      const char * cstr,  ///< C string to compare against.
+      const PString & str ///< String to compare against
+    );
+
+    /**Compare a PString to a C string using the <code>PObject::Compare()</code>
+       function. The <code>cstr</code> parameter is typically a literal
+       string, eg:
+<pre><code>
+          if ("fred" <= myStr)
+</code></pre>
+
+       @return
+       true if less than or equal.
+     */
+    friend bool operator<=(
+      const char * cstr,  ///< C string to compare against.
+      const PString & str ///< String to compare against
+    );
+
+    /**Compare a PString to a C string using the <code>PObject::Compare()</code>
+       function. The <code>cstr</code> parameter is typically a literal
+       string, eg:
+<pre><code>
+          if ("fred" >= myStr)
+</code></pre>
+
+       @return
+       true if greater than or equal.
+     */
+    friend bool operator>=(
+      const char * cstr,  ///< C string to compare against.
+      const PString & str ///< String to compare against
+    );
 
     /**Compare a string against a substring of the object.
        This will compare at most <code>count</code> characters of the string, starting at
