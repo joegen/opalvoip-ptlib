@@ -880,11 +880,13 @@ PBoolean PTextFile::IsTextFile() const
 // PConsoleChannel
 
 PConsoleChannel::PConsoleChannel()
+  : m_lastMouseState(0)
 {
 }
 
 
 PConsoleChannel::PConsoleChannel(ConsoleType type)
+  : m_lastMouseState(0)
 {
   Open(type);
 }
@@ -917,6 +919,82 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
 PString PConsoleChannel::GetName() const
 {
   return "\\\\.\\Console";
+}
+
+
+int PConsoleChannel::ReadChar()
+{
+  for (;;) {
+    INPUT_RECORD input;
+    DWORD numRead;
+    if (!ReadConsoleInput(m_hConsole, &input, 1, &numRead))
+      return PChannel::ReadChar();
+
+    if (numRead == 0)
+      continue;
+
+    switch (input.EventType) {
+      case KEY_EVENT :
+        if (input.Event.KeyEvent.bKeyDown)
+          continue;
+
+        switch (input.Event.KeyEvent.wVirtualKeyCode) {
+          case VK_LEFT :
+            return KeyLeft;
+          case VK_RIGHT :
+            return KeyRight;
+          case VK_UP :
+            return KeyUp;
+          case VK_DOWN :
+            return KeyDown;
+          case VK_PRIOR :
+            return KeyPageUp;
+          case VK_NEXT :
+            return KeyPageDown;
+          case VK_HOME :
+            return KeyHome;
+          case VK_END :
+            return KeyEnd;
+          case VK_DELETE :
+            return KeyDelete;
+          case VK_INSERT :
+            return KeyInsert;
+        }
+
+        if (input.Event.KeyEvent.wVirtualKeyCode >= VK_F1 && input.Event.KeyEvent.wVirtualKeyCode <= VK_F24)
+          return input.Event.KeyEvent.wVirtualKeyCode - KeyF1;
+
+        if (input.Event.KeyEvent.uChar.UnicodeChar != 0)
+          return (input.Event.KeyEvent.uChar.UnicodeChar&0xffff);
+
+        break;
+
+      case MOUSE_EVENT :
+        if (input.Event.MouseEvent.dwButtonState != m_lastMouseState) {
+          int code = MouseEvent;
+
+          DWORD buttons = m_lastMouseState|input.Event.MouseEvent.dwButtonState;
+          static const DWORD Mask[] = { FROM_LEFT_1ST_BUTTON_PRESSED, RIGHTMOST_BUTTON_PRESSED, FROM_LEFT_2ND_BUTTON_PRESSED, FROM_LEFT_3RD_BUTTON_PRESSED };
+          for (PINDEX btn = 0; btn < PARRAYSIZE(Mask); ++btn) {
+            if (buttons&Mask[btn]) {
+              code |= MouseButton1 << btn;
+              if (input.Event.MouseEvent.dwButtonState&&Mask[btn])
+                code |= (btn+1) << MouseClickShift;
+            }
+          }
+
+          if (input.Event.MouseEvent.dwEventFlags&DOUBLE_CLICK)
+            code |= MouseDoubleClick;
+
+          code |= input.Event.MouseEvent.dwMousePosition.X << MouseColShift;
+          code |= input.Event.MouseEvent.dwMousePosition.Y << MouseRowShift;
+
+          m_lastMouseState = input.Event.MouseEvent.dwButtonState;
+          return code;
+        }
+        break;
+    }
+  }
 }
 
 

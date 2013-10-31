@@ -42,7 +42,6 @@
 
 #if P_CURSES==1
   #include <ncurses.h>
-#elif P_CURSES==2
 #endif
 
 
@@ -53,6 +52,7 @@
 
 PCLI::Context::Context(PCLI & cli)
   : m_cli(cli)
+  , m_editPosition(0)
   , m_ignoreNextEOL(false)
   , m_thread(NULL)
   , m_state(cli.GetUsername().IsEmpty() ? (cli.GetPassword().IsEmpty() ? e_CommandEntry : e_Password) : e_Username)
@@ -188,42 +188,95 @@ bool PCLI::Context::ReadAndProcessInput()
   return ProcessInput(ch);
 }
 
-bool PCLI::Context::ProcessInput(const PString & str)
-{
-  PStringArray lines = str.Lines();
 
-  PINDEX i;
-  for (i = 0; i < lines.GetSize(); ++i) {
-    PINDEX j;
-    PString & line = lines[i];
-    for (j = 0; j < line.GetLength(); ++j)
-      if (!ProcessInput(line[j]))
-        return false;
-    if (!ProcessInput('\n'))
-      return false;
+static bool IsCode(const PIntArray & codes, int ch)
+{
+  for (PINDEX i = 0; i < codes.GetSize(); ++i) {
+    if (codes[i] == ch)
+      return true;
   }
+  return false;
+}
+
+
+bool PCLI::Context::InternalEchoCommandLine(PINDEX echoPosition, PINDEX moveLeftCount)
+{
+  if (m_cli.GetRequireEcho() && m_state != e_Password) {
+    PINDEX i;
+    // Move to the left
+    for (i = 0; i < moveLeftCount; ++i) {
+      if (!EchoInput('\b'))
+        return false;
+    }
+    // Rewrite rest of command line from new position
+    for (i = echoPosition; i < m_commandLine.GetLength(); ++i) {
+      if (!EchoInput(m_commandLine[i]))
+        return false;
+    }
+    // Space out characters left behind
+    for (i = 0; i < moveLeftCount; ++i) {
+      if (!EchoInput(' '))
+        return false;
+    }
+    // Then move back over the erased bit
+    for (i = 0; i < moveLeftCount; ++i) {
+      if (!EchoInput('\b'))
+        return false;
+    }
+    // Finally move back to the edit position
+    for (i = m_editPosition; i < m_commandLine.GetLength(); ++i) {
+      if (!EchoInput('\b'))
+        return false;
+    }
+  }
+
   return true;
 }
+
 
 bool PCLI::Context::ProcessInput(int ch)
 {
   if (ch != '\n' && ch != '\r') {
-    if (m_cli.GetEditCharacters().Find((char)ch) != P_MAX_INDEX) {
-      if (!m_commandLine.IsEmpty()) {
-        m_commandLine.Delete(m_commandLine.GetLength()-1, 1);
-        if (m_cli.GetRequireEcho() && m_state != e_Password) {
-          if (!EchoInput('\x7f'))
-            return false;
-        }
-      }
-    }
-    else if (ch > 0 && ch < 256 && isprint(ch)) {
-      m_commandLine += (char)ch;
-
-      if (m_cli.GetRequireEcho() && m_state != e_Password) {
-        if (!EchoInput((char)ch))
+    if (IsCode(m_cli.GetEditCodes(), ch)) {
+      if (m_editPosition > 0) {
+        m_commandLine.Delete(--m_editPosition, 1);
+        if (!InternalEchoCommandLine(m_editPosition, 1))
           return false;
       }
+    }
+    else if (IsCode(m_cli.GetEraseCodes(), ch)) {
+      PINDEX count = m_editPosition;
+      m_commandLine.Delete(0, m_editPosition);
+      m_editPosition = 0;
+      if (!InternalEchoCommandLine(0, count))
+        return false;
+    }
+    else if (IsCode(m_cli.GetLeftCodes(), ch)) {
+      if (m_editPosition > 0) {
+        if (m_cli.GetRequireEcho() && m_state != e_Password) {
+          if (!EchoInput('\b'))
+            return false;
+        }
+        --m_editPosition;
+      }
+    }
+    else if (IsCode(m_cli.GetRightCodes(), ch)) {
+      if (m_editPosition < m_commandLine.GetLength()) {
+        if (m_cli.GetRequireEcho() && m_state != e_Password) {
+          if (!EchoInput(m_commandLine[m_editPosition]))
+            return false;
+        }
+        ++m_editPosition;
+      }
+    }
+    else if (IsCode(m_cli.GetAutoFillCodes(), ch)) {
+      PArgList args(m_commandLine);
+      m_cli.ShowHelp(*this, &args);
+    }
+    else if (ch > 0 && ch < 256 && isprint(ch)) {
+      m_commandLine.Splice(PString((char)ch), m_editPosition++);
+      if (!InternalEchoCommandLine(m_editPosition-1, 0))
+        return false;
     }
 
     m_ignoreNextEOL = false;
@@ -396,22 +449,35 @@ PCLI::Context & PCLI::Arguments::WriteError(const PString & error)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static int EditCodes[]  = { '\b', '\x7f' };
+static int EraseCodes[] = { 'U'-64 };
+static int LeftCodes[]  = { 'L'-64 };
+static int RightCodes[] = { 'R'-64 };
+static int AutoFillCodes[] = { '\t' };
+
 PCLI::PCLI(const char * prompt)
   : m_newLine("\r\n")
   , m_requireEcho(false)
-  , m_editCharacters("\b\x7f")
+  , m_editCodes(EditCodes, PARRAYSIZE(EditCodes), false)
+  , m_eraseCodes(EraseCodes, PARRAYSIZE(EraseCodes), false)
+  , m_leftCodes(LeftCodes, PARRAYSIZE(LeftCodes), false)
+  , m_rightCodes(RightCodes, PARRAYSIZE(RightCodes), false)
+  , m_autoFillCodes(AutoFillCodes, PARRAYSIZE(AutoFillCodes), false)
   , m_prompt(prompt != NULL ? prompt : "CLI> ")
   , m_usernamePrompt("Username: ")
   , m_passwordPrompt("Password: ")
   , m_commentCommand("#\n;\n//")
   , m_exitCommand("exit\nquit")
   , m_helpCommand("?\nhelp")
-  , m_helpOnHelp("Use ? or 'help' to display help\n"
+  , m_helpOnHelp("\n"
+                 "Help"
+                 "----"
+                 "Use ? or 'help' to display help\n"
                  "Use ! to list history of commands\n"
                  "Use !n to repeat the n'th command\n"
                  "Use !! to repeat last command\n"
                  "\n"
-                 "Command available are:")
+                 "Commands available are:")
   , m_repeatCommand("!!")
   , m_historyCommand("!")
   , m_noHistoryError("No command history")
@@ -597,15 +663,20 @@ bool PCLI::InternalCommand::operator<(const InternalCommand & other) const
 }
 
 
-bool PCLI::InternalCommand::IsMatch(const PArgList & args) const
+bool PCLI::InternalCommand::IsMatch(const PArgList & args, bool partial) const
 {
-  for (PINDEX i = 0; i < m_words.GetSize(); ++i) {
+  PINDEX count = m_words.GetSize();
+  if (partial && count > args.GetCount())
+    count = args.GetCount();
+
+  for (PINDEX i = 0; i < count; ++i) {
     if (m_words[i].NumCompare(args[i]) != EqualTo)
       return false;
   }
 
   return true;
 }
+
 
 void PCLI::OnReceivedLine(Arguments & args)
 {
@@ -695,42 +766,48 @@ bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const ch
 }
 
 
-void PCLI::ShowHelp(Context & context)
+void PCLI::ShowHelp(Context & context, const PArgList * partial)
 {
   PINDEX i;
   Commands_t::const_iterator cmd;
 
   PINDEX maxCommandLength = GetHelpCommand().GetLength();
   for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
-    PINDEX len = cmd->m_command.GetLength();
-    if (maxCommandLength < len)
-      maxCommandLength = len;
+    if (partial == NULL || cmd->IsMatch(*partial, true)) {
+      PINDEX len = cmd->m_command.GetLength();
+      if (maxCommandLength < len)
+        maxCommandLength = len;
+    }
   }
 
-  PStringArray lines = GetHelpOnHelp().Lines();
-  for (i = 0; i < lines.GetSize(); ++i)
-    context << lines[i] << '\n';
+  if (partial != NULL)
+    context << "\nMatching commands:\n";
+  else
+    context << setfill('\n') << GetHelpOnHelp().Lines() << setfill(' ');
 
   for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
-    if (cmd->m_help.IsEmpty() && cmd->m_usage.IsEmpty())
-      context << cmd->m_command;
-    else {
-      context << left << setw(maxCommandLength) << cmd->m_command << "   ";
-
-      if (cmd->m_help.IsEmpty())
-        context << GetCommandUsagePrefix(); // Earlier conditon says must have usage
+    if (partial == NULL || cmd->IsMatch(*partial)) {
+      if (cmd->m_help.IsEmpty() && cmd->m_usage.IsEmpty())
+        context << cmd->m_command;
       else {
-        lines = cmd->m_help.Lines();
-        context << lines[0];
-        for (i = 1; i < lines.GetSize(); ++i)
-          context << '\n' << setw(maxCommandLength+3) << ' ' << lines[i];
-      }
+        context << left << setw(maxCommandLength) << cmd->m_command << "   ";
 
-      lines = cmd->m_usage.Lines();
-      for (i = 0; i < lines.GetSize(); ++i)
-        context << '\n' << setw(maxCommandLength+5) << ' ' << lines[i];
+        PStringArray lines;
+        if (cmd->m_help.IsEmpty())
+          context << GetCommandUsagePrefix(); // Earlier conditon says must have usage
+        else {
+          lines = cmd->m_help.Lines();
+          context << lines[0];
+          for (i = 1; i < lines.GetSize(); ++i)
+            context << '\n' << setw(maxCommandLength+3) << ' ' << lines[i];
+        }
+
+        lines = cmd->m_usage.Lines();
+        for (i = 0; i < lines.GetSize(); ++i)
+          context << '\n' << setw(maxCommandLength+5) << ' ' << lines[i];
+      }
+      context << '\n';
     }
-    context << '\n';
   }
 
   context.flush();
@@ -1275,7 +1352,7 @@ public:
   {
     m_cursorRow = std::min(row, m_sizeRows);
     m_cursorCol = std::min(col, m_sizeCols);
-    if (!SetConsoleCursorPosition(m_hStdOut, GetAbsoluteCoord(m_cursorRow, m_cursorCol))) {
+    if (m_focus && !SetConsoleCursorPosition(m_hStdOut, GetAbsoluteCoord(m_cursorRow, m_cursorCol))) {
       PTRACE(2, "Cannot set console cursor position");
     }
   }
@@ -1445,6 +1522,9 @@ PCLICurses::~PCLICurses()
 
 void PCLICurses::Construct()
 {
+  m_leftCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyLeft);
+  m_rightCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyRight);
+
   m_requireEcho = true;
 
   m_pageWaitPrompt = "Press a key for more ...";
@@ -1582,6 +1662,11 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
       case '\x7f' :
         if (col > 0 && !FillChar(row, --col, ' ', 1))
           return false;
+        break;
+
+      case '\b' :
+        if (col > 0)
+          --col;
         break;
 
       case '\r' :

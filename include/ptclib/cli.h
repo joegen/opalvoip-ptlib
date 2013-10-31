@@ -147,7 +147,6 @@ class PCLI : public PObject
            Returns false if have error and processing is to cease.
           */
         virtual bool ProcessInput(int ch);
-        virtual bool ProcessInput(const PString & line);
 
         /**Echo character from input.
            This is only called if m_cli.GetRequireEcho() returns true.
@@ -178,9 +177,11 @@ class PCLI : public PObject
 
       protected:
         PDECLARE_NOTIFIER(PThread, Context, ThreadMain);
+        bool InternalEchoCommandLine(PINDEX echoPosition, PINDEX moveLeftCount);
 
         PCLI      & m_cli;
         PString     m_commandLine;
+        PINDEX      m_editPosition;
         bool        m_ignoreNextEOL;
         PStringList m_commandHistory;
         PThread   * m_thread;
@@ -397,8 +398,9 @@ class PCLI : public PObject
 
     /**Show help for registered commands to the context.
       */
-    void ShowHelp(
-      Context & context   ///< Context to output help to.
+    virtual void ShowHelp(
+      Context & context,                ///< Context to output help to.
+      const PArgList * partial = NULL   ///< Partial command line to limit help
     );
   //@}
 
@@ -424,15 +426,55 @@ class PCLI : public PObject
       */
     void SetRequireEcho(bool requireEcho) { m_requireEcho = requireEcho; }
 
-    /**Get characters used for editing (backspace/delete) command lines.
-       Default is "\b\x7f".
+    /**Get codes used for editing (backspace/delete) command line.
+       Default is {'\b','\x7f'}.
       */
-    const PString & GetEditCharacters() const { return m_editCharacters; }
+    const PIntArray & GetEditCodes() const { return m_editCodes; }
 
-    /**Set characters used for editing (backspace/delete) command lines.
-       Default is "\b\x7f".
+    /**Set codes used for editing (backspace/delete) command line.
+       Default is {'\b','\x7f'}.
       */
-    void SetEditCharacters(const PString & editCharacters) { m_editCharacters = editCharacters; }
+    void SetEditCodes(const PIntArray & editCodes) { m_editCodes = editCodes; }
+
+    /**Get codes used for erasing whole command line.
+       Default is ^U {'\x15'}.
+      */
+    const PIntArray & GetEraseCodes() const { return m_eraseCodes; }
+
+    /**Set codes used for erasing whole command line.
+       Default is ^U {'\x15'}.
+      */
+    void SetEraseCodes(const PIntArray & eraseCodes) { m_eraseCodes = eraseCodes; }
+
+    /**Get codes used for moving left in command line.
+       Default is ^L {'\x0c'}.
+      */
+    const PIntArray & GetLeftCodes() const { return m_leftCodes; }
+
+    /**Set codes used for moving left in command line.
+       Default is ^L {'\x0c'}.
+      */
+    void SetLeftCodes(const PIntArray & leftCodes) { m_leftCodes = leftCodes; }
+
+    /**Get codes used for moving right in command line.
+       Default is ^R {'\x12'}.
+      */
+    const PIntArray & GetRightCodes() const { return m_rightCodes; }
+
+    /**Set codes used for moving right in command line.
+       Default is ^R {'\x12'}.
+      */
+    void SetRightCodes(const PIntArray & rightCodes) { m_rightCodes = rightCodes; }
+
+    /**Set codes used for auto-fill of keywords in command line.
+       Default is tab {'\t'}.
+      */
+    void SetAutoFillCodes(const PIntArray & autoFillCodes) { m_autoFillCodes = autoFillCodes; }
+
+    /**Get codes used for auto-fill of keywords in command line.
+       Default is tab {'\t'}.
+      */
+    const PIntArray & GetAutoFillCodes() const { return m_autoFillCodes; }
 
     /**Get prompt used for command line interpreter.
        Default is "CLI> ".
@@ -601,7 +643,11 @@ class PCLI : public PObject
   protected:
     PString         m_newLine;
     bool            m_requireEcho;
-    PString         m_editCharacters;
+    PIntArray       m_editCodes;
+    PIntArray       m_eraseCodes;
+    PIntArray       m_leftCodes;
+    PIntArray       m_rightCodes;
+    PIntArray       m_autoFillCodes;
     PString         m_prompt;
     PString         m_usernamePrompt;
     PString         m_passwordPrompt;
@@ -621,7 +667,7 @@ class PCLI : public PObject
 
     struct InternalCommand {
       InternalCommand(const PString & words, const PNotifier & notifier, const char * help, const char * usage, const char * argSpec);
-      bool IsMatch(const PArgList & args) const;
+      bool IsMatch(const PArgList & args, bool partial = false) const;
       bool operator<(const InternalCommand & other) const;
 
       PStringArray m_words;
