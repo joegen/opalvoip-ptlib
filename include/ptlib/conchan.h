@@ -56,6 +56,48 @@ class PConsoleChannel : public PChannel
       StandardError
     };
 
+    /// Special retrun codes from console input
+    enum {
+      KeyLeft = 0x10000, // Larger than possible Unicode character return
+      KeyRight,
+      KeyUp,
+      KeyDown,
+      KeyPageUp,
+      KeyPageDown,
+      KeyHome,
+      KeyEnd,
+      KeyDelete,
+      KeyInsert,
+
+      KeyFuncBase = 0x10100,
+      KeyF1 = KeyFuncBase+1,
+      KeyF2,
+      KeyF3,
+      KeyF4,
+      KeyF5,
+      KeyF6,
+      KeyF7,
+      KeyF8,
+      KeyF9,
+      KeyF10,
+      KeyF11,
+      KeyF12,
+      // Additional function keys have codes from here
+
+      MouseEvent = 0x40000000,
+      MouseButton1 = 1,         ///< State of (usually) left button
+      MouseButton2 = 2,         ///< State of (usually) right button
+      MouseButton3 = 4,         ///< State of (usually) middle button
+      MouseButton4 = 8,         ///< State of (on the side?) button
+      MouseClickShift = 4,      ///< 3 bits for button that was "clicked", that is went down and up. Zero is none.
+      MouseDoubleClick = 0x80,  ///< The click was a double
+      MouseShiftKey = 0x100,    ///< The shift key is down
+      MouseCtrlKey = 0x100,     ///< The control key is down
+      MouseAltKey = 0x200,      ///< The control key is down
+      MouseRowShift = 20,       ///< Shift to get 8 bit row
+      MouseColShift = 12,       ///< Shift to get 8 bit column
+    };
+
   /**@name Construction */
   //@{
     /// Create a new console channel object, leaving it unopen.
@@ -69,6 +111,28 @@ class PConsoleChannel : public PChannel
 
   /**@name Overrides from PChannel */
   //@{
+    /** Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in <code>PFile</code> type channels.
+
+       @return the name of the channel.
+     */
+    virtual PString GetName() const;
+
+    /** Close the channel, shutting down the link to the data source.
+
+       @return true if the channel successfully closed.
+     */
+    virtual PBoolean Close();
+
+    /** Read a single 8 bit byte from the channel. If one was not available
+       within the read timeout period, or an I/O error occurred, then the
+       function gives with a -1 return value.
+
+       @return
+       byte read or -1 if no character could be read.
+     */
+    virtual int ReadChar();
+
     /**Set local echo mode.
        For some classes of channel, e.g. PConsoleChannel, data read by this
        channel is automatically echoed. This disables the function so things

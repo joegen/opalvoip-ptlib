@@ -37,11 +37,6 @@
   public:
     ~PConsoleChannel();
 
-    // Overrides from class PChannel
-    virtual PString GetName() const;
-      // Return the name of the channel.
-
-
     virtual PBoolean Read(void * buf, PINDEX len);
       // Low level read from the channel. This function will block until the
       // requested number of characters were read.
@@ -50,10 +45,8 @@
       // Low level write to the channel. This function will block until the
       // requested number of characters were written.
 
-    virtual PBoolean Close();
-      // Close the channel.
-
   protected:
     PWin32Handle m_hConsole;
+    DWORD m_lastMouseState;
 
 // End Of File ///////////////////////////////////////////////////////////////

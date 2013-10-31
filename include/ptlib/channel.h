@@ -344,9 +344,13 @@ class PChannel : public PObject, public P_IOSTREAM {
      */
     PINDEX GetLastReadCount() const;
 
-    /** Read a single 8 bit byte from the channel. If one was not available
+    /** Read a single character from the channel. If one was not available
        within the read timeout period, or an I/O error occurred, then the
        function gives with a -1 return value.
+
+       Note, normally the character read will be an 8 bit value, but for some
+       derived classes, e.g. PConsoleChannel, this may be a code for special
+       input.
 
        @return
        byte read or -1 if no character could be read.

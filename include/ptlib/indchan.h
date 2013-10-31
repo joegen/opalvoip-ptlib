@@ -133,6 +133,19 @@ class PIndirectChannel : public PChannel
       PINDEX len    ///< Maximum number of bytes to read into the buffer.
     );
 
+    /** Read a single character from the channel. If one was not available
+       within the read timeout period, or an I/O error occurred, then the
+       function gives with a -1 return value.
+
+       Note, normally the character read will be an 8 bit value, but for some
+       derived classes, e.g. PConsoleChannel, this may be a code for special
+       input.
+
+       @return
+       byte read or -1 if no character could be read.
+     */
+    virtual int ReadChar();
+
     /**Low level write to the channel. This function will block until the
        requested number of characters are written or the write timeout is
        reached. The GetLastWriteCount() function returns the actual number

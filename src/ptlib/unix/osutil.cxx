@@ -69,6 +69,10 @@
 #endif
 #include <ctype.h>
 
+#if P_CURSES==1
+  #include <ncurses.h>
+#endif
+
 #if defined(P_LINUX) || defined(P_GNU_HURD)
 
 #include <mntent.h>
@@ -1093,6 +1097,45 @@ PBoolean PConsoleChannel::Close()
 {
   os_handle = -1;
   return true;
+}
+
+
+int PConsoleChannel::ReadChar()
+{
+#if P_CURSES==1
+  int ch = getch();
+  if (ch >= 0) {
+    switch (ch) {
+      case KEY_LEFT :
+        return KeyLeft;
+      case KEY_RIGHT :
+        return KeyRight;
+      case KEY_UP :
+        return KeyUp;
+      case KEY_DOWN :
+        return KeyDown;
+      case KEY_PPAGE :
+        return KeyPageUp;
+      case KEY_NPAGE :
+        return KeyPageDown;
+      case KEY_HOME :
+        return KeyHome;
+      case KEY_END :
+        return KeyEnd;
+      case KEY_DC :
+        return KeyDelete;
+      case KEY_EIC :
+        return KeyInsert;
+    }
+
+    if (ch >= KEY_F(0) && ch <= KEY_F(63))
+      return ch - KEY_F0 + KeyF1;
+
+    return ch;
+  }
+#endif
+
+  return PChannel::ReadChar();
 }
 
 
