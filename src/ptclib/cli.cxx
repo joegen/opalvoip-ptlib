@@ -283,6 +283,8 @@ bool PCLI::Context::ProcessInput(int ch)
     return true;
   }
 
+  m_editPosition = 0;
+
   if (m_ignoreNextEOL) {
     m_ignoreNextEOL = false;
     return true;
