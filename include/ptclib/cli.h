@@ -399,8 +399,8 @@ class PCLI : public PObject
     /**Show help for registered commands to the context.
       */
     virtual void ShowHelp(
-      Context & context,                ///< Context to output help to.
-      const PArgList * partial = NULL   ///< Partial command line to limit help
+      Context & context,        ///< Context to output help to.
+      const PArgList & partial  ///< Partial command line to limit help
     );
   //@}
 
