@@ -209,7 +209,9 @@ class PArgList : public PObject
       ostream & strm,    ///< Stream to output usage text.
       const char * usage = NULL ///< Usage first line
     ) const;
-    PString Usage() const;
+    PString Usage(
+      const char * usage = NULL ///< Usage first line
+    ) const;
   //@}
 
   /**@name Getting parsed arguments */

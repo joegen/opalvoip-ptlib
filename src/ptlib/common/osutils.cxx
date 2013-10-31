@@ -1313,10 +1313,10 @@ ostream & PArgList::Usage(ostream & strm, const char * usage) const
 }
 
 
-PString PArgList::Usage() const
+PString PArgList::Usage(const char * usage) const
 {
   PStringStream str;
-  Usage(str);
+  Usage(str, usage);
   return str;
 }
 
