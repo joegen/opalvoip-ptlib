@@ -744,8 +744,9 @@ PCLI::InternalCommand::InternalCommand(const PString & words,
   for (PINDEX i = 0; i < m_words.GetSize(); ++i)
     m_command &= m_words[i];
 
-  if (usage != NULL && *usage != '\0')
-    m_usage = m_command & usage;
+  PArgList args(PString::Empty(), m_argSpec);
+  args.SetCommandName(m_command);
+  m_usage = args.Usage(usage);
 }
 
 
