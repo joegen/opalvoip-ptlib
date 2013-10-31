@@ -50,24 +50,56 @@ class PPluginManager : public PObject
   
     // functions to access the plugins' services 
     PStringArray GetServiceTypes() const;
-    const PPluginServiceDescriptor * GetServiceDescriptor(const PString & serviceName, const PString & serviceType) const;
+    const PPluginServiceDescriptor * GetServiceDescriptor(
+      const PString & serviceName,
+      const PString & serviceType
+    ) const;
 
-    static PStringArray GetPluginsProviding(PPluginManager * pluginMgr, const PString & serviceType, bool friendlyNames)
-    { return (pluginMgr != NULL ? pluginMgr : &GetPluginManager())->GetPluginsProviding(serviceType, friendlyNames); }
+    static PStringArray GetPluginsProviding(
+      PPluginManager * pluginMgr,
+      const PString & serviceType,
+      bool friendlyNames
+    ) { return (pluginMgr != NULL ? pluginMgr : &GetPluginManager())->GetPluginsProviding(serviceType, friendlyNames); }
 
-    PStringArray GetPluginsProviding(const PString & serviceType, bool friendlyNames) const;
+    PStringArray GetPluginsProviding(
+      const PString & serviceType,
+      bool friendlyNames
+    ) const;
 
-    template <class T> static T * CreatePluginAs(PPluginManager * pluginMgr, const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0)
-    { return dynamic_cast<T *>((pluginMgr != NULL ? pluginMgr : &GetPluginManager())->CreatePlugin(serviceName, serviceType, userData)); }
+    template <class T> static T * CreatePluginAs(
+      PPluginManager * pluginMgr,
+      const PString & serviceName,
+      const PString & serviceType,
+      P_INT_PTR userData = 0
+    ) { return dynamic_cast<T *>((pluginMgr != NULL ? pluginMgr : &GetPluginManager())->CreatePlugin(serviceName, serviceType, userData)); }
 
-    PObject * CreatePlugin(const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0) const;
+    PObject * CreatePlugin(
+      const PString & serviceName,
+      const PString & serviceType,
+      P_INT_PTR userData = 0
+    ) const;
 
-    static PStringArray GetPluginDeviceNames(PPluginManager * pluginMgr, const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0)
-    { return (pluginMgr != NULL ? pluginMgr : &GetPluginManager())->GetPluginDeviceNames(serviceName, serviceType, userData); }
+    static PStringArray GetPluginDeviceNames(
+      PPluginManager * pluginMgr,
+      const PString & serviceName,
+      const PString & serviceType,
+      P_INT_PTR userData = 0,
+      const char * const * prioritisedDrivers = NULL
+    ) { return (pluginMgr != NULL ? pluginMgr : &GetPluginManager())->GetPluginDeviceNames(serviceName, serviceType, userData, prioritisedDrivers); }
 
-    PStringArray GetPluginDeviceNames(const PString & serviceName, const PString & serviceType, P_INT_PTR userData = 0) const;
+    PStringArray GetPluginDeviceNames(
+      const PString & serviceName,
+      const PString & serviceType,
+      P_INT_PTR userData = 0,
+      const char * const * prioritisedDrivers = NULL
+    ) const;
 
-    PBoolean GetPluginsDeviceCapabilities(const PString & serviceType,const PString & serviceName,const PString & deviceName,void * capabilities) const;
+    PBoolean GetPluginsDeviceCapabilities(
+      const PString & serviceType,
+      const PString & serviceName,
+      const PString & deviceName,
+      void * capabilities
+    ) const;
 
     // function to register a service (used by the plugins themselves)
     bool RegisterService(const char * name);

@@ -90,60 +90,11 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
     adjustedDriverName.MakeEmpty();
 
   if (adjustedDeviceName.IsEmpty()) {
-    if (adjustedDriverName.IsEmpty()) {
-      PStringArray drivers = VideoDevice::GetDriverNames(pluginMgr);
-      if (drivers.IsEmpty())
-        return NULL;
+    PStringArray devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
+    if (devices.IsEmpty())
+      return NULL;
 
-      // Give precedence to drivers like camera grabbers, Window
-      static const char * prioritisedDrivers[] = {
-#ifdef P_DIRECTSHOW
-        P_DIRECT_SHOW_DRIVER,
-#endif
-#ifdef WIN32
-        P_MSWIN_VIDEO_DRIVER,
-        P_VIDEO_FOR_WINDOWS_DRIVER,
-#endif
-        "V4L",
-        "V4L2",
-        "1394DC",
-        "1394AVC",
-        "BSDCAPTURE",
-#if P_SDL
-        P_SDL_VIDEO_DRIVER,
-#endif
-        P_FAKE_VIDEO_DRIVER,
-        P_NULL_VIDEO_DRIVER,
-#ifdef P_APPSHARE
-        P_APPLICATION_VIDEO_DRIVER,
-#endif
-#if P_VIDFILE
-        P_VIDEO_FILE_DRIVER,
-#endif
-      };
-      for (PINDEX i = 0; i < PARRAYSIZE(prioritisedDrivers); i++) {
-        PINDEX driverIndex = drivers.GetValuesIndex(PString(prioritisedDrivers[i]));
-        if (driverIndex != P_MAX_INDEX) {
-          PStringArray devices = VideoDevice::GetDriversDeviceNames(drivers[driverIndex]);
-          if (!devices.IsEmpty()) {
-            adjustedDeviceName = devices[0];
-            adjustedDriverName = drivers[driverIndex];
-            break;
-          }
-        }
-      }
-
-      if (adjustedDriverName.IsEmpty())
-        adjustedDriverName = drivers[0];
-    }
-
-    if (adjustedDeviceName.IsEmpty()) {
-      PStringArray devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
-      if (devices.IsEmpty())
-        return NULL;
-
-      adjustedDeviceName = devices[0];
-    }
+    adjustedDeviceName = devices[0];
   }
 
   return VideoDevice::CreateDeviceByName(adjustedDeviceName, adjustedDriverName, pluginMgr);
@@ -1201,30 +1152,50 @@ PBoolean PVideoInputDevice::CanCaptureVideo() const
   return true;
 }
 
-static const char videoInputPluginBaseClass[] = "PVideoInputDevice";
-
 
 PStringArray PVideoInputDevice::GetDriverNames(PPluginManager * pluginMgr)
 {
-  return PPluginManager::GetPluginsProviding(pluginMgr, videoInputPluginBaseClass, false);
+  return PPluginManager::GetPluginsProviding(pluginMgr, PPlugin_PVideoInputDevice::ServiceType(), false);
 }
 
 
 PStringArray PVideoInputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
 {
-  return PPluginManager::GetPluginDeviceNames(pluginMgr, driverName, videoInputPluginBaseClass);
+  // Give precedence to drivers like camera grabbers, Window
+  static const char * const PrioritisedDrivers[] = {
+#ifdef P_DIRECTSHOW
+    P_DIRECT_SHOW_DRIVER,
+#endif
+#ifdef WIN32
+    P_VIDEO_FOR_WINDOWS_DRIVER,
+#endif
+    "V4L",
+    "V4L2",
+    "1394DC",
+    "1394AVC",
+    "BSDCAPTURE",
+    P_NULL_VIDEO_DRIVER,
+#ifdef P_APPSHARE
+    P_APPLICATION_VIDEO_DRIVER,
+#endif
+#if P_VIDFILE
+    P_VIDEO_FILE_DRIVER,
+#endif
+    NULL
+  };
+  return PPluginManager::GetPluginDeviceNames(pluginMgr, driverName, PPlugin_PVideoInputDevice::ServiceType(), 0, PrioritisedDrivers);
 }
 
 
 PVideoInputDevice * PVideoInputDevice::CreateDevice(const PString &driverName, PPluginManager * pluginMgr)
 {
-  return PPluginManager::CreatePluginAs<PVideoInputDevice>(pluginMgr, driverName, videoInputPluginBaseClass);
+  return PPluginManager::CreatePluginAs<PVideoInputDevice>(pluginMgr, driverName, PPlugin_PVideoInputDevice::ServiceType());
 }
 
 
 PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & deviceName, const PString & driverName, PPluginManager * pluginMgr)
 {
-  return PPluginManager::CreatePluginAs<PVideoInputDevice>(pluginMgr, driverName.IsEmpty() ? deviceName : driverName, videoInputPluginBaseClass);
+  return PPluginManager::CreatePluginAs<PVideoInputDevice>(pluginMgr, driverName.IsEmpty() ? deviceName : driverName, PPlugin_PVideoInputDevice::ServiceType());
 }
 
 
@@ -1239,7 +1210,7 @@ PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, co
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
 
-  return pluginMgr->GetPluginsDeviceCapabilities(videoInputPluginBaseClass,driverName,deviceName, caps);
+  return pluginMgr->GetPluginsDeviceCapabilities(PPlugin_PVideoInputDevice::ServiceType(), driverName, deviceName, caps);
 }
 
 
@@ -1431,30 +1402,43 @@ PBoolean PVideoOutputDevice::DisableDecode()
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char videoOutputPluginBaseClass[] = "PVideoOutputDevice";
-
-
 PStringArray PVideoOutputDevice::GetDriverNames(PPluginManager * pluginMgr)
 {
-  return PPluginManager::GetPluginsProviding(pluginMgr, videoOutputPluginBaseClass, false);
+  return PPluginManager::GetPluginsProviding(pluginMgr, PPlugin_PVideoOutputDevice::ServiceType(), false);
 }
 
 
 PStringArray PVideoOutputDevice::GetDriversDeviceNames(const PString & driverName, PPluginManager * pluginMgr)
 {
-  return PPluginManager::GetPluginDeviceNames(pluginMgr, driverName, videoOutputPluginBaseClass);
+  // Give precedence to drivers like camera grabbers, Window
+  static const char * const PrioritisedDrivers[] = {
+#ifdef WIN32
+    P_MSWIN_VIDEO_DRIVER,
+#endif
+#if P_SDL
+    P_SDL_VIDEO_DRIVER,
+#endif
+    P_FAKE_VIDEO_DRIVER,
+    P_NULL_VIDEO_DRIVER,
+#if P_VIDFILE
+    P_VIDEO_FILE_DRIVER,
+#endif
+    NULL
+  };
+
+  return PPluginManager::GetPluginDeviceNames(pluginMgr, driverName, PPlugin_PVideoOutputDevice::ServiceType(), 0, PrioritisedDrivers);
 }
 
 
 PVideoOutputDevice * PVideoOutputDevice::CreateDevice(const PString & driverName, PPluginManager * pluginMgr)
 {
-  return PPluginManager::CreatePluginAs<PVideoOutputDevice>(pluginMgr, driverName, videoOutputPluginBaseClass);
+  return PPluginManager::CreatePluginAs<PVideoOutputDevice>(pluginMgr, driverName, PPlugin_PVideoOutputDevice::ServiceType());
 }
 
 
 PVideoOutputDevice * PVideoOutputDevice::CreateDeviceByName(const PString & deviceName, const PString & driverName, PPluginManager * pluginMgr)
 {
-  return PPluginManager::CreatePluginAs<PVideoOutputDevice>(pluginMgr, driverName.IsEmpty() ? deviceName : driverName, videoOutputPluginBaseClass);
+  return PPluginManager::CreatePluginAs<PVideoOutputDevice>(pluginMgr, driverName.IsEmpty() ? deviceName : driverName, PPlugin_PVideoOutputDevice::ServiceType());
 }
 
 
