@@ -1264,13 +1264,13 @@ PVideoOutputDevice_Window::~PVideoOutputDevice_Window()
 
 PStringArray PVideoOutputDevice_Window::GetOutputDeviceNames()
 {
-  return psprintf("MSWIN STYLE=0x%08X TITLE=\"%s\"", DEFAULT_STYLE, DEFAULT_TITLE);
+  return psprintf(P_MSWIN_VIDEO_PREFIX" STYLE=0x%08X TITLE=\"%s\"", DEFAULT_STYLE, DEFAULT_TITLE);
 }
 
 
 PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImmediate)
 {
-  if (name.NumCompare(PPlugin_PVideoOutputDevice_Window::ServiceName()) != EqualTo)
+  if (name.NumCompare(P_MSWIN_VIDEO_PREFIX) != EqualTo)
     return false;
 
   Close();
