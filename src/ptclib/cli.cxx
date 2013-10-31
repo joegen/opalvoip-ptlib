@@ -270,8 +270,7 @@ bool PCLI::Context::ProcessInput(int ch)
       }
     }
     else if (IsCode(m_cli.GetAutoFillCodes(), ch)) {
-      PArgList args(m_commandLine);
-      m_cli.ShowHelp(*this, &args);
+      m_cli.ShowHelp(*this, m_commandLine);
     }
     else if (ch > 0 && ch < 256 && isprint(ch)) {
       m_commandLine.Splice(PString((char)ch), m_editPosition++);
@@ -341,13 +340,17 @@ bool PCLI::Context::EchoInput(char ch)
 }
 
 
-static bool CheckInternalCommand(const PCaselessString & line, const PCaselessString & cmds)
+static bool CheckInternalCommand(PCaselessString & line, const PCaselessString & cmdStr)
 {
-  PINDEX pos = cmds.Find(line);
-  if (pos == P_MAX_INDEX)
-    return false;
-  char terminator = cmds[pos + line.GetLength()];
-  return terminator == '\n' || terminator == '\0';
+  PStringArray cmds = cmdStr.Lines();
+  for (PINDEX i = 0; i < cmds.GetSize(); ++i) {
+    if (line.NumCompare(cmds[i]) == PObject::EqualTo) {
+      line.Delete(0, cmds[i].GetLength());
+      return line.IsEmpty() || isspace(line[0]);
+    }
+  }
+
+  return false;
 }
 
 
@@ -359,26 +362,21 @@ void PCLI::Context::OnCompletedLine()
 
   PTRACE(4, "Processing command line \"" << line << '"');
 
-  if (CheckInternalCommand(line, m_cli.GetExitCommand())) {
-    Stop();
+  if (CheckInternalCommand(line, m_cli.GetCommentCommand()))
     return;
-  }
 
-  if (m_cli.GetCommentCommand().Find(line[0]) != P_MAX_INDEX) {
-    PStringArray comments = m_cli.GetCommentCommand().Lines();
-    for (PINDEX i = 0; i < comments.GetSize(); ++i) {
-      if (line.NumCompare(comments[i]) == EqualTo)
-        return;
-    }
-  }
-
-  if (line.NumCompare(m_cli.GetRepeatCommand()) == EqualTo) {
+  if (CheckInternalCommand(line, m_cli.GetRepeatCommand())) {
     if (m_commandHistory.IsEmpty()) {
       *this << m_cli.GetNoHistoryError() << endl;
       return;
     }
 
     line = m_commandHistory.back();
+  }
+
+  if (CheckInternalCommand(line, m_cli.GetExitCommand())) {
+    Stop();
+    return;
   }
 
   if (CheckInternalCommand(line, m_cli.GetHistoryCommand())) {
@@ -400,7 +398,7 @@ void PCLI::Context::OnCompletedLine()
   }
 
   if (CheckInternalCommand(line, m_cli.GetHelpCommand()))
-    m_cli.ShowHelp(*this);
+    m_cli.ShowHelp(*this, line);
   else {
     Arguments args(*this, line);
     m_state = e_ProcessingCommand;
@@ -769,27 +767,27 @@ bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const ch
 }
 
 
-void PCLI::ShowHelp(Context & context, const PArgList * partial)
+void PCLI::ShowHelp(Context & context, const PArgList & partial)
 {
   PINDEX i;
   Commands_t::const_iterator cmd;
 
   PINDEX maxCommandLength = GetHelpCommand().GetLength();
   for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
-    if (partial == NULL || cmd->IsMatch(*partial, true)) {
+    if (partial.GetCount() == 0 || cmd->IsMatch(partial, true)) {
       PINDEX len = cmd->m_command.GetLength();
       if (maxCommandLength < len)
         maxCommandLength = len;
     }
   }
 
-  if (partial != NULL)
+  if (partial.GetCount() != 0)
     context << "\nMatching commands:\n";
   else
     context << setfill('\n') << GetHelpOnHelp().Lines() << setfill(' ');
 
   for (cmd = m_commands.begin(); cmd != m_commands.end(); ++cmd) {
-    if (partial == NULL || cmd->IsMatch(*partial)) {
+    if (partial.GetCount() == 0 || cmd->IsMatch(partial, true)) {
       if (cmd->m_help.IsEmpty() && cmd->m_usage.IsEmpty())
         context << cmd->m_command;
       else {
