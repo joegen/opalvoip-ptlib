@@ -337,49 +337,59 @@ PObject * PPluginManager::CreatePlugin(const PString & serviceName,
 
 PStringArray PPluginManager::GetPluginDeviceNames(const PString & serviceName,
                                                   const PString & serviceType,
-                                                  P_INT_PTR userData) const
+                                                  P_INT_PTR userData,
+                                                  const char * const * prioritisedDrivers) const
 {
-  PStringArray allDevices;
+  PWaitAndSignal mutex(m_servicesMutex);
 
-  if (serviceName.IsEmpty() || serviceName == "*") {
-    PWaitAndSignal mutex(m_servicesMutex);
+  if (!serviceName.IsEmpty() && serviceName != "*") {
+    const PPluginDeviceDescriptor * descriptor = dynamic_cast<const PPluginDeviceDescriptor *>(GetServiceDescriptor(serviceName, serviceType));
+    return descriptor != NULL ? descriptor->GetDeviceNames(userData) : PStringArray();
+  }
 
-    PStringToString deviceToPluginMap;  
+  PStringToString deviceToPluginMap;  
 
-    // First we run through all of the drivers and their lists of devices and
-    // use the dictionary to assure all names are unique
-    for (ServiceMap::const_iterator it = m_services.find(serviceType); it != m_services.end() && it->first == serviceType; ++it) {
-      const PPluginDeviceDescriptor * descriptor = dynamic_cast<const PPluginDeviceDescriptor *>(&it->second);
-      if (descriptor != NULL) {
-        PStringArray devices = descriptor->GetDeviceNames(userData);
-        for (PINDEX j = 0; j < devices.GetSize(); j++) {
-          PCaselessString device = devices[j];
-          if (deviceToPluginMap.Contains(device)) {
-            PString oldPlugin = deviceToPluginMap[device];
-            if (!oldPlugin.IsEmpty()) {
-              // Make name unique by prepending driver name and a tab character
-              deviceToPluginMap.SetAt(oldPlugin+PPluginServiceDescriptor::SeparatorChar+device, descriptor->GetServiceName());
-              // Reset the original to empty string so we dont add it multiple times
-              deviceToPluginMap.SetAt(device, "");
-            }
-            // Now add the new one
-            deviceToPluginMap.SetAt(descriptor->GetServiceName()+PPluginServiceDescriptor::SeparatorChar+device, descriptor->GetServiceName());
+  // First we run through all of the drivers and their lists of devices and
+  // use the dictionary to assure all names are unique
+  for (ServiceMap::const_iterator it = m_services.find(serviceType); it != m_services.end() && it->first == serviceType; ++it) {
+    const PPluginDeviceDescriptor * descriptor = dynamic_cast<const PPluginDeviceDescriptor *>(&it->second);
+    if (descriptor != NULL) {
+      PCaselessString driver = descriptor->GetServiceName();
+      PStringArray devices = descriptor->GetDeviceNames(userData);
+      for (PINDEX j = 0; j < devices.GetSize(); j++) {
+        PCaselessString device = devices[j];
+        if (deviceToPluginMap.Contains(device)) {
+          PString oldDriver = deviceToPluginMap[device];
+          if (!oldDriver.IsEmpty()) {
+            // Make name unique by prepending driver name and a tab character
+            deviceToPluginMap.SetAt(oldDriver+PPluginServiceDescriptor::SeparatorChar+device, driver);
+            // Reset the original to empty string so we dont add it multiple times
+            deviceToPluginMap.SetAt(device, "");
           }
-          else
-            deviceToPluginMap.SetAt(device, descriptor->GetServiceName());
+          // Now add the new one
+          deviceToPluginMap.SetAt(driver+PPluginServiceDescriptor::SeparatorChar+device, driver);
         }
+        else
+          deviceToPluginMap.SetAt(device, driver);
       }
     }
+  }
 
-    for (PStringToString::iterator it = deviceToPluginMap.begin(); it != deviceToPluginMap.end(); ++it) {
-      if (!it->second.IsEmpty())
-        allDevices.AppendString(it->first);
+  PStringArray allDevices;
+
+  if (prioritisedDrivers != NULL) {
+    while (*prioritisedDrivers != NULL) {
+      for (PStringToString::iterator it = deviceToPluginMap.begin(); it != deviceToPluginMap.end(); ++it) {
+        if (it->second == *prioritisedDrivers)
+          allDevices.AppendString(it->first);
+      }
+      ++prioritisedDrivers;
     }
   }
-  else {
-    const PPluginDeviceDescriptor * descriptor = dynamic_cast<const PPluginDeviceDescriptor *>(GetServiceDescriptor(serviceName, serviceType));
-    if (descriptor != NULL)
-      allDevices = descriptor->GetDeviceNames(userData);
+
+  for (PStringToString::iterator it = deviceToPluginMap.begin(); it != deviceToPluginMap.end(); ++it) {
+    if (!it->second.IsEmpty() && allDevices.GetValuesIndex(it->first) == P_MAX_INDEX)
+      allDevices.AppendString(it->first);
   }
 
   return allDevices;
