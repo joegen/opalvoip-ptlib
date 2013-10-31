@@ -709,6 +709,27 @@ PBoolean PIndirectChannel::Read(void * buf, PINDEX len)
 }
 
 
+int PIndirectChannel::ReadChar()
+{
+  PReadWaitAndSignal mutex(channelPointerMutex);
+
+  if (readChannel == NULL) {
+    SetErrorValues(NotOpen, EBADF, LastReadError);
+    return -1;
+  }
+
+  readChannel->SetReadTimeout(readTimeout);
+  int returnValue = readChannel->ReadChar();
+
+  SetErrorValues(readChannel->GetErrorCode(LastReadError),
+                 readChannel->GetErrorNumber(LastReadError),
+                 LastReadError);
+  lastReadCount = readChannel->GetLastReadCount();
+
+  return returnValue;
+}
+
+
 PBoolean PIndirectChannel::Write(const void * buf, PINDEX len)
 {
   flush();

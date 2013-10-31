@@ -35,8 +35,5 @@
 #pragma interface
 #endif
 
-  public:
-    PString GetName() const;
-    PBoolean Close();
 
 // End Of File ////////////////////////////////////////////////////////////////
