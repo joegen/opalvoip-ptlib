@@ -436,15 +436,16 @@ class PSTUNMessage : public PBYTEArray
   */
 class PSTUNClient : public PNatMethod, public PSTUN
 {
-  PCLASSINFO(PSTUNClient, PNatMethod);
+    PCLASSINFO(PSTUNClient, PNatMethod);
   public:
-    PSTUNClient();
+    enum { DefaultPriority = 20 };
+    PSTUNClient(unsigned priority = DefaultPriority);
     ~PSTUNClient();
 
     /**Get the NAT Method Name
      */
-    static PString GetNatMethodName();
-    virtual PString GetName() const;
+    static const char * MethodName();
+    virtual PCaselessString GetName() const;
 
     /**Set the STUN server to use.
        The server string may be of the form host:port. If :port is absent
@@ -466,8 +467,8 @@ class PSTUNClient : public PNatMethod, public PSTUN
     ) const;
 
     virtual bool GetExternalAddress(
-      PIPSocket::Address & externalAddress, ///< External address of router
-      const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
+      PIPSocket::Address & externalAddress,   ///< External address of router
+      const PTimeInterval & maxAge = GetDefaultMaxAge()    ///< Maximum age for caching
     );
 
     virtual bool GetInterfaceAddress(
@@ -483,11 +484,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
     );
 
     virtual void Close();
-
-    // new functions
-    NatTypes FindNatType(
-      const PIPSocket::Address & binding
-    );
 
     /**Create a single socket.
        The STUN protocol is used to create a socket for which the external IP
@@ -529,7 +525,8 @@ class PSTUNClient : public PNatMethod, public PSTUN
 
     bool InternalOpenSocket(Component component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo);
 
-  protected:    
+  protected:
+    bool InternalSetServer(const PIPSocketAddressAndPort & addr);
     virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge);
 
     PSTUNUDPSocket * m_socket;
@@ -651,23 +648,20 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
 
 class PTURNClient : public PSTUNClient
 {
-  PCLASSINFO(PTURNClient, PSTUNClient);
+    PCLASSINFO(PTURNClient, PSTUNClient);
   public:
 
     friend class PTURNUDPSocket;
 
     /**Get the NAT Method Name
      */
-    static PString GetNatMethodName();
-    virtual PString GetName() const;
+    static const char * MethodName();
+    virtual PCaselessString GetName() const;
 
-    PTURNClient();
+    enum { DefaultPriority = 10 };
+    PTURNClient(unsigned priority = DefaultPriority);
 
     // overrides from PNatMethod
-    virtual bool Open(
-      const PIPSocket::Address & iface
-    );
-
     virtual void SetCredentials(
       const PString & username, 
       const PString & password, 
