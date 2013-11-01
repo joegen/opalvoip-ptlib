@@ -58,11 +58,6 @@ class PNatMethod  : public PObject
     PCLASSINFO(PNatMethod,PObject);
 
   public:
-    enum {
-      NatPortStart = 49152,
-      NatPortEnd   = 65535
-    };
-
     enum Component {
       eComponent_RTP  = 1,
       eComponent_RTCP = 2,
@@ -135,8 +130,10 @@ class PNatMethod  : public PObject
   //@{
     /** Default Contructor
     */
-    PNatMethod();
+  protected:
+    PNatMethod(unsigned priority);
 
+  public:
     /** Deconstructor
     */
     ~PNatMethod();
@@ -147,6 +144,9 @@ class PNatMethod  : public PObject
   //@{
     virtual void PrintOn(
       ostream & strm
+    ) const;
+    virtual Comparison Compare(
+      const PObject & obj
     ) const;
   //@}
 
@@ -168,7 +168,11 @@ class PNatMethod  : public PObject
 
     /** Get the NAT traversal method Name
     */
-    virtual PString GetName() const = 0;
+    virtual PCaselessString GetName() const = 0;
+
+    /** Get the NAT traversal method Name
+    */
+    virtual PString GetFriendlyName() const;
 
     /**Get the current server address name.
       */
@@ -212,11 +216,13 @@ class PNatMethod  : public PObject
       const PString & realm
     );
 
+    static const PTimeInterval & GetDefaultMaxAge();
+
     /** Get the acquired External IP Address.
     */
     virtual bool GetExternalAddress(
       PIPSocket::Address & externalAddress, ///< External address of router
-      const PTimeInterval & maxAge = 1000   ///< Maximum age for caching
+      const PTimeInterval & maxAge = GetDefaultMaxAge() ///< Maximum age for caching
     );
 
     /**Return the interface NAT router is using.
@@ -326,10 +332,10 @@ class PNatMethod  : public PObject
     );
 
     /**Returns whether the Nat Method is ready and available in
-    assisting in NAT Traversal on the specified interface.
+       assisting in NAT Traversal on the specified interface.
     */
     virtual bool IsAvailable(
-      const PIPSocket::Address & binding
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
     );
 
     /**Activate/DeActivate the NAT Method on a call by call basis
@@ -406,19 +412,21 @@ class PNatMethod  : public PObject
       WORD   basePort;
       WORD   maxPort;
       WORD   currentPort;
-    } ;
+    };
+
+    unsigned GetPriority() const { return m_priority; }
 
   protected:
     virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge) = 0;
 
-    PortInfo singlePortInfo, pairedPortInfo;
+    bool     m_active;
+    unsigned m_priority;
+    PortInfo m_singlePortInfo;
+    PortInfo m_pairedPortInfo;
 };
 
 /////////////////////////////////////////////////////////////
 
-PLIST(PNatList, PNatMethod);
-
-////////////////////////////////////////////////////////////////////////////////
 
 class PNatCandidate : public PObject
 {
@@ -499,17 +507,18 @@ class PNatMethod_Fixed  : public PNatMethod
 {
   PCLASSINFO(PNatMethod_Fixed, PNatMethod);
   public:
-    PNatMethod_Fixed();
+    enum { DefaultPriority = 90 };
+    PNatMethod_Fixed(unsigned priority = DefaultPriority);
 
-    static PString GetNatMethodName();
-    virtual PString GetName() const;
+    static const char * MethodName();
+    virtual PCaselessString GetName() const;
 
     virtual PString GetServer() const;
     virtual bool SetServer(const PString & str);
     virtual bool GetExternalAddress(PIPSocket::Address & addr ,const PTimeInterval &);
     virtual bool GetInterfaceAddress(PIPSocket::Address & addr) const;
     virtual bool Open(const PIPSocket::Address & addr);
-    virtual bool IsAvailable(const PIPSocket::Address &);
+    virtual bool IsAvailable(const PIPSocket::Address & binding);
 
   protected:
     virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge);
@@ -522,63 +531,64 @@ class PNatMethod_Fixed  : public PNatMethod
 /////////////////////////////////////////////////////////////
 
 /** PNatStrategy
-  The main container for all
-  NAT traversal Strategies. 
+  The main container for all NAT traversal Strategies. 
 */
-
-class PNatStrategy : public PObject
+class PNatMethods : public PSortedList<PNatMethod>
 {
-  PCLASSINFO(PNatStrategy,PObject);
+    typedef PSortedList<PNatMethod> BaseClass;
+    PCLASSINFO(PNatMethods, BaseClass);
+  public :
+    /**@name Construction */
+    //@{
+    /** Default Contructor
+      */
+    PNatMethods(
+      bool loadFromFactory = false,
+      PPluginManager * pluginMgr = NULL
+    );
+    //@}
 
-public :
+    /**@name Method Handling */
+    //@{
+    /** Load all known NAT methods.
+      */
+    void LoadAll(PPluginManager * pluginMgr = NULL);
 
-  /**@name Construction */
-  //@{
-  /** Default Contructor
-  */
-  PNatStrategy();
+    /** This function retrieves the first available NAT Traversal Method.
+        If no available NAT Method is found then NULL is returned. 
+      */
+    virtual PNatMethod * GetMethod(
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny()
+    );
 
-  /** Deconstructor
-  */
-  ~PNatStrategy();
-  //@}
+    /** This function retrieves the NAT Traversal Method with the given name. 
+        If it is not found then NULL is returned. 
+      */
+    virtual PNatMethod * GetMethodByName(
+      const PString & name
+    );
 
-  /**@name Method Handling */
-  //@{
-  /** AddMethod
-    This function is used to add the required NAT
-    Traversal Method. The Order of Loading is important
-    The first added has the highest priority.
-  */
-  void AddMethod(PNatMethod * method);
+    /** This function removes a NAT method from the list.
+      */
+    virtual bool RemoveMethod(
+      const PString & name
+    );
 
-  /** GetMethod
-    This function retrieves the first available NAT
-    Traversal Method. If no available NAT Method is found
-    then NULL is returned. 
-  */
-  PNatMethod * GetMethod(const PIPSocket::Address & address = PIPSocket::GetDefaultIpAny());
+    /** Determine if the address is local or external.
+      */
+    virtual bool IsLocalAddress(
+      const PIPSocket::Address & ip
+    ) const;
 
-  /** GetMethodByName
-    This function retrieves the NAT Traversal Method with the given name. 
-    If it is not found then NULL is returned. 
-  */
-  PNatMethod * GetMethodByName(const PString & name);
+    /** Set the port ranges to be used on local machine.
+        Note that the ports used on the NAT router may not be the same unless
+        some form of port forwarding is present.
 
-  /** RemoveMethod
-    This function removes a NAT method from the NATlist matching the supplied method name
-   */
-  bool RemoveMethod(const PString & meth);
+        If the port base is zero then standard operating system port allocation
+        method is used.
 
-    /**Set the port ranges to be used on local machine.
-       Note that the ports used on the NAT router may not be the same unless
-       some form of port forwarding is present.
-
-       If the port base is zero then standard operating system port allocation
-       method is used.
-
-       If the max port is zero then it will be automatically set to the port
-       base + 99.
+        If the max port is zero then it will be automatically set to the port
+        base + 99.
       */
     void SetPortRanges(
       WORD portBase,          ///< Single socket port number base
@@ -586,21 +596,16 @@ public :
       WORD portPairBase = 0,  ///< Socket pair port number base
       WORD portPairMax = 0    ///< Socket pair port number max
     );
+    //@}
 
-    /** Get Loaded NAT Method List
-     */
-    PNatList & GetNATList() {  return natlist; };
 
-	PNatMethod * LoadNatMethod(const PString & name, PPluginManager * plugMgr = NULL);
-
-    static PStringArray GetRegisteredList(bool friendlyName, PPluginManager * plugMgr = NULL);
-
-  //@}
-
-private:
-  PNatList natlist;
-  PPluginManager * pluginMgr;
+    PNatMethods & GetNATList() { return *this; }  // For backward compatibility
 };
+
+
+typedef PNatMethods PNatList;     // For backward compatibility
+typedef PNatMethods PNatStrategy; // For backward compatibility
+
 
 
 ////////////////////////////////////////////////////////

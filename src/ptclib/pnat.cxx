@@ -42,53 +42,54 @@
 #include <ptclib/random.h>
 
 
-static const char PNatMethodBaseClass[] = "PNatMethod";
-
-PNatStrategy::PNatStrategy()
+PNatMethods::PNatMethods(bool loadFromFactory, PPluginManager * pluginMgr)
 {
-   pluginMgr = NULL;
+  if (loadFromFactory)
+    LoadAll(pluginMgr);
 }
 
 
-PNatStrategy::~PNatStrategy()
+void PNatMethods::LoadAll(PPluginManager * pluginMgr)
 {
-   natlist.RemoveAll();
+  if (pluginMgr == NULL)
+    pluginMgr = &PPluginManager::GetPluginManager();
+
+  PStringArray methods = pluginMgr->GetPluginsProviding(PPlugin_PNatMethod::ServiceType(), false);
+  for (PINDEX i = 0; i < methods.GetSize(); ++i)
+    Append(pluginMgr->CreatePlugin(methods[i], PPlugin_PNatMethod::ServiceType()));
 }
 
 
-void PNatStrategy::AddMethod(PNatMethod * method)
+PNatMethod * PNatMethods::GetMethod(const PIPSocket::Address & binding)
 {
-  natlist.Append(method);
+  for (PNatMethods::iterator it = begin(); it != end(); ++it) {
+    if (it->IsAvailable(binding) && it->GetNatType() != PNatMethod::BlockedNat) {
+      PTRACE(5, "NAT\tFound method " << it->GetFriendlyName() << " on " << binding);
+      return &*it;
+    }
+  }
+
+  PTRACE(5, "NAT\tNo available methods on " << binding);
+  return NULL;
 }
 
 
-PNatMethod * PNatStrategy::GetMethod(const PIPSocket::Address & address)
+PNatMethod * PNatMethods::GetMethodByName(const PString & name)
 {
-  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
-    if (i->Open(address))
-      return &*i;
+  for (iterator it = begin(); it != end(); ++it) {
+    if (it->GetName() == name)
+      return &*it;
   }
 
   return NULL;
 }
 
 
-PNatMethod * PNatStrategy::GetMethodByName(const PString & name)
+bool PNatMethods::RemoveMethod(const PString & meth)
 {
-  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
-    if (i->GetName() == name) {
-      return &*i;
-	  }
-  }
-
-  return NULL;
-}
-
-bool PNatStrategy::RemoveMethod(const PString & meth)
-{
-  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++) {
-    if (i->GetName() == meth) {
-      natlist.erase(i);
+  for (iterator it = begin(); it != end(); ++it) {
+    if (it->GetName() == meth) {
+      erase(it);
       return true;
     }
   }
@@ -96,29 +97,31 @@ bool PNatStrategy::RemoveMethod(const PString & meth)
   return false;
 }
 
-void PNatStrategy::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax)
+
+bool PNatMethods::IsLocalAddress(const PIPSocket::Address & ip) const
 {
-  for (PNatList::iterator i = natlist.begin(); i != natlist.end(); i++)
-    i->SetPortRanges(portBase, portMax, portPairBase, portPairMax);
+  /* Check if the remote address is a private IP, broadcast, or us */
+  return ip.IsAny() || ip.IsBroadcast() || ip.IsRFC1918() || PIPSocket::IsLocalHost(ip);
 }
 
 
-PNatMethod * PNatStrategy::LoadNatMethod(const PString & name, PPluginManager * plugMgr)
+void PNatMethods::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax)
 {
-   return PPluginManager::CreatePluginAs<PNatMethod>(plugMgr, name, PNatMethodBaseClass);
+  for (iterator it = begin(); it != end(); ++it)
+    it->SetPortRanges(portBase, portMax, portPairBase, portPairMax);
 }
 
-PStringArray PNatStrategy::GetRegisteredList(bool friendlyName, PPluginManager * plugMgr)
-{
-  return PPluginManager::GetPluginsProviding(plugMgr, PNatMethodBaseClass, friendlyName);
-}
 
 ///////////////////////////////////////////////////////////////////////
 
-PNatMethod::PNatMethod()
-{
+const PTimeInterval & PNatMethod::GetDefaultMaxAge() { static const PTimeInterval age(0, 0, 1); return age; }
 
+PNatMethod::PNatMethod(unsigned priority)
+  : m_active(true)
+  , m_priority(priority)
+{
 }
+
 
 PNatMethod::~PNatMethod()
 {
@@ -147,7 +150,14 @@ PString PNatMethod::GetNatTypeString(NatTypes type)
 
 PNatMethod * PNatMethod::Create(const PString & name, PPluginManager * pluginMgr)
 {
-  return PPluginManager::CreatePluginAs<PNatMethod>(pluginMgr, name, PNatMethodBaseClass);
+  return PPluginManager::CreatePluginAs<PNatMethod>(pluginMgr, name, PPlugin_PNatMethod::ServiceType());
+}
+
+
+PString PNatMethod::GetFriendlyName() const
+{
+  PPluginServiceDescriptor * descriptor = PPluginFactory::CreateInstance("PNatMethod" + GetName());
+  return PAssertNULL(descriptor)->GetFriendlyName();
 }
 
 
@@ -209,7 +219,7 @@ bool PNatMethod::CreateSocket(Component component, PUDPSocket * & socket, const 
 
 bool PNatMethod::CreateSocketPair(PUDPSocket * & socket1, PUDPSocket * & socket2, const PIPSocket::Address & binding)
 {
-  WORD localPort = pairedPortInfo.GetRandomPair();
+  WORD localPort = m_pairedPortInfo.GetRandomPair();
   socket1 = new PNATUDPSocket(eComponent_RTP);
   socket2 = new PNATUDPSocket(eComponent_RTCP);
   return socket1->Listen(binding, 5, localPort) && socket2->Listen(binding, 5, localPort+1);
@@ -243,7 +253,7 @@ PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1,
 
 bool PNatMethod::IsAvailable(const PIPSocket::Address &)
 {
-  return true;
+  return m_active;
 }
 
 
@@ -278,10 +288,21 @@ void PNatMethod::PrintOn(ostream & strm) const
 }
 
 
+PObject::Comparison PNatMethod::Compare(const PObject & obj) const
+{
+  const PNatMethod & other = dynamic_cast<const PNatMethod &>(obj);
+  if (m_priority < other.m_priority)
+    return LessThan;
+  if (m_priority > other.m_priority)
+    return GreaterThan;
+  return EqualTo;
+}
+
+
 void PNatMethod::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax) 
 {
-  singlePortInfo.SetPorts(portBase, portMax);
-  pairedPortInfo.SetPorts((portPairBase+1)&0xfffe, portPairMax);
+  m_singlePortInfo.SetPorts(portBase, portMax);
+  m_pairedPortInfo.SetPorts((portPairBase+1)&0xfffe, portPairMax);
 }
 
 
@@ -324,8 +345,9 @@ WORD PNatMethod::PortInfo::GetNext(unsigned increment)
 }
 
 
-void PNatMethod::Activate(bool /*active*/)
+void PNatMethod::Activate(bool active)
 {
+  m_active = active;
 }
 
 
@@ -428,25 +450,26 @@ PString PNatCandidate::AsString() const
 // Fixed, preconfigured, NAT support
 //
 
-static PConstCaselessString const FixedName("Fixed");
+PCREATE_NAT_PLUGIN(Fixed);
 
-PNatMethod_Fixed::PNatMethod_Fixed()
-  : m_type(OpenNat)
+PNatMethod_Fixed::PNatMethod_Fixed(unsigned priority)
+  : PNatMethod(priority)
+  , m_type(OpenNat)
   , m_interfaceAddress(PIPSocket::GetInvalidAddress())
   , m_externalAddress(PIPSocket::GetInvalidAddress())
 {
 }
 
 
-PString PNatMethod_Fixed::GetNatMethodName()
+const char * PNatMethod_Fixed::MethodName()
 {
-  return FixedName;
+  return PPlugin_PNatMethod_Fixed::ServiceName();
 }
 
 
-PString PNatMethod_Fixed::GetName() const
+PCaselessString PNatMethod_Fixed::GetName() const
 {
-  return FixedName;
+  return MethodName();
 }
 
 
@@ -511,11 +534,10 @@ bool PNatMethod_Fixed::Open(const PIPSocket::Address & addr)
 
 bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding)
 {
-  return binding == m_interfaceAddress;
+  return PNatMethod::IsAvailable(binding) &&
+         m_externalAddress.IsValid() &&
+         (binding.IsAny() || binding == m_interfaceAddress);
 }
-
-
-PCREATE_NAT_PLUGIN(Fixed);
 
 
 #endif // P_NAT
