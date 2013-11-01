@@ -151,7 +151,7 @@ class PPluginManager : public PObject
     PMutex            m_pluginsMutex;
     PArray<PDynaLink> m_plugins;
 
-    typedef std::multimap<PCaselessString, const PPluginServiceDescriptor &> ServiceMap;
+    typedef std::multimap<PCaselessString, const PPluginServiceDescriptor *> ServiceMap;
     ServiceMap m_services;
     PMutex     m_servicesMutex;
 
