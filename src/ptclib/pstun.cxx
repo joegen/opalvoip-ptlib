@@ -42,6 +42,8 @@
 
 #include <ptclib/random.h>
 #include <ptclib/cypher.h>
+#include <ptclib/pdns.h>
+
 
 #define new PNEW
 
@@ -848,10 +850,9 @@ bool PSTUNUDPSocket::InternalGetBaseAddress(PIPSocketAddressAndPort & addr)
 typedef PSTUNClient PNatMethod_STUN;
 PCREATE_NAT_PLUGIN(STUN);
 
-static PConstCaselessString const STUNName("STUN");
-
-PSTUNClient::PSTUNClient()
-  : m_socket(NULL)
+PSTUNClient::PSTUNClient(unsigned priority)
+  : PNatMethod(priority)
+  , m_socket(NULL)
   , numSocketsForPairing(DEFAULT_NUM_SOCKETS_FOR_PAIRING)
 {
 }
@@ -862,20 +863,25 @@ PSTUNClient::~PSTUNClient()
 }
 
 
-PString PSTUNClient::GetNatMethodName()
+const char * PSTUNClient::MethodName()
 {
-  return STUNName;
+  return PPlugin_PNatMethod_STUN::ServiceName();
 }
 
 
-PString PSTUNClient::GetName() const
+PCaselessString PSTUNClient::GetName() const
 {
-  return STUNName;
+  return MethodName();
 }
 
 
 bool PSTUNClient::Open(const PIPSocket::Address & binding) 
 { 
+  if (!binding.IsAny() && (binding.IsLoopback() || binding.GetVersion() != 4)) {
+    PTRACE(1, "STUN\tCannot use interface " << binding << " to find STUN server");
+    return false;
+  }
+
   PWaitAndSignal m(m_mutex);
 
   if (!m_serverAddress.IsValid()) {
@@ -883,36 +889,35 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
     return false;
   }
 
-  switch (FindNatType(binding)) {
-    case OpenNat :
-    case ConeNat :
-    case RestrictedNat :
-    case PortRestrictedNat :
-    case SymmetricNat :
-      break;
-
-    default :
-      PTRACE(1, "STUN\tCannot use STUN with " << m_natType << " type.");
-      return false;
+  if (m_interface != binding) {
+    Close();
+    m_interface = binding;
   }
 
-  return true;
+  return GetNatType() != UnknownNat;
 }
+
 
 bool PSTUNClient::IsAvailable(const PIPSocket::Address & binding)
 {
   PWaitAndSignal m(m_mutex);
-  return (m_socket != NULL) && (binding == m_interface);
+  return PNatMethod::IsAvailable(binding) &&
+         m_socket != NULL &&
+         (binding.IsAny() || binding == m_interface);
 }
+
 
 void PSTUNClient::Close()
 {
   PWaitAndSignal m(m_mutex);
 
-  if (m_socket != NULL) {
-    delete m_socket;
-    m_socket = NULL;
-  }
+  delete m_socket;
+  m_socket = NULL;
+  m_timeAddressObtained = 0;
+  m_externalAddress = m_interface = PIPSocket::GetInvalidAddress();
+  m_natType = UnknownNat;
+
+  PNatMethod::Close();
 }
 
 
@@ -921,10 +926,32 @@ bool PSTUNClient::SetServer(const PString & server)
   if (server.IsEmpty())
     return false;
 
+#if P_DNS_RESOLVER
+  PIPSocketAddressAndPortVector addresses;
+  if (PDNS::LookupSRV(server, "_stun._udp.", DefaultPort, addresses) && !addresses.empty()) {
+    PTRACE(3, "STUN\tUsing DNS SRV record for server at " << addresses[0]);
+    return InternalSetServer(addresses[0]);
+  }
+#endif
+
+  return InternalSetServer(PIPSocketAddressAndPort(server, DefaultPort));
+}
+
+
+bool PSTUNClient::InternalSetServer(const PIPSocketAddressAndPort & addr)
+{
+  if (!addr.IsValid())
+    return false;
+
   PWaitAndSignal m(m_mutex);
 
-  m_serverAddress = PIPSocketAddressAndPort(server, DefaultPort);
-  return m_serverAddress.IsValid();
+  if (m_serverAddress != addr) {
+    PTRACE(4, "STUN\tServer set to " << addr);
+    m_serverAddress = addr;
+    Close();
+  }
+
+  return true;
 }
 
 
@@ -943,51 +970,39 @@ PNatMethod::NatTypes PSTUNClient::InternalGetNatType(bool force, const PTimeInte
 {  
   PWaitAndSignal m(m_mutex);
 
-  if (!force && m_externalAddress.IsValid() && (PTime() - m_timeAddressObtained) < maxAge)
-    return m_natType;
+  if (!m_interface.IsValid())
+    return UnknownNat;
 
   if (!m_serverAddress.IsValid()) {
-    PTRACE(1, "STUN\tserver not set");
-    return m_natType = UnknownNat;
+    PTRACE(1, "STUN\tServer not set");
+    Close();
+    return UnknownNat;
   }
 
-  if (m_socket == NULL)
-    return FindNatType(PIPSocket::GetDefaultIpAny());
-
-  PIPSocketAddressAndPort baseAddress;
-  return DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
-}
-
-
-PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding)
-{
-  PWaitAndSignal m(m_mutex);
-
-  if (!binding.IsAny() && (binding.IsLoopback() || binding.GetVersion() != 4)) {
-    PTRACE(1, "STUN\tCannot use interface " << binding << " to find STUN server");
-    return m_natType = UnknownNat;
-  }
+  if (!force && (PTime() - m_timeAddressObtained) < maxAge)
+    return m_natType;
 
   if (m_socket != NULL) {
-    delete m_socket;
-    m_socket = NULL;
+    PIPSocketAddressAndPort baseAddress;
+    return DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
   }
 
+  delete m_socket;
   m_socket = new PSTUNUDPSocket;
 
   // if a specific interface is given, use only that interface
-  if (!binding.IsAny()) {
-    m_interface = binding;
-    if (!InternalOpenSocket(eComponent_Unknown, binding, *m_socket, singlePortInfo)) {
+  if (!m_interface.IsAny()) {
+    if (!InternalOpenSocket(eComponent_Unknown, m_interface, *m_socket, m_singlePortInfo)) {
       PTRACE(1, "STUN\tUnable to open a socket on interface " << m_interface << "");
-      delete m_socket;
-      m_socket = NULL;
-      return m_natType = UnknownNat;
+      Close();
+      return UnknownNat;
     }
+
     m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
     m_socket->SetReadTimeout(replyTimeout);
 
-    return GetNatType(true);
+    PIPSocketAddressAndPort baseAddress;
+    return DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
   }
 
   // get list of interfaces
@@ -998,7 +1013,7 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
       PIPSocket::Address binding = interfaces[i].GetAddress();
       if (!binding.IsLoopback() && (binding.GetVersion() == 4)) {
         PSTUNUDPSocket * socket = new PSTUNUDPSocket;
-        if (InternalOpenSocket(eComponent_Unknown, binding, *socket, singlePortInfo))
+        if (InternalOpenSocket(eComponent_Unknown, binding, *socket, m_singlePortInfo))
           sockets.Append(socket);
         else
           delete socket;
@@ -1012,7 +1027,7 @@ PNatMethod::NatTypes PSTUNClient::FindNatType(const PIPSocket::Address & binding
   else {
     PSTUNUDPSocket * socket = new PSTUNUDPSocket;
     sockets.Append(socket);
-    if (!InternalOpenSocket(eComponent_Unknown, PIPSocket::GetDefaultIpAny(), *socket, singlePortInfo))
+    if (!InternalOpenSocket(eComponent_Unknown, PIPSocket::GetDefaultIpAny(), *socket, m_singlePortInfo))
       return m_natType = UnknownNat;
   }
 
@@ -1151,7 +1166,7 @@ bool PSTUNClient::CreateSocket(Component component, PUDPSocket * & udpSocket, co
 
   bool status = false;
   if (port == 0)
-    status = InternalOpenSocket(component, m_interface, *stunSocket, singlePortInfo);
+    status = InternalOpenSocket(component, m_interface, *stunSocket, m_singlePortInfo);
   else {
     PortInfo portInfo(port);
     status = InternalOpenSocket(component, m_interface, *stunSocket, portInfo);
@@ -1211,10 +1226,10 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       break;
 
     case SymmetricNat :
-      if (pairedPortInfo.basePort == 0 || pairedPortInfo.basePort > pairedPortInfo.maxPort)
+      if (m_pairedPortInfo.basePort == 0 || m_pairedPortInfo.basePort > m_pairedPortInfo.maxPort)
       {
         PTRACE(1, "STUN\tInvalid local UDP port range "
-               << pairedPortInfo.currentPort << '-' << pairedPortInfo.maxPort);
+               << m_pairedPortInfo.currentPort << '-' << m_pairedPortInfo.maxPort);
         return false;
       }
       break;
@@ -1236,7 +1251,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       socketInfo.push_back(new SocketInfo());
       SocketInfo & info = *socketInfo[idx];
       info.m_stunSocket = new PSTUNUDPSocket();
-      if (!InternalOpenSocket(eComponent_Unknown, m_interface, *info.m_stunSocket, pairedPortInfo)) {
+      if (!InternalOpenSocket(eComponent_Unknown, m_interface, *info.m_stunSocket, m_pairedPortInfo)) {
         PTRACE(1, "STUN\tUnable to open socket to " << *this);
         return false;
       }
@@ -1328,37 +1343,21 @@ void PTURNRequestedTransport::Initialise(BYTE protocol)
 typedef PTURNClient PNatMethod_TURN;
 PCREATE_NAT_PLUGIN(TURN);
 
-PTURNClient::PTURNClient()
-  : PSTUNClient()
+PTURNClient::PTURNClient(unsigned priority)
+  : PSTUNClient(priority)
 {
 }
 
 
-PString PTURNClient::GetNatMethodName()
+const char * PTURNClient::MethodName()
 {
   return PPlugin_PNatMethod_TURN::ServiceName();
 }
 
 
-PString PTURNClient::GetName() const
+PCaselessString PTURNClient::GetName() const
 {
-  return GetNatMethodName();
-}
-
-
-bool PTURNClient::Open(const PIPSocket::Address & binding)
-{
-  if (!m_serverAddress.IsValid()) {
-    PTRACE(1, "TURN\tServer not set.");
-    return false;
-  }
-
-  if (FindNatType(binding) == PNatMethod::UnknownNat || (m_natType == PNatMethod::BlockedNat)) {
-    PTRACE(1, "TURN\tUnable to use TURN with unknown or blocked NAT");
-    return false;
-  }
-
-  return true;
+  return MethodName();
 }
 
 
@@ -1724,7 +1723,7 @@ bool PTURNClient::CreateSocket(Component component, PUDPSocket * & socket, const
   if (port != 0)
     portInfo = &localPortInfo;
   else
-    portInfo = &singlePortInfo;
+    portInfo = &m_singlePortInfo;
 
   AllocateSocketFunctor op(*this, (BYTE)component, m_interface, *portInfo);
 
@@ -1768,8 +1767,8 @@ bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
   socket1 = NULL;
   socket2 = NULL;
 
-  AllocateSocketFunctor op1(*this, PNatMethod::eComponent_RTP,   binding, pairedPortInfo);
-  AllocateSocketFunctor op2(*this, PNatMethod::eComponent_RTCP,  binding, pairedPortInfo);
+  AllocateSocketFunctor op1(*this, PNatMethod::eComponent_RTP,   binding, m_pairedPortInfo);
+  AllocateSocketFunctor op2(*this, PNatMethod::eComponent_RTCP,  binding, m_pairedPortInfo);
   PThread * thread1 = new PThreadFunctor<AllocateSocketFunctor>(op1);
   PThread * thread2 = new PThreadFunctor<AllocateSocketFunctor>(op2);
 
