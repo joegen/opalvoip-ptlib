@@ -52,7 +52,6 @@ class PBitwiseEnum
   public:
     __inline PBitwiseEnum(Enumeration e = (Enumeration)0) : m_enum(e) { }
     __inline PBitwiseEnum(const PBitwiseEnum & e) : m_enum(e.m_enum) { }
-    __inline explicit PBitwiseEnum(unsigned bitNum) : m_enum((Enumeration)(1 << bitNum)) { if (m_enum > MaxValue) m_enum  = MaxValue; }
 
     enum IteratorBounds { First, Last };
     __inline PBitwiseEnum(IteratorBounds b) : m_enum(b == First ? (Enumeration)1 : MaxValue) { }
@@ -65,7 +64,8 @@ class PBitwiseEnum
     __inline operator const Enumeration&() const { return m_enum; }
     __inline Enumeration * operator&()           { return &m_enum; }
     __inline unsigned AsBits() const             { return m_enum; }
-    __inline PBitwiseEnum & FromBits(unsigned b) { m_enum = (Enumeration)(b&((MaxValue<<1)-1)); return *this; }
+    __inline static PBitwiseEnum FromBits(unsigned b) { return (Enumeration)(    b &((MaxValue<<1)-1)); }
+    __inline static PBitwiseEnum FromBit (unsigned b) { return (Enumeration)((1<<b)&((MaxValue<<1)-1)); }
 
     PBitwiseEnum operator++()
     {
@@ -212,7 +212,7 @@ extern unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names
   class name : public PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)>{ \
     public: typedef PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> BaseClass; \
     __inline name(BaseClass::Enumeration e = (BaseClass::Enumeration)0) : BaseClass(e) { } \
-    __inline explicit name(unsigned bitNum) : BaseClass(bitNum) { } \
+    __inline explicit name(const PString & s) { FromString(s); } \
     __inline name(IteratorBounds b) : BaseClass(b) { } \
     static char const * const * Names() { static char const * const Strings[] = { __VA_ARGS__, NULL }; return Strings; } \
     friend __inline std::ostream & operator<<(std::ostream & strm, const name & e) { PPrintBitwiseEnum(strm, e.AsBits(), name::Names()); return strm; } \
