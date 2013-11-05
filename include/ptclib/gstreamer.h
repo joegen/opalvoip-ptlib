@@ -58,12 +58,14 @@ class PGBaseObject : public PObject
     void operator=(const PGBaseObject &) { }
 
   public:
+    ~PGBaseObject();
+
     template<typename T> T * As() const { return reinterpret_cast<T *>(m_object); }
     void * Ptr() const { return m_object; }
-    bool IsValid() const { return m_object != NULL; }
     operator bool() const { return m_object != NULL; }
     bool operator!() const { return m_object == NULL; }
 
+    virtual bool IsValid() const;
     virtual bool Attach(void * object);
     void * Detach();
     void SetNULL();
@@ -88,12 +90,14 @@ class PGObject : public PGBaseObject
     void operator=(const PGObject &);
 
   public:
-    ~PGObject() { Unreference(); }
+    ~PGObject() { SetNULL(); }
 
   protected:
     virtual void Unreference();
 
   public:
+    virtual bool IsValid() const;
+
     bool Set(
       const char * attribute,
       const char * value
@@ -117,7 +121,9 @@ class PGstMiniObject : public PGBaseObject
     void operator=(const PGstMiniObject &);
 
   public:
-    ~PGstMiniObject() { Unreference(); }
+    ~PGstMiniObject() { SetNULL(); }
+
+    virtual bool IsValid() const;
 
   protected:
     virtual void Unreference();
@@ -237,7 +243,7 @@ class PGstBaseIterator : public PGBaseObject
 {
     PCLASSINFO(PGstBaseIterator, PGBaseObject)
   public:
-    ~PGstBaseIterator() { Unreference(); }
+    ~PGstBaseIterator() { SetNULL(); }
 
     virtual bool Attach(void * object);
 

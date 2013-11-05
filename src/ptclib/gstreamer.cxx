@@ -168,6 +168,18 @@ PGBaseObject::PGBaseObject()
 }
 
 
+PGBaseObject::~PGBaseObject()
+{
+  PAssert(m_object == NULL, "GStreamer object should be unreferenced in derived class.");
+}
+
+
+bool PGBaseObject::IsValid() const
+{
+  return m_object != NULL;
+}
+
+
 bool PGBaseObject::Attach(void * object)
 {
   Unreference();
@@ -202,6 +214,12 @@ PGObject::PGObject(const PGObject & other)
 void PGObject::operator=(const PGObject & other)
 {
   Attach(gst_object_ref(other.Ptr()));
+}
+
+
+bool PGObject::IsValid() const
+{
+  return PGBaseObject::IsValid() && G_IS_OBJECT(Ptr());
 }
 
 
@@ -257,6 +275,12 @@ PGstMiniObject::PGstMiniObject(const PGstMiniObject & other)
 void PGstMiniObject::operator=(const PGstMiniObject & other)
 {
   Attach(gst_mini_object_ref(other.As<GstMiniObject>()));
+}
+
+
+bool PGstMiniObject::IsValid() const
+{
+  return PGBaseObject::IsValid() && GST_IS_MINI_OBJECT(Ptr());
 }
 
 
