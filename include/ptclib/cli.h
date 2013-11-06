@@ -177,13 +177,16 @@ class PCLI : public PObject
 
       protected:
         PDECLARE_NOTIFIER(PThread, Context, ThreadMain);
+        bool InternalMoveCursor(bool left, PINDEX count);
         bool InternalEchoCommandLine(PINDEX echoPosition, PINDEX moveLeftCount);
+        bool InternalMoveHistoryCommand(int direction);
 
         PCLI      & m_cli;
         PString     m_commandLine;
         PINDEX      m_editPosition;
         bool        m_ignoreNextEOL;
         PStringList m_commandHistory;
+        PINDEX      m_historyPosition;
         PThread   * m_thread;
 
         enum State {
@@ -466,6 +469,46 @@ class PCLI : public PObject
       */
     void SetRightCodes(const PIntArray & rightCodes) { m_rightCodes = rightCodes; }
 
+    /**Get codes used for moving to beginning of command line.
+       Default is ^B.
+      */
+    const PIntArray & GetBeginCodes() const { return m_beginCodes; }
+
+    /**Set codes used for moving to beginning of command line.
+       Default is ^B.
+      */
+    void SetBeginCodes(const PIntArray & beginCodes) { m_beginCodes = beginCodes; }
+
+    /**Get codes used for moving to end of command line.
+       Default is ^E.
+      */
+    const PIntArray & GetEndCodes() const { return m_endCodes; }
+
+    /**Set codes used for moving to end of command line.
+       Default is ^E.
+      */
+    void SetEndCodes(const PIntArray & endCodes) { m_endCodes = endCodes; }
+
+    /**Get codes used for getting previous command in history.
+       Default is ^P.
+      */
+    const PIntArray & GetPrevCmdCodes() const { return m_prevCmdCodes; }
+
+    /**Set codes used for setting previous command in history.
+       Default is ^P.
+      */
+    void SetPrevCmdCodes(const PIntArray & prevCmdCodes) { m_prevCmdCodes = prevCmdCodes; }
+
+    /**Get codes used for getting next command in history.
+       Default is ^N.
+      */
+    const PIntArray & GetNextCmdCodes() const { return m_nextCmdCodes; }
+
+    /**Set codes used for setting next command in history.
+       Default is ^N.
+      */
+    void SetNextCmdCodes(const PIntArray & nextCmdCodes) { m_nextCmdCodes = nextCmdCodes; }
+
     /**Set codes used for auto-fill of keywords in command line.
        Default is tab {'\t'}.
       */
@@ -647,6 +690,10 @@ class PCLI : public PObject
     PIntArray       m_eraseCodes;
     PIntArray       m_leftCodes;
     PIntArray       m_rightCodes;
+    PIntArray       m_beginCodes;
+    PIntArray       m_endCodes;
+    PIntArray       m_prevCmdCodes;
+    PIntArray       m_nextCmdCodes;
     PIntArray       m_autoFillCodes;
     PString         m_prompt;
     PString         m_usernamePrompt;
