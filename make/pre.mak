@@ -61,7 +61,7 @@ else
   endif
   PTLIB_INCFLAGS := -I$(PTLIBDIR)/include
   PTLIB_LIBDIR = $(PTLIBDIR)/lib_$(target)
-  LIBDIRS += $(PTLIBDIR)  # Submodules built with make lib
+  LIBDIRS := $(PTLIBDIR) $(LIBDIRS)  # Submodules built with make lib
 endif
 
 
