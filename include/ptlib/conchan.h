@@ -66,6 +66,7 @@ class PConsoleChannel : public PChannel
       KeyPageDown,
       KeyHome,
       KeyEnd,
+      KeyBackSpace,
       KeyDelete,
       KeyInsert,
 
