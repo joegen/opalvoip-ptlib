@@ -54,6 +54,7 @@ PCLI::Context::Context(PCLI & cli)
   : m_cli(cli)
   , m_editPosition(0)
   , m_ignoreNextEOL(false)
+  , m_historyPosition(0)
   , m_thread(NULL)
   , m_state(cli.GetUsername().IsEmpty() ? (cli.GetPassword().IsEmpty() ? e_CommandEntry : e_Password) : e_Username)
 {
@@ -199,6 +200,20 @@ static bool IsCode(const PIntArray & codes, int ch)
 }
 
 
+bool PCLI::Context::InternalMoveCursor(bool left, PINDEX count)
+{
+  if (m_cli.GetRequireEcho() && m_state != e_Password) {
+    while (count-- > 0) {
+      if (!EchoInput(left ? '\b' : m_commandLine[m_editPosition]))
+        return false;
+      m_editPosition += left ? -1 : 1;
+    }
+  }
+
+  return true;
+}
+
+
 bool PCLI::Context::InternalEchoCommandLine(PINDEX echoPosition, PINDEX moveLeftCount)
 {
   if (m_cli.GetRequireEcho() && m_state != e_Password) {
@@ -234,6 +249,17 @@ bool PCLI::Context::InternalEchoCommandLine(PINDEX echoPosition, PINDEX moveLeft
 }
 
 
+bool PCLI::Context::InternalMoveHistoryCommand(int direction)
+{
+  PINDEX oldPosition = m_commandLine.GetLength();
+  if (!InternalMoveCursor(false, oldPosition-m_editPosition))
+    return false;
+  m_commandLine = m_commandHistory[m_historyPosition += direction];
+  m_editPosition = m_commandLine.GetLength();
+  return InternalEchoCommandLine(0, oldPosition);
+}
+
+
 bool PCLI::Context::ProcessInput(int ch)
 {
   if (ch != '\n' && ch != '\r') {
@@ -253,20 +279,34 @@ bool PCLI::Context::ProcessInput(int ch)
     }
     else if (IsCode(m_cli.GetLeftCodes(), ch)) {
       if (m_editPosition > 0) {
-        if (m_cli.GetRequireEcho() && m_state != e_Password) {
-          if (!EchoInput('\b'))
-            return false;
-        }
-        --m_editPosition;
+        if (!InternalMoveCursor(true, 1))
+          return false;
       }
     }
     else if (IsCode(m_cli.GetRightCodes(), ch)) {
       if (m_editPosition < m_commandLine.GetLength()) {
-        if (m_cli.GetRequireEcho() && m_state != e_Password) {
-          if (!EchoInput(m_commandLine[m_editPosition]))
-            return false;
-        }
-        ++m_editPosition;
+        if (!InternalMoveCursor(false, 1))
+          return false;
+      }
+    }
+    else if (IsCode(m_cli.GetBeginCodes(), ch)) {
+      if (!InternalMoveCursor(true, m_editPosition))
+        return false;
+    }
+    else if (IsCode(m_cli.GetEndCodes(), ch)) {
+      if (!InternalMoveCursor(false, m_commandLine.GetLength()-m_editPosition))
+        return false;
+    }
+    else if (IsCode(m_cli.GetPrevCmdCodes(), ch)) {
+      if (m_historyPosition > 0) {
+        if (!InternalMoveHistoryCommand(-1))
+          return false;
+      }
+    }
+    else if (IsCode(m_cli.GetNextCmdCodes(), ch)) {
+      if (m_historyPosition < m_commandHistory.GetSize()-1) {
+        if (!InternalMoveHistoryCommand(1))
+          return false;
       }
     }
     else if (IsCode(m_cli.GetAutoFillCodes(), ch)) {
@@ -283,6 +323,7 @@ bool PCLI::Context::ProcessInput(int ch)
   }
 
   m_editPosition = 0;
+  m_historyPosition = m_commandHistory.GetSize()+1;
 
   if (m_ignoreNextEOL) {
     m_ignoreNextEOL = false;
@@ -449,10 +490,14 @@ PCLI::Context & PCLI::Arguments::WriteError(const PString & error)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int EditCodes[]  = { '\b', '\x7f' };
-static int EraseCodes[] = { 'U'-64 };
-static int LeftCodes[]  = { 'L'-64 };
-static int RightCodes[] = { 'R'-64 };
+static int EditCodes[]     = { '\b', '\x7f' };
+static int EraseCodes[]    = { 'U'-64 };
+static int LeftCodes[]     = { 'L'-64 };
+static int RightCodes[]    = { 'R'-64 };
+static int BeginCodes[]    = { 'B'-64 };
+static int EndCodes[]      = { 'E'-64 };
+static int PrevCmdCodes[]  = { 'P'-64 };
+static int NextCmdCodes[]  = { 'N'-64 };
 static int AutoFillCodes[] = { '\t' };
 
 PCLI::PCLI(const char * prompt)
@@ -462,6 +507,10 @@ PCLI::PCLI(const char * prompt)
   , m_eraseCodes(EraseCodes, PARRAYSIZE(EraseCodes), false)
   , m_leftCodes(LeftCodes, PARRAYSIZE(LeftCodes), false)
   , m_rightCodes(RightCodes, PARRAYSIZE(RightCodes), false)
+  , m_beginCodes(BeginCodes, PARRAYSIZE(BeginCodes), false)
+  , m_endCodes(EndCodes, PARRAYSIZE(EndCodes), false)
+  , m_prevCmdCodes(PrevCmdCodes, PARRAYSIZE(PrevCmdCodes), false)
+  , m_nextCmdCodes(NextCmdCodes, PARRAYSIZE(NextCmdCodes), false)
   , m_autoFillCodes(AutoFillCodes, PARRAYSIZE(AutoFillCodes), false)
   , m_prompt(prompt != NULL ? prompt : "CLI> ")
   , m_usernamePrompt("Username: ")
@@ -1526,6 +1575,10 @@ void PCLICurses::Construct()
   m_editCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyBackSpace);
   m_leftCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyLeft);
   m_rightCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyRight);
+  m_beginCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyHome);
+  m_endCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyEnd);
+  m_prevCmdCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyUp);
+  m_nextCmdCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyDown);
 
   m_requireEcho = true;
 
