@@ -37,6 +37,10 @@
 
 #if P_ASN
 
+#if !PTRACING && !defined(PASN_NOPRINTON)
+  #define PASN_NOPRINTON 1
+#endif
+
 // provide options to omit vertain encodings, if needed
 #define     P_INCLUDE_PER
 #define     P_INCLUDE_BER
