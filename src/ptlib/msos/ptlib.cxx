@@ -955,6 +955,8 @@ int PConsoleChannel::ReadChar()
             return KeyHome;
           case VK_END :
             return KeyEnd;
+          case VK_BACK :
+            return KeyBackSpace;
           case VK_DELETE :
             return KeyDelete;
           case VK_INSERT :

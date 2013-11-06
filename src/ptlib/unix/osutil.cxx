@@ -1122,6 +1122,8 @@ int PConsoleChannel::ReadChar()
         return KeyHome;
       case KEY_END :
         return KeyEnd;
+      case KEY_BACKSPACE :
+        return KeyBackSpace;
       case KEY_DC :
         return KeyDelete;
       case KEY_EIC :
