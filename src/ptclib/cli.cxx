@@ -1523,6 +1523,7 @@ PCLICurses::~PCLICurses()
 
 void PCLICurses::Construct()
 {
+  m_editCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyBackSpace);
   m_leftCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyLeft);
   m_rightCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyRight);
 
