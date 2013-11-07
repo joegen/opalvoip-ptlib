@@ -762,8 +762,7 @@ PCREATE_PLUGIN_DEVICE(PSoundChannel);
 #define PCREATE_SOUND_PLUGIN(name, InstanceClass) PCREATE_SOUND_PLUGIN_EX(name, InstanceClass, )
 
 
-#define P_NULL_AUDIO_DRIVER "NullAudio"
-#define P_NULL_AUDIO_DEVICE "Null Audio"
+#define P_NULL_AUDIO_DEVICE "NullAudio"
 PPLUGIN_STATIC_LOAD(NullAudio, PSoundChannel)
 
 #ifdef _WIN32
