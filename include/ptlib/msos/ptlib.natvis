@@ -2,8 +2,8 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
    <Type Name="PString">
-      <DisplayString Condition="theArray==0">NULL</DisplayString>
-      <DisplayString>{{len={m_length} {theArray,s8}}}</DisplayString>
+      <DisplayString Condition="theArray==0">(null)</DisplayString>
+      <DisplayString>{theArray,s8}</DisplayString>
       <StringView>theArray,s8</StringView>
    </Type>
 
@@ -110,7 +110,42 @@
       </Expand>
    </Type>
 
-   <Type Name="PSafePtr&lt;*&gt;">
-      <DisplayString>{lockMode} {currentObject}</DisplayString>
+   <Type Name="PSafePtrBase">
+      <DisplayString>{{{{{lockMode}}} obj={currentObject}}}</DisplayString>
    </Type>
+
+   <Type Name="PSafeCollection">
+      <DisplayString>{*collection}</DisplayString>
+      <Expand>
+         <Item Name="Collection">*collection</Item>
+      </Expand>
+   </Type>
+
+   <Type Name="OpalMediaFormat">
+      <DisplayString Condition="m_info==0">(empty)</DisplayString>
+      <DisplayString>{m_info->formatName}</DisplayString>
+   </Type>
+
+   <Type Name="OpalMediaOption">
+      <DisplayString>{{name={m_name} merge={{{m_merge}}}}}</DisplayString>
+   </Type>
+
+   <Type Name="OpalMediaOptionValue&lt;*&gt;">
+      <DisplayString>{{name={m_name} value={m_value} merge={{{m_merge}}}}}</DisplayString>
+   </Type>
+
+   <Type Name="OpalMediaOptionString">
+      <DisplayString>{{name={m_name} value={m_value} merge={{{m_merge}}}}}</DisplayString>
+   </Type>
+
+   <Type Name="OpalMediaOptionOctets">
+      <DisplayString>{{name={m_name} value={m_value} merge={{{m_merge}}}}}</DisplayString>
+   </Type>
+
+   <Type Name="OpalBandwidth">
+      <DisplayString Condition="m_bps &lt; 10000">{{{m_bps} bps}}</DisplayString>
+      <DisplayString Condition="m_bps &lt; 10000000">{{{m_bps/1000} kbps}}</DisplayString>
+      <DisplayString>{{{m_bps/1000000} Mbps}}</DisplayString>
+   </Type>
+
 </AutoVisualizer>
