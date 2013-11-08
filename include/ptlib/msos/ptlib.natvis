@@ -49,11 +49,11 @@
    </Type>
 
    <Type Name="PArray&lt;*&gt;">
-      <DisplayString>{*(PAbstractArray*)theArray}</DisplayString>
+      <DisplayString>{*theArray}</DisplayString>
       <Expand>
-         <ArrayItems Condition="(PAbstractArray*)theArray)-&gt;theArray!=0">
-            <Size>((PAbstractArray*)theArray)-&gt;reference-&gt;size</Size>
-            <ValuePointer>($T1**)((PAbstractArray*)theArray)-&gt;theArray</ValuePointer>
+         <ArrayItems>
+            <Size>theArray-&gt;reference-&gt;size</Size>
+            <ValuePointer>($T1**)theArray-&gt;theArray</ValuePointer>
          </ArrayItems>
       </Expand>
    </Type>
