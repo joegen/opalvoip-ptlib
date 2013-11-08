@@ -249,8 +249,8 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
     default :
       break;    // Section 3.4, no reserved characters may be used
   }
-  PINDEX pos = (PINDEX)-1;
-  while ((pos = xlat.FindSpan(safeChars, pos+1)) != P_MAX_INDEX) {
+  
+  for (PINDEX pos = 0; (pos = xlat.FindSpan(safeChars, pos)) != P_MAX_INDEX; ++pos) {
     char buf[10];
     sprintf(buf, "%%%02X", (BYTE)xlat[pos]);
     xlat.Splice(buf, pos, 1);
@@ -268,13 +268,11 @@ PString PURL::UntranslateString(const PString & str, TranslationType type)
   PINDEX pos;
   if (type == PURL::QueryTranslation) {
     /* Even though RFC2396 never mentions this, RFC1630 does. */
-    pos = (PINDEX)-1;
-    while ((pos = xlat.Find('+', pos+1)) != P_MAX_INDEX)
+    for (pos = 0; (pos = xlat.Find('+', pos)) != P_MAX_INDEX; ++pos)
       xlat[pos] = ' ';
   }
 
-  pos = (PINDEX)-1;
-  while ((pos = xlat.Find('%', pos+1)) != P_MAX_INDEX) {
+  for (pos = 0; (pos = xlat.Find('%', pos)) != P_MAX_INDEX; ++pos) {
     int digit1 = xlat[pos+1];
     int digit2 = xlat[pos+2];
     if (isxdigit(digit1) && isxdigit(digit2)) {
