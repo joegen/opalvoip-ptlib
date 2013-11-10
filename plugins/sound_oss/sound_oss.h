@@ -11,6 +11,10 @@
 #include <sys/soundcard.h>
 #endif
 
+#ifdef P_GNU_HURD
+#include <sys/soundcard.h>
+#endif
+
 #ifdef P_LINUX
 #include <sys/soundcard.h>
 #endif
