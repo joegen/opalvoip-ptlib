@@ -15,6 +15,10 @@
 #include <sys/soundcard.h>
 #endif
 
+#ifdef P_GNU_HURD
+#include <sys/soundcard.h>
+#endif
+
 #ifdef P_FREEBSD
 #if P_FREEBSD >= 500000
 #include <sys/soundcard.h>
