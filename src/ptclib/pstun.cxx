@@ -47,8 +47,6 @@
 
 #define new PNEW
 
-#define ENABLE_TURN_FOR_ALL    1
-
 
 // Sample server is at larry.gloo.net
 
@@ -67,9 +65,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 PSTUN::PSTUN()
-  : m_natType(PNatMethod::UnknownNat)
-  , m_pollRetries(DEFAULT_POLL_RETRIES)
-  , m_timeAddressObtained(0)
+  : m_pollRetries(DEFAULT_POLL_RETRIES)
   , replyTimeout(DEFAULT_REPLY_TIMEOUT)
 {
 }
@@ -97,7 +93,7 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
   PSTUNMessage responseI;
   if (!responseI.Poll(*socket, requestI, m_pollRetries)) {
     PTRACE(2, "STUN\tSTUN server " << serverAddress << " did not respond.");
-    return m_natType = PNatMethod::UnknownNat;
+    return PNatMethod::UnknownNat;
   }
 
   return FinishRFC3489Discovery(responseI, socket, externalAddressAndPort);
@@ -127,7 +123,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     }
     if (!ok) {
       PTRACE(2, "STUN\tSTUN server " << socket->GetSendAddress() << " returned unexpected error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
-      return m_natType = PNatMethod::BlockedNat;
+      return PNatMethod::BlockedNat;
     }
   }
 
@@ -136,20 +132,19 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
     if (mappedAddress == NULL) {
       PTRACE(2, "STUN\tExpected (XOR)mapped address attribute from " << m_serverAddress);
-      return m_natType = PNatMethod::UnknownNat; // Protocol error
+      return PNatMethod::UnknownNat; // Protocol error
     }
   }
 
   mappedAddress->GetIPAndPort(externalAddressAndPort);
-  m_timeAddressObtained.SetCurrentTime();
 
   bool notNAT = (socket->GetPort() == externalAddressAndPort.GetPort()) && PIPSocket::IsLocalHost(externalAddressAndPort.GetAddress());
 
   // can only guess based on a single sample
   if (!canDoChangeRequest) {
-    m_natType = notNAT ? PNatMethod::OpenNat : PNatMethod::SymmetricNat;
-    PTRACE(3, "STUN\tSTUN server has only one address - best guess is that NAT is " << PNatMethod::GetNatTypeString(m_natType));
-    return m_natType;
+    PNatMethod::NatTypes natType = notNAT ? PNatMethod::OpenNat : PNatMethod::SymmetricNat;
+    PTRACE(3, "STUN\tSTUN server has only one address - best guess is that NAT is " << PNatMethod::GetNatTypeString(natType));
+    return natType;
   }
 
   PTRACE(3, "STUN\tTest I response received - sending test II (change port and address)");
@@ -164,21 +159,21 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   PTRACE(3, "STUN\tTest II response " << (testII ? "" : "not ") << "received");
 
   if (notNAT) {
-    m_natType = (testII ? PNatMethod::OpenNat : PNatMethod::PartiallyBlocked);
+    PNatMethod::NatTypes natType = (testII ? PNatMethod::OpenNat : PNatMethod::PartiallyBlocked);
     // Is not NAT or symmetric firewall
-    PTRACE(2, "STUN\tTest I and II indicate nat is " << PNatMethod::GetNatTypeString(m_natType));
-    return m_natType;
+    PTRACE(2, "STUN\tTest I and II indicate nat is " << PNatMethod::GetNatTypeString(natType));
+    return natType;
   }
 
   if (testII)
-    return m_natType = PNatMethod::ConeNat;
+    return PNatMethod::ConeNat;
 
   PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
   if (changedAddress == NULL) {
     changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::OTHER_ADDRESS);
     if (changedAddress == NULL) {
       PTRACE(3, "STUN\tTest II response indicates no alternate address in use - testing finished");
-      return m_natType = PNatMethod::UnknownNat; // Protocol error
+      return PNatMethod::UnknownNat; // Protocol error
     }
   }
 
@@ -194,7 +189,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   if (!responseI2.Poll(*socket, requestI2, m_pollRetries)) {
     PTRACE(3, "STUN\tPoll of secondary server " << secondaryServer << ':' << secondaryPort
            << " failed, NAT partially blocked by firewall rules.");
-    return m_natType = PNatMethod::PartiallyBlocked;
+    return PNatMethod::PartiallyBlocked;
   }
 
   mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
@@ -210,7 +205,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     PIPSocketAddressAndPort ipAndPort;
     mappedAddress->GetIPAndPort(ipAndPort);
     if (ipAndPort != externalAddressAndPort)
-      return m_natType = PNatMethod::SymmetricNat;
+      return PNatMethod::SymmetricNat;
   }
 
   socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
@@ -218,7 +213,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
 
-  return m_natType = (responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat);
+  return responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat;
 }
 
 void PSTUN::AppendMessageIntegrity(PSTUNMessage & message)
@@ -853,7 +848,7 @@ PCREATE_NAT_PLUGIN(STUN);
 PSTUNClient::PSTUNClient(unsigned priority)
   : PNatMethod(priority)
   , m_socket(NULL)
-  , numSocketsForPairing(DEFAULT_NUM_SOCKETS_FOR_PAIRING)
+  , m_numSocketsForPairing(DEFAULT_NUM_SOCKETS_FOR_PAIRING)
 {
 }
 
@@ -869,7 +864,7 @@ const char * PSTUNClient::MethodName()
 }
 
 
-PCaselessString PSTUNClient::GetName() const
+PCaselessString PSTUNClient::GetMethodName() const
 {
   return MethodName();
 }
@@ -913,7 +908,6 @@ void PSTUNClient::Close()
 
   delete m_socket;
   m_socket = NULL;
-  m_timeAddressObtained = 0;
   m_externalAddress = m_interface = PIPSocket::GetInvalidAddress();
   m_natType = UnknownNat;
 
@@ -966,25 +960,25 @@ PString PSTUNClient::GetServer() const
 }
 
 
-PNatMethod::NatTypes PSTUNClient::InternalGetNatType(bool force, const PTimeInterval & maxAge)
+void PSTUNClient::InternalUpdate()
 {  
   PWaitAndSignal m(m_mutex);
 
+  m_natType = UnknownNat;
+
   if (!m_interface.IsValid())
-    return UnknownNat;
+    return;
 
   if (!m_serverAddress.IsValid()) {
     PTRACE(1, "STUN\tServer not set");
     Close();
-    return UnknownNat;
+    return;
   }
-
-  if (!force && (PTime() - m_timeAddressObtained) < maxAge)
-    return m_natType;
 
   if (m_socket != NULL) {
     PIPSocketAddressAndPort baseAddress;
-    return DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    return;
   }
 
   delete m_socket;
@@ -995,14 +989,16 @@ PNatMethod::NatTypes PSTUNClient::InternalGetNatType(bool force, const PTimeInte
     if (!InternalOpenSocket(eComponent_Unknown, m_interface, *m_socket, m_singlePortInfo)) {
       PTRACE(1, "STUN\tUnable to open a socket on interface " << m_interface << "");
       Close();
-      return UnknownNat;
+      m_natType = UnknownNat;
+      return;
     }
 
     m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
     m_socket->SetReadTimeout(replyTimeout);
 
     PIPSocketAddressAndPort baseAddress;
-    return DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    return;
   }
 
   // get list of interfaces
@@ -1021,14 +1017,14 @@ PNatMethod::NatTypes PSTUNClient::InternalGetNatType(bool force, const PTimeInte
     }
     if (interfaces.IsEmpty()) {
       PTRACE(1, "STUN\tNo interfaces available to find STUN server.");
-      return m_natType = UnknownNat;
+      return;
     }
   }
   else {
     PSTUNUDPSocket * socket = new PSTUNUDPSocket;
     sockets.Append(socket);
     if (!InternalOpenSocket(eComponent_Unknown, PIPSocket::GetDefaultIpAny(), *socket, m_singlePortInfo))
-      return m_natType = UnknownNat;
+      return;
   }
 
   // send binding request on all interfaces and wait for a reply
@@ -1044,13 +1040,13 @@ PNatMethod::NatTypes PSTUNClient::InternalGetNatType(bool force, const PTimeInte
     }
 
     if (selectList.IsEmpty())
-      return m_natType = UnknownNat; // Could not send on any interface!
+      return; // Could not send on any interface!
 
     // wait for reply
     PChannel::Errors error = PIPSocket::Select(selectList, replyTimeout);
     if (error != PChannel::NoError) {
       PTRACE(1, "STUN\tError in select - " << PChannel::GetErrorText(error));
-      return m_natType = UnknownNat;
+      return;
     }
 
     // take the first valid one
@@ -1077,7 +1073,7 @@ PNatMethod::NatTypes PSTUNClient::InternalGetNatType(bool force, const PTimeInte
   PIPSocketAddressAndPort ap;
   m_socket->GetBaseAddress(ap);
   m_interface = ap.GetAddress();
-  return m_natType = FinishRFC3489Discovery(responseI, m_socket, m_externalAddress);
+  m_natType = FinishRFC3489Discovery(responseI, m_socket, m_externalAddress);
 }
 
 
@@ -1094,17 +1090,6 @@ bool PSTUNClient::GetServerAddress(PIPSocketAddressAndPort & serverAddress) cons
   return true;
 }
 
-
-bool PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress, const PTimeInterval & maxAge)
-{
-  PWaitAndSignal m(m_mutex);
-
-  if (GetNatType(maxAge) == UnknownNat)
-    return false;
-
-  externalAddress = m_externalAddress.GetAddress();
-  return true;
-}
 
 bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) const
 {
@@ -1242,7 +1227,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   PPtrVector<SocketInfo> socketInfo;
 
   // send binding requests until we get a pair of adjacent sockets
-  for (PINDEX socketCount = 0; socketCount < numSocketsForPairing; ++socketCount)  {
+  for (PINDEX socketCount = 0; socketCount < m_numSocketsForPairing; ++socketCount)  {
     // always ensure we have two sockets
     while (socketInfo.size() < 2) {
 
@@ -1355,7 +1340,7 @@ const char * PTURNClient::MethodName()
 }
 
 
-PCaselessString PTURNClient::GetName() const
+PCaselessString PTURNClient::GetMethodName() const
 {
   return MethodName();
 }
@@ -1406,24 +1391,6 @@ int PTURNUDPSocket::OpenTURN(PTURNClient & client)
     PTRACE(2, "TURN\tUsing STUN for non RTP socket");
     return OpenSTUN(client) ? 0 : -1;
   }
-
-  PSTUN::m_natType = client.GetNatType(false);
-
-#ifndef ENABLE_TURN_FOR_ALL
-  // for some NAT types, STUN is just fine
-  // for others, we gotta use TURN
-  switch (PSTUN::m_natType) {
-    case PNatMethod::OpenNat :
-    case PNatMethod::ConeNat :
-      return OpenSTUN(client);
-
-    case PNatMethod::RestrictedNat :
-    case PNatMethod::PortRestrictedNat :
-    case PNatMethod::SymmetricNat :
-    default :
-      break;
-  }
-#endif
 
   client.GetServerAddress(m_serverAddress);
 
@@ -1749,21 +1716,6 @@ bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
   if (!binding.IsAny() && binding != m_interface)
     return false;
 
-#ifndef ENABLE_TURN_FOR_ALL
-  switch (GetNatType(false)) {
-    case OpenNat :
-    //case ConeNat : 
-      PTRACE(3, "TURN\tNAT type allows use of STUN for socket pair");
-      return PSTUNClient::CreateSocketPair(socket1, socket2, binding);
-
-    case RestrictedNat :
-    case PortRestrictedNat :
-    case SymmetricNat :
-    default :
-      break;
-  }
-#endif
-
   socket1 = NULL;
   socket2 = NULL;
 
@@ -1801,12 +1753,14 @@ bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
   return true;
 }
 
+
 void PTURNClient::SetCredentials(const PString & username, const PString & password, const PString & realm)
 {
   m_userName  = username;
   m_password  = password;
   m_realm     = realm;
 }
+
 
 bool PTURNClient::RefreshAllocation(DWORD lifetime)
 {
