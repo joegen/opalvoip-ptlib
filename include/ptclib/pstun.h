@@ -117,9 +117,7 @@ class PSTUN {
       PINDEX retries    ///< Number of retries
     ) { m_pollRetries = retries; }
 
-    PNatMethod::NatTypes    m_natType;
     PINDEX                  m_pollRetries;
-    PTime                   m_timeAddressObtained;
     PString                 m_userName;
     PString                 m_realm;
     PString                 m_nonce;
@@ -445,7 +443,7 @@ class PSTUNClient : public PNatMethod, public PSTUN
     /**Get the NAT Method Name
      */
     static const char * MethodName();
-    virtual PCaselessString GetName() const;
+    virtual PCaselessString GetMethodName() const;
 
     /**Set the STUN server to use.
        The server string may be of the form host:port. If :port is absent
@@ -465,11 +463,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
     virtual bool GetServerAddress(
       PIPSocketAddressAndPort & serverAddressAndPort 
     ) const;
-
-    virtual bool GetExternalAddress(
-      PIPSocket::Address & externalAddress,   ///< External address of router
-      const PTimeInterval & maxAge = GetDefaultMaxAge()    ///< Maximum age for caching
-    );
 
     virtual bool GetInterfaceAddress(
       PIPSocket::Address & internalAddress
@@ -526,15 +519,13 @@ class PSTUNClient : public PNatMethod, public PSTUN
     bool InternalOpenSocket(Component component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo);
 
   protected:
+    virtual void InternalUpdate();
     bool InternalSetServer(const PIPSocketAddressAndPort & addr);
-    virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge);
 
     PSTUNUDPSocket * m_socket;
-    PMutex m_mutex;
 
   private:
-    PIPSocketAddressAndPort m_externalAddress;
-    PINDEX                  numSocketsForPairing;
+    PINDEX m_numSocketsForPairing;
 };
 
 
@@ -656,7 +647,7 @@ class PTURNClient : public PSTUNClient
     /**Get the NAT Method Name
      */
     static const char * MethodName();
-    virtual PCaselessString GetName() const;
+    virtual PCaselessString GetMethodName() const;
 
     enum { DefaultPriority = 10 };
     PTURNClient(unsigned priority = DefaultPriority);
