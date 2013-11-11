@@ -168,7 +168,7 @@ class PNatMethod  : public PObject
 
     /** Get the NAT traversal method Name
     */
-    virtual PCaselessString GetName() const = 0;
+    virtual PCaselessString GetMethodName() const = 0;
 
     /** Get the NAT traversal method Name
     */
@@ -188,13 +188,15 @@ class PNatMethod  : public PObject
       PIPSocketAddressAndPort & externalAddressAndPort 
     ) const;
 
-    __inline NatTypes GetNatType(
+    NatTypes GetNatType(
       const PTimeInterval & maxAge
-    ) { return InternalGetNatType(false, maxAge); }
+    );
 
     __inline NatTypes GetNatType(
       bool force = false    ///< Force a new check
-    ) { return InternalGetNatType(force, PMaxTimeInterval); }
+    ) { return GetNatType(force ? PTimeInterval(0) : PMaxTimeInterval); }
+
+    __inline NatTypes GetNatType() const { return m_natType; }
 
     /**Determine via the STUN protocol the NAT type for the router.
        As for GetNatType() but returns an English string for the type.
@@ -202,6 +204,8 @@ class PNatMethod  : public PObject
     PString GetNatTypeName(
       bool force = false    ///< Force a new check
     ) { return GetNatTypeString(GetNatType(force)); }
+
+    PString GetNatTypeName() const { return GetNatTypeString(GetNatType()); }
 
     /**Set the current server address name.
        Defaults to be "address:port" string form.
@@ -220,14 +224,17 @@ class PNatMethod  : public PObject
 
     /** Get the acquired External IP Address.
     */
-    virtual bool GetExternalAddress(
+    bool GetExternalAddress(
       PIPSocket::Address & externalAddress, ///< External address of router
       const PTimeInterval & maxAge = GetDefaultMaxAge() ///< Maximum age for caching
     );
+    bool GetExternalAddress(
+      PIPSocket::Address & externalAddress  ///< External address of router
+    ) const;
 
     /**Return the interface NAT router is using.
       */
-    virtual bool GetInterfaceAddress(
+    bool GetInterfaceAddress(
       PIPSocket::Address & internalAddress  ///< NAT router internal address returned.
     ) const;
 
@@ -303,32 +310,6 @@ class PNatMethod  : public PObject
       PUDPSocket * & socket2,
       const PIPSocket::Address & binding,
       void * userData
-    );
-
-    /**Create a socket pair asynchronously.
-       This is similar to CreateSocketPair but returns immediately, initiating
-       the creating of a socket pair in the background. Use GetSocketPairAsync
-       at some later time to get the resultant sockets.
-
-       Default behaviour does nothing.
-      */
-    virtual bool CreateSocketPairAsync(
-      const PString & token
-    );
-
-    /**Get a socket pair asynchronously created.
-       This function will get the socket pair initated by the
-       CreateSocketPairAsync function. If the sockets are not ready yet it
-       will block until they are.
-
-       Default behaviour calls CreateSocketPair synchronously
-      */
-    virtual bool GetSocketPairAsync(
-      const PString & token,
-      PUDPSocket * & socket1,
-      PUDPSocket * & socket2,
-      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
-      void * userData = NULL
     );
 
     /**Returns whether the Nat Method is ready and available in
@@ -414,15 +395,27 @@ class PNatMethod  : public PObject
       WORD   currentPort;
     };
 
+    bool     IsActive()    const { return m_active; }
     unsigned GetPriority() const { return m_priority; }
 
   protected:
-    virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge) = 0;
+    virtual void InternalUpdate() = 0;
 
     bool     m_active;
-    unsigned m_priority;
     PortInfo m_singlePortInfo;
     PortInfo m_pairedPortInfo;
+
+    PNatMethod::NatTypes    m_natType;
+    PIPSocketAddressAndPort m_externalAddress;
+    PTime                   m_updateTime;
+    PMutex                  m_mutex;
+
+  private:
+    unsigned m_priority;
+
+  P_REMOVE_VIRTUAL(NatTypes,InternalGetNatType(bool,const PTimeInterval &),UnknownNat);
+
+  friend class PNatMethods;
 };
 
 /////////////////////////////////////////////////////////////
@@ -511,21 +504,18 @@ class PNatMethod_Fixed  : public PNatMethod
     PNatMethod_Fixed(unsigned priority = DefaultPriority);
 
     static const char * MethodName();
-    virtual PCaselessString GetName() const;
+    virtual PCaselessString GetMethodName() const;
 
     virtual PString GetServer() const;
     virtual bool SetServer(const PString & str);
-    virtual bool GetExternalAddress(PIPSocket::Address & addr ,const PTimeInterval &);
     virtual bool GetInterfaceAddress(PIPSocket::Address & addr) const;
     virtual bool Open(const PIPSocket::Address & addr);
     virtual bool IsAvailable(const PIPSocket::Address & binding);
 
   protected:
-    virtual NatTypes InternalGetNatType(bool forced, const PTimeInterval & maxAge);
+    virtual void InternalUpdate();
 
-    NatTypes           m_type;
     PIPSocket::Address m_interfaceAddress;
-    PIPSocket::Address m_externalAddress;
 };
 
 /////////////////////////////////////////////////////////////
@@ -572,6 +562,13 @@ class PNatMethods : public PSortedList<PNatMethod>
       */
     virtual bool RemoveMethod(
       const PString & name
+    );
+
+    /** Set the priority of the method. 
+      */
+    virtual bool SetMethodPriority(
+      const PString & name,
+      unsigned priority
     );
 
     /** Determine if the address is local or external.
