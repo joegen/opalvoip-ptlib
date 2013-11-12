@@ -33,6 +33,7 @@
 
 #include <ptlib.h>
 #include <ptlib/sockets.h>
+#include <ptclib/random.h>
 
 #include <ctype.h>
 
@@ -2713,17 +2714,6 @@ void PUDPSocket::InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & a
 }
 
 
-PBoolean PUDPSocket::IsAlternateAddress(const Address &, WORD)
-{
-  return false;
-}
-
-PBoolean PUDPSocket::DoPseudoRead(int & /*selectStatus*/)
-{
-   return false;
-}
-
-
 PBoolean PUDPSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 {
   if (PIPDatagramSocket::ConvertOSError(libcReturnValue, group))
@@ -2840,6 +2830,128 @@ bool PIPSocket::AddressAndPort::MatchWildcard(const AddressAndPort & wild) const
 {
   return (!wild.m_address.IsValid() || wild.m_address == m_address) &&
          ( wild.m_port == 0         || wild.m_port    == m_port);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PIPSocket::PortRange::PortRange(WORD basePort, WORD maxPort)
+  : m_base(basePort)
+  , m_max(basePort != 0 && maxPort != 0 ? maxPort : basePort)
+{
+}
+
+
+void PIPSocket::PortRange::Set(unsigned newBase, unsigned newMax, unsigned range, unsigned dflt)
+{
+  if (newBase == 0) {
+    newBase = dflt;
+    newMax = dflt;
+    if (dflt > 0)
+      newMax += range;
+  }
+  else {
+    if (newBase < 1024)
+      newBase = 1024;
+    else if (newBase > 65500)
+      newBase = 65500;
+
+    if (newMax <= newBase)
+      newMax = newBase + range;
+    if (newMax > 65535)
+      newMax = 65535;
+  }
+
+  m_mutex.Wait();
+
+  m_base = (WORD)newBase;
+  m_max = (WORD)newMax;
+
+  m_mutex.Signal();
+}
+
+
+bool PIPSocket::PortRange::Connect(PIPSocket & socket, const Address & addr, const Address & binding)
+{
+  PWaitAndSignal mutex(m_mutex);
+
+  if (m_base == 0 || m_base == m_max)
+    return socket.Connect(binding, m_base, addr);
+
+  WORD firstPort = (WORD)PRandom::Number(m_base, m_max);
+  WORD nextPort = firstPort;
+  do {
+    if (socket.Connect(binding, nextPort, addr))
+      return true;
+    if (socket.GetErrorNumber() != EADDRINUSE && socket.GetErrorNumber() != EADDRNOTAVAIL)
+      return false;
+    PTRACE(5, &socket, PTraceModule(), "Could not connect using local port " << nextPort);
+    if (++nextPort >= m_max)
+      nextPort = m_base;
+  } while (nextPort != firstPort);
+
+  PTRACE(2, &socket, PTraceModule(), "Connect failed, exhausted all ports from " << m_base << " to " << m_max);
+  return false;
+}
+
+
+bool PIPSocket::PortRange::Listen(PIPSocket & socket, const Address & binding, unsigned queueSize, Reusability reuse)
+{
+  PIPSocket * sockets = &socket;
+  return Listen(&sockets, 1, binding, queueSize, reuse);
+}
+
+
+bool PIPSocket::PortRange::Listen(PIPSocket ** sockets,
+                                  PINDEX numSockets,
+                                  const Address & binding,
+                                  unsigned queueSize,
+                                  Reusability reuse)
+{
+  if (!PAssert(sockets != NULL && sockets[0] != NULL, PInvalidParameter))
+    return false;
+
+  PWaitAndSignal mutex(m_mutex);
+
+  if (m_base == 0 || m_base == m_max) {
+    if (!sockets[0]->Listen(binding, queueSize, m_base, reuse))
+      return false;
+    WORD nextPort = sockets[0]->GetPort();
+    for (WORD s = 1; s < numSockets; ++s) {
+      if (PAssert(sockets[s] != NULL, PInvalidParameter) && !sockets[s]->Listen(binding, queueSize, nextPort+s, reuse))
+        return false;
+    }
+    return true;
+  }
+
+  /*
+    Use a random port pair base number in the specified range for
+    the creation of the RTP port pairs (this used to avoid issues with multiple
+    NATed devices opening the same local ports and experiencing issues with
+    the behaviour of the NAT device Refer: draft-jennings-behave-test-results-04 sect 3
+  */
+  WORD firstPort = (WORD)((PRandom::Number(m_base, m_max)/numSockets)*numSockets);
+  WORD nextPort = firstPort;
+  do {
+    WORD s;
+    for (s = 0; s < numSockets; ++s) {
+      if (!PAssert(sockets[s] != NULL, PInvalidParameter))
+        return false;
+      if (!sockets[s]->Listen(binding, queueSize, nextPort+s, reuse)) {
+        PTRACE(5, sockets[0], PTraceModule(), "Could not listen on port " << nextPort);
+        break;
+      }
+    }
+    if (s == numSockets)
+      return true;
+
+    nextPort += (WORD)numSockets;
+    if (nextPort >= m_max)
+      nextPort = m_base;
+  } while (nextPort != firstPort);
+
+  PTRACE(2, sockets[0], PTraceModule(), "Listen failed, exhausted all ports from " << m_base << " to " << m_max);
+  return false;
 }
 
 
