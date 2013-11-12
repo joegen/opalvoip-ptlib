@@ -404,6 +404,57 @@ class PIPSocket : public PSocket
 
     /**@name Overrides from class PSocket */
     //@{
+    /** Class for handling a range of ports for local binding.
+      */
+    class PortRange {
+      public:
+        PortRange(WORD basePort = 0, WORD maxPort = 0);
+
+        /// Set the port range parameters
+        void Set(
+          unsigned newBase,       ///< New base port
+          unsigned newMax,        ///< New maximum port, if < newBase, then set to newBase
+          unsigned dfltRange = 0, ///< If newMax == 0 then it is set to newBase plus this.
+          unsigned dfltBase = 0   ///< If newbase == 0, then it is set to this value.
+        );
+
+        bool IsValid() const { return m_base != 0 && m_base <= m_max; }
+        friend ostream & operator<<(ostream & strm, const PortRange & pr) { return strm << pr.m_base << '-' << pr.m_max; }
+
+        /// Connect to remote
+        bool Connect(
+          PIPSocket & socket,         ///< Socket to connect on
+          const Address & addr,       ///< Address of remote machine to connect to.
+          const Address & binding = GetDefaultIpAny() ///< Local interface address to bind to.
+        );
+
+        /// Listen on the socket(s) with local port in the range.
+        bool Listen(
+          PIPSocket & socket,                          ///< Socket to listen on
+          const Address & binding = GetDefaultIpAny(), ///< Local interface address to bind to.
+          unsigned queueSize = 5,                      ///< Number of pending accepts that may be queued.
+          Reusability reuse = AddressIsExclusive       ///< Can/Can't listen more than once.
+        );
+        bool Listen(
+          PIPSocket ** sockets,                        ///< Socket(s) to listen on
+          PINDEX numSockets = 1,                       ///< Number of sockets to listen on consecutive ports
+          const Address & binding = GetDefaultIpAny(), ///< Local interface address to bind to.
+          unsigned queueSize = 5,                      ///< Number of pending accepts that may be queued.
+          Reusability reuse = AddressIsExclusive       ///< Can/Can't listen more than once.
+        );
+
+        /// Get base port for range.
+        WORD GetBase() const { return m_base; }
+
+        /// Get maximum port for range.
+        WORD GetMax() const { return m_max; }
+
+      protected:
+        PMutex m_mutex;
+        WORD   m_base;
+        WORD   m_max;
+    };
+
     /**Connect a socket to a remote host on the specified port number. This is
        typically used by the client or initiator of a communications channel.
        This connects to a "listening" socket at the other end of the

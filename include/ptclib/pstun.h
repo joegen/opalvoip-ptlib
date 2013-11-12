@@ -336,10 +336,12 @@ class PSTUNUDPSocket : public PNATUDPSocket
 {
   PCLASSINFO(PSTUNUDPSocket, PNATUDPSocket);
   public:
-    PSTUNUDPSocket();
+    PSTUNUDPSocket(
+      PNatMethod::Component component
+    );
 
     bool OpenSTUN(PSTUNClient & client);
-    PNatCandidate GetCandidateInfo();
+    virtual void GetCandidateInfo(PNatCandidate & candidate);
 
     bool BaseWriteTo(const void * buf, PINDEX len, const PIPSocketAddressAndPort & ap)
     { Slice slice((void *)buf, len); return PUDPSocket::InternalWriteTo(&slice, 1, ap); }
@@ -355,7 +357,6 @@ class PSTUNUDPSocket : public PNATUDPSocket
     PIPSocketAddressAndPort m_baseAddressAndPort;
 
     bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
-    bool InternalGetBaseAddress(PIPSocketAddressAndPort & addr);
 
   private:
     PNatMethod::NatTypes m_natType;
@@ -436,7 +437,7 @@ class PSTUNClient : public PNatMethod, public PSTUN
 {
     PCLASSINFO(PSTUNClient, PNatMethod);
   public:
-    enum { DefaultPriority = 20 };
+    enum { DefaultPriority = 40 };
     PSTUNClient(unsigned priority = DefaultPriority);
     ~PSTUNClient();
 
@@ -472,8 +473,9 @@ class PSTUNClient : public PNatMethod, public PSTUN
       const PIPSocket::Address & ifaceAddr
     );
 
-    bool IsAvailable(
-      const PIPSocket::Address & binding
+    virtual bool IsAvailable(
+      const PIPSocket::Address & binding,
+      PObject * userData
     );
 
     virtual void Close();
@@ -490,11 +492,12 @@ class PSTUNClient : public PNatMethod, public PSTUN
        The socket pointer is set to NULL if the function fails and returns
        false.
       */
-    bool CreateSocket(
-      Component component,
+    virtual bool CreateSocket(
       PUDPSocket * & socket,
-      const PIPSocket::Address & = PIPSocket::GetDefaultIpAny(), 
-      WORD port = 0
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
+      WORD localPort = 0,
+      PObject * context = NULL,
+      Component component = eComponent_Unknown
     );
 
     /**Create a socket pair.
@@ -513,12 +516,12 @@ class PSTUNClient : public PNatMethod, public PSTUN
     virtual bool CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2,
-      const PIPSocket::Address & = PIPSocket::GetDefaultIpAny()
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
+      PObject * context = NULL
     );
 
-    bool InternalOpenSocket(Component component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo);
-
   protected:
+    virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
     virtual void InternalUpdate();
     bool InternalSetServer(const PIPSocketAddressAndPort & addr);
 
@@ -601,12 +604,14 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
 
     friend class PTURNClient;
 
-    PTURNUDPSocket();
+    PTURNUDPSocket(
+      PNatMethod::Component component
+    );
     ~PTURNUDPSocket();
 
     virtual bool Close();
 
-    virtual PNatCandidate GetCandidateInfo();
+    virtual void GetCandidateInfo(PNatCandidate & candidate);
 
     int OpenTURN(PTURNClient & client);
 
@@ -649,7 +654,7 @@ class PTURNClient : public PSTUNClient
     static const char * MethodName();
     virtual PCaselessString GetMethodName() const;
 
-    enum { DefaultPriority = 10 };
+    enum { DefaultPriority = 30 };
     PTURNClient(unsigned priority = DefaultPriority);
 
     // overrides from PNatMethod
@@ -660,16 +665,18 @@ class PTURNClient : public PSTUNClient
     );
 
     bool CreateSocket(
-      Component component,
       PUDPSocket * & socket,
-      const PIPSocket::Address & = PIPSocket::GetDefaultIpAny(), 
-      WORD port = 0
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
+      WORD localPort = 0,
+      PObject * context = NULL,
+      Component component = eComponent_Unknown
     );
 
     bool CreateSocketPair(
       PUDPSocket * & socket1,
       PUDPSocket * & socket2,
-      const PIPSocket::Address & binding
+      const PIPSocket::Address & binding = PIPSocket::GetDefaultIpAny(),
+      PObject * context = NULL
     );
 
     /**Return an indication if the current STUN type supports RTP
@@ -680,6 +687,7 @@ class PTURNClient : public PSTUNClient
     );
 
   protected:
+    virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
     // New functions
     virtual bool RefreshAllocation(DWORD lifetime = 600);
     PString m_password;
