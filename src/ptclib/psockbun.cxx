@@ -415,26 +415,13 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
 }
 
 
-#if P_NAT
-
-void PInterfaceMonitor::OnRemoveNatMethod(const PNatMethod * natMethod)
-{
-  PWaitAndSignal guard(m_notifiersMutex);
-
-  for (Notifiers::iterator it = m_notifiers.begin(); it != m_notifiers.end(); ++it)
-    it->second(*this, InterfaceChange(natMethod, false));
-}
-
-#endif
-
-
 //////////////////////////////////////////////////
 
-PMonitoredSockets::PMonitoredSockets(bool reuseAddr P_NAT_PARAM(PNatMethod * nat))
+PMonitoredSockets::PMonitoredSockets(bool reuseAddr P_NAT_PARAM(PNatMethods * nat))
   : localPort(0)
   , reuseAddress(reuseAddr)
 #if P_NAT
-  , natMethod(nat)
+  , natMethods(nat)
 #endif
   , opened(false)
   , interfaceAddedSignal(localPort, PIPSocket::GetDefaultIpAddressFamily())
@@ -460,16 +447,19 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   info.socket = NULL;
   
 #if P_NAT
-  if (natMethod != NULL && natMethod->IsAvailable(binding)) {
-    PIPSocket::Address address;
-    WORD port;
-    natMethod->GetServerAddress(address, port);
-    if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
-      if (natMethod->CreateSocket(info.socket, binding, localPort)) {
-        info.socket->PUDPSocket::GetLocalAddress(address, port);
-        PTRACE(4, "Created bundled UDP socket via " << natMethod->GetName()
-               << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
-        return true;
+  if (natMethods != NULL) {
+    PNatMethod * natMethod = natMethods->GetMethod(binding, this);
+    if (natMethod) {
+      PIPSocket::Address address;
+      WORD port;
+      natMethod->GetServerAddress(address, port);
+      if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
+        if (natMethod->CreateSocket(info.socket, binding, localPort)) {
+          info.socket->PUDPSocket::GetLocalAddress(address, port);
+          PTRACE(4, "Created bundled UDP socket via " << natMethod->GetMethodName()
+                 << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
+          return true;
+        }
       }
     }
   }
@@ -664,15 +654,15 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
 }
 
 
-PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
+PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseAddr P_NAT_PARAM(PNatMethods * natMethods))
 {
   if (iface.IsEmpty() || iface == "*")
-    return new PMonitoredSocketBundle(PString::Empty(), 0, reuseAddr P_NAT_PARAM(natMethod));
+    return new PMonitoredSocketBundle(PString::Empty(), 0, reuseAddr P_NAT_PARAM(natMethods));
 
   PINDEX percent = iface.Find('%');
 
   if (percent == 0 || (percent == 1 && iface[0] == '*'))
-    return new PMonitoredSocketBundle(iface.Mid(percent+1), 0, reuseAddr P_NAT_PARAM(natMethod));
+    return new PMonitoredSocketBundle(iface.Mid(percent+1), 0, reuseAddr P_NAT_PARAM(natMethods));
 
   PIPSocket::Address ip(iface);
   if (!ip.IsValid())
@@ -680,21 +670,10 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseA
   
   if (ip.IsAny())
     return new PMonitoredSocketBundle(percent != P_MAX_INDEX ? iface.Mid(percent+1) : PString::Empty(),
-                                      ip.GetVersion(), reuseAddr P_NAT_PARAM(natMethod));
+                                      ip.GetVersion(), reuseAddr P_NAT_PARAM(natMethods));
 
-  return new PSingleMonitoredSocket(ip.AsString(true), reuseAddr P_NAT_PARAM(natMethod));
+  return new PSingleMonitoredSocket(ip.AsString(true), reuseAddr P_NAT_PARAM(natMethods));
 }
-
-
-#if P_NAT
-
-void PMonitoredSockets::OnRemoveNatMethod(const PNatMethod * nat)
-{
-  if (natMethod == nat)
-    natMethod = NULL;
-}
-
-#endif
 
 
 //////////////////////////////////////////////////
@@ -839,8 +818,8 @@ void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
                                                unsigned ipVersion,
                                                bool reuseAddr
-                                               P_NAT_PARAM(PNatMethod * natMethod))
-  : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
+                                               P_NAT_PARAM(PNatMethods * natMethods))
+  : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethods))
   , m_onInterfaceChange(PCREATE_InterfaceNotifier(OnInterfaceChange))
   , m_fixedInterface(fixedInterface)
   , m_ipVersion(ipVersion)
@@ -1066,9 +1045,6 @@ void PMonitoredSocketBundle::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
   else {
     CloseSocket(m_socketInfoMap.find(MakeInterfaceDescription(entry)));
     PTRACE(3, "UDP socket bundle has removed interface " << entry);
-#if P_NAT
-    OnRemoveNatMethod(entry.m_natMethod);
-#endif
   }
 
   UnlockReadWrite();
@@ -1077,8 +1053,8 @@ void PMonitoredSocketBundle::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
 
 //////////////////////////////////////////////////
 
-PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, bool reuseAddr P_NAT_PARAM(PNatMethod * natMethod))
-  : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethod))
+PSingleMonitoredSocket::PSingleMonitoredSocket(const PString & theInterface, bool reuseAddr P_NAT_PARAM(PNatMethods * natMethods))
+  : PMonitoredSockets(reuseAddr P_NAT_PARAM(natMethods))
   , m_onInterfaceChange(PCREATE_InterfaceNotifier(OnInterfaceChange))
   , m_interface(theInterface)
 {
@@ -1215,9 +1191,6 @@ void PSingleMonitoredSocket::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
     PTRACE(3, "Bound UDP socket DOWN event on interface " << m_entry);
     m_entry = InterfaceEntry();
     DestroySocket(m_info);
-#if P_NAT
-    OnRemoveNatMethod(entry.m_natMethod);
-#endif
   }
 }
 

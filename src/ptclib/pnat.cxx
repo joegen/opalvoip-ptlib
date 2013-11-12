@@ -42,6 +42,9 @@
 #include <ptclib/random.h>
 
 
+#define PTraceModule() "NAT"
+
+
 PNatMethods::PNatMethods(bool loadFromFactory, PPluginManager * pluginMgr)
 {
   if (loadFromFactory)
@@ -60,16 +63,16 @@ void PNatMethods::LoadAll(PPluginManager * pluginMgr)
 }
 
 
-PNatMethod * PNatMethods::GetMethod(const PIPSocket::Address & binding)
+PNatMethod * PNatMethods::GetMethod(const PIPSocket::Address & binding, PObject * userData)
 {
   for (PNatMethods::iterator it = begin(); it != end(); ++it) {
-    if (it->IsAvailable(binding) && it->GetNatType() != PNatMethod::BlockedNat) {
-      PTRACE(5, "NAT\tFound method " << it->GetFriendlyName() << " on " << binding);
+    if (it->IsAvailable(binding, userData) && it->GetNatType() != PNatMethod::BlockedNat) {
+      PTRACE(5, "Found method " << it->GetFriendlyName() << " on " << binding);
       return &*it;
     }
   }
 
-  PTRACE(5, "NAT\tNo available methods on " << binding);
+  PTRACE(5, "No available methods on " << binding);
   return NULL;
 }
 
@@ -186,6 +189,12 @@ PString PNatMethod::GetFriendlyName() const
 }
 
 
+void PNatMethod::Activate(bool active)
+{
+  m_active = active;
+}
+
+
 bool PNatMethod::GetServerAddress(PIPSocket::Address & address, WORD & port) const
 {
   PIPSocketAddressAndPort ap;
@@ -217,7 +226,7 @@ void PNatMethod::SetCredentials(const PString &, const PString &, const PString 
 
 PNatMethod::NatTypes PNatMethod::GetNatType(const PTimeInterval & maxAge)
 {
-  PWaitAndSignal m(m_mutex);
+  PWaitAndSignal mutex(m_mutex);
 
   if ((PTime() - m_updateTime) > maxAge) {
     InternalUpdate();
@@ -230,7 +239,7 @@ PNatMethod::NatTypes PNatMethod::GetNatType(const PTimeInterval & maxAge)
 
 bool PNatMethod::GetExternalAddress(PIPSocket::Address & externalAddress, const PTimeInterval & maxAge)
 {
-  PWaitAndSignal m(m_mutex);
+  PWaitAndSignal mutex(m_mutex);
 
   if ((PTime() - m_updateTime) > maxAge) {
     InternalUpdate();
@@ -243,7 +252,7 @@ bool PNatMethod::GetExternalAddress(PIPSocket::Address & externalAddress, const 
 
 bool PNatMethod::GetExternalAddress(PIPSocket::Address & externalAddress) const
 {
-  PWaitAndSignal m(m_mutex);
+  PWaitAndSignal mutex(m_mutex);
 
   if (!m_externalAddress.IsValid())
     return false;
@@ -266,36 +275,52 @@ bool PNatMethod::Open(const PIPSocket::Address &)
 }
 
 
-bool PNatMethod::CreateSocket(Component component, PUDPSocket * & socket, const PIPSocket::Address & binding, WORD localPort)
+bool PNatMethod::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding, WORD localPort, PObject * context, Component component)
 {
   PWaitAndSignal m(m_mutex);
 
-  socket = new PNATUDPSocket(component);
-  return socket->Listen(binding, 5, localPort);
+  socket = InternalCreateSocket(component, context);
+  if (socket == NULL)
+    return false;
+
+  if (localPort != 0) {
+    if (socket->Listen(binding, 5, localPort))
+      return true;
+  }
+  else {
+    if (m_singlePortRange.Listen(*socket, binding))
+      return true;
+  }
+
+  delete socket;
+  socket = NULL;
+  return false;
 }
 
 
-bool PNatMethod::CreateSocketPair(PUDPSocket * & socket1, PUDPSocket * & socket2, const PIPSocket::Address & binding)
+PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1, PUDPSocket * & socket2, const PIPSocket::Address & binding, PObject * context)
 {
-  PWaitAndSignal m(m_mutex);
+  PWaitAndSignal mutex(m_mutex);
 
-  WORD localPort = m_pairedPortInfo.GetRandomPair();
-  socket1 = new PNATUDPSocket(eComponent_RTP);
-  socket2 = new PNATUDPSocket(eComponent_RTCP);
-  return socket1->Listen(binding, 5, localPort) && socket2->Listen(binding, 5, localPort+1);
+  PIPSocket * sockets[2];
+  sockets[0] = socket1 = InternalCreateSocket(eComponent_RTP, context);
+  sockets[1] = socket2 = InternalCreateSocket(eComponent_RTCP, context);
+
+  if (socket1 == NULL || socket2 == NULL)
+    return false;
+
+  if (m_pairedPortRange.Listen(sockets, 2, binding))
+    return true;
+
+  delete socket1;
+  socket1 = NULL;
+  delete socket2;
+  socket2 = NULL;
+  return false;
 }
 
 
-PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1,
-                                      PUDPSocket * & socket2,
-                                      const PIPSocket::Address & binding,
-                                      void * /*userData*/)
-{
-  return CreateSocketPair(socket1, socket2, binding);
-}
-
-
-bool PNatMethod::IsAvailable(const PIPSocket::Address &)
+bool PNatMethod::IsAvailable(const PIPSocket::Address &, PObject *)
 {
   return m_active;
 }
@@ -353,68 +378,9 @@ PObject::Comparison PNatMethod::Compare(const PObject & obj) const
 
 void PNatMethod::SetPortRanges(WORD portBase, WORD portMax, WORD portPairBase, WORD portPairMax) 
 {
-  m_singlePortInfo.SetPorts(portBase, portMax);
-  m_pairedPortInfo.SetPorts((portPairBase+1)&0xfffe, portPairMax);
-}
-
-
-void PNatMethod::PortInfo::SetPorts(WORD start, WORD end)
-{
-  PWaitAndSignal m(mutex);
-
-  basePort = start;
-  if (basePort > 0 && basePort < 1024)
-    basePort = 1024;
-
-  if (basePort == 0)
-    maxPort = 0;
-  else if (end == 0)
-    maxPort = (WORD)PMIN(65535, basePort + 99);
-  else if (end < basePort)
-    maxPort = basePort;
-  else
-    maxPort = end;
-
-  if (basePort == maxPort)
-    currentPort = basePort;
-  else
-    currentPort = (WORD)PRandom::Number(basePort, maxPort-1);
-}
-
-
-WORD PNatMethod::PortInfo::GetNext(unsigned increment)
-{
-  PWaitAndSignal m(mutex);
-
-  if (basePort == 0)
-    return 0;
-
-  WORD p = currentPort;
-
-  currentPort = basePort + (((currentPort - basePort) + increment) % (maxPort - basePort));
-
-  return p;
-}
-
-
-void PNatMethod::Activate(bool active)
-{
-  m_active = active;
-}
-
-
-void PNatMethod::SetAlternateAddresses(const PStringArray & /*addresses*/, void * /*userData*/)
-{
-}
-
-
-WORD PNatMethod::PortInfo::GetRandomPair()
-{
-  static PRandom rand;
-  WORD num = (WORD)rand.Generate(basePort-1, maxPort-2);
-  if ((num&1) == 1)
-    num++;  // Make sure the number is even
-  return num;
+  PWaitAndSignal mutex(m_mutex);
+  m_singlePortRange.Set(portBase, portMax);
+  m_pairedPortRange.Set((portPairBase+1)&0xfffe, portPairMax);
 }
 
 
@@ -426,12 +392,12 @@ PNATUDPSocket::PNATUDPSocket(PNatMethod::Component component)
 }
 
 
-PNatCandidate PNATUDPSocket::GetCandidateInfo()
+void PNATUDPSocket::GetCandidateInfo(PNatCandidate & candidate)
 { 
-  PNatCandidate cand(PNatCandidate::eType_Host, m_component); 
-  PUDPSocket::InternalGetLocalAddress(cand.m_baseAddress);
-  PIPSocket::InternalGetLocalAddress(cand.m_baseAddress);
-  return cand;
+  candidate.m_type = PNatCandidate::eType_Host;
+  candidate.m_component = m_component;
+  InternalGetBaseAddress(candidate.m_hostTransportAddress);
+  InternalGetLocalAddress(candidate.m_localTransportAddress);
 }
 
 
@@ -466,28 +432,21 @@ PNatCandidate::PNatCandidate()
 }
 
 
-PNatCandidate::PNatCandidate(int type, PNatMethod::Component component)
-  : m_type(type)
-  , m_component(component)
-{
-}
-
-
 PString PNatCandidate::AsString() const
 {
   PStringStream strm;
   switch (m_type) {
     case eType_Host:
-      strm << "Host " << m_baseAddress;
+      strm << "Host " << m_hostTransportAddress;
       break;
     case eType_ServerReflexive:
-      strm << "ServerReflexive " << m_baseAddress << "/" << m_transport;
+      strm << "ServerReflexive " << m_hostTransportAddress << "/" << m_localTransportAddress;
       break;
     case eType_PeerReflexive:
-      strm << "PeerReflexive " << m_baseAddress << "/" << m_transport;
+      strm << "PeerReflexive " << m_hostTransportAddress << "/" << m_localTransportAddress;
       break;
     case eType_Relay:
-      strm << "Relay " << m_baseAddress << "/" << m_transport;
+      strm << "Relay " << m_hostTransportAddress << "/" << m_localTransportAddress;
       break;
     default:
       strm << "Unknown";
@@ -525,6 +484,8 @@ PCaselessString PNatMethod_Fixed::GetMethodName() const
 
 PString PNatMethod_Fixed::GetServer() const
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (m_externalAddress.IsValid())
     return PSTRSTRM(m_externalAddress << '/' << m_natType);
 
@@ -534,6 +495,8 @@ PString PNatMethod_Fixed::GetServer() const
 
 bool PNatMethod_Fixed::SetServer(const PString & str)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   if (str.IsEmpty()) {
     m_natType = OpenNat;
     m_externalAddress = PIPSocket::GetInvalidAddress();
@@ -555,6 +518,12 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
 }
 
 
+PNATUDPSocket * PNatMethod_Fixed::InternalCreateSocket(Component component, PObject *)
+{
+  return new PNATUDPSocket(component);
+}
+
+
 void PNatMethod_Fixed::InternalUpdate()
 {
 }
@@ -562,6 +531,8 @@ void PNatMethod_Fixed::InternalUpdate()
 
 bool PNatMethod_Fixed::GetInterfaceAddress(PIPSocket::Address & addr) const
 {
+  PWaitAndSignal mutex(m_mutex);
+
   addr = m_interfaceAddress;
   return true;
 }
@@ -569,14 +540,18 @@ bool PNatMethod_Fixed::GetInterfaceAddress(PIPSocket::Address & addr) const
 
 bool PNatMethod_Fixed::Open(const PIPSocket::Address & addr)
 {
+  PWaitAndSignal mutex(m_mutex);
+
   m_interfaceAddress = addr;
   return m_interfaceAddress.IsValid();
 }
 
 
-bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding)
+bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding, PObject * context)
 {
-  return PNatMethod::IsAvailable(binding) &&
+  PWaitAndSignal mutex(m_mutex);
+
+  return PNatMethod::IsAvailable(binding, context) &&
          m_externalAddress.IsValid() &&
          (binding.IsAny() || binding == m_interfaceAddress);
 }
