@@ -758,8 +758,9 @@ void PSTUNAddressAttribute::SetIPAndPort(const PIPSocketAddressAndPort & addrAnd
 
 /**UDP socket that has been created by the STUN client.
   */
-PSTUNUDPSocket::PSTUNUDPSocket()
-  : m_natType(PNatMethod::UnknownNat)
+PSTUNUDPSocket::PSTUNUDPSocket(PNatMethod::Component component)
+  : PNATUDPSocket(component)
+  , m_natType(PNatMethod::UnknownNat)
 {
 }
 
@@ -806,12 +807,10 @@ bool PSTUNUDPSocket::OpenSTUN(PSTUNClient & client)
   return true;
 }
 
-PNatCandidate PSTUNUDPSocket::GetCandidateInfo()
+
+void PSTUNUDPSocket::GetCandidateInfo(PNatCandidate & candidate)
 {
-  PNatCandidate candidate;
-  candidate.m_component = m_component;
-  GetBaseAddress(candidate.m_baseAddress);
-  GetLocalAddress(candidate.m_transport);
+  PNATUDPSocket::GetCandidateInfo(candidate);
 
   switch (m_natType) {
     case PNatMethod::OpenNat:
@@ -825,9 +824,8 @@ PNatCandidate PSTUNUDPSocket::GetCandidateInfo()
     default :
       break;
   }
-
-  return candidate;
 }
+
 
 bool PSTUNUDPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
 {
@@ -835,10 +833,6 @@ bool PSTUNUDPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
   return true;
 }
 
-bool PSTUNUDPSocket::InternalGetBaseAddress(PIPSocketAddressAndPort & addr)
-{
-  return PUDPSocket::InternalGetLocalAddress(addr);
-}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -893,10 +887,10 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
 }
 
 
-bool PSTUNClient::IsAvailable(const PIPSocket::Address & binding)
+bool PSTUNClient::IsAvailable(const PIPSocket::Address & binding, PObject * context)
 {
   PWaitAndSignal m(m_mutex);
-  return PNatMethod::IsAvailable(binding) &&
+  return PNatMethod::IsAvailable(binding, context) &&
          m_socket != NULL &&
          (binding.IsAny() || binding == m_interface);
 }
@@ -960,6 +954,12 @@ PString PSTUNClient::GetServer() const
 }
 
 
+PNATUDPSocket * PSTUNClient::InternalCreateSocket(Component component, PObject *)
+{
+  return new PSTUNUDPSocket(component);
+}
+
+
 void PSTUNClient::InternalUpdate()
 {  
   PWaitAndSignal m(m_mutex);
@@ -982,11 +982,11 @@ void PSTUNClient::InternalUpdate()
   }
 
   delete m_socket;
-  m_socket = new PSTUNUDPSocket;
+  m_socket = new PSTUNUDPSocket(eComponent_Unknown);
 
   // if a specific interface is given, use only that interface
   if (!m_interface.IsAny()) {
-    if (!InternalOpenSocket(eComponent_Unknown, m_interface, *m_socket, m_singlePortInfo)) {
+    if (!m_singlePortRange.Listen(*m_socket,m_interface)) {
       PTRACE(1, "STUN\tUnable to open a socket on interface " << m_interface << "");
       Close();
       m_natType = UnknownNat;
@@ -1008,8 +1008,8 @@ void PSTUNClient::InternalUpdate()
     for (PINDEX i =0; i < interfaces.GetSize(); i++) {
       PIPSocket::Address binding = interfaces[i].GetAddress();
       if (!binding.IsLoopback() && (binding.GetVersion() == 4)) {
-        PSTUNUDPSocket * socket = new PSTUNUDPSocket;
-        if (InternalOpenSocket(eComponent_Unknown, binding, *socket, m_singlePortInfo))
+        PSTUNUDPSocket * socket = new PSTUNUDPSocket(eComponent_Unknown);
+        if (m_singlePortRange.Listen(*socket, binding))
           sockets.Append(socket);
         else
           delete socket;
@@ -1021,9 +1021,9 @@ void PSTUNClient::InternalUpdate()
     }
   }
   else {
-    PSTUNUDPSocket * socket = new PSTUNUDPSocket;
+    PSTUNUDPSocket * socket = new PSTUNUDPSocket(eComponent_Unknown);
     sockets.Append(socket);
-    if (!InternalOpenSocket(eComponent_Unknown, PIPSocket::GetDefaultIpAny(), *socket, m_singlePortInfo))
+    if (!m_singlePortRange.Listen(*socket))
       return;
   }
 
@@ -1099,82 +1099,26 @@ bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) con
   return true;
 }
 
-//
-// this function must be thread safe as it will be called from multple threads
-//
-bool PSTUNClient::InternalOpenSocket(Component component, const PIPSocket::Address & binding, PSTUNUDPSocket & socket, PortInfo & portInfo)
-{
-  if (!m_serverAddress.IsValid()) {
-    PTRACE(1, "STUN\tServer port not set.");
-    return false;
-  }
 
-  if (portInfo.basePort == 0) {
-    if (!socket.Listen(binding, 1)) {
-      PTRACE(3, "STUN\tCannot bind port to " << m_interface);
-      return false;
-    }
-  }  
-  else {
-    WORD startPort = portInfo.currentPort;
-    PTRACE(3, "STUN\tUsing ports " << portInfo.basePort << " through " << portInfo.maxPort << " starting at " << startPort);
-    for (;;) {
-      bool status = socket.Listen(binding, 1, portInfo.currentPort);
-      PWaitAndSignal mutex(portInfo.mutex);
-      portInfo.currentPort++;
-      if (portInfo.currentPort > portInfo.maxPort)
-        portInfo.currentPort = portInfo.basePort;
-      if (status)
-        break;
-      if (portInfo.currentPort == startPort) {
-        PTRACE(3, "STUN\tListen failed on " << m_interface << ":" << portInfo.currentPort);
-        return false;
-      }
-    } 
-  }
-
-  socket.SetComponent(component);
-  socket.PUDPSocket::InternalSetSendAddress(m_serverAddress);
-
-  return true;
-}
-
-
-bool PSTUNClient::CreateSocket(Component component, PUDPSocket * & udpSocket, const PIPSocket::Address & binding, WORD port)
+bool PSTUNClient::CreateSocket(PUDPSocket * & udpSocket, const PIPSocket::Address & binding, WORD port, PObject * context, Component component)
 {
   PWaitAndSignal m(m_mutex);
 
   if (!binding.IsAny() && binding != m_interface)
     return false;
 
-  PSTUNUDPSocket * stunSocket = new PSTUNUDPSocket;
+  if (!PNatMethod::CreateSocket(udpSocket, binding, port, context, component))
+    return false;
 
-  bool status = false;
-  if (port == 0)
-    status = InternalOpenSocket(component, m_interface, *stunSocket, m_singlePortInfo);
-  else {
-    PortInfo portInfo(port);
-    status = InternalOpenSocket(component, m_interface, *stunSocket, portInfo);
-  }
+  PSTUNUDPSocket * stunSocket = dynamic_cast<PSTUNUDPSocket *>(udpSocket);
+  if (stunSocket->OpenSTUN(*this))
+    return true;
 
-  if (status)
-    status = stunSocket->OpenSTUN(*this);
-
-  if (!status) {
-    delete stunSocket;
-    stunSocket = NULL;
-  }
-
-  if (stunSocket != NULL) {
-    PIPSocketAddressAndPort ba, la;
-    stunSocket->GetBaseAddress(ba);
-    stunSocket->GetLocalAddress(la);
-    PTRACE(2, "STUN\tsocket created : " << ba << " -> " << la);
-  }
-
-  udpSocket = stunSocket;
-  return udpSocket != NULL;
+  delete udpSocket;
+  udpSocket = NULL;
+  return false;
 }
+
 
 struct SocketInfo {
   SocketInfo()
@@ -1193,7 +1137,8 @@ struct SocketInfo {
 
 bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2,
-                                   const PIPSocket::Address & binding)
+                                   const PIPSocket::Address & binding,
+                                   PObject *)
 {
   PWaitAndSignal m(m_mutex);
 
@@ -1211,10 +1156,8 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       break;
 
     case SymmetricNat :
-      if (m_pairedPortInfo.basePort == 0 || m_pairedPortInfo.basePort > m_pairedPortInfo.maxPort)
-      {
-        PTRACE(1, "STUN\tInvalid local UDP port range "
-               << m_pairedPortInfo.currentPort << '-' << m_pairedPortInfo.maxPort);
+      if (!m_pairedPortRange.IsValid()) {
+        PTRACE(1, "STUN\tInvalid local UDP port range " << m_pairedPortRange);
         return false;
       }
       break;
@@ -1235,8 +1178,8 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       size_t idx = socketInfo.size();
       socketInfo.push_back(new SocketInfo());
       SocketInfo & info = *socketInfo[idx];
-      info.m_stunSocket = new PSTUNUDPSocket();
-      if (!InternalOpenSocket(eComponent_Unknown, m_interface, *info.m_stunSocket, m_pairedPortInfo)) {
+      info.m_stunSocket = new PSTUNUDPSocket(eComponent_RTP);
+      if (!m_pairedPortRange.Listen(*info.m_stunSocket, m_interface)) {
         PTRACE(1, "STUN\tUnable to open socket to " << *this);
         return false;
       }
@@ -1346,10 +1289,16 @@ PCaselessString PTURNClient::GetMethodName() const
 }
 
 
+PNATUDPSocket * PTURNClient::InternalCreateSocket(Component component, PObject *)
+{
+  return new PTURNUDPSocket(component);
+}
+
+
 //////////////////////////////////////////////////////////////////////
 
-PTURNUDPSocket::PTURNUDPSocket()
-  : PSTUNUDPSocket()
+PTURNUDPSocket::PTURNUDPSocket(PNatMethod::Component component)
+  : PSTUNUDPSocket(component)
   , m_allocationMade(false)
   , m_channelNumber(PTURNClient::MinChannelNumber)
   , m_usingTURN(false)
@@ -1373,12 +1322,10 @@ PTURNUDPSocket::~PTURNUDPSocket()
 }
 
 
-PNatCandidate PTURNUDPSocket::GetCandidateInfo()
+void PTURNUDPSocket::GetCandidateInfo(PNatCandidate & candidate)
 {
-  PNatCandidate candidate(PNatCandidate::eType_Relay, m_component);
-  GetBaseAddress(candidate.m_baseAddress);
-  GetLocalAddress(candidate.m_transport);
-  return candidate;
+  PNATUDPSocket::GetCandidateInfo(candidate);
+  candidate.m_type = PNatCandidate::eType_Relay;
 }
 
 
@@ -1606,12 +1553,12 @@ PSTUNClient::RTPSupportTypes PTURNClient::GetRTPSupport(bool force)
 }
 
 struct AllocateSocketFunctor {
-  AllocateSocketFunctor(PTURNClient & client, BYTE component, const PIPSocket::Address & iface, PNatMethod::PortInfo & portInfo)
+  AllocateSocketFunctor(PTURNClient & client, BYTE component, const PIPSocket::Address & iface, PIPSocket::PortRange & portRange)
     : m_client(client)
     , m_component(component)
     , m_interface(iface)
     , m_turnSocket(NULL)
-    , m_portInfo(portInfo)
+    , m_portRange(portRange)
     , m_status(true)
   { }
 
@@ -1621,7 +1568,7 @@ struct AllocateSocketFunctor {
   BYTE m_component;
   PIPSocket::Address m_interface;
   PTURNUDPSocket * m_turnSocket;
-  PNatMethod::PortInfo & m_portInfo;
+  PIPSocket::PortRange & m_portRange;
   bool m_status;
 };
 
@@ -1631,9 +1578,9 @@ void AllocateSocketFunctor::operator () (PThread &)
   m_status = true;
   while (retryCount > 0) {
 
-    m_turnSocket = new PTURNUDPSocket();
+    m_turnSocket = new PTURNUDPSocket(PNatMethod::eComponent_RTP);
 
-    if (!m_client.InternalOpenSocket(PNatMethod::eComponent_RTP, m_interface, *m_turnSocket, m_portInfo)) {
+    if (!m_portRange.Listen(*m_turnSocket, m_interface)) {
       PTRACE(2, "TURN\tCould not create socket");
       m_status = false;
       break;
@@ -1675,24 +1622,24 @@ void AllocateSocketFunctor::operator () (PThread &)
 
 typedef PThreadFunctor<AllocateSocketFunctor> AllocateSocketThread;
 
-bool PTURNClient::CreateSocket(Component component, PUDPSocket * & socket, const PIPSocket::Address & binding, WORD port)
+bool PTURNClient::CreateSocket(PUDPSocket * & socket, const PIPSocket::Address & binding, WORD port, PObject * context, Component component)
 {
   if (component != PNatMethod::eComponent_RTP && component != PNatMethod::eComponent_RTCP)
-    return PSTUNClient::CreateSocket(component, socket, binding, port);
+    return PSTUNClient::CreateSocket(socket, binding, port, context, component);
 
   if (!binding.IsAny() && binding != m_interface)
     return false;
   
   socket = NULL;
 
-  PortInfo * portInfo;
-  PortInfo localPortInfo(port);
+  PIPSocket::PortRange * portRange;
+  PIPSocket::PortRange localPortInfo(port);
   if (port != 0)
-    portInfo = &localPortInfo;
+    portRange = &localPortInfo;
   else
-    portInfo = &m_singlePortInfo;
+    portRange = &m_singlePortRange;
 
-  AllocateSocketFunctor op(*this, (BYTE)component, m_interface, *portInfo);
+  AllocateSocketFunctor op(*this, (BYTE)component, m_interface, *portRange);
 
   op.operator()(*PThread::Current());
 
@@ -1711,7 +1658,8 @@ bool PTURNClient::CreateSocket(Component component, PUDPSocket * & socket, const
 
 bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2,
-                                   const PIPSocket::Address & binding)
+                                   const PIPSocket::Address & binding,
+                                   PObject *)
 {
   if (!binding.IsAny() && binding != m_interface)
     return false;
@@ -1719,8 +1667,8 @@ bool PTURNClient::CreateSocketPair(PUDPSocket * & socket1,
   socket1 = NULL;
   socket2 = NULL;
 
-  AllocateSocketFunctor op1(*this, PNatMethod::eComponent_RTP,   binding, m_pairedPortInfo);
-  AllocateSocketFunctor op2(*this, PNatMethod::eComponent_RTCP,  binding, m_pairedPortInfo);
+  AllocateSocketFunctor op1(*this, PNatMethod::eComponent_RTP,   binding, m_pairedPortRange);
+  AllocateSocketFunctor op2(*this, PNatMethod::eComponent_RTCP,  binding, m_pairedPortRange);
   PThread * thread1 = new PThreadFunctor<AllocateSocketFunctor>(op1);
   PThread * thread2 = new PThreadFunctor<AllocateSocketFunctor>(op2);
 

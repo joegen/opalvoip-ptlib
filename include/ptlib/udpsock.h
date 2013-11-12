@@ -129,23 +129,6 @@ class PUDPSocket : public PIPDatagramSocket
       PIPSocketAddressAndPort & addressAndPort    ///< IP address and port to send packets.
     ) const;
     PString GetLastReceiveAddress() const;
-
-    /** CallBack to check if the detected address of the connectionless Read()
-        is an alternate address. Use this to switch the target to send and
-        receive the connectionless read/write.
-     */
-    virtual PBoolean IsAlternateAddress(
-      const Address & address,    ///< Detected IP Address.
-      WORD port                    ///< Detected Port.
-    );
-
-    /** PseudoRead
-        This indicates to the upper system that reading on this socket
-        will be a pseudo read when means there is data available that
-        did not orginate from the physical socket but was programmically
-        injected.
-     */
-    virtual PBoolean DoPseudoRead(int & selectStatus);
   //@}
 
     // Normally, one would expect these to be protected, but they are just so darn
