@@ -461,7 +461,7 @@ PString PNatCandidate::AsString() const
 // Fixed, preconfigured, NAT support
 //
 
-PCREATE_NAT_PLUGIN(Fixed);
+PCREATE_NAT_PLUGIN(Fixed, "Fixed Router");
 
 PNatMethod_Fixed::PNatMethod_Fixed(unsigned priority)
   : PNatMethod(priority)
