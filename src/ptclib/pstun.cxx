@@ -837,7 +837,7 @@ bool PSTUNUDPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
 ///////////////////////////////////////////////////////////////////////
 
 typedef PSTUNClient PNatMethod_STUN;
-PCREATE_NAT_PLUGIN(STUN);
+PCREATE_NAT_PLUGIN(STUN, "STUN Server");
 
 PSTUNClient::PSTUNClient(unsigned priority)
   : PNatMethod(priority)
@@ -1269,7 +1269,7 @@ void PTURNRequestedTransport::Initialise(BYTE protocol)
 //////////////////////////////////////////////////////////////////////
 
 typedef PTURNClient PNatMethod_TURN;
-PCREATE_NAT_PLUGIN(TURN);
+PCREATE_NAT_PLUGIN(TURN, "TURN Server");
 
 PTURNClient::PTURNClient(unsigned priority)
   : PSTUNClient(priority)
