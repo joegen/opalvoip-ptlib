@@ -553,7 +553,10 @@ typedef PNatMethods PNatStrategy; // For backward compatibility
 
 PCREATE_PLUGIN_SERVICE(PNatMethod);
 
-#define PCREATE_NAT_PLUGIN(name) PCREATE_PLUGIN(name, PNatMethod)
+#define PCREATE_NAT_PLUGIN(name, friendlyName) \
+    PCREATE_PLUGIN(name, PNatMethod, PNatMethod_##name, PPlugin_PNatMethod, \
+      virtual const char * GetFriendlyName() const { return friendlyName; } \
+    )
 
 
 #define P_NAT_PARAM(...) ,__VA_ARGS__
