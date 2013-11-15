@@ -1035,6 +1035,7 @@ void PSTUNClient::InternalUpdate()
   for (PINDEX retry = 0; retry < m_pollRetries; ++retry) {
     PSocket::SelectList selectList;
     for (PList<PSTUNUDPSocket>::iterator socket = sockets.begin(); socket != sockets.end(); ++socket) {
+      socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
       if (requestI.Write(*socket))
         selectList += *socket;
     }
