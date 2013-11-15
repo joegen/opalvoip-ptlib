@@ -1191,6 +1191,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
         socketInfo[idx]->m_stunSocket->GetBaseAddress(socketInfo[idx]->m_stunSocket->m_serverReflexiveAddress);
       }
       else {
+        info.m_stunSocket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
         info.m_stunSocket->SetReadTimeout(replyTimeout);
         info.m_request = PSTUNMessage(PSTUNMessage::BindingRequest);
         if (!info.m_request.Write(*info.m_stunSocket)) {
