@@ -528,7 +528,8 @@ class PSTUNClient : public PNatMethod, public PSTUN
     PSTUNUDPSocket * m_socket;
 
   private:
-    PINDEX m_numSocketsForPairing;
+    PString m_serverName;
+    PINDEX  m_numSocketsForPairing;
 };
 
 
