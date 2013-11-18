@@ -873,17 +873,16 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
 
   PWaitAndSignal m(m_mutex);
 
-  if (!m_serverAddress.IsValid()) {
-    PTRACE(1, "STUN\tServer port not set.");
-    return false;
-  }
-
   if (m_interface != binding) {
     Close();
     m_interface = binding;
   }
 
-  return GetNatType() != UnknownNat;
+  if (m_serverAddress.IsValid() || SetServer(m_serverName))
+    return GetNatType() != UnknownNat;
+
+  PTRACE(1, "STUN\tServer port not set.");
+  return false;
 }
 
 
@@ -914,6 +913,8 @@ bool PSTUNClient::SetServer(const PString & server)
   if (server.IsEmpty())
     return false;
 
+  m_serverName = server;
+
 #if P_DNS_RESOLVER
   PIPSocketAddressAndPortVector addresses;
   if (PDNS::LookupSRV(server, "_stun._udp.", DefaultPort, addresses) && !addresses.empty()) {
@@ -934,7 +935,7 @@ bool PSTUNClient::InternalSetServer(const PIPSocketAddressAndPort & addr)
   PWaitAndSignal m(m_mutex);
 
   if (m_serverAddress != addr) {
-    PTRACE(4, "STUN\tServer set to " << addr);
+    PTRACE(4, "STUN\tServer set to " << addr << " (" << m_serverName << ')');
     m_serverAddress = addr;
     Close();
   }
@@ -947,10 +948,34 @@ PString PSTUNClient::GetServer() const
 {
   PWaitAndSignal m(m_mutex);
 
-  if (!m_serverAddress.IsValid())
-    return PString::Empty();
+  if (!m_serverName.IsEmpty())
+    return m_serverName;
 
-  return m_serverAddress.AsString();
+  if (m_serverAddress.IsValid())
+    return m_serverAddress.AsString();
+
+  return PString::Empty();
+}
+
+
+bool PSTUNClient::GetServerAddress(PIPSocketAddressAndPort & serverAddress) const
+{
+  PWaitAndSignal m(m_mutex);
+
+  if (!m_serverAddress.IsValid())
+    return false;
+
+  serverAddress = m_serverAddress;
+  return true;
+}
+
+
+bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) const
+{
+  PWaitAndSignal m(m_mutex);
+
+  interfaceAddress = m_interface;
+  return true;
 }
 
 
@@ -969,7 +994,7 @@ void PSTUNClient::InternalUpdate()
   if (!m_interface.IsValid())
     return;
 
-  if (!m_serverAddress.IsValid()) {
+  if (!m_serverAddress.IsValid() && !SetServer(m_serverName)) {
     PTRACE(1, "STUN\tServer not set");
     Close();
     return;
@@ -1075,29 +1100,6 @@ void PSTUNClient::InternalUpdate()
   m_socket->GetBaseAddress(ap);
   m_interface = ap.GetAddress();
   m_natType = FinishRFC3489Discovery(responseI, m_socket, m_externalAddress);
-}
-
-
-/**Get the current server address and port being used.
-  */
-bool PSTUNClient::GetServerAddress(PIPSocketAddressAndPort & serverAddress) const
-{
-  PWaitAndSignal m(m_mutex);
-
-  if (!m_serverAddress.IsValid())
-    return false;
-
-  serverAddress = m_serverAddress;
-  return true;
-}
-
-
-bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) const
-{
-  PWaitAndSignal m(m_mutex);
-
-  interfaceAddress = m_interface;
-  return true;
 }
 
 
