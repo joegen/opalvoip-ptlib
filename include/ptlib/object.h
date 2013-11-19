@@ -724,7 +724,7 @@ This macro outputs a trace of a source file line execution.
         PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, object, module)
 
 #define PTRACE_ARG_3(level, objectOrModule, args) \
-        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, objectOrModule, PTraceObjectInstance(), PTraceModule())
+        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, objectOrModule, PTraceObjectInstance(objectOrModule), PTraceModule())
 
 #define PTRACE_ARG_2(level, args) \
         PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, PTraceObjectInstance(), PTraceModule())
@@ -816,6 +816,7 @@ See PTRACE() for more information on level, instance, module.
 
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
+__inline static const PObject * PTraceObjectInstance(const void *) { return NULL; }
 __inline const char * PTraceModule() { return NULL; }
 
 
@@ -1602,6 +1603,8 @@ class PObject {
     { return IsClass(clsName); }
 
     __inline const PObject * PTraceObjectInstance() const { return this; }
+    __inline static const PObject * PTraceObjectInstance(const char *) { return NULL; }
+    __inline static const PObject * PTraceObjectInstance(const PObject * obj) { return obj; }
   //@}
 
   /**@name Comparison functions */
