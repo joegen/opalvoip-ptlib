@@ -737,7 +737,7 @@ This macro outputs a trace of a source file line execution.
         PTRACE_INTERNAL(level, && (condition), args, object, module)
 
 #define PTRACE_IF_ARG_4(level, condition, objectOrModule, args) \
-        PTRACE_INTERNAL(level, && (condition), args, objectOrModule, PTraceObjectInstance(), PTraceModule())
+        PTRACE_INTERNAL(level, && (condition), args, objectOrModule, PTraceObjectInstance(objectOrModule), PTraceModule())
 
 #define PTRACE_IF_ARG_3(level, condition, args) \
         PTRACE_INTERNAL(level, && (condition), args, PTraceObjectInstance(), PTraceModule())
@@ -750,7 +750,7 @@ This macro outputs a trace of a source file line execution.
       PTrace::Begin(level, __FILE__, __LINE__, object, module)
 
 #define PTRACE_BEGIN_ARG_2(level, objectOrModule) \
-      PTrace::Begin(level, __FILE__, __LINE__, objectOrModule, PTraceObjectInstance(), PTraceModule())
+      PTrace::Begin(level, __FILE__, __LINE__, objectOrModule, PTraceObjectInstance(objectOrModule), PTraceModule())
 
 #define PTRACE_BEGIN_ARG_1(level) \
       PTrace::Begin(level, __FILE__, __LINE__, PTraceObjectInstance(), PTraceModule())
