@@ -791,7 +791,7 @@ void PLua::ParamVector::Pop(void * data)
   lua_State * lua = static_cast<lua_State *>(data);
 
   resize(lua_gettop(lua));
-  PTRACE(6, NULL, NULL, "ParamVector::Pop stack=" << size());
+  PTRACE(6, PTraceModule(), "ParamVector::Pop stack=" << size());
 
   for (reverse_iterator it = rbegin(); it != rend(); ++it) {
     switch (lua_type(lua, -1)) {
