@@ -92,7 +92,7 @@ PStringArray PEthSocket::EnumInterfaces(bool detailed)
   pcap_if_t *alldevs;
   char errbuf[PCAP_ERRBUF_SIZE];
   if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-    PTRACE(1, NULL, PTraceModule(), "Could not enumerate interfaces, error: " << errbuf);
+    PTRACE(1, &interfaces, "Could not enumerate interfaces, error: " << errbuf);
   }
   else {
     for (pcap_if_t * dev = alldevs; dev != NULL; dev = dev->next) {
@@ -103,7 +103,7 @@ PStringArray PEthSocket::EnumInterfaces(bool detailed)
       interfaces += strm;
     }
     pcap_freealldevs(alldevs);
-    PTRACE(4, NULL, PTraceModule(), "Enumerated interfaces:\n" << setfill('\n') << interfaces);
+    PTRACE(4, &interfaces, "Enumerated interfaces:\n" << setfill('\n') << interfaces);
   }
 
   return interfaces;

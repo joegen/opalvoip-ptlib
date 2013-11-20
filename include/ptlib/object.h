@@ -736,7 +736,7 @@ This macro outputs a trace of a source file line execution.
         PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, object, module)
 
 #define PTRACE_ARG_3(level, objectOrModule, args) \
-        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, objectOrModule, PTraceObjectInstance(), PTraceModule())
+        PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, objectOrModule, PTraceObjectInstance(objectOrModule), PTraceModule())
 
 #define PTRACE_ARG_2(level, args) \
         PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, PTraceObjectInstance(), PTraceModule())
@@ -749,7 +749,7 @@ This macro outputs a trace of a source file line execution.
         PTRACE_INTERNAL(level, && (condition), args, object, module)
 
 #define PTRACE_IF_ARG_4(level, condition, objectOrModule, args) \
-        PTRACE_INTERNAL(level, && (condition), args, objectOrModule, PTraceObjectInstance(), PTraceModule())
+        PTRACE_INTERNAL(level, && (condition), args, objectOrModule, PTraceObjectInstance(objectOrModule), PTraceModule())
 
 #define PTRACE_IF_ARG_3(level, condition, args) \
         PTRACE_INTERNAL(level, && (condition), args, PTraceObjectInstance(), PTraceModule())
@@ -762,7 +762,7 @@ This macro outputs a trace of a source file line execution.
       PTrace::Begin(level, __FILE__, __LINE__, object, module)
 
 #define PTRACE_BEGIN_ARG_2(level, objectOrModule) \
-      PTrace::Begin(level, __FILE__, __LINE__, objectOrModule, PTraceObjectInstance(), PTraceModule())
+      PTrace::Begin(level, __FILE__, __LINE__, objectOrModule, PTraceObjectInstance(objectOrModule), PTraceModule())
 
 #define PTRACE_BEGIN_ARG_1(level) \
       PTrace::Begin(level, __FILE__, __LINE__, PTraceObjectInstance(), PTraceModule())
@@ -828,6 +828,7 @@ See PTRACE() for more information on level, instance, module.
 
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
+__inline static const PObject * PTraceObjectInstance(const void *) { return NULL; }
 __inline const char * PTraceModule() { return NULL; }
 
 
@@ -1618,6 +1619,8 @@ class PObject {
     { return IsClass(clsName); }
 
     __inline const PObject * PTraceObjectInstance() const { return this; }
+    __inline static const PObject * PTraceObjectInstance(const char *) { return NULL; }
+    __inline static const PObject * PTraceObjectInstance(const PObject * obj) { return obj; }
   //@}
 
   /**@name Comparison functions */

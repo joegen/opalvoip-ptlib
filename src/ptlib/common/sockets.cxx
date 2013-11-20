@@ -1106,7 +1106,7 @@ void PIPSocket::ClearNameCache()
     ::gethostbyname("www.microsoft.com");
   }
 #endif
-  PTRACE(4, NULL, NULL, "Cleared DNS cache.");
+  PTRACE(4, &pHostByName(), "Cleared DNS cache.");
 }
 
 
