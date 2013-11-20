@@ -286,17 +286,17 @@ PString PSoundChannelDirectSound::GetDefaultDevice (Directions dir) // static
   GUID deviceGUID;
   PComResult result = GetDeviceID((dir == Player)? &DSDEVID_DefaultPlayback  : &DSDEVID_DefaultCapture, &deviceGUID);
   if (result.Failed()) {
-    PTRACE(4, NULL, NULL, "Could not find default device: " << result);
+    PTRACE(4, PTraceModule(), "Could not find default device: " << result);
     return PString();
   }
   PDSoundDeviceInfoVector devices;
   result = GetFilteredDSoundDeviceInfo(deviceGUID, dir, PString::Empty(), -1, devices);
   if (result.Failed()) {
-    PTRACE(4, NULL, NULL, "Open: Could not retrieve device information: " << result);
+    PTRACE(4, PTraceModule(), "Open: Could not retrieve device information: " << result);
     return PString();
   }
   if (devices.size() == 0) {
-    PTRACE(4, NULL, NULL, "Open: Default device not found");
+    PTRACE(4, PTraceModule(), "Open: Default device not found");
     return PString();
   }
   return devices[0].m_Description;
@@ -310,7 +310,7 @@ PStringArray PSoundChannelDirectSound::GetDeviceNames (Directions dir) // static
   PDSoundDeviceInfoVector devices;
   PComResult result = GetFilteredDSoundDeviceInfo(GUID_NULL, dir, PString::Empty(), -1, devices);
   if (result.Failed()) {
-    PTRACE(4, NULL, NULL, "Could not get device list: " << result);
+    PTRACE(4, PTraceModule(), "Could not get device list: " << result);
     return PString();
   }
   PStringArray names;
