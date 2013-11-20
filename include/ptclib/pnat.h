@@ -64,6 +64,10 @@ class PNatMethod  : public PObject
       eComponent_Unknown = 255,
     };
 
+    /** NAT types.
+        Note the values in this enum are determined by various protocols and
+        should not be changed.
+     */
     P_DECLARE_STREAMABLE_ENUM(NatTypes,
       UnknownNat,         ///< NAT was not determined
       OpenNat,            ///< No NAT was detected
@@ -114,15 +118,15 @@ class PNatMethod  : public PObject
                                Only an external host that receives a packet
                                from an internal host can send a packet back.
                             */
-      PartiallyBlocked,   /**< Partially blocked.
+      BlockedNat,         /**< Completely blocked.
+                               Packets cannot pass through the router on one
+                               or the other direction.
+                            */
+      PartiallyBlocked    /**< Partially blocked.
                                A pathological condition where some packets get
                                through and some do not causing confusion to the
                                STUN protocol in particular. Usually indicates a
                                badly configured firewall rules.
-                            */
-      BlockedNat          /**< Completely blocked.
-                               Packets cannot pass through the router on one
-                               or the other direction.
                             */
     );
 
