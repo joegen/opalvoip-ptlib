@@ -15860,6 +15860,7 @@ EXPORTS
     ?begin@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QAE?AV?$_Tree_const_iterator@V?$_Tree_val@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@@2@XZ @26135 NONAME
     ?Begin@PTrace@@SAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPBDH0PBVPObject@@0@Z @15718 NONAME
     ?Begin@PTrace@@SAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPBDHPBVPObject@@0@Z @15719 NONAME
+    ?Begin@PTrace@@SAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@IPBDHPBVPObject@@10@Z @26422 NONAME
     ?BeginEncoding@PASN_Stream@@QAEXXZ @15720 NONAME
     ?BeginMessage@PPOP3Client@@QAE_NH@Z @15721 NONAME
     ?BeginMessage@PSMTPClient@@QAE_NABVPString@@0_N@Z @15722 NONAME
@@ -22638,6 +22639,8 @@ EXPORTS
     ?PTraceModule@@YAPBDXZ @22438 NONAME
     ?PTraceObjectInstance@@YAPBVPObject@@XZ @22439 NONAME
     ?PTraceObjectInstance@PObject@@QBEPBV1@XZ @22440 NONAME
+    ?PTraceObjectInstance@PObject@@SAPBV1@PBD@Z @26423 NONAME
+    ?PTraceObjectInstance@PObject@@SAPBV1@PBV1@@Z @26424 NONAME
     ?PureTone@PTones@@IAE_NIII@Z @22443 NONAME
     ?PURL_DataLoader_instance@PFactoryLoader@@3V?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @22444 NONAME
     ?PURL_DataLoader_link@PFactoryLoader@@YAHXZ @22445 NONAME
