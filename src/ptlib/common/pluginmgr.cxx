@@ -178,6 +178,7 @@ void PPluginManager::SetDirectories(const PStringArray & dirs)
 
 void PPluginManager::AddDirectory(const PDirectory & dir)
 {
+  PTRACE(4, "PLUGIN\tAdding directory \"" << dir << '"');
   if (m_directories.GetValuesIndex(dir) == P_MAX_INDEX)
     m_directories.Append(new PDirectory(dir));
 }
@@ -530,9 +531,6 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, P_INT_PTR code)
 
 void PluginLoaderStartup::OnStartup()
 { 
-  // load the actual DLLs, which will also load the system plugins
-  PPluginManager::GetPluginManager().LoadDirectories();
-
   // load the plugin module managers
   PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
   PFactory<PPluginModuleManager>::KeyList_T::const_iterator it;
@@ -543,6 +541,9 @@ void PluginLoaderStartup::OnStartup()
   PPluginFactory::KeyList_T keys = PPluginFactory::GetKeyList();
   for (PPluginFactory::KeyList_T::iterator it = keys.begin(); it != keys.end(); ++it)
     PPluginManager::GetPluginManager().RegisterService(it->c_str());
+
+  // load the actual DLLs, which will also load the system plugins
+  PPluginManager::GetPluginManager().LoadDirectories();
 }
 
 
