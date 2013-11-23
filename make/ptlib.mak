@@ -40,5 +40,8 @@ LIBS := -L$(PTLIB_LIBDIR) -l$(PTLIB_LIB_BASE)$(LIB_DEBUG_SUFFIX)$(LIB_STATIC_SUF
 
 include $(PTLIB_MAKE_DIR)/post.mak
 
+install uninstall:
+	@true
+
 
 # End of ptlib.mak

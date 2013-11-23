@@ -531,9 +531,9 @@ install:
 	           $(DESTDIR)$(libdir)/pkgconfig \
 		   $(DESTDIR)$(prefix)/bin \
 		   $(DESTDIR)$(includedir)/ptlib \
-                   $(DESTDIR)$(includedir)/ptlib/$(OS_INCLUDE)/ptlib \
-                   $(DESTDIR)$(includedir)/ptclib \
-                   $(DESTDIR)$(datarootdir)/ptlib/make ; \
+	           $(DESTDIR)$(includedir)/ptlib/$(OS_INCLUDE)/ptlib \
+	           $(DESTDIR)$(includedir)/ptclib \
+	           $(DESTDIR)$(datarootdir)/ptlib/make ; \
 	do \
 	    $(MKDIR_P) $$dir ; \
 	    chmod 755 $$dir ; \
@@ -553,20 +553,6 @@ install:
 	   cd $(DESTDIR)$(libdir) ; \
 	   $(LN_S) -f $(notdir $(PTLIB_DEBUG_SHARED_FILE)) $(notdir $(PTLIB_DEBUG_SHARED_LINK)) ; \
 	fi
-ifeq (1, $(HAS_PLUGINS))
-	if test -e $(PTLIB_LIBDIR)/device/; then \
-	   cd $(PTLIB_LIBDIR)/device/; \
-	   for dir in ./* ;\
-	   do \
-	      $(MKDIR_P) $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
-	      chmod 755 $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir ; \
-	      for fn in ./$$dir/*.so ; \
-	      do \
-	         $(INSTALL) -m 444 $$fn $(DESTDIR)$(libdir)/$(DEV_PLUGIN_DIR)/$$dir; \
-	      done ; \
-	   done ; \
-	fi
-endif
 	$(INSTALL) -m 444 include/ptlib.h $(DESTDIR)$(includedir)
 	$(INSTALL) -m 444 include/ptlib_config.h $(DESTDIR)$(includedir)
 	for fn in include/ptlib/*.h include/ptlib/*.inl; \
@@ -582,6 +568,7 @@ endif
 	   do $(INSTALL) -m 444 $$fn $(DESTDIR)$(datarootdir)/ptlib/make; \
 	done
 	$(INSTALL) -m 644 ptlib.pc $(DESTDIR)$(libdir)/pkgconfig
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) install && ) true
 
 
 uninstall:
