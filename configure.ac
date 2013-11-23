@@ -2016,10 +2016,6 @@ if test "x$enable_plugins" != "xno" ; then
    AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${EXPANDED_PLUGIN_DIR}"], [Default plugin directory])
 
 
-   DEV_PLUGIN_DIR="${PTLIB_PLUGIN_DIR}/devices"
-   AC_SUBST(DEV_PLUGIN_DIR)
-
-
    if test "x${enable_audio}" != "xno" ; then
 
       dnl ########################################################################
