@@ -243,7 +243,7 @@ class PStreamableBitwiseEnum : public PBitwiseEnum<BaseEnum, MaxValue, BaseInt>
         this->m_enum = BaseClass::Zero();
 
       PStringStream strm(s);
-      this->m_enum = FromBits(this->m_enum | PReadBitwiseEnum(strm, Names(), true));
+      this->m_enum = BaseClass::FromBits(this->m_enum | PReadBitwiseEnum(strm, Names(), true));
       return strm.good();
     }
 
