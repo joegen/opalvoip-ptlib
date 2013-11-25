@@ -50,7 +50,9 @@ class PBitwiseEnum
     Enumeration m_enum;
 
   public:
-    __inline PBitwiseEnum(Enumeration e = (Enumeration)0) : m_enum(e) { }
+    static __inline Enumeration Zero() { return (Enumeration)0; }
+
+    __inline PBitwiseEnum(Enumeration e = Zero()) : m_enum(e) { }
     __inline PBitwiseEnum(const PBitwiseEnum & e) : m_enum(e.m_enum) { }
 
     enum IteratorBounds { First, Last };
@@ -64,8 +66,8 @@ class PBitwiseEnum
     __inline operator const Enumeration&() const { return m_enum; }
     __inline Enumeration * operator&()           { return &m_enum; }
     __inline unsigned AsBits() const             { return m_enum; }
-    __inline static PBitwiseEnum FromBits(unsigned b) { return (Enumeration)(    b &((MaxValue<<1)-1)); }
-    __inline static PBitwiseEnum FromBit (unsigned b) { return (Enumeration)((1<<b)&((MaxValue<<1)-1)); }
+    __inline static Enumeration FromBits(unsigned b) { return (Enumeration)(    b &((MaxValue<<1)-1)); }
+    __inline static Enumeration FromBit (unsigned b) { return (Enumeration)((1<<b)&((MaxValue<<1)-1)); }
 
     PBitwiseEnum operator++()
     {
@@ -203,22 +205,60 @@ class PBitwiseEnum
 
 
 extern void PPrintBitwiseEnum(std::ostream & strm, unsigned bits, char const * const * names);
-extern unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names);
+extern unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names, bool continueOnError = false);
 
+
+template <typename BaseEnum, BaseEnum MaxValue, typename BaseInt = unsigned>
+class PStreamableBitwiseEnum : public PBitwiseEnum<BaseEnum, MaxValue, BaseInt>
+{
+  public:
+    typedef PBitwiseEnum<BaseEnum, MaxValue, BaseInt> BaseClass;
+
+    __inline PStreamableBitwiseEnum(typename BaseClass::Enumeration e = BaseClass::Zero()) : BaseClass(e) { }
+    __inline PStreamableBitwiseEnum(IteratorBounds b) : BaseClass(b) { }
+    __inline virtual ~PStreamableBitwiseEnum() { }
+
+    friend __inline std::ostream & operator<<(std::ostream & strm, const PStreamableBitwiseEnum & e)
+    {
+      PPrintBitwiseEnum(strm, e.AsBits(), e.Names());
+      return strm;
+    }
+
+    friend __inline std::istream & operator>>(std::istream & strm, PStreamableBitwiseEnum & e)
+    {
+      e.m_enum = BaseClass::FromBits(PReadBitwiseEnum(strm, e.Names(), false));
+      return strm;
+    }
+
+    PString ToString()
+    {
+      PStringStream strm;
+      strm >> *this;
+      return strm;
+    }
+
+    bool FromString(const PString & s, bool clear = true)
+    {
+      if (clear)
+        m_enum = (BaseClass::Enumeration)0;
+
+      PStringStream strm(s);
+      this->m_enum = FromBits(this->m_enum | PReadBitwiseEnum(strm, Names(), true));
+      return strm.good();
+    }
+
+    virtual char const * const * Names() const = 0;
+};
 
 #define P_DECLARE_STREAMABLE_BITWISE_ENUM_EX(name, count, values, ...) \
   enum name##_Bits { P_DECLARE_BITWISE_ENUM_##count values }; \
   P_DECLARE_BITWISE_ENUM_FRIENDS(name) \
-  class name : public PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)>{ \
-    public: typedef PBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> BaseClass; \
-    __inline name(BaseClass::Enumeration e = (BaseClass::Enumeration)0) : BaseClass(e) { } \
-    __inline explicit name(const PString & s) { FromString(s); } \
+  class name : public PStreamableBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)>{ \
+    public: typedef PStreamableBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> BaseClass; \
+    __inline name(BaseClass::Enumeration e = BaseClass::Zero()) : BaseClass(e) { } \
     __inline name(IteratorBounds b) : BaseClass(b) { } \
-    static char const * const * Names() { static char const * const Strings[] = { __VA_ARGS__, NULL }; return Strings; } \
-    friend __inline std::ostream & operator<<(std::ostream & strm, const name & e) { PPrintBitwiseEnum(strm, e.AsBits(), name::Names()); return strm; } \
-    friend __inline std::istream & operator>>(std::istream & strm, name & e) { e = (BaseClass::Enumeration)PReadBitwiseEnum(strm, name::Names()); return strm; } \
-    PString ToString() { PStringStream strm; strm >> *this; return strm; } \
-    bool FromString(const PString & s) { PStringStream strm(s); strm >> *this; return strm.good(); } \
+    __inline explicit name(const PString & s) { FromString(s); } \
+    virtual char const * const * Names() const { static char const * const Strings[] = { __VA_ARGS__, NULL }; return Strings; } \
   }
 
 #define P_DECLARE_STREAMABLE_BITWISE_ENUM(name, count, values) \
