@@ -3321,10 +3321,10 @@ void PPrintBitwiseEnum(std::ostream & strm, unsigned bits, char const * const * 
 }
 
 
-unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names)
+unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names, bool continueOnError)
 {
   unsigned bits = 0;
-  while (strm.good()) {
+  while ((continueOnError || strm.good()) && !strm.eof()) {
     char name[100]; // If someone has an enumeration longer than this, it deserves to fail!
     strm >> ws;
     strm.get(name, sizeof(name), ' ');
@@ -3342,6 +3342,9 @@ unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names)
         break;
       }
     }
+
+    if (continueOnError)
+      continue;
 
     if (unknown) {
       size_t i = strlen(name);

@@ -42,7 +42,6 @@
 #include <string>
 #include <vector>
 #include <ptlib/array.h>
-#include <ptlib/bitwise_enum.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3202,6 +3201,10 @@ class PStringOptions : public PStringToString
     __inline void Remove(const PCaselessString &   key)    { RemoveAt(key); }
     __inline void Remove(const PCaselessString & (*key)()) { RemoveAt(key); }
 };
+
+
+// Put include here as needs PString above to be defined.
+#include <ptlib/bitwise_enum.h>
 
 
 /**A class representing a regular expression that may be used for locating
