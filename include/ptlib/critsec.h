@@ -33,12 +33,23 @@
 
 #include <ptlib/psync.h>
 
+#if defined(__GNUC__)
+  #if __GNUC__ >= 4 && __GNUC_MINOR__ >= 2
+    #define P_ATOMICITY_HEADER <ext/atomicity.h>
+  #else
+    #define P_ATOMICITY_HEADER <bits/atomicity.h>
+  #endif
+#endif
+
 #ifdef P_ATOMICITY_HEADER
   #include P_ATOMICITY_HEADER
 #endif
 
-
-class PTimeInterval;
+#if P_NEEDS_GNU_CXX_NAMESPACE
+  #define P_ATOMICITY_NAMESPACE __gnu_cxx::
+#else
+  #define P_ATOMICITY_NAMESPACE
+#endif
 
 
 /** This class implements critical section mutexes using the most
