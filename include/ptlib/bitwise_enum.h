@@ -215,7 +215,7 @@ class PStreamableBitwiseEnum : public PBitwiseEnum<BaseEnum, MaxValue, BaseInt>
     typedef PBitwiseEnum<BaseEnum, MaxValue, BaseInt> BaseClass;
 
     __inline PStreamableBitwiseEnum(typename BaseClass::Enumeration e = BaseClass::Zero()) : BaseClass(e) { }
-    __inline PStreamableBitwiseEnum(IteratorBounds b) : BaseClass(b) { }
+    __inline PStreamableBitwiseEnum(typename BaseClass::IteratorBounds b) : BaseClass(b) { }
     __inline virtual ~PStreamableBitwiseEnum() { }
 
     friend __inline std::ostream & operator<<(std::ostream & strm, const PStreamableBitwiseEnum & e)
@@ -240,7 +240,7 @@ class PStreamableBitwiseEnum : public PBitwiseEnum<BaseEnum, MaxValue, BaseInt>
     bool FromString(const PString & s, bool clear = true)
     {
       if (clear)
-        m_enum = (BaseClass::Enumeration)0;
+        this->m_enum = BaseClass::Zero();
 
       PStringStream strm(s);
       this->m_enum = FromBits(this->m_enum | PReadBitwiseEnum(strm, Names(), true));
