@@ -1671,6 +1671,21 @@ void PTimedMutex::Signal()
   PAssertOS(::ReleaseMutex(handle));
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+PBoolean PCriticalSection::Wait(const PTimeInterval & timeout)
+{
+  PSimpleTimer timer(timeout);
+  do {
+    if (Try())
+      return true;
+    PThread::Sleep(100);
+  } while (timer.IsRunning());
+  return false;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
