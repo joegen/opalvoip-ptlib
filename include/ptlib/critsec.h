@@ -60,6 +60,8 @@
 
 #ifdef _WIN32
 
+class PTimeInterval;
+
 class PCriticalSection : public PSync
 {
   PCLASSINFO(PCriticalSection, PSync);
