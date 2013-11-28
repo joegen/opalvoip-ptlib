@@ -138,6 +138,8 @@ class PBitwiseEnum
     __inline bool           operator!=(PBitwiseEnum rhs) const { return !operator==(rhs); }
     __inline bool           operator< (PBitwiseEnum rhs) const { return !operator>=(rhs); }
     __inline bool           operator> (PBitwiseEnum rhs) const { return !operator<=(rhs); }
+
+    __inline PBitwiseEnum   operator~ ()                 const { return FromBits(~m_enum); }
 };
 
 
