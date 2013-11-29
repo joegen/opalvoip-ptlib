@@ -36,7 +36,7 @@ PTLIB_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 include $(PTLIB_MAKE_DIR)/pre.mak
 
-LIBS := -L$(PTLIB_LIBDIR) -l$(PTLIB_LIB_BASE)$(LIB_DEBUG_SUFFIX)$(LIB_STATIC_SUFFIX) $(LIBS)
+LIBS := $(PTLIB_LIBS) $(LIBS)
 
 include $(PTLIB_MAKE_DIR)/post.mak
 

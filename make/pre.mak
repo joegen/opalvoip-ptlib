@@ -153,6 +153,8 @@ else
   PTLIB_SHARED_LIB_FILE = $(PTLIB_OPT_SHARED_FILE)
 endif
 
+PTLIB_LIBS = -L$(PTLIB_LIBDIR) -l$(PTLIB_LIB_BASE)$(LIB_DEBUG_SUFFIX)$(LIB_STATIC_SUFFIX)
+
 
 ###############################################################################
 # Add common directory to include path
