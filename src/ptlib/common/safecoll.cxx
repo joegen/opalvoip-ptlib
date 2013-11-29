@@ -65,7 +65,7 @@ PBoolean PSafeObject::SafeReference()
 #endif
   }
 
-  PTRACE(6, "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  PTRACE(7, "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
   return PTrue;
 }
 
@@ -87,7 +87,7 @@ PBoolean PSafeObject::SafeDereference()
 #endif
   safetyMutex.Signal();
 
-  PTRACE(6, "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  PTRACE(7, "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
 
   return mayBeDeleted;
 }
@@ -95,50 +95,50 @@ PBoolean PSafeObject::SafeDereference()
 
 PBoolean PSafeObject::LockReadOnly() const
 {
-  PTRACE(6, "SafeColl\tWaiting read ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tWaiting read ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
-    PTRACE(6, "SafeColl\tBeing removed while waiting read ("<<(void *)this<<")");
+    PTRACE(5, "SafeColl\tBeing removed while waiting read ("<<(void *)this<<")");
     return PFalse;
   }
 
   safetyMutex.Signal();
   safeInUse->StartRead();
-  PTRACE(6, "SafeColl\tLocked read ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tLocked read ("<<(void *)this<<")");
   return PTrue;
 }
 
 
 void PSafeObject::UnlockReadOnly() const
 {
-  PTRACE(6, "SafeColl\tUnlocked read ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tUnlocked read ("<<(void *)this<<")");
   safeInUse->EndRead();
 }
 
 
 PBoolean PSafeObject::LockReadWrite()
 {
-  PTRACE(6, "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
-    PTRACE(6, "SafeColl\tBeing removed while waiting readWrite ("<<(void *)this<<")");
+    PTRACE(5, "SafeColl\tBeing removed while waiting readWrite ("<<(void *)this<<")");
     return PFalse;
   }
 
   safetyMutex.Signal();
   safeInUse->StartWrite();
-  PTRACE(6, "SafeColl\tLocked readWrite ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tLocked readWrite ("<<(void *)this<<")");
   return PTrue;
 }
 
 
 void PSafeObject::UnlockReadWrite()
 {
-  PTRACE(6, "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
+  PTRACE(7, "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
   safeInUse->EndWrite();
 }
 
