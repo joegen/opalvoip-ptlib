@@ -36,6 +36,10 @@
 #include "sound_oss.h"
 
 #include <sys/ioctl.h>
+#if defined(P_SOLARIS)
+  #include <sys/filio.h>
+#endif
+
 
 
 PCREATE_SOUND_PLUGIN(OSS, PSoundChannelOSS);
