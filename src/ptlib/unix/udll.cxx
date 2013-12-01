@@ -84,7 +84,7 @@ PBoolean PDynaLink::Open(const PString & names)
   PStringArray filenames = names.Lines();
   for (PINDEX i = 0; i < filenames.GetSize(); ++i) {
     m_name = filenames[i];
-    PTRACE(4, "UDLL\topening " << m_name);
+    PTRACE(4, "UDLL\tOpening " << m_name);
 
     LOCK_DLFCN();
 

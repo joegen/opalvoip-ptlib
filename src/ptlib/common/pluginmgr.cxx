@@ -233,6 +233,7 @@ PBoolean PPluginManager::LoadPlugin(const PString & fileName)
     else {
       unsigned (*GetAPIVersion)() = (unsigned (*)())fn;
       int version = (*GetAPIVersion)();
+      PTRACE(5, "PLUGIN\t" << fileName << " API version " << version);
       switch (version) {
         case 0 : // old-style service plugins, and old-style codec plugins
           {
@@ -242,6 +243,7 @@ PBoolean PPluginManager::LoadPlugin(const PString & fileName)
             else {
               void (*triggerRegister)(PPluginManager *) = (void (*)(PPluginManager *))fn;
               (*triggerRegister)(this);
+              PTRACE(4, "PLUGIN\t" << fileName << " has been triggered");
             }
           }
           // fall through to new version
@@ -425,15 +427,20 @@ PBoolean PPluginManager::GetPluginsDeviceCapabilities(const PString & serviceTyp
 
 bool PPluginManager::RegisterService(const char * name)
 {
+  PTRACE(5, "PLUGIN\tRegistering \"" << name << '"');
   PPluginServiceDescriptor * descriptor = PPluginFactory::CreateInstance(name);
-  if (descriptor == NULL)
+  if (descriptor == NULL) {
+    PTRACE(3, "PLUGIN\tCould not create factory instance for \"" << name << '"');
     return false;
+  }
 
   PWaitAndSignal mutex(m_servicesMutex);
 
   // first, check if it something didn't already register that name and type
-  if (GetServiceDescriptor(descriptor->GetServiceName(), descriptor->GetServiceType()) != NULL)
+  if (GetServiceDescriptor(descriptor->GetServiceName(), descriptor->GetServiceType()) != NULL) {
+    PTRACE(3, "PLUGIN\tDuplicate \"" << name << '"');
     return false;
+  }
 
   m_services.insert(ServiceMap::value_type(descriptor->GetServiceType(), descriptor));
 
@@ -537,13 +544,13 @@ void PluginLoaderStartup::OnStartup()
   for (it = keyList.begin(); it != keyList.end(); ++it)
     PFactory<PPluginModuleManager>::CreateInstance(*it)->OnStartup();
 
+  // load the actual DLLs, which will also load the system plugins
+  PPluginManager::GetPluginManager().LoadDirectories();
+
   // load the static plug in services/devices
   PPluginFactory::KeyList_T keys = PPluginFactory::GetKeyList();
   for (PPluginFactory::KeyList_T::iterator it = keys.begin(); it != keys.end(); ++it)
     PPluginManager::GetPluginManager().RegisterService(it->c_str());
-
-  // load the actual DLLs, which will also load the system plugins
-  PPluginManager::GetPluginManager().LoadDirectories();
 }
 
 
