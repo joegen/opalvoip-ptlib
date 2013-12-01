@@ -138,19 +138,26 @@ void AudioTest::Main()
   cout << "Audio Test Program\n\n";
 
   if (args.HasOption('l')) {
+    PINDEX i;
+    PStringArray names = PSoundChannel::GetDriverNames();
+    cout << "List of drivers\n";
+    for (i = 0; i < names.GetSize(); i++)
+      cout << "  \"" << names[i] << "\"\n";      
+    cout << '\n';
+
+    names = PSoundChannel::GetDeviceNames(PSoundChannel::Recorder);
     cout << "List of Record devices\n";
-    PStringArray names = PSoundChannel::GetDeviceNames(PSoundChannel::Recorder);
-    for (PINDEX i = 0; i < names.GetSize(); i++)
+    for (i = 0; i < names.GetSize(); i++)
       cout << "  \"" << names[i] << "\"\n";      
     cout << "The default record device is \"" 
-      << PSoundChannel::GetDefaultDevice(PSoundChannel::Recorder) << "\"\n\n";
+         << PSoundChannel::GetDefaultDevice(PSoundChannel::Recorder) << "\"\n\n";
 
-    cout << "List of play devices\n";
     names = PSoundChannel::GetDeviceNames(PSoundChannel::Player);
-    for (PINDEX i = 0; i < names.GetSize(); i++)
+    cout << "List of play devices\n";
+    for (i = 0; i < names.GetSize(); i++)
       cout << "  \"" << names[i] << "\"\n";      
     cout << "The default play device is \"" 
-      << PSoundChannel::GetDefaultDevice(PSoundChannel::Player) << "\"\n";
+         << PSoundChannel::GetDefaultDevice(PSoundChannel::Player) << "\"\n";
 
     return;
   }
@@ -169,7 +176,7 @@ void AudioTest::Main()
   if (!m_recorder.OpenSoundChannel(PSoundChannel::Recorder, args, 'R', 'r', 'V', "record-buffer-size", "record-buffer-count", "2"))
     return;
 
-  if (!  m_player.OpenSoundChannel(PSoundChannel::Player,   args, 'P', 'p', 'v', "player-buffer-size", "player-buffer-count", "8"))
+  if (!m_player.OpenSoundChannel(PSoundChannel::Player,   args, 'P', 'p', 'v', "player-buffer-size", "player-buffer-count", "8"))
     return;
 
   cout << "Starting record/play back thread" << endl;
