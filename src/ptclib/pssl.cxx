@@ -949,8 +949,12 @@ bool PSSLCipherContext::SetAlgorithm(const PString & name)
   if (cipher == NULL) {
     cipher = EVP_get_cipherbyobj(OBJ_txt2obj(name, 1));
     if (cipher == NULL) {
-      PTRACE(2, "Unknown cipher algorithm \"" << name << '"');
-      return false;
+      if (name == "1.3.14.3.2.6") // For some reason, not in the OpenSSL database.
+        cipher = EVP_des_ecb();
+      else {
+        PTRACE(2, "Unknown cipher algorithm \"" << name << '"');
+        return false;
+      }
     }
   }
 
