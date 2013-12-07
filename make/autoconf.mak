@@ -141,10 +141,10 @@ NO_CONFIG_GOALS += clean distclean config
 
 # Everything other than the NO_CONFIG_GOALS depends on the configuration
 ifneq (,$(MAKECMDGOALS))
-  $(filter-out $(NO_CONFIG_GOALS),$(MAKECMDGOALS)) : $(CONFIG_STATUS) build_top_level
+  $(filter-out $(NO_CONFIG_GOALS),$(MAKECMDGOALS)) : $(CONFIG_FILE_PATHS) build_top_level
 else
   .PHONY:default_goal
-  default_goal : $(CONFIG_STATUS) build_top_level
+  default_goal : $(CONFIG_FILE_PATHS) build_top_level
 endif
 
 
@@ -158,7 +158,7 @@ else
 endif
 
 distclean ::
-	rm -f $(CONFIG_FILE_PATHS)
+	rm -f $(CONFIG_FILE_PATHS) $(CONFIG_STATUS)
 
 
 .PHONY:config
@@ -173,9 +173,9 @@ build_top_level:
 
 $(CONFIG_STATUS) : $(CONFIGURE) $(addprefix $(TOP_LEVEL_DIR)/,$(addsuffix .in,$(CONFIG_FILES)))
 	$(CONFIGURE_CMD)
-	touch $(CONFIG_FILE_PATHS)
-	touch $(CONFIG_STATUS)
 
+$(CONFIG_FILE_PATHS) : $(CONFIG_STATUS)
+	@if test \! -f $@; then $(MAKE) $(AM_MAKEFLAGS) config; fi
 
 
 ifeq ($(shell which $(AUTOCONF) > /dev/null && \
