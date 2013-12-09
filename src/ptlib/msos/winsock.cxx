@@ -155,6 +155,12 @@ PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PWinSock);
 //////////////////////////////////////////////////////////////////////////////
 // P_fd_set
 
+P_fd_set::P_fd_set()
+{
+  Construct();
+  Zero();
+}
+
 void P_fd_set::Construct()
 {
   max_fd = UINT_MAX;
@@ -168,6 +174,43 @@ void P_fd_set::Zero()
     FD_ZERO(set);
 }
 
+PBoolean P_fd_set::IsPresent(SOCKET fd) const
+{
+  return FD_ISSET(fd, set);
+}
+
+
+P_fd_set::P_fd_set(SOCKET fd)
+{
+  Construct();
+  Zero();
+  FD_SET(fd, set);
+}
+
+
+P_fd_set & P_fd_set::operator=(SOCKET fd)
+{
+  PAssert(fd < max_fd, PInvalidParameter);
+  Zero();
+  FD_SET(fd, set);
+  return *this;
+}
+
+
+P_fd_set & P_fd_set::operator+=(SOCKET fd)
+{
+  PAssert(fd < max_fd, PInvalidParameter);
+  FD_SET(fd, set);
+  return *this;
+}
+
+
+P_fd_set & P_fd_set::operator-=(SOCKET fd)
+{
+  PAssert(fd < max_fd, PInvalidParameter);
+  FD_CLR(fd, set);
+  return *this;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
