@@ -356,9 +356,8 @@ int PChannel::PXClose()
 
   AbortIO(px_readThread, px_threadMutex);
   AbortIO(px_writeThread, px_threadMutex);
-  AbortIO(px_selectThread[0], px_threadMutex);
-  AbortIO(px_selectThread[1], px_threadMutex);
-  AbortIO(px_selectThread[2], px_threadMutex);
+  for (PINDEX i = 0; i < 3; ++i)
+    AbortIO(px_selectThread[i], px_selectMutex[i]);
 
   int stat;
   do {
