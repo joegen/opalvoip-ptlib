@@ -180,6 +180,10 @@ PBoolean P_fd_set::IsPresent(SOCKET fd) const
 }
 
 
+#ifdef _MSC_VER
+  #pragma warning(disable:4127)
+#endif
+
 P_fd_set::P_fd_set(SOCKET fd)
 {
   Construct();
@@ -211,6 +215,11 @@ P_fd_set & P_fd_set::operator-=(SOCKET fd)
   FD_CLR(fd, set);
   return *this;
 }
+
+#ifdef _MSC_VER
+  #pragma warning(default:4127)
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
