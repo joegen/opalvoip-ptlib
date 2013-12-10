@@ -80,7 +80,14 @@ static PBoolean PAssertThreadOp(int retval,
     return false;
   }
 
-  if (errno == EINTR || errno == EAGAIN) {
+  int err = errno;
+  switch (err) {
+  case EPERM :
+    PTRACE(1, "PTLib\tNo permission to use " << funcname);
+    return false;
+
+  case EINTR :
+  case EAGAIN :
     if (++retry < 1000) {
 #if defined(P_RTEMS)
       sched_yield();
@@ -93,7 +100,7 @@ static PBoolean PAssertThreadOp(int retval,
   }
 
 #if P_USE_ASSERTS
-  PAssertFunc(file, line, NULL, psprintf("Function %s failed", funcname));
+  PAssertFunc(file, line, NULL, psprintf("Function %s failed, errno=%i", funcname, err));
 #endif
   return false;
 }
