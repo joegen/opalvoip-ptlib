@@ -721,6 +721,24 @@ public:
   const MIB_IPFORWARDTABLE & operator *() const { return *Ptr(); }
   operator const MIB_IPFORWARDTABLE *  () const { return  Ptr(); }
 
+  bool ValidateAddress(DWORD ifIndex, LPSOCKADDR lpSockAddr)
+  {
+    int numEntries = Ptr()->dwNumEntries;
+    if (numEntries == 0)
+      return true;
+
+    if (lpSockAddr == NULL)
+      return false;
+
+    const MIB_IPFORWARDROW * row = Ptr()->table;
+    for (int i = 0; i < numEntries; i++, row++) {
+      if (row->dwForwardIfIndex == ifIndex && (u_long)row->dwForwardDest == ((sockaddr_in *)lpSockAddr)->sin_addr.S_un.S_addr)
+              return true;
+    }
+
+    return false;
+  }
+
   private:
     PBYTEArray m_buffer;
 };
@@ -751,7 +769,7 @@ public:
 };
 
 
-#if P_HAS_IPV6
+#if (P_HAS_IPV6 || _WIN32_WINNT_WINXP)
 class PIPAdaptersAddressTable
 {
 public:
@@ -780,8 +798,9 @@ public:
 private:
   PBYTEArray buffer;
 };
+#endif
 
-
+#if P_HAS_IPV6
 typedef NETIO_STATUS (NETIOAPI_API_ *GETIPFORWARDTABLE2)(ADDRESS_FAMILY, PMIB_IPFORWARD_TABLE2 *);
 typedef VOID (NETIOAPI_API_ *FREEMIBTABLE)(PVOID);
 
@@ -1339,6 +1358,42 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
     }
   }
 
+#elif _WIN32_WINNT_WINXP
+  PIPRouteTable routes;
+  PIPAdaptersAddressTable interfaces;
+  PIPInterfaceAddressTable byAddress;
+  PINDEX count = 0; // address count
+
+  if (!table.SetSize(0))
+    return false;
+
+  for (const IP_ADAPTER_ADDRESSES * adapter = &*interfaces; adapter != NULL; adapter = adapter->Next) {
+    if (!includeDown && (adapter->OperStatus != IfOperStatusUp))
+      continue;
+
+    for (PIP_ADAPTER_UNICAST_ADDRESS unicast = adapter->FirstUnicastAddress; unicast != NULL; unicast = unicast->Next) {
+      if (!routes.ValidateAddress(adapter->IfIndex, unicast->Address.lpSockaddr))
+          continue;
+
+      PStringStream macAddr;
+      macAddr << ::hex << ::setfill('0');
+      for (unsigned b = 0; b < adapter->PhysicalAddressLength; ++b)
+        macAddr << setw(2) << (unsigned)adapter->PhysicalAddress[b];
+      
+      PIPSocket::Address ip(((sockaddr_in *)unicast->Address.lpSockaddr)->sin_addr);
+
+      // Find out address index in byAddress table for the mask
+      DWORD dwMask = 0L;
+      for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
+        if (adapter->IfIndex == byAddress->table[i].dwIndex) {
+          dwMask = byAddress->table[i].dwMask;
+          break; 
+        }
+      } // find mask for the address
+
+      table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, dwMask, macAddr));           
+    }
+  }
 #else
 
   PIPInterfaceAddressTable byAddress;
