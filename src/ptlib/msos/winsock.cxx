@@ -1306,12 +1306,19 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 
 PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remoteAddress)
 {
+  // For some variants of Windows GetBestInterface will return 127.0.0.1
+  // when we are trying to talk to one of our own interfaces.
+  PIPInterfaceAddressTable interfaces;
+  for (DWORD i = 0; i < interfaces->dwNumEntries; ++i) {
+    if (remoteAddress == interfaces->table[i].dwAddr)
+      return remoteAddress;
+  }
+
   DWORD best;
   if (GetBestInterface(remoteAddress, &best) == NO_ERROR) {
-    PIPInterfaceAddressTable interfaces;
-    for (unsigned j = 0; j < interfaces->dwNumEntries; ++j) {
-      if (interfaces->table[j].dwIndex == best)
-        return interfaces->table[j].dwAddr;
+    for (DWORD i = 0; i < interfaces->dwNumEntries; ++i) {
+      if (interfaces->table[i].dwIndex == best)
+        return interfaces->table[i].dwAddr;
     }
   }
   return GetInvalidAddress();
