@@ -116,7 +116,7 @@ install:
 	              $(PT_LIBDIR)/lib$(PTLIB_BASE)_d_s.a ; \
           do \
 	  ( if test -e $$lib ; then \
-		$(INSTALL) -m 444 $$lib $(DESTDIR)$(LIBDIR); \
+		$(INSTALL) -m 755 $$lib $(DESTDIR)$(LIBDIR); \
 	  fi ) \
 	done )
 	( if test -e $(PT_LIBDIR)/$(LIB_SONAME); then \
@@ -138,7 +138,7 @@ ifeq (1, $(HAS_PLUGINS))
 		do mkdir -p $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		chmod 755 $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir ; \
 		(for fn in ./$$dir/*.so ; \
-			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir; \
+			do $(INSTALL) -m 755 $$fn $(DESTDIR)$(LIBDIR)/$(DEV_PLUGIN_DIR)/$$dir; \
 		done ); \
 	done ) ; \
 	fi
