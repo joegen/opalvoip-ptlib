@@ -1586,7 +1586,10 @@ void PCLICurses::Construct()
   NewWindow(0, 0, m_maxRows-2, m_maxCols, NoBorder).SetPageMode(true);
   NewWindow(m_maxRows-2, 0, 2, m_maxCols, BorderAbove).SetFocus();
 
-  StartContext(new PConsoleChannel(PConsoleChannel::StandardInput), &m_windows[0], true, false, false);
+  PConsoleChannel * input = new PConsoleChannel(PConsoleChannel::StandardInput);
+  input->SetLocalEcho(false); // We do all this
+  input->SetLineBuffered(false);
+  StartContext(input, &m_windows[0], true, false, false);
 
   PTRACE(4, "Constructed curses: maxRows=" << m_maxRows << " maxCols=" << m_maxCols);
 }

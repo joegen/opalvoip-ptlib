@@ -46,6 +46,7 @@
       // requested number of characters were written.
 
   protected:
+    bool InternalSetConsoleMode(DWORD bit, bool on);
     PWin32Handle m_hConsole;
     DWORD m_lastMouseState;
 
