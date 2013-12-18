@@ -1249,15 +1249,18 @@ public:
 
 PCLICurses::PCLICurses()
 {
-  initscr();            // Initialise curses
+  if (initscr()==ERR) { // Initialise curses
+    PTRACE(2, "Cannot initialise curses");
+    return;
+  }
+
   nonl();               // Don't automaticall wrap at end of line
-  cbreak();             // Do not wait for new line on input
-  noecho();             // Do not echo user input, we will do so
   keypad(stdscr, TRUE); // Enable special keys (arrows, keypad etc)
   refresh();            // the wrefresh() for a window is not enough, must do this first. Weird.
 
   getmaxyx(stdscr, m_maxRows, m_maxCols);
-  Construct();
+  if (m_maxRows != 0 && m_maxCols != 0)
+    Construct();
 }
 
 
@@ -1583,12 +1586,14 @@ void PCLICurses::Construct()
   m_requireEcho = true;
 
   m_pageWaitPrompt = "Press a key for more ...";
-  NewWindow(0, 0, m_maxRows-2, m_maxCols, NoBorder).SetPageMode(true);
-  NewWindow(m_maxRows-2, 0, 2, m_maxCols, BorderAbove).SetFocus();
 
   PConsoleChannel * input = new PConsoleChannel(PConsoleChannel::StandardInput);
   input->SetLocalEcho(false); // We do all this
   input->SetLineBuffered(false);
+
+  NewWindow(0, 0, m_maxRows-2, m_maxCols, NoBorder).SetPageMode(true);
+  NewWindow(m_maxRows-2, 0, 2, m_maxCols, BorderAbove).SetFocus();
+
   StartContext(input, &m_windows[0], true, false, false);
 
   PTRACE(4, "Constructed curses: maxRows=" << m_maxRows << " maxCols=" << m_maxCols);
