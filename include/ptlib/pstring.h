@@ -1648,7 +1648,7 @@ class PString : public PCharArray
      */
     PString(int dummy, const PString * str);
 
-    PString(PContainerReference & reference) : PCharArray(reference) { }
+    PString(PContainerReference & reference_) : PCharArray(reference_) { }
 };
 
 
@@ -1683,7 +1683,7 @@ inline wostream & operator<<(wostream & stream, const PString & string)
       friend inline ostream & operator<<(ostream & stream, const PWideString & string) { return stream << PString(string); }
 
     protected:
-      PWideString(PContainerReference & reference) : PWCharArray(reference) { }
+      PWideString(PContainerReference & reference_) : PWCharArray(reference_) { }
   };
 
   #ifdef UNICODE
@@ -1811,7 +1811,7 @@ class PCaselessString : public PString
      */
 
     PCaselessString(int dummy, const PCaselessString * str);
-    PCaselessString(PContainerReference & reference) : PString(reference) { }
+    PCaselessString(PContainerReference & reference_) : PString(reference_) { }
 };
 
 
