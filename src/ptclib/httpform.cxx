@@ -2207,6 +2207,84 @@ void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
 }
 
 
+bool PHTTPConfig::AddBooleanField(const char * name, bool defaultValue, const char * help)
+{
+  PConfig cfg(section);
+  bool currentValue = cfg.GetBoolean(name, defaultValue);
+  Add(new PHTTPBooleanField(name, currentValue, help));
+  return currentValue;
+}
+
+
+int PHTTPConfig::AddIntegerField(const char * name, int low, int high, int defaultValue, const char * units, const char * help)
+{
+  PConfig cfg(section);
+  int currentValue = cfg.GetInteger(name, defaultValue);
+  Add(new PHTTPIntegerField(name, low, high, currentValue, units, help));
+  return currentValue;
+}
+
+
+PString PHTTPConfig::AddStringField(const char * name, PINDEX maxLength, const char * defaultValue, const char * help, int rows, int columns)
+{
+  PConfig cfg(section);
+  PString currentValue = cfg.GetString(name, defaultValue);
+  Add(new PHTTPStringField(name, maxLength, currentValue, help, rows, columns));
+  return currentValue;
+}
+
+
+PStringArray PHTTPConfig::AddStringArrayField(const char * name,
+                                              bool sorted,
+                                              PINDEX maxLength,
+                                              const PStringArray & defaultValues,
+                                              const char * help,
+                                              int rows,
+                                              int columns)
+{
+  PConfig cfg(section);
+  PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPStringField(name, maxLength, "", help, rows, columns), sorted);
+  PStringArray currentValues = fieldArray->GetStrings(cfg);
+  if (currentValues.IsEmpty())
+    fieldArray->SetStrings(cfg, currentValues = defaultValues);
+  Add(fieldArray);
+  return currentValues;
+}
+
+
+PString PHTTPConfig::AddSelectField(const char * name,
+                                    const PStringArray & valueArray,
+                                    const char * defaultValue,
+                                    const char * help,
+                                    bool enumeration)
+{
+  PConfig cfg(section);
+  PString currentValue = cfg.GetString(name, defaultValue);
+  PINDEX selection = valueArray.GetValuesIndex(currentValue);
+  if (selection == P_MAX_INDEX)
+    selection = 0;
+  Add(new PHTTPSelectField(name, valueArray, selection, help, enumeration));
+  return currentValue;
+}
+
+
+PStringArray PHTTPConfig::AddSelectArrayField(const char * name,
+                                              bool sorted,
+                                              const PStringArray & valueArray,
+                                              const PStringArray & defaultValues,
+                                              const char * help,
+                                              bool enumeration)
+{
+  PConfig cfg(section);
+  PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPSelectField(name, valueArray, 0, help, enumeration), sorted);
+  PStringArray currentValues = fieldArray->GetStrings(cfg);
+  if (currentValues.IsEmpty())
+    fieldArray->SetStrings(cfg, currentValues = defaultValues);
+  Add(fieldArray);
+  return currentValues;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConfigSectionList
 
