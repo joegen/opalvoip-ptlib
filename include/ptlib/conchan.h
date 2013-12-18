@@ -144,6 +144,16 @@ class PConsoleChannel : public PChannel
     virtual bool SetLocalEcho(
       bool localEcho
     );
+
+    /**Set line buffered mode.
+       For some classes of channel, e.g. PConsoleChannel, data read by this
+       channel is not returned until a whole line is .
+
+       Default behaviour does nothing and return true if the channel is open.
+      */
+    virtual bool SetLineBuffered(
+      bool lineBuffered
+    );
   //@}
 
   /**@name Open functions */
