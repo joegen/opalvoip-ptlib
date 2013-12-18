@@ -924,6 +924,14 @@ PString PConsoleChannel::GetName() const
 
 int PConsoleChannel::ReadChar()
 {
+  {
+    DWORD mode;
+    if (!GetConsoleMode(m_hConsole, &mode))
+      return false;
+    if ((mode & ENABLE_LINE_INPUT) != 0)
+      return PChannel::ReadChar();
+  }
+
   for (;;) {
     INPUT_RECORD input;
     DWORD numRead;
@@ -1043,14 +1051,23 @@ PBoolean PConsoleChannel::Close()
 }
 
 
-#ifdef _WIN32_WCE
-bool PConsoleChannel::SetLocalEcho(bool)
-{
-  return false;
-}
-#else
 bool PConsoleChannel::SetLocalEcho(bool localEcho)
 {
+  return InternalSetConsoleMode(ENABLE_ECHO_INPUT, localEcho);
+}
+
+
+bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
+{
+  return InternalSetConsoleMode(ENABLE_LINE_INPUT, lineBuffered);
+}
+
+
+bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
+{
+  if (os_handle != StandardInput)
+    return ConvertOSError(-2, LastReadError);
+
   if (!m_hConsole.IsValid())
     return ConvertOSError(-2, LastReadError);
 
@@ -1058,14 +1075,13 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
   if (!GetConsoleMode(m_hConsole, &mode))
     return false;
 
-  if (localEcho)
-    mode |= ENABLE_ECHO_INPUT;
+  if (on)
+    mode |= bit;
   else
-    mode &= ~ENABLE_ECHO_INPUT;
+    mode &= ~bit;
 
   return SetConsoleMode(m_hConsole, mode);
 }
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
