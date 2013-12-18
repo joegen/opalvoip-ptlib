@@ -1146,7 +1146,12 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
   if (!IsOpen())
     return ConvertOSError(-2, LastReadError);
 
-#ifdef P_VXWORKS
+#if P_CURSES==1
+  if (localEcho)
+    echo();
+  else
+    noecho();
+#elif defined(P_VXWORKS)
   PAssertAlways("PConsoleChannel::GetName - Not implemented for VxWorks");
   return PString("Not Implemented");
 #else
@@ -1158,6 +1163,33 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
     ios.c_lflag |= ECHO;
   else
     ios.c_lflag &= ~ECHO;
+  return ConvertOSError(tcsetattr(os_handle, TCSANOW, &ios));
+#endif
+}
+
+
+bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
+{
+  if (!IsOpen())
+    return ConvertOSError(-2, LastReadError);
+
+#if P_CURSES==1
+  if (lineBuffered)
+    nocbreak();
+  else
+    cbreak();
+#elif defined(P_VXWORKS)
+  PAssertAlways("PConsoleChannel::GetName - Not implemented for VxWorks");
+  return PString("Not Implemented");
+#else
+  struct termios ios;
+  if (!ConvertOSError(tcgetattr(os_handle, &ios)))
+    return false;
+
+  if (lineBuffered)
+    ios.c_lflag |= ICANON;
+  else
+    ios.c_lflag &= ~ICANON;
   return ConvertOSError(tcsetattr(os_handle, TCSANOW, &ios));
 #endif
 }
