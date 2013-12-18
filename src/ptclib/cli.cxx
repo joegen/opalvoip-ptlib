@@ -1249,7 +1249,7 @@ public:
 
 PCLICurses::PCLICurses()
 {
-  if (initscr()==ERR) { // Initialise curses
+  if (initscr() == NULL) { // Initialise curses
     PTRACE(2, "Cannot initialise curses");
     return;
   }
