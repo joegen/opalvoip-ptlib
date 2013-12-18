@@ -917,6 +917,73 @@ class PHTTPConfig : public PHTTPForm
       PHTTPField * valFld   ///< Field for the value of the key yto be added.
     );
 
+    /**Add a boolean field.
+       Returns current value from PConfig, using defaultValue for first time.
+      */
+    bool AddBooleanField(
+      const char * name,
+      bool defaultValue = false,
+      const char * help = NULL
+    );
+
+    /**Add an integer field.
+       Returns current value from PConfig, using defaultValue for first time.
+      */
+    int AddIntegerField(
+      const char * name,
+      int low, int high,
+      int defaultValue = 0,
+      const char * units = NULL,
+      const char * help = NULL
+    );
+
+    /**Add a string field.
+       Returns current value from PConfig, using defaultValue for first time.
+      */
+    PString AddStringField(
+      const char * name,
+      PINDEX maxLength,
+      const char * defaultValue = NULL,
+      const char * help = NULL,
+      int rows = 0, // 0=auto, 1=InputText, >1=TextArea
+      int columns = 0
+    );
+
+    /**Add a string array field.
+       Returns current value from PConfig, using defaultValue for first time.
+      */
+    PStringArray AddStringArrayField(
+      const char * name,
+      bool sorted,
+      PINDEX maxLength,
+      const PStringArray & defaultValues,
+      const char * help = NULL,
+      int rows = 0, // 0=auto, 1=InputText, >1=TextArea
+      int columns = 0
+    );
+
+    /**Add a string field.
+       Returns current value from PConfig, using defaultValue for first time.
+      */
+    PString AddSelectField(
+      const char * name,
+      const PStringArray & valueArray,
+      const char * defaultValue = NULL,
+      const char * help = NULL,
+      bool enumeration = false
+    );
+
+    /**Add a string array field.
+       Returns current value from PConfig, using defaultValue for first time.
+      */
+    PStringArray AddSelectArrayField(
+      const char * name,
+      bool sorted,
+      const PStringArray & valueArray,
+      const PStringArray & defaultValues,
+      const char * help = NULL,
+      bool enumeration = false
+    );
 
   protected:
     PString section;
