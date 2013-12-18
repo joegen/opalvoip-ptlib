@@ -448,7 +448,7 @@ template <class T> class PBaseArray : public PAbstractArray
       stream << GetAt(index);
     }
 
-    PBaseArray(PContainerReference & reference) : PAbstractArray(reference, sizeof(T)) { }
+    PBaseArray(PContainerReference & reference_) : PAbstractArray(reference_, sizeof(T)) { }
 };
 
 /**Declare a dynamic array base type.
@@ -477,8 +477,8 @@ template <class T> class PBaseArray : public PAbstractArray
   PDECLARE_CLASS(cls, PBaseArray<T>) \
     cls(PINDEX initialSize = 0) \
       : PBaseArray<T>(initialSize) { } \
-    cls(PContainerReference & reference) \
-      : PBaseArray<T>(reference) { } \
+    cls(PContainerReference & reference_) \
+      : PBaseArray<T>(reference_) { } \
     cls(T const * buffer, PINDEX length, PBoolean dynamic = true) \
       : PBaseArray<T>(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
@@ -571,8 +571,8 @@ class PCharArray : public PBaseArray<char>
       PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     ) : ParentClass(buffer, length, dynamic) { }
 
-    PCharArray(PContainerReference & reference)
-      : ParentClass(reference) { }
+    PCharArray(PContainerReference & reference_)
+      : ParentClass(reference_) { }
   //@}
 
   /**@name Overrides from class PObject */
@@ -624,8 +624,8 @@ class PBYTEArray : public PBaseArray<BYTE>
       PBoolean dynamic = true ///< Buffer is copied and dynamically allocated.
     ) : ParentClass(buffer, length, dynamic) { }
 
-    PBYTEArray(PContainerReference & reference)
-      : ParentClass(reference) { }
+    PBYTEArray(PContainerReference & reference_)
+      : ParentClass(reference_) { }
   //@}
 
   /**@name Overrides from class PObject */
