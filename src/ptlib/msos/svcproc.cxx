@@ -111,6 +111,9 @@ static const char * const ServiceCommandNames[NumSvcCmds] = {
 static const char WindowLogOutput[] = "Window Log Output";
 static const char DebuggerLogOutput[] = "Debugger Log Output";
 
+static char emptyString[] = "";
+static char crlfString[] = "\r\n";
+
 
 class PNotifyIconData : public NOTIFYICONDATA {
   public:
@@ -758,7 +761,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         case DeleteMenuID :
           if (m_debugWindow != NULL && m_debugWindow != (HWND)-1)
-            SendMessage(m_debugWindow, WM_CLEAR, 0, 0);
+            SendMessage(m_debugWindow, EM_REPLACESEL, false, (LPARAM)emptyString);
           break;
 
         case SelectAllMenuID :
@@ -916,9 +919,6 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
   return DefWindowProc(hWnd, msg, wParam, lParam);
 }
-
-static char emptyString[] = "";
-static char crlfString[] = "\r\n";
 
 void PServiceProcess::DebugOutput(const char * out)
 {
