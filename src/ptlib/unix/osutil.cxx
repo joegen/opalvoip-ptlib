@@ -1148,9 +1148,9 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
 
 #if P_CURSES==1
   if (localEcho)
-    echo();
+    return echo() == OK;
   else
-    noecho();
+    return noecho() == OK;
 #elif defined(P_VXWORKS)
   PAssertAlways("PConsoleChannel::GetName - Not implemented for VxWorks");
   return PString("Not Implemented");
@@ -1175,9 +1175,9 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
 
 #if P_CURSES==1
   if (lineBuffered)
-    nocbreak();
+    return nocbreak() == OK;
   else
-    cbreak();
+    return cbreak() == OK;
 #elif defined(P_VXWORKS)
   PAssertAlways("PConsoleChannel::GetName - Not implemented for VxWorks");
   return PString("Not Implemented");
