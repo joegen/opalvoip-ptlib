@@ -1563,10 +1563,16 @@ PString PHTTPRadioField::GetHTMLInput(const PString & input) const
   else
     inval = baseName;
 
-  if (inval != value)
+  bool checked = input.Find("CHECKED>") != P_MAX_INDEX;
+  bool sameValue = inval == value;
+  if (checked == sameValue)
     return input;
 
-  return "<input checked" + input.Mid(6);
+  PINDEX len = input.GetLength();
+  if (sameValue)
+    return input.Left(len-1) + "CHECKED>";
+
+  return input.Left(len-8) + '>';
 }
 
 
@@ -1581,7 +1587,10 @@ PString PHTTPRadioField::GetValue(PBoolean dflt) const
 
 void PHTTPRadioField::SetValue(const PString & newVal)
 {
-  value = newVal;
+  PINDEX idx;
+  if ((idx = values.GetValuesIndex(newVal)) != P_MAX_INDEX ||
+      (idx = titles.GetValuesIndex(newVal)) != P_MAX_INDEX)
+    value = values[idx];
 }
 
 
