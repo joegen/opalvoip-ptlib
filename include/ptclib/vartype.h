@@ -254,15 +254,26 @@ class PVarType : public PObject
       */
     virtual bool SetType(BasicType type, PINDEX option = 0);
 
-    bool AsBoolean() const;
-    int AsInteger() const;
-    unsigned AsUnsigned() const;
-    int64_t AsInteger64() const;
-    uint64_t AsUnsigned64() const;
-    double AsFloat() const;
+    bool              AsBoolean() const;
+    int               AsInteger() const;
+    unsigned          AsUnsigned() const;
+    int64_t           AsInteger64() const;
+    uint64_t          AsUnsigned64() const;
+    double            AsFloat() const;
     PGloballyUniqueID AsGUID() const;
-    PTime AsTime() const;
-    PString AsString() const;
+    PTime             AsTime() const;
+    PString           AsString() const;
+
+    template <typename TYPE> TYPE As() const { return AsString();     }
+    template <> bool              As() const { return AsBoolean();    }
+    template <> int               As() const { return AsInteger();    }
+    template <> unsigned          As() const { return AsUnsigned();   }
+    template <> int64_t           As() const { return AsInteger64();  }
+    template <> uint64_t          As() const { return AsUnsigned64(); }
+    template <> double            As() const { return AsFloat();      }
+    template <> PGloballyUniqueID As() const { return AsGUID();       }
+    template <> PTime             As() const { return AsTime();       }
+    template <> PString           As() const { return AsString();     }
 
     const void * GetPointer() const;
     PINDEX GetSize() const;
@@ -332,6 +343,117 @@ class PVarType : public PObject
         size_t       size;
       } staticBinary;
     } m_;
+};
+
+
+template <typename TYPE>
+class PRefVar : public PVarType
+{
+    PCLASSINFO_WITH_CLONE(PRefVar, PVarType)
+  public:
+    explicit PRefVar(TYPE & value)
+      : PVarType(value)
+      , m_value(value)
+    {
+    }
+
+    PRefVar & operator=(const PRefVar & other)
+    {
+      PVarType::operator=(other);
+      return *this;
+    }
+
+    PRefVar & operator=(TYPE value)
+    {
+      PVarType::operator=(value);
+      return *this;
+    }
+
+  protected:
+    virtual void OnGetValue()
+    {
+      *reinterpret_cast<TYPE*>(&this->m_) = this->m_value;
+    }
+
+    virtual void OnValueChanged()
+    {
+      this->m_value = *reinterpret_cast<TYPE*>(&this->m_);
+    }
+
+  protected:
+    TYPE & m_value;
+};
+
+
+template <>
+class PRefVar <PGloballyUniqueID> : public PVarType
+{
+    PCLASSINFO_WITH_CLONE(PRefVar, PVarType)
+  public:
+    explicit PRefVar(PGloballyUniqueID & value) : PVarType(value), m_value(value) { }
+    PRefVar & operator=(const PRefVar & other) { PVarType::operator=(other); return *this; }
+    PRefVar & operator=(const PGloballyUniqueID & value) { PVarType::operator=(value); return *this; }
+
+  protected:
+    virtual void OnGetValue()     { memcpy(this->m_.guid, this->m_value, sizeof(this->m_.guid));              }
+    virtual void OnValueChanged() { memcpy(this->m_value.GetPointer(), this->m_.guid, sizeof(this->m_.guid)); }
+
+  protected:
+    PGloballyUniqueID & m_value;
+};
+
+
+template <>
+class PRefVar <PTime> : public PVarType
+{
+    PCLASSINFO_WITH_CLONE(PRefVar, PVarType)
+  public:
+    explicit PRefVar(PTime & value) : PVarType(value), m_value(value) { }
+    PRefVar & operator=(const PRefVar & other) { PVarType::operator=(other); return *this; }
+    PRefVar & operator=(const PTime & value) { PVarType::operator=(value); return *this; }
+
+  protected:
+    virtual void OnGetValue()     { this->m_.time.seconds = this->m_value.GetTimeInSeconds(); }
+    virtual void OnValueChanged() { this->m_value.SetTimestamp(this->m_.time.seconds);        }
+
+  protected:
+    PTime & m_value;
+};
+
+
+template <>
+class PRefVar <PString> : public PVarType
+{
+    PCLASSINFO_WITH_CLONE(PRefVar, PVarType)
+  public:
+    explicit PRefVar(PString & value) : PVarType(value, false), m_value(value) { }
+    PRefVar & operator=(const PRefVar & other) { PVarType::operator=(other); return *this; }
+    PRefVar & operator=(const PString & value) { SetString(value, false); return *this; }
+
+  protected:
+    virtual void OnGetValue()     { SetString(m_value, false); }
+    virtual void OnValueChanged() { m_value = m_.staticString; }
+
+  protected:
+    PString & m_value;
+};
+
+
+template <>
+class PRefVar <PBYTEArray> : public PVarType
+{
+    PCLASSINFO_WITH_CLONE(PRefVar, PVarType)
+  public:
+    explicit PRefVar(PBYTEArray & value) : PVarType(value, false) , m_value(value) { }
+    PRefVar & operator=(const PRefVar & other)    { PVarType::operator=(other); return *this; }
+    PRefVar & operator=(const PBYTEArray & value) { SetStaticBinary(value); return *this; }
+
+  protected:
+    virtual void OnGetValue()     { SetStaticBinary(m_value); }
+    virtual void OnValueChanged() { m_value = PBYTEArray((const BYTE *)m_.staticBinary.data, m_.staticBinary.size); }
+
+protected:
+  PBYTEArray & m_value;
 };
 
 
