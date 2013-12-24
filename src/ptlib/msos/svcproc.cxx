@@ -395,14 +395,14 @@ int PServiceProcess::InternalMain(void * arg)
 
   if (m_debugMode) {
     ::SetLastError(0);
-    PError << "Service simulation started for \"" << GetName()
-           << "\" version " << GetVersion(true)
-           << " by " << GetManufacturer()
-           << " on " << GetOSClass() << ' ' << GetOSName()
-           << " (" << GetOSVersion() << '-' << GetOSHardware()
-           << ") with PTLib (v" << GetLibVersion()
-           << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
-           << "\nClose window to terminate.\n" << endl;
+    DebugOutput(PSTRSTRM("Service simulation started for \"" << GetName()
+                << "\" version " << GetVersion(true)
+                << " by " << GetManufacturer()
+                << " on " << GetOSClass() << ' ' << GetOSName()
+                << " (" << GetOSVersion() << '-' << GetOSHardware()
+                << ") with PTLib (v" << GetLibVersion()
+                << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu")
+                << "\nClose window to terminate.\n"));
   }
 
   m_terminationEvent = CreateEvent(NULL, true, false, GetName());
@@ -439,8 +439,8 @@ int PServiceProcess::InternalMain(void * arg)
         if (!m_debugMode || m_controlWindow == NULL)
           msg.message = WM_QUIT;
         else {
-          PError << "nService simulation stopped for \"" << GetName() << "\".\n\n"
-                    "Close window to terminate.\n" << endl;
+          DebugOutput("\nService simulation stopped.\n\n"
+                      "Close window to terminate.");
           ResetEvent(m_terminationEvent);
         }
     }
@@ -953,18 +953,18 @@ void PServiceProcess::DebugOutput(const char * out)
   }
 
   SendMessage(m_debugWindow, EM_SETSEL, 128000, 128000);
-  char * lf;
-  char * prev = (char *)out;
+  const char * lf;
+  const char * prev = out;
   while ((lf = strchr(prev, '\n')) != NULL) {
-    if (*(lf-1) == '\r')
-      prev = lf+1;
-    else {
-      *lf++ = '\0';
-      SendMessage(m_debugWindow, EM_REPLACESEL, false, (LPARAM)out);
-      SendMessage(m_debugWindow, EM_REPLACESEL, false, (LPARAM)crlfString);
-      out = (const char *)lf;
-      prev = lf;
+    if (lf == out || *(lf-1) != '\r') {
+      size_t len = lf - out;
+      char * line = (char *)alloca(len+3);
+      memcpy(line, out, len);
+      strcpy(line+len, crlfString);
+      SendMessage(m_debugWindow, EM_REPLACESEL, false, (LPARAM)line);
+      out = lf+1;
     }
+    prev = lf+1;
   }
   if (*out != '\0')
     SendMessage(m_debugWindow, EM_REPLACESEL, false, (LPARAM)out);
@@ -1050,6 +1050,10 @@ void PServiceProcess::ThreadEntry()
     ReportStatus(SERVICE_RUNNING);
     SetTerminationValue(0);
     Main();
+  }
+  else {
+    if (m_debugMode)
+      DebugOutput("Failed to initialise service.\n");
   }
 
   ReportStatus(SERVICE_STOP_PENDING, terminationValue, 1, 30000);
