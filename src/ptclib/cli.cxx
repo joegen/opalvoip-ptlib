@@ -760,7 +760,78 @@ void PCLI::OnReceivedLine(Arguments & args)
     }
   }
 
-  cmd->m_notifier(args, 0);
+  if (cmd->m_variable == NULL)
+    cmd->m_notifier(args, 0);
+  else {
+    switch (cmd->m_variable->GetType()) {
+      case PVarType::VarBoolean :
+        OnSetBooleanCommand(args, *cmd);
+        break;
+
+      case PVarType::VarInt8:
+      case PVarType::VarInt16:
+      case PVarType::VarInt32:
+      case PVarType::VarInt64:
+      case PVarType::VarUInt8:
+      case PVarType::VarUInt16:
+      case PVarType::VarUInt32:
+      case PVarType::VarUInt64:
+        OnSetIntegerCommand(args, *cmd);
+        break;
+
+      default:
+        break;
+    }
+  }
+}
+
+
+void PCLI::OnSetBooleanCommand(Arguments & args, const InternalCommand & cmd)
+{
+  if (args.GetCount() == 0) {
+    args.GetContext() << cmd.m_varName << " = " << (cmd.m_variable->AsBoolean() ? "ON" : "OFF") << endl;
+    return;
+  }
+
+  if ((args[0] *= "on") || (args[0] *= "yes") || (args[0] *= "true"))
+    *cmd.m_variable = true;
+  else if ((args[0] *= "off") || (args[0] *= "no") || (args[0] *= "false"))
+    *cmd.m_variable = false;
+  else {
+    args.WriteUsage();
+    return;
+  }
+
+  args.GetContext() << cmd.m_varName << " => " << (cmd.m_variable->AsBoolean() ? "ON" : "OFF") << endl;
+
+  if (!cmd.m_notifier.IsNULL())
+    cmd.m_notifier(args, cmd.m_variable->AsBoolean());
+}
+
+
+void PCLI::OnSetIntegerCommand(Arguments & args, const InternalCommand & cmd)
+{
+  if (args.GetCount() == 0) {
+    args.GetContext() << cmd.m_varName << " = " << *cmd.m_variable << endl;
+    return;
+  }
+
+  if (!isdigit(args[0][0])) {
+    args.WriteUsage();
+    return;
+  }
+
+  int64_t value = args[0].AsInt64();
+  if (value < cmd.m_minimum->AsInteger64() || value > cmd.m_maximum->AsInteger64()) {
+    args.WriteError() << cmd.m_varName << " outside of bounds " << *cmd.m_minimum << ".." << *cmd.m_maximum << endl;
+    return;
+  }
+
+  *cmd.m_variable = value;
+  args.GetContext() << cmd.m_varName << " => " << value << endl;
+
+  if (!cmd.m_notifier.IsNULL())
+    cmd.m_notifier(args, cmd.m_variable->AsInteger());
 }
 
 
@@ -778,41 +849,114 @@ void PCLI::Broadcast(const PString & message) const
 }
 
 
-PCLI::InternalCommand::InternalCommand(const PString & words,
-                                       const PNotifier & notifier,
+PCLI::InternalCommand::InternalCommand(const PNotifier & notifier,
                                        const char * help,
                                        const char * usage,
-                                       const char * argSpec)
-  : m_words(words.Tokenise(' ', false))
-  , m_notifier(notifier)
+                                       const char * argSpec,
+                                       const char * varName)
+  : m_notifier(notifier)
   , m_help(help)
+  , m_usage(usage)
   , m_argSpec(argSpec)
+  , m_varName(varName)
+  , m_variable(NULL)
+  , m_minimum(NULL)
+  , m_maximum(NULL)
 {
-  for (PINDEX i = 0; i < m_words.GetSize(); ++i)
-    m_command &= m_words[i];
-
-  PArgList args(PString::Empty(), m_argSpec);
-  args.SetCommandName(m_command);
-  m_usage = args.Usage(usage);
 }
 
 
-bool PCLI::SetCommand(const char * command, const PNotifier & notifier, const char * help, const char * usage, const char * argSpec)
+PCLI::InternalCommand::InternalCommand(const InternalCommand & other)
+  : m_words(other.m_words)
+  , m_command(other.m_command)
+  , m_notifier(other.m_notifier)
+  , m_help(other.m_help)
+  , m_usage(other.m_usage)
+  , m_argSpec(other.m_argSpec)
+  , m_varName(other.m_varName)
+  , m_variable(other.m_variable != NULL ? other.m_variable->CloneAs<PVarType>() : NULL)
+  , m_minimum(other.m_minimum != NULL ? other.m_minimum->CloneAs<PVarType>() : NULL)
+  , m_maximum(other.m_maximum != NULL ? other.m_maximum->CloneAs<PVarType>() : NULL)
 {
-  if (!PAssert(command != NULL && *command != '\0' && !notifier.IsNULL(), PInvalidParameter))
+}
+
+
+PCLI::InternalCommand::~InternalCommand()
+{
+  delete m_variable;
+  delete m_minimum;
+  delete m_maximum;
+}
+
+
+bool PCLI::InternalSetCommand(const char * commands, const InternalCommand & info)
+{
+  if (!PAssert(commands != NULL && *commands != '\0', PInvalidParameter))
+    return false;
+
+  if (!PAssert(info.m_variable != NULL || !info.m_notifier.IsNULL(), PInvalidParameter))
     return false;
 
   bool good = true;
 
-  PStringArray synonymArray = PString(command).Lines();
+  PStringArray synonymArray = PConstString(commands).Lines();
   for (PINDEX s = 0; s < synonymArray.GetSize(); ++s) {
     // Normalise command to remove any duplicate spaces, should only
     // have one as in " conf  show   members   " -> "conf show members"
-    if (!m_commands.insert(InternalCommand(synonymArray[s], notifier, help, usage, argSpec)).second)
+    InternalCommand cmdToAdd(info);
+    cmdToAdd.m_words = synonymArray[s].Tokenise(' ', false);
+    for (PINDEX i = 0; i < cmdToAdd.m_words.GetSize(); ++i)
+      cmdToAdd.m_command &= cmdToAdd.m_words[i];
+
+    PArgList args(PString::Empty(), cmdToAdd.m_argSpec);
+    args.SetCommandName(cmdToAdd.m_command);
+    cmdToAdd.m_usage = args.Usage(cmdToAdd.m_usage, "");
+
+    if (!m_commands.insert(cmdToAdd).second)
       good = false;
   }
 
   return good;
+}
+
+
+bool PCLI::SetCommand(const char * commands, const PNotifier & notifier, const char * help, const char * usage, const char * argSpec)
+{
+  return InternalSetCommand(commands, InternalCommand(notifier, help, usage, argSpec, NULL));
+}
+
+
+bool PCLI::SetCommand(const char * commands, bool & value, const char * varName, const char * help, const PNotifier & notifier)
+{
+  PStringStream adjustedHelp;
+  if (help != NULL)
+    adjustedHelp << help;
+  else
+    adjustedHelp << "Set " << varName << " on/off.";
+  InternalCommand cmd(notifier, adjustedHelp, "[ \"on\" | \"off\" ]", NULL, varName);
+  cmd.m_variable = new PRefVar<bool>(value);
+  return InternalSetCommand(commands, cmd);
+}
+
+
+bool PCLI::SetCommand(const char * commands,
+                      const PVarType & value,
+                      const char * varName,
+                      const PVarType & minValue,
+                      const PVarType & maxValue,
+                      const char * help,
+                      const PNotifier & notifier)
+{
+  PStringStream adjustedHelp;
+  if (help != NULL)
+    adjustedHelp << help;
+  else
+    adjustedHelp << "Set integer " << varName;
+  InternalCommand cmd(notifier, adjustedHelp, "[ <value> ]", NULL, varName);
+  cmd.m_variable = value.CloneAs<PVarType>();
+  cmd.m_minimum  = minValue.CloneAs<PVarType>();
+  cmd.m_maximum  = maxValue.CloneAs<PVarType>();
+  return InternalSetCommand(commands, cmd);
 }
 
 

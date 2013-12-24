@@ -1243,7 +1243,7 @@ void PArgList::ReadFrom(istream & strm)
 }
 
 
-ostream & PArgList::Usage(ostream & strm, const char * usage) const
+ostream & PArgList::Usage(ostream & strm, const char * usage, const char * prefix) const
 {
   if (!m_parseError.IsEmpty())
     strm << m_parseError << "\n\n";
@@ -1254,11 +1254,11 @@ ostream & PArgList::Usage(ostream & strm, const char * usage) const
       break;
 
     case 1 :
-      strm << "usage: " << GetCommandName() << ' ' << usage << '\n';
+      strm << prefix << GetCommandName() << ' ' << usage << '\n';
       break;
 
     default :
-      strm << "Usage:\n";
+      strm << prefix << '\n';
       PINDEX i;
       for (i = 0; i < usages.GetSize(); ++i) {
         if (usages[i].IsEmpty())
@@ -1313,10 +1313,10 @@ ostream & PArgList::Usage(ostream & strm, const char * usage) const
 }
 
 
-PString PArgList::Usage(const char * usage) const
+PString PArgList::Usage(const char * usage, const char * prefix) const
 {
   PStringStream str;
-  Usage(str, usage);
+  Usage(str, usage, prefix);
   return str;
 }
 
