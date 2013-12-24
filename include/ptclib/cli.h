@@ -41,6 +41,7 @@
 #if P_CLI
 
 #include <ptlib/sockets.h>
+#include <ptclib/vartype.h>
 
 #include <list>
 
@@ -399,13 +400,49 @@ class PCLI : public PObject
       const char * argSpec = NULL ///< Argument specification to pass to PArgList
     );
 
+    /**Register a command setting a boolean variable.
+    */
+    bool SetCommand(
+      const char * command,       ///< Command(s) to register
+      bool & value,               ///< Boolean value to change
+      const char * name,          ///< Name of variable
+      const char * help = NULL,   ///< Help text on command (what it does)
+      const PNotifier & notifier = PNotifier() ///< Callback to execute when value changed
+    );
+
+    /**Register a command setting an integer variable.
+    */
+    bool SetCommand(
+      const char * command,       ///< Command(s) to register
+      const PVarType & value,     ///< Integer value to change
+      const char * name,          ///< Name of variable
+      const PVarType & minValue,  ///< Minimum value for integer
+      const PVarType & maxValue,  ///< Maximum value for integer
+      const char * help = NULL,   ///< Help text on command (what it does)
+      const PNotifier & notifier = PNotifier() ///< Callback to execute when value changed
+    );
+
+    template <typename TYPE>
+    bool SetCommand(
+      const char * command,        ///< Command(s) to register
+      TYPE & value,                ///< Integer value to change
+      const char * name,           ///< Name of variable
+      TYPE minValue,               ///< Minimum value for integer
+      TYPE maxValue = INT_MAX,     ///< Maximum value for integer
+      const char * help = NULL,    ///< Help text on command (what it does)
+      const PNotifier & notifier = PNotifier() ///< Callback to execute when value changed
+    )
+    {
+      return SetCommand(command, PRefVar(value), name, minValue, maxValue, help, notifier);
+    }
+
     /**Show help for registered commands to the context.
       */
     virtual void ShowHelp(
       Context & context,        ///< Context to output help to.
       const PArgList & partial  ///< Partial command line to limit help
     );
-  //@}
+    //@}
 
   /**@name Member access */
   //@{
@@ -712,8 +749,11 @@ class PCLI : public PObject
     PString         m_unknownCommandError;
     PString         m_ambiguousCommandError;
 
-    struct InternalCommand {
-      InternalCommand(const PString & words, const PNotifier & notifier, const char * help, const char * usage, const char * argSpec);
+    struct InternalCommand
+    {
+      InternalCommand(const PNotifier & notifier, const char * help, const char * usage, const char * argSpec, const char * varName);
+      InternalCommand(const InternalCommand & other);
+      ~InternalCommand();
       bool IsMatch(const PArgList & args, bool partial = false) const;
       bool operator<(const InternalCommand & other) const;
 
@@ -723,9 +763,17 @@ class PCLI : public PObject
       PString      m_help;
       PString      m_usage;
       PString      m_argSpec;
+      PString      m_varName;
+      PVarType   * m_variable;
+      PVarType   * m_minimum;
+      PVarType   * m_maximum;
     };
     typedef std::set<InternalCommand> Commands_t;
     Commands_t m_commands;
+    bool InternalSetCommand(const char * commands, const InternalCommand & info);
+
+    virtual void OnSetBooleanCommand(Arguments & args, const InternalCommand & cmd);
+    virtual void OnSetIntegerCommand(Arguments & args, const InternalCommand & cmd);
 
     typedef std::list<Context *> ContextList_t;
     ContextList_t m_contextList;

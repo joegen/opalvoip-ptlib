@@ -206,11 +206,13 @@ class PArgList : public PObject
        has multiple lines in it, then each argument pattern is output.
       */
     ostream & Usage(
-      ostream & strm,    ///< Stream to output usage text.
-      const char * usage = NULL ///< Usage first line
+      ostream & strm,                   ///< Stream to output usage text.
+      const char * usage = NULL,        ///< Usage first line
+      const char * prefix = "Usage: "   ///< Prefix for usage first line
     ) const;
     PString Usage(
-      const char * usage = NULL ///< Usage first line
+      const char * usage = NULL,        ///< Usage first line
+      const char * prefix = "Usage: "   ///< Prefix for usage first line
     ) const;
   //@}
 
