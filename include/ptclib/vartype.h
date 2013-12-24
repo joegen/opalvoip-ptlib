@@ -265,6 +265,7 @@ class PVarType : public PObject
     PString           AsString() const;
 
     template <typename TYPE> TYPE As() const { return AsString();     }
+#ifndef __GNUC__
     template <> bool              As() const { return AsBoolean();    }
     template <> int               As() const { return AsInteger();    }
     template <> unsigned          As() const { return AsUnsigned();   }
@@ -274,6 +275,7 @@ class PVarType : public PObject
     template <> PGloballyUniqueID As() const { return AsGUID();       }
     template <> PTime             As() const { return AsTime();       }
     template <> PString           As() const { return AsString();     }
+#endif
 
     const void * GetPointer() const;
     PINDEX GetSize() const;
