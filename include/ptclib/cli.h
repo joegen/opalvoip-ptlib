@@ -433,7 +433,7 @@ class PCLI : public PObject
       const PNotifier & notifier = PNotifier() ///< Callback to execute when value changed
     )
     {
-      return SetCommand(command, PRefVar(value), name, minValue, maxValue, help, notifier);
+      return SetCommand(command, PRefVar<TYPE>(value), name, minValue, maxValue, help, notifier);
     }
 
     /**Show help for registered commands to the context.
