@@ -879,7 +879,7 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
   }
 
   if (m_serverAddress.IsValid() || SetServer(m_serverName))
-    return GetNatType() != UnknownNat;
+    return GetNatType(true) != UnknownNat;
 
   PTRACE(1, "STUN\tServer port not set.");
   return false;
