@@ -1024,7 +1024,7 @@ bool PSSLCipherContext::Process(const PBYTEArray & in, PBYTEArray & out)
 // Note: This ciphertext stealing implementation doesn't seem to always produce
 // compatible results, avoid when encrypting:
 
-int EVP_CipherUpdate_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl,
+static int EVP_CipherUpdate_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl,
                       const unsigned char *in, int inl)
 {
     int bl = ctx->cipher->block_size;
@@ -1094,7 +1094,7 @@ int EVP_CipherUpdate_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl,
     return 1;
 }
 
-int EVP_EncryptFinal_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl)
+static int EVP_EncryptFinal_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl)
 {
     unsigned char tmp[EVP_MAX_BLOCK_LENGTH];
     int bl = ctx->cipher->block_size;
@@ -1158,7 +1158,7 @@ int EVP_EncryptFinal_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl)
     }
 }
 
-int EVP_DecryptFinal_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl)
+static int EVP_DecryptFinal_cts(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl)
 {
     unsigned char tmp[EVP_MAX_BLOCK_LENGTH];
     int bl = ctx->cipher->block_size;
