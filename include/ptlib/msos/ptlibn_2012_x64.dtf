@@ -2119,14 +2119,14 @@ EXPORTS
     ??0?$PBaseArray@_W@@QEAA@AEBV0@@Z @2118 NONAME
     ??0?$PBaseArray@_W@@QEAA@PEB_W_K_N@Z @2119 NONAME
     ??0?$PBaseArray@_W@@QEAA@_K@Z @2120 NONAME
-    ??0?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@QEAA@AEBV0@@Z @2121 NONAME
-    ??0?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@QEAA@W4CompileOptions_Bits@PRegularExpression@@@Z @2122 NONAME
-    ??0?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@QEAA@AEBV0@@Z @2123 NONAME
-    ??0?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@QEAA@W4ExecOptions_Bits@PRegularExpression@@@Z @2124 NONAME
-    ??0?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QEAA@AEBV0@@Z @2125 NONAME
-    ??0?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QEAA@W4OpenOptions_Bits@PFile@@@Z @2126 NONAME
-    ??0?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@QEAA@AEBV0@@Z @2127 NONAME
-    ??0?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@QEAA@W4Options_Bits@PXMLBase@@@Z @2128 NONAME
+    ??0?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@QEAA@AEBV0@@Z @24475 NONAME
+    ??0?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@QEAA@W4CompileOptions_Bits@PRegularExpression@@@Z @24476 NONAME
+    ??0?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@QEAA@AEBV0@@Z @24477 NONAME
+    ??0?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@QEAA@W4ExecOptions_Bits@PRegularExpression@@@Z @24478 NONAME
+    ??0?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@QEAA@AEBV0@@Z @24479 NONAME
+    ??0?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@QEAA@W4OpenOptions_Bits@PFile@@@Z @24480 NONAME
+    ??0?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@QEAA@AEBV0@@Z @24481 NONAME
+    ??0?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@QEAA@W4Options_Bits@PXMLBase@@@Z @24482 NONAME
     ??0?$PConstantString@VPCaselessString@@@@QEAA@PEBD@Z @2129 NONAME
     ??0?$PConstantString@VPString@@@@QEAA@PEBD@Z @2130 NONAME
     ??0?$PDevicePluginAdapter@VPNatMethod@@@@QEAA@XZ @2131 NONAME
@@ -3409,8 +3409,8 @@ EXPORTS
     ??0PEthSocketThread@@QEAA@AEBV?$PNotifierTemplate@AEAVFrame@PEthSocket@@@@@Z @3399 NONAME
     ??0PExternalThread@@QEAA@XZ @3400 NONAME
     ??0PFactoryBase@@IEAA@XZ @3401 NONAME
-    ??0PFile@@QEAA@AEBVPFilePath@@W4OpenMode@0@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @3402 NONAME
-    ??0PFile@@QEAA@W4OpenMode@0@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @3403 NONAME
+    ??0PFile@@QEAA@AEBVPFilePath@@W4OpenMode@0@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24483 NONAME
+    ??0PFile@@QEAA@W4OpenMode@0@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24484 NONAME
     ??0PFile@@QEAA@XZ @3404 NONAME
     ??0PFileInfo@@QEAA@XZ @3405 NONAME
     ??0PFilePath@@QEAA@AEBV0@@Z @3406 NONAME
@@ -3629,8 +3629,8 @@ EXPORTS
     ??0PreFormat@PHTML@@QEAA@HPEBD@Z @3617 NONAME
     ??0PRegisterPage@@QEAA@AEAVPHTTPServiceProcess@@AEBVPHTTPAuthority@@@Z @3618 NONAME
     ??0PRegularExpression@@QEAA@AEBV0@@Z @3619 NONAME
-    ??0PRegularExpression@@QEAA@AEBVPString@@V?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@@Z @3620 NONAME
-    ??0PRegularExpression@@QEAA@PEBDV?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@@Z @3621 NONAME
+    ??0PRegularExpression@@QEAA@AEBVPString@@V?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@@Z @24485 NONAME
+    ??0PRegularExpression@@QEAA@PEBDV?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@@Z @24486 NONAME
     ??0PRegularExpression@@QEAA@XZ @3622 NONAME
     ??0PRemoteConnection@@QEAA@AEBVPString@@@Z @3623 NONAME
     ??0PRemoteConnection@@QEAA@XZ @3624 NONAME
@@ -3773,7 +3773,7 @@ EXPORTS
     ??0PSOAPClient@@QEAA@AEBVPURL@@@Z @3759 NONAME
     ??0PSOAPMessage@@QEAA@AEBV0@@Z @3760 NONAME
     ??0PSOAPMessage@@QEAA@AEBVPString@@0@Z @3761 NONAME
-    ??0PSOAPMessage@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @3762 NONAME
+    ??0PSOAPMessage@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24487 NONAME
     ??0PSOAPServerMethod@@QEAA@AEBVPString@@@Z @3763 NONAME
     ??0PSOAPServerRequestResponse@@QEAA@AEAVPSOAPMessage@@@Z @3764 NONAME
     ??0PSOAPServerResource@@QEAA@AEBVPHTTPAuthority@@@Z @3765 NONAME
@@ -3901,8 +3901,8 @@ EXPORTS
     ??0PStringToString@@QEAA@AEBV0@@Z @3887 NONAME
     ??0PStringToString@@QEAA@XZ @3888 NONAME
     ??0PStringToString@@QEAA@_KPEBUInitialiser@0@_N2@Z @3889 NONAME
-    ??0PStructuredFile@@QEAA@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @3890 NONAME
-    ??0PStructuredFile@@QEAA@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @3891 NONAME
+    ??0PStructuredFile@@QEAA@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24488 NONAME
+    ??0PStructuredFile@@QEAA@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24489 NONAME
     ??0PStructuredFile@@QEAA@XZ @3892 NONAME
     ??0PSTUN@@QEAA@XZ @3893 NONAME
     ??0PSTUNAddressAttribute@@QEAA@XZ @3894 NONAME
@@ -3943,8 +3943,8 @@ EXPORTS
     ??0PTEACypher@@QEAA@W4BlockChainMode@PCypher@@@Z @3929 NONAME
     ??0PTelnetSocket@@QEAA@AEBVPString@@@Z @3930 NONAME
     ??0PTelnetSocket@@QEAA@XZ @3931 NONAME
-    ??0PTextFile@@QEAA@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @3932 NONAME
-    ??0PTextFile@@QEAA@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @3933 NONAME
+    ??0PTextFile@@QEAA@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24490 NONAME
+    ??0PTextFile@@QEAA@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24491 NONAME
     ??0PTextFile@@QEAA@XZ @3934 NONAME
     ??0PTextToSpeech@@QEAA@XZ @3935 NONAME
     ??0PTextToSpeech_Festival@@QEAA@XZ @3936 NONAME
@@ -4097,10 +4097,10 @@ EXPORTS
     ??0PWaveBuffer@@AEAA@_K@Z @4081 NONAME
     ??0PWaveFormat@@QEAA@AEBV0@@Z @4082 NONAME
     ??0PWaveFormat@@QEAA@XZ @4083 NONAME
-    ??0PWAVFile@@QEAA@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@I@Z @4084 NONAME
-    ??0PWAVFile@@QEAA@AEBVPString@@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @4085 NONAME
+    ??0PWAVFile@@QEAA@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@I@Z @24492 NONAME
+    ??0PWAVFile@@QEAA@AEBVPString@@AEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24493 NONAME
     ??0PWAVFile@@QEAA@I@Z @4086 NONAME
-    ??0PWAVFile@@QEAA@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@I@Z @4087 NONAME
+    ??0PWAVFile@@QEAA@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@I@Z @24494 NONAME
     ??0PWAVFileConverter@@QEAA@XZ @4088 NONAME
     ??0PWAVFileConverterPCM@@QEAA@XZ @4089 NONAME
     ??0PWAVFileFormat@@QEAA@XZ @4090 NONAME
@@ -4120,15 +4120,15 @@ EXPORTS
     ??0PXER_Stream@@QEAA@PEAVPXMLElement@@AEBVPBYTEArray@@@Z @4103 NONAME
     ??0PXER_Stream@@QEAA@PEAVPXMLElement@@PEBE_K@Z @4104 NONAME
     ??0PXML@@QEAA@AEBV0@@Z @4105 NONAME
-    ??0PXML@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@PEBD@Z @4106 NONAME
-    ??0PXMLBase@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @4107 NONAME
+    ??0PXML@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@PEBD@Z @24495 NONAME
+    ??0PXMLBase@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24496 NONAME
     ??0PXMLData@@QEAA@PEAVPXMLElement@@AEBVPString@@@Z @4108 NONAME
     ??0PXMLData@@QEAA@PEAVPXMLElement@@PEBDH@Z @4109 NONAME
     ??0PXMLElement@@QEAA@PEAV0@AEBVPString@@1@Z @4110 NONAME
     ??0PXMLElement@@QEAA@PEAV0@PEBD@Z @4111 NONAME
     ??0PXMLObject@@QEAA@PEAVPXMLElement@@@Z @4112 NONAME
-    ??0PXMLParser@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @4113 NONAME
-    ??0PXMLRPC@@QEAA@AEBVPURL@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @4114 NONAME
+    ??0PXMLParser@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24497 NONAME
+    ??0PXMLRPC@@QEAA@AEBVPURL@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24498 NONAME
     ??0PXMLRPCArrayBase@@IEAA@AEAVPContainer@@PEBD1@Z @4115 NONAME
     ??0PXMLRPCArrayObjectsBase@@IEAA@AEAVPArrayObjects@@PEBD1@Z @4116 NONAME
     ??0PXMLRPCBlock@@QEAA@AEBVPString@@@Z @4117 NONAME
@@ -4142,9 +4142,9 @@ EXPORTS
     ??0PXMLRPCServerResource@@QEAA@XZ @4125 NONAME
     ??0PXMLRPCStructBase@@IEAA@XZ @4126 NONAME
     ??0PXMLRPCVariableBase@@IEAA@PEBD0@Z @4127 NONAME
-    ??0PXMLSettings@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @4128 NONAME
+    ??0PXMLSettings@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24499 NONAME
     ??0PXMLStreamParser@@QEAA@XZ @4129 NONAME
-    ??0PXML_HTTP@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@PEBD@Z @4130 NONAME
+    ??0PXML_HTTP@@QEAA@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@PEBD@Z @24500 NONAME
     ??0PYUVFile@@QEAA@XZ @4131 NONAME
     ??0P_BGR24_RGB24@@QEAA@AEBVPVideoFrameInfo@@0@Z @4132 NONAME
     ??0P_BGR24_RGB24_Registration@@QEAA@XZ @4133 NONAME
@@ -5716,9 +5716,9 @@ EXPORTS
     ??4?$PBaseArray@J@@QEAAAEAV0@AEBV0@@Z @5686 NONAME
     ??4?$PBaseArray@K@@QEAAAEAV0@AEBV0@@Z @5687 NONAME
     ??4?$PBaseArray@_W@@QEAAAEAV0@AEBV0@@Z @5688 NONAME
-    ??4?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@QEAAAEAV0@AEBV0@@Z @5689 NONAME
-    ??4?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QEAAAEAV0@W4OpenOptions_Bits@PFile@@@Z @5690 NONAME
-    ??4?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@QEAAAEAV0@AEBV0@@Z @5691 NONAME
+    ??4?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@QEAAAEAV0@AEBV0@@Z @24501 NONAME
+    ??4?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@QEAAAEAV0@W4OpenOptions_Bits@PFile@@@Z @24502 NONAME
+    ??4?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@QEAAAEAV0@AEBV0@@Z @24503 NONAME
     ??4?$PDictionary@V?$PKey@_K@@VPString@@@@QEAAAEAV0@AEBV0@@Z @24161 NONAME
     ??4?$PDictionary@VPString@@V1@@@QEAAAEAV0@AEBV0@@Z @5693 NONAME
     ??4?$PDictionary@VPString@@V?$PKey@_K@@@@QEAAAEAV0@AEBV0@@Z @24162 NONAME
@@ -5932,7 +5932,7 @@ EXPORTS
     ??8?$CComPtr@UIEnumMoniker@@@@QEBA_NPEAUIEnumMoniker@@@Z @5901 NONAME
     ??8?$CComPtr@UIPin@@@@QEBA_NPEAUIPin@@@Z @5902 NONAME
     ??8?$CComPtr@VPSampleGrabberCB@@@@QEBA_NPEAVPSampleGrabberCB@@@Z @24433 NONAME
-    ??8?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QEBA_NW4OpenOptions_Bits@PFile@@@Z @5903 NONAME
+    ??8?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@QEBA_NW4OpenOptions_Bits@PFile@@@Z @24504 NONAME
     ??8?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PEAUPAsyncNotifierCallback@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @5904 NONAME
     ??8?$_Deque_unchecked_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PEAUPAsyncNotifierCallback@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @5905 NONAME
     ??8?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PEAVContext@PCLI@@@std@@@std@@@std@@QEBA_NAEBV01@@Z @5906 NONAME
@@ -6212,9 +6212,9 @@ EXPORTS
     ??B?$PBaseArray@PEAUPHashTableElement@@@@QEBAPEBQEAUPHashTableElement@@XZ @6179 NONAME
     ??B?$PBaseArray@PEAVPObject@@@@QEBAPEBQEAVPObject@@XZ @6180 NONAME
     ??B?$PBaseArray@_W@@QEBAPEB_WXZ @6181 NONAME
-    ??B?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@QEAAAEAW4CompileOptions_Bits@PRegularExpression@@XZ @6182 NONAME
-    ??B?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@QEAAAEAW4ExecOptions_Bits@PRegularExpression@@XZ @6183 NONAME
-    ??B?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@QEAAAEAW4Options_Bits@PXMLBase@@XZ @6184 NONAME
+    ??B?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@QEAAAEAW4CompileOptions_Bits@PRegularExpression@@XZ @24505 NONAME
+    ??B?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@QEAAAEAW4ExecOptions_Bits@PRegularExpression@@XZ @24506 NONAME
+    ??B?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@QEAAAEAW4Options_Bits@PXMLBase@@XZ @24507 NONAME
     ??B?$PIntReversedOrder@G@@QEBAGXZ @6185 NONAME
     ??B?$PIntReversedOrder@K@@QEBAKXZ @6186 NONAME
     ??B?$PIntSameOrder@G@@QEBAGXZ @6187 NONAME
@@ -6887,8 +6887,8 @@ EXPORTS
     ??I?$CComPtr@UISpObjectToken@@@@QEAAPEAPEAUISpObjectToken@@XZ @6859 NONAME
     ??I?$CComPtr@UISpObjectTokenCategory@@@@QEAAPEAPEAUISpObjectTokenCategory@@XZ @6860 NONAME
     ??I?$CComPtr@UISpStream@@@@QEAAPEAPEAUISpStream@@XZ @6861 NONAME
-    ??I?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@QEBA_NW4OpenOptions_Bits@PFile@@@Z @6862 NONAME
-    ??I?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@QEBA_NW4Options_Bits@PXMLBase@@@Z @6863 NONAME
+    ??I?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@QEBA_NW4OpenOptions_Bits@PFile@@@Z @24508 NONAME
+    ??I?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@QEBA_NW4Options_Bits@PXMLBase@@@Z @24509 NONAME
     ??I@YA?AVPString@@DAEBV0@@Z @6864 NONAME
     ??I@YA?AVPString@@PEBDAEBV0@@Z @6865 NONAME
     ??IMediaTypePtr@@QEAAPEAPEAU_AMMediaType@@XZ @6866 NONAME
@@ -6949,7 +6949,7 @@ EXPORTS
     ??XPString@@QEBA_NAEBV0@@Z @6918 NONAME
     ??XPString@@QEBA_NPEBD@Z @6919 NONAME
     ??XPTimeInterval@@QEAAAEAV0@H@Z @6920 NONAME
-    ??Y?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@QEAAAEAV0@W4CompileOptions_Bits@PRegularExpression@@@Z @6921 NONAME
+    ??Y?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@QEAAAEAV0@W4CompileOptions_Bits@PRegularExpression@@@Z @24510 NONAME
     ??Y?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PEAUPAsyncNotifierCallback@@@std@@@std@@@std@@QEAAAEAV01@_J@Z @6922 NONAME
     ??Y?$_Deque_unchecked_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PEAUPAsyncNotifierCallback@@@std@@@std@@@std@@QEAAAEAV01@_J@Z @6923 NONAME
     ??Y?$_Deque_unchecked_iterator@V?$_Deque_val@U?$_Deque_simple_types@PEAUPAsyncNotifierCallback@@@std@@@std@@@std@@QEAAAEAV01@_J@Z @6924 NONAME
@@ -13611,7 +13611,7 @@ EXPORTS
     ?AsString@PvCard@@QEAA?AVPString@@W4Format@1@@Z @13537 NONAME
     ?AsString@PVideoFrameInfo@@SA?AVPString@@II@Z @13539 NONAME
     ?AsString@PVideoInteractionInfo@@SA?AVPString@@AEBW4InputInteractType@1@@Z @13540 NONAME
-    ?AsString@PXML@@QEAA?AVPString@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @13541 NONAME
+    ?AsString@PXML@@QEAA?AVPString@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24511 NONAME
     ?AsString@PXML@@QEBA?AVPString@@XZ @13542 NONAME
     ?AsString@PXMLObject@@QEBA?AVPString@@XZ @13543 NONAME
     ?AsString@X509_Name@PSSLCertificate@@QEBA?AVPString@@H@Z @13544 NONAME
@@ -15152,8 +15152,8 @@ EXPORTS
     ?CompareObjectMemoryDirect@Transport@XMPP@@UEBA?AW4Comparison@PObject@@AEBV4@@Z @15069 NONAME
     ?CompareObjectMemoryDirect@User@MUC@XMPP@@UEBA?AW4Comparison@PObject@@AEBV5@@Z @15070 NONAME
     ?CompareObjectMemoryDirect@X509_Name@PSSLCertificate@@UEBA?AW4Comparison@PObject@@AEBV4@@Z @15071 NONAME
-    ?Compile@PRegularExpression@@QEAA_NAEBVPString@@V?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@@Z @15072 NONAME
-    ?Compile@PRegularExpression@@QEAA_NPEBDV?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$07I@@@Z @15073 NONAME
+    ?Compile@PRegularExpression@@QEAA_NAEBVPString@@V?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@@Z @24512 NONAME
+    ?Compile@PRegularExpression@@QEAA_NPEBDV?$PBitwiseEnum@W4CompileOptions_Bits@PRegularExpression@@$03I@@@Z @24513 NONAME
     ?Complete@PMessageDigest5@@UEAA?AVPString@@XZ @15074 NONAME
     ?Complete@PMessageDigest5@@UEAAXAEAVCode@1@@Z @15075 NONAME
     ?CompleteDigest@PMessageDigest@@UEAA?AVPString@@XZ @15076 NONAME
@@ -16351,15 +16351,15 @@ EXPORTS
     ?Execute@PAsyncNotifierQueueMap@@QEAA_NKPEAVPAsyncNotifierTarget@@AEBVPTimeInterval@@@Z @16261 NONAME
     ?Execute@PODBC@@QEAA_NAEBVPString@@@Z @16262 NONAME
     ?Execute@PPipeChannel@@QEAA_NXZ @16263 NONAME
-    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEAV?$PScalarArray@H@@1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16264 NONAME
-    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEAV?$PScalarArray@H@@V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16265 NONAME
-    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEA_K1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16266 NONAME
-    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEA_KV?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16267 NONAME
-    ?Execute@PRegularExpression@@QEBA_NPEBDAEAV?$PScalarArray@H@@1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16268 NONAME
-    ?Execute@PRegularExpression@@QEBA_NPEBDAEAV?$PScalarArray@H@@V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16269 NONAME
-    ?Execute@PRegularExpression@@QEBA_NPEBDAEAVPStringArray@@V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16270 NONAME
-    ?Execute@PRegularExpression@@QEBA_NPEBDAEA_K1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16271 NONAME
-    ?Execute@PRegularExpression@@QEBA_NPEBDAEA_KV?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$03I@@@Z @16272 NONAME
+    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEAV?$PScalarArray@H@@1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24514 NONAME
+    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEAV?$PScalarArray@H@@V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24515 NONAME
+    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEA_K1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24516 NONAME
+    ?Execute@PRegularExpression@@QEBA_NAEBVPString@@AEA_KV?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24517 NONAME
+    ?Execute@PRegularExpression@@QEBA_NPEBDAEAV?$PScalarArray@H@@1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24518 NONAME
+    ?Execute@PRegularExpression@@QEBA_NPEBDAEAV?$PScalarArray@H@@V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24519 NONAME
+    ?Execute@PRegularExpression@@QEBA_NPEBDAEAVPStringArray@@V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24520 NONAME
+    ?Execute@PRegularExpression@@QEBA_NPEBDAEA_K1V?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24521 NONAME
+    ?Execute@PRegularExpression@@QEBA_NPEBDAEA_KV?$PBitwiseEnum@W4ExecOptions_Bits@PRegularExpression@@$01I@@@Z @24522 NONAME
     ?Execute@PVXMLSession@@UEAA_NXZ @16273 NONAME
     ?Execute@Statement@PODBC@@QEAA_NAEBVPString@@@Z @16274 NONAME
     ?ExecuteCommand@PHTTPClient@@QEAAHAEBVPString@@AEBVPURL@@AEAVPMIMEInfo@@02@Z @16275 NONAME
@@ -16487,7 +16487,7 @@ EXPORTS
     ?FlowControl@PVideoInputDevice_DirectShow@@UEAA_NPEBX@Z @16393 NONAME
     ?FlushQueue@PVXMLChannel@@UEAAXXZ @16394 NONAME
     ?format@PWAVFile@@SAPEAV1@AEBVPString@@@Z @16395 NONAME
-    ?format@PWAVFile@@SAPEAV1@AEBVPString@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @16396 NONAME
+    ?format@PWAVFile@@SAPEAV1@AEBVPString@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24523 NONAME
     ?FormatFault@PSOAPServerResource@@UEAA?AVPSOAPMessage@@_KAEBVPString@@@Z @16397 NONAME
     ?FormatFault@PXMLRPCServerResource@@UEAA?AVPString@@_KAEBV2@@Z @16398 NONAME
     ?FormatId@CSpStreamFormat@@QEBAAEBU_GUID@@XZ @16399 NONAME
@@ -17700,7 +17700,7 @@ EXPORTS
     ?GetOptionCount@PConfigArgs@@UEBA_KAEBVPString@@@Z @17590 NONAME
     ?GetOptionCount@PConfigArgs@@UEBA_KD@Z @17591 NONAME
     ?GetOptionCount@PConfigArgs@@UEBA_KPEBD@Z @17592 NONAME
-    ?GetOptions@PXMLBase@@QEBA?AV?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@XZ @17593 NONAME
+    ?GetOptions@PXMLBase@@QEBA?AV?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@XZ @24524 NONAME
     ?GetOptionString@PArgList@@UEBA?AVPString@@AEBV2@PEBD@Z @17594 NONAME
     ?GetOptionString@PArgList@@UEBA?AVPString@@DPEBD@Z @17595 NONAME
     ?GetOptionString@PArgList@@UEBA?AVPString@@PEBD0@Z @17596 NONAME
@@ -19133,14 +19133,14 @@ EXPORTS
     ?Load@PURL_HttpLoader@@UEBA_NAEAVPBYTEArray@@AEBVPURL@@AEBULoadParams@3@@Z @19019 NONAME
     ?Load@PURL_HttpLoader@@UEBA_NAEAVPString@@AEBVPURL@@AEBULoadParams@3@@Z @19020 NONAME
     ?Load@PVXMLSession@@UEAA_NAEBVPString@@@Z @19021 NONAME
-    ?Load@PXML@@QEAA_NAEBVPString@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @19022 NONAME
+    ?Load@PXML@@QEAA_NAEBVPString@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24525 NONAME
     ?Load@PXMLRPCBlock@@QEAA_NAEBVPString@@@Z @19023 NONAME
-    ?LoadAndValidate@PXML@@QEAA_NAEBVPString@@PEBUValidationInfo@1@AEAV2@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @19024 NONAME
+    ?LoadAndValidate@PXML@@QEAA_NAEBVPString@@PEBUValidationInfo@1@AEAV2@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24526 NONAME
     ?LoadData@PHTTPFile@@UEAA_NAEAVPHTTPRequest@@AEAVPCharArray@@@Z @19025 NONAME
     ?LoadData@PHTTPResource@@UEAA_NAEAVPHTTPRequest@@AEAVPCharArray@@@Z @19026 NONAME
     ?LoadData@PHTTPTailFile@@UEAA_NAEAVPHTTPRequest@@AEAVPCharArray@@@Z @19027 NONAME
     ?LoadFile@PVXMLSession@@UEAA_NAEBVPFilePath@@AEBVPString@@@Z @19028 NONAME
-    ?LoadFile@PXML@@QEAA_NAEBVPFilePath@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @19029 NONAME
+    ?LoadFile@PXML@@QEAA_NAEBVPFilePath@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24527 NONAME
     ?LoadFromConfig@PHTTPBooleanField@@UEAAXAEAVPConfig@@@Z @19030 NONAME
     ?LoadFromConfig@PHTTPCompositeField@@UEAAXAEAVPConfig@@@Z @19031 NONAME
     ?LoadFromConfig@PHTTPConfig@@QEAAXXZ @19032 NONAME
@@ -19169,8 +19169,8 @@ EXPORTS
     ?LoadText@PServiceHTTPString@@UEAA?AVPString@@AEAVPHTTPRequest@@@Z @19055 NONAME
     ?LoadURL@PVXMLSession@@UEAA_NAEBVPURL@@@Z @19056 NONAME
     ?LoadURL@PXML_HTTP@@QEAA_NAEBVPURL@@@Z @19057 NONAME
-    ?LoadURL@PXML_HTTP@@QEAA_NAEBVPURL@@AEBULoadParams@2@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @19058 NONAME
-    ?LoadURL@PXML_HTTP@@QEAA_NAEBVPURL@@AEBVPTimeInterval@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @19059 NONAME
+    ?LoadURL@PXML_HTTP@@QEAA_NAEBVPURL@@AEBULoadParams@2@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24528 NONAME
+    ?LoadURL@PXML_HTTP@@QEAA_NAEBVPURL@@AEBVPTimeInterval@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24529 NONAME
     ?LoadVXML@PVXMLSession@@UEAA_NAEBVPString@@0@Z @19060 NONAME
     ?LocateName@PHTTPCompositeField@@UEBAPEBVPHTTPField@@AEBVPString@@@Z @19061 NONAME
     ?LocateName@PHTTPField@@UEBAPEBV1@AEBVPString@@@Z @19062 NONAME
@@ -19865,8 +19865,8 @@ EXPORTS
     ?Open@PConsoleChannel@@UEAA_NW4ConsoleType@1@@Z @19745 NONAME
     ?Open@PDirectory@@UEAA_NH@Z @19746 NONAME
     ?Open@PDynaLink@@UEAA_NAEBVPString@@@Z @19747 NONAME
-    ?Open@PFile@@UEAA_NAEBVPFilePath@@W4OpenMode@1@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @19748 NONAME
-    ?Open@PFile@@UEAA_NW4OpenMode@1@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @19749 NONAME
+    ?Open@PFile@@UEAA_NAEBVPFilePath@@W4OpenMode@1@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24530 NONAME
+    ?Open@PFile@@UEAA_NW4OpenMode@1@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24531 NONAME
     ?Open@PIndirectChannel@@QEAA_NAEAVPChannel@@@Z @19750 NONAME
     ?Open@PIndirectChannel@@QEAA_NPEAVPChannel@@0_N1@Z @19751 NONAME
     ?Open@PIndirectChannel@@QEAA_NPEAVPChannel@@_N@Z @19752 NONAME
@@ -19899,7 +19899,7 @@ EXPORTS
     ?Open@PSTUNServer@@QEAA_NG@Z @19779 NONAME
     ?Open@PTURNClient@@UEAA_NAEBVAddress@PIPSocket@@@Z @19780 NONAME
     ?Open@PVideoChannel@@QEAA_NAEBVPString@@W4Directions@1@@Z @19781 NONAME
-    ?Open@PVideoFile@@UEAA_NAEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @19782 NONAME
+    ?Open@PVideoFile@@UEAA_NAEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24532 NONAME
     ?Open@PVideoInputDevice_Application@@UEAA_NAEBVPString@@_N@Z @19783 NONAME
     ?Open@PVideoInputDevice_DirectShow@@UEAA_NAEBVPString@@_N@Z @19784 NONAME
     ?Open@PVideoInputDevice_FakeVideo@@UEAA_NAEBVPString@@_N@Z @19785 NONAME
@@ -19921,9 +19921,9 @@ EXPORTS
     ?Open@PVXMLPlayableURL@@UEAA_NAEAVPVXMLChannel@@AEBVPString@@_K2_N@Z @19800 NONAME
     ?Open@PVXMLRecordableFilename@@UEAA_NAEBVPString@@@Z @19801 NONAME
     ?Open@PVXMLSession@@UEAA_NAEBVPString@@@Z @19802 NONAME
-    ?Open@PWAVFile@@UEAA_NAEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @19803 NONAME
-    ?Open@PWAVFile@@UEAA_NW4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @19804 NONAME
-    ?Open@PYUVFile@@UEAA_NAEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @19805 NONAME
+    ?Open@PWAVFile@@UEAA_NAEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24533 NONAME
+    ?Open@PWAVFile@@UEAA_NW4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24534 NONAME
+    ?Open@PYUVFile@@UEAA_NAEBVPFilePath@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0CA@I@@@Z @24535 NONAME
     ?Open@TCPTransport@C2S@XMPP@@UEAA_NXZ @19806 NONAME
     ?OpenAppend@PSSL_BIO@@QEAA_NAEBVPFilePath@@@Z @19807 NONAME
     ?OpenBrowser@PURL@@SA_NAEBVPString@@@Z @19808 NONAME
@@ -20183,7 +20183,7 @@ EXPORTS
     ?PProcessInstance@@3PEAVPProcess@@EA @20060 NONAME
     ?PragmaNoCacheTag@PHTTP@@SAAEBVPCaselessString@@XZ @20061 NONAME
     ?PragmaTag@PHTTP@@SAAEBVPCaselessString@@XZ @20062 NONAME
-    ?PReadBitwiseEnum@@YAIAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@PEBQEBD@Z @20063 NONAME
+    ?PReadBitwiseEnum@@YAIAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@PEBQEBD_N@Z @24536 NONAME
     ?PReadEnum@@YAHAEAV?$basic_istream@DU?$char_traits@D@std@@@std@@HHPEBQEBD@Z @20064 NONAME
     ?PreambleDecode@PASN_Sequence@@QEAA_NAEAVPASN_Stream@@@Z @20065 NONAME
     ?PreambleDecodeBER@PASN_Sequence@@QEAA_NAEAVPBER_Stream@@@Z @20066 NONAME
@@ -20773,8 +20773,8 @@ EXPORTS
     ?Save@PSound@@QEAA_NAEBVPFilePath@@@Z @20646 NONAME
     ?Save@PSSLCertificate@@QEAA_NAEBVPFilePath@@_NW4PSSLFileTypes@@@Z @20647 NONAME
     ?Save@PSSLPrivateKey@@QEAA_NAEBVPFilePath@@_NW4PSSLFileTypes@@@Z @20648 NONAME
-    ?Save@PXML@@QEAA_NV?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @20649 NONAME
-    ?SaveFile@PXML@@QEAA_NAEBVPFilePath@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @20650 NONAME
+    ?Save@PXML@@QEAA_NV?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24537 NONAME
+    ?SaveFile@PXML@@QEAA_NAEBVPFilePath@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24538 NONAME
     ?SaveSettings@PModem@@UEAAXAEAVPConfig@@@Z @20651 NONAME
     ?SaveSettings@PSerialChannel@@UEAAXAEAVPConfig@@@Z @20652 NONAME
     ?SaveToConfig@PHTTPBooleanField@@UEBAXAEAVPConfig@@@Z @20653 NONAME
@@ -21165,7 +21165,7 @@ EXPORTS
     ?SetOffset@AsyncContext@PChannel@@QEAAXJ@Z @21034 NONAME
     ?SetOption@PSocket@@QEAA_NHHH@Z @21035 NONAME
     ?SetOption@PSocket@@QEAA_NHPEBX_KH@Z @21036 NONAME
-    ?SetOptions@PXMLBase@@QEAAXV?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @21037 NONAME
+    ?SetOptions@PXMLBase@@QEAAXV?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24539 NONAME
     ?SetOriginalMessage@IQ@XMPP@@UEAAXPEAV12@@Z @21038 NONAME
     ?SetOurOption@PTelnetSocket@@QEAAXE_N@Z @21039 NONAME
     ?SetOutputFlowControl@PSerialChannel@@QEAA_NW4FlowControl@1@@Z @21040 NONAME
@@ -21525,7 +21525,7 @@ EXPORTS
     ?Start@PVXMLTraverseVar@@EEBA_NAEAVPVXMLSession@@AEAVPXMLElement@@@Z @21393 NONAME
     ?Start@StreamHandler@C2S@XMPP@@UEAA_NPEAVTransport@3@@Z @21394 NONAME
     ?StartAuthNegotiation@StreamHandler@C2S@XMPP@@MEAAXXZ @21396 NONAME
-    ?StartAutoReloadURL@PXML_HTTP@@QEAA_NAEBVPURL@@AEBVPTimeInterval@@1V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @21397 NONAME
+    ?StartAutoReloadURL@PXML_HTTP@@QEAA_NAEBVPURL@@AEBVPTimeInterval@@1V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0CA@I@@@Z @24540 NONAME
     ?StartContext@PCLI@@QEAAPEAVContext@1@PEAVPChannel@@0_N11@Z @21398 NONAME
     ?StartDecoding@PBase64@@QEAAXXZ @21399 NONAME
     ?StartDocTypeDecl@PXMLParser@@UEAAXPEBD00H@Z @21400 NONAME
