@@ -477,8 +477,8 @@ template <class T> class PBaseArray : public PAbstractArray
   PDECLARE_CLASS(cls, PBaseArray<T>) \
     cls(PINDEX initialSize = 0) \
       : PBaseArray<T>(initialSize) { } \
-    cls(PContainerReference & reference) \
-      : PBaseArray<T>(reference) { } \
+    cls(PContainerReference & reference_) \
+      : PBaseArray<T>(reference_) { } \
     cls(T const * buffer, PINDEX length, PBoolean dynamic = true) \
       : PBaseArray<T>(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
