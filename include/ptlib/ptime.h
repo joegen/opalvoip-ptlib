@@ -291,6 +291,13 @@ class PTime : public PObject
      */
     int GetDayOfYear() const;
 
+    /**Retrun time elapsed from "now".
+
+       @return
+       PTimerInterval for elapsed time.
+     */
+    PTimeInterval GetElapsed() const;
+
     /**Determine if the time is in the past or in the future.
 
        @return
