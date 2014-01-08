@@ -167,6 +167,9 @@ PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
 PINLINE int PTime::GetDayOfYear() const
   { struct tm ts; return os_localtime(&theTime, &ts)->tm_yday; }
 
+PINLINE PTimeInterval PTime::GetElapsed() const
+  { return PTime() - *this; }
+
 PINLINE PBoolean PTime::IsPast() const
   { return GetTimeInSeconds() < PTime().GetTimeInSeconds(); }
 
