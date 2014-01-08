@@ -1315,8 +1315,8 @@ PString PProcess::GetOSName()
               return "Vista";
             case 1 :
               return "7";
-			case 2 :
-              return "8";
+            case 2 :
+              return info.dwBuildNumber < 9200 ? "8" : "8.1";
           }
       }
   }
