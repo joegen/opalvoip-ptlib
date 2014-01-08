@@ -18502,6 +18502,7 @@ EXPORTS
     ?GetDstFrameWidth@PColourConverter@@QEBAIXZ @15379 NONAME
     ?GetEditCharacters@PCLI@@QEBAAEBVPString@@XZ @15380 NONAME
     ?GetElapsed@PSimpleTimer@@QEBA?AVPTimeInterval@@XZ @15381 NONAME
+    ?GetElapsed@PTime@@QEBA?AVPTimeInterval@@XZ @25987 NONAME
     ?GetElement@PXML@@QEBAPEAVPXMLElement@@AEBVPCaselessString@@0AEBVPString@@@Z @23601 NONAME
     ?GetElement@PXML@@QEBAPEAVPXMLElement@@AEBVPCaselessString@@_K@Z @23602 NONAME
     ?GetElement@PXML@@QEBAPEAVPXMLElement@@_K@Z @23603 NONAME
