@@ -404,32 +404,19 @@ class PTime : public PObject
   //@{
     /// Standard time formats for string representations of a time and date.
     enum TimeFormat {
-      /// Internet standard format. (eg. Wed, 09 Feb 2011 11:25:58 +01:00)
-      RFC1123,
-      /// Another Internet standard format. (eg. 2011-02-09T11:14:41ZZ)
-      RFC3339,
-      /// Short form ISO standard format. (eg. 20110209T111108Z)
-      ShortISO8601,
-      /// Long form ISO standard format. (eg. 2011-02-09 T 11:13:06 Z)
-      LongISO8601,
-      /// Date with weekday, full month names and time with seconds.
-      LongDateTime,
-      /// Date with weekday, full month names and no time.
-      LongDate,
-      /// Time with seconds.
-      LongTime,
-      /// Date with abbreviated month names and time without seconds.
-      MediumDateTime,
-      /// Date with abbreviated month names and no time.
-      MediumDate,
-      /// Date with numeric month name and time without seconds.
-      ShortDateTime,
-      /// Date with numeric month and no time.
-      ShortDate,
-      /// Time without seconds.
-      ShortTime,
-      /// Epoch format (e.g. 1234476388.123456)
-      EpochTime,
+      RFC1123,        ///< Internet standard format. (eg. Wed, 09 Feb 2011 11:25:58 +01:00)
+      RFC3339,        ///< Another Internet standard format. (eg. 2011-02-09T11:14:41ZZ)
+      ShortISO8601,   ///< Short form ISO standard format. (eg. 20110209T111108Z)
+      LongISO8601,    ///< Long form ISO standard format. (eg. 2011-02-09 T 11:13:06 Z)
+      LongDateTime,   ///< Date with weekday, full month names and time with seconds.
+      LongDate,       ///< Date with weekday, full month names and no time.
+      LongTime,       ///< Time with seconds.
+      MediumDateTime, ///< Date with abbreviated month names and time without seconds.
+      MediumDate,     ///< Date with abbreviated month names and no time.
+      ShortDateTime,  ///< Date with numeric month name and time without seconds.
+      ShortDate,      ///< Date with numeric month and no time.
+      ShortTime,      ///< Time without seconds.
+      EpochTime,      ///< Epoch format (e.g. 1234476388.123456)
       NumTimeStrings
     };
 
