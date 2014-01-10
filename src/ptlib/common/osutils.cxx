@@ -630,7 +630,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
   if (!HasOption(SystemLogStream)) {
     if (HasOption(DateAndTime)) {
       PTime now;
-      stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", HasOption(GMTTime) ? PTime::GMT : PTime::Local);
+      stream << now.AsString(PTime::LoggingFormat, HasOption(GMTTime) ? PTime::GMT : PTime::Local) << '\t';
     }
 
     if (HasOption(Timestamp))

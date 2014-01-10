@@ -417,6 +417,7 @@ class PTime : public PObject
       ShortDate,      ///< Date with numeric month and no time.
       ShortTime,      ///< Time without seconds.
       EpochTime,      ///< Epoch format (e.g. 1234476388.123456)
+      LoggingFormat,  ///< Format used by logging. (eg. 2011/02/09 11:13:06.312)
       NumTimeStrings
     };
 
