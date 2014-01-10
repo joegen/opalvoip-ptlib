@@ -336,7 +336,9 @@ PString PTime::AsString(TimeFormat format, int zone) const
       return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
     case EpochTime :
       return psprintf("%u.%06lu", theTime, microseconds);
-    default :
+    case LoggingFormat :
+      return AsString("yyyy/MM/dd hh:mm:ss.uuu", zone);
+    default:
       break;
   }
 

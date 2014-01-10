@@ -216,7 +216,7 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
     return;
 
   PTime now;
-  stream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
+  stream << now.AsString(PTime::LoggingFormat) << '\t';
 
   if (level < 0)
     stream << "Message";
