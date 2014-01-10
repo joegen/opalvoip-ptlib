@@ -2217,6 +2217,9 @@ const char * PTCPSocket::GetProtocolName() const
 
 PBoolean PTCPSocket::Write(const void * buf, PINDEX len)
 {
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
   flush();
   PINDEX writeCount = 0;
 
