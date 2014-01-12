@@ -76,6 +76,12 @@ const PCaselessString & PHTTP::WWWAuthenticateTag  () { static const PConstCasel
 const PCaselessString & PHTTP::MIMEVersionTag      () { static const PConstCaselessString s("MIME-Version"); return s; }
 const PCaselessString & PHTTP::ConnectionTag       () { static const PConstCaselessString s("Connection"); return s; }
 const PCaselessString & PHTTP::KeepAliveTag        () { static const PConstCaselessString s("Keep-Alive"); return s; }
+const PCaselessString & PHTTP::UpgradeTag          () { static const PConstCaselessString s("Upgrade"); return s; }
+const PCaselessString & PHTTP::WebSocketTag        () { static const PConstCaselessString s("websocket"); return s; }
+const PCaselessString & PHTTP::WebSocketKeyTag     () { static const PConstCaselessString s("Sec-WebSocket-Key"); return s; }
+const PCaselessString & PHTTP::WebSocketAcceptTag  () { static const PConstCaselessString s("Sec-WebSocket-Accept"); return s; }
+const PCaselessString & PHTTP::WebSocketProtocolTag() { static const PConstCaselessString s("Sec-WebSocket-Protocol"); return s; }
+const PCaselessString & PHTTP::WebSocketVersionTag () { static const PConstCaselessString s("Sec-WebSocket-Version"); return s; }
 const PCaselessString & PHTTP::TransferEncodingTag () { static const PConstCaselessString s("Transfer-Encoding"); return s; }
 const PCaselessString & PHTTP::ChunkedTag          () { static const PConstCaselessString s("chunked"); return s; }
 const PCaselessString & PHTTP::ProxyConnectionTag  () { static const PConstCaselessString s("Proxy-Connection"); return s; }
