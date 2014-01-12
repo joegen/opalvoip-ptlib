@@ -236,6 +236,12 @@ class PHTTP : public PInternetProtocol
     static const PCaselessString & MIMEVersionTag();
     static const PCaselessString & ConnectionTag();
     static const PCaselessString & KeepAliveTag();
+    static const PCaselessString & UpgradeTag();
+    static const PCaselessString & WebSocketTag();
+    static const PCaselessString & WebSocketKeyTag();
+    static const PCaselessString & WebSocketAcceptTag();
+    static const PCaselessString & WebSocketProtocolTag();
+    static const PCaselessString & WebSocketVersionTag();
     static const PCaselessString & TransferEncodingTag();
     static const PCaselessString & ChunkedTag();
     static const PCaselessString & ProxyConnectionTag();
@@ -714,6 +720,130 @@ class PHTTPClient : public PHTTP
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PWebSocket
+
+/** This channel reads from a channel (usually socket) that is under the RFC6455
+    framing rules.
+    
+    Note the WebSocket handshake is assumed to have already occurred.
+*/
+
+class PWebSocket : public PIndirectChannel
+{
+    PCLASSINFO(PWebSocket, PIndirectChannel)
+  public:
+    /// Create a new WebSocket channel.
+    PWebSocket();
+
+  // Overrides from PChannel
+    /** Low level read from the channel.
+
+        @return
+        true indicates that at least one character was read from the channel.
+        false means no bytes were read due to timeout or some other I/O error.
+    */
+    virtual PBoolean Read(
+      void * buf,   ///< Pointer to a block of memory to receive the read bytes.
+      PINDEX len    ///< Maximum number of bytes to read into the buffer.
+    );
+
+    /** Low level write to the channel.
+        This function will always write a single WebSocket "frame".
+
+        If m_fragmenting is false, a single write will constitute a single
+        WebSocket "message" as well. If true, then this will be a fragment of
+        the message. The user should call SetFragmenting(false) before sending
+        the last part of the message.
+
+        @return
+        true if at least len bytes were written to the channel.
+    */
+    virtual PBoolean Write(
+      const void * buf, ///< Pointer to a block of memory to write.
+      PINDEX len        ///< Number of bytes to write.
+    );
+
+
+    /** Connect to the WebSocket.
+        This performs the HTTP handshake for the WebSocket establishment.
+      */
+    bool Connect(
+      const PStringArray & protocols,    ///< WebSocket sub-protocol to use.
+      PString * selectedProtocol = NULL  ///< Selected protocol by server
+    );
+
+
+    /// Read a complete WebSocket message
+    virtual bool ReadMessage(
+      PBYTEArray & msg
+    );
+
+    /// Indicate the last Read() completed the WebSocket message.
+    bool IsMessageComplete() const { return m_fragmentedRead && m_remainingPayload == 0; }
+
+    /** Indicate Write() calls are fragments of a large or indeterminate
+        message. The user should call SetFragmenting(false) before sending
+        the last part of the message.
+
+        Default is true, so every Write() call is a single message.
+      */
+    void SetWriteFragmentation(
+      bool frag
+    ) { m_fragmentingWrite = frag; }
+
+    /// Set writing binary data.
+    void SetBinaryMode(
+      bool bin = true
+    ) { m_binaryWrite = bin; }
+
+    /// Set writing text data.
+    void SetTextMode(
+      bool txt = true
+    ) { m_binaryWrite = !txt; }
+
+
+  protected:
+    enum OpCodes
+    {
+      Continuation = 0x0,
+      TextFrame = 0x1,
+      BinaryFrame = 0x2,
+      ConnectionClose = 0x8,
+      Ping = 0x9,
+      Pong = 0xA
+    };
+
+    virtual bool ReadHeader(
+      OpCodes  & opCode,
+      bool     & fragment,
+      uint64_t & payloadLength,
+      int64_t  & masking
+    );
+
+    virtual bool WriteHeader(
+      OpCodes  opCode,
+      bool     fragment,
+      uint64_t payloadLength,
+      int64_t  masking
+    );
+
+    bool WriteMasked(
+      const uint32_t * data,
+      PINDEX len,
+      uint32_t mask
+    );
+
+    bool     m_client;
+    bool     m_fragmentingWrite;
+    bool     m_binaryWrite;
+
+    uint64_t m_remainingPayload;
+    int64_t  m_currentMask;
+    bool     m_fragmentedRead;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPConnectionInfo
 
 class PHTTPServer;
@@ -772,6 +902,9 @@ class PHTTPConnectionInfo : public PObject
 
     PString GetEntityBody() const   { return entityBody; }
 
+    bool IsWebSocket() const { return m_isWebSocket; }
+    void ClearWebSocket() { m_isWebSocket = false; }
+
   protected:
     PBoolean Initialise(PHTTPServer & server, PString & args);
     bool DecodeMultipartFormInfo() { return mimeInfo.DecodeMultiPartList(m_multipartFormInfo, entityBody); }
@@ -783,6 +916,7 @@ class PHTTPConnectionInfo : public PObject
     bool            isPersistent;
     bool            wasPersistent;
     bool            isProxyConnection;
+    bool            m_isWebSocket;
     int             majorVersion;
     int             minorVersion;
     PString         entityBody;        // original entity body (POST only)
@@ -1020,6 +1154,44 @@ class PHTTPServer : public PHTTP
       PHTTPConnectionInfo & connectInfo
     );
 
+    /**Called when a request indicates a swtch to WebSocket protocol.
+       This will complete the WebSocket handshake if m_webSocketNotifiers
+       contains and entry for an offerred protocol. If none, a 404 is
+       returned and the socket remains in HTTP mode.
+
+       after the start up handshake has completed, if there is a notifier and
+       it is non-null, then the notifier is called. The notifier, may then call
+       connectInfo.ClearWebSocket() if it wishes to return to HTTP mode. That
+       is, ProcessCommand() will return true and the normal persistence rules
+       apply. If ClearWebSocket() is not called then ProcessCommand() will
+       return false.
+
+       Note, that the latter case does not mean that the underlying socket is
+       necessarily closed, it could subsequently be disconnected from the
+       PHTTPServer objects and passed to PWebSocket for processing.
+
+       @return true connectInfo.IsWebSocket() is false.
+      */
+    virtual bool OnWebSocket(
+      PHTTPConnectionInfo & connectInfo
+    );
+
+    typedef PNotifierTemplate<PHTTPConnectionInfo> WebSocketNotifier;
+
+    /** Set the handler for WebSocket sub-protocol.
+        A NULL notifier may be set which indiates that the protocol is
+        supported, but that ProcessCommand() is to simply return false as
+        the caller will handle the channel from then on.
+    */
+    void SetWebSocketNotifier(
+      const PString & protocol,
+      const WebSocketNotifier & notifier
+    );
+
+    /// Remove a WebSocket notifier
+    void ClearWebSocketNotifier(
+      const PString & protocol
+    );
 
   protected:
     void Construct();
@@ -1028,6 +1200,8 @@ class PHTTPServer : public PHTTP
     PHTTPConnectionInfo connectInfo;
     unsigned            transactionCount;
     PTimeInterval       nextTimeout;
+
+    std::map<PString, WebSocketNotifier> m_webSocketNotifiers;
 };
 
 

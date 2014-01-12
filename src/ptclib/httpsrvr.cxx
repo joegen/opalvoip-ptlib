@@ -34,6 +34,7 @@
 
 #include <ptlib/sockets.h>
 #include <ptclib/http.h>
+#include <ptclib/random.h>
 #include <ctype.h>
 
 #define new PNEW
@@ -51,6 +52,8 @@ static const PTimeInterval ReadLineTimeout(0, 30);
 
 //  filename to use for directory access directives
 static const char * accessFilename = "_access";
+
+static const PConstString WebSocketGUID("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -287,20 +290,24 @@ PBoolean PHTTPServer::ProcessCommand()
 
   PTRACE(5, "HTTPServer\tTransaction " << connectInfo.commandCode << ' ' << connectInfo.GetURL());
 
-  // If the incoming URL is of a proxy type then call OnProxy() which will
-  // probably just go OnError(). Even if a full URL is provided in the
-  // command we should check to see if it is a local server request and process
-  // it anyway even though we are not a proxy. The usage of GetHostName()
-  // below are to catch every way of specifying the host (name, alias, any of
-  // several IP numbers etc).
-  const PURL & url = connectInfo.GetURL();
-  if (url.GetScheme() != "http" ||
-      (url.GetPort() != 0 && url.GetPort() != myPort) ||
-      (!url.GetHostName() && !PIPSocket::IsLocalHost(url.GetHostName())))
-    persist = OnProxy(connectInfo);
+  if (connectInfo.IsWebSocket())
+    persist = OnWebSocket(connectInfo);
   else {
-    connectInfo.entityBody = ReadEntityBody();
-    persist = OnCommand(cmd, url, args, connectInfo);
+    // If the incoming URL is of a proxy type then call OnProxy() which will
+    // probably just go OnError(). Even if a full URL is provided in the
+    // command we should check to see if it is a local server request and process
+    // it anyway even though we are not a proxy. The usage of GetHostName()
+    // below are to catch every way of specifying the host (name, alias, any of
+    // several IP numbers etc).
+    const PURL & url = connectInfo.GetURL();
+    if (url.GetScheme() != "http" ||
+        (url.GetPort() != 0 && url.GetPort() != myPort) ||
+        (!url.GetHostName() && !PIPSocket::IsLocalHost(url.GetHostName())))
+      persist = OnProxy(connectInfo);
+    else {
+      connectInfo.entityBody = ReadEntityBody();
+      persist = OnCommand(cmd, url, args, connectInfo);
+    }
   }
 
   flush();
@@ -355,6 +362,50 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL & url, const PString & args, 
   return persist;
 }
 
+
+bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
+{
+  std::map<PString, WebSocketNotifier>::iterator notifier;
+
+  const PMIMEInfo & mime = connectInfo.GetMIME();
+
+  PStringArray protocols = mime(WebSocketProtocolTag()).Tokenise(", \t\r\n", false);
+  for (PINDEX i = 0; ; ++i) {
+    if (i >= protocols.GetSize())
+      return OnError(NotFound, "Unsupported WebSocket protocol", connectInfo);
+
+    if ((notifier = m_webSocketNotifiers.find(protocols[i])) != m_webSocketNotifiers.end())
+      break;
+  }
+
+  PMIMEInfo reply;
+  reply.SetAt(ConnectionTag(), UpgradeTag());
+  reply.SetAt(UpgradeTag(), WebSocketTag());
+  reply.SetAt(WebSocketProtocolTag(), notifier->first);
+  reply.SetAt(WebSocketAcceptTag(), PMessageDigestSHA1::Encode(mime(WebSocketKeyTag()) + WebSocketGUID));
+
+  if (!StartResponse(SwitchingProtocols, reply, -1))
+    return false;
+
+  if (!notifier->second.IsNULL())
+    notifier->second(*this, connectInfo);
+
+  return !connectInfo.IsWebSocket();
+}
+
+
+void PHTTPServer::SetWebSocketNotifier(const PString & protocol, const WebSocketNotifier & notifier)
+{
+  m_webSocketNotifiers[protocol] = notifier;
+}
+
+
+void PHTTPServer::ClearWebSocketNotifier(const PString & protocol)
+{
+  std::map<PString, WebSocketNotifier>::iterator it = m_webSocketNotifiers.find(protocol);
+  if (it != m_webSocketNotifiers.end())
+    m_webSocketNotifiers.erase(it);
+}
 
 
 PString PHTTPServer::ReadEntityBody()
@@ -796,6 +847,258 @@ PHTTPRequest::PHTTPRequest(const PURL & _url,
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PWebSocket
+
+PWebSocket::PWebSocket()
+  : m_client(false)
+  , m_fragmentingWrite(false)
+  , m_binaryWrite(false)
+  , m_remainingPayload(0)
+  , m_currentMask(-1)
+  , m_fragmentedRead(false)
+{
+}
+
+
+PBoolean PWebSocket::Read(void * buf, PINDEX len)
+{
+  if (!IsOpen())
+    return false;
+
+  while (m_remainingPayload == 0) {
+    OpCodes  opCode;
+    if (!ReadHeader(opCode, m_fragmentedRead, m_remainingPayload, m_currentMask))
+      return false;
+    switch (opCode) {
+      case Ping :
+        WriteHeader(Pong, false, 0, -1);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  if (len > m_remainingPayload)
+    len = (PINDEX)m_remainingPayload;
+
+  if (!PIndirectChannel::Read(buf, len))
+    return false;
+
+  if (m_currentMask >= 0) {
+    BYTE * ptr = (BYTE *)buf;
+    PINDEX count = GetLastReadCount();
+    while (count >= 4) {
+      *(uint32_t *)ptr ^= m_currentMask;
+      count -= 4;
+      ptr += 4;
+    }
+    switch (count) {
+      case 1 :
+        *(BYTE *)ptr ^= m_currentMask;
+        break;
+      case 2:
+        *(uint16_t *)ptr ^= m_currentMask;
+        break;
+      case 3:
+        *(uint16_t *)ptr ^= m_currentMask;
+        *(BYTE *)(ptr+2) ^= m_currentMask>>16;
+        break;
+    }
+  }
+
+  m_remainingPayload -= GetLastReadCount();
+  return true;
+}
+
+
+bool PWebSocket::ReadMessage(PBYTEArray & msg)
+{
+  if (!PAssert(m_remainingPayload == 0, "Cannot call ReadMessage whan have partial frames unread."))
+    return false;
+
+  PINDEX totalSize = 0;
+  do {
+    static const PINDEX chunkSize = 10000;
+    if (!Read(msg.GetPointer(totalSize + chunkSize) + totalSize, chunkSize))
+      return false;
+    totalSize += GetLastReadCount();
+  } while (!IsMessageComplete());
+
+  msg.SetSize(totalSize);
+
+  return true;
+}
+
+
+PBoolean PWebSocket::Write(const void * buf, PINDEX len)
+{
+  if (!IsOpen())
+    return false;
+
+  if (!m_client)
+    return WriteHeader(m_binaryWrite ? BinaryFrame : TextFrame, m_fragmentingWrite, len, -1) && PIndirectChannel::Write(buf, len);
+
+  uint32_t mask = PRandom::Number();
+  if (!WriteHeader(m_binaryWrite ? BinaryFrame : TextFrame, m_fragmentingWrite, len, mask))
+    return false;
+
+  const uint32_t * ptr = (const uint32_t *)buf;
+  while (len > 65536) {
+    if (!WriteMasked(ptr, 65536, mask))
+      return false;
+    ptr += 16384;
+    len -= 65536;
+  }
+
+  return WriteMasked(ptr, len, mask);
+}
+
+
+bool PWebSocket::WriteMasked(const uint32_t * data, PINDEX len, uint32_t mask)
+{
+  uint32_t buffer[16384];
+  PINDEX i = (len+3) / 4;
+  while (i-- > 0)
+    buffer[i] = data[i] ^ mask;
+
+  return PIndirectChannel::Write(buffer, len);
+}
+
+
+bool PWebSocket::Connect(const PStringArray & protocols, PString * selectedProtocol)
+{
+  PHTTPClient http;
+  if (!http.Open(*this))
+    return false;
+
+  PString key = PBase64::Encode("What is in here?");
+  PMIMEInfo outMIME, replyMIME;
+  outMIME.SetAt(PHTTP::ConnectionTag(), PHTTP::UpgradeTag());
+  outMIME.SetAt(PHTTP::UpgradeTag(), PHTTP::WebSocketTag());
+  outMIME.SetAt(PHTTP::WebSocketVersionTag(), "13");
+  outMIME.SetAt(PHTTP::WebSocketProtocolTag(), PSTRSTRM(std::setfill(',') << protocols));
+  outMIME.SetAt(PHTTP::WebSocketKeyTag(), key);
+
+  if (!http.GetDocument(PURL(), outMIME, replyMIME))
+    return false;
+
+  if (replyMIME(PHTTP::WebSocketAcceptTag()) != PMessageDigestSHA1::Encode(key + WebSocketGUID)) {
+    PTRACE(2, "WebSock\tReply accept is unacceptable.");
+    return false;
+  }
+
+  PString protocol = outMIME(PHTTP::WebSocketProtocolTag());
+  if (protocols.GetValuesIndex(protocol) == P_MAX_INDEX) {
+    PTRACE(2, "WebSock\tServer selected a protocol we did not offer.");
+    return false;
+  }
+
+  if (selectedProtocol != NULL)
+    * selectedProtocol = protocol;
+
+  PTRACE(3, "WebSock\tStarted for protocol: " << protocol);
+  m_client = true;
+  return true;
+}
+
+
+bool PWebSocket::ReadHeader(OpCodes  & opCode,
+                            bool     & fragment,
+                            uint64_t & payloadLength,
+                            int64_t  & masking)
+{
+  BYTE header1;
+  if (!PIndirectChannel::Read(&header1, 1))
+    return false;
+
+  fragment = (header1 & 0x80) == 0;
+  opCode = (OpCodes)(header1 & 0xf);
+
+  PTimeInterval oldTimeout = GetReadTimeout();
+  bool ok = false;
+
+  BYTE header2;
+  if (!PIndirectChannel::Read(&header2, 1))
+    goto badHeader;
+
+  switch (header2 & 0x7f) {
+    case 126 :
+    {
+      PUInt16b len16;
+      if (!PIndirectChannel::ReadBlock(&len16, 2))
+        goto badHeader;
+      payloadLength = len16;
+      break;
+    }
+
+    case 127 :
+    {
+      PUInt64b len64;
+      if (!PIndirectChannel::ReadBlock(&len64, 8))
+        goto badHeader;
+      payloadLength = len64;
+      break;
+    }
+
+    default :
+      payloadLength = header2 & 0x7f;
+  }
+
+  if ((header2 & 0x80) == 0)
+    masking = -1;
+  else {
+    PUInt32b mask32;
+    if (!PIndirectChannel::ReadBlock(&mask32, 4))
+      goto badHeader;
+
+    masking = (uint32_t)mask32;
+  }
+
+  ok = true;
+
+badHeader:
+  PIndirectChannel::SetReadTimeout(oldTimeout);
+  return ok;
+}
+
+
+bool PWebSocket::WriteHeader(OpCodes  opCode,
+                             bool     fragment,
+                             uint64_t payloadLength,
+                             int64_t  masking)
+{
+  BYTE header[14];
+  PINDEX len = 2;
+
+  header[0] = (BYTE)opCode;
+  if (!fragment)
+    header[0] |= 0x80;
+
+  if (payloadLength < 126)
+    header[1] = (BYTE)payloadLength;
+  else if (payloadLength < 65536) {
+    header[1] = 126;
+    *(PUInt16b *)&header[len] = (uint16_t)payloadLength;
+    len += 2;
+  }
+  else {
+    header[1] = 127;
+    *(PUInt64b *)&header[len] = payloadLength;
+    len += 8;
+  }
+
+  if (masking >= 0) {
+    header[1] |= 0x80;
+    *(PUInt32b *)&header[len] = (uint32_t)masking;
+    len += 4;
+  }
+
+  return PIndirectChannel::Write(header, len);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPConnectionInfo
 
 PHTTPConnectionInfo::PHTTPConnectionInfo()
@@ -812,6 +1115,7 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
   isPersistent      = false;
   wasPersistent     = false;
   isProxyConnection = false;
+  m_isWebSocket     = false;
 
   entityBodyLength  = -1;
 }
@@ -857,9 +1161,17 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 
   // get any connection options
   if (!str) {
-    PStringArray tokens = str.Tokenise(", \r\n", false);
-    for (PINDEX z = 0; !isPersistent && z < tokens.GetSize(); z++)
-      isPersistent = isPersistent || (tokens[z] *= PHTTP::KeepAliveTag());
+    PStringArray tokens = str.Tokenise(", \t\r\n", false);
+    for (PINDEX i = 0; !isPersistent && i < tokens.GetSize(); i++) {
+      PCaselessString token(tokens[i]);
+      if (token == PHTTP::KeepAliveTag())
+        isPersistent = true;
+      else if (token == PHTTP::UpgradeTag()) {
+        if (PHTTP::WebSocketTag() != mimeInfo(PHTTP::UpgradeTag()) || mimeInfo(PHTTP::WebSocketVersionTag()) != "13")
+          return server.OnError(PHTTP::MethodNotAllowed, "Cannot upgrade to protocol or version", *this);
+        m_isWebSocket = true;
+      }
+    }
   }
 
   // If the protocol is version 1.0 or greater, there is MIME info, and the
