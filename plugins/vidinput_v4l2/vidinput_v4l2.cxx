@@ -611,6 +611,7 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   }
 
   if(videoFormat.fmt.pix.pixelformat == colourFormatTab[colourFormatIndex].code){
+    frameBytes = videoFormat.fmt.pix.sizeimage;
     PTRACE(3,"V4L2\tcolour format already set.");
     return true;
   }
@@ -1076,6 +1077,7 @@ PBoolean PVideoInputDevice_V4L2::VerifyHardwareFrameSize(unsigned & width, unsig
   }
 
   if(videoFormat.fmt.pix.width == width && videoFormat.fmt.pix.height == height){
+    frameBytes = videoFormat.fmt.pix.sizeimage;
     PTRACE(3,"V4L2\tFrame size already set.");
     return true;
   }
