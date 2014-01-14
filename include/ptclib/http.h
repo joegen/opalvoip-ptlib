@@ -840,6 +840,8 @@ class PWebSocket : public PIndirectChannel
     uint64_t m_remainingPayload;
     int64_t  m_currentMask;
     bool     m_fragmentedRead;
+
+    bool     m_recursiveRead;
 };
 
 
@@ -1159,7 +1161,7 @@ class PHTTPServer : public PHTTP
        contains and entry for an offerred protocol. If none, a 404 is
        returned and the socket remains in HTTP mode.
 
-       after the start up handshake has completed, if there is a notifier and
+       After the start up handshake has completed, if there is a notifier and
        it is non-null, then the notifier is called. The notifier, may then call
        connectInfo.ClearWebSocket() if it wishes to return to HTTP mode. That
        is, ProcessCommand() will return true and the normal persistence rules
@@ -1170,7 +1172,7 @@ class PHTTPServer : public PHTTP
        necessarily closed, it could subsequently be disconnected from the
        PHTTPServer objects and passed to PWebSocket for processing.
 
-       @return true connectInfo.IsWebSocket() is false.
+       @return true if want to persist with HTTP connection.
       */
     virtual bool OnWebSocket(
       PHTTPConnectionInfo & connectInfo

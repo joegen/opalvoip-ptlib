@@ -290,8 +290,11 @@ PBoolean PHTTPServer::ProcessCommand()
 
   PTRACE(5, "HTTPServer\tTransaction " << connectInfo.commandCode << ' ' << connectInfo.GetURL());
 
-  if (connectInfo.IsWebSocket())
-    persist = OnWebSocket(connectInfo);
+  if (connectInfo.IsWebSocket()) {
+    if (!OnWebSocket(connectInfo) || connectInfo.IsWebSocket())
+      return false;
+    persist = true;
+  }
   else {
     // If the incoming URL is of a proxy type then call OnProxy() which will
     // probably just go OnError(). Even if a full URL is provided in the
@@ -384,13 +387,13 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
   reply.SetAt(WebSocketProtocolTag(), notifier->first);
   reply.SetAt(WebSocketAcceptTag(), PMessageDigestSHA1::Encode(mime(WebSocketKeyTag()) + WebSocketGUID));
 
-  if (!StartResponse(SwitchingProtocols, reply, -1))
-    return false;
+  StartResponse(SwitchingProtocols, reply, -1);
+  flush();
 
   if (!notifier->second.IsNULL())
     notifier->second(*this, connectInfo);
 
-  return !connectInfo.IsWebSocket();
+  return true;
 }
 
 
@@ -856,6 +859,7 @@ PWebSocket::PWebSocket()
   , m_remainingPayload(0)
   , m_currentMask(-1)
   , m_fragmentedRead(false)
+  , m_recursiveRead(false)
 {
 }
 
@@ -865,14 +869,25 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
   if (!IsOpen())
     return false;
 
+  if (m_recursiveRead)
+    return PIndirectChannel::Read(buf, len);
+
+  bool ok = false;
+  m_recursiveRead = true;
+
   while (m_remainingPayload == 0) {
     OpCodes  opCode;
     if (!ReadHeader(opCode, m_fragmentedRead, m_remainingPayload, m_currentMask))
-      return false;
+      goto badRead;
+
     switch (opCode) {
       case Ping :
         WriteHeader(Pong, false, 0, -1);
         break;
+
+      case ConnectionClose :
+        lastReadCount = 0;
+        return false;
 
       default:
         break;
@@ -882,8 +897,8 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
   if (len > m_remainingPayload)
     len = (PINDEX)m_remainingPayload;
 
-  if (!PIndirectChannel::Read(buf, len))
-    return false;
+  if (!PIndirectChannel::ReadBlock(buf, len))
+    goto badRead;
 
   if (m_currentMask >= 0) {
     BYTE * ptr = (BYTE *)buf;
@@ -908,7 +923,11 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
   }
 
   m_remainingPayload -= GetLastReadCount();
-  return true;
+  ok = true;
+
+badRead:
+  m_recursiveRead = false;
+  return ok;
 }
 
 
@@ -1009,7 +1028,7 @@ bool PWebSocket::ReadHeader(OpCodes  & opCode,
                             int64_t  & masking)
 {
   BYTE header1;
-  if (!PIndirectChannel::Read(&header1, 1))
+  if (!Read(&header1, 1))
     return false;
 
   fragment = (header1 & 0x80) == 0;
@@ -1019,14 +1038,14 @@ bool PWebSocket::ReadHeader(OpCodes  & opCode,
   bool ok = false;
 
   BYTE header2;
-  if (!PIndirectChannel::Read(&header2, 1))
+  if (!ReadBlock(&header2, 1))
     goto badHeader;
 
   switch (header2 & 0x7f) {
     case 126 :
     {
       PUInt16b len16;
-      if (!PIndirectChannel::ReadBlock(&len16, 2))
+      if (!ReadBlock(&len16, 2))
         goto badHeader;
       payloadLength = len16;
       break;
@@ -1035,7 +1054,7 @@ bool PWebSocket::ReadHeader(OpCodes  & opCode,
     case 127 :
     {
       PUInt64b len64;
-      if (!PIndirectChannel::ReadBlock(&len64, 8))
+      if (!ReadBlock(&len64, 8))
         goto badHeader;
       payloadLength = len64;
       break;
@@ -1048,17 +1067,17 @@ bool PWebSocket::ReadHeader(OpCodes  & opCode,
   if ((header2 & 0x80) == 0)
     masking = -1;
   else {
-    PUInt32b mask32;
-    if (!PIndirectChannel::ReadBlock(&mask32, 4))
+    uint32_t mask32;
+    if (!ReadBlock(&mask32, 4))
       goto badHeader;
 
-    masking = (uint32_t)mask32;
+    masking = mask32;
   }
 
   ok = true;
 
 badHeader:
-  PIndirectChannel::SetReadTimeout(oldTimeout);
+  SetReadTimeout(oldTimeout);
   return ok;
 }
 
@@ -1162,7 +1181,7 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // get any connection options
   if (!str) {
     PStringArray tokens = str.Tokenise(", \t\r\n", false);
-    for (PINDEX i = 0; !isPersistent && i < tokens.GetSize(); i++) {
+    for (PINDEX i = 0; i < tokens.GetSize(); i++) {
       PCaselessString token(tokens[i]);
       if (token == PHTTP::KeepAliveTag())
         isPersistent = true;
