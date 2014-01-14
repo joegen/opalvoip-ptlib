@@ -265,6 +265,17 @@ class PIndirectChannel : public PChannel
       PBoolean autoDeleteWrite = true  ///< Automatically delete the write channel
     );
 
+    /** Detach without closing the read/write channel.
+        If \p option is ShutdownReadAndWrite and the read and write channels
+        are different, then the channels are not detached and NULL is returned.
+
+        @return
+        Channel being detached.
+    */
+    PChannel * Detach(
+      ShutdownValue option = ShutdownReadAndWrite   ///< Flag for detach of read, write or both.
+    );
+
     /**Get the channel used for read operations.
     
        @return
