@@ -612,6 +612,7 @@ PBoolean PVideoInputDevice_V4L2::SetColourFormat(const PString & newFormat)
   }
 
   if(videoFormat.fmt.pix.pixelformat == colourFormatTab[colourFormatIndex].code){
+    frameBytes = videoFormat.fmt.pix.sizeimage;
     PTRACE(3,"V4L2\tcolour format already set.");
     return true;
   }
