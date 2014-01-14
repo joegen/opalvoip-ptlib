@@ -840,6 +840,34 @@ PBoolean PIndirectChannel::OnOpen()
 }
 
 
+PChannel * PIndirectChannel::Detach(ShutdownValue option)
+{
+  PWriteWaitAndSignal mutex(channelPointerMutex);
+
+  PChannel * channel;
+  switch (option) {
+    case ShutdownRead :
+      channel = readChannel;
+      readChannel = NULL;
+      break;
+
+    case ShutdownWrite :
+      channel = writeChannel;
+      writeChannel = NULL;
+      break;
+
+    default :
+      if (readChannel != writeChannel)
+        return NULL;
+
+      channel = readChannel;
+      readChannel = writeChannel = NULL;
+  }
+
+  return channel;
+}
+
+
 bool PIndirectChannel::SetReadChannel(PChannel * channel, bool autoDelete, bool closeExisting)
 {
   PWriteWaitAndSignal mutex(channelPointerMutex);
