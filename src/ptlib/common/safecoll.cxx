@@ -485,6 +485,12 @@ PObject::Comparison PSafePtrBase::Compare(const PObject & obj) const
 }
 
 
+void PSafePtrBase::PrintOn(ostream &strm) const
+{
+  strm << currentObject;
+}
+
+
 void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
 {
   if (this == &enumerator)
