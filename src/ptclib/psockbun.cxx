@@ -302,7 +302,7 @@ PStringArray PInterfaceMonitor::GetInterfaces(bool includeLoopBack,
 
   for (PINDEX i = 0; i < ifaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & entry = ifaces[i];
-    if (includeLoopBack || !entry.GetAddress().IsLoopback())
+    if (!entry.GetAddress().IsAny() && (includeLoopBack || !entry.GetAddress().IsLoopback()))
       names[count++] = MakeInterfaceDescription(entry);
   }
 
