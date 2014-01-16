@@ -22,7 +22,7 @@ SVN="svn"
 RSYNC="rsync -e ssh -avz"
 SVN2CL="svn2cl"
 TAR=tar
-ZIP=zip 
+ZIP=zip
 
 SNAPSHOTS=./snapshots
 WEB_HTML_DIR="/var/hosted_www/www.opalvoip.org/html"
@@ -173,7 +173,7 @@ function show_tags () {
 }
 
 #
-# check out 
+# check out
 #
 
 function check_out () {
@@ -286,7 +286,7 @@ function create_tag () {
     echo "Creating tag $release_tag in $base"
     $SVN copy ${repository}/$release_branch ${repository}/tags/$release_tag -m "Tagging $release_tag"
   fi
-  
+
   if [ -e "$VERSION_FILE" ]; then
     new_version=( ${release_version[*]} )
     let new_version[2]++
@@ -336,7 +336,7 @@ function create_changelog () {
 
   if [ -d $base ]; then
     output_name="-o $CHANGELOG_FILE"
-  else 
+  else
     output_name=--stdout
   fi
 
@@ -412,9 +412,9 @@ function create_docs () {
     if ./configure PTLIBDIR=$PTLIBDIR ; then
       make graphdocs
     fi
-  ) > docs.log 2>&1 
+  ) > docs.log 2>&1
 
-  if [ -d ${base}/html ]; then 
+  if [ -d ${base}/html ]; then
     echo Creating document archive $DOC_ARCHIVE_TBZ2
     ( cd ${base} ; $TAR -cjf ../$DOC_ARCHIVE_TBZ2 html )
     echo Creating document archive $DOC_ARCHIVE_ZIP
@@ -438,9 +438,22 @@ function upload_to_sourceforge () {
   if [ -z "$files" ]; then
     echo "Cannot find any of ${SOURCE_FORGE_FILES[*]}"
   else
-    echo "Uploading files to SourceForge"
-    read -p "Source Forge sub-directory: "
-    rsync -avP -e ssh $files "${SOURCEFORGE_USERNAME},opalvoip@frs.sourceforge.net:/home/frs/project/o/op/opalvoip/${REPLY}"
+    saved_dir="source_forge_dir"
+    if [ -e "${saved_dir}" ]; then
+      upload_dir=`cat ${saved_dir}`
+      read -p "Source Forge sub-directory [${upload_dir}]: "
+    else
+      read -p "Source Forge sub-directory: "
+    fi
+    if [ -n "${REPLY}" ]; then
+      upload_dir="${REPLY}"
+    fi
+    if [ -z "${upload_dir}" ]; then
+      echo Not uploading.
+    else
+      echo "Uploading files to Source Forge directory ${upload_dir}"
+      rsync -avP -e ssh $files "${SOURCEFORGE_USERNAME},opalvoip@frs.sourceforge.net:/home/frs/project/o/op/opalvoip/${upload_dir}"
+    fi
   fi
 }
 
