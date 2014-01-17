@@ -197,6 +197,14 @@ uint32_t PRandom::Number(uint32_t minimum, uint32_t maximum)
 }
 
 
+PBYTEArray PRandom::Octets(PINDEX size)
+{
+  PBYTEArray octets(size);
+  Octets(octets.GetPointer(), octets.GetSize());
+  return octets;
+}
+
+
 void PRandom::Octets(PBYTEArray & octets, PINDEX size)
 {
   if (size != 0)
