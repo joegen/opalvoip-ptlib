@@ -118,6 +118,7 @@ class PRandom
 
     /** Get a random set of bits.
     */
+    static PBYTEArray Octets(PINDEX size);
     static void Octets(PBYTEArray & octets, PINDEX size = 0);
     static void Octets(BYTE *  octets, PINDEX size);
 
