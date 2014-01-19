@@ -2834,6 +2834,20 @@ PStringToOrdinal::PStringToOrdinal(PINDEX count,
 }
 
 
+PStringToOrdinal::PStringToOrdinal(PINDEX count,
+                                   const POrdinalToString::Initialiser * init,
+                                   PBoolean caseless)
+{
+  while (count-- > 0) {
+    if (caseless)
+      SetAt(PCaselessString(init->value), init->key);
+    else
+      SetAt(init->value, init->key);
+    init++;
+  }
+}
+
+
 void PStringToOrdinal::ReadFrom(istream & strm)
 {
   while (strm.good()) {
