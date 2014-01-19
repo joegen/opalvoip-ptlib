@@ -2134,6 +2134,21 @@ PIPSocket::Address PIPSocket::GetInterfaceAddress(const PString & ifName, unsign
 }
 
 
+PString PIPSocket::GetInterfaceMACAddress(const char * ifName)
+{
+  PIPSocket::InterfaceTable interfaceTable;
+  if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+    for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+      if ((ifName == NULL || interfaceTable[i].GetName() == ifName)) {
+        PString macAddrStr = interfaceTable[i].GetMACAddress();
+        if (!macAddrStr.IsEmpty() && macAddrStr != "44-45-53-54-00-00") /* not Win32 PPP device */
+          return macAddrStr;
+      }
+    }
+  }
+}
+
+
 PIPSocket::Address PIPSocket::GetNetworkInterface(unsigned version)
 {
   PIPSocket::InterfaceTable interfaceTable;
