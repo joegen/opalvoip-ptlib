@@ -1186,7 +1186,7 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
        is maintained.
       */
     virtual PBoolean RemoveAt(
-      const Key & key   ///< Key to fund object to delete
+      const Key & key   ///< Key to find object to delete
     ) {
         PWaitAndSignal mutex(collectionMutex);
         return SafeRemove(dynamic_cast<Coll &>(*collection).GetAt(key));
@@ -1228,6 +1228,19 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
         ptr.SetSafetyMode(mode);
         return ptr;
       }
+
+    /** Move an object from one key location to another.
+      */
+    virtual bool Move(
+      const Key & from,   ///< Key to find object to move
+      const Key & to      ///< Key to place found object
+    ) {
+      PWaitAndSignal mutex(collectionMutex);
+      if (dynamic_cast<Coll &>(*collection).GetAt(to) != NULL)
+        return false;
+      dynamic_cast<Coll &>(*collection).SetAt(to, dynamic_cast<Coll &>(*collection).GetAt(from));
+      return true;
+    }
 
     /**Get an array containing all the keys for the dictionary.
       */
