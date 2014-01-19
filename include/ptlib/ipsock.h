@@ -783,6 +783,12 @@ class PIPSocket : public PSocket
       unsigned version = 4      ///< IP version number
     );
 
+    /** Get MAC address of interface.
+    */
+    static PString GetInterfaceMACAddress(
+      const char * ifName = NULL   ///< Name of interface, NULL is any
+    );
+
     /**Get the address of the first interface to the "Internet".
        This searches the interfaces for one that has a "public" IP address and
        thus would be access to the Internet.

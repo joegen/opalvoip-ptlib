@@ -113,30 +113,15 @@ PGloballyUniqueID::PGloballyUniqueID()
   theArray[9] = (BYTE)clockSequence;
 
   static PEthSocket::Address macAddress;
-  static PBoolean needMacAddress = true;
-  if (needMacAddress) {
-    PIPSocket::InterfaceTable interfaces;
-    if (PIPSocket::GetInterfaceTable(interfaces)) {
-      for (PINDEX i = 0; i < interfaces.GetSize(); i++) {
-        PString macAddrStr = interfaces[i].GetMACAddress();
-        if (!macAddrStr && macAddrStr != "44-45-53-54-00-00") { /* not Win32 PPP device */
-          macAddress = macAddrStr;
-          if (macAddress != NULL) {
-            needMacAddress = false;
-            break;
-          }
-        }
-      }
-    }
-
-    if (needMacAddress) {
-      PRandom rand;
-      macAddress.ls.l = rand;
-      macAddress.ls.s = (WORD)rand;
+  static PAtomicBoolean haveMacAddress;
+  if (!haveMacAddress.TestAndSet(true)) {
+    PString str = PIPSocket::GetInterfaceMACAddress();
+    if (str.IsEmpty()) {
+      PRandom::Octets(macAddress.b, sizeof(macAddress.b));
       macAddress.b[0] |= '\x80';
-
-      needMacAddress = false;
     }
+    else
+      macAddress = str;
   }
 
   memcpy(theArray+10, macAddress.b, 6);
