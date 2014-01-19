@@ -2975,7 +2975,14 @@ PDECLARE_ORDINAL_DICTIONARY(PStringToOrdinal, PString);
       const Initialiser * init,    ///< Array of Initialiser structures
       PBoolean caseless = false        ///< New keys are to be PCaselessStrings
     );
-  //@}
+    /** Initialise the string dictionary of ordinals from the static array.
+    */
+    PStringToOrdinal(
+      PINDEX count,                ///< Count of strings in initialiser array
+      const POrdinalToString::Initialiser * init,    ///< Array of Initialiser structures
+      PBoolean caseless = false        ///< New keys are to be PCaselessStrings
+    );
+    //@}
 
   /**@name Overrides from class PObject */
   //@{
