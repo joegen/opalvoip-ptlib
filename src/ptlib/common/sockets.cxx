@@ -2146,6 +2146,7 @@ PString PIPSocket::GetInterfaceMACAddress(const char * ifName)
       }
     }
   }
+  return PString::Empty();
 }
 
 
