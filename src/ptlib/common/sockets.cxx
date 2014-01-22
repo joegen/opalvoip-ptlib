@@ -2209,16 +2209,19 @@ const char * PTCPSocket::GetProtocolName() const
 
 PBoolean PTCPSocket::Write(const void * buf, PINDEX len)
 {
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
   flush();
   PINDEX writeCount = 0;
 
-  while (len > 0) {
+  do {
     Slice slice(((char *)buf)+writeCount, len);
     if (!os_vwrite(&slice, 1, 0, NULL, 0))
       return false;
     writeCount += lastWriteCount;
     len -= lastWriteCount;
-  }
+  } while (len > 0);
 
   lastWriteCount = writeCount;
   return true;
