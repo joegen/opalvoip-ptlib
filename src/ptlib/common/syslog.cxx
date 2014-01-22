@@ -285,7 +285,14 @@ void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 bool PSystemLogToFile::Clear()
 {
   PWaitAndSignal mutex(m_mutex);
-  return m_file.Remove(true);
+  if (!m_file.Remove(true))
+    return false;
+
+  if (!m_file.Open())
+    return false;
+
+  OutputToStream(m_file, PSystemLog::Warning, "Cleared log file.");
+  return true;
 }
 
 
