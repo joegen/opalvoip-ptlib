@@ -208,13 +208,15 @@ void PInterfaceMonitor::RefreshInterfaceList()
   // look for interfaces to add that are in new list that are not in the old list
   for (i = 0; i < newInterfaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & newEntry = newInterfaces[i];
-    if (!newEntry.GetAddress().IsLoopback() && !IsInterfaceInList(newEntry, oldInterfaces))
+    PIPSocket::Address addr = newEntry.GetAddress();
+    if (addr.IsValid() && !addr.IsLoopback() && !IsInterfaceInList(newEntry, oldInterfaces))
       interfacesToAdd.Append(&newEntry);
   }
   // look for interfaces to remove that are in old list that are not in the new list
   for (i = 0; i < oldInterfaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & oldEntry = oldInterfaces[i];
-    if (!oldEntry.GetAddress().IsLoopback() && !IsInterfaceInList(oldEntry, newInterfaces))
+    PIPSocket::Address addr = oldEntry.GetAddress();
+    if (addr.IsValid() && !addr.IsLoopback() && !IsInterfaceInList(oldEntry, newInterfaces))
       interfacesToRemove.Append(&oldEntry);
   }
 
@@ -302,7 +304,7 @@ PStringArray PInterfaceMonitor::GetInterfaces(bool includeLoopBack,
 
   for (PINDEX i = 0; i < ifaces.GetSize(); ++i) {
     PIPSocket::InterfaceEntry & entry = ifaces[i];
-    if (!entry.GetAddress().IsAny() && (includeLoopBack || !entry.GetAddress().IsLoopback()))
+    if (entry.GetAddress().IsValid() && (includeLoopBack || !entry.GetAddress().IsLoopback()))
       names[count++] = MakeInterfaceDescription(entry);
   }
 
