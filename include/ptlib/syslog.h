@@ -248,10 +248,15 @@ class PSystemLogToFile : public PSystemLogTarget
     /**Get the path to the file being logged to.
       */
     const PFilePath & GetFilePath() const { return m_file.GetFilePath(); }
+
+    /**Clear the log file
+      */
+    bool Clear();
   //@}
 
   protected:
     PTextFile m_file;
+    PMutex    m_mutex;
 };
 
 
