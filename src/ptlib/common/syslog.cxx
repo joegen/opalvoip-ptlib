@@ -276,7 +276,16 @@ PSystemLogToFile::PSystemLogToFile(const PString & filename)
 
 void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 {
+  m_mutex.Wait();
   OutputToStream(m_file, level, msg);
+  m_mutex.Signal();
+}
+
+
+bool PSystemLogToFile::Clear()
+{
+  PWaitAndSignal mutex(m_mutex);
+  return m_file.Remove(true);
 }
 
 
