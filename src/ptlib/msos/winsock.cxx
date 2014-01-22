@@ -1352,18 +1352,20 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
         macAddr << setw(2) << (unsigned)adapter->PhysicalAddress[b];
 
       if (unicast->Address.lpSockaddr->sa_family == AF_INET) {
-        PIPSocket::Address ip(((sockaddr_in *)unicast->Address.lpSockaddr)->sin_addr);
+        PIPSocket::Address addr(((sockaddr_in *)unicast->Address.lpSockaddr)->sin_addr);
+        if (addr.IsAny() || addr.IsBroadcast())
+          addr = GetInvalidAddress();
 
         // Find out address index in byAddress table for the mask
-        DWORD dwMask = 0L;
+        Address mask = Address::GetBroadcast(addr.GetVersion());
         for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
           if (adapter->IfIndex == byAddress->table[i].dwIndex) {
-            dwMask = byAddress->table[i].dwMask;
+            mask = byAddress->table[i].dwMask;
             break; 
           }
         } // find mask for the address
 
-        table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, dwMask, macAddr));
+        table.SetAt(count++, new InterfaceEntry(adapter->Description, addr, mask, macAddr));
 
       } // ipv4
       else if (unicast->Address.lpSockaddr->sa_family == AF_INET6) {
