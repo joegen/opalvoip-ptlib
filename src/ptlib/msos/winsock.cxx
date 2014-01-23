@@ -1327,16 +1327,21 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remote
 
 PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDown)
 {
-#if P_HAS_IPV6
-  // Adding IPv6 addresses
-  PIPRouteTableIPv6 routes;
-  PIPAdaptersAddressTable interfaces;
   PIPInterfaceAddressTable byAddress;
-
-  PINDEX count = 0; // address count
 
   if (!table.SetSize(0))
     return false;
+
+  PINDEX count = 0; // address count
+
+#if P_HAS_IPV6 || _WIN32_WINNT_WINXP
+  PIPAdaptersAddressTable interfaces;
+
+#if P_HAS_IPV6
+  PIPRouteTableIPv6 routes;
+#else _WIN32_WINNT_WINXP
+  PIPRouteTable routes;
+#endif
 
   for (const IP_ADAPTER_ADDRESSES * adapter = &*interfaces; adapter != NULL; adapter = adapter->Next) {
     if (!includeDown && (adapter->OperStatus != IfOperStatusUp))
@@ -1366,73 +1371,32 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
         } // find mask for the address
 
         table.SetAt(count++, new InterfaceEntry(adapter->Description, addr, mask, macAddr));
-
       } // ipv4
+#if P_HAS_IPV6
       else if (unicast->Address.lpSockaddr->sa_family == AF_INET6) {
         sockaddr_in6 * sock6 = (sockaddr_in6 *)unicast->Address.lpSockaddr;
-        PIPSocket::Address ip(sock6->sin6_addr, sock6->sin6_scope_id);
-        table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, 0L, macAddr));
-      } // ipv6
-    }
-  }
-
-#elif _WIN32_WINNT_WINXP
-  PIPRouteTable routes;
-  PIPAdaptersAddressTable interfaces;
-  PIPInterfaceAddressTable byAddress;
-  PINDEX count = 0; // address count
-
-  if (!table.SetSize(0))
-    return false;
-
-  for (const IP_ADAPTER_ADDRESSES * adapter = &*interfaces; adapter != NULL; adapter = adapter->Next) {
-    if (!includeDown && (adapter->OperStatus != IfOperStatusUp))
-      continue;
-
-    for (PIP_ADAPTER_UNICAST_ADDRESS unicast = adapter->FirstUnicastAddress; unicast != NULL; unicast = unicast->Next) {
-      if (!routes.ValidateAddress(adapter->IfIndex, unicast->Address.lpSockaddr))
-          continue;
-
-      PStringStream macAddr;
-      macAddr << ::hex << ::setfill('0');
-      for (unsigned b = 0; b < adapter->PhysicalAddressLength; ++b)
-        macAddr << setw(2) << (unsigned)adapter->PhysicalAddress[b];
-      
-      PIPSocket::Address ip(((sockaddr_in *)unicast->Address.lpSockaddr)->sin_addr);
-
-      // Find out address index in byAddress table for the mask
-      DWORD dwMask = 0L;
-      for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
-        if (adapter->IfIndex == byAddress->table[i].dwIndex) {
-          dwMask = byAddress->table[i].dwMask;
-          break; 
-        }
-      } // find mask for the address
-
-      table.SetAt(count++, new InterfaceEntry(adapter->Description, ip, dwMask, macAddr));           
+        PIPSocket::Address addr(sock6->sin6_addr, sock6->sin6_scope_id);
+        if (addr.IsAny() || addr.IsBroadcast())
+          addr = GetInvalidAddress();
+        table.SetAt(count++, new InterfaceEntry(adapter->Description, addr, 0L, macAddr));
+      }
+#endif
     }
   }
 #else
 
-  PIPInterfaceAddressTable byAddress;
-
-  if (!table.SetSize(byAddress->dwNumEntries))
-    return false;
-
-  if (table.IsEmpty())
-    return false;
-
-  PINDEX count = 0;
   for (unsigned i = 0; i < byAddress->dwNumEntries; ++i) {
-    Address addr = byAddress->table[i].dwAddr;
-
     MIB_IFROW info;
     info.dwIndex = byAddress->table[i].dwIndex;
-    if (GetIfEntry(&info) == NO_ERROR && (includeDown || (addr.IsValid() && info.dwAdminStatus))) {
+    if (GetIfEntry(&info) == NO_ERROR && (includeDown || info.dwAdminStatus != 0)) {
       PStringStream macAddr;
       macAddr << ::hex << ::setfill('0');
       for (unsigned b = 0; b < info.dwPhysAddrLen; ++b)
         macAddr << setw(2) << (unsigned)info.bPhysAddr[b];
+
+      Address addr = byAddress->table[i].dwAddr;
+      if (addr.IsAny() || addr.IsBroadcast())
+        addr = GetInvalidAddress();
 
       table.SetAt(count++, new InterfaceEntry(PString((const char *)info.bDescr, info.dwDescrLen),
                                               addr,
@@ -1441,11 +1405,9 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
     }
   }
 
-  table.SetSize(count); // May shrink due to "down" interfaces.
-
 #endif
 
-  return true;
+  return !table.IsEmpty();
 }
 
 
