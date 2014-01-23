@@ -2073,17 +2073,24 @@ class PConstantString : public ParentString
     {
       this->theArray = (char *)(init != NULL ? init : "");
     }
-    ~PConstantString() { this->Destruct(); }
+
+    PConstantString(const PConstantString & other)
+      : ParentString(m_staticReference, other.m_length)
+      , m_staticReference(other.m_length + 1, true)
+    {
+      this->theArray = other.theArray;
+    }
+
+    ~PConstantString()
+    {
+      this->Destruct();
+    }
 
     virtual PBoolean SetSize(PINDEX s) { return s <= this->m_length+1; }
     virtual void AssignContents(const PContainer &) { PAssertAlways(PInvalidParameter); }
     virtual void DestroyReference() { }
 
   private:
-    PConstantString(const PConstantString &)
-      : ParentString(m_staticReference)
-      , m_staticReference(0, true)
-      { }
     void operator=(const PConstantString &) { }
 };
 
