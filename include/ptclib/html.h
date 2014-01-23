@@ -160,12 +160,12 @@ class PHTML : public PStringStream
           ElementInSet elmt,
           ElementInSet req,
           OptionalCRLF opt
-        ) { name = nam; attr= att; inElement = elmt; reqElement = req; crlf = opt; }
+        ) : name(nam), attr(att), inElement(elmt), reqElement(req), crlf(opt) { }
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * name;
-        const char * attr;
+        PString      name;
+        PString      attr;
         ElementInSet inElement;
         ElementInSet reqElement;
         OptionalCRLF crlf;
@@ -579,20 +579,46 @@ class PHTML : public PStringStream
     };
 
 
-    enum BorderCodes {
-      NoBorder,
-      Border
+    enum TableAttr {
+      NoWrap,
+      Border1,
+      Border2,
+      CellPad1,
+      CellPad2,
+      CellPad4,
+      CellPad8,
+      CellSpace1,
+      CellSpace2,
+      CellSpace4,
+      CellSpace8,
+      AlignLeft,
+      AlignCentre,
+      AlignCenter = AlignCentre,
+      AlignRight,
+      AlignJustify,
+      AlignBaseline,
+      AlignBotton,
+      AlignMiddle,
+      AlignTop
     };
-    class TableStart : public Element {
+    #define P_DECL_HTML_TABLE_CTOR(cls) \
+        cls(const char * attr = NULL); \
+        cls(TableAttr attr1, const char * attr = NULL); \
+        cls(TableAttr attr1, TableAttr attr2, const char * attr = NULL); \
+        cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, const char * attr = NULL); \
+        cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, const char * attr = NULL); \
+        cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, TableAttr attr5, const char * attr = NULL); \
+
+    class TableStart : public Element
+    {
       public:
-        TableStart(const char * attr = NULL);
-        TableStart(BorderCodes border, const char * attr = NULL);
-        virtual ~TableStart() {}
+        P_DECL_HTML_TABLE_CTOR(TableStart)
+        virtual ~TableStart()
+        {
+        }
       protected:
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
-      private:
-        PBoolean borderFlag;
     };
     friend class TableStart;
 
@@ -607,19 +633,19 @@ class PHTML : public PStringStream
 
     class TableRow : public Element {
       public:
-        TableRow(const char * attr = NULL);
+        P_DECL_HTML_TABLE_CTOR(TableRow)
         virtual ~TableRow() {}
     };
 
     class TableHeader : public Element {
       public:
-        TableHeader(const char * attr = NULL);
+        P_DECL_HTML_TABLE_CTOR(TableHeader)
         virtual ~TableHeader() {}
     };
 
     class TableData : public Element {
       public:
-        TableData(const char * attr = NULL);
+        P_DECL_HTML_TABLE_CTOR(TableData)
         virtual ~TableData() {}
     };
 
