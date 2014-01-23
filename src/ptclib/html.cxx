@@ -580,17 +580,49 @@ void PHTML::DefinitionItem::Output(PHTML & html) const
 }
 
 
-PHTML::TableStart::TableStart(const char * attr)
-  : Element("TABLE", attr, InTable, InBody, BothCRLF)
+static PConstString const AttStr[] =
 {
-  borderFlag = false;
-}
+  "nowrap",
+  "border=1",
+  "border=2",
+  "cellpadding=1",
+  "cellpadding=2",
+  "cellpadding=4",
+  "cellpadding=8",
+  "cellpadding=1",
+  "cellpadding=2",
+  "cellpadding=4",
+  "cellpadding=8",
+  "align=left",
+  "align=centre",
+  "align=right",
+  "align=justify",
+  "valign=baseline",
+  "valign=botton",
+  "valign=middle",
+  "valign=top"
+};
 
-PHTML::TableStart::TableStart(BorderCodes border, const char * attr)
-  : Element("TABLE", attr, InTable, InBody, BothCRLF)
-{
-  borderFlag = border == Border;
-}
+#define P_DEF_HTML_TABLE_CTOR(cls, name, elmt, req, opt) \
+  PHTML::cls::cls(const char * attr) \
+    : Element(name, attr, elmt, req, opt) { } \
+  PHTML::cls::cls(TableAttr attr1, const char * attr) \
+    : Element(name, AttStr[attr1]&attr, elmt, req, opt) { } \
+  PHTML::cls::cls(TableAttr attr1, TableAttr attr2, const char * attr) \
+    : Element(name, AttStr[attr1]&AttStr[attr2]&attr, elmt, req, opt) { } \
+  PHTML::cls::cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, const char * attr) \
+    : Element(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&attr, elmt, req, opt) { } \
+  PHTML::cls::cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, const char * attr) \
+    : Element(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&AttStr[attr4]&attr, elmt, req, opt) { } \
+  PHTML::cls::cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, TableAttr attr5, const char * attr) \
+    : Element(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&AttStr[attr4]&AttStr[attr5]&attr, elmt, req, opt) { } \
+
+
+P_DEF_HTML_TABLE_CTOR(TableStart, "TABLE", InTable, InBody, BothCRLF)
+P_DEF_HTML_TABLE_CTOR(TableRow, "TR", NumElementsInSet, InTable, OpenCRLF)
+P_DEF_HTML_TABLE_CTOR(TableHeader, "TH", NumElementsInSet, InTable, CloseCRLF)
+P_DEF_HTML_TABLE_CTOR(TableData, "TD", NumElementsInSet, InTable, NoCRLF)
+
 
 void PHTML::TableStart::Output(PHTML & html) const
 {
@@ -601,8 +633,6 @@ void PHTML::TableStart::Output(PHTML & html) const
 
 void PHTML::TableStart::AddAttr(PHTML & html) const
 {
-  if (borderFlag)
-    html << " BORDER";
   html.tableNestLevel++;
 }
 
@@ -619,24 +649,6 @@ void PHTML::TableEnd::Output(PHTML & html) const
   html.tableNestLevel--;
   if (html.tableNestLevel > 0)
     html.Set(InTable);
-}
-
-
-PHTML::TableRow::TableRow(const char * attr)
-  : Element("TR", attr, NumElementsInSet, InTable, OpenCRLF)
-{
-}
-
-
-PHTML::TableHeader::TableHeader(const char * attr)
-  : Element("TH", attr, NumElementsInSet, InTable, CloseCRLF)
-{
-}
-
-
-PHTML::TableData::TableData(const char * attr)
-  : Element("TD", attr, NumElementsInSet, InTable, NoCRLF)
-{
 }
 
 
