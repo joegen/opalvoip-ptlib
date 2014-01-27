@@ -49,13 +49,14 @@ class PSTUNServer : public PObject, public PSTUN
     PSTUNServer();
     
     bool Open(WORD port = DefaultPort);
+    bool Open(PUDPSocket * socket1, PUDPSocket * socket2 = NULL);
 
     bool IsOpen() const;
 
     bool Close();
 
     struct SocketInfo {
-      SocketInfo();
+      SocketInfo(PUDPSocket * socket = NULL);
 
       PUDPSocket * m_socket;
       PIPSocketAddressAndPort m_socketAddress;
@@ -71,22 +72,22 @@ class PSTUNServer : public PObject, public PSTUN
       SocketInfo & socketInfo
     );
 
-    virtual bool Process(
+    virtual bool Process();
+
+    virtual bool OnReceiveMessage(
       const PSTUNMessage & message,
-      SocketInfo & socketInfo
-    );
+      const SocketInfo & socketInfo
+      );
 
     virtual bool OnBindingRequest(
       const PSTUNMessage & request,
-      SocketInfo & socketInfo
+      const SocketInfo & socketInfo
     );
 
     virtual bool OnUnknownRequest(
       const PSTUNMessage & request,
-      SocketInfo & socketInfo
+      const SocketInfo & socketInfo
     );
-
-    bool WriteTo(const PSTUNMessage & message, PUDPSocket & socket, const PIPSocketAddressAndPort & dest);
 
   protected:
     void PopulateInfo(PUDPSocket * socket, const PIPSocket::Address & alternateAddress, WORD alternatePort, 
@@ -94,10 +95,10 @@ class PSTUNServer : public PObject, public PSTUN
 
     SocketInfo * CreateAndAddSocket(const PIPSocket::Address & addess, WORD port);
 
-    PSocket::SelectList m_sockets;
-    PSocket::SelectList m_selectList;
     typedef std::map<PUDPSocket *, SocketInfo> SocketToSocketInfoMap;
     SocketToSocketInfoMap m_socketToSocketInfoMap;
+    PSocket::SelectList   m_sockets;
+    PSocket::SelectList   m_selectList;
 
     bool m_autoDelete;
 };
