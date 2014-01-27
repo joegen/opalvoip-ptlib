@@ -42,6 +42,115 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PSASLString
+
+void PSASLString::Prepare(const char * str)
+{
+  PWideString wide(str);
+  for (PINDEX i = 0; i < wide.GetLength(); ++i)
+    AppendValidated(wide[i]);
+}
+
+
+void PSASLString::AppendValidated(wchar_t c)
+{
+  // Strictly speaking, control characters are simply "illegal" in RFC4013
+
+  // RFC3454/C.1.2 ASCII control characters
+  if (c < ' ')
+    return;
+
+  // RFC3454/C.2.2 Non-ASCII control characters
+  if (c >= 0x80 && c <= 0x9f)
+    return;
+
+  // RFC3454/C.3 Private use
+  if (c >= 0xE000 && c <= 0xF8FF)
+    return;
+
+  // RFC3454/C.4 Non-character code points
+  if (c >= 0xFDD0 && c <= 0xFDEF)
+    return;
+
+  // RFC3454/C.5 Surrogate codes
+  if (c >= 0xD800 && c <= 0xDFFF)
+    return;
+
+  // RFC3454/C.7 Inappropriate for canonical representation
+  if (c >= 0x2FF0 && c <= 0x2FFB)
+    return;
+
+  switch (c) {
+    // RFC3454/C.1.2 Non-ASCII space characters
+    case 0x00A0: // NO - BREAK SPACE
+    case 0x1680: // OGHAM SPACE MARK
+    case 0x2000: // EN QUAD
+    case 0x2001: // EM QUAD
+    case 0x2002: // EN SPACE
+    case 0x2003: // EM SPACE
+    case 0x2004: // THREE - PER - EM SPACE
+    case 0x2005: // FOUR - PER - EM SPACE
+    case 0x2006: // SIX - PER - EM SPACE
+    case 0x2007: // FIGURE SPACE
+    case 0x2008: // PUNCTUATION SPACE
+    case 0x2009: // THIN SPACE
+    case 0x200A: // HAIR SPACE
+    case 0x200B: // ZERO WIDTH SPACE
+    case 0x202F: // NARROW NO - BREAK SPACE
+    case 0x205F: // MEDIUM MATHEMATICAL SPACE
+    case 0x3000: // IDEOGRAPHIC SPACE
+      PString::operator+=((char)c);
+      break;
+
+    // RFC3454/C.1.2 ASCII control characters
+    case 0x007F:
+    // RFC3454/C.2.2 Non-ASCII control characters
+    case 0x06DD: // ARABIC END OF AYAH
+    case 0x070F: // SYRIAC ABBREVIATION MARK
+    case 0x180E: // MONGOLIAN VOWEL SEPARATOR
+    case 0x200C: // ZERO WIDTH NON - JOINER
+    case 0x200D: // ZERO WIDTH JOINER
+    case 0x2028: // LINE SEPARATOR
+    case 0x2029: // PARAGRAPH SEPARATOR
+    case 0x2060: // WORD JOINER
+    case 0x2061: // FUNCTION APPLICATION
+    case 0x2062: // INVISIBLE TIMES
+    case 0x2063: // INVISIBLE SEPARATOR
+    case 0xFEFF: // ZERO WIDTH NO - BREAK SPACE
+    // RFC3454/C.4 Non-character code points
+    case 0xFFFE:
+    case 0xFFFF:
+    // RFC3454/C.6 Inappropriate for plain text
+    case 0xFFF9: // INTERLINEAR ANNOTATION ANCHOR
+    case 0xFFFA: // INTERLINEAR ANNOTATION SEPARATOR
+    case 0xFFFB: // INTERLINEAR ANNOTATION TERMINATOR
+    case 0xFFFC: // OBJECT REPLACEMENT CHARACTER
+    case 0xFFFD: // REPLACEMENT CHARACTER
+    // RFC3454/C.8 Change display properties or are deprecated
+    case 0x0340: // COMBINING GRAVE TONE MARK
+    case 0x0341: // COMBINING ACUTE TONE MARK
+    case 0x200E: // LEFT - TO - RIGHT MARK
+    case 0x200F: // RIGHT - TO - LEFT MARK
+    case 0x202A: // LEFT - TO - RIGHT EMBEDDING
+    case 0x202B: // RIGHT - TO - LEFT EMBEDDING
+    case 0x202C: // POP DIRECTIONAL FORMATTING
+    case 0x202D: // LEFT - TO - RIGHT OVERRIDE
+    case 0x202E: // RIGHT - TO - LEFT OVERRIDE
+    case 0x206A: // INHIBIT SYMMETRIC SWAPPING
+    case 0x206B: // ACTIVATE SYMMETRIC SWAPPING
+    case 0x206C: // INHIBIT ARABIC FORM SHAPING
+    case 0x206D: // ACTIVATE ARABIC FORM SHAPING
+    case 0x206E: // NATIONAL DIGIT SHAPES
+    case 0x206F: // NOMINAL DIGIT SHAPES
+      break;
+
+    default:
+      PString::operator+=((char)c);
+  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PBase64
 
 PBase64::PBase64()
@@ -750,7 +859,7 @@ void PMessageDigestSHA1::InternalCompleteDigest(Result & result)
   if (shaContext == NULL)
     return;
 
-  SHA1_Final(result.GetPointer(20), (SHA_CTX *)shaContext);
+  SHA1_Final(result.GetPointer(DigestLength), (SHA_CTX *)shaContext);
   delete ((SHA_CTX *)shaContext);
   shaContext = NULL;
 }
@@ -1054,18 +1163,15 @@ void PTEACypher::DecodeBlock(const void * in, void * out)
 // PHMAC
 //
 
-void PHMAC::Initialise(const BYTE * key, PINDEX oldLen)
+void PHMAC::Initialise(const BYTE * key, PINDEX len)
 {
   // ensure the key is at least one block long and pad out if necessary
-  if ((int)oldLen < GetB()) {
-    m_key.SetSize(oldLen);
-    memcpy(m_key.GetPointer(), key,  oldLen);
-  }
-  else if ((int)oldLen > GetB()) {
+  if (len < GetB())
+    memcpy(m_key.GetPointer(len), key,  len);
+  else if (len > GetB()) {
     Result result;
     Hash((const BYTE *)m_key, m_key.GetSize(), result);
-    m_key.SetSize(result.GetSize());
-    memcpy(m_key.GetPointer(), result.GetPointer(), result.GetSize());
+    m_key = result;
   }
 }
 
