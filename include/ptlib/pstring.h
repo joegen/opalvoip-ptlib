@@ -1906,12 +1906,14 @@ inline wostream & operator<<(wostream & stream, const PString & string)
       PWideString() { }
       PWideString(const PWCharArray & arr) : PWCharArray(arr) { }
       PWideString(const PString     & str) : PWCharArray(str.AsUCS2()) { }
-      PWideString(const char        * str) : PWCharArray(PString(str).AsUCS2()) { }
+      PWideString(const char        * str);
       PWideString & operator=(const PWideString & str) { PWCharArray::operator=(str); return *this; }
       PWideString & operator=(const PString     & str) { PWCharArray::operator=(str.AsUCS2()); return *this; }
-      PWideString & operator=(const std::string & str) { PWCharArray::operator=(PString(str.c_str()).AsUCS2()); return *this; }
-      PWideString & operator=(const char        * str) { PWCharArray::operator=(PString(str).AsUCS2()); return *this; }
+      PWideString & operator=(const std::string & str);
+      PWideString & operator=(const char        * str);
       friend inline ostream & operator<<(ostream & stream, const PWideString & string) { return stream << PString(string); }
+
+      PINDEX GetLength() const { return GetSize() - 1; }
 
     protected:
       PWideString(PContainerReference & reference_) : PWCharArray(reference_) { }
@@ -2101,6 +2103,11 @@ typedef PConstantString<PString>         PConstString;
 /// Constant PCaselessString type. See PConstantString.
 typedef PConstantString<PCaselessString> PConstCaselessString;
 
+
+// Now have PConstString can have these definitions
+__inline PWideString::PWideString(const char * str) : PWCharArray(PConstString(str).AsUCS2()) { }
+__inline PWideString & PWideString::operator=(const std::string & str) { PWCharArray::operator=(PConstString(str.c_str()).AsUCS2()); return *this; }
+__inline PWideString & PWideString::operator=(const char        * str) { PWCharArray::operator=(PConstString(str).AsUCS2()); return *this; }
 
 
 //////////////////////////////////////////////////////////////////////////////
