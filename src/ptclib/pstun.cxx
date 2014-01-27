@@ -493,12 +493,6 @@ bool PSTUNMessage::IsValid() const
   if (GetSize() < ((int)sizeof(PSTUNMessageHeader) + length))
     return false;
 
-  // do quick checks for RFC5389: magic cookie and top two bits of type must be 00
-  if (*(PUInt32b *)&(header->transactionId) == RFC5389_MAGIC_COOKIE && ((header->msgType & 0x00c0) != 0x00)) {
-    PTRACE(2, "STUN\tPacket received with magic cookie, but type bits are incorrect.");
-    return false;
-  }
-
   // check attributes
   PSTUNAttribute * attrib = GetFirstAttribute();
   while (attrib && length > 0) {
@@ -506,8 +500,12 @@ bool PSTUNMessage::IsValid() const
     attrib = attrib->GetNext();
   }
 
-  if (length != 0) {
-    PTRACE(2, "STUN\tInvalid packet received, incorrect attribute length.");
+  if (length != 0)
+    return false;
+
+  // do checks for RFC5389: magic cookie and top two bits of type must be 00
+  if (*(PUInt32b *)&(header->transactionId) == RFC5389_MAGIC_COOKIE && ((header->msgType & 0x00c0) != 0x00)) {
+    PTRACE(3, "STUN\tPacket received with magic cookie, but type bits are incorrect.");
     return false;
   }
 
