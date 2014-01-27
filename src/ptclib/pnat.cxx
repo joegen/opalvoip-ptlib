@@ -394,7 +394,7 @@ PNATUDPSocket::PNATUDPSocket(PNatMethod::Component component)
 
 void PNATUDPSocket::GetCandidateInfo(PNatCandidate & candidate)
 { 
-  candidate.m_type = PNatCandidate::eType_Host;
+  candidate.m_type = PNatCandidate::HostType;
   candidate.m_component = m_component;
   InternalGetBaseAddress(candidate.m_hostTransportAddress);
   InternalGetLocalAddress(candidate.m_localTransportAddress);
@@ -425,34 +425,35 @@ bool PNATUDPSocket::InternalGetBaseAddress(PIPSocketAddressAndPort & addr)
 
 ////////////////////////////////////////////////////
 
-PNatCandidate::PNatCandidate()
-  : m_type(eType_Unknown)
-  , m_component(PNatMethod::eComponent_Unknown)
+PNatCandidate::PNatCandidate(Types type, PNatMethod::Component component, const char * foundation)
+  : m_type(type)
+  , m_component(component)
+  , m_priority(0)
+  , m_foundation(foundation)
+  , m_protocol("udp")
 {
 }
 
 
-PString PNatCandidate::AsString() const
+void PNatCandidate::PrintOn(ostream & strm) const
 {
-  PStringStream strm;
   switch (m_type) {
-    case eType_Host:
+    case HostType :
       strm << "Host " << m_hostTransportAddress;
       break;
-    case eType_ServerReflexive:
-      strm << "ServerReflexive " << m_hostTransportAddress << "/" << m_localTransportAddress;
+    case ServerReflexiveType :
+      strm << "Server Reflexive " << m_hostTransportAddress << '/' << m_localTransportAddress;
       break;
-    case eType_PeerReflexive:
-      strm << "PeerReflexive " << m_hostTransportAddress << "/" << m_localTransportAddress;
+    case PeerReflexiveType :
+      strm << "Peer Reflexive " << m_hostTransportAddress << '/' << m_localTransportAddress;
       break;
-    case eType_Relay:
-      strm << "Relay " << m_hostTransportAddress << "/" << m_localTransportAddress;
+    case RelayType :
+      strm << "Relay " << m_hostTransportAddress << '/' << m_localTransportAddress;
       break;
     default:
       strm << "Unknown";
       break;
   }
-  return strm;
 }
 
 
