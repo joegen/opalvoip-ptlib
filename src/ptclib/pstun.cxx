@@ -718,27 +718,23 @@ bool PSTUNMessage::CheckFingerprint(bool required) const
 }
 
 
-static PDWORDArray CalculateCRC32Table()
-{
-  PDWORDArray table(256);
-
-  for (PINDEX i = 0; i < table.GetSize(); ++i) {
-    DWORD c = i;
-    for (size_t j = 0; j < 8; ++j) {
-      if (c & 1)
-        c = 0xEDB88320 ^ (c >> 1);
-      else
-        c >>= 1;
-    }
-    table[i] = c;
-  }
-
-  return table;
-}
-
 DWORD PSTUNMessage::CalculateFingerprint(PSTUNFingerprint * fp) const
 {
-  static PDWORDArray Crc32Table = CalculateCRC32Table();
+  static DWORD Crc32Table[256];
+
+  static PAtomicBoolean initialised;
+  if (!initialised.TestAndSet(true)) {
+    for (PINDEX i = 0; i < PARRAYSIZE(Crc32Table); ++i) {
+      DWORD c = i;
+      for (PINDEX j = 0; j < 8; ++j) {
+        if (c & 1)
+          c = 0xEDB88320 ^ (c >> 1);
+        else
+          c >>= 1;
+      }
+      Crc32Table[i] = c;
+    }
+  }
 
   // calculate hash up to, but not including, FINGERPRINT attribute
   DWORD c = 0xFFFFFFFF;
