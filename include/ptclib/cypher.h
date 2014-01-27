@@ -37,6 +37,38 @@
 #endif
 
 
+/** RFC4013 "SASLprep" compatible string.
+    For security systems, often some identifiers, usersname, passwords etc
+    must not contain extraneous characters. This class represents a string
+    that will obey (most) of those rules.
+  */
+class PSASLString : public PString
+{
+    PCLASSINFO(PSASLString, PString);
+  public:
+    PSASLString() { }
+    PSASLString(const char * str) { Prepare(str); }
+    PSASLString(const PString & str) { Prepare(str); }
+    PSASLString(const PSASLString & str) : PString(str) { }
+
+    PSASLString & operator=(char c) { MakeEmpty(); AppendValidated(c); return *this; }
+    PSASLString & operator=(wchar_t c) { MakeEmpty(); AppendValidated(c); return *this; }
+    PSASLString & operator=(const char * str) { Prepare(str); return *this; }
+    PSASLString & operator=(const PString & str) { Prepare(str); return *this; }
+    PSASLString & operator=(const PSASLString & str) { PString::operator=(str); return *this; }
+
+    PSASLString & operator+=(char c) { AppendValidated(c); return *this; }
+    PSASLString & operator+=(wchar_t c) { AppendValidated(c); return *this; }
+    PSASLString & operator+=(const char * str) { Prepare(str); return *this; }
+    PSASLString & operator+=(const PString & str) { Prepare(str); return *this; }
+    PSASLString & operator+=(const PSASLString & str) { PString::operator=(str); return *this; }
+
+  protected:
+    void Prepare(const char *);
+    void AppendValidated(wchar_t c);
+};
+
+
 /** This class is used to encode/decode data using the MIME standard base64
    encoding mechanism as defined in RFC1521.
 
@@ -288,6 +320,9 @@ class PMessageDigest : public PObject
 class PHMAC : public PObject
 {
   public:
+    enum { KeyLength = 20 };
+    enum { BlockSize = 64 };
+
     typedef PMessageDigest::Result Result;
     virtual void Hash(const BYTE * data, PINDEX len, Result & result) = 0;
 
@@ -300,8 +335,8 @@ class PHMAC : public PObject
     virtual void Process(const PString & str, Result & result);
 
   protected:
-    virtual int GetL() const = 0;
-    virtual int GetB() const { return 64; }
+    virtual PINDEX GetL() const { return KeyLength; };
+    virtual PINDEX GetB() const { return BlockSize; }
     virtual void Initialise(const BYTE * key, PINDEX len);
     virtual void InternalProcess(const BYTE * data, PINDEX len, PHMAC::Result & result);
 
@@ -318,7 +353,6 @@ class PHMACTemplate : public PHMAC
 
     virtual void Hash(const BYTE * data, PINDEX len, Result & result)
     { hash_class::Encode(data, len, result); }
-    virtual int GetL() const { return 20; };
 };
 
 /** MD5 Message Digest.
@@ -331,6 +365,8 @@ class PMessageDigest5 : public PMessageDigest
   PCLASSINFO(PMessageDigest5, PMessageDigest)
 
   public:
+    enum { DigestLength = 16 };
+
     /// Create a new message digestor
     PMessageDigest5();
 
@@ -451,6 +487,8 @@ class PMessageDigestSHA1 : public PMessageDigest
   PCLASSINFO(PMessageDigestSHA1, PMessageDigest)
 
   public:
+    enum { DigestLength = 20 };
+
     /// Create a new message digestor
     PMessageDigestSHA1();
     ~PMessageDigestSHA1();
