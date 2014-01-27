@@ -370,23 +370,34 @@ class PNatCandidate : public PObject
 {
   PCLASSINFO(PNatCandidate, PObject);
   public:
-    enum Type {
-      eType_Unknown,
-      eType_Host,
-      eType_ServerReflexive,
-      eType_PeerReflexive,
-      eType_Relay
-    };
+    P_DECLARE_ENUM(Types,
+      HostType,
+      ServerReflexiveType,
+      PeerReflexiveType,
+      RelayType
+    );
 
-    PNatCandidate();
+    PNatCandidate(
+      Types type = EndTypes,
+      PNatMethod::Component component = PNatMethod::eComponent_Unknown,
+      const char * foundation = NULL
+    );
 
-    virtual PString AsString() const;
+    virtual void PrintOn(ostream & strm) const;
 
-    Type                    m_type;
+    void CalculatePriority();
+
+    Types                   m_type;
     PNatMethod::Component   m_component;
-    PIPSocketAddressAndPort m_hostTransportAddress;
-    PIPSocketAddressAndPort m_localTransportAddress;
+    unsigned                m_priority;
+    PString                 m_foundation;             // ICE support
+    PString                 m_protocol;               // Almost invariably "udp"
+    PIPSocketAddressAndPort m_hostTransportAddress;   // Address of physical host
+    PIPSocketAddressAndPort m_localTransportAddress;  // Address presented to remote system
 };
+
+
+typedef PList<PNatCandidate> PNatCandidateList;
 
 
 //////////////////////////////////////////////////////////////////////////
