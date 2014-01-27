@@ -66,6 +66,8 @@ class PSoundChannelNull : public PSoundChannel
 
   protected:
     unsigned       m_sampleRate;
+    unsigned       m_channels;
+    unsigned       m_bytesPerSample;
     unsigned       m_bufferSize;
     unsigned       m_bufferCount;
     PAdaptiveDelay m_Pacing;
@@ -185,13 +187,13 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const Params & params)
     }
   }
 
-  if (sndChan != NULL && sndChan->Open(adjustedParams))
-    return sndChan;
-
-  PTRACE_IF(5, sndChan != NULL, sndChan, "Sound",
-         params.m_direction << " opening, "
-         " driver=\"" << adjustedParams.m_driver << "\","
-         " device=\"" << adjustedParams.m_device << '"');
+  if (sndChan != NULL) {
+    PTRACE(5, sndChan, "Sound", params.m_direction << " opening, "
+           " driver=\"" << adjustedParams.m_driver << "\","
+           " device=\"" << adjustedParams.m_device << '"');
+    if (sndChan->Open(adjustedParams))
+      return sndChan;
+  }
 
   PTRACE(2, sndChan, "Sound",
          params.m_direction << " could not be opened,"
@@ -785,6 +787,8 @@ PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
 
 PSoundChannelNull::PSoundChannelNull()
   : m_sampleRate(0)
+  , m_channels(1)
+  , m_bytesPerSample(2)
   , m_bufferSize(320)
 {
 }
@@ -822,7 +826,7 @@ PBoolean PSoundChannelNull::Write(const void *, PINDEX len)
     return false;
 
   lastWriteCount = len;
-  m_Pacing.Delay(len/2*1000/m_sampleRate);
+  m_Pacing.Delay(1000*len/m_sampleRate/m_channels/m_bytesPerSample);
   return true;
 }
 
@@ -833,19 +837,26 @@ PBoolean PSoundChannelNull::Read(void * buf, PINDEX len)
 
   memset(buf, 0, len);
   lastReadCount = len;
-  m_Pacing.Delay(len/2*1000/m_sampleRate);
+  m_Pacing.Delay(1000*len/m_sampleRate/m_channels/m_bytesPerSample);
   return true;
 }
 
 PBoolean PSoundChannelNull::SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample)
 {
+  if (bitsPerSample % 8 != 0) {
+    PTRACE(1, "NullAudio\tBits per sample must even bytes.");
+    return false;
+  }
+
   m_sampleRate = sampleRate;
-  return numChannels == 1 && bitsPerSample == 16;
+  m_channels = numChannels;
+  m_bytesPerSample = bitsPerSample / 8;
+  return true;
 }
 
 unsigned PSoundChannelNull::GetChannels() const
 {
-  return 1;
+  return m_channels;
 }
 
 unsigned PSoundChannelNull::GetSampleRate() const
@@ -855,7 +866,7 @@ unsigned PSoundChannelNull::GetSampleRate() const
 
 unsigned PSoundChannelNull::GetSampleSize() const
 {
-  return 16;
+  return m_bytesPerSample*2;
 }
 
 PBoolean PSoundChannelNull::SetBuffers(PINDEX size, PINDEX)
