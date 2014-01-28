@@ -1513,10 +1513,10 @@ PTimedMutex::PTimedMutex()
   PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
 #endif
 
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
+  PAssertPTHREAD(pthread_mutex_init, (&m_mutex, &attr));
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+  PAssertPTHREAD(pthread_mutex_init, (&m_mutex, NULL));
 #endif
 }
 
@@ -1532,20 +1532,20 @@ PTimedMutex::PTimedMutex(const PTimedMutex & /*mut*/)
   PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
 #endif
 
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, &attr));
+  PAssertPTHREAD(pthread_mutex_init, (&m_mutex, &attr));
   PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
 #else
-  pthread_mutex_init(&mutex, NULL);
+  pthread_mutex_init(&m_mutex, NULL);
 #endif
 }
 
 PTimedMutex::~PTimedMutex()
 {
-  int result = pthread_mutex_destroy(&mutex);
+  int result = pthread_mutex_destroy(&m_mutex);
   PINDEX i = 0;
   while ((result == EBUSY) && (i++ < 20)) {
-    pthread_mutex_unlock(&mutex);
-    result = pthread_mutex_destroy(&mutex);
+    pthread_mutex_unlock(&m_mutex);
+    result = pthread_mutex_destroy(&m_mutex);
   }
 #ifdef _DEBUG
   PAssert((result == 0), "Error destroying mutex");
@@ -1631,7 +1631,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-  if (pthread_mutex_timedlock(&mutex, &absTime) != 0)
+  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0)
     return PFalse;
 
 #if P_HAS_RECURSIVE_MUTEX == 0
@@ -1647,7 +1647,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 #else // P_PTHREADS_XPG6
 
   for (;;) {
-    if (pthread_mutex_trylock(&mutex) == 0) {
+    if (pthread_mutex_trylock(&m_mutex) == 0) {
 #if P_HAS_RECURSIVE_MUTEX == 0
       PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
               "PMutex acquired whilst locked by another thread");
@@ -1687,7 +1687,7 @@ void PTimedMutex::Signal()
 
 #endif
 
-  PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PAssertPTHREAD(pthread_mutex_unlock, (&m_mutex));
 }
 
 
@@ -1699,7 +1699,7 @@ PBoolean PTimedMutex::WillBlock() const
     return PFalse;
 #endif
 
-  pthread_mutex_t * mp = (pthread_mutex_t*)&mutex;
+  pthread_mutex_t * mp = (pthread_mutex_t*)&m_mutex;
   if (pthread_mutex_trylock(mp) != 0)
     return PTrue;
 
