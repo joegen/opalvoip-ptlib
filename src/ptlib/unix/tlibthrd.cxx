@@ -1563,7 +1563,7 @@ void PTimedMutex::Wait()
   absTime.tv_sec = time(NULL)+15;
   absTime.tv_nsec = 0;
   if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
-    PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
+    PTRACE(1, "PTLib\tPossible deadlock in mutex " << this << ", owner id="
            << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
   }

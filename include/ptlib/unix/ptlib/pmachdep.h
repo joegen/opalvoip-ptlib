@@ -442,7 +442,7 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 #define P_HAS_SEMAPHORES
 #define _THREAD_SAFE
 #define P_THREAD_SAFE_CLIB
-#define P_THREADIDENTIFIER long
+typedef long PThreadIdentifier;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -548,7 +548,7 @@ typedef int SOCKET;
 #ifdef P_PTHREADS
 
 #include <pthread.h>
-#define P_THREADIDENTIFIER pthread_t
+typedef pthread_t PThreadIdentifier;
 
 #if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
 #include <semaphore.h>
@@ -557,7 +557,7 @@ typedef int SOCKET;
 #endif  // P_PTHREADS
 
 #ifdef BE_THREADS
-#define P_THREADIDENTIFIER thread_id
+typedef thread_id PThreadIdentifier;
 #endif // BE_THREADS
 
 #endif // _PMACHDEP_H
