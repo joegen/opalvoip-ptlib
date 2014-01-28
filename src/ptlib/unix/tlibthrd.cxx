@@ -1556,29 +1556,46 @@ void PTimedMutex::Wait()
 {
   pthread_t currentThreadId = pthread_self();
 
-#if P_HAS_RECURSIVE_MUTEX == 0
+#if P_HAS_RECURSIVE_MUTEX
+
+#if PTRACING && P_PTHREADS_XPG6
+  struct timespec absTime;
+  absTime.tv_sec = time(NULL)+15;
+  absTime.tv_nsec = 0;
+  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
+    PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
+           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
+    PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+  }
+#else
+  PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+#endif
+
+  if (m_lockCount++ == 0)
+    m_lockerId = currentThreadId;
+
+#else //P_HAS_RECURSIVE_MUTEX
 
   // if the mutex is already acquired by this thread,
   // then just increment the lock count
-  if (pthread_equal(lockerId, currentThreadId)) {
+  if (pthread_equal(m_lockerId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
-    ++lockCount;
+    ++m_lockCount;
     return;
   }
-#endif
 
   // acquire the lock for real
-  PAssertPTHREAD(pthread_mutex_lock, (&mutex));
+  PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
 
-#if P_HAS_RECURSIVE_MUTEX == 0
-  PAssert((lockerId == (pthread_t)-1) && (lockCount.IsZero()),
+  PAssert(m_lockerId == PNullThreadIdentifier && m_lockCount.IsZero(),
           "PMutex acquired whilst locked by another thread");
+
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
-#endif
+  m_lockerId = currentThreadId;
 
-  lockerId = currentThreadId;
+#endif // P_HAS_RECURSIVE_MUTEX
 }
 
 
