@@ -2104,10 +2104,12 @@ typedef PConstantString<PString>         PConstString;
 typedef PConstantString<PCaselessString> PConstCaselessString;
 
 
+#ifdef _WIN32
 // Now have PConstString can have these definitions
 __inline PWideString::PWideString(const char * str) : PWCharArray(PConstString(str).AsUCS2()) { }
 __inline PWideString & PWideString::operator=(const std::string & str) { PWCharArray::operator=(PConstString(str.c_str()).AsUCS2()); return *this; }
 __inline PWideString & PWideString::operator=(const char        * str) { PWCharArray::operator=(PConstString(str).AsUCS2()); return *this; }
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
