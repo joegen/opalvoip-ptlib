@@ -477,6 +477,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
       }
     }
 
+    info.socket->SetReadTimeout(0);
     return true;
   }
 
@@ -631,7 +632,7 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
   // Assume is already locked
 
   if (inUse) {
-    PTRACE(2, &bundle, NULL, "Cannot read from multiple threads.");
+    PTRACE(2, &bundle, PTraceModule(), "Cannot read from multiple threads.");
     param.m_errorCode = PChannel::DeviceInUse;
     return;
   }
