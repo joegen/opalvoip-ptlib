@@ -636,26 +636,6 @@ void PSemaphore::Signal()
    }		
 }
 
-PBoolean PSemaphore::WillBlock() const
-{
-  if(!mfNested)
-  {
-    PAssertOS(semId >= B_NO_ERROR);
-
-    #ifdef DEBUG_SEMAPHORES
-    sem_info info;
-    get_sem_info(semId, &info);
-    PError << "::acquire_sem_etc (WillBlock) " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count << endl;
-    #endif
-	
-    status_t result = ::acquire_sem_etc(semId, 0, B_RELATIVE_TIMEOUT, 0);
-    return result == B_WOULD_BLOCK;
-  }
-  else
-  {
-    return mOwner == find_thread(NULL); // If we are in our own thread, we won't lock
-  }
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
