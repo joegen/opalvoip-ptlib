@@ -1479,27 +1479,6 @@ void PSemaphore::Signal()
 }
 
 
-PBoolean PSemaphore::WillBlock() const
-{
-#if defined(P_HAS_SEMAPHORES)
-  if (sem_trywait((sem_t *)&semId) != 0) {
-    PAssertOS(errno == EAGAIN || errno == EINTR);
-    return PTrue;
-  }
-  PAssertPTHREAD(sem_post, ((sem_t *)&semId));
-  return PFalse;
-#elif defined(P_HAS_NAMED_SEMAPHORES)
-  if (sem_trywait(semId) != 0) {
-    PAssertOS(errno == EAGAIN || errno == EINTR);
-    return PTrue;
-  }
-  PAssertPTHREAD(sem_post, (semId));
-  return PFalse;
-#else
-  return currentCount == 0;
-#endif
-}
-
 PTimedMutex::PTimedMutex()
 //  : PSemaphore(PXMutex)
 {
@@ -1691,23 +1670,6 @@ void PTimedMutex::Signal()
 }
 
 
-PBoolean PTimedMutex::WillBlock() const
-{
-#if P_HAS_RECURSIVE_MUTEX == 0
-  pthread_t currentThreadId = pthread_self();
-  if (currentThreadId == m_lockerId)
-    return PFalse;
-#endif
-
-  pthread_mutex_t * mp = (pthread_mutex_t*)&m_mutex;
-  if (pthread_mutex_trylock(mp) != 0)
-    return PTrue;
-
-  PAssertPTHREAD(pthread_mutex_unlock, (mp));
-  return PFalse;
-}
-
-
 PSyncPoint::PSyncPoint()
   : PSemaphore(PXSyncPoint)
 {
@@ -1774,12 +1736,6 @@ void PSyncPoint::Signal()
   signalled = true;
   PAssertPTHREAD(pthread_cond_signal, (&condVar));
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
-}
-
-
-PBoolean PSyncPoint::WillBlock() const
-{
-  return !signalled;
 }
 
 

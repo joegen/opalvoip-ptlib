@@ -58,11 +58,4 @@ void PSemaphore::Signal()
   pNucleusSemaphore->Release();
   }
 
-PBoolean PSemaphore::WillBlock() const
-  {
-  SemaphoreInfo * pNucleusSemaphoreInfo = 0;
-  STATUS retval = pNucleusSemaphore->Information(&pNucleusSemaphoreInfo);
-  PAssert(retval == NU_SUCCESS, "Failure of ATI Semaphore::Information()");
-  return pNucleusSemaphoreInfo->semaphoreControlBlock.sm_tasks_waiting != 0;
-  }
 

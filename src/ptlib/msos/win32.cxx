@@ -1641,18 +1641,6 @@ void PSemaphore::Signal()
 }
 
 
-PBoolean PSemaphore::WillBlock() const
-{
-  PSemaphore * unconst = (PSemaphore *)this;
-
-  if (!unconst->Wait(0))
-    return PTrue;
-
-  unconst->Signal();
-  return PFalse;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 

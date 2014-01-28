@@ -44,7 +44,6 @@
     virtual void Wait();
     virtual PBoolean Wait(const PTimeInterval & timeout);
     virtual void Signal();
-    virtual PBoolean WillBlock() const;
   private:
     bool signalled;
 #endif

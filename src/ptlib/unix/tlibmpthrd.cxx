@@ -743,16 +743,6 @@ void PSemaphore::Signal()
 }
 
 
-PBoolean PSemaphore::WillBlock() const
-{
-    OSStatus err = MPWaitOnSemaphore(semId, kDurationImmediate);
-    if (err == kMPTimeoutErr)
-        return PTrue;
-    PAssert(err == 0, psprintf("timed wait error = %i", err));
-    (void)MPSignalSemaphore(semId);
-    return PFalse;
-}
-
 // Ideally, a PMutex would contain an MPCriticalSection instead of a
 // semaphore, but the class derivation is outside the machine-specific
 // code, and I'm unwilling to do something gross like implement a bogus
@@ -776,11 +766,6 @@ PBoolean PMutex::Wait(const PTimeInterval & timeout)
 void PMutex::Signal()
 {
 	PSemaphore::Signal();
-}
-
-PBoolean PMutex::WillBlock() const 
-{
-	return PSemaphore::WillBlock();
 }
 
 PSyncPoint::PSyncPoint()
