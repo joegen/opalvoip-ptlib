@@ -85,12 +85,43 @@ class PTimedMutex : public PSync
        never wait.
      */
     PTimedMutex();
+
+    /**Copy constructor is allowed but does not copy, allocating a new mutex.
+       Two copies of the same mutex information would be very bad.
+      */
     PTimedMutex(const PTimedMutex & mutex);
+
+    /**Assignment operator is allowed but does nothing.
+       Overwriting the old mutex information would be very bad.
+      */
+    PTimedMutex & operator=(const PTimedMutex &) { return *this; }
+
+    /**Block until the synchronisation object is available.
+     */
+    virtual void Wait();
+
+    /**Block, for a time, until the synchronisation object is available.
+
+       @return
+       true if lock is acquired, false if timed out
+     */
+    virtual PBoolean Wait(
+      const PTimeInterval & timeout // Amount of time to wait.
+    );
+
+    /**Signal that the synchronisation object is available.
+     */
+    virtual void Signal();
 
     /** Try to enter the critical section for exlusive access. Does not wait.
         @return true if cirical section entered, leave/Signal must be called.
       */
     PINLINE bool Try() { return Wait(0); }
+
+
+  private:
+    PThreadIdentifier m_lockerId;
+    PAtomicInteger    m_lockCount;
 
 // Include platform dependent part of class
 #ifdef _WIN32
