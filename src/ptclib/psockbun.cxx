@@ -508,6 +508,9 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
       }
     }
 
+    // While there is always a select before a read call, there is eveidence of
+    // somehow the read blocking forever always, so double up the protection
+    info.socket->SetReadTimeout(0);
     return true;
   }
 
@@ -611,6 +614,7 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
       if (!interfaceAddedSignal.IsOpen()) {
         interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
         param.m_errorCode = PChannel::Interrupted;
+        PTRACE(4, "MonSock\tInterfaces changed");
         return;
       }
       // Do next case
@@ -637,16 +641,16 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
   switch (param.m_errorCode) {
     case PChannel::Unavailable :
       PTRACE(2, "MonSock\tUDP Port on remote not ready.");
-      param.m_errorCode = PChannel::NoError;
-      return;
+      break;
 
     case PChannel::BufferTooSmall :
       PTRACE(2, "MonSock\tRead UDP packet too large for buffer of " << param.m_length << " bytes.");
-      return;
+      break;
 
-    case PChannel::NotFound : // Interface went down
+    case PChannel::NotFound :
+      PTRACE(4, "MonSock\tInterface went down");
       param.m_errorCode = PChannel::Interrupted;
-      return;
+      break;
 
     default :
       PTRACE(1, "MonSock\tSocket read UDP error ("
