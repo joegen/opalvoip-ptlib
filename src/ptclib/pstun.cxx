@@ -938,6 +938,12 @@ bool PSTUNUDPSocket::OpenSTUN(PSTUNClient & client)
       return false;
   }
 
+  PIPSocket::AddressAndPort ap;
+  if (!client.GetServerAddress(ap))
+    return false;
+
+  SetSendAddress(ap);
+
   // do a binding request to verify the server is there
   PSTUNMessage request(PSTUNMessage::BindingRequest);
   PSTUNMessage response;
