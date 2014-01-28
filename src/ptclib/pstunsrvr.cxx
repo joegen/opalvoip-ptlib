@@ -282,6 +282,7 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
 {
   PSTUNMessage response;
   PUDPSocket * replySocket = socketInfo.m_socket;
+  const PSTUNChangeRequest * changeRequest;
 
   if (!m_password.IsEmpty()) {
     PSTUNStringAttribute * userAttr = request.FindAttributeAs<PSTUNStringAttribute>(PSTUNAttribute::USERNAME);
@@ -307,7 +308,7 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
   PTRACE(4, "STUNSRVR\tReceived " << request << " on " << socketInfo.m_socketAddress);
 
   // if CHANGE-REQUEST was specified, and we have no alternate address, then refuse the request
-  const PSTUNChangeRequest * changeRequest = (PSTUNChangeRequest *)request.FindAttribute(PSTUNAttribute::CHANGE_REQUEST);
+  changeRequest = (PSTUNChangeRequest *)request.FindAttribute(PSTUNAttribute::CHANGE_REQUEST);
   if ((changeRequest != NULL) && 
       (        
          (
