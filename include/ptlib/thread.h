@@ -48,7 +48,6 @@ class PSemaphore;
 
 #define PThreadIdentifer PThreadIdentifier
 
-typedef P_THREADIDENTIFIER PThreadIdentifier;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
