@@ -81,6 +81,7 @@ class PwxString : public wxString
 #if wxUSE_UNICODE
     inline PString p_str() const { return ToUTF8().data(); }
     inline operator PString() const { return ToUTF8().data(); }
+    inline operator PCaselessString() const { return ToUTF8().data(); }
     inline operator PFilePath() const { return ToUTF8().data(); }
 #if defined(PTLIB_PURL_H) && defined(P_URL)
     inline operator PURL() const { return ToUTF8().data(); }
@@ -93,6 +94,7 @@ class PwxString : public wxString
 #else
     inline PString p_str() const { return c_str(); }
     inline operator PString() const { return c_str(); }
+    inline operator PCaselessString() const { return c_str(); }
     inline operator PFilePath() const { return c_str(); }
 #if defined(PTLIB_PURL_H) && defined(P_URL)
     inline operator PURL() const { return c_str(); }
