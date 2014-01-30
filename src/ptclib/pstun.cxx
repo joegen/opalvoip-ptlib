@@ -697,7 +697,7 @@ void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PI
   memcpy(checkHmac, result.GetPointer(), PHMAC::KeyLength);
 }
 #else
-void PSTUNMessage::CalculateMessageIntegrity(const BYTE *, PINDEX, PSTUNMessageIntegrity *, BYTE * checkHmac)
+void PSTUNMessage::CalculateMessageIntegrity(const BYTE *, PINDEX, PSTUNMessageIntegrity *, BYTE * checkHmac) const
 {
   PTRACE(2, "STUN\tCannot calculate HMAC-SHA1 for MESSAGE-INTEGRITY");
   memset(checkHmac, 0, PHMAC::KeyLength);
