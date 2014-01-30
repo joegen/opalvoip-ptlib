@@ -368,6 +368,7 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL & url, const PString & args, 
 
 bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 {
+#if P_SSL
   std::map<PString, WebSocketNotifier>::iterator notifier;
 
   const PMIMEInfo & mime = connectInfo.GetMIME();
@@ -394,6 +395,10 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
     notifier->second(*this, connectInfo);
 
   return true;
+#else
+  PTRACE(2, "HTTP\tWebSocket refused due to no SSL");
+  return OnError(NotFound, "WebSocket unsupported (No SSL)", connectInfo);
+#endif
 }
 
 
@@ -852,6 +857,8 @@ PHTTPRequest::PHTTPRequest(const PURL & _url,
 //////////////////////////////////////////////////////////////////////////////
 // PWebSocket
 
+#if P_SSL
+
 PWebSocket::PWebSocket()
   : m_client(false)
   , m_fragmentingWrite(false)
@@ -1115,6 +1122,8 @@ bool PWebSocket::WriteHeader(OpCodes  opCode,
 
   return PIndirectChannel::Write(header, len);
 }
+
+#endif //P_SSL
 
 
 //////////////////////////////////////////////////////////////////////////////
