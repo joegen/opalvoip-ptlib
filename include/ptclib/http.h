@@ -722,6 +722,8 @@ class PHTTPClient : public PHTTP
 //////////////////////////////////////////////////////////////////////////////
 // PWebSocket
 
+#if P_SSL
+
 /** This channel reads from a channel (usually socket) that is under the RFC6455
     framing rules.
     
@@ -843,6 +845,8 @@ class PWebSocket : public PIndirectChannel
 
     bool     m_recursiveRead;
 };
+
+#endif // P_SSL
 
 
 //////////////////////////////////////////////////////////////////////////////
