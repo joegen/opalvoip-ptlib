@@ -666,9 +666,13 @@ bool PSTUNMessage::CheckMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX
   if (mi == NULL)
     return false;
 
+#if P_SSL
   BYTE hmac[PHMAC::KeyLength];
   CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, hmac);
   return memcmp(hmac, mi->m_hmac, PHMAC::KeyLength) == 0;
+#else
+  return true;
+#endif
 }
 
 
@@ -693,9 +697,10 @@ void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PI
   memcpy(checkHmac, result.GetPointer(), PHMAC::KeyLength);
 }
 #else
-void PSTUNMessage::CalculateMessageIntegrity(const BYTE *, PINDEX, PSTUNMessageIntegrity *, BYTE *)
+void PSTUNMessage::CalculateMessageIntegrity(const BYTE *, PINDEX, PSTUNMessageIntegrity *, BYTE * checkHmac)
 {
-  PAssertAlways(PUnimplementedFunction);
+  PTRACE(2, "STUN\tCannot calculate HMAC-SHA1 for MESSAGE-INTEGRITY");
+  memset(checkHmac, 0, PHMAC::KeyLength);
 }
 #endif
 
