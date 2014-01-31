@@ -780,6 +780,7 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR status, Errors & lastError, int & os
       lastError = BadParameter;
       break;
     case EBADF :
+    case ENOTSOCK :
       lastError = NotOpen;
       break;
     case EAGAIN :
