@@ -2290,19 +2290,24 @@ class PSortedStringList;
 */
 class PStringArray : public PArray<PString>
 {
-    typedef PArray<PString> ParentClass;
-    PCLASSINFO(PStringArray, ParentClass);
+    typedef PArray<PString> BaseClass;
+    PCLASSINFO(PStringArray, BaseClass);
 
   protected:
     inline PStringArray(int dummy, const PStringArray * c)
-      : ParentClass(dummy, c) { }
+      : BaseClass(dummy, c)
+    {
+    }
 
   public:
   /**@name Construction */
   //@{
     /// Create an empty PString array.
-    inline PStringArray(PINDEX initialSize = 0)
-      : ParentClass(initialSize) { }
+    __inline PStringArray(PINDEX initialSize = 0)
+      : BaseClass(initialSize) { }
+
+    __inline PStringArray(const BaseClass & other)
+      : BaseClass(other) { }
 
     /**Create a PStringArray from the array of C strings. If count is
        P_MAX_INDEX then strarr is assumed to point to an array of strings
@@ -2471,20 +2476,23 @@ class PStringArray : public PArray<PString>
  */
 class PStringList : public PList<PString>
 {
-    typedef PList<PString> ParentClass;
-    PCLASSINFO(PStringList, ParentClass);
+    typedef PList<PString> BaseClass;
+    PCLASSINFO(PStringList, BaseClass);
 
   protected:
     PStringList(int dummy, const PStringList * c)
-      : ParentClass(dummy, c) { }
+      : BaseClass(dummy, c) { }
 
   public:
   /**@name Construction */
   //@{
     /**Create an empty PStringList.
      */
-    PStringList()
-      : ParentClass() { }
+    __inline PStringList()
+      : BaseClass() { }
+
+    __inline PStringList(const BaseClass & other)
+      : BaseClass(other) { }
 
     /**Create a PStringList from the array of C strings.
      */
@@ -2602,13 +2610,26 @@ class PStringList : public PList<PString>
 
    See the PAbstractSortedList and PSortedList classes for more information.
  */
-#ifdef DOC_PLUS_PLUS
-class PSortedStringList : public PSortedList {
-#endif
-PDECLARE_SORTED_LIST(PSortedStringList, PString);
+class PSortedStringList : public PSortedList<PString>
+{
+    typedef PSortedList<PString> BaseClass;
+    PCLASSINFO(PSortedStringList, BaseClass);
+
+  protected:
+    PSortedStringList(int dummy, const PSortedStringList * c)
+      : BaseClass(dummy, c) { }
+
   public:
   /**@name Construction */
   //@{
+    /**Create an empty PStringList.
+     */
+    __inline PSortedStringList()
+      : BaseClass() { }
+
+    __inline PSortedStringList(const BaseClass & other)
+      : BaseClass(other) { }
+
     /**Create a PStringArray from the array of C strings.
      */
     PSortedStringList(
@@ -2719,6 +2740,9 @@ class PStringSet : public PSet<PString>
     PStringSet(PBoolean initialDeleteObjects = true)
       : BaseClass(initialDeleteObjects) { }
 
+    PStringSet(const BaseClass & other)
+      : BaseClass(other) { }
+
     /**Create a PStringSet from the array of C strings.
      */
     PStringSet(
@@ -2798,8 +2822,8 @@ class PStringSet : public PSet<PString>
  */
 template <class K> class PStringDictionary : public PDictionary<K, PString>
 {
-  typedef PDictionary<K, PString> ParentClass;
-  PCLASSINFO(PStringDictionary, ParentClass);
+  typedef PDictionary<K, PString> BaseClass;
+  PCLASSINFO(PStringDictionary, BaseClass);
 
   public:
   /**@name Construction */
@@ -2811,7 +2835,7 @@ template <class K> class PStringDictionary : public PDictionary<K, PString>
        destroyed.
      */
     PStringDictionary()
-      : ParentClass() { }
+      : BaseClass() { }
   //@}
 
   /**@name Overrides from class PObject */
@@ -2864,7 +2888,7 @@ template <class K> class PStringDictionary : public PDictionary<K, PString>
 
   protected:
     PStringDictionary(int dummy, const PStringDictionary * c)
-      : ParentClass(dummy, c) { }
+      : BaseClass(dummy, c) { }
 };
 
 
