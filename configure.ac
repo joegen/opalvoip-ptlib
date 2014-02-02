@@ -211,7 +211,6 @@ dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
 dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
 
 MY_VERSION_FILE([$VERSION_DIR/version.h], [PTLIB])
-AC_MSG_NOTICE(PTLib version is ${PTLIB_VERSION});
 
 
 dnl ########################################################################
@@ -247,6 +246,25 @@ dnl ########################################################################
 dnl look for compile flags
 
 MY_COMPILE_IFELSE(
+   [compiler -felide-constructors],
+   [-Werror -felide-constructors],
+   [],
+   [],
+   [CXXFLAGS="$CXXFLAGS -felide-constructors"]
+)
+
+MY_COMPILE_IFELSE(
+   [compiler -Wreorder],
+   [-Werror -Wreorder],
+   [],
+   [],
+   [CXXFLAGS="$CXXFLAGS -Wreorder"]
+)
+
+
+AC_LANG_PUSH(C)
+
+MY_COMPILE_IFELSE(
    [compiler -fno-diagnostics-show-caret],
    [-Werror -fno-diagnostics-show-caret],
    [],
@@ -270,22 +288,6 @@ MY_COMPILE_IFELSE(
    [CPPFLAGS="$CPPFLAGS -Wno-\#pragma-messages"]
 )
 
-MY_COMPILE_IFELSE(
-   [compiler -felide-constructors],
-   [-Werror -felide-constructors],
-   [],
-   [],
-   [CXXFLAGS="$CXXFLAGS -felide-constructors"]
-)
-
-MY_COMPILE_IFELSE(
-   [compiler -Wreorder],
-   [-Werror -Wreorder],
-   [],
-   [],
-   [CXXFLAGS="$CXXFLAGS -Wreorder"]
-)
-
 
 AC_ARG_ENABLE(deprecated, AS_HELP_STRING([--disable-deprecated],[Stop compiler warning about deprecated functions]))
 
@@ -299,6 +301,7 @@ if test "${enable_deprecated}" = "no" ; then
    )
 fi
 
+AC_LANG_POP(C)
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
