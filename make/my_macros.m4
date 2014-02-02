@@ -100,8 +100,8 @@ dnl $5 program main
 dnl $6 success code
 dnl $7 failure code
 AC_DEFUN([MY_LINK_IFELSE],[
-   oldCPPFLAGS="$CPPFLAGS"
-   oldLIBS="$LIBS"
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $2"
    LIBS="$3 $LIBS"
    AC_MSG_CHECKING($1)
@@ -111,8 +111,8 @@ AC_DEFUN([MY_LINK_IFELSE],[
       [usable=no]
    )
    AC_MSG_RESULT($usable)
-   CPPFLAGS="$oldCPPFLAGS"
-   LIBS="$oldLIBS"
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
    MY_IFELSE([usable], [$6], [$7])
 ])
 
@@ -322,7 +322,7 @@ AC_DEFUN([MY_VERSION_FILE],[
    AC_DEFINE_UNQUOTED([$2[_BUILD]],   [${build}], [Build number])
    AC_DEFINE_UNQUOTED([$2[_VERSION]], ["$version"],[PTLib version])
 
-   AC_MSG_NOTICE("$2 version is $version")
+   AC_MSG_NOTICE([$2 version is $version])
 ])
 
 
@@ -610,7 +610,7 @@ fi
 
 target=${target_os}_${target_cpu}
 
-AC_MSG_NOTICE([using \"$target_os\" release \"$target_release\" on \"$target_cpu\"])
+AC_MSG_NOTICE([Platform: \"$target_os\" release \"$target_release\" on \"$target_cpu\"])
 
 
 dnl add additional information for the debugger to ensure the user can indeed
