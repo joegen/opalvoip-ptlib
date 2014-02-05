@@ -1666,23 +1666,29 @@ PHTTPField * PHTTPSelectField::NewField() const
 void PHTTPSelectField::GetHTMLTag(PHTML & html) const
 {
   html << PHTML::Select(fullName);
-  for (PINDEX i = 0; i < m_values.GetSize(); i++)
-    html << PHTML::Option(m_values[i] == m_value ? PHTML::Selected : PHTML::NotSelected,
-                          m_enumeration ? psprintf("value=\"%u\"", i) : PString::Empty())
-         << PHTML::Escaped(m_values[i]);
+  for (PINDEX i = 0; i < m_values.GetSize(); i++) {
+    if (m_enumeration)
+      html << PHTML::Option(i == m_value.AsUnsigned() ? PHTML::Selected : PHTML::NotSelected, psprintf("value=\"%u\"", i));
+    else
+      html << PHTML::Option(m_values[i] == m_value ? PHTML::Selected : PHTML::NotSelected);
+    html << PHTML::Escaped(m_values[i]);
+  }
   html << PHTML::Select();
 }
 
 
 PString PHTTPSelectField::GetValue(PBoolean dflt) const
 {
-  if (dflt)
-    if (m_initialValue < m_values.GetSize())
-      return m_values[m_initialValue];
-    else
-      return PString::Empty();
-  else
+  if (!dflt)
     return m_value;
+
+  if (m_enumeration)
+    return m_initialValue;
+
+  if (m_initialValue < m_values.GetSize())
+    return m_values[m_initialValue];
+
+  return PString::Empty();
 }
 
 
