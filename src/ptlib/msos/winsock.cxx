@@ -399,7 +399,7 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 
   fionbio = 0;
   if (::ioctlsocket(os_handle, FIONBIO, &fionbio) < 0) {
-    PTRACE(1, "Socket\tCOuld nto reset FIONBIO mode, error=" << GetLastError());
+    PTRACE(1, "Socket\tCould not reset FIONBIO mode, error=" << GetLastError());
   }
 
   SetLastError(err);

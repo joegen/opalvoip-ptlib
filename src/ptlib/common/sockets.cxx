@@ -2841,12 +2841,15 @@ void PIPSocket::PortRange::Set(unsigned newBase, unsigned newMax, unsigned range
 
 bool PIPSocket::PortRange::Connect(PIPSocket & socket, const Address & addr, const Address & binding)
 {
-  PWaitAndSignal mutex(m_mutex);
+  m_mutex.Wait();
+  WORD basePort = m_base;
+  WORD maxPort = m_max;
+  m_mutex.Signal();
 
-  if (m_base == 0 || m_base == m_max)
-    return socket.Connect(binding, m_base, addr);
+  if (basePort == 0 || basePort == maxPort)
+    return socket.Connect(binding, basePort, addr);
 
-  WORD firstPort = (WORD)PRandom::Number(m_base, m_max);
+  WORD firstPort = (WORD)PRandom::Number(basePort, maxPort);
   WORD nextPort = firstPort;
   do {
     if (socket.Connect(binding, nextPort, addr))
@@ -2854,11 +2857,11 @@ bool PIPSocket::PortRange::Connect(PIPSocket & socket, const Address & addr, con
     if (socket.GetErrorNumber() != EADDRINUSE && socket.GetErrorNumber() != EADDRNOTAVAIL)
       return false;
     PTRACE(5, &socket, PTraceModule(), "Could not connect using local port " << nextPort);
-    if (++nextPort >= m_max)
-      nextPort = m_base;
+    if (++nextPort >= maxPort)
+      nextPort = basePort;
   } while (nextPort != firstPort);
 
-  PTRACE(2, &socket, PTraceModule(), "Connect failed, exhausted all ports from " << m_base << " to " << m_max);
+  PTRACE(2, &socket, PTraceModule(), "Connect failed, exhausted all ports from " << basePort << " to " << maxPort);
   return false;
 }
 
