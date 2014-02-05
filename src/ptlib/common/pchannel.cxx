@@ -950,6 +950,18 @@ PBoolean PFile::Rename(const PString & newname, PBoolean force)
 }
 
 
+bool PFile::Move(const PFilePath & newname, bool force, bool recurse)
+{
+  Close();
+
+  if (!ConvertOSError(Move(path, newname, force, recurse) ? 0 : -1))
+    return false;
+
+  path = newname;
+  return true;
+}
+
+
 PBoolean PFile::Close()
 {
   if (!IsOpen())
