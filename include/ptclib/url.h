@@ -226,6 +226,9 @@ class PURL : public PObject
     );
 
 
+    /// Extract scheme as per RFC2396
+    static PCaselessString ExtractScheme(const char * str);
+
     /// Get the scheme field of the URL.
     const PCaselessString & GetScheme() const { return scheme; }
 
