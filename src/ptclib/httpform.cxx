@@ -1666,9 +1666,10 @@ PHTTPField * PHTTPSelectField::NewField() const
 void PHTTPSelectField::GetHTMLTag(PHTML & html) const
 {
   html << PHTML::Select(fullName);
+  PINDEX selection = m_value.AsUnsigned();
   for (PINDEX i = 0; i < m_values.GetSize(); i++) {
     if (m_enumeration)
-      html << PHTML::Option(i == m_value.AsUnsigned() ? PHTML::Selected : PHTML::NotSelected, psprintf("value=\"%u\"", i));
+      html << PHTML::Option(i == selection ? PHTML::Selected : PHTML::NotSelected, psprintf("value=\"%u\"", i));
     else
       html << PHTML::Option(m_values[i] == m_value ? PHTML::Selected : PHTML::NotSelected);
     html << PHTML::Escaped(m_values[i]);
