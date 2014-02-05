@@ -383,6 +383,30 @@ void PURL::OutputVars(ostream & strm,
 }
 
 
+PCaselessString PURL::ExtractScheme(const char * cstr)
+{
+  // Character set as per RFC2396
+  //    scheme        = alpha *( alpha | digit | "+" | "-" | "." )
+  if (cstr == NULL)
+    return PString::Empty();
+
+  while (((*cstr & 0x80) == 0x00) && isspace(*cstr))
+    ++cstr;
+
+  if (!isalpha(*cstr))
+    return PString::Empty();
+
+  const char * ptr = cstr+1;
+  while (isalnum(*ptr) || *ptr == '+' || *ptr == '-' || *ptr == '.')
+    ++ptr;
+
+  if (*ptr != ':')
+    return PString::Empty();
+
+  return PString(cstr, ptr-cstr);
+}
+
+
 PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 {
   scheme.MakeEmpty();
@@ -413,21 +437,12 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   // particular scheme
   schemeInfo = NULL;
 
-  // Character set as per RFC2396
-  //    scheme        = alpha *( alpha | digit | "+" | "-" | "." )
-  if (isalpha(cstr[0])) {
-    PINDEX pos = 1;
-    while (isalnum(cstr[pos]) || cstr[pos] == '+' || cstr[pos] == '-' || cstr[pos] == '.')
-      ++pos;
-
-    // Determine if the URL has an explicit scheme
-    if (cstr[pos] == ':') {
-      scheme = PString(cstr, pos);
-      // get the scheme information
-      schemeInfo = PURLSchemeFactory::CreateInstance(std::string(cstr, pos));
-      if (schemeInfo != NULL)
-        cstr += pos+1;
-    }
+  scheme = ExtractScheme(cstr);
+  if (!scheme.IsEmpty()) {
+    // get the scheme information
+    schemeInfo = PURLSchemeFactory::CreateInstance(scheme);
+    if (schemeInfo != NULL)
+      cstr = strchr(cstr, ':')+1;
   }
 
   // if we could not match a scheme, then use the specified default scheme
