@@ -114,6 +114,23 @@ PHTTPServiceProcess & PHTTPServiceProcess::Current()
 
 PBoolean PHTTPServiceProcess::OnStart()
 {
+  {
+    /* Set up the default data and html files directory underneath
+       wherever the executable is. These directories contain the files
+       that can override the default calculated, and terrible looking,
+       configuration pages. */
+    PDirectory exeDir = GetFile().GetDirectory();
+#if defined(_WIN32) && defined(_DEBUG)
+    // Special check to aid in using DevStudio for debugging.
+    if (exeDir.Find("\\Debug\\") != P_MAX_INDEX)
+      exeDir = exeDir.GetParent();
+#endif
+
+    httpNameSpace.AddResource(new PHTTPDirectory("data", exeDir + "data"));
+    httpNameSpace.AddResource(new PServiceHTTPDirectory("html", exeDir + "html"));
+  }
+
+
   if (!Initialise("Started"))
     return false;
 
