@@ -291,16 +291,16 @@ PINLINE PDirectory & PDirectory::operator=(const char * cstr)
 PINLINE void PDirectory::DestroyContents()
   { Close(); PFilePathString::DestroyContents(); }
 
-PINLINE PBoolean PDirectory::Exists() const
+PINLINE bool PDirectory::Exists() const
   { return Exists(*this); }
 
-PINLINE PBoolean PDirectory::Change() const
+PINLINE bool PDirectory::Change() const
   { return Change(*this); }
 
-PINLINE PBoolean PDirectory::Create(int perm, bool recurse) const
+PINLINE bool PDirectory::Create(int perm, bool recurse) const
   { return Create(*this, perm, recurse); }
 
-PINLINE PBoolean PDirectory::Remove()
+PINLINE bool PDirectory::Remove()
   { Close(); return Remove(*this); }
 
 
@@ -331,40 +331,40 @@ PINLINE PFilePath & PFilePath::operator+=(const char * cstr)
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PFile::PFile()
-  { os_handle = -1; removeOnClose = false; }
+  { os_handle = -1; m_removeOnClose = false; }
 
 PINLINE PFile::PFile(OpenMode mode, OpenOptions opts)
-  { os_handle = -1; removeOnClose = false; Open(mode, opts); }
+  { os_handle = -1; m_removeOnClose = false; Open(mode, opts); }
 
 PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, OpenOptions opts)
-  { os_handle = -1; removeOnClose = false; Open(name, mode, opts); }
+  { os_handle = -1; m_removeOnClose = false; Open(name, mode, opts); }
 
 
-PINLINE PBoolean PFile::Exists() const
-  { return Exists(path); }
+PINLINE bool PFile::Exists() const
+  { return Exists(m_path); }
 
-PINLINE PBoolean PFile::Access(OpenMode mode)
-  { return ConvertOSError(Access(path, mode) ? 0 : -1); }
+PINLINE bool PFile::Access(OpenMode mode)
+  { return ConvertOSError(Access(m_path, mode) ? 0 : -1); }
 
-PINLINE PBoolean PFile::Remove(PBoolean force)
-  { Close(); return ConvertOSError(Remove(path, force) ? 0 : -1); }
+PINLINE bool PFile::Remove(PBoolean force)
+  { Close(); return ConvertOSError(Remove(m_path, force) ? 0 : -1); }
 
 PINLINE bool PFile::Copy(const PFilePath & newname, bool force, bool recurse)
-  { return ConvertOSError(Copy(path, newname, force, recurse) ? 0 : -1); }
+  { return ConvertOSError(Copy(m_path, newname, force, recurse) ? 0 : -1); }
 
-PINLINE PBoolean PFile::GetInfo(PFileInfo & info)
-  { return ConvertOSError(GetInfo(path, info) ? 0 : -1); }
+PINLINE bool PFile::GetInfo(PFileInfo & info)
+  { return ConvertOSError(GetInfo(m_path, info) ? 0 : -1); }
 
-PINLINE PBoolean PFile::SetPermissions(int permissions)
-  { return ConvertOSError(SetPermissions(path, permissions) ? 0 : -1); }
+PINLINE bool PFile::SetPermissions(PFileInfo::Permissions permissions)
+  { return ConvertOSError(SetPermissions(m_path, permissions) ? 0 : -1); }
 
 
 PINLINE const PFilePath & PFile::GetFilePath() const
-  { return path; }
+  { return m_path; }
       
 
 PINLINE PString PFile::GetName() const
-  { return path; }
+  { return m_path; }
 
 PINLINE off_t PFile::GetPosition() const
   { return _lseek(GetOSHandleAsInt(), 0, SEEK_CUR); }
