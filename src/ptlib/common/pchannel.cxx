@@ -934,18 +934,18 @@ PFile::~PFile()
 PObject::Comparison PFile::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PFile), PInvalidCast);
-  return path.Compare(((const PFile &)obj).path);
+  return m_path.Compare(((const PFile &)obj).m_path);
 }
 
 
-PBoolean PFile::Rename(const PString & newname, PBoolean force)
+bool PFile::Rename(const PString & newname, bool force)
 {
   Close();
 
-  if (!ConvertOSError(Rename(path, newname, force) ? 0 : -1))
+  if (!ConvertOSError(Rename(m_path, newname, force) ? 0 : -1))
     return false;
 
-  path = path.GetDirectory() + newname;
+  m_path = m_path.GetDirectory() + newname;
   return true;
 }
 
@@ -954,10 +954,10 @@ bool PFile::Move(const PFilePath & newname, bool force, bool recurse)
 {
   Close();
 
-  if (!ConvertOSError(Move(path, newname, force, recurse) ? 0 : -1))
+  if (!ConvertOSError(Move(m_path, newname, force, recurse) ? 0 : -1))
     return false;
 
-  path = newname;
+  m_path = newname;
   return true;
 }
 
@@ -977,7 +977,7 @@ PBoolean PFile::Close()
 
   os_handle = -1;
 
-  if (removeOnClose)
+  if (m_removeOnClose)
     Remove();
 
   return ok;
@@ -1052,7 +1052,7 @@ off_t PFile::GetLength() const
 }
 
 
-PBoolean PFile::IsEndOfFile() const
+bool PFile::IsEndOfFile() const
 {
   if (!IsOpen())
     return true;
@@ -1110,7 +1110,7 @@ bool PFile::Copy(const PFilePath & oldname, const PFilePath & newname, bool forc
 }
 
 
-PBoolean PFile::Rename(const PFilePath & oldname, const PString & newname, PBoolean force)
+bool PFile::Rename(const PFilePath & oldname, const PString & newname, bool force)
 {
   for (PINDEX i = 0; i< newname.GetLength(); ++i) {
     if (PDirectory::IsSeparator(newname[i])) {

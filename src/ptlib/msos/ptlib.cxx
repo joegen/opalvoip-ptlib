@@ -266,7 +266,7 @@ PDirectory PDirectory::GetParent() const
 }
 
 
-PBoolean PDirectory::Change(const PString & p)
+bool PDirectory::Change(const PString & p)
 {
   PDirectory d = p;
 
@@ -278,7 +278,7 @@ PBoolean PDirectory::Change(const PString & p)
 }
 
 
-PBoolean PDirectory::Filtered()
+bool PDirectory::InternalEntryCheck()
 {
 #ifdef UNICODE
   PString name(fileinfo.cFileName);
@@ -286,19 +286,17 @@ PBoolean PDirectory::Filtered()
   char * name = fileinfo.cFileName;
 #endif // UNICODE
   if (strcmp(name, ".") == 0)
-    return true;
+    return m_scanMask & PFileInfo::CurrentDirectory;
   if (strcmp(name, "..") == 0)
-    return true;
-  if (scanMask == PFileInfo::AllPermissions)
-    return false;
+    return m_scanMask & PFileInfo::ParentDirectory;
 
-  PFileInfo inf;
-  PAssert(PFile::GetInfo(*this+name, inf), POperatingSystemError);
-  return (inf.type&scanMask) == 0;
+  PFileInfo info;
+  PAssert(PFile::GetInfo(*this+name, info), POperatingSystemError);
+  return info.type & m_scanMask;
 }
 
 
-PBoolean PDirectory::IsRoot() const
+bool PDirectory::IsRoot() const
 {
   if ((*this)[1] == ':')
     return GetLength() == 3;
@@ -339,20 +337,20 @@ PStringArray PDirectory::GetPath() const
 }
 
 
-PBoolean PDirectory::GetInfo(PFileInfo & info) const
+bool PDirectory::GetInfo(PFileInfo & info) const
 {
   return PFile::GetInfo(*this + GetEntryName(), info);
 }
 
 
-PBoolean PDirectory::Exists(const PString & path)
+bool PDirectory::Exists(const PString & path)
 {
   if (_access(path, 0) != 0)
     return false;
 
   // Could be a file, so actually need to try and open it
   PDirectory dir(path);
-  return dir.Open();
+  return dir.Open(PFileInfo::AllFiles);
 }
 
 
@@ -504,11 +502,11 @@ void PFilePath::SetType(const PCaselessString & type)
 void PFile::SetFilePath(const PString & newName)
 {
   if (!IsOpen())
-    path = newName;
+    m_path = newName;
 }
 
 
-PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
+bool PFile::Access(const PFilePath & name, OpenMode mode)
 {
   int accmode;
 
@@ -551,7 +549,7 @@ PBoolean PFile::Remove(const PString & name, PBoolean force)
 time_t	FileTimeToTime(const FILETIME FileTime);
 time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
 
-PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
+bool PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
   PString fn = name;
   PINDEX pos = fn.GetLength()-1;
@@ -598,18 +596,18 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 
 #if defined(_WIN32)
 
-static void TwiddleBits(int newPermissions,
-                        int & oldPermissions,
-                        int permission,
+static void TwiddleBits(PFileInfo::Permissions newPermissions,
+                        PFileInfo::Permissions & oldPermissions,
+                        PFileInfo::Permissions permission,
                         DWORD & mask,
                         DWORD access)
 {
-  if (newPermissions < 0) {
+  if (newPermissions == PFileInfo::NoPermissions) {
     if ((mask&access) == access)
       oldPermissions |= permission;
   }
   else {
-    if ((newPermissions&permission) != 0)
+    if (newPermissions & permission)
       mask |= access;
     else
       mask &= ~access;
@@ -617,7 +615,7 @@ static void TwiddleBits(int newPermissions,
 }
 
 
-static int FileSecurityPermissions(const PFilePath & filename, int newPermissions)
+static PFileInfo::Permissions FileSecurityPermissions(const PFilePath & filename, PFileInfo::Permissions newPermissions)
 {
   // All of the following is to support cygwin style permissions
 
@@ -631,7 +629,7 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
                        storage.GetSize(),
                        &lengthNeeded)) {
     if (GetLastError() != ERROR_INSUFFICIENT_BUFFER || lengthNeeded == 0)
-      return -1;
+      return PFileInfo::NoPermissions;
 
     descriptor = (SECURITY_DESCRIPTOR *)storage.GetPointer(lengthNeeded);
     if (!GetFileSecurity(filename,
@@ -639,23 +637,23 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
                          descriptor,
                          storage.GetSize(),
                          &lengthNeeded))
-      return -1;
+                         return PFileInfo::NoPermissions;
   }
 
   BOOL daclPresent, daclDefaulted;
   PACL dacl;
   if (!GetSecurityDescriptorDacl(descriptor, &daclPresent, &dacl, &daclDefaulted))
-    return -1;
+    return PFileInfo::NoPermissions;
 
   if (!daclPresent || daclDefaulted || dacl == NULL)
-    return -1;
+    return PFileInfo::NoPermissions;
 
 
   ACL_SIZE_INFORMATION aclSize;
   if (!GetAclInformation(dacl, &aclSize, sizeof(aclSize), AclSizeInformation))
-    return -1;
+    return PFileInfo::NoPermissions;
 
-  int oldPermissions = 0;
+  PFileInfo::Permissions oldPermissions;
   int cygwinMask = 0;
 
   for (DWORD aceIndex = 0; aceIndex< aclSize.AceCount; aceIndex++) {
@@ -707,7 +705,7 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
 
   // Only do it if have the three ACE entries as per cygwin
   if (cygwinMask != 7)
-    return -1;
+    return PFileInfo::NoPermissions;
 
   if (newPermissions != -1)
     SetFileSecurity(filename, DACL_SECURITY_INFORMATION, descriptor);
@@ -718,7 +716,7 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
 #endif
 
 
-PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
+bool PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
   if (name.IsEmpty())
     return false;
@@ -739,11 +737,10 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   info.size = s.st_size;
 
 #if defined(_WIN32)
-  info.permissions = FileSecurityPermissions(name, -1);
-  if (info.permissions < 0)
+  info.permissions = FileSecurityPermissions(name, PFileInfo::NoPermissions);
+  if (info.permissions == PFileInfo::NoPermissions)
 #endif
   {
-    info.permissions = 0;
     if ((s.st_mode&S_IREAD) != 0)
       info.permissions |= PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
     if ((s.st_mode&S_IWRITE) != 0)
@@ -779,7 +776,7 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 
 #endif // _WIN32_WCE
 
-PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
+bool PFile::SetPermissions(const PFilePath & name, PFileInfo::Permissions permissions)
 {
 #if defined(_WIN32) && !defined(_WIN32_WCE)
   FileSecurityPermissions(name, permissions);
@@ -800,8 +797,8 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts, PFileInfo::Permissions per
   Close();
   clear();
 
-  if (path.IsEmpty())
-    path = PFilePath("PTL", NULL);
+  if (m_path.IsEmpty())
+    m_path = PFilePath("PTL", NULL);
 
   int oflags = IsTextFile() ? _O_TEXT : _O_BINARY;
   switch (mode) {
@@ -835,7 +832,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts, PFileInfo::Permissions per
     oflags |= O_TRUNC;
 
   if (opts & Temporary)
-    removeOnClose = true;
+    m_removeOnClose = true;
 
   int sflags = _SH_DENYNO;
   if (opts & DenySharedRead)
@@ -845,7 +842,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opts, PFileInfo::Permissions per
   else if (opts & (DenySharedRead|DenySharedWrite))
     sflags = _SH_DENYWR;
 
-  os_handle = _sopen(path, oflags, sflags, permissions);
+  os_handle = _sopen(m_path, oflags, sflags, permissions.AsBits());
 
   // As ConvertOSError tests for < 0 and some return values _sopen may be
   // negative, only pass -1 through.

@@ -37,7 +37,7 @@
   protected:
     HANDLE hFindFile;
     WIN32_FIND_DATA fileinfo;
-    PBoolean Filtered();
+    bool InternalEntryCheck();
 
   public:
     static PString CreateFullPath(const PString & path, PBoolean isDirectory);

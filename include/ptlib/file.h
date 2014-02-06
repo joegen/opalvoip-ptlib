@@ -204,7 +204,7 @@ class PFile : public PChannel
        @return
        true if the file exists.
      */
-    static PBoolean Exists(
+    static bool Exists(
       const PFilePath & name  ///< Name of file to see if exists.
     );
 
@@ -215,7 +215,7 @@ class PFile : public PChannel
        @return
        true if the file exists.
      */
-    PBoolean Exists() const;
+    bool Exists() const;
 
     /**Check for file access modes.
        Determine if the file specified may be opened in the specified mode. This would
@@ -226,7 +226,7 @@ class PFile : public PChannel
        @return
        true if a file open would succeed.
      */
-    static PBoolean Access(
+    static bool Access(
       const PFilePath & name, ///< Name of file to have its access checked.
       OpenMode mode         ///< Mode in which the file open would be done.
     );
@@ -241,7 +241,7 @@ class PFile : public PChannel
        @return
        true if a file open would succeed.
      */
-    PBoolean Access(
+    bool Access(
       OpenMode mode         ///< Mode in which the file open would be done.
     );
 
@@ -257,13 +257,13 @@ class PFile : public PChannel
        @return
        true if the file was deleted.
      */
-    static PBoolean Remove(
-      const PFilePath & name,   // Name of file to delete.
-      PBoolean force = false      // Force deletion even if file is protected.
+    static bool Remove(
+      const PFilePath & name,   ///< Name of file to delete.
+      bool force = false        ///< Force deletion even if file is protected.
     );
-    static PBoolean Remove(
-      const PString & name,   // Name of file to delete.
-      PBoolean force = false      // Force deletion even if file is protected.
+    static bool Remove(
+      const PString & name,   ///< Name of file to delete.
+      bool force = false      ///< Force deletion even if file is protected.
     );
 
     /**Delete the current file. If <code>force</code> is false and the file
@@ -278,8 +278,8 @@ class PFile : public PChannel
        @return
        true if the file was deleted.
      */
-    PBoolean Remove(
-      PBoolean force = false      // Force deletion even if file is protected.
+    bool Remove(
+      bool force = false      ///< Force deletion even if file is protected.
     );
 
     /**Change the specified files name. This does not move the file in the
@@ -297,11 +297,10 @@ class PFile : public PChannel
        @return
        true if the file was renamed.
      */
-    static PBoolean Rename(
+    static bool Rename(
       const PFilePath & oldname,  ///< Old name of the file.
       const PString & newname,    ///< New name for the file.
-      PBoolean force = false
-        ///< Delete file if a destination exists with the same name.
+      bool force = false          ///< Delete file if a destination exists with the same name.
     );
 
     /**Change the current files name.
@@ -320,10 +319,9 @@ class PFile : public PChannel
        @return
        true if the file was renamed.
      */
-    PBoolean Rename(
+    bool Rename(
       const PString & newname,  ///< New name for the file.
-      PBoolean force = false
-        ///< Delete file if a destination exists with the same name.
+      bool force = false        ///< Delete file if a destination exists with the same name.
     );
 
     /**Make a copy of the specified file.
@@ -411,8 +409,8 @@ class PFile : public PChannel
        true if the file was successfully opened.
      */
     virtual PBoolean Open(
-      OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      OpenOptions opts = ModeDefault      // Options for open operation.
+      OpenMode mode = ReadWrite,        ///< Mode in which to open the file.
+      OpenOptions opts = ModeDefault    ///< Options for open operation.
     );
 
     /**Open the specified file name in the specified mode and with
@@ -436,9 +434,9 @@ class PFile : public PChannel
        true if the file was successfully opened.
      */
     virtual PBoolean Open(
-      const PFilePath & name,    // Name of file to open.
-      OpenMode mode = ReadWrite, // Mode in which to open the file.
-      OpenOptions opts = ModeDefault     // <code>OpenOptions</code> enum# for open operation.
+      const PFilePath & name,         ///< Name of file to open.
+      OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
+      OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
     );
 
     /**Open the specified file name in the specified mode and with
@@ -474,12 +472,9 @@ class PFile : public PChannel
 
     /// Options for the origin in setting the file position.
     enum FilePositionOrigin {
-      /// Set position relative to start of file.
-      Start = SEEK_SET,   
-      /// Set position relative to current file position.
-      Current = SEEK_CUR, 
-      /// Set position relative to end of file.
-      End = SEEK_END      
+      Start = SEEK_SET,    ///< Set position relative to start of file.
+      Current = SEEK_CUR,  ///< Set position relative to current file position.
+      End = SEEK_END       ///< Set position relative to end of file.
     };
 
     /**Set the current active position in the file for the next read or write
@@ -511,17 +506,16 @@ class PFile : public PChannel
        @return
        true if at end of file.
      */
-    PBoolean IsEndOfFile() const;
+    bool IsEndOfFile() const;
       
     /**Get information (eg protection, timestamps) on the specified file.
 
        @return
        true if the file info was retrieved.
      */
-    static PBoolean GetInfo(
-      const PFilePath & name,  // Name of file to get the information on.
-      PFileInfo & info
-      // <code>PFileInfo</code> structure to receive the information.
+    static bool GetInfo(
+      const PFilePath & name,  ///< Name of file to get the information on.
+      PFileInfo & info         ///< <code>PFileInfo</code> structure to receive the information.
     );
 
     /**Get information (eg protection, timestamps) on the current file.
@@ -529,9 +523,8 @@ class PFile : public PChannel
        @return
        true if the file info was retrieved.
      */
-    PBoolean GetInfo(
-      PFileInfo & info
-      // <code>PFileInfo</code> structure to receive the information.
+    bool GetInfo(
+      PFileInfo & info ///< <code>PFileInfo</code> structure to receive the information.
     );
 
     /**Set permissions on the specified file.
@@ -539,25 +532,25 @@ class PFile : public PChannel
        @return
        true if the file was renamed.
      */
-    static PBoolean SetPermissions(
-      const PFilePath & name,   // Name of file to change the permission of.
-      int permissions           // New permissions mask for the file.
+    static bool SetPermissions(
+      const PFilePath & name,             ///< Name of file to change the permission of.
+      PFileInfo::Permissions permissions  ///< New permissions mask for the file.
     );
     /**Set permissions on the current file.
 
        @return
        true if the file was renamed.
      */
-    PBoolean SetPermissions(
-      int permissions           // New permissions mask for the file.
+    bool SetPermissions(
+      PFileInfo::Permissions permissions  ///< New permissions mask for the file.
     );
   //@}
 
   protected:
     // Member variables
 
-    PFilePath path;         ///< The fully qualified path name for the file.
-    PBoolean removeOnClose; ///< File is to be removed when closed.
+    PFilePath m_path;         ///< The fully qualified path name for the file.
+    bool      m_removeOnClose; ///< File is to be removed when closed.
 
 
 // Include platform dependent part of class
