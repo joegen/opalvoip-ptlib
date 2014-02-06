@@ -465,8 +465,8 @@ $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
 $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 	$(Q_CC)$(CC) $(STDCCFLAGS) -M $< >> $@
 
-$(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
-	bison $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
+#$(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
+#	bison $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
 
 #######################################################
 
