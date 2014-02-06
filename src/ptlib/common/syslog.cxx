@@ -312,7 +312,8 @@ void PSystemLogToFile::SetRotateInfo(const RotateInfo & info, bool force)
 
 bool PSystemLogToFile::Rotate(bool force)
 {
-  // Lock expected to be already in place
+  PWaitAndSignal mutex(m_mutex);
+
   if (!m_rotateInfo.CanRotate())
     return false;
 
