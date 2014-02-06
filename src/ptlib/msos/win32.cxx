@@ -267,26 +267,26 @@ void PDirectory::Construct()
 
 void PDirectory::CopyContents(const PDirectory & dir)
 {
-  scanMask  = dir.scanMask;
+  m_scanMask  = dir.m_scanMask;
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo  = dir.fileinfo;
 }
 
 
-PBoolean PDirectory::Open(int newScanMask)
+bool PDirectory::Open(PFileInfo::FileTypes newScanMask)
 {
-  scanMask = newScanMask;
+  m_scanMask = newScanMask;
   PVarString wildcard = *this + "*.*";
 
   hFindFile = FindFirstFile(wildcard, &fileinfo);
   if (hFindFile == INVALID_HANDLE_VALUE)
     return false;
 
-  return Filtered() ? Next() : true;
+  return InternalEntryCheck() || Next();
 }
 
 
-PBoolean PDirectory::Next()
+bool PDirectory::Next()
 {
   if (hFindFile == INVALID_HANDLE_VALUE)
     return false;
@@ -294,7 +294,7 @@ PBoolean PDirectory::Next()
   do {
     if (!FindNextFile(hFindFile, &fileinfo))
       return false;
-  } while (Filtered());
+  } while (!InternalEntryCheck());
 
   return true;
 }
@@ -306,7 +306,7 @@ PCaselessString PDirectory::GetEntryName() const
 }
 
 
-PBoolean PDirectory::IsSubDir() const
+bool PDirectory::IsSubDir() const
 {
   return (fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
@@ -376,7 +376,7 @@ typedef PBoolean (WINAPI *GetDiskFreeSpaceExType)(LPCTSTR lpDirectoryName,
                                               PULARGE_INTEGER lpTotalNumberOfFreeBytes);
 
 
-PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
+bool PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
   clusterSize = 512;
   total = free = ULONG_MAX;

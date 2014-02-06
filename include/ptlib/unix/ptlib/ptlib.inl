@@ -62,16 +62,16 @@ PINLINE unsigned PTimer::Resolution()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PBoolean PDirectory::IsRoot() const
+PINLINE bool PDirectory::IsRoot() const
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
 
 PINLINE PDirectory PDirectory::GetRoot() const
   { return PString(PDIR_SEPARATOR); }
 
-PINLINE PBoolean PDirectory::IsSeparator(char ch)
+PINLINE bool PDirectory::IsSeparator(char ch)
   { return ch == PDIR_SEPARATOR; }
 
-PINLINE PBoolean PDirectory::Change(const PString & p)
+PINLINE bool PDirectory::Change(const PString & p)
   { return chdir((char *)(const char *)p) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,10 +81,10 @@ PINLINE PString PFilePath::GetVolume() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PBoolean PFile::Remove(const PFilePath & name, PBoolean)
+PINLINE bool PFile::Remove(const PFilePath & name, bool)
   { return unlink((char *)(const char *)name) == 0; }
 
-PINLINE PBoolean PFile::Remove(const PString & name, PBoolean)
+PINLINE bool PFile::Remove(const PString & name, bool)
   { return unlink((char *)(const char *)name) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
