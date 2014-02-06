@@ -370,13 +370,13 @@ void PDirectory::Construct ()
   PString::AssignContents(CanonicaliseDirectory(*this));
 }
 
-PBoolean PDirectory::Open(int ScanMask)
+bool PDirectory::Open(PFileInfo::FileTypes ScanMask)
 
 {
   if (directory != NULL)
     Close();
 
-  scanMask = ScanMask;
+  m_scanMask = ScanMask;
 
   if ((directory = opendir(theArray)) == NULL)
     return false;
@@ -392,7 +392,7 @@ PBoolean PDirectory::Open(int ScanMask)
 }
 
 
-PBoolean PDirectory::Next()
+bool PDirectory::Next()
 {
   if (directory == NULL)
     return false;
@@ -421,16 +421,13 @@ PBoolean PDirectory::Next()
     /* Ignore this file if we can't get info about it */
     if (PFile::GetInfo(*this+entryBuffer->d_name, *entryInfo) == 0)
       continue;
-    
-    if (scanMask == PFileInfo::AllPermissions)
-      return true;
-  } while ((entryInfo->type & scanMask) == 0);
+  } while ((entryInfo->type & m_scanMask) == 0);
 
   return true;
 }
 
 
-PBoolean PDirectory::IsSubDir() const
+bool PDirectory::IsSubDir() const
 {
   if (entryInfo == NULL)
     return false;
@@ -438,9 +435,9 @@ PBoolean PDirectory::IsSubDir() const
   return entryInfo->type == PFileInfo::SubDirectory;
 }
 
-PBoolean PDirectory::Restart(int newScanMask)
+bool PDirectory::Restart(PFileInfo::FileTypes newScanMask)
 {
-  scanMask = newScanMask;
+  m_scanMask = newScanMask;
   if (directory != NULL)
     rewinddir(directory);
   return true;
@@ -455,7 +452,7 @@ PString PDirectory::GetEntryName() const
 }
 
 
-PBoolean PDirectory::GetInfo(PFileInfo & info) const
+bool PDirectory::GetInfo(PFileInfo & info) const
 {
   if (entryInfo == NULL)
     return false;
@@ -465,7 +462,7 @@ PBoolean PDirectory::GetInfo(PFileInfo & info) const
 }
 
 
-PBoolean PDirectory::Exists(const PString & p)
+bool PDirectory::Exists(const PString & p)
 {
   struct stat sbuf;
   if (stat((const char *)p, &sbuf) != 0)
@@ -475,7 +472,7 @@ PBoolean PDirectory::Exists(const PString & p)
 }
 
 
-PBoolean PDirectory::Remove(const PString & p)
+bool PDirectory::Remove(const PString & p)
 {
   PAssert(!p.IsEmpty(), "attempt to remove dir with empty name");
   PString str = p.Left(p.GetLength()-1);
@@ -576,7 +573,7 @@ PString PDirectory::GetVolume() const
   return volume;
 }
 
-PBoolean PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
+bool PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
 #if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined(P_GNU_HURD) || defined(P_ANDROID)
 
@@ -686,9 +683,9 @@ void PFile::SetFilePath(const PString & newName)
   PINDEX p;
 
   if ((p = newName.FindLast('/')) == P_MAX_INDEX) 
-    path = CanonicaliseDirectory("") + newName;
+    m_path = CanonicaliseDirectory("") + newName;
   else
-    path = CanonicaliseDirectory(newName(0,p)) + newName(p+1, P_MAX_INDEX);
+    m_path = CanonicaliseDirectory(newName(0, p)) + newName(p + 1, P_MAX_INDEX);
 }
 
 
@@ -699,9 +696,9 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opt, PFileInfo::Permissions perm
   clear();
 
   if (opt > 0)
-    removeOnClose = (opt & Temporary) != 0;
+    m_removeOnClose = (opt & Temporary) != 0;
 
-  if (path.IsEmpty()) {
+  if (m_path.IsEmpty()) {
     char templateStr[3+6+1];
     strcpy(templateStr, "PWLXXXXXX");
 #ifndef P_VXWORKS
@@ -714,7 +711,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opt, PFileInfo::Permissions perm
 #endif // P_RTEMS
     if (!ConvertOSError(os_handle))
       return false;
-    path = templateStr;
+    m_path = templateStr;
   } else {
 #else
     static int number = 0;
@@ -753,7 +750,7 @@ PBoolean PFile::Open(OpenMode mode, OpenOptions opt, PFileInfo::Permissions perm
 
     // We really want the permissions we specify
     mode_t oldMask = umask(0);
-    int h = ::open(path, oflags, permissions.AsBits());
+    int h = ::open(m_path, oflags, permissions.AsBits());
     umask(oldMask);
     if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), h)))
       return false;
@@ -773,7 +770,7 @@ PBoolean PFile::SetLength(off_t len)
 }
 
 
-PBoolean PFile::Exists(const PFilePath & name)
+bool PFile::Exists(const PFilePath & name)
 { 
 #ifdef P_VXWORKS
   // access function not defined for VxWorks
@@ -790,7 +787,7 @@ PBoolean PFile::Exists(const PFilePath & name)
 }
 
 
-PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
+bool PFile::Access(const PFilePath & name, OpenMode mode)
 {
 #ifdef P_VXWORKS
   // access function not defined for VxWorks
@@ -822,7 +819,7 @@ PBoolean PFile::Access(const PFilePath & name, OpenMode mode)
 }
 
 
-PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & status)
+bool PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 {
   status.type = PFileInfo::UnknownFileType;
 
@@ -867,13 +864,13 @@ PBoolean PFile::GetInfo(const PFilePath & name, PFileInfo & status)
   status.modified    = s.st_mtime;
   status.accessed    = s.st_atime;
   status.size        = s.st_size;
-  status.permissions = s.st_mode & PFileInfo::AllPermissions;
+  status.permissions = PFileInfo::Permissions::FromBits(s.st_mode);
 
   return true;
 }
 
 
-PBoolean PFile::SetPermissions(const PFilePath & name, int permissions)
+bool PFile::SetPermissions(const PFilePath & name, PFileInfo::Permissions permissions)
 
 {
   mode_t mode = 0;
