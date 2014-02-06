@@ -132,7 +132,7 @@ class PServiceProcess : public PProcess
      */
     void SetLogLevel(
       PSystemLog::Level level  ///< New log level
-    ) { PSystemLog::GetTarget().SetThresholdLevel(level); }
+    );
 
     /** Get the current level for logging.
 
