@@ -268,17 +268,22 @@ void PSystemLogToTrace::Output(PSystemLog::Level level, const char * msg)
 
 ///////////////////////////////////////////////////////////////
 
-PSystemLogToFile::PSystemLogToFile(const PString & filename)
-  : m_file(filename, PFile::WriteOnly)
+PSystemLogToFile::PSystemLogToFile(const PFilePath & filename)
+  : m_rotateInfo(filename.GetDirectory())
 {
+  m_file.SetFilePath(filename);
 }
 
 
 void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 {
-  m_mutex.Wait();
+  PWaitAndSignal mutex(m_mutex);
+
+  if (!InternalOpen())
+    return;
+
   OutputToStream(m_file, level, msg);
-  m_mutex.Signal();
+  Rotate(false);
 }
 
 
@@ -293,6 +298,107 @@ bool PSystemLogToFile::Clear()
 
   OutputToStream(m_file, PSystemLog::Warning, "Cleared log file.");
   return true;
+}
+
+
+void PSystemLogToFile::SetRotateInfo(const RotateInfo & info, bool force)
+{
+  m_mutex.Wait();
+  m_rotateInfo = info;
+  Rotate(force);
+  m_mutex.Signal();
+}
+
+
+bool PSystemLogToFile::Rotate(bool force)
+{
+  // Lock expected to be already in place
+  if (!m_rotateInfo.CanRotate())
+    return false;
+
+  if (!force && m_file.GetLength() < m_rotateInfo.m_maxSize)
+    return false;
+
+  PFilePath rotatedFile = m_rotateInfo.m_directory +
+                          m_rotateInfo.m_prefix +
+                          PTime().AsString(m_rotateInfo.m_timestamp) +
+                          m_rotateInfo.m_suffix;
+
+  if (m_file.IsOpen()) {
+    OutputToStream(m_file, PSystemLog::StdError, "Log rotated to " + rotatedFile);
+    m_file.Close();
+  }
+
+  bool ok = PFile::Move(m_file.GetFilePath(), rotatedFile, false, true);
+  InternalOpen();
+
+  if (m_rotateInfo.m_maxFileCount > 0 || m_rotateInfo.m_maxFileAge > 0) {
+    std::multimap<PTime, PFilePath> rotatedFiles;
+    PDirectory dir(m_rotateInfo.m_directory);
+    if (dir.Open(PFileInfo::RegularFile)) {
+      do {
+        PString name = dir.GetEntryName();
+        PFileInfo info;
+        if (m_rotateInfo.m_prefix == name.Left(m_rotateInfo.m_prefix.GetLength()) &&
+            m_rotateInfo.m_suffix == name.Right(m_rotateInfo.m_suffix.GetLength()) &&
+            dir.GetInfo(info))
+          rotatedFiles.insert(std::multimap<PTime, PFilePath>::value_type(info.modified, dir + name));
+      } while (dir.Next());
+    }
+
+    if (m_rotateInfo.m_maxFileCount > 0) {
+      while (rotatedFiles.size() > m_rotateInfo.m_maxFileCount) {
+        if (PFile::Remove(rotatedFiles.begin()->second))
+          PTRACE(3, "SystemLog", "Removed excess rotated log " << rotatedFiles.begin()->second);
+        rotatedFiles.erase(rotatedFiles.begin());
+      }
+    }
+
+    if (m_rotateInfo.m_maxFileAge > 0) {
+      PTime then = PTime() - m_rotateInfo.m_maxFileAge;
+      while (rotatedFiles.begin()->first < then) {
+        if (PFile::Remove(rotatedFiles.begin()->second))
+          PTRACE(3, "SystemLog", "Removed aged rotated log " << rotatedFiles.begin()->second);
+        rotatedFiles.erase(rotatedFiles.begin());
+      }
+    }
+  }
+
+  return ok;
+}
+
+
+bool PSystemLogToFile::InternalOpen()
+{
+  if (m_file.IsOpen())
+    return true;
+
+  if (!m_file.Open(PFile::WriteOnly))
+    return false;
+
+  PProcess & process = PProcess::Current();
+  PStringStream log;
+  log << process.GetName()
+      << " version " << process.GetVersion(true)
+      << " by " << process.GetManufacturer()
+      << " on "
+      << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
+      << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
+         " with PTLib (v" << PProcess::GetLibVersion() << ")"
+         " to \"" << m_file.GetFilePath() << '"';
+  OutputToStream(m_file, PSystemLog::StdError, log);
+  return true;
+}
+
+
+PSystemLogToFile::RotateInfo::RotateInfo(const PDirectory & dir)
+  : m_directory(dir)
+  , m_prefix(PProcess::Current().GetName())
+  , m_timestamp("_yyyy_MM_dd_hh_mm")
+  , m_suffix(".log")
+  , m_maxSize(0)
+  , m_maxFileCount(0)
+{
 }
 
 

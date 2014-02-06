@@ -281,6 +281,17 @@ PServiceProcess & PServiceProcess::Current()
 }
 
 
+void PServiceProcess::SetLogLevel(PSystemLog::Level level)
+{
+  PSystemLog::GetTarget().SetThresholdLevel(level);
+
+#if PTRACING
+  if ((PTrace::GetOptions()&PTrace::SystemLogStream) != 0)
+    PTrace::SetLevel(level);
+#endif
+}
+
+
 const char * PServiceProcess::GetServiceDependencies() const
 {
   return "EventLog\0";
@@ -311,18 +322,17 @@ int PServiceProcess::InternalMain(void * arg)
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
-#if SPECiAL_DEBUG_OUTPUT
-    PSetErrorStream(new ofstream("D:\\temp\\svcprog.log"));
-    PError << "PServiceProcess::InternalMain - " << PTime().AsString("hh:mm:ss.uuuuuu") << endl;
-#else
     PSetErrorStream(new PSystemLog(PSystemLog::StdError));
-#endif
-
 #if PTRACING
     PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
-    PTrace::ClearOptions(PTrace::FileAndLine);
-    PTrace::SetOptions(PTrace::SystemLogStream);
-    PTrace::SetLevel(4);
+  #if _DEBUG
+    PTrace::ClearOptions(PTrace::Timestamp);
+    PTrace::SetOptions(PTrace::FileAndLine | PTrace::ContextIdentifier | PTrace::SystemLogStream);
+  #else
+    PTrace::ClearOptions(PTrace::Timestamp | PTrace::FileAndLine);
+    PTrace::SetOptions(PTrace::ContextIdentifier | PTrace::SystemLogStream);
+  #endif
+    PTrace::SetLevel(GetLogLevel());
 #endif
   }
 

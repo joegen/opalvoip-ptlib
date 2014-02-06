@@ -229,7 +229,7 @@ class PSystemLogToFile : public PSystemLogTarget
   /**@name Construction */
   //@{
     PSystemLogToFile(
-      const PString & filename
+      const PFilePath & filename
     );
   //@}
 
@@ -252,11 +252,63 @@ class PSystemLogToFile : public PSystemLogTarget
     /**Clear the log file
       */
     bool Clear();
-  //@}
+
+    /** Information on how to rotate log files.
+        The system will generate a new file path via
+            m_directory + m_prefix + PTime::AsString(m_timeTemplate) + m_suffix
+        which is used with renaming/moving the log file.
+
+        The string
+            m_directory + m_prefix + '*' + m_suffix
+        is used to determine the files to remove.
+    */
+    struct RotateInfo
+    {
+      RotateInfo(const PDirectory & dir);
+
+      bool CanRotate() const
+      {
+        return m_maxSize > 0 && !m_timestamp.IsEmpty() && m_directory.Exists();
+      }
+
+      PDirectory      m_directory;    ///< Destination directory for rotated file, default to same s log file
+      PFilePathString m_prefix;       ///< File name prefix, default PProcess::GetName()
+      PString         m_timestamp;    ///< Time template for rotated file, default "_yyyy_MM_dd_hh_mm"
+      PFilePathString m_suffix;       ///< File name suffix, default ".log"
+      off_t           m_maxSize;      ///< Size in bytes which triggers a rotation, default zero disables
+      unsigned        m_maxFileCount; ///< When this many files have been rotated, oldest is deleted
+      PTimeInterval   m_maxFileAge;   ///< Rotated files older than this are deleted
+    };
+
+    /** Set file rotation template information.
+      */
+    virtual void SetRotateInfo(
+      const RotateInfo & info,  ///< New info for log rotation
+      bool force = false        ///< Force rotation immediately
+    );
+
+    /** Get file rotation template information.
+    */
+    const RotateInfo & GetRotateInfo() const { return m_rotateInfo; }
+
+    /** Execute a rotation.
+        If \b force is false then the file must be larger than RotateInfo::maxSize.
+        If \b force is true the the file is moved regardless of it's current size.
+
+        Note, RotateInfo::maxSize must be non zero and RotateInfo::m_timestamp must
+        be non-empty string for this to operate.
+      */
+    virtual bool Rotate(
+      bool force
+    );
+    //@}
 
   protected:
-    PTextFile m_file;
-    PMutex    m_mutex;
+    bool InternalOpen();
+
+    PTextFile  m_file;
+    RotateInfo m_rotateInfo;
+    PMutex     m_mutex;
 };
 
 
