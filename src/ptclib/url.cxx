@@ -422,6 +422,10 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   queryVars.RemoveAll();
   m_contents.MakeEmpty();
 
+  // get information which tells us how to parse URL for this
+  // particular scheme
+  schemeInfo = NULL;
+
   if (cstr == NULL)
     return false;
 
@@ -432,10 +436,6 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   // if string is empty, return
   if (*cstr == '\0')
     return false;
-
-  // get information which tells us how to parse URL for this
-  // particular scheme
-  schemeInfo = NULL;
 
   scheme = ExtractScheme(cstr);
   if (!scheme.IsEmpty()) {
