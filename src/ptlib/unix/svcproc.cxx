@@ -113,6 +113,17 @@ PServiceProcess & PServiceProcess::Current()
 }
 
 
+void PServiceProcess::SetLogLevel(PSystemLog::Level level)
+{
+  PSystemLog::GetTarget().SetThresholdLevel(level);
+
+#if PTRACING
+  if ((PTrace::GetOptions()&PTrace::SystemLogStream) != 0)
+    PTrace::SetLevel(level);
+#endif
+}
+
+
 #ifndef P_VXWORKS
 static int KillProcess(int pid, unsigned timeout, int sig)
 {
