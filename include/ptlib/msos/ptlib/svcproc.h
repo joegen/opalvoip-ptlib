@@ -53,6 +53,9 @@
 
     virtual PBoolean IsServiceProcess() const;
 
+    void SetDescription(const PString & description);
+    const PString & GetDescription() const;
+
   protected:
     bool m_debugHidden; /// Flag to indicate service is run in simulation mode without showing the control window 
 
@@ -121,6 +124,8 @@
     HANDLE                m_terminationEvent;
     HWND                  m_controlWindow;
     HWND                  m_debugWindow;
+
+    PString               m_description;
 
 
 // End Of File ///////////////////////////////////////////////////////////////
