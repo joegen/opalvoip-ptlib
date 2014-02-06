@@ -73,26 +73,24 @@ class PFileInfo : public PObject
        all of the file types. For example under DOS no file may be of the
        type <code>SymbolicLink</code>.
      */
-    enum FileTypes {
-      /// Ordinary disk file.
-      RegularFile = 1,        
-      /// File path is a symbolic link.
-      SymbolicLink = 2,       
-      /// File path is a sub-directory
-      SubDirectory = 4,       
-      /// File path is a character device name.
-      CharDevice = 8,         
-      /// File path is a block device name.
-      BlockDevice = 16,       
-      /// File path is a fifo (pipe) device.
-      Fifo = 32,              
-      /// File path is a socket device.
-      SocketDevice = 64,      
-      /// File path is of an unknown type.
-      UnknownFileType = 256,  
-      /// Mask for all file types.
-      AllFiles = 0x1ff        
-    };
+    P_DECLARE_BITWISE_ENUM_EX(FileTypes, 10,
+      (
+        NoFileType, // Should not happen!
+
+        RegularFile,      ///< Ordinary disk file.
+        SymbolicLink,     ///< File path is a symbolic link.
+        SubDirectory,     ///< File path is a sub-directory
+        ParentDirectory,  ///< File path is ".."
+        CurrentDirectory, ///< File path is "."
+        CharDevice,       ///< File path is a character device name.
+        BlockDevice,      ///< File path is a block device name.
+        Fifo,             ///< File path is a fifo (pipe) device.
+        SocketDevice,     ///< File path is a socket device.
+        UnknownFileType   ///< File path is of an unknown type.
+      ),
+      AllFiles = 0x3ff,    ///< Mask for all file types.
+      DefaultSearch = RegularFile | SymbolicLink | SubDirectory  ///< Mask for common file types in directory search.
+    );
 
     /// File type for this file. Only one bit is set at a time here.
     FileTypes type;
@@ -118,6 +116,7 @@ class PFileInfo : public PObject
     /// File access permissions for the file.
     P_DECLARE_BITWISE_ENUM_EX(Permissions,9,
       (
+        // Note the following bits are as per unixish / C standard lib values, do not change!
         NoPermissions, ///< No permissions selected
         WorldExecute,  ///< File has world execute permission
         WorldWrite,    ///< File has world write permission
@@ -129,15 +128,9 @@ class PFileInfo : public PObject
         UserWrite,     ///< File has owner write permission
         UserRead       ///< File has owner read permission
       ),
-
-      ///< All possible permissions.
-      AllPermissions = 0x1ff,
-
-      /// Owner read & write plus group and world read permissions.
-      DefaultPerms = UserRead|UserWrite|GroupRead|WorldRead,
-
-      /// Owner read & write & execute plus group and world read & exectute permissions.
-      DefaultDirPerms = DefaultPerms|UserExecute|GroupExecute|WorldExecute
+      AllPermissions = 0x1ff,                                               ///< All possible permissions.
+      DefaultPerms = UserRead|UserWrite|GroupRead|WorldRead,                ///< Owner read & write plus group and world read permissions.
+      DefaultDirPerms = DefaultPerms|UserExecute|GroupExecute|WorldExecute  /// Owner read & write & execute plus group and world read & exectute permissions.
     );
 
     /**A bit mask of all the file acces permissions. See the
@@ -145,13 +138,13 @@ class PFileInfo : public PObject
        
        Not all platforms support all permissions.
      */
-    int permissions;
+    Permissions permissions;
 
     /**File is a hidden file. What constitutes a hidden file is platform
        dependent, for example under unix it is a file beginning with a '.'
        character while under MS-DOS there is a file system attribute for it.
      */
-    PBoolean hidden;
+    bool hidden;
 };
 
 
@@ -246,7 +239,7 @@ class PDirectory : public PFilePathString
        @return
        true if the object is a root directory.
      */
-    PBoolean IsRoot() const;
+    bool IsRoot() const;
 
     /**Get the root directory of a volume.
     
@@ -267,7 +260,7 @@ class PDirectory : public PFilePathString
        @return
        true if may be used to separate directories in a path.
      */
-    PINLINE static PBoolean IsSeparator(
+    PINLINE static bool IsSeparator(
       char ch    ///< Character to check as being a separator.
     );
 
@@ -281,7 +274,7 @@ class PDirectory : public PFilePathString
        @return
        true if the information could be determined.
      */
-    PBoolean GetVolumeSpace(
+    bool GetVolumeSpace(
       PInt64 & total,     ///< Total number of bytes available on volume
       PInt64 & free,      ///< Number of bytes unused on the volume
       DWORD & clusterSize ///< "Quantisation factor" in bytes for files on volume
@@ -295,14 +288,14 @@ class PDirectory : public PFilePathString
        @return
        true if directory exists.
      */
-    PBoolean Exists() const;
+    bool Exists() const;
 
     /**Test for if the specified directory exists.
 
        @return
        true if directory exists.
      */
-    static PBoolean Exists(
+    static bool Exists(
       const PString & path   ///< Directory file path.
     );
       
@@ -311,14 +304,14 @@ class PDirectory : public PFilePathString
        @return
        true if current working directory was changed.
      */
-    PBoolean Change() const;
+    bool Change() const;
 
     /**Change the current working directory to that specified..
 
        @return
        true if current working directory was changed.
      */
-    static PBoolean Change(
+    static bool Change(
       const PString & path   ///< Directory file path.
     );
       
@@ -347,14 +340,14 @@ class PDirectory : public PFilePathString
        @return
        true if directory was deleted.
      */
-    PBoolean Remove();
+    bool Remove();
 
     /**Delete the specified directory.
 
        @return
        true if directory was deleted.
      */
-    static PBoolean Remove(
+    static bool Remove(
       const PString & path   ///< Directory file path.
     );
   //@}
@@ -376,8 +369,8 @@ class PDirectory : public PFilePathString
        true if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
-    virtual PBoolean Open(
-      int scanMask = PFileInfo::AllFiles    ///< Mask of files to provide.
+    virtual bool Open(
+      PFileInfo::FileTypes scanMask = PFileInfo::DefaultSearch    ///< Mask of files to provide.
     );
       
     /**Restart file list scan from the beginning of directory. This is similar
@@ -394,8 +387,8 @@ class PDirectory : public PFilePathString
        true if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
-    virtual PBoolean Restart(
-      int scanMask = PFileInfo::AllFiles    ///< Mask of files to provide.
+    virtual bool Restart(
+      PFileInfo::FileTypes scanMask = PFileInfo::DefaultSearch    ///< Mask of files to provide.
     );
       
     /**Move to the next file in the directory scan.
@@ -409,7 +402,7 @@ class PDirectory : public PFilePathString
        @return
        true if there is another valid file in the directory.
      */
-    PBoolean Next();
+    virtual bool Next();
       
     /// Close the directory during or after a file list scan.
     virtual void Close();
@@ -439,14 +432,14 @@ class PDirectory : public PFilePathString
        @return
        true if entry is a subdirectory.
      */
-    virtual PBoolean IsSubDir() const;
+    virtual bool IsSubDir() const;
 
     /**Get file information on the current directory entry.
     
        @return
        true if file information was successfully retrieved.
      */
-    virtual PBoolean GetInfo(
+    virtual bool GetInfo(
       PFileInfo & info    ///< Object to receive the file information.
     ) const;
   //@}
@@ -460,7 +453,7 @@ class PDirectory : public PFilePathString
 
     // Member variables
     /// Mask of file types that the directory scan will return.
-    int scanMask;
+    PFileInfo::FileTypes m_scanMask;
 
 // Include platform dependent part of class
 #ifdef _WIN32
