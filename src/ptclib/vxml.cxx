@@ -2680,14 +2680,15 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
       m_currentPlayItem->OnStop();
       delete m_currentPlayItem;
       m_currentPlayItem = NULL;
-      m_vxmlSession->Trigger();
     }
 
     for (;;) {
       // check the queue for the next action, if none, send silence
       m_currentPlayItem = m_playQueue.Dequeue();
-      if (m_currentPlayItem == NULL)
+      if (m_currentPlayItem == NULL) {
+        m_vxmlSession->Trigger(); // notify about the end of queue
         goto double_break;
+      }
 
       // start the new item
       if (m_currentPlayItem->OnStart())
