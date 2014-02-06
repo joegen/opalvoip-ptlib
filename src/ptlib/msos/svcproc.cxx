@@ -1249,6 +1249,16 @@ bool NT_ServiceManager::Create(PServiceProcess * svc)
     return false;
   }
 
+  PString description = svc->GetDescription();
+  if (!description.IsEmpty()) {
+    SERVICE_DESCRIPTION sd;
+    sd.lpDescription = (LPTSTR)description.GetPointer();
+    if (!ChangeServiceConfig2(schService, SERVICE_CONFIG_DESCRIPTION, &sd)) {
+      error = ::GetLastError();
+      PError << "Could not set service description, error=" << error << endl;
+    }
+  }
+
   HKEY key;
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
              "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" +
@@ -1573,6 +1583,16 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
     PError << msg << endl;
 
   return good;
+}
+
+void PServiceProcess::SetDescription(const PString & description)
+{
+  m_description = description;
+}
+
+const PString & PServiceProcess::GetDescription() const
+{
+  return m_description;
 }
 
 #endif // !_WIN32_WCE
