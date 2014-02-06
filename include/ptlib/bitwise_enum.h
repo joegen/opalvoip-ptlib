@@ -51,6 +51,7 @@ class PBitwiseEnum
 
   public:
     static __inline Enumeration Zero() { return (Enumeration)0; }
+    static __inline Enumeration All()  { return (Enumeration)((MaxValue<<1)-1); }
 
     __inline PBitwiseEnum(Enumeration e = Zero()) : m_enum(e) { }
     __inline PBitwiseEnum(const PBitwiseEnum & e) : m_enum(e.m_enum) { }
@@ -66,8 +67,8 @@ class PBitwiseEnum
     __inline operator const Enumeration&() const { return m_enum; }
     __inline Enumeration * operator&()           { return &m_enum; }
     __inline unsigned AsBits() const             { return m_enum; }
-    __inline static Enumeration FromBits(unsigned b) { return (Enumeration)(    b &((MaxValue<<1)-1)); }
-    __inline static Enumeration FromBit (unsigned b) { return (Enumeration)((1<<b)&((MaxValue<<1)-1)); }
+    __inline static Enumeration FromBits(unsigned b) { return (Enumeration)(    b &All()); }
+    __inline static Enumeration FromBit (unsigned b) { return (Enumeration)((1<<b)&All()); }
 
     PBitwiseEnum operator++()
     {
@@ -152,6 +153,9 @@ class PBitwiseEnum
 #define P_DECLARE_BITWISE_ENUM_7(_0,_1,_2,_3,_4,_5,_6,_7)P_DECLARE_BITWISE_ENUM_6(_0,_1,_2,_3,_4,_5,_6),_7=64
 #define P_DECLARE_BITWISE_ENUM_8(_0,_1,_2,_3,_4,_5,_6,_7,_8)P_DECLARE_BITWISE_ENUM_7(_0,_1,_2,_3,_4,_5,_6,_7),_8=128
 #define P_DECLARE_BITWISE_ENUM_9(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9)P_DECLARE_BITWISE_ENUM_8(_0,_1,_2,_3,_4,_5,_6,_7,_8),_9=256
+#define P_DECLARE_BITWISE_ENUM_10(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)P_DECLARE_BITWISE_ENUM_9(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9),_10=512
+#define P_DECLARE_BITWISE_ENUM_11(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11)P_DECLARE_BITWISE_ENUM_10(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10),_11=1024
+#define P_DECLARE_BITWISE_ENUM_12(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12)P_DECLARE_BITWISE_ENUM_11(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11),_11=2048
 
 #define P_DECLARE_BITWISE_NAMES_1(_0,_1)#_0,#_1
 #define P_DECLARE_BITWISE_NAMES_2(_0,_1,_2)P_DECLARE_BITWISE_NAMES_1(_0,_1),#_2
@@ -162,6 +166,9 @@ class PBitwiseEnum
 #define P_DECLARE_BITWISE_NAMES_7(_0,_1,_2,_3,_4,_5,_6,_7)P_DECLARE_BITWISE_NAMES_6(_0,_1,_2,_3,_4,_5,_6),#_7
 #define P_DECLARE_BITWISE_NAMES_8(_0,_1,_2,_3,_4,_5,_6,_7,_8)P_DECLARE_BITWISE_NAMES_7(_0,_1,_2,_3,_4,_5,_6,_7),#_8
 #define P_DECLARE_BITWISE_NAMES_9(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9)P_DECLARE_BITWISE_NAMES_8(_0,_1,_2,_3,_4,_5,_6,_7,_8),#_9
+#define P_DECLARE_BITWISE_NAMES_10(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10)P_DECLARE_BITWISE_NAMES_9(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9),#_10
+#define P_DECLARE_BITWISE_NAMES_11(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11)P_DECLARE_BITWISE_NAMES_10(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10),#_11
+#define P_DECLARE_BITWISE_NAMES_12(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12)P_DECLARE_BITWISE_NAMES_11(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11),#_12
 
 #define P_DECLARE_BITWISE_ENUM_FRIENDS(name) \
   __inline friend name##_Bits operator+(name##_Bits lhs, name##_Bits rhs) \
