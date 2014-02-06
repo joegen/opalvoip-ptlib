@@ -180,18 +180,23 @@ static PString ExpandOptionSet(const char * options)
 int PServiceProcess::InitialiseService()
 {
 #ifndef P_VXWORKS
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(true);
-#endif
-  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+  {
+    PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+
+    PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 #if PTRACING
-  PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
-  PTrace::SetOptions(PTrace::SystemLogStream);
-  PTrace::SetLevel(GetLogLevel());
+    PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
+#if _DEBUG
+    PTrace::ClearOptions(PTrace::Timestamp);
+    PTrace::SetOptions(PTrace::FileAndLine | PTrace::ContextIdentifier | PTrace::SystemLogStream);
+#else
+    PTrace::ClearOptions(PTrace::Timestamp | PTrace::FileAndLine);
+    PTrace::SetOptions(PTrace::ContextIdentifier | PTrace::SystemLogStream);
 #endif
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(false);
+    PTrace::SetLevel(GetLogLevel());
 #endif
+  }
+
   m_debugMode = false;
 
   // parse arguments so we can grab what we want
