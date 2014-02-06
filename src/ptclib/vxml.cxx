@@ -1588,7 +1588,7 @@ PBoolean PVXMLSession::PlayElement(PXMLElement & element)
   if (!safe) {
     PFilePath filename;
     if (GetCache().Get("url", url.AsString(), fileType, filename))
-      return PlayFile(url.AsFilePath());
+      return PlayFile(filename);
   }
 
   PBYTEArray data;
