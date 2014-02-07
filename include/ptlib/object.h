@@ -241,20 +241,35 @@ extern int PParseEnum(const char * str, int begin, int end, char const * const *
 #define P_ENUM_NAMES_ARG_39(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,_33,_34,_35,_36,_37,_38,_39    )#_1,#_2,#_3,#_4,#_5,#_6,#_7,#_8,#_9,#_10,#_11,#_12,#_13,#_14,#_15,#_16,#_17,#_18,#_19,#_20,#_21,#_22,#_23,#_24,#_25,#_26,#_27,#_28,#_29,#_30,#_31,#_32,#_33,#_34,#_35,#_36,#_37,#_38,#_39
 #define P_ENUM_NAMES_ARG_40(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,_33,_34,_35,_36,_37,_38,_39,_40)#_1,#_2,#_3,#_4,#_5,#_6,#_7,#_8,#_9,#_10,#_11,#_12,#_13,#_14,#_15,#_16,#_17,#_18,#_19,#_20,#_21,#_22,#_23,#_24,#_25,#_26,#_27,#_28,#_29,#_30,#_31,#_32,#_33,#_34,#_35,#_36,#_37,#_38,#_39,#_40
 
-/// This declares a standard enumeration (enum) of symbols with ++, --, << and >> operators
-#define P_DECLARE_STREAMABLE_ENUM_EX(name, countName, firstName, firstValue, ...) \
-  P_DECLARE_ENUM_EX(name, countName, firstName, firstValue, __VA_ARGS__) \
+/** This declares the functions and string table for the text names of an enum.
+    The enum is expected to be defined using P_DECLARE_ENUM() or P_DECLARE_ENUM_EX()
+    and adds functions MyEnumToString() and MyEnumFromString() to convert between
+    the string representation and the enum. The iostream operator<< and operator>>
+    is also defined.
+  */
+#define P_DECLARE_ENUM_NAMES(name, ...) \
   struct PEnumNames_##name { \
-    static char const * const * Names() { static char const * const Strings[] = \
-      { #firstName, P_ENUM_NAMES_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__)) }; return Strings; } \
+    static char const * const * Names() { static char const * const Strings[] = { __VA_ARGS__ }; return Strings; } \
   }; \
   friend __inline std::ostream & operator<<(std::ostream & strm, name e) \
     { PPrintEnum(strm, e, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
   friend __inline std::istream & operator>>(std::istream & strm, name & e) \
     { e = (name)PReadEnum(strm, Begin##name, End##name, PEnumNames_##name::Names()); return strm; } \
+  static __inline const char * name##ToString(name e) { return e >= Begin##name && e < End##name ? PAssertNULL(PEnumNames_##name::Names()[e-Begin##name]) : ""; } \
   static __inline name name##FromString(const char * str, bool matchCase = true) { return (name)PParseEnum(str, Begin##name, End##name, PEnumNames_##name::Names(), matchCase); }
 
-/// This declares a standard enumeration (enum) of symbols with ++, --, << and >> operators
+/** This declares a standard enumeration using P_DECLARE_ENUM_EX() and adds
+    the text names so can be streamed using operator<< or operator>>. See
+    P_DECLARE_ENUM_NAMES() for more
+  */
+#define P_DECLARE_STREAMABLE_ENUM_EX(name, countName, firstName, firstValue, ...) \
+  P_DECLARE_ENUM_EX(name, countName, firstName, firstValue, __VA_ARGS__) \
+  P_DECLARE_ENUM_NAMES(name, #firstName, P_ENUM_NAMES_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__)))
+
+/** This declares a standard enumeration using P_DECLARE_ENUM() and adds
+    the text names so can be streamed using operator<< or operator>>. See
+    P_DECLARE_ENUM_NAMES() for more
+  */
 #define P_DECLARE_STREAMABLE_ENUM(name, first, ...) P_DECLARE_STREAMABLE_ENUM_EX(name, Num##name, first, 0, __VA_ARGS__)
 
 
