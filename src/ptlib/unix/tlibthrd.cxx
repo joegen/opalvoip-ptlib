@@ -877,8 +877,8 @@ PBoolean PThread::IsTerminated() const
       ostream * trace = PTrace::GetStream();
       if (trace != NULL)
         *trace << "Error " << error << " calling pthread_kill: thread=" << this << ", id=" << id << endl;
-  }
 #endif
+  }
 
   return true;
 #endif
