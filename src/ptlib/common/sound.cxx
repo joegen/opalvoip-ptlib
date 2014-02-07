@@ -578,10 +578,16 @@ PString PSoundChannel::TestPlayer(const Params & params, const PNotifier & progr
   if (params.m_direction != Player || params.m_channels != 1 || params.m_bitsPerSample != 16)
     return "Error: Invalid parameters";
 
+#if P_DTMF
   PTones tones(toneSpec != NULL ? toneSpec :
                "C:0.2/D:0.2/E:0.2/F:0.2/G:0.2/A:0.2/B:0.2/C5:0.2/"
                "C5:0.2/B:0.2/A:0.2/G:0.2/F:0.2/E:0.2/D:0.2/C:2.0",
                PTones::MaxVolume, params.m_sampleRate);
+#else
+  PShortArray tones(params.m_sampleRate*5); // 5 seconds
+  if (toneSpec != NULL)
+    return "Cannot do user defined specification";
+#endif
 
   unsigned samplesPerBuffer = params.m_bufferSize/2;
   unsigned totalBuffers = (tones.GetSize()+samplesPerBuffer-1)/samplesPerBuffer;
@@ -589,8 +595,8 @@ PString PSoundChannel::TestPlayer(const Params & params, const PNotifier & progr
   tones.SetSize(samplesPerBuffer*totalBuffers); // Pad out with silence so exact match of writes
   
   PTRACE(3, &tones, "Sound", "Tones using " << tones.GetSize() << " samples, "
-          << PTimeInterval(1000*tones.GetSize()/tones.GetSampleRate()) << " seconds, "
-          << totalBuffers << 'x' << samplesPerBuffer << " sample buffers");
+         << PTimeInterval(1000 * tones.GetSize() / params.m_sampleRate) << " seconds, "
+         << totalBuffers << 'x' << samplesPerBuffer << " sample buffers");
 
   std::vector<int64_t> times(totalBuffers+1);
 
