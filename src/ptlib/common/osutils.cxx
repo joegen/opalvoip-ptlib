@@ -686,6 +686,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     stream << '\t';
   }
 
+#if PTRACING==2
   if (HasOption(ContextIdentifier)) {
     unsigned id = instance != NULL ? instance->GetTraceContextIdentifier() : 0;
     if (id == 0 && thread != NULL)
@@ -696,6 +697,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
       stream << "- - - - - - -";
     stream << '\t';
   }
+#endif
 
   if (module != NULL)
     stream << left << setw(8) << module << right << '\t';
