@@ -349,8 +349,9 @@ bool PSystemLogToFile::Rotate(bool force)
 
     if (m_rotateInfo.m_maxFileCount > 0) {
       while (rotatedFiles.size() > m_rotateInfo.m_maxFileCount) {
-        if (PFile::Remove(rotatedFiles.begin()->second))
+        if (PFile::Remove(rotatedFiles.begin()->second)) {
           PTRACE(3, "SystemLog", "Removed excess rotated log " << rotatedFiles.begin()->second);
+        }
         rotatedFiles.erase(rotatedFiles.begin());
       }
     }
@@ -358,8 +359,9 @@ bool PSystemLogToFile::Rotate(bool force)
     if (m_rotateInfo.m_maxFileAge > 0) {
       PTime then = PTime() - m_rotateInfo.m_maxFileAge;
       while (rotatedFiles.begin()->first < then) {
-        if (PFile::Remove(rotatedFiles.begin()->second))
+        if (PFile::Remove(rotatedFiles.begin()->second)) {
           PTRACE(3, "SystemLog", "Removed aged rotated log " << rotatedFiles.begin()->second);
+        }
         rotatedFiles.erase(rotatedFiles.begin());
       }
     }
