@@ -816,6 +816,8 @@ PTrace::Block::~Block()
 }
 
 
+#if PTRACING==2
+
 static PAtomicInteger g_lastContextIdentifer;
 
 unsigned PTrace::GetNextContextIdentifier()
@@ -846,6 +848,7 @@ PTraceSaveContextIdentifier::~PTraceSaveContextIdentifier()
     m_currentThread->SetTraceContextIdentifier(m_savedContextIdentifier);
 }
 
+#endif // PTRACING==2
 
 #endif // PTRACING
 
