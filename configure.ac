@@ -1077,7 +1077,7 @@ AC_ARG_ENABLE(
    [enable_resolver=${DEFAULT_RESOLVER:-yes}]
 )
 
-HAS_DNS_RESOLVER=
+HAS_DNS_RESOLVER=0
 if test "$enable_resolver" = "no" ; then
    AC_MSG_NOTICE(DNS resolver disabled)
 else
