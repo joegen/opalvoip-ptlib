@@ -470,11 +470,8 @@ PCLI::Arguments::Arguments(Context & context, const PString & rawLine)
 
 PCLI::Context & PCLI::Arguments::WriteUsage()
 {
-  if (!m_usage.IsEmpty()) {
-    m_context << m_context.GetCLI().GetCommandUsagePrefix() << m_usage << '\n';
-    Usage(m_context);
-    m_context << flush;
-  }
+  if (!m_usage.IsEmpty())
+    m_context << m_context.GetCLI().GetCommandUsagePrefix() << m_usage << endl;
   return m_context;
 }
 
