@@ -50,13 +50,13 @@ class PBitwiseEnum
     Enumeration m_enum;
 
   public:
-    static __inline Enumeration Zero() { return (Enumeration)0; }
+    static __inline Enumeration Zero()  { return (Enumeration)0; }
+    static __inline Enumeration All()   { return (Enumeration)((MaxValue<<1)-1); }
+    static __inline Enumeration Begin() { return (Enumeration)1; }
+    static __inline Enumeration End()   { return MaxValue; }
 
     __inline PBitwiseEnum(Enumeration e = Zero()) : m_enum(e) { }
     __inline PBitwiseEnum(const PBitwiseEnum & e) : m_enum(e.m_enum) { }
-
-    enum IteratorBounds { First, Last };
-    __inline PBitwiseEnum(IteratorBounds b) : m_enum(b == First ? (Enumeration)1 : MaxValue) { }
 
     __inline PBitwiseEnum & operator=(const PBitwiseEnum & e) { m_enum = e.m_enum; return *this; }
     __inline PBitwiseEnum & operator=(Enumeration          e) { m_enum = e; return *this; }
@@ -217,7 +217,6 @@ class PStreamableBitwiseEnum : public PBitwiseEnum<BaseEnum, MaxValue, BaseInt>
     typedef PBitwiseEnum<BaseEnum, MaxValue, BaseInt> BaseClass;
 
     __inline PStreamableBitwiseEnum(typename BaseClass::Enumeration e = BaseClass::Zero()) : BaseClass(e) { }
-    __inline PStreamableBitwiseEnum(typename BaseClass::IteratorBounds b) : BaseClass(b) { }
     __inline virtual ~PStreamableBitwiseEnum() { }
 
     friend __inline std::ostream & operator<<(std::ostream & strm, const PStreamableBitwiseEnum & e)
@@ -258,7 +257,6 @@ class PStreamableBitwiseEnum : public PBitwiseEnum<BaseEnum, MaxValue, BaseInt>
   class name : public PStreamableBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)>{ \
     public: typedef PStreamableBitwiseEnum<name##_Bits, (name##_Bits)(1<<count)> BaseClass; \
     __inline name(BaseClass::Enumeration e = BaseClass::Zero()) : BaseClass(e) { } \
-    __inline name(IteratorBounds b) : BaseClass(b) { } \
     __inline explicit name(const PString & s) { FromString(s); } \
     virtual char const * const * Names() const { static char const * const Strings[] = { __VA_ARGS__, NULL }; return Strings; } \
   }
