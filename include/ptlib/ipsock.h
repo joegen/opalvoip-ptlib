@@ -588,18 +588,17 @@ class PIPSocket : public PSocket
        @return
        false (or empty string) if the IP number was not available.
      */
-    PString GetLocalAddress();
+    PString GetLocalAddress() const;
     bool GetLocalAddress(
       Address & addr    ///< Variable to receive hosts IP address.
-    );
+    ) const;
     bool GetLocalAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
       WORD & port        ///< Variable to receive peer hosts port number.
-    );
+    ) const;
     bool GetLocalAddress(
       AddressAndPort & addr    ///< Variable to receive hosts IP address and port.
-    )
-    { return InternalGetLocalAddress(addr); }
+    ) const;
 
     /**Get the Internet Protocol address for the peer host and port the
        socket is connected to.
@@ -607,18 +606,17 @@ class PIPSocket : public PSocket
        @return
        false (or empty string) if the IP number was not available.
      */
-    PString GetPeerAddress();
+    PString GetPeerAddress() const;
     bool GetPeerAddress(
       Address & addr    ///< Variable to receive hosts IP address.
-    );
+      ) const;
     bool GetPeerAddress(
       Address & addr,    ///< Variable to receive peer hosts IP address.
       WORD & port        ///< Variable to receive peer hosts port number.
-    );
+      ) const;
     bool GetPeerAddress(
       AddressAndPort & addr    ///< Variable to receive hosts IP address and port.
-    )
-    { return InternalGetPeerAddress(addr); }
+    ) const;
 
     /**Get the host name for the local host.
 

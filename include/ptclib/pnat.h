@@ -392,7 +392,7 @@ class PNatCandidate : public PObject
     unsigned                m_priority;
     PString                 m_foundation;             // ICE support
     PString                 m_protocol;               // Almost invariably "udp"
-    PIPSocketAddressAndPort m_hostTransportAddress;   // Address of physical host
+    PIPSocketAddressAndPort m_baseTransportAddress;   // Address of physical host
     PIPSocketAddressAndPort m_localTransportAddress;  // Address presented to remote system
 };
 
@@ -413,11 +413,14 @@ class PNATUDPSocket : public PUDPSocket
       PNatMethod::Component component
     );
 
+    virtual PString GetName() const;
+    virtual const char * GetNatName() const { return "NAT"; }
+
     virtual void GetCandidateInfo(PNatCandidate & candidate);
 
     // Get phsyical, non-translated, IP/port for socket.
-    virtual PString GetBaseAddress();
-    virtual bool GetBaseAddress(PIPSocketAddressAndPort & addrAndPort);
+    PString GetBaseAddress() const;
+    bool GetBaseAddress(PIPSocketAddressAndPort & addrAndPort) const;
 
     PNatMethod::Component GetComponent() const
     { return m_component; }

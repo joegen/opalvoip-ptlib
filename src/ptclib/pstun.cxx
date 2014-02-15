@@ -919,6 +919,13 @@ PSTUNUDPSocket::PSTUNUDPSocket(PNatMethod::Component component)
 {
 }
 
+
+const char * PSTUNUDPSocket::GetNatName() const
+{
+  return PSTUNClient::MethodName();
+}
+
+
 bool PSTUNUDPSocket::OpenSTUN(PSTUNClient & client)
 {
   m_natType = client.GetNatType(false);
@@ -1484,6 +1491,12 @@ PTURNUDPSocket::PTURNUDPSocket(PNatMethod::Component component)
 PTURNUDPSocket::~PTURNUDPSocket()
 {
   Close();
+}
+
+
+const char * PTURNUDPSocket::GetNatName() const
+{
+  return PTURNClient::MethodName();
 }
 
 
