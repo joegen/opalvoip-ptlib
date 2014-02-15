@@ -1061,12 +1061,16 @@ void PIPSocket::ClearNameCache()
 
 PString PIPSocket::GetName() const
 {
-  PIPSocket::sockaddr_wrapper sa;
-  socklen_t size = sa.GetSize();
-  if (getpeername(os_handle, sa, &size) != 0)
-    return PString::Empty();
+  PStringStream str;
+  str << GetProtocolName() << ':';
 
-  return GetHostName(sa.GetIP()) + psprintf(":%u", sa.GetPort());
+  AddressAndPort ap;
+  if (GetLocalAddress(ap))
+    str << " local=" << ap;
+  if (GetPeerAddress(ap))
+    str << " peer= " << ap;
+
+  return str;
 }
 
 
@@ -1162,16 +1166,14 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
 }
 
 
-PString PIPSocket::GetLocalAddress()
+PString PIPSocket::GetLocalAddress() const
 {
-  PIPSocketAddressAndPort addrAndPort;
-  if (!GetLocalAddress(addrAndPort)) 
-    return PString::Empty();
-  return addrAndPort.AsString();
+  PIPSocketAddressAndPort ap;
+  return GetLocalAddress(ap) ? ap.AsString() : PString::Empty();
 }
 
 
-bool PIPSocket::GetLocalAddress(Address & addr)
+bool PIPSocket::GetLocalAddress(Address & addr) const
 {
   PIPSocketAddressAndPort addrAndPort;
   if (!GetLocalAddress(addrAndPort)) 
@@ -1181,7 +1183,7 @@ bool PIPSocket::GetLocalAddress(Address & addr)
 }
 
 
-bool PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
+bool PIPSocket::GetLocalAddress(Address & addr, WORD & portNum) const
 {
   PIPSocketAddressAndPort addrAndPort;
   if (!GetLocalAddress(addrAndPort)) 
@@ -1189,6 +1191,12 @@ bool PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
   addr = addrAndPort.GetAddress();
   portNum = addrAndPort.GetPort();
   return true;
+}
+
+
+bool PIPSocket::GetLocalAddress(AddressAndPort & addr) const
+{
+  return const_cast<PIPSocket *>(this)->InternalGetLocalAddress(addr);
 }
 
 
@@ -1219,16 +1227,14 @@ bool PIPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addrAndPort)
 }
 
 
-PString PIPSocket::GetPeerAddress()
+PString PIPSocket::GetPeerAddress() const
 {
-  PIPSocketAddressAndPort addrAndPort;
-  if (GetPeerAddress(addrAndPort)) 
-    return addrAndPort.AsString();
-  return PString::Empty();
+  PIPSocketAddressAndPort ap;
+  return GetPeerAddress(ap) ? ap.AsString() : PString::Empty();
 }
 
 
-bool PIPSocket::GetPeerAddress(Address & addr)
+bool PIPSocket::GetPeerAddress(Address & addr) const
 {
   PIPSocketAddressAndPort addrAndPort;
   if (!GetPeerAddress(addrAndPort)) 
@@ -1238,7 +1244,7 @@ bool PIPSocket::GetPeerAddress(Address & addr)
 }
 
 
-bool PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
+bool PIPSocket::GetPeerAddress(Address & addr, WORD & portNum) const
 {
   PIPSocketAddressAndPort addrAndPort;
   if (!GetPeerAddress(addrAndPort)) 
@@ -1246,6 +1252,12 @@ bool PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
   addr = addrAndPort.GetAddress();
   portNum = addrAndPort.GetPort();
   return true;
+}
+
+
+bool PIPSocket::GetPeerAddress(AddressAndPort & addr) const
+{
+  return const_cast<PIPSocket *>(this)->InternalGetPeerAddress(addr);
 }
 
 

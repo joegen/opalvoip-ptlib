@@ -392,28 +392,42 @@ PNATUDPSocket::PNATUDPSocket(PNatMethod::Component component)
 }
 
 
+PString PNATUDPSocket::GetName() const
+{
+  PStringStream str;
+  str << GetNatName() << ':';
+
+  AddressAndPort ap;
+  if (GetBaseAddress(ap))
+    str << " base=" << ap;
+  if (GetLocalAddress(ap))
+    str << " local=" << ap;
+  if (GetPeerAddress(ap))
+    str << " peer= " << ap;
+
+  return str;
+}
+
+
 void PNATUDPSocket::GetCandidateInfo(PNatCandidate & candidate)
 { 
   candidate.m_type = PNatCandidate::HostType;
   candidate.m_component = m_component;
-  InternalGetBaseAddress(candidate.m_hostTransportAddress);
+  InternalGetBaseAddress(candidate.m_baseTransportAddress);
   InternalGetLocalAddress(candidate.m_localTransportAddress);
 }
 
 
-PString PNATUDPSocket::GetBaseAddress()
+PString PNATUDPSocket::GetBaseAddress() const
 {
   PIPSocketAddressAndPort ap;
-  if (!InternalGetBaseAddress(ap))
-    return PString::Empty();
-  else
-    return ap.AsString();
+  return GetBaseAddress(ap) ? ap.AsString() :PString::Empty();
 }
 
 
-bool PNATUDPSocket::GetBaseAddress(PIPSocketAddressAndPort & addrAndPort)
+bool PNATUDPSocket::GetBaseAddress(PIPSocketAddressAndPort & addrAndPort) const
 {
-  return InternalGetBaseAddress(addrAndPort);
+  return const_cast<PNATUDPSocket *>(this)->InternalGetBaseAddress(addrAndPort);
 }
 
 
@@ -439,16 +453,16 @@ void PNatCandidate::PrintOn(ostream & strm) const
 {
   switch (m_type) {
     case HostType :
-      strm << "Host " << m_hostTransportAddress;
+      strm << "Host " << m_baseTransportAddress;
       break;
     case ServerReflexiveType :
-      strm << "Server Reflexive " << m_hostTransportAddress << '/' << m_localTransportAddress;
+      strm << "Server Reflexive " << m_baseTransportAddress << '/' << m_localTransportAddress;
       break;
     case PeerReflexiveType :
-      strm << "Peer Reflexive " << m_hostTransportAddress << '/' << m_localTransportAddress;
+      strm << "Peer Reflexive " << m_baseTransportAddress << '/' << m_localTransportAddress;
       break;
     case RelayType :
-      strm << "Relay " << m_hostTransportAddress << '/' << m_localTransportAddress;
+      strm << "Relay " << m_baseTransportAddress << '/' << m_localTransportAddress;
       break;
     default:
       strm << "Unknown";

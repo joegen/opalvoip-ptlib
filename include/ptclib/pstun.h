@@ -365,6 +365,8 @@ class PSTUNUDPSocket : public PNATUDPSocket
       PNatMethod::Component component
     );
 
+    virtual const char * GetNatName() const;
+
     bool OpenSTUN(PSTUNClient & client);
     virtual void GetCandidateInfo(PNatCandidate & candidate);
 
@@ -647,6 +649,8 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
       PNatMethod::Component component
     );
     ~PTURNUDPSocket();
+
+    virtual const char * GetNatName() const;
 
     virtual bool Close();
 
