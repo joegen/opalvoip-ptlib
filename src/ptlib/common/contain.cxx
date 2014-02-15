@@ -3321,8 +3321,33 @@ void PPrintBitwiseEnum(std::ostream & strm, unsigned bits, char const * const * 
     return;
   }
 
-  bool needSpace = false;
   ++names;
+
+  std::streamsize width = strm.width();
+  if (width > 0) {
+    std::streamsize len = 0;
+    unsigned bit = 1;
+    const char * const * name = names;
+    while (*name != NULL) {
+      if (bits & bit) {
+        if (len > 0)
+          ++len;
+        len += strlen(*name);
+      }
+      bit <<= 1;
+      ++name;
+    }
+    if (width > len)
+      width -= len;
+    else
+      width = 0;
+    strm.width(0);
+  }
+
+  if (width > 0 && (strm.flags()&ios::left) == 0)
+    strm << setw(width) << " ";
+
+  bool needSpace = false;
   for (unsigned bit = 1; *names != NULL; bit <<= 1, ++names) {
     if (bits & bit) {
       if (needSpace)
@@ -3332,6 +3357,9 @@ void PPrintBitwiseEnum(std::ostream & strm, unsigned bits, char const * const * 
       strm << *names;
     }
   }
+
+  if (width > 0 && (strm.flags()&ios::right) == 0)
+    strm << setw(width) << " ";
 }
 
 
