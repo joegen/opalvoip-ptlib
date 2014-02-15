@@ -104,11 +104,13 @@ class PBitwiseEnum
     __inline PBitwiseEnum & operator|=(Enumeration  rhs)       { m_enum = P_BITWISE_ENUM_INTERNAL_OP2( | ); return *this; }
     __inline PBitwiseEnum & operator+=(Enumeration  rhs)       { m_enum = P_BITWISE_ENUM_INTERNAL_OP2( | ); return *this; }
     __inline PBitwiseEnum & operator-=(Enumeration  rhs)       { m_enum = P_BITWISE_ENUM_INTERNAL_OP2(& ~); return *this; }
+    __inline PBitwiseEnum & operator*=(Enumeration  rhs)       { m_enum = P_BITWISE_ENUM_INTERNAL_OP2( & ); return *this; }
     __inline PBitwiseEnum & operator^=(Enumeration  rhs)       { m_enum = P_BITWISE_ENUM_INTERNAL_OP2( ^ ); return *this; }
 
     __inline PBitwiseEnum   operator+ (Enumeration  rhs) const { return P_BITWISE_ENUM_INTERNAL_OP2( | ); }
     __inline PBitwiseEnum   operator| (Enumeration  rhs) const { return P_BITWISE_ENUM_INTERNAL_OP2( | ); }
     __inline PBitwiseEnum   operator- (Enumeration  rhs) const { return P_BITWISE_ENUM_INTERNAL_OP2(& ~); }
+    __inline PBitwiseEnum   operator* (Enumeration  rhs) const { return P_BITWISE_ENUM_INTERNAL_OP2( & ); }
     __inline PBitwiseEnum   operator^ (Enumeration  rhs) const { return P_BITWISE_ENUM_INTERNAL_OP2( ^ ); }
 
     __inline bool           operator& (Enumeration  rhs) const { return P_BITWISE_ENUM_INTERNAL_OP1(&) != 0; }
@@ -123,11 +125,13 @@ class PBitwiseEnum
     __inline PBitwiseEnum & operator|=(PBitwiseEnum rhs)       { return operator|=(rhs.m_enum); }
     __inline PBitwiseEnum & operator+=(PBitwiseEnum rhs)       { return operator+=(rhs.m_enum); }
     __inline PBitwiseEnum & operator-=(PBitwiseEnum rhs)       { return operator-=(rhs.m_enum); }
+    __inline PBitwiseEnum & operator*=(PBitwiseEnum rhs)       { return operator*=(rhs.m_enum); }
     __inline PBitwiseEnum & operator^=(PBitwiseEnum rhs)       { return operator^=(rhs.m_enum); }
 
     __inline PBitwiseEnum   operator| (PBitwiseEnum rhs) const { return operator|(rhs.m_enum); }
     __inline PBitwiseEnum   operator+ (PBitwiseEnum rhs) const { return operator+(rhs.m_enum); }
     __inline PBitwiseEnum   operator- (PBitwiseEnum rhs) const { return operator-(rhs.m_enum); }
+    __inline PBitwiseEnum   operator* (PBitwiseEnum rhs) const { return operator*(rhs.m_enum); }
     __inline PBitwiseEnum   operator^ (PBitwiseEnum rhs) const { return operator^(rhs.m_enum); }
 
     __inline bool           operator& (PBitwiseEnum rhs) const { return operator& (rhs.m_enum); }
