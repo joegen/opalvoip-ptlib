@@ -1304,7 +1304,7 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 }
 
 
-PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(PIPSocket::Address remoteAddress)
+PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(const PIPSocket::Address & remoteAddress)
 {
   // For some variants of Windows GetBestInterface will return 127.0.0.1
   // when we are trying to talk to one of our own interfaces.

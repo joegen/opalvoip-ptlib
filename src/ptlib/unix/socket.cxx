@@ -1905,7 +1905,9 @@ PIPSocket::Address PIPSocket::GetGatewayAddress(unsigned version)
   RouteTable table;
   if (GetRouteTable(table)) {
     for (PINDEX i = 0; i < table.GetSize(); i++) {
-      if (table[i].GetNetwork().IsAny() && table[i].GetDestination().GetVersion() == version)
+      if (table[i].GetNetwork().IsAny() &&
+          table[i].GetDestination().GetVersion() == version &&
+         !table[i].GetDestination().IsAny())
         return table[i].GetDestination();
     }
   }
@@ -1933,53 +1935,95 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(unsigned version)
 }
 
 
-PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(Address remoteAddress)
+static bool IsSubNet(const PIPSocket::Address & addr,
+                     const PIPSocket::Address & network,
+                     const PIPSocket::Address & mask)
 {
-  InterfaceTable hostInterfaceTable;
-  GetInterfaceTable(hostInterfaceTable);
+  switch (addr.GetVersion()*100 + network.GetVersion()) {
+    case 404 :
+      return ((DWORD)addr & (DWORD)mask) == (DWORD)network;
 
-  RouteTable hostRouteTable;
-  GetRouteTable(hostRouteTable);
+    case 606 :
+      for (PINDEX i = 0; i < 16; ++i) {
+        if (addr[i] & mask[i] != network[i])
+          return false;
+      }
+      return true;
+  }
 
-  if (hostInterfaceTable.IsEmpty())
-    return GetDefaultIpAny();
+  return false;
+}
 
-  for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
-    if (remoteAddress == hostInterfaceTable[IfaceIdx].GetAddress()) {
+
+static unsigned CountMaskBits(const PIPSocket::Address & mask)
+{
+  unsigned count = 0;
+
+  switch (mask.GetVersion()) {
+    case 4:
+      while (count < 32 && (DWORD)mask & (1 << (31 - count)) != 0)
+        ++count;
+      break;
+
+    case 6 :
+      while (count < 128 && mask[count/8] & (1 << (7 - count%8)) != 0)
+        ++count;
+  }
+
+  return count;
+}
+
+
+PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(const Address & remoteAddress)
+{
+  InterfaceTable interfaceTable;
+  if (!GetInterfaceTable(interfaceTable)) {
+    PTRACE(4, NULL, PTraceModule(), "No interface table available.");
+    return GetInvalidAddress();
+  }
+
+  // Check for remote being local host
+  for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+    Address addr = interfaceTable[i].GetAddress();
+    if (remoteAddress == addr) {
       PTRACE(5, NULL, PTraceModule(), "Route for " << remoteAddress
-              << " is over interface " << hostInterfaceTable[IfaceIdx].GetName()
-              << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
-      return hostInterfaceTable[IfaceIdx].GetAddress();
+             << " is over interface " << interfaceTable[i].GetName()
+             << "[" << addr << "]");
+      return addr;
     }
   }
 
+  RouteTable routeTable;
+  if (!GetRouteTable(routeTable)) {
+    PTRACE(4, NULL, PTraceModule(), "No route table available.");
+    return GetInvalidAddress();
+  }
+
   RouteEntry * route = NULL;
-  for (PINDEX routeIdx = 0; routeIdx < hostRouteTable.GetSize(); routeIdx++) {
-    RouteEntry & routeEntry = hostRouteTable[routeIdx];
-
-    DWORD network = (DWORD) routeEntry.GetNetwork();
-    DWORD mask = (DWORD) routeEntry.GetNetMask();
-
-    if (((DWORD)remoteAddress & mask) == network) {
+  for (PINDEX i = 0; i < routeTable.GetSize(); i++) {
+    RouteEntry & routeEntry = routeTable[i];
+    if (IsSubNet(remoteAddress, routeEntry.GetNetwork(), routeEntry.GetNetMask())) {
       if (route == NULL)
         route = &routeEntry;
-      else if ((DWORD)routeEntry.GetNetMask() > (DWORD)route->GetNetMask())
+      else if (CountMaskBits(routeEntry.GetNetMask()) > CountMaskBits(route->GetNetMask()))
         route = &routeEntry;
     }
   }
 
   if (route != NULL) {
-    for (PINDEX IfaceIdx = 0; IfaceIdx < hostInterfaceTable.GetSize(); IfaceIdx++) {
-      if (route->GetInterface() == hostInterfaceTable[IfaceIdx].GetName()) {
+    for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
+      PString name = interfaceTable[i].GetName();
+      Address addr = interfaceTable[i].GetAddress();
+      if (addr.IsValid() && name == route->GetInterface()) {
         PTRACE(5, NULL, PTraceModule(), "Route for " << remoteAddress
-                << " is over interface " << hostInterfaceTable[IfaceIdx].GetName()
-                << "[" << hostInterfaceTable[IfaceIdx].GetAddress() << "]");
-        return hostInterfaceTable[IfaceIdx].GetAddress();
+               << " is over interface " << name << "[" << addr << "]");
+        return addr;
       }
     }
   }
 
-  return GetDefaultIpAny();
+  PTRACE(5, NULL, PTraceModule(), "Could not find route for " << remoteAddress);
+  return GetInvalidAddress();
 }
 
 
