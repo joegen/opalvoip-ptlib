@@ -850,7 +850,7 @@ class PIPSocket : public PSocket
        Network interface address.
       */
     static Address GetRouteInterfaceAddress(
-      Address remoteAddress    ///< Remote address to route
+      const Address & remoteAddress    ///< Remote address to route
     );
 
     /// The types of QoS supported, based on IEEE P802.1p TrafficClass parameter

@@ -51,30 +51,29 @@ PCREATE_PROCESS(NetTest)
 
 void NetTest::Main()
 {
-
-  cout << "Net Test Utility" << endl;
-  cout << endl;
+  cout << "Net Test Utility\n\n";
 
   // Read the interface table
   PIPSocket::InterfaceTable if_table;
 
   // Read the Interface Table
   if ( !PIPSocket::GetInterfaceTable( if_table ) ) {
-        cout << "GetInterfaceTable() failed. No interface table" << endl;
-        exit(0);
+    cout << "GetInterfaceTable() failed. No interface table" << endl;
+    return;
   }
 
   // Display the interface table
-  cout << "The interface table has " << if_table.GetSize()
-       <<" entries" << endl;
+  cout << "The interface table has " << if_table.GetSize() << " entries\n"
+       << left;
 
   for (PINDEX i=0; i < if_table.GetSize(); i++) {
     PIPSocket::InterfaceEntry if_entry = if_table[i];
-    cout << i << " " << if_entry.GetName() << " "
-                     << if_entry.GetAddress() << " "
-                     << if_entry.GetNetMask() << " "
-                     << if_entry.GetMACAddress()
-                     << endl;
+    cout << setw(2) << i
+         << ' ' << setw(10) << if_entry.GetName()
+         << ' ' << setw(30) << if_entry.GetAddress()
+         << ' ' << setw(40) << if_entry.GetNetMask()
+         << ' ' << setw(17) << if_entry.GetMACAddress()
+         << endl;
   }
   cout << endl;
 
@@ -82,40 +81,64 @@ void NetTest::Main()
   PIPSocket::RouteTable rt_table;
 
   if ( !PIPSocket::GetRouteTable( rt_table ) ) {
-        cout << "GetRouteTable() failed. No routing table" << endl;
-        exit(0);
+    cout << "GetRouteTable() failed. No routing table" << endl;
+    return;
   }
 
   // Display the route table
-  cout << "The route table has " << rt_table.GetSize()
-       <<" entries" << endl;
+  cout << "The route table has " << rt_table.GetSize() <<" entries" << endl;
 
   for (PINDEX i=0; i < rt_table.GetSize(); i++) {
     PIPSocket::RouteEntry rt_entry = rt_table[i];
-    cout << i << " " << rt_entry.GetNetwork() << " "
-                     << rt_entry.GetNetMask() << " "
-                     << rt_entry.GetDestination() << " "
-                     << rt_entry.GetInterface() << " "
-                     << rt_entry.GetMetric() << "."
-                     << endl;
+    cout << setw(2) << i
+         << ' ' << setw(30) << rt_entry.GetNetwork()
+         << ' ' << setw(40) << rt_entry.GetNetMask()
+         << ' ' << setw(20) << rt_entry.GetDestination()
+         << ' ' << setw(10) << rt_entry.GetInterface()
+         << ' '             << rt_entry.GetMetric()
+         << endl;
   }
   cout << endl;
 
   // Get the Default Gateway
-  PIPSocket::Address addr;
-  PIPSocket::GetGatewayAddress(addr);
-  cout << "Default gateway is " << addr << endl;
+  PIPSocket::Address addr = PIPSocket::GetGatewayAddress();
+  if (addr.IsValid())
+    cout << "Default v4 gateway is " << addr << endl;
+  else
+    cout << "Could not determine default v4 gateway\n";
+
+  addr = PIPSocket::GetGatewayAddress(6);
+  if (addr.IsValid())
+    cout << "Default v6 gateway is " << addr << endl;
+  else
+    cout << "Could not determine default v6 gateway\n";
   cout << endl;
 
   // Get the interface for the Default Gateway
   PString gw_if = PIPSocket::GetGatewayInterface();
-  if ( gw_if.IsEmpty() )
-    cout << "No default gateway interface" << endl;
+  if (gw_if.IsEmpty() )
+    cout << "No default v4 gateway interface" << endl;
   else
-    cout << "Gateway is on " << gw_if << endl;
+    cout << "Default v4 gateway is on " << gw_if << endl;
+
+  gw_if = PIPSocket::GetGatewayInterface(6);
+  if (gw_if.IsEmpty() )
+    cout << "No default v6 gateway interface" << endl;
+  else
+    cout << "Default v6 gateway is on " << gw_if << endl;
   cout << endl;
 
 
+  const PArgList & args = GetArguments();
+  for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
+    PIPSocket::Address addr(args[arg]);
+    if (addr.IsValid())
+      cout << "Interface used for " << addr
+           << " is " << PIPSocket::GetRouteInterfaceAddress(addr) << endl;
+    else
+      cout << "Invalid IP address \"" << args[arg] << '"' << endl;
+  }
 }
+
 // End of netif.cxx
 
