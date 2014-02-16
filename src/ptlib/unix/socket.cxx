@@ -1945,7 +1945,7 @@ static bool IsSubNet(const PIPSocket::Address & addr,
 
     case 606 :
       for (PINDEX i = 0; i < 16; ++i) {
-        if (addr[i] & mask[i] != network[i])
+        if ((addr[i] & mask[i]) != network[i])
           return false;
       }
       return true;
@@ -1961,12 +1961,12 @@ static unsigned CountMaskBits(const PIPSocket::Address & mask)
 
   switch (mask.GetVersion()) {
     case 4:
-      while (count < 32 && (DWORD)mask & (1 << (31 - count)) != 0)
+      while (count < 32 && ((DWORD)mask & (1 << (31 - count))) != 0)
         ++count;
       break;
 
     case 6 :
-      while (count < 128 && mask[count/8] & (1 << (7 - count%8)) != 0)
+      while (count < 128 && (mask[count/8] & (1 << (7 - count%8))) != 0)
         ++count;
   }
 
