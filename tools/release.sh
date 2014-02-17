@@ -25,7 +25,8 @@ TAR=tar
 ZIP=zip
 
 SNAPSHOTS=./snapshots
-WEB_HTML_DIR="/var/hosted_www/www.opalvoip.org/html"
+WEB_HOST=files.opalvoip.org
+WEB_HTML_DIR="/mnt/www/files.opalvoip.org/html"
 WEB_DOCS_DIR=${WEB_HTML_DIR}/docs
 WEB_CHANGELOG_DIR=${WEB_HTML_DIR}/docs/ChangeLogs
 
@@ -104,6 +105,8 @@ release_tag=$1
 previous_tag=$2
 
 
+echo "Releasing ${base}: \"${COMMANDS[*]}\" $release_tag $previous_tag"
+
 #
 # get release tag
 #
@@ -147,7 +150,8 @@ release_verstr=${release_version[0]}.${release_version[1]}.${release_version[2]}
 #  set calculated names
 #
 SRC_ARCHIVE_TBZ2=${SNAPSHOTS}/${base}-${release_verstr}.tar.bz2
-DOC_ARCHIVE_TBZ2=${SNAPSHOTS}/${base}-${release_verstr}-htmldoc.tar.bz2
+DOC_ARCHIVE_TBZ2_BASE=${base}-${release_verstr}-htmldoc.tar.bz2
+DOC_ARCHIVE_TBZ2=${SNAPSHOTS}/${DOC_ARCHIVE_TBZ2_BASE}
 BASE_TAR=${base}-${release_verstr}
 
 SRC_ARCHIVE_ZIP=${SNAPSHOTS}/${base}-${release_verstr}-src.zip
@@ -398,18 +402,18 @@ function create_docs () {
 
   echo Creating documents...
   (
-    PTLIBDIR=`pwd | xargs dirname`/ptlib
+    export PTLIBDIR=`pwd`/ptlib
+    export OPALDIR=`pwd`/opal
     if [ "$base" != "ptlib" ]; then
       pushd $PTLIBDIR
       ./configure --disable-plugins
-      make
       popd
     fi
 
     cd ${base}
     pwd
     rm -rf html
-    if ./configure PTLIBDIR=$PTLIBDIR ; then
+    if ./configure --disable-plugins ; then
       make graphdocs
     fi
   ) > docs.log 2>&1
@@ -464,26 +468,27 @@ function upload_to_sourceforge () {
 
 function update_website () {
   if [ -e "$CHANGELOG_FILE" ]; then
-    echo "Copying $CHANGELOG_FILE to $WEB_CHANGELOG_DIR"
-    cp "$CHANGELOG_FILE" $WEB_CHANGELOG_DIR
+    echo "Copying $CHANGELOG_FILE to ${WEB_HOST}:$WEB_CHANGELOG_DIR"
+    scp "$CHANGELOG_FILE" "${WEB_HOST}:$WEB_CHANGELOG_DIR"
   else
     echo "No $CHANGELOG_FILE, use 'log' command to generate."
   fi
 
-  already_set=`grep v$release_verstr $WEB_CHANGELOG_DIR/.htaccess`
+  already_set=`ssh $WEB_HOST "grep v$release_verstr $WEB_CHANGELOG_DIR/.htaccess"`
   if [ -z "$already_set" ]; then
-    echo "Added description for v$previous_verstr to v$release_verstr"
-    echo "AddDescription \"Changes from v$previous_verstr to v$release_verstr of ${base}\" $CHANGELOG_BASE" >> $WEB_CHANGELOG_DIR/.htaccess
+    echo "Adding description for v$previous_verstr to v$release_verstr"
+    ssh $WEB_HOST "echo \"AddDescription \"Changes from v$previous_verstr to v$release_verstr of ${base}\" $CHANGELOG_BASE\" >> $WEB_CHANGELOG_DIR/.htaccess"
   else
     echo "Description already added for v$release_verstr"
   fi
 
   if [ -e $DOC_ARCHIVE_TBZ2 ]; then
-    doc_dir=$WEB_DOCS_DIR/${base}-v${release_version[0]}_${release_version[1]}
-    echo "Creating online document directory $doc_dir"
-    rm -rf $doc_dir
-    mkdir $doc_dir
-    $TAR -xjf $DOC_ARCHIVE_TBZ2 -C $doc_dir --strip-components 1
+    doc_dir="$WEB_DOCS_DIR/${base}-v${release_version[0]}_${release_version[1]}"
+    doc_tar="$WEB_DOCS_DIR/$DOC_ARCHIVE_TBZ2_BASE"
+    echo "Copying $DOC_ARCHIVE_TBZ2 to ${WEB_HOST}:$WEB_DOCS_DIR"
+    scp "$DOC_ARCHIVE_TBZ2" "${WEB_HOST}:$WEB_DOCS_DIR"
+    echo "Creating online document directory ${WEB_HOST}:$doc_dir"
+    ssh $WEB_HOST "rm -rf $doc_dir ; mkdir $doc_dir ; $TAR -xjf $doc_tar -C $doc_dir --strip-components 1 ; rm $doc_tar"
   else
     echo "No $DOC_ARCHIVE_TBZ2, use 'docs' command to generate."
   fi
