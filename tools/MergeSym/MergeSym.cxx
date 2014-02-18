@@ -58,6 +58,7 @@ class SymbolInfo
     unsigned GetOrdinal() const { return m_ordinal; }
     bool IsExternal() const { return m_external; }
     bool NoName() const { return m_noName; }
+    void KeepName() { m_noName = false; }
 
   private:
     PString m_unmangled;
@@ -71,7 +72,9 @@ typedef std::map<PCaselessString, SymbolInfo> SortedSymbolList;
 
 std::ostream & operator<<(std::ostream & strm, const SortedSymbolList::iterator & it)
 {
-  strm << "    " << it->first << " @" << it->second.GetOrdinal();
+  strm << "    " << it->first;
+  if (it->second.GetOrdinal() > 0)
+    strm << " @" << it->second.GetOrdinal();
   if (it->second.NoName())
     strm << " NONAME";
   return strm << '\n';
@@ -89,7 +92,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 8, ReleaseCode, 3, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 9, ReleaseCode, 0, false, true)
 {
 }
 
@@ -101,7 +104,11 @@ void MergeSym::Main()
        << " by " << GetManufacturer() << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("vsd:x:I:");
+  args.Parse("v. Version\n"
+             "s. Symbol file (output from dumpbin)\n"
+             "d: Dumpbin executable (default \"dumpbin\")\n"
+             "x: File of excluded symbols\n"
+             "I: Search directory for excluded symbol files\n");
 
   PFilePath lib_filename, def_filename, out_filename;
 
@@ -124,7 +131,7 @@ void MergeSym::Main()
       break;
 
     default :
-      PError << "usage: MergeSym [ -v ] [ -s ] [ -d dumpbin ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] [ outfile[.def] ] ]";
+      args.Usage(PError, "libfile[.lib] [ deffile[.def] [ outfile[.def] ] ]");
       SetTerminationValue(1);
       return;
   }
@@ -266,7 +273,7 @@ void MergeSym::Main()
 
   PINDEX linecount = 0;
   PString dumpbin = args.GetOptionString('d', "dumpbin");
-  PPipeChannel pipe(dumpbin + " /symbols '" + lib_filename + "'", PPipeChannel::ReadOnly);
+  PPipeChannel pipe(dumpbin + " /symbols /directives '" + lib_filename + "'", PPipeChannel::ReadOnly);
   if (!pipe.IsOpen()) {
     PError << "\nMergeSym: could not run \"" << dumpbin << "\".\n";
     SetTerminationValue(2);
@@ -274,17 +281,20 @@ void MergeSym::Main()
   }
 
   PTextFile symfile;
- // if (args.HasOption('s')) {
+  if (args.HasOption('s')) {
     PFilePath sym_filename = out_filename;
     sym_filename.SetType(".sym");
     if (!symfile.Open(sym_filename, PFile::WriteOnly))
       cerr << "Could not open symbol file " << sym_filename << endl;
- // }
+  }
 
+  std::set<PString> explicitExports;
+
+  PSimpleTimer duration;
   while (!pipe.eof()) {
     PString line;
     pipe >> line;
-    symfile << line;
+    symfile << line << '\n';
 
     PINDEX namepos = line.Find('|');
     if (namepos != P_MAX_INDEX &&
@@ -307,16 +317,26 @@ void MergeSym::Main()
           unmangled = namepos;
           endunmangle = nameend;
         }
-        lib_symbols[name].Set(line(unmangled, endunmangle-1), 0, false, true);
+        lib_symbols[name].Set(line(unmangled, endunmangle-1), 0, false, explicitExports.find(name) == explicitExports.end());
       }
     }
+    else if ((namepos = line.Find("/EXPORT:")) != P_MAX_INDEX) {
+      PString name = line.Mid(namepos+8);
+      if (args.HasOption('v'))
+        cout << "Explicit export \"" << name << '"' << endl;
+      explicitExports.insert(name);
+      SortedSymbolList::iterator it = def_symbols.find(name);
+      if (it != def_symbols.end())
+        it->second.KeepName();
+    }
+
     if (args.HasOption('v') && linecount%500 == 0)
       cout << '.' << flush;
     linecount++;
   }
 
   if (args.HasOption('v'))
-    cout << '\n' << lib_symbols.size() << " symbols read.\n"
+    cout << '\n' << lib_symbols.size() << " symbols read in " << duration.GetElapsed() << " seconds.\n"
             "Sorting symbols... " << flush;
 
   SortedSymbolList::iterator it;
@@ -375,7 +395,7 @@ void MergeSym::Main()
     return;
 
   if (args.HasOption('v'))
-    cout << "Writing .DEF file..." << flush;
+    cout << "Writing " << out_filename << " ..." << flush;
 
   // If file is read/only, set it to read/write
   PFileInfo info;
