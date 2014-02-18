@@ -268,7 +268,7 @@ class PSystemLogToFile : public PSystemLogTarget
 
       bool CanRotate() const
       {
-        return m_maxSize > 0 && !m_timestamp.IsEmpty() && m_directory.Exists();
+        return m_maxSize > 0 && !m_timestamp.IsEmpty();
       }
 
       PDirectory      m_directory;    ///< Destination directory for rotated file, default to same s log file
