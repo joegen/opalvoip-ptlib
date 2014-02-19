@@ -1282,7 +1282,8 @@ ostream & PArgList::Usage(ostream & strm, const char * usage, const char * prefi
     if (maxNameLength < len)
       maxNameLength = len;
   }
-  maxNameLength += 6;
+  if (maxNameLength > 0)
+    maxNameLength += 6;
 
   for (i = 0; i < m_options.size(); ++i) {
     const OptionSpec & opt = m_options[i];
@@ -1295,15 +1296,19 @@ ostream & PArgList::Usage(ostream & strm, const char * usage, const char * prefi
     else
       strm << "  ";
 
-    if (opt.m_letter == '\0' || opt.m_name.IsEmpty())
-      strm << "    ";
-    else
-      strm << " or ";
-    strm << left << "--";
-    if (opt.m_type == NoString)
-      strm << setw(maxNameLength) << opt.m_name;
-    else
-      strm << opt.m_name << setw(maxNameLength-opt.m_name.GetLength()) << " <arg>";
+    strm << (maxNameLength > 0 ? opt.m_letter == '\0' || opt.m_name.IsEmpty() ? "    ":  " or " : " ")
+         << left;
+
+    if (opt.m_name.IsEmpty())
+      strm << setw(maxNameLength+5) << (opt.m_type == NoString ? "     " : "<arg>");
+    else {
+      strm << "--";
+      if (opt.m_type == NoString)
+        strm << setw(maxNameLength) << opt.m_name;
+      else
+        strm << opt.m_name << setw(maxNameLength - opt.m_name.GetLength()) << " <arg>";
+    }
+
     PStringArray lines = opt.m_usage.Lines();
     if (lines.IsEmpty())
       strm << '\n';
