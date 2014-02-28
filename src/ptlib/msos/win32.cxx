@@ -39,7 +39,7 @@
 
 #include <process.h>
 #include <errors.h>
-#include <Shlobj.h>
+#include <shlobj.h>
 
 #ifdef WIN32
   #ifndef _WIN32_WCE
