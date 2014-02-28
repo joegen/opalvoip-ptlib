@@ -283,7 +283,9 @@ PCREATE_VIDINPUT_PLUGIN(DirectShow);
 
 ////////////////////////////////////////////////////////////////////
 
+#ifndef __MINGW32__
 static const GUID MEDIASUBTYPE_I420 = { 0x30323449, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 };
+#endif
 
 static struct {
     const char * m_colourFormat;
