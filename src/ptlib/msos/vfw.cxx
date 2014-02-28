@@ -40,7 +40,7 @@
 #include <ptlib/pluginmgr.h>
 #include <ptclib/delaychan.h>
 
-#include <Windowsx.h>
+#include <windowsx.h>
 
 
 #if P_VFW_CAPTURE
