@@ -174,7 +174,11 @@ class PComResult
     #define PCOM_SUCCEEDED_EX(res,fn,args,...)  (res       ).Succeeded(fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
     #define PCOM_FAILED_EX(res,fn,args,...)     (res       ).Failed   (fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
     #define PCOM_SUCCEEDED(fn,args,...)         PComResult().Succeeded(fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
+#ifdef __MINGW32__
+    #define PCOM_FAILED(fn,args,...)            PComResult().Failed   (fn args, #fn, __FILE__, __LINE__, ##__VA_ARGS__)
+#else
     #define PCOM_FAILED(fn,args,...)            PComResult().Failed   (fn args, #fn, __FILE__, __LINE__, __VA_ARGS__)
+#endif
   #else
     #define PCOM_SUCCEEDED_EX(res,fn,args,...)  (res).Succeeded(fn args)
     #define PCOM_FAILED_EX(res,fn,args,...)     (res).Failed(fn args)
