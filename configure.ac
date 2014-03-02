@@ -1028,6 +1028,7 @@ fi
 
 dnl ########################################################################
 dnl check for regex library
+dnl mingw does not provide regcomp, so search for it in regex library
 
 AC_ARG_ENABLE(
    internalregex,
@@ -1037,14 +1038,12 @@ AC_ARG_ENABLE(
 if test "$internalregex" = "yes" ; then
    AC_MSG_NOTICE(Forcing use of internal regex library)
 else
-   AC_CHECK_FUNC(
+   AC_SEARCH_LIBS(
       regcomp,
+      regex,
       [
          AC_SUBST(HAS_REGEX, 1)
          AC_DEFINE(P_REGEX, 1, "Regex library found")
-         if test ${target_os} = mingw ; then
-            LIBS="-lregex $LIBS"
-         fi
       ]
    )
 fi
