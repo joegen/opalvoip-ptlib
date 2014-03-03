@@ -145,7 +145,7 @@
 #define PCHAR8 PANSI_CHAR
 #define PBYTE_ORDER PLITTLE_ENDIAN
 
-#if _MSC_VER < 1600
+#if !defined(__MINGW32__) && _MSC_VER < 1600
   #include <ptlib/msos/stdint.h>
 #else
   #include <stdint.h>
