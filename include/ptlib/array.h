@@ -1143,27 +1143,6 @@ class PBitArray : public PBYTEArray
 };
 
 
-template <class ObjClass>
-class PPtrVector : public std::vector<ObjClass *>
-{
-  public:
-    typedef std::vector<ObjClass *> Parent;
-    virtual ~PPtrVector()
-    {
-      Clear();
-    }
-
-    void Clear()
-    {
-      while (Parent::size() > 0) {
-        delete Parent::front();
-        Parent::erase(Parent::begin());
-      }
-    }
-};
-
-
-
 #endif // PTLIB_ARRAY_H
 
 
