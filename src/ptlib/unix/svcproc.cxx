@@ -297,7 +297,10 @@ int PServiceProcess::InitialiseService()
     {
       ifstream pidfile(pidfilename);
       if (!pidfile.is_open()) {
-        cout << "Could not open pid file: \"" << pidfilename << "\""
+        if (args.HasOption('s'))
+          cout << "Process has not been started." << endl;
+        else
+          cout << "Could not open pid file: \"" << pidfilename << "\""
                 " - " << strerror(errno) << endl;
         return 1;
       }
@@ -426,6 +429,16 @@ int PServiceProcess::InitialiseService()
     }
   }
 #endif
+
+  // Remove the service arguments
+  if (args.GetCount() == 0)
+    args.SetArgs("");
+  else {
+    PStringArray programArgs(args.GetCount());
+    for (PINDEX arg = 0; arg < args.GetCount(); ++arg)
+      programArgs = args[arg];
+    args.SetArgs(programArgs);
+  }
 
   // We are a service, don't want to get blocked on input from stdin during asserts
   if (!m_debugMode)

@@ -92,7 +92,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 9, ReleaseCode, 0, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 9, ReleaseCode, 1, false, true)
 {
 }
 
@@ -152,7 +152,6 @@ void MergeSym::Main()
     out_filename.SetType(".def");
 
   SortedSymbolList def_symbols;
-  SortedSymbolList lib_symbols;
   std::vector<bool> ordinals_used(65536);
 
   if (args.HasOption('x')) {
@@ -249,8 +248,6 @@ void MergeSym::Main()
           PCaselessString sym(line(start, end-1));
           if (def_symbols.find(sym) == def_symbols.end())
             def_symbols[sym].Set(unmangled, ordinal, false, noname);
-          if (!noname && lib_symbols.find(sym) == lib_symbols.end())
-            lib_symbols[sym].Set(unmangled, ordinal, false, noname);
           removed++;
           if (args.HasOption('v') && def_symbols.size()%100 == 0)
             cout << '.' << flush;
@@ -289,6 +286,7 @@ void MergeSym::Main()
   }
 
   std::set<PString> explicitExports;
+  SortedSymbolList lib_symbols;
 
   PSimpleTimer duration;
   while (!pipe.eof()) {

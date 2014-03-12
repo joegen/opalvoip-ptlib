@@ -1291,27 +1291,33 @@ bool PSTUNClient::CreateSocket(PUDPSocket * & udpSocket, const PIPSocket::Addres
 }
 
 
-struct SocketInfo {
-  SocketInfo()
-    : m_stunSocket(NULL)
+struct PSTUNSocketPairInfo {
+  PSTUNSocketPairInfo()
+    : m_socket(NULL)
     , m_ready(false)
   { }
 
-  ~SocketInfo()
-  { delete m_stunSocket; }
-   
-  PSTUNUDPSocket * m_stunSocket;
-  bool m_ready;
-  PSTUNMessage    m_request;
-  PSTUNMessage    m_response;
+  ~PSTUNSocketPairInfo()
+  {
+    delete m_socket;
+  }
+
+  PSTUNUDPSocket * m_socket;
+  bool             m_ready;
+  PSTUNMessage     m_request;
+  PSTUNMessage     m_response;
 };
+
 
 bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2,
                                    const PIPSocket::Address & binding,
-                                   PObject *)
+                                   PObject * context)
 {
   PWaitAndSignal m(m_mutex);
+
+  if (!PAssert(m_numSocketsForPairing >= 2, PInvalidParameter))
+    return false;
 
   if (!binding.IsAny() && binding != m_interface)
     return false;
@@ -1320,7 +1326,9 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   socket2 = NULL;
 
   switch (GetNatType(false)) {
-    case OpenNat :
+    case OpenNat:
+      return PNatMethod::CreateSocketPair(socket1, socket2, binding, context);
+
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
@@ -1338,90 +1346,66 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
       return false;
   }
 
-  PPtrVector<SocketInfo> socketInfo;
+  // We try and get a port pair by blasting out to a range of sockets
+  vector<PSTUNSocketPairInfo> socketInfo(m_numSocketsForPairing);
+  PIPSocket ** socketArray = (PIPSocket **)alloca(m_numSocketsForPairing*sizeof(PUDPSocket *));
+  for (PINDEX i = 0; i < m_numSocketsForPairing; ++i)
+    socketArray[i] = socketInfo[i].m_socket = (PSTUNUDPSocket *)InternalCreateSocket(eComponent_RTP, context);
 
-  // send binding requests until we get a pair of adjacent sockets
-  for (PINDEX socketCount = 0; socketCount < m_numSocketsForPairing; ++socketCount)  {
-    // always ensure we have two sockets
-    while (socketInfo.size() < 2) {
+  if (!m_pairedPortRange.Listen(socketArray, m_numSocketsForPairing, m_interface)) {
+    PTRACE(1, "STUN\tUnable to open sockets to " << *this);
+    return false;
+  }
 
-      // create a socket
-      size_t idx = socketInfo.size();
-      socketInfo.push_back(new SocketInfo());
-      SocketInfo & info = *socketInfo[idx];
-      info.m_stunSocket = new PSTUNUDPSocket(eComponent_RTP);
-      if (!m_pairedPortRange.Listen(*info.m_stunSocket, m_interface)) {
-        PTRACE(1, "STUN\tUnable to open socket to " << *this);
-        return false;
-      }
-
-      // if necessary, send a binding request
-      if (GetNatType(false) == OpenNat) {
-        info.m_ready = true;
-        socketInfo[idx]->m_stunSocket->GetBaseAddress(socketInfo[idx]->m_stunSocket->m_serverReflexiveAddress);
-      }
-      else {
-        info.m_stunSocket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
-        info.m_stunSocket->SetReadTimeout(replyTimeout);
-        info.m_request = PSTUNMessage(PSTUNMessage::BindingRequest);
-        if (!info.m_request.Write(*info.m_stunSocket)) {
-          PTRACE(1, "STUN\tsocket write failed");
-          return false;
-        }
-      }
-    }
-
-    // wait for something to respond
-    if ((GetNatType(false) != OpenNat) && (!socketInfo[0]->m_ready || !socketInfo[1]->m_ready)) {
-      int r = PIPSocket::Select(*socketInfo[0]->m_stunSocket, *socketInfo[1]->m_stunSocket, replyTimeout);
-      if (r == 0)
-        socketInfo.Clear();
-      else { 
-        if ((r == -1 || r == -3) && socketInfo[0]->m_response.Read(*socketInfo[0]->m_stunSocket) && socketInfo[0]->m_response.IsValidFor(socketInfo[0]->m_request)) {
-          GetFromBindingResponse(socketInfo[0]->m_response, socketInfo[0]->m_stunSocket->m_serverReflexiveAddress);
-          socketInfo[0]->m_ready = true;
-        }
-        if ((r == -2 || r == -3) && socketInfo[1]->m_response.Read(*socketInfo[1]->m_stunSocket) && socketInfo[1]->m_response.IsValidFor(socketInfo[1]->m_request)) {
-          socketInfo[1]->m_ready = true;
-          GetFromBindingResponse(socketInfo[1]->m_response, socketInfo[1]->m_stunSocket->m_serverReflexiveAddress);
-        }
-      }
-    }
-
-    // if both sockets are ready, see if they are adjacent
-    if ((socketInfo.size() == 2) && socketInfo[0]->m_ready && socketInfo[1]->m_ready) {
-      if ((socketInfo[0]->m_stunSocket->port&1) == 0 && (socketInfo[0]->m_stunSocket->port+1) == socketInfo[1]->m_stunSocket->port) {
-
-        socketInfo[0]->m_stunSocket->PUDPSocket::InternalSetSendAddress(PIPSocket::Address(0, 0));
-        socketInfo[0]->m_stunSocket->SetReadTimeout(PMaxTimeInterval);
-
-        socketInfo[1]->m_stunSocket->PUDPSocket::InternalSetSendAddress(PIPSocket::Address(0, 0));
-        socketInfo[1]->m_stunSocket->SetReadTimeout(PMaxTimeInterval);
-
-        PIPSocketAddressAndPort ba1, la1, ba2, la2;
-        socketInfo[0]->m_stunSocket->GetBaseAddress(ba1);
-        socketInfo[0]->m_stunSocket->GetLocalAddress(la1);
-        socketInfo[1]->m_stunSocket->GetBaseAddress(ba2);
-        socketInfo[1]->m_stunSocket->GetLocalAddress(la2);
-        PTRACE(2, "STUN\tsocket pair created : " << ba1 << " -> " << la1 << ", " << ba2 << " -> " << la2);
-
-        socket1 = socketInfo[0]->m_stunSocket;
-        socket2 = socketInfo[1]->m_stunSocket;
-
-        socketInfo[0]->m_stunSocket = NULL;
-        socketInfo[1]->m_stunSocket = NULL;
-
-
-        return true;
-      }
-
-      // clear the lowest socket
-      delete socketInfo[0];
-      socketInfo.erase(socketInfo.begin());
+  for (PINDEX i = 0; i < m_numSocketsForPairing; ++i) {
+    PSTUNSocketPairInfo & info = socketInfo[i];
+    info.m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
+    info.m_socket->SetReadTimeout(replyTimeout);
+    info.m_request = PSTUNMessage(PSTUNMessage::BindingRequest);
+    if (!info.m_request.Write(*info.m_socket)) {
+      PTRACE(1, "STUN\tSocket write failed: " << info.m_socket->GetErrorText(PChannel::LastWriteError));
+      return false;
     }
   }
 
-  PTRACE(2, "STUN\tCould not get a pair of adjacent port numbers from NAT");
+  // Process replies
+  for (PINDEX i = 0; i < m_numSocketsForPairing; ++i) {
+    PSTUNSocketPairInfo & info = socketInfo[i];
+    if (info.m_response.Read(*info.m_socket))
+      info.m_ready = info.m_response.IsValidFor(info.m_request) &&
+                     GetFromBindingResponse(info.m_response, info.m_socket->m_serverReflexiveAddress);
+    else if (info.m_socket->GetErrorCode(PChannel::LastReadError) == PChannel::Timeout) {
+      PTRACE(1, "STUN\tTimeout getting response from server: " << m_serverAddress);
+      return false;
+    }
+  }
+
+  // Look for an even/odd pair.
+  for (PINDEX evenIndex = 0; evenIndex < m_numSocketsForPairing; ++evenIndex) {
+    PSTUNSocketPairInfo & even = socketInfo[evenIndex];
+    WORD evenPort = even.m_socket->m_serverReflexiveAddress.GetPort();
+    if (even.m_ready && (evenPort & 1) == 0) {
+      for (PINDEX oddIndex = 0; oddIndex < m_numSocketsForPairing; ++oddIndex) {
+        PSTUNSocketPairInfo & odd = socketInfo[oddIndex];
+        if (odd.m_ready && odd.m_socket->m_serverReflexiveAddress.GetPort() == evenPort+1) {
+          socket1 = even.m_socket;
+          socket2 = odd.m_socket;
+          even.m_socket = odd.m_socket = NULL; // Don't wnat them deleted!
+
+          socket1->PUDPSocket::InternalSetSendAddress(PIPSocket::Address(0, 0));
+          socket1->SetReadTimeout(PMaxTimeInterval);
+
+          socket2->PUDPSocket::InternalSetSendAddress(PIPSocket::Address(0, 0));
+          socket2->SetReadTimeout(PMaxTimeInterval);
+
+          PTRACE(3, "STUN\tSocket pair created\n   " << socket1->GetName() << "\n   " << socket2->GetName());
+          return true;
+        }
+      }
+    }
+  }
+
+  PTRACE(3, "STUN\tCould not get a pair of adjacent port numbers from NAT");
   return false;
 }
 
