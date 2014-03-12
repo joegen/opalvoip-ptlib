@@ -104,22 +104,22 @@ PINLINE bool PTimeInterval::operator<=(const PTimeInterval & t) const
   { return GetMilliSeconds() <= t.GetMilliSeconds(); }
 
 PINLINE bool PTimeInterval::operator==(long msecs) const
-  { return (long)GetMilliSeconds() == msecs; }
+  { return GetMilliSeconds() == (PInt64)msecs; }
 
 PINLINE bool PTimeInterval::operator!=(long msecs) const
-  { return (long)GetMilliSeconds() != msecs; }
+  { return GetMilliSeconds() != (PInt64)msecs; }
 
 PINLINE bool PTimeInterval::operator> (long msecs) const
-  { return (long)GetMilliSeconds() > msecs; }
+  { return GetMilliSeconds() > (PInt64)msecs; }
 
 PINLINE bool PTimeInterval::operator>=(long msecs) const
-  { return (long)GetMilliSeconds() >= msecs; }
+  { return GetMilliSeconds() >= (PInt64)msecs; }
 
 PINLINE bool PTimeInterval::operator< (long msecs) const
-  { return (long)GetMilliSeconds() < msecs; }
+  { return GetMilliSeconds() < (PInt64)msecs; }
 
 PINLINE bool PTimeInterval::operator<=(long msecs) const
-  { return (long)GetMilliSeconds() <= msecs; }
+  { return GetMilliSeconds() <= (PInt64)msecs; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
