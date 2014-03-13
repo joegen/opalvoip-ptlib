@@ -164,6 +164,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
+      <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <ProjectReference>
@@ -249,6 +250,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>
