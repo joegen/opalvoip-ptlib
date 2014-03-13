@@ -8347,7 +8347,7 @@ _ACEOF
 $as_echo_n "checking if __exchange_and_add is in __gnu_cxx namespace... " >&6; }
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include $P_ATOMICITY_HEADER
+#include P_ATOMICITY_HEADER
 int
 main ()
 {
@@ -8380,13 +8380,13 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo_n "checking if __sync_fetch_and_or exists... " >&6; }
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include $P_ATOMICITY_HEADER
+#include P_ATOMICITY_HEADER
 int
 main ()
 {
 
-            _Atomic_word val;
-            __sync_fetch_and_or(&val, 1);
+            volatile _Atomic_word val;
+            volatile _Atomic_word old = __sync_fetch_and_or(&val, 1);
 
   ;
   return 0;
