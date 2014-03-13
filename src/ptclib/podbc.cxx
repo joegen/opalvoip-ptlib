@@ -274,6 +274,7 @@ PODBC::~PODBC()
 
   if (m_link->m_hEnv != NULL)
     SQLFreeHandle(SQL_HANDLE_ENV, m_link->m_hEnv);
+  delete m_link;
 }
 
 
