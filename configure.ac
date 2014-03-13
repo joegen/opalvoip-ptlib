@@ -720,8 +720,8 @@ else
       AC_DEFINE_UNQUOTED(P_ATOMICITY_HEADER, $P_ATOMICITY_HEADER)
 
       AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
-      AC_TRY_COMPILE(
-         [#include $P_ATOMICITY_HEADER],
+      AC_TRY_LINK(
+         [#include P_ATOMICITY_HEADER],
          [
             _Atomic_word val;
             __gnu_cxx::__exchange_and_add(&val, 1);
@@ -734,11 +734,11 @@ else
       )
 
       AC_MSG_CHECKING(if __sync_fetch_and_or exists)
-      AC_TRY_COMPILE(
-         [#include $P_ATOMICITY_HEADER],
+      AC_TRY_LINK(
+         [#include P_ATOMICITY_HEADER],
          [
-            _Atomic_word val;
-            __sync_fetch_and_or(&val, 1);
+            volatile _Atomic_word val;
+            volatile _Atomic_word old = __sync_fetch_and_or(&val, 1);
          ],
          [
             AC_MSG_RESULT(yes)
