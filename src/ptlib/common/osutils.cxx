@@ -384,10 +384,14 @@ PTHREAD_MUTEX_RECURSIVE_NP
           << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
              " with PTLib (v" << PProcess::GetLibVersion() << ")"
              " at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu") << ","
-             " level=" << m_thresholdLevel << ", to \"" << m_filename << '"';
-      if ((m_options & RotateLogMask) != 0)
-        log << ", rollover=\"" << m_rolloverPattern << '"';
-      log << endl;
+             " level=" << m_thresholdLevel << ", to ";
+      if ((m_options & RotateLogMask) == 0)
+        log << '"' << m_filename;
+      else {
+        PFilePath fn(m_filename);
+        log << " rollover=\"" << fn.GetDirectory() << fn.GetTitle() << m_rolloverPattern << fn.GetType();
+      }
+      log << '"' << endl;
     }
   }
 
