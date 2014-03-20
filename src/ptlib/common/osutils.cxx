@@ -301,6 +301,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     PStringArray tokens = m_filename.Tokenise(',');
 
     AdjustOptions(0, SystemLogStream);
+    bool outputFirstLog = m_thresholdLevel > 1;
 
     if (m_filename == "stderr")
       SetStream(&cerr);
@@ -351,8 +352,10 @@ PTHREAD_MUTEX_RECURSIVE_NP
         permissions.FromBits((m_options&FilePermissionMask)>>FilePermissionShift);
 
       PFile * traceOutput = new PTextFile();
-      if (traceOutput->Open(fn, PFile::WriteOnly, options, permissions))
+      if (traceOutput->Open(fn, PFile::WriteOnly, options, permissions)) {
         SetStream(traceOutput);
+        outputFirstLog = true;
+      }
       else {
         PStringStream msgstrm;
         msgstrm << PProcess::Current().GetName() << ": Could not open trace output file \"" << fn << '"';
@@ -366,7 +369,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       }
     }
 
-    if (m_thresholdLevel > 0) {
+    if (outputFirstLog) {
       ostream & log = InternalBegin(false, 0, NULL, 0, NULL, NULL) << '\t';
 
       if (PProcess::IsInitialised()) {
@@ -381,8 +384,14 @@ PTHREAD_MUTEX_RECURSIVE_NP
           << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
              " with PTLib (v" << PProcess::GetLibVersion() << ")"
              " at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu") << ","
-             " level=" << m_thresholdLevel << ", to \"" << m_filename << '"'
-          << endl;
+             " level=" << m_thresholdLevel << ", to ";
+      if ((m_options & RotateLogMask) == 0)
+        log << '"' << m_filename;
+      else {
+        PFilePath fn(m_filename);
+        log << " rollover=\"" << fn.GetDirectory() << fn.GetTitle() << m_rolloverPattern << fn.GetType();
+      }
+      log << '"' << endl;
     }
   }
 
@@ -525,11 +534,9 @@ void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const
   m_rolloverPattern = rolloverPattern;
   if (m_rolloverPattern.IsEmpty())
     m_rolloverPattern = DefaultRollOverPattern;
-  // Does PTime::GetDayOfYear() etc. want to take zone param like PTime::AsString() to switch 
-  // between os_gmtime and os_localtime?
   m_lastRotate = GetRotateVal(options);
-  OpenTraceFile(filename);
   AdjustOptions(options, UINT_MAX);
+  OpenTraceFile(filename);
   m_thresholdLevel = level;
 }
 
