@@ -333,8 +333,7 @@ bool PSafeCollection::SafeAddObject(PSafeObject * obj, PSafeObject * old)
   if (obj == old)
     return false;
 
-  if (old != NULL)
-    old->SafeDereference();
+  SafeRemoveObject(old);
 
   if (obj == NULL)
     return false;
