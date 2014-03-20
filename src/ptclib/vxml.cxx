@@ -1105,24 +1105,17 @@ void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
 
   while (!m_abortVXML) {
     // process current node in the VXML script
-    if (ProcessNode()) {
-      /* wait for something to happen, usually output of some audio. But under
-         some circumstances we want to abort the script, but we  have to make
-         sure the script has been run to the end so submit actions etc. can be
-         performed. Record and audio and other user interaction commands can
-         be skipped, so we don't wait for them */
-      do {
-        while (ProcessEvents())
-          ;
-      } while (NextNode(true));
-    }
-    else {
-      // Wait till node finishes
+    bool processChildren = ProcessNode();
+
+    /* wait for something to happen, usually output of some audio. But under
+        some circumstances we want to abort the script, but we  have to make
+        sure the script has been run to the end so submit actions etc. can be
+        performed. Record and audio and other user interaction commands can
+        be skipped, so we don't wait for them */
+    do {
       while (ProcessEvents())
         ;
-
-      NextNode(false);
-    }
+    } while (NextNode(processChildren));
 
     // Determine if we should quit
     if (m_currentNode != NULL)
@@ -1208,6 +1201,7 @@ bool PVXMLSession::ProcessEvents()
   }
   else if (m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started) {
     PTRACE(4, "VXML\tAwaiting input, awaiting event");
+    PlaySilence(500);
   }
   else if (m_transferStatus == TransferInProgress) {
     PTRACE(4, "VXML\tTransfer in progress, awaiting event");
@@ -1273,9 +1267,14 @@ bool PVXMLSession::NextNode(bool processChildren)
     PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
     if (handler != NULL) {
       if (!handler->Finish(*this, *element)) {
-        PTRACE(4, "VXML\t"
-               << (element != m_currentNode ? "Exception handling for" : "Continue processing")
-               << " VoiceXML element: <" << nodeType << '>');
+        if (m_currentNode != NULL) {
+          PTRACE_IF(4, (element = dynamic_cast<PXMLElement *>(m_currentNode)) != NULL,
+                    "VXML\tException handling <" << element->GetName() << "> for VoiceXML element: <" << nodeType << '>');
+          return false;
+        }
+
+        PTRACE(4, "VXML\tContinue processing VoiceXML element: <" << nodeType << '>');
+        m_currentNode = element;
         return true;
       }
       PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
