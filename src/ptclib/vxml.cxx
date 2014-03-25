@@ -1646,6 +1646,7 @@ PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 
   delete m_grammar;
   m_grammar = grammar;
+  m_bargingIn = false;
 
   PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
   return true;
