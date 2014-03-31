@@ -172,8 +172,14 @@ struct PHashTableList
   PHashTableList() : m_head(NULL), m_tail(NULL) { }
   PHashTableElement * m_head;
   PHashTableElement * m_tail;
+#if PTRACING
+  PINDEX              m_size;
+#endif
 };
 __inline std::ostream & operator<<(std::ostream & strm, const PHashTableList & hash) { return strm << (void *)hash.m_head; }
+
+class PHashTable;
+
 
 class PHashTableInfo : public PBaseArray<PHashTableList>
 {
@@ -188,7 +194,7 @@ class PHashTableInfo : public PBaseArray<PHashTableList>
     virtual ~PHashTableInfo() { Destruct(); }
     virtual void DestroyContents();
 
-    PINDEX AppendElement(PObject * key, PObject * data);
+    void AppendElement(PObject * key, PObject * data PTRACE_PARAM(, PHashTable * owner));
     PObject * RemoveElement(const PObject & key);
     PHashTableElement * GetElementAt(PINDEX index);
     PHashTableElement * GetElementAt(const PObject & key);
