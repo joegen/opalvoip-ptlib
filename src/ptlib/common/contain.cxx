@@ -1193,7 +1193,7 @@ PINDEX PString::HashFunction() const
   }
 
   static const PINDEX MaxCount = 16;
-  PINDEX count = std::max(m_length / 2, MaxCount);
+  PINDEX count = std::min(m_length / 2, MaxCount);
   PINDEX hash = 0;
   PINDEX i;
   for (i = 0; i < count; i++)
