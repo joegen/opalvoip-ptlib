@@ -1130,7 +1130,7 @@ void PHashTableInfo::DestroyContents()
 }
 
 
-PINDEX PHashTableInfo::AppendElement(PObject * key, PObject * data)
+void PHashTableInfo::AppendElement(PObject * key, PObject * data PTRACE_PARAM(, PHashTable * owner))
 {
   PINDEX bucket = PAssertNULL(key)->HashFunction();
   if (bucket >= GetSize())
@@ -1153,7 +1153,14 @@ PINDEX PHashTableInfo::AppendElement(PObject * key, PObject * data)
     list.m_tail->m_next = element;
     list.m_tail =  element;
   }
-  return bucket;
+
+#if PTRACING
+  ++list.m_size;
+  PINDEX totalSize = owner->GetSize();
+  if (list.m_size > 20 && list.m_size * 10 > totalSize / 8)
+    PTRACE(1, owner, "PTLib", "Poor hash function used, more than 80% of "
+           << totalSize << " items in same bucket for class " << owner->GetClass());
+#endif
 }
 
 
@@ -1181,6 +1188,9 @@ PObject * PHashTableInfo::RemoveElement(const PObject & key)
         element->m_next->m_prev = element->m_prev;
       }
     }
+#if PTRACING
+    --list.m_size;
+#endif
 
     obj = element->m_data;
     if (deleteKeys)
@@ -1320,7 +1330,7 @@ void PHashTable::CloneContents(const PHashTable * hash)
     PObject * data = lastElement->m_data;
     if (data != NULL)
       data = data->Clone();
-    hashTable->AppendElement(lastElement->m_key->Clone(), data);
+    hashTable->AppendElement(lastElement->m_key->Clone(), data PTRACE_PARAM(, this));
   }
 }
 
@@ -1382,8 +1392,9 @@ PINDEX PAbstractSet::Append(PObject * obj)
     return P_MAX_INDEX;
   }
 
-  reference->size++;
-  return hashTable->AppendElement(obj, NULL);
+  ++reference->size;
+  hashTable->AppendElement(obj, NULL PTRACE_PARAM(, this));
+  return reference->size;
 }
 
 
@@ -1572,8 +1583,8 @@ PObject * PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
   else {
     PHashTableElement * element = hashTable->GetElementAt(key);
     if (element == NULL) {
-      hashTable->AppendElement(key.Clone(), obj);
-      reference->size++;
+      ++reference->size;
+      hashTable->AppendElement(key.Clone(), obj PTRACE_PARAM(, this));
     }
     else if (element->m_data != obj) {
       if (reference->deleteObjects) 
