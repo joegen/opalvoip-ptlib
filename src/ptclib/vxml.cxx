@@ -1513,6 +1513,14 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
 
 PCaselessString PVXMLSession::GetVar(const PString & varName) const
 {
+  // Check for literal
+  if (varName[0] == '\'' || varName[0] == '"') {
+    PINDEX end = varName.GetLength() - 1;
+    if (varName[end] == '\'' || varName[end] == '"')
+      --end;
+    return varName(1, end);
+  }
+
   PString fullVarName = varName;
   if (varName.Find('.') == P_MAX_INDEX)
     fullVarName = m_variableScope+'.'+varName;
@@ -1646,6 +1654,7 @@ PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 
   delete m_grammar;
   m_grammar = grammar;
+  m_bargingIn = false;
 
   PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
   return true;
@@ -1961,19 +1970,11 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
     return false;
   }
 
-  // Find var name
-  PString varname = condition.Left(location);
-
-  // Find value, skip '=' signs
-  PString cond_value = condition.Mid(location + 3);
-
-  // check if var value equals value from condition and if not skip child elements
-  PCaselessString value = GetVar(varname);
-  if (value == cond_value) {
-    PTRACE(3, "VXML\tCondition matched \"" << condition << '"');
+  if (GetVar(condition.Left(location).Trim()) == GetVar(condition.Mid(location + 2).Trim())) {
+    PTRACE(4, "VXML\tCondition matched \"" << condition << '"');
   }
   else {
-    PTRACE(3, "VXMLSess\t\tCondition \"" << condition << "\"did not match, " << varname << " == " << value);
+    PTRACE(4, "VXMLSess\t\tCondition \"" << condition << "\"did not match");
     if (element.HasSubObjects())
       // Step to last child element (really last element is NULL?)
       m_currentNode = element.GetElement(element.GetSize() - 1);
