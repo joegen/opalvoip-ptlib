@@ -1373,9 +1373,9 @@ dnl MSWIN_DISPLAY    openssl64,Open SSL (64 bit)
 dnl MSWIN_CHECK_FILE openssl64,include\openssl\ssl.h,P_SSL_WIN64=1
 dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
 dnl MSWIN_CHECK_DIR  openssl64,..\openssl64\
-dnl MSWIN_CHECK_DIR  openssl,..\external\openssl64\
-dnl MSWIN_CHECK_DIR  openssl,\openssl64\
-dnl MSWIN_CHECK_DIR  openssl,\libs\openssl64\
+dnl MSWIN_CHECK_DIR  openssl64,..\external\openssl64\
+dnl MSWIN_CHECK_DIR  openssl64,\openssl64\
+dnl MSWIN_CHECK_DIR  openssl64,\libs\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,%ProgramFiles%\OpenSSL-Win64\
 dnl MSWIN_CHECK_DIR  openssl64,%ProgramW6432%\OpenSSL-Win64\
 dnl MSWIN_CHECK_DIR  openssl64,%ProgramFiles%\OpenSSL64\
