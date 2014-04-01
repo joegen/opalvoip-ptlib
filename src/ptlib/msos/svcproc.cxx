@@ -836,12 +836,8 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           break;
 
         default :
-          if (wParam >= LogLevelBaseMenuID+PSystemLog::Fatal && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels) {
+          if (wParam >= LogLevelBaseMenuID+PSystemLog::Fatal && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels)
             SetLogLevel((PSystemLog::Level)(wParam-LogLevelBaseMenuID));
-#if PTRACING
-            PTrace::SetLevel((UINT)wParam-LogLevelBaseMenuID-PSystemLog::Warning);
-#endif
-          }
           else if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds) {
             const char * cmdname = ServiceCommandNames[wParam-SvcCmdBaseMenuID];
             if (wParam == SvcCmdBaseMenuID+SvcCmdVersion ||

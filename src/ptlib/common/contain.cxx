@@ -1181,14 +1181,26 @@ PObject::Comparison PString::Compare(const PObject & obj) const
 
 PINDEX PString::HashFunction() const
 {
-  // Hash function from "Data Structures and Algorithm Analysis in C++" by
-  // Mark Allen Weiss, with limit of only executing over first 8 characters to
-  // increase speed when dealing with large strings.
+  /* Hash function from "Data Structures and Algorithm Analysis in C++" by
+     Mark Allen Weiss, with limit of only executing over at most the first and
+     last characters to increase speed when dealing with large strings. */
 
+  switch (m_length) {
+    case 0:
+      return 0;
+    case 1:
+      return tolower(theArray[0] & 0xff) % 127;
+  }
+
+  static const PINDEX MaxCount = 16;
+  PINDEX count = std::min(m_length / 2, MaxCount);
   PINDEX hash = 0;
-  for (PINDEX i = 0; i < 8 && theArray[i] != 0; i++)
+  PINDEX i;
+  for (i = 0; i < count; i++)
     hash = (hash << 5) ^ tolower(theArray[i] & 0xff) ^ hash;
-  return PABSINDEX(hash)%127;
+  for (i = m_length - count - 1; i < m_length; i++)
+    hash = (hash << 5) ^ tolower(theArray[i] & 0xff) ^ hash;
+  return PABSINDEX(hash) % 127;
 }
 
 
