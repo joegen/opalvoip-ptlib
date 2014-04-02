@@ -1697,10 +1697,17 @@ void PArgList::Shift(int sh)
 // PConfigArgs
 
 PConfigArgs::PConfigArgs(const PArgList & args)
-  : PArgList(args),
-    sectionName(config.GetDefaultSection()),
-    negationPrefix("no-")
+  : PArgList(args)
+  , m_config(new PConfig)
+  , m_sectionName(m_config->GetDefaultSection())
+  , m_negationPrefix("no-")
 {
+}
+
+
+PConfigArgs::~PConfigArgs()
+{
+  delete m_config;
 }
 
 
@@ -1732,10 +1739,10 @@ PINDEX PConfigArgs::GetOptionCount(const PString & option) const
     return count;
 
   // if user has specified "no-option", then ignore config file
-  if (PArgList::GetOptionCount(negationPrefix + option) > 0)
+  if (PArgList::GetOptionCount(m_negationPrefix + option) > 0)
     return 0;
 
-  return config.HasKey(sectionName, option) ? 1 : 0;
+  return m_config->HasKey(m_sectionName, option) ? 1 : 0;
 }
 
 
@@ -1768,13 +1775,13 @@ PString PConfigArgs::GetOptionString(const PString & option, const char * dflt) 
     return PArgList::GetOptionString(option, dflt);
 
   // if user has specified "no-option", then ignore config file
-  if (PArgList::HasOption(negationPrefix + option)) {
+  if (PArgList::HasOption(m_negationPrefix + option)) {
     if (dflt != NULL)
       return dflt;
     return PString();
   }
 
-  return config.GetString(sectionName, option, dflt != NULL ? dflt : "");
+  return m_config->GetString(m_sectionName, option, dflt != NULL ? dflt : "");
 }
 
 
@@ -1783,15 +1790,15 @@ void PConfigArgs::Save(const PString & saveOptionName)
   if (PArgList::GetOptionCount(saveOptionName) == 0)
     return;
 
-  config.DeleteSection(sectionName);
+  m_config->DeleteSection(m_sectionName);
 
   for (size_t i = 0; i < m_options.size(); i++) {
     PString optionName = m_options[i].m_name;
     if (m_options[i].m_count > 0 && optionName != saveOptionName) {
       if (!m_options[i].m_string.IsEmpty())
-        config.SetString(sectionName, optionName, m_options[i].m_string);
+        m_config->SetString(m_sectionName, optionName, m_options[i].m_string);
       else
-        config.SetBoolean(sectionName, optionName, true);
+        m_config->SetBoolean(m_sectionName, optionName, true);
     }
   }
 }
