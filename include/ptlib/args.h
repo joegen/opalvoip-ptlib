@@ -399,6 +399,8 @@ class PConfigArgs : public PArgList
     PConfigArgs(
       const PArgList & args   ///< Raw argument list.
     );
+
+    ~PConfigArgs();
   //@}
 
   /**@name Overrides from class PArgList */
@@ -462,31 +464,32 @@ class PConfigArgs : public PArgList
       */
     void SetSectionName(
       const PString & section ///< New section name 
-    ) { sectionName = section; }
+    ) { m_sectionName = section; }
 
     /**Get the PConfig section name for options.
       */
-    const PString & GetSectionName() const { return sectionName; }
+    const PString & GetSectionName() const { return m_sectionName; }
 
     /**Set the prefix for option negation.
        The default is "no-".
       */
     void SetNegationPrefix(
       const PString & prefix ///< New prefix string 
-    ) { negationPrefix = prefix; }
+    ) { m_negationPrefix = prefix; }
 
     /**Get the prefix for option negation.
        The default is "no-".
       */
-    const PString & GetNegationPrefix() const { return negationPrefix; }
+    const PString & GetNegationPrefix() const { return m_negationPrefix; }
   //@}
 
 
   protected:
     PString CharToString(char ch) const;
-    PConfig config;
-    PString sectionName;
-    PString negationPrefix;
+
+    PConfig * m_config;
+    PString   m_sectionName;
+    PString   m_negationPrefix;
 };
 
 #endif // P_CONFIG_FILE
