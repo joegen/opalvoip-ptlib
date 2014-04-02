@@ -649,65 +649,6 @@ BYTE PIPSocket::Address::Byte4() const
 }
 
 
-//////////////////////////////////////////////////////////////////////////////
-// PIPSocket
-
-PBoolean P_IsOldWin95()
-{
-  static int state = -1;
-  if (state < 0) {
-    state = 1;
-    OSVERSIONINFO info;
-    info.dwOSVersionInfoSize = sizeof(info);
-    if (GetVersionEx(&info)) {
-      state = 0;
-      if (info.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS && info.dwBuildNumber < 1000)
-        state = 1;
-    }
-  }
-  return state != 0;
-}
-
-
-PBoolean PIPSocket::IsLocalHost(const PString & hostname)
-{
-  if (hostname.IsEmpty())
-    return true;
-
-  if (hostname *= "localhost")
-    return true;
-
-  // lookup the host address using inet_addr, assuming it is a "." address
-  Address addr(hostname);
-  if (addr.IsLoopback())  // Is 127.0.0.1 or ::1
-    return true;
-
-  if (addr == 0) {
-    if (!GetHostAddress(hostname, addr))
-      return false;
-  }
-
-  // Seb: Should check that it's really IPv4 aware.
-  struct hostent * host_info = ::gethostbyname(GetHostName());
-
-  if (P_IsOldWin95())
-    return addr == *(struct in_addr *)host_info->h_addr_list[0];
-
-  for (PINDEX i = 0; host_info->h_addr_list[i] != NULL; i++) {
-#if P_HAS_IPV6
-    if (host_info->h_length == 16) {
-      if (addr == *(struct in6_addr *)host_info->h_addr_list[i])
-        return true;
-    }
-    else
-#endif
-    if (addr == *(struct in_addr *)host_info->h_addr_list[i])
-      return true;
-  }
-  return false;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class PIPRouteTable
