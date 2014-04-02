@@ -750,15 +750,9 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     host_info = ::gethostbyaddr(addr.GetPointer(), addr.GetSize(), PF_INET);
     localErrNo = h_errno;
 
-#endif
+#endif // P_GETHOSTBYNAME_R
 
-#if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
-    extern PBoolean P_IsOldWin95();
-    if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
-      host_info->h_addr_list[1] = NULL;
-#endif
-
-#endif
+#endif // Operating system
 
     mutex.Wait();
 
@@ -1081,6 +1075,34 @@ PString PIPSocket::GetHostName()
     return "localhost";
   name[sizeof(name)-1] = '\0';
   return name;
+}
+
+
+PBoolean PIPSocket::IsLocalHost(const PString & hostname)
+{
+  if (hostname.IsEmpty())
+    return true;
+
+  if (hostname *= "localhost")
+    return true;
+
+  Address addr(0);
+  if (!GetHostAddress(hostname, addr))
+    return false;
+
+  if (addr.IsLoopback())  // Is 127.0.0.1 or ::1
+    return true;
+
+  InterfaceTable table;
+  if (!GetInterfaceTable(table, true))
+    return false;
+
+  for (PINDEX i = 0; i < table.GetSize(); ++i) {
+    if (table[i].GetAddress() == addr)
+      return true;
+  }
+
+  return false;
 }
 
 
