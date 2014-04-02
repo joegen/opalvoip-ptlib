@@ -46,6 +46,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vidtest", "samples\vidtest\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Audio Test", "samples\audio\audio_2012.vcxproj", "{49F24456-6B80-42C8-88C0-CB30C5E9CF54}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Network Interfaces", "samples\netif\netif_2012.vcxproj", "{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -299,6 +301,18 @@ Global
 		{49F24456-6B80-42C8-88C0-CB30C5E9CF54}.Release|Win32.Build.0 = Release|Win32
 		{49F24456-6B80-42C8-88C0-CB30C5E9CF54}.Release|x64.ActiveCfg = Release|x64
 		{49F24456-6B80-42C8-88C0-CB30C5E9CF54}.Release|x64.Build.0 = Release|x64
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Debug|Win32.ActiveCfg = Debug|Win32
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Debug|Win32.Build.0 = Debug|Win32
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Debug|x64.ActiveCfg = Debug|x64
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Debug|x64.Build.0 = Debug|x64
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.No Trace|Win32.Build.0 = No Trace|Win32
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.No Trace|x64.ActiveCfg = No Trace|x64
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.No Trace|x64.Build.0 = No Trace|x64
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Release|Win32.ActiveCfg = Release|Win32
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Release|Win32.Build.0 = Release|Win32
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Release|x64.ActiveCfg = Release|x64
+		{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

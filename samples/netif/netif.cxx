@@ -129,14 +129,25 @@ void NetTest::Main()
   cout << endl;
 
 
-  const PArgList & args = GetArguments();
-  for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
-    PIPSocket::Address addr(args[arg]);
-    if (addr.IsValid())
-      cout << "Interface used for " << addr
-           << " is " << PIPSocket::GetRouteInterfaceAddress(addr) << endl;
-    else
-      cout << "Invalid IP address \"" << args[arg] << '"' << endl;
+  PArgList & args = GetArguments();
+  args.Parse("l");
+
+  if (args.HasOption('l')) {
+    for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
+      PSimpleTimer start;
+      bool result = PIPSocket::IsLocalHost(args[arg]);
+      cout << args[arg] << " is " << (result ? "local" : "remote") << " - " << start.GetElapsed() << " seconds" << endl;
+    }
+  }
+  else {
+    for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
+      PIPSocket::Address addr(args[arg]);
+      if (addr.IsValid())
+        cout << "Interface used for " << addr
+             << " is " << PIPSocket::GetRouteInterfaceAddress(addr) << endl;
+      else
+        cout << "Invalid IP address \"" << args[arg] << '"' << endl;
+    }
   }
 }
 
