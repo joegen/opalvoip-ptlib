@@ -2120,7 +2120,7 @@ __inline PWideString & PWideString::operator=(const char        * str) { PWCharA
    All of the standard stream I/O operators, manipulators etc will operate on
    the PStringStream class.
  */
-class PStringStream : public PString, public P_IOSTREAM
+class PStringStream : public PString, public std::iostream
 {
   PCLASSINFO(PStringStream, PString);
 
@@ -2232,7 +2232,10 @@ class PStringStream : public PString, public P_IOSTREAM
     virtual void AssignContents(const PContainer & cont);
 
   private:
-    PStringStream(int, const PStringStream &) : P_IOSTREAM(cout.rdbuf()) { }
+    PStringStream(int, const PStringStream &)
+      : std::iostream(cout.rdbuf())
+    {
+    }
 
     class Buffer : public streambuf {
       public:

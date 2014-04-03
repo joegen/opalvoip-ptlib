@@ -139,7 +139,7 @@ PChannelStreamBuffer::pos_type PChannelStreamBuffer::seekpos(pos_type pos, ios_b
 
 
 PChannel::PChannel()
-  : P_DISABLE_MSVC_WARNINGS(4355, P_IOSTREAM(new PChannelStreamBuffer(this)))
+  : P_DISABLE_MSVC_WARNINGS(4355, std::iostream(new PChannelStreamBuffer(this)))
   , readTimeout(PMaxTimeInterval)
   , writeTimeout(PMaxTimeInterval)
 {

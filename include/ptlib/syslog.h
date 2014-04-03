@@ -44,7 +44,7 @@ class PSystemLogTarget;
     To send messages to the system error log, the PSYSTEMLOG macro should be used. 
   */
 
-class PSystemLog : public PObject, public P_IOSTREAM
+class PSystemLog : public PObject, public std::ostream
 {
     PCLASSINFO(PSystemLog, PObject);
   public:
