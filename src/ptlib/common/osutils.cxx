@@ -209,28 +209,29 @@ PTHREAD_MUTEX_RECURSIVE_NP
   {
     InitMutex();
 
-    const char * env = getenv("PWLIB_TRACE_STARTUP"); // Backward compatibility test
-    if (env == NULL)
-      env = getenv("PTLIB_TRACE_STARTUP"); // Backward compatibility test
-    if (env != NULL)
-      m_thresholdLevel = atoi(env);
+    const char * levelEnv = getenv("PTLIB_TRACE_LEVEL");
+    if (levelEnv == NULL) {
+      levelEnv = getenv("PWLIB_TRACE_LEVEL");
+      if (levelEnv == NULL) {
+        levelEnv = getenv("PTLIB_TRACE_STARTUP"); // Backward compatibility test
+        if (levelEnv == NULL)
+          levelEnv = getenv("PWLIB_TRACE_STARTUP"); // Backward compatibility test
+      }
+    }
 
-    env = getenv("PWLIB_TRACE_LEVEL");
-    if (env == NULL)
-      env = getenv("PTLIB_TRACE_LEVEL");
-    if (env != NULL)
-      m_thresholdLevel = atoi(env);
+    const char * fileEnv = getenv("PTLIB_TRACE_FILE");
+    if (fileEnv == NULL)
+      fileEnv = getenv("PWLIB_TRACE_FILE");
 
-    env = getenv("PWLIB_TRACE_OPTIONS");
-    if (env == NULL)
-      env = getenv("PTLIB_TRACE_OPTIONS");
-    if (env != NULL)
-      AdjustOptions(atoi(env), UINT_MAX);
+    const char * optEnv = getenv("PWLIB_TRACE_OPTIONS");
+    if (optEnv == NULL)
+      optEnv = getenv("PTLIB_TRACE_OPTIONS");
 
-    env = getenv("PWLIB_TRACE_FILE");
-    if (env == NULL)
-      env = getenv("PTLIB_TRACE_FILE");
-    OpenTraceFile(env);
+    if (levelEnv != NULL || fileEnv != NULL || optEnv != NULL)
+      InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel,
+                         fileEnv,
+                         NULL,
+                         optEnv != NULL ? atoi(optEnv) : m_options);
   }
 
   ~PTraceInfo()
@@ -290,7 +291,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   bool HasOption(unsigned options) const { return (m_options & options) != 0; }
 
-  void OpenTraceFile(const char * newFilename)
+  void OpenTraceFile(const char * newFilename, bool outputFirstLog)
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
@@ -301,7 +302,6 @@ PTHREAD_MUTEX_RECURSIVE_NP
     PStringArray tokens = m_filename.Tokenise(',');
 
     AdjustOptions(0, SystemLogStream);
-    bool outputFirstLog = m_thresholdLevel > 1;
 
     if (m_filename == "stderr")
       SetStream(&cerr);
@@ -536,7 +536,7 @@ void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const
     m_rolloverPattern = DefaultRollOverPattern;
   m_lastRotate = GetRotateVal(options);
   AdjustOptions(options, UINT_MAX);
-  OpenTraceFile(filename);
+  OpenTraceFile(filename, level > 0);
   m_thresholdLevel = level;
 }
 
@@ -617,7 +617,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
       unsigned rotateVal = GetRotateVal(m_options);
       if (rotateVal != m_lastRotate) {
         m_lastRotate = rotateVal;
-        OpenTraceFile(m_filename);
+        OpenTraceFile(m_filename, true);
         if (m_stream == NULL)
           SetStream(&cerr);
         if (threadInfo == NULL)
