@@ -2379,27 +2379,27 @@ PStringStream::Buffer::pos_type PStringStream::Buffer::seekpos(pos_type pos, ios
 
 
 PStringStream::PStringStream()
-  : P_DISABLE_MSVC_WARNINGS(4355, P_IOSTREAM(new PStringStream::Buffer(*this, 0)))
+  : P_DISABLE_MSVC_WARNINGS(4355, std::iostream(new PStringStream::Buffer(*this, 0)))
 {
 }
 
 
 PStringStream::PStringStream(PINDEX fixedBufferSize)
-  : P_DISABLE_MSVC_WARNINGS(4355, P_IOSTREAM(new PStringStream::Buffer(*this, fixedBufferSize)))
+  : P_DISABLE_MSVC_WARNINGS(4355, std::iostream(new PStringStream::Buffer(*this, fixedBufferSize)))
 {
 }
 
 
 PStringStream::PStringStream(const PString & str)
   : PString(str)
-  , P_DISABLE_MSVC_WARNINGS(4355, P_IOSTREAM(new PStringStream::Buffer(*this, 0)))
+  , P_DISABLE_MSVC_WARNINGS(4355, std::iostream(new PStringStream::Buffer(*this, 0)))
 {
 }
 
 
 PStringStream::PStringStream(const char * cstr)
   : PString(cstr)
-  , P_DISABLE_MSVC_WARNINGS(4355, P_IOSTREAM(new PStringStream::Buffer(*this, 0)))
+  , P_DISABLE_MSVC_WARNINGS(4355, std::iostream(new PStringStream::Buffer(*this, 0)))
 {
 }
 

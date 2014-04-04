@@ -225,7 +225,8 @@ PINLINE PChannelStreamBuffer &
           PChannelStreamBuffer::operator=(const PChannelStreamBuffer & sbuf)
   { channel = sbuf.channel; return *this; }
 
-PINLINE PChannel::PChannel(const PChannel &) : P_IOSTREAM(cout.rdbuf())
+PINLINE PChannel::PChannel(const PChannel &)
+  : std::iostream(cout.rdbuf())
   { PAssertAlways("Cannot copy channels"); }
 
 PINLINE PChannel & PChannel::operator=(const PChannel &)
