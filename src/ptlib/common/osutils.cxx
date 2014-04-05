@@ -2127,8 +2127,8 @@ PString PProcess::GetLibVersion()
 #if P_CONFIG_FILE
 void PProcess::SetConfigurationPath(const PString & path)
 {
-  configurationPaths = path.Tokenise(";:", false);
-  PTRACE(3, "PTlib", "Configuration path set to " << setfill(';') << configurationPaths);
+  configurationPaths = path.Tokenise(PPATH_SEPARATOR, false);
+  PTRACE(3, "PTlib", "Configuration path set to " << setfill(PPATH_SEPARATOR) << configurationPaths);
 }
 #endif
 
