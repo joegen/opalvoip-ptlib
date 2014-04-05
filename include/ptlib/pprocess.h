@@ -428,8 +428,9 @@ class PProcess : public PThread
     /**Set the default file or set of directories to search for use in PConfig.
        To find the .ini file for use in the default PConfig() instance, this
        explicit filename is used, or if it is a set of directories separated
-       by either ':' or ';' characters, then the application base name postfixed
-       with ".ini" is searched for through those directories.
+       by either ':' or ';' characters, depending on platform, then the
+       application base name postfixed with ".ini" is searched for through
+       those directories.
 
        The search is actually done when the GetConfigurationFile() is called,
        this function only sets the internal variable.
