@@ -48,10 +48,12 @@
 
 #ifdef _WIN32
 #define PDIR_SEPARATOR '\\'
+#define PPATH_SEPARATOR ';'  // As used in PATH environment variable
 const PINDEX P_MAX_PATH = _MAX_PATH;
 typedef PCaselessString PFilePathString;
 #else
 #define PDIR_SEPARATOR '/'
+#define PPATH_SEPARATOR ':'  // As used in PATH environment variable
 #define P_MAX_PATH    (_POSIX_PATH_MAX)
 typedef PString PFilePathString;
 #endif

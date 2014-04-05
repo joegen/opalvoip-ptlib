@@ -56,20 +56,6 @@
 #  endif
 #endif
 
-#ifdef  _WIN32
-#define PATH_SEP   ';'
-#else
-#define PATH_SEP   ':'
-#endif
-
-#ifndef PDIR_SEPARATOR 
-#ifdef _WIN32
-#define PDIR_SEPARATOR '\\'
-#else
-#define PDIR_SEPARATOR '/'
-#endif
-#endif
-
 #define ENV_PTLIB_PLUGIN_DIR  "PTLIBPLUGINDIR"
 #define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
 
@@ -163,7 +149,7 @@ PPluginManager & PPluginManager::GetPluginManager()
 
 void PPluginManager::SetDirectories(const PString & dirs)
 {
-  SetDirectories(dirs.Tokenise(PATH_SEP, false)); // split into directories on correct seperator
+  SetDirectories(dirs.Tokenise(PPATH_SEPARATOR, false)); // split into directories on correct seperator
 }
 
 
@@ -186,7 +172,7 @@ void PPluginManager::AddDirectory(const PDirectory & dir)
 
 void PPluginManager::LoadDirectories()
 {
-  PTRACE(4, "PLUGIN\tEnumerating plugin directories " << setfill(PATH_SEP) << m_directories);
+  PTRACE(4, "PLUGIN\tEnumerating plugin directories " << setfill(PPATH_SEPARATOR) << m_directories);
   for (PList<PDirectory>::iterator it = m_directories.begin(); it != m_directories.end(); ++it)
     LoadDirectory(*it);
 }
