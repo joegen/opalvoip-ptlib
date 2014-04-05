@@ -1620,6 +1620,9 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
         mask = Address(AF_INET6, sizeof(sockaddr_in6), ifa->ifa_netmask);
       }
 #endif
+      else
+        continue;
+
       if (addr.IsAny() || addr.IsBroadcast())
         addr = GetInvalidAddress();
       list.Append(PNEW InterfaceEntry(ifa->ifa_name, addr, mask, macAddr));
