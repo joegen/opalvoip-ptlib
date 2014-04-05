@@ -33,7 +33,8 @@ class PPluginManager : public PObject
     // Add a directory to the list of plugin directories (used by OPAL)
     void AddDirectory(const PDirectory & dir);
 
-    /* Set the list of plugin directories using ':' (or ';' for Windows) separated string. */
+    /* Set the list of plugin directories using ':' or ';' (depending on
+       platform) separated string. */
     void SetDirectories(const PString & dirs);
 
     /* Set the list of plugin directories. */
