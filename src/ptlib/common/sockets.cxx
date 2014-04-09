@@ -2860,8 +2860,8 @@ void PIPSocket::PortRange::Set(unsigned newBase, unsigned newMax, unsigned range
 
     if (newMax <= newBase)
       newMax = newBase + range;
-    if (newMax > 65535)
-      newMax = 65535;
+    if (newMax > 65530) // Room for something to get 5 consecutive ports.
+      newMax = 65530;
   }
 
   m_mutex.Wait();
@@ -2929,6 +2929,12 @@ bool PIPSocket::PortRange::Listen(PIPSocket ** sockets,
     return true;
   }
 
+  if (numSockets >= (m_max - m_base)) {
+    PTRACE(2, NULL, PTraceModule(), "Listen failed, not enough room from "
+           << m_base << " to " << m_max << " for " << numSockets << " sockets");
+    return false;
+  }
+
   /*
     Use a random port pair base number in the specified range for
     the creation of the RTP port pairs (this used to avoid issues with multiple
@@ -2951,7 +2957,7 @@ bool PIPSocket::PortRange::Listen(PIPSocket ** sockets,
       return true;
 
     nextPort += (WORD)numSockets;
-    if (nextPort >= m_max)
+    if ((nextPort + numSockets) >= m_max)
       nextPort = m_base;
   } while (nextPort != firstPort);
 
