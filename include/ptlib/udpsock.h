@@ -133,6 +133,7 @@ class PUDPSocket : public PIPDatagramSocket
 
     // Normally, one would expect these to be protected, but they are just so darn
     // useful that it's just easier if they are public
+    virtual bool InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort);
     virtual void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
     virtual void InternalGetSendAddress(PIPSocketAddressAndPort & addr) const;
     virtual void InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & addr);
