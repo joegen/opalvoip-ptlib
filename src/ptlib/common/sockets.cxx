@@ -2618,12 +2618,20 @@ bool PUDPSocket::InternalListen(const Address & bindAddr,
 }
 
 
+bool PUDPSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort)
+{
+  if (!PIPDatagramSocket::InternalReadFrom(slices, sliceCount, ipAndPort))
+    return false;
+
+  InternalSetLastReceiveAddress(ipAndPort);
+  return true;
+}
+
+
 PBoolean PUDPSocket::Read(void * buf, PINDEX len)
 {
-  PIPSocketAddressAndPort ap;
-  bool stat = PIPDatagramSocket::ReadFrom(buf, len, ap);
-  InternalSetLastReceiveAddress(ap);
-  return stat;
+  PIPSocketAddressAndPort dummy;
+  return ReadFrom(buf, len, dummy);
 }
 
 
