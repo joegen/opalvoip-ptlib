@@ -44,6 +44,13 @@
 
 #include <math.h>
 
+#if P_DIRECTSOUND
+  #include <ptlib/msos/ptlib/directsound.h>
+#endif
+
+#ifdef _WIN32
+  #include <ptlib/msos/ptlib/sound_win32.h>
+#endif
 
 class PSoundChannelNull : public PSoundChannel
 {
@@ -214,32 +221,24 @@ PStringArray PSoundChannel::GetDeviceNames(PSoundChannel::Directions dir, PPlugi
 
 PString PSoundChannel::GetDefaultDevice(Directions dir)
 {
+  PCaselessString device;
+
+#if P_DIRECTSOUND
+  if (!(device = PSoundChannelDirectSound::GetDefaultDevice(dir)).IsEmpty())
+    return device;
+#endif
+
 #ifdef _WIN32
-  RegistryKey registry("HKEY_CURRENT_USER\\Software\\Microsoft\\Multimedia\\Sound Mapper",
-                       RegistryKey::ReadOnly);
-
-  PString str;
-
-  if (dir == Player) {
-    if (registry.QueryValue("ConsoleVoiceComPlayback", str) )
-      return str;
-    if (registry.QueryValue("Playback", str))
-      return str;
-  }
-  else {
-    if (registry.QueryValue("ConsoleVoiceComRecord", str))
-      return str;
-    if (registry.QueryValue("Record", str))
-      return str;
-  }
+  if (!(device = PSoundChannelWin32::GetDefaultDevice(dir)).IsEmpty())
+    return device;
 #endif
 
   PStringArray devices = GetDeviceNames(dir);
 
   for (PINDEX i = 0; i < devices.GetSize(); ++i) {
-    PCaselessString device = devices[i];
+    device = devices[i];
     if (device != PPlugin_PSoundChannel_NullAudio::ServiceName() && device != "*.wav" && device.NumCompare("Tones") != EqualTo)
-      return devices[i];
+      break;
   }
 
   return PPlugin_PSoundChannel_NullAudio::ServiceName();
