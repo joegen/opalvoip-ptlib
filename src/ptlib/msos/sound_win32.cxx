@@ -621,6 +621,12 @@ static bool GetWaveInDeviceName(UINT id, PString & name)
 }
 
 
+PString PSoundChannelWin32::GetDefaultDevice(Directions dir)
+{
+  return "Default";
+}
+
+
 PStringArray PSoundChannelWin32::GetDeviceNames(Directions dir)
 {
   PStringArray devices;
