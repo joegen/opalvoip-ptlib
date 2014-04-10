@@ -1814,7 +1814,8 @@ PTLIB_MODULE_OPTION(
    [curses],
    [disable Curses (text mode windows) support],
    [ncurses], 
-   [],[],
+   [],
+   [-lncurses],
    [#include <ncurses.h>],
    [initscr()]
 )
