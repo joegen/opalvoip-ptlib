@@ -132,6 +132,7 @@ class PSoundChannelWin32: public PSoundChannel
  public:
     PSoundChannelWin32();
     ~PSoundChannelWin32();
+    static PString GetDefaultDevice(Directions dir);
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
     bool Open(const Params & params);
     PBoolean Setup();
