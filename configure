@@ -958,6 +958,7 @@ enable_ffvdev
 enable_appshare
 enable_shmvideo
 enable_curses
+with_curses_dir
 enable_sdl
 enable_gstreamer
 enable_odbc
@@ -1728,6 +1729,8 @@ Optional Packages:
                           location for Open LDAP support
   --with-expat-dir=<dir>  location for expat XML support
   --with-v8-dir=<dir>     location for V8 Javascript script support
+  --with-curses-dir=<dir> location for disable Curses (text mode windows)
+                          support
   --with-odbc-dir=<dir>   location for ODBC database support
   --with-odbc-dir=<dir>   location for unixODBC database support
   --with-directx-includedir=DIR
@@ -14755,6 +14758,16 @@ fi
 
       if test "x$CURSES_SYSTEM" = "xyes" ; then
 
+# Check whether --with-curses-dir was given.
+if test "${with_curses_dir+set}" = set; then :
+  withval=$with_curses_dir;
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for disable Curses (text mode windows) support" >&5
+$as_echo "$as_me: Using directory $withval for disable Curses (text mode windows) support" >&6;}
+                  CURSES_CFLAGS="-I$withval/include "
+                  CURSES_LIBS="-L$withval/lib -lncurses"
+
+else
+
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CURSES" >&5
 $as_echo_n "checking for CURSES... " >&6; }
@@ -14813,18 +14826,26 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$CURSES_PKG_ERRORS" >&5
 
-	usable=no
+
+                     CURSES_CFLAGS=""
+                     CURSES_LIBS="-lncurses"
+
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	usable=no
+
+                     CURSES_CFLAGS=""
+                     CURSES_LIBS="-lncurses"
+
 
 else
 	CURSES_CFLAGS=$pkg_cv_CURSES_CFLAGS
 	CURSES_LIBS=$pkg_cv_CURSES_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+
+fi
 
 fi
 
