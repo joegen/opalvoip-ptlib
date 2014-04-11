@@ -615,7 +615,6 @@
 #undef P_V8
 #undef P_V8_WIN64
 #undef P_V8_WIN32
-#undef P_V8_NEED_ISOLATE
 #undef P_V8_DEBUG_LIBS
 
 #if (defined(P_V8_WIN64) &&  defined(P_64BIT)) || \

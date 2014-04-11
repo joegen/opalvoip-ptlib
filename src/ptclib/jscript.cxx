@@ -36,6 +36,8 @@
 
 #if P_V8
 
+// Requires version SVN tag http://v8.googlecode.com/svn/tags/3.26.11
+
 #pragma message("JavaScript support enabled")
 
 #ifdef _MSC_VER
@@ -57,46 +59,55 @@
 
 #define PTraceModule() "JavaScript"
 
-#if P_V8_NEED_ISOLATE
-  #define V8_HANDLE_SCOPE(variable, isolate) v8::HandleScope variable(isolate)
-  #define V8_NEW(cls, isolate)               v8::cls::New(isolate)
-#else
-  #define V8_HANDLE_SCOPE(variable, isolate) v8::HandleScope variable
-  #define V8_NEW(cls, isolate)               v8::cls::New()
-#endif
 
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
 
 
-struct PJavaScript::Private {
+struct PJavaScript::Private
+{
   v8::Isolate * m_isolate;
   v8::Handle<v8::Context> m_context;
 
+  Private()
+    : m_isolate(v8::Isolate::GetCurrent())
+  {
+    // V8 is full of globals, so we have to lock it. Sigh....
+    v8::Locker locker(m_isolate);
+
+    // create a V8 handle scope
+    v8::HandleScope handleScope(m_isolate);
+
+    // create a V8 context
+    m_context = v8::Context::New(m_isolate);
+
+    // make context scope available
+    v8::Context::Scope contextScope(m_context);
+  }
 
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
   {
-    V8_HANDLE_SCOPE(handleScope, m_isolate);
+    v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Value> value;
     
     // set flags if array access
     if (name[0] == '[')
       value = object->Get(name.Mid(1).AsInteger());
     else
-      value = object->Get(v8::String::New((const char *)name));
+      value = object->Get(v8::String::NewFromUtf8(m_isolate, name));
 
-    return handleScope.Close(value);
+    return value;
   }
   
   
   void SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
   {
-    V8_HANDLE_SCOPE(handleScope, m_isolate);
+    v8::HandleScope handleScope(m_isolate);
     
     // set flags if array access
     if (name[0] == '[')
       object->Set(name.Mid(1).AsInteger(), value);
     else
-      object->Set(v8::String::New((const char *)name), value);
+      object->Set(v8::String::NewFromUtf8(m_isolate, name), value);
   }
 };
 
@@ -109,19 +120,6 @@ struct PJavaScript::Private {
 PJavaScript::PJavaScript()
   : m_private(new Private)
 {
-  m_private->m_isolate = v8::Isolate::GetCurrent();
-
-  // V8 is full of globals, so we have to lock it. Sigh....
-  v8::Locker locker(m_private->m_isolate);
-
-  // create a V8 handle scope
-  V8_HANDLE_SCOPE(handleScope, m_private->m_isolate);
-
-  // create a V8 context
-  m_private->m_context = V8_NEW(Context, m_private->m_isolate);
-
-  // make context scope available
-  v8::Context::Scope contextScope(m_private->m_context);
 }
 
 
@@ -152,13 +150,13 @@ bool PJavaScript::Run(const char * text)
   v8::Locker locker(m_private->m_isolate);
 
   // create a V8 handle scope
-  V8_HANDLE_SCOPE(handleScope, m_private->m_isolate);
+  v8::HandleScope handleScope(m_private->m_isolate);
 
   // make context scope availabke
   v8::Context::Scope contextScope(m_private->m_context);
 
   // create V8 string to hold the source
-  v8::Handle<v8::String> source = v8::String::New(text);
+  v8::Handle<v8::String> source = v8::String::NewFromUtf8(m_private->m_isolate, text);
 
   // compile the source 
   v8::Handle<v8::Script> script = v8::Script::Compile(source);
@@ -173,8 +171,7 @@ bool PJavaScript::Run(const char * text)
     return false;
 
   // save return value
-  v8::String::AsciiValue ascii(result);
-  m_resultText = std::string(*ascii);
+  m_resultText = *v8::String::Utf8Value(result);
   PTRACE(1, "V8", "Returned '" << m_resultText << "'");
 
   return true;
@@ -223,7 +220,7 @@ PINDEX PJavaScript::ParseKey(const PString & name, PStringArray & tokens)
 bool PJavaScript::GetVar(const PString & key, PVarType & var)
 {
   v8::Locker locker(m_private->m_isolate);
-  V8_HANDLE_SCOPE(handleScope, m_private->m_isolate);
+  v8::HandleScope handleScope(m_private->m_isolate);
   v8::Context::Scope contextScope(m_private->m_context);
 
   PStringArray tokens;
@@ -290,22 +287,18 @@ bool PJavaScript::GetVar(const PString & key, PVarType & var)
   }
 
   if (value->IsString()) {
-    v8::String::AsciiValue ascii(value->ToString()); 
-    var = PVarType(PString(*ascii)); 
+    var = PVarType(PString(*v8::String::Utf8Value(value->ToString())));
     return true;
   }
 
-  v8::String::AsciiValue ascii(value);
-  std::string txt = std::string(*ascii);
-  PTRACE(5, "V8\tUnable to determine type of '" << key << "' = " << txt);
-
+  PTRACE(5, "V8\tUnable to determine type of '" << key << "' = " << *v8::String::Utf8Value(value));
   return false;
 }
 
 bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 {
   v8::Locker locker(m_private->m_isolate);
-  V8_HANDLE_SCOPE(handleScope, m_private->m_isolate);
+  v8::HandleScope handleScope(m_private->m_isolate);
   v8::Context::Scope contextScope(m_private->m_context);
 
   PStringArray tokens;
@@ -354,7 +347,7 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
       break;
 
     case PVarType::VarBoolean:
-      value = v8::Boolean::New(var.AsBoolean());
+      value = v8::Boolean::New(m_private->m_isolate, var.AsBoolean());
       break;
 
     case PVarType::VarChar:
@@ -362,19 +355,19 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
     case PVarType::VarFixedString:
     case PVarType::VarDynamicString:
     case PVarType::VarGUID:
-      value = v8::String::New(var.AsString());
+      value = v8::String::NewFromUtf8(m_private->m_isolate, var.AsString());
       break;
 
     case PVarType::VarInt8:
     case PVarType::VarInt16:
     case PVarType::VarInt32:
-      value = v8::Int32::New(var.AsInteger());
+      value = v8::Int32::New(m_private->m_isolate, var.AsInteger());
       break;
 
     case PVarType::VarUInt8:
     case PVarType::VarUInt16:
     case PVarType::VarUInt32:
-      value = v8::Uint32::New(var.AsUnsigned());
+      value = v8::Uint32::New(m_private->m_isolate, var.AsUnsigned());
       break;
 
     case PVarType::VarInt64:
@@ -384,7 +377,7 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
     case PVarType::VarFloatSingle:
     case PVarType::VarFloatDouble:
     case PVarType::VarFloatExtended:
-      value = v8::Number::New(var.AsFloat());
+      value = v8::Number::New(m_private->m_isolate, var.AsFloat());
       break;
 
     case PVarType::VarTime:
