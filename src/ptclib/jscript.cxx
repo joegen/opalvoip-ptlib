@@ -1,4 +1,5 @@
 /*
+
  * jscript.cxx
  *
  * Interface library for JavaScript interpreter
@@ -62,6 +63,21 @@
 
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
 
+#ifndef P_V8_API
+  #define P_V8_API 1
+#endif
+
+#if P_V8_API==1
+  #define ISOLATE_PARAM(var)
+  #define ISOLATE_NEW1(isolate, var) New(var)
+  #define ISOLATE_NEW2(isolate, var) New(var, isolate)
+  #define NewFromUtf8(isolate, str) New(str)
+#elif P_V8_API==2
+  #define ISOLATE_PARAM(var) var
+  #define ISOLATE_NEW1(isolate, var) New(isolate, var)
+  #define ISOLATE_NEW2(isolate, var) New(isolate, var)
+#endif
+
 
 struct PJavaScript::Private
 {
@@ -75,10 +91,10 @@ struct PJavaScript::Private
     v8::Locker locker(m_isolate);
 
     // create a V8 handle scope
-    v8::HandleScope handleScope(m_isolate);
+    v8::HandleScope handleScope(ISOLATE_PARAM(m_isolate));
 
     // create a V8 context
-    m_context = v8::Context::New(m_isolate);
+    m_context = v8::Context::New(ISOLATE_PARAM(m_isolate));
 
     // make context scope available
     v8::Context::Scope contextScope(m_context);
@@ -86,7 +102,7 @@ struct PJavaScript::Private
 
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
   {
-    v8::HandleScope handleScope(m_isolate);
+    v8::HandleScope handleScope(ISOLATE_PARAM(m_isolate));
     v8::Local<v8::Value> value;
     
     // set flags if array access
@@ -101,7 +117,7 @@ struct PJavaScript::Private
   
   void SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
   {
-    v8::HandleScope handleScope(m_isolate);
+    v8::HandleScope handleScope(ISOLATE_PARAM(m_isolate));
     
     // set flags if array access
     if (name[0] == '[')
@@ -150,7 +166,7 @@ bool PJavaScript::Run(const char * text)
   v8::Locker locker(m_private->m_isolate);
 
   // create a V8 handle scope
-  v8::HandleScope handleScope(m_private->m_isolate);
+  v8::HandleScope handleScope(ISOLATE_PARAM(m_private->m_isolate));
 
   // make context scope availabke
   v8::Context::Scope contextScope(m_private->m_context);
@@ -220,7 +236,7 @@ PINDEX PJavaScript::ParseKey(const PString & name, PStringArray & tokens)
 bool PJavaScript::GetVar(const PString & key, PVarType & var)
 {
   v8::Locker locker(m_private->m_isolate);
-  v8::HandleScope handleScope(m_private->m_isolate);
+  v8::HandleScope handleScope(ISOLATE_PARAM(m_private->m_isolate));
   v8::Context::Scope contextScope(m_private->m_context);
 
   PStringArray tokens;
@@ -298,7 +314,7 @@ bool PJavaScript::GetVar(const PString & key, PVarType & var)
 bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 {
   v8::Locker locker(m_private->m_isolate);
-  v8::HandleScope handleScope(m_private->m_isolate);
+  v8::HandleScope handleScope(ISOLATE_PARAM(m_private->m_isolate));
   v8::Context::Scope contextScope(m_private->m_context);
 
   PStringArray tokens;
@@ -347,7 +363,7 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
       break;
 
     case PVarType::VarBoolean:
-      value = v8::Boolean::New(m_private->m_isolate, var.AsBoolean());
+      value = v8::Boolean::ISOLATE_NEW1(m_private->m_isolate, var.AsBoolean());
       break;
 
     case PVarType::VarChar:
@@ -361,13 +377,13 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
     case PVarType::VarInt8:
     case PVarType::VarInt16:
     case PVarType::VarInt32:
-      value = v8::Int32::New(m_private->m_isolate, var.AsInteger());
+      value = v8::Int32::ISOLATE_NEW2(m_private->m_isolate, var.AsInteger());
       break;
 
     case PVarType::VarUInt8:
     case PVarType::VarUInt16:
     case PVarType::VarUInt32:
-      value = v8::Uint32::New(m_private->m_isolate, var.AsUnsigned());
+      value = v8::Uint32::ISOLATE_NEW2(m_private->m_isolate, var.AsUnsigned());
       break;
 
     case PVarType::VarInt64:
@@ -377,7 +393,7 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
     case PVarType::VarFloatSingle:
     case PVarType::VarFloatDouble:
     case PVarType::VarFloatExtended:
-      value = v8::Number::New(m_private->m_isolate, var.AsFloat());
+      value = v8::Number::ISOLATE_NEW1(m_private->m_isolate, var.AsFloat());
       break;
 
     case PVarType::VarTime:
