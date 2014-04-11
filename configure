@@ -11731,7 +11731,9 @@ $as_echo_n "checking for V8 Javascript script support usability... " >&6; }
 int
 main ()
 {
-int i = v8::HandleScope::NumberOfHandles()
+
+      v8::Isolate * isolate = v8::Isolate::GetCurrent();
+
   ;
   return 0;
 }
@@ -11778,8 +11780,8 @@ fi
 
    oldCPPFLAGS="$CPPFLAGS"
    CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript API needs Isolate" >&5
-$as_echo_n "checking V8 Javascript API needs Isolate... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript API version" >&5
+$as_echo_n "checking V8 Javascript API version... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <v8.h>
@@ -11788,7 +11790,8 @@ main ()
 {
 
          v8::Isolate * isolate;
-         v8::HandleScope::HandleScope scope(isolate);
+         const char * name;
+         v8::String::NewFromUtf8(isolate, name);
 
   ;
   return 0;
@@ -11806,7 +11809,7 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  $as_echo "#define P_V8_NEED_ISOLATE 1" >>confdefs.h
+  $as_echo "#define P_V8_API 2" >>confdefs.h
 
 
 fi
