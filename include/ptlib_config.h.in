@@ -615,12 +615,16 @@
 #undef P_V8
 #undef P_V8_WIN64
 #undef P_V8_WIN32
-#undef P_V8_NEW_STRING_API
+#undef P_V8_API
 #undef P_V8_DEBUG_LIBS
 
-#if (defined(P_V8_WIN64) &&  defined(P_64BIT)) || \
-    (defined(P_V8_WIN32) && !defined(P_64BIT))
+#if (defined(P_V8_WIN64) &&  defined(P_64BIT))
   #define P_V8 1
+  #define P_V8_API P_V8_WIN64
+#endif
+#if (defined(P_V8_WIN32) && !defined(P_64BIT))
+  #define P_V8 1
+  #define P_V8_API P_V8_WIN32
 #endif
 
 #if defined(_MSC_VER) && defined(P_V8)
