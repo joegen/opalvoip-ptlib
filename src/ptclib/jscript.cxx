@@ -74,6 +74,9 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
   #define ISOLATE_NEW1(isolate, var) New(var)
   #define ISOLATE_NEW2(isolate, var) New(var, isolate)
   #define NewFromUtf8(isolate, str) New(str)
+  struct EscapableHandleScope : HandleScope {
+    template <class T> V8_INLINE Local<T> Escape(Local<T> value) { return Close(value); }
+  };
 #elif P_V8_API==2
   #define ISOLATE_PARAM(var) var
   #define ISOLATE_NEW1(isolate, var) New(isolate, var)
@@ -104,7 +107,7 @@ struct PJavaScript::Private
 
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
   {
-    v8::HandleScope handleScope(ISOLATE_PARAM(m_isolate));
+    v8::EscapableHandleScope handleScope(ISOLATE_PARAM(m_isolate));
     v8::Local<v8::Value> value;
     
     // set flags if array access
@@ -113,7 +116,7 @@ struct PJavaScript::Private
     else
       value = object->Get(v8::String::NewFromUtf8(m_isolate, name));
 
-    return value;
+    return handleScope.Escape(value);
   }
   
   
