@@ -52,8 +52,10 @@
 #include <v8.h>
 
 #ifdef _MSC_VER
-  #pragma comment(lib, P_V8_LIBRARY1)
-  #pragma comment(lib, P_V8_LIBRARY2)
+  #pragma comment(lib, P_V8_BASE_LIB)
+  #pragma comment(lib, P_V8_SNAPSHOT_LIB)
+  #pragma comment(lib, P_V8_ICUUC_LIB)
+  #pragma comment(lib, P_V8_ICUI18N_LIB)
   #pragma comment(lib, "winmm.lib")
 #endif
 

@@ -616,7 +616,6 @@
 #undef P_V8_WIN64
 #undef P_V8_WIN32
 #undef P_V8_API
-#undef P_V8_DEBUG_LIBS
 
 #if (defined(P_V8_WIN64) &&  defined(P_64BIT))
   #define P_V8 1
@@ -630,12 +629,25 @@
 #if defined(_MSC_VER) && defined(P_V8)
   #pragma include_alias(<v8.h>, <@V8_DIR@/include/v8.h>)
 
-  #if defined(_DEBUG) && defined(P_V8_DEBUG_LIBS)
-    #define P_V8_LIBRARY1 "@V8_DIR@/build/Debug/lib/v8_snapshot.lib"
-    #define P_V8_LIBRARY2 "@V8_DIR@/build/Debug/lib/v8_base.lib"
+  #undef P_V8_DEBUG_BASE_LIB
+  #undef P_V8_DEBUG_SNAPSHOT_LIB
+  #undef P_V8_DEBUG_ICUUC_LIB
+  #undef P_V8_DEBUG_ICUI18N_LIB
+  #undef P_V8_RELEASE_BASE_LIB
+  #undef P_V8_RELEASE_SNAPSHOT_LIB
+  #undef P_V8_RELEASE_ICUUC_LIB
+  #undef P_V8_RELEASE_ICUI18N_LIB
+
+  #if defined(_DEBUG)
+    #define P_V8_BASE_LIB     P_V8_DEBUG_BASE_LIB
+    #define P_V8_SNAPSHOT_LIB P_V8_DEBUG_SNAPSHOT_LIB
+    #define P_V8_ICUUC_LIB    P_V8_DEBUG_ICUUC_LIB
+    #define P_V8_ICUI18N_LIB  P_V8_DEBUG_ICUI18N_LIB
   #else
-    #define P_V8_LIBRARY1 "@V8_DIR@/build/Release/lib/v8_snapshot.lib"
-    #define P_V8_LIBRARY2 "@V8_DIR@/build/Release/lib/v8_base.lib"
+    #define P_V8_BASE_LIB     P_V8_RELEASE_BASE_LIB
+    #define P_V8_SNAPSHOT_LIB P_V8_RELEASE_SNAPSHOT_LIB
+    #define P_V8_ICUUC_LIB    P_V8_RELEASE_ICUUC_LIB
+    #define P_V8_ICUI18N_LIB  P_V8_RELEASE_ICUI18N_LIB
   #endif
 #endif
 
