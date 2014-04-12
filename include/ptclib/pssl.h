@@ -366,6 +366,53 @@ class PSSLCertificate : public PObject
 };
 
 
+/** Create a "fingerprint" for SSL certificate.
+  */
+class PSSLCertificateFingerprint : public PObject
+{
+    PCLASSINFO(PSSLCertificateFingerprint, PObject);
+  public:
+    P_DECLARE_ENUM(HashType,
+      HashMd5,
+      HashSha1,
+      HashSha256,
+      HashSha512
+    );
+
+    /// Create empty fingerprint.
+    PSSLCertificateFingerprint();
+
+    /** Create fingerprint by parsing string in format: "type fingerprint"
+     */
+    PSSLCertificateFingerprint(
+      const PString& inStr    ///< Fingerprint string.
+    );
+
+    /** Create fingerprint with specified type from certificate.
+     */
+    PSSLCertificateFingerprint(
+      HashType type,                      ///< Hasing algorithm to use
+      const PSSLCertificate& certificate  ///< Certificate to fingerprint.
+    );
+
+    Comparison Compare(const PObject & other) const;
+
+    bool IsValid() const;
+
+    bool MatchForCertificate(
+      const PSSLCertificate& cert
+    ) const;
+
+    PString AsString() const;
+
+    HashType GetHash() const { return m_type; }
+
+  private:
+    HashType m_type;
+    PString  m_fingerprint;
+};
+
+
 /**Diffie-Hellman key exchange conteext.
    This class embodies a set of Diffie Helman key exchange parameters and
    context.
@@ -637,7 +684,8 @@ class PSSLContext : public PObject
     enum Method {
       SSLv23,
       SSLv3,
-      TLSv1
+      TLSv1,
+      DTLSv1
     };
 
     /**Create a new context for SSL channels.
@@ -741,6 +789,11 @@ class PSSLContext : public PObject
     /// Set the notifier for when SSL needs to get a password to unlock a private key.
     void SetPasswordNotifier(
       const PSSLPasswordNotifier & notifier   ///< Notifier to be called
+    );
+
+    /// Set TLS extension
+    bool SetExtension(
+      const char * extension
     );
 
   protected:
@@ -851,10 +904,29 @@ class PSSLChannel : public PIndirectChannel
 
     typedef PSSLContext::VerifyMode VerifyMode;
 
+    struct VerifyInfo
+    {
+      VerifyInfo(bool ok, const PSSLCertificate & cert) : m_ok(ok), m_peerCertificate(cert) { }
+      bool m_ok;
+      PSSLCertificate m_peerCertificate;
+    };
+    typedef PNotifierTemplate<VerifyInfo &> VerifyNotifier;
+    #define PDECLARE_SSLVerifyNotifier(cls, fn) PDECLARE_NOTIFIER2(PSSLChannel, cls, fn, PSSLChannel::VerifyInfo &)
+    #define PCREATE_SSLVerifyNotifier(fn) PCREATE_NOTIFIER2(fn, PSSLChannel::VerifyInfo &)
+
     /**Set certificate verification mode for connection.
       */
     void SetVerifyMode(
-      VerifyMode mode
+      VerifyMode mode,
+      const VerifyNotifier & notifier = VerifyNotifier()
+    );
+
+    /** Call back for certificate verification.
+        Default calls m_verifyNotifier if not NULL.
+      */
+    virtual bool OnVerify(
+      bool ok,
+      const PSSLCertificate & peerCertificate
     );
 
     /**Get the peer certificate, if there is one.
@@ -874,6 +946,8 @@ class PSSLChannel : public PIndirectChannel
 
   protected:
     void Construct(PSSLContext * ctx, PBoolean autoDel);
+    virtual bool InternalAccept();
+    virtual bool InternalConnect();
 
     /**This callback is executed when the Open() function is called with
        open channels. It may be used by descendent channels to do any
@@ -887,9 +961,53 @@ class PSSLChannel : public PIndirectChannel
     virtual PBoolean OnOpen();
 
   protected:
-    PSSLContext * m_context;
-    bool          m_autoDeleteContext;
-    ssl_st      * m_ssl;
+    PSSLContext  * m_context;
+    bool           m_autoDeleteContext;
+    ssl_st       * m_ssl;
+    VerifyNotifier m_verifyNotifier;
+};
+
+
+/**This class will start a secure SSL based channel.
+*/
+class PSSLChannelDTLS : public PSSLChannel
+{
+    PCLASSINFO(PSSLChannelDTLS, PSSLChannel)
+  public:
+    /**Create a new channel given the context.
+       If no context is given a default one is created.
+    */
+    PSSLChannelDTLS(
+      PSSLContext * context = NULL,   ///< Context for SSL channel
+      bool autoDeleteContext = false  ///< Flag for context to be automatically deleted.
+    );
+    PSSLChannelDTLS(
+      PSSLContext & context           ///< Context for SSL channel
+    );
+
+    /**Close and clear the SSL channel.
+    */
+    ~PSSLChannelDTLS();
+
+    // This need examination for cleaner API
+    bool Handshake(const BYTE * framePtr, PINDEX frameSize, bool isReceive);
+
+    /// Set callback function for handshake notification
+    void SetHandshakeNotifier(
+      const PNotifier & notifier
+    );
+
+    bool HandshakeCompleted() const;
+    bool IsServer() const;
+    PCaselessString GetSelectedProfile() const;
+    PBYTEArray GetKeyMaterial() const;
+
+  protected:
+    virtual bool InternalAccept();
+    virtual bool InternalConnect();
+
+    class Implementation;
+    Implementation * m_imp;
 };
 
 
