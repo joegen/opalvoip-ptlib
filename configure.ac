@@ -1506,7 +1506,18 @@ AC_LANG_POP(C)
 dnl ########################################################################
 dnl look for V8 library
 dnl MSWIN_DISPLAY    v8,V8 Javascript interpreter
+dnl MSWIN_CHECK_FILE v8,include\v8.h|NewFromUtf8,P_V8_WIN32=2
 dnl MSWIN_CHECK_FILE v8,include\v8.h,P_V8_WIN32=1
+dnl MSWIN_FIND_FILE  v8,P_V8_DEBUG_BASE_LIB,v8_base.ia32.lib,build/Debug/...
+dnl MSWIN_FIND_FILE  v8,P_V8_DEBUG_BASE_LIB,v8_base.lib,build/Debug/...
+dnl MSWIN_FIND_FILE  v8,P_V8_RELEASE_BASE_LIB,v8_base.ia32.lib,build/Release/...
+dnl MSWIN_FIND_FILE  v8,P_V8_RELEASE_BASE_LIB,v8_base.lib,build/Release/...
+dnl MSWIN_FIND_FILE  v8,P_V8_DEBUG_SNAPSHOT_LIB,v8_snapshot.lib,build/Debug/...
+dnl MSWIN_FIND_FILE  v8,P_V8_RELEASE_SNAPSHOT_LIB,v8_snapshot.lib,build/Release/...
+dnl MSWIN_FIND_FILE  v8,P_V8_DEBUG_ICUUC_LIB,icuuc.lib,build/Debug/...
+dnl MSWIN_FIND_FILE  v8,P_V8_RELEASE_ICUUC_LIB,icuuc.lib,build/Release/...
+dnl MSWIN_FIND_FILE  v8,P_V8_DEBUG_ICUI18N_LIB,icui18n.lib,build/Debug/...
+dnl MSWIN_FIND_FILE  v8,P_V8_RELEASE_ICUI18N_LIB,icui18n.lib,build/Release/...
 dnl MSWIN_DIR_SYMBOL v8,V8_DIR
 dnl MSWIN_CHECK_DIR  v8,..\external\v8
 
@@ -1518,16 +1529,19 @@ PTLIB_MODULE_OPTION(
    [],
    [-lv8],
    [#include <v8.h>],
-   [int i = v8::HandleScope::NumberOfHandles()],
+   [
+      v8::Isolate * isolate = v8::Isolate::GetCurrent();
+   ],
    [MY_COMPILE_IFELSE(
-      [V8 Javascript API needs Isolate],
+      [V8 Javascript API version],
       [$V8_CFLAGS],
       [#include <v8.h>],
       [
          v8::Isolate * isolate;
-         v8::HandleScope::HandleScope scope(isolate);
+         const char * name;
+         v8::String::NewFromUtf8(isolate, name);
       ],
-      [AC_DEFINE(P_V8_NEED_ISOLATE)]
+      [AC_DEFINE(P_V8_API, 2)]
    )]
 )
 
@@ -1814,7 +1828,8 @@ PTLIB_MODULE_OPTION(
    [curses],
    [disable Curses (text mode windows) support],
    [ncurses], 
-   [],[],
+   [],
+   [-lncurses],
    [#include <ncurses.h>],
    [initscr()]
 )
