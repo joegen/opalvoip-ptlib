@@ -864,6 +864,103 @@ PString PSSLCertificate::X509_Name::AsString(int indent) const
   return str;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+static char const * const FingerprintHashNames[PSSLCertificateFingerprint::NumHashType] = { "md5", "sha-1", "sha-256", "sha-512" };
+
+PSSLCertificateFingerprint::PSSLCertificateFingerprint()
+: m_type(NumHashType)
+{
+}
+
+
+PSSLCertificateFingerprint::PSSLCertificateFingerprint(const PString & inStr)
+: m_type(NumHashType)
+{
+  PCaselessString hashType, fp;
+
+  if (inStr.Split(' ', hashType, fp)) {
+    for (m_type = HashMd5; m_type < EndHashType; ++m_type) {
+      if (hashType == FingerprintHashNames[m_type]) {
+        m_fingerprint = fp.ToUpper();
+        break;
+      }
+    }
+  }
+}
+
+
+PSSLCertificateFingerprint::PSSLCertificateFingerprint(HashType type, const PSSLCertificate& cert)
+  : m_type(type)
+{
+  if (m_type == NumHashType || !cert.IsValid())
+    return;
+
+  const EVP_MD* evp = 0;
+  switch(m_type)
+  {
+    case HashMd5:
+      evp = EVP_md5();
+      break;
+    case HashSha1:
+      evp = EVP_sha1();
+      break;
+    case HashSha256:
+      evp = EVP_sha256();
+      break;
+    case HashSha512:
+      evp = EVP_sha512();
+      break;
+    default:
+      break;
+  }
+
+  unsigned len = 0;
+  unsigned char fp[256];
+  if(X509_digest(cert, evp, fp, &len) != 1 || len <= 0) {
+    char errbuf[1024];
+    errbuf[0] = 0;
+    ERR_error_string_n(ERR_get_error(), errbuf, sizeof(errbuf));
+    PTRACE(2, "X509_digest() failed [" << errbuf << "]");
+    return;
+  }
+
+  for(unsigned i = 0; i < len; ++i)
+    m_fingerprint.sprintf(i > 0 ? ":%.2X" : "%.2X", fp[i]);
+}
+
+
+PObject::Comparison PSSLCertificateFingerprint::Compare(const PObject & obj) const
+{
+  const PSSLCertificateFingerprint & other = dynamic_cast<const PSSLCertificateFingerprint &>(obj);
+  if (m_type < other.m_type)
+    return LessThan;
+  if (m_type > other.m_type)
+    return GreaterThan;
+  return m_fingerprint.Compare(other.m_fingerprint);
+}
+
+
+bool PSSLCertificateFingerprint::IsValid() const
+{
+  return m_type < NumHashType && !m_fingerprint.IsEmpty();
+}
+
+
+bool PSSLCertificateFingerprint::MatchForCertificate(const PSSLCertificate& cert) const
+{
+  return (*this == PSSLCertificateFingerprint(m_type, cert));
+}
+
+
+PString PSSLCertificateFingerprint::AsString() const
+{
+  if (IsValid())
+    return PSTRSTRM(FingerprintHashNames[m_type] << ' ' << m_fingerprint);
+
+  return PString::Empty();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1700,9 +1797,9 @@ static void InfoCallback(const SSL * PTRACE_PARAM(ssl), int PTRACE_PARAM(locatio
 }
 
 
-static int VerifyCallback(int ok, X509_STORE_CTX * PTRACE_PARAM(ctx))
-{
 #if PTRACING
+static void TraceVerifyCallback(int ok, X509_STORE_CTX * ctx)
+{
   const unsigned Level = ok ? 5 : 2;
   if (PTrace::GetLevel() >= Level) {
     int err = X509_STORE_CTX_get_error(ctx);
@@ -1713,16 +1810,31 @@ static int VerifyCallback(int ok, X509_STORE_CTX * PTRACE_PARAM(ctx))
     cert.GetSubjectName(subject);
 
     PTRACE_BEGIN(Level)
-        << "Verify callback: depth="
-        << depth
-        << ", err=" << err << " - " << X509_verify_cert_error_string(err)
-        << "\n  Subject:\n" << subject.AsString(4)
-        << "\n  Issuer:\n" << issuer.AsString(4)
-        << PTrace::End;
+      << "Verify callback: depth="
+      << depth
+      << ", err=" << err << " - " << X509_verify_cert_error_string(err)
+      << "\n  Subject:\n" << subject.AsString(4)
+      << "\n  Issuer:\n" << issuer.AsString(4)
+      << PTrace::End;
   }
+}
+#else
+  #define TraceVerifyCallback(ok, ctx)
 #endif // PTRACING
 
-  return ok;
+static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
+{
+  TraceVerifyCallback(ok, ctx);
+
+  SSL * ssl = reinterpret_cast<SSL *>(X509_STORE_CTX_get_app_data(ctx));
+  if (ssl == NULL)
+    return ok;
+
+  PSSLChannel * channel = reinterpret_cast<PSSLChannel *>(SSL_get_app_data(ssl));
+  if (channel == NULL)
+    return ok;
+
+  return channel->OnVerify(ok, X509_STORE_CTX_get_current_cert(ctx));
 }
 
 
@@ -1753,6 +1865,9 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
       break;
     case TLSv1:
       meth = TLSv1_method(); 
+      break;
+    case DTLSv1:
+      meth = DTLSv1_method();
       break;
     case SSLv23:
     default:
@@ -1996,6 +2111,12 @@ void PSSLContext::SetPasswordNotifier(const PSSLPasswordNotifier & notifier)
 }
 
 
+bool PSSLContext::SetExtension(const char * extension)
+{
+  return SSL_CTX_set_tlsext_use_srtp(m_context, extension) != 0;
+}
+
+
 /////////////////////////////////////////////////////////////////////////
 //
 //  SSLChannel
@@ -2024,6 +2145,8 @@ void PSSLChannel::Construct(PSSLContext * ctx, PBoolean autoDel)
   m_ssl = SSL_new(*m_context);
   if (m_ssl == NULL)
     PSSLAssert("Error creating channel: ");
+  else
+    SSL_set_app_data(m_ssl, this);
 }
 
 
@@ -2125,49 +2248,49 @@ PString PSSLChannel::GetErrorText(ErrorGroup group) const
 
 PBoolean PSSLChannel::Accept()
 {
-  if (IsOpen())
-    return ConvertOSError(SSL_accept(m_ssl));
-  return false;
+  return IsOpen() && InternalAccept();
 }
 
 
 PBoolean PSSLChannel::Accept(PChannel & channel)
 {
-  if (Open(channel))
-    return ConvertOSError(SSL_accept(m_ssl));
-  return false;
+  return Open(channel) && InternalAccept();
 }
 
 
 PBoolean PSSLChannel::Accept(PChannel * channel, PBoolean autoDelete)
 {
-  if (Open(channel, autoDelete))
-    return ConvertOSError(SSL_accept(m_ssl));
-  return false;
+  return Open(channel, autoDelete) && InternalAccept();
+}
+
+
+bool PSSLChannel::InternalAccept()
+{
+  return ConvertOSError(SSL_accept(m_ssl));
 }
 
 
 PBoolean PSSLChannel::Connect()
 {
-  if (IsOpen())
-    return ConvertOSError(SSL_connect(m_ssl));
-  return false;
+  return IsOpen() && InternalConnect();
 }
 
 
 PBoolean PSSLChannel::Connect(PChannel & channel)
 {
-  if (Open(channel))
-    return ConvertOSError(SSL_connect(m_ssl));
-  return false;
+  return Open(channel) && InternalConnect();
 }
 
 
 PBoolean PSSLChannel::Connect(PChannel * channel, PBoolean autoDelete)
 {
-  if (Open(channel, autoDelete))
-    return ConvertOSError(SSL_connect(m_ssl));
-  return false;
+  return Open(channel, autoDelete) && InternalConnect();
+}
+
+
+bool PSSLChannel::InternalConnect()
+{
+  return ConvertOSError(SSL_connect(m_ssl));
 }
 
 
@@ -2218,10 +2341,23 @@ PString PSSLChannel::GetCipherList() const
 }
 
 
-void PSSLChannel::SetVerifyMode(VerifyMode mode)
+void PSSLChannel::SetVerifyMode(VerifyMode mode, const VerifyNotifier & notifier)
 {
+  m_verifyNotifier = notifier;
+
   if (m_ssl != NULL)
     SSL_set_verify(m_ssl, VerifyModeBits[mode], VerifyCallback);
+}
+
+
+bool PSSLChannel::OnVerify(bool ok, const PSSLCertificate & peerCertificate)
+{
+  if (m_verifyNotifier.IsNULL())
+    return ok;
+
+  VerifyInfo info(ok, peerCertificate);
+  m_verifyNotifier(*this, info);
+  return info.m_ok;
 }
 
 
@@ -2419,6 +2555,254 @@ PBoolean PSSLChannel::OnOpen()
   bio->init = 1;
 
   SSL_set_bio(m_ssl, bio, bio);
+  return true;
+}
+
+
+class PSSLChannelDTLS::Implementation : public PObject
+{
+public:
+  Implementation(SSL * ssl)
+    : m_handshakeFinished(false)
+    , m_ssl(ssl)
+    , m_socket(NULL)
+    , m_waitResponse(false)
+    , m_inBio(BIO_new(BIO_s_mem()))
+    , m_outBio(BIO_new(BIO_s_mem()))
+  {
+    BIO_set_mem_eof_return(m_inBio, -1);
+    BIO_set_mem_eof_return(m_outBio, -1);
+
+    SSL_set_bio(m_ssl, m_inBio, m_outBio);
+
+    SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
+    SSL_set_read_ahead(m_ssl, 1);
+
+    m_readTimer.SetNotifier(PCREATE_NOTIFIER(OnReadTimeout));
+  }
+
+
+  // Returns false if handshake phase failed. 
+  bool Handshake(const BYTE * framePtr, PINDEX frameSize, bool isReceive)
+  {
+    if (m_handshakeFinished)
+      return true;
+
+    if (isReceive && frameSize > 0 && !isDTLSPacket(framePtr, frameSize))
+    {
+      PTRACE(4, "DTLSChannel\tSkip non DTLS packet...");
+      return true;
+    }
+
+    if (!m_mutex.Try())
+      return true;
+    PWaitAndSignal csHelper(m_mutex, false);
+
+    // Skip if we wait for data...
+    if (m_waitResponse && !isReceive)
+      return true;
+
+    char errbuf[1024];
+
+    if (!m_inBio || !m_outBio)
+      return false;
+
+    int ret;
+
+    if (isReceive && frameSize > 0)
+    {
+      m_waitResponse = false;
+      m_readTimer.Stop();
+      ret = BIO_write(m_inBio, framePtr, frameSize);
+      return true;
+    }
+
+    ret = SSL_do_handshake(m_ssl);
+
+    errbuf[0] = 0;
+    ERR_error_string_n(ERR_peek_error(), errbuf, sizeof(errbuf));
+
+    // See what was written
+    int outBioLen;
+    unsigned char *outBioData;  
+    outBioLen = BIO_get_mem_data(m_outBio, &outBioData);
+
+    ret = SSL_get_error(m_ssl, ret);
+    switch (ret)
+    {
+    case SSL_ERROR_NONE:
+      m_readTimer.Stop();
+      PTRACE(4, "DTLSChannel\tHandshake step done..");
+      m_handshakeFinished = true;
+      m_waitResponse = false;
+      break;
+    case SSL_ERROR_WANT_READ:
+      m_waitResponse = true;
+      // There are two cases here:
+      // (1) We didn't get enough data. In this case we leave the
+      //     timers alone and wait for more packets.
+      // (2) We did get a full flight and then handled it, but then
+      //     wrote some more message and now we need to flush them
+      //     to the network and now reset the timers
+      //
+      // If data was written then this means we got a complete
+      // something or a retransmit so we need to reset the timer
+      if (outBioLen)
+        m_readTimer.SetInterval(500);
+      break;
+    default:
+      PTRACE(2, "DTLSChannel\t Handshake failed [" << errbuf << "]");
+      return false;
+    }
+
+    if (outBioLen)
+    {
+      PTRACE(4, "DTLSChannel\tWrite " << outBioLen << " bytes to " << *m_socket);
+      if (!m_socket->Write(outBioData, outBioLen))
+      {
+        PTRACE(2, "DTLSChannel\tCan't write to socket... " << outBioLen);
+        return false;
+      }
+    }
+
+    BIO_reset(m_outBio);
+    BIO_reset(m_inBio);
+
+    if (m_handshakeFinished)
+    {
+      if (CompleteHandshake())
+      {
+        if (!m_callback.IsNULL())
+          m_callback(*this, false);
+      }
+      else
+        return false;
+    }
+    return true;
+  }
+
+  static bool isDTLSPacket(const BYTE * framePtr, PINDEX frameSize)
+  {
+    return (frameSize > 0 && framePtr[0] >= 20 && framePtr[0] <= 64);
+  }
+
+  bool CompleteHandshake()
+  {
+    SRTP_PROTECTION_PROFILE *p = SSL_get_selected_srtp_profile(m_ssl);
+    if (!p)
+    {
+      PTRACE(2, "DTLSChannel\tSSL_get_selected_srtp_profile returned NULL: " << ERR_error_string(ERR_get_error(), NULL));
+      return false;
+    }
+
+    m_profile = p->name;
+    static const PINDEX MaxKeySize = (256 >> 3) // rfc5764 4.1.2.  SRTP Protection Profiles
+                                   + (112 >> 3); // rfc5764 4.1.2.  SRTP Protection Profiles
+                                   ;
+
+    static PConstString const KeyMaterialName("EXTRACTOR-dtls_srtp");
+    if (SSL_export_keying_material(m_ssl,
+                                   m_keyMaterial.GetPointer(MaxKeySize), MaxKeySize,
+                                   KeyMaterialName, KeyMaterialName.GetLength(),
+                                   NULL, 0, 0) == 1)
+      return true;
+    
+    PTRACE(2, "DTLSChannel\tSSL_export_keying_material failed: " << ERR_error_string(ERR_get_error(), NULL));
+    return false;
+  }
+
+  PDECLARE_NOTIFIER(PTimer, Implementation, OnReadTimeout)
+  {
+    PTRACE(2, "DTLSChannel\tHandshake retransmit...");
+    if (!Handshake(NULL, 0, true) && !m_callback.IsNULL())
+      m_callback(*this, true); // Failed!
+  }
+
+  bool m_handshakeFinished;
+  SSL* m_ssl;
+  PUDPSocket * m_socket;
+  PTimer m_readTimer;
+  bool m_waitResponse;
+  PMutex m_mutex;
+  BIO* m_outBio;
+  BIO* m_inBio;
+  PNotifier m_callback;
+
+  PCaselessString    m_profile;
+  PBYTEArray         m_keyMaterial;
+};
+
+
+PSSLChannelDTLS::PSSLChannelDTLS(PSSLContext * context, bool autoDeleteContext)
+  : PSSLChannel(context, autoDeleteContext)
+  , m_imp(new Implementation(m_ssl))
+{
+}
+
+
+PSSLChannelDTLS::PSSLChannelDTLS(PSSLContext & context)
+  : PSSLChannel(context)
+  , m_imp(new Implementation(m_ssl))
+{
+}
+
+
+PSSLChannelDTLS::~PSSLChannelDTLS()
+{
+  delete m_imp;
+}
+
+
+bool PSSLChannelDTLS::Handshake(const BYTE * framePtr, PINDEX frameSize, bool isReceive)
+{
+  return m_imp->Handshake(framePtr, frameSize, isReceive);
+}
+
+
+void PSSLChannelDTLS::SetHandshakeNotifier(const PNotifier & notifier)
+{
+  m_imp->m_callback = notifier;
+}
+
+
+bool PSSLChannelDTLS::HandshakeCompleted() const
+{
+  return m_imp->m_handshakeFinished;
+}
+
+
+bool PSSLChannelDTLS::IsServer() const
+{
+  return m_ssl->server;
+}
+
+
+PCaselessString PSSLChannelDTLS::GetSelectedProfile() const
+{
+  return m_imp->m_profile;
+}
+
+
+PBYTEArray PSSLChannelDTLS::GetKeyMaterial() const
+{
+  return m_imp->m_keyMaterial;
+}
+
+
+bool PSSLChannelDTLS::InternalAccept()
+{
+  if ((m_imp->m_socket = dynamic_cast<PUDPSocket *>(GetReadChannel())) == NULL)
+    return false;
+  SSL_set_accept_state(m_ssl);
+  return true;
+}
+
+
+bool PSSLChannelDTLS::InternalConnect()
+{
+  if ((m_imp->m_socket = dynamic_cast<PUDPSocket *>(GetReadChannel())) == NULL)
+    return false;
+  SSL_set_connect_state(m_ssl);
   return true;
 }
 
