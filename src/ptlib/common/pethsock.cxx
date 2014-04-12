@@ -375,7 +375,7 @@ int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address 
   // Ethernet II header
   if (len_or_type > 1500) {
     // Subtract off the Ethernet II header
-    payload.Attach(header.ether.payload, m_rawSize - (sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length)));
+    payload.Attach(header.ether.payload, m_rawSize - (sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.ether.type)));
     return len_or_type;
   }
 
@@ -453,12 +453,19 @@ int PEthSocket::Frame::GetIP(PBYTEArray & payload, PIPSocket::Address & src, PIP
     return -1;
 
   PINDEX totalLength = (ip[2]<<8)|ip[3]; // Total length of packet
-  if (totalLength > ip.GetSize()) {
+  if (totalLength == 0)
+    totalLength = ip.GetSize(); // presume to be part of TCP segmentation offload (TSO), whatever THAT is
+  else if (totalLength > ip.GetSize()) {
     PTRACE(2, "Truncated IP packet, expected " << totalLength << ", got " << ip.GetSize());
     return -1;
   }
 
   PINDEX headerLength = (ip[0]&0xf)*4; // low 4 bits in DWORDS, is this in bytes
+  if (totalLength < headerLength) {
+    PTRACE(2, "Malformed IP header, length " << totalLength << " smaller than header " << headerLength);
+    return -1;
+  }
+
   payload.Attach(&ip[headerLength], totalLength-headerLength);
 
   src = PIPSocket::Address(4, ip+12);
