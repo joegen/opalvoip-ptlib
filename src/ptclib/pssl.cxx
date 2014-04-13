@@ -2567,8 +2567,8 @@ public:
     , m_ssl(ssl)
     , m_socket(NULL)
     , m_waitResponse(false)
-    , m_inBio(BIO_new(BIO_s_mem()))
     , m_outBio(BIO_new(BIO_s_mem()))
+    , m_inBio(BIO_new(BIO_s_mem()))
   {
     BIO_set_mem_eof_return(m_inBio, -1);
     BIO_set_mem_eof_return(m_outBio, -1);
