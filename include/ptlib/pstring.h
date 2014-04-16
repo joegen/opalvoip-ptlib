@@ -2278,6 +2278,7 @@ template <typename T> __inline T PString::As(T t) const
 
 class PStringList;
 class PSortedStringList;
+class PStringSet;
 
 /**This is an array collection class of <code>PString</code> objects. It has all the
    usual functions for a collection, with the object types set to
@@ -2340,6 +2341,11 @@ class PStringArray : public PArray<PString>
      */
     PStringArray(
       const PSortedStringList & list  ///< List of strings to convert to array.
+    );
+    /**Create a PStringArray from the string set.
+    */
+    PStringArray(
+      const PStringSet & set  ///< Set of strings to convert to array.
     );
 
     /**
@@ -2524,6 +2530,11 @@ class PStringList : public PList<PString>
     PStringList(
       const PSortedStringList & list  ///< List of strings to convert to list.
     );
+    /**Create a PStringList from the string set.
+    */
+    PStringList(
+      const PStringSet & set  ///< Set of strings to convert to array.
+    );
   //@}
 
   /**@name Overrides from class PObject */
@@ -2659,6 +2670,11 @@ class PSortedStringList : public PSortedList<PString>
      */
     PSortedStringList(
       const PStringList & list  ///< List of strings to convert to list.
+    );
+    /**Create a PStringList from the string set.
+    */
+    PSortedStringList(
+      const PStringSet & set  ///< Set of strings to convert to array.
     );
   //@}
 
