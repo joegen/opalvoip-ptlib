@@ -944,6 +944,11 @@ class PSSLChannel : public PIndirectChannel
 
     virtual PBoolean RawSSLRead(void * buf, PINDEX & len);
 
+    /**Get the internal SSL context structure.
+      */
+    operator ssl_st *() const { return m_ssl; }
+
+
   protected:
     void Construct(PSSLContext * ctx, PBoolean autoDel);
     virtual bool InternalAccept();
@@ -1003,6 +1008,7 @@ class PSSLChannelDTLS : public PSSLChannel
     PBYTEArray GetKeyMaterial() const;
 
   protected:
+    virtual PBoolean OnOpen();
     virtual bool InternalAccept();
     virtual bool InternalConnect();
 
