@@ -1160,7 +1160,6 @@ void PHashTableInfo::AppendElement(PObject * key, PObject * data PTRACE_PARAM(, 
   PTRACE_IF(1, list.m_size > 20 && list.m_size * 10 > totalSize / 8, owner, "PTLib",
             "Poor hash function used, more than 80% of " << totalSize <<
             " items in same bucket for class " << owner->GetClass());
-  }
 #endif
 }
 
