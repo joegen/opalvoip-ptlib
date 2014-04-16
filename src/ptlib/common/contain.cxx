@@ -2470,7 +2470,7 @@ PStringArray::PStringArray(PINDEX count, char const * const * strarr, PBoolean c
 PStringArray::PStringArray(const PString & str)
 {
   SetSize(1);
-  (*theArray)[0] = new PString(str);
+  (*theArray)[0] = str.CloneAs<PString>();
 }
 
 
@@ -2485,8 +2485,8 @@ PStringArray::PStringArray(const PStringList & list)
 {
   SetSize(list.GetSize());
   PINDEX count = 0;
-  for (PStringList::const_iterator i = list.begin(); i != list.end(); i++)
-    (*theArray)[count++] = new PString(*i);
+  for (PStringList::const_iterator it = list.begin(); it != list.end(); ++it)
+    (*theArray)[count++] = it->CloneAs<PString>();
 }
 
 
@@ -2494,7 +2494,16 @@ PStringArray::PStringArray(const PSortedStringList & list)
 {
   SetSize(list.GetSize());
   for (PINDEX i = 0; i < list.GetSize(); i++)
-    (*theArray)[i] = new PString(list[i]);
+    (*theArray)[i] = list[i].CloneAs<PString>();
+}
+
+
+PStringArray::PStringArray(const PStringSet & set)
+{
+  SetSize(set.GetSize());
+  PINDEX count = 0;
+  for (PStringSet::const_iterator it = set.begin(); it != set.end(); ++it)
+    (*theArray)[count++] = it->CloneAs<PString>();
 }
 
 
@@ -2599,7 +2608,7 @@ PStringList::PStringList(PINDEX count, char const * const * strarr, PBoolean cas
 
 PStringList::PStringList(const PString & str)
 {
-  AppendString(str);
+  Append(str.Clone());
 }
 
 
@@ -2612,15 +2621,23 @@ PStringList::PStringList(const char * cstr)
 PStringList::PStringList(const PStringArray & array)
 {
   for (PINDEX i = 0; i < array.GetSize(); i++)
-    AppendString(array[i]);
+    Append(array[i].Clone());
 }
 
 
 PStringList::PStringList(const PSortedStringList & list)
 {
-  for (PINDEX i = 0; i < list.GetSize(); i++)
-    AppendString(list[i]);
+  for (PSortedStringList::const_iterator it = list.begin(); it != list.end(); ++it)
+    Append(it->Clone());
 }
+
+
+PStringList::PStringList(const PStringSet & set)
+{
+  for (PStringSet::const_iterator it = set.begin(); it != set.end(); ++it)
+    Append(it->Clone());
+}
+
 
 PStringList & PStringList::operator += (const PStringList & v)
 {
@@ -2666,7 +2683,7 @@ PSortedStringList::PSortedStringList(PINDEX count,
 
 PSortedStringList::PSortedStringList(const PString & str)
 {
-  AppendString(str);
+  Append(str.Clone());
 }
 
 
@@ -2679,16 +2696,22 @@ PSortedStringList::PSortedStringList(const char * cstr)
 PSortedStringList::PSortedStringList(const PStringArray & array)
 {
   for (PINDEX i = 0; i < array.GetSize(); i++)
-    AppendString(array[i]);
+    Append(array[i].Clone());
 }
 
 
 PSortedStringList::PSortedStringList(const PStringList & list)
 {
-  for (PStringList::const_iterator i = list.begin(); i != list.end(); i++)
-    AppendString(*i);
+  for (PStringList::const_iterator it = list.begin(); it != list.end(); ++it)
+    Append(it->Clone());
 }
 
+
+PSortedStringList::PSortedStringList(const PStringSet & set)
+{
+  for (PStringSet::const_iterator it = set.begin(); it != set.end(); ++it)
+    Append(it->Clone());
+}
 
 
 void PSortedStringList::ReadFrom(istream & strm)
