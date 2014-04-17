@@ -145,7 +145,7 @@ struct PJavaScript::Private : PObject
   PCLASSINFO(PJavaScript::Private, PObject);
 private:
   v8::Isolate * m_isolate;
-  v8::Handle<v8::Context> m_context;
+  v8::Persistent<v8::Context> m_context;
 
 #if P_V8_API==1
   struct HandleScope : v8::HandleScope
@@ -161,6 +161,7 @@ private:
 
   v8::Local<v8::String> NewString(const char * str) const { return v8::String::New(str); }
   template <class CLS, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return CLS::New(param); }
+  v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_context); }
 #else
   struct HandleScope : v8::HandleScope
   {
@@ -174,6 +175,7 @@ private:
 
   v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
   template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
+  v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_isolate, m_context); }
 #endif
 
 
@@ -187,22 +189,22 @@ public:
 #endif
     }
 
-    if ((m_isolate = v8::Isolate::GetCurrent()) == NULL)
-      return;
+    m_isolate = v8::Isolate::New();
 
     v8::Isolate::Scope isolateScope(m_isolate);
+    HandleScope handleScope(this);
 
 #if P_V8_API==2
   #if PTRACING
     m_isolate->SetEventLogger(LogEventCallback);
 
     // Bind the global 'PTRACE' function to the PTLib trace callback.
-    EscapableHandleScope handleScope(this);
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
     global->Set(NewString("PTRACE"), v8::FunctionTemplate::New(m_isolate, TraceFunction));
-    m_context = handleScope.Escape(v8::Context::New(m_isolate, NULL, global));
+
+    m_context.Reset(m_isolate, v8::Context::New(m_isolate, NULL, global));
   #else
-    m_context = v8::Context::New(m_isolate);
+    m_context.Reset(m_isolate, v8::Context::New(m_isolate));
   #endif
 #else
     m_context = v8::Context::New();
@@ -210,9 +212,14 @@ public:
   }
 
 
+  ~Private()
+  {
+    if (m_isolate != NULL)
+      m_isolate->Dispose();
+  }
+
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
   {
-    EscapableHandleScope handleScope(this);
     v8::Local<v8::Value> value;
 
     if (m_isolate == NULL)
@@ -224,7 +231,7 @@ public:
     else
       value = object->Get(NewString(name));
 
-    return handleScope.Escape(value);
+    return value;
   }
   
   
@@ -232,8 +239,6 @@ public:
   {
     if (m_isolate == NULL)
       return;
-
-    HandleScope handleScope(this);
 
     // set flags if array access
     if (name[0] == '[')
@@ -248,9 +253,10 @@ public:
     if (m_isolate == NULL)
       return false;
 
-    v8::Locker locker(m_isolate);
+    v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
-    v8::Context::Scope contextScope(m_context);
+    v8::Local<v8::Context> context = GetContext();
+    v8::Context::Scope contextScope(context);
 
     PStringArray tokens;
     if (ParseKey(key, tokens) < 1) {
@@ -259,7 +265,7 @@ public:
     }
 
     v8::Handle<v8::Value> value;
-    v8::Handle<v8::Object> object = m_context->Global();
+    v8::Handle<v8::Object> object = context->Global();
 
     int i = 0;
 
@@ -330,9 +336,10 @@ public:
     if (m_isolate == NULL)
       return false;
 
-    v8::Locker locker(m_isolate);
+    v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
-    v8::Context::Scope contextScope(m_context);
+    v8::Local<v8::Context> context = GetContext();
+    v8::Context::Scope contextScope(context);
 
     PStringArray tokens;
     if (ParseKey(key, tokens) < 1) {
@@ -340,7 +347,7 @@ public:
       return false;
     }
 
-    v8::Handle<v8::Object> object = m_context->Global();
+    v8::Handle<v8::Object> object = context->Global();
 
     int i = 0;
 
@@ -430,14 +437,13 @@ public:
     if (m_isolate == NULL)
       return false;
 
-    // V8 is full of globals, so we have to lock it. Sigh....
-    v8::Locker locker(m_isolate);
-
-    // create a V8 handle scope
+    // create a V8 scopes
+    v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
 
     // make context scope availabke
-    v8::Context::Scope contextScope(m_context);
+    v8::Local<v8::Context> context = GetContext();
+    v8::Context::Scope contextScope(context);
 
     // create V8 string to hold the source
     v8::Handle<v8::String> source = NewString(text);
