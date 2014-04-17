@@ -223,8 +223,6 @@ class PJavaScript : public PScriptLanguage
   //@}
 
   protected:
-    PINDEX ParseKey(const PString & name, PStringArray & tokens);
-  
     struct Private;
     Private * m_private;
     PString   m_resultText;

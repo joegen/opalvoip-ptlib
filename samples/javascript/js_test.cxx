@@ -59,18 +59,8 @@ void MyProcess::Main()
   cout << "JavaScript Test Utility" << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("T-test:"
-#if PTRACING
-             "o-output:"
-             "t-trace."
-#endif
-    );
-
-#if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-#endif
+  args.Parse("T-test:" PTRACE_ARGLIST);
+  PTRACE_INITIALISE(args);
 
   PJavaScript jscript;
 
