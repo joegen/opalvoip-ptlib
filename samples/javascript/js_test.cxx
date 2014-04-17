@@ -30,6 +30,8 @@
 #include <ptlib/pprocess.h>
 #include <ptclib/jscript.h>
 
+// Sample command line:  -ttttodebugstream "myString='after';"
+
 #if P_V8
 
 class MyProcess : public PProcess
@@ -59,14 +61,20 @@ void MyProcess::Main()
   cout << "JavaScript Test Utility" << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("T-test:" PTRACE_ARGLIST);
+  args.Parse("h-help Display usage\n" PTRACE_ARGLIST);
+  if (!args.IsParsed() || args.HasOption('h')) {
+    args.Usage(cerr);
+    return;
+  }
+
   PTRACE_INITIALISE(args);
 
   PJavaScript jscript;
 
   jscript.SetString ("myString", "before");
-  jscript.SetInteger("myInt",    -1);
+  jscript.SetInteger("myInt",    -1234);
   jscript.SetNumber ("myNumber", -3.14);
+  jscript.SetBoolean("myBool", true);
 
   for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
     if (jscript.Run(args[arg]))
