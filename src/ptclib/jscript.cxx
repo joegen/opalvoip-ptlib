@@ -69,55 +69,160 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
   #define P_V8_API 1
 #endif
 
-#if P_V8_API==1
-  #define ISOLATE_PARAM(var)
-  #define ISOLATE_NEW1(isolate, var) New(var)
-  #define ISOLATE_NEW2(isolate, var) New(var, isolate)
-  #define NewFromUtf8(isolate, str) New(str)
-  namespace v8 {
-    struct EscapableHandleScope : HandleScope {
-      EscapableHandleScope(v8::Isolate *) { }
-      template <class T> v8::Local<T> Escape(v8::Local<T> value) { return HandleScope::Close(value); }
-    };
-  };
-#elif P_V8_API==2
-  #define ISOLATE_PARAM(var) var
-  #define ISOLATE_NEW1(isolate, var) New(isolate, var)
-  #define ISOLATE_NEW2(isolate, var) New(isolate, var)
-#endif
+#if P_V8_API==2
+
+  #if PTRACING
+    static void LogEventCallback(const char * PTRACE_PARAM(name), int PTRACE_PARAM(event))
+    {
+      PTRACE(4, "V8-Log", "Event=" << event << " - " << name);
+    }
 
 
-struct PJavaScript::Private
+    static void TraceFunction(const v8::FunctionCallbackInfo<v8::Value>& args)
+    {
+      if (args.Length() < 2)
+        return;
+
+      if (!args[0]->IsUint32())
+        return;
+
+      unsigned level = args[0]->Uint32Value();
+      if (!PTrace::CanTrace(level))
+        return;
+
+      ostream & trace = PTRACE_BEGIN(level);
+      for (int i = 1; i < args.Length(); i++) {
+        v8::HandleScope handle_scope(args.GetIsolate());
+        if (i > 0)
+          trace << ' ';
+        v8::String::Utf8Value str(args[i]);
+        if (*str)
+          trace << *str;
+      }
+
+      trace << PTrace::End;
+    }
+  #endif // PTRACING
+#endif // P_V8_API==2
+
+
+PINDEX ParseKey(const PString & name, PStringArray & tokens)
 {
+  tokens = name.Tokenise('.', false);
+  if (tokens.GetSize() < 1) {
+    PTRACE(5, "V8\tParseKey:node '" << name << " is too short");
+    return 0;
+  }
+  PINDEX i = 0;
+  while (i < tokens.GetSize()) {
+    PString element = tokens[i];
+    PINDEX start = element.Find('[');
+    if (start == P_MAX_INDEX)
+      ++i;
+    else {
+      PINDEX end = element.Find(']', start + 1);
+      if (end != P_MAX_INDEX) {
+        tokens[i] = element(0, start - 1);
+        ++i;
+        tokens.InsertAt(i, new PString(element(start, end - 1)));
+        if (end < element.GetLength() - 1) {
+          i++;
+          tokens.InsertAt(i, new PString(element(end + 1, P_MAX_INDEX)));
+        }
+        else {
+        }
+      }
+      ++i;
+    }
+  }
+
+  return tokens.GetSize();
+}
+
+
+struct PJavaScript::Private : PObject
+{
+  PCLASSINFO(PJavaScript::Private, PObject);
+private:
   v8::Isolate * m_isolate;
   v8::Handle<v8::Context> m_context;
 
-  Private()
-    : m_isolate(v8::Isolate::GetCurrent())
+#if P_V8_API==1
+  struct HandleScope : v8::HandleScope
   {
-    // V8 is full of globals, so we have to lock it. Sigh....
-    v8::Locker locker(m_isolate);
+    HandleScope(Private *) { }
+  };
 
-    // create a V8 handle scope
-    v8::HandleScope handleScope(ISOLATE_PARAM(m_isolate));
+  struct EscapableHandleScope : v8::HandleScope
+  {
+    EscapableHandleScope(Private *) { }
+    template <class T> v8::Local<T> Escape(v8::Local<T> value) { return v8::HandleScope::Close(value); }
+  };
 
-    // create a V8 context
-    m_context = v8::Context::New(ISOLATE_PARAM(m_isolate));
+  v8::Local<v8::String> NewString(const char * str) const { return v8::String::New(str); }
+  template <class CLS, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return CLS::New(param); }
+#else
+  struct HandleScope : v8::HandleScope
+  {
+    HandleScope(Private * prvt) : v8::HandleScope(prvt->m_isolate) { }
+  };
 
-    // make context scope available
-    v8::Context::Scope contextScope(m_context);
+  struct EscapableHandleScope : v8::EscapableHandleScope
+  {
+    EscapableHandleScope(Private * prvt) : v8::EscapableHandleScope(prvt->m_isolate) { }
+  };
+
+  v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
+  template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
+#endif
+
+
+public:
+  Private()
+  {
+    static PAtomicBoolean initialised;
+    if (!initialised.TestAndSet(true)) {
+#if P_V8_API==2
+      v8::V8::InitializeICU();
+#endif
+    }
+
+    if ((m_isolate = v8::Isolate::GetCurrent()) == NULL)
+      return;
+
+    v8::Isolate::Scope isolateScope(m_isolate);
+
+#if P_V8_API==2
+  #if PTRACING
+    m_isolate->SetEventLogger(LogEventCallback);
+
+    // Bind the global 'PTRACE' function to the PTLib trace callback.
+    EscapableHandleScope handleScope(this);
+    v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
+    global->Set(NewString("PTRACE"), v8::FunctionTemplate::New(m_isolate, TraceFunction));
+    m_context = handleScope.Escape(v8::Context::New(m_isolate, NULL, global));
+  #else
+    m_context = v8::Context::New(m_isolate);
+  #endif
+#else
+    m_context = v8::Context::New();
+#endif
   }
+
 
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
   {
-    v8::EscapableHandleScope handleScope(m_isolate);
+    EscapableHandleScope handleScope(this);
     v8::Local<v8::Value> value;
-    
+
+    if (m_isolate == NULL)
+      return value;
+
     // set flags if array access
     if (name[0] == '[')
       value = object->Get(name.Mid(1).AsInteger());
     else
-      value = object->Get(v8::String::NewFromUtf8(m_isolate, name));
+      value = object->Get(NewString(name));
 
     return handleScope.Escape(value);
   }
@@ -125,13 +230,235 @@ struct PJavaScript::Private
   
   void SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
   {
-    v8::HandleScope handleScope(ISOLATE_PARAM(m_isolate));
-    
+    if (m_isolate == NULL)
+      return;
+
+    HandleScope handleScope(this);
+
     // set flags if array access
     if (name[0] == '[')
       object->Set(name.Mid(1).AsInteger(), value);
     else
-      object->Set(v8::String::NewFromUtf8(m_isolate, name), value);
+      object->Set(NewString(name), value);
+  }
+
+
+  bool GetVar(const PString & key, PVarType & var)
+  {
+    if (m_isolate == NULL)
+      return false;
+
+    v8::Locker locker(m_isolate);
+    HandleScope handleScope(this);
+    v8::Context::Scope contextScope(m_context);
+
+    PStringArray tokens;
+    if (ParseKey(key, tokens) < 1) {
+      PTRACE(5, "GetVar '" << key << " is too short");
+      return false;
+    }
+
+    v8::Handle<v8::Value> value;
+    v8::Handle<v8::Object> object = m_context->Global();
+
+    int i = 0;
+
+    for (;;) {
+
+      // get the member variable
+      value = GetMember(object, tokens[i]);
+      if (value.IsEmpty()) {
+        PTRACE(5, "Cannot get element '" << tokens[i] << "'");
+        return false;
+      }
+
+      // see if end of path
+      if (i == (tokens.GetSize() - 1))
+        break;
+
+      // terminals must not be composites, internal nodes must be composites
+      bool isObject = value->IsObject();
+      if (!isObject) {
+        tokens.SetSize(i + 1);
+        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
+        return false;
+      }
+
+      // if path has ended, return error
+      object = value->ToObject();
+      if (object->IsNull()) {
+        tokens.SetSize(i + 1);
+        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << " not found");
+        return false;
+      }
+
+      i++;
+    }
+
+    if (value->IsInt32()) {
+      var = PVarType(value->Int32Value());
+      return true;
+    }
+
+    if (value->IsUint32()) {
+      var = PVarType(value->Uint32Value());
+      return true;
+    }
+
+    if (value->IsNumber()) {
+      var = PVarType(value->NumberValue());
+      return true;
+    }
+
+    if (value->IsBoolean()) {
+      var = PVarType(value->BooleanValue());
+      return true;
+    }
+
+    if (value->IsString()) {
+      var = PVarType(PString(*v8::String::Utf8Value(value->ToString())));
+      return true;
+    }
+
+    PTRACE(5, "Unable to determine type of '" << key << "' = " << *v8::String::Utf8Value(value));
+    return false;
+  }
+
+
+  bool SetVar(const PString & key, const PVarType & var)
+  {
+    if (m_isolate == NULL)
+      return false;
+
+    v8::Locker locker(m_isolate);
+    HandleScope handleScope(this);
+    v8::Context::Scope contextScope(m_context);
+
+    PStringArray tokens;
+    if (ParseKey(key, tokens) < 1) {
+      PTRACE(5, "SetVar '" << key << " is too short");
+      return false;
+    }
+
+    v8::Handle<v8::Object> object = m_context->Global();
+
+    int i = 0;
+
+    while (i > 0) {
+
+      // get the member variable
+      v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
+      if (value.IsEmpty()) {
+        PTRACE(5, "Cannot get element '" << tokens[i] << "'");
+        return false;
+      }
+
+      // terminals must not be composites, internal nodes must be composites
+      bool isObject = value->IsObject();
+      if (!isObject) {
+        tokens.SetSize(i + 1);
+        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
+        return false;
+      }
+
+      // if path has ended, return error
+      object = value->ToObject();
+      if (object->IsNull()) {
+        tokens.SetSize(i + 1);
+        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << " not found");
+        return false;
+      }
+
+      i++;
+    }
+
+    v8::Handle<v8::Value> value;
+
+    switch (var.GetType()) {
+      case PVarType::VarNULL:
+        //return object->Set(strKey, v8::Null::New());
+        break;
+
+      case PVarType::VarBoolean:
+        value = NewObject<v8::Boolean>(var.AsBoolean());
+        break;
+
+      case PVarType::VarChar:
+      case PVarType::VarStaticString:
+      case PVarType::VarFixedString:
+      case PVarType::VarDynamicString:
+      case PVarType::VarGUID:
+        value = NewString(var.AsString());
+        break;
+
+      case PVarType::VarInt8:
+      case PVarType::VarInt16:
+      case PVarType::VarInt32:
+        value = NewObject<v8::Int32>(var.AsInteger());
+        break;
+
+      case PVarType::VarUInt8:
+      case PVarType::VarUInt16:
+      case PVarType::VarUInt32:
+        value = NewObject<v8::Uint32>(var.AsUnsigned());
+        break;
+
+      case PVarType::VarInt64:
+      case PVarType::VarUInt64:
+        // Until V8 suppies a 64 bit integer, we use double
+
+      case PVarType::VarFloatSingle:
+      case PVarType::VarFloatDouble:
+      case PVarType::VarFloatExtended:
+        value = NewObject<v8::Number>(var.AsFloat());
+        break;
+
+      case PVarType::VarTime:
+      case PVarType::VarStaticBinary:
+      case PVarType::VarDynamicBinary:
+      default:
+        break;
+    }
+
+    SetMember(object, tokens[i], value);
+    return true;
+  }
+
+
+  bool Run(const char * text, PString & resultText)
+  {
+    if (m_isolate == NULL)
+      return false;
+
+    // V8 is full of globals, so we have to lock it. Sigh....
+    v8::Locker locker(m_isolate);
+
+    // create a V8 handle scope
+    HandleScope handleScope(this);
+
+    // make context scope availabke
+    v8::Context::Scope contextScope(m_context);
+
+    // create V8 string to hold the source
+    v8::Handle<v8::String> source = NewString(text);
+
+    // compile the source 
+    v8::Handle<v8::Script> script = v8::Script::Compile(source);
+    if (*script == NULL)
+      return false;
+
+    // run the code
+    v8::Handle<v8::Value> result = script->Run();
+
+    // return error if no result
+    if (*result == NULL)
+      return false;
+
+    // save return value
+    resultText = *v8::String::Utf8Value(result);
+    PTRACE(1, "Returned '" << resultText << "'");
+
+    return true;
   }
 };
 
@@ -144,14 +471,12 @@ struct PJavaScript::Private
 PJavaScript::PJavaScript()
   : m_private(new Private)
 {
+  PTRACE_CONTEXT_ID_TO(m_private);
 }
 
 
 PJavaScript::~PJavaScript()
 {
-  // V8 is full of globals, so we have to lock it. Sigh....
-  v8::Locker locker(m_private->m_isolate);
-
   delete m_private;
 }
 
@@ -170,35 +495,7 @@ bool PJavaScript::LoadText(const PString & /*text*/)
 
 bool PJavaScript::Run(const char * text)
 {
-  // V8 is full of globals, so we have to lock it. Sigh....
-  v8::Locker locker(m_private->m_isolate);
-
-  // create a V8 handle scope
-  v8::HandleScope handleScope(ISOLATE_PARAM(m_private->m_isolate));
-
-  // make context scope availabke
-  v8::Context::Scope contextScope(m_private->m_context);
-
-  // create V8 string to hold the source
-  v8::Handle<v8::String> source = v8::String::NewFromUtf8(m_private->m_isolate, text);
-
-  // compile the source 
-  v8::Handle<v8::Script> script = v8::Script::Compile(source);
-  if (*script == NULL)
-    return false;
-
-  // run the code
-  v8::Handle<v8::Value> result = script->Run();
-
-  // return error if no result
-  if (*result == NULL)
-    return false;
-
-  // save return value
-  m_resultText = *v8::String::Utf8Value(result);
-  PTRACE(1, "V8", "Returned '" << m_resultText << "'");
-
-  return true;
+  return m_private->Run(text, m_resultText);
 }
 
 
@@ -207,212 +504,15 @@ bool PJavaScript::CreateComposite(const PString & /*name*/)
   return false;
 }
 
-PINDEX PJavaScript::ParseKey(const PString & name, PStringArray & tokens)
-{
-  tokens = name.Tokenise('.', false);
-  if (tokens.GetSize() < 1) {
-    PTRACE(5, "V8\tParseKey:node '" << name << " is too short");
-    return 0;
-  }
-  PINDEX i = 0;
-  while (i < tokens.GetSize()) {
-    PString element = tokens[i];
-    PINDEX start = element.Find('[');
-    if (start == P_MAX_INDEX)
-      ++i;
-    else {
-      PINDEX end = element.Find(']', start+1);
-      if (end != P_MAX_INDEX) {
-        tokens[i] = element(0, start-1);
-        ++i;
-        tokens.InsertAt(i, new PString(element(start, end-1)));
-        if (end < element.GetLength()-1) {
-          i++;
-          tokens.InsertAt(i, new PString(element(end+1, P_MAX_INDEX)));
-        }
-        else {
-        }
-      }
-      ++i;
-    }
-  }
-
-  return tokens.GetSize();
-}
-
 
 bool PJavaScript::GetVar(const PString & key, PVarType & var)
 {
-  v8::Locker locker(m_private->m_isolate);
-  v8::HandleScope handleScope(ISOLATE_PARAM(m_private->m_isolate));
-  v8::Context::Scope contextScope(m_private->m_context);
-
-  PStringArray tokens;
-  if (ParseKey(key, tokens) < 1) {
-    PTRACE(5, "V8\tGetVar '" << key << " is too short");
-    return false;
-  }
-
-  v8::Handle<v8::Value> value;
-  v8::Handle<v8::Object> object = m_private->m_context->Global();
-
-  int i = 0;
-
-  for (;;)  {
-
-    // get the member variable
-    value = m_private->GetMember(object, tokens[i]);
-    if (value.IsEmpty()) {
-      PTRACE(5, "V8", "Cannot get element '" << tokens[i] << "'");
-      return false;
-    }
-
-    // see if end of path
-    if (i == (tokens.GetSize()-1)) 
-      break;
-
-    // terminals must not be composites, internal nodes must be composites
-    bool isObject = value->IsObject();
-    if (!isObject) {
-      tokens.SetSize(i+1);
-      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
-      return false;
-    }
-
-    // if path has ended, return error
-    object = value->ToObject();
-    if (object->IsNull()) {
-      tokens.SetSize(i+1);
-      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << " not found");
-      return false;
-    }
-
-    i++;
-  } 
-
-  if (value->IsInt32()) {
-    var = PVarType(value->Int32Value());
-    return true;
-  }
-
-  if (value->IsUint32()) {
-    var = PVarType(value->Uint32Value());
-    return true;
-  }
-
-  if (value->IsNumber()) {
-    var = PVarType(value->NumberValue());
-    return true;
-  }
-
-  if (value->IsBoolean()) {
-    var = PVarType(value->BooleanValue());
-    return true;
-  }
-
-  if (value->IsString()) {
-    var = PVarType(PString(*v8::String::Utf8Value(value->ToString())));
-    return true;
-  }
-
-  PTRACE(5, "V8\tUnable to determine type of '" << key << "' = " << *v8::String::Utf8Value(value));
-  return false;
+  return m_private->GetVar(key, var);
 }
 
 bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 {
-  v8::Locker locker(m_private->m_isolate);
-  v8::HandleScope handleScope(ISOLATE_PARAM(m_private->m_isolate));
-  v8::Context::Scope contextScope(m_private->m_context);
-
-  PStringArray tokens;
-  if (ParseKey(key, tokens) < 1) {
-    PTRACE(5, "V8\tSetVar '" << key << " is too short");
-    return false;
-  }
-
-  v8::Handle<v8::Object> object = m_private->m_context->Global();
-
-  int i = 0;
-
-  while (i > 0) {
-
-    // get the member variable
-    v8::Handle<v8::Value> value = m_private->GetMember(object, tokens[i]);
-    if (value.IsEmpty()) {
-      PTRACE(5, "V8", "Cannot get element '" << tokens[i] << "'");
-      return false;
-    }
-
-    // terminals must not be composites, internal nodes must be composites
-    bool isObject = value->IsObject();
-    if (!isObject) {
-      tokens.SetSize(i+1);
-      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
-      return false;
-    }
-
-    // if path has ended, return error
-    object = value->ToObject();
-    if (object->IsNull()) {
-      tokens.SetSize(i+1);
-      PTRACE(5, "V8\tGetVar intermediate node '" << setfill('.') << tokens << " not found");
-      return false;
-    }
-
-    i++;
-  } 
-
-  v8::Handle<v8::Value> value;
-
-  switch (var.GetType()) {
-    case PVarType::VarNULL:
-      //return object->Set(strKey, v8::Null::New());
-      break;
-
-    case PVarType::VarBoolean:
-      value = v8::Boolean::ISOLATE_NEW1(m_private->m_isolate, var.AsBoolean());
-      break;
-
-    case PVarType::VarChar:
-    case PVarType::VarStaticString:
-    case PVarType::VarFixedString:
-    case PVarType::VarDynamicString:
-    case PVarType::VarGUID:
-      value = v8::String::NewFromUtf8(m_private->m_isolate, var.AsString());
-      break;
-
-    case PVarType::VarInt8:
-    case PVarType::VarInt16:
-    case PVarType::VarInt32:
-      value = v8::Int32::ISOLATE_NEW2(m_private->m_isolate, var.AsInteger());
-      break;
-
-    case PVarType::VarUInt8:
-    case PVarType::VarUInt16:
-    case PVarType::VarUInt32:
-      value = v8::Uint32::ISOLATE_NEW2(m_private->m_isolate, var.AsUnsigned());
-      break;
-
-    case PVarType::VarInt64:
-    case PVarType::VarUInt64:
-      // Until V8 suppies a 64 bit integer, we use double
-
-    case PVarType::VarFloatSingle:
-    case PVarType::VarFloatDouble:
-    case PVarType::VarFloatExtended:
-      value = v8::Number::ISOLATE_NEW1(m_private->m_isolate, var.AsFloat());
-      break;
-
-    case PVarType::VarTime:
-    case PVarType::VarStaticBinary:
-    case PVarType::VarDynamicBinary:
-    default:
-      break;
-  }
-
-  m_private->SetMember(object, tokens[i], value); 
-  return true;
+  return m_private->SetVar(key, var);
 }
 
 
