@@ -189,9 +189,9 @@ public:
 #endif
     }
 
-    if ((m_isolate = v8::Isolate::GetCurrent()) == NULL)
-      return;
+    m_isolate = v8::Isolate::New();
 
+    v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
 
 #if P_V8_API==2
@@ -212,9 +212,14 @@ public:
   }
 
 
+  ~Private()
+  {
+    if (m_isolate != NULL)
+      m_isolate->Dispose();
+  }
+
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
   {
-    EscapableHandleScope handleScope(this);
     v8::Local<v8::Value> value;
 
     if (m_isolate == NULL)
@@ -226,7 +231,7 @@ public:
     else
       value = object->Get(NewString(name));
 
-    return handleScope.Escape(value);
+    return value;
   }
   
   
@@ -234,8 +239,6 @@ public:
   {
     if (m_isolate == NULL)
       return;
-
-    HandleScope handleScope(this);
 
     // set flags if array access
     if (name[0] == '[')
@@ -250,6 +253,7 @@ public:
     if (m_isolate == NULL)
       return false;
 
+    v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
@@ -332,6 +336,7 @@ public:
     if (m_isolate == NULL)
       return false;
 
+    v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
@@ -432,7 +437,8 @@ public:
     if (m_isolate == NULL)
       return false;
 
-    // create a V8 handle scope
+    // create a V8 scopes
+    v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
 
     // make context scope availabke
