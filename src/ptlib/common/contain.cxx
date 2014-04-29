@@ -2584,6 +2584,19 @@ char ** PStringArray::ToCharArray(PCharArray * storage) const
 }
 
 
+PString PStringArray::ToString(char separator) const
+{
+  PStringStream str;
+
+  for (PINDEX i = 0; i < GetSize(); ++i) {
+    if (i > 0)
+      str << separator;
+    str << (*this)[i];
+  }
+
+  return str;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
