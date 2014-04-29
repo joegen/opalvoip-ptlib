@@ -141,6 +141,146 @@ bool PVarType::SetType(BasicType type, PINDEX option)
 }
 
 
+PVarType & PVarType::operator = (bool value)
+{
+  if (SetType(VarBoolean)) {
+    m_.boolean = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(char value)
+{
+  if (SetType(VarChar)) {
+    m_.character = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(int16_t value)
+{
+  if (SetType(VarInt16)) {
+    m_.int16 = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(int32_t value)
+{
+  if (SetType(VarInt32)) {
+    m_.int32 = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(int64_t value)
+{
+  if (SetType(VarInt64)) {
+    m_.int64 = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(uint8_t value)
+{
+  if (SetType(VarUInt8)) {
+    m_.uint8 = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(uint16_t value)
+{
+  if (SetType(VarUInt16)) {
+    m_.uint16 = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(uint32_t value)
+{
+  if (SetType(VarUInt32)) {
+    m_.uint32 = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(uint64_t value)
+{
+  if (SetType(VarUInt64)) {
+    m_.uint64 = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(float value)
+{
+  if (SetType(VarFloatSingle)) {
+    m_.floatSingle = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(double value)
+{
+  if (SetType(VarFloatDouble)) {
+    m_.floatDouble = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(long double value)
+{
+  if (SetType(VarFloatExtended)) {
+    m_.floatExtended = value;
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(const PGloballyUniqueID & value)
+{
+  if (SetType(VarGUID)) {
+    memcpy(m_.guid, value, value.GetSize());
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
+PVarType & PVarType::operator=(const PTime & value)
+{
+  if (SetType(VarTime)) {
+    m_.time.seconds = value.GetTimeInSeconds();
+    OnValueChanged();
+  }
+  return *this;
+}
+
+
 PVarType & PVarType::SetValue(const PString & value)
 {
   switch (m_type) {
