@@ -281,16 +281,7 @@ class PSoundChannel : public PIndirectChannel
         unsigned bufferSize =   DefaultBufferSize,
         unsigned bufferCount = DefaultBufferCount,
         PPluginManager * pluginMgr = NULL
-      ) : m_direction(dir)
-        , m_device(device)
-        , m_driver(driver)
-        , m_channels(channels)
-        , m_sampleRate(sampleRate)
-        , m_bitsPerSample(bitsPerSample)
-        , m_bufferSize(bufferSize)
-        , m_bufferCount(bufferCount)
-        , m_pluginMgr(pluginMgr)
-      { }
+      );
 
       Directions m_direction;     ///< Sound I/O direction
       PString    m_device;        ///< Name of sound device
@@ -305,6 +296,7 @@ class PSoundChannel : public PIndirectChannel
       PPluginManager * m_pluginMgr;
       
       void SetBufferCountFromMS(unsigned milliseconds);
+      friend ostream & operator<<(ostream &, const Params & params);
     };
 
     /** Create a sound channel.
