@@ -52,6 +52,10 @@
   #include <ptlib/msos/ptlib/sound_win32.h>
 #endif
 
+
+#define PTraceModule() "Sound"
+
+
 class PSoundChannelNull : public PSoundChannel
 {
     PCLASSINFO(PSoundChannelNull, PSoundChannel);
@@ -416,32 +420,45 @@ PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 }
 
 
-PBoolean PSoundChannel::PlayFile(const PFilePath & file, PBoolean wait)
+PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
 {
   PAssert(activeDirection == Player, PLogicError);
   PReadWaitAndSignal mutex(channelPointerMutex);
   if (readChannel != NULL)
-    return GetSoundChannel()->PlayFile(file, wait);
+    return GetSoundChannel()->PlayFile(filename, wait);
 
 #if P_WAVFILE
   /* use PWAVFile instead of PFile -> skips wav header bytes */
-  PWAVFile wavFile(file, PFile::ReadOnly);
+  PWAVFile wavFile(filename, PFile::ReadOnly);
+  if (!wavFile.IsOpen()) {
+    PTRACE(2, "Could not open WAV file " << filename);
+    return false;
+  }
 
-  if (!wavFile.IsOpen())
+  Abort();
+
+  if (!SetFormat(wavFile.GetChannels(), wavFile.GetSampleRate(), wavFile.GetSampleSize()))
     return false;
 
-  for (;;) {
-    BYTE buffer[512];
-    if (!wavFile.Read(buffer, 512))
-      break;
+  PBYTEArray buffer(std::min(wavFile.GetLength(), (off_t)(1024*1024))); // Max of a megabyte
 
-    PINDEX len = wavFile.GetLastReadCount();
-    if (len == 0)
-      break;
+  if (!SetBuffers(buffer.GetSize()))
+    return false;
 
-    if (!Write(buffer, len))
-      break;
+  PTRACE(4, "Starting play of WAV file \"" << filename << "\", "
+            "total size=" << wavFile.GetLength() << ", "
+            "buffer size=" << buffer.GetSize() << ", "
+            "sample rate=" << wavFile.GetSampleRate() << ", "
+            "duration=" << PTimeInterval(wavFile.GetLength()*8000/wavFile.GetSampleSize()/wavFile.GetChannels()/wavFile.GetSampleRate()));
+
+  while (wavFile.Read(buffer.GetPointer(), buffer.GetSize())) {
+    if (!Write(buffer, wavFile.GetLastReadCount())) {
+      PTRACE(4, "Error writing sound: " << GetErrorText());
+      return false;
+    }
   }
+
+  PTRACE(4, "Queued WAV file " << filename);
 
   if (wait)
    return WaitForPlayCompletion();

@@ -901,7 +901,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
 
 PBoolean PSoundChannelDirectSound::HasPlayCompleted () // public
 {
-  return CheckPlayBuffer() != SOUNDNOTIFY_AVAILABLE;
+  return CheckPlayBuffer() != SOUNDNOTIFY_AVAILABLE || m_available == (DWORD)m_bufferSize;
 }
 
 
@@ -926,49 +926,6 @@ PBoolean PSoundChannelDirectSound::PlaySound (const PSound & sound, PBoolean wai
 
   if (!Write((const void *)sound, sound.GetSize()))
     return false;
-
-  if (wait)
-    return WaitForPlayCompletion();
-
-  return true;
-}
-
-
-PBoolean PSoundChannelDirectSound::PlayFile (const PFilePath & filename, PBoolean wait) // public
-{
-  PAssert(activeDirection == Player, "Invalid device direction");
-
-  PMultiMediaFile mediaFile;
-  PWaveFormat fileFormat;
-  DWORD dataSize;
-  if (!mediaFile.OpenWaveFile(filename, fileFormat, dataSize))
-    return SetErrorValues(NotOpen, mediaFile.GetLastError() | PWIN32ErrorFlag, LastWriteError);
-
-  //Abort();
-  if (!SetFormat(fileFormat->nChannels, fileFormat->nSamplesPerSec, fileFormat->wBitsPerSample))
-    return false;
-
-  int bufferSize = m_waveFormat.nAvgBytesPerSec / 2; // 1/2 second
-  if (!SetBuffers(bufferSize, 4))                    // 2 seconds
-    return false;
-
-  PBYTEArray buffer;
-  m_isStreaming = false;
-
-  while (dataSize) {
-    // Read the waveform data subchunk
-    PINDEX count = PMIN(dataSize,((DWORD)bufferSize));
-    if (!mediaFile.Read(buffer.GetPointer(bufferSize), count)) {
-      SetErrorValues(Miscellaneous, mediaFile.GetLastError() | PWIN32ErrorFlag, LastReadError);
-      PTRACE(4, "PlayFile read error: " << GetErrorText());
-      return false;
-    }
-    if (!Write(buffer, count))
-      break;
-
-    dataSize -= count;
-  }
-  mediaFile.Close();
 
   if (wait)
     return WaitForPlayCompletion();
