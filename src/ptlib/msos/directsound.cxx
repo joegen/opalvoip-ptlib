@@ -275,6 +275,12 @@ PSoundChannelDirectSound::~PSoundChannelDirectSound()
 }
 
 
+const char * PSoundChannelDirectSound::GetDriverName()
+{
+  return PPlugin_PSoundChannel_DirectSound::ServiceName();
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Open
 
