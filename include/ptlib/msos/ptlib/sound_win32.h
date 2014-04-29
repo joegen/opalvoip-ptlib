@@ -150,7 +150,6 @@ class PSoundChannelWin32: public PSoundChannel
     PBoolean SetBuffers(PINDEX size, PINDEX count);
     PBoolean GetBuffers(PINDEX & size, PINDEX & count);
     PBoolean PlaySound(const PSound & sound, PBoolean wait);
-    PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
     PBoolean HasPlayCompleted();
     PBoolean WaitForPlayCompletion();
     PBoolean RecordSound(PSound & sound);
