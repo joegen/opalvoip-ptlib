@@ -1645,29 +1645,28 @@ PString PArgList::InternalGetOptionStringByIndex(size_t idx, const char * dflt) 
 
 PStringArray PArgList::GetParameters(PINDEX first, PINDEX last) const
 {
-  PStringArray array;
+  PStringArray params;
 
-  last += m_shift;
-  if (last < 0)
-    return array;
+  if (last != P_MAX_INDEX)
+    last += m_shift;
 
   if (last >= m_parameterIndex.GetSize())
     last = m_parameterIndex.GetSize()-1;
 
+  if (m_shift < 0 && first < (PINDEX)-m_shift)
+    return params;
+
   first += m_shift;
-  if (first < 0)
-    first = 0;
-
   if (first > last)
-    return array;
+    return params;
 
-  array.SetSize(last-first+1);
+  params.SetSize(last - first + 1);
 
   PINDEX idx = 0;
   while (first <= last)
-    array[idx++] = m_argumentArray[m_parameterIndex[first++]];
+    params[idx++] = m_argumentArray[m_parameterIndex[first++]];
 
-  return array;
+  return params;
 }
 
 
