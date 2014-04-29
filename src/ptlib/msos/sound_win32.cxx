@@ -555,10 +555,6 @@ DWORD PWaveBuffer::Release()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
 PSoundChannelWin32::PSoundChannelWin32()
   : hWaveIn(NULL)
   , hWaveOut(NULL)
@@ -580,6 +576,12 @@ PSoundChannelWin32::~PSoundChannelWin32()
 
   if (hEventDone != NULL)
     CloseHandle(hEventDone);
+}
+
+
+const char * PSoundChannelWin32::GetDriverName()
+{
+  return PPlugin_PSoundChannel_WindowsMultimedia::ServiceName();
 }
 
 

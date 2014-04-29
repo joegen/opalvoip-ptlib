@@ -86,10 +86,46 @@ PCREATE_SOUND_PLUGIN(NullAudio, PSoundChannelNull)
 
 //////////////////////////////////////////////////////////////////////////////
     
+PSoundChannel::Params::Params(Directions dir,
+                              const PString & device,
+                              const PString & driver,
+                              unsigned channels,
+                              unsigned sampleRate,
+                              unsigned bitsPerSample,
+                              unsigned bufferSize,
+                              unsigned bufferCount,
+                              PPluginManager * pluginMgr)
+  : m_direction(dir)
+  , m_device(device)
+  , m_driver(driver)
+  , m_channels(channels)
+  , m_sampleRate(sampleRate)
+  , m_bitsPerSample(bitsPerSample)
+  , m_bufferSize(bufferSize)
+  , m_bufferCount(bufferCount)
+  , m_pluginMgr(pluginMgr)
+{
+  if (m_driver.IsEmpty())
+    device.Split(PPluginServiceDescriptor::SeparatorChar, m_driver, m_device);
+}
+
+
 void PSoundChannel::Params::SetBufferCountFromMS(unsigned milliseconds)
 {
   unsigned msPerBuffer = m_bufferSize*1000/m_sampleRate*8/m_bitsPerSample;
   m_bufferCount = (milliseconds+msPerBuffer-1)/msPerBuffer;
+}
+
+
+ostream & operator<<(ostream & strm, const PSoundChannel::Params & params)
+{
+  if (params.m_driver.IsEmpty())
+    return strm << "device=\"" << params.m_device << '"';
+
+  if (params.m_device.IsEmpty())
+    return strm << "driver=\"" << params.m_driver << '"';
+
+  return strm << "driver=\"" << params.m_driver << "\", device=\"" << params.m_device << '"';
 }
 
 
@@ -164,10 +200,7 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const Params & params)
     }
   }
 
-  PTRACE(5, NULL, "Sound",
-         params.m_direction << " search for"
-         " driver=\"" << adjustedParams.m_driver << "\","
-         " device=\"" << adjustedParams.m_device << '"');
+  PTRACE(5, NULL, "Sound", params.m_direction << " search for " << adjustedParams);
 
   PSoundChannel * sndChan = NULL;
 
@@ -195,17 +228,13 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(const Params & params)
   }
 
   if (sndChan != NULL) {
-    PTRACE(5, sndChan, "Sound", params.m_direction << " opening, "
-           " driver=\"" << adjustedParams.m_driver << "\","
-           " device=\"" << adjustedParams.m_device << '"');
+    PTRACE(5, sndChan, "Sound", params.m_direction << " opening, " << adjustedParams);
     if (sndChan->Open(adjustedParams))
       return sndChan;
   }
 
   PTRACE(2, sndChan, "Sound",
-         params.m_direction << " could not be opened,"
-         " driver=\"" << adjustedParams.m_driver << "\","
-         " device=\"" << adjustedParams.m_device << "\": " <<
+         params.m_direction << " could not be opened, " << adjustedParams << ": " <<
          (sndChan != NULL ? sndChan->GetErrorText() : "Unknown driver or device type"));
 
   delete sndChan;
@@ -225,12 +254,12 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 
 #if P_DIRECTSOUND
   if (!(device = PSoundChannelDirectSound::GetDefaultDevice(dir)).IsEmpty())
-    return device;
+    return PSTRSTRM(PSoundChannelDirectSound::GetDriverName() << PPluginServiceDescriptor::SeparatorChar << device);
 #endif
 
 #ifdef _WIN32
   if (!(device = PSoundChannelWin32::GetDefaultDevice(dir)).IsEmpty())
-    return device;
+    return PSTRSTRM(PSoundChannelWin32::GetDriverName() << PPluginServiceDescriptor::SeparatorChar << device);
 #endif
 
   PStringArray devices = GetDeviceNames(dir);
@@ -558,11 +587,7 @@ static PString SuccessfulTestResult(std::vector<int64_t> & times, PSoundChannel 
 static PString UnsuccessfulTestResult(const char * err, const PSoundChannel::Params & params, PSoundChannel & channel)
 {
   PStringStream text;
-  text << "Error: " << err << " using ";
-  if (params.m_driver.IsEmpty())
-    text << '"' << params.m_device << '"';
-  else
-    text << "driver=\"" << params.m_driver << "\", device=\"" << params.m_device << '"';
+  text << "Error: " << err << " using " << params;
 
   if (channel.IsOpen())
     text << ": " << channel.GetErrorText();
