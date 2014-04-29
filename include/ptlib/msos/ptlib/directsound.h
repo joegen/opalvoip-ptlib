@@ -187,12 +187,6 @@ public:
     */
   PBoolean PlaySound(const PSound & sound, PBoolean wait);
 
-  /** Resets I/O, changes audio format to match file and reconfigures the
-      device's transfer buffers. Accepts .wav files. Wait refers to waiting 
-      for completion of last chunk.
-    */
-  PBoolean PlayFile(const PFilePath & filename, PBoolean wait);
-
   PBoolean HasPlayCompleted();
   PBoolean WaitForPlayCompletion();
   //@}
