@@ -130,6 +130,7 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
 class PSoundChannelWin32: public PSoundChannel
 {
  public:
+    static const char * GetDriverName();
     PSoundChannelWin32();
     ~PSoundChannelWin32();
     static PString GetDefaultDevice(Directions dir);

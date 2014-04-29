@@ -59,6 +59,8 @@
 class PSoundChannelDirectSound: public PSoundChannel
 {
 public:
+  static const char * GetDriverName();
+
   /**@name Construction */
   //@{
   /** Initialise with no device
