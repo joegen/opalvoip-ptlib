@@ -160,7 +160,7 @@
       <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>V8.DLL;SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -245,7 +245,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>V8.DLL;SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -339,7 +339,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>V8.DLL;SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
