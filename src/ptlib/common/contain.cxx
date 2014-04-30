@@ -1185,7 +1185,7 @@ PINDEX PString::HashFunction() const
      Mark Allen Weiss, with limit of only executing over at most the first and
      last characters to increase speed when dealing with large strings. */
 
-  switch (m_length) {
+  switch (GetLength()) { // Use virtual function so PStringStream recalculates length
     case 0:
       return 0;
     case 1:
@@ -1218,7 +1218,7 @@ PBoolean PString::SetSize(PINDEX newSize)
   if (!InternalSetSize(newSize, !IsUnique()))
     return false;
 
-  if (m_length >= newSize) {
+  if (GetLength() >= newSize) {
     m_length = newSize-1;
     theArray[m_length] = '\0';
   }
@@ -1976,7 +1976,7 @@ PWCharArray PString::AsUCS2() const
   // Note that MB_ERR_INVALID_CHARS is the only dwFlags value supported by Code page 65001 (UTF-8). Windows XP and later.
   PINDEX count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, GetLength(), NULL, 0);
   if (count > 0 && ucs2.SetSize(count+1)) { // Allow for trailing NULL
-    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, m_length, ucs2.GetPointer(), ucs2.GetSize());
+    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, theArray, GetLength(), ucs2.GetPointer(), ucs2.GetSize());
     return ucs2;
   }
 
@@ -2583,6 +2583,19 @@ char ** PStringArray::ToCharArray(PCharArray * storage) const
   return storagePtr;
 }
 
+
+PString PStringArray::ToString(char separator) const
+{
+  PStringStream str;
+
+  for (PINDEX i = 0; i < GetSize(); ++i) {
+    if (i > 0)
+      str << separator;
+    str << (*this)[i];
+  }
+
+  return str;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
