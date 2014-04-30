@@ -893,7 +893,16 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     PWaitAndSignal mutex(m_sessionMutex);
 
     m_xmlChanged = true;
-    LoadGrammar(NULL);
+    m_speakNodeData = true;
+    m_bargeIn = false;
+    m_bargingIn = false;
+    m_recordingStatus = NotRecording;
+    m_transferStatus = NotTransfering;
+
+    m_userInputMutex.Wait();
+    while (!m_userInputQueue.empty())
+      m_userInputQueue.pop();
+    m_userInputMutex.Signal();
 
     // parse the XML
     m_xml.RemoveAll();

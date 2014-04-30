@@ -160,59 +160,59 @@ class PVarType : public PObject
 
     /**Assign a boolean type object.
      */
-    PVarType & operator=(bool value) { if (SetType(VarBoolean)) m_.boolean = value; return *this; }
+    PVarType & operator=(bool value);
 
     /**Assign a 8 bit integer type object.
      */
-    PVarType & operator=(char value) { if (SetType(VarChar)) m_.character = value; return *this; }
+    PVarType & operator=(char value);
 
     /**Assign a 16 bit integer type object.
      */
-    PVarType & operator=(int16_t value) { if (SetType(VarInt16)) m_.int16 = value; return *this; }
+    PVarType & operator=(int16_t value);
 
     /**Assign a 32 bit integer type object.
      */
-    PVarType & operator=(int32_t value) { if (SetType(VarInt32)) m_.int32 = value; return *this; }
+    PVarType & operator=(int32_t value);
 
     /**Assign a 64 bit integertype object.
      */
-    PVarType & operator=(int64_t value) { if (SetType(VarInt64)) m_.int64 = value; return *this; }
+    PVarType & operator=(int64_t value);
 
     /**Assign a 8 bit unsigned integer type object.
      */
-    PVarType & operator=(uint8_t value) { if (SetType(VarUInt8)) m_.uint8 = value; return *this; }
+    PVarType & operator=(uint8_t value);
 
     /**Assign a 16 bit unsigned integer type object.
      */
-    PVarType & operator=(uint16_t value) { if (SetType(VarUInt16)) m_.uint16 = value; return *this; }
+    PVarType & operator=(uint16_t value);
 
     /**Assign a 32 bit unsigned integer type object.
      */
-    PVarType & operator=(uint32_t value) { if (SetType(VarUInt32)) m_.uint32 = value; return *this; }
+    PVarType & operator=(uint32_t value);
 
     /**Assign a 64 bit unsigned integer type object.
      */
-    PVarType & operator=(uint64_t value) { if (SetType(VarUInt64)) m_.uint64 = value; return *this; }
+    PVarType & operator=(uint64_t value);
 
     /**Assign a single precision floating point type object.
      */
-    PVarType & operator=(float value) { if (SetType(VarFloatSingle)) m_.floatSingle = value; return *this; }
+    PVarType & operator=(float value);
 
     /**Assign a double precision floating point type object.
      */
-    PVarType & operator=(double value) { if (SetType(VarFloatDouble)) m_.floatDouble = value; return *this; }
+    PVarType & operator=(double value);
 
     /**Assign a extended (long double) precision floating point type object.
      */
-    PVarType & operator=(long double value) { if (SetType(VarFloatExtended)) m_.floatExtended = value; return *this; }
+    PVarType & operator=(long double value);
 
     /**Assign a time of day type object.
      */
-    PVarType & operator=(const PGloballyUniqueID & value) { if (SetType(VarGUID)) memcpy(m_.guid, value, value.GetSize()); return *this; }
+    PVarType & operator=(const PGloballyUniqueID & value);
 
     /**Assign a time of day type object.
      */
-    PVarType & operator=(const PTime & value) { if (SetType(VarTime)) m_.time.seconds = value.GetTimeInSeconds(); return *this; }
+    PVarType & operator=(const PTime & value);
 
     /**Assignment operator for strings.
        Default to dynamic, not static as is this is much safer.
