@@ -1005,7 +1005,7 @@ class PSSLChannelDTLS : public PSSLChannel
     bool HandshakeCompleted() const;
     bool IsServer() const;
     PCaselessString GetSelectedProfile() const;
-    PBYTEArray GetKeyMaterial() const;
+    bool GetKeyMaterial(PINDEX materialSize, PBYTEArray* result) const;
 
   protected:
     virtual PBoolean OnOpen();
