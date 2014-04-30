@@ -37,7 +37,21 @@
 
 #if P_V8
 
-// Requires version SVN tag http://v8.googlecode.com/svn/tags/3.26.11
+/*
+  Requires V8 version with SVN tag http://v8.googlecode.com/svn/tags/3.26.11
+
+  Need to build V8 DLL's for compatibility across compilers.
+
+  For Windows the following commands were used to build the VisualStudio solution:
+    svn co http://v8.googlecode.com/svn/tags/3.26.11 where/ever
+    cd where/ever
+    svn co http://gyp.googlecode.com/svn/trunk build/gyp
+    svn co http://src.chromium.org/svn/trunk/deps/third_party/cygwin@66844 third_party/cygwin
+    svn co http://src.chromium.org/svn/trunk/tools/third_party/python_26@89111 third_party/python_26
+    .\third_party\cygwin\bin\bash.exe -c "./third_party/python_26/python26.exe ./build/gyp_v8 -Dtarget_arch=ia32 -Dcomponent=shared_library"
+
+  then use .\build\all.sln
+*/
 
 #pragma message("JavaScript support enabled")
 
@@ -52,11 +66,11 @@
 #include <v8.h>
 
 #ifdef _MSC_VER
-  #pragma comment(lib, P_V8_BASE_LIB)
-  #pragma comment(lib, P_V8_SNAPSHOT_LIB)
-  #pragma comment(lib, P_V8_ICUUC_LIB)
-  #pragma comment(lib, P_V8_ICUI18N_LIB)
-  #pragma comment(lib, "winmm.lib")
+  #if defined(_DEBUG)
+    #pragma comment(lib, P_V8_DEBUG_LIB)
+  #else
+    #pragma comment(lib, P_V8_RELEASE_LIB)
+  #endif
 #endif
 
 
