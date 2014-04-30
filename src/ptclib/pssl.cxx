@@ -2704,21 +2704,23 @@ public:
 
     m_profile = p->name;
 
+    return true;
+  }
+
+  bool GetKeyMaterial(PINDEX materialSize, PBYTEArray* result) const
+  {
+    if (!result || materialSize == 0)
+      return false;
+
     static PConstString const KeyMaterialName("EXTRACTOR-dtls_srtp");
-    static const PINDEX MaxKeySize = ((256 >> 3) // rfc5764 4.1.2.  SRTP Protection Profiles, key
-                                     +(112 >> 3) // rfc5764 4.1.2.  SRTP Protection Profiles, salt
-                                     )*2;
-
-    memset(m_keyMaterial.GetPointer(MaxKeySize), 0, MaxKeySize);
-
-    if (SSL_export_keying_material(m_channel,
-                                   m_keyMaterial.GetPointer(), MaxKeySize,
-                                   KeyMaterialName, KeyMaterialName.GetLength(),
-                                   NULL, 0, 0) == 1)
-      return true;
-    
-    PTRACE(2, "DTLSChannel\tSSL_export_keying_material failed: " << ERR_error_string(ERR_get_error(), NULL));
-    return false;
+    memset(result->GetPointer(materialSize), 0, materialSize);
+    if (SSL_export_keying_material(m_channel, result->GetPointer(materialSize), materialSize,
+        KeyMaterialName, KeyMaterialName.GetLength(), NULL, 0, 0) != 1)
+    {
+      PTRACE(2, "DTLSChannel\tSSL_export_keying_material failed: " << ERR_error_string(ERR_get_error(), NULL));
+      return false;
+    }
+    return true;
   }
 
   PDECLARE_NOTIFIER(PTimer, Implementation, OnReadTimeout)
@@ -2739,7 +2741,6 @@ public:
   PNotifier m_callback;
 
   PCaselessString    m_profile;
-  PBYTEArray         m_keyMaterial;
 };
 
 
@@ -2795,9 +2796,9 @@ PCaselessString PSSLChannelDTLS::GetSelectedProfile() const
 }
 
 
-PBYTEArray PSSLChannelDTLS::GetKeyMaterial() const
+bool PSSLChannelDTLS::GetKeyMaterial(PINDEX materialSize, PBYTEArray* result) const
 {
-  return m_imp->m_keyMaterial;
+  return m_imp->GetKeyMaterial(materialSize, result);
 }
 
 
