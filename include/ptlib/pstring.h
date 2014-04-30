@@ -2467,6 +2467,12 @@ class PStringArray : public PArray<PString>
     char ** ToCharArray(
       PCharArray * storage = NULL
     ) const;
+
+    /**Create a PString concatenation of all array memebers.
+      */
+    PString ToString(
+      char separator = ' '
+    ) const;
   //@}
 };
 

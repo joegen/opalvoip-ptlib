@@ -555,10 +555,6 @@ DWORD PWaveBuffer::Release()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
 PSoundChannelWin32::PSoundChannelWin32()
   : hWaveIn(NULL)
   , hWaveOut(NULL)
@@ -580,6 +576,12 @@ PSoundChannelWin32::~PSoundChannelWin32()
 
   if (hEventDone != NULL)
     CloseHandle(hEventDone);
+}
+
+
+const char * PSoundChannelWin32::GetDriverName()
+{
+  return PPlugin_PSoundChannel_WindowsMultimedia::ServiceName();
 }
 
 
@@ -1203,73 +1205,6 @@ PBoolean PSoundChannelWin32::PlaySound(const PSound & sound, PBoolean wait)
   SetFormat(numChannels, sampleRate, bitsPerSample);
   SetBuffers(bufferSize, bufferCount);
   return ok;
-}
-
-
-PBoolean PSoundChannelWin32::PlayFile(const PFilePath & filename, PBoolean wait)
-{
-  Abort();
-
-  PMultiMediaFile mmio;
-  PWaveFormat fileFormat;
-  DWORD dataSize;
-  if (!mmio.OpenWaveFile(filename, fileFormat, dataSize))
-    return SetErrorValues(NotOpen, mmio.GetLastError()|PWIN32ErrorFlag, LastWriteError);
-
-  // Save old format and set to one loaded from file.
-  unsigned numChannels = waveFormat->nChannels;
-  unsigned sampleRate = waveFormat->nSamplesPerSec;
-  unsigned bitsPerSample = waveFormat->wBitsPerSample;
-  waveFormat = fileFormat;
-  if (!OpenDevice(os_handle)) {
-    SetFormat(numChannels, sampleRate, bitsPerSample);
-    return false;
-  }
-
-  bufferMutex.Wait();
-
-  DWORD osError = MMSYSERR_NOERROR;
-  while (dataSize > 0) {
-    PWaveBuffer & buffer = buffers[bufferIndex];
-    while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
-      bufferMutex.Signal();
-      // No free buffers, so wait for one
-      if (!WaitEvent(LastWriteError))
-        return false;
-      bufferMutex.Wait();
-    }
-
-    // Can't write more than a buffer full
-    PINDEX count = dataSize;
-    if ((osError = buffer.Prepare(hWaveOut, count)) != MMSYSERR_NOERROR)
-      break;
-
-    // Read the waveform data subchunk
-    if (!mmio.Read(buffer.GetPointer(), count)) {
-      osError = mmio.GetLastError();
-      break;
-    }
-
-    if ((osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
-      break;
-
-    bufferIndex = (bufferIndex+1)%buffers.GetSize();
-    dataSize -= count;
-  }
-
-  bufferMutex.Signal();
-
-  if (osError != MMSYSERR_NOERROR) {
-    SetFormat(numChannels, sampleRate, bitsPerSample);
-    return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
-  }
-
-  if (dataSize == 0 && wait) {
-    WaitForPlayCompletion();
-    SetFormat(numChannels, sampleRate, bitsPerSample);
-  }
-
-  return true;
 }
 
 
