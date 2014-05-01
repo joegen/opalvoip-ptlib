@@ -484,7 +484,12 @@ int PEthSocket::Frame::GetIP(PBYTEArray & payload, PIPSocket::Address & src, PIP
     if (m_fragmentSrcIP != src || m_fragmentDstIP != dst)
       return ip[9]; // Next protocol layer
 
-    if (fragmentsSize != fragmentOffset) {
+    if (fragmentsSize > fragmentOffset) {
+      PTRACE(5, "Repeated IP fragment at " << fragmentOffset << " on " << src << " -> " << dst);
+      return -1;
+    }
+
+    if (fragmentsSize < fragmentOffset) {
       PTRACE(2, "Missing IP fragment, expected " << fragmentsSize << ", got " << fragmentOffset << " on " << src << " -> " << dst);
       m_fragments.SetSize(0);
       return -1;
