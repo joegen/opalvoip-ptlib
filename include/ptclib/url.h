@@ -504,12 +504,12 @@ class PURLLegacyScheme : public PURLScheme
 
   */
 #define PURL_LEGACY_SCHEME(schemeName, \
-                           hasUsername,           /* URL scheme has a ysername */ \
+                           hasUsername,           /* URL scheme has a username */ \
                            hasPassword,           /* URL scheme has a password */ \
                            hasHostPort,           /* URL scheme has a host:port */ \
                            defaultToUserIfNoAt,   /* URL scheme is username if no @, otherwise host:port */ \
                            defaultHostToLocal,    /* URL scheme defaults to PIPSocket::GetHostName() if not present */ \
-                           hasQuery,              /* URL scheme has a query secton */ \
+                           hasQuery,              /* URL scheme has a query section */ \
                            hasParameters,         /* URL scheme has a parameter section */ \
                            hasFragments,          /* URL scheme has a fragment section */ \
                            hasPath,               /* URL scheme has a path */ \
