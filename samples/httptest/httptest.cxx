@@ -86,9 +86,12 @@ void HTTPTest::Main()
       return;
     }
   }
+
+  PTCPSocket listener(args.GetOptionAs('p', (WORD)(sslContext != NULL ? 443 : 80)));
+#else
+  PTCPSocket listener(args.GetOptionAs('p', 80));
 #endif
 
-    PTCPSocket listener(args.GetOptionAs('p', (WORD)(sslContext != NULL ? 443 : 80)));
   if (!listener.Listen(args.GetOptionString('Q', "100").AsUnsigned())) {
     cerr << "Could not listen on port " << listener.GetPort() << endl;
     return;
@@ -97,10 +100,20 @@ void HTTPTest::Main()
   PHTTPSpace httpNameSpace;
   httpNameSpace.AddResource(new PHTTPString("index.html", "Hello", "text/plain"));
 
-  cout << "Listening for " << (sslContext != NULL ? "https" : "http") << " on port " << listener.GetPort() << endl;
+  cout << "Listening for "
+#if P_SSL
+       << (sslContext != NULL ? "https" : "http") <<
+#else
+          "http"
+#endif
+          " on port " << listener.GetPort() << endl;
 
   for (;;) {
+#if P_SSL
     HTTPConnection * connection = new HTTPConnection(httpNameSpace, sslContext);
+#else
+    HTTPConnection * connection = new HTTPConnection(httpNameSpace);
+#endif
     if (connection->m_socket.Accept(listener))
       m_pool.AddWork(connection);
     else {
