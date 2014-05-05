@@ -1705,17 +1705,15 @@ Optional Features:
   --disable-alsa          disable ALSA audio support
   --disable-esd           disable ESD audio support
   --disable-oss           disable OSS audio support
-  --disable-pulse         disable Pulse audio support
+  --enable-pulse          enable Pulse audio support
   --disable-sunaudio      disable Sun audio support
   --disable-shmaudio      disable shm audio support
   --disable-portaudio     disable PortAudio library
   --disable-v4l           disable V4L video support
   --disable-v4l2          disable V4L2 video support
   --disable-bsdvideo      disable BSD video support
-  --enable-avc            enable IEEE1394/AVC video support - NOTE DOES NOT
-                          COMPILE!
-  --enable-dc             enable IEEE1394/DC video support - NOTE DOES NOT
-                          COMPILE!
+  --disable-avc           disable IEEE1394/AVC video support
+  --disable-dc            disable IEEE1394/DC video support
   --enable-samples        enable samples build
 
 Optional Packages:
@@ -16640,23 +16638,28 @@ fi
       fi
 
 
-      # Check whether --enable-pulse was given.
+                  # Check whether --enable-pulse was given.
 if test "${enable_pulse+set}" = set; then :
-  enableval=$enable_pulse;
+  enableval=$enable_pulse; enable_pulse="$enableval"
+else
+  enable_pulse=disabled
 fi
 
       PTLIB_PULSE=no
       if test "x${enable_pulse}" = "xno" ; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
-$as_echo "$as_me: OSS audio disabled by user" >&6;}
+         { $as_echo "$as_me:${as_lineno-$LINENO}: Pulse audio disabled by user" >&5
+$as_echo "$as_me: Pulse audio disabled by user" >&6;}
+      elif test "x${enable_pulse}" = "xdisabled" ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: Pulse audio disabled by default" >&5
+$as_echo "$as_me: Pulse audio disabled by default" >&6;}
       else
 
    MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
    MY_LINK_IFELSE_LIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS "
    LIBS="-lpulse $LIBS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PCAP support" >&5
-$as_echo_n "checking for PCAP support... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Pulse support" >&5
+$as_echo_n "checking for Pulse support... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <pulse/context.h>
@@ -16701,8 +16704,8 @@ fi
 
       PTLIB_SUNAUDIO=no
       if test "x${enable_sunaudio}" = "xno" ; then
-         { $as_echo "$as_me:${as_lineno-$LINENO}: OSS audio disabled by user" >&5
-$as_echo "$as_me: OSS audio disabled by user" >&6;}
+         { $as_echo "$as_me:${as_lineno-$LINENO}: Sun audio disabled by user" >&5
+$as_echo "$as_me: Sun audio disabled by user" >&6;}
       else
          ac_fn_cxx_check_header_mongrel "$LINENO" "sys/mixer.h" "ac_cv_header_sys_mixer_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_mixer_h" = xyes; then :
@@ -17119,13 +17122,9 @@ fi
       fi
 
 
-#until avc lib header API change is solved, default to disabled.
-#      AC_ARG_ENABLE(avc, AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]))
-# Check whether --enable-avc was given.
+      # Check whether --enable-avc was given.
 if test "${enable_avc+set}" = set; then :
-  enableval=$enable_avc; enable_avc="$enableval"
-else
-  enable_avc=no
+  enableval=$enable_avc;
 fi
 
       PTLIB_AVC1394=no
@@ -17163,13 +17162,9 @@ fi
       fi
 
 
-#until avc lib header API change is solved, default to disabled.
-#      AC_ARG_ENABLE(dc, AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]))
-# Check whether --enable-dc was given.
+      # Check whether --enable-dc was given.
 if test "${enable_dc+set}" = set; then :
-  enableval=$enable_dc; enable_dc="$enableval"
-else
-  enable_dc=no
+  enableval=$enable_dc;
 fi
 
       PTLIB_DC1394=no
