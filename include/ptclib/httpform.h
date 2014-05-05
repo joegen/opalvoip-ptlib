@@ -173,8 +173,9 @@ class PHTTPField : public PObject
 
     /** Get the value of the PConfig to the sub-field. If the field is not
        composite then it always sets the value as for the non-indexed version.
+       @return true if no configuration set and a default should be used.
      */
-    virtual void LoadFromConfig(
+    virtual bool LoadFromConfig(
       PConfig & cfg   // Configuration for value transfer.
     );
 
@@ -275,7 +276,7 @@ class PHTTPCompositeField : public PHTTPField
       const PString & newValue   // New value for the field.
     );
 
-    virtual void LoadFromConfig(
+    virtual bool LoadFromConfig(
       PConfig & cfg   // Configuration for value transfer.
     );
     virtual void SaveToConfig(
@@ -357,7 +358,7 @@ class PHTTPFieldArray : public PHTTPCompositeField
       PHTML & html    // HTML to receive the field info.
     ) const;
 
-    virtual void LoadFromConfig(
+    virtual bool LoadFromConfig(
       PConfig & cfg   // Configuration for value transfer.
     );
     virtual void SaveToConfig(
@@ -373,7 +374,8 @@ class PHTTPFieldArray : public PHTTPCompositeField
     void SetSize(PINDEX newSize);
 
     PStringArray GetStrings(
-      PConfig & cfg   ///< Config file to get strings from
+      PConfig & cfg,   ///< Config file to get strings from
+      const PStringArray & defaultValues
     );
 
     void SetStrings(
@@ -528,7 +530,7 @@ class PHTTPIntegerField : public PHTTPField
       const PString & newVal
     );
 
-    virtual void LoadFromConfig(
+    virtual bool LoadFromConfig(
       PConfig & cfg   ///< Configuration for value transfer.
     );
     virtual void SaveToConfig(
@@ -580,7 +582,7 @@ class PHTTPBooleanField : public PHTTPField
       const PString & newVal
     );
 
-    virtual void LoadFromConfig(
+    virtual bool LoadFromConfig(
       PConfig & cfg   ///< Configuration for value transfer.
     );
     virtual void SaveToConfig(
@@ -885,7 +887,7 @@ class PHTTPConfig : public PHTTPForm
 
     /** Load all of the values for the resource from the configuration.
      */
-    void LoadFromConfig();
+    bool LoadFromConfig();
 
     /** Get the configuration file section that the page will alter.
 
