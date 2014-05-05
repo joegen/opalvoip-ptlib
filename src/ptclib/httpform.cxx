@@ -362,16 +362,23 @@ static int SplitConfigKey(const PString & fullName,
 }
 
 
-void PHTTPField::LoadFromConfig(PConfig & cfg)
+bool PHTTPField::LoadFromConfig(PConfig & cfg)
 {
   PString section, key;
   switch (SplitConfigKey(fullName, section, key)) {
     case 1 :
-      SetValue(cfg.GetString(key, GetValue(true)));
+      if (!cfg.HasKey(key))
+        return true;
+      SetValue(cfg.GetString(key));
       break;
+
     case 2 :
-      SetValue(cfg.GetString(section, key, GetValue(true)));
+      if (!cfg.HasKey(section, key))
+        return true;
+      SetValue(cfg.GetString(section, key));
   }
+
+  return false;
 }
 
 
@@ -549,11 +556,18 @@ void PHTTPCompositeField::SetValue(const PString &)
 }
 
 
-void PHTTPCompositeField::LoadFromConfig(PConfig & cfg)
+bool PHTTPCompositeField::LoadFromConfig(PConfig & cfg)
 {
+  bool useDefault = true;
+
   SetName(fullName);
-  for (PINDEX i = 0; i < GetSize(); i++)
-    fields[i].LoadFromConfig(cfg);
+
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    if (!fields[i].LoadFromConfig(cfg))
+      useDefault = false;
+  }
+
+  return useDefault;
 }
 
 
@@ -852,19 +866,28 @@ static int SplitArraySizeKey(const PString & fullName,
 }
 
 
-void PHTTPFieldArray::LoadFromConfig(PConfig & cfg)
+bool PHTTPFieldArray::LoadFromConfig(PConfig & cfg)
 {
   if (canAddElements) {
     PString section, key;
     switch (SplitArraySizeKey(fullName, section, key)) {
       case 1 :
-        SetSize(cfg.GetInteger(key, GetSize()));
+        if (!cfg.HasKey(key))
+          return true;
+
+        SetSize(cfg.GetInteger(key));
         break;
+
       case 2 :
-        SetSize(cfg.GetInteger(section, key, GetSize()));
+        if (!cfg.HasKey(section, key))
+          return true;
+
+        SetSize(cfg.GetInteger(section, key));
     }
   }
+
   PHTTPCompositeField::LoadFromConfig(cfg);
+  return false;
 }
 
 
@@ -984,9 +1007,10 @@ void PHTTPFieldArray::AddBlankField()
 }
 
 
-PStringArray PHTTPFieldArray::GetStrings(PConfig & cfg)
+PStringArray PHTTPFieldArray::GetStrings(PConfig & cfg, const PStringArray & defaultValues)
 {
-  LoadFromConfig(cfg);
+  if (LoadFromConfig(cfg))
+    SetStrings(cfg, defaultValues);
 
   PStringArray values(GetSize());
 
@@ -1255,16 +1279,21 @@ PString PHTTPIntegerField::GetValue(PBoolean dflt) const
 }
 
 
-void PHTTPIntegerField::LoadFromConfig(PConfig & cfg)
+bool PHTTPIntegerField::LoadFromConfig(PConfig & cfg)
 {
   PString section, key;
   switch (SplitConfigKey(fullName, section, key)) {
     case 1 :
+      if (!cfg.HasKey(key))
+        return true;
       value = cfg.GetInteger(key, initialValue);
       break;
     case 2 :
+      if (!cfg.HasKey(section, key))
+        return true;
       value = cfg.GetInteger(section, key, initialValue);
   }
+  return false;
 }
 
 
@@ -1393,16 +1422,21 @@ PString PHTTPBooleanField::GetValue(PBoolean dflt) const
 }
 
 
-void PHTTPBooleanField::LoadFromConfig(PConfig & cfg)
+bool PHTTPBooleanField::LoadFromConfig(PConfig & cfg)
 {
   PString section, key;
   switch (SplitConfigKey(fullName, section, key)) {
     case 1 :
+      if (!cfg.HasKey(key))
+        return true;
       value = cfg.GetBoolean(key, initialValue);
       break;
     case 2 :
+      if (!cfg.HasKey(section, key))
+        return true;
       value = cfg.GetBoolean(section, key, initialValue);
   }
+  return false;
 }
 
 
@@ -2097,10 +2131,10 @@ void PHTTPConfig::Construct()
 }
 
 
-void PHTTPConfig::LoadFromConfig()
+bool PHTTPConfig::LoadFromConfig()
 {
   PConfig cfg(section);
-  fields.LoadFromConfig(cfg);
+  return fields.LoadFromConfig(cfg);
 }
 
 
@@ -2260,11 +2294,8 @@ PStringArray PHTTPConfig::AddStringArrayField(const char * name,
 {
   PConfig cfg(section);
   PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPStringField(name, maxLength, "", help, rows, columns), sorted);
-  PStringArray currentValues = fieldArray->GetStrings(cfg);
-  if (currentValues.IsEmpty())
-    fieldArray->SetStrings(cfg, currentValues = defaultValues);
   Add(fieldArray);
-  return currentValues;
+  return fieldArray->GetStrings(cfg, defaultValues);
 }
 
 
@@ -2293,11 +2324,8 @@ PStringArray PHTTPConfig::AddSelectArrayField(const char * name,
 {
   PConfig cfg(section);
   PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPSelectField(name, valueArray, 0, help, enumeration), sorted);
-  PStringArray currentValues = fieldArray->GetStrings(cfg);
-  if (currentValues.IsEmpty())
-    fieldArray->SetStrings(cfg, currentValues = defaultValues);
   Add(fieldArray);
-  return currentValues;
+  return fieldArray->GetStrings(cfg, defaultValues);
 }
 
 
