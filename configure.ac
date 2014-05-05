@@ -2107,13 +2107,18 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for Pulse sound support
 
-      AC_ARG_ENABLE(pulse, AS_HELP_STRING([--disable-pulse],[disable Pulse audio support]))
+      dnl Pulse seems to lock up on some machines, so disabled by default
+      dnl AC_ARG_ENABLE(pulse, AS_HELP_STRING([--disable-pulse],[disable Pulse audio support]))
+      AC_ARG_ENABLE(pulse, AS_HELP_STRING([--enable-pulse],[enable Pulse audio support]),
+                    [enable_pulse="$enableval"], [enable_pulse=disabled])
       PTLIB_PULSE=no
       if test "x${enable_pulse}" = "xno" ; then
-         AC_MSG_NOTICE(OSS audio disabled by user)
+         AC_MSG_NOTICE(Pulse audio disabled by user)
+      elif test "x${enable_pulse}" = "xdisabled" ; then
+         AC_MSG_NOTICE(Pulse audio disabled by default)
       else
          MY_LINK_IFELSE(
-            [for PCAP support],
+            [for Pulse support],
             [],
             [-lpulse],
             [#include <pulse/context.h>],
@@ -2131,7 +2136,7 @@ if test "x$enable_plugins" != "xno" ; then
       AC_ARG_ENABLE(sunaudio, AS_HELP_STRING([--disable-sunaudio],[disable Sun audio support]))
       PTLIB_SUNAUDIO=no
       if test "x${enable_sunaudio}" = "xno" ; then
-         AC_MSG_NOTICE(OSS audio disabled by user)
+         AC_MSG_NOTICE(Sun audio disabled by user)
       else
          AC_CHECK_HEADER(
             [sys/mixer.h],
@@ -2265,10 +2270,7 @@ if test "x$enable_plugins" != "xno" ; then
       dnl #########################################################################
       dnl check for AVC video support
 
-#until avc lib header API change is solved, default to disabled.
-#      AC_ARG_ENABLE(avc, AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]))
-AC_ARG_ENABLE(avc, AS_HELP_STRING([--enable-avc],[enable IEEE1394/AVC video support - NOTE DOES NOT COMPILE!]),
-[enable_avc="$enableval"],[enable_avc=no])
+      AC_ARG_ENABLE(avc, AS_HELP_STRING([--disable-avc],[disable IEEE1394/AVC video support]))
       PTLIB_AVC1394=no
       if test "x$enable_avc" = "xno" ; then
          AC_MSG_NOTICE(IEEE1394/AVC video disabled by user)
@@ -2295,10 +2297,7 @@ AC_ARG_ENABLE(avc, AS_HELP_STRING([--enable-avc],[enable IEEE1394/AVC video supp
       dnl #########################################################################
       dnl check for DC video support
 
-#until avc lib header API change is solved, default to disabled.
-#      AC_ARG_ENABLE(dc, AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]))
-AC_ARG_ENABLE(dc, AS_HELP_STRING([--enable-dc],[enable IEEE1394/DC video support - NOTE DOES NOT COMPILE!]),
-[enable_dc="$enableval"],[enable_dc=no])
+      AC_ARG_ENABLE(dc, AS_HELP_STRING([--disable-dc],[disable IEEE1394/DC video support]))
       PTLIB_DC1394=no
       if test "x$enable_dc" = "xno" ; then
          AC_MSG_NOTICE(IEEE1394/DC video disabled by user)
