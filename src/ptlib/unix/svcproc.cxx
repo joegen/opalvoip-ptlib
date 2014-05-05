@@ -430,6 +430,8 @@ int PServiceProcess::InitialiseService()
   }
 #endif
 
+  bool daemon = args.HasOption('d');
+
   // Remove the service arguments
   if (args.GetCount() == 0)
     args.SetArgs("");
@@ -440,16 +442,16 @@ int PServiceProcess::InitialiseService()
     args.SetArgs(programArgs);
   }
 
-  // We are a service, don't want to get blocked on input from stdin during asserts
+ // We are a service, don't want to get blocked on input from stdin during asserts
   if (!m_debugMode)
     ::close(STDIN_FILENO);
 
-#if !defined(BE_THREADS) && !defined(P_RTEMS)
-  if (!args.HasOption('d'))
+  if (!daemon)
     return -1;
 
-  // Run as a daemon, ie fork
+#if !defined(BE_THREADS) && !defined(P_RTEMS)
 
+  // Run as a daemon, ie fork
   if (!pidfilename) {
     ifstream pidfile(pidfilename);
     if (pidfile.is_open()) {
