@@ -108,6 +108,7 @@ EXPORTS
     ??$?0U?$_Tree_node@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@PAX@std@@@?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@std@@QAE@ABV?$allocator@U?$_Tree_node@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@PAX@std@@@1@@Z @92 NONAME
     ??$?0U?$_Wrap_alloc@V?$allocator@D@std@@@std@@@?$_Wrap_alloc@V?$allocator@PAD@std@@@std@@QAE@ABU?$_Wrap_alloc@V?$allocator@D@std@@@1@@Z @93 NONAME
     ??$?0U?$_Wrap_alloc@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@std@@QAE@ABU?$_Wrap_alloc@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@1@@Z @94 NONAME
+    ??$?0U?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAE@ABU?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@1@@Z @29026 NONAME
     ??$?0V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@std@@QAE@$$QAU?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@1@PAPAX@Z @96 NONAME
     ??$?0V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPHTTPClientAuthentication@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPHTTPClientAuthentication@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@std@@QAE@$$QAU?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPHTTPClientAuthentication@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@1@PAPAX@Z @98 NONAME
     ??$?0V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPPluginServiceDescriptor@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPPluginServiceDescriptor@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@std@@QAE@$$QAU?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPPluginServiceDescriptor@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@1@PAPAX@Z @24952 NONAME
@@ -120,6 +121,7 @@ EXPORTS
     ??$?0V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPVXMLPlayable@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPVXMLPlayable@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@std@@QAE@$$QAU?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVWorkerBase@?$PFactoryTemplate@VPVXMLPlayable@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@@1@PAPAX@Z @110 NONAME
     ??$?0V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@@?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@@std@@QAE@$$QAU?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@@1@PAPAX@Z @111 NONAME
     ??$?0V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@@?$pair@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@USocketInfo@PMonitoredSockets@@@std@@QAE@$$QAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@$$QAUSocketInfo@PMonitoredSockets@@PAPAX@Z @112 NONAME
+    ??$?0V?$PSmartPtr@VEmitter@PTimer@@@@@?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAE@ABV?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@1@@Z @29027 NONAME
     ??$?0V?$_Tree_const_iterator@V?$_Tree_val@U?$_Tree_simple_types@I@std@@@std@@@std@@V01@@?$pair@V?$_Tree_const_iterator@V?$_Tree_val@U?$_Tree_simple_types@I@std@@@std@@@std@@V12@@std@@QAE@$$QAU01@PAPAX@Z @24953 NONAME
     ??$?0V?$_Tree_const_iterator@V?$_Tree_val@U?$_Tree_simple_types@I@std@@@std@@@std@@_N@?$pair@V?$_Tree_const_iterator@V?$_Tree_val@U?$_Tree_simple_types@I@std@@@std@@@std@@_N@std@@QAE@$$QAU01@PAPAX@Z @24954 NONAME
     ??$?0V?$_Tree_const_iterator@V?$_Tree_val@U?$_Tree_simple_types@I@std@@@std@@@std@@_N@?$pair@V?$_Tree_const_iterator@V?$_Tree_val@U?$_Tree_simple_types@I@std@@@std@@@std@@_N@std@@QAE@$$QAV?$_Tree_const_iterator@V?$_Tree_val@U?$_Tree_simple_types@I@std@@@std@@@1@$$QA_NPAPAX@Z @24955 NONAME
@@ -283,7 +285,6 @@ EXPORTS
     ??$addressof@PAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@YAPAPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@0@AAPAU10@@Z @254 NONAME
     ??$addressof@PAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@YAPAPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@0@AAPAU10@@Z @255 NONAME
     ??$addressof@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@YAPAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@0@AAPAU10@@Z @256 NONAME
-    ??$addressof@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@YAPAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@0@AAPAU10@@Z @24997 NONAME
     ??$addressof@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@YAPAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@0@AAPAU10@@Z @24998 NONAME
     ??$addressof@PAU?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@YAPAPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@0@AAPAU10@@Z @257 NONAME
     ??$addressof@PAU?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@YAPAPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@0@AAPAU10@@Z @258 NONAME
@@ -371,7 +372,6 @@ EXPORTS
     ??$addressof@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@YAPAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@0@AAU10@@Z @345 NONAME
     ??$addressof@UInternalCommand@PCLI@@@std@@YAPAUInternalCommand@PCLI@@AAU12@@Z @25016 NONAME
     ??$addressof@UPDSoundDeviceInfo@@@std@@YAPAUPDSoundDeviceInfo@@AAU1@@Z @346 NONAME
-    ??$addressof@UPreparedEventInfo@List@PTimer@@@std@@YAPAUPreparedEventInfo@List@PTimer@@AAU123@@Z @25017 NONAME
     ??$addressof@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@AAV10@@Z @348 NONAME
     ??$addressof@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@YAPAV?$PNotifierTemplate@AAVPXMLElement@@@@AAV1@@Z @25018 NONAME
     ??$addressof@V?$PNotifierTemplate@H@@@std@@YAPAV?$PNotifierTemplate@H@@AAV1@@Z @349 NONAME
@@ -420,9 +420,6 @@ EXPORTS
     ??$construct@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@AAPAU12@@?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@QAEXPAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@AAPAU21@@Z @377 NONAME
     ??$construct@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@AAPAU12@@?$allocator_traits@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@1@PAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@AAPAU31@@Z @378 NONAME
     ??$construct@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@AAPAU12@@?$_Wrap_alloc@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@QAEXPAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@AAPAU21@@Z @379 NONAME
-    ??$construct@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@AAPAU12@@?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QAEXPAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@AAPAU21@@Z @25037 NONAME
-    ??$construct@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@AAPAU12@@?$allocator_traits@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@1@PAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@AAPAU31@@Z @25038 NONAME
-    ??$construct@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@AAPAU12@@?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QAEXPAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@AAPAU21@@Z @25039 NONAME
     ??$construct@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@AAPAU12@@?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@QAEXPAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@AAPAU21@@Z @25040 NONAME
     ??$construct@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@AAPAU12@@?$allocator_traits@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@1@PAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@AAPAU31@@Z @25041 NONAME
     ??$construct@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@AAPAU12@@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@std@@QAEXPAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@AAPAU21@@Z @25042 NONAME
@@ -701,9 +698,6 @@ EXPORTS
     ??$construct@UPDSoundDeviceInfo@@U1@@?$allocator@UPDSoundDeviceInfo@@@std@@QAEXPAUPDSoundDeviceInfo@@$$QAU2@@Z @661 NONAME
     ??$construct@UPDSoundDeviceInfo@@U1@@?$allocator_traits@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@SAXAAV?$allocator@UPDSoundDeviceInfo@@@1@PAUPDSoundDeviceInfo@@$$QAU3@@Z @662 NONAME
     ??$construct@UPDSoundDeviceInfo@@U1@@?$_Wrap_alloc@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@QAEXPAUPDSoundDeviceInfo@@$$QAU2@@Z @663 NONAME
-    ??$construct@UPreparedEventInfo@List@PTimer@@U123@@?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QAEXPAUPreparedEventInfo@List@PTimer@@$$QAU234@@Z @25097 NONAME
-    ??$construct@UPreparedEventInfo@List@PTimer@@U123@@?$allocator_traits@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@1@PAUPreparedEventInfo@List@PTimer@@$$QAU345@@Z @25098 NONAME
-    ??$construct@UPreparedEventInfo@List@PTimer@@U123@@?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QAEXPAUPreparedEventInfo@List@PTimer@@$$QAU234@@Z @25099 NONAME
     ??$construct@UPSTUNSocketPairInfo@@@?$allocator_traits@V?$allocator@UPSTUNSocketPairInfo@@@std@@@std@@SAXAAV?$allocator@UPSTUNSocketPairInfo@@@1@PAUPSTUNSocketPairInfo@@@Z @28590 NONAME
     ??$construct@UPSTUNSocketPairInfo@@U1@@?$allocator@UPSTUNSocketPairInfo@@@std@@QAEXPAUPSTUNSocketPairInfo@@$$QAU2@@Z @28591 NONAME
     ??$construct@UPSTUNSocketPairInfo@@U1@@?$allocator_traits@V?$allocator@UPSTUNSocketPairInfo@@@std@@@std@@SAXAAV?$allocator@UPSTUNSocketPairInfo@@@1@PAUPSTUNSocketPairInfo@@$$QAU3@@Z @28592 NONAME
@@ -737,6 +731,9 @@ EXPORTS
     ??$construct@V?$PNotifierTemplate@H@@ABV1@@?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@QAEXPAV?$PNotifierTemplate@H@@ABV2@@Z @693 NONAME
     ??$construct@V?$PNotifierTemplate@H@@ABV1@@?$allocator_traits@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@1@PAV?$PNotifierTemplate@H@@ABV3@@Z @694 NONAME
     ??$construct@V?$PNotifierTemplate@H@@ABV1@@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@QAEXPAV?$PNotifierTemplate@H@@ABV2@@Z @695 NONAME
+    ??$construct@V?$PSmartPtr@VEmitter@PTimer@@@@V1@@?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAEXPAV?$PSmartPtr@VEmitter@PTimer@@@@$$QAV2@@Z @29028 NONAME
+    ??$construct@V?$PSmartPtr@VEmitter@PTimer@@@@V1@@?$allocator_traits@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@SAXAAV?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@1@PAV?$PSmartPtr@VEmitter@PTimer@@@@$$QAV3@@Z @29029 NONAME
+    ??$construct@V?$PSmartPtr@VEmitter@PTimer@@@@V1@@?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEXPAV?$PSmartPtr@VEmitter@PTimer@@@@$$QAV2@@Z @29030 NONAME
     ??$construct@VAddress@PIPSocket@@V12@@?$allocator@VAddress@PIPSocket@@@std@@QAEXPAVAddress@PIPSocket@@$$QAV23@@Z @696 NONAME
     ??$construct@VAddress@PIPSocket@@V12@@?$allocator_traits@V?$allocator@VAddress@PIPSocket@@@std@@@std@@SAXAAV?$allocator@VAddress@PIPSocket@@@1@PAVAddress@PIPSocket@@$$QAV34@@Z @697 NONAME
     ??$construct@VAddress@PIPSocket@@V12@@?$_Wrap_alloc@V?$allocator@VAddress@PIPSocket@@@std@@@std@@QAEXPAVAddress@PIPSocket@@$$QAV23@@Z @698 NONAME
@@ -828,9 +825,6 @@ EXPORTS
     ??$destroy@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@QAEXPAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@@Z @775 NONAME
     ??$destroy@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@?$allocator_traits@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@1@PAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@@Z @776 NONAME
     ??$destroy@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@?$_Wrap_alloc@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@QAEXPAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@@Z @777 NONAME
-    ??$destroy@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QAEXPAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@@Z @25121 NONAME
-    ??$destroy@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@?$allocator_traits@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@1@PAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@@Z @25122 NONAME
-    ??$destroy@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QAEXPAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@@Z @25123 NONAME
     ??$destroy@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@QAEXPAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@@Z @25124 NONAME
     ??$destroy@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@?$allocator_traits@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@1@PAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@@Z @25125 NONAME
     ??$destroy@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@std@@QAEXPAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@@Z @25126 NONAME
@@ -969,6 +963,9 @@ EXPORTS
     ??$destroy@PAUPAsyncNotifierCallback@@@?$allocator@PAUPAsyncNotifierCallback@@@std@@QAEXPAPAUPAsyncNotifierCallback@@@Z @913 NONAME
     ??$destroy@PAUPAsyncNotifierCallback@@@?$allocator_traits@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@SAXAAV?$allocator@PAUPAsyncNotifierCallback@@@1@PAPAUPAsyncNotifierCallback@@@Z @914 NONAME
     ??$destroy@PAUPAsyncNotifierCallback@@@?$_Wrap_alloc@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEXPAPAUPAsyncNotifierCallback@@@Z @915 NONAME
+    ??$destroy@PAV?$PSmartPtr@VEmitter@PTimer@@@@@?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAEXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29031 NONAME
+    ??$destroy@PAV?$PSmartPtr@VEmitter@PTimer@@@@@?$allocator_traits@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@SAXAAV?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@1@PAPAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29032 NONAME
+    ??$destroy@PAV?$PSmartPtr@VEmitter@PTimer@@@@@?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29033 NONAME
     ??$destroy@PAVContext@PCLI@@@?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@QAEXPAPAVContext@PCLI@@@Z @916 NONAME
     ??$destroy@PAVContext@PCLI@@@?$allocator_traits@V?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@1@PAPAVContext@PCLI@@@Z @917 NONAME
     ??$destroy@PAVContext@PCLI@@@?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@@std@@QAEXPAPAVContext@PCLI@@@Z @918 NONAME
@@ -1095,9 +1092,6 @@ EXPORTS
     ??$destroy@UPDSoundDeviceInfo@@@?$allocator@UPDSoundDeviceInfo@@@std@@QAEXPAUPDSoundDeviceInfo@@@Z @1045 NONAME
     ??$destroy@UPDSoundDeviceInfo@@@?$allocator_traits@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@SAXAAV?$allocator@UPDSoundDeviceInfo@@@1@PAUPDSoundDeviceInfo@@@Z @1046 NONAME
     ??$destroy@UPDSoundDeviceInfo@@@?$_Wrap_alloc@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@QAEXPAUPDSoundDeviceInfo@@@Z @1047 NONAME
-    ??$destroy@UPreparedEventInfo@List@PTimer@@@?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QAEXPAUPreparedEventInfo@List@PTimer@@@Z @25181 NONAME
-    ??$destroy@UPreparedEventInfo@List@PTimer@@@?$allocator_traits@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@1@PAUPreparedEventInfo@List@PTimer@@@Z @25182 NONAME
-    ??$destroy@UPreparedEventInfo@List@PTimer@@@?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QAEXPAUPreparedEventInfo@List@PTimer@@@Z @25183 NONAME
     ??$destroy@UPSTUNSocketPairInfo@@@?$allocator@UPSTUNSocketPairInfo@@@std@@QAEXPAUPSTUNSocketPairInfo@@@Z @28594 NONAME
     ??$destroy@UPSTUNSocketPairInfo@@@?$allocator_traits@V?$allocator@UPSTUNSocketPairInfo@@@std@@@std@@SAXAAV?$allocator@UPSTUNSocketPairInfo@@@1@PAUPSTUNSocketPairInfo@@@Z @28595 NONAME
     ??$destroy@UPSTUNSocketPairInfo@@@?$_Wrap_alloc@V?$allocator@UPSTUNSocketPairInfo@@@std@@@std@@QAEXPAUPSTUNSocketPairInfo@@@Z @28596 NONAME
@@ -1125,6 +1119,9 @@ EXPORTS
     ??$destroy@V?$PNotifierTemplate@H@@@?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@QAEXPAV?$PNotifierTemplate@H@@@Z @1069 NONAME
     ??$destroy@V?$PNotifierTemplate@H@@@?$allocator_traits@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@SAXAAV?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@1@PAV?$PNotifierTemplate@H@@@Z @1070 NONAME
     ??$destroy@V?$PNotifierTemplate@H@@@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@QAEXPAV?$PNotifierTemplate@H@@@Z @1071 NONAME
+    ??$destroy@V?$PSmartPtr@VEmitter@PTimer@@@@@?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAEXPAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29034 NONAME
+    ??$destroy@V?$PSmartPtr@VEmitter@PTimer@@@@@?$allocator_traits@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@SAXAAV?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@1@PAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29035 NONAME
+    ??$destroy@V?$PSmartPtr@VEmitter@PTimer@@@@@?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEXPAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29036 NONAME
     ??$destroy@VAddress@PIPSocket@@@?$allocator@VAddress@PIPSocket@@@std@@QAEXPAVAddress@PIPSocket@@@Z @1072 NONAME
     ??$destroy@VAddress@PIPSocket@@@?$allocator_traits@V?$allocator@VAddress@PIPSocket@@@std@@@std@@SAXAAV?$allocator@VAddress@PIPSocket@@@1@PAVAddress@PIPSocket@@@Z @1073 NONAME
     ??$destroy@VAddress@PIPSocket@@@?$_Wrap_alloc@V?$allocator@VAddress@PIPSocket@@@std@@@std@@QAEXPAVAddress@PIPSocket@@@Z @1074 NONAME
@@ -1183,7 +1180,6 @@ EXPORTS
     ??$forward@AAPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@YAAAPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@0@AAPAU10@@Z @1119 NONAME
     ??$forward@AAPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@YAAAPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@0@AAPAU10@@Z @1120 NONAME
     ??$forward@AAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@YAAAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@0@AAPAU10@@Z @1121 NONAME
-    ??$forward@AAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@YAAAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@0@AAPAU10@@Z @25202 NONAME
     ??$forward@AAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@YAAAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@0@AAPAU10@@Z @25203 NONAME
     ??$forward@AAPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@YAAAPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@0@AAPAU10@@Z @1122 NONAME
     ??$forward@AAPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@YAAAPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@0@AAPAU10@@Z @1123 NONAME
@@ -1393,7 +1389,6 @@ EXPORTS
     ??$forward@UNest@PReadWriteMutex@@@std@@YA$$QAUNest@PReadWriteMutex@@AAU12@@Z @1338 NONAME
     ??$forward@UOptionSpec@PArgList@@@std@@YA$$QAUOptionSpec@PArgList@@AAU12@@Z @1339 NONAME
     ??$forward@UPDSoundDeviceInfo@@@std@@YA$$QAUPDSoundDeviceInfo@@AAU1@@Z @1340 NONAME
-    ??$forward@UPreparedEventInfo@List@PTimer@@@std@@YA$$QAUPreparedEventInfo@List@PTimer@@AAU123@@Z @25243 NONAME
     ??$forward@UPSTUNSocketPairInfo@@@std@@YA$$QAUPSTUNSocketPairInfo@@AAU1@@Z @28597 NONAME
     ??$forward@USlice@PSocket@@@std@@YA$$QAUSlice@PSocket@@AAU12@@Z @1341 NONAME
     ??$forward@USocketInfo@PMonitoredSockets@@@std@@YA$$QAUSocketInfo@PMonitoredSockets@@AAU12@@Z @1342 NONAME
@@ -1532,6 +1527,7 @@ EXPORTS
     ??$move@AAUtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@YA$$QAUtagMIXERCONTROLDETAILS_LISTTEXTA@@AAU1@@Z @1475 NONAME
     ??$move@AAUtMIXERCONTROLDETAILS_BOOLEAN@@@std@@YA$$QAUtMIXERCONTROLDETAILS_BOOLEAN@@AAU1@@Z @1476 NONAME
     ??$move@AAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@YA$$QAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@AAV10@@Z @1477 NONAME
+    ??$move@AAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@YA$$QAV?$PSmartPtr@VEmitter@PTimer@@@@AAV1@@Z @29037 NONAME
     ??$move@AAVPCriticalSection@@@std@@YA$$QAVPCriticalSection@@AAV1@@Z @1478 NONAME
     ??$move@AAVPFilePath@@@std@@YA$$QAVPFilePath@@AAV1@@Z @1479 NONAME
     ??$move@AAVPVarType@@@std@@YA$$QAVPVarType@@AAV1@@Z @1480 NONAME
@@ -1579,12 +1575,12 @@ EXPORTS
     ??$_Allocate@PAD@std@@YAPAPADIPAPAD@Z @1527 NONAME
     ??$_Allocate@PAPAUPAsyncNotifierCallback@@@std@@YAPAPAPAUPAsyncNotifierCallback@@IPAPAPAU1@@Z @1528 NONAME
     ??$_Allocate@PAUPAsyncNotifierCallback@@@std@@YAPAPAUPAsyncNotifierCallback@@IPAPAU1@@Z @1529 NONAME
+    ??$_Allocate@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@YAPAPAV?$PSmartPtr@VEmitter@PTimer@@@@IPAPAV1@@Z @29038 NONAME
     ??$_Allocate@PAVWorkerThreadBase@PThreadPoolBase@@@std@@YAPAPAVWorkerThreadBase@PThreadPoolBase@@IPAPAV12@@Z @1533 NONAME
     ??$_Allocate@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@YAPAU?$_List_node@PAVContext@PCLI@@PAX@0@IPAU10@@Z @1534 NONAME
     ??$_Allocate@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@YAPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@0@IPAU10@@Z @1535 NONAME
     ??$_Allocate@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@YAPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@0@IPAU10@@Z @1536 NONAME
     ??$_Allocate@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@YAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@0@IPAU10@@Z @1537 NONAME
-    ??$_Allocate@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@YAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@0@IPAU10@@Z @25269 NONAME
     ??$_Allocate@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@YAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@0@IPAU10@@Z @25270 NONAME
     ??$_Allocate@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@YAPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@0@IPAU10@@Z @1538 NONAME
     ??$_Allocate@U?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@YAPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@0@IPAU10@@Z @1539 NONAME
@@ -1643,6 +1639,7 @@ EXPORTS
     ??$_Allocate@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@YAPAUtMIXERCONTROLDETAILS_BOOLEAN@@IPAU1@@Z @1592 NONAME
     ??$_Allocate@U_Container_proxy@std@@@std@@YAPAU_Container_proxy@0@IPAU10@@Z @1593 NONAME
     ??$_Allocate@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@IPAV10@@Z @1594 NONAME
+    ??$_Allocate@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@YAPAV?$PSmartPtr@VEmitter@PTimer@@@@IPAV1@@Z @29039 NONAME
     ??$_Allocate@VAddress@PIPSocket@@@std@@YAPAVAddress@PIPSocket@@IPAV12@@Z @1595 NONAME
     ??$_Allocate@VAddressAndPort@PIPSocket@@@std@@YAPAVAddressAndPort@PIPSocket@@IPAV12@@Z @1596 NONAME
     ??$_Allocate@VPCaselessString@@@std@@YAPAVPCaselessString@@IPAV1@@Z @25281 NONAME
@@ -1695,7 +1692,6 @@ EXPORTS
     ??$_Buynode@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@?$_List_buy@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@PAU21@0$$QAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@1@@Z @1643 NONAME
     ??$_Buynode@U?$pair@VToken@PvCard@@UExtendedType@2@@std@@@?$_Tree_buy@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@2@@std@@QAEPAU?$_Tree_node@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@PAX@1@$$QAU?$pair@VToken@PvCard@@UExtendedType@2@@1@@Z @1644 NONAME
     ??$_Buynode@U?$pair@VToken@PvCard@@VParamValues@2@@std@@@?$_Tree_buy@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@2@@std@@QAEPAU?$_Tree_node@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@PAX@1@$$QAU?$pair@VToken@PvCard@@VParamValues@2@@1@@Z @1645 NONAME
-    ??$_Buynode@UPreparedEventInfo@List@PTimer@@@?$_List_buy@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAEPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@PAU21@0$$QAUPreparedEventInfo@List@PTimer@@@Z @25292 NONAME
     ??$_Buynode@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$_Tree_buy@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEPAU?$_Tree_node@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAX@1@$$QAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@@Z @1647 NONAME
     ??$_Buynode@VPVideoFrameInfo@@@?$_Tree_buy@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEPAU?$_Tree_node@VPVideoFrameInfo@@PAX@1@$$QAVPVideoFrameInfo@@@Z @25293 NONAME
     ??$_Buynode_if_nil@AAU?$pair@$$CBIPAVPThread@@@std@@@?$_Tree@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@IAEPAU?$_Tree_node@U?$pair@$$CBIPAVPThread@@@std@@PAX@1@PAU21@AAU?$pair@$$CBIPAVPThread@@@1@@Z @1648 NONAME
@@ -1743,6 +1739,8 @@ EXPORTS
     ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@PAD@std@@@std@@@std@@YAXPAPAD0AAU?$_Wrap_alloc@V?$allocator@PAD@std@@@0@U_Scalar_ptr_iterator_tag@0@@Z @1690 NONAME
     ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@std@@@std@@YAXPAPAPAUPAsyncNotifierCallback@@0AAU?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@0@@Z @1691 NONAME
     ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@std@@@std@@YAXPAPAPAUPAsyncNotifierCallback@@0AAU?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@0@U_Scalar_ptr_iterator_tag@0@@Z @1692 NONAME
+    ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@YAXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@0AAU?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@0@@Z @29040 NONAME
+    ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@YAXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@0AAU?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@0@U_Scalar_ptr_iterator_tag@0@@Z @29041 NONAME
     ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@@std@@YAXPAPAVWorkerThreadBase@PThreadPoolBase@@0AAU?$_Wrap_alloc@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@0@@Z @1699 NONAME
     ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@@std@@YAXPAPAVWorkerThreadBase@PThreadPoolBase@@0AAU?$_Wrap_alloc@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@0@U_Scalar_ptr_iterator_tag@0@@Z @1700 NONAME
     ??$_Destroy_range@U?$_Wrap_alloc@V?$allocator@UOptionSpec@PArgList@@@std@@@std@@@std@@YAXPAUOptionSpec@PArgList@@0AAU?$_Wrap_alloc@V?$allocator@UOptionSpec@PArgList@@@std@@@0@@Z @1701 NONAME
@@ -1816,6 +1814,7 @@ EXPORTS
     ??$_Equal@V?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@VPVarType@@@std@@@std@@@std@@U?$iterator@Urandom_access_iterator_tag@std@@VPVarType@@HPAV3@AAV3@@2@@?$_Revranit@V?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@VPVarType@@@std@@@std@@@std@@U?$iterator@Urandom_access_iterator_tag@std@@VPVarType@@HPAV3@AAV3@@2@@std@@QBE_NABV01@@Z @1736 NONAME
     ??$_Fill_n@PAPADIPAD@std@@YAPAPADPAPADIABQAD@Z @1738 NONAME
     ??$_Fill_n@PAPAPAUPAsyncNotifierCallback@@IPAPAU1@@std@@YAPAPAPAUPAsyncNotifierCallback@@PAPAPAU1@IABQAPAU1@@Z @1739 NONAME
+    ??$_Fill_n@PAPAV?$PSmartPtr@VEmitter@PTimer@@@@IPAV1@@std@@YAPAPAV?$PSmartPtr@VEmitter@PTimer@@@@PAPAV1@IABQAV1@@Z @29042 NONAME
     ??$_Fill_n@PA_JI_J@std@@YAPA_JPA_JIAB_J@Z @25338 NONAME
     ??$_Find@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@$$BY0BE@$$CBD@std@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PAV10@0AAY0BE@$$CBD@Z @1741 NONAME
     ??$_Find@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@std@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PAV10@0ABV10@@Z @1742 NONAME
@@ -1827,7 +1826,6 @@ EXPORTS
     ??$_Insert@ABVPVideoControlInfo@@@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXV?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@VPVideoControlInfo@@@std@@@std@@U_Iterator_base0@2@@1@ABVPVideoControlInfo@@@Z @1748 NONAME
     ??$_Insert@ABVPVideoFrameInfo@@@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEXV?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@VPVideoFrameInfo@@@std@@@std@@U_Iterator_base0@2@@1@ABVPVideoFrameInfo@@@Z @1749 NONAME
     ??$_Insert@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXV?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@U_Iterator_base0@2@@1@$$QAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@1@@Z @1750 NONAME
-    ??$_Insert@UPreparedEventInfo@List@PTimer@@@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAEXV?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@U_Iterator_base0@2@@1@$$QAUPreparedEventInfo@List@PTimer@@@Z @25340 NONAME
     ??$_Insert_at@AAU?$pair@$$CBIPAVPThread@@@std@@PAU?$_Tree_node@U?$pair@$$CBIPAVPThread@@@std@@PAX@2@@?$_Tree@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@IAE?AV?$_Tree_iterator@V?$_Tree_val@U?$_Tree_simple_types@U?$pair@$$CBIPAVPThread@@@std@@@std@@@std@@@1@_NPAU?$_Tree_node@U?$pair@$$CBIPAVPThread@@@std@@PAX@1@AAU?$pair@$$CBIPAVPThread@@@1@1@Z @1753 NONAME
     ??$_Insert_at@AAU?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@PAU?$_Tree_node@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@PAX@2@@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@@4@$0A@@std@@@std@@IAE?AV?$_Tree_iterator@V?$_Tree_val@U?$_Tree_simple_types@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@@std@@@std@@@1@_NPAU?$_Tree_node@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@PAX@1@AAU?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@1@1@Z @1754 NONAME
     ??$_Insert_at@AAU?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@std@@PAU?$_Tree_node@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@std@@PAX@2@@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@std@@@4@$0A@@std@@@std@@IAE?AV?$_Tree_iterator@V?$_Tree_val@U?$_Tree_simple_types@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@std@@@std@@@std@@@1@_NPAU?$_Tree_node@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@std@@PAX@1@AAU?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@1@1@Z @1755 NONAME
@@ -2011,6 +2009,7 @@ EXPORTS
     ??$_Move@PA_JPA_J@std@@YAPA_JPA_J00U_Scalar_ptr_iterator_tag@0@@Z @25388 NONAME
     ??$_Ptr_cat@PADPAD@std@@YA?AU_Scalar_ptr_iterator_tag@0@PAPAD0@Z @1933 NONAME
     ??$_Ptr_cat@PAPAUPAsyncNotifierCallback@@PAPAU1@@std@@YA?AU_Scalar_ptr_iterator_tag@0@PAPAPAUPAsyncNotifierCallback@@0@Z @1934 NONAME
+    ??$_Ptr_cat@PAV?$PSmartPtr@VEmitter@PTimer@@@@PAV1@@std@@YA?AU_Scalar_ptr_iterator_tag@0@PAPAV?$PSmartPtr@VEmitter@PTimer@@@@0@Z @29043 NONAME
     ??$_Ptr_cat@PAVWorkerThreadBase@PThreadPoolBase@@PAV12@@std@@YA?AU_Scalar_ptr_iterator_tag@0@PAPAVWorkerThreadBase@PThreadPoolBase@@0@Z @1938 NONAME
     ??$_Ptr_cat@UOptionSpec@PArgList@@U12@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@PAUOptionSpec@PArgList@@0@Z @1939 NONAME
     ??$_Ptr_cat@UPDSoundDeviceInfo@@U1@@std@@YA?AU_Nonscalar_ptr_iterator_tag@0@PAUPDSoundDeviceInfo@@0@Z @1940 NONAME
@@ -2056,9 +2055,11 @@ EXPORTS
     ??$_Unchecked@V?$_Vector_val@U?$_Simple_types@VPCaselessString@@@std@@@std@@@std@@YAPAVPCaselessString@@V?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@VPCaselessString@@@std@@@std@@@0@@Z @25394 NONAME
     ??$_Uninitialized_copy@PAPADPAPADU?$_Wrap_alloc@V?$allocator@PAD@std@@@std@@@std@@YAPAPADPAPAD00AAU?$_Wrap_alloc@V?$allocator@PAD@std@@@0@@Z @1983 NONAME
     ??$_Uninitialized_copy@PAPAPAUPAsyncNotifierCallback@@PAPAPAU1@U?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@std@@@std@@YAPAPAPAUPAsyncNotifierCallback@@PAPAPAU1@00AAU?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@0@@Z @1984 NONAME
+    ??$_Uninitialized_copy@PAPAV?$PSmartPtr@VEmitter@PTimer@@@@PAPAV1@U?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@YAPAPAV?$PSmartPtr@VEmitter@PTimer@@@@PAPAV1@00AAU?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@0@@Z @29044 NONAME
     ??$_Uninitialized_copy@V?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@UOptionSpec@PArgList@@@std@@@std@@@std@@PAUOptionSpec@PArgList@@U?$_Wrap_alloc@V?$allocator@UOptionSpec@PArgList@@@std@@@2@@std@@YAPAUOptionSpec@PArgList@@V?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@UOptionSpec@PArgList@@@std@@@std@@@0@0PAU12@AAU?$_Wrap_alloc@V?$allocator@UOptionSpec@PArgList@@@std@@@0@@Z @1986 NONAME
     ??$_Uninitialized_default_fill_n@PAPADIU?$_Wrap_alloc@V?$allocator@PAD@std@@@std@@@std@@YAXPAPADIAAU?$_Wrap_alloc@V?$allocator@PAD@std@@@0@@Z @1987 NONAME
     ??$_Uninitialized_default_fill_n@PAPAPAUPAsyncNotifierCallback@@IU?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@std@@@std@@YAXPAPAPAUPAsyncNotifierCallback@@IAAU?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@0@@Z @1988 NONAME
+    ??$_Uninitialized_default_fill_n@PAPAV?$PSmartPtr@VEmitter@PTimer@@@@IU?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@YAXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@IAAU?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@0@@Z @29045 NONAME
     ??$_Uninitialized_default_fill_n@PAUPSTUNSocketPairInfo@@IU?$_Wrap_alloc@V?$allocator@UPSTUNSocketPairInfo@@@std@@@std@@@std@@YAXPAUPSTUNSocketPairInfo@@IAAU?$_Wrap_alloc@V?$allocator@UPSTUNSocketPairInfo@@@std@@@0@@Z @28612 NONAME
     ??$_Uninitialized_default_fill_n@PAUSlice@PSocket@@IU?$_Wrap_alloc@V?$allocator@USlice@PSocket@@@std@@@std@@@std@@YAXPAUSlice@PSocket@@IAAU?$_Wrap_alloc@V?$allocator@USlice@PSocket@@@std@@@0@@Z @1990 NONAME
     ??$_Uninitialized_default_fill_n@PAUtagMIXERCONTROLDETAILS_LISTTEXTA@@IU?$_Wrap_alloc@V?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@@std@@@std@@YAXPAUtagMIXERCONTROLDETAILS_LISTTEXTA@@IAAU?$_Wrap_alloc@V?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@@0@@Z @1991 NONAME
@@ -2083,6 +2084,7 @@ EXPORTS
     ??$_Uninitialized_move@PA_JPA_JU?$_Wrap_alloc@V?$allocator@_J@std@@@std@@@std@@YAPA_JPA_J00AAU?$_Wrap_alloc@V?$allocator@_J@std@@@0@@Z @25397 NONAME
     ??$_Uninit_copy@PADPAD@std@@YAPAPADPAPAD00AAU?$_Wrap_alloc@V?$allocator@PAD@std@@@0@U_Scalar_ptr_iterator_tag@0@@Z @2009 NONAME
     ??$_Uninit_copy@PAPAUPAsyncNotifierCallback@@PAPAU1@@std@@YAPAPAPAUPAsyncNotifierCallback@@PAPAPAU1@00AAU?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@0@U_Scalar_ptr_iterator_tag@0@@Z @2010 NONAME
+    ??$_Uninit_copy@PAV?$PSmartPtr@VEmitter@PTimer@@@@PAV1@@std@@YAPAPAV?$PSmartPtr@VEmitter@PTimer@@@@PAPAV1@00AAU?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@0@U_Scalar_ptr_iterator_tag@0@@Z @29046 NONAME
     ??$_Uninit_copy@V?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@UOptionSpec@PArgList@@@std@@@std@@@std@@PAUOptionSpec@PArgList@@V?$allocator@UOptionSpec@PArgList@@@2@@std@@YAPAUOptionSpec@PArgList@@V?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@UOptionSpec@PArgList@@@std@@@std@@@0@0PAU12@AAU?$_Wrap_alloc@V?$allocator@UOptionSpec@PArgList@@@std@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z @2012 NONAME
     ??$_Uninit_def_fill_n@PADIPAD@std@@YAXPAPADIAAU?$_Wrap_alloc@V?$allocator@PAD@std@@@0@0U_Scalar_ptr_iterator_tag@0@@Z @2013 NONAME
     ??$_Uninit_def_fill_n@PAPAUPAsyncNotifierCallback@@IPAPAU1@@std@@YAXPAPAPAUPAsyncNotifierCallback@@IAAU?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@0@0U_Scalar_ptr_iterator_tag@0@@Z @2014 NONAME
@@ -2090,6 +2092,7 @@ EXPORTS
     ??$_Uninit_def_fill_n@PAUSlice@PSocket@@IV?$allocator@USlice@PSocket@@@std@@U12@@std@@YAXPAUSlice@PSocket@@IAAU?$_Wrap_alloc@V?$allocator@USlice@PSocket@@@std@@@0@0U_Nonscalar_ptr_iterator_tag@0@@Z @2015 NONAME
     ??$_Uninit_def_fill_n@PAUtagMIXERCONTROLDETAILS_LISTTEXTA@@IV?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@U1@@std@@YAXPAUtagMIXERCONTROLDETAILS_LISTTEXTA@@IAAU?$_Wrap_alloc@V?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@@0@0U_Nonscalar_ptr_iterator_tag@0@@Z @2016 NONAME
     ??$_Uninit_def_fill_n@PAUtMIXERCONTROLDETAILS_BOOLEAN@@IV?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@U1@@std@@YAXPAUtMIXERCONTROLDETAILS_BOOLEAN@@IAAU?$_Wrap_alloc@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@0@0U_Nonscalar_ptr_iterator_tag@0@@Z @2017 NONAME
+    ??$_Uninit_def_fill_n@PAV?$PSmartPtr@VEmitter@PTimer@@@@IPAV1@@std@@YAXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@IAAU?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@0@0U_Scalar_ptr_iterator_tag@0@@Z @29047 NONAME
     ??$_Uninit_def_fill_n@PAVPCriticalSection@@IV?$allocator@VPCriticalSection@@@std@@V1@@std@@YAXPAVPCriticalSection@@IAAU?$_Wrap_alloc@V?$allocator@VPCriticalSection@@@std@@@0@0U_Nonscalar_ptr_iterator_tag@0@@Z @2018 NONAME
     ??$_Uninit_def_fill_n@PAVPVarType@@IV?$allocator@VPVarType@@@std@@V1@@std@@YAXPAVPVarType@@IAAU?$_Wrap_alloc@V?$allocator@VPVarType@@@std@@@0@0U_Nonscalar_ptr_iterator_tag@0@@Z @2019 NONAME
     ??$_Uninit_def_fill_n@_JI_J@std@@YAXPA_JIAAU?$_Wrap_alloc@V?$allocator@_J@std@@@0@0U_Scalar_ptr_iterator_tag@0@@Z @25398 NONAME
@@ -2110,6 +2113,7 @@ EXPORTS
     ??$_Uninit_move@_J_J_J@std@@YAPA_JPA_J00AAU?$_Wrap_alloc@V?$allocator@_J@std@@@0@0U_Scalar_ptr_iterator_tag@0@@Z @25400 NONAME
     ??$_Val_type@PAPAD@std@@YAPAPADPAPAD@Z @2036 NONAME
     ??$_Val_type@PAPAPAUPAsyncNotifierCallback@@@std@@YAPAPAPAUPAsyncNotifierCallback@@PAPAPAU1@@Z @2037 NONAME
+    ??$_Val_type@PAPAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@YAPAPAV?$PSmartPtr@VEmitter@PTimer@@@@PAPAV1@@Z @29048 NONAME
     ??$_Val_type@PAPAVWorkerThreadBase@PThreadPoolBase@@@std@@YAPAPAVWorkerThreadBase@PThreadPoolBase@@PAPAV12@@Z @2041 NONAME
     ??$_Val_type@PAUOptionSpec@PArgList@@@std@@YAPAUOptionSpec@PArgList@@PAU12@@Z @2042 NONAME
     ??$_Val_type@PAUPDSoundDeviceInfo@@@std@@YAPAUPDSoundDeviceInfo@@PAU1@@Z @2043 NONAME
@@ -2175,7 +2179,6 @@ EXPORTS
     ??0?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@QAE@XZ @2104 NONAME
     ??0?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@QAE@XZ @2105 NONAME
     ??0?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@QAE@XZ @2106 NONAME
-    ??0?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QAE@XZ @25411 NONAME
     ??0?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@QAE@XZ @25412 NONAME
     ??0?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@QAE@ABV01@@Z @2107 NONAME
     ??0?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@QAE@XZ @2108 NONAME
@@ -2230,7 +2233,6 @@ EXPORTS
     ??0?$allocator@UPHashTableElement@@@std@@QAE@XZ @2157 NONAME
     ??0?$allocator@UPListElement@@@std@@QAE@XZ @2158 NONAME
     ??0?$allocator@UPListInfo@@@std@@QAE@XZ @2159 NONAME
-    ??0?$allocator@UPreparedEventInfo@List@PTimer@@@std@@QAE@XZ @25424 NONAME
     ??0?$allocator@UPSortedListElement@@@std@@QAE@XZ @2160 NONAME
     ??0?$allocator@UPSortedListInfo@@@std@@QAE@XZ @2161 NONAME
     ??0?$allocator@UPSTUNSocketPairInfo@@@std@@QAE@XZ @28617 NONAME
@@ -2241,6 +2243,7 @@ EXPORTS
     ??0?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAE@XZ @2167 NONAME
     ??0?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@QAE@XZ @25425 NONAME
     ??0?$allocator@V?$PNotifierTemplate@H@@@std@@QAE@XZ @2168 NONAME
+    ??0?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAE@XZ @29049 NONAME
     ??0?$allocator@VAddress@PIPSocket@@@std@@QAE@XZ @2169 NONAME
     ??0?$allocator@VAddressAndPort@PIPSocket@@@std@@QAE@XZ @2170 NONAME
     ??0?$allocator@VAttribute@PLDAPSchema@@@std@@QAE@XZ @2171 NONAME
@@ -2288,6 +2291,7 @@ EXPORTS
     ??0?$deque@DV?$allocator@D@std@@@std@@QAE@XZ @2215 NONAME
     ??0?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAE@ABV01@@Z @2216 NONAME
     ??0?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAE@XZ @2217 NONAME
+    ??0?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAE@XZ @29050 NONAME
     ??0?$EntryPoint@P6G?AW4IppStatus@@QAPBEPAEUIppiSize@@@Z@PDynaLink@@QAE@AAV1@PBD_N@Z @25429 NONAME
     ??0?$EntryPoint@P6G?AW4IppStatus@@QAPBEQAHPAEHUIppiSize@@@Z@PDynaLink@@QAE@AAV1@PBD_N@Z @25430 NONAME
     ??0?$EntryPoint@P6G?AW4IppStatus@@QAPBEQAHPAEHUIppiSize@@E@Z@PDynaLink@@QAE@AAV1@PBD_N@Z @25431 NONAME
@@ -2303,7 +2307,6 @@ EXPORTS
     ??0?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @2226 NONAME
     ??0?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAE@XZ @2227 NONAME
     ??0?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@XZ @2228 NONAME
-    ??0?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE@XZ @25433 NONAME
     ??0?$list@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAE@XZ @25434 NONAME
     ??0?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAE@ABV01@@Z @2229 NONAME
     ??0?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAE@XZ @2230 NONAME
@@ -2640,6 +2643,7 @@ EXPORTS
     ??0?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAE@XZ @2568 NONAME
     ??0?$queue@PAUPAsyncNotifierCallback@@V?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@ABV01@@Z @2569 NONAME
     ??0?$queue@PAUPAsyncNotifierCallback@@V?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@XZ @2570 NONAME
+    ??0?$queue@V?$PSmartPtr@VEmitter@PTimer@@@@V?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@XZ @29051 NONAME
     ??0?$reverse_iterator@V?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@VPVarType@@@std@@@std@@@std@@@std@@QAE@V?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@VPVarType@@@std@@@std@@@1@@Z @2572 NONAME
     ??0?$set@IU?$less@I@std@@V?$allocator@I@2@@std@@QAE@XZ @25486 NONAME
     ??0?$set@UInternalCommand@PCLI@@U?$less@UInternalCommand@PCLI@@@std@@V?$allocator@UInternalCommand@PCLI@@@4@@std@@QAE@XZ @25487 NONAME
@@ -2760,22 +2764,25 @@ EXPORTS
     ??0?$Worker@VTextToSpeech_Sample@@@?$PFactory@VPTextToSpeech@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z @2669 NONAME
     ??0?$_Deque_alloc@$0A@U?$_Deque_base_types@DV?$allocator@D@std@@@std@@@std@@QAE@ABV?$allocator@D@1@@Z @2670 NONAME
     ??0?$_Deque_alloc@$0A@U?$_Deque_base_types@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@ABV?$allocator@PAUPAsyncNotifierCallback@@@1@@Z @2671 NONAME
+    ??0?$_Deque_alloc@$0A@U?$_Deque_base_types@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@ABV?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@1@@Z @29052 NONAME
     ??0?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @2673 NONAME
     ??0?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@ABV01@@Z @2674 NONAME
     ??0?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @2675 NONAME
+    ??0?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @29053 NONAME
     ??0?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @2677 NONAME
     ??0?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@ABV01@@Z @2678 NONAME
     ??0?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @2679 NONAME
+    ??0?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @29054 NONAME
     ??0?$_Deque_unchecked_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @2681 NONAME
     ??0?$_Deque_unchecked_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@IPBU_Container_base12@1@@Z @2682 NONAME
     ??0?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@QAE@XZ @2683 NONAME
     ??0?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@QAE@XZ @2684 NONAME
+    ??0?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAE@XZ @29055 NONAME
     ??0?$_Fillobj@D@std@@QAE@D@Z @2686 NONAME
     ??0?$_List_alloc@$0A@U?$_List_base_types@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAE@ABV?$allocator@PAVContext@PCLI@@@1@@Z @2687 NONAME
     ??0?$_List_alloc@$0A@U?$_List_base_types@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@ABV?$allocator@PAVPVideoOutputDevice_SDL@@@1@@Z @2688 NONAME
     ??0?$_List_alloc@$0A@U?$_List_base_types@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAE@ABV?$allocator@PBVLocalStorageBase@PThread@@@1@@Z @2689 NONAME
     ??0?$_List_alloc@$0A@U?$_List_base_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAE@ABV?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@1@@Z @2690 NONAME
-    ??0?$_List_alloc@$0A@U?$_List_base_types@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAE@ABV?$allocator@UPreparedEventInfo@List@PTimer@@@1@@Z @25513 NONAME
     ??0?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAE@ABV?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@1@@Z @25514 NONAME
     ??0?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAE@ABV?$allocator@V?$PNotifierTemplate@H@@@1@@Z @2691 NONAME
     ??0?$_List_alloc@$0A@U?$_List_base_types@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@ABV?$allocator@VAttribute@PLDAPSchema@@@1@@Z @2692 NONAME
@@ -2786,7 +2793,6 @@ EXPORTS
     ??0?$_List_buy@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@ABV?$allocator@PAVPVideoOutputDevice_SDL@@@1@@Z @2697 NONAME
     ??0?$_List_buy@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAE@ABV?$allocator@PBVLocalStorageBase@PThread@@@1@@Z @2698 NONAME
     ??0?$_List_buy@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@ABV?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@1@@Z @2699 NONAME
-    ??0?$_List_buy@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE@ABV?$allocator@UPreparedEventInfo@List@PTimer@@@1@@Z @25515 NONAME
     ??0?$_List_buy@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAE@ABV?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@1@@Z @25516 NONAME
     ??0?$_List_buy@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAE@ABV?$allocator@V?$PNotifierTemplate@H@@@1@@Z @2700 NONAME
     ??0?$_List_buy@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@ABV?$allocator@VAttribute@PLDAPSchema@@@1@@Z @2701 NONAME
@@ -2797,7 +2803,6 @@ EXPORTS
     ??0?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@PAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@1@@Z @2706 NONAME
     ??0?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAE@PAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@1@@Z @2707 NONAME
     ??0?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@@std@@QAE@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@PBV?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@1@@Z @2708 NONAME
-    ??0?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAE@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@PBV?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@1@@Z @25517 NONAME
     ??0?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAE@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@PBV?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@1@@Z @25518 NONAME
     ??0?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAE@PAU?$_List_node@V?$PNotifierTemplate@H@@PAX@1@PBV?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@1@@Z @2709 NONAME
     ??0?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@PAU?$_List_node@VAttribute@PLDAPSchema@@PAX@1@PBV?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@1@@Z @2710 NONAME
@@ -2806,7 +2811,6 @@ EXPORTS
     ??0?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@std@@QAE@PAU?$_List_node@PAVContext@PCLI@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@1@@Z @2714 NONAME
     ??0?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@PAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@1@@Z @2715 NONAME
     ??0?$_List_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAE@PAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@1@@Z @2716 NONAME
-    ??0?$_List_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAE@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@PBV?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@1@@Z @25519 NONAME
     ??0?$_List_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAE@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@PBV?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@1@@Z @25520 NONAME
     ??0?$_List_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAE@PAU?$_List_node@V?$PNotifierTemplate@H@@PAX@1@PBV?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@1@@Z @2717 NONAME
     ??0?$_List_iterator@V?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@PAU?$_List_node@VAttribute@PLDAPSchema@@PAX@1@PBV?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@1@@Z @2718 NONAME
@@ -2816,7 +2820,6 @@ EXPORTS
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@U_Iterator_base0@2@@std@@QAE@PAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@1@@Z @2723 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@U_Iterator_base0@2@@std@@QAE@PAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@1@@Z @2724 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@U_Iterator_base0@2@@std@@QAE@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@PBV?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@1@@Z @2725 NONAME
-    ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@U_Iterator_base0@2@@std@@QAE@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@PBV?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@1@@Z @25521 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@U_Iterator_base0@2@@std@@QAE@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@1@PBV?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@1@@Z @25522 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@U_Iterator_base0@2@@std@@QAE@PAU?$_List_node@V?$PNotifierTemplate@H@@PAX@1@PBV?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@1@@Z @2726 NONAME
     ??0?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@U_Iterator_base0@2@@std@@QAE@PAU?$_List_node@VAttribute@PLDAPSchema@@PAX@1@PBV?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@1@@Z @2727 NONAME
@@ -2827,7 +2830,6 @@ EXPORTS
     ??0?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@PAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@1@@Z @2732 NONAME
     ??0?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAE@PAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@1@PBV?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@1@@Z @2733 NONAME
     ??0?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@@std@@QAE@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@1@PBV?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@1@@Z @2734 NONAME
-    ??0?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAE@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@1@PBV?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@1@@Z @25523 NONAME
     ??0?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAE@PAU?$_List_node@V?$PNotifierTemplate@H@@PAX@1@PBV?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@1@@Z @2735 NONAME
     ??0?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@VPVideoControlInfo@@@std@@@std@@@std@@QAE@PAU?$_List_node@VPVideoControlInfo@@PAX@1@PBV?$_List_val@U?$_List_simple_types@VPVideoControlInfo@@@std@@@1@@Z @2736 NONAME
     ??0?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@VPVideoFrameInfo@@@std@@@std@@@std@@QAE@PAU?$_List_node@VPVideoFrameInfo@@PAX@1@PBV?$_List_val@U?$_List_simple_types@VPVideoFrameInfo@@@std@@@1@@Z @2737 NONAME
@@ -2835,7 +2837,6 @@ EXPORTS
     ??0?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @2739 NONAME
     ??0?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@QAE@XZ @2740 NONAME
     ??0?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@QAE@XZ @2741 NONAME
-    ??0?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE@XZ @25524 NONAME
     ??0?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAE@XZ @25525 NONAME
     ??0?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@QAE@XZ @2742 NONAME
     ??0?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@QAE@XZ @2743 NONAME
@@ -3286,7 +3287,6 @@ EXPORTS
     ??0?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@@std@@QAE@XZ @3199 NONAME
     ??0?$_Wrap_alloc@V?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@@std@@QAE@XZ @3200 NONAME
     ??0?$_Wrap_alloc@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@QAE@XZ @3201 NONAME
-    ??0?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QAE@XZ @25622 NONAME
     ??0?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@std@@QAE@XZ @25623 NONAME
     ??0?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@QAE@ABV?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@1@@Z @3202 NONAME
     ??0?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@QAE@XZ @3203 NONAME
@@ -3343,6 +3343,7 @@ EXPORTS
     ??0?$_Wrap_alloc@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QAE@XZ @3254 NONAME
     ??0?$_Wrap_alloc@V?$allocator@U_Container_proxy@std@@@std@@@std@@QAE@XZ @3255 NONAME
     ??0?$_Wrap_alloc@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@std@@QAE@XZ @3256 NONAME
+    ??0?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAE@XZ @29056 NONAME
     ??0?$_Wrap_alloc@V?$allocator@VAddress@PIPSocket@@@std@@@std@@QAE@XZ @3257 NONAME
     ??0?$_Wrap_alloc@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QAE@XZ @3258 NONAME
     ??0?$_Wrap_alloc@V?$allocator@VPCaselessString@@@std@@@std@@QAE@XZ @25634 NONAME
@@ -4112,8 +4113,6 @@ EXPORTS
     ??0PRegularExpression@@QAE@XZ @3987 NONAME
     ??0PRemoteConnection@@QAE@ABVPString@@@Z @3988 NONAME
     ??0PRemoteConnection@@QAE@XZ @3989 NONAME
-    ??0PreparedEventInfo@List@PTimer@@QAE@ABU012@@Z @25730 NONAME
-    ??0PreparedEventInfo@List@PTimer@@QAE@PAV2@@Z @25731 NONAME
     ??0Presence@XMPP@@QAE@AAVPXMLElement@@@Z @25732 NONAME
     ??0Presence@XMPP@@QAE@ABV01@@Z @3991 NONAME
     ??0Presence@XMPP@@QAE@XZ @3993 NONAME
@@ -4911,11 +4910,11 @@ EXPORTS
     ??1?$CComPtr@VPSampleGrabberCB@@@@QAE@XZ @25815 NONAME
     ??1?$deque@DV?$allocator@D@std@@@std@@QAE@XZ @4758 NONAME
     ??1?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAE@XZ @4759 NONAME
+    ??1?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAE@XZ @29057 NONAME
     ??1?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE@XZ @4761 NONAME
     ??1?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @4762 NONAME
     ??1?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAE@XZ @4763 NONAME
     ??1?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@XZ @4764 NONAME
-    ??1?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE@XZ @25816 NONAME
     ??1?$list@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAE@XZ @25817 NONAME
     ??1?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAE@XZ @4765 NONAME
     ??1?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@XZ @4766 NONAME
@@ -5148,6 +5147,7 @@ EXPORTS
     ??1?$PValidatedNotifierFunction@H@@UAE@XZ @5014 NONAME
     ??1?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAE@XZ @5019 NONAME
     ??1?$queue@PAUPAsyncNotifierCallback@@V?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@XZ @5020 NONAME
+    ??1?$queue@V?$PSmartPtr@VEmitter@PTimer@@@@V?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@XZ @29058 NONAME
     ??1?$set@IU?$less@I@std@@V?$allocator@I@2@@std@@QAE@XZ @25854 NONAME
     ??1?$set@UInternalCommand@PCLI@@U?$less@UInternalCommand@PCLI@@@std@@V?$allocator@UInternalCommand@PCLI@@@4@@std@@QAE@XZ @25855 NONAME
     ??1?$set@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAE@XZ @5023 NONAME
@@ -5264,17 +5264,20 @@ EXPORTS
     ??1?$Worker@VTextToSpeech_Sample@@@?$PFactory@VPTextToSpeech@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@UAE@XZ @5116 NONAME
     ??1?$_Deque_alloc@$0A@U?$_Deque_base_types@DV?$allocator@D@std@@@std@@@std@@QAE@XZ @5117 NONAME
     ??1?$_Deque_alloc@$0A@U?$_Deque_base_types@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@XZ @5118 NONAME
+    ??1?$_Deque_alloc@$0A@U?$_Deque_base_types@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@XZ @29059 NONAME
     ??1?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@std@@QAE@XZ @5120 NONAME
     ??1?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@XZ @5121 NONAME
+    ??1?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@XZ @29060 NONAME
     ??1?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@std@@QAE@XZ @5123 NONAME
     ??1?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAE@XZ @5124 NONAME
+    ??1?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAE@XZ @29061 NONAME
     ??1?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@QAE@XZ @5126 NONAME
     ??1?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@QAE@XZ @5127 NONAME
+    ??1?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAE@XZ @29062 NONAME
     ??1?$_List_alloc@$0A@U?$_List_base_types@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QAE@XZ @5129 NONAME
     ??1?$_List_alloc@$0A@U?$_List_base_types@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAE@XZ @5130 NONAME
     ??1?$_List_alloc@$0A@U?$_List_base_types@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAE@XZ @5131 NONAME
     ??1?$_List_alloc@$0A@U?$_List_base_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAE@XZ @5132 NONAME
-    ??1?$_List_alloc@$0A@U?$_List_base_types@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAE@XZ @25880 NONAME
     ??1?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAE@XZ @25881 NONAME
     ??1?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAE@XZ @5133 NONAME
     ??1?$_List_alloc@$0A@U?$_List_base_types@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAE@XZ @5134 NONAME
@@ -5285,7 +5288,6 @@ EXPORTS
     ??1?$_List_buy@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE@XZ @5139 NONAME
     ??1?$_List_buy@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAE@XZ @5140 NONAME
     ??1?$_List_buy@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE@XZ @5141 NONAME
-    ??1?$_List_buy@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE@XZ @25882 NONAME
     ??1?$_List_buy@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAE@XZ @25883 NONAME
     ??1?$_List_buy@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAE@XZ @5142 NONAME
     ??1?$_List_buy@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAE@XZ @5143 NONAME
@@ -5848,7 +5850,6 @@ EXPORTS
     ??1PRegisterPage@@UAE@XZ @5656 NONAME
     ??1PRegularExpression@@UAE@XZ @5657 NONAME
     ??1PRemoteConnection@@UAE@XZ @5658 NONAME
-    ??1PreparedEventInfo@List@PTimer@@QAE@XZ @25977 NONAME
     ??1Presence@XMPP@@UAE@XZ @5659 NONAME
     ??1PRFC1155_ApplicationSyntax@@UAE@XZ @5660 NONAME
     ??1PRFC1155_Counter@@UAE@XZ @5661 NONAME
@@ -6627,7 +6628,6 @@ EXPORTS
     ??6PArgList@@QAEAAV0@H@Z @6408 NONAME
     ??7?$CComPtr@UIDirectSoundBuffer@@@@QBE_NXZ @6409 NONAME
     ??7?$CComPtr@UIDirectSoundCaptureBuffer@@@@QBE_NXZ @6410 NONAME
-    ??7PAtomicBoolean@@QBE_NXZ @26030 NONAME
     ??7PString@@QBE_NXZ @6411 NONAME
     ??8?$CComPtr@UIAMCameraControl@@@@QBE_NPAUIAMCameraControl@@@Z @26031 NONAME
     ??8?$CComPtr@UIDirectSoundBuffer@@@@QBE_NPAUIDirectSoundBuffer@@@Z @26032 NONAME
@@ -7086,7 +7086,6 @@ EXPORTS
     ??C?$PSingleton@V?$allocator@VPContainerReference@@@std@@I@@QBEPAV?$allocator@VPContainerReference@@@std@@XZ @6848 NONAME
     ??C?$PSmartPtr@VEmitter@PTimer@@@@QBEPAVEmitter@PTimer@@XZ @26093 NONAME
     ??C?$PSmartPtr@VGuard@PTimer@@@@QBEPAVGuard@PTimer@@XZ @26094 NONAME
-    ??C?$_List_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QBEPAUPreparedEventInfo@List@PTimer@@XZ @26095 NONAME
     ??C?$_List_iterator@V?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBEPAVAttribute@PLDAPSchema@@XZ @6849 NONAME
     ??C?$_List_iterator@V?$_List_val@U?$_List_simple_types@VPVideoFrameInfo@@@std@@@std@@@std@@QBEPAVPVideoFrameInfo@@XZ @6851 NONAME
     ??C?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPBU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@1@XZ @6852 NONAME
@@ -7175,14 +7174,15 @@ EXPORTS
     ??D?$Handle@VValue@v8@@@v8@@QBEPAVValue@1@XZ @6934 NONAME
     ??D?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@std@@QBEABDXZ @6935 NONAME
     ??D?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QBEABQAUPAsyncNotifierCallback@@XZ @6936 NONAME
+    ??D?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QBEABV?$PSmartPtr@VEmitter@PTimer@@@@XZ @29063 NONAME
     ??D?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@std@@QBEAADXZ @6938 NONAME
     ??D?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QBEAAPAUPAsyncNotifierCallback@@XZ @6939 NONAME
+    ??D?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QBEAAV?$PSmartPtr@VEmitter@PTimer@@@@XZ @29064 NONAME
     ??D?$_Deque_unchecked_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QBEABQAUPAsyncNotifierCallback@@XZ @6941 NONAME
     ??D?$_Deque_unchecked_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QBEAAPAUPAsyncNotifierCallback@@XZ @6942 NONAME
     ??D?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@std@@QBEABQAVContext@PCLI@@XZ @6943 NONAME
     ??D?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QBEABQAVPVideoOutputDevice_SDL@@XZ @6944 NONAME
     ??D?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QBEABQBVLocalStorageBase@PThread@@XZ @6945 NONAME
-    ??D?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QBEABUPreparedEventInfo@List@PTimer@@XZ @26113 NONAME
     ??D?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QBEABV?$PNotifierTemplate@AAVPXMLElement@@@@XZ @26114 NONAME
     ??D?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QBEABV?$PNotifierTemplate@H@@XZ @6946 NONAME
     ??D?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBEABVAttribute@PLDAPSchema@@XZ @6947 NONAME
@@ -7190,7 +7190,6 @@ EXPORTS
     ??D?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@std@@QBEAAPAVContext@PCLI@@XZ @6950 NONAME
     ??D?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QBEAAPAVPVideoOutputDevice_SDL@@XZ @6951 NONAME
     ??D?$_List_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QBEAAPBVLocalStorageBase@PThread@@XZ @6952 NONAME
-    ??D?$_List_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QBEAAUPreparedEventInfo@List@PTimer@@XZ @26115 NONAME
     ??D?$_List_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QBEAAV?$PNotifierTemplate@AAVPXMLElement@@@@XZ @26116 NONAME
     ??D?$_List_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QBEAAV?$PNotifierTemplate@H@@XZ @6953 NONAME
     ??D?$_List_iterator@V?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBEAAVAttribute@PLDAPSchema@@XZ @6954 NONAME
@@ -7308,8 +7307,6 @@ EXPORTS
     ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEAAV01@XZ @7072 NONAME
     ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAEAAV01@XZ @7073 NONAME
     ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@@std@@QAEAAV01@XZ @7074 NONAME
-    ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAE?AV01@H@Z @26137 NONAME
-    ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAEAAV01@XZ @26138 NONAME
     ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAEAAV01@XZ @26139 NONAME
     ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAEAAV01@XZ @7075 NONAME
     ??E?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEAAV01@XZ @7076 NONAME
@@ -14747,12 +14744,12 @@ EXPORTS
     ?allocate@?$allocator@PAD@std@@QAEPAPADI@Z @14315 NONAME
     ?allocate@?$allocator@PAPAUPAsyncNotifierCallback@@@std@@QAEPAPAPAUPAsyncNotifierCallback@@I@Z @14316 NONAME
     ?allocate@?$allocator@PAUPAsyncNotifierCallback@@@std@@QAEPAPAUPAsyncNotifierCallback@@I@Z @14317 NONAME
+    ?allocate@?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAEPAPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29065 NONAME
     ?allocate@?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@QAEPAPAVWorkerThreadBase@PThreadPoolBase@@I@Z @14321 NONAME
     ?allocate@?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@QAEPAU?$_List_node@PAVContext@PCLI@@PAX@2@I@Z @14322 NONAME
     ?allocate@?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@QAEPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@I@Z @14323 NONAME
     ?allocate@?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@QAEPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@I@Z @14324 NONAME
     ?allocate@?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@QAEPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@I@Z @14325 NONAME
-    ?allocate@?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QAEPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@I@Z @26955 NONAME
     ?allocate@?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@I@Z @26956 NONAME
     ?allocate@?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@I@Z @14326 NONAME
     ?allocate@?$allocator@U?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@QAEPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@I@Z @14327 NONAME
@@ -14811,6 +14808,7 @@ EXPORTS
     ?allocate@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAEPAUtMIXERCONTROLDETAILS_BOOLEAN@@I@Z @14380 NONAME
     ?allocate@?$allocator@U_Container_proxy@std@@@std@@QAEPAU_Container_proxy@2@I@Z @14381 NONAME
     ?allocate@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@I@Z @14382 NONAME
+    ?allocate@?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAEPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29066 NONAME
     ?allocate@?$allocator@VAddress@PIPSocket@@@std@@QAEPAVAddress@PIPSocket@@I@Z @14383 NONAME
     ?allocate@?$allocator@VAddressAndPort@PIPSocket@@@std@@QAEPAVAddressAndPort@PIPSocket@@I@Z @14384 NONAME
     ?allocate@?$allocator@VPCaselessString@@@std@@QAEPAVPCaselessString@@I@Z @26967 NONAME
@@ -14824,12 +14822,12 @@ EXPORTS
     ?allocate@?$_Wrap_alloc@V?$allocator@PAD@std@@@std@@QAEPAPADI@Z @14392 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@std@@QAEPAPAPAUPAsyncNotifierCallback@@I@Z @14393 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEPAPAUPAsyncNotifierCallback@@I@Z @14394 NONAME
+    ?allocate@?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEPAPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29067 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QAEPAPAVWorkerThreadBase@PThreadPoolBase@@I@Z @14398 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@PAVContext@PCLI@@PAX@2@I@Z @14399 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@I@Z @14400 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@I@Z @14401 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@I@Z @14402 NONAME
-    ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@I@Z @26969 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@I@Z @26970 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@I@Z @14403 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@@std@@QAEPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@I@Z @14404 NONAME
@@ -14883,6 +14881,7 @@ EXPORTS
     ?allocate@?$_Wrap_alloc@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QAEPAUtMIXERCONTROLDETAILS_BOOLEAN@@I@Z @14452 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@U_Container_proxy@std@@@std@@@std@@QAEPAU_Container_proxy@2@I@Z @14453 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@std@@QAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@I@Z @14454 NONAME
+    ?allocate@?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29068 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@VAddress@PIPSocket@@@std@@@std@@QAEPAVAddress@PIPSocket@@I@Z @14455 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QAEPAVAddressAndPort@PIPSocket@@I@Z @14456 NONAME
     ?allocate@?$_Wrap_alloc@V?$allocator@VPCaselessString@@@std@@@std@@QAEPAVPCaselessString@@I@Z @26981 NONAME
@@ -15059,12 +15058,12 @@ EXPORTS
     ?begin@?$deque@DV?$allocator@D@std@@@std@@QAE?AV?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@2@XZ @14629 NONAME
     ?begin@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAE?AV?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@2@XZ @14630 NONAME
     ?begin@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QBE?AV?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@2@XZ @14631 NONAME
+    ?begin@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAE?AV?$_Deque_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@2@XZ @29069 NONAME
     ?begin@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@2@XZ @14633 NONAME
     ?begin@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBE?AV?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@2@XZ @14634 NONAME
     ?begin@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@2@XZ @14635 NONAME
     ?begin@?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@2@XZ @14636 NONAME
     ?begin@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBE?AV?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@@2@XZ @14637 NONAME
-    ?begin@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@2@XZ @26992 NONAME
     ?begin@?$list@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@2@XZ @26993 NONAME
     ?begin@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@2@XZ @14638 NONAME
     ?begin@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QBE?AV?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@2@XZ @14639 NONAME
@@ -15804,7 +15803,6 @@ EXPORTS
     ?clear@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXXZ @15337 NONAME
     ?clear@?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAEXXZ @15338 NONAME
     ?clear@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXXZ @15339 NONAME
-    ?clear@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAEXXZ @27064 NONAME
     ?clear@?$list@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAEXXZ @27065 NONAME
     ?clear@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAEXXZ @15340 NONAME
     ?clear@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAEXXZ @15341 NONAME
@@ -17242,12 +17240,12 @@ EXPORTS
     ?deallocate@?$allocator@PAD@std@@QAEXPAPADI@Z @16760 NONAME
     ?deallocate@?$allocator@PAPAUPAsyncNotifierCallback@@@std@@QAEXPAPAPAUPAsyncNotifierCallback@@I@Z @16761 NONAME
     ?deallocate@?$allocator@PAUPAsyncNotifierCallback@@@std@@QAEXPAPAUPAsyncNotifierCallback@@I@Z @16762 NONAME
+    ?deallocate@?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAEXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29070 NONAME
     ?deallocate@?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@QAEXPAPAVWorkerThreadBase@PThreadPoolBase@@I@Z @16766 NONAME
     ?deallocate@?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@QAEXPAU?$_List_node@PAVContext@PCLI@@PAX@2@I@Z @16767 NONAME
     ?deallocate@?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@QAEXPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@I@Z @16768 NONAME
     ?deallocate@?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@QAEXPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@I@Z @16769 NONAME
     ?deallocate@?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@QAEXPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@I@Z @16770 NONAME
-    ?deallocate@?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QAEXPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@I@Z @27248 NONAME
     ?deallocate@?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@I@Z @27249 NONAME
     ?deallocate@?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@I@Z @16771 NONAME
     ?deallocate@?$allocator@U?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@QAEXPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@I@Z @16772 NONAME
@@ -17306,6 +17304,7 @@ EXPORTS
     ?deallocate@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QAEXPAUtMIXERCONTROLDETAILS_BOOLEAN@@I@Z @16825 NONAME
     ?deallocate@?$allocator@U_Container_proxy@std@@@std@@QAEXPAU_Container_proxy@2@I@Z @16826 NONAME
     ?deallocate@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QAEXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@I@Z @16827 NONAME
+    ?deallocate@?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@QAEXPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29071 NONAME
     ?deallocate@?$allocator@VAddress@PIPSocket@@@std@@QAEXPAVAddress@PIPSocket@@I@Z @16828 NONAME
     ?deallocate@?$allocator@VAddressAndPort@PIPSocket@@@std@@QAEXPAVAddressAndPort@PIPSocket@@I@Z @16829 NONAME
     ?deallocate@?$allocator@VPCaselessString@@@std@@QAEXPAVPCaselessString@@I@Z @27260 NONAME
@@ -17319,12 +17318,12 @@ EXPORTS
     ?deallocate@?$_Wrap_alloc@V?$allocator@PAD@std@@@std@@QAEXPAPADI@Z @16837 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@PAPAUPAsyncNotifierCallback@@@std@@@std@@QAEXPAPAPAUPAsyncNotifierCallback@@I@Z @16838 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEXPAPAUPAsyncNotifierCallback@@I@Z @16839 NONAME
+    ?deallocate@?$_Wrap_alloc@V?$allocator@PAV?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEXPAPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29072 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QAEXPAPAVWorkerThreadBase@PThreadPoolBase@@I@Z @16843 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@PAVContext@PCLI@@PAX@2@I@Z @16844 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@I@Z @16845 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@I@Z @16846 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@I@Z @16847 NONAME
-    ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@I@Z @27262 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@I@Z @27263 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@I@Z @16848 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@@std@@QAEXPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@I@Z @16849 NONAME
@@ -17378,6 +17377,7 @@ EXPORTS
     ?deallocate@?$_Wrap_alloc@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QAEXPAUtMIXERCONTROLDETAILS_BOOLEAN@@I@Z @16897 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@U_Container_proxy@std@@@std@@@std@@QAEXPAU_Container_proxy@2@I@Z @16898 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@std@@QAEXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@I@Z @16899 NONAME
+    ?deallocate@?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEXPAV?$PSmartPtr@VEmitter@PTimer@@@@I@Z @29073 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@VAddress@PIPSocket@@@std@@@std@@QAEXPAVAddress@PIPSocket@@I@Z @16900 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QAEXPAVAddressAndPort@PIPSocket@@I@Z @16901 NONAME
     ?deallocate@?$_Wrap_alloc@V?$allocator@VPCaselessString@@@std@@@std@@QAEXPAVPCaselessString@@I@Z @27274 NONAME
@@ -17583,6 +17583,7 @@ EXPORTS
     ?EchoInput@PCLICursesContext@@UAE_ND@Z @27286 NONAME
     ?empty@?$deque@DV?$allocator@D@std@@@std@@QBE_NXZ @17107 NONAME
     ?empty@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QBE_NXZ @17108 NONAME
+    ?empty@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QBE_NXZ @29074 NONAME
     ?empty@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBE_NXZ @17110 NONAME
     ?empty@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QBE_NXZ @17111 NONAME
     ?empty@?$list@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QBE_NXZ @27287 NONAME
@@ -17590,6 +17591,7 @@ EXPORTS
     ?empty@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QBE_NXZ @17113 NONAME
     ?empty@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QBE_NXZ @17114 NONAME
     ?empty@?$queue@PAUPAsyncNotifierCallback@@V?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QBE_NXZ @17115 NONAME
+    ?empty@?$queue@V?$PSmartPtr@VEmitter@PTimer@@@@V?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QBE_NXZ @29075 NONAME
     ?empty@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBE_NXZ @17118 NONAME
     ?empty@?$vector@UOptionSpec@PArgList@@V?$allocator@UOptionSpec@PArgList@@@std@@@std@@QBE_NXZ @17119 NONAME
     ?empty@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBE_NXZ @17120 NONAME
@@ -17843,7 +17845,6 @@ EXPORTS
     ?erase@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEAAV12@I@Z @17346 NONAME
     ?erase@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEAAV12@II@Z @17347 NONAME
     ?erase@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@2@V?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@2@@Z @17348 NONAME
-    ?erase@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@2@V?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@2@@Z @27333 NONAME
     ?erase@?$PList@V?$PNotifierTemplate@H@@@@QAEXABViterator@1@@Z @17349 NONAME
     ?erase@?$PList@VPSocket@@@@QAEXABViterator@1@@Z @17351 NONAME
     ?erase@?$PList@VPThread@@@@QAEXABViterator@1@@Z @17352 NONAME
@@ -18111,11 +18112,13 @@ EXPORTS
     ?FromTag@Stanza@XMPP@@SAABVPCaselessString@@XZ @17613 NONAME
     ?front@?$deque@DV?$allocator@D@std@@@std@@QAEAADXZ @17614 NONAME
     ?front@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEAAPAUPAsyncNotifierCallback@@XZ @17615 NONAME
+    ?front@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEAAV?$PSmartPtr@VEmitter@PTimer@@@@XZ @29076 NONAME
     ?front@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEAAPAVContext@PCLI@@XZ @17617 NONAME
     ?front@?$PList@VPSocket@@@@QBEAAVPSocket@@XZ @17618 NONAME
     ?front@?$PList@VPString@@@@QBEAAVPString@@XZ @17619 NONAME
     ?front@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAEAADXZ @17620 NONAME
     ?front@?$queue@PAUPAsyncNotifierCallback@@V?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAEAAPAUPAsyncNotifierCallback@@XZ @17621 NONAME
+    ?front@?$queue@V?$PSmartPtr@VEmitter@PTimer@@@@V?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAEAAV?$PSmartPtr@VEmitter@PTimer@@@@XZ @29077 NONAME
     ?front@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QAEAAPAVWorkerThreadBase@PThreadPoolBase@@XZ @17624 NONAME
     ?front@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEAAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ @17625 NONAME
     ?g7231FormatWAVFormat@@3V?$Worker@VPWAVFileFormatG7231_vivo@@@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@A @17626 NONAME
@@ -19231,6 +19234,7 @@ EXPORTS
     ?GetInterfaces@PMonitoredSockets@@UAE?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @18656 NONAME
     ?GetInterfaces@PSingleMonitoredSocket@@UAE?AVPStringArray@@_NABVAddress@PIPSocket@@@Z @18657 NONAME
     ?GetInterfaceTable@PIPSocket@@SA_NAAV?$PArray@VInterfaceEntry@PIPSocket@@@@_N@Z @18658 NONAME
+    ?GetInterval@Emitter@PTimer@@QBE_JXZ @29078 NONAME
     ?GetInterval@PSoundChannelDirectSound@@AAE?AVPTimeInterval@@XZ @18659 NONAME
     ?GetInterval@PTimeInterval@@QBEKXZ @18660 NONAME
     ?GetInvalidAddress@PIPSocket@@SAABVAddress@1@XZ @18661 NONAME
@@ -19593,7 +19597,6 @@ EXPORTS
     ?GetRemaining@PSimpleTimer@@QBE?AVPTimeInterval@@XZ @19007 NONAME
     ?GetRenderHeight@PVideoChannel@@QAEHXZ @19008 NONAME
     ?GetRenderWidth@PVideoChannel@@QAEHXZ @19009 NONAME
-    ?GetRepeat@Emitter@PTimer@@QBE_JXZ @27622 NONAME
     ?GetRepeat@PVXMLPlayable@@UBEHXZ @19010 NONAME
     ?GetRepeatCommand@PCLI@@QBEABVPCaselessString@@XZ @19011 NONAME
     ?GetReplacement@NAPTR_DNS@@QBE?AVPString@@XZ @19012 NONAME
@@ -19764,7 +19767,7 @@ EXPORTS
     ?GetString@PStringOptions@@QBE?AVPString@@P6AABVPCaselessString@@XZPBD@Z @19150 NONAME
     ?GetString@PSTUNStringAttribute@@QBE?AVPString@@XZ @19151 NONAME
     ?GetString@PXMLData@@QBEABVPString@@XZ @27660 NONAME
-    ?GetStrings@PHTTPFieldArray@@QAE?AVPStringArray@@AAVPConfig@@@Z @19153 NONAME
+    ?GetStrings@PHTTPFieldArray@@QAE?AVPStringArray@@AAVPConfig@@ABV2@@Z @29079 NONAME
     ?GetStringsIndex@PSortedStringList@@QBEHABVPString@@@Z @19154 NONAME
     ?GetStringsIndex@PStringArray@@QBEHABVPString@@@Z @19155 NONAME
     ?GetStringsIndex@PStringList@@QBEHABVPString@@@Z @19156 NONAME
@@ -20881,6 +20884,7 @@ EXPORTS
     ?IsRecordBufferFull@PSoundChannel_WAVFile@@UAE_NXZ @20217 NONAME
     ?IsRecording@PVXMLChannel@@QBE_NXZ @20218 NONAME
     ?IsRenderOpen@PVideoChannel@@UAE_NXZ @20223 NONAME
+    ?IsRepeating@Emitter@PTimer@@QBE_NXZ @29080 NONAME
     ?IsRFC1918@Address@PIPSocket@@QBE_NXZ @20224 NONAME
     ?IsRFC5389@PSTUNMessage@@QBE_NXZ @20225 NONAME
     ?IsRoot@PDirectory@@QBE_NXZ @20226 NONAME
@@ -21103,12 +21107,12 @@ EXPORTS
     ?LoadFile@PVXMLSession@@UAE_NABVPFilePath@@ABVPString@@@Z @20411 NONAME
     ?LoadFile@PXML@@QAE_NABVPFilePath@@@Z @27813 NONAME
     ?LoadFile@PXML@@QAE_NABVPFilePath@@V?$PBitwiseEnum@W4Options_Bits@PXMLBase@@$0EA@I@@@Z @20412 NONAME
-    ?LoadFromConfig@PHTTPBooleanField@@UAEXAAVPConfig@@@Z @20413 NONAME
-    ?LoadFromConfig@PHTTPCompositeField@@UAEXAAVPConfig@@@Z @20414 NONAME
-    ?LoadFromConfig@PHTTPConfig@@QAEXXZ @20415 NONAME
-    ?LoadFromConfig@PHTTPField@@UAEXAAVPConfig@@@Z @20416 NONAME
-    ?LoadFromConfig@PHTTPFieldArray@@UAEXAAVPConfig@@@Z @20417 NONAME
-    ?LoadFromConfig@PHTTPIntegerField@@UAEXAAVPConfig@@@Z @20418 NONAME
+    ?LoadFromConfig@PHTTPBooleanField@@UAE_NAAVPConfig@@@Z @29081 NONAME
+    ?LoadFromConfig@PHTTPCompositeField@@UAE_NAAVPConfig@@@Z @29082 NONAME
+    ?LoadFromConfig@PHTTPConfig@@QAE_NXZ @29083 NONAME
+    ?LoadFromConfig@PHTTPField@@UAE_NAAVPConfig@@@Z @29084 NONAME
+    ?LoadFromConfig@PHTTPFieldArray@@UAE_NAAVPConfig@@@Z @29085 NONAME
+    ?LoadFromConfig@PHTTPIntegerField@@UAE_NAAVPConfig@@@Z @29086 NONAME
     ?LoadGrammar@PVXMLSession@@UAE_NPAVPVXMLGrammar@@@Z @20419 NONAME
     ?LoadHeaders@PHTTPDirectory@@UAE_NAAVPHTTPRequest@@@Z @20420 NONAME
     ?LoadHeaders@PHTTPFile@@UAE_NAAVPHTTPRequest@@@Z @20421 NONAME
@@ -21257,7 +21261,6 @@ EXPORTS
     ?max_size@?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@QBEIXZ @20572 NONAME
     ?max_size@?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@QBEIXZ @20573 NONAME
     ?max_size@?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@QBEIXZ @20574 NONAME
-    ?max_size@?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@QBEIXZ @27820 NONAME
     ?max_size@?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@QBEIXZ @20575 NONAME
     ?max_size@?$allocator@U?$_List_node@VPVideoControlInfo@@PAX@std@@@std@@QBEIXZ @20576 NONAME
     ?max_size@?$allocator@U?$_List_node@VPVideoFrameInfo@@PAX@std@@@std@@QBEIXZ @20577 NONAME
@@ -21306,6 +21309,7 @@ EXPORTS
     ?max_size@?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@QBEIXZ @20619 NONAME
     ?max_size@?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@QBEIXZ @20620 NONAME
     ?max_size@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QBEIXZ @20621 NONAME
+    ?max_size@?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@QBEIXZ @29087 NONAME
     ?max_size@?$allocator@VAddress@PIPSocket@@@std@@QBEIXZ @20622 NONAME
     ?max_size@?$allocator@VAddressAndPort@PIPSocket@@@std@@QBEIXZ @20623 NONAME
     ?max_size@?$allocator@VPCaselessString@@@std@@QBEIXZ @27831 NONAME
@@ -21320,7 +21324,6 @@ EXPORTS
     ?max_size@?$allocator_traits@V?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@@std@@SAIABV?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@2@@Z @20634 NONAME
     ?max_size@?$allocator_traits@V?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@@std@@SAIABV?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@2@@Z @20635 NONAME
     ?max_size@?$allocator_traits@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@SAIABV?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@2@@Z @20636 NONAME
-    ?max_size@?$allocator_traits@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@SAIABV?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@2@@Z @27833 NONAME
     ?max_size@?$allocator_traits@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@SAIABV?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@2@@Z @20637 NONAME
     ?max_size@?$allocator_traits@V?$allocator@U?$_List_node@VPVideoControlInfo@@PAX@std@@@std@@@std@@SAIABV?$allocator@U?$_List_node@VPVideoControlInfo@@PAX@std@@@2@@Z @20638 NONAME
     ?max_size@?$allocator_traits@V?$allocator@U?$_List_node@VPVideoFrameInfo@@PAX@std@@@std@@@std@@SAIABV?$allocator@U?$_List_node@VPVideoFrameInfo@@PAX@std@@@2@@Z @20639 NONAME
@@ -21369,6 +21372,7 @@ EXPORTS
     ?max_size@?$allocator_traits@V?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@@std@@SAIABV?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@2@@Z @20681 NONAME
     ?max_size@?$allocator_traits@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@SAIABV?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@2@@Z @20682 NONAME
     ?max_size@?$allocator_traits@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@std@@SAIABV?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@Z @20683 NONAME
+    ?max_size@?$allocator_traits@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@SAIABV?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@2@@Z @29088 NONAME
     ?max_size@?$allocator_traits@V?$allocator@VAddress@PIPSocket@@@std@@@std@@SAIABV?$allocator@VAddress@PIPSocket@@@2@@Z @20684 NONAME
     ?max_size@?$allocator_traits@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@SAIABV?$allocator@VAddressAndPort@PIPSocket@@@2@@Z @20685 NONAME
     ?max_size@?$allocator_traits@V?$allocator@VPCaselessString@@@std@@@std@@SAIABV?$allocator@VPCaselessString@@@2@@Z @27844 NONAME
@@ -21379,11 +21383,11 @@ EXPORTS
     ?max_size@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QBEIXZ @20690 NONAME
     ?max_size@?$deque@DV?$allocator@D@std@@@std@@QBEIXZ @20691 NONAME
     ?max_size@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QBEIXZ @20692 NONAME
+    ?max_size@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QBEIXZ @29089 NONAME
     ?max_size@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBEIXZ @20694 NONAME
     ?max_size@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QBEIXZ @20695 NONAME
     ?max_size@?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QBEIXZ @20696 NONAME
     ?max_size@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBEIXZ @20697 NONAME
-    ?max_size@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QBEIXZ @27846 NONAME
     ?max_size@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QBEIXZ @20698 NONAME
     ?max_size@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QBEIXZ @20699 NONAME
     ?max_size@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QBEIXZ @20700 NONAME
@@ -21447,7 +21451,6 @@ EXPORTS
     ?max_size@?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@@std@@QBEIXZ @20759 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@@std@@QBEIXZ @20760 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@std@@QBEIXZ @20761 NONAME
-    ?max_size@?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@std@@QBEIXZ @27859 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@std@@QBEIXZ @20762 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@U?$_List_node@VPVideoControlInfo@@PAX@std@@@std@@@std@@QBEIXZ @20763 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@U?$_List_node@VPVideoFrameInfo@@PAX@std@@@std@@@std@@QBEIXZ @20764 NONAME
@@ -21496,6 +21499,7 @@ EXPORTS
     ?max_size@?$_Wrap_alloc@V?$allocator@UtagMIXERCONTROLDETAILS_LISTTEXTA@@@std@@@std@@QBEIXZ @20806 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@UtMIXERCONTROLDETAILS_BOOLEAN@@@std@@@std@@QBEIXZ @20807 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@std@@QBEIXZ @20808 NONAME
+    ?max_size@?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QBEIXZ @29090 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@VAddress@PIPSocket@@@std@@@std@@QBEIXZ @20809 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@VAddressAndPort@PIPSocket@@@std@@@std@@QBEIXZ @20810 NONAME
     ?max_size@?$_Wrap_alloc@V?$allocator@VPCaselessString@@@std@@@std@@QBEIXZ @27870 NONAME
@@ -22139,7 +22143,6 @@ EXPORTS
     ?pointer_to@?$pointer_traits@PAU?$pair@QAVPThread@@PAX@std@@@std@@SAPAU?$pair@QAVPThread@@PAX@2@AAU32@@Z @21426 NONAME
     ?pointer_to@?$pointer_traits@PAU?$pair@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@std@@@std@@SAPAU?$pair@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@2@AAU32@@Z @21427 NONAME
     ?pointer_to@?$pointer_traits@PAUPDSoundDeviceInfo@@@std@@SAPAUPDSoundDeviceInfo@@AAU3@@Z @21428 NONAME
-    ?pointer_to@?$pointer_traits@PAUPreparedEventInfo@List@PTimer@@@std@@SAPAUPreparedEventInfo@List@PTimer@@AAU345@@Z @27934 NONAME
     ?pointer_to@?$pointer_traits@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@SAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@AAV32@@Z @27935 NONAME
     ?pointer_to@?$pointer_traits@PAVAttribute@PLDAPSchema@@@std@@SAPAVAttribute@PLDAPSchema@@AAV34@@Z @21429 NONAME
     ?pointer_to@?$pointer_traits@PAVPVarType@@@std@@SAPAVPVarType@@AAV3@@Z @21430 NONAME
@@ -22163,14 +22166,17 @@ EXPORTS
     ?Pop@?$PStack@VPStringStream@@@@UAEPAVPStringStream@@XZ @21450 NONAME
     ?pop@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAEXXZ @21451 NONAME
     ?pop@?$queue@PAUPAsyncNotifierCallback@@V?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAEXXZ @21452 NONAME
+    ?pop@?$queue@V?$PSmartPtr@VEmitter@PTimer@@@@V?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAEXXZ @29091 NONAME
     ?Pop@ParamVector@PScriptLanguage@@QAEXPAX@Z @21454 NONAME
     ?Pop@PGstBus@@QAE_NAAVPGstMessage@@@Z @27938 NONAME
     ?Pop@PGstBus@@QAE_NAAVPGstMessage@@AAVPTimeInterval@@@Z @27939 NONAME
     ?PopulateInfo@PSTUNServer@@IAEXPAVPUDPSocket@@ABVAddress@PIPSocket@@G000@Z @21455 NONAME
     ?pop_back@?$deque@DV?$allocator@D@std@@@std@@QAEXXZ @21456 NONAME
     ?pop_back@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEXXZ @21457 NONAME
+    ?pop_back@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEXXZ @29092 NONAME
     ?pop_front@?$deque@DV?$allocator@D@std@@@std@@QAEXXZ @21459 NONAME
     ?pop_front@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEXXZ @21460 NONAME
+    ?pop_front@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEXXZ @29093 NONAME
     ?Post@Field@PODBC@@QAE_NXZ @21462 NONAME
     ?Post@PConfigPage@@UAE_NAAVPHTTPRequest@@ABVPStringToString@@AAVPHTML@@@Z @21463 NONAME
     ?Post@PConfigSectionsPage@@UAE_NAAVPHTTPRequest@@ABVPStringToString@@AAVPHTML@@@Z @21464 NONAME
@@ -22412,7 +22418,6 @@ EXPORTS
     ?ProcessHeader@PWAVFile@@IAE_NXZ @21687 NONAME
     ?ProcessHTTP@PHTTPServiceProcess@@QAE_NAAVPTCPSocket@@@Z @21688 NONAME
     ?ProcessInput@Context@PCLI@@UAE_NH@Z @21690 NONAME
-    ?ProcessInsertion@List@PTimer@@AAEXXZ @27992 NONAME
     ?ProcessMacros@PServiceHTML@@SA_NAAVPHTTPRequest@@AAVPString@@ABV3@I@Z @21691 NONAME
     ?ProcessNode@PVXMLSession@@MAE_NXZ @21692 NONAME
     ?ProcessPDU@PSNMPServer@@QAE_NABVPBYTEArray@@AAV2@@Z @21693 NONAME
@@ -22469,15 +22474,16 @@ EXPORTS
     ?Push@?$PStack@VPStringStream@@@@UAEXPAVPStringStream@@@Z @21741 NONAME
     ?push@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QAEX$$QAD@Z @21742 NONAME
     ?push@?$queue@PAUPAsyncNotifierCallback@@V?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAEXABQAUPAsyncNotifierCallback@@@Z @21743 NONAME
+    ?push@?$queue@V?$PSmartPtr@VEmitter@PTimer@@@@V?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAEX$$QAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29094 NONAME
     ?Push@ParamVector@PScriptLanguage@@QAEXPAX@Z @21745 NONAME
     ?Push@PGstAppSrc@@QAE_NPBXH@Z @28003 NONAME
     ?push_back@?$deque@DV?$allocator@D@std@@@std@@QAEX$$QAD@Z @21746 NONAME
     ?push_back@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@QAEXABQAUPAsyncNotifierCallback@@@Z @21747 NONAME
+    ?push_back@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QAEX$$QAV?$PSmartPtr@VEmitter@PTimer@@@@@Z @29095 NONAME
     ?push_back@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEXABQAVContext@PCLI@@@Z @21749 NONAME
     ?push_back@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXABQAVPVideoOutputDevice_SDL@@@Z @21750 NONAME
     ?push_back@?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAEXABQBVLocalStorageBase@PThread@@@Z @21751 NONAME
     ?push_back@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEX$$QAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@2@@Z @21752 NONAME
-    ?push_back@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAEX$$QAUPreparedEventInfo@List@PTimer@@@Z @28004 NONAME
     ?push_back@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAEXABV?$PNotifierTemplate@H@@@Z @21753 NONAME
     ?push_back@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXABVPVideoControlInfo@@@Z @21754 NONAME
     ?push_back@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEXABVPVideoFrameInfo@@@Z @21755 NONAME
@@ -23434,7 +23440,6 @@ EXPORTS
     ?SetRemote@PMonitoredSocketChannel@@QAEXABVPString@@@Z @22653 NONAME
     ?SetRenderFrameSize@PVideoChannel@@UAEXHH@Z @22654 NONAME
     ?SetRenderFrameSize@PVideoChannel@@UAEXHHHH@Z @22655 NONAME
-    ?SetRepeat@Emitter@PTimer@@QAEX_J@Z @28130 NONAME
     ?SetRepeat@PVXMLPlayable@@UAEXH@Z @22656 NONAME
     ?SetRequestID@PSNMPClient@@QAEXH@Z @22657 NONAME
     ?SetResizeMode@PColourConverter@@QAEXW4ResizeMode@PVideoFrameInfo@@@Z @22658 NONAME
@@ -23638,7 +23643,6 @@ EXPORTS
     ?size@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QBEIXZ @22850 NONAME
     ?size@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBEIXZ @22851 NONAME
     ?size@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QBEIXZ @22852 NONAME
-    ?size@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QBEIXZ @28144 NONAME
     ?size@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QBEIXZ @22853 NONAME
     ?size@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QBEIXZ @22854 NONAME
     ?size@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBEIXZ @22857 NONAME
@@ -24362,6 +24366,7 @@ EXPORTS
     ?_Adopt@_Iterator_base12@std@@QAEXPBU_Container_base12@2@@Z @23526 NONAME
     ?_Alloc_proxy@?$_Deque_alloc@$0A@U?$_Deque_base_types@DV?$allocator@D@std@@@std@@@std@@QAEXXZ @23527 NONAME
     ?_Alloc_proxy@?$_Deque_alloc@$0A@U?$_Deque_base_types@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAEXXZ @23528 NONAME
+    ?_Alloc_proxy@?$_Deque_alloc@$0A@U?$_Deque_base_types@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAEXXZ @29096 NONAME
     ?_Assign_rv@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEX$$QAV12@@Z @23530 NONAME
     ?_Assign_rv@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEX$$QAV12@@Z @23531 NONAME
     ?_Assign_rv@?$vector@VPCaselessString@@V?$allocator@VPCaselessString@@@std@@@std@@QAEX$$QAV12@@Z @28263 NONAME
@@ -24370,7 +24375,6 @@ EXPORTS
     ?_Buyheadnode@?$_List_alloc@$0A@U?$_List_base_types@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@XZ @23534 NONAME
     ?_Buyheadnode@?$_List_alloc@$0A@U?$_List_base_types@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAEPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@XZ @23535 NONAME
     ?_Buyheadnode@?$_List_alloc@$0A@U?$_List_base_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAEPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@XZ @23536 NONAME
-    ?_Buyheadnode@?$_List_alloc@$0A@U?$_List_base_types@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAEPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@XZ @28264 NONAME
     ?_Buyheadnode@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@XZ @28265 NONAME
     ?_Buyheadnode@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@XZ @23537 NONAME
     ?_Buyheadnode@?$_List_alloc@$0A@U?$_List_base_types@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@XZ @23538 NONAME
@@ -24420,7 +24424,6 @@ EXPORTS
     ?_Buynode0@?$_List_alloc@$0A@U?$_List_base_types@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@PAU32@0@Z @23583 NONAME
     ?_Buynode0@?$_List_alloc@$0A@U?$_List_base_types@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAEPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@PAU32@0@Z @23584 NONAME
     ?_Buynode0@?$_List_alloc@$0A@U?$_List_base_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAEPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@PAU32@0@Z @23585 NONAME
-    ?_Buynode0@?$_List_alloc@$0A@U?$_List_base_types@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAEPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@PAU32@0@Z @28276 NONAME
     ?_Buynode0@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@PAU32@0@Z @28277 NONAME
     ?_Buynode0@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAEPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@PAU32@0@Z @23586 NONAME
     ?_Buynode0@?$_List_alloc@$0A@U?$_List_base_types@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@PAU32@0@Z @23587 NONAME
@@ -24578,6 +24581,7 @@ EXPORTS
     ?_Destroy_if_not_nil@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@IAEXU_Nil@2@@Z @28311 NONAME
     ?_EEM_DS@?$deque@DV?$allocator@D@std@@@std@@2HB @23739 NONAME
     ?_EEM_DS@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@2HB @23740 NONAME
+    ?_EEM_DS@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@2HB @29097 NONAME
     ?_Eos@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEXI@Z @23743 NONAME
     ?_Eqrange@?$_Tree@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@IAE?AU?$pair@V?$_Tree_iterator@V?$_Tree_val@U?$_Tree_simple_types@U?$pair@$$CBIPAVPThread@@@std@@@std@@@std@@@std@@V12@@2@ABI@Z @23744 NONAME
     ?_Eqrange@?$_Tree@V?$_Tmap_traits@IPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@@4@$0A@@std@@@std@@IAE?AU?$pair@V?$_Tree_iterator@V?$_Tree_val@U?$_Tree_simple_types@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@@std@@@std@@@std@@V12@@2@ABI@Z @28312 NONAME
@@ -24640,7 +24644,6 @@ EXPORTS
     ?_Freeheadnode@?$_List_alloc@$0A@U?$_List_base_types@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QAEXPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@@Z @23789 NONAME
     ?_Freeheadnode@?$_List_alloc@$0A@U?$_List_base_types@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QAEXPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@@Z @23790 NONAME
     ?_Freeheadnode@?$_List_alloc@$0A@U?$_List_base_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QAEXPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@@Z @23791 NONAME
-    ?_Freeheadnode@?$_List_alloc@$0A@U?$_List_base_types@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QAEXPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@@Z @28337 NONAME
     ?_Freeheadnode@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@@Z @28338 NONAME
     ?_Freeheadnode@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@@Z @23792 NONAME
     ?_Freeheadnode@?$_List_alloc@$0A@U?$_List_base_types@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QAEXPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@@Z @23793 NONAME
@@ -24728,7 +24731,6 @@ EXPORTS
     ?_Freenode@?$_List_buy@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@@Z @23876 NONAME
     ?_Freenode@?$_List_buy@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAEXPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@@Z @23877 NONAME
     ?_Freenode@?$_List_buy@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@@Z @23878 NONAME
-    ?_Freenode@?$_List_buy@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAEXPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@@Z @28359 NONAME
     ?_Freenode@?$_List_buy@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@@Z @28360 NONAME
     ?_Freenode@?$_List_buy@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAEXPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@@Z @23879 NONAME
     ?_Freenode@?$_List_buy@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAEXPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@@Z @23880 NONAME
@@ -24737,14 +24739,15 @@ EXPORTS
     ?_Freenode@?$_List_buy@VPVideoInteractionInfo@@V?$allocator@VPVideoInteractionInfo@@@std@@@std@@QAEXPAU?$_List_node@VPVideoInteractionInfo@@PAX@2@@Z @23883 NONAME
     ?_Free_proxy@?$_Deque_alloc@$0A@U?$_Deque_base_types@DV?$allocator@D@std@@@std@@@std@@QAEXXZ @23884 NONAME
     ?_Free_proxy@?$_Deque_alloc@$0A@U?$_Deque_base_types@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAEXXZ @23885 NONAME
+    ?_Free_proxy@?$_Deque_alloc@$0A@U?$_Deque_base_types@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAEXXZ @29098 NONAME
     ?_Generic_object@?$_Error_objects@H@std@@2V_Generic_error_category@2@A @23887 NONAME
     ?_Getal@?$_Deque_alloc@$0A@U?$_Deque_base_types@DV?$allocator@D@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@D@std@@@2@XZ @23888 NONAME
     ?_Getal@?$_Deque_alloc@$0A@U?$_Deque_base_types@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@2@XZ @23889 NONAME
+    ?_Getal@?$_Deque_alloc@$0A@U?$_Deque_base_types@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@2@XZ @29099 NONAME
     ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVContext@PCLI@@PAX@std@@@std@@@2@XZ @23891 NONAME
     ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@std@@@std@@@2@XZ @23892 NONAME
     ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@PBVLocalStorageBase@PThread@@PAX@std@@@std@@@2@XZ @23893 NONAME
     ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@std@@@std@@@2@XZ @23894 NONAME
-    ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@std@@@std@@@2@XZ @28361 NONAME
     ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@std@@@std@@@2@XZ @28362 NONAME
     ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@V?$PNotifierTemplate@H@@PAX@std@@@std@@@2@XZ @23895 NONAME
     ?_Getal@?$_List_alloc@$0A@U?$_List_base_types@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@U?$_List_node@VAttribute@PLDAPSchema@@PAX@std@@@std@@@2@XZ @23896 NONAME
@@ -24808,6 +24811,7 @@ EXPORTS
     ?_Getal@?$_Vector_alloc@$0A@U?$_Vec_base_types@_JV?$allocator@_J@std@@@std@@@std@@QBE?AU?$_Wrap_alloc@V?$allocator@_J@std@@@2@XZ @28374 NONAME
     ?_Getblock@?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@QBEII@Z @23955 NONAME
     ?_Getblock@?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@QBEII@Z @23956 NONAME
+    ?_Getblock@?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@QBEII@Z @29100 NONAME
     ?_Getcomp@?$_Tree_comp@$0A@V?$_Tmap_traits@IPAVPThread@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVPThread@@@std@@@3@$0A@@std@@@std@@QBE?AU?$less@I@2@XZ @23958 NONAME
     ?_Getcomp@?$_Tree_comp@$0A@V?$_Tmap_traits@IPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@@std@@@4@$0A@@std@@@std@@QBE?AU?$less@I@2@XZ @23959 NONAME
     ?_Getcomp@?$_Tree_comp@$0A@V?$_Tmap_traits@IPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@U?$less@I@std@@V?$allocator@U?$pair@$$CBIPAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@@std@@@4@$0A@@std@@@std@@QBE?AU?$less@I@2@XZ @23960 NONAME
@@ -24854,6 +24858,7 @@ EXPORTS
     ?_Grow@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAE_NI_N@Z @24001 NONAME
     ?_Growmap@?$deque@DV?$allocator@D@std@@@std@@IAEXI@Z @24002 NONAME
     ?_Growmap@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@IAEXI@Z @24003 NONAME
+    ?_Growmap@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@IAEXI@Z @29101 NONAME
     ?_Grow_to@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@IBEII@Z @24007 NONAME
     ?_Grow_to@?$vector@UOptionSpec@PArgList@@V?$allocator@UOptionSpec@PArgList@@@std@@@std@@IBEII@Z @24008 NONAME
     ?_Grow_to@?$vector@UPDSoundDeviceInfo@@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@IBEII@Z @24009 NONAME
@@ -24874,7 +24879,6 @@ EXPORTS
     ?_Incsize@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXI@Z @24021 NONAME
     ?_Incsize@?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAEXI@Z @24022 NONAME
     ?_Incsize@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXI@Z @24023 NONAME
-    ?_Incsize@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAEXI@Z @28387 NONAME
     ?_Incsize@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAEXI@Z @24024 NONAME
     ?_Incsize@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAEXI@Z @24025 NONAME
     ?_Incsize@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAEXI@Z @24026 NONAME
@@ -25163,7 +25167,6 @@ EXPORTS
     ?_Lrotate@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@IAEXPAU?$_Tree_node@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAX@2@@Z @24320 NONAME
     ?_Lrotate@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@IAEXPAU?$_Tree_node@VPVideoFrameInfo@@PAX@2@@Z @28457 NONAME
     ?_Make_iter@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QBE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@2@V?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@PAVContext@PCLI@@@std@@@std@@@2@@Z @24321 NONAME
-    ?_Make_iter@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QBE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@2@V?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@2@@Z @28458 NONAME
     ?_Make_iter@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QBE?AV?$_List_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@2@V?$_List_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@2@@Z @24322 NONAME
     ?_Make_iter@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QBE?AV?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@@2@V?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@@2@@Z @24325 NONAME
     ?_Make_iter@?$vector@UPSTUNSocketPairInfo@@V?$allocator@UPSTUNSocketPairInfo@@@std@@@std@@QBE?AV?$_Vector_iterator@V?$_Vector_val@U?$_Simple_types@UPSTUNSocketPairInfo@@@std@@@std@@@2@V?$_Vector_const_iterator@V?$_Vector_val@U?$_Simple_types@UPSTUNSocketPairInfo@@@std@@@std@@@2@@Z @29020 NONAME
@@ -25256,7 +25259,6 @@ EXPORTS
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@XZ @24413 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@XZ @24414 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@XZ @24415 NONAME
-    ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@XZ @28480 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@XZ @24416 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@VPVideoControlInfo@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPAU?$_List_node@VPVideoControlInfo@@PAX@2@XZ @24417 NONAME
     ?_Mynode@?$_List_unchecked_const_iterator@V?$_List_val@U?$_List_simple_types@VPVideoFrameInfo@@@std@@@std@@U_Iterator_base0@2@@std@@QBEPAU?$_List_node@VPVideoFrameInfo@@PAX@2@XZ @24418 NONAME
@@ -25305,7 +25307,6 @@ EXPORTS
     ?_Myval@?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@SAAAPAVPVideoOutputDevice_SDL@@PAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@@Z @24462 NONAME
     ?_Myval@?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@SAAAPBVLocalStorageBase@PThread@@PAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@@Z @24463 NONAME
     ?_Myval@?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@SAAAU?$pair@VPString@@VPRFC1155_ObjectSyntax@@@2@PAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@@Z @24464 NONAME
-    ?_Myval@?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@SAAAUPreparedEventInfo@List@PTimer@@PAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@@Z @28491 NONAME
     ?_Myval@?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@SAAAV?$PNotifierTemplate@AAVPXMLElement@@@@PAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@@Z @28492 NONAME
     ?_Myval@?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@SAAAV?$PNotifierTemplate@H@@PAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@@Z @24465 NONAME
     ?_Myval@?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@SAAAVAttribute@PLDAPSchema@@PAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@@Z @24466 NONAME
@@ -25355,7 +25356,6 @@ EXPORTS
     ?_Nextnode@?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@SAAAPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@PAU32@@Z @24511 NONAME
     ?_Nextnode@?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@SAAAPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@PAU32@@Z @24512 NONAME
     ?_Nextnode@?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@SAAAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@PAU32@@Z @24513 NONAME
-    ?_Nextnode@?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@SAAAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@PAU32@@Z @28503 NONAME
     ?_Nextnode@?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@SAAAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@PAU32@@Z @28504 NONAME
     ?_Nextnode@?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@SAAAPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@PAU32@@Z @24514 NONAME
     ?_Nextnode@?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@SAAAPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@PAU32@@Z @24515 NONAME
@@ -25417,7 +25417,6 @@ EXPORTS
     ?_Prevnode@?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@SAAAPAU?$_List_node@PAVPVideoOutputDevice_SDL@@PAX@2@PAU32@@Z @24573 NONAME
     ?_Prevnode@?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@SAAAPAU?$_List_node@PBVLocalStorageBase@PThread@@PAX@2@PAU32@@Z @24574 NONAME
     ?_Prevnode@?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@SAAAPAU?$_List_node@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@PAX@2@PAU32@@Z @24575 NONAME
-    ?_Prevnode@?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@SAAAPAU?$_List_node@UPreparedEventInfo@List@PTimer@@PAX@2@PAU32@@Z @28516 NONAME
     ?_Prevnode@?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@SAAAPAU?$_List_node@V?$PNotifierTemplate@AAVPXMLElement@@@@PAX@2@PAU32@@Z @28517 NONAME
     ?_Prevnode@?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@SAAAPAU?$_List_node@V?$PNotifierTemplate@H@@PAX@2@PAU32@@Z @24576 NONAME
     ?_Prevnode@?$_List_val@U?$_List_simple_types@VAttribute@PLDAPSchema@@@std@@@std@@SAAAPAU?$_List_node@VAttribute@PLDAPSchema@@PAX@2@PAU32@@Z @24577 NONAME
@@ -25616,6 +25615,7 @@ EXPORTS
     ?_Setcomp@?$_Tree_comp@$0A@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QAEXABU?$less@VToken@PvCard@@@2@@Z @24774 NONAME
     ?_Setcont@?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@D@std@@@std@@@std@@QAEXPBV?$_Deque_val@U?$_Deque_simple_types@D@std@@@2@@Z @24775 NONAME
     ?_Setcont@?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@std@@@std@@QAEXPBV?$_Deque_val@U?$_Deque_simple_types@PAUPAsyncNotifierCallback@@@std@@@2@@Z @24776 NONAME
+    ?_Setcont@?$_Deque_const_iterator@V?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@@std@@QAEXPBV?$_Deque_val@U?$_Deque_simple_types@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@2@@Z @29102 NONAME
     ?_Stdio@?$_Iosb@H@std@@2W4_Fmtflags@12@B @24779 NONAME
     ?_Stream_err@failure@ios_base@std@@0W4io_errc@43@B @24781 NONAME
     ?_Swap_alloc@?$_String_alloc@$0A@U?$_String_base_types@DV?$allocator@D@std@@@std@@@std@@QAEXAAV12@@Z @24782 NONAME
@@ -25625,11 +25625,11 @@ EXPORTS
     ?_Tidy@?$basic_stringbuf@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@IAEXXZ @24786 NONAME
     ?_Tidy@?$deque@DV?$allocator@D@std@@@std@@IAEXXZ @24787 NONAME
     ?_Tidy@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@IAEXXZ @24788 NONAME
+    ?_Tidy@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@IAEXXZ @29103 NONAME
     ?_Tidy@?$list@PAVContext@PCLI@@V?$allocator@PAVContext@PCLI@@@std@@@std@@QAEXXZ @24790 NONAME
     ?_Tidy@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAEXXZ @24791 NONAME
     ?_Tidy@?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAEXXZ @24792 NONAME
     ?_Tidy@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAEXXZ @24793 NONAME
-    ?_Tidy@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAEXXZ @28563 NONAME
     ?_Tidy@?$list@V?$PNotifierTemplate@AAVPXMLElement@@@@V?$allocator@V?$PNotifierTemplate@AAVPXMLElement@@@@@std@@@std@@QAEXXZ @28564 NONAME
     ?_Tidy@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAEXXZ @24794 NONAME
     ?_Tidy@?$list@VAttribute@PLDAPSchema@@V?$allocator@VAttribute@PLDAPSchema@@@std@@@std@@QAEXXZ @24795 NONAME
@@ -25698,7 +25698,6 @@ EXPORTS
     ?_Unchecked_end@?$list@PAVPVideoOutputDevice_SDL@@V?$allocator@PAVPVideoOutputDevice_SDL@@@std@@@std@@QAE?AV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@PAVPVideoOutputDevice_SDL@@@std@@@std@@@2@XZ @24858 NONAME
     ?_Unchecked_end@?$list@PBVLocalStorageBase@PThread@@V?$allocator@PBVLocalStorageBase@PThread@@@std@@@std@@QAE?AV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@PBVLocalStorageBase@PThread@@@std@@@std@@@2@XZ @24859 NONAME
     ?_Unchecked_end@?$list@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@V?$allocator@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@2@@std@@QAE?AV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@U?$pair@VPString@@VPRFC1155_ObjectSyntax@@@std@@@std@@@std@@@2@XZ @24860 NONAME
-    ?_Unchecked_end@?$list@UPreparedEventInfo@List@PTimer@@V?$allocator@UPreparedEventInfo@List@PTimer@@@std@@@std@@QAE?AV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@UPreparedEventInfo@List@PTimer@@@std@@@std@@@2@XZ @28578 NONAME
     ?_Unchecked_end@?$list@V?$PNotifierTemplate@H@@V?$allocator@V?$PNotifierTemplate@H@@@std@@@std@@QAE?AV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@V?$PNotifierTemplate@H@@@std@@@std@@@2@XZ @24861 NONAME
     ?_Unchecked_end@?$list@VPVideoControlInfo@@V?$allocator@VPVideoControlInfo@@@std@@@std@@QAE?AV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@VPVideoControlInfo@@@std@@@std@@@2@XZ @24862 NONAME
     ?_Unchecked_end@?$list@VPVideoFrameInfo@@V?$allocator@VPVideoFrameInfo@@@std@@@std@@QAE?AV?$_List_unchecked_iterator@V?$_List_val@U?$_List_simple_types@VPVideoFrameInfo@@@std@@@std@@@2@XZ @24863 NONAME
@@ -25721,6 +25720,7 @@ EXPORTS
     ?_Xlen@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QBEXXZ @24880 NONAME
     ?_Xlen@?$deque@DV?$allocator@D@std@@@std@@IBEXXZ @24881 NONAME
     ?_Xlen@?$deque@PAUPAsyncNotifierCallback@@V?$allocator@PAUPAsyncNotifierCallback@@@std@@@std@@IBEXXZ @24882 NONAME
+    ?_Xlen@?$deque@V?$PSmartPtr@VEmitter@PTimer@@@@V?$allocator@V?$PSmartPtr@VEmitter@PTimer@@@@@std@@@std@@IBEXXZ @29104 NONAME
     ?_Xlen@?$vector@PAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@IBEXXZ @24886 NONAME
     ?_Xlen@?$vector@UOptionSpec@PArgList@@V?$allocator@UOptionSpec@PArgList@@@std@@@std@@IBEXXZ @24887 NONAME
     ?_Xlen@?$vector@UPDSoundDeviceInfo@@V?$allocator@UPDSoundDeviceInfo@@@std@@@std@@IBEXXZ @24888 NONAME
