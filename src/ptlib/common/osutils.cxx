@@ -1086,9 +1086,70 @@ void PTimer::OnTimeout()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer::List
 
+PTimer::Guard::Guard()
+  : m_invokeState(0)
+  , m_stopped(false)
+  , m_handle(s_handleGenerator.Create())
+{
+}
+
+
+void PTimer::Guard::WaitForInvokeFinished() const
+{
+  while (IsInvoking())
+    PThread::Sleep(25);
+}
+
+
+void PTimer::Guard::ResetHandle()
+{
+  PIdGenerator::Handle current = m_handle;
+  m_handle = PIdGenerator::Invalid;
+  s_handleGenerator.Release(current);
+}
+
+
+bool PTimer::Guard::TryLock()
+{
+  AddRef(); // We need to add reference before IsValid test
+  if (IsValid())
+    return true;
+
+  ReleaseRef();
+  return false;
+}
+
+
+PTimer::Emitter::Emitter(PTimer * aTimer)
+  : m_guard(new Guard())
+  , m_timer(aTimer)
+  , m_interval(0)
+  , m_repeating(false)
+{
+  if (aTimer != NULL) {
+    aTimer->m_guard = m_guard;
+    m_interval = aTimer->GetResetTime().GetMilliSeconds();
+    m_repeating = !aTimer->m_oneshot;
+  }
+}
+
+
+PIdGenerator::Handle PTimer::Emitter::Timeout()
+{
+  if (m_guard->TryLock()) {
+    // One shot timer must be stopped before OnTimeout() call
+    if (m_timer->m_oneshot)
+      m_guard->Stop();
+
+    m_timer->OnTimeout();
+    m_guard->Unlock();
+  }
+  return GetHandle(); // returns valid timer handle or PIdGenerator::Invalid
+}
+
 PTimer::List::List()
   : m_ticks(0)
-  , m_mininalInterval(25)
+  , m_minimumInterval(25)
   , m_timerThread(NULL)
 {
 }
@@ -1099,27 +1160,11 @@ void PTimer::List::RegisterTimer(PTimer * aTimer)
   PAssert(aTimer != NULL, "Timer is NULL!");
 
   m_insertMutex.Wait();
-  m_eventsForInsertion.push_back(PreparedEventInfo(aTimer));
+  m_eventsForInsertion.push(new Emitter(aTimer));
   m_insertMutex.Signal();
 
   if (!IsTimerThread())
     PProcess::Current().SignalTimerChange();
-}
-
-
-void PTimer::List::ProcessInsertion()
-{
-  PWaitAndSignal locker(m_insertMutex);
-  while (m_eventsForInsertion.size() > 0)
-  {
-    EventsForInsertion::iterator it = m_eventsForInsertion.begin();
-    PIdGenerator::Handle handle = it->emitter->GetHandle();
-    if (handle != PIdGenerator::Invalid) {
-      m_events[handle] = it->emitter;
-      m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + it->msecs, handle));
-    }
-    m_eventsForInsertion.erase(it);
-  }
 }
 
 
@@ -1136,19 +1181,29 @@ PTimeInterval PTimer::List::Process()
 
   m_ticks = PTimer::Tick().GetMilliSeconds();
 
-  ProcessInsertion();
+  // Get the queue of newly activated timers to our active list
+  m_insertMutex.Wait();
+  while (!m_eventsForInsertion.empty()) {
+    Emitter::Ptr emitter = m_eventsForInsertion.front();
+    m_eventsForInsertion.pop();
+
+    PIdGenerator::Handle handle = emitter->GetHandle();
+    if (handle != PIdGenerator::Invalid) {
+      m_activeEvents[handle] = emitter;
+      m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + emitter->GetInterval(), handle));
+    }
+  }
+  m_insertMutex.Signal();
 
   TimerEventRelations::iterator it = m_timeToEventRelations.begin();
   while ((it != m_timeToEventRelations.end()) && (it->first <= m_ticks)) {
-    Events::iterator eventIt = m_events.find(it->second);
-    if (eventIt != m_events.end()) {
-      PIdGenerator::Handle currentHandle = eventIt->second->Timeout();
-      PInt64 interval = eventIt->second->GetRepeat();
-      // If timer is repeatable and valid add it again
-      if (interval > 0 && PIdGenerator::Invalid != currentHandle)
-        m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + interval, it->second));
+    Events::iterator eventIt = m_activeEvents.find(it->second);
+    if (eventIt != m_activeEvents.end()) {
+      // If timer is valid and repeatable, add it again
+      if (eventIt->second->Timeout() != PIdGenerator::Invalid && eventIt->second->IsRepeating())
+        m_timeToEventRelations.insert(TimerEventRelations::value_type(m_ticks + eventIt->second->GetInterval(), it->second));
       else
-        m_events.erase(eventIt); // One shot or stopped timer - remove it
+        m_activeEvents.erase(eventIt); // One shot or stopped timer - remove it
     }
     m_timeToEventRelations.erase(it++);
   }
@@ -1156,13 +1211,12 @@ PTimeInterval PTimer::List::Process()
   // Calculate interval before next Process() call
   PTimeInterval nextInterval = 1000;
   it = m_timeToEventRelations.begin();
-  if (it != m_timeToEventRelations.end())
-  {
+  if (it != m_timeToEventRelations.end()) {
     nextInterval = it->first - m_ticks;
     if (nextInterval.GetMilliSeconds() < PTimer::Resolution())
       nextInterval = PTimer::Resolution();
-    if (nextInterval.GetMilliSeconds() < m_mininalInterval)
-      nextInterval = m_mininalInterval;
+    if (nextInterval.GetMilliSeconds() < m_minimumInterval)
+      nextInterval = m_minimumInterval;
   }
 
   return nextInterval;
@@ -2927,7 +2981,7 @@ PIdGenerator::Handle PIdGenerator::Create()
 
   do {
     id = m_nextId++;
-  } while (!m_inUse.insert(id).second);
+  } while (id == Invalid || !m_inUse.insert(id).second);
 
   m_mutex->Signal();
 
@@ -2937,7 +2991,7 @@ PIdGenerator::Handle PIdGenerator::Create()
 
 void PIdGenerator::Release(Handle id)
 {
-  if (m_mutex == NULL) // Before construction or after destruction
+  if (id == Invalid || m_mutex == NULL) // Before construction or after destruction
     return;
 
   m_mutex->Wait();
@@ -2950,7 +3004,7 @@ void PIdGenerator::Release(Handle id)
 
 bool PIdGenerator::IsValid(Handle id) const
 {
-  if (m_mutex == NULL) // Before construction or after destruction
+  if (id == Invalid || m_mutex == NULL) // Before construction or after destruction
     return false;
 
   PWaitAndSignal mutex(*m_mutex);

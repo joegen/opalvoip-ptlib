@@ -376,7 +376,7 @@ class PTimer : public PTimeInterval
     class Guard : public PSmartObject
     {
       PAtomicInteger       m_invokeState;
-      PAtomicBoolean       m_stopped;
+      bool                 m_stopped;
       PIdGenerator::Handle m_handle;
       static PIdGenerator  s_handleGenerator;
 
@@ -393,12 +393,7 @@ class PTimer : public PTimeInterval
     public:
       typedef PSmartPtr<Guard> Ptr;
 
-      Guard()
-        : m_invokeState(0)
-        , m_stopped(false)
-        , m_handle(s_handleGenerator.Create())
-      {
-      }
+      Guard();
 
       ~Guard()
       {
@@ -413,44 +408,26 @@ class PTimer : public PTimeInterval
         return !m_stopped && referenceCount >= 2;
       }
 
-      void WaitForInvokeFinished() const
-      {
-        while (!m_invokeState.IsZero())
-          PThread::Sleep(25);
-      }
+      void WaitForInvokeFinished() const;
 
       bool IsInvoking() const
       {
-        return (!m_invokeState.IsZero());
+        return !m_invokeState.IsZero();
       }
 
       PIdGenerator::Handle GetHandle() const
       {
-        if (IsValid())
-          return m_handle;
-        return PIdGenerator::Invalid;
+        return IsValid() ? m_handle : PIdGenerator::Invalid;
       }
 
-      void ResetHandle()
-      {
-        PIdGenerator::Handle current = m_handle;
-        m_handle = PIdGenerator::Invalid;
-        s_handleGenerator.Release(current);
-      }
+      void ResetHandle();
 
       void Stop()
       {
         m_stopped = true;
       }
 
-      bool TryLock()
-      {
-        AddRef(); // We need to add reference before IsValid test
-        if (IsValid())
-          return true;
-        ReleaseRef();
-        return false;
-      }
+      bool TryLock();
 
       void Unlock()
       {
@@ -460,51 +437,30 @@ class PTimer : public PTimeInterval
 
     class Emitter : public PSmartObject
     {
-      PInt64 m_repeatMSecs;
       Guard::Ptr m_guard; // Emitter should use only 1 reference to PTimer::Guard
-      PTimer * m_timer;
+      PTimer   * m_timer;
+      PInt64     m_interval;
+      bool       m_repeating;
     public:
       typedef PSmartPtr<Emitter> Ptr;
 
-      Emitter(PTimer * aTimer)
-        : m_repeatMSecs(-1)
-        , m_timer(aTimer)
-      {
-        m_guard = new Guard();
-        if (m_timer != NULL)
-        {
-          m_timer->m_guard = m_guard;
-          if (!m_timer->m_oneshot)
-            SetRepeat(m_timer->GetResetTime().GetMilliSeconds());
-        }
-      }
+      Emitter(PTimer * aTimer);
 
       ~Emitter()
       {
         m_guard->ResetHandle(); // here we can free used handle
       }
 
-      PIdGenerator::Handle Timeout()
-      {
-        if (m_guard->TryLock()) {
-          // One shot timer must be stopped before OnTimeout() call
-          if (m_timer->m_oneshot)
-            m_guard->Stop();
+      PIdGenerator::Handle Timeout();
 
-          m_timer->OnTimeout();
-          m_guard->Unlock();
-        }
-        return GetHandle(); // returns valid timer handle or PIdGenerator::Invalid
+      inline bool IsRepeating() const
+      {
+        return m_repeating;
       }
 
-      inline void SetRepeat(PInt64 repeatMSecs)
+      inline PInt64 GetInterval() const
       {
-        m_repeatMSecs = repeatMSecs;
-      }
-
-      inline PInt64 GetRepeat() const
-      {
-        return m_repeatMSecs;
+        return m_interval;
       }
 
       inline PIdGenerator::Handle GetHandle() const
@@ -550,30 +506,17 @@ class PTimer : public PTimeInterval
         void RegisterTimer(PTimer * aTimer);
 
         bool IsTimerThread() const;
-        void ProcessInsertion();
-
-        struct PreparedEventInfo
-        {
-          Emitter::Ptr emitter;
-          PInt64       msecs;
-
-          PreparedEventInfo(PTimer * aTimer)
-            : emitter(new Emitter(aTimer))
-            , msecs(aTimer->GetResetTime().GetMilliSeconds())
-          {
-          }
-        };
 
         typedef std::multimap<PInt64, PIdGenerator::Handle>   TimerEventRelations;
         typedef std::map<PIdGenerator::Handle, Emitter::Ptr>  Events;
-        typedef std::list<PreparedEventInfo>                  EventsForInsertion;
+        typedef std::queue<Emitter::Ptr>                      EventsForInsertion;
 
         PMutex              m_insertMutex;          // Mutex for new timers queue
         PInt64              m_ticks;                // Internal timer ticks
-        Events              m_events;               // Active timer events
+        Events              m_activeEvents;         // Active timer events
         TimerEventRelations m_timeToEventRelations; // Pending events ordered by timeout
         EventsForInsertion  m_eventsForInsertion;   // Queue of new timers
-        const int           m_mininalInterval;      // Minimal interval between internal processing 
+        const int           m_minimumInterval;      // Minimum interval between internal processing 
 
         PThread * m_timerThread;
 
