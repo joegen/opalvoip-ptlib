@@ -303,20 +303,28 @@ endif
 # common rule to generate SVN revision
 
 ifneq (,$(REVISION_FILE))
-  $(REVISION_FILE) : $(REVISION_FILE).in
-  ifeq (,$(SVN))
-	$(Q)sed -e "s/.WCREV./`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $<`/" $< > $@
-  else
-	$(Q)sed "s/SVN_REVISION.*/SVN_REVISION `LC_ALL=C $(SVN) info $(dir $@) | sed -n 's/Revision: //p'`/" $< > $@.tmp
-	$(Q)if diff -q $@ $@.tmp >/dev/null 2>&1; then \
-	  rm $@.tmp; \
-	else \
-	  mv -f $@.tmp $@; \
-	  echo "Revision file updated to `sed -n 's/.*SVN_REVISION *\(.*\)/\1/p' $@`" ; \
-	fi
 
-    .PHONY: $(REVISION_FILE)
+  SVN_REVISION_CMD := \
+    SVN_REVISION=`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $(REVISION_FILE).in`; \
+
+  ifneq (,$(SVN))
+    SVN_REVISION_CMD := \
+      SVN_REVISION=`LC_ALL=C $(SVN) info $(dir $(REVISION_FILE)) 2> /dev/null | sed -n 's/Revision: //p'`; \
+      if [ -z "$$SVN_REVISION" ]; then $(SVN_REVISION_CMD) fi;
   endif
+
+  SVN_REVISION_CMD += \
+    sed "s/SVN_REVISION.*/SVN_REVISION $$SVN_REVISION/" $(REVISION_FILE).in > $(REVISION_FILE).tmp; \
+    if diff -q $(REVISION_FILE) $(REVISION_FILE).tmp >/dev/null 2>&1; then \
+      rm $(REVISION_FILE).tmp; \
+    else \
+      mv -f $(REVISION_FILE).tmp $(REVISION_FILE); \
+      echo "Revision file updated to `sed -n 's/.*SVN_REVISION *\(.*\)/\1/p' $(REVISION_FILE)`" ; \
+    fi
+
+  $(REVISION_FILE) : $(REVISION_FILE).in
+	$(Q)$(SVN_REVISION_CMD)
+
 endif
 
 
