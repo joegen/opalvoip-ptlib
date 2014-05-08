@@ -186,14 +186,23 @@ fi
 
 dnl ########################################################################
 dnl Check for non-installed "environment variable" mode
-if test "x$PTLIBDIR" != "x" ; then
-   AC_MSG_NOTICE(PTLIBDIR environment variable detected as $PTLIBDIR)
-   ac_default_prefix=$PTLIBDIR
-   if test "x$prefix" = "x" || test "x$prefix" = "xNONE" ; then
-      libdir+=_$target
+if test "x$prefix" != "x" && test "x$prefix" != "xNONE" ; then
+   if test "$prefix" = `pwd`; then
+      INTERNAL_PTLIBDIR="$prefix"
    fi
-   makedir="$PTLIBDIR/make"
-   VERSION_DIR="$PTLIBDIR"
+else
+   if test "x$PTLIBDIR" != "x" ; then
+      AC_MSG_NOTICE(PTLIBDIR environment variable detected as $PTLIBDIR)
+      ac_default_prefix=$PTLIBDIR
+      INTERNAL_PTLIBDIR="$PTLIBDIR"
+   fi
+fi
+
+if test "x$INTERNAL_PTLIBDIR" != "x"; then
+   libdir+=_$target
+   datarootdir="\${exec_prefix}"
+   makedir="\${exec_prefix}/make"
+   VERSION_DIR="$INTERNAL_PTLIBDIR"
 else
    makedir="\${datarootdir}/ptlib/make"
    VERSION_DIR="$srcdir"
@@ -2397,9 +2406,13 @@ echo ""
 echo "=========================== Configuration =============================="
 echo "                          OS Type :  $target_os"
 echo "                     Machine Type :  $target_cpu"
+echo ""
 echo "                           prefix :  $prefix"
 echo "                      exec_prefix :  $exec_prefix"
+echo "                       includedir :  $includedir"
 echo "                           libdir :  $libdir"
+echo "                      datarootdir :  $datarootdir"
+echo "                          makedir :  $makedir"
 
 echo ""
 
