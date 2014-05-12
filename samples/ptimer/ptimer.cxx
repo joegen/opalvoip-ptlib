@@ -28,39 +28,244 @@
  * $Date$
  */
 
-#include "precompile.h"
-#include "main.h"
-#include "version.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
+#include <ptlib.h>
+#include <ptlib/pprocess.h>
+#include <ptclib/random.h>
 
 
-PCREATE_PROCESS(PTimerTest);
-
-#include  <ptclib/dtmf.h>
-#include  <ptclib/random.h>
-
-void PTimerTest::TooSoon(const PTimeInterval & elapsed, const PTimeInterval& expected)
+/**A class that does a PTimer functionality. This class runs once. It
+is started, and on completion of the delay it toggles a flag. At
+that point, this timer has finished. */
+class MyTimer : public PTimer
 {
-  cerr << "Timer returned too soon, interval: " << elapsed.GetMilliSeconds() << " < " << expected.GetMilliSeconds() << endl;
-}
+  PCLASSINFO(MyTimer, PTimer);
+public:
+  /**constructor */
+  MyTimer();
 
-PTimerTest::PTimerTest()
-  : PProcess("Derek Smithies code factory", "ptimer test", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  /**method used to start everything */
+  void StartRunning(PSyncPoint * _exitFlag, PINDEX delayMs);
+
+  /**Method called when this timer finishes */
+  virtual void OnTimeout();
+
+protected:
+  /**The flag to mark the end of this timer */
+  PSyncPoint *exitFlag;
+
+  /**The duration we delay for */
+  PTimeInterval delayPeriod;
+
+  /**The time at which we started */
+  PTime startTime;
+
+
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+/**This class is a simple simple thread that just creates, waits a
+period of time, and exits.It is designed to test the PwLib methods
+for reporting the status of a thread. This class will be created
+over and over- millions of times is possible if left long
+enough. If the pwlib thread status functions are broken, a segfault
+will result. Past enxperience has found a fault in pwlib with the
+BusyWait option on, with SMP machines and a delay period of 20ms */
+class DelayThread : public PThread
 {
-}
+  PCLASSINFO(DelayThread, PThread);
+
+public:
+  DelayThread(PINDEX _delay, PBoolean _checkTimer);
+
+  ~DelayThread();
+
+  void Main();
+
+protected:
+  PINDEX delay;
+
+  PBoolean checkTimer;
+
+  MyTimer localPTimer;
+
+  PSyncPoint endMe;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+/**This class turns the ptimer on from a separate thread to the delay thread.
+Then, DelayThread checks this ptimer, and waits for it to finish.
+*/
+class TimerOnThread : public PThread
+{
+  PCLASSINFO(TimerOnThread, PThread);
+
+public:
+  TimerOnThread(PTimer & _timer);
+
+  void Main();
+
+protected:
+
+  PTimer timer;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+/**This thread handles the Users console requests to query the status of
+the launcher thread. It provides a means for the user to close down this
+program - without having to use Ctrl-C*/
+class UserInterfaceThread : public PThread
+{
+  PCLASSINFO(UserInterfaceThread, PThread);
+
+public:
+  UserInterfaceThread()
+    : PThread(10000, NoAutoDeleteThread)
+  {
+  }
+
+  void Main();
+
+protected:
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/**This thread launches multiple instances of the BusyWaitThread. Each
+thread launched is busy monitored for termination. When the thread
+terminates, the thread is deleted, and a new one is created. This
+process repeats until segfault or termination by the user */
+class LauncherThread : public PThread
+{
+  PCLASSINFO(LauncherThread, PThread);
+
+public:
+  LauncherThread()
+    : PThread(10000, NoAutoDeleteThread)
+  {
+    iteration = 0; keepGoing = true;
+  }
+
+  void Main();
+
+  PINDEX GetIteration()
+  {
+    return iteration;
+  }
+
+  virtual void Terminate()
+  {
+    keepGoing = false;
+  }
+
+  PTimeInterval GetElapsedTime()
+  {
+    return PTime() - startTime;
+  }
+
+protected:
+  PINDEX iteration;
+  PTime startTime;
+  PBoolean  keepGoing;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+class PTimerTest : public PProcess
+{
+  PCLASSINFO(PTimerTest, PProcess)
+
+public:
+  PTimerTest();
+  virtual void Main();
+
+  PINDEX Delay()
+  {
+    return delay;
+  }
+
+  PINDEX Interval()
+  {
+    return interval;
+  }
+
+  PBoolean   CheckTimer()
+  {
+    return checkTimer;
+  }
+
+  static PTimerTest & Current()
+  {
+    return (PTimerTest &)PProcess::Current();
+  }
+
+  void TooSoon(const PTimeInterval & elapsed, const PTimeInterval& expected);
+
+protected:
+
+  PINDEX delay;
+
+  PINDEX interval;
+
+  PBoolean   checkTimer;
+
+
+  /**Code to run the second test supported by this application. */
+  void RunSecondTest();
+  void StressTest();
+  void MultiTimerlTest();
+  void LongOnTimeoutTest();
+  void MassStopTest();
+  void StartStopTest();
+  void PullCheck();
+  void CallbackCheck();
+  void DestroyCheck();
+  void TestStopInTimeout();
+  void DoubleStopTest();
+  void DestroyWhenTimeoutCheck();
+  void OneShotStopOnTimeoutTest();
+  void ContinuousStopOnTimeoutTest();
+  void OneShotToContinuousSwitchTest();
+  void ContinuousRestartInTimeout();
+
+  /**First internal timer that we manage */
+  PTimer firstTimer;
+
+  /**Second internal timer that we manage */
+  PTimer secondTimer;
+
+  PTimer* thirdTimer;
+
+  PDECLARE_NOTIFIER(PTimer, PTimerTest, OnFirstTimerExpired);
+  PDECLARE_NOTIFIER(PTimer, PTimerTest, OnSecondTimerExpired);
+
+  PDECLARE_NOTIFIER(PThread, PTimerTest, RestartFirstTimerMain);
+  PDECLARE_NOTIFIER(PThread, PTimerTest, RestartSecondTimerMain);
+  PDECLARE_NOTIFIER(PThread, PTimerTest, RestartThirdTimerMain);
+
+  /**The integer that is set, to indicate activity of the RestartTimer thread */
+  PAtomicInteger restartActivity;
+};
 
 class MyTimerTester : public PTimer
 {
-  public:
-    MyTimerTester(PSyncPoint & _sync)
-      : sync(_sync) { }
-    void OnTimeout()
-    { sync.Signal(); }
-    PSyncPoint & sync;
+public:
+  MyTimerTester(PSyncPoint & _sync)
+    : sync(_sync)
+  {
+  }
+  void OnTimeout()
+  {
+    sync.Signal();
+  }
+  PSyncPoint & sync;
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+PCREATE_PROCESS(PTimerTest);
+
 
 void PTimerTest::Main()
 {
@@ -68,57 +273,22 @@ void PTimerTest::Main()
 
   PArgList & args = GetArguments();
 
-  args.Parse(
-             "h-help."
-             "c-check."
-             "d-delay:"
-             "i-interval:"
-             "s-reset."
-             "z-slow."
-             "x-stress."
-             "m-multi."
-             "g-stoptest."
-#if PTRACING
-             "o-output:"
-             "t-trace."
-#endif
-             "v-version."
+  args.Parse("h-help.      print this help\n"
+             "c-check.     check the timer is running when it should be running\n"
+             "d-delay:     duration (ms) the timer waits for\n"
+             "i-interval:  interval (ms) between timer tests\n"
+             "s-reset.     A second test, which repeatedly resets two internal timers.\n"
+             "z-slow.      A test that try to delete PTimer instance while timers OnTimeout works\n"
+             "x-stress.    A test create 10 timers and change it repeatedly from 1000 threads\n"
+             "m-multi.     A test create 25 threads. Each thread create 5000 random timers\r"
+                           "and calculate average delay between expected and actual timeouts\n"
+             "g-stoptest.  Measure Stop() time for many timers.\n"
+             PTRACE_ARGLIST
   );
-#if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-#endif
+  PTRACE_INITIALISE(args);
 
-  if (args.HasOption('v')) {
-    cout << "Product Name: " << GetName() << endl
-         << "Manufacturer: " << GetManufacturer() << endl
-         << "Version     : " << GetVersion(true) << endl
-         << "System      : " << GetOSName() << '-'
-         << GetOSHardware() << ' '
-         << GetOSVersion() << endl;
-    return;
-  }
-
-  if (args.HasOption('h')) {
-    PError << "Available options are: " << endl         
-           << "-h  or --help         print this help" << endl
-           << "-c  or --check        check the timer is running when it should be running" << endl
-           << "-v  or --version      print version info" << endl
-           << "-d  or --delay ##     duration (ms) the timer waits for" << endl
-           << "-i  or --interval ##  interval (ms) between timer tests" << endl
-           << "-s  or --second       A second test, which repeatedly resets two internal timers." << endl
-           << "-z  or --slow         A test that try to delete PTimer instance while timers OnTimeout works."  << endl
-           << "-x  or --stress       A test create 10 timers and change it repeatedly from 1000 threads" << endl
-           << "-m  or --multi        A test create 25 threads. Each thread create 5000 random timers" << endl
-           << "                      and calculate average delay between expected and actual timeouts" << endl
-           << "-g  or --stoptest     Measure Stop() time for many timers." << endl
-#if PTRACING
-           << "o-output              output file name for trace" << endl
-           << "t-trace.              trace level to use." << endl
-#endif
-           << endl
-           << endl << endl;
+  if (!args.IsParsed() || args.HasOption('h')) {
+    args.Usage(cerr);
     return;
   }
 
@@ -147,8 +317,8 @@ void PTimerTest::Main()
     MassStopTest();
 
   if (args.HasOption('s')) {
-      RunSecondTest();
-      return;
+    RunSecondTest();
+    return;
   }
 
   checkTimer = args.HasOption('c');
@@ -174,6 +344,18 @@ void PTimerTest::Main()
   ui.WaitForTermination();
 }
 
+void PTimerTest::TooSoon(const PTimeInterval & elapsed, const PTimeInterval& expected)
+{
+  cerr << "Timer returned too soon, interval: " << elapsed.GetMilliSeconds() << " < " << expected.GetMilliSeconds() << endl;
+}
+
+PTimerTest::PTimerTest()
+: PProcess("Derek Smithies code factory", "ptimer test", 1, 0, AlphaCode, 0)
+{
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 class TestTimer
   : public PTimer
@@ -210,6 +392,9 @@ void PTimerTest::DestroyWhenTimeoutCheck()
   PThread::Sleep(5000);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+
 class TestTimer1
   : public PTimer
 {
@@ -235,6 +420,9 @@ void PTimerTest::OneShotStopOnTimeoutTest()
   if (t.IsRunning())
     cerr << "Error!!! IsRunning() must be false" << endl;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 class TestTimer2
   : public PTimer
@@ -262,6 +450,9 @@ void PTimerTest::ContinuousStopOnTimeoutTest()
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 class TestTimer3
   : public PTimer
@@ -306,6 +497,9 @@ void PTimerTest::OneShotToContinuousSwitchTest()
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 class TestTimer4
   : public PTimer
@@ -367,6 +561,7 @@ void PTimerTest::ContinuousRestartInTimeout()
 }
 
 /////////////////////////////////////////////////////////////////////////////
+
 void PTimerTest::RunSecondTest()
 {
   cerr << "Will run the second test, which goes forever (if pwlib works correctly)" << endl
@@ -537,6 +732,8 @@ void PTimerTest::StressTest()
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
 class MultiTimerThread
   : public PThread
 {
@@ -618,6 +815,8 @@ void PTimerTest::MultiTimerlTest()
   while (MultiTimerThread::threads > 0)
     PThread::Sleep(1000);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 class SlowTimer
   : public PTimer
@@ -725,6 +924,8 @@ void PTimerTest::MassStopTest()
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 class EarlyStopTimerTester
   : public MyTimerTester
 {
@@ -790,6 +991,8 @@ void PTimerTest::DestroyCheck()
   cout << "No crash detected" << endl;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 class TimerWithStopInTimeout
   : public MyTimerTester
 {
@@ -845,6 +1048,7 @@ void PTimerTest::DoubleStopTest()
 }
 
 /////////////////////////////////////////////////////////////////////////////
+
 MyTimer::MyTimer()
 {
   exitFlag = NULL;
