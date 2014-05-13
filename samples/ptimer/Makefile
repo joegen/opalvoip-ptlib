@@ -24,7 +24,7 @@
 # $Date$
 
 PROG = ptimer
-SOURCES := main.cxx precompile.cxx
+SOURCES := ptimer.cxx
 
 ifdef PTLIBDIR
   include $(PTLIBDIR)/make/ptlib.mak
