@@ -378,7 +378,6 @@ class PTimer : public PTimeInterval
       PAtomicInteger       m_invokeState;
       bool                 m_stopped;
       PIdGenerator::Handle m_handle;
-      static PIdGenerator  s_handleGenerator;
 
       void AddRef()
       {

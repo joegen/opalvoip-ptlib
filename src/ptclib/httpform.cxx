@@ -375,7 +375,7 @@ bool PHTTPField::LoadFromConfig(PConfig & cfg)
     case 2 :
       if (!cfg.HasKey(section, key))
         return true;
-      SetValue(cfg.GetString(section, key));
+      SetValue(cfg.GetString(section, key, PString::Empty()));
   }
 
   return false;

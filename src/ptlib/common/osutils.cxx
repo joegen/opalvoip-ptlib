@@ -961,8 +961,6 @@ PTimeInterval PSimpleTimer::GetRemaining() const
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-PIdGenerator PTimer::Guard::s_handleGenerator;
-
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : m_resetTime(millisecs, seconds, minutes, hours, days)
 {
@@ -1085,6 +1083,8 @@ void PTimer::OnTimeout()
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer::List
+
+static PIdGenerator s_handleGenerator;
 
 PTimer::Guard::Guard()
   : m_invokeState(0)
