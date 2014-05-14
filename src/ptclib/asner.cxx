@@ -71,10 +71,10 @@ inline PBoolean CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
   return (0 <= offset && offset <= upper);
 }
 
-static PINDEX FindNameByValue(const PASN_Names *names, unsigned namesCount, unsigned value)
+static PINDEX FindNameByValue(const PASN_Names *names, PINDEX namesCount, unsigned value)
 {
   if (names != NULL) {
-    for (PINDEX i = 0;i < namesCount;i++) {
+    for (PINDEX i = 0; i < namesCount;i++) {
       if (names[i].value == value)
         return i;
     }
