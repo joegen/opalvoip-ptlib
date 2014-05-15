@@ -289,6 +289,8 @@ bool PDirectory::InternalEntryCheck()
     return m_scanMask & PFileInfo::CurrentDirectory;
   if (strcmp(name, "..") == 0)
     return m_scanMask & PFileInfo::ParentDirectory;
+  if (!PFilePath::IsValid(name))
+    return false;
 
   PFileInfo info;
   PAssert(PFile::GetInfo(*this+name, info), POperatingSystemError);
