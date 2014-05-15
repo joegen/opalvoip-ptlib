@@ -1221,7 +1221,7 @@ void PProcess::HouseKeeping()
     }
     m_threadMutex.Signal();
 
-    PTimeInterval nextTimer = m_timers.Process();
+    PTimeInterval nextTimer = m_timerList->Process();
     DWORD delay;
     if (nextTimer == PMaxTimeInterval)
       delay = INFINITE;

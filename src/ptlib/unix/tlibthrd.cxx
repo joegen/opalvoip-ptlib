@@ -175,7 +175,7 @@ static pthread_mutex_t MutexInitialiser = PTHREAD_MUTEX_INITIALIZER;
 void PProcess::HouseKeeping()
 {
   while (m_keepingHouse) {
-    PTimeInterval delay = m_timers.Process();
+    PTimeInterval delay = m_timerList->Process();
     if (delay > 10000)
       delay = 10000;
 
