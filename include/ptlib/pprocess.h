@@ -620,8 +620,8 @@ class PProcess : public PThread
     PSyncPoint     m_signalHouseKeeper;
     void HouseKeeping();
 
-    PTimer::List m_timers;
-    friend PTimer::List & PTimer::TimerList() const;
+    PTimer::List * m_timerList;
+    friend static PTimer::List * PTimer::TimerList();
 
     PProcessIdentifier m_processID;
 
