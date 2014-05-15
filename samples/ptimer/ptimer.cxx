@@ -211,9 +211,9 @@ protected:
 
 
   /**Code to run the second test supported by this application. */
-  void RunSecondTest();
+  void RunRestartTest();
   void StressTest();
-  void MultiTimerlTest();
+  void MultiTimerTest();
   void LongOnTimeoutTest();
   void MassStopTest();
   void StartStopTest();
@@ -269,19 +269,14 @@ PCREATE_PROCESS(PTimerTest);
 
 void PTimerTest::Main()
 {
-  srand( (unsigned)time( NULL ) );
-
   PArgList & args = GetArguments();
 
   args.Parse("h-help.      print this help\n"
              "c-check.     check the timer is running when it should be running\n"
              "d-delay:     duration (ms) the timer waits for\n"
              "i-interval:  interval (ms) between timer tests\n"
-             "s-reset.     A second test, which repeatedly resets two internal timers.\n"
-             "z-slow.      A test that try to delete PTimer instance while timers OnTimeout works\n"
+             "r-restart.   A test which repeatedly restarts two internal timers.\n"
              "x-stress.    A test create 10 timers and change it repeatedly from 1000 threads\n"
-             "m-multi.     A test create 25 threads. Each thread create 5000 random timers\r"
-                           "and calculate average delay between expected and actual timeouts\n"
              "g-stoptest.  Measure Stop() time for many timers.\n"
              PTRACE_ARGLIST
   );
@@ -292,6 +287,11 @@ void PTimerTest::Main()
     return;
   }
 
+  if (args.HasOption('r')) {
+    RunRestartTest();
+    return;
+  }
+
   PullCheck();
   CallbackCheck();
   StartStopTest();
@@ -299,27 +299,18 @@ void PTimerTest::Main()
   DoubleStopTest();
   DestroyCheck();
   DestroyWhenTimeoutCheck();
+  LongOnTimeoutTest();
   OneShotStopOnTimeoutTest();
   ContinuousStopOnTimeoutTest();
   OneShotToContinuousSwitchTest();
   ContinuousRestartInTimeout();
+  MultiTimerTest();
 
-  if (args.HasOption("z"))
-    LongOnTimeoutTest();
-
-  if (args.HasOption("m"))
-    MultiTimerlTest();
-
-  if (args.HasOption("x"))
+  if (args.HasOption('x'))
     StressTest();
 
-  if (args.HasOption("g"))
+  if (args.HasOption('g'))
     MassStopTest();
-
-  if (args.HasOption('s')) {
-    RunSecondTest();
-    return;
-  }
 
   checkTimer = args.HasOption('c');
 
@@ -386,6 +377,7 @@ bool TestTimer::destroyed = false;
 
 void PTimerTest::DestroyWhenTimeoutCheck()
 {
+  cout << "Create timer and destroy it during timeout callback." << endl;
   TestTimer* t = new TestTimer();
   PThread::Sleep(1500);
   delete t;
@@ -413,6 +405,7 @@ protected:
 
 void PTimerTest::OneShotStopOnTimeoutTest()
 {
+  cout << "One shot timer is ended on timeout." << endl;
   TestTimer1 t;
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
@@ -443,6 +436,7 @@ protected:
 
 void PTimerTest::ContinuousStopOnTimeoutTest()
 {
+  cout << "Continuous timer is not ended on timeout." << endl;
   TestTimer2 t;
   if (!t.IsRunning())
     cerr << "Error!!! IsRunning() must be true" << endl;
@@ -491,6 +485,7 @@ protected:
 
 void PTimerTest::OneShotToContinuousSwitchTest()
 {
+  cout << "One shot timer is switched to continuous." << endl;
   PSyncPoint sync;
   TestTimer3 t(sync);
   sync.Wait();
@@ -541,6 +536,7 @@ protected:
 
 void PTimerTest::ContinuousRestartInTimeout()
 {
+  cout << "Continuous timer is restarted in timeout." << endl;
   static const int shotsCount = 20;
 
   PSyncPoint sync;
@@ -562,18 +558,16 @@ void PTimerTest::ContinuousRestartInTimeout()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void PTimerTest::RunSecondTest()
+void PTimerTest::RunRestartTest()
 {
-  cerr << "Will run the second test, which goes forever (if pwlib works correctly)" << endl
-       << "or stops, on detecting an error" << endl
-       << " " << endl
-       << "This test runs two threads, which continually restart two timer instances " << endl
-       << " " << endl
-       <<"---There is no output, until an error is detected. All going well, you will have" << endl
-       << "to stop this program with Ctrl-C" << endl;
+  cout << "This test runs two threads, which continually restart two timer instances\n\n"
+          "There is no output, until an error is detected. All going well, you will have\n"
+          "to stop this program with Ctrl-C" << endl;
 
   firstTimer.SetNotifier(PCREATE_NOTIFIER(OnFirstTimerExpired));
+  firstTimer.SetInterval(0, 1);
   secondTimer.SetNotifier(PCREATE_NOTIFIER(OnSecondTimerExpired));
+  secondTimer.SetInterval(0, 2);
   thirdTimer = 0;
 
   PThread::Create(PCREATE_NOTIFIER(RestartFirstTimerMain), 30000,
@@ -593,42 +587,42 @@ void PTimerTest::RunSecondTest()
 
   for (;;) {
     if (restartActivity > 0) {
-        restartActive = PTime();
+        restartActive.SetCurrentTime();
         restartActivity.SetValue(0);
     }
     if ((restartActive + quietPeriod) < PTime()) {
-        cerr << "No activity for four seconds. Timers Locked up. PWlib Error" << endl;
-        exit(0);
+      cerr << "No activity for " << quietPeriod << " seconds.Timers Locked up." << endl;
+      exit(0);
     }
-    PThread::Sleep(100);
+    PThread::Sleep(1000);
   }
 }
 
 void PTimerTest::OnFirstTimerExpired(PTimer &, INT)
 {
-  cerr << "The first timer has expired " << endl;
+  cerr << "The first timer has expired unexpectedly." << endl;
 }
 
 void PTimerTest::OnSecondTimerExpired(PTimer &, INT)
 {
-  cerr << "The second timer has expired " << endl;
+  cerr << "The second timer has expired unexpectedly." << endl;
 }
 
 void PTimerTest::RestartFirstTimerMain(PThread &, INT)
 {
   for (;;) {
-    firstTimer = PTimeInterval(1900);
-    restartActivity.SetValue(1);
-    PThread::Sleep(200);
+    firstTimer.Reset();
+    ++restartActivity;
+    PThread::Sleep(PRandom::Number(1, 100));
   }
 }
 
 void PTimerTest::RestartSecondTimerMain(PThread &, INT)
 {
   for (;;) {
-    secondTimer = PTimeInterval(2000);
-    restartActivity.SetValue(1);
-    PThread::Sleep(100);
+    secondTimer.Reset();
+    ++restartActivity;
+    PThread::Sleep(PRandom::Number(1, 100));
   }
 }
 
@@ -639,8 +633,8 @@ void PTimerTest::RestartThirdTimerMain(PThread &, INT)
   for (;;) {
     if (thirdTimer == 0)
     {
-      thirdTimer = new PTimer(PTimeInterval((rand() % 10) * 500));
-      if (rand() % 3)
+      thirdTimer = new PTimer(PRandom::Number(0, 9) * 500);
+      if (PRandom::Number(0, 2) == 0)
       {
         delete thirdTimer;
         thirdTimer = 0;
@@ -648,10 +642,10 @@ void PTimerTest::RestartThirdTimerMain(PThread &, INT)
     }
     else
     {
-      thirdTimer->SetInterval((rand() % 10) * 500);
+      thirdTimer->SetInterval(PRandom::Number(0, 9) * 500);
     }
-    restartActivity.SetValue(1);
-    PThread::Sleep(50);
+    ++restartActivity;
+    PThread::Sleep(PRandom::Number(10, 100));
   }
 }
 
@@ -671,16 +665,16 @@ public:
   }
   static int randomTime(int maxSec)
   {
-    return (rand() % maxSec) * 100;
+    return PRandom::Number(maxSec) * 100;
   }
   void Main()
   {
     ++m_counter;
     while (m_iteration--)
     {
-      size_t index = rand() % s_timers.size();
+      size_t index = PRandom::Number(s_timers.size());
       s_timers[index].second.Wait();
-      int xxx = rand() % 5;
+      int xxx = PRandom::Number(5);
       if (xxx == 0)
       {
         s_timers[index].first.SetInterval(randomTime(5));
@@ -713,8 +707,8 @@ PAtomicInteger TimerTestThread::m_counter;
 
 void PTimerTest::StressTest()
 {
-  cout << "First test run 10 timers and randomly change it from different threads" << endl;
-  cout << "Be patient it will take some time..." << endl;
+  cout << "First test run 10 timers and randomly change it from different threads\n"
+          "Be patient it will take some time..." << endl;
   TimerTestThread::s_timers.resize(10);
   std::list<TimerTestThread*> threads;
   for (int i = 0; i < 1000; ++i)
@@ -734,86 +728,56 @@ void PTimerTest::StressTest()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class MultiTimerThread
-  : public PThread
+class MultiTimer : public PTimer
 {
-  PCLASSINFO(MultiTimerThread, PThread);
-
-  class Timer : public PTimer
-  {
-    PTime m_start;
-    PInt64 m_expected;
+  PAtomicInteger & m_runningCount;
   public:
-    Timer(MultiTimerThread* ownThread)
-      : m_thread(ownThread)
-    { }
-    void startRun(PInt64 period)
+    PTime m_start;
+    PTime m_end;
+
+    MultiTimer(PAtomicInteger & runningCount, int seconds)
+      : PTimer(0, seconds)
+      , m_runningCount(runningCount)
+      , m_end(0)
     {
-      m_start = PTime();
-      if (period == 0)
-        period = 1500;
-      m_expected = period;
-      SetInterval(period);
+      PTRACE(4, "Timer: " << *this << " started");
     }
     void OnTimeout()
     {
-      PInt64 period = (PTime() - m_start).GetMilliSeconds();
-      m_thread->m_diff += abs(period - m_expected);
-      m_thread->timers--;
+      m_end.SetCurrentTime();
+      PTRACE(4, "Timer: " << *this << " OnTimeout");
+      --m_runningCount;
     }
-    MultiTimerThread* m_thread;
-  };
-  std::list<Timer*> _timers;
-public:
-  PInt64 m_diff;
-  PAtomicInteger timers;
-  static PAtomicInteger threads;
-  MultiTimerThread()
-    : PThread(10000, AutoDeleteThread)
-    , m_diff(0)
-  {
-  }
-  ~MultiTimerThread()
-  {
-    cout << "Average diff: " << (float(m_diff) / _timers.size()) << endl;
-    while (_timers.size() > 0)
-    {
-      delete _timers.back();
-      _timers.pop_back();
-    }
-    --threads;
-  }
-  void Main()
-  {
-    ++threads;
-    for (timers = 0; timers < 500; ++timers)
-    {
-      Timer* t = new Timer(this);
-      _timers.push_back(t);
-      t->startRun((rand() % 5) * 1000);
-    }
-    
-    while (timers != 0)
-    {
-      PTRACE(5, "Timers = " << timers <<  ", thread =" << this << endl);
-      PThread::Sleep(100);
-    }
-  }
 };
 
-PAtomicInteger MultiTimerThread::threads(0);
-
-void PTimerTest::MultiTimerlTest()
+void PTimerTest::MultiTimerTest()
 {
-  for (int i = 0; i < 25; ++i)
-  {
-    MultiTimerThread* t = new MultiTimerThread();
-    t->Resume();
-    PThread::Sleep(200);
+  const int TotalTimers = 10000;
+  cout << "Create " << TotalTimers << " timers, calculate delay on expected timeouts.\n"
+          "This can take quite some time." << endl;
+  PAtomicInteger runningCount(TotalTimers);
+
+  std::list<MultiTimer*> timers;
+  for (int i = 0; i < TotalTimers; ++i) {
+    MultiTimer* timer = new MultiTimer(runningCount, PRandom::Number(2, 10));
+    timers.push_back(timer);
+#if 0
+    if (i%100 == 99)
+      cout << "Created " << (i+1) << " timers." << endl;
+#endif
   }
 
-  while (MultiTimerThread::threads > 0)
+  while (runningCount > 0)
     PThread::Sleep(1000);
+
+  PInt64 sum = 0;
+  while (timers.size() > 0) {
+    MultiTimer * timer = timers.back();
+    sum += std::abs(((timer->m_end - timer->m_start) - timer->GetResetTime()).GetMilliSeconds());
+    delete timer;
+    timers.pop_back();
+  }
+  cout << "Average delta time: " << PTimeInterval(sum / TotalTimers) << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -831,11 +795,11 @@ class SlowTimer
       cout << "Long work finished..." << endl;
   }
 public:
-  PInt64 interval;
+  PTimeInterval interval;
 
   SlowTimer(bool& _flag)
     : m_flag(_flag)
-    , interval((rand() % 2) * 1000)
+    , interval(0, PRandom::Number(2))
   {
     destructed = false;
   }
@@ -872,14 +836,14 @@ public:
     SlowTimer* st = new SlowTimer(flag);
     PTime start;
     st->SetInterval(100);
-    PInt64 interval = st->interval;
+    PTimeInterval interval = st->interval;
     // Wait when PTimer starts its OnTimeout...
-    PThread::Sleep(100 + (interval / 2));
+    PThread::Sleep((interval / 2) + 100);
     delete st;
     if (!flag)
       cout << "OnTimeout didn't called!!!" << endl;
-    PInt64 actual = (PTime() - start).GetMilliSeconds();
-    if ( actual < interval + 100)
+    PTimeInterval actual = PTime() - start;
+    if (actual < interval + 100)
       cout << "Deletion don't wait for finish: " << actual << " < " << interval + 100 << endl;
   }
   ~SlowThread()
@@ -903,7 +867,7 @@ void PTimerTest::MassStopTest()
   cout << "Creating 10000 timers, be patient..." << endl;
   for (int i = 0; i < 10000; ++i)
   {
-    PTimer* t = new PTimer(500 + ((rand() % 10) * 1000));
+    PTimer* t = new PTimer(500, PRandom::Number(10));
     timers.push_back(t);
     PThread::Sleep(5);
   }
@@ -934,11 +898,6 @@ public:
     : MyTimerTester(sync)
   {
   }
-  void callStop()
-  {
-    Stop();
-    cout << "Stop timer here!!!!" << endl;
-  }
   virtual void OnTimeout()
   {
     cout << "Why we are here???" << endl;
@@ -950,9 +909,9 @@ void PTimerTest::StartStopTest()
 {
   PSyncPoint sync;
   EarlyStopTimerTester timer(sync);
-  cout << "Starting 1 second timer..." << endl;
+  cout << "Starting 1 second timer, then stopping it immediately." << endl;
   timer.SetInterval(1000);
-  timer.callStop();
+  timer.Stop();
   sync.Wait(2000);
 }
 
@@ -984,11 +943,10 @@ void PTimerTest::CallbackCheck()
 void PTimerTest::DestroyCheck()
 {
   PTimer* t = new PTimer;
-  cout << "Create 1 sec timer and destroy it." << endl;
+  cout << "Create 1 sec timer and destroy it immediately." << endl;
   t->SetInterval(1000);
   delete t;
   PThread::Sleep(3000);
-  cout << "No crash detected" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1011,6 +969,7 @@ public:
 
 void PTimerTest::TestStopInTimeout()
 {
+  cout << "Testing stop within timeout callback" << endl;
   PSyncPoint sp;
   TimerWithStopInTimeout timer(sp, 1000);
   sp.Wait();
