@@ -84,6 +84,8 @@ class PSmartObject : public PObject
 
    A NULL value is possible for a smart pointer. It can be detected via the
    <code>IsNULL()</code> function.
+
+   Note that a PSmartPointer is not 100% thread safe.
  */
 class PSmartPointer : public PObject
 {
