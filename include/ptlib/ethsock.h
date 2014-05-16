@@ -341,7 +341,8 @@ class PEthSocketThread : public PObject
 
     virtual bool Start(
       const PString & device,
-      const PString & filter = PString::Empty()
+      const PString & filter = PString::Empty(),
+      PThread::Priority priority = PThread::NormalPriority
     );
 
     virtual void Stop();
