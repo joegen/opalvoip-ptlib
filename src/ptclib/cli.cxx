@@ -121,7 +121,10 @@ bool PCLI::Context::Start()
 
 void PCLI::Context::Stop()
 {
-  Close();
+  // Close this way in case we are inside a ^C interrupt
+  PChannel * base = GetBaseReadChannel();
+  if (base != NULL)
+    base->Close();
 
   if (m_thread != NULL && PThread::Current() != m_thread) {
     m_thread->WaitForTermination(10000);

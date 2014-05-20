@@ -621,7 +621,7 @@ class PProcess : public PThread
     void HouseKeeping();
 
     PTimer::List * m_timerList;
-    friend static PTimer::List * PTimer::TimerList();
+    friend PTimer::List * PTimer::TimerList();
 
     PProcessIdentifier m_processID;
 
