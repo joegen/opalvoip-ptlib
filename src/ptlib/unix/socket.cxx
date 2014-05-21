@@ -466,27 +466,32 @@ PChannel::Errors PSocket::Select(SelectList & read,
   #include "linux/errqueue.h"
   PBoolean PSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
   {
-    if (libcReturnValue < 0) {
-      msghdr errorData;
-      memset(&errorData, 0, sizeof(errorData));
+    if (PChannel::ConvertOSError(libcReturnValue, group))
+      return true;
 
-      char control_data[50];
-      errorData.msg_control    = control_data;
-      errorData.msg_controllen = sizeof(control_data);
+    msghdr errorData;
+    memset(&errorData, 0, sizeof(errorData));
 
-      if (::recvmsg(os_handle, &errorData, MSG_ERRQUEUE) >= 0) {
-        for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&errorData); cmsg != NULL; cmsg = CMSG_NXTHDR(&errorData, cmsg)) {
-          if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
-            struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
-            PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
-                      "ICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
-            errno = sock_error->ee_errno;
-          }
-        }
+    char control_data[50];
+    errorData.msg_control    = control_data;
+    errorData.msg_controllen = sizeof(control_data);
+
+    if (::recvmsg(os_handle, &errorData, MSG_ERRQUEUE) < 0)
+      return false; // Just use previously set error values
+
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&errorData); cmsg != NULL; cmsg = CMSG_NXTHDR(&errorData, cmsg)) {
+      if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
+        struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
+        PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
+                  "ICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
+        errno = sock_error->ee_errno;
+        // Use adjusted errno for conversion to PTLib normalised values
+        return PChannel::ConvertOSError(-1, group);
       }
     }
 
-    return PChannel::ConvertOSError(libcReturnValue, group);
+    // Could not get any better error information
+    return false;
   }
 #endif
 
