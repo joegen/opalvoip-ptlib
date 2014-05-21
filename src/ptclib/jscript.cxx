@@ -83,15 +83,15 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
   #define P_V8_API 1
 #endif
 
-#if P_V8_API==2
-
-  #if PTRACING
+#if PTRACING
+  #if P_V8_API > 2
     static void LogEventCallback(const char * PTRACE_PARAM(name), int PTRACE_PARAM(event))
     {
       PTRACE(4, "V8-Log", "Event=" << event << " - " << name);
     }
+  #endif
 
-
+  #if P_V8_API > 1
     static void TraceFunction(const v8::FunctionCallbackInfo<v8::Value>& args)
     {
       if (args.Length() < 2)
@@ -116,8 +116,8 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
 
       trace << PTrace::End;
     }
-  #endif // PTRACING
-#endif // P_V8_API==2
+  #endif // P_V8_API
+#endif // PTRACING
 
 
 PINDEX ParseKey(const PString & name, PStringArray & tokens)
@@ -161,7 +161,21 @@ private:
   v8::Isolate * m_isolate;
   v8::Persistent<v8::Context> m_context;
 
-#if P_V8_API==1
+#if P_V8_API > 1
+  struct HandleScope : v8::HandleScope
+  {
+    HandleScope(Private * prvt) : v8::HandleScope(prvt->m_isolate) { }
+  };
+
+  struct EscapableHandleScope : v8::EscapableHandleScope
+  {
+    EscapableHandleScope(Private * prvt) : v8::EscapableHandleScope(prvt->m_isolate) { }
+  };
+
+  v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
+  template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
+  v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_isolate, m_context); }
+#else
   struct HandleScope : v8::HandleScope
   {
     HandleScope(Private *) { }
@@ -176,20 +190,6 @@ private:
   v8::Local<v8::String> NewString(const char * str) const { return v8::String::New(str); }
   template <class CLS, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return CLS::New(param); }
   v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_context); }
-#else
-  struct HandleScope : v8::HandleScope
-  {
-    HandleScope(Private * prvt) : v8::HandleScope(prvt->m_isolate) { }
-  };
-
-  struct EscapableHandleScope : v8::EscapableHandleScope
-  {
-    EscapableHandleScope(Private * prvt) : v8::EscapableHandleScope(prvt->m_isolate) { }
-  };
-
-  v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
-  template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
-  v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_isolate, m_context); }
 #endif
 
 
@@ -198,7 +198,7 @@ public:
   {
     static PAtomicBoolean initialised;
     if (!initialised.TestAndSet(true)) {
-#if P_V8_API==2
+#if P_V8_API > 1
       v8::V8::InitializeICU();
 #endif
     }
@@ -208,9 +208,11 @@ public:
     v8::Isolate::Scope isolateScope(m_isolate);
     HandleScope handleScope(this);
 
-#if P_V8_API==2
+#if P_V8_API > 1
   #if PTRACING
-    m_isolate->SetEventLogger(LogEventCallback);
+    #if P_V8_API > 2
+      m_isolate->SetEventLogger(LogEventCallback);
+    #endif
 
     // Bind the global 'PTRACE' function to the PTLib trace callback.
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
