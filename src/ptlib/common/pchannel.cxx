@@ -153,8 +153,6 @@ PChannel::PChannel()
 
 PChannel::~PChannel()
 {
-  flush();
-  Close();
   delete (PChannelStreamBuffer *)rdbuf();
 #ifndef _WIN32
   init(NULL);
