@@ -1759,6 +1759,8 @@ void PTimedMutex::Signal()
 
 PBoolean PCriticalSection::Wait(const PTimeInterval & timeout)
 {
+  PTRACE(2, "PTLib", "PCriticalSection::Wait() called, this is very inefficient, consider using PTimedMutex!");
+
   PSimpleTimer timer(timeout);
   do {
     if (Try())
