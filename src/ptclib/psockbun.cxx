@@ -667,10 +667,10 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseA
   if (percent == 0 || (percent == 1 && iface[0] == '*'))
     return new PMonitoredSocketBundle(iface.Mid(percent+1), 0, reuseAddr P_NAT_PARAM(natMethods));
 
-  PIPSocket::Address ip(iface);
-  if (!ip.IsValid())
+  PIPSocket::Address ip;
+  if (!PIPSocket::GetHostAddress(iface, ip))
     return NULL;
-  
+
   if (ip.IsAny())
     return new PMonitoredSocketBundle(percent != P_MAX_INDEX ? iface.Mid(percent+1) : PString::Empty(),
                                       ip.GetVersion(), reuseAddr P_NAT_PARAM(natMethods));
