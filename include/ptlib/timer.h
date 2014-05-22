@@ -406,13 +406,13 @@ class PTimer : public PTimeInterval
         PTimeInterval Process();
 
       private:
-        void OnTimeout(PIdGenerator::Handle handle);
+        bool OnTimeout(PIdGenerator::Handle handle);
 
         struct Timeout
         {
           PIdGenerator::Handle m_handle;
           Timeout(PIdGenerator::Handle handle) : m_handle(handle) { }
-          virtual void Work() { PTimer::TimerList()->OnTimeout(m_handle); }
+          virtual void Work();
         };
         PQueuedThreadPool<Timeout> m_threadPool;
 
