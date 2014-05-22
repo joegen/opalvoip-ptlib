@@ -1120,30 +1120,44 @@ PTimer::List::List()
 }
 
 
-void PTimer::List::OnTimeout(PIdGenerator::Handle handle)
+void PTimer::List::Timeout::Work()
 {
-  PTRACE(6, NULL, "PTLib", "Timer: [" << handle << "] working");
+  PTimer::List * list;
+  while ((list = PTimer::TimerList()) != NULL) {
+    PTRACE(6, NULL, "PTLib", "Timer: [" << m_handle << "] working");
+    if (list->OnTimeout(m_handle))
+      return;
 
+    PTRACE(5, NULL, "PTLib", "Timer: [" << m_handle << "] already in OnTimeout(), waiting.");
+    PThread::Sleep(10);
+  }
+}
+
+bool PTimer::List::OnTimeout(PIdGenerator::Handle handle)
+{
   PTimer * timer = NULL;
 
-  m_timersMutex.Wait();
+  {
+    PWaitAndSignal mutex1(m_timersMutex);
 
-  TimerMap::iterator it = m_timers.find(handle);
-  if (it != m_timers.end()) {
-    it->second->m_timerMutex.Wait();
-    if (it->second->m_oneshot || it->second->m_running) {
-      timer = it->second;
-      timer->m_callbackMutex.Wait();
-    }
-    it->second->m_timerMutex.Signal();
+    TimerMap::iterator it = m_timers.find(handle);
+    if (it == m_timers.end())
+      return true; // Don't try again
+
+    timer = it->second;
+
+    PWaitAndSignal mutex2(timer->m_timerMutex);
+    if (!timer->m_oneshot && !timer->m_running)
+      return true; // Was recurring timer and was stopped
+
+    if (!timer->m_callbackMutex.Try())
+      return false; // Try again
   }
 
-  m_timersMutex.Signal();
-
-  if (timer != NULL) {
-    timer->OnTimeout();
-    timer->m_callbackMutex.Signal();
-  }
+  // Must be outside of m_timersMutex and timer->m_timerMutex mutexes
+  timer->OnTimeout();
+  timer->m_callbackMutex.Signal();
+  return true; // Done
 }
 
 
