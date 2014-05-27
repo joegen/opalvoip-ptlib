@@ -2323,7 +2323,7 @@ PStringArray PHTTPConfig::AddSelectArrayField(const char * name,
                                               bool enumeration)
 {
   PConfig cfg(section);
-  PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPSelectField(name, valueArray, 0, help, enumeration), sorted);
+  PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPSelectField(name, defaultValues, 0, help, enumeration), sorted);
   Add(fieldArray);
   return fieldArray->GetStrings(cfg, defaultValues);
 }
