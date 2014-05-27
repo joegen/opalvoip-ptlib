@@ -1178,7 +1178,8 @@ PTimeInterval PTimer::List::Process()
           if (nextInterval > delta)
             nextInterval = delta;
         }
-        else {
+        else if (timer.m_callbackMutex.Try()) {
+          timer.m_callbackMutex.Signal();
           if (timer.m_oneshot)
             timer.m_running = false;
           else
