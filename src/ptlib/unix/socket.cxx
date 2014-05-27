@@ -1915,7 +1915,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(const Address & remoteAdd
     for (PINDEX i = 0; i < interfaceTable.GetSize(); i++) {
       PString name = interfaceTable[i].GetName();
       Address addr = interfaceTable[i].GetAddress();
-      if (addr.IsValid() && name == route->GetInterface()) {
+      if (addr.IsValid() && (name == route->GetInterface()) && (remoteAddress.GetVersion() == addr.GetVersion())) {
         PTRACE(5, NULL, PTraceModule(), "Route for " << remoteAddress
                << " is over interface " << name << "[" << addr << "]");
         return addr;
