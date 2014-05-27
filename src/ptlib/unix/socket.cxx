@@ -1611,7 +1611,9 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & list, PBoolean includeDow
       ifReq.ifr_addr.sa_family = ifa->ifa_addr->sa_family;
       strncpy(ifReq.ifr_name, ifa->ifa_name, sizeof(ifReq.ifr_name) - 1);
       if (ioctl(ifsock.GetHandle(), SIO_Get_MAC_Address, &ifReq) == 0) {
-        macAddr = PEthSocket::Address((BYTE *)ifReq.ifr_macaddr);
+        PEthSocket::Address eth((BYTE *)ifReq.ifr_macaddr);
+        if (eth != PEthSocket::Address(NULL))
+          macAddr = eth;
       }
 #endif
       PIPSocket::Address addr = GetInvalidAddress(), mask = GetInvalidAddress();
