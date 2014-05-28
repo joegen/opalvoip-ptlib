@@ -981,8 +981,8 @@ class PHTTPConfig : public PHTTPForm
     PStringArray AddSelectArrayField(
       const char * name,
       bool sorted,
-      const PStringArray & valueArray,
       const PStringArray & defaultValues,
+      const PStringArray & possibleValues,
       const char * help = NULL,
       bool enumeration = false
     );
