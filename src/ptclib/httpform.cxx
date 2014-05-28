@@ -2317,13 +2317,13 @@ PString PHTTPConfig::AddSelectField(const char * name,
 
 PStringArray PHTTPConfig::AddSelectArrayField(const char * name,
                                               bool sorted,
-                                              const PStringArray & valueArray,
                                               const PStringArray & defaultValues,
+                                              const PStringArray & possibleValues,
                                               const char * help,
                                               bool enumeration)
 {
   PConfig cfg(section);
-  PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPSelectField(name, defaultValues, 0, help, enumeration), sorted);
+  PHTTPFieldArray* fieldArray = new PHTTPFieldArray(new PHTTPSelectField(name, possibleValues, 0, help, enumeration), sorted);
   Add(fieldArray);
   return fieldArray->GetStrings(cfg, defaultValues);
 }
