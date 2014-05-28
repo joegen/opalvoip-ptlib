@@ -1638,10 +1638,8 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    bool enumeration)
   : PHTTPField(name, NULL, help)
   , m_values(valueArray)
-  , m_enumeration(enumeration)
-  , m_initialValue(initVal)
-  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
+  Construct(initVal, enumeration);
 }
 
 
@@ -1653,10 +1651,8 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    bool enumeration)
   : PHTTPField(name, NULL, help)
   , m_values(count, valueStrings)
-  , m_enumeration(enumeration)
-  , m_initialValue(initVal)
-  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
+  Construct(initVal, enumeration);
 }
 
 
@@ -1668,10 +1664,8 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    bool enumeration)
   : PHTTPField(name, title, help)
   , m_values(valueArray)
-  , m_enumeration(enumeration)
-  , m_initialValue(initVal)
-  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
+  Construct(initVal, enumeration);
 }
 
 
@@ -1684,9 +1678,16 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    bool enumeration)
   : PHTTPField(name, title, help)
   , m_values(count, valueStrings)
-  , m_enumeration(enumeration)
-  , m_initialValue(initVal)
 {
+  Construct(initVal, enumeration);
+}
+
+
+void PHTTPSelectField::Construct(PINDEX initVal, bool enumeration)
+{
+  m_initialValue = initVal;
+  m_enumeration = enumeration;
+
   if (enumeration)
     m_value.sprintf("%u", initVal);
   else if (initVal < m_values.GetSize())
