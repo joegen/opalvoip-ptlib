@@ -735,6 +735,8 @@ class PHTTPSelectField : public PHTTPField
     );
 
   protected:
+    void Construct(PINDEX initVal, bool enumeration);
+
     PStringArray m_values;
     bool         m_enumeration;
     PINDEX       m_initialValue;
