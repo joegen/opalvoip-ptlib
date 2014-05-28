@@ -1686,8 +1686,11 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
   , m_values(count, valueStrings)
   , m_enumeration(enumeration)
   , m_initialValue(initVal)
-  , m_value(initVal < m_values.GetSize() ? m_values[initVal] : PString::Empty())
 {
+  if (enumeration)
+    m_value.sprintf("%u", initVal);
+  else if (initVal < m_values.GetSize())
+    m_value = m_values[initVal];
 }
 
 
