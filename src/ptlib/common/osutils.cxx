@@ -994,31 +994,13 @@ void PTimer::Construct()
 {
   m_handle = s_handleGenerator.Create();
   m_running = false;
-
-  List * list = TimerList();
-  if (PAssertNULL(list) != NULL) {
-    list->m_timersMutex.Wait();
-    list->m_timers[m_handle] = this;
-    list->m_timersMutex.Signal();
-  }
-
   StartRunning(true);
 }
 
 
 PTimer::~PTimer()
 {
-  // Take out of timer list first, so when stop is called and callback waited
-  // it cannot then be called again
-  List * list = TimerList();
-  if (list != NULL) {
-    list->m_timersMutex.Wait();
-    list->m_timers.erase(m_handle);
-    list->m_timersMutex.Signal();
-
-    Stop(); // And wait, if necessary
-  }
-
+  Stop(); // And wait, if necessary
   s_handleGenerator.Release(m_handle);
 }
 
@@ -1066,6 +1048,10 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(PBoolean once)
 {
+  List * list = TimerList();
+  if (PAssertNULL(list) == NULL)
+    return;
+
   Stop();
 
   m_timerMutex.Wait();
@@ -1076,8 +1062,11 @@ void PTimer::StartRunning(PBoolean once)
   if (m_resetTime > 0) {
     m_absoluteTime = Tick() + m_resetTime;
     m_running = true;
-    PProcess::Current().SignalTimerChange();
+    list->m_timersMutex.Wait();
+    list->m_timers[m_handle] = this;
+    list->m_timersMutex.Signal();
 
+    PProcess::Current().SignalTimerChange();
   }
 
   m_timerMutex.Signal();
@@ -1086,14 +1075,22 @@ void PTimer::StartRunning(PBoolean once)
 
 void PTimer::Stop(bool wait)
 {
+  List * list = TimerList();
+  if (list == NULL)
+    return;
+
+  /* Take out of timer list first, so when callback is waited for it's
+     completion it cannot then be called again. */
+  list->m_timersMutex.Wait();
+  list->m_timers.erase(m_handle);
+  list->m_timersMutex.Signal();
+
+  m_running = false;
+
   if (wait) {
     m_callbackMutex.Wait();
     m_callbackMutex.Signal();
   }
-
-  m_timerMutex.Wait();
-  m_running = false;
-  m_timerMutex.Signal();
 }
 
 
