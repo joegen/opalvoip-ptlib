@@ -149,11 +149,13 @@ public:
   virtual ~PWAVFileConverter() { }
   virtual unsigned GetFormat    (const PWAVFile & file) const = 0;
   virtual off_t GetPosition     (const PWAVFile & file) const = 0;
-  virtual PBoolean SetPosition      (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin) = 0;
+  virtual PBoolean SetPosition  (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin) = 0;
   virtual unsigned GetSampleSize(const PWAVFile & file) const = 0;
   virtual off_t GetDataLength   (PWAVFile & file) = 0;
-  virtual PBoolean Read             (PWAVFile & file, void * buf, PINDEX len)  = 0;
-  virtual PBoolean Write            (PWAVFile & file, const void * buf, PINDEX len) = 0;
+  virtual PBoolean Read         (PWAVFile & file, void * buf, PINDEX len)  = 0;
+  virtual PBoolean Write        (PWAVFile & file, const void * buf, PINDEX len) = 0;
+
+protected:
 };
 
 typedef PFactory<PWAVFileConverter, unsigned> PWAVFileConverterFactory;
@@ -167,8 +169,7 @@ class PWAVFile : public PFile
 public:
   /**@name Construction */
   //@{
-  /**When a file is opened for writing, we can specify if this is a PCM
-     wav file or a G.723.1 wav file.
+  /**The type of codec being used to encode the audio in the WAV file.
   */
   enum WaveType {
     fmt_PCM         = 1,      ///< PCM, 8kHz, 16 bit, mono
@@ -189,22 +190,15 @@ public:
     // For backward compatibility
     PCM_WavFile     = fmt_PCM,
     G7231_WavFile   = fmt_VivoG7231,
-
-    // allow opening files without knowing the format
-    fmt_NotKnown    = 0x10000
   };
 
   /**Create a WAV file object but do not open it. It does not
      initially have a valid file name. However, an attempt to open the file
      using the <code>PFile::Open()</code> function will generate a unique
      temporary file.
-
-     If a WAV file is being created, the type parameter can be used
-     to create a PCM Wave file or a G.723.1 Wave file by using
-     <code>WaveType</code> enum.
   */
   PWAVFile(
-    unsigned format = fmt_PCM ///< Type of WAV File to create
+    unsigned createFormat = fmt_PCM  ///< Type of WAV File to create
   );
 
   /**Create a unique temporary file name, and open the file in the specified
@@ -212,17 +206,13 @@ public:
      temporary file name in ReadOnly mode will always fail. This would only
      be usefull in a mode and options that will create the file.
 
-     If a WAV file is being created, the type parameter can be used
-     to create a PCM Wave file or a G.723.1 Wave file by using
-     <code>WaveType</code> enum.
-
      The <code>PChannel::IsOpen()</code> function may be used after object
      construction to determine if the file was successfully opened.
   */
   PWAVFile(
-    OpenMode mode,          ///< Mode in which to open the file.
+    OpenMode mode,                  ///< Mode in which to open the file.
     OpenOptions opts = ModeDefault, ///< <code>OpenOptions</code> enum for open operation.
-    unsigned format = fmt_PCM ///< Type of WAV File to create
+    unsigned createFormat = fmt_PCM ///< Type of WAV File to create, if mode is WriteOnly
   );
 
   /**Create a WAV file object with the specified name and open it in
@@ -235,17 +225,17 @@ public:
      construction to determine if the file was successfully opened.
   */
   PWAVFile(
-    const PFilePath & name,     ///< Name of file to open.
-    OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
-    OpenOptions opts = ModeDefault,     ///< <code>OpenOptions</code> enum for open operation.
-    unsigned format = fmt_PCM ///< Type of WAV File to create
+    const PFilePath & name,         ///< Name of file to open.
+    OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
+    OpenOptions opts = ModeDefault, ///< <code>OpenOptions</code> enum for open operation.
+    unsigned createFormat = fmt_PCM ///< Type of WAV File to create, if mode is WriteOnly
   );
 
   PWAVFile(
-    const PString & format,  ///< Type of WAV File to create
-    const PFilePath & name,     ///< Name of file to open.
-    OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
-    OpenOptions opts = ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
+    const PString & createFormat,   ///< Type of WAV File to create, if mode is WriteOnly
+    const PFilePath & name,         ///< Name of file to open.
+    OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
+    OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum for open operation.
   );
 
   /**Close the file before destruction.
@@ -292,8 +282,8 @@ public:
      true if the file was successfully opened.
   */
   virtual PBoolean Open(
-    OpenMode mode = ReadWrite,  ///< Mode in which to open the file.
-    OpenOptions opts = ModeDefault      ///< Options for open operation.
+    OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
+    OpenOptions opts = ModeDefault  ///< Options for open operation.
   );
 
   /**Open the specified WAV file name in the specified mode and with
@@ -303,16 +293,13 @@ public:
      For new files, it creates a new file (and header) using the type of
      WAV file specified in the class constructor.
 
-     Note: if \p mode is StandardInput, StandardOutput or StandardError,
-     then the \p name parameter is ignored.
-
      @return
      true if the file was successfully opened.
   */
   virtual PBoolean Open(
-    const PFilePath & name,    ///< Name of file to open.
-    OpenMode mode = ReadWrite, ///< Mode in which to open the file.
-    OpenOptions opts = ModeDefault     ///< <code>OpenOptions</code> enum for open operation.
+    const PFilePath & name,         ///< Name of file to open.
+    OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
+    OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum for open operation.
   );
 
   /** Close the file channel.
@@ -353,7 +340,9 @@ public:
 
   /**@name Member variable access */
   //@{
-  /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
+  /**Set the codec type, format, of the WAV file.
+     Note this can only be performed for WriteOnly files, and before the first
+     call to Write() is executed.
    */
   virtual PBoolean SetFormat(unsigned fmt);
   virtual PBoolean SetFormat(const PString & format);
@@ -361,65 +350,64 @@ public:
   /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
    */
   virtual unsigned GetFormat() const;
-  virtual PString GetFormatAsString() const;
+  virtual PString GetFormatString() const;
 
-  /**Find out the number of channels the WAV file has. Typically this is 1 for
-     mono and 2 for stereo.
-  */
+  /**Get the number of channels the WAV file has.
+     Typically this is 1 for mono and 2 for stereo.
+    */
   virtual unsigned GetChannels() const;
+
+  /**Set the number of channels the WAV file has.
+     Typically this is 1 for mono and 2 for stereo.
+
+     Note this can only be performed for WriteOnly files, and before the first
+     call to Write() is executed.
+    */
   virtual void SetChannels(unsigned v);
 
-  /**Find out the sample rate of the WAV file in Hz.
+  /**Get the sample rate of the WAV file in Hz.
    */
   virtual unsigned GetSampleRate() const;
+
+  /**Set the sample rate of the WAV file in Hz.
+     Note this can only be performed for WriteOnly files, and before the first
+     call to Write() is executed.
+   */
   virtual void SetSampleRate(unsigned v);
 
-  /**Find out how may bits there are per sample, eg 8 or 16.
+  /**Get how many bits there are per sample, eg 8 or 16.
    */
   virtual unsigned GetSampleSize() const;
+
+  /**Set how many bits there are per sample, eg 8 or 16.
+     Note this can only be performed for WriteOnly files, and before the first
+     call to Write() is executed.
+   */
   virtual void SetSampleSize(unsigned v);
 
-  /**Find out how may bytes there are per second
+  /**Get how may bytes there are per second
    */
   virtual unsigned GetBytesPerSecond() const;
+
+  /**Set how may bytes there are per second
+     Note this can only be performed for WriteOnly files, and before the first
+     call to Write() is executed.
+   */
   virtual void SetBytesPerSecond(unsigned v);
 
-  /**Find out the size of WAV header presented in the file.
+  /**Enable autoconversion between the native format and PCM-16.
+     Note, this only applies to ReadOnly files.
    */
-  off_t GetHeaderLength() const;
-
-  /**Find out how many bytes of audio data there are.
-   */
-  virtual off_t GetDataLength();
-
-  /**Determine if the WAV file is a valid wave file.
-
-     @return
-     true indicates that the WAV file is valid
-     false indicates that the WAV file is invalid
-  */
-  PBoolean IsValid() const { return isValidWAV; }
-
-  /**Return a string that describes the WAV format
-   */
-  PString GetFormatString() const
-  { if (formatHandler == NULL) return PString("N/A"); else return formatHandler->GetFormatString(); }
-
-  /**Enable autoconversion between PCM-16 and the native format.
-   */
-  void SetAutoconvert();
-
+  bool SetAutoconvert(bool convert = true);
   //@}
 
-  PBoolean RawRead(void * buf, PINDEX len);
-  PBoolean RawWrite(const void * buf, PINDEX len);
-
-  PBoolean FileRead(void * buf, PINDEX len);
-  PBoolean FileWrite(const void * buf, PINDEX len);
+  // Internal stuff
+  bool RawRead(void * buf, PINDEX len);
+  bool RawWrite(const void * buf, PINDEX len);
 
   off_t RawGetPosition() const;
-  PBoolean RawSetPosition(off_t pos, FilePositionOrigin origin);
-  off_t RawGetDataLength();
+  bool RawSetPosition(off_t pos, FilePositionOrigin origin);
+  off_t RawGetDataLength() { return m_dataLength; }
 
   void SetLastReadCount(PINDEX v) { lastReadCount = v; }
   void SetLastWriteCount(PINDEX v) { lastWriteCount = v; }
@@ -430,32 +418,30 @@ public:
 
 
 protected:
-  void Construct();
-  bool SelectFormat(unsigned fmt);
-  bool SelectFormat(const PString & format);
+  void Construct(OpenMode mode);
+  bool SelectFormat(PWAVFileFormat * handler);
 
-  PBoolean ProcessHeader();
-  PBoolean GenerateHeader();
-  PBoolean UpdateHeader();
+  bool ProcessHeader();
+  bool GenerateHeader();
+  bool UpdateHeader();
 
-  PBYTEArray wavHeaderData;
-  PWAV::FMTChunk wavFmtChunk;
-  PBYTEArray extendedHeader;
+  unsigned            m_createFormat;
+  PWAV::FMTChunk      m_wavFmtChunk;
+  PBYTEArray          m_wavHeaderData;
+  PBYTEArray          m_extendedHeader;
+  off_t               m_headerLength;
+  off_t               m_dataLength;
 
-  bool     isValidWAV;
+  PWAVFileFormat    * m_formatHandler;
+  PWAVFileConverter * m_autoConverter;
 
-  unsigned int origFmt;
-  PWAVFileFormat * formatHandler;
+  enum {
+    e_Reading,
+    e_PreWrite,
+    e_Writing
+  } m_status;
 
-  PBoolean     autoConvert;
-  PWAVFileConverter * autoConverter;
-
-  off_t lenHeader;
-  off_t lenData;
-
-  bool     header_needs_updating;
-
-friend class PWAVFileConverter;
+  friend class PWAVFileConverter;
 };
 
 #endif // P_WAVFILE
