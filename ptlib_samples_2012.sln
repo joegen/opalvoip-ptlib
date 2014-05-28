@@ -50,7 +50,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Audio Test", "samples\audio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Network Interfaces", "samples\netif\netif_2012.vcxproj", "{94CDC619-B4DB-42E7-9B69-E33FDA1D3482}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib Timers", "..\SVN-3.14-Lacaille-2012\ptlib\samples\ptimer\ptimer_2012.vcxproj", "{93969422-D25F-4C89-A24E-B6B3AC597380}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib Timers", "samples\ptimer\ptimer_2012.vcxproj", "{93969422-D25F-4C89-A24E-B6B3AC597380}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
