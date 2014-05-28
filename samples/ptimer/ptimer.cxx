@@ -33,6 +33,9 @@
 #include <ptclib/random.h>
 
 
+#define PTraceModule() "TimerTest"
+
+
 /**A class that does a PTimer functionality. This class runs once. It
 is started, and on completion of the delay it toggles a flag. At
 that point, this timer has finished. */
@@ -1057,7 +1060,7 @@ DelayThread::~DelayThread()
 
 void DelayThread::Main()  
 {
-  PTRACE(5, "DelayThread\t start now");
+  PTRACE(5, "DelayThread start now");
   localPTimer.StartRunning(&endMe, delay);
 
   if (checkTimer) {
@@ -1066,7 +1069,7 @@ void DelayThread::Main()
   }
 
   endMe.Wait();
-  PTRACE(5, "DelayThread\t all finished");
+  PTRACE(5, "DelayThread all finished");
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1078,7 +1081,7 @@ TimerOnThread::TimerOnThread(PTimer & _timer)
 
 void TimerOnThread::Main()  
 {
-  PTRACE(5, "DelayThread\t start now");
+  PTRACE(5, "DelayThread start now");
   //timer.Resume();
 }
 
