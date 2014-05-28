@@ -125,7 +125,7 @@ class PAtomicBase
     typedef __stl_atomic_t IntegerType;
 #elif defined(SOLARIS) && !defined(__GNUC__)
     typedef uint32_t IntegerType;
-#elif defined(__GNUC__) && P_HAS_ATOMIC_INT
+#elif defined(__GNUC__) && defined(P_ATOMICITY_HEADER)
     typedef _Atomic_word IntegerType;
 #else
     typedef int IntegerType;
