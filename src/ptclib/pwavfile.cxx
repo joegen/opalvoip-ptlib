@@ -156,6 +156,7 @@ PBoolean PWAVFile::Open(OpenMode mode, OpenOptions opts)
   if (!PFile::Open(mode, opts))
     return false;
 
+  m_status = mode == WriteOnly ? e_PreWrite : e_Reading;
   if (!(m_status != e_Reading ? GenerateHeader() : ProcessHeader())) {
     Close();
     return false;
