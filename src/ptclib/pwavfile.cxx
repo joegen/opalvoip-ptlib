@@ -220,7 +220,7 @@ bool PWAVFile::SetAutoconvert(bool convert)
   if ((m_autoConverter = PWAVFileConverterFactory::CreateInstance(m_wavFmtChunk.format)) != NULL)
     return true;
 
-  PTRACE(2, "PWAVFile\tNo format converter for type " << m_wavFmtChunk.format);
+  PTRACE(2, "PWAVFile\tNo format converter for type " << (WORD)m_wavFmtChunk.format);
   return false;
 }
 
