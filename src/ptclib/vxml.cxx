@@ -2552,38 +2552,32 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
 PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
 {
   PWAVFile * wav = new PWAVFile;
-  if (!wav->SetFormat(mediaFormat)) {
-    PTRACE(1, "VXML\tWAV file format " << mediaFormat << " not known");
-    delete wav;
-    return NULL;
-  }
-
-  wav->SetAutoconvert();
-  if (!wav->Open(fn,
-                 recording ? PFile::WriteOnly : PFile::ReadOnly,
-                 PFile::ModeDefault))
-    PTRACE(2, "VXML\tCould not open WAV file " << wav->GetName());
-
-  else if (recording) {
+  if (recording) {
     wav->SetChannels(1);
-    wav->SetSampleRate(8000);
     wav->SetSampleSize(16);
-    return wav;
+    wav->SetSampleRate(GetSampleFrequency());
+    if (!wav->SetFormat(mediaFormat))
+      PTRACE(2, "VXML\tUnsupported codec " << mediaFormat);
+    else if (!wav->Open(fn, PFile::WriteOnly))
+      PTRACE(2, "VXML\tCould not create WAV file " << wav->GetName() << " - " << wav->GetErrorText());
+    else if (!wav->SetAutoconvert())
+      PTRACE(2, "VXML\tWAV file cannot convert to " << mediaFormat);
+    else
+      return wav;
   }
-
-  else if (!wav->IsValid())
-    PTRACE(2, "VXML\tWAV file header invalid for " << wav->GetName());
-
-  else if (wav->GetSampleRate() != GetSampleFrequency())
-    PTRACE(2, "VXML\tWAV file has unsupported sample frequency " << wav->GetSampleRate());
-
-  else if (wav->GetChannels() != 1)
-    PTRACE(2, "VXML\tWAV file has unsupported channel count " << wav->GetChannels());
-
   else {
-    wav->SetAutoconvert();   /// enable autoconvert
-    PTRACE(3, "VXML\tOpened WAV file " << wav->GetName());
-    return wav;
+    if (!wav->Open(fn, PFile::ReadOnly))
+      PTRACE(2, "VXML\tCould not open WAV file " << wav->GetName() << " - " << wav->GetErrorText());
+    else if (wav->GetChannels() != 1)
+      PTRACE(2, "VXML\tWAV file has unsupported channel count " << wav->GetChannels());
+    else if (wav->GetSampleSize() != 16)
+      PTRACE(2, "VXML\tWAV file has unsupported sample size " << wav->GetSampleSize());
+    else if (wav->GetSampleRate() != GetSampleFrequency())
+      PTRACE(2, "VXML\tWAV file has unsupported sample rate " << wav->GetSampleRate());
+    else if (wav->GetFormatString() != mediaFormat && !wav->SetAutoconvert())
+      PTRACE(2, "VXML\tWAV file cannot convert from " << wav->GetFormatString());
+    else
+      return wav;
   }
 
   delete wav;
