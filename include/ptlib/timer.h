@@ -177,27 +177,21 @@ class PSimpleTimer : public PTimeInterval
    may either override the virtual function or set a callback as desired.
    
    A list of active timers is maintained by the applications <code>PProcess</code> 
-   instance and the timeout functions are executed in the context of a single
-   thread of execution. There are many consequences of this: only one timeout
-   function can be executed at a time and thus a user should not execute a
-   lot of code in the timeout call-back functions or it will delay the timely
-   execution of other timers call-back functions.
+   instance and the timeout functions are executed in the context of a separate
+   thread of execution.
 
    Also timers are not very accurate in sub-second delays, even though you can
    set the timer in milliseconds, its accuracy is only to -0/+250 ms. Even
-   more (potentially MUCH more) if there are delays in the user call-back
-   functions.
-
-   Another trap is you cannot destroy a timer in its own call-back. There is
-   code to cause an assert if you try but it is very easy to accidentally do
-   this when you delete an object that contains an object that contains the
-   timer!
+   more (potentially MUCH more) if there are large delays in the user call-back
+   functions and many of them exhausting the thread pool.
 
    When you subclass PTimer you MUST call Stop() in destructor. This guarantees
    that object not destroyed in OnTimeout execution.
 
-   Finally static timers cause race conditions on start up and termination and
-   should be avoided.
+   Finally, while the timers "system" threads are fully thread safe, the
+   PTimeInterval on which it is based is not. So care is required for user
+   threads on platforms where a 64 bit integer access is not an atomic
+   operation.
  */
 class PTimer : public PTimeInterval
 {
@@ -234,7 +228,7 @@ class PTimer : public PTimeInterval
      */
     PTimer & operator=(
       const PTimer & timer          ///< New time interval for timer.
-    ) { SetInterval(timer.GetMilliSeconds()); return *this; }
+    );
 
     PTIMER_OPERATORS(PTimer);
 
@@ -255,24 +249,10 @@ class PTimer : public PTimeInterval
 
   /**@name Control functions */
   //@{
-    /** Set the value of the time interval. The time interval, in milliseconds,
-       is the sum of all of the parameters. For example all of the following
-       are equivalent:
-<pre><code>
-              SetInterval(120000)
-              SetInterval(60000, 60)
-              SetInterval(60000, 0, 1)
-              SetInterval(0, 60, 1)
-              SetInterval(0, 0, 2)
-</code></pre>
-     */
-    virtual void SetInterval(
-      PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
-      long seconds = 0,         ///< Number of seconds for interval.
-      long minutes = 0,         ///< Number of minutes for interval.
-      long hours = 0,           ///< Number of hours for interval.
-      int days = 0              ///< Number of days for interval.
-    );
+    /** Set the number of milliseconds for the time interval.
+        Note, this will restart the timer in the current mode.
+    */
+    virtual void SetMilliSeconds(PInt64 msecs);
 
     /** Start a timer in continous cycle mode. Whenever the timer runs out it
        is automatically reset to the time specified. Thus, it calls the
@@ -309,7 +289,7 @@ class PTimer : public PTimeInterval
 
     /** Get the time this timer was set to initially.
      */
-    const PTimeInterval & GetResetTime() const;
+    PTimeInterval GetResetTime() const;
   //@}
 
   /**@name Notification functions */
@@ -427,24 +407,14 @@ class PTimer : public PTimeInterval
 
 
   private:
-    void Construct();
-
-    /* Start or restart the timer from the <code>resetTime</code> variable.
-       This is an internal function.
-     */
-    void StartRunning(
-      PBoolean once   // Flag for one shot or continuous.
-    );
+    void InternalStart(bool once, PTimeInterval resetTime); // Note, not "const PTimeInterval &" to avoid mutex issues
 
     // Member variables
-    PNotifier      m_callback;     // Callback function for expired timers.
-    PTimeInterval  m_resetTime;    // The time to reset a timer to when RunContinuous() is called.
-    bool           m_oneshot;      // Timer operates once then stops.
-
+    PNotifier            m_callback;     // Callback function for expired timers.
+    bool                 m_oneshot;      // Timer operates once then stops.
     PIdGenerator::Handle m_handle;
     bool                 m_running;
     PTimeInterval        m_absoluteTime;
-    PCriticalSection     m_timerMutex;
     PTimedMutex          m_callbackMutex;
 
     friend class Emitter;
