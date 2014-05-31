@@ -74,7 +74,7 @@ class PTimeInterval : public PObject
       PInt64 millisecs = 0   ///< Number of milliseconds for interval.
     );
     PTimeInterval(
-      long millisecs,       ///< Number of milliseconds for interval.
+      PInt64 millisecs,     ///< Number of milliseconds for interval.
       long seconds,         ///< Number of seconds for interval.
       long minutes = 0,     ///< Number of minutes for interval.
       long hours = 0,       ///< Number of hours for interval.
