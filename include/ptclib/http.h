@@ -1546,9 +1546,29 @@ class PHTTPResource : public PObject
      */
     DWORD GetHitCount() const { return hitCount; }
 
+    /// Clear the hit count for the resource.
     void ClearHitCount() { hitCount = 0; }
-    // Clear the hit count for the resource.
 
+    /**Called when a request indicates a swtch to WebSocket protocol.
+       This will handle a WebScoket protocol change.
+
+       After the start up handshake has completed, if there is a notifier and
+       it is non-null, then the notifier is called. The notifier, may then call
+       connectInfo.ClearWebSocket() if it wishes to return to HTTP mode. That
+       is, ProcessCommand() will return true and the normal persistence rules
+       apply. If ClearWebSocket() is not called then ProcessCommand() will
+       return false.
+
+       Note, that the latter case does not mean that the underlying socket is
+       necessarily closed, it could subsequently be disconnected from the
+       PHTTPServer objects and passed to PWebSocket for processing.
+
+       @return true if want to persist with HTTP connection.
+      */
+    virtual bool OnWebSocket(
+      PHTTPServer & server,       ///< HTTP server that received the request
+      PHTTPConnectionInfo & connectInfo   ///< HTTP connection information
+    );
 
     /** Handle the GET command passed from the HTTP socket.
 
@@ -1677,7 +1697,7 @@ class PHTTPResource : public PObject
      */
     virtual PBoolean LoadHeaders(
       PHTTPRequest & request    ///<  Information on this request.
-    ) = 0;
+    );
 
     /**Send the data associated with a command.
 
