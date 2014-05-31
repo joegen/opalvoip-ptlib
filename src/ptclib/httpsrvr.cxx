@@ -291,7 +291,7 @@ PBoolean PHTTPServer::ProcessCommand()
   PTRACE(5, "HTTPServer\tTransaction " << connectInfo.commandCode << ' ' << connectInfo.GetURL());
 
   if (connectInfo.IsWebSocket()) {
-    if (!OnWebSocket(connectInfo) || connectInfo.IsWebSocket())
+    if (!OnWebSocket(connectInfo))
       return false;
     persist = true;
   }
@@ -391,10 +391,17 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
   StartResponse(SwitchingProtocols, reply, -1);
   flush();
 
-  if (!notifier->second.IsNULL())
+  if (!notifier->second.IsNULL()) {
     notifier->second(*this, connectInfo);
+    return !connectInfo.IsWebSocket();
+  }
 
-  return true;
+  urlSpace.StartRead();
+  PHTTPResource * resource = urlSpace.FindResource(connectInfo.GetURL());
+  bool persist = resource != NULL && resource->OnWebSocket(*this, connectInfo);
+  urlSpace.EndRead();
+
+  return persist;
 #else
   PTRACE(2, "HTTP\tWebSocket refused due to no SSL");
   return OnError(NotFound, "WebSocket unsupported (No SSL)", connectInfo);
@@ -1289,6 +1296,12 @@ PHTTPResource::~PHTTPResource()
 }
 
 
+bool PHTTPResource::OnWebSocket(PHTTPServer &, PHTTPConnectionInfo &)
+{
+  return false;
+}
+
+
 PBoolean PHTTPResource::OnGET(PHTTPServer & server,
                            const PURL & url,
                       const PMIMEInfo & info,
@@ -1513,6 +1526,13 @@ static void WriteChunkedDataToServer(PHTTPServer & server, PCharArray & data)
   server.Write(data, data.GetSize());
   server << "\r\n";
   data.SetSize(0);
+}
+
+
+PBoolean PHTTPResource::LoadHeaders(PHTTPRequest & request)
+{
+	request.code = PHTTP::MethodNotAllowed;
+	return false;
 }
 
 
