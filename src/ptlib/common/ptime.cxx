@@ -37,7 +37,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
 
-PTimeInterval::PTimeInterval(long millisecs,
+PTimeInterval::PTimeInterval(PInt64 millisecs,
                              long seconds,
                              long minutes,
                              long hours,
