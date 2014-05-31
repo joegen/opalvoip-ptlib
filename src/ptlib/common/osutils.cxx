@@ -961,40 +961,35 @@ PTimeInterval PSimpleTimer::GetRemaining() const
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
+static PIdGenerator s_handleGenerator;
+
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
-  : m_resetTime(millisecs, seconds, minutes, hours, days)
+  : PTimeInterval(millisecs, seconds, minutes, hours, days)
+  , m_handle(s_handleGenerator.Create())
 {
-  Construct();
+  InternalStart(true, *this);
 }
 
 
 PTimer::PTimer(const PTimeInterval & time)
-  : m_resetTime(time)
+  : PTimeInterval(time)
+  , m_handle(s_handleGenerator.Create())
 {
-  Construct();
+  InternalStart(true, *this);
 }
 
 
 PTimer::PTimer(const PTimer & timer)
-  : m_resetTime(timer.GetResetTime())
+  : PTimeInterval(timer.GetResetTime())
+  , m_handle(s_handleGenerator.Create())
 {
-  Construct();
+  InternalStart(true, *this);
 }
 
 
 PTimer::List * PTimer::TimerList()
 {
   return PProcess::Current().m_timerList;
-}
-
-
-static PIdGenerator s_handleGenerator;
-
-void PTimer::Construct()
-{
-  m_handle = s_handleGenerator.Create();
-  m_running = false;
-  StartRunning(true);
 }
 
 
@@ -1005,16 +1000,21 @@ PTimer::~PTimer()
 }
 
 
+PTimer & PTimer::operator=(const PTimer & timer)
+{
+  SetMilliSeconds(timer.GetMilliSeconds());
+  return *this;
+}
+
 void PTimer::PrintOn(ostream & strm) const
 {
   PTimeInterval::PrintOn(strm);
-  strm << '/' << m_resetTime << '[' << m_handle << ']';
+  strm << '/' << GetResetTime() << '[' << m_handle << ']';
 }
 
 
 PInt64 PTimer::GetMilliSeconds() const
 {
-  PWaitAndSignal mutex(m_timerMutex);
   PInt64 diff = (m_absoluteTime - Tick()).GetMilliSeconds();
   if (diff < 0)
     diff = 0;
@@ -1028,25 +1028,19 @@ PBoolean PTimer::IsRunning() const
 }
 
 
-void PTimer::SetInterval(PInt64 milliseconds,
-                         long seconds,
-                         long minutes,
-                         long hours,
-                         int days)
+void PTimer::SetMilliSeconds(PInt64 milliseconds)
 {
-  m_resetTime.SetInterval(milliseconds, seconds, minutes, hours, days);
-  StartRunning(m_oneshot);
+  InternalStart(m_oneshot, PTimeInterval(milliseconds));
 }
 
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  m_resetTime = time;
-  StartRunning(false);
+  InternalStart(false, time);
 }
 
 
-void PTimer::StartRunning(PBoolean once)
+void PTimer::InternalStart(bool once, PTimeInterval resetTime)
 {
   List * list = TimerList();
   if (PAssertNULL(list) == NULL)
@@ -1054,13 +1048,14 @@ void PTimer::StartRunning(PBoolean once)
 
   Stop();
 
-  m_timerMutex.Wait();
+  /* We can use non-mutexed access here because the current implementation
+     guarantees that system threads can't access the timer while it's stopped. */
 
-  PTimeInterval::operator=(m_resetTime);
   m_oneshot = once;
+  PTimeInterval::operator=(resetTime);
 
-  if (m_resetTime > 0) {
-    m_absoluteTime = Tick() + m_resetTime;
+  if (resetTime > 0) {
+    m_absoluteTime = Tick() + resetTime;
     m_running = true;
     list->m_timersMutex.Wait();
     list->m_timers[m_handle] = this;
@@ -1068,8 +1063,6 @@ void PTimer::StartRunning(PBoolean once)
 
     PProcess::Current().SignalTimerChange();
   }
-
-  m_timerMutex.Signal();
 }
 
 
@@ -1096,7 +1089,7 @@ void PTimer::Stop(bool wait)
 
 void PTimer::Reset()
 {
-  StartRunning(m_oneshot);
+  InternalStart(m_oneshot, *this);
 }
 
 
@@ -1143,7 +1136,6 @@ bool PTimer::List::OnTimeout(PIdGenerator::Handle handle)
 
     timer = it->second;
 
-    PWaitAndSignal mutex2(timer->m_timerMutex);
     if (!timer->m_oneshot && !timer->m_running)
       return true; // Was recurring timer and was stopped
 
@@ -1168,35 +1160,25 @@ PTimeInterval PTimer::List::Process()
   m_timersMutex.Wait();
   for (TimerMap::iterator it = m_timers.begin(); it != m_timers.end(); ++it) {
     PTimer & timer = *it->second;
-    if (timer.m_timerMutex.Try()) {
-      if (timer.m_running) {
-        PTimeInterval delta = timer.m_absoluteTime - now;
-        if (delta > 0) {
-          if (nextInterval > delta)
-            nextInterval = delta;
-        }
-        else if (timer.m_callbackMutex.Try()) {
-          timer.m_callbackMutex.Signal();
-          if (timer.m_oneshot)
-            timer.m_running = false;
-          else
-            timer.m_absoluteTime = now + timer.m_resetTime;
-          m_threadPool.AddWork(new Timeout(it->first));
-          PTRACE(6, &timer, "PTLib", "Timer: " << timer << " work added, lateness=" << -delta);
-        }
-      }
-      timer.m_timerMutex.Signal();
-    }
-    else {
-      /* Couldn't lock, try again next time, but still want time left. We use
-         the slightly risky non-mutexed access to m_absoluteTime, which is not
-         necessarily an atomic read dependong on the underlying platform. But
-         as the worst that can happen is we end up with a shorter time before
-         Process() is run again, it isn't a big deal.
-       */
+    if (timer.m_running) {
       PTimeInterval delta = timer.m_absoluteTime - now;
-      if (nextInterval > delta)
-        nextInterval = delta;
+      if (delta > 0) {
+        if (nextInterval > delta)
+          nextInterval = delta;
+      }
+      else if (timer.m_callbackMutex.Try()) {
+        timer.m_callbackMutex.Signal();
+        /* PTimer is stopped and completely removed from the list before it's
+           properties are changed from the external code, making this thread
+           safe without a mutex. */
+        if (timer.m_oneshot)
+          timer.m_running = false;
+        else
+          timer.m_absoluteTime = now + timer.GetResetTime();
+
+        m_threadPool.AddWork(new Timeout(it->first));
+        PTRACE(6, &timer, "PTLib", "Timer: " << timer << " work added, lateness=" << -delta);
+      }
     }
   }
   m_timersMutex.Signal();

@@ -206,8 +206,8 @@ PINLINE PSimpleTimer::operator bool() const
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-PINLINE const PTimeInterval & PTimer::GetResetTime() const
-  { return m_resetTime; }
+PINLINE PTimeInterval PTimer::GetResetTime() const
+  { return *this; }
 
 PINLINE const PNotifier & PTimer::GetNotifier() const
   { return m_callback; }
