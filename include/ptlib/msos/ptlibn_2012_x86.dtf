@@ -4482,8 +4482,8 @@ EXPORTS
     ??0PTimedMutex@@QAE@XZ @4292 NONAME
     ??0PTimeInterval@@QAE@ABV0@@Z @4293 NONAME
     ??0PTimeInterval@@QAE@ABVPString@@@Z @4294 NONAME
-    ??0PTimeInterval@@QAE@JJJJH@Z @4295 NONAME
     ??0PTimeInterval@@QAE@_J@Z @4296 NONAME
+    ??0PTimeInterval@@QAE@_JJJJH@Z @29321 NONAME
     ??0PTimer@@QAE@ABV0@@Z @4297 NONAME
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @4298 NONAME
     ??0PTimer@@QAE@JHHHH@Z @4299 NONAME
@@ -6573,6 +6573,7 @@ EXPORTS
     ??4PSystemLogTarget@@AAEAAV0@ABV0@@Z @6309 NONAME
     ??4PTime@@QAEAAV0@ABV0@@Z @6310 NONAME
     ??4PTimeInterval@@QAEAAV0@ABV0@@Z @6311 NONAME
+    ??4PTimer@@QAEAAV0@ABV0@@Z @29322 NONAME
     ??4PTimer@@QAEAAV0@ABVPTimeInterval@@@Z @6312 NONAME
     ??4PURL@@QAEAAV0@ABV0@@Z @6313 NONAME
     ??4PVarType@@QAEAAV0@ABV0@@Z @6314 NONAME
@@ -16752,6 +16753,7 @@ EXPORTS
     ?Construct@PDirectory@@IAEXXZ @16149 NONAME
     ?Construct@PFTPServer@@IAEXXZ @16150 NONAME
     ?Construct@PHTTPConfig@@AAEXXZ @16151 NONAME
+    ?Construct@PHTTPSelectField@@IAEXH_N@Z @29323 NONAME
     ?Construct@PHTTPServer@@IAEXXZ @16152 NONAME
     ?Construct@PMail@@IAEXXZ @16153 NONAME
     ?Construct@PProcess@@IAEXXZ @16154 NONAME
@@ -16761,7 +16763,6 @@ EXPORTS
     ?Construct@PSSLContext@@IAEXW4Method@1@PBXH@Z @16160 NONAME
     ?Construct@PSSLDiffieHellman@@IAE_NPBEH0H0H@Z @26935 NONAME
     ?Construct@PTelnetSocket@@IAEXXZ @16161 NONAME
-    ?Construct@PTimer@@AAEXXZ @16162 NONAME
     ?Construct@PWAVFile@@IAEXXZ @16164 NONAME
     ?Construct@P_fd_set@@IAEXXZ @16165 NONAME
     ?Construct@sockaddr_wrapper@PIPSocket@@AAEXABVAddress@2@G@Z @16166 NONAME
@@ -19563,7 +19564,7 @@ EXPORTS
     ?GetReplacementLen@NAPTR_DNS@@QBEHXZ @18874 NONAME
     ?GetRequestID@PSNMPClient@@QBEHXZ @18875 NONAME
     ?GetRequireEcho@PCLI@@QBE_NXZ @18876 NONAME
-    ?GetResetTime@PTimer@@QBEABVPTimeInterval@@XZ @18877 NONAME
+    ?GetResetTime@PTimer@@QBE?AVPTimeInterval@@XZ @29324 NONAME
     ?GetResizeMode@PVideoFrameInfo@@QBE?AW4ResizeMode@1@XZ @18878 NONAME
     ?GetResource@BareJID@XMPP@@UBE?AVPString@@XZ @18879 NONAME
     ?GetResource@JID@XMPP@@UBE?AVPString@@XZ @18880 NONAME
@@ -20656,6 +20657,7 @@ EXPORTS
     ?InternalSetSize@PAbstractArray@@IAE_NH_N@Z @19909 NONAME
     ?InternalSetVariable@PLua@@IAE_NABVPString@@@Z @19910 NONAME
     ?InternalSpecificationError@PArgList@@IAE_N_NABVPString@@@Z @19911 NONAME
+    ?InternalStart@PTimer@@AAEX_NVPTimeInterval@@@Z @29325 NONAME
     ?InternalStartRead@PReadWriteMutex@@IAEXAAUNest@1@@Z @19912 NONAME
     ?InternalStringSelect@PSortedStringList@@IBEHPBDHPAUPSortedListElement@@AAPAU2@@Z @19913 NONAME
     ?InternalThreadEnded@PProcess@@IAEXPAVPThread@@@Z @19914 NONAME
@@ -21041,6 +21043,7 @@ EXPORTS
     ?LoadGrammar@PVXMLSession@@UAE_NPAVPVXMLGrammar@@@Z @20256 NONAME
     ?LoadHeaders@PHTTPDirectory@@UAE_NAAVPHTTPRequest@@@Z @20257 NONAME
     ?LoadHeaders@PHTTPFile@@UAE_NAAVPHTTPRequest@@@Z @20258 NONAME
+    ?LoadHeaders@PHTTPResource@@UAE_NAAVPHTTPRequest@@@Z @29326 NONAME
     ?LoadHeaders@PHTTPString@@UAE_NAAVPHTTPRequest@@@Z @20259 NONAME
     ?LoadHeaders@PHTTPTailFile@@UAE_NAAVPHTTPRequest@@@Z @20260 NONAME
     ?LoadHeaders@PSOAPServerResource@@UAE_NAAVPHTTPRequest@@@Z @20261 NONAME
@@ -21782,7 +21785,7 @@ EXPORTS
     ?OnTextData@PSMTPServer@@MAE_NAAVPCharArray@@AA_N@Z @20974 NONAME
     ?OnThreadEnded@PProcess@@UAEXAAVPThread@@@Z @20975 NONAME
     ?OnThreadStart@PProcess@@UAEXAAVPThread@@@Z @20976 NONAME
-    ?OnTimeout@List@PTimer@@AAEXI@Z @29214 NONAME
+    ?OnTimeout@List@PTimer@@AAE_NI@Z @29327 NONAME
     ?OnTimeout@PTimer@@UAEXXZ @20977 NONAME
     ?OnTimeout@PVXMLGrammar@@MAEXAAVPTimer@@H@Z @20978 NONAME
     ?OnTOP@PPOP3Server@@MAEXHH@Z @20979 NONAME
@@ -21808,6 +21811,7 @@ EXPORTS
     ?OnValueChanged@PVarType@@MAEXXZ @20998 NONAME
     ?OnVRFY@PSMTPServer@@MAEXABVPCaselessString@@@Z @20999 NONAME
     ?OnWait@PCondMutex@@UAEXXZ @21000 NONAME
+    ?OnWebSocket@PHTTPResource@@UAE_NAAVPHTTPServer@@AAVPHTTPConnectionInfo@@@Z @29328 NONAME
     ?OnWebSocket@PHTTPServer@@UAE_NAAVPHTTPConnectionInfo@@@Z @27679 NONAME
     ?OnWill@PTelnetSocket@@MAEXE@Z @21001 NONAME
     ?OnWont@PTelnetSocket@@MAEXE@Z @21002 NONAME
@@ -23229,7 +23233,6 @@ EXPORTS
     ?SetInterfaceFilter@PInterfaceMonitor@@QAEXPAVPInterfaceFilter@@@Z @22359 NONAME
     ?SetInterval@PSimpleTimer@@UAEX_JJJJH@Z @22360 NONAME
     ?SetInterval@PTimeInterval@@UAEX_JJJJH@Z @22361 NONAME
-    ?SetInterval@PTimer@@UAEX_JJJJH@Z @22362 NONAME
     ?SetIPAndPort@PSTUNAddressAttribute@@QAEXABVAddressAndPort@PIPSocket@@@Z @22363 NONAME
     ?SetItem@Roster@XMPP@@UAE_NPAVItem@12@_N@Z @22364 NONAME
     ?SetIV@PSSLCipherContext@@QAE_NPBEH@Z @27886 NONAME
@@ -23262,6 +23265,7 @@ EXPORTS
     ?SetMethod@PXMLRPCServerResource@@UAE_NABVPString@@ABV?$PNotifierTemplate@H@@@Z @22388 NONAME
     ?SetMethodPriority@PNatMethods@@UAE_NABVPString@@I@Z @27891 NONAME
     ?SetMilliSeconds@PTimeInterval@@UAEX_J@Z @22389 NONAME
+    ?SetMilliSeconds@PTimer@@UAEX_J@Z @29329 NONAME
     ?SetMIME@PHTTPConnectionInfo@@QAEXABVPString@@0@Z @22390 NONAME
     ?SetMinSize@PContainer@@QAE_NH@Z @22391 NONAME
     ?SetMute@PSoundChannel@@UAE_N_N@Z @22392 NONAME
@@ -23696,7 +23700,6 @@ EXPORTS
     ?StartRecording@PSoundChannel_WAVFile@@UAE_NXZ @22802 NONAME
     ?StartRegistration@StreamHandler@C2S@XMPP@@MAEXXZ @22805 NONAME
     ?StartResponse@PHTTPServer@@QAE_NW4StatusCode@PHTTP@@AAVPMIMEInfo@@J@Z @22806 NONAME
-    ?StartRunning@PTimer@@AAEX_N@Z @22807 NONAME
     ?StartTLS@PLDAPSession@@QAE_NXZ @22808 NONAME
     ?Startup@PProcess@@QAEXXZ @22809 NONAME
     ?StartWrite@PHTTPSpace@@QBEXXZ @22810 NONAME
@@ -23894,6 +23897,7 @@ EXPORTS
     ?True@v8@@YA?AV?$Handle@VBoolean@v8@@@1@PAVIsolate@1@@Z @28665 NONAME
     ?trunc@?$_Iosb@H@std@@2W4_Openmode@12@B @22997 NONAME
     ?Try@PCriticalSection@@QAE_NXZ @22998 NONAME
+    ?Try@PTimedMutex@@QAE_NXZ @29330 NONAME
     ?TypeTag@IQ@XMPP@@SAABVPCaselessString@@XZ @22999 NONAME
     ?TypeTag@Message@XMPP@@SAABVPCaselessString@@XZ @23000 NONAME
     ?TypeTag@Presence@XMPP@@SAABVPCaselessString@@XZ @23001 NONAME
