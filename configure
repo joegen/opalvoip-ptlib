@@ -903,7 +903,6 @@ enable_minsize
 enable_deprecated
 enable_exceptions
 with_allocator
-enable_atomicity
 enable_pthread_kill
 enable_ipv6
 enable_memcheck
@@ -1643,7 +1642,6 @@ Optional Features:
                           options
   --disable-deprecated    Stop compiler warning about deprecated functions
   --enable-exceptions     enable C++ exceptions
-  --disable-atomicity     Do not use atomicity.h
   --disable-pthread_kill  Disable use of pthread_kill for checking on thread
                           terminated
   --disable-ipv6          disable IPV6 support
@@ -5795,8 +5793,8 @@ case "$target_os" in
       AR="libtool"
       ARFLAGS="-static -o"
       RANLIB=
-      CPPFLAGS="${CPPFLAGS} -stdlib=libstdc++"
-      LDFLAGS="${LDFLAGS} -stdlib=libstdc++"
+      CPPFLAGS="${CPPFLAGS} -stdlib=libc++"
+      LDFLAGS="${LDFLAGS} -stdlib=libc++"
       LIBS="-framework AudioToolbox -framework CoreAudio -framework SystemConfiguration -framework Foundation -lobjc $LIBS"
    ;;
 
@@ -5829,7 +5827,7 @@ case "$target_os" in
       target_os=Darwin
       target_release=`sw_vers -productVersion`
 
-      MIN_MACOSX_VER="10.6"
+      MIN_MACOSX_VER="10.8"
       if test $target_release \< $MIN_MACOSX_VER ; then
          as_fn_error $? "Requires Mac OS-X release $MIN_MACOSX_VER, is $target_release" "$LINENO" 5
       fi
@@ -8294,18 +8292,28 @@ fi
 
 
 
-# Check whether --enable-atomicity was given.
-if test "${enable_atomicity+set}" = set; then :
-  enableval=$enable_atomicity;
-fi
-
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if atomic integer available" >&5
 $as_echo_n "checking if atomic integer available... " >&6; }
-if test "${enable_atomicity}" = "no" ; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled" >&5
-$as_echo "disabled" >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <atomic>
+int
+main ()
+{
+std::atomic<unsigned> val
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+      $as_echo "#define P_STD_ATOMIC 1" >>confdefs.h
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (std)" >&5
+$as_echo "yes (std)" >&6; }
+
 else
+
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <bits/atomicity.h>
@@ -8334,7 +8342,8 @@ _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
   P_ATOMICITY_HEADER="<ext/atomicity.h>"
 else
-  as_fn_error $? "Must have atomicity" "$LINENO" 5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (SIMULATING!)" >&5
+$as_echo "no (SIMULATING!)" >&6; }
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
@@ -8342,10 +8351,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-   if test -z "$P_ATOMICITY_HEADER" ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-   else
+   if test -n "$P_ATOMICITY_HEADER" ; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes $P_ATOMICITY_HEADER" >&5
 $as_echo "yes $P_ATOMICITY_HEADER" >&6; }
       cat >>confdefs.h <<_ACEOF
@@ -8417,7 +8423,10 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
    fi
+
+
 fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 
 
