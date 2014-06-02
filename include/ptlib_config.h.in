@@ -60,11 +60,9 @@
 #undef    P_ANDROID
 #undef    P_UNKNOWN_OS
 
-#ifndef _WIN32_WCE
-
 // Windows API version for compile
-#undef    WINVER
-
+#if !defined(_WIN32_WCE) && !defined(WINVER)
+	#undef    WINVER
 #endif
 
 /////////////////////////////////////////////////
@@ -300,7 +298,7 @@
 #undef P_POP3SMTP
 #undef P_CONFIG_FILE
 
-#if WIN32 || P_PIPECHAN
+#if _WIN32 || P_PIPECHAN
   #undef P_REMCONN
 #endif
 
