@@ -704,12 +704,15 @@ MY_COMPILE_IFELSE(
 dnl ########################################################################
 dnl see if using GNU glibc++, because then we have atomic integer operations
 
-AC_ARG_ENABLE(atomicity, AS_HELP_STRING([--disable-atomicity],[Do not use atomicity.h]))
-
 AC_MSG_CHECKING(if atomic integer available)
-if test "${enable_atomicity}" = "no" ; then
-   AC_MSG_RESULT(disabled)
-else
+AC_TRY_COMPILE(
+   [#include <atomic>],
+   [std::atomic<unsigned> val],
+   [
+      AC_DEFINE(P_STD_ATOMIC, 1)
+      AC_MSG_RESULT([yes (std)])
+   ],
+   [
    AC_TRY_COMPILE(
       [#include <bits/atomicity.h>],
       [_Atomic_word val],
@@ -718,13 +721,11 @@ else
          [#include <ext/atomicity.h>],
          [_Atomic_word val],
          [P_ATOMICITY_HEADER="<ext/atomicity.h>"],
-         [AC_MSG_ERROR(Must have atomicity)]
+         [AC_MSG_RESULT([no (SIMULATING!)])]
       )]
    )
 
-   if test -z "$P_ATOMICITY_HEADER" ; then
-      AC_MSG_RESULT(no)
-   else
+   if test -n "$P_ATOMICITY_HEADER" ; then
       AC_MSG_RESULT(yes $P_ATOMICITY_HEADER)
       AC_DEFINE_UNQUOTED(P_ATOMICITY_HEADER, $P_ATOMICITY_HEADER)
 
@@ -756,7 +757,8 @@ else
          [AC_MSG_RESULT(no)]
       )
    fi
-fi
+   ]
+)
 
 
 dnl ########################################################################
