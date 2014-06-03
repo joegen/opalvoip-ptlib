@@ -717,6 +717,26 @@ class PCLI : public PObject
        Default is "Ambiguous command".
       */
     void SetAmbiguousCommandError(const PString & ambiguousCommandError) { m_ambiguousCommandError = ambiguousCommandError; }
+
+    /**Get command that will read a script file.
+       Default is "<\nread".
+      */
+    const PCaselessString & GetScriptCommand() const { return m_scriptCommand; }
+
+    /**Set command that will read a script file.
+       Default is "<\nread".
+      */
+    void SetScriptCommand(const PCaselessString & scriptCommand) { m_scriptCommand = scriptCommand; }
+
+    /**Get error message for if script file doe not exist.
+       Default is "Script file could not be found".
+      */
+    const PString & GetNoScriptError() const { return m_noScriptError; }
+
+    /**Set error message for if script file doe not exist.
+       Default is "Script file could not be found".
+      */
+    void SetNoScriptError(const PString & noScriptError) { m_noScriptError = noScriptError; }
   //@}
 
 
@@ -748,6 +768,8 @@ class PCLI : public PObject
     PString         m_commandErrorPrefix;
     PString         m_unknownCommandError;
     PString         m_ambiguousCommandError;
+    PCaselessString m_scriptCommand;
+    PString         m_noScriptError;
 
     struct InternalCommand
     {

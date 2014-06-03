@@ -390,7 +390,13 @@ static bool CheckInternalCommand(PCaselessString & line, const PCaselessString &
   for (PINDEX i = 0; i < cmds.GetSize(); ++i) {
     if (line.NumCompare(cmds[i]) == PObject::EqualTo) {
       line.Delete(0, cmds[i].GetLength());
-      return line.IsEmpty() || isspace(line[0]);
+      if (line.IsEmpty())
+        return true;
+      if (!isspace(line[0]))
+        return false;
+      while (isspace(line[0]))
+        line.Delete(0, 1);
+      return true;
     }
   }
 
@@ -428,6 +434,30 @@ void PCLI::Context::OnCompletedLine()
     for (PStringList::iterator cmd = m_commandHistory.begin(); cmd != m_commandHistory.end(); ++cmd)
       *this << cmdNum++ << ' ' << *cmd << '\n';
     flush();
+    return;
+  }
+
+  if (CheckInternalCommand(line, m_cli.GetScriptCommand())) {
+    PTextFile script;
+    if (script.Open(line, PFile::ReadOnly)) {
+      PString prompt = m_cli.GetPrompt();
+      m_cli.SetPrompt(PString::Empty());
+      m_state = e_ProcessingCommand;
+
+      while (script.good()) {
+        script >> line;
+        if (line.IsEmpty() || CheckInternalCommand(line, m_cli.GetCommentCommand()))
+          continue;
+
+        Arguments args(*this, line);
+        m_cli.OnReceivedLine(args);
+      }
+
+      m_state = e_CommandEntry;
+      m_cli.SetPrompt(prompt);
+    }
+    else
+      *this << m_cli.GetNoScriptError() << endl;
     return;
   }
 
@@ -534,6 +564,8 @@ PCLI::PCLI(const char * prompt)
   , m_commandErrorPrefix(": error: ")
   , m_unknownCommandError("Unknown command")
   , m_ambiguousCommandError("Ambiguous command")
+  , m_scriptCommand("<\nread")
+  , m_noScriptError("Script file could not be found")
 {
 }
 
