@@ -926,7 +926,7 @@ int PConsoleChannel::ReadChar()
   {
     DWORD mode;
     if (!GetConsoleMode(m_hConsole, &mode))
-      return false;
+      return -1;
     if ((mode & ENABLE_LINE_INPUT) != 0)
       return PChannel::ReadChar();
   }
