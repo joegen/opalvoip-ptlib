@@ -1764,6 +1764,10 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
       }
       break;
 
+    case WM_LBUTTONDOWN :
+      PostMessage(m_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, lParam);
+      break;
+
     case WM_LBUTTONDBLCLK :
       switch (m_sizeMode) {
         default :
