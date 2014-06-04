@@ -1992,7 +1992,7 @@ PWCharArray PString::AsUCS2() const
   if (ucs2.SetSize(GetSize())) { // Will be at least this big
     PINDEX count = 0;
     PINDEX i = 0;
-    PINDEX length = GetSize(); // Include the trailing '\0'
+    PINDEX length = GetLength()+1; // Include the trailing '\0'
     while (i < length) {
       int c = theArray[i];
       if ((c&0x80) == 0)
