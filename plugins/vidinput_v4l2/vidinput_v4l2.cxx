@@ -145,7 +145,7 @@ V4L2Names::Update()
   }
   if (procvideo) {
     PTRACE(2,"PV4L2Plugin\tdetected device metadata at "<<*procvideo);
-    if (((kernelVersion==K2_6 && procvideo->Open(PFileInfo::SubDirectory)) ||
+    if (((kernelVersion==K2_6 && procvideo->Open(PFileInfo::SubDirectory|PFileInfo::SymbolicLink)) ||
         (procvideo->Open(PFileInfo::RegularFile)))) {
       do {
         entry = procvideo->GetEntryName();
