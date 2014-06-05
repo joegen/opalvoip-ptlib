@@ -415,6 +415,7 @@ public:
   // Restored for backward compatibility reasons
   static PWAVFile * format(const PString & format);
   static PWAVFile * format(const PString & format, OpenMode mode, OpenOptions opts = ModeDefault);
+  __inline bool IsValid() const { return IsOpen(); }
 
 
 protected:
