@@ -1174,15 +1174,13 @@ void PSTUNClient::InternalUpdate()
     return;
   }
 
-  delete m_socket;
-  m_socket = new PSTUNUDPSocket(eComponent_Unknown);
-
   // if a specific interface is given, use only that interface
   if (!m_interface.IsAny()) {
+    m_socket = new PSTUNUDPSocket(eComponent_Unknown);
+
     if (!m_singlePortRange.Listen(*m_socket,m_interface)) {
       PTRACE(1, "STUN\tUnable to open a socket on interface " << m_interface << "");
       Close();
-      m_natType = UnknownNat;
       return;
     }
 
@@ -1226,6 +1224,8 @@ void PSTUNClient::InternalUpdate()
   PSTUNMessage responseI;
 
   for (PINDEX retry = 0; retry < m_pollRetries; ++retry) {
+    PTRACE_IF(4, retry > 0, "STUN\tRetry " << retry);
+
     PSocket::SelectList selectList;
     for (PList<PSTUNUDPSocket>::iterator socket = sockets.begin(); socket != sockets.end(); ++socket) {
       socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
@@ -1259,6 +1259,11 @@ void PSTUNClient::InternalUpdate()
       sockets.AllowDeleteObjects(true);
       break;
     }
+  }
+
+  if (m_socket == NULL) {
+    PTRACE(2, "STUN\tNo reply from " << m_serverAddress);
+    return;
   }
 
   // complete discovery
