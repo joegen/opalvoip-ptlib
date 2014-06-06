@@ -150,7 +150,7 @@ class PContainer : public PObject
        @return number of objects in container.
      */
     virtual PINDEX GetSize() const;
-    virtual PINDEX size() const { return GetSize(); }
+    __inline size_t size() const { return GetSize(); }
 
     /**Set the new current size of the container.
        The exact behavious of this is determined by the descendent class. For
@@ -185,6 +185,7 @@ class PContainer : public PObject
        @return true if <code>GetSize()</code> returns zero.
      */
     virtual PBoolean IsEmpty() const;
+    __inline bool empty() const { return IsEmpty(); }
 
     /**Determine if container is unique reference.
        Determine if this instance is the one and only reference to the
@@ -490,6 +491,7 @@ class PCollection : public PContainer
     virtual PBoolean Remove(
       const PObject * obj   ///< Existing object to remove from the collection.
     ) = 0;
+    __inline void remove(const PObject * obj) { Remove(obj); }
 
     /**Remove the object at the specified ordinal index from the collection.
        If the AllowDeleteObjects option is set then the object is also deleted.
@@ -510,7 +512,7 @@ class PCollection : public PContainer
        <code>(GetSize()-1)</code> toward the first at index zero.
      */
     virtual void RemoveAll();
-    virtual void clear()  { RemoveAll(); }
+    __inline void clear()  { RemoveAll(); }
 
     /**Set the object at the specified ordinal position to the new value. This
        will overwrite the existing entry. If the AllowDeleteObjects option is
