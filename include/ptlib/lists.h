@@ -387,7 +387,7 @@ template <class T> class PList : public PAbstractList
     iterator rend()   { return iterator(); }
     iterator find(const value_type & obj) { return this->FindElement(obj, NULL); }
     void insert(const iterator & pos, value_type * obj) { this->InsertElement(pos.element, obj); }
-    void insert(const iterator & pos, const value_type & obj) { this->InsertElement(pos.element, obj->Clone()); }
+    void insert(const iterator & pos, const value_type & obj) { this->InsertElement(pos.element, obj.Clone()); }
 
     class const_iterator : public iterator_base {
       public:
