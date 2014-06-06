@@ -387,6 +387,7 @@ template <class T> class PList : public PAbstractList
     iterator rend()   { return iterator(); }
     iterator find(const value_type & obj) { return this->FindElement(obj, NULL); }
     void insert(const iterator & pos, value_type * obj) { this->InsertElement(pos.element, obj); }
+    void insert(const iterator & pos, const value_type & obj) { this->InsertElement(pos.element, obj->Clone()); }
 
     class const_iterator : public iterator_base {
       public:
@@ -411,6 +412,8 @@ template <class T> class PList : public PAbstractList
     value_type & back() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->tail)->data); }
     void erase(const iterator & it) { this->RemoveElement(it.element); }
     void erase(const const_iterator & it) { this->RemoveElement(it.element); }
+    __inline void pop_front() { this->RemoveHead(); }
+    __inline void pop_back() { this->RemoveTail(); }
   //@}
 
   /**@name New functions for class */
@@ -623,6 +626,7 @@ template <class T> class PStack : public PAbstractList
     virtual void Push(
       T * obj    ///< Object to add to the stack.
     ) { PAbstractList::Prepend(obj); }
+    __inline void push(T * obj) { Push(obj); }
 
     /**Remove the last object pushed onto the stack.
 
@@ -631,6 +635,7 @@ template <class T> class PStack : public PAbstractList
      */
     virtual T * Pop()
       { return dynamic_cast<T *>(PAbstractList::RemoveHead()); }
+    __inline void pop() { Pop(); }
 
     /**Get the element that is currently on top of the stack without removing
        it.
@@ -640,6 +645,7 @@ template <class T> class PStack : public PAbstractList
      */
     virtual T & Top()
       { PAssert(this->GetSize() > 0, PStackEmpty); return dynamic_cast<T &>(*this->info->head->data); }
+    __inline T & front() { Top(); }
   //@}
 
   protected:
@@ -1085,6 +1091,8 @@ template <class T> class PSortedList : public PAbstractSortedList
 
     void erase(const iterator & it)       { PAssert(this == it.m_list, PLogicError); this->RemoveElement(it.m_element); }
     void erase(const const_iterator & it) { PAssert(this == it.m_list, PLogicError); this->RemoveElement(it.m_element); }
+    void pop_front() { erase(begin()); }
+    void pop_back() { erase(rbegin()); }
   //@}
 
   protected:
