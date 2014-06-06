@@ -239,13 +239,13 @@ class PMonitoredSockets : public PSafeObject
     ) = 0;
 
     /// Indicate if the socket(s) are open and ready for reads/writes.
-    PBoolean IsOpen() const { return opened; }
+    PBoolean IsOpen() const { return m_opened; }
 
     /// Close all socket(s)
     virtual PBoolean Close() = 0;
 
     /// Return the local port number being used by the socket(s)
-    WORD GetPort() const { return localPort; }
+    WORD GetPort() const { return m_localPort; }
 
     /// Get the local address for the given interface.
     virtual PBoolean GetAddress(
@@ -371,14 +371,14 @@ class PMonitoredSockets : public PSafeObject
       BundleParams & param
     );
 
-    WORD          localPort;
-    bool          reuseAddress;
+    WORD          m_localPort;
+    bool          m_reuseAddress;
 #if P_NAT
-    PNatMethods * natMethods;
+    PNatMethods * m_natMethods;
 #endif
 
-    bool          opened;
-    PUDPSocket    interfaceAddedSignal;
+    bool          m_opened;
+    PUDPSocket    m_interfaceAddedSignal;
 };
 
 typedef PSafePtr<PMonitoredSockets> PMonitoredSocketsPtr;
@@ -441,12 +441,19 @@ class PMonitoredSocketChannel : public PChannel
       WORD & port,                  ///< Port listening on
       bool usingNAT                 ///< Require NAT address/port
     );
+    bool GetLocal(
+      PIPSocket::AddressAndPort & ap, ///< IP address and port of local interface
+      bool usingNAT                 ///< Require NAT address/port
+    );
 
     /// Set the remote address/port for all Write() functions
     void SetRemote(
       const PIPSocket::Address & address, ///< Remote IP address
       WORD port                           ///< Remote port number
-    );
+    ) { m_remoteAP.SetAddress(address, port); }
+    void SetRemote(
+      const PIPSocket::AddressAndPort & ap ///< Remote IP address and port
+    ) { m_remoteAP = ap; }
 
     /// Set the remote address/port for all Write() functions
     void SetRemote(
@@ -457,7 +464,10 @@ class PMonitoredSocketChannel : public PChannel
     void GetRemote(
       PIPSocket::Address & addr,  ///< Remote IP address
       WORD & port                 ///< Remote port number
-    ) const { addr = remoteAddress; port = remotePort; }
+    ) const { addr = m_remoteAP.GetAddress(); port = m_remoteAP.GetPort(); }
+    void GetRemote(
+      PIPSocketAddressAndPort & ap  ///< Remote IP address and port
+    ) const { ap = m_remoteAP; }
 
     /** Set flag for receiving UDP data from any remote address. If the flag
         is false then data received from anything other than the configured
@@ -465,36 +475,37 @@ class PMonitoredSocketChannel : public PChannel
       */
     void SetPromiscuous(
       bool flag   ///< New flag
-    ) { promiscuousReads = flag; }
+    ) { m_promiscuousReads = flag; }
 
     /// Get flag for receiving UDP data from any remote address
-    bool GetPromiscuous() { return promiscuousReads; }
+    bool GetPromiscuous() { return m_promiscuousReads; }
 
     /// Get the IP address and port of the last received UDP data.
     void GetLastReceived(
       PIPSocket::Address & addr,  ///< Remote IP address
       WORD & port                 ///< Remote port number
-    ) const { addr = lastReceivedAddress; port = lastReceivedPort; }
+    ) const { addr = m_lastReceivedAP.GetAddress(); port = m_lastReceivedAP.GetPort(); }
+    void GetLastReceived(
+      PIPSocketAddressAndPort & ap  ///< Remote IP address and port
+    ) const { ap = m_lastReceivedAP; }
 
     /// Get the interface the last received UDP data was recieved on.
-    PString GetLastReceivedInterface() const { return lastReceivedInterface; }
+    PString GetLastReceivedInterface() const { return m_lastReceivedInterface; }
 
     /// Get the monitored socket bundle being used by this channel.
-    const PMonitoredSocketsPtr & GetMonitoredSockets() const { return socketBundle; }
+    const PMonitoredSocketsPtr & GetMonitoredSockets() const { return m_socketBundle; }
   //@}
 
   protected:
-    PMonitoredSocketsPtr socketBundle;
-    bool                 sharedBundle;
-    PString              currentInterface;
-    bool                 promiscuousReads;
-    PIPSocket::Address   remoteAddress;
-    bool                 closing;
-    WORD                 remotePort;
-    PIPSocket::Address   lastReceivedAddress;
-    WORD                 lastReceivedPort;
-    PString              lastReceivedInterface;
-    PMutex               mutex;
+    PMonitoredSocketsPtr    m_socketBundle;
+    bool                    m_sharedBundle;
+    PString                 m_currentInterface;
+    bool                    m_promiscuousReads;
+    bool                    m_closing;
+    PIPSocketAddressAndPort m_remoteAP;
+    PIPSocketAddressAndPort m_lastReceivedAP;
+    PString                 m_lastReceivedInterface;
+    PMutex                  m_mutex;
 };
 
 
