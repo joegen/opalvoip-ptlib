@@ -1424,7 +1424,7 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
     if (adjust)
       AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle);
 
-    PTRACE(4, "SetWindowPos: t" << rect.left << 'x' << rect.top << ".." << rect.right-rect.left << 'x' << rect.bottom-rect.top << ')');
+    PTRACE(4, "SetWindowPos: pos=" << rect.left << 'x' << rect.top << " size=" << rect.right-rect.left << 'x' << rect.bottom-rect.top);
     ::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, flags);
   }
 
