@@ -1018,19 +1018,30 @@ void PCLI::ShowHelp(Context & context, const PArgList & partial)
       else {
         context << left << setw(maxCommandLength) << cmd->m_command << "   ";
 
-        PStringArray lines;
-        if (cmd->m_help.IsEmpty())
-          context << GetCommandUsagePrefix(); // Earlier conditon says must have usage
-        else {
-          lines = cmd->m_help.Lines();
-          context << lines[0];
-          for (i = 1; i < lines.GetSize(); ++i)
-            context << '\n' << setw(maxCommandLength+3) << ' ' << lines[i];
+        Commands_t::const_iterator duplicate;
+        for (duplicate = m_commands.begin(); duplicate != cmd; ++duplicate) {
+          if (duplicate->m_notifier.IsNULL() ? (duplicate->m_variable == cmd->m_variable)
+                                             : (duplicate->m_notifier == cmd->m_notifier))
+            break;
         }
 
-        lines = cmd->m_usage.Lines();
-        for (i = 0; i < lines.GetSize(); ++i)
-          context << '\n' << setw(maxCommandLength+5) << ' ' << lines[i];
+        if (duplicate != cmd)
+          context << "Synonym for command \"" << duplicate->m_command << '"';
+        else {
+          PStringArray lines;
+          if (cmd->m_help.IsEmpty())
+            context << GetCommandUsagePrefix(); // Earlier conditon says must have usage
+          else {
+            lines = cmd->m_help.Lines();
+            context << lines[0];
+            for (i = 1; i < lines.GetSize(); ++i)
+              context << '\n' << setw(maxCommandLength+3) << ' ' << lines[i];
+          }
+
+          lines = cmd->m_usage.Lines();
+          for (i = 0; i < lines.GetSize(); ++i)
+            context << '\n' << setw(maxCommandLength+5) << ' ' << lines[i];
+        }
       }
       context << '\n';
     }
