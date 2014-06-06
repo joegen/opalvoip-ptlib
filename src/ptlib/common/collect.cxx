@@ -412,8 +412,10 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
 
 void PAbstractList::InsertElement(PListElement * element, PObject * obj)
 {
-  if (element == NULL)
+  if (element == NULL) {
     Append(obj);
+    return;
+  }
 
   Element * newElement = new Element(obj);
   if (element->prev != NULL)
