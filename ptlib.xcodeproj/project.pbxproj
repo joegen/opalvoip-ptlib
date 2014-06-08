@@ -346,12 +346,14 @@
 		A3981AB717216EAA00871F96 /* ptlib.pc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib.pc; sourceTree = SOURCE_ROOT; };
 		A3981AB817216EAB00871F96 /* ptlib.pc.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ptlib.pc.in; sourceTree = SOURCE_ROOT; };
 		A3DD3BDE17182B7D007D5F24 /* macaudio.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macaudio.mm; sourceTree = "<group>"; };
+		A3EDF81A1942FFA900EDE702 /* ptlib_wx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ptlib_wx.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		A31D2AB217167FF600C588F9 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				A3EDF81A1942FFA900EDE702 /* ptlib_wx.h */,
 				A31D2BD917167FF700C588F9 /* ptlib.h */,
 				A31D2AB417167FF600C588F9 /* ptlib_config.h.in */,
 				A31D2AB317167FF600C588F9 /* ptlib_config.h */,
