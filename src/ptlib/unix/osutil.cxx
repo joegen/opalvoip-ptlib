@@ -306,7 +306,11 @@ PTimeInterval PTimer::Tick()
 #if defined(_POSIX_MONOTONIC_CLOCK) && !defined(P_MACOSX)
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  return ts.tv_sec*1000LL + ts.tv_nsec/1000000LL;
+  int64_t tick = ts.tv_sec;
+  tick *= 1000; // Convert to milliseconds
+  tick += ts.tv_nsec/1000000ULL;
+	PAssert(tick > 0, "PTimer::Tick() wrap around issue!");
+  return tick;
 #else
   #warning System does not have clock_gettime with CLOCK_MONOTONIC, using gettimeofday
   struct timeval tv;
