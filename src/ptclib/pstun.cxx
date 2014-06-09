@@ -604,24 +604,29 @@ bool PSTUNMessage::Read(PUDPSocket & socket)
   return true;
 }
 
+
 bool PSTUNMessage::Write(PUDPSocket & socket) const
 {
   PIPSocketAddressAndPort ap;
   socket.PUDPSocket::InternalGetSendAddress(ap);
   return Write(socket, ap);
 }
-  
+
+
 bool PSTUNMessage::Write(PUDPSocket & socket, const PIPSocketAddressAndPort & ap) const
 {
   int len = sizeof(PSTUNMessageHeader) + ((PSTUNMessageHeader *)theArray)->msgLength;
   PUDPSocket::Slice slice(theArray, len);
-  if (socket.PUDPSocket::InternalWriteTo(&slice, 1, ap))
+  if (socket.PUDPSocket::InternalWriteTo(&slice, 1, ap)) {
+    PTRACE(5, "STUN", "Writing " << *this << ", dst=" << ap << " if=" << socket.PUDPSocket::GetLocalAddress());
     return true;
+  }
 
   PTRACE(2, "STUN\tError writing to " << socket.GetSendAddress()
          << " - " << socket.GetErrorText(PChannel::LastWriteError));
   return false;
 }
+
 
 bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDEX pollRetries)
 {
@@ -997,6 +1002,8 @@ void PSTUNUDPSocket::GetCandidateInfo(PNatCandidate & candidate)
 
 bool PSTUNUDPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
 {
+  if (!m_serverReflexiveAddress.IsValid())
+    return PNATUDPSocket::InternalGetLocalAddress(addr);
   addr = m_serverReflexiveAddress;
   return true;
 }
