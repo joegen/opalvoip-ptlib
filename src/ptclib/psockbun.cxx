@@ -420,13 +420,13 @@ void PInterfaceMonitor::OnInterfacesChanged(const PIPSocket::InterfaceTable & ad
 //////////////////////////////////////////////////
 
 PMonitoredSockets::PMonitoredSockets(bool reuseAddr P_NAT_PARAM(PNatMethods * nat))
-  : localPort(0)
-  , reuseAddress(reuseAddr)
+  : m_localPort(0)
+  , m_reuseAddress(reuseAddr)
 #if P_NAT
-  , natMethods(nat)
+  , m_natMethods(nat)
 #endif
-  , opened(false)
-  , interfaceAddedSignal(localPort, PIPSocket::GetDefaultIpAddressFamily())
+  , m_opened(false)
+  , m_interfaceAddedSignal(m_localPort, PIPSocket::GetDefaultIpAddressFamily())
 {
 }
 
@@ -449,14 +449,14 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   info.socket = NULL;
   
 #if P_NAT
-  if (natMethods != NULL) {
-    PNatMethod * natMethod = natMethods->GetMethod(binding, this);
+  if (m_natMethods != NULL) {
+    PNatMethod * natMethod = m_natMethods->GetMethod(binding, this);
     if (natMethod) {
       PIPSocket::Address address;
       WORD port;
       natMethod->GetServerAddress(address, port);
       if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
-        if (natMethod->CreateSocket(info.socket, binding, localPort)) {
+        if (natMethod->CreateSocket(info.socket, binding, m_localPort)) {
           info.socket->PUDPSocket::GetLocalAddress(address, port);
           PTRACE(4, "Created bundled UDP socket via " << natMethod->GetMethodName()
                  << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
@@ -467,8 +467,8 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   }
 #endif
 
-  info.socket = new PUDPSocket(localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
-  if (info.socket->Listen(binding, 0, localPort, reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
+  info.socket = new PUDPSocket(m_localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
+  if (info.socket->Listen(binding, 0, m_localPort, m_reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
     PTRACE(4, "Created bundled UDP socket " << binding << ':' << info.socket->GetPort());
     int sz = 0;
     if (info.socket->GetOption(SO_RCVBUF, sz) && sz < UDP_BUFFER_SIZE) {
@@ -482,7 +482,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   }
 
   PTRACE(1, "Could not listen on "
-         << binding << ':' << localPort
+         << binding << ':' << m_localPort
          << " - " << info.socket->GetErrorText());
   delete info.socket;
   info.socket = NULL;
@@ -568,7 +568,7 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
 
   param.m_errorCode = PSocket::Select(readers, param.m_timeout);
 
-  if (!LockReadWrite() || !opened) {
+  if (!LockReadWrite() || !m_opened) {
     param.m_errorCode = PChannel::NotOpen;  // Closed, break out
     return;
   }
@@ -578,8 +578,8 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
       break;
 
     case PChannel::NotOpen : // Interface went down
-      if (!interfaceAddedSignal.IsOpen()) {
-        interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
+      if (!m_interfaceAddedSignal.IsOpen()) {
+        m_interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
         param.m_errorCode = PChannel::Interrupted;
         PTRACE(4, "Interfaces changed");
         return;
@@ -647,7 +647,7 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
       sockets += *socket;
       inUse = true;
     }
-    sockets += bundle.interfaceAddedSignal;
+    sockets += bundle.m_interfaceAddedSignal;
 
     PUDPSocket * socket;
     bundle.ReadFromSocketList(sockets, socket, param);
@@ -682,27 +682,25 @@ PMonitoredSockets * PMonitoredSockets::Create(const PString & iface, bool reuseA
 //////////////////////////////////////////////////
 
 PMonitoredSocketChannel::PMonitoredSocketChannel(const PMonitoredSocketsPtr & sock, bool shared)
-  : socketBundle(sock)
-  , sharedBundle(shared)
-  , promiscuousReads(false)
-  , closing(false)
-  , remotePort(0)
-  , lastReceivedAddress(PIPSocket::GetDefaultIpAny())
-  , lastReceivedPort(0)
+  : m_socketBundle(sock)
+  , m_sharedBundle(shared)
+  , m_promiscuousReads(false)
+  , m_closing(false)
+  , m_lastReceivedAP(PIPSocket::GetDefaultIpAny())
 {
 }
 
 
 PBoolean PMonitoredSocketChannel::IsOpen() const
 {
-  return !closing && socketBundle != NULL && socketBundle->IsOpen();
+  return !m_closing && m_socketBundle != NULL && m_socketBundle->IsOpen();
 }
 
 
 PBoolean PMonitoredSocketChannel::Close()
 {
-  closing = true;
-  return sharedBundle || socketBundle == NULL || socketBundle->Close();
+  m_closing = true;
+  return m_sharedBundle || m_socketBundle == NULL || m_socketBundle->Close();
 }
 
 
@@ -712,28 +710,27 @@ PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
     return false;
 
   do {
-    lastReceivedInterface = GetInterface();
+    m_lastReceivedInterface = GetInterface();
     PMonitoredSockets::BundleParams param;
     param.m_buffer = buffer;
     param.m_length = length;
     param.m_timeout = readTimeout;
-    socketBundle->ReadFromBundle(param);
-    lastReceivedAddress = param.m_addr;
-    lastReceivedPort = param.m_port;
-    lastReceivedInterface = param.m_iface;
+    m_socketBundle->ReadFromBundle(param);
+    m_lastReceivedAP.SetAddress(param.m_addr, param.m_port);
+    m_lastReceivedInterface = param.m_iface;
     lastReadCount = param.m_lastCount;
     if (!SetErrorValues(param.m_errorCode, param.m_errorNumber, LastReadError))
       return false;
 
-    if (promiscuousReads)
+    if (m_promiscuousReads)
       return true;
 
-    if (remoteAddress.IsAny())
-      remoteAddress = lastReceivedAddress;
-    if (remotePort == 0)
-      remotePort = lastReceivedPort;
+    if (m_remoteAP.GetAddress().IsAny())
+      m_remoteAP.SetAddress(m_lastReceivedAP.GetAddress());
+    if (m_remoteAP.GetPort() == 0)
+      m_remoteAP.SetPort(m_lastReceivedAP.GetPort());
 
-  } while (remoteAddress != lastReceivedAddress || remotePort != lastReceivedPort);
+  } while (m_remoteAP != m_lastReceivedAP);
   return true;
 }
 
@@ -746,11 +743,11 @@ PBoolean PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
   PMonitoredSockets::BundleParams param;
   param.m_buffer = (void *)buffer;
   param.m_length = length;
-  param.m_addr = remoteAddress;
-  param.m_port = remotePort;
+  param.m_addr = m_remoteAP.GetAddress();
+  param.m_port = m_remoteAP.GetPort();
   param.m_iface = GetInterface();
   param.m_timeout = readTimeout;
-  socketBundle->WriteToBundle(param);
+  m_socketBundle->WriteToBundle(param);
   lastWriteCount = param.m_lastCount;
   return SetErrorValues(param.m_errorCode, param.m_errorNumber, LastWriteError);
 }
@@ -758,18 +755,18 @@ PBoolean PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
 
 void PMonitoredSocketChannel::SetInterface(const PString & iface)
 {
-  mutex.Wait();
+  m_mutex.Wait();
 
   PIPSocket::InterfaceEntry info;
-  if (socketBundle != NULL && socketBundle->GetInterfaceInfo(iface, info))
-    currentInterface = MakeInterfaceDescription(info);
+  if (m_socketBundle != NULL && m_socketBundle->GetInterfaceInfo(iface, info))
+    m_currentInterface = MakeInterfaceDescription(info);
   else
-    currentInterface = iface;
+    m_currentInterface = iface;
 
-  if (lastReceivedInterface.IsEmpty())
-    lastReceivedInterface = currentInterface;
+  if (m_lastReceivedInterface.IsEmpty())
+    m_lastReceivedInterface = m_currentInterface;
 
-  mutex.Signal();
+  m_mutex.Signal();
 }
 
 
@@ -777,15 +774,15 @@ PString PMonitoredSocketChannel::GetInterface()
 {
   PString iface;
 
-  mutex.Wait();
+  m_mutex.Wait();
 
-  if (currentInterface.Find('%') == P_MAX_INDEX)
-    SetInterface(currentInterface);
+  if (m_currentInterface.Find('%') == P_MAX_INDEX)
+    SetInterface(m_currentInterface);
 
-  iface = currentInterface;
+  iface = m_currentInterface;
   iface.MakeUnique();
 
-  mutex.Signal();
+  m_mutex.Signal();
 
   return iface;
 }
@@ -793,26 +790,26 @@ PString PMonitoredSocketChannel::GetInterface()
 
 bool PMonitoredSocketChannel::GetLocal(PIPSocket::Address & address, WORD & port, bool usingNAT)
 {
-  return socketBundle->GetAddress(GetInterface(), address, port, usingNAT);
+  return m_socketBundle->GetAddress(GetInterface(), address, port, usingNAT);
 }
 
 
-void PMonitoredSocketChannel::SetRemote(const PIPSocket::Address & address, WORD port)
+bool PMonitoredSocketChannel::GetLocal(PIPSocket::AddressAndPort & ap, bool usingNAT)
 {
-  remoteAddress = address;
-  remotePort = port;
+  PIPAddress ip;
+  WORD port;
+  if (!m_socketBundle->GetAddress(GetInterface(), ip, port, usingNAT))
+    return false;
+
+  ap.SetAddress(ip);
+  ap.SetPort(port);
+  return true;
 }
 
 
 void PMonitoredSocketChannel::SetRemote(const PString & hostAndPort)
 {
-  PINDEX colon = hostAndPort.Find(':');
-  if (colon == P_MAX_INDEX)
-    remoteAddress = hostAndPort;
-  else {
-    remoteAddress = hostAndPort.Left(colon);
-    remotePort = PIPSocket::GetPortByService("udp", hostAndPort.Mid(colon+1));
-  }
+  m_remoteAP.Parse(hostAndPort, 0, ':', "udp");
 }
 
 
@@ -859,12 +856,12 @@ PBoolean PMonitoredSocketBundle::Open(WORD port)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (IsOpen() && localPort != 0  && localPort == port)
+  if (IsOpen() && m_localPort != 0  && m_localPort == port)
     return true;
 
-  opened = true;
+  m_opened = true;
 
-  localPort = port;
+  m_localPort = port;
 
   // Close and re-open all sockets
   while (!m_socketInfoMap.empty())
@@ -883,11 +880,11 @@ PBoolean PMonitoredSocketBundle::Close()
   if (!LockReadWrite())
     return false;
 
-  opened = false;
+  m_opened = false;
 
   while (!m_socketInfoMap.empty())
     CloseSocket(m_socketInfoMap.begin());
-  interfaceAddedSignal.Close(); // Fail safe break out of Select()
+  m_interfaceAddedSignal.Close(); // Fail safe break out of Select()
 
   UnlockReadWrite();
 
@@ -910,7 +907,7 @@ PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
   }
 
   address = PIPSocket::Address::GetAny(m_ipVersion);
-  port = localPort;
+  port = m_localPort;
   return false;
 }
 
@@ -938,10 +935,10 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
 
   SocketInfo info;
   if (CreateSocket(info, binding)) {
-    if (localPort == 0) {
+    if (m_localPort == 0) {
       PIPSocketAddressAndPort addrAndPort;
       info.socket->PUDPSocket::InternalGetLocalAddress(addrAndPort);
-      localPort = addrAndPort.GetPort();
+      m_localPort = addrAndPort.GetPort();
     }
     m_socketInfoMap[iface] = info;
   }
@@ -988,7 +985,7 @@ void PMonitoredSocketBundle::WriteToBundle(BundleParams & param)
 
 void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
 {
-  if (!opened || !LockReadWrite()) {
+  if (!m_opened || !LockReadWrite()) {
     param.m_errorCode = PChannel::NotOpen;
     return;
   }
@@ -1010,7 +1007,7 @@ void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
           iter->second.inUse = true;
         }
       }
-      readers += interfaceAddedSignal;
+      readers += m_interfaceAddedSignal;
 
       PUDPSocket * socket;
       ReadFromSocketList(readers, socket, param);
@@ -1037,13 +1034,13 @@ void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
 
 void PMonitoredSocketBundle::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMonitor::InterfaceChange entry)
 {
-  if (!opened || !LockReadWrite())
+  if (!m_opened || !LockReadWrite())
     return;
 
   if (entry.m_added) {
     OpenSocket(MakeInterfaceDescription(entry));
     PTRACE(3, "UDP socket bundle has added interface " << entry);
-    interfaceAddedSignal.Close();
+    m_interfaceAddedSignal.Close();
   }
   else {
     CloseSocket(m_socketInfoMap.find(MakeInterfaceDescription(entry)));
@@ -1090,14 +1087,14 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (opened && localPort == port && m_info.socket != NULL && m_info.socket->IsOpen())
+  if (m_opened && m_localPort == port && m_info.socket != NULL && m_info.socket->IsOpen())
     return true;
 
   Close();
 
-  opened = true;
+  m_opened = true;
 
-  localPort = port;
+  m_localPort = port;
 
   if (!m_entry.GetAddress().IsValid() && !GetInterfaceInfo(m_interface, m_entry)) {
     PTRACE(3, "Not creating socket as interface \"" << m_entry.GetName() << "\" is  not up.");
@@ -1107,7 +1104,7 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
   if (!CreateSocket(m_info, m_entry.GetAddress()))
     return false;
     
-  localPort = m_info.socket->PUDPSocket::GetPort();
+  m_localPort = m_info.socket->PUDPSocket::GetPort();
   return true;
 }
 
@@ -1116,11 +1113,11 @@ PBoolean PSingleMonitoredSocket::Close()
 {
   PSafeLockReadWrite guard(*this);
 
-  if (!opened)
+  if (!m_opened)
     return true;
 
-  opened = false;
-  interfaceAddedSignal.Close(); // Fail safe break out of Select()
+  m_opened = false;
+  m_interfaceAddedSignal.Close(); // Fail safe break out of Select()
   return DestroySocket(m_info);
 }
 
@@ -1149,7 +1146,7 @@ void PSingleMonitoredSocket::WriteToBundle(BundleParams & param)
 
 void PSingleMonitoredSocket::ReadFromBundle(BundleParams & param)
 {
-  if (!opened || !LockReadWrite()) {
+  if (!m_opened || !LockReadWrite()) {
     param.m_errorCode = PChannel::NotOpen;
     return;
   }
@@ -1168,7 +1165,7 @@ void PSingleMonitoredSocket::ReadFromBundle(BundleParams & param)
 void PSingleMonitoredSocket::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMonitor::InterfaceChange entry)
 {
   PSafeLockReadWrite guard(*this);
-  if (!guard.IsLocked() || !opened)
+  if (!guard.IsLocked() || !m_opened)
     return;
 
   if (entry.m_added) {
@@ -1179,10 +1176,10 @@ void PSingleMonitoredSocket::OnInterfaceChange(PInterfaceMonitor &, PInterfaceMo
 
     if ((!addr.IsValid() || entry.GetAddress() == addr) && entry.GetName().NumCompare(name) == EqualTo) {
       m_entry = entry;
-      if (!Open(localPort))
+      if (!Open(m_localPort))
         m_entry = InterfaceEntry();
       else {
-        interfaceAddedSignal.Close();
+        m_interfaceAddedSignal.Close();
         PTRACE(3, "Bound UDP socket UP event on interface " << m_entry);
       }
     }
