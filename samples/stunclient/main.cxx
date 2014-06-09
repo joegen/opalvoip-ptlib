@@ -48,49 +48,26 @@ StunClient::StunClient()
 void StunClient::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("-turn."
-             "-username:"
-             "-password:"
-             "-realm:"
-             "-portbase:"
-             "-portmax:"
-             "-pairbase:"
-             "-pairmax:"
-#if PTRACING
-             "t-trace."
-             "o-output:"
-#endif
-             "V-version."
-  );
+  if (!args.Parse("-turn. Use TURN instead of STUN\n"
+                  "-username: TURN Authorisation username\n"
+                  "-password: TURN Authorisation password\n"
+                  "-realm: TURN Authorisation realm\n"
+                  "-interface: Local network interface to use\n"
+                  "-portbase: Port base for sockets\n"
+                  "-portmax: Port maximum for sockets\n"
+                  "-pairbase: Port base for socket pairs\n"
+                  "-pairmax: Port maximum for socket pairs\n"
+                  PTRACE_ARGLIST
+                  "V-version. Output version\n")) {
+    args.Usage(cerr, "[ <options> ... ] <stun-server>");
+    return;
+  }
 
-#if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-                     PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-#endif
+  PTRACE_INITIALISE(args);
 
   if (args.HasOption('V')) {
     cout << GetName() << " version " << GetVersion() << endl;
     return;
-  }
-
-  if (args.GetCount() == 0) {
-    cerr << "usage: " << GetFile().GetTitle() << " [options] stunserver\n"
-            "options:\n"
-            "  --turn           Use TURN instead of STUN\n"
-            "  --username name  TURN Authorisation username\n"
-            "  --password pass  TURN Authorisation password\n"
-            "  --realm id       TURN Authorisation realm\n"
-            "  --portbase n     Port base for sockets\n"
-            "  --portmax n      Port maximum for sockets\n"
-            "  --pairbase n     Port base for socket pairs\n"
-            "  --pairmax n      Port maximum for socket pairs\n"
-#if PTRACING
-            " -t --trace         Trace log level\n"
-            " -o --output fn     Output trace log to fn\n"
-#endif
-            " -V --version       Output version\n";
-      return;
   }
 
   PString methodName = args.HasOption("turn") ? "TURN" : "STUN";
@@ -110,6 +87,11 @@ void StunClient::Main()
 
   if (!nat->SetServer(args[0])) {
     cerr << "Cannot set server \"" << args[0] << "\" for " << methodName << endl;
+    return;
+  }
+
+  if (!nat->Open(PIPAddress(args.GetOptionString("interface", "0.0.0.0")))) {
+    cerr << "Cannot open server \"" << args[0] << "\" for " << methodName << endl;
     return;
   }
 
