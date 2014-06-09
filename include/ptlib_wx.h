@@ -61,5 +61,11 @@
 #endif
 
 
+// Allow for older versions of wxWidgets
+#ifndef wxIMPLEMENT_APP
+  #define wxIMPLEMENT_APP(app) IMPLEMENT_APP(app)
+#endif
+
+
 #endif // _PTLIB_WX_H
 
