@@ -14819,7 +14819,6 @@ EXPORTS
     ?clear@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QEAAXXZ @25424 NONAME
     ?Clear@PASN_BitString@@QEAAXI@Z @14431 NONAME
     ?Clear@PCLICursesWindow@@UEAAXXZ @25425 NONAME
-    ?clear@PCollection@@UEAAXXZ @25426 NONAME
     ?Clear@PSystemLogToFile@@QEAA_NXZ @25427 NONAME
     ?ClearAuthority@PHTTPResource@@QEAAXXZ @14432 NONAME
     ?ClearBreak@PSerialChannel@@QEAAXXZ @14433 NONAME
@@ -18073,6 +18072,7 @@ EXPORTS
     ?GetLibVersion@PProcess@@SA?AVPString@@XZ @17593 NONAME
     ?GetLifetime@PTURNLifetime@@QEBAKXZ @17594 NONAME
     ?GetLocal@PMonitoredSocketChannel@@QEAA_NAEAVAddress@PIPSocket@@AEAG_N@Z @17595 NONAME
+    ?GetLocal@PMonitoredSocketChannel@@QEAA_NAEAVAddressAndPort@PIPSocket@@_N@Z @28549 NONAME
     ?GetLocalAddress@PIPSocket@@QEBA?AVPString@@XZ @25889 NONAME
     ?GetLocalAddress@PIPSocket@@QEBA_NAEAVAddress@1@@Z @25890 NONAME
     ?GetLocalAddress@PIPSocket@@QEBA_NAEAVAddress@1@AEAG@Z @25891 NONAME
@@ -18182,6 +18182,7 @@ EXPORTS
     ?GetNID@X509_Name@PSSLCertificate@@QEBA?AVPString@@H@Z @17702 NONAME
     ?GetNoCarrierString@PModem@@QEBA?AVPString@@XZ @17703 NONAME
     ?GetNoHistoryError@PCLI@@QEBAAEBVPString@@XZ @17704 NONAME
+    ?GetNoScriptError@PCLI@@QEBAAEBVPString@@XZ @28550 NONAME
     ?GetNotifier@PTimer@@QEBAAEBV?$PNotifierTemplate@_J@@XZ @17705 NONAME
     ?GetNotify@PSSDP@@QEAA_NAEAVPMIMEInfo@@AEBVPString@@@Z @17706 NONAME
     ?GetNumBits@PSSLDiffieHellman@@QEBA_KXZ @25915 NONAME
@@ -18413,6 +18414,7 @@ EXPORTS
     ?GetSarWidth@PVideoFrameInfo@@UEBAIXZ @17928 NONAME
     ?GetScheme@PURL@@QEBAAEBVPCaselessString@@XZ @17929 NONAME
     ?GetScreenSize@PCLICurses@@QEAAXAEAI0@Z @25942 NONAME
+    ?GetScriptCommand@PCLI@@QEBAAEBVPCaselessString@@XZ @28551 NONAME
     ?GetSecond@PTime@@QEBAHXZ @17930 NONAME
     ?GetSeconds@PTimeInterval@@QEBAJXZ @17931 NONAME
     ?GetSections@PConfig@@UEBA?AVPStringArray@@XZ @17932 NONAME
@@ -21913,7 +21915,6 @@ EXPORTS
     ?SetReal@PConfig@@UEAAXAEBVPString@@N@Z @21273 NONAME
     ?SetReal@PStringOptions@@QEAAXAEBVPCaselessString@@NH@Z @21274 NONAME
     ?SetRefreshInterval@PInterfaceMonitor@@QEAAXI@Z @21275 NONAME
-    ?SetRemote@PMonitoredSocketChannel@@QEAAXAEBVAddress@PIPSocket@@G@Z @21276 NONAME
     ?SetRemote@PMonitoredSocketChannel@@QEAAXAEBVPString@@@Z @21277 NONAME
     ?SetRenderFrameSize@PVideoChannel@@UEAAXHH@Z @21278 NONAME
     ?SetRenderFrameSize@PVideoChannel@@UEAAXHHHH@Z @21279 NONAME
@@ -22156,7 +22157,6 @@ EXPORTS
     ?size@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@UExtendedType@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@UExtendedType@2@@std@@@5@$0A@@std@@@std@@QEBA_KXZ @21512 NONAME
     ?size@?$_Tree@V?$_Tmap_traits@VToken@PvCard@@VParamValues@2@U?$less@VToken@PvCard@@@std@@V?$allocator@U?$pair@$$CBVToken@PvCard@@VParamValues@2@@std@@@5@$0A@@std@@@std@@QEBA_KXZ @21513 NONAME
     ?size@?$_Tree@V?$_Tset_traits@VPVideoFrameInfo@@U?$greater@VPVideoFrameInfo@@@std@@V?$allocator@VPVideoFrameInfo@@@3@$0A@@std@@@std@@QEBA_KXZ @26437 NONAME
-    ?size@PContainer@@UEBA_KXZ @26438 NONAME
     ?skipws@?$_Iosb@H@std@@2W4_Fmtflags@12@B @21516 NONAME
     ?Sleep@PThread@@SAXAEBVPTimeInterval@@@Z @21517 NONAME
     ?SmallUnsignedDecode@PPER_Stream@@QEAA_NAEAI@Z @21518 NONAME
