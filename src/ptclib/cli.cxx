@@ -384,7 +384,7 @@ bool PCLI::Context::EchoInput(char ch)
 }
 
 
-static bool CheckInternalCommand(PCaselessString & line, const PCaselessString & cmdStr)
+static bool CheckInternalCommand(PCaselessString & line, const PCaselessString & cmdStr, bool noSpaceNeeded = false)
 {
   PStringArray cmds = cmdStr.Lines();
   for (PINDEX i = 0; i < cmds.GetSize(); ++i) {
@@ -393,7 +393,7 @@ static bool CheckInternalCommand(PCaselessString & line, const PCaselessString &
       if (line.IsEmpty())
         return true;
       if (!isspace(line[0]))
-        return false;
+        return noSpaceNeeded;
       while (isspace(line[0]))
         line.Delete(0, 1);
       return true;
@@ -412,7 +412,7 @@ void PCLI::Context::OnCompletedLine()
 
   PTRACE(4, "Processing command line \"" << line << '"');
 
-  if (CheckInternalCommand(line, m_cli.GetCommentCommand()))
+  if (CheckInternalCommand(line, m_cli.GetCommentCommand(), true))
     return;
 
   if (CheckInternalCommand(line, m_cli.GetRepeatCommand())) {
@@ -545,7 +545,7 @@ PCLI::PCLI(const char * prompt)
   , m_prompt(prompt != NULL ? prompt : "CLI> ")
   , m_usernamePrompt("Username: ")
   , m_passwordPrompt("Password: ")
-  , m_commentCommand("#\n;\n//")
+  , m_commentCommand("#\n;\n//\nrem ")
   , m_exitCommand("exit\nquit")
   , m_helpCommand("?\nhelp")
   , m_helpOnHelp("\n"
