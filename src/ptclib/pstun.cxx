@@ -216,13 +216,37 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   return responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat;
 }
 
+
 void PSTUN::AppendMessageIntegrity(PSTUNMessage & message)
 {
   message.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::USERNAME, m_userName));
   message.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::REALM,    m_realm));
-  message.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::NONCE,    m_nonce));
+  if (!m_nonce.IsEmpty())
+    message.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::NONCE,  m_nonce));
   message.AddMessageIntegrity(m_password);
 }
+
+
+bool PSTUN::ValidateMessageIntegrity(const PSTUNMessage & message)
+{
+  if (!message.CheckMessageIntegrity(m_password)) {
+    PTRACE(2, "STUN\tIntegrity check failed for user=" << m_userName << ", incorrect password");
+    return false;
+  }
+
+  if (message.FindAttributeString(PSTUNAttribute::USERNAME) != m_userName) {
+    PTRACE(2, "STUN\tIntegrity check failed for user=" << m_userName << ", incorrect username");
+    return false;
+  }
+
+  if (message.FindAttributeString(PSTUNAttribute::REALM) != m_realm) {
+    PTRACE(2, "STUN\tIntegrity check failed for user=" << m_userName << ", incorrect realm");
+    return false;
+  }
+
+  return true;
+}
+
 
 int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & request, PSTUNMessage & response)
 {
@@ -237,9 +261,7 @@ int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & requ
     // reset message length
     ((PSTUNMessageHeader *)request.GetPointer())->msgLength = unauthenticatedLength;
 
-    // if we have a nonce, apply it
-    if (!m_nonce.IsEmpty())
-      AppendMessageIntegrity(request);
+    AppendMessageIntegrity(request);
 
     // send request, 
     if (!response.Poll(*socket, request, m_pollRetries)) {
@@ -590,6 +612,14 @@ PSTUNAttribute * PSTUNMessage::FindAttribute(PSTUNAttribute::Types type) const
   }
   return NULL;
 }
+
+
+PString PSTUNMessage::FindAttributeString(PSTUNAttribute::Types type, const char * dflt) const
+{
+  PSTUNStringAttribute * attr = FindAttributeAs<PSTUNStringAttribute>(type);
+  return attr != NULL ? attr->GetString() : PString(dflt);
+}
+
 
 bool PSTUNMessage::Read(PUDPSocket & socket)
 {
@@ -1099,6 +1129,12 @@ bool PSTUNClient::SetServer(const PString & server)
 #endif
 
   return InternalSetServer(PIPSocketAddressAndPort(server, DefaultPort));
+}
+
+
+void PSTUNClient::SetCredentials(const PString & username, const PString & password, const PString & realm)
+{
+  PSTUN::SetCredentials(username, password, realm);
 }
 
 
