@@ -93,6 +93,10 @@ class PSTUN {
       PSTUNMessage & message
     );
 
+    virtual bool ValidateMessageIntegrity(
+      const PSTUNMessage & message
+    );
+
     virtual void SetCredentials(
       const PString & username, 
       const PString & password, 
@@ -438,12 +442,19 @@ class PSTUNMessage : public PBYTEArray
     void SetType(MsgType newType, const BYTE * id = NULL);
     void SetErrorType(int code, const BYTE * id, const char * reason = NULL);
 
+    bool IsRequest()        const { return (GetType() & 0x0110) == 0x0000; }
+    bool IsIndication()     const { return (GetType() & 0x0110) == 0x0010; }
+    bool IsSuccessRespone() const { return (GetType() & 0x0110) == 0x0100; }
+    bool IsErrorResponse()  const { return (GetType() & 0x0110) == 0x0110; }
+
     PSTUNAttribute * AddAttribute(const PSTUNAttribute & attribute);
     PSTUNAttribute * SetAttribute(const PSTUNAttribute & attribute);
     PSTUNAttribute * FindAttribute(PSTUNAttribute::Types type) const;
 
     template <class Type> Type * FindAttributeAs(PSTUNAttribute::Types type) const
     { return static_cast<Type *>(FindAttribute(type)); }
+
+    PString FindAttributeString(PSTUNAttribute::Types type, const char * dflt = NULL) const;
 
     bool Read(PUDPSocket & socket);
     bool Write(PUDPSocket & socket) const;
@@ -494,6 +505,14 @@ class PSTUNClient : public PNatMethod, public PSTUN
       */
     bool SetServer(
       const PString & server
+    );
+
+    /**Set the authentication credentials.
+      */
+    virtual void SetCredentials(
+      const PString & username, 
+      const PString & password, 
+      const PString & realm
     );
 
     /**Get the current server address name.

@@ -229,7 +229,7 @@ class PNatMethod  : public PObject
       */
     virtual bool SetServer(const PString & server);
 
-    /**Set the authentication credientials.
+    /**Set the authentication credentials.
       */
     virtual void SetCredentials(
       const PString & username, 
