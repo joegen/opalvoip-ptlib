@@ -18,10 +18,6 @@
 #define new PNEW
 
 
-#define IS_REQUEST(msg_type)       (((msg_type) & 0x0110) == 0x0000)
-#define IS_INDICATION(msg_type)    (((msg_type) & 0x0110) == 0x0010)
-#define IS_SUCCESS_RESP(msg_type)  (((msg_type) & 0x0110) == 0x0100)
-#define IS_ERR_RESP(msg_type)      (((msg_type) & 0x0110) == 0x0110)
 
 //////////////////////////////////////////////////
 
@@ -257,19 +253,20 @@ bool PSTUNServer::Process()
 
 bool PSTUNServer::OnReceiveMessage(const PSTUNMessage & message, const PSTUNServer::SocketInfo & socketInfo)
 {
-  PSTUNMessage::MsgType type = message.GetType();
-  switch (type) {
+  switch (message.GetType()) {
     case PSTUNMessage::BindingRequest :
       return OnBindingRequest(message, socketInfo);
 
     default :
-      if (IS_REQUEST(type))
+      if (message.IsRequest())
         return OnUnknownRequest(message, socketInfo);
+
       PTRACE(2, "STUNSRVR\tUnexpected response message: " << message);
   }
 
   return false;
 }
+
 
 bool PSTUNServer::OnUnknownRequest(const PSTUNMessage & PTRACE_PARAM(request), const PSTUNServer::SocketInfo & /*socketInfo*/)
 {
