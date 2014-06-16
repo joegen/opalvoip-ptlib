@@ -994,26 +994,21 @@ class PSSLChannelDTLS : public PSSLChannel
     */
     ~PSSLChannelDTLS();
 
-    // This need examination for cleaner API
-    bool Handshake(const BYTE * framePtr, PINDEX frameSize, bool isReceive);
+    /** Perform negotiation handshake.
+      */
+    bool ExecuteHandshake();
 
-    /// Set callback function for handshake notification
-    void SetHandshakeNotifier(
-      const PNotifier & notifier
-    );
-
-    bool HandshakeCompleted() const;
     bool IsServer() const;
     PCaselessString GetSelectedProfile() const;
-    bool GetKeyMaterial(PINDEX materialSize, PBYTEArray* result) const;
+    PBYTEArray GetKeyMaterial(
+      PINDEX materialSize,
+      const char * name
+    ) const;
 
   protected:
     virtual PBoolean OnOpen();
     virtual bool InternalAccept();
     virtual bool InternalConnect();
-
-    class Implementation;
-    Implementation * m_imp;
 };
 
 
