@@ -288,7 +288,7 @@ PBoolean PHTTPServer::ProcessCommand()
   // make sure the form info is reset for each new operation
   connectInfo.ResetMultipartFormInfo();
 
-  PTRACE(5, "HTTPServer\tTransaction " << connectInfo.commandCode << ' ' << connectInfo.GetURL());
+  PTRACE(5, "HTTPServer\tTransaction " << connectInfo.GetCommandName() << " \"" << args << "\" url=" << connectInfo.GetURL());
 
   if (connectInfo.IsWebSocket()) {
     if (!OnWebSocket(connectInfo))
