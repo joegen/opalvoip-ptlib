@@ -20935,6 +20935,7 @@ EXPORTS
     ?GetCommandCode@PHTTPConnectionInfo@@QBE?AW4Commands@PHTTP@@XZ @20233 NONAME
     ?GetCommandErrorPrefix@PCLI@@QBEABVPString@@XZ @20234 NONAME
     ?GetCommandName@PArgList@@QBEABVPString@@XZ @20235 NONAME
+    ?GetCommandName@PHTTPConnectionInfo@@QBEABVPString@@XZ @32192 NONAME
     ?GetCommandUsagePrefix@PCLI@@QBEABVPString@@XZ @20236 NONAME
     ?GetCommentCommand@PCLI@@QBEABVPCaselessString@@XZ @20237 NONAME
     ?GetCommonName@X509_Name@PSSLCertificate@@QBE?AVPString@@XZ @20238 NONAME
