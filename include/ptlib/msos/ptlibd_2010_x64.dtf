@@ -18783,6 +18783,7 @@ EXPORTS
     ?GetCommandCode@PHTTPConnectionInfo@@QEBA?AW4Commands@PHTTP@@XZ @15235 NONAME
     ?GetCommandErrorPrefix@PCLI@@QEBAAEBVPString@@XZ @15236 NONAME
     ?GetCommandName@PArgList@@QEBAAEBVPString@@XZ @23586 NONAME
+    ?GetCommandName@PHTTPConnectionInfo@@QEBAAEBVPString@@XZ @29563 NONAME
     ?GetCommandUsagePrefix@PCLI@@QEBAAEBVPString@@XZ @15237 NONAME
     ?GetCommentCommand@PCLI@@QEBAAEBVPCaselessString@@XZ @15238 NONAME
     ?GetCommonName@X509_Name@PSSLCertificate@@QEBA?AVPString@@XZ @23587 NONAME
