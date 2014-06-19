@@ -590,7 +590,6 @@ EXPORTS
     ??$GetFactoryAs@V?$PFactory@VPWAVFileConverter@@I@@@PFactoryBase@@KAAEAV?$PFactory@VPWAVFileConverter@@I@@XZ @479 NONAME
     ??$GetFactoryAs@V?$PFactory@VPWAVFileFormat@@I@@@PFactoryBase@@KAAEAV?$PFactory@VPWAVFileFormat@@I@@XZ @480 NONAME
     ??$GetFactoryAs@V?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@@PFactoryBase@@KAAEAV?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@XZ @481 NONAME
-    ??$GetOptionAs@IPEBD@PArgList@@QEBAIPEBDI@Z @24838 NONAME
     ??$insert@AEAI@?$_Tree@V?$_Tset_traits@IU?$less@I@std@@V?$allocator@I@2@$0A@@std@@@std@@QEAA?AU?$pair@V?$_Tree_const_iterator@V?$_Tree_val@V?$_Tset_traits@IU?$less@I@std@@V?$allocator@I@2@$0A@@std@@@std@@@std@@_N@1@AEAI@Z @24839 NONAME
     ??$insert@AEAUInternalCommand@PCLI@@@?$_Tree@V?$_Tset_traits@UInternalCommand@PCLI@@U?$less@UInternalCommand@PCLI@@@std@@V?$allocator@UInternalCommand@PCLI@@@4@$0A@@std@@@std@@QEAA?AU?$pair@V?$_Tree_const_iterator@V?$_Tree_val@V?$_Tset_traits@UInternalCommand@PCLI@@U?$less@UInternalCommand@PCLI@@@std@@V?$allocator@UInternalCommand@PCLI@@@4@$0A@@std@@@std@@@std@@_N@1@AEAUInternalCommand@PCLI@@@Z @24840 NONAME
     ??$insert@AEAVPString@@@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QEAA?AU?$pair@V?$_Tree_const_iterator@V?$_Tree_val@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@@std@@_N@1@AEAVPString@@@Z @484 NONAME
@@ -19621,6 +19620,7 @@ EXPORTS
     ?GetServer@JID@XMPP@@QEBA?AVPString@@XZ @23706 NONAME
     ?GetServer@PNatMethod_Fixed@@UEBA?AVPString@@XZ @23707 NONAME
     ?GetServer@PSTUNClient@@UEBA?AVPString@@XZ @15941 NONAME
+    ?GetServer@PSystemLogToNetwork@@QEBAAEBVAddressAndPort@PIPSocket@@XZ @29564 NONAME
     ?GetServerAddress@PNatMethod@@UEBA_NAEAVAddress@PIPSocket@@AEAG@Z @15942 NONAME
     ?GetServerAddress@PNatMethod@@UEBA_NAEAVAddressAndPort@PIPSocket@@@Z @23708 NONAME
     ?GetServerAddress@PSTUNClient@@UEBA_NAEAVAddressAndPort@PIPSocket@@@Z @23709 NONAME
@@ -19704,7 +19704,6 @@ EXPORTS
     ?GetStopBits@PSerialChannel@@QEBAEXZ @15993 NONAME
     ?GetStorage@LocalStorageBase@PThread@@MEBAPEAXXZ @15994 NONAME
     ?GetStream@PTrace@@SAPEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@XZ @15995 NONAME
-    ?GetStream@PTraceInfo@@QEBAPEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@XZ @15996 NONAME
     ?GetString@PASNInteger@@UEBA?AVPString@@XZ @15997 NONAME
     ?GetString@PASNIPAddress@@UEBA?AVPString@@XZ @15998 NONAME
     ?GetString@PASNNull@@UEBA?AVPString@@XZ @15999 NONAME
@@ -21791,6 +21790,7 @@ EXPORTS
     ?PrintElementOn@?$PBaseArray@UPHashTableList@@@@MEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@_K@Z @27640 NONAME
     ?PrintElementOn@?$PBaseArray@_W@@MEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@_K@Z @17640 NONAME
     ?PrintElementOn@PAbstractArray@@MEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@_K@Z @17641 NONAME
+    ?PrintInfo@PTrace@@SAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AEAV23@_N@Z @29565 NONAME
     ?PrintOn@?$PKey@_K@@UEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @27641 NONAME
     ?PrintOn@Address@PvCard@@UEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @17642 NONAME
     ?PrintOn@EMail@PvCard@@UEBAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @17643 NONAME
