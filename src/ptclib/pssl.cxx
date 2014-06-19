@@ -1451,7 +1451,7 @@ bool PSSLDiffieHellman::Construct(const BYTE * pData, PINDEX pSize,
         PTRACE(2, "Unable to check the generator value");
         break;
       case DH_NOT_SUITABLE_GENERATOR:
-        PTRACE(2, "The g value is not a suitable generator");
+        PTRACE(4, "The g value is not a suitable generator");
         break;
       default :
         PTRACE(1, "Diffie-Hellman check failed: code=" << err);
