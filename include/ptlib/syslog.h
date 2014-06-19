@@ -344,6 +344,8 @@ class PSystemLogToNetwork : public PSystemLogTarget
     );
   //@}
 
+    const PIPSocket::AddressAndPort & GetServer() const { return m_server; }
+
   protected:
     PIPSocket::AddressAndPort m_server;
     unsigned                  m_facility;
