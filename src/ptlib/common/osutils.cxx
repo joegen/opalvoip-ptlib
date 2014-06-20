@@ -262,11 +262,6 @@ PTHREAD_MUTEX_RECURSIVE_NP
     Unlock();
   }
 
-  ostream * GetStream() const
-  {
-    return m_stream;
-  }
-
   bool AdjustOptions(unsigned addedOptions, unsigned removedOptions)
   {
     unsigned oldOptions = m_options;
@@ -404,16 +399,85 @@ PTHREAD_MUTEX_RECURSIVE_NP
 void PTrace::SetStream(ostream * s)
 {
   PTraceInfo & info = PTraceInfo::Instance();
-  ostream * before = info.GetStream();
+  ostream * before = info.m_stream;
   info.SetStream(s);
-  ostream * after = info.GetStream();
+  ostream * after = info.m_stream;
   PTRACE_IF(2, before != after, "PTLib\tTrace stream set to " << after << " (" << s << ')');
 }
 
 
 ostream * PTrace::GetStream()
 {
-  return PTraceInfo::Instance().GetStream();
+  return PTraceInfo::Instance().m_stream;
+}
+
+
+ostream & PTrace::PrintInfo(ostream & strm, bool crlf)
+{
+  PTraceInfo & info = PTraceInfo::Instance();
+
+  strm << "Level: " << info.m_thresholdLevel << ", Output: ";
+
+  if (info.m_stream == NULL)
+    strm << "null";
+  else if (info.m_stream == &cout)
+    strm << "stdout";
+  else if (info.m_stream == &cerr)
+    strm << "stderr";
+  else if (dynamic_cast<PFile *>(info.m_stream) != NULL)
+    strm << dynamic_cast<PFile *>(info.m_stream)->GetFilePath();
+#ifdef _WIN32
+  else if (dynamic_cast<PDebugStream *>(info.m_stream) != NULL)
+    strm << "debugstream";
+#elif !defined(P_VXWORKS)
+  else if (dynamic_cast<PSystemLogToSyslog *>(info.m_stream) != NULL)
+    strm << "syslog";
+#endif
+  else if (dynamic_cast<PSystemLogToNetwork *>(info.m_stream) != NULL)
+    strm << "network: " << dynamic_cast<PSystemLogToNetwork *>(info.m_stream)->GetServer();
+  else
+    strm << typeid(*info.m_stream).name();
+
+  strm << ", Options:";
+  if (info.m_options&Blocks)
+    strm << " blocks";
+  if (info.m_options&TraceLevel)
+    strm << " level";
+  if (info.m_options&DateAndTime)
+    strm << " date";
+  if (info.m_options&GMTTime)
+    strm << " GMT";
+  if (info.m_options&Timestamp)
+    strm << " timestamp";
+  if (info.m_options&Thread)
+    strm << " thread";
+  if (info.m_options&ThreadAddress)
+    strm << " thread-addr";
+  if (info.m_options&FileAndLine)
+    strm << " file/line";
+  if (info.m_options&AppendToFile)
+    strm << " append";
+  if (info.m_options&ObjectInstance)
+    strm << " object";
+  if (info.m_options&ContextIdentifier)
+    strm << " context";
+
+  switch (info.m_options&RotateLogMask) {
+    case RotateDaily :
+      strm << " daily " << info.m_rolloverPattern;
+      break;
+    case RotateHourly :
+      strm << " hourly " << info.m_rolloverPattern;
+      break;
+    case RotateMinutely :
+      strm << " minute " << info.m_rolloverPattern;
+      break;
+  }
+
+  if (crlf)
+    strm << endl;
+
+  return strm;
 }
 
 
@@ -429,6 +493,22 @@ static void ClearOptionBit(unsigned & options, unsigned option)
 }
 
 
+static PString GetOptionOrParameter(const PArgList & args, const char * opt, const char * dflt = NULL)
+{
+  if (opt == NULL)
+    return dflt;
+
+  if (strspn(opt, "0123456789") < strlen(opt))
+    return args.GetOptionString(opt, dflt);
+
+  PINDEX optNum = atoi(opt);
+  if (optNum < args.GetCount())
+    return args[optNum];
+
+  return dflt;
+}
+
+
 void PTrace::Initialise(const PArgList & args,
                         unsigned options,
                         const char * traceCount,
@@ -439,7 +519,7 @@ void PTrace::Initialise(const PArgList & args,
 {
   PTraceInfo & info = PTraceInfo::Instance();
 
-  PCaselessString optStr = args.GetOptionString(traceOpts);
+  PCaselessString optStr = GetOptionOrParameter(args, traceOpts);
   if (optStr.IsEmpty())
     options = info.m_options;
   else {
@@ -502,11 +582,16 @@ void PTrace::Initialise(const PArgList & args,
     }
   }
 
-  info.InternalInitialise(std::max((unsigned)args.GetOptionCount(traceCount),
-                                             args.GetOptionAs(traceLevel, info.m_thresholdLevel)),
-                                             args.GetOptionString(outputFile, info.m_filename),
-                                             args.GetOptionString(traceRollover),
-                                             options);
+  int level;
+  if (traceCount != NULL && args.HasOption(traceCount))
+    level = args.GetOptionCount(traceCount);
+  else if ((level = GetOptionOrParameter(args, traceLevel, "-1").AsInteger()) < 0)
+    level = info.m_thresholdLevel;
+
+  info.InternalInitialise(level,
+                          GetOptionOrParameter(args, outputFile, info.m_filename),
+                          GetOptionOrParameter(args, traceRollover),
+                          options);
 }
 
 

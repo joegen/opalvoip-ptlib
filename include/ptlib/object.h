@@ -623,6 +623,13 @@ public:
   */
   static ostream * GetStream();
 
+  /** Output trace parameters (level, output, options etc) to stream.
+    */
+  static ostream & PrintInfo(
+    ostream & strm,
+    bool crlf = true
+  );
+
   /** Begin a trace output.
   If the trace stream output is used outside of the provided macros, it
   should be noted that a mutex is obtained on the call to Begin() which
