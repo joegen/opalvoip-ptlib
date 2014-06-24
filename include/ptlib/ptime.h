@@ -174,6 +174,23 @@ class PTime : public PObject
       */
     PBoolean IsValid() const;
 
+    /**Get the Network Time Protocol value.
+       The upper 32 bits are seconds since 1st January 1900 and the lower 32
+       bits are 2^32'th of a second, or 0.23ns.
+
+       @return
+       NTP format time.
+     */
+    PUInt64 GetNTP() const;
+
+    /**Set the Network Time Protocol value.
+       The upper 32 bits are seconds since 1st January 1900 and the lower 32
+       bits are 2^32'th of a second, or 0.23ns.
+     */
+    void SetNTP(
+      PUInt64 ntp
+    );
+
     /**Get the total microseconds since the epoch. The epoch is the 1st
        January 1970.
 
