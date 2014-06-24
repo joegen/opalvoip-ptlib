@@ -320,6 +320,21 @@ void PTime::SetTimestamp(time_t seconds, long usecs)
 }
 
 
+static PUInt64 const SecondsFrom1900to1970 = (70*365+17)*24*60*60U;
+
+void PTime::SetNTP(PUInt64 ntp)
+{
+  theTime = (time_t)((ntp>>32) - SecondsFrom1900to1970);
+  microseconds = (long)(ntp / 4294);
+}
+
+
+PUInt64 PTime::GetNTP() const
+{
+  return ((theTime+SecondsFrom1900to1970)<<32) + microseconds*4294;
+}
+
+
 PString PTime::AsString(TimeFormat format, int zone) const
 { 
   if (format >= NumTimeStrings)
