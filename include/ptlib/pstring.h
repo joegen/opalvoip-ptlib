@@ -1346,7 +1346,7 @@ class PString : public PCharArray
        ignoring case is required then the string should be converted to a
        PCaselessString before the search is made.
      */
-    void Replace(
+    PString & Replace(
       const PString & target,   ///< Text to be removed.
       const PString & subs,     ///< String to be inserted into the gaps created
       PBoolean all = false,         ///< Replace all occurrences of target text.
@@ -1360,7 +1360,7 @@ class PString : public PCharArray
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
      */
-    void Splice(
+    PString & Splice(
       const PString & str,  ///< Substring to insert.
       PINDEX pos,           ///< Position in string to insert the substring.
       PINDEX len = 0        ///< Length of section to remove.
@@ -1373,7 +1373,7 @@ class PString : public PCharArray
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
      */
-    void Splice(
+    PString & Splice(
       const char * cstr,    ///< Substring to insert.
       PINDEX pos,           ///< Position in string to insert the substring.
       PINDEX len = 0        ///< Length of section to remove.
@@ -1385,7 +1385,7 @@ class PString : public PCharArray
        references to the string. A new string buffer is allocated and the data
        from the old string buffer copied to it.
      */
-    void Delete(
+    PString & Delete(
       PINDEX start,   ///< Position in string to remove.
       PINDEX len      ///< Number of characters to delete.
     );
