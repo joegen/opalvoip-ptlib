@@ -161,8 +161,8 @@ PINLINE PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
 PINLINE PINDEX PString::FindSpan(const PString & str, PINDEX offset) const
   { return FindSpan((const char *)str, offset); }
 
-PINLINE void PString::Splice(const PString & str, PINDEX pos, PINDEX len)
-  { Splice((const char *)str, pos, len); }
+PINLINE PString & PString::Splice(const PString & str, PINDEX pos, PINDEX len)
+  { return Splice((const char *)str, pos, len); }
 
 PINLINE PStringArray PString::Tokenise(const PString & separators, PBoolean onePerSeparator) const
   { return Tokenise((const char *)separators, onePerSeparator); }

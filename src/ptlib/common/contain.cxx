@@ -1363,16 +1363,16 @@ PString & PString::operator&=(char ch)
 }
 
 
-void PString::Delete(PINDEX start, PINDEX len)
+PString & PString::Delete(PINDEX start, PINDEX len)
 {
   if (start < 0 || len < 0)
-    return;
+    return *this;
 
   MakeUnique();
 
   register PINDEX slen = GetLength();
   if (start > slen)
-    return;
+    return *this;
 
   if (len >= slen - start) {
     theArray[start] = '\0';
@@ -1385,6 +1385,7 @@ void PString::Delete(PINDEX start, PINDEX len)
 
   if (GetSize() > m_length*2)
     PAssert(MakeMinimumSize(m_length), POutOfMemory);
+  return *this;
 }
 
 
@@ -1718,12 +1719,10 @@ PBoolean PString::MatchesRegEx(const PRegularExpression & regex) const
   return (pos == 0) && (len == GetLength());
 }
 
-void PString::Replace(const PString & target,
-                      const PString & subs,
-                      PBoolean all, PINDEX offset)
+PString & PString::Replace(const PString & target, const PString & subs, PBoolean all, PINDEX offset)
 {
   if (offset < 0)
-    return;
+    return *this;
     
   MakeUnique();
 
@@ -1732,36 +1731,40 @@ void PString::Replace(const PString & target,
   do {
     PINDEX pos = Find(target, offset);
     if (pos == P_MAX_INDEX)
-      return;
+      return *this;
     Splice(subs, pos, tlen);
     offset = pos + slen;
   } while (all);
+
+  return *this;
 }
 
 
-void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
+PString & PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
 {
   if (len < 0 || pos < 0)
-    return;
+    return *this;
 
   register PINDEX slen = GetLength();
   if (pos >= slen)
-    operator+=(cstr);
-  else {
-    MakeUnique();
-    if (len > slen-pos)
-      len = slen-pos;
-    PINDEX clen = cstr != NULL ? strlen(cstr) : 0;
-    PINDEX newlen = slen-len+clen;
-    if (clen > len)
-      SetMinSize(newlen+1);
-    if (pos+len < slen)
-      memmove(theArray+pos+clen, theArray+pos+len, slen-pos-len+1);
-    if (clen > 0)
-      memcpy(theArray+pos, cstr, clen);
-    theArray[newlen] = '\0';
-    m_length = newlen;
-  }
+    return operator+=(cstr);
+
+  MakeUnique();
+
+  if (len > slen-pos)
+    len = slen-pos;
+  PINDEX clen = cstr != NULL ? strlen(cstr) : 0;
+  PINDEX newlen = slen-len+clen;
+  if (clen > len)
+    SetMinSize(newlen+1);
+  if (pos+len < slen)
+    memmove(theArray+pos+clen, theArray+pos+len, slen-pos-len+1);
+  if (clen > 0)
+    memcpy(theArray+pos, cstr, clen);
+  theArray[newlen] = '\0';
+  m_length = newlen;
+
+  return *this;
 }
 
 
