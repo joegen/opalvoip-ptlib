@@ -16319,7 +16319,7 @@ EXPORTS
     ?Deinitialise@PModem@@QEAA_NXZ @15928 NONAME
     ?Delay@PAdaptiveDelay@@QEAA_NH@Z @15929 NONAME
     ?Delete@PNotifyIconData@@QEAAXXZ @15930 NONAME
-    ?Delete@PString@@QEAAX_K0@Z @15931 NONAME
+    ?Delete@PString@@QEAAAEAV1@_K0@Z @28555 NONAME
     ?Delete@Row@PODBC@@QEAA_NI@Z @15932 NONAME
     ?DeleteDocument@PHTTPClient@@QEAA_NAEBVPURL@@@Z @15933 NONAME
     ?DeleteKey@PConfig@@UEAAXAEBVPString@@0@Z @15934 NONAME
@@ -21349,7 +21349,7 @@ EXPORTS
     ?replace@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@V?$_String_const_iterator@V?$_String_val@U?$_Simple_types@D@std@@@std@@@2@0V?$_String_iterator@V?$_String_val@U?$_Simple_types@D@std@@@std@@@2@1@Z @20757 NONAME
     ?replace@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@_K0AEBV12@00@Z @20758 NONAME
     ?replace@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@_K0PEBD0@Z @20759 NONAME
-    ?Replace@PString@@QEAAXAEBV1@0_N_K@Z @20760 NONAME
+    ?Replace@PString@@QEAAAEAV1@AEBV1@0_N_K@Z @28556 NONAME
     ?ReplaceAt@PAbstractList@@UEAA_N_KPEAVPObject@@@Z @20761 NONAME
     ?ReportStatus@PServiceProcess@@AEAA_NKKKK@Z @20762 NONAME
     ?Reset@PSemaphore@@UEAAXII@Z @26327 NONAME
@@ -22171,8 +22171,8 @@ EXPORTS
     ?SpeakNumber@TextToSpeech_Sample@@QEAA_NI@Z @21526 NONAME
     ?SpEnumTokens@@YAJPEB_W00PEAPEAUIEnumSpObjectTokens@@@Z @21527 NONAME
     ?SpGetCategoryFromId@@YAJPEB_WPEAPEAUISpObjectTokenCategory@@H@Z @21528 NONAME
-    ?Splice@PString@@QEAAXAEBV1@_K1@Z @21529 NONAME
-    ?Splice@PString@@QEAAXPEBD_K1@Z @21530 NONAME
+    ?Splice@PString@@QEAAAEAV1@AEBV1@_K1@Z @28557 NONAME
+    ?Splice@PString@@QEAAAEAV1@PEBD_K1@Z @28558 NONAME
     ?SpliceMacro@PServiceHTML@@SA_NAEAVPString@@AEBV2@1@Z @21531 NONAME
     ?Split@PString@@QEBA_NDAEAV1@0_N@Z @21532 NONAME
     ?SplitQueryVars@PURL@@SAXAEBVPString@@AEAVPStringToString@@@Z @21533 NONAME
