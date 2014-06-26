@@ -325,7 +325,7 @@ static PUInt64 const SecondsFrom1900to1970 = (70*365+17)*24*60*60U;
 void PTime::SetNTP(PUInt64 ntp)
 {
   theTime = (time_t)((ntp>>32) - SecondsFrom1900to1970);
-  microseconds = (long)(ntp / 4294);
+  microseconds = (long)((DWORD)ntp / 4294);
 }
 
 
