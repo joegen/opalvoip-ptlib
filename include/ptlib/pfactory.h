@@ -387,7 +387,7 @@ class PFactory : public PFactoryTemplate<AbstractClass, const KeyType &, KeyType
           : WorkerBase_T(singleton)
           , m_key(key)
         {
-          Register(key, this);
+          PAssert(Register(key, this), "Factory Worker already registered");
         }
         ~Worker()
         {
@@ -442,7 +442,7 @@ class PParamFactory : public PFactoryTemplate<AbstractClass, ParamType, KeyType>
         Worker(const Key_T & key, bool singleton = false)
           : WorkerBase_T(singleton)
         {
-          Register(key, this);
+          PAssert(Register(key, this), "Factory Worker already registered");
         }
 
       protected:
