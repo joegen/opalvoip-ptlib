@@ -2559,7 +2559,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
     if (!wav->SetFormat(mediaFormat))
       PTRACE(2, "VXML\tUnsupported codec " << mediaFormat);
     else if (!wav->Open(fn, PFile::WriteOnly))
-      PTRACE(2, "VXML\tCould not create WAV file " << wav->GetName() << " - " << wav->GetErrorText());
+      PTRACE(2, "VXML\tCould not create WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
     else if (!wav->SetAutoconvert())
       PTRACE(2, "VXML\tWAV file cannot convert to " << mediaFormat);
     else
@@ -2567,7 +2567,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
   }
   else {
     if (!wav->Open(fn, PFile::ReadOnly))
-      PTRACE(2, "VXML\tCould not open WAV file " << wav->GetName() << " - " << wav->GetErrorText());
+      PTRACE(2, "VXML\tCould not open WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
     else if (wav->GetChannels() != 1)
       PTRACE(2, "VXML\tWAV file has unsupported channel count " << wav->GetChannels());
     else if (wav->GetSampleSize() != 16)
