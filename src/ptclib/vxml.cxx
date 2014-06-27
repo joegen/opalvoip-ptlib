@@ -2562,7 +2562,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
   if (!wav->Open(fn,
                  recording ? PFile::WriteOnly : PFile::ReadOnly,
                  PFile::ModeDefault))
-    PTRACE(2, "VXML\tCould not open WAV file " << wav->GetName());
+    PTRACE(2, "VXML\tCould not open WAV file \"" << wav->GetName() << '"');
 
   else if (recording) {
     wav->SetChannels(1);
