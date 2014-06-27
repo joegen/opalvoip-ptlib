@@ -431,7 +431,7 @@ PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
   /* use PWAVFile instead of PFile -> skips wav header bytes */
   PWAVFile wavFile(filename, PFile::ReadOnly);
   if (!wavFile.IsOpen()) {
-    PTRACE(2, "Could not open WAV file " << filename);
+    PTRACE(2, "Could not open WAV file \"" << filename << '"');
     return false;
   }
 
