@@ -1675,7 +1675,7 @@ int PArgList::InternalParseOption(const PString & optStr, PINDEX offset, PINDEX 
     if (opt.m_type == OptionalString && (offset == P_MAX_INDEX || m_argumentArray[arg][offset] == '\0'))
       return 0;
 
-    if (offset != P_MAX_INDEX) {
+    if (offset != P_MAX_INDEX && m_argumentArray[arg][offset] != '\0') {
       opt.m_string += m_argumentArray[arg].Mid(offset);
       return 1;
     }
