@@ -2553,15 +2553,13 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
 {
   PWAVFile * wav = new PWAVFile;
   if (!wav->SetFormat(mediaFormat)) {
-    PTRACE(1, "VXML\tWAV file format " << mediaFormat << " not known");
+    PTRACE(1, "VXML\tWAV file format \"" << mediaFormat << "\" not known");
     delete wav;
     return NULL;
   }
 
   wav->SetAutoconvert();
-  if (!wav->Open(fn,
-                 recording ? PFile::WriteOnly : PFile::ReadOnly,
-                 PFile::ModeDefault))
+  if (!wav->Open(fn, recording ? PFile::WriteOnly : PFile::ReadOnly, PFile::ModeDefault))
     PTRACE(2, "VXML\tCould not open WAV file \"" << wav->GetName() << '"');
 
   else if (recording) {
@@ -2572,7 +2570,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
   }
 
   else if (!wav->IsValid())
-    PTRACE(2, "VXML\tWAV file header invalid for " << wav->GetName());
+    PTRACE(2, "VXML\tWAV file header invalid for \"" << wav->GetName() << '"');
 
   else if (wav->GetSampleRate() != GetSampleFrequency())
     PTRACE(2, "VXML\tWAV file has unsupported sample frequency " << wav->GetSampleRate());
@@ -2582,7 +2580,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
 
   else {
     wav->SetAutoconvert();   /// enable autoconvert
-    PTRACE(3, "VXML\tOpened WAV file " << wav->GetName());
+    PTRACE(3, "VXML\tOpened WAV file \"" << wav->GetName() << '"');
     return wav;
   }
 
