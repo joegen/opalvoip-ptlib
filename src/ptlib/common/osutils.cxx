@@ -1562,7 +1562,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
           opts.m_type = HasString;
           break;
         case ';' :
-          opts.m_type = StringWithLetter;
+          opts.m_type = OptionalString;
           break;
         default :
           --spec;
@@ -1620,7 +1620,10 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
     else if (optionsBeforeParams && m_parameterIndex.GetSize() > 0)
       break;
     else if (argStr[1] == '-') {
-      if (InternalParseOption(argStr.Mid(2), 0, arg) < 0)
+      PINDEX equals = argStr.Find('=');
+      if (equals != P_MAX_INDEX)
+        ++equals;
+      if (InternalParseOption(argStr(2, equals-2), equals, arg) < 0)
         return false;
     }
     else {
@@ -1669,7 +1672,10 @@ int PArgList::InternalParseOption(const PString & optStr, PINDEX offset, PINDEX 
     if (!opt.m_string)
       opt.m_string += '\n';
 
-    if (offset != 0 && (opt.m_type == StringWithLetter || m_argumentArray[arg][offset] != '\0')) {
+    if (opt.m_type == OptionalString && (offset == P_MAX_INDEX || m_argumentArray[arg][offset] == '\0'))
+      return 0;
+
+    if (offset != P_MAX_INDEX) {
       opt.m_string += m_argumentArray[arg].Mid(offset);
       return 1;
     }
