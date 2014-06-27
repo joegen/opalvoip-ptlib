@@ -162,10 +162,11 @@ class PArgList : public PObject
        version of the option is present. This is terminated either by a '.' or
        a ':' character. If the single letter or long name is followed by the
        ':' character then the option has may have an associated string. This
-       string must be within the argument or in the next argument. If a single
-       letter option is followed by a ';' character, then the option may have
-       an associated string but this MUST follow the letter immediately, if
-       it is present at all.
+       string must be within the argument, following the single letter
+       version, or an '=' sign for the long version, or in the next argument.
+       If an option is followed by a ';' character, then the option may have
+       an optional associated string but, if present, it MUST follow the
+       single letter immediately, or be be after an '=' for long form.
 
        If the option is followed by a space character then all text up until
        a new line '\\n' is used as a usage/help text for the option.
@@ -354,7 +355,7 @@ class PArgList : public PObject
     enum OptionType {
       NoString,
       HasString,
-      StringWithLetter
+      OptionalString
     };
     struct OptionSpec {
       OptionSpec() : m_letter('\0'), m_type(NoString), m_count(0) { }
