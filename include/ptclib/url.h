@@ -532,7 +532,7 @@ class PURLLegacyScheme : public PURLScheme
                            defaultPort) \
         { } \
   }; \
-  static PURLSchemeFactory::Worker<PURLLegacyScheme_##schemeName> schemeName##Factory(#schemeName, true); \
+  PFACTORY_CREATE(PURLSchemeFactory, PURLLegacyScheme_##schemeName, #schemeName, true)
 
 
 
