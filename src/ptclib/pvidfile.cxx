@@ -175,8 +175,8 @@ PBoolean PVideoFile::SetFrameRate(unsigned rate)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PFACTORY_CREATE(PVideoFileFactory, PYUVFile, ".yuv", false);
-static PVideoFileFactory::Worker<PYUVFile> y4mFileFactory(".y4m");
+PFACTORY_CREATE(PVideoFileFactory, PYUVFile, ".yuv");
+PFACTORY_SYNONYM(PVideoFileFactory, PYUVFile, y4m, ".y4m");
 
 
 PYUVFile::PYUVFile()
@@ -317,8 +317,8 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 
 #include <ptlib/vconvert.h>
 
-PFACTORY_CREATE(PVideoFileFactory, PJPEGFile, ".jpg", false);
-static PVideoFileFactory::Worker<PJPEGFile> jpegFileFactory(".jpeg");
+PFACTORY_CREATE(PVideoFileFactory, PJPEGFile, ".jpg");
+PFACTORY_SYNONYM(PVideoFileFactory, PJPEGFile, jpeg, ".jpeg");
 
 PJPEGFile::PJPEGFile()
 {

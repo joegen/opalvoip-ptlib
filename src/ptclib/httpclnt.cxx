@@ -44,8 +44,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-static PHTTPClientAuthenticationFactory::Worker<PHTTPClientBasicAuthentication> httpClient_basicAuthenticator("basic");
-static PHTTPClientAuthenticationFactory::Worker<PHTTPClientDigestAuthentication> httpClient_md5Authenticator("digest");
+PFACTORY_CREATE(PHTTPClientAuthenticationFactory, PHTTPClientBasicAuthentication, "basic");
+PFACTORY_CREATE(PHTTPClientAuthenticationFactory, PHTTPClientDigestAuthentication, "digest");
+
 static const char * const AlgorithmNames[PHTTPClientDigestAuthentication::NumAlgorithms] = {
   "MD5"
 };
@@ -1137,7 +1138,7 @@ class PURL_HttpLoader : public PURLLoader
 
 PFACTORY_CREATE(PURLLoaderFactory, PURL_HttpLoader, "http", true);
 #if P_SSL
-static PURLLoaderFactory::Worker<PURL_HttpLoader> httpsLoader("https", true);
+PFACTORY_SYNONYM(PURLLoaderFactory, PURL_HttpLoader, https, "https");
 #endif
 
 #endif // P_HTTP

@@ -221,6 +221,8 @@ class PFactoryTemplate : public PFactoryBase
 
         Types        m_type;
         Abstract_T * m_singletonInstance;
+
+      friend class PFactoryTemplate;
     };
 
     virtual void DestroySingletons()
@@ -241,8 +243,9 @@ class PFactoryTemplate : public PFactoryBase
     bool InternalRegister(const Key_T & key, WorkerBase * worker)
     {
       PWaitAndSignal mutex(m_mutex);
-      if (m_workers.find(key) != m_workers.end())
-        return false;
+      typename WorkerMap_T::iterator it = m_workers.find(key);
+      if (it != m_workers.end())
+        return it->second == worker;
 
       PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
       m_workers[key] = PAssertNULL(worker);
@@ -252,8 +255,9 @@ class PFactoryTemplate : public PFactoryBase
     bool InternalRegister(const Key_T & key, Abstract_T * instance, bool autoDeleteInstance)
     {
       PWaitAndSignal mutex(m_mutex);
-      if (m_workers.find(key) != m_workers.end())
-        return false;
+      typename WorkerMap_T::iterator it = m_workers.find(key);
+      if (it != m_workers.end())
+        return it->second->m_singletonInstance == instance;
 
       PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
       m_workers[key] = PNEW WorkerBase(instance, autoDeleteInstance);
@@ -263,10 +267,15 @@ class PFactoryTemplate : public PFactoryBase
     PBoolean InternalRegisterAs(const Key_T & newKey, const Key_T & oldKey)
     {
       PWaitAndSignal mutex(m_mutex);
-      if (m_workers.find(oldKey) == m_workers.end())
+      typename WorkerMap_T::iterator itOld = m_workers.find(oldKey);
+      if (itOld == m_workers.end())
         return false;
 
-      m_workers[newKey] = m_workers[oldKey];
+      typename WorkerMap_T::iterator itNew = m_workers.find(newKey);
+      if (itNew != m_workers.end())
+        return itNew->second == itOld->second;
+
+      m_workers[newKey] = PAssertNULL(itOld->second);
       return true;
     }
 
@@ -389,10 +398,13 @@ class PFactory : public PFactoryTemplate<AbstractClass, const KeyType &, KeyType
         {
           PAssert(Register(key, this), "Factory Worker already registered");
         }
+
         ~Worker()
         {
           Unregister(m_key);
         }
+
+        const Key_T & GetKey() const { return m_key; }
 
       protected:
         virtual Abstract_T * Create(Param_T) const
@@ -438,12 +450,22 @@ class PParamFactory : public PFactoryTemplate<AbstractClass, ParamType, KeyType>
     template <class ConcreteClass>
     class Worker : protected WorkerBase_T
     {
+      private:
+        Key_T m_key;
       public:
         Worker(const Key_T & key, bool singleton = false)
           : WorkerBase_T(singleton)
+          , m_key(key)
         {
           PAssert(Register(key, this), "Factory Worker already registered");
         }
+
+        ~Worker()
+        {
+          Unregister(m_key);
+        }
+
+        const Key_T & GetKey() const { return m_key; }
 
       protected:
         virtual Abstract_T * Create(Param_T param) const
@@ -485,6 +507,11 @@ class PParamFactory : public PFactoryTemplate<AbstractClass, ParamType, KeyType>
   namespace PFactoryLoader { \
     int ConcreteClass##_link() { return 0; } \
     factory::Worker<ConcreteClass> ConcreteClass##_instance(__VA_ARGS__); \
+  }
+
+#define PFACTORY_SYNONYM(factory, ConcreteClass, name, key) \
+  namespace PFactoryLoader { \
+    bool ConcreteClass##name##_synonym = factory::RegisterAs(key, ConcreteClass##_instance.GetKey()); \
   }
 
 #define PFACTORY_CREATE_SINGLETON(factory, ConcreteClass) \
