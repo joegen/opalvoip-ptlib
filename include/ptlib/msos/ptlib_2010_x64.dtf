@@ -16181,11 +16181,6 @@ EXPORTS
     ?front@?$queue@PEAUTimeout@List@PTimer@@V?$deque@PEAUTimeout@List@PTimer@@V?$allocator@PEAUTimeout@List@PTimer@@@std@@@std@@@std@@QEAAAEAPEAUTimeout@List@PTimer@@XZ @27003 NONAME
     ?front@?$vector@PEAVWorkerThreadBase@PThreadPoolBase@@V?$allocator@PEAVWorkerThreadBase@PThreadPoolBase@@@std@@@std@@QEAAAEAPEAVWorkerThreadBase@PThreadPoolBase@@XZ @13144 NONAME
     ?front@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QEAAAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ @13145 NONAME
-    ?g7231FormatWAVFormat@@3V?$Worker@VPWAVFileFormatG7231_vivo@@@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@A @13146 NONAME
-    ?g7231MSWAVFormat@@3V?$Worker@VPWAVFileFormatG7231_ms@@@?$PFactory@VPWAVFileFormat@@I@@A @13147 NONAME
-    ?g7231VivoWAVFormat@@3V?$Worker@VPWAVFileFormatG7231_vivo@@@?$PFactory@VPWAVFileFormat@@I@@A @13148 NONAME
-    ?g7231VXMLChannelFactory@@3V?$Worker@VPVXMLChannelG7231@@@?$PFactory@VPVXMLChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @29430 NONAME
-    ?g729VXMLChannelFactory@@3V?$Worker@VPVXMLChannelG729@@@?$PFactory@VPVXMLChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @29431 NONAME
     ?GarbageCollection@PCLI@@UEAAXXZ @13149 NONAME
     ?GarbageCollection@PSafeObject@@UEAA_NXZ @13150 NONAME
     ?Generate@PRandom@@QEAAII@Z @13151 NONAME
@@ -17247,6 +17242,10 @@ EXPORTS
     ?GetIssuerName@PSSLCertificate@@QEBA_NAEAVX509_Name@1@@Z @21630 NONAME
     ?GetIVLength@PSSLCipherContext@@QEBA_KXZ @24949 NONAME
     ?GetJID@Item@Roster@XMPP@@QEBAAEBVJID@3@XZ @29569 NONAME
+    ?GetKey@?$Worker@VPJPEGFile@@@?$PFactory@VPVideoFile@@VPCaselessString@@@@QEBAAEBVPCaselessString@@XZ @30360 NONAME
+    ?GetKey@?$Worker@VPURL_HttpLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@QEBAAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ @30361 NONAME
+    ?GetKey@?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@QEBAAEBVPCaselessString@@XZ @30362 NONAME
+    ?GetKey@?$Worker@VPYUVFile@@@?$PFactory@VPVideoFile@@VPCaselessString@@@@QEBAAEBVPCaselessString@@XZ @30363 NONAME
     ?GetKey@PTEACypher@@QEBAXAEAUKey@1@@Z @13992 NONAME
     ?GetKeyAt@?$PSet@VPString@@@@UEBAAEBVPString@@_K@Z @13993 NONAME
     ?GetKeyLength@PSSLCipherContext@@QEBA_KXZ @24950 NONAME
@@ -18597,6 +18596,9 @@ EXPORTS
     ?InternalRegister@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@IEAA_NAEBIPEAVWorkerBase@1@@Z @15099 NONAME
     ?InternalRegister@?$PFactoryTemplate@VPWAVFileFormat@@AEBII@@IEAA_NAEBIPEAVWorkerBase@1@@Z @15100 NONAME
     ?InternalRegister@?$PFactoryTemplate@VPWAVFileFormat@@AEBVPCaselessString@@V2@@@IEAA_NAEBVPCaselessString@@PEAVWorkerBase@1@@Z @15101 NONAME
+    ?InternalRegisterAs@?$PFactoryTemplate@VPURLLoader@@AEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V23@@@IEAA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z @30364 NONAME
+    ?InternalRegisterAs@?$PFactoryTemplate@VPVideoFile@@AEBVPCaselessString@@V2@@@IEAA_NAEBVPCaselessString@@0@Z @30365 NONAME
+    ?InternalRegisterAs@?$PFactoryTemplate@VPVXMLNodeHandler@@AEBVPCaselessString@@V2@@@IEAA_NAEBVPCaselessString@@0@Z @30366 NONAME
     ?InternalRemoveEntry@PIpAccessControlList@@AEAA_NAEAVPIpAccessControlEntry@@@Z @15102 NONAME
     ?InternalRemoveFunction@PScriptLanguage@@MEAAXAEBVPString@@@Z @15103 NONAME
     ?InternalSetAutoDeleteThread@PProcess@@IEAAXPEAVPThread@@@Z @15104 NONAME
@@ -19669,17 +19671,19 @@ EXPORTS
     ?Pause@NT_ServiceManager@@UEAA_NPEAVPServiceProcess@@@Z @15914 NONAME
     ?pbackfail@?$basic_stringbuf@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@MEAAHH@Z @15918 NONAME
     ?PBreakToDebugger@@YAXXZ @15919 NONAME
-    ?pcmConverter@@3V?$Worker@VPWAVFileConverterPCM@@@?$PFactory@VPWAVFileConverter@@I@@A @15920 NONAME
-    ?pcmFormatWAVFormat@@3V?$Worker@VPWAVFileFormatPCM@@@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@A @15921 NONAME
-    ?pcmVXMLChannelFactory@@3V?$Worker@VPVXMLChannelPCM@@@?$PFactory@VPVXMLChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @29957 NONAME
     ?PDummyFunctionToMakeSureSymbolsAreInDEFFile@@YAXXZ @15927 NONAME
     ?PerformRequest@PSOAPClient@@IEAA_NAEAVPSOAPMessage@@0@Z @29958 NONAME
     ?PerformRequest@PXMLRPC@@IEAA_NAEAVPXMLRPCBlock@@0@Z @29959 NONAME
     ?PGetErrorStream@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@XZ @15928 NONAME
+    ?PHTTPClientBasicAuthentication_instance@PFactoryLoader@@3V?$Worker@VPHTTPClientBasicAuthentication@@@?$PFactory@VPHTTPClientAuthentication@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30367 NONAME
+    ?PHTTPClientBasicAuthentication_link@PFactoryLoader@@YAHXZ @30368 NONAME
+    ?PHTTPClientDigestAuthentication_instance@PFactoryLoader@@3V?$Worker@VPHTTPClientDigestAuthentication@@@?$PFactory@VPHTTPClientAuthentication@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30369 NONAME
+    ?PHTTPClientDigestAuthentication_link@PFactoryLoader@@YAHXZ @30370 NONAME
     ?Ping@PICMPSocket@@QEAA_NAEBVPString@@@Z @15929 NONAME
     ?Ping@PICMPSocket@@QEAA_NAEBVPString@@AEAVPingInfo@1@@Z @15930 NONAME
     ?PInterfaceMonitor_instance@PFactoryLoader@@3V?$Worker@VPInterfaceMonitor@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @15931 NONAME
     ?PInterfaceMonitor_link@PFactoryLoader@@YAHXZ @15932 NONAME
+    ?PJPEGFilejpeg_synonym@PFactoryLoader@@3_NA @30371 NONAME
     ?PJPEGFile_instance@PFactoryLoader@@3V?$Worker@VPJPEGFile@@@?$PFactory@VPVideoFile@@VPCaselessString@@@@A @25249 NONAME
     ?PJPEGFile_link@PFactoryLoader@@YAHXZ @25250 NONAME
     ?PlatformOpen@PPipeChannel@@AEAA_NAEBVPString@@AEBVPStringArray@@W4OpenMode@1@_N3PEBVPStringToString@@@Z @15933 NONAME
@@ -19971,14 +19975,61 @@ EXPORTS
     ?PTraceObjectInstance@PObject@@SAPEBV1@PEBD@Z @25310 NONAME
     ?PTraceObjectInstance@PObject@@SAPEBV1@PEBV1@@Z @25311 NONAME
     ?PureTone@PTones@@IEAA_NIII@Z @16160 NONAME
+    ?PURLLegacyScheme_fax_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_fax@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30372 NONAME
+    ?PURLLegacyScheme_fax_link@PFactoryLoader@@YAHXZ @30373 NONAME
+    ?PURLLegacyScheme_file_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_file@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30374 NONAME
+    ?PURLLegacyScheme_file_link@PFactoryLoader@@YAHXZ @30375 NONAME
+    ?PURLLegacyScheme_ftp_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_ftp@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30376 NONAME
+    ?PURLLegacyScheme_ftp_link@PFactoryLoader@@YAHXZ @30377 NONAME
+    ?PURLLegacyScheme_gopher_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_gopher@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30378 NONAME
+    ?PURLLegacyScheme_gopher_link@PFactoryLoader@@YAHXZ @30379 NONAME
+    ?PURLLegacyScheme_h323s_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_h323s@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30380 NONAME
+    ?PURLLegacyScheme_h323s_link@PFactoryLoader@@YAHXZ @30381 NONAME
+    ?PURLLegacyScheme_h323_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_h323@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30382 NONAME
+    ?PURLLegacyScheme_h323_link@PFactoryLoader@@YAHXZ @30383 NONAME
+    ?PURLLegacyScheme_https_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_https@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30384 NONAME
+    ?PURLLegacyScheme_https_link@PFactoryLoader@@YAHXZ @30385 NONAME
+    ?PURLLegacyScheme_http_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_http@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30386 NONAME
+    ?PURLLegacyScheme_http_link@PFactoryLoader@@YAHXZ @30387 NONAME
+    ?PURLLegacyScheme_mailto_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_mailto@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30388 NONAME
+    ?PURLLegacyScheme_mailto_link@PFactoryLoader@@YAHXZ @30389 NONAME
+    ?PURLLegacyScheme_msrp_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_msrp@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30390 NONAME
+    ?PURLLegacyScheme_msrp_link@PFactoryLoader@@YAHXZ @30391 NONAME
+    ?PURLLegacyScheme_news_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_news@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30392 NONAME
+    ?PURLLegacyScheme_news_link@PFactoryLoader@@YAHXZ @30393 NONAME
+    ?PURLLegacyScheme_nntp_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_nntp@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30394 NONAME
+    ?PURLLegacyScheme_nntp_link@PFactoryLoader@@YAHXZ @30395 NONAME
+    ?PURLLegacyScheme_prospero_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_prospero@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30396 NONAME
+    ?PURLLegacyScheme_prospero_link@PFactoryLoader@@YAHXZ @30397 NONAME
+    ?PURLLegacyScheme_rtmp_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_rtmp@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30398 NONAME
+    ?PURLLegacyScheme_rtmp_link@PFactoryLoader@@YAHXZ @30399 NONAME
+    ?PURLLegacyScheme_rtspu_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_rtspu@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30400 NONAME
+    ?PURLLegacyScheme_rtspu_link@PFactoryLoader@@YAHXZ @30401 NONAME
+    ?PURLLegacyScheme_rtsp_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_rtsp@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30402 NONAME
+    ?PURLLegacyScheme_rtsp_link@PFactoryLoader@@YAHXZ @30403 NONAME
+    ?PURLLegacyScheme_sips_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_sips@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30404 NONAME
+    ?PURLLegacyScheme_sips_link@PFactoryLoader@@YAHXZ @30405 NONAME
+    ?PURLLegacyScheme_sip_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_sip@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30406 NONAME
+    ?PURLLegacyScheme_sip_link@PFactoryLoader@@YAHXZ @30407 NONAME
+    ?PURLLegacyScheme_telnet_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_telnet@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30408 NONAME
+    ?PURLLegacyScheme_telnet_link@PFactoryLoader@@YAHXZ @30409 NONAME
+    ?PURLLegacyScheme_wais_instance@PFactoryLoader@@3V?$Worker@VPURLLegacyScheme_wais@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30410 NONAME
+    ?PURLLegacyScheme_wais_link@PFactoryLoader@@YAHXZ @30411 NONAME
+    ?PURL_CalltoScheme_instance@PFactoryLoader@@3V?$Worker@VPURL_CalltoScheme@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30412 NONAME
+    ?PURL_CalltoScheme_link@PFactoryLoader@@YAHXZ @30413 NONAME
     ?PURL_DataLoader_instance@PFactoryLoader@@3V?$Worker@VPURL_DataLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16161 NONAME
     ?PURL_DataLoader_link@PFactoryLoader@@YAHXZ @16162 NONAME
+    ?PURL_DataScheme_instance@PFactoryLoader@@3V?$Worker@VPURL_DataScheme@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30414 NONAME
+    ?PURL_DataScheme_link@PFactoryLoader@@YAHXZ @30415 NONAME
     ?PURL_FileLoader_instance@PFactoryLoader@@3V?$Worker@VPURL_FileLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16163 NONAME
     ?PURL_FileLoader_link@PFactoryLoader@@YAHXZ @16164 NONAME
     ?PURL_FtpLoader_instance@PFactoryLoader@@3V?$Worker@VPURL_FtpLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16165 NONAME
     ?PURL_FtpLoader_link@PFactoryLoader@@YAHXZ @16166 NONAME
+    ?PURL_HttpLoaderhttps_synonym@PFactoryLoader@@3_NA @30416 NONAME
     ?PURL_HttpLoader_instance@PFactoryLoader@@3V?$Worker@VPURL_HttpLoader@@@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @16167 NONAME
     ?PURL_HttpLoader_link@PFactoryLoader@@YAHXZ @16168 NONAME
+    ?PURL_TelScheme_instance@PFactoryLoader@@3V?$Worker@VPURL_TelScheme@@@?$PFactory@VPURLScheme@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30417 NONAME
+    ?PURL_TelScheme_link@PFactoryLoader@@YAHXZ @30418 NONAME
     ?Push@?$PStack@VPStringStream@@@@UEAAXPEAVPStringStream@@@Z @16169 NONAME
     ?push@?$queue@DV?$deque@DV?$allocator@D@std@@@std@@@std@@QEAAX$$QEAD@Z @29999 NONAME
     ?push@?$queue@PEAUPAsyncNotifierCallback@@V?$deque@PEAUPAsyncNotifierCallback@@V?$allocator@PEAUPAsyncNotifierCallback@@@std@@@std@@@std@@QEAAXAEBQEAUPAsyncNotifierCallback@@@Z @16170 NONAME
@@ -20010,10 +20061,87 @@ EXPORTS
     ?PutWithLock@PVXMLCache@@UEAA_NAEBVPString@@00AEAVPFile@@@Z @30004 NONAME
     ?pvsprintf@@YA?AVPString@@AEBV1@PEAD@Z @16199 NONAME
     ?pvsprintf@@YA?AVPString@@PEBDPEAD@Z @16200 NONAME
+    ?PVXMLChannelG7231_instance@PFactoryLoader@@3V?$Worker@VPVXMLChannelG7231@@@?$PFactory@VPVXMLChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30419 NONAME
+    ?PVXMLChannelG7231_link@PFactoryLoader@@YAHXZ @30420 NONAME
+    ?PVXMLChannelG729_instance@PFactoryLoader@@3V?$Worker@VPVXMLChannelG729@@@?$PFactory@VPVXMLChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30421 NONAME
+    ?PVXMLChannelG729_link@PFactoryLoader@@YAHXZ @30422 NONAME
+    ?PVXMLChannelPCM_instance@PFactoryLoader@@3V?$Worker@VPVXMLChannelPCM@@@?$PFactory@VPVXMLChannel@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30423 NONAME
+    ?PVXMLChannelPCM_link@PFactoryLoader@@YAHXZ @30424 NONAME
+    ?PVXMLNodeHandler_instance@PFactoryLoader@@3V?$Worker@VPVXMLNodeHandler@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30425 NONAME
+    ?PVXMLNodeHandler_link@PFactoryLoader@@YAHXZ @30426 NONAME
+    ?PVXMLPlayableCommand_instance@PFactoryLoader@@3V?$Worker@VPVXMLPlayableCommand@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30427 NONAME
+    ?PVXMLPlayableCommand_link@PFactoryLoader@@YAHXZ @30428 NONAME
+    ?PVXMLPlayableData_instance@PFactoryLoader@@3V?$Worker@VPVXMLPlayableData@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30429 NONAME
+    ?PVXMLPlayableData_link@PFactoryLoader@@YAHXZ @30430 NONAME
+    ?PVXMLPlayableFileList_instance@PFactoryLoader@@3V?$Worker@VPVXMLPlayableFileList@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30431 NONAME
+    ?PVXMLPlayableFileList_link@PFactoryLoader@@YAHXZ @30432 NONAME
+    ?PVXMLPlayableFile_instance@PFactoryLoader@@3V?$Worker@VPVXMLPlayableFile@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30433 NONAME
+    ?PVXMLPlayableFile_link@PFactoryLoader@@YAHXZ @30434 NONAME
+    ?PVXMLPlayableTone_instance@PFactoryLoader@@3V?$Worker@VPVXMLPlayableTone@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30435 NONAME
+    ?PVXMLPlayableTone_link@PFactoryLoader@@YAHXZ @30436 NONAME
+    ?PVXMLPlayableURL_instance@PFactoryLoader@@3V?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30437 NONAME
+    ?PVXMLPlayableURL_link@PFactoryLoader@@YAHXZ @30438 NONAME
+    ?PVXMLTraverseAudio_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseAudio@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30439 NONAME
+    ?PVXMLTraverseAudio_link@PFactoryLoader@@YAHXZ @30440 NONAME
+    ?PVXMLTraverseBreak_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseBreak@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30441 NONAME
+    ?PVXMLTraverseBreak_link@PFactoryLoader@@YAHXZ @30442 NONAME
+    ?PVXMLTraverseChoice_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseChoice@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30443 NONAME
+    ?PVXMLTraverseChoice_link@PFactoryLoader@@YAHXZ @30444 NONAME
+    ?PVXMLTraverseDisconnect_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseDisconnect@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30445 NONAME
+    ?PVXMLTraverseDisconnect_link@PFactoryLoader@@YAHXZ @30446 NONAME
+    ?PVXMLTraverseEventCatch_synonym@PFactoryLoader@@3_NA @30447 NONAME
+    ?PVXMLTraverseEventError_synonym@PFactoryLoader@@3_NA @30448 NONAME
+    ?PVXMLTraverseEventNoInput_synonym@PFactoryLoader@@3_NA @30449 NONAME
+    ?PVXMLTraverseEventNoMatch_synonym@PFactoryLoader@@3_NA @30450 NONAME
+    ?PVXMLTraverseEvent_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseEvent@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30451 NONAME
+    ?PVXMLTraverseEvent_link@PFactoryLoader@@YAHXZ @30452 NONAME
+    ?PVXMLTraverseExit_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseExit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30453 NONAME
+    ?PVXMLTraverseExit_link@PFactoryLoader@@YAHXZ @30454 NONAME
+    ?PVXMLTraverseField_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseField@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30455 NONAME
+    ?PVXMLTraverseField_link@PFactoryLoader@@YAHXZ @30456 NONAME
+    ?PVXMLTraverseForm_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseForm@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30457 NONAME
+    ?PVXMLTraverseForm_link@PFactoryLoader@@YAHXZ @30458 NONAME
+    ?PVXMLTraverseGoto_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseGoto@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30459 NONAME
+    ?PVXMLTraverseGoto_link@PFactoryLoader@@YAHXZ @30460 NONAME
+    ?PVXMLTraverseGrammar_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseGrammar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30461 NONAME
+    ?PVXMLTraverseGrammar_link@PFactoryLoader@@YAHXZ @30462 NONAME
+    ?PVXMLTraverseIf_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseIf@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30463 NONAME
+    ?PVXMLTraverseIf_link@PFactoryLoader@@YAHXZ @30464 NONAME
+    ?PVXMLTraverseLog_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseLog@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30465 NONAME
+    ?PVXMLTraverseLog_link@PFactoryLoader@@YAHXZ @30466 NONAME
+    ?PVXMLTraverseMenu_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseMenu@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30467 NONAME
+    ?PVXMLTraverseMenu_link@PFactoryLoader@@YAHXZ @30468 NONAME
+    ?PVXMLTraversePrompt_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraversePrompt@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30469 NONAME
+    ?PVXMLTraversePrompt_link@PFactoryLoader@@YAHXZ @30470 NONAME
+    ?PVXMLTraverseProperty_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseProperty@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30471 NONAME
+    ?PVXMLTraverseProperty_link@PFactoryLoader@@YAHXZ @30472 NONAME
+    ?PVXMLTraverseRecord_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseRecord@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30473 NONAME
+    ?PVXMLTraverseRecord_link@PFactoryLoader@@YAHXZ @30474 NONAME
+    ?PVXMLTraverseSayAs_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseSayAs@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30475 NONAME
+    ?PVXMLTraverseSayAs_link@PFactoryLoader@@YAHXZ @30476 NONAME
+    ?PVXMLTraverseSubmit_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseSubmit@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30477 NONAME
+    ?PVXMLTraverseSubmit_link@PFactoryLoader@@YAHXZ @30478 NONAME
+    ?PVXMLTraverseTransfer_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseTransfer@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30479 NONAME
+    ?PVXMLTraverseTransfer_link@PFactoryLoader@@YAHXZ @30480 NONAME
+    ?PVXMLTraverseValue_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseValue@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30481 NONAME
+    ?PVXMLTraverseValue_link@PFactoryLoader@@YAHXZ @30482 NONAME
+    ?PVXMLTraverseVar_instance@PFactoryLoader@@3V?$Worker@VPVXMLTraverseVar@@@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@A @30483 NONAME
+    ?PVXMLTraverseVar_link@PFactoryLoader@@YAHXZ @30484 NONAME
+    ?PWAVFileConverterPCM_instance@PFactoryLoader@@3V?$Worker@VPWAVFileConverterPCM@@@?$PFactory@VPWAVFileConverter@@I@@A @30485 NONAME
+    ?PWAVFileConverterPCM_link@PFactoryLoader@@YAHXZ @30486 NONAME
+    ?PWAVFileFormatG7231_ms_instance@PFactoryLoader@@3V?$Worker@VPWAVFileFormatG7231_ms@@@?$PFactory@VPWAVFileFormat@@I@@A @30487 NONAME
+    ?PWAVFileFormatG7231_ms_link@PFactoryLoader@@YAHXZ @30488 NONAME
+    ?PWAVFileFormatG7231_vivo_ByFormat_instance@PFactoryLoader@@3V?$Worker@VPWAVFileFormatG7231_vivo@@@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@A @30489 NONAME
+    ?PWAVFileFormatG7231_vivo_ByFormat_link@PFactoryLoader@@YAHXZ @30490 NONAME
+    ?PWAVFileFormatG7231_vivo_instance@PFactoryLoader@@3V?$Worker@VPWAVFileFormatG7231_vivo@@@?$PFactory@VPWAVFileFormat@@I@@A @30491 NONAME
+    ?PWAVFileFormatG7231_vivo_link@PFactoryLoader@@YAHXZ @30492 NONAME
+    ?PWAVFileFormatPCM_ByFormat_instance@PFactoryLoader@@3V?$Worker@VPWAVFileFormatPCM@@@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@A @30493 NONAME
+    ?PWAVFileFormatPCM_ByFormat_link@PFactoryLoader@@YAHXZ @30494 NONAME
     ?PWAVFileFormatPCM_instance@PFactoryLoader@@3V?$Worker@VPWAVFileFormatPCM@@@?$PFactory@VPWAVFileFormat@@I@@A @16201 NONAME
     ?PWAVFileFormatPCM_link@PFactoryLoader@@YAHXZ @16202 NONAME
     ?PWinSock_instance@PFactoryLoader@@3V?$Worker@UPWinSock@@@?$PFactory@VPProcessStartup@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @25317 NONAME
     ?PWinSock_link@PFactoryLoader@@YAHXZ @25318 NONAME
+    ?PYUVFiley4m_synonym@PFactoryLoader@@3_NA @30495 NONAME
     ?PYUVFile_instance@PFactoryLoader@@3V?$Worker@VPYUVFile@@@?$PFactory@VPVideoFile@@VPCaselessString@@@@A @25319 NONAME
     ?PYUVFile_link@PFactoryLoader@@YAHXZ @16204 NONAME
     ?Query@RecordSet@PODBC@@QEAA_NAEBVPString@@@Z @16206 NONAME
@@ -20206,6 +20334,9 @@ EXPORTS
     ?Register@?$PFactory@VPWAVFileFormat@@I@@SA_NAEBIPEAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@AEBII@@@Z @16368 NONAME
     ?Register@?$PFactory@VPWAVFileFormat@@VPCaselessString@@@@SA_NAEBVPCaselessString@@PEAVWorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@AEBVPCaselessString@@V2@@@@Z @16369 NONAME
     ?Register@HostSystemURLHandlerInfo@PProcess@@QEAA_NXZ @16370 NONAME
+    ?RegisterAs@?$PFactory@VPURLLoader@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@SA_NAEBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z @30496 NONAME
+    ?RegisterAs@?$PFactory@VPVideoFile@@VPCaselessString@@@@SA_NAEBVPCaselessString@@0@Z @30497 NONAME
+    ?RegisterAs@?$PFactory@VPVXMLNodeHandler@@VPCaselessString@@@@SA_NAEBVPCaselessString@@0@Z @30498 NONAME
     ?RegisterService@PPluginManager@@QEAA_NPEBD@Z @25335 NONAME
     ?RegisterTypes@HostSystemURLHandlerInfo@PProcess@@SA_NAEBVPString@@_N@Z @16372 NONAME
     ?Release@?$CComPtr@UIAMCameraControl@@@@QEAAXXZ @16374 NONAME
@@ -20378,7 +20509,6 @@ EXPORTS
     ?SafeRemoveAt@PSafeCollection@@MEAA_N_K@Z @16515 NONAME
     ?SafeRemoveObject@PSafeCollection@@IEAAXPEAVPSafeObject@@@Z @16516 NONAME
     ?SampleCB@PSampleGrabberCB@@UEAAJNPEAUIMediaSample@@@Z @25360 NONAME
-    ?sampleTTSFactory@@3V?$Worker@VTextToSpeech_Sample@@@?$PFactory@VPTextToSpeech@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30043 NONAME
     ?SanitiseName@InterfaceEntry@PIPSocket@@SAXAEAVPString@@@Z @16518 NONAME
     ?Save@PConfigArgs@@QEAAXAEBVPString@@@Z @16519 NONAME
     ?Save@PSound@@QEAA_NAEBVPFilePath@@@Z @16520 NONAME
@@ -21290,6 +21420,8 @@ EXPORTS
     ?TestPlayer@PSoundChannel@@SA?AVPString@@AEBUParams@1@AEBV?$PNotifierTemplate@_J@@PEBD@Z @25484 NONAME
     ?TestRecorder@PSoundChannel@@SA?AVPString@@AEBUParams@1@0AEBV?$PNotifierTemplate@_J@@I@Z @25485 NONAME
     ?TextPlain@PMIMEInfo@@SAAEBVPCaselessString@@XZ @17216 NONAME
+    ?TextToSpeech_Sample_instance@PFactoryLoader@@3V?$Worker@VTextToSpeech_Sample@@@?$PFactory@VPTextToSpeech@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30499 NONAME
+    ?TextToSpeech_Sample_link@PFactoryLoader@@YAHXZ @30500 NONAME
     ?ThreadDestroyed@LocalStorageBase@PThread@@AEBAXPEAV2@@Z @17217 NONAME
     ?ThreadEntry@PServiceProcess@@AEAAXXZ @17218 NONAME
     ?ThreadMain@Context@PCLI@@MEAAXAEAVPThread@@_J@Z @22420 NONAME
@@ -21495,12 +21627,6 @@ EXPORTS
     ?vsprintf@PString@@QEAAAEAV1@AEBV1@PEAD@Z @17359 NONAME
     ?vsprintf@PString@@QEAAAEAV1@PEBDPEAD@Z @17360 NONAME
     ?VXMLExecute@PVXMLSession@@UEAAXAEAVPThread@@_J@Z @30236 NONAME
-    ?vxmlPlayableCommandFactory@@3V?$Worker@VPVXMLPlayableCommand@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30237 NONAME
-    ?vxmlPlayableDataFactory@@3V?$Worker@VPVXMLPlayableData@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30238 NONAME
-    ?vxmlPlayableFilenameFactory@@3V?$Worker@VPVXMLPlayableFile@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30239 NONAME
-    ?vxmlPlayableFilenameListFactory@@3V?$Worker@VPVXMLPlayableFileList@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30240 NONAME
-    ?vxmlPlayableToneFactory@@3V?$Worker@VPVXMLPlayableTone@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30241 NONAME
-    ?vxmlPlayableURLFactory@@3V?$Worker@VPVXMLPlayableURL@@@?$PFactory@VPVXMLPlayable@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@@A @30242 NONAME
     ?Wait@PCriticalSection@@UEAAXXZ @17361 NONAME
     ?Wait@PCriticalSection@@UEAA_NAEBVPTimeInterval@@@Z @17362 NONAME
     ?Wait@PDelayChannel@@MEAAX_KAEAVPTimeInterval@@@Z @17363 NONAME
