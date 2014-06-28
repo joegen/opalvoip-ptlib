@@ -138,6 +138,11 @@ public:
 typedef PFactory<PWAVFileFormat, PCaselessString> PWAVFileFormatByFormatFactory;
 typedef PFactory<PWAVFileFormat, unsigned> PWAVFileFormatByIDFactory;
 
+#define PCREATE_WAVFILE_FORMAT_FACTORY(cls, id, name) \
+  PFACTORY_CREATE(PWAVFileFormatByIDFactory, cls, id); \
+  typedef cls cls##_ByFormat; \
+  PFACTORY_CREATE(PWAVFileFormatByFormatFactory, cls##_ByFormat, name)
+
 PFACTORY_LOAD(PWAVFileFormatPCM);
 
 
