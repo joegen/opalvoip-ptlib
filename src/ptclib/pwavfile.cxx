@@ -798,8 +798,7 @@ class PWAVFileFormatPCM : public PWAVFileFormat
     PBoolean Write(PWAVFile & file, const void * buf, PINDEX & len);
 };
 
-PFACTORY_CREATE(PWAVFileFormatByIDFactory, PWAVFileFormatPCM, PWAVFile::fmt_PCM, false);
-PWAVFileFormatByFormatFactory::Worker<PWAVFileFormatPCM> pcmFormatWAVFormat("PCM-16");
+PCREATE_WAVFILE_FORMAT_FACTORY(PWAVFileFormatPCM, PWAVFile::fmt_PCM, "PCM-16");
 
 void PWAVFileFormatPCM::CreateHeader(PWAV::FMTChunk & wavFmtChunk, 
                                      PBYTEArray & /*extendedHeader*/)
@@ -1024,8 +1023,7 @@ class PWAVFileFormatG7231_vivo : public PWAVFileFormatG7231
     { return GetFormatString() & "Vivo"; }
 };
 
-PWAVFileFormatByIDFactory::Worker<PWAVFileFormatG7231_vivo> g7231VivoWAVFormat(PWAVFile::fmt_VivoG7231);
-PWAVFileFormatByFormatFactory::Worker<PWAVFileFormatG7231_vivo> g7231FormatWAVFormat("G.723.1");
+PCREATE_WAVFILE_FORMAT_FACTORY(PWAVFileFormatG7231_vivo, PWAVFile::fmt_VivoG7231, "G.723.1");
 
 class PWAVFileFormatG7231_ms : public PWAVFileFormatG7231
 {
@@ -1039,7 +1037,7 @@ class PWAVFileFormatG7231_ms : public PWAVFileFormatG7231
     { return GetFormatString() & "MS"; }
 };
 
-PWAVFileFormatByIDFactory::Worker<PWAVFileFormatG7231_ms> g7231MSWAVFormat(PWAVFile::fmt_MSG7231);
+PFACTORY_CREATE(PWAVFileFormatByIDFactory, PWAVFileFormatG7231_ms, PWAVFile::fmt_MSG7231);
 
 //////////////////////////////////////////////////////////////////
 
@@ -1121,7 +1119,7 @@ PBoolean PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX l
   return false;
 }
 
-PWAVFileConverterFactory::Worker<PWAVFileConverterPCM> pcmConverter(PWAVFile::fmt_PCM);
+PFACTORY_CREATE(PWAVFileConverterFactory, PWAVFileConverterPCM, PWAVFile::fmt_PCM);
 
 
 #endif // P_WAVFILE

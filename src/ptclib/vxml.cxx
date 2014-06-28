@@ -90,14 +90,14 @@ class PVXMLChannelG729 : public PVXMLChannel
 };
 
 
-static PVXMLNodeFactory::Worker<PVXMLNodeHandler> BlockNodeHandler("Block", true);
+PFACTORY_CREATE(PVXMLNodeFactory, PVXMLNodeHandler, "Block", true);
 
 #define TRAVERSE_NODE(name) \
   class PVXMLTraverse##name : public PVXMLNodeHandler { \
     virtual bool Start(PVXMLSession & session, PXMLElement & element) const \
     { return session.Traverse##name(element); } \
   }; \
-  static PVXMLNodeFactory::Worker<PVXMLTraverse##name> name##NodeHandler(#name, true)
+  PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverse##name, #name, true)
 
 TRAVERSE_NODE(Audio);
 TRAVERSE_NODE(Break);
@@ -120,7 +120,7 @@ TRAVERSE_NODE(Disconnect);
     virtual bool Finish(PVXMLSession & session, PXMLElement & element) const \
     { return session.Traversed##name(element); } \
   }; \
-  static PVXMLNodeFactory::Worker<PVXMLTraverse##name> name##NodeHandler(#name, true)
+  PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverse##name, #name, true)
 
 TRAVERSE_NODE2(Menu);
 TRAVERSE_NODE2(Form);
@@ -142,11 +142,11 @@ class PVXMLTraverseEvent : public PVXMLNodeHandler
     return true;
   }
 };
-static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> FilledNodeHandler("Filled", true);
-static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> NoInputNodeHandler("NoInput", true);
-static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> NoMatchNodeHandler("NoMatch", true);
-static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> ErrorNodeHandler("Error", true);
-static PVXMLNodeFactory::Worker<PVXMLTraverseEvent> CatchNodeHandler("Catch", true);
+PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverseEvent, "Filled", true);
+PFACTORY_SYNONYM(PVXMLNodeFactory, PVXMLTraverseEvent, NoInput, "NoInput");
+PFACTORY_SYNONYM(PVXMLNodeFactory, PVXMLTraverseEvent, NoMatch, "NoMatch");
+PFACTORY_SYNONYM(PVXMLNodeFactory, PVXMLTraverseEvent, Error, "Error");
+PFACTORY_SYNONYM(PVXMLNodeFactory, PVXMLTraverseEvent, Catch, "Catch");
 
 #if PTRACING
 class PVXMLTraverseLog : public PVXMLNodeHandler {
@@ -159,7 +159,7 @@ class PVXMLTraverseLog : public PVXMLNodeHandler {
     return true;
   }
 };
-static PVXMLNodeFactory::Worker<PVXMLTraverseLog> LogNodeHandler("Log", true);
+PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverseLog, "Log", true);
 #endif
 
 
@@ -318,7 +318,7 @@ void PVXMLPlayableFile::OnStop()
 }
 
 
-PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFile> vxmlPlayableFilenameFactory("File");
+PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableFile, "File");
 
 
 ///////////////////////////////////////////////////////////////
@@ -388,7 +388,7 @@ void PVXMLPlayableFileList::OnStop()
   }
 }
 
-PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFileList> vxmlPlayableFilenameListFactory("FileList");
+PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableFileList, "FileList");
 
 
 ///////////////////////////////////////////////////////////////
@@ -444,7 +444,7 @@ void PVXMLPlayableCommand::OnStop()
   PVXMLPlayable::OnStop();
 }
 
-PFactory<PVXMLPlayable>::Worker<PVXMLPlayableCommand> vxmlPlayableCommandFactory("Command");
+PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableCommand, "Command");
 
 #endif
 
@@ -483,7 +483,7 @@ bool PVXMLPlayableData::OnRepeat()
   return PAssert(memfile != NULL, PLogicError) && PAssertOS(memfile->SetPosition(0));
 }
 
-PFactory<PVXMLPlayable>::Worker<PVXMLPlayableData> vxmlPlayableDataFactory("PCM Data");
+PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableData, "PCM Data");
 
 
 ///////////////////////////////////////////////////////////////
@@ -506,7 +506,7 @@ PBoolean PVXMLPlayableTone::Open(PVXMLChannel & chan, const PString & toneSpec, 
   return PVXMLPlayable::Open(chan, toneSpec, delay, repeat, autoDelete);
 }
 
-PFactory<PVXMLPlayable>::Worker<PVXMLPlayableTone> vxmlPlayableToneFactory("Tone");
+PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableTone, "Tone");
 
 #endif // P_DTMF
 
@@ -543,7 +543,7 @@ bool PVXMLPlayableURL::OnStart()
   return m_vxmlChannel->SetReadChannel(client, false);
 }
 
-PFactory<PVXMLPlayable>::Worker<PVXMLPlayableURL> vxmlPlayableURLFactory("URL");
+PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableURL, "URL");
 
 
 ///////////////////////////////////////////////////////////////
@@ -2822,7 +2822,7 @@ void PVXMLChannel::FlushQueue()
 
 ///////////////////////////////////////////////////////////////
 
-PFactory<PVXMLChannel>::Worker<PVXMLChannelPCM> pcmVXMLChannelFactory(VXML_PCM16);
+PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelPCM, VXML_PCM16);
 
 PVXMLChannelPCM::PVXMLChannelPCM()
   : PVXMLChannel(10, 160)
@@ -2894,7 +2894,7 @@ void PVXMLChannelPCM::GetBeepData(PBYTEArray & data, unsigned ms)
 
 ///////////////////////////////////////////////////////////////
 
-PFactory<PVXMLChannel>::Worker<PVXMLChannelG7231> g7231VXMLChannelFactory(VXML_G7231);
+PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelG7231, VXML_G7231);
 
 PVXMLChannelG7231::PVXMLChannelG7231()
   : PVXMLChannel(30, 0)
@@ -2951,7 +2951,7 @@ PBoolean PVXMLChannelG7231::IsSilenceFrame(const void * buf, PINDEX len) const
 
 ///////////////////////////////////////////////////////////////
 
-PFactory<PVXMLChannel>::Worker<PVXMLChannelG729> g729VXMLChannelFactory(VXML_G729);
+PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelG729, VXML_G729);
 
 PVXMLChannelG729::PVXMLChannelG729()
   : PVXMLChannel(10, 0)
@@ -3371,7 +3371,7 @@ PBoolean TextToSpeech_Sample::SpeakFile(const PString & text)
   return true;
 }
 
-PFactory<PTextToSpeech>::Worker<TextToSpeech_Sample> sampleTTSFactory("sampler", false);
+PFACTORY_CREATE(PFactory<PTextToSpeech>, TextToSpeech_Sample, "sampler", false);
 
 
 #endif   // P_VXML

@@ -1067,7 +1067,7 @@ class PURL_CalltoScheme : public PURLScheme
     }
 };
 
-static PURLSchemeFactory::Worker<PURL_CalltoScheme> calltoScheme("callto", true);
+PFACTORY_CREATE(PURLSchemeFactory, PURL_CalltoScheme, "callto", true);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1123,7 +1123,7 @@ class PURL_TelScheme : public PURLScheme
     }
 };
 
-static PURLSchemeFactory::Worker<PURL_TelScheme> telScheme("tel", true);
+PFACTORY_CREATE(PURLSchemeFactory,PURL_TelScheme, "tel", true);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1192,7 +1192,7 @@ class PURL_DataScheme : public PURLScheme
     }
 };
 
-static PURLSchemeFactory::Worker<PURL_DataScheme> dataScheme("data", true);
+PFACTORY_CREATE(PURLSchemeFactory, PURL_DataScheme, "data", true);
 
 
 ///////////////////////////////////////////////////////////////////////////////
