@@ -49,10 +49,12 @@ class PWAVFile;
 
 namespace PWAV {
 
+#pragma pack(1)
+
   struct ChunkHeader
   {
     char    tag[4];
-    P_PACK_FIELD(PInt32l len);
+    PInt32l len;
   };
 
   struct RIFFChunkHeader
@@ -64,13 +66,27 @@ namespace PWAV {
   struct FMTChunk
   {
     ChunkHeader hdr;          ///< chunk header (already packed)
-    P_PACK_FIELD(PUInt16l format);          ///< Format
-    P_PACK_FIELD(PUInt16l numChannels);     ///< Channels 0x01 = mono, 0x02 = stereo
-    P_PACK_FIELD(PUInt32l sampleRate);      ///< Sample Rate in Hz
-    P_PACK_FIELD(PUInt32l bytesPerSec);     ///< Average bytes Per Second
-    P_PACK_FIELD(PUInt16l bytesPerSample);  ///< Bytes Per Sample, eg 2
-    P_PACK_FIELD(PUInt16l bitsPerSample);   ///< Bits Per Sample, eg 16
+    PUInt16l format;          ///< Format
+    PUInt16l numChannels;     ///< Channels 0x01 = mono, 0x02 = stereo
+    PUInt32l sampleRate;      ///< Sample Rate in Hz
+    PUInt32l bytesPerSec;     ///< Average bytes Per Second
+    PUInt16l bytesPerSample;  ///< Bytes Per Sample, eg 2
+    PUInt16l bitsPerSample;   ///< Bits Per Sample, eg 16
   };
+
+  struct G7231ExtendedInfo
+  {
+    PInt16l data1;      // 1
+    PInt16l data2;      // 480
+  };
+
+  struct G7231FACTChunk
+  {
+    PWAV::ChunkHeader hdr;
+    PInt32l data1;      // 0   Should be number of samples.
+  };
+
+#pragma pack()
 
 }; // namespace PWAV
 
