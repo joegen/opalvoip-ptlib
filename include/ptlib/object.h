@@ -2012,11 +2012,9 @@ typedef PIntSameOrder<long double> PFloat80b;
 typedef intptr_t P_INT_PTR;
 
 #if defined(_MSC_VER)
-#define P_ALIGN_FIELD(f,a) __declspec(align(a)) f
-#define P_PACK_FIELD(f)    __declspec(align(1)) f
+#define P_ALIGN_FIELD(fieldType,fieldName,alignment) fieldType __declspec(align(alignment)) fieldName
 #elif defined(__GNUC__)
-#define P_ALIGN_FIELD(f,a) f __attribute__ ((aligned(a)))
-#define P_PACK_FIELD(f)    f __attribute__ ((packed))
+#define P_ALIGN_FIELD(fieldType,fieldName,alignment) fieldType fieldName __attribute__ ((aligned(alignment)))
 #endif
 
 typedef intptr_t P_INT_PTR;

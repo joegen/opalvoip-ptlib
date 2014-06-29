@@ -701,20 +701,6 @@ PCREATE_WAVFILE_FORMAT_FACTORY(PWAVFileFormatPCM, PWAVFile::fmt_PCM, "PCM-16");
 
 //////////////////////////////////////////////////////////////////
 
-struct G7231ExtendedInfo
-{
-  P_PACK_FIELD(PInt16l data1);      // 1
-  P_PACK_FIELD(PInt16l data2);      // 480
-};
-
-struct G7231FACTChunk
-{
-  PWAV::ChunkHeader hdr;
-  P_PACK_FIELD(PInt32l data1);      // 0   Should be number of samples.
-};
-
-
-
 class PWAVFileFormatG7231 : public PWAVFileFormat
 {
   public:
@@ -743,7 +729,7 @@ class PWAVFileFormatG7231 : public PWAVFileFormat
 
 void PWAVFileFormatG7231::CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader)
 {
-  wavFmtChunk.hdr.len         = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr) + sizeof(sizeof(G7231ExtendedInfo));
+  wavFmtChunk.hdr.len         = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr) + sizeof(sizeof(PWAV::G7231ExtendedInfo));
   wavFmtChunk.format          = g7231;
   wavFmtChunk.numChannels     = 1;
   wavFmtChunk.sampleRate      = 8000;
@@ -751,8 +737,8 @@ void PWAVFileFormatG7231::CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray 
   wavFmtChunk.bitsPerSample   = 0;
   wavFmtChunk.bytesPerSec     = 800;
 
-  extendedHeader.SetSize(sizeof(G7231ExtendedInfo));
-  G7231ExtendedInfo * g7231Info = (G7231ExtendedInfo *)extendedHeader.GetPointer(sizeof(G7231ExtendedInfo));
+  extendedHeader.SetSize(sizeof(PWAV::G7231ExtendedInfo));
+  PWAV::G7231ExtendedInfo * g7231Info = (PWAV::G7231ExtendedInfo *)extendedHeader.GetPointer(sizeof(PWAV::G7231ExtendedInfo));
 
   g7231Info->data1 = 1;
   g7231Info->data2 = 480;
@@ -761,7 +747,7 @@ void PWAVFileFormatG7231::CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray 
 PBoolean PWAVFileFormatG7231::WriteExtraChunks(PWAVFile & file)
 {
   // write the fact chunk
-  G7231FACTChunk factChunk;
+  PWAV::G7231FACTChunk factChunk;
   memcpy(factChunk.hdr.tag, "FACT", 4);
   factChunk.hdr.len = sizeof(factChunk) - sizeof(factChunk.hdr);
   factChunk.data1 = 0;
