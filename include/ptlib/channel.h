@@ -482,14 +482,6 @@ class PChannel : public PObject, public std::iostream
     #define PDECLARE_AsyncNotifier(cls, fn) PDECLARE_NOTIFIER2(PChannel, cls, fn, PChannel::AsyncContext &)
     #define PCREATE_AsyncNotifier(fn) PCREATE_NOTIFIER2(fn, PChannel::AsyncContext &)
 
-#ifdef _MSC_VER
-  #pragma pack(push)
-  #if P_64BIT
-    #pragma pack(8)
-  #else
-    #pragma pack(4)
-  #endif
-#endif
     /** Parameters for asynchronous I/O operation.
       */
 #ifdef _WIN32
@@ -522,13 +514,10 @@ class PChannel : public PObject, public std::iostream
         // Internal stuff
         PChannel * m_channel;
         typedef void (PChannel::*CompletionFunction)(AsyncContext &);
-        CompletionFunction m_onComplete;
+        P_ALIGN_FIELD(CompletionFunction,m_onComplete,16);
         bool Initialise(PChannel * channel, CompletionFunction onComplete);
         void OnIOComplete(PINDEX length, int errorNumber);
     };
-#ifdef _MSC_VER
-  #pragma pack(pop)
-#endif
 
     /** Begin an asynchronous read from channel. The read timeout is used as in
        other read operations, in this case calling the OnReadComplete()
