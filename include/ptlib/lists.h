@@ -405,7 +405,7 @@ template <class T> class PList : public PAbstractList
     const_iterator begin()  const { return this->info->head; }
     const_iterator end()    const { return const_iterator(); }
     const_iterator rbegin() const { return this->info->tail; }
-    const_iterator rend()   const { return iterator(); }
+    const_iterator rend()   const { return const_iterator(); }
     const_iterator find(const value_type & obj) const { return this->FindElement(obj, NULL); }
 
     value_type & front() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->head)->data); }
