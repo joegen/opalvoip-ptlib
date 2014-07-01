@@ -1190,6 +1190,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     HWND       m_hParent;
     DWORD      m_dwStyle;
     DWORD      m_dwExStyle;
+    COLORREF   m_bgColour;
     PThread  * m_thread;
     PMutex     m_openCloseMutex;
     PSyncPoint m_started;
@@ -1233,6 +1234,7 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   , m_hParent(NULL)
   , m_dwStyle(DEFAULT_STYLE)
   , m_dwExStyle(0)
+  , m_bgColour(0) // Black
   , m_thread(NULL)
   , m_flipped(false)
   , m_sizeMode(NormalSize)
@@ -1286,8 +1288,7 @@ static int GetTokenValue(const PString & deviceName, const char * token, int def
   if (pos == P_MAX_INDEX)
     return defaultValue;
 
-  pos += strlen(token);
-  return deviceName.Mid(pos).AsInteger();
+  return strtoul(((const char *)deviceName)+pos+strlen(token), NULL, 0);
 }
 
 
@@ -1329,6 +1330,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
   m_lastPosition.y = GetTokenValue(deviceName, "Y=", CW_USEDEFAULT);
   m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
   m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
+  m_bgColour       = GetTokenValue(deviceName, "BACKGROUND=", 0);
 
   if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
     m_sizeMode = FullScreen;
@@ -1595,8 +1597,12 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
   RECT rect;
   GetClientRect(m_hWnd, &rect);
 
-  if (frameStore.IsEmpty())
-    FillRect(hDC, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+  HBRUSH brush = m_bgColour < 0x1000000 ? CreateSolidBrush(m_bgColour) : NULL;
+
+  if (frameStore.IsEmpty()) {
+    if (brush != NULL)
+      FillRect(hDC, &rect, brush);
+  }
   else {
     int result;
     if (frameWidth == (unsigned)rect.right && frameHeight == (unsigned)rect.bottom)
@@ -1613,16 +1619,26 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
         h = rect.bottom;
         x = (rect.right - w)/2;
         y = 0;
-        Rectangle(hDC, 0,            0, x,          rect.bottom);
-        Rectangle(hDC, rect.right-x, 0, rect.right, rect.bottom);
+        if (brush != NULL) {
+          RECT r;
+          r.left = 0; r.top = 0; r.right = x; r.bottom = rect.bottom;
+          FillRect(hDC, &r, brush);
+          r.left = rect.right-x; r.right = rect.right;
+          FillRect(hDC, &r, brush);
+        }
       }
       else if (frameAspect > windowAspect) {
         w = rect.right;
         h = frameHeight*rect.right/frameWidth;
         x = 0;
         y = (rect.bottom - h)/2;
-        Rectangle(hDC, 0, 0,             rect.right, y);
-        Rectangle(hDC, 0, rect.bottom-y, rect.right, rect.bottom);
+        if (brush != NULL) {
+          RECT r;
+          r.left = 0; r.top = 0; r.right = rect.right; r.bottom = y;
+          FillRect(hDC, &r, brush);
+          r.top = rect.bottom - y; r.bottom = rect.bottom;
+          FillRect(hDC, &r, brush);
+        }
       }
       else {
         x = y = 0;
@@ -1648,6 +1664,9 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
              << ", size=" << m_bitmap.bmiHeader.biSizeImage << ", result=" << result << ", error=" << lastError);
     }
   }
+
+  if (brush != NULL)
+    DeleteObject(brush);
 
   if (m_showInfo) {
     PStringStream strm;
@@ -1708,6 +1727,7 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
     wndClass.lpszClassName = wndClassName;
     wndClass.lpszClassName = wndClassName;
     wndClass.lpfnWndProc = ::WndProc;
+    wndClass.hbrBackground = GetStockBrush(HOLLOW_BRUSH);
     wndClass.cbWndExtra = sizeof(this);
     PAssertOS(RegisterClass(&wndClass));
   }
