@@ -422,11 +422,11 @@ PChannel::Errors PSocket::Select(SelectList & read,
           case ECONNREFUSED :
           case EHOSTUNREACH :
           case ENETUNREACH :
-            errorCode = Unavailable;
+            errorCode = PChannel::Unavailable;
             break;
 
           case EMSGSIZE :
-            errorCode = BufferTooSmall;
+            errorCode = PChannel::BufferTooSmall;
             break;
 
           default :
