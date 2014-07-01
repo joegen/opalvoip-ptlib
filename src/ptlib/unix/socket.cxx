@@ -416,8 +416,23 @@ PChannel::Errors PSocket::Select(SelectList & read,
         struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
         PTRACE_IF(2, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
                   "PTLib\tICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
-        errno = sock_error->ee_errno;
-        PChannel::ConvertOSError(-1, errorCode, errorNumber);
+        errno = errorNumber = sock_error->ee_errno;
+        switch (errorNumber) {
+          case ECONNRESET :
+          case ECONNREFUSED :
+          case EHOSTUNREACH :
+          case ENETUNREACH :
+            errorCode = Unavailable;
+            break;
+
+          case EMSGSIZE :
+            errorCode = BufferTooSmall;
+            break;
+
+          default :
+            // Use adjusted errno for conversion to PTLib normalised values
+            PChannel::ConvertOSError(-1, errorCode, errorNumber);
+        }
       }
     }
   }
