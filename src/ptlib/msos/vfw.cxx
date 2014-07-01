@@ -1182,10 +1182,12 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
 
   protected:
     PDECLARE_NOTIFIER(PThread, PVideoOutputDevice_Window, HandleDisplay);
+    static VOID CALLBACK TimerProc(_In_ HWND, _In_ UINT, _In_ UINT_PTR, _In_ DWORD);
     void CreateDisplayWindow();
     void Draw(HDC hDC);
 
     HWND       m_hWnd;
+    HWND       m_hParent;
     DWORD      m_dwStyle;
     DWORD      m_dwExStyle;
     PThread  * m_thread;
@@ -1228,6 +1230,7 @@ PCREATE_VIDOUTPUT_PLUGIN_EX(Window,
 
 PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   : m_hWnd(NULL)
+  , m_hParent(NULL)
   , m_dwStyle(DEFAULT_STYLE)
   , m_dwExStyle(0)
   , m_thread(NULL)
@@ -1268,6 +1271,26 @@ PStringArray PVideoOutputDevice_Window::GetOutputDeviceNames()
 }
 
 
+VOID CALLBACK PVideoOutputDevice_Window::TimerProc(_In_  HWND,
+                                                   _In_  UINT,
+                                                   _In_  UINT_PTR idEvent,
+                                                   _In_  DWORD)
+{
+  ((PVideoOutputDevice_Window*)idEvent)->CreateDisplayWindow();
+}
+
+
+static int GetTokenValue(const PString & deviceName, const char * token, int defaultValue)
+{
+  PINDEX pos = deviceName.Find(token);
+  if (pos == P_MAX_INDEX)
+    return defaultValue;
+
+  pos += strlen(token);
+  return deviceName.Mid(pos).AsInteger();
+}
+
+
 PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImmediate)
 {
   if (name.NumCompare(P_MSWIN_VIDEO_PREFIX) != EqualTo)
@@ -1279,22 +1302,70 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
 
   deviceName = name;
 
-  if (deviceName.Find("PARENT") == P_MAX_INDEX) {
-    m_thread = PThread::Create(PCREATE_NOTIFIER(HandleDisplay), "VidOut");
+  m_hParent = NULL;
+  PINDEX pos = deviceName.Find("PARENT=");
+  if (pos != P_MAX_INDEX) {
+    m_hParent = (HWND)strtoul(((const char *)deviceName)+pos+7, NULL, 0);
+    if (!::IsWindow(m_hParent)) {
+      PTRACE(2, "Illegal parent window " << m_hParent << " specified.");
+      return false;
+    }
+  }
 
+  pos = deviceName.Find("STYLE=");
+  m_dwStyle = pos == P_MAX_INDEX ? DEFAULT_STYLE : strtoul(((const char *)deviceName)+pos+6, NULL, 0);
+  if ((m_dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
+    PTRACE(1, "Window must be WS_POPUP or WS_CHILD window.");
+    return false;
+  }
+
+  // Have parsed out style & parent, see if legal combination
+  if (m_hParent == NULL && (m_dwStyle&WS_POPUP) == 0) {
+    PTRACE(1, "Must have parent for WS_CHILD window.");
+    return false;
+  }
+
+  m_lastPosition.x = GetTokenValue(deviceName, "X=", CW_USEDEFAULT);
+  m_lastPosition.y = GetTokenValue(deviceName, "Y=", CW_USEDEFAULT);
+  m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
+  m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
+
+  if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
+    m_sizeMode = FullScreen;
+  else if (deviceName.Find("HALF") != P_MAX_INDEX)
+    m_sizeMode = HalfSize;
+  else if (deviceName.Find("DOUBLE") != P_MAX_INDEX)
+    m_sizeMode = DoubleSize;
+  else if (m_fixedSize.cx > 0 && m_fixedSize.cy > 0)
+    m_sizeMode = FixedSize;
+  channelNumber = m_sizeMode;
+
+  if (m_lastPosition.x == CW_USEDEFAULT && m_lastPosition.y == CW_USEDEFAULT) {
+    if (m_hParent != NULL) {
+      RECT rect;
+      GetWindowRect(m_hParent, &rect);
+      m_lastPosition.x = (rect.right + rect.left - frameWidth)/2;
+      m_lastPosition.y = (rect.bottom + rect.top - frameHeight)/2;
+    }
+    else {
+      m_lastPosition.x = (GetSystemMetrics(SM_CXSCREEN) - frameWidth)/2;
+      m_lastPosition.y = (GetSystemMetrics(SM_CYSCREEN) - frameHeight)/2;
+    }
+  }
+  
+  m_showInfo = deviceName.Find("SHOWINFO") != P_MAX_INDEX;
+
+  if (m_hParent != NULL) {
+    // This is a sneaky way to get a callback in the context of the parent windows thread
+    SetTimer(m_hParent, (UINT_PTR)this, USER_TIMER_MINIMUM, TimerProc);
+    m_started.Wait();
+    KillTimer(m_hParent, (UINT_PTR)this);
     m_openCloseMutex.Signal();
-    m_started.Wait();     
   }
   else {
-    /* Description: child windows should be created on the same thread as the
-      parent window (well, not necessarily, but it is much less error prone
-      that way) so I am adding another method to handle creating child
-      windows which will be created in the calling thread.
-      Date: 03/15/2012
-      Author: Jonathan M. Henson
-     */
-    CreateDisplayWindow();
+    m_thread = PThread::Create(PCREATE_NOTIFIER(HandleDisplay), "VidOut");
     m_openCloseMutex.Signal();
+    m_started.Wait();
   }
 
   return startImmediate ? Start() : IsOpen();
@@ -1619,17 +1690,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 
-static int GetTokenValue(const PString & deviceName, const char * token, int defaultValue)
-{
-  PINDEX pos = deviceName.Find(token);
-  if (pos == P_MAX_INDEX)
-    return defaultValue;
-
-  pos += strlen(token);
-  return deviceName.Mid(pos).AsInteger();
-}
-
-
 void PVideoOutputDevice_Window::CreateDisplayWindow()
 {
 #ifndef _WIN32_WCE
@@ -1652,81 +1712,27 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
     PAssertOS(RegisterClass(&wndClass));
   }
 
-  PINDEX pos = deviceName.Find("STYLE=");
-  m_dwStyle = pos == P_MAX_INDEX ? DEFAULT_STYLE : strtoul(((const char *)deviceName)+pos+6, NULL, 0);
-  if ((m_dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
-    PTRACE(1, "Window must be WS_POPUP or WS_CHILD window.");
-    return;
-  }
-
-  HWND hParent = NULL;
-  pos = deviceName.Find("PARENT=");
-  if (pos != P_MAX_INDEX) {
-    hParent = (HWND)strtoul(((const char *)deviceName)+pos+7, NULL, 0);
-    if (!::IsWindow(hParent)) {
-      PTRACE(2, "Illegal parent window " << hParent << " specified.");
-      return;
-    }
-  }
-
-  // Have parsed out style & parent, see if legal combination
-  if (hParent == NULL && (m_dwStyle&WS_POPUP) == 0) {
-    PTRACE(1, "Window must be WS_POPUP if parent window not specified.");
-    return;
-  }
-
   PVarString title = DEFAULT_TITLE;
-  pos = deviceName.Find("TITLE=\"");
+  PINDEX pos = deviceName.Find("TITLE=\"");
   if (pos != P_MAX_INDEX)
     title = PString(PString::Literal, deviceName.Mid(pos+6));
 
-  m_lastPosition.x = GetTokenValue(deviceName, "X=", CW_USEDEFAULT);
-  m_lastPosition.y = GetTokenValue(deviceName, "Y=", CW_USEDEFAULT);
-  m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
-  m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
-
-  if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
-    m_sizeMode = FullScreen;
-  else if (deviceName.Find("HALF") != P_MAX_INDEX)
-    m_sizeMode = HalfSize;
-  else if (deviceName.Find("DOUBLE") != P_MAX_INDEX)
-    m_sizeMode = DoubleSize;
-  else if (m_fixedSize.cx > 0 && m_fixedSize.cy > 0)
-    m_sizeMode = FixedSize;
-  channelNumber = m_sizeMode;
-
-  if (m_lastPosition.x == CW_USEDEFAULT && m_lastPosition.y == CW_USEDEFAULT) {
-    if (hParent != NULL) {
-      RECT rect;
-      GetWindowRect(hParent, &rect);
-      m_lastPosition.x = (rect.right + rect.left - frameWidth)/2;
-      m_lastPosition.y = (rect.bottom + rect.top - frameHeight)/2;
-    }
-    else {
-      m_lastPosition.x = (GetSystemMetrics(SM_CXSCREEN) - frameWidth)/2;
-      m_lastPosition.y = (GetSystemMetrics(SM_CYSCREEN) - frameHeight)/2;
-    }
-  }
-  
   if ((m_hWnd = CreateWindow(wndClassName,
                              title, 
                              m_dwStyle,
                              m_lastPosition.x , m_lastPosition.y, frameWidth, frameHeight,
-                             hParent, NULL, GetModuleHandle(NULL), this)) == NULL)
-    return;
+                             m_hParent, NULL, GetModuleHandle(NULL), this)) != NULL) {
+    m_dwExStyle = GetWindowLong(m_hWnd, GWL_EXSTYLE);
+    SetChannel(GetChannel());
+  }
 
-  m_dwExStyle = GetWindowLong(m_hWnd, GWL_EXSTYLE);
-  SetChannel(GetChannel());
-
-  m_showInfo = deviceName.Find("SHOWINFO") != P_MAX_INDEX;
+  m_started.Signal();
 }
 
 
 void PVideoOutputDevice_Window::HandleDisplay(PThread &, P_INT_PTR)
 {
   CreateDisplayWindow();
-
-  m_started.Signal();
 
   if (m_hWnd != NULL) {
     MSG msg;
@@ -1840,7 +1846,8 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
       break;
 
     case WM_DESTROY:
-      PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
+      if (m_thread != NULL)
+        PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
       break;
   }
   return DefWindowProc(m_hWnd, uMsg, wParam, lParam);
