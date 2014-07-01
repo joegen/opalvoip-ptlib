@@ -1923,12 +1923,12 @@ bool PSSLContext::SetCredentials(const PString & authority,
     return false;
   }
 
-  // Can put the base64 doirectly into string, rather than file path
+  // Can put the base64 directly into string, rather than file path
   if (!key.IsValid())
-    key.Parse(certificate);
+    key.Parse(privateKey);
 
   if (!cert.IsValid())
-    cert.Parse(privateKey);
+    cert.Parse(certificate);
 
   if (!cert.IsValid() || !key.IsValid()) {
 
