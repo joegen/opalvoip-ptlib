@@ -57,10 +57,6 @@ static pthread_t baseThread;
 #include <jni.h>
 #endif
 
-#ifdef P_HAS_SEMAPHORES_XPG6
-#include "semaphore.h"
-#endif
-
 #ifndef P_ANDROID
   #define P_USE_THREAD_CANCEL 1
 #else
@@ -1183,6 +1179,11 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
   m_initial = std::min(initial, m_maximum);
 
 #if defined(P_HAS_SEMAPHORES)
+  /* Due to bug in some Linux/Kernel versions, need to clear structure manually, sem_init does not do the job.
+     See http://stackoverflow.com/questions/1832395/sem-timedwait-not-supported-properly-on-redhat-enterprise-linux-5-3-onwards
+     While the above link was for RHEL, seems to happen on some Fedoras as well. */
+  memset(&m_semaphore, 0, sizeof(sem_t));
+
   #if defined(P_HAS_NAMED_SEMAPHORES)
     if (sem_init(&m_semaphore, 0, m_initial) == 0)
       m_namedSemaphore.ptr = NULL;
