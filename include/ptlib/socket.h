@@ -485,6 +485,8 @@ class PSocket : public PChannel
   //@}
 
   protected:
+    virtual PBoolean ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group = LastGeneralError);
+
     /*This function calls os_socket() with the correct parameters for the
        socket protocol type.
      */
@@ -523,6 +525,8 @@ class PSocket : public PChannel
       struct sockaddr * addr,
       socklen_t * size
     );
+
+    int os_errno() const;
 
 
   // Member variables

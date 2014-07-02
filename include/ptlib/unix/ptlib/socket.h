@@ -38,10 +38,6 @@
     virtual bool Read(void * ptr, PINDEX len);
     virtual bool Write(const void * buf, PINDEX len);
     ~PSocket();
-#if P_HAS_RECVMSG_MSG_ERRQUEUE
-  protected:
-    virtual PBoolean ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group = LastGeneralError);
-#endif
 
 
-//)nd Of File ////////////////////////////////////////////////////////////////
+//End Of File ////////////////////////////////////////////////////////////////
