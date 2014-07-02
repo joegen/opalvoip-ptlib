@@ -975,10 +975,8 @@ int PSocket::Select(PSocket & sock1,
   read += sock1;
   read += sock2;
 
-  Errors lastError;
-  int osError;
-  if (!PChannel::ConvertOSError(Select(read, dummy1, dummy2, timeout), lastError, osError))
-    return lastError;
+  if (!sock1.ConvertOSError(Select(read, dummy1, dummy2, timeout)))
+    return sock1.GetErrorCode();
 
   switch (read.GetSize()) {
     case 0 :
@@ -1026,6 +1024,27 @@ PChannel::Errors PSocket::Select(SelectList & read,
                                  SelectList & except)
 {
   return Select(read, write, except, PMaxTimeInterval);
+}
+
+
+PBoolean PSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
+{
+  if (PChannel::ConvertOSError(libcReturnValue, group))
+    return true;
+
+  switch (lastErrorNumber[group] = os_errno()) {
+    case ECONNRESET :
+    case ECONNREFUSED :
+    case EHOSTUNREACH :
+    case ENETUNREACH :
+      SetErrorValues(Unavailable, lastErrorNumber[group], group);
+      break;
+
+    case EMSGSIZE :
+      return SetErrorValues(BufferTooSmall, lastErrorNumber[group], group);
+  }
+
+  return false;
 }
 
 
@@ -2721,27 +2740,6 @@ void PUDPSocket::InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & a
 {
   m_lastReceiveAddress = ap.GetAddress();
   m_lastReceivePort    = ap.GetPort();
-}
-
-
-PBoolean PUDPSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
-{
-  if (PIPDatagramSocket::ConvertOSError(libcReturnValue, group))
-    return true;
-
-  switch (lastErrorNumber[group]) {
-    case ECONNRESET :
-    case ECONNREFUSED :
-    case EHOSTUNREACH :
-    case ENETUNREACH :
-      SetErrorValues(Unavailable, lastErrorNumber[group], group);
-      break;
-
-    case EMSGSIZE :
-      return SetErrorValues(BufferTooSmall, lastErrorNumber[group], group);
-  }
-
-  return false;
 }
 
 
