@@ -391,15 +391,15 @@ PString PChannel::GetErrorText(Errors normalisedError, int osError /* =0 */)
 }
 
 
-PBoolean PChannel::ConvertOSError(P_INT_PTR err, Errors & lastError, int & osError)
-
+PBoolean PChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 {
-  osError = (err >= 0) ? 0 : errno;
+  int osError = (libcReturnValue >= 0) ? 0 : errno;
+  Errors lastError;
 
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return true;
+      break;
 
     case EMSGSIZE:
       lastError = BufferTooSmall;
@@ -458,7 +458,8 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR err, Errors & lastError, int & osErr
       lastError = Miscellaneous;
       break;
   }
-  return false;
+
+  return SetErrorValues(lastError, osError, group);
 }
 
 

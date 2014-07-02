@@ -277,18 +277,6 @@ class PChannel : public PObject, public std::iostream
       Errors lastError,   ///< Error code to translate.
       int osError = 0     ///< OS error number to translate.
     );
-
-    /** Convert an operating system error into platform independent error.
-       This will set the lastError and osError member variables for access by
-       GetErrorCode() and GetErrorNumber().
-       
-       @return true if there was no error.
-     */
-    static PBoolean ConvertOSError(
-      P_INT_PTR libcReturnValue,
-      Errors & lastError,
-      int & osError
-    );
   //@}
 
   /**@name Reading functions */

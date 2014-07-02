@@ -835,7 +835,7 @@ class PSSLChannel : public PIndirectChannel
     virtual PBoolean Close();
     virtual PBoolean Shutdown(ShutdownValue) { return true; }
     virtual PString GetErrorText(ErrorGroup group = NumErrorGroups) const;
-    virtual PBoolean ConvertOSError(P_INT_PTR error, ErrorGroup group = LastGeneralError);
+    virtual PBoolean ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group = LastGeneralError);
 
     // New functions
     /**Accept a new inbound connection (server).
