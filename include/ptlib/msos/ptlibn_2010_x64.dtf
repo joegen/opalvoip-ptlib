@@ -2545,7 +2545,7 @@ EXPORTS
     ??0Form@PHTML@@QEAA@PEBD000@Z @2105 NONAME
     ??0FormField@PHTML@@IEAA@PEBD0W4ElementInSet@1@W4OptionalCRLF@Element@1@W4DisableCodes@1@0@Z @2106 NONAME
     ??0Frame@PEthSocket@@QEAA@_K@Z @2107 NONAME
-    ??0G7231FACTChunk@@QEAA@XZ @2108 NONAME
+    ??0G7231FACTChunk@PWAV@@QEAA@XZ @30251 NONAME
     ??0HandleCapture_PNotifier@PVideoInputDevice_VideoForWindows@@QEAA@PEAV1@@Z @2109 NONAME
     ??0HandleDisplay_PNotifier@PVideoOutputDevice_Window@@QEAA@PEAV1@@Z @2110 NONAME
     ??0Head@PHTML@@QEAA@XZ @2111 NONAME
@@ -7732,8 +7732,8 @@ EXPORTS
     ??_8Transport@XMPP@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @27838 NONAME
     ??_8Window@PCLICurses@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @23672 NONAME
     ??_8Window@PCLICurses@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @23673 NONAME
-    ??_9PChannel@@$BLA@AA @6353 NONAME
-    ??_9PChannel@@$BMA@AA @6354 NONAME
+    ??_9PChannel@@$BKI@AA @30252 NONAME
+    ??_9PChannel@@$BLI@AA @30253 NONAME
     ??_9PEthSocketThread@@$BGA@AA @6355 NONAME
     ??_9PSDL_Window@@$BGA@AA @27839 NONAME
     ??_B?1??GetInstance@PSDL_Window@@SAAEAV1@XZ@51 @27840 NONAME
@@ -14927,11 +14927,8 @@ EXPORTS
     ?Convert@P_YUY2_YUV420P@@UEAA_NPEBEPEAEPEA_K@Z @12128 NONAME
     ?ConvertInPlace@PColourConverter@@UEAA_NPEAEPEA_K_N@Z @12129 NONAME
     ?ConvertOSError@PChannel@@MEAA_N_JW4ErrorGroup@1@@Z @21003 NONAME
-    ?ConvertOSError@PChannel@@SA_N_JAEAW4Errors@1@AEAH@Z @21004 NONAME
-    ?ConvertOSError@PSocket@@KA_N_JAEAW4Errors@PChannel@@AEAH@Z @21005 NONAME
     ?ConvertOSError@PSocket@@MEAA_N_JW4ErrorGroup@PChannel@@@Z @21006 NONAME
     ?ConvertOSError@PSSLChannel@@UEAA_N_JW4ErrorGroup@PChannel@@@Z @21007 NONAME
-    ?ConvertOSError@PUDPSocket@@MEAA_N_JW4ErrorGroup@PChannel@@@Z @24344 NONAME
     ?CookieTag@PHTTP@@SAAEBVPCaselessString@@XZ @12134 NONAME
     ?copy@?$char_traits@D@std@@SAPEADPEADPEBD_K@Z @12135 NONAME
     ?Copy@Dynamic@Variant@PVarType@@QEAAXAEBU123@@Z @12136 NONAME
@@ -19454,6 +19451,7 @@ EXPORTS
     ?os_accept@PSocket@@IEAA_NAEAV1@PEAUsockaddr@@PEAH@Z @15703 NONAME
     ?os_close@PSocket@@IEAAHXZ @15704 NONAME
     ?os_connect@PSocket@@IEAA_NPEAUsockaddr@@H@Z @15705 NONAME
+    ?os_errno@PSocket@@IEBAHXZ @30254 NONAME
     ?os_gmtime@PTime@@SAPEAUtm@@PEB_JPEAU2@@Z @15706 NONAME
     ?os_localtime@PTime@@SAPEAUtm@@PEB_JPEAU2@@Z @15707 NONAME
     ?os_socket@PSocket@@IEAAHHHH@Z @15708 NONAME
@@ -21262,6 +21260,7 @@ EXPORTS
     ?Tick@PTimer@@SA?AVPTimeInterval@@XZ @17051 NONAME
     ?time@?$_Locbase@H@std@@2HB @17054 NONAME
     ?TimerList@PTimer@@SAPEAVList@1@XZ @26806 NONAME
+    ?TimerProc@PVideoOutputDevice_Window@@KAXPEAUHWND__@@I_KK@Z @30255 NONAME
     ?tinyjpeg_idct_float@@YAXPEAUcomponent@@PEAEH@Z @22218 NONAME
     ?ToBase64@PXMLRPCVariableBase@@QEBA?AVPString@@AEAVPAbstractArray@@@Z @29943 NONAME
     ?ToCharArray@PStringArray@@QEBAPEAPEADPEAVPCharArray@@@Z @17055 NONAME
