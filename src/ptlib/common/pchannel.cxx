@@ -497,16 +497,6 @@ PString PChannel::GetErrorText(ErrorGroup group) const
 }
 
 
-PBoolean PChannel::ConvertOSError(P_INT_PTR status, ErrorGroup group)
-{
-  Errors lastError;
-  int osError;
-  PBoolean ok = ConvertOSError(status, lastError, osError);
-  SetErrorValues(lastError, osError, group);
-  return ok;
-}
-
-
 PBoolean PChannel::SetErrorValues(Errors errorCode, int errorNum, ErrorGroup group)
 {
   lastErrorCode[NumErrorGroups] = lastErrorCode[group] = errorCode;
@@ -533,11 +523,14 @@ void PChannel::AsyncContext::OnIOComplete(PINDEX length, int errorNumber)
   PTRACE(6, m_channel, "AsyncIO", "OnIOComplete: len=" << length << ", error=" << errorNumber);
 
   m_length = length;
-  m_errorNumber = errorNumber;
-  PChannel::ConvertOSError(-3, m_errorCode, m_errorNumber);
 
   PChannel * channel = m_channel;
   m_channel = NULL;
+
+  channel->SetErrorValues(PChannel::Miscellaneous, errorNumber);
+  channel->ConvertOSError(-3);
+  m_errorCode = channel->GetErrorCode();
+
   (channel->*m_onComplete)(*this);
 }
 

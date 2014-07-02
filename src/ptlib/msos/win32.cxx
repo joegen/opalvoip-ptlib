@@ -657,9 +657,11 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
 }
 
 
-PBoolean PChannel::ConvertOSError(P_INT_PTR status, Errors & lastError, int & osError)
+PBoolean PChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 {
-  switch (status) {
+  int osError = GetErrorNumber(group);
+
+  switch (libcReturnValue) {
     case -1 :
       if ((osError = errno) != 0)
         break;
@@ -752,15 +754,14 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR status, Errors & lastError, int & os
       break;
 
     default :
-      lastError = NoError;
       osError = 0;
-      return true;
   }
 
+  Errors lastError;
   switch (osError) {
     case 0 :
       lastError = NoError;
-      return true;
+      break;
     case ENOENT :
       lastError = NotFound;
       break;
@@ -798,7 +799,7 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR status, Errors & lastError, int & os
       lastError = Miscellaneous;
   }
 
-  return false;
+  return SetErrorValues(lastError, osError, group);
 }
 
 
