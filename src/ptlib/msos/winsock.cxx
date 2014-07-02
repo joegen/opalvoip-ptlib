@@ -503,12 +503,16 @@ PChannel::Errors PSocket::Select(SelectList & read,
                                  SelectList & except,
                                  const PTimeInterval & timeout)
 {
+  PSocket * firstSocket = NULL;
+
   SelectList::iterator sock;
   P_fd_set readfds;
   for (sock = read.begin(); sock != read.end(); ++sock) {
     if (!sock->IsOpen())
       return NotOpen;
     readfds += sock->GetHandle();
+    if (firstSocket == NULL)
+      firstSocket = &*sock;
   }
 
   P_fd_set writefds;
@@ -516,6 +520,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
     if (!sock->IsOpen())
       return NotOpen;
     writefds += sock->GetHandle();
+    if (firstSocket == NULL)
+      firstSocket = &*sock;
   }
 
   P_fd_set exceptfds;
@@ -523,15 +529,18 @@ PChannel::Errors PSocket::Select(SelectList & read,
     if (!sock->IsOpen())
       return NotOpen;
     exceptfds += sock->GetHandle();
+    if (firstSocket == NULL)
+      firstSocket = &*sock;
   }
+
+  if (firstSocket == NULL)
+    return BadParameter;
 
   P_timeval tval = timeout;
   int retval = select(INT_MAX, readfds, writefds, exceptfds, tval);
 
-  Errors lastError;
-  int osError;
-  if (!ConvertOSError(retval, lastError, osError))
-    return lastError;
+  if (!firstSocket->ConvertOSError(retval))
+    return firstSocket->GetErrorCode();
 
   if (retval > 0) {
     sock = read.begin();
@@ -575,20 +584,11 @@ PChannel::Errors PSocket::Select(SelectList & read,
 }
 
 
-PBoolean PSocket::ConvertOSError(P_INT_PTR status, ErrorGroup group)
+int PSocket::os_errno() const
 {
-  Errors lastError;
-  int osError;
-  PBoolean ok = ConvertOSError(status, lastError, osError);
-  SetErrorValues(lastError, osError, group);
-  return ok;
-}
-
-
-PBoolean PSocket::ConvertOSError(P_INT_PTR status, Errors & lastError, int & osError)
-{
-  SetLastError(WSAGetLastError());
-  return PChannel::ConvertOSError(status, lastError, osError);
+  DWORD err = WSAGetLastError();
+  SetLastError(err);
+  return err;
 }
 
 

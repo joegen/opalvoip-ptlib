@@ -2220,11 +2220,11 @@ PBoolean PSSLChannel::Close()
 }
 
 
-PBoolean PSSLChannel::ConvertOSError(P_INT_PTR error, ErrorGroup group)
+PBoolean PSSLChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 {
   Errors lastError = NoError;
   DWORD osError = 0;
-  if (SSL_get_error(m_ssl, (int)error) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
+  if (SSL_get_error(m_ssl, (int)libcReturnValue) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
     osError |= 0x80000000;
     lastError = AccessDenied;
   }
