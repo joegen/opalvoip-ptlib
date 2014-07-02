@@ -3493,7 +3493,7 @@ EXPORTS
     ??0Form@PHTML@@QAE@PBD000@Z @3358 NONAME
     ??0FormField@PHTML@@IAE@PBD0W4ElementInSet@1@W4OptionalCRLF@Element@1@W4DisableCodes@1@0@Z @3359 NONAME
     ??0Frame@PEthSocket@@QAE@H@Z @3360 NONAME
-    ??0G7231FACTChunk@@QAE@XZ @3361 NONAME
+    ??0G7231FACTChunk@PWAV@@QAE@XZ @29735 NONAME
     ??0HandleCapture_PNotifier@PVideoInputDevice_VideoForWindows@@QAE@PAV1@@Z @3362 NONAME
     ??0HandleDisplay_PNotifier@PVideoOutputDevice_Window@@QAE@PAV1@@Z @3363 NONAME
     ??0HandleScope@Private@PJavaScript@@QAE@PAU12@@Z @28634 NONAME
@@ -9153,8 +9153,8 @@ EXPORTS
     ??_8Transport@XMPP@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @8799 NONAME
     ??_8Window@PCLICurses@@7B?$basic_istream@DU?$char_traits@D@std@@@std@@@ @26366 NONAME
     ??_8Window@PCLICurses@@7B?$basic_ostream@DU?$char_traits@D@std@@@std@@@ @26367 NONAME
-    ??_9PChannel@@$BFI@AE @8800 NONAME
-    ??_9PChannel@@$BGA@AE @8801 NONAME
+    ??_9PChannel@@$BFE@AE @29736 NONAME
+    ??_9PChannel@@$BFM@AE @29737 NONAME
     ??_9PEthSocketThread@@$BDA@AE @8802 NONAME
     ??_9PSDL_Window@@$BDA@AE @8803 NONAME
     ??_B?1???0Private@PJavaScript@@QAE@XZ@51 @28754 NONAME
@@ -16943,11 +16943,8 @@ EXPORTS
     ?Convert@P_YUY2_YUV420P@@UAE_NPBEPAEPAH@Z @16389 NONAME
     ?ConvertInPlace@PColourConverter@@UAE_NPAEPAH_N@Z @16390 NONAME
     ?ConvertOSError@PChannel@@MAE_NHW4ErrorGroup@1@@Z @16391 NONAME
-    ?ConvertOSError@PChannel@@SA_NHAAW4Errors@1@AAH@Z @16392 NONAME
-    ?ConvertOSError@PSocket@@KA_NHAAW4Errors@PChannel@@AAH@Z @16393 NONAME
     ?ConvertOSError@PSocket@@MAE_NHW4ErrorGroup@PChannel@@@Z @16394 NONAME
     ?ConvertOSError@PSSLChannel@@UAE_NHW4ErrorGroup@PChannel@@@Z @16395 NONAME
-    ?ConvertOSError@PUDPSocket@@MAE_NHW4ErrorGroup@PChannel@@@Z @27159 NONAME
     ?CookieTag@PHTTP@@SAABVPCaselessString@@XZ @16397 NONAME
     ?copy@?$char_traits@D@std@@SAPADPADPBDI@Z @16398 NONAME
     ?Copy@Dynamic@Variant@PVarType@@QAEXABU123@@Z @16399 NONAME
@@ -22094,6 +22091,7 @@ EXPORTS
     ?os_accept@PSocket@@IAE_NAAV1@PAUsockaddr@@PAH@Z @21270 NONAME
     ?os_close@PSocket@@IAEHXZ @21271 NONAME
     ?os_connect@PSocket@@IAE_NPAUsockaddr@@H@Z @21272 NONAME
+    ?os_errno@PSocket@@IBEHXZ @29738 NONAME
     ?os_gmtime@PTime@@SAPAUtm@@PB_JPAU2@@Z @21273 NONAME
     ?os_localtime@PTime@@SAPAUtm@@PB_JPAU2@@Z @21274 NONAME
     ?os_socket@PSocket@@IAEHHHH@Z @21275 NONAME
@@ -24120,6 +24118,7 @@ EXPORTS
     ?Tick@PTimer@@SA?AVPTimeInterval@@XZ @23088 NONAME
     ?time@?$_Locbase@H@std@@2HB @23091 NONAME
     ?TimerList@PTimer@@SAPAVList@1@XZ @29484 NONAME
+    ?TimerProc@PVideoOutputDevice_Window@@KGXPAUHWND__@@IIK@Z @29739 NONAME
     ?tinyjpeg_idct_float@@YAXPAUcomponent@@PAEH@Z @23092 NONAME
     ?tinyness_before@_Num_base@std@@2_NB @23093 NONAME
     ?tinyness_before@_Num_float_base@std@@2_NB @23094 NONAME
@@ -24509,7 +24508,7 @@ EXPORTS
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CAI@AEXXZ @28941 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CBA@AEXXZ @28942 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CBI@AEXXZ @28943 NONAME
-    ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CCA@AEXXZ @28944 NONAME
+    ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CCI@AEXXZ @29740 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CDI@AEXXZ @28945 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CFI@AEXXZ @28946 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CIA@AEXXZ @28947 NONAME
@@ -24558,7 +24557,7 @@ EXPORTS
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CAI@AEXXZ @28988 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CBA@AEXXZ @28989 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CBI@AEXXZ @28990 NONAME
-    ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CCA@AEXXZ @28991 NONAME
+    ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CCI@AEXXZ @29741 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CDI@AEXXZ @28992 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CFI@AEXXZ @28993 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@CIA@AEXXZ @28994 NONAME
