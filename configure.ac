@@ -1369,6 +1369,7 @@ dnl MSWIN_DISPLAY    openssl,Open SSL (32 bit)
 dnl MSWIN_CHECK_FILE openssl,inc32\openssl\ssl.h,P_SSL_WIN32=1
 dnl MSWIN_CHECK_FILE openssl,include\openssl\ssl.h,P_SSL_WIN32=2
 dnl MSWIN_FIND_FILE  openssl,P_SSL_AES,aes.h,...
+dnl MSWIN_DEFINE     openssl,P_SSL_SRTP
 dnl MSWIN_DIR_SYMBOL openssl,SSL_WIN32_DIR
 dnl MSWIN_CHECK_DIR  openssl,..\openssl\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
@@ -1383,6 +1384,7 @@ dnl MSWIN_CHECK_DIR  openssl,\OpenSSL-Win32
 dnl MSWIN_DISPLAY    openssl64,Open SSL (64 bit)
 dnl MSWIN_CHECK_FILE openssl64,include\openssl\ssl.h,P_SSL_WIN64=1
 dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
+dnl MSWIN_DEFINE     openssl64,P_SSL_SRTP
 dnl MSWIN_CHECK_DIR  openssl64,..\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,..\external\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,\openssl64\
@@ -1413,6 +1415,20 @@ PTLIB_MODULE_OPTION(
             d2i_AutoPrivateKey(a, p, l);
          ],
          [AC_DEFINE([P_SSL_USE_CONST], [1], [SSL with const])]
+      )
+
+      MY_COMPILE_IFELSE(
+         [for OPENSSL SRTP support],
+         [$OPENSSL_CFLAGS],
+         [#include <openssl/ssl.h>],
+         [
+            SSL *s;
+            SRTP_PROTECTION_PROFILE * srtp = SSL_get_selected_srtp_profile(s);
+         ],
+         [
+            AC_DEFINE([P_SSL_SRTP], [1],[openssl with SRTP yes])
+            HAS_SSL_SRTP=1
+         ]
       )
 
       MY_COMPILE_IFELSE(

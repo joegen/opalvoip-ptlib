@@ -2110,7 +2110,12 @@ void PSSLContext::SetPasswordNotifier(const PSSLPasswordNotifier & notifier)
 
 bool PSSLContext::SetExtension(const char * extension)
 {
+#if P_SSL_SRTP
   return SSL_CTX_set_tlsext_use_srtp(m_context, extension) == 0;
+#else
+  #pragma message("SSL SRTP support (via OpenSSL) DISABLED")
+  return false;
+#endif
 }
 
 
@@ -2609,17 +2614,20 @@ bool PSSLChannelDTLS::IsServer() const
 
 PCaselessString PSSLChannelDTLS::GetSelectedProfile() const
 {
+#if P_SSL_SRTP
   SRTP_PROTECTION_PROFILE *p = SSL_get_selected_srtp_profile(m_ssl);
   if (p != NULL)
     return p->name;
 
   PTRACE(2, "SSL_get_selected_srtp_profile returned NULL: " << PSSLError());
+#endif
   return PString::Empty();
 }
 
 
 PBYTEArray PSSLChannelDTLS::GetKeyMaterial(PINDEX materialSize, const char * name) const
 {
+#if P_SSL_SRTP
   if (PAssert(materialSize > 0 && name != NULL && *name != '\0', PInvalidParameter)) {
     PBYTEArray result;
     if (SSL_export_keying_material(m_ssl,
@@ -2630,6 +2638,7 @@ PBYTEArray PSSLChannelDTLS::GetKeyMaterial(PINDEX materialSize, const char * nam
 
     PTRACE(2, "SSL_export_keying_material failed: " << PSSLError());
   }
+#endif
 
   return PBYTEArray();
 }
