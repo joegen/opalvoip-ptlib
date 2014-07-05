@@ -1543,6 +1543,7 @@ PTLIB_MODULE_OPTION(
          v8::Isolate * isolate;
          const char * name;
          v8::String::NewFromUtf8(isolate, name);
+         v8::V8::InitializeICU();
       ],
       [MY_COMPILE_IFELSE(
          [V8 Javascript API version 3],
