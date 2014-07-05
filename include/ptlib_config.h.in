@@ -385,6 +385,7 @@
 
 #if P_SSL
   #undef P_SSL_AES
+  #undef P_SSL_SRTP
   #undef P_SSL_USE_CONST
 #endif
 
