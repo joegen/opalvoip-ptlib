@@ -554,6 +554,7 @@ install:
 	   $(LN_S) -f $(notdir $(PTLIB_DEBUG_SHARED_FILE)) $(notdir $(PTLIB_DEBUG_SHARED_LINK)) ; \
 	fi
 	$(INSTALL) -m 444 include/ptlib.h $(DESTDIR)$(includedir)
+	$(INSTALL) -m 444 include/ptlib_wx.h $(DESTDIR)$(includedir)
 	$(INSTALL) -m 444 include/ptlib_config.h $(DESTDIR)$(includedir)
 	for fn in include/ptlib/*.h include/ptlib/*.inl; \
 	   do $(INSTALL) -m 444 $$fn $(DESTDIR)$(includedir)/ptlib; \
