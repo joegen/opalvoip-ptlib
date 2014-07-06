@@ -11850,6 +11850,7 @@ main ()
          v8::Isolate * isolate;
          const char * name;
          v8::String::NewFromUtf8(isolate, name);
+         v8::V8::InitializeICU();
 
   ;
   return 0;
