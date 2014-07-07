@@ -703,6 +703,10 @@ class PHTTPClient : public PHTTP
     /// Get persistent connection mode
     bool GetPersistent() const { return m_persist; }
 
+#if PTRACING
+    static PINDEX MaxTraceContentSize;
+#endif
+
   protected:
     bool AssureConnect(const PURL & url, PMIMEInfo & outMIME);
 

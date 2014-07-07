@@ -56,7 +56,9 @@ static const char * const AlgorithmNames[PHTTPClientDigestAuthentication::NumAlg
 
 static __inline bool IsOK(int response) { return (response/100) == 2; }
 
-static PINDEX MaxTraceContentSize = 1000;
+#if PTRACING
+PINDEX PHTTPClient::MaxTraceContentSize = 1000;
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -244,9 +246,11 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
       PString body;
       if (lastResponseCode >= 300) {
+#if PTRACING
         if ((int)replyMIME.GetInteger(ContentLengthTag(), INT_MAX) <= MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
         else
+#endif
           ReadContentBody(replyMIME); // Waste body
       }
 
