@@ -228,6 +228,10 @@ class PEthSocket : public PSocket
           PINDEX maxSize = 65536
         );
 
+        virtual bool Write(
+          PChannel & channel
+        ) const;
+
         virtual bool Read(
           PChannel & channel,
           PINDEX packetSize = P_MAX_INDEX
@@ -289,6 +293,8 @@ class PEthSocket : public PSocket
 
         const PTime & GetTimestamp() const { return m_timestamp; }
         bool IsFragmentated() const { return m_fragmentated; }
+
+        PINDEX GetSize() const { return m_rawSize; }
 
       protected:
         PTime       m_timestamp;
