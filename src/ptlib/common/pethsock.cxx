@@ -334,6 +334,12 @@ void PEthSocket::Frame::PreRead()
 }
 
 
+bool PEthSocket::Frame::Write(PChannel & channel) const
+{
+  return channel.Write(m_rawData, m_rawSize);
+}
+
+
 bool PEthSocket::Frame::Read(PChannel & channel, PINDEX packetSize)
 {
   PreRead();
