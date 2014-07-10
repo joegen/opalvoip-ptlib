@@ -24658,6 +24658,7 @@ EXPORTS
     ?Write@BaseStreamHandler@XMPP@@UEAA_NAEBVPXML@@@Z @23798 NONAME
     ?Write@BaseStreamHandler@XMPP@@UEAA_NPEBX_K@Z @23799 NONAME
     ?Write@Context@PCLI@@UEAA_NPEBX_K@Z @23800 NONAME
+    ?Write@Frame@PEthSocket@@UEBA_NAEAVPChannel@@@Z @31167 NONAME
     ?Write@PBER_Stream@@UEAA_NAEAVPChannel@@@Z @23801 NONAME
     ?Write@PChannel@@UEAA_NPEBX_K0@Z @23802 NONAME
     ?Write@PChannel@@UEAA_NPEBX_K@Z @23803 NONAME

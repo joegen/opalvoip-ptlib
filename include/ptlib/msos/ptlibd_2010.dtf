@@ -25393,6 +25393,7 @@ EXPORTS
     ?Write@BaseStreamHandler@XMPP@@UAE_NABVPXML@@@Z @24024 NONAME
     ?Write@BaseStreamHandler@XMPP@@UAE_NPBXH@Z @24025 NONAME
     ?Write@Context@PCLI@@UAE_NPBXH@Z @24026 NONAME
+    ?Write@Frame@PEthSocket@@UBE_NAAVPChannel@@@Z @32002 NONAME
     ?Write@PBER_Stream@@UAE_NAAVPChannel@@@Z @24027 NONAME
     ?Write@PChannel@@UAE_NPBXH0@Z @24028 NONAME
     ?Write@PChannel@@UAE_NPBXH@Z @24029 NONAME
