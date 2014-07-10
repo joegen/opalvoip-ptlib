@@ -92,7 +92,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 9, ReleaseCode, 1, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 9, ReleaseCode, 2, false, true)
 {
 }
 
@@ -270,7 +270,7 @@ void MergeSym::Main()
 
   PINDEX linecount = 0;
   PString dumpbin = args.GetOptionString('d', "dumpbin");
-  PPipeChannel pipe(dumpbin + " /symbols /directives '" + lib_filename + "'", PPipeChannel::ReadOnly);
+  PPipeChannel pipe(PSTRSTRM(dumpbin << " /symbols /directives \"" << lib_filename << '"'), PPipeChannel::ReadOnly);
   if (!pipe.IsOpen()) {
     PError << "\nMergeSym: could not run \"" << dumpbin << "\".\n";
     SetTerminationValue(2);
