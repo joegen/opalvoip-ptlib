@@ -2774,6 +2774,7 @@ EXPORTS
     ??0FMTChunk@PWAV@@QAE@XZ @2624 NONAME
     ??0Form@PHTML@@QAE@PBD000@Z @2625 NONAME
     ??0FormField@PHTML@@IAE@PBD0W4ElementInSet@1@W4OptionalCRLF@Element@1@W4DisableCodes@1@0@Z @2626 NONAME
+    ??0Frame@PEthSocket@@QAE@ABV01@@Z @29044 NONAME
     ??0Frame@PEthSocket@@QAE@H@Z @2627 NONAME
     ??0G7231FACTChunk@PWAV@@QAE@XZ @29038 NONAME
     ??0HandleCapture_PNotifier@PVideoInputDevice_VideoForWindows@@QAE@PAV1@@Z @2629 NONAME
