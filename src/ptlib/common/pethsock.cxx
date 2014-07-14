@@ -324,6 +324,18 @@ PEthSocket::Frame::Frame(PINDEX maxSize)
 }
 
 
+PEthSocket::Frame::Frame(const Frame & frame)
+  : m_rawData(frame.m_rawData, frame.m_rawSize) // Make copy, not reference
+  , m_rawSize(frame.m_rawSize)
+  , m_fragmentated(false)
+  , m_fragmentProto(0)
+  , m_fragmentProcessed(false)
+  , m_timestamp(frame.m_timestamp)
+{
+  m_rawData.SetMinSize(sizeof(PEthFrameHeader));
+}
+
+
 void PEthSocket::Frame::PreRead()
 {
   if (m_fragmentated) {

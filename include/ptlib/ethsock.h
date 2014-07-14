@@ -227,6 +227,9 @@ class PEthSocket : public PSocket
         Frame(
           PINDEX maxSize = 65536
         );
+        Frame(
+          const Frame & frame
+        );
 
         virtual bool Write(
           PChannel & channel
@@ -297,7 +300,6 @@ class PEthSocket : public PSocket
         PINDEX GetSize() const { return m_rawSize; }
 
       protected:
-        PTime       m_timestamp;
         PBYTEArray  m_rawData;
         PINDEX      m_rawSize;
 
@@ -305,6 +307,8 @@ class PEthSocket : public PSocket
         bool        m_fragmentated;
         unsigned    m_fragmentProto;
         bool        m_fragmentProcessed;
+
+        PTime              m_timestamp;
         PIPSocket::Address m_fragmentSrcIP;
         PIPSocket::Address m_fragmentDstIP;
     };
