@@ -1411,6 +1411,8 @@ void PTimedMutex::Wait()
     PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
            << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+    PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this << ", owner id="
+           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
   }
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
