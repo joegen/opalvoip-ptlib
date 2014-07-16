@@ -15989,6 +15989,7 @@ EXPORTS
     ?CreateContext@PCLICurses@@UEAAPEAVContext@PCLI@@XZ @25530 NONAME
     ?CreateControlEntry@PIpAccessControlList@@UEAAPEAVPIpAccessControlEntry@@AEBVPString@@@Z @15604 NONAME
     ?CreateControlWindow@PServiceProcess@@AEAA_N_N@Z @15605 NONAME
+    ?CreateDataLink@Frame@PEthSocket@@QEAAPEAEAEBTAddress@2@0I_K@Z @28709 NONAME
     ?CreateDateAndTime@PXMLRPCBlock@@QEAAPEAVPXMLElement@@AEBVPTime@@@Z @25531 NONAME
     ?CreateDevice@PVideoInputDevice@@SAPEAV1@AEBVPString@@PEAVPPluginManager@@@Z @15607 NONAME
     ?CreateDevice@PVideoOutputDevice@@SAPEAV1@AEBVPString@@PEAVPPluginManager@@@Z @15608 NONAME
@@ -16052,6 +16053,7 @@ EXPORTS
     ?CreateInstance@WorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@AEBII@@QEAAPEAVPWAVFileConverter@@AEBI@Z @15666 NONAME
     ?CreateInstance@WorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@AEBII@@QEAAPEAVPWAVFileFormat@@AEBI@Z @15667 NONAME
     ?CreateInstance@WorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@AEBVPCaselessString@@V2@@@QEAAPEAVPWAVFileFormat@@AEBVPCaselessString@@@Z @15668 NONAME
+    ?CreateIP@Frame@PEthSocket@@QEAAPEAEAEBVAddress@PIPSocket@@0I_K@Z @28710 NONAME
     ?CreateMember@PXMLRPCBlock@@QEAAPEAVPXMLElement@@AEBVPString@@PEAV2@@Z @25558 NONAME
     ?CreateNonSSLMessage@PSecureHTTPServiceProcess@@UEAA?AVPString@@AEBV2@@Z @15670 NONAME
     ?CreateObject@PBER_Stream@@UEBAPEAVPASN_Object@@IW4TagClass@2@_N@Z @15671 NONAME
@@ -16096,6 +16098,8 @@ EXPORTS
     ?CreateStruct@PXMLRPCBlock@@QEAAPEAVPXMLElement@@AEBVPStringToString@@@Z @25574 NONAME
     ?CreateStruct@PXMLRPCBlock@@QEAAPEAVPXMLElement@@AEBVPStringToString@@AEBVPString@@@Z @25575 NONAME
     ?CreateStruct@PXMLRPCBlock@@QEAAPEAVPXMLElement@@AEBVPXMLRPCStructBase@@@Z @25576 NONAME
+    ?CreateTCP@Frame@PEthSocket@@QEAAPEAEAEBVAddressAndPort@PIPSocket@@0_K@Z @28711 NONAME
+    ?CreateUDP@Frame@PEthSocket@@QEAAPEAEAEBVAddressAndPort@PIPSocket@@0_K@Z @28712 NONAME
     ?CreateValueElement@PXMLRPCBlock@@QEAAPEAVPXMLElement@@PEAV2@@Z @25577 NONAME
     ?CreateWaveFile@PMultiMediaFile@@QEAA_NAEBVPFilePath@@AEBVPWaveFormat@@K@Z @15718 NONAME
     ?CreateWAVFile@PVXMLChannel@@UEAAPEAVPWAVFile@@AEBVPFilePath@@_N@Z @15719 NONAME
