@@ -253,6 +253,12 @@ class PEthSocket : public PSocket
           Address & src,
           Address & dst
         );
+        BYTE * CreateDataLink(
+          const Address & src,
+          const Address & dst,
+          unsigned proto,
+          PINDEX length
+        );
 
         /** Extract the Internet Protocol payload.
             @return the protocol identifier for the payload.
@@ -264,6 +270,12 @@ class PEthSocket : public PSocket
           PBYTEArray & payload,
           PIPSocket::Address & src,
           PIPSocket::Address & dst
+        );
+        BYTE * CreateIP(
+          const PIPSocket::Address & src,
+          const PIPSocket::Address & dst,
+          unsigned proto,
+          PINDEX length
         );
 
         /** Extract the UDP payload.
@@ -279,6 +291,11 @@ class PEthSocket : public PSocket
           PIPSocketAddressAndPort & src,
           PIPSocketAddressAndPort & dst
         );
+        BYTE * CreateUDP(
+          const PIPSocketAddressAndPort & src,
+          const PIPSocketAddressAndPort & dst,
+          PINDEX length
+        );
 
         /** Extract the TCP payload.
             @return the protocol identifier for the payload.
@@ -292,6 +309,11 @@ class PEthSocket : public PSocket
           PBYTEArray & payload,
           PIPSocketAddressAndPort & src,
           PIPSocketAddressAndPort & dst
+        );
+        BYTE * CreateTCP(
+          const PIPSocketAddressAndPort & src,
+          const PIPSocketAddressAndPort & dst,
+          PINDEX length
         );
 
         const PTime & GetTimestamp() const { return m_timestamp; }
