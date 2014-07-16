@@ -18510,6 +18510,7 @@ EXPORTS
     ?CreateContext@PCLICurses@@UAEPAVContext@PCLI@@XZ @28500 NONAME
     ?CreateControlEntry@PIpAccessControlList@@UAEPAVPIpAccessControlEntry@@ABVPString@@@Z @17647 NONAME
     ?CreateControlWindow@PServiceProcess@@AAE_N_N@Z @17648 NONAME
+    ?CreateDataLink@Frame@PEthSocket@@QAEPAEABTAddress@2@0IH@Z @32004 NONAME
     ?CreateDateAndTime@PXMLRPCBlock@@QAEPAVPXMLElement@@ABVPTime@@@Z @28501 NONAME
     ?CreateDevice@PVideoInputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @17650 NONAME
     ?CreateDevice@PVideoOutputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @17651 NONAME
@@ -18574,6 +18575,7 @@ EXPORTS
     ?CreateInstance@WorkerBase@?$PFactoryTemplate@VPWAVFileConverter@@ABII@@QAEPAVPWAVFileConverter@@ABI@Z @17710 NONAME
     ?CreateInstance@WorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABII@@QAEPAVPWAVFileFormat@@ABI@Z @17711 NONAME
     ?CreateInstance@WorkerBase@?$PFactoryTemplate@VPWAVFileFormat@@ABVPCaselessString@@V2@@@QAEPAVPWAVFileFormat@@ABVPCaselessString@@@Z @17712 NONAME
+    ?CreateIP@Frame@PEthSocket@@QAEPAEABVAddress@PIPSocket@@0IH@Z @32005 NONAME
     ?CreateMember@PXMLRPCBlock@@QAEPAVPXMLElement@@ABVPString@@PAV2@@Z @28528 NONAME
     ?CreateNonSSLMessage@PSecureHTTPServiceProcess@@UAE?AVPString@@ABV2@@Z @17714 NONAME
     ?CreateObject@PBER_Stream@@UBEPAVPASN_Object@@IW4TagClass@2@_N@Z @17715 NONAME
@@ -18620,6 +18622,8 @@ EXPORTS
     ?CreateStruct@PXMLRPCBlock@@QAEPAVPXMLElement@@ABVPStringToString@@ABVPString@@@Z @28544 NONAME
     ?CreateStruct@PXMLRPCBlock@@QAEPAVPXMLElement@@ABVPXMLRPCStructBase@@@Z @28545 NONAME
     ?CreateTable@PLua@@QAE_NABVPString@@0@Z @17761 NONAME
+    ?CreateTCP@Frame@PEthSocket@@QAEPAEABVAddressAndPort@PIPSocket@@0H@Z @32006 NONAME
+    ?CreateUDP@Frame@PEthSocket@@QAEPAEABVAddressAndPort@PIPSocket@@0H@Z @32007 NONAME
     ?CreateValueElement@PXMLRPCBlock@@QAEPAVPXMLElement@@PAV2@@Z @28546 NONAME
     ?CreateWaveFile@PMultiMediaFile@@QAE_NABVPFilePath@@ABVPWaveFormat@@K@Z @17765 NONAME
     ?CreateWAVFile@PVXMLChannel@@UAEPAVPWAVFile@@ABVPFilePath@@_N@Z @17766 NONAME
