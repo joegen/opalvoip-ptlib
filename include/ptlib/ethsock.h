@@ -195,6 +195,10 @@ class PEthSocket : public PSocket
        Type enum for the interface, or NumMediumTypes if interface not open.
      */
     MediumType GetMedium();
+
+    /**Return the capture time of the last read packet.
+      */
+    const PTime & GetLastPacketTime() const { return m_lastPacketTime; }
   //@}
 
 
@@ -358,6 +362,8 @@ class PEthSocket : public PSocket
 
     struct InternalData;
     InternalData * m_internal;
+
+    PTime m_lastPacketTime;
 };
 
 
