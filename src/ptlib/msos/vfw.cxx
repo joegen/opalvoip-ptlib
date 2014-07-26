@@ -1191,6 +1191,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     DWORD      m_dwStyle;
     DWORD      m_dwExStyle;
     COLORREF   m_bgColour;
+    int        m_rotation;
     PThread  * m_thread;
     PMutex     m_openCloseMutex;
     PSyncPoint m_started;
@@ -1235,6 +1236,7 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   , m_dwStyle(DEFAULT_STYLE)
   , m_dwExStyle(0)
   , m_bgColour(0) // Black
+  , m_rotation(0)
   , m_thread(NULL)
   , m_flipped(false)
   , m_sizeMode(NormalSize)
@@ -1331,6 +1333,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
   m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
   m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
   m_bgColour       = GetTokenValue(deviceName, "BACKGROUND=", 0);
+  m_rotation       = GetTokenValue(deviceName, "ROTATION=", 0);
 
   if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
     m_sizeMode = FullScreen;
@@ -1455,25 +1458,27 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
     rect.right = rect.left = m_lastPosition.x;
     rect.bottom = rect.top = m_lastPosition.y;
     bool adjust = true;
+    bool swapForRotation = m_rotation%180 != 0;
     switch (channelNumber) {
       case NormalSize :
-        rect.right += frameWidth;
-        rect.bottom += frameHeight;
+        rect.right = frameWidth;
+        rect.bottom = frameHeight;
         break;
 
       case HalfSize :
-        rect.right += frameWidth/2;
-        rect.bottom += frameHeight/2;
+        rect.right = frameWidth/2;
+        rect.bottom = frameHeight/2;
         break;
 
       case DoubleSize :
-        rect.right += frameWidth*2;
-        rect.bottom += frameHeight*2;
+        rect.right = frameWidth*2;
+        rect.bottom = frameHeight*2;
         break;
 
       case FixedSize :
-        rect.right += m_fixedSize.cx;
-        rect.bottom += m_fixedSize.cy;
+        rect.right = m_fixedSize.cx;
+        rect.bottom = m_fixedSize.cy;
+        swapForRotation = false;
         break;
 
       case FullScreen :
@@ -1494,8 +1499,13 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
         }
     }
 
-    if (adjust)
+    if (adjust) {
+      if (swapForRotation)
+        std::swap(rect.right, rect.bottom);
+      rect.right += rect.left;
+      rect.bottom += rect.top;
       AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle);
+    }
 
     PTRACE(4, "SetWindowPos: chan=" << channelNumber
            << " pos=" << rect.left << 'x' << rect.top
@@ -1592,6 +1602,87 @@ bool PVideoOutputDevice_Window::SetPosition(int x, int y)
 }
 
 
+static void Rotate(PBYTEArray & frameStore, int frameWidth, int frameHeight, unsigned bytesPerPixel, unsigned angle)
+{
+  PBYTEArray destination(frameStore.GetSize());
+
+  if (bytesPerPixel == 4) {
+    // Split out the BGR32 version for faster operation
+    const uint32_t * src = (const uint32_t *)frameStore.GetPointer();
+    uint32_t * dst = (uint32_t *)destination.GetPointer();
+    switch (angle) {
+      case -90 :
+        dst += frameWidth*frameHeight;
+        for (int y = frameHeight; y > 0; --y) {
+          uint32_t * tempY = dst - y;
+          for (int x = frameWidth; x > 0; --x) {
+            *tempY = *src++;
+            tempY -= frameHeight;
+          }
+        }
+        break;
+
+      case 90 :
+        for (int y = frameHeight-1; y >= 0; --y) {
+          uint32_t * tempY = dst + y;
+          for (int x = frameWidth; x > 0; --x) {
+            *tempY = *src++;
+            tempY += frameHeight;
+          }
+        }
+        break;
+
+      case 180 :
+        dst += frameWidth*frameHeight;
+        for (int y = frameHeight; y > 0; --y) {
+          for (int x = frameWidth; x > 0; --x)
+            *--dst = *src++;
+        }
+        break;
+    }
+  }
+  else {
+    const BYTE * src = frameStore;
+    BYTE * dst = destination.GetPointer();
+    switch (angle) {
+      case -90 :
+        dst += frameWidth*frameHeight*bytesPerPixel;
+        for (int y = frameHeight; y > 0; --y) {
+          BYTE * tempY = dst - y*bytesPerPixel;
+          for (int x = frameWidth; x > 0; --x) {
+            for (unsigned i = 0; i < bytesPerPixel; ++i)
+              tempY[i] = *src++;
+            tempY -= frameHeight*bytesPerPixel;
+          }
+        }
+        break;
+
+      case 90 :
+        for (int y = frameHeight-1; y >= 0; --y) {
+          BYTE * tempY = dst + y*bytesPerPixel;
+          for (int x = frameWidth; x > 0; --x) {
+            for (unsigned i = 0; i < bytesPerPixel; ++i)
+              tempY[i] = *src++;
+            tempY += frameHeight*bytesPerPixel;
+          }
+        }
+        break;
+
+      case 180 :
+        dst += frameWidth*frameHeight*bytesPerPixel;
+        for (int y = frameHeight; y > 0; --y) {
+          for (int x = frameWidth; x > 0; --x)
+            for (unsigned i = 0; i < bytesPerPixel; ++i)
+              *--dst = *src++;
+        }
+        break;
+    }
+  }
+
+  frameStore = destination;
+}
+
+
 void PVideoOutputDevice_Window::Draw(HDC hDC)
 {
   RECT rect;
@@ -1604,18 +1695,31 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
       FillRect(hDC, &rect, brush);
   }
   else {
+    int imageWidth = frameWidth;
+    int imageHeight = frameHeight;
+    if (m_rotation != 0) {
+      Rotate(frameStore, frameWidth, frameHeight, bytesPerPixel, m_rotation);
+      if (m_rotation != 180) {
+        imageWidth = frameHeight;
+        imageHeight = frameWidth;
+      }
+    }
+
+    m_bitmap.bmiHeader.biWidth = imageWidth;
+    m_bitmap.bmiHeader.biHeight = m_flipped ? imageHeight : -imageHeight;
+
     int result;
-    if (frameWidth == (unsigned)rect.right && frameHeight == (unsigned)rect.bottom)
+    if (imageWidth == rect.right && imageHeight == rect.bottom)
       result = SetDIBitsToDevice(hDC,
-                                 0, 0, frameWidth, frameHeight,
-                                 0, 0, 0, frameHeight,
+                                 0, 0, imageWidth, imageHeight,
+                                 0, 0, 0, imageHeight,
                                  frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
     else {
-      int frameAspect = 1000*frameWidth/frameHeight;
+      int frameAspect = 1000*imageWidth/imageHeight;
       int windowAspect = 1000*rect.right/rect.bottom;
       int x,y,w,h;
       if (frameAspect < windowAspect) {
-        w = frameWidth*rect.bottom/frameHeight;
+        w = imageWidth*rect.bottom/imageHeight;
         h = rect.bottom;
         x = (rect.right - w)/2;
         y = 0;
@@ -1629,7 +1733,7 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
       }
       else if (frameAspect > windowAspect) {
         w = rect.right;
-        h = frameHeight*rect.right/frameWidth;
+        h = imageHeight*rect.right/imageWidth;
         x = 0;
         y = (rect.bottom - h)/2;
         if (brush != NULL) {
@@ -1653,14 +1757,14 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
 #endif
       result = StretchDIBits(hDC,
                              x, y, w, h,
-                             0, 0, frameWidth, frameHeight,
+                             0, 0, imageWidth, imageHeight,
                              frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS, SRCCOPY);
     }
 
-    if (result != (int)frameHeight) {
+    if (result != imageHeight) {
       lastError = ::GetLastError();
-      PTRACE(2, "Drawing image failed: resolution=" << frameWidth << 'x' << frameHeight
-             << ", bitmap=" << m_bitmap.bmiHeader.biWidth << 'x' << m_bitmap.bmiHeader.biHeight
+      PTRACE(2, "Drawing image failed: resolution=" << rect.right << 'x' << rect.bottom
+             << ", bitmap=" << imageWidth << 'x' << imageHeight
              << ", size=" << m_bitmap.bmiHeader.biSizeImage << ", result=" << result << ", error=" << lastError);
     }
   }
