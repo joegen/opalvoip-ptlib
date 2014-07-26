@@ -193,6 +193,7 @@ PBoolean PEthSocket::Read(void * data, PINDEX length)
     case 1 :
       memcpy(data, pkt_data, std::min(length, (PINDEX)header->caplen));
       lastReadCount = header->caplen;
+      m_lastPacketTime = PTime(header->ts.tv_sec, header->ts.tv_usec);
       return true;
 
     case 0 :
@@ -280,6 +281,7 @@ PEthSocket::PEthSocket(bool promiscuous, unsigned snapLength)
   : m_promiscuous(promiscuous)
   , m_snapLength(snapLength)
   , m_internal(new InternalData)
+  , m_lastPacketTime(0)
 {
   memset(m_internal, 0, sizeof(InternalData));
 }
@@ -363,7 +365,11 @@ bool PEthSocket::Frame::Read(PChannel & channel, PINDEX packetSize)
     m_rawSize = channel.GetLastReadCount();
   } while ((size_t)m_rawSize < sizeof(Address)+sizeof(Address)+sizeof(2));
 
-  m_timestamp.SetCurrentTime();
+  const PEthSocket * ethChannel = dynamic_cast<PEthSocket *>(&channel);
+  if (ethChannel != NULL && ethChannel->GetLastPacketTime().IsValid())
+    m_timestamp = ethChannel->GetLastPacketTime();
+  else
+    m_timestamp.SetCurrentTime();
 
   return true;
 }
