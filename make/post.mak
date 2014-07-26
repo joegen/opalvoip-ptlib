@@ -102,7 +102,7 @@ optshared debugshared optclean debugclean optdepend debugdepend optlibs debuglib
 optstatic debugstatic :: INTERNAL_STATIC_BUILD:=yes
 
 optshared debugshared optstatic debugstatic optclean debugclean optdepend debugdepend optlibs debuglibs ::
-	$(Q_MAKE) --file="$(firstword $(MAKEFILE_LIST))" DEBUG_BUILD=$(INTERNAL_DEBUG_BUILD) STATIC_BUILD=$(INTERNAL_STATIC_BUILD) internal_$(subst opt,,$(subst debug,,$@))
+	+$(Q_MAKE) --file="$(firstword $(MAKEFILE_LIST))" DEBUG_BUILD=$(INTERNAL_DEBUG_BUILD) STATIC_BUILD=$(INTERNAL_STATIC_BUILD) internal_$(subst opt,,$(subst debug,,$@))
 
 
 # For backward compatibility reasons
