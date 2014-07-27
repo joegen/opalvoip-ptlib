@@ -33,34 +33,10 @@
 
 #include <ptlib.h>
 #include <ptlib/remconn.h>
+#include <ptlib/pprocess.h>
+
 
 #if P_REMCONN
-
-#define SizeWin400_RAS_MaxEntryName 256
-#define SizeWin400_RAS_MaxPhoneNumber 128
-#define SizeWin400_RAS_MaxCallbackNumber SizeWin400_RAS_MaxPhoneNumber
-#define SizeWin400_RAS_MaxDeviceType 16
-#define SizeWin400_RAS_MaxDeviceName 128
-
-#define SizeWin400_RASCONN (sizeof(DWORD) + \
-                            sizeof(HRASCONN) + \
-                            SizeWin400_RAS_MaxEntryName + 1)
-
-#define SizeWin400_RASDIALPARAMS (sizeof(DWORD) + \
-                                  SizeWin400_RAS_MaxEntryName + 1 + \
-                                  SizeWin400_RAS_MaxPhoneNumber + 1 + \
-                                  SizeWin400_RAS_MaxCallbackNumber + 1 + \
-                                  UNLEN + 1 + \
-                                  PWLEN + 1 + \
-                                  DNLEN + 1)
-
-#define SizeWin400_RASCONNSTATUS (sizeof(DWORD) + \
-                                  sizeof(RASCONNSTATE) + \
-                                  sizeof(DWORD) + \
-                                  SizeWin400_RAS_MaxDeviceType + 1 + \
-                                  SizeWin400_RAS_MaxDeviceName + 1)
-
-
 
 class PRASDLL : public PDynaLink
 {
@@ -104,22 +80,6 @@ PRASDLL::PRASDLL()
 
 
 #define new PNEW
-
-
-static PBoolean IsWinVer401()
-{
-  OSVERSIONINFO verinf;
-  verinf.dwOSVersionInfoSize = sizeof(verinf);
-  GetVersionEx(&verinf);
-
-  if (verinf.dwPlatformId != VER_PLATFORM_WIN32_NT)
-    return false;
-
-  if (verinf.dwMajorVersion < 4)
-    return false;
-
-  return true;
-}
 
 
 PRemoteConnection::PRemoteConnection()
@@ -192,10 +152,8 @@ PBoolean PRemoteConnection::Open(PBoolean existing)
   if (!Ras.IsLoaded())
     return false;
 
-  PBoolean isVer401 = IsWinVer401();
-
   RASCONN connection;
-  connection.dwSize = isVer401 ? sizeof(RASCONN) : SizeWin400_RASCONN;
+  connection.dwSize = sizeof(RASCONN);
 
   LPRASCONN connections = &connection;
   DWORD size = sizeof(connection);
@@ -231,7 +189,7 @@ PBoolean PRemoteConnection::Open(PBoolean existing)
 
   RASDIALPARAMS params;
   memset(&params, 0, sizeof(params));
-  params.dwSize = isVer401 ? sizeof(params) : SizeWin400_RASDIALPARAMS;
+  params.dwSize = sizeof(params);
 
   if (remoteName[0] != '.') {
     PAssert(remoteName.GetLength() < (PINDEX)sizeof(params.szEntryName)-1, PInvalidParameter);
@@ -270,7 +228,7 @@ void PRemoteConnection::Close()
 static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
 {
   RASCONNSTATUS status;
-  status.dwSize = IsWinVer401() ? sizeof(status) : SizeWin400_RASCONNSTATUS;
+  status.dwSize = sizeof(status);
 
   rasError = Ras.GetConnectStatus(rasConnection, &status);
   if (rasError == ERROR_INVALID_HANDLE) {
