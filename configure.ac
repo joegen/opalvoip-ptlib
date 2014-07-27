@@ -222,6 +222,10 @@ dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
 MY_VERSION_FILE([$VERSION_DIR/version.h], [PTLIB])
 
 
+dnl MSWIN_DISPLAY    version_helpers,Version Helpers
+dnl MSWIN_CHECK_FILE version_helpers,VersionHelpers.h,P_VERSION_HELPERS=1
+
+
 dnl ########################################################################
 dnl Find programs we need
 
