@@ -41,7 +41,7 @@
 #include <errors.h>
 #include <shlobj.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
   #ifndef _WIN32_WCE
     #pragma comment(lib, "mpr.lib")
     #pragma comment(lib, "Shell32.lib")
@@ -56,6 +56,9 @@
   #endif
 #endif
 
+#if P_VERSION_HELPERS
+  #include <versionhelpers.h>
+#endif
 
 #define new PNEW
 
@@ -1275,6 +1278,26 @@ PString PProcess::GetOSClass()
 
 PString PProcess::GetOSName()
 {
+#if P_VERSION_HELPERS
+  if (IsWindows8Point1OrGreater())
+    return "8.1";
+  if (IsWindows8OrGreater())
+    return "8";
+  if (IsWindows7SP1OrGreater())
+    return "7 sp1";
+  if (IsWindows7OrGreater())
+    return "7";
+  if (IsWindowsVistaSP2OrGreater())
+    return "Vista sp2";
+  if (IsWindowsVistaSP1OrGreater())
+    return "Vista sp1";
+  if (IsWindowsVistaOrGreater())
+    return "Vista";
+  if (IsWindowsXPSP3OrGreater())
+    return "XP sp3";
+  if (IsWindowsXPOrGreater())
+    return "XP";
+#else
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
@@ -1318,6 +1341,7 @@ PString PProcess::GetOSName()
           }
       }
   }
+#endif // P_VERSION_HELPERS
   return "?";
 }
 
@@ -1359,17 +1383,54 @@ PString PProcess::GetOSHardware()
 
 PString PProcess::GetOSVersion()
 {
+#if P_VERSION_HELPERS
+  if (IsWindows8Point1OrGreater())
+    return "v6.3";
+  if (IsWindows8OrGreater())
+    return "v6.2";
+  if (IsWindows7SP1OrGreater())
+    return "v6.1.1";
+  if (IsWindows7OrGreater())
+    return "v6.1";
+  if (IsWindowsVistaSP2OrGreater())
+    return "v6.0.2";
+  if (IsWindowsVistaSP1OrGreater())
+    return "v6.0.1";
+  if (IsWindowsVistaOrGreater())
+    return "v6.0";
+  if (IsWindowsXPSP3OrGreater())
+    return "v5.1.3";
+  if (IsWindowsXPOrGreater())
+    return "v5.1";
+  return "?";
+#else
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
   WORD wBuildNumber = (WORD)info.dwBuildNumber;
   return psprintf(wBuildNumber > 0 ? "v%u.%u.%u" : "v%u.%u",
                   info.dwMajorVersion, info.dwMinorVersion, wBuildNumber);
+#endif // P_VERSION_HELPERS
 }
 
 
 bool PProcess::IsOSVersion(unsigned major, unsigned minor, unsigned build)
 {
+#if P_VERSION_HELPERS
+  OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0 };
+  DWORDLONG        const dwlConditionMask = VerSetConditionMask(
+    VerSetConditionMask(
+    VerSetConditionMask(
+    0, VER_MAJORVERSION, VER_GREATER_EQUAL),
+    VER_MINORVERSION, VER_GREATER_EQUAL),
+    VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+
+  osvi.dwMajorVersion = major;
+  osvi.dwMinorVersion = minor;
+  osvi.wServicePackMajor = (WORD)build;
+
+  return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+#else
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
@@ -1385,6 +1446,7 @@ bool PProcess::IsOSVersion(unsigned major, unsigned minor, unsigned build)
     return true;
 
   return info.dwBuildNumber >= build;
+#endif // P_VERSION_HELPERS
 }
 
 
@@ -1393,16 +1455,7 @@ PDirectory PProcess::GetOSConfigDir()
 #ifdef _WIN32_WCE
   return PString("\\Windows");
 #else
-  OSVERSIONINFO info;
-  info.dwOSVersionInfoSize = sizeof(info);
-  GetVersionEx(&info);
-
   char dir[_MAX_PATH];
-
-  if (info.dwPlatformId != VER_PLATFORM_WIN32_NT) {
-    PAssertOS(GetWindowsDirectory(dir, sizeof(dir)) != 0);
-    return dir;
-  }
 
   PAssertOS(GetSystemDirectory(dir, sizeof(dir)) != 0);
   PDirectory sysdir = dir;
