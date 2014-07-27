@@ -493,6 +493,16 @@ EXPORTS
     _CODECAPI_SETALLDEFAULTS
     _CODECAPI_SUPPORTSEVENTS
     _CODECAPI_VIDEO_ENCODER
+    _CODECAPI_AVEncSliceControlMode
+    _CODECAPI_AVEncSliceControlSize
+    _CODECAPI_AVEncVideoEncodeFrameTypeQP
+    _CODECAPI_AVEncVideoLTRBufferControl
+    _CODECAPI_AVEncVideoMarkLTRFrame
+    _CODECAPI_AVEncVideoMaxNumRefFrame
+    _CODECAPI_AVEncVideoMaxQP
+    _CODECAPI_AVEncVideoMeanAbsoluteDifference
+    _CODECAPI_AVEncVideoROIEnabled
+    _CODECAPI_AVEncVideoUseLTRFrame
     __CTA2?AVbad_alloc@std@@
     __CTA3?AVlength_error@std@@
     __CT??_R0?AVbad_alloc@std@@@8??0bad_alloc@std@@QAE@ABV01@@Z12

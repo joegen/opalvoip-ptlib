@@ -65,6 +65,9 @@
 	#undef    WINVER
 #endif
 
+#undef P_VERSION_HELPERS
+
+
 /////////////////////////////////////////////////
 //
 // Language stuff
