@@ -32,6 +32,8 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pprocess.h>
+
 
 #define P_FORCE_STATIC_PLUGIN 1
 
@@ -819,11 +821,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
     bool haveControl = true;
     MIXERLINECONTROLS controls;
 
-    if ((activeDirection == Recorder)
-#ifndef _WIN32_WCE
-      && ((DWORD)(LOBYTE(LOWORD(GetVersion()))) < 6)
-#endif
-      ) { //5=XP/win2003
+    if ((activeDirection == Recorder) && !PProcess::IsOSVersion(6,0,0)) { //5=XP/win2003
       /* There is no "master" for the recording side, so need to find the
          single selected input or at least individual microphone input
          No need to do all of these on Vista/Win7/Win2008 as there is

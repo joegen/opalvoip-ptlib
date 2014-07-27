@@ -338,10 +338,8 @@ int PServiceProcess::InternalMain(void * arg)
 
   hInstance = (HINSTANCE)arg;
 
-  OSVERSIONINFO verinfo;
-  verinfo.dwOSVersionInfoSize = sizeof(verinfo);
-  GetVersionEx(&verinfo);
-  if (verinfo.dwPlatformId != VER_PLATFORM_WIN32_NT) {
+  
+  if (!PProcess::IsOSVersion(5,1,0)) {
     PError << "Unsupported Win32 platform type!" << endl;
     return 1;
   }
