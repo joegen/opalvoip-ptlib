@@ -84,6 +84,11 @@ class PSTUNServer : public PObject, public PSTUN
       const SocketInfo & socketInfo
     );
 
+    virtual void OnBindingResponse(
+      const PSTUNMessage & request,
+      PSTUNMessage & response
+    );
+
     virtual bool OnUnknownRequest(
       const PSTUNMessage & request,
       const SocketInfo & socketInfo
