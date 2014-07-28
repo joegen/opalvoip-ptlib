@@ -286,19 +286,19 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     if (userAttr == NULL) {
       PTRACE(2, "STUNSRVR\tNo USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
       response.SetErrorType(400, request.GetTransactionID());
-      goto done;
+      goto sendResponse;
     }
 
     if (userAttr->GetString() != m_userName) {
       PTRACE(2, "STUNSRVR\tIncorrect USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
       response.SetErrorType(401, request.GetTransactionID());
-      goto done;
+      goto sendResponse;
     }
 
     if (!request.CheckMessageIntegrity(m_password)) {
       PTRACE(2, "STUNSRVR\tIntegrity check failed for " << request << " on interface " << socketInfo.m_socketAddress);
       response.SetErrorType(401, request.GetTransactionID());
-      goto done;
+      goto sendResponse;
     }
   }
 
@@ -320,60 +320,65 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     PTRACE(2, "STUNSRVR\tUnable to fulfill CHANGE-REQUEST from " << request.GetSourceAddressAndPort());
 
     response.SetErrorType(420, request.GetTransactionID());
+    goto sendResponse;
   }
+
+  // initialise the response
+  response.SetType(PSTUNMessage::BindingResponse, request.GetTransactionID());
+
+  // if RFC 5389, set XOR-MAPPED_ADDRESS, RESPONSE_ORIGIN
+  if (request.IsRFC5389()) {
+    response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS, request.GetSourceAddressAndPort()));
+    //response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::RESPONSE_ORIGIN, socketInfo.m_socketAddress));
+
+    // set OTHER-ADDRESS, if we can
+    if (socketInfo.m_alternateAddressSocket != 0)
+      response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::OTHER_ADDRESS, socketInfo.m_alternateAddressAndPort));
+  }
+
+  // if not RFC 5389, set the SOURCE attribute 
   else {
+    // replies always contain SOURCE-ADDRESS 
+    response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::SOURCE_ADDRESS, socketInfo.m_socketAddress));
 
-    // initialise the response
-    response.SetType(PSTUNMessage::BindingResponse, request.GetTransactionID());
+    // set the MAPPED_ADDRESS attribute
+    response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::MAPPED_ADDRESS, request.GetSourceAddressAndPort()));
 
-    // if RFC 5389, set XOR-MAPPED_ADDRESS, RESPONSE_ORIGIN
-    if (request.IsRFC5389()) {
-      response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS, request.GetSourceAddressAndPort()));
-      //response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::RESPONSE_ORIGIN, socketInfo.m_socketAddress));
-
-      // set OTHER-ADDRESS, if we can
-      if (socketInfo.m_alternateAddressSocket != 0)
-        response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::OTHER_ADDRESS, socketInfo.m_alternateAddressAndPort));
-    }
-
-    // if not RFC 5389, set the SOURCE attribute 
-    else {
-      // replies always contain SOURCE-ADDRESS 
-      response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::SOURCE_ADDRESS, socketInfo.m_socketAddress));
-
-      // set the MAPPED_ADDRESS attribute
-      response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::MAPPED_ADDRESS, request.GetSourceAddressAndPort()));
-
-      // set CHANGED-ADDRESS, if we can
-      if (socketInfo.m_alternateAddressSocket != 0)
-        response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::CHANGED_ADDRESS, socketInfo.m_alternateAddressAndPort));
-    }
-
-    // fulfill CHANGE-REQUEST, if any
-    if (changeRequest != NULL) {
-      if (changeRequest->GetChangeIP() && changeRequest->GetChangePort()) {
-        PTRACE(3, "STUNSRVR\tChanged source to alternate address and port " << socketInfo.m_alternateAddressAndPort);
-        replySocket = socketInfo.m_alternateAddressAndPortSocket;
-      }
-      else if (changeRequest->GetChangeIP()) {
-        PTRACE(3, "STUNSRVR\tChanged source to alternate address " << socketInfo.m_alternateAddressAndPort.GetAddress());
-        replySocket = socketInfo.m_alternateAddressSocket;
-      }
-      else if (changeRequest->GetChangePort())  {
-        PTRACE(3, "STUNSRVR\tChanged source to alternate port " << socketInfo.m_alternateAddressAndPort.GetPort());
-        replySocket = socketInfo.m_alternatePortSocket;
-      }
-    }
-
-    PTRACE(3, "STUNSRVR\tSending BindingResponse to " << request.GetSourceAddressAndPort());
+    // set CHANGED-ADDRESS, if we can
+    if (socketInfo.m_alternateAddressSocket != 0)
+      response.AddAttribute(PSTUNAddressAttribute(PSTUNAttribute::CHANGED_ADDRESS, socketInfo.m_alternateAddressAndPort));
   }
 
-done:
+  // fulfill CHANGE-REQUEST, if any
+  if (changeRequest != NULL) {
+    if (changeRequest->GetChangeIP() && changeRequest->GetChangePort()) {
+      PTRACE(3, "STUNSRVR\tChanged source to alternate address and port " << socketInfo.m_alternateAddressAndPort);
+      replySocket = socketInfo.m_alternateAddressAndPortSocket;
+    }
+    else if (changeRequest->GetChangeIP()) {
+      PTRACE(3, "STUNSRVR\tChanged source to alternate address " << socketInfo.m_alternateAddressAndPort.GetAddress());
+      replySocket = socketInfo.m_alternateAddressSocket;
+    }
+    else if (changeRequest->GetChangePort())  {
+      PTRACE(3, "STUNSRVR\tChanged source to alternate port " << socketInfo.m_alternateAddressAndPort.GetPort());
+      replySocket = socketInfo.m_alternatePortSocket;
+    }
+  }
+
+  PTRACE(3, "STUNSRVR\tSending BindingResponse to " << request.GetSourceAddressAndPort());
+  OnBindingResponse(request, response);
+
+sendResponse:
   response.AddMessageIntegrity(m_password); // Must be last things before sending
   response.AddFingerprint();
   response.Write(*replySocket, request.GetSourceAddressAndPort());
 
   return true;
+}
+
+
+void PSTUNServer::OnBindingResponse(const PSTUNMessage &, PSTUNMessage &)
+{
 }
 
 
