@@ -1185,8 +1185,6 @@ class PComEnumerator
 
 PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
 {
-  PTRACE(4, "DShow\tEnumerating Device Names");
-
   PStringArray devices;
   unsigned duplicate = 0;
 
@@ -1196,9 +1194,12 @@ PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
     if (!name.IsEmpty()) {
       if (devices.GetValuesIndex(name) != P_MAX_INDEX)
         name.sprintf("{%u}", ++duplicate);
+      PTRACE(3, "DShow\tFound capture device \""<< name <<'"');
       devices.AppendString(name);
     }
   }
+
+  PTRACE_IF(2, devices.IsEmpty(), "DShow\tNo video capture devices available.");
 
   return devices;
 }
