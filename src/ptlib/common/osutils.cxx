@@ -348,6 +348,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
       PFile * traceOutput = new PTextFile();
       if (traceOutput->Open(fn, PFile::WriteOnly, options, permissions)) {
+        traceOutput->SetPosition(0, PFile::End);
         SetStream(traceOutput);
         outputFirstLog = true;
       }
