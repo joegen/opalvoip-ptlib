@@ -703,20 +703,56 @@ public:
       Block(
         const char * fileName, ///< Filename of source file being traced
         int lineNum,           ///< Line number of source file being traced.
-        const char * traceName
-          ///< String to be output with trace, typically it is the function name.
-       );
-      Block(const Block & obj)
-        : file(obj.file), line(obj.line), name(obj.name) { }
+        const char * traceName ///< String to be output with trace, typically it is the function name.
+      );
+      Block(const Block & obj);
+
       /// Output exit trace message.
       ~Block();
-    private:
+
+    protected:
       Block & operator=(const Block &)
       { return *this; }
       const char * file;
       int          line;
       const char * name;
   };
+
+  /** Class to reduce noise level for some logging.
+      A log is emitted at the lowLevel every interval milliseconds. All logs
+      within the time interval are emitted at highLevel.
+
+      An optional log output of the count of times the log occurred during may
+      achived by simply including the throttle instance at the end of the log,
+      e.g.
+      <pre><code>
+        PTRACE_THROTTLE_STATIC(m_throttleIt, 2, 2000);
+        PTRACE(m_throttleIt, "A very frequent log" << m_throttleIt);
+      </code></pre>
+    */
+  class Throttle
+  {
+    public:
+      Throttle(
+        unsigned lowLevel,          ///< Level at which low frequency logs made
+        unsigned interval = 60000,  ///< TIme between low frequency logs
+        unsigned highLevel = 6      ///> Level for high frequency (every) logs
+      );
+
+      bool CanTrace();
+      operator unsigned() const { return m_currentLevel; }
+
+      friend ostream & operator<<(ostream & strm, const Throttle & throttle);
+
+    protected:
+      unsigned m_interval;
+      unsigned m_lowLevel;
+      unsigned m_highLevel;
+      unsigned m_currentLevel;
+      uint64_t m_lastLog;
+      unsigned m_count;
+  };
+  static bool CanTrace(Throttle & throttle) { return throttle.CanTrace(); }
 
   static unsigned GetNextContextIdentifier();
 };
@@ -794,7 +830,7 @@ This macro outputs a trace of a source file line execution.
 #define PTRACE2(level, object, args) \
         PTRACE_INTERNAL(level, PTRACE_NO_CONDITION, args, object, PTraceModule())
 #define PTRACE_IF2(level, condition, object, args) \
-        PTRACE_INTERNAL(level, && (condition), args, object, PTraceModule())
+  PTRACE_INTERNAL(level, && (condition), args, object, PTraceModule())
 
 /** Output trace.
 This macro outputs a trace of any information needed, using standard stream
@@ -847,6 +883,11 @@ This macro has variable arguments, and is of the form:
 See PTRACE() for more information on level, instance, module.
 */
 #define PTRACE_BEGIN(...) PTRACE_BEGIN_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
+
+
+/* Macro to create a throttle context for use in <code>PTRACE()</code> */
+#define PTRACE_THROTTLE(var, ...) struct PTraceThrottle_##var : PTrace::Throttle { PTraceThrottle_##var() : PTrace::Throttle(__VA_ARGS__) { } } var
+#define PTRACE_THROTTLE_STATIC(var, ...) static PTRACE_THROTTLE(var, __VA_ARGS__)
 
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
@@ -921,6 +962,10 @@ class PTraceSaveContextIdentifier
 
 #ifndef PTRACE_BEGIN
 #define PTRACE_BEGIN(...)
+#endif
+
+#ifndef PTRACE_THROTTLE
+#define PTRACE_THROTTLE(...)
 #endif
 
 #ifndef PTRACE2
