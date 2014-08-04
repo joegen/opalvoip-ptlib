@@ -1195,6 +1195,8 @@ bool PVideoInputDevice_V4L2::GetAttributes(Attributes & attrib)
   GetControlCommon(V4L2_CID_SATURATION, &attrib.m_saturation);
   GetControlCommon(V4L2_CID_CONTRAST, &attrib.m_contrast);
   GetControlCommon(V4L2_CID_HUE, &attrib.m_hue);
+  GetControlCommon(V4L2_CID_GAMMA, &attrib.m_gamma);
+  GetControlCommon(V4L2_CID_EXPOSURE, &attrib.m_exposure);
 
   return true;
 }
@@ -1237,7 +1239,9 @@ bool PVideoInputDevice_V4L2::SetAttributes(const Attributes & attrib)
   return SetControlCommon(V4L2_CID_BRIGHTNESS, attrib.m_brightness) &&
          SetControlCommon(V4L2_CID_SATURATION, attrib.m_saturation) &&
          SetControlCommon(V4L2_CID_CONTRAST, attrib.m_contrast) &&
-         SetControlCommon(V4L2_CID_HUE, attrib.m_hue);
+         SetControlCommon(V4L2_CID_HUE, attrib.m_hue) &&
+         SetControlCommon(V4L2_CID_GAMMA, attrib.m_gamma) &&
+         SetControlCommon(V4L2_CID_EXPOSURE, attrib.m_exposure);
 }
 
 PBoolean PVideoInputDevice_V4L2::QueueAllBuffers()
