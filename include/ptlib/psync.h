@@ -42,26 +42,49 @@
 #include <ptlib/contain.h>
 #include <ptlib/object.h>
 
+class PTimeInterval;
+
+
 class PSync : public PObject
 {
   public:
+    PSync() { }
+
   /**@name Operations */
   //@{
     /**Block until the synchronisation object is available.
      */
     virtual void Wait() = 0;
 
-    /**Signal that the synchronisation object is available.
+    /**Block, for a time, until the synchronisation object is available.
+
+       @return
+       true if lock is acquired, false if timed out
+     */
+    virtual PBoolean Wait(
+      const PTimeInterval & timeout // Amount of time to wait.
+    ) = 0;
+
+     /**Signal that the synchronisation object is available.
      */
     virtual void Signal() = 0;
   //@}
+
+  private:
+    PSync(const PSync &) : PObject() { }
+    void operator=(const PSync &) { }
 };
 
 class PSyncNULL : public PSync
 {
   public:
     virtual void Wait() { }
+    virtual PBoolean Wait(const PTimeInterval &) { return true; }
     virtual void Signal() { }
+
+  private:
+    PSyncNULL(const PSyncNULL &) : PSync() { }
+    void operator=(const PSyncNULL &) { }
 };
 
 /**This class waits for the semaphore on construction and automatically

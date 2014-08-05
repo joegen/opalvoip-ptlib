@@ -252,6 +252,34 @@ class PWin32Overlapped : public OVERLAPPED
 };
 
 
+class PWin32Handle
+{
+  protected:
+    HANDLE m_handle;
+  public:
+    explicit PWin32Handle(HANDLE h = NULL)
+      : m_handle(h)
+    { }
+
+    ~PWin32Handle() { Close(); }
+
+    void Close();
+    bool IsValid() const { return m_handle != NULL && m_handle != INVALID_HANDLE_VALUE; }
+    HANDLE Detach();
+    HANDLE * GetPointer();
+
+    PWin32Handle & operator=(HANDLE h);
+    operator HANDLE() const { return m_handle; }
+
+    bool Wait(DWORD timeout) const;
+    bool Duplicate(HANDLE h, DWORD flags = DUPLICATE_SAME_ACCESS);
+
+  private:
+    PWin32Handle(const PWin32Handle &) { }
+    void operator=(const PWin32Handle &) { }
+};
+
+
 enum { PWIN32ErrorFlag = 0x40000000 };
 
 class PString;
@@ -322,6 +350,7 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 typedef UINT  PThreadIdentifier;
 typedef DWORD PProcessIdentifier;
 
+#define PNullThreadIdentifier ((PThreadIdentifier)0)
 
 #if defined(_MSC_VER)
   #pragma warning(disable:4201)

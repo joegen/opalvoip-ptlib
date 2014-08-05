@@ -104,6 +104,15 @@ class PCriticalSection : public PSync
     void Wait();
     inline void Enter() { Wait(); }
 
+    /**Block, for a time, until the synchronisation object is available.
+
+       @return
+       true if lock is acquired, false if timed out
+     */
+    virtual PBoolean Wait(
+      const PTimeInterval & timeout // Amount of time to wait.
+    );
+
     /** Leave the critical section by unlocking the mutex
      */
     void Signal();
