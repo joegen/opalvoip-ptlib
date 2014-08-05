@@ -1586,6 +1586,7 @@ EXPORTS
     ??$swap@D@std@@YAXAAD0@Z @1511 NONAME
     ??$swap@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@YAXAAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@0@Z @1512 NONAME
     ??$swap@I@std@@YAXAAI0@Z @1513 NONAME
+    ??$swap@J@std@@YAXAAJ0@Z @29490 NONAME
     ??$swap@PAD@std@@YAXAAPAD0@Z @1514 NONAME
     ??$swap@PAUPAsyncNotifierCallback@@@std@@YAXAAPAUPAsyncNotifierCallback@@0@Z @1515 NONAME
     ??$swap@T_Bxty@?$_String_val@U?$_Simple_types@D@std@@@std@@@std@@YAXAAT_Bxty@?$_String_val@U?$_Simple_types@D@std@@@0@0@Z @1517 NONAME
@@ -2016,6 +2017,7 @@ EXPORTS
     ??$_Kfn@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@?$_Tmap_traits@PAVPUDPSocket@@USocketInfo@PSTUNServer@@U?$less@PAVPUDPSocket@@@std@@V?$allocator@U?$pair@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@std@@@5@$0A@@std@@SAABQAVPUDPSocket@@ABU?$pair@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@1@@Z @1895 NONAME
     ??$_Move@AAD@std@@YA$$QADAAD@Z @1899 NONAME
     ??$_Move@AAI@std@@YA$$QAIAAI@Z @1900 NONAME
+    ??$_Move@AAJ@std@@YA$$QAJAAJ@Z @29491 NONAME
     ??$_Move@AAPAD@std@@YA$$QAPADAAPAD@Z @1901 NONAME
     ??$_Move@AAPAUPAsyncNotifierCallback@@@std@@YA$$QAPAUPAsyncNotifierCallback@@AAPAU1@@Z @1902 NONAME
     ??$_Move@AAT_Bxty@?$_String_val@U?$_Simple_types@D@std@@@std@@@std@@YA$$QAT_Bxty@?$_String_val@U?$_Simple_types@D@std@@@0@AAT120@@Z @1904 NONAME
@@ -19236,6 +19238,7 @@ EXPORTS
     ?GetLastErrorIndex@PSNMPClient@@QBEHXZ @18553 NONAME
     ?GetLastErrorText@PScriptLanguage@@UBEABVPString@@XZ @18554 NONAME
     ?GetLastErrorText@PSNMPClient@@QBE?AVPString@@XZ @18555 NONAME
+    ?GetLastPacketTime@PEthSocket@@QBEABVPTime@@XZ @29492 NONAME
     ?GetLastReadCount@PChannel@@QBEHXZ @27351 NONAME
     ?GetLastReceiveAddress@PUDPSocket@@QBE?AVPString@@XZ @18558 NONAME
     ?GetLastReceiveAddress@PUDPSocket@@QBEXAAVAddress@PIPSocket@@AAG@Z @18559 NONAME
@@ -24336,7 +24339,6 @@ EXPORTS
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@II@AEXXZ @28705 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@JI@AEXXZ @28706 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@KA@AEXXZ @28707 NONAME
-    ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@KI@AEXXZ @28708 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@LA@AEXXZ @28709 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@LI@AEXXZ @28710 NONAME
     ?_Add_vtordisp1@?$basic_istream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@MA@AEXXZ @28711 NONAME
@@ -24387,7 +24389,6 @@ EXPORTS
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@II@AEXXZ @28753 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@JI@AEXXZ @28754 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@KA@AEXXZ @28755 NONAME
-    ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@KI@AEXXZ @28756 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@LA@AEXXZ @28757 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@LI@AEXXZ @28758 NONAME
     ?_Add_vtordisp2@?$basic_ostream@DU?$char_traits@D@std@@@std@@$4PPPPPPPM@MA@AEXXZ @28759 NONAME
