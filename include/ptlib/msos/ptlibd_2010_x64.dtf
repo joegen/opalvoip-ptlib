@@ -759,6 +759,7 @@ EXPORTS
     ??$setfill@D@std@@YA?AU?$_Fillobj@D@0@D@Z @627 NONAME
     ??$swap@D@std@@YAXAEAD0@Z @631 NONAME
     ??$swap@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@YAXAEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@0@Z @632 NONAME
+    ??$swap@J@std@@YAXAEAJ0@Z @33254 NONAME
     ??$swap@PEAUPAsyncNotifierCallback@@@std@@YAXAEAPEAUPAsyncNotifierCallback@@0@Z @633 NONAME
     ??$swap@T_Bxty@?$_String_val@DV?$allocator@D@std@@@std@@@std@@YAXAEAT_Bxty@?$_String_val@DV?$allocator@D@std@@@0@0@Z @635 NONAME
     ??$swap@_K@std@@YAXAEA_K0@Z @636 NONAME
@@ -1355,6 +1356,7 @@ EXPORTS
     ??$_Kfn@QEAVPThread@@PEAX@?$_Tmap_traits@PEAVPThread@@PEAXU?$less@PEAVPThread@@@std@@V?$allocator@U?$pair@QEAVPThread@@PEAX@std@@@3@$0A@@std@@SAAEBQEAVPThread@@AEBU?$pair@QEAVPThread@@PEAX@1@@Z @1111 NONAME
     ??$_Kfn@QEAVPUDPSocket@@USocketInfo@PSTUNServer@@@?$_Tmap_traits@PEAVPUDPSocket@@USocketInfo@PSTUNServer@@U?$less@PEAVPUDPSocket@@@std@@V?$allocator@U?$pair@QEAVPUDPSocket@@USocketInfo@PSTUNServer@@@std@@@5@$0A@@std@@SAAEBQEAVPUDPSocket@@AEBU?$pair@QEAVPUDPSocket@@USocketInfo@PSTUNServer@@@1@@Z @1112 NONAME
     ??$_Move@AEAD@std@@YA$$QEADAEAD@Z @1116 NONAME
+    ??$_Move@AEAJ@std@@YA$$QEAJAEAJ@Z @33255 NONAME
     ??$_Move@AEAPEAUPAsyncNotifierCallback@@@std@@YA$$QEAPEAUPAsyncNotifierCallback@@AEAPEAU1@@Z @1117 NONAME
     ??$_Move@AEAT_Bxty@?$_String_val@DV?$allocator@D@std@@@std@@@std@@YA$$QEAT_Bxty@?$_String_val@DV?$allocator@D@std@@@0@AEAT120@@Z @1119 NONAME
     ??$_Move@AEA_K@std@@YA$$QEA_KAEA_K@Z @1120 NONAME
@@ -19245,6 +19247,7 @@ EXPORTS
     ?GetLastErrorIndex@PSNMPClient@@QEBA_KXZ @15615 NONAME
     ?GetLastErrorText@PScriptLanguage@@UEBAAEBVPString@@XZ @15616 NONAME
     ?GetLastErrorText@PSNMPClient@@QEBA?AVPString@@XZ @15617 NONAME
+    ?GetLastPacketTime@PEthSocket@@QEBAAEBVPTime@@XZ @33256 NONAME
     ?GetLastReadCount@PChannel@@QEBA_KXZ @27301 NONAME
     ?GetLastReceiveAddress@PUDPSocket@@QEBA?AVPString@@XZ @15620 NONAME
     ?GetLastReceiveAddress@PUDPSocket@@QEBAXAEAVAddress@PIPSocket@@AEAG@Z @15621 NONAME
