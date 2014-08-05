@@ -1192,6 +1192,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     DWORD      m_dwExStyle;
     COLORREF   m_bgColour;
     int        m_rotation;
+    bool       m_mouseEnabled;
     PThread  * m_thread;
     PMutex     m_openCloseMutex;
     PSyncPoint m_started;
@@ -1237,6 +1238,7 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   , m_dwExStyle(0)
   , m_bgColour(0) // Black
   , m_rotation(0)
+  , m_mouseEnabled(true)
   , m_thread(NULL)
   , m_flipped(false)
   , m_sizeMode(NormalSize)
@@ -1334,6 +1336,8 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
   m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
   m_bgColour       = GetTokenValue(deviceName, "BACKGROUND=", 0);
   m_rotation       = GetTokenValue(deviceName, "ROTATION=", 0);
+
+  m_mouseEnabled = deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
 
   if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
     m_sizeMode = FullScreen;
@@ -1898,49 +1902,54 @@ LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lPar
       break;
 
     case WM_LBUTTONDOWN :
-      PostMessage(m_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, lParam);
+      if (m_mouseEnabled)
+        PostMessage(m_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, lParam);
       break;
 
     case WM_LBUTTONDBLCLK :
-      switch (m_sizeMode) {
-        default :
-          SetChannel(NormalSize);
-          break;
+      if (m_mouseEnabled) {
+        switch (m_sizeMode) {
+          default :
+            SetChannel(NormalSize);
+            break;
 
-        case NormalSize :
-          SetChannel(DoubleSize);
-          break;
+          case NormalSize :
+            SetChannel(DoubleSize);
+            break;
 
-        case FixedSize :
-          if (m_fixedSize.cx < 10000 && m_fixedSize.cy < 10000) {
-            m_fixedSize.cx *= 2;
-            m_fixedSize.cy *= 2;
-            SetChannel(FixedSize);
-          }
+          case FixedSize :
+            if (m_fixedSize.cx < 10000 && m_fixedSize.cy < 10000) {
+              m_fixedSize.cx *= 2;
+              m_fixedSize.cy *= 2;
+              SetChannel(FixedSize);
+            }
+        }
       }
       break;
 
     case WM_RBUTTONDBLCLK :
-      switch (m_sizeMode) {
-        default :
-          SetChannel(NormalSize);
-          break;
+      if (m_mouseEnabled) {
+        switch (m_sizeMode) {
+          default :
+            SetChannel(NormalSize);
+            break;
 
-        case NormalSize :
-          SetChannel(HalfSize);
-          break;
+          case NormalSize :
+            SetChannel(HalfSize);
+            break;
 
-        case FixedSize :
-          if (m_fixedSize.cx > 64 && m_fixedSize.cy > 36 && (m_fixedSize.cx&1) == 0 && (m_fixedSize.cy&1) == 0) {
-            m_fixedSize.cx /= 2;
-            m_fixedSize.cy /= 2;
-            SetChannel(FixedSize);
-          }
+          case FixedSize :
+            if (m_fixedSize.cx > 64 && m_fixedSize.cy > 36 && (m_fixedSize.cx&1) == 0 && (m_fixedSize.cy&1) == 0) {
+              m_fixedSize.cx /= 2;
+              m_fixedSize.cy /= 2;
+              SetChannel(FixedSize);
+            }
+        }
       }
       break;
 
     case WM_RBUTTONDOWN :
-      {
+      if (m_mouseEnabled) {
         HMENU hMenu = CreatePopupMenu();
         AppendMenu(hMenu, MF_ENABLED|MF_STRING|(m_sizeMode == NormalSize ? MF_CHECKED : 0), 100+NormalSize, "Normal size");
         AppendMenu(hMenu, MF_ENABLED|MF_STRING|(m_sizeMode == FullScreen ? MF_CHECKED : 0), 100+FullScreen, "Full screen");
