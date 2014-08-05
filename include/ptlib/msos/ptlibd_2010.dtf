@@ -847,6 +847,7 @@ EXPORTS
     ??$swap@D@std@@YAXAAD0@Z @767 NONAME
     ??$swap@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@YAXAAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@0@Z @768 NONAME
     ??$swap@I@std@@YAXAAI0@Z @769 NONAME
+    ??$swap@J@std@@YAXAAJ0@Z @32008 NONAME
     ??$swap@PAUPAsyncNotifierCallback@@@std@@YAXAAPAUPAsyncNotifierCallback@@0@Z @770 NONAME
     ??$swap@T_Bxty@?$_String_val@DV?$allocator@D@std@@@std@@@std@@YAXAAT_Bxty@?$_String_val@DV?$allocator@D@std@@@0@0@Z @772 NONAME
     ??$use_facet@V?$ctype@D@std@@@std@@YAABV?$ctype@D@0@ABVlocale@0@@Z @775 NONAME
@@ -1479,6 +1480,7 @@ EXPORTS
     ??$_Kfn@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@?$_Tmap_traits@PAVPUDPSocket@@USocketInfo@PSTUNServer@@U?$less@PAVPUDPSocket@@@std@@V?$allocator@U?$pair@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@std@@@5@$0A@@std@@SAABQAVPUDPSocket@@ABU?$pair@QAVPUDPSocket@@USocketInfo@PSTUNServer@@@1@@Z @1350 NONAME
     ??$_Move@AAD@std@@YA$$QADAAD@Z @1354 NONAME
     ??$_Move@AAI@std@@YA$$QAIAAI@Z @1355 NONAME
+    ??$_Move@AAJ@std@@YA$$QAJAAJ@Z @32009 NONAME
     ??$_Move@AAPAUPAsyncNotifierCallback@@@std@@YA$$QAPAUPAsyncNotifierCallback@@AAPAU1@@Z @1356 NONAME
     ??$_Move@AAT_Bxty@?$_String_val@DV?$allocator@D@std@@@std@@@std@@YA$$QAT_Bxty@?$_String_val@DV?$allocator@D@std@@@0@AAT120@@Z @1358 NONAME
     ??$_Move@PAPAVWorkerThreadBase@PThreadPoolBase@@PAPAV12@@std@@YAPAPAVWorkerThreadBase@PThreadPoolBase@@PAPAV12@00@Z @1363 NONAME
@@ -20648,6 +20650,7 @@ EXPORTS
     ?GetLastErrorIndex@PSNMPClient@@QBEHXZ @19662 NONAME
     ?GetLastErrorText@PScriptLanguage@@UBEABVPString@@XZ @19663 NONAME
     ?GetLastErrorText@PSNMPClient@@QBE?AVPString@@XZ @19664 NONAME
+    ?GetLastPacketTime@PEthSocket@@QBEABVPTime@@XZ @32010 NONAME
     ?GetLastReadCount@PChannel@@QBEHXZ @28870 NONAME
     ?GetLastReceiveAddress@PUDPSocket@@QBE?AVPString@@XZ @19667 NONAME
     ?GetLastReceiveAddress@PUDPSocket@@QBEXAAVAddress@PIPSocket@@AAG@Z @19668 NONAME
