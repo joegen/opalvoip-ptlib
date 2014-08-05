@@ -1547,19 +1547,72 @@ PBoolean PSemaphore::WillBlock() const
 // PTimedMutex
 
 PTimedMutex::PTimedMutex()
-  : PSemaphore(::CreateMutex(NULL, PFalse, NULL))
+  : m_lockerId(PNullThreadIdentifier)
+  , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
 
+
 PTimedMutex::PTimedMutex(const PTimedMutex &)
-  : PSemaphore(::CreateMutex(NULL, PFalse, NULL))
+  : m_lockerId(PNullThreadIdentifier)
+  , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
+
+
+void PTimedMutex::Wait()
+{
+#if PTRACING
+  if (!m_handle.Wait(15000)) {
+    PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
+           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
+    m_handle.Wait(INFINITE);
+    PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this);
+  }
+#else
+  m_handle.Wait(INFINITE);
+#endif
+
+  if (m_lockCount++ == 0)
+    m_lockerId = ::GetCurrentThreadId();
+}
+
+
+PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
+{
+  if (!m_handle.Wait(timeout.GetInterval()))
+    return false;
+
+  if (m_lockCount++ == 0)
+    m_lockerId = ::GetCurrentThreadId();
+  return true;
+}
+
 
 void PTimedMutex::Signal()
 {
-  PAssertOS(::ReleaseMutex(handle));
+  if (--m_lockCount == 0)
+    m_lockerId = PNullThreadIdentifier;
+
+  PAssertOS(::ReleaseMutex(m_handle));
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PBoolean PCriticalSection::Wait(const PTimeInterval & timeout)
+{
+  PTRACE(2, "PTLib\tPCriticalSection::Wait() called, this is very inefficient, consider using PTimedMutex!");
+
+  PSimpleTimer timer(timeout);
+  do {
+    if (Try())
+      return true;
+    PThread::Sleep(100);
+  } while (timer.IsRunning());
+  return false;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
@@ -1577,6 +1630,77 @@ PSyncPoint::PSyncPoint(const PSyncPoint &)
 void PSyncPoint::Signal()
 {
   PAssertOS(::SetEvent(handle));
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void PWin32Handle::Close()
+{
+  if (IsValid()) {
+    HANDLE h = m_handle; // This is a little more thread safe
+    m_handle = NULL;
+    PAssertOS(CloseHandle(h));
+  }
+}
+
+
+HANDLE PWin32Handle::Detach()
+{
+  HANDLE h = m_handle;
+  m_handle = NULL;
+  return h;
+}
+
+
+HANDLE * PWin32Handle::GetPointer()
+{
+  Close();
+  return &m_handle;
+}
+
+
+PWin32Handle & PWin32Handle::operator=(HANDLE h)
+{
+  Close();
+  m_handle = h;
+  return *this;
+}
+
+
+bool PWin32Handle::Wait(DWORD timeout) const
+{
+  int retry = 0;
+  while (retry < 10) {
+    DWORD tick = ::GetTickCount();
+    switch (::WaitForSingleObjectEx(m_handle, timeout, TRUE)) {
+      case WAIT_OBJECT_0 :
+        return true;
+
+      case WAIT_TIMEOUT :
+        return false;
+
+      case WAIT_IO_COMPLETION :
+        timeout -= (::GetTickCount() - tick);
+        break;
+
+      default :
+        if (::GetLastError() != ERROR_INVALID_HANDLE) {
+          PAssertAlways(POperatingSystemError);
+          return true;
+        }
+        ++retry;
+    }
+  }
+
+  return false;
+}
+
+
+bool PWin32Handle::Duplicate(HANDLE h, DWORD flags)
+{
+  Close();
+  return DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(), &m_handle, 0, 0, flags);
 }
 
 
