@@ -492,14 +492,14 @@ void PCharArray::ReadFrom(istream &strm)
 
 void PBYTEArray::PrintOn(ostream & strm) const
 {
-  PINDEX line_width = (int)strm.width();
+  int line_width = (int)strm.width();
   if (line_width == 0)
     line_width = 16;
   strm.width(0);
 
-  PINDEX indent = (int)strm.precision();
+  int indent = (int)strm.precision();
 
-  PINDEX val_width = ((strm.flags()&ios::basefield) == ios::hex) ? 2 : 3;
+  int val_width = ((strm.flags()&ios::basefield) == ios::hex) ? 2 : 3;
 
   ios::fmtflags oldFlags = strm.flags();
   if (strm.fill() == '0')
@@ -509,20 +509,20 @@ void PBYTEArray::PrintOn(ostream & strm) const
   while (i < GetSize()) {
     if (i > 0)
       strm << '\n';
-    PINDEX j;
+    int j;
     for (j = 0; j < indent; j++)
       strm << ' ';
     for (j = 0; j < line_width; j++) {
-      if (j == line_width/2)
+      if (indent >= 0 && j == line_width/2)
         strm << ' ';
       if (i+j < GetSize())
         strm << setw(val_width) << (theArray[i+j]&0xff);
       else {
-        PINDEX k;
-        for (k = 0; k < val_width; k++)
+        for (int k = 0; k < val_width; k++)
           strm << ' ';
       }
-      strm << ' ';
+      if (indent >= 0)
+        strm << ' ';
     }
     if ((strm.flags()&ios::floatfield) != ios::fixed) {
       strm << "  ";
