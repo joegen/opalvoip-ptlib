@@ -47,6 +47,8 @@ struct evp_cipher_ctx_st;
 struct dh_st;
 struct aes_key_st;
 struct SHAstate_st;
+struct bio_st;
+
 
 enum PSSLFileTypes {
   PSSLFileTypePEM,
@@ -942,8 +944,6 @@ class PSSLChannel : public PIndirectChannel
 
     PSSLContext * GetContext() const { return m_context; }
 
-    virtual PBoolean RawSSLRead(void * buf, PINDEX & len);
-
     /**Get the internal SSL context structure.
       */
     operator ssl_st *() const { return m_ssl; }
@@ -954,22 +954,24 @@ class PSSLChannel : public PIndirectChannel
     virtual bool InternalAccept();
     virtual bool InternalConnect();
 
-    /**This callback is executed when the Open() function is called with
-       open channels. It may be used by descendent channels to do any
-       handshaking required by the protocol that channel embodies.
-
-       The default behaviour "connects" the channel to the OpenSSL library.
-
-       @return
-       Returns true if the protocol handshaking is successful.
-     */
-    virtual PBoolean OnOpen();
-
   protected:
+    static int  BioRead(bio_st * bio, char * buf, int len);
+    static int  BioWrite(bio_st * bio, const char * buf, int len);
+    static long BioControl(bio_st * bio, int cmd, long num, void * ptr);
+    static int  BioClose(bio_st * bio);
+
+    virtual int  BioRead(char * buf, int len);
+    virtual int  BioWrite(const char * buf, int len);
+    virtual long BioControl(int cmd, long num, void * ptr);
+    virtual int  BioClose();
+
     PSSLContext  * m_context;
     bool           m_autoDeleteContext;
     ssl_st       * m_ssl;
+    bio_st       * m_bio;
     VerifyNotifier m_verifyNotifier;
+
+    P_REMOVE_VIRTUAL(PBoolean,RawSSLRead(void *, PINDEX &),false);
 };
 
 
@@ -1006,7 +1008,6 @@ class PSSLChannelDTLS : public PSSLChannel
     ) const;
 
   protected:
-    virtual PBoolean OnOpen();
     virtual bool InternalAccept();
     virtual bool InternalConnect();
 };
