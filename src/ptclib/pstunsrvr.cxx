@@ -365,7 +365,6 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     }
   }
 
-  PTRACE(3, "STUNSRVR\tSending BindingResponse to " << request.GetSourceAddressAndPort());
   OnBindingResponse(request, response);
 
 sendResponse:
