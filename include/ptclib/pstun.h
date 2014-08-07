@@ -432,7 +432,7 @@ class PSTUNMessage : public PBYTEArray
     bool IsValid() const;
     bool IsValidFor(const PSTUNMessage & request) const;
 
-    const BYTE * GetTransactionID() const;
+    PBYTEArray GetTransactionID() const;
 
     bool IsRFC5389() const;
 
