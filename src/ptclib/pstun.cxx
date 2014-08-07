@@ -459,10 +459,10 @@ bool PSTUNMessage::IsRFC5389() const
 }
 
 
-const BYTE * PSTUNMessage::GetTransactionID() const
+PBYTEArray PSTUNMessage::GetTransactionID() const
 {
   PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
-  return (const BYTE *)hdr->transactionId;
+  return PBYTEArray(hdr->transactionId, sizeof(hdr->transactionId), false);
 }
 
 static int CalcPaddedAttributeLength(int len)
@@ -837,6 +837,8 @@ void PSTUNMessage::PrintOn(ostream & strm) const
 
   if (IsRFC5389())
     strm << " (RFC5389)";
+
+  strm << " [" << hex << setfill('0') << defaultfloat << GetTransactionID() << ']';
 
   if (m_sourceAddressAndPort.IsValid())
     strm << " from " << m_sourceAddressAndPort;
