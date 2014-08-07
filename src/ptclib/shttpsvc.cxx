@@ -238,7 +238,7 @@ int HTTP_PSSLChannel::BioRead(char * buf, int len)
   }
 
   // copy some bytes to the returned buffer, but no more than the buffer will allow
-  len = PMIN(len, preReadLen);
+  len = std::min(len, (int)preReadLen);
   memcpy(buf, preRead, len);
   preReadLen -= len;
   return len;
