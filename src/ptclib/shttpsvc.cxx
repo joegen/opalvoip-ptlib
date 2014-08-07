@@ -47,7 +47,7 @@ class HTTP_PSSLChannel : public PSSLChannel
   public:
     HTTP_PSSLChannel(PSecureHTTPServiceProcess * svc, PSSLContext * context = NULL);
 
-    virtual PBoolean RawSSLRead(void * buf, PINDEX & len);
+    virtual int BioRead(char * out, int outl);
 
   protected:
     enum { PreRead_Size = 4 };
@@ -203,10 +203,10 @@ HTTP_PSSLChannel::HTTP_PSSLChannel(PSecureHTTPServiceProcess * _svc, PSSLContext
 }
 
 
-PBoolean HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
+int HTTP_PSSLChannel::BioRead(char * buf, int len)
 { 
   if (preReadLen == 0)
-    return PSSLChannel::RawSSLRead(buf, len); 
+    return PSSLChannel::BioRead(buf, len); 
 
   if (preReadLen == P_MAX_INDEX) {
     PChannel * chan = GetReadChannel();
@@ -233,7 +233,7 @@ PBoolean HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
         line += (char)ch;
 
       if (!svc->OnDetectedNonSSLConnection(chan, line))
-        return false;
+        return -1;
     }
   }
 
@@ -241,7 +241,7 @@ PBoolean HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
   len = PMIN(len, preReadLen);
   memcpy(buf, preRead, len);
   preReadLen -= len;
-  return true;
+  return len;
 }
 
 #endif //P_SSL

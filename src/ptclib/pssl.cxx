@@ -108,6 +108,9 @@ extern "C" {
 #endif
 };
 
+#if (OPENSSL_VERSION_NUMBER < 0x00906000)
+  #error OpenSSL too old!
+#endif
 
 #ifdef _MSC_VER
   #pragma comment(lib, P_SSL_LIB1)
@@ -1851,10 +1854,7 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize)
 {
   // create the new SSL context
-#if OPENSSL_VERSION_NUMBER >= 0x00909000L
-  const
-#endif
-  SSL_METHOD * meth;
+  const SSL_METHOD * meth;
 
   switch (method) {
     case SSLv3:
@@ -2145,10 +2145,37 @@ void PSSLChannel::Construct(PSSLContext * ctx, PBoolean autoDel)
   m_autoDeleteContext = autoDel;
 
   m_ssl = SSL_new(*m_context);
-  if (m_ssl == NULL)
+  if (m_ssl == NULL) {
     PSSLAssert("Error creating channel: ");
-  else
-    SSL_set_app_data(m_ssl, this);
+    return;
+  }
+
+  SSL_set_app_data(m_ssl, this);
+
+  static BIO_METHOD BioMethods =
+  {
+    BIO_TYPE_SOCKET,
+    "PTLib-PSSLChannel",
+    BioWrite,
+    BioRead,
+    NULL,
+    NULL,
+    BioControl,
+    NULL,
+    BioClose,
+    NULL
+  };
+
+  m_bio = BIO_new(&BioMethods);
+  if (m_bio == NULL) {
+    PSSLAssert("Error creating BIO: ");
+    return;
+  }
+
+  m_bio->ptr = this;
+  m_bio->init = 1;
+
+  SSL_set_bio(m_ssl, m_bio, m_bio);
 }
 
 
@@ -2157,6 +2184,8 @@ PSSLChannel::~PSSLChannel()
   // free the SSL connection
   if (m_ssl != NULL)
     SSL_free(m_ssl);
+
+  // The above free of SSL also frees the m_bio, no need to it here
 
   if (m_autoDeleteContext)
     delete m_context;
@@ -2189,6 +2218,33 @@ PBoolean PSSLChannel::Read(void * buf, PINDEX len)
   return returnValue;
 }
 
+
+int PSSLChannel::BioRead(bio_st * bio, char * buf, int len)
+{
+  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioRead(buf, len) : 0;
+}
+
+
+int PSSLChannel::BioRead(char * buf, int len)
+{
+  BIO_clear_retry_flags(m_bio);
+
+  // Skip over the polymorphic read, want to do real one
+  if (PIndirectChannel::Read(buf, len))
+    return GetLastReadCount();
+
+  switch (GetErrorCode(PChannel::LastReadError)) {
+    case PChannel::Interrupted :
+      BIO_set_retry_read(m_bio);
+    case PChannel::Timeout :
+      return -1;
+
+    default :
+      return 0;
+  }
+}
+
+
 PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
 {
   flush();
@@ -2218,10 +2274,57 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
 }
 
 
+int PSSLChannel::BioWrite(bio_st * bio, const char * buf, int len)
+{
+  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioWrite(buf, len) : 0;
+}
+
+
+int PSSLChannel::BioWrite(const char * buf, int len)
+{
+  BIO_clear_retry_flags(m_bio);
+
+  // Skip over the polymorphic write, want to do real one
+  if (PIndirectChannel::Write(buf, len))
+    return GetLastWriteCount();
+
+  switch (GetErrorCode(PChannel::LastWriteError)) {
+    case PChannel::Interrupted :
+      BIO_set_retry_write(m_bio);
+    case PChannel::Timeout :
+      return -1;
+
+    default :
+      return 0;
+  }
+}
+
+
 PBoolean PSSLChannel::Close()
 {
   PBoolean ok = SSL_shutdown(m_ssl);
   return PIndirectChannel::Close() && ok;
+}
+
+
+int PSSLChannel::BioClose(bio_st * bio)
+{
+  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioClose() : 0;
+}
+
+
+int PSSLChannel::BioClose()
+{
+  if (m_bio->shutdown) {
+    if (m_bio->init) {
+      Shutdown(PSocket::ShutdownReadAndWrite);
+      Close();
+    }
+    m_bio->init  = 0;
+    m_bio->flags = 0;
+  }
+
+  return 1;
 }
 
 
@@ -2381,70 +2484,21 @@ bool PSSLChannel::GetPeerCertificate(PSSLCertificate & certificate, PString * er
 }
 
 
-PBoolean PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
+long PSSLChannel::BioControl(bio_st * bio, int cmd, long num, void * ptr)
 {
-  if (!PIndirectChannel::Read(buf, len)) 
-    return false;
-
-  len = GetLastReadCount();
-  return true;
+  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioControl(cmd, num, ptr) : 0;
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-//
-//  Low level interface to SSLEay routines
-//
-
-
-#define PSSLCHANNEL(bio)      ((PSSLChannel *)(bio->ptr))
-
-extern "C" {
-
-#if (OPENSSL_VERSION_NUMBER < 0x00906000)
-
-typedef int (*ifptr)();
-typedef long (*lfptr)();
-
-#endif
-
-static int Psock_new(BIO * bio)
-{
-  bio->init     = 0;
-  bio->num      = 0;
-  bio->ptr      = NULL;    // this is really (PSSLChannel *)
-  bio->flags    = 0;
-
-  return(1);
-}
-
-
-static int Psock_free(BIO * bio)
-{
-  if (bio == NULL)
-    return 0;
-
-  if (bio->shutdown) {
-    if (bio->init) {
-      PSSLCHANNEL(bio)->Shutdown(PSocket::ShutdownReadAndWrite);
-      PSSLCHANNEL(bio)->Close();
-    }
-    bio->init  = 0;
-    bio->flags = 0;
-  }
-  return 1;
-}
-
-
-static long Psock_ctrl(BIO * bio, int cmd, long num, void * /*ptr*/)
+long PSSLChannel::BioControl(int cmd, long num, void * /*ptr*/)
 {
   switch (cmd) {
     case BIO_CTRL_SET_CLOSE:
-      bio->shutdown = (int)num;
+      m_bio->shutdown = (int)num;
       return 1;
 
     case BIO_CTRL_GET_CLOSE:
-      return bio->shutdown;
+      return m_bio->shutdown;
 
     case BIO_CTRL_FLUSH:
       return 1;
@@ -2452,118 +2506,6 @@ static long Psock_ctrl(BIO * bio, int cmd, long num, void * /*ptr*/)
 
   // Other BIO commands, return 0
   return 0;
-}
-
-
-static int Psock_read(BIO * bio, char * out, int outl)
-{
-  if (out == NULL)
-    return 0;
-
-  BIO_clear_retry_flags(bio);
-
-  // Skip over the polymorphic read, want to do real one
-  PINDEX len = outl;
-  if (PSSLCHANNEL(bio)->RawSSLRead(out, len))
-    return len;
-
-  switch (PSSLCHANNEL(bio)->GetErrorCode(PChannel::LastReadError)) {
-    case PChannel::Interrupted :
-      BIO_set_retry_read(bio);
-    case PChannel::Timeout :
-      return -1;
-
-    default :
-      break;
-  }
-
-  return 0;
-}
-
-
-static int Psock_write(BIO * bio, const char * in, int inl)
-{
-  if (in == NULL)
-    return 0;
-
-  BIO_clear_retry_flags(bio);
-
-  // Skip over the polymorphic write, want to do real one
-  if (PSSLCHANNEL(bio)->PIndirectChannel::Write(in, inl))
-    return PSSLCHANNEL(bio)->GetLastWriteCount();
-
-  switch (PSSLCHANNEL(bio)->GetErrorCode(PChannel::LastWriteError)) {
-    case PChannel::Interrupted :
-      BIO_set_retry_write(bio);
-    case PChannel::Timeout :
-      return -1;
-
-    default :
-      break;
-  }
-
-  return 0;
-}
-
-
-static int Psock_puts(BIO * bio, const char * str)
-{
-  int n,ret;
-
-  n   = strlen(str);
-  ret = Psock_write(bio,str,n);
-
-  return ret;
-}
-
-};
-
-
-static BIO_METHOD methods_Psock =
-{
-  BIO_TYPE_SOCKET,
-  "PTLib-PSSLChannel",
-#if (OPENSSL_VERSION_NUMBER < 0x00906000)
-  (ifptr)Psock_write,
-  (ifptr)Psock_read,
-  (ifptr)Psock_puts,
-  NULL,
-  (lfptr)Psock_ctrl,
-  (ifptr)Psock_new,
-  (ifptr)Psock_free
-#else
-  Psock_write,
-  Psock_read,
-  Psock_puts,
-  NULL,
-  Psock_ctrl,
-  Psock_new,
-  Psock_free
-#endif
-};
-
-
-static bool SetBIO(SSL * ssl, void * ptr)
-{
-  BIO * bio = BIO_new(&methods_Psock);
-  if (bio == NULL) {
-    PTRACE(2, "Could not open BIO");
-    return false;
-  }
-
-  // "Open" then bio
-  bio->ptr  = ptr;
-  bio->init = 1;
-
-  SSL_set_bio(ssl, bio, bio);
-  return true;
-}
-
-
-
-PBoolean PSSLChannel::OnOpen()
-{
-  return SetBIO(m_ssl, this);
 }
 
 
@@ -2580,6 +2522,9 @@ PSSLChannelDTLS::PSSLChannelDTLS(PSSLContext & context)
   : PSSLChannel(context)
 {
   PTRACE(4, "Create PSSLChannelDTLS instance.");
+
+  SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
+  SSL_set_read_ahead(m_ssl, 1);
 }
 
 
@@ -2641,17 +2586,6 @@ PBYTEArray PSSLChannelDTLS::GetKeyMaterial(PINDEX materialSize, const char * nam
 #endif
 
   return PBYTEArray();
-}
-
-
-bool PSSLChannelDTLS::OnOpen()
-{
-  if (!PSSLChannel::OnOpen())
-    return false;
-
-  SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
-  SSL_set_read_ahead(m_ssl, 1);
-  return true;
 }
 
 
