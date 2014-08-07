@@ -838,7 +838,7 @@ void PSTUNMessage::PrintOn(ostream & strm) const
   if (IsRFC5389())
     strm << " (RFC5389)";
 
-  strm << " [" << hex << setfill('0') << scientific << GetTransactionID() << ']';
+  strm << " [" << hex << setfill('0') << fixed << setprecision(-1) << GetTransactionID() << ']';
 
   if (m_sourceAddressAndPort.IsValid())
     strm << " from " << m_sourceAddressAndPort;
