@@ -906,6 +906,12 @@ PStringArray PVideoDevice::GetDeviceNames() const
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+void PVideoControlInfo::PrintOn(ostream & strm) const
+{
+  strm << m_type << ": min=" << m_minimum << ", max=" << m_maximum << ", step=" << m_step << ", reset=" << m_reset;
+}
+
+
 int PVideoControlInfo::SetCurrent(int current)
 {
   if (current < m_minimum)
@@ -920,7 +926,19 @@ int PVideoControlInfo::SetCurrent(int current)
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-PString PVideoInteractionInfo::AsString(const InputInteractType & ctype)
+PVideoInteractionInfo::PVideoInteractionInfo()
+  : m_type(InteractOther)
+{
+}
+
+
+void PVideoInteractionInfo::PrintOn(ostream & strm) const
+{
+  strm << AsString(m_type);
+}
+
+
+PString PVideoInteractionInfo::AsString(const Type & ctype)
 {
   switch (ctype) {
     case InteractKey:
@@ -1199,18 +1217,69 @@ PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & device
 }
 
 
-PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, Capabilities * caps, PPluginManager * pluginMgr)
+bool PVideoInputDevice::GetDeviceCapabilities(Capabilities * capabilities) const
+{
+  return GetDeviceCapabilities(GetDeviceName(), capabilities);
+}
+
+
+bool PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, Capabilities * caps, PPluginManager * pluginMgr)
 {
   return GetDeviceCapabilities(deviceName, "*", caps, pluginMgr);
 }
 
 
-PBoolean PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, const PString & driverName, Capabilities * caps, PPluginManager * pluginMgr)
+bool PVideoInputDevice::GetDeviceCapabilities(const PString & deviceName, const PString & driverName, Capabilities * caps, PPluginManager * pluginMgr)
 {
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
 
   return pluginMgr->GetPluginsDeviceCapabilities(PPlugin_PVideoInputDevice::ServiceType(), driverName, deviceName, caps);
+}
+
+
+PVideoInputDevice::Capabilities::Capabilities()
+  : m_channels(0)
+  , m_brightness(false)
+  , m_contrast(false)
+  , m_saturation(false)
+  , m_hue(false)
+  , m_gamma(false)
+  , m_exposure(false)
+{
+}
+
+
+void PVideoInputDevice::Capabilities::PrintOn(ostream & strm) const
+{
+  std::streamsize indent = strm.precision();
+
+  strm << setw(indent) << ' ';
+  if (framesizes.empty())
+    strm << "No frame sizes.\n";
+  else {
+    strm << "Frame Sizes:\n";
+    for (list<PVideoFrameInfo>::const_iterator it = framesizes.begin(); it != framesizes.end(); ++it)
+      strm << setw(indent+2) << ' ' << *it << '\n';
+  }
+
+  strm << setw(indent) << ' ';
+  if (controls.empty())
+    strm << "No controls.\n";
+  else {
+    strm << "Controls:\n";
+    for (list<PVideoControlInfo>::const_iterator it = controls.begin(); it != controls.end(); ++it)
+      strm << setw(indent+2) << ' ' << *it << '\n';
+  }
+
+  strm << setw(indent) << ' ';
+  if (interactions.empty())
+    strm << "No interactions.\n";
+  else {
+    strm << "Interactions:\n";
+    for (list<PVideoInteractionInfo>::const_iterator it = interactions.begin(); it != interactions.end(); ++it)
+      strm << setw(indent+2) << ' ' << *it << '\n';
+  }
 }
 
 
