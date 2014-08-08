@@ -1987,18 +1987,8 @@ if test "x${HAS_VIDEO}" = "x1" ; then
     cygwin* | mingw* )
       old_CPPFLAGS="$CPPFLAGS"
       CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
-
       ptlib_has_directx=yes
-
-      AC_CHECK_HEADERS([control.h], [], [ptlib_has_directx=no])
-      AC_CHECK_HEADERS([ddraw.h], [], [ptlib_has_directx=no])
       AC_CHECK_HEADERS([dshow.h], [], [ptlib_has_directx=no])
-      AC_CHECK_HEADERS([dsound.h], [], [ptlib_has_directx=no])
-      AC_CHECK_HEADERS([strmif.h], [], [ptlib_has_directx=no])
-      dnl ##### the two following headers are included by other headers, so check only if they exist
-      AC_PREPROC_IFELSE([AC_LANG_SOURCE([[ksuuids.h]])], [], [ptlib_has_directx=no])
-      AC_PREPROC_IFELSE([AC_LANG_SOURCE([[uuids.h]])], [], [ptlib_has_directx=no])
-
       CPPFLAGS="$old_CPPFLAGS"
 
       if test "x${ptlib_has_directx}" = "xyes" ; then
