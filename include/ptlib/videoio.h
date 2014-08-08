@@ -296,6 +296,8 @@ class PVideoControlInfo : public PObject
       , m_current(reset)
     { }
 
+    virtual void PrintOn(ostream & strm) const;
+
     bool IsValid() const   { return m_type != EndTypes; }
 
     Types GetType() const  { return m_type; }
@@ -320,7 +322,7 @@ class PVideoInteractionInfo : public PObject
 {
     PCLASSINFO(PVideoInteractionInfo, PObject);
   public:
-    P_DECLARE_ENUM(InputInteractType,
+    P_DECLARE_ENUM(Type,
       InteractKey,       /// Register remote KeyPresses
       InteractMouse,     /// Register remote Mouse Movement Clicks
       InteractNavigate,  /// Register remote Navigation commands
@@ -328,9 +330,11 @@ class PVideoInteractionInfo : public PObject
       InteractOther      /// Register remote application specific Inputs
     );
 
-    static PString AsString(const InputInteractType & type);
+    PVideoInteractionInfo();
+    virtual void PrintOn(ostream & strm) const;
+    static PString AsString(const Type & type);
 
-    InputInteractType type;
+    Type m_type;
 };
 
 
@@ -1029,21 +1033,33 @@ class PVideoInputDevice : public PVideoDevice
       PBoolean startImmediate = true          ///< Immediately start display
     );
 
-  typedef struct {
-     std::list<PVideoFrameInfo>       framesizes;
-     std::list<PVideoControlInfo>     controls;
-     std::list<PVideoInteractionInfo> interactions;
-  } Capabilities;
+    class Capabilities : public PObject {
+      PCLASSINFO(Capabilities, PObject);
+    public:
+      Capabilities();
+      virtual void PrintOn(ostream & strm) const;
+
+      unsigned                         m_channels;
+      bool                             m_brightness;
+      bool                             m_contrast;
+      bool                             m_saturation;
+      bool                             m_hue;
+      bool                             m_gamma;
+      bool                             m_exposure;
+      std::list<PVideoFrameInfo>       framesizes;
+      std::list<PVideoControlInfo>     controls;
+      std::list<PVideoInteractionInfo> interactions;
+    };
 
     /**Retrieve a list of Device Capabilities
       */
     virtual bool GetDeviceCapabilities(
       Capabilities * capabilities          ///< List of supported capabilities
-    ) const { return GetDeviceCapabilities(GetDeviceName(), capabilities); }
+      ) const;
 
     /**Retrieve a list of Device Capabilities for particular device
       */
-    static PBoolean GetDeviceCapabilities(
+    static bool GetDeviceCapabilities(
       const PString & deviceName,           ///< Name of device
       Capabilities * capabilities,          ///< List of supported capabilities
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
@@ -1051,7 +1067,7 @@ class PVideoInputDevice : public PVideoDevice
 
     /**Retrieve a list of Device Capabilities for a particular driver
       */
-    static PBoolean GetDeviceCapabilities(
+    static bool GetDeviceCapabilities(
       const PString & deviceName,           ///< Name of device
       const PString & driverName,           ///< Device Driver
       Capabilities * caps,                  ///< List of supported capabilities
