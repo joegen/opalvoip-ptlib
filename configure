@@ -5967,7 +5967,6 @@ fi
 
    mingw* )
       target_os=mingw
-      CPPFLAGS="$CPPFLAGS -mms-bitfields"
       LIBS="-lwinmm -lwsock32 -lws2_32 -lsnmpapi -lmpr -lcomdlg32 -lgdi32 -lavicap32 -liphlpapi -lole32 -lquartz $LIBS"
    ;;
 
@@ -16101,37 +16100,7 @@ if test "x${HAS_VIDEO}" = "x1" ; then
     cygwin* | mingw* )
       old_CPPFLAGS="$CPPFLAGS"
       CPPFLAGS="$CPPFLAGS -I${with_directx_dir}"
-
       ptlib_has_directx=yes
-
-      for ac_header in control.h
-do :
-  ac_fn_cxx_check_header_mongrel "$LINENO" "control.h" "ac_cv_header_control_h" "$ac_includes_default"
-if test "x$ac_cv_header_control_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_CONTROL_H 1
-_ACEOF
-
-else
-  ptlib_has_directx=no
-fi
-
-done
-
-      for ac_header in ddraw.h
-do :
-  ac_fn_cxx_check_header_mongrel "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
-if test "x$ac_cv_header_ddraw_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_DDRAW_H 1
-_ACEOF
-
-else
-  ptlib_has_directx=no
-fi
-
-done
-
       for ac_header in dshow.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "dshow.h" "ac_cv_header_dshow_h" "$ac_includes_default"
@@ -16145,55 +16114,6 @@ else
 fi
 
 done
-
-      for ac_header in dsound.h
-do :
-  ac_fn_cxx_check_header_mongrel "$LINENO" "dsound.h" "ac_cv_header_dsound_h" "$ac_includes_default"
-if test "x$ac_cv_header_dsound_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_DSOUND_H 1
-_ACEOF
-
-else
-  ptlib_has_directx=no
-fi
-
-done
-
-      for ac_header in strmif.h
-do :
-  ac_fn_cxx_check_header_mongrel "$LINENO" "strmif.h" "ac_cv_header_strmif_h" "$ac_includes_default"
-if test "x$ac_cv_header_strmif_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_STRMIF_H 1
-_ACEOF
-
-else
-  ptlib_has_directx=no
-fi
-
-done
-
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-ksuuids.h
-_ACEOF
-if ac_fn_cxx_try_cpp "$LINENO"; then :
-
-else
-  ptlib_has_directx=no
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-uuids.h
-_ACEOF
-if ac_fn_cxx_try_cpp "$LINENO"; then :
-
-else
-  ptlib_has_directx=no
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
 
       CPPFLAGS="$old_CPPFLAGS"
 
