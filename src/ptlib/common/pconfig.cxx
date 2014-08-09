@@ -41,6 +41,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PConfig
 
+const PString & PConfig::DefaultSectionName() { static PConstString const s("Options"); return s; }
+
 PStringToString PConfig::GetAllKeyValues(const PString & section) const
 {
   PStringToString dict;

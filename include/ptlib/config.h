@@ -42,7 +42,6 @@
 #include "ptlib.h"
 #ifdef P_CONFIG_FILE
 
-class PXConfig;
 
 /** A class representing a configuration for the application.
 There are four sources of configuration information. The system environment,
@@ -528,6 +527,8 @@ class PConfig : public PObject
     );
   //@}
 
+
+    static const PString & DefaultSectionName();
 
   protected:
     // Member variables

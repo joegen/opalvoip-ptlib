@@ -41,13 +41,9 @@
 #include "../common/pconfig.cxx"
 
 
-#define SYS_CONFIG_NAME		"pwlib"
+static const char OldSystemConfigFile[] = "/usr/local/pwlib/pwlib.ini";
+static const char NewSystemConfigFile[] = "/usr/local/share/ptlib/ptlib.ini";
 
-#define	APP_CONFIG_DIR		".pwlib_config/"
-#define	SYS_CONFIG_DIR		"/usr/local/pwlib/"
-
-#define	EXTENSION		".ini"
-#define	ENVIRONMENT_CONFIG_STR	"/\~~environment~~\/"
 
 #if defined(P_MACOSX) || defined(P_IOS) || defined(P_SOLARIS) || defined(P_FREEBSD)
 #define environ (NULL)
@@ -62,42 +58,34 @@ extern char **environ;
 // a list of sections
 //
 
-class PXConfig : public PDictionary<PCaselessString, PStringToString>
+class PConfig::Cached : public PDictionary<PCaselessString, PStringOptions>
 {
-    typedef PDictionary<PCaselessString, PStringToString> ParentClass;
-    PCLASSINFO(PXConfig, ParentClass);
+    typedef PDictionary<PCaselessString, PStringOptions> ParentClass;
+    PCLASSINFO(Cached, ParentClass);
   public:
-    PXConfig(const PString & key, const PFilePath & filename);
-    ~PXConfig();
+    Cached(const PFilePath & filename);
+    Cached(char **envp);
+    ~Cached();
 
-    void Wait()   { mutex.Wait(); }
-    void Signal() { mutex.Signal(); }
-
-    PBoolean ReadFromFile (const PFilePath & filename);
-    void ReadFromEnvironment (char **envp);
-
-    PBoolean WriteToFile(const PFilePath & filename);
-    void Flush();
-
-    void SetDirty()
-    {
-      PTRACE_IF(4, !dirty, "PTLib\tSetting PXConfig dirty.");
-      dirty = true;
-    }
+    void SetDirty();
 
   protected:
-    PString        m_key;
-    PFilePath      m_filename;
-    PAtomicInteger instanceCount;
-    PMutex         mutex;
-    bool           dirty;
-    bool           canSave;
+    void Flush();
+    PDECLARE_NOTIFIER(PTimer, Cached, FlushTimeout);
 
-  friend class PXConfigDictionary;
+    PFilePath      m_filePath;
+    PAtomicInteger m_instanceCount;
+    PMutex         m_mutex;
+    bool           m_dirty;
+    bool           m_canSave;
+    PTimer         m_flushTimer;
+
+  friend class PConfigCache;
+  friend class PConfig;
 };
 
 
-static PBoolean IsComment(const PString& str)
+static bool IsComment(const PString& str)
 {
   return str.GetLength() && strchr(";#", str[0]);
 }
@@ -106,117 +94,131 @@ static PBoolean IsComment(const PString& str)
 //
 // a dictionary of configurations, keyed by filename
 //
-class PXConfigDictionary : public PDictionary<PString, PXConfig>
+class PConfigCache : public PProcessStartup
 {
-    typedef PDictionary<PString, PXConfig> ParentClass;
-    PCLASSINFO(PXConfigDictionary, ParentClass)
+    PCLASSINFO(PConfigCache, PProcessStartup)
   public:
-    PXConfigDictionary();
-    ~PXConfigDictionary();
-    PXConfig * GetFileConfigInstance(const PString & key, const PFilePath & filename);
-    PXConfig * GetEnvironmentInstance();
-    void RemoveInstance(PXConfig * instance);
-    void WriteChangedInstances();
+    PConfigCache();
+    ~PConfigCache();
+
+    virtual void OnShutdown();
+
+    PConfig::Cached * GetEnvironmentCache();
+    PConfig::Cached * GetFileCache(const PFilePath & filename);
+    void Detach(PConfig::Cached * cache);
+
+    PFACTORY_GET_SINGLETON(PProcessStartupFactory, PConfigCache);
 
   protected:
-    PMutex        mutex;
-    PXConfig    * environmentInstance;
-    PThread     * writeThread;
-    PSyncPointAck stopConfigWriteThread;
+    PMutex   m_mutex;
+    PConfig::Cached  * m_environmentCache;
+
+    typedef PDictionary<PFilePath, PConfig::Cached> CacheDict;
+    CacheDict m_cache;
 };
 
-
-PDECLARE_CLASS(PXConfigWriteThread, PThread)
-  public:
-    PXConfigWriteThread(PSyncPointAck & stop);
-    void Main();
-  private:
-    PSyncPointAck & stop;
-};
+PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PConfigCache);
 
 
-typedef PSingleton<PXConfigDictionary, PAtomicInteger> PXConfigData;
 
+#define PTraceModule() "PConfig"
 #define	new PNEW
 
-//////////////////////////////////////////////////////
-
-PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
-  : PThread(10000, NoAutoDeleteThread, NormalPriority, "PXConfigWriteThread"),
-    stop(s)
-{
-  Resume();
-}
-
-
-void PXConfigWriteThread::Main()
-{
-  PTRACE(4, "PTLib\tConfig file cache write back thread started.");
-  while (!stop.Wait(30000))  // if stop.Wait() returns true, we are shutting down
-    PXConfigData()->WriteChangedInstances();   // check dictionary for items that need writing
-
-  PXConfigData()->WriteChangedInstances();
-
-  stop.Acknowledge();
-}
-
 
 //////////////////////////////////////////////////////
 
-PXConfig::PXConfig(const PString & key, const PFilePath & filename)
-  : m_key(key)
-  , m_filename(filename)
+PConfig::Cached::Cached(const PFilePath & path)
+  : m_filePath(path)
+  , m_dirty(false)
+  , m_canSave(true) // normally save on exit (except for environment configs)
 {
-  // make sure content gets removed
-  AllowDeleteObjects();
+  PTRACE(4, "Created " << this << " for " << m_filePath);
 
-  // we start off clean
-  dirty = false;
+  // attempt to open file
+  PTextFile file;
+  if (!file.Open(m_filePath, PFile::ReadOnly))
+    return;
 
-  // normally save on exit (except for environment configs)
-  canSave = true;
+  PStringOptions * currentSection = NULL;
 
-  PTRACE(4, "PTLib\tCreated PXConfig " << this);
-}
+  // read lines in the file
+  while (file.good()) {
+    PString line;
+    file >> line;
+    line = line.LeftTrim();
+    if (line.IsEmpty())
+      continue;
 
+    // Preserve comments
+    if (IsComment(line)) {
+      SetAt(line, new PStringOptions());
+      continue;
+    }
 
-PXConfig::~PXConfig()
-{
-  PTRACE(4, "PTLib\tDestroyed PXConfig " << this);
-}
-
-
-void PXConfig::Flush()
-{
-  mutex.Wait();
-
-  if (canSave && dirty) {
-    WriteToFile(m_filename);
-    dirty = false;
+    if (line[0] == '[') {
+      PCaselessString sectionName = line(1, line.Find(']')-1).Trim();
+      if ((currentSection = GetAt(sectionName)) == NULL)
+        SetAt(sectionName, currentSection = new PStringOptions());
+    }
+    else if (currentSection != NULL) {
+      PString keyStr, valStr;
+      if (line.Split('=', keyStr, valStr, false) && !(keyStr = keyStr.Trim()).IsEmpty()) {
+        PStringOptions::iterator it = currentSection->find(keyStr);
+        if (it != currentSection->end())
+          valStr.Splice(it->second + '\n', 0, 0);
+        currentSection->SetAt(keyStr, valStr);
+      }
+    }
   }
 
-  mutex.Signal();
+  PTRACE(3, "Read config file " << m_filePath);
 }
 
-PBoolean PXConfig::WriteToFile(const PFilePath & filename)
+
+PConfig::Cached::~Cached()
 {
+  Flush();
+  PTRACE(4, "Destroyed " << this);
+}
+
+
+void PConfig::Cached::SetDirty()
+{
+  PTRACE_IF(4, !m_dirty, "Setting config cache dirty.");
+  m_dirty = true;
+  m_flushTimer.SetInterval(0, 10);
+}
+
+
+void PConfig::Cached::FlushTimeout(PTimer&, INT)
+{
+  m_mutex.Wait();
+  Flush();
+  m_mutex.Signal();
+}
+
+
+void PConfig::Cached::Flush()
+{
+  if (!m_dirty)
+    return;
+
+  m_dirty = false;
+  m_flushTimer.Stop();
+
   // make sure the directory that the file is to be written into exists
-  PDirectory dir = filename.GetDirectory();
-  if (!dir.Exists() && !dir.Create( 
-                                   PFileInfo::UserExecute |
-                                   PFileInfo::UserWrite |
-                                   PFileInfo::UserRead)) {
-    PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config directory");
-    return false;
+  PDirectory dir = m_filePath.GetDirectory();
+  if (!dir.Exists() && !dir.Create(PFileInfo::UserExecute|PFileInfo::UserWrite|PFileInfo::UserRead, true)) {
+    PTRACE(1, "Could not create directory: " << dir);
+    PProcess::PXShowSystemWarning(2000, "Cannot create config directory");
+    return;
   }
 
   PTextFile file;
-  if (!file.Open(filename + ".new", PFile::WriteOnly))
-    file.Open(filename, PFile::WriteOnly);
-
-  if (!file.IsOpen()) {
-    PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file: " + file.GetErrorText());
-    return false;
+  if (PFile::Exists(m_filePath) ? file.Open(m_filePath + ".new", PFile::WriteOnly) : file.Open(m_filePath , PFile::WriteOnly)) {
+    PTRACE(1, "Could not create file: " << file.GetFilePath() << " - " << file.GetErrorText());
+    PProcess::PXShowSystemWarning(2001, "Cannot create config file: " + file.GetErrorText());
+    return;
   }
 
   for (iterator it = begin(); it != end(); ++it) {
@@ -227,11 +229,11 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
     }
 
     file << "[" << it->first << "]" << endl;
-    for (PStringToString::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+    for (PStringOptions::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
       PStringArray lines = it2->second.Tokenise('\n', true);
       // Preserve name/value pairs with no value, i.e. of the form "name="
       if (lines.IsEmpty())
-	file << it2->first << "=" << endl;
+        file << it2->first << "=" << endl;
       else {
         for (PINDEX k = 0; k < lines.GetSize(); k++) 
           file << it2->first << "=" << lines[k] << endl;
@@ -240,123 +242,232 @@ PBoolean PXConfig::WriteToFile(const PFilePath & filename)
     file << endl;
   }
 
-  file.flush();
-  file.SetLength(file.GetPosition());
   file.Close();
 
-  if (file.GetFilePath() != filename) {
-    if (!file.Rename(file.GetFilePath(), filename.GetFileName(), true)) {
-      PProcess::PXShowSystemWarning(2001, "Cannot rename config file: " + file.GetErrorText());
-      return false;
-    }
+  if (file.GetFilePath() != m_filePath && !file.Rename(file.GetFilePath(), m_filePath.GetFileName(), true)) {
+    PTRACE(1, "Could not rename file: " << file.GetFilePath() << " to " << m_filePath << " - " << file.GetErrorText());
+    PProcess::PXShowSystemWarning(2001, "Cannot rename config file: " + file.GetErrorText());
+    return;
   }
 
-  PTRACE(4, "PTLib\tSaved config file: " << filename);
-  return true;
+  PTRACE(4, "Flushed config file: " << m_filePath);
 }
 
 
-PBoolean PXConfig::ReadFromFile(const PFilePath & filename)
+PConfig::Cached::Cached(char **envp)
+  : m_dirty(false)
+  , m_canSave(false) // can't save environment configs
 {
-  PINDEX len;
+  PTRACE(4, "Created " << this << " for environment");
 
-  // clear out all information
-  RemoveAll();
+  PStringOptions * envSection = new PStringOptions();
+  SetAt(PConfig::DefaultSectionName(), envSection);
 
-  PTRACE(4, "PTLib\tReading config file: " << filename);
-
-  // attempt to open file
-  PTextFile file;
-  if (!file.Open(filename, PFile::ReadOnly))
-    return false;
-
-  PStringToString * currentSection = NULL;
-
-  // read lines in the file
-  while (file.good()) {
-    PString line;
-    file >> line;
-    line = line.LeftTrim();
-    if ((len = line.GetLength()) > 0) {
-      // Preserve comments
-      if (IsComment(line))
-        SetAt(line, new PStringToString());
-      else {
-        if (line[0] == '[') {
-          PCaselessString sectionName = line(1, line.Find(']')-1).Trim();
-          iterator iter;
-          if ((iter = find(sectionName)) != end())
-            currentSection = &iter->second;
-          else {
-            currentSection = new PStringToString();
-            SetAt(sectionName, currentSection);
-          }
-        }
-        else if (currentSection != NULL) {
-          PString keyStr, valStr;
-          if (line.Split('=', keyStr, valStr, false) && !(keyStr = keyStr.Trim()).IsEmpty()) {
-            PStringToString::iterator iter = currentSection->find(keyStr);
-            if (iter != currentSection->end())
-              iter->second += '\n' + valStr;
-            else
-              currentSection->SetAt(keyStr, valStr);
-          }
-        }
-      }
-    }
-  }
-  
-  // close the file and return
-  file.Close();
-  return true;
-}
-
-void PXConfig::ReadFromEnvironment (char **envp)
-{
-  // clear out all information
-  RemoveAll();
-
-  PStringToString * currentSection = new PStringToString();
-  SetAt("Options", currentSection);
-
-  // can't save environment configs
-  canSave = false;
-
-  if (envp == NULL)
+  if (envp != NULL)
     return;
 
   while (*envp != NULL && **envp != '\0') {
-    PString line(*envp);
-    PINDEX equals = line.Find('=');
-    if (equals > 0)
-      currentSection->SetAt(line.Left(equals), line.Mid(equals+1));
-    envp++;
+    PStringStream strm(*envp++);
+    strm >> *envSection;
   }
 }
 
 
-static PBoolean LocateFile(const PString & baseName,
-                       PFilePath & readFilename,
-                       PFilePath & filename)
-{
-  // check the user's home directory first
-  filename = readFilename = PProcess::Current().GetConfigurationFile();
-  if (PFile::Exists(filename))
-    return true;
+////////////////////////////////////////////////////////////
 
-  // otherwise check the system directory for a file to read,
-  // and then create 
-  readFilename = SYS_CONFIG_DIR + baseName + EXTENSION;
-  return PFile::Exists(readFilename);
+PConfigCache::PConfigCache()
+  : m_environmentCache(NULL)
+{
 }
+
+
+PConfigCache::~PConfigCache()
+{
+  delete m_environmentCache;
+}
+
+
+void PConfigCache::OnShutdown()
+{
+  m_cache.RemoveAll(); // And flush them
+}
+
+
+PConfig::Cached * PConfigCache::GetEnvironmentCache()
+{
+  m_mutex.Wait();
+  if (m_environmentCache == NULL)
+    m_environmentCache = new PConfig::Cached(environ);
+  m_mutex.Signal();
+  return m_environmentCache;
+}
+
+
+PConfig::Cached * PConfigCache::GetFileCache(const PFilePath & filename)
+{
+  m_mutex.Wait();
+
+  PConfig::Cached * config = m_cache.GetAt(filename);
+  if (config == NULL)
+    m_cache.SetAt(filename, config = new PConfig::Cached(filename));
+  ++config->m_instanceCount;
+
+  m_mutex.Signal();
+  return config;
+}
+
+
+void PConfigCache::Detach(PConfig::Cached * config)
+{
+  m_mutex.Wait();
+
+  if (config != m_environmentCache) {
+    CacheDict::iterator it = m_cache.find(config->m_filePath);
+    if (it != m_cache.end() && --config->m_instanceCount == 0)
+      m_cache.erase(it);
+  }
+
+  m_mutex.Signal();
+}
+
+
+void PConfig::Construct(Source src, const PString & appname, const PString & /*manuf*/)
+{
+  switch (src) {
+    case Environment:
+      m_config = PConfigCache::GetInstance().GetEnvironmentCache();
+      break;
+
+    case System:
+      m_config = PConfigCache::GetInstance().GetFileCache(PFile::Exists(OldSystemConfigFile) ? OldSystemConfigFile : NewSystemConfigFile);
+      break;
+
+    case Application:
+      m_config = PConfigCache::GetInstance().GetFileCache(PProcess::Current().GetConfigurationFile());
+  }
+}
+
+
+void PConfig::Construct(const PFilePath & theFilename)
+{
+  m_config = PConfigCache::GetInstance().GetFileCache(theFilename);
+}
+
+
+PConfig::~PConfig()
+{
+  PConfigCache::GetInstance().Detach(m_config);
+}
+
+
+PStringArray PConfig::GetSections() const
+{
+  PAssert(m_config != NULL, "config instance not set");
+  PWaitAndSignal(m_config->m_mutex);
+
+  PStringArray sections(m_config->GetSize());
+
+  PINDEX index = 0;
+  for (Cached::iterator it = m_config->begin(); it != m_config->end(); ++it)
+    sections[index++] = it->first;
+
+  return sections;
+}
+
+
+PStringArray PConfig::GetKeys(const PString & theSection) const
+{
+  PAssert(m_config != NULL, "config instance not set");
+  PWaitAndSignal(m_config->m_mutex);
+
+  PStringArray keys;
+
+  PStringOptions * section = m_config->GetAt(theSection);
+  if (section != NULL) {
+    keys.SetSize(section->GetSize());
+    PINDEX index = 0;
+    for (PStringOptions::iterator it = section->begin(); it!= section->end(); ++it)
+      keys[index++] = it->first;
+  }
+
+  return keys;
+}
+
+
+void PConfig::DeleteSection(const PString & theSection)
+{
+  PAssert(m_config != NULL, "config instance not set");
+  PWaitAndSignal(m_config->m_mutex);
+
+  PConfig::Cached::iterator it = m_config->find(theSection);
+  if (it != m_config->end()) {
+    m_config->erase(it);
+    m_config->SetDirty();
+  }
+}
+
+
+void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
+{
+  PAssert(m_config != NULL, "config instance not set");
+  PWaitAndSignal(m_config->m_mutex);
+
+  PStringOptions * section = m_config->GetAt(theSection);
+  if (section != NULL) {
+    PStringOptions::iterator it = section->find(theKey);
+    if (it != section->end()) {
+      section->erase(it);
+      m_config->SetDirty();
+    }
+  }
+}
+
+
+PBoolean PConfig::HasKey(const PString & theSection, const PString & theKey) const
+{
+  PAssert(m_config != NULL, "config instance not set");
+  PWaitAndSignal(m_config->m_mutex);
+
+  PStringOptions * section = m_config->GetAt(theSection);
+  return section != NULL && section->Contains(theKey);
+}
+
+
+PString PConfig::GetString(const PString & theSection, const PString & theKey, const PString & dflt) const
+{
+  PAssert(m_config != NULL, "config instance not set");
+  PWaitAndSignal(m_config->m_mutex);
+
+  PStringOptions * section = m_config->GetAt(theSection);
+  return section != NULL ? section->GetString(theKey, dflt) : dflt;
+}
+
+
+void PConfig::SetString(const PString & theSection,
+                        const PString & theKey,
+                        const PString & theValue)
+{
+  PAssert(m_config != NULL, "config instance not set");
+  PWaitAndSignal(m_config->m_mutex);
+
+  PStringOptions * section = m_config->GetAt(theSection);
+  if (section == NULL)
+    m_config->SetAt(theSection, section = new PStringOptions);
+
+  section->SetAt(theKey, theValue);
+  m_config->SetDirty();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PString PProcess::GetConfigurationFile()
 {
   if (configurationPaths.IsEmpty()) {
-    configurationPaths.AppendString(GetHomeDirectory() + APP_CONFIG_DIR);
-    configurationPaths.AppendString(SYS_CONFIG_DIR);
+    configurationPaths.AppendString(GetHomeDirectory() + ".ptlib_config/");
+    configurationPaths.AppendString(GetHomeDirectory() + ".pwlib_config/");
+    configurationPaths.AppendString("/usr/local/share/ptlib/");
+    configurationPaths.AppendString("/usr/local/pwlib/");
   }
 
   // See if explicit filename
@@ -372,334 +483,6 @@ PString PProcess::GetConfigurationFile()
   }
 
   return PDirectory(configurationPaths[0]) + iniFilename;
-}
-
-
-////////////////////////////////////////////////////////////
-//
-// PXConfigDictionary
-//
-
-PXConfigDictionary::PXConfigDictionary()
-{
-  environmentInstance = NULL;
-  writeThread = NULL;
-}
-
-
-PXConfigDictionary::~PXConfigDictionary()
-{
-  if (writeThread != NULL) {
-    stopConfigWriteThread.Signal();
-    writeThread->WaitForTermination();
-    delete writeThread;
-  }
-  delete environmentInstance;
-}
-
-
-PXConfig * PXConfigDictionary::GetEnvironmentInstance()
-{
-  mutex.Wait();
-  if (environmentInstance == NULL) {
-    environmentInstance = new PXConfig(PString::Empty(), PString::Empty());
-    environmentInstance->ReadFromEnvironment(environ);
-  }
-  mutex.Signal();
-  return environmentInstance;
-}
-
-
-PXConfig * PXConfigDictionary::GetFileConfigInstance(const PString & key, const PFilePath & filename)
-{
-  mutex.Wait();
-
-  // start write thread, if not already started
-  if (writeThread == NULL)
-    writeThread = new PXConfigWriteThread(stopConfigWriteThread);
-
-  PXConfig * config = GetAt(key);
-  if (config == NULL) {
-    config = new PXConfig(key, filename);
-    config->ReadFromFile(filename);
-    SetAt(key, config);
-  }
-  ++config->instanceCount;
-
-  mutex.Signal();
-  return config;
-}
-
-void PXConfigDictionary::RemoveInstance(PXConfig * instance)
-{
-  mutex.Wait();
-
-  if (instance != environmentInstance) {
-    iterator it = find(instance->m_key);
-    if (it != end() && --instance->instanceCount == 0) {
-      instance->Flush();
-      erase(it);
-    }
-  }
-
-  mutex.Signal();
-}
-
-void PXConfigDictionary::WriteChangedInstances()
-{
-  mutex.Wait();
-
-  for (iterator it = begin(); it != end(); ++it)
-    it->second.Flush();
-
-  mutex.Signal();
-}
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Create a new configuration object
-//
-////////////////////////////////////////////////////////////
-
-void PConfig::Construct(Source src,
-                        const PString & appname,
-                        const PString & /*manuf*/)
-{
-  // handle cnvironment configs differently
-  if (src == PConfig::Environment)  {
-    config = PXConfigData()->GetEnvironmentInstance();
-    return;
-  }
-  
-  PString name;
-  PFilePath filename, readFilename;
-  
-  // look up file name to read, and write
-  if (src == PConfig::System)
-    LocateFile(SYS_CONFIG_NAME, readFilename, filename);
-  else
-    filename = readFilename = PProcess::Current().GetConfigurationFile();
-
-  // get, or create, the configuration
-  config = PXConfigData()->GetFileConfigInstance(filename, readFilename);
-}
-
-PConfig::PConfig(int, const PString & name)
-  : defaultSection("Options")
-{
-  PFilePath readFilename, filename;
-  LocateFile(name, readFilename, filename);
-  config = PXConfigData()->GetFileConfigInstance(filename, readFilename);
-}
-
-
-void PConfig::Construct(const PFilePath & theFilename)
-{
-  config = PXConfigData()->GetFileConfigInstance(theFilename, theFilename);
-}
-
-
-PConfig::~PConfig()
-{
-  PXConfigData()->RemoveInstance(config);
-}
-
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Return a list of all the section names in the file.
-//
-////////////////////////////////////////////////////////////
-
-PStringArray PConfig::GetSections() const
-{
-  PAssert(config != NULL, "config instance not set");
-  config->Wait();
-
-  PINDEX sz = config->GetSize();
-  PStringArray sections(sz);
-
-  PINDEX index = 0;
-  for (PXConfig::iterator it = config->begin(); it != config->end(); ++it)
-    sections[index++] = it->first;
-
-  config->Signal();
-
-  return sections;
-}
-
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Return a list of all the keys in the section. If the section name is
-// not specified then use the default section.
-//
-////////////////////////////////////////////////////////////
-
-PStringArray PConfig::GetKeys(const PString & theSection) const
-{
-  PAssert(config != NULL, "config instance not set");
-  config->Wait();
-
-  PStringArray keys;
-
-  PXConfig::iterator it;
-  if ((it = config->find(theSection)) != config->end()) {
-    PStringToString & section = it->second;
-    keys.SetSize(section.GetSize());
-    PINDEX index = 0;
-    for (PStringToString::iterator it2 = section.begin(); it2 != section.end(); ++it2)
-      keys[index++] = it2->first;
-  }
-
-  config->Signal();
-  return keys;
-}
-
-
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Delete all variables in the specified section. If the section name is
-// not specified then use the default section.
-//
-////////////////////////////////////////////////////////////
-
-void PConfig::DeleteSection(const PString & theSection)
-{
-  PAssert(config != NULL, "config instance not set");
-  config->Wait();
-
-  PXConfig::iterator it;
-  if ((it = config->find(theSection)) != config->end()) {
-    config->RemoveAt(it->first);
-    config->SetDirty();
-  }
-
-  config->Signal();
-}
-
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Delete the particular variable in the specified section.
-//
-////////////////////////////////////////////////////////////
-
-void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
-{
-  PAssert(config != NULL, "config instance not set");
-  config->Wait();
-
-  PXConfig::iterator it;
-  if ((it = config->find(theSection)) != config->end()) {
-    PStringToString & section = it->second;
-    PStringToString::iterator it2;
-    if ((it2 = section.find(theKey)) != section.end()) {
-      section.RemoveAt(it2->first);
-      config->SetDirty();
-    }
-  }
-
-  config->Signal();
-}
-
-
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Test if there is a value for the key.
-//
-////////////////////////////////////////////////////////////
-
-PBoolean PConfig::HasKey(const PString & theSection, const PString & theKey) const
-{
-  PAssert(config != NULL, "config instance not set");
-  config->Wait();
-
-  bool present = false;
-  PXConfig::iterator it;
-  if ((it = config->find(theSection)) != config->end())
-    present = it->second.Contains(theKey);
-
-  config->Signal();
-  return present;
-}
-
-
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Get a string variable determined by the key in the section.
-//
-////////////////////////////////////////////////////////////
-
-PString PConfig::GetString(const PString & theSection, const PString & theKey, const PString & dflt) const
-{
-  PAssert(config != NULL, "config instance not set");
-  config->Wait();
-
-  PString value = dflt;
-  PXConfig::iterator it;
-  if ((it = config->find(theSection)) != config->end()) {
-    PStringToString & section = it->second;
-    PStringToString::iterator it2;
-    if ((it2 = section.find(theKey)) != section.end()) 
-      value = it2->second;
-  }
-
-  config->Signal();
-  return value;
-}
-
-
-////////////////////////////////////////////////////////////
-//
-// PConfig::
-//
-// Set a string variable determined by the key in the section.
-//
-////////////////////////////////////////////////////////////
-
-void PConfig::SetString(const PString & theSection,
-                        const PString & theKey,
-                        const PString & theValue)
-{
-  PAssert(config != NULL, "config instance not set");
-  config->Wait();
-
-  PStringToString * section;
-
-  PXConfig::iterator it;
-  if ((it = config->find(theSection)) != config->end())
-    section = &it->second;
-  else {
-    section = new PStringToString;
-    config->SetAt(theSection, section);
-    config->SetDirty();
-  } 
-
-  PStringToString::iterator it2;
-  if ((it2 = section->find(theKey)) == section->end() || it2->second != theValue) {
-    section->SetAt(theKey, theValue);
-    config->SetDirty();
-  }
-
-  config->Signal();
 }
 
 
