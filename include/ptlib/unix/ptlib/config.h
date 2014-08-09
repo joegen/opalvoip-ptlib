@@ -35,10 +35,12 @@
 // PConfiguration
 
   public:
-    PConfig(int, const PString & name);
     ~PConfig();
 
   protected:
-    PXConfig * config;
+    class Cached;
+    Cached * m_config;
+
+  friend class PConfigCache;
 
 // End Of File ////////////////////////////////////////////////////////////////
