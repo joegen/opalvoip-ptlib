@@ -707,6 +707,7 @@ class PChannel : public PObject, public std::iostream
       PINDEX start
     );
 
+    virtual int os_errno() const;
 
     // Member variables
     /// The operating system file handle return by standard open() function.

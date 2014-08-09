@@ -526,7 +526,7 @@ class PSocket : public PChannel
       socklen_t * size
     );
 
-    int os_errno() const;
+    virtual int os_errno() const;
 
 
   // Member variables
