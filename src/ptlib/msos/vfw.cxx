@@ -1193,6 +1193,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     COLORREF   m_bgColour;
     int        m_rotation;
     bool       m_mouseEnabled;
+    bool       m_hidden;
     PThread  * m_thread;
     PMutex     m_openCloseMutex;
     PSyncPoint m_started;
@@ -1239,6 +1240,7 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   , m_bgColour(0) // Black
   , m_rotation(0)
   , m_mouseEnabled(true)
+  , m_hidden(false)
   , m_thread(NULL)
   , m_flipped(false)
   , m_sizeMode(NormalSize)
@@ -1338,6 +1340,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
   m_rotation       = GetTokenValue(deviceName, "ROTATION=", 0);
 
   m_mouseEnabled = deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
+  m_hidden = deviceName.Find("HIDE") == P_MAX_INDEX;
 
   if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
     m_sizeMode = FullScreen;
@@ -1447,7 +1450,7 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
     return false;
 
   if (m_hWnd != NULL) {
-    UINT flags = SWP_SHOWWINDOW;
+    UINT flags = m_hidden ? SWP_HIDEWINDOW : SWP_SHOWWINDOW;
 
     if (m_sizeMode == FullScreen) {
       if (channelNumber == FullScreen)
@@ -1581,6 +1584,11 @@ PBoolean PVideoOutputDevice_Window::FrameComplete()
   if (m_hWnd == NULL)
     return false;
 
+  if (m_hidden) {
+    m_hidden = false;
+    ShowWindow(m_hWnd, SW_SHOW);
+  }
+
   HDC hDC = GetDC(m_hWnd);
   Draw(hDC);
   ReleaseDC(m_hWnd, hDC);
@@ -1602,7 +1610,7 @@ bool PVideoOutputDevice_Window::SetPosition(int x, int y)
   if (m_hWnd == NULL)
     return false;
 
-  return ::SetWindowPos(m_hWnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
+  return ::SetWindowPos(m_hWnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE|SWP_NOACTIVATE);
 }
 
 
