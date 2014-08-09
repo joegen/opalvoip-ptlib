@@ -342,7 +342,7 @@ void PConfig::Construct(Source src, const PString & appname, const PString & /*m
       m_config = PConfigCache::GetInstance().GetFileCache(PFile::Exists(OldSystemConfigFile) ? OldSystemConfigFile : NewSystemConfigFile);
       break;
 
-    case Application:
+    default :
       m_config = PConfigCache::GetInstance().GetFileCache(PProcess::Current().GetConfigurationFile());
   }
 }
