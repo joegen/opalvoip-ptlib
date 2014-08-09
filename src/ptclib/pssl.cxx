@@ -1854,7 +1854,10 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize)
 {
   // create the new SSL context
-  const SSL_METHOD * meth;
+#if OPENSSL_VERSION_NUMBER > 0x0090819fL
+  const
+#endif
+       SSL_METHOD * meth;
 
   switch (method) {
     case SSLv3:
