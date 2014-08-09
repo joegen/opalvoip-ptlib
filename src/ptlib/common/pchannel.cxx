@@ -178,6 +178,12 @@ PINDEX PChannel::HashFunction() const
 }
 
 
+int PChannel::os_errno() const
+{
+  return errno;
+}
+
+
 PBoolean PChannel::IsOpen() const
 {
   return os_handle != -1;
