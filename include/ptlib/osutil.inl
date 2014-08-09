@@ -389,19 +389,19 @@ PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, OpenOptions 
 #ifdef P_CONFIG_FILE
 
 PINLINE PConfig::PConfig(Source src)
-  : defaultSection("Options") { Construct(src, "", ""); }
+  : defaultSection(DefaultSectionName()) { Construct(src, PString::Empty(), PString::Empty()); }
 
 PINLINE PConfig::PConfig(Source src, const PString & appname)
-  : defaultSection("Options") { Construct(src, appname, ""); }
+  : defaultSection(DefaultSectionName()) { Construct(src, appname, PString::Empty()); }
 
 PINLINE PConfig::PConfig(Source src, const PString & appname, const PString & manuf)
-  : defaultSection("Options") { Construct(src, appname, manuf); }
+  : defaultSection(DefaultSectionName()) { Construct(src, appname, manuf); }
 
 PINLINE PConfig::PConfig(const PString & section, Source src)
-  : defaultSection(section) { Construct(src, "", ""); }
+  : defaultSection(section) { Construct(src, PString::Empty(), PString::Empty()); }
 
 PINLINE PConfig::PConfig(const PString & section, Source src, const PString & appname)
-  : defaultSection(section) { Construct(src, appname, ""); }
+  : defaultSection(section) { Construct(src, appname, PString::Empty()); }
 
 PINLINE PConfig::PConfig(const PString & section,
                          Source src,

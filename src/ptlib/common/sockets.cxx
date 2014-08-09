@@ -1032,7 +1032,7 @@ PBoolean PSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
   if (PChannel::ConvertOSError(libcReturnValue, group))
     return true;
 
-  switch (lastErrorNumber[group] = os_errno()) {
+  switch (lastErrorNumber[group]) {
     case ECONNRESET :
     case ECONNREFUSED :
     case EHOSTUNREACH :

@@ -666,7 +666,7 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 
   switch (libcReturnValue) {
     case -1 :
-      if ((osError = errno) != 0)
+      if ((osError = os_errno()) != 0)
         break;
       // Do next case
 
