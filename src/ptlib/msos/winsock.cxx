@@ -85,6 +85,10 @@
 
 #endif // !_WIN32_WCE
 
+#if P_GQOS
+  #include <qossp.h>
+#endif
+
 #if P_QWAVE
   #include <qos2.h>
 #endif
@@ -95,6 +99,9 @@
     #pragma comment(lib, "qwave.lib")
   #endif
 #endif
+
+
+#define PTraceModule() "WinSock"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -119,10 +126,7 @@ struct PWinSock : public PProcessStartup
 
 #if P_GQOS
     // Use for NT (5.1) and Win2003 (5.2) but not Win2000 (5.0) or Vista and later (6.x)
-    OSVERSIONINFO info;
-    info.dwOSVersionInfoSize = sizeof(info);
-    GetVersionEx(&info);
-    m_useGQOS = info.dwMajorVersion == 5 && info.dwMinorVersion >= 1;
+    m_useGQOS = PProcess::IsOSVersion(5,1,0) && !PProcess::IsOSVersion(6,0,0);
 #endif // P_GQOS
 
 #if P_QWAVE
@@ -399,7 +403,7 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 
   fionbio = 0;
   if (::ioctlsocket(os_handle, FIONBIO, &fionbio) < 0) {
-    PTRACE(1, "Socket\tCould not reset FIONBIO mode, error=" << GetLastError());
+    PTRACE(1, "Could not reset FIONBIO mode, error=" << GetLastError());
   }
 
   SetLastError(err);
@@ -976,6 +980,47 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(unsigned version)
 }
 
 
+static bool SetTOS(PIPSocket & socket, PIPSocket::QoSType type, int new_tos)
+{
+  // Not explicitly set, so make a value up.
+  if (new_tos < 0) {
+    static int const DSCP[PIPSocket::NumQoSType] = {
+      0,     // BackgroundQoS
+      0,     // BestEffortQoS
+      8<<2,  // ExcellentEffortQoS
+      10<<2, // CriticalQoS
+      38<<2, // VideoQoS
+      44<<2, // VoiceQoS
+      48<<2  // ControlQoS
+    };
+    new_tos = DSCP[type];
+  }
+
+  // On Win7 and later IP_TOS succeeds, but does not actually do anything. Useless!
+  if (PProcess::IsOSVersion(6, 1, 0)) {
+    PTRACE(3, &socket, "Setting TOS field of IP header does not work in Windows 7 and later.");
+    return false;
+  }
+
+  if (!socket.SetOption(IP_TOS, new_tos, IPPROTO_IP)) {
+    PTRACE(2, &socket, "Could not set TOS field in IP header: " << socket.GetErrorText());
+    return false;
+  }
+
+  int actual_tos;
+  if (!socket.GetOption(IP_TOS, actual_tos, IPPROTO_IP)) {
+    PTRACE(1, &socket, "Could not get TOS field in IP header: " << socket.GetErrorText());
+    return false;
+  }
+
+  if (new_tos == actual_tos)
+    return true;
+
+  PTRACE(2, &socket, "Setting TOS field of IP header appeared successful, but was not really set.");
+  return false;
+}
+
+
 bool PIPSocket::SetQoS(const QoS & qos)
 {
   m_qos = qos;
@@ -1023,99 +1068,69 @@ bool PIPSocket::SetQoS(const QoS & qos)
         return true;
     }
     else {
-      PTRACE(2, "Socket\tCould not SIO_SET_QOS: " << GetErrorText());
+      PTRACE(2, "Could not SIO_SET_QOS: " << GetErrorText());
     }
   }
 #endif // P_GQOS
 
 #if P_QWAVE
-    PIPSocketAddressAndPort peer = qos.m_remote;
-    if (!peer.IsValid())
-      GetPeerAddress(peer);
+  if (PWinSock::GetInstance().m_hQoS != NULL) {
+    static QOS_TRAFFIC_TYPE const TrafficType[NumQoSType] = {
+      QOSTrafficTypeBackground,      // BackgroundQoS
+      QOSTrafficTypeBestEffort,      // BestEffortQoS
+      QOSTrafficTypeExcellentEffort, // ExcellentEffortQoS
+      QOSTrafficTypeControl,         // CriticalQoS
+      QOSTrafficTypeAudioVideo,      // VideoQoS
+      QOSTrafficTypeVoice,           // VoiceQoS
+      QOSTrafficTypeControl          // ControlQoS
+    };
 
-    if (PWinSock::GetInstance().m_hQoS != NULL && peer.IsValid()) {
-      static QOS_TRAFFIC_TYPE const TrafficType[NumQoSType] = {
-        QOSTrafficTypeBackground,      // BackgroundQoS
-        QOSTrafficTypeBestEffort,      // BestEffortQoS
-        QOSTrafficTypeExcellentEffort, // ExcellentEffortQoS
-        QOSTrafficTypeControl,         // CriticalQoS
-        QOSTrafficTypeAudioVideo,      // VideoQoS
-        QOSTrafficTypeVoice,           // VoiceQoS
-        QOSTrafficTypeControl          // ControlQoS
-      };
-
-      bool ok = false;
-      if (m_qosFlowId == 0) {
-        if (qos.m_type != BestEffortQoS || new_tos >= 0 || qos.m_transmit.m_maxBandwidth > 0) {
-          ok = QOSAddSocketToFlow(PWinSock::GetInstance().m_hQoS, os_handle,
-                                  peer.IsValid() ? (PSOCKADDR)sockaddr_wrapper(peer) : (PSOCKADDR)NULL,
-                                  TrafficType[qos.m_type], QOS_NON_ADAPTIVE_FLOW, &m_qosFlowId);
-          PTRACE_IF(1, !ok, "WinSock", "Could not add socket to QoS flow, error=" << ::GetLastError());
-        }
-      }
-      else {
-        ok = QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetTrafficType, sizeof(QOS_TRAFFIC_TYPE), (PVOID)&TrafficType[qos.m_type], 0, NULL);
-        PTRACE_IF(1, !ok, "WinSock", "Could not set QoS flow, error=" << ::GetLastError());
+    if (m_qosFlowId == 0) {
+      PIPSocketAddressAndPort peer = qos.m_remote;
+      if (!peer.IsValid() && !GetPeerAddress(peer)) {
+        PTRACE(3, "Cannot set QoS, no peer address yet.");
+        return false;
       }
 
-      if (ok && qos.m_transmit.m_maxBandwidth > 0) {
-        QOS_FLOWRATE_OUTGOING out;
-        out.Bandwidth = qos.m_transmit.m_maxBandwidth;
-        out.ShapingBehavior = QOSUseNonConformantMarkings;
-        out.Reason = QOSFlowRateNotApplicable;
-        if (!QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetOutgoingRate, sizeof(out), &out, 0, NULL)) {
-          PTRACE(1, "WinSock", "Could not set QoS rates, error=" << ::GetLastError());
-        }
+      if (!QOSAddSocketToFlow(PWinSock::GetInstance().m_hQoS, os_handle,
+                              sockaddr_wrapper(peer), TrafficType[qos.m_type], QOS_NON_ADAPTIVE_FLOW, &m_qosFlowId)) {
+        PTRACE(1, "Could not add socket to QoS flow, error=" << ::GetLastError());
+        return false;
       }
-
-      if (ok && new_tos >= 0) {
-#if P_QWAVE_DSCP
-        DWORD dscp = qos.m_dscp;
-        if (!QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetOutgoingDSCPValue, sizeof(dscp), &dscp, 0, NULL)) {
-          PTRACE(1, "WinSock", "Could not set DSCP, error=" << ::GetLastError());
-        }
-#else
-        ok = false;
-#endif // P_QWAVE_DSCP
-      }
-
-      if (ok)
-        return true;
     }
+    else {
+      if (!QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetTrafficType,
+                      sizeof(QOS_TRAFFIC_TYPE), (PVOID)&TrafficType[qos.m_type], 0, NULL)) {
+        PTRACE(1, "Could not set QoS flow, error=" << ::GetLastError());
+        return false;
+      }
+    }
+
+    if (qos.m_transmit.m_maxBandwidth > 0) {
+      QOS_FLOWRATE_OUTGOING out;
+      out.Bandwidth = qos.m_transmit.m_maxBandwidth;
+      out.ShapingBehavior = QOSUseNonConformantMarkings;
+      out.Reason = QOSFlowRateNotApplicable;
+      if (!QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetOutgoingRate, sizeof(out), &out, 0, NULL)) {
+        PTRACE(2, "Could not set QoS rates, error=" << ::GetLastError());
+      }
+    }
+
+#if P_QWAVE_DSCP
+    if (new_tos < 0)
+      return true;
+
+    DWORD dscp = qos.m_dscp;
+    if (QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetOutgoingDSCPValue, sizeof(dscp), &dscp, 0, NULL))
+      return true;
+
+    PTRACE(2, "Could not set DSCP, error=" << ::GetLastError());
+    return false;
+#endif // P_QWAVE_DSCP
+  }
 #endif // P_QWAVE
 
-  // Not explicitly set, so make a value up.
-  if (new_tos < 0) {
-    static int const DSCP[NumQoSType] = {
-      0,     // BackgroundQoS
-      0,     // BestEffortQoS
-      8<<2,  // ExcellentEffortQoS
-      10<<2, // CriticalQoS
-      38<<2, // VideoQoS
-      44<<2, // VoiceQoS
-      48<<2  // ControlQoS
-    };
-    new_tos = DSCP[qos.m_type];
-  }
-
-  // On Win7 and later this succeeds, does not actually do anything. Useless!
-
-  if (!SetOption(IP_TOS, new_tos, IPPROTO_IP)) {
-    PTRACE(2, "Socket\tCould not set TOS field in IP header: " << GetErrorText());
-    return false;
-  }
-
-  int actual_tos;
-  if (!GetOption(IP_TOS, actual_tos, IPPROTO_IP)) {
-    PTRACE(1, "Socket\tCould not get TOS field in IP header: " << GetErrorText());
-    return false;
-  }
-
-  if (new_tos == actual_tos)
-    return true;
-
-  PTRACE(2, "Socket\tSetting TOS field of IP header appeared successful, but was not really set.");
-  return false;
+  return SetTOS(*this, qos.m_type, new_tos);
 }
 
 
@@ -1203,7 +1218,7 @@ class Win32RouteTableDetector : public PIPSocket::RouteTableDetector
         memset(&overlap, 0, sizeof(overlap));
         DWORD error = NotifyAddrChange(&hNotify, &overlap);
         if (error != ERROR_IO_PENDING) {
-          PTRACE(1, "PTlib\tCould not get network interface change notification: error=" << error);
+          PTRACE(1, "Could not get network interface change notification: error=" << error);
           hNotify = NULL;
         }
       }
