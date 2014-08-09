@@ -251,7 +251,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     bool GetCurrentBufferData(BYTE * data, PINDEX & bufferSize);
     bool SetPinFormat(unsigned useDefaultColourOrSize = 0);
     bool SetAttributeCommon(long control, int newValue);
-    int GetAttributeCommon(long control);
+    int GetAttributeCommon(long control) const;
 
 
     // DirectShow 
@@ -409,6 +409,9 @@ PBoolean PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & dev
 
 bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) const
 {
+  if (m_pCameraOutPin == NULL)
+    return false;
+
   CComPtr<IAMStreamConfig> pStreamConfig;
 #ifdef __MINGW32__
   PCOM_RETURN_ON_FAILED(m_pCameraOutPin->QueryInterface,(IID_IAMStreamConfig, (void**)&pStreamConfig));
@@ -438,7 +441,8 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
       fsizes.insert(PVideoFrameInfo(scc.MaxOutputSize.cx,
                                     scc.MaxOutputSize.cy,
                                     GUID2Format(pMediaFormat->subtype),
-                                    10000000/(unsigned)scc.MinFrameInterval));
+                                    10000000/(unsigned)scc.MinFrameInterval,
+                                    PVideoFrameInfo::eMaxResizeMode));
   }
 
   if (fsizes.empty())
@@ -456,6 +460,12 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
       caps->controls.push_back(m_controlInfo[type]);
   }
 #endif
+
+  caps->m_brightness = GetAttributeCommon(VideoProcAmp_Brightness) >= 0;
+  caps->m_contrast   = GetAttributeCommon(VideoProcAmp_Contrast) >= 0;
+  caps->m_saturation = GetAttributeCommon(VideoProcAmp_Saturation) >= 0;
+  caps->m_hue        = GetAttributeCommon(VideoProcAmp_Hue) >= 0;
+  caps->m_gamma      = GetAttributeCommon(VideoProcAmp_Gamma) >= 0;
 
   return true;
 }
@@ -813,7 +823,7 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
 }
 
 
-int PVideoInputDevice_DirectShow::GetAttributeCommon(long control)
+int PVideoInputDevice_DirectShow::GetAttributeCommon(long control) const
 {
   CComPtr<IAMVideoProcAmp> pVideoProcAmp;
   if (PCOM_FAILED(m_pCaptureFilter->QueryInterface,(IID_IAMVideoProcAmp, (void **)&pVideoProcAmp)))

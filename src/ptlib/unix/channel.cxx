@@ -393,7 +393,7 @@ PString PChannel::GetErrorText(Errors normalisedError, int osError /* =0 */)
 
 PBoolean PChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 {
-  int osError = (libcReturnValue >= 0) ? 0 : errno;
+  int osError = (libcReturnValue >= 0) ? 0 : os_errno();
   Errors lastError;
 
   switch (osError) {
