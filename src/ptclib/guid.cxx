@@ -163,6 +163,13 @@ PGloballyUniqueID::PGloballyUniqueID(const PASN_OctetString & newId)
 #endif
 
 
+#ifdef GUID_DEFINED
+PGloballyUniqueID::PGloballyUniqueID(const GUID & guid)
+  : PBYTEArray(reinterpret_cast<const BYTE *>(&guid), sizeof(GUID))
+{
+}
+#endif
+
 PObject * PGloballyUniqueID::Clone() const
 {
   PAssert(GetSize() == Size, "PGloballyUniqueID is invalid size");
