@@ -91,6 +91,11 @@ class PGloballyUniqueID : public PBYTEArray
       const PASN_OctetString & ostr  ///<  Octet string from ASN to convert
     );
 #endif
+#ifdef GUID_DEFINED
+    PGloballyUniqueID(
+      const GUID & guid  ///<  Windows OS guid type
+    );
+#endif
   //@}
 
   /**@name Overrides from PObject */
