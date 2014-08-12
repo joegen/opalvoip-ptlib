@@ -90,8 +90,6 @@
 
 #if P_SSL
 
-#pragma message("SSL support (via OpenSSL) enabled")
-
 #define USE_SOCKETS
 
 extern "C" {
@@ -2116,7 +2114,6 @@ bool PSSLContext::SetExtension(const char * extension)
 #if P_SSL_SRTP
   return SSL_CTX_set_tlsext_use_srtp(m_context, extension) == 0;
 #else
-  #pragma message("SSL SRTP support (via OpenSSL) DISABLED")
   return false;
 #endif
 }
@@ -2604,11 +2601,4 @@ bool PSSLChannelDTLS::InternalConnect()
   SSL_set_connect_state(*this);
   return true;
 }
-
-
-#else
-  #pragma message("SSL support (via OpenSSL) DISABLED")
 #endif // P_SSL
-
-
-// End of file ////////////////////////////////////////////////////////////////

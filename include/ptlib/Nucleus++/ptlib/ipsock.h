@@ -44,7 +44,6 @@
 
 // Crib from msos
 #if defined(ENETUNREACH) || defined(EHOSTUNREACH) || defined(WSAENETUNREACH) || defined (WSAENETEUNREACH)
-#pragma message ("ENET errors actually defined!!!")
 #else
 // I'm sure this is dodgy, but I'm just copying 'doze for the moment.
 

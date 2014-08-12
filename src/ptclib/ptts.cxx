@@ -42,9 +42,6 @@
 
 #if P_SAPI
 
-#pragma message("SAPI support enabled")
-
-
 // Following defined by both stdint.h and intsafe.h
 #undef INT8_MIN
 #undef INT16_MIN
@@ -257,9 +254,6 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 {
   return 0;
 }
-
-#else
-  #pragma message("SAPI support DISABLED")
 #endif // P_SAPI
 
 
@@ -492,6 +486,3 @@ unsigned PTextToSpeech_Festival::GetVolume()
 #endif // P_PIPECHAN
 
 #endif // P_TTS
-
-
-// End Of File ///////////////////////////////////////////////////////////////

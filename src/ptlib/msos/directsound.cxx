@@ -35,8 +35,6 @@
 
 #if P_DIRECTSOUND
 
-#pragma message("Direct Sound support enabled")
-
 #define PTraceModule() "dsound"
 
 #define P_FORCE_STATIC_PLUGIN 1
@@ -1335,11 +1333,4 @@ PBoolean PSoundChannelDirectSound::GetVolume (unsigned & devVol) // public
   devVol = 100 * (volume.dwValue - m_volumeControl.Bounds.dwMinimum) / (m_volumeControl.Bounds.dwMaximum - m_volumeControl.Bounds.dwMinimum);
   return true;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-#else
-  #pragma message("Direct Sound support DISABLED")
 #endif // P_DIRECTSOUND

@@ -53,8 +53,6 @@
   then use .\build\all.sln
 */
 
-#pragma message("JavaScript support enabled")
-
 #ifdef _MSC_VER
   #pragma warning(disable:4100 4127)
 #endif
@@ -624,9 +622,5 @@ bool PJavaScript::SetFunction(const PString & /*name*/, const FunctionNotifier &
 {
   return false;
 }
-
-
-#else // P_V8
-  #pragma message("JavaScript support DISABLED")
 #endif // P_V8
 
