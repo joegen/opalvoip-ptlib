@@ -29,8 +29,6 @@
 
 #if P_APPSHARE
 
-#pragma message("Application sharing video support enabled")
-
 #define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptlib/vconvert.h>
@@ -416,11 +414,7 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
   // Clean up DCs
   DeleteDC(hScrDC);
   DeleteDC(hMemDC);
-  
+
   return true;
 }
-
-
-#else
-  #pragma message("Application sharing video support DISABLED")
 #endif  // P_APPSHARE
