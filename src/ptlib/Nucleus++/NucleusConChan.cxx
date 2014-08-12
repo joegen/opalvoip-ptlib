@@ -35,7 +35,6 @@
 
 
 #ifdef P_USE_LANGINFO
-#pragma message ("H")
 #include <langinfo.h>
 #endif
 

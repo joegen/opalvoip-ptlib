@@ -39,8 +39,6 @@
 
 #if P_SASL
 
-#pragma message("SASL support enabled")
-
 extern "C" {
 
 #if P_HAS_SASL_SASL_H
@@ -337,11 +335,5 @@ PBoolean PSASLClient::End()
 
     return false;
 }
-
-
-#else
-  #pragma message("SASL support DISABLED")
 #endif // P_SASL
-
-// End of File ///////////////////////////////////////////////////////////////
 
