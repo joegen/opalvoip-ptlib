@@ -3383,6 +3383,7 @@ EXPORTS
     ??0PFTPClient@@QEAA@XZ @2819 NONAME
     ??0PFTPServer@@QEAA@AEBVPString@@@Z @2820 NONAME
     ??0PFTPServer@@QEAA@XZ @2821 NONAME
+    ??0PGloballyUniqueID@@QEAA@AEBU_GUID@@@Z @33323 NONAME
     ??0PGloballyUniqueID@@QEAA@AEBV0@@Z @2822 NONAME
     ??0PGloballyUniqueID@@QEAA@AEBVPASN_OctetString@@@Z @2823 NONAME
     ??0PGloballyUniqueID@@QEAA@AEBVPString@@@Z @2824 NONAME

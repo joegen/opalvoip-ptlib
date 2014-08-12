@@ -3894,6 +3894,7 @@ EXPORTS
     ??0PFTPServer@@QAE@XZ @3745 NONAME
     ??0PGBaseObject@@IAE@XZ @25665 NONAME
     ??0PGError@@QAE@XZ @25666 NONAME
+    ??0PGloballyUniqueID@@QAE@ABU_GUID@@@Z @29815 NONAME
     ??0PGloballyUniqueID@@QAE@ABV0@@Z @3746 NONAME
     ??0PGloballyUniqueID@@QAE@ABVPASN_OctetString@@@Z @3747 NONAME
     ??0PGloballyUniqueID@@QAE@ABVPString@@@Z @3748 NONAME
