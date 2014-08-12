@@ -37,25 +37,6 @@
 #include <svcguid.h>
 #include <iphlpapi.h>
 
-#if P_HAS_IPV6
-  #pragma message("IPv6 support enabled")
-#else
-  #pragma message("IPv6 support DISABLED")
-#endif
-
-#if P_GQOS
-  #pragma message("GQOS support enabled")
-#else
-  #pragma message("GQOS support DISABLED")
-#endif
-
-#if P_QWAVE
-  #pragma message("qWAVE support enabled")
-#else
-  #pragma message("qWAVE support DISABLED")
-#endif
-
-
 #ifndef _WIN32_WCE
   #include <nspapi.h>
   #include <wsipx.h>
@@ -1365,6 +1346,3 @@ PBoolean PIPSocket::GetInterfaceTable(InterfaceTable & table, PBoolean includeDo
 
   return !table.IsEmpty();
 }
-
-
-// End Of File ///////////////////////////////////////////////////////////////

@@ -20,7 +20,6 @@ PBoolean PTime::GetTimeAMPM()
   return strstr(buf, "20") != NULL;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("No RTC")
 PAssertAlways("No RTC");
 #else
 #warning No AMPM implementation
@@ -45,7 +44,6 @@ PString PTime::GetTimeAM()
   return buf;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("No RTC")
 PAssertAlways("No RTC");
 #else
 #warning Using default AM string
@@ -70,7 +68,6 @@ PString PTime::GetTimePM()
   return buf;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("No RTC")
 PAssertAlways("No RTC");
 #else
 #warning Using default PM string
@@ -109,7 +106,6 @@ PString PTime::GetTimeSeparator()
   return PString(sp, ep-sp);
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("Defaulting time separator")
 PAssertAlways("Defaulting time separator");
 #else
 #warning Using default time separator
@@ -158,7 +154,6 @@ PTime::DateOrder PTime::GetDateOrder()
   return MonthDayYear;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("Defaulting date order")
 PAssertAlways("Defaulting date order");
 #else
 #warning Using default date order
@@ -196,7 +191,6 @@ PString PTime::GetDateSeparator()
   return PString(sp, ep-sp);
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("Defaulting date separator")
 PAssertAlways("Default date separator");
 #else
 #warning Using default date separator
@@ -226,7 +220,6 @@ PString PTime::GetDayName(PTime::Weekdays day, NameType type)
   return buf;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("Defaulting day names")
 PAssertAlways("Defaulting day names");
 #else
 #warning Using default day names
@@ -263,7 +256,6 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
   return buf;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("Using default month names")
 PAssertAlways("Using default month names");
 #else
 #warning Using default monthnames
@@ -285,7 +277,6 @@ PAssertAlways("Using default month names");
 PBoolean PTime::IsDaylightSavings()
 {
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("No RTC")
 PAssertAlways("No RTC");
 return false;
 #else
@@ -321,7 +312,6 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return -tb.timezone + 60;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("No timezone info")
 PAssertAlways("No timezone info");
 #else
 #warning No timezone information
@@ -346,7 +336,6 @@ PString PTime::GetTimeZoneString(PTime::TimeZoneType type)
   return buf;
 #else
 #ifdef __NUCLEUS_PLUS__
-#pragma message ("No timezone info")
 PAssertAlways("No timezone info");
 #else
 #warning No timezone name information

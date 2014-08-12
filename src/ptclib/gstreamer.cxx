@@ -41,8 +41,6 @@
 
 #if P_GSTREAMER
 
-#pragma message("GStreamer support enabled")
-
 #ifdef _MSC_VER
   #pragma warning(disable:4127)
   #include <gst/gst.h>
@@ -742,10 +740,6 @@ bool PGstBus::SetNotifier(Notifier & notifier)
 }
 
 
-///////////////////////////////////////////////////////////////////////
-
-#else
-  #pragma message("GStreamer support DISABLED")
 #endif // P_GSTREAMER
 
 

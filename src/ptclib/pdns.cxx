@@ -43,8 +43,6 @@
 
 #if P_DNS_RESOLVER
 
-#pragma message("DNS support enabled")
-
 #ifdef _MSC_VER
   #pragma comment(lib, "DnsAPI.Lib")
 #endif
@@ -769,11 +767,6 @@ PDNS::PDnsRecords::~PDnsRecords()
     DnsRecordListFree(m_records, DnsFreeRecordList);
 }
 
-
-/////////////////////////////////////////////////////////////////
-
-#else
-  #pragma message("DNS resolver support DISABLED")
 #endif // P_DNS_RESOLVER
 
 

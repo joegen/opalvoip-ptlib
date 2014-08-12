@@ -5,13 +5,11 @@
 #define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
 #if !P_USE_INLINES
-#pragma message ("!P_USE_INLINES including ptlib.inl, osutil.inl")
 #include <ptlib/osutil.inl>
 #include <ptlib/ptlib.inl>
 #endif
 
 #ifdef P_USE_LANGINFO
-#pragma message ("H")
 #include <langinfo.h>
 #endif
 

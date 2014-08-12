@@ -37,8 +37,6 @@
 
 #if P_LUA
 
-#pragma message("Lua scripting support enabled")
-
 #include <ptclib/lua.h>
 
 extern "C" {
@@ -815,8 +813,4 @@ void PLua::ParamVector::Pop(void * data)
     lua_pop(lua, 1);
   }
 }
-
-
-#else // P_LUA
-  #pragma message("Lua scripting support DISABLED")
 #endif // P_LUA

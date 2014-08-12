@@ -10,7 +10,6 @@
  */
 
 #ifdef __GNUC__
-#pragma message ("implementations")
 #pragma implementation "svcproc.h"
 #pragma implementation "config.h"
 #pragma implementation "args.h"
@@ -93,7 +92,6 @@ PString PProcess::GetOSVersion()
 PDirectory GetOSConfigDir()
   {
 // No directory structure (nothing at all!)
-#pragma message("No directory structure")
   PAssertAlways("No directory structure");
   return "N/A";
   }
@@ -106,8 +104,6 @@ void PProcess::Construct()
 // PProcess::CommonConstruct!).
 
 // Normally in CommonConstruct
-
-#pragma message("PProcess::Construct() looks a little light relative to the Unix version!")
   }
 
 
