@@ -42,8 +42,6 @@
 
 #if P_LDAP
 
-#pragma message("LDAP support enabled")
-
 #define LDAP_DEPRECATED 1
 #include <ldap.h>
 
@@ -1046,12 +1044,4 @@ void PLDAPSchema::OnSendSchema(PArray<PLDAPSession::ModAttrib> & attrib, PLDAPSe
         attrib.Append(new PLDAPSession::BinaryModAttrib(s->first,s->second,op));
 	}
 }
-
-
-#else
-  #pragma message("LDAP support DISABLED")
 #endif // P_LDAP
-
-
-// End of file ////////////////////////////////////////////////////////////////
-

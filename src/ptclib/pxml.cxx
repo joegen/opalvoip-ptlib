@@ -41,8 +41,6 @@
 
 #ifdef P_EXPAT
 
-#pragma message( "XML support (via Expat) enabled")
-
 #define XML_STATIC 1
 
 #include <expat.h>
@@ -1667,12 +1665,8 @@ PXMLElement * PXMLStreamParser::Read(PChannel * channel)
   return 0;
 }
 
-
 ///////////////////////////////////////////////////////
-
-#else
-  #pragma message("XML support (via Expat) DISABLED")
-#endif 
+#endif
 
 
 #ifdef P_EXPAT

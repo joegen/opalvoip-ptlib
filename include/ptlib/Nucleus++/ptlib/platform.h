@@ -37,7 +37,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef __NUCLEUS_MNT__
-#pragma message ("<netdb.h> not included")
 #define P_PLATFORM_HAS_THREADS
 // The windows version of errno.h, which this will find, should do for us -
 // it contains lots of things from Unix!!!
@@ -85,14 +84,12 @@
 //#include "pmachdep.h"
 
 #ifdef __NUCLEUS_MNT__
-#pragma message ("<unistd.h> not included")
 #ifndef _WINSOCKAPI_
 #define _WINSOCKAPI_     /* _WINSOCKAPI_ must be defined to keep the      */
 #endif                   /* winsock.h file from being included.  If it is */
                          /* included some of the typedefs will conflict   */
                          /* with those in Nucleus NET.                    */
 
-#pragma message ("Include VNET stuff")
 extern "C"
   {
 #include "net\inc\externs.h"  // Nucleus (V)NET unofficial

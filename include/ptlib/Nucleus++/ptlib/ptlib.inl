@@ -49,7 +49,6 @@ PINLINE unsigned PTimer::Resolution()
 #ifdef __NUCLEUS_PLUS__
   {
 // Returns number of milliseconds per tick
-#pragma message ("Timer tick hard-coded at 10 milliseconds in ptlib.inl")
   return 10;
   }
 #elif defined(P_SUN4)
