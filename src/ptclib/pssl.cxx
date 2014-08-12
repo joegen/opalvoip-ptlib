@@ -90,8 +90,6 @@
 
 #if P_SSL
 
-#pragma message("SSL support (via OpenSSL) enabled")
-
 #define USE_SOCKETS
 
 extern "C" {
@@ -2421,11 +2419,4 @@ PBoolean PSSLChannel::OnOpen()
   SSL_set_bio(m_ssl, bio, bio);
   return true;
 }
-
-
-#else
-  #pragma message("SSL support (via OpenSSL) DISABLED")
 #endif // P_SSL
-
-
-// End of file ////////////////////////////////////////////////////////////////

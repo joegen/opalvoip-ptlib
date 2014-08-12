@@ -36,8 +36,6 @@
 
 #if P_SDL
 
-#pragma message("SDL video support enabled")
-
 #define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptclib/vsdl.h>
@@ -505,11 +503,4 @@ void PVideoOutputDevice_SDL::PostEvent(unsigned code, bool wait)
     PAssert(m_operationComplete.Wait(10000),
             PSTRSTRM("Couldn't process user event " << (unsigned)sdlEvent.user.code));
 }
-
-
-#else
-  #pragma message("SDL video support DISABLED")
 #endif // P_SDL
-
-
-// End of file ////////////////////////////////////////////////////////////////

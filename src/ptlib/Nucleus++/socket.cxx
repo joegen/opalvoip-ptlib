@@ -813,7 +813,6 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
 
 #else
 
-#pragma message("Platform requires implemetation of GetRouteTable()")
   return false;
 
 #endif

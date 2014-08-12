@@ -313,8 +313,6 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 
 #if P_JPEG_DECODER
 
-#pragma message("JPEG file video device enabled")
-
 #include <ptlib/vconvert.h>
 
 PFACTORY_CREATE(PVideoFileFactory, PJPEGFile, ".jpg");
@@ -390,9 +388,6 @@ PBoolean PJPEGFile::ReadFrame(void * frame)
   memcpy(frame, m_pixelData, m_pixelData.GetSize());
   return true;
 }
-
-#else
-  #pragma message("JPEG file video device DISABLED")
 #endif  // P_JPEG_DECODER
 #endif  // P_VIDFILE
 #endif  // P_VIDEO

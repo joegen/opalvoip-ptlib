@@ -40,9 +40,6 @@
 
 #ifdef P_DIRECTSHOW
 
-#pragma message("Direct Show video support enabled")
-
-
 #define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptlib/videoio.h>
@@ -1564,8 +1561,4 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bu
 
 
 #endif  // _WIN32_WCE
-
-
-#else
-  #pragma message("Direct Show video support DISABLED")
 #endif  // P_DIRECTSHOW

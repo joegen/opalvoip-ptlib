@@ -29,14 +29,11 @@
 
 #if P_APPSHARE
 
-#pragma message("Application sharing video support enabled")
-
 #define P_FORCE_STATIC_PLUGIN 1
 
 #include <ptlib/vconvert.h>
 #include <ptclib/delaychan.h>
 #include <ptlib/msos/ptlib/vidinput_app.h>
-
 
 
 static const PConstCaselessString DesktopWindowName("Desktop");
@@ -416,11 +413,7 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
   // Clean up DCs
   DeleteDC(hScrDC);
   DeleteDC(hMemDC);
-  
+
   return true;
 }
-
-
-#else
-  #pragma message("Application sharing video support DISABLED")
 #endif  // P_APPSHARE

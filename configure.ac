@@ -293,15 +293,6 @@ MY_COMPILE_IFELSE(
    [CPPFLAGS="$CPPFLAGS -fno-caret-diagnostics"]
 )
 
-MY_COMPILE_IFELSE(
-   [compiler -Wno-pragma-messages],
-   [-Werror -Wno-#pragma-messages],
-   [],
-   [],
-   [CPPFLAGS="$CPPFLAGS -Wno-\#pragma-messages"]
-)
-
-
 AC_ARG_ENABLE(deprecated, AS_HELP_STRING([--disable-deprecated],[Stop compiler warning about deprecated functions]))
 
 if test "${enable_deprecated}" = "no" ; then
