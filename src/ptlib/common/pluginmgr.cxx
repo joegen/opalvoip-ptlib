@@ -48,7 +48,7 @@
 #  if defined (_WIN32_WCE)
 #    define P_DEFAULT_PLUGIN_DIR "\\Program Files\\PTLib Plug Ins"
 #  elif defined (_WIN32)
-#    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
+#    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\Program Files (x86)\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
 #  elif defined (P_ANDROID)
 #    define P_DEFAULT_PLUGIN_DIR ""
 #  else
