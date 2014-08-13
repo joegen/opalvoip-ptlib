@@ -6,13 +6,6 @@
  * Search path for PLugin is defined in this class, using the following 
  * define variables: P_DEFAULT_PLUGIN_DIR
  *
- * Configure setup in ptlib_config.h.in:
- *   #define P_DEFAULT_PLUGIN_DIR "/usr/local/lib/ptlib-2.13.0"
- * if not defined pluginmgr.cxx set it to:
- *   #define P_DEFAULT_PLUGIN_DIR ".:/usr/lib/ptlib:/usr/lib/pwlib"
- * or windows:
- *   #define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
- *
  * Also the following Environment variables:  "PTLIBPLUGINDIR" and "PWLIBPLUGINDIR"
  * It check 1st if PTLIBPLUGINDIR is defined, 
  * if not then check PWLIBPLUGINDIR is defined. 
@@ -48,7 +41,11 @@
 #  if defined (_WIN32_WCE)
 #    define P_DEFAULT_PLUGIN_DIR "\\Program Files\\PTLib Plug Ins"
 #  elif defined (_WIN32)
-#    define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\Program Files (x86)\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
+#    if _WIN64
+#      define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
+#    else
+#      define P_DEFAULT_PLUGIN_DIR ".;C:\\Program Files (x86)\\PTLib Plug Ins;C:\\Program Files\\PTLib Plug Ins;C:\\PTLIB_PLUGINS;C:\\PWLIB_PLUGINS"
+#    endif
 #  elif defined (P_ANDROID)
 #    define P_DEFAULT_PLUGIN_DIR ""
 #  else
