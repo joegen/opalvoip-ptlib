@@ -1398,13 +1398,12 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 
   // We try and get a port pair by blasting out to a range of sockets
   vector<PSTUNSocketPairInfo> socketInfo(m_numSocketsForPairing);
-  PIPSocket ** socketArray = (PIPSocket **)alloca(m_numSocketsForPairing*sizeof(PUDPSocket *));
-  for (PINDEX i = 0; i < m_numSocketsForPairing; ++i)
-    socketArray[i] = socketInfo[i].m_socket = (PSTUNUDPSocket *)InternalCreateSocket(eComponent_RTP, context);
-
-  if (!m_pairedPortRange.Listen(socketArray, m_numSocketsForPairing, m_interface)) {
-    PTRACE(1, "STUN\tUnable to open sockets to " << *this);
-    return false;
+  for (PINDEX i = 0; i < m_numSocketsForPairing; ++i) {
+    socketInfo[i].m_socket = (PSTUNUDPSocket *)InternalCreateSocket(eComponent_RTP, context);
+    if (!m_pairedPortRange.Listen(*socketInfo[i].m_socket, m_interface)) {
+      PTRACE(1, "STUN\tUnable to open socket to " << *this);
+      return false;
+    }
   }
 
   for (PINDEX i = 0; i < m_numSocketsForPairing; ++i) {
