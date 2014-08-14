@@ -2963,7 +2963,7 @@ bool PIPSocket::PortRange::Listen(PIPSocket ** sockets,
       return true;
 
     nextPort += (WORD)numSockets;
-    if ((nextPort + numSockets) >= m_max)
+    if ((nextPort + numSockets) > m_max)
       nextPort = m_base;
   } while (nextPort != firstPort);
 
