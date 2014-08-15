@@ -1303,8 +1303,11 @@ PTimeInterval PTimer::List::Process()
            safe without a mutex. */
         if (timer.m_oneshot)
           timer.m_running = false;
-        else
+        else {
           timer.m_absoluteTime = now + timer.GetResetTime();
+          if (nextInterval > timer.GetResetTime())
+            nextInterval = timer.GetResetTime();
+        }
 
         m_threadPool.AddWork(new Timeout(it->first));
         PTRACE(6, &timer, "PTLib", "Timer: " << timer << " work added, lateness=" << -delta);
