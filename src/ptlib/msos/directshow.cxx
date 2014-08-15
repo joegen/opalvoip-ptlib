@@ -1357,12 +1357,9 @@ bool PSampleGrabberCB::GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize)
     return false;
   }
 
-  if (m_actualSize > maxSize) {
-    PTRACE(1, "Not copying, m_maxFrameBytes (" << m_actualSize << " > " << maxSize << ')');
-    return false;
-  }
+  if (m_actualSize <= maxSize)
+    memcpy(data, m_buffer, m_actualSize);
 
-  memcpy(data, m_buffer, m_actualSize);
   actualSize = m_actualSize;
   return true;
 }
@@ -1547,16 +1544,14 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bu
   if (m_pSampleGrabberCB == NULL)
     return false;
 
-  do {
-    if (!IsCapturing())
-      return false;
+  while (IsCapturing() && m_pSampleGrabberCB->GetData(data, m_maxFrameBytes, bufferSize)) {
+    if (m_fixedSizeFrames ? (bufferSize == m_maxFrameBytes) : (bufferSize <= m_maxFrameBytes))
+      return true;
 
-    if (!m_pSampleGrabberCB->GetData(data, m_maxFrameBytes, bufferSize))
-      return false;
-    // Sometimes on changing resolution, we get some frames at old size, ignore them.
-  } while (m_fixedSizeFrames && bufferSize < m_maxFrameBytes);
+    PTRACE(4, "Camera resolution changed, ignoring received frame at old size.");
+  }
 
-  return true;
+  return false;
 }
 
 #endif  // _WIN32_WCE
