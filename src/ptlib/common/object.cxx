@@ -820,7 +820,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
     if (obj->className != NULL)
       strm << '"' << obj->className << "\" ";
 
-    strm << '\n' << hex << setfill('0') << PBYTEArray(data, PMIN(16, obj->size), PFalse)
+    strm << '\n' << hex << setfill('0') << PBYTEArray(data, PMIN(size_t(16), obj->size), PFalse)
                  << dec << setfill(' ') << endl;
   }
 }
