@@ -42,6 +42,10 @@
 
 #include <ctype.h>
 
+
+#define PTraceModule() "HTTP"
+
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 PFACTORY_CREATE(PHTTPClientAuthenticationFactory, PHTTPClientBasicAuthentication, "basic");
@@ -100,8 +104,15 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
   bool needAuthentication = true;
   PURL adjustableURL = url;
   for (int retry = 3; retry > 0; --retry) {
-    if (!AssureConnect(adjustableURL, outMIME))
+    if (!ConnectURL(adjustableURL))
       break;
+
+    // Have connection, so fill in the required MIME fields
+    if (!outMIME.Contains(HostTag)) {
+      PIPSocket * sock = GetSocket();
+      if (sock != NULL)
+        outMIME.SetAt(HostTag, sock->GetHostName());
+    }
 
     if (!WriteCommand(cmdName, url.AsString(PURL::RelativeOnly), outMIME, dataBody)) {
       lastResponseCode = -1;
@@ -156,12 +167,12 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
       if (!m_persist)
         break;
 
-      // ... we close the channel and allow AssureConnect() to reopen it.
+      // ... we close the channel and allow ConnectURL() to reopen it.
       Close();
     }
   }
 
-  PTRACE_IF(3, !IsOK(lastResponseCode), "HTTP", "Error " << lastResponseCode << ' ' << lastResponseInfo);
+  PTRACE_IF(3, !IsOK(lastResponseCode), "Error " << lastResponseCode << ' ' << lastResponseInfo);
   return lastResponseCode;
 }
 
@@ -195,7 +206,7 @@ bool PHTTPClient::WriteCommand(const PString & cmdName,
 #if PTRACING
   if (PTrace::CanTrace(3)) {
     ostream & strm = PTRACE_BEGIN(3);
-    strm << "HTTP\tSending ";
+    strm << "Sending ";
     if (PTrace::CanTrace(4))
       strm << '\n';
     strm << cmdName << ' ';
@@ -232,7 +243,7 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     if (http.Find("HTTP/") == P_MAX_INDEX) {
       lastResponseCode = PHTTP::RequestOK;
       lastResponseInfo = "HTTP/0.9";
-      PTRACE(3, "HTTP\tRead HTTP/0.9 OK");
+      PTRACE(3, "Read HTTP/0.9 OK");
       return true;
     }
 
@@ -257,7 +268,7 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 #if PTRACING
       if (PTrace::CanTrace(3)) {
         ostream & strm = PTRACE_BEGIN(3);
-        strm << "HTTP\tResponse ";
+        strm << "Response ";
         if (PTrace::CanTrace(4))
           strm << '\n';
         strm << lastResponseCode << ' ' << lastResponseInfo;
@@ -488,7 +499,7 @@ static bool CheckContentType(const PMIMEInfo & replyMIME, const PString & requir
       actualContentType.NumCompare(requiredContentType, requiredContentType.Find(';')) == PObject::EqualTo)
     return true;
 
-  PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting "
+  PTRACE(2, "Incorrect Content-Type for document: expecting "
          << requiredContentType << ", got " << actualContentType);
   return false;
 }
@@ -508,11 +519,11 @@ bool PHTTPClient::GetTextDocument(const PURL & url,
   }
 
   if (!ReadContentBody(replyMIME, document)) {
-    PTRACE(2, "HTTP\tRead of body failed");
+    PTRACE(2, "Read of body failed");
     return false;
   }
 
-  PTRACE_IF(4, !document.IsEmpty(), "HTTP\tReceived body:\n"
+  PTRACE_IF(4, !document.IsEmpty(), "Received body:\n"
             << document.Left(MaxTraceContentSize) << (document.GetLength() > MaxTraceContentSize ? "\n...." : ""));
   return true;
 }
@@ -532,11 +543,11 @@ bool PHTTPClient::GetBinaryDocument(const PURL & url,
   }
 
   if (!ReadContentBody(replyMIME, document)) {
-    PTRACE(2, "HTTP\tRead of body failed");
+    PTRACE(2, "Read of body failed");
     return false;
   }
 
-  PTRACE_IF(4, !document.IsEmpty(), "HTTP\tReceived " << document.GetSize() << " byte body\n");
+  PTRACE_IF(4, !document.IsEmpty(), "Received " << document.GetSize() << " byte body\n");
   return true;
 }
 
@@ -640,72 +651,63 @@ bool PHTTPClient::DeleteDocument(const PURL & url)
 }
 
 
-bool PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
+bool PHTTPClient::ConnectURL(const PURL & url)
 {
+  if (IsOpen())
+    return true;
+
   PString host = url.GetHostName();
 
   // Is not open or other end shut down, restablish connection
-  if (!IsOpen()) {
-    if (host.IsEmpty()) {
-      lastResponseCode = BadRequest;
-      lastResponseInfo = "No host specified";
-      return SetErrorValues(ProtocolFailure, 0, LastReadError);
-    }
+  if (host.IsEmpty()) {
+    lastResponseCode = BadRequest;
+    lastResponseInfo = "No host specified";
+    return SetErrorValues(ProtocolFailure, 0, LastReadError);
+  }
 
 #if P_SSL
-    if (url.GetScheme() == "https") {
-      PTCPSocket * tcp = new PTCPSocket(url.GetPort());
-      tcp->SetReadTimeout(readTimeout);
-      if (!tcp->Connect(host)) {
-        lastResponseCode = -2;
-        lastResponseInfo = tcp->GetErrorText();
-        delete tcp;
-        return false;
-      }
-
-      PSSLContext * context = new PSSLContext;
-      if (!context->SetCredentials(m_authority, m_certificate, m_privateKey)) {
-        lastResponseCode = -2;
-        lastResponseInfo = "Could not set certificates";
-        delete context;
-        return false;
-      }
-
-      PSSLChannel * ssl = new PSSLChannel(context);
-      if (!ssl->Connect(tcp)) {
-        lastResponseCode = -2;
-        lastResponseInfo = ssl->GetErrorText();
-        delete ssl;
-        return false;
-      }
-
-      if (!Open(ssl)) {
-        lastResponseCode = -2;
-        lastResponseInfo = GetErrorText();
-        return false;
-      }
+  if (url.GetScheme() == "https") {
+    PTCPSocket * tcp = new PTCPSocket(url.GetPort());
+    tcp->SetReadTimeout(readTimeout);
+    if (!tcp->Connect(host)) {
+      lastResponseCode = -2;
+      lastResponseInfo = tcp->GetErrorText();
+      delete tcp;
+      return false;
     }
-    else
-#endif
 
-    if (!Connect(host, url.GetPort())) {
+    PSSLContext * context = new PSSLContext;
+    if (!context->SetCredentials(m_authority, m_certificate, m_privateKey)) {
+      lastResponseCode = -2;
+      lastResponseInfo = "Could not set certificates";
+      delete context;
+      return false;
+    }
+
+    PSSLChannel * ssl = new PSSLChannel(context);
+    if (!ssl->Connect(tcp)) {
+      lastResponseCode = -2;
+      lastResponseInfo = ssl->GetErrorText();
+      delete ssl;
+      return false;
+    }
+
+    if (!Open(ssl)) {
       lastResponseCode = -2;
       lastResponseInfo = GetErrorText();
       return false;
     }
   }
+  else
+#endif
 
-  // Have connection, so fill in the required MIME fields
-  if (!outMIME.Contains(HostTag)) {
-    if (!host)
-      outMIME.SetAt(HostTag, host);
-    else {
-      PIPSocket * sock = GetSocket();
-      if (sock != NULL)
-        outMIME.SetAt(HostTag, sock->GetHostName());
-    }
+  if (!Connect(host, url.GetPort())) {
+    lastResponseCode = -2;
+    lastResponseInfo = GetErrorText();
+    return false;
   }
 
+  PTRACE(5, "Connected to " << host);
   return true;
 }
 
@@ -893,7 +895,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
   nonceCount.SetValue(1);
 
   if (auth.Find("digest") == P_MAX_INDEX) {
-    PTRACE(1, "HTTP\tDigest auth does not contian digest keyword");
+    PTRACE(1, "Digest auth does not contian digest keyword");
     return false;
   }
 
@@ -903,7 +905,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
     while (str != AlgorithmNames[algorithm]) {
       algorithm = (Algorithm)(algorithm+1);
       if (algorithm >= PHTTPClientDigestAuthentication::NumAlgorithms) {
-        PTRACE(1, "HTTP\tUnknown digest algorithm " << str);
+        PTRACE(1, "Unknown digest algorithm " << str);
         return false;
       }
     }
@@ -911,24 +913,24 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
 
   authRealm = GetAuthParam(auth, "realm");
   if (authRealm.IsEmpty()) {
-    PTRACE(1, "HTTP\tNo realm in authentication");
+    PTRACE(1, "No realm in authentication");
     return false;
   }
 
   nonce = GetAuthParam(auth, "nonce");
   if (nonce.IsEmpty()) {
-    PTRACE(1, "HTTP\tNo nonce in authentication");
+    PTRACE(1, "No nonce in authentication");
     return false;
   }
 
   opaque = GetAuthParam(auth, "opaque");
   if (!opaque.IsEmpty()) {
-    PTRACE(2, "HTTP\tAuthentication contains opaque data");
+    PTRACE(2, "Authentication contains opaque data");
   }
 
   PString qopStr = GetAuthParam(auth, "qop");
   if (!qopStr.IsEmpty()) {
-    PTRACE(3, "HTTP\tAuthentication contains qop-options " << qopStr);
+    PTRACE(3, "Authentication contains qop-options " << qopStr);
     PStringList options = qopStr.Tokenise(',', true);
     qopAuth    = options.GetStringsIndex("auth") != P_MAX_INDEX;
     qopAuthInt = options.GetStringsIndex("auth-int") != P_MAX_INDEX;
@@ -936,7 +938,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
   }
 
   PCaselessString staleStr = GetAuthParam(auth, "stale");
-  PTRACE_IF(3, !staleStr.IsEmpty(), "HTTP\tAuthentication contains stale flag \"" << staleStr << '"');
+  PTRACE_IF(3, !staleStr.IsEmpty(), "Authentication contains stale flag \"" << staleStr << '"');
   stale = staleStr.Find("true") != P_MAX_INDEX;
 
   isProxy = proxy;
@@ -946,7 +948,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
 
 PBoolean PHTTPClientDigestAuthentication::Authorise(AuthObject & authObject) const
 {
-  PTRACE(3, "HTTP\tAdding authentication information");
+  PTRACE(3, "Adding authentication information");
 
   PMessageDigest5 digestor;
   PMessageDigest5::Code a1, a2, entityBodyCode, response;
@@ -1132,7 +1134,7 @@ class PURL_HttpLoader : public PURLLoader
       PCaselessString actualContentType = replyMIME(PHTTP::ContentTypeTag());
       if (!params.m_requiredContentType.IsEmpty() && !actualContentType.IsEmpty() &&
             actualContentType.NumCompare(params.m_requiredContentType, params.m_requiredContentType.Find(';')) != EqualTo) {
-        PTRACE(2, "HTTP\tIncorrect Content-Type for document: expecting " << params.m_requiredContentType << ", got " << actualContentType);
+        PTRACE(2, "Incorrect Content-Type for document: expecting " << params.m_requiredContentType << ", got " << actualContentType);
         return false;
       }
 
