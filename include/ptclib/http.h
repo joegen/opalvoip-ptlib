@@ -458,6 +458,11 @@ class PHTTPClient : public PHTTP
 
 
   // New functions for class.
+    /// Connect at transport level to remote, based on URL
+    bool ConnectURL(
+      const PURL & url
+    );
+
     /** Send a command and wait for the response header (including MIME fields).
        Note that a body may still be on its way even if lasResponseCode is not
        200!
@@ -708,8 +713,6 @@ class PHTTPClient : public PHTTP
 #endif
 
   protected:
-    bool AssureConnect(const PURL & url, PMIMEInfo & outMIME);
-
     PString m_userAgentName;
     bool    m_persist;
     PString m_userName;
@@ -1024,13 +1027,9 @@ class PHTTPServer : public PHTTP
        If there is no ContentLength field in the response, this value must
        be false for correct operation.
      */
-    virtual PBoolean OnGET(
-      const PURL & url,                    ///< Universal Resource Locator for document.
-      const PMIMEInfo & info,              ///< Extra MIME information in command.
+    virtual bool OnGET(
       const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
     );
-
-
 
     /** Handle a HEAD command from a client.
 
@@ -1043,9 +1042,7 @@ class PHTTPServer : public PHTTP
        If there is no ContentLength field in the response, this value must
        be false for correct operation.
      */
-    virtual PBoolean OnHEAD(
-      const PURL & url,                   ///< Universal Resource Locator for document.
-      const PMIMEInfo & info,             ///< Extra MIME information in command.
+    virtual bool OnHEAD(
       const PHTTPConnectionInfo & conInfo ///< HTTP connection information
     );
 
@@ -1060,10 +1057,7 @@ class PHTTPServer : public PHTTP
        If there is no ContentLength field in the response, this value must
        be false for correct operation.
      */
-    virtual PBoolean OnPOST(
-      const PURL & url,                   ///< Universal Resource Locator for document.
-      const PMIMEInfo & info,             ///< Extra MIME information in command.
-      const PStringToString & data,       ///< Variables provided in the POST data.
+    virtual bool OnPOST(
       const PHTTPConnectionInfo & conInfo ///< HTTP connection information
     );
 
@@ -1212,6 +1206,10 @@ class PHTTPServer : public PHTTP
     PTimeInterval       nextTimeout;
 
     std::map<PString, WebSocketNotifier> m_webSocketNotifiers;
+
+    P_REMOVE_VIRTUAL(PBoolean,OnGET(const PURL&,const PMIMEInfo&, const PHTTPConnectionInfo&),false);
+    P_REMOVE_VIRTUAL(PBoolean,OnHEAD(const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo&),false);
+    P_REMOVE_VIRTUAL(PBoolean,OnPOST(const PURL&,const PMIMEInfo&,const PStringToString&,const PHTTPConnectionInfo&),false);
 };
 
 
@@ -1585,6 +1583,10 @@ class PHTTPResource : public PObject
        If there is no ContentLength field in the response, this value must
        be false for correct operation.
      */
+    virtual bool OnGET(
+      PHTTPServer & server,       ///< HTTP server that received the request
+      const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
+    );
     virtual PBoolean OnGET(
       PHTTPServer & server,       ///< HTTP server that received the request
       const PURL & url,           ///< Universal Resource Locator for document.
@@ -1619,6 +1621,10 @@ class PHTTPResource : public PObject
        If there is no ContentLength field in the response, this value must
        be false for correct operation.
      */
+    virtual bool OnHEAD(
+      PHTTPServer & server,       ///< HTTP server that received the request
+      const PHTTPConnectionInfo & conInfo ///< HTTP connection information
+    );
     virtual PBoolean OnHEAD(
       PHTTPServer & server,       ///< HTTP server that received the request
       const PURL & url,           ///< Universal Resource Locator for document.
@@ -1637,6 +1643,10 @@ class PHTTPResource : public PObject
        If there is no ContentLength field in the response, this value must
        be false for correct operation.
      */
+    virtual bool OnPOST(
+      PHTTPServer & server,       ///< HTTP server that received the request
+      const PHTTPConnectionInfo & conInfo ///< HTTP connection information
+    );
     virtual PBoolean OnPOST(
       PHTTPServer & server,         ///< HTTP server that received the request
       const PURL & url,             ///< Universal Resource Locator for document.
