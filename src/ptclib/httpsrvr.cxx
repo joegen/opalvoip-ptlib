@@ -334,28 +334,25 @@ PBoolean PHTTPServer::ProcessCommand()
 }
 
 
-bool PHTTPServer::OnCommand(PINDEX cmd, const PURL & url, const PString & args, PHTTPConnectionInfo & connectInfo)
+bool PHTTPServer::OnCommand(PINDEX cmd, const PURL &, const PString & args, PHTTPConnectionInfo & connectInfo)
 {
   bool persist = false;
 
   // Handle the local request
   switch (cmd) {
     case GET :
-      persist = OnGET(url, connectInfo.GetMIME(), connectInfo);
+      connectInfo.DecodeMultipartFormInfo();
+      persist = OnGET(connectInfo);
       break;
 
     case HEAD :
-      persist = OnHEAD(url, connectInfo.GetMIME(), connectInfo);
+      persist = OnHEAD(connectInfo);
       break;
 
     case POST :
-    {
-      PStringToString postData;
-      if (!connectInfo.DecodeMultipartFormInfo())
-        PURL::SplitQueryVars(connectInfo.entityBody, postData); // x-www-form-urlencoded
-      persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
+      connectInfo.DecodeMultipartFormInfo();
+      persist = OnPOST(connectInfo);
       break;
-    }
 
     case P_MAX_INDEX:
     default:
@@ -463,53 +460,46 @@ void PHTTPServer::SetURLSpace(const PHTTPSpace & space)
 }
 
 
-PBoolean PHTTPServer::OnGET(const PURL & url,
-                   const PMIMEInfo & info,
-         const PHTTPConnectionInfo & connectInfo)
+bool PHTTPServer::OnGET(const PHTTPConnectionInfo & conInfo)
 {
   urlSpace.StartRead();
-  PHTTPResource * resource = urlSpace.FindResource(url);
+  PHTTPResource * resource = urlSpace.FindResource(conInfo.GetURL());
   if (resource == NULL) {
     urlSpace.EndRead();
-    return OnError(NotFound, url.AsString(), connectInfo);
+    return OnError(NotFound, conInfo.GetURL().AsString(), connectInfo);
   }
 
-  PBoolean retval = resource->OnGET(*this, url, info, connectInfo);
+  bool retval = resource->OnGET(*this, connectInfo);
   urlSpace.EndRead();
   return retval;
 }
 
 
-PBoolean PHTTPServer::OnHEAD(const PURL & url,
-                    const PMIMEInfo & info,
-          const PHTTPConnectionInfo & connectInfo)
+bool PHTTPServer::OnHEAD(const PHTTPConnectionInfo & conInfo)
 {
   urlSpace.StartRead();
-  PHTTPResource * resource = urlSpace.FindResource(url);
+  PHTTPResource * resource = urlSpace.FindResource(conInfo.GetURL());
   if (resource == NULL) {
     urlSpace.EndRead();
-    return OnError(NotFound, url.AsString(), connectInfo);
+    return OnError(NotFound, conInfo.GetURL().AsString(), connectInfo);
   }
 
-  PBoolean retval = resource->OnHEAD(*this, url, info, connectInfo);
+  bool retval = resource->OnHEAD(*this, connectInfo);
   urlSpace.EndRead();
   return retval;
 }
 
 
-PBoolean PHTTPServer::OnPOST(const PURL & url,
-                    const PMIMEInfo & info,
-              const PStringToString & data,
-          const PHTTPConnectionInfo & connectInfo)
+bool PHTTPServer::OnPOST(const PHTTPConnectionInfo & conInfo)
 {
   urlSpace.StartRead();
-  PHTTPResource * resource = urlSpace.FindResource(url);
+  PHTTPResource * resource = urlSpace.FindResource(conInfo.GetURL());
   if (resource == NULL) {
     urlSpace.EndRead();
-    return OnError(NotFound, url.AsString(), connectInfo);
+    return OnError(NotFound, conInfo.GetURL().AsString(), connectInfo);
   }
 
-  PBoolean retval = resource->OnPOST(*this, url, info, data, connectInfo);
+  bool retval = resource->OnPOST(*this, connectInfo);
   urlSpace.EndRead();
   return retval;
 }
@@ -1302,12 +1292,24 @@ bool PHTTPResource::OnWebSocket(PHTTPServer &, PHTTPConnectionInfo &)
 }
 
 
+bool PHTTPResource::OnGET(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
+{
+  return OnGETOrHEAD(server, connectInfo.GetURL(), connectInfo.GetMIME(), connectInfo, true);
+}
+
+
 PBoolean PHTTPResource::OnGET(PHTTPServer & server,
                            const PURL & url,
                       const PMIMEInfo & info,
             const PHTTPConnectionInfo & connectInfo)
 {
   return OnGETOrHEAD(server, url, info, connectInfo, true);
+}
+
+
+bool PHTTPResource::OnHEAD(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
+{
+  return OnGETOrHEAD(server, connectInfo.GetURL(), connectInfo.GetMIME(), connectInfo, false);
 }
 
 
@@ -1369,6 +1371,15 @@ PBoolean PHTTPResource::OnGETData(PHTTPServer & /*server*/,
   SendData(request);
   return request.outMIME.Contains(PHTTP::ContentLengthTag()) ||
          request.outMIME.Contains(PHTTP::TransferEncodingTag());
+}
+
+
+bool PHTTPResource::OnPOST(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
+{
+  PStringToString postData;
+  if (connectInfo.GetMIME().Get(PHTTP::ContentTypeTag(), "x-www-form-urlencoded") == "x-www-form-urlencoded")
+    PURL::SplitQueryVars(connectInfo.GetEntityBody(), postData);
+  return OnPOST(server, connectInfo.GetURL(), connectInfo.GetMIME(), postData, connectInfo);
 }
 
 
