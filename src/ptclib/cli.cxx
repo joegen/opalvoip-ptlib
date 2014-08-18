@@ -555,6 +555,7 @@ PCLI::PCLI(const char * prompt)
                  "Use ! to list history of commands\n"
                  "Use !n to repeat the n'th command\n"
                  "Use !! to repeat last command\n"
+                 "Use read <filename> to read a script file as commands\n"
                  "\n"
                  "Commands available are:")
   , m_repeatCommand("!!")
