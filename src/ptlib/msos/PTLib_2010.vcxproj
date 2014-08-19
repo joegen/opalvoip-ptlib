@@ -71,18 +71,6 @@
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>Windows7.1SDK</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <AndroidAPILevel>android-14</AndroidAPILevel>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <AndroidAPILevel>android-14</AndroidAPILevel>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Android'">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <AndroidAPILevel>android-14</AndroidAPILevel>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -149,21 +137,6 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ptlib64d</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">ptlibn</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">ptlib64n</TargetName>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">ptlibd</TargetName>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">ptlibn</TargetName>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Android'">ptlib</TargetName>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir);</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir);</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform)\include;$(ProjectDir)..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir);</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath);</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath);</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\Lib\$(Platform);$(AndroidLibDir);$(AndroidStlLibPath);</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -188,7 +161,7 @@
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;PTRACING=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <ProjectReference />
@@ -228,7 +201,7 @@
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;PTRACING=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <ProjectReference />
@@ -270,7 +243,7 @@
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;PTRACING=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <ProjectReference>
@@ -317,7 +290,7 @@
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;PTRACING=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <ProjectReference>
@@ -430,58 +403,6 @@
       <Command>
       </Command>
     </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">
-    <ClCompile>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG=1;P_TRACING=1</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <EchoCommandLines>true</EchoCommandLines>
-      <AndroidSystemLibs>dl;c;m;log;gcc</AndroidSystemLibs>
-    </Link>
-    <ProjectReference />
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">
-    <ClCompile>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <EchoCommandLines>true</EchoCommandLines>
-      <AndroidSystemLibs>dl;c;m;log;gcc</AndroidSystemLibs>
-    </Link>
-    <ProjectReference />
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Android'">
-    <ClCompile>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <EchoCommandLines>true</EchoCommandLines>
-      <AndroidSystemLibs>dl;c;m;log;gcc</AndroidSystemLibs>
-    </Link>
-    <ProjectReference />
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\lib\Win32\release\PTLib.def">
@@ -691,14 +612,8 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64sn.lib" "%
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="libver.rc">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PRODUCT=PTLib;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PRODUCT=PTLib;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(FileName).res</ResourceOutputFileName>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(FileName).res</ResourceOutputFileName>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">PRODUCT=PTLib;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">PRODUCT=PTLib;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PRODUCT=PTLib;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PRODUCT=PTLib;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Android'">true</ExcludedFromBuild>

@@ -31,15 +31,15 @@
 
 
 #ifndef PRODUCT
-#define	PRODUCT PWLib
+  #define	PRODUCT PTLib
 #endif
 
 #ifndef MANUFACTURER_NAME
-#define	MANUFACTURER_NAME   "Equivalence Pty. Ltd."
+  #define	MANUFACTURER_NAME   "Equivalence Pty. Ltd."
 #endif
 
 #ifndef PRODUCT_DESCRIPTION
-#define PRODUCT_DESCRIPTION "Equivalence Portable Windows Library"
+  #define PRODUCT_DESCRIPTION "Equivalence Portable Tools Library"
 #endif
 
 
@@ -56,15 +56,17 @@
 
 
 #ifndef PRODUCT_NAME
-#define	PRODUCT_NAME MkStr(PRODUCT)
+  #define	PRODUCT_NAME MkStr(PRODUCT)
 #endif
 
 #ifndef EXECUTABLE_NAME
-#ifdef _DEBUG
-#define EXECUTABLE_NAME	PRODUCT_NAME "d.dll"
-#else
-#define EXECUTABLE_NAME	PRODUCT_NAME ".dll"
-#endif
+  #ifdef _DEBUG
+    #define EXECUTABLE_NAME	PRODUCT_NAME "d.dll"
+  #elif PTRACING
+    #define EXECUTABLE_NAME	PRODUCT_NAME  ".dll"
+  #else
+    #define EXECUTABLE_NAME	PRODUCT_NAME "n.dll"
+  #endif
 #endif
 
 
