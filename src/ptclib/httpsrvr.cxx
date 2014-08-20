@@ -1377,7 +1377,8 @@ PBoolean PHTTPResource::OnGETData(PHTTPServer & /*server*/,
 bool PHTTPResource::OnPOST(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
   PStringToString postData;
-  if (connectInfo.GetMIME().Get(PHTTP::ContentTypeTag(), "x-www-form-urlencoded") == "x-www-form-urlencoded")
+  static const PConstCaselessString UrlEncoded("application/x-www-form-urlencoded");
+  if (UrlEncoded == connectInfo.GetMIME().Get(PHTTP::ContentTypeTag(), UrlEncoded))
     PURL::SplitQueryVars(connectInfo.GetEntityBody(), postData);
   return OnPOST(server, connectInfo.GetURL(), connectInfo.GetMIME(), postData, connectInfo);
 }
