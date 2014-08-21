@@ -559,61 +559,61 @@ public:
   ) { Initialise(level, filename, options, rolloverPattern); }
 
   /** Set the trace options.
-  The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
-  may contain assorted values. These are defined by the #Options enum.
+      The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
+      may contain assorted values. These are defined by the #Options enum.
 
-  Note this function OR's the bits included in the options parameter.
+      Note this function OR's the bits included in the options parameter.
   */
   static void SetOptions(
     unsigned options ///< New option bits for tracing
   );
 
   /** Clear the trace options.
-  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and
-  <code>PTRACE_LINE()</code> macros output trace text that
-  may contain assorted values. These are defined by the #Options enum.
+      The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and
+      <code>PTRACE_LINE()</code> macros output trace text that
+      may contain assorted values. These are defined by the #Options enum.
 
-  Note this function AND's the complement of the bits included in the options
-  parameter.
+      Note this function AND's the complement of the bits included in the options
+      parameter.
   */
   static void ClearOptions(
     unsigned options ///< Option bits to turn off
   );
 
   /** Get the current trace options.
-  The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and
-  <code>PTRACE_LINE()</code> macros output trace text that
-  may contain assorted values. These are defined by the #Options enum.
+      The <code>PTRACE()</code>, <code>PTRACE_BLOCK()</code> and
+      <code>PTRACE_LINE()</code> macros output trace text that
+      may contain assorted values. These are defined by the #Options enum.
   */
   static unsigned GetOptions();
 
   /** Set the trace level.
-  The <code>PTRACE()</code> macro checks to see if its level is equal to or lower then the
-  level set by this function. If so then the trace text is output to the trace
-  stream.
+      The <code>PTRACE()</code> macro checks to see if its level is equal to or lower then the
+      level set by this function. If so then the trace text is output to the trace
+      stream.
   */
   static void SetLevel(
     unsigned level ///< New level for tracing
   );
 
   /** Get the trace level.
-  The <code>PTRACE()</code> macro checks to see if its level is equal to or lower then the
-  level set by this function. If so then the trace text is output to the trace
-  stream.
+      The <code>PTRACE()</code> macro checks to see if its level is equal to or lower then the
+      level set by this function. If so then the trace text is output to the trace
+      stream.
   */
   static unsigned GetLevel();
 
   /** Determine if the level may cause trace output.
-  This checks against the current global trace level set by SetLevel()
-  for if the trace output may be emitted. This is used by the PTRACE() macro.
+      This checks against the current global trace level set by SetLevel()
+      for if the trace output may be emitted. This is used by the PTRACE() macro.
   */
   static PBoolean CanTrace(
     unsigned level ///< Trace level to check
   );
 
   /** Set the stream to be used for trace output.
-  This stream is used for all trace output using the various trace functions
-  and macros.
+      This stream is used for all trace output using the various trace functions
+      and macros.
   */
   static void SetStream(
     ostream * out ///< New output stream from trace.
@@ -631,19 +631,19 @@ public:
   );
 
   /** Begin a trace output.
-  If the trace stream output is used outside of the provided macros, it
-  should be noted that a mutex is obtained on the call to Begin() which
-  will prevent any other threads from using the trace stream until the
-  End() function is called.
+      If the trace stream output is used outside of the provided macros, it
+      should be noted that a mutex is obtained on the call to Begin() which
+      will prevent any other threads from using the trace stream until the
+      End() function is called.
 
-  So a typical usage would be:
-  <pre><code>
-    ostream & s = PTrace::Begin(3, __FILE__, __LINE__);
-    s << "hello";
-    if (want_there)
-      s << " there";
-    s << '!' << PTrace::End;
-  </code></pre>
+      So a typical usage would be:
+      <pre><code>
+        ostream & s = PTrace::Begin(3, __FILE__, __LINE__);
+        s << "hello";
+        if (want_there)
+          s << " there";
+        s << '!' << PTrace::End;
+      </code></pre>
   */
   static ostream & Begin(
     unsigned level,         ///< Log level for output
@@ -672,30 +672,30 @@ public:
   ) { return Begin(level, fileName, lineNum, instance != NULL ? instance : defInstance, module); }
 
   /** End a trace output.
-  If the trace stream output is used outside of the provided macros, the
-  End() function must be used at the end of the section of trace
-  output. A mutex is obtained on the call to Begin() which will prevent
-  any other threads from using the trace stream until the End(). The
-  End() is used in a similar manner to <code>std::endl</code> or
-  <code>std::flush</code>.
+      If the trace stream output is used outside of the provided macros, the
+      End() function must be used at the end of the section of trace
+      output. A mutex is obtained on the call to Begin() which will prevent
+      any other threads from using the trace stream until the End(). The
+      End() is used in a similar manner to <code>std::endl</code> or
+      <code>std::flush</code>.
 
-  So a typical usage would be:
-  <pre><code>
-    ostream & s = PTrace::Begin();
-    s << "hello";
-    if (want_there)
-      s << " there";
-    s << '!' << PTrace::End;
-  </code></pre>
+      So a typical usage would be:
+      <pre><code>
+        ostream & s = PTrace::Begin();
+        s << "hello";
+        if (want_there)
+          s << " there";
+        s << '!' << PTrace::End;
+      </code></pre>
   */
   static ostream & End(
     ostream & strm ///< Trace output stream being completed
   );
 
   /** Class to trace Execution blocks.
-  This class is used for tracing the entry and exit of program blocks. Upon
-  construction it outputs an entry trace message and on destruction outputs an
-  exit trace message. This is normally only used from in the <code>PTRACE_BLOCK()</code> macro.
+      This class is used for tracing the entry and exit of program blocks. Upon
+      construction it outputs an entry trace message and on destruction outputs an
+      exit trace message. This is normally only used from in the <code>PTRACE_BLOCK()</code> macro.
   */
   class Block {
     public:
@@ -754,7 +754,14 @@ public:
   };
   static bool CanTrace(Throttle & throttle) { return throttle.CanTrace(); }
 
+  static void WalkStack(
+    ostream & strm,
+    PThreadIdentifier id = PNullThreadIdentifier
+  );
+
+#if PTRACING==2
   static unsigned GetNextContextIdentifier();
+#endif
 };
 
 /* Macro to conditionally declare a parameter to a function to avoid compiler
