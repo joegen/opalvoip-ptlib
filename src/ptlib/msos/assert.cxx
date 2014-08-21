@@ -46,7 +46,7 @@ void PProcess::WaitOnExitConsoleWindow()
 {
 }
 
-#define StackWalk(strm)
+#define InternalStackWalk(strm, id)
 
 #elif defined(__MINGW32__)
 
@@ -54,7 +54,7 @@ void PProcess::WaitOnExitConsoleWindow()
 {
 }
 
-#define StackWalk(strm)
+#define InternalStackWalk(strm, id)
 
 #else
 
@@ -152,7 +152,7 @@ class PDebugDLL : public PDynaLink
         m_SymCleanup(GetCurrentProcess());
     }
 
-    void StackWalk(ostream & strm)
+    void StackWalk(ostream & strm, PThreadIdentifier id)
     {
       if (!GetFunction("SymInitialize", (Function &)m_SymInitialize) ||
           !GetFunction("SymCleanup", (Function &)m_SymCleanup) ||
@@ -164,48 +164,103 @@ class PDebugDLL : public PDynaLink
           !GetFunction("SymGetModuleBase64", (Function &)m_SymGetModuleBase64) ||
           !m_SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
         DWORD err = ::GetLastError();
-        Close();
-        strm << "\n    No stack dump: " << GetName() << " failed: error=" << err;
+        strm << "\n    Invalid stack walk DLL: " << GetName() << " failed: error=" << err;
         return;
       }
 
       m_SymSetOptions(m_SymGetOptions()|SYMOPT_LOAD_LINES|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS);
 
       // The thread information.
+      HANDLE hThread;
+      int framesToSkip = 0;
+      int resumeCount = -1;
+
       CONTEXT threadContext;
       memset(&threadContext, 0, sizeof(threadContext));
-      RtlCaptureContext(&threadContext);
+      threadContext.ContextFlags = CONTEXT_FULL;
+
+      if (id == PNullThreadIdentifier || id == GetCurrentThreadId()) {
+        hThread = GetCurrentThread();
+        RtlCaptureContext(&threadContext);
+        framesToSkip = 2;
+      }
+      else {
+        hThread = OpenThread(THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT|THREAD_SUSPEND_RESUME, FALSE, id);
+        if (hThread == NULL) {
+          DWORD err = ::GetLastError();
+          strm << "\n    No thread: id=" << id << " (0x" << std::hex << id << std::dec << "), error=" << err;
+          return;
+        }
+        resumeCount = SuspendThread(hThread);
+        if (!GetThreadContext(hThread, &threadContext)) {
+          if (resumeCount >= 0)
+            ResumeThread(hThread);
+          DWORD err = ::GetLastError();
+          strm << "\n    No context for thread: id=" << id << " (0x" << std::hex << id << std::dec << "), error=" << err;
+          return;
+        }
+      }
 
       STACKFRAME64 frame;
       memset(&frame, 0, sizeof(frame));
       frame.AddrPC.Mode    = AddrModeFlat;
       frame.AddrStack.Mode = AddrModeFlat;
       frame.AddrFrame.Mode = AddrModeFlat;
+#ifdef _M_IX86
+      // normally, call ImageNtHeader() and use machine info from PE header
+      DWORD imageType = IMAGE_FILE_MACHINE_I386;
+      frame.AddrPC.Offset = threadContext.Eip;
+      frame.AddrFrame.Offset = frame.AddrStack.Offset = threadContext.Esp;
+#elif _M_X64
+      DWORD imageType = IMAGE_FILE_MACHINE_AMD64;
+      frame.AddrPC.Offset = threadContext.Rip;
+      frame.AddrFrame.Offset = frame.AddrStack.Offset = threadContext.Rsp;
+#elif _M_IA64
+      DWORD imageType = IMAGE_FILE_MACHINE_IA64;
+      frame.AddrPC.Offset = threadContext.StIIP;
+      frame.AddrFrame.Offset = threadContext.IntSp;
+      frame.AddrBStore.Offset = threadContext.RsBSP;
+      frame.AddrBStore.Mode = AddrModeFlat;
+      frame.AddrStack.Offset = threadContext.IntSp;
+#else
+      #error "Platform not supported!"
+#endif
 
       int frameCount = 0;
-      while (frameCount++ < 16 &&
-                      m_StackWalk64(IMAGE_FILE_MACHINE,
-                                    GetCurrentProcess(),
-                                    GetCurrentThread(),
-                                    &frame,
-                                    &threadContext,
-                                    NULL,
-                                    m_SymFunctionTableAccess64,
-                                    m_SymGetModuleBase64,
-                                    NULL) && frame.AddrPC.Offset != 0) {
-        if (frameCount <= 1)
+      while (frameCount++ < 16) {
+        if (!m_StackWalk64(imageType,
+                           GetCurrentProcess(),
+                           hThread,
+                           &frame,
+                           &threadContext,
+                           NULL,
+                           m_SymFunctionTableAccess64,
+                           m_SymGetModuleBase64,
+                           NULL)) {
+          DWORD err = ::GetLastError();
+          strm << "\n    StackWalk64 failed: error=" << err;
+          break;
+        }
+
+        if (frame.AddrPC.Offset == frame.AddrReturn.Offset) {
+          strm << "\n    StackWalk64 returned recursive stack! PC=0x" << hex << frame.AddrPC.Offset << dec;
+          break;
+        }
+
+        if (frameCount <= framesToSkip || frame.AddrPC.Offset == 0)
           continue;
+
+        strm << "\n    " << hex << setfill('0');
 
         char buffer[sizeof(IMAGEHLP_SYMBOL64)+200];
         PIMAGEHLP_SYMBOL64 symbol = (PIMAGEHLP_SYMBOL64)buffer;
         symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
         symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL64);
         DWORD64 displacement = 0;
-        strm << "\n    ";
         if (m_SymGetSymFromAddr64(GetCurrentProcess(), frame.AddrPC.Offset, &displacement, symbol))
           strm << symbol->Name;
         else
-          strm << hex << setfill('0') << setw(8) << frame.AddrPC.Offset << dec << setfill(' ');
+          strm << setw(8) << frame.AddrPC.Offset;
         strm << '(' << hex << setfill('0');
         for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
           if (i > 0)
@@ -217,24 +272,40 @@ class PDebugDLL : public PDynaLink
         strm << setfill(' ') << ')';
         if (displacement != 0)
           strm << " + 0x" << displacement;
+
+        strm << dec << setfill(' ');
+
+        if (frame.AddrReturn.Offset == 0)
+          break;
       }
 
-      if (frameCount <= 2) {
-        DWORD err = ::GetLastError();
-        strm << "\n    No stack dump: " << GetName() << " StackWalk64 failed: error=" << err;
-      }
+      if (resumeCount >= 0)
+        ResumeThread(hThread);
     }
 };
 
 
-static void StackWalk(ostream & strm)
+static PCriticalSection StackWalkMutex;
+
+static void InternalStackWalk(ostream & strm, PThreadIdentifier id)
 {
+  StackWalkMutex.Wait();
   PDebugDLL debughelp;
   if (debughelp.IsLoaded())
-    debughelp.StackWalk(strm);
+    debughelp.StackWalk(strm, id);
+  StackWalkMutex.Signal();
 }
 
 #endif // _WIN32_WCE
+
+
+#if PTRACING
+void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
+{
+  InternalStackWalk(strm, id);
+}
+#endif // PTRACING
+
 
 static PCriticalSection AssertMutex;
 
@@ -244,7 +315,7 @@ bool PAssertFunc(const char * msg)
   {
     ostringstream strm;
     strm << msg;
-    StackWalk(strm);
+    InternalStackWalk(strm, PNullThreadIdentifier);
     strm << ends;
     str = strm.str();
   }
