@@ -44,6 +44,12 @@
     PError << msg << endl
 
 
+#if PTRACING
+void PTrace::WalkStack(ostream &, PThreadIdentifier)
+{
+}
+#endif // PTRACING
+
 
 #if defined(P_ANDROID)
 
