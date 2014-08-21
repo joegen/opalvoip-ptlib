@@ -1069,7 +1069,7 @@ PHTTPStringField::PHTTPStringField(const char * name,
 
 PHTTPField * PHTTPStringField::NewField() const
 {
-  return new PHTTPStringField(baseName, title, maxLength, initialValue, help);
+  return new PHTTPStringField(baseName, title, maxLength, initialValue, help, rows, columns);
 }
 
 
