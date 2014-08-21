@@ -2863,20 +2863,19 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
     return;
   }
 
-  if (PTrace::CanTrace(1)) {
-    ostream & trace = PTrace::Begin(1, __FILE__, __LINE__);
-    trace << "PTLib\tPossible deadlock in read/write mutex " << this << " :\n";
-    for (std::map<PThreadIdentifier, Nest>::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it) {
-      if (it != m_nestedThreads.begin())
-        trace << '\n';
-      trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
-                " readers=" << it->second.m_readerCount << ","
-                " writers=" << it->second.m_writerCount;
-      if (!it->second.m_waiting)
-        trace << ", LOCKED";
-    }
-    trace << PTrace::End;
+  ostream & trace = PTRACE_BEGIN(0, "PTLib");
+  trace << "Possible deadlock in read/write mutex " << this << " :\n";
+  for (std::map<PThreadIdentifier, Nest>::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it) {
+    if (it != m_nestedThreads.begin())
+      trace << '\n';
+    trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
+              " readers=" << it->second.m_readerCount << ","
+              " writers=" << it->second.m_writerCount;
+    if (!it->second.m_waiting)
+      trace << ", LOCKED";
+    PTrace::WalkStack(trace, it->first);
   }
+  trace << PTrace::End;
 
   sync.Wait();
 
