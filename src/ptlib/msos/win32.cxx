@@ -1775,8 +1775,13 @@ void PTimedMutex::Wait()
 {
 #if PTRACING
   if (!m_handle.Wait(15000)) {
-    PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
-           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
+    ostream & trace = PTRACE_BEGIN(0, "PTLib");
+    trace << "Possible deadlock in mutex " << this;
+    PTrace::WalkStack(trace);
+    trace << " Owner Thread id=" << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')';
+    PTrace::WalkStack(trace, m_lockerId);
+    trace << PTrace::End;
+
     m_handle.Wait(INFINITE);
     PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this);
   }
