@@ -320,7 +320,7 @@ PThread::PThread(PINDEX stackSize,
   if (m_type == e_IsAutoDelete)
     PProcess::Current().SignalTimerChange();
 
-  PTRACE(5, "PTLib\tCreated thread " << this << ' ' << m_threadName);
+  PTRACE(5, "PTLib\tCreated thread " << this << ' ' << m_threadName << " stack=" << m_originalStackSize);
 }
 
 //
