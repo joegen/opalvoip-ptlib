@@ -445,16 +445,18 @@ void PThread::PX_StartThread()
   pthread_attr_init(&threadAttr);
   PAssertPTHREAD(pthread_attr_setdetachstate, (&threadAttr, PTHREAD_CREATE_DETACHED));
 
+  if (m_originalStackSize == 0) {
+    PTRACE(3, "PTlib\tUsing default stack size: " << PThreadMinimumStack);
+    m_originalStackSize = PThreadMinimumStack;
+  }
+
+  PAssertPTHREAD(pthread_attr_setstacksize, (&threadAttr, m_originalStackSize));
+
 #if defined(P_LINUX)
-
-  pthread_attr_setstacksize(&threadAttr, m_originalStackSize);
-
   struct sched_param sched_params;
   PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, GetSchedParam(PX_priority, sched_params)));
   PAssertPTHREAD(pthread_attr_setschedparam,  (&threadAttr, &sched_params));
-
 #elif defined(P_RTEMS)
-  pthread_attr_setstacksize(&threadAttr, 2*PTHREAD_MINIMUM_STACK_SIZE);
   pthread_attr_setinheritsched(&threadAttr, PTHREAD_EXPLICIT_SCHED);
   pthread_attr_setschedpolicy(&threadAttr, SCHED_OTHER);
   struct sched_param sched_param;
