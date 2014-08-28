@@ -1419,7 +1419,7 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
 
   // attempt to create a socket
   if (!OpenSocket(sa->sa_family)) {
-    PTRACE(4, "OpenSocket failed");
+    PTRACE(4, "OpenSocket failed for " << GetProtocolName());
     return false;
   }
 
