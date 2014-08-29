@@ -1364,6 +1364,14 @@ class PHTTPSimpleAuth : public PHTTPAuthority
      */
     virtual PBoolean IsActive() const;
 
+    /** Get the realm or name space for the user authorisation name and
+       password as required by the basic authorisation system of HTTP/1.0.
+
+       @return
+       String for the authorisation realm name.
+     */
+    const PString & GetLocalRealm() const { return realm; }
+
     /** Get the user name allocated to this simple authorisation.
 
        @return

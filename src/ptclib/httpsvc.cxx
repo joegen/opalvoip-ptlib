@@ -61,22 +61,22 @@ static const PTime ImmediateExpiryTime(0, 0, 0, 1, 1, 1980);
 
 PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   : PServiceProcess(inf.manufacturerName, inf.productName,
-                    inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.buildNumber),
-    macroKeyword("macro"),
-    productKey(inf.productKey),
-    securedKeys(inf.securedKeyCount, inf.securedKeys),
-    signatureKey(inf.signatureKey),
-    compilationDate(inf.compilationDate),
-    manufacturersHomePage(inf.manufHomePage != NULL ? inf.manufHomePage : HOME_PAGE),
-    manufacturersEmail(inf.email != NULL ? inf.email : EMAIL),
-    productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName),
-    gifHTML(inf.gifHTML),
-    copyrightHolder(inf.copyrightHolder != NULL ? inf.copyrightHolder : inf.manufacturerName),
-    copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : (const char *)manufacturersHomePage),
-    copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : (const char *)manufacturersEmail)
+                    inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.buildNumber)
+  , m_macroKeyword("macro")
+  , m_productKey(inf.productKey)
+  , m_securedKeys(inf.securedKeyCount, inf.securedKeys)
+  , m_signatureKey(inf.signatureKey)
+  , m_ignoreSignatures(false)
+  , m_compilationDate(inf.compilationDate)
+  , m_manufacturersHomePage(inf.manufHomePage != NULL ? inf.manufHomePage : HOME_PAGE)
+  , m_manufacturersEmail(inf.email != NULL ? inf.email : EMAIL)
+  , m_productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName)
+  , m_gifHTML(inf.gifHTML)
+  , m_copyrightHolder(inf.copyrightHolder != NULL ? inf.copyrightHolder : inf.manufacturerName)
+  , m_copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : (const char *)m_manufacturersHomePage)
+  , m_copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : (const char *)m_manufacturersEmail)
+  , m_restartThread(NULL)
 {
-  ignoreSignatures = false;
-
   if (inf.gifFilename != NULL) {
     PDirectory exeDir = GetFile().GetDirectory();
 #if defined(_WIN32) && defined(_DEBUG)
@@ -84,17 +84,16 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
     if (exeDir.Find("\\Debug\\") != P_MAX_INDEX)
       exeDir = exeDir.GetParent();
 #endif
-    httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, exeDir+inf.gifFilename));
-    if (gifHTML.IsEmpty()) {
-      gifHTML = psprintf("<img border=0 src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
+    m_httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, exeDir+inf.gifFilename));
+    if (m_gifHTML.IsEmpty()) {
+      m_gifHTML = psprintf("<img border=0 src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
       if (inf.gifWidth != 0 && inf.gifHeight != 0)
-        gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
-      gifHTML += " align=absmiddle>";
+        m_gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
+      m_gifHTML += " align=absmiddle>";
     }
   }
 
-  restartThread = NULL;
-  httpThreads.DisallowDeleteObjects();
+  m_httpThreads.DisallowDeleteObjects();
 }
 
 
@@ -126,8 +125,8 @@ PBoolean PHTTPServiceProcess::OnStart()
       exeDir = exeDir.GetParent();
 #endif
 
-    httpNameSpace.AddResource(new PHTTPDirectory("data", exeDir + "data"));
-    httpNameSpace.AddResource(new PServiceHTTPDirectory("html", exeDir + "html"));
+    m_httpNameSpace.AddResource(new PHTTPDirectory("data", exeDir + "data"));
+    m_httpNameSpace.AddResource(new PServiceHTTPDirectory("html", exeDir + "html"));
   }
 
 
@@ -169,6 +168,207 @@ const char * PHTTPServiceProcess::GetServiceDependencies() const
   return "EventLog\0Tcpip\0";
 }
 #endif
+
+
+const PString & PHTTPServiceProcess::GetDefaultSection() { static PConstString const s("Parameters"); return s; }
+
+
+PHTTPServiceProcess::Params::Params(const char * configPageName, const char * section)
+  : m_configPageName(configPageName)
+  , m_section(section)
+  , m_configPage(NULL)
+  , m_realmKey("Realm")
+  , m_usernameKey("Username")
+  , m_passwordKey("Password")
+  , m_authority(PProcess::Current().GetName(), PProcess::Current().GetUserName(), PString::Empty())
+  , m_levelKey("Log Level")
+  , m_fileKey("Log File")
+  , m_rotateDirKey("Log Rotate Directory")
+  , m_rotateSizeKey("Log Rotate Size")
+  , m_rotateCountKey("Log Rotate File Count")
+  , m_rotateAgeKey("Log Rotate File Age")
+  , m_fullLogPageName("FullLog")
+  , m_clearLogPageName("ClearLog")
+  , m_tailLogPageName("TailLog")
+  , m_fullLogPage(NULL)
+  , m_clearLogPage(NULL)
+  , m_tailLogPage(NULL)
+  , m_httpPortKey("HTTP Port")
+  , m_httpInterfacesKey("HTTP Interfaces")
+  , m_httpPort(0)
+{
+}
+
+
+bool PHTTPServiceProcess::InitialiseBase(Params & params)
+{
+  if (!PAssert(params.m_usernameKey != NULL && params.m_passwordKey != NULL, PInvalidParameter))
+    return false;
+
+  PConfig cfg(params.m_section);
+
+  // Get the HTTP basic authentication info
+  params.m_authority = PHTTPSimpleAuth(cfg.GetString(params.m_realmKey, params.m_authority.GetLocalRealm()),
+                                       cfg.GetString(params.m_usernameKey, params.m_authority.GetUserName()),
+                                       PHTTPPasswordField::Decrypt(cfg.GetString(params.m_passwordKey)));
+
+  if (params.m_configPage == NULL && params.m_configPageName != NULL) {
+    // Create the parameters URL page, and start adding fields to it
+    params.m_configPage = new PConfigPage(*this, params.m_configPageName, params.m_section, params.m_authority);
+    m_httpNameSpace.AddResource(params.m_configPage, PHTTPSpace::Overwrite);
+  }
+
+
+  PSystemLog::Level level;
+  PString fileName;
+  PSystemLogToFile::RotateInfo info(GetHomeDirectory());
+
+  PSystemLogToFile * logFile = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
+
+  if (logFile != NULL)
+    info = logFile->GetRotateInfo();
+
+  if (params.m_configPage != NULL) {
+    params.m_configPage->AddStringField(params.m_usernameKey, 25, params.m_authority.GetUserName(), "User name to access HTTP user interface for server.");
+    params.m_configPage->Add(new PHTTPPasswordField(params.m_passwordKey, 20, params.m_authority.GetPassword()));
+
+    level = PSystemLog::LevelFromInt(
+                params.m_configPage->AddIntegerField(params.m_levelKey,
+                                               PSystemLog::Fatal, PSystemLog::NumLogLevels-1,
+                                               GetLogLevel(),
+                                               "0=Fatal only, 1=Errors, 2=Warnings, 3=Info, 4=Debug, 5=Detailed"));
+    fileName = params.m_configPage->AddStringField(params.m_fileKey, 0, logFile != NULL ? logFile->GetFilePath() : PString::Empty(),
+                                             "File for logging output, empty string disables logging", 1, 80);
+    info.m_directory = params.m_configPage->AddStringField(params.m_rotateDirKey, 0, info.m_directory,
+                                                     "Directory path for log file rotation", 1, 80);
+    info.m_maxSize = params.m_configPage->AddIntegerField(params.m_rotateSizeKey, 0, INT_MAX, info.m_maxSize / 1000,
+                                                    "kb", "Size of log file to trigger rotation, zero disables")*1000;
+    info.m_maxFileCount = params.m_configPage->AddIntegerField(params.m_rotateCountKey, 0, 10000, info.m_maxFileCount,
+                                                         "", "Number of rotated log file to keep, zero is infinite");
+    info.m_maxFileAge.SetInterval(0, 0, 0, 0,
+                     params.m_configPage->AddIntegerField(params.m_rotateAgeKey,
+                                                    0, 10000, info.m_maxFileAge.GetDays(),
+                                                    "days", "Number of days to keep rotated log files, zero is infinite"));
+
+  // HTTP Port number to use.
+    params.m_httpPort = (WORD)params.m_configPage->AddIntegerField(params.m_httpPortKey, 1, 65535, params.m_httpPort,
+                                                                   "", "Port for HTTP user interface for server.");
+  }
+  else {
+    level = cfg.GetEnum(params.m_levelKey, GetLogLevel());
+    fileName = cfg.GetString(params.m_fileKey);
+    info.m_directory = cfg.GetString(params.m_rotateDirKey, info.m_directory);
+    info.m_maxSize = cfg.GetInteger(params.m_rotateSizeKey, info.m_maxSize / 1000) * 1000;
+    info.m_maxFileCount = cfg.GetInteger(params.m_rotateCountKey, info.m_maxFileCount);
+    info.m_maxFileAge.SetInterval(0, 0, 0, 0, cfg.GetInteger(params.m_rotateAgeKey, info.m_maxFileAge.GetDays()));
+    params.m_httpPort = (WORD)cfg.GetInteger(params.m_httpPortKey, params.m_httpPort);
+  }
+
+  SetLogLevel(level);
+
+  if (fileName.IsEmpty()) {
+    if (logFile != NULL)
+      PSystemLog::SetTarget(new PSystemLogToNowhere);
+  }
+  else {
+    if (logFile == NULL || logFile->GetFilePath() != fileName) {
+      logFile = new PSystemLogToFile(fileName);
+      PSystemLog::SetTarget(logFile);
+    }
+  }
+
+  if (logFile != NULL) {
+    logFile->SetRotateInfo(info);
+
+    if (params.m_fullLogPageName != NULL) {
+      params.m_fullLogPage = new PHTTPFile(params.m_fullLogPageName, logFile->GetFilePath(), PMIMEInfo::TextPlain(), params.m_authority);
+      m_httpNameSpace.AddResource(params.m_fullLogPage, PHTTPSpace::Overwrite);
+    }
+
+    if (params.m_clearLogPageName != NULL) {
+      params.m_clearLogPage = new ClearLogPage(*this, params.m_clearLogPageName, params.m_authority);
+      m_httpNameSpace.AddResource(params.m_clearLogPage, PHTTPSpace::Overwrite);
+    }
+
+    if (params.m_tailLogPageName != NULL) {
+      params.m_tailLogPage = new PHTTPTailFile(params.m_tailLogPageName, logFile->GetFilePath(), PMIMEInfo::TextPlain(), params.m_authority);
+      m_httpNameSpace.AddResource(params.m_tailLogPage, PHTTPSpace::Overwrite);
+    }
+  }
+
+  return true;
+}
+
+
+PHTTPServiceProcess::ClearLogPage::ClearLogPage(PHTTPServiceProcess & process, const PURL & url, const PHTTPAuthority & auth)
+  : PServiceHTTPString(url, auth)
+  , m_process(process)
+{
+}
+
+
+static PConstString const ClearLogFileStr("Clear Log File");
+static PConstString const RotateLogFilesStr("Rotate Log Files");
+
+PString PHTTPServiceProcess::ClearLogPage::LoadText(PHTTPRequest & request)
+{
+  PHTML html;
+  html << PHTML::Title(m_process.GetName() & "Clear Log File")
+       << PHTML::Body()
+       << m_process.GetPageGraphic()
+       << PHTML::Paragraph() << "<center>"
+
+       << PHTML::Form("POST")
+
+       << PHTML::Paragraph() << "<center>" << PHTML::SubmitButton(ClearLogFileStr);
+
+  PSystemLogToFile * logFile = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
+  if (logFile != NULL && logFile->GetRotateInfo().CanRotate())
+    html << PHTML::Paragraph() << "<center>" << PHTML::SubmitButton(RotateLogFilesStr);
+
+  html << PHTML::Form()
+       << PHTML::HRule()
+       << m_process.GetCopyrightText()
+       << PHTML::Body();
+
+  string = html;
+
+  return PServiceHTTPString::LoadText(request);
+}
+
+
+PBoolean PHTTPServiceProcess::ClearLogPage::Post(PHTTPRequest & request, const PStringToString & data, PHTML & msg)
+{
+  msg << PHTML::Title() << "Cleared Log File" << PHTML::Body()
+      << PHTML::Heading(1) << "Cleared Log File" << PHTML::Heading(1);
+
+  PSystemLogToFile * logFile = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
+  if (logFile == NULL)
+    msg << "Not logging to a file";
+  else {
+    if (data("submit") == ClearLogFileStr) {
+      if (logFile->Clear())
+        msg << "Cleared ";
+      else
+        msg << "Could not clear ";
+      msg << " log file " << logFile->GetFilePath();
+    }
+    else if (data("submit") == RotateLogFilesStr) {
+      if (logFile->Rotate(true))
+        msg << "Rotated";
+      else
+        msg << "Could not rotate";
+      msg << " log file " << logFile->GetFilePath() << " to " << logFile->GetRotateInfo().m_directory;
+    }
+  }
+
+  msg << PHTML::Paragraph()
+      << PHTML::HotLink("/") << "Home page" << PHTML::HotLink();
+
+  PServiceHTML::ProcessMacros(request, msg, "html/status.html",
+                              PServiceHTML::LoadFromFile | PServiceHTML::NoSignatureForFile);
+  return true;
+}
 
 
 bool PHTTPServiceProcess::ListenForHTTP(WORD port,
@@ -268,18 +468,18 @@ void PHTTPServiceProcess::ShutdownListener()
   for (PSocketList::iterator it = m_httpListeningSockets.begin(); it != m_httpListeningSockets.end(); ++it)
     it->Close();
 
-  httpThreadsMutex.Wait();
-  for (ThreadList::iterator it = httpThreads.begin(); it != httpThreads.end(); it++)
+  m_httpThreadsMutex.Wait();
+  for (ThreadList::iterator it = m_httpThreads.begin(); it != m_httpThreads.end(); it++)
     it->Close();
 
-  while (httpThreads.GetSize() > 0) {
-    httpThreadsMutex.Signal();
+  while (m_httpThreads.GetSize() > 0) {
+    m_httpThreadsMutex.Signal();
     SignalTimerChange();
     Sleep(10);
-    httpThreadsMutex.Wait();
+    m_httpThreadsMutex.Wait();
   }
 
-  httpThreadsMutex.Signal();
+  m_httpThreadsMutex.Signal();
 
   m_httpListeningSockets.RemoveAll();
 }
@@ -289,13 +489,13 @@ PString PHTTPServiceProcess::GetCopyrightText()
 {
   PHTML html(PHTML::InBody);
   html << "Copyright &copy;"
-       << compilationDate.AsString("yyyy") << " by "
-       << PHTML::HotLink(copyrightHomePage)
-       << copyrightHolder
+       << m_compilationDate.AsString("yyyy") << " by "
+       << PHTML::HotLink(m_copyrightHomePage)
+       << m_copyrightHolder
        << PHTML::HotLink()
        << ", "
-       << PHTML::HotLink("mailto:" + copyrightEmail)
-       << copyrightEmail
+       << PHTML::HotLink("mailto:" + m_copyrightEmail)
+       << m_copyrightEmail
        << PHTML::HotLink();
   return html;
 }
@@ -309,10 +509,10 @@ PString PHTTPServiceProcess::GetPageGraphic()
        << PHTML::TableData()
 
        << PHTML::HotLink("/");
-  if (gifHTML.IsEmpty())
-    html << PHTML::Heading(1) << productNameHTML << "&nbsp;" << PHTML::Heading(1);
+  if (m_gifHTML.IsEmpty())
+    html << PHTML::Heading(1) << m_productNameHTML << "&nbsp;" << PHTML::Heading(1);
   else
-    html << gifHTML;
+    html << m_gifHTML;
   html << PHTML::HotLink()
 
        << PHTML::TableData()
@@ -321,9 +521,9 @@ PString PHTTPServiceProcess::GetPageGraphic()
        << ' ' << GetCompilationDate().AsString("d MMMM yyyy")
        << PHTML::BreakLine()
        << "By "
-       << PHTML::HotLink(manufacturersHomePage) << GetManufacturer() << PHTML::HotLink()
+       << PHTML::HotLink(m_manufacturersHomePage) << GetManufacturer() << PHTML::HotLink()
        << ", "
-       << PHTML::HotLink("mailto:" + manufacturersEmail) << manufacturersEmail << PHTML::HotLink()
+       << PHTML::HotLink("mailto:" + m_manufacturersEmail) << m_manufacturersEmail << PHTML::HotLink()
        << PHTML::TableEnd()
        << PHTML::HRule();
 
@@ -402,8 +602,8 @@ PBoolean PHTTPServiceProcess::ProcessHTTP(PTCPSocket & socket)
 
 void PHTTPServiceProcess::BeginRestartSystem()
 {
-  if (restartThread == NULL) {
-    restartThread = PThread::Current();
+  if (m_restartThread == NULL) {
+    m_restartThread = PThread::Current();
     OnConfigChanged();
   }
 }
@@ -411,20 +611,20 @@ void PHTTPServiceProcess::BeginRestartSystem()
 
 void PHTTPServiceProcess::CompleteRestartSystem()
 {
-  if (restartThread == NULL)
+  if (m_restartThread == NULL)
     return;
   
-  if (restartThread != PThread::Current())
+  if (m_restartThread != PThread::Current())
     return;
 
-  httpNameSpace.StartWrite();
+  m_httpNameSpace.StartWrite();
 
   if (Initialise("Restart\tInitialisation"))
-    restartThread = NULL;
+    m_restartThread = NULL;
 
-  httpNameSpace.EndWrite();
+  m_httpNameSpace.EndWrite();
 
-  if (restartThread != NULL)
+  if (m_restartThread != NULL)
     Terminate();
 }
 
@@ -452,7 +652,7 @@ PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
   socket.SetOption(SO_LINGER, &ling, sizeof(ling));
 #endif
 
-  PHTTPServer * server = OnCreateHTTPServer(httpNameSpace);
+  PHTTPServer * server = OnCreateHTTPServer(m_httpNameSpace);
 
   if (server->Open(socket))
     return server;
@@ -475,9 +675,9 @@ PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
   : PThread(stackSize, AutoDeleteThread, NormalPriority, "HTTP Service"),
     process(app)
 {
-  process.httpThreadsMutex.Wait();
-  process.httpThreads.Append(this);
-  process.httpThreadsMutex.Signal();
+  process.m_httpThreadsMutex.Wait();
+  process.m_httpThreads.Append(this);
+  process.m_httpThreadsMutex.Signal();
 
   myStackSize = stackSize;
   socket = NULL;
@@ -487,9 +687,9 @@ PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
 
 PHTTPServiceThread::~PHTTPServiceThread()
 {
-  process.httpThreadsMutex.Wait();
-  process.httpThreads.Remove(this);
-  process.httpThreadsMutex.Signal();
+  process.m_httpThreadsMutex.Wait();
+  process.m_httpThreads.Remove(this);
+  process.m_httpThreadsMutex.Signal();
   delete socket;
 }
 
