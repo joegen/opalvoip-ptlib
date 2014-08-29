@@ -141,6 +141,10 @@ class PHTTPServiceProcess : public PServiceProcess
     const PString & GetHomePage() const { return manufacturersHomePage; }
     const PString & GetEMailAddress() const { return manufacturersEmail; }
     const PString & GetProductName() const { return productNameHTML; }
+    const PString & GetGifHTML() const { return gifHTML; }
+    const PString & GetCopyrightHolder() const { return copyrightHolder; }
+    const PString & GetCopyrightHomePage() const { return copyrightHomePage; }
+    const PString & GetCopyrightEmail() const { return copyrightEmail; }
     const PTEACypher::Key & GetProductKey() const { return productKey; }
     const PStringArray & GetSecuredKeys() const { return securedKeys; }
     const PTEACypher::Key & GetSignatureKey() const { return signatureKey; }
