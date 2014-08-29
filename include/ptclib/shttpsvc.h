@@ -50,6 +50,21 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
     PSecureHTTPServiceProcess(const Info & inf);
     ~PSecureHTTPServiceProcess();
 
+    struct Params : PHTTPServiceProcess::Params
+    {
+      Params(
+        const char * configPageName,
+        const char * section = GetDefaultSection()
+      );
+
+      const char * m_certificateFileKey;
+      const char * m_createCertificateKey;
+    };
+
+    virtual bool InitialiseBase(
+      PHTTPServiceProcess::Params & params
+    );
+
     virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
 
     bool SetServerCertificate(

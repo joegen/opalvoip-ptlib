@@ -80,6 +80,46 @@ void PSecureHTTPServiceProcess::DisableSSL()
 }
 
 
+PSecureHTTPServiceProcess::Params::Params(const char * configPageName, const char * section)
+  : PHTTPServiceProcess::Params(configPageName, section)
+  , m_certificateFileKey("HTTP Certificate")
+  , m_createCertificateKey("Create HTTP Certificate")
+{
+}
+
+
+bool PSecureHTTPServiceProcess::InitialiseBase(PHTTPServiceProcess::Params & params)
+{
+  if (!PHTTPServiceProcess::InitialiseBase(params))
+    return false;
+
+  if (params.m_configPage == NULL)
+    return true;
+
+  Params * secure = dynamic_cast<Params *>(&params);
+  if (secure == NULL || secure->m_certificateFileKey == NULL)
+    return true;
+
+  // SSL certificate file.
+  PString certificateFile = params.m_configPage->AddStringField(secure->m_certificateFileKey, 250, PString::Empty(),
+                                                                "Certificate for HTTPS user interface, if empty HTTP is used.", 1, 50);
+  if (certificateFile.IsEmpty()) {
+    DisableSSL();
+    return true;
+  }
+
+  bool create = true;
+  if (secure->m_createCertificateKey != NULL)
+    create = params.m_configPage->AddBooleanField(secure->m_createCertificateKey, true, "Automatically create certificate file if does not exist");
+
+  if (SetServerCertificate(certificateFile, create))
+    return true;
+
+  PSYSTEMLOG(Fatal, "Could not load certificate \"" << certificateFile << '"');
+  return false;
+}
+
+
 PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 {
   if (m_sslContext == NULL)
@@ -93,12 +133,12 @@ PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
   PSSLChannel * ssl = new HTTP_PSSLChannel(this, m_sslContext);
 
   if (!ssl->Accept(socket)) {
-    PSYSTEMLOG(Error, "HTTPS\tAccept failed: " << ssl->GetErrorText());
+    PSYSTEMLOG(Error, "Accept failed: " << ssl->GetErrorText());
     delete ssl;
     return NULL;
   }
 
-  PHTTPServer * server = OnCreateHTTPServer(httpNameSpace);
+  PHTTPServer * server = OnCreateHTTPServer(m_httpNameSpace);
 
   server->GetConnectionInfo().SetPersistenceMaximumTransations(0);
   if (server->Open(ssl))
@@ -127,7 +167,7 @@ bool PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certifica
            << "/CN=" << GetName() << '@' << PIPSocket::GetHostName();
     }
     if (!certificate.CreateRoot(name, key)) {
-      PTRACE(1, "MTGW\tCould not create certificate");
+      PSYSTEMLOG(Fatal, "Could not create certificate for name \"" << name << '"');
       return false;
     }
     certificate.Save(certificateFile);
