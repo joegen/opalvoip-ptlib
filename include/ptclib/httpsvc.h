@@ -191,6 +191,10 @@ class PHTTPServiceProcess : public PServiceProcess
     const PString & GetHomePage() const { return m_manufacturersHomePage; }
     const PString & GetEMailAddress() const { return m_manufacturersEmail; }
     const PString & GetProductName() const { return m_productNameHTML; }
+    const PString & GetGifHTML() const { return m_gifHTML; }
+    const PString & GetCopyrightHolder() const { return m_copyrightHolder; }
+    const PString & GetCopyrightHomePage() const { return m_copyrightHomePage; }
+    const PString & GetCopyrightEmail() const { return m_copyrightEmail; }
     const PTEACypher::Key & GetProductKey() const { return m_productKey; }
     const PStringArray & GetSecuredKeys() const { return m_securedKeys; }
     const PTEACypher::Key & GetSignatureKey() const { return m_signatureKey; }
