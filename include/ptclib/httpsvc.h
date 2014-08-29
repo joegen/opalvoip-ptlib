@@ -40,6 +40,7 @@
 
 
 class PHTTPServiceProcess;
+class PConfigPage;
 
 
 /////////////////////////////////////////////////////////////////////
@@ -115,6 +116,53 @@ class PHTTPServiceProcess : public PServiceProcess
     virtual void OnConfigChanged() = 0;
     virtual PBoolean Initialise(const char * initMsg) = 0;
 
+    static const PString & GetDefaultSection();
+
+    class ClearLogPage;
+
+    struct Params
+    {
+      Params(
+        const char * configPageName,
+        const char * section = GetDefaultSection()
+      );
+      virtual ~Params() { }
+
+      const char  * m_configPageName;
+      const char  * m_section;
+      PConfigPage * m_configPage;   // Output
+
+      // Authentication
+      const char    * m_realmKey;
+      const char    * m_usernameKey;
+      const char    * m_passwordKey;
+      PHTTPSimpleAuth m_authority;  // Output
+
+      // Logging
+      const char * m_levelKey;
+      const char * m_fileKey;
+      const char * m_rotateDirKey;
+      const char * m_rotateSizeKey;
+      const char * m_rotateCountKey;
+      const char * m_rotateAgeKey;
+      const char * m_fullLogPageName;
+      const char * m_clearLogPageName;
+      const char * m_tailLogPageName;
+
+      PHTTPFile     * m_fullLogPage;    // Output
+      ClearLogPage  * m_clearLogPage;   // Output
+      PHTTPTailFile * m_tailLogPage;    // Output
+
+      // HTTP access
+      const char *  m_httpPortKey;
+      const char *  m_httpInterfacesKey;
+      WORD          m_httpPort;         // Output
+    };
+    virtual bool InitialiseBase(
+      Params & params
+    );
+
+
     bool ListenForHTTP(
       WORD port,
       PSocket::Reusability reuse = PSocket::CanReuseAddress,
@@ -138,16 +186,16 @@ class PHTTPServiceProcess : public PServiceProcess
 
     virtual PString GetCopyrightText();
 
-    const PString & GetMacroKeyword() const { return macroKeyword; }
-    const PTime & GetCompilationDate() const { return compilationDate; }
-    const PString & GetHomePage() const { return manufacturersHomePage; }
-    const PString & GetEMailAddress() const { return manufacturersEmail; }
-    const PString & GetProductName() const { return productNameHTML; }
-    const PTEACypher::Key & GetProductKey() const { return productKey; }
-    const PStringArray & GetSecuredKeys() const { return securedKeys; }
-    const PTEACypher::Key & GetSignatureKey() const { return signatureKey; }
-    bool ShouldIgnoreSignatures() const { return ignoreSignatures; }
-    void SetIgnoreSignatures(bool ig) { ignoreSignatures = ig; }
+    const PString & GetMacroKeyword() const { return m_macroKeyword; }
+    const PTime & GetCompilationDate() const { return m_compilationDate; }
+    const PString & GetHomePage() const { return m_manufacturersHomePage; }
+    const PString & GetEMailAddress() const { return m_manufacturersEmail; }
+    const PString & GetProductName() const { return m_productNameHTML; }
+    const PTEACypher::Key & GetProductKey() const { return m_productKey; }
+    const PStringArray & GetSecuredKeys() const { return m_securedKeys; }
+    const PTEACypher::Key & GetSignatureKey() const { return m_signatureKey; }
+    bool ShouldIgnoreSignatures() const { return m_ignoreSignatures; }
+    void SetIgnoreSignatures(bool ig) { m_ignoreSignatures = ig; }
 
     static PHTTPServiceProcess & Current();
 
@@ -160,33 +208,32 @@ class PHTTPServiceProcess : public PServiceProcess
     PBoolean ProcessHTTP(PTCPSocket & socket);
 
   protected:
-    PSocketList m_httpListeningSockets;
-    PHTTPSpace httpNameSpace;
-    PString    macroKeyword;
+    PSocketList     m_httpListeningSockets;
+    PHTTPSpace      m_httpNameSpace;
+    PString         m_macroKeyword;
+    PTEACypher::Key m_productKey;
+    PStringArray    m_securedKeys;
+    PTEACypher::Key m_signatureKey;
+    bool            m_ignoreSignatures;
 
-    PTEACypher::Key productKey;
-    PStringArray    securedKeys;
-    PTEACypher::Key signatureKey;
-    bool            ignoreSignatures;
-
-    PTime      compilationDate;
-    PString    manufacturersHomePage;
-    PString    manufacturersEmail;
-    PString    productNameHTML;
-    PString    gifHTML;
-    PString    copyrightHolder;
-    PString    copyrightHomePage;
-    PString    copyrightEmail;
+    PTime      m_compilationDate;
+    PString    m_manufacturersHomePage;
+    PString    m_manufacturersEmail;
+    PString    m_productNameHTML;
+    PString    m_gifHTML;
+    PString    m_copyrightHolder;
+    PString    m_copyrightHomePage;
+    PString    m_copyrightEmail;
 
     void ShutdownListener();
     void BeginRestartSystem();
     void CompleteRestartSystem();
 
-    PThread *  restartThread;
+    PThread *  m_restartThread;
 
     PLIST(ThreadList, PHTTPServiceThread);
-    ThreadList httpThreads;
-    PMutex     httpThreadsMutex;
+    ThreadList m_httpThreads;
+    PMutex     m_httpThreadsMutex;
 
   friend class PConfigPage;
   friend class PConfigSectionsPage;
@@ -474,6 +521,27 @@ class PServiceHTTPDirectory : public PHTTPDirectory
     );
 
     PBoolean needSignature;
+};
+
+
+class PHTTPServiceProcess::ClearLogPage : public PServiceHTTPString
+{
+    PCLASSINFO(ClearLogPage, PServiceHTTPString);
+  public:
+    ClearLogPage(PHTTPServiceProcess & process, const PURL & url, const PHTTPAuthority & auth);
+
+    virtual PString LoadText(
+      PHTTPRequest & request    // Information on this request.
+      );
+
+    virtual PBoolean Post(
+      PHTTPRequest & request,
+      const PStringToString &,
+      PHTML & msg
+    );
+
+  protected:
+    PHTTPServiceProcess & m_process;
 };
 
 
