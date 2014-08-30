@@ -333,8 +333,8 @@ PBoolean PPipeChannel::Close()
 
 PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastReadError);;
+  if (CheckNotOpen())
+    return false;
 
   if (!PAssert(m_fromChildPipe[0] != -1, "Attempt to read from write-only pipe"))
     return false;
@@ -346,8 +346,8 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 
 PBoolean PPipeChannel::Write(const void * buffer, PINDEX len)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);;
+  if (CheckNotOpen())
+    return false;
 
   if (!PAssert(m_toChildPipe[1] != -1, "Attempt to write to read-only pipe"))
     return false;
@@ -449,8 +449,8 @@ PBoolean PPipeChannel::CanReadAndWrite()
 
 PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastReadError);;
+  if (CheckNotOpen())
+    return false;
 
   if (!PAssert(m_stderrChildPipe[0] != -1, "Attempt to read from write-only pipe"))
     return false;

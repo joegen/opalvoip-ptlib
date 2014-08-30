@@ -229,7 +229,7 @@ bool PWAVFile::SetAutoconvert(bool convert)
 // Performs necessary byte-order swapping on for big-endian platforms.
 PBoolean PWAVFile::Read(void * buf, PINDEX len)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   if (m_autoConverter != NULL)
@@ -267,7 +267,7 @@ bool PWAVFile::RawRead(void * buf, PINDEX len)
 // Performs necessary byte-order swapping on for big-endian platforms.
 PBoolean PWAVFile::Write(const void * buf, PINDEX len)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   // Needs to update header on close.
@@ -572,10 +572,8 @@ PBoolean PWAVFile::UpdateHeader()
   }
 
   // Check file is still open
-  if (!IsOpen()) {
-    PTRACE(1,"WAV\tUpdateHeader: Not Open");
-    return (false);
-  }
+  if (CheckNotOpen())
+    return false;
 
   // Find out the length of the audio data
   m_dataLength = PFile::GetLength() - m_headerLength;

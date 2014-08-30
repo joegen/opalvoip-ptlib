@@ -2286,8 +2286,8 @@ const char * PTCPSocket::GetProtocolName() const
 
 PBoolean PTCPSocket::Write(const void * buf, PINDEX len)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   flush();
   PINDEX writeCount = 0;
@@ -2405,8 +2405,8 @@ bool PIPDatagramSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPS
 {
   lastReadCount = 0;
 
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   PIPSocket::sockaddr_wrapper sa;
   socklen_t size = sa.GetSize();
@@ -2455,8 +2455,8 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
   const PIPSocket::Address & addr = ipAndPort.GetAddress();
   WORD port = ipAndPort.GetPort();
 
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   PBoolean broadcast = addr.IsAny() || addr.IsBroadcast();
   if (broadcast) {

@@ -991,8 +991,8 @@ unsigned PSoundChannelWin32::GetSampleSize() const
 
 PBoolean PSoundChannelWin32::Close()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   PWaitAndSignal mutex(bufferMutex);
 
@@ -1078,7 +1078,7 @@ int PSoundChannelWin32::WaitEvent(ErrorGroup group)
       return 1;
 
     case WAIT_TIMEOUT :
-      if (!IsOpen())
+      if (CheckNotOpen())
         return false;
 
       if (m_reopened) {
@@ -1490,8 +1490,10 @@ PString PSoundChannelWin32::GetErrorText(ErrorGroup group) const
 
 PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
 {
-  if (!IsOpen() || hMixer == NULL)
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
+  if (hMixer == NULL)
+    return SetErrorValues(Unavailable, EBADF);
 
   MIXERCONTROLDETAILS_UNSIGNED volume;
   if (newVolume >= MaxVolume)
@@ -1520,8 +1522,10 @@ PBoolean PSoundChannelWin32::SetVolume(unsigned newVolume)
 
 PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
 {
-  if (!IsOpen() || hMixer == NULL)
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
+  if (hMixer == NULL)
+    return SetErrorValues(Unavailable, EBADF);
 
   MIXERCONTROLDETAILS_UNSIGNED volume;
 
@@ -1544,8 +1548,10 @@ PBoolean PSoundChannelWin32::GetVolume(unsigned & oldVolume)
 
 bool PSoundChannelWin32::SetMute(bool newMute)
 {
-  if (!IsOpen() || hMixer == NULL)
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    false;
+  if (hMixer == NULL)
+    return SetErrorValues(Unavailable, EBADF);
 
   MIXERCONTROLDETAILS_UNSIGNED mute;
   mute.dwValue = newMute;
@@ -1569,8 +1575,10 @@ bool PSoundChannelWin32::SetMute(bool newMute)
 
 bool PSoundChannelWin32::GetMute(bool & oldMute)
 {
-  if (!IsOpen() || hMixer == NULL)
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
+  if (hMixer == NULL)
+    return SetErrorValues(Unavailable, EBADF);
 
   MIXERCONTROLDETAILS_UNSIGNED mute;
 
