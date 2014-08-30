@@ -71,8 +71,8 @@ PBoolean PSerialChannel::Read(void * buf, PINDEX len)
 {
   lastReadCount = 0;
 
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
   COMMTIMEOUTS cto;
   PAssertOS(GetCommTimeouts(commsResource, &cto));
@@ -127,8 +127,8 @@ PBoolean PSerialChannel::Write(const void * buf, PINDEX len)
 {
   lastWriteCount = 0;
 
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);
+  if (CheckNotOpen())
+    return false;
 
   COMMTIMEOUTS cto;
   PAssertOS(GetCommTimeouts(commsResource, &cto));
@@ -158,8 +158,8 @@ PBoolean PSerialChannel::Write(const void * buf, PINDEX len)
 
 PBoolean PSerialChannel::Close()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   CloseHandle(commsResource);
   commsResource = INVALID_HANDLE_VALUE;
@@ -243,8 +243,8 @@ PBoolean PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       break;
   }
 
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   return ConvertOSError(SetCommState(commsResource, &deviceControlBlock) ? 0 : -2);
 }
@@ -407,8 +407,8 @@ void PSerialChannel::SetBreak(PBoolean state)
 
 PBoolean PSerialChannel::GetCTS()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));
@@ -418,8 +418,8 @@ PBoolean PSerialChannel::GetCTS()
 
 PBoolean PSerialChannel::GetDSR()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));
@@ -429,8 +429,8 @@ PBoolean PSerialChannel::GetDSR()
 
 PBoolean PSerialChannel::GetDCD()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));
@@ -440,8 +440,8 @@ PBoolean PSerialChannel::GetDCD()
 
 PBoolean PSerialChannel::GetRing()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));

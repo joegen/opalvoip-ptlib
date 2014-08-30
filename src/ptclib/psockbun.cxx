@@ -706,7 +706,7 @@ PBoolean PMonitoredSocketChannel::Close()
 
 PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   do {
@@ -737,7 +737,7 @@ PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 
 PBoolean PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   PMonitoredSockets::BundleParams param;

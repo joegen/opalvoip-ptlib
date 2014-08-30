@@ -437,7 +437,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     virtual PBoolean Abort()
     {
-      if (!IsOpen())
+      if (CheckNotOpen())
         return false;
 
       bool ok = true;
@@ -472,7 +472,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     {
       lastWriteCount = 0;
 
-      if (!IsOpen())
+      if (CheckNotOpen())
         return false;
 
       if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
@@ -510,7 +510,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     {
       while (!HasPlayCompleted()) {
         PThread::Sleep(m_buffers[0].size()*1000/GetSampleRate());
-        if (!IsOpen())
+        if (CheckNotOpen())
           return false;
       }
       return true;
@@ -521,7 +521,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     {
       lastReadCount = 0;
 
-      if (!IsOpen())
+      if (CheckNotOpen())
         return false;
 
       if (!PAssert(activeDirection == Recorder, "Trying to read from player"))
@@ -537,7 +537,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     virtual PBoolean StartRecording()
     {
-      if (!IsOpen())
+      if (CheckNotOpen())
         return false;
 
       SLuint32 state;
