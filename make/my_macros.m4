@@ -616,25 +616,25 @@ AC_MSG_NOTICE([Platform: \"$target_os\" release \"$target_release\" on \"$target
 dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
-AC_SUBST(DEBUG_CPPFLAGS, "-D_DEBUG")
+AC_SUBST(DEBUG_CPPFLAGS, "-D_DEBUG $DEBUG_CPPFLAGS")
 MY_COMPILE_IFELSE(
    [debug build -g3 -ggdb -O0],
    [-g3 -ggdb -O0],
    [],
    [],
-   [DEBUG_CFLAGS="$DEBUG_CFLAGS -g3 -ggdb -O0"],
-   [DEBUG_CFLAGS="$DEBUG_CFLAGS -g"]
+   [DEBUG_CFLAGS="-g3 -ggdb -O0 $DEBUG_CFLAGS"],
+   [DEBUG_CFLAGS="-g $DEBUG_CFLAGS"]
 )
 AC_SUBST(DEBUG_CFLAGS)
 
-AC_SUBST(OPT_CPPFLAGS, "-DNDEBUG")
+AC_SUBST(OPT_CPPFLAGS, "-DNDEBUG $OPT_CPPFLAGS")
 MY_COMPILE_IFELSE(
    [optimised build -O3],
    [-O3],
    [],
    [],
-   [OPT_CFLAGS="$OPT_FLAGS -O3"],
-   [OPT_CFLAGS="$OPT_FLAGS -O2"]
+   [OPT_CFLAGS="-O3 $OPT_CFLAGS"],
+   [OPT_CFLAGS="-O2 $OPT_CFLAGS"]
 )
 AC_SUBST(OPT_CFLAGS)
 
