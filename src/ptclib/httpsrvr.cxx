@@ -870,7 +870,7 @@ PWebSocket::PWebSocket()
 
 PBoolean PWebSocket::Read(void * buf, PINDEX len)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   if (m_recursiveRead)
@@ -956,7 +956,7 @@ bool PWebSocket::ReadMessage(PBYTEArray & msg)
 
 PBoolean PWebSocket::Write(const void * buf, PINDEX len)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   if (!m_client)

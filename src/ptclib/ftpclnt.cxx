@@ -56,7 +56,7 @@ PFTPClient::~PFTPClient()
 
 PBoolean PFTPClient::Close()
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
   PBoolean ok = ExecuteCommand(QUIT)/100 == 2;
   return PFTP::Close() && ok;

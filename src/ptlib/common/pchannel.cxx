@@ -178,6 +178,19 @@ PINDEX PChannel::HashFunction() const
 }
 
 
+bool PChannel::CheckNotOpen()
+{
+  if (IsOpen())
+    return false;
+
+  for (size_t i = 0; i <= NumErrorGroups; ++i) {
+    lastErrorCode[i] = NotOpen;
+    lastErrorNumber[i] = EBADF;
+  }
+  return true;
+}
+
+
 int PChannel::os_errno() const
 {
   return errno;
@@ -961,8 +974,8 @@ bool PFile::Move(const PFilePath & newname, bool force, bool recurse)
 
 PBoolean PFile::Close()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   flush();
 
@@ -983,8 +996,8 @@ PBoolean PFile::Close()
 
 PBoolean PFile::Read(void * buffer, PINDEX amount)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
 #ifdef WOT_NO_FILESYSTEM
   lastReadCount = 0;
@@ -997,8 +1010,8 @@ PBoolean PFile::Read(void * buffer, PINDEX amount)
 
 PBoolean PFile::Write(const void * buffer, PINDEX amount)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   flush();
 #ifdef WOT_NO_FILESYSTEM
@@ -1064,8 +1077,8 @@ PBoolean PFile::SetPosition(off_t pos, FilePositionOrigin origin)
 #ifdef WOT_NO_FILESYSTEM
   return true;
 #else
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   return _lseek(GetOSHandleAsInt(), pos, origin) != (off_t)-1;
 #endif
