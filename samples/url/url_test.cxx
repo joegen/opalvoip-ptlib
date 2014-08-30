@@ -49,7 +49,9 @@ void Test::Main()
   cout << "URL Test Utility" << endl;
 
   PArgList & args = GetArguments();
-  if (!args.Parse("T-time: time PURL parsing for number of iterations\n" PTRACE_ARGLIST)) {
+  if (!args.Parse("v-verbose. Verbose output\n"
+                  "T-time: time PURL parsing for number of iterations\n"
+                  PTRACE_ARGLIST)) {
     args.Usage(cerr);
     return;
   }
@@ -79,12 +81,38 @@ void Test::Main()
     cout << "UTL Parsing time is " << (1000.0*(PTime() - start).GetMilliSeconds()/total) << "us" << endl;
   }
 
+  if (args.HasOption('v')) {
+    static char const sep[] = ": ";
+    static char const sepq[] = ": \"";
+    static char const qlf[] = "\"\n";
+    static int const width = 15;
+    cout << "\nParsed URL Components\n"
+         << setw(width) << "Scheme" << sepq << url.GetScheme() << qlf
+         << setw(width) << "Username" << sepq << url.GetUserName() << qlf
+         << setw(width) << "Password" << sepq << url.GetPassword() << qlf
+         << setw(width) << "Hostname" << sepq << url.GetHostName() << qlf
+         << setw(width) << "Port" << sep << url.GetPort() << " (" << (url.GetPortSupplied() ? "supplied" : "default") << ")\n"
+         << setw(width) << "Fragment" << sepq << url.GetFragment() << qlf
+         << setw(width) << "Path" << sep << url.GetPath().GetSize() << " elements (" << (url.GetRelativePath() ? "relative" : "absolute") << ")\n";
+    for (PINDEX i = 0; i < url.GetPath().GetSize(); ++i)
+      cout << setw(width) << i << sepq << url.GetPath()[i] << qlf;
+    cout << setw(width) << "Query" << sep << url.GetQueryVars().GetSize() << " elements\n";
+    for (PStringOptions::const_iterator it = url.GetQueryVars().begin(); it != url.GetQueryVars().end(); ++it)
+      cout << setw(width+3) << '"' << it->first << "\" = \"" << it->second << qlf;
+    cout << setw(width) << "Parameters" << sep << url.GetParamVars().GetSize() << " elements\n";
+    for (PStringOptions::const_iterator it = url.GetParamVars().begin(); it != url.GetParamVars().end(); ++it)
+      cout << setw(width+3) << '"' << it->first << "\" = \"" << it->second << "\"\n";
+    cout << setw(width) << "Contents" << sepq << url.GetContents() << qlf
+         << "\nReconstructed URL:\n" << url
+         << endl;
+  }
+
   if (args.GetCount() == 1) {
     PString str;
     if (url.LoadResource(str))
       cout << str << endl;
     else
-      cerr << "Could not load text URL \"" << args[0] << '"' << endl;
+      cerr << "\nCould not load text URL \"" << url << '"' << endl;
   }
   else {
     PBYTEArray data;
@@ -93,10 +121,10 @@ void Test::Main()
       if (out.Open(args[1], PFile::WriteOnly))
         out.Write((const BYTE *)data, data.GetSize());
       else
-        cerr << "Could not open file \"" << args[1] << '"' << endl;
+        cerr << "\nCould not open file \"" << args[1] << '"' << endl;
     }
     else
-      cerr << "Could not load binary URL \"" << args[0] << '"' << endl;
+      cerr << "\nCould not load binary URL \"" << url << '"' << endl;
   }
 }
 
