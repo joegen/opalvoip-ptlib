@@ -231,6 +231,9 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
 {
   lastReadCount = 0;
 
+  if (CheckNotOpen())
+    return false;
+
   if (len == 0)
     return SetErrorValues(BadParameter, EINVAL, LastReadError);
 
@@ -244,6 +247,9 @@ PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 {
   lastReadCount = 0;
 
+  if (CheckNotOpen())
+    return false;
+
   os_vread(slices, sliceCount, 0, NULL, NULL);
   return lastReadCount > 0;
 }
@@ -251,6 +257,11 @@ PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 
 PBoolean PSocket::Write(const void * buf, PINDEX len)
 {
+  lastWriteCount = 0;
+
+  if (CheckNotOpen())
+    return false;
+
   flush();
   Slice slice(buf, len);
   return os_vwrite(&slice, 1, 0, NULL, 0) && lastWriteCount >= len;
@@ -259,6 +270,11 @@ PBoolean PSocket::Write(const void * buf, PINDEX len)
 
 PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 {
+  lastWriteCount = 0;
+
+  if (CheckNotOpen())
+    return false;
+
   flush();
   return os_vwrite(slices, sliceCount, 0, NULL, 0) && lastWriteCount >= 0;
 }
@@ -266,8 +282,9 @@ PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 
 PBoolean PSocket::Close()
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
+
   flush();
   return ConvertOSError(os_close());
 }
@@ -453,7 +470,7 @@ bool PSocket::os_vwrite(const Slice * slices,
 {
   lastWriteCount = 0;
 
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   P_fd_set writefds = os_handle;
@@ -1005,9 +1022,6 @@ static bool SetTOS(PIPSocket & socket, PIPSocket::QoSType type, int new_tos)
 bool PIPSocket::SetQoS(const QoS & qos)
 {
   m_qos = qos;
-
-  if (!IsOpen())
-    return false;
 
   int new_tos = qos.m_dscp >= 0 || qos.m_dscp < 64 ? (qos.m_dscp<<2) : -1;
 

@@ -91,8 +91,8 @@ PBoolean PMemoryFile::Close()
 
 PBoolean PMemoryFile::Read(void * buf, PINDEX len)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   if ((PINDEX)m_position > m_data.GetSize()) {
     lastReadCount = 0;
@@ -112,8 +112,8 @@ PBoolean PMemoryFile::Read(void * buf, PINDEX len)
 
 PBoolean PMemoryFile::Write(const void * buf, PINDEX len)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   BYTE * ptr = m_data.GetPointer(m_position+len);
   if (ptr == NULL)

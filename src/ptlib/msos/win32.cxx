@@ -561,8 +561,8 @@ bool PChannel::AsyncContext::Initialise(PChannel * channel, CompletionFunction o
 
 bool PChannel::ReadAsync(AsyncContext & context)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   HANDLE handle = GetAsyncReadHandle();
   if (handle == INVALID_HANDLE_VALUE)
@@ -583,8 +583,8 @@ bool PChannel::ReadAsync(AsyncContext & context)
 
 bool PChannel::WriteAsync(AsyncContext & context)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   HANDLE handle = GetAsyncWriteHandle();
   if (handle == INVALID_HANDLE_VALUE)

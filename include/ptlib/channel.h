@@ -707,6 +707,7 @@ class PChannel : public PObject, public std::iostream
       PINDEX start
     );
 
+    bool CheckNotOpen();
     virtual int os_errno() const;
 
     // Member variables

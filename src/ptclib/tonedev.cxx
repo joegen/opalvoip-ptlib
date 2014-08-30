@@ -204,8 +204,8 @@ unsigned PSoundChannel_Tones::GetSampleSize() const
 
 PBoolean PSoundChannel_Tones::Close()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   m_tones.SetSize(0);
   os_handle = -1;

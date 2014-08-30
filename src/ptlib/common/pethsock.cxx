@@ -183,8 +183,8 @@ bool PEthSocket::SetFilter(const PString & filter)
 
 PBoolean PEthSocket::Read(void * data, PINDEX length)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
   struct pcap_pkthdr *header;
   const u_char *pkt_data;
@@ -212,7 +212,7 @@ PBoolean PEthSocket::Read(void * data, PINDEX length)
 PBoolean PEthSocket::Write(const void * data, PINDEX length)
 {
   if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);
+    return false;
 
   if (!ConvertOSError(pcap_sendpacket(m_internal->m_pcap, (u_char *)data, length), LastWriteError)) {
     PTRACE(2, "Write error: " << pcap_geterr(m_internal->m_pcap));

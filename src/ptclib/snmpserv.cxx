@@ -80,8 +80,8 @@ PBoolean PSNMPServer::HandleChannel()
 
 
   for (;;) {
-   	if (!IsOpen())
-	  return false;
+   	if (CheckNotOpen())
+      return false;
 
 		// Reading
 	    PINDEX rxSize = 0;

@@ -1140,8 +1140,8 @@ int PConsoleChannel::ReadChar()
 
 bool PConsoleChannel::SetLocalEcho(bool localEcho)
 {
-  if (!IsOpen())
-    return ConvertOSError(-2, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
 #if P_CURSES==1
   if (localEcho)
@@ -1167,8 +1167,8 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
 
 bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
 {
-  if (!IsOpen())
-    return ConvertOSError(-2, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
 #if P_CURSES==1
   if (lineBuffered)

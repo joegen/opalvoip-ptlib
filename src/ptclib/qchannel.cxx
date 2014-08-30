@@ -86,7 +86,7 @@ PBoolean PQueueChannel::Open(PINDEX size)
 
 PBoolean PQueueChannel::Close()
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   mutex.Wait();
@@ -107,7 +107,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
 
   lastReadCount = 0;
 
-  if (!IsOpen()) {
+  if (CheckNotOpen()) {
     mutex.Signal();
     return false;
   }
@@ -133,7 +133,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
     mutex.Wait();
 
     // check if the channel is still open
-    if (!IsOpen()) {
+    if (CheckNotOpen()) {
       mutex.Signal();
       return SetErrorValues(Interrupted, EINTR, LastReadError);
     }
@@ -193,7 +193,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
 
   lastWriteCount = 0;
 
-  if (!IsOpen()) {
+  if (CheckNotOpen()) {
     mutex.Signal();
     return false;
   }

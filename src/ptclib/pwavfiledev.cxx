@@ -202,8 +202,8 @@ unsigned PSoundChannel_WAVFile::GetSampleSize() const
 
 PBoolean PSoundChannel_WAVFile::Close()
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+  if (CheckNotOpen())
+    return false;
 
   m_WAVFile.Close();
   os_handle = -1;

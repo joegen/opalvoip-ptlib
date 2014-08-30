@@ -352,7 +352,7 @@ PBoolean PSocksSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 
 PBoolean PSocksSocket::Accept()
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   return ReceiveSocksResponse(*this, remoteAddress, remotePort);
@@ -387,7 +387,7 @@ P_INT_PTR PSocksSocket::TransferHandle(PSocksSocket & destination)
 
 PBoolean PSocksSocket::GetLocalAddress(Address & addr)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = localAddress;
@@ -397,7 +397,7 @@ PBoolean PSocksSocket::GetLocalAddress(Address & addr)
 
 PBoolean PSocksSocket::GetLocalAddress(Address & addr, WORD & port)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = localAddress;
@@ -408,7 +408,7 @@ PBoolean PSocksSocket::GetLocalAddress(Address & addr, WORD & port)
 
 PBoolean PSocksSocket::GetPeerAddress(Address & addr)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = remoteAddress;
@@ -418,7 +418,7 @@ PBoolean PSocksSocket::GetPeerAddress(Address & addr)
 
 PBoolean PSocksSocket::GetPeerAddress(Address & addr, WORD & port)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = remoteAddress;
@@ -616,7 +616,7 @@ PBoolean PSocksUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 
 PBoolean PSocksUDPSocket::GetLocalAddress(Address & addr)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = localAddress;
@@ -626,7 +626,7 @@ PBoolean PSocksUDPSocket::GetLocalAddress(Address & addr)
 
 PBoolean PSocksUDPSocket::GetLocalAddress(Address & addr, WORD & port)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = localAddress;
@@ -637,7 +637,7 @@ PBoolean PSocksUDPSocket::GetLocalAddress(Address & addr, WORD & port)
 
 PBoolean PSocksUDPSocket::GetPeerAddress(Address & addr)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = remoteAddress;
@@ -647,7 +647,7 @@ PBoolean PSocksUDPSocket::GetPeerAddress(Address & addr)
 
 PBoolean PSocksUDPSocket::GetPeerAddress(Address & addr, WORD & port)
 {
-  if (!IsOpen())
+  if (CheckNotOpen())
     return false;
 
   addr = remoteAddress;

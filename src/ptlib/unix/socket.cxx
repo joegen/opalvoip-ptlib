@@ -536,8 +536,8 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
 {
   lastWriteCount = 0;
 
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);
+  if (CheckNotOpen())
+    return false;
 
   do {
     msghdr writeData;
@@ -680,9 +680,12 @@ bool PSocket::Write(const void * buf, PINDEX len)
 
 PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 {
-  flush();
   lastReadCount = 0;
 
+  if (CheckNotOpen())
+    return false;
+
+  flush();
   if (sliceCount == 0)
     return SetErrorValues(BadParameter, EINVAL, LastReadError);
 
@@ -693,6 +696,11 @@ PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 
 PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 {
+  lastWriteCount = 0;
+
+  if (CheckNotOpen())
+    return false;
+
   flush();
   return os_vwrite(slices, sliceCount, 0, NULL, 0) && lastWriteCount >= 0;
 }
