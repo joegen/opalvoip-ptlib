@@ -263,7 +263,7 @@ PConfig::Cached::Cached(char **envp)
   PStringOptions * envSection = new PStringOptions();
   SetAt(PConfig::DefaultSectionName(), envSection);
 
-  if (envp != NULL)
+  if (envp == NULL)
     return;
 
   while (*envp != NULL && **envp != '\0') {
