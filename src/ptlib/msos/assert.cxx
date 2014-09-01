@@ -172,7 +172,7 @@ class PDebugDLL : public PDynaLink
 
       // The thread information.
       HANDLE hThread;
-      int framesToSkip = 0;
+      unsigned framesToSkip = 0;
       int resumeCount = -1;
 
       CONTEXT threadContext;
@@ -226,7 +226,7 @@ class PDebugDLL : public PDynaLink
       #error "Platform not supported!"
 #endif
 
-      int frameCount = 0;
+      unsigned frameCount = 0;
 #if PTRACING
       while (frameCount++ < PTrace::MaxStackWalk) {
 #else
