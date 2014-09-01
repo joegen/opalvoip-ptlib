@@ -227,7 +227,11 @@ class PDebugDLL : public PDynaLink
 #endif
 
       int frameCount = 0;
+#if PTRACING
       while (frameCount++ < PTrace::MaxStackWalk) {
+#else
+      while (frameCount++ < 20) {
+#endif
         if (!m_StackWalk64(imageType,
                            GetCurrentProcess(),
                            hThread,
