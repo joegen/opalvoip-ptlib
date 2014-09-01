@@ -22618,6 +22618,7 @@ EXPORTS
     ?Match@PIpAccessControlEntry@@QAE_NAAVAddress@PIPSocket@@@Z @21471 NONAME
     ?MatchesRegEx@PString@@QBE_NABVPRegularExpression@@@Z @21472 NONAME
     ?MatchWildcard@AddressAndPort@PIPSocket@@QBE_NABV12@@Z @25922 NONAME
+    ?MaxStackWalk@PTrace@@2IA @32078 NONAME
     ?max_size@?$allocator@D@std@@QBEIXZ @21474 NONAME
     ?max_size@?$allocator@I@std@@QBEIXZ @29113 NONAME
     ?max_size@?$allocator@PAUPAsyncNotifierCallback@@@std@@QBEIXZ @21476 NONAME
@@ -25018,7 +25019,7 @@ EXPORTS
     ?SplitVars@PURL@@SAXABVPString@@AAVPStringToString@@DDW4TranslationType@1@@Z @23628 NONAME
     ?sprintf@PString@@QAAAAV1@PBDZZ @23629 NONAME
     ?SQL_OK@Statement@PODBC@@QAE_NF@Z @23630 NONAME
-    ?StackWalk@PDebugDLL@@QAEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @23631 NONAME
+    ?StackWalk@PDebugDLL@@QAEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@I@Z @32079 NONAME
     ?Start@BaseStreamHandler@XMPP@@UAE_NPAVTransport@2@@Z @23632 NONAME
     ?Start@Context@PCLI@@QAE_NXZ @23633 NONAME
     ?Start@Context@PJPEGConverter@@QAE_NPBEHAAI1@Z @29413 NONAME
@@ -25438,6 +25439,7 @@ EXPORTS
     ?WaitPage@PCLICurses@@UAE_NXZ @29480 NONAME
     ?WaitStateChange@PGstElement@@QAE?AW4StateResult@1@ABVPTimeInterval@@@Z @29481 NONAME
     ?WaitStateChange@PGstElement@@QAE?AW4StateResult@1@XZ @29482 NONAME
+    ?WalkStack@PTrace@@SAXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@I@Z @32080 NONAME
     ?WaveFormatExPtr@CSpStreamFormat@@QBEPBUtWAVEFORMATEX@@XZ @24019 NONAME
     ?WebSocketAcceptTag@PHTTP@@SAABVPCaselessString@@XZ @29483 NONAME
     ?WebSocketKeyTag@PHTTP@@SAABVPCaselessString@@XZ @29484 NONAME

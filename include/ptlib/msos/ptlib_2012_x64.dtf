@@ -19922,6 +19922,7 @@ EXPORTS
     ?max@?$numeric_limits@H@std@@SAHXZ @19325 NONAME
     ?max@?$numeric_limits@I@std@@SAIXZ @19326 NONAME
     ?max@?$numeric_limits@_J@std@@SA_JXZ @19327 NONAME
+    ?MaxStackWalk@PTrace@@2IA @28798 NONAME
     ?max_digits10@?$numeric_limits@M@std@@2HB @19328 NONAME
     ?max_digits10@?$numeric_limits@N@std@@2HB @19329 NONAME
     ?max_digits10@?$numeric_limits@O@std@@2HB @19330 NONAME
@@ -22365,7 +22366,7 @@ EXPORTS
     ?SplitVars@PURL@@SAXAEBVPString@@AEAVPStringToString@@DDW4TranslationType@1@@Z @21534 NONAME
     ?sprintf@PString@@QEAAAEAV1@PEBDZZ @21535 NONAME
     ?SQL_OK@Statement@PODBC@@QEAA_NF@Z @21536 NONAME
-    ?StackWalk64@PDebugDLL@@QEAAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z @21537 NONAME
+    ?StackWalk64@PDebugDLL@@QEAAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@I@Z @28799 NONAME
     ?Start@BaseStreamHandler@XMPP@@UEAA_NPEAVTransport@2@@Z @21538 NONAME
     ?Start@Context@PCLI@@QEAA_NXZ @21539 NONAME
     ?Start@Context@PJPEGConverter@@QEAA_NPEBE_KAEAI2@Z @26439 NONAME
@@ -22779,6 +22780,7 @@ EXPORTS
     ?WaitForTermination@PThread@@QEBA_NAEBVPTimeInterval@@@Z @21929 NONAME
     ?WaitOnExitConsoleWindow@PProcess@@QEAAXXZ @21930 NONAME
     ?WaitPage@PCLICurses@@UEAA_NXZ @26503 NONAME
+    ?WalkStack@PTrace@@SAXAEAV?$basic_ostream@DU?$char_traits@D@std@@@std@@I@Z @28800 NONAME
     ?WaveFormatExPtr@CSpStreamFormat@@QEBAPEBUtWAVEFORMATEX@@XZ @21931 NONAME
     ?WebSocketAcceptTag@PHTTP@@SAAEBVPCaselessString@@XZ @26504 NONAME
     ?WebSocketKeyTag@PHTTP@@SAAEBVPCaselessString@@XZ @26505 NONAME
