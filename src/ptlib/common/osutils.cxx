@@ -128,6 +128,8 @@ void PSetErrorStream(ostream * s)
 
 #if PTRACING
 
+unsigned PTrace::MaxStackWalk = 20;
+
 class PTraceInfo : public PTrace
 {
   /* NOTE you cannot have any complex types in this structure. Anything
