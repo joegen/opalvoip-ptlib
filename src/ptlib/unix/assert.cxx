@@ -94,7 +94,7 @@
     }
   }
 #else
-  #define InternalStackWalk(s)
+  #define InternalStackWalk(s, i)
 #endif // P_HAS_BACKTRACE
 
 
@@ -118,7 +118,7 @@ void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
   #undef  OUTPUT_MESSAGE
   #define OUTPUT_MESSAGE(msg) \
       PTRACE(0, NULL, "PTLib", msg); \
-      __android_log_assert("", PProcess::Current().GetName(), "%s", msg);
+      __android_log_assert("", PProcess::Current().GetName(), "%s", msg.c_str());
 
   static const char ActionMessage[] = "Ignoring";
 
