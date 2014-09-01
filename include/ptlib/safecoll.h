@@ -438,6 +438,7 @@ class PSafeCollection : public PObject
     /**Get the mutex for the collection.
       */
     const PMutex & GetMutex() const { return collectionMutex; }
+          PMutex & GetMutex()       { return collectionMutex; }
   //@}
 
   protected:
