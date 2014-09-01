@@ -723,6 +723,8 @@ public:
     PThreadIdentifier id = PNullThreadIdentifier
   );
 
+  static unsigned MaxStackWalk; // Default 20
+
 #if PTRACING==2
   static unsigned GetNextContextIdentifier();
 #endif

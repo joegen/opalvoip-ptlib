@@ -254,6 +254,9 @@
   #undef P_GETGRNAM_R5
   #undef P_GETHOSTBYNAME_R
 
+  #undef P_HAS_BACKTRACE
+  #undef P_HAS_DEMANGLE
+
 #endif //P_ANDROID
 
 #ifndef _WIN32_WCE
