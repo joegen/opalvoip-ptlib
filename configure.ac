@@ -1002,6 +1002,48 @@ AC_CHECK_HEADERS(
 
 
 dnl ########################################################################
+dnl look for stack back trace capability
+
+AC_ARG_ENABLE(backtrace, AS_HELP_STRING([--disable-backtrace],[disable stack back trace support]))
+
+HAS_BACKTRACE=
+
+if test "$enable_backtrace" = "no" ; then
+   AC_MSG_NOTICE(Stack back trace disabled)
+else
+   MY_COMPILE_IFELSE(
+      [for stack back trace support],
+      [],
+      [#include <execinfo.h>],
+      [
+         void* addrlist[100];
+         int addrlen = backtrace(addrlist, sizeof(addrlist)/sizeof(void*));
+         char** symbollist = backtrace_symbols(addrlist, addrlen);
+      ],
+      [
+         HAS_BACKTRACE=1
+         AC_DEFINE(P_HAS_BACKTRACE, 1, "Stack back trace enabled")
+
+	 MY_COMPILE_IFELSE(
+	    [for C++ demangle support],
+	    [],
+	    [#include <cxxabi.h>],
+	    [
+	       char name[100];
+	       size_t size;
+	       int status;
+	       abi::__cxa_demangle("something", name, &size, &status);
+	    ],
+	    [AC_DEFINE(P_HAS_DEMANGLE, 1, "C++ demangle enabled")]
+	 )
+      ]
+   )
+fi
+
+PTLIB_SUBST(BACKTRACE)
+
+
+dnl ########################################################################
 dnl look for MEMORY_CHECK enabled.
 
 AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
