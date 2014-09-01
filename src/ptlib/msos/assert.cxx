@@ -227,7 +227,7 @@ class PDebugDLL : public PDynaLink
 #endif
 
       int frameCount = 0;
-      while (frameCount++ < 16) {
+      while (frameCount++ < PTrace::MaxStackWalk) {
         if (!m_StackWalk64(imageType,
                            GetCurrentProcess(),
                            hThread,
@@ -261,7 +261,7 @@ class PDebugDLL : public PDynaLink
           strm << symbol->Name;
         else
           strm << setw(8) << frame.AddrPC.Offset;
-        strm << '(' << hex << setfill('0');
+        strm << '(';
         for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
           if (i > 0)
             strm << ", ";

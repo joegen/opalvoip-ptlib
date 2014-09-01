@@ -39,116 +39,200 @@
 #include <stdexcept>
 #include <ptlib/pprocess.h>
 
-#define PTRACE_WITH_STDERR(msg) \
-    PTRACE_IF(0, PTrace::GetStream() != &PError, NULL, "PTLib", msg); \
-    PError << msg << endl
+
+#if P_HAS_BACKTRACE
+  #include <execinfo.h>
+  #if P_HAS_DEMANGLE
+    #include <cxxabi.h>
+  #endif
+
+  void InternalStackWalk(ostream & strm, PThreadIdentifier id)
+  {
+    if (id != PNullThreadIdentifier && id != PThread::GetCurrentThreadId()) {
+      strm << "\n    Cannot get stack trace for other thread\n";
+      return;
+    }
+
+    void* addresses[PTrace::MaxStackWalk];
+    int addressCount = backtrace(addresses, PTrace::MaxStackWalk);
+    if (addressCount == 0) {
+      strm << "\n    Stack back trace empty, possibly corrupt\n";
+      return;
+    }
+
+    char ** symbols = backtrace_symbols(addresses, addressCount);
+    for (int i = 0; i < addressCount; ++i) {
+      strm << "\n    ";
+      if (symbols[i] == NULL || symbols[i][0] == '\0') {
+        strm << addresses[i];
+        continue;
+      }
+
+#if P_HAS_DEMANGLE
+      char * mangled = strchr(symbols[i], '(');
+      if (mangled != NULL) {
+        ++mangled;
+        char * offset = mangled + strcspn(mangled, "+)");
+        if (offset != mangled) {
+          char separator = *offset;
+          *offset++ = '\0';
+
+    	    int status = 0;
+          char name[100];
+          size_t size = sizeof(name);
+	        char * ret = abi::__cxa_demangle(mangled, name, &size, &status);
+          if (status == 0) {
+            *mangled = '\0';
+            strm << symbols[i] << name << separator << offset;
+            continue;
+          }
+        }
+      }
+#endif // P_HAS_DEMANGLE
+
+      strm << symbols[i];
+    }
+  }
+#else
+  #define InternalStackWalk(s)
+#endif // P_HAS_BACKTRACE
 
 
 #if PTRACING
-void PTrace::WalkStack(ostream &, PThreadIdentifier)
+void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
 {
+  InternalStackWalk(strm, id);
 }
 #endif // PTRACING
 
 
+#define OUTPUT_MESSAGE(msg) \
+    PTRACE_IF(0, PTrace::GetStream() != &PError, NULL, "PTLib", msg); \
+    PError << msg << endl
+
+
 #if defined(P_ANDROID)
 
-#include <android/log.h>
+  #include <android/log.h>
 
-bool PAssertFunc(const char * msg)
-{
-  PTRACE_WITH_STDERR(msg);
-  __android_log_assert("", PProcess::Current().GetName(), "%s", msg);
-  return false;
-}
+  #undef  OUTPUT_MESSAGE
+  #define OUTPUT_MESSAGE(msg) \
+      PTRACE(0, NULL, "PTLib", msg); \
+      __android_log_assert("", PProcess::Current().GetName(), "%s", msg);
+
+  static const char ActionMessage[] = "Ignoring";
+
+  static bool AssertAction(int, const char *)
+  {
+    return false;
+  }
 
 #elif defined(P_BEOS)
 
-bool PAssertFunc(const char * msg)
-{
-  // Print location in Eddie-compatible format
-  PTRACE_WITH_STDERR(msg);
+  static const char ActionMessage[] = "Entering debugger";
 
-  // Pop up the debugger dialog that gives the user the necessary choices
-  // "Ignore" is not supported on BeOS but you can instruct the
-  // debugger to continue executing.
-  // Note: if you choose "debug" you get a debug prompt. Type bdb to
-  // start the Be Debugger.
-  debugger(msg);
+  static bool AssertAction(int c, const char * msg)
+  {
+    // Pop up the debugger dialog that gives the user the necessary choices
+    // "Ignore" is not supported on BeOS but you can instruct the
+    // debugger to continue executing.
+    // Note: if you choose "debug" you get a debug prompt. Type bdb to
+    // start the Be Debugger.
+    debugger(msg);
 
-  return false;
-}
+    return false;
+  }
 
 #elif defined(P_VXWORKS)
 
-bool PAssertFunc(const char * msg)
-{
-  PTRACE_WITH_STDERR(msg);
+  static const char ActionMessage[] = "Aborting";
 
-  PThread::Trace(); // Get debugging dump
-  exit(1);
-  kill(taskIdSelf(), SIGABRT);
-
-  return false;
-}
+  static bool AssertAction(int c, const char *)
+  {
+    exit(1);
+    kill(taskIdSelf(), SIGABRT);
+    return false;
+  }
 
 #else
 
-static PBoolean PAssertAction(int c, const char * msg)
-{
-  switch (c) {
-    case 'a' :
-    case 'A' :
-      PError << "\nAborting.\n";
-      _exit(1);
-      break;
+  static const char ActionMessage[] = "<A>bort, <C>ore dump, "
+  #if P_EXCEPTIONS
+                                      "<T>hrow exception, "
+  #endif
+  #ifdef _DEBUG
+                                      "<D>ebug, "
+  #endif
+                                      "<I>gnore";
 
-#if P_EXCEPTIONS
-    case 't' :
-    case 'T' :
-      PError << "\nThrowing exception\n";
-      throw std::runtime_error(msg);
-      return true;
-#endif
+  static bool AssertAction(int c, const char * msg)
+  {
+    switch (c) {
+      case 'a' :
+      case 'A' :
+        PError << "\nAborting.\n";
+        _exit(1);
+        return true;
+
+  #if P_EXCEPTIONS
+      case 't' :
+      case 'T' :
+        PError << "\nThrowing exception.\n";
+        throw std::runtime_error(msg);
+        return true;
+  #endif
         
-#ifdef _DEBUG
-    case 'd' :
-    case 'D' :
-      {
-        PString cmd = ::getenv("PTLIB_ASSERT_DEBUGGER");
-        if (cmd.IsEmpty())
-          cmd = "gdb";
-        cmd &= PProcess::Current().GetFile();
-        cmd.sprintf(" %d", getpid());
-        PError << "\nStarting debugger \"" << cmd << "\"\n";
-        system((const char *)cmd);
-      }
-      break;
+  #ifdef _DEBUG
+      case 'd' :
+      case 'D' :
+        {
+          PString cmd = ::getenv("PTLIB_ASSERT_DEBUGGER");
+          if (cmd.IsEmpty())
+            cmd = "gdb";
+          cmd &= PProcess::Current().GetFile();
+          cmd.sprintf(" %d", getpid());
+          PError << "\nStarting debugger \"" << cmd << '"' << endl;
+          system((const char *)cmd);
+        }
+        return false;
+  #endif
+
+      case 'c' :
+      case 'C' :
+        PError << "\nDumping core.\n";
+        raise(SIGABRT);
+        return false;
+
+      case 'i' :
+      case 'I' :
+      case EOF :
+        PError << "\nIgnoring.\n";
+        return false;
+
+      default :
+        return true;
+    }
+  }
+
 #endif
 
-    case 'c' :
-    case 'C' :
-      PError << "\nDumping core.\n";
-      raise(SIGABRT);
 
-    case 'i' :
-    case 'I' :
-    case EOF :
-      PError << "\nIgnoring.\n";
-      return true;
-  }
-  return false;
-}
-
+static PCriticalSection AssertMutex;
 
 bool PAssertFunc(const char * msg)
 {
-  static PBoolean inAssert;
-  if (inAssert)
-    return false;
-  inAssert = true;
+  std::string str;
+  {
+    ostringstream strm;
+    strm << msg;
+    InternalStackWalk(strm, PNullThreadIdentifier);
+    strm << ends;
+    str = strm.str();
+  }
 
-  PTRACE_WITH_STDERR(msg);
+  PWaitAndSignal mutex(AssertMutex);
+
+  OUTPUT_MESSAGE(str);
 
   char *env;
 
@@ -157,44 +241,30 @@ bool PAssertFunc(const char * msg)
   env = ::getenv("PTLIB_ASSERT_EXCEPTION");
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_EXCEPTION");
-  if (env != NULL){
+  if (env != NULL) {
     throw std::runtime_error(msg);
+    return false;
   }
 #endif
-  
+
   env = ::getenv("PTLIB_ASSERT_ACTION");
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
-  if (env != NULL && *env != EOF && PAssertAction(*env, msg)) {
-    inAssert = false;
+  if (env != NULL && *env != EOF && AssertAction(*env, msg))
     return false;
-  }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (isatty(STDIN_FILENO) != 1) {
-    inAssert = false;
+    AssertAction('i', msg);
     return false;
   }
 
-  for(;;) {
-    PError << "\n<A>bort, <C>ore dump"
-#if P_EXCEPTIONS
-           << ", <T>hrow exception"
-#endif
-#ifdef _DEBUG
-           << ", <D>ebug"
-#endif
-           << ", <I>gnore? " << flush;
-
-    if (PAssertAction(getchar(), msg))
-      break;
-   }
-   inAssert = false;
+  do {
+    PError << '\n' << ActionMessage << "? " << flush;
+  } while (AssertAction(getchar(), msg));
 
   return false;
 }
-
-#endif // P_ANDROID || P_VXWORKS || P_BEOS
 
 
 // End Of File ///////////////////////////////////////////////////////////////
