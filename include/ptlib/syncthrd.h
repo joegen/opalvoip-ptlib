@@ -521,6 +521,21 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
         m_closed.Wait();
     }
 
+    /// Restart the queue after it has been closed.
+    void Restart()
+    {
+      m_mutex.Wait();
+      if (m_state == e_Closed) {
+        while (!BaseQueue::empty())
+          BaseQueue::pop();
+        while (m_available.Wait(0))
+          ;
+        m_state = e_Open;
+      }
+      m_mutex.Signal();
+    }
+
+
     __inline const PMutex & GetMutex() const { return m_mutex; }
     __inline       PMutex & GetMutex()       { return m_mutex; }
 
