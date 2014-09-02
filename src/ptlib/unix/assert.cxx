@@ -41,11 +41,19 @@
 
 
 #if P_HAS_BACKTRACE
+
   #include <execinfo.h>
   #if P_HAS_DEMANGLE
     #include <cxxabi.h>
   #endif
 
+  #if PTRACING
+    #define InternalStackWalk    PTrace::WalkStack
+    #define InternalMaxStackWalk PTrace::MaxStackWalk
+  #else
+    #define InternalMaxStackWalk 20
+    static
+  #endif // PTRACING
   void InternalStackWalk(ostream & strm, PThreadIdentifier id)
   {
     if (id != PNullThreadIdentifier && id != PThread::GetCurrentThreadId()) {
@@ -53,57 +61,57 @@
       return;
     }
 
-    void* addresses[PTrace::MaxStackWalk];
-    int addressCount = backtrace(addresses, PTrace::MaxStackWalk);
+    void* addresses[InternalMaxStackWalk];
+    int addressCount = backtrace(addresses, InternalMaxStackWalk);
     if (addressCount == 0) {
       strm << "\n    Stack back trace empty, possibly corrupt\n";
       return;
     }
 
     char ** symbols = backtrace_symbols(addresses, addressCount);
-    for (int i = 0; i < addressCount; ++i) {
+    for (int i = 1; i < addressCount; ++i) {
       strm << "\n    ";
       if (symbols[i] == NULL || symbols[i][0] == '\0') {
         strm << addresses[i];
         continue;
       }
 
-#if P_HAS_DEMANGLE
-      char * mangled = strchr(symbols[i], '(');
-      if (mangled != NULL) {
-        ++mangled;
-        char * offset = mangled + strcspn(mangled, "+)");
-        if (offset != mangled) {
-          char separator = *offset;
-          *offset++ = '\0';
+      #if P_HAS_DEMANGLE
+        char * mangled = strchr(symbols[i], '(');
+        if (mangled != NULL) {
+          ++mangled;
+          char * offset = mangled + strcspn(mangled, "+)");
+          if (offset != mangled) {
+            char separator = *offset;
+            *offset++ = '\0';
 
-    	    int status = 0;
-          char name[100];
-          size_t size = sizeof(name);
-	        char * ret = abi::__cxa_demangle(mangled, name, &size, &status);
-          if (status == 0) {
-            *mangled = '\0';
-            strm << symbols[i] << name << separator << offset;
-            continue;
+    	      int status = 0;
+            char name[100];
+            size_t size = sizeof(name);
+	          char * ret = abi::__cxa_demangle(mangled, name, &size, &status);
+            if (status == 0) {
+              *mangled = '\0';
+              strm << symbols[i] << name << separator << offset;
+              continue;
+            }
           }
         }
-      }
-#endif // P_HAS_DEMANGLE
+      #endif // P_HAS_DEMANGLE
 
       strm << symbols[i];
     }
   }
 #else
+
   #define InternalStackWalk(s, i)
+
+  #if PTRACING
+    void PTrace::WalkStack(ostream &, PThreadIdentifier)
+    {
+    }
+  #endif // PTRACING
+
 #endif // P_HAS_BACKTRACE
-
-
-#if PTRACING
-void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
-{
-  InternalStackWalk(strm, id);
-}
-#endif // PTRACING
 
 
 #define OUTPUT_MESSAGE(msg) \
