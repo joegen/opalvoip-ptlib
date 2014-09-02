@@ -425,6 +425,8 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
 {
     PCLASSINFO(PSyncQueue, PObject);
   public:
+    typedef std::queue<T*> BaseQueue;
+
     enum State
     {
       e_Open,
@@ -442,7 +444,7 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
     /// Destroy synchronous queue
     ~PSyncQueue()
     {
-      this->Close(true);
+      Close(true);
     }
 
     /// Enqueue an object to the synchronous queue.
@@ -450,7 +452,7 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
     {
       m_mutex.Wait();
       if (m_state != e_Closed) {
-        push(obj);
+        BaseQueue::push(obj);
         m_available.Signal();
       }
       m_mutex.Signal();
@@ -478,9 +480,9 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
             bool available = m_available.Wait(timeout);
             m_mutex.Wait();
 
-            if (available && !empty()) {
-              msg = front();
-              pop();
+            if (available && !BaseQueue::empty()) {
+              msg = BaseQueue::front();
+              BaseQueue::pop();
             }
           }
 
@@ -509,8 +511,8 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
       bool blocked = m_state == e_Blocked;
       m_state = e_Closed;
 
-      while (!empty())
-        pop();
+      while (!BaseQueue::empty())
+        BaseQueue::pop();
 
       m_available.Signal();
       m_mutex.Signal();
