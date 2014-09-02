@@ -39,8 +39,10 @@
 #endif
 
 #include <ptlib/mutex.h>
+#include <ptlib/semaphor.h>
 #include <ptlib/syncpoint.h>
 #include <map>
+#include <queue>
 
 
 /** This class defines a thread synchronisation object.
@@ -409,6 +411,128 @@ class PWriteWaitAndSignal {
 
   protected:
     PReadWriteMutex & mutex;
+};
+
+
+/** A synchronous queue of objects.
+    This implements a queue of objects between threads. The dequeue action will
+    always block until an object is placed into the queue.
+
+    It is expected the user is in complete control of memory management, the
+    queue just deals in pointers.
+  */
+template <class T> class PSyncQueue : public PObject, public std::queue<T*>
+{
+    PCLASSINFO(PSyncQueue, PObject);
+  public:
+    enum State
+    {
+      e_Open,
+      e_Blocked,
+      e_Closed
+    };
+
+    /// Construct synchronous queue
+    PSyncQueue()
+      : m_state(e_Open)
+      , m_available(0, INT_MAX)
+    {
+    }
+
+    /// Destroy synchronous queue
+    ~PSyncQueue()
+    {
+      this->Close(true);
+    }
+
+    /// Enqueue an object to the synchronous queue.
+    void Enqueue(T * obj)
+    {
+      m_mutex.Wait();
+      if (m_state != e_Closed) {
+        push(obj);
+        m_available.Signal();
+      }
+      m_mutex.Signal();
+    }
+
+    /** Dequeue an object from the synchronous queue.
+        A NULL is returned if a timeout occurs, or the queue was flushed.
+      */
+    T * Dequeue(const PTimeInterval & timeout = PMaxTimeInterval)
+    {
+      T * msg = NULL;
+
+      m_mutex.Wait();
+
+      switch (m_state) {
+        case e_Blocked :
+          PAssertAlways("Multiple threads in PSyncQueue::pop()");
+          break;
+
+        case e_Open :
+          m_state = e_Blocked;
+
+          {
+            m_mutex.Signal();
+            bool available = m_available.Wait(timeout);
+            m_mutex.Wait();
+
+            if (available && !empty()) {
+              msg = front();
+              pop();
+            }
+          }
+
+          if (m_state != e_Closed) {
+            m_state = e_Open;
+            break;
+          }
+          // Do closed case
+
+        case e_Closed :
+          m_closed.Signal();
+      }
+
+      m_mutex.Signal();
+
+      return msg;
+    }
+
+    /** Close the queue and break block in Dequeue() function.
+        This may optionally wait for Dequeue() to exit before returning.
+      */
+    void Close(bool wait)
+    {
+      m_mutex.Wait();
+
+      bool blocked = m_state == e_Blocked;
+      m_state = e_Closed;
+
+      while (!empty())
+        pop();
+
+      m_available.Signal();
+      m_mutex.Signal();
+
+      if (blocked && wait)
+        m_closed.Wait();
+    }
+
+    __inline const PMutex & GetMutex() const { return m_mutex; }
+    __inline       PMutex & GetMutex()       { return m_mutex; }
+
+  protected:
+    State          m_state;
+    PSemaphore     m_available;
+    PMutex         m_mutex;
+    PSyncPoint     m_closed;
+
+  private:
+    __inline PSyncQueue(const PSyncQueue & other) : PObject(other) { }
+    __inline void operator=(const PSyncQueue &) { }
+    __inline void push(T * obj) { std::queue<T*>::push(obj); }
+    __inline void pop() { std::queue<T*>::pop(); }
 };
 
 
