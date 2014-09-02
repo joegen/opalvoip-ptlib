@@ -418,7 +418,6 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
                            PThread::Priority priority = PThread::NormalPriority,
                            const char * threadName = NULL)
           : PThreadPool<Work_T>::WorkerThread(pool, priority, threadName)
-          , m_available(0, INT_MAX)
         {
         }
 
@@ -427,18 +426,11 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         void AddWork(Work_T * work)
         {
-          m_mutex.Wait();
-          m_queue.push(work);
-          m_available.Signal();
-          m_mutex.Signal();
+          m_queue.Enqueue(work);
         }
 
-        void RemoveWork(Work_T * )
+        void RemoveWork(Work_T * work)
         {
-          m_mutex.Wait();
-          Work_T * work = m_queue.front();
-          m_queue.pop();
-          m_mutex.Signal();
           delete work;
         }
 
@@ -449,33 +441,21 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         void Main()
         {
-          for (;;) {
-            m_available.Wait();
-            if (PThreadPool<Work_T>::WorkerThread::m_shutdown)
-              break;
-
-            m_mutex.Wait();
-            Work_T * work = m_queue.empty() ? NULL : m_queue.front();
-            m_mutex.Signal();
-
-            if (work != NULL) {
-              work->Work();
-              PThreadPool<Work_T>::WorkerThread::m_pool.RemoveWork(work);
-            }
+          Work_T * work;
+          while ((work = m_queue.Dequeue()) != NULL) {
+            work->Work();
+            RemoveWork(work);
           }
         }
 
         void Shutdown()
         {
           PThreadPool<Work_T>::WorkerThread::m_shutdown = true;
-          m_available.Signal();
+          m_queue.Close(true);
         }
 
       protected:
-        typedef std::queue<Work_T *> Queue;
-        Queue      m_queue;
-        PMutex     m_mutex;
-        PSemaphore m_available;
+        PSyncQueue<Work_T> m_queue;
     };
 
 
