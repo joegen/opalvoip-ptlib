@@ -24001,7 +24001,7 @@ EXPORTS
     ?SplitVars@PURL@@SAXABVPString@@AAVPStringToString@@DDW4TranslationType@1@@Z @22921 NONAME
     ?sprintf@PString@@QAAAAV1@PBDZZ @22922 NONAME
     ?SQL_OK@Statement@PODBC@@QAE_NF@Z @22923 NONAME
-    ?StackWalk@PDebugDLL@@QAEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@I@Z @29817 NONAME
+    ?StackWalk@PDebugDLL@@QAEXAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@II@Z @29819 NONAME
     ?Start@BaseStreamHandler@XMPP@@UAE_NPAVTransport@2@@Z @22925 NONAME
     ?Start@Context@PCLI@@QAE_NXZ @22926 NONAME
     ?Start@Context@PJPEGConverter@@QAE_NPBEHAAI1@Z @28154 NONAME
