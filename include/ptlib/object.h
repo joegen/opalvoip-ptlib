@@ -1570,12 +1570,7 @@ of compatibility with documentation systems.
 #define PCLASSINFO(cls, par) \
   public: \
     typedef cls P_thisClass; \
-    static inline const char * Class() \
-      { return #cls; } \
-    virtual PBoolean InternalIsDescendant(const char * clsName) const \
-      { return strcmp(clsName, this->Class()) == 0 || par::InternalIsDescendant(clsName); } \
-    virtual const char * GetClass(unsigned ancestor = 0) const \
-      { return ancestor > 0 ? par::GetClass(ancestor-1) : this->Class(); } \
+    __inline static const char * Class() { return typeid(cls).name(); } \
     virtual PObject::Comparison CompareObjectMemoryDirect(const PObject & obj) const \
       { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
@@ -1587,8 +1582,6 @@ of compatibility with documentation systems.
 
 
 #define PIsDescendant(ptr, cls)    (dynamic_cast<const cls *>(ptr) != NULL) 
-#define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str)) 
-
 #define PRemoveConst(cls, ptr)  (const_cast<cls*>(ptr))
 
 #if P_USE_ASSERTS
@@ -1653,55 +1646,14 @@ class PObject {
      */
     virtual ~PObject() { }
 
-    /**@name Run Time Type functions */
-  //@{
-    /** Get the name of the class as a C string. This is a static function which
-       returns the type of a specific class. 
-       
-       When comparing class names, always use the <code>strcmp()</code>
-       function rather than comparing pointers. The pointers are not
-       necessarily the same over compilation units depending on the compiler,
-       platform etc.
-
-       @return pointer to C string literal.
-     */      
-    static inline const char * Class()    { return "PObject"; }
-
-    /** Get the current dynamic type of the object instance.
-
-       When comparing class names, always use the <code>strcmp()</code>
-       function rather than comparing pointers. The pointers are not
-       necessarily the same over compilation units depending on the compiler,
-       platform etc.
-
-       The <code>#PCLASSINFO</code> macro declares an override of this function for
-       the particular class. The user need not implement it.
-
-       @return pointer to C string literal.
-     */
-    virtual const char * GetClass(unsigned ancestor = 0) const { return ancestor > 0 ? "" : this->Class(); }
-
-    PBoolean IsClass(const char * cls) const 
-    { return strcmp(cls, GetClass()) == 0; }
-
-    /** Determine if the dynamic type of the current instance is a descendent of
-       the specified class. The class name is usually provided by the
-       <code>Class()</code> static function of the desired class.
-    
-       The <code>#PCLASSINFO</code> macro declares an override of this function for
-       the particular class. The user need not implement it.
-
-       @return true if object is descended from the class.
-     */
-    virtual PBoolean InternalIsDescendant(
-      const char * clsName    // Ancestor class name to compare against.
-    ) const
-    { return IsClass(clsName); }
+    // Backward compatibility, use RTTI from now on!
+    __inline static const char * Class() { return typeid(PObject).name(); }
+    __inline const char * GetClass() const { return typeid(const_cast<PObject &>(*this)).name(); }
+    __inline bool IsClass(const char * cls) const { return strcmp(cls, GetClass()) == 0; }
 
     __inline const PObject * PTraceObjectInstance() const { return this; }
     __inline static const PObject * PTraceObjectInstance(const char *) { return NULL; }
     __inline static const PObject * PTraceObjectInstance(const PObject * obj) { return obj; }
-  //@}
 
   /**@name Comparison functions */
   //@{
