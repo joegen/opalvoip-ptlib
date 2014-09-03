@@ -1571,7 +1571,7 @@ of compatibility with documentation systems.
   public: \
     typedef cls P_thisClass; \
     __inline static const char * Class() { return typeid(cls).name(); } \
-    __inline bool IsClass(const char * cls) const { return strcmp(cls, GetClass()) == 0 || par::IsClass(cls); } \
+    __inline bool IsClass(const char * name) const { return strcmp(name, Class()) == 0; } \
     virtual PObject::Comparison CompareObjectMemoryDirect(const PObject & obj) const \
       { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
@@ -1650,7 +1650,7 @@ class PObject {
     // Backward compatibility, use RTTI from now on!
     __inline static const char * Class() { return typeid(PObject).name(); }
     __inline const char * GetClass() const { return typeid(const_cast<PObject &>(*this)).name(); }
-    __inline bool IsClass(const char * cls) const { return strcmp(cls, GetClass()) == 0; }
+    __inline bool IsClass(const char * name) const { return strcmp(name, Class()) == 0; }
 
     __inline const PObject * PTraceObjectInstance() const { return this; }
     __inline static const PObject * PTraceObjectInstance(const char *) { return NULL; }
