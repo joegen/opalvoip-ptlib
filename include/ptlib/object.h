@@ -1571,6 +1571,7 @@ of compatibility with documentation systems.
   public: \
     typedef cls P_thisClass; \
     __inline static const char * Class() { return typeid(cls).name(); } \
+    __inline bool IsClass(const char * cls) const { return strcmp(cls, GetClass()) == 0 || par::IsClass(cls); } \
     virtual PObject::Comparison CompareObjectMemoryDirect(const PObject & obj) const \
       { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
