@@ -162,7 +162,7 @@ PConfig::Cached::Cached(const PFilePath & path)
     }
     else if (currentSection != NULL) {
       PString keyStr, valStr;
-      if (line.Split('=', keyStr, valStr, false) && !(keyStr = keyStr.Trim()).IsEmpty()) {
+      if (line.Split('=', keyStr, valStr, PString::SplitDefaultToBefore|PString::SplitTrimBefore|PString::SplitBeforeNonEmpty)) {
         PStringOptions::iterator it = currentSection->find(keyStr);
         if (it != currentSection->end())
           valStr.Splice(it->second + '\n', 0, 0);
