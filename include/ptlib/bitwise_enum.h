@@ -216,6 +216,11 @@ class PBitwiseEnum
   P_DECLARE_BITWISE_ENUM_END(name, count)
 
 
+#endif // PTLIB_BITWISE_ENUM_H
+
+#if defined(PTLIB_STRING_H) && !defined(PTLIB_BITWISE_STREAMABLE_ENUM_H)
+#define PTLIB_BITWISE_STREAMABLE_ENUM_H 1
+
 extern void PPrintBitwiseEnum(std::ostream & strm, unsigned bits, char const * const * names);
 extern unsigned PReadBitwiseEnum(std::istream & strm, char const * const * names, bool continueOnError = false);
 
@@ -275,7 +280,7 @@ class PStreamableBitwiseEnum : public PBitwiseEnum<BaseEnum, MaxValue, BaseInt>
         P_DECLARE_STREAMABLE_BITWISE_ENUM_EX(name, count, values, P_DECLARE_BITWISE_NAMES_##count values)
 
 
-#endif // PTLIB_BITWISE_ENUM_H
+#endif // defined(PTLIB_STRING_H) && !defined(PTLIB_BITWISE_STREAMABLE_ENUM_H)
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -1768,20 +1768,31 @@ PString & PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
 }
 
 
-bool PString::Split(char delimiter, PString & before, PString & after, bool trim) const
+bool PString::InternalSplit(const PString & delimiter, PString & before, PString & after, SplitOptions_Bits options) const
 {
   PINDEX pos = Find(delimiter);
-  if (pos == P_MAX_INDEX)
-    return false;
 
-  if (trim) {
-    before = Left(pos).Trim();
-    after = Mid(pos+1).Trim();
+  if (pos != P_MAX_INDEX) {
+    before = (options&SplitTrimBefore) ? Left(pos).Trim() : Left(pos);
+    pos += delimiter.GetLength();
+    after = (options&SplitTrimAfter) ? Mid(pos).Trim() : Mid(pos);
   }
   else {
-    before = Left(pos);
-    after = Mid(pos+1);
+    if (!(options&(SplitDefaultToBefore|SplitDefaultToAfter)))
+      return false;
+
+    if (options&SplitDefaultToBefore)
+      before = (options&SplitTrimBefore) ? Trim() : *this;
+
+    if (options&SplitDefaultToAfter)
+      after = (options&SplitTrimBefore) ? Trim() : *this;
   }
+
+  if (before.IsEmpty() && (options&SplitBeforeNonEmpty))
+    return false;
+
+  if (after.IsEmpty() && (options&SplitAfterNonEmpty))
+    return false;
 
   return true;
 }
@@ -2945,10 +2956,8 @@ void PStringToString::ReadFrom(istream & strm)
       continue;
 
     PString key, value;
-    if (str.Split('=', key, value))
-      SetAt(key, value);
-    else
-      SetAt(str, PString::Empty());
+    str.Split('=', key, value, PString::SplitDefaultToBefore);
+    SetAt(key, value);
   }
 }
 
