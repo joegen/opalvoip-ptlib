@@ -31,6 +31,9 @@
  * $Date$
  */
 
+
+#include <ptlib/bitwise_enum.h> /// Note must be before #ifndef PTLIB_STRING_H
+
 #ifndef PTLIB_STRING_H
 #define PTLIB_STRING_H
 
@@ -1524,15 +1527,45 @@ class PString : public PCharArray
     PString ToUpper() const;
 
 
+    /// Options for PString::Split() function.
+    P_DECLARE_BITWISE_ENUM_EX(
+      SplitOptions,6,
+      (
+        SplitOnly,
+        SplitTrimBefore,
+        SplitTrimAfter,
+        SplitDefaultToBefore,
+        SplitDefaultToAfter,
+        SplitBeforeNonEmpty,
+        SplitAfterNonEmpty
+      ),
+      SplitTrim = SplitTrimBefore|SplitTrimAfter,
+      SplitNonEmpty = SplitBeforeNonEmpty|SplitAfterNonEmpty
+    );
     /** Split the string into two substrings around delimiter.
-        @return false if the delimiter not present.
+
+        @return
+        If the delimiter not present and \p options does not contain
+        SplitDefaultToBefore or SplitDefaultToAfter, false is returned.
+
+        If SplitBeforeNonEmpty or SplitAfterNonEmpty is present, then false
+        is returned if the respective result, after the optional trim, is an
+        empty string.
       */
-    bool Split(
-      char delimiter,   ///< Delimiter around which tom plit the substrings
-      PString & before, ///< Substring before delimiter
-      PString & after,  ///< Substring after delimiter
-      bool trim = true  ///< Substrings to be trimmed of whitespace
-    ) const;
+    __inline bool Split(
+      const PString & delimiter,  ///< Delimiter around which tom plit the substrings
+      PString & before,           ///< Substring before delimiter
+      PString & after,            ///< Substring after delimiter
+      SplitOptions options = SplitTrim  ///< Options for how to split the string
+      ) const
+    { return InternalSplit(delimiter, before, after, options); }
+
+    // The insanity below is all to maintain backward compatibility with the previous API
+    __inline bool Split(char delimiter, PString & before, PString & after, SplitOptions options) const              { return InternalSplit(delimiter, before, after, options); }
+    __inline bool Split(char delimiter, PString & before, PString & after, SplitOptions_Bits options) const         { return InternalSplit(delimiter, before, after, options); }
+    __inline bool Split(const char * delimiter, PString & before, PString & after, SplitOptions options) const      { return InternalSplit(delimiter, before, after, options); }
+    __inline bool Split(const char * delimiter, PString & before, PString & after, SplitOptions_Bits options) const { return InternalSplit(delimiter, before, after, options); }
+    __inline bool Split(char delimiter, PString & before, PString & after, bool trim) const                         { return InternalSplit(delimiter, before, after, trim ? SplitTrim : SplitOnly); }
 
 
     /** Split the string into an array of substrings. */
@@ -1861,6 +1894,12 @@ class PString : public PCharArray
       PINDEX offset,      // Offset into string to compare.
       PINDEX length,      // Number of characters to compare.
       const char * cstr   // C string to compare against.
+    ) const;
+    bool InternalSplit(
+      const PString & delimiter,  // Delimiter around which tom plit the substrings
+      PString & before,           // Substring before delimiter
+      PString & after,            // Substring after delimiter
+      SplitOptions_Bits options   // options
     ) const;
 
     /* Internal function to compare the current string value against the
@@ -3273,10 +3312,6 @@ class PStringOptions : public PStringToString
     __inline void Remove(const PCaselessString &   key)    { RemoveAt(key); }
     __inline void Remove(const PCaselessString & (*key)()) { RemoveAt(key); }
 };
-
-
-// Put include here as needs PString above to be defined.
-#include <ptlib/bitwise_enum.h>
 
 
 /**A class representing a regular expression that may be used for locating
