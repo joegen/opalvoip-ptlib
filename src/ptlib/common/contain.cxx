@@ -2409,10 +2409,9 @@ PStringStream::PStringStream(const char * cstr)
 
 PStringStream::~PStringStream()
 {
-  delete (PStringStream::Buffer *)rdbuf();
-#ifndef _WIN32
-  init(NULL);
-#endif
+  PStringStream::Buffer * buf = dynamic_cast<PStringStream::Buffer *>(rdbuf());
+  set_rdbuf(NULL);
+  delete buf;
 }
 
 
