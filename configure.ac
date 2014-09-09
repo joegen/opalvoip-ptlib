@@ -709,23 +709,34 @@ AC_TRY_COMPILE(
    ],
    [
    AC_TRY_COMPILE(
-      [#include <bits/atomicity.h>],
-      [_Atomic_word val],
-      [P_ATOMICITY_HEADER="<bits/atomicity.h>"],
-      [AC_TRY_COMPILE(
-         [#include <ext/atomicity.h>],
+      [],
+      [
+         int val;
+         __sync_fetch_and_add(&val, 1);
+      ],
+      [
+         AC_DEFINE(P_ATOMICITY_BUILTIN,1)
+         AC_MSG_RESULT([yes (builtin)])
+      ],
+      AC_TRY_COMPILE(
+         [#include <bits/atomicity.h>],
          [_Atomic_word val],
-         [P_ATOMICITY_HEADER="<ext/atomicity.h>"],
-         [AC_MSG_RESULT([no (SIMULATING!)])]
-      )]
+         [P_ATOMICITY_HEADER="<bits/atomicity.h>"],
+         AC_TRY_COMPILE(
+            [#include <ext/atomicity.h>],
+            [_Atomic_word val],
+            [P_ATOMICITY_HEADER="<ext/atomicity.h>"],
+            [AC_MSG_RESULT([no (SIMULATING!)])]
+         )
+      )
    )
 
    if test -n "$P_ATOMICITY_HEADER" ; then
       AC_MSG_RESULT(yes $P_ATOMICITY_HEADER)
       AC_DEFINE_UNQUOTED(P_ATOMICITY_HEADER, $P_ATOMICITY_HEADER)
 
-      AC_MSG_CHECKING(if __exchange_and_add is in __gnu_cxx namespace)
-      AC_TRY_LINK(
+      AC_MSG_CHECKING(if atomic __exchange_and_add is in __gnu_cxx namespace)
+      AC_TRY_COMPILE(
          [#include P_ATOMICITY_HEADER],
          [
             _Atomic_word val;
@@ -734,20 +745,6 @@ AC_TRY_COMPILE(
          [
             AC_MSG_RESULT(yes)
             AC_DEFINE_UNQUOTED(P_ATOMICITY_NAMESPACE, __gnu_cxx::)
-         ],
-         [AC_MSG_RESULT(no)]
-      )
-
-      AC_MSG_CHECKING(if __sync_fetch_and_or exists)
-      AC_TRY_LINK(
-         [#include P_ATOMICITY_HEADER],
-         [
-            volatile _Atomic_word val;
-            volatile _Atomic_word old = __sync_fetch_and_or(&val, 1);
-         ],
-         [
-            AC_MSG_RESULT(yes)
-            AC_DEFINE(P_ATOMICITY_HAS_OR, 1)
          ],
          [AC_MSG_RESULT(no)]
       )
