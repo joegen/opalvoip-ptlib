@@ -154,7 +154,11 @@ PChannel::PChannel()
 PChannel::~PChannel()
 {
   PChannelStreamBuffer * buf = dynamic_cast<PChannelStreamBuffer *>(rdbuf());
+#if P_HAS_SET_RDBUF
   set_rdbuf(NULL);
+#else
+  init(NULL);
+#endif
   delete buf;
 }
 

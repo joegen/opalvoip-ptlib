@@ -1000,6 +1000,29 @@ AC_CHECK_HEADERS(
 
 
 dnl ########################################################################
+dnl check for iostream::set_rdbuf
+
+dnl MSWIN_DISPLAY set_rdbuf,iostream has set_rdbuf
+dnl MSWIN_DEFINE  set_rdbuf,P_HAS_SET_RDBUF
+
+MY_COMPILE_IFELSE(
+   [if has iostream::set_rdbuf],
+   [],
+   [#include <iostream>],
+   [
+      struct MyStream : public std::iostream {
+        MyStream()
+          : std::iostream(NULL)
+        {
+          set_rdbuf(NULL);
+        }
+      };
+   ],
+   [AC_DEFINE(P_HAS_SET_RDBUF, 1, "set_rdbuf found")]
+)
+
+
+dnl ########################################################################
 dnl look for stack back trace capability
 
 AC_ARG_ENABLE(backtrace, AS_HELP_STRING([--disable-backtrace],[disable stack back trace support]))
