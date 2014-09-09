@@ -9416,6 +9416,53 @@ done
 
 
 
+
+
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS "
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if has iostream::set_rdbuf" >&5
+$as_echo_n "checking if has iostream::set_rdbuf... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <iostream>
+int
+main ()
+{
+
+      struct MyStream : public std::iostream {
+        MyStream()
+          : std::iostream(NULL)
+        {
+          set_rdbuf(NULL);
+        }
+      };
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+
+   if test "x$usable" = "xyes"; then :
+
+$as_echo "#define P_HAS_SET_RDBUF 1" >>confdefs.h
+
+
+fi
+
+
+
+
+
 # Check whether --enable-backtrace was given.
 if test "${enable_backtrace+set}" = set; then :
   enableval=$enable_backtrace;

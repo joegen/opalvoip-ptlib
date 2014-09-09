@@ -115,6 +115,7 @@
 #if P_HAS_WCHAR
   #undef P_HAS_WOSTREAM
 #endif
+#undef P_HAS_SET_RDBUF
 
 #undef PBYTE_ORDER
 #ifndef PBYTE_ORDER
@@ -148,6 +149,7 @@
   #define HAVE_LONG_LONG_INT 1
   #define HAVE_UNSIGNED_LONG_LONG_INT 1
   #define HAVE_LONG_DOUBLE 1
+  #define P_HAS_SET_RDBUF 1
 
   #define HAVE_LIMITS_H 1
   #define HAVE_UNISTD_H 1
