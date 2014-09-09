@@ -147,16 +147,16 @@ AC_DEFUN([MY_PKG_CHECK_MODULE],[
 
 
 dnl MY_ADD_FLAGS
-dnl Add to CPPFLAGS, CFLAGS, CXXFLAGS & LIBS new flags
-dnl $1 new LIBS (prepended)
+dnl Prepend to CPPFLAGS, CFLAGS, CXXFLAGS & LIBS new flags
+dnl $1 new LIBS
 dnl $2 new CPPFLAGS
 dnl $3 new CFLAGS
 dnl $4 new CXXFLAGS
 AC_DEFUN([MY_ADD_FLAGS],[
    m4_ifnblank([$1], [LIBS="$1 $LIBS"])
-   m4_ifnblank([$2], [CPPFLAGS="$CPPFLAGS $2"])
-   m4_ifnblank([$3], [CFLAGS="$CPPFLAGS $3"])
-   m4_ifnblank([$4], [CXXFLAGS="$CPPFLAGS $4"])
+   m4_ifnblank([$2], [CPPFLAGS="$2 $CPPFLAGS"])
+   m4_ifnblank([$3], [CFLAGS="$3 $CFLAGS"])
+   m4_ifnblank([$4], [CXXFLAGS="$4 $CXXFLAGS"])
 ])
 
 
