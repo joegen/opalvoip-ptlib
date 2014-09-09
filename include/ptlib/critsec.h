@@ -121,6 +121,8 @@ class PAtomicBase
   public:
 #if defined(_WIN32)
     typedef long IntegerType;
+#elif defined(P_ATOMICITY_BUILTIN)
+    typedef int IntegerType;
 #elif defined(_STLP_INTERNAL_THREADS_H) && defined(_STLP_ATOMIC_INCREMENT) && defined(_STLP_ATOMIC_DECREMENT)
     typedef __stl_atomic_t IntegerType;
 #elif defined(SOLARIS) && !defined(__GNUC__)
@@ -271,6 +273,14 @@ __inline PAtomicInteger::IntegerType PAtomicInteger::operator++(int)  { return I
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--()     { return InterlockedDecrement  (&m_value); }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--(int)  { return InterlockedExchangeAdd(&m_value, -1); }
 __inline bool PAtomicBoolean::TestAndSet(bool value)                  { return InterlockedExchange   (&m_value, value) != 0; }
+#elif defined(P_ATOMICITY_BUILTIN)
+__inline PAtomicBase::PAtomicBase(IntegerType value) : m_value(value) { }
+__inline PAtomicBase::~PAtomicBase()                                  { }
+__inline PAtomicInteger::IntegerType PAtomicInteger::operator++()     { return __sync_add_and_fetch(&m_value, 1); }
+__inline PAtomicInteger::IntegerType PAtomicInteger::operator++(int)  { return __sync_fetch_and_add(&m_value, 1); }
+__inline PAtomicInteger::IntegerType PAtomicInteger::operator--()     { return __sync_sub_and_fetch(&m_value, 1); }
+__inline PAtomicInteger::IntegerType PAtomicInteger::operator--(int)  { return __sync_fetch_and_sub(&m_value, 1); }
+__inline bool PAtomicBoolean::TestAndSet(bool value)                  { return value ? __sync_fetch_and_or(&m_value, 1) : __sync_fetch_and_and(&m_value, 0); }
 #elif defined(_STLP_INTERNAL_THREADS_H) && defined(_STLP_ATOMIC_INCREMENT) && defined(_STLP_ATOMIC_DECREMENT)
 __inline PAtomicBase::PAtomicBase(IntegerType value) : m_value(value) { }
 __inline PAtomicBase::~PAtomicBase()                                  { }
@@ -295,11 +305,7 @@ __inline PAtomicInteger::IntegerType PAtomicInteger::operator++()     { return E
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator++(int)  { return EXCHANGE_AND_ADD(&m_value,  1); }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--()     { return EXCHANGE_AND_ADD(&m_value, -1)-1; }
 __inline PAtomicInteger::IntegerType PAtomicInteger::operator--(int)  { return EXCHANGE_AND_ADD(&m_value, -1); }
-#if P_ATOMICITY_HAS_OR
-__inline bool PAtomicBoolean::TestAndSet(bool value)                  { IntegerType previous = value ? __sync_fetch_and_or(&m_value, 1) : __sync_fetch_and_and(&m_value, 0); return previous != 0; }
-#else
 __inline bool PAtomicBoolean::TestAndSet(bool value)                  { IntegerType previous = EXCHANGE_AND_ADD(&m_value, value?1:-1); m_value = value?1:0; return previous > 0; }
-#endif
 #else
 __inline PAtomicBase::PAtomicBase(IntegerType value) : m_value(value) { pthread_mutex_init(&m_mutex, NULL); }
 __inline PAtomicBase::~PAtomicBase()                                  { pthread_mutex_destroy(&m_mutex); }
