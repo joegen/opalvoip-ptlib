@@ -175,9 +175,7 @@
 
   #define P_PTHREADS 1
   #define P_HAS_SEMAPHORES 1
-  #define P_ATOMICITY_HEADER <ext/atomicity.h>
-  #define P_ATOMICITY_NAMESPACE __gnu_cxx::
-  #define P_ATOMICITY_HAS_OR 1
+  #define P_ATOMICITY_BUILTIN 1
   #define P_HAS_RECURSIVE_MUTEX 1
   #define P_HAS_RECVMSG 1
   #define P_HAS_RECVMSG_MSG_ERRQUEUE 1
@@ -224,9 +222,9 @@
   #undef P_PTHREADS
   #undef P_NO_PTHREAD_KILL
   #undef P_HAS_SEMAPHORES
+  #undef P_ATOMICITY_BUILTIN
   #undef P_ATOMICITY_HEADER
   #undef P_ATOMICITY_NAMESPACE
-  #undef P_ATOMICITY_HAS_OR
   #undef P_HAS_RECURSIVE_MUTEX
   #undef P_HAS_RECVMSG
   #undef P_HAS_RECVMSG_MSG_ERRQUEUE
