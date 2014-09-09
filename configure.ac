@@ -263,7 +263,7 @@ MY_COMPILE_IFELSE(
    [-Werror -felide-constructors],
    [],
    [],
-   [CXXFLAGS="$CXXFLAGS -felide-constructors"]
+   [CXXFLAGS="-felide-constructors $CXXFLAGS"]
 )
 
 MY_COMPILE_IFELSE(
@@ -271,7 +271,7 @@ MY_COMPILE_IFELSE(
    [-Werror -Wreorder],
    [],
    [],
-   [CXXFLAGS="$CXXFLAGS -Wreorder"]
+   [CXXFLAGS="-Wreorder $CXXFLAGS"]
 )
 
 
@@ -342,9 +342,9 @@ dnl this reduces the size of all executables and libraries
 PTLIB_SIMPLE_OPTION([exceptions], [EXCEPTIONS], [enable C++ exceptions])
 
 if test "x${HAS_EXCEPTIONS}" = "x1" ; then
-   CXXFLAGS="$CXXFLAGS -fexceptions"
+   CXXFLAGS="-fexceptions $CXXFLAGS"
 else
-   CXXFLAGS="$CXXFLAGS -fno-exceptions"
+   CXXFLAGS="-fno-exceptions $CXXFLAGS"
 fi
 
 
