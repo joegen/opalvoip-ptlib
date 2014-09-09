@@ -153,10 +153,9 @@ PChannel::PChannel()
 
 PChannel::~PChannel()
 {
-  delete (PChannelStreamBuffer *)rdbuf();
-#ifndef _WIN32
-  init(NULL);
-#endif
+  PChannelStreamBuffer * buf = dynamic_cast<PChannelStreamBuffer *>(rdbuf());
+  set_rdbuf(NULL);
+  delete buf;
 }
 
 PObject::Comparison PChannel::Compare(const PObject & obj) const
