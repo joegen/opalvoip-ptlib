@@ -2421,7 +2421,11 @@ PStringStream::PStringStream(const char * cstr)
 PStringStream::~PStringStream()
 {
   PStringStream::Buffer * buf = dynamic_cast<PStringStream::Buffer *>(rdbuf());
+#if P_HAS_SET_RDBUF
   set_rdbuf(NULL);
+#else
+  init(NULL);
+#endif
   delete buf;
 }
 
