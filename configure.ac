@@ -708,7 +708,7 @@ AC_TRY_COMPILE(
       AC_MSG_RESULT([yes (std)])
    ],
    [
-   AC_TRY_COMPILE(
+   AC_TRY_LINK(
       [],
       [
          int val;
