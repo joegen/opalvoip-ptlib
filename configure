@@ -6124,7 +6124,7 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  DEBUG_CFLAGS="-g3 -ggdb -O0" $DEBUG_CFLAGS
+  DEBUG_CFLAGS="-g3 -ggdb -O0 $DEBUG_CFLAGS"
 else
   DEBUG_CFLAGS="-g $DEBUG_CFLAGS"
 
@@ -6163,9 +6163,9 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  OPT_CFLAGS="-O3 $OPT_FLAGS"
+  OPT_CFLAGS="-O3 $OPT_CFLAGS"
 else
-  OPT_CFLAGS="-O2 $OPT_FLAGS"
+  OPT_CFLAGS="-O2 $OPT_CFLAGS"
 
 fi
 
