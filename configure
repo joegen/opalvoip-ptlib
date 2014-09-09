@@ -3463,6 +3463,9 @@ test -n "$target_alias" &&
 fi
 
 
+oldCFLAGS="$CFLAGS"
+oldCXXFLAGS="$CXXFLAGS"
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4513,8 +4516,8 @@ if test -z "$CXX" ; then
    as_fn_error 1 "C++ compiler is required" "$LINENO" 5
 fi
 
-CFLAGS=
-CXXFLAGS=
+CFLAGS="$oldCFLAGS"
+CXXFLAGS="$oldCXXFLAGS"
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
@@ -6656,7 +6659,7 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  CXXFLAGS="$CXXFLAGS -felide-constructors"
+  CXXFLAGS="-felide-constructors $CXXFLAGS"
 
 fi
 
@@ -6690,7 +6693,7 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  CXXFLAGS="$CXXFLAGS -Wreorder"
+  CXXFLAGS="-Wreorder $CXXFLAGS"
 
 fi
 
@@ -6943,9 +6946,9 @@ fi
 
 
 if test "x${HAS_EXCEPTIONS}" = "x1" ; then
-   CXXFLAGS="$CXXFLAGS -fexceptions"
+   CXXFLAGS="-fexceptions $CXXFLAGS"
 else
-   CXXFLAGS="$CXXFLAGS -fno-exceptions"
+   CXXFLAGS="-fno-exceptions $CXXFLAGS"
 fi
 
 
