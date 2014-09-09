@@ -627,7 +627,7 @@ MY_COMPILE_IFELSE(
    [-g3 -ggdb -O0],
    [],
    [],
-   [DEBUG_CFLAGS="-g3 -ggdb -O0" $DEBUG_CFLAGS],
+   [DEBUG_CFLAGS="-g3 -ggdb -O0 $DEBUG_CFLAGS"],
    [DEBUG_CFLAGS="-g $DEBUG_CFLAGS"]
 )
 AC_SUBST(DEBUG_CFLAGS)
@@ -638,8 +638,8 @@ MY_COMPILE_IFELSE(
    [-O3],
    [],
    [],
-   [OPT_CFLAGS="-O3 $OPT_FLAGS"],
-   [OPT_CFLAGS="-O2 $OPT_FLAGS"]
+   [OPT_CFLAGS="-O3 $OPT_CFLAGS"],
+   [OPT_CFLAGS="-O2 $OPT_CFLAGS"]
 )
 AC_SUBST(OPT_CFLAGS)
 
