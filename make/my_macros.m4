@@ -543,6 +543,8 @@ case "$target_cpu" in
             AC_MSG_RESULT(no)
             target_cpu=x86
             target_64bit=0
+            CFLAGS="-march=i686 $CFLAGS"
+            CXXFLAGS="-march=i686 $CXXFLAGS"
          ]
       )
    ;;
@@ -625,8 +627,8 @@ MY_COMPILE_IFELSE(
    [-g3 -ggdb -O0],
    [],
    [],
-   [DEBUG_CFLAGS="$DEBUG_CFLAGS -g3 -ggdb -O0"],
-   [DEBUG_CFLAGS="$DEBUG_CFLAGS -g"]
+   [DEBUG_CFLAGS="-g3 -ggdb -O0" $DEBUG_CFLAGS],
+   [DEBUG_CFLAGS="-g $DEBUG_CFLAGS"]
 )
 AC_SUBST(DEBUG_CFLAGS)
 
@@ -636,8 +638,8 @@ MY_COMPILE_IFELSE(
    [-O3],
    [],
    [],
-   [OPT_CFLAGS="$OPT_FLAGS -O3"],
-   [OPT_CFLAGS="$OPT_FLAGS -O2"]
+   [OPT_CFLAGS="-O3 $OPT_FLAGS"],
+   [OPT_CFLAGS="-O2 $OPT_FLAGS"]
 )
 AC_SUBST(OPT_CFLAGS)
 
