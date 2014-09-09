@@ -362,15 +362,18 @@ fi
 
 
 dnl Set up compiler by platform
+oldCFLAGS="$CFLAGS"
+oldCXXFLAGS="$CXXFLAGS"
+
 AC_PROG_CC()
 AC_PROG_CXX()
 if test -z "$CXX" ; then
    AC_MSG_ERROR(C++ compiler is required, 1)
 fi
 
-dnl Clear out the flags left behind by AC_PROC_CC/AC_PROG_CXX
-CFLAGS=
-CXXFLAGS=
+dnl Restore flags changed by AC_PROC_CC/AC_PROG_CXX
+CFLAGS="$oldCFLAGS"
+CXXFLAGS="$oldCXXFLAGS"
 
 
 dnl Find some tools
