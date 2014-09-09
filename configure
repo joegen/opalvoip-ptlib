@@ -6009,6 +6009,8 @@ else
 $as_echo "no" >&6; }
             target_cpu=x86
             target_64bit=0
+            CFLAGS="-march=i686 $CFLAGS"
+            CXXFLAGS="-march=i686 $CXXFLAGS"
 
 
 fi
@@ -8303,7 +8305,7 @@ main ()
   return 0;
 }
 _ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
+if ac_fn_cxx_try_link "$LINENO"; then :
 
          $as_echo "#define P_ATOMICITY_BUILTIN 1" >>confdefs.h
 
@@ -8349,7 +8351,8 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
 
    if test -n "$P_ATOMICITY_HEADER" ; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes $P_ATOMICITY_HEADER" >&5
