@@ -543,6 +543,8 @@ case "$target_cpu" in
             AC_MSG_RESULT(no)
             target_cpu=x86
             target_64bit=0
+            CFLAGS="-march=i686 $CFLAGS"
+            CXXFLAGS="-march=i686 $CXXFLAGS"
          ]
       )
    ;;
