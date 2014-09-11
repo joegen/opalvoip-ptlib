@@ -1340,7 +1340,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
   m_rotation       = GetTokenValue(deviceName, "ROTATION=", 0);
 
   m_mouseEnabled = deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
-  m_hidden = deviceName.Find("HIDE") == P_MAX_INDEX;
+  m_hidden = deviceName.Find("HIDE") != P_MAX_INDEX;
 
   if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
     m_sizeMode = FullScreen;
