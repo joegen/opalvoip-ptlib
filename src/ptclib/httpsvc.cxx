@@ -180,7 +180,7 @@ PHTTPServiceProcess::Params::Params(const char * configPageName, const char * se
   , m_realmKey("Realm")
   , m_usernameKey("Username")
   , m_passwordKey("Password")
-  , m_authority(PProcess::Current().GetName(), PProcess::Current().GetUserName(), PString::Empty())
+  , m_authority(PProcess::Current().GetName(), PString::Empty(), PString::Empty())
   , m_levelKey("Log Level")
   , m_fileKey("Log File")
   , m_rotateDirKey("Log Rotate Directory")
