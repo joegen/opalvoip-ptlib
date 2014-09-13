@@ -357,7 +357,7 @@ bool PSystemLogToFile::Rotate(bool force)
 
     if (m_rotateInfo.m_maxFileAge > 0) {
       PTime then = PTime() - m_rotateInfo.m_maxFileAge;
-      while (rotatedFiles.begin()->first < then) {
+      while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
         if (PFile::Remove(rotatedFiles.begin()->second)) {
           PTRACE(3, "SystemLog", "Removed aged rotated log " << rotatedFiles.begin()->second);
         }
