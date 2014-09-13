@@ -139,6 +139,7 @@ class PHTTPServiceProcess : public PServiceProcess
       PHTTPSimpleAuth m_authority;  // Output
 
       // Logging
+      bool         m_forceRotate;
       const char * m_levelKey;
       const char * m_fileKey;
       const char * m_rotateDirKey;
