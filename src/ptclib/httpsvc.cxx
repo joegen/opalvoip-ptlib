@@ -181,6 +181,7 @@ PHTTPServiceProcess::Params::Params(const char * configPageName, const char * se
   , m_usernameKey("Username")
   , m_passwordKey("Password")
   , m_authority(PProcess::Current().GetName(), PString::Empty(), PString::Empty())
+  , m_forceRotate(false)
   , m_levelKey("Log Level")
   , m_fileKey("Log File")
   , m_rotateDirKey("Log Rotate Directory")
@@ -278,7 +279,7 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
   }
 
   if (logFile != NULL) {
-    logFile->SetRotateInfo(info);
+    logFile->SetRotateInfo(info, params.m_forceRotate);
 
     if (params.m_fullLogPageName != NULL) {
       params.m_fullLogPage = new PHTTPFile(params.m_fullLogPageName, logFile->GetFilePath(), PMIMEInfo::TextPlain(), params.m_authority);
