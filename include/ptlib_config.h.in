@@ -149,7 +149,6 @@
   #define HAVE_LONG_LONG_INT 1
   #define HAVE_UNSIGNED_LONG_LONG_INT 1
   #define HAVE_LONG_DOUBLE 1
-  #define P_HAS_SET_RDBUF 1
 
   #define HAVE_LIMITS_H 1
   #define HAVE_UNISTD_H 1

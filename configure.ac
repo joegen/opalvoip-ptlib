@@ -1001,8 +1001,9 @@ AC_CHECK_HEADERS(
 dnl ########################################################################
 dnl check for iostream::set_rdbuf
 
-dnl MSWIN_DISPLAY set_rdbuf,iostream has set_rdbuf
-dnl MSWIN_DEFINE  set_rdbuf,P_HAS_SET_RDBUF
+dnl MSWIN_DISPLAY    set_rdbuf,iostream has set_rdbuf
+dnl MSWIN_DEFINE     set_rdbuf,P_HAS_SET_RDBUF
+dnl MSWIN_IF_FEATURE set_rdbuf,!android
 
 MY_COMPILE_IFELSE(
    [if has iostream::set_rdbuf],
