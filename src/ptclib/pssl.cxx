@@ -2544,6 +2544,9 @@ bool PSSLChannelDTLS::ExecuteHandshake()
       return true;
     }
 
+    if (!IsOpen())
+      return false;
+
     PTRACE(2, "DTLS handshake failed (" << retry <<" retries left) - " << PSSLError(SSL_get_error(m_ssl, errorCode)));
   }
 
