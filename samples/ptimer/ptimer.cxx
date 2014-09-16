@@ -182,19 +182,19 @@ public:
   PTimerTest();
   virtual void Main();
 
-  PINDEX Delay()
+  unsigned Delay()
   {
-    return delay;
+    return m_delay;
   }
 
-  PINDEX Interval()
+  unsigned Interval()
   {
-    return interval;
+    return m_interval;
   }
 
-  PBoolean   CheckTimer()
+  bool CheckTimer()
   {
-    return checkTimer;
+    return m_checkTimer;
   }
 
   static PTimerTest & Current()
@@ -206,11 +206,9 @@ public:
 
 protected:
 
-  PINDEX delay;
-
-  PINDEX interval;
-
-  PBoolean   checkTimer;
+  unsigned m_delay;
+  unsigned m_interval;
+  bool     m_checkTimer;
 
 
   /**Code to run the second test supported by this application. */
@@ -315,22 +313,14 @@ void PTimerTest::Main()
   if (args.HasOption('g'))
     MassStopTest();
 
-  checkTimer = args.HasOption('c');
+  m_checkTimer = args.HasOption('c');
 
-  delay = 200;
-  if (args.HasOption('d'))
-    delay = args.GetOptionString('d').AsInteger();
-
-  delay = PMIN(1000000, PMAX(0, delay));
-  cout << "Created ptimer will wait for " << delay 
+  m_delay = std::min(1000000U, std::max(0U, args.GetOptionAs('d', 200U)));
+  cout << "Created ptimer will wait for " << Delay()
        << " milliseconds before ending" << endl;
  
-  interval = 50;
-  if (args.HasOption('i'))
-    interval = args.GetOptionString('i').AsInteger();
-
-  interval = PMIN(1000000, PMAX(0, interval));
-  cout << "Separate each instance of PTimer by " << interval 
+  m_interval = std::min(1000000U, std::max(0U, args.GetOptionAs('i', 50U)));
+  cout << "Separate each instance of PTimer by " << Interval()
        << " milliseconds " << endl;
 
   UserInterfaceThread ui;
@@ -601,17 +591,17 @@ void PTimerTest::RunRestartTest()
   }
 }
 
-void PTimerTest::OnFirstTimerExpired(PTimer &, INT)
+void PTimerTest::OnFirstTimerExpired(PTimer &, P_INT_PTR)
 {
   cerr << "The first timer has expired unexpectedly." << endl;
 }
 
-void PTimerTest::OnSecondTimerExpired(PTimer &, INT)
+void PTimerTest::OnSecondTimerExpired(PTimer &, P_INT_PTR)
 {
   cerr << "The second timer has expired unexpectedly." << endl;
 }
 
-void PTimerTest::RestartFirstTimerMain(PThread &, INT)
+void PTimerTest::RestartFirstTimerMain(PThread &, P_INT_PTR)
 {
   for (;;) {
     firstTimer.Reset();
@@ -620,7 +610,7 @@ void PTimerTest::RestartFirstTimerMain(PThread &, INT)
   }
 }
 
-void PTimerTest::RestartSecondTimerMain(PThread &, INT)
+void PTimerTest::RestartSecondTimerMain(PThread &, P_INT_PTR)
 {
   for (;;) {
     secondTimer.Reset();
@@ -630,7 +620,7 @@ void PTimerTest::RestartSecondTimerMain(PThread &, INT)
 }
 
 
-void PTimerTest::RestartThirdTimerMain(PThread &, INT)
+void PTimerTest::RestartThirdTimerMain(PThread &, P_INT_PTR)
 {
   static int tmp = 0;
   for (;;) {
