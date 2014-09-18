@@ -75,10 +75,10 @@ PBoolean PSafeObject::SafeReference()
   }
   return count > 0;
 #else
-  PWaitAndSignal mutex(safetyMutex);
-  if (safelyBeingRemoved)
+  PWaitAndSignal mutex(m_safetyMutex);
+  if (m_safelyBeingRemoved)
     return false;
-  ++safeReferenceCount;
+  ++m_safeReferenceCount;
   return true;
 #endif
 }
