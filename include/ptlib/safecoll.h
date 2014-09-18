@@ -268,17 +268,18 @@ class PSafeObject : public PObject
        Note this returns the value outside of any mutexes, so it could change
        at any moment. Care must be exercised in its use.
       */
-    unsigned GetSafeReferenceCount() const { return safeReferenceCount; }
+    unsigned GetSafeReferenceCount() const { return m_safeReferenceCount; }
   //@}
 
   private:
-    mutable PMutex    safetyMutex;
-    unsigned          safeReferenceCount;
-    bool              safelyBeingRemoved;
-    PReadWriteMutex   safeInUseMutex;
-    PReadWriteMutex * safeInUse;
+    mutable PMutex    m_safetyMutex;
+    unsigned          m_safeReferenceCount;
+    bool              m_safelyBeingRemoved;
+    PReadWriteMutex   m_safeInUseMutex;
+    PReadWriteMutex * m_safeInUse;
 
   friend class PSafeCollection;
+  friend class PSafePtrBase;
 };
 
 
@@ -289,14 +290,14 @@ class PSafeLockReadOnly
   public:
     PSafeLockReadOnly(const PSafeObject & object);
     ~PSafeLockReadOnly();
-    PBoolean Lock();
+    bool Lock();
     void Unlock();
-    PBoolean IsLocked() const { return locked; }
-    bool operator!() const { return !locked; }
+    PBoolean IsLocked() const { return m_locked; }
+    bool operator!() const { return !m_locked; }
 
   protected:
-    PSafeObject & safeObject;
-    PBoolean          locked;
+    PSafeObject & m_safeObject;
+    bool          m_locked;
 };
 
 
@@ -308,14 +309,14 @@ class PSafeLockReadWrite
   public:
     PSafeLockReadWrite(const PSafeObject & object);
     ~PSafeLockReadWrite();
-    PBoolean Lock();
+    bool Lock();
     void Unlock();
-    PBoolean IsLocked() const { return locked; }
-    bool operator!() const { return !locked; }
+    PBoolean IsLocked() const { return m_locked; }
+    bool operator!() const { return !m_locked; }
 
   protected:
-    PSafeObject & safeObject;
-    PBoolean          locked;
+    PSafeObject & m_safeObject;
+    bool          m_locked;
 };
 
 
@@ -401,13 +402,13 @@ class PSafeCollection : public PObject
       */
     void AllowDeleteObjects(
       PBoolean yes = true   ///< New value for flag for deleting objects
-    ) { deleteObjects = yes; }
+    ) { m_deleteObjects = yes; }
 
     /**Disallow the automatic delete any objects that have been removed.
        Objects are simply removed from the collection and not marked for
        deletion using PSafeObject::SafeRemove() and DeleteObject().
       */
-    void DisallowDeleteObjects() { deleteObjects = false; }
+    void DisallowDeleteObjects() { m_deleteObjects = false; }
 
     /**Delete any objects that have been removed.
        Returns true if all objects in the collection have been removed and
@@ -437,8 +438,8 @@ class PSafeCollection : public PObject
 
     /**Get the mutex for the collection.
       */
-    const PMutex & GetMutex() const { return collectionMutex; }
-          PMutex & GetMutex()       { return collectionMutex; }
+    const PMutex & GetMutex() const { return m_collectionMutex; }
+          PMutex & GetMutex()       { return m_collectionMutex; }
   //@}
 
   protected:
@@ -448,11 +449,11 @@ class PSafeCollection : public PObject
     void SafeRemoveObject(PSafeObject * obj);
     PDECLARE_NOTIFIER(PTimer, PSafeCollection, DeleteObjectsTimeout);
 
-    PCollection      * collection;
-    mutable PMutex     collectionMutex;
-    bool               deleteObjects;
-    PList<PSafeObject> toBeRemoved;
-    PMutex             removalMutex;
+    PCollection      * m_collection;
+    mutable PMutex     m_collectionMutex;
+    bool               m_deleteObjects;
+    PList<PSafeObject> m_toBeRemoved;
+    PMutex             m_removalMutex;
     PTimer           * m_deleteObjectsTimer;
 
   private:
@@ -570,11 +571,11 @@ class PSafePtrBase : public PObject
 
     /**Return true if pointer is NULL.
       */
-    bool operator!() const { return currentObject == NULL; }
+    bool operator!() const { return m_currentObject == NULL; }
 
     /**Return pointer to safe object.
       */
-    PSafeObject * GetObject() const { return currentObject; }
+    PSafeObject * GetObject() const { return m_currentObject; }
 
     /**Return pointer to safe object.
       */
@@ -583,7 +584,7 @@ class PSafePtrBase : public PObject
 
     /**Get the locking mode used by this pointer.
       */
-    PSafetyMode GetSafetyMode() const { return lockMode; }
+    PSafetyMode GetSafetyMode() const { return m_lockMode; }
 
     /**Change the locking mode used by this pointer.
 
@@ -622,9 +623,9 @@ class PSafePtrBase : public PObject
     virtual void UnlockPtr() { }
 
   protected:
-    const PSafeCollection * collection;
-    PSafeObject           * currentObject;
-    PSafetyMode             lockMode;
+    const PSafeCollection * m_collection;
+    PSafeObject           * m_currentObject;
+    PSafetyMode             m_lockMode;
 };
 
 
@@ -827,7 +828,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     PSafePtr & operator=(const PSafePtr & ptr)
       {
-        BaseClass::Assign(ptr);
+        this->Assign(ptr);
         return *this;
       }
 
@@ -837,7 +838,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     PSafePtr & operator=(const PSafeCollection & safeCollection)
       {
-        BaseClass::Assign(safeCollection);
+        this->Assign(safeCollection);
         return *this;
       }
 
@@ -873,7 +874,7 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
      */
     PSafePtr & operator=(PINDEX idx)
       {
-        BaseClass::Assign(idx);
+        this->Assign(idx);
         return *this;
       }
 
@@ -895,15 +896,15 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
   //@{
     /**Return the physical pointer to the object.
       */
-    operator T*()    const { return  dynamic_cast<T *>(BaseClass::currentObject); }
+    operator T*()    const { return  dynamic_cast<T *>(this->m_currentObject); }
 
     /**Return the physical pointer to the object.
       */
-    T & operator*()  const { return *dynamic_cast<T *>(PAssertNULL(BaseClass::currentObject)); }
+    T & operator*()  const { return *dynamic_cast<T *>(PAssertNULL(this->m_currentObject)); }
 
     /**Allow access to the physical object the pointer is pointing to.
       */
-    T * operator->() const { return  dynamic_cast<T *>(PAssertNULL(BaseClass::currentObject)); }
+    T * operator->() const { return  dynamic_cast<T *>(PAssertNULL(this->m_currentObject)); }
 
     /**Post-increment the pointer.
        This requires that the pointer has been created with a PSafeCollection
@@ -911,8 +912,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator++(int)
       {
-        T * previous = dynamic_cast<T *>(BaseClass::currentObject);
-        BaseClass::Next();
+        T * previous = dynamic_cast<T *>(this->m_currentObject);
+        this->Next();
         return previous;
       }
 
@@ -922,8 +923,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator++()
       {
-        BaseClass::Next();
-        return dynamic_cast<T *>(BaseClass::currentObject);
+        this->Next();
+        return dynamic_cast<T *>(this->m_currentObject);
       }
 
     /**Post-decrement the pointer.
@@ -932,8 +933,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator--(int)
       {
-        T * previous = dynamic_cast<T *>(BaseClass::currentObject);
-        BaseClass::Previous();
+        T * previous = dynamic_cast<T *>(this->m_currentObject);
+        this->Previous();
         return previous;
       }
 
@@ -943,8 +944,8 @@ template <class T, class BaseClass = PSafePtrBase> class PSafePtr : public BaseC
       */
     T * operator--()
       {
-        BaseClass::Previous();
-        return dynamic_cast<T *>(BaseClass::currentObject);
+        this->Previous();
+        return dynamic_cast<T *>(this->m_currentObject);
       }
   //@}
 };
@@ -991,8 +992,8 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
     PSafeColl(const PSafeColl & other)
       : PSafeCollection(new Coll)
     {
-      PWaitAndSignal lock2(other.collectionMutex);
-      CopySafeCollection(dynamic_cast<Coll *>(other.collection));
+      PWaitAndSignal lock2(other.m_collectionMutex);
+      this->CopySafeCollection(dynamic_cast<Coll *>(other.m_collection));
     }
 
     /**Assign one safe collection to another.
@@ -1002,9 +1003,9 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
     {
       if (&other != this) {
         RemoveAll(true);
-        PWaitAndSignal lock1(collectionMutex);
-        PWaitAndSignal lock2(other.collectionMutex);
-        CopySafeCollection(dynamic_cast<Coll *>(other.collection));
+        PWaitAndSignal lock1(this->m_collectionMutex);
+        PWaitAndSignal lock2(other.m_collectionMutex);
+        CopySafeCollection(dynamic_cast<Coll *>(other.m_collection));
       }
       return *this;
     }
@@ -1020,9 +1021,9 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
       Base * obj,       ///< Object to add to safe collection.
       PSafetyMode mode = PSafeReference   ///< Safety mode for returned locked PSafePtr
     ) {
-        PWaitAndSignal mutex(collectionMutex);
+        PWaitAndSignal mutex(this->m_collectionMutex);
         if (SafeAddObject(obj, NULL))
-          return PSafePtr<Base>(*this, mode, collection->Append(obj));
+          return PSafePtr<Base>(*this, mode, this->m_collection->Append(obj));
         return NULL;
       }
 
@@ -1075,9 +1076,9 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
       const Base & value,
       PSafetyMode mode = PSafeReadWrite
     ) {
-        collectionMutex.Wait();
-        PSafePtr<Base> ptr(*this, PSafeReference, collection->GetValuesIndex(value));
-        collectionMutex.Signal();
+        this->m_collectionMutex.Wait();
+        PSafePtr<Base> ptr(*this, PSafeReference, this->m_collection->GetValuesIndex(value));
+        this->m_collectionMutex.Signal();
         ptr.SetSafetyMode(mode);
         return ptr;
       }
@@ -1145,8 +1146,8 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     PSafeDictionaryBase(const PSafeDictionaryBase & other)
       : PSafeCollection(new Coll)
     {
-      PWaitAndSignal lock2(other.collectionMutex);
-      CopySafeDictionary(dynamic_cast<Coll *>(other.collection));
+      PWaitAndSignal lock2(other.m_collectionMutex);
+      CopySafeDictionary(dynamic_cast<Coll *>(other.m_collection));
     }
 
     /**Assign one safe collection to another.
@@ -1156,9 +1157,9 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     {
       if (&other != this) {
         RemoveAll(true);
-        PWaitAndSignal lock1(collectionMutex);
-        PWaitAndSignal lock2(other.collectionMutex);
-        CopySafeDictionary(dynamic_cast<Coll *>(other.collection));
+        PWaitAndSignal lock1(m_collectionMutex);
+        PWaitAndSignal lock2(other.m_collectionMutex);
+        CopySafeDictionary(dynamic_cast<Coll *>(other.m_collection));
       }
       return *this;
     }
@@ -1172,10 +1173,10 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       */
     virtual void SetAt(const Key & key, Base * obj)
       {
-        collectionMutex.Wait();
-        if (SafeAddObject(obj, dynamic_cast<Coll &>(*collection).GetAt(key)))
-          dynamic_cast<Coll &>(*collection).SetAt(key, obj);
-        collectionMutex.Signal();
+        this->m_collectionMutex.Wait();
+        if (SafeAddObject(obj, dynamic_cast<Coll &>(*this->m_collection).GetAt(key)))
+          dynamic_cast<Coll &>(*this->m_collection).SetAt(key, obj);
+        this->m_collectionMutex.Signal();
       }
 
     /**Remove an object to the collection.
@@ -1189,8 +1190,8 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     virtual PBoolean RemoveAt(
       const Key & key   ///< Key to find object to delete
     ) {
-        PWaitAndSignal mutex(collectionMutex);
-        return SafeRemove(dynamic_cast<Coll &>(*collection).GetAt(key));
+        PWaitAndSignal mutex(this->m_collectionMutex);
+        return SafeRemove(dynamic_cast<Coll &>(*this->m_collection).GetAt(key));
       }
 
     /**Determine of the dictionary contains an entry for the key.
@@ -1198,8 +1199,8 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     virtual PBoolean Contains(
       const Key & key
     ) {
-        PWaitAndSignal lock(collectionMutex);
-        return dynamic_cast<Coll &>(*collection).Contains(key);
+        PWaitAndSignal lock(this->m_collectionMutex);
+        return dynamic_cast<Coll &>(*this->m_collection).Contains(key);
       }
 
     /**Get the instance in the collection of the index.
@@ -1223,9 +1224,9 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       const Key & key,
       PSafetyMode mode = PSafeReadWrite
     ) const {
-        collectionMutex.Wait();
-        PSafePtr<Base> ptr(*this, PSafeReference, dynamic_cast<Coll &>(*collection).GetAt(key));
-        collectionMutex.Signal();
+        this->m_collectionMutex.Wait();
+        PSafePtr<Base> ptr(*this, PSafeReference, dynamic_cast<Coll &>(*this->m_collection).GetAt(key));
+        this->m_collectionMutex.Signal();
         ptr.SetSafetyMode(mode);
         return ptr;
       }
@@ -1236,11 +1237,27 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       const Key & from,   ///< Key to find object to move
       const Key & to      ///< Key to place found object
     ) {
-      PWaitAndSignal mutex(collectionMutex);
-      if (dynamic_cast<Coll &>(*collection).GetAt(to) != NULL)
+      PWaitAndSignal mutex(this->m_collectionMutex);
+      if (dynamic_cast<Coll &>(*this->m_collection).GetAt(to) != NULL)
         return false;
-      dynamic_cast<Coll &>(*collection).SetAt(to, dynamic_cast<Coll &>(*collection).GetAt(from));
+      dynamic_cast<Coll &>(*this->m_collection).SetAt(to, dynamic_cast<Coll &>(*this->m_collection).GetAt(from));
       return true;
+    }
+
+    /** Move all objects from other dictionary to this one.
+        This will delete all the objects from the other dictionary, but does
+        not delete the objects themselves.
+      */
+    void MoveFrom(PSafeDictionaryBase & other)
+    {
+      *this = other;
+      this->AllowDeleteObjects(); // We now own the objects, need to put this back on
+
+      // Remove from other without deleting them
+      bool del = other.m_deleteObjects;
+      other.DisallowDeleteObjects();
+      other.RemoveAll();
+      other.AllowDeleteObjects(del);
     }
 
     /**Get an array containing all the keys for the dictionary.
@@ -1248,9 +1265,9 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
     PArray<Key> GetKeys() const
     {
       PArray<Key> keys;
-      collectionMutex.Wait();
-      dynamic_cast<Coll &>(*collection).AbstractGetKeys(keys);
-      collectionMutex.Signal();
+      this->m_collectionMutex.Wait();
+      dynamic_cast<Coll &>(*this->m_collection).AbstractGetKeys(keys);
+      this->m_collectionMutex.Signal();
       return keys;
     }
   //@}
