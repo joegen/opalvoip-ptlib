@@ -630,7 +630,7 @@ void PSafePtrBase::Next()
     while (++idx < m_collection->m_collection->GetSize()) {
       m_currentObject = dynamic_cast<PSafeObject *>(m_collection->m_collection->GetAt(idx));
       if (m_currentObject != NULL) {
-        if (m_currentObject->SafeReference())
+        if (!m_currentObject->IsSafelyBeingRemoved() && m_currentObject->SafeReference())
           break;
         m_currentObject = NULL;
       }
@@ -661,7 +661,7 @@ void PSafePtrBase::Previous()
     while (idx-- > 0) {
       m_currentObject = dynamic_cast<PSafeObject *>(m_collection->m_collection->GetAt(idx));
       if (m_currentObject != NULL) {
-        if (m_currentObject->SafeReference())
+        if (!m_currentObject->IsSafelyBeingRemoved() && m_currentObject->SafeReference())
           break;
         m_currentObject = NULL;
       }
