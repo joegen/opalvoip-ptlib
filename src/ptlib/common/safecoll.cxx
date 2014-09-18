@@ -36,6 +36,7 @@
 #include <ptlib/safecoll.h>
 
 
+#define PTraceModule() "SafeColl"
 #define new PNEW
 
 
@@ -52,24 +53,34 @@ PSafeObject::PSafeObject(PSafeObject * indirectLock)
 PBoolean PSafeObject::SafeReference()
 {
 #if PTRACING
-  unsigned tracedReferenceCount = 0;
-#endif
-
+  unsigned count = 0;
   {
     PWaitAndSignal mutex(safetyMutex);
-    if (safelyBeingRemoved) {
-      PTRACE(3, "SafeColl\tAttempt to reference object being removed: " << GetClass() << ' ' << (void *)this);
-      return false;
-    }
-    safeReferenceCount++;
-#if PTRACING
-    tracedReferenceCount = safeReferenceCount;
-#endif
+    if (!safelyBeingRemoved)
+      count = ++safeReferenceCount;
   }
 
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tIncrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  unsigned level = count == 0  || m_traceContextIdentifier == 1234567890 ? 3 : 7;
+  if (PTrace::CanTrace(level)) {
+    ostream & trace = PTRACE_BEGIN(level);
+    trace << GetClass() << ' ' << (void *)this;
+    if (count != 0)
+      trace << " incremented reference count to " << count;
+    else {
+      trace << " removed, cannot reference";
+      if (PTrace::CanTrace(6))
+        PTrace::WalkStack(trace);
+    }
+    trace << PTrace::End;
+  }
+  return count > 0;
+#else
+  PWaitAndSignal mutex(safetyMutex);
+  if (safelyBeingRemoved)
+    return false;
+  ++safeReferenceCount;
   return true;
+#endif
 }
 
 
@@ -91,7 +102,7 @@ PBoolean PSafeObject::SafeDereference()
   safetyMutex.Signal();
 
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tDecrement reference count to " << tracedReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+         GetClass() << ' ' << (void *)this << " decremented reference count to " << tracedReferenceCount);
 
   return mayBeDeleted;
 }
@@ -99,56 +110,50 @@ PBoolean PSafeObject::SafeDereference()
 
 PBoolean PSafeObject::LockReadOnly() const
 {
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tWaiting read ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting read ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
-    PTRACE(6, "SafeColl\tBeing removed while waiting read ("<<(void *)this<<")");
+    PTRACE(6, "Being removed while waiting read ("<<(void *)this<<")");
     return false;
   }
 
   safetyMutex.Signal();
   safeInUse->StartRead();
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tLocked read ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked read ("<<(void *)this<<")");
   return true;
 }
 
 
 void PSafeObject::UnlockReadOnly() const
 {
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tUnlocked read ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked read ("<<(void *)this<<")");
   safeInUse->EndRead();
 }
 
 
 PBoolean PSafeObject::LockReadWrite()
 {
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tWaiting readWrite ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting readWrite ("<<(void *)this<<")");
   safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
     safetyMutex.Signal();
-    PTRACE(6, "SafeColl\tBeing removed while waiting readWrite ("<<(void *)this<<")");
+    PTRACE(6, "Being removed while waiting readWrite ("<<(void *)this<<")");
     return false;
   }
 
   safetyMutex.Signal();
   safeInUse->StartWrite();
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tLocked readWrite ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked readWrite ("<<(void *)this<<")");
   return true;
 }
 
 
 void PSafeObject::UnlockReadWrite()
 {
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         "SafeColl\tUnlocked readWrite ("<<(void *)this<<")");
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked readWrite ("<<(void *)this<<")");
   safeInUse->EndWrite();
 }
 
@@ -758,7 +763,7 @@ void PSafePtrBase::DeleteObject(PSafeObject * obj)
   if (obj == NULL)
     return;
 
-  PTRACE(6, "SafeColl\tDeleting object (" << obj << ')');
+  PTRACE(6, "Deleting object (" << obj << ')');
   delete obj;
 }
 
