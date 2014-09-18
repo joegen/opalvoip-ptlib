@@ -242,6 +242,12 @@ class PSafeObject : public PObject
       */
     void SafeRemove();
 
+    /**Indicate the object is being safely removed.
+       Note this returns the value outside of any mutexes, so it could change
+       at any moment. Care must be exercised in its use.
+      */
+    unsigned IsSafelyBeingRemoved() const { return m_safelyBeingRemoved; }
+
     /**Determine if the object can be safely deleted.
        This determines if the object has been flagged for deletion and all
        references to it have been released.
