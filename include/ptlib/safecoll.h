@@ -586,7 +586,7 @@ class PSafePtrBase : public PObject
     /**Return pointer to safe object.
       */
     template <class T>
-    T * GetObjectAs() const { return dynamic_cast<T *>(currentObject); }
+    T * GetObjectAs() const { return dynamic_cast<T *>(m_currentObject); }
 
     /**Get the locking mode used by this pointer.
       */
