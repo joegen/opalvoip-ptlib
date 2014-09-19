@@ -85,15 +85,16 @@
             char separator = *offset;
             *offset++ = '\0';
 
-    	      int status = 0;
-            char name[100];
-            size_t size = sizeof(name);
-	          char * ret = abi::__cxa_demangle(mangled, name, &size, &status);
+    	      int status = -1;
+	          char * demangled = abi::__cxa_demangle(mangled, NULL, NULL, &status);
             if (status == 0) {
               *mangled = '\0';
-              strm << symbols[i] << name << separator << offset;
+              strm << symbols[i] << demangled << separator << offset;
+              free(demangled);
               continue;
             }
+            if (demangled != NULL)
+              free(demangled);
           }
         }
       #endif // P_HAS_DEMANGLE
