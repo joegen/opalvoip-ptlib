@@ -10739,7 +10739,7 @@ if test "${with_openldap_dir+set}" = set; then :
                   { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for Open LDAP support" >&5
 $as_echo "$as_me: Using directory $withval for Open LDAP support" >&6;}
                   OPENLDAP_CFLAGS="-I$withval/include "
-                  OPENLDAP_LIBS="-L$withval/lib -lldap"
+                  OPENLDAP_LIBS="-L$withval/lib -lldap -llber"
 
 else
 
@@ -10803,7 +10803,7 @@ fi
 
 
                      OPENLDAP_CFLAGS=""
-                     OPENLDAP_LIBS="-lldap"
+                     OPENLDAP_LIBS="-lldap -llber"
 
 
 elif test $pkg_failed = untried; then
@@ -10811,7 +10811,7 @@ elif test $pkg_failed = untried; then
 $as_echo "no" >&6; }
 
                      OPENLDAP_CFLAGS=""
-                     OPENLDAP_LIBS="-lldap"
+                     OPENLDAP_LIBS="-lldap -llber"
 
 
 else
@@ -10908,11 +10908,6 @@ fi
 
 
 
-
-
-if test "x$HAS_OPENLDAP" = "x1" && test "x$OS_TAG" = "xP_MACOSX" ; then
-   LIBS+="-llber $LIBS"
-fi
 
 
 ac_ext=cpp
