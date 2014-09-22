@@ -1399,18 +1399,13 @@ PTLIB_MODULE_OPTION(
    [Open LDAP support],
    [ldap],
    [],
-   [-lldap],
+   [-lldap -llber],
    [#include <ldap.h>],
    [ldap_init("localhost", 1234)],
    [],
    [],
    [HAS_DNS_RESOLVER]
 )
-
-if test "x$HAS_OPENLDAP" = "x1" && test "x$OS_TAG" = "xP_MACOSX" ; then
-   LIBS+="-llber $LIBS"
-fi
-
 
 AC_LANG_POP(C)
 
