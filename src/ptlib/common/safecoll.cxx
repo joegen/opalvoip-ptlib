@@ -247,9 +247,9 @@ void PSafeLockReadWrite::Unlock()
 /////////////////////////////////////////////////////////////////////////////
 
 PSafeCollection::PSafeCollection(PCollection * coll)
-  : m_deleteObjectsTimer(NULL)
-  , m_collection(PAssertNULL(coll))
+  : m_collection(PAssertNULL(coll))
   , m_deleteObjects(true)
+  , m_deleteObjectsTimer(NULL)
 {
   m_collection->DisallowDeleteObjects();
   m_toBeRemoved.DisallowDeleteObjects();
