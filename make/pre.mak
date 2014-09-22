@@ -69,6 +69,10 @@ ifeq ($(P_SHAREDLIB),0)
   STATIC_BUILD:=yes
 endif
 
+ifeq ($(P_PROFILING),yes)
+  STATIC_BUILD:=yes
+endif
+
 ifndef STATIC_BUILD
   STATIC_BUILD:=no
 endif
