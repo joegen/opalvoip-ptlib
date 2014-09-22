@@ -812,6 +812,7 @@ PTLIB_BUILD
 PTLIB_MINOR
 PTLIB_MAJOR
 makedir
+P_PROFILING
 OPT_CFLAGS
 OPT_CPPFLAGS
 DEBUG_CFLAGS
@@ -901,6 +902,7 @@ ac_user_opts='
 enable_option_checking
 enable_ios
 enable_force32
+enable_profiling
 enable_minsize
 enable_deprecated
 enable_exceptions
@@ -1641,6 +1643,7 @@ Optional Features:
   --enable-ios=iphone|simulator
                           enable iOS support
   --enable-force32        Force 32-bit x86 build
+  --enable-profiling      Enable compiler generated profiling (gprof)
   --enable-minsize        Minimise the size of the lib by disabling least used
                           options
   --disable-deprecated    Stop compiler warning about deprecated functions
@@ -3165,6 +3168,11 @@ fi
 ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
+
+
+
+
+
 
 
 
@@ -5574,18 +5582,18 @@ else
 /* end confdefs.h.  */
 
   /* For now, do not test the preprocessor; as of 2007 there are too many
-         implementations with broken preprocessors.  Perhaps this can
-         be revisited in 2012.  In the meantime, code should not expect
-         #if to work with literals wider than 32 bits.  */
+	 implementations with broken preprocessors.  Perhaps this can
+	 be revisited in 2012.  In the meantime, code should not expect
+	 #if to work with literals wider than 32 bits.  */
       /* Test literals.  */
       long long int ll = 9223372036854775807ll;
       long long int nll = -9223372036854775807LL;
       unsigned long long int ull = 18446744073709551615ULL;
       /* Test constant expressions.   */
       typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       int i = 63;
 int
 main ()
@@ -5594,9 +5602,9 @@ main ()
       long long int llmax = 9223372036854775807ll;
       unsigned long long int ullmax = 18446744073709551615ull;
       return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
-              | (llmax / ll) | (llmax % ll)
-              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
-              | (ullmax / ull) | (ullmax % ull));
+	      | (llmax / ll) | (llmax % ll)
+	      | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+	      | (ullmax / ull) | (ullmax % ull));
   ;
   return 0;
 }
@@ -5628,33 +5636,33 @@ if ${ac_cv_type_long_long_int+:} false; then :
 else
   ac_cv_type_long_long_int=yes
       if test "x${ac_cv_prog_cc_c99-no}" = xno; then
-        ac_cv_type_long_long_int=$ac_cv_type_unsigned_long_long_int
-        if test $ac_cv_type_long_long_int = yes; then
-                                        if test "$cross_compiling" = yes; then :
+	ac_cv_type_long_long_int=$ac_cv_type_unsigned_long_long_int
+	if test $ac_cv_type_long_long_int = yes; then
+	  	  	  	  if test "$cross_compiling" = yes; then :
   :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <limits.h>
-                 #ifndef LLONG_MAX
-                 # define HALF \
-                          (1LL << (sizeof (long long int) * CHAR_BIT - 2))
-                 # define LLONG_MAX (HALF - 1 + HALF)
-                 #endif
+		 #ifndef LLONG_MAX
+		 # define HALF \
+			  (1LL << (sizeof (long long int) * CHAR_BIT - 2))
+		 # define LLONG_MAX (HALF - 1 + HALF)
+		 #endif
 int
 main ()
 {
 long long int n = 1;
-                 int i;
-                 for (i = 0; ; i++)
-                   {
-                     long long int m = n << i;
-                     if (m >> i != n)
-                       return 1;
-                     if (LLONG_MAX / 2 < m)
-                       break;
-                   }
-                 return 0;
+		 int i;
+		 for (i = 0; ; i++)
+		   {
+		     long long int m = n << i;
+		     if (m >> i != n)
+		       return 1;
+		     if (LLONG_MAX / 2 < m)
+		       break;
+		   }
+		 return 0;
   ;
   return 0;
 }
@@ -5668,7 +5676,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-        fi
+	fi
       fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_long_long_int" >&5
@@ -5691,18 +5699,18 @@ else
 /* end confdefs.h.  */
 
   /* For now, do not test the preprocessor; as of 2007 there are too many
-         implementations with broken preprocessors.  Perhaps this can
-         be revisited in 2012.  In the meantime, code should not expect
-         #if to work with literals wider than 32 bits.  */
+	 implementations with broken preprocessors.  Perhaps this can
+	 be revisited in 2012.  In the meantime, code should not expect
+	 #if to work with literals wider than 32 bits.  */
       /* Test literals.  */
       long long int ll = 9223372036854775807ll;
       long long int nll = -9223372036854775807LL;
       unsigned long long int ull = 18446744073709551615ULL;
       /* Test constant expressions.   */
       typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       int i = 63;
 int
 main ()
@@ -5711,9 +5719,9 @@ main ()
       long long int llmax = 9223372036854775807ll;
       unsigned long long int ullmax = 18446744073709551615ull;
       return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
-              | (llmax / ll) | (llmax % ll)
-              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
-              | (ullmax / ull) | (ullmax % ull));
+	      | (llmax / ll) | (llmax % ll)
+	      | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+	      | (ullmax / ull) | (ullmax % ull));
   ;
   return 0;
 }
@@ -6099,8 +6107,8 @@ DEBUG_CPPFLAGS="-D_DEBUG $DEBUG_CPPFLAGS"
 
    oldCPPFLAGS="$CPPFLAGS"
    CPPFLAGS="$CPPFLAGS -g3 -ggdb -O0"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking debug build -g3 -ggdb -O0" >&5
-$as_echo_n "checking debug build -g3 -ggdb -O0... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking debug build (-g3 -ggdb -O0)" >&5
+$as_echo_n "checking debug build (-g3 -ggdb -O0)... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6138,8 +6146,8 @@ OPT_CPPFLAGS="-DNDEBUG $OPT_CPPFLAGS"
 
    oldCPPFLAGS="$CPPFLAGS"
    CPPFLAGS="$CPPFLAGS -O3"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking optimised build -O3" >&5
-$as_echo_n "checking optimised build -O3... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking optimised build (-O3)" >&5
+$as_echo_n "checking optimised build (-O3)... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6170,6 +6178,59 @@ else
 fi
 
 
+
+
+
+# Check whether --enable-profiling was given.
+if test "${enable_profiling+set}" = set; then :
+  enableval=$enable_profiling;
+      if test "x$enableval" = "xyes"; then
+
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS -pg"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking has compiler supported profiling (-pg)" >&5
+$as_echo_n "checking has compiler supported profiling (-pg)... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+
+   if test "x$usable" = "xyes"; then :
+
+
+   LIBS="-pg $LIBS"
+
+   CFLAGS="-pg $CFLAGS"
+   CXXFLAGS="-pg $CXXFLAGS"
+
+               P_PROFILING="yes"
+
+
+
+fi
+
+
+      fi
+
+
+fi
 
 
 
@@ -18802,53 +18863,334 @@ fi
 
 
 
-echo ""
-echo "=========================== Configuration =============================="
-echo "                          OS Type :  $target_os"
-echo "                     Machine Type :  $target_cpu"
-echo ""
-echo "                           prefix :  $prefix"
-echo "                      exec_prefix :  $exec_prefix"
-echo "                       includedir :  $includedir"
-echo "                           libdir :  $libdir"
-echo "                      datarootdir :  $datarootdir"
-echo "                          makedir :  $makedir"
 
-echo ""
+   $as_echo ""
+   $as_echo "=========================== Configuration =============================="
 
-echo "                     DNS Resolver :  ${PTLIB_DNS_RESOLVER}"
-echo "                             IPv6 :  ${PTLIB_IPV6}"
-echo "            Packet Capture (PCAP) :  ${PTLIB_PCAP}"
-echo "               Expat (XML parser) :  ${PTLIB_EXPAT}"
-echo "                          OpenSSL :  ${PTLIB_OPENSSL}"
-echo "                       SASL/SASL2 :  ${PTLIB_SASL}/${PTLIB_SASL2}"
-echo "                         OpenLDAP :  ${PTLIB_OPENLDAP}"
-echo "                             ODBC :  ${PTLIB_ODBC}"
-echo "                              Lua :  ${PTLIB_LUA}"
-echo "                       Javascript :  ${PTLIB_V8} (V8)"
-echo "                           Curses :  ${PTLIB_CURSES}"
-echo "                        GStreamer :  ${PTLIB_GSTREAMER}"
+   if test "x${target_os}" = "x"; then :
+  $as_echo "                          OS Type : no"
+else
+  $as_echo "                          OS Type : ${target_os}"
 
-echo ""
+fi
 
-echo "                            Audio :  ${PTLIB_AUDIO}"
-echo "                             ALSA :  ${PTLIB_ALSA}"
-echo "                              ESD :  ${PTLIB_ESD}"
-echo "                              OSS :  ${PTLIB_OSS}"
-echo "                            Pulse :  ${PTLIB_PULSE}"
-echo "                              Sun :  ${PTLIB_SUNAUDIO}"
-echo "                              shm :  ${PTLIB_AUDIOSHM}"
 
-echo ""
 
-echo "                            Video :  ${PTLIB_VIDEO}"
-echo "                              SDL :  ${PTLIB_SDL}"
-echo "                     Video4linux  :  ${PTLIB_V4L}"
-echo "                     Video4linux2 :  ${PTLIB_V4L2}"
-echo "                              BSD :  ${PTLIB_BSDVIDEOCAP}"
-echo "                    IEEE-1394/AVC :  ${PTLIB_AVC1394}"
-echo "                    IEEE-1394/DC  :  ${PTLIB_DC1394}"
-echo "                       JPEG File  :  ${PTLIB_LIBJPEG}"
+   if test "x${target_cpu}" = "x"; then :
+  $as_echo "                     Machine Type : no"
+else
+  $as_echo "                     Machine Type : ${target_cpu}"
 
-echo ""
-echo "========================================================================"
+fi
+
+
+   if test "x$P_PROFILING" = "xyes"; then :
+  $as_echo ""
+      $as_echo "                        Profiling : ***** ENABLED *****"
+
+fi
+   $as_echo ""
+
+   if test "x${prefix}" = "x"; then :
+  $as_echo "                           prefix : no"
+else
+  $as_echo "                           prefix : ${prefix}"
+
+fi
+
+
+
+   if test "x${exec_prefix}" = "x"; then :
+  $as_echo "                      exec_prefix : no"
+else
+  $as_echo "                      exec_prefix : ${exec_prefix}"
+
+fi
+
+
+
+   if test "x${includedir}" = "x"; then :
+  $as_echo "                       includedir : no"
+else
+  $as_echo "                       includedir : ${includedir}"
+
+fi
+
+
+
+   if test "x${libdir}" = "x"; then :
+  $as_echo "                           libdir : no"
+else
+  $as_echo "                           libdir : ${libdir}"
+
+fi
+
+
+
+   if test "x${datarootdir}" = "x"; then :
+  $as_echo "                      datarootdir : no"
+else
+  $as_echo "                      datarootdir : ${datarootdir}"
+
+fi
+
+
+
+   if test "x${makedir}" = "x"; then :
+  $as_echo "                          makedir : no"
+else
+  $as_echo "                          makedir : ${makedir}"
+
+fi
+
+
+
+   $as_echo ""
+
+   if test "x${PTLIB_DNS_RESOLVER}" = "x"; then :
+  $as_echo "                     DNS Resolver : no"
+else
+  $as_echo "                     DNS Resolver : ${PTLIB_DNS_RESOLVER}"
+
+fi
+
+
+   if test "x${PTLIB_IPV6}" = "x"; then :
+  $as_echo "                             IPv6 : no"
+else
+  $as_echo "                             IPv6 : ${PTLIB_IPV6}"
+
+fi
+
+
+   if test "x${PTLIB_DNS_RESOLVER}" = "x"; then :
+  $as_echo "                     DNS Resolver : no"
+else
+  $as_echo "                     DNS Resolver : ${PTLIB_DNS_RESOLVER}"
+
+fi
+
+
+   if test "x${PTLIB_IPV6}" = "x"; then :
+  $as_echo "                             IPv6 : no"
+else
+  $as_echo "                             IPv6 : ${PTLIB_IPV6}"
+
+fi
+
+
+   if test "x${PTLIB_PCAP}" = "x"; then :
+  $as_echo "            Packet Capture (PCAP) : no"
+else
+  $as_echo "            Packet Capture (PCAP) : ${PTLIB_PCAP}"
+
+fi
+
+
+   if test "x${PTLIB_EXPAT}" = "x"; then :
+  $as_echo "               Expat (XML parser) : no"
+else
+  $as_echo "               Expat (XML parser) : ${PTLIB_EXPAT}"
+
+fi
+
+
+   if test "x${PTLIB_OPENSSL}" = "x"; then :
+  $as_echo "                          OpenSSL : no"
+else
+  $as_echo "                          OpenSSL : ${PTLIB_OPENSSL}"
+
+fi
+
+
+   if test "x${PTLIB_SASL}" = "x"; then :
+  $as_echo "                          SASL v1 : no"
+else
+  $as_echo "                          SASL v1 : ${PTLIB_SASL}"
+
+fi
+
+
+   if test "x${PTLIB_SASL2}" = "x"; then :
+  $as_echo "                          SASL v2 : no"
+else
+  $as_echo "                          SASL v2 : ${PTLIB_SASL2}"
+
+fi
+
+
+   if test "x${PTLIB_OPENLDAP}" = "x"; then :
+  $as_echo "                         OpenLDAP : no"
+else
+  $as_echo "                         OpenLDAP : ${PTLIB_OPENLDAP}"
+
+fi
+
+
+   if test "x${PTLIB_ODBC}" = "x"; then :
+  $as_echo "                             ODBC : no"
+else
+  $as_echo "                             ODBC : ${PTLIB_ODBC}"
+
+fi
+
+
+   if test "x${PTLIB_LUA}" = "x"; then :
+  $as_echo "                              Lua : no"
+else
+  $as_echo "                              Lua : ${PTLIB_LUA}"
+
+fi
+
+
+   if test "x${PTLIB_V8}" = "x"; then :
+  $as_echo "                  Javascript (V8) : no"
+else
+  $as_echo "                  Javascript (V8) : ${PTLIB_V8}"
+
+fi
+
+
+   if test "x${PTLIB_CURSES}" = "x"; then :
+  $as_echo "                           Curses : no"
+else
+  $as_echo "                           Curses : ${PTLIB_CURSES}"
+
+fi
+
+
+   if test "x${PTLIB_GSTREAMER}" = "x"; then :
+  $as_echo "                        GStreamer : no"
+else
+  $as_echo "                        GStreamer : ${PTLIB_GSTREAMER}"
+
+fi
+
+
+   $as_echo ""
+
+   if test "x${PTLIB_AUDIO}" = "x"; then :
+  $as_echo "                            Audio : no"
+else
+  $as_echo "                            Audio : ${PTLIB_AUDIO}"
+
+fi
+
+
+   if test "x${PTLIB_ALSA}" = "x"; then :
+  $as_echo "                             ALSA : no"
+else
+  $as_echo "                             ALSA : ${PTLIB_ALSA}"
+
+fi
+
+
+   if test "x${PTLIB_ESD}" = "x"; then :
+  $as_echo "                              ESD : no"
+else
+  $as_echo "                              ESD : ${PTLIB_ESD}"
+
+fi
+
+
+   if test "x${PTLIB_OSS}" = "x"; then :
+  $as_echo "                              OSS : no"
+else
+  $as_echo "                              OSS : ${PTLIB_OSS}"
+
+fi
+
+
+   if test "x${PTLIB_PULSE}" = "x"; then :
+  $as_echo "                            Pulse : no"
+else
+  $as_echo "                            Pulse : ${PTLIB_PULSE}"
+
+fi
+
+
+   if test "x${PTLIB_SUNAUDIO}" = "x"; then :
+  $as_echo "                              Sun : no"
+else
+  $as_echo "                              Sun : ${PTLIB_SUNAUDIO}"
+
+fi
+
+
+   if test "x${PTLIB_AUDIOSHM}" = "x"; then :
+  $as_echo "                              shm : no"
+else
+  $as_echo "                              shm : ${PTLIB_AUDIOSHM}"
+
+fi
+
+
+   $as_echo ""
+
+   if test "x${PTLIB_VIDEO}" = "x"; then :
+  $as_echo "                            Video : no"
+else
+  $as_echo "                            Video : ${PTLIB_VIDEO}"
+
+fi
+
+
+   if test "x${PTLIB_SDL}" = "x"; then :
+  $as_echo "                              SDL : no"
+else
+  $as_echo "                              SDL : ${PTLIB_SDL}"
+
+fi
+
+
+   if test "x${PTLIB_V4L}" = "x"; then :
+  $as_echo "                     Video4linux  : no"
+else
+  $as_echo "                     Video4linux  : ${PTLIB_V4L}"
+
+fi
+
+
+   if test "x${PTLIB_V4L2}" = "x"; then :
+  $as_echo "                     Video4linux2 : no"
+else
+  $as_echo "                     Video4linux2 : ${PTLIB_V4L2}"
+
+fi
+
+
+   if test "x${PTLIB_BSDVIDEOCAP}" = "x"; then :
+  $as_echo "                              BSD : no"
+else
+  $as_echo "                              BSD : ${PTLIB_BSDVIDEOCAP}"
+
+fi
+
+
+   if test "x${PTLIB_AVC1394}" = "x"; then :
+  $as_echo "                    IEEE-1394/AVC : no"
+else
+  $as_echo "                    IEEE-1394/AVC : ${PTLIB_AVC1394}"
+
+fi
+
+
+   if test "x${PTLIB_DC1394}" = "x"; then :
+  $as_echo "                    IEEE-1394/DC  : no"
+else
+  $as_echo "                    IEEE-1394/DC  : ${PTLIB_DC1394}"
+
+fi
+
+
+   if test "x${PTLIB_LIBJPEG}" = "x"; then :
+  $as_echo "                        JPEG File : no"
+else
+  $as_echo "                        JPEG File : ${PTLIB_LIBJPEG}"
+
+fi
+
+
+   $as_echo ""
+   $as_echo "========================================================================"
+

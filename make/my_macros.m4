@@ -326,6 +326,44 @@ AC_DEFUN([MY_VERSION_FILE],[
 ])
 
 
+AC_DEFUN([INTERNAL_OUTPUT_SUMMARY],[
+   m4_ifblank([$2],
+      AS_ECHO("$1"),
+      AS_IF(
+         [test "x${$2}" = "x"],
+         AS_ECHO("$1 : no"),
+         AS_ECHO("$1 : ${$2}")
+      )
+   )
+])
+
+dnl MY_OUTPUT_SUMMARY
+dnl Output summary of configuration at end of script
+AC_DEFUN([MY_OUTPUT_SUMMARY],[
+   AS_ECHO("")
+   AS_ECHO("=========================== Configuration ==============================")
+   INTERNAL_OUTPUT_SUMMARY([                          OS Type],[target_os])
+   INTERNAL_OUTPUT_SUMMARY([                     Machine Type],[target_cpu])
+   AS_IF(
+      [test "x$P_PROFILING" = "xyes"],
+      AS_ECHO("")
+      AS_ECHO("                        Profiling : ***** ENABLED *****")
+   )
+   AS_ECHO("")
+   INTERNAL_OUTPUT_SUMMARY([                           prefix],[prefix])
+   INTERNAL_OUTPUT_SUMMARY([                      exec_prefix],[exec_prefix])
+   INTERNAL_OUTPUT_SUMMARY([                       includedir],[includedir])
+   INTERNAL_OUTPUT_SUMMARY([                           libdir],[libdir])
+   INTERNAL_OUTPUT_SUMMARY([                      datarootdir],[datarootdir])
+   INTERNAL_OUTPUT_SUMMARY([                          makedir],[makedir])
+
+   AS_ECHO("")
+   m4_map_args_pair([INTERNAL_OUTPUT_SUMMARY], [AS_ECHO], $@)
+   AS_ECHO("")
+   AS_ECHO("========================================================================")
+])
+
+
 dnl ##################################################################
 
 dnl Now the common stuff, checks for stuffwe always use
@@ -623,7 +661,7 @@ dnl debug coredumps and macros.
 
 AC_SUBST(DEBUG_CPPFLAGS, "-D_DEBUG $DEBUG_CPPFLAGS")
 MY_COMPILE_IFELSE(
-   [debug build -g3 -ggdb -O0],
+   [debug build (-g3 -ggdb -O0)],
    [-g3 -ggdb -O0],
    [],
    [],
@@ -634,7 +672,7 @@ AC_SUBST(DEBUG_CFLAGS)
 
 AC_SUBST(OPT_CPPFLAGS, "-DNDEBUG $OPT_CPPFLAGS")
 MY_COMPILE_IFELSE(
-   [optimised build -O3],
+   [optimised build (-O3)],
    [-O3],
    [],
    [],
@@ -642,6 +680,26 @@ MY_COMPILE_IFELSE(
    [OPT_CFLAGS="-O2 $OPT_CFLAGS"]
 )
 AC_SUBST(OPT_CFLAGS)
+
+
+AC_ARG_ENABLE(
+   [profiling],
+   [AC_HELP_STRING([--enable-profiling], [Enable compiler generated profiling (gprof)])],
+   [
+      if test "x$enableval" = "xyes"; then
+         MY_COMPILE_IFELSE(
+            [has compiler supported profiling (-pg)],
+            [-pg],
+            [],
+            [],
+            [
+               MY_ADD_FLAGS([-pg],[],[-pg],[-pg])
+               AC_SUBST(P_PROFILING, "yes")
+            ]
+         )
+      fi
+   ]
+)
 
 
 dnl End of file
