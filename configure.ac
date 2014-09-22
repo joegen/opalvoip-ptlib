@@ -2483,53 +2483,41 @@ AC_OUTPUT()
 dnl ########################################################################
 dnl Summary
 dnl ########################################################################
-echo ""
-echo "=========================== Configuration =============================="
-echo "                          OS Type :  $target_os"
-echo "                     Machine Type :  $target_cpu"
-echo ""
-echo "                           prefix :  $prefix"
-echo "                      exec_prefix :  $exec_prefix"
-echo "                       includedir :  $includedir"
-echo "                           libdir :  $libdir"
-echo "                      datarootdir :  $datarootdir"
-echo "                          makedir :  $makedir"
+MY_OUTPUT_SUMMARY(
+   [                     DNS Resolver], PTLIB_DNS_RESOLVER,
+   [                             IPv6], PTLIB_IPV6,
+   [                     DNS Resolver], PTLIB_DNS_RESOLVER,
+   [                             IPv6], PTLIB_IPV6,
+   [            Packet Capture (PCAP)], PTLIB_PCAP,
+   [               Expat (XML parser)], PTLIB_EXPAT,
+   [                          OpenSSL], PTLIB_OPENSSL,
+   [                          SASL v1], PTLIB_SASL,
+   [                          SASL v2], PTLIB_SASL2,
+   [                         OpenLDAP], PTLIB_OPENLDAP,
+   [                             ODBC], PTLIB_ODBC,
+   [                              Lua], PTLIB_LUA,
+   [                  Javascript (V8)], PTLIB_V8,
+   [                           Curses], PTLIB_CURSES,
+   [                        GStreamer], PTLIB_GSTREAMER,
 
-echo ""
+   [], [],
 
-echo "                     DNS Resolver :  ${PTLIB_DNS_RESOLVER}"
-echo "                             IPv6 :  ${PTLIB_IPV6}"
-echo "            Packet Capture (PCAP) :  ${PTLIB_PCAP}"
-echo "               Expat (XML parser) :  ${PTLIB_EXPAT}"
-echo "                          OpenSSL :  ${PTLIB_OPENSSL}"
-echo "                       SASL/SASL2 :  ${PTLIB_SASL}/${PTLIB_SASL2}"
-echo "                         OpenLDAP :  ${PTLIB_OPENLDAP}"
-echo "                             ODBC :  ${PTLIB_ODBC}"
-echo "                              Lua :  ${PTLIB_LUA}"
-echo "                       Javascript :  ${PTLIB_V8} (V8)"
-echo "                           Curses :  ${PTLIB_CURSES}"
-echo "                        GStreamer :  ${PTLIB_GSTREAMER}"
+   [                            Audio], PTLIB_AUDIO,
+   [                             ALSA], PTLIB_ALSA,
+   [                              ESD], PTLIB_ESD,
+   [                              OSS], PTLIB_OSS,
+   [                            Pulse], PTLIB_PULSE,
+   [                              Sun], PTLIB_SUNAUDIO,
+   [                              shm], PTLIB_AUDIOSHM,
 
-echo ""
+   [], [],
 
-echo "                            Audio :  ${PTLIB_AUDIO}"
-echo "                             ALSA :  ${PTLIB_ALSA}"
-echo "                              ESD :  ${PTLIB_ESD}"
-echo "                              OSS :  ${PTLIB_OSS}"
-echo "                            Pulse :  ${PTLIB_PULSE}"
-echo "                              Sun :  ${PTLIB_SUNAUDIO}"
-echo "                              shm :  ${PTLIB_AUDIOSHM}"
-
-echo ""
-
-echo "                            Video :  ${PTLIB_VIDEO}"
-echo "                              SDL :  ${PTLIB_SDL}"
-echo "                     Video4linux  :  ${PTLIB_V4L}"
-echo "                     Video4linux2 :  ${PTLIB_V4L2}"
-echo "                              BSD :  ${PTLIB_BSDVIDEOCAP}"
-echo "                    IEEE-1394/AVC :  ${PTLIB_AVC1394}"
-echo "                    IEEE-1394/DC  :  ${PTLIB_DC1394}"
-echo "                       JPEG File  :  ${PTLIB_LIBJPEG}"
-
-echo ""
-echo "========================================================================"
+   [                            Video], PTLIB_VIDEO,
+   [                              SDL], PTLIB_SDL,
+   [                     Video4linux ], PTLIB_V4L,
+   [                     Video4linux2], PTLIB_V4L2,
+   [                              BSD], PTLIB_BSDVIDEOCAP,
+   [                    IEEE-1394/AVC], PTLIB_AVC1394,
+   [                    IEEE-1394/DC ], PTLIB_DC1394,
+   [                        JPEG File], [PTLIB_LIBJPEG]dnl
+)
