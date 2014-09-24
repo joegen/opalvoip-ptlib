@@ -1014,6 +1014,62 @@ class PTraceSaveContextIdentifier
 #endif
 
 
+///////////////////////////////////////////////////////////////////////////////
+// Profiling
+
+#ifdef __GNUC__
+  #define PPROFILE_EXCLUDE(func)  func  __attribute__((no_instrument_function))
+#else
+  #define PPROFILE_EXCLUDE(func) func
+#endif
+
+#if P_PROFILING
+
+namespace PProfiling
+{
+  class Block
+  {
+    public:
+      PPROFILE_EXCLUDE(
+        Block(
+          const char * name,
+          const char * file,
+          unsigned line
+        )
+      );
+      PPROFILE_EXCLUDE(
+        ~Block()
+      );
+
+    protected:
+      const char * m_name;
+  };
+
+  #if P_PROFILING==2
+    #define PPROFILE_BLOCK(name) ::PProfiling::Block p_profile_block_instance(name, __FILE__, __LINE__)
+    #define PPROFILE_FUNCTION()  ::PProfiling::Block p_profile_block_instance(__FUNCTION__, __FILE__, __LINE__)
+  #endif
+
+  PPROFILE_EXCLUDE(
+    void Dump(ostream & strm)
+  );
+  PPROFILE_EXCLUDE(
+    void Analyse(ostream & strm)
+  );
+};
+#endif
+
+#ifndef PPROFILE_BLOCK
+#define PPROFILE_BLOCK(...)
+#endif
+#ifndef PPROFILE_FUNCTION
+#define PPROFILE_FUNCTION()
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Memory management
+
 #if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)) 
 
 #define PMEMORY_HEAP 1
