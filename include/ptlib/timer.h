@@ -326,6 +326,7 @@ class PTimer : public PTimeInterval
 
   /**@name Global real time functions */
   //@{
+    PPROFILE_EXCLUDE(
     /** Get the number of milliseconds since some arbtrary point in time. This
        is a platform dependent function that yields a real time counter.
        
@@ -338,7 +339,8 @@ class PTimer : public PTimeInterval
        @return
        millisecond counter.
      */
-    static PTimeInterval Tick();
+    static PTimeInterval Tick()
+    );
 
     /** Get the smallest number of milliseconds that the timer can be set to.
        All actual timing events will be rounded up to the next value. This is

@@ -255,6 +255,7 @@
 
   #undef P_HAS_BACKTRACE
   #undef P_HAS_DEMANGLE
+  #undef P_PROFILING
 
 #endif //P_ANDROID
 

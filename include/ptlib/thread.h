@@ -290,7 +290,7 @@ class PThread : public PObject
       * thread that may be terminating is a very bad idea.
       */
     virtual PThreadIdentifier GetThreadId() const { return m_threadId; }
-    static PThreadIdentifier GetCurrentThreadId();
+    PPROFILE_EXCLUDE(static PThreadIdentifier GetCurrentThreadId());
 
     /// Times for execution of the thread.
     struct Times
