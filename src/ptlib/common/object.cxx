@@ -1264,4 +1264,343 @@ istream & istream::operator>>(PUInt64 & v)
 #endif // P_TORNADO
 
 
+#if P_PROFILING
+// Currently only supported in GNU && *nix
+
+#include <fstream>
+
+#if defined(P_LINUX)
+  #include <sys/syscall.h>
+  typedef pid_t ThreadId;
+  #define GetThreadId() syscall(SYS_gettid)
+#else
+  typedef PThreadIdentifier ThreadId;
+  #define GetThreadId() PThread::GetCurrentThreadId()
+#endif
+
+
+namespace PProfiling
+{
+
+#if defined(__i386__) || defined(__x86_64__)
+  #define GetTimestamp(when) { uint32_t l,h; __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h)); when = ((uint64_t)h<<32)|l; }
+#elif defined(_M_IX86) || defined(_M_X64)
+  #define GetTimestamp(when) when = __rdtsc()
+#elif defined(_WIN32)
+  #define GetTimestamp(when) { LARGE_INTEGER li; QueryPerformanceCounter(&li); when = li.QuadPart; }
+#else
+  #define GetTimestamp(when) { timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); when = t.tv_sec*1000000000ULL+t.tv_nsec; }
+#endif
+
+
+#ifdef P_ATOMICITY_BUILTIN
+  #define AddToList() m_link = __sync_lock_test_and_set(&s_records.m_list, this)
+#elif defined(_WIN32)
+  #define AddToList() m_link = static_cast<Record *>(_InterlockedExchangePointer(reinterpret_cast<PVOID *>(&s_records.m_list), this))
+#else
+  #define AddToList() \
+            pthread_mutex_lock(&s_records.m_mutex); \
+            m_link = this; \
+            s_records.m_list = val; \
+            pthread_mutex_unlock(&s_records.m_mutex);
+  #define DefineMutex pthread_mutex_t m_mutex
+  #define InitMutex   , m_mutex(PTHREAD_MUTEX_INITIALIZER)
+#endif
+#ifndef DefineMutex
+#define DefineMutex
+#endif
+#ifndef InitMutex
+#define InitMutex
+#endif
+
+  enum RecordType
+  {
+    e_AutoEntry,
+    e_AutoExit,
+    e_ManualEntry,
+    e_ManualExit
+  };
+
+  struct Record
+  {
+    PPROFILE_EXCLUDE(Record(bool entry, void * function, void * caller));
+    PPROFILE_EXCLUDE(Record(bool entry, const char * name, const char * file, unsigned line));
+
+    PPROFILE_EXCLUDE(Record(const Record & other));
+    PPROFILE_EXCLUDE(Record & operator=(const Record & other));
+    PPROFILE_EXCLUDE(bool operator<(const Record & other) const);
+
+    PPROFILE_EXCLUDE(void PrintOn(ostream & out) const);
+
+    union
+    {
+      struct
+      {
+        void * m_pointer;
+        void * m_caller;
+      };
+      struct
+      {
+        const char * m_name;
+        const char * m_file;
+        unsigned     m_line;
+      };
+    } m_function;
+
+    RecordType m_type;
+    ThreadId   m_thread;
+    uint64_t   m_when;
+    Record   * m_link;
+  };
+
+  struct Records
+  {
+    public:
+      PPROFILE_EXCLUDE(Records());
+      PPROFILE_EXCLUDE(~Records());
+
+      Record  * m_list;
+      uint64_t  m_start;
+      DefineMutex;
+  };
+  static Records s_records;
+
+
+  Record::Record(bool entry, void * function, void * caller)
+    : m_type(entry ? e_AutoEntry : e_AutoExit)
+    , m_thread(GetThreadId())
+  {
+    m_function.m_pointer = function;
+    m_function.m_caller = caller;
+
+    GetTimestamp(m_when);
+    AddToList();
+  }
+
+
+  Record::Record(bool entry, const char * name, const char * file, unsigned line)
+    : m_type(entry ? e_ManualEntry : e_ManualExit)
+    , m_thread(GetThreadId())
+  {
+    m_function.m_name = name;
+    m_function.m_file = file;
+    m_function.m_line = line;
+
+    GetTimestamp(m_when);
+    AddToList();
+  }
+
+
+  Record::Record(const Record & other)
+    : m_function(other.m_function)
+    , m_type(other.m_type)
+    , m_thread(other.m_thread)
+    , m_when(other.m_when)
+    , m_link(NULL)
+  {
+  }
+
+
+  Record & Record::operator=(const Record & other)
+  {
+    m_function = other.m_function;
+    m_type = other.m_type;
+    m_thread = other.m_thread;
+    m_when = other.m_when;
+    m_link = NULL;
+    return *this;
+  }
+
+
+  bool Record::operator<(const Record & other) const
+  {
+    if (m_thread < other.m_thread)
+      return true;
+    if (m_thread > other.m_thread)
+      return false;
+
+    switch (m_type) {
+      case e_AutoEntry :
+      case e_AutoExit :
+        return m_function.m_pointer < other.m_function.m_pointer;
+
+      case e_ManualEntry :
+      case e_ManualExit :
+        return m_function.m_name < other.m_function.m_name;
+    }
+
+    return false;
+  }
+
+
+  void Record::PrintOn(ostream & out) const
+  {
+    switch (m_type) {
+      case e_AutoEntry :
+        out << "AutoEnter\t" << m_function.m_pointer << '\t' << m_function.m_caller;
+        break;
+      case e_AutoExit :
+        out << "AutoExit\t" << m_function.m_pointer << '\t' << m_function.m_caller;
+        break;
+      case e_ManualEntry :
+        out << "ManualEnter\t" << m_function.m_name << '\t' << m_function.m_file << '(' << m_function.m_line << ')';
+        break;
+      case e_ManualExit :
+        out << "ManualExit\t" << m_function.m_name << '\t';
+    }
+
+    out << '\t' << m_thread << '\t' << m_when << '\n';
+  }
+
+  Records::Records()
+    : m_list(NULL)
+    InitMutex
+  {
+    GetTimestamp(m_start);
+  }
+
+
+  Records::~Records()
+  {
+    if (m_list == NULL)
+      return;
+
+    const char * filename;
+
+    if ((filename = getenv("PTLIB_RAW_PROFILING_FILENAME")) != NULL) {
+      ofstream out(filename, ios::out | ios::trunc);
+      if (out.is_open())
+        Dump(out);
+    }
+
+    if ((filename = getenv("PTLIB_PROFILING_FILENAME")) != NULL) {
+      ofstream out(filename, ios::out | ios::trunc);
+      if (out.is_open())
+        Analyse(out);
+    }
+
+    while (m_list != NULL) {
+      Record * info = m_list;
+      m_list = info->m_link;
+      delete info;
+    }
+  }
+
+
+  Block::Block(const char * name, const char * file, unsigned line)
+    : m_name(name)
+  {
+    new PProfiling::Record(true, name, file, line);
+  }
+
+
+  Block::~Block()
+  {
+    new PProfiling::Record(false, m_name, NULL, 0);
+  }
+
+
+  void Dump(ostream & strm)
+  {
+    for (Record * info = s_records.m_list; info != NULL; info = info->m_link)
+      info->PrintOn(strm);
+  }
+
+
+  struct Accumulator
+  {
+    mutable unsigned m_count;
+    mutable uint64_t m_time;
+
+    PPROFILE_EXCLUDE(Accumulator());
+    PPROFILE_EXCLUDE(void Accumulate(Record * entry, Record * exit));
+  };
+
+  Accumulator::Accumulator()
+    : m_count(0)
+    , m_time(0)
+  {
+  }
+
+  void Accumulator::Accumulate(Record * entry, Record * exit)
+  {
+    ++m_count;
+    m_time += exit->m_when - entry->m_when;
+  }
+
+
+  void Analyse(ostream & strm)
+  {
+    uint64_t duration;
+    GetTimestamp(duration);
+    duration -= s_records.m_start;
+
+    std::map<Record, Accumulator> accumulators;
+
+    for (Record * exit = s_records.m_list; exit != NULL; exit = exit->m_link) {
+      switch (exit->m_type) {
+        case e_AutoExit :
+          for (Record * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
+            if (entry->m_function.m_pointer == exit->m_function.m_pointer && entry->m_thread == exit->m_thread) {
+              accumulators[*entry].Accumulate(entry, exit);
+              break;
+            }
+          }
+          break;
+
+        case e_ManualExit :
+          for (Record * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
+            if (entry->m_function.m_name == exit->m_function.m_name && entry->m_thread == exit->m_thread) {
+              accumulators[*entry].Accumulate(entry, exit);
+              break;
+            }
+          }
+      }
+    }
+
+    std::streamsize width = 0;
+    for (std::map<Record, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
+      std::streamsize len = it->first.m_type == e_ManualEntry ? strlen(it->first.m_function.m_name) : 18;
+      if (len > width)
+        width = len;
+    }
+
+    strm << "Summary profile: " << accumulators.size() << " functions, total time=" << duration << "\n\n";
+    for (std::map<Record, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
+      strm << "  " << left << setw(width+2);
+      if (it->first.m_type == e_ManualEntry)
+        strm << it->first.m_function.m_name;
+      else
+        strm << it->first.m_function.m_pointer;
+      uint64_t avg = it->second.m_time / it->second.m_count;
+      strm << "thread=" << setw(10) << it->first.m_thread
+           << "count=" << setw(10) << it->second.m_count
+           << "avg=" << setw(16) << avg << " (" << setprecision(4) << (avg*100.0/duration) << "%)\n";
+    }
+  }
+};
+
+#ifdef __GNUC__
+extern "C"
+{
+  #undef new
+
+  PPROFILE_EXCLUDE(void __cyg_profile_func_enter(void * function, void * caller));
+  PPROFILE_EXCLUDE(void __cyg_profile_func_exit(void * function, void * caller));
+
+  void __cyg_profile_func_enter(void * function, void * caller)
+  {
+    new PProfiling::Record(true, function, caller);
+  }
+
+  void __cyg_profile_func_exit(void * function, void * caller)
+  {
+    new PProfiling::Record(false, function, caller);
+  }
+};
+#endif // __GNUC__
+
+#endif // P_PROFILING
+
+
 // End Of File ///////////////////////////////////////////////////////////////
