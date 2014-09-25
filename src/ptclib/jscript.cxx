@@ -194,7 +194,7 @@ private:
 public:
   Private()
   {
-    static PAtomicBoolean initialised;
+    static atomic<bool> initialised;
     if (!initialised.TestAndSet(true)) {
 #if P_V8_API > 1
       v8::V8::InitializeICU();

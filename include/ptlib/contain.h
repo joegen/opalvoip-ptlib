@@ -40,7 +40,7 @@
 
 
 #include <ptlib/object.h>
-#include <ptlib/critsec.h>
+#include <ptlib/atomic.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ class PContainerReference
     }
 
     PINDEX         size;          // Size of what the container contains
-    PAtomicInteger count;         // reference count to the container content - guaranteed to be atomic
+    atomic<uint32_t> count;         // reference count to the container content - guaranteed to be atomic
     bool           deleteObjects; // Used by PCollection but put here for efficiency
     bool           constObject;   // Indicates object is constant/static, copy on write.
 

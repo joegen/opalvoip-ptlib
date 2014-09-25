@@ -40,7 +40,7 @@
 
 #include <ptlib/psync.h>
 #include <limits.h>
-#include <ptlib/critsec.h>
+#include <ptlib/atomic.h>
 
 /**This class defines a thread synchronisation object. This is in the form of a
    integer semaphore. The semaphore has a count and a maximum value. The

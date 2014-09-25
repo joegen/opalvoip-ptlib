@@ -957,7 +957,7 @@ std::ostream & operator<<(ostream & strm, const PTrace::Throttle & throttle)
 
 #if PTRACING==2
 
-static PAtomicInteger g_lastContextIdentifer;
+static atomic<uint32_t> g_lastContextIdentifer;
 
 unsigned PTrace::GetNextContextIdentifier()
 {
@@ -2104,7 +2104,7 @@ bool PProcess::SignalTimerChange()
   if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 
     return false;
 
-  if (m_keepingHouse.TestAndSet(true))
+  if (m_keepingHouse.exchange(true))
     m_signalHouseKeeper.Signal();
   else
     m_houseKeeper = new PThreadObj<PProcess>(*this, &PProcess::HouseKeeping, false, "PTLib Housekeeper");
@@ -2225,7 +2225,7 @@ void PProcess::OnThreadEnded(PThread & PTRACE_PARAM(thread))
     PThread::Times times;
     if (thread.GetTimes(times)) {
       PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
-    }
+  }
   }
 #endif
 }

@@ -74,7 +74,7 @@ class PConfig::Cached : public PDictionary<PCaselessString, PStringOptions>
     PDECLARE_NOTIFIER(PTimer, Cached, FlushTimeout);
 
     PFilePath      m_filePath;
-    PAtomicInteger m_instanceCount;
+    atomic<uint32_t> m_instanceCount;
     PMutex         m_mutex;
     bool           m_dirty;
     bool           m_canSave;
