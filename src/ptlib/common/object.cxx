@@ -1264,71 +1264,59 @@ istream & istream::operator>>(PUInt64 & v)
 #endif // P_TORNADO
 
 
+///////////////////////////////////////////////////////////////////////////////
+
 #if P_PROFILING
 // Currently only supported in GNU && *nix
 
 #include <fstream>
 
-#if defined(P_LINUX)
-  #include <sys/syscall.h>
-  typedef pid_t ThreadId;
-  #define GetThreadId() syscall(SYS_gettid)
-#else
-  typedef PThreadIdentifier ThreadId;
-  #define GetThreadId() PThread::GetCurrentThreadId()
-#endif
-
-
 namespace PProfiling
 {
 
 #if defined(__i386__) || defined(__x86_64__)
-  #define GetTimestamp(when) { uint32_t l,h; __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h)); when = ((uint64_t)h<<32)|l; }
+#define GetTimestamp(when) { uint32_t l,h; __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h)); when = ((uint64_t)h<<32)|l; }
+PPROFILE_EXCLUDE(void GetFrequency(uint64_t & freq))
+void GetFrequency(uint64_t & freq)
+{
+  ifstream cpuinfo("/proc/cpuinfo", ios::in);
+  while (cpuinfo.good()) {
+    char line[100];
+    cpuinfo.getline(line);
+    if (strcmp(line, "cpu MHz") == 0) {
+      freq = (uint64_t)(atof(strchr(line, ':')+1)*1000000);
+      break;
+    }
+  }
+}
 #elif defined(_M_IX86) || defined(_M_X64)
-  #define GetTimestamp(when) when = __rdtsc()
+#define GetTimestamp(when) when = __rdtsc()
+#define GetFrequency(freq) { LARGE_INTEGER li; QueryPerformanceFrequency(&li); freq = li.QuadPart*1000; }
 #elif defined(_WIN32)
-  #define GetTimestamp(when) { LARGE_INTEGER li; QueryPerformanceCounter(&li); when = li.QuadPart; }
+#define GetTimestamp(when) { LARGE_INTEGER li; QueryPerformanceCounter(&li); when = li.QuadPart; }
+#define GetFrequency(freq) { LARGE_INTEGER li; QueryPerformanceFrequency(&li); freq = li.QuadPart; }
 #else
-  #define GetTimestamp(when) { timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); when = t.tv_sec*1000000000ULL+t.tv_nsec; }
+#define GetTimestamp(when) { timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); when = t.tv_sec*1000000000ULL+t.tv_nsec; }
+#define GetFrequency(freq) freq = 1000000000ULL
 #endif
 
 
-#ifdef P_ATOMICITY_BUILTIN
-  #define AddToList() m_link = __sync_lock_test_and_set(&s_records.m_list, this)
-#elif defined(_WIN32)
-  #define AddToList() m_link = static_cast<Record *>(_InterlockedExchangePointer(reinterpret_cast<PVOID *>(&s_records.m_list), this))
-#else
-  #define AddToList() \
-            pthread_mutex_lock(&s_records.m_mutex); \
-            m_link = this; \
-            s_records.m_list = val; \
-            pthread_mutex_unlock(&s_records.m_mutex);
-  #define DefineMutex pthread_mutex_t m_mutex
-  #define InitMutex   , m_mutex(PTHREAD_MUTEX_INITIALIZER)
-#endif
-#ifndef DefineMutex
-#define DefineMutex
-#endif
-#ifndef InitMutex
-#define InitMutex
-#endif
-
-  enum RecordType
+  enum FunctionType
   {
     e_AutoEntry,
     e_AutoExit,
     e_ManualEntry,
-    e_ManualExit
+    e_ManualExit,
   };
 
-  struct Record
+  struct FunctionInfo
   {
-    PPROFILE_EXCLUDE(Record(bool entry, void * function, void * caller));
-    PPROFILE_EXCLUDE(Record(bool entry, const char * name, const char * file, unsigned line));
+    PPROFILE_EXCLUDE(FunctionInfo(bool entry, void * function, void * caller));
+    PPROFILE_EXCLUDE(FunctionInfo(bool entry, const char * name, const char * file, unsigned line));
 
-    PPROFILE_EXCLUDE(Record(const Record & other));
-    PPROFILE_EXCLUDE(Record & operator=(const Record & other));
-    PPROFILE_EXCLUDE(bool operator<(const Record & other) const);
+    PPROFILE_EXCLUDE(FunctionInfo(const FunctionInfo & other));
+    PPROFILE_EXCLUDE(FunctionInfo & operator=(const FunctionInfo & other));
+    PPROFILE_EXCLUDE(bool operator<(const FunctionInfo & other) const);
 
     PPROFILE_EXCLUDE(void PrintOn(ostream & out) const);
 
@@ -1347,51 +1335,68 @@ namespace PProfiling
       };
     } m_function;
 
-    RecordType m_type;
-    ThreadId   m_thread;
-    uint64_t   m_when;
-    Record   * m_link;
+    FunctionType            m_type;
+    PUniqueThreadIdentifier m_thread;
+    uint64_t                m_when;
+    FunctionInfo          * m_link;
   };
 
-  struct Records
+
+  struct ThreadInfo
   {
-    public:
-      PPROFILE_EXCLUDE(Records());
-      PPROFILE_EXCLUDE(~Records());
+    PPROFILE_EXCLUDE(ThreadInfo());
+    PPROFILE_EXCLUDE(ThreadInfo(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu));
+    PPROFILE_EXCLUDE(friend ostream & operator<<(ostream & strm, const ThreadInfo & info));
 
-      Record  * m_list;
-      uint64_t  m_start;
-      DefineMutex;
+    PUniqueThreadIdentifier m_id;
+    std::string             m_name;
+    PTimeInterval           m_real;
+    PTimeInterval           m_cpu;
+    ThreadInfo            * m_link;
   };
-  static Records s_records;
 
 
-  Record::Record(bool entry, void * function, void * caller)
+  struct Database
+  {
+  public:
+    PPROFILE_EXCLUDE(Database());
+    PPROFILE_EXCLUDE(~Database());
+
+    uint64_t m_start;
+    atomic<FunctionInfo *> m_functions;
+    atomic<ThreadInfo *>   m_threads;
+  };
+  static Database s_database;
+
+
+  /////////////////////////////////////////////////////////////////////
+
+  FunctionInfo::FunctionInfo(bool entry, void * function, void * caller)
     : m_type(entry ? e_AutoEntry : e_AutoExit)
-    , m_thread(GetThreadId())
+    , m_thread(PThread::GetCurrentUniqueIdentifier())
   {
     m_function.m_pointer = function;
     m_function.m_caller = caller;
 
     GetTimestamp(m_when);
-    AddToList();
+    m_link = s_database.m_functions.exchange(this);
   }
 
 
-  Record::Record(bool entry, const char * name, const char * file, unsigned line)
+  FunctionInfo::FunctionInfo(bool entry, const char * name, const char * file, unsigned line)
     : m_type(entry ? e_ManualEntry : e_ManualExit)
-    , m_thread(GetThreadId())
+    , m_thread(PThread::GetCurrentUniqueIdentifier())
   {
     m_function.m_name = name;
     m_function.m_file = file;
     m_function.m_line = line;
 
     GetTimestamp(m_when);
-    AddToList();
+    m_link = s_database.m_functions.exchange(this);
   }
 
 
-  Record::Record(const Record & other)
+  FunctionInfo::FunctionInfo(const FunctionInfo & other)
     : m_function(other.m_function)
     , m_type(other.m_type)
     , m_thread(other.m_thread)
@@ -1401,7 +1406,7 @@ namespace PProfiling
   }
 
 
-  Record & Record::operator=(const Record & other)
+  FunctionInfo & FunctionInfo::operator=(const FunctionInfo & other)
   {
     m_function = other.m_function;
     m_type = other.m_type;
@@ -1412,7 +1417,7 @@ namespace PProfiling
   }
 
 
-  bool Record::operator<(const Record & other) const
+  bool FunctionInfo::operator<(const FunctionInfo & other) const
   {
     if (m_thread < other.m_thread)
       return true;
@@ -1420,12 +1425,12 @@ namespace PProfiling
       return false;
 
     switch (m_type) {
-      case e_AutoEntry :
-      case e_AutoExit :
+      case e_AutoEntry:
+      case e_AutoExit:
         return m_function.m_pointer < other.m_function.m_pointer;
 
-      case e_ManualEntry :
-      case e_ManualExit :
+      case e_ManualEntry:
+      case e_ManualExit:
         return m_function.m_name < other.m_function.m_name;
     }
 
@@ -1433,36 +1438,36 @@ namespace PProfiling
   }
 
 
-  void Record::PrintOn(ostream & out) const
+  void FunctionInfo::PrintOn(ostream & out) const
   {
     switch (m_type) {
-      case e_AutoEntry :
+      case e_AutoEntry:
         out << "AutoEnter\t" << m_function.m_pointer << '\t' << m_function.m_caller;
         break;
-      case e_AutoExit :
+      case e_AutoExit:
         out << "AutoExit\t" << m_function.m_pointer << '\t' << m_function.m_caller;
         break;
-      case e_ManualEntry :
+      case e_ManualEntry:
         out << "ManualEnter\t" << m_function.m_name << '\t' << m_function.m_file << '(' << m_function.m_line << ')';
         break;
-      case e_ManualExit :
+      case e_ManualExit:
         out << "ManualExit\t" << m_function.m_name << '\t';
     }
 
     out << '\t' << m_thread << '\t' << m_when << '\n';
   }
 
-  Records::Records()
-    : m_list(NULL)
-    InitMutex
+  Database::Database()
+    : m_functions(NULL)
+    , m_threads(NULL)
   {
     GetTimestamp(m_start);
   }
 
 
-  Records::~Records()
+  Database::~Database()
   {
-    if (m_list == NULL)
+    if (static_cast<FunctionInfo *>(m_functions) == NULL)
       return;
 
     const char * filename;
@@ -1479,68 +1484,132 @@ namespace PProfiling
         Analyse(out);
     }
 
-    while (m_list != NULL) {
-      Record * info = m_list;
-      m_list = info->m_link;
-      delete info;
+    Reset();
+  }
+
+
+  void Reset()
+  {
+    FunctionInfo * func = s_database.m_functions.exchange(NULL);
+    while (func != NULL) {
+      FunctionInfo * del = func;
+      func = func->m_link;
+      delete del;
     }
+
+    ThreadInfo * thrd = s_database.m_threads.exchange(NULL);
+    while (thrd != NULL) {
+      ThreadInfo * del = thrd;
+      thrd = thrd->m_link;
+      delete del;
+    }
+  }
+
+
+  void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
+  {
+    new ThreadInfo(thread, real, cpu);
+  }
+
+
+  ThreadInfo::ThreadInfo()
+    : m_id(0)
+  {
+  }
+
+
+  ThreadInfo::ThreadInfo(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
+    : m_id(thread.GetUniqueIdentifier())
+    , m_name(thread.GetThreadName().GetPointer())
+    , m_real(real)
+    , m_cpu(cpu)
+  {
+    m_link = s_database.m_threads.exchange(this);
+  }
+
+
+  ostream & operator<<(ostream & strm, const ThreadInfo & info)
+  {
+    std::streamsize w = strm.width();
+    return strm << setw(0) << "Thread \"" << info.m_name << left << setw(w-info.m_name.length()) << '"'
+                << "real=" << scientific << setprecision(3) << setw(10) << info.m_real <<
+                    "cpu=" << scientific << setprecision(3) << setw(10) << info.m_cpu  <<
+                    '('    << fixed      << setprecision(2) << (100.0*info.m_cpu.GetMilliSeconds()/info.m_real.GetMilliSeconds()) << "%)";
   }
 
 
   Block::Block(const char * name, const char * file, unsigned line)
     : m_name(name)
   {
-    new PProfiling::Record(true, name, file, line);
+    new FunctionInfo(true, name, file, line);
   }
 
 
   Block::~Block()
   {
-    new PProfiling::Record(false, m_name, NULL, 0);
+    new FunctionInfo(false, m_name, NULL, 0);
   }
 
 
   void Dump(ostream & strm)
   {
-    for (Record * info = s_records.m_list; info != NULL; info = info->m_link)
+    for (FunctionInfo * info = s_database.m_functions; info != NULL; info = info->m_link)
       info->PrintOn(strm);
   }
 
 
   struct Accumulator
   {
-    mutable unsigned m_count;
-    mutable uint64_t m_time;
+    unsigned m_count;
+    uint64_t m_sum;
+    uint64_t m_minimum;
+    uint64_t m_maximum;
 
     PPROFILE_EXCLUDE(Accumulator());
-    PPROFILE_EXCLUDE(void Accumulate(Record * entry, Record * exit));
+    PPROFILE_EXCLUDE(void Accumulate(FunctionInfo * entry, FunctionInfo * exit));
   };
 
   Accumulator::Accumulator()
     : m_count(0)
-    , m_time(0)
+    , m_sum(0)
+    , m_minimum(UINT64_MAX)
+    , m_maximum(0)
   {
   }
 
-  void Accumulator::Accumulate(Record * entry, Record * exit)
+  void Accumulator::Accumulate(FunctionInfo * entry, FunctionInfo * exit)
   {
+    uint64_t diff = exit->m_when - entry->m_when;
+
+    if (m_minimum > diff)
+      m_minimum = diff;
+    if (m_maximum < diff)
+      m_maximum = diff;
+
+    m_sum += diff;
     ++m_count;
-    m_time += exit->m_when - entry->m_when;
   }
 
+  PPROFILE_EXCLUDE(static std::string FormatTime(uint64_t cycles, uint64_t frequency));
+  static std::string FormatTime(uint64_t cycles, uint64_t frequency)
+  {
+    std::stringstream strm;
+    strm << cycles << " (" << setprecision(3) << (1000.0*cycles / frequency) << "ms)";
+    return strm.str();
+  }
 
   void Analyse(ostream & strm)
   {
     uint64_t duration;
     GetTimestamp(duration);
-    duration -= s_records.m_start;
+    duration -= s_database.m_start;
 
-    std::map<Record, Accumulator> accumulators;
+    std::map<FunctionInfo, Accumulator> accumulators;
 
-    for (Record * exit = s_records.m_list; exit != NULL; exit = exit->m_link) {
+    for (FunctionInfo * exit = s_database.m_functions; exit != NULL; exit = exit->m_link) {
       switch (exit->m_type) {
         case e_AutoExit :
-          for (Record * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
+          for (FunctionInfo * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
             if (entry->m_function.m_pointer == exit->m_function.m_pointer && entry->m_thread == exit->m_thread) {
               accumulators[*entry].Accumulate(entry, exit);
               break;
@@ -1549,7 +1618,7 @@ namespace PProfiling
           break;
 
         case e_ManualExit :
-          for (Record * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
+          for (FunctionInfo * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
             if (entry->m_function.m_name == exit->m_function.m_name && entry->m_thread == exit->m_thread) {
               accumulators[*entry].Accumulate(entry, exit);
               break;
@@ -1558,25 +1627,66 @@ namespace PProfiling
       }
     }
 
-    std::streamsize width = 0;
-    for (std::map<Record, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
-      std::streamsize len = it->first.m_type == e_ManualEntry ? strlen(it->first.m_function.m_name) : 18;
-      if (len > width)
-        width = len;
-    }
+    std::streamsize threadNameWidth = 0;
+    map<PUniqueThreadIdentifier, ThreadInfo> threads;
+    for (ThreadInfo * thrd = s_database.m_threads; thrd != NULL; thrd = thrd->m_link) {
+      threads[thrd->m_id] = *thrd;
 
-    strm << "Summary profile: " << accumulators.size() << " functions, total time=" << duration << "\n\n";
-    for (std::map<Record, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
-      strm << "  " << left << setw(width+2);
+      std::streamsize len = thrd->m_name.length();
+      if (len > threadNameWidth)
+        threadNameWidth = len;
+    }
+    threadNameWidth += 3;
+
+    std::streamsize functionNameWidth = 0;
+    for (std::map<FunctionInfo, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
+      std::streamsize len = it->first.m_type == e_ManualEntry ? strlen(it->first.m_function.m_name) : 18;
+      if (len > functionNameWidth)
+        functionNameWidth = len;
+    }
+    functionNameWidth += 2;
+
+    PUniqueThreadIdentifier lastId = 0;
+
+    uint64_t frequency;
+    GetFrequency(frequency);
+
+    strm << "Summary profile: " << threads.size() << " completed threads, "
+         << accumulators.size() << " functions,"
+            " cycles=" << duration << ","
+            " frequency=" << frequency << ","
+            " time=" << ((double)duration/frequency) << '\n'
+         << fixed;
+    for (std::map<FunctionInfo, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
+      PTimeInterval threadTime;
+      if (lastId != it->first.m_thread) {
+        lastId = it->first.m_thread;
+        map<PUniqueThreadIdentifier, ThreadInfo>::iterator it = threads.find(lastId);
+        if (it == threads.end())
+          strm << "\n  Thread not yet ended: id=" << lastId << '\n';
+        else {
+          strm << "\n  " << setw(threadNameWidth) << it->second << '\n';
+          threadTime = it->second.m_real;
+          threads.erase(it);
+        }
+      }
+      strm << "    " << left << setw(functionNameWidth);
       if (it->first.m_type == e_ManualEntry)
         strm << it->first.m_function.m_name;
       else
         strm << it->first.m_function.m_pointer;
-      uint64_t avg = it->second.m_time / it->second.m_count;
-      strm << "thread=" << setw(10) << it->first.m_thread
-           << "count=" << setw(10) << it->second.m_count
-           << "avg=" << setw(16) << avg << " (" << setprecision(4) << (avg*100.0/duration) << "%)\n";
+      uint64_t avg = it->second.m_sum / it->second.m_count;
+      strm << " count=" << setw(10) << it->second.m_count
+           <<   " min=" << setw(20) << FormatTime(it->second.m_minimum, frequency)
+           <<   " max=" << setw(20) << FormatTime(it->second.m_maximum, frequency)
+           <<   " avg=" << setw(20) << FormatTime(avg                 , frequency);
+      if (threadTime > 0)
+        strm << " (" << setprecision(2) << (100000.0*it->second.m_sum/frequency/threadTime.GetMilliSeconds()) << "%)";
+      strm << '\n';
     }
+
+    for ( map<PUniqueThreadIdentifier, ThreadInfo>::iterator it = threads.begin(); it != threads.end(); ++it)
+      strm << "\n  " << setw(threadNameWidth) << it->second;
   }
 };
 
@@ -1590,12 +1700,12 @@ extern "C"
 
   void __cyg_profile_func_enter(void * function, void * caller)
   {
-    new PProfiling::Record(true, function, caller);
+    new PProfiling::FunctionInfo(true, function, caller);
   }
 
   void __cyg_profile_func_exit(void * function, void * caller)
   {
-    new PProfiling::Record(false, function, caller);
+    new PProfiling::FunctionInfo(false, function, caller);
   }
 };
 #endif // __GNUC__

@@ -1021,12 +1021,33 @@ class PTraceSaveContextIdentifier
   #define PPROFILE_EXCLUDE(func)  func  __attribute__((no_instrument_function))
 #else
   #define PPROFILE_EXCLUDE(func) func
+  #ifdef _MSC_VER
+    #define __PRETTY_FUNCTION__ __FUNCSIG__
+  #else
+    #define __PRETTY_FUNCTION__ __FUNCTION__
+  #endif
 #endif
 
 #if P_PROFILING
 
+class PThread;
+class PTimeInterval;
+
 namespace PProfiling
 {
+  PPROFILE_EXCLUDE(
+    void Dump(ostream & strm)
+  );
+  PPROFILE_EXCLUDE(
+    void Analyse(ostream & strm)
+  );
+  PPROFILE_EXCLUDE(
+    void Reset()
+  );
+  PPROFILE_EXCLUDE(
+    void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
+  );
+
   class Block
   {
     public:
@@ -1045,25 +1066,12 @@ namespace PProfiling
       const char * m_name;
   };
 
-  #if P_PROFILING==2
-    #define PPROFILE_BLOCK(name) ::PProfiling::Block p_profile_block_instance(name, __FILE__, __LINE__)
-    #define PPROFILE_FUNCTION()  ::PProfiling::Block p_profile_block_instance(__FUNCTION__, __FILE__, __LINE__)
-  #endif
-
-  PPROFILE_EXCLUDE(
-    void Dump(ostream & strm)
-  );
-  PPROFILE_EXCLUDE(
-    void Analyse(ostream & strm)
-  );
+  #define PPROFILE_BLOCK(name) ::PProfiling::Block p_profile_block_instance(name, __FILE__, __LINE__)
+  #define PPROFILE_FUNCTION()  ::PProfiling::Block p_profile_block_instance(__PRETTY_FUNCTION__, __FILE__, __LINE__)
 };
-#endif
-
-#ifndef PPROFILE_BLOCK
-#define PPROFILE_BLOCK(...)
-#endif
-#ifndef PPROFILE_FUNCTION
-#define PPROFILE_FUNCTION()
+#else
+  #define PPROFILE_BLOCK(...)
+  #define PPROFILE_FUNCTION()
 #endif
 
 
@@ -1501,7 +1509,7 @@ public:
 </code></pre>
      Default is not thread safe, however the following is:
 <pre><code>
-        typedef PSingleton<MyClass, PAtomicInteger> MySafeSingleton;
+        typedef PSingleton<MyClass, atomic<uint32_t> > MySafeSingleton;
         MySafeSingleton()->DoSomething();
 </code></pre>
  */

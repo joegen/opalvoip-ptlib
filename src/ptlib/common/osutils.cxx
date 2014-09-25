@@ -2217,18 +2217,33 @@ ostream & operator<<(ostream & strm, const PThread::Times & times)
 }
 
 
-void PProcess::OnThreadEnded(PThread & PTRACE_PARAM(thread))
+void PProcess::OnThreadEnded(PThread &
+#if PTRACING || P_PROFILING
+                             thread
+#endif
+                             )
 {
+#if P_PROFILING
+  PThread::Times times;
+  if (!thread.GetTimes(times))
+    return;
+  PProfiling::OnThreadEnded(thread, times.m_real, times.m_kernel+times.m_user);
+#endif // P_PROFILING
+
 #if PTRACING
   const int LogLevel = 3;
   if (PTrace::CanTrace(LogLevel)) {
-    PThread::Times times;
-    if (thread.GetTimes(times)) {
+#if P_PROFILING
       PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
+#else
+    PThread::Times times;
+    if (thread.GetTimes(times))
+      PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
+#endif // P_PROFILING
   }
-  }
-#endif
+#endif //PTRACING
 }
+
 
 
 bool PProcess::OnInterrupt(bool)

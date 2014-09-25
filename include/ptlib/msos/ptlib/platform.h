@@ -302,6 +302,7 @@ extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 #define PNullThreadIdentifier ((PThreadIdentifier)0)
 typedef UINT  PThreadIdentifier;
+typedef UINT  PUniqueThreadIdentifier;
 typedef DWORD PProcessIdentifier;
 
 #ifdef _DEBUG
