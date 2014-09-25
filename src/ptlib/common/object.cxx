@@ -40,6 +40,7 @@
 #include <ptlib/pprocess.h>
 #include <sstream>
 #include <ctype.h>
+#include <limits>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
@@ -1276,13 +1277,14 @@ namespace PProfiling
 
 #if defined(__i386__) || defined(__x86_64__)
 #define GetTimestamp(when) { uint32_t l,h; __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h)); when = ((uint64_t)h<<32)|l; }
-PPROFILE_EXCLUDE(void GetFrequency(uint64_t & freq))
-void GetFrequency(uint64_t & freq)
+PPROFILE_EXCLUDE(static void GetFrequency(uint64_t & freq));
+static void GetFrequency(uint64_t & freq)
 {
+  freq = 2500000000; // 2.5GHz pretty typical
   ifstream cpuinfo("/proc/cpuinfo", ios::in);
   while (cpuinfo.good()) {
     char line[100];
-    cpuinfo.getline(line);
+    cpuinfo.getline(line, sizeof(100));
     if (strcmp(line, "cpu MHz") == 0) {
       freq = (uint64_t)(atof(strchr(line, ':')+1)*1000000);
       break;
@@ -1572,7 +1574,7 @@ void GetFrequency(uint64_t & freq)
   Accumulator::Accumulator()
     : m_count(0)
     , m_sum(0)
-    , m_minimum(UINT64_MAX)
+    , m_minimum(std::numeric_limits<uint64_t>::max())
     , m_maximum(0)
   {
   }

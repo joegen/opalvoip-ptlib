@@ -455,7 +455,7 @@ typedef pid_t PProcessIdentifier;
   typedef pthread_t PThreadIdentifier;
   #define PNullThreadIdentifier ((PThreadIdentifier)-1)
 
-  #if P_LINUX
+  #ifdef P_LINUX
     typedef pid_t PUniqueThreadIdentifier;
   #else
     typedef pthread_t PUniqueThreadIdentifier;
