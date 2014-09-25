@@ -1129,6 +1129,14 @@ dnl MSWIN_DEFINE  dll,P_DYNALINK
 
 
 dnl ########################################################################
+dnl Profiling
+
+dnl MSWIN_DISPLAY profiling,Profiling
+dnl MSWIN_DEFINE  profiling,P_PROFILING
+dnl MSWIN_DEFAULT profiling,Disabled
+
+
+dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
 dnl on some systems, the resolver is in libc
 dnl but needs resolv.h included which defines res_search as __res_search
