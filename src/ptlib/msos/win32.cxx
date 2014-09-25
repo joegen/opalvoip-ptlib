@@ -928,8 +928,8 @@ bool PThread::CoInitialise()
     return false;
   }
 
-  static PAtomicBoolean securityInitialised;
-  if (!securityInitialised.TestAndSet(true)) {
+  static atomic<bool> securityInitialised;
+  if (!securityInitialised.exchange(true)) {
     result = ::CoInitializeSecurity(NULL, 
                                     -1,                          // COM authentication
                                     NULL,                        // Authentication services
@@ -1579,8 +1579,8 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 
 PBoolean PProcess::IsGUIProcess() const
 {
-  static PAtomicBoolean CheckGUIProcess;
-  if (!CheckGUIProcess.TestAndSet(true))
+  static atomic<bool> CheckGUIProcess;
+  if (!CheckGUIProcess.exchange(true))
     EnumWindows(EnumWindowsProc, GetCurrentProcessId());
   return s_IsGUIProcess;
 }

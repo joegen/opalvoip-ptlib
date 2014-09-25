@@ -28,7 +28,73 @@
  * $Date$
  */
 
-  // Windows specific critical section implementation
+/** This class implements critical section mutexes using the most
+  * efficient mechanism available on the host platform.
+  * For Windows, CriticalSection is used.
+  * On other platforms, pthread_mutex_t is used
+  */
+class PCriticalSection : public PSync
+{
+  PCLASSINFO(PCriticalSection, PSync);
+
+  public:
+  /**@name Construction */
+  //@{
+    /**Create a new critical section object .
+     */
+    PCriticalSection();
+
+    /**Allow copy constructor, but it actually does not copy the critical section,
+       it creates a brand new one as they cannot be shared in that way.
+     */
+    PCriticalSection(const PCriticalSection &);
+
+    /**Destroy the critical section object
+     */
+    ~PCriticalSection();
+
+    /**Assignment operator is allowed but does nothing. Overwriting the old critical
+       section information would be very bad.
+      */
+    PCriticalSection & operator=(const PCriticalSection &) { return *this; }
+  //@}
+
+  /**@name Operations */
+  //@{
+    /** Create a new PCriticalSection
+      */
+    PObject * Clone() const
+    {
+      return new PCriticalSection();
+    }
+
+    /** Enter the critical section by waiting for exclusive access.
+     */
+    virtual void Wait();
+    inline void Enter() { Wait(); }
+
+    /**Block, for a time, until the synchronisation object is available.
+
+       @return
+       true if lock is acquired, false if timed out
+     */
+    virtual PBoolean Wait(
+      const PTimeInterval & timeout // Amount of time to wait.
+    );
+
+    /** Leave the critical section by unlocking the mutex
+     */
+    virtual void Signal();
+    inline void Leave() { Signal(); }
+
+    /** Try to enter the critical section for exlusive access. Does not wait.
+        @return true if cirical section entered, leave/Signal must be called.
+      */
+    bool Try();
+  //@}
+
   mutable CRITICAL_SECTION criticalSection; 
+};
+
 
 // End Of File ///////////////////////////////////////////////////////////////
