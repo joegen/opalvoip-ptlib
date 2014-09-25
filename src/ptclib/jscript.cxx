@@ -195,7 +195,7 @@ public:
   Private()
   {
     static atomic<bool> initialised;
-    if (!initialised.TestAndSet(true)) {
+    if (!initialised.exchange(true)) {
 #if P_V8_API > 1
       v8::V8::InitializeICU();
 #endif
