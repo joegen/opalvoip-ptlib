@@ -96,14 +96,20 @@ private:
                                 PreDec(reinterpret_cast<T2 *>(&m_storage)), \
                                    Add(reinterpret_cast<T2 *>(&m_storage), -1))
 
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  int8_t, SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32( uint8_t, SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32( int16_t, SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(uint16_t, SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32( int32_t, long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(uint32_t, long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32( int64_t, LONG64, _InterlockedExchange64, _InterlockedIncrement64, _InterlockedDecrement64, _InterlockedExchangeAdd64);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(uint64_t, LONG64, _InterlockedExchange64, _InterlockedIncrement64, _InterlockedDecrement64, _InterlockedExchangeAdd64);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed  char,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned  char,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed short,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned short,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed   int,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned   int,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed  long,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned  long,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
+  #if HAVE_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed long long, LONG64, _InterlockedExchange64, _InterlockedIncrement64, _InterlockedDecrement64, _InterlockedExchangeAdd64);
+  #endif
+  #if HAVE_UNSIGNED_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned long long, LONG64, _InterlockedExchange64, _InterlockedIncrement64, _InterlockedDecrement64, _InterlockedExchangeAdd64);
+  #endif
   P_DEFINE_ATOMIC_PTR_CLASS(_InterlockedExchangePointer(reinterpret_cast<PVOID *>(&m_storage), value));
 
 #elif defined(P_ATOMICITY_BUILTIN)
@@ -115,14 +121,20 @@ private:
                               __sync_add_and_fetch(&m_storage, 1), \
                               __sync_fetch_and_sub(&m_storage, 1), \
                               __sync_sub_and_fetch(&m_storage, 1))
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  int8_t);
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN( uint8_t);
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN( int16_t);
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(uint16_t);
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN( int32_t);
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(uint32_t);
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN( int64_t);
-  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(uint64_t);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed  char);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned  char);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed short);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned short);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed   int);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned   int);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed  long);
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned  long);
+  #if HAVE_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(signed long long);
+  #endif
+  #if HAVE_UNSIGNED_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned long long);
+  #endif
   P_DEFINE_ATOMIC_PTR_CLASS(__sync_lock_test_and_set(&m_storage, value));
   
 #elif defined(_STLP_INTERNAL_THREADS_H) && defined(_STLP_ATOMIC_INCREMENT) && defined(_STLP_ATOMIC_DECREMENT)
