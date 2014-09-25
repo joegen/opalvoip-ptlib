@@ -285,12 +285,29 @@ class PThread : public PObject
   /**@name Miscellaneous */
   //@{
     /** Get operating system specific thread identifier for this thread.
-      * Note that the return value from these functions is only valid
-      * if called by the owning thread. Calling this function for another
-      * thread that may be terminating is a very bad idea.
       */
     virtual PThreadIdentifier GetThreadId() const { return m_threadId; }
-    PPROFILE_EXCLUDE(static PThreadIdentifier GetCurrentThreadId());
+
+    /** Get operating system specific thread identifier for the current thread.
+      */
+    PPROFILE_EXCLUDE(
+      static PThreadIdentifier GetCurrentThreadId()
+    );
+
+    PPROFILE_EXCLUDE(
+    /** This returns a unique number for the thread.
+        For most platforms this is identical to GetThreadId(), but others,
+        e.g. Linux, it is different and GetThreadId() return values get
+        re-used during the run of the process.
+      */
+    PUniqueThreadIdentifier GetUniqueIdentifier() const
+    );
+
+    PPROFILE_EXCLUDE(
+    /** This returns a unique number for the currentthread.
+      */
+      static PUniqueThreadIdentifier GetCurrentUniqueIdentifier()
+    );
 
     /// Times for execution of the thread.
     struct Times

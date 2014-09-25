@@ -258,7 +258,7 @@ PThread::PThread(bool isProcess)
   , m_threadId(pthread_self())
   , PX_priority(NormalPriority)
 #if defined(P_LINUX)
-  , PX_linuxId(syscall(SYS_gettid))
+  , PX_linuxId(GetCurrentUniqueIdentifier())
 #endif
   , PX_suspendMutex(MutexInitialiser)
   , PX_suspendCount(0)
@@ -360,7 +360,7 @@ void PThread::PX_ThreadBegin()
   SetThreadName(GetThreadName());
 
 #if defined(P_LINUX)
-  PX_linuxId = syscall(SYS_gettid);
+  PX_linuxId = GetCurrentUniqueIdentifier();
   PX_startTick = PTimer::Tick();
 #endif
 
@@ -917,6 +917,18 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
 #if defined(P_LINUX)
 
+PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
+{
+  return PX_linuxId;
+}
+
+
+PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
+{
+  return syscall(SYS_gettid);
+}
+
+
 static inline unsigned long long jiffies_to_msecs(const unsigned long j)
 {
   static long sysconf_HZ = sysconf(_SC_CLK_TCK);
@@ -1082,6 +1094,18 @@ bool PThread::GetTimes(Times & times)
   return false;
 }
 #else
+PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
+{
+  return GetThreadId();
+}
+
+
+PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
+{
+  return GetCurrentThreadId();
+}
+
+
 bool PThread::GetTimes(Times & times)
 {
   return false;
