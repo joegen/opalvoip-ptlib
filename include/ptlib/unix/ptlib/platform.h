@@ -455,6 +455,12 @@ typedef pid_t PProcessIdentifier;
   typedef pthread_t PThreadIdentifier;
   #define PNullThreadIdentifier ((PThreadIdentifier)-1)
 
+  #if P_LINUX
+    typedef pid_t PUniqueThreadIdentifier;
+  #else
+    typedef pthread_t PUniqueThreadIdentifier;
+  #endif
+
   #if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
     #include <semaphore.h>
   #endif  // P_HAS_SEMPAHORES
@@ -463,6 +469,7 @@ typedef pid_t PProcessIdentifier;
 
   typedef thread_id PThreadIdentifier;
   #define PNullThreadIdentifier ((PThreadIdentifier)-1)
+  typedef thread_id PUniqueThreadIdentifier;
 
 #endif
 
