@@ -173,7 +173,7 @@ static void psasl_Initialise()
   sasl_client_init(cbs);
 }
 
-static PAtomicInteger psasl_UsageCount(0);
+static atomic<uint32_t> psasl_UsageCount(0);
 PString PSASLClient::s_Realm;
 PString PSASLClient::s_Path;
 

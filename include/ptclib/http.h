@@ -419,7 +419,7 @@ class PHTTPClientDigestAuthentication : public PHTTPClientAuthentication
     bool    qopAuthInt;
     bool    stale;
     PString cnonce;
-    mutable PAtomicInteger nonceCount;
+    mutable atomic<uint32_t> nonceCount;
 };
 
 

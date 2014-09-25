@@ -64,7 +64,7 @@ class PSmartObject : public PObject
     /** Count of number of instances of <code>PSmartPointer</code> that currently
        reference the object instance.
      */
-    PAtomicInteger referenceCount;
+    atomic<uint32_t> referenceCount;
 
 
   friend class PSmartPointer;

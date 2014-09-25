@@ -1170,7 +1170,6 @@ if errorlevel 1 "$(ProjectDir)..\..\..\svn_getrev" %(FullPath) %(RootDir)%(Direc
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\pt_atl.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\channel.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\config.h" />
-    <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\critsec.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\dynalink.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\ethsock.h" />
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\file.h" />
@@ -1209,7 +1208,7 @@ if errorlevel 1 "$(ProjectDir)..\..\..\svn_getrev" %(FullPath) %(RootDir)%(Direc
     <ClInclude Include="..\..\..\Include\PtLib\Channel.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Config.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Contain.h" />
-    <ClInclude Include="..\..\..\include\ptlib\critsec.h" />
+    <ClInclude Include="..\..\..\include\ptlib\atomic.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Dict.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Dynalink.h" />
     <ClInclude Include="..\..\..\Include\PtLib\Ethsock.h" />
