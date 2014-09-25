@@ -615,7 +615,7 @@ class PProcess : public PThread
     void InternalSetAutoDeleteThread(PThread * thread);
     void InternalCleanAutoDeleteThreads();
 
-    PAtomicBoolean m_keepingHouse;
+    atomic<bool>   m_keepingHouse;
     PThread      * m_houseKeeper; // Thread for doing timers, thread clean up etc.
     PSyncPoint     m_signalHouseKeeper;
     void HouseKeeping();

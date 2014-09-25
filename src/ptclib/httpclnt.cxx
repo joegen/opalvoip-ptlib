@@ -855,7 +855,7 @@ PHTTPClientDigestAuthentication & PHTTPClientDigestAuthentication::operator =(co
   qopAuthInt = auth.qopAuthInt;
   stale      = auth.stale;
   cnonce     = auth.cnonce;
-  nonceCount.SetValue(auth.nonceCount);
+  nonceCount = (uint32_t)auth.nonceCount;
 
   return *this;
 }
@@ -892,7 +892,7 @@ PBoolean PHTTPClientDigestAuthentication::Parse(const PString & p_auth, PBoolean
 
   qopAuth = qopAuthInt = false;
   cnonce.MakeEmpty();
-  nonceCount.SetValue(1);
+  nonceCount = 1;
 
   if (auth.Find("digest") == P_MAX_INDEX) {
     PTRACE(1, "Digest auth does not contian digest keyword");

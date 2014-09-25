@@ -112,7 +112,7 @@ static void LogFunction(GstDebugCategory * /*category*/,
 #endif
 
 
-static PAtomicBoolean g_initialised;
+static atomic<bool> g_initialised;
 
 static void DeinitialiseGstreamer()
 {

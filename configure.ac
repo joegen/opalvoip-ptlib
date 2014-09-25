@@ -700,10 +700,16 @@ MY_COMPILE_IFELSE(
 dnl ########################################################################
 dnl see if using GNU glibc++, because then we have atomic integer operations
 
+dnl MSWIN_DISPLAY    atomic,Has std::atomic
+dnl MSWIN_DEFINE     atomic,P_STD_ATOMIC
+
 AC_MSG_CHECKING(if atomic integer available)
 AC_TRY_COMPILE(
    [#include <atomic>],
-   [std::atomic<unsigned> val],
+   [
+      std::atomic<unsigned> val;
+      val.exchange(1);
+   ],
    [
       AC_DEFINE(P_STD_ATOMIC, 1)
       AC_MSG_RESULT([yes (std)])

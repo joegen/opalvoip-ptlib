@@ -414,7 +414,7 @@
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\debstrm.h">
       <Filter>Header Files\MSOS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\critsec.h">
+    <ClInclude Include="..\..\..\include\ptlib\atomic.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\critsec.h">
@@ -874,9 +874,6 @@
       <Filter>Header Files\Android</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\config.h">
-      <Filter>Header Files\Android</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\critsec.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\dynalink.h">

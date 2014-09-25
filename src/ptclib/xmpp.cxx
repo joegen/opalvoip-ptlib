@@ -459,8 +459,8 @@ PXMLElement * XMPP::Stanza::GetElement(const PString& name, PINDEX i)
 
 PString XMPP::Stanza::GenerateID()
 {
-  static PAtomicInteger s_id;
-  return psprintf("pdu_%d", (PAtomicInteger::IntegerType)++s_id);
+  static atomic<uint32_t> s_id;
+  return psprintf("pdu_%d", ++s_id);
 }
 
 

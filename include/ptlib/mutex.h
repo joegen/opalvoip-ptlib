@@ -38,7 +38,7 @@
 #pragma interface
 #endif
 
-#include <ptlib/critsec.h>
+#include <ptlib/atomic.h>
 #include <ptlib/semaphor.h>
 
 /**This class defines a thread mutual exclusion object. A mutex is where a
@@ -107,7 +107,7 @@ class PTimedMutex : public PSync
 
   private:
     PThreadIdentifier m_lockerId;
-    PAtomicInteger    m_lockCount;
+    atomic<uint32_t>  m_lockCount;
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -120,6 +120,7 @@ class PTimedMutex : public PSync
 // On Windows, critical sections are recursive and so we can use them for mutexes
 // The only Posix mutex that is recursive is pthread_mutex, so we have to use that
 #ifdef _WIN32
+#include "msos/ptlib/critsec.h"
 /** \class PMutex
     Synonym for PCriticalSection
   */
