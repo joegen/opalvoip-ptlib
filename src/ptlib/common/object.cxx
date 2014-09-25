@@ -1284,8 +1284,8 @@ static void GetFrequency(uint64_t & freq)
   ifstream cpuinfo("/proc/cpuinfo", ios::in);
   while (cpuinfo.good()) {
     char line[100];
-    cpuinfo.getline(line, sizeof(100));
-    if (strcmp(line, "cpu MHz") == 0) {
+    cpuinfo.getline(line, sizeof(line));
+    if (strncmp(line, "cpu MHz", 7) == 0) {
       freq = (uint64_t)(atof(strchr(line, ':')+1)*1000000);
       break;
     }
