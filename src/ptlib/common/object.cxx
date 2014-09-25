@@ -1533,10 +1533,12 @@ static void GetFrequency(uint64_t & freq)
   ostream & operator<<(ostream & strm, const ThreadInfo & info)
   {
     std::streamsize w = strm.width();
-    return strm << setw(0) << "Thread \"" << info.m_name << left << setw(w-info.m_name.length()) << '"'
-                << "real=" << scientific << setprecision(3) << setw(10) << info.m_real <<
-                    "cpu=" << scientific << setprecision(3) << setw(10) << info.m_cpu  <<
-                    '('    << fixed      << setprecision(2) << (100.0*info.m_cpu.GetMilliSeconds()/info.m_real.GetMilliSeconds()) << "%)";
+    strm << setw(0) << "Thread \"" << info.m_name << left << setw(w-info.m_name.length()) << "\", "
+           " real=" << scientific << setprecision(3) << setw(10) << info.m_real << ", "
+           " cpu="  << scientific << setprecision(3) << setw(10) << info.m_cpu;
+    if (info.m_real > 0)
+      strm << " ("  <<   fixed    << setprecision(2) << (100.0*info.m_cpu.GetMilliSeconds()/info.m_real.GetMilliSeconds()) << "%)";
+    return strm;
   }
 
 
@@ -1657,7 +1659,7 @@ static void GetFrequency(uint64_t & freq)
          << accumulators.size() << " functions,"
             " cycles=" << duration << ","
             " frequency=" << frequency << ","
-            " time=" << ((double)duration/frequency) << '\n'
+            " time=" << PTimeInterval(int64_t(1000.0*duration/frequency)) << '\n'
          << fixed;
     for (std::map<FunctionInfo, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
       PTimeInterval threadTime;
