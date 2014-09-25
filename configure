@@ -8374,6 +8374,7 @@ fi
 
 
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if atomic integer available" >&5
 $as_echo_n "checking if atomic integer available... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -8382,7 +8383,10 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 int
 main ()
 {
-std::atomic<unsigned> val
+
+      std::atomic<unsigned> val;
+      val.exchange(1);
+
   ;
   return 0;
 }
@@ -9836,6 +9840,9 @@ fi
    else
       PTLIB_REGEX=no
    fi
+
+
+
 
 
 
