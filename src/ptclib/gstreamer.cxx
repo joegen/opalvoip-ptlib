@@ -128,7 +128,7 @@ static void DeinitialiseGstreamer()
 
 static void InitialiseGstreamer()
 {
-  if (g_initialised.TestAndSet(true))
+  if (g_initialised.exchange(true))
     return;
 
   PGError error;
