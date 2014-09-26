@@ -1338,7 +1338,8 @@ static void GetFrequency(uint64_t & freq)
     } m_function;
 
     FunctionType            m_type;
-    PUniqueThreadIdentifier m_thread;
+    PThreadIdentifier       m_threadIdentifier;
+    PUniqueThreadIdentifier m_threadUniqueId;
     uint64_t                m_when;
     FunctionInfo          * m_link;
   };
@@ -1347,10 +1348,17 @@ static void GetFrequency(uint64_t & freq)
   struct ThreadInfo
   {
     PPROFILE_EXCLUDE(ThreadInfo());
-    PPROFILE_EXCLUDE(ThreadInfo(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu));
+    PPROFILE_EXCLUDE(ThreadInfo(
+      PThreadIdentifier threadId,
+      PUniqueThreadIdentifier uniqueId,
+      const char * name,
+      const PTimeInterval & real,
+      const PTimeInterval & cpu
+    ));
     PPROFILE_EXCLUDE(friend ostream & operator<<(ostream & strm, const ThreadInfo & info));
 
-    PUniqueThreadIdentifier m_id;
+    PThreadIdentifier       m_threadId;
+    PUniqueThreadIdentifier m_uniqueId;
     std::string             m_name;
     PTimeInterval           m_real;
     PTimeInterval           m_cpu;
@@ -1375,7 +1383,8 @@ static void GetFrequency(uint64_t & freq)
 
   FunctionInfo::FunctionInfo(bool entry, void * function, void * caller)
     : m_type(entry ? e_AutoEntry : e_AutoExit)
-    , m_thread(PThread::GetCurrentUniqueIdentifier())
+    , m_threadIdentifier(PThread::GetCurrentThreadId())
+    , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
   {
     m_function.m_pointer = function;
     m_function.m_caller = caller;
@@ -1387,7 +1396,8 @@ static void GetFrequency(uint64_t & freq)
 
   FunctionInfo::FunctionInfo(bool entry, const char * name, const char * file, unsigned line)
     : m_type(entry ? e_ManualEntry : e_ManualExit)
-    , m_thread(PThread::GetCurrentUniqueIdentifier())
+    , m_threadIdentifier(PThread::GetCurrentThreadId())
+    , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
   {
     m_function.m_name = name;
     m_function.m_file = file;
@@ -1401,7 +1411,8 @@ static void GetFrequency(uint64_t & freq)
   FunctionInfo::FunctionInfo(const FunctionInfo & other)
     : m_function(other.m_function)
     , m_type(other.m_type)
-    , m_thread(other.m_thread)
+    , m_threadIdentifier(other.m_threadIdentifier)
+    , m_threadUniqueId(other.m_threadUniqueId)
     , m_when(other.m_when)
     , m_link(NULL)
   {
@@ -1412,7 +1423,8 @@ static void GetFrequency(uint64_t & freq)
   {
     m_function = other.m_function;
     m_type = other.m_type;
-    m_thread = other.m_thread;
+    m_threadIdentifier = other.m_threadIdentifier;
+    m_threadUniqueId = other.m_threadUniqueId;
     m_when = other.m_when;
     m_link = NULL;
     return *this;
@@ -1421,9 +1433,9 @@ static void GetFrequency(uint64_t & freq)
 
   bool FunctionInfo::operator<(const FunctionInfo & other) const
   {
-    if (m_thread < other.m_thread)
+    if (m_threadUniqueId < other.m_threadUniqueId)
       return true;
-    if (m_thread > other.m_thread)
+    if (m_threadUniqueId > other.m_threadUniqueId)
       return false;
 
     switch (m_type) {
@@ -1456,7 +1468,7 @@ static void GetFrequency(uint64_t & freq)
         out << "ManualExit\t" << m_function.m_name << '\t';
     }
 
-    out << '\t' << m_thread << '\t' << m_when << '\n';
+    out << '\t' << m_threadUniqueId << '\t' << m_when << '\n';
   }
 
   Database::Database()
@@ -1510,19 +1522,25 @@ static void GetFrequency(uint64_t & freq)
 
   void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
   {
-    new ThreadInfo(thread, real, cpu);
+    new ThreadInfo(thread.GetThreadId(), thread.GetUniqueIdentifier(), thread.GetThreadName(), real, cpu);
   }
 
 
   ThreadInfo::ThreadInfo()
-    : m_id(0)
+    : m_threadId(PNullThreadIdentifier)
+    , m_uniqueId(0)
   {
   }
 
 
-  ThreadInfo::ThreadInfo(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
-    : m_id(thread.GetUniqueIdentifier())
-    , m_name(thread.GetThreadName().GetPointer())
+  ThreadInfo::ThreadInfo(PThreadIdentifier threadId,
+                         PUniqueThreadIdentifier uniqueId,
+                         const char * name,
+                         const PTimeInterval & real,
+                         const PTimeInterval & cpu)
+    : m_threadId(threadId)
+    , m_uniqueId(uniqueId)
+    , m_name(name)
     , m_real(real)
     , m_cpu(cpu)
   {
@@ -1532,12 +1550,14 @@ static void GetFrequency(uint64_t & freq)
 
   ostream & operator<<(ostream & strm, const ThreadInfo & info)
   {
-    std::streamsize w = strm.width();
-    strm << setw(0) << "Thread \"" << info.m_name << left << setw(w-info.m_name.length()) << "\", "
-           " real=" << scientific << setprecision(3) << setw(10) << info.m_real << ", "
-           " cpu="  << scientific << setprecision(3) << setw(10) << info.m_cpu;
+    std::streamsize nameWidth = strm.width();
+    strm << setw(0) << "Thread \"" << info.m_name << left << setw(nameWidth - info.m_name.length()) << '"';
+    if (info.m_threadId != info.m_uniqueId)
+      strm << " (" << info.m_uniqueId << ')';
+    strm << "  real=" << scientific << setprecision(3) << setw(10) << info.m_real
+         <<  "  cpu=" << scientific << setprecision(3) << setw(10) << info.m_cpu;
     if (info.m_real > 0)
-      strm << " ("  <<   fixed    << setprecision(2) << (100.0*info.m_cpu.GetMilliSeconds()/info.m_real.GetMilliSeconds()) << "%)";
+      strm <<  " ("  <<   fixed    << setprecision(2) << (100.0*info.m_cpu.GetMilliSeconds()/info.m_real.GetMilliSeconds()) << "%)";
     return strm;
   }
 
@@ -1598,7 +1618,7 @@ static void GetFrequency(uint64_t & freq)
   static std::string FormatTime(uint64_t cycles, uint64_t frequency)
   {
     std::stringstream strm;
-    strm << cycles << " (" << setprecision(3) << (1000.0*cycles / frequency) << "ms)";
+    strm << cycles << " (" << fixed << setprecision(3) << (1000.0*cycles / frequency) << "ms)";
     return strm.str();
   }
 
@@ -1614,7 +1634,7 @@ static void GetFrequency(uint64_t & freq)
       switch (exit->m_type) {
         case e_AutoExit :
           for (FunctionInfo * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
-            if (entry->m_function.m_pointer == exit->m_function.m_pointer && entry->m_thread == exit->m_thread) {
+            if (entry->m_function.m_pointer == exit->m_function.m_pointer && entry->m_threadUniqueId == exit->m_threadUniqueId) {
               accumulators[*entry].Accumulate(entry, exit);
               break;
             }
@@ -1623,7 +1643,7 @@ static void GetFrequency(uint64_t & freq)
 
         case e_ManualExit :
           for (FunctionInfo * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
-            if (entry->m_function.m_name == exit->m_function.m_name && entry->m_thread == exit->m_thread) {
+            if (entry->m_function.m_name == exit->m_function.m_name && entry->m_threadUniqueId == exit->m_threadUniqueId) {
               accumulators[*entry].Accumulate(entry, exit);
               break;
             }
@@ -1634,7 +1654,7 @@ static void GetFrequency(uint64_t & freq)
     std::streamsize threadNameWidth = 0;
     map<PUniqueThreadIdentifier, ThreadInfo> threads;
     for (ThreadInfo * thrd = s_database.m_threads; thrd != NULL; thrd = thrd->m_link) {
-      threads[thrd->m_id] = *thrd;
+      threads[thrd->m_uniqueId] = *thrd;
 
       std::streamsize len = thrd->m_name.length();
       if (len > threadNameWidth)
@@ -1663,16 +1683,29 @@ static void GetFrequency(uint64_t & freq)
          << fixed;
     for (std::map<FunctionInfo, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
       PTimeInterval threadTime;
-      if (lastId != it->first.m_thread) {
-        lastId = it->first.m_thread;
-        map<PUniqueThreadIdentifier, ThreadInfo>::iterator it = threads.find(lastId);
-        if (it == threads.end())
-          strm << "\n  Thread not yet ended: id=" << lastId << '\n';
-        else {
-          strm << "\n  " << setw(threadNameWidth) << it->second << '\n';
-          threadTime = it->second.m_real;
-          threads.erase(it);
+      if (lastId != it->first.m_threadUniqueId) {
+        lastId = it->first.m_threadUniqueId;
+        strm << "\n  ";
+        map<PUniqueThreadIdentifier, ThreadInfo>::iterator thrd = threads.find(lastId);
+        if (thrd != threads.end()) {
+          strm << setw(threadNameWidth) << thrd->second;
+          threadTime = thrd->second.m_real;
+          threads.erase(thrd);
         }
+        else {
+          PThread::Times times;
+          if (PThread::GetTimes(it->first.m_threadIdentifier, times))
+            strm << setw(threadNameWidth)
+            << ThreadInfo(it->first.m_threadIdentifier,
+            it->first.m_threadUniqueId,
+            PThread::GetThreadName(it->first.m_threadIdentifier),
+            times.m_real, times.m_kernel + times.m_user);
+          else
+            strm << "Thread info not available: id=" << it->first.m_threadIdentifier;
+            if (it->first.m_threadIdentifier != lastId)
+              strm << " (" << lastId << ')';
+        }
+        strm << '\n';
       }
       strm << "    " << left << setw(functionNameWidth);
       if (it->first.m_type == e_ManualEntry)
@@ -1685,7 +1718,7 @@ static void GetFrequency(uint64_t & freq)
            <<   " max=" << setw(20) << FormatTime(it->second.m_maximum, frequency)
            <<   " avg=" << setw(20) << FormatTime(avg                 , frequency);
       if (threadTime > 0)
-        strm << " (" << setprecision(2) << (100000.0*it->second.m_sum/frequency/threadTime.GetMilliSeconds()) << "%)";
+        strm << " (" << fixed << setprecision(2) << (100000.0*it->second.m_sum/frequency/threadTime.GetMilliSeconds()) << "%)";
       strm << '\n';
     }
 
