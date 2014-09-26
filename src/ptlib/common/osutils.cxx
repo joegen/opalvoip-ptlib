@@ -957,7 +957,7 @@ std::ostream & operator<<(ostream & strm, const PTrace::Throttle & throttle)
 
 #if PTRACING==2
 
-static atomic<uint32_t> g_lastContextIdentifer;
+static atomic<uint32_t> g_lastContextIdentifer(0);
 
 unsigned PTrace::GetNextContextIdentifier()
 {
@@ -2017,6 +2017,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   , buildNumber(build)
   , maxHandles(INT_MAX)
   , m_shuttingDown(false)
+  , m_keepingHouse(false)
   , m_houseKeeper(NULL)
 #ifndef P_VXWORKS
   , m_processID(GetCurrentProcessID())
