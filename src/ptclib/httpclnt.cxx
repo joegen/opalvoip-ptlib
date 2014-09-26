@@ -839,6 +839,7 @@ PHTTPClientDigestAuthentication::PHTTPClientDigestAuthentication()
   , qopAuth(false)
   , qopAuthInt(false)
   , stale(false)
+  , nonceCount(0)
 {
 }
 

@@ -928,7 +928,7 @@ bool PThread::CoInitialise()
     return false;
   }
 
-  static atomic<bool> securityInitialised;
+  static atomic<bool> securityInitialised(false);
   if (!securityInitialised.exchange(true)) {
     result = ::CoInitializeSecurity(NULL, 
                                     -1,                          // COM authentication
@@ -1579,7 +1579,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 
 PBoolean PProcess::IsGUIProcess() const
 {
-  static atomic<bool> CheckGUIProcess;
+  static atomic<bool> CheckGUIProcess(false);
   if (!CheckGUIProcess.exchange(true))
     EnumWindows(EnumWindowsProc, GetCurrentProcessId());
   return s_IsGUIProcess;
@@ -1759,6 +1759,7 @@ void PSemaphore::Signal()
 
 PTimedMutex::PTimedMutex()
   : m_lockerId(PNullThreadIdentifier)
+  , m_lockCount(0)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
@@ -1766,6 +1767,7 @@ PTimedMutex::PTimedMutex()
 
 PTimedMutex::PTimedMutex(const PTimedMutex &)
   : m_lockerId(PNullThreadIdentifier)
+  , m_lockCount(0)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
