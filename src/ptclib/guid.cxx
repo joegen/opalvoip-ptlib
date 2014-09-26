@@ -113,7 +113,7 @@ PGloballyUniqueID::PGloballyUniqueID()
   theArray[9] = (BYTE)clockSequence;
 
   static PEthSocket::Address macAddress;
-  static atomic<bool> haveMacAddress;
+  static atomic<bool> haveMacAddress(false);
   if (!haveMacAddress.exchange(true)) {
     PString str = PIPSocket::GetInterfaceMACAddress();
     if (str.IsEmpty()) {

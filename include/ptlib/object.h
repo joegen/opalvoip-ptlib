@@ -1522,7 +1522,7 @@ class PSingleton
     PSingleton()
     {
       static Type * s_pointer;
-      static GuardType s_guard;
+      static GuardType s_guard(0);
       if (s_guard++ != 0)
         s_guard = 1;
       else {
