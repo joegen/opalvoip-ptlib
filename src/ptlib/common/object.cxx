@@ -1522,7 +1522,8 @@ static void GetFrequency(uint64_t & freq)
 
   void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
   {
-    new ThreadInfo(thread.GetThreadId(), thread.GetUniqueIdentifier(), thread.GetThreadName(), real, cpu);
+    ThreadInfo * info = new ThreadInfo(thread.GetThreadId(), thread.GetUniqueIdentifier(), thread.GetThreadName(), real, cpu);
+    info->m_link = s_database.m_threads.exchange(info);
   }
 
 
@@ -1544,7 +1545,6 @@ static void GetFrequency(uint64_t & freq)
     , m_real(real)
     , m_cpu(cpu)
   {
-    m_link = s_database.m_threads.exchange(this);
   }
 
 
