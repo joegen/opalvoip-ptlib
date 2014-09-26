@@ -917,6 +917,8 @@ PThread::PThread(PINDEX stackSize,
 
 
 #ifdef P_WIN_COM
+static atomic<bool> s_securityInitialised(false);
+
 bool PThread::CoInitialise()
 {
   if (m_comInitialised)
@@ -928,8 +930,7 @@ bool PThread::CoInitialise()
     return false;
   }
 
-  static atomic<bool> securityInitialised(false);
-  if (!securityInitialised.exchange(true)) {
+  if (!s_securityInitialised.exchange(true)) {
     result = ::CoInitializeSecurity(NULL, 
                                     -1,                          // COM authentication
                                     NULL,                        // Authentication services
@@ -1560,6 +1561,7 @@ PBoolean PProcess::IsGUIProcess() const
 #else
 
 static bool s_IsGUIProcess = true;
+static atomic<bool> s_checkGUIProcess(false);
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
@@ -1579,8 +1581,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 
 PBoolean PProcess::IsGUIProcess() const
 {
-  static atomic<bool> CheckGUIProcess(false);
-  if (!CheckGUIProcess.exchange(true))
+  if (!s_checkGUIProcess.exchange(true))
     EnumWindows(EnumWindowsProc, GetCurrentProcessId());
   return s_IsGUIProcess;
 }
