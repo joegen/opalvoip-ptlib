@@ -760,7 +760,7 @@ DWORD PSTUNMessage::CalculateFingerprint(PSTUNFingerprint * fp) const
 {
   static DWORD Crc32Table[256];
 
-  static atomic<bool> initialised;
+  static atomic<bool> initialised(false);
   if (!initialised.exchange(true)) {
     for (PINDEX i = 0; i < PARRAYSIZE(Crc32Table); ++i) {
       DWORD c = i;

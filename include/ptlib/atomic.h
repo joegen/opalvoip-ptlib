@@ -60,7 +60,8 @@ private:
 };
 
 #define P_DEFINE_ATOMIC_FUNCTIONS(Type,Exch,FetchAdd,AddFetch) \
-    __inline atomic(Type value = 0) : m_storage(value) { } \
+    __inline atomic() : m_storage() { } \
+    __inline atomic(Type value) : m_storage(value) { } \
     __inline atomic(const atomic & other) : m_storage((Type)AddFetch(const_cast<Type *>(&other.m_storage), 0)) { } \
     __inline atomic & operator=(const atomic & other) { Exch(&m_storage, (Type)AddFetch(const_cast<Type *>(&other.m_storage), 0)); return *this; } \
     __inline operator Type() const { return (Type)AddFetch(const_cast<Type *>(&m_storage), 0); } \
@@ -86,10 +87,10 @@ private:
 
   #define P_Exchange8(storage, value)     _InterlockedExchange8       ((CHAR  *)(storage), value)
   #define P_FetchAdd8(storage, value)     _InterlockedExchangeAdd8    ((char  *)(storage), value)
-  #define P_AddFetch8(storage, value)    (_InterlockedExchangeAdd8    ((LONG  *)(storage), value)+value)
+  #define P_AddFetch8(storage, value)    (_InterlockedExchangeAdd8    ((char  *)(storage), value)+value)
   #define P_Exchange16(storage, value)    _InterlockedExchange16      ((SHORT *)(storage), value)
   #define P_FetchAdd16(storage, value)    _InterlockedExchangeAdd16   ((SHORT *)(storage), value)
-  #define P_AddFetch16(storage, value)   (_InterlockedExchangeAdd16   ((LONG  *)(storage), value)+value)
+  #define P_AddFetch16(storage, value)   (_InterlockedExchangeAdd16   ((SHORT *)(storage), value)+value)
   #define P_Exchange32(storage, value)    _InterlockedExchange        ((LONG  *)(storage), value)
   #define P_FetchAdd32(storage, value)    _InterlockedExchangeAdd     ((LONG  *)(storage), value)
   #define P_AddFetch32(storage, value)    _InterlockedAdd             ((LONG  *)(storage), value)
@@ -108,6 +109,7 @@ private:
   #define P_DEFINE_ATOMIC_INT_CLASS_WIN32(Type, Size) \
     P_DEFINE_ATOMIC_INT_CLASS(Type, P_Exchange##Size, P_FetchAdd##Size, P_AddFetch##Size);
 
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(              bool, 8 );
   P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed      char, 8 );
   P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned      char, 8 );
   P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed     short, 16);
@@ -126,6 +128,7 @@ private:
   #define P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(Type) \
     P_DEFINE_ATOMIC_INT_CLASS(Type, __sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch)
 
+  P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(          bool);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed  char);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned  char);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed short);
@@ -144,6 +147,7 @@ private:
   
 #elif defined(SOLARIS) && !defined(__GNUC__)
 
+  P_DEFINE_ATOMIC_INT_CLASS(          bool, atomic_swap_8,  atomic_add_8,  atomic_add_8_nv);
   P_DEFINE_ATOMIC_INT_CLASS(  signed  char, atomic_swap_8,  atomic_add_8,  atomic_add_8_nv);
   P_DEFINE_ATOMIC_INT_CLASS(unsigned  char, atomic_swap_8,  atomic_add_8,  atomic_add_8_nv);
   P_DEFINE_ATOMIC_INT_CLASS(  signed short, atomic_swap_16, atomic_add_16, atomic_add_16_nv);
