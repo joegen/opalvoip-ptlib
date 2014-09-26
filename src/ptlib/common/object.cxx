@@ -1553,9 +1553,9 @@ static void GetFrequency(uint64_t & freq)
     std::streamsize nameWidth = strm.width();
     strm << setw(0) << "Thread \"" << info.m_name << left << setw(nameWidth - info.m_name.length()) << '"';
     if (info.m_threadId != info.m_uniqueId)
-      strm << " (" << info.m_uniqueId << ')';
-    strm << "  real=" << scientific << setprecision(3) << setw(10) << info.m_real
-         <<  "  cpu=" << scientific << setprecision(3) << setw(10) << info.m_cpu;
+      strm <<   "  id=" << left << setw(8) << info.m_uniqueId;
+    strm   << "  real=" << scientific << setprecision(3) << setw(10) << info.m_real
+           <<  "  cpu=" << scientific << setprecision(3) << setw(10) << info.m_cpu;
     if (info.m_real > 0)
       strm <<  " ("  <<   fixed    << setprecision(2) << (100.0*info.m_cpu.GetMilliSeconds()/info.m_real.GetMilliSeconds()) << "%)";
     return strm;
@@ -1699,7 +1699,8 @@ static void GetFrequency(uint64_t & freq)
                  << ThreadInfo(it->first.m_threadIdentifier,
                                it->first.m_threadUniqueId,
                                PThread::GetThreadName(it->first.m_threadIdentifier),
-                               times.m_real, times.m_kernel + times.m_user);
+                               times.m_real, times.m_kernel + times.m_user)
+                 << "  ** Running **";
           else {
             strm << "Thread info not available: id=" << it->first.m_threadIdentifier;
             if (it->first.m_threadIdentifier != lastId)
