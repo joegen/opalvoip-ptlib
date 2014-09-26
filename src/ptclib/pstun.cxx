@@ -62,6 +62,9 @@
 #define IS_SUCCESS_RESP(msg_type)  (((msg_type) & 0x0110) == 0x0100)
 #define IS_ERR_RESP(msg_type)      (((msg_type) & 0x0110) == 0x0110)
 
+static atomic<bool> Crc32Table_initialised;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 PSTUN::PSTUN()
@@ -760,8 +763,7 @@ DWORD PSTUNMessage::CalculateFingerprint(PSTUNFingerprint * fp) const
 {
   static DWORD Crc32Table[256];
 
-  static atomic<bool> initialised(false);
-  if (!initialised.exchange(true)) {
+  if (!Crc32Table_initialised.exchange(true)) {
     for (PINDEX i = 0; i < PARRAYSIZE(Crc32Table); ++i) {
       DWORD c = i;
       for (PINDEX j = 0; j < 8; ++j) {

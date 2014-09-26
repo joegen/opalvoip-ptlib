@@ -47,6 +47,10 @@
 #define new PNEW
 
 
+static atomic<bool> s_haveMacAddress;
+static PEthSocket::Address s_macAddress;
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PGloballyUniqueID::PGloballyUniqueID()
@@ -112,19 +116,17 @@ PGloballyUniqueID::PGloballyUniqueID()
   theArray[8] = (BYTE)(((clockSequence>>8)&0x1f) | 0x80); // DCE compatible GUID
   theArray[9] = (BYTE)clockSequence;
 
-  static PEthSocket::Address macAddress;
-  static atomic<bool> haveMacAddress(false);
-  if (!haveMacAddress.exchange(true)) {
+  if (!s_haveMacAddress.exchange(true)) {
     PString str = PIPSocket::GetInterfaceMACAddress();
     if (str.IsEmpty()) {
-      PRandom::Octets(macAddress.b, sizeof(macAddress.b));
-      macAddress.b[0] |= '\x80';
+      PRandom::Octets(s_macAddress.b, sizeof(s_macAddress.b));
+      s_macAddress.b[0] |= '\x80';
     }
     else
-      macAddress = str;
+      s_macAddress = str;
   }
 
-  memcpy(theArray+10, macAddress.b, 6);
+  memcpy(theArray+10, s_macAddress.b, 6);
 }
 
 

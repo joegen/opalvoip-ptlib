@@ -77,6 +77,8 @@
 
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
 
+static atomic<bool> V8_initialised;
+
 #ifndef P_V8_API
   #define P_V8_API 1
 #endif
@@ -194,8 +196,7 @@ private:
 public:
   Private()
   {
-    static atomic<bool> initialised;
-    if (!initialised.exchange(true)) {
+    if (!V8_initialised.exchange(true)) {
 #if P_V8_API > 1
       v8::V8::InitializeICU();
 #endif
