@@ -1504,19 +1504,22 @@ static void GetFrequency(uint64_t & freq)
 
   void Reset()
   {
+    GetTimestamp(s_database.m_start);
+    ThreadInfo * thrd = s_database.m_threads.exchange(NULL);
     FunctionInfo * func = s_database.m_functions.exchange(NULL);
+
     while (func != NULL) {
       FunctionInfo * del = func;
       func = func->m_link;
       delete del;
     }
 
-    ThreadInfo * thrd = s_database.m_threads.exchange(NULL);
     while (thrd != NULL) {
       ThreadInfo * del = thrd;
       thrd = thrd->m_link;
       delete del;
     }
+
   }
 
 
