@@ -41,25 +41,15 @@
   #include P_ATOMICITY_HEADER
 #endif
 
-#define P_DEFINE_ATOMIC_FUNCTIONS1(T,Exch) \
-    __inline atomic() { } \
-    __inline atomic(T value) : m_storage(value) { } \
-    __inline atomic(const atomic & other) : m_storage(other.m_storage) { } \
-    __inline atomic & operator=(const atomic & other) { m_storage = other.m_storage; return *this; } \
-    __inline operator T() const { return m_storage; } \
-    __inline T exchange(T value) { return (T)(Exch); }
-
-#define P_DEFINE_ATOMIC_FUNCTIONS2(T, Exch, PreInc, PostInc, PreDec, PostDec) \
-    P_DEFINE_ATOMIC_FUNCTIONS1(T,Exch) \
-    __inline T operator++(int) { return (T)(PreInc);  } \
-    __inline T operator++()    { return (T)(PostInc); } \
-    __inline T operator--(int) { return (T)(PreDec);  } \
-    __inline T operator--()    { return (T)(PostDec); } \
-
-
 template <typename T> struct atomic
 {
-  P_DEFINE_ATOMIC_FUNCTIONS1(T, m_storage = value)
+  __inline atomic() { }
+  __inline atomic(T value) : m_storage(value) { }
+  __inline atomic(const atomic & other) : m_storage(other.m_storage) { }
+  __inline atomic & operator=(const atomic & other) { m_storage = other.m_storage; return *this; }
+  __inline operator T() const { return m_storage; }
+  __inline T exchange(T value) { T previous = m_storage; m_storage = value; return previous; }
+
 private:
   volatile T m_storage;
 #if _WIN32
@@ -69,58 +59,73 @@ private:
 #endif
 };
 
-#define P_DEFINE_ATOMIC_BASE_CLASS(T, Exch) \
-  template <> struct atomic<T *> { \
-    P_DEFINE_ATOMIC_FUNCTIONS1(T *, Exch) \
-    private: T * m_storage; \
+#define P_DEFINE_ATOMIC_FUNCTIONS(Type,Exch,FetchAdd,AddFetch) \
+    __inline atomic(Type value = 0) : m_storage(value) { } \
+    __inline atomic(const atomic & other) : m_storage((Type)AddFetch(const_cast<Type *>(&other.m_storage), 0)) { } \
+    __inline atomic & operator=(const atomic & other) { Exch(&m_storage, (Type)AddFetch(const_cast<Type *>(&other.m_storage), 0)); return *this; } \
+    __inline operator Type() const { return (Type)AddFetch(const_cast<Type *>(&m_storage), 0); } \
+    __inline Type exchange(Type value) { return (Type)Exch(&m_storage, value); } \
+    __inline Type operator++(int) { return (Type)AddFetch(&m_storage,  1);  } \
+    __inline Type operator++()    { return (Type)FetchAdd(&m_storage,  1); } \
+    __inline Type operator--(int) { return (Type)AddFetch(&m_storage, -1);  } \
+    __inline Type operator--()    { return (Type)FetchAdd(&m_storage, -1); } \
+
+#define P_DEFINE_ATOMIC_INT_CLASS(Type,Exch,FetchAdd,AddFetch) \
+  template <> struct atomic<Type> { \
+    P_DEFINE_ATOMIC_FUNCTIONS(Type,Exch,FetchAdd,AddFetch) \
+    private: volatile Type m_storage; \
   }
 
-#define P_DEFINE_ATOMIC_INT_CLASS(T, Exch, PreInc, PostInc, PreDec, PostDec) \
-  template <> struct atomic<T> { \
-    P_DEFINE_ATOMIC_FUNCTIONS2(T, Exch, PreInc, PostInc, PreDec, PostDec) \
-    private: T m_storage; \
-  }
-
-#define P_DEFINE_ATOMIC_PTR_CLASS(Exch) \
-  template <typename T> struct atomic<T *> { \
-    P_DEFINE_ATOMIC_FUNCTIONS1(T *, Exch) \
-    private: T * m_storage; \
+#define P_DEFINE_ATOMIC_PTR_CLASS(Exch,FetchAdd,AddFetch) \
+  template <typename Type> struct atomic<Type *> { \
+    P_DEFINE_ATOMIC_FUNCTIONS(Type*,Exch,FetchAdd,AddFetch) \
+    private: volatile Type * m_storage; \
   }
 
 #if defined(_WIN32)
 
-  #define P_DEFINE_ATOMIC_INT_CLASS_WIN32(T1, T2, Exch, PreInc, PreDec, Add) \
-    P_DEFINE_ATOMIC_INT_CLASS(T1, Exch(reinterpret_cast<T2 *>(&m_storage), value), \
-                                PreInc(reinterpret_cast<T2 *>(&m_storage)), \
-                                   Add(reinterpret_cast<T2 *>(&m_storage), 1), \
-                                PreDec(reinterpret_cast<T2 *>(&m_storage)), \
-                                   Add(reinterpret_cast<T2 *>(&m_storage), -1))
+  #define P_Exchange8(storage, value)     _InterlockedExchange8       ((CHAR  *)(storage), value)
+  #define P_FetchAdd8(storage, value)     _InterlockedExchangeAdd8    ((char  *)(storage), value)
+  #define P_AddFetch8(storage, value)    (_InterlockedExchangeAdd8    ((LONG  *)(storage), value)+value)
+  #define P_Exchange16(storage, value)    _InterlockedExchange16      ((SHORT *)(storage), value)
+  #define P_FetchAdd16(storage, value)    _InterlockedExchangeAdd16   ((SHORT *)(storage), value)
+  #define P_AddFetch16(storage, value)   (_InterlockedExchangeAdd16   ((LONG  *)(storage), value)+value)
+  #define P_Exchange32(storage, value)    _InterlockedExchange        ((LONG  *)(storage), value)
+  #define P_FetchAdd32(storage, value)    _InterlockedExchangeAdd     ((LONG  *)(storage), value)
+  #define P_AddFetch32(storage, value)    _InterlockedAdd             ((LONG  *)(storage), value)
+  #define P_Exchange64(storage, value)    _InterlockedExchange64      ((LONG64*)(storage), value)
+  #define P_FetchAdd64(storage, value)    _InterlockedExchangeAdd64   ((LONG64*)(storage), value)
+  #define P_AddFetch64(storage, value)    _InterlockedAdd64           ((LONG64*)(storage), value)
+  #define P_ExchangePtr(storage, value)   _InterlockedExchangePointer ((PVOID *)(storage), value)
+  #ifdef _WIN64
+    #define P_FetchAddPtr(storage, value) _InterlockedExchangeAdd64   ((LONG64*)(storage), value)
+    #define P_AddFetchPtr(storage, value) _InterlockedAdd64           ((LONG64*)(storage), value)
+  #else
+    #define P_FetchAddPtr(storage, value) _InterlockedExchangeAdd     ((LONG  *)(storage), value)
+    #define P_AddFetchPtr(storage, value) _InterlockedAdd             ((LONG  *)(storage), value)
+  #endif
 
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed  char,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned  char,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed short,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned short,       SHORT,  _InterlockedExchange16, _InterlockedIncrement16, _InterlockedDecrement16, _InterlockedExchangeAdd16);
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed   int,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned   int,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed  long,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
-  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned  long,       long,   _InterlockedExchange,   _InterlockedIncrement,   _InterlockedDecrement,   _InterlockedAdd  );
-  #if HAVE_LONG_LONG_INT
-    P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed long long, LONG64, _InterlockedExchange64, _InterlockedIncrement64, _InterlockedDecrement64, _InterlockedExchangeAdd64);
-  #endif
-  #if HAVE_UNSIGNED_LONG_LONG_INT
-    P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned long long, LONG64, _InterlockedExchange64, _InterlockedIncrement64, _InterlockedDecrement64, _InterlockedExchangeAdd64);
-  #endif
-  P_DEFINE_ATOMIC_PTR_CLASS(_InterlockedExchangePointer(reinterpret_cast<PVOID *>(&m_storage), value));
+  #define P_DEFINE_ATOMIC_INT_CLASS_WIN32(Type, Size) \
+    P_DEFINE_ATOMIC_INT_CLASS(Type, P_Exchange##Size, P_FetchAdd##Size, P_AddFetch##Size);
+
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed      char, 8 );
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned      char, 8 );
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed     short, 16);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned     short, 16);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed       int, 32);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned       int, 32);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed      long, 32);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned      long, 32);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed long long, 64);
+  P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned long long, 64);
+
+  P_DEFINE_ATOMIC_PTR_CLASS(P_ExchangePtr, P_FetchAddPtr, P_AddFetchPtr);
 
 #elif defined(P_ATOMICITY_BUILTIN)
 
-  #define P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(T) \
-    P_DEFINE_ATOMIC_INT_CLASS(T, \
-                              __sync_lock_test_and_set(&m_storage, value), \
-                              __sync_fetch_and_add(&m_storage, 1), \
-                              __sync_add_and_fetch(&m_storage, 1), \
-                              __sync_fetch_and_sub(&m_storage, 1), \
-                              __sync_sub_and_fetch(&m_storage, 1))
+  #define P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(Type) \
+    P_DEFINE_ATOMIC_INT_CLASS(Type, __sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch)
+
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed  char);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned  char);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed short);
@@ -135,44 +140,33 @@ private:
   #if HAVE_UNSIGNED_LONG_LONG_INT
     P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned long long);
   #endif
-  P_DEFINE_ATOMIC_PTR_CLASS(__sync_lock_test_and_set(&m_storage, value));
+  P_DEFINE_ATOMIC_PTR_CLASS(__sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch);
   
-#elif defined(_STLP_INTERNAL_THREADS_H) && defined(_STLP_ATOMIC_INCREMENT) && defined(_STLP_ATOMIC_DECREMENT)
-
-  P_DEFINE_ATOMIC_INT_CLASS(__stl_atomic_t, \
-                            _STLP_ATOMIC_EXCHANGE( &m_storage, value), \
-                            _STLP_ATOMIC_INCREMENT(&m_storage, 1)-1, \
-                            _STLP_ATOMIC_INCREMENT(&m_storage, 1), \
-                            _STLP_ATOMIC_DECREMENT(&m_storage, 1)+1, \
-                            _STLP_ATOMIC_DECREMENT(&m_storage, 1));
-  P_DEFINE_ATOMIC_BASE_CLASS(bool, _STLP_ATOMIC_EXCHANGE(&m_storage, value));
-  #if !defined(P_64BIT)
-    P_DEFINE_ATOMIC_PTR_CLASS(_STLP_ATOMIC_EXCHANGE(&m_storage, value));
-  #endif
-
 #elif defined(SOLARIS) && !defined(__GNUC__)
 
-  P_DEFINE_ATOMIC_INT_CLASS(__stl_atomic_t, \
-                            atomic_swap_32(  &m_storage, value), \
-                            atomic_add_32_nv(&m_storage,  1)-1, \
-                            atomic_add_32_nv(&m_storage,  1), \
-                            atomic_add_32_nv(&m_storage, -1)+1, \
-                            atomic_add_32_nv(&m_storage, -1))
-  P_DEFINE_ATOMIC_BASE_CLASS(bool, atomic_swap_32(&m_storage, value))
-  #if !defined(P_64BIT)
-    P_DEFINE_ATOMIC_PTR_CLASS(atomic_swap_32(&m_storage, value));
+  P_DEFINE_ATOMIC_INT_CLASS(  signed  char, atomic_swap_8,  atomic_add_8,  atomic_add_8_nv);
+  P_DEFINE_ATOMIC_INT_CLASS(unsigned  char, atomic_swap_8,  atomic_add_8,  atomic_add_8_nv);
+  P_DEFINE_ATOMIC_INT_CLASS(  signed short, atomic_swap_16, atomic_add_16, atomic_add_16_nv);
+  P_DEFINE_ATOMIC_INT_CLASS(unsigned short, atomic_swap_16, atomic_add_16, atomic_add_16_nv);
+  P_DEFINE_ATOMIC_INT_CLASS(  signed   int, atomic_swap_32, atomic_add_32, atomic_add_32_nv);
+  P_DEFINE_ATOMIC_INT_CLASS(unsigned   int, atomic_swap_32, atomic_add_32, atomic_add_32_nv);
+  P_DEFINE_ATOMIC_INT_CLASS(  signed  long, atomic_swap_32, atomic_add_32, atomic_add_32_nv);
+  P_DEFINE_ATOMIC_INT_CLASS(unsigned  long, atomic_swap_32, atomic_add_32, atomic_add_32_nv);
+  #if HAVE_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS(signed long long, atomic_swap_64, atomic_add_64, atomic_add_64_nv);
+  #endif
+  #if HAVE_UNSIGNED_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS(unsigned long long, atomic_swap_64, atomic_add_64, atomic_add_64_nv);
+  #endif
+  #if defined(P_64BIT)
+    P_DEFINE_ATOMIC_PTR_CLASS(atomic_swap_64, atomic_add_64, atomic_add_64_nv);
+  #else
+    P_DEFINE_ATOMIC_PTR_CLASS(atomic_swap_32, atomic_add_32, atomic_add_32_nv);
   #endif
 
 #elif defined(P_ATOMICITY_HEADER)
 
-  #define EXCHANGE_AND_ADD P_ATOMICITY_NAMESPACE __exchange_and_add
-  P_DEFINE_ATOMIC_INT_CLASS(_Atomic_word, \
-                            m_storage = value, \
-                            EXCHANGE_AND_ADD(&m_storage,  1), \
-                            EXCHANGE_AND_ADD(&m_storage,  1)+1, \
-                            EXCHANGE_AND_ADD(&m_storage, -1), \
-                            EXCHANGE_AND_ADD(&m_storage, -1)-1)
-  P_DEFINE_ATOMIC_BASE_CLASS(bool, (_Atomic_word previous = EXCHANGE_AND_ADD(&m_value, value?1:-1), m_value = value?1:0))
+  P_DEFINE_ATOMIC_INT_CLASS(_Atomic_word, m_storage = value, P_ATOMICITY_NAMESPACE __exchange_and_add)
 
 #endif
 
