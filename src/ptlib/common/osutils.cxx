@@ -2155,6 +2155,8 @@ void PProcess::PreShutdown()
   m_activeThreads.clear();
 
   m_threadMutex.Signal();
+
+  OnThreadEnded(*this);
 }
 
 
@@ -2428,6 +2430,12 @@ bool PProcess::HostSystemURLHandlerInfo::RegisterTypes(const PString & _types, b
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+PThreadIdentifier PThread::GetThreadId() const
+{
+  return m_threadId;
+}
+
+
 PThread * PThread::Current()
 {
   if (!PProcess::IsInitialised())
@@ -2441,6 +2449,37 @@ PThread * PThread::Current()
     return it->second;
 
   return process.m_shuttingDown ? NULL : new PExternalThread;
+}
+
+
+PString PThread::GetThreadName(PThreadIdentifier id)
+{
+  if (!PProcess::IsInitialised())
+    return false;
+
+  PProcess & process = PProcess::Current();
+
+  PWaitAndSignal mutex(process.m_threadMutex);
+  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(id);
+  return it != process.m_activeThreads.end() ? it->second->GetThreadName() : PString::Empty();
+}
+
+
+bool PThread::GetTimes(PThreadIdentifier id, Times & times)
+{
+  if (!PProcess::IsInitialised())
+    return false;
+
+  PProcess & process = PProcess::Current();
+
+  PWaitAndSignal mutex(process.m_threadMutex);
+  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(id);
+  return it != process.m_activeThreads.end() && it->second->GetTimes(times);
+}
+
+
+PThread::Times::Times()
+{
 }
 
 
