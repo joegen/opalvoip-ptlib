@@ -66,10 +66,10 @@ private:
     __inline atomic & operator=(const atomic & other) { Exch(&m_storage, (Type)AddFetch(const_cast<Type *>(&other.m_storage), 0)); return *this; } \
     __inline operator Type() const { return (Type)AddFetch(const_cast<Type *>(&m_storage), 0); } \
     __inline Type exchange(Type value) { return (Type)Exch(&m_storage, value); } \
-    __inline Type operator++(int) { return (Type)AddFetch(&m_storage,  1);  } \
-    __inline Type operator++()    { return (Type)FetchAdd(&m_storage,  1); } \
-    __inline Type operator--(int) { return (Type)AddFetch(&m_storage, -1);  } \
-    __inline Type operator--()    { return (Type)FetchAdd(&m_storage, -1); } \
+    __inline Type operator++()    { return (Type)AddFetch(&m_storage,  1); } \
+    __inline Type operator++(int) { return (Type)FetchAdd(&m_storage,  1); } \
+    __inline Type operator--()    { return (Type)AddFetch(&m_storage, -1); } \
+    __inline Type operator--(int) { return (Type)FetchAdd(&m_storage, -1); } \
 
 #define P_DEFINE_ATOMIC_INT_CLASS(Type,Exch,FetchAdd,AddFetch) \
   template <> struct atomic<Type> { \
