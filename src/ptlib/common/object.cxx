@@ -1674,6 +1674,7 @@ static void GetFrequency(uint64_t & freq)
     functionNameWidth += 2;
 
     PUniqueThreadIdentifier lastId = 0;
+    PTimeInterval threadTime;
 
     uint64_t frequency;
     GetFrequency(frequency);
@@ -1685,7 +1686,6 @@ static void GetFrequency(uint64_t & freq)
             " time=" << PTimeInterval(int64_t(1000.0*duration/frequency)) << '\n'
          << fixed;
     for (std::map<FunctionInfo, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
-      PTimeInterval threadTime;
       if (lastId != it->first.m_threadUniqueId) {
         lastId = it->first.m_threadUniqueId;
         strm << "\n  ";
@@ -1698,18 +1698,19 @@ static void GetFrequency(uint64_t & freq)
         else {
           PThread::Times times;
           if (PThread::GetTimes(it->first.m_threadIdentifier, times)) {
-            threadTime = thrd->second.m_real;
             strm << setw(threadNameWidth)
-              << ThreadInfo(it->first.m_threadIdentifier,
-              it->first.m_threadUniqueId,
-              PThread::GetThreadName(it->first.m_threadIdentifier),
-              times.m_real, times.m_kernel + times.m_user)
-              << "  ** Running **";
+                 << ThreadInfo(it->first.m_threadIdentifier,
+                               it->first.m_threadUniqueId,
+                               PThread::GetThreadName(it->first.m_threadIdentifier),
+                               times.m_real, times.m_kernel + times.m_user)
+                 << "  ** Running **";
+            threadTime = thrd->second.m_real;
           }
           else {
             strm << "Thread info not available: id=" << it->first.m_threadIdentifier;
             if (it->first.m_threadIdentifier != lastId)
               strm << " (" << lastId << ')';
+            threadTime = 0;
           }
         }
         strm << '\n';
