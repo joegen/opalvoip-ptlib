@@ -1696,14 +1696,15 @@ static void GetFrequency(uint64_t & freq)
           PThread::Times times;
           if (PThread::GetTimes(it->first.m_threadIdentifier, times))
             strm << setw(threadNameWidth)
-            << ThreadInfo(it->first.m_threadIdentifier,
-            it->first.m_threadUniqueId,
-            PThread::GetThreadName(it->first.m_threadIdentifier),
-            times.m_real, times.m_kernel + times.m_user);
-          else
+                 << ThreadInfo(it->first.m_threadIdentifier,
+                               it->first.m_threadUniqueId,
+                               PThread::GetThreadName(it->first.m_threadIdentifier),
+                               times.m_real, times.m_kernel + times.m_user);
+          else {
             strm << "Thread info not available: id=" << it->first.m_threadIdentifier;
             if (it->first.m_threadIdentifier != lastId)
               strm << " (" << lastId << ')';
+          }
         }
         strm << '\n';
       }
