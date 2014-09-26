@@ -265,12 +265,23 @@ class PThread : public PObject
      */
     void SetNoAutoDelete() { SetAutoDelete(NoAutoDeleteThread); }
 
+    PPROFILE_EXCLUDE(
     /** Get the name of the thread. Thread names are a optional debugging aid.
 
        @return
        current thread name.
      */
-    virtual PString GetThreadName() const;
+    virtual PString GetThreadName() const
+    );
+
+    PPROFILE_EXCLUDE(
+    /** Get the name of the thread. Thread names are a optional debugging aid.
+
+       @return
+       current thread name.
+     */
+    static PString GetThreadName(PThreadIdentifier id)
+    );
 
     /** Change the name of the thread. Thread names are a optional debugging aid.
 
@@ -284,9 +295,11 @@ class PThread : public PObject
 
   /**@name Miscellaneous */
   //@{
-    /** Get operating system specific thread identifier for this thread.
+    PPROFILE_EXCLUDE(
+      /** Get operating system specific thread identifier for this thread.
       */
-    virtual PThreadIdentifier GetThreadId() const { return m_threadId; }
+    virtual PThreadIdentifier GetThreadId() const;
+    );
 
     /** Get operating system specific thread identifier for the current thread.
       */
@@ -312,17 +325,28 @@ class PThread : public PObject
     /// Times for execution of the thread.
     struct Times
     {
+      PPROFILE_EXCLUDE(Times());
+      PPROFILE_EXCLUDE(friend ostream & operator<<(ostream & strm, const Times & times));
+
       PTimeInterval m_real;     ///< Total real time since thread start in milliseconds.
       PTimeInterval m_kernel;   ///< Total kernel CPU time in milliseconds.
       PTimeInterval m_user;     ///< Total user CPU time in milliseconds.
-      friend ostream & operator<<(ostream & strm, const Times & times);
     };
 
+    PPROFILE_EXCLUDE(
     /** Get the thread execution times.
      */
     bool GetTimes(
       Times & times   ///< Times for thread execution.
-    );
+    ));
+
+    PPROFILE_EXCLUDE(
+    /** Get the thread execution times.
+     */
+    static bool GetTimes(
+      PThreadIdentifier id, ///< Thread identifier to get times for
+      Times & times         ///< Times for thread execution.
+    ));
 
     /** User override function for the main execution routine of the thread. A
        descendent class must provide the code that will be executed in the
