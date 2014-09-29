@@ -259,6 +259,8 @@ PThread::PThread(bool isProcess)
   , PX_priority(NormalPriority)
 #if defined(P_LINUX)
   , PX_linuxId(GetCurrentUniqueIdentifier())
+  , PX_startTick(PTimer::Tick())
+#endif
 #endif
   , PX_suspendMutex(MutexInitialiser)
   , PX_suspendCount(0)
