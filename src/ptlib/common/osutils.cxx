@@ -2479,7 +2479,21 @@ bool PThread::GetTimes(PThreadIdentifier id, Times & times)
 }
 
 
+void PThread::GetTimes(std::list<Times> & allThreadTimes)
+{
+  Times threadTimes;
+  PProcess & process = PProcess::Current();
+  PWaitAndSignal mutex(process.m_threadMutex);
+  for (PProcess::ThreadMap::iterator it = process.m_activeThreads.begin(); it != process.m_activeThreads.end(); ++it) {
+    if (it->second->GetTimes(threadTimes))
+      allThreadTimes.push_back(threadTimes);
+  }
+}
+
+
 PThread::Times::Times()
+  : m_threadId(PNullThreadIdentifier)
+  , m_uniqueId(0)
 {
 }
 
