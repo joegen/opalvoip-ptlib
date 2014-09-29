@@ -671,9 +671,9 @@ void PHTML::Form::AddAttr(PHTML & html) const
   if (methodString != NULL)
     html << " METHOD=" << methodString;
   if (actionString != NULL)
-    html << " ACTION=\"" << Escaped(actionString) << '"';
+    html << " ACTION=\"" << actionString << '"';
   if (mimeTypeString != NULL)
-    html << " ENCTYPE=\"" << Escaped(mimeTypeString) << '"';
+    html << " ENCTYPE=\"" << mimeTypeString << '"';
   if (scriptString != NULL)
     html << " SCRIPT=\"" << Escaped(scriptString) << '"';
 }
