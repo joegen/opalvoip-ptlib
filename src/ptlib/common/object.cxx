@@ -41,6 +41,7 @@
 #include <sstream>
 #include <ctype.h>
 #include <limits>
+#include <functional>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
@@ -1318,12 +1319,12 @@ static void GetFrequency(uint64_t & freq)
 
     PPROFILE_EXCLUDE(FunctionInfo(const FunctionInfo & other));
     PPROFILE_EXCLUDE(FunctionInfo & operator=(const FunctionInfo & other));
-    PPROFILE_EXCLUDE(bool operator<(const FunctionInfo & other) const);
 
     PPROFILE_EXCLUDE(void PrintOn(ostream & out) const);
 
     union
     {
+      // Note for correct operation m_pointer must overlay m_name
       struct
       {
         void * m_pointer;
@@ -1355,7 +1356,6 @@ static void GetFrequency(uint64_t & freq)
       const PTimeInterval & real,
       const PTimeInterval & cpu
     ));
-    PPROFILE_EXCLUDE(friend ostream & operator<<(ostream & strm, const ThreadInfo & info));
 
     PThreadIdentifier       m_threadId;
     PUniqueThreadIdentifier m_uniqueId;
@@ -1431,27 +1431,6 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
-  bool FunctionInfo::operator<(const FunctionInfo & other) const
-  {
-    if (m_threadUniqueId < other.m_threadUniqueId)
-      return true;
-    if (m_threadUniqueId > other.m_threadUniqueId)
-      return false;
-
-    switch (m_type) {
-      case e_AutoEntry:
-      case e_AutoExit:
-        return m_function.m_pointer < other.m_function.m_pointer;
-
-      case e_ManualEntry:
-      case e_ManualExit:
-        return m_function.m_name < other.m_function.m_name;
-    }
-
-    return false;
-  }
-
-
   void FunctionInfo::PrintOn(ostream & out) const
   {
     switch (m_type) {
@@ -1495,7 +1474,7 @@ static void GetFrequency(uint64_t & freq)
     if ((filename = getenv("PTLIB_PROFILING_FILENAME")) != NULL) {
       ofstream out(filename, ios::out | ios::trunc);
       if (out.is_open())
-        Analyse(out);
+        Analyse(out, strstr(filename, ".html") != NULL);
     }
 
     Reset();
@@ -1551,20 +1530,6 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
-  ostream & operator<<(ostream & strm, const ThreadInfo & info)
-  {
-    std::streamsize nameWidth = strm.width();
-    strm << setw(0) << "Thread \"" << info.m_name << left << setw(nameWidth - info.m_name.length()) << '"';
-    if (info.m_threadId != info.m_uniqueId)
-      strm <<   "  id=" << left << setw(8) << info.m_uniqueId;
-    strm   << "  real=" << scientific << setprecision(3) << setw(10) << info.m_real
-           <<  "  cpu=" << scientific << setprecision(3) << setw(10) << info.m_cpu;
-    if (info.m_real > 0)
-      strm <<  " ("  <<   fixed    << setprecision(2) << (100.0*info.m_cpu.GetMilliSeconds()/info.m_real.GetMilliSeconds()) << "%)";
-    return strm;
-  }
-
-
   Block::Block(const char * name, const char * file, unsigned line)
     : m_name(name)
   {
@@ -1585,39 +1550,68 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
-  struct Accumulator
+  struct FunctionAccumulator : FunctionInfo
   {
     unsigned m_count;
     uint64_t m_sum;
     uint64_t m_minimum;
     uint64_t m_maximum;
 
-    PPROFILE_EXCLUDE(Accumulator());
-    PPROFILE_EXCLUDE(void Accumulate(FunctionInfo * entry, FunctionInfo * exit));
+    FunctionAccumulator(const FunctionInfo & info)
+      : FunctionInfo(info)
+      , m_count(0)
+      , m_sum(0)
+      , m_minimum(std::numeric_limits<uint64_t>::max())
+      , m_maximum(0)
+    {
+    }
+
+    void Accumulate(FunctionInfo * entry, FunctionInfo * exit)
+    {
+      *(FunctionInfo *)this = *entry;
+
+      uint64_t diff = exit->m_when - entry->m_when;
+
+      if (m_minimum > diff)
+        m_minimum = diff;
+      if (m_maximum < diff)
+        m_maximum = diff;
+
+      m_sum += diff;
+      ++m_count;
+    }
   };
+  typedef std::map<void *, FunctionAccumulator> FunctionAccumulatorMap;
 
-  Accumulator::Accumulator()
-    : m_count(0)
-    , m_sum(0)
-    , m_minimum(std::numeric_limits<uint64_t>::max())
-    , m_maximum(0)
+
+  struct ThreadAccumulator : ThreadInfo
   {
-  }
+    bool m_running;
+    FunctionAccumulatorMap m_functions;
 
-  void Accumulator::Accumulate(FunctionInfo * entry, FunctionInfo * exit)
-  {
-    uint64_t diff = exit->m_when - entry->m_when;
+    ThreadAccumulator(const ThreadInfo & info)
+      : ThreadInfo(info)
+      , m_running(false)
+    {
+    }
 
-    if (m_minimum > diff)
-      m_minimum = diff;
-    if (m_maximum < diff)
-      m_maximum = diff;
+    ThreadAccumulator(const FunctionInfo & info)
+      : ThreadInfo(info.m_threadIdentifier,
+                   info.m_threadUniqueId,
+                   PThread::GetThreadName(info.m_threadIdentifier),
+                   0, 0)
+      , m_running(true)
+    {
+      PThread::Times times;
+      PThread::GetTimes(info.m_threadIdentifier, times);
+      m_real = times.m_real;
+      m_cpu = times.m_kernel + times.m_user;
+    }
+  };
+  typedef std::map<PUniqueThreadIdentifier, ThreadAccumulator> ThreadAccumulatorMap;
+  typedef std::multimap<double, ThreadAccumulator, std::greater<double> > ThreadUsage;
 
-    m_sum += diff;
-    ++m_count;
-  }
 
-  PPROFILE_EXCLUDE(static std::string FormatTime(uint64_t cycles, uint64_t frequency));
   static std::string FormatTime(uint64_t cycles, uint64_t frequency)
   {
     std::stringstream strm;
@@ -1625,113 +1619,149 @@ static void GetFrequency(uint64_t & freq)
     return strm.str();
   }
 
-  void Analyse(ostream & strm)
+
+  void Analyse(ostream & strm, bool html)
   {
-    uint64_t duration;
-    GetTimestamp(duration);
-    duration -= s_database.m_start;
-
-    std::map<FunctionInfo, Accumulator> accumulators;
-
-    for (FunctionInfo * exit = s_database.m_functions; exit != NULL; exit = exit->m_link) {
-      switch (exit->m_type) {
-        case e_AutoExit :
-          for (FunctionInfo * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
-            if (entry->m_function.m_pointer == exit->m_function.m_pointer && entry->m_threadUniqueId == exit->m_threadUniqueId) {
-              accumulators[*entry].Accumulate(entry, exit);
-              break;
-            }
-          }
-          break;
-
-        case e_ManualExit :
-          for (FunctionInfo * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
-            if (entry->m_function.m_name == exit->m_function.m_name && entry->m_threadUniqueId == exit->m_threadUniqueId) {
-              accumulators[*entry].Accumulate(entry, exit);
-              break;
-            }
-          }
-      }
-    }
-
-    std::streamsize threadNameWidth = 0;
-    map<PUniqueThreadIdentifier, ThreadInfo> threads;
-    for (ThreadInfo * thrd = s_database.m_threads; thrd != NULL; thrd = thrd->m_link) {
-      threads[thrd->m_uniqueId] = *thrd;
-
-      std::streamsize len = thrd->m_name.length();
-      if (len > threadNameWidth)
-        threadNameWidth = len;
-    }
-    threadNameWidth += 3;
-
-    std::streamsize functionNameWidth = 0;
-    for (std::map<FunctionInfo, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
-      std::streamsize len = it->first.m_type == e_ManualEntry ? strlen(it->first.m_function.m_name) : 18;
-      if (len > functionNameWidth)
-        functionNameWidth = len;
-    }
-    functionNameWidth += 2;
-
-    PUniqueThreadIdentifier lastId = 0;
-    PTimeInterval threadTime;
+    uint64_t durationCycles;
+    GetTimestamp(durationCycles);
+    durationCycles -= s_database.m_start;
 
     uint64_t frequency;
     GetFrequency(frequency);
 
-    strm << "Summary profile: " << threads.size() << " completed threads, "
-         << accumulators.size() << " functions,"
-            " cycles=" << duration << ","
-            " frequency=" << frequency << ","
-            " time=" << PTimeInterval(int64_t(1000.0*duration/frequency)) << '\n'
-         << fixed;
-    for (std::map<FunctionInfo, Accumulator>::iterator it = accumulators.begin(); it != accumulators.end(); ++it) {
-      if (lastId != it->first.m_threadUniqueId) {
-        lastId = it->first.m_threadUniqueId;
-        strm << "\n  ";
-        map<PUniqueThreadIdentifier, ThreadInfo>::iterator thrd = threads.find(lastId);
-        if (thrd != threads.end()) {
-          strm << setw(threadNameWidth) << thrd->second;
-          threadTime = thrd->second.m_real;
-          threads.erase(thrd);
-        }
-        else {
-          PThread::Times times;
-          if (PThread::GetTimes(it->first.m_threadIdentifier, times)) {
-            strm << setw(threadNameWidth)
-                 << ThreadInfo(it->first.m_threadIdentifier,
-                               it->first.m_threadUniqueId,
-                               PThread::GetThreadName(it->first.m_threadIdentifier),
-                               times.m_real, times.m_kernel + times.m_user)
-                 << "  ** Running **";
-            threadTime = thrd->second.m_real;
+    ThreadAccumulatorMap accumulators;
+    for (ThreadInfo * thrd = s_database.m_threads; thrd != NULL; thrd = thrd->m_link)
+      accumulators.insert(make_pair(thrd->m_uniqueId, *thrd));
+
+    unsigned functionCount = 0;
+    for (FunctionInfo * exit = s_database.m_functions; exit != NULL; exit = exit->m_link) {
+      switch (exit->m_type) {
+        case e_AutoExit :
+        case e_ManualExit :
+          for (FunctionInfo * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
+            if (entry->m_function.m_pointer == exit->m_function.m_pointer && entry->m_threadUniqueId == exit->m_threadUniqueId) {
+              ThreadAccumulatorMap::iterator thrd = accumulators.find(entry->m_threadUniqueId);
+              if (thrd == accumulators.end())
+                thrd = accumulators.insert(make_pair(entry->m_threadUniqueId, *entry)).first;
+
+              FunctionAccumulatorMap & functions = thrd->second.m_functions;
+              FunctionAccumulatorMap::iterator func = functions.find(entry->m_function.m_pointer);
+              if (func == functions.end()) {
+                func = functions.insert(make_pair(entry->m_function.m_pointer, *entry)).first;
+                ++functionCount;
+              }
+              func->second.Accumulate(entry, exit);
+              break;
+            }
           }
-          else {
-            strm << "Thread info not available: id=" << it->first.m_threadIdentifier;
-            if (it->first.m_threadIdentifier != lastId)
-              strm << " (" << lastId << ')';
-            threadTime = 0;
-          }
-        }
-        strm << '\n';
       }
-      strm << "    " << left << setw(functionNameWidth);
-      if (it->first.m_type == e_ManualEntry)
-        strm << it->first.m_function.m_name;
-      else
-        strm << it->first.m_function.m_pointer;
-      uint64_t avg = it->second.m_sum / it->second.m_count;
-      strm << " count=" << setw(10) << it->second.m_count
-           <<   " min=" << setw(20) << FormatTime(it->second.m_minimum, frequency)
-           <<   " max=" << setw(20) << FormatTime(it->second.m_maximum, frequency)
-           <<   " avg=" << setw(20) << FormatTime(avg                 , frequency);
-      if (threadTime > 0)
-        strm << " (" << fixed << setprecision(2) << (100000.0*it->second.m_sum/frequency/threadTime.GetMilliSeconds()) << "%)";
-      strm << '\n';
     }
 
-    for ( map<PUniqueThreadIdentifier, ThreadInfo>::iterator it = threads.begin(); it != threads.end(); ++it)
-      strm << "\n  " << setw(threadNameWidth) << it->second;
+    ThreadUsage threads;
+    for (ThreadAccumulatorMap::iterator thrd = accumulators.begin(); thrd != accumulators.end(); ++thrd) {
+      if (thrd->second.m_real > 0)
+        threads.insert(make_pair(100.0*thrd->second.m_cpu.GetMilliSeconds() / thrd->second.m_real.GetMilliSeconds(), thrd->second));
+      else
+        threads.insert(make_pair(-1, thrd->second));
+    }
+
+    PTimeInterval durationTime(int64_t(1000.0*durationCycles / frequency));
+
+    if (html) {
+      strm << "<H2>Summary profile<H2>"
+              "<table border=1 cellspacing=1 cellpadding=12>"
+              "<tr>"
+              "<th>Threads<th>Functions<th>Cycles<th>Frequency<th>Time"
+              "<tr>"
+              "<td align=center>" << threads.size()
+           << "<td align=center>" << functionCount
+           << "<td align=center>" << durationCycles
+           << "<td align=center>" << frequency
+           << "<td align=center>" << durationTime
+           << "</table>"
+               "<p>"
+              "<table border=1 cellspacing=0 cellpadding=8>"
+              "<tr><th>ID<th align=left>Thread<th>Real Time<th>CPU Time<th align=right nowrap>Core %";
+      for (ThreadUsage::iterator thrd = threads.begin(); thrd != threads.end(); ++thrd) {
+        strm << "<tr>"
+                "<td align=center>" << thrd->second.m_uniqueId
+             << scientific << setprecision(3)
+             << "<td>" << thrd->second.m_name
+             << "<td align=center>" << thrd->second.m_real
+             << "<td align=center>" << thrd->second.m_cpu;
+        if (thrd->first >= 0)
+          strm << "<td align=right>" << fixed << setprecision(2) << thrd->first << '%';
+        for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
+          strm << "<tr><td>&nbsp;<td colspan=4>"
+                  "<table border=1 cellspacing=1 cellpadding=4 width=100%>"
+                  "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Thread %"
+                  "<tr><td>";
+          if (func->second.m_type == e_ManualEntry)
+            strm << func->second.m_function.m_name;
+          else
+            strm << func->second.m_function.m_pointer;
+          uint64_t avg = func->second.m_sum / func->second.m_count;
+          strm << "<td align=center>" << func->second.m_count
+               << "<td align=center nowrap>" << FormatTime(func->second.m_minimum, frequency)
+               << "<td align=center nowrap>" << FormatTime(func->second.m_maximum, frequency)
+               << "<td align=center nowrap>" << FormatTime(avg, frequency);
+          if (thrd->second.m_real > 0)
+            strm << "<td align=right>" << fixed << setprecision(2) << (100000.0*func->second.m_sum / frequency / thrd->second.m_real.GetMilliSeconds()) << '%';
+          strm << "</table>";
+        }
+      }
+      strm << "</table>";
+    }
+    else {
+      std::streamsize threadNameWidth = 0;
+      std::streamsize functionNameWidth = 0;
+      for (ThreadUsage::iterator thrd = threads.begin(); thrd != threads.end(); ++thrd) {
+        std::streamsize len = thrd->second.m_name.length();
+        if (len > threadNameWidth)
+          threadNameWidth = len;
+
+        for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
+          std::streamsize len = func->second.m_type == e_ManualEntry ? strlen(func->second.m_function.m_name) : 18;
+          if (len > functionNameWidth)
+            functionNameWidth = len;
+        }
+      }
+      threadNameWidth += 3;
+      functionNameWidth += 2;
+
+      strm << "Summary profile:"
+              " threads="   << threads.size() << ","
+              " functions=" << functionCount  << ","
+              " cycles="    << durationCycles << ","
+              " frequency=" << frequency      << ","
+              " time="      << durationTime   << '\n'
+           << fixed;
+      for (ThreadUsage::iterator thrd = threads.begin(); thrd != threads.end(); ++thrd) {
+        strm << "   Thread \"" << left << setw(threadNameWidth) << (thrd->second.m_name+'"')
+             <<   "  id=" << left << setw(8) << thrd->second.m_uniqueId
+             << "  real=" << scientific << setprecision(3) << setw(10) << thrd->second.m_real
+             <<  "  cpu=" << scientific << setprecision(3) << setw(10) << thrd->second.m_cpu;
+        if (thrd->first >= 0)
+          strm << " (" << fixed << setprecision(2) << thrd->first << "%)";
+        strm << '\n';
+
+        for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
+          strm << "      " << left << setw(functionNameWidth);
+          if (func->second.m_type == e_ManualEntry)
+            strm << func->second.m_function.m_name;
+          else
+            strm << func->second.m_function.m_pointer;
+          uint64_t avg = func->second.m_sum / func->second.m_count;
+          strm << " count=" << setw(10) << func->second.m_count
+               << " min=" << setw(20) << FormatTime(func->second.m_minimum, frequency)
+               << " max=" << setw(20) << FormatTime(func->second.m_maximum, frequency)
+               << " avg=" << setw(20) << FormatTime(avg, frequency);
+          if (thrd->second.m_real > 0)
+            strm << " (" << fixed << setprecision(2) << (100000.0*func->second.m_sum / frequency / thrd->second.m_real.GetMilliSeconds()) << "%)";
+          strm << '\n';
+        }
+      }
+    }
   }
 };
 
