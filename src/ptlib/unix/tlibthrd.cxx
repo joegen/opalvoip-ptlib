@@ -1071,6 +1071,10 @@ static bool LinuxGetTimes(const PString & statFileName,
 
 bool PThread::GetTimes(Times & times)
 {
+  times.m_name = GetThreadName();
+  times.m_threadId = GetThreadId();
+  times.m_uniqueId = GetUniqueIdentifier();
+
   PStringStream statFileName;
   statFileName << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
 

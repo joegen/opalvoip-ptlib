@@ -1030,6 +1030,10 @@ static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
 
 bool PThread::GetTimes(Times & times)
 {
+  times.m_name = GetThreadName();
+  times.m_threadId = GetThreadId();
+  times.m_uniqueId = GetUniqueIdentifier();
+
   FILETIME created, exit, kernel, user;
   exit.dwHighDateTime = exit.dwLowDateTime = 0;
   if (!GetThreadTimes(GetHandle(), &created, &exit, &kernel, &user))
