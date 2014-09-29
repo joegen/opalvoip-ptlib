@@ -1708,8 +1708,8 @@ static void GetFrequency(uint64_t & freq)
                << "<td align=center nowrap>" << FormatTime(avg, frequency);
           if (thrd->second.m_real > 0)
             strm << "<td align=right>" << fixed << setprecision(2) << (100000.0*func->second.m_sum / frequency / thrd->second.m_real.GetMilliSeconds()) << '%';
-          strm << "</table>";
         }
+        strm << "</table>";
       }
       strm << "</table>";
     }
