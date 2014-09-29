@@ -1691,11 +1691,12 @@ static void GetFrequency(uint64_t & freq)
              << "<td align=center>" << thrd->second.m_cpu;
         if (thrd->first >= 0)
           strm << "<td align=right>" << fixed << setprecision(2) << thrd->first << '%';
-        for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
+        if (!thrd->second.m_functions.empty())
           strm << "<tr><td>&nbsp;<td colspan=4>"
                   "<table border=1 cellspacing=1 cellpadding=4 width=100%>"
-                  "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Core %"
-                  "<tr><td>";
+                  "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Core %";
+        for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
+          strm << "<tr><td>";
           if (func->second.m_type == e_ManualEntry)
             strm << func->second.m_function.m_name;
           else
