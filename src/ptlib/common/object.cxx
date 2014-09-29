@@ -1668,7 +1668,7 @@ static void GetFrequency(uint64_t & freq)
     PTimeInterval durationTime(int64_t(1000.0*durationCycles / frequency));
 
     if (html) {
-      strm << "<H2>Summary profile<H2>"
+      strm << "<H2>Summary profile</H2>"
               "<table border=1 cellspacing=1 cellpadding=12>"
               "<tr>"
               "<th>Threads<th>Functions<th>Cycles<th>Frequency<th>Time"
