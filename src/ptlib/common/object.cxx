@@ -1694,7 +1694,7 @@ static void GetFrequency(uint64_t & freq)
         for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
           strm << "<tr><td>&nbsp;<td colspan=4>"
                   "<table border=1 cellspacing=1 cellpadding=4 width=100%>"
-                  "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Thread %"
+                  "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Core %"
                   "<tr><td>";
           if (func->second.m_type == e_ManualEntry)
             strm << func->second.m_function.m_name;
