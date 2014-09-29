@@ -1039,7 +1039,7 @@ namespace PProfiling
     void Dump(ostream & strm)
   );
   PPROFILE_EXCLUDE(
-    void Analyse(ostream & strm)
+    void Analyse(ostream & strm, bool html)
   );
   PPROFILE_EXCLUDE(
     void Reset()
