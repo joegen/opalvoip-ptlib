@@ -1281,7 +1281,7 @@ namespace PProfiling
 PPROFILE_EXCLUDE(static void GetFrequency(uint64_t & freq));
 static void GetFrequency(uint64_t & freq)
 {
-  freq = 2500000000; // 2.5GHz pretty typical
+  freq = 2000000000; // 2GHz
   ifstream cpuinfo("/proc/cpuinfo", ios::in);
   while (cpuinfo.good()) {
     char line[100];
@@ -1691,25 +1691,26 @@ static void GetFrequency(uint64_t & freq)
              << "<td align=center>" << thrd->second.m_cpu;
         if (thrd->first >= 0)
           strm << "<td align=right>" << fixed << setprecision(2) << thrd->first << '%';
-        if (!thrd->second.m_functions.empty())
+        if (!thrd->second.m_functions.empty()) {
           strm << "<tr><td>&nbsp;<td colspan=4>"
                   "<table border=1 cellspacing=1 cellpadding=4 width=100%>"
                   "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Core %";
-        for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
-          strm << "<tr><td>";
-          if (func->second.m_type == e_ManualEntry)
-            strm << func->second.m_function.m_name;
-          else
-            strm << func->second.m_function.m_pointer;
-          uint64_t avg = func->second.m_sum / func->second.m_count;
-          strm << "<td align=center>" << func->second.m_count
-               << "<td align=center nowrap>" << FormatTime(func->second.m_minimum, frequency)
-               << "<td align=center nowrap>" << FormatTime(func->second.m_maximum, frequency)
-               << "<td align=center nowrap>" << FormatTime(avg, frequency);
-          if (thrd->second.m_real > 0)
-            strm << "<td align=right>" << fixed << setprecision(2) << (100000.0*func->second.m_sum / frequency / thrd->second.m_real.GetMilliSeconds()) << '%';
+          for (FunctionAccumulatorMap::iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
+            strm << "<tr><td>";
+            if (func->second.m_type == e_ManualEntry)
+              strm << func->second.m_function.m_name;
+            else
+              strm << func->second.m_function.m_pointer;
+            uint64_t avg = func->second.m_sum / func->second.m_count;
+            strm << "<td align=center>" << func->second.m_count
+                 << "<td align=center nowrap>" << FormatTime(func->second.m_minimum, frequency)
+                 << "<td align=center nowrap>" << FormatTime(func->second.m_maximum, frequency)
+                 << "<td align=center nowrap>" << FormatTime(avg, frequency);
+            if (thrd->second.m_real > 0)
+              strm << "<td align=right>" << fixed << setprecision(2) << (100000.0*func->second.m_sum / frequency / thrd->second.m_real.GetMilliSeconds()) << '%';
+          }
+          strm << "</table>";
         }
-        strm << "</table>";
       }
       strm << "</table>";
     }
