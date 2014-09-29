@@ -328,9 +328,12 @@ class PThread : public PObject
       PPROFILE_EXCLUDE(Times());
       PPROFILE_EXCLUDE(friend ostream & operator<<(ostream & strm, const Times & times));
 
-      PTimeInterval m_real;     ///< Total real time since thread start in milliseconds.
-      PTimeInterval m_kernel;   ///< Total kernel CPU time in milliseconds.
-      PTimeInterval m_user;     ///< Total user CPU time in milliseconds.
+      PString                 m_name;     ///< Name of thread
+      PThreadIdentifier       m_threadId; ///< Operating system thread ID
+      PUniqueThreadIdentifier m_uniqueId; ///< Unique thread identifier
+      PTimeInterval           m_real;     ///< Total real time since thread start in milliseconds.
+      PTimeInterval           m_kernel;   ///< Total kernel CPU time in milliseconds.
+      PTimeInterval           m_user;     ///< Total user CPU time in milliseconds.
     };
 
     PPROFILE_EXCLUDE(
@@ -346,6 +349,13 @@ class PThread : public PObject
     static bool GetTimes(
       PThreadIdentifier id, ///< Thread identifier to get times for
       Times & times         ///< Times for thread execution.
+    ));
+
+    PPROFILE_EXCLUDE(
+    /** Get the thread execution times for all threads.
+     */
+    static void GetTimes(
+      std::list<Times> & times         ///< Times for thread execution.
     ));
 
     /** User override function for the main execution routine of the thread. A
