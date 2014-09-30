@@ -964,6 +964,22 @@ class PHTML : public PStringStream
         int minValue, maxValue, initValue;
     };
 
+    class InputReal : public InputField {
+      public:
+        InputReal(
+          const char * fname,
+          double minimum, double maximum,
+          double value = 0,
+          DisableCodes disabled = Enabled,
+          const char * attr = NULL
+        );
+        virtual ~InputReal() {}
+      protected:
+        virtual void AddAttr(PHTML & html) const;
+      private:
+        double minValue, maxValue, initValue;
+    };
+
     class InputRange : public InputNumber {
       public:
         InputRange(
