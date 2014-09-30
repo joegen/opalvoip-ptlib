@@ -61,6 +61,7 @@
 #include <map>
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <typeinfo>
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
