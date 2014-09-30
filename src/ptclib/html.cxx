@@ -1054,16 +1054,43 @@ void PHTML::InputNumber::Construct(int min, int max, int value)
 void PHTML::InputNumber::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  PINDEX max = PMAX(-minValue, maxValue);
+  int range = PMAX(-minValue, maxValue);
   PINDEX width = 3;
-  while (max > 10) {
+  while (range > 10) {
     width++;
-    max /= 10;
+    range /= 10;
   }
   html << " SIZE=" << width
        << " MIN=" << minValue
        << " MAX=" << maxValue
        << " VALUE=\"" << initValue << '"';
+}
+
+
+PHTML::InputReal::InputReal(const char * fname,
+                            double minimum, double maximum, double value,
+                            DisableCodes disabled,
+                            const char * attr)
+  : InputField("number", fname, disabled, attr)
+{
+  PAssert(minimum <= maximum, PInvalidParameter);
+  minValue = minimum;
+  maxValue = maximum;
+  if (value < minimum)
+    initValue = minimum;
+  else if (value > maximum)
+    initValue = maximum;
+  else
+    initValue = value;
+}
+
+void PHTML::InputReal::AddAttr(PHTML & html) const
+{
+  InputField::AddAttr(html);
+  html << fixed
+       << " MIN=" << minValue
+       << " MAX=" << maxValue
+       << " VALUE=" << initValue;
 }
 
 
