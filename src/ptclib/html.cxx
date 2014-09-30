@@ -1069,6 +1069,7 @@ void PHTML::InputNumber::AddAttr(PHTML & html) const
 
 PHTML::InputReal::InputReal(const char * fname,
                             double minimum, double maximum, double value,
+                            int decs,
                             DisableCodes disabled,
                             const char * attr)
   : InputField("number", fname, disabled, attr)
@@ -1082,12 +1083,13 @@ PHTML::InputReal::InputReal(const char * fname,
     initValue = maximum;
   else
     initValue = value;
+  decimals = decs;
 }
 
 void PHTML::InputReal::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  html << fixed
+  html << std::fixed << std::setprecision(decimals)
        << " MIN=" << minValue
        << " MAX=" << maxValue
        << " VALUE=" << initValue;
