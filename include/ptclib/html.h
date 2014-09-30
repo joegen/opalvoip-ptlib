@@ -970,6 +970,7 @@ class PHTML : public PStringStream
           const char * fname,
           double minimum, double maximum,
           double value = 0,
+          int decimals = 2,
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
@@ -978,6 +979,7 @@ class PHTML : public PStringStream
         virtual void AddAttr(PHTML & html) const;
       private:
         double minValue, maxValue, initValue;
+        int decimals;
     };
 
     class InputRange : public InputNumber {
