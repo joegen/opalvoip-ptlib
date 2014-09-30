@@ -60,6 +60,7 @@
 #include <list>
 #include <map>
 #include <algorithm>
+#include <functional>
 #include <typeinfo>
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
@@ -1035,15 +1036,77 @@ class PTimeInterval;
 
 namespace PProfiling
 {
-  PPROFILE_EXCLUDE(
-    void Dump(ostream & strm)
-  );
-  PPROFILE_EXCLUDE(
-    void Analyse(ostream & strm, bool html)
-  );
+  struct Function
+  {
+    unsigned    m_count;
+    uint64_t    m_sum;
+    uint64_t    m_minimum;
+    uint64_t    m_maximum;
+
+    Function()
+      : m_count(0)
+      , m_sum(0)
+      , m_minimum(std::numeric_limits<uint64_t>::max())
+      , m_maximum(0)
+    {
+    }
+  };
+  typedef std::map<std::string, Function> FunctionMap;
+
+  struct Thread
+  {
+    std::string             m_name;
+    PThreadIdentifier       m_threadId;
+    PUniqueThreadIdentifier m_uniqueId;
+    float                   m_real;
+    float                   m_cpu;
+    bool                    m_running;
+    FunctionMap             m_functions;
+
+    Thread(
+      PThreadIdentifier       threadId = PNullThreadIdentifier,
+      PUniqueThreadIdentifier uniqueId = 0
+    ) : m_threadId(threadId)
+      , m_uniqueId(uniqueId)
+      , m_real(0)
+      , m_cpu(0)
+      , m_running(false)
+    {
+    }
+  };
+  typedef std::map<PUniqueThreadIdentifier, Thread> ThreadByID;
+  typedef std::multimap<float, Thread, std::greater<double> > ThreadByUsage; // percentage
+
+  struct Analysis
+  {
+    uint64_t      m_durationCycles;
+    uint64_t      m_frequency;
+    unsigned      m_functionCount;
+    ThreadByID    m_threadByID;
+    ThreadByUsage m_threadByUsage;
+
+    Analysis()
+      : m_durationCycles(0)
+      , m_frequency(0)
+      , m_functionCount(0)
+    {
+    }
+
+    float CyclesToSeconds(uint64_t cycles) const;
+    void ToText(ostream & strm) const;
+    void ToHTML(ostream & strm) const;
+  };
+
+  void Analyse(Analysis & analysis);
+  void Analyse(ostream & strm, bool html);
+
   PPROFILE_EXCLUDE(
     void Reset()
   );
+  PPROFILE_EXCLUDE(
+    void Dump(ostream & strm)
+  );
+
   PPROFILE_EXCLUDE(
     void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
   );
