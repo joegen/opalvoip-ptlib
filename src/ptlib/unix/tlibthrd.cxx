@@ -52,6 +52,7 @@
 static pthread_t baseThread;
 #elif defined(P_LINUX)
 #include <sys/syscall.h>
+#include <fstream>
 #elif defined(P_ANDROID)
 #include <asm/page.h>
 #include <jni.h>
@@ -937,12 +938,16 @@ static inline unsigned long long jiffies_to_msecs(const unsigned long j)
 }
 
 
-static bool LinuxGetTimes(const PString & statFileName,
-#if PTRACING
-                          PString & error,
-#endif
-                          PThread::Times & times)
+bool PThread::GetTimes(Times & times)
 {
+  // Do not use any PTLib functions in here as they could to a PTRACE, and this deadlock
+  times.m_name = m_threadName;
+  times.m_threadId = m_threadId;
+  times.m_uniqueId = PX_linuxId;
+
+  std::stringstream statFileName;
+  statFileName << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
+
   /* From the man page on the "stat" file
       Status information about the process. This is used by ps(1). It is defined in /usr/src/linux/fs/proc/array.c.
       The fields, in order, with their proper scanf(3) format specifiers, are:
@@ -1016,86 +1021,53 @@ static bool LinuxGetTimes(const PString & statFileName,
                           clock ticks (centiseconds).
   */
 
-  PTextFile statfile(statFileName, PFile::ReadOnly);
-  if (!statfile.IsOpen()) {
-    PTRACE_PARAM(error = "Could not find thread stat file");
-    return false;
-  }
-
-  char line[1000];
-  statfile.getline(line, sizeof(line));
-  if (!statfile.good()) {
-    PTRACE_PARAM(error = "Could not read thread stat file");
-    return false;
-  }
-
-  int pid;
-  char comm[100];
-  char state;
-  int ppid, pgrp, session, tty_nr, tpgid;
-  unsigned long flags, minflt, cminflt, majflt, cmajflt, utime, stime;
-  long cutime, cstime, priority, nice, num_threads, itrealvalue;
-  unsigned long starttime, vsize;
-  long rss;
-  unsigned long rlim, startcode, endcode, startstack, kstkesp, kstkeip, signal, blocked, sigignore, sigcatch, wchan, nswap, cnswap;
-  int exit_signal, processor;
-  unsigned long rt_priority, policy;
-  unsigned long long delayacct_blkio_ticks;
-
-  // 17698 (maxmcu) R 1 17033 8586 34833 17467 4202560 7
-  // 0 0 0 0 0 0 0 -100 0 16
-  // 0 55172504 258756608 6741 4294967295 134512640 137352760 3217892976 8185700 15991824
-  // 0 0 4 201349635 0 0 0 -1 7 99
-  // 2 0
-
-  int count = sscanf(line,
-         "%d%s %c%d%d%d%d%d%lu%lu"
-         "%lu%lu%lu%lu%lu%ld%ld%ld%ld%ld"
-         "%ld%lu%lu%ld%lu%lu%lu%lu%lu%lu"
-         "%lu%lu%lu%lu%lu%lu%lu%d%d%lu"
-         "%lu%llu",
-         &pid, comm, &state, &ppid, &pgrp, &session, &tty_nr, &tpgid, &flags, &minflt,
-         &cminflt, &majflt, &cmajflt, &utime, &stime, &cutime, &cstime, &priority, &nice, &num_threads,
-         &itrealvalue, &starttime, &vsize, &rss, &rlim, &startcode, &endcode, &startstack, &kstkesp, &kstkeip,
-         &signal, &blocked, &sigignore, &sigcatch, &wchan, &nswap, &cnswap, &exit_signal, &processor, &rt_priority,
-         &policy, &delayacct_blkio_ticks);
-  if (count != 42) {
-    PTRACE_PARAM(error = psprintf("Not enough values (%d)\n%s", count, line));
-    return false;
-  }
-
-  times.m_kernel = jiffies_to_msecs(stime);
-  times.m_user = jiffies_to_msecs(utime);
-  return true;
-}
-
-
-bool PThread::GetTimes(Times & times)
-{
-  times.m_name = GetThreadName();
-  times.m_threadId = GetThreadId();
-  times.m_uniqueId = GetUniqueIdentifier();
-
-  PStringStream statFileName;
-  statFileName << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
-
-  PTRACE_PARAM(PString error);
-
   for (int retry = 0; retry < 3; ++retry) {
-    if (LinuxGetTimes(statFileName,
-#if PTRACING
-                      error,
-#endif
-                      times)) {
-      if (PX_endTick != 0)
-        times.m_real = PX_endTick - PX_startTick;
-      else
-        times.m_real = PTimer::Tick() - PX_startTick;
-      return true;
-    }
+    std::ifstream statfile(statFileName.str().c_str());
+
+    char line[1000];
+    statfile.getline(line, sizeof(line));
+    if (!statfile.good())
+      continue;
+
+    int pid;
+    char comm[100];
+    char state;
+    int ppid, pgrp, session, tty_nr, tpgid;
+    unsigned long flags, minflt, cminflt, majflt, cmajflt, utime, stime;
+    long cutime, cstime, priority, nice, num_threads, itrealvalue;
+    unsigned long starttime, vsize;
+    long rss;
+    unsigned long rlim, startcode, endcode, startstack, kstkesp, kstkeip, signal, blocked, sigignore, sigcatch, wchan, nswap, cnswap;
+    int exit_signal, processor;
+    unsigned long rt_priority, policy;
+    unsigned long long delayacct_blkio_ticks;
+
+    // 17698 (maxmcu) R 1 17033 8586 34833 17467 4202560 7
+    // 0 0 0 0 0 0 0 -100 0 16
+    // 0 55172504 258756608 6741 4294967295 134512640 137352760 3217892976 8185700 15991824
+    // 0 0 4 201349635 0 0 0 -1 7 99
+    // 2 0
+
+    int count = sscanf(line,
+                       "%d%s %c%d%d%d%d%d%lu%lu"
+                       "%lu%lu%lu%lu%lu%ld%ld%ld%ld%ld"
+                       "%ld%lu%lu%ld%lu%lu%lu%lu%lu%lu"
+                       "%lu%lu%lu%lu%lu%lu%lu%d%d%lu"
+                       "%lu%llu",
+                       &pid, comm, &state, &ppid, &pgrp, &session, &tty_nr, &tpgid, &flags, &minflt,
+                       &cminflt, &majflt, &cmajflt, &utime, &stime, &cutime, &cstime, &priority, &nice, &num_threads,
+                       &itrealvalue, &starttime, &vsize, &rss, &rlim, &startcode, &endcode, &startstack, &kstkesp, &kstkeip,
+                       &signal, &blocked, &sigignore, &sigcatch, &wchan, &nswap, &cnswap, &exit_signal, &processor, &rt_priority,
+                       &policy, &delayacct_blkio_ticks);
+    if (count != 42)
+      continue;
+
+    times.m_kernel = jiffies_to_msecs(stime);
+    times.m_user = jiffies_to_msecs(utime);
+    times.m_real = (PX_endTick != 0 ? PX_endTick : PTimer::Tick()) - PX_startTick;
+    return true;
   }
 
-  PTRACE(2, "PTLib\tError reading " << statFileName << ", " << error);
   return false;
 }
 #else

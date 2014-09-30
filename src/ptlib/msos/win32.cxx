@@ -1030,9 +1030,9 @@ static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
 
 bool PThread::GetTimes(Times & times)
 {
-  times.m_name = GetThreadName();
-  times.m_threadId = GetThreadId();
-  times.m_uniqueId = GetUniqueIdentifier();
+  // Do not use any PTLib functions in here as they could to a PTRACE, and this deadlock
+  times.m_name = m_threadName;
+  times.m_uniqueId = times.m_threadId = m_threadId;
 
   FILETIME created, exit, kernel, user;
   exit.dwHighDateTime = exit.dwLowDateTime = 0;
@@ -1042,9 +1042,8 @@ bool PThread::GetTimes(Times & times)
   times.m_kernel.SetInterval(GetMillisecondFromFileTime(kernel));
   times.m_user.SetInterval(GetMillisecondFromFileTime(user));
   if (exit.dwHighDateTime == 0 && exit.dwLowDateTime == 0)
-    times.m_real = PTime() - PTime(created);
-  else
-    times.m_real = PTime(exit) - PTime(created);
+    GetSystemTimeAsFileTime(&exit);
+  times.m_real.SetInterval(GetMillisecondFromFileTime(exit) - GetMillisecondFromFileTime(created));
 
   return true;
 }
