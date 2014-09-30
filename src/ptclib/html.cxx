@@ -35,6 +35,8 @@
 #include <ptlib.h>
 #include <ptclib/html.h>
 
+#include <math.h>
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTML
@@ -1092,7 +1094,8 @@ void PHTML::InputReal::AddAttr(PHTML & html) const
   html << std::fixed << std::setprecision(decimals)
        << " MIN=" << minValue
        << " MAX=" << maxValue
-       << " VALUE=" << initValue;
+       << " VALUE=" << initValue
+       << " STEP=" << pow(10, -decimals);
 }
 
 
