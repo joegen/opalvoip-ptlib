@@ -885,7 +885,16 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     PWaitAndSignal mutex(m_sessionMutex);
 
     m_xmlChanged = true;
-    LoadGrammar(NULL);
+    m_speakNodeData = true;
+    m_bargeIn = false;
+    m_bargingIn = false;
+    m_recordingStatus = NotRecording;
+    m_transferStatus = NotTransfering;
+
+    m_userInputMutex.Wait();
+    while (!m_userInputQueue.empty())
+      m_userInputQueue.pop();
+    m_userInputMutex.Signal();
 
     // parse the XML
     m_xml.RemoveAll();
@@ -902,6 +911,11 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
 
     m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
 
+    PURL pathURL = m_rootURL;
+    pathURL.ChangePath(PString::Empty()); // Remove last element of root URL
+    SetVar("path", pathURL);
+    SetVar("uri", m_rootURL);
+
     {
       PINDEX idx = 0;
       PXMLElement * element;
@@ -917,6 +931,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     }
   }
 
+  PTRACE(4, "VXML\tStarting with variables:\n" << m_variables);
   return Execute();
 }
 
@@ -1358,9 +1373,6 @@ bool PVXMLSession::ProcessNode()
   if (m_currentNode == NULL)
     return false;
 
-  if (m_bargingIn)
-    return false;
-
   m_xmlChanged = false;
 
   PXMLData * nodeData = dynamic_cast<PXMLData *>(m_currentNode);
@@ -1530,13 +1542,13 @@ PBoolean PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX de
 
 PBoolean PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && GetVXMLChannel()->QueueData(data, repeat, delay);
+  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueueData(data, repeat, delay);
 }
 
 
 PBoolean PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && GetVXMLChannel()->QueuePlayable("Tone", toneSpec, repeat, delay, true);
+  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueuePlayable("Tone", toneSpec, repeat, delay, true);
 }
 
 
@@ -1583,7 +1595,7 @@ PBoolean PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 PBoolean PVXMLSession::PlaySilence(PINDEX msecs)
 {
   PBYTEArray nothing;
-  return IsOpen() && GetVXMLChannel()->QueueData(nothing, 1, msecs);
+  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueueData(nothing, 1, msecs);
 }
 
 
@@ -1595,7 +1607,7 @@ PBoolean PVXMLSession::PlayStop()
 
 PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && GetVXMLChannel()->QueueResource(url, repeat, delay);
+  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueueResource(url, repeat, delay);
 }
 
 
@@ -1605,6 +1617,8 @@ PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 
   delete m_grammar;
   m_grammar = grammar;
+  PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
+  m_bargingIn = false;
 
   PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
   return true;
@@ -1616,7 +1630,7 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
                                      PINDEX repeat,
                                      PINDEX delay)
 {
-  if (!IsOpen() || textToPlay.IsEmpty())
+  if (!IsOpen() || textToPlay.IsEmpty() || m_bargingIn)
     return false;
 
   PTRACE(2, "VXML\tConverting \"" << textToPlay << "\" to speech");
