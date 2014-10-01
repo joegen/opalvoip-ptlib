@@ -974,6 +974,9 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
 
 bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
 {
+  PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
+  m_bargingIn = false;
+
   PString id = searchId;
 
   if (fullURI) {
