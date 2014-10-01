@@ -1339,9 +1339,6 @@ bool PVXMLSession::ProcessNode()
   if (m_currentNode == NULL)
     return false;
 
-  if (m_bargingIn)
-    return false;
-
   m_xmlChanged = false;
 
   PXMLData * nodeData = dynamic_cast<PXMLData *>(m_currentNode);
@@ -1550,30 +1547,33 @@ void PVXMLSession::SetVar(const PString & varName, const PString & value)
 
 PBoolean PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, PBoolean autoDelete)
 {
-  return IsOpen() && GetVXMLChannel()->QueueFile(fn, repeat, delay, autoDelete);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueFile(fn, repeat, delay, autoDelete);
 }
 
 
 PBoolean PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && GetVXMLChannel()->QueueCommand(cmd, repeat, delay);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueCommand(cmd, repeat, delay);
 }
 
 
 PBoolean PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && GetVXMLChannel()->QueueData(data, repeat, delay);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueData(data, repeat, delay);
 }
 
 
 PBoolean PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && GetVXMLChannel()->QueuePlayable("Tone", toneSpec, repeat, delay, true);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueuePlayable("Tone", toneSpec, repeat, delay, true);
 }
 
 
 PBoolean PVXMLSession::PlayElement(PXMLElement & element)
 {
+  if (m_bargingIn)
+    return false;
+
   PString str = element.GetAttribute("src").Trim();
   if (str.IsEmpty()) {
     str = EvaluateExpr(element.GetAttribute("expr"));
@@ -1641,7 +1641,7 @@ PBoolean PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 PBoolean PVXMLSession::PlaySilence(PINDEX msecs)
 {
   PBYTEArray nothing;
-  return IsOpen() && GetVXMLChannel()->QueueData(nothing, 1, msecs);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueData(nothing, 1, msecs);
 }
 
 
@@ -1653,7 +1653,7 @@ PBoolean PVXMLSession::PlayStop()
 
 PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && GetVXMLChannel()->QueueResource(url, repeat, delay);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueResource(url, repeat, delay);
 }
 
 
@@ -1663,6 +1663,7 @@ PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 
   delete m_grammar;
   m_grammar = grammar;
+  PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
   m_bargingIn = false;
 
   PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
@@ -1675,7 +1676,7 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
                                      PINDEX repeat,
                                      PINDEX delay)
 {
-  if (!IsOpen() || textToPlay.IsEmpty())
+  if (!IsOpen() || textToPlay.IsEmpty() || m_bargingIn)
     return false;
 
   PTRACE(5, "VXML\tConverting \"" << textToPlay << "\" to speech");
