@@ -627,6 +627,43 @@ void PTrace::Cleanup()
   PTraceInfo::Instance().m_threadStorage.Clean();
 }
 
+PTrace::Throttle::Throttle(unsigned lowLevel, unsigned interval, unsigned highLevel)
+  : m_interval(interval)
+  , m_lowLevel(lowLevel)
+  , m_highLevel(highLevel)
+  , m_lastLog(0)
+  , m_count(0)
+{
+}
+
+
+bool PTrace::Throttle::CanTrace()
+{
+  PTimeInterval now = PTimer::Tick();
+
+  if (m_lastLog == 0 || (now - m_lastLog) > m_interval) {
+    m_currentLevel = m_lowLevel;
+    m_lastLog = now.GetMilliSeconds();
+  }
+  else if (m_currentLevel == m_highLevel)
+    ++m_count;
+  else {
+    m_count = 1;
+    m_currentLevel = m_highLevel;
+  }
+
+  return PTrace::CanTrace(m_currentLevel);
+}
+
+
+std::ostream & operator<<(ostream & strm, const PTrace::Throttle & throttle)
+{
+  if (throttle.m_count > 1)
+    strm << " (repeated " << throttle.m_count << " times)";
+  return strm;
+}
+
+
 
 static PAtomicInteger g_lastContextIdentifer;
 

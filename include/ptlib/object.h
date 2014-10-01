@@ -505,7 +505,7 @@ public:
         int lineNum,           ///< Line number of source file being traced.
         const char * traceName
           ///< String to be output with trace, typically it is the function name.
-       );
+      );
       Block(const Block & obj)
         : file(obj.file), line(obj.line), name(obj.name) { }
       /// Output exit trace message.
@@ -517,6 +517,42 @@ public:
       int          line;
       const char * name;
   };
+
+  /** Class to reduce noise level for some logging.
+      A log is emitted at the lowLevel every interval milliseconds. All logs
+      within the time interval are emitted at highLevel.
+
+      An optional log output of the count of times the log occurred during may
+      achived by simply including the throttle instance at the end of the log,
+      e.g.
+      <pre><code>
+        PTRACE_THROTTLE_STATIC(m_throttleIt, 2, 2000);
+        PTRACE(m_throttleIt, "A very frequent log" << m_throttleIt);
+      </code></pre>
+    */
+  class Throttle
+  {
+    public:
+      Throttle(
+        unsigned lowLevel,          ///< Level at which low frequency logs made
+        unsigned interval = 60000,  ///< TIme between low frequency logs
+        unsigned highLevel = 6      ///> Level for high frequency (every) logs
+      );
+
+      bool CanTrace();
+      operator unsigned() const { return m_currentLevel; }
+
+      friend ostream & operator<<(ostream & strm, const Throttle & throttle);
+
+    protected:
+      unsigned m_interval;
+      unsigned m_lowLevel;
+      unsigned m_highLevel;
+      unsigned m_currentLevel;
+      uint64_t m_lastLog;
+      unsigned m_count;
+  };
+  static bool CanTrace(Throttle & throttle) { return throttle.CanTrace(); }
 
   static unsigned GetNextContextIdentifier();
 };
@@ -583,6 +619,11 @@ trace level is sufficient.
 #define PTRACE(level, args) PTRACE2(level, NULL, args)
 #define PTRACE_IF(level, cond, args) PTRACE_IF2(level, cond, NULL, args)
 #endif
+
+/* Macro to create a throttle context for use in <code>PTRACE()</code> */
+#define PTRACE_THROTTLE(var, ...) struct PTraceThrottle_##var : PTrace::Throttle { PTraceThrottle_##var() : PTrace::Throttle(__VA_ARGS__) { } } var
+#define PTRACE_THROTTLE_STATIC(var, ...) static PTRACE_THROTTLE(var, __VA_ARGS__)
+
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
 
