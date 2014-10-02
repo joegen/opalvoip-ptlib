@@ -294,6 +294,8 @@ class PVXMLSession : public PIndirectChannel
     virtual bool ProcessEvents();
     virtual bool ProcessGrammar();
     virtual bool NextNode(bool processChildren);
+    void ClearBargeIn();
+    void FlushInput();
 
     void SayAs(const PString & className, const PString & text);
     void SayAs(const PString & className, const PString & text, const PString & voice);
