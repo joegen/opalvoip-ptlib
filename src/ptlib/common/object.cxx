@@ -1535,12 +1535,59 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
-  static std::string FormatTime(uint64_t cycles, uint64_t frequency)
+  class CpuTime
   {
-    std::stringstream strm;
-    strm << cycles << " (" << setprecision(3) << (1000.0*cycles / frequency) << "ms)";
-    return strm.str();
-  }
+    private:
+      uint64_t m_cycles;
+      double   m_time;
+
+    public:
+      CpuTime(const Analysis & analysis, uint64_t cycles)
+        : m_cycles(cycles)
+        , m_time(analysis.CyclesToSeconds(cycles))
+      {
+      }
+
+    friend ostream & operator<<(ostream & strm, const CpuTime & c)
+    {
+      std::streamsize fullWidth = strm.width();
+      std::ios::pos_type startPos = strm.tellp();
+      strm << c.m_cycles << " (";
+      if (c.m_time >= 1) {
+        if (c.m_time >= 1000)
+          strm.precision(0);
+        else if (c.m_time >= 100)
+          strm.precision(1);
+        else if (c.m_time >= 10)
+          strm.precision(2);
+        else
+          strm.precision(3);
+        strm << c.m_time;
+      }
+      else if (c.m_time >= 0.001) {
+        if (c.m_time >= 0.1)
+          strm.precision(1);
+        else if (c.m_time >= 0.01)
+          strm.precision(2);
+        else
+          strm.precision(3);
+        strm << 1000.0*c.m_time << 'm';
+      }
+      else {
+        if (c.m_time >= 0.0001)
+          strm.precision(1);
+        else if (c.m_time >= 0.00001)
+          strm.precision(2);
+        else
+          strm.precision(3);
+        strm << 1000000.0*c.m_time << 'µ';
+      }
+      std::streamsize actualWidth = (strm.tellp() - startPos) + 2;
+      if (fullWidth > actualWidth)
+        strm.width(fullWidth - actualWidth);
+      return strm << "s)";
+    }
+  };
 
 
   __inline static float Percentage(float v1, float v2)
@@ -1592,9 +1639,9 @@ static void GetFrequency(uint64_t & freq)
         uint64_t avg = func->second.m_sum / func->second.m_count;
         strm << "      " << left << setw(functionNameWidth) << func->first
               << " count=" << setw(10) << func->second.m_count
-              << " min=" << setw(20) << FormatTime(func->second.m_minimum, m_frequency)
-              << " max=" << setw(20) << FormatTime(func->second.m_maximum, m_frequency)
-              << " avg=" << setw(20) << FormatTime(avg, m_frequency);
+              << " min=" << setw(24) << CpuTime(*this, func->second.m_minimum)
+              << " max=" << setw(24) << CpuTime(*this, func->second.m_maximum)
+              << " avg=" << setw(24) << CpuTime(*this, avg);
         if (thrd->second.m_real > 0)
           strm << " (" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_real) << "%)";
         strm << '\n';
@@ -1603,27 +1650,42 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
-  static void EscapeHTML(ostream & strm, const string & str)
+  class EscapedHTML
   {
-    for (size_t i = 0; i < str.length(); ++i) {
-      switch (str[i]) {
-        case '"' :
-          strm << "&quot;";
-          break;
-        case '<' :
-          strm << "&lt;";
-          break;
-        case '>' :
-          strm << "&gt;";
-          break;
-        case '&' :
-          strm << "&amp;";
-          break;
-        default :
-          strm << str[i];
+    private:
+      const std::string m_str;
+
+    public:
+      EscapedHTML(const std::string & str)
+        : m_str(str)
+      {
       }
+
+    friend ostream & operator<<(ostream & strm, const EscapedHTML & e)
+    {
+      for (size_t i = 0; i < e.m_str.length(); ++i) {
+        switch (e.m_str[i]) {
+          case '"':
+            strm << "&quot;";
+            break;
+          case '<':
+            strm << "&lt;";
+            break;
+          case '>':
+            strm << "&gt;";
+            break;
+          case '&':
+            strm << "&amp;";
+            break;
+          default:
+            strm << e.m_str[i];
+        }
+      }
+      return strm;
     }
-  }
+  };
+
+
   void Analysis::ToHTML(ostream & strm) const
   {
     strm << "<H2>Summary profile</H2>"
@@ -1643,9 +1705,8 @@ static void GetFrequency(uint64_t & freq)
     for (ThreadByUsage::const_iterator thrd = m_threadByUsage.begin(); thrd != m_threadByUsage.end(); ++thrd) {
       strm << "<tr>"
               "<td align=center>" << thrd->second.m_uniqueId
-           << "<td>";
-      EscapeHTML(strm, thrd->second.m_name);
-      strm << setprecision(3)
+           << "<td>" << EscapedHTML(thrd->second.m_name)
+           << setprecision(3)
            << "<td align=center>" << thrd->second.m_real
            << "<td align=center>" << thrd->second.m_cpu;
       if (thrd->first >= 0)
@@ -1657,12 +1718,11 @@ static void GetFrequency(uint64_t & freq)
         for (FunctionMap::const_iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
           uint64_t avg = func->second.m_sum / func->second.m_count;
           strm << "<tr>"
-                  "<td>";
-          EscapeHTML(strm, func->first);
-          strm << "<td align=center>" << func->second.m_count
-               << "<td align=center nowrap>" << FormatTime(func->second.m_minimum, m_frequency)
-               << "<td align=center nowrap>" << FormatTime(func->second.m_maximum, m_frequency)
-               << "<td align=center nowrap>" << FormatTime(avg, m_frequency);
+                  "<td>" << EscapedHTML(func->first)
+               << "<td align=center>" << func->second.m_count
+               << "<td align=center nowrap>" << CpuTime(*this, func->second.m_minimum)
+               << "<td align=center nowrap>" << CpuTime(*this, func->second.m_maximum)
+               << "<td align=center nowrap>" << CpuTime(*this, avg);
           if (thrd->second.m_real > 0)
             strm << "<td align=right>" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_real) << '%';
         }
