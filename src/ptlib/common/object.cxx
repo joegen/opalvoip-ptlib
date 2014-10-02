@@ -1603,6 +1603,27 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
+  static void EscapeHTML(ostream & strm, const string & str)
+  {
+    for (size_t i = 0; i < str.length(); ++i) {
+      switch (str[i]) {
+        case '"' :
+          strm << "&quot;";
+          break;
+        case '<' :
+          strm << "&lt;";
+          break;
+        case '>' :
+          strm << "&gt;";
+          break;
+        case '&' :
+          strm << "&amp;";
+          break;
+        default :
+          strm << str[i];
+      }
+    }
+  }
   void Analysis::ToHTML(ostream & strm) const
   {
     strm << "<H2>Summary profile</H2>"
@@ -1611,20 +1632,22 @@ static void GetFrequency(uint64_t & freq)
             "<th>Threads<th>Functions<th>Cycles<th>Frequency<th>Time"
             "<tr>"
             "<td align=center>" << m_threadByID.size()
-          << "<td align=center>" << m_functionCount
-          << "<td align=center>" << m_durationCycles
-          << "<td align=center>" << m_frequency
-          << "<td align=center>" << fixed << setprecision(3) << CyclesToSeconds(m_durationCycles)
-          << "</table>"
-              "<p>"
+         << "<td align=center>" << m_functionCount
+         << "<td align=center>" << m_durationCycles
+         << "<td align=center>" << m_frequency
+         << "<td align=center>" << fixed << setprecision(3) << CyclesToSeconds(m_durationCycles)
+         << "</table>"
+            "<p>"
             "<table border=1 cellspacing=0 cellpadding=8>"
             "<tr><th>ID<th align=left>Thread<th>Real Time<th>CPU Time<th align=right nowrap>Core %";
     for (ThreadByUsage::const_iterator thrd = m_threadByUsage.begin(); thrd != m_threadByUsage.end(); ++thrd) {
       strm << "<tr>"
               "<td align=center>" << thrd->second.m_uniqueId
-            << "<td>" << setprecision(3) << thrd->second.m_name
-            << "<td align=center>" << thrd->second.m_real
-            << "<td align=center>" << thrd->second.m_cpu;
+           << "<td>";
+      EscapeHTML(strm, thrd->second.m_name);
+      strm << setprecision(3)
+           << "<td align=center>" << thrd->second.m_real
+           << "<td align=center>" << thrd->second.m_cpu;
       if (thrd->first >= 0)
         strm << "<td align=right>" << setprecision(2) << thrd->first << '%';
       if (!thrd->second.m_functions.empty()) {
@@ -1633,11 +1656,13 @@ static void GetFrequency(uint64_t & freq)
                 "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Core %";
         for (FunctionMap::const_iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
           uint64_t avg = func->second.m_sum / func->second.m_count;
-          strm << "<tr><td>" << func->first
-                << "<td align=center>" << func->second.m_count
-                << "<td align=center nowrap>" << FormatTime(func->second.m_minimum, m_frequency)
-                << "<td align=center nowrap>" << FormatTime(func->second.m_maximum, m_frequency)
-                << "<td align=center nowrap>" << FormatTime(avg, m_frequency);
+          strm << "<tr>"
+                  "<td>";
+          EscapeHTML(strm, func->first);
+          strm << "<td align=center>" << func->second.m_count
+               << "<td align=center nowrap>" << FormatTime(func->second.m_minimum, m_frequency)
+               << "<td align=center nowrap>" << FormatTime(func->second.m_maximum, m_frequency)
+               << "<td align=center nowrap>" << FormatTime(avg, m_frequency);
           if (thrd->second.m_real > 0)
             strm << "<td align=right>" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_real) << '%';
         }
