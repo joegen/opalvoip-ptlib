@@ -899,10 +899,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     m_recordingStatus = NotRecording;
     m_transferStatus = NotTransfering;
 
-    m_userInputMutex.Wait();
-    while (!m_userInputQueue.empty())
-      m_userInputQueue.pop();
-    m_userInputMutex.Signal();
+    FlushInput();
 
     // parse the XML
     m_xml.RemoveAll();
@@ -974,6 +971,8 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
 
 bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
 {
+  ClearBargeIn();
+
   PString id = searchId;
 
   if (fullURI) {
@@ -1298,6 +1297,22 @@ bool PVXMLSession::NextNode(bool processChildren)
 }
 
 
+void PVXMLSession::ClearBargeIn()
+{
+  PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
+  m_bargingIn = false;
+}
+
+
+void PVXMLSession::FlushInput()
+{
+  m_userInputMutex.Wait();
+  while (!m_userInputQueue.empty())
+    m_userInputQueue.pop();
+  m_userInputMutex.Signal();
+}
+
+
 bool PVXMLSession::ProcessGrammar()
 {
   if (m_grammar == NULL) {
@@ -1316,8 +1331,7 @@ bool PVXMLSession::ProcessGrammar()
       return false;
 
     default :
-      PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
-      m_bargingIn = false;
+      ClearBargeIn();
 
       PVXMLGrammar * grammar = m_grammar;
       m_grammar = NULL;
@@ -1663,8 +1677,7 @@ PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 
   delete m_grammar;
   m_grammar = grammar;
-  PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
-  m_bargingIn = false;
+  ClearBargeIn();
 
   PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
   return true;
@@ -2269,6 +2282,10 @@ PBoolean PVXMLSession::TraversePrompt(PXMLElement & element)
     m_grammar->SetTimeout(StringToTime(element.GetAttribute("timeout")));
 
   m_bargeIn = !(element.GetAttribute("bargein") *= "false"); // Defaults to true
+  if (!m_bargeIn) {
+    ClearBargeIn();
+    FlushInput();
+  }
   return true;
 }
 
