@@ -1690,12 +1690,13 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
   }
 
   if (NULL != converter) {
-    if (!converter->Convert(destFrame, destFrame, bytesReturned))
+    if (!converter->ConvertInPlace(destFrame, bytesReturned))
       return false;
   }
-
-  if (bytesReturned != NULL)
-    *bytesReturned = m_videoFrameSize;
+  else {
+    if (bytesReturned != NULL)
+      *bytesReturned = m_videoFrameSize;
+  }
 
   return true;
 }
