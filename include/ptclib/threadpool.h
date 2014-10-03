@@ -442,7 +442,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         void Main()
         {
           Work_T * work;
-          while ((work = m_queue.Dequeue()) != NULL) {
+          while (m_queue.Dequeue(work)) {
             work->Work();
             RemoveWork(work);
           }
@@ -455,7 +455,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         }
 
       protected:
-        PSyncQueue<Work_T> m_queue;
+        PSyncQueue<Work_T*> m_queue;
     };
 
 

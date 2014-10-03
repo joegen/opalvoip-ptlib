@@ -417,15 +417,12 @@ class PWriteWaitAndSignal {
 /** A synchronous queue of objects.
     This implements a queue of objects between threads. The dequeue action will
     always block until an object is placed into the queue.
-
-    It is expected the user is in complete control of memory management, the
-    queue just deals in pointers.
   */
-template <class T> class PSyncQueue : public PObject, public std::queue<T*>
+template <class T> class PSyncQueue : public PObject, public std::queue<T>
 {
     PCLASSINFO(PSyncQueue, PObject);
   public:
-    typedef std::queue<T*> BaseQueue;
+    typedef std::queue<T> BaseQueue;
 
     enum State
     {
@@ -448,22 +445,22 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
     }
 
     /// Enqueue an object to the synchronous queue.
-    void Enqueue(T * obj)
+    bool Enqueue(const T & obj)
     {
-      m_mutex.Wait();
-      if (m_state != e_Closed) {
-        BaseQueue::push(obj);
-        m_available.Signal();
-      }
-      m_mutex.Signal();
+      PWaitAndSignal lock(m_mutex);
+      if (m_state == e_Closed)
+        return false;
+      BaseQueue::push(obj);
+      m_available.Signal();
+      return true;
     }
 
     /** Dequeue an object from the synchronous queue.
-        A NULL is returned if a timeout occurs, or the queue was flushed.
+        @return false if a timeout occurs, or the queue was flushed.
       */
-    T * Dequeue(const PTimeInterval & timeout = PMaxTimeInterval)
+    bool Dequeue(T & value, const PTimeInterval & timeout = PMaxTimeInterval)
     {
-      T * msg = NULL;
+      bool dequeued = false;
 
       m_mutex.Wait();
 
@@ -481,8 +478,9 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
             m_mutex.Wait();
 
             if (available && !BaseQueue::empty()) {
-              msg = BaseQueue::front();
+              value = BaseQueue::front();
               BaseQueue::pop();
+              dequeued = true;
             }
           }
 
@@ -498,7 +496,7 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
 
       m_mutex.Signal();
 
-      return msg;
+      return dequeued;
     }
 
     /** Close the queue and break block in Dequeue() function.
@@ -548,8 +546,8 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T*>
   private:
     __inline PSyncQueue(const PSyncQueue & other) : PObject(other) { }
     __inline void operator=(const PSyncQueue &) { }
-    __inline void push(T * obj) { std::queue<T*>::push(obj); }
-    __inline void pop() { std::queue<T*>::pop(); }
+    __inline void push(T * obj) { BaseQueue::push(obj); }
+    __inline void pop() { BaseQueue::pop(); }
 };
 
 
