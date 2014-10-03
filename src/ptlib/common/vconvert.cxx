@@ -1808,6 +1808,9 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     return false;
   }
 
+  if (bytesReturned != NULL)
+    *bytesReturned = m_dstFrameBytes;
+
   unsigned yPlaneSize = m_srcFrameWidth*m_srcFrameHeight;
   const BYTE * scanLinePtrY = srcFrameBuffer;            // 1 byte Y (luminance) for each pixel
   const BYTE * scanLinePtrU = scanLinePtrY+yPlaneSize;   // 1 byte U for a block of 4 pixels
@@ -1938,9 +1941,6 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
       scanLinePtrV += scanLineSizeUV;
     } while (raster.RunningY());
   }
-
-  if (bytesReturned != NULL)
-    *bytesReturned = m_dstFrameBytes;
 
   return true;
 }
