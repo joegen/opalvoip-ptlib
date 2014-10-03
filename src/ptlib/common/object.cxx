@@ -1548,49 +1548,53 @@ static void GetFrequency(uint64_t & freq)
       {
       }
 
+    private:
+      void PrintOn(ostream & strm) const
+      {
+        strm << m_cycles << " (";
+        if (m_time >= 1) {
+          if (m_time >= 1000)
+            strm.precision(0);
+          else if (m_time >= 100)
+            strm.precision(1);
+          else if (m_time >= 10)
+            strm.precision(2);
+          else
+            strm.precision(3);
+          strm << m_time;
+        }
+        else if (m_time >= 0.001) {
+          if (m_time >= 0.1)
+            strm.precision(1);
+          else if (m_time >= 0.01)
+            strm.precision(2);
+          else
+            strm.precision(3);
+          strm << 1000.0*m_time << 'm';
+        }
+        else {
+          if (m_time >= 0.0001)
+            strm.precision(1);
+          else if (m_time >= 0.00001)
+            strm.precision(2);
+          else
+            strm.precision(3);
+          strm << 1000000.0*m_time << 'µ';
+        }
+        strm << "s)";
+      }
+
     friend ostream & operator<<(ostream & strm, const CpuTime & c)
-    {
-#ifndef __GNUC__
-      std::streamsize fullWidth = strm.width();
-      std::ios::pos_type startPos = strm.tellp();
-#endif
-      strm << c.m_cycles << " (";
-      if (c.m_time >= 1) {
-        if (c.m_time >= 1000)
-          strm.precision(0);
-        else if (c.m_time >= 100)
-          strm.precision(1);
-        else if (c.m_time >= 10)
-          strm.precision(2);
-        else
-          strm.precision(3);
-        strm << c.m_time;
+      {
+        if (strm.width() < 10)
+          c.PrintOn(strm);
+        else {
+          ostringstream str;
+          c.PrintOn(str);
+          strm << str.str();
+        }
+        return strm;
       }
-      else if (c.m_time >= 0.001) {
-        if (c.m_time >= 0.1)
-          strm.precision(1);
-        else if (c.m_time >= 0.01)
-          strm.precision(2);
-        else
-          strm.precision(3);
-        strm << 1000.0*c.m_time << 'm';
-      }
-      else {
-        if (c.m_time >= 0.0001)
-          strm.precision(1);
-        else if (c.m_time >= 0.00001)
-          strm.precision(2);
-        else
-          strm.precision(3);
-        strm << 1000000.0*c.m_time << 'µ';
-      }
-#ifndef __GNUC__
-      std::streamsize actualWidth = (strm.tellp() - startPos) + 2;
-      if (fullWidth > actualWidth)
-        strm.width(fullWidth - actualWidth);
-#endif
-      return strm << "s)";
-    }
   };
 
 
