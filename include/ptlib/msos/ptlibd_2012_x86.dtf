@@ -18031,6 +18031,7 @@ EXPORTS
     ?Clear@PCLICursesWindow@@UAEXXZ @29552 NONAME
     ?Clear@PSystemLogToFile@@QAE_NXZ @29554 NONAME
     ?ClearAuthority@PHTTPResource@@QAEXXZ @17370 NONAME
+    ?ClearBargeIn@PVXMLSession@@IAEXXZ @32436 NONAME
     ?ClearBreak@PSerialChannel@@QAEXXZ @17371 NONAME
     ?ClearDTR@PSerialChannel@@QAEXXZ @17372 NONAME
     ?ClearNameCache@PIPSocket@@SAXXZ @17373 NONAME
@@ -20282,6 +20283,7 @@ EXPORTS
     ?FlowControl@PVideoChannel@@UAE_NPBX@Z @19569 NONAME
     ?FlowControl@PVideoInputDevice@@UAE_NPBX@Z @19570 NONAME
     ?FlowControl@PVideoInputDevice_DirectShow@@UAE_NPBX@Z @19571 NONAME
+    ?FlushInput@PVXMLSession@@IAEXXZ @32437 NONAME
     ?FlushQueue@PVXMLChannel@@UAEXXZ @19572 NONAME
     ?format@PWAVFile@@SAPAV1@ABVPString@@@Z @19573 NONAME
     ?format@PWAVFile@@SAPAV1@ABVPString@@W4OpenMode@PFile@@V?$PBitwiseEnum@W4OpenOptions_Bits@PFile@@$0EA@I@@@Z @19574 NONAME
