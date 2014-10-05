@@ -1019,7 +1019,7 @@ class PTraceSaveContextIdentifier
 ///////////////////////////////////////////////////////////////////////////////
 // Profiling
 
-#ifdef __GNUC__
+#if defined( __GNUC__) && !defined(__clang__)
   #define PPROFILE_EXCLUDE(func)  func  __attribute__((no_instrument_function))
 #else
   #define PPROFILE_EXCLUDE(func) func
