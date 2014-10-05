@@ -2240,8 +2240,9 @@ void PProcess::OnThreadEnded(PThread &
       PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
 #else
     PThread::Times times;
-    if (thread.GetTimes(times))
+    if (thread.GetTimes(times)) {
       PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
+    }
 #endif // P_PROFILING
   }
 #endif //PTRACING
