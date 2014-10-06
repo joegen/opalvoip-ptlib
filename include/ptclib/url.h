@@ -271,6 +271,12 @@ class PURL : public PObject
     /// Append segment to the path field of the URL.
     void AppendPath(const PString & segment);
 
+    /// Change segment in the path field of the URL.
+    void ChangePath(
+      const PString & segment, ///< New value for segment
+      PINDEX idx = P_MAX_INDEX ///< Segment index, P_MAX_INDEX means last segment
+    );
+
     /// Get the parameter (;) field of the URL.
     PString GetParameters() const;
 
@@ -363,17 +369,17 @@ class PURL : public PObject
     PString urlString;
 
     PCaselessString scheme;
-    PString username;
-    PString password;
+    PString         username;
+    PString         password;
     PCaselessString hostname;
-    WORD port;
+    WORD            port;
     PBoolean portSupplied;          /// port was supplied in string input
     PBoolean relativePath;
-    PStringArray path;
+    PStringArray    path;
     PStringOptions paramVars;
-    PString fragment;
+    PString         fragment;
     PStringOptions queryVars;
-    PString m_contents;  // Anything left after parsing other elements
+    PString         m_contents;  // Anything left after parsing other elements
 };
 
 
