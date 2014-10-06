@@ -1542,13 +1542,13 @@ PBoolean PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX de
 
 PBoolean PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueueData(data, repeat, delay);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueData(data, repeat, delay);
 }
 
 
 PBoolean PVXMLSession::PlayTone(const PString & toneSpec, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueuePlayable("Tone", toneSpec, repeat, delay, true);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueuePlayable("Tone", toneSpec, repeat, delay, true);
 }
 
 
@@ -1595,7 +1595,7 @@ PBoolean PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 PBoolean PVXMLSession::PlaySilence(PINDEX msecs)
 {
   PBYTEArray nothing;
-  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueueData(nothing, 1, msecs);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueData(nothing, 1, msecs);
 }
 
 
@@ -1607,7 +1607,7 @@ PBoolean PVXMLSession::PlayStop()
 
 PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  return IsOpen() && !m_bargedIn && GetVXMLChannel()->QueueResource(url, repeat, delay);
+  return IsOpen() && !m_bargingIn && GetVXMLChannel()->QueueResource(url, repeat, delay);
 }
 
 
