@@ -189,6 +189,9 @@ class PVXMLSession : public PIndirectChannel
     void SetCache(PVXMLCache & cache) { m_ttsCache = &cache; }
     PVXMLCache & GetCache();
 
+    void SetRecordDirectory(const PDirectory & dir) { m_recordDirectory = dir; }
+    const PDirectory & GetRecordDirectory() const { return m_recordDirectory; }
+
     virtual PBoolean Load(const PString & source);
     virtual PBoolean LoadFile(const PFilePath & file, const PString & firstForm = PString::Empty());
     virtual PBoolean LoadURL(const PURL & url);
@@ -224,9 +227,6 @@ class PVXMLSession : public PIndirectChannel
     virtual void SetPause(PBoolean pause);
     virtual void GetBeepData(PBYTEArray & data, unsigned ms);
 
-    virtual PBoolean StartRecording(const PFilePath & fn, PBoolean recordDTMFTerm, const PTimeInterval & recordMaxTime, const PTimeInterval & recordFinalSilence);
-    virtual PBoolean EndRecording();
-
     virtual void OnUserInput(const PString & str);
 
     PString GetXMLError() const;
@@ -255,7 +255,7 @@ class PVXMLSession : public PIndirectChannel
     bool GoToEventHandler(PXMLElement & element, const PString & eventName);
 
     // overrides from VXMLChannelInterface
-    virtual void OnEndRecording();
+    virtual void OnEndRecording(PINDEX bytesRecorded, bool timedOut);
     virtual void Trigger();
 
 
@@ -331,8 +331,11 @@ class PVXMLSession : public PIndirectChannel
       NotRecording,
       RecordingInProgress,
       RecordingComplete
-    }    m_recordingStatus;
-    bool m_recordStopOnDTMF;
+    }          m_recordingStatus;
+    bool       m_recordStopOnDTMF;
+    PString    m_recordingName;
+    PTime      m_recordingStartTime;
+    PDirectory m_recordDirectory;
 
     enum {
       NotTransfering,
@@ -359,23 +362,17 @@ class PVXMLRecordable : public PObject
 
     virtual PBoolean OnFrame(PBoolean /*isSilence*/) { return false; }
 
-    void SetFinalSilence(unsigned v)
-    { m_finalSilence = v > 0 ? v : 60000; }
+    const PTimeInterval & GetFinalSilence() const { return m_finalSilence; }
+    void SetFinalSilence(const PTimeInterval & v) { m_finalSilence = v > 0 ? v : 60000; }
 
-    unsigned GetFinalSilence()
-    { return m_finalSilence; }
-
-    void SetMaxDuration(unsigned v)
-    { m_maxDuration = v > 0 ? v : 86400000; }
-
-    unsigned GetMaxDuration()
-    { return m_maxDuration; }
+    const PTimeInterval & GetMaxDuration() const { return m_maxDuration; }
+    void SetMaxDuration(const PTimeInterval & v) { m_maxDuration = v > 0 ? v : 86400000; }
 
   protected:
-    PSimpleTimer m_silenceTimer;
-    PSimpleTimer m_recordTimer;
-    unsigned     m_finalSilence;
-    unsigned     m_maxDuration;
+    PSimpleTimer  m_silenceTimer;
+    PSimpleTimer  m_recordTimer;
+    PTimeInterval m_finalSilence;
+    PTimeInterval m_maxDuration;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -560,11 +557,9 @@ class PVXMLChannel : public PDelayChannel
     virtual PBoolean WriteFrame(const void * buf, PINDEX len) = 0;
     virtual PBoolean IsSilenceFrame(const void * buf, PINDEX len) const = 0;
 
-    virtual PBoolean QueueRecordable(PVXMLRecordable * newItem);
-
-    PBoolean StartRecording(const PFilePath & fn, unsigned finalSilence = 3000, unsigned maxDuration = 30000);
-    PBoolean EndRecording();
-    PBoolean IsRecording() const { return m_recordable != NULL; }
+    virtual bool QueueRecordable(PVXMLRecordable * newItem);
+    bool EndRecording(bool timedOut);
+    bool IsRecording() const { return m_recordable != NULL; }
 
     // Outgoing channel functions
     virtual PBoolean ReadFrame(void * buffer, PINDEX amount) = 0;
@@ -607,8 +602,6 @@ class PVXMLChannel : public PDelayChannel
 
     // Incoming audio variables
     PVXMLRecordable * m_recordable;
-    unsigned          m_finalSilence;
-    unsigned          m_silenceRun;
 
     // Outgoing audio variables
     PVXMLQueue      m_playQueue;
