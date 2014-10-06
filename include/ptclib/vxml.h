@@ -44,6 +44,7 @@
 #include <ptclib/pwavfile.h>
 #include <ptclib/ptts.h>
 #include <ptclib/url.h>
+#include <ptlib/safecoll.h>
 
 #include <queue>
 
@@ -133,35 +134,40 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLCache : public PMutex
+class PVXMLCache : public PSafeObject
 {
   public:
-    PVXMLCache(const PDirectory & directory);
+    PVXMLCache();
 
-    PFilePath CreateFilename(const PString & prefix, const PString & key, const PString & fileType);
+    virtual bool Get(
+      const PString & prefix,
+      const PString & key,
+      const PString & fileType,
+      PFilePath     & filename
+    );
 
-    void Put(const PString & prefix,
-             const PString & key, 
-             const PString & fileType, 
-             const PString & contentType,       
-           const PFilePath & fn, 
-                 PFilePath & dataFn);
+    virtual bool PutWithLock(
+      const PString   & prefix,
+      const PString   & key,
+      const PString   & fileType,
+      PFile           & file
+    );
 
-    PBoolean Get(const PString & prefix,
-             const PString & key, 
-             const PString & fileType, 
-                   PString & contentType,       
-                 PFilePath & fn);
+    void SetDirectory(
+      const PDirectory & directory
+    );
 
-    PFilePath GetCacheDir() const
-    { return directory; }
-
-    PFilePath GetRandomFilename(const PString & prefix, const PString & fileType);
-
-    static PVXMLCache & GetResourceCache();
+    const PDirectory & GetDirectory() const
+    { return m_directory; }
 
   protected:
-    PDirectory directory;
+    virtual PFilePath CreateFilename(
+      const PString & prefix,
+      const PString & key,
+      const PString & fileType
+    );
+
+    PDirectory m_directory;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -179,6 +185,9 @@ class PVXMLSession : public PIndirectChannel
     PTextToSpeech * SetTextToSpeech(PTextToSpeech * tts, PBoolean autoDelete = false);
     PTextToSpeech * SetTextToSpeech(const PString & ttsName);
     PTextToSpeech * GetTextToSpeech() const { return m_textToSpeech; }
+
+    void SetCache(PVXMLCache & cache) { m_ttsCache = &cache; }
+    PVXMLCache & GetCache();
 
     virtual PBoolean Load(const PString & source);
     virtual PBoolean LoadFile(const PFilePath & file, const PString & firstForm = PString::Empty());
@@ -198,7 +207,6 @@ class PVXMLSession : public PIndirectChannel
     virtual PBoolean LoadGrammar(PVXMLGrammar * grammar);
 
     virtual PBoolean PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
-    PBoolean ConvertTextToFilenameList(const PString & text, PTextToSpeech::TextType type, PStringArray & list, PBoolean useCacheing);
 
     virtual PBoolean PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, PBoolean autoDelete = false);
     virtual PBoolean PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
@@ -240,8 +248,6 @@ class PVXMLSession : public PIndirectChannel
     virtual PString EvaluateExpr(const PString & oexpr);
 
     static PTimeInterval StringToTime(const PString & str, int dflt = 0);
-
-    virtual PBoolean RetreiveResource(const PURL & url, PString & contentType, PFilePath & fn, PBoolean useCache = true);
 
     PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
@@ -299,7 +305,8 @@ class PVXMLSession : public PIndirectChannel
     PURL             m_rootURL;
     PXML             m_xml;
 
-    PTextToSpeech *  m_textToSpeech;
+    PTextToSpeech  * m_textToSpeech;
+    PVXMLCache     * m_ttsCache;
     bool             m_autoDeleteTextToSpeech;
 
     PThread     *    m_vxmlThread;
