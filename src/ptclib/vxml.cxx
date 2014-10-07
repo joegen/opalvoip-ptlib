@@ -898,6 +898,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     m_bargingIn = false;
     m_recordingStatus = NotRecording;
     m_transferStatus = NotTransfering;
+    m_currentNode = NULL;
 
     FlushInput();
 
