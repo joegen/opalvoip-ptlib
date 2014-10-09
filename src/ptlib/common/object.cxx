@@ -1863,13 +1863,13 @@ extern "C"
 
   void __cyg_profile_func_enter(void * function, void * caller)
   {
-    if (s_database.m_enabled)
+    if (PProfiling::s_database.m_enabled)
       new PProfiling::FunctionRawData(true, function, caller);
   }
 
   void __cyg_profile_func_exit(void * function, void * caller)
   {
-    if (s_database.m_enabled)
+    if (PProfiling::s_database.m_enabled)
       new PProfiling::FunctionRawData(false, function, caller);
   }
 };
