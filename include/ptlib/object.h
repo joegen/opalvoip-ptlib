@@ -1102,6 +1102,16 @@ namespace PProfiling
   void Analyse(ostream & strm, bool html);
 
   PPROFILE_EXCLUDE(
+    void Enable(bool enab)
+  );
+  PPROFILE_EXCLUDE(
+    __inline void Disable()
+    {
+      Enable(false);
+    }
+  );
+
+  PPROFILE_EXCLUDE(
     void Reset()
   );
   PPROFILE_EXCLUDE(
