@@ -2139,40 +2139,53 @@ PBoolean PVXMLSession::TraverseTransfer(PXMLElement &)
 
 PBoolean PVXMLSession::TraversedTransfer(PXMLElement & element)
 {
-  if (m_transferStatus == NotTransfering) {
-    TransferType type = BridgedTransfer;
-    if (element.GetAttribute("bridge") *= "false")
-      type = BlindTransfer;
-    else {
-      PCaselessString typeStr = element.GetAttribute("type");
-      if (typeStr == "blind")
+  const char * eventName = "error";
+
+  switch (m_transferStatus) {
+    case TransferCompleted :
+      return true;
+
+    case NotTransfering :
+    {
+      TransferType type = BridgedTransfer;
+      if (element.GetAttribute("bridge") *= "false")
         type = BlindTransfer;
-      else if (typeStr == "consultation")
-        type = ConsultationTransfer;
+      else {
+        PCaselessString typeStr = element.GetAttribute("type");
+        if (typeStr == "blind")
+          type = BlindTransfer;
+        else if (typeStr == "consultation")
+          type = ConsultationTransfer;
+      }
+
+      m_transferStartTime.SetCurrentTime();
+
+      bool started = false;
+      if (element.HasAttribute("dest"))
+        started = OnTransfer(element.GetAttribute("dest"), type);
+      else if (element.HasAttribute("destexpr"))
+        started = OnTransfer(EvaluateExpr(element.GetAttribute("destexpr")), type);
+
+      if (started) {
+        m_transferStatus = TransferInProgress;
+        return false;
+      }
+      break;
     }
 
-    m_transferStartTime.SetCurrentTime();
+    case TransferSuccessful :
+      eventName = "filled";
+      // Do default case
 
-    bool started = false;
-    if (element.HasAttribute("dest"))
-      started = OnTransfer(element.GetAttribute("dest"), type);
-    else if (element.HasAttribute("destexpr"))
-      started = OnTransfer(EvaluateExpr(element.GetAttribute("destexpr")), type);
-
-    if (started) {
-      m_transferStatus = TransferInProgress;
-      return false;
-    }
-
-    m_transferStatus = TransferFailed;
-  }
-  else {
-    PString name = element.GetAttribute("name");
-    if (!name.IsEmpty())
-      SetVar(name + "$.duration", PString(PString::Unsigned, (PTime() - m_transferStartTime).GetSeconds()));
+    default :
+      PString name = element.GetAttribute("name");
+      if (!name.IsEmpty())
+        SetVar(name + "$.duration", PString(PString::Unsigned, (PTime() - m_transferStartTime).GetSeconds()));
   }
 
-  return GoToEventHandler(element, m_transferStatus == TransferSuccessful ? "filled" : "error");
+  m_transferStatus = TransferCompleted;
+
+  return GoToEventHandler(element, eventName);
 }
 
 
