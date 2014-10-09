@@ -1481,9 +1481,9 @@ static void GetFrequency(uint64_t & freq)
   /////////////////////////////////////////////////////////////////////
 
   Database::Database()
-    : m_functions(NULL)
+    : m_enabled(getenv("PTLIB_PROFILING_ENABLED") != NULL)
+    , m_functions(NULL)
     , m_threads(NULL)
-    , m_enabled(getenv("PTLIB_PROFILING_ENABLED") != NULL)
   {
     GetTimestamp(m_start);
   }
