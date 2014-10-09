@@ -1374,6 +1374,7 @@ static void GetFrequency(uint64_t & freq)
     PPROFILE_EXCLUDE(~Database());
 
     uint64_t m_start;
+    bool     m_enabled;
     atomic<FunctionRawData *> m_functions;
     atomic<ThreadRawData *>   m_threads;
   };
@@ -1453,8 +1454,10 @@ static void GetFrequency(uint64_t & freq)
 
   void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
   {
-    ThreadRawData * info = new ThreadRawData(thread.GetThreadId(), thread.GetUniqueIdentifier(), thread.GetThreadName(), real, cpu);
-    info->m_link = s_database.m_threads.exchange(info);
+    if (s_database.m_enabled) {
+      ThreadRawData * info = new ThreadRawData(thread.GetThreadId(), thread.GetUniqueIdentifier(), thread.GetThreadName(), real, cpu);
+      info->m_link = s_database.m_threads.exchange(info);
+    }
   }
 
 
@@ -1463,13 +1466,15 @@ static void GetFrequency(uint64_t & freq)
   Block::Block(const char * name, const char * file, unsigned line)
     : m_name(name)
   {
-    new FunctionRawData(true, name, file, line);
+    if (s_database.m_enabled)
+      new FunctionRawData(true, name, file, line);
   }
 
 
   Block::~Block()
   {
-    new FunctionRawData(false, m_name, NULL, 0);
+    if (s_database.m_enabled)
+      new FunctionRawData(false, m_name, NULL, 0);
   }
 
 
@@ -1478,6 +1483,7 @@ static void GetFrequency(uint64_t & freq)
   Database::Database()
     : m_functions(NULL)
     , m_threads(NULL)
+    , m_enabled(getenv("PTLIB_PROFILING_ENABLED") != NULL)
   {
     GetTimestamp(m_start);
   }
@@ -1503,6 +1509,12 @@ static void GetFrequency(uint64_t & freq)
     }
 
     Reset();
+  }
+
+
+  void Enable(bool enab)
+  {
+    s_database.m_enabled = enab;
   }
 
 
@@ -1845,12 +1857,14 @@ extern "C"
 
   void __cyg_profile_func_enter(void * function, void * caller)
   {
-    new PProfiling::FunctionRawData(true, function, caller);
+    if (s_database.m_enabled)
+      new PProfiling::FunctionRawData(true, function, caller);
   }
 
   void __cyg_profile_func_exit(void * function, void * caller)
   {
-    new PProfiling::FunctionRawData(false, function, caller);
+    if (s_database.m_enabled)
+      new PProfiling::FunctionRawData(false, function, caller);
   }
 };
 #endif // __GNUC__
