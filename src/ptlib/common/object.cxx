@@ -1518,6 +1518,12 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
+  bool IsEnabled()
+  {
+    return s_database.m_enabled;
+  }
+
+
   void Reset()
   {
     GetTimestamp(s_database.m_start);

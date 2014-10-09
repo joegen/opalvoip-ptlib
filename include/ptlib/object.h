@@ -1105,10 +1105,7 @@ namespace PProfiling
     void Enable(bool enab)
   );
   PPROFILE_EXCLUDE(
-    __inline void Disable()
-    {
-      Enable(false);
-    }
+    bool IsEnabled()
   );
 
   PPROFILE_EXCLUDE(
