@@ -341,7 +341,8 @@ class PVXMLSession : public PIndirectChannel
       NotTransfering,
       TransferInProgress,
       TransferFailed,
-      TransferSuccessful
+      TransferSuccessful,
+      TransferCompleted
     }     m_transferStatus;
     PTime m_transferStartTime;
 };
