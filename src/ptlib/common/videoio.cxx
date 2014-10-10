@@ -1309,6 +1309,9 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
   if (device == NULL)
     return NULL;
 
+  device->colourFormat = args.colourFormat;
+  device->frameWidth = args.width;
+  device->frameHeight = args.height;
   if (device->OpenFull(adjustedArgs, startImmediate))
     return device;
 
