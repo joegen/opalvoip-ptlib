@@ -674,79 +674,16 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
       osError = ::GetLastError();
       switch (osError) {
         case ERROR_INVALID_HANDLE :
-        case WSAEBADF :
           osError = EBADF;
           break;
         case ERROR_INVALID_PARAMETER :
-        case WSAEINVAL :
           osError = EINVAL;
           break;
         case ERROR_ACCESS_DENIED :
-        case WSAEACCES :
           osError = EACCES;
           break;
         case ERROR_NOT_ENOUGH_MEMORY :
           osError = ENOMEM;
-          break;
-        case WSAEINTR :
-          osError = EINTR;
-          break;
-        case WSAEINPROGRESS :
-          osError = EINPROGRESS;
-          break;
-        case WSAENOTSOCK :
-          osError = ENOTSOCK;
-          break;
-        case WSAEOPNOTSUPP :
-          osError = EOPNOTSUPP;
-          break;
-        case WSAEAFNOSUPPORT :
-          osError = EAFNOSUPPORT;
-          break;
-        case WSAEADDRINUSE :
-          osError = EADDRINUSE;
-          break;
-        case WSAEADDRNOTAVAIL :
-          osError = EADDRNOTAVAIL;
-          break;
-        case WSAENETDOWN :
-          osError = ENETDOWN;
-          break;
-        case WSAENETUNREACH :
-          osError = ENETUNREACH;
-          break;
-        case WSAENETRESET :
-          osError = ENETRESET;
-          break;
-        case WSAECONNABORTED :
-          osError = ECONNABORTED;
-          break;
-        case WSAECONNRESET :
-          osError = ECONNRESET;
-          break;
-        case WSAENOBUFS :
-          osError = ENOBUFS;
-          break;
-        case WSAEISCONN :
-          osError = EISCONN;
-          break;
-        case WSAENOTCONN :
-          osError = ENOTCONN;
-          break;
-        case WSAECONNREFUSED :
-          osError = ECONNREFUSED;
-          break;
-        case WSAEHOSTUNREACH :
-          osError = EHOSTUNREACH;
-          break;
-        case WSAEMSGSIZE :
-          osError = EMSGSIZE;
-          break;
-        case WSAEWOULDBLOCK :
-          osError = EWOULDBLOCK;
-          break;
-        case WSAETIMEDOUT :
-          osError = ETIMEDOUT;
           break;
         default :
           osError |= PWIN32ErrorFlag;
