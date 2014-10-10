@@ -939,16 +939,8 @@ static inline unsigned long long jiffies_to_msecs(const unsigned long j)
 }
 
 
-bool PThread::GetTimes(Times & times)
+static bool InternalGetTimes(const char * filename, PThread::Times & times)
 {
-  // Do not use any PTLib functions in here as they could to a PTRACE, and this deadlock
-  times.m_name = m_threadName;
-  times.m_threadId = m_threadId;
-  times.m_uniqueId = PX_linuxId;
-
-  std::stringstream statFileName;
-  statFileName << "/proc/" << getpid() << "/task/" << PX_linuxId << "/stat";
-
   /* From the man page on the "stat" file
       Status information about the process. This is used by ps(1). It is defined in /usr/src/linux/fs/proc/array.c.
       The fields, in order, with their proper scanf(3) format specifiers, are:
@@ -1023,7 +1015,7 @@ bool PThread::GetTimes(Times & times)
   */
 
   for (int retry = 0; retry < 3; ++retry) {
-    std::ifstream statfile(statFileName.str().c_str());
+    std::ifstream statfile(filename);
 
     char line[1000];
     statfile.getline(line, sizeof(line));
@@ -1065,7 +1057,6 @@ bool PThread::GetTimes(Times & times)
 
     times.m_kernel = jiffies_to_msecs(stime);
     times.m_user = jiffies_to_msecs(utime);
-    times.m_real = (PX_endTick != 0 ? PX_endTick : PTimer::Tick()) - PX_startTick;
     return true;
   }
 
@@ -1073,15 +1064,23 @@ bool PThread::GetTimes(Times & times)
 }
 
 
+bool PThread::GetTimes(Times & times)
+{
+  // Do not use any PTLib functions in here as they could to a PTRACE, and this deadlock
+  times.m_name = m_threadName;
+  times.m_threadId = m_threadId;
+  times.m_uniqueId = PX_linuxId;
+  times.m_real = (PX_endTick != 0 ? PX_endTick : PTimer::Tick()) - PX_startTick;
+
+  return InternalGetTimes(PSTRSTRM("/proc/" << getpid() << "/task/" << PX_linuxId << "/stat"), times);
+}
+
+
 bool PProcess::GetProcessTimes(Times & times) const
 {
   times.m_name = GetName();
-
-  std::ifstream pf("/proc/self/stat");
-  if (!pf.is_open())
-    return false;
-
-  return true;
+  times.m_real = PTime() - GetStartTime();
+  return InternalGetTimes("/proc/self/stat", times);
 }
 
 
@@ -1089,16 +1088,20 @@ bool PProcess::GetSystemTimes(Times & times)
 {
   times.m_name = "SYSTEM";
 
-  std::ifstream statfile("/proc/stat");
+  for (int retry = 0; retry < 3; ++retry) {
+    std::ifstream statfile("/proc/stat");
 
-  char dummy[10];
-  unsigned user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
-  statfile >> dummy >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
-  if (!statfile.good())
-    return false;
-
-  times.m_kernel = system
-  return true;
+    char dummy[10];
+    unsigned user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+    statfile >> dummy >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+    if (statfile.good()) {
+      times.m_kernel = jiffies_to_msecs(system);
+      times.m_user = jiffies_to_msecs(user);
+      times.m_real = times.m_kernel + times.m_user + jiffies_to_msecs(idle);
+      return true;
+    }
+  }
+  return false;
 }
 
 #else
