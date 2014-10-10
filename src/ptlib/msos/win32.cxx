@@ -1019,14 +1019,42 @@ std::ostream & operator<<(std::ostream & strm, const PComVariant & var)
 #endif // P_WIN_COM
 
 
-static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
+__inline static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
 {
-  ULARGE_INTEGER i;
-  i.HighPart = ft.dwHighDateTime;
-  i.LowPart = ft.dwLowDateTime;
-  return (i.QuadPart+9999)/10000;
+  return (reinterpret_cast<const ULARGE_INTEGER *>(&ft)->QuadPart+9999)/10000;
 }
 
+
+struct PWindowsTimes
+{
+  FILETIME m_created;
+  FILETIME m_exit;
+  FILETIME m_kernel;
+  FILETIME m_user;
+  FILETIME m_idle;
+
+  PWindowsTimes()
+  {
+    m_exit.dwHighDateTime = m_exit.dwLowDateTime = m_idle.dwHighDateTime = m_idle.dwLowDateTime = 0;
+  }
+
+  bool FromThread(HANDLE handle)  { return GetThreadTimes(handle, &m_created, &m_exit, &m_kernel, &m_user); }
+  bool FromProcess(HANDLE handle) { return GetProcessTimes(handle, &m_created, &m_exit, &m_kernel, &m_user); }
+  bool FromSystem()               { return GetSystemTimes(&m_idle, &m_kernel, &m_user); }
+
+  void ToTimes(PThread::Times & times)
+  {
+    times.m_kernel.SetInterval(GetMillisecondFromFileTime(m_kernel));
+    times.m_user.SetInterval(GetMillisecondFromFileTime(m_user));
+    if (m_idle.dwHighDateTime != 0 || m_idle.dwLowDateTime != 0)
+      times.m_real.SetInterval(GetMillisecondFromFileTime(m_kernel) + GetMillisecondFromFileTime(m_user) + GetMillisecondFromFileTime(m_idle));
+    else {
+      if (m_exit.dwHighDateTime == 0 && m_exit.dwLowDateTime == 0)
+        GetSystemTimeAsFileTime(&m_exit);
+      times.m_real.SetInterval(GetMillisecondFromFileTime(m_exit) - GetMillisecondFromFileTime(m_created));
+    }
+  }
+};
 
 bool PThread::GetTimes(Times & times)
 {
@@ -1034,17 +1062,11 @@ bool PThread::GetTimes(Times & times)
   times.m_name = m_threadName;
   times.m_uniqueId = times.m_threadId = m_threadId;
 
-  FILETIME created, exit, kernel, user;
-  exit.dwHighDateTime = exit.dwLowDateTime = 0;
-  if (!GetThreadTimes(GetHandle(), &created, &exit, &kernel, &user))
+  PWindowsTimes wt;
+  if (!wt.FromThread(GetHandle()))
     return false;
 
-  times.m_kernel.SetInterval(GetMillisecondFromFileTime(kernel));
-  times.m_user.SetInterval(GetMillisecondFromFileTime(user));
-  if (exit.dwHighDateTime == 0 && exit.dwLowDateTime == 0)
-    GetSystemTimeAsFileTime(&exit);
-  times.m_real.SetInterval(GetMillisecondFromFileTime(exit) - GetMillisecondFromFileTime(created));
-
+  wt.ToTimes(times);
   return true;
 }
 
@@ -1551,6 +1573,32 @@ PProcessIdentifier PProcess::GetCurrentProcessID()
 PBoolean PProcess::IsServiceProcess() const
 {
   return false;
+}
+
+
+bool PProcess::GetProcessTimes(Times & times) const
+{
+  times.m_name = GetName();
+
+  PWindowsTimes wt;
+  if (!wt.FromProcess(GetCurrentProcess()))
+    return false;
+
+  wt.ToTimes(times);
+  return true;
+}
+
+
+bool PProcess::GetSystemTimes(Times & times)
+{
+  times.m_name = "SYSTEM";
+
+  PWindowsTimes wt;
+  if (!wt.FromSystem())
+    return false;
+
+  wt.ToTimes(times);
+  return true;
 }
 
 
