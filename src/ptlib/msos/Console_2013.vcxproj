@@ -115,18 +115,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.21006.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\lib\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(Platform)\$(Configuration)\obj\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)$(Platform)\$(Configuration)\obj\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\..\lib\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(Platform)\$(Configuration)\obj\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)$(Platform)\$(Configuration)\obj\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\lib\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(OutDir)$(Platform)\$(Configuration)\obj\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(OutDir)$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)$(Platform)\$(Configuration)\lib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)$(Platform)\$(Configuration)\lib\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)$(Platform)\$(Configuration)\lib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)$(Platform)\$(Configuration)\lib\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(OutDir)$(Platform)\$(Configuration)\lib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(OutDir)$(Platform)\$(Configuration)\lib\</IntDir>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\lib\$(Platform)\include;..\..\..\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\lib\$(Platform)\include;..\..\..\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\lib\$(Platform)\include;..\..\..\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
@@ -139,16 +139,16 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ptlib64sd</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">ptlibsn</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">ptlib64sn</TargetName>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">..\..\..\lib\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">..\..\..\lib\$(Platform)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\lib\$(Platform)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(OutDir)$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">libptlibsd</TargetName>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">..\..\..\lib\$(Platform)\include;..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">..\..\..\lib\$(Platform)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(ProjectDir)..\..\..\lib\$(Platform)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">$(OutDir)$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">libptlibsn</TargetName>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">..\..\..\lib\$(Platform)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\lib\$(Platform)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(OutDir)$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Android'">libptlibs</TargetName>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">..\..\..\lib\$(Platform)\$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Android'">..\..\..\lib\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">..\..\..\lib\$(Platform)\include;..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Android'">..\..\..\lib\$(Platform)\include;..\..\..\include;$(AndroidIncludeDir);$(AndroidStlIncludeDir)</IncludePath>
   </PropertyGroup>
@@ -182,11 +182,11 @@
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderOutputFile>$(VS_PCH_DIR)$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0c09</Culture>
