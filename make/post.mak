@@ -101,6 +101,8 @@ debugshared debugstatic debugclean debugdepend debuglibs :: INTERNAL_DEBUG_BUILD
 optshared debugshared optclean debugclean optdepend debugdepend optlibs debuglibs :: INTERNAL_STATIC_BUILD:=no
 optstatic debugstatic :: INTERNAL_STATIC_BUILD:=yes
 
+clean optclean debugclean :: MAKEFLAGS+=--no-print-directory
+
 optshared debugshared optstatic debugstatic optclean debugclean optdepend debugdepend optlibs debuglibs ::
 	+$(Q_MAKE) --file="$(firstword $(MAKEFILE_LIST))" DEBUG_BUILD=$(INTERNAL_DEBUG_BUILD) STATIC_BUILD=$(INTERNAL_STATIC_BUILD) internal_$(subst opt,,$(subst debug,,$@))
 
@@ -260,10 +262,10 @@ internal_build internal_shared internal_static :: $(TARGET)
 ######################################################################
 # Cleaning up
 
-CLEAN_FILES += $(OBJS) $(DEPS) core* $(TARGET)
+CLEAN_FILES += $(OBJDIR) $(TARGET) core.*
 
 internal_clean ::
-	rm -rf $(CLEAN_FILES)
+	-rm -rf $(CLEAN_FILES)
 
 
 DIST_CLEAN_FILES += $(CLEAN_FILES) config.log config.err autom4te.cache config.status a.out aclocal.m4 lib* samples/*/obj_*
