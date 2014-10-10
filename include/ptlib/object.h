@@ -829,6 +829,16 @@ Note: If this is used with a static function of a PObject descendant there
 will be an issue with the default usage of PTraceObjectInstance(). To avoid
 the issue you will need to make sure the PTRACE macro has four parameters, as
 in the full form descibed above.
+
+The general policy for levels in trace logs is:
+  Level 0 - Fatal error - program will likely crash
+  Level 1 - Error       - program should continue, but call will likely fail.
+  Level 2 - Warning     - something not right, call might continue with something missing
+  Level 3 - Info        - all should be well, but enough information to track something odd
+  Level 4 - Debug1      - More info on what's ahppening, including protocol packet dumps
+  Level 5 - Debug2      - A lot more information, including more details on protocol
+  Level 6 - Debug3      - A ridiculous amount of debugging, includes media packets.
+  Level 7 - Debug4      - A hard disk filler. Used only to track down the nastiest of problems
 */
 #define PTRACE(...) PTRACE_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
