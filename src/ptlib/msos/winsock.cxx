@@ -590,7 +590,57 @@ int PSocket::os_errno() const
 {
   DWORD err = WSAGetLastError();
   SetLastError(err);
-  return err;
+
+  switch (err) {
+    case WSAEBADF:
+      return EBADF;
+    case WSAEINVAL:
+      return EINVAL;
+    case WSAEACCES:
+      return EACCES;
+    case WSAEINTR:
+      return EINTR;
+    case WSAEINPROGRESS:
+      return EINPROGRESS;
+    case WSAENOTSOCK:
+      return ENOTSOCK;
+    case WSAEOPNOTSUPP:
+      return EOPNOTSUPP;
+    case WSAEAFNOSUPPORT:
+      return EAFNOSUPPORT;
+    case WSAEADDRINUSE:
+      return EADDRINUSE;
+    case WSAEADDRNOTAVAIL:
+      return EADDRNOTAVAIL;
+    case WSAENETDOWN:
+      return ENETDOWN;
+    case WSAENETUNREACH:
+      return ENETUNREACH;
+    case WSAENETRESET:
+      return ENETRESET;
+    case WSAECONNABORTED:
+      return ECONNABORTED;
+    case WSAECONNRESET:
+      return ECONNRESET;
+    case WSAENOBUFS:
+      return ENOBUFS;
+    case WSAEISCONN:
+      return EISCONN;
+    case WSAENOTCONN:
+      return ENOTCONN;
+    case WSAECONNREFUSED:
+      return ECONNREFUSED;
+    case WSAEHOSTUNREACH:
+      return EHOSTUNREACH;
+    case WSAEMSGSIZE:
+      return EMSGSIZE;
+    case WSAEWOULDBLOCK:
+      return EWOULDBLOCK;
+    case WSAETIMEDOUT:
+      return ETIMEDOUT;
+  }
+
+  return err|PWIN32ErrorFlag;
 }
 
 
