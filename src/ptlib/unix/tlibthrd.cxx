@@ -35,6 +35,7 @@
 #include <sched.h>
 #include <pthread.h>
 #include <sys/resource.h>
+#include <fstream>
 
 #ifdef P_RTEMS
 #define SUSPEND_SIG SIGALRM
@@ -1070,7 +1071,38 @@ bool PThread::GetTimes(Times & times)
 
   return false;
 }
+
+
+bool PProcess::GetProcessTimes(Times & times) const
+{
+  times.m_name = GetName();
+
+  std::ifstream pf("/proc/self/stat");
+  if (!pf.is_open())
+    return false;
+
+  return true;
+}
+
+
+bool PProcess::GetSystemTimes(Times & times)
+{
+  times.m_name = "SYSTEM";
+
+  std::ifstream statfile("/proc/stat");
+
+  char dummy[10];
+  unsigned user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+  statfile >> dummy >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+  if (!statfile.good())
+    return false;
+
+  times.m_kernel = system
+  return true;
+}
+
 #else
+
 PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
 {
   return GetThreadId();
@@ -1084,6 +1116,18 @@ PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
 
 
 bool PThread::GetTimes(Times & times)
+{
+  return false;
+}
+
+
+bool PProcess::GetProcessTimes(Times & times) const
+{
+  return false;
+}
+
+
+bool PProcess::GetSystemTimes(Times & times)
 {
   return false;
 }

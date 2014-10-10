@@ -317,6 +317,21 @@ class PProcess : public PThread
     */
     PTime GetStartTime() const;
 
+    PPROFILE_EXCLUDE(
+    /** Get the process execution times.
+     */
+    bool GetProcessTimes(
+      Times & times   ///< Times for thread execution.
+    ) const
+    );
+
+    PPROFILE_EXCLUDE(
+    /** Get the system execution times.
+     */
+    static bool GetSystemTimes(
+      Times & times   ///< Times for thread execution.
+    ));
+
     /**Get the effective user name of the owner of the process, eg "root" etc.
        This is a platform dependent string only provided by platforms that are
        multi-user. Note that some value may be returned as a "simulated" user.
