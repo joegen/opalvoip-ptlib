@@ -794,6 +794,7 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   thread->Main();
   process.OnThreadEnded(*thread);
 
+  process.InternalThreadEnded(thread);
   return 0;
 }
 
