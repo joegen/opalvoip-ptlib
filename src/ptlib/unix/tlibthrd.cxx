@@ -896,6 +896,10 @@ void PThread::Terminate()
   if (PX_origStackSize <= 0)
     return;
 
+  // if the thread is already terminated, then nothing to do
+  if (IsTerminated())
+    return;
+
   // if thread calls Terminate on itself, then do it
   // don't use PThread::Current, as the thread may already not be in the
   // active threads list
@@ -903,10 +907,6 @@ void PThread::Terminate()
     pthread_exit(0);
     return;   // keeps compiler happy
   }
-
-  // if the thread is already terminated, then nothing to do
-  if (IsTerminated())
-    return;
 
   // otherwise force thread to die
   PTRACE(2, "PTLib\tForcing termination of thread " << (void *)this);
