@@ -1092,7 +1092,7 @@ bool PProcess::GetSystemTimes(Times & times)
     std::ifstream statfile("/proc/stat");
 
     char dummy[10];
-    unsigned user, nice, system, idle, iowait, irq, softirq, steal;
+    uint64_t user, nice, system, idle, iowait, irq, softirq, steal;
     statfile >> dummy >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal;
     if (statfile.good()) {
       times.m_kernel = jiffies_to_msecs(system);
