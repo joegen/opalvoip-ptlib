@@ -367,8 +367,8 @@ PMemoryHeap::PMemoryHeap()
   firstRealObject = 0;
   flags = NoLeakPrint;
 
-  allocFillChar = '\x5A';
-  freeFillChar = '\xA5';
+  allocFillChar = '\xCD'; // Microsoft debug heap values
+  freeFillChar = '\xDD';
 
   currentMemoryUsage = 0;
   peakMemoryUsage = 0;
@@ -377,7 +377,7 @@ PMemoryHeap::PMemoryHeap()
   totalObjects = 0;
 
   for (PINDEX i = 0; i < Header::NumGuardBytes; i++)
-    Header::GuardBytes[i] = (i&1) == 0 ? '\x55' : '\xaa';
+    Header::GuardBytes[i] = '\xFD';
 
 #if defined(_WIN32)
   InitializeCriticalSection(&mutex);
@@ -718,25 +718,34 @@ void PMemoryHeap::DumpStatistics(ostream & strm)
 }
 
 
+static void OutputMemory(ostream & strm, size_t bytes)
+{
+  if (bytes < 10000) {
+    strm << bytes << " bytes";
+    return;
+  }
+
+  if (bytes < 10240000)
+    strm << (bytes+1023)/1024 << "kb";
+  else
+    strm << (bytes+1048575)/1048576 << "Mb";
+  strm << " (" << bytes << ')';
+}
+
 void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 {
-  strm << "\nCurrent memory usage: " << currentMemoryUsage << " bytes";
-  if (currentMemoryUsage > 2048)
-    strm << ", " << (currentMemoryUsage+1023)/1024 << "kb";
-  if (currentMemoryUsage > 2097152)
-    strm << ", " << (currentMemoryUsage+1048575)/1048576 << "Mb";
-
-  strm << ".\nCurrent objects count: " << currentObjects
-       << "\nPeak memory usage: " << peakMemoryUsage << " bytes";
-  if (peakMemoryUsage > 2048)
-    strm << ", " << (peakMemoryUsage+1023)/1024 << "kb";
-  if (peakMemoryUsage > 2097152)
-    strm << ", " << (peakMemoryUsage+1048575)/1048576 << "Mb";
-
-  strm << ".\nPeak objects created: " << peakObjects
-       << "\nTotal objects created: " << totalObjects
-       << "\nNext allocation request: " << allocationRequest
-       << '\n' << endl;
+  strm << "\n"
+          "Current memory usage    : ";
+  OutputMemory(strm, currentMemoryUsage);
+  strm << "\n"
+          "Current objects count   : " << currentObjects << "\n"
+          "Peak memory usage       : ";
+  OutputMemory(strm, peakMemoryUsage);
+  strm << "\n"
+          "Peak objects created    : " << peakObjects << "\n"
+          "Total objects created   : " << totalObjects << "\n"
+          "Next allocation request : " << allocationRequest << '\n'
+       << endl;
 }
 
 
