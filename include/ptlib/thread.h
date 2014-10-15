@@ -325,8 +325,15 @@ class PThread : public PObject
     /// Times for execution of the thread.
     struct Times
     {
-      PPROFILE_EXCLUDE(Times());
-      PPROFILE_EXCLUDE(friend ostream & operator<<(ostream & strm, const Times & times));
+      PPROFILE_EXCLUDE(
+        Times()
+      );
+      PPROFILE_EXCLUDE(
+        friend ostream & operator<<(ostream & strm, const Times & times)
+      );
+      PPROFILE_EXCLUDE(
+        float AsPercentage() const
+      );
 
       PString                 m_name;     ///< Name of thread
       PThreadIdentifier       m_threadId; ///< Operating system thread ID
