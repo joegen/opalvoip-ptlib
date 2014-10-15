@@ -1367,6 +1367,11 @@ PBoolean PIPSocket::Connect(const Address & iface, const Address & addr)
 
 PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address & addr)
 {
+  if (!addr.IsValid()) {
+    PTRACE(2, "Cannot connect to invalid address");
+    return false;
+  }
+
   // close the port if it is already open
   if (IsOpen())
     Close();
@@ -1408,6 +1413,11 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
                                WORD newPort,
                                Reusability reuse)
 {
+  if (!addr.IsValid()) {
+    PTRACE(2, "Cannot listen bound to invalid address");
+    return false;
+  }
+
   // make sure we have a port
   if (newPort != 0)
     port = newPort;
