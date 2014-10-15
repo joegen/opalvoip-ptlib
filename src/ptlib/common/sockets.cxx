@@ -1413,7 +1413,7 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
                                WORD newPort,
                                Reusability reuse)
 {
-  if (!addr.IsValid()) {
+  if (!bindAddr.IsValid()) {
     PTRACE(2, "Cannot listen bound to invalid address");
     return false;
   }
