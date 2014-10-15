@@ -2493,6 +2493,8 @@ dnl ########################################################################
 dnl Summary
 dnl ########################################################################
 MY_OUTPUT_SUMMARY(
+   [         Internal memory checking], enable_memcheck,
+   [], [],
    [                     DNS Resolver], PTLIB_DNS_RESOLVER,
    [                             IPv6], PTLIB_IPV6,
    [                     DNS Resolver], PTLIB_DNS_RESOLVER,
@@ -2508,9 +2510,7 @@ MY_OUTPUT_SUMMARY(
    [                  Javascript (V8)], PTLIB_V8,
    [                           Curses], PTLIB_CURSES,
    [                        GStreamer], PTLIB_GSTREAMER,
-
    [], [],
-
    [                            Audio], PTLIB_AUDIO,
    [                             ALSA], PTLIB_ALSA,
    [                              ESD], PTLIB_ESD,
@@ -2518,9 +2518,7 @@ MY_OUTPUT_SUMMARY(
    [                            Pulse], PTLIB_PULSE,
    [                              Sun], PTLIB_SUNAUDIO,
    [                              shm], PTLIB_AUDIOSHM,
-
    [], [],
-
    [                            Video], PTLIB_VIDEO,
    [                              SDL], PTLIB_SDL,
    [                     Video4linux ], PTLIB_V4L,
