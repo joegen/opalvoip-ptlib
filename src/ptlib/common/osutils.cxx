@@ -2501,6 +2501,13 @@ PThread::Times::Times()
 }
 
 
+float PThread::Times::AsPercentage() const
+{
+  PTimeInterval cpu = m_kernel + m_user;
+  return (float)(cpu == 0 ? 0.0 : (100.0 * cpu.GetMilliSeconds() / m_real.GetMilliSeconds()));
+}
+
+
 void PThread::PrintOn(ostream & strm) const
 {
   strm << GetThreadName();
