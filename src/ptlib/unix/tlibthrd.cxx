@@ -1078,7 +1078,7 @@ bool PThread::GetTimes(Times & times)
 
 bool PProcess::GetProcessTimes(Times & times) const
 {
-  times.m_name = GetName();
+  times.m_name = "Process Total";
   times.m_real = PTime() - GetStartTime();
   return InternalGetTimes("/proc/self/stat", times);
 }
@@ -1086,7 +1086,7 @@ bool PProcess::GetProcessTimes(Times & times) const
 
 bool PProcess::GetSystemTimes(Times & times)
 {
-  times.m_name = "SYSTEM";
+  times.m_name = "System Total";
 
   for (int retry = 0; retry < 3; ++retry) {
     std::ifstream statfile("/proc/stat");
