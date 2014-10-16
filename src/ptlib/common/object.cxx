@@ -752,9 +752,10 @@ void PMemoryHeap::InternalDumpStatistics(ostream & strm)
   proc >> virt >> res;
   if (proc.good()) {
     strm << "Virtual memory usage    : ";
-    OutputMemory(strm, virt);
-    strm << "Resident memory usage   : ";
-    OutputMemory(strm, res);
+    OutputMemory(strm, virt*1024);
+    strm << "\n"
+            "Resident memory usage   : ";
+    OutputMemory(strm, res*1024);
   }
 #endif
   strm << endl;
