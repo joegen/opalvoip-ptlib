@@ -39,6 +39,7 @@
 #include <ptlib/pfactory.h>
 #include <ptlib/pprocess.h>
 #include <sstream>
+#include <fstream>
 #include <ctype.h>
 #include <limits>
 #ifdef _WIN32
@@ -744,8 +745,19 @@ void PMemoryHeap::InternalDumpStatistics(ostream & strm)
   strm << "\n"
           "Peak objects created    : " << peakObjects << "\n"
           "Total objects created   : " << totalObjects << "\n"
-          "Next allocation request : " << allocationRequest << '\n'
-       << endl;
+          "Next allocation request : " << allocationRequest << '\n';
+#if defined(P_LINUX)
+  ifstream proc("/proc/self/statm");
+  size_t virt, res;
+  proc >> virt >> res;
+  if (proc.good()) {
+    strm << "Virtual memory usage    : ";
+    OutputMemory(strm, virt);
+    strm << "Resident memory usage   : ";
+    OutputMemory(strm, res);
+  }
+#endif
+  strm << endl;
 }
 
 
