@@ -256,7 +256,7 @@ PProcess::~PProcess()
 
 PThread::PThread(bool isProcess)
   : m_type(isProcess ? e_IsProcess : e_IsExternal)
-  , m_originalStackSize(0) // 0 indicates external thread
+  , m_originalStackSize(0)
   , m_threadId(pthread_self())
   , PX_priority(NormalPriority)
 #if defined(P_LINUX)
@@ -310,8 +310,6 @@ PThread::PThread(PINDEX stackSize,
   , PX_WaitSemMutex(MutexInitialiser)
 #endif
 {
-  PAssert(m_originalStackSize > 0, PInvalidParameter);
-
 #ifdef P_RTEMS
   PAssertOS(socketpair(AF_INET,SOCK_STREAM,0,unblockPipe) == 0);
 #else
@@ -448,11 +446,6 @@ void PThread::PX_StartThread()
   pthread_attr_init(&threadAttr);
   PAssertPTHREAD(pthread_attr_setdetachstate, (&threadAttr, PTHREAD_CREATE_DETACHED));
 
-  if (m_originalStackSize == 0) {
-    PTRACE(3, "PTlib\tUsing default stack size: " << PThreadMinimumStack);
-    m_originalStackSize = PThreadMinimumStack;
-  }
-
   PAssertPTHREAD(pthread_attr_setstacksize, (&threadAttr, m_originalStackSize));
 
 #if defined(P_LINUX)
@@ -468,6 +461,10 @@ void PThread::PX_StartThread()
 #endif
 
   PProcess & process = PProcess::Current();
+
+  size_t checkSize = 0;
+  PAssertPTHREAD(pthread_attr_getstacksize, (&threadAttr, &checkSize));
+  PAssert(checkSize == m_originalStackSize, "Stack size not set correctly");
 
   // create the thread
   PAssertPTHREAD(pthread_create, (&m_threadId, &threadAttr, &PThread::PX_ThreadMain, this));
