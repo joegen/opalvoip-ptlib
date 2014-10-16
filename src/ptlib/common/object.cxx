@@ -752,10 +752,10 @@ void PMemoryHeap::InternalDumpStatistics(ostream & strm)
   proc >> virt >> res;
   if (proc.good()) {
     strm << "Virtual memory usage    : ";
-    OutputMemory(strm, virt*1024);
+    OutputMemory(strm, virt*4096); // page size
     strm << "\n"
             "Resident memory usage   : ";
-    OutputMemory(strm, res*1024);
+    OutputMemory(strm, res*4096);
   }
 #endif
   strm << endl;
