@@ -101,6 +101,7 @@
 
       strm << symbols[i];
     }
+    free(symbols);
   }
 #else
 
