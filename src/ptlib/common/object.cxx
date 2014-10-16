@@ -735,6 +735,19 @@ static void OutputMemory(ostream & strm, size_t bytes)
 
 void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 {
+#if defined(P_LINUX)
+  ifstream proc("/proc/self/statm");
+  size_t virt, res;
+  proc >> virt >> res;
+  if (proc.good()) {
+    strm << "\n"
+            "Virtual memory usage    : ";
+    OutputMemory(strm, virt*4096); // page size
+    strm << "\n"
+            "Resident memory usage   : ";
+    OutputMemory(strm, res*4096);
+  }
+#endif
   strm << "\n"
           "Current memory usage    : ";
   OutputMemory(strm, currentMemoryUsage);
@@ -745,20 +758,8 @@ void PMemoryHeap::InternalDumpStatistics(ostream & strm)
   strm << "\n"
           "Peak objects created    : " << peakObjects << "\n"
           "Total objects created   : " << totalObjects << "\n"
-          "Next allocation request : " << allocationRequest << '\n';
-#if defined(P_LINUX)
-  ifstream proc("/proc/self/statm");
-  size_t virt, res;
-  proc >> virt >> res;
-  if (proc.good()) {
-    strm << "Virtual memory usage    : ";
-    OutputMemory(strm, virt*4096); // page size
-    strm << "\n"
-            "Resident memory usage   : ";
-    OutputMemory(strm, res*4096);
-  }
-#endif
-  strm << endl;
+          "Next allocation request : " << allocationRequest << '\n'
+       << endl;
 }
 
 
