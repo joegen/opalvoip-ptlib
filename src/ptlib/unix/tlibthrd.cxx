@@ -1416,6 +1416,7 @@ void PTimedMutex::Construct()
 #else // P_HAS_RECURSIVE_MUTEX
 
   m_lockerId = PNullThreadIdentifier;
+  m_uniqueId = 0;
   PAssertPTHREAD(pthread_mutex_init, (&m_mutex, NULL));
 
 #endif // P_HAS_RECURSIVE_MUTEX
@@ -1456,17 +1457,18 @@ void PTimedMutex::Wait()
   absTime.tv_nsec = 0;
   if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
     PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
-           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
+           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ") unique=" << m_uniqueId);
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
-    PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this << ", owner id="
-           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')');
+    PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this);
   }
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
 #endif
 
-  if (m_lockCount++ == 0)
+  if (m_lockCount++ == 0) {
     m_lockerId = currentThreadId;
+    m_uniqueId = PThread::GetCurrentUniqueIdentifier();
+  }
 
 #else //P_HAS_RECURSIVE_MUTEX
 
@@ -1488,6 +1490,7 @@ void PTimedMutex::Wait()
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
   m_lockerId = currentThreadId;
+  m_uniqueId = PThread::GetCurrentUniqueIdentifier();
 
 #endif // P_HAS_RECURSIVE_MUTEX
 }
@@ -1538,8 +1541,10 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 #if P_HAS_RECURSIVE_MUTEX
 
-  if (m_lockCount++ == 0)
+  if (m_lockCount++ == 0) {
     m_lockerId = currentThreadId;
+    m_uniqueId = PThread::GetCurrentUniqueIdentifier();
+  }
 
 #else
 
@@ -1549,6 +1554,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
   m_lockerId = currentThreadId;
+  m_uniqueId = PThread::GetCurrentUniqueIdentifier();
 
 #endif
 
@@ -1560,8 +1566,10 @@ void PTimedMutex::Signal()
 {
 #if P_HAS_RECURSIVE_MUTEX
 
-  if (--m_lockCount == 0)
+  if (--m_lockCount == 0) {
     m_lockerId = PNullThreadIdentifier;
+    m_uniqueId = 0;
+  }
 
 #else
 
@@ -1580,6 +1588,7 @@ void PTimedMutex::Signal()
 
   // otherwise mark mutex as available
   m_lockerId = PNullThreadIdentifier;
+  m_uniqueId = 0;
 
 #endif
 
