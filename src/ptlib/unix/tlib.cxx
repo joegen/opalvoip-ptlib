@@ -481,7 +481,7 @@ void PProcess::PXCheckSignals()
 }
 
 
-void SetSignals(void (*handler)(int))
+static void SetSignals(void (*handler)(int))
 {
   SIGNALS_DEBUG("\nSETSIG<%p>\n",handler);
 
@@ -512,6 +512,9 @@ void SetSignals(void (*handler)(int))
 #ifdef SIGPROF
   signal(SIGPROF, handler);
 #endif
+#ifdef SIGTRAP
+  signal(SIGTRAP, handler);
+#endif
 }
 
 
@@ -525,6 +528,12 @@ void PProcess::PXOnAsyncSignal(int sig)
     case SIGTERM:
       if (OnInterrupt(sig == SIGTERM))
         return;
+
+#if P_HAS_BACKTRACE && PTRACING
+    case WalkStackSignal:
+      InternalWalkStackSignaled();
+      break;
+#endif
   }
 
   m_pxSignals |= 1 << sig;

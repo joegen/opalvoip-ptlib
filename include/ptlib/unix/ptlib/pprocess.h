@@ -58,5 +58,20 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
     uint32_t m_pxSignals;
 
+#if P_HAS_BACKTRACE && PTRACING
+    enum { WalkStackSignal = SIGTRAP };
+    struct WalkStackInfo
+    {
+      std::ostringstream m_stream;
+      PSyncPoint         m_done;
+    };
+    typedef std::map<PUniqueThreadIdentifier, WalkStackInfo> WalkStackMap;
+    WalkStackMap m_threadStackWalks;
+    PMutex       m_threadStackWalkMutex;
+
+    void InternalWalkStackSignaled();
+    friend void PTrace::WalkStack(ostream & strm, PThreadIdentifier id);
+#endif
+
 
 // End Of File ////////////////////////////////////////////////////////////////
