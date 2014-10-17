@@ -62,8 +62,8 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     enum { WalkStackSignal = SIGTRAP };
     struct WalkStackInfo
     {
-      std::ostringstream m_stream;
-      PSyncPoint         m_done;
+      std::string m_output;
+      PSyncPoint  m_done;
     };
     typedef std::map<PUniqueThreadIdentifier, WalkStackInfo> WalkStackMap;
     WalkStackMap m_threadStackWalks;
