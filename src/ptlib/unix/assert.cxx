@@ -48,19 +48,13 @@
   #endif
 
   #if PTRACING
-    #define InternalStackWalk    PTrace::WalkStack
     #define InternalMaxStackWalk PTrace::MaxStackWalk
   #else
     #define InternalMaxStackWalk 20
-    static
   #endif // PTRACING
-  void InternalStackWalk(ostream & strm, PThreadIdentifier id)
-  {
-    if (id != PNullThreadIdentifier && id != PThread::GetCurrentThreadId()) {
-      strm << "\n    Cannot get stack trace for other thread\n";
-      return;
-    }
 
+  static void InternalWalkStack(ostream & strm)
+  {
     void* addresses[InternalMaxStackWalk];
     int addressCount = backtrace(addresses, InternalMaxStackWalk);
     if (addressCount == 0) {
@@ -103,9 +97,49 @@
     }
     free(symbols);
   }
+
+  #if PTRACING
+    void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
+    {
+      if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId()) {
+        InternalWalkStack(strm);
+        return;
+      }
+
+      if (!PProcess::IsInitialised())
+        return;
+
+      PProcess & process = PProcess::Current();
+
+      process.m_threadStackWalkMutex.Wait();
+      PProcess::WalkStackInfo & info = process.m_threadStackWalks[id];
+      process.m_threadStackWalkMutex.Signal();
+
+      pthread_kill(id, PProcess::WalkStackSignal);
+
+      if (info.m_done.Wait(1000))
+        strm << info.m_stream.str();
+      else
+        strm << "Could not get stack trace for id=" << id << endl;
+
+      process.m_threadStackWalkMutex.Wait();
+      process.m_threadStackWalks.erase(id);
+      process.m_threadStackWalkMutex.Signal();
+    }
+
+    void PProcess::InternalWalkStackSignaled()
+    {
+      m_threadStackWalkMutex.Wait();
+      WalkStackMap::iterator it = m_threadStackWalks.find(PThread::GetCurrentThreadId());
+      if (it != m_threadStackWalks.end())
+        InternalWalkStack(it->second.m_stream);
+      m_threadStackWalkMutex.Signal();
+    }
+  #endif // PTRACING
+
 #else
 
-  #define InternalStackWalk(s, i)
+  #define InternalWalkStack(s)
 
   #if PTRACING
     void PTrace::WalkStack(ostream &, PThreadIdentifier)
@@ -235,7 +269,7 @@ bool PAssertFunc(const char * msg)
   {
     ostringstream strm;
     strm << msg;
-    InternalStackWalk(strm, PNullThreadIdentifier);
+    InternalWalkStack(strm);
     strm << ends;
     str = strm.str();
   }
