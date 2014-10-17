@@ -1399,6 +1399,10 @@ PTimedMutex::PTimedMutex(const PTimedMutex &)
 
 void PTimedMutex::Construct()
 {
+  m_lockerId = PNullThreadIdentifier;
+  m_uniqueId = 0;
+  m_excessiveLockTime = false;
+
 #if P_HAS_RECURSIVE_MUTEX
 
   pthread_mutexattr_t attr;
@@ -1415,8 +1419,6 @@ void PTimedMutex::Construct()
 
 #else // P_HAS_RECURSIVE_MUTEX
 
-  m_lockerId = PNullThreadIdentifier;
-  m_uniqueId = 0;
   PAssertPTHREAD(pthread_mutex_init, (&m_mutex, NULL));
 
 #endif // P_HAS_RECURSIVE_MUTEX
@@ -1456,10 +1458,9 @@ void PTimedMutex::Wait()
   absTime.tv_sec = time(NULL)+15;
   absTime.tv_nsec = 0;
   if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
-    PTRACE(1, "PTLib", "Possible deadlock in mutex " << this << ", owner id="
-           << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ") unique=" << m_uniqueId);
+    ExcessiveLockWait();
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
-    PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this);
+    PTRACE(0, "PTLib", "Phantom deadlock in mutex " << this);
   }
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
@@ -1566,10 +1567,8 @@ void PTimedMutex::Signal()
 {
 #if P_HAS_RECURSIVE_MUTEX
 
-  if (--m_lockCount == 0) {
-    m_lockerId = PNullThreadIdentifier;
-    m_uniqueId = 0;
-  }
+  if (--m_lockCount == 0)
+    CommonSignal();
 
 #else
 
@@ -1586,9 +1585,7 @@ void PTimedMutex::Signal()
     return;
   }
 
-  // otherwise mark mutex as available
-  m_lockerId = PNullThreadIdentifier;
-  m_uniqueId = 0;
+  CommonSignal();
 
 #endif
 
