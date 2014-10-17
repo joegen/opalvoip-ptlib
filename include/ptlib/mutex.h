@@ -106,8 +106,13 @@ class PTimedMutex : public PSync
 
 
   private:
-    PThreadIdentifier m_lockerId;
-    atomic<uint32_t>  m_lockCount;
+    PThreadIdentifier       m_lockerId;
+    atomic<uint32_t>        m_lockCount;
+    PUniqueThreadIdentifier m_uniqueId;
+    bool                    m_excessiveLockTime;
+
+    void ExcessiveLockWait();
+    void CommonSignal();
 
 // Include platform dependent part of class
 #ifdef _WIN32

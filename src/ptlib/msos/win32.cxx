@@ -1750,6 +1750,8 @@ void PSemaphore::Signal()
 PTimedMutex::PTimedMutex()
   : m_lockerId(PNullThreadIdentifier)
   , m_lockCount(0)
+  , m_uniqueId(0)
+  , m_excessiveLockTime(false)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
@@ -1758,6 +1760,8 @@ PTimedMutex::PTimedMutex()
 PTimedMutex::PTimedMutex(const PTimedMutex &)
   : m_lockerId(PNullThreadIdentifier)
   , m_lockCount(0)
+  , m_uniqueId(0)
+  , m_excessiveLockTime(false)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
@@ -1767,15 +1771,9 @@ void PTimedMutex::Wait()
 {
 #if PTRACING
   if (!m_handle.Wait(15000)) {
-    ostream & trace = PTRACE_BEGIN(0, "PTLib");
-    trace << "Possible deadlock in mutex " << this;
-    PTrace::WalkStack(trace);
-    trace << " Owner Thread id=" << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')';
-    PTrace::WalkStack(trace, m_lockerId);
-    trace << PTrace::End;
-
+    ExcessiveLockWait();
     m_handle.Wait(INFINITE);
-    PTRACE(1, "PTLib", "Phantom deadlock in mutex " << this);
+    PTRACE(0, "PTLib", "Phantom deadlock in mutex " << this);
   }
 #else
   m_handle.Wait(INFINITE);
@@ -1800,7 +1798,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
 void PTimedMutex::Signal()
 {
   if (--m_lockCount == 0)
-    m_lockerId = PNullThreadIdentifier;
+    CommonSignal();
 
   PAssertOS(::ReleaseMutex(m_handle));
 }
