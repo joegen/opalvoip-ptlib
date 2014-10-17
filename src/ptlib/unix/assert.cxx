@@ -136,6 +136,7 @@
         InternalWalkStack(strm);
         it->second.m_output = strm.str();
       }
+      it->second.m_done.Signal();
       m_threadStackWalkMutex.Signal();
     }
   #endif // PTRACING
