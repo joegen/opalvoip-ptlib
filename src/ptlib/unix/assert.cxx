@@ -118,7 +118,7 @@
       pthread_kill(id, PProcess::WalkStackSignal);
 
       if (info.m_done.Wait(1000))
-        strm << info.m_stream.str();
+        strm << info.m_output;
       else
         strm << "Could not get stack trace for id=" << id << endl;
 
@@ -131,8 +131,11 @@
     {
       m_threadStackWalkMutex.Wait();
       WalkStackMap::iterator it = m_threadStackWalks.find(PThread::GetCurrentThreadId());
-      if (it != m_threadStackWalks.end())
-        InternalWalkStack(it->second.m_stream);
+      if (it != m_threadStackWalks.end()) {
+        std::ostringstream strm;
+        InternalWalkStack(strm);
+        it->second.m_output = strm.str();
+      }
       m_threadStackWalkMutex.Signal();
     }
   #endif // PTRACING
