@@ -39,6 +39,7 @@
     virtual ~PTimedMutex();
   protected:
     mutable pthread_mutex_t m_mutex;
+    PUniqueThreadIdentifier m_uniqueId;
     void Construct();
 #endif
 

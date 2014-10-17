@@ -318,11 +318,13 @@ class PReadWriteMutex : public PObject
       unsigned m_readerCount;
       unsigned m_writerCount;
       bool     m_waiting;
+      PUniqueThreadIdentifier m_uniqueId;
 
       Nest()
         : m_readerCount(0)
         , m_writerCount(0)
         , m_waiting(false)
+        , m_uniqueId(PThread::GetCurrentUniqueIdentifier())
       { }
     };
     typedef std::map<PThreadIdentifier, Nest> NestMap;
