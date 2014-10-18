@@ -436,10 +436,11 @@ PBoolean PColourConverter::ConvertInPlace(BYTE * frameBuffer,
 #define RGB2Y(r, g, b, y) \
   y=(BYTE)(((int)257*(r)  +(int)504*(g) +(int)98*(b))/1000)
 
-#define RGB2YUV(r, g, b, y, cb, cr) \
-  RGB2Y(r, g, b, y); \
+#define RGB2UV(r, g, b, cb, cr) \
   cb=(BYTE)((-148*(r)  -291*(g) +439*(b))/1000 + 128); \
   cr=(BYTE)(( 439*(r)  -368*(g) - 71*(b))/1000 + 128)
+
+#define RGB2YUV(r, g, b, y, cb, cr) RGB2Y(r, g, b, y); RGB2UV(r, g, b, cb, cr)
 
 
 void PColourConverter::RGBtoYUV(unsigned   r, unsigned   g, unsigned   b,
@@ -1139,6 +1140,7 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
     scanLineSizeRGB = -scanLineSizeRGB;
   }
 
+  bool evenLine = true;
   PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 1);
   do {
     while (raster.HasDutyY()) {
@@ -1153,8 +1155,13 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
           if (raster.IsBlack())
             pixelY[0] = pixelY[1] = 0;
           else {
-            RGB2Y(  pixelRGB1[redOffset], pixelRGB1[greenOffset], pixelRGB1[blueOffset], pixelY[0]                  );
-            RGB2YUV(pixelRGB2[redOffset], pixelRGB2[greenOffset], pixelRGB2[blueOffset], pixelY[1], *pixelU, *pixelV);
+            RGB2Y(pixelRGB1[redOffset], pixelRGB1[greenOffset], pixelRGB1[blueOffset], pixelY[0]);
+            RGB2Y(pixelRGB2[redOffset], pixelRGB2[greenOffset], pixelRGB2[blueOffset], pixelY[1]);
+            if (evenLine)
+              RGB2UV((pixelRGB1[redOffset  ]+pixelRGB2[redOffset  ])/2,
+                     (pixelRGB1[greenOffset]+pixelRGB2[greenOffset])/2,
+                     (pixelRGB1[blueOffset ]+pixelRGB2[blueOffset ])/2,
+                     *pixelU, *pixelV);
           }
 
           pixelY += 2;
@@ -1167,10 +1174,11 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
       } while (raster.RunningX());
 
       scanLinePtrY += scanLineSizeY;
-      if ((raster.GetY()&1) == 0) {
+      if (evenLine) {
         scanLinePtrU += scanLineSizeUV;
         scanLinePtrV += scanLineSizeUV;
       }
+      evenLine = !evenLine;
     }
 
     scanLinePtrRGB += scanLineSizeRGB;
@@ -1850,7 +1858,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
   if (m_verticalFlip) {
     scanLinePtrRGB += (m_dstFrameHeight - 2) * m_dstFrameWidth * rgbIncrement;
-    scanLineSizeRGB = -scanLineSizeRGB;
+    scanLineSizeRGB = -scanLineSizeRGB*3;
     dstPixpos[0] = dstPixpos[2];
     dstPixpos[1] = dstPixpos[3];
     dstPixpos[2] = 0;
