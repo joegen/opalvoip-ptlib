@@ -95,8 +95,6 @@
 #endif
 
 
-static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
-
 PSYNONYM_COLOUR_CONVERTER(YUV420P,IYUV);
 PSYNONYM_COLOUR_CONVERTER(IYUV,   YUV420P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,I420);
@@ -107,10 +105,8 @@ class PStandardColourConverter : public PColourConverter
 {
     PCLASSINFO(PStandardColourConverter, PColourConverter);
   protected:
-    PStandardColourConverter(
-      const PVideoFrameInfo & src,
-      const PVideoFrameInfo & dst
-    ) : PColourConverter(src, dst)
+    PStandardColourConverter(const PColourPair & colours)
+      : PColourConverter(colours)
     { }
 
     bool SBGGR8toYUV420P(
@@ -197,7 +193,7 @@ class PStandardColourConverter : public PColourConverter
 
 
 #define PSTANDARD_COLOUR_CONVERTER(from,to) \
-  PCOLOUR_CONVERTER2(P_##from##_##to,PStandardColourConverter,#from,#to)
+  PCOLOUR_CONVERTER2(PColourConverter_##from##_##to,PStandardColourConverter,#from,#to)
 
 
 #define BLACK_Y 0
@@ -211,37 +207,28 @@ class PStandardColourConverter : public PColourConverter
 ///////////////////////////////////////////////////////////////////////////////
 // PColourConverter
 
-PColourConverterRegistration::PColourConverterRegistration(const PString & srcColourFormat,
-                                                           const PString & destColourFormat)
-  : PCaselessString(srcColourFormat+'\t'+destColourFormat)
+PObject::Comparison PColourPair::Compare(const PObject & obj) const
 {
-  PColourConverterRegistration * test = RegisteredColourConvertersListHead;
-  while (test != NULL) {
-    if (*test == *this)
-      return;
-    test = test->link;
-  }
-
-  link = RegisteredColourConvertersListHead;
-  RegisteredColourConvertersListHead = this;
+  const PColourPair & other = dynamic_cast<const PColourPair &>(obj);
+  Comparison result = m_srcColourFormat.Compare(other.m_srcColourFormat);
+  if (result == EqualTo)
+    result = m_dstColourFormat.Compare(other.m_dstColourFormat);
+  return result;
 }
 
 
 PColourConverter * PColourConverter::Create(const PVideoFrameInfo & src,
                                             const PVideoFrameInfo & dst)
 {
-  PString converterName = src.GetColourFormat() + '\t' + dst.GetColourFormat();
-
-  PColourConverterRegistration * find = RegisteredColourConvertersListHead;
-  while (find != NULL) {
-    if (*find == converterName) {
-      return find->Create(src, dst);
-    }
-    find = find->link;
+  PColourConverter *converter = PColourConverterFactory::CreateInstance(PColourPair(src.GetColourFormat(), dst.GetColourFormat()));
+  if (converter == NULL) {
+    PTRACE(2, "PColCnv", "Create error. Did not find " << src.GetColourFormat() << "->" << dst.GetColourFormat());
+    return NULL;
   }
 
-  PTRACE(2, find, "PColCnv", "Create error. Did not find " << src.GetColourFormat() << "->" << dst.GetColourFormat());
-  return NULL;
+  converter->SetSrcFrameInfo(src);
+  converter->SetDstFrameInfo(dst);
+  return converter;
 }
 
 PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
@@ -260,37 +247,17 @@ PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
 }
 
 
-PColourConverter::PColourConverter(const PString & srcColourFmt,
-                                   const PString & dstColourFmt,
-                                   unsigned width,
-                                   unsigned height)
+PColourConverter::PColourConverter(const PColourPair & colours)
+  : PColourPair(colours)
+  , m_srcFrameWidth(0)
+  , m_srcFrameHeight(0)
+  , m_srcFrameBytes(0)
+  , m_dstFrameWidth(0)
+  , m_dstFrameHeight(0)
+  , m_dstFrameBytes(0)
+  , m_resizeMode(PVideoFrameInfo::eScale)
+  , m_verticalFlip(false)
 {
-  Construct(PVideoFrameInfo(width, height, srcColourFmt),
-            PVideoFrameInfo(width, height, dstColourFmt));
-}
-
-PColourConverter::PColourConverter(const PVideoFrameInfo & src,
-                                   const PVideoFrameInfo & dst)
-{
-  Construct(src, dst);
-}
-
-
-void PColourConverter::Construct(const PVideoFrameInfo & src, const PVideoFrameInfo & dst)
-{
-  m_srcColourFormat = src.GetColourFormat();
-  src.GetFrameSize(m_srcFrameWidth, m_srcFrameHeight);
-  m_srcFrameBytes = src.CalculateFrameBytes();
-
-  m_dstColourFormat = dst.GetColourFormat();
-  dst.GetFrameSize(m_dstFrameWidth, m_dstFrameHeight);
-  m_dstFrameBytes = dst.CalculateFrameBytes();
-
-  m_resizeMode = dst.GetResizeMode();
-
-  m_verticalFlip = false;
-
-  PTRACE(4,"PColCnv\tPColourConverter constructed: " << src << " -> " << dst);
 }
 
 
@@ -314,7 +281,7 @@ PBoolean PColourConverter::SetFrameSize(unsigned width, unsigned height)
 
 PBoolean PColourConverter::SetSrcFrameInfo(const PVideoFrameInfo & info)
 {
-  if (!PAssert(info.GetColourFormat() != GetSrcColourFormat(), "Cannot change colour format"))
+  if (!PAssert(info.GetColourFormat() == GetSrcColourFormat(), "Cannot change colour format"))
     return false;
 
   unsigned w, h;
@@ -324,7 +291,7 @@ PBoolean PColourConverter::SetSrcFrameInfo(const PVideoFrameInfo & info)
 
 PBoolean PColourConverter::SetDstFrameInfo(const PVideoFrameInfo & info)
 {
-  if (!PAssert(info.GetColourFormat() != GetDstColourFormat(), "Cannot change colour format"))
+  if (!PAssert(info.GetColourFormat() == GetDstColourFormat(), "Cannot change colour format"))
     return false;
 
   SetResizeMode(info.GetResizeMode());
@@ -436,10 +403,11 @@ PBoolean PColourConverter::ConvertInPlace(BYTE * frameBuffer,
 #define RGB2Y(r, g, b, y) \
   y=(BYTE)(((int)257*(r)  +(int)504*(g) +(int)98*(b))/1000)
 
-#define RGB2YUV(r, g, b, y, cb, cr) \
-  RGB2Y(r, g, b, y); \
+#define RGB2UV(r, g, b, cb, cr) \
   cb=(BYTE)((-148*(r)  -291*(g) +439*(b))/1000 + 128); \
   cr=(BYTE)(( 439*(r)  -368*(g) - 71*(b))/1000 + 128)
+
+#define RGB2YUV(r, g, b, y, cb, cr) RGB2Y(r, g, b, y); RGB2UV(r, g, b, cb, cr)
 
 
 void PColourConverter::RGBtoYUV(unsigned   r, unsigned   g, unsigned   b,
@@ -575,14 +543,9 @@ class PRasterDutyCycle
 // no interpolation is used, just pixel dropping or doubling
 
 PRAGMA_OPTIMISE_ON()
-static void GrowYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigned srcHeight,
-                        unsigned srcFrameWidth, const BYTE * srcYUV,
-                        unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
-                        unsigned dstFrameWidth, BYTE * dstYUV)
+static void GrowYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                              BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstLineSpan)
 {
-  const BYTE * srcPtr = srcYUV + srcY * srcFrameWidth + srcX;
-  BYTE * dstPtr = dstYUV + dstY * dstFrameWidth + dstX;
-
   unsigned repeatRow = 0;
   for (unsigned y = 0; y < srcHeight; y++) {
 
@@ -604,26 +567,21 @@ static void GrowYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigne
 
     repeatRow += srcHeight;
     while (repeatRow < dstHeight) {
-      dstPtr += dstFrameWidth;
+      dstPtr += dstLineSpan;
       memcpy(dstPtr, repeatPtr, dstWidth);
       repeatRow += srcHeight;
     }
     repeatRow -= dstHeight;
 
-    srcPtr += srcFrameWidth;
-    dstPtr += dstFrameWidth;
+    srcPtr += srcLineSpan;
+    dstPtr += dstLineSpan;
   }
 }
 
 
-static void ShrinkYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigned srcHeight,
-                          unsigned srcFrameWidth, const BYTE * srcYUV,
-                          unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
-                          unsigned dstFrameWidth, BYTE * dstYUV)
+static void ShrinkYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                                BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstLineSpan)
 {
-  const BYTE * srcPtr = srcYUV + srcY * srcFrameWidth + srcX;
-  BYTE * dstPtr = dstYUV + dstY * dstFrameWidth + dstX;
-
   unsigned repeatRow = 0;
   for (unsigned y = 0; y < dstHeight; y++) {
 
@@ -642,28 +600,24 @@ static void ShrinkYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsig
     }
 
     do {
-      srcPtr += srcFrameWidth;
+      srcPtr += srcLineSpan;
       repeatRow += dstHeight;
     } while (repeatRow < srcHeight);
     repeatRow -= srcHeight;
 
-    dstPtr += dstFrameWidth;
+    dstPtr += dstLineSpan;
   }
 }
 PRAGMA_OPTIMISE_DEFAULT()
 
 
-static void CropYUV420P(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigned srcHeight,
-                          unsigned srcFrameWidth, const BYTE * srcYUV,
-                          unsigned dstX, unsigned dstY, unsigned , unsigned ,
-                          unsigned dstFrameWidth, BYTE * dstYUV)
+static void CropYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                              BYTE * dstPtr, unsigned, unsigned , int dstLineSpan)
 {
-  const BYTE * srcPtr = srcYUV + srcY * srcFrameWidth + srcX;
-  BYTE * dstPtr = dstYUV + dstY * dstFrameWidth + dstX;
   for (unsigned y = 0; y < srcHeight; y++) {
     memcpy(dstPtr, srcPtr, srcWidth);
-    srcPtr += srcFrameWidth;
-    dstPtr += dstFrameWidth;
+    srcPtr += srcLineSpan;
+    dstPtr += dstLineSpan;
   }
 }
 
@@ -698,7 +652,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
                                    unsigned srcFrameWidth, unsigned srcFrameHeight, const BYTE * srcYUV,
                                    unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
                                    unsigned dstFrameWidth, unsigned dstFrameHeight, BYTE * dstYUV,
-                                   PVideoFrameInfo::ResizeMode resizeMode)
+                                   PVideoFrameInfo::ResizeMode resizeMode, bool verticalFlip)
 {
   if (srcX == 0 && srcY == 0 && dstX == 0 && dstY == 0 &&
       srcWidth == dstWidth && srcHeight == dstHeight &&
@@ -719,10 +673,8 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
     return false;
   }
 
-  void (*rowFunction)(unsigned srcX, unsigned srcY, unsigned srcWidth, unsigned srcHeight,
-                      unsigned srcFrameWidth, const BYTE * srcYUV,
-                      unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
-                      unsigned dstFrameWidth, BYTE * dstYUV) = CropYUV420P;
+  void(*rowFunction)(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                     BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstFrameWidth) = CropYUV420P;
 
   switch (resizeMode) {
     case PVideoFrameInfo::eScale :
@@ -771,9 +723,15 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       break;
   }
 
+  BYTE * dstPtr = dstYUV + dstY * dstFrameWidth + dstX;
+  int dstLineSpan = dstFrameWidth;
+  if (verticalFlip) {
+    dstPtr += (dstHeight - 1) * dstFrameWidth;
+    dstLineSpan = -dstLineSpan;
+  }
+
   // Copy plane Y
-  rowFunction(srcX, srcY, srcWidth, srcHeight, srcFrameWidth, srcYUV,
-              dstX, dstY, dstWidth, dstHeight, dstFrameWidth, dstYUV);
+  rowFunction(srcYUV + srcY * srcFrameWidth + srcX, srcWidth, srcHeight, srcFrameWidth, dstPtr, dstWidth, dstHeight, dstLineSpan);
 
   srcYUV += srcFrameWidth*srcFrameHeight;
   dstYUV += dstFrameWidth*dstFrameHeight;
@@ -791,17 +749,20 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
   srcFrameHeight /= 2;
   dstFrameWidth /= 2;
   dstFrameHeight /= 2;
+  dstLineSpan /= 2;
+
+  dstPtr = dstYUV + dstY * dstFrameWidth + dstX;
+  if (verticalFlip)
+    dstPtr += (dstHeight - 1) * dstFrameWidth;
 
   // Copy plane U
-  rowFunction(srcX, srcY, srcWidth, srcHeight, srcFrameWidth, srcYUV,
-              dstX, dstY, dstWidth, dstHeight, dstFrameWidth, dstYUV);
+  rowFunction(srcYUV + srcY * srcFrameWidth + srcX, srcWidth, srcHeight, srcFrameWidth, dstYUV, dstWidth, dstHeight, dstLineSpan);
 
   srcYUV += srcFrameWidth*srcFrameHeight;
   dstYUV += dstFrameWidth*dstFrameHeight;
 
   // Copy plane V
-  rowFunction(srcX, srcY, srcWidth, srcHeight, srcFrameWidth, srcYUV,
-              dstX, dstY, dstWidth, dstHeight, dstFrameWidth, dstYUV);
+  rowFunction(srcYUV + srcY * srcFrameWidth + srcX, srcWidth, srcHeight, srcFrameWidth, dstYUV, dstWidth, dstHeight, dstLineSpan);
   return true;
 }
 
@@ -925,20 +886,6 @@ PRAGMA_OPTIMISE_DEFAULT()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PSynonymColourRegistration::PSynonymColourRegistration(const char * srcFmt,
-                                                       const char * dstFmt)
-  : PColourConverterRegistration(srcFmt,dstFmt)
-{
-}
-
-
-PColourConverter * PSynonymColourRegistration::Create(const PVideoFrameInfo & src,
-                                                      const PVideoFrameInfo & dst) const
-{
-  return new PSynonymColour(src, dst);
-}
-
 
 PRAGMA_OPTIMISE_ON()
 PBoolean PSynonymColour::Convert(const BYTE *srcFrameBuffer,
@@ -1139,42 +1086,74 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
     scanLineSizeRGB = -scanLineSizeRGB;
   }
 
-  PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 1);
-  do {
-    while (raster.HasDutyY()) {
-      const BYTE * pixelRGB1 = scanLinePtrRGB;
-      const BYTE * pixelRGB2 = scanLinePtrRGB+rgbIncrement;
-      BYTE * pixelY = scanLinePtrY;
-      BYTE * pixelU = scanLinePtrU;
-      BYTE * pixelV = scanLinePtrV;
+  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
+    unsigned YUVOffset[4] = { 0, 1, m_dstFrameWidth, m_dstFrameWidth + 1 };
+    unsigned RGBOffset[4] = { 0, rgbIncrement, m_dstFrameWidth*rgbIncrement, (m_dstFrameWidth + 1)*rgbIncrement };
+    for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
+      for (unsigned x = 0; x < m_srcFrameWidth; x += 2) {
+        unsigned rSum = 0, gSum = 0, bSum = 0;
+        for (unsigned p = 0; p < 4; ++p) {
+          unsigned r = scanLinePtrRGB[RGBOffset[p] + redOffset];
+          unsigned g = scanLinePtrRGB[RGBOffset[p] + greenOffset];
+          unsigned b = scanLinePtrRGB[RGBOffset[p] + blueOffset];
+          RGB2Y(r, g, b, scanLinePtrY[YUVOffset[p]]);
+          rSum += r;
+          gSum += g;
+          bSum += b;
+        }
+        RGB2UV(rSum / 4, gSum / 4, bSum / 4, *scanLinePtrU++, *scanLinePtrV++);
+        scanLinePtrY += 2;
+        scanLinePtrRGB += rgbIncrement*2;
+      }
+      scanLinePtrY += m_srcFrameWidth;
+      scanLinePtrRGB += scanLineSizeRGB;
+    }
+  }
+  else {
+    bool evenLine = true;
+    PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 1);
+    do {
+      while (raster.HasDutyY()) {
+        const BYTE * pixelRGB1 = scanLinePtrRGB;
+        const BYTE * pixelRGB2 = scanLinePtrRGB + rgbIncrement;
+        BYTE * pixelY = scanLinePtrY;
+        BYTE * pixelU = scanLinePtrU;
+        BYTE * pixelV = scanLinePtrV;
 
-      do {
-        while (raster.HasDutyX()) {
-          if (raster.IsBlack())
-            pixelY[0] = pixelY[1] = 0;
-          else {
-            RGB2Y(  pixelRGB1[redOffset], pixelRGB1[greenOffset], pixelRGB1[blueOffset], pixelY[0]                  );
-            RGB2YUV(pixelRGB2[redOffset], pixelRGB2[greenOffset], pixelRGB2[blueOffset], pixelY[1], *pixelU, *pixelV);
+        do {
+          while (raster.HasDutyX()) {
+            if (raster.IsBlack())
+              pixelY[0] = pixelY[1] = 0;
+            else {
+              RGB2Y(pixelRGB1[redOffset], pixelRGB1[greenOffset], pixelRGB1[blueOffset], pixelY[0]);
+              RGB2Y(pixelRGB2[redOffset], pixelRGB2[greenOffset], pixelRGB2[blueOffset], pixelY[1]);
+              if (evenLine)
+                RGB2UV((pixelRGB1[redOffset] + pixelRGB2[redOffset]) / 2,
+                       (pixelRGB1[greenOffset] + pixelRGB2[greenOffset]) / 2,
+                       (pixelRGB1[blueOffset] + pixelRGB2[blueOffset]) / 2,
+                       *pixelU, *pixelV);
+            }
+
+            pixelY += 2;
+            pixelU++;
+            pixelV++;
           }
 
-          pixelY += 2;
-          pixelU++;
-          pixelV++;
+          pixelRGB1 += rgbIncrement * 2;
+          pixelRGB2 += rgbIncrement * 2;
+        } while (raster.RunningX());
+
+        scanLinePtrY += scanLineSizeY;
+        if (evenLine) {
+          scanLinePtrU += scanLineSizeUV;
+          scanLinePtrV += scanLineSizeUV;
         }
-
-        pixelRGB1 += rgbIncrement*2;
-        pixelRGB2 += rgbIncrement*2;
-      } while (raster.RunningX());
-
-      scanLinePtrY += scanLineSizeY;
-      if ((raster.GetY()&1) == 0) {
-        scanLinePtrU += scanLineSizeUV;
-        scanLinePtrV += scanLineSizeUV;
+        evenLine = !evenLine;
       }
-    }
 
-    scanLinePtrRGB += scanLineSizeRGB;
-  } while (raster.RunningY());
+      scanLinePtrRGB += scanLineSizeRGB;
+    } while (raster.RunningY());
+  }
 
   if (bytesReturned != NULL)
     *bytesReturned = m_dstFrameBytes;
@@ -1528,7 +1507,7 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
 
   return CopyYUV420P(0, 0, m_srcFrameWidth, m_srcFrameHeight, m_srcFrameWidth, m_srcFrameHeight, srcFrameBuffer,
                      0, 0, m_dstFrameWidth, m_dstFrameHeight, m_dstFrameWidth, m_dstFrameHeight, dstFrameBuffer,
-                     m_resizeMode);
+                     m_resizeMode, m_verticalFlip);
 }
 
 /*
@@ -1849,8 +1828,8 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   int scanLineSizeRGB = rgbIncrement*m_dstFrameWidth;
 
   if (m_verticalFlip) {
-    scanLinePtrRGB += (m_dstFrameHeight - 2) * m_dstFrameWidth * rgbIncrement;
-    scanLineSizeRGB = -scanLineSizeRGB;
+    scanLinePtrRGB += (m_dstFrameHeight - 2) * scanLineSizeRGB;
+    scanLineSizeRGB = -scanLineSizeRGB*3;
     dstPixpos[0] = dstPixpos[2];
     dstPixpos[1] = dstPixpos[3];
     dstPixpos[2] = 0;
@@ -3128,10 +3107,18 @@ struct PJPEGConverter::Context
 };
 
 
-PJPEGConverter::PJPEGConverter(const PVideoFrameInfo & src, const PVideoFrameInfo & dst)
-  : PColourConverter(src, dst)
+PJPEGConverter::PJPEGConverter(const PColourPair & colours)
+  : PColourConverter(colours)
   , m_context(new Context)
 {
+}
+
+
+PJPEGConverter::PJPEGConverter(const PVideoFrameInfo & src, const PVideoFrameInfo & dst)
+  : PColourConverter(PColourPair(src.GetColourFormat(), dst.GetColourFormat()))
+{
+  SetSrcFrameInfo(src);
+  SetDstFrameInfo(dst);
 }
 
 
@@ -3163,7 +3150,7 @@ bool PJPEGConverter::Load(PFile & file, PBYTEArray & dstFrameBuffer)
 
 
 #define JPEG_CONVERTER(from,to) \
-  PCOLOUR_CONVERTER2(P_##from##_##to,PJPEGConverter,#from,#to) \
+  PCOLOUR_CONVERTER2(PColourConverter_##from##_##to,PJPEGConverter,#from,#to) \
   { return m_context->Convert(srcFrameBuffer, m_srcFrameBytes, dstFrameBuffer, m_dstFrameBytes, m_dstFrameWidth, m_dstFrameHeight, bytesReturned, MY_JPEG_##to); }
 
 JPEG_CONVERTER(MJPEG, RGB24)
