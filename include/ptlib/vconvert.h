@@ -46,52 +46,46 @@
 struct jdec_private;
 
 
-/**This class registers a colour conversion class.
-   There should be one and one only instance of this class for each pair of
-   srcColurFormat and dstColourFormat strings. Use the
-   PCOLOUR_CONVERTER_REGISTRATION macro to do this.
- */
-class PColourConverterRegistration : public PCaselessString
+/**This class contains a pair of colour formats for conversion.
+*/
+class PColourPair : public PObject
 {
-    PCLASSINFO(PColourConverterRegistration, PCaselessString);
+    PCLASSINFO(PColourPair, PObject)
   public:
-    PColourConverterRegistration(
-      const PString & srcColourFormat,  ///< Name of source colour format
-      const PString & destColourFormat  ///< Name of destination colour format
-    );
+    PColourPair(const PString & src, const PString & dst)
+      : m_srcColourFormat(src)
+      , m_dstColourFormat(dst)
+    { }
+
+    Comparison Compare(const PObject & other) const;
+
+    /**Get the source colour format.
+    */
+    const PString & GetSrcColourFormat() const { return m_srcColourFormat; }
+
+    /**Get the destination colour format.
+    */
+    const PString & GetDstColourFormat() const { return m_dstColourFormat; }
 
   protected:
-    virtual PColourConverter * Create(
-      const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
-      const PVideoFrameInfo & dst  ///< Destination frame info
-    ) const = 0;
-
-    PColourConverterRegistration * link;
-
-  friend class PColourConverter;
+    const PString m_srcColourFormat;
+    const PString m_dstColourFormat;
 };
-
 
 /**This class defines a means to convert an image from one colour format to another.
    It is an ancestor class for the individual formatting functions.
  */
-class PColourConverter : public PObject
+class PColourConverter : public PColourPair
 {
-    PCLASSINFO(PColourConverter, PObject);
-  public:
+    PCLASSINFO(PColourConverter, PColourPair);
+  protected:
     /**Create a new converter.
       */
     PColourConverter(
-      const PString & srcColourFormat,  ///< Name of source colour format
-      const PString & dstColourFormat,  ///< Name of destination colour format
-      unsigned width,   ///< Width of frame
-      unsigned height   ///< Height of frame
-    );
-    PColourConverter(
-      const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
-      const PVideoFrameInfo & dst  ///< Destination frame info
+      const PColourPair & colours
     );
 
+  public:
     /// Print description of converter
     virtual void PrintOn(
       ostream & strm
@@ -179,14 +173,6 @@ class PColourConverter : public PObject
       unsigned height,  ///< New height of target frame
       PBoolean bScale   ///< Indicate if scaling or cropping is to be used
     );
-
-    /**Get the source colour format.
-      */
-    const PString & GetSrcColourFormat() const { return m_srcColourFormat; }
-
-    /**Get the destination colour format.
-      */
-    const PString & GetDstColourFormat() const { return m_dstColourFormat; }
 
     /**Get the maximum frame size in bytes for source frames.
 
@@ -311,7 +297,8 @@ class PColourConverter : public PObject
       unsigned srcFrameWidth, unsigned srcFrameHeight, const BYTE * srcYUV,
       unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
       unsigned dstFrameWidth, unsigned dstFrameHeight, BYTE * dstYUV,
-      PVideoFrameInfo::ResizeMode resizeMode
+      PVideoFrameInfo::ResizeMode resizeMode = PVideoFrameInfo::eScale,
+      bool verticalFlip = false
     );
 
     /**Rotate the video buffer image.
@@ -333,13 +320,6 @@ class PColourConverter : public PObject
     );
 
   protected:
-    void Construct(
-      const PVideoFrameInfo & src, ///< Source frame info (colour formet, size etc)
-      const PVideoFrameInfo & dst  ///< Destination frame info
-    );
-
-    PString  m_srcColourFormat;
-    PString  m_dstColourFormat;
     unsigned m_srcFrameWidth;
     unsigned m_srcFrameHeight;
     PINDEX   m_srcFrameBytes;
@@ -355,30 +335,23 @@ class PColourConverter : public PObject
     PBYTEArray m_intermediateFrameStore;
 
   P_REMOVE_VIRTUAL(PBoolean,Convert(const BYTE*,BYTE*,unsigned,PINDEX*),false);
-
-  friend class PColourConverterRegistration;
 };
+
+typedef PFactory<PColourConverter, PColourPair> PColourConverterFactory;
 
 
 /**Declare a colour converter class with Convert() function.
    This should only be used once and at the global scope level for each
    converter. It declares everything needs so only the body of the Convert()
    function need be added.
-  */
+   */
 #define PCOLOUR_CONVERTER2(cls,ancestor,srcFmt,dstFmt) \
 class cls : public ancestor { \
   public: \
-  cls(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) \
-    : ancestor(src, dst) { } \
-  virtual PBoolean Convert(const BYTE *, BYTE *, PINDEX * = NULL); \
+    cls() : ancestor(PColourPair(srcFmt, dstFmt)) { } \
+    virtual PBoolean Convert(const BYTE *, BYTE *, PINDEX * = NULL); \
 }; \
-static class cls##_Registration : public PColourConverterRegistration { \
-  public: cls##_Registration() \
-    : PColourConverterRegistration(srcFmt,dstFmt) { } \
-  protected: virtual PColourConverter * Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const; \
-} p_##cls##_registration_instance; \
-PColourConverter * cls##_Registration::Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const \
-  { return new cls(src, dst); } \
+PFACTORY_CREATE(PColourConverterFactory, cls, PColourPair(srcFmt, dstFmt)); \
 PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned) \
 
 
@@ -399,35 +372,21 @@ PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX *
 class PSynonymColour : public PColourConverter {
   public:
     PSynonymColour(
-      const PVideoFrameInfo & src,
-      const PVideoFrameInfo & dst
-    ) : PColourConverter(src, dst) { }
+      const PColourPair & colours
+    ) : PColourConverter(colours) { }
     virtual PBoolean Convert(const BYTE *, BYTE *, PINDEX * = NULL);
-};
-
-
-/**Define synonym colour format registration.
-   This is a class that defines for which no conversion is required between
-   the specified colour format names.
-  */
-class PSynonymColourRegistration : public PColourConverterRegistration {
-  public:
-    PSynonymColourRegistration(
-      const char * srcFmt,
-      const char * dstFmt
-    );
-
-  protected:
-    virtual PColourConverter * Create(const PVideoFrameInfo & src, const PVideoFrameInfo & dst) const;
 };
 
 
 /**Define synonym colour format.
    This is a class that defines for which no conversion is required between
    the specified colour format names.
-  */
+   */
 #define PSYNONYM_COLOUR_CONVERTER(from,to) \
-  static PSynonymColourRegistration p_##from##_##to##_registration_instance(#from,#to)
+  class PColourConverter_##from##_##to : public PSynonymColour { \
+    public: PColourConverter_##from##_##to() : PSynonymColour(PColourPair(#from, #to)) { }\
+  }; \
+  PColourConverterFactory::Worker<PColourConverter_##from##_##to> PColourConverter_##from##_##to##_instance(PColourPair(#from, #to))
 
 
 #if P_JPEG_DECODER
@@ -439,7 +398,13 @@ class PJPEGConverter : public PColourConverter
     Context * m_context;
 
   public:
-    PJPEGConverter(const PVideoFrameInfo & src, const PVideoFrameInfo & dst);
+    PJPEGConverter(
+      const PColourPair & colours
+    );
+    PJPEGConverter(
+      const PVideoFrameInfo & src,
+      const PVideoFrameInfo & dst
+    );
     ~PJPEGConverter();
 
     virtual PBoolean Convert(
