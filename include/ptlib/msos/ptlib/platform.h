@@ -347,6 +347,7 @@ typedef DWORD PProcessIdentifier;
 #endif
 
 // used by various modules to disable the winsock2 include to avoid header file problems
+#define _WINSOCK_DEPRECATED_NO_WARNINGS 1
 #include <winsock2.h> // Version 2 of windows socket
 #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
 
