@@ -42,9 +42,6 @@
 #include <ptclib/http.h>
 
 
-static const bool DefaultBargeIn = true;
-
-
 class PVXMLChannelPCM : public PVXMLChannel
 {
   PCLASSINFO(PVXMLChannelPCM, PVXMLChannel);
@@ -753,7 +750,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   , m_currentNode(NULL)
   , m_xmlChanged(false)
   , m_speakNodeData(true)
-  , m_bargeIn(DefaultBargeIn)
+  , m_bargeIn(true)
   , m_bargingIn(false)
   , m_grammar(NULL)
   , m_defaultMenuDTMF('N') /// Disabled
@@ -763,6 +760,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   , m_transferStartTime(0)
 {
   SetVar("property.timeout" , "10s");
+  SetVar("property.bargein", "true");
 }
 
 
@@ -894,7 +892,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
 
     m_xmlChanged = true;
     m_speakNodeData = true;
-    m_bargeIn = false;
+    m_bargeIn = true;
     m_bargingIn = false;
     m_recordingStatus = NotRecording;
     m_transferStatus = NotTransfering;
@@ -2295,8 +2293,8 @@ PBoolean PVXMLSession::TraversePrompt(PXMLElement & element)
   if (m_grammar != NULL)
     m_grammar->SetTimeout(StringToTime(element.GetAttribute("timeout")));
 
-  m_bargeIn = !(element.GetAttribute("bargein") *= "false"); // Defaults to true
-  if (!m_bargeIn) {
+  if ((element.GetAttribute("bargein") *= "false") || GetVar("property.bargein") == "false") {
+    m_bargeIn = false;
     ClearBargeIn();
     FlushInput();
   }
@@ -2306,7 +2304,7 @@ PBoolean PVXMLSession::TraversePrompt(PXMLElement & element)
 
 PBoolean PVXMLSession::TraversedPrompt(PXMLElement &)
 {
-  m_bargeIn = DefaultBargeIn;
+  m_bargeIn = GetVar("property.bargein") != "false";
   return true;
 }
 
