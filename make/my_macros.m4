@@ -581,7 +581,7 @@ AS_CASE([$target_cpu],
       target_64bit=0
    ],
 
-   ppc64 | powerpc64, [
+   ppc64 | powerpc64 | ppc64el | powerpc64le, [
       target_cpu=ppc64
       target_64bit=1
    ],
@@ -595,6 +595,10 @@ AS_CASE([$target_cpu],
    ],
 
    aarch64*, [
+      target_64bit=1
+   ],
+
+   mips64 | mips64el, [
       target_64bit=1
    ],
       AC_MSG_WARN([CPU \"$target_cpu\" not recognized - assuming 32 bit])
