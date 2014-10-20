@@ -569,7 +569,7 @@ case "$target_cpu" in
       target_64bit=0
    ;;
 
-   ppc64 | powerpc64 )
+   ppc64 | powerpc64 | ppc64el | powerpc64le )
       target_cpu=ppc64
       target_64bit=1
    ;;
@@ -583,6 +583,10 @@ case "$target_cpu" in
    ;;
 
    aarch64* )
+      target_64bit=1
+   ;;
+
+   mips64 | mips64el )
       target_64bit=1
    ;;
 
