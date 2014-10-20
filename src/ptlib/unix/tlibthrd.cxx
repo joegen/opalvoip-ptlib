@@ -52,6 +52,7 @@
 // going to need the main thread for adjusting relative priority
 static pthread_t baseThread;
 #elif defined(P_LINUX)
+#include <malloc.h>
 #include <sys/syscall.h>
 #include <fstream>
 #elif defined(P_ANDROID)
@@ -1115,7 +1116,7 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
   struct mallinfo info = mallinfo();
   usage.m_malloc = info.uordblks;
   usage.m_blocks = info.hblks;
-  usage.m_free = info.uordblks;
+  usage.m_freed = info.uordblks;
 }
 
 
