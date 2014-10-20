@@ -1101,6 +1101,24 @@ bool PProcess::GetSystemTimes(Times & times)
   return false;
 }
 
+
+void PProcess::GetMemoryUsage(MemoryUsage & usage)
+{
+  ifstream proc("/proc/self/statm");
+  size_t virtPages, resPages;
+  proc >> virtPages >> resPages;
+  if (proc.good()) {
+    usage.m_virtual = virtPages * 4096;
+    usage.m_resident = resPages * 4096;
+  }
+
+  struct mallinfo info = mallinfo();
+  usage.m_malloc = info.uordblks;
+  usage.m_blocks = info.hblks;
+  usage.m_free = info.uordblks;
+}
+
+
 #else
 
 PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
@@ -1112,6 +1130,11 @@ PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
 PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
 {
   return GetCurrentThreadId();
+}
+
+
+void PProcess::GetMemoryUsage(MemoryUsage & usage)
+{
 }
 
 
