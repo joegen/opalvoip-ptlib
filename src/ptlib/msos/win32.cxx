@@ -40,6 +40,7 @@
 #include <process.h>
 #include <errors.h>
 #include <shlobj.h>
+#include <Psapi.h>
 
 #ifdef _MSC_VER
   #ifndef _WIN32_WCE
@@ -1511,6 +1512,17 @@ PProcessIdentifier PProcess::GetCurrentProcessID()
 PBoolean PProcess::IsServiceProcess() const
 {
   return false;
+}
+
+
+void PProcess::GetMemoryUsage(MemoryUsage & usage)
+{
+  PROCESS_MEMORY_COUNTERS info;
+  info.cb = sizeof(info);
+  if (GetProcessMemoryInfo(GetCurrentProcess(), &info, sizeof(info))) {
+    usage.m_virtual = info.PeakWorkingSetSize;
+    usage.m_resident = info.WorkingSetSize;
+  }
 }
 
 
