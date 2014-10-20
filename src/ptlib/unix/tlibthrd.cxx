@@ -1116,7 +1116,7 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
   struct mallinfo info = mallinfo();
   usage.m_malloc = info.uordblks;
   usage.m_blocks = info.hblks;
-  usage.m_freed = info.uordblks;
+  usage.m_freed = info.fordblks;
 }
 
 
