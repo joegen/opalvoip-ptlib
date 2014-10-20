@@ -1159,7 +1159,7 @@ namespace PProfiling
 ///////////////////////////////////////////////////////////////////////////////
 // Memory management
 
-#if PMEMORY_CHECK || defined(__GLIBC__) || (defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)) 
+#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)) 
 
 #define PMEMORY_HEAP 1
 
@@ -1261,7 +1261,6 @@ class PMemoryHeap {
     static PBoolean SetIgnoreAllocations(
       PBoolean ignore  ///< New flag for allocation ignoring.
     );
-    static bool GetIgnoreAllocations();
 
     /** Get memory check system statistics.
         Dump statistics output to the default stream.
@@ -1276,13 +1275,8 @@ class PMemoryHeap {
     struct State {
       DWORD allocationNumber;
     };
-#elif defined(_MSC_VER)
-    typedef _CrtMemState State;
-#elif defined(__GLIBC__)
-    struct State {
-      size_t m_size;
-      size_t m_free;
-    };
+#else
+	typedef _CrtMemState State;
 #endif
 
     /* Get memory state.
@@ -1414,13 +1408,11 @@ class PMemoryHeap {
     void * mutex;
 #endif
 
-#elif defined(_MSC_VER)
+#else
 
     static void CreateInstance();
 #define P_CLIENT_BLOCK (_CLIENT_BLOCK|(0x61<<16)) // This identifies a PObject derived class
     _CrtMemState initialState;
-
-#elif defined(__GLIBC__)
 
 #endif // PMEMORY_CHECK
 };
