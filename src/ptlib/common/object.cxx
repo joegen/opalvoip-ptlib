@@ -47,9 +47,6 @@
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
 #include <crtdbg.h>
 #endif
-#elif defined(__GLIBC__)
-#include <malloc.h>
-#include <mcheck.h>
 #elif defined(__NUCLEUS_PLUS__)
 #include <ptlib/NucleusDebstrm.h>
 #else
@@ -274,43 +271,6 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-
-#if PMEMORY_HEAP
-
-static void DumpMemoryStatistic(ostream & strm, size_t bytes)
-{
-  if (bytes < 10000) {
-    strm << bytes << " bytes";
-    return;
-  }
-
-  if (bytes < 10240000)
-    strm << (bytes + 1023) / 1024 << "kb";
-  else
-    strm << (bytes + 1048575) / 1048576 << "Mb";
-  strm << " (" << bytes << ')';
-}
-
-#if defined(P_LINUX)
-static void DumpLinuxMemoryStatistics(ostream & strm)
-{
-  ifstream proc("/proc/self/statm");
-  size_t virt, res;
-  proc >> virt >> res;
-  if (proc.good()) {
-    strm << "\n"
-            "Virtual memory usage    : ";
-    DumpMemoryStatistic(strm, virt * 4096); // page size
-    strm << "\n"
-            "Resident memory usage   : ";
-    DumpMemoryStatistic(strm, res * 4096);
-  }
-}
-#else
-#define DumpLinuxMemoryStatistics(strm)
-#endif // P_LINUX
-
-#endif // PMEMORY_HEAP
 
 #if PMEMORY_CHECK
 
@@ -744,12 +704,6 @@ PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 }
 
 
-bool PMemoryHeap::GetIgnoreAllocations()
-{
-
-}
-
-
 void PMemoryHeap::DumpStatistics()
 {
   Wrapper mem;
@@ -765,16 +719,42 @@ void PMemoryHeap::DumpStatistics(ostream & strm)
 }
 
 
+static void OutputMemory(ostream & strm, size_t bytes)
+{
+  if (bytes < 10000) {
+    strm << bytes << " bytes";
+    return;
+  }
+
+  if (bytes < 10240000)
+    strm << (bytes+1023)/1024 << "kb";
+  else
+    strm << (bytes+1048575)/1048576 << "Mb";
+  strm << " (" << bytes << ')';
+}
+
 void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 {
-  DumpLinuxMemoryStatistics(strm);
+#if defined(P_LINUX)
+  ifstream proc("/proc/self/statm");
+  size_t virt, res;
+  proc >> virt >> res;
+  if (proc.good()) {
+    strm << "\n"
+            "Virtual memory usage    : ";
+    OutputMemory(strm, virt*4096); // page size
+    strm << "\n"
+            "Resident memory usage   : ";
+    OutputMemory(strm, res*4096);
+  }
+#endif
   strm << "\n"
           "Current memory usage    : ";
-  DumpMemoryStatistic(strm, currentMemoryUsage);
+  OutputMemory(strm, currentMemoryUsage);
   strm << "\n"
           "Current objects count   : " << currentObjects << "\n"
           "Peak memory usage       : ";
-  DumpMemoryStatistic(strm, peakMemoryUsage);
+  OutputMemory(strm, peakMemoryUsage);
   strm << "\n"
           "Peak objects created    : " << peakObjects << "\n"
           "Total objects created   : " << totalObjects << "\n"
@@ -851,7 +831,9 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 }
 
 
-#elif defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
+#else // PMEMORY_CHECK
+
+#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
 
 static _CRT_DUMP_CLIENT pfnOldCrtDumpClient;
 static bool hadCrtDumpLeak = false;
@@ -950,12 +932,6 @@ PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 }
 
 
-bool PMemoryHeap::GetIgnoreAllocations()
-{
-  return (_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG)&_CRTDBG_ALLOC_MEM_DF) == 0;
-}
-
-
 void PMemoryHeap::DumpStatistics()
 {
   CreateInstance();
@@ -998,117 +974,6 @@ void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
   _CrtSetBreakAlloc(objectNumber);
 }
 
-#elif defined(__GLIBC__)
-
-static bool g_mtraceDeactivated = true;
-
-PMemoryHeap::PMemoryHeap()
-{
-}
-
-
-PMemoryHeap::~PMemoryHeap()
-{
-}
-
-
-void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
-{
-  return malloc(nSize);
-}
-
-
-void * PMemoryHeap::Allocate(size_t count, size_t iSize, const char * file, int line)
-{
-  return calloc(count, iSize);
-}
-
-
-void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
-{
-  return realloc(ptr, nSize);
-}
-
-
-void PMemoryHeap::Deallocate(void * ptr, const char * className)
-{
-  free(ptr);
-}
-
-
-PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr, const char * className, ostream * /*strm*/)
-{
-  switch (mprobe(const_cast<void *>(ptr))) {
-  case MCHECK_HEAD :
-  case MCHECK_TAIL :
-    return Trashed;
-  case MCHECK_FREE :
-    return Bad;
-  }
-  return Ok;
-}
-
-
-PBoolean PMemoryHeap::ValidateHeap(ostream * /*strm*/)
-{
-  return Ok;
-}
-
-
-PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
-{
-  g_mtraceDeactivated = ignore;
-  if (ignore)
-    muntrace();
-  else
-    mtrace();
-}
-
-
-bool PMemoryHeap::GetIgnoreAllocations()
-{
-  return g_mtraceDeactivated;
-}
-
-
-void PMemoryHeap::DumpStatistics()
-{
-  DumpStatistics(PError);
-}
-
-
-void PMemoryHeap::DumpStatistics(ostream & strm)
-{
-  struct mallinfo info = mallinfo();
-  DumpLinuxMemoryStatistics(strm);
-  strm << "\n"
-          "Current memory usage    : ";
-  DumpMemoryStatistic(strm, info.uordblks);
-  strm << "\n"
-          "Free memory usage       : ";
-  DumpMemoryStatistic(strm, info.fordblks);
-  strm << endl;
-}
-
-
-void PMemoryHeap::GetState(State & state)
-{
-}
-
-
-void PMemoryHeap::DumpObjectsSince(const State & state)
-{
-}
-
-
-void PMemoryHeap::DumpObjectsSince(const State & state, ostream & /*strm*/)
-{
-}
-
-
-void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
-{
-}
 
 #else // defined(_MSC_VER) && defined(_DEBUG)
 
@@ -1133,6 +998,8 @@ void operator delete[](void * ptr)
 }
 
 #endif // !P_VXWORKS
+
+#endif // defined(_MSC_VER) && defined(_DEBUG)
 
 #endif // PMEMORY_CHECK
 
