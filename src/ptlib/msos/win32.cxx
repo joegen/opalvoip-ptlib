@@ -55,6 +55,8 @@
   #if P_DIRECTSHOW
     #pragma comment(lib, "quartz.lib")
   #endif
+
+  #pragma comment(lib, "Psapi.lib")
 #endif
 
 #if P_VERSION_HELPERS
