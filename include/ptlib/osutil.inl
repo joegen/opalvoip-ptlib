@@ -533,6 +533,8 @@ PINLINE void PProcess::SetTerminationValue(int value)
 PINLINE int PProcess::GetTerminationValue() const
   { return terminationValue; }
 
+PINLINE void PThreadYield()
+  { PThread::Yield(); }
 
 
 // End Of File ///////////////////////////////////////////////////////////////

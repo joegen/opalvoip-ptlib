@@ -1581,6 +1581,8 @@ public:
 #endif // PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG))
 
 
+void PThreadYield();
+
 ///////////////////////////////////////////////////////////////////////////////
 /** Template class for a simple singleton object.
      Usage is typically like:
@@ -1600,7 +1602,25 @@ class PSingleton
   protected:
     Type * m_instance;
   public:
-    PSingleton();
+    PSingleton()
+    {
+      static Type * s_pointer;
+      static GuardType s_guard(0);
+      if (s_guard++ != 0) {
+        s_guard = 1;
+        while ((m_instance = s_pointer) == NULL)
+          PThreadYield();
+      }
+      else {
+#if PMEMORY_HEAP
+        // Do this to make sure debugging is initialised as early as possible
+        PMemoryHeap::Validate(NULL, NULL, NULL);
+#endif
+        static Type s_instance;
+        m_instance = s_pointer = &s_instance;
+      }
+    }
+
     Type * operator->() const { return  m_instance; }
     Type & operator* () const { return *m_instance; }
 };
