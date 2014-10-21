@@ -723,6 +723,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       break;
   }
 
+  const BYTE * srcPtr = srcYUV + srcY * srcFrameWidth + srcX;
   BYTE * dstPtr = dstYUV + dstY * dstFrameWidth + dstX;
   int dstLineSpan = dstFrameWidth;
   if (verticalFlip) {
@@ -731,7 +732,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
   }
 
   // Copy plane Y
-  rowFunction(srcYUV + srcY * srcFrameWidth + srcX, srcWidth, srcHeight, srcFrameWidth, dstPtr, dstWidth, dstHeight, dstLineSpan);
+  rowFunction(srcPtr, srcWidth, srcHeight, srcFrameWidth, dstPtr, dstWidth, dstHeight, dstLineSpan);
 
   srcYUV += srcFrameWidth*srcFrameHeight;
   dstYUV += dstFrameWidth*dstFrameHeight;
@@ -751,18 +752,19 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
   dstFrameHeight /= 2;
   dstLineSpan /= 2;
 
+  srcPtr = srcYUV + srcY * srcFrameWidth + srcX;
   dstPtr = dstYUV + dstY * dstFrameWidth + dstX;
   if (verticalFlip)
     dstPtr += (dstHeight - 1) * dstFrameWidth;
 
   // Copy plane U
-  rowFunction(srcYUV + srcY * srcFrameWidth + srcX, srcWidth, srcHeight, srcFrameWidth, dstYUV, dstWidth, dstHeight, dstLineSpan);
+  rowFunction(srcPtr, srcWidth, srcHeight, srcFrameWidth, dstPtr, dstWidth, dstHeight, dstLineSpan);
 
-  srcYUV += srcFrameWidth*srcFrameHeight;
-  dstYUV += dstFrameWidth*dstFrameHeight;
+  srcPtr += srcFrameWidth*srcFrameHeight;
+  dstPtr += dstFrameWidth*dstFrameHeight;
 
   // Copy plane V
-  rowFunction(srcYUV + srcY * srcFrameWidth + srcX, srcWidth, srcHeight, srcFrameWidth, dstYUV, dstWidth, dstHeight, dstLineSpan);
+  rowFunction(srcPtr, srcWidth, srcHeight, srcFrameWidth, dstPtr, dstWidth, dstHeight, dstLineSpan);
   return true;
 }
 
