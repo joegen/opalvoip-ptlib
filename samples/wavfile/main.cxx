@@ -114,15 +114,15 @@ void WAVFileTest::Create(PArgList & args)
 
 void WAVFileTest::Play(PArgList & args)
 {
-  PWAVFile file(args[0], PFile::ReadOnly, PFile::MustExist, PWAVFile::fmt_NotKnown);
+  PWAVFile file(args[0], PFile::ReadOnly, PFile::MustExist);
   if (!file.IsOpen()) {
     cout << "Cannot open " << args[0] << endl;
     return;
   }
 
-  PINDEX dataLen = file.GetDataLength();
-  PINDEX hdrLen  = file.GetHeaderLength();
-  PINDEX fileLen = file.GetLength();
+  PINDEX dataLen = file.GetLength();
+  PINDEX hdrLen  = file.PFile::GetPosition();
+  PINDEX fileLen = file.PFile::GetLength();
 
   cout << "Format:       " << file.GetFormat() << " (" << file.GetFormatString() << ")" << "\n"
        << "Channels:     " << file.GetChannels() << "\n"
