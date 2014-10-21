@@ -324,4 +324,26 @@ PINLINE PAbstractDictionary::PAbstractDictionary(int dummy,
   : PHashTable(dummy, c) { }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+template <class Type, typename GuardType = unsigned> __inline PSingleton<Type, GuardType>::PSingleton()
+{
+  static Type * s_pointer;
+  static GuardType s_guard(0);
+  if (s_guard++ != 0) {
+    s_guard = 1;
+    while ((m_instance = s_pointer) == NULL)
+      PThread::Sleep(1);
+  }
+  else {
+#if PMEMORY_HEAP
+    // Do this to make sure debugging is initialised as early as possible
+    PMemoryHeap::Validate(NULL, NULL, NULL);
+#endif
+    static Type s_instance;
+    m_instance = s_pointer = &s_instance;
+  }
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////
