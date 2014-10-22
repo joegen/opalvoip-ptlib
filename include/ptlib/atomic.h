@@ -59,12 +59,13 @@ private:
 #endif
 };
 
-#define P_DEFINE_ATOMIC_FUNCTIONS(Type,Exch,FetchAdd,AddFetch) \
+#define P_DEFINE_ATOMIC_FUNCTIONS(Type,Exch,FetchAdd,AddFetch,CompExch) \
     __inline atomic() : m_storage() { } \
     __inline atomic(Type value) : m_storage(value) { } \
     __inline atomic(const atomic & other) : m_storage((Type)AddFetch(const_cast<Type *>(&other.m_storage), 0)) { } \
-    __inline atomic & operator=(const atomic & other) { Exch(&m_storage, load()); return *this; } \
+    __inline atomic & operator=(const atomic & other) { Exch(&m_storage, other.load()); return *this; } \
     __inline operator Type() const { return (Type)AddFetch(const_cast<Type *>(&m_storage), 0); } \
+    __inline bool compare_exchange_strong(Type & comp, Type value) { return CompExch(&m_storage, comp, value); } \
     __inline void store(Type value) { Exch(&m_storage, value); } \
     __inline Type load() const { return (Type)AddFetch(const_cast<Type *>(&m_storage), 0); } \
     __inline Type exchange(Type value) { return (Type)Exch(&m_storage, value); } \
@@ -73,43 +74,49 @@ private:
     __inline Type operator--()    { return (Type)AddFetch(&m_storage, -1); } \
     __inline Type operator--(int) { return (Type)FetchAdd(&m_storage, -1); } \
 
-#define P_DEFINE_ATOMIC_INT_CLASS(Type,Exch,FetchAdd,AddFetch) \
+#define P_DEFINE_ATOMIC_INT_CLASS(Type,Exch,FetchAdd,AddFetch,CompExch) \
   template <> struct atomic<Type> { \
-    P_DEFINE_ATOMIC_FUNCTIONS(Type,Exch,FetchAdd,AddFetch) \
+    P_DEFINE_ATOMIC_FUNCTIONS(Type,Exch,FetchAdd,AddFetch,CompExch) \
     private: volatile Type m_storage; \
   }
 
-#define P_DEFINE_ATOMIC_PTR_CLASS(Exch,FetchAdd,AddFetch) \
+#define P_DEFINE_ATOMIC_PTR_CLASS(Exch,FetchAdd,AddFetch,CompExch) \
   template <typename Type> struct atomic<Type *> { \
-    P_DEFINE_ATOMIC_FUNCTIONS(Type*,Exch,FetchAdd,AddFetch) \
+    P_DEFINE_ATOMIC_FUNCTIONS(Type*,Exch,FetchAdd,AddFetch,CompExch) \
     private: volatile Type * m_storage; \
   }
 
 #if defined(_WIN32)
 
-  #define P_Exchange8(storage, value)     _InterlockedExchange8       ((CHAR  *)(storage), value)
-  #define P_FetchAdd8(storage, value)     _InterlockedExchangeAdd8    ((char  *)(storage), value)
-  #define P_AddFetch8(storage, value)    (_InterlockedExchangeAdd8    ((char  *)(storage), value)+value)
-  #define P_Exchange16(storage, value)    _InterlockedExchange16      ((SHORT *)(storage), value)
-  #define P_FetchAdd16(storage, value)    _InterlockedExchangeAdd16   ((SHORT *)(storage), value)
-  #define P_AddFetch16(storage, value)   (_InterlockedExchangeAdd16   ((SHORT *)(storage), value)+value)
-  #define P_Exchange32(storage, value)    _InterlockedExchange        ((LONG  *)(storage), value)
-  #define P_FetchAdd32(storage, value)    _InterlockedExchangeAdd     ((LONG  *)(storage), value)
-  #define P_AddFetch32(storage, value)    _InterlockedAdd             ((LONG  *)(storage), value)
-  #define P_Exchange64(storage, value)    _InterlockedExchange64      ((LONG64*)(storage), value)
-  #define P_FetchAdd64(storage, value)    _InterlockedExchangeAdd64   ((LONG64*)(storage), value)
-  #define P_AddFetch64(storage, value)    _InterlockedAdd64           ((LONG64*)(storage), value)
-  #define P_ExchangePtr(storage, value)   _InterlockedExchangePointer ((PVOID *)(storage), value)
+  #define P_Exchange8(storage, value)       _InterlockedExchange8         ((CHAR  *)(storage), value)
+  #define P_CompExch8(storage,comp,value)  (_InterlockedCompareExchange8  ((CHAR  *)(storage), value, comp) == (CHAR)comp)
+  #define P_FetchAdd8(storage, value)       _InterlockedExchangeAdd8      ((char  *)(storage), value)
+  #define P_AddFetch8(storage, value)      (_InterlockedExchangeAdd8      ((char  *)(storage), value)+value)
+  #define P_Exchange16(storage, value)      _InterlockedExchange16        ((SHORT *)(storage), value)
+  #define P_CompExch16(storage,comp,value) (_InterlockedCompareExchange16 ((SHORT *)(storage), value, comp) == (SHORT)comp)
+  #define P_FetchAdd16(storage, value)      _InterlockedExchangeAdd16     ((SHORT *)(storage), value)
+  #define P_AddFetch16(storage, value)     (_InterlockedExchangeAdd16     ((SHORT *)(storage), value)+value)
+  #define P_Exchange32(storage, value)      _InterlockedExchange          ((LONG  *)(storage), value)
+  #define P_CompExch32(storage,comp,value) (_InterlockedCompareExchange   ((LONG  *)(storage), value, comp) == (LONG)comp)
+  #define P_FetchAdd32(storage, value)      _InterlockedExchangeAdd       ((LONG  *)(storage), value)
+  #define P_AddFetch32(storage, value)      _InterlockedAdd               ((LONG  *)(storage), value)
+  #define P_Exchange64(storage, value)      _InterlockedExchange64        ((LONG64*)(storage), value)
+  #define P_CompExch64(storage,comp,value) (_InterlockedCompareExchange64 ((LONG64*)(storage), value, comp) == (LONG64)comp)
+  #define P_FetchAdd64(storage, value)      _InterlockedExchangeAdd64     ((LONG64*)(storage), value)
+  #define P_AddFetch64(storage, value)      _InterlockedAdd64             ((LONG64*)(storage), value)
+  #define P_ExchangePtr(storage, value)     _InterlockedExchangePointer   ((PVOID *)(storage), value)
   #ifdef _WIN64
-    #define P_FetchAddPtr(storage, value) _InterlockedExchangeAdd64   ((LONG64*)(storage), value)
-    #define P_AddFetchPtr(storage, value) _InterlockedAdd64           ((LONG64*)(storage), value)
+    #define P_CompExchPtr(storage,comp,value) (_InterlockedCompareExchange64((LONG  *)(storage), value, comp) == comp)
+    #define P_FetchAddPtr(storage, value)      _InterlockedExchangeAdd64    ((LONG64*)(storage), value)
+    #define P_AddFetchPtr(storage, value)      _InterlockedAdd64            ((LONG64*)(storage), value)
   #else
-    #define P_FetchAddPtr(storage, value) _InterlockedExchangeAdd     ((LONG  *)(storage), value)
-    #define P_AddFetchPtr(storage, value) _InterlockedAdd             ((LONG  *)(storage), value)
+    #define P_CompExchPtr(storage,comp,value) (_InterlockedCompareExchange  ((LONG  *)(storage), value, comp) == comp)
+    #define P_FetchAddPtr(storage, value)      _InterlockedExchangeAdd      ((LONG  *)(storage), value)
+    #define P_AddFetchPtr(storage, value)      _InterlockedAdd              ((LONG  *)(storage), value)
   #endif
 
   #define P_DEFINE_ATOMIC_INT_CLASS_WIN32(Type, Size) \
-    P_DEFINE_ATOMIC_INT_CLASS(Type, P_Exchange##Size, P_FetchAdd##Size, P_AddFetch##Size);
+    P_DEFINE_ATOMIC_INT_CLASS(Type, P_Exchange##Size, P_FetchAdd##Size, P_AddFetch##Size, P_CompExch##Size)
 
   P_DEFINE_ATOMIC_INT_CLASS_WIN32(              bool, 8 );
   P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed      char, 8 );
@@ -123,12 +130,12 @@ private:
   P_DEFINE_ATOMIC_INT_CLASS_WIN32(  signed long long, 64);
   P_DEFINE_ATOMIC_INT_CLASS_WIN32(unsigned long long, 64);
 
-  P_DEFINE_ATOMIC_PTR_CLASS(P_ExchangePtr, P_FetchAddPtr, P_AddFetchPtr);
+  P_DEFINE_ATOMIC_PTR_CLASS(P_ExchangePtr, P_FetchAddPtr, P_AddFetchPtr, P_CompExchPtr);
 
 #elif defined(P_ATOMICITY_BUILTIN)
 
   #define P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(Type) \
-    P_DEFINE_ATOMIC_INT_CLASS(Type, __sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch)
+    P_DEFINE_ATOMIC_INT_CLASS(Type, __sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch, __sync_bool_compare_and_swap)
 
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(          bool);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed  char);
