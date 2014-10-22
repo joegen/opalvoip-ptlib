@@ -152,7 +152,7 @@ private:
   #if HAVE_UNSIGNED_LONG_LONG_INT
     P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned long long);
   #endif
-  P_DEFINE_ATOMIC_PTR_CLASS(__sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch);
+  P_DEFINE_ATOMIC_PTR_CLASS(__sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch, __sync_bool_compare_and_swap);
   
 #elif defined(SOLARIS) && !defined(__GNUC__)
 
