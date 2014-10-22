@@ -117,7 +117,9 @@ PWAVFile::PWAVFile(const PString & format, const PFilePath & name, OpenMode mode
 
 PWAVFile::~PWAVFile()
 { 
-  Close(); 
+  Close();
+  delete m_autoConverter;
+  delete m_formatHandler;
 }
 
 
@@ -183,15 +185,6 @@ PBoolean PWAVFile::Close()
 {
   if (m_status == e_Writing)
     UpdateHeader();
-
-  if (m_formatHandler != NULL) {
-    m_formatHandler->OnStop();
-    delete m_formatHandler;
-    m_formatHandler = NULL;
-  }
-
-  delete m_autoConverter;
-  m_autoConverter = NULL;
 
   return PFile::Close();
 }
@@ -500,14 +493,6 @@ PBoolean PWAVFile::ProcessHeader()
   return true;
 }
 
-
-// Generates the wave file header.
-// Two types of header are supported.
-// a) PCM data, set to 8000Hz, mono, 16-bit samples
-// b) G.723.1 data
-// When this function is called with lenData < 0, it will write the header
-// as if the lenData is LONG_MAX minus header length.
-// Note: If it returns false, the file may be left in inconsistent state.
 
 bool PWAVFile::GenerateHeader()
 {
