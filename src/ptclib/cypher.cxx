@@ -284,24 +284,36 @@ PString PBase64::CompleteEncoding()
 
 PString PBase64::Encode(const PString & str, const char * endOfLine, PINDEX width)
 {
+  if (str.IsEmpty())
+    return PString::Empty();
+
   return Encode((const char *)str, str.GetLength(), endOfLine, width);
 }
 
 
 PString PBase64::Encode(const char * cstr, const char * endOfLine, PINDEX width)
 {
+  if (cstr == NULL || *cstr == '\0')
+    return PString::Empty();
+
   return Encode((const BYTE *)cstr, (PINDEX)strlen(cstr), endOfLine, width);
 }
 
 
 PString PBase64::Encode(const PBYTEArray & data, const char * endOfLine, PINDEX width)
 {
+  if (data.IsEmpty())
+    return PString::Empty();
+
   return Encode(data, data.GetSize(), endOfLine, width);
 }
 
 
 PString PBase64::Encode(const void * data, PINDEX length, const char * endOfLine, PINDEX width)
 {
+  if (length == 0)
+    return PString::Empty();
+
   PBase64 encoder;
   encoder.StartEncoding(endOfLine, width);
   encoder.ProcessEncoding(data, length);
@@ -415,6 +427,9 @@ PBoolean PBase64::GetDecodedData(void * dataBlock, PINDEX length)
 
 PString PBase64::Decode(const PString & str)
 {
+  if (str.IsEmpty())
+    return str;
+
   PBYTEArray data;
   Decode(str, data);
   return PString(data);
@@ -423,6 +438,9 @@ PString PBase64::Decode(const PString & str)
 
 PBoolean PBase64::Decode(const PString & str, PBYTEArray & data)
 {
+  if (str.IsEmpty())
+    return false;
+
   PBase64 decoder;
   decoder.ProcessDecoding(str);
   data = decoder.GetDecodedData();
@@ -432,6 +450,9 @@ PBoolean PBase64::Decode(const PString & str, PBYTEArray & data)
 
 PBoolean PBase64::Decode(const PString & str, void * dataBlock, PINDEX length)
 {
+  if (str.IsEmpty())
+    return false;
+
   PBase64 decoder;
   decoder.ProcessDecoding(str);
   return decoder.GetDecodedData(dataBlock, length);
