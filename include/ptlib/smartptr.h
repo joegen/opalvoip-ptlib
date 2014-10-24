@@ -53,19 +53,26 @@ class PSmartObject : public PObject
 {
   PCLASSINFO(PSmartObject, PObject);
 
-  public:
+  protected:
     /** Construct a new smart object, subject to a <code>PSmartPointer</code> instance
        referencing it.
      */
     PSmartObject()
-      :referenceCount(1) { }
+      : referenceCount(1)
+    { }
 
-  protected:
+    PSmartObject(const PSmartObject & other)
+      : PObject(other)
+      , referenceCount(1)
+    { }
+
     /** Count of number of instances of <code>PSmartPointer</code> that currently
        reference the object instance.
      */
     atomic<uint32_t> referenceCount;
 
+  private:
+    void operator=(const PSmartObject&) { }
 
   friend class PSmartPointer;
 };
