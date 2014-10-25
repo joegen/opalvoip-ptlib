@@ -1,5 +1,5 @@
 /*
- * macvideo.cxx
+ * macvideo.mm
  *
  * Classes to support streaming video input (grabbing) and output.
  *
@@ -36,6 +36,10 @@
 
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
+
+#ifdef BOOL
+#undef BOOL
+#endif
 
 #include <Foundation/NSAutoreleasePool.h>
 #import <Foundation/NSLock.h>

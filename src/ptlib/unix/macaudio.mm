@@ -37,6 +37,10 @@
 #include <ptlib/sound.h>
 #include <ptclib/qchannel.h>
 
+#ifdef BOOL
+#undef BOOL
+#endif
+
 #include <AudioUnit/AudioUnit.h>
 #ifdef P_MACOSX
   #include <CoreAudio/CoreAudio.h>
