@@ -401,13 +401,13 @@ PBoolean PColourConverter::ConvertInPlace(BYTE * frameBuffer,
 
 
 #define RGB2Y(r, g, b, y) \
-  y=(BYTE)(((int)257*(r)  +(int)504*(g) +(int)98*(b))/1000)
+  ((y)=(BYTE)(((int)257*(r)  +(int)504*(g) +(int)98*(b))/1000))
 
 #define RGB2UV(r, g, b, cb, cr) \
-  cb=(BYTE)((-148*(r)  -291*(g) +439*(b))/1000 + 128); \
-  cr=(BYTE)(( 439*(r)  -368*(g) - 71*(b))/1000 + 128)
+  ((cb)=(BYTE)((-148*(r)  -291*(g) +439*(b))/1000 + 128)), \
+  ((cr)=(BYTE)(( 439*(r)  -368*(g) - 71*(b))/1000 + 128))
 
-#define RGB2YUV(r, g, b, y, cb, cr) RGB2Y(r, g, b, y); RGB2UV(r, g, b, cb, cr)
+#define RGB2YUV(r, g, b, y, cb, cr) RGB2Y(r, g, b, y), RGB2UV(r, g, b, cb, cr)
 
 
 void PColourConverter::RGBtoYUV(unsigned   r, unsigned   g, unsigned   b,
@@ -497,7 +497,7 @@ class PRasterDutyCycle
         }
 
         m_pixel += m_increment;
-        if (m_pixel >= m_upper)
+        if (m_pixel > m_upper)
           return false;
         if (m_pixel < m_start)
           return m_growing;
