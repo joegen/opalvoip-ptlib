@@ -2537,19 +2537,13 @@ bool PSSLChannelDTLS::ExecuteHandshake()
 {
   PTRACE(5, "DTLS executing handshake.");
 
-  for (int retry = 3; retry >= 0; --retry) {
-    int errorCode = SSL_do_handshake(m_ssl);
-    if (errorCode == 1) {
-      PTRACE(3, "DTLS handshake successful.");
-      return true;
-    }
-
-    if (!IsOpen())
-      return false;
-
-    PTRACE(2, "DTLS handshake failed (" << retry <<" retries left) - " << PSSLError(SSL_get_error(m_ssl, errorCode)));
+  int errorCode = SSL_do_handshake(m_ssl);
+  if (errorCode == 1) {
+    PTRACE(3, "DTLS handshake successful.");
+    return true;
   }
 
+  PTRACE_IF(2, IsOpen(), "DTLS handshake failed (" << errorCode <<") - " << PSSLError(SSL_get_error(m_ssl, errorCode)));
   return false;
 }
 
