@@ -236,6 +236,7 @@
   #undef P_SETPGRP_NOPARM
 
   #undef P_GNU_ALLOCATOR
+  #undef P_HAS_MALLOC_INFO
   #undef P_HAS_NAMED_SEMAPHORES
   #undef P_PTHREADS_XPG6      
   #undef P_HAS_SEMAPHORES_XPG6
