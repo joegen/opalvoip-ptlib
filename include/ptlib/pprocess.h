@@ -321,16 +321,16 @@ class PProcess : public PThread
       MemoryUsage()
         : m_virtual(0)
         , m_resident(0)
-        , m_malloc(0)
+        , m_max(0)
+        , m_current(0)
         , m_blocks(0)
-        , m_freed(0)
         { }
 
       size_t m_virtual;
       size_t m_resident;
-      size_t m_malloc;
+      size_t m_max;
+      size_t m_current;
       size_t m_blocks;
-      size_t m_freed;
     };
 
     /**Get process memory suage.

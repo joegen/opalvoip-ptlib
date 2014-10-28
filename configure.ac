@@ -394,6 +394,26 @@ fi
 
 
 dnl ########################################################################
+dnl Do we have malloc_info
+
+MY_COMPILE_IFELSE(
+   [if has malloc_info],
+   [],
+   [
+      #include <stdio.h>
+      #include <malloc.h>
+   ],
+   [
+      FILE * out;
+      malloc_info(0, out);
+   ],
+   [
+      AC_DEFINE(P_HAS_MALLOC_INFO, 1)
+   ]
+)
+
+
+dnl ########################################################################
 dnl check the endianness
 
 dnl MSWIN_DISPLAY byteorder,Byte Order
