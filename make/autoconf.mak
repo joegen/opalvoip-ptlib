@@ -200,7 +200,7 @@ else # autoconf
   $(CONFIGURE): $(CONFIGURE).ac
 	@echo ---------------------------------------------------------------------
 	@echo The configure script requires updating but autoconf not is installed.
-	@echo Either install autoconf v3.$(AUTOCONF_VERSION) or later or execute the command:
+	@echo Either install autoconf v2.$(AUTOCONF_VERSION) or later or execute the command:
 	@echo touch $@
 	@echo ---------------------------------------------------------------------
 
