@@ -1113,10 +1113,30 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
     usage.m_resident = resPages * 4096;
   }
 
+#if P_HAS_MALLOC_INFO
+  char * buffer = NULL;
+  size_t size;
+  FILE * mem = open_memstream(&buffer, &size);
+  malloc_info(0, mem);
+  fclose(mem);
+
+  PStringArray substrings(2);
+
+  static PRegularExpression MaxRE("< *system *type *= *\"max\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
+  if (MaxRE.Execute(buffer, substrings))
+    usage.m_max = (size_t)substrings[1].AsUnsigned64();
+
+  static PRegularExpression CurrentRE("< *system *type *= *\"current\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
+  if (CurrentRE.Execute(buffer, substrings))
+    usage.m_current = (size_t)substrings[1].AsUnsigned64();
+
+  free(buffer);
+#else
   struct mallinfo info = mallinfo();
-  usage.m_malloc = info.uordblks;
+  usage.m_max = info.uordblks+info.fordblks;
+  usage.m_current = info.uordblks;
   usage.m_blocks = info.hblks;
-  usage.m_freed = info.fordblks;
+#endif
 }
 
 
