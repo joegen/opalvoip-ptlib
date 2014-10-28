@@ -406,11 +406,13 @@ class PSSLCertificateFingerprint : public PObject
     ) const;
 
     PString AsString() const;
+    bool FromString(const PString & str);
 
-    HashType GetHash() const { return m_type; }
+    HashType GetHash() const { return m_hashAlogorithm; }
+    void SetHash(HashType hash) { m_hashAlogorithm = hash; }
 
   private:
-    HashType m_type;
+    HashType m_hashAlogorithm;
     PString  m_fingerprint;
 };
 
