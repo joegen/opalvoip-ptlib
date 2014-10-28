@@ -870,35 +870,25 @@ PString PSSLCertificate::X509_Name::AsString(int indent) const
 static char const * const FingerprintHashNames[PSSLCertificateFingerprint::NumHashType] = { "md5", "sha-1", "sha-256", "sha-512" };
 
 PSSLCertificateFingerprint::PSSLCertificateFingerprint()
-: m_type(NumHashType)
+  : m_hashAlogorithm(NumHashType)
 {
 }
 
 
-PSSLCertificateFingerprint::PSSLCertificateFingerprint(const PString & inStr)
-: m_type(NumHashType)
+PSSLCertificateFingerprint::PSSLCertificateFingerprint(const PString & str)
 {
-  PCaselessString hashType, fp;
-
-  if (inStr.Split(' ', hashType, fp)) {
-    for (m_type = HashMd5; m_type < EndHashType; ++m_type) {
-      if (hashType == FingerprintHashNames[m_type]) {
-        m_fingerprint = fp.ToUpper();
-        break;
-      }
-    }
-  }
+  FromString(str);
 }
 
 
 PSSLCertificateFingerprint::PSSLCertificateFingerprint(HashType type, const PSSLCertificate& cert)
-  : m_type(type)
+  : m_hashAlogorithm(type)
 {
-  if (m_type == NumHashType || !cert.IsValid())
+  if (m_hashAlogorithm == NumHashType || !cert.IsValid())
     return;
 
   const EVP_MD* evp = 0;
-  switch(m_type)
+  switch(m_hashAlogorithm)
   {
     case HashMd5:
       evp = EVP_md5();
@@ -931,9 +921,9 @@ PSSLCertificateFingerprint::PSSLCertificateFingerprint(HashType type, const PSSL
 PObject::Comparison PSSLCertificateFingerprint::Compare(const PObject & obj) const
 {
   const PSSLCertificateFingerprint & other = dynamic_cast<const PSSLCertificateFingerprint &>(obj);
-  if (m_type < other.m_type)
+  if (m_hashAlogorithm < other.m_hashAlogorithm)
     return LessThan;
-  if (m_type > other.m_type)
+  if (m_hashAlogorithm > other.m_hashAlogorithm)
     return GreaterThan;
   return m_fingerprint.Compare(other.m_fingerprint);
 }
@@ -941,22 +931,43 @@ PObject::Comparison PSSLCertificateFingerprint::Compare(const PObject & obj) con
 
 bool PSSLCertificateFingerprint::IsValid() const
 {
-  return m_type < NumHashType && !m_fingerprint.IsEmpty();
+  return m_hashAlogorithm < NumHashType && !m_fingerprint.IsEmpty();
 }
 
 
 bool PSSLCertificateFingerprint::MatchForCertificate(const PSSLCertificate& cert) const
 {
-  return (*this == PSSLCertificateFingerprint(m_type, cert));
+  return (*this == PSSLCertificateFingerprint(m_hashAlogorithm, cert));
 }
 
 
 PString PSSLCertificateFingerprint::AsString() const
 {
   if (IsValid())
-    return PSTRSTRM(FingerprintHashNames[m_type] << ' ' << m_fingerprint);
+    return PSTRSTRM(FingerprintHashNames[m_hashAlogorithm] << ' ' << m_fingerprint);
 
   return PString::Empty();
+}
+
+
+bool PSSLCertificateFingerprint::FromString(const PString & str)
+{
+  PCaselessString hashType, fp;
+
+  m_fingerprint.MakeEmpty();
+  m_hashAlogorithm = NumHashType;
+
+  if (!str.Split(' ', hashType, fp))
+    return false;
+
+  for (m_hashAlogorithm = HashMd5; m_hashAlogorithm < EndHashType; ++m_hashAlogorithm) {
+    if (hashType == FingerprintHashNames[m_hashAlogorithm]) {
+      m_fingerprint = fp.ToUpper();
+      return true;
+    }
+  }
+
+  return false;
 }
 
 
