@@ -271,7 +271,8 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
   }
 
 #ifndef _WIN32_WCE
-  error = SecureCreateKey(basekey, subkey, key);
+  if (basekey != HKEY_CURRENT_USER)
+    error = SecureCreateKey(basekey, subkey, key);
   if (error != ERROR_SUCCESS)
 #endif
   {
