@@ -285,8 +285,11 @@ bool PDirectory::Open(PFileInfo::FileTypes newScanMask)
   PVarString wildcard = *this + "*.*";
 
   hFindFile = FindFirstFile(wildcard, &fileinfo);
-  if (hFindFile == INVALID_HANDLE_VALUE)
+  if (hFindFile == INVALID_HANDLE_VALUE) {
+    PTRACE_IF(2, GetLastError() != ERROR_PATH_NOT_FOUND && GetLastError() != ERROR_DIRECTORY,
+              "PTLib", "Could not open directory \"" << *this << "\", error=" << GetLastError());
     return false;
+  }
 
   return InternalEntryCheck() || Next();
 }
