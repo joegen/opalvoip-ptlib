@@ -735,30 +735,31 @@ static void OutputMemory(ostream & strm, size_t bytes)
 
 void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 {
-#if defined(P_LINUX)
-  ifstream proc("/proc/self/statm");
-  size_t virt, res;
-  proc >> virt >> res;
-  if (proc.good()) {
-    strm << "\n"
-            "Virtual memory usage    : ";
-    OutputMemory(strm, virt*4096); // page size
-    strm << "\n"
-            "Resident memory usage   : ";
-    OutputMemory(strm, res*4096);
-  }
-#endif
+  PProcess::MemoryUsage usage;
+  PProcess::Current().GetMemoryUsage(usage);
   strm << "\n"
-          "Current memory usage    : ";
+          "Virtual memory usage     : ";
+  OutputMemory(strm, usage.m_virtual);
+  strm << "\n"
+          "Resident memory usage    : ";
+  OutputMemory(strm, usage.m_resident);
+  strm << "\n"
+          "Process heap memory max  : ";
+  OutputMemory(strm, usage.m_max);
+  strm << "\n"
+          "Process memory heap usage: ";
+  OutputMemory(strm, usage.m_current);
+  strm << "\n"
+          "Current memory usage     : ";
   OutputMemory(strm, currentMemoryUsage);
   strm << "\n"
-          "Current objects count   : " << currentObjects << "\n"
-          "Peak memory usage       : ";
+          "Current objects count    : " << currentObjects << "\n"
+          "Peak memory usage        : ";
   OutputMemory(strm, peakMemoryUsage);
   strm << "\n"
-          "Peak objects created    : " << peakObjects << "\n"
-          "Total objects created   : " << totalObjects << "\n"
-          "Next allocation request : " << allocationRequest << '\n'
+          "Peak objects created     : " << peakObjects << "\n"
+          "Total objects created    : " << totalObjects << "\n"
+          "Next allocation request  : " << allocationRequest << '\n'
        << endl;
 }
 
