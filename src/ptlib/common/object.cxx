@@ -746,20 +746,23 @@ static void OutputMemory(ostream & strm, size_t bytes)
 
 void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 {
-  PProcess::MemoryUsage usage;
-  PProcess::Current().GetMemoryUsage(usage);
-  strm << "\n"
-          "Virtual memory usage     : ";
-  OutputMemory(strm, usage.m_virtual);
-  strm << "\n"
-          "Resident memory usage    : ";
-  OutputMemory(strm, usage.m_resident);
-  strm << "\n"
-          "Process heap memory max  : ";
-  OutputMemory(strm, usage.m_max);
-  strm << "\n"
-          "Process memory heap usage: ";
-  OutputMemory(strm, usage.m_current);
+  if (PProcess::IsInitialised()) {
+    PProcess::MemoryUsage usage;
+    PProcess::Current().GetMemoryUsage(usage);
+    strm << "\n"
+            "Virtual memory usage     : ";
+    OutputMemory(strm, usage.m_virtual);
+    strm << "\n"
+            "Resident memory usage    : ";
+    OutputMemory(strm, usage.m_resident);
+    strm << "\n"
+            "Process heap memory max  : ";
+    OutputMemory(strm, usage.m_max);
+    strm << "\n"
+            "Process memory heap usage: ";
+    OutputMemory(strm, usage.m_current);
+  }
+
   strm << "\n"
           "Current memory usage     : ";
   OutputMemory(strm, currentMemoryUsage);
