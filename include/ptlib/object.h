@@ -1379,7 +1379,11 @@ class PMemoryHeap {
     };
 #pragma pack()
 
-    PBoolean isDestroyed;
+    enum {
+      e_Disabled,
+      e_Destroyed,
+      e_Active
+    } m_state;
 
     Header * listHead;
     Header * listTail;
