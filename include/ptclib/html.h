@@ -611,7 +611,19 @@ class PHTML : public PStringStream
         cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, const char * attr = NULL); \
         cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, TableAttr attr5, const char * attr = NULL); \
 
-    class TableStart : public Element
+    class TableElement : public Element {
+      public:
+        TableElement(
+          const char * nam,
+          const char * att,
+          ElementInSet elmt,
+          ElementInSet req,
+          OptionalCRLF opt
+        ) : Element(nam, att, elmt, req, opt) { }
+        virtual void Output(PHTML & html) const;
+    };
+
+    class TableStart : public TableElement
     {
       public:
         P_DECL_HTML_TABLE_CTOR(TableStart)
@@ -624,7 +636,7 @@ class PHTML : public PStringStream
     };
     friend class TableStart;
 
-    class TableEnd : public Element {
+    class TableEnd : public TableElement {
       public:
         TableEnd();
         virtual ~TableEnd() {}
@@ -633,19 +645,19 @@ class PHTML : public PStringStream
     };
     friend class TableEnd;
 
-    class TableRow : public Element {
+    class TableRow : public TableElement {
       public:
         P_DECL_HTML_TABLE_CTOR(TableRow)
         virtual ~TableRow() {}
     };
 
-    class TableHeader : public Element {
+    class TableHeader : public TableElement {
       public:
         P_DECL_HTML_TABLE_CTOR(TableHeader)
         virtual ~TableHeader() {}
     };
 
-    class TableData : public Element {
+    class TableData : public TableElement {
       public:
         P_DECL_HTML_TABLE_CTOR(TableData)
         virtual ~TableData() {}

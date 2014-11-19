@@ -609,17 +609,17 @@ static PConstString const AttStr[] =
 
 #define P_DEF_HTML_TABLE_CTOR(cls, name, elmt, req, opt) \
   PHTML::cls::cls(const char * attr) \
-    : Element(name, attr, elmt, req, opt) { } \
+    : TableElement(name, attr, elmt, req, opt) { } \
   PHTML::cls::cls(TableAttr attr1, const char * attr) \
-    : Element(name, AttStr[attr1]&attr, elmt, req, opt) { } \
+    : TableElement(name, AttStr[attr1]&attr, elmt, req, opt) { } \
   PHTML::cls::cls(TableAttr attr1, TableAttr attr2, const char * attr) \
-    : Element(name, AttStr[attr1]&AttStr[attr2]&attr, elmt, req, opt) { } \
+    : TableElement(name, AttStr[attr1]&AttStr[attr2]&attr, elmt, req, opt) { } \
   PHTML::cls::cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, const char * attr) \
-    : Element(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&attr, elmt, req, opt) { } \
+    : TableElement(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&attr, elmt, req, opt) { } \
   PHTML::cls::cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, const char * attr) \
-    : Element(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&AttStr[attr4]&attr, elmt, req, opt) { } \
+    : TableElement(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&AttStr[attr4]&attr, elmt, req, opt) { } \
   PHTML::cls::cls(TableAttr attr1, TableAttr attr2, TableAttr attr3, TableAttr attr4, TableAttr attr5, const char * attr) \
-    : Element(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&AttStr[attr4]&AttStr[attr5]&attr, elmt, req, opt) { } \
+    : TableElement(name, AttStr[attr1]&AttStr[attr2]&AttStr[attr3]&AttStr[attr4]&AttStr[attr5]&attr, elmt, req, opt) { } \
 
 
 P_DEF_HTML_TABLE_CTOR(TableStart, "TABLE", InTable, InBody, BothCRLF)
@@ -628,11 +628,19 @@ P_DEF_HTML_TABLE_CTOR(TableHeader, "TH", NumElementsInSet, InTable, CloseCRLF)
 P_DEF_HTML_TABLE_CTOR(TableData, "TD", NumElementsInSet, InTable, NoCRLF)
 
 
+void PHTML::TableElement::Output(PHTML & html) const
+{
+  // All these are reset by a table data/row boundary
+  for (int i = InNote; i < InList; ++i)
+    html.Clr((ElementInSet)i);
+  Element::Output(html);
+}
+
 void PHTML::TableStart::Output(PHTML & html) const
 {
   if (html.tableNestLevel > 0)
     html.Clr(InTable);
-  Element::Output(html);
+  TableElement::Output(html);
 }
 
 void PHTML::TableStart::AddAttr(PHTML & html) const
@@ -642,14 +650,14 @@ void PHTML::TableStart::AddAttr(PHTML & html) const
 
 
 PHTML::TableEnd::TableEnd()
-  : Element("TABLE", "", InTable, InBody, BothCRLF)
+  : TableElement("TABLE", "", InTable, InBody, BothCRLF)
 {
 }
 
 void PHTML::TableEnd::Output(PHTML & html) const
 {
   PAssert(html.tableNestLevel > 0, "Table nesting error");
-  Element::Output(html);
+  TableElement::Output(html);
   html.tableNestLevel--;
   if (html.tableNestLevel > 0)
     html.Set(InTable);
