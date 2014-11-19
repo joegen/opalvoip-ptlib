@@ -275,6 +275,7 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 #if PMEMORY_CHECK
 
 #undef malloc
+#undef calloc
 #undef realloc
 #undef free
 
@@ -329,7 +330,7 @@ PMemoryHeap::Wrapper::Wrapper()
   // guarentee that a static global is contructed before it is used.
   static PMemoryHeap real_instance;
   instance = &real_instance;
-  if (instance->isDestroyed)
+  if (instance->m_state != e_Active)
     return;
 
 #if defined(_WIN32)
@@ -344,7 +345,7 @@ PMemoryHeap::Wrapper::Wrapper()
 
 PMemoryHeap::Wrapper::~Wrapper()
 {
-  if (instance->isDestroyed)
+  if (instance->m_state != e_Active)
     return;
 
 #if defined(_WIN32)
@@ -359,7 +360,8 @@ PMemoryHeap::Wrapper::~Wrapper()
 
 PMemoryHeap::PMemoryHeap()
 {
-  isDestroyed = false;
+  const char * env = getenv("PTLIB_MEMORY_CHECK");
+  m_state = env == NULL || atoi(env) > 0 ? e_Active : e_Disabled;
 
   listHead = NULL;
   listTail = NULL;
@@ -402,7 +404,7 @@ PMemoryHeap::PMemoryHeap()
 
 PMemoryHeap::~PMemoryHeap()
 {
-  isDestroyed = true;
+  m_state = e_Destroyed;
 
   if (leakDumpStream != NULL) {
     *leakDumpStream << "Final memory statistics:\n";
@@ -424,6 +426,8 @@ PMemoryHeap::~PMemoryHeap()
 void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
 {
   Wrapper mem;
+  if (mem->m_state == e_Disabled)
+    return malloc(nSize);
   return mem->InternalAllocate(nSize, file, line, className);
 }
 
@@ -431,6 +435,8 @@ void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const ch
 void * PMemoryHeap::Allocate(size_t count, size_t size, const char * file, int line)
 {
   Wrapper mem;
+  if (mem->m_state == e_Disabled)
+    return calloc(count, size);
 
   char oldFill = mem->allocFillChar;
   mem->allocFillChar = '\0';
@@ -445,7 +451,7 @@ void * PMemoryHeap::Allocate(size_t count, size_t size, const char * file, int l
 
 void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, const char * className)
 {
-  if (isDestroyed)
+  if (m_state != e_Active)
     return malloc(nSize);
 
   Header * obj = (Header *)malloc(sizeof(Header) + nSize + sizeof(Header::GuardBytes));
@@ -512,7 +518,7 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
 
   Wrapper mem;
 
-  if (mem->isDestroyed)
+  if (mem->m_state != e_Active)
     return realloc(ptr, nSize);
 
   if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok)
@@ -558,9 +564,14 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
     return;
 
   Wrapper mem;
+  if (mem->m_state == e_Disabled) {
+    free(ptr);
+    return;
+  }
+
   Header * obj = ((Header *)ptr)-1;
 
-  if (mem->isDestroyed) {
+  if (mem->m_state == e_Destroyed) {
     free(obj);
     return;
   }
@@ -606,7 +617,7 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
                                                       const char * className,
                                                       ostream * error)
 {
-  if (isDestroyed)
+  if (m_state != e_Active)
     return Bad;
 
   if (ptr == NULL)
@@ -799,7 +810,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
     if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
       continue;
 
-    if (first && isDestroyed) {
+    if (first && m_state == e_Destroyed) {
       *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
 #if !defined(_WIN32)
       cin.get();
