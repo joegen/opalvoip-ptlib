@@ -1356,6 +1356,10 @@ static void GetFrequency(uint64_t & freq)
 
     PPROFILE_EXCLUDE(void Dump(ostream & out) const);
 
+    // Do not use memory check allocation
+    PPROFILE_EXCLUDE(void * operator new(size_t nSize));
+    PPROFILE_EXCLUDE(void operator delete(void * ptr));
+
     union
     {
       // Note for correct operation m_pointer must overlay m_name
@@ -1395,6 +1399,10 @@ static void GetFrequency(uint64_t & freq)
     ));
 
     PPROFILE_EXCLUDE(void Dump(ostream & out) const);
+
+    // Do not use memory check allocation
+    PPROFILE_EXCLUDE(void * operator new(size_t nSize));
+    PPROFILE_EXCLUDE(void operator delete(void * ptr));
 
     PThreadIdentifier       m_threadId;
     PUniqueThreadIdentifier m_uniqueId;
@@ -1448,7 +1456,18 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
-  void FunctionRawData::Dump(ostream & out) const
+  void * FunctionRawData::operator new(size_t nSize)
+  {
+    return runtime_malloc(nSize);
+
+  }
+  void FunctionRawData::operator delete(void * ptr)
+  {
+    runtime_free(ptr);
+  }
+
+
+   void FunctionRawData::Dump(ostream & out) const
   {
     switch (m_type) {
       case e_AutoEntry:
@@ -1481,6 +1500,17 @@ static void GetFrequency(uint64_t & freq)
     , m_real(real)
     , m_cpu(cpu)
   {
+  }
+
+
+  void * ThreadRawData::operator new(size_t nSize)
+  {
+    return runtime_malloc(nSize);
+
+  }
+  void ThreadRawData::operator delete(void * ptr)
+  {
+    runtime_free(ptr);
   }
 
 
