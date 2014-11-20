@@ -59,18 +59,9 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     uint32_t m_pxSignals;
 
 #if P_HAS_BACKTRACE && PTRACING
+  public:
     enum { WalkStackSignal = SIGTRAP };
-    struct WalkStackInfo
-    {
-      std::string m_output;
-      PSyncPoint  m_done;
-    };
-    typedef std::map<PUniqueThreadIdentifier, WalkStackInfo> WalkStackMap;
-    WalkStackMap m_threadStackWalks;
-    PMutex       m_threadStackWalkMutex;
-
     void InternalWalkStackSignaled();
-    friend void PTrace::WalkStack(ostream & strm, PThreadIdentifier id);
 #endif
 
 

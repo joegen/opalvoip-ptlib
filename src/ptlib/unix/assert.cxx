@@ -53,6 +53,21 @@
     #define InternalMaxStackWalk 20
   #endif // PTRACING
 
+
+  static bool fgets_nonl(char * buffer, size_t size, FILE * fp)
+  {
+    if (fgets(buffer, size, fp) == NULL)
+      return false;
+
+    size_t len = strlen(buffer);
+    if (len == 0)
+      return true;
+
+    if (buffer[--len] == '\n')
+      buffer[len] = '\0';
+    return true;
+}
+
   static std::string Locate_addr2line()
   {
     std::string addr2line;
@@ -60,21 +75,14 @@
     FILE * p = popen("which addr2line", "r");
     if (p != NULL) {
       char line[100];
-      if (fgets(line, sizeof(line), p)) {
-        size_t len = strlen(line);
-        if (len > 0) {
-          if (line[len - 1] == '\n')
-            line[--len] = '\0';
-          if (access(line, R_OK|X_OK))
-            addr2line = line;
-        }
-      }
-
+      if (fgets_nonl(line, sizeof(line), p) && access(line, R_OK|X_OK) == 0)
+        addr2line = line;
       fclose(p);
     }
 
     return addr2line;
   }
+
 
   static void InternalWalkStack(ostream & strm)
   {
@@ -92,15 +100,16 @@
     static std::string addr2line = Locate_addr2line();
     if (!addr2line.empty()) {
       std::stringstream cmd;
-      cmd << addr2line << " --target=\"" << PProcess::Current().GetFile() << '"';
+      cmd << addr2line << " -e \"" << PProcess::Current().GetFile() << '"';
       for (i = 1; i < addressCount; ++i)
         cmd << ' ' << addresses[i];
       FILE * p = popen(cmd.str().c_str(), "r");
       if (p != NULL) {
-        i = 0;
         char line[200];
-        while (i < InternalMaxStackWalk && fgets(line, sizeof(line), p))
-          lines[i++] = line;
+        for (i = 1; i < InternalMaxStackWalk && fgets_nonl(line, sizeof(line), p); ++i) {
+          if (strcmp(line, "??:0") != 0)
+            lines[i] = line;
+        }
         fclose(p);
       }
     }
@@ -144,6 +153,16 @@
   }
 
   #if PTRACING
+    struct PWalkStackInfo
+    {
+      std::string m_output;
+      PSyncPoint  m_done;
+    };
+    typedef std::map<PUniqueThreadIdentifier, PWalkStackInfo> PWalkStackMap;
+    static PWalkStackMap   s_threadStackWalks;
+    static pthread_mutex_t s_threadStackMutex = PTHREAD_MUTEX_INITIALIZER;
+
+
     void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
     {
       if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId()) {
@@ -156,9 +175,9 @@
 
       PProcess & process = PProcess::Current();
 
-      process.m_threadStackWalkMutex.Wait();
-      PProcess::WalkStackInfo & info = process.m_threadStackWalks[id];
-      process.m_threadStackWalkMutex.Signal();
+      pthread_mutex_lock(&s_threadStackMutex);
+      PWalkStackInfo & info = s_threadStackWalks[id];
+      pthread_mutex_unlock(&s_threadStackMutex);
 
       pthread_kill(id, PProcess::WalkStackSignal);
 
@@ -167,22 +186,22 @@
       else
         strm << "Could not get stack trace for id=" << id << endl;
 
-      process.m_threadStackWalkMutex.Wait();
-      process.m_threadStackWalks.erase(id);
-      process.m_threadStackWalkMutex.Signal();
+      pthread_mutex_lock(&s_threadStackMutex);
+      s_threadStackWalks.erase(id);
+      pthread_mutex_unlock(&s_threadStackMutex);
     }
 
     void PProcess::InternalWalkStackSignaled()
     {
-      m_threadStackWalkMutex.Wait();
-      WalkStackMap::iterator it = m_threadStackWalks.find(PThread::GetCurrentThreadId());
-      if (it != m_threadStackWalks.end()) {
+      pthread_mutex_lock(&s_threadStackMutex);
+      PWalkStackMap::iterator it = s_threadStackWalks.find(PThread::GetCurrentThreadId());
+      if (it != s_threadStackWalks.end()) {
         std::ostringstream strm;
         InternalWalkStack(strm);
         it->second.m_output = strm.str();
       }
       it->second.m_done.Signal();
-      m_threadStackWalkMutex.Signal();
+      pthread_mutex_unlock(&s_threadStackMutex);
     }
   #endif // PTRACING
 
