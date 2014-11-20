@@ -53,8 +53,33 @@
     #define InternalMaxStackWalk 20
   #endif // PTRACING
 
+  static std::string Locate_addr2line()
+  {
+    std::string addr2line;
+
+    FILE * p = popen("which addr2line", "r");
+    if (p != NULL) {
+      char line[100];
+      if (fgets(line, sizeof(line), p)) {
+        size_t len = strlen(line);
+        if (len > 0) {
+          if (line[len - 1] == '\n')
+            line[--len] = '\0';
+          if (access(line, R_OK|X_OK))
+            addr2line = line;
+        }
+      }
+
+      fclose(p);
+    }
+
+    return addr2line;
+  }
+
   static void InternalWalkStack(ostream & strm)
   {
+    int i;
+
     void* addresses[InternalMaxStackWalk];
     int addressCount = backtrace(addresses, InternalMaxStackWalk);
     if (addressCount == 0) {
@@ -62,11 +87,31 @@
       return;
     }
 
+    std::string lines[InternalMaxStackWalk];
+
+    static std::string addr2line = Locate_addr2line();
+    if (!addr2line.empty()) {
+      std::stringstream cmd;
+      cmd << addr2line << " --target=\"" << PProcess::Current().GetFile() << '"';
+      for (i = 1; i < addressCount; ++i)
+        cmd << ' ' << addresses[i];
+      FILE * p = popen(cmd.str().c_str(), "r");
+      if (p != NULL) {
+        i = 0;
+        char line[200];
+        while (i < InternalMaxStackWalk && fgets(line, sizeof(line), p))
+          lines[i++] = line;
+        fclose(p);
+      }
+    }
+
+
     char ** symbols = backtrace_symbols(addresses, addressCount);
-    for (int i = 1; i < addressCount; ++i) {
+    for (i = 1; i < addressCount; ++i) {
       strm << "\n    ";
+
       if (symbols[i] == NULL || symbols[i][0] == '\0') {
-        strm << addresses[i];
+        strm << addresses[i] << ' ' << lines[i];
         continue;
       }
 
@@ -83,7 +128,7 @@
 	          char * demangled = abi::__cxa_demangle(mangled, NULL, NULL, &status);
             if (status == 0) {
               *mangled = '\0';
-              strm << symbols[i] << demangled << separator << offset;
+              strm << symbols[i] << demangled << separator << offset << ' ' << lines[i];
               free(demangled);
               continue;
             }
@@ -93,7 +138,7 @@
         }
       #endif // P_HAS_DEMANGLE
 
-      strm << symbols[i];
+      strm << symbols[i] << ' ' << lines[i];
     }
     free(symbols);
   }
