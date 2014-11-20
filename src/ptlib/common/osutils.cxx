@@ -2722,7 +2722,7 @@ void PTimedMutex::ExcessiveLockWait()
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Possible deadlock in mutex " << this;
   PTrace::WalkStack(trace);
-  trace << " Owner Thread id=" << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')';
+  trace << "\n  Owner Thread id=" << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')';
   PTrace::WalkStack(trace, m_lockerId);
   if (m_lockerId != m_uniqueId)
     trace << " unique-id=" << m_uniqueId;
