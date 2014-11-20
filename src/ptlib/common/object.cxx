@@ -322,6 +322,9 @@ void operator delete[](void * ptr)
 DWORD PMemoryHeap::allocationBreakpoint = 0;
 char PMemoryHeap::Header::GuardBytes[NumGuardBytes];
 static const size_t MaxMemoryDumBytes = 16;
+static void * DeletedPtr;
+static void * UninitialisedPtr;
+static void * GuardedPtr;
 
 
 PMemoryHeap::Wrapper::Wrapper()
@@ -381,6 +384,10 @@ PMemoryHeap::PMemoryHeap()
 
   for (PINDEX i = 0; i < Header::NumGuardBytes; i++)
     Header::GuardBytes[i] = '\xFD';
+
+  memset(&DeletedPtr, freeFillChar, sizeof(DeletedPtr));
+  memset(&UninitialisedPtr, allocFillChar, sizeof(UninitialisedPtr));
+  memset(&GuardedPtr, '\xFD', sizeof(GuardedPtr));
 
 #if defined(_WIN32)
   InitializeCriticalSection(&mutex);
@@ -521,8 +528,10 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
   if (mem->m_state != e_Active)
     return realloc(ptr, nSize);
 
-  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok)
+  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok) {
+    PAssertAlways("Invalid heap on reallocate");
     return NULL;
+  }
 
   Header * obj = (Header *)realloc(((Header *)ptr)-1, sizeof(Header) + nSize + sizeof(obj->guard));
   if (obj == NULL) {
@@ -580,9 +589,11 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
     case Ok :
       break;
     case Trashed :
+      PAssertAlways("Trashed heap on free");
       free(ptr);
       return;
     case Bad :
+      PAssertAlways("Bad pointer on free");
       free(obj);
       return;
   }
@@ -626,9 +637,15 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
   Header * obj = ((Header *)ptr)-1;
 
   unsigned count = currentObjects;
-  Header * link = listTail;  
-  while (link != NULL && link != obj && count-- > 0) 
-    link = link->prev;  
+  Header * link = listTail;
+  while (link != NULL && link != obj && count-- > 0) {
+    if (link->prev == DeletedPtr || link->prev == UninitialisedPtr || link->prev == GuardedPtr) {
+      if (error != NULL)
+        *error << "Block " << ptr << " trashed!" << endl;
+      return Trashed;
+    }
+    link = link->prev;
+  }
 
   if (link != obj) {
     if (error != NULL)
