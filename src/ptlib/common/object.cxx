@@ -471,8 +471,11 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   // by PProcess::PreInitialise() clearing the NoLeakPrint flag. Why do we do
   // this? because the GNU compiler is broken in the way it does static global
   // C++ object construction and destruction.
-  if (firstRealObject == 0 && (flags&NoLeakPrint) == 0)
+  if (firstRealObject == 0 && (flags&NoLeakPrint) == 0) {
+    if (leakDumpStream != NULL)
+      *leakDumpStream << "PTLib memory checking activated." << endl;
     firstRealObject = allocationRequest;
+  }
 
   if (allocationBreakpoint != 0 && allocationRequest == allocationBreakpoint)
     PBreakToDebugger();
@@ -528,10 +531,8 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
   if (mem->m_state != e_Active)
     return realloc(ptr, nSize);
 
-  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok) {
-    PAssertAlways("Invalid heap on reallocate");
+  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok)
     return NULL;
-  }
 
   Header * obj = (Header *)realloc(((Header *)ptr)-1, sizeof(Header) + nSize + sizeof(obj->guard));
   if (obj == NULL) {
@@ -573,29 +574,21 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
     return;
 
   Wrapper mem;
-  if (mem->m_state == e_Disabled) {
-    free(ptr);
-    return;
-  }
 
   Header * obj = ((Header *)ptr)-1;
 
-  if (mem->m_state == e_Destroyed) {
-    free(obj);
-    return;
-  }
-
   switch (mem->InternalValidate(ptr, className, mem->leakDumpStream)) {
-    case Ok :
-      break;
     case Trashed :
-      PAssertAlways("Trashed heap on free");
-      free(ptr);
+      free(obj);  // Try and free out extended version, and continue
       return;
+
+    case Inactive :
     case Bad :
-      PAssertAlways("Bad pointer on free");
-      free(obj);
+      free(ptr);  // Try and free it as if we didn't extend it, and continue
       return;
+
+    default :
+      break;
   }
 
   if (obj->prev != NULL)
@@ -624,15 +617,21 @@ PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr,
 }
 
 
+#ifdef PTRACING
+  #define PMEMORY_VALIDATE_ERROR(arg) if (error != NULL) { *error << arg << '\n'; PTrace::WalkStack(*error); error->flush(); }
+#else
+  #define PMEMORY_VALIDATE_ERROR(arg) if (error != NULL) *error << arg << endl
+#endif
+
 PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
                                                       const char * className,
                                                       ostream * error)
 {
   if (m_state != e_Active)
-    return Bad;
+    return Inactive;
 
   if (ptr == NULL)
-    return Trashed;
+    return Bad;
 
   Header * obj = ((Header *)ptr)-1;
 
@@ -640,40 +639,34 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
   Header * link = listTail;
   while (link != NULL && link != obj && count-- > 0) {
     if (link->prev == DeletedPtr || link->prev == UninitialisedPtr || link->prev == GuardedPtr) {
-      if (error != NULL)
-        *error << "Block " << ptr << " trashed!" << endl;
+      PMEMORY_VALIDATE_ERROR("Block " << ptr << " trashed!");
       return Trashed;
     }
     link = link->prev;
   }
 
   if (link != obj) {
-    if (error != NULL)
-      *error << "Block " << ptr << " not in heap!" << endl;
-    return Trashed;
+    PMEMORY_VALIDATE_ERROR("Block " << ptr << " not in heap!");
+    return Bad;
   }
 
   if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
-    if (error != NULL)
-      *error << "Underrun at " << ptr << '[' << obj->size << "] #" << obj->request << endl;
-    return Bad;
+    PMEMORY_VALIDATE_ERROR("Underrun at " << ptr << '[' << obj->size << "] #" << obj->request);
+    return Corrupt;
   }
   
   if (memcmp((char *)ptr+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
-    if (error != NULL)
-      *error << "Overrun at " << ptr << '[' << obj->size << "] #" << obj->request << endl;
-    return Bad;
+    PMEMORY_VALIDATE_ERROR("Overrun at " << ptr << '[' << obj->size << "] #" << obj->request);
+    return Corrupt;
   }
   
   if (!(className == NULL && obj->className == NULL) &&
        (className == NULL || obj->className == NULL ||
        (className != obj->className && strcmp(obj->className, className) != 0))) {
-    if (error != NULL)
-      *error << "PObject " << ptr << '[' << obj->size << "] #" << obj->request
-             << " allocated as \"" << (obj->className != NULL ? obj->className : "<NULL>")
-             << "\" and should be \"" << (className != NULL ? className : "<NULL>")
-             << "\"." << endl;
-    return Bad;
+    PMEMORY_VALIDATE_ERROR("PObject " << ptr << '[' << obj->size << "] #" << obj->request
+                           << " allocated as \"" << (obj->className != NULL ? obj->className : "<NULL>")
+                           << "\" and should be \"" << (className != NULL ? className : "<NULL>") << "\".");
+    return Corrupt;
   }
 
   return Ok;
