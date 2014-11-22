@@ -84,7 +84,7 @@
   }
 
 
-  static void InternalWalkStack(ostream & strm)
+  static void InternalWalkStack(ostream & strm, int skip)
   {
     int i;
 
@@ -101,12 +101,12 @@
     if (!addr2line.empty()) {
       std::stringstream cmd;
       cmd << addr2line << " -e \"" << PProcess::Current().GetFile() << '"';
-      for (i = 1; i < addressCount; ++i)
+      for (i = skip; i < addressCount; ++i)
         cmd << ' ' << addresses[i];
       FILE * p = popen(cmd.str().c_str(), "r");
       if (p != NULL) {
         char line[200];
-        for (i = 1; i < InternalMaxStackWalk && fgets_nonl(line, sizeof(line), p); ++i) {
+        for (i = skip; i < addressCount && fgets_nonl(line, sizeof(line), p); ++i) {
           if (strcmp(line, "??:0") != 0)
             lines[i] = line;
         }
@@ -116,7 +116,7 @@
 
 
     char ** symbols = backtrace_symbols(addresses, addressCount);
-    for (i = 1; i < addressCount; ++i) {
+    for (i = skip; i < addressCount; ++i) {
       strm << "\n    ";
 
       if (symbols[i] == NULL || symbols[i][0] == '\0') {
@@ -138,18 +138,18 @@
             if (status == 0) {
               *mangled = '\0';
               strm << symbols[i] << demangled << separator << offset << ' ' << lines[i];
-              free(demangled);
+              runtime_free(demangled);
               continue;
             }
             if (demangled != NULL)
-              free(demangled);
+              runtime_free(demangled);
           }
         }
       #endif // P_HAS_DEMANGLE
 
       strm << symbols[i] << ' ' << lines[i];
     }
-    free(symbols);
+    runtime_free(symbols);
   }
 
   #if PTRACING
@@ -166,7 +166,7 @@
     void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
     {
       if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId()) {
-        InternalWalkStack(strm);
+        InternalWalkStack(strm, 2);
         return;
       }
 
@@ -197,7 +197,7 @@
       PWalkStackMap::iterator it = s_threadStackWalks.find(PThread::GetCurrentThreadId());
       if (it != s_threadStackWalks.end()) {
         std::ostringstream strm;
-        InternalWalkStack(strm);
+        InternalWalkStack(strm, 3);
         it->second.m_output = strm.str();
       }
       it->second.m_done.Signal();
@@ -207,7 +207,7 @@
 
 #else
 
-  #define InternalWalkStack(s)
+  #define InternalWalkStack(...)
 
   #if PTRACING
     void PTrace::WalkStack(ostream &, PThreadIdentifier)
@@ -329,20 +329,16 @@
 #endif
 
 
-static PCriticalSection AssertMutex;
-
-bool PAssertFunc(const char * msg)
+static void InternalAssertFunc(const char * msg)
 {
   std::string str;
   {
     ostringstream strm;
     strm << msg;
-    InternalWalkStack(strm);
+    InternalWalkStack(strm, 3);
     strm << ends;
     str = strm.str();
   }
-
-  PWaitAndSignal mutex(AssertMutex);
 
   OUTPUT_MESSAGE(str);
 
@@ -355,7 +351,7 @@ bool PAssertFunc(const char * msg)
     env = ::getenv("PWLIB_ASSERT_EXCEPTION");
   if (env != NULL) {
     throw std::runtime_error(msg);
-    return false;
+    return;
   }
 #endif
 
@@ -363,18 +359,32 @@ bool PAssertFunc(const char * msg)
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
   if (env != NULL && *env != EOF && AssertAction(*env, msg))
-    return false;
+    return;
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (isatty(STDIN_FILENO) != 1) {
     AssertAction('i', msg);
-    return false;
+    return;
   }
 
   do {
     PError << '\n' << ActionMessage << "? " << flush;
   } while (AssertAction(getchar(), msg));
+}
 
+
+static PCriticalSection s_AssertMutex;
+static bool s_TopLevelAssert = true;
+
+bool PAssertFunc(const char * msg)
+{
+  s_AssertMutex.Wait();
+  if (s_TopLevelAssert) {
+    s_TopLevelAssert = false;
+    InternalAssertFunc(msg);
+    s_TopLevelAssert = true;
+  }
+  s_AssertMutex.Signal();
   return false;
 }
 
