@@ -1230,7 +1230,11 @@ class PMemoryHeap {
     /** Validation result.
      */
     enum Validation {
-      Ok, Bad, Trashed
+      Ok,         // All good.
+      Bad,        // Bad pointer, not allocated by us, double deletion or just random address.
+      Trashed,    // Heap is trashed, linked list failed.
+      Corrupt,    // Corrupted guard bytes or object.
+      Inactive    // Heap checking disabled or after final destruction.
     };
     /** Validate the memory pointer.
         The <code>ptr</code> parameter is validated as a currently allocated heap
