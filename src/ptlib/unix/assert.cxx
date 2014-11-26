@@ -184,7 +184,7 @@
       if (info.m_done.Wait(1000))
         strm << info.m_output;
       else
-        strm << "Could not get stack trace for id=" << id << endl;
+        strm << "\n    Could not get stack trace for id=" << id;
 
       pthread_mutex_lock(&s_threadStackMutex);
       s_threadStackWalks.erase(id);
