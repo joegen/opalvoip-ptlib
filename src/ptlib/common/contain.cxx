@@ -1017,6 +1017,7 @@ PSTRING_CONV_CTOR(unsigned long long, long long, unsigned long long);
 
 
 PString::PString(ConversionType type, double value, unsigned places)
+  : m_length(0)
 {
   switch (type) {
     case Decimal :
