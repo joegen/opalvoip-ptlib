@@ -918,7 +918,7 @@ PTrace::Block::~Block()
 }
 
 
-PTrace::Throttle::Throttle(unsigned lowLevel, unsigned interval, unsigned highLevel)
+PTrace::ThrottleBase::ThrottleBase(unsigned lowLevel, unsigned interval, unsigned highLevel)
   : m_interval(interval)
   , m_lowLevel(lowLevel)
   , m_highLevel(highLevel)
@@ -928,7 +928,7 @@ PTrace::Throttle::Throttle(unsigned lowLevel, unsigned interval, unsigned highLe
 }
 
 
-bool PTrace::Throttle::CanTrace()
+bool PTrace::ThrottleBase::CanTrace()
 {
   PTimeInterval now = PTimer::Tick();
 
@@ -947,7 +947,7 @@ bool PTrace::Throttle::CanTrace()
 }
 
 
-std::ostream & operator<<(ostream & strm, const PTrace::Throttle & throttle)
+std::ostream & operator<<(ostream & strm, const PTrace::ThrottleBase & throttle)
 {
   if (throttle.m_count > 1)
     strm << " (repeated " << throttle.m_count << " times)";
