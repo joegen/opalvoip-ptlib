@@ -732,10 +732,10 @@ public:
         PTRACE(m_throttleIt, "A very frequent log" << m_throttleIt);
       </code></pre>
     */
-  class Throttle
+  class ThrottleBase
   {
     public:
-      Throttle(
+      ThrottleBase(
         unsigned lowLevel,          ///< Level at which low frequency logs made
         unsigned interval = 60000,  ///< TIme between low frequency logs
         unsigned highLevel = 6      ///> Level for high frequency (every) logs
@@ -744,7 +744,7 @@ public:
       bool CanTrace();
       operator unsigned() const { return m_currentLevel; }
 
-      friend ostream & operator<<(ostream & strm, const Throttle & throttle);
+      friend ostream & operator<<(ostream & strm, const ThrottleBase & throttle);
 
     protected:
       unsigned m_interval;
@@ -754,7 +754,13 @@ public:
       uint64_t m_lastLog;
       unsigned m_count;
   };
-  static bool CanTrace(Throttle & throttle) { return throttle.CanTrace(); }
+
+  template <unsigned lowLevel, unsigned interval = 60000, unsigned highLevel = 6> struct Throttle : ThrottleBase
+  {
+    Throttle() : ThrottleBase(lowLevel, interval, highLevel) { }
+  };
+
+  static bool CanTrace(ThrottleBase & throttle) { return throttle.CanTrace(); }
 
   static void WalkStack(
     ostream & strm,
@@ -907,8 +913,8 @@ See PTRACE() for more information on level, instance, module.
 
 
 /* Macro to create a throttle context for use in <code>PTRACE()</code> */
-#define PTRACE_THROTTLE(var, ...) struct PTraceThrottle_##var : PTrace::Throttle { PTraceThrottle_##var() : PTrace::Throttle(__VA_ARGS__) { } } var
-#define PTRACE_THROTTLE_STATIC(var, ...) static PTRACE_THROTTLE(var, __VA_ARGS__)
+#define PTRACE_THROTTLE(var, ...) PTrace::Throttle<__VA_ARGS__> var
+#define PTRACE_THROTTLE_STATIC(...) static PTRACE_THROTTLE(__VA_ARGS__)
 
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
