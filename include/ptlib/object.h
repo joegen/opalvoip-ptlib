@@ -1149,16 +1149,31 @@ namespace PProfiling
         ~Block()
       );
 
+      PPROFILE_EXCLUDE(
+        void PreLock()
+      );
+
+      PPROFILE_EXCLUDE(
+        void PostLock()
+      );
+
     protected:
       const char * m_name;
   };
 
   #define PPROFILE_BLOCK(name) ::PProfiling::Block p_profile_block_instance(name, __FILE__, __LINE__)
-  #define PPROFILE_FUNCTION()  ::PProfiling::Block p_profile_block_instance(__PRETTY_FUNCTION__, __FILE__, __LINE__)
+  #define PPROFILE_FUNCTION() PPROFILE_BLOCK(__PRETTY_FUNCTION__)
+
+  #define PPROFILE_PRE_LOCK()  p_profile_block_instance.PreLock()
+  #define PPROFILE_POST_LOCK() p_profile_block_instance.PostLock()
+  #define PPROFILE_LOCK(...)  PPROFILE_PRE_LOCK(); __VA_ARGS__; PPROFILE_POST_LOCK()
 };
 #else
   #define PPROFILE_BLOCK(...)
   #define PPROFILE_FUNCTION()
+  #define PPROFILE_PRE_LOCK()
+  #define PPROFILE_POST_LOCK()
+  #define PPROFILE_LOCK(...) __VA_ARGS__
 #endif
 
 
