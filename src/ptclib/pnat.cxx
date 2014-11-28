@@ -465,9 +465,21 @@ void PNatCandidate::PrintOn(ostream & strm) const
       strm << "Relay " << m_baseTransportAddress << '/' << m_localTransportAddress;
       break;
     default:
-      strm << "Unknown";
+      strm << "Unknown type";
       break;
   }
+
+  if (!m_protocol.IsEmpty())
+    strm << ' ' << m_protocol;
+
+  if (m_component > 0)
+    strm << " component=" << m_component;
+
+  if (m_priority > 0)
+    strm << " priority=" << m_priority;
+
+  if (!m_foundation.IsEmpty())
+    strm << " foundation=\"" << m_foundation << '"';
 }
 
 
