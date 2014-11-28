@@ -1357,12 +1357,14 @@ static void GetFrequency(uint64_t & freq)
     e_AutoExit,
     e_ManualEntry,
     e_ManualExit,
+    e_LockEntry,
+    e_LockExit
   };
 
   struct FunctionRawData
   {
-    PPROFILE_EXCLUDE(FunctionRawData(bool entry, void * function, void * caller));
-    PPROFILE_EXCLUDE(FunctionRawData(bool entry, const char * name, const char * file, unsigned line));
+    PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, void * function, void * caller));
+    PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, const char * name, const char * file, unsigned line));
 
     PPROFILE_EXCLUDE(void Dump(ostream & out) const);
 
@@ -1439,8 +1441,8 @@ static void GetFrequency(uint64_t & freq)
 
   /////////////////////////////////////////////////////////////////////
 
-  FunctionRawData::FunctionRawData(bool entry, void * function, void * caller)
-    : m_type(entry ? e_AutoEntry : e_AutoExit)
+  FunctionRawData::FunctionRawData(FunctionType type, void * function, void * caller)
+    : m_type(type)
     , m_threadIdentifier(PThread::GetCurrentThreadId())
     , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
   {
@@ -1452,8 +1454,8 @@ static void GetFrequency(uint64_t & freq)
   }
 
 
-  FunctionRawData::FunctionRawData(bool entry, const char * name, const char * file, unsigned line)
-    : m_type(entry ? e_ManualEntry : e_ManualExit)
+  FunctionRawData::FunctionRawData(FunctionType type, const char * name, const char * file, unsigned line)
+    : m_type(type)
     , m_threadIdentifier(PThread::GetCurrentThreadId())
     , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
   {
@@ -1545,14 +1547,28 @@ static void GetFrequency(uint64_t & freq)
     : m_name(name)
   {
     if (s_database.m_enabled)
-      new FunctionRawData(true, name, file, line);
+      new FunctionRawData(e_ManualEntry, name, file, line);
   }
 
 
   Block::~Block()
   {
     if (s_database.m_enabled)
-      new FunctionRawData(false, m_name, NULL, 0);
+      new FunctionRawData(e_ManualExit, m_name, NULL, 0);
+  }
+
+
+  void Block::PreLock()
+  {
+    if (s_database.m_enabled)
+      new FunctionRawData(e_LockEntry, m_name, NULL, 0);
+  }
+
+
+  void Block::PostLock()
+  {
+    if (s_database.m_enabled)
+      new FunctionRawData(e_LockExit, m_name, NULL, 0);
   }
 
 
@@ -1884,33 +1900,56 @@ static void GetFrequency(uint64_t & freq)
           break;
       }
 
+      uint64_t lockTime = 0;
+      uint64_t lockAccumulator = 0;
       for (FunctionRawData * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
-        if (entry->m_function.m_pointer == exit->m_function.m_pointer && entry->m_threadUniqueId == exit->m_threadUniqueId) {
-          ThreadByID::iterator thrd = analysis.m_threadByID.find(entry->m_threadUniqueId);
-          if (thrd == analysis.m_threadByID.end()) {
-            PThread::Times times;
-            PThread::GetTimes(entry->m_threadIdentifier, times);
-            thrd = AddThreadByID(analysis.m_threadByID, times);
-          }
+        if (entry->m_function.m_pointer != exit->m_function.m_pointer || entry->m_threadUniqueId != exit->m_threadUniqueId)
+          continue;
 
-          FunctionMap & functions = thrd->second.m_functions;
-          FunctionMap::iterator func = functions.find(functionName);
-          if (func == functions.end()) {
-            func = functions.insert(make_pair(functionName, Function())).first;
-            ++analysis.m_functionCount;
-          }
+        switch (entry->m_type) {
+          case e_AutoEntry:
+          case e_ManualEntry :
+            break;
 
-          uint64_t diff = exit->m_when - entry->m_when;
+          case e_LockEntry :
+            if (lockTime != 0) {
+              lockAccumulator += lockTime - entry->m_when;
+              lockTime = 0;
+            }
+            continue;
 
-          if (func->second.m_minimum > diff)
-            func->second.m_minimum = diff;
-          if (func->second.m_maximum < diff)
-            func->second.m_maximum = diff;
+          case e_LockExit :
+            lockTime = entry->m_when;
+            // Do default case
 
-          func->second.m_sum += diff;
-          ++func->second.m_count;
-          break;
+          default :
+            continue;
         }
+
+        ThreadByID::iterator thrd = analysis.m_threadByID.find(entry->m_threadUniqueId);
+        if (thrd == analysis.m_threadByID.end()) {
+          PThread::Times times;
+          PThread::GetTimes(entry->m_threadIdentifier, times);
+          thrd = AddThreadByID(analysis.m_threadByID, times);
+        }
+
+        FunctionMap & functions = thrd->second.m_functions;
+        FunctionMap::iterator func = functions.find(functionName);
+        if (func == functions.end()) {
+          func = functions.insert(make_pair(functionName, Function())).first;
+          ++analysis.m_functionCount;
+        }
+
+        uint64_t diff = exit->m_when - entry->m_when - lockAccumulator;
+
+        if (func->second.m_minimum > diff)
+          func->second.m_minimum = diff;
+        if (func->second.m_maximum < diff)
+          func->second.m_maximum = diff;
+
+        func->second.m_sum += diff;
+        ++func->second.m_count;
+        break;
       }
     }
 
@@ -1942,13 +1981,13 @@ extern "C"
   void __cyg_profile_func_enter(void * function, void * caller)
   {
     if (PProfiling::s_database.m_enabled)
-      new PProfiling::FunctionRawData(true, function, caller);
+      new PProfiling::FunctionRawData(PProfiling::e_AutoEntry, function, caller);
   }
 
   void __cyg_profile_func_exit(void * function, void * caller)
   {
     if (PProfiling::s_database.m_enabled)
-      new PProfiling::FunctionRawData(false, function, caller);
+      new PProfiling::FunctionRawData(PProfiling::e_AutoExit, function, caller);
   }
 };
 #endif // __GNUC__
