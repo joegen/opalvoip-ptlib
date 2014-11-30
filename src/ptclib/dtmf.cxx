@@ -426,8 +426,7 @@ bool PTones::Generate(const PString & descriptor, unsigned sampleRate, unsigned 
     }
   }
 
-  SetSize(m_addPosition);
-  return true;
+  return SetSize(m_addPosition);
 }
 
 
@@ -446,13 +445,13 @@ bool PTones::Generate(char operation, unsigned frequency1, unsigned frequency2, 
 
   switch (operation) {
     case '+':
-      return Juxtapose(frequency1, frequency2, milliseconds, volume);
+      return Juxtapose(frequency1, frequency2, milliseconds, volume) && SetSize(m_addPosition);
 
     case 'x':
-      return Modulate(frequency1, frequency2, milliseconds, volume);
+      return Modulate(frequency1, frequency2, milliseconds, volume) && SetSize(m_addPosition);
 
     case '-':
-      return PureTone(frequency1, milliseconds, volume);
+      return PureTone(frequency1, milliseconds, volume) && SetSize(m_addPosition);
 
     case ' ':
       return Silence(milliseconds);
@@ -556,19 +555,11 @@ static unsigned char tone_2100[320] = {
 bool PTones::PureTone(unsigned frequency1, unsigned milliseconds, unsigned volume)
 {
   if (frequency1 == 2100) {
-    int samples = milliseconds * 8;
+    PINDEX samples = milliseconds * 8;
     short * tone = (short *)tone_2100;
     unsigned int toneLen  = sizeof(tone_2100) / 2;
-    PINDEX length;
-    for (length = 0; length < (PINDEX)samples; ++length) {
-      PINDEX length = GetSize();
-      SetSize(length + 1);
-      short sample = tone[length % toneLen];
-      //sample *= volume;
-      //sample *= masterVolume;
-      //sample /= SineScale*100*100/SHRT_MAX;
-      SetAt(length, (short)sample);
-    }
+    for (PINDEX length = 0; length < samples; ++length)
+      AddSample(tone[length % toneLen], volume);
     return true;
   }
 
