@@ -109,9 +109,10 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 
     // Have connection, so fill in the required MIME fields
     if (!outMIME.Contains(HostTag)) {
-      PIPSocket * sock = GetSocket();
-      if (sock != NULL)
-        outMIME.SetAt(HostTag, sock->GetHostName());
+      if (url.GetHostName().IsEmpty())
+        outMIME.SetAt(HostTag, "localhost");
+      else
+        outMIME.SetAt(HostTag, url.GetHostPort());
     }
 
     if (!WriteCommand(cmdName, url.AsString(PURL::RelativeOnly), outMIME, dataBody)) {
