@@ -350,11 +350,13 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
   if (lastError == NoError) {
     P_timeval tval = timeout;
-    int result = ::select(maxfds+1, 
-                          (fd_set *)fds[0], 
-                          (fd_set *)fds[1], 
-                          (fd_set *)fds[2], 
-                          tval);
+    PPROFILE_SYSTEM(
+      int result = ::select(maxfds+1, 
+                            (fd_set *)fds[0], 
+                            (fd_set *)fds[1], 
+                            (fd_set *)fds[2], 
+                            tval);
+    );
 
     int osError;
     (void)ConvertOSError(result, lastError, osError);
@@ -422,14 +424,18 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
     P_timeval tval = timeout;
     do {
-      result = ::select(maxfds+1, (fd_set *)fds[0], (fd_set *)fds[1], (fd_set *)fds[2], tval);
+      PPROFILE_SYSTEM(
+        result = ::select(maxfds+1, (fd_set *)fds[0], (fd_set *)fds[1], (fd_set *)fds[2], tval);
+      );
     } while (result < 0 && errno == EINTR);
 
     if (firstSocket->ConvertOSError(result)) {
       if (fds[0].IsPresent(unblockPipe)) {
         PTRACE2(6, NULL, "Select unblocked fd=" << unblockPipe);
         char ch;
-        firstSocket->ConvertOSError(::read(unblockPipe, &ch, 1));
+        PPROFILE_SYSTEM(
+          firstSocket->ConvertOSError(::read(unblockPipe, &ch, 1));
+        );
         lastError = Interrupted;
       }
     }
@@ -516,7 +522,9 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
     readData.msg_iovlen     = sliceCount;
 
     // read a packet 
-    int result = ::recvmsg(os_handle, &readData, flags);
+    PPROFILE_SYSTEM(
+      int result = ::recvmsg(os_handle, &readData, flags);
+    );
     if (ConvertOSError(result, LastReadError)) {
       lastReadCount = result;
       if ((readData.msg_flags&MSG_TRUNC) == 0)
@@ -550,7 +558,9 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
     writeData.msg_iovlen  = sliceCount;
 
     // write the packet 
-    int result = ::sendmsg(os_handle, &writeData, flags);
+    PPROFILE_SYSTEM(
+      int result = ::sendmsg(os_handle, &writeData, flags);
+    );
     if (ConvertOSError(result, LastWriteError)) {
       lastWriteCount = result;
       return true;
@@ -647,7 +657,9 @@ PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
     OnOutOfBand(buffer, ooblen);
 
   // attempt to read non-out of band data
-  int r = ::recv(os_handle, (char *)buf, maxLen, 0);
+  PPROFILE_SYSTEM(
+    int r = ::recv(os_handle, (char *)buf, maxLen, 0);
+  );
   if (!ConvertOSError(r, LastReadError))
     return false;
 
@@ -664,8 +676,9 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
     return false;
 
-  int lastReadCount = ::recv(os_handle, (char *)buf, len, 0);
-    return lastReadCount > 0;
+  PPROFILE_SYSTEM(
+    int lastReadCount = ::recv(os_handle, (char *)buf, len, 0);
+  );
   if (ConvertOSError(lastReadCount))
     return lastReadCount > 0;
 
@@ -1407,7 +1420,9 @@ class NetLinkRouteTableDetector : public PIPSocket::RouteTableDetector
         struct iovec iov = { buf, sizeof buf };
         struct msghdr msg = { (void*)&snl, sizeof snl, &iov, 1, NULL, 0, 0};
 
-        int status = recvmsg(m_fdLink, &msg, 0);
+        PPROFILE_SYSTEM(
+          int status = recvmsg(m_fdLink, &msg, 0);
+        );
         if (status < 0)
           return false;
 
