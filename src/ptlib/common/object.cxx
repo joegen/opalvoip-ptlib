@@ -1820,25 +1820,31 @@ static void GetFrequency(uint64_t & freq)
          << "</table>"
             "<p>"
             "<table width=\"100%\" border=1 cellspacing=0 cellpadding=8>"
-            "<tr><th>ID"
+            "<tr><th width=\"1%\">ID"
                 "<th align=left>Thread"
-                "<th nowrap>Real Time"
-                "<th nowrap>System CPU"
-                "<th align=right nowrap>System Core %"
-                "<th nowrap>User CPU"
-                "<th align=right nowrap>User Core %";
+                "<th width=\"5%\" nowrap>Real Time"
+                "<th width=\"5%\" nowrap>System CPU"
+                "<th width=\"5%\" align=right nowrap>System Core %"
+                "<th width=\"5%\" nowrap>User CPU"
+                "<th width=\"5%\" align=right nowrap>User Core %";
     for (ThreadByUsage::const_iterator thrd = m_threadByUsage.begin(); thrd != m_threadByUsage.end(); ++thrd) {
       strm << "<tr>"
-              "<td align=center>" << thrd->second.m_uniqueId
+              "<td width=\"1%\" align=center>" << thrd->second.m_uniqueId
            << "<td>" << EscapedHTML(thrd->second.m_name)
            << setprecision(3)
-           << "<td align=center>" << thrd->second.m_realTime << 's'
-           << "<td align=center>" << thrd->second.m_systemCPU << 's';
+           << "<td width=\"5%\" align=center>" << thrd->second.m_realTime << 's'
+           << "<td width=\"5%\" align=center>" << thrd->second.m_systemCPU << 's'
+           << "<td width=\"5%\" align=right>";
       if (thrd->first >= 0)
-        strm << "<td align=right>" << setprecision(2) << Percentage(thrd->second.m_systemCPU, thrd->second.m_realTime) << '%';
-      strm << "<td align=center>" << thrd->second.m_userCPU << 's';
+        strm << setprecision(2) << Percentage(thrd->second.m_systemCPU, thrd->second.m_realTime) << '%';
+      else
+        strm << "&nbsp;";
+      strm << "<td width=\"5%\" align=center>" << thrd->second.m_userCPU << 's'
+           << "<td width=\"5%\" align=right>";
       if (thrd->first >= 0)
-        strm << "<td align=right>" << setprecision(2) << thrd->first << '%';
+        strm << setprecision(2) << thrd->first << '%';
+      else
+        strm << "&nbsp;";
       if (!thrd->second.m_functions.empty()) {
         strm << "<tr><td>&nbsp;<td colspan=\"9999\">"
                 "<table border=1 cellspacing=1 cellpadding=4 width=100%>"
