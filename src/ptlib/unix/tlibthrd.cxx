@@ -104,11 +104,7 @@ static PBoolean PAssertThreadOp(int retval,
   case EINTR :
   case EAGAIN :
     if (++retry < 1000) {
-#if defined(P_RTEMS)
-      sched_yield();
-#else
-      usleep(10000); // Basically just swap out thread to try and clear blockage
-#endif
+      PThread::Sleep(10); // Basically just swap out thread to try and clear blockage
       return true;   // Return value to try again
     }
     // Give up and assert
@@ -765,17 +761,23 @@ void PThread::Sleep(const PTimeInterval & timeout)
   ts.tv_sec = timeout.GetSeconds();
   ts.tv_nsec = (timeout.GetMilliSeconds()%1000)*1000000;
 
+  PPROFILE_PRE_SYSTEM();
+
   while (nanosleep(&ts, &ts) < 0 && PAssert(errno == EINTR || errno == EAGAIN, POperatingSystemError)) {
 #if P_USE_THREAD_CANCEL
     pthread_testcancel();
 #endif
   }
+
+  PPROFILE_POST_SYSTEM();
 }
 
 
 void PThread::Yield()
 {
-  sched_yield();
+  PPROFILE_SYSTEM(
+    sched_yield();
+  );
 }
 
 
@@ -1221,8 +1223,10 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     read_fds += unblockPipe[0];
 
     P_timeval tval = timeout;
-    retval = ::select(PMAX(handle, unblockPipe[0])+1,
-                      read_fds, write_fds, exception_fds, tval);
+    PPROFILE_SYSTEM(
+      retval = ::select(PMAX(handle, unblockPipe[0])+1,
+                        read_fds, write_fds, exception_fds, tval);
+    );
   } while (retval < 0 && errno == EINTR);
 
   if ((retval == 1) && read_fds.IsPresent(unblockPipe[0])) {
@@ -1317,7 +1321,9 @@ void PSemaphore::Wait()
   PThread::Current()->PXSetWaitingSemaphore(this);
 
   while (currentCount == 0) {
-    int err = pthread_cond_wait(&condVar, &mutex);
+    PPROFILE_SYSTEM(
+      int err = pthread_cond_wait(&condVar, &mutex);
+    );
     PAssert(err == 0 || err == EINTR, psprintf("wait error = %i", err));
   }
 
@@ -1351,10 +1357,14 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
     absTime.tv_sec  = finishTime.GetTimeInSeconds();
     absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
+    PPROFILE_PRE_SYSTEM();
     do {
-      if (sem_timedwait(GetSemPtr(), &absTime) == 0)
+      if (sem_timedwait(GetSemPtr(), &absTime) == 0) {
+        PPROFILE_POST_SYSTEM();
         return true;
+      }
     } while (errno == EINTR);
+    PPROFILE_POST_SYSTEM();
 
     PAssert(errno == ETIMEDOUT, strerror(errno));
 
@@ -1362,14 +1372,18 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
     // loop until timeout, or semaphore becomes available
     // don't use a PTimer, as this causes the housekeeping
     // thread to get very busy
+    PPROFILE_PRE_SYSTEM();
     do {
-      if (sem_trywait(GetSemPtr()) == 0)
+      if (sem_trywait(GetSemPtr()) == 0) {
+        PPROFILE_POST_SYSTEM();
         return true;
+      }
 
       // tight loop is bad karma
       // for the linux scheduler: http://www.ussg.iu.edu/hypermail/linux/kernel/0312.2/1127.html
       PThread::Sleep(10);
     } while (PTime() < finishTime);
+    PPROFILE_POST_SYSTEM();
   #endif
 
     return false;
@@ -1379,6 +1393,8 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
   struct timespec absTime;
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
+
+  PPROFILE_PRE_SYSTEM();
 
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
@@ -1404,6 +1420,8 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
     currentCount--;
 
   PAssertPTHREAD(pthread_mutex_unlock, ((pthread_mutex_t *)&mutex));
+
+  PPROFILE_POST_SYSTEM();
 
   return ok;
 #endif
@@ -1481,7 +1499,9 @@ PTimedMutex::~PTimedMutex()
     for (PINDEX i = 0; i < 100; ++i) {
       if ((result = pthread_mutex_destroy(&m_mutex)) != EBUSY)
         break;
-      usleep(100);
+      PPROFILE_SYSTEM(
+        usleep(100);
+      );
     }
   }
 
@@ -1501,13 +1521,17 @@ void PTimedMutex::Wait()
   struct timespec absTime;
   absTime.tv_sec = time(NULL)+15;
   absTime.tv_nsec = 0;
+  PPROFILE_PRE_SYSTEM();
   if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
     ExcessiveLockWait();
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
     PTRACE(0, "PTLib", "Phantom deadlock in mutex " << this);
   }
+  PPROFILE_POST_SYSTEM();
 #else
-  PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+  PPROFILE_SYSTEM(
+    PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+  );
 #endif
 
   if (m_lockCount++ == 0) {
@@ -1527,7 +1551,9 @@ void PTimedMutex::Wait()
   }
 
   // acquire the lock for real
-  PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+  PPROFILE_SYSTEM(
+    PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+  );
 
   PAssert(m_lockerId == PNullThreadIdentifier && m_lockCount.IsZero(),
           "PMutex acquired whilst locked by another thread");
@@ -1571,16 +1597,22 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0)
+  PPROFILE_PRE_SYSTEM();
+  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
+    PPROFILE_POST_SYSTEM();
     return false;
+  }
+  PPROFILE_POST_SYSTEM();
 
 #else // P_PTHREADS_XPG6
 
+  PPROFILE_PRE_SYSTEM();
   while (pthread_mutex_trylock(&m_mutex) != 0) {
     if (PTime() >= finishTime)
       return false;
     usleep(10000);
   }
+  PPROFILE_POST_SYSTEM();
 
 #endif // P_PTHREADS_XPG6
 
@@ -1661,16 +1693,20 @@ PSyncPoint::~PSyncPoint()
 
 void PSyncPoint::Wait()
 {
+  PPROFILE_PRE_SYSTEM();
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
   while (!signalled)
     pthread_cond_wait(&condVar, &mutex);
   signalled = false;
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+  PPROFILE_POST_SYSTEM();
 }
 
 
 PBoolean PSyncPoint::Wait(const PTimeInterval & waitTime)
 {
+  PPROFILE_PRE_SYSTEM();
+
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
   PTime finishTime;
@@ -1692,6 +1728,8 @@ PBoolean PSyncPoint::Wait(const PTimeInterval & waitTime)
     signalled = false;
 
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+
+  PPROFILE_POST_SYSTEM();
 
   return err == 0;
 }

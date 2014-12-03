@@ -1357,8 +1357,8 @@ static void GetFrequency(uint64_t & freq)
     e_AutoExit,
     e_ManualEntry,
     e_ManualExit,
-    e_LockEntry,
-    e_LockExit
+    e_SystemEntry,
+    e_SystemExit
   };
 
   struct FunctionRawData
@@ -1400,14 +1400,15 @@ static void GetFrequency(uint64_t & freq)
   };
 
 
-  struct ThreadRawData
+  struct ThreadRawData : Thread
   {
     PPROFILE_EXCLUDE(ThreadRawData(
       PThreadIdentifier threadId,
       PUniqueThreadIdentifier uniqueId,
       const char * name,
-      const PTimeInterval & real,
-      const PTimeInterval & cpu
+      float real,
+      float systemCPU,
+      float userCPU
     ));
 
     PPROFILE_EXCLUDE(void Dump(ostream & out) const);
@@ -1416,12 +1417,7 @@ static void GetFrequency(uint64_t & freq)
     PPROFILE_EXCLUDE(void * operator new(size_t nSize));
     PPROFILE_EXCLUDE(void operator delete(void * ptr));
 
-    PThreadIdentifier       m_threadId;
-    PUniqueThreadIdentifier m_uniqueId;
-    std::string             m_name;
-    PTimeInterval           m_real;
-    PTimeInterval           m_cpu;
-    ThreadRawData         * m_link;
+    ThreadRawData * m_link;
   };
 
 
@@ -1504,13 +1500,10 @@ static void GetFrequency(uint64_t & freq)
   ThreadRawData::ThreadRawData(PThreadIdentifier threadId,
                                PUniqueThreadIdentifier uniqueId,
                                const char * name,
-                               const PTimeInterval & real,
-                               const PTimeInterval & cpu)
-    : m_threadId(threadId)
-    , m_uniqueId(uniqueId)
-    , m_name(name)
-    , m_real(real)
-    , m_cpu(cpu)
+                               float realTime,
+                               float systemCPU,
+                               float userCPU)
+    : Thread(threadId, uniqueId, name, realTime, systemCPU, userCPU)
   {
   }
 
@@ -1528,14 +1521,19 @@ static void GetFrequency(uint64_t & freq)
 
   void ThreadRawData::Dump(ostream & out) const
   {
-    out << "Thread\t" << m_name << '\t' << m_threadId << '\t' << m_uniqueId << '\t' << m_real << '\t' << m_cpu << '\n';
+    out << "Thread\t" << m_name << '\t' << m_threadId << '\t' << m_uniqueId << '\t' << m_realTime << '\t' << m_userCPU << '\t' << m_systemCPU << '\n';
   }
 
 
-  void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
+  void OnThreadEnded(const PThread & thread, const PTimeInterval & realTime, const PTimeInterval & systemCPU, const PTimeInterval & userCPU)
   {
     if (s_database.m_enabled) {
-      ThreadRawData * info = new ThreadRawData(thread.GetThreadId(), thread.GetUniqueIdentifier(), thread.GetThreadName(), real, cpu);
+      ThreadRawData * info = new ThreadRawData(thread.GetThreadId(),
+                                               thread.GetUniqueIdentifier(),
+                                               thread.GetThreadName(),
+                                               realTime.GetMilliSeconds()/1000.0f,
+                                               systemCPU.GetMilliSeconds()/1000.0f,
+                                               userCPU.GetMilliSeconds()/1000.0f);
       info->m_link = s_database.m_threads.exchange(info);
     }
   }
@@ -1555,20 +1553,6 @@ static void GetFrequency(uint64_t & freq)
   {
     if (s_database.m_enabled)
       new FunctionRawData(e_ManualExit, m_name, NULL, 0);
-  }
-
-
-  void Block::PreLock()
-  {
-    if (s_database.m_enabled)
-      new FunctionRawData(e_LockEntry, m_name, NULL, 0);
-  }
-
-
-  void Block::PostLock()
-  {
-    if (s_database.m_enabled)
-      new FunctionRawData(e_LockExit, m_name, NULL, 0);
   }
 
 
@@ -1635,6 +1619,20 @@ static void GetFrequency(uint64_t & freq)
       thrd = thrd->m_link;
       delete del;
     }
+  }
+
+
+  void PreSystem()
+  {
+    if (s_database.m_enabled)
+      new FunctionRawData(e_SystemEntry, NULL, NULL, 0);
+  }
+
+
+  void PostSystem()
+  {
+    if (s_database.m_enabled)
+      new FunctionRawData(e_SystemExit, NULL, NULL, 0);
   }
 
 
@@ -1749,8 +1747,9 @@ static void GetFrequency(uint64_t & freq)
     for (ThreadByUsage::const_iterator thrd = m_threadByUsage.begin(); thrd != m_threadByUsage.end(); ++thrd) {
       strm << "   Thread \"" << setw(threadNameWidth) << (thrd->second.m_name+'"')
             <<   "  id=" << setw(8) << thrd->second.m_uniqueId
-            << "  real=" << setw(10) << setprecision(3) << thrd->second.m_real
-            <<  "  cpu=" << setw(10) << setprecision(3) << thrd->second.m_cpu;
+            << "  real=" << setw(10) << setprecision(3) << thrd->second.m_realTime
+            <<  "  sys=" << setw(10) << setprecision(3) << thrd->second.m_systemCPU
+            << "  user=" << setw(10) << setprecision(3) << thrd->second.m_userCPU;
       if (thrd->first >= 0)
         strm << " (" << setprecision(2) << thrd->first << "%)";
       strm << '\n';
@@ -1762,8 +1761,8 @@ static void GetFrequency(uint64_t & freq)
               << " min=" << setw(24) << CpuTime(*this, func->second.m_minimum)
               << " max=" << setw(24) << CpuTime(*this, func->second.m_maximum)
               << " avg=" << setw(24) << CpuTime(*this, avg);
-        if (thrd->second.m_real > 0)
-          strm << " (" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_real) << "%)";
+        if (thrd->second.m_realTime > 0)
+          strm << " (" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_realTime) << "%)";
         strm << '\n';
       }
     }
@@ -1820,21 +1819,35 @@ static void GetFrequency(uint64_t & freq)
          << "<td align=center>" << fixed << setprecision(3) << CyclesToSeconds(m_durationCycles)
          << "</table>"
             "<p>"
-            "<table border=1 cellspacing=0 cellpadding=8>"
-            "<tr><th>ID<th align=left>Thread<th>Real Time<th>CPU Time<th align=right nowrap>Core %";
+            "<table width=\"100%\" border=1 cellspacing=0 cellpadding=8>"
+            "<tr><th>ID"
+                "<th align=left>Thread"
+                "<th nowrap>Real Time"
+                "<th nowrap>System CPU"
+                "<th align=right nowrap>System Core %"
+                "<th nowrap>User CPU"
+                "<th align=right nowrap>User Core %";
     for (ThreadByUsage::const_iterator thrd = m_threadByUsage.begin(); thrd != m_threadByUsage.end(); ++thrd) {
       strm << "<tr>"
               "<td align=center>" << thrd->second.m_uniqueId
            << "<td>" << EscapedHTML(thrd->second.m_name)
            << setprecision(3)
-           << "<td align=center>" << thrd->second.m_real
-           << "<td align=center>" << thrd->second.m_cpu;
+           << "<td align=center>" << thrd->second.m_realTime << 's'
+           << "<td align=center>" << thrd->second.m_systemCPU << 's';
+      if (thrd->first >= 0)
+        strm << "<td align=right>" << setprecision(2) << Percentage(thrd->second.m_systemCPU, thrd->second.m_realTime) << '%';
+      strm << "<td align=center>" << thrd->second.m_userCPU << 's';
       if (thrd->first >= 0)
         strm << "<td align=right>" << setprecision(2) << thrd->first << '%';
       if (!thrd->second.m_functions.empty()) {
-        strm << "<tr><td>&nbsp;<td colspan=4>"
+        strm << "<tr><td>&nbsp;<td colspan=\"9999\">"
                 "<table border=1 cellspacing=1 cellpadding=4 width=100%>"
-                "<th align=left>Function<th>Count<th>Minimum<th>Maxium<th>Average<th align=right nowrap>Core %";
+                "<th align=left>Function"
+                "<th>Count"
+                "<th>Minimum"
+                "<th>Maximum"
+                "<th>Average"
+                "<th align=right nowrap>Core %";
         for (FunctionMap::const_iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
           uint64_t avg = func->second.m_sum / func->second.m_count;
           strm << "<tr>"
@@ -1843,8 +1856,8 @@ static void GetFrequency(uint64_t & freq)
                << "<td align=center nowrap>" << CpuTime(*this, func->second.m_minimum)
                << "<td align=center nowrap>" << CpuTime(*this, func->second.m_maximum)
                << "<td align=center nowrap>" << CpuTime(*this, avg);
-          if (thrd->second.m_real > 0)
-            strm << "<td align=right>" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_real) << '%';
+          if (thrd->second.m_realTime > 0)
+            strm << "<td align=right>" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_realTime) << '%';
         }
         strm << "</table>";
       }
@@ -1857,8 +1870,9 @@ static void GetFrequency(uint64_t & freq)
   {
     Thread threadInfo(times.m_threadId, times.m_uniqueId);
     threadInfo.m_name = times.m_name.GetPointer();
-    threadInfo.m_real = times.m_real.GetMilliSeconds()/1000.0f;
-    threadInfo.m_cpu  = (times.m_kernel + times.m_user).GetMilliSeconds()/1000.0f;
+    threadInfo.m_realTime = times.m_real.GetMilliSeconds()/1000.0f;
+    threadInfo.m_systemCPU = times.m_kernel.GetMilliSeconds()/1000.0f;
+    threadInfo.m_userCPU = times.m_user.GetMilliSeconds()/1000.0f;
     threadInfo.m_running = true;
     return threadByID.insert(make_pair(times.m_uniqueId, threadInfo)).first;
   }
@@ -1875,13 +1889,8 @@ static void GetFrequency(uint64_t & freq)
     for (std::list<PThread::Times>::iterator it = times.begin(); it != times.end(); ++it)
       AddThreadByID(analysis.m_threadByID, *it);
 
-    for (ThreadRawData * thrd = s_database.m_threads; thrd != NULL; thrd = thrd->m_link) {
-      Thread threadInfo(thrd->m_threadId, thrd->m_uniqueId);
-      threadInfo.m_name = thrd->m_name;
-      threadInfo.m_real = thrd->m_real.GetMilliSeconds()/1000.0f;
-      threadInfo.m_cpu  = thrd->m_cpu.GetMilliSeconds()/1000.0f;
-      analysis.m_threadByID.insert(make_pair(thrd->m_uniqueId, threadInfo));
-    }
+    for (ThreadRawData * thrd = s_database.m_threads; thrd != NULL; thrd = thrd->m_link)
+      analysis.m_threadByID.insert(make_pair(thrd->m_uniqueId, *thrd));
 
     for (FunctionRawData * exit = s_database.m_functions; exit != NULL; exit = exit->m_link) {
       std::string functionName;
@@ -1900,29 +1909,35 @@ static void GetFrequency(uint64_t & freq)
           break;
       }
 
-      uint64_t lockTime = 0;
-      uint64_t lockAccumulator = 0;
-      for (FunctionRawData * entry = exit->m_link; entry != NULL; entry = entry->m_link) {
-        if (entry->m_function.m_pointer != exit->m_function.m_pointer || entry->m_threadUniqueId != exit->m_threadUniqueId)
+      uint64_t subFunctionAccumulator = 0;
+
+      // Find the next entry in that thread
+      FunctionRawData * entry;
+      for (entry = exit->m_link; entry != NULL; entry = entry->m_link) {
+        if (entry->m_threadUniqueId != exit->m_threadUniqueId)
           continue;
 
         switch (entry->m_type) {
-          case e_AutoEntry:
           case e_ManualEntry :
-            break;
-
-          case e_LockEntry :
-            if (lockTime != 0) {
-              lockAccumulator += lockTime - entry->m_when;
-              lockTime = 0;
-            }
-            continue;
-
-          case e_LockExit :
-            lockTime = entry->m_when;
-            // Do default case
+          case e_AutoEntry:
+          case e_SystemEntry :
+            if (entry->m_function.m_pointer == exit->m_function.m_pointer)
+              break;
+            continue; // Should not happen!
 
           default :
+            // Have an exit, so look for matching entry
+            FunctionRawData * subEntry;
+            for (subEntry = entry->m_link; subEntry != NULL; subEntry = subEntry->m_link) {
+              if (subEntry->m_threadUniqueId == entry->m_threadUniqueId && subEntry->m_function.m_pointer == entry->m_function.m_pointer)
+                break;
+            }
+            if (subEntry == NULL)
+              continue; // Should not happen!
+
+            // Amount of time in sub-function, subtract it off later
+            subFunctionAccumulator += entry->m_when - subEntry->m_when;
+            entry = subEntry;
             continue;
         }
 
@@ -1940,7 +1955,7 @@ static void GetFrequency(uint64_t & freq)
           ++analysis.m_functionCount;
         }
 
-        uint64_t diff = exit->m_when - entry->m_when - lockAccumulator;
+        uint64_t diff = exit->m_when - entry->m_when - subFunctionAccumulator;
 
         if (func->second.m_minimum > diff)
           func->second.m_minimum = diff;
@@ -1954,7 +1969,7 @@ static void GetFrequency(uint64_t & freq)
     }
 
     for (ThreadByID::iterator thrd = analysis.m_threadByID.begin(); thrd != analysis.m_threadByID.end(); ++thrd)
-      analysis.m_threadByUsage.insert(make_pair(Percentage(thrd->second.m_cpu, thrd->second.m_real), thrd->second));
+      analysis.m_threadByUsage.insert(make_pair(Percentage(thrd->second.m_userCPU, thrd->second.m_realTime), thrd->second));
   }
 
 
