@@ -2230,7 +2230,7 @@ void PProcess::OnThreadEnded(PThread &
   PThread::Times times;
   if (!thread.GetTimes(times))
     return;
-  PProfiling::OnThreadEnded(thread, times.m_real, times.m_kernel+times.m_user);
+  PProfiling::OnThreadEnded(thread, times.m_real, times.m_kernel, times.m_user);
 #endif // P_PROFILING
 
 #if PTRACING

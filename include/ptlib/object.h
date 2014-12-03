@@ -1075,18 +1075,25 @@ namespace PProfiling
     std::string             m_name;
     PThreadIdentifier       m_threadId;
     PUniqueThreadIdentifier m_uniqueId;
-    float                   m_real;
-    float                   m_cpu;
+    float                   m_realTime;
+    float                   m_systemCPU;
+    float                   m_userCPU;
     bool                    m_running;
     FunctionMap             m_functions;
 
     Thread(
       PThreadIdentifier       threadId = PNullThreadIdentifier,
-      PUniqueThreadIdentifier uniqueId = 0
-    ) : m_threadId(threadId)
+      PUniqueThreadIdentifier uniqueId = 0,
+      const char * name = "",
+      float realTime = 0,
+      float systemCPU = 0,
+      float userCPU = 0
+    ) : m_name(name)
+      , m_threadId(threadId)
       , m_uniqueId(uniqueId)
-      , m_real(0)
-      , m_cpu(0)
+      , m_realTime(realTime)
+      , m_systemCPU(systemCPU)
+      , m_userCPU(userCPU)
       , m_running(false)
     {
     }
@@ -1132,7 +1139,15 @@ namespace PProfiling
   );
 
   PPROFILE_EXCLUDE(
-    void OnThreadEnded(const PThread & thread, const PTimeInterval & real, const PTimeInterval & cpu)
+    void OnThreadEnded(const PThread & thread, const PTimeInterval & realTime, const PTimeInterval & systemCPU, const PTimeInterval & userCPU)
+  );
+
+  PPROFILE_EXCLUDE(
+    void PreSystem()
+  );
+
+  PPROFILE_EXCLUDE(
+    void PostSystem()
   );
 
   class Block
@@ -1149,14 +1164,6 @@ namespace PProfiling
         ~Block()
       );
 
-      PPROFILE_EXCLUDE(
-        void PreLock()
-      );
-
-      PPROFILE_EXCLUDE(
-        void PostLock()
-      );
-
     protected:
       const char * m_name;
   };
@@ -1164,16 +1171,16 @@ namespace PProfiling
   #define PPROFILE_BLOCK(name) ::PProfiling::Block p_profile_block_instance(name, __FILE__, __LINE__)
   #define PPROFILE_FUNCTION() PPROFILE_BLOCK(__PRETTY_FUNCTION__)
 
-  #define PPROFILE_PRE_LOCK()  p_profile_block_instance.PreLock()
-  #define PPROFILE_POST_LOCK() p_profile_block_instance.PostLock()
-  #define PPROFILE_LOCK(...)  PPROFILE_PRE_LOCK(); __VA_ARGS__; PPROFILE_POST_LOCK()
+  #define PPROFILE_PRE_SYSTEM()  ::PProfiling::PreSystem()
+  #define PPROFILE_POST_SYSTEM() ::PProfiling::PostSystem()
+  #define PPROFILE_SYSTEM(...)  PPROFILE_PRE_SYSTEM(); __VA_ARGS__; PPROFILE_POST_SYSTEM()
 };
 #else
   #define PPROFILE_BLOCK(...)
   #define PPROFILE_FUNCTION()
-  #define PPROFILE_PRE_LOCK()
-  #define PPROFILE_POST_LOCK()
-  #define PPROFILE_LOCK(...) __VA_ARGS__
+  #define PPROFILE_PRE_SYSTEM()
+  #define PPROFILE_POST_SYSTEM()
+  #define PPROFILE_SYSTEM(...) __VA_ARGS__
 #endif
 
 
