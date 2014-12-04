@@ -1833,17 +1833,15 @@ static void TraceVerifyCallback(int ok, X509_STORE_CTX * ctx)
 
 static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
 {
-  TraceVerifyCallback(ok, ctx);
-
   SSL * ssl = reinterpret_cast<SSL *>(X509_STORE_CTX_get_app_data(ctx));
-  if (ssl == NULL)
-    return ok;
+  if (ssl != NULL) {
+    PSSLChannel * channel = reinterpret_cast<PSSLChannel *>(SSL_get_app_data(ssl));
+    if (channel != NULL)
+      ok = channel->OnVerify(ok, X509_STORE_CTX_get_current_cert(ctx));
+  }
 
-  PSSLChannel * channel = reinterpret_cast<PSSLChannel *>(SSL_get_app_data(ssl));
-  if (channel == NULL)
-    return ok;
-
-  return channel->OnVerify(ok, X509_STORE_CTX_get_current_cert(ctx));
+  TraceVerifyCallback(ok, ctx);
+  return ok;
 }
 
 
