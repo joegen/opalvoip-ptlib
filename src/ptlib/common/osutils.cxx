@@ -2719,13 +2719,21 @@ void PSimpleThread::Main()
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
+  PThreadIdentifier lockerId = m_lockerId;
+  PUniqueThreadIdentifier uniqueId = m_uniqueId;
+
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Possible deadlock in mutex " << this;
   PTrace::WalkStack(trace);
-  trace << "\n  Owner Thread id=" << m_lockerId << " (0x" << std::hex << m_lockerId << std::dec << ')';
-  PTrace::WalkStack(trace, m_lockerId);
-  if (m_lockerId != m_uniqueId)
-    trace << " unique-id=" << m_uniqueId;
+  trace << "\n  Owner Thread ";
+  if (lockerId == PNullThreadIdentifier)
+    trace << "no longer has lock";
+  else {
+    trace << "id=" << lockerId << " (0x" << std::hex << lockerId << std::dec << ')';
+    if (lockerId != uniqueId)
+      trace << " unique-id=" << m_uniqueId;
+    PTrace::WalkStack(trace, lockerId);
+  }
   trace << PTrace::End;
 #endif
 
@@ -2996,7 +3004,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
 
   sync.Wait();
 
-  PTRACE(1, "PTLib\tPhantom deadlock in read/write mutex " << this);
+  PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in read/write mutex " << this << PTrace::End;
 #else
   sync.Wait();
 #endif
