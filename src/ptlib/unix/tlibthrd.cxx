@@ -1525,7 +1525,7 @@ void PTimedMutex::Wait()
   if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
     ExcessiveLockWait();
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
-    PTRACE(0, "PTLib", "Phantom deadlock in mutex " << this);
+    PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in mutex " << this << PTrace::End;
   }
   PPROFILE_POST_SYSTEM();
 #else
