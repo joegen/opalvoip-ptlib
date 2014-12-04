@@ -162,7 +162,13 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
-  while ((lastReadCount = ::read(os_handle, buf, len)) < 0) {
+  for (;;) {
+    PPROFILE_SYSTEM(
+      int result = ::read(os_handle, buf, len);
+    );
+    if (result >= 0)
+      return (lastReadCount = result) > 0;
+
     switch (errno) {
       case EINTR :
         break;
@@ -179,8 +185,6 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
         return ConvertOSError(-1);
     }
   }
-
-  return lastReadCount > 0;
 }
 
 
