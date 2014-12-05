@@ -370,7 +370,9 @@ unsigned PWAVFile::GetFormat() const
 
 unsigned PWAVFile::GetChannels() const
 {
-  return m_status == e_Reading && m_readChannels > 0 ? m_readChannels : m_wavFmtChunk.numChannels;
+  if (m_status == e_Reading && m_readChannels > 0)
+    return m_readChannels;
+  return m_wavFmtChunk.numChannels;
 }
 
 
@@ -400,7 +402,9 @@ void PWAVFile::SetChannels(unsigned channels)
 
 unsigned PWAVFile::GetSampleRate() const
 {
-  return m_status == e_Reading && m_readSampleRate > 0 ? m_readSampleRate : m_wavFmtChunk.sampleRate;
+  if (m_status == e_Reading && m_readSampleRate > 0)
+    return m_readSampleRate;
+  return m_wavFmtChunk.sampleRate;
 }
 
 
