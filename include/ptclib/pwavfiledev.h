@@ -54,8 +54,8 @@
 
 class PSoundChannel_WAVFile : public PSoundChannel
 {
- PCLASSINFO(PSoundChannel_WAVFile, PSoundChannel);
- public:
+  PCLASSINFO(PSoundChannel_WAVFile, PSoundChannel);
+  public:
     PSoundChannel_WAVFile();
     ~PSoundChannel_WAVFile();
     static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
@@ -81,19 +81,11 @@ class PSoundChannel_WAVFile : public PSoundChannel
     PBoolean WaitForRecordBufferFull();
     PBoolean WaitForAllRecordBuffersFull();
 
-protected:
-    bool ReadSamples(void * data, PINDEX size);
-    bool ReadSample(short * data, unsigned channels);
-    void CopyMerge(short * & output, const short * wavSample, unsigned wavChannels);
-
+  protected:
+    PINDEX         m_bufferSize;
+    bool           m_autoRepeat;
     PWAVFile       m_WAVFile;
     PAdaptiveDelay m_Pacing;
-    bool           m_autoRepeat;
-    unsigned       m_sampleRate;
-    unsigned       m_channels;
-    PINDEX         m_bufferSize;
-    PShortArray    m_sampleBuffer;
-    PINDEX         m_samplePosition;
 };
 
 
