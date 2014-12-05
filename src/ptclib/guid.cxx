@@ -184,9 +184,15 @@ PINDEX PGloballyUniqueID::HashFunction() const
 {
   PAssert(GetSize() == Size, "PGloballyUniqueID is invalid size");
 
-  DWORD * words = (DWORD *)theArray;
-  DWORD sum = words[0] + words[1] + words[2] + words[3];
-  return ((sum >> 25)+(sum >> 15)+sum)%23;
+  static PINDEX NumBuckets = 53; // Should be prime number
+
+#if P_64BIT
+  uint64_t * qwords = (uint64_t *)theArray;
+  return (qwords[0] ^ qwords[1]) % NumBuckets;
+#else
+  uint32_t * dwords = (uint32_t *)theArray;
+  return (dwords[0] ^ dwords[1] ^ dwords[2] ^ dwords[3]) % NumBuckets;
+#endif
 }
 
 
