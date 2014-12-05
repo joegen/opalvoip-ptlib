@@ -1012,7 +1012,7 @@ PBoolean PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
   PINDEX i;
   short * pcmPtr = (short *)buf;
   for (i = 0; i < samples; i++)
-    *pcmPtr++ = (unsigned short)((pcm8[i] << 8) - 0x8000);
+    *pcmPtr++ = pcm8[i] == 0 ? 0 : (unsigned short)((pcm8[i] << 8) - 0x8000);
 
   // fake the lastReadCount
   file.SetLastReadCount(len);
