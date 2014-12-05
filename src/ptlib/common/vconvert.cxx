@@ -273,7 +273,7 @@ PBoolean PColourConverter::SetFrameSize(unsigned width, unsigned height)
 {
   bool ok1 = SetSrcFrameSize(width, height);
   bool ok2 = SetDstFrameSize(width, height);
-  PTRACE(2,"PColCnv\tSetFrameSize: " << width << 'x' << height
+  PTRACE(ok1 && ok2 ? 4 : 2,"PColCnv\tSetFrameSize: " << width << 'x' << height
          << (ok1 && ok2 ? " OK" : " Failed"));
   return ok1 && ok2;
 }
