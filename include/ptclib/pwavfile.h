@@ -330,6 +330,23 @@ public:
   */
   virtual PBoolean Close();
 
+  /**Get the current size of the file.
+
+      @return
+      length of file in bytes.
+    */
+  virtual off_t GetLength() const;
+      
+  /**Set the size of the file, padding with 0 bytes if it would require
+      expanding the file, or truncating it if being made shorter.
+
+      @return
+      true if the file size was changed to the length specified.
+    */
+  virtual PBoolean SetLength(
+    off_t len   // New length of file.
+  );
+
   /**Set the current active position in the file for the next read or write
      operation. The \p pos variable is a signed number which is
      added to the specified origin. For \p origin == PFile::Start
@@ -462,6 +479,13 @@ protected:
     e_PreWrite,
     e_Writing
   } m_status;
+
+  // Rate/channel conversion of WAV file
+  unsigned     m_readSampleRate;
+  unsigned     m_readChannels;
+  PShortArray  m_readBuffer;
+  PINDEX       m_readBufCount;
+  PINDEX       m_readBufPos;
 
   friend class PWAVFileConverter;
 };

@@ -36,7 +36,6 @@
 #include <ptlib/sound.h>
 #include <ptlib/pprocess.h>
 
-#define SAMPLES 64000  
 
 class WAVFileTest : public PProcess
 {
@@ -55,38 +54,28 @@ PCREATE_PROCESS(WAVFileTest)
 void WAVFileTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("hpr:c:F:C:R:d:D:v:");
-
-  if (args.GetCount() > 0) {
-    if (args.HasOption('c')) {
-      Create(args);
-      return;
-    }
-
-    if (args.HasOption('p')) {
-      Play(args);
-      return;
-    }
-
-    if (args.HasOption('r')) {
-      Record(args);
-      return;
-    }
+  if (!args.Parse("r: Record for N seconds\n"
+                  "c: Create file from generated tones\n"
+                  "F: WAV file format for record/create (default PCM-16)\n"
+                  "R: Sample rate (default 8000)\n"
+                  "C: Channels (1=mono, 2=stereo etc)\n"
+                  "d: Device name for sound channel record/playback\n"
+                  "D: Driver name for sound channel record/playback\n"
+                  "v: Set sound device to vol (0..100)\n"
+                  "B: Set sound device buffer size (10000)\n"
+                  PTRACE_ARGLIST)) {
+    args.Usage(cerr, "[ options ] filename");
+    return;
   }
 
-  cout << "usage: wavfile { -r | -p | -c tones } [ options ] filename\n"
-          "   -p          Play WAV file\n"
-          "   -r time     Record WAV file for number of seconds\n"
-          "   -c tones    Create WAV file from generated tones\n"
-          "\n"
-          "Options:\n"
-          "   -F format   File format, e.g. \"PCM-16\" (create/record only)\n"
-          "   -C channels Number of channels (record only)\n"
-          "   -R rate     Sample rate (record only)\n"
-          "   -d dev      Use device name for sound channel record/playback\n"
-          "   -D drv      Use driver name for sound channel record/playback\n"
-          "   -v vol      Set sound device to vol (0..100)\n"
-       << endl;
+  PTRACE_INITIALISE(args);
+
+  if (args.HasOption('c'))
+    Create(args);
+  else if (args.HasOption('r'))
+    Record(args);
+  else
+    Play(args);
 }
 
 
@@ -125,21 +114,32 @@ void WAVFileTest::Play(PArgList & args)
   PINDEX fileLen = file.PFile::GetLength();
 
   cout << "Format:       " << file.GetFormat() << " (" << file.GetFormatString() << ")" << "\n"
-       << "Channels:     " << file.GetChannels() << "\n"
-       << "Sample rate:  " << file.GetSampleRate() << "\n"
-       << "Bytes/sec:    " << file.GetBytesPerSecond() << "\n"
-       << "Bits/sample:  " << file.GetSampleSize() << "\n"
-       << "\n"
-       << "Hdr length :  " << hdrLen << endl
-       << "Data length:  " << dataLen << endl
-       << "File length:  " << fileLen << " (" << hdrLen + dataLen << ")" << endl
-       << endl;
+          "Channels:     " << file.GetChannels() << "\n"
+          "Sample rate:  " << file.GetSampleRate() << "Hz\n"
+          "Bytes/sec:    " << file.GetBytesPerSecond() << "\n"
+          "Bits/sample:  " << file.GetSampleSize() << "\n"
+          "\n"
+          "Hdr length :  " << hdrLen << "\n"
+          "Data length:  " << dataLen << "\n"
+       << "File length:  " << fileLen << " (" << hdrLen + dataLen << ")\n\n";
 
-  PBYTEArray data;
-  if (!file.Read(data.GetPointer(dataLen), dataLen) || (file.GetLastReadCount() != dataLen)) {
-    cout << "error: cannot read " << dataLen << " bytes of WAV data" << endl;
-    return;
+  if (args.HasOption('C')) {
+    unsigned channels = args.GetOptionString('C').AsUnsigned();
+    if (channels != file.GetChannels()) {
+      file.SetChannels(channels);
+      cout << "Converting to " << channels << " channels.\n";
+    }
   }
+
+  if (args.HasOption('R')) {
+    unsigned rate = args.GetOptionString('R').AsUnsigned();
+    if (rate != file.GetSampleRate()) {
+      file.SetSampleRate(rate);
+      cout << "Converting to " << rate << "Hz.\n";
+    }
+  }
+
+  cout.flush();
 
   PSoundChannel * sound = PSoundChannel::CreateOpenedChannel(args.GetOptionString('D'),
                                                              args.GetOptionString('d'),
@@ -154,18 +154,26 @@ void WAVFileTest::Play(PArgList & args)
 
   sound->SetVolume(args.GetOptionString('v', "50").AsUnsigned());
 
-  if (!sound->SetBuffers(SAMPLES, 2)) {
-    cout << "Failed to set samples to " << SAMPLES << " and 2 buffers. End program now." << endl;
+  unsigned sampleSize = (file.GetChannels()*file.GetSampleSize() + 7) / 8;
+  unsigned bufferSize = (args.GetOptionString('B', "10000").AsUnsigned()+sampleSize-1)/sampleSize*sampleSize;
+  if (!sound->SetBuffers(bufferSize, 2)) {
+    cout << "Failed to set samples to " << bufferSize << " and 2 buffers. End program now." << endl;
     return;
   }
 
-  if (!sound->Write((const BYTE *)data, data.GetSize())) {
-    cout << "error: write to audio device failed" << endl;
-    return;
+  PBYTEArray data(bufferSize);
+  while (file.Read(data.GetPointer(), bufferSize)) {
+    if (!sound->Write(data.GetPointer(), file.GetLastReadCount())) {
+      cout << "error: write to audio device failed" << endl;
+      return;
+    }
   }
 
   sound->WaitForPlayCompletion();
   delete sound;
+
+  if (file.GetErrorCode() != PChannel::NoError)
+    cout << "Error reading " << file.GetFilePath() << " - " << file.GetErrorText() << endl;
 }
 
 
