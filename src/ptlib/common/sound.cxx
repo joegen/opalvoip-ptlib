@@ -928,3 +928,131 @@ PBoolean PSoundChannelNull::GetBuffers(PINDEX & size, PINDEX & count)
   count = 1;
   return true;
 }
+
+
+///////////////////////////////////////////////////////////////////////////
+
+static void MergeSampleValues(const short * & srcSample,
+                              PINDEX & srcCount,
+                              unsigned srcChannels,
+                              short * & dstSample,
+                              PINDEX & dstCount,
+                              unsigned dstChannels)
+{
+  if (dstChannels == srcChannels) {
+    PINDEX bytes = dstChannels*sizeof(short);
+    memcpy(dstSample, srcSample, bytes);
+    srcSample += srcChannels;
+    srcCount += srcChannels*sizeof(short);
+    dstSample += dstChannels;
+    dstCount += bytes;
+  }
+
+  else if (srcChannels == 1) {
+    for (unsigned c = 0; c < dstChannels; ++c)
+      *dstSample++ = *srcSample;
+    srcSample++;
+    srcCount += sizeof(short);
+    dstCount += dstChannels*sizeof(short);
+  }
+
+  else if (dstChannels == 1) {
+    int sum = 0;
+    for (unsigned c = 0; c < srcChannels; ++c)
+      sum += *srcSample++;
+    srcCount += srcChannels*sizeof(short);
+    *dstSample++ = (short)(sum/dstChannels);
+    dstCount += sizeof(short);
+  }
+
+  else {
+    // Complicated ones, we cheat mightily and make it all mono
+    int sum = 0;
+    for (unsigned c = 0; c < dstChannels; ++c)
+      sum += *srcSample++;
+    for (unsigned c = 0; c < srcChannels; ++c)
+      *dstSample++ = (short)(sum/dstChannels);
+    srcCount += srcChannels*sizeof(short);
+    dstCount += srcChannels*sizeof(short);
+  }
+}
+
+
+bool PSound::ConvertPCM(const short * srcPtr,
+                        PINDEX & srcSize,
+                        unsigned srcRate,
+                        unsigned srcChannels,
+                        short * dstPtr,
+                        PINDEX & dstSize,
+                        unsigned dstRate,
+                        unsigned dstChannels)
+{
+  if (srcRate == dstRate && srcChannels == dstChannels) {
+    dstSize = std::min(srcSize, dstSize);
+    if (srcPtr != dstPtr)
+      memcpy(dstPtr, srcPtr, dstSize);
+    return srcSize <= dstSize;
+  }
+
+  PINDEX srcCount = 0;
+  PINDEX dstCount = 0;
+
+  /* Reduce size by one "sample", makes sure we don't overflow on last copy
+     in case the input/output buffers are not exact multiples of the sample */
+  srcSize -= srcChannels*sizeof(short);
+  dstSize -= dstChannels*sizeof(short);
+
+  // Variable Duty Cycle algorithm
+  if (srcRate < dstRate) {
+    // Have less samples than we want, so we need to interpolate
+    unsigned iDutyCycle = dstRate - srcRate;
+    while (srcCount <= srcSize && dstCount <= dstSize) {
+      iDutyCycle += srcRate;
+      if (iDutyCycle >= dstRate) {
+        iDutyCycle -= dstRate;
+        MergeSampleValues(srcPtr, srcCount, srcChannels, dstPtr, dstCount, dstChannels);
+      }
+      else {
+        const short * tempPtr = srcPtr;
+        PINDEX tempCount = srcCount;
+        MergeSampleValues(tempPtr, tempCount, srcChannels, dstPtr, dstCount, dstChannels);
+      }
+    }
+  }
+  else if (srcRate > dstRate) {
+    // File has more samples than we want, so we need to throw some away
+    size_t sumsSize = srcChannels*sizeof(int);
+    int * sums = (int *)alloca(sumsSize);
+
+    unsigned iDutyCycle = 0;
+    while (srcCount <= srcSize && dstCount <= dstSize) {
+      memset(sums, 0, sumsSize);
+      unsigned count = 0;
+      do {
+        for (unsigned c = 0; c < srcChannels; ++c)
+          sums[c] += *srcPtr++;
+        ++count;
+        iDutyCycle += dstRate;
+      } while (iDutyCycle < srcRate);
+      iDutyCycle -= srcRate;
+
+      const short * avg = (const short *)alloca(srcChannels*sizeof(short));
+      for (unsigned c = 0; c < srcChannels; ++c)
+        const_cast<short *>(avg)[c] = (short)(sums[c]/count);
+      PINDEX tempCount = 0;
+      MergeSampleValues(avg, tempCount, srcChannels, dstPtr, dstCount, dstChannels);
+      srcCount += count*tempCount;
+    }
+  }
+  else {
+    while (srcCount <= srcSize && dstCount <= dstSize)
+      MergeSampleValues(srcPtr, srcCount, srcChannels, dstPtr, dstCount, dstChannels);
+  }
+
+  srcSize = srcCount;
+  dstSize = dstCount;
+  return srcCount > srcSize && dstCount <= dstSize;
+}
+
+    
+///////////////////////////////////////////////////////////////////////////

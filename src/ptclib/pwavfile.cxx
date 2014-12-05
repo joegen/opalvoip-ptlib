@@ -42,8 +42,11 @@
 #if P_WAVFILE
 
 #include <ptlib/pfactory.h>
+#include <ptlib/sound.h>
+
 
 #define new PNEW
+#define PTraceModule() "WAVFile"
 
 
 const char WAVLabelRIFF[4] = { 'R', 'I', 'F', 'F' };
@@ -134,6 +137,9 @@ void PWAVFile::Construct(OpenMode mode)
 
   memset(&m_wavFmtChunk, 0, sizeof(m_wavFmtChunk));
   m_wavFmtChunk.hdr.len = sizeof(m_wavFmtChunk) - sizeof(m_wavFmtChunk.hdr);
+
+  m_readSampleRate = m_readChannels = 0;  // Zero means automatically set in ProcessHeader
+  m_readBufCount = m_readBufPos = 0;
 }
 
 
@@ -214,7 +220,7 @@ bool PWAVFile::SetAutoconvert(bool convert)
   if ((m_autoConverter = PWAVFileConverterFactory::CreateInstance(m_wavFmtChunk.format)) != NULL)
     return true;
 
-  PTRACE(2, "PWAVFile\tNo format converter for type " << (WORD)m_wavFmtChunk.format);
+  PTRACE(2, "No format converter for type " << (WORD)m_wavFmtChunk.format);
   return false;
 }
 
@@ -225,10 +231,31 @@ PBoolean PWAVFile::Read(void * buf, PINDEX len)
   if (CheckNotOpen())
     return false;
 
-  if (m_autoConverter != NULL)
-    return m_autoConverter->Read(*this, buf, len);
+  if (m_wavFmtChunk.sampleRate == m_readSampleRate && m_wavFmtChunk.numChannels == m_readChannels)
+    return m_autoConverter != NULL ? m_autoConverter->Read(*this, buf, len) : RawRead(buf, len);
 
-  return RawRead(buf, len);
+  if (GetSampleSize() != sizeof(short)* 8) {
+    PTRACE(2, "Only 16 bit PCM supported in WAV file conversion.");
+    return false;
+  }
+
+  if (m_readBufPos >= m_readBufCount) {
+    if (!m_readBuffer.SetSize(10 * m_wavFmtChunk.sampleRate*m_wavFmtChunk.numChannels)) // 10 seconds worth
+      return false;
+    void * ptr = m_readBuffer.GetPointer();
+    PINDEX sz = m_readBuffer.GetSize()*sizeof(short);
+    if (!(m_autoConverter != NULL ? m_autoConverter->Read(*this, ptr, sz) : RawRead(ptr, sz)))
+      return false;
+    m_readBufCount = GetLastReadCount()/sizeof(short);
+    m_readBufPos = 0;
+  }
+
+  PINDEX srcSize = (m_readBufCount - m_readBufPos)*sizeof(short);
+  lastReadCount = len;
+  PSound::ConvertPCM(&m_readBuffer[m_readBufPos], srcSize, m_wavFmtChunk.sampleRate, m_wavFmtChunk.numChannels,
+                     (short *)buf, lastReadCount, m_readSampleRate, m_readChannels);
+  m_readBufPos += srcSize / sizeof(short);
+  return true;
 }
 
 
@@ -282,7 +309,29 @@ bool PWAVFile::RawWrite(const void * buf, PINDEX len)
 }
 
 
-// Both SetPosition() and GetPosition() are offset by m_headerLength.
+// Functions that are offset by m_headerLength.
+off_t PWAVFile::GetLength() const
+{
+  switch (m_status) {
+    case e_Reading:
+      return m_dataLength;
+
+    case e_Writing:
+      return PFile::GetLength() - m_headerLength;
+
+    default :
+      return 0;
+  }
+}
+
+
+PBoolean PWAVFile::SetLength(off_t)
+{
+  PAssertAlways("PWAVFile::SetLength() is not allowed");
+  return false;
+}
+
+
 PBoolean PWAVFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
   if (m_autoConverter != NULL)
@@ -321,34 +370,55 @@ unsigned PWAVFile::GetFormat() const
 
 unsigned PWAVFile::GetChannels() const
 {
-  return m_wavFmtChunk.numChannels;
+  return m_status == e_Reading && m_readChannels > 0 ? m_readChannels : m_wavFmtChunk.numChannels;
 }
 
 
-void PWAVFile::SetChannels(unsigned v) 
+void PWAVFile::SetChannels(unsigned channels) 
 {
-  if (m_status == e_PreWrite && (m_formatHandler == NULL || m_formatHandler->CanSetChannels(v))) {
-    m_wavFmtChunk.numChannels = (WORD)v;
-    if (m_wavFmtChunk.format == fmt_PCM) {
-      m_wavFmtChunk.bytesPerSample = (m_wavFmtChunk.bitsPerSample/8) * m_wavFmtChunk.numChannels;
-      m_wavFmtChunk.bytesPerSec = m_wavFmtChunk.sampleRate * m_wavFmtChunk.bytesPerSample;
-    }
+  switch (m_status) {
+    case e_Reading :
+      m_readChannels = channels;
+      break;
+
+    case e_PreWrite :
+      if (m_formatHandler == NULL || m_formatHandler->CanSetChannels(channels)) {
+        m_wavFmtChunk.numChannels = (WORD)channels;
+        if (m_wavFmtChunk.format == fmt_PCM) {
+          m_wavFmtChunk.bytesPerSample = (m_wavFmtChunk.bitsPerSample/8) * m_wavFmtChunk.numChannels;
+          m_wavFmtChunk.bytesPerSec = m_wavFmtChunk.sampleRate * m_wavFmtChunk.bytesPerSample;
+        }
+        break;
+      }
+      // DO default case
+
+    default :
+      PTRACE(2, "SetChannels ignored after write started, or number of channels unsupported");
   }
 }
 
 
 unsigned PWAVFile::GetSampleRate() const
 {
-  return m_wavFmtChunk.sampleRate;
+  return m_status == e_Reading && m_readSampleRate > 0 ? m_readSampleRate : m_wavFmtChunk.sampleRate;
 }
 
 
-void PWAVFile::SetSampleRate(unsigned v) 
+void PWAVFile::SetSampleRate(unsigned rate) 
 {
-  if (m_status == e_PreWrite) {
-    m_wavFmtChunk.sampleRate = (WORD)v;
-    if (m_wavFmtChunk.format == fmt_PCM)
-      m_wavFmtChunk.bytesPerSec = m_wavFmtChunk.sampleRate * m_wavFmtChunk.bytesPerSample;
+  switch (m_status) {
+    case e_Reading :
+      m_readSampleRate = rate;
+      break;
+
+    case e_PreWrite :
+      m_wavFmtChunk.sampleRate = (WORD)rate;
+      if (m_wavFmtChunk.format == fmt_PCM)
+        m_wavFmtChunk.bytesPerSec = m_wavFmtChunk.sampleRate * m_wavFmtChunk.bytesPerSample;
+      break;
+
+    default :
+      PTRACE(2, "SetSampleRate ignored after write started");
   }
 }
 
@@ -422,7 +492,7 @@ PBoolean PWAVFile::ProcessHeader()
 
   // go to the beginning of the file
   if (!PFile::SetPosition(0)) {
-    PTRACE(1,"WAV\tProcessHeader: Cannot Set Pos");
+    PTRACE(1,"ProcessHeader: Cannot Set Pos");
     return (false);
   }
 
@@ -433,12 +503,12 @@ PBoolean PWAVFile::ProcessHeader()
 
   // check if tags are correct
   if (strncmp(riffChunk.hdr.tag, WAVLabelRIFF, sizeof(WAVLabelRIFF)) != 0) {
-    PTRACE(1,"WAV\tProcessHeader: Not RIFF");
+    PTRACE(1,"ProcessHeader: Not RIFF");
     return (false);
   }
 
   if (strncmp(riffChunk.tag, WAVLabelWAVE, sizeof(WAVLabelWAVE)) != 0) {
-    PTRACE(1,"WAV\tProcessHeader: Not WAVE");
+    PTRACE(1,"ProcessHeader: Not WAVE");
     return (false);
   }
 
@@ -448,7 +518,7 @@ PBoolean PWAVFile::ProcessHeader()
 
   // check if labels are correct
   if (strncmp(m_wavFmtChunk.hdr.tag, WAVLabelFMT_, sizeof(WAVLabelFMT_)) != 0) {
-    PTRACE(1,"WAV\tProcessHeader: Not FMT");
+    PTRACE(1,"ProcessHeader: Not FMT");
     return (false);
   }
 
@@ -480,7 +550,7 @@ PBoolean PWAVFile::ProcessHeader()
     }
 
     if (!PFile::SetPosition(PFile::GetPosition() + + chunkHeader.len)) {
-      PTRACE(1,"WAV\tProcessHeader: Cannot set new position");
+      PTRACE(1,"ProcessHeader: Cannot set new position");
       return false;
     }
   }
@@ -490,6 +560,29 @@ PBoolean PWAVFile::ProcessHeader()
 
   m_formatHandler->OnStart();
 
+  if (m_readSampleRate == 0)
+    m_readSampleRate = m_wavFmtChunk.sampleRate;
+  if (m_readChannels == 0)
+    m_readChannels = m_wavFmtChunk.numChannels;
+
+#if PTRACING
+  static unsigned const Level = 4;
+  if (PTrace::CanTrace(Level)) {
+    ostream & trace = PTRACE_BEGIN(Level);
+    trace << "Opened \"" << GetFilePath() << "\" at " << m_readSampleRate << "Hz";
+    if (m_readSampleRate != m_wavFmtChunk.sampleRate)
+      trace << " (converted from " << m_wavFmtChunk.sampleRate << "Hz)";
+    trace << " using " << m_readChannels;
+    if (m_readChannels != m_wavFmtChunk.numChannels)
+      trace << " (converted from " << m_wavFmtChunk.numChannels << ')';
+    trace << " channel";
+    if (m_readChannels > 1)
+      trace << 's';
+    trace << '.'
+          << PTrace::End;
+  }
+#endif
+
   return true;
 }
 
@@ -497,13 +590,13 @@ PBoolean PWAVFile::ProcessHeader()
 bool PWAVFile::GenerateHeader()
 {
   if (m_formatHandler == NULL) {
-    PTRACE(1,"WAV\tGenerateHeader: format handler is null!");
+    PTRACE(1,"GenerateHeader: format handler is null!");
     return false;
   }
 
   // go to the beginning of the file
   if (!PFile::SetPosition(0)) {
-    PTRACE(1,"WAV\tGenerateHeader: Cannot Set Pos");
+    PTRACE(1,"GenerateHeader: Cannot Set Pos");
     return (false);
   }
 
@@ -552,7 +645,7 @@ bool PWAVFile::GenerateHeader()
 PBoolean PWAVFile::UpdateHeader()
 {
   if (m_formatHandler == NULL){
-    PTRACE(1,"WAV\tGenerateHeader: format handler is null!");
+    PTRACE(1,"GenerateHeader: format handler is null!");
     return false;
   }
 
@@ -901,7 +994,7 @@ PBoolean PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
     return file.RawRead(buf, len);
 
   if (file.GetSampleSize() != 8) {
-    PTRACE(1, "PWAVFile\tAttempt to read autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
+    PTRACE(1, "Attempt to read autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
     return false;
   }
 
@@ -929,7 +1022,7 @@ PBoolean PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX l
   if (file.GetSampleSize() == 16)
     return file.PWAVFile::RawWrite(buf, len);
 
-  PTRACE(1, "PWAVFile\tAttempt to write autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
+  PTRACE(1, "Attempt to write autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
   return false;
 }
 

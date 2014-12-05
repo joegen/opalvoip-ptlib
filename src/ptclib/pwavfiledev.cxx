@@ -81,11 +81,9 @@ PCREATE_SOUND_PLUGIN_EX(WAVFile, PSoundChannel_WAVFile,
 ///////////////////////////////////////////////////////////////////////////////
 
 PSoundChannel_WAVFile::PSoundChannel_WAVFile()
-  : m_Pacing(1000)
+  : m_bufferSize(2)
   , m_autoRepeat(false)
-  , m_sampleRate(8000)
-  , m_bufferSize(2)
-  , m_samplePosition(P_MAX_INDEX)
+  , m_Pacing(1000)
 {
 }
 
@@ -134,29 +132,8 @@ bool PSoundChannel_WAVFile::Open(const Params & params)
     return false;
   }
 
-  m_sampleRate = params.m_sampleRate;
-  m_channels = params.m_channels;
-
-  if (m_sampleRate >= 8000 && m_WAVFile.GetSampleSize() == params.m_bitsPerSample) {
-#if PTRACING
-    static unsigned const Level = 3;
-    if (PTrace::CanTrace(Level)) {
-      ostream & trace = PTRACE_BEGIN(Level, "WAVFileDev");
-      trace << "Opened \"" << m_WAVFile.GetFilePath() << "\" at " << m_sampleRate << "Hz";
-      if (m_sampleRate != m_WAVFile.GetSampleRate())
-        trace << " (converted from " << m_WAVFile.GetSampleRate() << "Hz)";
-      trace << " using " << m_channels;
-      if (m_channels != m_WAVFile.GetChannels())
-        trace << " (converted from " << m_WAVFile.GetChannels() << ')';
-      trace << " channel";
-      if (m_channels > 1)
-        trace << 's';
-      trace << '.'
-            << PTrace::End;
-    }
-#endif
+  if (params.m_sampleRate >= 8000 && m_WAVFile.GetSampleSize() == params.m_bitsPerSample)
     return true;
-  }
 
   Close();
 
@@ -255,116 +232,6 @@ PBoolean PSoundChannel_WAVFile::StartRecording()
 
 PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 {
-  lastReadCount = 0;
-
-  unsigned wavSampleRate = m_WAVFile.GetSampleRate();
-  unsigned wavChannels = m_WAVFile.GetChannels();
-  short * wavSample = (short *)alloca(wavChannels*sizeof(short));
-  short * pPCM = (short *)data;
-
-  if (wavSampleRate < m_sampleRate) {
-    // File has less samples than we want, so we need to interpolate
-    unsigned iDutyCycle = m_sampleRate - wavSampleRate;
-    while (lastReadCount < size) {
-      iDutyCycle += wavSampleRate;
-      if (iDutyCycle >= m_sampleRate) {
-        iDutyCycle -= m_sampleRate;
-        if (!ReadSample(wavSample, wavChannels))
-          return false;
-      }
-      CopyMerge(pPCM, wavSample, wavChannels);
-    }
-  }
-  else if (wavSampleRate > m_sampleRate) {
-    // File has more samples than we want, so we need to throw some away
-    unsigned iDutyCycle = 0;
-    while (lastReadCount < size) {
-      do {
-        if (!ReadSample(wavSample, wavChannels))
-          return false;
-        iDutyCycle += m_sampleRate;
-      } while (iDutyCycle < wavSampleRate);
-      iDutyCycle -= wavSampleRate;
-      CopyMerge(pPCM, wavSample, wavChannels);
-    }
-  }
-  else if (wavChannels != m_channels) {
-    while (lastReadCount < size) {
-      if (!ReadSample(wavSample, wavChannels))
-        return false;
-      CopyMerge(pPCM, wavSample, wavChannels);
-    }
-  }
-  else {
-    if (!ReadSamples(data, size))
-      return false;
-    lastReadCount = m_WAVFile.GetLastReadCount();
-    PINDEX pad = ((lastReadCount+m_bufferSize-1)/m_bufferSize)*m_bufferSize - lastReadCount;
-    if (lastReadCount+pad > size)
-      pad = size - lastReadCount;
-    PTRACE(6, "WAVFileDev", "Direct read of " << lastReadCount << " bytes, pad=" << pad << ", pos=" << m_WAVFile.GetPosition());
-    memset((char *)data+lastReadCount, 0, pad);
-    lastReadCount += pad;
-  }
-
-  m_Pacing.Delay(lastReadCount*8/m_WAVFile.GetSampleSize()*1000/m_sampleRate/m_channels);
-  return true;
-}
-
-
-void PSoundChannel_WAVFile::CopyMerge(short * & output, const short * wavSample, unsigned wavChannels)
-{
-  if (wavChannels == m_channels) {
-    PINDEX bytes = wavChannels*sizeof(short);
-    memcpy(output, wavSample, bytes);
-    lastReadCount += bytes;
-    output += m_channels;
-  }
-
-  else if (wavChannels == 1) {
-    for (unsigned c = 0; c < m_channels; ++c)
-      *output++ = *wavSample;
-    lastReadCount += m_channels*sizeof(short);
-  }
-
-  else if (m_channels == 1) {
-    int sum = 0;
-    for (unsigned c = 0; c < wavChannels; ++c)
-      sum += *wavSample++;
-    *output++ = (short)(sum/wavChannels);
-    lastReadCount += sizeof(short);
-  }
-
-  else {
-    // Complicated ones, we cheat mightily and make it all mono
-    int sum = 0;
-    for (unsigned c = 0; c < wavChannels; ++c)
-      sum += *wavSample++;
-    for (unsigned c = 0; c < m_channels; ++c)
-      *output++ = (short)(sum/wavChannels);
-    lastReadCount += m_channels*sizeof(short);
-  }
-}
-
-
-bool PSoundChannel_WAVFile::ReadSample(short * sample, unsigned channels)
-{
-  while (channels-- > 0) {
-    if (m_samplePosition >= m_sampleBuffer.GetSize()) {
-      static const PINDEX BufferSize = 10000;
-      if (!ReadSamples(m_sampleBuffer.GetPointer(BufferSize), BufferSize*sizeof(short)))
-        return false;
-      m_sampleBuffer.SetSize(m_WAVFile.GetLastReadCount()/sizeof(short));
-      m_samplePosition = 0;
-    }
-    *sample++ = m_sampleBuffer[m_samplePosition++];
-  }
-  return true;
-}
-
-
-bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
-{
   if (m_WAVFile.Read(data, size))
     return true;
 
@@ -380,7 +247,11 @@ bool PSoundChannel_WAVFile::ReadSamples(void * data, PINDEX size)
 
   PTRACE(4, "WAVFileDev", "End of file, repeating");
   m_WAVFile.SetPosition(0);
-  return m_WAVFile.Read(data, size);
+  if (m_WAVFile.Read(data, size))
+    return true;
+
+  PTRACE(2, "WAVFileDev", "Error reading file: " << m_WAVFile.GetErrorText(LastReadError));
+  return false;
 }
 
 

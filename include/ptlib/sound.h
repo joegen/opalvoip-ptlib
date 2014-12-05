@@ -167,6 +167,20 @@ class PSound : public PBYTEArray
 
     /// Play the "standard" warning beep for the platform.
     static void Beep();
+
+    /** Convert PCM data sample rates and channel depth.
+        @ return true if all the input could be converted in the output buffer size.
+      */
+    static bool ConvertPCM(
+      const short * srcPtr, ///< Source PCM data
+      PINDEX & srcSize,     ///< In: number of bytes of source PCM, Out: bytes consumed
+      unsigned srcRate,     ///< Sample rate for source PCM
+      unsigned srcChannels, ///< Number of channels for source PCM
+      short * dstPtr,       ///< Destination PCM data, may be same as srcPtr
+      PINDEX & dstSize,     ///< In: size of destination buffer, Out: bytes written
+      unsigned dstRate,     ///< Sample rate for destination PCM
+      unsigned dstChannels  ///< Number of channels for destination PCM
+    );
   //@}
 
   protected:
