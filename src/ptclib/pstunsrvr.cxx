@@ -16,7 +16,7 @@
 #include <ptclib/pstunsrvr.h>
 
 #define new PNEW
-
+#define PTraceModule() "STUNSrvr"
 
 
 //////////////////////////////////////////////////
@@ -47,7 +47,7 @@ bool PSTUNServer::Open(WORD port)
   // get interfaces to bind to
   PIPSocket::InterfaceTable interfaces;
   if (!PIPSocket::GetInterfaceTable(interfaces)) {
-    PTRACE(2, "PSTUNSRVR\tGetInterfaceTable failed");
+    PTRACE(2, "GetInterfaceTable failed");
     return false;
   }
 
@@ -69,7 +69,7 @@ bool PSTUNServer::Open(WORD port)
   }
 
   if (interfaceAddresses.size() == 0) {
-    PTRACE(2, "PSTUNSRVR\tno suitable interfaces found");
+    PTRACE(2, "no suitable interfaces found");
     return false;
   }
 
@@ -78,15 +78,15 @@ bool PSTUNServer::Open(WORD port)
   for (j = 0; j < interfaceAddresses.size(); ++j) {
     PIPSocketAddressAndPort addr(interfaceAddresses[j], port);
     if (!CreateAndAddSocket(interfaceAddresses[j], port)) {
-      PTRACE(2, "PSTUNSRVR\tCannot open socket on " << addr);
+      PTRACE(2, "Cannot open socket on " << addr);
       Close();
       return false;
     }
-    PTRACE(2, "PSTUNSRVR\tListening on " << addr);
+    PTRACE(2, "Listening on " << addr);
   }
 
   if (m_sockets.GetSize() == 0) {
-    PTRACE(2, "PSTUNSRVR\tUnable to open any ports" << addr);
+    PTRACE(2, "Unable to open any ports" << addr);
     return false;
   }
 
@@ -108,10 +108,10 @@ bool PSTUNServer::Open(WORD port)
       // primary socket, alternate port
       SocketInfo * info = CreateAndAddSocket(primaryAddress, alternatePort);
       if (info == NULL) {
-        PTRACE(2, "PSTUNSRVR\tCannot open primary alternate port socket on " << primaryAddress << ":" << alternatePort);
+        PTRACE(2, "Cannot open primary alternate port socket on " << primaryAddress << ":" << alternatePort);
         return false;
       }
-      PTRACE(2, "PSTUNSRVR\tListening on " << info->m_socketAddress);
+      PTRACE(2, "Listening on " << info->m_socketAddress);
       primaryAlternateSocket = info->m_socket;
     }
 
@@ -120,10 +120,10 @@ bool PSTUNServer::Open(WORD port)
       // primary socket, alternate port
       SocketInfo * info = CreateAndAddSocket(secondaryAddress, alternatePort);
       if (info == NULL) {
-        PTRACE(2, "PSTUNSRVR\tCannot open secondary alternate port socket on " << secondaryAddress << ":" << alternatePort);
+        PTRACE(2, "Cannot open secondary alternate port socket on " << secondaryAddress << ":" << alternatePort);
         return false;
       }
-      PTRACE(2, "PSTUNSRVR\tListening on " << info->m_socketAddress);
+      PTRACE(2, "Listening on " << info->m_socketAddress);
       secondaryAlternateSocket = info->m_socket;
     }
 
@@ -227,7 +227,7 @@ bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketI
   if (!message.Read(*socket)) {
     // ignore read errors - they are likely to be connection
     // refused ICMP messages from symmetric NATs
-    //PTRACE(2, "STUNSRVR\tRead failed");
+    //PTRACE(2, "Read failed");
     message.SetSize(0);
     return true;
   }  
@@ -235,7 +235,7 @@ bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketI
   {
     SocketToSocketInfoMap::iterator r = m_socketToSocketInfoMap.find(socket);
     if (r == m_socketToSocketInfoMap.end()) {
-      PTRACE(2, "STUNSRVR\tUnable to find interface for received request - ignoring");
+      PTRACE(2, "Unable to find interface for received request - ignoring");
       return false;
     }
     socketInfo = r->second;
@@ -261,7 +261,7 @@ bool PSTUNServer::OnReceiveMessage(const PSTUNMessage & message, const PSTUNServ
       if (message.IsRequest())
         return OnUnknownRequest(message, socketInfo);
 
-      PTRACE(2, "STUNSRVR\tUnexpected response message: " << message);
+      PTRACE(2, "Unexpected response message: " << message);
   }
 
   return false;
@@ -270,7 +270,7 @@ bool PSTUNServer::OnReceiveMessage(const PSTUNMessage & message, const PSTUNServ
 
 bool PSTUNServer::OnUnknownRequest(const PSTUNMessage & PTRACE_PARAM(request), const PSTUNServer::SocketInfo & /*socketInfo*/)
 {
-  PTRACE(2, "STUNSRVR\tReceived unknown request " << hex << request.GetType() << " from " << request.GetSourceAddressAndPort());
+  PTRACE(2, "Received unknown request " << hex << request.GetType() << " from " << request.GetSourceAddressAndPort());
   return false;
 }
 
@@ -284,25 +284,25 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
   if (!m_password.IsEmpty()) {
     PSTUNStringAttribute * userAttr = request.FindAttributeAs<PSTUNStringAttribute>(PSTUNAttribute::USERNAME);
     if (userAttr == NULL) {
-      PTRACE(2, "STUNSRVR\tNo USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
+      PTRACE(2, "No USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
       response.SetErrorType(400, request.GetTransactionID());
       goto sendResponse;
     }
 
     if (userAttr->GetString() != m_userName) {
-      PTRACE(2, "STUNSRVR\tIncorrect USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
+      PTRACE(2, "Incorrect USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
       response.SetErrorType(401, request.GetTransactionID());
       goto sendResponse;
     }
 
     if (!request.CheckMessageIntegrity(m_password)) {
-      PTRACE(2, "STUNSRVR\tIntegrity check failed for " << request << " on interface " << socketInfo.m_socketAddress);
+      PTRACE(2, "Integrity check failed for " << request << " on interface " << socketInfo.m_socketAddress);
       response.SetErrorType(401, request.GetTransactionID());
       goto sendResponse;
     }
   }
 
-  PTRACE(4, "STUNSRVR\tReceived " << request << " on " << socketInfo.m_socketAddress);
+  PTRACE(4, "Received " << request << " on " << socketInfo.m_socketAddress);
 
   // if CHANGE-REQUEST was specified, and we have no alternate address, then refuse the request
   changeRequest = (PSTUNChangeRequest *)request.FindAttribute(PSTUNAttribute::CHANGE_REQUEST);
@@ -317,7 +317,7 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
           )
       )
       ) {
-    PTRACE(2, "STUNSRVR\tUnable to fulfill CHANGE-REQUEST from " << request.GetSourceAddressAndPort());
+    PTRACE(2, "Unable to fulfill CHANGE-REQUEST from " << request.GetSourceAddressAndPort());
 
     response.SetErrorType(420, request.GetTransactionID());
     goto sendResponse;
@@ -352,15 +352,15 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
   // fulfill CHANGE-REQUEST, if any
   if (changeRequest != NULL) {
     if (changeRequest->GetChangeIP() && changeRequest->GetChangePort()) {
-      PTRACE(3, "STUNSRVR\tChanged source to alternate address and port " << socketInfo.m_alternateAddressAndPort);
+      PTRACE(3, "Changed source to alternate address and port " << socketInfo.m_alternateAddressAndPort);
       replySocket = socketInfo.m_alternateAddressAndPortSocket;
     }
     else if (changeRequest->GetChangeIP()) {
-      PTRACE(3, "STUNSRVR\tChanged source to alternate address " << socketInfo.m_alternateAddressAndPort.GetAddress());
+      PTRACE(3, "Changed source to alternate address " << socketInfo.m_alternateAddressAndPort.GetAddress());
       replySocket = socketInfo.m_alternateAddressSocket;
     }
     else if (changeRequest->GetChangePort())  {
-      PTRACE(3, "STUNSRVR\tChanged source to alternate port " << socketInfo.m_alternateAddressAndPort.GetPort());
+      PTRACE(3, "Changed source to alternate port " << socketInfo.m_alternateAddressAndPort.GetPort());
       replySocket = socketInfo.m_alternatePortSocket;
     }
   }
