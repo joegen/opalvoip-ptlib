@@ -215,7 +215,7 @@ void PConfig::Cached::Flush()
   }
 
   PTextFile file;
-  if (PFile::Exists(m_filePath) ? file.Open(m_filePath + ".new", PFile::WriteOnly) : file.Open(m_filePath , PFile::WriteOnly)) {
+  if (!(PFile::Exists(m_filePath) ? file.Open(m_filePath + ".new", PFile::WriteOnly) : file.Open(m_filePath , PFile::WriteOnly))) {
     PTRACE(1, "Could not create file: " << file.GetFilePath() << " - " << file.GetErrorText());
     PProcess::PXShowSystemWarning(2001, "Cannot create config file: " + file.GetErrorText());
     return;
