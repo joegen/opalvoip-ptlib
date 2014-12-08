@@ -268,8 +268,10 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
   SetLogLevel(level);
 
   if (fileName.IsEmpty()) {
-    if (logFile != NULL)
+    if (logFile != NULL) {
+      logFile = NULL;
       PSystemLog::SetTarget(new PSystemLogToNowhere);
+    }
   }
   else {
     if (logFile == NULL || logFile->GetFilePath() != fileName) {
