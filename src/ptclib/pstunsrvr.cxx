@@ -302,7 +302,7 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     }
   }
 
-  PTRACE(4, "Received " << request << " on " << socketInfo.m_socketAddress);
+  PTRACE(m_throttleReceivedPacket, "Received " << request << " on " << socketInfo.m_socketAddress << m_throttleReceivedPacket);
 
   // if CHANGE-REQUEST was specified, and we have no alternate address, then refuse the request
   changeRequest = (PSTUNChangeRequest *)request.FindAttribute(PSTUNAttribute::CHANGE_REQUEST);

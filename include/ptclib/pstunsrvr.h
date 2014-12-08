@@ -106,6 +106,8 @@ class PSTUNServer : public PObject, public PSTUN
     PSocket::SelectList   m_selectList;
 
     bool m_autoDelete;
+
+    PTRACE_THROTTLE(m_throttleReceivedPacket, 4, 10000);
 };
 
 
