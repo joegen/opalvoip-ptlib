@@ -1865,11 +1865,14 @@ static bool IsSubNet(const PIPSocket::Address & addr,
 static unsigned CountMaskBits(const PIPSocket::Address & mask)
 {
   unsigned count = 0;
+  DWORD m = (DWORD) mask;
 
   switch (mask.GetVersion()) {
     case 4:
-      while (count < 32 && ((DWORD)mask & (1 << (31 - count))) != 0)
-        ++count;
+      while (m > 0) {
+        count++;
+        m = m & (m - 1);
+      }
       break;
 
     case 6 :
@@ -1912,7 +1915,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(const Address & remoteAdd
     if (IsSubNet(remoteAddress, routeEntry.GetNetwork(), routeEntry.GetNetMask())) {
       if (route == NULL)
         route = &routeEntry;
-      else if (CountMaskBits(routeEntry.GetNetMask()) > CountMaskBits(route->GetNetMask()) || (DWORD) route->GetNetMask() == 0)
+      else if (CountMaskBits(routeEntry.GetNetMask()) > CountMaskBits(route->GetNetMask()))// || (DWORD) route->GetNetMask() == 0)
         route = &routeEntry;
     }
   }
