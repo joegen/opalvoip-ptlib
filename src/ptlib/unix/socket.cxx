@@ -1935,7 +1935,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(const Address & remoteAdd
     if (IsSubNet(remoteAddress, routeEntry.GetNetwork(), routeEntry.GetNetMask())) {
       if (route == NULL)
         route = &routeEntry;
-      else if (CountMaskBits(routeEntry.GetNetMask()) > CountMaskBits(route->GetNetMask()))
+      else if (CountMaskBits(routeEntry.GetNetMask()) > CountMaskBits(route->GetNetMask()) || (DWORD) route->GetNetMask() == 0)
         route = &routeEntry;
     }
   }
