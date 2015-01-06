@@ -1114,23 +1114,49 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
     usage.m_virtual = virtPages * 4096;
     usage.m_resident = resPages * 4096;
   }
+  else
+    usage.m_virtual = usage.m_resident = 0;
 
 #if P_HAS_MALLOC_INFO
+  usage.m_max = usage.m_current = usage.m_blocks = 0;
+
   char * buffer = NULL;
   size_t size;
   FILE * mem = open_memstream(&buffer, &size);
   malloc_info(0, mem);
   fclose(mem);
 
+#if P_XML
+  PXML xml;
+  if (xml.Load(buffer)) {
+    PXMLElement * root = xml.GetRootElement();
+    PXMLElement * element = root->GetElement("system", "type", "current");
+    if (element != NULL)
+      usage.m_current = (size_t)element->GetAttribute("size").AsUnsigned64();
+    element = root->GetElement("system", "type", "max");
+    if (element != NULL)
+      usage.m_max = (size_t)element->GetAttribute("size").AsUnsigned64();
+  }
+#else
+  // Find last </heap> in XML
+  size_t offset = 0;
+  static PRegularExpression HeapRE("< */ *heap *>", PRegularExpression::Extended);
+  PINDEX pos, len;
+  while (HeapRE.Execute(buffer + offset, pos, len))
+    offset += pos + len;
+
+  // The <system type="xxx" size=yyy> after the <heap>s is total
+
   PStringArray substrings(2);
 
   static PRegularExpression MaxRE("< *system *type *= *\"max\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
-  if (MaxRE.Execute(buffer, substrings))
+  if (MaxRE.Execute(buffer+offset, substrings))
     usage.m_max = (size_t)substrings[1].AsUnsigned64();
 
   static PRegularExpression CurrentRE("< *system *type *= *\"current\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
-  if (CurrentRE.Execute(buffer, substrings))
+  if (CurrentRE.Execute(buffer+offset, substrings))
     usage.m_current = (size_t)substrings[1].AsUnsigned64();
+#endif
 
   free(buffer);
 #else
