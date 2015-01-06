@@ -95,7 +95,7 @@
       return;
     }
 
-    std::string lines[InternalMaxStackWalk];
+    std::vector<std::string> lines(InternalMaxStackWalk);
 
     static std::string addr2line = Locate_addr2line();
     if (!addr2line.empty()) {
