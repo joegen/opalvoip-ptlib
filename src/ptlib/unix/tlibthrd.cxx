@@ -32,6 +32,7 @@
  */
 
 #include <ptlib/socket.h>
+#include <ptclib/pxml.h>
 #include <sched.h>
 #include <pthread.h>
 #include <sys/resource.h>
@@ -1126,7 +1127,7 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
   malloc_info(0, mem);
   fclose(mem);
 
-#if P_XML
+#if P_EXPAT
   PXML xml;
   if (xml.Load(buffer)) {
     PXMLElement * root = xml.GetRootElement();
