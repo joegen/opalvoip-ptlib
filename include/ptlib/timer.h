@@ -38,6 +38,9 @@
 #pragma interface
 #endif
 
+#include <ptlib_config.h>
+
+#if P_TIMERS
 
 #include <ptlib/notifier.h>
 #include <ptlib/id_generator.h>
@@ -589,6 +592,16 @@ class PPoolTimerArg3: public PPoolTimer<Base_T, Pool_T>
     PTIMER_OPERATORS(PPoolTimerArg3);
 };
 
+
+#else
+
+namespace PTimer
+{
+  PTimeInterval Tick();
+  unsigned Resolution();
+};
+
+#endif // P_TIMERS
 
 #endif // PTLIB_TIMER_H
 

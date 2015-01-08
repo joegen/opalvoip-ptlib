@@ -249,7 +249,9 @@ void PSafeLockReadWrite::Unlock()
 PSafeCollection::PSafeCollection(PCollection * coll)
   : m_collection(PAssertNULL(coll))
   , m_deleteObjects(true)
+#if _P_TIMERS
   , m_deleteObjectsTimer(NULL)
+#endif
 {
   m_collection->DisallowDeleteObjects();
   m_toBeRemoved.DisallowDeleteObjects();
@@ -258,7 +260,9 @@ PSafeCollection::PSafeCollection(PCollection * coll)
 
 PSafeCollection::~PSafeCollection()
 {
+#if _P_TIMERS
   delete m_deleteObjectsTimer;
+#endif
 
   RemoveAll();
 
@@ -404,19 +408,23 @@ void PSafeCollection::DeleteObject(PObject * object) const
 
 void PSafeCollection::SetAutoDeleteObjects()
 {
+#if _P_TIMERS
   if (m_deleteObjectsTimer != NULL)
     return;
 
   m_deleteObjectsTimer = new PTimer();
   m_deleteObjectsTimer->SetNotifier(PCREATE_NOTIFIER(DeleteObjectsTimeout));
   m_deleteObjectsTimer->RunContinuous(1000); // Every second
+#endif
 }
 
 
+#if _P_TIMERS
 void PSafeCollection::DeleteObjectsTimeout(PTimer &, P_INT_PTR)
 {
   DeleteObjectsToBeRemoved();
 }
+#endif
 
 
 PINDEX PSafeCollection::GetSize() const
