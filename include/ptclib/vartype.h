@@ -36,6 +36,9 @@
 #endif
 
 #include <ptlib.h>
+
+#if P_VARTYPE
+
 #include <ptclib/guid.h>
 
 
@@ -458,6 +461,7 @@ protected:
   PBYTEArray & m_value;
 };
 
+#endif // P_VARTYPE
 
 #endif  // PTLIB_VARTYPE_H
 

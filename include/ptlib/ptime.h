@@ -615,6 +615,39 @@ class PTime : public PObject
 };
 
 
+class P_timeval
+{
+public:
+  P_timeval();
+
+  P_timeval(const PTimeInterval & time)
+  {
+    operator=(time);
+  }
+
+  P_timeval & operator=(const PTimeInterval & time);
+
+  operator timeval*()
+  {
+    return m_infinite ? NULL : &m_timeval;
+  }
+
+  timeval * operator->()
+  {
+    return &m_timeval;
+  }
+
+  timeval & operator*()
+  {
+    return m_timeval;
+  }
+
+private:
+  struct timeval m_timeval;
+  bool           m_infinite;
+};
+
+
 #endif // PTLIB_TIME_H
 
 

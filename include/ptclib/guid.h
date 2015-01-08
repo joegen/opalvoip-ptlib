@@ -35,6 +35,10 @@
 #pragma interface
 #endif
 
+#include <ptlib_config.h>
+
+#if P_GUID
+
 class PASN_OctetString;
 
 
@@ -147,7 +151,8 @@ class PGloballyUniqueID : public PBYTEArray
 };
 
 
-#endif // PTLIB_GUID_H
+#endif // P_GUID
 
+#endif // PTLIB_GUID_H
 
 // End Of File ///////////////////////////////////////////////////////////////

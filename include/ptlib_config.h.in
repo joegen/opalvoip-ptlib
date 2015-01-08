@@ -305,6 +305,15 @@
 #undef P_SERIAL
 #undef P_POP3SMTP
 #undef P_CONFIG_FILE
+#undef P_CYPHER
+#undef P_VARTYPE
+#undef P_GUID
+#if P_GUID
+  #undef P_SPOOLDIR
+#endif
+#undef P_SYSTEMLOG
+#undef P_CHANNEL_UTILS
+#undef P_NETWORKING
 
 #if _WIN32 || P_PIPECHAN
   #undef P_REMCONN
@@ -590,13 +599,25 @@
 
 /////////////////////////////////////////////////
 //
+// Script interpreter
+//
+
+#if P_VARTYPE
+	#undef P_SCRIPTS
+#endif
+
+
+/////////////////////////////////////////////////
+//
 // Lua interpreter
 //
 
-#undef P_LUA
-#undef P_LUA_WIN64
-#undef P_LUA_WIN32
-#undef P_LUA_WINCE
+#if P_SCRIPTS
+  #undef P_LUA
+  #undef P_LUA_WIN64
+  #undef P_LUA_WIN32
+  #undef P_LUA_WINCE
+#endif
 
 #if (defined(P_LUA_WIN64) &&  defined(P_64BIT)                        ) || \
     (defined(P_LUA_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
@@ -619,10 +640,12 @@
 // V8 Javascript interpreter
 //
 
-#undef P_V8
-#undef P_V8_WIN64
-#undef P_V8_WIN32
-#undef P_V8_API
+#if P_SCRIPTS
+  #undef P_V8
+  #undef P_V8_WIN64
+  #undef P_V8_WIN32
+ #undef P_V8_API
+#endif
 
 #if (defined(P_V8_WIN64) &&  defined(P_64BIT))
   #define P_V8 1

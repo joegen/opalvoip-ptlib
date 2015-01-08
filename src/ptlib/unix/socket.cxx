@@ -136,77 +136,6 @@ extern "C" void inet_ntoa_b(struct in_addr inetAddress, char *pString);
 
 
 //////////////////////////////////////////////////////////////////////////////
-// P_fd_set
-
-void P_fd_set::Construct()
-{
-  max_fd = PProcess::Current().GetMaxHandles();
-  // Use an array for FORTIFY_SOURCE
-  set = (fd_set *)malloc(((max_fd+FD_SETSIZE-1)/FD_SETSIZE)*sizeof(fd_set));
-}
-
-
-void P_fd_set::Zero()
-{
-  if (PAssertNULL(set) != NULL)
-    memset(set, 0, ((max_fd+FD_SETSIZE-1)/FD_SETSIZE)*sizeof(fd_set));
-}
-
-
-P_fd_set::P_fd_set()
-{
-  Construct();
-  Zero();
-}
-
-PBoolean P_fd_set::IsPresent(SOCKET fd) const
-{
-  const int fd_num = fd / FD_SETSIZE;
-  const int fd_off = fd % FD_SETSIZE;
-  return FD_ISSET(fd_off, set+fd_num);
-}
-
-P_fd_set::P_fd_set(SOCKET fd)
-{
-  Construct();
-  Zero();
-  const int fd_num = fd / FD_SETSIZE;
-  const int fd_off = fd % FD_SETSIZE;
-  FD_SET(fd_off, set+fd_num);
-}
-
-
-P_fd_set & P_fd_set::operator=(SOCKET fd)
-{
-  PAssert(fd < max_fd, PInvalidParameter);
-  Zero();
-  const int fd_num = fd / FD_SETSIZE;
-  const int fd_off = fd % FD_SETSIZE;
-  FD_SET(fd_off, set+fd_num);
-  return *this;
-}
-
-
-P_fd_set & P_fd_set::operator+=(SOCKET fd)
-{
-  PAssert(fd < max_fd, PInvalidParameter);
-  const int fd_num = fd / FD_SETSIZE;
-  const int fd_off = fd % FD_SETSIZE;
-  FD_SET(fd_off, set+fd_num);
-  return *this;
-}
-
-
-P_fd_set & P_fd_set::operator-=(SOCKET fd)
-{
-  PAssert(fd < max_fd, PInvalidParameter);
-  const int fd_num = fd / FD_SETSIZE;
-  const int fd_off = fd % FD_SETSIZE;
-  FD_CLR(fd_off, set+fd_num);
-  return *this;
-}
-
-//////////////////////////////////////////////////////////////////////////////
 
 PSocket::~PSocket()
 {
@@ -316,72 +245,6 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
 }
 
 
-#if !defined(P_PTHREADS) && !defined(P_BEOS)
-
-PChannel::Errors PSocket::Select(SelectList & read,
-                                 SelectList & write,
-                                 SelectList & except,
-      const PTimeInterval & timeout)
-{
-  PINDEX i, j;
-  PINDEX nextfd = 0;
-  int maxfds = 0;
-  Errors lastError = NoError;
-  PThread * unblockThread = PThread::Current();
-  
-  P_fd_set fds[3];
-  SelectList * list[3] = { &read, &write, &except };
-
-  for (i = 0; i < 3; i++) {
-    for (j = 0; j < list[i]->GetSize(); j++) {
-      PSocket & socket = (*list[i])[j];
-      if (!socket.IsOpen())
-        lastError = NotOpen;
-      else {
-        int h = socket.GetHandle();
-        fds[i] += h;
-        if (h > maxfds)
-          maxfds = h;
-      }
-      socket.px_selectMutex[i].Wait();
-      socket.px_selectThread[i] = unblockThread;
-    }
-  }
-
-  if (lastError == NoError) {
-    P_timeval tval = timeout;
-    PPROFILE_SYSTEM(
-      int result = ::select(maxfds+1, 
-                            (fd_set *)fds[0], 
-                            (fd_set *)fds[1], 
-                            (fd_set *)fds[2], 
-                            tval);
-    );
-
-    int osError;
-    (void)ConvertOSError(result, lastError, osError);
-  }
-
-  for (i = 0; i < 3; i++) {
-    for (j = 0; j < list[i]->GetSize(); j++) {
-      PSocket & socket = (*list[i])[j];
-      socket.px_selectThread[i] = NULL;
-      socket.px_selectMutex[i].Signal();
-      if (lastError == NoError) {
-        int h = socket.GetHandle();
-        if (h < 0)
-          lastError = Interrupted;
-        else if (!fds[i].IsPresent(h))
-          list[i]->RemoveAt(j--);
-      }
-    }
-  }
-
-  return lastError;
-}
-                     
-#else
-
 PChannel::Errors PSocket::Select(SelectList & read,
                                  SelectList & write,
                                  SelectList & except,
@@ -390,8 +253,10 @@ PChannel::Errors PSocket::Select(SelectList & read,
   PINDEX i, j;
   int maxfds = 0;
   Errors lastError = NoError;
+#if P_PTHREADS
   PThread * unblockThread = PThread::Current();
   int unblockPipe = unblockThread->unblockPipe[0];
+#endif
 
   P_fd_set fds[3];
   SelectList * list[3] = { &read, &write, &except };
@@ -412,15 +277,19 @@ PChannel::Errors PSocket::Select(SelectList & read,
           firstSocket = &socket;
       }
       socket.px_selectMutex[i].Wait();
+#if P_PTHREADS
       socket.px_selectThread[i] = unblockThread;
+#endif
     }
   }
 
   int result = -1;
   if (lastError == NoError) {
+#if P_PTHREADS
     fds[0] += unblockPipe;
     if (unblockPipe > maxfds)
       maxfds = unblockPipe;
+#endif
 
     P_timeval tval = timeout;
     do {
@@ -430,6 +299,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
     } while (result < 0 && errno == EINTR);
 
     if (firstSocket->ConvertOSError(result)) {
+#if P_PTHREADS
       if (fds[0].IsPresent(unblockPipe)) {
         PTRACE2(6, NULL, "Select unblocked fd=" << unblockPipe);
         char ch;
@@ -438,6 +308,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
         );
         lastError = Interrupted;
       }
+#endif
     }
     else
       lastError = firstSocket->GetErrorCode();
@@ -467,8 +338,6 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
   return lastError;
 }
-
-#endif
 
 
 #if P_HAS_RECVMSG

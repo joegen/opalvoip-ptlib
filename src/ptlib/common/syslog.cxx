@@ -35,6 +35,9 @@
 #endif
 
 #include <ptlib/syslog.h>
+
+#if P_SYSTEMLOG
+
 #include <ptlib/pprocess.h>
 
 
@@ -576,6 +579,9 @@ void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
 }
 
 #endif // _WIN32/P_ANDROID
+
+
+#endif // P_SYSTEMLOG
 
 
 // End Of File ///////////////////////////////////////////////////////////////
