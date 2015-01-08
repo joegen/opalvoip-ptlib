@@ -39,7 +39,9 @@
 #include <ptlib/syncthrd.h>
 
 
+#if _P_TIMERS
 class PTimer;
+#endif
 
 
 /** This class defines a thread-safe object in a collection.
@@ -453,14 +455,17 @@ class PSafeCollection : public PObject
     void CopySafeDictionary(PAbstractDictionary * other);
     bool SafeAddObject(PSafeObject * obj, PSafeObject * old);
     void SafeRemoveObject(PSafeObject * obj);
-    PDECLARE_NOTIFIER(PTimer, PSafeCollection, DeleteObjectsTimeout);
 
     PCollection      * m_collection;
     mutable PMutex     m_collectionMutex;
     bool               m_deleteObjects;
     PList<PSafeObject> m_toBeRemoved;
     PMutex             m_removalMutex;
+
+#if P_TIMERS
+    PDECLARE_NOTIFIER(PTimer, PSafeCollection, DeleteObjectsTimeout);
     PTimer           * m_deleteObjectsTimer;
+#endif
 
   private:
     PSafeCollection(const PSafeCollection & other) : PObject(other) { }

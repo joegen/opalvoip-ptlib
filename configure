@@ -736,6 +736,8 @@ PTLIB_VCARD
 HAS_VCARD
 PTLIB_NETWORKING
 HAS_NETWORKING
+PTLIB_TIMERS
+HAS_TIMERS
 PTLIB_CHANNEL_UTILS
 HAS_CHANNEL_UTILS
 PTLIB_SYSTEMLOG
@@ -957,6 +959,7 @@ enable_scripts
 enable_spooldir
 enable_syslog
 enable_chanutils
+enable_timers
 enable_networking
 enable_vcard
 enable_jabber
@@ -1703,6 +1706,7 @@ Optional Features:
   --disable-spooldir      disable Spool directory support
   --disable-syslog        disable System log support
   --disable-chanutils     disable Channel utilities support
+  --disable-timers        disable Timers support
   --disable-networking    disable Network support
   --disable-vcard         disable VCard support
   --disable-jabber        disable Jabber support
@@ -13334,6 +13338,81 @@ fi
 
 
    enable_chanutils="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Timers support" >&5
+$as_echo_n "checking Timers support... " >&6; }
+
+   # Check whether --enable-timers was given.
+if test "${enable_timers+set}" = set; then :
+  enableval=$enable_timers; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_TIMERS:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_TIMERS=1
+
+   if test "x$HAS_TIMERS" = "xyes" ; then
+      HAS_TIMERS=1
+   fi
+
+   if test "x$HAS_TIMERS" = "x0" || test "x$HAS_TIMERS" = "xno" ; then
+      HAS_TIMERS=
+   fi
+
+
+
+   if test "x$HAS_TIMERS" = "x1" ; then
+      PTLIB_TIMERS=yes
+      $as_echo "#define P_TIMERS 1" >>confdefs.h
+
+   else
+      PTLIB_TIMERS=no
+   fi
+
+
+
+else
+  HAS_TIMERS=
+fi
+
+
+   enable_timers="$enableval"
 
 
 

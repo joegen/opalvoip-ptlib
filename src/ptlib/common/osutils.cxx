@@ -1024,6 +1024,8 @@ bool PDirectory::Create(const PString & p, int perm, bool recurse)
 }
 
 
+#if P_TIMERS
+
 ///////////////////////////////////////////////////////////////////////////////
 // PSimpleTimer
 
@@ -1328,6 +1330,9 @@ PTimeInterval PTimer::List::Process()
   PTRACE(6, NULL, "PTLib", m_timers.size() << " timers processed, next=" << nextInterval);
   return nextInterval;
 }
+
+
+#endif //P_TIMERS
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2066,7 +2071,9 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   Construct();
 
+#if P_TIMERS
   m_timerList = new PTimer::List();
+#endif
 
   if (!suppressStartup)
     Startup();
@@ -2131,8 +2138,10 @@ void PProcess::PreShutdown()
     m_houseKeeper->WaitForTermination();
     delete m_houseKeeper;
     m_houseKeeper = NULL;
+#if P_TIMERS
     delete m_timerList;
     m_timerList = NULL;
+#endif
   }
 
   // Clean up factories

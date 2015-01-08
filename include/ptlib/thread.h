@@ -43,6 +43,7 @@
 #endif
 
 #include <ptlib/mutex.h>
+#include <ptlib/notifier.h>
 #include <set>
 
 
