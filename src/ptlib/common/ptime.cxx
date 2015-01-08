@@ -743,4 +743,24 @@ PTime & PTime::operator-=(const PTimeInterval & t)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// P_timeval
+
+P_timeval::P_timeval()
+  : m_infinite(false)
+{
+  m_timeval.tv_usec = 0;
+  m_timeval.tv_sec = 0;
+}
+
+
+P_timeval & P_timeval::operator=(const PTimeInterval & time)
+{
+  m_infinite = time == PMaxTimeInterval;
+  m_timeval.tv_usec = (long)(time.GetMilliSeconds() % 1000) * 1000;
+  m_timeval.tv_sec = time.GetSeconds();
+  return *this;
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////

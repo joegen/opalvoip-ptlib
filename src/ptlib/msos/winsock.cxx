@@ -159,7 +159,7 @@ void P_fd_set::Zero()
     FD_ZERO(set);
 }
 
-PBoolean P_fd_set::IsPresent(SOCKET fd) const
+PBoolean P_fd_set::IsPresent(intptr_t fd) const
 {
   return FD_ISSET(fd, set);
 }
@@ -169,7 +169,7 @@ PBoolean P_fd_set::IsPresent(SOCKET fd) const
   #pragma warning(disable:4127)
 #endif
 
-P_fd_set::P_fd_set(SOCKET fd)
+P_fd_set::P_fd_set(intptr_t fd)
 {
   Construct();
   Zero();
@@ -177,7 +177,7 @@ P_fd_set::P_fd_set(SOCKET fd)
 }
 
 
-P_fd_set & P_fd_set::operator=(SOCKET fd)
+P_fd_set & P_fd_set::operator=(intptr_t fd)
 {
   PAssert(fd < max_fd, PInvalidParameter);
   Zero();
@@ -186,7 +186,7 @@ P_fd_set & P_fd_set::operator=(SOCKET fd)
 }
 
 
-P_fd_set & P_fd_set::operator+=(SOCKET fd)
+P_fd_set & P_fd_set::operator+=(intptr_t fd)
 {
   PAssert(fd < max_fd, PInvalidParameter);
   FD_SET(fd, set);
@@ -194,7 +194,7 @@ P_fd_set & P_fd_set::operator+=(SOCKET fd)
 }
 
 
-P_fd_set & P_fd_set::operator-=(SOCKET fd)
+P_fd_set & P_fd_set::operator-=(intptr_t fd)
 {
   PAssert(fd < max_fd, PInvalidParameter);
   FD_CLR(fd, set);

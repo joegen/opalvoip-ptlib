@@ -30,12 +30,13 @@
  */
 
 #include <ptlib.h>
-#include <ptlib/pprocess.h>
 #include <ptlib/pluginmgr.h>
 
-#ifndef __BEOS__
+#if P_PLUGINS
+
+#include <ptlib/pprocess.h>
 #include <algorithm>
-#endif
+
 
 #ifndef P_DEFAULT_PLUGIN_DIR
 #  if defined (_WIN32_WCE)
@@ -521,7 +522,9 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, P_INT_PTR code)
 ////////////////////////////////////////////////////////////////////////////////////
 
 void PluginLoaderStartup::OnStartup()
-{ 
+{
+  PPluginManager::GetPluginManager().AddDirectory(PProcess::Current().GetFile().GetDirectory());
+
   // load the plugin module managers
   PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
   PFactory<PPluginModuleManager>::KeyList_T::const_iterator it;
@@ -551,3 +554,4 @@ void PluginLoaderStartup::OnShutdown()
 
 PFACTORY_CREATE(PProcessStartupFactory, PluginLoaderStartup, PLUGIN_LOADER_STARTUP_NAME, true);
 
+#endif // P_PLUGINS

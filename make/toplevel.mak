@@ -397,7 +397,8 @@ endif
 
 ifeq ($(HAS_CONFIG_FILE),1)
   ifeq ($(target_os),mingw)
-    SOURCES += $(PLATFORM_SRC_DIR)/wincfg.cxx 
+    SOURCES += $(PLATFORM_SRC_DIR)/wincfg.cxx \
+               $(COMMON_SRC_DIR)/pconfig.cxx
   else
     SOURCES += $(PLATFORM_SRC_DIR)/config.cxx 
   endif
@@ -412,19 +413,62 @@ ifeq ($(HAS_FFVDEV),1)
   SOURCES += $(COMPONENT_SRC_DIR)/pffvdev.cxx
 endif
 
+ifeq ($(HAS_CYPHER),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/cypher.cxx
+endif
+
+ifeq ($(HAS_VARTYPE),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/vartype.cxx
+endif
+
+ifeq ($(HAS_GUID),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/guid.cxx
+endif
+
+ifeq ($(HAS_SCRIPTS),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/script.cxx
+endif
+
+ifeq ($(HAS_SPOOLDIR),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/spooldir.cxx
+endif
+
+ifeq ($(HAS_SYSTEMLOG),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/syslog.cxx
+endif
+
+ifeq ($(HAS_PLUGINS),1)
+  SOURCES += $(COMMON_SRC_DIR)/pluginmgr.cxx
+endif
+
+ifeq ($(HAS_CHANNEL_UTILS),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/qchannel.cxx \
+             $(COMPONENT_SRC_DIR)/delaychan.cxx \
+             $(COMPONENT_SRC_DIR)/memfile.cxx
+endif
+
+ifeq ($(HAS_NETWORKING),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/ipacl.cxx \
+             $(COMPONENT_SRC_DIR)/inetprot.cxx \
+             $(COMMON_SRC_DIR)/psockbun.cxx \
+             $(COMMON_SRC_DIR)/sockets.cxx
+  ifeq ($(target_os),mingw)
+    SOURCES += $(PLATFORM_SRC_DIR)/icmp.cxx \
+               $(PLATFORM_SRC_DIR)/winsock.cxx \
+               $(COMMON_SRC_DIR)/pethsock.cxx
+  else
+    SOURCES += $(PLATFORM_SRC_DIR)/uicmp.cxx \
+               $(PLATFORM_SRC_DIR)/socket.cxx
+  endif
+endif
+
 ifeq ($(target_os),mingw)
   SOURCES += $(PLATFORM_SRC_DIR)/ptlib.cxx \
-             $(PLATFORM_SRC_DIR)/icmp.cxx \
-             $(PLATFORM_SRC_DIR)/winsock.cxx \
              $(PLATFORM_SRC_DIR)/win32.cxx \
              $(PLATFORM_SRC_DIR)/dllmain.cxx \
-             $(COMMON_SRC_DIR)/pchannel.cxx \
-             $(COMMON_SRC_DIR)/pethsock.cxx \
-             $(COMMON_SRC_DIR)/pconfig.cxx
+             $(COMMON_SRC_DIR)/pchannel.cxx
 else
-  SOURCES += $(PLATFORM_SRC_DIR)/uicmp.cxx \
-             $(PLATFORM_SRC_DIR)/socket.cxx \
-             $(PLATFORM_SRC_DIR)/udll.cxx \
+  SOURCES += $(PLATFORM_SRC_DIR)/udll.cxx \
              $(PLATFORM_SRC_DIR)/channel.cxx \
              $(PLATFORM_SRC_DIR)/osutil.cxx \
              $(PLATFORM_SRC_DIR)/tlib.cxx
@@ -434,28 +478,14 @@ GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.c
 CLEAN_FILES = $(GETDATE_SOURCE)
 
 SOURCES	+= \
-	$(COMPONENT_SRC_DIR)/spooldir.cxx \
 	$(COMPONENT_SRC_DIR)/threadpool.cxx \
-	$(COMPONENT_SRC_DIR)/ipacl.cxx \
-	$(COMPONENT_SRC_DIR)/qchannel.cxx \
-	$(COMPONENT_SRC_DIR)/delaychan.cxx \
-	$(COMPONENT_SRC_DIR)/memfile.cxx \
-	$(COMPONENT_SRC_DIR)/cypher.cxx \
 	$(COMPONENT_SRC_DIR)/random.cxx \
-	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
-	$(COMPONENT_SRC_DIR)/guid.cxx \
-	$(COMPONENT_SRC_DIR)/vartype.cxx \
-	$(COMPONENT_SRC_DIR)/script.cxx \
-	$(GETDATE_SOURCE) \
-	$(PLATFORM_SRC_DIR)/assert.cxx \
-	$(COMMON_SRC_DIR)/pluginmgr.cxx \
-	$(COMMON_SRC_DIR)/sockets.cxx \
-	$(COMMON_SRC_DIR)/psockbun.cxx \
-	$(COMMON_SRC_DIR)/ptime.cxx \
-	$(COMMON_SRC_DIR)/syslog.cxx \
-	$(COMMON_SRC_DIR)/osutils.cxx \
 	$(COMMON_SRC_DIR)/safecoll.cxx \
+	$(COMMON_SRC_DIR)/ptime.cxx \
+	$(GETDATE_SOURCE) \
+	$(COMMON_SRC_DIR)/osutils.cxx \
+	$(PLATFORM_SRC_DIR)/assert.cxx \
 	$(COMMON_SRC_DIR)/collect.cxx \
 	$(COMMON_SRC_DIR)/contain.cxx \
 	$(COMMON_SRC_DIR)/object.cxx   # must be last module

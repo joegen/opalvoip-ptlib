@@ -762,6 +762,41 @@ class PNullChannel : public PChannel
 };
 
 
+class P_fd_set
+{
+public:
+  P_fd_set();
+  P_fd_set(intptr_t fd);
+  ~P_fd_set()
+  {
+    free(set);
+  }
+
+  P_fd_set & operator=(intptr_t fd);
+  P_fd_set & operator+=(intptr_t fd);
+  P_fd_set & operator-=(intptr_t fd);
+
+  void Zero();
+
+  PBoolean IsPresent(intptr_t fd) const;
+
+  operator fd_set*() const
+  {
+    return set;
+  }
+
+protected:
+  void Construct();
+
+  intptr_t max_fd;
+  fd_set * set;
+
+private:
+  P_fd_set(const P_fd_set &) { }
+  void operator=(const P_fd_set &) { }
+};
+
+
 #endif // PTLIB_CHANNEL_H
 
 

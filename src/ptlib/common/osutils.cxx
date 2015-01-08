@@ -275,12 +275,14 @@ PTHREAD_MUTEX_RECURSIVE_NP
     if ((m_options & HasFilePermissions) == 0)
       m_options |= HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
 
+#if P_SYSTEMLOG
     bool syslogBit = (m_options&SystemLogStream) != 0;
     bool syslogStrm = dynamic_cast<PSystemLog *>(m_stream) != NULL;
     if (syslogBit != syslogStrm) {
       SetStream(syslogBit ? new PSystemLog : &cerr);
       PSystemLog::GetTarget().SetThresholdLevel(PSystemLog::LevelFromInt(m_thresholdLevel));
     }
+#endif
 
     return true;
   }
@@ -307,7 +309,8 @@ PTHREAD_MUTEX_RECURSIVE_NP
 #ifdef _WIN32
     else if (m_filename == "DEBUGSTREAM")
       SetStream(new PDebugStream);
-#elif !defined(P_VXWORKS)
+#endif
+#if P_SYSTEMLOG
     else if (tokens[0] *= "syslog") {
       PSystemLog::SetTarget(new PSystemLogToSyslog(tokens[1],
                                                    tokens.GetSize() > 2 ? tokens[2].AsInteger() : -1,
@@ -315,7 +318,6 @@ PTHREAD_MUTEX_RECURSIVE_NP
                                                    tokens.GetSize() > 4 ? tokens[4].AsInteger() : -1));
       AdjustOptions(SystemLogStream, 0);
     }
-#endif
     else if (tokens[0] *= "network") {
       switch (tokens.GetSize()) {
         case 1 :
@@ -331,6 +333,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       }
       AdjustOptions(SystemLogStream, 0);
     }
+#endif
     else {
       PFilePath fn(m_filename);
       fn.Replace("%P", PString(PProcess::GetCurrentProcessID()));
@@ -432,12 +435,13 @@ ostream & PTrace::PrintInfo(ostream & strm, bool crlf)
 #ifdef _WIN32
   else if (dynamic_cast<PDebugStream *>(info.m_stream) != NULL)
     strm << "debugstream";
-#elif !defined(P_VXWORKS)
+#endif
+#if P_SYSTEMLOG
   else if (dynamic_cast<PSystemLogToSyslog *>(info.m_stream) != NULL)
     strm << "syslog";
-#endif
   else if (dynamic_cast<PSystemLogToNetwork *>(info.m_stream) != NULL)
     strm << "network: " << dynamic_cast<PSystemLogToNetwork *>(info.m_stream)->GetServer();
+#endif
   else
     strm << typeid(*info.m_stream).name();
 
@@ -2078,14 +2082,13 @@ void PProcess::Startup()
 {
   PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
-  if (!executableFile.IsEmpty())
-    PPluginManager::GetPluginManager().AddDirectory(executableFile.GetDirectory());
-
   // create one instance of each class registered in the PProcessStartup abstract factory
   // But make sure we have plugins first, to avoid bizarre behaviour where static objects
   // are initialised multiple times when libraries are loaded in Linux.
   PProcessStartupFactory::KeyList_T list = PProcessStartupFactory::GetKeyList();
+#ifdef PLUGIN_LOADER_STARTUP_NAME
   std::swap(list.front(), *std::find(list.begin(), list.end(), PLUGIN_LOADER_STARTUP_NAME));
+#endif
   list.insert(list.begin(), "SetTraceLevel");
   for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it) {
     PProcessStartup * startup = PProcessStartupFactory::CreateInstance(*it);

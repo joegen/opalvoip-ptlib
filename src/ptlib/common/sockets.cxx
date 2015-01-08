@@ -770,26 +770,6 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 
 //////////////////////////////////////////////////////////////////////////////
-// P_timeval
-
-P_timeval::P_timeval()
-{
-  tval.tv_usec = 0;
-  tval.tv_sec = 0;
-  infinite = false;
-}
-
-
-P_timeval & P_timeval::operator=(const PTimeInterval & time)
-{
-  infinite = time == PMaxTimeInterval;
-  tval.tv_usec = (long)(time.GetMilliSeconds()%1000)*1000;
-  tval.tv_sec = time.GetSeconds();
-  return *this;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
 // PSocket
 
 PSocket::PSocket()

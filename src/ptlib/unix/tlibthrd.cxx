@@ -50,8 +50,6 @@
 #include <mach/thread_policy.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
-// going to need the main thread for adjusting relative priority
-static pthread_t baseThread;
 #elif defined(P_LINUX)
 #include <malloc.h>
 #include <sys/syscall.h>
@@ -186,21 +184,6 @@ void PProcess::HouseKeeping()
 
 void PProcess::Construct()
 {
-#ifndef P_RTEMS
-  // get the file descriptor limit
-  struct rlimit rl;
-  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-  maxHandles = rl.rlim_cur;
-  PTRACE(4, "PTLib\tMaximum per-process file handles is " << maxHandles);
-#else
-  maxHandles = 500; // arbitrary value
-#endif
-
-#ifdef P_MACOSX
-  // records the main thread for priority adjusting
-  baseThread = pthread_self();
-#endif
-
   CommonConstruct();
 }
 
@@ -568,10 +551,7 @@ GetThreadBasePriority ()
     thread_basic_info_data_t threadInfo;
     policy_info_data_t       thePolicyInfo;
     unsigned int             count;
-
-    if (baseThread == 0) {
-      return 0;
-    }
+    pthread_t baseThread = PProcess::Current().GetThreadId();
 
     // get basic info
     count = THREAD_BASIC_INFO_COUNT;
