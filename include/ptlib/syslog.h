@@ -35,6 +35,10 @@
 #pragma interface
 #endif
 
+#include "ptlib_config.h"
+
+#if P_SYSTEMLOG
+
 #include "ptlib/udpsock.h"
 
 class PSystemLogTarget;
@@ -420,5 +424,7 @@ as a stream output sequence which is them output to the system log.
 
 #endif
 
+
+#endif //P_SYSTEMLOG
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -170,6 +170,7 @@
         return;
       }
 
+#if P_PTHREADS
       if (!PProcess::IsInitialised())
         return;
 
@@ -189,10 +190,12 @@
       pthread_mutex_lock(&s_threadStackMutex);
       s_threadStackWalks.erase(id);
       pthread_mutex_unlock(&s_threadStackMutex);
+#endif
     }
 
     void PProcess::InternalWalkStackSignaled()
     {
+#if P_PTHREADS
       pthread_mutex_lock(&s_threadStackMutex);
       PWalkStackMap::iterator it = s_threadStackWalks.find(PThread::GetCurrentThreadId());
       if (it != s_threadStackWalks.end()) {
@@ -202,6 +205,7 @@
       }
       it->second.m_done.Signal();
       pthread_mutex_unlock(&s_threadStackMutex);
+#endif
     }
   #endif // PTRACING
 

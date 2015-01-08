@@ -1715,6 +1715,62 @@ dnl MSWIN_IF_FEATURE ssdp,http
 PTLIB_SIMPLE_OPTION([ssdp], [SSDP], [SSDP support], [HAS_HTTP])
 
 dnl ########################################################################
+dnl check for Cypher support
+dnl MSWIN_DISPLAY    cypher,Cypher support
+dnl MSWIN_DEFINE     cypher,P_CYPHER
+
+PTLIB_SIMPLE_OPTION([cypher], [CYPHER], [Cypher support])
+
+dnl ########################################################################
+dnl check for VarType support
+dnl MSWIN_DISPLAY    vartype,VarType support
+dnl MSWIN_DEFINE     vartype,P_VARTYPE
+
+PTLIB_SIMPLE_OPTION([vartype], [VARTYPE], [VarType support])
+
+dnl ########################################################################
+dnl check for GUID support
+dnl MSWIN_DISPLAY    guid,GUID support
+dnl MSWIN_DEFINE     guid,P_GUID
+
+PTLIB_SIMPLE_OPTION([guid], [GUID], [GUID support])
+
+dnl ########################################################################
+dnl check for scripts support
+dnl MSWIN_DISPLAY    scripts,Scripts support
+dnl MSWIN_DEFINE     scripts,P_SCRIPTS
+
+PTLIB_SIMPLE_OPTION([scripts], [SCRIPTS], [Scripts support], [HAS_VARTYPE])
+
+dnl ########################################################################
+dnl check for spool directory support
+dnl MSWIN_DISPLAY    spooldir,Spool directory support
+dnl MSWIN_DEFINE     spooldir,P_SPOOLDIR
+
+PTLIB_SIMPLE_OPTION([spooldir], [SPOOLDIR], [Spool directory support], [HAS_GUID])
+
+dnl ########################################################################
+dnl check for system log support
+dnl MSWIN_DISPLAY    syslog,System log support
+dnl MSWIN_DEFINE     syslog,P_SYSTEMLOG
+
+PTLIB_SIMPLE_OPTION([syslog], [SYSTEMLOG], [System log support])
+
+dnl ########################################################################
+dnl check for channel utilities support
+dnl MSWIN_DISPLAY    chanutils,Channel utilities support
+dnl MSWIN_DEFINE     chanutils,P_CHANNEL_UTILS
+
+PTLIB_SIMPLE_OPTION([chanutils], [CHANNEL_UTILS], [Channel utilities support])
+
+dnl ########################################################################
+dnl check for network support
+dnl MSWIN_DISPLAY    networking,Network support
+dnl MSWIN_DEFINE     networking,P_NETWORKING
+
+PTLIB_SIMPLE_OPTION([networking], [NETWORKING], [Network support])
+
+dnl ########################################################################
 dnl check for VCard support
 dnl MSWIN_DISPLAY    vcard,VCard support
 dnl MSWIN_DEFINE     vcard,P_VCARD

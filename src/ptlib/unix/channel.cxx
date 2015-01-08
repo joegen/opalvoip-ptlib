@@ -348,16 +348,6 @@ int PChannel::PXClose()
   os_handle = -1;
   IOSTREAM_MUTEX_SIGNAL();
 
-#if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(VX_TASKS)
-  // abort any I/O block using this os_handle
-  PProcess::Current().PXAbortIOBlock(handle);
-
-#ifndef BE_BONELESS
-  DWORD cmd = 0;
-  ::ioctl(handle, FIONBIO, &cmd);
-#endif
-#endif
-
   AbortIO(px_readThread, px_threadMutex);
   AbortIO(px_writeThread, px_threadMutex);
   for (PINDEX i = 0; i < 3; ++i)

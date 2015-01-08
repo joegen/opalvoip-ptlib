@@ -35,6 +35,8 @@
 #include <ptlib.h>
 #include <ptclib/vartype.h>
 
+#if P_VARTYPE
+
 #include <limits>
 
 
@@ -977,3 +979,5 @@ void PVarType::OnGetValue()
 void PVarType::OnValueChanged()
 {
 }
+
+#endif // P_VARTYPE
