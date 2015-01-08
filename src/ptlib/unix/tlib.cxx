@@ -69,6 +69,8 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <malloc.h>
+#include <fstream>
 #endif
 
 #if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
@@ -773,10 +775,12 @@ bool PThread::GetTimes(Times & times)
   // Do not use any PTLib functions in here as they could to a PTRACE, and this deadlock
   times.m_name = m_threadName;
   times.m_threadId = m_threadId;
-  times.m_uniqueId = PX_linuxId;
+  times.m_uniqueId = GetUniqueIdentifier();
+#if P_PTHREADS
   times.m_real = (PX_endTick != 0 ? PX_endTick : PTimer::Tick()) - PX_startTick;
+#endif
 
-  return InternalGetTimes(PSTRSTRM("/proc/" << getpid() << "/task/" << PX_linuxId << "/stat"), times);
+  return InternalGetTimes(PSTRSTRM("/proc/" << getpid() << "/task/" << times.m_uniqueId << "/stat"), times);
 }
 
 
