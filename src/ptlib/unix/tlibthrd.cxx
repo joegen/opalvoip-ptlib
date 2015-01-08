@@ -36,7 +36,6 @@
 #include <sched.h>
 #include <pthread.h>
 #include <sys/resource.h>
-#include <fstream>
 
 #ifdef P_RTEMS
 #define SUSPEND_SIG SIGALRM
@@ -51,9 +50,7 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #elif defined(P_LINUX)
-#include <malloc.h>
 #include <sys/syscall.h>
-#include <fstream>
 #elif defined(P_ANDROID)
 #include <asm/page.h>
 #include <jni.h>
