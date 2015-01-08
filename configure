@@ -734,6 +734,22 @@ PTLIB_JABBER
 HAS_JABBER
 PTLIB_VCARD
 HAS_VCARD
+PTLIB_NETWORKING
+HAS_NETWORKING
+PTLIB_CHANNEL_UTILS
+HAS_CHANNEL_UTILS
+PTLIB_SYSTEMLOG
+HAS_SYSTEMLOG
+PTLIB_SPOOLDIR
+HAS_SPOOLDIR
+PTLIB_SCRIPTS
+HAS_SCRIPTS
+PTLIB_GUID
+HAS_GUID
+PTLIB_VARTYPE
+HAS_VARTYPE
+PTLIB_CYPHER
+HAS_CYPHER
 PTLIB_SSDP
 HAS_SSDP
 PTLIB_HTTPSVC
@@ -934,6 +950,14 @@ enable_http
 enable_httpforms
 enable_httpsvc
 enable_ssdp
+enable_cypher
+enable_vartype
+enable_guid
+enable_scripts
+enable_spooldir
+enable_syslog
+enable_chanutils
+enable_networking
 enable_vcard
 enable_jabber
 enable_tts
@@ -1672,6 +1696,14 @@ Optional Features:
   --disable-httpforms     disable HTTP forms support
   --disable-httpsvc       disable HTTP server support
   --disable-ssdp          disable SSDP support
+  --disable-cypher        disable Cypher support
+  --disable-vartype       disable VarType support
+  --disable-guid          disable GUID support
+  --disable-scripts       disable Scripts support
+  --disable-spooldir      disable Spool directory support
+  --disable-syslog        disable System log support
+  --disable-chanutils     disable Channel utilities support
+  --disable-networking    disable Network support
   --disable-vcard         disable VCard support
   --disable-jabber        disable Jabber support
   --disable-tts           disable Text-To-Speech server support
@@ -5504,18 +5536,18 @@ else
 /* end confdefs.h.  */
 
   /* For now, do not test the preprocessor; as of 2007 there are too many
-	 implementations with broken preprocessors.  Perhaps this can
-	 be revisited in 2012.  In the meantime, code should not expect
-	 #if to work with literals wider than 32 bits.  */
+         implementations with broken preprocessors.  Perhaps this can
+         be revisited in 2012.  In the meantime, code should not expect
+         #if to work with literals wider than 32 bits.  */
       /* Test literals.  */
       long long int ll = 9223372036854775807ll;
       long long int nll = -9223372036854775807LL;
       unsigned long long int ull = 18446744073709551615ULL;
       /* Test constant expressions.   */
       typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
-		     ? 1 : -1)];
+                     ? 1 : -1)];
       typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
-		     ? 1 : -1)];
+                     ? 1 : -1)];
       int i = 63;
 int
 main ()
@@ -5524,9 +5556,9 @@ main ()
       long long int llmax = 9223372036854775807ll;
       unsigned long long int ullmax = 18446744073709551615ull;
       return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
-	      | (llmax / ll) | (llmax % ll)
-	      | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
-	      | (ullmax / ull) | (ullmax % ull));
+              | (llmax / ll) | (llmax % ll)
+              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+              | (ullmax / ull) | (ullmax % ull));
   ;
   return 0;
 }
@@ -5558,33 +5590,33 @@ if ${ac_cv_type_long_long_int+:} false; then :
 else
   ac_cv_type_long_long_int=yes
       if test "x${ac_cv_prog_cc_c99-no}" = xno; then
-	ac_cv_type_long_long_int=$ac_cv_type_unsigned_long_long_int
-	if test $ac_cv_type_long_long_int = yes; then
-	  	  	  	  if test "$cross_compiling" = yes; then :
+        ac_cv_type_long_long_int=$ac_cv_type_unsigned_long_long_int
+        if test $ac_cv_type_long_long_int = yes; then
+                                        if test "$cross_compiling" = yes; then :
   :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <limits.h>
-		 #ifndef LLONG_MAX
-		 # define HALF \
-			  (1LL << (sizeof (long long int) * CHAR_BIT - 2))
-		 # define LLONG_MAX (HALF - 1 + HALF)
-		 #endif
+                 #ifndef LLONG_MAX
+                 # define HALF \
+                          (1LL << (sizeof (long long int) * CHAR_BIT - 2))
+                 # define LLONG_MAX (HALF - 1 + HALF)
+                 #endif
 int
 main ()
 {
 long long int n = 1;
-		 int i;
-		 for (i = 0; ; i++)
-		   {
-		     long long int m = n << i;
-		     if (m >> i != n)
-		       return 1;
-		     if (LLONG_MAX / 2 < m)
-		       break;
-		   }
-		 return 0;
+                 int i;
+                 for (i = 0; ; i++)
+                   {
+                     long long int m = n << i;
+                     if (m >> i != n)
+                       return 1;
+                     if (LLONG_MAX / 2 < m)
+                       break;
+                   }
+                 return 0;
   ;
   return 0;
 }
@@ -5598,7 +5630,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-	fi
+        fi
       fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_long_long_int" >&5
@@ -5621,18 +5653,18 @@ else
 /* end confdefs.h.  */
 
   /* For now, do not test the preprocessor; as of 2007 there are too many
-	 implementations with broken preprocessors.  Perhaps this can
-	 be revisited in 2012.  In the meantime, code should not expect
-	 #if to work with literals wider than 32 bits.  */
+         implementations with broken preprocessors.  Perhaps this can
+         be revisited in 2012.  In the meantime, code should not expect
+         #if to work with literals wider than 32 bits.  */
       /* Test literals.  */
       long long int ll = 9223372036854775807ll;
       long long int nll = -9223372036854775807LL;
       unsigned long long int ull = 18446744073709551615ULL;
       /* Test constant expressions.   */
       typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
-		     ? 1 : -1)];
+                     ? 1 : -1)];
       typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
-		     ? 1 : -1)];
+                     ? 1 : -1)];
       int i = 63;
 int
 main ()
@@ -5641,9 +5673,9 @@ main ()
       long long int llmax = 9223372036854775807ll;
       unsigned long long int ullmax = 18446744073709551615ull;
       return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
-	      | (llmax / ll) | (llmax % ll)
-	      | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
-	      | (ullmax / ull) | (ullmax % ull));
+              | (llmax / ll) | (llmax % ll)
+              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+              | (ullmax / ull) | (ullmax % ull));
   ;
   return 0;
 }
@@ -12757,6 +12789,626 @@ fi
 
 
    enable_ssdp="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Cypher support" >&5
+$as_echo_n "checking Cypher support... " >&6; }
+
+   # Check whether --enable-cypher was given.
+if test "${enable_cypher+set}" = set; then :
+  enableval=$enable_cypher; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_CYPHER:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_CYPHER=1
+
+   if test "x$HAS_CYPHER" = "xyes" ; then
+      HAS_CYPHER=1
+   fi
+
+   if test "x$HAS_CYPHER" = "x0" || test "x$HAS_CYPHER" = "xno" ; then
+      HAS_CYPHER=
+   fi
+
+
+
+   if test "x$HAS_CYPHER" = "x1" ; then
+      PTLIB_CYPHER=yes
+      $as_echo "#define P_CYPHER 1" >>confdefs.h
+
+   else
+      PTLIB_CYPHER=no
+   fi
+
+
+
+else
+  HAS_CYPHER=
+fi
+
+
+   enable_cypher="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking VarType support" >&5
+$as_echo_n "checking VarType support... " >&6; }
+
+   # Check whether --enable-vartype was given.
+if test "${enable_vartype+set}" = set; then :
+  enableval=$enable_vartype; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_VARTYPE:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_VARTYPE=1
+
+   if test "x$HAS_VARTYPE" = "xyes" ; then
+      HAS_VARTYPE=1
+   fi
+
+   if test "x$HAS_VARTYPE" = "x0" || test "x$HAS_VARTYPE" = "xno" ; then
+      HAS_VARTYPE=
+   fi
+
+
+
+   if test "x$HAS_VARTYPE" = "x1" ; then
+      PTLIB_VARTYPE=yes
+      $as_echo "#define P_VARTYPE 1" >>confdefs.h
+
+   else
+      PTLIB_VARTYPE=no
+   fi
+
+
+
+else
+  HAS_VARTYPE=
+fi
+
+
+   enable_vartype="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking GUID support" >&5
+$as_echo_n "checking GUID support... " >&6; }
+
+   # Check whether --enable-guid was given.
+if test "${enable_guid+set}" = set; then :
+  enableval=$enable_guid; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_GUID:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_GUID=1
+
+   if test "x$HAS_GUID" = "xyes" ; then
+      HAS_GUID=1
+   fi
+
+   if test "x$HAS_GUID" = "x0" || test "x$HAS_GUID" = "xno" ; then
+      HAS_GUID=
+   fi
+
+
+
+   if test "x$HAS_GUID" = "x1" ; then
+      PTLIB_GUID=yes
+      $as_echo "#define P_GUID 1" >>confdefs.h
+
+   else
+      PTLIB_GUID=no
+   fi
+
+
+
+else
+  HAS_GUID=
+fi
+
+
+   enable_guid="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Scripts support" >&5
+$as_echo_n "checking Scripts support... " >&6; }
+
+   # Check whether --enable-scripts was given.
+if test "${enable_scripts+set}" = set; then :
+  enableval=$enable_scripts; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_SCRIPTS:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+      if test "x${enableval}" = "xyes" && \
+             test "x$HAS_VARTYPE" != "x1" && \
+             test "x$HAS_VARTYPE" != "xyes"; then :
+
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VARTYPE=$HAS_VARTYPE" >&5
+$as_echo "disabled due to disabled dependency HAS_VARTYPE=$HAS_VARTYPE" >&6; }
+         enableval=no
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_SCRIPTS=1
+
+   if test "x$HAS_SCRIPTS" = "xyes" ; then
+      HAS_SCRIPTS=1
+   fi
+
+   if test "x$HAS_SCRIPTS" = "x0" || test "x$HAS_SCRIPTS" = "xno" ; then
+      HAS_SCRIPTS=
+   fi
+
+
+
+   if test "x$HAS_SCRIPTS" = "x1" ; then
+      PTLIB_SCRIPTS=yes
+      $as_echo "#define P_SCRIPTS 1" >>confdefs.h
+
+   else
+      PTLIB_SCRIPTS=no
+   fi
+
+
+
+else
+  HAS_SCRIPTS=
+fi
+
+
+   enable_scripts="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Spool directory support" >&5
+$as_echo_n "checking Spool directory support... " >&6; }
+
+   # Check whether --enable-spooldir was given.
+if test "${enable_spooldir+set}" = set; then :
+  enableval=$enable_spooldir; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_SPOOLDIR:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+      if test "x${enableval}" = "xyes" && \
+             test "x$HAS_GUID" != "x1" && \
+             test "x$HAS_GUID" != "xyes"; then :
+
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_GUID=$HAS_GUID" >&5
+$as_echo "disabled due to disabled dependency HAS_GUID=$HAS_GUID" >&6; }
+         enableval=no
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_SPOOLDIR=1
+
+   if test "x$HAS_SPOOLDIR" = "xyes" ; then
+      HAS_SPOOLDIR=1
+   fi
+
+   if test "x$HAS_SPOOLDIR" = "x0" || test "x$HAS_SPOOLDIR" = "xno" ; then
+      HAS_SPOOLDIR=
+   fi
+
+
+
+   if test "x$HAS_SPOOLDIR" = "x1" ; then
+      PTLIB_SPOOLDIR=yes
+      $as_echo "#define P_SPOOLDIR 1" >>confdefs.h
+
+   else
+      PTLIB_SPOOLDIR=no
+   fi
+
+
+
+else
+  HAS_SPOOLDIR=
+fi
+
+
+   enable_spooldir="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking System log support" >&5
+$as_echo_n "checking System log support... " >&6; }
+
+   # Check whether --enable-syslog was given.
+if test "${enable_syslog+set}" = set; then :
+  enableval=$enable_syslog; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_SYSTEMLOG:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_SYSTEMLOG=1
+
+   if test "x$HAS_SYSTEMLOG" = "xyes" ; then
+      HAS_SYSTEMLOG=1
+   fi
+
+   if test "x$HAS_SYSTEMLOG" = "x0" || test "x$HAS_SYSTEMLOG" = "xno" ; then
+      HAS_SYSTEMLOG=
+   fi
+
+
+
+   if test "x$HAS_SYSTEMLOG" = "x1" ; then
+      PTLIB_SYSTEMLOG=yes
+      $as_echo "#define P_SYSTEMLOG 1" >>confdefs.h
+
+   else
+      PTLIB_SYSTEMLOG=no
+   fi
+
+
+
+else
+  HAS_SYSTEMLOG=
+fi
+
+
+   enable_syslog="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Channel utilities support" >&5
+$as_echo_n "checking Channel utilities support... " >&6; }
+
+   # Check whether --enable-chanutils was given.
+if test "${enable_chanutils+set}" = set; then :
+  enableval=$enable_chanutils; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_CHANNEL_UTILS:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_CHANNEL_UTILS=1
+
+   if test "x$HAS_CHANNEL_UTILS" = "xyes" ; then
+      HAS_CHANNEL_UTILS=1
+   fi
+
+   if test "x$HAS_CHANNEL_UTILS" = "x0" || test "x$HAS_CHANNEL_UTILS" = "xno" ; then
+      HAS_CHANNEL_UTILS=
+   fi
+
+
+
+   if test "x$HAS_CHANNEL_UTILS" = "x1" ; then
+      PTLIB_CHANNEL_UTILS=yes
+      $as_echo "#define P_CHANNEL_UTILS 1" >>confdefs.h
+
+   else
+      PTLIB_CHANNEL_UTILS=no
+   fi
+
+
+
+else
+  HAS_CHANNEL_UTILS=
+fi
+
+
+   enable_chanutils="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Network support" >&5
+$as_echo_n "checking Network support... " >&6; }
+
+   # Check whether --enable-networking was given.
+if test "${enable_networking+set}" = set; then :
+  enableval=$enable_networking; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_NETWORKING:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_NETWORKING=1
+
+   if test "x$HAS_NETWORKING" = "xyes" ; then
+      HAS_NETWORKING=1
+   fi
+
+   if test "x$HAS_NETWORKING" = "x0" || test "x$HAS_NETWORKING" = "xno" ; then
+      HAS_NETWORKING=
+   fi
+
+
+
+   if test "x$HAS_NETWORKING" = "x1" ; then
+      PTLIB_NETWORKING=yes
+      $as_echo "#define P_NETWORKING 1" >>confdefs.h
+
+   else
+      PTLIB_NETWORKING=no
+   fi
+
+
+
+else
+  HAS_NETWORKING=
+fi
+
+
+   enable_networking="$enableval"
 
 
 

@@ -120,7 +120,7 @@ class PServiceProcess : public PProcess
      */
     static PServiceProcess & Current();
 
-
+#if P_SYSTEMLOG
     /** Set the level at which errors are logged. Only messages higher than or
        equal to the specified level will be logged.
     
@@ -140,6 +140,7 @@ class PServiceProcess : public PProcess
        Log level.
      */
     PSystemLog::Level GetLogLevel() const { return PSystemLog::GetTarget().GetThresholdLevel(); }
+#endif
   //@}
 
 

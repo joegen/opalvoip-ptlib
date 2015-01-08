@@ -36,6 +36,7 @@
 #pragma interface
 #endif
 
+#if P_CYPHER
 
 /** RFC4013 "SASLprep" compatible string.
     For security systems, often some identifiers, usersname, passwords etc
@@ -897,6 +898,8 @@ class PSecureConfig : public PConfig
 };
 
 #endif // P_CONFIG_FILE
+
+#endif // P_CYPHER
 
 #endif // PTLIB_CYPHER_H
 

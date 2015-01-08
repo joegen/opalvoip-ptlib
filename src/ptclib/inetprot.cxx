@@ -965,13 +965,17 @@ bool PMultiPartList::Decode(const PString & entityBody, const PStringToString & 
     PCaselessString encoding = info->m_mime.GetString(PMIMEInfo::ContentTransferEncodingTag);
 
     // save the entity body, being careful of binary files
+#if P_CYPHER
     if (encoding == "base64")
       PBase64::Decode(PString(partPtr, partLen), info->m_binaryBody);
-#ifdef P_HAS_WCHAR
-    else if (typeInfo("charset") *= "UCS-2")
-      info->m_textBody = PString((const wchar_t *)partPtr, partLen/2);
+    else
 #endif
-    else if (encoding == "7bit" || encoding == "8bit" || (typeInfo("charset") *= "UTF-8") || memchr(partPtr, 0, partLen) == NULL)
+#ifdef P_HAS_WCHAR
+    if (typeInfo("charset") *= "UCS-2")
+      info->m_textBody = PString((const wchar_t *)partPtr, partLen/2);
+    else
+#endif
+    if (encoding == "7bit" || encoding == "8bit" || (typeInfo("charset") *= "UTF-8") || memchr(partPtr, 0, partLen) == NULL)
       info->m_textBody = PString(partPtr, partLen);
     else
       info->m_binaryBody = PBYTEArray((const BYTE *)partPtr, partLen);

@@ -36,6 +36,8 @@
 
 #include <ptclib/guid.h>
 
+#if P_GUID
+
 #include <ptlib/sockets.h>
 #include <ptclib/random.h>
 
@@ -274,6 +276,9 @@ PBoolean PGloballyUniqueID::IsNULL() const
 
   return memcmp(theArray, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", Size) == 0;
 }
+
+
+#endif // P_GUID
 
 
 /////////////////////////////////////////////////////////////////////////////

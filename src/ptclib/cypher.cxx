@@ -36,6 +36,9 @@
 
 #include <ptlib.h>
 #include <ptclib/cypher.h>
+
+#if P_CYPHER
+
 #include <ptclib/mime.h>
 #include <ptclib/random.h>
 
@@ -1413,5 +1416,7 @@ void PSecureConfig::ResetPending()
 }
 
 #endif // P_CONFIG_FILE
+
+#endif // P_CYPHER
 
 ///////////////////////////////////////////////////////////////////////////////

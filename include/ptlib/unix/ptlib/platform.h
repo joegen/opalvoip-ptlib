@@ -471,6 +471,12 @@ typedef pid_t PProcessIdentifier;
   #define PNullThreadIdentifier ((PThreadIdentifier)-1)
   typedef thread_id PUniqueThreadIdentifier;
 
+#else
+
+typedef pid_t PThreadIdentifier;
+#define PNullThreadIdentifier ((PThreadIdentifier)-1)
+typedef pid_t PUniqueThreadIdentifier;
+
 #endif
 
 #ifdef _DEBUG

@@ -90,20 +90,13 @@ PINLINE bool PFile::Remove(const PString & name, bool)
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef BE_THREADS
-
-PINLINE PThreadIdentifier PThread::GetThreadId() const
-  { return mId; }
-
-#else // !BE_THREADS
-
-#ifndef VX_TASKS
-PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
-  { return ::pthread_self(); }
+PINLINE PThreadIdentifier PThread::GetThreadId() const { return mId; }
+#elif defined(P_PTHREADS)
+PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return ::pthread_self(); }
+#elif defined(VX_TASKS)
+PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return ::taskIdSelf(); }
 #else
-PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
-  { return ::taskIdSelf(); }
-#endif // !VX_TASKS
-
-#endif // BE_THREADS
+PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return 0; }
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
