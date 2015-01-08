@@ -1764,6 +1764,13 @@ dnl MSWIN_DEFINE     chanutils,P_CHANNEL_UTILS
 PTLIB_SIMPLE_OPTION([chanutils], [CHANNEL_UTILS], [Channel utilities support])
 
 dnl ########################################################################
+dnl check for timer support
+dnl MSWIN_DISPLAY    timers,Timers support
+dnl MSWIN_DEFINE     timers,P_TIMERS
+
+PTLIB_SIMPLE_OPTION([timers], [TIMERS], [Timers support])
+
+dnl ########################################################################
 dnl check for network support
 dnl MSWIN_DISPLAY    networking,Network support
 dnl MSWIN_DEFINE     networking,P_NETWORKING

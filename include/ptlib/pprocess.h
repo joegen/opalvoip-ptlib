@@ -657,8 +657,10 @@ class PProcess : public PThread
     PSyncPoint     m_signalHouseKeeper;
     void HouseKeeping();
 
+#if P_TIMERS
     PTimer::List * m_timerList;
     friend PTimer::List * PTimer::TimerList();
+#endif
 
     PProcessIdentifier m_processID;
 

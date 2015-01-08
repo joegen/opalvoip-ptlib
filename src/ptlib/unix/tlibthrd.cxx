@@ -166,11 +166,15 @@ static pthread_mutex_t MutexInitialiser = PTHREAD_MUTEX_INITIALIZER;
 void PProcess::HouseKeeping()
 {
   while (m_keepingHouse) {
+#if P_TIMERS
     PTimeInterval delay = m_timerList->Process();
     if (delay > 10000)
       delay = 10000;
 
     m_signalHouseKeeper.Wait(delay);
+#else
+    m_signalHouseKeeper.Wait(10000);
+#endif
 
     InternalCleanAutoDeleteThreads();
 
@@ -857,9 +861,9 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
   PXAbortBlock();   // this assist in clean shutdowns on some systems
 
-  PSimpleTimer timeout(maxWait);
+  PTimeInterval start = PTimer::Tick();
   while (!IsTerminated()) {
-    if (timeout.HasExpired())
+    if ((PTimer::Tick() - start) > maxWait)
       return false;
 
     Sleep(10); // sleep for 10ms. This slows down the busy loop removing 100%

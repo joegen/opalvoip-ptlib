@@ -184,6 +184,7 @@ PINLINE int PTime::GetTimeZone()
   { return GetTimeZone(IsDaylightSavings() ? DaylightSavings : StandardTime); }
 
 
+#if P_TIMERS
 ///////////////////////////////////////////////////////////////////////////////
 // PSimpleTimer
 
@@ -215,6 +216,8 @@ PINLINE const PNotifier & PTimer::GetNotifier() const
 PINLINE void PTimer::SetNotifier(const PNotifier & func)
   { m_callback = func; }
 
+
+#endif // P_TIMERS
 
 ///////////////////////////////////////////////////////////////////////////////
 
