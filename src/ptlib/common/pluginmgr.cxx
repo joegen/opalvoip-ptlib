@@ -32,7 +32,7 @@
 #include <ptlib.h>
 #include <ptlib/pluginmgr.h>
 
-#if P_PLUGINS
+#if P_PLUGINMGR
 
 #include <ptlib/pprocess.h>
 #include <algorithm>
@@ -554,4 +554,4 @@ void PluginLoaderStartup::OnShutdown()
 
 PFACTORY_CREATE(PProcessStartupFactory, PluginLoaderStartup, PLUGIN_LOADER_STARTUP_NAME, true);
 
-#endif // P_PLUGINS
+#endif // P_PLUGINMGR
