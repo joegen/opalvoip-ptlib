@@ -148,7 +148,7 @@ P_fd_set::P_fd_set()
 
 void P_fd_set::Construct()
 {
-  max_fd = UINT_MAX;
+  max_fd = INT_MAX;
   set = (fd_set *)malloc(sizeof(fd_set));
 }
 
