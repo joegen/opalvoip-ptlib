@@ -173,7 +173,7 @@ P_fd_set::P_fd_set(intptr_t fd)
 {
   Construct();
   Zero();
-  FD_SET(fd, set);
+  FD_SET((SOCKET)fd, set);
 }
 
 
@@ -181,7 +181,7 @@ P_fd_set & P_fd_set::operator=(intptr_t fd)
 {
   PAssert(fd < max_fd, PInvalidParameter);
   Zero();
-  FD_SET(fd, set);
+  FD_SET((SOCKET)fd, set);
   return *this;
 }
 
@@ -189,7 +189,7 @@ P_fd_set & P_fd_set::operator=(intptr_t fd)
 P_fd_set & P_fd_set::operator+=(intptr_t fd)
 {
   PAssert(fd < max_fd, PInvalidParameter);
-  FD_SET(fd, set);
+  FD_SET((SOCKET)fd, set);
   return *this;
 }
 
@@ -197,7 +197,7 @@ P_fd_set & P_fd_set::operator+=(intptr_t fd)
 P_fd_set & P_fd_set::operator-=(intptr_t fd)
 {
   PAssert(fd < max_fd, PInvalidParameter);
-  FD_CLR(fd, set);
+  FD_CLR((SOCKET)fd, set);
   return *this;
 }
 
