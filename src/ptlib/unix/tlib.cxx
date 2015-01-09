@@ -48,7 +48,7 @@
 
 #include "ptlib.h"
 #include <ptlib/pprocess.h>
-#include <ptxlib/pxml.h>
+#include <ptclib/pxml.h>
 
 #ifdef P_VXWORKS
 #include <sys/times.h>
