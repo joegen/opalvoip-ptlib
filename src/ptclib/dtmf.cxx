@@ -258,6 +258,14 @@ PTones::PTones(const PString & descriptor, unsigned volume, unsigned sampleRate)
 }
 
 
+void PTones::SetSampleRate(unsigned rate)
+{
+  m_sampleRate = rate;
+  m_addPosition = 0;
+  PShortArray::SetSize(0);
+}
+
+
 PBoolean PTones::SetSize(PINDEX newSize)
 {
   bool ok = PShortArray::SetSize(newSize);

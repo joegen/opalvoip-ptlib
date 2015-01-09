@@ -161,8 +161,11 @@ class PTones : public PShortArray
       PChannel & channel
     ) { return channel.Write(GetPointer(), GetSize()*sizeof(short)); }
 
-    ///< Get the sample rate for tones
+    /// Get the sample rate for tones
     unsigned GetSampleRate() const { return m_sampleRate; }
+
+    /// Set sample rate for tones, note will clear tone buffer.
+    void SetSampleRate(unsigned rate);
 
     virtual PBoolean SetSize(PINDEX newSize);
 
