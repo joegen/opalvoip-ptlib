@@ -106,6 +106,7 @@ HAS_SASL2         := @HAS_SASL2@
 HAS_EXPAT         := @HAS_EXPAT@
 HAS_REGEX         := @HAS_REGEX@
 HAS_SDL           := @HAS_SDL@
+HAS_PLUGINMGR     := @HAS_PLUGINMGR@
 HAS_PLUGINS       := @HAS_PLUGINS@
 HAS_SAMPLES       := @HAS_SAMPLES@
 
