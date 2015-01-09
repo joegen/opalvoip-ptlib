@@ -249,7 +249,7 @@ void PSafeLockReadWrite::Unlock()
 PSafeCollection::PSafeCollection(PCollection * coll)
   : m_collection(PAssertNULL(coll))
   , m_deleteObjects(true)
-#if _P_TIMERS
+#if P_TIMERS
   , m_deleteObjectsTimer(NULL)
 #endif
 {
@@ -260,7 +260,7 @@ PSafeCollection::PSafeCollection(PCollection * coll)
 
 PSafeCollection::~PSafeCollection()
 {
-#if _P_TIMERS
+#if P_TIMERS
   delete m_deleteObjectsTimer;
 #endif
 
@@ -408,7 +408,7 @@ void PSafeCollection::DeleteObject(PObject * object) const
 
 void PSafeCollection::SetAutoDeleteObjects()
 {
-#if _P_TIMERS
+#if P_TIMERS
   if (m_deleteObjectsTimer != NULL)
     return;
 
@@ -419,7 +419,7 @@ void PSafeCollection::SetAutoDeleteObjects()
 }
 
 
-#if _P_TIMERS
+#if P_TIMERS
 void PSafeCollection::DeleteObjectsTimeout(PTimer &, P_INT_PTR)
 {
   DeleteObjectsToBeRemoved();
