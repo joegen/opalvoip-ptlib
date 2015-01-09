@@ -39,7 +39,7 @@
 #include <ptlib/syncthrd.h>
 
 
-#if _P_TIMERS
+#if P_TIMERS
 class PTimer;
 #endif
 

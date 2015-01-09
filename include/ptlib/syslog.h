@@ -375,6 +375,7 @@ class PSystemLogToDebug : public PSystemLogTarget
   //@}
 };
 #elif !defined(P_VXWORKS)
+#define P_SYSTEMLOG_TO_SYSLOG 1
 /** Log system output to the Posix syslog() function.
   */
 class PSystemLogToSyslog : public PSystemLogTarget

@@ -311,6 +311,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       SetStream(new PDebugStream);
 #endif
 #if P_SYSTEMLOG
+#ifdef P_SYSTEMLOG_TO_SYSLOG
     else if (tokens[0] *= "syslog") {
       PSystemLog::SetTarget(new PSystemLogToSyslog(tokens[1],
                                                    tokens.GetSize() > 2 ? tokens[2].AsInteger() : -1,
@@ -318,6 +319,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
                                                    tokens.GetSize() > 4 ? tokens[4].AsInteger() : -1));
       AdjustOptions(SystemLogStream, 0);
     }
+#endif
     else if (tokens[0] *= "network") {
       switch (tokens.GetSize()) {
         case 1 :
@@ -437,8 +439,10 @@ ostream & PTrace::PrintInfo(ostream & strm, bool crlf)
     strm << "debugstream";
 #endif
 #if P_SYSTEMLOG
+#ifdef P_SYSTEMLOG_TO_SYSLOG
   else if (dynamic_cast<PSystemLogToSyslog *>(info.m_stream) != NULL)
     strm << "syslog";
+#endif
   else if (dynamic_cast<PSystemLogToNetwork *>(info.m_stream) != NULL)
     strm << "network: " << dynamic_cast<PSystemLogToNetwork *>(info.m_stream)->GetServer();
 #endif
