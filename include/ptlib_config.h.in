@@ -133,7 +133,7 @@
 //
 
 #undef P_DYNALINK
-#undef P_PLUGINS
+#undef P_PLUGINMGR
 #undef P_DEFAULT_PLUGIN_DIR
 
 
