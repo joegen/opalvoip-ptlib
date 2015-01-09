@@ -650,6 +650,8 @@ HAS_ALSA
 PTLIB_PLUGIN_DIR
 PTLIB_PLUGINS
 HAS_PLUGINS
+PTLIB_PLUGINMGR
+HAS_PLUGINMGR
 PTLIB_DYNALINK
 HAS_DYNALINK
 HAS_DIRECTSOUND
@@ -996,6 +998,7 @@ enable_odbc
 with_odbc_dir
 enable_vfw
 with_directx_includedir
+enable_pluginmgr
 enable_plugins
 with_plugin_installdir
 enable_alsa
@@ -1741,7 +1744,8 @@ Optional Features:
   --disable-odbc          disable ODBC database support
   --disable-odbc          disable unixODBC database support
   --enable-vfw            enable video for windows capture
-  --disable-plugins       disable plugin support
+  --disable-pluginmgr     disable Plugin Manager support
+  --disable-plugins       disable Plugin support
   --disable-alsa          disable ALSA audio support
   --disable-esd           disable ESD audio support
   --disable-oss           disable OSS audio support
@@ -17337,8 +17341,83 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking plugin support" >&5
-$as_echo_n "checking plugin support... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Plugin Manager support" >&5
+$as_echo_n "checking Plugin Manager support... " >&6; }
+
+   # Check whether --enable-pluginmgr was given.
+if test "${enable_pluginmgr+set}" = set; then :
+  enableval=$enable_pluginmgr; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_PLUGINMGR:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_PLUGINMGR=1
+
+   if test "x$HAS_PLUGINMGR" = "xyes" ; then
+      HAS_PLUGINMGR=1
+   fi
+
+   if test "x$HAS_PLUGINMGR" = "x0" || test "x$HAS_PLUGINMGR" = "xno" ; then
+      HAS_PLUGINMGR=
+   fi
+
+
+
+   if test "x$HAS_PLUGINMGR" = "x1" ; then
+      PTLIB_PLUGINMGR=yes
+      $as_echo "#define P_PLUGINMGR 1" >>confdefs.h
+
+   else
+      PTLIB_PLUGINMGR=no
+   fi
+
+
+
+else
+  HAS_PLUGINMGR=
+fi
+
+
+   enable_pluginmgr="$enableval"
+
+
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Plugin support" >&5
+$as_echo_n "checking Plugin support... " >&6; }
 
    # Check whether --enable-plugins was given.
 if test "${enable_plugins+set}" = set; then :
@@ -17359,6 +17438,16 @@ fi
 
 
 
+
+      if test "x${enableval}" = "xyes" && \
+             test "x$P_PLUGINMGR" != "x1" && \
+             test "x$P_PLUGINMGR" != "xyes"; then :
+
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency P_PLUGINMGR=$P_PLUGINMGR" >&5
+$as_echo "disabled due to disabled dependency P_PLUGINMGR=$P_PLUGINMGR" >&6; }
+         enableval=no
+
+fi
 
 
 
