@@ -31,8 +31,6 @@
  * $Date$
  */
 
-#include <ptlib/socket.h>
-#include <ptclib/pxml.h>
 #include <sched.h>
 #include <pthread.h>
 #include <sys/resource.h>
