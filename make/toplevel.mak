@@ -437,7 +437,7 @@ ifeq ($(HAS_SYSTEMLOG),1)
   SOURCES += $(COMPONENT_SRC_DIR)/syslog.cxx
 endif
 
-ifeq ($(HAS_PLUGINS),1)
+ifeq ($(HAS_PLUGINMGR),1)
   SOURCES += $(COMMON_SRC_DIR)/pluginmgr.cxx
 endif
 
