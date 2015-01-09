@@ -16,8 +16,9 @@
 #define PTLIB_PLUGINMGR_H
 
 #include <ptlib/plugin.h>
+#include <ptlib_config.h>
 
-#if P_PLUGINS
+#if P_PLUGINMGR
 
 //////////////////////////////////////////////////////
 //
@@ -199,7 +200,7 @@ class PPluginModuleManager : public PObject
 PFACTORY_LOAD(PluginLoaderStartup);
 
 
-#endif // P_PLUGINS
+#endif // P_PLUGINMGR
 
 #endif // PTLIB_PLUGINMGR_H
 

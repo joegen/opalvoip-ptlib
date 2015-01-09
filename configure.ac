@@ -2173,10 +2173,16 @@ dnl ########################################################################
 dnl Plug ins!
 dnl
 
-dnl MSWIN_DISPLAY plugins,Plugin Support
-dnl MSWIN_DEFINE  plugins,P_PLUGINS
+dnl MSWIN_DISPLAY pluginmgr,Plugin Manager Support
+dnl MSWIN_DEFINE  pluginmgr,P_PLUGINMGR
 
-PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [plugin support])
+PTLIB_SIMPLE_OPTION([pluginmgr], [PLUGINMGR], [Plugin Manager support])
+
+dnl MSWIN_DISPLAY    plugins,Plugin Support
+dnl MSWIN_DEFINE     plugins,P_PLUGINS
+dnl MSWIN_IF_FEATURE plugins,pluginmgr
+
+PTLIB_SIMPLE_OPTION([plugins], [PLUGINS], [Plugin support], [P_PLUGINMGR])
 
 if test "x$enable_plugins" != "xno" ; then
    AC_MSG_CHECKING(where plugins are being installed)
