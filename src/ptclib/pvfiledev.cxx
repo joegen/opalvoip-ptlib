@@ -129,7 +129,7 @@ PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*s
 
   PTRACE(3, "VidFileDev", "Opening file " << filePath);
 
-  *static_cast<PVideoFrameInfo *>(this) = *static_cast<PVideoFrameInfo *>(m_file);
+  *static_cast<PVideoFrameInfo *>(this) = *m_file;
 
   deviceName = m_file->GetFilePath();
   m_opened = true;
