@@ -110,22 +110,13 @@ class PYUVFile : public PVideoFile
   public:
     PYUVFile();
 
-    virtual PBoolean Open(
-      const PFilePath & name,         ///< Name of file to open.
-      OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
-      OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
-    ) { return PVideoFile::Open(name, mode, opts); }
-
-    virtual PBoolean Open(
-      PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
-      PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
-    );
-
     virtual PBoolean WriteFrame(const void * frame);
     virtual PBoolean ReadFrame(void * frame);
 
   protected:
-    bool m_y4mMode; 
+    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
+
+    bool m_y4mMode;
 };
 
 typedef PFactory<PVideoFile, PFilePathString> PVideoFileFactory;
@@ -146,11 +137,6 @@ class PJPEGFile : public PVideoFile
     PJPEGFile();
     ~PJPEGFile();
 
-    virtual bool Open(
-      PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
-      PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
-    );
-
     virtual bool Close();
     virtual PBoolean IsOpen() const;
     virtual off_t GetLength() const;
@@ -161,6 +147,8 @@ class PJPEGFile : public PVideoFile
     virtual PBoolean ReadFrame(void * frame);
 
   protected:
+    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
+
     PBYTEArray m_pixelData;
 };
 

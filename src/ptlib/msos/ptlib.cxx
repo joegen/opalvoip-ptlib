@@ -794,7 +794,7 @@ PBoolean PFile::IsTextFile() const
 }
 
 
-PBoolean PFile::Open(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
+bool PFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
 {
   Close();
   clear();

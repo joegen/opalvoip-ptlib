@@ -1026,26 +1026,32 @@ PBoolean PFile::Write(const void * buffer, PINDEX amount)
 }
 
 
-PBoolean PFile::Open(const PFilePath & name, OpenMode  mode, OpenOptions opts)
+bool PFile::Open(const PFilePath & name, OpenMode  mode, OpenOptions opts)
 {
   Close();
   SetFilePath(name);
-  return Open(mode, opts);
+  return InternalOpen(mode, opts, PFileInfo::DefaultPerms);
 }
 
 
-PBoolean PFile::Open(const PFilePath & name, OpenMode  mode, OpenOptions opts, PFileInfo::Permissions permissions)
+bool PFile::Open(const PFilePath & name, OpenMode  mode, OpenOptions opts, PFileInfo::Permissions permissions)
 {
   Close();
   SetFilePath(name);
-  return Open(mode, opts, permissions);
+  return InternalOpen(mode, opts, permissions);
 }
 
 
-PBoolean PFile::Open(OpenMode mode, OpenOptions opts)
+bool PFile::Open(OpenMode mode, OpenOptions opts)
 {
   Close();
-  return Open(mode, opts, PFileInfo::DefaultPerms);
+  return InternalOpen(mode, opts, PFileInfo::DefaultPerms);
+}
+
+
+bool PFile::Open(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
+{
+  return InternalOpen(mode, opts, permissions);
 }
 
 

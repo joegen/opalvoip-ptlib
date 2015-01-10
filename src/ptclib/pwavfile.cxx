@@ -159,9 +159,9 @@ PWAVFile * PWAVFile::format(const PString & format, PFile::OpenMode mode, OpenOp
 }
 
 
-PBoolean PWAVFile::Open(OpenMode mode, OpenOptions opts)
+bool PWAVFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
 {
-  if (!PFile::Open(mode, opts))
+  if (!PFile::InternalOpen(mode, opts, permissions))
     return false;
 
   m_status = mode == WriteOnly ? e_PreWrite : e_Reading;
@@ -178,12 +178,6 @@ PBoolean PWAVFile::Open(OpenMode mode, OpenOptions opts)
   }
 
   return true;
-}
-
-
-PBoolean PWAVFile::Open(const PFilePath & name, OpenMode mode, OpenOptions opts)
-{
-  return PFile::Open(name, mode, opts);
 }
 
 
