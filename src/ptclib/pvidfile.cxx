@@ -190,12 +190,12 @@ static PString ReadPrintable(PFile & file)
 }
 
 
-PBoolean PYUVFile::Open(PFile::OpenMode mode, PFile::OpenOptions opts)
+bool PYUVFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
 {
   SetFrameSizeFromFilename(GetFilePath());
   SetFPSFromFilename(GetFilePath());
 
-  if (!PVideoFile::Open(mode, opts))
+  if (!PVideoFile::InternalOpen(mode, opts, permissions))
     return false;
 
   m_y4mMode = GetFilePath().GetType() *= ".y4m";
@@ -338,12 +338,12 @@ PBoolean PJPEGFile::Close()
 }
 
 
-PBoolean PJPEGFile::Open(PFile::OpenMode mode, PFile::OpenOptions opts)
+bool PJPEGFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
 {
   if (mode != PFile::ReadOnly)
     return false;
 
-  if (!PVideoFile::Open(mode, opts))
+  if (!PVideoFile::InternalOpen(mode, opts, permissions))
     return false;
 
   PJPEGConverter decoder(PVideoFrameInfo(m_videoInfo.GetFrameWidth(), m_videoInfo.GetFrameHeight(), "JPEG"), m_videoInfo);

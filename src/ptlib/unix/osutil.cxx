@@ -689,7 +689,7 @@ void PFile::SetFilePath(const PString & newName)
 }
 
 
-PBoolean PFile::Open(OpenMode mode, OpenOptions opt, PFileInfo::Permissions permissions)
+bool PFile::InternalOpen(OpenMode mode, OpenOptions opt, PFileInfo::Permissions permissions)
 
 {
   Close();

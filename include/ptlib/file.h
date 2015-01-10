@@ -408,7 +408,7 @@ class PFile : public PChannel
        @return
        true if the file was successfully opened.
      */
-    virtual PBoolean Open(
+    bool Open(
       OpenMode mode = ReadWrite,        ///< Mode in which to open the file.
       OpenOptions opts = ModeDefault    ///< Options for open operation.
     );
@@ -420,7 +420,7 @@ class PFile : public PChannel
        @return
        true if the file was successfully opened.
      */
-    virtual PBoolean Open(
+    bool Open(
       OpenMode mode,                      ///< Mode in which to open the file.
       OpenOptions opts,                   ///< <code>OpenOptions</code> enum# for open operation.
       PFileInfo::Permissions permissions  ///< Permission for file if created
@@ -433,7 +433,7 @@ class PFile : public PChannel
        @return
        true if the file was successfully opened.
      */
-    virtual PBoolean Open(
+    bool Open(
       const PFilePath & name,         ///< Name of file to open.
       OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
       OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
@@ -446,7 +446,7 @@ class PFile : public PChannel
        @return
        true if the file was successfully opened.
      */
-    virtual PBoolean Open(
+    bool Open(
       const PFilePath & name,             ///< Name of file to open.
       OpenMode mode,                      ///< Mode in which to open the file.
       OpenOptions opts,                   ///< <code>OpenOptions</code> enum# for open operation.
@@ -547,6 +547,8 @@ class PFile : public PChannel
   //@}
 
   protected:
+    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
+
     // Member variables
 
     PFilePath m_path;         ///< The fully qualified path name for the file.
