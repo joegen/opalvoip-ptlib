@@ -49,25 +49,13 @@
 /**
  * Abstract class for a file containing a sequence of video frames
  */
-class PVideoFile : public PVideoFrameInfo
+class PVideoFile : public PFile
 {
-  PCLASSINFO(PVideoFile, PVideoFrameInfo);
+  PCLASSINFO(PVideoFile, PFile);
   protected:
     PVideoFile();
 
   public:
-    virtual PBoolean Open(
-      const PFilePath & name,    // Name of file to open.
-      PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
-      PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
-    );
-
-    virtual PBoolean IsOpen() const { return m_file.IsOpen(); }
-    virtual PBoolean Close() { return m_file.Close(); }
-
-    virtual PBoolean WriteFrame(const void * frame);
-    virtual PBoolean ReadFrame(void * frame);
-
     virtual off_t GetLength() const;
     virtual PBoolean SetLength(
       off_t len   // New length of file in frames.
@@ -79,6 +67,9 @@ class PVideoFile : public PVideoFrameInfo
       PFile::FilePositionOrigin origin = PFile::Start  ///< Origin for position change.
     );
 
+    virtual PBoolean WriteFrame(const void * frame);
+    virtual PBoolean ReadFrame(void * frame);
+
     virtual PBoolean SetFrameSize(
       unsigned width,   ///< New width of frame
       unsigned height   ///< New height of frame
@@ -87,14 +78,17 @@ class PVideoFile : public PVideoFrameInfo
       unsigned rate  ///< Frames  per second
     );
 
-    const PFilePath & GetFilePath() const { return m_file.GetFilePath(); }
-    PChannel::Errors GetErrorCode(PChannel::ErrorGroup group = PChannel::NumErrorGroups) const { return m_file.GetErrorCode(group); }
-    int GetErrorNumber(PChannel::ErrorGroup group = PChannel::NumErrorGroups) const { return m_file.GetErrorNumber(group); }
-    PString GetErrorText(PChannel::ErrorGroup group = PChannel::NumErrorGroups) const { return m_file.GetErrorText(group); }
     PINDEX GetFrameBytes() const { return m_frameBytes; }
 
     bool SetFrameSizeFromFilename(const PString & fn);
     bool SetFPSFromFilename(const PString & fn);
+
+    operator const PVideoFrameInfo &() const { return m_videoInfo; }
+    bool GetFrameSize(unsigned & w, unsigned & h) const { return m_videoInfo.GetFrameSize(w, h); }
+    unsigned GetFrameWidth() const { return m_videoInfo.GetFrameWidth(); }
+    unsigned GetFrameHeight() const { return m_videoInfo.GetFrameHeight(); }
+    unsigned GetFrameRate() const { return m_videoInfo.GetFrameRate(); }
+    const PString & GetColourFormat() const { return m_videoInfo.GetColourFormat(); }
 
   protected:
     bool   m_fixedFrameSize;
@@ -102,7 +96,7 @@ class PVideoFile : public PVideoFrameInfo
     PINDEX m_frameBytes;
     off_t  m_headerOffset;
     off_t  m_frameHeaderLen;
-    PFile  m_file;
+    PVideoFrameInfo m_videoInfo;
 };
 
 /**
@@ -112,12 +106,17 @@ class PVideoFile : public PVideoFrameInfo
 
 class PYUVFile : public PVideoFile
 {
-  PCLASSINFO(PYUVFile, PVideoFile);
+    PCLASSINFO(PYUVFile, PVideoFile);
   public:
     PYUVFile();
 
     virtual PBoolean Open(
-      const PFilePath & name,    // Name of file to open.
+      const PFilePath & name,         ///< Name of file to open.
+      OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
+      OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum# for open operation.
+    ) { return PVideoFile::Open(name, mode, opts); }
+
+    virtual PBoolean Open(
       PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
       PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
@@ -148,19 +147,18 @@ class PJPEGFile : public PVideoFile
     ~PJPEGFile();
 
     virtual bool Open(
-      const PFilePath & name,    // Name of file to open.
       PFile::OpenMode mode = PFile::ReadWrite, // Mode in which to open the file.
       PFile::OpenOptions opts = PFile::ModeDefault     // <code>OpenOptions</code> enum# for open operation.
     );
 
+    virtual bool Close();
+    virtual PBoolean IsOpen() const;
+    virtual off_t GetLength() const;
+    virtual off_t GetPosition() const;
+    virtual bool SetPosition(off_t pos, PFile::FilePositionOrigin origin);
+
     virtual PBoolean WriteFrame(const void * frame);
     virtual PBoolean ReadFrame(void * frame);
-
-    bool Close();
-    PBoolean IsOpen() const;
-    off_t GetLength() const;
-    off_t GetPosition() const;
-    bool SetPosition(off_t pos, PFile::FilePositionOrigin origin);
 
   protected:
     PBYTEArray m_pixelData;
