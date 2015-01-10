@@ -290,39 +290,6 @@ public:
     PINDEX len    ///< Maximum number of bytes to write to the channel.
   );
 
-  /**Open the current file in the specified mode and with
-     the specified options. If the file object already has an open file then
-     it is closed.
-
-     If there has not been a filename attached to the file object
-     (via <code>SetFilePath()</code>, the \p name parameter in the constructor
-     or a previous open) then a new unique temporary filename is
-     generated.
-
-     @return
-     true if the file was successfully opened.
-  */
-  virtual PBoolean Open(
-    OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
-    OpenOptions opts = ModeDefault  ///< Options for open operation.
-  );
-
-  /**Open the specified WAV file name in the specified mode and with
-     the specified options. If the file object already has an open file then
-     it is closed.
-     This reads (and validates) the header for existing files.
-     For new files, it creates a new file (and header) using the type of
-     WAV file specified in the class constructor.
-
-     @return
-     true if the file was successfully opened.
-  */
-  virtual PBoolean Open(
-    const PFilePath & name,         ///< Name of file to open.
-    OpenMode mode = ReadWrite,      ///< Mode in which to open the file.
-    OpenOptions opts = ModeDefault  ///< <code>OpenOptions</code> enum for open operation.
-  );
-
   /** Close the file channel.
       If a WAV file has been written to, this will update the header
       to contain the correct size information.
@@ -457,6 +424,7 @@ public:
 
 
 protected:
+  virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
   void Construct(OpenMode mode);
   bool SelectFormat(PWAVFileFormat * handler);
 

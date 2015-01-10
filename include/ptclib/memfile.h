@@ -79,38 +79,6 @@ class PMemoryFile : public PFile
 
   /**@name Overrides from class PChannel */
   //@{
-    /**Open the current file in the specified mode and with
-       the specified options. If the file object already has an open file then
-       it is closed.
-       
-       If there has not been a filename attached to the file object (via
-       <code>SetFilePath()</code>, the <code>name</code> parameter or a previous
-       open) then a new unique temporary filename is generated.
-
-       @return
-       true if the file was successfully opened.
-     */
-    virtual PBoolean Open(
-      OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // Options for open operation.
-    );
-
-    /**Open the specified file name in the specified mode and with
-       the specified options. If the file object already has an open file then
-       it is closed.
-       
-       Note: if <code>mode</code> is StandardInput, StandardOutput or StandardError,
-       then the <code>name</code> parameter is ignored.
-
-       @return
-       true if the file was successfully opened.
-     */
-    virtual PBoolean Open(
-      const PFilePath & name,    // Name of file to open.
-      OpenMode mode = ReadWrite, // Mode in which to open the file.
-      int opts = ModeDefault     // <code>OpenOptions</code> enum# for open operation.
-    );
-      
     /** Close the channel, shutting down the link to the data source.
 
        @return true if the channel successfully closed.
@@ -203,6 +171,8 @@ class PMemoryFile : public PFile
 
 
   protected:
+    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
+
     PBYTEArray m_data;
     off_t      m_position;
 };

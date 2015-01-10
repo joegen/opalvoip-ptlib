@@ -68,7 +68,7 @@ PObject::Comparison PMemoryFile::Compare(const PObject & obj) const
 }
 
 
-PBoolean PMemoryFile::Open(OpenMode, int)
+bool PMemoryFile::InternalOpen(OpenMode, OpenOptions, PFileInfo::Permissions)
 {
   os_handle = INT_MAX;
   m_position = 0;
@@ -76,12 +76,6 @@ PBoolean PMemoryFile::Open(OpenMode, int)
 }
 
 
-PBoolean PMemoryFile::Open(const PFilePath &, OpenMode mode, int opts)
-{
-  return Open(mode, opts);
-}
-
-      
 PBoolean PMemoryFile::Close()
 {
   os_handle = -1;
