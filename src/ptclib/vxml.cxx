@@ -2070,8 +2070,9 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     }
 
     PMIMEInfo replyMIME;
-    if (client.GetDocument(url, replyMIME) && client.ReadContentBody(replyMIME))
-      return true;
+	PString body;
+    if (client.GetTextDocument(url, body))
+      return InternalLoadVXML(body, PString::Empty());
 
     PTRACE(1, "VXML\t<submit> GET " << url << " failed with "
            << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
