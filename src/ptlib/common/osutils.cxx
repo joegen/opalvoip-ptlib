@@ -2524,6 +2524,16 @@ float PThread::Times::AsPercentage() const
 }
 
 
+PThread::Times PThread::Times::operator-(const Times & rhs) const
+{
+  Times diff;
+  diff.m_real = m_real - rhs.m_real;
+  diff.m_kernel = m_kernel - rhs.m_kernel;
+  diff.m_user = m_user - rhs.m_user;
+  return diff;
+}
+
+
 void PThread::PrintOn(ostream & strm) const
 {
   strm << GetThreadName();

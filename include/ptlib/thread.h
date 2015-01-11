@@ -335,6 +335,9 @@ class PThread : public PObject
       PPROFILE_EXCLUDE(
         float AsPercentage() const
       );
+      PPROFILE_EXCLUDE(
+        Times operator-(const Times & rhs) const
+      );
 
       PString                 m_name;     ///< Name of thread
       PThreadIdentifier       m_threadId; ///< Operating system thread ID
