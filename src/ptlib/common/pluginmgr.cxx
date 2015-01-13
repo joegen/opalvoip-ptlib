@@ -120,19 +120,6 @@ bool PPluginDeviceDescriptor::GetDeviceCapabilities(const PString & /*deviceName
 
 PPluginManager::PPluginManager()
 {
-  PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
-  if (env.IsEmpty())
-    env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
-  if (env.IsEmpty())
-    env = P_DEFAULT_PLUGIN_DIR;
-  SetDirectories(env);
-
-#ifdef _WIN32
-  TCHAR moduleName[_MAX_PATH];
-  if (GetModuleFileName(GetModuleHandle(NULL), moduleName, sizeof(moduleName)) > 0)
-    AddDirectory(PFilePath(moduleName).GetDirectory());
-#endif // _WIN32
-
   m_suffixes.AppendString(PTPLUGIN_SUFFIX);
   m_suffixes.AppendString(PWPLUGIN_SUFFIX);
 }
@@ -523,7 +510,16 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, P_INT_PTR code)
 
 void PluginLoaderStartup::OnStartup()
 {
-  PPluginManager::GetPluginManager().AddDirectory(PProcess::Current().GetFile().GetDirectory());
+  PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
+  if (env.IsEmpty())
+    env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
+  if (env.IsEmpty()) {
+    env = P_DEFAULT_PLUGIN_DIR;
+    PDirectory appdir = PProcess::Current().GetFile().GetDirectory();
+    if (!appdir.IsRoot())
+      env += PPATH_SEPARATOR + appdir;
+  }
+  PPluginManager::GetPluginManager().SetDirectories(env);
 
   // load the plugin module managers
   PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
