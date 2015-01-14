@@ -761,9 +761,16 @@ PBoolean PSoundChannelOSS::StartRecording()
   if (os_handle == 0)
     return true;
 
+#if P_HAS_POLL
+  struct pollfd pfd;
+  pfd.fd = os_handle;
+  pfd.events = POLLIN;
+  return ConvertOSError(::poll(&pfd, 1, -1));
+#else
   P_fd_set fds(os_handle);
   P_timeval instant;
   return ConvertOSError(::select(1, fds, NULL, NULL, instant));
+#endif
 }
 
 

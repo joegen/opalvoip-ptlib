@@ -444,6 +444,21 @@ AC_HEADER_DIRENT()
 
 
 dnl ########################################################################
+dnl check for poll function
+
+MY_COMPILE_IFELSE(
+   [for poll],
+   [],
+   [#include <poll.h>],
+   [
+      struct pollfd pfd;
+      poll(&pfd, 1, 1000);
+   ],
+   [AC_DEFINE(P_HAS_POLL, 1)]
+)
+
+
+dnl ########################################################################
 dnl check for number of parms to readdir
 MY_COMPILE_IFELSE(
    [if readdir_r has 2 parms],

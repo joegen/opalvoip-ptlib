@@ -207,17 +207,27 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
 }
 
 
-DWORD PTimeInterval::GetInterval() const
-{
-  PInt64 msecs = GetMilliSeconds();
+#ifdef _WIN32
+static const DWORD TimeIntervalLimit = UINT_MAX;
+static const DWORD TimeIntervalInfinite = INFINITE;
+#else
+static const int TimeIntervalLimit = INT_MAX;
+static const int TimeIntervalInfinite = -1;
+#endif
 
+PTimeInterval::IntervalType PTimeInterval::GetInterval() const
+{
+  if (*this == PMaxTimeInterval)
+    return TimeIntervalInfinite;
+
+  PInt64 msecs = GetMilliSeconds();
   if (msecs <= 0)
     return 0;
 
-  if (msecs >= UINT_MAX)
-    return UINT_MAX;
+  if (msecs >= TimeIntervalLimit)
+    return TimeIntervalLimit;
 
-  return (DWORD)msecs;
+  return (IntervalType)msecs;
 }
 
 
