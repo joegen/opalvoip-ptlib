@@ -133,6 +133,9 @@
 #include <netinet/tcp.h>
 #endif
 
+#if P_HAS_POLL
+#include <poll.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
@@ -241,7 +244,6 @@ extern "C" {
   int shutdown(int, int);
   int socket(int, int, int);
   int vfork();
-  void bzero(void *, int);
   void closelog();
   void gettimeofday(struct timeval * tv, struct timezone * tz);
   void openlog(const char *, int, int);

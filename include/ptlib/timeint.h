@@ -177,12 +177,22 @@ class PTimeInterval : public PObject
      */
     int GetDays() const;
 
-    /** Get the number of milliseconds for the time interval.
+#ifdef _WIN32
+    typedef DWORD IntervalType;
+#else
+    typedef int IntervalType;
+#endif
+
+    /** Get the "clamped" number of milliseconds for the time interval.
+        This returns an operating system dependent value for use in system
+        calls. For Windows, a value of PMaxTimeInterval returns INFINITE.
+        For unix systems, PMaxTimeInterval returns -1. In both cases a
+        negative value returns zero.
     
        @return
-       long integer number of milliseconds.
+       number of milliseconds.
      */
-    DWORD GetInterval() const;
+    IntervalType GetInterval() const;
 
     /** Set the value of the time interval. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
