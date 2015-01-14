@@ -95,9 +95,6 @@ int closesocket( Socket fd );
 
 #ifdef P_RTEMS
 typedef int socklen_t;
-extern "C" {
-  int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *tv);
-}
 #endif
 
 #endif

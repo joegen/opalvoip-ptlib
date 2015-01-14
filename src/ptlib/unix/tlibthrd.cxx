@@ -907,6 +907,41 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
   PTRACE(7, "PTLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
 
+  int retval;
+
+#if P_HAS_POLL
+  struct pollfd pfd[2];
+  pfd[0].fd = handle;
+  switch (type) {
+    case PChannel::PXReadBlock :
+    case PChannel::PXAcceptBlock :
+      pfd[0].events = POLLIN;
+      break;
+
+    case PChannel::PXWriteBlock :
+    case PChannel::PXConnectBlock :
+      pfd[0].events = POLLOUT;
+      break;
+  }
+  pfd[0].events |= POLLERR;
+
+  pfd[1].fd = unblockPipe[0];
+  pfd[1].events = POLLIN;
+
+  do {
+    retval = ::poll(pfd, PARRAYSIZE(pfd), timeout.GetInterval());
+  } while (retval < 0 && errno == EINTR);
+
+  if (retval > 0 && pfd[1].revents != 0) {
+    BYTE ch;
+    PAssertOS(::read(unblockPipe[0], &ch, 1) != -1);
+    errno = EINTR;
+    retval = -1;
+    PTRACE(6, "PTLib\tUnblocked I/O fd=" << unblockPipe[0]);
+  }
+
+#else // P_HAS_POLL
+
   if ((handle < 0) || (handle >= PProcess::Current().GetMaxHandles())) {
     PTRACE(2, "PTLib\tAttempt to use illegal handle in PThread::PXBlockOnIO, handle=" << handle);
     errno = EBADF;
@@ -918,7 +953,6 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   P_fd_set write_fds;
   P_fd_set exception_fds;
 
-  int retval;
   do {
     switch (type) {
       case PChannel::PXReadBlock:
@@ -959,6 +993,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     retval =  -1;
     PTRACE(6, "PTLib\tUnblocked I/O fd=" << unblockPipe[0]);
   }
+
+#endif // P_HAS_POLL
 
   return retval;
 }

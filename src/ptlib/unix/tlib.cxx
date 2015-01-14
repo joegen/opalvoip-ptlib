@@ -86,21 +86,6 @@ extern "C" {
 
 #include "uerror.h"
 
-#if defined(P_HPUX9)
-#define  SELECT(p1,p2,p3,p4,p5)    select(p1,(int *)(p2),(int *)(p3),(int *)(p4),p5)
-#else
-#define  SELECT(p1,p2,p3,p4,p5)    select(p1,p2,p3,p4,p5)
-#endif
-
-#if defined(P_SUN4)
-extern "C" void bzero(void *, int);
-extern "C" int select(int width,
-      fd_set *readfds,
-      fd_set *writefds,
-      fd_set *exceptfds,
-      struct timeval *timeout);
-#endif
-
 #ifdef P_BEOS
 #include "OS.h"
 #endif
