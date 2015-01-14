@@ -251,17 +251,105 @@ PChannel::Errors PSocket::Select(SelectList & read,
                                  const PTimeInterval & timeout)
 {
   PINDEX i, j;
-  int maxfds = 0;
+  int result = -1;
   Errors lastError = NoError;
 #if P_PTHREADS
   PThread * unblockThread = PThread::Current();
   int unblockPipe = unblockThread->unblockPipe[0];
 #endif
-
-  P_fd_set fds[3];
   SelectList * list[3] = { &read, &write, &except };
-
   PSocket * firstSocket = NULL;
+
+#if P_HAS_POLL
+
+  size_t pfdSize = sizeof(::pollfd)*(read.GetSize() + write.GetSize() + except.GetSize() + 1);
+  ::pollfd * pfd = (::pollfd *)alloca(pfdSize);
+  memset(pfd, 0, pfdSize);
+
+#if P_PTHREADS
+  PINDEX count = 1;
+  pfd[0].fd = unblockPipe;
+  pfd[0].events = POLLIN;
+#else
+  PIDNEX count = 0;
+#endif
+
+  for (i = 0; i < 3; i++) {
+    for (SelectList::iterator it = list[i]->begin(); it != list[i]->end(); it++) {
+      if (firstSocket == NULL)
+        firstSocket = &*it;
+
+      int h = it->GetHandle();
+      for (j = 0; j < count; ++j) {
+        if (pfd[j].fd == h)
+          break;
+      }
+      if (j == count)
+        pfd[count++].fd = h;
+
+      static int const EventBit[3] = { POLLIN | POLLNVAL, POLLOUT | POLLNVAL, POLLERR | POLLNVAL };
+      pfd[j].events |= EventBit[i];
+
+#if P_PTHREADS
+      it->px_selectMutex[i].Wait();
+      it->px_selectThread[i] = unblockThread;
+#endif
+    }
+  }
+
+  do {
+    PPROFILE_SYSTEM(
+      result = ::poll(pfd, count, timeout.GetInterval());
+    );
+  } while (result < 0 && errno == EINTR);
+
+  if (firstSocket->ConvertOSError(result)) {
+#if P_PTHREADS
+    if (pfd[0].revents != 0) {
+      PTRACE2(6, NULL, "Select unblocked fd=" << unblockPipe);
+      char ch;
+      PPROFILE_SYSTEM(
+        firstSocket->ConvertOSError(::read(unblockPipe, &ch, 1));
+      );
+      lastError = Interrupted;
+    }
+#endif
+  }
+  else
+    lastError = firstSocket->GetErrorCode();
+
+  for (i = 0; i < 3; i++) {
+    SelectList::iterator it = list[i]->begin();
+    while (it != list[i]->end()) {
+      PSocket & socket = *it;
+      socket.px_selectThread[i] = NULL;
+      socket.px_selectMutex[i].Signal();
+      if (lastError != NoError)
+        ++it;
+      else {
+        int h = socket.GetHandle();
+        if (h < 0) {
+          lastError = Interrupted;
+          ++it;
+        }
+        else {
+          for (j = 0; j < count; ++j) {
+            if (pfd[j].fd == h)
+              break;
+          }
+          if (j < count)
+            ++it;
+          else
+            list[i]->erase(it++);
+        }
+      }
+    }
+  }
+
+#else // P_HAS_POLL
+
+  int maxfds = 0;
+  P_fd_set fds[3];
 
   for (i = 0; i < 3; i++) {
     for (j = 0; j < list[i]->GetSize(); j++) {
@@ -276,14 +364,13 @@ PChannel::Errors PSocket::Select(SelectList & read,
         if (firstSocket == NULL)
           firstSocket = &socket;
       }
-      socket.px_selectMutex[i].Wait();
 #if P_PTHREADS
+      socket.px_selectMutex[i].Wait();
       socket.px_selectThread[i] = unblockThread;
 #endif
     }
   }
 
-  int result = -1;
   if (lastError == NoError) {
 #if P_PTHREADS
     fds[0] += unblockPipe;
@@ -335,6 +422,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
       }
     }
   }
+
+#endif // P_HAS_POLL
 
   return lastError;
 }
@@ -694,7 +783,7 @@ PBoolean PIPSocket::GetRouteTable(RouteTable & table)
         entry->interfaceName = tokens[9];
         entry->metric = tokens[5].AsUnsigned(16);
 		BYTE net_mask[16];
-		bzero(net_mask, sizeof(net_mask));
+		memset(net_mask, 0, sizeof(net_mask));
 		for(size_t i = 0; i < tokens[1].AsUnsigned(16) / 4; ++i)
 			net_mask[i/2] = (i % 2 == 0) ? 0xf0 : 0xff;
         entry->net_mask = Address(sizeof(net_mask), net_mask);
@@ -1358,11 +1447,11 @@ class ReachabilityRouteTableDetector : public PIPSocket::RouteTableDetector
 		struct sockaddr_in6		sin6;
 		SCNetworkReachabilityRef	target	= NULL;
 
-		bzero(&sin, sizeof(sin));
+		memset(&sin, 0, sizeof(sin));
 		sin.sin_len    = sizeof(sin);
 		sin.sin_family = AF_INET;
 
-		bzero(&sin6, sizeof(sin6));
+		memset(&sin6, 0, sizeof(sin6));
 		sin6.sin6_len    = sizeof(sin6);
 		sin6.sin6_family = AF_INET6;
 
