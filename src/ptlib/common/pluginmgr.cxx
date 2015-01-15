@@ -54,9 +54,6 @@
 #  endif
 #endif
 
-#define ENV_PTLIB_PLUGIN_DIR  "PTLIBPLUGINDIR"
-#define ENV_PWLIB_PLUGIN_DIR  "PWLIBPLUGINDIR"
-
 #define PTPLUGIN_SUFFIX       "_ptplugin"
 #define PWPLUGIN_SUFFIX       "_pwplugin"
 
@@ -510,9 +507,9 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, P_INT_PTR code)
 
 void PluginLoaderStartup::OnStartup()
 {
-  PString env = ::getenv(ENV_PTLIB_PLUGIN_DIR);
+  PString env = ::getenv(P_PTLIB_PLUGIN_DIR_ENV_VAR);
   if (env.IsEmpty())
-    env = ::getenv(ENV_PWLIB_PLUGIN_DIR);
+    env = ::getenv(P_PWLIB_PLUGIN_DIR_ENV_VAR);
   if (env.IsEmpty()) {
     env = P_DEFAULT_PLUGIN_DIR;
     PDirectory appdir = PProcess::Current().GetFile().GetDirectory();
