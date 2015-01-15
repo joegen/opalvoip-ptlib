@@ -20,6 +20,10 @@
 
 #if P_PLUGINMGR
 
+#define P_PTLIB_PLUGIN_DIR_ENV_VAR  "PTLIBPLUGINDIR"
+#define P_PWLIB_PLUGIN_DIR_ENV_VAR  "PWLIBPLUGINDIR"
+
+
 //////////////////////////////////////////////////////
 //
 //  Manager for plugins
