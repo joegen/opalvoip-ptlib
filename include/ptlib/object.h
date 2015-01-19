@@ -760,7 +760,7 @@ public:
     Throttle() : ThrottleBase(lowLevel, interval, highLevel) { }
   };
 
-  static bool CanTrace(ThrottleBase & throttle) { return throttle.CanTrace(); }
+  static bool CanTrace(const ThrottleBase & throttle) { return const_cast<ThrottleBase &>(throttle).CanTrace(); }
 
   static void WalkStack(
     ostream & strm,
