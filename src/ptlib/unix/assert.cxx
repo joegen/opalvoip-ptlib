@@ -155,8 +155,17 @@
   #if PTRACING
     struct PWalkStackInfo
     {
-      std::string m_output;
-      PSyncPoint  m_done;
+      std::string     m_output;
+      pthread_mutex_t m_mutex;
+      pthread_cond_t  m_condVar;
+      bool            m_done;
+
+      PWalkStackInfo()
+        : m_done(false)
+      {
+        pthread_mutex_init(&m_mutex, NULL);
+        pthread_cond_init(&m_condVar, NULL);
+      }
     };
     typedef std::map<PUniqueThreadIdentifier, PWalkStackInfo> PWalkStackMap;
     static PWalkStackMap   s_threadStackWalks;
@@ -182,7 +191,22 @@
 
       pthread_kill(id, PProcess::WalkStackSignal);
 
-      if (info.m_done.Wait(1000))
+
+      int err = 0;
+      struct timespec absTime;
+      absTime.tv_sec = time(NULL) + 2;
+      absTime.tv_nsec = 0;
+
+      pthread_mutex_lock(&info.m_mutex);
+      while (!info.m_done) {
+        err = pthread_cond_timedwait(&info.m_condVar, &info.m_mutex, &absTime);
+        if (err == 0 || err == ETIMEDOUT)
+          break;
+      }
+
+      pthread_mutex_unlock(&info.m_mutex);
+
+      if (err == 0)
         strm << info.m_output;
       else
         strm << "\n    Could not get stack trace for id=" << id;
@@ -197,13 +221,19 @@
     {
 #if P_PTHREADS
       pthread_mutex_lock(&s_threadStackMutex);
+
       PWalkStackMap::iterator it = s_threadStackWalks.find(PThread::GetCurrentThreadId());
       if (it != s_threadStackWalks.end()) {
         std::ostringstream strm;
         InternalWalkStack(strm, 3);
         it->second.m_output = strm.str();
       }
-      it->second.m_done.Signal();
+
+      pthread_mutex_lock(&it->second.m_mutex);
+      it->second.m_done = true;
+      pthread_cond_signal(&it->second.m_condVar);
+      pthread_mutex_unlock(&it->second.m_mutex);
+
       pthread_mutex_unlock(&s_threadStackMutex);
 #endif
     }
