@@ -153,89 +153,94 @@
   }
 
   #if PTRACING
-    struct PWalkStackInfo
-    {
-      std::string     m_output;
-      pthread_mutex_t m_mutex;
-      pthread_cond_t  m_condVar;
-      bool            m_done;
-
-      PWalkStackInfo()
-        : m_done(false)
+    #if P_PTHREADS
+      struct PWalkStackInfo
       {
-        pthread_mutex_init(&m_mutex, NULL);
-        pthread_cond_init(&m_condVar, NULL);
-      }
-    };
-    typedef std::map<PUniqueThreadIdentifier, PWalkStackInfo> PWalkStackMap;
-    static PWalkStackMap   s_threadStackWalks;
-    static pthread_mutex_t s_threadStackMutex = PTHREAD_MUTEX_INITIALIZER;
+        pthread_mutex_t   m_mainMutex;
+        PThreadIdentifier m_id;
+        std::string       m_output;
+        pthread_mutex_t   m_condMutex;
+        pthread_cond_t    m_condVar;
+        bool              m_done;
+
+        PWalkStackInfo()
+          : m_id(PNullThreadIdentifier)
+          , m_done(false)
+        {
+          pthread_mutex_init(&m_mainMutex, NULL);
+          pthread_mutex_init(&m_condMutex, NULL);
+          pthread_cond_init(&m_condVar, NULL);
+        }
+
+        void WalkOther(ostream & strm, PThreadIdentifier id)
+        {
+          pthread_mutex_lock(&m_mainMutex);
+
+          m_id = id;
+          pthread_kill(id, PProcess::WalkStackSignal);
+
+          int err = 0;
+          struct timespec absTime;
+          absTime.tv_sec = time(NULL) + 2;
+          absTime.tv_nsec = 0;
+
+          pthread_mutex_lock(&m_condMutex);
+          while (!m_done) {
+            err = pthread_cond_timedwait(&m_condVar, &m_condMutex, &absTime);
+            if (err == 0 || err == ETIMEDOUT)
+              break;
+          }
+
+          pthread_mutex_unlock(&m_condMutex);
+
+          if (err == 0)
+            strm << m_output;
+          else
+            strm << "\n    Could not get stack trace for id=" << id;
+
+          m_id = PNullThreadIdentifier;
+
+          pthread_mutex_unlock(&m_mainMutex);
+        }
+
+        void OthersWalk()
+        {
+          if (m_id != PThread::GetCurrentThreadId())
+            return;
+
+          std::ostringstream strm;
+          InternalWalkStack(strm, 3);
+          m_output = strm.str();
+
+          pthread_mutex_lock(&m_condMutex);
+          m_done = true;
+          pthread_cond_signal(&m_condVar);
+          pthread_mutex_unlock(&m_condMutex);
+        }
+      };
+    #else // P_PTHREADS
+      struct PWalkStackInfo
+      {
+        void WalkOther(ostream &, PThreadIdentifier) { }
+        void OthersWalk() { }
+      };
+    #endif // P_PTHREADS
+
+    static PWalkStackInfo s_otherThreadStack;
 
 
     void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
     {
-      if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId()) {
+      if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId())
         InternalWalkStack(strm, 2);
-        return;
-      }
-
-#if P_PTHREADS
-      if (!PProcess::IsInitialised())
-        return;
-
-      PProcess & process = PProcess::Current();
-
-      pthread_mutex_lock(&s_threadStackMutex);
-      PWalkStackInfo & info = s_threadStackWalks[id];
-      pthread_mutex_unlock(&s_threadStackMutex);
-
-      pthread_kill(id, PProcess::WalkStackSignal);
-
-
-      int err = 0;
-      struct timespec absTime;
-      absTime.tv_sec = time(NULL) + 2;
-      absTime.tv_nsec = 0;
-
-      pthread_mutex_lock(&info.m_mutex);
-      while (!info.m_done) {
-        err = pthread_cond_timedwait(&info.m_condVar, &info.m_mutex, &absTime);
-        if (err == 0 || err == ETIMEDOUT)
-          break;
-      }
-
-      pthread_mutex_unlock(&info.m_mutex);
-
-      if (err == 0)
-        strm << info.m_output;
-      else
-        strm << "\n    Could not get stack trace for id=" << id;
-
-      pthread_mutex_lock(&s_threadStackMutex);
-      s_threadStackWalks.erase(id);
-      pthread_mutex_unlock(&s_threadStackMutex);
-#endif
+      else if (PProcess::IsInitialised())
+        s_otherThreadStack.WalkOther(strm, id);
     }
 
     void PProcess::InternalWalkStackSignaled()
     {
-#if P_PTHREADS
-      pthread_mutex_lock(&s_threadStackMutex);
-
-      PWalkStackMap::iterator it = s_threadStackWalks.find(PThread::GetCurrentThreadId());
-      if (it != s_threadStackWalks.end()) {
-        std::ostringstream strm;
-        InternalWalkStack(strm, 3);
-        it->second.m_output = strm.str();
-      }
-
-      pthread_mutex_lock(&it->second.m_mutex);
-      it->second.m_done = true;
-      pthread_cond_signal(&it->second.m_condVar);
-      pthread_mutex_unlock(&it->second.m_mutex);
-
-      pthread_mutex_unlock(&s_threadStackMutex);
-#endif
+      if (IsInitialised())
+        s_otherThreadStack.OthersWalk();
     }
   #endif // PTRACING
 
