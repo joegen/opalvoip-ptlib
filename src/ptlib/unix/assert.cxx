@@ -209,7 +209,7 @@
             return;
 
           std::ostringstream strm;
-          InternalWalkStack(strm, 3);
+          InternalWalkStack(strm, 6);
           m_output = strm.str();
 
           pthread_mutex_lock(&m_condMutex);
