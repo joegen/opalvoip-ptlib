@@ -88,14 +88,15 @@
   {
     int i;
 
-    void* addresses[InternalMaxStackWalk];
-    int addressCount = backtrace(addresses, InternalMaxStackWalk);
-    if (addressCount == 0) {
+    const size_t maxStackWalk = InternalMaxStackWalk + skip;
+    void* addresses[maxStackWalk];
+    int addressCount = backtrace(addresses, maxStackWalk);
+    if (addressCount <= 0) {
       strm << "\n    Stack back trace empty, possibly corrupt\n";
       return;
     }
 
-    std::vector<std::string> lines(InternalMaxStackWalk);
+    std::vector<std::string> lines(addressCount);
 
     static std::string addr2line = Locate_addr2line();
     if (!addr2line.empty()) {
