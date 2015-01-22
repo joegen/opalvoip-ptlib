@@ -117,7 +117,7 @@
 
     char ** symbols = backtrace_symbols(addresses, addressCount);
     for (i = skip; i < addressCount; ++i) {
-      strm << "\n    ";
+      strm << "\n\t";
 
       if (symbols[i] == NULL || symbols[i][0] == '\0') {
         strm << addresses[i] << ' ' << lines[i];
