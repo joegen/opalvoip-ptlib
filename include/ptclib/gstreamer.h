@@ -139,6 +139,8 @@ class PGstObject : public PGObject
   public:
 
     PString GetName() const;
+
+    bool SetSockFd(int fd);
 };
 
 

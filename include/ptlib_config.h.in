@@ -920,6 +920,7 @@
 #undef P_GSTREAMER_WIN64
 #undef P_GSTREAMER_WIN32
 #undef P_GSTREAMER_WINCE
+#undef P_GSTREAMER_1_0_API
 
 #if (defined(P_GSTREAMER_WIN64) &&  defined(P_64BIT)                        ) || \
     (defined(P_GSTREAMER_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
