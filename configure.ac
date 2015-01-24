@@ -2078,13 +2078,23 @@ dnl MSWIN_CHECK_DIR  gstreamer,%ProgramW6432%\gstreamer-sdk\0.10\x86
 PTLIB_MODULE_OPTION(
    [GSTREAMER], 
    [gstreamer],
-   [GStreamer support],
+   [GStreamer 0.10 support],
    [gstreamer-app-0.10], 
    [],[],
    [#include <gst/gst.h>],
-   [gst_version_string()]
+   [gst_version_string()],
+   [],
+   [PTLIB_MODULE_OPTION(
+      [GSTREAMER],
+      [gstreamer],
+      [GStreamer 1.0 support],
+      [gio-2.0 gstreamer-app-1.0],
+      [],[],
+      [#include <gst/gst.h>],
+      [gst_version_string()],
+      [AC_DEFINE(P_GSTREAMER_1_0_API, 1)]
+   )]
 )
-
 
 dnl ########################################################################
 dnl look for ODBC code
