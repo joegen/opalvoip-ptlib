@@ -56,10 +56,14 @@
 
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappsink.h>
+#if !GST_CHECK_VERSION(1,0,0)
 #include <gst/app/gstappbuffer.h>
+#else
+/* GST_PLUGIN_FEATURE_NAME() was removed, use GST_OBJECT_NAME() instead. */
+#define GST_PLUGIN_FEATURE_NAME(f) GST_OBJECT_NAME(f)
 
-#include <glib-object.h>
-
+#include <gio/gio.h>
+#endif
 
 class PGError
 {
@@ -92,6 +96,14 @@ public:
 
 #if PTRACING
 static void LogFunction(GstDebugCategory * /*category*/,
+                        GstDebugLevel gstLevel,
+                        const gchar *file,
+                        const gchar *function,
+                        gint line,
+                        GObject * /*object*/,
+                        GstDebugMessage *message,
+                        gpointer /*data*/) G_GNUC_NO_INSTRUMENT;
+  static void LogFunction(GstDebugCategory * /*category*/,
                         GstDebugLevel gstLevel,
                         const gchar *file,
                         const gchar *function,
@@ -131,6 +143,9 @@ static void InitialiseGstreamer()
   if (g_initialised.exchange(true))
     return;
 
+  if (gst_is_initialized())
+    return;
+
   PGError error;
   if (gst_init_check(NULL, NULL, &error)) {
     PTRACE(3, "GStreamer\tUsing version " << gst_version_string());
@@ -140,7 +155,11 @@ static void InitialiseGstreamer()
 #pragma warning(disable:4127)
 #endif
     gst_debug_remove_log_function(gst_debug_log_default);
+#if !GST_CHECK_VERSION(1,0,0)
     gst_debug_add_log_function(LogFunction, NULL);
+#else
+    gst_debug_add_log_function(LogFunction, NULL, NULL);
+#endif
 #ifdef _MSC_VER
 #pragma warning(default:4127)
 #endif
@@ -261,6 +280,24 @@ PString PGstObject::GetName() const
   return str;
 }
 
+bool PGstObject::SetSockFd(int fd)
+{
+  if (!IsValid())
+    return false;
+
+#if !GST_CHECK_VERSION(1,0,0)
+  g_object_set(Ptr(), "sockfd", fd, "closefd", FALSE, NULL);
+#else
+  GSocket * socket = g_socket_new_from_fd (fd, NULL);
+  if (!socket)
+    return false;
+  g_object_set(Ptr(), "socket", socket, "close-socket", FALSE, NULL);
+  g_object_unref(socket);
+#endif
+
+  return true;
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -278,7 +315,11 @@ void PGstMiniObject::operator=(const PGstMiniObject & other)
 
 bool PGstMiniObject::IsValid() const
 {
+#if !GST_CHECK_VERSION(1,0,0)
   return PGBaseObject::IsValid() && GST_IS_MINI_OBJECT(Ptr());
+#else
+  return PGBaseObject::IsValid() && GST_IS_MINI_OBJECT_TYPE(Ptr(), GST_MINI_OBJECT_TYPE(Ptr()));
+#endif
 }
 
 
@@ -308,13 +349,17 @@ PStringList PGstPluginFeature::Inspect(const char * theRegex, InspectSearchField
 
   PRegularExpression regex(theRegex == NULL || *theRegex == '\0' ? ".*" : theRegex);
 
+#if !GST_CHECK_VERSION(1,0,0)
   GstRegistry * registry = gst_registry_get_default();
+#else
+  GstRegistry * registry = gst_registry_get();
+#endif
 
   GList * pluginList = gst_registry_get_plugin_list(registry);
   for (GList * pluginIter = pluginList; pluginIter != NULL; pluginIter = g_list_next(pluginIter)) {
     GstPlugin * plugin = GST_PLUGIN(pluginIter->data);
 
-    GList * featureList = gst_registry_get_feature_list_by_plugin(registry, plugin->desc.name);
+    GList * featureList = gst_registry_get_feature_list_by_plugin(registry, gst_plugin_get_name(plugin));
     for (GList * featureIter = featureList; featureIter != NULL; featureIter = g_list_next(featureIter)) {
       GstPluginFeature * feature = GST_PLUGIN_FEATURE(featureIter->data);
 
@@ -323,25 +368,25 @@ PStringList PGstPluginFeature::Inspect(const char * theRegex, InspectSearchField
         PINDEX found = P_MAX_INDEX;
         switch (searchField) {
           case ByKlass :
-            regex.Execute(factory->details.klass, found);
+            regex.Execute(gst_element_factory_get_klass(factory), found);
             break;
           case ByName :
             regex.Execute(GST_PLUGIN_FEATURE_NAME(factory), found);
             break;
           case ByLongName :
-            regex.Execute(factory->details.longname, found);
+            regex.Execute(gst_element_factory_get_longname(factory), found);
             break;
           case ByDescription :
-            regex.Execute(factory->details.description, found);
+            regex.Execute(gst_element_factory_get_description(factory), found);
             break;
         }
         if (found != P_MAX_INDEX) {
           PStringStream info;
           info << GST_PLUGIN_FEATURE_NAME(factory);
           if (detailed) {
-            info << '\t' << factory->details.klass
-                 << '\t' << factory->details.longname
-                 << '\t' << factory->details.description;
+            info << '\t' << gst_element_factory_get_klass(factory)
+                 << '\t' << gst_element_factory_get_longname(factory)
+                 << '\t' << gst_element_factory_get_description(factory);
           }
           elements.AppendString(info);
         }
@@ -501,7 +546,16 @@ void PGstBaseIterator::Resync()
 PGstBaseIterator::Result PGstBaseIterator::InternalNext()
 {
   gpointer valuePtr;
+
+#if !GST_CHECK_VERSION(1,0,0)
   m_lastResult = (Result)gst_iterator_next(As<GstIterator>(), &valuePtr);
+#else
+  GValue value = G_VALUE_INIT;
+  m_lastResult = (Result)gst_iterator_next(As<GstIterator>(), &value);
+  valuePtr = g_value_get_object(&value);
+  g_value_unset(&value);
+#endif
+
   if (m_lastResult == Success)
     m_valueRef.Attach(valuePtr);
   return m_lastResult;
@@ -553,7 +607,11 @@ bool PGstAppSrc::Push(const void * data, PINDEX size)
 {
   gchar * bufPtr = (gchar*)g_malloc0 (size);
   memcpy(bufPtr, data, size);
+#if !GST_CHECK_VERSION(1,0,0)
   GstBuffer * buffer = gst_app_buffer_new(bufPtr, size, (GstAppBufferFinalizeFunc)g_free, bufPtr);
+#else
+  GstBuffer * buffer = gst_buffer_new_wrapped(bufPtr, size);
+#endif
   return gst_app_src_push_buffer(As<GstAppSrc>(), buffer) == GST_FLOW_OK;
 }
 
@@ -577,13 +635,27 @@ bool PGstAppSink::Pull(void * data, PINDEX & size)
   if (!IsValid() || IsEndStream())
     return false;
 
+#if !GST_CHECK_VERSION(1,0,0)
   GstBuffer * buffer = gst_app_sink_pull_buffer(As<GstAppSink>());
   if (buffer == NULL)
     return false;
 
   size = std::min(size, (PINDEX)GST_BUFFER_SIZE(buffer));
-  memcpy(data, buffer->data, size);
+  memcpy(data, GST_BUFFER_DATA(buffer), size);
   gst_buffer_unref(buffer);
+#else
+  GstSample * sample = gst_app_sink_pull_sample(As<GstAppSink>());
+  if (sample == NULL)
+    return false;
+  GstBuffer * buffer = gst_sample_get_buffer(sample);
+  if (buffer == NULL) {
+    gst_sample_unref(sample);
+    return false;
+  }
+  gst_buffer_extract(buffer, 0, data, size);
+  gst_sample_unref(sample);
+#endif
+
   return true;
 }
 
@@ -735,7 +807,12 @@ bool PGstBus::SetNotifier(Notifier & notifier)
   if (!IsValid() || notifier.IsNULL())
     return false;
 
+#if !GST_CHECK_VERSION(1,0,0)
   gst_bus_set_sync_handler(As<GstBus>(), MySyncHandler, &notifier);
+#else
+  gst_bus_set_sync_handler(As<GstBus>(), MySyncHandler, &notifier, NULL);
+#endif
+
   return true;
 }
 #endif // P_GSTREAMER
