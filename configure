@@ -1740,7 +1740,8 @@ Optional Features:
   --disable-shmvideo      disable shared memory video devices
   --disable-curses        disable disable Curses (text mode windows) support
   --disable-sdl           disable disable libSDL (video display) support
-  --disable-gstreamer     disable GStreamer support
+  --disable-gstreamer     disable GStreamer 0.10 support
+  --disable-gstreamer     disable GStreamer 1.0 support
   --disable-odbc          disable ODBC database support
   --disable-odbc          disable unixODBC database support
   --enable-vfw            enable video for windows capture
@@ -16328,8 +16329,8 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking GStreamer support" >&5
-$as_echo_n "checking GStreamer support... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking GStreamer 0.10 support" >&5
+$as_echo_n "checking GStreamer 0.10 support... " >&6; }
 
    # Check whether --enable-gstreamer was given.
 if test "${enable_gstreamer+set}" = set; then :
@@ -16464,8 +16465,8 @@ fi
    MY_LINK_IFELSE_LIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
    LIBS="$GSTREAMER_LIBS $LIBS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GStreamer support usability" >&5
-$as_echo_n "checking for GStreamer support usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GStreamer 0.10 support usability" >&5
+$as_echo_n "checking for GStreamer 0.10 support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <gst/gst.h>
@@ -16473,7 +16474,6 @@ int
 main ()
 {
 gst_version_string()
-
   ;
   return 0;
 }
@@ -16519,7 +16519,210 @@ fi
 
 
 
+   if test "x$usable" = "xyes"; then :
 
+else
+
+
+   GSTREAMER_SYSTEM="yes"
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking GStreamer 1.0 support" >&5
+$as_echo_n "checking GStreamer 1.0 support... " >&6; }
+
+   # Check whether --enable-gstreamer was given.
+if test "${enable_gstreamer+set}" = set; then :
+  enableval=$enable_gstreamer; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_GSTREAMER:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_gstreamer="$enableval"
+
+
+   if test "x$usable" = xyes; then :
+
+
+
+      if test "x$GSTREAMER_SYSTEM" = xyes; then :
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER" >&5
+$as_echo_n "checking for GSTREAMER... " >&6; }
+
+if test -n "$GSTREAMER_CFLAGS"; then
+    pkg_cv_GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gio-2.0 gstreamer-app-1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gio-2.0 gstreamer-app-1.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GSTREAMER_CFLAGS=`$PKG_CONFIG --cflags "gio-2.0 gstreamer-app-1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$GSTREAMER_LIBS"; then
+    pkg_cv_GSTREAMER_LIBS="$GSTREAMER_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gio-2.0 gstreamer-app-1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gio-2.0 gstreamer-app-1.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GSTREAMER_LIBS=`$PKG_CONFIG --libs "gio-2.0 gstreamer-app-1.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gio-2.0 gstreamer-app-1.0" 2>&1`
+        else
+	        GSTREAMER_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gio-2.0 gstreamer-app-1.0" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$GSTREAMER_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	GSTREAMER_CFLAGS=$pkg_cv_GSTREAMER_CFLAGS
+	GSTREAMER_LIBS=$pkg_cv_GSTREAMER_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+         if test "x$usable" = xyes; then :
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $GSTREAMER_CFLAGS"
+   LIBS="$GSTREAMER_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GStreamer 1.0 support usability" >&5
+$as_echo_n "checking for GStreamer 1.0 support usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <gst/gst.h>
+int
+main ()
+{
+gst_version_string()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+
+   LIBS="$GSTREAMER_LIBS $LIBS"
+   CPPFLAGS="$GSTREAMER_CFLAGS $CPPFLAGS"
+
+
+
+
+else
+  usable=no
+
+fi
+
+
+
+fi
+
+
+
+fi
+
+fi
+
+   GSTREAMER_USABLE=$usable
+
+
+
+   if test "x$usable" = "xyes"; then :
+  $as_echo "#define P_GSTREAMER_1_0_API 1" >>confdefs.h
+
+
+fi
 
 
 
@@ -16543,6 +16746,33 @@ fi
       PTLIB_GSTREAMER=no
    fi
 
+
+
+
+
+fi
+
+
+
+   HAS_GSTREAMER=$GSTREAMER_USABLE
+
+   if test "x$HAS_GSTREAMER" = "xyes" ; then
+      HAS_GSTREAMER=1
+   fi
+
+   if test "x$HAS_GSTREAMER" = "x0" || test "x$HAS_GSTREAMER" = "xno" ; then
+      HAS_GSTREAMER=
+   fi
+
+
+
+   if test "x$HAS_GSTREAMER" = "x1" ; then
+      PTLIB_GSTREAMER=yes
+      $as_echo "#define P_GSTREAMER 1" >>confdefs.h
+
+   else
+      PTLIB_GSTREAMER=no
+   fi
 
 
 
