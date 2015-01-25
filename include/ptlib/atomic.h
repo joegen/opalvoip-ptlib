@@ -41,21 +41,48 @@
   #include P_ATOMICITY_HEADER
 #endif
 
-template <typename T> struct atomic
+template <typename Type> struct atomic
 {
-  __inline atomic() { }
-  __inline atomic(T value) : m_storage(value) { }
-  __inline atomic(const atomic & other) : m_storage(other.m_storage) { }
-  __inline atomic & operator=(const atomic & other) { m_storage = other.m_storage; return *this; }
-  __inline operator T() const { return m_storage; }
-  __inline T exchange(T value) { T previous = m_storage; m_storage = value; return previous; }
+  __inline atomic() { ConstructMutex(); }
+  __inline atomic(Type value) : m_storage(value) { ConstructMutex(); }
+  __inline atomic(const atomic & other) : m_storage(other.m_storage) { ConstructMutex(); }
+  __inline ~atomic() { DestroyMutex(); }
+  __inline atomic & operator=(const atomic & other) { Lock(); other.Lock(); m_storage = other.m_storage; other.Unlock(); Unlock(); return *this; }
+  __inline operator Type() const { Lock(); Type value = m_storage; Unlock(); return value; }
+  __inline Type load() const { Lock(); Type value = m_storage; Unlock(); return value; } \
+  __inline void store(Type value) { Lock(); m_storage = value; Unlock();; } \
+  __inline Type exchange(Type value) { Lock(); Type previous = m_storage; m_storage = value; Unlock(); return previous; }
+  bool compare_exchange_strong(Type & comp, Type value)
+  {
+      Lock();
+      if (m_storage == comp) {
+        m_storage = value;
+        Unlock();
+        return true;
+      }
+      else {
+        comp = m_storage;
+        Unlock();
+        return false;
+      }
+  }
 
 private:
-  volatile T m_storage;
+  volatile Type m_storage;
+
+  // This is declared before any PMutex classes, have to do it manually.
 #if _WIN32
   CRITICAL_SECTION m_mutex;
+  __inline void ConstructMutex() { InitializeCriticalSection(&m_mutex); }
+  __inline void DestroyMutex()   { DeleteCriticalSection(&m_mutex); }
+  __inline void Lock()           { EnterCriticalSection(&m_mutex); }
+  __inline void Unlock()         { LeaveCriticalSection(&m_mutex); }
 #else
   pthread_mutex_t m_mutex;
+  __inline void ConstructMutex() { pthread_mutex_init(&m_mutex, NULL); }
+  __inline void DestroyMutex()   { pthread_mutex_destroy(&m_mutex); }
+  __inline void Lock()           { pthread_mutex_lock(&m_mutex); }
+  __inline void Unlock()         { pthread_mutex_unlock(&m_mutex); }
 #endif
 };
 
