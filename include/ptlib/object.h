@@ -1053,6 +1053,20 @@ class PTimeInterval;
 
 namespace PProfiling
 {
+  #if defined(__i386__) || defined(__x86_64__)
+    #define PProfilingGetCycles(when) { uint32_t l,h; __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h)); when = ((uint64_t)h<<32)|l; }
+  #elif defined(_M_IX86) || defined(_M_X64)
+    #define PProfilingGetCycles(when) when = __rdtsc()
+  #elif defined(_WIN32)
+    #define PProfilingGetCycles(when) { LARGE_INTEGER li; QueryPerformanceCounter(&li); when = li.QuadPart; }
+  #elif defined(CLOCK_MONOTONIC)
+    #define PProfilingGetCycles(when) { timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); when = ts.ts_sec*1000000000ULL+ts.ts_nsec; }
+  #else
+    #define PProfilingGetCycles(when) { timeval tv; gettimeofday(&tv, NULL); when = tv.tv_sec*1000000ULL+tv.tv_usec; }
+  #endif
+
+  PPROFILE_EXCLUDE(void GetFrequency(uint64_t & freq));
+
   struct Function
   {
     unsigned    m_count;

@@ -1318,37 +1318,48 @@ istream & istream::operator>>(PUInt64 & v)
 #if P_PROFILING
 // Currently only supported in GNU && *nix
 
-#include <fstream>
-
 namespace PProfiling
 {
 
-#if defined(__i386__) || defined(__x86_64__)
-#define GetTimestamp(when) { uint32_t l,h; __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h)); when = ((uint64_t)h<<32)|l; }
-PPROFILE_EXCLUDE(static void GetFrequency(uint64_t & freq));
-static void GetFrequency(uint64_t & freq)
-{
-  freq = 2000000000; // 2GHz
-  ifstream cpuinfo("/proc/cpuinfo", ios::in);
-  while (cpuinfo.good()) {
-    char line[100];
-    cpuinfo.getline(line, sizeof(line));
-    if (strncmp(line, "cpu MHz", 7) == 0) {
-      freq = (uint64_t)(atof(strchr(line, ':')+1)*1000000);
-      break;
+  #if defined(__i386__) || defined(__x86_64__)
+    void GetFrequency(uint64_t & freq)
+    {
+      freq = 2000000000; // 2GHz
+      ifstream cpuinfo("/proc/cpuinfo", ios::in);
+      while (cpuinfo.good()) {
+        char line[100];
+        cpuinfo.getline(line, sizeof(line));
+        if (strncmp(line, "cpu MHz", 7) == 0) {
+          freq = (uint64_t)(atof(strchr(line, ':')+1)*1000000);
+          break;
+        }
+      }
     }
-  }
-}
-#elif defined(_M_IX86) || defined(_M_X64)
-#define GetTimestamp(when) when = __rdtsc()
-#define GetFrequency(freq) { LARGE_INTEGER li; QueryPerformanceFrequency(&li); freq = li.QuadPart*1000; }
-#elif defined(_WIN32)
-#define GetTimestamp(when) { LARGE_INTEGER li; QueryPerformanceCounter(&li); when = li.QuadPart; }
-#define GetFrequency(freq) { LARGE_INTEGER li; QueryPerformanceFrequency(&li); freq = li.QuadPart; }
-#else
-#define GetTimestamp(when) { timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); when = t.tv_sec*1000000000ULL+t.tv_nsec; }
-#define GetFrequency(freq) freq = 1000000000ULL
-#endif
+  #elif defined(_M_IX86) || defined(_M_X64)
+    void GetFrequency(uint64_t & freq)
+    {
+      LARGE_INTEGER li;
+      QueryPerformanceFrequency(&li);
+      freq = li.QuadPart*1000;
+    }
+  #elif defined(_WIN32)
+    void GetFrequency(uint64_t & freq)
+    {
+      LARGE_INTEGER li;
+      QueryPerformanceFrequency(&li);
+      freq = li.QuadPart;
+    }
+  #elif defined(CLOCK_MONOTONIC)
+    void GetFrequency(uint64_t & freq)
+    {
+      freq = 1000000000ULL;
+    }
+  #else
+    void GetFrequency(uint64_t & freq)
+    {
+      freq = 1000000ULL;
+    }
+  #endif
 
 
   enum FunctionType
@@ -1445,7 +1456,7 @@ static void GetFrequency(uint64_t & freq)
     m_function.m_pointer = function;
     m_function.m_caller = caller;
 
-    GetTimestamp(m_when);
+    PProfilingGetCycles(m_when);
     m_link = s_database.m_functions.exchange(this);
   }
 
@@ -1459,7 +1470,7 @@ static void GetFrequency(uint64_t & freq)
     m_function.m_file = file;
     m_function.m_line = line;
 
-    GetTimestamp(m_when);
+    PProfilingGetCycles(m_when);
     m_link = s_database.m_functions.exchange(this);
   }
 
@@ -1563,7 +1574,7 @@ static void GetFrequency(uint64_t & freq)
     , m_functions(NULL)
     , m_threads(NULL)
   {
-    GetTimestamp(m_start);
+    PProfilingGetCycles(m_start);
   }
 
 
@@ -1604,7 +1615,7 @@ static void GetFrequency(uint64_t & freq)
 
   void Reset()
   {
-    GetTimestamp(s_database.m_start);
+    PProfilingGetCycles(s_database.m_start);
     ThreadRawData * thrd = s_database.m_threads.exchange(NULL);
     FunctionRawData * func = s_database.m_functions.exchange(NULL);
 
@@ -1885,7 +1896,7 @@ static void GetFrequency(uint64_t & freq)
 
   void Analyse(Analysis & analysis)
   {
-    GetTimestamp(analysis.m_durationCycles);
+    PProfilingGetCycles(analysis.m_durationCycles);
     analysis.m_durationCycles -= s_database.m_start;
 
     GetFrequency(analysis.m_frequency);
