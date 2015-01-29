@@ -633,8 +633,10 @@ void PMIMEInfo::ReadFrom(istream &strm)
     }
   }
 
-  if (!lastLine.IsEmpty())
+  if (!lastLine.IsEmpty()) {
     AddMIME(lastLine);
+    strm.setstate(ios::failbit); // Should always end with empty line
+  }
 }
 
 
