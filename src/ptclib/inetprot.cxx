@@ -621,10 +621,13 @@ void PMIMEInfo::ReadFrom(istream &strm)
 
   PString line;
   PString lastLine;
+  bool incomplete = true;
   while (strm.good()) {
     strm >> line;
-    if (line.IsEmpty())
+    if (line.IsEmpty()) {
+      incomplete = false;
       break;
+    }
     if (line[0] == ' ' || line[0] == '\t') // RFC 2822 section 2.2.2 & 2.2.3
       lastLine += line;
     else {
@@ -633,10 +636,11 @@ void PMIMEInfo::ReadFrom(istream &strm)
     }
   }
 
-  if (!lastLine.IsEmpty()) {
+  if (!lastLine.IsEmpty())
     AddMIME(lastLine);
-    strm.setstate(ios::failbit); // Should always end with empty line
-  }
+
+  if (incomplete)
+    strm.setstate(ios::failbit);
 }
 
 
