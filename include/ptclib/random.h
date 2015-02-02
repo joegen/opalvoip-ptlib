@@ -84,13 +84,15 @@ class PRandom
 
     /**Get the next psuedo-random number in sequence.
        This generates one pseudorandom unsigned integer from 0 to maximum.
-       Uses the Generate() function and scales accordingly.
+       Uses the Generate() function and scales accordingly. Is inclusive of
+       maximum, i.e. [0..maximum].
       */
     uint32_t Generate(uint32_t maximum);
 
     /**Get the next psuedo-random number in sequence.
        This generates one pseudorandom unsigned integer from minimum to maximum.
-       Uses the Generate() function and scales and shifts accordingly.
+       Uses the Generate() function and scales and shifts accordingly. Is
+       inclusive of endpoints, i.e. [minimum..maximum].
       */
     uint32_t Generate(uint32_t minimum, uint32_t maximum);
 
