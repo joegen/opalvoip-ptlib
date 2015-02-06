@@ -337,7 +337,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
             if (pfd[j].fd == h)
               break;
           }
-          if (j < count)
+          if (j < count && pfd[j].revents != 0)
             ++it;
           else
             list[i]->erase(it++);
