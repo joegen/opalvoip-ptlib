@@ -72,6 +72,9 @@
 #include <sys/mman.h>
 #include <malloc.h>
 #include <fstream>
+#ifndef P_RTEMS
+#include <sys/resource.h>
+#endif
 #endif
 
 #if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_IOS) || defined (P_AIX) || defined(P_BEOS) || defined(P_IRIX) || defined(P_QNX) || defined(P_GNU_HURD) || defined(P_ANDROID)
