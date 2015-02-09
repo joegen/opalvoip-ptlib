@@ -559,7 +559,8 @@ BYTE * PEthSocket::Frame::CreateIP(const PIPSocket::Address & src, const PIPSock
 
   PBYTEArray dummy;
   Address srcMac, dstMac;
-  GetDataLink(dummy, srcMac, dstMac);
+  if ((size_t)m_rawSize > sizeof(PEthSocket::Address)*2)
+    GetDataLink(dummy, srcMac, dstMac);
   BYTE * ip = CreateDataLink(srcMac, dstMac, 0x800, length);
   memset(ip, 0, 20);
   ip[0] = 0x45;
