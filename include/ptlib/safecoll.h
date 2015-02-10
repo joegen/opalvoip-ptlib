@@ -1261,6 +1261,9 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       */
     void MoveFrom(PSafeDictionaryBase & other)
     {
+      if (this == &other)
+        return;
+
       *this = other;
       this->AllowDeleteObjects(); // We now own the objects, need to put this back on
 
