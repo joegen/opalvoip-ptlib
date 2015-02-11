@@ -324,8 +324,10 @@ ifneq (,$(REVISION_FILE))
       echo "Revision file updated to `sed -n 's/.*SVN_REVISION *\(.*\)/\1/p' $(REVISION_FILE)`" ; \
     fi
 
-  $(REVISION_FILE) : $(REVISION_FILE).in
+  $(REVISION_FILE) : $(REVISION_FILE).in FORCE
 	$(Q)$(SVN_REVISION_CMD)
+
+  .PHONY:FORCE
 
 endif
 
