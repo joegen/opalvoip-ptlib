@@ -71,28 +71,15 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   , m_manufacturersHomePage(inf.manufHomePage != NULL ? inf.manufHomePage : HOME_PAGE)
   , m_manufacturersEmail(inf.email != NULL ? inf.email : EMAIL)
   , m_productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName)
+  , m_gifFilename(inf.gifFilename)
+  , m_gifWidth(inf.gifWidth)
+  , m_gifHeight(inf.gifHeight)
   , m_gifHTML(inf.gifHTML)
   , m_copyrightHolder(inf.copyrightHolder != NULL ? inf.copyrightHolder : inf.manufacturerName)
   , m_copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : (const char *)m_manufacturersHomePage)
   , m_copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : (const char *)m_manufacturersEmail)
   , m_restartThread(NULL)
 {
-  if (inf.gifFilename != NULL) {
-    PDirectory exeDir = GetFile().GetDirectory();
-#if defined(_WIN32) && defined(_DEBUG)
-    // Special check to aid in using DevStudio for debugging.
-    if (exeDir.Find("\\Debug\\") != P_MAX_INDEX)
-      exeDir = exeDir.GetParent();
-#endif
-    m_httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, exeDir+inf.gifFilename));
-    if (m_gifHTML.IsEmpty()) {
-      m_gifHTML = psprintf("<img border=0 src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
-      if (inf.gifWidth != 0 && inf.gifHeight != 0)
-        m_gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
-      m_gifHTML += " align=absmiddle>";
-    }
-  }
-
   m_httpThreads.DisallowDeleteObjects();
 }
 
@@ -127,8 +114,19 @@ PBoolean PHTTPServiceProcess::OnStart()
 
     m_httpNameSpace.AddResource(new PHTTPDirectory("data", exeDir + "data"));
     m_httpNameSpace.AddResource(new PServiceHTTPDirectory("html", exeDir + "html"));
-  }
 
+    if (!m_gifFilename.IsEmpty()) {
+      m_httpNameSpace.AddResource(new PServiceHTTPFile(m_gifFilename, exeDir+m_gifFilename));
+      if (m_gifHTML.IsEmpty()) {
+        PStringStream html;
+        html << "<img border=0 src=\"" << m_gifFilename << "\" alt=\"" << GetName() << "!\"";
+        if (m_gifWidth != 0 && m_gifHeight != 0)
+          html << " width=" << m_gifWidth << " height=" << m_gifHeight;
+        html << " align=absmiddle>";
+        m_gifHTML = html;
+      }
+    }
+  }
 
   if (!Initialise("Started"))
     return false;
