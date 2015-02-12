@@ -225,6 +225,9 @@ class PHTTPServiceProcess : public PServiceProcess
     PString    m_manufacturersHomePage;
     PString    m_manufacturersEmail;
     PString    m_productNameHTML;
+    PString    m_gifFilename;
+    unsigned   m_gifWidth;
+    unsigned   m_gifHeight;
     PString    m_gifHTML;
     PString    m_copyrightHolder;
     PString    m_copyrightHomePage;
