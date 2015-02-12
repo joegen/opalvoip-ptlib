@@ -41,6 +41,9 @@
 #include <ptclib/random.h>
 
 
+#define PTraceModule() "FakeVideo"
+
+
 // Device names for fake output
 
 enum {
@@ -1413,15 +1416,6 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
                   int rectWidth, int rectHeight,
                   int r,         int g,          int b);
 
-    /**Set the video format to be used.
-
-       Default behaviour sets the value of the videoFormat variable and then
-       returns the IsOpen() status.
-    */
-    virtual PBoolean SetVideoFormat(
-      VideoFormat videoFormat   /// New video format
-    );
-
     /**Get the number of video channels available on the device.
     */
     virtual int GetNumChannels();
@@ -1503,8 +1497,8 @@ PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
   : m_open(false)
   , m_Pacing(500)
 {
-  SetColourFormat("RGB24");
-  channelNumber = 3; // Blank screen
+  SetColourFormat(GetColourFormat());
+  channelNumber = eBouncingBoxes;
 
   m_grabCount = 0;
   SetFrameRate(10);
@@ -1518,13 +1512,14 @@ PBoolean PVideoInputDevice_FakeVideo::Open(const PString & devName, PBoolean /*s
   for (i = 0; i < PARRAYSIZE(FakeDeviceNames)-1; ++i) {
     if (devName *= FakeDeviceNames[i]) {
       SetChannel(i);
-      break;
+      deviceName = FakeDeviceNames[i];
+      m_open = true;
+      return true;
     }
   }
 
-  deviceName = FakeDeviceNames[i];
-  m_open = true;
-  return true;
+  PTRACE(2, "Unknown fake video \"" << devName << '"');
+  return false;
 }
 
 
@@ -1565,12 +1560,6 @@ PStringArray PVideoInputDevice_FakeVideo::GetInputDeviceNames()
 }
 
 
-PBoolean PVideoInputDevice_FakeVideo::SetVideoFormat(VideoFormat newFormat)
-{
-  return PVideoDevice::SetVideoFormat(newFormat);
-}
-
-
 int PVideoInputDevice_FakeVideo::GetNumChannels() 
 {
   return eNumTestPatterns;  
@@ -1596,8 +1585,10 @@ PBoolean PVideoInputDevice_FakeVideo::SetColourFormat(const PString & newFormat)
     m_internalColourFormat = eYUV420P;
   else if ((newFormat *= "YUV422") || (newFormat *= "YUY2"))
     m_internalColourFormat = eYUV422;
-  else
+  else {
+    PTRACE(1, "Could not set colour format \"" << newFormat << '"');
     return false;
+  }
 
   if (!PVideoDevice::SetColourFormat(newFormat))
     return false;
@@ -1637,8 +1628,14 @@ PBoolean PVideoInputDevice_FakeVideo::SetFrameSize(unsigned width, unsigned heig
     return false;
 
   m_videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
-  m_scanLineWidth = (frameHeight == 0) ? 0 : m_videoFrameSize/frameHeight;
-  return m_videoFrameSize > 0;
+  if (m_videoFrameSize == 0) {
+    PTRACE(1, "Could not calculate video frame size using resolution "
+           << frameWidth << 'x' << frameHeight << " and format \"" << colourFormat << '"');
+    return false;
+  }
+
+  m_scanLineWidth = m_videoFrameSize/frameHeight;
+  return true;
 }
 
 
@@ -1686,6 +1683,7 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
        GrabNTSCTestFrame(destFrame);
        break;
      default :
+       PAssertAlways(PLogicError);
        return false;
   }
 
