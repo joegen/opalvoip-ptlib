@@ -2230,7 +2230,7 @@ PBoolean PSSLChannel::Read(void * buf, PINDEX len)
 
 int PSSLChannel::BioRead(bio_st * bio, char * buf, int len)
 {
-  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioRead(buf, len) : 0;
+  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioRead(buf, len) : -1;
 }
 
 
@@ -2242,15 +2242,10 @@ int PSSLChannel::BioRead(char * buf, int len)
   if (PIndirectChannel::Read(buf, len))
     return GetLastReadCount();
 
-  switch (GetErrorCode(PChannel::LastReadError)) {
-    case PChannel::Interrupted :
-      BIO_set_retry_read(m_bio);
-    case PChannel::Timeout :
-      return -1;
+  if (GetErrorCode(PChannel::LastReadError) == PChannel::Interrupted)
+    BIO_set_retry_read(m_bio);
 
-    default :
-      return 0;
-  }
+  return -1;
 }
 
 
@@ -2285,7 +2280,7 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
 
 int PSSLChannel::BioWrite(bio_st * bio, const char * buf, int len)
 {
-  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioWrite(buf, len) : 0;
+  return bio != NULL && bio->ptr != NULL ? reinterpret_cast<PSSLChannel *>(bio->ptr)->BioWrite(buf, len) : -1;
 }
 
 
@@ -2297,15 +2292,10 @@ int PSSLChannel::BioWrite(const char * buf, int len)
   if (PIndirectChannel::Write(buf, len))
     return GetLastWriteCount();
 
-  switch (GetErrorCode(PChannel::LastWriteError)) {
-    case PChannel::Interrupted :
-      BIO_set_retry_write(m_bio);
-    case PChannel::Timeout :
-      return -1;
+  if (GetErrorCode(PChannel::LastWriteError) == PChannel::Interrupted)
+    BIO_set_retry_write(m_bio);
 
-    default :
-      return 0;
-  }
+  return -1;
 }
 
 
