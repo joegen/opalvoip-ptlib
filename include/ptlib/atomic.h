@@ -161,8 +161,17 @@ private:
 
 #elif defined(P_ATOMICITY_BUILTIN)
 
+  template <typename Type> static __inline bool p_compare_exchange_strong(volatile Type *ptr, Type & comp, Type newval)
+  {
+    Type oldval = __sync_val_compare_and_swap(ptr, comp, newval);
+    if (oldval == comp)
+      return true;
+    comp = oldval;
+    return false;
+  }
+
   #define P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(Type) \
-    P_DEFINE_ATOMIC_INT_CLASS(Type, __sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch, __sync_bool_compare_and_swap)
+    P_DEFINE_ATOMIC_INT_CLASS(Type, __sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch, p_compare_exchange_strong)
 
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(          bool);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed  char);
