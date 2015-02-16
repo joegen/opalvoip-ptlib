@@ -290,7 +290,8 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     }
 
     if (userAttr->GetString() != m_userName) {
-      PTRACE(2, "Incorrect USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
+      PTRACE(2, "Incorrect USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress
+             << ", got \"" << userAttr->GetString() << "\", expected \"" << m_userName << '"');
       response.SetErrorType(401, request.GetTransactionID());
       goto sendResponse;
     }
