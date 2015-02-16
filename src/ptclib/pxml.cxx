@@ -1205,8 +1205,8 @@ PXMLElement::PXMLElement(const PXMLElement & copy)
   m_attributes.MakeUnique();
   m_dirty = copy.m_dirty;
 
-  for (PINDEX idx = 0; idx < m_subObjects.GetSize(); idx++)
-    AddSubObject(m_subObjects[idx].Clone(), false);
+  for (PINDEX idx = 0; idx < copy.m_subObjects.GetSize(); idx++)
+    AddSubObject(copy.m_subObjects[idx].Clone(), false);
 }
 
 
