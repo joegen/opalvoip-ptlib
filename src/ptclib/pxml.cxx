@@ -1677,64 +1677,24 @@ PString EscapeSpecialChars(const PString & str)
 #endif
 {
   // code based on appendix from http://www.hdfgroup.org/HDF5/XML/xml_escape_chars.htm
-  static const char quote[] = "&quot;";
-  static const char apos[]  = "&apos;";
-  static const char amp[]   = "&amp;";
-  static const char lt[]    = "&lt;";
-  static const char gt[]    = "&gt;";
+  static const PConstString SpecialChars("\"'&<>");
+  static const char * const Escapes[] = { "&quot;", "&apos;", "&amp;", "&lt;", "&gt;" };
 
-  if (str.IsEmpty())
+  PINDEX pos = str.FindOneOf(SpecialChars);
+  if (pos == P_MAX_INDEX)
     return str;
 
-  // calculate the extra length needed for the returned strng
-  int len = str.GetLength();
-  const char * cp = (const char *)str;
-  int extra = 0;
-  int i;
-  for (i = 0; i < len; i++) {
-    if (*cp == '\"')
-      extra += (sizeof(quote) - 2);
-    else if (*cp == '\'')
-      extra += (sizeof(apos) - 2);
-    else if (*cp == '<')
-      extra += (sizeof(lt) - 2);
-    else if (*cp == '>')
-      extra += (sizeof(gt) - 2);
-    else if (*cp == '&')
-      extra += (sizeof(amp) - 2);
-    cp++;
-  }
+  PStringStream escaped;
 
-  if (extra == 0)
-    return str;
+  PINDEX lastPos = 0;
+  do {
+    escaped << str(lastPos, pos - 1) << Escapes[SpecialChars.Find(str[pos])];
+    lastPos = pos + 1;
+  } while((pos = str.FindOneOf(SpecialChars, lastPos)) != P_MAX_INDEX);
 
-  PString rstring;
-  rstring.SetSize(len+extra+1);
+  escaped << str.Mid(lastPos);
 
-  cp = (const char *)str;
-  for (i = 0; i < len; i++, cp++) {
-    switch (*cp) {
-      case '\'' :
-        rstring += apos;
-        break;
-      case '<' :
-        rstring += lt;
-        break;
-      case '>' :
-        rstring += gt;
-        break;
-      case '\"' :
-        rstring += quote;
-        break;
-      case '&' :
-        rstring += amp;
-        break;
-      default :
-        rstring += *cp;
-    }
-  }
-
-  return rstring;
+  return escaped;
 }
 
 #ifndef P_EXPAT
