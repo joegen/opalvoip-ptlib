@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
   }
 
   ostringstream cmd;
-  cmd << "SubWCRev " << path.substr(0, path.rfind('\\')) << ' ' << argv[1] << ' ' << argv[2];
+  cmd << "SubWCRev \"" << path.substr(0, path.rfind('\\')) << "\" \"" << argv[1] << "\" \"" << argv[2] << '"';
 
   if (system(cmd.str().c_str()) == 0)
     return 0;
