@@ -638,8 +638,6 @@ void PXML::PrintOn(ostream & strm) const
 //<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
   if (!(m_options & PXML::FragmentOnly)) {
-    bool newLine = OutputIndent(strm, 0);
-
     strm << "<?xml version=\"";
     if (m_version.IsEmpty())
       strm << "1.0";
@@ -665,7 +663,7 @@ void PXML::PrintOn(ostream & strm) const
     }
 
     strm << "?>";
-    if (newLine)
+    if (m_options & NewLineAfterElement)
       strm << '\n';
 
     if (!m_docType.IsEmpty()) {
@@ -677,13 +675,13 @@ void PXML::PrintOn(ostream & strm) const
       if (!m_dtdURI.IsEmpty())
         strm << " \"" << m_dtdURI << '"';
       strm << '>';
-      if (newLine)
+      if (m_options & NewLineAfterElement)
         strm << '\n';
     }
   }
 
   if (m_rootElement != NULL)
-    m_rootElement->Output(strm, *this, 0);
+    m_rootElement->Output(strm, *this, 1);
 }
 
 
@@ -1133,13 +1131,16 @@ bool PXMLBase::OutputIndent(ostream & strm, int indent, const PString & elementN
   if (!elementName.IsEmpty() && IsNoIndentElement(elementName))
     return false;
 
+  if (indent == 0)
+    return false;
+
   if (m_options & IndentWithTabs) {
     for (int tab = 0; tab < indent; ++tab)
       strm << '\t';
     return true;
   }
 
-  if (m_options & PXML::Indent) {
+  if (indent > 1 && m_options & PXML::Indent) {
     strm << setw((indent-1)*2) << " ";
     return true;
   }
@@ -1405,17 +1406,19 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
   else {
     strm << '>';
 
-    bool complexElement = m_subObjects.GetSize() != 1 || m_subObjects[0].IsElement();
+    if (!m_subObjects.IsEmpty()) {
+      if (m_subObjects.GetSize() == 1 && !m_subObjects[0].IsElement())
+        m_subObjects[0].Output(strm, xml, 0);
+      else {
+        if (newLine)
+          strm << endl;
 
-    if (newLine && complexElement)
-      strm << endl;
-  
-    for (PINDEX i = 0; i < m_subObjects.GetSize(); i++) 
-      m_subObjects[i].Output(strm, xml, indent + 1);
+        for (PINDEX i = 0; i < m_subObjects.GetSize(); i++)
+          m_subObjects[i].Output(strm, xml, indent + 1);
 
-    if (complexElement)
-      xml.OutputIndent(strm, indent, elementName);
-
+        xml.OutputIndent(strm, indent, elementName);
+      }
+    }
     strm << "</" << m_name << '>';
   }
 
