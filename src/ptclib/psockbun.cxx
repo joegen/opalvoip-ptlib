@@ -577,14 +577,18 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
     case PChannel::NoError :
       break;
 
-    case PChannel::NotOpen : // Interface went down
+    case PChannel::NotOpen :
+    case PChannel::Interrupted :
+      // Interface went down (socket was closed)
       if (!m_interfaceAddedSignal.IsOpen()) {
         m_interfaceAddedSignal.Listen(); // Reset if this was used to break Select() block
         param.m_errorCode = PChannel::Interrupted;
         PTRACE(4, "Interfaces changed");
         return;
       }
-      // Do next case
+      if (readers.IsEmpty())
+        return;
+      break;
 
     default :
       return;
