@@ -749,10 +749,15 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
       name.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
     else
       name = thread->GetThreadName();
-    if (name.GetLength() <= 23)
-      stream << setw(23) << name;
+#if P_64BIT
+    static const unsigned ThreadNameWidth = 31;
+#else
+    static const unsigned ThreadNameWidth = 23;
+#endif
+    if (name.GetLength() <= ThreadNameWidth)
+      stream << setw(ThreadNameWidth) << name;
     else
-      stream << name.Left(10) << "..." << name.Right(10);
+      stream << name.Left(10) << "..." << name.Right(ThreadNameWidth-13);
     stream << '\t';
   }
 
