@@ -43,26 +43,26 @@
 
 template <typename Type> struct atomic
 {
-  __inline atomic() { ConstructMutex(); }
-  __inline atomic(Type value) : m_storage(value) { ConstructMutex(); }
-  __inline atomic(const atomic & other) : m_storage(other.m_storage) { ConstructMutex(); }
-  __inline ~atomic() { DestroyMutex(); }
-  __inline atomic & operator=(const atomic & other) { Lock(); other.Lock(); m_storage = other.m_storage; other.Unlock(); Unlock(); return *this; }
-  __inline operator Type() const { Lock(); Type value = m_storage; Unlock(); return value; }
-  __inline Type load() const { Lock(); Type value = m_storage; Unlock(); return value; } \
-  __inline void store(Type value) { Lock(); m_storage = value; Unlock();; } \
-  __inline Type exchange(Type value) { Lock(); Type previous = m_storage; m_storage = value; Unlock(); return previous; }
+  __inline atomic() { this->ConstructMutex(); }
+  __inline atomic(Type value) : m_storage(value) { this->ConstructMutex(); }
+  __inline atomic(const atomic & other) : m_storage(other.m_storage) { this->ConstructMutex(); }
+  __inline ~atomic() { this->DestroyMutex(); }
+  __inline atomic & operator=(const atomic & other) { this->Lock(); other.Lock(); this->m_storage = other.m_storage; other.Unlock(); this->Unlock(); return *this; }
+  __inline operator Type() const { this->Lock(); Type value = this->m_storage; this->Unlock(); return value; }
+  __inline Type load() const { this->Lock(); Type value = this->m_storage; this->Unlock(); return value; } \
+  __inline void store(Type value) { this->Lock(); this->m_storage = value; this->Unlock(); } \
+  __inline Type exchange(Type value) { this->Lock(); Type previous = this->m_storage; this->m_storage = value; this->Unlock(); return previous; }
   bool compare_exchange_strong(Type & comp, Type value)
   {
-      Lock();
-      if (m_storage == comp) {
-        m_storage = value;
-        Unlock();
+      this->Lock();
+      if (this->m_storage == comp) {
+        this->m_storage = value;
+        this->Unlock();
         return true;
       }
       else {
-        comp = m_storage;
-        Unlock();
+        comp = this->m_storage;
+        this->Unlock();
         return false;
       }
   }
@@ -72,17 +72,17 @@ private:
 
   // This is declared before any PMutex classes, have to do it manually.
 #if _WIN32
-  CRITICAL_SECTION m_mutex;
-  __inline void ConstructMutex() { InitializeCriticalSection(&m_mutex); }
-  __inline void DestroyMutex()   { DeleteCriticalSection(&m_mutex); }
-  __inline void Lock()           { EnterCriticalSection(&m_mutex); }
-  __inline void Unlock()         { LeaveCriticalSection(&m_mutex); }
+  mutable CRITICAL_SECTION m_mutex;
+  __inline void ConstructMutex() { InitializeCriticalSection(&this->m_mutex); }
+  __inline void DestroyMutex()   { DeleteCriticalSection(&this->m_mutex); }
+  __inline void Lock() const     { EnterCriticalSection(&this->m_mutex); }
+  __inline void Unlock() const   { LeaveCriticalSection(&this->m_mutex); }
 #else
-  pthread_mutex_t m_mutex;
-  __inline void ConstructMutex() { pthread_mutex_init(&m_mutex, NULL); }
-  __inline void DestroyMutex()   { pthread_mutex_destroy(&m_mutex); }
-  __inline void Lock()           { pthread_mutex_lock(&m_mutex); }
-  __inline void Unlock()         { pthread_mutex_unlock(&m_mutex); }
+  mutable pthread_mutex_t m_mutex;
+  __inline void ConstructMutex() { pthread_mutex_init(&this->m_mutex, NULL); }
+  __inline void DestroyMutex()   { pthread_mutex_destroy(&this->m_mutex); }
+  __inline void Lock() const     { pthread_mutex_lock(&this->m_mutex); }
+  __inline void Unlock() const   { pthread_mutex_unlock(&this->m_mutex); }
 #endif
 };
 
