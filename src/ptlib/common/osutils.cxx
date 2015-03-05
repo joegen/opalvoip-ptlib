@@ -1171,7 +1171,14 @@ PInt64 PTimer::GetMilliSeconds() const
 
 PBoolean PTimer::IsRunning() const
 {
-  return m_running;
+  if (m_running)
+      return true;
+
+  if (!m_callbackMutex.Try())
+      return true;
+
+  m_callbackMutex.Signal();
+  return false;
 }
 
 
@@ -1314,7 +1321,6 @@ PTimeInterval PTimer::List::Process()
           nextInterval = delta;
       }
       else if (timer.m_callbackMutex.Try()) {
-        timer.m_callbackMutex.Signal();
         /* PTimer is stopped and completely removed from the list before it's
            properties are changed from the external code, making this thread
            safe without a mutex. */
@@ -1325,6 +1331,7 @@ PTimeInterval PTimer::List::Process()
           if (nextInterval > timer.GetResetTime())
             nextInterval = timer.GetResetTime();
         }
+        timer.m_callbackMutex.Signal();
 
         m_threadPool.AddWork(new Timeout(it->first));
         PTRACE(6, &timer, "PTLib", "Timer: " << timer << " work added, lateness=" << -delta);
