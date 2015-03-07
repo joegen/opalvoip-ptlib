@@ -1144,15 +1144,6 @@ PBoolean PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
   if (hostname.IsEmpty())
     return false;
 
-  // Check for special case of "[ipaddr]"
-  if (hostname[0] == '[') {
-    PINDEX end = hostname.Find(']');
-    if (end != P_MAX_INDEX) {
-      if (addr.FromString(hostname(1, end-1)))
-        return true;
-    }
-  }
-
   // Assuming it is a "." address and return if so
   if (addr.FromString(hostname))
     return true;
