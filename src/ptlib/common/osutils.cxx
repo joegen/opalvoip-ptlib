@@ -2264,14 +2264,17 @@ void PProcess::OnThreadEnded(PThread &
 #if PTRACING
   const int LogLevel = 3;
   if (PTrace::CanTrace(LogLevel)) {
-#if P_PROFILING
-      PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
-#else
+#if !P_PROFILING
     PThread::Times times;
-    if (thread.GetTimes(times)) {
-      PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
-    }
+    if (thread.GetTimes(times))
 #endif // P_PROFILING
+    {
+      ostream & trace = PTRACE_BEGIN(LogLevel, "PTLib");
+      trace << "Thread ended: name=\"" << thread.GetThreadName() << "\", ";
+      if (thread.GetThreadId() != thread.GetUniqueIdentifier())
+          trace << "id=" << thread.GetUniqueIdentifier() << ", ";
+      trace << times << PTrace::End;
+    }
   }
 #endif //PTRACING
 }
