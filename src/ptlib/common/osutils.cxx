@@ -949,8 +949,10 @@ bool PTrace::ThrottleBase::CanTrace()
     m_currentLevel = m_lowLevel;
     m_lastLog = now.GetMilliSeconds();
   }
-  else if (m_currentLevel == m_highLevel)
-    ++m_count;
+  else if (m_currentLevel == m_highLevel) {
+    if (!PTrace::CanTrace(m_highLevel))
+      ++m_count;
+  }
   else {
     m_count = 1;
     m_currentLevel = m_highLevel;
