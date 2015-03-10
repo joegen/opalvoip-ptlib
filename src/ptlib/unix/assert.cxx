@@ -177,6 +177,7 @@
         {
           pthread_mutex_lock(&m_mainMutex);
 
+          m_output.clear();
           m_id = id;
           pthread_kill(id, PProcess::WalkStackSignal);
 
@@ -187,18 +188,19 @@
 
           pthread_mutex_lock(&m_condMutex);
           while (!m_done) {
-            err = pthread_cond_timedwait(&m_condVar, &m_condMutex, &absTime);
-            if (err == 0 || err == ETIMEDOUT)
+            if ((err = pthread_cond_timedwait(&m_condVar, &m_condMutex, &absTime)) != 0)
               break;
           }
-
           pthread_mutex_unlock(&m_condMutex);
 
-          if (err == 0 && !m_output.empty())
-            strm << m_output;
-          else
+          if (err == ETIMEDOUT)
+            strm << "\n    No response getting stack trace for id=" << id;
+          else if (err != 0)
+            strm << "\n    Error " << err << " getting stack trace for id=" << id;
+          else if (m_output.empty())
             strm << "\n    Could not get stack trace for id=" << id;
-          m_output.clear();
+          else
+            strm << m_output;
 
           m_id = PNullThreadIdentifier;
 
@@ -207,8 +209,11 @@
 
         void OthersWalk()
         {
-          if (m_id != PThread::GetCurrentThreadId())
+          if (m_id != PThread::GetCurrentThreadId()) {
+            PTRACE(1, "StackWalk", "Signal received on "
+                   << PThread::GetCurrentThreadId() << " but expected " << m_id);
             return;
+          }
 
           std::ostringstream strm;
           InternalWalkStack(strm, 6);
