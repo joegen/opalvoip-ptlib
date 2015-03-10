@@ -198,6 +198,7 @@
             strm << m_output;
           else
             strm << "\n    Could not get stack trace for id=" << id;
+          m_output.clear();
 
           m_id = PNullThreadIdentifier;
 
