@@ -128,7 +128,7 @@ void PSetErrorStream(ostream * s)
 
 #if PTRACING
 
-unsigned PTrace::MaxStackWalk = 20;
+unsigned PTrace::MaxStackWalk = 32;
 
 class PTraceInfo : public PTrace
 {
