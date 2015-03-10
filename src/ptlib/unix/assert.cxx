@@ -194,7 +194,7 @@
 
           pthread_mutex_unlock(&m_condMutex);
 
-          if (err == 0)
+          if (err == 0 && !m_output.empty())
             strm << m_output;
           else
             strm << "\n    Could not get stack trace for id=" << id;
