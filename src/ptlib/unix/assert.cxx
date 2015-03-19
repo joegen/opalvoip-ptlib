@@ -162,11 +162,9 @@
         std::string       m_output;
         pthread_mutex_t   m_condMutex;
         pthread_cond_t    m_condVar;
-        bool              m_done;
 
         PWalkStackInfo()
           : m_id(PNullThreadIdentifier)
-          , m_done(false)
         {
           pthread_mutex_init(&m_mainMutex, NULL);
           pthread_mutex_init(&m_condMutex, NULL);
@@ -187,18 +185,18 @@
           absTime.tv_nsec = 0;
 
           pthread_mutex_lock(&m_condMutex);
-          while (!m_done) {
+          while (m_output.empty()) {
             if ((err = pthread_cond_timedwait(&m_condVar, &m_condMutex, &absTime)) != 0)
               break;
           }
           pthread_mutex_unlock(&m_condMutex);
 
           if (err == ETIMEDOUT)
-            strm << "\n    No response getting stack trace for id=" << id;
+            strm << "\n    No response getting stack trace for id=" << id << " (0x" << hex << id << ')';
           else if (err != 0)
-            strm << "\n    Error " << err << " getting stack trace for id=" << id;
+            strm << "\n    Error " << err << " getting stack trace for id=" << id << " (0x" << hex << id << ')';
           else if (m_output.empty())
-            strm << "\n    Could not get stack trace for id=" << id;
+            strm << "\n    Could not get stack trace for id=" << id << " (0x" << hex << id << ')';
           else
             strm << m_output;
 
@@ -209,18 +207,21 @@
 
         void OthersWalk()
         {
-          if (m_id != PThread::GetCurrentThreadId()) {
-            PTRACE(1, "StackWalk", "Signal received on "
-                   << PThread::GetCurrentThreadId() << " but expected " << m_id);
+          PThreadIdentifier id = PThread::GetCurrentThreadId();
+          if (m_id != id) {
+            if (id == PNullThreadIdentifier)
+              PTRACE(1, "StackWalk", "Thread took too long to respond to signal");
+            else
+              PTRACE(1, "StackWalk", "Signal received on " << id << " (0x" << hex << id << ")"
+                                     " but expected " << m_id << " (0x" << hex << m_id << ')');
             return;
           }
 
           std::ostringstream strm;
           InternalWalkStack(strm, 6);
-          m_output = strm.str();
 
           pthread_mutex_lock(&m_condMutex);
-          m_done = true;
+          m_output = strm.str();
           pthread_cond_signal(&m_condVar);
           pthread_mutex_unlock(&m_condMutex);
         }
