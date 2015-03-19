@@ -2759,6 +2759,8 @@ void PSimpleThread::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
+static bool EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -2767,15 +2769,19 @@ void PTimedMutex::ExcessiveLockWait()
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Possible deadlock in mutex " << this;
-  PTrace::WalkStack(trace);
-  trace << "\n  Owner Thread ";
+  if (EnableDeadlockStackWalk) {
+    PTrace::WalkStack(trace);
+    trace << 'n';
+  }
+  trace << "  Owner Thread ";
   if (lockerId == PNullThreadIdentifier)
     trace << "no longer has lock";
   else {
     trace << "id=" << lockerId << " (0x" << std::hex << lockerId << std::dec << ')';
     if (lockerId != uniqueId)
       trace << " unique-id=" << m_uniqueId;
-    PTrace::WalkStack(trace, lockerId);
+    if (EnableDeadlockStackWalk)
+      PTrace::WalkStack(trace, lockerId);
   }
   trace << PTrace::End;
 #endif
@@ -2790,7 +2796,8 @@ void PTimedMutex::CommonSignal()
 #if PTRACING
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
     trace << "Released phantom deadlock in mutex " << this;
-    PTrace::WalkStack(trace);
+    if (EnableDeadlockStackWalk)
+      PTrace::WalkStack(trace);
     trace << PTrace::End;
 #endif
     m_excessiveLockTime = false;
@@ -3041,7 +3048,8 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
               " writers=" << it->second.m_writerCount;
     if (!it->second.m_waiting)
       trace << ", LOCKED";
-    PTrace::WalkStack(trace, it->first);
+    if (EnableDeadlockStackWalk)
+      PTrace::WalkStack(trace, it->first);
   }
   trace << PTrace::End;
 
