@@ -914,7 +914,7 @@ See PTRACE() for more information on level, instance, module.
 
 /* Macro to create a throttle context for use in <code>PTRACE()</code> */
 #define PTRACE_THROTTLE(var, ...) PTrace::Throttle<__VA_ARGS__> var
-#define PTRACE_THROTTLE_STATIC(...) static PTRACE_THROTTLE(__VA_ARGS__)
+#define PTRACE_THROTTLE_STATIC(var, ...) static PTrace::Throttle<__VA_ARGS__> var
 
 
 __inline const PObject * PTraceObjectInstance() { return NULL; }
