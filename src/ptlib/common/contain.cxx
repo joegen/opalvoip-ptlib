@@ -1868,6 +1868,9 @@ PStringArray PString::Lines() const
 
 PString PString::LeftTrim() const
 {
+  if (IsEmpty())
+    return PString::Empty();
+
   const char * lpos = theArray;
   while (isspace(*lpos & 0xff))
     lpos++;
@@ -1877,6 +1880,9 @@ PString PString::LeftTrim() const
 
 PString PString::RightTrim() const
 {
+  if (IsEmpty())
+    return PString::Empty();
+
   char * rpos = theArray+GetLength()-1;
   if (!isspace(*rpos & 0xff))
     return *this;
@@ -1895,6 +1901,9 @@ PString PString::RightTrim() const
 
 PString PString::Trim() const
 {
+  if (IsEmpty())
+    return PString::Empty();
+
   const char * lpos = theArray;
   while (isspace(*lpos & 0xff))
     lpos++;
