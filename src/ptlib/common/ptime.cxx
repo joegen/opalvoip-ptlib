@@ -276,7 +276,14 @@ static time_t p_mktime(struct tm * t, int zone)
 }
 
 
+PTime::PTime(time_t tsecs, int64_t usecs)
+  : m_microSecondsSinceEpoch(tsecs*Micro+usecs)
+{
+}
+
+
 PTime::PTime(const PString & str)
+  : m_microSecondsSinceEpoch(0)
 {
   PStringStream s(str);
   ReadFrom(s);
@@ -287,8 +294,6 @@ PTime::PTime(int second, int minute, int hour,
              int day,    int month,  int year,
              int zone)
 {
-  microseconds = 0;
-
   struct tm t;
   PAssert(second >= 0 && second <= 59, PInvalidParameter);
   t.tm_sec = second;
@@ -303,7 +308,20 @@ PTime::PTime(int second, int minute, int hour,
   PAssert(year >= 1970 && year <= 2038, PInvalidParameter);
   t.tm_year   = year-1900;
 
-  theTime = p_mktime(&t, zone);
+  m_microSecondsSinceEpoch.store(p_mktime(&t, zone)*Micro);
+}
+
+
+PTime::PTime(const PTime & other)
+  : m_microSecondsSinceEpoch(other.m_microSecondsSinceEpoch.load())
+{
+}
+
+
+PTime & PTime::operator=(const PTime & other)
+{
+  m_microSecondsSinceEpoch.store(other.m_microSecondsSinceEpoch.load());
+  return *this;
 }
 
 
@@ -311,22 +329,27 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PTime), PInvalidCast);
   const PTime & other = (const PTime &)obj;
-  if (theTime < other.theTime)
+
+  int64_t myMicroSeconds = m_microSecondsSinceEpoch.load();
+  int64_t otherMicroSeconds = other.m_microSecondsSinceEpoch.load();
+  if (myMicroSeconds < otherMicroSeconds)
     return LessThan;
-  if (theTime > other.theTime)
+  if (myMicroSeconds > otherMicroSeconds)
     return GreaterThan;
-  if (microseconds < other.microseconds)
-    return LessThan;
-  if (microseconds > other.microseconds)
-    return GreaterThan;
+
   return EqualTo;
+}
+
+
+PInt64 PTime::GetTimestamp() const
+{
+  return m_microSecondsSinceEpoch.load();
 }
 
 
 void PTime::SetTimestamp(time_t seconds, long usecs)
 { 
-  microseconds = usecs%1000000;
-  theTime = seconds + usecs/1000000;
+  m_microSecondsSinceEpoch.store(seconds*Micro + usecs);
 }
 
 
@@ -334,14 +357,76 @@ static PUInt64 const SecondsFrom1900to1970 = (70*365+17)*24*60*60U;
 
 void PTime::SetNTP(PUInt64 ntp)
 {
-  theTime = (time_t)((ntp>>32) - SecondsFrom1900to1970);
-  microseconds = (long)((DWORD)ntp / 4294);
+  m_microSecondsSinceEpoch.store(((ntp>>32) - SecondsFrom1900to1970)*Micro + (DWORD)ntp / 4294);
 }
 
 
 PUInt64 PTime::GetNTP() const
 {
-  return ((theTime+SecondsFrom1900to1970)<<32) + microseconds*4294;
+  int64_t usecs = m_microSecondsSinceEpoch.load();
+  return ((usecs/Micro+SecondsFrom1900to1970)<<32) + usecs*4294;
+}
+
+
+bool PTime::InternalLocalTime(struct tm & ts) const
+{
+  time_t t = m_microSecondsSinceEpoch.load()/Micro;
+  return os_localtime(&t, &ts) != NULL;
+}
+
+
+int PTime::GetSecond() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? ts.tm_sec : -1;
+}
+
+
+int PTime::GetMinute() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? ts.tm_min : -1;
+}
+
+
+int PTime::GetHour() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? ts.tm_hour : -1;
+}
+
+
+int PTime::GetDay() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? ts.tm_mday : -1;
+}
+
+
+PTime::Months PTime::GetMonth() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? (Months)(ts.tm_mon+January) : InvalidMonth;
+}
+
+
+int PTime::GetYear() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? ts.tm_year+1900 : -1;
+}
+
+
+PTime::Weekdays PTime::GetDayOfWeek() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? (Weekdays)ts.tm_wday : InvalidWeekday;
+}
+
+int PTime::GetDayOfYear() const
+{
+  struct tm ts;
+  return InternalLocalTime(ts) ? ts.tm_yday : -1;
 }
 
 
@@ -359,8 +444,11 @@ PString PTime::AsString(TimeFormat format, int zone) const
       return AsString("yyyyMMddThhmmssZ", zone);
     case LongISO8601 :
       return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
-    case EpochTime :
-      return psprintf("%u.%06lu", theTime, microseconds);
+    case EpochTime:
+    {
+      int64_t usecs = m_microSecondsSinceEpoch.load();
+      return psprintf("%u.%06lu", usecs / Micro, usecs % Micro);
+    }
     case LoggingFormat :
       return AsString("yyyy/MM/dd hh:mm:ss.uuu", zone);
     default:
@@ -480,7 +568,7 @@ PString PTime::AsString(const char * format, int zone) const
   // so take this into account when converting non-local times
   if (zone == Local)
     zone = GetTimeZone();  // includes daylight savings time
-  time_t realTime = theTime + zone*60;     // to correct timezone
+  time_t realTime = m_microSecondsSinceEpoch.load()/Micro + zone*60;     // to correct timezone
   struct tm ts;
   struct tm * t = os_gmtime(&realTime, &ts);
   if (t == NULL)
@@ -572,22 +660,25 @@ PString PTime::AsString(const char * format, int zone) const
         }
         break;
 
-      case 'u' :
+      case 'u':
+      {
+        unsigned usecs = m_microSecondsSinceEpoch.load()%Micro;
         switch (repeatCount) {
-          case 1 :
-            str << (microseconds/100000);
+          case 1:
+            str << (usecs / 100000);
             break;
-          case 2 :
-            str << setw(2) << (microseconds/10000);
+          case 2:
+            str << setw(2) << (usecs / 10000);
             break;
-          case 3 :
-            str << setw(3) << (microseconds/1000);
+          case 3:
+            str << setw(3) << (usecs / 1000);
             break;
-          default :
-            str << setw(6) << microseconds;
+          default:
+            str << setw(6) << usecs;
             break;
         }
         break;
+      }
 
       case '\\' :
         // Escaped character, put straight through to output string
@@ -660,9 +751,8 @@ void PTime::ReadFrom(istream & strm)
   time_t now;
   struct tm timeBuf;
   time(&now);
-  microseconds = 0;
   strm >> ws;
-  theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone(StandardTime));
+  m_microSecondsSinceEpoch.store(PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone(StandardTime))*Micro);
 }
 
 
@@ -676,82 +766,32 @@ bool PTime::Parse(const PString & str)
 
 PTime PTime::operator+(const PTimeInterval & t) const
 {
-  time_t secs = theTime + t.GetSeconds();
-  long usecs = (long)(microseconds + (t.GetMilliSeconds()%1000)*1000);
-  if (usecs < 0) {
-    usecs += 1000000;
-    secs--;
-  }
-  else if (usecs >= 1000000) {
-    usecs -= 1000000;
-    secs++;
-  }
-
-  return PTime(secs, usecs);
+  return PTime(0, m_microSecondsSinceEpoch.load() +  t.GetMilliSeconds()*1000);
 }
 
 
 PTime & PTime::operator+=(const PTimeInterval & t)
 {
-  theTime += t.GetSeconds();
-  microseconds += (long)(t.GetMilliSeconds()%1000)*1000;
-  if (microseconds < 0) {
-    microseconds += 1000000;
-    theTime--;
-  }
-  else if (microseconds >= 1000000) {
-    microseconds -= 1000000;
-    theTime++;
-  }
-
+  m_microSecondsSinceEpoch += t.GetMilliSeconds()*1000;
   return *this;
 }
 
 
 PTimeInterval PTime::operator-(const PTime & t) const
 {
-  time_t secs = theTime - t.theTime;
-  long usecs = microseconds - t.microseconds;
-  if (usecs < 0) {
-    usecs += 1000000;
-    secs--;
-  }
-  else if (usecs >= 1000000) {
-    usecs -= 1000000;
-    secs++;
-  }
-  return PTimeInterval(usecs/1000, (long)secs);
+  return PTimeInterval((m_microSecondsSinceEpoch.load() - t.m_microSecondsSinceEpoch.load())/1000);
 }
 
 
 PTime PTime::operator-(const PTimeInterval & t) const
 {
-  time_t secs = theTime - t.GetSeconds();
-  long usecs = (long)(microseconds - (t.GetMilliSeconds()%1000)*1000);
-  if (usecs < 0) {
-    usecs += 1000000;
-    secs--;
-  }
-  else if (usecs >= 1000000) {
-    usecs -= 1000000;
-    secs++;
-  }
-  return PTime(secs, usecs);
+  return PTime(0, m_microSecondsSinceEpoch.load() - t.GetMilliSeconds()*1000);
 }
 
 
 PTime & PTime::operator-=(const PTimeInterval & t)
 {
-  theTime -= t.GetSeconds();
-  microseconds -= (long)(t.GetMilliSeconds()%1000)*1000;
-  if (microseconds < 0) {
-    microseconds += 1000000;
-    theTime--;
-  }
-  else if (microseconds >= 1000000) {
-    microseconds -= 1000000;
-    theTime++;
-  }
+  m_microSecondsSinceEpoch -= t.GetMilliSeconds()*1000;
   return *this;
 }
 

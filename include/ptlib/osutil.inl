@@ -126,54 +126,27 @@ PINLINE bool PTimeInterval::operator<=(long msecs) const
 // PTime
 
 PINLINE PObject * PTime::Clone() const
-  { return PNEW PTime(theTime, microseconds); }
+  { return PNEW PTime(*this); }
 
 PINLINE void PTime::PrintOn(ostream & strm) const
   { strm << AsString(); }
 
 PINLINE PBoolean PTime::IsValid() const
-  { return theTime > 46800; }
-
-PINLINE PInt64 PTime::GetTimestamp() const
-  { return theTime*(PInt64)1000000 + microseconds; }
+  { return m_microSecondsSinceEpoch.load() > 46800000000; }
 
 PINLINE time_t PTime::GetTimeInSeconds() const
-  { return theTime; }
+  { return m_microSecondsSinceEpoch.load()/Micro; }
 
-PINLINE long PTime::GetMicrosecond() const
-  { return microseconds; }
-
-PINLINE int PTime::GetSecond() const
-  { struct tm ts; return os_localtime(&theTime, &ts)->tm_sec; }
-
-PINLINE int PTime::GetMinute() const
-  { struct tm ts; return os_localtime(&theTime, &ts)->tm_min; }
-
-PINLINE int PTime::GetHour() const
-  { struct tm ts; return os_localtime(&theTime, &ts)->tm_hour; }
-
-PINLINE int PTime::GetDay() const
-  { struct tm ts; return os_localtime(&theTime, &ts)->tm_mday; }
-
-PINLINE PTime::Months PTime::GetMonth() const
-  { struct tm ts; return (Months)(os_localtime(&theTime, &ts)->tm_mon+January); }
-
-PINLINE int PTime::GetYear() const
-  { struct tm ts; return os_localtime(&theTime, &ts)->tm_year+1900; }
-
-PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
-  { struct tm ts; return (Weekdays)os_localtime(&theTime, &ts)->tm_wday; }
-
-PINLINE int PTime::GetDayOfYear() const
-  { struct tm ts; return os_localtime(&theTime, &ts)->tm_yday; }
+PINLINE unsigned PTime::GetMicrosecond() const
+  { return m_microSecondsSinceEpoch.load()%Micro; }
 
 PINLINE PTimeInterval PTime::GetElapsed() const
   { return PTime() - *this; }
 
-PINLINE PBoolean PTime::IsPast() const
+PINLINE bool PTime::IsPast() const
   { return GetTimeInSeconds() < PTime().GetTimeInSeconds(); }
 
-PINLINE PBoolean PTime::IsFuture() const
+PINLINE bool PTime::IsFuture() const
   { return GetTimeInSeconds() > PTime().GetTimeInSeconds(); }
 
 
