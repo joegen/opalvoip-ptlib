@@ -480,6 +480,9 @@ PSTUNAttribute * PSTUNMessage::GetFirstAttribute() const
 
   int length = ((PSTUNMessageHeader *)theArray)->msgLength;
 
+  if (GetSize() < ((int)sizeof(PSTUNMessageHeader) + length))
+    return NULL;
+
   PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
   PSTUNAttribute * ptr  = attr;
 
