@@ -79,8 +79,8 @@ class PTime : public PObject
      */
     PTime(
       time_t tsecs,     ///< Time in seconds since 00:00:00 1/1/70 UTC
-      long usecs = 0    ///< microseconds part of time.
-    ) { theTime = tsecs; microseconds = usecs; }
+      int64_t usecs = 0    ///< microseconds part of time.
+    );
 
     /**Create a time object instance.
        This initialises the time to the specified time, parsed from the
@@ -114,6 +114,9 @@ class PTime : public PObject
       int year,             ///< Year from 1970 to 2038
       int tz = Local        ///< local time or UTC
     );
+
+    PTime(const PTime & other);
+    PTime & operator=(const PTime & other);
   //@}
 
   /**@name Overrides from class PObject */
@@ -223,7 +226,7 @@ class PTime : public PObject
        @return
        integer in range 0..999999.
      */
-    long GetMicrosecond() const;
+    unsigned GetMicrosecond() const;
 
     /**Get the second of the time.
 
@@ -255,7 +258,8 @@ class PTime : public PObject
 
     /// Month codes.
     enum Months {
-      January = 1,
+      InvalidMonth,
+      January,
       February,
       March,
       April,
@@ -285,6 +289,7 @@ class PTime : public PObject
 
     /// Days of the week.
     enum Weekdays {
+      InvalidWeekday = -1,
       Sunday,
       Monday,
       Tuesday,
@@ -320,14 +325,14 @@ class PTime : public PObject
        @return
        true if time is before the current real time.
      */
-    PBoolean IsPast() const;
+    bool IsPast() const;
 
     /**Determine if the time is in the past or in the future.
 
        @return
        true if time is after the current real time.
      */
-    PBoolean IsFuture() const;
+    bool IsFuture() const;
   //@}
 
   /**@name Time Zone configuration functions */
@@ -337,7 +342,7 @@ class PTime : public PObject
        @return
        true if daylight savings time is active.
      */
-    static PBoolean IsDaylightSavings();
+    static bool IsDaylightSavings();
 
     /// Flag for time zone adjustment on daylight savings.
     enum TimeZoneType {
@@ -526,7 +531,7 @@ class PTime : public PObject
        @return
        true is 12 hour, false if 24 hour.
      */
-    static PBoolean GetTimeAMPM();
+    static bool GetTimeAMPM();
 
     /**Get the internationalised time AM string.
     
@@ -600,11 +605,11 @@ class PTime : public PObject
     */
 
   protected:
-    // Member variables
-    /// Number of seconds since 1 January 1970.
-    time_t theTime;
-    long   microseconds;
+    bool InternalLocalTime(struct tm & t) const;
 
+    // Member variables
+    atomic<int64_t> m_microSecondsSinceEpoch;
+    enum { Micro = 1000000 };
 
 // Include platform dependent part of class
 #ifdef _WIN32
