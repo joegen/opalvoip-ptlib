@@ -1202,13 +1202,11 @@ void PTime::SetCurrentTime()
 #ifdef P_VXWORKS
   struct timespec ts;
   clock_gettime(0,&ts);
-  theTime = ts.tv_sec;
-  microseconds = ts.tv_sec*10000 + ts.tv_nsec/100000L;
+  m_microSecondsSinceEpoch.store(ts.tv_sec*Micro + ts.tv_nsec/1000);
 #else
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  theTime = tv.tv_sec;
-  microseconds = tv.tv_usec;
+  m_microSecondsSinceEpoch.store(tv.tv_sec*Micro + tv.tv_usec);
 #endif // P_VXWORKS
 }
 

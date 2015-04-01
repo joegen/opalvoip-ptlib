@@ -94,15 +94,13 @@ PTime::PTime(const FILETIME & timestamp)
 void PTime::SetFromFileTime(const FILETIME & timestamp)
 {
   // Magic constant to convert epoch from 1601 to 1970
-  static const ULONGLONG delta = ((PInt64)369*365+(369/4)-3)*24*60*60U;
-  static const ULONGLONG scale = 10000000;
+  static const ULONGLONG delta = ((PInt64)369*365+(369/4)-3)*24*60*60U*1000000;
 
   ULARGE_INTEGER i;
   i.HighPart = timestamp.dwHighDateTime;
   i.LowPart = timestamp.dwLowDateTime;
 
-  theTime = (time_t)(i.QuadPart/scale - delta);
-  microseconds = (long)(i.QuadPart%scale/10);
+  m_microSecondsSinceEpoch.store(i.QuadPart/10 - delta);
 }
 
 #ifdef UNICODE
@@ -129,7 +127,7 @@ PString PTime::GetTimeSeparator()
 }
 
 
-PBoolean PTime::GetTimeAMPM()
+bool PTime::GetTimeAMPM()
 {
   char str[2];
   PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_ITIME, str, sizeof(str));
@@ -190,7 +188,7 @@ PTime::DateOrder PTime::GetDateOrder()
 }
 
 
-PBoolean PTime::IsDaylightSavings()
+bool PTime::IsDaylightSavings()
 {
   TIME_ZONE_INFORMATION tz;
   DWORD result = GetTimeZoneInformation(&tz);
