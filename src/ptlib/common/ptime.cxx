@@ -470,15 +470,11 @@ PString PTime::AsString(TimeFormat format, int zone) const
 
 PString PTime::AsString(const char * format, int zone) const
 {
-  if (!IsValid())
-    return PString::Empty();
-
   PAssert(format != NULL, PInvalidParameter);
+  PAssert(zone == Local || std::abs(zone) <= 13, PInvalidParameter);
 
-  PBoolean is12hour = strchr(format, 'a') != NULL;
-
-  PStringStream str;
-  str.fill('0');
+  if (!IsValid())
+    return "<invalid>";
 
   // the localtime call automatically adjusts for daylight savings time
   // so take this into account when converting non-local times
@@ -487,6 +483,13 @@ PString PTime::AsString(const char * format, int zone) const
   time_t realTime = theTime + zone*60;     // to correct timezone
   struct tm ts;
   struct tm * t = os_gmtime(&realTime, &ts);
+  if (t == NULL)
+    return "<error>";
+
+  PStringStream str;
+  str.fill('0');
+
+  bool is12hour = strchr(format, 'a') != NULL;
 
   while (*format != '\0') {
     char formatLetter = *format;
