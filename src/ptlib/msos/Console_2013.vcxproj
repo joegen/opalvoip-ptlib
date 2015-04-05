@@ -1044,40 +1044,40 @@ bison -o ../common/getdate_tab.c ../common/getdate.y
       <FileType>Document</FileType>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Configuring Build Options</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd ..\..\..
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd $(ProjectDir)..\..\..
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd ..\..\..
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd $(ProjectDir)..\..\..
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Configuring Build Options</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd ..\..\..
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd $(ProjectDir)..\..\..
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd ..\..\..
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd $(ProjectDir)..\..\..
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Configuring Build Options</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd ..\..\..
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd $(ProjectDir)..\..\..
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd ..\..\..
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd $(ProjectDir)..\..\..
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\Lib\$(Platform)\include\ptlib_config.h</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">cd ..\..\..
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../lib/$(Platform)/" --no-search --enable-android --disable-byteorder --disable-wstream --disable-resolver --disable-sasl --disable-openldap --disable-openssl --disable-openssl64 --disable-expat --disable-expat32 --disable-lua --disable-atl --disable-sapi --disable-remconn --disable-serial --disable-qos --disable-ffvdev --disable-appshare --disable-libsdl --disable-dsound --disable-dshow --disable-odbc --disable-gstreamer --disable-pcap --disable-lua --disable-v8 --disable-libjpeg</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">$(ProjectDir)..\..\..\lib\$(Platform)\include\ptlib_config.h</Outputs>
