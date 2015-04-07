@@ -1223,7 +1223,7 @@ void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
 #if P_HAS_RECURSIVE_MUTEX
 
   pthread_mutexattr_t attr;
-  pthread_mutexattr_init(&attr));
+  pthread_mutexattr_init(&attr);
 
 #if (P_HAS_RECURSIVE_MUTEX == 2)
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
@@ -1231,13 +1231,13 @@ void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
 #endif
 
-  pthread_mutex_init(&m_mutex, &attr);
+  pthread_mutex_init(mutex, &attr);
 
   pthread_mutexattr_destroy(&attr);
 
 #else // P_HAS_RECURSIVE_MUTEX
 
-  pthread_mutex_init(&m_mutex, NULL);
+  pthread_mutex_init(mutex, NULL);
 
 #endif // P_HAS_RECURSIVE_MUTEX
 }
