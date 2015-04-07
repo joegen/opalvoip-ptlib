@@ -1218,31 +1218,37 @@ PTimedMutex::PTimedMutex(const PTimedMutex &)
 }
 
 
+void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
+{
+#if P_HAS_RECURSIVE_MUTEX
+
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr));
+
+#if (P_HAS_RECURSIVE_MUTEX == 2)
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+#else
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+#endif
+
+  pthread_mutex_init(&m_mutex, &attr);
+
+  pthread_mutexattr_destroy(&attr);
+
+#else // P_HAS_RECURSIVE_MUTEX
+
+  pthread_mutex_init(&m_mutex, NULL);
+
+#endif // P_HAS_RECURSIVE_MUTEX
+}
+
+
 void PTimedMutex::Construct()
 {
   m_lockerId = PNullThreadIdentifier;
   m_uniqueId = 0;
   m_excessiveLockTime = false;
-
-#if P_HAS_RECURSIVE_MUTEX
-
-  pthread_mutexattr_t attr;
-  PAssertPTHREAD(pthread_mutexattr_init, (&attr));
-
-#if (P_HAS_RECURSIVE_MUTEX == 2)
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE));
-#else
-  PAssertPTHREAD(pthread_mutexattr_settype, (&attr, PTHREAD_MUTEX_RECURSIVE_NP));
-#endif
-
-  PAssertPTHREAD(pthread_mutex_init, (&m_mutex, &attr));
-  PAssertPTHREAD(pthread_mutexattr_destroy, (&attr));
-
-#else // P_HAS_RECURSIVE_MUTEX
-
-  PAssertPTHREAD(pthread_mutex_init, (&m_mutex, NULL));
-
-#endif // P_HAS_RECURSIVE_MUTEX
+  InitialiseRecursiveMutex(&m_mutex);
 }
 
 
