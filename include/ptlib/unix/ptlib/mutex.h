@@ -40,6 +40,7 @@
   protected:
     mutable pthread_mutex_t m_mutex;
     void Construct();
+    static void InitialiseRecursiveMutex(pthread_mutex_t *mutex);
 #endif
 
 
