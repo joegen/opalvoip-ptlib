@@ -433,7 +433,7 @@ class PThread : public PObject
         void ThreadDestroyed(PThread * thread) const;
         typedef std::map<PThread *, void *> StorageMap;
         mutable StorageMap m_storage;
-        PMutex m_mutex;
+        PCriticalSection m_mutex;
       friend class PThread;
     };
     friend class LocalStorageBase;
@@ -460,7 +460,7 @@ class PThread : public PObject
     PINDEX m_originalStackSize;
 
     PString m_threadName; // Give the thread a name for debugging purposes.
-    PMutex  m_threadNameMutex;
+    PCriticalSection m_threadNameMutex;
 
     PThreadIdentifier m_threadId;
 

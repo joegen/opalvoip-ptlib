@@ -99,4 +99,43 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return ::taskIdSelf();
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return 0; }
 #endif
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PCriticalSection
+
+#if defined(P_PTHREADS) || defined(VX_TASKS)
+
+PINLINE PCriticalSection::PCriticalSection()
+{
+  ::pthread_mutex_init(&m_mutex, NULL);
+}
+
+PINLINE PCriticalSection::PCriticalSection(const PCriticalSection &)
+{
+  ::pthread_mutex_init(&m_mutex, NULL);
+}
+
+PINLINE PCriticalSection::~PCriticalSection()
+{
+  ::pthread_mutex_destroy(&m_mutex);
+}
+
+PINLINE void PCriticalSection::Wait()
+{
+  ::pthread_mutex_lock(&m_mutex);
+}
+
+PINLINE void PCriticalSection::Signal()
+{
+  ::pthread_mutex_unlock(&m_mutex);
+}
+
+PINLINE bool PCriticalSection::Try()
+{
+  return ::pthread_mutex_trylock(&m_mutex) != 0;
+}
+
+#endif
+
+
 // End Of File ///////////////////////////////////////////////////////////////
