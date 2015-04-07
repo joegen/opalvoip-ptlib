@@ -403,7 +403,7 @@ class PTimer : public PTimeInterval
 
         typedef std::map<PIdGenerator::Handle, PTimer *> TimerMap;
         TimerMap m_timers;
-        PMutex   m_timersMutex;
+        PCriticalSection m_timersMutex;
 
       friend class PTimer;
     };

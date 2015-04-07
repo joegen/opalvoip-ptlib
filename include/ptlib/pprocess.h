@@ -640,7 +640,7 @@ class PProcess : public PThread
     PTime programStartTime;           // time at which process was intantiated, i.e. started
 
     bool   m_shuttingDown;
-    PMutex m_threadMutex;
+    PCriticalSection m_threadMutex;
 
     typedef std::map<PThreadIdentifier, PThread *> ThreadMap;
     ThreadMap m_activeThreads;
