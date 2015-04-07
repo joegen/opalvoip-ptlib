@@ -1819,25 +1819,6 @@ void PTimedMutex::Signal()
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-
-PBoolean PCriticalSection::Wait(const PTimeInterval & timeout)
-{
-  if (timeout == 0)
-    return Try();
-
-  PTRACE(2, "PTLib", "PCriticalSection::Wait() called, this is very inefficient, consider using PTimedMutex!");
-
-  PSimpleTimer timer(timeout);
-  do {
-    if (Try())
-      return true;
-    PThread::Sleep(100);
-  } while (timer.IsRunning());
-  return false;
-}
-
-
 /////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
