@@ -107,12 +107,12 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return 0; }
 
 PINLINE PCriticalSection::PCriticalSection()
 {
-  ::pthread_mutex_init(&m_mutex, NULL);
+  PMutex::InitialiseRecursiveMutex(&m_mutex);
 }
 
 PINLINE PCriticalSection::PCriticalSection(const PCriticalSection &)
 {
-  ::pthread_mutex_init(&m_mutex, NULL);
+  PMutex::InitialiseRecursiveMutex(&m_mutex);
 }
 
 PINLINE PCriticalSection::~PCriticalSection()
