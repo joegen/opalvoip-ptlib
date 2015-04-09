@@ -1252,8 +1252,20 @@ void PTimer::Reset()
 // called only from the timer thread
 void PTimer::OnTimeout()
 {
-  if (!m_callback.IsNULL())
-    m_callback(*this, IsRunning());
+  if (m_callback.IsNULL())
+    return;
+
+  PString oldName;
+  PThread * thread = PThread::Current();
+  if (thread != NULL && !m_threadName.IsEmpty()) {
+    oldName = thread->GetThreadName();
+    thread->SetThreadName(m_threadName);
+  }
+
+  m_callback(*this, IsRunning());
+
+  if (!oldName.IsEmpty())
+    thread->SetThreadName(oldName);
 }
 
 
