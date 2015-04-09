@@ -186,8 +186,8 @@ PINLINE PTimeInterval PTimer::GetResetTime() const
 PINLINE const PNotifier & PTimer::GetNotifier() const
   { return m_callback; }
 
-PINLINE void PTimer::SetNotifier(const PNotifier & func)
-  { m_callback = func; }
+PINLINE void PTimer::SetNotifier(const PNotifier & func, const PString & threadName)
+  { m_callback = func; m_threadName = threadName; }
 
 
 #endif // P_TIMERS
