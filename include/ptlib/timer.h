@@ -323,7 +323,8 @@ class PTimer : public PTimeInterval
        This is called by the <code>OnTimeout()</code> function.
      */
     void SetNotifier(
-      const PNotifier & func  // New notifier function for the timer.
+      const PNotifier & func,  ///< New notifier function for the timer.
+      const PString & threadName = PString::Empty()  ///< Thread name to use in pool when func executed
     );
   //@}
 
@@ -416,6 +417,7 @@ class PTimer : public PTimeInterval
 
     // Member variables
     PNotifier            m_callback;     // Callback function for expired timers.
+    PString              m_threadName;
     bool                 m_oneshot;      // Timer operates once then stops.
     PIdGenerator::Handle m_handle;
     bool                 m_running;
