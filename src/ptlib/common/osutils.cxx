@@ -2563,6 +2563,15 @@ PThread::Times PThread::Times::operator-(const Times & rhs) const
 }
 
 
+PThread::Times & PThread::Times::operator-=(const Times & rhs)
+{
+  m_real -= rhs.m_real;
+  m_kernel -= rhs.m_kernel;
+  m_user -= rhs.m_user;
+  return *this;
+}
+
+
 void PThread::PrintOn(ostream & strm) const
 {
   strm << GetThreadName();
