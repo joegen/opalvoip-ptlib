@@ -338,6 +338,9 @@ class PThread : public PObject
       PPROFILE_EXCLUDE(
         Times operator-(const Times & rhs) const
       );
+      PPROFILE_EXCLUDE(
+        Times & operator-=(const Times & rhs)
+      );
 
       PString                 m_name;     ///< Name of thread
       PThreadIdentifier       m_threadId; ///< Operating system thread ID
