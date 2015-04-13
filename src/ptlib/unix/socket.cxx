@@ -191,12 +191,13 @@ int PSocket::os_socket(int af, int type, int protocol)
 
 PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 {
-  int val;
   do {
-    val = ::connect(os_handle, addr, size);
-  } while (val != 0 && errno == EINTR);
-  if (val == 0 || errno != EINPROGRESS)
-    return ConvertOSError(val);
+    if (ConvertOSError(::connect(os_handle, addr, size)))
+      return true;
+  } while (GetErrorNumber() == EINTR);
+
+  if (GetErrorNumber() != EINPROGRESS)
+    return false;
 
   if (!PXSetIOBlock(PXConnectBlock, readTimeout))
     return false;
@@ -204,13 +205,16 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
   socklen_t optlen = sizeof(optval);
-  getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&optval, &optlen);
-  if (optval != 0) {
-    errno = optval;
-    return ConvertOSError(-1);
+  if (!ConvertOSError(getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&optval, &optlen)) {
+    PTRACE(2, "getsockopt SO_ERROR failure: errno=" << GetErrorNumber() << ' ' << GetErrorText());
+    return false;
   }
 
-  return true;
+  if (optval == 0)
+    return true;
+
+  errno = optval;
+  return ConvertOSError(-1);
 }
 
 

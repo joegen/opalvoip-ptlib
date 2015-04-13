@@ -1353,18 +1353,22 @@ PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address
   PIPSocket::sockaddr_wrapper sa(addr, port);
 
   // attempt to create a socket with the right family
-  if (!OpenSocket(sa->sa_family))
+  if (!OpenSocket(sa->sa_family)) {
+    PTRACE(2, "Create failure: family=" << sa->sa_family << ", errno=" << GetErrorNumber() << ' ' << GetErrorText());
     return false;
+  }
 
   if (localPort != 0 || (iface.IsValid() && !iface.IsAny())) {
     PIPSocket::sockaddr_wrapper bind_sa(iface, localPort);
 
     if (!SetOption(SO_REUSEADDR, 0)) {
+      PTRACE(2, "setsockopt SO_REUSEADDR failure: errno=" << GetErrorNumber() << ' ' << GetErrorText());
       os_close();
       return false;
     }
-    
+
     if (!ConvertOSError(::bind(os_handle, bind_sa, bind_sa.GetSize()))) {
+      PTRACE(2, "bind failure: errno=" << GetErrorNumber() << ' ' << GetErrorText());
       os_close();
       return false;
     }
