@@ -427,6 +427,12 @@ void * PAbstractArray::GetPointer(PINDEX minSize)
 }
 
 
+PINDEX PAbstractArray::GetLength() const
+{
+  return elementSize*GetSize();
+}
+
+
 PBoolean PAbstractArray::Concatenate(const PAbstractArray & array)
 {
   if (!allocatedDynamically || array.elementSize != elementSize)
