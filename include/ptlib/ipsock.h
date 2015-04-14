@@ -223,6 +223,9 @@ class PIPSocket : public PSocket
         /// Check if address is multicast group
         bool IsMulticast() const;
 
+        /// Check if this address is within the sub-net
+        bool IsSubNet(const Address & network, const Address & mask) const;
+
         /** Check if the remote address is a private address.
             For IPV4 this is specified RFC 1918 as the following ranges:
             \li    10.0.0.0 - 10.255.255.255.255
