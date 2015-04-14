@@ -53,6 +53,8 @@ void HTTPTest::Main()
 {
   PArgList & args = GetArguments();
   args.Parse("h-help.    print this help message.\n"
+             "G.         do a GET\n"
+             "P.         do a PUT"
              "p-port:    port number to listen on(default 80 or 443).\n"
 #if P_SSL
              "s-secure.     SSL/TLS mode.\n"
@@ -68,7 +70,34 @@ void HTTPTest::Main()
   PTRACE_INITIALISE(args);
 
   if (!args.IsParsed() || args.HasOption('h')) {
-    args.Usage(PError);
+    cerr << args.Usage("[ url [ file ] ]");
+    return;
+  }
+
+  if (args.HasOption('G')) {
+    if (args.GetCount() < 1) {
+      cerr << args.Usage("url");
+      return;
+    }
+    PString str;
+    PHTTPClient client;
+    if (client.GetTextDocument(args[0], str))
+      cout << str << endl;
+    else
+      cout << "Error " << client.GetErrorText() << endl;
+    return;
+  }
+
+  if (args.HasOption('P')) {
+    if (args.GetCount() < 2) {
+      cerr << args.Usage("url file");
+      return;
+    }
+    PHTTPClient client;
+    if (client.PutDocument(args[0], PFilePath(args[1])))
+      cout << "Put succeeded\n";
+    else
+      cout << "Error " << client.GetErrorText() << endl;
     return;
   }
 
