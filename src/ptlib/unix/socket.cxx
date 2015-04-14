@@ -1827,26 +1827,6 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(unsigned version)
 }
 
 
-static bool IsSubNet(const PIPSocket::Address & addr,
-                     const PIPSocket::Address & network,
-                     const PIPSocket::Address & mask)
-{
-  switch (addr.GetVersion()*100 + network.GetVersion()) {
-    case 404 :
-      return ((DWORD)addr & (DWORD)mask) == (DWORD)network;
-
-    case 606 :
-      for (PINDEX i = 0; i < 16; ++i) {
-        if ((addr[i] & mask[i]) != network[i])
-          return false;
-      }
-      return true;
-  }
-
-  return false;
-}
-
-
 static unsigned CountMaskBits(const PIPSocket::Address & mask)
 {
   unsigned count = 0;
@@ -1897,7 +1877,7 @@ PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(const Address & remoteAdd
   RouteEntry * route = NULL;
   for (PINDEX i = 0; i < routeTable.GetSize(); i++) {
     RouteEntry & routeEntry = routeTable[i];
-    if (IsSubNet(remoteAddress, routeEntry.GetNetwork(), routeEntry.GetNetMask())) {
+    if (remoteAddress.IsSubNet(routeEntry.GetNetwork(), routeEntry.GetNetMask())) {
       if (route == NULL)
         route = &routeEntry;
       else if (CountMaskBits(routeEntry.GetNetMask()) > CountMaskBits(route->GetNetMask()))

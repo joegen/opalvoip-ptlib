@@ -2048,7 +2048,26 @@ bool PIPSocket::Address::IsMulticast() const
 }
 
 
-bool PIPSocket::Address::IsRFC1918() const 
+bool PIPSocket::Address::IsSubNet(const Address & network, const Address & mask) const
+{
+  if (m_version != network.m_version || m_version != mask.m_version)
+    return false;
+
+#if P_HAS_IPV6
+  if (m_version == 6) {
+    for (PINDEX i = 0; i < 16; ++i) {
+      if (((*this)[i] & mask[i]) != network[i])
+        return false;
+    }
+    return true;
+  }
+#endif
+
+  return ((DWORD)*this & (DWORD)mask) == (DWORD)network;
+}
+
+
+bool PIPSocket::Address::IsRFC1918() const
 {
   PINDEX offset = 0;
 #if P_HAS_IPV6
