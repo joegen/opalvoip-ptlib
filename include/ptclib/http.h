@@ -179,6 +179,9 @@ class PHTTP : public PInternetProtocol
       BadResponse = 1,             ///<   1 = response is malformed
       ContentProcessorError,       ///< Content Processer returned error
       UnknownTransferEncoding,     ///< Unknown "Transfer-Encoding" extension
+      TransportConnectError,       ///< Could not connect transport
+      TransportWriteError,         ///< Could not write transport
+      TransportReadError,          ///< Could not read transport
       Continue = 100,              ///< 100 - Continue
       SwitchingProtocols,          ///< 101 - upgrade allowed
       RequestOK = 200,             ///< 200 - request has succeeded
@@ -276,6 +279,18 @@ class PHTTP : public PInternetProtocol
 };
 
 
+class PHTTPContentProcessor
+{
+public:
+  PHTTPContentProcessor(bool reader) : m_reader(reader) { }
+  virtual ~PHTTPContentProcessor() { }
+  virtual void * GetBuffer(PINDEX & size) = 0;
+  virtual bool Process(const void * /*data*/, PINDEX /*length*/) { return true; }
+  virtual void Reset() { }
+protected:
+  bool m_reader;
+};
+
 
 class PHTTPClientAuthentication : public PObject
 {
@@ -286,7 +301,8 @@ class PHTTPClientAuthentication : public PObject
         virtual ~AuthObject() { }
         virtual PMIMEInfo & GetMIME() = 0;
         virtual PString GetURI() = 0;
-        virtual PString GetEntityBody() = 0;
+        virtual PString GetEntityBody() { return PString::Empty(); }
+        virtual PHTTPContentProcessor * GetContentProcessor() { return NULL; }
         virtual PString GetMethod() = 0;
     };
 
@@ -337,17 +353,17 @@ class PHTTPClientAuthenticator : public PHTTPClientAuthentication::AuthObject
       const PString & cmdName, 
       const PString & uri, 
       PMIMEInfo & mime, 
-      const PString & body
+      PHTTPContentProcessor & processor
     );
     virtual PMIMEInfo & GetMIME();
     virtual PString GetURI();
-    virtual PString GetEntityBody();
+    virtual PHTTPContentProcessor * GetContentProcessor();
     virtual PString GetMethod();
   protected:
     PString m_method;
     PString m_uri;
     PMIMEInfo & m_mime;
-    PString m_body;
+    PHTTPContentProcessor & m_contentProcessor;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -463,6 +479,9 @@ class PHTTPClient : public PHTTP
       const PURL & url
     );
 
+    /// Call back to process the body of the HTTP command
+    typedef PHTTPContentProcessor ContentProcessor;
+
     /** Send a command and wait for the response header (including MIME fields).
        Note that a body may still be on its way even if lasResponseCode is not
        200!
@@ -478,10 +497,17 @@ class PHTTPClient : public PHTTP
       PMIMEInfo & replyMime
     );
     int ExecuteCommand(
-      const PString & cmdName,
+      Commands cmd,
       const PURL & url,
       PMIMEInfo & outMIME,
-      const PString & dataBody,
+      const PBYTEArray & dataBody,
+      PMIMEInfo & replyMime
+    );
+    int ExecuteCommand(
+      Commands cmd,
+      const PURL & url,
+      PMIMEInfo & outMIME,
+      ContentProcessor & processor,
       PMIMEInfo & replyMime
     );
 
@@ -490,27 +516,13 @@ class PHTTPClient : public PHTTP
       Commands cmd,
       const PString & url,
       PMIMEInfo & outMIME,
-      const PString & dataBody
-    );
-    bool WriteCommand(
-      const PString & cmdName,
-      const PString & url,
-      PMIMEInfo & outMIME,
-      const PString & dataBody
+      ContentProcessor & processor
     );
 
     /// Read a response from the server
     bool ReadResponse(
       PMIMEInfo & replyMIME
     );
-
-    /// Call back to process the body of the HTTP command
-    struct ContentProcessor
-    {
-      virtual ~ContentProcessor() { }
-      virtual void * GetBuffer(PINDEX & size) = 0;
-      virtual bool Process(const void * data, PINDEX length) = 0;
-    };
 
     /// Read the body of the HTTP command
     bool ReadContentBody(
@@ -659,10 +671,38 @@ class PHTTPClient : public PHTTP
        @return
        true if document is being transferred.
      */
-    bool PutTextDocument(
-      const PURL & url,         ///< Universal Resource Locator for document.
-      const PString & document,       ///< Body read
+    bool PutDocument(
+      const PURL & url,           ///< Universal Resource Locator for document.
+      const PString & document,  ///< Body to write
       const PString & contentType = PMIMEInfo::TextPlain() ///< Content-Type header to use
+    );
+
+    bool PutTextDocument(
+      const PURL & url,           ///< Universal Resource Locator for document.
+      const PString & document,  ///< Body to write
+      const PString & contentType = PMIMEInfo::TextPlain() ///< Content-Type header to use
+    ) { return PutDocument(url, document, contentType); }
+
+    /** Put the document specified by the URL.
+
+       @return
+       true if document is being transferred.
+     */
+    bool PutDocument(
+      const PURL & url,             ///< Universal Resource Locator for document.
+      const PBYTEArray & document,  ///< Body to write
+      const PString & contentType   ///< Content-Type header to use
+    );
+
+    /** Put the document specified by the URL.
+
+       @return
+       true if document is being transferred.
+     */
+    bool PutDocument(
+      const PURL & url,             ///< Universal Resource Locator for document.
+      const PFilePath & document,   ///< Body to write
+      const PString & contentType = PString::Empty() ///< Content-Type header to use
     );
 
     /** Put the document specified by the URL.
