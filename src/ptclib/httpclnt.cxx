@@ -66,6 +66,158 @@ PINDEX PHTTPClient::MaxTraceContentSize = 1000;
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+struct PHTTPClient_DummyProcessor : public PHTTPContentProcessor
+{
+  BYTE m_body[4096];
+
+  PHTTPClient_DummyProcessor(bool reader)
+    : PHTTPContentProcessor(reader)
+  {
+  }
+
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    if (m_reader) {
+      size = sizeof(m_body);
+      return m_body;
+    }
+
+    size = 0;
+    return NULL;
+  }
+};
+
+
+struct PHTTPClient_StringReader : public PHTTPContentProcessor
+{
+  PString & m_body;
+
+  PHTTPClient_StringReader(PString & body)
+    : PHTTPContentProcessor(true)
+    , m_body(body)
+  {
+  }
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    PINDEX oldLength = m_body.GetLength();
+    char * ptr = m_body.GetPointerAndSetLength(oldLength + size);
+    return ptr != NULL ? ptr + oldLength : NULL;
+  }
+};
+
+
+struct PHTTPClient_StringWriter : public PHTTPContentProcessor
+{
+  PString m_body;
+  bool    m_written;
+
+  PHTTPClient_StringWriter(const PString & body)
+    : PHTTPContentProcessor(false)
+    , m_body(body)
+    , m_written(false)
+  {
+  }
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    if (m_written)
+      return NULL;
+
+    m_written = true;
+    size = m_body.GetLength();
+    return m_body.PCharArray::GetPointer();
+  }
+
+  virtual void Reset()
+  {
+    m_written = false;
+  }
+};
+
+
+struct PHTTPClient_BinaryReader : public PHTTPContentProcessor
+{
+  PBYTEArray & m_body;
+
+  PHTTPClient_BinaryReader(PBYTEArray & body)
+    : PHTTPContentProcessor(true)
+    , m_body(body)
+  {
+  }
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    PINDEX oldSize = m_body.GetSize();
+    BYTE * ptr = m_body.GetPointer(oldSize+size);
+    return ptr != NULL ? ptr+oldSize : NULL;
+  }
+};
+
+
+struct PHTTPClient_BinaryWriter : public PHTTPContentProcessor
+{
+  PBYTEArray m_body;
+  bool       m_written;
+
+  PHTTPClient_BinaryWriter(const PBYTEArray & body)
+    : PHTTPContentProcessor(false)
+    , m_body(body)
+    , m_written(false)
+  {
+  }
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    if (m_written)
+      return NULL;
+
+    m_written = true;
+    size = m_body.GetLength();
+    return m_body.GetPointer();
+  }
+
+  virtual void Reset()
+  {
+    m_written = false;
+  }
+};
+
+
+struct PHTTPClient_FileWriter : public PHTTPContentProcessor
+{
+  PFile   m_file;
+  uint8_t m_buffer[4096];
+
+  PHTTPClient_FileWriter(const PFilePath & path)
+    : PHTTPContentProcessor(false)
+    , m_file(path, PFile::ReadOnly)
+  {
+  }
+
+  virtual void * GetBuffer(PINDEX & size)
+  {
+    if (!m_file.IsOpen())
+      return NULL;
+
+    off_t left = m_file.GetLength() - m_file.GetPosition();
+    size = left > sizeof(m_buffer) ? (PINDEX)sizeof(m_buffer) : (PINDEX)left;
+    if (m_file.Read(m_buffer, size))
+      return m_buffer;
+
+    return NULL;
+  }
+
+  virtual void Reset()
+  {
+    m_file.Open();
+  }
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPClient
 
 PHTTPClient::PHTTPClient(const PString & userAgent)
@@ -82,14 +234,26 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime)
 {
-  return ExecuteCommand(commandNames[cmd], url, outMIME, dataBody, replyMime);
+  PHTTPClient_StringWriter processor(dataBody);
+  return ExecuteCommand(cmd, url, outMIME, processor, replyMime);
 }
 
 
-int PHTTPClient::ExecuteCommand(const PString & cmdName,
+int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PURL & url,
                                 PMIMEInfo & outMIME,
-                                const PString & dataBody,
+                                const PBYTEArray & dataBody,
+                                PMIMEInfo & replyMIME)
+{
+  PHTTPClient_BinaryWriter processor(dataBody);
+  return ExecuteCommand(cmd, url, outMIME, processor, replyMIME);
+}
+
+
+int PHTTPClient::ExecuteCommand(Commands cmd,
+                                const PURL & url,
+                                PMIMEInfo & outMIME,
+                                ContentProcessor & processor,
                                 PMIMEInfo & replyMIME)
 {
   if (!outMIME.Contains(DateTag()))
@@ -115,8 +279,8 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
         outMIME.SetAt(HostTag, url.GetHostPort());
     }
 
-    if (!WriteCommand(cmdName, url.AsString(PURL::RelativeOnly), outMIME, dataBody)) {
-      lastResponseCode = -1;
+    if (!WriteCommand(cmd, url.AsString(PURL::RelativeOnly), outMIME, processor)) {
+      lastResponseCode = TransportWriteError;
       lastResponseInfo = GetErrorText(LastWriteError);
       break;
     }
@@ -181,28 +345,23 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
 bool PHTTPClient::WriteCommand(Commands cmd,
                         const PString & url,
                             PMIMEInfo & outMIME,
-                        const PString & dataBody)
+                     ContentProcessor & processor)
 {
-  return WriteCommand(commandNames[cmd], url, outMIME, dataBody);
-}
-
-
-bool PHTTPClient::WriteCommand(const PString & cmdName,
-                               const PString & url,
-                                   PMIMEInfo & outMIME,
-                               const PString & dataBody)
-{
-  ostream & this_stream = *this;
-  PINDEX len = dataBody.GetLength();
-  if (!outMIME.Contains(ContentLengthTag()))
-    outMIME.SetInteger(ContentLengthTag(), len);
-
-  if (m_authentication != NULL) {
-    PHTTPClientAuthenticator auth(cmdName, url, outMIME, dataBody);
-    m_authentication->Authorise(auth);
+  if (!outMIME.Contains(ContentLengthTag())) {
+    processor.Reset();
+    PINDEX total = 0;
+    PINDEX len;
+    while (processor.GetBuffer(len) != NULL)
+      total += len;
+    outMIME.SetInteger(ContentLengthTag(), total);
   }
 
-  PString cmd(cmdName.IsEmpty() ? "GET" : cmdName);
+  PString cmdName = commandNames[cmd];
+
+  if (m_authentication != NULL) {
+    PHTTPClientAuthenticator auth(cmdName, url, outMIME, processor);
+    m_authentication->Authorise(auth);
+  }
 
 #if PTRACING
   if (PTrace::CanTrace(3)) {
@@ -215,23 +374,22 @@ bool PHTTPClient::WriteCommand(const PString & cmdName,
       strm << '/';
     else
       strm << url;
-    if (PTrace::CanTrace(4)) {
-      strm << '\n' << outMIME;
-      if (!dataBody.IsEmpty()) {
-        PINDEX amt = PTrace::CanTrace(5) ? 10000 : 100;
-        strm << dataBody.Left(amt);
-        if (len > amt)
-          strm << "\n....";
-      }
-    }
     strm << PTrace::End;
-  } 
+  }
 #endif
 
-  this_stream << cmd << ' ' << (url.IsEmpty() ? "/" :  (const char*) url) << " HTTP/1.1\r\n"
-              << setfill('\r') << outMIME;
+  *this << cmdName << ' ' << (url.IsEmpty() ? "/" : (const char*)url) << " HTTP/1.1\r\n"
+        << setfill('\r') << outMIME;
 
-  return Write((const char *)dataBody, len);
+  processor.Reset();
+  const void * data;
+  PINDEX len = 0;
+  while ((data = processor.GetBuffer(len)) != NULL) {
+    if (!Write(data, len))
+      return false;
+  }
+
+  return true;
 }
 
 
@@ -290,7 +448,7 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
     }
   }
  
-  lastResponseCode = -1;
+  lastResponseCode = TransportReadError;
   if (GetErrorCode(LastReadError) != NoError)
     lastResponseInfo = GetErrorText(LastReadError);
   else {
@@ -302,85 +460,23 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 }
 
 
-struct PHTTPClient_DummyProcessor : public PHTTPClient::ContentProcessor
-{
-  BYTE m_body[4096];
-
-  virtual void * GetBuffer(PINDEX & size)
-  {
-    size = sizeof(m_body);
-    return m_body;
-  }
-
-  virtual bool Process(const void *, PINDEX)
-  {
-    return true;
-  }
-};
-
-
 bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME)
 {
-  PHTTPClient_DummyProcessor processor;
+  PHTTPClient_DummyProcessor processor(true);
   return ReadContentBody(replyMIME, processor);
 }
-
-
-struct PHTTPClient_StringProcessor : public PHTTPClient::ContentProcessor
-{
-  PString & m_body;
-
-  PHTTPClient_StringProcessor(PString & body)
-    : m_body(body)
-  {
-  }
-
-  virtual void * GetBuffer(PINDEX & size)
-  {
-    PINDEX oldLength = m_body.GetLength();
-    char * ptr = m_body.GetPointerAndSetLength(oldLength+size);
-    return ptr != NULL ? ptr+oldLength : NULL;
-  }
-
-  virtual bool Process(const void *, PINDEX)
-  {
-    return true;
-  }
-};
 
 
 bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PString & body)
 {
-  PHTTPClient_StringProcessor processor(body);
+  PHTTPClient_StringReader processor(body);
   return ReadContentBody(replyMIME, processor);
 }
 
 
-struct PHTTPClient_BinaryProcessor : public PHTTPClient::ContentProcessor
-{
-  PBYTEArray & m_body;
-
-  PHTTPClient_BinaryProcessor(PBYTEArray & body)
-    : m_body(body)
-  {
-  }
-
-  virtual void * GetBuffer(PINDEX & size)
-  {
-    PINDEX oldSize = m_body.GetSize();
-    BYTE * ptr = m_body.GetPointer(oldSize+size);
-    return ptr != NULL ? ptr+oldSize : NULL;
-  }
-
-  virtual bool Process(const void *, PINDEX)
-  {
-    return true;
-  }
-};
-
 bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
 {
-  PHTTPClient_BinaryProcessor processor(body);
+  PHTTPClient_BinaryReader processor(body);
   return ReadContentBody(replyMIME, processor);
 }
 
@@ -416,7 +512,7 @@ bool PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, ContentProcessor & proc
     }
 
     if (!(encoding.IsEmpty())) {
-      lastResponseCode = -1;
+      lastResponseCode = UnknownTransferEncoding;
       lastResponseInfo = "Unknown Transfer-Encoding extension";
       return false;
     }
@@ -627,19 +723,32 @@ bool PHTTPClient::PostData(const PURL & url,
 }
 
 
-bool PHTTPClient::PutTextDocument(const PURL & url,
-                                  const PString & document,
-                                  const PString & contentType)
+bool PHTTPClient::PutDocument(const PURL & url, const PString & data, const PString & contentType)
 {
   PMIMEInfo outMIME, replyMIME;
   outMIME.SetAt(ContentTypeTag(), contentType);
-  return IsOK(ExecuteCommand(PUT, url, outMIME, document, replyMIME));
+  return IsOK(ExecuteCommand(PUT, url, outMIME, data, replyMIME));
 }
 
 
-bool PHTTPClient::PutDocument(const PURL & url,
-                              PMIMEInfo & outMIME,
-                              PMIMEInfo & replyMIME)
+bool PHTTPClient::PutDocument(const PURL & url, const PBYTEArray & data, const PString & contentType)
+{
+  PMIMEInfo outMIME, replyMIME;
+  outMIME.SetAt(ContentTypeTag(), contentType);
+  return IsOK(ExecuteCommand(PUT, url, outMIME, data, replyMIME));
+}
+
+
+bool PHTTPClient::PutDocument(const PURL & url, const PFilePath & path, const PString & contentType)
+{
+  PMIMEInfo outMIME, replyMIME;
+  outMIME.SetAt(ContentTypeTag(), contentType.IsEmpty() ? PMIMEInfo::GetContentType(path.GetType()) : contentType);
+  PHTTPClient_FileWriter processor(path);
+  return IsOK(ExecuteCommand(PUT, url, outMIME, processor, replyMIME));
+}
+
+
+bool PHTTPClient::PutDocument(const PURL & url, PMIMEInfo & outMIME, PMIMEInfo & replyMIME)
 {
   return IsOK(ExecuteCommand(PUT, url, outMIME, PString::Empty(), replyMIME));
 }
@@ -671,7 +780,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
     PTCPSocket * tcp = new PTCPSocket(url.GetPort());
     tcp->SetReadTimeout(readTimeout);
     if (!tcp->Connect(host)) {
-      lastResponseCode = -2;
+      lastResponseCode = TransportConnectError;
       lastResponseInfo = tcp->GetErrorText();
       delete tcp;
       return false;
@@ -679,7 +788,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
 
     PSSLContext * context = new PSSLContext;
     if (!context->SetCredentials(m_authority, m_certificate, m_privateKey)) {
-      lastResponseCode = -2;
+      lastResponseCode = TransportConnectError;
       lastResponseInfo = "Could not set certificates";
       delete context;
       return false;
@@ -687,14 +796,14 @@ bool PHTTPClient::ConnectURL(const PURL & url)
 
     PSSLChannel * ssl = new PSSLChannel(context);
     if (!ssl->Connect(tcp)) {
-      lastResponseCode = -2;
+      lastResponseCode = TransportConnectError;
       lastResponseInfo = ssl->GetErrorText();
       delete ssl;
       return false;
     }
 
     if (!Open(ssl)) {
-      lastResponseCode = -2;
+      lastResponseCode = TransportConnectError;
       lastResponseInfo = GetErrorText();
       return false;
     }
@@ -703,7 +812,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
 #endif
 
   if (!Connect(host, url.GetPort())) {
-    lastResponseCode = -2;
+    lastResponseCode = TransportConnectError;
     lastResponseInfo = GetErrorText();
     return false;
   }
@@ -970,7 +1079,16 @@ PBoolean PHTTPClientDigestAuthentication::Authorise(AuthObject & authObject) con
 
   if (qopAuthInt) {
     digestor.Start();
-    digestor.Process(authObject.GetEntityBody());
+    PHTTPContentProcessor * processor = authObject.GetContentProcessor();
+    if (processor == NULL)
+      digestor.Process(authObject.GetEntityBody());
+    else {
+      processor->Reset();
+      void * data;
+      PINDEX len;
+      while ((data = processor->GetBuffer(len)) != NULL)
+        digestor.Process(data, len);
+    }
     digestor.Complete(entityBodyCode);
   }
 
@@ -1072,11 +1190,11 @@ PHTTPClientAuthentication * PHTTPClientAuthentication::ParseAuthenticationRequir
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-PHTTPClientAuthenticator::PHTTPClientAuthenticator(const PString & method, const PString & uri, PMIMEInfo & mime, const PString & body)
+PHTTPClientAuthenticator::PHTTPClientAuthenticator(const PString & method, const PString & uri, PMIMEInfo & mime, PHTTPContentProcessor & processor)
   : m_method(method)
   , m_uri(uri)
   , m_mime(mime)
-  , m_body(body)
+  , m_contentProcessor(processor)
 {
 }
 
@@ -1090,9 +1208,9 @@ PString PHTTPClientAuthenticator::GetURI()
   return m_uri;
 }
 
-PString PHTTPClientAuthenticator::GetEntityBody()
+PHTTPContentProcessor * PHTTPClientAuthenticator::GetContentProcessor()
 {
-  return m_body;
+  return &m_contentProcessor;
 }
 
 PString PHTTPClientAuthenticator::GetMethod()
