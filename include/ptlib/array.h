@@ -205,6 +205,10 @@ class PAbstractArray : public PContainer
     void * GetPointer(
       PINDEX minSize = 1  ///< Minimum size the array must be.
     );
+    const void * GetPointer() const { return theArray; }
+
+    /// Retrun the length in bytes for the array
+    virtual PINDEX GetLength() const;
 
     /**Concatenate one array to the end of this array.
        This function will allocate a new array large enough for the existing
