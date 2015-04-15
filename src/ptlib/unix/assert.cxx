@@ -84,18 +84,16 @@
   }
 
 
-  static void InternalWalkStack(ostream & strm, int skip)
+  static void InternalWalkStack(ostream & strm, int skip, void * const * addresses, int addressCount)
   {
-    int i;
-
-    void* addresses[InternalMaxStackWalk];
-    int addressCount = backtrace(addresses, InternalMaxStackWalk);
-    if (addressCount == 0) {
-      strm << "\n    Stack back trace empty, possibly corrupt\n";
+    if (addressCount <= 0) {
+      strm << "\n\tStack back trace empty, possibly corrupt.";
       return;
     }
 
-    std::string lines[InternalMaxStackWalk];
+    int i;
+
+    std::vector<std::string> lines(addressCount);
 
     static std::string addr2line = Locate_addr2line();
     if (!addr2line.empty()) {
@@ -117,7 +115,7 @@
 
     char ** symbols = backtrace_symbols(addresses, addressCount);
     for (i = skip; i < addressCount; ++i) {
-      strm << "\n    ";
+      strm << "\n\t";
 
       if (symbols[i] == NULL || symbols[i][0] == '\0') {
         strm << addresses[i] << ' ' << lines[i];
@@ -152,56 +150,112 @@
     runtime_free(symbols);
   }
 
+
+  static void InternalWalkStack(ostream & strm, int skip)
+  {
+    const size_t maxStackWalk = InternalMaxStackWalk + skip;
+    void * addresses[maxStackWalk];
+    InternalWalkStack(strm, skip, addresses, backtrace(addresses, maxStackWalk));
+  }
+
+
   #if PTRACING
-    struct PWalkStackInfo
-    {
-      std::string m_output;
-      PSyncPoint  m_done;
-    };
-    typedef std::map<PUniqueThreadIdentifier, PWalkStackInfo> PWalkStackMap;
-    static PWalkStackMap   s_threadStackWalks;
-    static pthread_mutex_t s_threadStackMutex = PTHREAD_MUTEX_INITIALIZER;
+    #if P_PTHREADS
+      struct PWalkStackInfo
+      {
+        enum { OtherThreadSkip = 6 };
+        pthread_mutex_t   m_mainMutex;
+        PThreadIdentifier m_id;
+        vector<void *>    m_addresses;
+        int               m_addressCount;
+        pthread_mutex_t   m_condMutex;
+        pthread_cond_t    m_condVar;
+
+        PWalkStackInfo()
+          : m_id(PNullThreadIdentifier)
+          , m_addressCount(-1)
+        {
+          pthread_mutex_init(&m_mainMutex, NULL);
+          pthread_mutex_init(&m_condMutex, NULL);
+          pthread_cond_init(&m_condVar, NULL);
+        }
+
+        void WalkOther(ostream & strm, PThreadIdentifier id)
+        {
+          pthread_mutex_lock(&m_mainMutex);
+
+          m_id = id;
+          m_addressCount = -1;
+          m_addresses.resize(InternalMaxStackWalk+OtherThreadSkip);
+          pthread_kill(id, PProcess::WalkStackSignal);
+
+          int err = 0;
+          struct timespec absTime;
+          absTime.tv_sec = time(NULL) + 2;
+          absTime.tv_nsec = 0;
+
+          pthread_mutex_lock(&m_condMutex);
+          while (m_addressCount < 0) {
+            if ((err = pthread_cond_timedwait(&m_condVar, &m_condMutex, &absTime)) != 0)
+              break;
+          }
+          pthread_mutex_unlock(&m_condMutex);
+
+          if (err == ETIMEDOUT)
+            strm << "\n    No response getting stack trace for id=" << id << " (0x" << hex << id << ')';
+          else if (err != 0)
+            strm << "\n    Error " << err << " getting stack trace for id=" << id << " (0x" << hex << id << ')';
+          else
+            InternalWalkStack(strm, OtherThreadSkip, m_addresses.data(), m_addressCount);
+
+          m_id = PNullThreadIdentifier;
+
+          pthread_mutex_unlock(&m_mainMutex);
+        }
+
+        void OthersWalk()
+        {
+          PThreadIdentifier id = PThread::GetCurrentThreadId();
+          if (m_id != id) {
+            if (id == PNullThreadIdentifier)
+              PTRACE(0, "StackWalk", "Thread took too long to respond to signal");
+            else
+              PTRACE(0, "StackWalk", "Signal received on " << id << " (0x" << hex << id << ")"
+                                     " but expected " << m_id << " (0x" << hex << m_id << ')');
+            return;
+          }
+
+          int addressCount = backtrace(m_addresses.data(), m_addresses.size());
+
+          pthread_mutex_lock(&m_condMutex);
+          m_addressCount = addressCount < 0 ? 0 : addressCount;
+          pthread_cond_signal(&m_condVar);
+          pthread_mutex_unlock(&m_condMutex);
+        }
+      };
+    #else // P_PTHREADS
+      struct PWalkStackInfo
+      {
+        void WalkOther(ostream &, PThreadIdentifier) { }
+        void OthersWalk() { }
+      };
+    #endif // P_PTHREADS
+
+    static PWalkStackInfo s_otherThreadStack;
 
 
     void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
     {
-      if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId()) {
+      if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId())
         InternalWalkStack(strm, 2);
-        return;
-      }
-
-      if (!PProcess::IsInitialised())
-        return;
-
-      PProcess & process = PProcess::Current();
-
-      pthread_mutex_lock(&s_threadStackMutex);
-      PWalkStackInfo & info = s_threadStackWalks[id];
-      pthread_mutex_unlock(&s_threadStackMutex);
-
-      pthread_kill(id, PProcess::WalkStackSignal);
-
-      if (info.m_done.Wait(1000))
-        strm << info.m_output;
-      else
-        strm << "\n    Could not get stack trace for id=" << id;
-
-      pthread_mutex_lock(&s_threadStackMutex);
-      s_threadStackWalks.erase(id);
-      pthread_mutex_unlock(&s_threadStackMutex);
+      else if (PProcess::IsInitialised())
+        s_otherThreadStack.WalkOther(strm, id);
     }
 
     void PProcess::InternalWalkStackSignaled()
     {
-      pthread_mutex_lock(&s_threadStackMutex);
-      PWalkStackMap::iterator it = s_threadStackWalks.find(PThread::GetCurrentThreadId());
-      if (it != s_threadStackWalks.end()) {
-        std::ostringstream strm;
-        InternalWalkStack(strm, 3);
-        it->second.m_output = strm.str();
-      }
-      it->second.m_done.Signal();
-      pthread_mutex_unlock(&s_threadStackMutex);
+      if (IsInitialised())
+        s_otherThreadStack.OthersWalk();
     }
   #endif // PTRACING
 

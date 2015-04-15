@@ -97,7 +97,7 @@ class MyThread2 : public PThread
 
         // Display the number 2, then sleep for a short time
         printf("2 "); fflush(stdout);
-	Sleep(10); // sleep 10ms
+	    Sleep(10); // sleep 10ms
       }
     }
 
@@ -113,6 +113,26 @@ class MyThread2 : public PThread
       PMutex exitMutex;
       PBoolean exitFlag;
 };
+
+
+void LockAthenB(PMutex & a, PMutex & b)
+{
+  PTRACE(1, "Locking A then B");
+  a.Wait();
+  b.Wait();
+  PTRACE(1, "Locked A then B");
+  PThread::Sleep(60000);
+}
+
+
+void LockBthenA(PMutex & a, PMutex & b)
+{
+  PTRACE(1, "Locking B then A");
+  b.Wait();
+  a.Wait();
+  PTRACE(1, "Locked B then A");
+  PThread::Sleep(60000);
+}
 
 
 /*
@@ -131,6 +151,22 @@ PCREATE_PROCESS(ThreadTest);
 void ThreadTest::Main()
 {
   cout << "Thread Test Program" << endl;
+
+  PArgList & args = GetArguments();
+  args.Parse("d-deadlock. Test deadlock detection");
+
+  if (args.HasOption('d')) {
+    cout << "Testing deadlock detection." << endl;
+    PTRACE_INITIALISE(3, "stderr");
+    PTimedMutex a, b;
+    PThread * th1 = new PThread2Arg<PMutex &, PMutex &>(a, b, LockAthenB);
+    PThread * th2 = new PThread2Arg<PMutex &, PMutex &>(a, b, LockBthenA);
+    Sleep(30000);
+    delete th1;
+    delete th2;
+    return;
+  }
+
   cout << "This program will display the following:" << endl;
   cout << "             2 seconds of 1 1 1 1 1..." << endl;
   cout << " followed by 2 seconds of 1 2 1 2 1 2 1 2 1 2..." << endl;
@@ -141,12 +177,8 @@ void ThreadTest::Main()
   cout << endl;
 
   // Create the threads
-  MyThread1 * mythread1;
-  MyThread2 * mythread2;
-
-  mythread1 = new MyThread1();
-  mythread2 = new MyThread2();
-
+  MyThread1 * mythread1 = new MyThread1();
+  MyThread2 * mythread2 = new MyThread2();
 
   // Thread 1 should now be running, as there is a Resume() function
   // in the thread constructor.

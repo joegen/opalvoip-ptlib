@@ -128,7 +128,7 @@ void PSetErrorStream(ostream * s)
 
 #if PTRACING
 
-unsigned PTrace::MaxStackWalk = 20;
+unsigned PTrace::MaxStackWalk = 32;
 
 class PTraceInfo : public PTrace
 {
@@ -741,10 +741,15 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
       name.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
     else
       name = thread->GetThreadName();
-    if (name.GetLength() <= 23)
-      stream << setw(23) << name;
+#if P_64BIT
+    static const unsigned ThreadNameWidth = 31;
+#else
+    static const unsigned ThreadNameWidth = 23;
+#endif
+    if (name.GetLength() <= ThreadNameWidth)
+      stream << setw(ThreadNameWidth) << name;
     else
-      stream << name.Left(10) << "..." << name.Right(10);
+      stream << name.Left(10) << "..." << name.Right(ThreadNameWidth-13);
     stream << '\t';
   }
 
@@ -936,8 +941,10 @@ bool PTrace::ThrottleBase::CanTrace()
     m_currentLevel = m_lowLevel;
     m_lastLog = now.GetMilliSeconds();
   }
-  else if (m_currentLevel == m_highLevel)
-    ++m_count;
+  else if (m_currentLevel == m_highLevel) {
+    if (!PTrace::CanTrace(m_highLevel))
+      ++m_count;
+  }
   else {
     m_count = 1;
     m_currentLevel = m_highLevel;
@@ -1156,7 +1163,14 @@ PInt64 PTimer::GetMilliSeconds() const
 
 PBoolean PTimer::IsRunning() const
 {
-  return m_running;
+  if (m_running)
+      return true;
+
+  if (!m_callbackMutex.Try())
+      return true;
+
+  m_callbackMutex.Signal();
+  return false;
 }
 
 
@@ -1299,7 +1313,6 @@ PTimeInterval PTimer::List::Process()
           nextInterval = delta;
       }
       else if (timer.m_callbackMutex.Try()) {
-        timer.m_callbackMutex.Signal();
         /* PTimer is stopped and completely removed from the list before it's
            properties are changed from the external code, making this thread
            safe without a mutex. */
@@ -1310,6 +1323,7 @@ PTimeInterval PTimer::List::Process()
           if (nextInterval > timer.GetResetTime())
             nextInterval = timer.GetResetTime();
         }
+        timer.m_callbackMutex.Signal();
 
         m_threadPool.AddWork(new Timeout(it->first));
         PTRACE(6, &timer, "PTLib", "Timer: " << timer << " work added, lateness=" << -delta);
@@ -2236,14 +2250,17 @@ void PProcess::OnThreadEnded(PThread &
 #if PTRACING
   const int LogLevel = 3;
   if (PTrace::CanTrace(LogLevel)) {
-#if P_PROFILING
-      PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
-#else
+#if !P_PROFILING
     PThread::Times times;
-    if (thread.GetTimes(times)) {
-      PTRACE(LogLevel, "PTLib\tThread ended: name=\"" << thread.GetThreadName() << "\", " << times);
-    }
+    if (thread.GetTimes(times))
 #endif // P_PROFILING
+    {
+      ostream & trace = PTRACE_BEGIN(LogLevel, "PTLib");
+      trace << "Thread ended: name=\"" << thread.GetThreadName() << "\", ";
+      if (thread.GetThreadId() != thread.GetUniqueIdentifier())
+          trace << "id=" << thread.GetUniqueIdentifier() << ", ";
+      trace << times << PTrace::End;
+    }
   }
 #endif //PTRACING
 }
@@ -2716,6 +2733,8 @@ void PSimpleThread::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
+static bool EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -2724,15 +2743,24 @@ void PTimedMutex::ExcessiveLockWait()
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Possible deadlock in mutex " << this;
-  PTrace::WalkStack(trace);
-  trace << "\n  Owner Thread ";
+  if (EnableDeadlockStackWalk) {
+    PThreadIdentifier id = PThread::GetCurrentThreadId();
+    PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
+    trace << "\n  Blocked Thread id=" << id << " (0x" << std::hex << id << std::dec << ')';
+    if (id != uid)
+      trace << " unique-id=" << uid;
+    PTrace::WalkStack(trace);
+    trace << '\n';
+  }
+  trace << "  Owner Thread ";
   if (lockerId == PNullThreadIdentifier)
     trace << "no longer has lock";
   else {
     trace << "id=" << lockerId << " (0x" << std::hex << lockerId << std::dec << ')';
     if (lockerId != uniqueId)
       trace << " unique-id=" << m_uniqueId;
-    PTrace::WalkStack(trace, lockerId);
+    if (EnableDeadlockStackWalk)
+      PTrace::WalkStack(trace, lockerId);
   }
   trace << PTrace::End;
 #endif
@@ -2747,7 +2775,8 @@ void PTimedMutex::CommonSignal()
 #if PTRACING
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
     trace << "Released phantom deadlock in mutex " << this;
-    PTrace::WalkStack(trace);
+    if (EnableDeadlockStackWalk)
+      PTrace::WalkStack(trace);
     trace << PTrace::End;
 #endif
     m_excessiveLockTime = false;
@@ -2998,7 +3027,8 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
               " writers=" << it->second.m_writerCount;
     if (!it->second.m_waiting)
       trace << ", LOCKED";
-    PTrace::WalkStack(trace, it->first);
+    if (EnableDeadlockStackWalk)
+      PTrace::WalkStack(trace, it->first);
   }
   trace << PTrace::End;
 
