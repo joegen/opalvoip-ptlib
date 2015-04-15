@@ -417,7 +417,7 @@ class PTimer : public PTimeInterval
     PIdGenerator::Handle m_handle;
     bool                 m_running;
     PTimeInterval        m_absoluteTime;
-    PTimedMutex          m_callbackMutex;
+    mutable PTimedMutex  m_callbackMutex;
 
     friend class Emitter;
 
