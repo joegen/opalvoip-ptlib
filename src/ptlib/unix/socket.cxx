@@ -191,13 +191,13 @@ int PSocket::os_socket(int af, int type, int protocol)
 
 PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 {
+  int result;
   do {
-    if (ConvertOSError(::connect(os_handle, addr, size)))
-      return true;
-  } while (GetErrorNumber() == EINTR);
+    result = ::connect(os_handle, addr, size);
+  } while (result != 0 && errno == EINTR);
 
-  if (GetErrorNumber() != EINPROGRESS)
-    return false;
+  if (result == 0 || errno != EINPROGRESS)
+    return ConvertOSError(result);
 
   if (!PXSetIOBlock(PXConnectBlock, readTimeout))
     return false;
