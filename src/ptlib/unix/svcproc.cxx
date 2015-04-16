@@ -446,6 +446,11 @@ int PServiceProcess::InitialiseService()
   if (!m_debugMode)
     ::close(STDIN_FILENO);
 
+  // We intercept the core dumping signals so get a message in the log file.
+  signal(SIGSEGV, PXSignalHandler);
+  signal(SIGFPE, PXSignalHandler);
+  signal(SIGBUS, PXSignalHandler);
+
   if (!daemon)
     return -1;
 
@@ -500,12 +505,6 @@ int PServiceProcess::InitialiseService()
   CommonConstruct();
 
   pidFileToRemove = pidfilename;
-
-  // Only if we are running in the background as a daemon, we intercept
-  // the core dumping signals so get a message in the log file.
-  signal(SIGSEGV, PXSignalHandler);
-  signal(SIGFPE, PXSignalHandler);
-  signal(SIGBUS, PXSignalHandler);
 
 #endif // !BE_THREADS && !P_RTEMS
 #endif // !P_VXWORKS
@@ -582,6 +581,8 @@ void PServiceProcess::Terminate()
   _exit(terminationValue);
 }
 
+static atomic<bool> InSignalHandler(false);
+
 void PServiceProcess::PXOnAsyncSignal(int sig)
 {
   const char * sigmsg;
@@ -612,34 +613,25 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   signal(SIGFPE, SIG_DFL);
   signal(SIGBUS, SIG_DFL);
 
-  static PBoolean inHandler = false;
-  if (inHandler) {
-    raise(SIGQUIT); // Dump core
-    _exit(-1); // Fail safe if raise() didn't dump core and exit
-  }
-
-  inHandler = true;
-
-  {
+  if (!InSignalHandler.exchange(true)) {
     PThreadIdentifier tid = GetCurrentThreadId();
-    ThreadMap::iterator thread = m_activeThreads.find(tid);
+    PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
 
     PSystemLog log(PSystemLog::Fatal);
-    log << "\nCaught " << sigmsg << ", thread_id=" << tid;
+    log << "\nCaught " << sigmsg << ", thread-id=" << tid << " (0x" << std::hex << tid << std::dec << ')';
+    if (tid != uid)
+      log << ", unique-id=" << uid;
+    log << ", name=\"" << PThread::GetThreadName(tid) << '"';
 
-    if (thread != m_activeThreads.end()) {
-      PString thread_name = thread->second->GetThreadName();
-      if (thread_name.IsEmpty())
-        log << " obj_ptr=" << thread->second;
-      else
-        log << " name=" << thread_name;
-    }
-
-    log << ", aborting.\n";
+#if PTRACING
+    log << ", stack:\n";
+    PTrace::WalkStack(log);
+#endif
+    log << endl;
   }
 
-  raise(SIGQUIT); // Dump core
-  _exit(-1); // Fail safe if raise() didn't dump core and exit
+  raise(sig); // Dump core
+  _exit(sig); // Fail safe if raise() didn't dump core and exit
 }
 
 
