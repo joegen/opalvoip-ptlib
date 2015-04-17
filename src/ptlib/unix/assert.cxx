@@ -366,7 +366,7 @@
       case 'c' :
       case 'C' :
         PError << "\nDumping core.\n";
-        raise(SIGABRT);
+        abort();
         return false;
 
       case 'i' :
