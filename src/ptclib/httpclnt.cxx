@@ -282,6 +282,7 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
     if (!WriteCommand(cmd, url.AsString(PURL::RelativeOnly), outMIME, processor)) {
       lastResponseCode = TransportWriteError;
       lastResponseInfo = GetErrorText(LastWriteError);
+      lastResponseInfo.sprintf(" (errno=%i)", GetErrorNumber(LastWriteError));
       break;
     }
 
@@ -449,8 +450,10 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
   }
  
   lastResponseCode = TransportReadError;
-  if (GetErrorCode(LastReadError) != NoError)
+  if (GetErrorCode(LastReadError) != NoError) {
     lastResponseInfo = GetErrorText(LastReadError);
+    lastResponseInfo.sprintf(" (errno=%i)", GetErrorNumber(LastReadError));
+  }
   else {
     lastResponseInfo = "Premature shutdown";
     SetErrorValues(ProtocolFailure, 0, LastReadError);
@@ -782,6 +785,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
     if (!tcp->Connect(host)) {
       lastResponseCode = TransportConnectError;
       lastResponseInfo = tcp->GetErrorText();
+      lastResponseInfo.sprintf(" (errno=%i)", tcp->GetErrorNumber());
       delete tcp;
       return false;
     }
@@ -814,6 +818,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
   if (!Connect(host, url.GetPort())) {
     lastResponseCode = TransportConnectError;
     lastResponseInfo = GetErrorText();
+    lastResponseInfo.sprintf(" (errno=%i)", GetErrorNumber());
     return false;
   }
 
