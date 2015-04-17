@@ -54,7 +54,8 @@ PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount,
 {
 }
 
-PThreadPoolBase::~PThreadPoolBase()
+
+void PThreadPoolBase::Shutdown()
 {
   while (!m_workers.empty()) {
     m_listMutex.Wait();
@@ -65,6 +66,7 @@ PThreadPoolBase::~PThreadPoolBase()
     StopWorker(worker);
   }
 }
+
 
 PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::AllocateWorker()
 {
@@ -104,13 +106,14 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
 {
   // create a new worker thread
   WorkerThreadBase * worker = CreateWorkerThread();
+  PTRACE(4, "PTLib", "Created pool thread " << worker);
 
   m_listMutex.Wait();
   m_workers.push_back(worker);
 
   if (m_workers.size() > m_highWaterMark) {
     m_highWaterMark = m_workers.size();
-    PTRACE(4, "PTLib\tThread pool high water mark: " << m_highWaterMark);
+    PTRACE(3, "PTLib", "Thread pool high water mark: " << m_highWaterMark);
   }
 
   m_listMutex.Signal();
@@ -157,13 +160,8 @@ bool PThreadPoolBase::CheckWorker(WorkerThreadBase * worker)
 
 void PThreadPoolBase::StopWorker(WorkerThreadBase * worker)
 {
+  PTRACE(4, "PTLib", "Shutting down pool thread " << worker);
   worker->Shutdown();
-
-  // the worker is now finished
-  if (!worker->WaitForTermination(10000)) {
-    PTRACE(4, "ThreadPool\tWorker did not terminate promptly");
-  }
-
-  PTRACE(4, "ThreadPool\tDestroying pool thread");
+  PAssert(worker->WaitForTermination(10000), "Worker did not terminate promptly");
   delete worker;
 }

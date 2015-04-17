@@ -180,7 +180,12 @@ class PThreadPoolBase : public PObject
         std::string m_group;
     };
 
-    ~PThreadPoolBase();
+    ~PThreadPoolBase()
+    {
+      Shutdown();
+    }
+
+    void Shutdown();
 
     virtual WorkerThreadBase * CreateWorkerThread() = 0;
     virtual WorkerThreadBase * AllocateWorker();
