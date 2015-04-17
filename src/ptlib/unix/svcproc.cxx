@@ -629,7 +629,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 #endif
   }
 
-  raise(sig); // Dump core
+  abort(); // Dump core
   _exit(sig); // Fail safe if raise() didn't dump core and exit
 }
 
