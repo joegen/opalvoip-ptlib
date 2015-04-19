@@ -430,6 +430,16 @@ int PTime::GetDayOfYear() const
 }
 
 
+void PTime::PrintOn(ostream & strm) const
+{
+  int fmt = (int)strm.precision();
+  if (fmt >= 0 || fmt <= -NumTimeStrings)
+    strm << AsString();
+  else
+    strm << AsString((NumTimeStrings)-fmt);
+}
+
+
 PString PTime::AsString(TimeFormat format, int zone) const
 { 
   if (format >= NumTimeStrings)

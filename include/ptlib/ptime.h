@@ -139,8 +139,11 @@ class PTime : public PObject
       const PObject & obj   ///< Other time to compare against.
     ) const;
 
-    /**Output the time to the stream. This uses the <code>AsString()</code> function
-       with the <code>ShortDateTime</code> parameter.
+    /**Output the time to the stream.
+       This uses the <code>AsString()</code> function with the default
+       <code>RFC1123</code> parameter.
+       The strm.precision(), if negative may be used to change this to a value
+       from the TimeFormat enum.
      */
     virtual void PrintOn(
       ostream & strm    ///< Stream to output the time to.
