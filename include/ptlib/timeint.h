@@ -106,8 +106,13 @@ class PTimeInterval : public PObject
       const PObject & obj   ///< Time interval to compare against.
     ) const;
 
-    /** Output the time interval to the I/O stream. This outputs the number of
-       milliseconds as a signed decimal integer number.
+    /** Output the time interval to the I/O stream. This
+       If ios::scientific,  outputs the number of milliseconds as a signed
+       decimal integer number.
+       If ios:fixed then prints as "hh:mm:ss.uuu".
+       The strm.precision() field can be used to set the Formats enum as
+       described in AsString().
+
      */
     virtual void PrintOn(
       ostream & strm    ///< I/O stream to output the time interval.
@@ -124,15 +129,19 @@ class PTimeInterval : public PObject
   /**@name Conversion functions */
   //@{
     enum Formats {
-      NormalFormat,
-      IncludeDays,
-      SecondsOnly
+      NormalFormat,     ///< Output as "hh:mm:ss.uuu"
+      IncludeDays,      ///< Output as "d:hh:mm:ss.uuu"
+      SecondsOnly       ///< Output as "s.uuu"
     };
 
+    /** Output the time interval as a string.
+        The \p width, if negative, can control which components (hours/minutes)
+        are output. < -6 suppresses hour, < -3 suppresses minutes.
+      */
     PString AsString(
-      int decimals = 3,
-      Formats format = NormalFormat,
-      int width = 1
+      int decimals = 3,                 ///< DEcimals for milliseconds part
+      Formats format = NormalFormat,    ///< Output format options
+      int width = 1                     ///< Width of output
     ) const;
   //@}
 
