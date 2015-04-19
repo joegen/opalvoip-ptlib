@@ -128,9 +128,6 @@ PINLINE bool PTimeInterval::operator<=(long msecs) const
 PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(*this); }
 
-PINLINE void PTime::PrintOn(ostream & strm) const
-  { strm << AsString(); }
-
 PINLINE PBoolean PTime::IsValid() const
   { return m_microSecondsSinceEpoch.load() > 46800000000; }
 
