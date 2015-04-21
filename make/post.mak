@@ -198,7 +198,7 @@ ifeq ($(SEPARATE_DEBUG_INFO),yes)
   ifneq ($(OBJCOPY),)
     define BUILD_DEBUG_INFO
 	$(OBJCOPY) --only-keep-debug $@ $@.$(DEBUGINFOEXT)
-	$(STRIP) -strip-debug $@
+	$(STRIP) --strip-debug $@
 	$(OBJCOPY) --add-gnu-debuglink=$@.$(DEBUGINFOEXT) $@
     endef
   endif
