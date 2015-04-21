@@ -449,7 +449,6 @@ AC_SUBST(STATICLIBEXT, "a")
 AC_SUBST(DEBUGINFOEXT, "debug")
 AC_SUBST(ARFLAGS, "rc")
 
-DEBUG_FLAG=""
 case "$target_os" in
    darwin* | iPhone* )
       SHARED_LDFLAGS="-dynamiclib"
@@ -646,7 +645,7 @@ dnl add additional information for the debugger to ensure the user can indeed
 dnl debug coredumps and macros.
 
 AC_SUBST(DEBUG_CPPFLAGS, "-D_DEBUG $DEBUG_CPPFLAGS")
-AS_VAR_SET_IF([DEBUG_FLAG],[],
+AS_VAR_SET_IF([DEBUG_FLAG], ,
    MY_COMPILE_IFELSE(
       [debug build (-ggdb3)],
       [-ggdb3],
