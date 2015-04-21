@@ -197,15 +197,15 @@ BUILD_DEBUG_INFO:=@true
 ifeq ($(SEPARATE_DEBUG_INFO),yes)
   ifneq ($(OBJCOPY),)
     define BUILD_DEBUG_INFO
-	$(OBJCOPY) --only-keep-debug $@ $@.$(DEBUGINFOEXT)
-	$(STRIP) --strip-debug $@
-	$(OBJCOPY) --add-gnu-debuglink=$@.$(DEBUGINFOEXT) $@
+	$Q$(OBJCOPY) --only-keep-debug $@ $@.$(DEBUGINFOEXT)
+	$Q$(STRIP) --strip-debug $@
+	$Q$(OBJCOPY) --add-gnu-debuglink=$(basename $@).$(DEBUGINFOEXT) $@
     endef
   endif
   ifneq ($(DSYMUTIL),)
     define BUILD_DEBUG_INFO
-	$(DSYMUTIL) $@ -o $@.$(DEBUGINFOEXT)
-	$(STRIP) -S $@
+	$Q$(DSYMUTIL) $@ -o $@.$(DEBUGINFOEXT)
+	$Q$(STRIP) -S $@
     endef
   endif
 endif
