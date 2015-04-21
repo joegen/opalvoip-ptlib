@@ -6044,7 +6044,6 @@ DEBUGINFOEXT="debug"
 ARFLAGS="rc"
 
 
-DEBUG_FLAG=""
 case "$target_os" in
    darwin* | iPhone* )
       SHARED_LDFLAGS="-dynamiclib"
