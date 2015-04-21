@@ -64,6 +64,9 @@ CXX     := @CXX@
 LD      := @LD@
 AR      := @AR@
 RANLIB  := @RANLIB@
+STRIP   := @STRIP@
+OBJCOPY := @OBJCOPY@
+DSYMUTIL:= @DSYMUTIL@
 LN_S    := @LN_S@
 MKDIR_P := @MKDIR_P@
 BISON   := @BISON@
@@ -86,6 +89,7 @@ YFLAGS            := @YFLAGS@
 
 SHAREDLIBEXT      := @SHAREDLIBEXT@
 STATICLIBEXT      := @STATICLIBEXT@
+DEBUGINFOEXT      := @DEBUGINFOEXT@
 
 PTLIB_PLUGIN_SUFFIX := _ptplugin
 

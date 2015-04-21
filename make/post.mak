@@ -192,6 +192,25 @@ vpath %.o   $(OBJDIR)
 vpath %.dep $(DEPDIR)
 
 
+BUILD_DEBUG_INFO:=@true
+
+ifeq ($(SEPARATE_DEBUG_INFO),yes)
+  ifneq ($(OBJCOPY),)
+    define BUILD_DEBUG_INFO
+	$(OBJCOPY) --only-keep-debug $@ $@.$(DEBUGINFOEXT)
+	$(STRIP) -strip-debug $@
+	$(OBJCOPY) --add-gnu-debuglink=$@.$(DEBUGINFOEXT) $@
+    endef
+  endif
+  ifneq ($(DSYMUTIL),)
+    define BUILD_DEBUG_INFO
+	$(DSYMUTIL) $@ -o $@.$(DEBUGINFOEXT)
+	$(STRIP) -S $@
+    endef
+  endif
+endif
+
+
 ######################################################################
 # rules for application
 
@@ -206,6 +225,7 @@ ifdef PROG
   $(TARGET) : $(OBJS) $(TARGET_LIBS)
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_LD)$(LD) -o $@ $(strip $(LDFLAGS) $(OBJS) $(LIBS))
+	$(BUILD_DEBUG_INFO)
 
 else # PROG -  so must be a library
 
@@ -234,6 +254,7 @@ else # PROG -  so must be a library
     $(SHARED_LIB_FILE): $(STATIC_LIB_FILE) $(OBJS)
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_LD)$(LD) -o $@ $(strip $(SHARED_LDFLAGS) $(LDFLAGS) $(OBJS) $(LIBS))
+	$(BUILD_DEBUG_INFO)
 
   endif # SHARED_LIB_FILE
 
@@ -248,7 +269,7 @@ else # PROG -  so must be a library
 	$(Q_AR)$(AR) $(ARFLAGS) $@ $(OBJS)
       ifneq ($(RANLIB),)
 	$Q$(RANLIB) $@
-     endif
+      endif
 
   endif # STATIC_LIB_FILE
 

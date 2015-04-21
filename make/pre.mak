@@ -180,6 +180,8 @@ endif
 # Set up compiler flags and macros for debug/release versions
 #
 
+SEPARATE_DEBUG_INFO:=no
+
 ifeq ($(DEBUG_BUILD),yes)
   CPPFLAGS += $(DEBUG_CPPFLAGS)
   CXXFLAGS += $(DEBUG_CFLAGS)
@@ -190,6 +192,14 @@ else
   CXXFLAGS += $(OPT_CFLAGS)
   CFLAGS   += $(OPT_CFLAGS)
   LDFLAGS  := $(OPT_CFLAGS) $(LDFLAGS)
+  ifneq ($(STRIP),)
+    ifneq ($(DSYMUTIL)$(OBJCOPY),)
+      CXXFLAGS += $(DEBUG_CFLAGS)
+      CFLAGS   += $(DEBUG_CFLAGS)
+      LDFLAGS  := $(DEBUG_CFLAGS) $(LDFLAGS)
+      SEPARATE_DEBUG_INFO:=yes
+    endif
+  endif
 endif
 
 endif # PTLIB_PRE_INCLUDED
