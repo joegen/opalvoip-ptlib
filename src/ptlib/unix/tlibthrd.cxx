@@ -1287,7 +1287,12 @@ void PTimedMutex::Wait()
   absTime.tv_sec = time(NULL)+15;
   absTime.tv_nsec = 0;
   PPROFILE_PRE_SYSTEM();
-  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
+  /* Note, from man page "This function shall not return an error code of [EINTR]"
+     so we do not need a loop to retry. */
+  int err = pthread_mutex_timedlock(&m_mutex, &absTime);
+  if (err != ETIMEDOUT)
+    PAssertOS(err == 0);
+  else {
     ExcessiveLockWait();
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
     PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in mutex " << this << PTrace::End;
