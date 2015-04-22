@@ -193,27 +193,28 @@ PBoolean PSocket::os_connect(struct sockaddr * addr, socklen_t size)
 {
   int result;
   do {
-    result = ::connect(os_handle, addr, size);
-  } while (result != 0 && errno == EINTR);
+    do {
+      result = ::connect(os_handle, addr, size);
+    } while (result != 0 && errno == EINTR);
 
-  if (result == 0 || errno != EINPROGRESS)
-    return ConvertOSError(result);
+    if (result == 0 || errno != EINPROGRESS)
+      return ConvertOSError(result);
 
-  if (!PXSetIOBlock(PXConnectBlock, readTimeout))
-    return false;
+    if (!PXSetIOBlock(PXConnectBlock, readTimeout))
+      return false;
 
-  // A successful select() call does not necessarily mean the socket connected OK.
-  int optval = -1;
-  socklen_t optlen = sizeof(optval);
-  if (!ConvertOSError(getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&optval, &optlen))) {
-    PTRACE(2, "getsockopt SO_ERROR failure: errno=" << GetErrorNumber() << ' ' << GetErrorText());
-    return false;
-  }
+    // A successful select() call does not necessarily mean the socket connected OK.
+    result = -1;
+    socklen_t optlen = sizeof(result);
+    if (!ConvertOSError(getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&result, &optlen))) {
+      PTRACE(2, "getsockopt SO_ERROR failure: errno=" << GetErrorNumber() << ' ' << GetErrorText());
+      return false;
+    }
+  } while (result == EINTR);
 
-  if (optval == 0)
+  if (result == 0)
     return true;
-
-  errno = optval;
+  errno = result;
   return ConvertOSError(-1);
 }
 
