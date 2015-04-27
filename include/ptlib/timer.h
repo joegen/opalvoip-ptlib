@@ -398,6 +398,7 @@ class PTimer : public PTimeInterval
         {
           PIdGenerator::Handle m_handle;
           Timeout(PIdGenerator::Handle handle) : m_handle(handle) { }
+          virtual ~Timeout() { }
           virtual void Work();
         };
         PQueuedThreadPool<Timeout> m_threadPool;
