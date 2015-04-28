@@ -1282,7 +1282,7 @@ void PTimedMutex::Wait()
 
 #if P_HAS_RECURSIVE_MUTEX
 
-#if PTRACING && P_PTHREADS_XPG6
+#if P_PTHREADS_XPG6
   struct timespec absTime;
   absTime.tv_sec = time(NULL)+15;
   absTime.tv_nsec = 0;

@@ -2782,6 +2782,22 @@ void PSimpleThread::Main()
 
 static bool EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
 
+static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid)
+{
+  strm << " id=" << id << " (0x" << std::hex << id << std::dec << ')';
+
+  if (id != (PThreadIdentifier)uid)
+    strm << " unique-id=" << uid;
+
+  PString name = PThread::GetThreadName(id);
+  if (!name.IsEmpty())
+    strm << " name=\"" << name << '"';
+
+  if (EnableDeadlockStackWalk)
+    PTrace::WalkStack(strm, id);
+}
+
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -2789,27 +2805,16 @@ void PTimedMutex::ExcessiveLockWait()
   PUniqueThreadIdentifier uniqueId = m_uniqueId;
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
-  trace << "Possible deadlock in mutex " << this;
-  if (EnableDeadlockStackWalk) {
-    PThreadIdentifier id = PThread::GetCurrentThreadId();
-    PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
-    trace << "\n  Blocked Thread id=" << id << " (0x" << std::hex << id << std::dec << ')';
-    if (id != (PThreadIdentifier)uid)
-      trace << " unique-id=" << uid;
-    PTrace::WalkStack(trace);
-    trace << '\n';
-  }
-  trace << "  Owner Thread ";
+  trace << "Possible deadlock in mutex " << this << "\n  Blocked Thread";
+  OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier());
+  trace << "\n  Owner Thread ";
   if (lockerId == PNullThreadIdentifier)
     trace << "no longer has lock";
-  else {
-    trace << "id=" << lockerId << " (0x" << std::hex << lockerId << std::dec << ')';
-    if (lockerId != (PThreadIdentifier)uniqueId)
-      trace << " unique-id=" << m_uniqueId;
-    if (EnableDeadlockStackWalk)
-      PTrace::WalkStack(trace, lockerId);
-  }
+  else
+    OutputThreadInfo(trace, lockerId, uniqueId);
   trace << PTrace::End;
+#else
+  PAssertAlways(PSTRSTRM("Possible deadlock in mutex " << this));
 #endif
 
   m_excessiveLockTime = true;
@@ -2819,13 +2824,7 @@ void PTimedMutex::ExcessiveLockWait()
 void PTimedMutex::CommonSignal()
 {
   if (m_excessiveLockTime) {
-#if PTRACING
-    ostream & trace = PTRACE_BEGIN(0, "PTLib");
-    trace << "Released phantom deadlock in mutex " << this;
-    if (EnableDeadlockStackWalk)
-      PTrace::WalkStack(trace);
-    trace << PTrace::End;
-#endif
+    PTRACE(0, "PTLib", "Released phantom deadlock in mutex " << this);
     m_excessiveLockTime = false;
   }
 
