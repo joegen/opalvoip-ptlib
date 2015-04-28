@@ -419,7 +419,7 @@ void PThread::PX_StartThread()
 
   size_t checkSize = 0;
   PAssertPTHREAD(pthread_attr_getstacksize, (&threadAttr, &checkSize));
-  PAssert(checkSize == m_originalStackSize, "Stack size not set correctly");
+  PAssert(checkSize == (size_t)m_originalStackSize, "Stack size not set correctly");
 
   // create the thread
   PAssertPTHREAD(pthread_create, (&m_threadId, &threadAttr, &PThread::PX_ThreadMain, this));
