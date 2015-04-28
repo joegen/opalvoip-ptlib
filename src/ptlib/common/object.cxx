@@ -1500,6 +1500,9 @@ namespace PProfiling
         break;
       case e_ManualExit:
         out << "ManualExit\t" << m_function.m_name << '\t';
+        break;
+      default :
+        PAssertAlways(PLogicError);
     }
 
     out << '\t' << m_threadUniqueId << '\t' << m_when << '\n';
