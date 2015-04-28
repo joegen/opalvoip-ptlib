@@ -90,10 +90,11 @@ private:
     __inline atomic() : m_storage() { } \
     __inline atomic(Type value) : m_storage(value) { } \
     __inline atomic(const atomic & other) : m_storage((Type)AddFetch(const_cast<Type *>(&other.m_storage), 0)) { } \
-    __inline atomic & operator=(const atomic & other) { Exch(&m_storage, other.load()); return *this; } \
+    __inline atomic & operator=(const atomic & other) { store(other.load()); return *this; } \
+    __inline atomic & operator=(Type other) { store(other); return *this; } \
     __inline operator Type() const { return (Type)AddFetch(const_cast<Type *>(&m_storage), 0); } \
     __inline bool compare_exchange_strong(Type & comp, Type value) { return CompExch(&m_storage, comp, value); } \
-    __inline void store(Type value) { Exch(&m_storage, value); } \
+    __inline void store(Type value) { exchange(value); } \
     __inline Type load() const { return (Type)AddFetch(const_cast<Type *>(&m_storage), 0); } \
     __inline Type exchange(Type value) { return (Type)Exch(&m_storage, value); } \
     __inline Type operator++()         { return (Type)AddFetch(&m_storage,  1); } \

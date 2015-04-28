@@ -446,7 +446,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         void Main()
         {
-          Work_T * work;
+          Work_T * work = 0;
           while (m_queue.Dequeue(work)) {
             work->Work();
             RemoveWork(work);
