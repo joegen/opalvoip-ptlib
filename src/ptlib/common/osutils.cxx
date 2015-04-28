@@ -750,9 +750,9 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     else
       name = thread->GetThreadName();
 #if P_64BIT
-    static const unsigned ThreadNameWidth = 31;
+    static const PINDEX ThreadNameWidth = 31;
 #else
-    static const unsigned ThreadNameWidth = 23;
+    static const PINDEX ThreadNameWidth = 23;
 #endif
     if (name.GetLength() <= ThreadNameWidth)
       stream << setw(ThreadNameWidth) << name;
@@ -2285,7 +2285,7 @@ void PProcess::OnThreadEnded(PThread &
     {
       ostream & trace = PTRACE_BEGIN(LogLevel, "PTLib");
       trace << "Thread ended: name=\"" << thread.GetThreadName() << "\", ";
-      if (thread.GetThreadId() != thread.GetUniqueIdentifier())
+      if (thread.GetThreadId() != (PThreadIdentifier)thread.GetUniqueIdentifier())
           trace << "id=" << thread.GetUniqueIdentifier() << ", ";
       trace << times << PTrace::End;
     }
@@ -2794,7 +2794,7 @@ void PTimedMutex::ExcessiveLockWait()
     PThreadIdentifier id = PThread::GetCurrentThreadId();
     PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
     trace << "\n  Blocked Thread id=" << id << " (0x" << std::hex << id << std::dec << ')';
-    if (id != uid)
+    if (id != (PThreadIdentifier)uid)
       trace << " unique-id=" << uid;
     PTrace::WalkStack(trace);
     trace << '\n';
@@ -2804,7 +2804,7 @@ void PTimedMutex::ExcessiveLockWait()
     trace << "no longer has lock";
   else {
     trace << "id=" << lockerId << " (0x" << std::hex << lockerId << std::dec << ')';
-    if (lockerId != uniqueId)
+    if (lockerId != (PThreadIdentifier)uniqueId)
       trace << " unique-id=" << m_uniqueId;
     if (EnableDeadlockStackWalk)
       PTrace::WalkStack(trace, lockerId);
