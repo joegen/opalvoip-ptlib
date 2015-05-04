@@ -469,9 +469,6 @@ endif
 
 CPPFLAGS += $(SHARED_CPPFLAGS)
 
-internal_build ::
-	@echo PTLib build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
-
 include $(PTLIB_TOP_LEVEL_DIR)/make/post.mak
 
 
