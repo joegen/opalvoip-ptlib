@@ -53,7 +53,7 @@ default_goal : internal_depend internal_build opt
 	@echo DEBUG_BUILD=$(DEBUG_BUILD) $(OBJDIR)
 
 internal_build ::
-	@echo PTLib build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
+	@echo Build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
 
 help :
 	@echo "The following targets are available:"
