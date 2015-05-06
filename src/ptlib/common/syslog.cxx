@@ -339,6 +339,7 @@ bool PSystemLogToFile::Rotate(bool force)
     std::multimap<PTime, PFilePath> rotatedFiles;
     PDirectory dir(m_rotateInfo.m_directory);
     if (dir.Open(PFileInfo::RegularFile)) {
+      int failsafe = 10000;
       do {
         PString name = dir.GetEntryName();
         PFileInfo info;
@@ -346,13 +347,17 @@ bool PSystemLogToFile::Rotate(bool force)
             m_rotateInfo.m_suffix == name.Right(m_rotateInfo.m_suffix.GetLength()) &&
             dir.GetInfo(info))
           rotatedFiles.insert(std::multimap<PTime, PFilePath>::value_type(info.modified, dir + name));
-      } while (dir.Next());
+      } while (dir.Next() && --failsafe > 0);
     }
 
     if (m_rotateInfo.m_maxFileCount > 0) {
       while (rotatedFiles.size() > m_rotateInfo.m_maxFileCount) {
-        if (PFile::Remove(rotatedFiles.begin()->second)) {
-          PTRACE(3, "SystemLog", "Removed excess rotated log " << rotatedFiles.begin()->second);
+        PFilePath filePath = rotatedFiles.begin()->second;
+        if (PFile::Remove(filePath)) {
+          PTRACE(3, "SystemLog", "Removed excess rotated log " << filePath);
+        }
+        else {
+          PTRACE(2, "SystemLog", "Could not remove excess rotated log " << filePath);
         }
         rotatedFiles.erase(rotatedFiles.begin());
       }
@@ -361,8 +366,12 @@ bool PSystemLogToFile::Rotate(bool force)
     if (m_rotateInfo.m_maxFileAge > 0) {
       PTime then = PTime() - m_rotateInfo.m_maxFileAge;
       while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
-        if (PFile::Remove(rotatedFiles.begin()->second)) {
-          PTRACE(3, "SystemLog", "Removed aged rotated log " << rotatedFiles.begin()->second);
+        PFilePath filePath = rotatedFiles.begin()->second;
+        if (PFile::Remove(filePath)) {
+          PTRACE(3, "SystemLog", "Removed aged rotated log " << filePath);
+        }
+        else {
+          PTRACE(2, "SystemLog", "Could not remove aged rotated log " << filePath);
         }
         rotatedFiles.erase(rotatedFiles.begin());
       }
