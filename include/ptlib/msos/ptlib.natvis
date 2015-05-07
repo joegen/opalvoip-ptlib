@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="PString">
+    <DisplayString Condition="theArray==0">(null)</DisplayString>
+    <DisplayString>{theArray,s8}</DisplayString>
+    <StringView>theArray,s8</StringView>
+  </Type>
+
+  <Type Name="PIPSocket::Address">
+    <DisplayString Condition="m_version==4">{{ipv4={(int)m_v.m_four.S_un.S_un_b.s_b1,u}.{(int)m_v.m_four.S_un.S_un_b.s_b2,u}.{(int)m_v.m_four.S_un.S_un_b.s_b3,u}.{(int)m_v.m_four.S_un.S_un_b.s_b4,u}}}</DisplayString>
+    <DisplayString Condition="m_version==6">{{ipv6={m_v.m_six.u.Word[0],x}:{m_v.m_six.u.Word[1],x}:{m_v.m_six.u.Word[2],x}:{m_v.m_six.u.Word[3],x}:{m_v.m_six.u.Word[4],x}:{m_v.m_six.u.Word[5],x}:{m_v.m_six.u.Word[6],x}:{m_v.m_six.u.Word[7],x}}}</DisplayString>
+  </Type>
+
+  <Type Name="PTimeInterval">
+    <DisplayString>{m_milliseconds}ms</DisplayString>
+  </Type>
+
+  <Type Name="PTime">
+    <DisplayString>{theTime,u}s</DisplayString>
+  </Type>
+
+  <Type Name="PAtomicInteger">
+    <DisplayString>{m_value}</DisplayString>
+  </Type>
+
+  <Type Name="PKey&lt;*&gt;">
+    <DisplayString>{m_key}</DisplayString>
+  </Type>
+
+  <Type Name="PURL">
+    <DisplayString Condition="urlString.theArray==0">NULL</DisplayString>
+    <DisplayString>{{len={urlString.m_length} {urlString.theArray,s8}}}</DisplayString>
+    <StringView>urlString.theArray,s8</StringView>
+  </Type>
+
+  <Type Name="PContainer">
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value}}}</DisplayString>
+  </Type>
+
+  <Type Name="PBaseArray&lt;*&gt;">
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} ptr={(void *)theArray}}}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>reference-&gt;size</Size>
+        <ValuePointer>($T1*)theArray</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="PArray&lt;*&gt;">
+    <DisplayString>{*theArray}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>theArray-&gt;reference-&gt;size</Size>
+        <ValuePointer>($T1**)theArray-&gt;theArray</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="PList&lt;*&gt;">
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} head={(void *)(info-&gt;head)}}}</DisplayString>
+    <Expand>
+      <LinkedListItems>
+        <Size>reference-&gt;size</Size>
+        <HeadPointer>info-&gt;head</HeadPointer>
+        <NextPointer>next</NextPointer>
+        <ValueNode>($T1 *)data</ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="PSortedList&lt;*&gt;">
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} root={(void *)(m_info-&gt;m_root)}}}</DisplayString>
+    <Expand>
+      <TreeItems>
+        <Size>reference-&gt;size</Size>
+        <HeadPointer>m_info-&gt;m_root</HeadPointer>
+        <LeftPointer>m_left</LeftPointer>
+        <RightPointer>m_right</RightPointer>
+        <ValueNode Condition="m_data!=0">($T1 *)m_data</ValueNode>
+      </TreeItems>
+    </Expand>
+  </Type>
+
+  <Type Name="PHashTableElement">
+    <DisplayString Condition="m_data==0">{*m_key}</DisplayString>
+    <DisplayString Condition="m_data!=0">{{{*m_key}={*m_data}}}</DisplayString>
+  </Type>
+
+  <Type Name="PHashTableList">
+    <DisplayString Condition="m_head==0">-</DisplayString>
+    <DisplayString Condition="m_head!=0">{*m_head}</DisplayString>
+    <Expand>
+      <LinkedListItems>
+        <HeadPointer>m_head</HeadPointer>
+        <NextPointer>m_next</NextPointer>
+        <ValueNode>this</ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="PHashTable">
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} hash={(void *)hashTable-&gt;theArray}}}</DisplayString>
+    <Expand>
+      <IndexListItems>
+        <Size>hashTable-&gt;reference-&gt;size</Size>
+        <ValueNode>(((PHashTableList*)(hashTable-&gt;theArray))[$i])</ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="PSafePtrBase">
+    <DisplayString>{{{{{lockMode}}} obj={currentObject}}}</DisplayString>
+    <Expand>
+      <ExpandedItem>*currentObject</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <Type Name="PSafeCollection">
+    <DisplayString>{*collection}</DisplayString>
+    <Expand>
+      <ExpandedItem>*collection</ExpandedItem>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

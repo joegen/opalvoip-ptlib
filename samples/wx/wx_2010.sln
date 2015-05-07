@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxSample", "wx_2010.vcxproj", "{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib Static", "\Work\ptlib\src\ptlib\msos\Console_2010.vcxproj", "{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib DLL", "\Work\ptlib\src\ptlib\msos\PTLib_2010.vcxproj", "{85F4F26A-1A5D-4685-A48A-448102C5C5BC}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxInstaller", "wxInstaller_2010.vcxproj", "{AE1C39FC-A03D-4947-9127-ABE9FE7EDF3A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		No Trace|Win32 = No Trace|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}.Debug|Win32.Build.0 = Debug|Win32
+		{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}.No Trace|Win32.Build.0 = No Trace|Win32
+		{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}.Release|Win32.ActiveCfg = Release|Win32
+		{56E04FF6-6AEB-4917-B8FC-6C0C1F5831F1}.Release|Win32.Build.0 = Release|Win32
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}.Debug|Win32.Build.0 = Debug|Win32
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}.No Trace|Win32.Build.0 = No Trace|Win32
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}.Release|Win32.ActiveCfg = Release|Win32
+		{D11E1C9D-406C-4D7C-8F37-913C0BFD9E0D}.Release|Win32.Build.0 = Release|Win32
+		{85F4F26A-1A5D-4685-A48A-448102C5C5BC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{85F4F26A-1A5D-4685-A48A-448102C5C5BC}.Debug|Win32.Build.0 = Debug|Win32
+		{85F4F26A-1A5D-4685-A48A-448102C5C5BC}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{85F4F26A-1A5D-4685-A48A-448102C5C5BC}.No Trace|Win32.Build.0 = No Trace|Win32
+		{85F4F26A-1A5D-4685-A48A-448102C5C5BC}.Release|Win32.ActiveCfg = Release|Win32
+		{85F4F26A-1A5D-4685-A48A-448102C5C5BC}.Release|Win32.Build.0 = Release|Win32
+		{AE1C39FC-A03D-4947-9127-ABE9FE7EDF3A}.Debug|Win32.ActiveCfg = Release|Win32
+		{AE1C39FC-A03D-4947-9127-ABE9FE7EDF3A}.No Trace|Win32.ActiveCfg = Release|Win32
+		{AE1C39FC-A03D-4947-9127-ABE9FE7EDF3A}.No Trace|Win32.Build.0 = Release|Win32
+		{AE1C39FC-A03D-4947-9127-ABE9FE7EDF3A}.Release|Win32.ActiveCfg = Release|Win32
+		{AE1C39FC-A03D-4947-9127-ABE9FE7EDF3A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

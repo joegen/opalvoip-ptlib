@@ -1,0 +1,137 @@
+<?xml version='1.0'?>
+<?define LuaDir = "$(env.ProgramFiles)\lua\5.1" ?>
+<?define SaslDir = "C:\Tools" ?>
+<?define LDAPDir = "C:\Tools" ?>
+<?define SSLDir = "$(env.windir)\SYSTEM32" ?>
+<?define PTLibDir = "..\..\..\ptlib" ?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='wxSample'
+           Language='1033'
+           Version='2.10.0'
+           Manufacturer='Vox Lucida Pty. Ltd.'
+           Id='*'
+           UpgradeCode='56E04FF7-6AEB-4917-B8FC-6C0C1F5831F1'>
+    <Package Description='wxSample'
+             Comments='Sample wxWidows/PTLib application'
+             Manufacturer='Vox Lucida Pty. Ltd.'
+             InstallerVersion='300'
+             Compressed='yes' />
+
+    <Media Id='1' Cabinet='wxSample.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
+    <Property Id='DiskPrompt' Value="wxSample 2.10 Installation [1]" />
+
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id='VoxLucida' Name='Vox Lucida'>
+          <Directory Id='INSTALLDIR' Name='wxSample'>
+            <Component Id='MainExecutable' Guid='*'>
+              <File Id='wxSampleEXE'
+		    Name='wxSample.exe'
+		    Source='..\..\bin\wxSample\Release\wxSample.exe'
+		    DiskId='1'
+		    KeyPath='yes'>
+                <Shortcut Id="startmenu_wxSample"
+                          Directory="ProgramMenuDir"
+                          Name="wxSample"
+                          WorkingDirectory='INSTALLDIR'
+                          Icon="wxSample.ico"
+                          IconIndex="0"
+                          Advertise="yes" />
+              </File>
+            </Component>
+            <Component Id='PTLib' Guid='*'>
+              <File Id='PTLib_DLL'
+		      Name='PTLib.DLL'
+		      Source='$(var.PTLibDir)\lib\PTLib.DLL'
+		      DiskId='1'
+		      KeyPath='yes' />
+            </Component>
+            <Component Id='Lua' Guid='*'>
+              <File Id='Lua_DLL'
+		      Name='LUA5.1.DLL'
+		      Source='$(var.LuaDir)\LUA5.1.DLL'
+		      DiskId='1'
+		      KeyPath='yes' />
+            </Component>
+            <Component Id='SASL' Guid='*'>
+              <File Id='SASL_DLL'
+		      Name='LIBSASL.DLL'
+		      Source='$(var.SaslDir)\LIBSASL.DLL'
+		      DiskId='1'
+		      KeyPath='yes' />
+            </Component>
+            <Component Id='OpenLDAP' Guid='*'>
+              <File Id='OPENLDAP_DLL'
+		      Name='OPENLDAP.DLL'
+		      Source='$(var.LDAPDir)\OPENLDAP.DLL'
+		      DiskId='1'
+		      KeyPath='yes' />
+            </Component>
+            <Component Id='OpenSSL1' Guid='*'>
+              <File Id='LIBEAY32_DLL'
+		      Name='LIBEAY32.DLL'
+		      Source='$(var.SSLDir)\LIBEAY32.DLL'
+		      DiskId='1'
+		      KeyPath='yes' />
+            </Component>
+            <Component Id='OpenSSL2' Guid='*'>
+              <File Id='SSLEAY32_DLL'
+		      Name='SSLEAY32.DLL'
+		      Source='$(var.SSLDir)\SSLEAY32.DLL'
+		      DiskId='1'
+		      KeyPath='yes' />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="wxSample">
+          <Component Id="ProgramMenuDir" Guid="*">
+            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+            <RegistryValue Root='HKCU'
+                           Key='Software\[Manufacturer]\[ProductName]'
+                           Type='string'
+                           Value=''
+                           KeyPath='yes' />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Icon Id="wxSample.ico" SourceFile=".\app.ico" />
+
+    <Feature Id='Complete' Level='1'>
+      <ComponentRef Id='MainExecutable' />
+      <ComponentRef Id='ProgramMenuDir' />
+    </Feature>
+
+    <Feature Id='PTLib'
+             Title="Portable Tools Library"
+             AllowAdvertise="no"
+             Display="hidden"
+             Level='1'>
+      <ComponentRef Id='PTLib' />
+      <ComponentRef Id='Lua' />
+      <ComponentRef Id='SASL' />
+      <ComponentRef Id='OpenLDAP' />
+      <ComponentRef Id='OpenSSL1' />
+      <ComponentRef Id='OpenSSL2' />
+    </Feature>
+
+    <Feature Id="VCRedist"
+             Title="Microsoft C++ Run Time Libraries"
+             AllowAdvertise="no"
+             Display="hidden"
+             Level="1">
+      <MergeRef Id="VCRedist"/>
+    </Feature>
+
+    <DirectoryRef Id="TARGETDIR">
+      <Merge Id="VCRedist"
+             SourceFile="$(env.ProgramFiles)\Common Files\Merge Modules\Microsoft_VC$(var.MSVCRT_VER)_CRT_x86.msm"
+             DiskId="1"
+             Language="0"/>
+    </DirectoryRef>
+  </Product>
+</Wix>
