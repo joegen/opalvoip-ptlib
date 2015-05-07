@@ -56,6 +56,17 @@
 
   static bool fgets_nonl(char * buffer, size_t size, FILE * fp)
   {
+    fd_set rd;
+    FD_ZERO(&rd);
+    FD_SET(fileno(fp), &rd);
+
+    timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+
+    if (select(1, &rd, NULL, NULL, &tv) != 0)
+      return false;
+
     if (fgets(buffer, size, fp) == NULL)
       return false;
 
