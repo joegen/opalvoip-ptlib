@@ -1784,15 +1784,11 @@ PTimedMutex::PTimedMutex(const PTimedMutex &)
 
 void PTimedMutex::Wait()
 {
-#if PTRACING
   if (!m_handle.Wait(15000)) {
     ExcessiveLockWait();
     m_handle.Wait(INFINITE);
     PTRACE(0, "PTLib", "Phantom deadlock in mutex " << this);
   }
-#else
-  m_handle.Wait(INFINITE);
-#endif
 
   if (m_lockCount++ == 0)
     m_lockerId = ::GetCurrentThreadId();
