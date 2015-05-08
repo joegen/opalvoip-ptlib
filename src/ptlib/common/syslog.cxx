@@ -353,12 +353,10 @@ bool PSystemLogToFile::Rotate(bool force)
     if (m_rotateInfo.m_maxFileCount > 0) {
       while (rotatedFiles.size() > m_rotateInfo.m_maxFileCount) {
         PFilePath filePath = rotatedFiles.begin()->second;
-        if (PFile::Remove(filePath)) {
-          PTRACE(3, "SystemLog", "Removed excess rotated log " << filePath);
-        }
-        else {
-          PTRACE(2, "SystemLog", "Could not remove excess rotated log " << filePath);
-        }
+        if (PFile::Remove(filePath))
+          OutputToStream(m_file, PSystemLog::Info, "Removed excess rotated log " + filePath);
+        else
+          OutputToStream(m_file, PSystemLog::Warning, "Could not remove excess rotated log " + filePath);
         rotatedFiles.erase(rotatedFiles.begin());
       }
     }
@@ -367,12 +365,10 @@ bool PSystemLogToFile::Rotate(bool force)
       PTime then = PTime() - m_rotateInfo.m_maxFileAge;
       while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
         PFilePath filePath = rotatedFiles.begin()->second;
-        if (PFile::Remove(filePath)) {
-          PTRACE(3, "SystemLog", "Removed aged rotated log " << filePath);
-        }
-        else {
-          PTRACE(2, "SystemLog", "Could not remove aged rotated log " << filePath);
-        }
+        if (PFile::Remove(filePath))
+          OutputToStream(m_file, PSystemLog::Info, "Removed aged rotated log " + filePath);
+        else
+          OutputToStream(m_file, PSystemLog::Warning, "Could not remove aged rotated log " + filePath);
         rotatedFiles.erase(rotatedFiles.begin());
       }
     }
