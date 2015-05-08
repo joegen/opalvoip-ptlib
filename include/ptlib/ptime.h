@@ -443,6 +443,7 @@ class PTime : public PObject
       ShortTime,      ///< Time without seconds.
       EpochTime,      ///< Epoch format (e.g. 1234476388.123456)
       LoggingFormat,  ///< Format used by logging. (eg. 2011/02/09 11:13:06.312)
+      TodayFormat,    ///< If +/- 12 hours, only prints hh:mm:ss.uuu, otherwise LoggingFormat
       NumTimeStrings
     };
 

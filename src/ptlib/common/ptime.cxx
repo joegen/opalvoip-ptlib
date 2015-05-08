@@ -445,22 +445,40 @@ PString PTime::AsString(TimeFormat format, int zone) const
   if (format >= NumTimeStrings)
     return "Invalid format : " + AsString("yyyy-MM-dd T hh:mm:ss Z");
 
+  if (!IsValid())
+    return "N/A";
+
   switch (format) {
     case RFC1123 :
       return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
+
     case RFC3339 :
       return AsString("yyyy-MM-ddThh:mm:ssZZ", zone);
+
     case ShortISO8601 :
       return AsString("yyyyMMddThhmmssZ", zone);
+
     case LongISO8601 :
       return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
+
     case EpochTime:
     {
       int64_t usecs = m_microSecondsSinceEpoch.load();
       return psprintf("%u.%06lu", usecs / Micro, usecs % Micro);
     }
+
+    case TodayFormat:
+    {
+      PTime now;
+      static const PTimeInterval halfDay(0, 0, 0, 12);
+      if (*this > (now - halfDay) && *this < (now + halfDay))
+        return AsString("hh:mm:ss.uuu");
+      // Do next case
+    }
+
     case LoggingFormat :
       return AsString("yyyy/MM/dd hh:mm:ss.uuu", zone);
+
     default:
       break;
   }
