@@ -104,6 +104,7 @@ class PTimedMutex : public PSync
       */
     PINLINE bool Try() { return Wait(0); }
 
+    static unsigned ExcessiveLockWaitTime;
 
   private:
     PThreadIdentifier       m_lockerId;
