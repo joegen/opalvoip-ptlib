@@ -363,6 +363,8 @@ void PTime::SetNTP(PUInt64 ntp)
 
 PUInt64 PTime::GetNTP() const
 {
+  if (!IsValid())
+    return 0;
   int64_t usecs = m_microSecondsSinceEpoch.load();
   return ((usecs/Micro+SecondsFrom1900to1970)<<32) + usecs*4294;
 }
