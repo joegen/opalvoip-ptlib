@@ -1283,9 +1283,11 @@ void PTimedMutex::Wait()
 #if P_HAS_RECURSIVE_MUTEX
 
 #if P_PTHREADS_XPG6
+  struct timeval now;
+  gettimeofday(&now, NULL);
   struct timespec absTime;
-  absTime.tv_sec = time(NULL)+15;
-  absTime.tv_nsec = 0;
+  absTime.tv_sec = now.tv_sec+ExcessiveLockWaitTime;
+  absTime.tv_nsec = now.tv_usec*1000;
   PPROFILE_PRE_SYSTEM();
   /* Note, from man page "This function shall not return an error code of [EINTR]"
      so we do not need a loop to retry. */
