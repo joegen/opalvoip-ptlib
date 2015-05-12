@@ -2798,6 +2798,8 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThread
 }
 
 
+unsigned PTimedMutex::ExcessiveLockWaitTime = 15;
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -3057,7 +3059,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
   nest.m_waiting = true;
 
 #if PTRACING
-  if (sync.Wait(15000)) {
+  if (sync.Wait(PTimeInterval(0,PTimedMutex::ExcessiveLockWaitTime))) {
     nest.m_waiting = false;
     return;
   }
