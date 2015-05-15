@@ -2798,7 +2798,14 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThread
 }
 
 
-unsigned PTimedMutex::ExcessiveLockWaitTime = 15;
+static unsigned InitExcessiveLockWaitTime()
+{
+  const char * env = getenv("PTLIB_DEADLOCK_TIME");
+  int seconds = env != NULL ? atoi(env) : 0;
+  return seconds > 0 ? seconds : 15;
+}
+
+unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime();
 
 void PTimedMutex::ExcessiveLockWait()
 {
