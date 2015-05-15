@@ -154,7 +154,6 @@ void PPluginManager::AddDirectory(const PDirectory & dir)
 
 void PPluginManager::LoadDirectories()
 {
-  PPROFILE_FUNCTION();
   PTRACE(4, "PLUGIN\tEnumerating plugin directories " << setfill(PPATH_SEPARATOR) << m_directories);
   for (PList<PDirectory>::iterator it = m_directories.begin(); it != m_directories.end(); ++it)
     LoadDirectory(*it);
