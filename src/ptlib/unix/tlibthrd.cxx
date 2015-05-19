@@ -356,6 +356,9 @@ void * PThread::PX_ThreadMain(void * arg)
 #if P_USE_THREAD_CANCEL
   // make sure the cleanup routine is called when the threade cancelled
   pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
+  // Allow cancel to happen any time
+  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 #endif
 
   thread->PX_ThreadBegin();
@@ -761,7 +764,7 @@ void PThread::Terminate()
   PTRACE(2, "PTLib\tForcing termination of thread id=0x" << hex << m_threadId << dec);
 
   PXAbortBlock();
-  if (WaitForTermination(20))
+  if (WaitForTermination(100))
     return;
 
 #ifndef P_HAS_SEMAPHORES
@@ -778,12 +781,10 @@ void PThread::Terminate()
   if (m_threadId != PNullThreadIdentifier) {
 #if P_USE_THREAD_CANCEL
     pthread_cancel(m_threadId);
-    if (WaitForTermination(20))
-      return;
-    // get more forceful
-#endif
-
+#else
     pthread_kill(m_threadId, SIGKILL);
+#endif
+    WaitForTermination(100);
   }
 }
 
