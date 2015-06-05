@@ -37,6 +37,7 @@
   public:
     PTime(const FILETIME & timestamp);
     void SetFromFileTime(const FILETIME & timestamp);
+    void SetToFileTime(FILETIME & timestamp) const;
 
 
 // End Of File ///////////////////////////////////////////////////////////////

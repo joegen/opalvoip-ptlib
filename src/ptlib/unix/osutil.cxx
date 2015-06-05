@@ -819,6 +819,16 @@ bool PFile::Access(const PFilePath & name, OpenMode mode)
 }
 
 
+bool PFile::Touch(const PFilePath & name, const PTime & accessTime, const PTime & modTime)
+{
+  PTime now;
+  P_timeval acc(accessTime.IsValid() ? accessTime : now);
+  P_timeval mod(modTime.IsValid() ? modTime : now);
+  timeval times[2] = { *acc, *mod };
+  return utimes(name, times) == 0;
+}
+
+
 bool PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 {
   status.type = PFileInfo::UnknownFileType;
