@@ -60,11 +60,8 @@
     FD_ZERO(&rd);
     FD_SET(fileno(fp), &rd);
 
-    timeval tv;
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
-
-    if (select(1, &rd, NULL, NULL, &tv) != 0)
+    P_timeval tv(1);
+    if (select(1, &rd, NULL, NULL, tv) != 0)
       return false;
 
     if (fgets(buffer, size, fp) == NULL)

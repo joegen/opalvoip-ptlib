@@ -829,19 +829,36 @@ PTime & PTime::operator-=(const PTimeInterval & t)
 //////////////////////////////////////////////////////////////////////////////
 // P_timeval
 
-P_timeval::P_timeval()
+P_timeval::P_timeval(long secs, long usecs)
   : m_infinite(false)
 {
-  m_timeval.tv_usec = 0;
-  m_timeval.tv_sec = 0;
+  m_timeval.tv_sec = secs;
+  m_timeval.tv_usec = usecs;
 }
 
 
 P_timeval & P_timeval::operator=(const PTimeInterval & time)
 {
   m_infinite = time == PMaxTimeInterval;
-  m_timeval.tv_usec = (long)(time.GetMilliSeconds() % 1000) * 1000;
-  m_timeval.tv_sec = time.GetSeconds();
+  if (m_infinite)
+    m_timeval.tv_sec = m_timeval.tv_usec = -1;
+  else {
+    m_timeval.tv_sec = time.GetSeconds();
+    m_timeval.tv_usec = (long)(time.GetMilliSeconds() % 1000) * 1000;
+  }
+  return *this;
+}
+
+
+P_timeval & P_timeval::operator=(const PTime & time)
+{
+  m_infinite = !time.IsValid();
+  if (m_infinite)
+    m_timeval.tv_sec = m_timeval.tv_usec = -1;
+  else {
+    m_timeval.tv_sec = (long)time.GetTimeInSeconds();
+    m_timeval.tv_usec = time.GetMicrosecond();
+  }
   return *this;
 }
 
