@@ -1359,17 +1359,13 @@ class NetLinkRouteTableDetector : public PIPSocket::RouteTableDetector
         FD_ZERO(&fds);
         FD_SET(m_fdCancel[0], &fds);
 
-        struct timeval tval;
-        struct timeval * ptval = NULL;
+        P_timeval tv(PMaxTimeInterval);
         if (m_fdLink != -1) {
-          tval.tv_sec  = timeout.GetMilliSeconds() / 1000;
-          tval.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
-          ptval = &tval;
-
+          tv = timeout;
           FD_SET(m_fdLink, &fds);
         }
 
-        int result = select(std::max(m_fdLink, m_fdCancel[0])+1, &fds, NULL, NULL, ptval);
+        int result = select(std::max(m_fdLink, m_fdCancel[0])+1, &fds, NULL, NULL, tv);
         if (result < 0)
           return false;
         if (result == 0)
