@@ -320,6 +320,15 @@ PINLINE bool PFile::Exists() const
 PINLINE bool PFile::Access(OpenMode mode)
   { return ConvertOSError(Access(m_path, mode) ? 0 : -1); }
 
+PINLINE bool PFile::Touch(const PFilePath & name, const PTime & accessTime)
+  { return Touch(name, accessTime, accessTime); }
+
+PINLINE bool PFile::Touch(const PTime & accessTime)
+  { return ConvertOSError(Touch(m_path, accessTime) ? 0 : -1); }
+
+PINLINE bool PFile::Touch(const PTime & accessTime, const PTime & modTime)
+  { return ConvertOSError(Touch(m_path, accessTime, modTime) ? 0 : -1); }
+
 PINLINE bool PFile::Remove(PBoolean force)
   { Close(); return ConvertOSError(Remove(m_path, force) ? 0 : -1); }
 
