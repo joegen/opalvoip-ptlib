@@ -245,6 +245,36 @@ class PFile : public PChannel
       OpenMode mode         ///< Mode in which the file open would be done.
     );
 
+    /**Set access & modification times for file.
+       If accessTime or modTime is invalid then current time is used for that
+       time. If the modTime is not present it is set to the same as the accessTime.
+
+       @return
+       true if file times changed.
+     */
+    static bool Touch(
+      const PFilePath & name,       ///< Name of file to have its access time changed.
+      const PTime & accessTime = 0  ///< Time to set access time to.
+    );
+    static bool Touch(
+      const PFilePath & name,   ///< Name of file to have its access time changed.
+      const PTime & accessTime, ///< Time to set access time to.
+      const PTime & modTime     ///< Time to set modification time to.
+    );
+
+    /**Set access & modification times for file.
+
+       @return
+       true if file times changed.
+     */
+    bool Touch(
+      const PTime & accessTime = 0 ///< Time to set access time to.
+    );
+    bool Touch(
+      const PTime & accessTime,    ///< Time to set access time to.
+      const PTime & modTime        ///< Time to set modification time to.
+    );
+
     /**Delete the specified file. If <code>force</code> is false and the file
        is protected against being deleted then the function fails. If
        <code>force</code> is true then the protection is ignored. What
