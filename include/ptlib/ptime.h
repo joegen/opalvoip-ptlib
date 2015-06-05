@@ -627,14 +627,20 @@ class PTime : public PObject
 class P_timeval
 {
 public:
-  P_timeval();
+  P_timeval(long secs = 0, long usecs = 0);
 
   P_timeval(const PTimeInterval & time)
   {
     operator=(time);
   }
 
+  P_timeval(const PTime & time)
+  {
+    operator=(time);
+  }
+
   P_timeval & operator=(const PTimeInterval & time);
+  P_timeval & operator=(const PTime & time);
 
   operator timeval*()
   {
