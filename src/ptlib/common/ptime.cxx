@@ -347,7 +347,7 @@ PInt64 PTime::GetTimestamp() const
 }
 
 
-void PTime::SetTimestamp(time_t seconds, long usecs)
+void PTime::SetTimestamp(time_t seconds, int64_t usecs)
 { 
   m_microSecondsSinceEpoch.store(seconds*Micro + usecs);
 }
