@@ -213,7 +213,7 @@ class PTime : public PObject
       */
     void SetTimestamp(
       time_t seconds,
-      long usecs = 0
+      int64_t usecs = 0
     );
 
     /**Get the total seconds since the epoch. The epoch is the 1st
