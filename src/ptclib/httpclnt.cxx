@@ -726,34 +726,28 @@ bool PHTTPClient::PostData(const PURL & url,
 }
 
 
-bool PHTTPClient::PutDocument(const PURL & url, const PString & data, const PString & contentType)
+bool PHTTPClient::PutDocument(const PURL & url, const PString & data, const PString & contentType, const PMIMEInfo & mime)
 {
-  PMIMEInfo outMIME, replyMIME;
+  PMIMEInfo outMIME(mime), replyMIME;
   outMIME.SetAt(ContentTypeTag(), contentType);
   return IsOK(ExecuteCommand(PUT, url, outMIME, data, replyMIME));
 }
 
 
-bool PHTTPClient::PutDocument(const PURL & url, const PBYTEArray & data, const PString & contentType)
+bool PHTTPClient::PutDocument(const PURL & url, const PBYTEArray & data, const PString & contentType, const PMIMEInfo & mime)
 {
-  PMIMEInfo outMIME, replyMIME;
+  PMIMEInfo outMIME(mime), replyMIME;
   outMIME.SetAt(ContentTypeTag(), contentType);
   return IsOK(ExecuteCommand(PUT, url, outMIME, data, replyMIME));
 }
 
 
-bool PHTTPClient::PutDocument(const PURL & url, const PFilePath & path, const PString & contentType)
+bool PHTTPClient::PutDocument(const PURL & url, const PFilePath & path, const PString & contentType, const PMIMEInfo & mime)
 {
-  PMIMEInfo outMIME, replyMIME;
+  PMIMEInfo outMIME(mime), replyMIME;
   outMIME.SetAt(ContentTypeTag(), contentType.IsEmpty() ? PMIMEInfo::GetContentType(path.GetType()) : contentType);
   PHTTPClient_FileWriter processor(path);
   return IsOK(ExecuteCommand(PUT, url, outMIME, processor, replyMIME));
-}
-
-
-bool PHTTPClient::PutDocument(const PURL & url, PMIMEInfo & outMIME, PMIMEInfo & replyMIME)
-{
-  return IsOK(ExecuteCommand(PUT, url, outMIME, PString::Empty(), replyMIME));
 }
 
 

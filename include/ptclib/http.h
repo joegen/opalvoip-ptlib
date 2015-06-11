@@ -674,14 +674,9 @@ class PHTTPClient : public PHTTP
     bool PutDocument(
       const PURL & url,           ///< Universal Resource Locator for document.
       const PString & document,  ///< Body to write
-      const PString & contentType = PMIMEInfo::TextPlain() ///< Content-Type header to use
+      const PString & contentType = PMIMEInfo::TextPlain(), ///< Content-Type header to use
+      const PMIMEInfo & mime = PMIMEInfo()   ///< Extra MIME fields to be sent
     );
-
-    bool PutTextDocument(
-      const PURL & url,           ///< Universal Resource Locator for document.
-      const PString & document,  ///< Body to write
-      const PString & contentType = PMIMEInfo::TextPlain() ///< Content-Type header to use
-    ) { return PutDocument(url, document, contentType); }
 
     /** Put the document specified by the URL.
 
@@ -691,7 +686,8 @@ class PHTTPClient : public PHTTP
     bool PutDocument(
       const PURL & url,             ///< Universal Resource Locator for document.
       const PBYTEArray & document,  ///< Body to write
-      const PString & contentType   ///< Content-Type header to use
+      const PString & contentType,  ///< Content-Type header to use
+      const PMIMEInfo & mime = PMIMEInfo()   ///< Extra MIME fields to be sent
     );
 
     /** Put the document specified by the URL.
@@ -702,19 +698,13 @@ class PHTTPClient : public PHTTP
     bool PutDocument(
       const PURL & url,             ///< Universal Resource Locator for document.
       const PFilePath & document,   ///< Body to write
-      const PString & contentType = PString::Empty() ///< Content-Type header to use
+      const PString & contentType = PString::Empty(), ///< Content-Type header to use
+      const PMIMEInfo & mime = PMIMEInfo()   ///< Extra MIME fields to be sent
     );
 
-    /** Put the document specified by the URL.
-
-       @return
-       true if document is being transferred.
-     */
-    bool PutDocument(
-      const PURL & url,         ///< Universal Resource Locator for document.
-      PMIMEInfo & outMIME,      ///< MIME info in request
-      PMIMEInfo & replyMIME     ///< MIME info in response
-    );
+    // For backward compatibility
+    bool PutTextDocument(const PURL & url, const PString & document, const PString & contentType = PMIMEInfo::TextPlain())
+    { return PutDocument(url, document, contentType); }
 
     /** Delete the document specified by the URL.
 
