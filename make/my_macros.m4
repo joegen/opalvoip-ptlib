@@ -453,10 +453,6 @@ case "$target_os" in
       fi
 
       MIN_IOS_VER="6.0"
-      if test $target_release \< $MIN_IOS_VER ; then
-         AC_MSG_ERROR([Requires iOS release $MIN_IOS_VER, has $target_release])
-      fi
-
       IOS_DEVROOT="`xcode-select -print-path`/Platforms/${target_os}.platform/Developer"
       IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${target_os}${target_release}.sdk
       IOS_FLAGS="-arch $target_cpu -miphoneos-version-min=$MIN_IOS_VER -isysroot ${IOS_SDKROOT}"
@@ -469,10 +465,6 @@ case "$target_os" in
       target_release=`sw_vers -productVersion`
 
       MIN_MACOSX_VER="10.8"
-      if test $target_release \< $MIN_MACOSX_VER ; then
-         AC_MSG_ERROR([Requires Mac OS-X release $MIN_MACOSX_VER, is $target_release])
-      fi
-
       CPPFLAGS="${CPPFLAGS} -mmacosx-version-min=$MIN_MACOSX_VER"
       LIBS="-framework QTKit -framework CoreVideo -framework AudioUnit $LIBS"
    ;;
