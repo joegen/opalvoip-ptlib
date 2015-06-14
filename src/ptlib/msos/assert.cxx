@@ -97,6 +97,7 @@
   }
 
   #include <DbgHelp.h>
+  #include <Psapi.h>
 
   class PDebugDLL : public PDynaLink
   {
@@ -157,10 +158,42 @@
             !GetFunction("StackWalk64", (Function &)m_StackWalk64) ||
             !GetFunction("SymGetSymFromAddr64", (Function &)m_SymGetSymFromAddr64) ||
             !GetFunction("SymFunctionTableAccess64", (Function &)m_SymFunctionTableAccess64) ||
-            !GetFunction("SymGetModuleBase64", (Function &)m_SymGetModuleBase64) ||
-            !m_SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
+            !GetFunction("SymGetModuleBase64", (Function &)m_SymGetModuleBase64)) {
+          strm << "\n    Invalid stack walk DLL: " << GetName() << " not all functions present.";
+          return;
+        }
+
+        HANDLE hProcess = GetCurrentProcess();
+
+        // Get the directory the .exe file is in
+        char exe[_MAX_PATH];
+        if (GetModuleFileNameEx(hProcess, NULL, exe, sizeof(exe)) == 0) {
           DWORD err = ::GetLastError();
-          strm << "\n    Invalid stack walk DLL: " << GetName() << " failed: error=" << err;
+          strm << "\n    GetModuleFileNameEx failed, error=" << err;
+          return;
+        }
+
+        char * backslash = strrchr(exe, '\\');
+        if (backslash != NULL)
+          *backslash = '\0';
+
+        // Always look in same place as the .exe file for .pdb file
+        ostringstream path;
+        path << exe;
+
+        /* Add in the environment variables as per default, but do not add in
+           current directory (as default does), as if that is C:\, it searches
+           the entire disk. Slooooow. */
+        const char * env;
+        if ((env = getenv("_NT_SYMBOL_PATH")) != NULL)
+          path << ';' << env;
+        if ((env = getenv("_NT_ALTERNATE_SYMBOL_PATH")) != NULL)
+          path << ';' << env;
+
+        // Initialise the symbols with path for PDB files.
+        if (!m_SymInitialize(hProcess, path.str().c_str(), TRUE)) {
+          DWORD err = ::GetLastError();
+          strm << "\n    SymInitialize failed, error=" << err;
           return;
         }
 
@@ -225,7 +258,7 @@
         unsigned frameCount = 0;
         while (frameCount++ < maxWalk) {
           if (!m_StackWalk64(imageType,
-                             GetCurrentProcess(),
+                             hProcess,
                              hThread,
                              &frame,
                              &threadContext,
@@ -253,10 +286,13 @@
           symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
           symbol->MaxNameLength = sizeof(buffer)-sizeof(IMAGEHLP_SYMBOL64);
           DWORD64 displacement = 0;
-          if (m_SymGetSymFromAddr64(GetCurrentProcess(), frame.AddrPC.Offset, &displacement, symbol))
+          DWORD error = 0;
+          if (m_SymGetSymFromAddr64(hProcess, frame.AddrPC.Offset, &displacement, symbol))
             strm << symbol->Name;
-          else
+          else {
+            error = ::GetLastError();
             strm << setw(8) << frame.AddrPC.Offset;
+          }
           strm << '(';
           for (PINDEX i = 0; i < PARRAYSIZE(frame.Params); i++) {
             if (i > 0)
@@ -270,6 +306,8 @@
             strm << " + 0x" << displacement;
 
           strm << dec << setfill(' ');
+          if (error != 0)
+            strm << " - symbol lookup error=" << error;
 
           if (frame.AddrReturn.Offset == 0)
             break;
