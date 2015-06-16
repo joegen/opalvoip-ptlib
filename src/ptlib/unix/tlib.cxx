@@ -627,10 +627,10 @@ PBoolean PProcess::SetMaxHandles(int newMax)
 
 #if defined(P_LINUX)
 
-static inline unsigned long long jiffies_to_msecs(const unsigned long j)
+static inline PTimeInterval jiffies_to_msecs(const uint64_t jiffies)
 {
   static long sysconf_HZ = sysconf(_SC_CLK_TCK);
-  return (j * 1000LL) / sysconf_HZ;
+  return (jiffies * 1000) / sysconf_HZ;
 }
 
 
