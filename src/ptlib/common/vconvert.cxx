@@ -543,8 +543,8 @@ class PRasterDutyCycle
 // no interpolation is used, just pixel dropping or doubling
 
 PRAGMA_OPTIMISE_ON()
-static void GrowYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
-                              BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstLineSpan)
+static void GrowBothYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                                  BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int      dstLineSpan)
 {
   unsigned repeatRow = 0;
   for (unsigned y = 0; y < srcHeight; y++) {
@@ -579,10 +579,10 @@ static void GrowYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeig
 }
 
 
-static void ShrinkYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
-                                BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstLineSpan)
+static void ShrinkBothYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                                    BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int      dstLineSpan)
 {
-  unsigned repeatRow = 0;
+  unsigned srcAdvance = 0;
   for (unsigned y = 0; y < dstHeight; y++) {
 
     const BYTE * srcPixel = srcPtr;
@@ -601,18 +601,56 @@ static void ShrinkYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHe
 
     do {
       srcPtr += srcLineSpan;
-      repeatRow += dstHeight;
-    } while (repeatRow < srcHeight);
-    repeatRow -= srcHeight;
+      srcAdvance += dstHeight;
+    } while (srcAdvance < srcHeight);
+    srcAdvance -= srcHeight;
 
     dstPtr += dstLineSpan;
   }
 }
-PRAGMA_OPTIMISE_DEFAULT()
+
+
+static void GrowRowsYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                                  BYTE * dstPtr, unsigned         , unsigned dstHeight, int      dstLineSpan)
+{
+  unsigned repeatRow = 0;
+  for (unsigned y = 0; y < srcHeight; y++) {
+    memcpy(dstPtr, srcPtr, srcWidth);
+
+    repeatRow += srcHeight;
+    while (repeatRow < dstHeight) {
+      dstPtr += dstLineSpan;
+      memcpy(dstPtr, srcPtr, srcWidth);
+      repeatRow += srcHeight;
+    }
+    repeatRow -= dstHeight;
+
+    srcPtr += srcLineSpan;
+    dstPtr += dstLineSpan;
+  }
+}
+
+
+static void ShrinkRowsYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
+                                    BYTE * dstPtr, unsigned         , unsigned dstHeight, int      dstLineSpan)
+{
+  unsigned srcAdvance = 0;
+  for (unsigned y = 0; y < dstHeight; y++) {
+    memcpy(dstPtr, srcPtr, srcWidth);
+
+    do {
+      srcPtr += srcLineSpan;
+      srcAdvance += dstHeight;
+    } while (srcAdvance < srcHeight);
+    srcAdvance -= srcHeight;
+
+    dstPtr += dstLineSpan;
+  }
+}
 
 
 static void CropYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
-                              BYTE * dstPtr, unsigned, unsigned , int dstLineSpan)
+                              BYTE * dstPtr, unsigned         , unsigned          , int      dstLineSpan)
 {
   for (unsigned y = 0; y < srcHeight; y++) {
     memcpy(dstPtr, srcPtr, srcWidth);
@@ -620,6 +658,7 @@ static void CropYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeig
     dstPtr += dstLineSpan;
   }
 }
+PRAGMA_OPTIMISE_DEFAULT()
 
 
 static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight, unsigned dstFrameWidth, unsigned dstFrameHeight)
@@ -679,9 +718,13 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
   switch (resizeMode) {
     case PVideoFrameInfo::eScale :
       if (srcWidth > dstWidth)
-        rowFunction = ShrinkYUV420P;
+        rowFunction = ShrinkBothYUV420P;
       else if (srcWidth < dstWidth)
-        rowFunction = GrowYUV420P;
+        rowFunction = GrowBothYUV420P;
+      else if (srcHeight > dstHeight)
+        rowFunction = ShrinkRowsYUV420P; // More efficient version for same width case
+      else
+        rowFunction = GrowRowsYUV420P;
       break;
 
     default :
