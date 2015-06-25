@@ -185,7 +185,6 @@ struct Variables {
                     + __GNUC_PATCHLEVEL__)
 
 static int yyparse(void *); 
-static int yylex();
 
 #ifdef __GNUC__
 static int yyerror(char const *msg);
@@ -272,6 +271,12 @@ typedef union YYSTYPE
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 #endif
+
+
+#ifndef __GNUC__
+static
+#endif
+int yylex(YYSTYPE * yylval, struct Variables * vars);
 
 
 #ifdef YYPARSE_PARAM
