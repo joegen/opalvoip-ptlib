@@ -6622,9 +6622,9 @@ fi
 
 
    oldCPPFLAGS="$CPPFLAGS"
-   CPPFLAGS="$CPPFLAGS -Werror -fno-deprecated-declarations"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler -fno-deprecated-declarations" >&5
-$as_echo_n "checking compiler -fno-deprecated-declarations... " >&6; }
+   CPPFLAGS="$CPPFLAGS -Werror -Wno-deprecated-declarations"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler -Wno-deprecated-declarations" >&5
+$as_echo_n "checking compiler -Wno-deprecated-declarations... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6648,7 +6648,7 @@ $as_echo "$usable" >&6; }
    CPPFLAGS="$oldCPPFLAGS"
 
    if test "x$usable" = "xyes"; then :
-  CXXFLAGS="$CXXFLAGS -fno-deprecated-declarations"
+  CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"
 
 fi
 
