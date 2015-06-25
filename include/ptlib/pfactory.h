@@ -505,7 +505,7 @@ class PParamFactory : public PFactoryTemplate<AbstractClass, ParamType, KeyType>
   */
 #define PFACTORY_CREATE(factory, ConcreteClass, ...) \
   namespace PFactoryLoader { \
-    int ConcreteClass##_link() { return 0; } \
+    int ConcreteClass##_link(int const *) { return 0; } \
     factory::Worker<ConcreteClass> ConcreteClass##_instance(__VA_ARGS__); \
   }
 
@@ -530,8 +530,8 @@ class PParamFactory : public PFactoryTemplate<AbstractClass, ParamType, KeyType>
  */
 #define PFACTORY_LOAD(ConcreteType) \
   namespace PFactoryLoader { \
-    extern int ConcreteType##_link(); \
-    int const ConcreteType##_loader = ConcreteType##_link(); \
+    extern int ConcreteType##_link(int const *); \
+    static int const ConcreteType##_loader = ConcreteType##_link(&ConcreteType##_loader); \
   }
 
 
