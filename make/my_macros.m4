@@ -691,6 +691,8 @@ MY_COMPILE_IFELSE(
    [CPPFLAGS="-Wno-unknown-pragmas $CPPFLAGS"]
 )
 
+AC_LANG_PUSH(C++)
+
 MY_COMPILE_IFELSE(
    [Disable unused-private-field warning (-Wno-unused-private-field)],
    [-Werror -Wno-unused-private-field],
@@ -698,8 +700,6 @@ MY_COMPILE_IFELSE(
    [],
    [CXXFLAGS="-Wno-unused-private-field $CXXFLAGS"]
 )
-
-AC_LANG(C++)
 
 MY_COMPILE_IFELSE(
    [Disable overloaded-virtual warning (-Wno-overloaded-virtual)],
@@ -710,12 +710,14 @@ MY_COMPILE_IFELSE(
 )
 
 MY_COMPILE_IFELSE(
-   [compiler -Wno-deprecated-declarations],
+   [Disable deprecated-declarations warning (-Wno-deprecated-declarations)],
    [-Werror -Wno-deprecated-declarations],
    [],
    [],
    [CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"]
 )
+
+AC_LANG_POP(C++)
 
 MY_COMPILE_IFELSE(
    [warnings (-Wall)],
