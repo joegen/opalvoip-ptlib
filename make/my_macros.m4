@@ -703,11 +703,11 @@ MY_COMPILE_IFELSE(
 )
 
 MY_COMPILE_IFELSE(
-   [compiler -fno-deprecated-declarations],
-   [-Werror -fno-deprecated-declarations],
+   [compiler -Wno-deprecated-declarations],
+   [-Werror -Wno-deprecated-declarations],
    [],
    [],
-   [CXXFLAGS="$CXXFLAGS -fno-deprecated-declarations"]
+   [CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"]
 )
 
 MY_COMPILE_IFELSE(
