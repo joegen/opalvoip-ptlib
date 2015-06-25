@@ -738,8 +738,9 @@ dnl see if using GNU glibc++, because then we have atomic integer operations
 dnl MSWIN_DISPLAY    atomic,Has std::atomic
 dnl MSWIN_DEFINE     atomic,P_STD_ATOMIC
 
-AC_MSG_CHECKING(if atomic integer available)
-AC_TRY_COMPILE(
+MY_COMPILE_IFELSE(
+   [if has std::atomic],
+   [$CPP11_FLAGS],
    [#include <atomic>],
    [
       std::atomic<unsigned> val;
@@ -747,10 +748,12 @@ AC_TRY_COMPILE(
    ],
    [
       AC_DEFINE(P_STD_ATOMIC, 1)
-      AC_MSG_RESULT([yes (std)])
    ],
    [
-   AC_TRY_LINK(
+   MY_LINK_IFELSE(
+      [if has builtin atomic],
+      [],
+      [],
       [],
       [
          int val;
@@ -758,13 +761,16 @@ AC_TRY_COMPILE(
       ],
       [
          AC_DEFINE(P_ATOMICITY_BUILTIN,1)
-         AC_MSG_RESULT([yes (builtin)])
       ],
-      AC_TRY_COMPILE(
+      MY_COMPILE_IFELSE(
+         [if has bits/atomicity.h],
+         [],
          [#include <bits/atomicity.h>],
          [_Atomic_word val],
          [P_ATOMICITY_HEADER="<bits/atomicity.h>"],
-         AC_TRY_COMPILE(
+         MY_COMPILE_IFELSE(
+            [if has ext/atomicity.h],
+            [],
             [#include <ext/atomicity.h>],
             [_Atomic_word val],
             [P_ATOMICITY_HEADER="<ext/atomicity.h>"],
