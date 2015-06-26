@@ -139,7 +139,7 @@ $(OBJDIR)/%.o : %.cpp
 
 $(OBJDIR)/%.o : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $<
+	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPP11_FLAGS) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
@@ -180,7 +180,7 @@ $(DEPDIR)/%.dep : %.cpp
 $(DEPDIR)/%.dep : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPP11_FLAGS)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
