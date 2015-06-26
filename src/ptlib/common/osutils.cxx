@@ -1628,7 +1628,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
           return false;
         opts.m_section = PString(spec, end-spec);
         spec = end+1;
-        if (InternalSpecificationError(spec == '\0', "Empty [] clause in specification."))
+        if (InternalSpecificationError(opts.m_section.IsEmpty(), "Empty [] clause in specification."))
           return false;
       }
 

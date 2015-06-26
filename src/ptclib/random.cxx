@@ -138,7 +138,7 @@ static uint32_t redistribute(uint32_t value, uint32_t minimum, uint32_t maximum)
 uint32_t PRandom::Generate()
 {
   if (randcnt-- == 0) {
-    register uint32_t a,b,x,y,*m,*mm,*m2,*r,*mend;
+    uint32_t a,b,x,y,*m,*mm,*m2,*r,*mend;
     mm=randmem; r=randrsl;
     a = randa; b = randb + (++randc);
     for (m = mm, mend = m2 = m+(RandSize/2); m<mend; )
