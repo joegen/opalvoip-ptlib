@@ -387,7 +387,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\gstreamer.cxx">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\include;C:\gstreamer-sdk\0.10\x86\include\gstreamer-0.10;c:\gstreamer-sdk\0.10\x86\include\glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\include;C:\gstreamer\1.0\x86\include\gstreamer-1.0;c:\gstreamer\1.0\x86\include\glib-2.0;C:\gstreamer-sdk\0.10\x86\include\gstreamer-0.10;c:\gstreamer-sdk\0.10\x86\include\glib-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\jscript.cxx">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\external\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

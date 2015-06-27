@@ -100,6 +100,33 @@ class PGObject : public PGBaseObject
 
     bool Set(
       const char * attribute,
+      bool value
+    );
+    bool Get(
+      const char * attribute,
+      bool & value
+    );
+
+    bool Set(
+      const char * attribute,
+      int value
+    );
+    bool Get(
+      const char * attribute,
+      int & value
+    );
+
+    bool Set(
+      const char * attribute,
+      double value
+    );
+    bool Get(
+      const char * attribute,
+      double & value
+    );
+
+    bool Set(
+      const char * attribute,
       const char * value
     );
     bool Get(
