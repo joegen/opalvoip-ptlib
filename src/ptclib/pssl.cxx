@@ -1855,7 +1855,7 @@ PSSLContext::PSSLContext(Method method, const void * sessionId, PINDEX idSize)
 
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 {
-  Construct(TLSv1, sessionId, idSize);
+  Construct(TLSv1_2, sessionId, idSize);
 }
 
 void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize)
@@ -1867,19 +1867,43 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
        SSL_METHOD * meth;
 
   switch (method) {
+    case SSLv23:
+      meth = SSLv23_method();
+      break;
     case SSLv3:
       meth = SSLv3_method();
       break;
+#if OPENSSL_VERSION_NUMBER > 0x01000200L
     case TLSv1:
       meth = TLSv1_method(); 
+      break;
+    case TLSv1_1 :
+      meth = TLSv1_1_method(); 
+      break;
+    case TLSv1_2 :
+      meth = TLSv1_2_method(); 
       break;
     case DTLSv1:
       meth = DTLSv1_method();
       break;
-    case SSLv23:
-    default:
-      meth = SSLv23_method();
+    case DTLSv1_2 :
+      meth = DTLSv1_2_method(); 
       break;
+#else
+    case TLSv1:
+    case TLSv1_1 :
+    case TLSv1_2 :
+      meth = TLSv1_method();
+      break;
+    case DTLSv1:
+    case DTLSv1_2 :
+      meth = DTLSv1_method();
+      break;
+#endif
+    default :
+      PAssertAlways("Unsupported TLS/DTLS version");
+      m_context = NULL;
+      return;
   }
 
   m_context = SSL_CTX_new(meth);
@@ -2521,9 +2545,6 @@ PSSLChannelDTLS::PSSLChannelDTLS(PSSLContext & context)
   : PSSLChannel(context)
 {
   PTRACE(4, "Create PSSLChannelDTLS instance.");
-
-  SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
-  SSL_set_read_ahead(m_ssl, 1);
 }
 
 
@@ -2535,6 +2556,10 @@ PSSLChannelDTLS::~PSSLChannelDTLS()
 bool PSSLChannelDTLS::ExecuteHandshake()
 {
   PTRACE(5, "DTLS executing handshake.");
+
+  SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
+  SSL_set_read_ahead(m_ssl, 1);
+  SSL_CTX_set_read_ahead(*m_context, 1);
 
   int errorCode = SSL_do_handshake(m_ssl);
   if (errorCode == 1) {
