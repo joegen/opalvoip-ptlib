@@ -825,9 +825,9 @@
     <ClCompile Include="..\..\ptclib\psoap.cxx" />
     <ClCompile Include="..\..\ptclib\psockbun.cxx" />
     <ClCompile Include="..\..\ptclib\pssl.cxx">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">c:/program files/openssl-win32/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">c:/program files/openssl/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">c:/program files/openssl/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files (x86)\OpenSSL-Win32\include;C:\Program Files\OpenSSL-Win32\include;C:\OpenSSL-Win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">C:\Program Files (x86)\OpenSSL-Win32\include;C:\Program Files\OpenSSL-Win32\include;C:\OpenSSL-Win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files (x86)\OpenSSL-Win32\include;C:\Program Files\OpenSSL-Win32\include;C:\OpenSSL-Win32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pstun.cxx" />
     <ClCompile Include="..\..\ptclib\pstunsrvr.cxx" />
