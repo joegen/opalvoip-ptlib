@@ -1890,6 +1890,11 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
       meth = DTLSv1_2_method(); 
       break;
 #else
+  #ifdef _MSC_VER
+    #pragma message("Using old version of OpenSSL")
+  #else
+    #message "Using old version of OpenSSL"
+  #endif
     case TLSv1:
     case TLSv1_1 :
     case TLSv1_2 :
