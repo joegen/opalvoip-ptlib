@@ -685,7 +685,7 @@ class PSSLContext : public PObject
 {
     PCLASSINFO(PSSLContext, PObject);
   public:
-    enum Method {
+    P_DECLARE_TRACED_ENUM(Method,
       SSLv23,
       SSLv3,
       TLSv1,
@@ -693,7 +693,7 @@ class PSSLContext : public PObject
       TLSv1_2,
       DTLSv1,
       DTLSv1_2
-    };
+    );
 
     /**Create a new context for SSL channels.
        An optional session ID may be provided in the context. This is used
@@ -803,9 +803,12 @@ class PSSLContext : public PObject
       const char * extension
     );
 
-  protected:
-    void Construct(Method method, const void * sessionId, PINDEX idSize);
+    Method GetMethod() const { return m_method; }
 
+  protected:
+    void Construct(const void * sessionId, PINDEX idSize);
+
+    Method       m_method;
     ssl_ctx_st * m_context;
     PSSLPasswordNotifier m_passwordNotifier;
 
