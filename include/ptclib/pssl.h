@@ -692,7 +692,8 @@ class PSSLContext : public PObject
       TLSv1_1,
       TLSv1_2,
       DTLSv1,
-      DTLSv1_2
+      DTLSv1_2,
+      DTLSv1_2_v1_0
     );
 
     /**Create a new context for SSL channels.
