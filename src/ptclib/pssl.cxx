@@ -1891,6 +1891,9 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case DTLSv1_2 :
       meth = DTLSv1_2_method(); 
       break;
+    case DTLSv1_2_v1_0 :
+      meth = DTLS_method(); 
+      break;
 #else
   #ifdef _MSC_VER
     #pragma message("Using old version of OpenSSL")
@@ -1904,6 +1907,7 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
       break;
     case DTLSv1:
     case DTLSv1_2 :
+    case DTLSv1_2_v1_0 :
       meth = DTLSv1_method();
       break;
 #endif
