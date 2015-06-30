@@ -1873,7 +1873,7 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
     case SSLv3:
       meth = SSLv3_method();
       break;
-#if OPENSSL_VERSION_NUMBER > 0x01000200L
+#if OPENSSL_VERSION_NUMBER > 0x10002000L
     case TLSv1:
       meth = TLSv1_method(); 
       break;
