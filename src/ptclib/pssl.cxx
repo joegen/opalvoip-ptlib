@@ -1895,11 +1895,7 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
       meth = DTLS_method(); 
       break;
 #else
-  #ifdef _MSC_VER
-    #pragma message("Using old version of OpenSSL")
-  #else
-    #warning "Using old version of OpenSSL"
-  #endif
+  #pragma message ("Using " OPENSSL_VERSION_TEXT " - TLS 1.1, 1.2 and DTLS 1.2 not available")
     case TLSv1:
     case TLSv1_1 :
     case TLSv1_2 :
