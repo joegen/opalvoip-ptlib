@@ -1898,7 +1898,7 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
   #ifdef _MSC_VER
     #pragma message("Using old version of OpenSSL")
   #else
-    #message "Using old version of OpenSSL"
+    #warning "Using old version of OpenSSL"
   #endif
     case TLSv1:
     case TLSv1_1 :
