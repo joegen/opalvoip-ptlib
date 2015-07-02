@@ -1054,7 +1054,7 @@ PString::PString(ConversionType type, double value, unsigned places)
           places -= 3;
         else if (places >= 2 && value >= 10)
           places -= 2;
-        else
+        else if (places >= 1)
           --places;
         sprintf("%0.*f%c", (int)places, value, siTable[i]);
       }
