@@ -1050,9 +1050,11 @@ PString::PString(ConversionType type, double value, unsigned places)
         }
         value /= multiplier;
         // Want places to be significant figures
-        if (places >= 2 && value >= 100)
+        if (places >= 3 && value >= 100)
+          places -= 3;
+        else if (places >= 2 && value >= 10)
           places -= 2;
-        else if (places >= 1 && value >= 10)
+        else
           --places;
         sprintf("%0.*f%c", (int)places, value, siTable[i]);
       }
