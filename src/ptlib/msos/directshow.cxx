@@ -1518,14 +1518,15 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
     PTRACE(3, "Camera " << deviceName << " does not support Camera Controls.");
     m_pCameraControls = NULL;
   }
-
-  for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
-    PComResult hr;
-    long minimum, maximum, step, reset, flags;
-    if (hr.Succeeded(m_pCameraControls->GetRange(InputControlPropertyCode[type], &minimum, &maximum, &step, &reset, &flags)))
-      m_controlInfo[type] = PVideoControlInfo(type, minimum, maximum, step, reset);
-    else {
-      PTRACE(4, "Camera does not support " << type << ": " << hr);
+  else {
+    for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
+      PComResult hr;
+      long minimum, maximum, step, reset, flags;
+      if (hr.Succeeded(m_pCameraControls->GetRange(InputControlPropertyCode[type], &minimum, &maximum, &step, &reset, &flags)))
+        m_controlInfo[type] = PVideoControlInfo(type, minimum, maximum, step, reset);
+      else {
+        PTRACE(4, "Camera does not support " << type << ": " << hr);
+      }
     }
   }
 
