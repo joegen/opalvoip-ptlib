@@ -872,6 +872,7 @@ const PCaselessString & PMIMEInfo::ContentDescriptionTag()      { static const P
 const PCaselessString & PMIMEInfo::ContentIdTag()               { static const PConstCaselessString s("Content-ID");                return s; }
 
 const PCaselessString & PMIMEInfo::TextPlain()                  { static const PConstCaselessString s("text/plain");                return s; }
+const PCaselessString & PMIMEInfo::TextHTML()                   { static const PConstCaselessString s("text/html");                 return s; }
 
 
 //////////////////////////////////////////////////////////////////////////////

@@ -3161,6 +3161,7 @@ PJPEGConverter::PJPEGConverter(const PColourPair & colours)
 
 PJPEGConverter::PJPEGConverter(const PVideoFrameInfo & src, const PVideoFrameInfo & dst)
   : PColourConverter(PColourPair(src.GetColourFormat(), dst.GetColourFormat()))
+  , m_context(new Context)
 {
   SetSrcFrameInfo(src);
   SetDstFrameInfo(dst);

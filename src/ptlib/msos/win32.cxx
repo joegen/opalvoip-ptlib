@@ -91,16 +91,24 @@ PTime::PTime(const FILETIME & timestamp)
 }
 
 
+// Magic constant to convert epoch from 1601 to 1970
+static const ULONGLONG Win332FileTimeDelta = ((PInt64)369*365+(369/4)-3)*24*60*60U*1000000;
+
 void PTime::SetFromFileTime(const FILETIME & timestamp)
 {
-  // Magic constant to convert epoch from 1601 to 1970
-  static const ULONGLONG delta = ((PInt64)369*365+(369/4)-3)*24*60*60U*1000000;
-
   ULARGE_INTEGER i;
   i.HighPart = timestamp.dwHighDateTime;
   i.LowPart = timestamp.dwLowDateTime;
 
-  m_microSecondsSinceEpoch.store(i.QuadPart/10 - delta);
+  m_microSecondsSinceEpoch.store(i.QuadPart/10 - Win332FileTimeDelta);
+}
+
+void PTime::SetToFileTime(FILETIME & timestamp) const
+{
+    ULARGE_INTEGER i;
+    i.QuadPart = (m_microSecondsSinceEpoch.load()+Win332FileTimeDelta)*10;
+    timestamp.dwHighDateTime = i.HighPart;
+    timestamp.dwLowDateTime = i.LowPart;
 }
 
 #ifdef UNICODE
@@ -517,6 +525,34 @@ PBoolean PFilePath::IsValid(const PString & str)
 bool PFilePath::IsAbsolutePath(const PString & path)
 {
   return path.GetLength() > 2 && (path[1] == ':' || (path[0] == '\\' && path[1] == '\\'));
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFile
+
+bool PFile::Touch(const PFilePath & name, const PTime & accessTime, const PTime & modTime)
+{
+  PWin32Handle hFile(::CreateFile(name,FILE_WRITE_ATTRIBUTES,0,NULL,0,0,NULL));
+  if (!hFile.IsValid())
+    return false;
+
+  FILETIME now;
+  GetSystemTimeAsFileTime(&now);
+
+  FILETIME acc;
+  if (accessTime.IsValid())
+    accessTime.SetToFileTime(acc);
+  else
+    acc = now;
+
+  FILETIME mod;
+  if (modTime.IsValid())
+    modTime.SetToFileTime(mod);
+  else
+    mod = now;
+
+  return ::SetFileTime(hFile, NULL, &acc, &mod);
 }
 
 
@@ -1784,7 +1820,7 @@ PTimedMutex::PTimedMutex(const PTimedMutex &)
 
 void PTimedMutex::Wait()
 {
-  if (!m_handle.Wait(15000)) {
+  if (!m_handle.Wait(ExcessiveLockWaitTime*1000)) {
     ExcessiveLockWait();
     m_handle.Wait(INFINITE);
     PTRACE(0, "PTLib", "Phantom deadlock in mutex " << this);

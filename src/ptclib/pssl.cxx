@@ -1798,7 +1798,7 @@ static void InfoCallback(const SSL * PTRACE_PARAM(ssl), int PTRACE_PARAM(locatio
           trace << "error in ";
       }
 
-      trace << SSL_state_string_long(ssl);
+      trace << "state=" << SSL_state_string_long(ssl);
     }
     trace << PTrace::End;
   }
@@ -1848,17 +1848,19 @@ static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
 ///////////////////////////////////////////////////////////////////////////////
 
 PSSLContext::PSSLContext(Method method, const void * sessionId, PINDEX idSize)
+  : m_method(method)
 {
-  Construct(method, sessionId, idSize);
+  Construct(sessionId, idSize);
 }
 
 
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
+  : m_method(TLSv1_2)
 {
-  Construct(TLSv1, sessionId, idSize);
+  Construct(sessionId, idSize);
 }
 
-void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize)
+void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
 {
   // create the new SSL context
 #if OPENSSL_VERSION_NUMBER > 0x0090819fL
@@ -1866,20 +1868,49 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
 #endif
        SSL_METHOD * meth;
 
-  switch (method) {
+  switch (m_method) {
+    case SSLv23:
+      meth = SSLv23_method();
+      break;
     case SSLv3:
       meth = SSLv3_method();
       break;
+#if OPENSSL_VERSION_NUMBER > 0x10002000L
     case TLSv1:
       meth = TLSv1_method(); 
+      break;
+    case TLSv1_1 :
+      meth = TLSv1_1_method(); 
+      break;
+    case TLSv1_2 :
+      meth = TLSv1_2_method(); 
       break;
     case DTLSv1:
       meth = DTLSv1_method();
       break;
-    case SSLv23:
-    default:
-      meth = SSLv23_method();
+    case DTLSv1_2 :
+      meth = DTLSv1_2_method(); 
       break;
+    case DTLSv1_2_v1_0 :
+      meth = DTLS_method(); 
+      break;
+#else
+  #pragma message ("Using " OPENSSL_VERSION_TEXT " - TLS 1.1, 1.2 and DTLS 1.2 not available")
+    case TLSv1:
+    case TLSv1_1 :
+    case TLSv1_2 :
+      meth = TLSv1_method();
+      break;
+    case DTLSv1:
+    case DTLSv1_2 :
+    case DTLSv1_2_v1_0 :
+      meth = DTLSv1_method();
+      break;
+#endif
+    default :
+      PAssertAlways("Unsupported TLS/DTLS version");
+      m_context = NULL;
+      return;
   }
 
   m_context = SSL_CTX_new(meth);
@@ -1895,11 +1926,14 @@ void PSSLContext::Construct(Method method, const void * sessionId, PINDEX idSize
 
   SSL_CTX_set_info_callback(m_context, InfoCallback);
   SetVerifyMode(VerifyNone);
+
+  PTRACE(4, "Constructed context: method=" << m_method << " ctx=" << m_context);
 }
 
 
 PSSLContext::~PSSLContext()
 {
+  PTRACE(4, "Destroyed context: method=" << m_method << " ctx=" << m_context);
   SSL_CTX_free(m_context);
 }
 
@@ -2185,11 +2219,15 @@ void PSSLChannel::Construct(PSSLContext * ctx, PBoolean autoDel)
   m_bio->init = 1;
 
   SSL_set_bio(m_ssl, m_bio, m_bio);
+
+  PTRACE(4, "Constructed channel: ssl=" << m_ssl << " method=" << m_context->GetMethod() << " context=" << &*m_context);
 }
 
 
 PSSLChannel::~PSSLChannel()
 {
+  PTRACE(4, "Destroyed channel: ssl=" << m_ssl << " method=" << m_context->GetMethod() << " context=" << &*m_context);
+
   // free the SSL connection
   if (m_ssl != NULL)
     SSL_free(m_ssl);
@@ -2513,17 +2551,12 @@ long PSSLChannel::BioControl(int cmd, long num, void * /*ptr*/)
 PSSLChannelDTLS::PSSLChannelDTLS(PSSLContext * context, bool autoDeleteContext)
   : PSSLChannel(context, autoDeleteContext)
 {
-  PTRACE(4, "Create PSSLChannelDTLS instance.");
 }
 
 
 PSSLChannelDTLS::PSSLChannelDTLS(PSSLContext & context)
   : PSSLChannel(context)
 {
-  PTRACE(4, "Create PSSLChannelDTLS instance.");
-
-  SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
-  SSL_set_read_ahead(m_ssl, 1);
 }
 
 
@@ -2535,6 +2568,10 @@ PSSLChannelDTLS::~PSSLChannelDTLS()
 bool PSSLChannelDTLS::ExecuteHandshake()
 {
   PTRACE(5, "DTLS executing handshake.");
+
+  SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
+  SSL_set_read_ahead(m_ssl, 1);
+  SSL_CTX_set_read_ahead(*m_context, 1);
 
   int errorCode = SSL_do_handshake(m_ssl);
   if (errorCode == 1) {

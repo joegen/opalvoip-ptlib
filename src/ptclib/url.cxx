@@ -104,6 +104,8 @@ PURL_LEGACY_SCHEME(sip,       true,  true,  true,  false,  false,  true,  true, 
 PURL_LEGACY_SCHEME(sips,      true,  true,  true,  false,  false,  true,  true,  false, false, false, DEFAULT_SIPS_PORT)
 PURL_LEGACY_SCHEME(fax,       false, false, false, true,   false,  false, true,  false, false, false, 0)
 PURL_LEGACY_SCHEME(msrp,      false, false, true,  false,  false,  true,  true,  false, true,  false, DEFAULT_MSRP_PORT)
+PURL_LEGACY_SCHEME(ws,        false, false, true,  false,  true,   true,  false, false, true,  false, DEFAULT_HTTP_PORT)
+PURL_LEGACY_SCHEME(wss,       false, false, true,  false,  true,   true,  false, false, true,  false, DEFAULT_HTTPS_PORT)
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"

@@ -898,7 +898,7 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
     }
   }
 
-  if (len > m_remainingPayload)
+  if (len > (PINDEX)m_remainingPayload)
     len = (PINDEX)m_remainingPayload;
 
   if (!PIndirectChannel::ReadBlock(buf, len))
