@@ -52,7 +52,6 @@
 const char WAVLabelRIFF[4] = { 'R', 'I', 'F', 'F' };
 const char WAVLabelWAVE[4] = { 'W', 'A', 'V', 'E' };
 const char WAVLabelFMT_[4] = { 'f', 'm', 't', ' ' };
-const char WAVLabelFACT[4] = { 'F', 'A', 'C', 'T' };
 const char WAVLabelDATA[4] = { 'd', 'a', 't', 'a' };
 
 

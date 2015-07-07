@@ -347,7 +347,7 @@ PInt64 PTime::GetTimestamp() const
 }
 
 
-void PTime::SetTimestamp(time_t seconds, long usecs)
+void PTime::SetTimestamp(time_t seconds, int64_t usecs)
 { 
   m_microSecondsSinceEpoch.store(seconds*Micro + usecs);
 }
@@ -363,6 +363,8 @@ void PTime::SetNTP(PUInt64 ntp)
 
 PUInt64 PTime::GetNTP() const
 {
+  if (!IsValid())
+    return 0;
   int64_t usecs = m_microSecondsSinceEpoch.load();
   return ((usecs/Micro+SecondsFrom1900to1970)<<32) + usecs*4294;
 }
@@ -445,22 +447,40 @@ PString PTime::AsString(TimeFormat format, int zone) const
   if (format >= NumTimeStrings)
     return "Invalid format : " + AsString("yyyy-MM-dd T hh:mm:ss Z");
 
+  if (!IsValid())
+    return "N/A";
+
   switch (format) {
     case RFC1123 :
       return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
+
     case RFC3339 :
       return AsString("yyyy-MM-ddThh:mm:ssZZ", zone);
+
     case ShortISO8601 :
       return AsString("yyyyMMddThhmmssZ", zone);
+
     case LongISO8601 :
       return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
+
     case EpochTime:
     {
       int64_t usecs = m_microSecondsSinceEpoch.load();
       return psprintf("%u.%06lu", usecs / Micro, usecs % Micro);
     }
+
+    case TodayFormat:
+    {
+      PTime now;
+      static const PTimeInterval halfDay(0, 0, 0, 12);
+      if (*this > (now - halfDay) && *this < (now + halfDay))
+        return AsString("hh:mm:ss.uuu");
+      // Do next case
+    }
+
     case LoggingFormat :
       return AsString("yyyy/MM/dd hh:mm:ss.uuu", zone);
+
     default:
       break;
   }
@@ -809,19 +829,36 @@ PTime & PTime::operator-=(const PTimeInterval & t)
 //////////////////////////////////////////////////////////////////////////////
 // P_timeval
 
-P_timeval::P_timeval()
+P_timeval::P_timeval(long secs, long usecs)
   : m_infinite(false)
 {
-  m_timeval.tv_usec = 0;
-  m_timeval.tv_sec = 0;
+  m_timeval.tv_sec = secs;
+  m_timeval.tv_usec = usecs;
 }
 
 
 P_timeval & P_timeval::operator=(const PTimeInterval & time)
 {
   m_infinite = time == PMaxTimeInterval;
-  m_timeval.tv_usec = (long)(time.GetMilliSeconds() % 1000) * 1000;
-  m_timeval.tv_sec = time.GetSeconds();
+  if (m_infinite)
+    m_timeval.tv_sec = m_timeval.tv_usec = -1;
+  else {
+    m_timeval.tv_sec = time.GetSeconds();
+    m_timeval.tv_usec = (long)(time.GetMilliSeconds() % 1000) * 1000;
+  }
+  return *this;
+}
+
+
+P_timeval & P_timeval::operator=(const PTime & time)
+{
+  m_infinite = !time.IsValid();
+  if (m_infinite)
+    m_timeval.tv_sec = m_timeval.tv_usec = -1;
+  else {
+    m_timeval.tv_sec = (long)time.GetTimeInSeconds();
+    m_timeval.tv_usec = time.GetMicrosecond();
+  }
   return *this;
 }
 

@@ -750,9 +750,9 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     else
       name = thread->GetThreadName();
 #if P_64BIT
-    static const unsigned ThreadNameWidth = 31;
+    static const PINDEX ThreadNameWidth = 31;
 #else
-    static const unsigned ThreadNameWidth = 23;
+    static const PINDEX ThreadNameWidth = 23;
 #endif
     if (name.GetLength() <= ThreadNameWidth)
       stream << setw(ThreadNameWidth) << name;
@@ -1628,7 +1628,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
           return false;
         opts.m_section = PString(spec, end-spec);
         spec = end+1;
-        if (InternalSpecificationError(spec == '\0', "Empty [] clause in specification."))
+        if (InternalSpecificationError(opts.m_section.IsEmpty(), "Empty [] clause in specification."))
           return false;
       }
 
@@ -2285,7 +2285,7 @@ void PProcess::OnThreadEnded(PThread &
     {
       ostream & trace = PTRACE_BEGIN(LogLevel, "PTLib");
       trace << "Thread ended: name=\"" << thread.GetThreadName() << "\", ";
-      if (thread.GetThreadId() != thread.GetUniqueIdentifier())
+      if (thread.GetThreadId() != (PThreadIdentifier)thread.GetUniqueIdentifier())
           trace << "id=" << thread.GetUniqueIdentifier() << ", ";
       trace << times << PTrace::End;
     }
@@ -2798,6 +2798,15 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThread
 }
 
 
+static unsigned InitExcessiveLockWaitTime()
+{
+  const char * env = getenv("PTLIB_DEADLOCK_TIME");
+  int seconds = env != NULL ? atoi(env) : 0;
+  return seconds > 0 ? seconds : 15;
+}
+
+unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime();
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -3057,7 +3066,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
   nest.m_waiting = true;
 
 #if PTRACING
-  if (sync.Wait(15000)) {
+  if (sync.Wait(PTimeInterval(0,PTimedMutex::ExcessiveLockWaitTime))) {
     nest.m_waiting = false;
     return;
   }

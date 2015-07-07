@@ -55,13 +55,13 @@ const PConstString StringIndex("Some \"string\" index");
 
 const char TestScript[] =
 #if PTRACING
-  "PTRACE(2, 'Starting test script: ', ' setting "LUA_VARIABLE" to ', "LUA_VAR_NEW_VALUE")\n"
+  "PTRACE(2, 'Starting test script: ', ' setting " LUA_VARIABLE " to ', " LUA_VAR_NEW_VALUE ")\n"
 #endif
   LUA_TO_C_FUNCTION "('main')\n"
-  "class1."LUA_TO_C_FUNCTION"('first', 1)\n"
-  "class2."LUA_TO_C_FUNCTION"('second', 2)\n"
-  LUA_VARIABLE"="LUA_VAR_NEW_VALUE"\n"
-  "function "C_TO_LUA_FUNCTION"(a, b)\n"
+  "class1." LUA_TO_C_FUNCTION "('first', 1)\n"
+  "class2." LUA_TO_C_FUNCTION "('second', 2)\n"
+  LUA_VARIABLE "=" LUA_VAR_NEW_VALUE "\n"
+  "function " C_TO_LUA_FUNCTION "(a, b)\n"
   "  return 'a+b=' .. (a + b)\n"
   "end\n";
 

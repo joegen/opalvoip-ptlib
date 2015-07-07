@@ -738,8 +738,9 @@ dnl see if using GNU glibc++, because then we have atomic integer operations
 dnl MSWIN_DISPLAY    atomic,Has std::atomic
 dnl MSWIN_DEFINE     atomic,P_STD_ATOMIC
 
-AC_MSG_CHECKING(if atomic integer available)
-AC_TRY_COMPILE(
+MY_COMPILE_IFELSE(
+   [if has std::atomic],
+   [$CPP11_FLAGS],
    [#include <atomic>],
    [
       std::atomic<unsigned> val;
@@ -747,10 +748,12 @@ AC_TRY_COMPILE(
    ],
    [
       AC_DEFINE(P_STD_ATOMIC, 1)
-      AC_MSG_RESULT([yes (std)])
    ],
    [
-   AC_TRY_LINK(
+   MY_LINK_IFELSE(
+      [if has builtin atomic],
+      [],
+      [],
       [],
       [
          int val;
@@ -758,13 +761,16 @@ AC_TRY_COMPILE(
       ],
       [
          AC_DEFINE(P_ATOMICITY_BUILTIN,1)
-         AC_MSG_RESULT([yes (builtin)])
       ],
-      AC_TRY_COMPILE(
+      MY_COMPILE_IFELSE(
+         [if has bits/atomicity.h],
+         [],
          [#include <bits/atomicity.h>],
          [_Atomic_word val],
          [P_ATOMICITY_HEADER="<bits/atomicity.h>"],
-         AC_TRY_COMPILE(
+         MY_COMPILE_IFELSE(
+            [if has ext/atomicity.h],
+            [],
             [#include <ext/atomicity.h>],
             [_Atomic_word val],
             [P_ATOMICITY_HEADER="<ext/atomicity.h>"],
@@ -2068,12 +2074,18 @@ PTLIB_MODULE_OPTION(
 dnl ########################################################################
 dnl check for GStreamer library
 
-dnl MSWIN_DISPLAY    gstreamer,GStreamer (OSSBuild)
+dnl MSWIN_DISPLAY    gstreamer,GStreamer 0.10 (OSSBuild)
 dnl MSWIN_CHECK_FILE gstreamer,include\gstreamer-0.10\gst\gst.h,P_GSTREAMER_WIN32=1
 dnl MSWIN_DIR_SYMBOL gstreamer,GSTREAMER_DIR
 dnl MSWIN_CHECK_DIR  gstreamer,\gstreamer-sdk\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,%ProgramFiles%\gstreamer-sdk\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,%ProgramW6432%\gstreamer-sdk\0.10\x86
+
+dnl MSWIN_DISPLAY    gstreamer1,GStreamer 1.0
+dnl MSWIN_CHECK_FILE gstreamer1,include\gstreamer-1.0\gst\gst.h,P_GSTREAMER_WIN32=1
+dnl MSWIN_DIR_SYMBOL gstreamer1,GSTREAMER1_DIR
+dnl MSWIN_DEFINE     gstreamer1,P_GSTREAMER_1_0_API
+dnl MSWIN_CHECK_DIR  gstreamer1,\gstreamer\1.0\x86
 
 PTLIB_MODULE_OPTION(
    [GSTREAMER], 

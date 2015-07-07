@@ -33,21 +33,26 @@ class PPluginManager : public PObject
 {
     PCLASSINFO(PPluginManager, PObject);
   public:
-    // static functions for accessing global instances of plugin managers
+    /// static functions for accessing global instances of plugin managers
     static PPluginManager & GetPluginManager();
 
-    // Add a directory to the list of plugin directories (used by OPAL)
+    /// Add a directory to the list of plugin directories (used by OPAL)
     void AddDirectory(const PDirectory & dir);
 
-    /* Set the list of plugin directories using ':' or ';' (depending on
-       platform) separated string. */
+    /** Set the list of plugin directories using ':' or ';' (depending on
+        platform) separated string. */
     void SetDirectories(const PString & dirs);
 
-    /* Set the list of plugin directories. */
+    /// Set the list of plugin directories.
     void SetDirectories(const PStringArray & dirs);
 
-    // Load the plugins in the directories.
+    /// Get the list of plugin directories.
+    const PList<PDirectory> & GetDirectories() const { return m_directories; }
+
+    /// Load the plugins in the directories.
     void LoadDirectories();
+
+    /// Load the plugins in the directory.
     void LoadDirectory(const PDirectory & dir);
 
     // functions to load/unload a dynamic plugin 

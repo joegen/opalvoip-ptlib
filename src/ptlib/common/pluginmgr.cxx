@@ -506,16 +506,19 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, P_INT_PTR code)
 
 void PluginLoaderStartup::OnStartup()
 {
-  PString env = ::getenv(P_PTLIB_PLUGIN_DIR_ENV_VAR);
-  if (env.IsEmpty())
-    env = ::getenv(P_PWLIB_PLUGIN_DIR_ENV_VAR);
-  if (env.IsEmpty()) {
-    env = P_DEFAULT_PLUGIN_DIR;
-    PDirectory appdir = PProcess::Current().GetFile().GetDirectory();
-    if (!appdir.IsRoot())
-      env += PPATH_SEPARATOR + appdir;
+  PPluginManager & pluginMgr = PPluginManager::GetPluginManager();
+  if (pluginMgr.GetDirectories().IsEmpty()) {
+    PString env = ::getenv(P_PTLIB_PLUGIN_DIR_ENV_VAR);
+    if (env.IsEmpty())
+      env = ::getenv(P_PWLIB_PLUGIN_DIR_ENV_VAR);
+    if (env.IsEmpty()) {
+      env = P_DEFAULT_PLUGIN_DIR;
+      PDirectory appdir = PProcess::Current().GetFile().GetDirectory();
+      if (!appdir.IsRoot())
+        env += PPATH_SEPARATOR + appdir;
+    }
+    pluginMgr.SetDirectories(env);
   }
-  PPluginManager::GetPluginManager().SetDirectories(env);
 
   // load the plugin module managers
   PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
@@ -524,12 +527,12 @@ void PluginLoaderStartup::OnStartup()
     PFactory<PPluginModuleManager>::CreateInstance(*it)->OnStartup();
 
   // load the actual DLLs, which will also load the system plugins
-  PPluginManager::GetPluginManager().LoadDirectories();
+  pluginMgr.LoadDirectories();
 
   // load the static plug in services/devices
   PPluginFactory::KeyList_T keys = PPluginFactory::GetKeyList();
   for (PPluginFactory::KeyList_T::iterator it = keys.begin(); it != keys.end(); ++it)
-    PPluginManager::GetPluginManager().RegisterService(it->c_str());
+    pluginMgr.RegisterService(it->c_str());
 }
 
 
