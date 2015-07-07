@@ -203,7 +203,7 @@ struct PHTTPClient_FileWriter : public PHTTPContentProcessor
       return NULL;
 
     off_t left = m_file.GetLength() - m_file.GetPosition();
-    size = left > sizeof(m_buffer) ? (PINDEX)sizeof(m_buffer) : (PINDEX)left;
+    size = left > (off_t)sizeof(m_buffer) ? (PINDEX)sizeof(m_buffer) : (PINDEX)left;
     if (m_file.Read(m_buffer, size))
       return m_buffer;
 

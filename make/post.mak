@@ -49,12 +49,15 @@ STANDARD_TARGETS +=\
 .PHONY: $(STANDARD_TARGETS) all help internal_shared internal_static internal_build internal_clean internal_depend internal_libs
 
 # Default goal
-default_goal : internal_depend internal_build
+default_goal : internal_depend internal_build opt
 	@echo DEBUG_BUILD=$(DEBUG_BUILD) $(OBJDIR)
 
+internal_build ::
+	@echo Build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
 
 help :
 	@echo "The following targets are available:"
+	@echo "  make               The same as make opt"
 	@echo "  make opt           Make optimised version of application"
 	@echo "  make debug         Make debug version of application"
 	@echo "  make both          Make both versions of application"
@@ -128,15 +131,15 @@ endif
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $<
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPP11_FLAGS) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $<
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPP11_FLAGS) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CXXFLAGS)) -c $<
+	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPP11_FLAGS) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
@@ -167,17 +170,17 @@ DEPS	  = $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPP11_FLAGS)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPP11_FLAGS)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPP11_FLAGS)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi

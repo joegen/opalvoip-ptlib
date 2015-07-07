@@ -361,7 +361,8 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
     BitBlt(hMemDC, 0, 0, width, height, hScrDC, rect.left, rect.top, SRCCOPY);
   else {
     // Get a better quality scale
-    SetStretchBltMode(hMemDC, STRETCH_DELETESCANS);
+    SetStretchBltMode(hMemDC, HALFTONE);
+    SetBrushOrgEx(hMemDC, 0, 0, NULL);
     StretchBlt(hMemDC, 0, 0, framewidth, frameheight, hScrDC, rect.left, rect.top, width, height, SRCCOPY);
   }
 

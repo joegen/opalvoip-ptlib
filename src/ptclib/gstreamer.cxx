@@ -50,6 +50,9 @@
   #pragma comment(lib, P_GST_APP_LIBRARY)
   #pragma comment(lib, P_GOBJECT_LIBRARY)
   #pragma comment(lib, P_GLIB_LIBRARY)
+  #if GST_CHECK_VERSION(1,0,0)
+    #pragma comment(lib, P_GIO_LIBRARY)
+  #endif
 #else
   #include <gst/gst.h>
 #endif
@@ -244,6 +247,66 @@ void PGObject::Unreference()
 {
   if (IsValid())
     gst_object_unref(Ptr());
+}
+
+
+bool PGObject::Set(const char * attribute, bool value)
+{
+  if (!IsValid())
+    return false;
+
+  g_object_set(Ptr(), attribute, value, NULL);
+  return true;
+}
+
+
+bool PGObject::Get(const char * attribute, bool & value)
+{
+  if (!IsValid())
+    return false;
+
+  g_object_get(Ptr(), attribute, &value, NULL);
+  return true;
+}
+
+
+bool PGObject::Set(const char * attribute, int value)
+{
+  if (!IsValid())
+    return false;
+
+  g_object_set(Ptr(), attribute, value, NULL);
+  return true;
+}
+
+
+bool PGObject::Get(const char * attribute, int & value)
+{
+  if (!IsValid())
+    return false;
+
+  g_object_get(Ptr(), attribute, &value, NULL);
+  return true;
+}
+
+
+bool PGObject::Set(const char * attribute, double value)
+{
+  if (!IsValid())
+    return false;
+
+  g_object_set(Ptr(), attribute, value, NULL);
+  return true;
+}
+
+
+bool PGObject::Get(const char * attribute, double & value)
+{
+  if (!IsValid())
+    return false;
+
+  g_object_get(Ptr(), attribute, &value, NULL);
+  return true;
 }
 
 

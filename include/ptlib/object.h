@@ -487,11 +487,11 @@ public:
   #define PTRACE_ARG_OPTION   "trace-option"
 
   #define PTRACE_ARGLIST_EXT(t,l,o,r,O) \
-    t"-"PTRACE_ARG_TRACE".     Trace enable (use multiple times for more detail).\n" \
-    l"-"PTRACE_ARG_LEVEL":     Specify trace detail level.\n" \
-    o"-"PTRACE_ARG_OUTPUT":    Specify filename for trace output\rMay be special value such as \"stderr\" dependent on platform.\n" \
-    r"-"PTRACE_ARG_ROLLOVER":  Specify trace file rollover file name pattern.\n" \
-    O"-"PTRACE_ARG_OPTION":    Specify trace option(s),\r" PTRACE_ARGLIST_OPT_HELP "\n"
+    t "-" PTRACE_ARG_TRACE ".     Trace enable (use multiple times for more detail).\n" \
+    l "-" PTRACE_ARG_LEVEL ":     Specify trace detail level.\n" \
+    o "-" PTRACE_ARG_OUTPUT ":    Specify filename for trace output\rMay be special value such as \"stderr\" dependent on platform.\n" \
+    r "-" PTRACE_ARG_ROLLOVER ":  Specify trace file rollover file name pattern.\n" \
+    O "-" PTRACE_ARG_OPTION ":    Specify trace option(s),\r" PTRACE_ARGLIST_OPT_HELP "\n"
 
   #define PTRACE_ARGLIST PTRACE_ARGLIST_EXT("t","","o","","")
   

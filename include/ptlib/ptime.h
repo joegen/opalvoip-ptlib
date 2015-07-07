@@ -213,7 +213,7 @@ class PTime : public PObject
       */
     void SetTimestamp(
       time_t seconds,
-      long usecs = 0
+      int64_t usecs = 0
     );
 
     /**Get the total seconds since the epoch. The epoch is the 1st
@@ -443,6 +443,7 @@ class PTime : public PObject
       ShortTime,      ///< Time without seconds.
       EpochTime,      ///< Epoch format (e.g. 1234476388.123456)
       LoggingFormat,  ///< Format used by logging. (eg. 2011/02/09 11:13:06.312)
+      TodayFormat,    ///< If +/- 12 hours, only prints hh:mm:ss.uuu, otherwise LoggingFormat
       NumTimeStrings
     };
 
@@ -626,14 +627,20 @@ class PTime : public PObject
 class P_timeval
 {
 public:
-  P_timeval();
+  P_timeval(long secs = 0, long usecs = 0);
 
   P_timeval(const PTimeInterval & time)
   {
     operator=(time);
   }
 
+  P_timeval(const PTime & time)
+  {
+    operator=(time);
+  }
+
   P_timeval & operator=(const PTimeInterval & time);
+  P_timeval & operator=(const PTime & time);
 
   operator timeval*()
   {
