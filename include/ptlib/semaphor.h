@@ -93,7 +93,7 @@ class PSemaphore : public PSync
 
     /** Create a new semaphore with the same initial and maximum values as the original.
      */
-    PSemaphore(const PSemaphore & sem) { Reset(sem.m_initial, sem.m_maximum); }
+    PSemaphore(const PSemaphore & sem) : PSync() { Reset(sem.m_initial, sem.m_maximum); }
 
     /**Destroy the semaphore. This will assert if there are still waiting
        threads on the semaphore.
