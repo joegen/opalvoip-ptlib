@@ -117,7 +117,7 @@ struct PWinSock : public PProcessStartup
       QOS_VERSION qosVersion;
       qosVersion.MajorVersion = 1;
       qosVersion.MinorVersion = 0;
-      PAssert(QOSCreateHandle(&qosVersion, &m_hQoS), POperatingSystemError);
+      QOSCreateHandle(&qosVersion, &m_hQoS);
       FreeLibrary(hTest);
     }
 #endif // P_QWAVE
@@ -127,7 +127,7 @@ struct PWinSock : public PProcessStartup
   {
 #if P_QWAVE
     if (m_hQoS != NULL)
-      PAssert(QOSCloseHandle(m_hQoS), POperatingSystemError);
+      QOSCloseHandle(m_hQoS);
 #endif // P_QWAVE
 
     WSACleanup();
