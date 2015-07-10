@@ -15,7 +15,7 @@ suffix=
 objdir=obj/@target@$(suffix)
 
 cppflags=-I${includedir} @CPPFLAGS@
-cxxflags=-I${includedir} @CPPFLAGS@ @CXXFLAGS@
+cxxflags=-I${includedir} @CPPFLAGS@ @CXXFLAGS@ @CPP11_FLAGS@
 Cflags: -I${includedir} @CPPFLAGS@ @CFLAGS@
 Libs.private: @LDFLAGS@ @LIBS@
 Libs: -L${libdir} -lpt${suffix}
