@@ -1479,7 +1479,7 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
   while (pos < expr.GetLength()) {
     if (expr[pos] == '\'') {
       PINDEX quote = expr.Find('\'', ++pos);
-      PTRACE_IF(2, quote == P_MAX_INDEX, "VXML\tMismatched quote, ignoring transfer");
+      PTRACE_IF(2, quote == P_MAX_INDEX, "VXML\tMismatched quote, ignoring expression");
       result += expr(pos, quote-1);
       pos = quote+1;
     }
