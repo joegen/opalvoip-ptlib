@@ -1,0 +1,11 @@
+config.log
+config.status
+autom4te.cache
+ptlib.pc
+ptlib_cfg.dxy
+revision.h
+make/ptlib_config.mak
+include/ptlib_config.h
+src/ptlib/common/getdate.c
+lib_*
+
