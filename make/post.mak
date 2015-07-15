@@ -46,13 +46,13 @@ STANDARD_TARGETS +=\
   optlibs     debuglibs     bothlibs \
   release
 
-.PHONY: $(STANDARD_TARGETS) all help internal_shared internal_static internal_build internal_clean internal_depend internal_libs
+.PHONY: $(STANDARD_TARGETS) all help internal_shared internal_static internal_build internal_clean internal_depend internal_libs print_info
 
 # Default goal
-default_goal : internal_depend internal_build opt
+default_goal : internal_depend print_info opt
 	@echo DEBUG_BUILD=$(DEBUG_BUILD) $(OBJDIR)
 
-internal_build ::
+print_info :
 	@echo Build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
 
 help :
