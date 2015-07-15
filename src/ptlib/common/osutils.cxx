@@ -339,9 +339,13 @@ PTHREAD_MUTEX_RECURSIVE_NP
     }
 #endif
     else {
+      PDirectory dir(m_filename);
+      if (dir.Exists())
+        m_filename = dir + "opal_%P.log";
+
       PFilePath fn(m_filename);
       fn.Replace("%P", PString(PProcess::GetCurrentProcessID()));
-     
+
       if ((m_options & RotateLogMask) != 0)
         fn = fn.GetDirectory() +
              fn.GetTitle() +
