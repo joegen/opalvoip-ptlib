@@ -3154,11 +3154,31 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
 
        The default behaviour reads input of the form "key=value\\nkey=value"
        until <code>!strm.good()</code>.
+
+       If there are more than one line with the same key they dictionary entry
+       is is appended to with '\n' separator.
      */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
     );
   //@}
+
+  /**@name New functions for class */
+  //@{
+    /// Actions to take when doing a PStringToString::Merge()
+    enum MergeAction
+    {
+      e_MergeOverwrite, ///< Overwrite destination keys value
+      e_MergeIgnore,    ///< Ignore new value, leave desstination as is
+      e_MergeAppend     ///< Append to existing key value, separated by '\n'
+    };
+    /**Merge string dictionary into this dictionary.
+       If \p unique is true, then if the merge value for a key is the same
+      */
+    void Merge(
+      const PStringToString & merge, ///< Strings to merge
+      MergeAction action
+    );
 
     /**Create an array of C strings.
        If withEqualSign is true then array is GetSize()+1 strings of the form
@@ -3179,10 +3199,13 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
 
     /**Set dictionary from string.
        The string is expected to be of the form "key=value\\nkey=value".
+       If there are more than one line with the same key they dictionary entry
+       is is appended to with '\n' separator.
       */
     void FromString(
       const PString & str  ///< String to read dictionary from
     );
+  //@}
 };
 
 
