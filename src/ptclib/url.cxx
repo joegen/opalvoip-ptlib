@@ -876,9 +876,14 @@ void PURL::SetParameters(const PString & parameters)
 }
 
 
-void PURL::SetParamVars(const PStringToString & p)
+void PURL::SetParamVars(const PStringToString & p, bool merge)
 {
-  paramVars = p;
+  if (merge)
+    paramVars.Merge(p, PStringToString::e_MergeIgnore);
+  else {
+    paramVars = p;
+    paramVars.MakeUnique();
+  }
   Recalculate();
 }
 
