@@ -536,7 +536,7 @@ PChannel::AsyncContext::AsyncContext(void * buf, PINDEX len, const AsyncNotifier
   , m_channel(NULL)
   , m_onComplete(NULL)
 {
-  memset(this, 0, sizeof(AsyncContextBase));
+  memset(static_cast<AsyncContextBase*>(this), 0, sizeof(AsyncContextBase));
 }
 
 
