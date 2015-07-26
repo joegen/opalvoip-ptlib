@@ -2984,7 +2984,12 @@ void PStringToString::ReadFrom(istream & strm)
 
     PString key, value;
     str.Split('=', key, value, PString::SplitDefaultToBefore);
-    SetAt(key, value);
+
+    PString * ptr = GetAt(key);
+    if (ptr != NULL)
+      *ptr += '\n' + value;
+    else
+      SetAt(key, value);
   }
 }
 
@@ -2995,6 +3000,18 @@ void PStringToString::FromString(const PString & str)
 
   PStringStream strm(str);
   strm >> *this;
+}
+
+
+void PStringToString::Merge(const PStringToString & other, MergeAction action)
+{
+  for (const_iterator it = other.begin(); it != other.end(); ++it) {
+    PString * str = GetAt(it->first);
+    if (str == NULL || action == e_MergeOverwrite)
+      SetAt(it->first, it->second);
+    else if (action = e_MergeAppend)
+      *str += '\n' + it->second;
+  }
 }
 
 
