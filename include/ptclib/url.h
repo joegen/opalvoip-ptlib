@@ -301,7 +301,10 @@ class PURL : public PObject
 
     /// Set the parameter (;) field(s) of the URL as a string dictionary.
     /// Note the values will be translated using TranslateString
-    void SetParamVars(const PStringToString & paramVars);
+    void SetParamVars(
+      const PStringToString & paramVars,
+      bool merge = false
+    );
 
     /// Set the parameter (;) field of the URL as a string dictionary.
     /// Note the values will be translated using TranslateString
