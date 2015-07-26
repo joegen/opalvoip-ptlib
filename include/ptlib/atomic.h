@@ -185,13 +185,11 @@ private:
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned   int);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(  signed  long);
   P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned  long);
-  #if !defined(__arm__) || __GNUC__ > 4 || __GNUC_MINOR__ >= 6  // ARM build doesn't link before v4.6
-    #if HAVE_LONG_LONG_INT
-      P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(signed long long);
-    #endif
-    #if HAVE_UNSIGNED_LONG_LONG_INT
-      P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned long long);
-    #endif
+  #if HAVE_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(signed long long);
+  #endif
+  #if HAVE_UNSIGNED_LONG_LONG_INT
+    P_DEFINE_ATOMIC_INT_CLASS_BUILTIN(unsigned long long);
   #endif
   P_DEFINE_ATOMIC_PTR_CLASS(__sync_lock_test_and_set, __sync_fetch_and_add, __sync_add_and_fetch, __sync_bool_compare_and_swap);
   
