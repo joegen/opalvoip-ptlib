@@ -49,8 +49,7 @@ STANDARD_TARGETS +=\
 .PHONY: $(STANDARD_TARGETS) all help internal_shared internal_static internal_build internal_clean internal_depend internal_libs
 
 # Default goal
-default_goal : internal_depend internal_build opt
-	@echo DEBUG_BUILD=$(DEBUG_BUILD) $(OBJDIR)
+.DEFAULT_GOAL:=optshared
 
 internal_build ::
 	@echo Build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
@@ -106,8 +105,12 @@ optstatic debugstatic :: INTERNAL_STATIC_BUILD:=yes
 
 clean optclean debugclean :: MAKEFLAGS+=--no-print-directory
 
+ifndef ALLOW_PARALLEL
+.NOTPARALLEL:
+endif
+
 optshared debugshared optstatic debugstatic optclean debugclean optdepend debugdepend optlibs debuglibs ::
-	+$(Q_MAKE) --file="$(firstword $(MAKEFILE_LIST))" DEBUG_BUILD=$(INTERNAL_DEBUG_BUILD) STATIC_BUILD=$(INTERNAL_STATIC_BUILD) internal_$(subst opt,,$(subst debug,,$@))
+	+$(Q_MAKE) --file="$(firstword $(MAKEFILE_LIST))" ALLOW_PARALLEL=1 DEBUG_BUILD=$(INTERNAL_DEBUG_BUILD) STATIC_BUILD=$(INTERNAL_STATIC_BUILD) internal_$(subst opt,,$(subst debug,,$@))
 
 
 # For backward compatibility reasons
