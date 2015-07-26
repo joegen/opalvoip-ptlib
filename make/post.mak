@@ -49,7 +49,7 @@ STANDARD_TARGETS +=\
 .PHONY: $(STANDARD_TARGETS) all help internal_shared internal_static internal_build internal_clean internal_depend internal_libs
 
 # Default goal
-.DEFAULT_GOAL:=optshared
+.DEFAULT_GOAL:=opt
 
 internal_build ::
 	@echo Build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
