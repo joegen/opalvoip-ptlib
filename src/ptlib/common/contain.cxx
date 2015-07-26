@@ -3009,7 +3009,7 @@ void PStringToString::Merge(const PStringToString & other, MergeAction action)
     PString * str = GetAt(it->first);
     if (str == NULL || action == e_MergeOverwrite)
       SetAt(it->first, it->second);
-    else if (action = e_MergeAppend)
+    else if (action == e_MergeAppend)
       *str += '\n' + it->second;
   }
 }
