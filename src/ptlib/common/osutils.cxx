@@ -366,13 +366,16 @@ PTHREAD_MUTEX_RECURSIVE_NP
         outputFirstLog = true;
       }
       else {
-        PStringStream msgstrm;
-        msgstrm << PProcess::Current().GetName() << ": Could not open trace output file \"" << fn << '"';
+        ostringstream msgstrm;
+        if (PProcess::IsInitialised())
+          msgstrm << PProcess::Current().GetName() << ": ";
+        msgstrm << "Could not open trace output file  \"" << fn << "\"\n"
+                << traceOutput->GetErrorText();
 #ifdef WIN32
-        PVarString msg(msgstrm);
+        PVarString msg(msgstrm.str().c_str());
         MessageBox(NULL, msg, NULL, MB_OK|MB_ICONERROR);
 #else
-        fputs(msgstrm, stderr);
+        fputs(msgstrm.str().c_str(), stderr);
 #endif
         delete traceOutput;
       }
@@ -397,8 +400,20 @@ PTHREAD_MUTEX_RECURSIVE_NP
       if ((m_options & RotateLogMask) == 0)
         log << '"' << m_filename;
       else {
+        log << " rollover every ";
+        switch (m_options & RotateLogMask) {
+          case RotateDaily :
+            log << "day";
+            break;
+          case RotateHourly :
+            log << "hour";
+            break;
+          case RotateMinutely :
+            log << "minute";
+            break;
+        }
         PFilePath fn(m_filename);
-        log << " rollover=\"" << fn.GetDirectory() << fn.GetTitle() << m_rolloverPattern << fn.GetType();
+        log << " to \"" << fn.GetDirectory() << fn.GetTitle() << m_rolloverPattern << fn.GetType();
       }
       log << '"' << endl;
     }
