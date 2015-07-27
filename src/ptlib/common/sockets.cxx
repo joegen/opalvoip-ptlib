@@ -2531,30 +2531,14 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
 // PUDPSocket
 
 PUDPSocket::PUDPSocket(WORD newPort, int iAddressFamily)
-#if P_HAS_IPV6
-  : m_sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
-    m_lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
-#else
-  : m_sendAddress(loopback4),
-    m_lastReceiveAddress(loopback4)
-#endif
 {
-  m_sendPort = 0;
   SetPort(newPort);
   OpenSocket(iAddressFamily);
 }
 
 
 PUDPSocket::PUDPSocket(const PString & service, int iAddressFamily)
-#if P_HAS_IPV6
-  : m_sendAddress(iAddressFamily == AF_INET ? loopback4 : loopback6),
-    m_lastReceiveAddress(iAddressFamily == AF_INET ? loopback4 : loopback6)
-#else
-  : m_sendAddress(loopback4),
-    m_lastReceiveAddress(loopback4)
-#endif
 {
-  m_sendPort = 0;
   SetPort(service);
   OpenSocket(iAddressFamily);
 }
@@ -2681,8 +2665,7 @@ void PUDPSocket::SetSendAddress(const PIPSocketAddressAndPort & addressAndPort)
 
 void PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr)
 {
-  m_sendAddress = addr.GetAddress();
-  m_sendPort    = addr.GetPort();
+  m_sendAddressAndPort = addr;
 }
 
 
@@ -2703,13 +2686,13 @@ void PUDPSocket::GetSendAddress(PIPSocketAddressAndPort & addr) const
 
 PString PUDPSocket::GetSendAddress() const
 {
-  return m_sendAddress.AsString(true) + psprintf(":%u", m_sendPort);
+  return m_sendAddressAndPort.AsString();
 }
 
 
 void PUDPSocket::InternalGetSendAddress(PIPSocketAddressAndPort & addr) const
 {
-  addr = PIPSocketAddressAndPort(m_sendAddress, m_sendPort);
+  addr = m_sendAddressAndPort;
 }
 
 
@@ -2730,20 +2713,19 @@ void PUDPSocket::GetLastReceiveAddress(PIPSocketAddressAndPort & ap) const
 
 PString PUDPSocket::GetLastReceiveAddress() const
 {
-  return m_lastReceiveAddress.AsString(true) + psprintf(":%u", m_lastReceivePort);
+  return m_lastReceiveAddressAndPort.AsString();
 }
 
 
 void PUDPSocket::InternalGetLastReceiveAddress(PIPSocketAddressAndPort & ap) const
 {
-  ap = PIPSocketAddressAndPort(m_lastReceiveAddress, m_lastReceivePort);
+  ap = m_lastReceiveAddressAndPort;
 }
 
 
 void PUDPSocket::InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & ap)
 {
-  m_lastReceiveAddress = ap.GetAddress();
-  m_lastReceivePort    = ap.GetPort();
+  m_lastReceiveAddressAndPort = ap;
 }
 
 
@@ -2820,11 +2802,11 @@ PString PIPSocket::AddressAndPort::AsString(char separator) const
 {
   PString str;
 
-  if (m_address.IsValid())
+  if (m_address.IsValid()) {
     str = m_address.AsString(true, true);
-
-  if (m_port != 0)
-    str.sprintf("%c%u", separator ? separator : m_separator, m_port);
+    if (m_port != 0)
+      str.sprintf("%c%u", separator ? separator : m_separator, m_port);
+  }
 
   return str;
 }

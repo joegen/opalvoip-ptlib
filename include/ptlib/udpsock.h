@@ -160,11 +160,8 @@ class PUDPSocket : public PIPDatagramSocket
 #endif
 
     private:
-      Address m_sendAddress;
-      WORD    m_sendPort;
-
-      Address m_lastReceiveAddress;
-      WORD    m_lastReceivePort;
+      AddressAndPort m_sendAddressAndPort;
+      AddressAndPort m_lastReceiveAddressAndPort;
 };
 
 
