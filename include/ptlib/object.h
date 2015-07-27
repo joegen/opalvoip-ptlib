@@ -945,7 +945,7 @@ class PTraceSaveContextIdentifier
     ~PTraceSaveContextIdentifier();
 };
 
-#define PTRACE_CONTEXT_ID_PUSH_THREAD(obj) PTraceSaveContextIdentifier praceSavedContextIdentifier(obj)
+#define PTRACE_CONTEXT_ID_PUSH_THREAD(obj) PTraceSaveContextIdentifier ptraceSavedContextIdentifier(obj)
 
 #endif // PTRACING==2
 
