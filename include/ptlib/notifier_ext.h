@@ -269,7 +269,8 @@ class PNotifierListTemplate : public PObject
     /// Add a notifier to the list
     void Add(const Notifier & handler)
     {
-      this->m_list.push_back(handler);
+      if (std::find(this->m_list.begin(), this->m_list.end(), handler) == this->m_list.end())
+        this->m_list.push_back(handler);
     }
 
     /// Remove notifier from teh list
