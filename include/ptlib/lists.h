@@ -410,8 +410,10 @@ template <class T> class PList : public PAbstractList
 
     value_type & front() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->head)->data); }
     value_type & back() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->tail)->data); }
-    void erase(const iterator & it) { this->RemoveElement(it.element); }
-    void erase(const const_iterator & it) { this->RemoveElement(it.element); }
+    __inline void erase(const iterator & it) { this->RemoveElement(it.element); }
+    __inline void erase(const const_iterator & it) { this->RemoveElement(it.element); }
+    __inline void push_front(const value_type & value) { this->InsertAt(0, new value_type(value)); }
+    __inline void push_back(const value_type & value) { this->Append(new value_type(value)); }
     __inline void pop_front() { this->RemoveHead(); }
     __inline void pop_back() { this->RemoveTail(); }
   //@}
@@ -1091,8 +1093,9 @@ template <class T> class PSortedList : public PAbstractSortedList
 
     void erase(const iterator & it)       { PAssert(this == it.m_list, PLogicError); this->RemoveElement(it.m_element); }
     void erase(const const_iterator & it) { PAssert(this == it.m_list, PLogicError); this->RemoveElement(it.m_element); }
-    void pop_front() { erase(begin()); }
-    void pop_back() { erase(rbegin()); }
+    __inline void insert(const value_type & value) { this->Append(new value_type(value)); }
+    __inline void pop_front() { this->erase(this->begin()); }
+    __inline void pop_back() { this->erase(this->rbegin()); }
   //@}
 
   protected:
