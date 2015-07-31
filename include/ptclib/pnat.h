@@ -392,7 +392,7 @@ class PNatCandidate : public PObject
     PNatMethod::Component   m_component;
     unsigned                m_priority;
     PString                 m_foundation;             // ICE support
-    PString                 m_protocol;               // Almost invariably "udp"
+    PCaselessString         m_protocol;               // Almost invariably "udp"
     PIPSocketAddressAndPort m_baseTransportAddress;   // Address of physical host
     PIPSocketAddressAndPort m_localTransportAddress;  // Address presented to remote system
 };
