@@ -2579,6 +2579,25 @@ PSSLChannelDTLS::~PSSLChannelDTLS()
 }
 
 
+bool PSSLChannelDTLS::SetMTU(unsigned mtu)
+{
+  if (m_ssl == NULL)
+    return false;
+
+  static unsigned MinMTU = 576-8-20; // RFC879 indicates this is ALWAYS good
+  if (mtu < MinMTU)
+    mtu = MinMTU;
+  else if (mtu > 65535) // Largest possible UDP packet
+    mtu = 65535;
+
+#ifdef SSL_OP_NO_QUERY_MTU
+  SSL_set_options(m_ssl, SSL_OP_NO_QUERY_MTU);
+#endif
+  SSL_set_mtu(m_ssl, mtu);
+  return true;
+}
+
+
 bool PSSLChannelDTLS::ExecuteHandshake()
 {
   PTRACE(5, "DTLS executing handshake.");
