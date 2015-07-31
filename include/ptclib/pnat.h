@@ -383,6 +383,7 @@ class PNatCandidate : public PObject
       const char * foundation = NULL
     );
 
+    virtual Comparison Compare(const PObject & other) const;
     virtual void PrintOn(ostream & strm) const;
 
     void CalculatePriority();
