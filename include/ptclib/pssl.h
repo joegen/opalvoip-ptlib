@@ -1005,12 +1005,24 @@ class PSSLChannelDTLS : public PSSLChannel
     */
     ~PSSLChannelDTLS();
 
+    /** Set the MTU for DTLS handshake.
+        Note, should be done before calling ExecuteHandshake().
+      */
+    bool SetMTU(
+      unsigned bytes
+    );
+
     /** Perform negotiation handshake.
       */
     bool ExecuteHandshake();
 
+    /// Indicate we are operating as a server
     bool IsServer() const;
+
+    /// Get the selected profile name.
     PCaselessString GetSelectedProfile() const;
+
+    /// Get the key material after exchange completed.
     PBYTEArray GetKeyMaterial(
       PINDEX materialSize,
       const char * name
