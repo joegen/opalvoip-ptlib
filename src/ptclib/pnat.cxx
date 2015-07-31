@@ -449,6 +449,29 @@ PNatCandidate::PNatCandidate(Types type, PNatMethod::Component component, const 
 }
 
 
+PObject::Comparison PNatCandidate::Compare(const PObject & obj) const
+{
+  const PNatCandidate & other = dynamic_cast<const PNatCandidate &>(obj);
+  if (m_priority < other.m_priority)
+    return LessThan;
+  if (m_priority > other.m_priority)
+    return GreaterThan;
+  if (m_type < other.m_type)
+    return LessThan;
+  if (m_type > other.m_type)
+    return GreaterThan;
+  if (m_component < other.m_component)
+    return LessThan;
+  if (m_component > other.m_component)
+    return GreaterThan;
+  if (m_protocol < other.m_protocol)
+    return LessThan;
+  if (m_protocol > other.m_protocol)
+    return GreaterThan;
+  return m_foundation.Compare(other.m_foundation);
+}
+
+
 void PNatCandidate::PrintOn(ostream & strm) const
 {
   switch (m_type) {
