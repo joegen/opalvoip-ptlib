@@ -1190,7 +1190,7 @@ class PHTTPServer : public PHTTP
 
     /**Called when a request indicates a swtch to WebSocket protocol.
        This will complete the WebSocket handshake if m_webSocketNotifiers
-       contains and entry for an offerred protocol. If none, a 404 is
+       contains and entry for an offered protocol. If none, a 404 is
        returned and the socket remains in HTTP mode.
 
        After the start up handshake has completed, if there is a notifier and
