@@ -1487,11 +1487,20 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
    PString textLine[PVideoFont::MAX_L_HEIGHT];
 };
 
-PCREATE_VIDINPUT_PLUGIN(FakeVideo);
+PCREATE_VIDINPUT_PLUGIN_EX(FakeVideo,
+  virtual bool ValidateDeviceName(const PString & devName, P_INT_PTR /*userData*/) const
+  {
+    for (PINDEX chan = 0; chan < PARRAYSIZE(FakeDeviceNames) - 1; ++chan) {
+      if (devName.Left(devName.Find('=')) *= FakeDeviceNames[chan])
+        return true;
+    }
+    return false;
+  }
+);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_FakeVideo
-
 
 PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
   : m_open(false)
@@ -1505,14 +1514,38 @@ PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
 }
 
 
-
 PBoolean PVideoInputDevice_FakeVideo::Open(const PString & devName, PBoolean /*startImmediate*/)
 {
-  PINDEX i;
-  for (i = 0; i < PARRAYSIZE(FakeDeviceNames)-1; ++i) {
-    if (devName *= FakeDeviceNames[i]) {
-      SetChannel(i);
-      deviceName = FakeDeviceNames[i];
+  for (PINDEX chan = 0; chan < PARRAYSIZE(FakeDeviceNames)-1; ++chan) {
+    PINDEX equals = devName.Find('=');
+    if (devName.Left(equals) *= FakeDeviceNames[chan]) {
+      deviceName = FakeDeviceNames[chan];
+      SetChannel(chan);
+
+      if (chan == eText) {
+        PStringStream message;
+        if (equals != P_MAX_INDEX)
+          message << devName.Mid(equals+1);
+        else
+          message << PProcess::Current().GetUserName() <<  " on " <<
+                     PProcess::Current().GetOSName() << ":" <<
+                     PProcess::Current().GetOSHardware();
+
+        for (int scanLine = 0; scanLine < PVideoFont::MAX_L_HEIGHT; ++scanLine)
+          textLine[scanLine].MakeEmpty();
+
+        PINDEX nChars = message.GetLength();
+        for (PINDEX i = 0; i < (nChars + 2); i++) {
+          const PVideoFont::LetterData * ld = PVideoFont::GetLetterData(i >= nChars ? ' ' : message[i]);
+          if (ld != NULL) {
+            for (int scanLine = 0; scanLine < PVideoFont::MAX_L_HEIGHT; ++scanLine) {
+              textLine[scanLine] += ld->line[scanLine];
+              textLine[scanLine] += ' ';
+            }
+          }
+        }
+      }
+
       m_open = true;
       return true;
     }
@@ -1989,28 +2022,8 @@ void PVideoInputDevice_FakeVideo::GrabTextVideoFrame(BYTE *resFrame)
            200, 200, 200); //a light grey colour.
 
 
-  if (textLine[0].GetLength() < 2) {
-    PStringStream message;
-    message << PProcess::Current().GetUserName() <<  " on " <<
-               PProcess::Current().GetOSName() << ":" <<
-               PProcess::Current().GetOSHardware();
-    PINDEX nChars = message.GetLength();
-    const PVideoFont::LetterData *ld;
-
-    for (j = 0; j < PVideoFont::MAX_L_HEIGHT; j++)
-      textLine[j] = "";
-
-    for (i = 0; i < (nChars + 2); i++){
-      if (i >= nChars)
-        ld = PVideoFont::GetLetterData(' ');
-      else
-        ld = PVideoFont::GetLetterData(message[i]);
-      if (ld == NULL)
-        continue;
-      for (j = 0; j < PVideoFont::MAX_L_HEIGHT; j++)
-        textLine[j] += ld->line[j] + PString(" ");
-    }
-  }
+  if (textLine[0].GetLength() < 2)
+    return;
 
   PINDEX boxSize = (frameHeight / (PVideoFont::MAX_L_HEIGHT * 2) ) & 0xffe;
   int index = (int)((PTime() - startTime).GetMilliSeconds() / 300);
