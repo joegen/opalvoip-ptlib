@@ -2720,7 +2720,7 @@ PThread * PThread::Create(const PNotifier & notifier,
 
 PThread::~PThread()
 {
-  if (m_type != e_IsProcess && m_type != e_IsExternal)
+  if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(100))
     Terminate();
 
   PTRACE(5, "PTLib\tDestroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
