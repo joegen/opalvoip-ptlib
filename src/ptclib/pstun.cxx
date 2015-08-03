@@ -360,6 +360,11 @@ int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & requ
 
 void PSTUN::SetCredentials(const PString & username, const PString & password, const PString & realm)
 {
+  PTRACE(4, "STUN\tSet credentials:"
+            " username=\"" << username << "\""
+            " password=<" << (password.IsEmpty() ? "empty" : "present") << ">"
+            " realm=\"" << realm << '"');
+
   m_userName = username;
   m_realm    = realm;
   if (username.IsEmpty() || password.IsEmpty()) {
