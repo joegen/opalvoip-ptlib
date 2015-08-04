@@ -1207,7 +1207,7 @@ PINDEX PString::HashFunction() const
       return tolower(theArray[0] & 0xff) % 127;
   }
 
-  static const PINDEX MaxCount = 16;
+  static const PINDEX MaxCount = 18; // Make sure big enough to cover whole PGloballyUniqueID::AsString()
   PINDEX count = std::min(m_length / 2, MaxCount);
   PINDEX hash = 0;
   PINDEX i;
