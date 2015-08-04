@@ -612,6 +612,8 @@ uninstall:
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_STATIC_FILE)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_FILE)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_FILE)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_FILE).$(DEBUGINFOEXT)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_FILE).$(DEBUGINFOEXT)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_LINK)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_LINK))
 
