@@ -46,9 +46,8 @@
 #include <ptlib/videoio.h>
 
 
-/**
- * Abstract class for a file containing a sequence of video frames
- */
+/**Abstract class for a file containing a sequence of video frames.
+  */
 class PVideoFile : public PFile
 {
   PCLASSINFO(PVideoFile, PFile);
@@ -99,11 +98,12 @@ class PVideoFile : public PFile
     PVideoFrameInfo m_videoInfo;
 };
 
-/**
- * A file containing a sequence of raw YUV files in planar 4:2:0 format
- * Example files can be found at http://media.xiph.org/video/derf/
- */
+typedef PFactory<PVideoFile, PFilePathString> PVideoFileFactory;
 
+
+/**A file containing a sequence of raw YUV files in planar 4:2:0 format.
+   Example files can be found at http://media.xiph.org/video/derf/
+  */
 class PYUVFile : public PVideoFile
 {
     PCLASSINFO(PYUVFile, PVideoFile);
@@ -119,17 +119,33 @@ class PYUVFile : public PVideoFile
     bool m_y4mMode;
 };
 
-typedef PFactory<PVideoFile, PFilePathString> PVideoFileFactory;
-
 PFACTORY_LOAD(PYUVFile);
+
+
+/**A file containing a single image, which is repeatedly output.
+  */
+class PBMPFile : public PVideoFile
+{
+    PCLASSINFO(PBMPFile, PVideoFile);
+  public:
+    PBMPFile();
+
+    virtual PBoolean WriteFrame(const void * frame);
+    virtual PBoolean ReadFrame(void * frame);
+
+  protected:
+    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
+
+    PBYTEArray m_imageData;
+};
+
+PFACTORY_LOAD(PBMPFile);
 
 
 #if P_JPEG_DECODER
 
-/**
- * A file containing a JPEG image
- */
-
+/**A file containing a JPEG image, which is repeatedly output.
+  */
 class PJPEGFile : public PVideoFile
 {
   PCLASSINFO(PJPEGFile, PVideoFile);
