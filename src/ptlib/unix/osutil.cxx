@@ -183,7 +183,8 @@ static char *tzname[2] = { "STD", "DST" };
 
 #define new PNEW
 
-#if defined(__arm__) && __GNUC__ <= 4 && __GNUC_MINOR__ < 6
+#if defined(__arm__) && !defined(__llvm__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
+
 // ARM build doesn't link before v4.6
 // This code shamelessly stolen from GCC 4.6 source
 typedef int (__kernel_cmpxchg64_t) (const long long* oldval,
@@ -192,10 +193,10 @@ typedef int (__kernel_cmpxchg64_t) (const long long* oldval,
 #define __kernel_cmpxchg64 (*(__kernel_cmpxchg64_t *) 0xffff0f60)
 
 extern "C" {
-  int64_t __sync_lock_test_and_set_8(int64_t * ptr, in64_t val)
+  long long __sync_lock_test_and_set_8(long long * ptr, long long val)
   {
     int failure;
-    in64_t oldval;
+    long long oldval;
 
     do {
       oldval = *ptr;
@@ -205,7 +206,7 @@ extern "C" {
     return oldval;
   }
 
-  int64_t __sync_add_and_fetch_8(int64_t * ptr, in64_t val)
+  long long __sync_add_and_fetch_8(long long * ptr, long long val)
   {
     int failure;
     long long tmp1,tmp2;
