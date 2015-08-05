@@ -1115,10 +1115,15 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
     return false;
   }
 
+  if ((m_dstFrameWidth | m_dstFrameHeight) & 1) {
+    PTRACE(2,"PColCnv\tCannot have odd output width or height.");
+    return false;
+  }
+
   static const unsigned greenOffset = 1;
 
   const BYTE * scanLinePtrRGB = srcFrameBuffer;
-  int scanLineSizeRGB = rgbIncrement*m_srcFrameWidth;
+  int scanLineSizeRGB = (rgbIncrement*m_srcFrameWidth+3)&~3;
 
   unsigned scanLineSizeY = m_dstFrameWidth;
   unsigned scanLineSizeUV = scanLineSizeY/2;
