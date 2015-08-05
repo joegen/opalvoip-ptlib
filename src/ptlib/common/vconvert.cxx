@@ -401,11 +401,11 @@ PBoolean PColourConverter::ConvertInPlace(BYTE * frameBuffer,
 
 
 #define RGB2Y(r, g, b, y) \
-  ((y)=(BYTE)(((int)257*(r)  +(int)504*(g) +(int)98*(b))/1000))
+  ((y)=(BYTE)((299*(int)(r) + 587*(int)(g) + 114*(int)(b))/1000))
 
 #define RGB2UV(r, g, b, cb, cr) \
-  ((cb)=(BYTE)((-148*(r)  -291*(g) +439*(b))/1000 + 128)), \
-  ((cr)=(BYTE)(( 439*(r)  -368*(g) - 71*(b))/1000 + 128))
+  ((cb)=(BYTE)((-147*(int)(r) - 289*(int)(g) + 436*(int)(b))/1000 + 128)), \
+  ((cr)=(BYTE)(( 615*(int)(r) - 515*(int)(g) - 100*(int)(b))/1000 + 128))
 
 #define RGB2YUV(r, g, b, y, cb, cr) RGB2Y(r, g, b, y), RGB2UV(r, g, b, cb, cr)
 
@@ -1127,28 +1127,31 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
   BYTE * scanLinePtrV = scanLinePtrU+m_dstFrameHeight*scanLineSizeUV/2; // 1 byte V for a block of 4 pixels
 
   if (m_verticalFlip) {
-    scanLinePtrRGB += (m_srcFrameHeight - 1) * m_srcFrameWidth * rgbIncrement;
+    scanLinePtrRGB += (m_srcFrameHeight - 1) * scanLineSizeRGB;
     scanLineSizeRGB = -scanLineSizeRGB;
   }
 
   if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
-    unsigned YUVOffset[4] = { 0, 1, m_dstFrameWidth, m_dstFrameWidth + 1 };
-    unsigned RGBOffset[4] = { 0, rgbIncrement, m_dstFrameWidth*rgbIncrement, (m_dstFrameWidth + 1)*rgbIncrement };
+    int RGBOffset[4] = { 0, rgbIncrement, scanLineSizeRGB, scanLineSizeRGB+rgbIncrement };
+    int YUVOffset[4] = { 0, 1, m_dstFrameWidth, m_dstFrameWidth + 1 };
+    scanLineSizeRGB *= 2;
+    rgbIncrement *= 2;
     for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
+      const BYTE * pixelPtrRGB = scanLinePtrRGB;
       for (unsigned x = 0; x < m_srcFrameWidth; x += 2) {
         unsigned rSum = 0, gSum = 0, bSum = 0;
         for (unsigned p = 0; p < 4; ++p) {
-          unsigned r = scanLinePtrRGB[RGBOffset[p] + redOffset];
-          unsigned g = scanLinePtrRGB[RGBOffset[p] + greenOffset];
-          unsigned b = scanLinePtrRGB[RGBOffset[p] + blueOffset];
+          unsigned r = pixelPtrRGB[RGBOffset[p] + redOffset];
+          unsigned g = pixelPtrRGB[RGBOffset[p] + greenOffset];
+          unsigned b = pixelPtrRGB[RGBOffset[p] + blueOffset];
           RGB2Y(r, g, b, scanLinePtrY[YUVOffset[p]]);
           rSum += r;
           gSum += g;
           bSum += b;
         }
         RGB2UV(rSum / 4, gSum / 4, bSum / 4, *scanLinePtrU++, *scanLinePtrV++);
+        pixelPtrRGB += rgbIncrement;
         scanLinePtrY += 2;
-        scanLinePtrRGB += rgbIncrement*2;
       }
       scanLinePtrY += m_srcFrameWidth;
       scanLinePtrRGB += scanLineSizeRGB;
