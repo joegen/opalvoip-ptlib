@@ -360,7 +360,7 @@ bool PBMPFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissi
     return false;
   if (!PFile::SetPosition(sizeof(fileHeader)))
     return false;
-  if (!Read(&bitmapHeader, std::min((uint32_t)bitmapHeader.m_Size, sizeof(bitmapHeader))))
+  if (!Read(&bitmapHeader, std::min((uint32_t)bitmapHeader.m_Size, (uint32_t)sizeof(bitmapHeader))))
     return false;
   if (bitmapHeader.m_Planes != 1)
     return false;

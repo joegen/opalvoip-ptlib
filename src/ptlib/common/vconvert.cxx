@@ -1137,8 +1137,8 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
   }
 
   if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
-    int RGBOffset[4] = { 0, rgbIncrement, scanLineSizeRGB, scanLineSizeRGB+rgbIncrement };
-    int YUVOffset[4] = { 0, 1, m_dstFrameWidth, m_dstFrameWidth + 1 };
+    int RGBOffset[4] = { 0, (int)rgbIncrement, scanLineSizeRGB, scanLineSizeRGB+(int)rgbIncrement };
+    unsigned YUVOffset[4] = { 0, 1, m_dstFrameWidth, m_dstFrameWidth + 1 };
     scanLineSizeRGB *= 2;
     rgbIncrement *= 2;
     for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
