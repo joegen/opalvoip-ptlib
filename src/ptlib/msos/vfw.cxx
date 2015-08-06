@@ -1340,7 +1340,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
   m_rotation       = GetTokenValue(deviceName, "ROTATION=", 0);
 
   m_mouseEnabled = deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
-  m_hidden = deviceName.Find("HIDE") != P_MAX_INDEX;
+  m_hidden = !startImmediate || deviceName.Find("HIDE") != P_MAX_INDEX;
 
   if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
     m_sizeMode = FullScreen;
@@ -1579,15 +1579,13 @@ PBoolean PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height
 
 PBoolean PVideoOutputDevice_Window::FrameComplete()
 {
+  if (m_hidden)
+    m_hidden = !ShowWindow(m_hWnd, SW_SHOW);
+
   PWaitAndSignal m(mutex);
 
   if (m_hWnd == NULL)
     return false;
-
-  if (m_hidden) {
-    m_hidden = false;
-    ShowWindow(m_hWnd, SW_SHOW);
-  }
 
   HDC hDC = GetDC(m_hWnd);
   Draw(hDC);
