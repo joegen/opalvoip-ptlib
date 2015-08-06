@@ -207,7 +207,7 @@ PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
 {
   PBoolean ok = m_WAVFile.Write(data, size);
   lastWriteCount = m_WAVFile.GetLastWriteCount();
-  m_Pacing.Delay(lastWriteCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate());
+  m_Pacing.Delay(lastWriteCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate()/m_WAVFile.GetChannels());
   return ok;
 }
 
