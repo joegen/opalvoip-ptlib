@@ -201,9 +201,8 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
 
 struct tm * PTime::os_localtime(const time_t * clock, struct tm * tb)
 {
-  struct tm * tp = ::localtime(clock);
-  if (tp != NULL)
-    return tp;
+  if (::localtime_s(tb, clock) == 0)
+    return tb;
 
   memset(tb, 0, sizeof(*tb));
   return tb;
@@ -212,9 +211,8 @@ struct tm * PTime::os_localtime(const time_t * clock, struct tm * tb)
 
 struct tm * PTime::os_gmtime(const time_t * clock, struct tm * tb)
 {
-  struct tm * tp = ::gmtime(clock);
-  if (tp != NULL)
-    return tp;
+  if (::gmtime_s(tb, clock) == 0)
+    return tb;
 
   memset(tb, 0, sizeof(*tb));
   return tb;
