@@ -1058,29 +1058,31 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
                                          const BYTE * data,
                                          PBoolean endFrame)
 {
-  PWaitAndSignal m(mutex);
+  {
+    PWaitAndSignal m(mutex);
 
-  if (x+width > frameWidth || y+height > frameHeight || PAssertNULL(data) == NULL)
-    return false;
-
-  if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
-    if (converter != NULL)
-      converter->Convert(data, frameStore.GetPointer());
-    else
-      memcpy(frameStore.GetPointer(), data, height*scanLineWidth);
-  }
-  else {
-    if (converter != NULL) {
-      PAssertAlways("Converted output of partial RGB frame not supported");
+    if (x+width > frameWidth || y+height > frameHeight || PAssertNULL(data) == NULL)
       return false;
-    }
 
-    if (x == 0 && width == frameWidth)
-      memcpy(frameStore.GetPointer() + y*scanLineWidth, data, height*scanLineWidth);
+    if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
+      if (converter != NULL)
+        converter->Convert(data, frameStore.GetPointer());
+      else
+        memcpy(frameStore.GetPointer(), data, height*scanLineWidth);
+    }
     else {
-      for (unsigned dy = 0; dy < height; dy++)
-        memcpy(frameStore.GetPointer() + (y+dy)*scanLineWidth + x*bytesPerPixel,
-               data + dy*width*bytesPerPixel, width*bytesPerPixel);
+      if (converter != NULL) {
+        PAssertAlways("Converted output of partial RGB frame not supported");
+        return false;
+      }
+
+      if (x == 0 && width == frameWidth)
+        memcpy(frameStore.GetPointer() + y*scanLineWidth, data, height*scanLineWidth);
+      else {
+        for (unsigned dy = 0; dy < height; dy++)
+          memcpy(frameStore.GetPointer() + (y+dy)*scanLineWidth + x*bytesPerPixel,
+                 data + dy*width*bytesPerPixel, width*bytesPerPixel);
+      }
     }
   }
 
