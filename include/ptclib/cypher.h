@@ -48,25 +48,25 @@ class PSASLString : public PString
     PCLASSINFO(PSASLString, PString);
   public:
     PSASLString() { }
-    PSASLString(const char * str) { Prepare(str); }
-    PSASLString(const PString & str) { Prepare(str); }
+    PSASLString(const char * str)    { AppendValidated(str); }
+    PSASLString(const PString & str) { AppendValidated(str); }
     PSASLString(const PSASLString & str) : PString(str) { }
 
-    PSASLString & operator=(char c) { MakeEmpty(); AppendValidated(c); return *this; }
-    PSASLString & operator=(wchar_t c) { MakeEmpty(); AppendValidated(c); return *this; }
-    PSASLString & operator=(const char * str) { Prepare(str); return *this; }
-    PSASLString & operator=(const PString & str) { Prepare(str); return *this; }
-    PSASLString & operator=(const PSASLString & str) { PString::operator=(str); return *this; }
+    PSASLString & operator=(char ch)                 { MakeEmpty(); AppendValidated(ch);  return *this; }
+    PSASLString & operator=(wchar_t ch)              { MakeEmpty(); AppendValidated(ch);  return *this; }
+    PSASLString & operator=(const char * str)        { MakeEmpty(); AppendValidated(str); return *this; }
+    PSASLString & operator=(const PString & str)     { MakeEmpty(); AppendValidated(str); return *this; }
+    PSASLString & operator=(const PSASLString & str) { PString::operator=(str);           return *this; }
 
-    PSASLString & operator+=(char c) { AppendValidated(c); return *this; }
-    PSASLString & operator+=(wchar_t c) { AppendValidated(c); return *this; }
-    PSASLString & operator+=(const char * str) { Prepare(str); return *this; }
-    PSASLString & operator+=(const PString & str) { Prepare(str); return *this; }
+    PSASLString & operator+=(char ch)                 { AppendValidated(ch);     return *this; }
+    PSASLString & operator+=(wchar_t ch)              { AppendValidated(ch);     return *this; }
+    PSASLString & operator+=(const char * str)        { AppendValidated(str);    return *this; }
+    PSASLString & operator+=(const PString & str)     { AppendValidated(str);    return *this; }
     PSASLString & operator+=(const PSASLString & str) { PString::operator=(str); return *this; }
 
   protected:
-    void Prepare(const char *);
-    void AppendValidated(wchar_t c);
+    void AppendValidated(const char * str);
+    void AppendValidated(wchar_t ch);
 };
 
 

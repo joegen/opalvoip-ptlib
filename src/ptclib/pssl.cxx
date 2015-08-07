@@ -1927,6 +1927,20 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
   SSL_CTX_set_info_callback(m_context, InfoCallback);
   SetVerifyMode(VerifyNone);
 
+  /* Specify an ECDH group for ECDHE ciphers, otherwise they cannot be
+     negotiated when acting as the server. Use NIST's P-256 which is commonly
+     supported. */
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+  SSL_CTX_set_ecdh_auto(m_context, 1);
+#else
+  EC_KEY* ecdh = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+  if (ecdh != NULL) {
+    SSL_CTX_set_options(m_context, SSL_OP_SINGLE_ECDH_USE);
+    SSL_CTX_set_tmp_ecdh(m_context, ecdh);
+    EC_KEY_free(ecdh);
+  }
+#endif
+
   PTRACE(4, "Constructed context: method=" << m_method << " ctx=" << m_context);
 }
 

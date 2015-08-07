@@ -565,8 +565,8 @@ install:
 	    $(MKDIR_P) $$dir ; \
 	    chmod 755 $$dir ; \
 	done
-	for lib in $(PTLIB_OPT_SHARED_FILE) \
-	           $(PTLIB_DEBUG_SHARED_FILE) \
+	for lib in $(PTLIB_OPT_SHARED_FILE) $(PTLIB_OPT_SHARED_FILE).$(DEBUGINFOEXT) \
+	           $(PTLIB_DEBUG_SHARED_FILE) $(PTLIB_DEBUG_SHARED_FILE).$(DEBUGINFOEXT) \
 	           $(PTLIB_OPT_STATIC_FILE) \
 	           $(PTLIB_DEBUG_STATIC_FILE) ; \
 	do \
@@ -612,6 +612,8 @@ uninstall:
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_STATIC_FILE)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_FILE)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_FILE)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_FILE).$(DEBUGINFOEXT)) \
+	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_FILE).$(DEBUGINFOEXT)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_OPT_SHARED_LINK)) \
 	      $(DESTDIR)$(libdir)/$(notdir $(PTLIB_DEBUG_SHARED_LINK))
 

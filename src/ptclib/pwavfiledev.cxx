@@ -207,7 +207,7 @@ PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
 {
   PBoolean ok = m_WAVFile.Write(data, size);
   lastWriteCount = m_WAVFile.GetLastWriteCount();
-  m_Pacing.Delay(lastWriteCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate());
+  m_Pacing.Delay(lastWriteCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate()/m_WAVFile.GetChannels());
   return ok;
 }
 
@@ -232,25 +232,28 @@ PBoolean PSoundChannel_WAVFile::StartRecording()
 
 PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 {
-  if (m_WAVFile.Read(data, size))
-    return true;
+  for (int retry = 0; retry < 2; ++retry) {
+    if (m_WAVFile.Read(data, size)) {
+      lastReadCount = m_WAVFile.GetLastReadCount();
+      m_Pacing.Delay(lastReadCount * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate());
+      return true;
+    }
 
-  if (m_WAVFile.GetErrorCode(LastReadError) != NoError) {
-    PTRACE(2, "WAVFileDev", "Error reading file: " << m_WAVFile.GetErrorText(LastReadError));
-    return false;
+    if (m_WAVFile.GetErrorCode(LastReadError) != NoError) {
+      PTRACE(2, "WAVFileDev", "Error reading file: " << m_WAVFile.GetErrorText(LastReadError));
+      return false;
+    }
+
+    if (!m_autoRepeat) {
+      PTRACE(3, "WAVFileDev", "End of file, stopping");
+      return false;
+    }
+
+    PTRACE_IF(4, retry == 0, "WAVFileDev", "End of file, repeating");
+    m_WAVFile.SetPosition(0);
   }
 
-  if (!m_autoRepeat) {
-    PTRACE(3, "WAVFileDev", "End of file, stopping");
-    return false;
-  }
-
-  PTRACE(4, "WAVFileDev", "End of file, repeating");
-  m_WAVFile.SetPosition(0);
-  if (m_WAVFile.Read(data, size))
-    return true;
-
-  PTRACE(2, "WAVFileDev", "Error reading file: " << m_WAVFile.GetErrorText(LastReadError));
+  PTRACE(2, "WAVFileDev", "File is empty, cannot repeat");
   return false;
 }
 

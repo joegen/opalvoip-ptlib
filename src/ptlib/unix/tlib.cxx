@@ -769,7 +769,7 @@ bool PThread::GetTimes(Times & times)
   times.m_real = (PX_endTick != 0 ? PX_endTick : PTimer::Tick()) - PX_startTick;
 #endif
 
-  return InternalGetTimes(PSTRSTRM("/proc/" << getpid() << "/task/" << times.m_uniqueId << "/stat"), times);
+  return InternalGetTimes(PSTRSTRM("/proc/self/task/" << times.m_uniqueId << "/stat"), times);
 }
 
 

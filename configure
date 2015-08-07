@@ -6117,16 +6117,9 @@ else
   as_fn_error $? "Unable to determine iOS release number" "$LINENO" 5
 fi
 
-      MIN_IOS_VER="6.0"
-      if test $target_release \< $MIN_IOS_VER; then :
-  as_fn_error $? "Requires iOS release $MIN_IOS_VER
-else
-  has $target_release" "$LINENO" 5
-fi
-
       IOS_DEVROOT="`xcode-select -print-path`/Platforms/${target_os}.platform/Developer"
       IOS_SDKROOT=${IOS_DEVROOT}/SDKs/${target_os}${target_release}.sdk
-      IOS_FLAGS="-arch $target_cpu -miphoneos-version-min=$MIN_IOS_VER -isysroot ${IOS_SDKROOT}"
+      IOS_FLAGS="-arch $target_cpu -miphoneos-version-min=6.0 -isysroot ${IOS_SDKROOT}"
       CPPFLAGS="${IOS_FLAGS} $CPPFLAGS"
       LDFLAGS="${IOS_FLAGS} -L${IOS_SDKROOT}/usr/lib $LDFLAGS"
    ;;
@@ -6135,14 +6128,7 @@ fi
       target_os=Darwin
       target_release=`sw_vers -productVersion`
 
-      MIN_MACOSX_VER="10.8"
-      if test $target_release \< $MIN_MACOSX_VER; then :
-  as_fn_error $? "Requires Mac OS-X release $MIN_MACOSX_VER
-else
-  is $target_release" "$LINENO" 5
-fi
-
-      CPPFLAGS="-mmacosx-version-min=$MIN_MACOSX_VER $CPPFLAGS"
+      CPPFLAGS="-mmacosx-version-min=10.8 $CPPFLAGS"
       LIBS="-framework QTKit -framework CoreVideo -framework AudioUnit $LIBS"
    ;;
 
