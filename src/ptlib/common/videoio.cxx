@@ -1288,7 +1288,7 @@ void PVideoInputDevice::Capabilities::PrintOn(ostream & strm) const
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driverName,
                                                           const PString & deviceName,
-                                                          PBoolean startImmediate,
+                                                          bool startImmediate,
                                                           PPluginManager * pluginMgr)
 {
   PString adjustedDeviceName = deviceName;
@@ -1305,7 +1305,7 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
 
 
 PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
-                                                          PBoolean startImmediate)
+                                                          bool startImmediate)
 {
   OpenArgs adjustedArgs = args;
   PVideoInputDevice * device = CreateDeviceWithDefaults<PVideoInputDevice>(adjustedArgs.deviceName, args.driverName, NULL);
@@ -1519,7 +1519,7 @@ PVideoOutputDevice * PVideoOutputDevice::CreateDeviceByName(const PString & devi
 
 PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &driverName,
                                                             const PString &deviceName,
-                                                            PBoolean startImmediate,
+                                                            bool startImmediate,
                                                             PPluginManager * pluginMgr)
 {
   PString adjustedDeviceName = deviceName;
@@ -1536,7 +1536,7 @@ PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &drive
 
 
 PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const OpenArgs & args,
-                                                            PBoolean startImmediate)
+                                                            bool startImmediate)
 {
   OpenArgs adjustedArgs = args;
   PVideoOutputDevice * device = CreateDeviceWithDefaults<PVideoOutputDevice>(adjustedArgs.deviceName, args.driverName, NULL);
