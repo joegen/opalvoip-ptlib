@@ -2067,8 +2067,8 @@ static void FillYUV422Rect(BYTE * frame,
                            int r, int g, int b,
                            PINDEX scanLineWidth)
 {
-  unsigned Y, Cb, Cr;
-  PColourConverter::RGBtoYUV(r, g, b, Y, Cb, Cr);
+  BYTE Y, U, V;
+  PColourConverter::RGBtoYUV(r, g, b, Y, U, V);
 
   x &= 0xfffffffe; // Make sure is even
 
@@ -2076,10 +2076,10 @@ static void FillYUV422Rect(BYTE * frame,
   for (int dy = 0; dy < height; dy++) {
     BYTE * ptr = frame + (y+dy)*scanLineWidth + x*2;
     for (int dx = 0; dx < halfRectWidth; dx++) {
-      *ptr++ = (BYTE)Y;
-      *ptr++ = (BYTE)Cb;
-      *ptr++ = (BYTE)Y;
-      *ptr++ = (BYTE)Cr;
+      *ptr++ = Y;
+      *ptr++ = U;
+      *ptr++ = Y;
+      *ptr++ = V;
     }
   }
 }
