@@ -723,8 +723,9 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
         rowFunction = GrowBothYUV420P;
       else if (srcHeight > dstHeight)
         rowFunction = ShrinkRowsYUV420P; // More efficient version for same width case
-      else
+      else if (srcHeight < dstHeight)
         rowFunction = GrowRowsYUV420P;
+      // else use crop
       break;
 
     default :
