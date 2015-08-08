@@ -281,10 +281,6 @@ class PColourConverter : public PColourPair
     /**Convert RGB to YUV.
       */
     static void RGBtoYUV(
-      unsigned   r, unsigned   g, unsigned   b,
-      unsigned & y, unsigned & u, unsigned & v
-    );
-    static void RGBtoYUV(
       unsigned r, unsigned g, unsigned b,
       BYTE   & y, BYTE   & u, BYTE   & v
     );
