@@ -760,15 +760,20 @@ class PVideoOutputDevice : public PVideoDevice
     static PVideoOutputDevice *CreateOpenedDevice(
       const PString & driverName,         ///< Name of driver
       const PString & deviceName,         ///< Name of device
-      PBoolean startImmediate = true,         ///< Immediately start display
+      bool startImmediate = true,         ///< Immediately start display
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
+    static PVideoOutputDevice *CreateOpenedDevice(
+      const PString & deviceName,         ///< Name of device
+      bool startImmediate = true,         ///< Immediately start display
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
+    ) { return CreateOpenedDevice(PString::Empty(), deviceName, startImmediate, pluginMgr); }
 
     /**Create an opened video output device that corresponds to the specified arguments.
     */
     static PVideoOutputDevice *CreateOpenedDevice(
       const OpenArgs & args,              ///< Parameters to set on opened device
-      PBoolean startImmediate = true          ///< Immediately start display
+      bool startImmediate = true          ///< Immediately start display
     );
 
     /**Close the device.
@@ -1022,15 +1027,20 @@ class PVideoInputDevice : public PVideoDevice
     static PVideoInputDevice *CreateOpenedDevice(
       const PString & driverName,         ///< Name of driver
       const PString & deviceName,         ///< Name of device
-      PBoolean startImmediate = true,         ///< Immediately start grabbing
+      bool startImmediate = true,         ///< Immediately start grabbing
       PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
     );
+    static PVideoInputDevice *CreateOpenedDevice(
+      const PString & deviceName,         ///< Name of device
+      bool startImmediate = true,         ///< Immediately start grabbing
+      PPluginManager * pluginMgr = NULL   ///< Plug in manager, use default if NULL
+    ) { return CreateOpenedDevice(PString::Empty(), deviceName, startImmediate, pluginMgr); }
 
     /**Create an opened video output device that corresponds to the specified arguments.
     */
     static PVideoInputDevice *CreateOpenedDevice(
       const OpenArgs & args,              ///< Parameters to set on opened device
-      PBoolean startImmediate = true          ///< Immediately start display
+      bool startImmediate = true          ///< Immediately start display
     );
 
     class Capabilities : public PObject {
