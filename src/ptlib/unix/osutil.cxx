@@ -183,6 +183,44 @@ static char *tzname[2] = { "STD", "DST" };
 
 #define new PNEW
 
+#if defined(__arm__) && !defined(__llvm__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
+
+// ARM build doesn't link before v4.6
+// This code shamelessly stolen from GCC 4.6 source
+typedef int (__kernel_cmpxchg64_t) (const long long* oldval,
+                                    const long long* newval,
+                                    long long *ptr);
+#define __kernel_cmpxchg64 (*(__kernel_cmpxchg64_t *) 0xffff0f60)
+
+extern "C" {
+  long long __sync_lock_test_and_set_8(long long * ptr, long long val)
+  {
+    int failure;
+    long long oldval;
+
+    do {
+      oldval = *ptr;
+      failure = __kernel_cmpxchg64(&oldval, &val, ptr);
+    } while (failure != 0);
+
+    return oldval;
+  }
+
+  long long __sync_add_and_fetch_8(long long * ptr, long long val)
+  {
+    int failure;
+    long long tmp1,tmp2;
+
+    do {
+      tmp1 = *ptr;
+      tmp2 = tmp1 + val;
+      failure = __kernel_cmpxchg64(&tmp1, &tmp2, ptr);
+    } while (failure != 0);
+
+    return tmp2;
+  }
+};
+#endif
 
 static PMutex waterMarkMutex;
 static int lowWaterMark = INT_MAX;

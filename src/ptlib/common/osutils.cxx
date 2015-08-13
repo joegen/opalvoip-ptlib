@@ -47,7 +47,9 @@
 #include "../../../revision.h"
 
 #ifdef _WIN32
-#include <ptlib/msos/ptlib/debstrm.h>
+  #include <ptlib/msos/ptlib/debstrm.h>
+#elif defined(P_MACOSX)
+  #include <mach-o/dyld.h>
 #endif
 
 
@@ -337,9 +339,13 @@ PTHREAD_MUTEX_RECURSIVE_NP
     }
 #endif
     else {
+      PDirectory dir(m_filename);
+      if (dir.Exists())
+        m_filename = dir + "opal_%P.log";
+
       PFilePath fn(m_filename);
       fn.Replace("%P", PString(PProcess::GetCurrentProcessID()));
-     
+
       if ((m_options & RotateLogMask) != 0)
         fn = fn.GetDirectory() +
              fn.GetTitle() +
@@ -360,13 +366,16 @@ PTHREAD_MUTEX_RECURSIVE_NP
         outputFirstLog = true;
       }
       else {
-        PStringStream msgstrm;
-        msgstrm << PProcess::Current().GetName() << ": Could not open trace output file \"" << fn << '"';
+        ostringstream msgstrm;
+        if (PProcess::IsInitialised())
+          msgstrm << PProcess::Current().GetName() << ": ";
+        msgstrm << "Could not open trace output file  \"" << fn << "\"\n"
+                << traceOutput->GetErrorText();
 #ifdef WIN32
-        PVarString msg(msgstrm);
+        PVarString msg(msgstrm.str().c_str());
         MessageBox(NULL, msg, NULL, MB_OK|MB_ICONERROR);
 #else
-        fputs(msgstrm, stderr);
+        fputs(msgstrm.str().c_str(), stderr);
 #endif
         delete traceOutput;
       }
@@ -391,8 +400,20 @@ PTHREAD_MUTEX_RECURSIVE_NP
       if ((m_options & RotateLogMask) == 0)
         log << '"' << m_filename;
       else {
+        log << " rollover every ";
+        switch (m_options & RotateLogMask) {
+          case RotateDaily :
+            log << "day";
+            break;
+          case RotateHourly :
+            log << "hour";
+            break;
+          case RotateMinutely :
+            log << "minute";
+            break;
+        }
         PFilePath fn(m_filename);
-        log << " rollover=\"" << fn.GetDirectory() << fn.GetTitle() << m_rolloverPattern << fn.GetType();
+        log << " to \"" << fn.GetDirectory() << fn.GetTitle() << m_rolloverPattern << fn.GetType();
       }
       log << '"' << endl;
     }
@@ -2073,14 +2094,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
   PProcessInstance = this;
 
-#ifdef P_RTEMS
-
-  cout << "Enter program arguments:\n";
-  arguments.ReadFrom(cin);
-
-#endif // P_RTEMS
-
-#ifdef _WIN32
+#if defined(_WIN32)
   // Try to get the real image path for this process
   TCHAR shortName[_MAX_PATH];
   if (GetModuleFileName(GetModuleHandle(NULL), shortName, sizeof(shortName)) > 0) {
@@ -2091,7 +2105,20 @@ PProcess::PProcess(const char * manuf, const char * name,
       executableFile = shortName;
     executableFile.Replace("\\\\?\\", ""); // Name can contain \\?\ prefix, remove it
   }
+#elif defined(P_MACOSX)
+  char path[10000];
+  uint32_t size = sizeof(path);
+  if (_NSGetExecutablePath(path, &size) == 0)
+    executableFile = path;
+#elif defined(P_RTEMS)
 
+  cout << "Enter program arguments:\n";
+  arguments.ReadFrom(cin);
+#else
+  // Hope for a /proc, dertainly works for Linux
+  char path[10000];
+  if (readlink("/proc/self/exe", path, sizeof(path)) >= 0)
+    executableFile = path;
 #endif // _WIN32
 
   if (productName.IsEmpty())
@@ -2693,7 +2720,7 @@ PThread * PThread::Create(const PNotifier & notifier,
 
 PThread::~PThread()
 {
-  if (m_type != e_IsProcess && m_type != e_IsExternal)
+  if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(100))
     Terminate();
 
   PTRACE(5, "PTLib\tDestroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);

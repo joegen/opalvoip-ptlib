@@ -48,32 +48,33 @@
 static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
+  unsigned     alignmentMinus1;
 } ColourFormatBPPTab[] = {
-  { "YUV420P", 12 },
-  { "I420",    12 },
-  { "IYUV",    12 },
-  { "YUV420",  12 },
-  { "RGB32",   32 },
-  { "BGR32",   32 },
-  { "RGB24",   24 },
-  { "BGR24",   24 },
-  { "YUY2",    16 },
-  { "YUV422",  16 },
-  { "YUV422P", 16 },
-  { "YUV411",  12 },
-  { "YUV411P", 12 },
-  { "RGB565",  16 },
-  { "RGB555",  16 },
-  { "RGB16",   16 },
-  { "YUV410",  10 },
-  { "YUV410P", 10 },
-  { "Grey",     8 },
-  { "GreyF",    8 },
-  { "UYVY422", 16 },
-  { "UYV444",  24 },
-  { "SBGGR8",   8 },
-  { "JPEG",    24 },
-  { "MJPEG",    8 }
+  { "YUV420P", 12, 0 },
+  { "I420",    12, 0 },
+  { "IYUV",    12, 0 },
+  { "YUV420",  12, 0 },
+  { "RGB32",   32, 3 },
+  { "BGR32",   32, 3 },
+  { "RGB24",   24, 3 },
+  { "BGR24",   24, 3 },
+  { "YUY2",    16, 0 },
+  { "YUV422",  16, 0 },
+  { "YUV422P", 16, 0 },
+  { "YUV411",  12, 0 },
+  { "YUV411P", 12, 0 },
+  { "RGB565",  16, 3 },
+  { "RGB555",  16, 3 },
+  { "RGB16",   16, 1 },
+  { "YUV410",  10, 0 },
+  { "YUV410P", 10, 0 },
+  { "Grey",     8, 0 },
+  { "GreyF",    8, 0 },
+  { "UYVY422", 16, 1 },
+  { "UYV444",  24, 0 },
+  { "SBGGR8",   8, 0 },
+  { "JPEG",    24, 0 },
+  { "MJPEG",    8, 0 }
 };
 
 
@@ -293,7 +294,7 @@ PINDEX PVideoFrameInfo::CalculateFrameBytes(unsigned width, unsigned height,
 {
   for (PINDEX i = 0; i < PARRAYSIZE(ColourFormatBPPTab); i++) {
     if (colourFormat *= ColourFormatBPPTab[i].colourFormat)
-      return width * height * ColourFormatBPPTab[i].bitsPerPixel/8;
+      return  height * ((width * ColourFormatBPPTab[i].bitsPerPixel/8 + ColourFormatBPPTab[i].alignmentMinus1) & (~ColourFormatBPPTab[i].alignmentMinus1));
   }
   return 0;
 }
@@ -1057,29 +1058,31 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
                                          const BYTE * data,
                                          PBoolean endFrame)
 {
-  PWaitAndSignal m(mutex);
+  {
+    PWaitAndSignal m(mutex);
 
-  if (x+width > frameWidth || y+height > frameHeight || PAssertNULL(data) == NULL)
-    return false;
-
-  if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
-    if (converter != NULL)
-      converter->Convert(data, frameStore.GetPointer());
-    else
-      memcpy(frameStore.GetPointer(), data, height*scanLineWidth);
-  }
-  else {
-    if (converter != NULL) {
-      PAssertAlways("Converted output of partial RGB frame not supported");
+    if (x+width > frameWidth || y+height > frameHeight || PAssertNULL(data) == NULL)
       return false;
-    }
 
-    if (x == 0 && width == frameWidth)
-      memcpy(frameStore.GetPointer() + y*scanLineWidth, data, height*scanLineWidth);
+    if (x == 0 && width == frameWidth && y == 0 && height == frameHeight) {
+      if (converter != NULL)
+        converter->Convert(data, frameStore.GetPointer());
+      else
+        memcpy(frameStore.GetPointer(), data, height*scanLineWidth);
+    }
     else {
-      for (unsigned dy = 0; dy < height; dy++)
-        memcpy(frameStore.GetPointer() + (y+dy)*scanLineWidth + x*bytesPerPixel,
-               data + dy*width*bytesPerPixel, width*bytesPerPixel);
+      if (converter != NULL) {
+        PAssertAlways("Converted output of partial RGB frame not supported");
+        return false;
+      }
+
+      if (x == 0 && width == frameWidth)
+        memcpy(frameStore.GetPointer() + y*scanLineWidth, data, height*scanLineWidth);
+      else {
+        for (unsigned dy = 0; dy < height; dy++)
+          memcpy(frameStore.GetPointer() + (y+dy)*scanLineWidth + x*bytesPerPixel,
+                 data + dy*width*bytesPerPixel, width*bytesPerPixel);
+      }
     }
   }
 

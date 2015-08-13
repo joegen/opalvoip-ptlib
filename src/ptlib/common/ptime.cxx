@@ -809,7 +809,7 @@ PTime & PTime::operator+=(const PTimeInterval & t)
 
 PTimeInterval PTime::operator-(const PTime & t) const
 {
-  return PTimeInterval((m_microSecondsSinceEpoch.load() - t.m_microSecondsSinceEpoch.load())/1000);
+  return PTimeInterval((m_microSecondsSinceEpoch.load() - t.m_microSecondsSinceEpoch.load() + 999)/1000);
 }
 
 

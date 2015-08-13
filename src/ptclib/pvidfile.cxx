@@ -42,6 +42,8 @@
 
 #include <ptclib/pvidfile.h>
 #include <ptlib/videoio.h>
+#include <ptlib/vconvert.h>
+
 
 #define PTraceModule() "VidFile"
 
@@ -165,12 +167,10 @@ PBoolean PVideoFile::SetFrameRate(unsigned rate)
 }
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 PFACTORY_CREATE(PVideoFileFactory, PYUVFile, ".yuv");
 PFACTORY_SYNONYM(PVideoFileFactory, PYUVFile, y4m, ".y4m");
-
 
 PYUVFile::PYUVFile()
   : m_y4mMode(false)
@@ -303,6 +303,115 @@ PBoolean PYUVFile::ReadFrame(void * frame)
   }
 
   return PVideoFile::ReadFrame(frame);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PFACTORY_CREATE(PVideoFileFactory, PBMPFile, ".bmp");
+PFACTORY_SYNONYM(PVideoFileFactory, PBMPFile, dib, ".dib");
+
+PBMPFile::PBMPFile()
+{
+}
+
+
+bool PBMPFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
+{
+  if (mode != PFile::ReadOnly)
+    return false;
+
+  if (!PVideoFile::InternalOpen(mode, opts, permissions))
+    return false;
+
+#pragma pack(1)
+  struct {
+    PUInt16l m_FileType;     /* File type, always 4D42h ("BM") */
+    PUInt32l m_FileSize;     /* Size of the file in bytes */
+    PUInt16l m_Reserved1;    /* Always 0 */
+    PUInt16l m_Reserved2;    /* Always 0 */
+    PUInt32l m_BitmapOffset; /* Starting position of image data in bytes */
+  } fileHeader;
+#pragma pack()
+
+  if (!Read(&fileHeader, sizeof(fileHeader)))
+    return false;
+
+  if (fileHeader.m_FileType != 0x4D42)
+    return false;
+
+#pragma pack(1)
+  struct {
+    PUInt32l m_Size;            /* Size of this header in bytes */
+    PInt32l  m_Width;           /* Image width in pixels */
+    PInt32l  m_Height;          /* Image height in pixels */
+    PUInt16l m_Planes;          /* Number of color planes */
+    PUInt16l m_BitsPerPixel;    /* Number of bits per pixel */
+    PUInt32l m_Compression;     /* Compression methods used */
+    PUInt32l m_SizeOfBitmap;    /* Size of bitmap in bytes */
+    PInt32l  m_HorzResolution;  /* Horizontal resolution in pixels per meter */
+    PInt32l  m_VertResolution;  /* Vertical resolution in pixels per meter */
+    PUInt32l m_ColorsUsed;      /* Number of colors in the image */
+    PUInt32l m_ColorsImportant; /* Minimum number of important colors */
+  } bitmapHeader;
+#pragma pack()
+
+  if (!Read(&bitmapHeader.m_Size, sizeof(bitmapHeader.m_Size)))
+    return false;
+  if (!PFile::SetPosition(sizeof(fileHeader)))
+    return false;
+  if (!Read(&bitmapHeader, std::min((uint32_t)bitmapHeader.m_Size, (uint32_t)sizeof(bitmapHeader))))
+    return false;
+  if (bitmapHeader.m_Planes != 1)
+    return false;
+  if (bitmapHeader.m_BitsPerPixel != 24 && bitmapHeader.m_BitsPerPixel != 32)
+    return false;
+  if (bitmapHeader.m_Compression != 0)
+    return false;
+
+  m_headerOffset =bitmapHeader.m_Size + sizeof(fileHeader);
+  if (!SetPosition(0))
+    return false;
+
+  m_videoInfo.SetFrameSize(bitmapHeader.m_Width, std::abs(bitmapHeader.m_Height));
+  m_frameBytes = m_videoInfo.CalculateFrameBytes();
+  if (!m_imageData.SetSize(m_frameBytes))
+    return false;
+
+  PVideoFrameInfo rgb = m_videoInfo;
+  rgb.SetColourFormat(bitmapHeader.m_BitsPerPixel == 24 ? "BGR24" : "BGR32");
+
+  PBYTEArray temp;
+  if (!temp.SetSize(rgb.CalculateFrameBytes()))
+    return false;
+
+  if (!Read(temp.GetPointer(), temp.GetSize()))
+    return false;
+
+  PColourConverter * converter = PColourConverter::Create(rgb, m_videoInfo);
+  if (converter == NULL)
+    return false;
+
+  converter->SetVFlipState(bitmapHeader.m_Height > 0);
+  bool converted = converter->Convert(temp, m_imageData.GetPointer());
+  delete converter;
+  return converted;
+}
+
+
+PBoolean PBMPFile::WriteFrame(const void *)
+{
+  return false;
+}
+
+
+PBoolean PBMPFile::ReadFrame(void * frame)
+{
+  if (m_imageData.IsEmpty() || !IsOpen())
+    return false;
+
+  memcpy(frame, m_imageData, m_frameBytes);
+  return true;
 }
 
 

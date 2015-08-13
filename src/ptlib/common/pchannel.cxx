@@ -536,7 +536,7 @@ PChannel::AsyncContext::AsyncContext(void * buf, PINDEX len, const AsyncNotifier
   , m_channel(NULL)
   , m_onComplete(NULL)
 {
-  memset(this, 0, sizeof(AsyncContextBase));
+  memset(static_cast<AsyncContextBase*>(this), 0, sizeof(AsyncContextBase));
 }
 
 
@@ -823,23 +823,8 @@ PBoolean PIndirectChannel::Open(PChannel * readChan,
 
   channelPointerMutex.StartWrite();
 
-  if (readChannel != NULL)
-    readChannel->Close();
-
-  if (readChannel != writeChannel && writeChannel != NULL)
-    writeChannel->Close();
-
-  if (readAutoDelete)
-    delete readChannel;
-
-  if (readChannel != writeChannel && writeAutoDelete)
-    delete writeChannel;
-
-  readChannel = readChan;
-  readAutoDelete = autoDeleteRead;
-
-  writeChannel = writeChan;
-  writeAutoDelete = autoDeleteWrite;
+  SetReadChannel(readChan, autoDeleteRead, true);
+  SetWriteChannel(writeChan, autoDeleteWrite, true);
 
   channelPointerMutex.EndWrite();
 
@@ -886,8 +871,10 @@ bool PIndirectChannel::SetReadChannel(PChannel * channel, bool autoDelete, bool 
   PWriteWaitAndSignal mutex(channelPointerMutex);
 
   if (closeExisting) {
-    if (readAutoDelete)
+    if (readAutoDelete && readChannel != NULL && readChannel != writeChannel) {
+      readChannel->Close();
       delete readChannel;
+    }
   }
   else {
     if (readChannel != NULL)
@@ -896,6 +883,8 @@ bool PIndirectChannel::SetReadChannel(PChannel * channel, bool autoDelete, bool 
 
   readChannel = channel;
   readAutoDelete = autoDelete;
+  if (readChannel != NULL)
+    SetReadTimeout(readChannel->GetReadTimeout());
 
   return channel != NULL && channel->IsOpen();
 }
@@ -906,8 +895,10 @@ bool PIndirectChannel::SetWriteChannel(PChannel * channel, bool autoDelete, bool
   PWriteWaitAndSignal mutex(channelPointerMutex);
 
   if (closeExisting) {
-    if (writeAutoDelete)
+    if (writeAutoDelete && writeChannel != NULL && writeChannel != readChannel) {
+      writeChannel->Close();
       delete writeChannel;
+    }
   }
   else {
     if (writeChannel != NULL)
@@ -916,6 +907,8 @@ bool PIndirectChannel::SetWriteChannel(PChannel * channel, bool autoDelete, bool
 
   writeChannel = channel;
   writeAutoDelete = autoDelete;
+  if (writeChannel != NULL)
+    SetWriteTimeout(writeChannel->GetWriteTimeout());
 
   return channel != NULL && channel->IsOpen();
 }
