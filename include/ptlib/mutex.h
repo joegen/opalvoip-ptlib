@@ -108,6 +108,7 @@ class PTimedMutex : public PSync
 
   private:
     PThreadIdentifier       m_lockerId;
+    PThreadIdentifier       m_lastLockerId;
     atomic<uint32_t>        m_lockCount;
     PUniqueThreadIdentifier m_uniqueId;
     bool                    m_excessiveLockTime;

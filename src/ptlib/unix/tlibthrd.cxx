@@ -1246,7 +1246,7 @@ void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
 
 void PTimedMutex::Construct()
 {
-  m_lockerId = PNullThreadIdentifier;
+  m_lastLockerId = m_lockerId = PNullThreadIdentifier;
   m_uniqueId = 0;
   m_excessiveLockTime = false;
   InitialiseRecursiveMutex(&m_mutex);
