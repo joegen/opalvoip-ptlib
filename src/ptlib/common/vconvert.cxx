@@ -400,27 +400,30 @@ PBoolean PColourConverter::ConvertInPlace(BYTE * frameBuffer,
 }
 
 
-#define RGB2Y(r, g, b, y) \
-  ((y)=(BYTE)((299*(int)(r) + 587*(int)(g) + 114*(int)(b))/1000))
-
-#define RGB2UV(r, g, b, cb, cr) \
-  ((cb)=(BYTE)((-147*(int)(r) - 289*(int)(g) + 436*(int)(b))/1000 + 128)), \
-  ((cr)=(BYTE)(( 615*(int)(r) - 515*(int)(g) - 100*(int)(b))/1000 + 128))
-
-#define RGB2YUV(r, g, b, y, cb, cr) RGB2Y(r, g, b, y), RGB2UV(r, g, b, cb, cr)
-
-
-void PColourConverter::RGBtoYUV(unsigned   r, unsigned   g, unsigned   b,
-                                unsigned & y, unsigned & u, unsigned & v)
+__inline BYTE RGBtoY(int r, int g, int b)
 {
-  RGB2YUV(r, g, b, y, u, v);
+  int y = 299*r + 587*g + 114*b;
+  return (BYTE)(y < 255000 ? (y/1000) : 255);
 }
 
+__inline BYTE RGBtoU(int r, int g, int b)
+{
+  int u = -147*r - 289*g + 436*b;
+  return (BYTE)(u < -127000 ? 0 : u > 127000 ? 255 : (u/1000 + 128));
+}
+
+__inline BYTE RGBtoV(int r, int g, int b)
+{
+  int v =615*r - 515*g - 100*b;
+  return (BYTE)(v < -127000 ? 0 : v > 127000 ? 255 : (v/1000 + 128));
+}
 
 void PColourConverter::RGBtoYUV(unsigned r, unsigned g, unsigned b,
                                 BYTE   & y, BYTE   & u, BYTE   & v)
 {
-  RGB2YUV(r, g, b, y, u, v);
+  y = RGBtoY(r,g,b);
+  u = RGBtoU(r,g,b);
+  v = RGBtoV(r,g,b);
 }
 
 
@@ -723,8 +726,9 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
         rowFunction = GrowBothYUV420P;
       else if (srcHeight > dstHeight)
         rowFunction = ShrinkRowsYUV420P; // More efficient version for same width case
-      else
+      else if (srcHeight < dstHeight)
         rowFunction = GrowRowsYUV420P;
+      // else use crop
       break;
 
     default :
@@ -897,8 +901,8 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
     return false;
   }
 
-  unsigned Y, Cb, Cr;
-  PColourConverter::RGBtoYUV(r, g, b, Y, Cb, Cr);
+  BYTE Y, U, V;
+  PColourConverter::RGBtoYUV(r, g, b, Y, U, V);
 
   x &= 0xfffffffe; // Make sure is even
 
@@ -906,8 +910,8 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
   int colourOffset = ( (y * frameWidth) >> 2) + (x >> 1);
 
   unsigned char * Yptr  = yuv + offset;
-  unsigned char * CbPtr = yuv + (frameWidth * frameHeight) + colourOffset;
-  unsigned char * CrPtr = yuv + (frameWidth * frameHeight) + (frameWidth * frameHeight/4)  + colourOffset;
+  unsigned char * Uptr = yuv + (frameWidth * frameHeight) + colourOffset;
+  unsigned char * Vptr = yuv + (frameWidth * frameHeight) + (frameWidth * frameHeight/4)  + colourOffset;
 
   int halfRectWidth  = width/2;
   int halfFrameWidth = frameWidth/2;
@@ -918,11 +922,11 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
     memset(Yptr, Y, width);
     Yptr += frameWidth;
 
-    memset(CbPtr, Cb, halfRectWidth);
-    memset(CrPtr, Cr, halfRectWidth);
+    memset(Uptr, U, halfRectWidth);
+    memset(Vptr, V, halfRectWidth);
 
-    CbPtr += halfFrameWidth;
-    CrPtr += halfFrameWidth;
+    Uptr += halfFrameWidth;
+    Vptr += halfFrameWidth;
   }
 
   return true;
@@ -1146,15 +1150,19 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
       for (unsigned x = 0; x < m_srcFrameWidth; x += 2) {
         unsigned rSum = 0, gSum = 0, bSum = 0;
         for (unsigned p = 0; p < 4; ++p) {
-          unsigned r = pixelPtrRGB[RGBOffset[p] + redOffset];
+          unsigned r = pixelPtrRGB[RGBOffset[p] +  redOffset];
           unsigned g = pixelPtrRGB[RGBOffset[p] + greenOffset];
-          unsigned b = pixelPtrRGB[RGBOffset[p] + blueOffset];
-          RGB2Y(r, g, b, scanLinePtrY[YUVOffset[p]]);
+          unsigned b = pixelPtrRGB[RGBOffset[p] +  blueOffset];
+          scanLinePtrY[YUVOffset[p]] = RGBtoY(r, g, b);
           rSum += r;
           gSum += g;
           bSum += b;
         }
-        RGB2UV(rSum / 4, gSum / 4, bSum / 4, *scanLinePtrU++, *scanLinePtrV++);
+        rSum /= 4;
+        gSum /= 4;
+        bSum /= 4;
+        *scanLinePtrU++ = RGBtoU(rSum, gSum, bSum);
+        *scanLinePtrV++ = RGBtoV(rSum, gSum, bSum);
         pixelPtrRGB += rgbIncrement;
         scanLinePtrY += 2;
       }
@@ -1178,13 +1186,15 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
             if (raster.IsBlack())
               pixelY[0] = pixelY[1] = 0;
             else {
-              RGB2Y(pixelRGB1[redOffset], pixelRGB1[greenOffset], pixelRGB1[blueOffset], pixelY[0]);
-              RGB2Y(pixelRGB2[redOffset], pixelRGB2[greenOffset], pixelRGB2[blueOffset], pixelY[1]);
-              if (evenLine)
-                RGB2UV((pixelRGB1[redOffset] + pixelRGB2[redOffset]) / 2,
-                       (pixelRGB1[greenOffset] + pixelRGB2[greenOffset]) / 2,
-                       (pixelRGB1[blueOffset] + pixelRGB2[blueOffset]) / 2,
-                       *pixelU, *pixelV);
+              pixelY[0] = RGBtoY(pixelRGB1[redOffset], pixelRGB1[greenOffset], pixelRGB1[blueOffset]);
+              pixelY[1] = RGBtoY(pixelRGB2[redOffset], pixelRGB2[greenOffset], pixelRGB2[blueOffset]);
+              if (evenLine) {
+                int rAvg = (pixelRGB1[  redOffset] + pixelRGB2[  redOffset]) / 2;
+                int gAvg = (pixelRGB1[greenOffset] + pixelRGB2[greenOffset]) / 2;
+                int bAvg = (pixelRGB1[ blueOffset] + pixelRGB2[ blueOffset]) / 2;
+                *pixelU = RGBtoU(rAvg, gAvg, bAvg);
+                *pixelV = RGBtoV(rAvg, gAvg, bAvg);
+              }
             }
 
             pixelY += 2;

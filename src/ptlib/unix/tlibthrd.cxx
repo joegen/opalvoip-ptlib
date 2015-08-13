@@ -1246,7 +1246,7 @@ void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
 
 void PTimedMutex::Construct()
 {
-  m_lockerId = PNullThreadIdentifier;
+  m_lastLockerId = m_lockerId = PNullThreadIdentifier;
   m_uniqueId = 0;
   m_excessiveLockTime = false;
   InitialiseRecursiveMutex(&m_mutex);
@@ -1287,8 +1287,12 @@ void PTimedMutex::Wait()
   struct timeval now;
   gettimeofday(&now, NULL);
   struct timespec absTime;
-  absTime.tv_sec = now.tv_sec+ExcessiveLockWaitTime;
-  absTime.tv_nsec = now.tv_usec*1000;
+  absTime.tv_sec = now.tv_sec + ExcessiveLockWaitTime/1000;
+  absTime.tv_nsec = now.tv_usec*1000 + (ExcessiveLockWaitTime%1000)*1000000;
+  if (absTime.tv_nsec >= 1000000000) {
+    absTime.tv_nsec -= 1000000000;
+    ++absTime.tv_sec;
+  }
   PPROFILE_PRE_SYSTEM();
   /* Note, from man page "This function shall not return an error code of [EINTR]"
      so we do not need a loop to retry. */
