@@ -2809,7 +2809,7 @@ void PSimpleThread::Main()
 
 static bool EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
 
-static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid)
+static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, bool walkStack)
 {
   strm << " id=" << id << " (0x" << std::hex << id << std::dec << ')';
 
@@ -2820,7 +2820,7 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThread
   if (!name.IsEmpty())
     strm << " name=\"" << name << '"';
 
-  if (EnableDeadlockStackWalk)
+  if (walkStack)
     PTrace::WalkStack(strm, id);
 }
 
@@ -2838,16 +2838,19 @@ void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
   PThreadIdentifier lockerId = m_lockerId;
+  PThreadIdentifier lastLockerId = m_lastLockerId;
   PUniqueThreadIdentifier uniqueId = m_uniqueId;
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Possible deadlock in mutex " << this << "\n  Blocked Thread";
-  OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier());
+  OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), EnableDeadlockStackWalk);
   trace << "\n  Owner Thread ";
-  if (lockerId == PNullThreadIdentifier)
-    trace << "no longer has lock";
-  else
-    OutputThreadInfo(trace, lockerId, uniqueId);
+  if (lockerId != PNullThreadIdentifier)
+    OutputThreadInfo(trace, lockerId, uniqueId, EnableDeadlockStackWalk);
+  else {
+    trace << "no longer has lock, last owner:";
+    OutputThreadInfo(trace, lastLockerId, uniqueId, false);
+  }
   trace << PTrace::End;
 #else
   PAssertAlways(PSTRSTRM("Possible deadlock in mutex " << this));
@@ -2864,6 +2867,7 @@ void PTimedMutex::CommonSignal()
     m_excessiveLockTime = false;
   }
 
+  m_lastLockerId = m_lockerId;
   m_lockerId = PNullThreadIdentifier;
   m_uniqueId = 0;
 }
