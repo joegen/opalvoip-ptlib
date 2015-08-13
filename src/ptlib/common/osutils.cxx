@@ -2832,7 +2832,7 @@ static unsigned InitExcessiveLockWaitTime()
   return seconds > 0 ? seconds : 15;
 }
 
-unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime();
+unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime()*1000;
 
 void PTimedMutex::ExcessiveLockWait()
 {
@@ -3097,7 +3097,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
   nest.m_waiting = true;
 
 #if PTRACING
-  if (sync.Wait(PTimeInterval(0,PTimedMutex::ExcessiveLockWaitTime))) {
+  if (sync.Wait(PTimedMutex::ExcessiveLockWaitTime)) {
     nest.m_waiting = false;
     return;
   }
