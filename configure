@@ -6066,6 +6066,9 @@ case "$target_os" in
       CPPFLAGS="-stdlib=libc++ $CPPFLAGS"
       LDFLAGS="${LDFLAGS} -stdlib=libc++"
       LIBS="-framework AudioToolbox -framework CoreAudio -framework SystemConfiguration -framework Foundation -lobjc $LIBS"
+      if ${DEBUG_FLAG+:} false; then :
+
+else
 
    oldCPPFLAGS="$CPPFLAGS"
    CPPFLAGS="$CPPFLAGS -gdwarf-4"
@@ -6099,6 +6102,8 @@ $as_echo "$usable" >&6; }
 fi
 
 
+
+fi
    ;;
 
    cygwin* | mingw* )
