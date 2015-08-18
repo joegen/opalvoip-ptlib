@@ -94,7 +94,7 @@
 
   static void InternalWalkStack(ostream & strm, int skip, void * const * addresses, int addressCount)
   {
-    if (addressCount <= 0) {
+    if (addressCount <= skip) {
       strm << "\n\tStack back trace empty, possibly corrupt.";
       return;
     }
