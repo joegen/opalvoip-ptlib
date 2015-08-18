@@ -235,6 +235,8 @@ PVideoInputDevice_Mac::PVideoInputDevice_Mac()
   , m_captureFrame(nil)
 {
   colourFormat = "YUV420P";
+  frameWidth = 640;
+  frameHeight = 480;
   m_frameSizeBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   PTRACE(5, "Constructed.");
 }
@@ -320,7 +322,8 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
   [m_captureOutput setDelegate:m_captureFrame];
   
   deviceName = devName;
-  
+  m_frameSizeBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+
   PTRACE(3, "Opened \"" << devName << "\""
             " res=" << frameWidth << 'x' << frameHeight << '@' << frameRate);
   
@@ -514,9 +517,7 @@ PBoolean PVideoInputDevice_Mac::SetFrameSize(unsigned width, unsigned height)
   // Searched and searched but cannot figure out how to do this programmatically.
   if (!((width == 160 && height == 120) ||
         (width == 320 && height == 240) ||
-        (width == 640 && height == 480) ||
-        (width == 176 && height == 144) ||
-        (width == 352 && height == 288)))
+        (width == 640 && height == 480)))
     return false;
 
   if (!PVideoDevice::SetFrameSize(width, height))
