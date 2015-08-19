@@ -3307,6 +3307,17 @@ class PStringOptions : public PStringToString
     void SetReal(const PCaselessString &   key,    double value, int decimals);
     void SetReal(const PCaselessString & (*key)(), double value, int decimals) { SetReal(key(), value, decimals); }
 
+    /// Get the option value as any type.
+    template<typename T> T GetVar(const char *              key,    const T & dflt) const { PConstCaselessString k(key); return GetVar<T>(k, dflt); }
+    template<typename T> T GetVar(const PString         &   key,    const T & dflt) const { return GetVar<T>(PCaselessString(key), dflt); }
+    template<typename T> T GetVar(const PCaselessString &   key,    const T & dflt) const { PStringStream s(GetString(key)); T v(dflt); s>>v; return v; }
+    template<typename T> T GetVar(const PCaselessString & (*key)(), const T & dflt) const { return GetVar<T>(key(), dflt); }
+
+    template<typename T> bool SetVar(const char *              key,    const T & value) { PConstCaselessString k(key); return SetVar<T>(k, value); }
+    template<typename T> bool SetVar(const PString         &   key,    const T & value) { return SetVar<T>(PCaselessString(key), value); }
+    template<typename T> bool SetVar(const PCaselessString &   key,    const T & value) { return SetString(key, PSTRSTRM(value)); }
+    template<typename T> bool SetVar(const PCaselessString & (*key)(), const T & value) { return SetVar<T>(key(), value); }
+
     /// Determine of the option exists.
     __inline bool Has(const char * key) const                 { return Contains(key); }
     __inline bool Has(const PString & key) const              { return Contains(key); }
