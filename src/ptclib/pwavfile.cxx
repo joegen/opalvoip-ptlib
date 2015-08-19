@@ -201,7 +201,7 @@ PString PWAVFile::GetFormatString() const
 
 bool PWAVFile::SetAutoconvert(bool convert)
 {
-  if (m_status != e_Reading)
+  if (m_status == e_Writing)
     return false;
 
   delete m_autoConverter;
