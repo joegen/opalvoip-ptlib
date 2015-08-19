@@ -465,12 +465,14 @@ case "$target_os" in
       CPPFLAGS="-stdlib=libc++ $CPPFLAGS"
       LDFLAGS="${LDFLAGS} -stdlib=libc++"
       LIBS="-framework AudioToolbox -framework CoreAudio -framework SystemConfiguration -framework Foundation -lobjc $LIBS"
-      MY_COMPILE_IFELSE(
-         [debug build (-gdwarf-4)],
-         [-gdwarf-4],
-         [],
-         [],
-         [DEBUG_FLAG="-gdwarf-4"]
+      AS_VAR_SET_IF([DEBUG_FLAG], ,
+         MY_COMPILE_IFELSE(
+            [debug build (-gdwarf-4)],
+            [-gdwarf-4],
+            [],
+            [],
+            [DEBUG_FLAG="-gdwarf-4"]
+         )
       )
    ;;
 
