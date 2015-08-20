@@ -801,7 +801,10 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
           file = fileName;
       }
     }
-    stream << setw(16) << file;
+    static unsigned const FileWidth = 16;
+    char buffer[FileWidth + 1];
+    buffer[FileWidth] = '\0';
+    stream << setw(FileWidth) << strncpy(buffer, file, FileWidth);
 
     if (lineNum > 0)
       stream << '(' << lineNum << ')';
