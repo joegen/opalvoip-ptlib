@@ -2063,7 +2063,19 @@ bool PIPSocket::Address::IsSubNet(const Address & network, const Address & mask)
   }
 #endif
 
-  return ((DWORD)*this & (DWORD)mask) == (DWORD)network;
+  DWORD bitmask;
+  if (!mask.IsAny())
+    bitmask = mask;
+  else if (network.Byte1() < 128)
+    bitmask = inet_addr("255.0.0.0");
+  else if (network.Byte1() < 192)
+    bitmask = inet_addr("255.255.0.0");
+  else if (network.Byte1() < 240)
+    bitmask = inet_addr("255.255.255.0");
+  else
+    bitmask = inet_addr("255.255.255.255");
+
+  return ((DWORD)*this & bitmask) == (DWORD)network;
 }
 
 
