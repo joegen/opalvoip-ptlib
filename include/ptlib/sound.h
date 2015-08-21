@@ -160,9 +160,10 @@ class PSound : public PBYTEArray
        @return
        true if the sound is playing or has played.
      */
-    static PBoolean PlayFile(
+    static bool PlayFile(
       const PFilePath & file, ///< Sound file to play.
-      PBoolean wait = true        ///< Flag to play sound synchronously.
+      bool wait = true,       ///< Flag to play sound synchronously.
+      unsigned volume = 100   ///< Volume in percent to play the wave file.
     );
 
     /// Play the "standard" warning beep for the platform.
@@ -604,9 +605,10 @@ class PSoundChannel : public PIndirectChannel
        @return
        true if the sound is playing or has played.
      */
-    virtual PBoolean PlayFile(
+    virtual bool PlayFile(
       const PFilePath & file, ///< Sound file to play.
-      PBoolean wait = true        ///< Flag to play sound synchronously.
+      bool wait = true,       ///< Flag to play sound synchronously.
+      unsigned volume = 100   ///< Volume in percent to play the wave file.
     );
 
     /**Indicate if the sound play begun with PlayBuffer() or PlayFile() has
