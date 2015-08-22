@@ -461,8 +461,8 @@ bool PSoundChannel::PlayFile(const PFilePath & filename, bool wait, unsigned vol
       else {
         /* Convert "volume" to a multiplier an a logarithmic scale. 50%, which
            divides by 2, does not actually give you half the volume. */
-        static const unsigned scale = 1000;
-        unsigned multiplier = (unsigned)((pow(10, volume/100.0)-1.0)/9.0*scale);
+        static const int scale = 1000;
+        int multiplier = (int)((pow(10, volume/100.0)-1.0)/9.0*scale);
         PINDEX nSample = buffer.GetSize() / 2;
         short * pSample = (short *)buffer.GetPointer();
         for (PINDEX iSample = 0; iSample < nSample; ++iSample, ++pSample)
