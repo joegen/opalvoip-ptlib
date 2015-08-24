@@ -92,7 +92,24 @@ class PSmartObject : public PObject
    A NULL value is possible for a smart pointer. It can be detected via the
    <code>IsNULL()</code> function.
 
-   Note that a PSmartPointer is not 100% thread safe.
+   Note that a PSmartPointer is not 100% thread safe. The case of assigment to
+   and from a pointer at the same time is not handled. Consider the assignment
+   code for A = B in one thread and C = A in another, when A was unique at the
+   time of A  = B.
+
+   <code>
+      if ((object != NULL) && (--object->referenceCount == 0))
+          // context switch here
+          delete object;
+
+      object = ptr.object;
+      if (object != NULL)
+        ++object->referenceCount;
+   </code>
+
+   The A = B operation in thread 1 is interrupted after it has decremented the
+   count, then C = B then copies the pointer "object" in thread 2. Thread 1
+   then deletes it leaving C pointing to a deleted pointer.
  */
 class PSmartPointer : public PObject
 {
