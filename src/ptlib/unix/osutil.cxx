@@ -347,7 +347,7 @@ PTimeInterval PTimer::Tick()
 #if defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  return ts.tv_sec*1000LL + ts.tv_nsec/1000000LL;
+  return PTimeInterval::NanoSeconds(ts.tv_sec*1000000000LL + ts.tv_nsec);
 #elif defined(P_MACOSX) || defined(P_IOS)
   static mach_timebase_info_data_t timebaseInfo;
   if (timebaseInfo.denom == 0) {
@@ -359,7 +359,7 @@ PTimeInterval PTimer::Tick()
   #warning System does not have clock_gettime with CLOCK_MONOTONIC, using gettimeofday
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  return tv.tv_sec*1000LL + tv.tv_usec/1000LL;
+  return PTimeInterval::MicroSeconds(tv.tv_sec*1000000LL + tv.tv_usec);
 #endif // P_VXWORKS
 }
 

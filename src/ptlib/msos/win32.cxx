@@ -244,7 +244,7 @@ PTimeInterval PTimer::Tick()
   
   LARGE_INTEGER count;
   QueryPerformanceCounter(&count);
-  return count.QuadPart/divisor;
+  return PTimeInterval::MicroSeconds(count.QuadPart*1000/divisor);
 }
 
 
