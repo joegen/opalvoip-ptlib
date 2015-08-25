@@ -54,23 +54,12 @@ PTimeInterval::PTimeInterval(const PString & str)
 }
 
 
-PInt64 PTimeInterval::GetMilliSeconds() const
-{ 
-  return m_milliseconds; 
-}
-
-void PTimeInterval::SetMilliSeconds(PInt64 msecs)
-{ 
-  m_milliseconds = msecs;
-}
-
 PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 {
-  PAssert(PIsDescendant(&obj, PTimeInterval), PInvalidCast);
-  const PTimeInterval & other = (const PTimeInterval &)obj;
-
-  return GetMilliSeconds() < other.GetMilliSeconds() ? LessThan :
-         GetMilliSeconds() > other.GetMilliSeconds() ? GreaterThan : EqualTo;}
+  int64_t otherNano = dynamic_cast<const PTimeInterval &>(obj).GetNanoSeconds();
+  int64_t thisNano = GetNanoSeconds();
+  return thisNano < otherNano ? LessThan : thisNano > otherNano ? GreaterThan : EqualTo;
+}
 
 
 void PTimeInterval::PrintOn(ostream & stream) const
@@ -312,19 +301,6 @@ PTime::PTime(int second, int minute, int hour,
 }
 
 
-PTime::PTime(const PTime & other)
-  : m_microSecondsSinceEpoch(other.m_microSecondsSinceEpoch.load())
-{
-}
-
-
-PTime & PTime::operator=(const PTime & other)
-{
-  m_microSecondsSinceEpoch.store(other.m_microSecondsSinceEpoch.load());
-  return *this;
-}
-
-
 PObject::Comparison PTime::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PTime), PInvalidCast);
@@ -338,18 +314,6 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
     return GreaterThan;
 
   return EqualTo;
-}
-
-
-PInt64 PTime::GetTimestamp() const
-{
-  return m_microSecondsSinceEpoch.load();
-}
-
-
-void PTime::SetTimestamp(time_t seconds, int64_t usecs)
-{ 
-  m_microSecondsSinceEpoch.store(seconds*Micro + usecs);
 }
 
 
@@ -794,38 +758,6 @@ bool PTime::Parse(const PString & str)
 }
 
 
-PTime PTime::operator+(const PTimeInterval & t) const
-{
-  return PTime(0, m_microSecondsSinceEpoch.load() +  t.GetMilliSeconds()*1000);
-}
-
-
-PTime & PTime::operator+=(const PTimeInterval & t)
-{
-  m_microSecondsSinceEpoch += t.GetMilliSeconds()*1000;
-  return *this;
-}
-
-
-PTimeInterval PTime::operator-(const PTime & t) const
-{
-  return PTimeInterval((m_microSecondsSinceEpoch.load() - t.m_microSecondsSinceEpoch.load() + 999)/1000);
-}
-
-
-PTime PTime::operator-(const PTimeInterval & t) const
-{
-  return PTime(0, m_microSecondsSinceEpoch.load() - t.GetMilliSeconds()*1000);
-}
-
-
-PTime & PTime::operator-=(const PTimeInterval & t)
-{
-  m_microSecondsSinceEpoch -= t.GetMilliSeconds()*1000;
-  return *this;
-}
-
-
 //////////////////////////////////////////////////////////////////////////////
 // P_timeval
 
@@ -844,7 +776,7 @@ P_timeval & P_timeval::operator=(const PTimeInterval & time)
     m_timeval.tv_sec = m_timeval.tv_usec = -1;
   else {
     m_timeval.tv_sec = time.GetSeconds();
-    m_timeval.tv_usec = (long)(time.GetMilliSeconds() % 1000) * 1000;
+    m_timeval.tv_usec = (long)(time.GetMicroSeconds() % 1000000);
   }
   return *this;
 }

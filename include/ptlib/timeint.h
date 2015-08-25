@@ -83,6 +83,15 @@ class PTimeInterval : public PObject
     PTimeInterval(
       const PString & str   ///< String representation of time interval.
     );
+
+    PTimeInterval(const PTimeInterval & other);
+    PTimeInterval & operator=(const PTimeInterval & other);
+
+    /// Return a PTimeInterval in nanoseconds
+    static PTimeInterval NanoSeconds(int64_t nsecs);
+
+    /// Return a PTimeInterval in microseconds
+    static PTimeInterval MicroSeconds(int64_t usecs);
   //@}
 
   /**@name Overrides from class PObject */
@@ -147,6 +156,28 @@ class PTimeInterval : public PObject
 
   /**@name Access functions */
   //@{
+    /** Get the number of nanoseconds for the time interval.
+    
+       @return
+       very long integer number of nanoseconds.
+     */
+    virtual PInt64 GetNanoSeconds() const;
+
+    /** Set the number of nanoseconds for the time interval.
+     */
+    virtual void SetNanoSeconds(PInt64 nsecs);
+
+    /** Get the number of microseconds for the time interval.
+    
+       @return
+       very long integer number of microseconds.
+     */
+    virtual PInt64 GetMicroSeconds() const;
+
+    /** Set the number of microseconds for the time interval.
+     */
+    virtual void SetMicroSeconds(PInt64 usecs);
+
     /** Get the number of milliseconds for the time interval.
     
        @return
@@ -402,9 +433,7 @@ class PTimeInterval : public PObject
   //@}
 
   private:
-  // Member variables
-    /// Number of milliseconds in time interval.
-    PInt64 m_milliseconds;
+    atomic<int64_t> m_nanoseconds;
 
 
 // Include platform dependent part of class

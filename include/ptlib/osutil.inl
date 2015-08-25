@@ -35,11 +35,40 @@
 // PTimeInterval
 
 PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
-  : m_milliseconds(millisecs) { }
+  : m_nanoseconds(millisecs*1000000) { }
 
+PINLINE PTimeInterval::PTimeInterval(const PTimeInterval & other)
+  : m_nanoseconds(other.m_nanoseconds.load()) { }
+
+PINLINE PTimeInterval & PTimeInterval::operator=(const PTimeInterval & other)
+  { m_nanoseconds.store(other.m_nanoseconds.load()); return *this; }
 
 PINLINE PObject * PTimeInterval::Clone() const
   { return PNEW PTimeInterval(GetMilliSeconds()); }
+
+PINLINE PTimeInterval PTimeInterval::NanoSeconds(int64_t nsecs)
+  { PTimeInterval t; t.SetNanoSeconds(nsecs); return t; }
+
+PINLINE PTimeInterval PTimeInterval::MicroSeconds(int64_t usecs)
+  { PTimeInterval t; t.SetMicroSeconds(usecs); return t; }
+
+PINLINE PInt64 PTimeInterval::GetNanoSeconds() const
+  { return m_nanoseconds.load(); }
+
+PINLINE void PTimeInterval::SetNanoSeconds(PInt64 nsecs)
+  { m_nanoseconds.store(nsecs); }
+
+PINLINE PInt64 PTimeInterval::GetMicroSeconds() const
+  { return m_nanoseconds.load()/1000; }
+
+PINLINE void PTimeInterval::SetMicroSeconds(PInt64 usecs)
+  { m_nanoseconds.store(usecs*1000); }
+
+PINLINE PInt64 PTimeInterval::GetMilliSeconds() const
+  { return m_nanoseconds.load()/1000000; }
+
+PINLINE void PTimeInterval::SetMilliSeconds(PInt64 msecs)
+  { m_nanoseconds.store(msecs*1000000); }
 
 PINLINE long PTimeInterval::GetSeconds() const
   { return (long)(GetMilliSeconds()/1000); }
@@ -125,11 +154,26 @@ PINLINE bool PTimeInterval::operator<=(long msecs) const
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
+PINLINE PTime::PTime(const PTime & other)
+  : m_microSecondsSinceEpoch(other.m_microSecondsSinceEpoch.load()) { }
+
+PINLINE PTime & PTime::operator=(const PTime & other)
+  { m_microSecondsSinceEpoch.store(other.m_microSecondsSinceEpoch.load()); return *this; }
+
 PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(*this); }
 
 PINLINE PBoolean PTime::IsValid() const
   { return m_microSecondsSinceEpoch.load() > 46800000000; }
+
+PINLINE PInt64 PTime::GetTimestamp() const
+  { return m_microSecondsSinceEpoch.load(); }
+
+PINLINE void PTime::SetTimestamp(time_t seconds, int64_t usecs)
+  { m_microSecondsSinceEpoch.store(seconds*Micro + usecs); }
+
+PINLINE void PTime::AddTimestamp(int64_t usecs)
+ { m_microSecondsSinceEpoch += usecs; }
 
 PINLINE time_t PTime::GetTimeInSeconds() const
   { return m_microSecondsSinceEpoch.load()/Micro; }
@@ -152,6 +196,21 @@ PINLINE PString PTime::AsString(const PString & format, int zone) const
 
 PINLINE int PTime::GetTimeZone() 
   { return GetTimeZone(IsDaylightSavings() ? DaylightSavings : StandardTime); }
+
+PINLINE PTime PTime::operator+(const PTimeInterval & t) const
+  { return PTime(0, GetTimestamp() +  t.GetMicroSeconds()); }
+
+PINLINE PTime & PTime::operator+=(const PTimeInterval & t)
+  { m_microSecondsSinceEpoch += t.GetMicroSeconds(); return *this; }
+
+PINLINE PTimeInterval PTime::operator-(const PTime & t) const
+  { return PTimeInterval::MicroSeconds(GetTimestamp() - t.GetTimestamp()); }
+
+PINLINE PTime PTime::operator-(const PTimeInterval & t) const
+  { return PTime(0, GetTimestamp() - t.GetMicroSeconds()); }
+
+PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
+  { m_microSecondsSinceEpoch -= t.GetMicroSeconds(); return *this; }
 
 
 #if P_TIMERS
