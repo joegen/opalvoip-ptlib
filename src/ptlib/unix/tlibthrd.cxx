@@ -717,7 +717,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
 {
   struct timespec ts;
   ts.tv_sec = timeout.GetSeconds();
-  ts.tv_nsec = (timeout.GetMilliSeconds()%1000)*1000000;
+  ts.tv_nsec = timeout.GetNanoSeconds()%1000000000;
 
   PPROFILE_PRE_SYSTEM();
 
