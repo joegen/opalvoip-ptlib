@@ -37,8 +37,8 @@
 
 /////////////////////////////////////////////////////////
 
-PAdaptiveDelay::PAdaptiveDelay(unsigned maximumSlip, unsigned minimumDelay)
-  : m_jitterLimit(-(int)maximumSlip)
+PAdaptiveDelay::PAdaptiveDelay(const PTimeInterval & maximumSlip, const PTimeInterval & minimumDelay)
+  : m_jitterLimit(-maximumSlip)
   , m_minimumDelay(minimumDelay)
   , m_targetTime(0)
   , m_firstTime(true)
@@ -50,7 +50,7 @@ void PAdaptiveDelay::Restart()
   m_firstTime = true;
 }
 
-PBoolean PAdaptiveDelay::Delay(int frameTime)
+PBoolean PAdaptiveDelay::DelayMicroseconds(int frameTime)
 {
   if (m_firstTime) {
     m_firstTime = false;
@@ -61,7 +61,7 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
     return true;
 
   // Set the new target
-  m_targetTime += frameTime;
+  m_targetTime.AddTimestamp(frameTime);
 
   // Calculate the sleep time so we delay until the target time
   PTimeInterval delay = m_targetTime - PTime();
