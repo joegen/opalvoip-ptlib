@@ -99,10 +99,10 @@ class PAdaptiveDelay : public PObject
        true if we are "too late" of @a time milliseconds (unrelated to
        the maximum slip time).
       */
-    bool Delay(int msec) { return DelayMicroseconds(msec*1000); }
+    bool Delay(int msec) { return DelayInterval(msec); }
 
-    /// As for Delay() but for microseconds.
-    bool DelayMicroseconds(int usec);
+    /// As for Delay() but for more accurate timing.
+    bool DelayInterval(const PTimeInterval & delta);
 
     /**Invalidate the timer. The timing of this function call is not
        important, the timer will restart at the next call to Delay().
