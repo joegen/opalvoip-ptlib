@@ -244,9 +244,11 @@ PSmartPointer & PSmartPointer::operator=(const PSmartPointer & ptr)
   if ((object != NULL) && (--object->referenceCount == 0))
       delete object;
 
-  object = ptr.object;
-  if (object != NULL)
-    ++object->referenceCount;
+  // This reduces, but does not close, the multi-threading window for failure
+  if (ptr.object != NULL && PAssert(++ptr.object->referenceCount > 1, "Multi-thread failure in PSmartPointer"))
+    object = ptr.object;
+  else
+    object = NULL;
 
   return *this;
 }

@@ -420,12 +420,9 @@ PBoolean PSoundChannel::PlaySound(const PSound & sound, PBoolean wait)
 }
 
 
-PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
+bool PSoundChannel::PlayFile(const PFilePath & filename, bool wait, unsigned volume)
 {
   PAssert(activeDirection == Player, PLogicError);
-  PReadWaitAndSignal mutex(channelPointerMutex);
-  if (readChannel != NULL)
-    return GetSoundChannel()->PlayFile(filename, wait);
 
 #if P_WAVFILE
   /* use PWAVFile instead of PFile -> skips wav header bytes */
@@ -446,12 +443,33 @@ PBoolean PSoundChannel::PlayFile(const PFilePath & filename, PBoolean wait)
     return false;
 
   PTRACE(4, "Starting play of WAV file \"" << filename << "\", "
+            "volume=" << volume << "%, "
             "total size=" << wavFile.GetLength() << ", "
             "buffer size=" << buffer.GetSize() << ", "
             "sample rate=" << wavFile.GetSampleRate() << ", "
             "duration=" << PTimeInterval(wavFile.GetLength()*8000/wavFile.GetSampleSize()/wavFile.GetChannels()/wavFile.GetSampleRate()));
 
   while (wavFile.Read(buffer.GetPointer(), buffer.GetSize())) {
+    if (volume < 100) {
+      /* Adjust volume of audio data sent to the device without changing the
+         volume of the device itself. Do this because of other ongoing or
+         subsequent playing operations while volume of the device should not
+         be changed. */
+      if (wavFile.GetSampleSize() != 16)
+        PTRACE(2, "Volume adjustment of WAV file \"" << filename << "\" with "
+               << wavFile.GetSampleSize() << " bits/sample is not supported");
+      else {
+        /* Convert "volume" to a multiplier an a logarithmic scale. 50%, which
+           divides by 2, does not actually give you half the volume. */
+        static const int scale = 1000;
+        int multiplier = (int)((pow(10, volume/100.0)-1.0)/9.0*scale);
+        PINDEX nSample = buffer.GetSize() / 2;
+        short * pSample = (short *)buffer.GetPointer();
+        for (PINDEX iSample = 0; iSample < nSample; ++iSample, ++pSample)
+          *pSample = (short)(*pSample * multiplier / scale);
+      }
+    }
+
     if (!Write(buffer, wavFile.GetLastReadCount())) {
       PTRACE(4, "Error writing sound: " << GetErrorText());
       return false;
@@ -816,19 +834,15 @@ PBoolean PSound::Play(const PString & device)
   return channel.PlaySound(*this, true);
 }
 
+#endif //_WIN32
 
-PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
+
+PBoolean PSound::PlayFile(const PFilePath & file, bool wait, unsigned volume)
 {
-  PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
-                        PSoundChannel::Player);
-  if (!channel.IsOpen())
-    return false;
-
-  return channel.PlayFile(file, wait);
+  PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player), PSoundChannel::Player);
+  return channel.IsOpen() && channel.PlayFile(file, wait, volume);
 }
 
-
-#endif //_WIN32
 
 ///////////////////////////////////////////////////////////////////////////
 

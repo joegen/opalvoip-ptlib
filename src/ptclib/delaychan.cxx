@@ -37,8 +37,8 @@
 
 /////////////////////////////////////////////////////////
 
-PAdaptiveDelay::PAdaptiveDelay(unsigned maximumSlip, unsigned minimumDelay)
-  : m_jitterLimit(-(int)maximumSlip)
+PAdaptiveDelay::PAdaptiveDelay(const PTimeInterval & maximumSlip, const PTimeInterval & minimumDelay)
+  : m_jitterLimit(-maximumSlip)
   , m_minimumDelay(minimumDelay)
   , m_targetTime(0)
   , m_firstTime(true)
@@ -50,18 +50,18 @@ void PAdaptiveDelay::Restart()
   m_firstTime = true;
 }
 
-PBoolean PAdaptiveDelay::Delay(int frameTime)
+PBoolean PAdaptiveDelay::DelayInterval(const PTimeInterval & delta)
 {
   if (m_firstTime) {
     m_firstTime = false;
     m_targetTime.SetCurrentTime();   // targetTime is the time we want to delay to
   }
 
-  if (frameTime <= 0)
+  if (delta <= 0)
     return true;
 
   // Set the new target
-  m_targetTime += frameTime;
+  m_targetTime += delta;
 
   // Calculate the sleep time so we delay until the target time
   PTimeInterval delay = m_targetTime - PTime();
@@ -70,8 +70,8 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
   if (m_jitterLimit < 0 && delay < m_jitterLimit) {
     unsigned i = 0;
     while (delay < 0) { 
-      m_targetTime += frameTime;
-      delay += frameTime;
+      m_targetTime += delta;
+      delay += delta;
       i++;
     }
     PTRACE (4, "AdaptiveDelay\tResynchronise skipped " << i << " frames");
@@ -81,7 +81,7 @@ PBoolean PAdaptiveDelay::Delay(int frameTime)
   if (delay > m_minimumDelay)
     PThread::Sleep(delay);
 
-  return delay <= -frameTime;
+  return delay <= -delta;
 }
 
 

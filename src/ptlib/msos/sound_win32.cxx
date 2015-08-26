@@ -467,12 +467,6 @@ PBoolean PSound::Play(const PString & device)
   return channel.PlaySound(*this, true);
 }
 
-PBoolean PSound::PlayFile(const PFilePath & file, PBoolean wait)
-{
-  PVarString filename = file;
-  return ::PlaySound(filename, NULL, SND_FILENAME|(wait ? SND_SYNC : SND_ASYNC));
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 

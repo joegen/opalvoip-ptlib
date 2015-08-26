@@ -62,8 +62,8 @@ class PAdaptiveDelay : public PObject
        The maximum slip time can also be set later using SetMaximumSlip.
       */
     PAdaptiveDelay(
-      unsigned maximumSlip = 0,   ///< Maximum slip time in milliseconds
-      unsigned minimumDelay = 0   ///< Minimum delay (usually OS time slice)
+      const PTimeInterval & maximumSlip = 0,   ///< Maximum slip time in milliseconds
+      const PTimeInterval & minimumDelay = 0   ///< Minimum delay (usually OS time slice)
     );
   //@}
 
@@ -75,8 +75,8 @@ class PAdaptiveDelay : public PObject
 
        If @a maximumSlip is 0, this feature is disabled.
       */
-    void SetMaximumSlip(unsigned maximumSlip)
-    { m_jitterLimit = -(int)maximumSlip; }
+    void SetMaximumSlip(const PTimeInterval & maximumSlip)
+    { m_jitterLimit = -maximumSlip; }
 
     /**Get the current slip time. */
     PTimeInterval GetMaximumSlip() const
@@ -99,7 +99,10 @@ class PAdaptiveDelay : public PObject
        true if we are "too late" of @a time milliseconds (unrelated to
        the maximum slip time).
       */
-    PBoolean Delay(int time);
+    bool Delay(int msec) { return DelayInterval(msec); }
+
+    /// As for Delay() but for more accurate timing.
+    bool DelayInterval(const PTimeInterval & delta);
 
     /**Invalidate the timer. The timing of this function call is not
        important, the timer will restart at the next call to Delay().
