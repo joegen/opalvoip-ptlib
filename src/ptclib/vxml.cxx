@@ -2481,7 +2481,10 @@ void PVXMLDigitsGrammar::OnUserInput(const char ch)
 {
   PWaitAndSignal mutex(m_mutex);
 
-  // Ignore any keys until we are running
+  if (m_state == Idle)
+    Start();
+
+  // Ignore any keys unless we are running
   if (m_state != Started)
     return;
 
