@@ -91,9 +91,22 @@ class PSemaphore : public PSync
       unsigned maximum = UINT_MAX   ///< Maximum value for semaphore count.
     ) { Reset(initial, maximum); }
 
+    /**Create a new system global semaphore with maximum count and initial value specified.
+       If the initial value is larger than the maximum value then is is set to
+       the maximum value.
+     */
+    PSemaphore(
+      const PString & name,
+      unsigned initial = 0,         ///< Initial value for semaphore count.
+      unsigned maximum = UINT_MAX   ///< Maximum value for semaphore count.
+    ) : m_name(name) { Reset(initial, maximum); }
+
     /** Create a new semaphore with the same initial and maximum values as the original.
      */
-    PSemaphore(const PSemaphore & sem) : PSync() { Reset(sem.m_initial, sem.m_maximum); }
+    PSemaphore(const PSemaphore & sem)
+      : PSync()
+      , m_name(sem.m_name)
+    { Reset(sem.m_initial, sem.m_maximum); }
 
     /**Destroy the semaphore. This will assert if there are still waiting
        threads on the semaphore.
@@ -144,6 +157,7 @@ class PSemaphore : public PSync
 
 
   protected:
+    PString  m_name;
     unsigned m_maximum;
     unsigned m_initial;
 
