@@ -313,6 +313,10 @@ class PProcess : public PThread
      */
     static PProcessIdentifier GetCurrentProcessID();
 
+    /**Indicate if this is the second, or more, instance of this executable.
+      */
+    bool IsMultipleInstance() const;
+
     /**Return the time at which the program was started 
     */
     PTime GetStartTime() const;
