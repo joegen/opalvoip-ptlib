@@ -28,147 +28,68 @@
  * $Date$
  */
 
-#include "precompile.h"
-#include "main.h"
-#include "version.h"
-
-#include <ptlib/sockets.h>
+#include <ptlib.h>
 #include <ptclib/inetmail.h>
+#include <ptlib/pprocess.h>
 
-PCREATE_PROCESS(Emailtest);
 
-Emailtest::Emailtest()
-  : PProcess("Post Increment", "emailtest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+class Test : public PProcess
+{
+  PCLASSINFO(Test, PProcess)
+
+  public:
+    Test();
+    virtual void Main();
+};
+
+PCREATE_PROCESS(Test);
+
+Test::Test()
+  : PProcess("Post Increment", "emailtest", 1, 0, AlphaCode, 0)
 {
 }
 
-void Emailtest::Main()
+void Test::Main()
 {
   PArgList & args = GetArguments();
 
-  args.Parse(
-             "h-help."
-             "v-version."
-             "-server:"
-             "-to:"
-             "-from:"
-             "-subject:"
-             "-attach:"
-
-#if PTRACING
-             "o-output:"             "-no-output."
-             "t-trace."              "-no-trace."
-#endif
-  );
- 
-  if (args.HasOption('h')) {
-    cout << "usage: " <<  (const char *)GetName()
-         << endl
-         << "     --server srv     : set mail server" << endl
-         << "     --to     dst     : set to address" << endl
-         << "     --from   frm     : set from address " << endl
-         << "     -subject sbj     : set subject " << endl
-         << "     --attach atc     : list of attachments " << endl
-         << "     -h or --help           : get help on usage " << endl
-         << "     -v or --version        : report program version " << endl
-#if PTRACING
-         << "  -t --trace   : Enable trace, use multiple times for more detail" << endl
-         << "  -o --output  : File for trace output, default is stderr" << endl
-#endif
-         << endl;
+  if (!args.Parse("h-help.   Help\n"
+                  "-host:    Server host/address\n"
+                  "-port:    Server port\n"
+                  "-user:    Username\n"
+                  "-pass:    Password\n"
+                  "-from:    From email address\n"
+                  "-to:      To email addresses\n"
+                  "-cc:      CC email addresses\n"
+                  "-bcc:     BCC email addresses\n"
+                  "-subject: Subject for email\n"
+                  "-attach:  Attachments"
+                  PTRACE_ARGLIST
+  ) || args.HasOption('h')) {
+    args.Usage(cerr, "[ options] <body>");
     return;
   }
 
- if (args.HasOption('v')) {
-    cout << endl
-         << "Product Name: " <<  (const char *)GetName() << endl
-         << "Manufacturer: " <<  (const char *)GetManufacturer() << endl
-         << "Version     : " <<  (const char *)GetVersion(true) << endl
-         << "System      : " <<  (const char *)GetOSName() << '-'
-         <<  (const char *)GetOSHardware() << ' '
-         <<  (const char *)GetOSVersion() << endl
-         << endl;
-    return;
-  }
-  
+  PTRACE_INITIALISE(args);
 
-#if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-#endif
+  PSMTP::Parameters params;
+  params.m_hostname = args.GetOptionString("host");
+  params.m_port = args.GetOptionAs<WORD>("port", 0);
+  params.m_username = args.GetOptionString("user");
+  params.m_password = args.GetOptionString("pass");
+  params.m_from = args.GetOptionString("from");
+  params.m_to = args.GetOptionString("to").Lines();
+  params.m_cc = args.GetOptionString("cc").Lines();
+  params.m_bcc = args.GetOptionString("bcc").Lines();
+  params.m_subject = args.GetOptionString("subject");
+  params.m_bodyText = args.GetParameters().ToString();
+  params.m_attachments = args.GetOptionString("attach").Lines();
 
-  PRFC822Channel email(PRFC822Channel::Sending);
-
-  PString to = args.GetOptionString("to");
-  PString from = args.GetOptionString("from");
-
-  email.SetToAddress(to);
-  email.SetFromAddress(from);
-  email.SetSubject(args.GetOptionString("subject"));
-
-  PStringArray attachments = args.GetOptionString("attach").Lines();
-
-  PString server = args.GetOptionString("server");
-  if (server.IsEmpty())
-    server = "127.0.0.1";
-
-  PTCPSocket socket("smtp 25");
-  if (!socket.Connect(server)) {
-    PError << "error: could not connect to SMTP server " << server << endl;
-    return;
-  }
-
-  PSMTPClient smtpClient;
-  if (!smtpClient.Open(socket)) {
-    PError << "error: could not open SMTP server " << server << endl;
-    return;
-  }
-
-  if (!email.Open(smtpClient)) {
-    PError << "error: cannot open email message " << server << endl;
-    return;
-  }
-
-  if (!smtpClient.BeginMessage(from, to)) {
-    PError << "error: could not begin SMTP message " << smtpClient.GetErrorText() << endl;
-    return;
-  }
-
-  PString boundary;
-  if (attachments.GetSize() > 0) {
-    boundary = email.MultipartMessage();
-  }
-
-  for (PINDEX i = 0; i < args.GetCount(); ++i) {
-    email.Write((const char *)args[i], args[i].GetLength());
-    email << "\n";
-  }
-
-  if (attachments.GetSize() > 0) {
-    for (PINDEX i = 0; i < attachments.GetSize(); ++i) {
-      PFilePath filename = attachments[i];
-      PFile file(filename, PFile::ReadOnly);
-      if (file.IsOpen()) {
-        email.NextPart(boundary);
-        email.SetContentAttachment(filename.GetFileName());
-        PString fileType = filename.GetType();
-        PString contentType = PMIMEInfo::GetContentType(fileType);
-        if ((fileType *= "txt") || (fileType == "html"))
-          email.SetTransferEncoding("7bit", false);
-        else
-          email.SetTransferEncoding("base64", true);
-        BYTE buffer[1024];
-        for (;;) {
-          if (!file.Read(buffer, sizeof(buffer)))
-            break;
-          email.Write(buffer, file.GetLastReadCount());
-        }
-      }
-    }
-  }
-
-  email.Close();
+  PString error;
+  if (PSMTP::SendMail(params, error))
+    cout << "Send of email successful\n";
+  else
+    cerr << "Send of email failed: " << error << '\n';
 }
 
 
