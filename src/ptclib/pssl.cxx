@@ -1875,7 +1875,6 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case SSLv3:
       meth = SSLv3_method();
       break;
-#if OPENSSL_VERSION_NUMBER > 0x10002000L
     case TLSv1:
       meth = TLSv1_method(); 
       break;
@@ -1885,6 +1884,7 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case TLSv1_2 :
       meth = TLSv1_2_method(); 
       break;
+#if OPENSSL_VERSION_NUMBER > 0x10002000L
     case DTLSv1:
       meth = DTLSv1_method();
       break;
@@ -1895,12 +1895,7 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
       meth = DTLS_method(); 
       break;
 #else
-  #pragma message ("Using " OPENSSL_VERSION_TEXT " - TLS 1.1, 1.2 and DTLS 1.2 not available")
-    case TLSv1:
-    case TLSv1_1 :
-    case TLSv1_2 :
-      meth = TLSv1_method();
-      break;
+  #pragma message ("Using " OPENSSL_VERSION_TEXT " - DTLS 1.2 not available")
     case DTLSv1:
     case DTLSv1_2 :
     case DTLSv1_2_v1_0 :
