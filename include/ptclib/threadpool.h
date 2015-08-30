@@ -499,7 +499,10 @@ typedef PQueuedThreadPool<PSafeWork> PSafeThreadPool;
 
 /// A PSafeWork thread pool item where call back has no arguments.
 template <class PtrClass, typename FuncRet = void>
-class PSafeWorkNoArg : public PSafeWork {
+class PSafeWorkNoArg : public PSafeWork
+{
+  PCLASSINFO_ALIGNED(PSafeWorkNoArg, PSafeWork, 16);
+
   public:
     typedef FuncRet (PtrClass::*Function)();
 
@@ -527,7 +530,10 @@ template <
   typename Arg1Type,
   typename FuncRet = void
 >
-class PSafeWorkArg1 : public PSafeWork {
+class PSafeWorkArg1 : public PSafeWork
+{
+  PCLASSINFO_ALIGNED(PSafeWorkArg1, PSafeWork, 16);
+
   public:
     typedef FuncRet (PtrClass::*Function)(Arg1Type arg1);
 
@@ -559,7 +565,10 @@ template <
   typename Arg2Type,
   typename FuncRet = void
 >
-class PSafeWorkArg2 : public PSafeWork {
+class PSafeWorkArg2 : public PSafeWork
+{
+  PCLASSINFO_ALIGNED(PSafeWorkArg2, PSafeWork, 16);
+
   public:
     typedef FuncRet (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2);
 
@@ -595,7 +604,10 @@ template <
   typename Arg3Type,
   typename FuncRet = void
 >
-class PSafeWorkArg3 : public PSafeWork {
+class PSafeWorkArg3 : public PSafeWork
+{
+  PCLASSINFO_ALIGNED(PSafeWorkArg3, PSafeWork, 16);
+
   public:
     typedef FuncRet (PtrClass::*Function)(Arg1Type arg1, Arg2Type arg2, Arg3Type arg3);
 

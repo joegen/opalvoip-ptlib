@@ -1232,6 +1232,7 @@ class PMemoryHeap {
       int line,               ///< Source file line for allocating function.
       const char * className  ///< Class name for allocating function.
     );
+
     /** Allocate a memory block.
        This allocates a new memory block and keeps track of it. The memory
        block is filled with the value in the <code>allocFillChar</code> member variable
@@ -1550,7 +1551,7 @@ at the begining of the source file, after all declarations that use the
       { PMemoryHeap::Deallocate(ptr, Class()); }
 #endif
 
-#define PNEW_AND_DELETE_FUNCTIONS \
+#define PNEW_AND_DELETE_FUNCTIONS(align) \
     void * operator new(size_t nSize, const char * file, int line) \
       { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
     void * operator new(size_t nSize) \
@@ -1620,7 +1621,26 @@ public:
 
 #define PNEW new
 
-#define PNEW_AND_DELETE_FUNCTIONS
+#if _MSC_VER < 1800
+  #define PNEW_AND_DELETE_FUNCTIONS(align)
+#else
+  #define PNEW_AND_DELETE_FUNCTIONS_ALIGNED(align) \
+      void * operator new(size_t nSize) \
+        { return _aligned_malloc(nSize, align); } \
+      void * operator new(size_t, void * placement) \
+        { return placement; } \
+      void * operator new[](size_t nSize) \
+        { return _aligned_malloc(nSize, align); }
+
+  #define PNEW_AND_DELETE_FUNCTIONS64 PNEW_AND_DELETE_FUNCTIONS_ALIGNED(64)
+  #define PNEW_AND_DELETE_FUNCTIONS32 PNEW_AND_DELETE_FUNCTIONS_ALIGNED(32)
+  #define PNEW_AND_DELETE_FUNCTIONS16 PNEW_AND_DELETE_FUNCTIONS_ALIGNED(16)
+  #define PNEW_AND_DELETE_FUNCTIONS8  PNEW_AND_DELETE_FUNCTIONS_ALIGNED(8)
+  #define PNEW_AND_DELETE_FUNCTIONS4  PNEW_AND_DELETE_FUNCTIONS_ALIGNED(4)
+  #define PNEW_AND_DELETE_FUNCTIONS2  PNEW_AND_DELETE_FUNCTIONS_ALIGNED(2)
+  #define PNEW_AND_DELETE_FUNCTIONS0
+  #define PNEW_AND_DELETE_FUNCTIONS(align) PNEW_AND_DELETE_FUNCTIONS##align
+#endif
 
 #define runtime_malloc(s) malloc(s)
 #define runtime_free(p) free(p)
@@ -1755,6 +1775,15 @@ class PSingleton
   void   cls::operator delete(void * ptr, const char *, int) {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); }
 
 
+#define PCLASSINFO_ALIGNED(cls, par, align) \
+  public: \
+    typedef cls P_thisClass; \
+    __inline static const char * Class() { return typeid(cls).name(); } \
+    __inline bool IsClass(const char * name) const { return strcmp(name, Class()) == 0; } \
+    virtual PObject::Comparison CompareObjectMemoryDirect(const PObject & obj) const \
+      { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
+    PNEW_AND_DELETE_FUNCTIONS(align)
+
 
 /** Declare all the standard PTLib class information.
 This macro is used to provide the basic run-time typing capability needed
@@ -1766,14 +1795,7 @@ The use of the <code>#PDECLARE_CLASS</code> macro is no longer recommended for r
 of compatibility with documentation systems.
 */
 
-#define PCLASSINFO(cls, par) \
-  public: \
-    typedef cls P_thisClass; \
-    __inline static const char * Class() { return typeid(cls).name(); } \
-    __inline bool IsClass(const char * name) const { return strcmp(name, Class()) == 0; } \
-    virtual PObject::Comparison CompareObjectMemoryDirect(const PObject & obj) const \
-      { return PObject::InternalCompareObjectMemoryDirect(this, dynamic_cast<const cls *>(&obj), sizeof(cls)); } \
-    PNEW_AND_DELETE_FUNCTIONS
+#define PCLASSINFO(cls, par) PCLASSINFO_ALIGNED(cls, par, 0)
 
 /// Declare all the standard PTLib class information, plus Clone().
 #define PCLASSINFO_WITH_CLONE(cls, par) \
