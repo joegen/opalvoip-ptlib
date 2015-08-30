@@ -80,8 +80,38 @@ class PSMTP : public PInternetProtocol
       HELO, EHLO, QUIT, HELP, NOOP,
       TURN, RSET, VRFY, EXPN, RCPT,
       MAIL, SEND, SAML, SOML, DATA,
-      AUTH, NumCommands
+      AUTH, STARTTLS, NumCommands
     };
+
+    /// Info sending email
+    struct Parameters
+    {
+      Parameters()
+        : m_port(0)
+        , m_eightBitMIME(false)
+      {
+      }
+
+      PString     m_hostname;    ///< SMTP server host name
+      WORD        m_port;        ///< SMTP port, zero is default for protocol
+      PString     m_username;    ///< Username of credentials required
+      PString     m_password;    ///< Password if credentials required
+      PString     m_from;        ///< Mail address of sender.
+      PStringList m_to;          ///< Mail address of recipient.
+      PStringList m_cc;          ///< Carbon copy list
+      PStringList m_bcc;         ///< Blind carbon copy list
+      PString     m_subject;     ///< Subject of message
+      PString     m_bodyText;    ///< Body for message, if text
+      PStringList m_attachments; ///< List of files to attach
+      bool        m_eightBitMIME;///< Eight bit MIME more
+    };
+
+    /**Make a TCP/TLS connection and send the simple mail message.
+      */
+    static bool SendMail(
+      const Parameters & params, ///< Parameters for for email
+      PString & error            ///< Error message, if any
+    );
 
   protected:
     PSMTP();
@@ -141,7 +171,7 @@ class PSMTPClient : public PSMTP
        @return
        true if logged in.
      */
-    PBoolean LogIn(
+    bool LogIn(
       const PString & username,   ///< User name on remote system.
       const PString & password    ///< Password for user name.
     );
@@ -154,15 +184,15 @@ class PSMTPClient : public PSMTP
        @return
        true if message was handled, false if an error occurs.
      */
-    PBoolean BeginMessage(
+    bool BeginMessage(
       const PString & from,        ///< User name of sender.
       const PString & to,          ///< User name of recipient.
       PBoolean eightBitMIME = false    ///< Mesage will be 8 bit MIME.
     );
-    PBoolean BeginMessage(
+    bool BeginMessage(
       const PString & from,        ///< User name of sender.
       const PStringList & toList,  ///< List of user names of recipients.
-      PBoolean eightBitMIME = false    ///< Mesage will be 8 bit MIME.
+      bool eightBitMIME = false    ///< Mesage will be 8 bit MIME.
     );
 
     /** End transmission of a message using the SMTP socket as a client.
@@ -176,15 +206,17 @@ class PSMTPClient : public PSMTP
   protected:
     PBoolean OnOpen();
 
-    PBoolean    haveHello;
-    PBoolean    extendedHello;
-    PBoolean    eightBitMIME;
-    PString fromAddress;
-    PStringList toNames;
-    PBoolean    sendingData;
+    bool            m_haveHello;
+    PStringToString m_extensions;
+    PString         m_fromAddress;
+    PStringList     m_toNames;
+    bool            m_sendingData;
 
   private:
-    bool InternalBeginMessage();
+    bool InternalHello();
+    bool InternalExtendedHello();
+    PString InternalLocalHostName();
+    bool InternalBeginMessage(bool useEightBitMIME);
 };
 
 
@@ -990,29 +1022,13 @@ class PRFC822Channel : public PIndirectChannel
     static const PCaselessString & ContentDispositionTag() { return PMIMEInfo::ContentDispositionTag(); }
     static const PCaselessString & ContentTransferEncodingTag() { return PMIMEInfo::ContentTransferEncodingTag(); }
 
-    /**Send this message using an SMTP socket.
-       This will create a PSMTPClient and connect to the specified host then
-       send the message to the remote SMTP server.
-      */
-    PBoolean SendWithSMTP(
-      const PString & hostname
-    );
-
-    /**Send this message using an SMTP socket.
-       This assumes PSMTPClient is open the sends the message to the remote
-       SMTP server.
-      */
-    PBoolean SendWithSMTP(
-      PSMTPClient * smtp
-    );
-
 
   protected:
     PBoolean OnOpen();
 
-    PBoolean        writeHeaders;
+    bool        writeHeaders;
     PMIMEInfo   headers;
-    PBoolean        writePartHeaders;
+    bool        writePartHeaders;
     PMIMEInfo   partHeaders;
     PStringList boundaries;
     PBase64   * base64;
