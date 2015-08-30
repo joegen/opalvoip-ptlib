@@ -1764,11 +1764,10 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
   }
 #endif
 
-  if ((DWORD)*this < other)
-    return LessThan;
-  if ((DWORD)*this > other)
-    return GreaterThan;
-  return EqualTo;
+  if (operator==((DWORD)other))
+    return EqualTo;
+
+  return ntohl(*this) < ntohl(other) ? LessThan : GreaterThan;
 }
 
 
