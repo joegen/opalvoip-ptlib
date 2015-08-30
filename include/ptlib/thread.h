@@ -704,7 +704,7 @@ class PThread3Arg : public PThread
 template <typename ObjType>
 class PThreadObj : public PThread
 {
-    PCLASSINFO(PThreadObj, PThread);
+    PCLASSINFO_ALIGNED(PThreadObj, PThread, 16);
   public:
     typedef void (ObjType::*ObjTypeFn)(); 
 
@@ -754,7 +754,7 @@ class PThreadObj : public PThread
 template <class ObjType, typename Arg1Type>
 class PThreadObj1Arg : public PThread
 {
-    PCLASSINFO(PThreadObj1Arg, PThread);
+    PCLASSINFO_ALIGNED(PThreadObj1Arg, PThread, 16);
   public:
     typedef void (ObjType::*ObjTypeFn)(Arg1Type); 
 
@@ -790,7 +790,7 @@ class PThreadObj1Arg : public PThread
 template <class ObjType, typename Arg1Type, typename Arg2Type>
 class PThreadObj2Arg : public PThread
 {
-    PCLASSINFO(PThreadObj2Arg, PThread);
+    PCLASSINFO_ALIGNED(PThreadObj2Arg, PThread, 16);
   public:
     typedef void (ObjType::*ObjTypeFn)(Arg1Type, Arg2Type);
 

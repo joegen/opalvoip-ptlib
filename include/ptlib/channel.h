@@ -505,6 +505,8 @@ class PChannel : public PObject, public std::iostream
         P_ALIGN_FIELD(CompletionFunction,m_onComplete,16);
         bool Initialise(PChannel * channel, CompletionFunction onComplete);
         void OnIOComplete(PINDEX length, int errorNumber);
+
+        PNEW_AND_DELETE_FUNCTIONS(16)
     };
 
     /** Begin an asynchronous read from channel. The read timeout is used as in
