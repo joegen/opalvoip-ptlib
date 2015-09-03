@@ -264,7 +264,7 @@ bool PSMTPClient::LogIn(const PString & username, const PString & password)
 
   PString mech;
 
-  for (i = 0, max = serverMechs.GetSize() ; i < max ; i++)
+  for (PINDEX i = 0, max = serverMechs.GetSize() ; i < max ; i++)
     if (ourMechs.Contains(serverMechs[i])) {
       mech = serverMechs[i];
       break;
