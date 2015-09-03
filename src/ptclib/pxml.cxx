@@ -974,21 +974,27 @@ bool PXML_HTTP::LoadURL(const PURL & url, const PTimeInterval & timeout, Options
 
 bool PXML_HTTP::LoadURL(const PURL & url, const PURL::LoadParams & params, Options options)
 {
+  m_errorString.MakeEmpty();
+  m_errorLine = m_errorColumn = 0;
+
   if (url.IsEmpty()) {
-    m_errorString = "Cannot load empty URL";
-    m_errorLine = m_errorColumn = 0;
+    m_errorString << "Cannot load empty URL.";
     return false;
   }
 
   PTRACE(4, "XML\tLoading URL " << url);
 
-  PString data;
-  if (url.LoadResource(data, params))
-    return Load(data, options);
+  PString str;
+  PHTTPClient http;
+  http.SetReadTimeout(params.m_timeout);
+  http.SetAuthenticationInfo(params.m_username, params.m_password);
+#if P_SSL
+  http.SetSSLCredentials(params.m_authority, params.m_certificate, params.m_privateKey);
+#endif
+  if (http.GetTextDocument(url, str, params.m_requiredContentType))
+    return Load(str, options);
 
-  m_errorString = "Cannot load URL ";
-  m_errorLine = m_errorColumn = 0;
-  m_errorString << '"' << url << '"';
+  m_errorString << "Error loading \"" << url << "\", code=" << http.GetLastResponseCode() << ' ' << http.GetLastResponseInfo();
   return false;
 }
 
