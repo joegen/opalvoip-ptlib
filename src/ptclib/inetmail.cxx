@@ -34,6 +34,7 @@
 
 #include <ptlib.h>
 #include <ptlib/sockets.h>
+#include <ptclib/pssl.h>
 #include <ptclib/inetmail.h>
 #if P_SASL
 #include <ptclib/psasl.h>
@@ -53,7 +54,7 @@ static char const * const SMTPCommands[PSMTP::NumCommands] = {
   "HELO", "EHLO", "QUIT", "HELP", "NOOP",
   "TURN", "RSET", "VRFY", "EXPN", "RCPT",
   "MAIL", "SEND", "SAML", "SOML", "DATA",
-  "AUTH"
+  "AUTH", "STARTTLS"
 };
 
 
@@ -63,14 +64,99 @@ PSMTP::PSMTP()
 }
 
 
+bool PSMTP::SendMail(const Parameters & params, PString & error)
+{
+  if (params.m_to.IsEmpty() || params.m_to.front().IsEmpty()) {
+    error = "No \"to\" address provided.";
+    return false;
+  }
+
+  PString from = params.m_from;
+  if (from.IsEmpty())
+    from = PSTRSTRM(PProcess::Current().GetUserName() << '@' << PIPSocket::GetHostName());
+
+  PString server = params.m_hostname;
+  if (server.IsEmpty())
+    server = "127.0.0.1";
+
+  WORD port = params.m_port;
+  if (port == 0)
+    port = PSocket::GetPortByService("tcp", "smtp 25");
+
+  PTCPSocket socket(port);
+  if (!socket.Connect(server)) {
+    error = PSTRSTRM("Could not connect to SMTP server " << server << ':' << port << " - " << socket.GetErrorText());
+    return false;
+  }
+
+  PSMTPClient smtpClient;
+  if (!smtpClient.Open(socket)) {
+    error = PSTRSTRM("Could not open SMTP to server " << server << ':' << port << " - " << smtpClient.GetErrorText());
+    return false;
+  }
+
+  if (!params.m_username.IsEmpty() && !smtpClient.LogIn(params.m_username, params.m_password)) {
+    error = PSTRSTRM("Could not log into SMTP server " << server << ':' << port << " - " << smtpClient.GetLastResponseInfo());
+    return false;
+  }
+
+  if (!smtpClient.BeginMessage(from, params.m_to.front(), params.m_eightBitMIME)) {
+    error = PSTRSTRM("Could not begin SMTP to server " << server << ':' << port << " - " << smtpClient.GetLastResponseInfo());
+    return false;
+  }
+
+  PRFC822Channel email(PRFC822Channel::Sending);
+  email.SetFromAddress(from);
+  email.SetToAddress(PSTRSTRM(setfill(',') << params.m_to));
+  email.SetCC(PSTRSTRM(setfill(',') << params.m_cc));
+  email.SetBCC(PSTRSTRM(setfill(',') << params.m_bcc));
+  email.SetSubject(params.m_subject);
+
+  if (!email.Open(smtpClient)) {
+    error = PSTRSTRM("Could not open RFC822 to server " << server << ':' << port);
+    return false;
+  }
+
+  PString boundary;
+  if (!params.m_attachments.IsEmpty())
+    boundary = email.MultipartMessage();
+
+  if (!email.WriteString(params.m_bodyText))
+    return false;
+
+  for (PStringList::const_iterator it = params.m_attachments.begin(); it != params.m_attachments.end(); ++it) {
+    PFilePath filename = *it;
+    PFile file(filename, PFile::ReadOnly);
+    if (file.IsOpen()) {
+      email.NextPart(boundary);
+      email.SetContentAttachment(filename.GetFileName());
+      PString fileType = filename.GetType();
+      PString contentType = PMIMEInfo::GetContentType(fileType);
+      if ((fileType *= "txt") || (fileType == "html"))
+        email.SetTransferEncoding("7bit", false);
+      else
+        email.SetTransferEncoding("base64", true);
+      BYTE buffer[1024];
+      for (;;) {
+        if (!file.Read(buffer, sizeof(buffer)))
+          break;
+        if (!email.Write(buffer, file.GetLastReadCount()))
+          return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PSMTPClient
 
 PSMTPClient::PSMTPClient()
+  : m_haveHello(false)
+  , m_sendingData(false)
 {
-  haveHello = false;
-  extendedHello = false;
-  eightBitMIME = false;
 }
 
 
@@ -88,12 +174,12 @@ PBoolean PSMTPClient::OnOpen()
 
 PBoolean PSMTPClient::Close()
 {
-  PBoolean ok = true;
+  bool ok = true;
 
-  if (sendingData)
+  if (m_sendingData)
     ok = EndMessage();
 
-  if (IsOpen() && haveHello) {
+  if (IsOpen() && m_haveHello) {
     SetReadTimeout(60000);
     ok = ExecuteCommand(QUIT, "")/100 == 2 && ok;
   }
@@ -101,38 +187,75 @@ PBoolean PSMTPClient::Close()
 }
 
 
-#if P_SASL
-PBoolean PSMTPClient::LogIn(const PString & username,
-                        const PString & password)
+PString PSMTPClient::InternalLocalHostName()
 {
-
-  PString localHost;
   PIPSocket * socket = GetSocket();
-  if (socket != NULL) {
-    localHost = socket->GetLocalHostName();
+  return socket != NULL ? socket->GetLocalHostName() : PIPSocket::GetHostName();
+}
+
+
+bool PSMTPClient::InternalHello()
+{
+  if (m_haveHello)
+    return true;
+
+  if (!InternalExtendedHello())
+    return m_haveHello = (ExecuteCommand(HELO, InternalLocalHostName())/100 != 2);
+
+#if P_SSL
+  if (m_extensions.Contains("STARTTLS") && ExecuteCommand(STARTTLS) / 100 == 2) {
+    PSSLChannel * ssl = new PSSLChannel();
+    if (!ssl->Open(Detach(), readAutoDelete) || !ssl->Connect()) {
+      delete ssl;
+      return false;
+    }
+    if (!SetReadChannel(ssl) || !SetWriteChannel(ssl))
+      return false;
+    if (!InternalExtendedHello())
+      return false;
+  }
+#endif
+
+  m_haveHello = true;
+  return true;
+}
+
+
+bool PSMTPClient::InternalExtendedHello()
+{
+  if (ExecuteCommand(EHLO, InternalLocalHostName()) / 100 != 2)
+    return false;
+
+  m_extensions.SetAt("EHLO", PString::Empty()); // Make sure something in set.
+
+  PStringArray lines = lastResponseInfo.Lines();
+  for (PINDEX i = 1; i < lines.GetSize(); ++i) {
+    PString key, data;
+    if (lines[i].Split(' ', key, data, PString::SplitDefaultToBefore|PString::SplitTrimBefore|PString::SplitBeforeNonEmpty))
+      m_extensions.SetAt(key, data);
   }
 
-  if (haveHello)
+  return true;
+}
+
+
+bool PSMTPClient::LogIn(const PString & username, const PString & password)
+{
+  if (m_haveHello) {
+    lastResponseInfo = "Cannot log in when already logged in.";
     return false; // Wrong state
+  }
 
-  if (ExecuteCommand(EHLO, localHost)/100 != 2)
-    return true; // EHLO not supported, therefore AUTH not supported
+  if (!InternalHello())
+    return false;
 
-  haveHello = extendedHello = true;
-
-  PStringArray caps = lastResponseInfo.Lines();
-  PStringArray serverMechs;
-  PINDEX i, max;
-
-  for (i = 0, max = caps.GetSize() ; i < max ; i++)
-    if (caps[i].Left(5) == "AUTH ") {
-      serverMechs = caps[i].Mid(5).Tokenise(" ", false);
-      break;
-    }
-
-  if (serverMechs.GetSize() == 0)
-    return true; // No mechanisms, no login
-
+  PStringArray serverMechs = m_extensions("AUTH").Tokenise(' ', false);
+  if (serverMechs.IsEmpty()) {
+    lastResponseInfo = "Server did not provide any authentication mechanisms";
+    return false;
+  }
+  
+#if P_SASL
   PSASLClient auth("smtp", username, username, password);
   PStringSet ourMechs;
 
@@ -141,7 +264,7 @@ PBoolean PSMTPClient::LogIn(const PString & username,
 
   PString mech;
 
-  for (i = 0, max = serverMechs.GetSize() ; i < max ; i++)
+  for (PINDEX i = 0, max = serverMechs.GetSize() ; i < max ; i++)
     if (ourMechs.Contains(serverMechs[i])) {
       mech = serverMechs[i];
       break;
@@ -185,46 +308,54 @@ PBoolean PSMTPClient::LogIn(const PString & username,
     }
   } while (result == PSASLClient::Continue);
   auth.End();
-
   return true;
-}
-
 #else
+  PConstString plain("PLAIN");
+  if (serverMechs.GetValuesIndex(plain) == P_MAX_INDEX) {
+    lastResponseInfo = "SASL not available and PLAIN authentication not allowed.";
+    return false;
+  }
 
-PBoolean PSMTPClient::LogIn(const PString &,
-                        const PString &)
-{
-  return true;
-}
-
+  PBYTEArray auth((username.GetLength()+1)*2 + password.GetLength());
+  memcpy(auth.GetPointer(),                            username.GetPointer(), username.GetLength());
+  memcpy(auth.GetPointer()+   username.GetLength()+1,  username.GetPointer(), username.GetLength());
+  memcpy(auth.GetPointer()+2*(username.GetLength()+1), password.GetPointer(), password.GetLength());
+  return ExecuteCommand(AUTH, plain & PBase64::Encode(auth,""))/100 == 2;
 #endif
+}
 
 
-PBoolean PSMTPClient::BeginMessage(const PString & from,
+bool PSMTPClient::BeginMessage(const PString & from,
                                const PString & to,
-                               PBoolean useEightBitMIME)
+                               bool useEightBitMIME)
 {
-  fromAddress = from;
-  toNames.RemoveAll();
-  toNames.AppendString(to);
-  eightBitMIME = useEightBitMIME;
-  return InternalBeginMessage();
+  m_fromAddress = from;
+  m_toNames.RemoveAll();
+  m_toNames.AppendString(to);
+  return InternalBeginMessage(useEightBitMIME);
 }
 
 
-PBoolean PSMTPClient::BeginMessage(const PString & from,
+bool PSMTPClient::BeginMessage(const PString & from,
                                const PStringList & toList,
-                               PBoolean useEightBitMIME)
+                               bool useEightBitMIME)
 {
-  fromAddress = from;
-  toNames = toList;
-  eightBitMIME = useEightBitMIME;
-  return InternalBeginMessage();
+  m_fromAddress = from;
+  m_toNames = toList;
+  return InternalBeginMessage(useEightBitMIME);
 }
 
 
-bool PSMTPClient::InternalBeginMessage()
+bool PSMTPClient::InternalBeginMessage(bool useEightBitMIME)
 {
+  if (!InternalHello())
+    return false;
+
+  if (useEightBitMIME && !m_extensions.Contains("8BITMIME")) {
+    lastResponseInfo = "Eight bit MIME not supported.";
+    return false;
+  }
+
   PString localHost;
   PString peerHost;
   PIPSocket * socket = GetSocket();
@@ -233,28 +364,14 @@ bool PSMTPClient::InternalBeginMessage()
     peerHost = socket->GetPeerHostName();
   }
 
-  if (!haveHello) {
-    if (ExecuteCommand(EHLO, localHost)/100 == 2)
-      haveHello = extendedHello = true;
-  }
-
-  if (!haveHello) {
-    extendedHello = false;
-    if (eightBitMIME)
-      return false;
-    if (ExecuteCommand(HELO, localHost)/100 != 2)
-      return false;
-    haveHello = true;
-  }
-
-  if (fromAddress[0] != '"' && fromAddress.Find(' ') != P_MAX_INDEX)
-    fromAddress = '"' + fromAddress + '"';
-  if (!localHost && fromAddress.Find('@') == P_MAX_INDEX)
-    fromAddress += '@' + localHost;
-  if (ExecuteCommand(MAIL, "FROM:<" + fromAddress + '>')/100 != 2)
+  if (m_fromAddress[0] != '"' && m_fromAddress.Find(' ') != P_MAX_INDEX)
+    m_fromAddress = '"' + m_fromAddress + '"';
+  if (!localHost && m_fromAddress.Find('@') == P_MAX_INDEX)
+    m_fromAddress += '@' + localHost;
+  if (ExecuteCommand(MAIL, "FROM:<" + m_fromAddress + '>')/100 != 2)
     return false;
 
-  for (PStringList::iterator i = toNames.begin(); i != toNames.end(); i++) {
+  for (PStringList::iterator i = m_toNames.begin(); i != m_toNames.end(); i++) {
     if (!peerHost && i->Find('@') == P_MAX_INDEX)
       *i += '@' + peerHost;
     if (ExecuteCommand(RCPT, "TO:<" + *i + '>')/100 != 2)
@@ -267,7 +384,7 @@ bool PSMTPClient::InternalBeginMessage()
   flush();
 
   stuffingState = StuffIdle;
-  sendingData = true;
+  m_sendingData = true;
   return true;
 }
 
@@ -277,7 +394,7 @@ PBoolean PSMTPClient::EndMessage()
   flush();
 
   stuffingState = DontStuff;
-  sendingData = false;
+  m_sendingData = false;
 
   if (!WriteString(CRLFdotCRLF))
     return false;
@@ -1491,26 +1608,6 @@ void PRFC822Channel::SetHeaderField(const PString & name, const PString & value)
     headers.SetAt(name, value);
   else
     PAssertAlways(PLogicError);
-}
-
-
-PBoolean PRFC822Channel::SendWithSMTP(const PString & hostname)
-{
-  PSMTPClient * smtp = new PSMTPClient;
-  smtp->Connect(hostname);
-  return SendWithSMTP(smtp);
-}
-
-
-PBoolean PRFC822Channel::SendWithSMTP(PSMTPClient * smtp)
-{
-  if (!Open(smtp))
-    return false;
-
-  if (!headers.Contains(FromTag()) || !headers.Contains(ToTag()))
-    return false;
-
-  return smtp->BeginMessage(headers[FromTag()], headers[ToTag()]);
 }
 
 

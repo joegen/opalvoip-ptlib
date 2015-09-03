@@ -2359,6 +2359,15 @@ PTime PProcess::GetStartTime() const
   return programStartTime; 
 }
 
+
+bool PProcess::IsMultipleInstance() const
+{
+  static PSemaphore s_multiTest(GetName()+" UniqueProcessSeampahore", 1, 1);
+  static bool s_multiple = !s_multiTest.Wait(0);
+  return s_multiple;
+}
+
+
 PString PProcess::GetVersion(PBoolean full) const
 {
   return psprintf(full ? "%u.%u%s%u" : "%u.%u",

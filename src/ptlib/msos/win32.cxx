@@ -1765,7 +1765,8 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
   m_maximum = std::min(maximum, (unsigned)INT_MAX);
   m_initial = std::min(initial, m_maximum);
 
-  m_handle = CreateSemaphore(NULL, m_initial, m_maximum, NULL);
+  m_handle.Close();
+  m_handle = CreateSemaphore(NULL, m_initial, m_maximum, m_name.IsEmpty() ? NULL : m_name.GetPointer());
   PAssertOS(m_handle.IsValid());
 }
 

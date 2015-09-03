@@ -1040,7 +1040,7 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
   memset(&m_semaphore, 0, sizeof(sem_t));
 
   #if defined(P_HAS_NAMED_SEMAPHORES)
-    if (sem_init(&m_semaphore, 0, m_initial) == 0)
+    if (m_name.IsEmpty() && sem_init(&m_semaphore, 0, m_initial) == 0)
       m_namedSemaphore.ptr = NULL;
     else {
       // Since sem_open and sem_unlink are two operations, there is a small
@@ -1049,9 +1049,13 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
       // prevent this.
       static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
       PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
-    
-      sem_unlink("/ptlib_sem");
-      m_namedSemaphore.ptr = sem_open("/ptlib_sem", (O_CREAT | O_EXCL), 700, m_initial);
+
+      const char * semName;
+      if (m_name.IsEmpty())
+        sem_unlink(semName = "/ptlib_sem");
+      else
+        semName = m_name;
+      m_namedSemaphore.ptr = sem_open(semName, (O_CREAT | O_EXCL), 700, m_initial);
   
       PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
   
@@ -1059,13 +1063,18 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
         m_namedSemaphore.ptr = NULL;
     }
   #else
-    PAssertPTHREAD(sem_init, (&m_semaphore, 0, m_initial));
+    if (m_name.IsEmpty())
+      PAssertPTHREAD(sem_init, (&m_semaphore, 0, m_initial));
   #endif
 #else
-  PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
-  PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
-  currentCount = initial;
-  queuedLocks  = 0;
+  if (m_name.IsEmpty()) {
+    PAssertPTHREAD(pthread_mutex_init, (&mutex, NULL));
+    PAssertPTHREAD(pthread_cond_init, (&condVar, NULL));
+    currentCount = initial;
+  }
+  else
+    currentCount = INT_MAX;
+  queuedLocks = 0;
 #endif
 }
 
@@ -1075,6 +1084,9 @@ void PSemaphore::Wait()
 #if defined(P_HAS_SEMAPHORES)
   PAssertPTHREAD(sem_wait, (GetSemPtr()));
 #else
+  if (currentCount == INT_MAX)
+    return;
+
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
   queuedLocks++;
@@ -1149,6 +1161,8 @@ PBoolean PSemaphore::Wait(const PTimeInterval & waitTime)
     return false;
 
 #else
+  if (currentCount == INT_MAX)
+    return false;
 
   struct timespec absTime;
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
