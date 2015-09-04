@@ -2873,7 +2873,7 @@ struct PJPEGConverter::Context
   {
     m_decoder = tinyjpeg_init();
     if (m_decoder == NULL) {
-      PTRACE(2, NULL, "PColCnv", "TinyJpeg error: Can't allocate memory");
+      PTRACE(2, NULL, "JPEG", "TinyJpeg error: Can't allocate memory");
       return;
     }
 
@@ -2891,7 +2891,7 @@ struct PJPEGConverter::Context
   bool Start(const BYTE * srcFrameBuffer, PINDEX srcFrameBytes, unsigned & width, unsigned & height)
   {
     if (tinyjpeg_parse_header(m_decoder, srcFrameBuffer, srcFrameBytes) < 0) {
-      PTRACE(2, NULL, "PColCnv", "Parse JPEG header error: " << tinyjpeg_get_errorstring(m_decoder));
+      PTRACE(2, NULL, "JPEG", "Header parse error: " << tinyjpeg_get_errorstring(m_decoder));
       return false;
     }
 
@@ -2902,6 +2902,9 @@ struct PJPEGConverter::Context
 
   bool Finish(BYTE * dstFrameBuffer, unsigned width, unsigned height)
   {
+    if (dstFrameBuffer == NULL)
+      return false;
+
     int componentCount = 1;
     BYTE *components[4];
     components[0] = dstFrameBuffer;
@@ -2919,21 +2922,10 @@ struct PJPEGConverter::Context
     if (tinyjpeg_decode(m_decoder, m_colourSpace) >= 0)
       return true;
 
-    PTRACE(2, NULL, "PColCnv", "JPEG decode error: " << tinyjpeg_get_errorstring(m_decoder));
+    PTRACE(2, NULL, "JPEG", "Decode error: " << tinyjpeg_get_errorstring(m_decoder));
     return false;
   }
 
-
-  bool Convert(const BYTE * srcFrameBuffer, PINDEX srcFrameBytes, BYTE * dstFrameBuffer, unsigned width, unsigned height)
-  {
-    if (m_decoder == NULL)
-      return false;
-
-    unsigned jpegWidth, jpegHeight;
-    return Start(srcFrameBuffer, srcFrameBytes, jpegWidth, jpegHeight) &&
-           jpegWidth == width && jpegHeight == height &&
-           Finish(dstFrameBuffer, width, height);
-  }
 
 #elif P_LIBJPEG
 
@@ -2969,7 +2961,7 @@ struct PJPEGConverter::Context
   {
 #if PTRACING
     if (PTrace::CanTrace(2)) {
-      ostream & trace = PTRACE_BEGIN(2, NULL, "PColConv");
+      ostream & trace = PTRACE_BEGIN(2, NULL, "JPEG");
       trace << "Turbo-JPEG failed: ";
       switch (m_error_mgr.last_jpeg_message) {
         case 0 :
@@ -3067,7 +3059,7 @@ struct PJPEGConverter::Context
     return false;
   }
 
-#endif
+#endif // P_TINY_JPEG/P_LIBJPEG
 
 
   ColourSpace m_colourSpace;
@@ -3093,7 +3085,7 @@ struct PJPEGConverter::Context
     else if (colourFormat == "Grey")
       m_colourSpace = MY_JPEG_Grey;
     else {
-      PTRACE(2, NULL, "PColConv", "Unsupported colout format: " << colourFormat);
+      PTRACE(2, NULL, "JPEG", "Unsupported colour format: " << colourFormat);
       return false;
     }
 
@@ -3101,17 +3093,82 @@ struct PJPEGConverter::Context
   }
 
 
+  PINDEX GetBufferSizeForColour(unsigned width, unsigned height)
+  {
+    switch (m_colourSpace) {
+      case MY_JPEG_RGB24 :
+#ifdef MY_JPEG_BGR24
+      case MY_JPEG_BGR24 :
+#endif
+        return width*height*3;
+
+#ifdef MY_JPEG_RGB32
+      case MY_JPEG_RGB32 :
+#endif
+#ifdef MY_JPEG_BGR32
+      case MY_JPEG_BGR32 :
+#endif
+#if defined(MY_JPEG_RGB32) || defined(MY_JPEG_BGR32)
+        return width*height*4;
+#endif
+
+      case MY_JPEG_Grey :
+        return width*height;
+
+      case MY_JPEG_YUV420P :
+        return width*height*3/2;
+
+      default :
+        PAssertAlways(PInvalidParameter);
+        return 0;
+    }
+  }
+
+
+  PBYTEArray m_temporaryBuffer;
+
   bool Convert(const BYTE * srcFrameBuffer, PINDEX srcFrameBytes,
                BYTE * dstFrameBuffer, PINDEX dstFrameBytes,
-               unsigned width, unsigned height,
-               PINDEX * bytesReturned, ColourSpace colourSpace)
+               unsigned & outputWidth, unsigned & outputHeight,
+               PINDEX * bytesReturned, ColourSpace colourSpace,
+               PVideoFrameInfo::ResizeMode resizeMode)
   {
     m_colourSpace = colourSpace;
 
-    if (bytesReturned != NULL)
-      *bytesReturned = dstFrameBytes;
+    unsigned nativeWidth, nativeHeight;
+    if (!Start(srcFrameBuffer, srcFrameBytes, nativeWidth, nativeHeight))
+        return false;
 
-    return Start(srcFrameBuffer, srcFrameBytes, width, height) && Finish(dstFrameBuffer, width, height);
+    if (outputWidth == 0 && outputHeight == 0) {
+      outputWidth = nativeWidth;
+      outputHeight = nativeHeight;
+    }
+
+    if (!PAssert(outputWidth != 0 && outputHeight != 0, PInvalidParameter))
+      return false;
+
+    PINDEX actualFrameBytes = GetBufferSizeForColour(outputWidth, outputHeight);
+    if (dstFrameBytes < actualFrameBytes) {
+      PTRACE(2, NULL, "JPEG", "Output buffer size too small: " << dstFrameBytes << ", required " << actualFrameBytes);
+      return false;
+    }
+
+    if (bytesReturned != NULL)
+      *bytesReturned = actualFrameBytes;
+
+    if (nativeWidth == outputWidth && nativeHeight == outputHeight)
+        return Finish(dstFrameBuffer, nativeWidth, nativeHeight);
+
+    if (colourSpace != MY_JPEG_YUV420P) {
+      PTRACE(2, NULL, "JPEG", "Cannot resize output unless YUV420P");
+      return false;
+    }
+
+    if (!Finish(m_temporaryBuffer.GetPointer(nativeWidth*nativeHeight*3/2), nativeWidth, nativeHeight))
+      return false;
+
+    return CopyYUV420P(0, 0, nativeWidth, nativeHeight, nativeWidth, nativeHeight, m_temporaryBuffer,
+                       0, 0, outputWidth, outputHeight, outputWidth, outputHeight, dstFrameBuffer, resizeMode);
   }
 
 
@@ -3122,50 +3179,12 @@ struct PJPEGConverter::Context
       return false;
 
     if (!file.Read(jpegData.GetPointer(), jpegData.GetSize())) {
-      PTRACE(2, NULL, "PColCnv", "JPEG file read error: " << file.GetErrorText());
+      PTRACE(2, NULL, "JPEG", "File read error: " << file.GetErrorText());
       return false;
     }
 
-    if (!Start(jpegData, jpegData.GetSize(), width, height))
-      return false;
-
-    PINDEX frameBufferSize;
-    switch (m_colourSpace) {
-      case MY_JPEG_RGB24 :
-#ifdef MY_JPEG_BGR24
-      case MY_JPEG_BGR24 :
-#endif
-        frameBufferSize = width*height*3;
-        break;
-
-#ifdef MY_JPEG_RGB32
-      case MY_JPEG_RGB32 :
-#endif
-#ifdef MY_JPEG_BGR32
-      case MY_JPEG_BGR32 :
-#endif
-#if defined(MY_JPEG_RGB32) || defined(MY_JPEG_BGR32)
-        frameBufferSize = width*height*4;
-        break;
-#endif
-
-      case MY_JPEG_Grey :
-        frameBufferSize = width*height;
-        break;
-
-      case MY_JPEG_YUV420P :
-        frameBufferSize = width*height*3/2;
-        break;
-
-      default :
-        PAssertAlways(PInvalidParameter);
-        return false;
-    }
-
-    if (!PAssert(frameBuffer.SetSize(frameBufferSize),POutOfMemory))
-      return false;
-
-    return Finish(frameBuffer.GetPointer(), width, height);
+    return Start(jpegData, jpegData.GetSize(), width, height) &&
+           Finish(frameBuffer.GetPointer(GetBufferSizeForColour(width, height)), width, height);
   }
 };
 
@@ -3200,7 +3219,8 @@ PBoolean PJPEGConverter::Convert(const BYTE * srcFrameBuffer, BYTE * dstFrameBuf
   return m_context->Convert(srcFrameBuffer, m_srcFrameBytes,
                             dstFrameBuffer, m_dstFrameBytes,
                             m_dstFrameWidth, m_dstFrameHeight,
-                            bytesReturned, m_context->m_colourSpace);
+                            bytesReturned, m_context->m_colourSpace,
+                            m_resizeMode);
 }
 
 
@@ -3215,7 +3235,8 @@ bool PJPEGConverter::Load(PFile & file, PBYTEArray & dstFrameBuffer)
 
 #define JPEG_CONVERTER(from,to) \
   PCOLOUR_CONVERTER2(PColourConverter_##from##_##to,PJPEGConverter,#from,#to) \
-  { return m_context->Convert(srcFrameBuffer, m_srcFrameBytes, dstFrameBuffer, m_dstFrameBytes, m_dstFrameWidth, m_dstFrameHeight, bytesReturned, MY_JPEG_##to); }
+  { return m_context->Convert(srcFrameBuffer, m_srcFrameBytes, dstFrameBuffer, m_dstFrameBytes, \
+                              m_dstFrameWidth, m_dstFrameHeight, bytesReturned, MY_JPEG_##to, m_resizeMode); }
 
 JPEG_CONVERTER(MJPEG, RGB24)
 #ifdef MY_JPEG_BGR24
