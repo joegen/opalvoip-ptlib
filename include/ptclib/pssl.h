@@ -696,6 +696,9 @@ class PSSLContext : public PObject
       DTLSv1_2_v1_0
     );
 
+    static const Method HighestTLS = TLSv1_2;
+    static const Method HighestDTLS = DTLSv1_2_v1_0;
+
     /**Create a new context for SSL channels.
        An optional session ID may be provided in the context. This is used
        to identify sessions across multiple channels in this context. The
