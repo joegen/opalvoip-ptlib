@@ -13,15 +13,11 @@
   </Type>
 
   <Type Name="PTimeInterval">
-    <DisplayString>{m_milliseconds}ms</DisplayString>
+    <DisplayString>{m_nanoseconds}ns</DisplayString>
   </Type>
 
   <Type Name="PTime">
-    <DisplayString>{theTime,u}s</DisplayString>
-  </Type>
-
-  <Type Name="PAtomicInteger">
-    <DisplayString>{m_value}</DisplayString>
+    <DisplayString>{m_microseconds}us</DisplayString>
   </Type>
 
   <Type Name="PKey&lt;*&gt;">
@@ -35,15 +31,19 @@
   </Type>
 
   <Type Name="PContainer">
-    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value}}}</DisplayString>
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count._My_val}}}</DisplayString>
+  </Type>
+
+  <Type Name="PAbstractArray">
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count._My_val} ptr={(void *)theArray}}}</DisplayString>
   </Type>
 
   <Type Name="PBaseArray&lt;*&gt;">
-    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} ptr={(void *)theArray}}}</DisplayString>
+    <DisplayString>{{size={((PAbstractArray *)this)-&gt;reference-&gt;size} ref={((PAbstractArray *)this)-&gt;reference-&gt;count._My_val} ptr={(void *)((PAbstractArray *)this)-&gt;theArray}}}</DisplayString>
     <Expand>
       <ArrayItems>
-        <Size>reference-&gt;size</Size>
-        <ValuePointer>($T1*)theArray</ValuePointer>
+        <Size>((PAbstractArray *)this)-&gt;reference-&gt;size</Size>
+        <ValuePointer>($T1 *)((PAbstractArray *)this)-&gt;theArray</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
@@ -52,14 +52,14 @@
     <DisplayString>{*theArray}</DisplayString>
     <Expand>
       <ArrayItems>
-        <Size>theArray-&gt;reference-&gt;size</Size>
-        <ValuePointer>($T1**)theArray-&gt;theArray</ValuePointer>
+        <Size>((PContainer *)theArray)-&gt;reference-&gt;size</Size>
+        <ValuePointer>($T1 **)((PAbstractArray*)theArray)-&gt;theArray</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
 
   <Type Name="PList&lt;*&gt;">
-    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} head={(void *)(info-&gt;head)}}}</DisplayString>
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count._My_val} head={(void *)(info-&gt;head)}}}</DisplayString>
     <Expand>
       <LinkedListItems>
         <Size>reference-&gt;size</Size>
@@ -71,7 +71,7 @@
   </Type>
 
   <Type Name="PSortedList&lt;*&gt;">
-    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} root={(void *)(m_info-&gt;m_root)}}}</DisplayString>
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count._My_val} root={(void *)(m_info-&gt;m_root)}}}</DisplayString>
     <Expand>
       <TreeItems>
         <Size>reference-&gt;size</Size>
@@ -101,7 +101,7 @@
   </Type>
 
   <Type Name="PHashTable">
-    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count.m_value} hash={(void *)hashTable-&gt;theArray}}}</DisplayString>
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count._My_val} hash={(void *)hashTable-&gt;theArray}}}</DisplayString>
     <Expand>
       <IndexListItems>
         <Size>hashTable-&gt;reference-&gt;size</Size>
