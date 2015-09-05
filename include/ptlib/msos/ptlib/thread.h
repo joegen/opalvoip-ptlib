@@ -35,8 +35,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#define PTHREAD_ID_FMT "%u"
-
   public:
     HANDLE GetHandle() const { return m_threadHandle; }
     void Win32AttachThreadInput();
