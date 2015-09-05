@@ -34,8 +34,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#define PTHREAD_ID_FMT "0x%lx"
-
   public:
     int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
 
