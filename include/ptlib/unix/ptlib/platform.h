@@ -456,9 +456,11 @@ typedef pid_t PProcessIdentifier;
   #include <pthread.h>
   typedef pthread_t PThreadIdentifier;
   #define PNullThreadIdentifier ((PThreadIdentifier)-1)
+  #define P_THREAD_ID_FMT "0x%lx"
 
   #ifdef P_LINUX
     typedef pid_t PUniqueThreadIdentifier;
+    #define P_UNIQUE_THREAD_ID_FMT "%u"
   #else
     typedef pthread_t PUniqueThreadIdentifier;
   #endif
@@ -471,12 +473,14 @@ typedef pid_t PProcessIdentifier;
 
   typedef thread_id PThreadIdentifier;
   #define PNullThreadIdentifier ((PThreadIdentifier)-1)
+  #define P_THREAD_ID_FMT "0x%lx"
   typedef thread_id PUniqueThreadIdentifier;
 
 #else
 
 typedef pid_t PThreadIdentifier;
 #define PNullThreadIdentifier ((PThreadIdentifier)-1)
+#define P_THREAD_ID_FMT "%u"
 typedef pid_t PUniqueThreadIdentifier;
 
 #endif

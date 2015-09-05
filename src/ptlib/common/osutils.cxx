@@ -765,12 +765,8 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     stream << level << '\t';
 
   if (HasOption(Thread)) {
-    PString name;
-    if (thread == NULL)
-      name.sprintf("Thread:" PTHREAD_ID_FMT, PThread::GetCurrentThreadId());
-    else
-      name = thread->GetThreadName();
-#if P_64BIT
+    PString name = thread != NULL ? thread->GetThreadName() : PThread::GetCurrentThreadName();
+#if P_64BIT && !defined(WIN32) && !defined(P_UNIQUE_THREAD_ID_FMT)
     static const PINDEX ThreadNameWidth = 31;
 #else
     static const PINDEX ThreadNameWidth = 23;
@@ -2540,15 +2536,29 @@ PThread * PThread::Current()
 
 PString PThread::GetThreadName(PThreadIdentifier id)
 {
-  if (!PProcess::IsInitialised())
-    return false;
+  if (PProcess::IsInitialised()) {
+    PProcess & process = PProcess::Current();
+    PWaitAndSignal mutex(process.m_threadMutex);
+    PProcess::ThreadMap::iterator it = process.m_activeThreads.find(id);
+    if (it != process.m_activeThreads.end())
+      return it->second->GetThreadName();
+  }
 
-  PProcess & process = PProcess::Current();
-
-  PWaitAndSignal mutex(process.m_threadMutex);
-  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(id);
-  return it != process.m_activeThreads.end() ? it->second->GetThreadName() : PString::Empty();
+  return psprintf(P_THREAD_ID_FMT, PThread::GetCurrentUniqueIdentifier());
 }
+
+
+#ifdef P_UNIQUE_THREAD_ID_FMT
+PString PThread::GetIdentifiersAsString(PThreadIdentifier tid, PUniqueThreadIdentifier uid)
+{
+  return PString(PString::Printf, P_THREAD_ID_FMT " (" P_UNIQUE_THREAD_ID_FMT ")", tid, uid);
+}
+#else
+PString PThread::GetIdentifiersAsString(PThreadIdentifier tid, PUniqueThreadIdentifier)
+{
+  return psprintf(P_THREAD_ID_FMT, tid);
+}
+#endif
 
 
 bool PThread::GetTimes(PThreadIdentifier id, Times & times)
@@ -2654,21 +2664,19 @@ static void SetWinDebugThreadName(const char * threadName, DWORD threadId)
 
 #endif // defined(_DEBUG) && defined(_MSC_VER) && !defined(_WIN32_WCE)
 
-
 void PThread::SetThreadName(const PString & name)
 {
   PWaitAndSignal mutex(m_threadNameMutex);
 
-  PThreadIdentifier threadId = GetThreadId();
+  PUniqueThreadIdentifier threadId = GetUniqueIdentifier();
   if (name.Find('%') != P_MAX_INDEX)
     m_threadName = psprintf(name, threadId);
-  else if (name.IsEmpty()) {
-    m_threadName = GetClass();
-    m_threadName.sprintf(":" PTHREAD_ID_FMT, threadId);
-  }
   else {
-    PString idStr;
-    idStr.sprintf(":" PTHREAD_ID_FMT, threadId);
+#ifdef P_UNIQUE_THREAD_ID_FMT
+    PString idStr(PString::Printf, ":" P_UNIQUE_THREAD_ID_FMT, threadId);
+#else
+    PString idStr(PString::Printf, ":" P_THREAD_ID_FMT, threadId);
+#endif
 
     m_threadName = name;
     if (m_threadName.Find(idStr) == P_MAX_INDEX)
@@ -2821,19 +2829,11 @@ void PSimpleThread::Main()
 
 static bool EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
 
-static void OutputThreadInfo(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, bool walkStack)
+static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool walkStack)
 {
-  strm << " id=" << id << " (0x" << std::hex << id << std::dec << ')';
-
-  if (id != (PThreadIdentifier)uid)
-    strm << " unique-id=" << uid;
-
-  PString name = PThread::GetThreadName(id);
-  if (!name.IsEmpty())
-    strm << " name=\"" << name << '"';
-
+  strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << " name=\"" << PThread::GetThreadName(tid) << '"';
   if (walkStack)
-    PTrace::WalkStack(strm, id);
+    PTrace::WalkStack(strm, tid);
 }
 
 
