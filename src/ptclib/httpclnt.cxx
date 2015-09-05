@@ -775,7 +775,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
 #if P_SSL
   if (url.GetScheme() == "https") {
     PSSLChannel * ssl = NULL;
-    PSSLContext::Method method = PSSLContext::TLSv1_2;
+    PSSLContext::Method method = PSSLContext::HighestTLS;
     for (;;) {
       PTCPSocket * tcp = new PTCPSocket(url.GetPort());
       tcp->SetReadTimeout(readTimeout);
@@ -799,7 +799,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
       if (ssl->Connect(tcp))
         break;
 
-      if (ssl->GetErrorNumber() != 0x9408f10b || method < PSSLContext::TLSv1) {
+      if (ssl->GetErrorNumber() != 0x9408f10b || method <= PSSLContext::BeginMethod) {
         lastResponseCode = TransportConnectError;
         lastResponseInfo = ssl->GetErrorText();
         delete ssl;

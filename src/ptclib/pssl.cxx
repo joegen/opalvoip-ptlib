@@ -1855,7 +1855,7 @@ PSSLContext::PSSLContext(Method method, const void * sessionId, PINDEX idSize)
 
 
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
-  : m_method(TLSv1_2)
+  : m_method(HighestTLS)
 {
   Construct(sessionId, idSize);
 }
