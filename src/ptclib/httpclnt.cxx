@@ -795,7 +795,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
         return false;
       }
 
-      PSSLChannel * ssl = new PSSLChannel(context);
+      ssl = new PSSLChannel(context);
       if (ssl->Connect(tcp))
         break;
 
