@@ -1138,7 +1138,7 @@ void PSemaphore::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PTimedMutex::PTimedMutex()
+PTimedMutex::PTimedMutex(const char *, unsigned)
 {
 }
 
