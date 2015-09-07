@@ -341,7 +341,7 @@ class PIndirectChannel : public PChannel
     PBoolean writeAutoDelete;
 
     /// Race condition prevention on closing channel
-    PReadWriteMutex channelPointerMutex;
+    PDECLARE_READ_WRITE_MUTEX(channelPointerMutex);
 };
 
 

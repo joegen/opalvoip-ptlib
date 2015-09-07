@@ -192,14 +192,14 @@ class PInterfaceMonitor : public PProcessStartup
 
     typedef std::multimap<unsigned, Notifier> Notifiers;
     Notifiers m_notifiers;
-    PMutex    m_notifiersMutex;
+    PDECLARE_MUTEX(m_notifiersMutex);
 
     PIPSocket::InterfaceTable m_interfaces;
-    PMutex                    m_interfacesMutex;
+   PDECLARE_MUTEX(m_interfacesMutex);
 
     bool           m_runMonitorThread;
     PTimeInterval  m_refreshInterval;
-    PMutex         m_threadMutex;
+    PDECLARE_MUTEX(m_threadMutex);
     PThread      * m_updateThread;
 
     PInterfaceFilter * m_interfaceFilter;
@@ -505,7 +505,7 @@ class PMonitoredSocketChannel : public PChannel
     PIPSocketAddressAndPort m_remoteAP;
     PIPSocketAddressAndPort m_lastReceivedAP;
     PString                 m_lastReceivedInterface;
-    PMutex                  m_mutex;
+    PDECLARE_MUTEX(m_mutex);
 };
 
 
