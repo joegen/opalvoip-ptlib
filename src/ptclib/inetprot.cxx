@@ -590,7 +590,8 @@ void PMIMEInfo::PrintOn(ostream &strm) const
 
 ostream & PMIMEInfo::PrintContents(ostream &strm) const
 {
-  PBoolean output_cr = strm.fill() == '\r';
+  bool output_cr = strm.fill() == '\r';
+  std::streamsize indent = strm.width();
   strm.fill(' ');
   for (const_iterator it = begin(); it != end(); ++it) {
     PString name = it->first + ": ";
@@ -598,6 +599,8 @@ ostream & PMIMEInfo::PrintContents(ostream &strm) const
     if (value.FindOneOf("\r\n") != P_MAX_INDEX) {
       PStringArray vals = value.Lines();
       for (PINDEX j = 0; j < vals.GetSize(); j++) {
+        if (indent > 0)
+          strm << setw(indent) << " ";
         strm << name << vals[j];
         if (output_cr)
           strm << '\r';
@@ -605,6 +608,8 @@ ostream & PMIMEInfo::PrintContents(ostream &strm) const
       }
     }
     else {
+      if (indent > 0)
+        strm << setw(indent) << " ";
       strm << name << value;
       if (output_cr)
         strm << '\r';
