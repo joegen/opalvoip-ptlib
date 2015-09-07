@@ -799,7 +799,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
       if (ssl->Connect(tcp))
         break;
 
-      if (ssl->GetErrorNumber() != 0x9408f10b || method <= PSSLContext::BeginMethod) {
+      if ((unsigned)ssl->GetErrorNumber() != 0x9408f10b || method <= PSSLContext::BeginMethod) {
         lastResponseCode = TransportConnectError;
         lastResponseInfo = ssl->GetErrorText();
         delete ssl;
