@@ -69,8 +69,13 @@ class PTimedMutex : public PSync
     /* Create a new mutex.
        Initially the mutex will not be "set", so the first call to Wait() will
        never wait.
+
+       The name/line parameters are used for deadlock detection debugging.
      */
-    PTimedMutex();
+    PTimedMutex(
+        const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
+        unsigned line = 0          ///< Line number, if non zero, name is assumed to be a filename
+    );
 
     /**Copy constructor is allowed but does not copy, allocating a new mutex.
        Two copies of the same mutex information would be very bad.
@@ -104,14 +109,18 @@ class PTimedMutex : public PSync
       */
     PINLINE bool Try() { return Wait(0); }
 
+    virtual void PrintOn(ostream &strm) const;
+
     static unsigned ExcessiveLockWaitTime;
 
-  private:
+  protected:
     PThreadIdentifier       m_lockerId;
     PThreadIdentifier       m_lastLockerId;
     atomic<uint32_t>        m_lockCount;
     PUniqueThreadIdentifier m_uniqueId;
     bool                    m_excessiveLockTime;
+    PString                 m_name;
+    unsigned                m_line;
 
     void ExcessiveLockWait();
     void CommonSignal();
@@ -125,6 +134,11 @@ class PTimedMutex : public PSync
 };
 
 typedef PTimedMutex PMutex;
+
+/// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
+#define PDECLARE_MUTEX(var) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
+#define PDECLARE_MUTEX2(var, name) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(name) { } } var
+
 
 /** This class implements critical section mutexes using the most efficient
     mechanism available on the host platform.

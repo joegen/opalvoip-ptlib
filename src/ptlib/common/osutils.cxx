@@ -2854,7 +2854,7 @@ void PTimedMutex::ExcessiveLockWait()
   PUniqueThreadIdentifier uniqueId = m_uniqueId;
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
-  trace << "Possible deadlock in mutex " << this << "\n  Blocked Thread";
+  trace << "Possible deadlock in mutex " << *this << "\n  Blocked Thread";
   OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), EnableDeadlockStackWalk);
   trace << "\n  Owner Thread ";
   if (lockerId != PNullThreadIdentifier)
@@ -2865,7 +2865,7 @@ void PTimedMutex::ExcessiveLockWait()
   }
   trace << PTrace::End;
 #else
-  PAssertAlways(PSTRSTRM("Possible deadlock in mutex " << this));
+  PAssertAlways(PSTRSTRM("Possible deadlock in mutex " << *this));
 #endif
 
   m_excessiveLockTime = true;
@@ -2875,7 +2875,7 @@ void PTimedMutex::ExcessiveLockWait()
 void PTimedMutex::CommonSignal()
 {
   if (m_excessiveLockTime) {
-    PTRACE(0, "PTLib", "Released phantom deadlock in mutex " << this);
+    PTRACE(0, "PTLib", "Released phantom deadlock in mutex " << *this);
     m_excessiveLockTime = false;
   }
 
@@ -2883,6 +2883,21 @@ void PTimedMutex::CommonSignal()
   m_lockerId = PNullThreadIdentifier;
   m_uniqueId = 0;
 }
+
+
+void PTimedMutex::PrintOn(ostream &strm) const
+{
+  strm << this;
+  if (!m_name.IsEmpty()) {
+    strm << " (";
+    if (m_line != 0)
+      strm << PFilePath(m_name).GetFileName() << ':' << m_line;
+    else
+      strm << m_name;
+    strm << ')';
+  }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -3029,19 +3044,21 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 
 /////////////////////////////////////////////////////////////////////////////
 
-PReadWriteMutex::PReadWriteMutex()
+PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
   : m_readerSemaphore(1, 1)
   , m_readerCount(0)
   , m_writerSemaphore(1, 1)
   , m_writerCount(0)
+  , m_name(name)
+  , m_line(line)
 {
-  PTRACE(5, "PTLib\tCreated read/write mutex " << this);
+  PTRACE(5, "PTLib\tCreated read/write mutex " << *this);
 }
 
 
 PReadWriteMutex::~PReadWriteMutex()
 {
-  PTRACE(5, "PTLib\tDestroying read/write mutex " << this);
+  PTRACE(5, "PTLib\tDestroying read/write mutex " << *this);
 
   EndNest(); // Destruction while current thread has a lock is OK
 
@@ -3115,7 +3132,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
   }
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
-  trace << "Possible deadlock in read/write mutex " << this << " :\n";
+  trace << "Possible deadlock in read/write mutex " << *this << " :\n";
   for (NestMap::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it) {
     if (it != m_nestedThreads.begin())
       trace << '\n';
@@ -3132,7 +3149,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
 
   sync.Wait();
 
-  PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in read/write mutex " << this << PTrace::End;
+  PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in read/write mutex " << *this << PTrace::End;
 #else
   sync.Wait();
 #endif
@@ -3279,6 +3296,20 @@ void PReadWriteMutex::EndWrite()
     InternalStartRead(*nest);
   else
     EndNest();
+}
+
+
+void PReadWriteMutex::PrintOn(ostream & strm) const
+{
+  strm << this;
+  if (!m_name.IsEmpty()) {
+    strm << " (";
+    if (m_line != 0)
+      strm << PFilePath(m_name).GetFileName() << ':' << m_line;
+    else
+      strm << m_name;
+    strm << ')';
+  }
 }
 
 

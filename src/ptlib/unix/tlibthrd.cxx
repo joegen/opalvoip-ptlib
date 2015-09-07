@@ -1222,12 +1222,16 @@ void PSemaphore::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PTimedMutex::PTimedMutex()
+PTimedMutex::PTimedMutex(const char * name, unsigned line)
+  : m_name(name)
+  , m_line(line)
 {
   Construct();
 }
 
-PTimedMutex::PTimedMutex(const PTimedMutex &)
+PTimedMutex::PTimedMutex(const PTimedMutex & other)
+  : m_name(other.m_name)
+  , m_line(other.m_line)
 {
   Construct();
 }
@@ -1316,7 +1320,7 @@ void PTimedMutex::Wait()
   else {
     ExcessiveLockWait();
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
-    PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in mutex " << this << PTrace::End;
+    PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in mutex " << *this << PTrace::End;
   }
   PPROFILE_POST_SYSTEM();
 #else

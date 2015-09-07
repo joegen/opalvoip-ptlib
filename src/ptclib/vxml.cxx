@@ -3039,7 +3039,7 @@ class TextToSpeech_Sample : public PTextToSpeech
   protected:
     //PTextToSpeech * defaultEngine;
 
-    PMutex mutex;
+    PDECLARE_MUTEX(mutex);
     PBoolean opened;
     PBoolean usingFile;
     PString text;
