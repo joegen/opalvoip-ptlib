@@ -313,12 +313,12 @@ void PThread::PX_ThreadBegin()
   PAssert(PX_state == PX_starting, PLogicError);
   PX_state = PX_running;
 
-  SetThreadName(GetThreadName());
-
 #if defined(P_LINUX)
   PX_linuxId = GetCurrentUniqueIdentifier();
   PX_startTick = PTimer::Tick();
 #endif
+
+  SetThreadName(GetThreadName());
 
   pthread_mutex_unlock(&PX_suspendMutex);
 
