@@ -1799,23 +1799,27 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
-PTimedMutex::PTimedMutex()
+PTimedMutex::PTimedMutex(const char * name, unsigned line)
   : m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
   , m_lockCount(0)
   , m_uniqueId(0)
   , m_excessiveLockTime(false)
+  , m_name(name)
+  , m_line(line)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
 
 
-PTimedMutex::PTimedMutex(const PTimedMutex &)
+PTimedMutex::PTimedMutex(const PTimedMutex & other)
   : m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
   , m_lockCount(0)
   , m_uniqueId(0)
   , m_excessiveLockTime(false)
+  , m_name(other.m_name)
+  , m_line(other.m_line)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
 }
@@ -1826,7 +1830,7 @@ void PTimedMutex::Wait()
   if (!m_handle.Wait(ExcessiveLockWaitTime)) {
     ExcessiveLockWait();
     m_handle.Wait(INFINITE);
-    PTRACE(0, "PTLib", "Phantom deadlock in mutex " << this);
+    PTRACE(0, "PTLib", "Phantom deadlock in mutex " << *this);
   }
 
   if (m_lockCount++ == 0)

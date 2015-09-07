@@ -774,30 +774,40 @@ bool PHTTPClient::ConnectURL(const PURL & url)
 
 #if P_SSL
   if (url.GetScheme() == "https") {
-    PTCPSocket * tcp = new PTCPSocket(url.GetPort());
-    tcp->SetReadTimeout(readTimeout);
-    if (!tcp->Connect(host)) {
-      lastResponseCode = TransportConnectError;
-      lastResponseInfo = tcp->GetErrorText();
-      lastResponseInfo.sprintf(" (errno=%i)", tcp->GetErrorNumber());
-      delete tcp;
-      return false;
-    }
+    PSSLChannel * ssl = NULL;
+    PSSLContext::Method method = PSSLContext::HighestTLS;
+    for (;;) {
+      PTCPSocket * tcp = new PTCPSocket(url.GetPort());
+      tcp->SetReadTimeout(readTimeout);
+      if (!tcp->Connect(host)) {
+        lastResponseCode = TransportConnectError;
+        lastResponseInfo = tcp->GetErrorText();
+        lastResponseInfo.sprintf(" (errno=%i)", tcp->GetErrorNumber());
+        delete tcp;
+        return false;
+      }
 
-    PSSLContext * context = new PSSLContext;
-    if (!context->SetCredentials(m_authority, m_certificate, m_privateKey)) {
-      lastResponseCode = TransportConnectError;
-      lastResponseInfo = "Could not set certificates";
-      delete context;
-      return false;
-    }
+      PSSLContext * context = new PSSLContext(method);
+      if (!context->SetCredentials(m_authority, m_certificate, m_privateKey)) {
+        lastResponseCode = TransportConnectError;
+        lastResponseInfo = "Could not set certificates";
+        delete context;
+        return false;
+      }
 
-    PSSLChannel * ssl = new PSSLChannel(context);
-    if (!ssl->Connect(tcp)) {
-      lastResponseCode = TransportConnectError;
-      lastResponseInfo = ssl->GetErrorText();
+      ssl = new PSSLChannel(context);
+      if (ssl->Connect(tcp))
+        break;
+
+      if ((unsigned)ssl->GetErrorNumber() != 0x9408f10b || method <= PSSLContext::BeginMethod) {
+        lastResponseCode = TransportConnectError;
+        lastResponseInfo = ssl->GetErrorText();
+        delete ssl;
+        return false;
+      }
+
       delete ssl;
-      return false;
+      --method;
     }
 
     if (!Open(ssl)) {

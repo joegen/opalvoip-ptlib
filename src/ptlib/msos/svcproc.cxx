@@ -214,21 +214,6 @@ class PSystemLogToEvent : public PSystemLogTarget
     if (hEventSource == NULL)
       return;
 
-    PString threadName;
-    PThread * thread = PThread::Current();
-    if (thread != NULL)
-      threadName = thread->GetThreadName();
-    else
-      threadName.sprintf(PTHREAD_ID_FMT, GetCurrentThreadId());
-
-    char thrdbuf[16];
-    if (threadName.IsEmpty())
-      sprintf(thrdbuf, "0x%8p", (void *)thread);
-    else {
-      strncpy(thrdbuf, threadName, sizeof(thrdbuf)-1);
-      thrdbuf[sizeof(thrdbuf)-1] = '\0';
-    }
-
     char errbuf[25];
     if (level > PSystemLog::StdError && level < PSystemLog::Info && err != 0)
       ::sprintf(errbuf, "Error code = %lu", err);
@@ -236,7 +221,8 @@ class PSystemLogToEvent : public PSystemLogTarget
       errbuf[0] = '\0';
 
     LPCTSTR strings[4];
-    strings[0] = thrdbuf;
+    PString threadName = PThread::GetCurrentThreadName();
+    strings[0] = threadName.GetPointer();
     strings[1] = msg;
     strings[2] = errbuf;
     strings[3] = level != PSystemLog::Fatal ? "" : " Program aborted.";

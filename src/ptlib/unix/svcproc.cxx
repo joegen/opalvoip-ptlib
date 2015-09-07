@@ -618,10 +618,9 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
     PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
 
     PSystemLog log(PSystemLog::Fatal);
-    log << "Caught " << sigmsg << ", thread-id=" << tid << " (0x" << std::hex << tid << std::dec << ')';
-    if (tid != (PThreadIdentifier)uid)
-      log << ", unique-id=" << uid;
-    log << ", name=\"" << PThread::GetThreadName(tid) << '"';
+    log << "Caught " << sigmsg << ","
+           " thread-id=" << PThread::GetIdentifiersAsString(tid, uid) << ","
+           " name=\"" << PThread::GetThreadName(tid) << '"';
 
 #if PTRACING
     log << ", stack:";
