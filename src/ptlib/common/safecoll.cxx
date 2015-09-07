@@ -119,7 +119,11 @@ PBoolean PSafeObject::LockReadOnly() const
     return false;
   }
 
+  if (m_safeInUse->m_name.IsEmpty())
+      m_safeInUse->m_name = typeid(*this).name();
+
   m_safetyMutex.Signal();
+
   m_safeInUse->StartRead();
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked read ("<<(void *)this<<")");
   return true;
@@ -144,7 +148,11 @@ PBoolean PSafeObject::LockReadWrite()
     return false;
   }
 
+  if (m_safeInUse->m_name.IsEmpty())
+      m_safeInUse->m_name = typeid(*this).name();
+
   m_safetyMutex.Signal();
+
   m_safeInUse->StartWrite();
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked readWrite ("<<(void *)this<<")");
   return true;

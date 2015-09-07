@@ -93,7 +93,7 @@ class PVXMLGrammar : public PObject
     GrammarState   m_state;
     PTimeInterval  m_timeout;
     PTimer         m_timer;
-    PMutex         m_mutex;
+    PDECLARE_MUTEX(m_mutex);
 };
 
 
@@ -302,7 +302,7 @@ class PVXMLSession : public PIndirectChannel
 
     PURL NormaliseResourceName(const PString & src);
 
-    PMutex           m_sessionMutex;
+    PDECLARE_MUTEX(m_sessionMutex);
 
     PURL             m_rootURL;
     PXML             m_xml;
@@ -327,7 +327,7 @@ class PVXMLSession : public PIndirectChannel
     PString          m_variableScope;
 
     std::queue<char> m_userInputQueue;
-    PMutex           m_userInputMutex;
+    PDECLARE_MUTEX(m_userInputMutex);
 
     enum {
       NotRecording,
@@ -604,8 +604,8 @@ class PVXMLChannel : public PDelayChannel
     PString mediaFormat;
     PString wavFilePrefix;
 
-    PMutex   m_channelWriteMutex;
-    PMutex   m_channelReadMutex;
+    PDECLARE_MUTEX(m_channelWriteMutex);
+    PDECLARE_MUTEX(m_channelReadMutex);
     bool     m_closed;
     bool     m_paused;
     PINDEX   m_totalData;
