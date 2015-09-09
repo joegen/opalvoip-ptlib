@@ -1265,7 +1265,7 @@ void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
 void PTimedMutex::Construct()
 {
   m_lastLockerId = m_lockerId = PNullThreadIdentifier;
-  m_uniqueId = 0;
+  m_lastUniqueId = 0;
   m_excessiveLockTime = false;
   InitialiseRecursiveMutex(&m_mutex);
 }
@@ -1330,8 +1330,8 @@ void PTimedMutex::Wait()
 #endif
 
   if (m_lockCount++ == 0) {
-    m_lockerId = currentThreadId;
-    m_uniqueId = PThread::GetCurrentUniqueIdentifier();
+    m_lastLockerId = m_lockerId = currentThreadId;
+    m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
   }
 
 #else //P_HAS_RECURSIVE_MUTEX
@@ -1355,8 +1355,8 @@ void PTimedMutex::Wait()
 
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
-  m_lockerId = currentThreadId;
-  m_uniqueId = PThread::GetCurrentUniqueIdentifier();
+  m_lastLockerId = m_lockerId = currentThreadId;
+  m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
 
 #endif // P_HAS_RECURSIVE_MUTEX
 }
@@ -1414,8 +1414,8 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 #if P_HAS_RECURSIVE_MUTEX
 
   if (m_lockCount++ == 0) {
-    m_lockerId = currentThreadId;
-    m_uniqueId = PThread::GetCurrentUniqueIdentifier();
+    m_lastLockerId = m_lockerId = currentThreadId;
+    m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
   }
 
 #else
@@ -1425,8 +1425,8 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter it.
-  m_lockerId = currentThreadId;
-  m_uniqueId = PThread::GetCurrentUniqueIdentifier();
+  m_lastLockerId = m_lockerId = currentThreadId;
+  m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
 
 #endif
 
