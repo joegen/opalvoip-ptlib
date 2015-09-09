@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World Static", "samples\hello_world\hello_2013.vcxproj", "{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
 EndProject
@@ -52,7 +52,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Network Interfaces", "sampl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLib Timers", "samples\ptimer\ptimer_2013.vcxproj", "{93969422-D25F-4C89-A24E-B6B3AC597380}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "emailtest", "samples\emailtest\emailtest_2013.vcxproj", "{F9A6DEF5-0329-4651-B05C-A3FAE105CA4E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E-Mail Test", "samples\emailtest\emailtest_2013.vcxproj", "{F9A6DEF5-0329-4651-B05C-A3FAE105CA4E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JSON Test", "samples\json\json_2013.vcxproj", "{8298F530-F757-4E34-A6A5-DCCEEF9FC842}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -367,6 +369,18 @@ Global
 		{F9A6DEF5-0329-4651-B05C-A3FAE105CA4E}.Release|Win32.ActiveCfg = Release|Win32
 		{F9A6DEF5-0329-4651-B05C-A3FAE105CA4E}.Release|Win32.Build.0 = Release|Win32
 		{F9A6DEF5-0329-4651-B05C-A3FAE105CA4E}.Release|x64.ActiveCfg = Release|Win32
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Debug|Win32.Build.0 = Debug|Win32
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Debug|x64.ActiveCfg = Debug|x64
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Debug|x64.Build.0 = Debug|x64
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.No Trace|Win32.Build.0 = No Trace|Win32
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.No Trace|x64.ActiveCfg = No Trace|x64
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.No Trace|x64.Build.0 = No Trace|x64
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Release|Win32.ActiveCfg = Release|Win32
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Release|Win32.Build.0 = Release|Win32
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Release|x64.ActiveCfg = Release|x64
+		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
