@@ -1802,8 +1802,8 @@ void PSemaphore::Signal()
 PTimedMutex::PTimedMutex(const char * name, unsigned line)
   : m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
+  , m_lastUniqueId(0)
   , m_lockCount(0)
-  , m_uniqueId(0)
   , m_excessiveLockTime(false)
   , m_name(name)
   , m_line(line)
@@ -1815,8 +1815,8 @@ PTimedMutex::PTimedMutex(const char * name, unsigned line)
 PTimedMutex::PTimedMutex(const PTimedMutex & other)
   : m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
+  , m_lastUniqueId(0)
   , m_lockCount(0)
-  , m_uniqueId(0)
   , m_excessiveLockTime(false)
   , m_name(other.m_name)
   , m_line(other.m_line)
@@ -1834,7 +1834,7 @@ void PTimedMutex::Wait()
   }
 
   if (m_lockCount++ == 0)
-    m_lockerId = ::GetCurrentThreadId();
+    m_lastUniqueId = m_lastLockerId = m_lockerId = ::GetCurrentThreadId();
 }
 
 
@@ -1844,7 +1844,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
     return false;
 
   if (m_lockCount++ == 0)
-    m_lockerId = ::GetCurrentThreadId();
+    m_lastUniqueId = m_lastLockerId = m_lockerId = ::GetCurrentThreadId();
   return true;
 }
 
