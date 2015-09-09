@@ -2851,17 +2851,17 @@ void PTimedMutex::ExcessiveLockWait()
 #if PTRACING
   PThreadIdentifier lockerId = m_lockerId;
   PThreadIdentifier lastLockerId = m_lastLockerId;
-  PUniqueThreadIdentifier uniqueId = m_uniqueId;
+  PUniqueThreadIdentifier lastUniqueId = m_lastUniqueId;
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Possible deadlock in mutex " << *this << "\n  Blocked Thread";
   OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), EnableDeadlockStackWalk);
   trace << "\n  Owner Thread ";
   if (lockerId != PNullThreadIdentifier)
-    OutputThreadInfo(trace, lockerId, uniqueId, EnableDeadlockStackWalk);
+    OutputThreadInfo(trace, lockerId, lastUniqueId, EnableDeadlockStackWalk);
   else {
     trace << "no longer has lock, last owner:";
-    OutputThreadInfo(trace, lastLockerId, uniqueId, false);
+    OutputThreadInfo(trace, lastLockerId, lastUniqueId, false);
   }
   trace << PTrace::End;
 #else
@@ -2879,9 +2879,7 @@ void PTimedMutex::CommonSignal()
     m_excessiveLockTime = false;
   }
 
-  m_lastLockerId = m_lockerId;
   m_lockerId = PNullThreadIdentifier;
-  m_uniqueId = 0;
 }
 
 
