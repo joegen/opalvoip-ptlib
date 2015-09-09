@@ -228,6 +228,12 @@ PHTTPClient::PHTTPClient(const PString & userAgent)
 }
 
 
+PHTTPClient::~PHTTPClient()
+{
+  delete m_authentication;
+}
+
+
 int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PURL & url,
                                 PMIMEInfo & outMIME,
