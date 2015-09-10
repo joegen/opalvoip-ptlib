@@ -3129,10 +3129,16 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
     return;
   }
 
+  NestMap nestedThreadsToDump;
+  {
+    PWaitAndSignal mutex(m_nestingMutex);
+    nestedThreadsToDump = m_nestedThreads;
+  }
+
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Possible deadlock in read/write mutex " << *this << " :\n";
-  for (NestMap::const_iterator it = m_nestedThreads.begin(); it != m_nestedThreads.end(); ++it) {
-    if (it != m_nestedThreads.begin())
+  for (NestMap::const_iterator it = nestedThreadsToDump.begin(); it != nestedThreadsToDump.end(); ++it) {
+    if (it != nestedThreadsToDump.begin())
       trace << '\n';
     trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
               " unique-id=" << it->second.m_uniqueId << ","
