@@ -228,6 +228,12 @@ PHTTPClient::PHTTPClient(const PString & userAgent)
 }
 
 
+PHTTPClient::~PHTTPClient()
+{
+  delete m_authentication;
+}
+
+
 int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PURL & url,
                                 PMIMEInfo & outMIME,
@@ -792,10 +798,11 @@ bool PHTTPClient::ConnectURL(const PURL & url)
         lastResponseCode = TransportConnectError;
         lastResponseInfo = "Could not set certificates";
         delete context;
+        delete tcp;
         return false;
       }
 
-      ssl = new PSSLChannel(context);
+      ssl = new PSSLChannel(context, true);
       if (ssl->Connect(tcp))
         break;
 

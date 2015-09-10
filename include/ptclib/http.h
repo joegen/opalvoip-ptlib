@@ -471,6 +471,7 @@ class PHTTPClient : public PHTTP
     PHTTPClient(
       const PString & userAgentName = PString::Empty()
     );
+    ~PHTTPClient();
 
 
   // New functions for class.
