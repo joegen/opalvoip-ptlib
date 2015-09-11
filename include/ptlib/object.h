@@ -1627,10 +1627,16 @@ public:
   #define PNEW_AND_DELETE_FUNCTIONS_ALIGNED(align) \
       void * operator new(size_t nSize) \
         { return _aligned_malloc(nSize, align); } \
+      void operator delete(void * ptr) \
+        { _aligned_free(ptr); } \
       void * operator new(size_t, void * placement) \
         { return placement; } \
+      void operator delete(void *, void *) \
+        { } \
       void * operator new[](size_t nSize) \
-        { return _aligned_malloc(nSize, align); }
+        { return _aligned_malloc(nSize, align); } \
+      void operator delete[](void * ptr) \
+        { _aligned_free(ptr); }
 
   #define PNEW_AND_DELETE_FUNCTIONS64 PNEW_AND_DELETE_FUNCTIONS_ALIGNED(64)
   #define PNEW_AND_DELETE_FUNCTIONS32 PNEW_AND_DELETE_FUNCTIONS_ALIGNED(32)
