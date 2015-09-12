@@ -13,11 +13,11 @@
   </Type>
 
   <Type Name="PTimeInterval">
-    <DisplayString>{m_nanoseconds}ns</DisplayString>
+    <DisplayString>{m_nanoseconds._My_val/1000000000.0}s</DisplayString>
   </Type>
 
   <Type Name="PTime">
-    <DisplayString>{m_microseconds}us</DisplayString>
+    <DisplayString>{m_microSecondsSinceEpoch._My_val/1000000.0}s</DisplayString>
   </Type>
 
   <Type Name="PKey&lt;*&gt;">
