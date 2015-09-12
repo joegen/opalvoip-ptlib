@@ -21,6 +21,20 @@ JSONTest::JSONTest()
 
 void JSONTest::Main()
 {
+  PArgList & args = GetArguments();
+  if (args.GetCount() > 0) {
+    PJSON json;
+    if (args[0] == "-")
+      cin >> json;
+    else
+      json.FromString(args[0]);
+    if (json.IsValid())
+      cout << json << endl;
+    else
+      cout << "Could not parse JSON\n";
+    return;
+  }
+
   PJSON json1(PJSON::e_Object);
   PJSON::Object & obj1 = json1.GetObject();
   obj1.SetString("one", "first");
