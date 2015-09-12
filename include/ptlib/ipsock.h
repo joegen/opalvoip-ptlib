@@ -276,7 +276,7 @@ class PIPSocket : public PSocket
 
     /**A class describing an IP address and port number combination.
      */
-    class AddressAndPort
+    class AddressAndPort : public PObject
     {
       public:
         AddressAndPort(
@@ -329,20 +329,12 @@ class PIPSocket : public PSocket
           return m_address.IsValid() && m_port != 0;
         }
 
-        bool operator==(const AddressAndPort & obj) const
+        virtual void PrintOn(ostream & strm) const
         {
-          return m_port == obj.m_port && m_address == obj.m_address;
+          strm << AsString();
         }
 
-        bool operator!=(const AddressAndPort & obj) const
-        {
-          return m_port != obj.m_port || m_address != obj.m_address;
-        }
-
-        friend ostream & operator<<(ostream & strm, const AddressAndPort & ap)
-        {
-          return strm << ap.AsString();
-        }
+        virtual Comparison Compare(const PObject & obj) const;
 
         bool MatchWildcard(
           const AddressAndPort & wild
