@@ -1894,6 +1894,16 @@ class PObject {
       GreaterThan = 1
     };
 
+    /// Compare two types, returning Comparison type.
+    template<typename T> static Comparison Compare2(T v1, T v2)
+    {
+      if (v1 < v2)
+        return LessThan;
+      if (v1 > v2)
+        return GreaterThan;
+      return EqualTo;
+    }
+
     /** Compare the two objects and return their relative rank. This function is
        usually overridden by descendent classes to yield the ranking according
        to the semantics of the object.
