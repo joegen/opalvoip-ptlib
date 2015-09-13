@@ -271,6 +271,7 @@ class PTimeInterval : public PObject
     PTimeInterval operator+(
       const PTimeInterval & interval   ///< Time interval to add.
     ) const;
+    friend PTimeInterval operator+(int64_t left, const PTimeInterval & right);
 
     /** Add the second time interval to the first time interval.
     
@@ -289,6 +290,7 @@ class PTimeInterval : public PObject
     PTimeInterval operator-(
       const PTimeInterval & interval   ///< Time interval to subtract.
     ) const;
+    friend PTimeInterval operator-(int64_t left, const PTimeInterval & right);
 
     /** Subtract the second time interval from the first time interval.
     
@@ -307,6 +309,7 @@ class PTimeInterval : public PObject
     PTimeInterval operator*(
       int factor   ///< factor to multiply.
     ) const;
+    friend PTimeInterval operator*(int left, const PTimeInterval & right);
 
     /** Multiply the time interval by a factor.
     
@@ -334,6 +337,7 @@ class PTimeInterval : public PObject
     PTimeInterval operator/(
       int factor   ///< factor to divide.
     ) const;
+    friend PTimeInterval operator/(int64_t left, const PTimeInterval & right);
 
     /** Divide the time interval by a factor.
     
