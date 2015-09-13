@@ -2074,7 +2074,7 @@ bool PIPSocket::Address::IsSubNet(const Address & network, const Address & mask)
   else
     bitmask = inet_addr("255.255.255.255");
 
-  return ((DWORD)*this & bitmask) == (DWORD)network;
+  return ((DWORD)*this & bitmask) == ((DWORD)network & bitmask);
 }
 
 
