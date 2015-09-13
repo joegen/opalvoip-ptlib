@@ -2843,7 +2843,7 @@ PObject::Comparison PIPSocket::AddressAndPort::Compare(const PObject & obj) cons
 
 bool PIPSocket::AddressAndPort::MatchWildcard(const AddressAndPort & wild) const
 {
-  return (!wild.m_address.IsValid() || wild.m_address == m_address) &&
+  return (!wild.m_address.IsValid() || wild.m_address.IsAny() || wild.m_address == m_address) &&
          ( wild.m_port == 0         || wild.m_port    == m_port);
 }
 
