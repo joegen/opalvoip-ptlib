@@ -84,53 +84,65 @@ PINLINE int PTimeInterval::GetDays() const
 
 
 PINLINE PTimeInterval PTimeInterval::operator-() const
-  { return PTimeInterval(-GetMilliSeconds()); }
+  { return PTimeInterval::NanoSeconds(-GetNanoSeconds()); }
 
 PINLINE PTimeInterval PTimeInterval::operator+(const PTimeInterval & t) const
-  { return PTimeInterval(GetMilliSeconds() + t.GetMilliSeconds()); }
+  { return PTimeInterval::NanoSeconds(GetNanoSeconds() + t.GetNanoSeconds()); }
+
+PINLINE PTimeInterval operator+(int64_t left, const PTimeInterval & right)
+  { return PTimeInterval(left + right.GetMilliSeconds()); }
 
 PINLINE PTimeInterval & PTimeInterval::operator+=(const PTimeInterval & t)
-  { SetMilliSeconds(GetMilliSeconds() + t.GetMilliSeconds()); return *this; }
+  { SetNanoSeconds(GetNanoSeconds() + t.GetNanoSeconds()); return *this; }
 
 PINLINE PTimeInterval PTimeInterval::operator-(const PTimeInterval & t) const
-  { return PTimeInterval(GetMilliSeconds() - t.GetMilliSeconds()); }
+  { return PTimeInterval::NanoSeconds(GetNanoSeconds() - t.GetNanoSeconds()); }
+
+PINLINE PTimeInterval operator-(int64_t left, const PTimeInterval & right)
+  { return PTimeInterval(left - right.GetMilliSeconds()); }
 
 PINLINE PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
-  { SetMilliSeconds(GetMilliSeconds() - t.GetMilliSeconds()); return *this; }
+  { SetNanoSeconds(GetNanoSeconds() - t.GetNanoSeconds()); return *this; }
 
 PINLINE PTimeInterval PTimeInterval::operator*(int f) const
-  { return PTimeInterval(GetMilliSeconds() * f); }
+  { return PTimeInterval::NanoSeconds(GetNanoSeconds() * f); }
+
+PINLINE PTimeInterval operator*(int64_t left, const PTimeInterval & right)
+  { return PTimeInterval::NanoSeconds(left * right.GetNanoSeconds()); }
 
 PINLINE PTimeInterval & PTimeInterval::operator*=(int f)
-  { SetMilliSeconds(GetMilliSeconds() * f); return *this; }
+  { SetNanoSeconds(GetNanoSeconds() * f); return *this; }
 
 PINLINE int PTimeInterval::operator/(const PTimeInterval & t) const
-  { return (int)(GetMilliSeconds() / t.GetMilliSeconds()); }
+  { return (int)(GetNanoSeconds() / t.GetNanoSeconds()); }
 
 PINLINE PTimeInterval PTimeInterval::operator/(int f) const
-  { return PTimeInterval(GetMilliSeconds() / f); }
+  { return PTimeInterval::NanoSeconds(GetNanoSeconds() / f); }
+
+PINLINE PTimeInterval operator/(int64_t left, const PTimeInterval & right)
+  { return PTimeInterval::NanoSeconds(left / right.GetNanoSeconds()); }
 
 PINLINE PTimeInterval & PTimeInterval::operator/=(int f)
-  { SetMilliSeconds(GetMilliSeconds() / f); return *this; }
+  { SetNanoSeconds(GetNanoSeconds() / f); return *this; }
 
 
 PINLINE bool PTimeInterval::operator==(const PTimeInterval & t) const
-  { return GetMilliSeconds() == t.GetMilliSeconds(); }
+  { return GetNanoSeconds() == t.GetNanoSeconds(); }
 
 PINLINE bool PTimeInterval::operator!=(const PTimeInterval & t) const
-  { return GetMilliSeconds() != t.GetMilliSeconds(); }
+  { return GetNanoSeconds() != t.GetNanoSeconds(); }
 
 PINLINE bool PTimeInterval::operator> (const PTimeInterval & t) const
-  { return GetMilliSeconds() > t.GetMilliSeconds(); }
+  { return GetNanoSeconds() > t.GetNanoSeconds(); }
 
 PINLINE bool PTimeInterval::operator>=(const PTimeInterval & t) const
-  { return GetMilliSeconds() >= t.GetMilliSeconds(); }
+  { return GetNanoSeconds() >= t.GetNanoSeconds(); }
 
 PINLINE bool PTimeInterval::operator< (const PTimeInterval & t) const
-  { return GetMilliSeconds() < t.GetMilliSeconds(); }
+  { return GetNanoSeconds() < t.GetNanoSeconds(); }
 
 PINLINE bool PTimeInterval::operator<=(const PTimeInterval & t) const
-  { return GetMilliSeconds() <= t.GetMilliSeconds(); }
+  { return GetNanoSeconds() <= t.GetNanoSeconds(); }
 
 PINLINE bool PTimeInterval::operator==(long msecs) const
   { return GetMilliSeconds() == (PInt64)msecs; }
