@@ -235,6 +235,40 @@ ifdef PROG
 	$(Q_LD)$(LD) -o $@ $(strip $(LDFLAGS) $(OBJS) $(LIBS))
 	$(BUILD_DEBUG_INFO)
 
+  bundle: $(BUNDLE_DIR)
+
+  ifneq ($(target_os),Darwin)
+
+    $(BUNDLE_DIR): $(TARGET)
+	@-rm -f $@/*
+	@-mkdir -p $@
+	cp -pR $(BUNDLE_FILES) $@
+
+  else # Darwin
+
+    STRINGSFILE= #InfoPlist.strings
+
+    $(BUNDLE_DIR): $(TARGET) Info.plist version.plist $(PROG).icns $(STRINGSFILE)
+	@for dir in $@ \
+	           $@/Contents \
+	           $@/Contents/MacOS \
+	           $@/Contents/Resources \
+	           $@/Contents/Resources/English.lproj; do \
+	  if test ! -d $$dir; then \
+	    echo Creating $$dir; \
+	    mkdir $$dir; \
+	  fi \
+	done
+	cp Info.plist version.plist $@/Contents/
+	cp $(PROG).icns $@/Contents/Resources/
+    ifneq ($(STRINGSFILE),)	
+	cp $(STRINGSFILE) $@/Contents/Resources/English.lproj/
+    endif
+	echo -n 'APPL????'    > $@/Contents/PkgInfo
+	cp -pR $(BUNDLE_FILES)  $@/Contents/MacOS
+
+  endif # Darwin
+
 else # PROG -  so must be a library
 
   ifdef SHARED_LIB_LINK
