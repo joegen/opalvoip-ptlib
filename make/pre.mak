@@ -160,6 +160,16 @@ endif
 PTLIB_LIBS = -L$(PTLIB_LIBDIR) -l$(PTLIB_LIB_BASE)$(LIB_DEBUG_SUFFIX)$(LIB_STATIC_SUFFIX)
 
 
+ifdef PROG
+  BUNDLE_DIR := ./$(PROG).app
+  BUNDLE_FILES =\
+        $(TARGET) \
+        $(PTLIB_SHARED_LIB_FILE) \
+        $(PTLIB_SHARED_LIB_LINK) \
+        `find $(PTLIB_LIBDIR) -name \*$(PTLIB_PLUGIN_SUFFIX).$(SHAREDLIBEXT)`
+endif
+
+
 ###############################################################################
 # Add common directory to include path
 # Note also have include directory that is always relative to the
