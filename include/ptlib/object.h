@@ -1627,10 +1627,16 @@ public:
   #define PNEW_AND_DELETE_FUNCTIONS_ALIGNED(align) \
       void * operator new(size_t nSize) \
         { return _aligned_malloc(nSize, align); } \
+      void operator delete(void * ptr) \
+        { _aligned_free(ptr); } \
       void * operator new(size_t, void * placement) \
         { return placement; } \
+      void operator delete(void *, void *) \
+        { } \
       void * operator new[](size_t nSize) \
-        { return _aligned_malloc(nSize, align); }
+        { return _aligned_malloc(nSize, align); } \
+      void operator delete[](void * ptr) \
+        { _aligned_free(ptr); }
 
   #define PNEW_AND_DELETE_FUNCTIONS64 PNEW_AND_DELETE_FUNCTIONS_ALIGNED(64)
   #define PNEW_AND_DELETE_FUNCTIONS32 PNEW_AND_DELETE_FUNCTIONS_ALIGNED(32)
@@ -1887,6 +1893,16 @@ class PObject {
       EqualTo = 0,
       GreaterThan = 1
     };
+
+    /// Compare two types, returning Comparison type.
+    template<typename T> static Comparison Compare2(T v1, T v2)
+    {
+      if (v1 < v2)
+        return LessThan;
+      if (v1 > v2)
+        return GreaterThan;
+      return EqualTo;
+    }
 
     /** Compare the two objects and return their relative rank. This function is
        usually overridden by descendent classes to yield the ranking according

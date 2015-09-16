@@ -2074,7 +2074,7 @@ bool PIPSocket::Address::IsSubNet(const Address & network, const Address & mask)
   else
     bitmask = inet_addr("255.255.255.255");
 
-  return ((DWORD)*this & bitmask) == (DWORD)network;
+  return ((DWORD)*this & bitmask) == ((DWORD)network & bitmask);
 }
 
 
@@ -2831,9 +2831,19 @@ void PIPSocket::AddressAndPort::SetAddress(const PIPSocket::Address & addr, WORD
 }
 
 
+PObject::Comparison PIPSocket::AddressAndPort::Compare(const PObject & obj) const
+{
+  const AddressAndPort & other = dynamic_cast<const AddressAndPort &>(obj);
+  Comparison c = m_address.Compare(other.m_address);
+  if (c == EqualTo)
+    c = Compare2(m_port, other.m_port);
+  return c;
+}
+
+
 bool PIPSocket::AddressAndPort::MatchWildcard(const AddressAndPort & wild) const
 {
-  return (!wild.m_address.IsValid() || wild.m_address == m_address) &&
+  return (!wild.m_address.IsValid() || wild.m_address.IsAny() || wild.m_address == m_address) &&
          ( wild.m_port == 0         || wild.m_port    == m_port);
 }
 
