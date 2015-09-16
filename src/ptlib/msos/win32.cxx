@@ -1149,7 +1149,7 @@ void PThread::SetPriority(Priority priorityLevel)
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
 
-  static int const priorities[NumPriorities] = {
+  static int const priorities[NumPriority] = {
     THREAD_PRIORITY_LOWEST,
     THREAD_PRIORITY_BELOW_NORMAL,
     THREAD_PRIORITY_NORMAL,
