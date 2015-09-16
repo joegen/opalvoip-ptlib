@@ -74,7 +74,7 @@ class PThread : public PObject
   /**@name Construction */
   //@{
     /// Codes for thread priorities.
-    enum Priority {
+    P_DECLARE_TRACED_ENUM(Priority,
       LowestPriority,  ///< Will only run if all other threads are blocked.
 
       LowPriority,     ///< Runs approximately half as often as normal.
@@ -83,10 +83,8 @@ class PThread : public PObject
 
       HighPriority,    ///< Runs approximately twice as often as normal.
 
-      HighestPriority, ///< Is only thread that will run, unless blocked.
-
-      NumPriorities
-    };
+      HighestPriority  ///< Is only thread that will run, unless blocked.
+    );
 
     /// Codes for thread autodelete flag
     enum AutoDeleteFlag {
