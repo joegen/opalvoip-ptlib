@@ -2827,7 +2827,7 @@ void PSimpleThread::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
-static bool EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
+bool PTimedMutex::EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
 
 static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool walkStack)
 {
@@ -3146,7 +3146,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
               " writers=" << it->second.m_writerCount;
     if (!it->second.m_waiting)
       trace << ", LOCKED";
-    if (EnableDeadlockStackWalk)
+    if (PTimedMutex::EnableDeadlockStackWalk)
       PTrace::WalkStack(trace, it->first);
   }
   trace << PTrace::End;
