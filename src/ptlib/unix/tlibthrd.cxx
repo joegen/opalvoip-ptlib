@@ -132,7 +132,7 @@ static int GetSchedParam(PThread::Priority priority, sched_param & param)
       break;
 
     case PThread::HighPriority :
-      param.sched_priority = sched_get_priority_min(SCHED_RR);
+      param.sched_priority = (sched_get_priority_max(SCHED_RR) + sched_get_priority_min(SCHED_RR))/2;
       break;
 
 #ifdef SCHED_BATCH
