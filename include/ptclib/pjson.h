@@ -61,6 +61,8 @@ class PJSON : public PObject
         void operator=(const Base &);
     };
 
+    class Array;
+
     class Object : public Base, public std::map<PString, Base *>
     {
       public:
@@ -74,8 +76,17 @@ class PJSON : public PObject
           const_iterator it = find(name);
           return it != end() ? dynamic_cast<T *>(it->second) : NULL;
         }
+        Object & GetObject(const PString & name) const;
+        Array & GetArray(const PString & name) const;
+        PString GetString(const PString & name) const;
+        int GetInteger(const PString & name) const;
+        unsigned GetUnsigned(const PString & name) const;
+        double GetNumber(const PString & name) const;
+        bool GetBoolean(const PString & name) const;
 
         bool Set(const PString & name, Types type);
+        Object & SetObject(const PString & name);
+        Array & SetArray(const PString & name);
         bool SetString(const PString & name, const PString & value);
         bool SetNumber(const PString & name, double value);
         bool SetBoolean(const PString & name, bool value);
@@ -93,8 +104,17 @@ class PJSON : public PObject
         {
           return index < size() ? dynamic_cast<T *>(at(index)) : NULL;
         }
+        Object & GetObject(size_t index) const;
+        Array & GetArray(size_t index) const;
+        PString GetString(size_t index) const;
+        int GetInteger(size_t index) const;
+        unsigned GetUnsigned(size_t index) const;
+        double GetNumber(size_t index) const;
+        bool GetBoolean(size_t index) const;
 
         void Append(Types type);
+        Object & AppendObject();
+        Array & AppendArray();
         void AppendString(const PString & value);
         void AppendNumber(double value);
         void AppendBoolean(bool value);
@@ -115,11 +135,13 @@ class PJSON : public PObject
       protected:
         double m_value;
       public:
-        Number(double value = 0);
+        explicit Number(double value = 0);
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
         Number & operator=(double value) { m_value = value; return *this; }
+        void SetValue(double value) { m_value = value; }
+        double GetValue() const { return m_value; }
     };
 
     class Boolean : public Base
@@ -127,11 +149,13 @@ class PJSON : public PObject
       protected:
         bool m_value;
       public:
-        Boolean(bool value = false);
+        explicit Boolean(bool value = false);
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
         Boolean & operator=(bool value) { m_value = value; return *this; }
+        void SetValue(bool value) { m_value = value; }
+        bool GetValue() const { return m_value; }
     };
 
     class Null : public Base
