@@ -27,9 +27,9 @@ void JSONTest::Main()
     if (args[0] == "-")
       cin >> json;
     else
-      json.FromString(args[0]);
+      json.FromString(args.GetParameters().ToString());
     if (json.IsValid())
-      cout << json << endl;
+      cout << "\n\n\nParsed JSON:\n" << json << endl;
     else
       cout << "Could not parse JSON\n";
     return;
