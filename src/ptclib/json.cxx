@@ -62,19 +62,24 @@ static PJSON::Base * CreateByType(PJSON::Types type)
 
 
 PJSON::PJSON()
-  : m_root(NULL)
+  : m_root(new Null)
+  , m_valid(true)
 {
 }
 
 
 PJSON::PJSON(Types type)
   : m_root(CreateByType(type))
+  , m_valid(m_root != NULL)
 {
+    if (m_root == NULL)
+        m_root = new Null;
 }
 
 
 PJSON::PJSON(const PString & str)
   : m_root(NULL)
+  , m_valid(false)
 {
   FromString(str);
 }
@@ -84,7 +89,7 @@ bool PJSON::FromString(const PString & str)
 {
   PStringStream strm(str);
   ReadFrom(strm);
-  return strm.bad() || strm.fail();
+  return m_valid;
 }
 
 
@@ -135,16 +140,20 @@ void PJSON::ReadFrom(istream & strm)
 {
   delete m_root;
   m_root = CreateFromStream(strm);
-  if (m_root != NULL)
+  if (m_root != NULL) {
     m_root->ReadFrom(strm);
-  else
-    m_root = new Object;
+    m_valid = !(strm.bad() || strm.fail());
+  }
+  else {
+    m_root = new Null;
+    m_valid = false;
+  }
 }
 
 
 void PJSON::PrintOn(ostream & strm) const
 {
-  if (m_root != NULL)
+  if (PAssertNULL(m_root) != NULL)
     m_root->PrintOn(strm);
 }
 

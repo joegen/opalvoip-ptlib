@@ -158,16 +158,18 @@ class PJSON : public PObject
 
     PString AsString() const;
 
-    bool IsValid() const { return m_root != NULL; }
+    bool IsValid() const { return m_valid; }
 
-    Object & GetObject() const { return dynamic_cast<Object &>(*m_root); }
-    Array  & GetArray () const { return dynamic_cast<Array &>(*m_root); }
-    String & GetString() const { return dynamic_cast<String &>(*m_root); }
-    Number & GetNumber() const { return dynamic_cast<Number &>(*m_root); }
-    Boolean & GetBoolean() const { return dynamic_cast<Boolean &>(*m_root); }
+    template <class T> T & GetAs() const { return dynamic_cast<T &>(*PAssertNULL(m_root)); }
+    Object  & GetObject()  const { return GetAs<Object>();  }
+    Array   & GetArray ()  const { return GetAs<Array>();   }
+    String  & GetString()  const { return GetAs<String>();  }
+    Number  & GetNumber()  const { return GetAs<Number>();  }
+    Boolean & GetBoolean() const { return GetAs<Boolean>(); }
 
   protected:
     Base * m_root;
+    bool   m_valid;
 };
 
 
