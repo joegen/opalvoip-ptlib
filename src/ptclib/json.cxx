@@ -279,9 +279,11 @@ void PJSON::Object::ReadFrom(istream & strm)
   if (!Expect(strm, '{'))
     return;
 
-  strm >> ws;
-  if (strm.peek() == '}')
+  char close;
+  strm >> ws >> close;
+  if (close == '}')
       return;
+  strm.putback(close);
 
   do {
     PString name;
@@ -377,9 +379,11 @@ void PJSON::Array::ReadFrom(istream & strm)
   if (!Expect(strm, '['))
     return;
 
-  strm >> ws;
-  if (strm.peek() == ']')
+  char close;
+  strm >> ws >> close;
+  if (close == ']')
       return;
+  strm.putback(close);
 
   do {
     Base * value = CreateFromStream(strm);
