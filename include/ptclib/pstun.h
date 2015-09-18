@@ -442,10 +442,10 @@ class PSTUNMessage : public PBYTEArray
     void SetType(MsgType newType, const BYTE * id = NULL);
     void SetErrorType(int code, const BYTE * id, const char * reason = NULL);
 
-    bool IsRequest()        const { return (GetType() & 0x0110) == 0x0000; }
-    bool IsIndication()     const { return (GetType() & 0x0110) == 0x0010; }
-    bool IsSuccessRespone() const { return (GetType() & 0x0110) == 0x0100; }
-    bool IsErrorResponse()  const { return (GetType() & 0x0110) == 0x0110; }
+    bool IsRequest()         const { return (GetType() & 0x0110) == 0x0000; }
+    bool IsIndication()      const { return (GetType() & 0x0110) == 0x0010; }
+    bool IsSuccessResponse() const { return (GetType() & 0x0110) == 0x0100; }
+    bool IsErrorResponse()   const { return (GetType() & 0x0110) == 0x0110; }
 
     PSTUNAttribute * AddAttribute(const PSTUNAttribute & attribute);
     PSTUNAttribute * SetAttribute(const PSTUNAttribute & attribute);
