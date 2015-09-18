@@ -605,7 +605,21 @@ void PJSON::Number::ReadFrom(istream & strm)
 
 void PJSON::Number::PrintOn(ostream & strm) const
 {
-  strm << m_value;
+  if (m_value < 0) {
+    int intval = (int)m_value;
+    if (intval == m_value) {
+      strm << intval;
+      return;
+    }
+  }
+  else if (m_value < UINT_MAX) {
+    unsigned uintval = (unsigned)m_value;
+    if (uintval == m_value) {
+      strm << uintval;
+      return;
+    }
+  }
+    strm << m_value;
 }
 
 
