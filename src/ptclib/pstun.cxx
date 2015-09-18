@@ -828,6 +828,12 @@ void PSTUNMessage::PrintOn(ostream & strm) const
     case Refresh:
       strm << "Refresh";
       break;
+    case RefreshResponse:
+      strm << "Refresh Response";
+      break;
+    case RefreshError:
+      strm << "Refresh Error";
+      break;
     case Send:
       strm << "Send";
       break;
@@ -837,8 +843,41 @@ void PSTUNMessage::PrintOn(ostream & strm) const
     case CreatePermission:
       strm << "Create Permission";
       break;
+    case CreatePermResponse:
+      strm << "Create Permission Response";
+      break;
+    case CreatePermError:
+      strm << "Create Permission Error";
+      break;
     case ChannelBind:
       strm << "Channel Bind";
+      break;
+    case ChannelBindResponse:
+      strm << "Channel Bind Response";
+      break;
+    case ChannelBindError:
+      strm << "Channel Bind Error";
+      break;
+    case Connect:
+      strm << "Connect";
+      break;
+    case ConnectResponse:
+      strm << "Connect Response";
+      break;
+    case ConnectError:
+      strm << "Connect Error";
+      break;
+    case ConnectionBind:
+      strm << "Connection Bind";
+      break;
+    case ConnectionBindResponse:
+      strm << "Connection Bind Response";
+      break;
+    case ConnectionBindError:
+      strm << "Connection Bind Error";
+      break;
+    case ConnectionAttempt:
+      strm << "Connection Attempt";
       break;
     default :
       strm << "Unknown message 0x" << hex << (unsigned)GetType();
