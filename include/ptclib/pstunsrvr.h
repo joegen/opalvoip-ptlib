@@ -107,7 +107,7 @@ class PSTUNServer : public PObject, public PSTUN
 
     bool m_autoDelete;
 
-    PTRACE_THROTTLE(m_throttleReceivedPacket, 4, 10000);
+    PTRACE_THROTTLE(m_throttleReceivedPacket, 3, 30000, 5);
 };
 
 
