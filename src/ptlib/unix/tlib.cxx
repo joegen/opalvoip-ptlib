@@ -500,9 +500,6 @@ static void SetSignals(void (*handler)(int))
 #ifdef SIGWINCH
   signal(SIGWINCH, handler);
 #endif
-#ifdef SIGPROF
-  signal(SIGPROF, handler);
-#endif
 #ifdef SIGTRAP
   signal(SIGTRAP, handler);
 #endif
