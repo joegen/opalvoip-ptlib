@@ -1909,8 +1909,10 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
   }
 
   m_context = SSL_CTX_new(meth);
-  if (m_context == NULL)
+  if (m_context == NULL) {
     PSSLAssert("Error creating context: ");
+    return;
+  }
 
   if (sessionId != NULL) {
     if (idSize == 0)
@@ -1943,12 +1945,16 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
 PSSLContext::~PSSLContext()
 {
   PTRACE(4, "Destroyed context: method=" << m_method << " ctx=" << m_context);
-  SSL_CTX_free(m_context);
+  if (m_context != NULL)
+    SSL_CTX_free(m_context);
 }
 
 
 bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory & caDir)
 {
+  if (PAssertNULL(m_context) == NULL)
+    return false;
+
   PString caPath = caDir.Left(caDir.GetLength()-1);
   if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
                                                caPath.IsEmpty() ? NULL : (const char *)caPath)) {
@@ -1963,7 +1969,7 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
 
 bool PSSLContext::SetVerifyCertificate(const PSSLCertificate & cert)
 {
-  if (m_context == NULL || !cert.IsValid())
+  if (PAssertNULL(m_context) == NULL || !cert.IsValid())
     return false;
 
   X509_STORE * store = SSL_CTX_get_cert_store(m_context);
@@ -1983,7 +1989,7 @@ static int VerifyModeBits[PSSLContext::EndVerifyMode] = {
 
 void PSSLContext::SetVerifyMode(VerifyMode mode, unsigned depth)
 {
-  if (m_context == NULL)
+  if (PAssertNULL(m_context) == NULL)
     return;
 
   SSL_CTX_set_verify(m_context, VerifyModeBits[mode], VerifyCallback);
@@ -1993,7 +1999,7 @@ void PSSLContext::SetVerifyMode(VerifyMode mode, unsigned depth)
 
 PSSLContext::VerifyMode PSSLContext::GetVerifyMode() const
 {
-  if (m_context == NULL)
+  if (PAssertNULL(m_context) == NULL)
     return VerifyNone;
 
   int v = SSL_CTX_get_verify_mode(m_context);
@@ -2007,14 +2013,19 @@ PSSLContext::VerifyMode PSSLContext::GetVerifyMode() const
 
 bool PSSLContext::AddClientCA(const PSSLCertificate & certificate)
 {
-  return SSL_CTX_add_client_CA(m_context, certificate);
+  return PAssertNULL(m_context) != NULL &&
+         certificate.IsValid() &&
+         SSL_CTX_add_client_CA(m_context, certificate);
 }
 
 
 bool PSSLContext::AddClientCA(const PList<PSSLCertificate> & certificates)
 {
+  if (PAssertNULL(m_context) == NULL)
+    return false;
+
   for (PList<PSSLCertificate>::const_iterator it = certificates.begin(); it != certificates.end(); ++it) {
-    if (!SSL_CTX_add_client_CA(m_context, *it))
+    if (!it->IsValid() || !SSL_CTX_add_client_CA(m_context, *it))
       return false;
   }
 
@@ -2024,31 +2035,33 @@ bool PSSLContext::AddClientCA(const PList<PSSLCertificate> & certificates)
 
 bool PSSLContext::UseCertificate(const PSSLCertificate & certificate)
 {
-  return SSL_CTX_use_certificate(m_context, certificate) > 0;
+  return PAssertNULL(m_context) != NULL &&
+         certificate.IsValid() &&
+         SSL_CTX_use_certificate(m_context, certificate) > 0;
 }
 
 
 bool PSSLContext::UsePrivateKey(const PSSLPrivateKey & key)
 {
-  if (SSL_CTX_use_PrivateKey(m_context, key) <= 0)
-    return false;
-
-  return SSL_CTX_check_private_key(m_context);
+  return PAssertNULL(m_context) != NULL &&
+         SSL_CTX_use_PrivateKey(m_context, key) > 0 &&
+         SSL_CTX_check_private_key(m_context);
 }
 
 
 bool PSSLContext::UseDiffieHellman(const PSSLDiffieHellman & dh)
 {
-  return SSL_CTX_set_tmp_dh(m_context, (dh_st *)dh) > 0;
+  return PAssertNULL(m_context) != NULL &&
+         dh.IsValid() &&
+         SSL_CTX_set_tmp_dh(m_context, (dh_st *)dh) > 0;
 }
 
 
 bool PSSLContext::SetCipherList(const PString & ciphers)
 {
-  if (ciphers.IsEmpty())
-    return false;
-
-  return SSL_CTX_set_cipher_list(m_context, (char *)(const char *)ciphers);
+  return PAssertNULL(m_context) != NULL &&
+         !ciphers.IsEmpty() &&
+         SSL_CTX_set_cipher_list(m_context, (char *)(const char *)ciphers);
 }
 
 
@@ -2057,6 +2070,9 @@ bool PSSLContext::SetCredentials(const PString & authority,
                                  const PString & privateKey,
                                  bool create)
 {
+  if (PAssertNULL(m_context) == NULL)
+    return false;
+
   if (!authority.IsEmpty()) {
     bool ok;
     if (PDirectory::Exists(authority))
@@ -2148,7 +2164,7 @@ bool PSSLContext::SetCredentials(const PString & authority,
 
 void PSSLContext::SetPasswordNotifier(const PSSLPasswordNotifier & notifier)
 {
-  if (m_context == NULL)
+  if (PAssertNULL(m_context) == NULL)
     return;
 
   m_passwordNotifier = notifier;
@@ -2164,7 +2180,9 @@ void PSSLContext::SetPasswordNotifier(const PSSLPasswordNotifier & notifier)
 bool PSSLContext::SetExtension(const char * extension)
 {
 #if P_SSL_SRTP
-  return SSL_CTX_set_tlsext_use_srtp(m_context, extension) == 0;
+  return PAssertNULL(m_context) != NULL &&
+         extension != NULL && *extension != '\0' &&
+         SSL_CTX_set_tlsext_use_srtp(m_context, extension) == 0;
 #else
   return false;
 #endif
@@ -2250,6 +2268,9 @@ PSSLChannel::~PSSLChannel()
 
 PBoolean PSSLChannel::Read(void * buf, PINDEX len)
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
   channelPointerMutex.StartRead();
 
   lastReadCount = 0;
@@ -2298,6 +2319,9 @@ int PSSLChannel::BioRead(char * buf, int len)
 
 PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
   flush();
 
   channelPointerMutex.StartRead();
@@ -2348,7 +2372,7 @@ int PSSLChannel::BioWrite(const char * buf, int len)
 
 PBoolean PSSLChannel::Close()
 {
-  PBoolean ok = SSL_shutdown(m_ssl);
+  bool ok = PAssertNULL(m_ssl) != NULL && SSL_shutdown(m_ssl);
   return PIndirectChannel::Close() && ok;
 }
 
@@ -2378,7 +2402,7 @@ PBoolean PSSLChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group
 {
   Errors lastError = NoError;
   DWORD osError = 0;
-  if (SSL_get_error(m_ssl, (int)libcReturnValue) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
+  if (m_ssl != NULL && SSL_get_error(m_ssl, (int)libcReturnValue) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
     osError |= 0x80000000;
     lastError = AccessDenied;
   }
@@ -2416,7 +2440,7 @@ PBoolean PSSLChannel::Accept(PChannel * channel, PBoolean autoDelete)
 
 bool PSSLChannel::InternalAccept()
 {
-  return ConvertOSError(SSL_accept(m_ssl));
+  return PAssertNULL(m_ssl) != NULL && ConvertOSError(SSL_accept(m_ssl));
 }
 
 
@@ -2440,18 +2464,21 @@ PBoolean PSSLChannel::Connect(PChannel * channel, PBoolean autoDelete)
 
 bool PSSLChannel::InternalConnect()
 {
-  return ConvertOSError(SSL_connect(m_ssl));
+  return PAssertNULL(m_ssl) != NULL && ConvertOSError(SSL_connect(m_ssl));
 }
 
 
 PBoolean PSSLChannel::AddClientCA(const PSSLCertificate & certificate)
 {
-  return SSL_add_client_CA(m_ssl, certificate);
+  return PAssertNULL(m_ssl) != NULL && SSL_add_client_CA(m_ssl, certificate);
 }
 
 
 PBoolean PSSLChannel::AddClientCA(const PList<PSSLCertificate> & certificates)
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
   for (PList<PSSLCertificate>::const_iterator it = certificates.begin(); it != certificates.end(); ++it) {
     if (!SSL_add_client_CA(m_ssl, *it))
       return false;
@@ -2463,21 +2490,23 @@ PBoolean PSSLChannel::AddClientCA(const PList<PSSLCertificate> & certificates)
 
 PBoolean PSSLChannel::UseCertificate(const PSSLCertificate & certificate)
 {
-  return SSL_use_certificate(m_ssl, certificate);
+  return PAssertNULL(m_ssl) != NULL && SSL_use_certificate(m_ssl, certificate);
 }
 
 
 PBoolean PSSLChannel::UsePrivateKey(const PSSLPrivateKey & key)
 {
-  if (SSL_use_PrivateKey(m_ssl, key) <= 0)
-    return false;
-
-  return SSL_check_private_key(m_ssl);
+  return PAssertNULL(m_ssl) != NULL &&
+         SSL_use_PrivateKey(m_ssl, key) > 0 &&
+         SSL_check_private_key(m_ssl);
 }
 
 
 PString PSSLChannel::GetCipherList() const
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
   PStringStream strm;
   int i = -1;
   const char * str;
@@ -2495,7 +2524,7 @@ void PSSLChannel::SetVerifyMode(VerifyMode mode, const VerifyNotifier & notifier
 {
   m_verifyNotifier = notifier;
 
-  if (m_ssl != NULL)
+  if (PAssertNULL(m_ssl) != NULL)
     SSL_set_verify(m_ssl, VerifyModeBits[mode], VerifyCallback);
 }
 
@@ -2513,6 +2542,9 @@ bool PSSLChannel::OnVerify(bool ok, const PSSLCertificate & peerCertificate)
 
 bool PSSLChannel::GetPeerCertificate(PSSLCertificate & certificate, PString * error)
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
   long err = SSL_get_verify_result(m_ssl);
   certificate.Attach(SSL_get_peer_certificate(m_ssl));
 
@@ -2576,7 +2608,7 @@ PSSLChannelDTLS::~PSSLChannelDTLS()
 
 bool PSSLChannelDTLS::SetMTU(unsigned mtu)
 {
-  if (m_ssl == NULL)
+  if (PAssertNULL(m_ssl) == NULL)
     return false;
 
   static unsigned MinMTU = 576-8-20; // RFC879 indicates this is ALWAYS good
@@ -2595,6 +2627,9 @@ bool PSSLChannelDTLS::SetMTU(unsigned mtu)
 
 bool PSSLChannelDTLS::ExecuteHandshake()
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
   PTRACE(5, "DTLS executing handshake.");
 
   SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY);
@@ -2614,12 +2649,15 @@ bool PSSLChannelDTLS::ExecuteHandshake()
 
 bool PSSLChannelDTLS::IsServer() const
 {
-  return m_ssl->server;
+  return PAssertNULL(m_ssl) != NULL && m_ssl->server;
 }
 
 
 PCaselessString PSSLChannelDTLS::GetSelectedProfile() const
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return PString::Empty();
+
 #if P_SSL_SRTP
   SRTP_PROTECTION_PROFILE *p = SSL_get_selected_srtp_profile(m_ssl);
   if (p != NULL)
@@ -2633,6 +2671,9 @@ PCaselessString PSSLChannelDTLS::GetSelectedProfile() const
 
 PBYTEArray PSSLChannelDTLS::GetKeyMaterial(PINDEX materialSize, const char * name) const
 {
+  if (PAssertNULL(m_ssl) == NULL)
+    return PBYTEArray();
+
 #if P_SSL_SRTP
   if (PAssert(materialSize > 0 && name != NULL && *name != '\0', PInvalidParameter)) {
     PBYTEArray result;
@@ -2652,14 +2693,20 @@ PBYTEArray PSSLChannelDTLS::GetKeyMaterial(PINDEX materialSize, const char * nam
 
 bool PSSLChannelDTLS::InternalAccept()
 {
-  SSL_set_accept_state(*this);
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
+  SSL_set_accept_state(m_ssl);
   return true;
 }
 
 
 bool PSSLChannelDTLS::InternalConnect()
 {
-  SSL_set_connect_state(*this);
+  if (PAssertNULL(m_ssl) == NULL)
+    return false;
+
+  SSL_set_connect_state(m_ssl);
   return true;
 }
 #endif // P_SSL
