@@ -38,10 +38,10 @@ PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
   : m_nanoseconds(millisecs*1000000) { }
 
 PINLINE PTimeInterval::PTimeInterval(const PTimeInterval & other)
-  : m_nanoseconds(other.m_nanoseconds.load()) { }
+  : m_nanoseconds(other.InternalGet()) { }
 
 PINLINE PTimeInterval & PTimeInterval::operator=(const PTimeInterval & other)
-  { m_nanoseconds.store(other.m_nanoseconds.load()); return *this; }
+  { InternalSet(other.InternalGet()); return *this; }
 
 PINLINE PObject * PTimeInterval::Clone() const
   { return PNEW PTimeInterval(GetMilliSeconds()); }
@@ -53,22 +53,22 @@ PINLINE PTimeInterval PTimeInterval::MicroSeconds(int64_t usecs)
   { PTimeInterval t; t.SetMicroSeconds(usecs); return t; }
 
 PINLINE PInt64 PTimeInterval::GetNanoSeconds() const
-  { return m_nanoseconds.load(); }
+  { return InternalGet(); }
 
 PINLINE void PTimeInterval::SetNanoSeconds(PInt64 nsecs)
-  { m_nanoseconds.store(nsecs); }
+  { InternalSet(nsecs); }
 
 PINLINE PInt64 PTimeInterval::GetMicroSeconds() const
-  { return m_nanoseconds.load()/1000; }
+  { return InternalGet()/1000; }
 
 PINLINE void PTimeInterval::SetMicroSeconds(PInt64 usecs)
-  { m_nanoseconds.store(usecs*1000); }
+  { InternalSet(usecs*1000); }
 
 PINLINE PInt64 PTimeInterval::GetMilliSeconds() const
-  { return m_nanoseconds.load()/1000000; }
+  { return InternalGet()/1000000; }
 
 PINLINE void PTimeInterval::SetMilliSeconds(PInt64 msecs)
-  { m_nanoseconds.store(msecs*1000000); }
+  { InternalSet(msecs*1000000); }
 
 PINLINE long PTimeInterval::GetSeconds() const
   { return (long)(GetMilliSeconds()/1000); }
