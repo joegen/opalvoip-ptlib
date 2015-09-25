@@ -409,16 +409,36 @@ class PSTUNMessage : public PBYTEArray
       SharedSecretResponse  = 0x0102,
       SharedSecretError     = 0x0112,
 
-      Allocate              = 0x0003,  // RFC 5766
-      AllocateResponse      = 0x0103,  // RFC 5766
-      AllocateError         = 0x0113,  // RFC 5766
+      // RFC 5766
+      Allocate              = 0x0003,  
+      AllocateResponse      = 0x0103,
+      AllocateError         = 0x0113,
 
-      Refresh               = 0x0004,  // RFC 5766
-      Send                  = 0x0006,  // RFC 5766
-      Data                  = 0x0007,  // RFC 5766
-      CreatePermission      = 0x0008,  // RFC 5766
-      ChannelBind           = 0x0009,  // RFC 5766
+      Refresh               = 0x0004,
+      RefreshResponse       = 0x0104,
+      RefreshError          = 0x0114,
 
+      Send                  = 0x0016,
+      Data                  = 0x0017,
+
+      CreatePermission      = 0x0008,
+      CreatePermResponse    = 0x0108,
+      CreatePermError       = 0x0118,
+
+      ChannelBind           = 0x0009,
+      ChannelBindResponse   = 0x0109,
+      ChannelBindError      = 0x0119,
+
+      // RFC6062
+      Connect               = 0x000a,
+      ConnectResponse       = 0x010a,
+      ConnectError          = 0x011a,
+
+      ConnectionBind        = 0x000b,
+      ConnectionBindResponse= 0x010b,
+      ConnectionBindError   = 0x011b,
+
+      ConnectionAttempt     = 0x001c,
     };
     
     PSTUNMessage();
@@ -442,10 +462,10 @@ class PSTUNMessage : public PBYTEArray
     void SetType(MsgType newType, const BYTE * id = NULL);
     void SetErrorType(int code, const BYTE * id, const char * reason = NULL);
 
-    bool IsRequest()        const { return (GetType() & 0x0110) == 0x0000; }
-    bool IsIndication()     const { return (GetType() & 0x0110) == 0x0010; }
-    bool IsSuccessRespone() const { return (GetType() & 0x0110) == 0x0100; }
-    bool IsErrorResponse()  const { return (GetType() & 0x0110) == 0x0110; }
+    bool IsRequest()         const { return (GetType() & 0x0110) == 0x0000; }
+    bool IsIndication()      const { return (GetType() & 0x0110) == 0x0010; }
+    bool IsSuccessResponse() const { return (GetType() & 0x0110) == 0x0100; }
+    bool IsErrorResponse()   const { return (GetType() & 0x0110) == 0x0110; }
 
     PSTUNAttribute * AddAttribute(const PSTUNAttribute & attribute);
     PSTUNAttribute * SetAttribute(const PSTUNAttribute & attribute);

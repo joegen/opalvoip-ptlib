@@ -62,19 +62,24 @@ static PJSON::Base * CreateByType(PJSON::Types type)
 
 
 PJSON::PJSON()
-  : m_root(NULL)
+  : m_root(new Null)
+  , m_valid(true)
 {
 }
 
 
 PJSON::PJSON(Types type)
   : m_root(CreateByType(type))
+  , m_valid(m_root != NULL)
 {
+    if (m_root == NULL)
+        m_root = new Null;
 }
 
 
 PJSON::PJSON(const PString & str)
   : m_root(NULL)
+  , m_valid(false)
 {
   FromString(str);
 }
@@ -84,7 +89,7 @@ bool PJSON::FromString(const PString & str)
 {
   PStringStream strm(str);
   ReadFrom(strm);
-  return strm.bad() || strm.fail();
+  return m_valid;
 }
 
 
@@ -135,16 +140,20 @@ void PJSON::ReadFrom(istream & strm)
 {
   delete m_root;
   m_root = CreateFromStream(strm);
-  if (m_root != NULL)
+  if (m_root != NULL) {
     m_root->ReadFrom(strm);
-  else
-    m_root = new Object;
+    m_valid = !(strm.bad() || strm.fail());
+  }
+  else {
+    m_root = new Null;
+    m_valid = false;
+  }
 }
 
 
 void PJSON::PrintOn(ostream & strm) const
 {
-  if (m_root != NULL)
+  if (PAssertNULL(m_root) != NULL)
     m_root->PrintOn(strm);
 }
 
@@ -270,6 +279,12 @@ void PJSON::Object::ReadFrom(istream & strm)
   if (!Expect(strm, '{'))
     return;
 
+  char close;
+  strm >> ws >> close;
+  if (close == '}')
+      return;
+  strm.putback(close);
+
   do {
     PString name;
     if (!ReadString(strm, name))
@@ -305,6 +320,55 @@ void PJSON::Object::PrintOn(ostream & strm) const
 }
 
 
+PJSON::Object & PJSON::Object::GetObject(const PString & name) const
+{
+  Object * obj = Get<Object>(name);
+  return *PAssertNULL(obj);
+}
+
+
+PJSON::Array & PJSON::Object::GetArray(const PString & name) const
+{
+  Array * arr = Get<Array>(name);
+  return *PAssertNULL(arr);
+}
+
+
+PString PJSON::Object::GetString(const PString & name) const
+{
+  String * str = Get<String>(name);
+  return str != NULL ? *str : PString::Empty();
+}
+
+
+int PJSON::Object::GetInteger(const PString & name) const
+{
+  Number * num = Get<Number>(name);
+  return num != NULL ? (int)num->GetValue() : 0;
+}
+
+
+unsigned PJSON::Object::GetUnsigned(const PString & name) const
+{
+  Number * num = Get<Number>(name);
+  return num != NULL ? (unsigned)num->GetValue() : 0;
+}
+
+
+double PJSON::Object::GetNumber(const PString & name) const
+{
+  Number * num = Get<Number>(name);
+  return num != NULL ? num->GetValue() : 0;
+}
+
+
+bool PJSON::Object::GetBoolean(const PString & name) const
+{
+    Boolean * flag = Get<Boolean>(name);
+    return flag != NULL && flag->GetValue();
+}
+
+
 bool PJSON::Object::Set(const PString & name, Types type)
 {
   if (find(name) != end())
@@ -316,6 +380,20 @@ bool PJSON::Object::Set(const PString & name, Types type)
 
   insert(make_pair(name, ptr));
   return true;
+}
+
+
+PJSON::Object & PJSON::Object::SetObject(const PString & name)
+{
+  Set(name, e_Object);
+  return GetObject(name);
+}
+
+
+PJSON::Array & PJSON::Object::SetArray(const PString & name)
+{
+  Set(name, e_Array);
+  return GetArray(name);
 }
 
 
@@ -364,6 +442,11 @@ void PJSON::Array::ReadFrom(istream & strm)
   if (!Expect(strm, '['))
     return;
 
+  char close;
+  strm >> ws >> close;
+  if (close == ']')
+      return;
+  strm.putback(close);
 
   do {
     Base * value = CreateFromStream(strm);
@@ -392,11 +475,74 @@ void PJSON::Array::PrintOn(ostream & strm) const
 }
 
 
+PJSON::Object & PJSON::Array::GetObject(size_t index) const
+{
+  Object * obj = Get<Object>(index);
+  return *PAssertNULL(obj);
+}
+
+
+PJSON::Array & PJSON::Array::GetArray(size_t index) const
+{
+  Array * arr = Get<Array>(index);
+  return *PAssertNULL(arr);
+}
+
+
+PString PJSON::Array::GetString(size_t index) const
+{
+  String * str = Get<String>(index);
+  return str != NULL ? *str : PString::Empty();
+}
+
+
+int PJSON::Array::GetInteger(size_t index) const
+{
+  Number * num = Get<Number>(index);
+  return num != NULL ? (int)num->GetValue() : 0;
+}
+
+
+unsigned PJSON::Array::GetUnsigned(size_t index) const
+{
+  Number * num = Get<Number>(index);
+  return num != NULL ? (unsigned)num->GetValue() : 0;
+}
+
+
+double PJSON::Array::GetNumber(size_t index) const
+{
+  Number * num = Get<Number>(index);
+  return num != NULL ? num->GetValue() : 0;
+}
+
+
+bool PJSON::Array::GetBoolean(size_t index) const
+{
+  Boolean * flag = Get<Boolean>(index);
+  return flag != NULL && flag->GetValue();
+}
+
+
 void PJSON::Array::Append(Types type)
 {
   Base * ptr = CreateByType(type);
   if (ptr != NULL)
     push_back(ptr);
+}
+
+
+PJSON::Object & PJSON::Array::AppendObject()
+{
+  Append(e_Object);
+  return *dynamic_cast<Object *>(back());
+}
+
+
+PJSON::Array & PJSON::Array::AppendArray()
+{
+  Append(e_Array);
+  return *dynamic_cast<Array *>(back());
 }
 
 
@@ -459,7 +605,21 @@ void PJSON::Number::ReadFrom(istream & strm)
 
 void PJSON::Number::PrintOn(ostream & strm) const
 {
-  strm << m_value;
+  if (m_value < 0) {
+    int intval = (int)m_value;
+    if (intval == m_value) {
+      strm << intval;
+      return;
+    }
+  }
+  else if (m_value < UINT_MAX) {
+    unsigned uintval = (unsigned)m_value;
+    if (uintval == m_value) {
+      strm << uintval;
+      return;
+    }
+  }
+    strm << m_value;
 }
 
 
