@@ -161,33 +161,33 @@ class PTimeInterval : public PObject
        @return
        very long integer number of nanoseconds.
      */
-    virtual PInt64 GetNanoSeconds() const;
+    PInt64 GetNanoSeconds() const;
 
     /** Set the number of nanoseconds for the time interval.
      */
-    virtual void SetNanoSeconds(PInt64 nsecs);
+    void SetNanoSeconds(PInt64 nsecs);
 
     /** Get the number of microseconds for the time interval.
     
        @return
        very long integer number of microseconds.
      */
-    virtual PInt64 GetMicroSeconds() const;
+    PInt64 GetMicroSeconds() const;
 
     /** Set the number of microseconds for the time interval.
      */
-    virtual void SetMicroSeconds(PInt64 usecs);
+    void SetMicroSeconds(PInt64 usecs);
 
     /** Get the number of milliseconds for the time interval.
     
        @return
        very long integer number of milliseconds.
      */
-    virtual PInt64 GetMilliSeconds() const;
+    PInt64 GetMilliSeconds() const;
 
     /** Set the number of milliseconds for the time interval.
      */
-    virtual void SetMilliSeconds(PInt64 msecs);
+    void SetMilliSeconds(PInt64 msecs);
 
     /** Get the number of whole seconds for the time interval.
     
@@ -245,7 +245,7 @@ class PTimeInterval : public PObject
               SetInterval(0, 0, 2)
 </code></pre>
      */
-    virtual void SetInterval(
+    void SetInterval(
       PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
       long seconds = 0,         ///< Number of seconds for interval.
       long minutes = 0,         ///< Number of minutes for interval.
@@ -435,6 +435,10 @@ class PTimeInterval : public PObject
       long msecs    ///< Time interval as integer milliseconds to compare.
     ) const;
   //@}
+
+  protected:
+    virtual int64_t InternalGet() const;
+    virtual void InternalSet(int64_t t);
 
   private:
     atomic<int64_t> m_nanoseconds;

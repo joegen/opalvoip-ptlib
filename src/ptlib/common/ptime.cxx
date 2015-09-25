@@ -83,7 +83,7 @@ void PTimeInterval::ReadFrom(istream &strm)
   long day = 0;
   long hour = 0;
   long min = 0;
-  float sec;
+  double sec;
   strm >> sec;
   while (strm.peek() == ':') {
     day = hour;
@@ -93,7 +93,7 @@ void PTimeInterval::ReadFrom(istream &strm)
     strm >> sec;
   }
 
-  SetInterval(((long)(sec*1000))%1000, (int)sec, min, hour, day);
+  InternalSet((int64_t)((((day*24 + hour)*60 + min)*60 + sec)*1000000000));
 }
 
 
