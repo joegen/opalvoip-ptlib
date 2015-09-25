@@ -1058,6 +1058,21 @@ bool PDirectory::Create(const PString & p, int perm, bool recurse)
 #if P_TIMERS
 
 ///////////////////////////////////////////////////////////////////////////////
+// PTimeInterval
+
+int64_t PTimeInterval::InternalGet() const
+{
+  return m_nanoseconds.load();
+}
+
+
+void PTimeInterval::InternalSet(int64_t t)
+{
+  m_nanoseconds.store(t);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PSimpleTimer
 
 PSimpleTimer::PSimpleTimer(long milliseconds,
@@ -1109,13 +1124,9 @@ PSimpleTimer & PSimpleTimer::operator=(const PSimpleTimer & timer)
 }
 
 
-void PSimpleTimer::SetInterval(PInt64 milliseconds,
-                               long seconds,
-                               long minutes,
-                               long hours,
-                               int days)
+void PSimpleTimer::InternalSet(int64_t t)
 {
-  PTimeInterval::SetInterval(milliseconds, seconds, minutes, hours, days);
+  PTimeInterval::InternalSet(t);
   m_startTick = PTimer::Tick();
 }
 
@@ -1182,12 +1193,12 @@ void PTimer::PrintOn(ostream & strm) const
 }
 
 
-PInt64 PTimer::GetMilliSeconds() const
+int64_t PTimer::InternalGet() const
 {
-  PInt64 diff = (m_absoluteTime - Tick()).GetMilliSeconds();
+  PTimeInterval diff = m_absoluteTime - Tick();
   if (diff < 0)
     diff = 0;
-  return diff;
+  return diff.GetNanoSeconds();
 }
 
 
@@ -1204,7 +1215,7 @@ PBoolean PTimer::IsRunning() const
 }
 
 
-void PTimer::SetMilliSeconds(PInt64 milliseconds)
+void PTimer::InternalSet(int64_t milliseconds)
 {
   InternalStart(m_oneshot, PTimeInterval(milliseconds));
 }
