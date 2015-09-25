@@ -118,28 +118,6 @@ class PSimpleTimer : public PTimeInterval
 
   /**@name Control functions */
   //@{
-    /** Set the value of the time interval. The time interval, in milliseconds,
-       is the sum of all of the parameters. For example all of the following
-       are equivalent:
-<pre><code>
-              SetInterval(120000)
-              SetInterval(60000, 60)
-              SetInterval(60000, 0, 1)
-              SetInterval(0, 60, 1)
-              SetInterval(0, 0, 2)
-</code></pre>
-
-       The timer will be expired the specified time interval after "now" in
-       real time.
-     */
-    virtual void SetInterval(
-      PInt64 milliseconds = 0,  ///< Number of milliseconds for interval.
-      long seconds = 0,         ///< Number of seconds for interval.
-      long minutes = 0,         ///< Number of minutes for interval.
-      long hours = 0,           ///< Number of hours for interval.
-      int days = 0              ///< Number of days for interval.
-    );
-
     /**Stop the timer.
       */
     void Stop();
@@ -167,6 +145,7 @@ class PSimpleTimer : public PTimeInterval
   //@}
 
   protected:
+    virtual void InternalSet(int64_t t);
     PTimeInterval m_startTick;
 };
 
@@ -252,11 +231,6 @@ class PTimer : public PTimeInterval
 
   /**@name Control functions */
   //@{
-    /** Set the number of milliseconds for the time interval.
-        Note, this will restart the timer in the current mode.
-    */
-    virtual void SetMilliSeconds(PInt64 msecs);
-
     /** Start a timer in continous cycle mode. Whenever the timer runs out it
        is automatically reset to the time specified. Thus, it calls the
        notification function every time interval.
@@ -357,13 +331,6 @@ class PTimer : public PTimeInterval
     static unsigned Resolution();
   //@}
 
-  /**@name Member access */
-  //@{
-    /**Return number of milliseconds left in timer.
-      */
-    PInt64 GetMilliSeconds() const;
-  //@}
-
 
     /* This class defines a list of <code>PTimer</code> objects. It is primarily used
        internally by the library and the user should never create an instance of
@@ -414,6 +381,8 @@ class PTimer : public PTimeInterval
 
 
   private:
+    virtual int64_t InternalGet() const;
+    virtual void InternalSet(int64_t t);
     void InternalStart(bool once, PTimeInterval resetTime); // Note, not "const PTimeInterval &" to avoid mutex issues
 
     // Member variables
