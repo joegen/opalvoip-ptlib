@@ -20882,22 +20882,6 @@ else
 fi
 
 
-   if ${PTLIB_DNS_RESOLVER+:} false; then :
-  $as_echo "                     DNS Resolver : ${PTLIB_DNS_RESOLVER}"
-else
-  $as_echo "                     DNS Resolver : no"
-
-fi
-
-
-   if ${PTLIB_IPV6+:} false; then :
-  $as_echo "                             IPv6 : ${PTLIB_IPV6}"
-else
-  $as_echo "                             IPv6 : no"
-
-fi
-
-
    if ${PTLIB_PCAP+:} false; then :
   $as_echo "            Packet Capture (PCAP) : ${PTLIB_PCAP}"
 else

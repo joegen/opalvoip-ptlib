@@ -2623,8 +2623,6 @@ MY_OUTPUT_SUMMARY(
    [], [],
    [                     DNS Resolver], PTLIB_DNS_RESOLVER,
    [                             IPv6], PTLIB_IPV6,
-   [                     DNS Resolver], PTLIB_DNS_RESOLVER,
-   [                             IPv6], PTLIB_IPV6,
    [            Packet Capture (PCAP)], PTLIB_PCAP,
    [               Expat (XML parser)], PTLIB_EXPAT,
    [                          OpenSSL], PTLIB_OPENSSL,
