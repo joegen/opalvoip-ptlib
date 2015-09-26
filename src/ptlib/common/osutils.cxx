@@ -1147,7 +1147,7 @@ PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : PTimeInterval(millisecs, seconds, minutes, hours, days)
   , m_handle(s_handleGenerator.Create())
 {
-  InternalStart(true, *this);
+  InternalStart(true, PTimeInterval::InternalGet());
 }
 
 
@@ -1155,7 +1155,7 @@ PTimer::PTimer(const PTimeInterval & time)
   : PTimeInterval(time)
   , m_handle(s_handleGenerator.Create())
 {
-  InternalStart(true, *this);
+  InternalStart(true, PTimeInterval::InternalGet());
 }
 
 
@@ -1163,7 +1163,7 @@ PTimer::PTimer(const PTimer & timer)
   : PTimeInterval(timer.GetResetTime())
   , m_handle(s_handleGenerator.Create())
 {
-  InternalStart(true, *this);
+  InternalStart(true, PTimeInterval::InternalGet());
 }
 
 
@@ -1215,19 +1215,19 @@ PBoolean PTimer::IsRunning() const
 }
 
 
-void PTimer::InternalSet(int64_t milliseconds)
+void PTimer::InternalSet(int64_t nanoseconds)
 {
-  InternalStart(m_oneshot, PTimeInterval(milliseconds));
+  InternalStart(m_oneshot, nanoseconds);
 }
 
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  InternalStart(false, time);
+  InternalStart(false, time.GetNanoSeconds());
 }
 
 
-void PTimer::InternalStart(bool once, PTimeInterval resetTime)
+void PTimer::InternalStart(bool once, int64_t resetTime)
 {
   List * list = TimerList();
   if (PAssertNULL(list) == NULL)
@@ -1239,7 +1239,7 @@ void PTimer::InternalStart(bool once, PTimeInterval resetTime)
      guarantees that system threads can't access the timer while it's stopped. */
 
   m_oneshot = once;
-  PTimeInterval::operator=(resetTime);
+  PTimeInterval::InternalSet(resetTime);
 
   if (resetTime > 0) {
     m_absoluteTime = Tick() + resetTime;
@@ -1276,7 +1276,7 @@ void PTimer::Stop(bool wait)
 
 void PTimer::Reset()
 {
-  InternalStart(m_oneshot, *this);
+  InternalStart(m_oneshot, PTimeInterval::InternalGet());
 }
 
 
