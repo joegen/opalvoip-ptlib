@@ -269,9 +269,9 @@ function create_tag () {
     if [ $version_file_changed ]; then
       # Add or remove a space to force check in
       if grep --quiet "revision.h " "$REVISION_FILE" ; then
-        sed --in-place "s/revision.h /revision.h/" "$REVISION_FILE"
+        sed -i ''  "s/revision.h /revision.h/" "$REVISION_FILE"
       else
-        sed --in-place "s/revision.h/revision.h /" "$REVISION_FILE"
+        sed -i '' "s/revision.h/revision.h /" "$REVISION_FILE"
       fi
       msg="Update release version number to $release_verstr"
       if [ -n "$debug_tagging" ]; then
@@ -424,7 +424,7 @@ function create_docs () {
     echo Creating document archive $DOC_ARCHIVE_ZIP
     ( cd ${base} ; $ZIP -r ../$DOC_ARCHIVE_ZIP html ) > /dev/null
   else
-    echo Documents not created for $base
+    echo "Documents not created for $base, check docs.log for reason."
   fi
 }
 
@@ -442,12 +442,12 @@ function upload_to_sourceforge () {
   if [ -z "$files" ]; then
     echo "Cannot find any of ${SOURCE_FORGE_FILES[*]}"
   else
-    saved_dir="source_forge_dir"
+    saved_dir="./source_forge_dir"
     if [ -e "${saved_dir}" ]; then
       upload_dir=`cat ${saved_dir}`
-      read -p "Source Forge sub-directory [${upload_dir}]: "
+      read -rep "Source Forge sub-directory [${upload_dir}]: "
     else
-      read -p "Source Forge sub-directory: "
+      read -rep "Source Forge sub-directory: "
     fi
     if [ -n "${REPLY}" ]; then
       upload_dir="${REPLY}"
@@ -455,8 +455,10 @@ function upload_to_sourceforge () {
     if [ -z "${upload_dir}" ]; then
       echo Not uploading.
     else
-      echo "Uploading files to Source Forge directory ${upload_dir}"
-      rsync -avP -e ssh $files "${SOURCEFORGE_USERNAME},opalvoip@frs.sourceforge.net:/home/frs/project/o/op/opalvoip/${upload_dir}"
+      echo "${upload_dir}" > "${saved_dir}"
+      upload_path=${SOURCEFORGE_USERNAME},opalvoip@frs.sf.net:/home/frs/project/o/op/opalvoip/`echo ${upload_dir} | sed 's/ /\\\\ /g'`
+      echo "Uploading files to Source Forge directory \"${upload_path}\""
+      rsync -avP -e ssh $files "${upload_path}"
     fi
   fi
 }
