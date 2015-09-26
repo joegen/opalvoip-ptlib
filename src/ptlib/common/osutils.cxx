@@ -2840,12 +2840,14 @@ void PSimpleThread::Main()
 
 bool PTimedMutex::EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
 
+#if PTRACING
 static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool walkStack)
 {
   strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << " name=\"" << PThread::GetThreadName(tid) << '"';
   if (walkStack)
     PTrace::WalkStack(strm, tid);
 }
+#endif
 
 
 static unsigned InitExcessiveLockWaitTime()
