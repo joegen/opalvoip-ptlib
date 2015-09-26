@@ -383,7 +383,7 @@ class PTimer : public PTimeInterval
   private:
     virtual int64_t InternalGet() const;
     virtual void InternalSet(int64_t t);
-    void InternalStart(bool once, PTimeInterval resetTime); // Note, not "const PTimeInterval &" to avoid mutex issues
+    void InternalStart(bool once, int64_t resetTime);
 
     // Member variables
     PNotifier            m_callback;     // Callback function for expired timers.
