@@ -1892,7 +1892,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
   if (m_verticalFlip) {
     scanLinePtrRGB += (m_dstFrameHeight - 2) * scanLineSizeRGB;
-    scanLineSizeRGB = -scanLineSizeRGB*3;
+    scanLineSizeRGB = -scanLineSizeRGB;
     dstPixpos[0] = dstPixpos[2];
     dstPixpos[1] = dstPixpos[3];
     dstPixpos[2] = 0;
@@ -1917,6 +1917,8 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     rgbPtr[blueOffset]  = CLAMP(bvalue);
 
   if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
+    scanLineSizeRGB *= 3;
+
     for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
       for (unsigned x = 0; x < m_srcFrameWidth; x += 2) {
         YUV420PtoRGB_PIXEL_UV(scanLinePtrU, scanLinePtrV);
