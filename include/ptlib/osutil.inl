@@ -249,7 +249,7 @@ PINLINE PSimpleTimer::operator bool() const
 // PTimer
 
 PINLINE PTimeInterval PTimer::GetResetTime() const
-  { return *this; }
+  { return PTimeInterval::NanoSeconds(PTimeInterval::InternalGet()); }
 
 PINLINE const PNotifier & PTimer::GetNotifier() const
   { return m_callback; }
