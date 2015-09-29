@@ -1195,6 +1195,9 @@ void PTimer::PrintOn(ostream & strm) const
 
 int64_t PTimer::InternalGet() const
 {
+  if (!m_running)
+      return PTimeInterval::InternalGet();
+
   PTimeInterval diff = m_absoluteTime - Tick();
   if (diff < 0)
     diff = 0;
@@ -1242,7 +1245,7 @@ void PTimer::InternalStart(bool once, int64_t resetTime)
   PTimeInterval::InternalSet(resetTime);
 
   if (resetTime > 0) {
-    m_absoluteTime = Tick() + resetTime;
+    m_absoluteTime = Tick() + GetResetTime();
     m_running = true;
     list->m_timersMutex.Wait();
     list->m_timers[m_handle] = this;
