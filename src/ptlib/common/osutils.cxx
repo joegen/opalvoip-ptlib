@@ -1195,6 +1195,9 @@ void PTimer::PrintOn(ostream & strm) const
 
 int64_t PTimer::InternalGet() const
 {
+  if (!m_running)
+      return PTimeInterval::InternalGet();
+
   PTimeInterval diff = m_absoluteTime - Tick();
   if (diff < 0)
     diff = 0;
@@ -1242,7 +1245,7 @@ void PTimer::InternalStart(bool once, int64_t resetTime)
   PTimeInterval::InternalSet(resetTime);
 
   if (resetTime > 0) {
-    m_absoluteTime = Tick() + resetTime;
+    m_absoluteTime = Tick() + GetResetTime();
     m_running = true;
     list->m_timersMutex.Wait();
     list->m_timers[m_handle] = this;
@@ -2191,6 +2194,34 @@ bool PProcess::SignalTimerChange()
 }
 
 
+void PProcess::HouseKeeping()
+{
+  PSimpleTimer cleanAutoDeleteThreads;
+  static PTimeInterval const CleanAutoDeleteThreadsTime(0, 10);
+
+  while (m_keepingHouse) {
+#if P_TIMERS
+    PTimeInterval delay = m_timerList->Process();
+    if (delay > CleanAutoDeleteThreadsTime)
+      delay = CleanAutoDeleteThreadsTime;
+
+    m_signalHouseKeeper.Wait(delay);
+#else
+    m_signalHouseKeeper.Wait(10000);
+#endif
+
+    if (cleanAutoDeleteThreads.HasExpired()) {
+      InternalCleanAutoDeleteThreads();
+      cleanAutoDeleteThreads = CleanAutoDeleteThreadsTime;
+    }
+
+#ifndef _WIN32
+    PXCheckSignals();
+#endif
+  }
+}
+
+
 void PProcess::PreShutdown()
 {
   PTRACE(4, "PTLib\tStarting process destruction.");
@@ -2899,12 +2930,12 @@ void PTimedMutex::CommonSignal()
 void PTimedMutex::PrintOn(ostream &strm) const
 {
   strm << this;
-  if (!m_name.IsEmpty()) {
+  if (m_fileOrName != NULL) {
     strm << " (";
     if (m_line != 0)
-      strm << PFilePath(m_name).GetFileName() << ':' << m_line;
+      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
     else
-      strm << m_name;
+      strm << m_fileOrName;
     strm << ')';
   }
 }
@@ -3060,7 +3091,7 @@ PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
   , m_readerCount(0)
   , m_writerSemaphore(1, 1)
   , m_writerCount(0)
-  , m_name(name)
+  , m_fileOrName(name)
   , m_line(line)
 {
   PTRACE(5, "PTLib\tCreated read/write mutex " << *this);
@@ -3319,12 +3350,12 @@ void PReadWriteMutex::EndWrite()
 void PReadWriteMutex::PrintOn(ostream & strm) const
 {
   strm << this;
-  if (!m_name.IsEmpty()) {
+  if (m_fileOrName != NULL) {
     strm << " (";
     if (m_line != 0)
-      strm << PFilePath(m_name).GetFileName() << ':' << m_line;
+      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
     else
-      strm << m_name;
+      strm << m_fileOrName;
     strm << ')';
   }
 }

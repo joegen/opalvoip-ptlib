@@ -161,26 +161,6 @@ static pthread_mutex_t MutexInitialiser = PTHREAD_MUTEX_INITIALIZER;
 #define new PNEW
 
 
-void PProcess::HouseKeeping()
-{
-  while (m_keepingHouse) {
-#if P_TIMERS
-    PTimeInterval delay = m_timerList->Process();
-    if (delay > 10000)
-      delay = 10000;
-
-    m_signalHouseKeeper.Wait(delay);
-#else
-    m_signalHouseKeeper.Wait(10000);
-#endif
-
-    InternalCleanAutoDeleteThreads();
-
-    PXCheckSignals();
-  }
-}
-
-
 void PProcess::Construct()
 {
   CommonConstruct();
@@ -1223,14 +1203,14 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 
 PTimedMutex::PTimedMutex(const char * name, unsigned line)
-  : m_name(name)
+  : m_fileOrName(name)
   , m_line(line)
 {
   Construct();
 }
 
 PTimedMutex::PTimedMutex(const PTimedMutex & other)
-  : m_name(other.m_name)
+  : m_fileOrName(other.m_fileOrName)
   , m_line(other.m_line)
 {
   Construct();

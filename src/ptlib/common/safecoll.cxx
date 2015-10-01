@@ -119,8 +119,8 @@ PBoolean PSafeObject::LockReadOnly() const
     return false;
   }
 
-  if (m_safeInUse->m_name.IsEmpty())
-      m_safeInUse->m_name = typeid(*this).name();
+  if (m_safeInUse->m_fileOrName == NULL)
+      m_safeInUse->m_fileOrName = typeid(*this).name();
 
   m_safetyMutex.Signal();
 
@@ -148,8 +148,8 @@ PBoolean PSafeObject::LockReadWrite()
     return false;
   }
 
-  if (m_safeInUse->m_name.IsEmpty())
-      m_safeInUse->m_name = typeid(*this).name();
+  if (m_safeInUse->m_fileOrName == NULL)
+      m_safeInUse->m_fileOrName = typeid(*this).name();
 
   m_safetyMutex.Signal();
 
