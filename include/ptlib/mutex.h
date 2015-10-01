@@ -72,7 +72,7 @@ class PTimedMutex : public PSync
 
        The name/line parameters are used for deadlock detection debugging.
      */
-    PTimedMutex(
+    explicit PTimedMutex(
         const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
         unsigned line = 0          ///< Line number, if non zero, name is assumed to be a filename
     );
@@ -120,7 +120,7 @@ class PTimedMutex : public PSync
     PUniqueThreadIdentifier m_lastUniqueId;
     atomic<uint32_t>        m_lockCount;
     bool                    m_excessiveLockTime;
-    PString                 m_name;
+    const char *            m_fileOrName;
     unsigned                m_line;
 
     void ExcessiveLockWait();
@@ -138,7 +138,7 @@ typedef PTimedMutex PMutex;
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
 #define PDECLARE_MUTEX(var) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_MUTEX2(var, name) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(name) { } } var
+#define PDECLARE_MUTEX2(var, name) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name) { } } var
 
 
 /** This class implements critical section mutexes using the most efficient

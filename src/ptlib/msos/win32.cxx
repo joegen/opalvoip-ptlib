@@ -1194,75 +1194,6 @@ void PThread::Yield()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PProcess::TimerThread
-
-void PProcess::HouseKeeping()
-{
-  while (m_keepingHouse) {
-
-    // collect a list of thread handles to check, and clean up 
-    // handles for threads that disappeared without telling us
-    m_threadMutex.Wait();
-    HANDLE handles[MAXIMUM_WAIT_OBJECTS];
-    DWORD numHandles = 1;
-    handles[0] = m_signalHouseKeeper.GetHandle();
-    for (ThreadList::iterator thread = m_autoDeleteThreads.begin(); thread != m_autoDeleteThreads.end(); ++thread) {
-      if (thread->IsTerminated())
-        continue;
-
-      handles[numHandles] = thread->GetHandle();
-
-      // make sure we don't put invalid handles into the list
-#ifndef _WIN32_WCE
-      DWORD dwFlags;
-      if (GetHandleInformation(handles[numHandles], &dwFlags) == 0) {
-        PTRACE(2, "PTLib\tRefused to put invalid handle into wait list");
-      }
-      else
-#endif
-      // don't put the handle for the current process in the list
-      if (handles[numHandles] != GetHandle()) {
-        numHandles++;
-        if (numHandles >= MAXIMUM_WAIT_OBJECTS)
-          break;
-      }
-    }
-    m_threadMutex.Signal();
-
-    PTimeInterval nextTimer = m_timerList->Process();
-    DWORD delay;
-    if (nextTimer == PMaxTimeInterval)
-      delay = INFINITE;
-    else if (nextTimer > 1000)
-      delay = 1000;
-    else
-      delay = nextTimer.GetInterval();
-
-    DWORD result;
-    int retries = 100;
-
-    while ((result = WaitForMultipleObjects(numHandles, handles, false, delay)) == WAIT_FAILED) {
-
-      // if we get an invalid handle error, than assume this is because a thread ended between
-      // creating the handle list and testing it. So, cleanup the list before calling 
-      // WaitForMultipleObjects again
-      if (::GetLastError() == ERROR_INVALID_HANDLE)
-        break;
-
-      // sometimes WaitForMultipleObjects fails. No idea why, so allow some retries
-      else {
-        retries--;
-        if (retries <= 0)
-          break;
-      }
-    }
-
-    InternalCleanAutoDeleteThreads();
-  }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
 PProcess::~PProcess()
@@ -1805,7 +1736,7 @@ PTimedMutex::PTimedMutex(const char * name, unsigned line)
   , m_lastUniqueId(0)
   , m_lockCount(0)
   , m_excessiveLockTime(false)
-  , m_name(name)
+  , m_fileOrName(name)
   , m_line(line)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
@@ -1818,7 +1749,7 @@ PTimedMutex::PTimedMutex(const PTimedMutex & other)
   , m_lastUniqueId(0)
   , m_lockCount(0)
   , m_excessiveLockTime(false)
-  , m_name(other.m_name)
+  , m_fileOrName(other.m_fileOrName)
   , m_line(other.m_line)
   , m_handle(::CreateMutex(NULL, FALSE, NULL))
 {
