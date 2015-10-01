@@ -975,11 +975,6 @@ P_fd_set & P_fd_set::operator-=(intptr_t fd)
 #warning No thread support, practically nothing will work!
 
 
-void PProcess::HouseKeeping()
-{
-}
-
-
 void PProcess::Construct()
 {
   CommonConstruct();
