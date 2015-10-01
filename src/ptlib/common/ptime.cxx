@@ -85,7 +85,7 @@ void PTimeInterval::ReadFrom(istream &strm)
   long min = 0;
   double sec;
   strm >> sec;
-  while (strm.peek() == ':') {
+  while (strm.good() && strm.peek() == ':') {
     day = hour;
     hour = min;
     min = (long)sec;
