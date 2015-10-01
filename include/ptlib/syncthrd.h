@@ -256,7 +256,7 @@ class PReadWriteMutex : public PObject
   public:
   /**@name Construction */
   //@{
-    PReadWriteMutex(
+    explicit PReadWriteMutex(
         const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
         unsigned line = 0          ///< Line number, if non zero, name is assumed to be a filename
     );
@@ -343,15 +343,15 @@ class PReadWriteMutex : public PObject
     void InternalEndRead(Nest & nest);
     void InternalWait(Nest & nest, PSync & sync) const;
 
-    PString  m_name;
-    unsigned m_line;
+    const char * m_fileOrName;
+    unsigned     m_line;
 
   friend class PSafeObject;
 };
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
 #define PDECLARE_READ_WRITE_MUTEX(var) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_READ_WRITE_MUTEX2(var, name) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(name) { } } var
+#define PDECLARE_READ_WRITE_MUTEX2(var, name) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#name) { } } var
 
 
 /**This class starts a read operation for the PReadWriteMutex on construction

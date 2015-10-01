@@ -1223,14 +1223,14 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 
 PTimedMutex::PTimedMutex(const char * name, unsigned line)
-  : m_name(name)
+  : m_fileOrName(name)
   , m_line(line)
 {
   Construct();
 }
 
 PTimedMutex::PTimedMutex(const PTimedMutex & other)
-  : m_name(other.m_name)
+  : m_fileOrName(other.m_fileOrName)
   , m_line(other.m_line)
 {
   Construct();

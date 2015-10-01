@@ -2902,12 +2902,12 @@ void PTimedMutex::CommonSignal()
 void PTimedMutex::PrintOn(ostream &strm) const
 {
   strm << this;
-  if (!m_name.IsEmpty()) {
+  if (m_fileOrName != NULL) {
     strm << " (";
     if (m_line != 0)
-      strm << PFilePath(m_name).GetFileName() << ':' << m_line;
+      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
     else
-      strm << m_name;
+      strm << m_fileOrName;
     strm << ')';
   }
 }
@@ -3063,7 +3063,7 @@ PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
   , m_readerCount(0)
   , m_writerSemaphore(1, 1)
   , m_writerCount(0)
-  , m_name(name)
+  , m_fileOrName(name)
   , m_line(line)
 {
   PTRACE(5, "PTLib\tCreated read/write mutex " << *this);
@@ -3322,12 +3322,12 @@ void PReadWriteMutex::EndWrite()
 void PReadWriteMutex::PrintOn(ostream & strm) const
 {
   strm << this;
-  if (!m_name.IsEmpty()) {
+  if (m_fileOrName != NULL) {
     strm << " (";
     if (m_line != 0)
-      strm << PFilePath(m_name).GetFileName() << ':' << m_line;
+      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
     else
-      strm << m_name;
+      strm << m_fileOrName;
     strm << ')';
   }
 }
