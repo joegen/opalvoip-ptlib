@@ -1884,11 +1884,11 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   }
 #endif
 
-  unsigned srcPixpos[4] = { 0, 1, m_srcFrameWidth, m_srcFrameWidth + 1 };
-  unsigned dstPixpos[4] = { 0, rgbIncrement, m_dstFrameWidth*rgbIncrement, (m_dstFrameWidth+1)*rgbIncrement };
-
   BYTE * scanLinePtrRGB = dstFrameBuffer;
-  int scanLineSizeRGB = rgbIncrement*m_dstFrameWidth;
+  int scanLineSizeRGB = (rgbIncrement*m_dstFrameWidth+3)&~3;
+
+  unsigned srcPixpos[4] = { 0, 1, m_srcFrameWidth, m_srcFrameWidth + 1 };
+  unsigned dstPixpos[4] = { 0, rgbIncrement, scanLineSizeRGB, scanLineSizeRGB+rgbIncrement };
 
   if (m_verticalFlip) {
     scanLinePtrRGB += (m_dstFrameHeight - 2) * scanLineSizeRGB;
@@ -1898,6 +1898,8 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     dstPixpos[2] = 0;
     dstPixpos[3] = rgbIncrement;
   }
+
+  scanLineSizeRGB *= 2;
 
   static const unsigned greenOffset = 1;
 
@@ -1917,19 +1919,17 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     rgbPtr[blueOffset]  = CLAMP(bvalue);
 
   if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
-    if (m_verticalFlip)
-      scanLineSizeRGB *= 3;
-
     for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
+      BYTE * pixelRGB = scanLinePtrRGB;
       for (unsigned x = 0; x < m_srcFrameWidth; x += 2) {
         YUV420PtoRGB_PIXEL_UV(scanLinePtrU, scanLinePtrV);
         for (unsigned p = 0; p < 4; p++) {
-          BYTE * rgbPtr = scanLinePtrRGB + dstPixpos[p];
+          BYTE * rgbPtr = pixelRGB + dstPixpos[p];
           YUV420PtoRGB_PIXEL_RGB(scanLinePtrY);
           if (rgbIncrement == 4)
             rgbPtr[3] = 0;
         }
-        scanLinePtrRGB += rgbIncrement*2;
+        pixelRGB += rgbIncrement*2;
         scanLinePtrY += 2;
         scanLinePtrU++;
         scanLinePtrV++;
@@ -1941,7 +1941,6 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   else {
     unsigned scanLineSizeY = m_srcFrameWidth*2; // Actually two scan lines
     unsigned scanLineSizeUV = m_srcFrameWidth/2;
-    scanLineSizeRGB *= 2;
 
     PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 2);
     do {
