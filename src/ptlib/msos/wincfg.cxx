@@ -40,9 +40,10 @@
 #define new PNEW
 
 
-const char LocalMachineStr[] = "HKEY_LOCAL_MACHINE\\";
-const char CurrentUserStr[]  = "HKEY_CURRENT_USER\\";
-const char ClassesRootStr[]  = "HKEY_CLASSES_ROOT\\";
+static PConstString const LocalMachineStr("HKEY_LOCAL_MACHINE\\");
+static PConstString const LocalMach64Str ("HKEY_LOCAL_MACH64\\");
+static PConstString const CurrentUserStr ("HKEY_CURRENT_USER\\");
+static PConstString const ClassesRootStr ("HKEY_CLASSES_ROOT\\");
 
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
@@ -207,16 +208,21 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 
   PVarString subkey;
   HKEY basekey;
-  if (subkeyname.Find(LocalMachineStr) == 0) {
-    subkey = subkeyname.Mid(19);
+  if (subkeyname.NumCompare(LocalMachineStr) == PObject::EqualTo) {
+    subkey = subkeyname.Mid(LocalMachineStr.GetLength());
     basekey = HKEY_LOCAL_MACHINE;
   }
-  else if (subkeyname.Find(CurrentUserStr) == 0) {
-    subkey = subkeyname.Mid(18);
+  else if (subkeyname.NumCompare(LocalMach64Str) == PObject::EqualTo) {
+    subkey = subkeyname.Mid(LocalMach64Str.GetLength());
+    basekey = HKEY_LOCAL_MACHINE;
+    access |= KEY_WOW64_64KEY;
+  }
+  else if (subkeyname.NumCompare(CurrentUserStr) == PObject::EqualTo) {
+    subkey = subkeyname.Mid(CurrentUserStr.GetLength());
     basekey = HKEY_CURRENT_USER;
   }
-  else if (subkeyname.Find(ClassesRootStr) == 0) {
-    subkey = subkeyname.Mid(18);
+  else if (subkeyname.NumCompare(ClassesRootStr) == PObject::EqualTo) {
+    subkey = subkeyname.Mid(ClassesRootStr.GetLength());
     basekey = HKEY_CLASSES_ROOT;
   }
   else {
@@ -352,7 +358,8 @@ BOOL RegistryKey::QueryValue(const PString & valueName, PString & str)
   PVarString varValueName = valueName;
 
   DWORD type, size, num;
-  if (RegQueryValueEx(key, varValueName, NULL, &type, NULL, &size) != ERROR_SUCCESS)
+  DWORD error = RegQueryValueEx(key, varValueName, NULL, &type, NULL, &size);
+  if (error != ERROR_SUCCESS)
     return false;
 
   if (type == REG_DWORD) {
@@ -450,10 +457,17 @@ BOOL RegistryKey::SetValue(const PString & value, DWORD num)
 
 #if P_CONFIG_FILE
 
-static PBoolean IsRegistryPath(const PString & path)
+static PBoolean IsRegistryPath(PString & path)
 {
-  return (path.Find(LocalMachineStr) == 0 && path != LocalMachineStr) ||
-         (path.Find(CurrentUserStr) == 0 && path != CurrentUserStr);
+  if (path.NumCompare(LocalMachineStr) != PObject::EqualTo &&
+      path.NumCompare(LocalMach64Str ) != PObject::EqualTo &&
+      path.NumCompare(CurrentUserStr ) != PObject::EqualTo)
+    return false;
+
+  if (path[path.GetLength() - 1] != '\\')
+    path += '\\';
+
+  return true;
 }
 
 
@@ -494,9 +508,8 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
 
   switch (src) {
     case System :
-      if (IsRegistryPath(appname))
-        location = appname;
-      else {
+      location = appname;
+      if (!IsRegistryPath(location)) {
         TCHAR dir[_MAX_PATH];
         GetWindowsDirectory(dir, sizeof(dir));
         Construct(PDirectory(PString(dir))+"WIN.INI");
