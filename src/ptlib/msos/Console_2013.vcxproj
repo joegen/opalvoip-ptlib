@@ -1096,6 +1096,7 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../lib/$(Platform)/" --no-se
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Android'">$(ProjectDir)..\..\..\configure.ac;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="..\..\..\include\ptlib\contain.inl" />
+    <None Include="..\..\..\include\ptlib\msos\ptlib.natvis" />
     <None Include="..\..\..\include\ptlib\osutil.inl" />
     <None Include="..\..\..\include\ptlib\msos\ptlib\ptlib.inl" />
     <None Include="..\..\..\configure.ac" />
