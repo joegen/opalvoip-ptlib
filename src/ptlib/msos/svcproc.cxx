@@ -1158,15 +1158,15 @@ class NT_ServiceManager
     NT_ServiceManager()  { schSCManager = schService = NULL; error = 0; }
     ~NT_ServiceManager();
 
-    virtual bool Create(PServiceProcess * svc);
-    virtual bool Remove(PServiceProcess * svc);
-    virtual bool Start(PServiceProcess * svc);
-    virtual bool Stop(PServiceProcess * svc)   { return Control(svc, SERVICE_CONTROL_STOP); }
-    virtual bool Pause(PServiceProcess * svc)  { return Control(svc, SERVICE_CONTROL_PAUSE); }
-    virtual bool Resume(PServiceProcess * svc) { return Control(svc, SERVICE_CONTROL_CONTINUE); }
-    virtual bool SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action);
-    virtual bool IsInstalled(PServiceProcess * svc);
-    virtual bool IsRunning(PServiceProcess * svc);
+    bool Create(PServiceProcess * svc);
+    bool Remove(PServiceProcess * svc);
+    bool Start(PServiceProcess * svc);
+    bool Stop(PServiceProcess * svc)   { return Control(svc, SERVICE_CONTROL_STOP); }
+    bool Pause(PServiceProcess * svc)  { return Control(svc, SERVICE_CONTROL_PAUSE); }
+    bool Resume(PServiceProcess * svc) { return Control(svc, SERVICE_CONTROL_CONTINUE); }
+    bool SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action);
+    bool IsInstalled(PServiceProcess * svc);
+    bool IsRunning(PServiceProcess * svc);
 
     DWORD GetError() const { return error; }
 
