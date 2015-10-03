@@ -981,6 +981,7 @@
     <None Include="..\..\..\include\ptlib\unix\ptlib\ptlib.inl">
       <Filter>Header Files\Android</Filter>
     </None>
+    <None Include="..\..\..\include\ptlib\msos\ptlib.natvis" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
