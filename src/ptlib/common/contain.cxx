@@ -141,6 +141,7 @@ void PContainer::Destruct()
 void PContainer::DestroyReference()
 {
   delete reference;
+  reference = NULL;
 }
 
 
