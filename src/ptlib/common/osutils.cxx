@@ -2194,6 +2194,34 @@ bool PProcess::SignalTimerChange()
 }
 
 
+void PProcess::HouseKeeping()
+{
+  PSimpleTimer cleanAutoDeleteThreads;
+  static PTimeInterval const CleanAutoDeleteThreadsTime(0, 10);
+
+  while (m_keepingHouse) {
+#if P_TIMERS
+    PTimeInterval delay = m_timerList->Process();
+    if (delay > CleanAutoDeleteThreadsTime)
+      delay = CleanAutoDeleteThreadsTime;
+
+    m_signalHouseKeeper.Wait(delay);
+#else
+    m_signalHouseKeeper.Wait(10000);
+#endif
+
+    if (cleanAutoDeleteThreads.HasExpired()) {
+      InternalCleanAutoDeleteThreads();
+      cleanAutoDeleteThreads = CleanAutoDeleteThreadsTime;
+    }
+
+#ifndef _WIN32
+    PXCheckSignals();
+#endif
+  }
+}
+
+
 void PProcess::PreShutdown()
 {
   PTRACE(4, "PTLib\tStarting process destruction.");
