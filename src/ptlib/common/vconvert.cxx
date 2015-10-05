@@ -1888,7 +1888,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   int scanLineSizeRGB = (int)((rgbIncrement*m_dstFrameWidth+3)&~3);
 
   unsigned srcPixpos[4] = { 0, 1, m_srcFrameWidth, m_srcFrameWidth + 1 };
-  unsigned dstPixpos[4] = { 0, rgbIncrement, scanLineSizeRGB, scanLineSizeRGB+rgbIncrement };
+  unsigned dstPixpos[4] = { 0, rgbIncrement, (unsigned)scanLineSizeRGB, (unsigned)scanLineSizeRGB+rgbIncrement };
 
   if (m_verticalFlip) {
     scanLinePtrRGB += (m_dstFrameHeight - 2) * scanLineSizeRGB;
