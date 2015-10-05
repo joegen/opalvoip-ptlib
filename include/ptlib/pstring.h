@@ -2129,7 +2129,7 @@ class PConstantString : public ParentString
 
     virtual PBoolean SetSize(PINDEX s) { return s <= this->m_length+1; }
     virtual void AssignContents(const PContainer &) { PAssertAlways(PInvalidParameter); }
-    virtual void DestroyReference() { reference = NULL; }
+    virtual void DestroyReference() { this->reference = NULL; }
 
   private:
     void operator=(const PConstantString &) { }
