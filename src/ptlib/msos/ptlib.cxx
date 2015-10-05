@@ -291,7 +291,9 @@ bool PDirectory::InternalEntryCheck()
     return false;
 
   PFileInfo info;
-  PAssert(PFile::GetInfo(*this+name, info), POperatingSystemError);
+  if (!PFile::GetInfo(*this + name, info))
+    return false; // Probably means file disappeared between dir open and here
+
   return info.type & m_scanMask;
 }
 
