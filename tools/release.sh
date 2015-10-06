@@ -19,9 +19,12 @@ fi
 #
 
 SVN="svn"
-RSYNC="rsync -e ssh -avz"
+RSYNC="rsync -avP -e ssh"
 SVN2CL="svn2cl"
-TAR=tar
+TAR=`which gnutar`
+if [ -z "$TAR" ]; then
+  TAR=tar
+fi
 ZIP=zip
 
 SNAPSHOTS=./snapshots
@@ -29,6 +32,7 @@ WEB_HOST=files.opalvoip.org
 WEB_HTML_DIR="/mnt/www/files.opalvoip.org/html"
 WEB_DOCS_DIR=${WEB_HTML_DIR}/docs
 WEB_CHANGELOG_DIR=${WEB_HTML_DIR}/docs/ChangeLogs
+SOURCEFORGE_PATH=",opalvoip@frs.sf.net:/home/frs/project/o/op/opalvoip/"
 
 BINARY_EXT=( exe dll lib wav png gif ico sw mdb dsp dsw vcp vcw wpj wsp )
 
@@ -456,9 +460,9 @@ function upload_to_sourceforge () {
       echo Not uploading.
     else
       echo "${upload_dir}" > "${saved_dir}"
-      upload_path=${SOURCEFORGE_USERNAME},opalvoip@frs.sf.net:/home/frs/project/o/op/opalvoip/`echo ${upload_dir} | sed 's/ /\\\\ /g'`
+      upload_path=${SOURCEFORGE_USERNAME}${SOURCEFORGE_PATH}/`echo ${upload_dir} | sed 's/ /\\\\ /g'`
       echo "Uploading files to Source Forge directory \"${upload_path}\""
-      rsync -avP -e ssh $files "${upload_path}"
+      ${RSYNC} $files "${upload_path}"
     fi
   fi
 }
