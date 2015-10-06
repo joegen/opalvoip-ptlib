@@ -81,6 +81,7 @@ DEFAULT_VFW_CAPTURE=no
 DEFAULT_SAMPLES=no
 DEFAULT_PLUGINS=yes
 DEFAULT_EXCEPTIONS=no
+MEMORY_CHECKER=None
 
 
 dnl ########################################################################
@@ -303,6 +304,41 @@ if test "${enable_deprecated}" = "no" ; then
       [],
       [],
       [CPPFLAGS="$CPPFLAGS -Wno-deprecated-declarations"]
+   )
+fi
+
+
+AC_ARG_ENABLE(sanitize-address, AS_HELP_STRING([--enable-sanitize-address],[Enable GCC/clang Address Sanitizer]))
+
+if test "${enable_sanitize_address}" = "yes" ; then
+   MY_COMPILE_IFELSE(
+      [compiler -fsanitize=address],
+      [-fsanitize=address],
+      [],
+      [],
+      [
+         CFLAGS="-fsanitize=address $CFLAGS"
+         CXXFLAGS="-fsanitize=address $CXXFLAGS"
+         LDFLAGS="-fsanitize=address $LDFLAGS"
+         MEMORY_CHECKER="GCC AddressSanitizer"
+      ]
+   )
+fi
+
+
+AC_ARG_ENABLE(sanitize-thread, AS_HELP_STRING([--enable-sanitize-thread],[Enable GCC/clang Thread Sanitizer]))
+
+if test "${enable_sanitize_thread}" = "yes" ; then
+   MY_COMPILE_IFELSE(
+      [compiler -fsanitize=thread],
+      [-fsanitize=thread],
+      [],
+      [],
+      [
+         CFLAGS="-fsanitize=thread $CFLAGS"
+         CXXFLAGS="-fsanitize=thread $CXXFLAGS"
+         LDFLAGS="-fsanitize=thread $LDFLAGS"
+      ]
    )
 fi
 
@@ -1119,6 +1155,7 @@ AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing 
 AC_MSG_NOTICE(Memory checking... $enable_memcheck)
 if test "$enable_memcheck" = "yes" ; then
    AC_DEFINE(PMEMORY_CHECK, 1)
+   MEMORY_CHECKER="Internal"
 fi
 
 
@@ -2619,7 +2656,7 @@ dnl ########################################################################
 dnl Summary
 dnl ########################################################################
 MY_OUTPUT_SUMMARY(
-   [         Internal memory checking], enable_memcheck,
+   [                  Memory checking], MEMORY_CHECKER,
    [], [],
    [                     DNS Resolver], PTLIB_DNS_RESOLVER,
    [                             IPv6], PTLIB_IPV6,
