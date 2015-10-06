@@ -2240,7 +2240,9 @@ PString pvsprintf(const char * fmt, va_list arg)
 
 PBoolean PString::MakeMinimumSize(PINDEX newLength)
 {
-  GetPointerAndSetLength(newLength > 0 ? newLength : theArray != NULL ? strlen(theArray) : 0);
+  if (newLength == 0 && theArray != NULL)
+    newLength = strlen(theArray);
+  GetPointerAndSetLength(newLength);
   return SetSize(m_length+1);
 }
 
