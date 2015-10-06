@@ -1246,6 +1246,7 @@ void PTimedMutex::Construct()
 {
   m_lastLockerId = m_lockerId = PNullThreadIdentifier;
   m_lastUniqueId = 0;
+  m_lockCount = 0;
   m_excessiveLockTime = false;
   InitialiseRecursiveMutex(&m_mutex);
 }
@@ -1330,7 +1331,7 @@ void PTimedMutex::Wait()
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
   );
 
-  PAssert(m_lockerId == PNullThreadIdentifier && m_lockCount.IsZero(),
+  PAssert(m_lockerId == PNullThreadIdentifier && m_lockCount == 0,
           "PMutex acquired whilst locked by another thread");
 
   // Note this is protected by the mutex itself only the thread with
@@ -1400,7 +1401,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 #else
 
-  PAssert((lockerId == PNullThreadIdentifier) && m_lockCount.IsZero(),
+  PAssert((lockerId == PNullThreadIdentifier) && m_lockCount == 0,
           "PMutex acquired whilst locked by another thread");
 
   // Note this is protected by the mutex itself only the thread with
@@ -1431,7 +1432,7 @@ void PTimedMutex::Signal()
   // if lock was recursively acquired, then decrement the counter
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
-  if (!m_lockCount.IsZero()) {
+  if (m_lockCount > 0) {
     --m_lockCount;
     return;
   }

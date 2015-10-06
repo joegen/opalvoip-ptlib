@@ -2578,6 +2578,9 @@ PThread * PThread::Current()
 
 PString PThread::GetThreadName(PThreadIdentifier id)
 {
+  if (id == PNullThreadIdentifier)
+    return "(null)";
+
   if (PProcess::IsInitialised()) {
     PProcess & process = PProcess::Current();
     PWaitAndSignal mutex(process.m_threadMutex);
@@ -2586,18 +2589,25 @@ PString PThread::GetThreadName(PThreadIdentifier id)
       return it->second->GetThreadName();
   }
 
-  return psprintf(P_THREAD_ID_FMT, PThread::GetCurrentUniqueIdentifier());
+  return "Unknown thread, id=" + GetIdentifiersAsString(id, 0);
 }
 
 
 #ifdef P_UNIQUE_THREAD_ID_FMT
 PString PThread::GetIdentifiersAsString(PThreadIdentifier tid, PUniqueThreadIdentifier uid)
 {
+  if (tid == PNullThreadIdentifier)
+    return "(null)";
+  if (id == 0)
+    return psprintf(P_THREAD_ID_FMT, tid);
   return PString(PString::Printf, P_THREAD_ID_FMT " (" P_UNIQUE_THREAD_ID_FMT ")", tid, uid);
 }
 #else
 PString PThread::GetIdentifiersAsString(PThreadIdentifier tid, PUniqueThreadIdentifier)
 {
+  if (tid == PNullThreadIdentifier)
+    return "(null)";
+
   return psprintf(P_THREAD_ID_FMT, tid);
 }
 #endif
