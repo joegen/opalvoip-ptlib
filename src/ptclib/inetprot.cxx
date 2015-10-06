@@ -330,9 +330,7 @@ PBoolean PInternetProtocol::ReadLine(PString & line, PBoolean allowContinuation)
 
   SetReadTimeout(oldTimeout);
 
-  if (count < line.GetSize()-1)
-    line[count] = '\0';
-  line.MakeMinimumSize();
+  line.MakeMinimumSize(count);
 
   return gotEndOfLine;
 }
