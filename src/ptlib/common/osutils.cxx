@@ -2598,7 +2598,7 @@ PString PThread::GetIdentifiersAsString(PThreadIdentifier tid, PUniqueThreadIden
 {
   if (tid == PNullThreadIdentifier)
     return "(null)";
-  if (id == 0)
+  if (uid == 0)
     return psprintf(P_THREAD_ID_FMT, tid);
   return PString(PString::Printf, P_THREAD_ID_FMT " (" P_UNIQUE_THREAD_ID_FMT ")", tid, uid);
 }
