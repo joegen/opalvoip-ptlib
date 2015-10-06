@@ -118,7 +118,7 @@ class PTimedMutex : public PSync
     PThreadIdentifier       m_lockerId;
     PThreadIdentifier       m_lastLockerId;
     PUniqueThreadIdentifier m_lastUniqueId;
-    atomic<uint32_t>        m_lockCount;
+    unsigned                m_lockCount;
     bool                    m_excessiveLockTime;
     const char *            m_fileOrName;
     unsigned                m_line;
