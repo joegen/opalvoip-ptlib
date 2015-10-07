@@ -98,8 +98,25 @@ PStringArray PEthSocket::EnumInterfaces(bool detailed)
     for (pcap_if_t * dev = alldevs; dev != NULL; dev = dev->next) {
       PStringStream strm;
       strm << dev->name;
-      if (detailed)
+      if (detailed) {
         strm << '\t' << dev->description;
+#if _WIN32
+        static const char DevPrefix[] = "\\Device\\NPF_";
+        if (strncmp(dev->name, DevPrefix, sizeof(DevPrefix)-1) == 0) {
+          PConfig registry("HKEY_LOCAL_MACH64\\"
+                           "SYSTEM\\"
+                           "CurrentControlSet\\"
+                           "Control\\"
+                           "Network\\"
+                           "{4D36E972-E325-11CE-BFC1-08002BE10318}\\" +
+                           PConstString(dev->name+sizeof(DevPrefix)-1) + "\\"
+                           "Connection");
+          PString name = registry.GetString("Name");
+          if (!name.IsEmpty())
+            strm << '\t' << name;
+        }
+#endif
+      }
       interfaces += strm;
     }
     pcap_freealldevs(alldevs);
