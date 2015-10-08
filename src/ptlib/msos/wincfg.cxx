@@ -471,6 +471,29 @@ static PBoolean IsRegistryPath(PString & path)
 }
 
 
+static PString GetDefaultRegistryPath(const PString & manuf, const PString & appname)
+{
+  PStringStream regPath;
+
+  regPath << CurrentUserStr << "SOFTWARE\\";
+
+  if (!manuf)
+    regPath << manuf;
+
+  if (!manuf && !appname)
+    regPath << '\\';
+
+  if (!appname)
+    regPath << appname;
+  else if (manuf.IsEmpty())
+    regPath << "PTLib";
+
+  regPath << "\\CurrentVersion\\";
+
+  return regPath;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PString PProcess::GetConfigurationFile()
@@ -478,7 +501,7 @@ PString PProcess::GetConfigurationFile()
   // No paths set, use defaults
   if (configurationPaths.IsEmpty()) {
     configurationPaths.AppendString(executableFile.GetVolume() + executableFile.GetPath());
-    configurationPaths.AppendString(CurrentUserStr);
+    configurationPaths.AppendString(GetDefaultRegistryPath(GetManufacturer(), GetName()));
   }
 
   // See if explicit filename
@@ -521,27 +544,17 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
         location = PString();
       else {
         PProcess & proc = PProcess::Current();
-        PString cfgPath = proc.GetConfigurationFile();
-        if (IsRegistryPath(cfgPath))
-          location = cfgPath;
-        else if (!cfgPath) {
-          source = NumSources; // Make a file based config
-          location = cfgPath;
-        }
+        if (!manuf || !appname)
+          location = GetDefaultRegistryPath(manuf, appname);
         else {
-          location = "SOFTWARE\\";
-          if (!manuf)
-            location += manuf;
-          else if (!proc.GetManufacturer())
-            location += proc.GetManufacturer();
-          else
-            location += "PWLib";
-          location += PDIR_SEPARATOR;
-          if (appname.IsEmpty())
-            location += proc.GetName();
-          else
-            location += appname;
-          location += "\\CurrentVersion\\";
+          PString cfgPath = proc.GetConfigurationFile();
+          if (cfgPath.IsEmpty())
+            location = GetDefaultRegistryPath(manuf, appname);
+          else {
+            if (!IsRegistryPath(cfgPath))
+              source = NumSources; // Make a file based config
+            location = cfgPath;
+          }
         }
       }
       break;
