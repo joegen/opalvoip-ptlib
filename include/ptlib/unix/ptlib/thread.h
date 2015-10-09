@@ -51,6 +51,7 @@
 #ifndef P_HAS_SEMAPHORES
     void PXSetWaitingSemaphore(PSemaphore * sem);
 #endif
+    static bool PX_kill(PThreadIdentifier id, int sig);
 
   protected:
     void PX_StartThread();
