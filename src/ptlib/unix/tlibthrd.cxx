@@ -414,6 +414,22 @@ void PThread::PX_StartThread()
 }
 
 
+bool PThread::PX_kill(PThreadIdentifier id, int sig)
+{
+#if P_LINUX
+  if (!PProcess::IsInitialised())
+    return false;
+  PProcess & process = PProcess::Current();
+  PWaitAndSignal mutex(process.m_threadMutex);
+  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(id);
+  if (it == process.m_activeThreads.end())
+    return false;
+#endif
+
+  return pthread_kill(id, sig) == 0;
+}
+
+
 void PThread::PX_Suspended()
 {
   while (PX_suspendCount > 0) {
