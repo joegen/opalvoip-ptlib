@@ -29,7 +29,7 @@ void JSONTest::Main()
     else
       json.FromString(args.GetParameters().ToString());
     if (json.IsValid())
-      cout << "\n\n\nParsed JSON:\n" << json << endl;
+      cout << "\n\n\nParsed JSON:\n" << setw(2) << json << endl;
     else
       cout << "Could not parse JSON\n";
     return;
