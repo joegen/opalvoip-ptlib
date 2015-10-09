@@ -416,7 +416,7 @@ void PThread::PX_StartThread()
 
 bool PThread::PX_kill(PThreadIdentifier id, int sig)
 {
-#if P_LINUX
+#if defined(P_LINUX)
   if (!PProcess::IsInitialised())
     return false;
   PProcess & process = PProcess::Current();
