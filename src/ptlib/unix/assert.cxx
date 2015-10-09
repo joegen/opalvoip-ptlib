@@ -195,7 +195,10 @@
           m_id = id;
           m_addressCount = -1;
           m_addresses.resize(InternalMaxStackWalk+OtherThreadSkip);
-          pthread_kill(id, PProcess::WalkStackSignal);
+          if (!PThread::PX_kill(id, PProcess::WalkStackSignal)) {
+            strm << "\n    Thread id=" << id << " (0x" << hex << id << ") is no longer running";
+            return;
+          }
 
           int err = 0;
           struct timespec absTime;
