@@ -93,9 +93,10 @@ bool PJSON::FromString(const PString & str)
 }
 
 
-PString PJSON::AsString() const
+PString PJSON::AsString(std::streamsize indent) const
 {
   PStringStream strm;
+  strm.width(indent);
   PrintOn(strm);
   return strm;
 }
@@ -308,14 +309,30 @@ void PJSON::Object::ReadFrom(istream & strm)
 
 void PJSON::Object::PrintOn(ostream & strm) const
 {
+  std::streamsize indent = strm.width();
+
+  if (indent > 0)
+    strm << std::right << std::setw(indent + 1);
   strm << '{';
   for (const_iterator it = begin(); it != end(); ++it) {
     if (it != begin())
       strm << ',';
+    if (indent > 0)
+      strm << '\n' << std::setw(indent+2) << ' ';
     PrintString(strm, it->first);
-    strm << ':';
+    if (indent > 0) {
+      strm << " :";
+      if (it->second->IsType(e_Object) || it->second->IsType(e_Array))
+        strm << '\n' << std::setw(indent + 2);
+      else
+        strm << ' ';
+    }
+    else
+      strm << ':';
     it->second->PrintOn(strm);
   }
+  if (indent > 0 && !empty())
+    strm << '\n' << std::setw(indent+1);
   strm << '}';
 }
 
@@ -465,12 +482,26 @@ void PJSON::Array::ReadFrom(istream & strm)
 
 void PJSON::Array::PrintOn(ostream & strm) const
 {
+  std::streamsize indent = strm.width();
+
+  if (indent > 0)
+    strm << std::right << std::setw(indent + 1);
   strm << '[';
   for (const_iterator it = begin(); it != end(); ++it) {
+    const PJSON::Base & item = **it;
     if (it != begin())
       strm << ',';
-    (*it)->PrintOn(strm);
+    if (indent > 0) {
+      strm << '\n';
+      if (item.IsType(e_Object) || item.IsType(e_Array))
+        strm.width(indent + 2);
+      else
+        strm << std::setw(indent + 2) << ' ';
+    }
+    item.PrintOn(strm);
   }
+  if (indent > 0 && !empty())
+    strm << '\n' << std::setw(indent + 1);
   strm << ']';
 }
 
