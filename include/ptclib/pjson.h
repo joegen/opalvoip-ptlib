@@ -180,7 +180,7 @@ class PJSON : public PObject
       const PString & str
     );
 
-    PString AsString() const;
+    PString AsString(std::streamsize indent = 0) const;
 
     bool IsValid() const { return m_valid; }
 
