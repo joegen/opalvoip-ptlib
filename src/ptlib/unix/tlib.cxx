@@ -830,6 +830,9 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
     element = root->GetElement("system", "type", "max");
     if (element != NULL)
       usage.m_max = (size_t)element->GetAttribute("size").AsUnsigned64();
+    element = root->GetElement("total", "type", "rest");
+    if (element != NULL)
+      usage.m_blocks = (size_t)element->GetAttribute("count").AsUnsigned64();
   }
 #else // P_EXPAT
   // Find last </heap> in XML
