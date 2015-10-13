@@ -65,7 +65,8 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
       PHTTPServiceProcess::Params & params
     );
 
-    virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
+    virtual PChannel * CreateChannelForHTTP(PChannel * channel);
+    virtual void OnHTTPStarted(PHTTPServer & server);
 
     bool SetServerCertificate(
       const PFilePath & certFile,

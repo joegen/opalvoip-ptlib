@@ -45,27 +45,7 @@ class PConfigPage;
 
 /////////////////////////////////////////////////////////////////////
 
-class PHTTPServiceThread : public PThread
-{
-  PCLASSINFO(PHTTPServiceThread, PThread)
-  public:
-    PHTTPServiceThread(PINDEX stackSize,
-                       PHTTPServiceProcess & app);
-    ~PHTTPServiceThread();
-
-    void Main();
-    void Close();
-
-  protected:
-    PINDEX                myStackSize;
-    PHTTPServiceProcess & process;
-    PTCPSocket          * socket;
-};
-
-
-/////////////////////////////////////////////////////////////////////
-
-class PHTTPServiceProcess : public PServiceProcess
+class PHTTPServiceProcess : public PServiceProcess, public PHTTPListener
 {
   PCLASSINFO(PHTTPServiceProcess, PServiceProcess)
 
@@ -164,23 +144,6 @@ class PHTTPServiceProcess : public PServiceProcess
     );
 
 
-    bool ListenForHTTP(
-      WORD port,
-      PSocket::Reusability reuse = PSocket::CanReuseAddress,
-      PINDEX stackSize = 0x4000
-    );
-    bool ListenForHTTP(
-      const PString & interfaces,
-      WORD port,
-      PSocket::Reusability reuse = PSocket::CanReuseAddress,
-      PINDEX stackSize = 0x4000
-    );
-    bool ListenForHTTP(
-      PSocket * listener,
-      PSocket::Reusability reuse = PSocket::CanReuseAddress,
-      PINDEX stackSize = 0x4000
-    );
-
     virtual PString GetPageGraphic();
     void GetPageHeader(PHTML &);
     void GetPageHeader(PHTML &, const PString & title);
@@ -207,14 +170,8 @@ class PHTTPServiceProcess : public PServiceProcess
     virtual void AddRegisteredText(PHTML & html);
     virtual void AddUnregisteredText(PHTML & html);
     virtual PBoolean SubstituteEquivalSequence(PHTTPRequest & request, const PString &, PString &);
-    virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
-    virtual PHTTPServer * OnCreateHTTPServer(const PHTTPSpace & urlSpace);
-    PTCPSocket * AcceptHTTP();
-    PBoolean ProcessHTTP(PTCPSocket & socket);
 
   protected:
-    PSocketList     m_httpListeningSockets;
-    PHTTPSpace      m_httpNameSpace;
     PString         m_macroKeyword;
     PTEACypher::Key m_productKey;
     PStringArray    m_securedKeys;
@@ -233,19 +190,15 @@ class PHTTPServiceProcess : public PServiceProcess
     PString    m_copyrightHomePage;
     PString    m_copyrightEmail;
 
-    void ShutdownListener();
     void BeginRestartSystem();
-    void CompleteRestartSystem();
+    virtual void OnHTTPEnded(PHTTPServer & server);
 
     PThread *  m_restartThread;
 
-    PLIST(ThreadList, PHTTPServiceThread);
-    ThreadList m_httpThreads;
-    PMutex     m_httpThreadsMutex;
-
   friend class PConfigPage;
   friend class PConfigSectionsPage;
-  friend class PHTTPServiceThread;
+  P_REMOVE_VIRTUAL(PHTTPServer*, CreateHTTPServer(PChannel &),0);
+  P_REMOVE_VIRTUAL(PHTTPServer*, OnCreateHTTPServer(const PHTTPSpace &),0);
 };
 
 
