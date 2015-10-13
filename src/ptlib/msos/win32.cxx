@@ -649,7 +649,7 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
       return PString();
 
     static int const errors[NumNormalisedErrors] = {
-      0, ENOENT, EEXIST, ENOSPC, EACCES, EBUSY, EINVAL, ENOMEM, EBADF, EAGAIN, EINTR,
+      0, ENOENT, EEXIST, ENOSPC, EACCES, EBUSY, EINVAL, ENOMEM, EBADF, EAGAIN, ECANCELED,
       WSAEMSGSIZE|PWIN32ErrorFlag, EIO, 0x1000000|PWIN32ErrorFlag
     };
     osError = errors[lastError];
@@ -773,6 +773,7 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
       lastError = BufferTooSmall;
       break;
     case EINTR :
+    case ECANCELED :
       lastError = Interrupted;
       break;
     default :
