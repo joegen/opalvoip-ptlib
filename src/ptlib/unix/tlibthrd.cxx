@@ -932,7 +932,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   if (retval > 0 && pfd[1].revents != 0) {
     BYTE ch;
     PAssertOS(::read(unblockPipe[0], &ch, 1) != -1);
-    errno = EINTR;
+    errno = ECANCELED;
     retval = -1;
     PTRACE(6, "PTLib\tUnblocked I/O fd=" << unblockPipe[0]);
   }
@@ -986,7 +986,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   if ((retval == 1) && read_fds.IsPresent(unblockPipe[0])) {
     BYTE ch;
     PAssertOS(::read(unblockPipe[0], &ch, 1) != -1);
-    errno = EINTR;
+    errno = ECANCELED;
     retval =  -1;
     PTRACE(6, "PTLib\tUnblocked I/O fd=" << unblockPipe[0]);
   }
