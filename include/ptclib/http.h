@@ -1277,6 +1277,7 @@ public:
   virtual void OnHTTPStarted(PHTTPServer & server);
   virtual void OnHTTPEnded(PHTTPServer & server);
 
+  void GetMaxWorkers() const { m_threadPool.GetMaxWorkers(); }
   void SetMaxWorkers(
     unsigned count
   ) { m_threadPool.SetMaxWorkers(count); }
