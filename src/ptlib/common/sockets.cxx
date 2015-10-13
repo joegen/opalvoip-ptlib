@@ -1314,7 +1314,7 @@ PBoolean PIPSocket::Connect(const PString & host)
   Address ipnum(host);
   if (ipnum.IsValid() || GetHostAddress(host, ipnum))
     return Connect(Address::GetAny(ipnum.GetVersion()), 0, ipnum);
-  return false;
+  return SetErrorValues(BadParameter, EINVAL);
 }
 
 
@@ -1340,7 +1340,7 @@ PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address
 {
   if (!addr.IsValid()) {
     PTRACE(2, "Cannot connect to invalid address");
-    return false;
+    return SetErrorValues(BadParameter, EINVAL);
   }
 
   // close the port if it is already open
