@@ -1307,21 +1307,48 @@ PIPSocket::RouteTableDetector * PIPSocket::CreateRouteTableDetector()
 
 PIPSocket::Address PIPSocket::GetRouteInterfaceAddress(const PIPSocket::Address & remoteAddress)
 {
-  // For some variants of Windows GetBestInterface will return 127.0.0.1
-  // when we are trying to talk to one of our own interfaces.
-  PIPInterfaceAddressTable interfaces;
-  for (DWORD i = 0; i < interfaces->dwNumEntries; ++i) {
-    if (remoteAddress == interfaces->table[i].dwAddr)
-      return remoteAddress;
-  }
+#if P_HAS_IPV6
+  if (remoteAddress.GetVersion() == 6) {
+    sockaddr_in6 addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin6_family = AF_INET6;
+    addr.sin6_addr = remoteAddress;
+    DWORD best;
+    if (GetBestInterfaceEx((sockaddr*)&addr, &best) == NO_ERROR) {
+      PIPAdaptersAddressTable interfaces;
+      PIPRouteTableIPv6 routes;
+      for (const IP_ADAPTER_ADDRESSES * adapter = &*interfaces; adapter != NULL; adapter = adapter->Next) {
+        if (adapter->IfIndex != best)
+          continue;
 
-  DWORD best;
-  if (GetBestInterface(remoteAddress, &best) == NO_ERROR) {
-    for (DWORD i = 0; i < interfaces->dwNumEntries; ++i) {
-      if (interfaces->table[i].dwIndex == best)
-        return interfaces->table[i].dwAddr;
+        for (PIP_ADAPTER_UNICAST_ADDRESS unicast = adapter->FirstUnicastAddress; unicast != NULL; unicast = unicast->Next) {
+          if (unicast->Address.lpSockaddr->sa_family == AF_INET6 &&
+              routes.ValidateAddress(adapter->IfIndex, unicast->Address.lpSockaddr))
+            return ((sockaddr_in6 *)unicast->Address.lpSockaddr)->sin6_addr;
+        }
+      }
     }
   }
+  else
+#endif
+  {
+    // For some variants of Windows GetBestInterface will return 127.0.0.1
+    // when we are trying to talk to one of our own interfaces.
+    PIPInterfaceAddressTable interfaces;
+    for (DWORD i = 0; i < interfaces->dwNumEntries; ++i) {
+      if (remoteAddress == interfaces->table[i].dwAddr)
+        return remoteAddress;
+    }
+
+    DWORD best;
+    if (GetBestInterface(remoteAddress, &best) == NO_ERROR) {
+      for (DWORD i = 0; i < interfaces->dwNumEntries; ++i) {
+        if (interfaces->table[i].dwIndex == best)
+          return interfaces->table[i].dwAddr;
+      }
+    }
+  }
+
   return GetInvalidAddress();
 }
 
