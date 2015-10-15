@@ -848,30 +848,39 @@ PHTTPListener::Worker::~Worker()
 
 void PHTTPListener::Worker::Work()
 {
-  std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
-  if (server.get() == NULL) {
-    PTRACE(2, "HTTP server creation failed.");
+  if (PAssertNULL(m_socket) == NULL)
     return;
-  }
-
-  PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
-  if (channel == NULL) {
-    PTRACE(2, "HTTP indirect channel creation failed.");
-    return;
-  }
 
 #ifdef SO_LINGER
   const linger ling = { 1, 5 };
   m_socket->SetOption(SO_LINGER, &ling, sizeof(ling));
 #endif
 
-  m_socket = NULL; // Is now auto-deleted by server.
+#if PTRACING
+  PStringStream socketInfo;
+  socketInfo << ": local=" << m_socket->GetLocalAddress() << ", peer=" << m_socket->GetPeerAddress();
+#endif
 
-  if (!server->Open(channel)) {
-    PTRACE(2, "HTTP server/channel open failed.");
+  std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
+  if (server.get() == NULL) {
+    PTRACE(2, "HTTP server creation failed" << socketInfo);
     return;
   }
 
+  PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
+  if (channel == NULL) {
+    PTRACE(2, "HTTP indirect channel creation failed" << socketInfo);
+    return;
+  }
+
+  m_socket = NULL; // Is now auto-deleted by server.
+
+  if (!server->Open(channel)) {
+    PTRACE(2, "HTTP server/channel open failed" << socketInfo);
+    return;
+  }
+
+  PTRACE(5, "HTTP server started" << socketInfo);
   m_listener.OnHTTPStarted(*server);
 
   // process requests
@@ -879,6 +888,7 @@ void PHTTPListener::Worker::Work()
     ;
 
   m_listener.OnHTTPEnded(*server);
+  PTRACE(5, "HTTP server ended" << socketInfo);
 }
 
 
