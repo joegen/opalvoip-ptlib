@@ -38,6 +38,7 @@
 #include <ctype.h>
 
 #define new PNEW
+#define PTraceModule() "HTTPServer"
 
 
 // define to enable work-around for Netscape persistent connection bug
@@ -288,7 +289,7 @@ PBoolean PHTTPServer::ProcessCommand()
   // make sure the form info is reset for each new operation
   connectInfo.ResetMultipartFormInfo();
 
-  PTRACE(5, "HTTPServer\tTransaction " << connectInfo.GetCommandName() << " \"" << args << "\" url=" << connectInfo.GetURL());
+  PTRACE(5, "Transaction " << connectInfo.GetCommandName() << " \"" << args << "\" url=" << connectInfo.GetURL());
 
   if (connectInfo.IsWebSocket()) {
     if (!OnWebSocket(connectInfo))
@@ -326,7 +327,7 @@ PBoolean PHTTPServer::ProcessCommand()
       return true;
   }
 
-  PTRACE(5, "HTTPServer\tConnection end: " << connectInfo.IsPersistent());
+  PTRACE(5, "Connection end: " << connectInfo.IsPersistent());
 
   // close the output stream now and return false
   Shutdown(ShutdownWrite);
@@ -400,7 +401,7 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 
   return persist;
 #else
-  PTRACE(2, "HTTP\tWebSocket refused due to no SSL");
+  PTRACE(2, "WebSocket refused due to no SSL");
   return OnError(NotFound, "WebSocket unsupported (No SSL)", connectInfo);
 #endif
 }
@@ -640,11 +641,11 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
 
   if (connectInfo.IsPersistent()) {
     if (connectInfo.IsProxyConnection()) {
-      PTRACE(5, "HTTPServer\tSetting proxy persistent response");
+      PTRACE(5, "Setting proxy persistent response");
       info.SetAt(ProxyConnectionTag, KeepAliveTag());
     }
     else {
-      PTRACE(5, "HTTPServer\tSetting direct persistent response");
+      PTRACE(5, "Setting direct persistent response");
       info.SetAt(ConnectionTag, KeepAliveTag());
     }
   }
@@ -863,24 +864,24 @@ void PHTTPListener::Worker::Work()
 
   std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
   if (server.get() == NULL) {
-    PTRACE(2, "HTTP server creation failed" << socketInfo);
+    PTRACE(2, "Creation failed" << socketInfo);
     return;
   }
 
   PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
   if (channel == NULL) {
-    PTRACE(2, "HTTP indirect channel creation failed" << socketInfo);
+    PTRACE(2, "Indirect channel creation failed" << socketInfo);
     return;
   }
 
   m_socket = NULL; // Is now auto-deleted by server.
 
   if (!server->Open(channel)) {
-    PTRACE(2, "HTTP server/channel open failed" << socketInfo);
+    PTRACE(2, "Open failed" << socketInfo);
     return;
   }
 
-  PTRACE(5, "HTTP server started" << socketInfo);
+  PTRACE(5, "Started" << socketInfo);
   m_listener.OnHTTPStarted(*server);
 
   // process requests
@@ -888,7 +889,7 @@ void PHTTPListener::Worker::Work()
     ;
 
   m_listener.OnHTTPEnded(*server);
-  PTRACE(5, "HTTP server ended" << socketInfo);
+  PTRACE(5, "Ended" << socketInfo);
 }
 
 
@@ -1197,20 +1198,20 @@ bool PWebSocket::Connect(const PStringArray & protocols, PString * selectedProto
     return false;
 
   if (replyMIME(PHTTP::WebSocketAcceptTag()) != PMessageDigestSHA1::Encode(key + WebSocketGUID)) {
-    PTRACE(2, "WebSock\tReply accept is unacceptable.");
+    PTRACE(2, "WebSocket reply accept is unacceptable.");
     return false;
   }
 
   PString protocol = outMIME(PHTTP::WebSocketProtocolTag());
   if (protocols.GetValuesIndex(protocol) == P_MAX_INDEX) {
-    PTRACE(2, "WebSock\tServer selected a protocol we did not offer.");
+    PTRACE(2, "WebSocket selected a protocol we did not offer.");
     return false;
   }
 
   if (selectedProtocol != NULL)
     * selectedProtocol = protocol;
 
-  PTRACE(3, "WebSock\tStarted for protocol: " << protocol);
+  PTRACE(3, "WebSocket started for protocol: " << protocol);
   m_client = true;
   return true;
 }
@@ -1406,7 +1407,7 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   else {
     entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
     if (entityBodyLength < 0) {
-      PTRACE(5, "HTTPServer\tPersistent connection has no content length");
+      PTRACE(5, "Persistent connection has no content length");
       entityBodyLength = 0;
       mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
     }
