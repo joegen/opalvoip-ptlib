@@ -444,7 +444,7 @@ PString PHTTPServiceProcess::GetPageGraphic()
 
        << PHTML::HotLink("/");
   if (m_gifHTML.IsEmpty())
-    html << PHTML::Heading(1) << m_productNameHTML << "&nbsp;" << PHTML::Heading(1);
+    html << PHTML::Heading(1) << m_productNameHTML << PHTML::NonBreakSpace() << PHTML::Heading(1);
   else
     html << m_gifHTML;
   html << PHTML::HotLink()
@@ -946,7 +946,7 @@ PServiceHTML::PServiceHTML(const char * title, const char * help, const char * h
   this_stream << PHTML::Heading(1) << title;
   
   if (help != NULL)
-    this_stream << "&nbsp;"
+    this_stream << PHTML::NonBreakSpace()
                 << PHTML::HotLink(help)
                 << PHTML::Image(helpGif, "Help", 48, 23, "align=absmiddle")
                 << PHTML::HotLink();
