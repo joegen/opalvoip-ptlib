@@ -149,6 +149,16 @@ class PHTML : public PStringStream
     };
     static PString Escape(const char * str);
 
+    static const PString & GetNonBreakSpace();
+    class NonBreakSpace {
+      public:
+        NonBreakSpace(unsigned count = 1) : m_count(count) { }
+      private:
+        void Output(ostream & strm) const;
+        unsigned m_count;
+      friend ostream & operator<<(ostream & strm, const NonBreakSpace & e) { e.Output(strm); return strm; }
+    };
+
     class Element {
       public: 
         virtual ~Element() {}

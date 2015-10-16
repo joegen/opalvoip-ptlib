@@ -157,6 +157,15 @@ PString PHTML::Escape(const char * str)
 }
 
 
+const PString & PHTML::GetNonBreakSpace() { static const PConstString s("&nbsp;"); return s; }
+
+void PHTML::NonBreakSpace::Output(ostream & strm) const
+{
+  for (unsigned i = 0; i < m_count; ++i)
+    strm << GetNonBreakSpace();
+}
+
+
 void PHTML::Element::Output(PHTML & html) const
 {
   PAssert(reqElement == NumElementsInSet || html.Is(reqElement),
