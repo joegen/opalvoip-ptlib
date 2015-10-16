@@ -855,7 +855,7 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
     usage.m_current = (size_t)substrings[1].AsUnsigned64();
 #endif // P_EXPAT
 
-  free(buffer);
+  runtime_free(buffer);
 #else // P_HAS_MALLOC_INFO
   struct mallinfo info = mallinfo();
   usage.m_max = info.uordblks + info.fordblks;
