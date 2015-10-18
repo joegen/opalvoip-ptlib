@@ -652,9 +652,8 @@ class PProcess : public PThread
     void InternalThreadEnded(PThread * thread);
     
     typedef PList<PThread> ThreadList;
-    ThreadList m_autoDeleteThreads;
-    void InternalSetAutoDeleteThread(PThread * thread);
-    void InternalCleanAutoDeleteThreads();
+    ThreadList m_externalThreads;
+    PSyncQueue<PThread*> m_autoDeleteThreads;
 
     atomic<bool>   m_keepingHouse;
     PThread      * m_houseKeeper; // Thread for doing timers, thread clean up etc.
