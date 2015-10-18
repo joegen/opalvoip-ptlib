@@ -500,22 +500,15 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
         (
           useDefaultColourOrSize >= 2 ||
           (
-            scc.MaxOutputSize.cx == (LONG)frameWidth &&
-            scc.MaxOutputSize.cy == (LONG)frameHeight &&
+            scc.MinOutputSize.cx <= (LONG)frameWidth  && (LONG)frameWidth  <= scc.MaxOutputSize.cx &&
+            scc.MinOutputSize.cy <= (LONG)frameHeight && (LONG)frameHeight <= scc.MaxOutputSize.cy &&
             (
               useDefaultColourOrSize >= 1 ||
               GUID2Format(pMediaFormat->subtype) == colourFormat
             )
           )
         )) {
-
-      bool running = IsCapturing();
-      if (running)
-        PCOM_RETURN_ON_FAILED(m_pMediaControl->Stop,());
-
       VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
-      pVih->AvgTimePerFrame = 10000000 / frameRate;
-      PCOM_RETURN_ON_FAILED(pStreamConfig->SetFormat,(pMediaFormat));
 
       if (useDefaultColourOrSize >= 1) {
         colourFormat = GUID2Format(pMediaFormat->subtype);
@@ -533,6 +526,16 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
         nativeVerticalFlip = true;
         PTRACE(3, "Image up side down");
       }
+
+      bool running = IsCapturing();
+      if (running)
+        PCOM_RETURN_ON_FAILED(m_pMediaControl->Stop,());
+
+      pVih->AvgTimePerFrame = 10000000 / frameRate;
+      pVih->bmiHeader.biWidth = frameWidth;
+      pVih->bmiHeader.biHeight = pVih->bmiHeader.biHeight < 0 ? -(LONG)frameHeight : frameHeight;
+      pVih->bmiHeader.biSizeImage = m_maxFrameBytes;
+      PCOM_RETURN_ON_FAILED(pStreamConfig->SetFormat,(pMediaFormat));
 
       if (running)
         PCOM_RETURN_ON_FAILED(m_pMediaControl->Run,());
