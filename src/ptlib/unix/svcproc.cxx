@@ -538,7 +538,6 @@ void PServiceProcess::Main()
 void PServiceProcess::OnStop()
 {
   m_exitMain.Signal();
-  PSYSTEMLOG(Warning, GetName() << " stopped.");
 }
 
 
@@ -556,11 +555,11 @@ void PServiceProcess::OnContinue()
 void PServiceProcess::Terminate()
 {
   if (isTerminating) {
+    PSYSTEMLOG(Error, "Nested call to process termination!");
     // If we are the process itself and another thread is terminating us,
-    // just stop and wait forever for us to go away
+    // just stop and wait forever for us to go away via exit() below
     if (PThread::Current() == this)
       Sleep(PMaxTimeInterval);
-    PSYSTEMLOG(Error, "Nested call to process termination!");
     return;
   }
 
@@ -575,10 +574,12 @@ void PServiceProcess::Terminate()
   // Do the services stop code
   OnStop();
 
+  PSYSTEMLOG(Error, "Stopped service process \"" << GetName() << "\" v" << GetVersion(true));
   PSystemLog::SetTarget(NULL);
 
-  // Now end the program
-  _exit(terminationValue);
+  // Now end the program, or let main exit normally
+  if (PThread::Current() != this)
+    exit(terminationValue);
 }
 
 static atomic<bool> InSignalHandler(false);
