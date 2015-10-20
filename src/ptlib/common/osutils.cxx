@@ -53,6 +53,8 @@
 #endif
 
 
+#define PTraceModule() "PTLib"
+
 static const char * const VersionStatus[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
 static const char DefaultRollOverPattern[] = "_yyyy_MM_dd_hh_mm";
 
@@ -2230,10 +2232,8 @@ void PProcess::HouseKeeping()
 
     // m_autoDeleteThreads is inherently thread safe
     PThread * thread;
-    while (m_autoDeleteThreads.Dequeue(thread, 0)) {
-      PTRACE(5, "PTLib\tAuto-deleting terminated thread: " << thread << ", id=" << thread->GetThreadId());
+    while (m_autoDeleteThreads.Dequeue(thread, 0))
       delete thread;
-    }
 
 #ifndef _WIN32
     PXCheckSignals();
@@ -2272,19 +2272,37 @@ void PProcess::PreShutdown()
   m_threadMutex.Wait();
 
   // OK, if there are any other threads left, we get really insistent...
-  PTRACE(4, "PTLib\tTerminating " << m_activeThreads.size()-1 << " remaining threads.");
+  PTRACE(4, "Cleaning up " << m_activeThreads.size()-1 << " remaining threads.");
   for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it) {
     PThread & thread = *it->second;
-    if ((thread.m_type == e_IsAutoDelete || thread.m_type == e_IsManualDelete) && !thread.IsTerminated()) {
-      PTRACE(3, "PTLib\tTerminating thread " << thread);
-      thread.Terminate();  // With extreme prejudice
+    switch (thread.m_type) {
+      case e_IsAutoDelete:
+      case e_IsManualDelete:
+        if (thread.IsTerminated()) {
+          PTRACE(5, "Already terminated thread " << thread);
+        }
+        else {
+          PTRACE(3, "Terminating thread " << thread);
+          thread.Terminate();  // With extreme prejudice
+        }
+        break;
+      case e_IsExternal :
+        PTRACE(5, "Remaining external thread " << thread);
+        break;
+      default :
+        break;
     }
   }
-  PTRACE(4, "PTLib\tTerminated all threads, destroying " << m_autoDeleteThreads.size() << " remaining auto-delete threads.");
+  m_activeThreads.clear();
+
+  PTRACE(4, "Terminated all threads, destroying "
+         << m_autoDeleteThreads.size() << " remaining auto-delete threads, and "
+         << m_externalThreads.size() << " remaining external threads.");
   PThread * thread;
   while (m_autoDeleteThreads.Dequeue(thread, 0))
     delete thread;
-  m_activeThreads.clear();
+
+  m_externalThreads.RemoveAll();
 
   m_threadMutex.Signal();
 
@@ -2492,15 +2510,17 @@ void PProcess::InternalThreadEnded(PThread * thread)
   if (PAssertNULL(thread) == NULL)
     return;
 
+  if (thread->IsAutoDelete()) {
+    PTRACE(5, thread, "Queuing auto-delete of thread " << *thread);
+    thread->SetNoAutoDelete();
+    m_autoDeleteThreads.Enqueue(thread);
+  }
+
   PWaitAndSignal mutex(m_threadMutex);
 
   ThreadMap::iterator it = m_activeThreads.find(thread->GetThreadId());
-  if (it != m_activeThreads.end() && // Already gone
-      it->second != thread) // Already re-used the thread ID for new thread.
-    m_activeThreads.erase(it);
-
-  if (thread->IsAutoDelete())
-    m_autoDeleteThreads.Enqueue(thread);
+  if (it != m_activeThreads.end() && it->second == thread)
+    m_activeThreads.erase(it); // Not already gone, or re-used the thread ID for new thread.
 }
 
 
@@ -2780,7 +2800,7 @@ PThread::~PThread()
   for (LocalStorageList::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
     (*it)->ThreadDestroyed(this);
 
-  if (m_type != e_IsProcess && m_type != e_IsAutoDelete)
+  if (m_type != e_IsProcess)
     PProcess::Current().InternalThreadEnded(this);
 }
 
