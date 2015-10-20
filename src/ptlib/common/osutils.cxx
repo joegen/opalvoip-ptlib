@@ -66,12 +66,12 @@ class PExternalThread : public PThread
       : PThread(false)
     {
       SetThreadName("External thread");
-      PTRACE(5, "PTLib\tCreated external thread " << this << ", id=" << GetCurrentThreadId());
+      PTRACE(5, "Created external thread " << this << ", id=" << GetCurrentThreadId());
     }
 
     ~PExternalThread()
     {
-      PTRACE(5, "PTLib\tDestroyed external thread " << this << ", id " << GetThreadId());
+      PTRACE(5, "Destroyed external thread " << this << ", id " << GetThreadId());
     }
 
     virtual void Main()
@@ -80,7 +80,7 @@ class PExternalThread : public PThread
 
     virtual void Terminate()
     {
-      PTRACE(2, "PTLib\tCannot terminate external thread " << this << ", id " << GetThreadId());
+      PTRACE(2, "Cannot terminate external thread " << this << ", id " << GetThreadId());
     }
 };
 
@@ -433,7 +433,7 @@ void PTrace::SetStream(ostream * s)
   ostream * before = info.m_stream;
   info.SetStream(s);
   ostream * after = info.m_stream;
-  PTRACE_IF(2, before != after, "PTLib\tTrace stream set to " << after << " (" << s << ')');
+  PTRACE_IF(2, before != after, "Trace stream set to " << after << " (" << s << ')');
 }
 
 
@@ -664,7 +664,7 @@ void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(options, 0)) {
-    PTRACE(2, "PTLib", "Trace options set to " << info.m_options);
+    PTRACE(2, "Trace options set to " << info.m_options);
   }
 }
 
@@ -673,7 +673,7 @@ void PTrace::ClearOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(0, options)) {
-    PTRACE(2, "PTLib", "Trace options set to " << info.m_options);
+    PTRACE(2, "Trace options set to " << info.m_options);
   }
 }
 
@@ -689,7 +689,7 @@ void PTrace::SetLevel(unsigned level)
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.m_thresholdLevel != level) {
     info.m_thresholdLevel = level;
-    PTRACE(2, "PTLib\tTrace threshold set to " << level);
+    PTRACE(2, "Trace threshold set to " << level);
   }
 }
 
@@ -1318,11 +1318,11 @@ void PTimer::List::Timeout::Work()
 {
   PTimer::List * list;
   while ((list = PTimer::TimerList()) != NULL) {
-    PTRACE(6, NULL, "PTLib", "Timer: [" << m_handle << "] working");
+    PTRACE(6, NULL, "Timer: [" << m_handle << "] working");
     if (list->OnTimeout(m_handle))
       return;
 
-    PTRACE(5, NULL, "PTLib", "Timer: [" << m_handle << "] already in OnTimeout(), waiting.");
+    PTRACE(5, NULL, "Timer: [" << m_handle << "] already in OnTimeout(), waiting.");
     PThread::Sleep(10);
   }
 }
@@ -1384,7 +1384,7 @@ PTimeInterval PTimer::List::Process()
         timer.m_callbackMutex.Signal();
 
         m_threadPool.AddWork(new Timeout(it->first));
-        PTRACE(6, &timer, "PTLib", "Timer: " << timer << " work added, lateness=" << -delta);
+        PTRACE(6, &timer, "Timer: " << timer << " work added, lateness=" << -delta);
       }
     }
   }
@@ -1393,7 +1393,7 @@ PTimeInterval PTimer::List::Process()
   if (nextInterval < 10)
     nextInterval = 10;
 
-  PTRACE(6, NULL, "PTLib", m_timers.size() << " timers processed, next=" << nextInterval);
+  PTRACE(6, NULL, m_timers.size() << " timers processed, next=" << nextInterval);
   return nextInterval;
 }
 
@@ -2171,11 +2171,11 @@ void PProcess::Startup()
   for (PProcessStartupFactory::KeyList_T::const_iterator it = list.begin(); it != list.end(); ++it) {
     PProcessStartup * startup = PProcessStartupFactory::CreateInstance(*it);
     if (startup != NULL) {
-      PTRACE(5, "PTLib", "Startup factory " << *it);
+      PTRACE(5, "Startup factory " << *it);
       startup->OnStartup();
     }
     else {
-      PTRACE(1, "PTLib", "Could not create startup factory " << *it);
+      PTRACE(1, "Could not create startup factory " << *it);
     }
   }
 }
@@ -2244,13 +2244,13 @@ void PProcess::HouseKeeping()
 
 void PProcess::PreShutdown()
 {
-  PTRACE(4, "PTLib\tStarting process destruction.");
+  PTRACE(4, "Starting process destruction.");
 
   m_shuttingDown = true;
 
   // Get rid of the house keeper (majordomocide)
   if (m_houseKeeper != NULL && m_houseKeeper->GetThreadId() != PThread::GetCurrentThreadId()) {
-    PTRACE(4, "PTLib\tTerminating housekeeper thread.");
+    PTRACE(4, "Terminating housekeeper thread.");
     m_keepingHouse = false;
     m_signalHouseKeeper.Signal();
     m_houseKeeper->WaitForTermination();
@@ -2312,7 +2312,7 @@ void PProcess::PreShutdown()
 
 void PProcess::PostShutdown()
 {
-  PTRACE(4, PProcessInstance, "PTLib", "Completed process destruction.");
+  PTRACE(4, PProcessInstance, "Completed process destruction.");
 
   PFactoryBase::GetFactories().DestroySingletons();
   PProcessInstance = NULL;
@@ -2467,7 +2467,7 @@ PString PProcess::GetLibVersion()
 void PProcess::SetConfigurationPath(const PString & path)
 {
   configurationPaths = path.Tokenise(PPATH_SEPARATOR, false);
-  PTRACE(3, "PTlib", "Configuration path set to " << setfill(PPATH_SEPARATOR) << configurationPaths);
+  PTRACE(3, "Configuration path set to " << setfill(PPATH_SEPARATOR) << configurationPaths);
 }
 #endif
 
@@ -2499,7 +2499,7 @@ void PProcess::InternalThreadStarted(PThread * thread)
 
   m_threadMutex.Signal();
 
-  PTRACE_IF(2, newHighWaterMark  > 0, "PTLib", "Thread high water mark set: " << newHighWaterMark);
+  PTRACE_IF(2, newHighWaterMark  > 0, "Thread high water mark set: " << newHighWaterMark);
 
   SignalTimerChange();
 }
@@ -2792,7 +2792,7 @@ PThread::~PThread()
   if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(100))
     Terminate();
 
-  PTRACE(5, "PTLib\tDestroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
+  PTRACE(5, "Destroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
 
   InternalDestroy();
 
@@ -2926,7 +2926,7 @@ void PTimedMutex::ExcessiveLockWait()
 void PTimedMutex::CommonSignal()
 {
   if (m_excessiveLockTime) {
-    PTRACE(0, "PTLib", "Released phantom deadlock in mutex " << *this);
+    PTRACE(0, "Released phantom deadlock in mutex " << *this);
     m_excessiveLockTime = false;
   }
 
@@ -3101,13 +3101,13 @@ PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
   , m_fileOrName(name)
   , m_line(line)
 {
-  PTRACE(5, "PTLib\tCreated read/write mutex " << *this);
+  PTRACE(5, "Created read/write mutex " << *this);
 }
 
 
 PReadWriteMutex::~PReadWriteMutex()
 {
-  PTRACE(5, "PTLib\tDestroying read/write mutex " << *this);
+  PTRACE(5, "Destroying read/write mutex " << *this);
 
   EndNest(); // Destruction while current thread has a lock is OK
 
@@ -3375,7 +3375,7 @@ PBoolean PCriticalSection::Wait(const PTimeInterval & timeout)
   if (timeout == 0)
     return Try();
 
-  PTRACE(2, "PTLib", "PCriticalSection::Wait() called, this is very inefficient, consider using PTimedMutex!");
+  PTRACE(2, "PCriticalSection::Wait() called, this is very inefficient, consider using PTimedMutex!");
 
   PSimpleTimer timer(timeout);
   do {
