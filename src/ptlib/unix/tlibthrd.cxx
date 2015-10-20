@@ -323,7 +323,9 @@ void PThread::PX_ThreadEnd()
   PX_endTick = PTimer::Tick();
 #endif
 
-  PProcess::Current().OnThreadEnded(*this);
+  PProcess & process = PProcess::Current();
+  process.OnThreadEnded(*this);
+  process.InternalThreadEnded(this);
 
   PX_state = PX_finished; // Must be last thing to avoid races
 }
