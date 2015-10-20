@@ -830,6 +830,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 #if !defined(_WIN32)
       cin.get();
 #endif
+      *leakDumpStream << '\n';
       first = false;
     }
 
