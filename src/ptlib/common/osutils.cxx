@@ -1318,11 +1318,11 @@ void PTimer::List::Timeout::Work()
 {
   PTimer::List * list;
   while ((list = PTimer::TimerList()) != NULL) {
-    PTRACE(6, NULL, "Timer: [" << m_handle << "] working");
+    PTRACE(6, NULL, PTraceModule(), "Timer: [" << m_handle << "] working");
     if (list->OnTimeout(m_handle))
       return;
 
-    PTRACE(5, NULL, "Timer: [" << m_handle << "] already in OnTimeout(), waiting.");
+    PTRACE(5, NULL, PTraceModule(), "Timer: [" << m_handle << "] already in OnTimeout(), waiting.");
     PThread::Sleep(10);
   }
 }
@@ -1393,7 +1393,7 @@ PTimeInterval PTimer::List::Process()
   if (nextInterval < 10)
     nextInterval = 10;
 
-  PTRACE(6, NULL, m_timers.size() << " timers processed, next=" << nextInterval);
+  PTRACE(6, NULL, PTraceModule(), m_timers.size() << " timers processed, next=" << nextInterval);
   return nextInterval;
 }
 
