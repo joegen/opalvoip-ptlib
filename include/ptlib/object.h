@@ -1727,21 +1727,14 @@ class PSingleton
     }
   };
 
-  /*Do this template class specialisation so each type has it's own separate
-    memory block for the pool. */
-  template <class Type>
-  struct PCommonPool : public __gnu_cxx::__common_pool_policy<PMemoryPool, true>
-  {
-  };
-
-  /*This template class specialisation adds the singleton instance.
-   */
-  template <class Type, class Pool = PCommonPool<Type> >
-  struct PVariablePoolAllocator : public PSingleton<__gnu_cxx::__mt_alloc<Type, Pool> >
-  {
-  };
-
   #if P_GNU_ALLOCATOR==1
+    /*Do this template class specialisation so each type has it's own separate
+      memory block for the pool. */
+    template <class Type>
+    struct PCommonPool : public __gnu_cxx::__common_pool_policy<PMemoryPool, true>
+    {
+    };
+
     template <class Type>
     struct PFixedPoolAllocator : public PSingleton<__gnu_cxx::__mt_alloc<Type, PCommonPool<Type> > >
     {
@@ -1754,31 +1747,27 @@ class PSingleton
     };
   #endif
 
+  #define PDECLARE_POOL_ALLOCATOR() \
+      void * operator new(size_t nSize); \
+      void * operator new(size_t nSize, const char * file, int line); \
+      void operator delete(void * ptr); \
+      void operator delete(void * ptr, const char *, int)
+
+  #define PDEFINE_POOL_ALLOCATOR(cls) \
+    void * cls::operator new(size_t)                           { return PFixedPoolAllocator<cls>()->allocate(1);               } \
+    void * cls::operator new(size_t, const char *, int)        { return PFixedPoolAllocator<cls>()->allocate(1);               } \
+    void   cls::operator delete(void * ptr)                    {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); } \
+    void   cls::operator delete(void * ptr, const char *, int) {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); }
+
 #else
 
-  template <class Type, class Pool = void>
-  struct PVariablePoolAllocator : public PSingleton<std::allocator<Type> >
-  {
-  };
+  #define PDECLARE_POOL_ALLOCATOR(cls) \
+    __inline static const char * Class() { return typeid(cls).name(); } \
+    PNEW_AND_DELETE_FUNCTIONS(0)
 
-  template <class Type>
-  struct PFixedPoolAllocator    : public PSingleton<std::allocator<Type> >
-  {
-  };
+  #define PDEFINE_POOL_ALLOCATOR(cls)
 
 #endif
-
-#define PDECLARE_POOL_ALLOCATOR() \
-    void * operator new(size_t nSize); \
-    void * operator new(size_t nSize, const char * file, int line); \
-    void operator delete(void * ptr); \
-    void operator delete(void * ptr, const char *, int)
-
-#define PDEFINE_POOL_ALLOCATOR(cls) \
-  void * cls::operator new(size_t)                           { return PFixedPoolAllocator<cls>()->allocate(1);               } \
-  void * cls::operator new(size_t, const char *, int)        { return PFixedPoolAllocator<cls>()->allocate(1);               } \
-  void   cls::operator delete(void * ptr)                    {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); } \
-  void   cls::operator delete(void * ptr, const char *, int) {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); }
 
 
 #define PCLASSINFO_ALIGNED(cls, par, align) \

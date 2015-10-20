@@ -71,7 +71,7 @@ class PContainerReference
     bool           deleteObjects; // Used by PCollection but put here for efficiency
     bool           constObject;   // Indicates object is constant/static, copy on write.
 
-    PDECLARE_POOL_ALLOCATOR();
+    PDECLARE_POOL_ALLOCATOR(PContainerReference);
 
   private:
     void operator=(const PContainerReference &) { }
