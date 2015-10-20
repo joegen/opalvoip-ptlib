@@ -120,32 +120,25 @@ bool PSecureHTTPServiceProcess::InitialiseBase(PHTTPServiceProcess::Params & par
 }
 
 
-PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
+PChannel * PSecureHTTPServiceProcess::CreateChannelForHTTP(PChannel * channel)
 {
   if (m_sslContext == NULL)
-    return PHTTPServiceProcess::CreateHTTPServer(socket);
-
-#ifdef SO_LINGER
-  const linger ling = { 1, 5 };
-  socket.SetOption(SO_LINGER, &ling, sizeof(ling));
-#endif
+    return PHTTPServiceProcess::CreateChannelForHTTP(channel);
 
   PSSLChannel * ssl = new HTTP_PSSLChannel(this, m_sslContext);
+  if (ssl->Accept(channel))
+    return ssl;
 
-  if (!ssl->Accept(socket)) {
-    PSYSTEMLOG(Error, "Accept failed: " << ssl->GetErrorText());
-    delete ssl;
-    return NULL;
-  }
-
-  PHTTPServer * server = OnCreateHTTPServer(m_httpNameSpace);
-
-  server->GetConnectionInfo().SetPersistenceMaximumTransations(0);
-  if (server->Open(ssl))
-    return server;
-
-  delete server;
+  PSYSTEMLOG(Error, "Accept failed: " << ssl->GetErrorText());
+  delete ssl;
   return NULL;
+}
+
+
+void PSecureHTTPServiceProcess::OnHTTPStarted(PHTTPServer & server)
+{
+  if (m_sslContext != NULL)
+    server.GetConnectionInfo().SetPersistenceMaximumTransations(0);
 }
 
 

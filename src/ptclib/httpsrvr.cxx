@@ -38,6 +38,7 @@
 #include <ctype.h>
 
 #define new PNEW
+#define PTraceModule() "HTTPServer"
 
 
 // define to enable work-around for Netscape persistent connection bug
@@ -288,7 +289,7 @@ PBoolean PHTTPServer::ProcessCommand()
   // make sure the form info is reset for each new operation
   connectInfo.ResetMultipartFormInfo();
 
-  PTRACE(5, "HTTPServer\tTransaction " << connectInfo.GetCommandName() << " \"" << args << "\" url=" << connectInfo.GetURL());
+  PTRACE(5, "Transaction " << connectInfo.GetCommandName() << " \"" << args << "\" url=" << connectInfo.GetURL());
 
   if (connectInfo.IsWebSocket()) {
     if (!OnWebSocket(connectInfo))
@@ -326,7 +327,7 @@ PBoolean PHTTPServer::ProcessCommand()
       return true;
   }
 
-  PTRACE(5, "HTTPServer\tConnection end: " << connectInfo.IsPersistent());
+  PTRACE(5, "Connection end: " << connectInfo.IsPersistent());
 
   // close the output stream now and return false
   Shutdown(ShutdownWrite);
@@ -400,7 +401,7 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 
   return persist;
 #else
-  PTRACE(2, "HTTP\tWebSocket refused due to no SSL");
+  PTRACE(2, "WebSocket refused due to no SSL");
   return OnError(NotFound, "WebSocket unsupported (No SSL)", connectInfo);
 #endif
 }
@@ -640,11 +641,11 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
 
   if (connectInfo.IsPersistent()) {
     if (connectInfo.IsProxyConnection()) {
-      PTRACE(5, "HTTPServer\tSetting proxy persistent response");
+      PTRACE(5, "Setting proxy persistent response");
       info.SetAt(ProxyConnectionTag, KeepAliveTag());
     }
     else {
-      PTRACE(5, "HTTPServer\tSetting direct persistent response");
+      PTRACE(5, "Setting direct persistent response");
       info.SetAt(ConnectionTag, KeepAliveTag());
     }
   }
@@ -701,6 +702,196 @@ PBoolean PHTTPServer::OnError(StatusCode code,
   WriteString(reply);
   return statusInfo->code == RequestOK;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPListener
+
+PHTTPListener::PHTTPListener(unsigned maxWorkers)
+  : m_listenerPort(80)
+  , m_listenerThread(NULL)
+  , m_threadPool(maxWorkers, 0, "HTTP-Service")
+{
+}
+
+
+bool PHTTPListener::ListenForHTTP(WORD port, PSocket::Reusability reuse)
+{
+  return ListenForHTTP(PString::Empty(), port, reuse);
+}
+
+
+bool PHTTPListener::ListenForHTTP(const PString & interfaces, WORD port, PSocket::Reusability reuse)
+{
+  if (port == 0) {
+    PAssertAlways(PInvalidParameter);
+    return false;
+  }
+
+  if (m_listenerInterfaces == interfaces && m_listenerPort == port)
+    return true;
+
+  ShutdownListeners();
+  m_listenerInterfaces = interfaces;
+  m_listenerPort = port;
+
+  PStringArray ifaces = interfaces.Tokenise(',');
+  if (ifaces.IsEmpty()) {
+    ifaces.AppendString("0.0.0.0");
+#if P_HAS_IPV6
+    ifaces.AppendString("[::]");
+#endif
+  }
+
+  bool atLeastOne = false;
+  for (PINDEX i = 0; i < ifaces.GetSize(); ++i) {
+    PIPSocket::Address binding(ifaces[i]);
+    if (binding.IsValid()) {
+      PTCPSocket * listener = new PTCPSocket(port);
+      if (listener->Listen(binding, 5, 0, reuse)) {
+        PTRACE(3, "Listening for HTTP on " << listener->GetLocalAddress());
+        m_httpListeningSockets.Append(listener);
+        atLeastOne = true;
+      }
+      else {
+        PTRACE(2, "Listen on port " << binding << ':' << listener->GetPort() << " failed: " << listener->GetErrorText());
+        delete listener;
+      }
+    }
+    else {
+      PTRACE(2, "Invalid interface address \"" << ifaces[i] << '"');
+    }
+  }
+
+  if (atLeastOne)
+    m_listenerThread = new PThreadObj<PHTTPListener>(*this, &PHTTPListener::ListenMain, false, "HTTP-Listen");
+
+  return atLeastOne;
+}
+
+
+void PHTTPListener::ShutdownListeners()
+{
+  PTRACE_IF(3, !m_httpListeningSockets.IsEmpty(),
+            "Closing listener socket on port " << m_httpListeningSockets.front().GetPort());
+
+  for (PSocketList::iterator it = m_httpListeningSockets.begin(); it != m_httpListeningSockets.end(); ++it)
+    it->Close();
+
+  if (m_listenerThread != NULL) {
+    PAssert(m_listenerThread->WaitForTermination(10000), "HTTP service listener did not terminate promptly");
+    delete m_listenerThread;
+    m_listenerThread = NULL;
+  }
+
+  m_httpListeningSockets.RemoveAll();
+
+  m_threadPool.Shutdown();
+}
+
+
+void PHTTPListener::ListenMain()
+{
+  while (IsListening()) {
+    PSocket::SelectList listeners;
+    for (PSocketList::iterator it = m_httpListeningSockets.begin(); it != m_httpListeningSockets.end(); ++it)
+      listeners += *it;
+
+    PChannel::Errors error = PSocket::Select(listeners);
+    if (error == PChannel::NoError) {
+      // get a socket(s) when a client connects
+      for (PSocket::SelectList::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+        PTCPSocket * socket = new PTCPSocket;
+        if (socket->Accept(*it))
+          m_threadPool.AddWork(new Worker(*this, socket));
+        else {
+          if (socket->GetErrorCode() != PChannel::Interrupted) {
+            PTRACE(2, "Accept failed for HTTP: " << socket->GetErrorText());
+          }
+          delete socket;
+        }
+      }
+    }
+    else if (error != PChannel::Interrupted) {
+      PTRACE(2, "Select failed for HTTP: " << PSocket::GetErrorText(error));
+    }
+  }
+}
+
+
+PChannel * PHTTPListener::CreateChannelForHTTP(PChannel * channel)
+{
+  return channel;
+}
+
+
+PHTTPServer * PHTTPListener::CreateServerForHTTP()
+{
+  return new PHTTPServer(m_httpNameSpace);
+}
+
+
+void PHTTPListener::OnHTTPStarted(PHTTPServer & /*server*/)
+{
+}
+
+
+void PHTTPListener::OnHTTPEnded(PHTTPServer & /*server*/)
+{
+}
+
+
+PHTTPListener::Worker::~Worker()
+{
+  delete m_socket;
+}
+
+
+void PHTTPListener::Worker::Work()
+{
+  if (PAssertNULL(m_socket) == NULL)
+    return;
+
+#ifdef SO_LINGER
+  const linger ling = { 1, 5 };
+  m_socket->SetOption(SO_LINGER, &ling, sizeof(ling));
+#endif
+
+#if PTRACING
+  PStringStream socketInfo;
+  socketInfo << ": local=" << m_socket->GetLocalAddress() << ", peer=" << m_socket->GetPeerAddress();
+#endif
+
+  std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
+  if (server.get() == NULL) {
+    PTRACE(2, "Creation failed" << socketInfo);
+    return;
+  }
+
+  PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
+  if (channel == NULL) {
+    PTRACE(2, "Indirect channel creation failed" << socketInfo);
+    return;
+  }
+
+  m_socket = NULL; // Is now auto-deleted by server.
+
+  if (!server->Open(channel)) {
+    PTRACE(2, "Open failed" << socketInfo);
+    return;
+  }
+
+  PTRACE(5, "Started" << socketInfo);
+  m_listener.OnHTTPStarted(*server);
+
+  // process requests
+  while (server->ProcessCommand())
+    ;
+
+  m_listener.OnHTTPEnded(*server);
+  PTRACE(5, "Ended" << socketInfo);
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1007,20 +1198,20 @@ bool PWebSocket::Connect(const PStringArray & protocols, PString * selectedProto
     return false;
 
   if (replyMIME(PHTTP::WebSocketAcceptTag()) != PMessageDigestSHA1::Encode(key + WebSocketGUID)) {
-    PTRACE(2, "WebSock\tReply accept is unacceptable.");
+    PTRACE(2, "WebSocket reply accept is unacceptable.");
     return false;
   }
 
   PString protocol = outMIME(PHTTP::WebSocketProtocolTag());
   if (protocols.GetValuesIndex(protocol) == P_MAX_INDEX) {
-    PTRACE(2, "WebSock\tServer selected a protocol we did not offer.");
+    PTRACE(2, "WebSocket selected a protocol we did not offer.");
     return false;
   }
 
   if (selectedProtocol != NULL)
     * selectedProtocol = protocol;
 
-  PTRACE(3, "WebSock\tStarted for protocol: " << protocol);
+  PTRACE(3, "WebSocket started for protocol: " << protocol);
   m_client = true;
   return true;
 }
@@ -1216,7 +1407,7 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   else {
     entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
     if (entityBodyLength < 0) {
-      PTRACE(5, "HTTPServer\tPersistent connection has no content length");
+      PTRACE(5, "Persistent connection has no content length");
       entityBodyLength = 0;
       mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
     }

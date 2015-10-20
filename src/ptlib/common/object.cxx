@@ -729,16 +729,9 @@ PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 
 void PMemoryHeap::DumpStatistics()
 {
-  Wrapper mem;
-  if (mem->leakDumpStream != NULL)
-    mem->InternalDumpStatistics(*mem->leakDumpStream);
-}
-
-
-void PMemoryHeap::DumpStatistics(ostream & strm)
-{
-  Wrapper mem;
-  mem->InternalDumpStatistics(strm);
+  ostream * strm = Wrapper()->leakDumpStream;
+  if (strm != NULL)
+    DumpStatistics(*strm);
 }
 
 
@@ -756,7 +749,7 @@ static void OutputMemory(ostream & strm, size_t bytes)
   strm << " (" << bytes << ')';
 }
 
-void PMemoryHeap::InternalDumpStatistics(ostream & strm)
+void PMemoryHeap::DumpStatistics(ostream & strm)
 {
   if (PProcess::IsInitialised()) {
     PProcess::MemoryUsage usage;
@@ -775,6 +768,13 @@ void PMemoryHeap::InternalDumpStatistics(ostream & strm)
     OutputMemory(strm, usage.m_current);
   }
 
+  Wrapper mem;
+  mem->InternalDumpStatistics(strm);
+}
+
+
+void PMemoryHeap::InternalDumpStatistics(ostream & strm)
+{
   strm << "\n"
           "Current memory usage     : ";
   OutputMemory(strm, currentMemoryUsage);
@@ -830,6 +830,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 #if !defined(_WIN32)
       cin.get();
 #endif
+      *leakDumpStream << '\n';
       first = false;
     }
 

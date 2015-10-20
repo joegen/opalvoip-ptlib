@@ -80,13 +80,12 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   , m_copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : (const char *)m_manufacturersEmail)
   , m_restartThread(NULL)
 {
-  m_httpThreads.DisallowDeleteObjects();
 }
 
 
 PHTTPServiceProcess::~PHTTPServiceProcess()
 {
-  ShutdownListener();
+  ShutdownListeners();
 }
 
 
@@ -138,7 +137,7 @@ PBoolean PHTTPServiceProcess::OnStart()
 
 void PHTTPServiceProcess::OnStop()
 {
-  ShutdownListener();
+  ShutdownListeners();
   PServiceProcess::OnStop();
 }
 
@@ -372,117 +371,51 @@ PBoolean PHTTPServiceProcess::ClearLogPage::Post(PHTTPRequest & request, const P
 }
 
 
-bool PHTTPServiceProcess::ListenForHTTP(WORD port,
-                                        PSocket::Reusability reuse,
-                                        PINDEX stackSize)
+void PHTTPServiceProcess::BeginRestartSystem()
 {
-  return ListenForHTTP(PString::Empty(), port, reuse, stackSize);
+  if (m_restartThread == NULL) {
+    m_restartThread = PThread::Current();
+    OnConfigChanged();
+  }
 }
 
 
-bool PHTTPServiceProcess::ListenForHTTP(const PString & interfaces,
-                                        WORD port,
-                                        PSocket::Reusability reuse,
-                                        PINDEX stackSize)
+void PHTTPServiceProcess::OnHTTPEnded(PHTTPServer & /*server*/)
 {
-  if (port == 0) {
-    PAssertAlways(PInvalidParameter);
-    return false;
-  }
-
-  if (!m_httpListeningSockets.IsEmpty()) {
-    if (m_httpListeningSockets.front().GetPort() == port)
-      return true;
-
-    ShutdownListener();
-  }
-
-  PStringArray ifaces = interfaces.Tokenise(',');
-  if (ifaces.IsEmpty()) {
-    ifaces.AppendString("0.0.0.0");
-#if P_HAS_IPV6
-    ifaces.AppendString("[::]");
-#endif
-  }
-
-  bool atLeastOne = false;
-  for (PINDEX i = 0; i < ifaces.GetSize(); ++i) {
-    PIPSocket::Address binding(ifaces[i]);
-    if (binding.IsValid()) {
-      PTCPSocket * listener = new PTCPSocket(port);
-      if (listener->Listen(binding, 5, 0, reuse)) {
-        PSYSTEMLOG(Debug, "HTTPSVC\tListening for HTTP on " << listener->GetLocalAddress());
-        m_httpListeningSockets.Append(listener);
-        atLeastOne = true;
-      }
-      else {
-        PSYSTEMLOG(Debug, "HTTPSVC\tListen on port " << binding << ':' << listener->GetPort() << " failed: " << listener->GetErrorText());
-        delete listener;
-      }
-    }
-    else {
-      PSYSTEMLOG(Debug, "HTTPSVC\tInvalid interface address \"" << ifaces[i] << '"');
-    }
-  }
-
-  if (atLeastOne && stackSize > 1000)
-    new PHTTPServiceThread(stackSize, *this);
-
-  return atLeastOne;
-}
-
-
-bool PHTTPServiceProcess::ListenForHTTP(PSocket * listener,
-                                        PSocket::Reusability reuse,
-                                        PINDEX stackSize)
-{
-  if (PAssertNULL(listener) == NULL)
-    return false;
-
-  if (!m_httpListeningSockets.IsEmpty())
-    ShutdownListener();
-
-  if (!listener->Listen(5, 0, reuse)) {
-    PSYSTEMLOG(Debug, "HTTPSVC\tListen on port " << listener->GetPort()
-                    << " failed: " << listener->GetErrorText());
-    return false;
-  }
-
-  PSYSTEMLOG(Debug, "HTTPSVC\tListening for HTTP on " << *listener);
-  m_httpListeningSockets.Append(listener);
-
-  if (stackSize > 1000)
-    new PHTTPServiceThread(stackSize, *this);
-
-  return true;
-}
-
-
-void PHTTPServiceProcess::ShutdownListener()
-{
-  if (m_httpListeningSockets.IsEmpty())
+  if (m_restartThread == NULL)
+    return;
+  
+  if (m_restartThread != PThread::Current())
     return;
 
-  PSYSTEMLOG(Debug, "HTTPSVC\tClosing listener socket on port "
-                 << m_httpListeningSockets.front().GetPort());
+  if (!IsListening())
+    return;
 
-  for (PSocketList::iterator it = m_httpListeningSockets.begin(); it != m_httpListeningSockets.end(); ++it)
-    it->Close();
+  m_httpNameSpace.StartWrite();
 
-  m_httpThreadsMutex.Wait();
-  for (ThreadList::iterator it = m_httpThreads.begin(); it != m_httpThreads.end(); it++)
-    it->Close();
+  if (Initialise("Restart\tInitialisation"))
+    m_restartThread = NULL;
 
-  while (m_httpThreads.GetSize() > 0) {
-    m_httpThreadsMutex.Signal();
-    SignalTimerChange();
-    Sleep(10);
-    m_httpThreadsMutex.Wait();
-  }
+  m_httpNameSpace.EndWrite();
 
-  m_httpThreadsMutex.Signal();
+  if (m_restartThread != NULL)
+    Terminate();
+}
 
-  m_httpListeningSockets.RemoveAll();
+
+void PHTTPServiceProcess::AddRegisteredText(PHTML &)
+{
+}
+
+
+void PHTTPServiceProcess::AddUnregisteredText(PHTML &)
+{
+}
+
+
+PBoolean PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
+{
+  return false;
 }
 
 
@@ -543,172 +476,6 @@ void PHTTPServiceProcess::GetPageHeader(PHTML & html, const PString & title)
   html << PHTML::Title(title) 
        << PHTML::Body()
        << GetPageGraphic();
-}
-
-
-PTCPSocket * PHTTPServiceProcess::AcceptHTTP()
-{
-  if (m_httpListeningSockets.IsEmpty())
-    return NULL;
-
-  PSocket::SelectList listeners;
-  for (PSocketList::iterator it = m_httpListeningSockets.begin(); it != m_httpListeningSockets.end(); ++it)
-    listeners += *it;
-
-  PChannel::Errors error = PSocket::Select(listeners);
-  if (error == PChannel::NoError) {
-    // get a socket when a client connects
-    PTCPSocket * socket = new PTCPSocket;
-    if (socket->Accept(listeners.front()))
-      return socket;
-
-    if (socket->GetErrorCode() != PChannel::Interrupted) {
-      PSYSTEMLOG(Error, "Accept failed for HTTP: " << socket->GetErrorText());
-    }
-    delete socket;
-  }
-  else if (error != PChannel::Interrupted) {
-    PSYSTEMLOG(Error, "Select failed for HTTP: " << PSocket::GetErrorText(error));
-  }
-
-  return NULL;
-}
-
-
-PBoolean PHTTPServiceProcess::ProcessHTTP(PTCPSocket & socket)
-{
-  if (!socket.IsOpen() || m_httpListeningSockets.IsEmpty() || !m_httpListeningSockets.front().IsOpen())
-    return true;
-
-  PHTTPServer * server = CreateHTTPServer(socket);
-  if (server == NULL) {
-    PSYSTEMLOG(Error, "HTTP server creation/open failed.");
-    return true;
-  }
-
-  // process requests
-  while (server->ProcessCommand())
-    ;
-
-  // always close after the response has been sent
-  delete server;
-
-  // if a restart was requested, then do it, but only if we are not shutting down
-  if (!m_httpListeningSockets.IsEmpty() && m_httpListeningSockets.front().IsOpen())
-    CompleteRestartSystem();
-
-  return true;
-}
-
-
-void PHTTPServiceProcess::BeginRestartSystem()
-{
-  if (m_restartThread == NULL) {
-    m_restartThread = PThread::Current();
-    OnConfigChanged();
-  }
-}
-
-
-void PHTTPServiceProcess::CompleteRestartSystem()
-{
-  if (m_restartThread == NULL)
-    return;
-  
-  if (m_restartThread != PThread::Current())
-    return;
-
-  m_httpNameSpace.StartWrite();
-
-  if (Initialise("Restart\tInitialisation"))
-    m_restartThread = NULL;
-
-  m_httpNameSpace.EndWrite();
-
-  if (m_restartThread != NULL)
-    Terminate();
-}
-
-
-void PHTTPServiceProcess::AddRegisteredText(PHTML &)
-{
-}
-
-
-void PHTTPServiceProcess::AddUnregisteredText(PHTML &)
-{
-}
-
-
-PBoolean PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
-{
-  return false;
-}
-
-
-PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
-{
-#ifdef SO_LINGER
-  const linger ling = { 1, 5 };
-  socket.SetOption(SO_LINGER, &ling, sizeof(ling));
-#endif
-
-  PHTTPServer * server = OnCreateHTTPServer(m_httpNameSpace);
-
-  if (server->Open(socket))
-    return server;
-
-  delete server;
-  return NULL;
-}
-
-
-PHTTPServer * PHTTPServiceProcess::OnCreateHTTPServer(const PHTTPSpace & httpNameSpace)
-{
-  return new PHTTPServer(httpNameSpace);
-}
-
-
-//////////////////////////////////////////////////////////////
-
-PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
-                                       PHTTPServiceProcess & app)
-  : PThread(stackSize, AutoDeleteThread, NormalPriority, "HTTP Service"),
-    process(app)
-{
-  process.m_httpThreadsMutex.Wait();
-  process.m_httpThreads.Append(this);
-  process.m_httpThreadsMutex.Signal();
-
-  myStackSize = stackSize;
-  socket = NULL;
-  Resume();
-}
-
-
-PHTTPServiceThread::~PHTTPServiceThread()
-{
-  process.m_httpThreadsMutex.Wait();
-  process.m_httpThreads.Remove(this);
-  process.m_httpThreadsMutex.Signal();
-  delete socket;
-}
-
-
-void PHTTPServiceThread::Close()
-{
-  if (socket != NULL)
-    socket->Close();
-}
-
-
-void PHTTPServiceThread::Main()
-{
-  socket = process.AcceptHTTP();
-  if (socket != NULL) {
-    new PHTTPServiceThread(myStackSize, process);
-    process.ProcessHTTP(*socket);
-  }
 }
 
 

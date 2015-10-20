@@ -820,21 +820,6 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
   malloc_info(0, mem);
   fclose(mem);
 
-#if P_EXPAT
-  PXML xml;
-  if (xml.Load(buffer)) {
-    PXMLElement * root = xml.GetRootElement();
-    PXMLElement * element = root->GetElement("system", "type", "current");
-    if (element != NULL)
-      usage.m_current = (size_t)element->GetAttribute("size").AsUnsigned64();
-    element = root->GetElement("system", "type", "max");
-    if (element != NULL)
-      usage.m_max = (size_t)element->GetAttribute("size").AsUnsigned64();
-    element = root->GetElement("total", "type", "rest");
-    if (element != NULL)
-      usage.m_blocks = (size_t)element->GetAttribute("count").AsUnsigned64();
-  }
-#else // P_EXPAT
   // Find last </heap> in XML
   size_t offset = 0;
   static PRegularExpression HeapRE("< */ *heap *>", PRegularExpression::Extended);
@@ -853,7 +838,6 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
   static PRegularExpression CurrentRE("< *system *type *= *\"current\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
   if (CurrentRE.Execute(buffer + offset, substrings))
     usage.m_current = (size_t)substrings[1].AsUnsigned64();
-#endif // P_EXPAT
 
   runtime_free(buffer);
 #else // P_HAS_MALLOC_INFO

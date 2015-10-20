@@ -35,6 +35,8 @@
 #pragma interface
 #endif
 
+#include <ptlib_config.h>
+
 #if P_HTTP
 
 #include <ptclib/inetprot.h>
@@ -1241,6 +1243,64 @@ class PHTTPServer : public PHTTP
     P_REMOVE_VIRTUAL(PBoolean,OnGET(const PURL&,const PMIMEInfo&, const PHTTPConnectionInfo&),false);
     P_REMOVE_VIRTUAL(PBoolean,OnHEAD(const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo&),false);
     P_REMOVE_VIRTUAL(PBoolean,OnPOST(const PURL&,const PMIMEInfo&,const PStringToString&,const PHTTPConnectionInfo&),false);
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPNetworkServer
+
+class PTCPSocket;
+
+class PHTTPListener
+{
+public:
+  PHTTPListener(
+    unsigned maxWorkers = 10
+  );
+
+  bool ListenForHTTP(
+    WORD port,
+    PSocket::Reusability reuse = PSocket::CanReuseAddress
+  );
+  bool ListenForHTTP(
+    const PString & interfaces,
+    WORD port,
+    PSocket::Reusability reuse = PSocket::CanReuseAddress
+  );
+  void ShutdownListeners();
+
+  bool IsListening() const { return !m_httpListeningSockets.IsEmpty() && m_httpListeningSockets.front().IsOpen(); }
+
+  virtual PChannel * CreateChannelForHTTP(PChannel * channel);
+  virtual PHTTPServer * CreateServerForHTTP();
+
+  virtual void OnHTTPStarted(PHTTPServer & server);
+  virtual void OnHTTPEnded(PHTTPServer & server);
+
+  unsigned GetMaxWorkers() const { return m_threadPool.GetMaxWorkers(); }
+  void SetMaxWorkers(
+    unsigned count
+  ) { m_threadPool.SetMaxWorkers(count); }
+
+protected:
+  PHTTPSpace  m_httpNameSpace;
+  PString     m_listenerInterfaces;
+  WORD        m_listenerPort;
+  PThread   * m_listenerThread;
+  PSocketList m_httpListeningSockets;
+  void ListenMain();
+
+  struct Worker
+  {
+    Worker(PHTTPListener & listener, PTCPSocket * socket)
+      : m_listener(listener), m_socket(socket) { }
+    ~Worker();
+    void Work();
+
+    PHTTPListener & m_listener;
+    PTCPSocket    * m_socket;
+  };
+  PQueuedThreadPool<Worker> m_threadPool;
 };
 
 
