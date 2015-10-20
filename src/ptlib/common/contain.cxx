@@ -171,7 +171,7 @@ PBoolean PContainer::MakeUnique()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if !PMEMORY_CHECK
+#if PMEMORY_CHECK
 
   #define PAbstractArrayAllocate(s)     (char *)PMemoryHeap::Allocate(s, __FILE__, __LINE__, "PAbstractArrayData")
   #define PAbstractArrayReallocate(p,s)         PMemoryHeap::Reallocate(p, s, __FILE__, __LINE__, "PAbstractArrayData")
