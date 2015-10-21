@@ -931,9 +931,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     retval = ::poll(pfd, PARRAYSIZE(pfd), timeout.GetInterval());
   } while (retval < 0 && errno == EINTR);
 
-  if (retval > 0 && pfd[1].revents != 0) {
-    BYTE ch;
-    PAssertOS(::read(unblockPipe[0], &ch, 1) != -1);
+  BYTE dummy;
+  if (retval > 0 && pfd[1].revents != 0 && ::read(unblockPipe[0], &dummy, 1) == 1) {
     errno = ECANCELED;
     retval = -1;
     PTRACE(6, "PTLib\tUnblocked I/O fd=" << unblockPipe[0]);
@@ -985,9 +984,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     );
   } while (retval < 0 && errno == EINTR);
 
-  if ((retval == 1) && read_fds.IsPresent(unblockPipe[0])) {
-    BYTE ch;
-    PAssertOS(::read(unblockPipe[0], &ch, 1) != -1);
+  BYTE dummy;
+  if (retval > 0 && read_fds.IsPresent(unblockPipe[0]) && ::read(unblockPipe[0], &ch, 1) == 1) {
     errno = ECANCELED;
     retval =  -1;
     PTRACE(6, "PTLib\tUnblocked I/O fd=" << unblockPipe[0]);
@@ -1001,7 +999,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 void PThread::PXAbortBlock() const
 {
   static BYTE ch = 0;
-  PAssertOS(::write(unblockPipe[1], &ch, 1) != -1);
+  PAssertOS(::write(unblockPipe[1], &ch, 1) == 1);
   PTRACE(6, "PTLib\tUnblocking I/O fd=" << unblockPipe[0] << " thread=" << GetThreadName());
 }
 
