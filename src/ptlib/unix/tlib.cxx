@@ -811,9 +811,12 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
   else
     usage.m_virtual = usage.m_resident = 0;
 
-#if P_HAS_MALLOC_INFO
-  usage.m_max = usage.m_current = usage.m_blocks = 0;
+  struct mallinfo info = mallinfo();
+  usage.m_max = info.uordblks + info.fordblks;
+  usage.m_current = info.uordblks;
+  usage.m_blocks = info.hblks;
 
+#if P_HAS_MALLOC_INFO
   char * buffer = NULL;
   size_t size;
   FILE * mem = open_memstream(&buffer, &size);
@@ -840,11 +843,6 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
     usage.m_current = (size_t)substrings[1].AsUnsigned64();
 
   runtime_free(buffer);
-#else // P_HAS_MALLOC_INFO
-  struct mallinfo info = mallinfo();
-  usage.m_max = info.uordblks + info.fordblks;
-  usage.m_current = info.uordblks;
-  usage.m_blocks = info.hblks;
 #endif // P_HAS_MALLOC_INFO
 }
 
