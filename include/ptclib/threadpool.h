@@ -406,6 +406,9 @@ class PThreadPool : public PThreadPoolBase
 template <class Work_T>
 class PQueuedThreadPool : public PThreadPool<Work_T>
 {
+  protected:
+    PTimeInterval m_maxWaitTime;
+
   public:
     //
     //  constructor
@@ -414,8 +417,10 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
       unsigned maxWorkers = 10,
       unsigned maxWorkUnits = 0,
       const char * threadName = NULL,
-      PThread::Priority priority = PThread::NormalPriority
+      PThread::Priority priority = PThread::NormalPriority,
+      const PTimeInterval & maxWaitTime = PMaxTimeInterval
     ) : PThreadPool<Work_T>(maxWorkers, maxWorkUnits, threadName, priority)
+      , m_maxWaitTime(maxWaitTime)
     { }
 
     class QueuedWorkerThread : public PThreadPool<Work_T>::WorkerThread
@@ -428,12 +433,13 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         {
         }
 
-        ~QueuedWorkerThread()
-        { }
+        const PTimeInterval & GetMaxWaitTime() const { return m_maxWaitTime; }
+        void SetMaxWaitTime(const PTimeInterval & time) { m_maxWaitTime = time; }
 
         void AddWork(Work_T * work)
         {
-          m_queue.Enqueue(work);
+          if (PAssertNULL(work) != NULL)
+            this->m_queue.Enqueue(work);
         }
 
         void RemoveWork(Work_T * work)
@@ -443,28 +449,38 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         unsigned GetWorkSize() const
         {
-          return (unsigned)m_queue.size();
+          return (unsigned)this->m_queue.size();
         }
 
         void Main()
         {
-          Work_T * work = 0;
-          while (m_queue.Dequeue(work)) {
-            work->Work();
-            RemoveWork(work);
+          QueuedWork item(NULL);
+          while (this->m_queue.Dequeue(item)) {
+            PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(m_pool);
+            if (item.m_time.GetElapsed() > pool.m_maxWaitTime)
+              pool.OnMaxWaitTime();
+            item.m_work->Work();
+            this->RemoveWork(item.m_work);
           }
         }
 
         void Shutdown()
         {
-          PThreadPool<Work_T>::WorkerThread::m_shutdown = true;
-          m_queue.Close(true);
+          this->m_shutdown = true;
+          this->m_queue.Close(true);
         }
 
       protected:
-        PSyncQueue<Work_T*> m_queue;
+        struct QueuedWork
+        {
+          QueuedWork(Work_T * work) : m_work(work) { }
+          PTime    m_time;
+          Work_T * m_work;
+        };
+        PSyncQueue<QueuedWork> m_queue;
     };
 
+    virtual void OnMaxWaitTime() { }
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
     {
