@@ -1309,7 +1309,10 @@ void PTimer::OnTimeout()
 // PTimer::List
 
 PTimer::List::List()
-  : m_threadPool(10, 0, "OnTimeout")
+  : m_threadPool(10, 0, "OnTimeout", PThread::NormalPriority, 500)
+#if PTRACING
+  , m_highWaterMark(0)
+#endif
 {
 }
 
@@ -1393,6 +1396,12 @@ PTimeInterval PTimer::List::Process()
   if (nextInterval < 10)
     nextInterval = 10;
 
+#if PTRACING
+  if (m_timers.size() > m_highWaterMark+10) {
+    m_highWaterMark = m_timers.size();
+    PTRACE(2, NULL, "PTLib", "Timers high water mark: " << m_highWaterMark);
+  }
+#endif
   PTRACE(6, NULL, "PTLib", m_timers.size() << " timers processed, next=" << nextInterval);
   return nextInterval;
 }

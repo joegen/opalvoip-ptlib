@@ -1277,19 +1277,6 @@ public:
   virtual void OnHTTPStarted(PHTTPServer & server);
   virtual void OnHTTPEnded(PHTTPServer & server);
 
-  unsigned GetMaxWorkers() const { return m_threadPool.GetMaxWorkers(); }
-  void SetMaxWorkers(
-    unsigned count
-  ) { m_threadPool.SetMaxWorkers(count); }
-
-protected:
-  PHTTPSpace  m_httpNameSpace;
-  PString     m_listenerInterfaces;
-  WORD        m_listenerPort;
-  PThread   * m_listenerThread;
-  PSocketList m_httpListeningSockets;
-  void ListenMain();
-
   struct Worker
   {
     Worker(PHTTPListener & listener, PTCPSocket * socket)
@@ -1300,7 +1287,19 @@ protected:
     PHTTPListener & m_listener;
     PTCPSocket    * m_socket;
   };
-  PQueuedThreadPool<Worker> m_threadPool;
+  typedef PQueuedThreadPool<Worker> ThreadPool;
+  const ThreadPool & GetThreadPool() const { return m_threadPool; }
+        ThreadPool & GetThreadPool()       { return m_threadPool; }
+
+protected:
+  void ListenMain();
+
+  PHTTPSpace  m_httpNameSpace;
+  PString     m_listenerInterfaces;
+  WORD        m_listenerPort;
+  PThread   * m_listenerThread;
+  PSocketList m_httpListeningSockets;
+  ThreadPool  m_threadPool;
 };
 
 
