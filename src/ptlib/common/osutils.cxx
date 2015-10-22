@@ -1309,25 +1309,11 @@ void PTimer::OnTimeout()
 // PTimer::List
 
 PTimer::List::List()
+  : m_threadPool(10, 0, "OnTimeout", PThread::NormalPriority, 500)
 #if PTRACING
-  : m_highWaterMark(0)
+  , m_highWaterMark(0)
 #endif
 {
-}
-
-
-PTimer::List::ThreadPool::ThreadPool()
-  : PQueuedThreadPool<Timeout>(10, 0, "OnTimeout", PThread::NormalPriority, 500)
-{
-}
-
-
-void PTimer::List::ThreadPool::OnMaxWaitTime()
-{
-  unsigned maxWorkers = GetMaxWorkers()+10;
-  PTRACE(2, NULL, "PTLib", "Timer thread pool latency excessive (" << GetMaxWaitTime() << "s),"
-                           " increasing maximum threads to " << maxWorkers);
-  SetMaxWorkers(maxWorkers);
 }
 
 
