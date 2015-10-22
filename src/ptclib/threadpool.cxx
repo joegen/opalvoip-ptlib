@@ -48,7 +48,9 @@ PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount,
                                  PThread::Priority priority)
   : m_maxWorkerCount(maxWorkerCount)
   , m_maxWorkUnitCount(maxWorkUnitCount)
+#if PTRACING
   , m_highWaterMark(0)
+#endif
   , m_threadName(threadName != NULL ? threadName : "Pool")
   , m_priority(priority)
 {
@@ -102,6 +104,7 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::AllocateWorker()
   return NewWorker();
 }
 
+
 PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
 {
   // create a new worker thread
@@ -111,10 +114,12 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
   m_listMutex.Wait();
   m_workers.push_back(worker);
 
+#if PTRACING
   if (m_workers.size() > m_highWaterMark) {
     m_highWaterMark = m_workers.size();
-    PTRACE(3, "PTLib", "Thread pool high water mark: " << m_highWaterMark);
+    PTRACE(2, "PTLib", "Thread pool (" << m_threadName << ") high water mark: " << m_highWaterMark);
   }
+#endif
 
   m_listMutex.Signal();
 
