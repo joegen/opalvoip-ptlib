@@ -220,7 +220,9 @@ class PThreadPoolBase : public PObject
 
     unsigned          m_maxWorkerCount;
     unsigned          m_maxWorkUnitCount;
+#if PTRACING
     unsigned          m_highWaterMark; // For logging
+#endif
     PString           m_threadName;
     PThread::Priority m_priority;
 };
