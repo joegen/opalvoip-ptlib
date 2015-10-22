@@ -802,8 +802,10 @@ void PHTTPListener::ListenMain()
       // get a socket(s) when a client connects
       for (PSocket::SelectList::iterator it = listeners.begin(); it != listeners.end(); ++it) {
         PTCPSocket * socket = new PTCPSocket;
-        if (socket->Accept(*it))
+        if (socket->Accept(*it)) {
+          PTRACE(5, "Queuing thread pool work for: local=" << socket->GetLocalAddress() << ", peer=" << socket->GetPeerAddress());
           m_threadPool.AddWork(new Worker(*this, socket));
+        }
         else {
           if (socket->GetErrorCode() != PChannel::Interrupted) {
             PTRACE(2, "Accept failed for HTTP: " << socket->GetErrorText());
@@ -861,6 +863,7 @@ void PHTTPListener::Worker::Work()
   PStringStream socketInfo;
   socketInfo << ": local=" << m_socket->GetLocalAddress() << ", peer=" << m_socket->GetPeerAddress();
 #endif
+  PTRACE(5, "Processing thread pool work for" << socketInfo);
 
   std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
   if (server.get() == NULL) {
