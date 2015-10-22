@@ -368,7 +368,12 @@ class PTimer : public PTimeInterval
           virtual ~Timeout() { }
           virtual void Work();
         };
-        PQueuedThreadPool<Timeout> m_threadPool;
+        struct ThreadPool : PQueuedThreadPool<Timeout>
+        {
+          ThreadPool();
+          virtual void OnMaxWaitTime();
+        };
+        ThreadPool m_threadPool;
 
         typedef std::map<PIdGenerator::Handle, PTimer *> TimerMap;
         TimerMap m_timers;
