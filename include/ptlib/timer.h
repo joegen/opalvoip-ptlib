@@ -373,6 +373,9 @@ class PTimer : public PTimeInterval
         typedef std::map<PIdGenerator::Handle, PTimer *> TimerMap;
         TimerMap m_timers;
         PCriticalSection m_timersMutex;
+#if PTRACING
+        size_t m_highWaterMark;
+#endif
 
       friend class PTimer;
     };
