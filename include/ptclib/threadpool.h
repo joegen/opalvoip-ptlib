@@ -481,7 +481,13 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         PSyncQueue<QueuedWork> m_queue;
     };
 
-    virtual void OnMaxWaitTime() { }
+    virtual void OnMaxWaitTime()
+    {
+      unsigned newMaxWorkers = (this->m_maxWorkerCount*11+9)/10;
+      PTRACE(2, NULL, "PTLib", "Thread pool latency excessive (" << this->m_maxWaitTime << "s),"
+                               " increasing maximum threads to " << newMaxWorkers);
+      this->m_maxWorkerCount = newMaxWorkers;
+    }
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
     {
