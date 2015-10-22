@@ -421,7 +421,11 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
       const PTimeInterval & maxWaitTime = PMaxTimeInterval
     ) : PThreadPool<Work_T>(maxWorkers, maxWorkUnits, threadName, priority)
       , m_maxWaitTime(maxWaitTime)
-    { }
+    {
+    }
+
+    const PTimeInterval & GetMaxWaitTime() const { return m_maxWaitTime; }
+    void SetMaxWaitTime(const PTimeInterval & time) { m_maxWaitTime = time; }
 
     class QueuedWorkerThread : public PThreadPool<Work_T>::WorkerThread
     {
@@ -432,9 +436,6 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
           : PThreadPool<Work_T>::WorkerThread(pool, priority, threadName)
         {
         }
-
-        const PTimeInterval & GetMaxWaitTime() const { return m_maxWaitTime; }
-        void SetMaxWaitTime(const PTimeInterval & time) { m_maxWaitTime = time; }
 
         void AddWork(Work_T * work)
         {
@@ -456,7 +457,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         {
           QueuedWork item(NULL);
           while (this->m_queue.Dequeue(item)) {
-            PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(m_pool);
+            PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(this->m_pool);
             if (item.m_time.GetElapsed() > pool.m_maxWaitTime)
               pool.OnMaxWaitTime();
             item.m_work->Work();
