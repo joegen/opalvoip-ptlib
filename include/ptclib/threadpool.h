@@ -434,6 +434,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
                            PThread::Priority priority = PThread::NormalPriority,
                            const char * threadName = NULL)
           : PThreadPool<Work_T>::WorkerThread(pool, priority, threadName)
+          , m_working(false)
         {
         }
 
@@ -450,18 +451,20 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         unsigned GetWorkSize() const
         {
-          return (unsigned)this->m_queue.size();
+          return (unsigned)this->m_queue.size()+this->m_working;
         }
 
         void Main()
         {
           QueuedWork item(NULL);
           while (this->m_queue.Dequeue(item)) {
+            this->m_working = true;
             PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(this->m_pool);
             if (item.m_time.GetElapsed() > pool.m_maxWaitTime)
               pool.OnMaxWaitTime();
             item.m_work->Work();
             this->RemoveWork(item.m_work);
+            this->m_working = false;
           }
         }
 
@@ -479,6 +482,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
           Work_T * m_work;
         };
         PSyncQueue<QueuedWork> m_queue;
+        bool                   m_working;
     };
 
     virtual void OnMaxWaitTime()
