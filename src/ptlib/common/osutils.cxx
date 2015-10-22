@@ -1325,7 +1325,7 @@ PTimer::List::ThreadPool::ThreadPool()
 void PTimer::List::ThreadPool::OnMaxWaitTime()
 {
   unsigned maxWorkers = GetMaxWorkers()+10;
-  PTRACE(2, NULL, "PTLib", "Time thread pool latency excessive (" << GetMaxWaitTime() << "s),"
+  PTRACE(2, NULL, "PTLib", "Timer thread pool latency excessive (" << GetMaxWaitTime() << "s),"
                            " increasing maximum threads to " << maxWorkers);
   SetMaxWorkers(maxWorkers);
 }
