@@ -422,7 +422,7 @@ void PWAVFile::SetSampleRate(unsigned rate)
 
 unsigned PWAVFile::GetSampleSize() const
 {
-  return m_wavFmtChunk.bitsPerSample;
+  return m_autoConverter != NULL ? 16 : m_wavFmtChunk.bitsPerSample;
 }
 
 
