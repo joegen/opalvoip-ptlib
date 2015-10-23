@@ -812,40 +812,45 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
     usage.m_virtual = usage.m_resident = 0;
 
 #if P_HAS_MALLOC_INFO
-  usage.m_max = usage.m_current = usage.m_blocks = 0;
-
   char * buffer = NULL;
   size_t size;
   FILE * mem = open_memstream(&buffer, &size);
-  malloc_info(0, mem);
+  bool ok = malloc_info(0, mem) == 0;
   fclose(mem);
 
-  // Find last </heap> in XML
-  size_t offset = 0;
-  static PRegularExpression HeapRE("< */ *heap *>", PRegularExpression::Extended);
-  PINDEX pos, len;
-  while (HeapRE.Execute(buffer + offset, pos, len))
-    offset += pos + len;
+  if (ok) {
+    // Find last </heap> in XML
+    size_t offset = 0;
+    static PRegularExpression HeapRE("< */ *heap *>", PRegularExpression::Extended);
+    PINDEX pos, len;
+    while (HeapRE.Execute(buffer + offset, pos, len))
+      offset += pos + len;
 
-  // The <system type="xxx" size=yyy> after the <heap>s is total
+    // The <system type="xxx" size=yyy> after the <heap>s is total
 
-  PStringArray substrings(2);
+    PStringArray substrings(2);
 
-  static PRegularExpression MaxRE("< *system *type *= *\"max\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
-  if (MaxRE.Execute(buffer + offset, substrings))
-    usage.m_max = (size_t)substrings[1].AsUnsigned64();
+    static PRegularExpression MaxRE("< *system *type *= *\"max\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
+    if (MaxRE.Execute(buffer + offset, substrings)) {
+      usage.m_max = (size_t)substrings[1].AsUnsigned64();
+      ok = usage.m_max > 0;
+    }
 
-  static PRegularExpression CurrentRE("< *system *type *= *\"current\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
-  if (CurrentRE.Execute(buffer + offset, substrings))
-    usage.m_current = (size_t)substrings[1].AsUnsigned64();
+    static PRegularExpression CurrentRE("< *system *type *= *\"current\" *size *= *\"([0-9]+)", PRegularExpression::Extended);
+    if (CurrentRE.Execute(buffer + offset, substrings))
+      usage.m_current = (size_t)substrings[1].AsUnsigned64();
+  }
 
   runtime_free(buffer);
-#else // P_HAS_MALLOC_INFO
-  struct mallinfo info = mallinfo();
-  usage.m_max = info.uordblks + info.fordblks;
-  usage.m_current = info.uordblks;
-  usage.m_blocks = info.hblks;
+
+  if (!ok)
 #endif // P_HAS_MALLOC_INFO
+  {
+    struct mallinfo info = mallinfo();
+    usage.m_max = info.usmblks > 0 ? info.usmblks : (info.uordblks + info.fordblks + info.fsmblks);
+    usage.m_current = info.uordblks;
+    usage.m_blocks = info.hblks;
+  }
 }
 
 #else //P_LINUX
