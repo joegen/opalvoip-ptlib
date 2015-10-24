@@ -72,7 +72,7 @@ PNatMethod * PNatMethods::GetMethod(const PIPSocket::Address & binding, PObject 
     }
   }
 
-  PTRACE(5, "No available methods on " << binding);
+  PTRACE(3, "No available methods on " << binding);
   return NULL;
 }
 
