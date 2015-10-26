@@ -135,7 +135,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
     // check if the channel is still open
     if (CheckNotOpen()) {
       mutex.Signal();
-      return SetErrorValues(Interrupted, EINTR, LastReadError);
+      return SetErrorValues(NotOpen, EBADF, LastReadError);
     }
   }
 
@@ -216,7 +216,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
 
       if (!IsOpen()) {
         mutex.Signal();
-        return SetErrorValues(Interrupted, EINTR, LastWriteError);
+        return SetErrorValues(NotOpen, EBADF, LastWriteError);
       }
     }
 
