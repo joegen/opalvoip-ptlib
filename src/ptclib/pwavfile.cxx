@@ -426,6 +426,12 @@ unsigned PWAVFile::GetSampleSize() const
 }
 
 
+unsigned PWAVFile::GetRawSampleSize() const
+{
+  return m_wavFmtChunk.bitsPerSample;
+}
+
+
 void PWAVFile::SetSampleSize(unsigned v) 
 {
   if (m_status == e_PreWrite) {
@@ -474,8 +480,15 @@ bool PWAVFile::SelectFormat(PWAVFileFormat * handler)
   delete m_formatHandler;
   m_formatHandler = handler;
 
-  if (m_status == e_PreWrite)
-    m_wavFmtChunk.format = (WORD)m_formatHandler->GetFormat();
+  switch (m_status) {
+    case e_PreWrite:
+      m_wavFmtChunk.format = (WORD)m_formatHandler->GetFormat();
+      break;
+    case e_Reading:
+      m_formatHandler->ProcessHeader(m_wavFmtChunk, m_wavHeaderData);
+    default:
+      break;
+  }
 
   return SetAutoconvert(m_autoConverter != NULL);
 }
@@ -703,7 +716,13 @@ PBoolean PWAVFileFormat::Write(PWAVFile & file, const void * buf, PINDEX & len)
 
 class PWAVFileFormatPCM : public PWAVFileFormat
 {
+    WORD m_bitsPerSample;
   public:
+    PWAVFileFormatPCM()
+      : m_bitsPerSample(16)
+    {
+    }
+
     unsigned GetFormat() const
     {
       return PWAVFile::fmt_PCM;
@@ -721,7 +740,7 @@ class PWAVFileFormatPCM : public PWAVFileFormat
 
     PString GetFormatString() const
     {
-      return "PCM-16";
+      return PSTRSTRM("PCM-" << m_bitsPerSample);
     }
 
     void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & /*extendedHeader*/)
@@ -730,15 +749,20 @@ class PWAVFileFormatPCM : public PWAVFileFormat
       wavFmtChunk.format          = PWAVFile::fmt_PCM;
       wavFmtChunk.numChannels     = 1;
       wavFmtChunk.sampleRate      = 8000;
-      wavFmtChunk.bytesPerSample  = 2;
-      wavFmtChunk.bitsPerSample   = 16;
+      wavFmtChunk.bitsPerSample   = m_bitsPerSample;
+      wavFmtChunk.bytesPerSample  = wavFmtChunk.numChannels*wavFmtChunk.bitsPerSample/8;
       wavFmtChunk.bytesPerSec     = wavFmtChunk.sampleRate * wavFmtChunk.bytesPerSample;
     }
 
     void UpdateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & /*extendedHeader*/)
     {
-      wavFmtChunk.bytesPerSample  = 2 * wavFmtChunk.numChannels;
-      wavFmtChunk.bytesPerSec     = wavFmtChunk.sampleRate * 2 * wavFmtChunk.numChannels;
+      wavFmtChunk.bytesPerSample  = wavFmtChunk.numChannels*m_bitsPerSample/8;
+      wavFmtChunk.bytesPerSec     = wavFmtChunk.sampleRate * wavFmtChunk.bytesPerSample;
+    }
+
+    virtual void ProcessHeader(const PWAV::FMTChunk & wavFmtChunk, const PBYTEArray & /*extendedHeader*/)
+    {
+      m_bitsPerSample = wavFmtChunk.bitsPerSample;
     }
 
     PBoolean Read(PWAVFile & file, void * buf, PINDEX & len)
@@ -987,10 +1011,10 @@ off_t PWAVFileConverterPCM::GetDataLength(PWAVFile & file)
 
 PBoolean PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
 {
-  if (file.GetSampleSize() == 16)
+  if (file.GetRawSampleSize() == 16)
     return file.RawRead(buf, len);
 
-  if (file.GetSampleSize() != 8) {
+  if (file.GetRawSampleSize() != 8) {
     PTRACE(1, "Attempt to read autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
     return false;
   }
@@ -1016,7 +1040,7 @@ PBoolean PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
 
 PBoolean PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX len)
 {
-  if (file.GetSampleSize() == 16)
+  if (file.GetRawSampleSize() == 16)
     return file.PWAVFile::RawWrite(buf, len);
 
   PTRACE(1, "Attempt to write autoconvert PCM data with unsupported number of bits per sample " << file.GetSampleSize());
