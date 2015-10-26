@@ -168,7 +168,7 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
       int result = ::read(os_handle, buf, len);
     );
     if (result >= 0)
-      return (lastReadCount = result) > 0;
+      return ConvertOSError(lastReadCount = result, LastReadError);
 
     switch (errno) {
       case EINTR :
@@ -183,7 +183,7 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
         // Next case
 
       default :
-        return ConvertOSError(-1);
+        return ConvertOSError(-1, LastReadError);
     }
   }
 }
@@ -402,6 +402,7 @@ PBoolean PChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
 
     case EBADF:  // will get EBADF if a read/write occurs after closing. This must return Interrupted
     case EINTR:
+    case ECANCELED :
       lastError = Interrupted;
       break;
 

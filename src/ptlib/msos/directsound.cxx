@@ -826,7 +826,7 @@ PBoolean PSoundChannelDirectSound::WaitForPlayBufferFree () // protected
       CheckPlayBuffer();
     }
   }
-  return SetErrorValues(Interrupted, EINTR, LastWriteError);
+  return SetErrorValues(Interrupted, ECANCELED, LastWriteError);
 }
 
 
@@ -1135,7 +1135,7 @@ PBoolean PSoundChannelDirectSound::WaitForRecordBufferFull () // public
       CheckCaptureBuffer();
     }
   }
-  return SetErrorValues(Interrupted, EINTR, LastReadError);
+  return SetErrorValues(Interrupted, ECANCELED, LastReadError);
 }
 
 
