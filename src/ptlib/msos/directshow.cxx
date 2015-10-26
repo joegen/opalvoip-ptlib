@@ -515,7 +515,10 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
         if (useDefaultColourOrSize >= 2) {
           frameWidth = scc.MaxOutputSize.cx;
           frameHeight = scc.MaxOutputSize.cy;
+          PTRACE(3, "Camera format forced resolution to " << *this);
         }
+        else
+          PTRACE(3, "Camera format forced colour to " << *this);
       }
 
       m_selectedGUID = pMediaFormat->subtype;
@@ -553,7 +556,6 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
     }
   }
 
-  PTRACE(2, "Camera formats available could not be matched to " << *this);
   return false;
 }
 
@@ -602,9 +604,12 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
   PCOM_RETURN_ON_FAILED(pEnum->Reset,());
   PCOM_RETURN_ON_FAILED(pEnum->Next,(1, &m_pCameraOutPin, NULL));
 
+  PTRACE(4, "Attempting to use " << *this);
   // Set the format of the Output pin of the camera
-  if (!(SetPinFormat(0) || SetPinFormat(1) || SetPinFormat(2)))
+  if (!(SetPinFormat(0) || SetPinFormat(1) || SetPinFormat(2))) {
+    PTRACE(2, "Camera formats available could not be matched to " << *this);
     return false;
+  }
 
   if (!PlatformOpen())
     return false;
