@@ -122,6 +122,11 @@ public:
   virtual void UpdateHeader(PWAV::FMTChunk & /*header*/, PBYTEArray & /*extendedHeader*/)
   { }
 
+  /**Populate the header with the correct values after initial parameters are set.
+   */
+  virtual void ProcessHeader(const PWAV::FMTChunk & /*header*/, const PBYTEArray & /*extendedHeader*/)
+  { }
+
   /**Write any extra headers after the FORMAT chunk.
    */
   virtual PBoolean WriteExtraChunks(PWAVFile & /*file*/)
@@ -384,6 +389,9 @@ public:
    */
   virtual unsigned GetSampleSize() const;
 
+  /// Get original unconverted samepl size
+  unsigned GetRawSampleSize() const;
+
   /**Set how many bits there are per sample, eg 8 or 16.
      Note this can only be performed for WriteOnly files, and before the first
      call to Write() is executed.
@@ -454,8 +462,6 @@ protected:
   PShortArray  m_readBuffer;
   PINDEX       m_readBufCount;
   PINDEX       m_readBufPos;
-
-  friend class PWAVFileConverter;
 };
 
 #endif // P_WAVFILE
