@@ -318,10 +318,11 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 
 
 static PUInt64 const SecondsFrom1900to1970 = (70*365+17)*24*60*60U;
+static PUInt64 const MicrosecondsToFraction = 4294;
 
 void PTime::SetNTP(PUInt64 ntp)
 {
-  m_microSecondsSinceEpoch.store(((ntp>>32) - SecondsFrom1900to1970)*Micro + (DWORD)ntp / 4294);
+  m_microSecondsSinceEpoch.store(((ntp>>32) - SecondsFrom1900to1970)*Micro + (ntp&0xffffffff)/MicrosecondsToFraction);
 }
 
 
@@ -330,7 +331,7 @@ PUInt64 PTime::GetNTP() const
   if (!IsValid())
     return 0;
   int64_t usecs = m_microSecondsSinceEpoch.load();
-  return ((usecs/Micro+SecondsFrom1900to1970)<<32) + usecs*4294;
+  return ((usecs/Micro+SecondsFrom1900to1970)<<32) | ((usecs%Micro)*MicrosecondsToFraction);
 }
 
 
