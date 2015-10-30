@@ -856,8 +856,6 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
   
   PTRACE(6, "WaitForTermination on 0x" << hex << id << dec << " for " << maxWait);
 
-  PXAbortBlock();   // this assist in clean shutdowns on some systems
-
   PTimeInterval start = PTimer::Tick();
   while (!IsTerminated()) {
     if ((PTimer::Tick() - start) > maxWait)
