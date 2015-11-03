@@ -932,8 +932,9 @@ PString::PString(unsigned long long n)
 #endif
 
 
-static const char siTable[] = { 'f', 'p', 'n', 'u', 'm', '\0', 'k', 'M', 'G', 'T', 'E' };
-static const size_t siZero = sizeof(siTable)/2;
+static const char siTable[][2] = { "f", "p", "n", "u", "m", "", "k", "M", "G", "T", "E" };
+static const size_t siCount = sizeof(siTable)/2;
+static const size_t siZero = siCount/2;
 
 static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArray)
 {
@@ -952,7 +953,7 @@ static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArr
 
   PINDEX length = 0;
   PInt64 multiplier = 1;
-  for (size_t i = siZero+1; i < sizeof(siTable); ++i) {
+  for (size_t i = siZero+1; i < siCount; ++i) {
     multiplier *= 1000;
     if (absValue < multiplier*1000) {
       length = p_signed2string<PInt64, PUInt64>(value/multiplier, 10, theArray);
@@ -964,7 +965,7 @@ static PINDEX InternalConvertScaleSI(PInt64 value, unsigned param, char * theArr
           theArray[length++] = (absValue/multiplier)%10 + '0';
         } while (--param > 0 && absValue%multiplier != 0);
       }
-      theArray[length++] = siTable[i];
+      theArray[length++] = siTable[i][0];
       break;
     }
   }
@@ -1038,7 +1039,7 @@ PString::PString(ConversionType type, double value, unsigned places)
         double multiplier = 1e-15;
         double absValue = fabs(value);
         size_t i;
-        for (i = 0; i < sizeof(siTable)-1; ++i) {
+        for (i = 0; i < siCount-1; ++i) {
           double nextMultiplier = multiplier * 1000;
           if (absValue < nextMultiplier)
             break;
@@ -1052,7 +1053,7 @@ PString::PString(ConversionType type, double value, unsigned places)
           places -= 2;
         else if (places >= 1)
           --places;
-        sprintf("%0.*f%c", (int)places, value, siTable[i]);
+        sprintf("%0.*f%s", (int)places, value, siTable[i]);
       }
       break;
 
