@@ -1687,23 +1687,40 @@ namespace PXML {
 PString EscapeSpecialChars(const PString & str)
 #endif
 {
-  // code based on appendix from http://www.hdfgroup.org/HDF5/XML/xml_escape_chars.htm
-  static const PConstString SpecialChars("\"'&<>");
-  static const char * const Escapes[] = { "&quot;", "&apos;", "&amp;", "&lt;", "&gt;" };
-
-  PINDEX pos = str.FindOneOf(SpecialChars);
-  if (pos == P_MAX_INDEX)
-    return str;
+  // http://www.w3.org/TR/2008/REC-xml-20081126/#charsets
 
   PStringStream escaped;
 
-  PINDEX lastPos = 0;
-  do {
-    escaped << str(lastPos, pos - 1) << Escapes[SpecialChars.Find(str[pos])];
-    lastPos = pos + 1;
-  } while((pos = str.FindOneOf(SpecialChars, lastPos)) != P_MAX_INDEX);
-
-  escaped << str.Mid(lastPos);
+  for (PINDEX i = 0; i < str.GetLength(); ++i) {
+    char c = str[i];
+    switch (c) {
+      case '"' :
+        escaped << "&quot;";
+        break;
+      case '\'' :
+        escaped << "&apos;";
+        break;
+      case '&' :
+        escaped << "&amp;";
+        break;
+      case '<' :
+        escaped << "&lt;";
+        break;
+      case '>' :
+        escaped << "&gt;";
+        break;
+      case '\t' :
+      case '\r' :
+      case '\n' :
+        escaped << c;
+        break;
+      default :
+        if (c >= '\0' && c < ' ')
+          escaped << "&#" << (unsigned)c << ';';
+        else
+          escaped << c;
+    }
+  }
 
   return escaped;
 }
