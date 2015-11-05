@@ -1872,9 +1872,12 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case SSLv23:
       meth = SSLv23_method();
       break;
+#ifndef OPENSSL_NO_SSL3
+    // fall through to SSLv23_method if unsupported
     case SSLv3:
       meth = SSLv3_method();
       break;
+#endif
     case TLSv1:
       meth = TLSv1_method(); 
       break;
