@@ -132,7 +132,7 @@ class PSafeObject : public PObject
   //@{
     /**Create a thread safe object.
      */
-    PSafeObject(
+    explicit PSafeObject(
         PSafeObject * indirectLock = NULL ///< Other safe object to be locked when this is locked
     );
   //@}
