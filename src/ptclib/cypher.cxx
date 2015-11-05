@@ -102,7 +102,7 @@ void PSASLString::AppendValidated(wchar_t c)
     case 0x202F: // NARROW NO - BREAK SPACE
     case 0x205F: // MEDIUM MATHEMATICAL SPACE
     case 0x3000: // IDEOGRAPHIC SPACE
-      PString::operator+=((char)c);
+      PString::operator+=(' ');
       break;
 
     // RFC3454/C.1.2 ASCII control characters
