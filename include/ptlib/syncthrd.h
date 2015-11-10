@@ -248,6 +248,13 @@ class PIntCondMutex : public PCondMutex
    This is a special type of mutual exclusion, where the excluded area may
    have multiple read threads but only one write thread and the read threads
    are blocked on write as well.
+
+   The original algorithm for this was described in 'Communications of the ACM:
+   Concurrent Control with "Readers" and "Writers" P.J. Courtois,* F. H, 1971'
+   http://cs.nyu.edu/~lerner/spring10/MCP-S10-Read04-ReadersWriters.pdf which
+   can be changed via #define to an alternate algorithm 'Faster Fair Solution
+   for the Reader-Writer Problem. V.Popov, O.Mazonka 2013'
+   http://arxiv.org/ftp/arxiv/papers/1309/1309.4507.pdf to improve efficiency.
  */
 
 class PReadWriteMutex : public PObject
@@ -309,6 +316,14 @@ class PReadWriteMutex : public PObject
     virtual void PrintOn(ostream &strm) const;
 
   protected:
+#if P_READ_WRITE_ALGO2
+    PSemaphore  m_inSemaphore;
+    unsigned    m_inCount;
+    PSemaphore  m_outSemaphore;
+    unsigned    m_outCount;
+    PSemaphore  m_writeSemaphore;
+    bool        m_wait;
+#else
     PSemaphore  m_readerSemaphore;
     PTimedMutex m_readerMutex;
     unsigned    m_readerCount;
@@ -317,7 +332,7 @@ class PReadWriteMutex : public PObject
     PSemaphore  m_writerSemaphore;
     PTimedMutex m_writerMutex;
     unsigned    m_writerCount;
-
+#endif
     struct Nest
     {
       unsigned m_readerCount;
@@ -341,6 +356,8 @@ class PReadWriteMutex : public PObject
     void EndNest();
     void InternalStartRead(Nest & nest);
     void InternalEndRead(Nest & nest);
+    void InternalStartWrite(Nest & nest);
+    void InternalEndWrite(Nest & nest);
     void InternalWait(Nest & nest, PSync & sync) const;
 
     const char * m_fileOrName;

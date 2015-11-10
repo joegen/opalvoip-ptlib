@@ -3094,10 +3094,19 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 /////////////////////////////////////////////////////////////////////////////
 
 PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
+#if P_READ_WRITE_ALGO2
+  : m_inSemaphore(1, 1)
+  , m_inCount(0)
+  , m_outSemaphore(1, 1)
+  , m_outCount(0)
+  , m_writeSemaphore(0, 1)
+  , m_wait(false)
+#else
   : m_readerSemaphore(1, 1)
   , m_readerCount(0)
   , m_writerSemaphore(1, 1)
   , m_writerCount(0)
+#endif
   , m_fileOrName(name)
   , m_line(line)
 {
@@ -3196,7 +3205,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
               " readers=" << it->second.m_readerCount << ","
               " writers=" << it->second.m_writerCount;
     if (!it->second.m_waiting)
-      trace << ", LOCKED";
+      trace << ", LOCKER";
     if (PTimedMutex::EnableDeadlockStackWalk)
       PTrace::WalkStack(trace, it->first);
   }
@@ -3211,24 +3220,6 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
 
 
   nest.m_waiting = false;
-}
-
-
-void PReadWriteMutex::InternalStartRead(Nest & nest)
-{
-  // Text book read only lock
-
-  InternalWait(nest, m_starvationPreventer);
-   InternalWait(nest, m_readerSemaphore);
-    InternalWait(nest, m_readerMutex);
-
-     m_readerCount++;
-     if (m_readerCount == 1)
-       InternalWait(nest, m_writerSemaphore);
-
-    m_readerMutex.Signal();
-   m_readerSemaphore.Signal();
-  m_starvationPreventer.Signal();
 }
 
 
@@ -3262,20 +3253,6 @@ void PReadWriteMutex::EndRead()
 }
 
 
-void PReadWriteMutex::InternalEndRead(Nest & nest)
-{
-  // Text book read only unlock
-
-  InternalWait(nest, m_readerMutex);
-
-  m_readerCount--;
-  if (m_readerCount == 0)
-    m_writerSemaphore.Signal();
-
-  m_readerMutex.Signal();
-}
-
-
 void PReadWriteMutex::StartWrite()
 {
   // Get the nested thread info structure, create one it it doesn't exist
@@ -3296,18 +3273,9 @@ void PReadWriteMutex::StartWrite()
   if (nest.m_readerCount > 0)
     InternalEndRead(nest);
 
-  // Note in this gap another thread could grab the write lock, thus
+  // Note in this gap another thread could grab the write lock
 
-  // Now do the text book write lock
-  InternalWait(nest, m_writerMutex);
-
-  m_writerCount++;
-  if (m_writerCount == 1)
-    InternalWait(nest, m_readerSemaphore);
-
-  m_writerMutex.Signal();
-
-  InternalWait(nest, m_writerSemaphore);
+  InternalStartWrite(nest);
 }
 
 
@@ -3332,17 +3300,7 @@ void PReadWriteMutex::EndWrite()
   if (nest->m_writerCount > 0)
     return;
 
-  // Begin text book write unlock
-  m_writerSemaphore.Signal();
-
-  InternalWait(*nest, m_writerMutex);
-
-  m_writerCount--;
-  if (m_writerCount == 0)
-    m_readerSemaphore.Signal();
-
-  m_writerMutex.Signal();
-  // End of text book write unlock
+  InternalEndWrite(*nest);
 
   // Now check to see if there was a read lock present for this thread, if so
   // then reacquire the read lock (not changing the count) otherwise clean up the
@@ -3353,6 +3311,92 @@ void PReadWriteMutex::EndWrite()
     EndNest();
 }
 
+
+void PReadWriteMutex::InternalStartRead(Nest & nest)
+{
+#if P_READ_WRITE_ALGO2
+  InternalWait(nest, m_inSemaphore);
+  ++m_inCount;
+  m_inSemaphore.Signal();
+#else
+  InternalWait(nest, m_starvationPreventer);
+   InternalWait(nest, m_readerSemaphore);
+    InternalWait(nest, m_readerMutex);
+
+     m_readerCount++;
+     if (m_readerCount == 1)
+       InternalWait(nest, m_writerSemaphore);
+
+    m_readerMutex.Signal();
+   m_readerSemaphore.Signal();
+  m_starvationPreventer.Signal();
+#endif
+}
+
+
+void PReadWriteMutex::InternalEndRead(Nest & nest)
+{
+#if P_READ_WRITE_ALGO2
+  InternalWait(nest, m_outSemaphore);
+  ++m_outCount;
+  if (m_wait && m_inCount == m_outCount)
+    m_writeSemaphore.Signal();
+  m_outSemaphore.Signal();
+#else
+  InternalWait(nest, m_readerMutex);
+
+  m_readerCount--;
+  if (m_readerCount == 0)
+    m_writerSemaphore.Signal();
+
+  m_readerMutex.Signal();
+#endif
+}
+
+
+void PReadWriteMutex::InternalStartWrite(Nest & nest)
+{
+#if P_READ_WRITE_ALGO2
+  InternalWait(nest, m_inSemaphore);
+  InternalWait(nest, m_outSemaphore);
+  if (m_inCount == m_outCount)
+    m_outSemaphore.Signal();
+  else {
+    m_wait = true;
+    m_outSemaphore.Signal();
+    InternalWait(nest, m_writeSemaphore);
+    m_wait = false;
+  }
+#else
+  InternalWait(nest, m_writerMutex);
+
+  m_writerCount++;
+  if (m_writerCount == 1)
+    InternalWait(nest, m_readerSemaphore);
+
+  m_writerMutex.Signal();
+
+  InternalWait(nest, m_writerSemaphore);
+#endif
+}
+
+
+void PReadWriteMutex::InternalEndWrite(Nest & nest)
+{
+#if P_READ_WRITE_ALGO2
+  m_inSemaphore.Signal();
+#else
+  m_writerSemaphore.Signal();
+
+  InternalWait(nest, m_writerMutex);
+
+  m_writerCount--;
+  if (m_writerCount == 0)
+    m_readerSemaphore.Signal();
+
+  m_writerMutex.Signal();
+#endif
+}
 
 void PReadWriteMutex::PrintOn(ostream & strm) const
 {
