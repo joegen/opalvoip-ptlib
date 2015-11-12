@@ -2391,7 +2391,7 @@ int PSSLChannel::BioClose()
   if (m_bio->shutdown) {
     if (m_bio->init) {
       Shutdown(PSocket::ShutdownReadAndWrite);
-      Close();
+      PIndirectChannel::Close(); // Don't do PSSLChannel::Close() as OpenSSL might die
     }
     m_bio->init  = 0;
     m_bio->flags = 0;
