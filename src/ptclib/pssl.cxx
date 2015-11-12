@@ -1872,9 +1872,12 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case SSLv23:
       meth = SSLv23_method();
       break;
+#ifndef OPENSSL_NO_SSL3
+    // fall through to SSLv23_method if unsupported
     case SSLv3:
       meth = SSLv3_method();
       break;
+#endif
     case TLSv1:
       meth = TLSv1_method(); 
       break;
@@ -2388,7 +2391,7 @@ int PSSLChannel::BioClose()
   if (m_bio->shutdown) {
     if (m_bio->init) {
       Shutdown(PSocket::ShutdownReadAndWrite);
-      Close();
+      PIndirectChannel::Close(); // Don't do PSSLChannel::Close() as OpenSSL might die
     }
     m_bio->init  = 0;
     m_bio->flags = 0;
