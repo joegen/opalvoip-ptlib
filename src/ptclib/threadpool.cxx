@@ -109,16 +109,17 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
 {
   // create a new worker thread
   WorkerThreadBase * worker = CreateWorkerThread();
-  PTRACE(4, "PTLib", "Created pool thread " << worker);
 
   m_listMutex.Wait();
-  m_workers.push_back(worker);
+  m_workers.push_back(PAssertNULL(worker));
 
 #if PTRACING
   if (m_workers.size() > m_highWaterMark) {
     m_highWaterMark = m_workers.size();
-    PTRACE(2, "PTLib", "Thread pool (" << m_threadName << ") high water mark: " << m_highWaterMark);
+    PTRACE(2, "PTLib", "Created new pool thread \"" << worker->GetThreadName() << "\", high water mark=" << m_highWaterMark);
   }
+  else
+    PTRACE(4, "PTLib", "Created new pool thread \"" << worker->GetThreadName() << '"');
 #endif
 
   m_listMutex.Signal();
