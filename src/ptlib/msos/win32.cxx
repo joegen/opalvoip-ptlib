@@ -1229,6 +1229,8 @@ PString PProcess::GetOSName()
     return "Vista sp1";
   if (IsWindowsVistaOrGreater())
     return "Vista";
+  if (IsWindowsServer())
+    return "Server 2003";
   if (IsWindowsXPSP3OrGreater())
     return "XP sp3";
   if (IsWindowsXPOrGreater())
@@ -1334,6 +1336,8 @@ PString PProcess::GetOSVersion()
     return "v6.0.1";
   if (IsWindowsVistaOrGreater())
     return "v6.0";
+  if (IsWindowsServer())
+    return "v5.2";
   if (IsWindowsXPSP3OrGreater())
     return "v5.1.3";
   if (IsWindowsXPOrGreater())
