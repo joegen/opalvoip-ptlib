@@ -211,7 +211,7 @@ class PThreadPoolBase : public PObject
       PThread::Priority priority
     );
 
-    virtual bool CheckWorker(WorkerThreadBase * worker);
+    virtual bool ReclaimWorker(WorkerThreadBase * worker);
     void StopWorker(WorkerThreadBase * worker);
     PMutex m_listMutex;
 
@@ -273,15 +273,15 @@ class PThreadPool : public PThreadPoolBase
     class InternalWork : public InternalWorkBase
     {
       public:
-        InternalWork(WorkerThread * worker, Work_T * work, const char * group)
+        InternalWork(Work_T * work, const char * group)
           : InternalWorkBase(group)
-          , m_worker(worker)
           , m_work(work)
+          , m_worker(NULL)
         { 
         }
 
-        WorkerThread * m_worker;
         Work_T * m_work;
+        WorkerThread * m_worker;
     };
 
     //
@@ -297,6 +297,7 @@ class PThreadPool : public PThreadPoolBase
     struct GroupInfo {
       unsigned m_count;
       WorkerThread * m_worker;
+      GroupInfo(WorkerThread * worker) : m_count(1), m_worker(worker) { }
     };
 
 
@@ -312,52 +313,36 @@ class PThreadPool : public PThreadPoolBase
     //
     bool AddWork(Work_T * work, const char * group = NULL)
     {
+      // create internal work structure
+      InternalWork internalWork(work, group);
+
+      typename GroupInfoMap_t::iterator iterGroup = m_groupInfoMap.end();
+
       PWaitAndSignal m(m_listMutex);
 
-      // allocate by group if specified
-      // else allocate to least busy
-      WorkerThread * worker;
-      if ((group == NULL) || (strlen(group) == 0)) {
-        worker = (WorkerThread *)AllocateWorker();
+      // allocate by group if specified, else allocate to least busy
+      if (internalWork.m_group.empty() || (iterGroup = m_groupInfoMap.find(group)) == m_groupInfoMap.end()) {
+        internalWork.m_worker = (WorkerThread *)AllocateWorker();
+
+        // if cannot allocate worker, return
+        if (internalWork.m_worker == NULL) 
+          return false;
+
+        // add group ID to map
+        if (!internalWork.m_group.empty())
+          m_groupInfoMap.insert(make_pair(internalWork.m_group, GroupInfo(internalWork.m_worker)));
       }
       else {
-
-        // find the worker thread with the matching group ID
-        // if no matching Id, then create a new thread
-        typename GroupInfoMap_t::iterator g = m_groupInfoMap.find(group);
-        if (g == m_groupInfoMap.end()) 
-          worker = (WorkerThread *)AllocateWorker();
-        else {
-          worker = g->second.m_worker;
-          PTRACE(4, "PTLib", "Using existing worker thread with group Id \"" << group << '"');
-        }
+        internalWork.m_worker = iterGroup->second.m_worker;
+        ++iterGroup->second.m_count;
+        PTRACE(4, "PTLib", "Using existing worker thread with group Id \"" << group << '"');
       }
-
-      // if cannot allocate worker, return
-      if (worker == NULL) 
-        return false;
-
-      // create internal work structure
-      InternalWork internalWork(worker, work, group);
 
       // add work to external to internal map
-      m_externalToInternalWorkMap.insert(typename ExternalToInternalWorkMap_T::value_type(work, internalWork));
+      m_externalToInternalWorkMap.insert(make_pair(work, internalWork));
 
-      // add group ID to map
-      if (!internalWork.m_group.empty()) {
-        typename GroupInfoMap_t::iterator r = m_groupInfoMap.find(internalWork.m_group);
-        if (r != m_groupInfoMap.end())
-          ++r->second.m_count;
-        else {
-          GroupInfo info;
-          info.m_count  = 1;
-          info.m_worker = worker;
-          m_groupInfoMap.insert(typename GroupInfoMap_t::value_type(internalWork.m_group, info));
-        }
-      }
-      
       // give the work to the worker
-      worker->AddWork(work);
+      internalWork.m_worker->AddWork(work);
     
       return true;
     }
@@ -365,36 +350,32 @@ class PThreadPool : public PThreadPoolBase
     //
     //  remove a unit of work from a worker thread
     //
-    bool RemoveWork(Work_T * work, bool removeFromWorker = true)
+    bool RemoveWork(Work_T * work)
     {
       PWaitAndSignal m(m_listMutex);
 
       // find worker with work unit to remove
       typename ExternalToInternalWorkMap_T::iterator iterWork = m_externalToInternalWorkMap.find(work);
-      if (iterWork == m_externalToInternalWorkMap.end())
+      if (!PAssert(iterWork != m_externalToInternalWorkMap.end(), "Missing work!"))
         return false;
 
       InternalWork & internalWork = iterWork->second;
 
-      // tell worker to stop processing work
-      if (removeFromWorker)
-        internalWork.m_worker->RemoveWork(work);
-
       // update group information
       if (!internalWork.m_group.empty()) {
         typename GroupInfoMap_t::iterator iterGroup = m_groupInfoMap.find(internalWork.m_group);
-        PAssert(iterGroup != m_groupInfoMap.end(), "Attempt to find thread from unknown work group");
-        if (iterGroup != m_groupInfoMap.end()) {
-          if (--iterGroup->second.m_count == 0)
-            m_groupInfoMap.erase(iterGroup);
-        }
+        if (PAssert(iterGroup != m_groupInfoMap.end(), "Unknown work group") && --iterGroup->second.m_count == 0)
+          m_groupInfoMap.erase(iterGroup);
       }
 
-      // see if workers need reorganising
-      CheckWorker(internalWork.m_worker);
+      // tell worker to stop processing work
+      internalWork.m_worker->RemoveWork(work);
 
       // remove element from work unit map
       m_externalToInternalWorkMap.erase(iterWork);
+
+      // see if worker thread can be stopped now
+      ReclaimWorker(internalWork.m_worker);
 
       return true;
     }
@@ -459,11 +440,16 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
           QueuedWork item(NULL);
           while (this->m_queue.Dequeue(item)) {
             this->m_working = true;
+
             PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(this->m_pool);
             if (item.m_time.GetElapsed() > pool.m_maxWaitTime)
               pool.OnMaxWaitTime();
+
             item.m_work->Work();
-            this->RemoveWork(item.m_work);
+
+            if (!pool.RemoveWork(item.m_work))
+              this->RemoveWork(item.m_work);
+
             this->m_working = false;
           }
         }
