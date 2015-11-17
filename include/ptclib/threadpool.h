@@ -329,7 +329,7 @@ class PThreadPool : public PThreadPoolBase
           worker = (WorkerThread *)AllocateWorker();
         else {
           worker = g->second.m_worker;
-          PTRACE(4, "ThreadPool\tAllocated worker thread by group Id " << group);
+          PTRACE(4, "PTLib", "Using existing worker thread with group Id \"" << group << '"');
         }
       }
 
