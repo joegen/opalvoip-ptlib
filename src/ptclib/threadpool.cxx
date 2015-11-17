@@ -129,7 +129,7 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::NewWorker()
 }
 
 
-bool PThreadPoolBase::CheckWorker(WorkerThreadBase * worker)
+bool PThreadPoolBase::ReclaimWorker(WorkerThreadBase * worker)
 {
   {
     PWaitAndSignal mutex(m_listMutex);
