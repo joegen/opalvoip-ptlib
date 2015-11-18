@@ -63,6 +63,7 @@
 #include <functional>
 #include <limits>
 #include <typeinfo>
+#include <memory>
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
 
