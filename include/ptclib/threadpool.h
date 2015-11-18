@@ -186,10 +186,7 @@ class PThreadPoolBase : public PObject
     }
 
     void Shutdown();
-
-    virtual WorkerThreadBase * CreateWorkerThread() = 0;
-    virtual WorkerThreadBase * AllocateWorker();
-    virtual WorkerThreadBase * NewWorker();
+    virtual void ReclaimWorkers();
 
     unsigned GetMaxWorkers() const { return m_maxWorkerCount; }
 
@@ -211,12 +208,13 @@ class PThreadPoolBase : public PObject
       PThread::Priority priority
     );
 
-    virtual bool ReclaimWorker(WorkerThreadBase * worker);
-    void StopWorker(WorkerThreadBase * worker);
-    PMutex m_listMutex;
+    virtual WorkerThreadBase * AllocateWorker();
+    virtual WorkerThreadBase * CreateWorkerThread() = 0;
+    virtual void StopWorker(WorkerThreadBase * worker);
 
     typedef std::vector<WorkerThreadBase *> WorkerList_t;
     WorkerList_t m_workers;
+    PMutex       m_mutex;
 
     unsigned          m_maxWorkerCount;
     unsigned          m_maxWorkUnitCount;
@@ -318,7 +316,7 @@ class PThreadPool : public PThreadPoolBase
 
       typename GroupInfoMap_t::iterator iterGroup = m_groupInfoMap.end();
 
-      PWaitAndSignal m(m_listMutex);
+      PWaitAndSignal m(m_mutex);
 
       // allocate by group if specified, else allocate to least busy
       if (internalWork.m_group.empty() || (iterGroup = m_groupInfoMap.find(group)) == m_groupInfoMap.end()) {
@@ -352,7 +350,7 @@ class PThreadPool : public PThreadPoolBase
     //
     bool RemoveWork(Work_T * work)
     {
-      PWaitAndSignal m(m_listMutex);
+      PWaitAndSignal m(m_mutex);
 
       // find worker with work unit to remove
       typename ExternalToInternalWorkMap_T::iterator iterWork = m_externalToInternalWorkMap.find(work);
@@ -373,9 +371,6 @@ class PThreadPool : public PThreadPoolBase
 
       // remove element from work unit map
       m_externalToInternalWorkMap.erase(iterWork);
-
-      // see if worker thread can be stopped now
-      ReclaimWorker(internalWork.m_worker);
 
       return true;
     }
