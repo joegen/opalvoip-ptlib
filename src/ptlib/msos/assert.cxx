@@ -342,6 +342,36 @@
 
 static PCriticalSection AssertMutex;
 
+static bool AssertAction(int c)
+{
+  switch (c) {
+    case 'A':
+    case 'a':
+      cerr << "Aborted" << endl;
+    case IDABORT :
+      PTRACE(0, "Assert abort, application exiting immediately");
+      abort(); // Never returns
+
+    case 'B':
+    case 'b':
+      cerr << "Break" << endl;
+    case IDRETRY :
+      PBreakToDebugger();
+      return false; // Then ignore it
+
+    case 'I':
+    case 'i':
+      cerr << "Ignored" << endl;
+
+    case IDIGNORE :
+    case EOF:
+      return false;
+  }
+
+  return true;
+}
+
+
 bool PAssertFunc(const char * msg)
 {
   std::string str;
@@ -364,42 +394,24 @@ bool PAssertFunc(const char * msg)
 
   PWaitAndSignal mutex(AssertMutex);
 
+  const char * env = ::getenv("PTLIB_ASSERT_ACTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_ACTION");
+  if (env != NULL && *env != EOF && AssertAction(*env))
+    return false;
+
   if (PProcess::Current().IsGUIProcess()) {
     PVarString msg = str;
     PVarString name = PProcess::Current().GetName();
-    switch (MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL)) {
-      case IDABORT :
-	_exit(100); // Never returns
-
-      case IDRETRY :
-        PBreakToDebugger();
-    }
-    return false;
+    AssertAction(MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL));
   }
-
-  for (;;) {
-    cerr << str << "\n<A>bort, <B>reak, <I>gnore? ";
-    cerr.flush();
-    switch (cin.get()) {
-      case 'A' :
-      case 'a' :
-        cerr << "Aborted" << endl;
-        _exit(100); // Never returns
-
-      case 'B' :
-      case 'b' :
-        cerr << "Break" << endl;
-        PBreakToDebugger();
-        return false; // Then ignore it
-
-      case 'I' :
-      case 'i' :
-        cerr << "Ignored" << endl;
-
-      case EOF :
-        return false;
-    }
+  else {
+    do {
+      cerr << str << "\n<A>bort, <B>reak, <I>gnore? ";
+      cerr.flush();
+    } while (AssertAction(cin.get()));
   }
+  return false;
 }
 
 

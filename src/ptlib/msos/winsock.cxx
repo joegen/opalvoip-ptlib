@@ -111,14 +111,17 @@ struct PWinSock : public PProcessStartup
 #endif // P_GQOS
 
 #if P_QWAVE
-    // Not always installed so test if there
-    HMODULE hTest = LoadLibrary("QWAVE.DLL");
-    if (hTest != NULL) {
-      QOS_VERSION qosVersion;
-      qosVersion.MajorVersion = 1;
-      qosVersion.MinorVersion = 0;
-      QOSCreateHandle(&qosVersion, &m_hQoS);
-      FreeLibrary(hTest);
+    // Seems to crash on Server 2003
+    if (PProcess::IsOSVersion(6, 0, 0)) {
+      // Not always installed so test if there
+      HMODULE hTest = LoadLibrary("QWAVE.DLL");
+      if (hTest != NULL) {
+        QOS_VERSION qosVersion;
+        qosVersion.MajorVersion = 1;
+        qosVersion.MinorVersion = 0;
+        QOSCreateHandle(&qosVersion, &m_hQoS);
+        FreeLibrary(hTest);
+      }
     }
 #endif // P_QWAVE
   }
@@ -1028,47 +1031,6 @@ PIPSocket::Address PIPSocket::GetGatewayInterfaceAddress(unsigned version)
 }
 
 
-static bool SetTOS(PIPSocket & socket, PIPSocket::QoSType type, int new_tos)
-{
-  // Not explicitly set, so make a value up.
-  if (new_tos < 0) {
-    static int const DSCP[PIPSocket::NumQoSType] = {
-      0,     // BackgroundQoS
-      0,     // BestEffortQoS
-      8<<2,  // ExcellentEffortQoS
-      10<<2, // CriticalQoS
-      38<<2, // VideoQoS
-      44<<2, // VoiceQoS
-      48<<2  // ControlQoS
-    };
-    new_tos = DSCP[type];
-  }
-
-  // On Win7 and later IP_TOS succeeds, but does not actually do anything. Useless!
-  if (PProcess::IsOSVersion(6, 1, 0)) {
-    PTRACE(3, &socket, "Setting TOS field of IP header does not work in Windows 7 and later.");
-    return false;
-  }
-
-  if (!socket.SetOption(IP_TOS, new_tos, IPPROTO_IP)) {
-    PTRACE(2, &socket, "Could not set TOS field in IP header: " << socket.GetErrorText());
-    return false;
-  }
-
-  int actual_tos;
-  if (!socket.GetOption(IP_TOS, actual_tos, IPPROTO_IP)) {
-    PTRACE(1, &socket, "Could not get TOS field in IP header: " << socket.GetErrorText());
-    return false;
-  }
-
-  if (new_tos == actual_tos)
-    return true;
-
-  PTRACE(2, &socket, "Setting TOS field of IP header appeared successful, but was not really set.");
-  return false;
-}
-
-
 bool PIPSocket::SetQoS(const QoS & qos)
 {
   m_qos = qos;
@@ -1175,7 +1137,42 @@ bool PIPSocket::SetQoS(const QoS & qos)
   }
 #endif // P_QWAVE
 
-  return SetTOS(*this, qos.m_type, new_tos);
+  // Not explicitly set, so make a value up.
+  if (new_tos < 0) {
+    static int const DSCP[PIPSocket::NumQoSType] = {
+      0,     // BackgroundQoS
+      0,     // BestEffortQoS
+      8<<2,  // ExcellentEffortQoS
+      10<<2, // CriticalQoS
+      38<<2, // VideoQoS
+      44<<2, // VoiceQoS
+      48<<2  // ControlQoS
+    };
+    new_tos = DSCP[qos.m_type];
+  }
+
+  // On Win7 and later IP_TOS succeeds, but does not actually do anything. Useless!
+  if (PProcess::IsOSVersion(6, 1, 0)) {
+    PTRACE(3, "Setting TOS field of IP header does not work in Windows 7 and later.");
+    return false;
+  }
+
+  if (!SetOption(IP_TOS, new_tos, IPPROTO_IP)) {
+    PTRACE(2, "Could not set TOS field in IP header: " << GetErrorText());
+    return false;
+  }
+
+  int actual_tos;
+  if (!GetOption(IP_TOS, actual_tos, IPPROTO_IP)) {
+    PTRACE(1, "Could not get TOS field in IP header: " << GetErrorText());
+    return false;
+  }
+
+  if (new_tos == actual_tos)
+    return true;
+
+  PTRACE(2, "Setting TOS field of IP header appeared successful, but was not really set.");
+  return false;
 }
 
 
