@@ -1753,13 +1753,7 @@ class PSingleton
     };
   #endif
 
-  #define PDECLARE_POOL_ALLOCATOR() \
-      void * operator new(size_t nSize); \
-      void * operator new(size_t nSize, const char * file, int line); \
-      void operator delete(void * ptr); \
-      void operator delete(void * ptr, const char *, int)
-
-  #define PDEFINE_POOL_ALLOCATOR(cls) \
+  #define PDECLARE_POOL_ALLOCATOR(cls) \
     void * cls::operator new(size_t)                           { return PFixedPoolAllocator<cls>()->allocate(1);               } \
     void * cls::operator new(size_t, const char *, int)        { return PFixedPoolAllocator<cls>()->allocate(1);               } \
     void   cls::operator delete(void * ptr)                    {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); } \
@@ -1768,6 +1762,7 @@ class PSingleton
 #else
 
   #define PDECLARE_POOL_ALLOCATOR(cls) \
+    virtual ~cls() { } \
     __inline static const char * Class() { return typeid(cls).name(); } \
     PNEW_AND_DELETE_FUNCTIONS(0)
 
