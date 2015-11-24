@@ -1697,7 +1697,7 @@ void PHTTPSelectField::Construct(PINDEX initVal, bool enumeration)
 
 PHTTPField * PHTTPSelectField::NewField() const
 {
-  return new PHTTPSelectField(baseName, title, m_values, m_initialValue, help);
+  return new PHTTPSelectField(baseName, title, m_values, m_initialValue, help, m_enumeration);
 }
 
 
@@ -1707,7 +1707,7 @@ void PHTTPSelectField::GetHTMLTag(PHTML & html) const
   PINDEX selection = m_value.AsUnsigned();
   for (PINDEX i = 0; i < m_values.GetSize(); i++) {
     if (m_enumeration)
-      html << PHTML::Option(i == selection ? PHTML::Selected : PHTML::NotSelected, psprintf("value=\"%u\"", i));
+      html << PHTML::Option(i == selection ? PHTML::Selected : PHTML::NotSelected, psprintf("VALUE=\"%u\"", i));
     else
       html << PHTML::Option(m_values[i] == m_value ? PHTML::Selected : PHTML::NotSelected);
     html << PHTML::Escaped(m_values[i]);
