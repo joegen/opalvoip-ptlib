@@ -1661,6 +1661,12 @@ public:
 void PThreadYield();
 
 ///////////////////////////////////////////////////////////////////////////////
+
+template<class Type> Type * PSingletonCreatorDefault()
+{
+  return new Type();
+}
+
 /** Template class for a simple singleton object.
      Usage is typically like:
 <pre><code>
@@ -1672,19 +1678,21 @@ void PThreadYield();
         typedef PSingleton<MyClass, atomic<uint32_t> > MySafeSingleton;
         MySafeSingleton()->DoSomething();
 </code></pre>
- */
-template <class Type, typename GuardType = unsigned>
+     If the singleton class requires parameters on construction, then a creator
+     function may be included in the template parameters:
+ <pre><code>
+        MyClass * CreateMyClass() { return new MyClass("fred"); }
+        typedef PSingleton<MyClass, atomic<uint32_t>, CreateMyClass> MySafeSingleton;
+        MySafeSingleton()->DoSomething();
+</code></pre>
+*/
+template <class Type, typename GuardType = unsigned, Type * (*Creator)() = PSingletonCreatorDefault<Type> >
 class PSingleton
 {
   protected:
     Type * m_instance;
   public:
-    static Type * DefaultCreate()
-    {
-      return new Type();
-    }
-
-    PSingleton(Type * (*create)() = DefaultCreate)
+    PSingleton()
     {
       static auto_ptr<Type> s_pointer;
       static GuardType s_guard(0);
@@ -1698,7 +1706,7 @@ class PSingleton
         // Do this to make sure debugging is initialised as early as possible
         PMemoryHeap::Validate(NULL, NULL, NULL);
 #endif
-        s_pointer.reset(create());
+        s_pointer.reset(Creator());
         m_instance = s_pointer.get();
       }
     }
