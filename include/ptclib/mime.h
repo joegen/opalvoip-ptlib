@@ -200,6 +200,10 @@ class PMIMEInfo : public PStringOptions
       const PCaselessString & (*key)() = ContentTypeTag ///< MIME key for multipart info
     ) const { return DecodeMultiPartList(parts, body, key()); }
 
+    void AddMultiPartList(
+      PMultiPartList & parts,
+      const PCaselessString & (*key)() = ContentTypeTag ///< MIME key for multipart info
+    );
 
     static const PCaselessString & ContentTypeTag();
     static const PCaselessString & ContentDispositionTag();
@@ -282,27 +286,73 @@ class PMIMEInfo : public PStringOptions
 //////////////////////////////////////////////////////////////////////////////
 // PMultiPartInfo
 
-/** This object describes the information associated with a multi-part bodies.
+/** This object describes the information associated with one part of a multi-part body.
   */
 class PMultiPartInfo : public PObject
 {
     PCLASSINFO(PMultiPartInfo, PObject);
   public:
-    PMIMEInfo  m_mime;
-    PString    m_textBody;
-    PBYTEArray m_binaryBody;
+    PMultiPartInfo() { }
+    PMultiPartInfo(
+      const PString & data,
+      const PString & contentType,
+      const PString & disposition = PString::Empty()
+    );
+    PMultiPartInfo(
+      const PBYTEArray & data,
+      const PString & contentType,
+      const PString & disposition = PString::Empty()
+    );
+
+    virtual void PrintOn(ostream & strm) const;
+
+    PCaselessString m_contentType;
+    PCaselessString m_encoding;    // "base64", "7bit", "UTF-8", or "8bit"
+    PCaselessString m_disposition;
+    PMIMEInfo       m_mime;
+    PString         m_textBody;
+    PBYTEArray      m_binaryBody;
 };
 
+
+/** This object describes the information associated with multi-part bodies.
+  */
 class PMultiPartList : public PList<PMultiPartInfo>
 {
     PCLASSINFO(PMultiPartList, PList<PMultiPartInfo>);
   public:
-    PMultiPartList() { }
+    PMultiPartList();
 
     bool Decode(
       const PString & body,               ///< Body to extract parts from
       const PStringToString & contentInfo ///< Content-Type info as decoded from PMIMEInfo::GetComplex()
     );
+
+    PString AsString() const;
+    virtual void PrintOn(ostream & strm) const;
+
+    void AddPart(
+      const PString & data,
+      const PString & contentType,
+      const PString & disposition = PString::Empty()
+    ) { Append(new PMultiPartInfo(data, contentType, disposition)); }
+
+    void AddPart(
+      const PBYTEArray & data,
+      const PString & contentType,
+      const PString & disposition = PString::Empty()
+    ) { Append(new PMultiPartInfo(data, contentType, disposition)); }
+
+    /** Set the boundary string used for encoding the multipart MIME body.
+        Note this must be set before calling AdjustMIME() or a default is generated.
+      */
+    void SetBoundary(const PString & boundary) { m_boundary = boundary; }
+
+    /// Get the boundary string used for encoding the multipart MIME body.
+    const PString & GetBoundary() const { return m_boundary; }
+
+  protected:
+    PString m_boundary;
 };
 
 
