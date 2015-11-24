@@ -235,4 +235,24 @@ void PRandom::Octets(BYTE * octets, PINDEX size)
 }
 
 
+PString PRandom::String(PINDEX size)
+{
+  if (size == 0)
+    return PString::Empty();
+
+  static PMutex mutex;
+  PWaitAndSignal wait(mutex);
+
+  static PRandom rand;
+
+  PString str;
+  str.SetSize(size + 1);
+
+  for (PINDEX i = 0; i < size; ++i)
+    str[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[rand.Generate(0, 35)];
+
+  return str;
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////
