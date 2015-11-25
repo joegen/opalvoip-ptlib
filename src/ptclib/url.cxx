@@ -246,7 +246,12 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
 
     case QuotedParameterTranslation :
       safeChars += "[]/:@&=+$,|";
-      return str.FindSpan(safeChars) != P_MAX_INDEX ? str.ToLiteral() : str;
+      // If already starts and ends with quotes, assume it already formatted correctly.
+      if ((str.GetLength() >= 2 && str[0] == '"' && str[str.GetLength()-1] == '"') ||
+           str.FindSpan(safeChars) == P_MAX_INDEX)
+        return str;
+
+      return str.ToLiteral();
 
     default :
       break;    // Section 3.4, no reserved characters may be used
