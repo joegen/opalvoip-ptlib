@@ -603,7 +603,7 @@ bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding, PObject *
 
   return PNatMethod::IsAvailable(binding, context) &&
          m_externalAddress.IsValid() &&
-         (binding.IsAny() || binding == m_interfaceAddress);
+         (binding.IsAny() || m_interfaceAddress.IsAny() || binding == m_interfaceAddress);
 }
 
 
