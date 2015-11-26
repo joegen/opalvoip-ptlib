@@ -379,19 +379,28 @@ void PURL::OutputVars(ostream & strm,
 
     PString key  = TranslateString(it->first,  type);
 
-    PStringArray values = it->second.Lines();
-    if (values.IsEmpty())
-      strm << key;
+    if (type < ParameterTranslation) {
+        PString data = TranslateString(it->second, type);
+      if (key.IsEmpty())
+        strm << data;
+      else
+        strm << key << sep2 << data;
+    }
     else {
-      for (PINDEX i = 0; i < values.GetSize(); ++i) {
-        PString data = TranslateString(values[i], type);
+      PStringArray values = it->second.Lines();
+      if (values.IsEmpty())
+        strm << key;
+      else {
+        for (PINDEX i = 0; i < values.GetSize(); ++i) {
+          PString data = TranslateString(values[i], type);
 
-        if (key.IsEmpty())
-          strm << data;
-        else if (data.IsEmpty())
-          strm << key;
-        else
-          strm << key << sep2 << data;
+          if (i > 0)
+            strm << sep1;
+          if (key.IsEmpty())
+            strm << data;
+          else
+            strm << key << sep2 << data;
+        }
       }
     }
   }
