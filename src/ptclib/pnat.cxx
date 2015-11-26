@@ -555,7 +555,7 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
 
   PINDEX pos = str.FindLast('/');
   if (pos == P_MAX_INDEX) {
-    m_natType = SymmetricNat;
+    m_natType = ConeNat;
     return m_externalAddress.Parse(str, 1);
   }
 
@@ -570,7 +570,26 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
 
 PNATUDPSocket * PNatMethod_Fixed::InternalCreateSocket(Component component, PObject *)
 {
-  return new PNATUDPSocket(component);
+  return new Socket(component, m_externalAddress.GetAddress());
+}
+
+
+PNatMethod_Fixed::Socket::Socket(PNatMethod::Component component, const PIPSocket::Address & externalAddress)
+  : PNATUDPSocket(component)
+  , m_externalAddress(externalAddress)
+{
+}
+
+
+bool PNatMethod_Fixed::Socket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
+{
+  if (!PNATUDPSocket::InternalGetLocalAddress(addr))
+    return false;
+
+  if (m_externalAddress.IsValid())
+    addr.SetAddress(m_externalAddress);
+
+  return true;
 }
 
 
