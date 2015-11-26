@@ -555,7 +555,7 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
 
   PINDEX pos = str.FindLast('/');
   if (pos == P_MAX_INDEX) {
-    m_natType = SymmetricNat;
+    m_natType = ConeNat;
     return m_externalAddress.Parse(str, 1);
   }
 
