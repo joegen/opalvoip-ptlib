@@ -2034,7 +2034,7 @@ PBoolean PHTTPForm::Post(PHTTPRequest & request,
       msg << PHTML::Title() << "Accepted New Configuration" << PHTML::Body()
           << PHTML::Heading(1) << "Accepted New Configuration" << PHTML::Heading(1)
           << PHTML::HotLink(request.url.AsString()) << "Reload page" << PHTML::HotLink()
-          << "&nbsp;&nbsp;&nbsp;&nbsp;"
+          << PHTML::NonBreakSpace(4)
           << PHTML::HotLink("/") << "Home page" << PHTML::HotLink();
     }
     else {
@@ -2055,7 +2055,7 @@ PBoolean PHTTPForm::Post(PHTTPRequest & request,
           << errors
           << PHTML::Paragraph()
           << PHTML::HotLink(request.url.AsString()) << "Reload page" << PHTML::HotLink()
-          << "&nbsp;&nbsp;&nbsp;&nbsp;"
+          << PHTML::NonBreakSpace(4)
           << PHTML::HotLink("/") << "Home page" << PHTML::HotLink();
     }
     else {
