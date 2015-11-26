@@ -37,6 +37,7 @@
 #include <ptlib/sockets.h>
 #include <ptclib/inetprot.h>
 #include <ptclib/mime.h>
+#include <ptclib/random.h>
 
 
 static const char * CRLF = "\r\n";
@@ -815,6 +816,30 @@ bool PMIMEInfo::DecodeMultiPartList(PMultiPartList & parts, const PString & body
 }
 
 
+void PMIMEInfo::AddMultiPartList(PMultiPartList & parts, const PCaselessString & (*key)())
+{
+  switch (parts.GetSize()) {
+    case 0 :
+      return;
+
+    case 1 :
+      Set(key, parts.front().m_contentType);
+      break;
+
+    default :
+      Set(key, "multipart/mixed;boundary="+parts.GetBoundary());
+      break;
+  }
+
+  for (PMultiPartList::iterator it = parts.begin(); it != parts.end(); ++it) {
+    if (it->m_mime.Get(PMIMEInfo::ContentTypeTag).IsEmpty())
+      it->m_mime.Set(PMIMEInfo::ContentTypeTag, it->m_contentType);
+    if (!it->m_disposition.IsEmpty() && it->m_mime.Get(PMIMEInfo::ContentDispositionTag).IsEmpty())
+      it->m_mime.Set(PMIMEInfo::ContentDispositionTag, it->m_disposition);
+  }
+}
+
+
 static const PStringToString::Initialiser DefaultContentTypes[] = {
   { ".txt", "text/plain" },
   { ".text", "text/plain" },
@@ -882,6 +907,12 @@ const PCaselessString & PMIMEInfo::TextHTML()                   { static const P
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+PMultiPartList::PMultiPartList()
+  : m_boundary(PRandom::String(20))
+{
+}
+
 
 static PINDEX FindBoundary(const PString & boundary, const char * & bodyPtr, PINDEX & bodyLen)
 {
@@ -1009,6 +1040,71 @@ bool PMultiPartList::Decode(const PString & entityBody, const PStringToString & 
   }
 
   return !IsEmpty();
+}
+
+
+PString PMultiPartList::AsString() const
+{
+  PStringStream strm;
+  strm << *this;
+  return strm;
+}
+
+
+void PMultiPartList::PrintOn(ostream & strm) const
+{
+  if (IsEmpty())
+    return;
+
+  if (GetSize() == 1) {
+    strm << front();
+    return;
+  }
+
+  PAssert(!m_boundary.IsEmpty(), PLogicError);
+
+  for (const_iterator it = begin(); it != end(); ++it)
+    strm << "--" << m_boundary << "\r\n" << setfill('\r') << it->m_mime << *it << "\r\n";
+  strm << "--" << m_boundary << "--\r\n";
+}
+
+
+PMultiPartInfo::PMultiPartInfo(const PString & data, const PString & contentType, const PString & disposition)
+  : m_contentType(contentType)
+  , m_encoding("7bit")
+  , m_disposition(disposition)
+  , m_textBody(data)
+{
+}
+
+
+PMultiPartInfo::PMultiPartInfo(const PBYTEArray & data, const PString & contentType, const PString & disposition)
+  : m_contentType(contentType)
+  , m_encoding("binary")
+  , m_disposition(disposition)
+  , m_binaryBody(data)
+{
+}
+
+
+void PMultiPartInfo::PrintOn(ostream & strm) const
+{
+#if P_CYPHER
+  if (m_encoding == "base64")
+    strm << PBase64::Encode(m_binaryBody);
+  else
+#endif
+#ifdef P_HAS_WCHAR
+  if (m_encoding == "UCS-2") {
+    PWCharArray ucs2 = m_textBody.AsUCS2();
+    strm.write((const char *)ucs2.GetPointer(), ucs2.GetSize());
+  }
+  else
+#endif
+  if (m_encoding == "7bit" || m_encoding == "8bit")
+    strm << m_textBody;
+  else
+    strm.write((const char *)(const BYTE *)m_binaryBody, m_binaryBody.GetSize());
 }
 
 

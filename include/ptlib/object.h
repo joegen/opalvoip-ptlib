@@ -63,6 +63,7 @@
 #include <functional>
 #include <limits>
 #include <typeinfo>
+#include <memory>
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
 
@@ -1660,6 +1661,12 @@ public:
 void PThreadYield();
 
 ///////////////////////////////////////////////////////////////////////////////
+
+template<class Type> Type * PSingletonCreatorDefault()
+{
+  return new Type();
+}
+
 /** Template class for a simple singleton object.
      Usage is typically like:
 <pre><code>
@@ -1671,8 +1678,15 @@ void PThreadYield();
         typedef PSingleton<MyClass, atomic<uint32_t> > MySafeSingleton;
         MySafeSingleton()->DoSomething();
 </code></pre>
- */
-template <class Type, typename GuardType = unsigned>
+     If the singleton class requires parameters on construction, then a creator
+     function may be included in the template parameters:
+ <pre><code>
+        MyClass * CreateMyClass() { return new MyClass("fred"); }
+        typedef PSingleton<MyClass, atomic<uint32_t>, CreateMyClass> MySafeSingleton;
+        MySafeSingleton()->DoSomething();
+</code></pre>
+*/
+template <class Type, typename GuardType = unsigned, Type * (*Creator)() = PSingletonCreatorDefault<Type> >
 class PSingleton
 {
   protected:
@@ -1680,11 +1694,11 @@ class PSingleton
   public:
     PSingleton()
     {
-      static Type * s_pointer;
+      static auto_ptr<Type> s_pointer;
       static GuardType s_guard(0);
       if (s_guard++ != 0) {
         s_guard = 1;
-        while ((m_instance = s_pointer) == NULL)
+        while ((m_instance = s_pointer.get()) == NULL)
           PThreadYield();
       }
       else {
@@ -1692,8 +1706,8 @@ class PSingleton
         // Do this to make sure debugging is initialised as early as possible
         PMemoryHeap::Validate(NULL, NULL, NULL);
 #endif
-        static Type s_instance;
-        m_instance = s_pointer = &s_instance;
+        s_pointer.reset(Creator());
+        m_instance = s_pointer.get();
       }
     }
 
@@ -1747,13 +1761,7 @@ class PSingleton
     };
   #endif
 
-  #define PDECLARE_POOL_ALLOCATOR() \
-      void * operator new(size_t nSize); \
-      void * operator new(size_t nSize, const char * file, int line); \
-      void operator delete(void * ptr); \
-      void operator delete(void * ptr, const char *, int)
-
-  #define PDEFINE_POOL_ALLOCATOR(cls) \
+  #define PDECLARE_POOL_ALLOCATOR(cls) \
     void * cls::operator new(size_t)                           { return PFixedPoolAllocator<cls>()->allocate(1);               } \
     void * cls::operator new(size_t, const char *, int)        { return PFixedPoolAllocator<cls>()->allocate(1);               } \
     void   cls::operator delete(void * ptr)                    {        PFixedPoolAllocator<cls>()->deallocate((cls *)ptr, 1); } \
@@ -1762,6 +1770,7 @@ class PSingleton
 #else
 
   #define PDECLARE_POOL_ALLOCATOR(cls) \
+    virtual ~cls() { } \
     __inline static const char * Class() { return typeid(cls).name(); } \
     PNEW_AND_DELETE_FUNCTIONS(0)
 

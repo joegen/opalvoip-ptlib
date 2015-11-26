@@ -124,6 +124,9 @@ class PRandom
     static void Octets(PBYTEArray & octets, PINDEX size = 0);
     static void Octets(BYTE *  octets, PINDEX size);
 
+    /// Get a string of random alphanumeric characters
+    static PString String(PINDEX size);
+
   protected:
     enum {
       RandBits = 8, ///< I recommend 8 for crypto, 4 for simulations
