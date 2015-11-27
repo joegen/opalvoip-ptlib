@@ -555,8 +555,8 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
 
   PINDEX pos = str.FindLast('/');
   if (pos == P_MAX_INDEX) {
-    m_natType = SymmetricNat;
-    return m_externalAddress.Parse(str);
+    m_natType = ConeNat;
+    return m_externalAddress.Parse(str, 1);
   }
 
   int newType = str.Mid(pos+1).AsInteger();
@@ -564,13 +564,32 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
     return false;
 
   m_natType = (NatTypes)newType;
-  return m_externalAddress.Parse(str.Left(pos));
+  return m_externalAddress.Parse(str.Left(pos), 1);
 }
 
 
 PNATUDPSocket * PNatMethod_Fixed::InternalCreateSocket(Component component, PObject *)
 {
-  return new PNATUDPSocket(component);
+  return new Socket(component, m_externalAddress.GetAddress());
+}
+
+
+PNatMethod_Fixed::Socket::Socket(PNatMethod::Component component, const PIPSocket::Address & externalAddress)
+  : PNATUDPSocket(component)
+  , m_externalAddress(externalAddress)
+{
+}
+
+
+bool PNatMethod_Fixed::Socket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
+{
+  if (!PNATUDPSocket::InternalGetLocalAddress(addr))
+    return false;
+
+  if (m_externalAddress.IsValid())
+    addr.SetAddress(m_externalAddress);
+
+  return true;
 }
 
 
@@ -603,7 +622,7 @@ bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding, PObject *
 
   return PNatMethod::IsAvailable(binding, context) &&
          m_externalAddress.IsValid() &&
-         (binding.IsAny() || binding == m_interfaceAddress);
+         (binding.IsAny() || m_interfaceAddress.IsAny() || binding == m_interfaceAddress);
 }
 
 
