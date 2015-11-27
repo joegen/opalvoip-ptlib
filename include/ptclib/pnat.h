@@ -470,6 +470,18 @@ class PNatMethod_Fixed  : public PNatMethod
     virtual bool Open(const PIPSocket::Address & addr);
     virtual bool IsAvailable(const PIPSocket::Address & binding, PObject * context);
 
+    class Socket : public PNATUDPSocket
+    {
+        PCLASSINFO(Socket, PNATUDPSocket);
+      public:
+        Socket(
+          PNatMethod::Component component,
+          const PIPSocket::Address & externalAddress
+        );
+      private:
+        bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
+        PIPSocket::Address m_externalAddress;
+    };
   protected:
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
     virtual void InternalUpdate();
