@@ -676,8 +676,9 @@ void PHTML::TableEnd::Output(PHTML & html) const
 PHTML::Form::Form(const char * method,
                   const char * action,
                   const char * mimeType,
-                  const char * script)
-  : Element("FORM", NULL, InForm, InBody, BothCRLF)
+                  const char * script,
+                  const char * attr)
+  : Element("FORM", attr, InForm, InBody, BothCRLF)
 {
   methodString = method;
   actionString = action;

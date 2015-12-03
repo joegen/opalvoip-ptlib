@@ -680,7 +680,8 @@ class PHTML : public PStringStream
           const char * method = NULL,
           const char * action = NULL,
           const char * encoding = NULL,
-          const char * script = NULL
+          const char * script = NULL,
+          const char * attr = NULL
         );
         virtual ~Form() {}
       protected:
