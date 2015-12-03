@@ -322,6 +322,11 @@ class PMultiPartList : public PList<PMultiPartInfo>
     PCLASSINFO(PMultiPartList, PList<PMultiPartInfo>);
   public:
     PMultiPartList();
+    PMultiPartList(
+      const PString & data,
+      const PString & contentType = PMIMEInfo::TextPlain(),
+      const PString & disposition = PString::Empty()
+    );
 
     bool Decode(
       const PString & body,               ///< Body to extract parts from
@@ -331,14 +336,17 @@ class PMultiPartList : public PList<PMultiPartInfo>
     PString AsString() const;
     virtual void PrintOn(ostream & strm) const;
 
-    void AddPart(
-      const PString & data,
+    template <typename T> void Set(
+      const T & data,
       const PString & contentType,
       const PString & disposition = PString::Empty()
-    ) { Append(new PMultiPartInfo(data, contentType, disposition)); }
+    ) {
+      RemoveAll();
+      Append(new PMultiPartInfo(data, contentType, disposition)); 
+    }
 
-    void AddPart(
-      const PBYTEArray & data,
+    template <typename T> void AddPart(
+      const T & data,
       const PString & contentType,
       const PString & disposition = PString::Empty()
     ) { Append(new PMultiPartInfo(data, contentType, disposition)); }
