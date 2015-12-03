@@ -914,6 +914,12 @@ PMultiPartList::PMultiPartList()
 }
 
 
+PMultiPartList::PMultiPartList(const PString & data, const PString & contentType, const PString & disposition)
+{
+  Append(new PMultiPartInfo(data, contentType, disposition));
+}
+
+
 static PINDEX FindBoundary(const PString & boundary, const char * & bodyPtr, PINDEX & bodyLen)
 {
   PINDEX boundaryLen = boundary.GetLength();
