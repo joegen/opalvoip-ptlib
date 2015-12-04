@@ -690,7 +690,7 @@ class PThread3Arg : public PThread
     FnType   m_function;
     Arg1Type m_arg1;
     Arg2Type m_arg2;
-    Arg2Type m_arg3;
+    Arg3Type m_arg3;
 };
 
 /*
