@@ -166,20 +166,24 @@
         HANDLE hProcess = GetCurrentProcess();
 
         // Get the directory the .exe file is in
-        char exe[_MAX_PATH];
-        if (GetModuleFileNameEx(hProcess, NULL, exe, sizeof(exe)) == 0) {
+        char filename[_MAX_PATH];
+        if (GetModuleFileNameEx(hProcess, NULL, filename, sizeof(filename)) == 0) {
           DWORD err = ::GetLastError();
           strm << "\n    GetModuleFileNameEx failed, error=" << err;
           return;
         }
 
-        char * backslash = strrchr(exe, '\\');
-        if (backslash != NULL)
-          *backslash = '\0';
+        ostringstream path;
 
         // Always look in same place as the .exe file for .pdb file
-        ostringstream path;
-        path << exe;
+        char * ptr = strrchr(filename, '\\');
+        if (ptr == NULL)
+          path << filename;
+        else {
+          *ptr = '\0';
+          path << filename;
+          *ptr = '\\';
+        }
 
         /* Add in the environment variables as per default, but do not add in
            current directory (as default does), as if that is C:\, it searches
@@ -196,6 +200,18 @@
           strm << "\n    SymInitialize failed, error=" << err;
           return;
         }
+
+        strm << "\n    Stack walk symbols initialised, path=\"" << path.str() << '"';
+
+        // See if PDB file exists
+        ptr = strrchr(filename, '.');
+        if (ptr == NULL)
+          strcat(filename, ".pdb");
+        else
+          strcpy(ptr, ".pdb");
+
+        if (_access(filename, 4) != 0)
+          strm << "\n    Stack walk could not find symbols file \"" << filename << '"';
 
         m_SymSetOptions(m_SymGetOptions()|SYMOPT_LOAD_LINES|SYMOPT_FAIL_CRITICAL_ERRORS|SYMOPT_NO_PROMPTS);
 
