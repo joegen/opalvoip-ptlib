@@ -264,23 +264,19 @@ class PThread : public PObject
      */
     void SetNoAutoDelete() { SetAutoDelete(NoAutoDeleteThread); }
 
-    PPROFILE_EXCLUDE(
     /** Get the name of the thread. Thread names are a optional debugging aid.
 
        @return
        current thread name.
      */
-    virtual PString GetThreadName() const
-    );
+    virtual PString GetThreadName() const;
 
-    PPROFILE_EXCLUDE(
     /** Get the name of the thread. Thread names are a optional debugging aid.
 
        @return
        current thread name.
      */
-    static PString GetThreadName(PThreadIdentifier id)
-    );
+    static PString GetThreadName(PThreadIdentifier id);
 
     /**Get the current threads name.
       */
