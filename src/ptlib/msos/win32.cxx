@@ -1038,7 +1038,7 @@ struct PWindowsTimes
 bool PThread::GetTimes(Times & times)
 {
   // Do not use any PTLib functions in here as they could to a PTRACE, and this deadlock
-  times.m_name = m_threadName;
+  times.m_name = GetThreadName();
   times.m_uniqueId = times.m_threadId = m_threadId;
 
   PWindowsTimes wt;
