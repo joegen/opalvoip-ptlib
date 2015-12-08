@@ -759,14 +759,16 @@ static bool InternalGetTimes(const char * filename, PThread::Times & times)
 bool PThread::GetTimes(Times & times)
 {
   // Do not use any PTLib functions in here as they could to a PTRACE, and this deadlock
-  times.m_name = m_threadName;
+  times.m_name = GetThreadName();
   times.m_threadId = m_threadId;
   times.m_uniqueId = GetUniqueIdentifier();
 #if P_PTHREADS
   times.m_real = (PX_endTick != 0 ? PX_endTick : PTimer::Tick()) - PX_startTick;
 #endif
 
-  return InternalGetTimes(PSTRSTRM("/proc/self/task/" << times.m_uniqueId << "/stat"), times);
+  std::stringstream path;
+  path << "/proc/self/task/" << times.m_uniqueId << "/stat";
+  return InternalGetTimes(path.str().c_str(), times);
 }
 
 
