@@ -747,6 +747,9 @@ public:
 
       friend ostream & operator<<(ostream & strm, const ThrottleBase & throttle);
 
+      unsigned GetLowLevel() const { return m_lowLevel; }
+      unsigned GetHighLevel() const { return m_highLevel; }
+
     protected:
       unsigned m_interval;
       unsigned m_lowLevel;
