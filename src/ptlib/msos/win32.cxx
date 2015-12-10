@@ -1527,7 +1527,7 @@ bool PProcess::GetSystemTimes(Times & times)
 }
 
 
-unsigned PProcess::GetNumProcessors()
+unsigned PThread::GetNumProcessors()
 {
   SYSTEM_INFO info;
   GetSystemInfo(&info);
