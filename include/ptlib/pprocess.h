@@ -358,10 +358,6 @@ class PProcess : public PThread
       Times & times   ///< Times for thread execution.
     ));
 
-    /**Get number of processors, or processor cores, this machine has available.
-      */
-    static unsigned GetNumProcessors();
-
     /**Get the effective user name of the owner of the process, eg "root" etc.
        This is a platform dependent string only provided by platforms that are
        multi-user. Note that some value may be returned as a "simulated" user.

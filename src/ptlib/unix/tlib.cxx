@@ -882,7 +882,7 @@ bool PProcess::GetSystemTimes(Times & times)
 #endif // P_LINUX
 
 
-unsigned PProcess::GetNumProcessors()
+unsigned PThread::GetNumProcessors()
 {
   int numCPU;
 

@@ -376,6 +376,10 @@ class PThread : public PObject
       std::list<Times> & times         ///< Times for thread execution.
     ));
 
+    /**Get number of processors, or processor cores, this machine has available.
+      */
+    static unsigned GetNumProcessors();
+
     /** User override function for the main execution routine of the thread. A
        descendent class must provide the code that will be executed in the
        thread within this function.
