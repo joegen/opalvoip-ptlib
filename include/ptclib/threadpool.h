@@ -391,12 +391,12 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     //  constructor
     //
     PQueuedThreadPool(
-      unsigned maxWorkers = 10,
+      unsigned maxWorkers = std::max(PProcess::GetNumProcessors(), 10U),
       unsigned maxWorkUnits = 0,
       const char * threadName = NULL,
       PThread::Priority priority = PThread::NormalPriority,
       const PTimeInterval & maxWaitTime = PMaxTimeInterval,
-      unsigned workerIncreaseLimit = 100
+      unsigned workerIncreaseLimit = 0
     ) : PThreadPool<Work_T>(maxWorkers, maxWorkUnits, threadName, priority)
       , m_workerIncreaseLatency(maxWaitTime)
       , m_workerIncreaseLimit(workerIncreaseLimit)
