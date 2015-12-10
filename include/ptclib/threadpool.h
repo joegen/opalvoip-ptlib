@@ -327,13 +327,17 @@ class PThreadPool : public PThreadPoolBase
           return false;
 
         // add group ID to map
-        if (!internalWork.m_group.empty())
+        if (!internalWork.m_group.empty()) {
           m_groupInfoMap.insert(make_pair(internalWork.m_group, GroupInfo(internalWork.m_worker)));
+          PTRACE(5, "PTLib", "Setting worker thread \"" << *internalWork.m_worker << "\""
+                             " with group Id \"" << internalWork.m_group << '"');
+        }
       }
       else {
         internalWork.m_worker = iterGroup->second.m_worker;
         ++iterGroup->second.m_count;
-        PTRACE(4, "PTLib", "Using existing worker thread with group Id \"" << group << '"');
+        PTRACE(5, "PTLib", "Using existing worker thread \"" << *internalWork.m_worker << "\""
+                           " with group Id \"" << internalWork.m_group << "\", count=" << iterGroup->second.m_count);
       }
 
       // add work to external to internal map
@@ -362,8 +366,10 @@ class PThreadPool : public PThreadPoolBase
       // update group information
       if (!internalWork.m_group.empty()) {
         typename GroupInfoMap_t::iterator iterGroup = m_groupInfoMap.find(internalWork.m_group);
-        if (PAssert(iterGroup != m_groupInfoMap.end(), "Unknown work group") && --iterGroup->second.m_count == 0)
+        if (PAssert(iterGroup != m_groupInfoMap.end(), "Unknown work group") && --iterGroup->second.m_count == 0) {
+          PTRACE(5, "PTLib", "Removing worker thread \"" << *internalWork.m_worker << "\" from group Id \"" << internalWork.m_group << '"');
           m_groupInfoMap.erase(iterGroup);
+        }
       }
 
       // tell worker to stop processing work
@@ -395,12 +401,19 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
       unsigned maxWorkUnits = 0,
       const char * threadName = NULL,
       PThread::Priority priority = PThread::NormalPriority,
-      const PTimeInterval & maxWaitTime = PMaxTimeInterval,
+      const PTimeInterval & workerIncreaseLatency = PMaxTimeInterval,
       unsigned workerIncreaseLimit = 0
     ) : PThreadPool<Work_T>(maxWorkers, maxWorkUnits, threadName, priority)
-      , m_workerIncreaseLatency(maxWaitTime)
+      , m_workerIncreaseLatency(workerIncreaseLatency)
       , m_workerIncreaseLimit(workerIncreaseLimit)
     {
+        PTRACE(4, NULL, "PTLib", "Thread pool created:"
+                                 " maxWorkers=" << maxWorkers << ","
+                                 " maxWorkUnits=" << maxWorkUnits << ","
+                                 " threadName=" << this->m_threadName << ","
+                                 " priority=" << priority << ","
+                                 " workerIncreaseLatency=" << workerIncreaseLatency << ","
+                                 " workerIncreaseLimit=" << workerIncreaseLimit);
     }
 
     const PTimeInterval & GetWorkerIncreaseLatency() const { return m_workerIncreaseLatency; }
