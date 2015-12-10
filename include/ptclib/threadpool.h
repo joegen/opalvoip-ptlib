@@ -403,8 +403,10 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     {
     }
 
-    const PTimeInterval & GetMaxWaitTime() const { return m_maxWaitTime; }
-    void SetMaxWaitTime(const PTimeInterval & time) { m_maxWaitTime = time; }
+    const PTimeInterval & GetWorkerIncreaseLatency() const { return m_workerIncreaseLatency; }
+    void SetWorkerIncreaseLatency(const PTimeInterval & time) { m_workerIncreaseLatency = time; }
+    unsigned GetWorkerIncreaseLimit() const { return m_workerIncreaseLimit; }
+    void SetWorkerIncreaseLimit(unsigned limit) { m_workerIncreaseLimit = limit; }
 
     class QueuedWorkerThread : public PThreadPool<Work_T>::WorkerThread
     {
