@@ -391,7 +391,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     //  constructor
     //
     PQueuedThreadPool(
-      unsigned maxWorkers = std::max(PProcess::GetNumProcessors(), 10U),
+      unsigned maxWorkers = std::max(PThread::GetNumProcessors(), 10U),
       unsigned maxWorkUnits = 0,
       const char * threadName = NULL,
       PThread::Priority priority = PThread::NormalPriority,
