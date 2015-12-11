@@ -882,6 +882,34 @@ bool PProcess::GetSystemTimes(Times & times)
 #endif // P_LINUX
 
 
+unsigned PThread::GetNumProcessors()
+{
+  int numCPU;
+
+#if defined(_SC_NPROCESSORS_ONLN)
+  numCPU = sysconf(_SC_NPROCESSORS_ONLN);
+#elif defined(HW_AVAILCPU)
+  int mib[4];
+  size_t len = sizeof(numCPU); 
+
+  numCPU = -1;
+
+  /* set the mib for hw.ncpu */
+  mib[0] = CTL_HW;
+  mib[1] = HW_AVAILCPU;
+  sysctl(mib, 2, &numCPU, &len, NULL, 0);
+  if (numCPU <= 0) {
+    mib[1] = HW_NCPU;
+    sysctl(mib, 2, &numCPU, &len, NULL, 0);
+  }
+#else
+  return 1;
+#endif
+
+  return numCPU > 0 ? numCPU : 1;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // P_fd_set
 
