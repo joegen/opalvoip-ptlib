@@ -327,13 +327,17 @@ class PThreadPool : public PThreadPoolBase
           return false;
 
         // add group ID to map
-        if (!internalWork.m_group.empty())
+        if (!internalWork.m_group.empty()) {
           m_groupInfoMap.insert(make_pair(internalWork.m_group, GroupInfo(internalWork.m_worker)));
+          PTRACE(6, "ThreadPool", "Setting worker thread \"" << *internalWork.m_worker << "\""
+                             " with group Id \"" << internalWork.m_group << '"');
+        }
       }
       else {
         internalWork.m_worker = iterGroup->second.m_worker;
         ++iterGroup->second.m_count;
-        PTRACE(4, "PTLib", "Using existing worker thread with group Id \"" << group << '"');
+        PTRACE(6, "ThreadPool", "Using existing worker thread \"" << *internalWork.m_worker << "\""
+                           " with group Id \"" << internalWork.m_group << "\", count=" << iterGroup->second.m_count);
       }
 
       // add work to external to internal map
@@ -362,8 +366,11 @@ class PThreadPool : public PThreadPoolBase
       // update group information
       if (!internalWork.m_group.empty()) {
         typename GroupInfoMap_t::iterator iterGroup = m_groupInfoMap.find(internalWork.m_group);
-        if (PAssert(iterGroup != m_groupInfoMap.end(), "Unknown work group") && --iterGroup->second.m_count == 0)
+        if (PAssert(iterGroup != m_groupInfoMap.end(), "Unknown work group") && --iterGroup->second.m_count == 0) {
+          PTRACE(6, "ThreadPool", "Removing worker thread \"" << *internalWork.m_worker << "\""
+                                  " from group Id \"" << internalWork.m_group << '"');
           m_groupInfoMap.erase(iterGroup);
+        }
       }
 
       // tell worker to stop processing work
@@ -383,25 +390,37 @@ template <class Work_T>
 class PQueuedThreadPool : public PThreadPool<Work_T>
 {
   protected:
-    PTimeInterval m_maxWaitTime;
+    PTimeInterval m_workerIncreaseLatency;
+    unsigned      m_workerIncreaseLimit;
 
   public:
     //
     //  constructor
     //
     PQueuedThreadPool(
-      unsigned maxWorkers = 10,
+      unsigned maxWorkers = std::max(PThread::GetNumProcessors(), 10U),
       unsigned maxWorkUnits = 0,
       const char * threadName = NULL,
       PThread::Priority priority = PThread::NormalPriority,
-      const PTimeInterval & maxWaitTime = PMaxTimeInterval
+      const PTimeInterval & workerIncreaseLatency = PMaxTimeInterval,
+      unsigned workerIncreaseLimit = 0
     ) : PThreadPool<Work_T>(maxWorkers, maxWorkUnits, threadName, priority)
-      , m_maxWaitTime(maxWaitTime)
+      , m_workerIncreaseLatency(workerIncreaseLatency)
+      , m_workerIncreaseLimit(workerIncreaseLimit)
     {
+        PTRACE(4, NULL, "ThreadPool", "Thread pool created:"
+                                      " maxWorkers=" << maxWorkers << ","
+                                      " maxWorkUnits=" << maxWorkUnits << ","
+                                      " threadName=" << this->m_threadName << ","
+                                      " priority=" << priority << ","
+                                      " workerIncreaseLatency=" << workerIncreaseLatency << ","
+                                      " workerIncreaseLimit=" << workerIncreaseLimit);
     }
 
-    const PTimeInterval & GetMaxWaitTime() const { return m_maxWaitTime; }
-    void SetMaxWaitTime(const PTimeInterval & time) { m_maxWaitTime = time; }
+    const PTimeInterval & GetWorkerIncreaseLatency() const { return m_workerIncreaseLatency; }
+    void SetWorkerIncreaseLatency(const PTimeInterval & time) { m_workerIncreaseLatency = time; }
+    unsigned GetWorkerIncreaseLimit() const { return m_workerIncreaseLimit; }
+    void SetWorkerIncreaseLimit(unsigned limit) { m_workerIncreaseLimit = limit; }
 
     class QueuedWorkerThread : public PThreadPool<Work_T>::WorkerThread
     {
@@ -417,7 +436,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         void AddWork(Work_T * work)
         {
           if (PAssertNULL(work) != NULL)
-            this->m_queue.Enqueue(work);
+            this->m_queue.Enqueue(QueuedWork(work));
         }
 
         void RemoveWork(Work_T * work)
@@ -432,13 +451,12 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         void Main()
         {
-          QueuedWork item(NULL);
+          QueuedWork item;
           while (this->m_queue.Dequeue(item)) {
             this->m_working = true;
 
             PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(this->m_pool);
-            if (item.m_time.GetElapsed() > pool.m_maxWaitTime)
-              pool.OnMaxWaitTime();
+            PTimeInterval latency = item.m_time.GetElapsed();
 
             item.m_work->Work();
 
@@ -446,6 +464,9 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
               this->RemoveWork(item.m_work);
 
             this->m_working = false;
+
+            if (latency > pool.m_workerIncreaseLatency)
+              pool.OnMaxWaitTime(latency);
           }
         }
 
@@ -458,7 +479,8 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
       protected:
         struct QueuedWork
         {
-          QueuedWork(Work_T * work) : m_work(work) { }
+          QueuedWork() : m_time(0), m_work(NULL) { }
+          explicit QueuedWork(Work_T * work) : m_work(work) { }
           PTime    m_time;
           Work_T * m_work;
         };
@@ -466,12 +488,20 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         bool                   m_working;
     };
 
-    virtual void OnMaxWaitTime()
+    virtual void OnMaxWaitTime(const PTimeInterval & PTRACE_PARAM(latency))
     {
-      unsigned newMaxWorkers = (this->m_maxWorkerCount*11+9)/10;
-      PTRACE(2, NULL, "PTLib", "Thread pool latency excessive (" << this->m_maxWaitTime << "s),"
-                               " increasing maximum threads to " << newMaxWorkers);
-      this->m_maxWorkerCount = newMaxWorkers;
+      unsigned newMaxWorkers = std::min((this->m_maxWorkerCount*11+9)/10, m_workerIncreaseLimit);
+      if (newMaxWorkers != this->m_maxWorkerCount) {
+        PTRACE(2, NULL, "ThreadPool", "Thread pool latency excessive"
+               " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
+               " increasing maximum threads from " << this->m_maxWorkerCount << " to " << newMaxWorkers);
+        this->m_maxWorkerCount = newMaxWorkers;
+      }
+      else {
+        PTRACE(2, NULL, "ThreadPool", "Thread pool latency excessive"
+               " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
+               " cannot increase threads past " << m_workerIncreaseLimit);
+      }
     }
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
