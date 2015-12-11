@@ -59,7 +59,7 @@ PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount,
 
 void PThreadPoolBase::Shutdown()
 {
-  PTRACE(3, "Shutting down thread pool \"" << m_threadName << '"');
+  PTRACE(3, "PTLib", "Shutting down thread pool \"" << m_threadName << '"');
 
   while (!m_workers.empty()) {
     m_mutex.Wait();
