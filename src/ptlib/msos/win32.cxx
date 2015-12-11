@@ -1527,6 +1527,14 @@ bool PProcess::GetSystemTimes(Times & times)
 }
 
 
+unsigned PThread::GetNumProcessors()
+{
+  SYSTEM_INFO info;
+  GetSystemInfo(&info);
+  return info.dwNumberOfProcessors;
+}
+
+
 #ifdef _WIN32_WCE
 
 PBoolean PProcess::IsGUIProcess() const
