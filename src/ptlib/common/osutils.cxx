@@ -2375,6 +2375,9 @@ void PProcess::OnThreadEnded(PThread &
 #endif
                              )
 {
+  if (!PProcess::IsInitialised())
+    return;
+
 #if P_PROFILING
   PThread::Times times;
   if (!thread.GetTimes(times))
