@@ -163,7 +163,14 @@ class PFactoryTemplate : public PFactoryBase
     typedef ParamType                      Param_T;
     typedef KeyType                        Key_T;
     typedef std::vector<Key_T>             KeyList_T;
-    typedef std::map<Key_T, WorkerBase*>   WorkerMap_T;
+
+    struct WorkerWrap
+    {
+      WorkerWrap(WorkerBase * worker, bool autoDelete) : m_worker(worker), m_autoDelete(autoDelete) { }
+      WorkerBase * m_worker;
+      bool         m_autoDelete;
+    };
+    typedef std::map<Key_T, WorkerWrap>    WorkerMap_T;
     typedef typename WorkerMap_T::iterator WorkerIter_T;
 
     class WorkerBase
@@ -228,7 +235,7 @@ class PFactoryTemplate : public PFactoryBase
     virtual void DestroySingletons()
     {
       for (WorkerIter_T it = m_workers.begin(); it != m_workers.end(); ++it)
-        it->second->DestroySingleton();
+        it->second.m_worker->DestroySingleton();
     }
 
   protected:
@@ -238,17 +245,19 @@ class PFactoryTemplate : public PFactoryBase
     ~PFactoryTemplate()
     {
       DestroySingletons();
+      InternalUnregisterAll();
     }
 
-    bool InternalRegister(const Key_T & key, WorkerBase * worker)
+    bool InternalRegister(const Key_T & key, WorkerBase * worker, bool autoDeleteWorker)
     {
       PWaitAndSignal mutex(m_mutex);
       typename WorkerMap_T::iterator it = m_workers.find(key);
-      if (it != m_workers.end())
-        return it->second == worker;
+      if (it != m_workers.end()) {
+        return it->second.m_worker == worker;
+      }
 
       PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-      m_workers[key] = PAssertNULL(worker);
+      m_workers.insert(make_pair(key, WorkerWrap(PAssertNULL(worker), autoDeleteWorker)));
       return true;
     }
 
@@ -257,10 +266,10 @@ class PFactoryTemplate : public PFactoryBase
       PWaitAndSignal mutex(m_mutex);
       typename WorkerMap_T::iterator it = m_workers.find(key);
       if (it != m_workers.end())
-        return it->second->m_singletonInstance == instance;
+        return it->second.m_worker->m_singletonInstance == instance;
 
       PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-      m_workers[key] = PNEW WorkerBase(instance, autoDeleteInstance);
+      m_workers.insert(make_pair(key, WorkerWrap(PNEW WorkerBase(instance, autoDeleteInstance), true)));
       return true;
     }
 
@@ -273,16 +282,21 @@ class PFactoryTemplate : public PFactoryBase
 
       typename WorkerMap_T::iterator itNew = m_workers.find(newKey);
       if (itNew != m_workers.end())
-        return itNew->second == itOld->second;
+        return itNew->second.m_worker == itOld->second.m_worker;
 
-      m_workers[newKey] = PAssertNULL(itOld->second);
+      m_workers.insert(make_pair(newKey, WorkerWrap(itOld->second.m_worker, false)));
       return true;
     }
 
     void InternalUnregister(const Key_T & key)
     {
       m_mutex.Wait();
-      m_workers.erase(key);
+      typename WorkerMap_T::iterator it = m_workers.find(key);
+      if (it != m_workers.end()) {
+        if (it->second.m_autoDelete)
+          delete it->second.m_worker;
+        m_workers.erase(it);
+      }
       m_mutex.Signal();
     }
 
@@ -291,7 +305,7 @@ class PFactoryTemplate : public PFactoryBase
       m_mutex.Wait();
       for (WorkerIter_T it = m_workers.begin(); it != m_workers.end(); ++it) {
         if (it->second == instance) {
-          m_workers.erase(it);
+          InternalUnregister(it->first);
           break;
         }
       }
@@ -301,6 +315,10 @@ class PFactoryTemplate : public PFactoryBase
     void InternalUnregisterAll()
     {
       m_mutex.Wait();
+      for (typename WorkerMap_T::iterator it = m_workers.begin(); it != m_workers.end(); ++it) {
+        if (it->second.m_autoDelete)
+          delete it->second.m_worker;
+      }
       m_workers.clear();
       m_mutex.Signal();
     }
@@ -315,14 +333,14 @@ class PFactoryTemplate : public PFactoryBase
     {
       PWaitAndSignal mutex(m_mutex);
       WorkerIter_T entry = m_workers.find(key);
-      return entry == m_workers.end() ? NULL : entry->second->CreateInstance(param);
+      return entry == m_workers.end() ? NULL : entry->second.m_worker->CreateInstance(param);
     }
 
     void InternalDestroy(const Key_T & key, Abstract_T * instance)
     {
       PWaitAndSignal mutex(m_mutex);
       WorkerIter_T entry = m_workers.find(key);
-      if (entry != m_workers.end() && !entry->second->IsSingleton())
+      if (entry != m_workers.end() && !entry->second.m_worker->IsSingleton())
         delete instance;
     }
 
@@ -330,7 +348,7 @@ class PFactoryTemplate : public PFactoryBase
     {
       PWaitAndSignal mutex(m_mutex);
       WorkerIter_T entry = m_workers.find(key);
-      return entry != m_workers.end() && entry->second->IsSingleton();
+      return entry != m_workers.end() && entry->second.m_worker->IsSingleton();
     }
 
     KeyList_T InternalGetKeyList()
@@ -359,7 +377,7 @@ typedef std::string PDefaultPFactoryKey;
 
 #define PFACTORY_STATICS(cls) \
   static cls & GetFactory()                                            { return PFactoryBase::GetFactoryAs<cls>(); } \
-  static bool Register(const Key_T & k, WorkerBase_T * w)              { return GetFactory().InternalRegister(k, w); } \
+  static bool Register(const Key_T & k, WorkerBase_T *w, bool a=false) { return GetFactory().InternalRegister(k, w, a); } \
   static bool Register(const Key_T & k, Abstract_T * i, bool a = true) { return GetFactory().InternalRegister(k, i, a); } \
   static bool RegisterAs(const Key_T & synonym, const Key_T & original){ return GetFactory().InternalRegisterAs(synonym, original); } \
   static void Unregister(const Key_T & k)                              {        GetFactory().InternalUnregister(k); } \
