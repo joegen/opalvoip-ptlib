@@ -279,18 +279,17 @@ class PNotifierListTemplate : public PObject
       this->m_list.remove(handler);
     }
 
-    class IsObj : public std::unary_function<PObject, bool> 
+    struct IsTarget : public std::unary_function<PObject, bool> 
     {
-    public:
       PObject * m_obj;
-      IsObj(PObject * obj) : m_obj(obj) { }
-      bool operator()(Notifier & test) const { return m_obj == test.GetObject(); }
+      IsTarget(PObject * obj) : m_obj(obj) { }
+      bool operator()(Notifier & test) const { return m_obj == test.GetTarget(); }
     };
 
     /// Remove all notifiers that use the specified target object.
     void RemoveTarget(PObject * obj)
     {
-      this->m_list.remove_if(IsObj(obj));
+      this->m_list.remove_if(IsTarget(obj));
     }
 
     /// Execute all notifiers in the list.
