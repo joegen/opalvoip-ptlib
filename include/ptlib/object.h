@@ -1322,9 +1322,11 @@ class PMemoryHeap {
      */
     static void DumpStatistics(ostream & strm /** Stream to output to */);
 
+    typedef unsigned alloc_t;
+
 #if PMEMORY_CHECK
     struct State {
-      DWORD allocationNumber;
+      alloc_t allocationNumber;
     };
 #else
 	typedef _CrtMemState State;
@@ -1365,35 +1367,39 @@ class PMemoryHeap {
       them to determine memory leaks allocation point.
      */
     static void SetAllocationBreakpoint(
-      DWORD point   ///< Allocation number to stop at.
+      alloc_t point   ///< Allocation number to stop at.
     );
 
 #if PMEMORY_CHECK
 
   protected:
+    static PMemoryHeap & GetInstance();
+
     void * InternalAllocate(
       size_t nSize,           // Number of bytes to allocate.
       const char * file,      // Source file name for allocating function.
       int line,               // Source file line for allocating function.
-      const char * className  // Class name for allocating function.
+      const char * className, // Class name for allocating function.
+      bool zeroFill           // FIll with zeros
+    );
+    void * InternalReallocate(
+      void * ptr,             // Pointer to memory block to reallocate
+      size_t nSize,           // Number of bytes to allocate.
+      const char * file,      // Source file name for allocating function.
+      int line                // Source file line for allocating function.
+    );
+    void InternalDeallocate(
+      void * ptr,
+      const char * className
     );
     Validation InternalValidate(
       const void * ptr,       // Pointer to memory block to check
       const char * className, // Class name it should be.
       ostream * error         // Stream to receive error message (may be NULL)
     );
+    bool InternalValidateHeap(ostream * error);
     void InternalDumpStatistics(ostream & strm);
     void InternalDumpObjectsSince(DWORD objectNumber, ostream & strm);
-
-    class Wrapper {
-      public:
-        Wrapper();
-        ~Wrapper();
-        PMemoryHeap * operator->() const { return instance; }
-      private:
-        PMemoryHeap * instance;
-    };
-    friend class Wrapper;
 
     enum Flags {
       NoLeakPrint = 1
@@ -1408,59 +1414,62 @@ class PMemoryHeap {
                               sizeof(const char *) +
                               sizeof(const char *) +
                               sizeof(size_t) +
-                              sizeof(DWORD) +
-                              sizeof(WORD) +
-                              sizeof(BYTE) +
+                              sizeof(alloc_t) +
+                              sizeof(uint16_t) +
+                              sizeof(uint8_t) +
                               sizeof(PThreadIdentifier)
                               )%8
       };
 
-      Header     * prev;
-      Header     * next;
-      const char * className;
-      const char * fileName;
-      size_t       size;
-      DWORD        request;
-      WORD         line;
-      BYTE         flags;
-      PThreadIdentifier threadId;
-      char         guard[NumGuardBytes];
+      Header     * m_prev;
+      Header     * m_next;
+      const char * m_className;
+      const char * m_fileName;
+      size_t       m_size;
+      alloc_t      m_request;
+      uint16_t     m_line;
+      uint8_t      m_flags;
+      PThreadIdentifier m_threadId;
+      char         m_guard[NumGuardBytes];
 
       static char GuardBytes[NumGuardBytes];
     };
 #pragma pack()
 
     enum {
+      e_Destroyed =-1,
       e_Disabled,
-      e_Destroyed,
+      e_TrackOnly,
       e_Active
     } m_state;
 
-    Header * listHead;
-    Header * listTail;
+    Header * m_listHead;
+    Header * m_listTail;
 
-    static DWORD allocationBreakpoint;
-    DWORD allocationRequest;
-    DWORD firstRealObject;
-    BYTE  flags;
+    alloc_t m_allocationRequest;
+    alloc_t m_allocationBreakpoint;
+    alloc_t m_firstRealObject;
+    uint8_t m_flags;
 
-    char  allocFillChar;
-    char  freeFillChar;
+    char  m_allocFillChar;
+    char  m_freeFillChar;
 
-    DWORD currentMemoryUsage;
-    DWORD peakMemoryUsage;
-    DWORD currentObjects;
-    DWORD peakObjects;
-    DWORD totalObjects;
+    size_t  m_currentMemoryUsage;
+    size_t  m_peakMemoryUsage;
+    alloc_t m_currentObjects;
+    alloc_t m_peakObjects;
+    alloc_t m_totalObjects;
 
-    ostream * leakDumpStream;
+    ostream * m_leakDumpStream;
 
+    void Lock();
+    void Unlock();
 #if defined(_WIN32)
-    CRITICAL_SECTION mutex;
+    CRITICAL_SECTION m_mutex;
 #elif defined(P_PTHREADS)
-    pthread_mutex_t mutex;
+    pthread_mutex_t m_mutex;
 #elif defined(P_VXWORKS)
-    void * mutex;
+    void * m_mutex;
 #endif
 
 #else

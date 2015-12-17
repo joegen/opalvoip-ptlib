@@ -321,7 +321,6 @@ void operator delete[](void * ptr)
 }
 
 
-DWORD PMemoryHeap::allocationBreakpoint = 0;
 char PMemoryHeap::Header::GuardBytes[NumGuardBytes];
 static const size_t MaxMemoryDumBytes = 16;
 static void * DeletedPtr;
@@ -329,84 +328,69 @@ static void * UninitialisedPtr;
 static void * GuardedPtr;
 
 
-PMemoryHeap::Wrapper::Wrapper()
+PMemoryHeap & PMemoryHeap::GetInstance()
 {
   // The following is done like this to get over brain dead compilers that cannot
   // guarentee that a static global is contructed before it is used.
   static PMemoryHeap real_instance;
-  instance = &real_instance;
-  if (instance->m_state != e_Active)
-    return;
-
-#if defined(_WIN32)
-  EnterCriticalSection(&instance->mutex);
-#elif defined(P_PTHREADS)
-  pthread_mutex_lock(&instance->mutex);
-#elif defined(P_VXWORKS)
-  semTake((SEM_ID)instance->mutex, WAIT_FOREVER);
-#endif
-}
-
-
-PMemoryHeap::Wrapper::~Wrapper()
-{
-  if (instance->m_state != e_Active)
-    return;
-
-#if defined(_WIN32)
-  LeaveCriticalSection(&instance->mutex);
-#elif defined(P_PTHREADS)
-  pthread_mutex_unlock(&instance->mutex);
-#elif defined(P_VXWORKS)
-  semGive((SEM_ID)instance->mutex);
-#endif
+  return real_instance;
 }
 
 
 PMemoryHeap::PMemoryHeap()
+  : m_listHead(NULL)
+  , m_listTail(NULL)
+  , m_allocationRequest(1)
+  , m_allocationBreakpoint(0)
+  , m_firstRealObject(0)
+  , m_flags(NoLeakPrint)
+  , m_allocFillChar('\xCD') // Microsoft debug heap values
+  , m_freeFillChar('\xDD')
+  , m_currentMemoryUsage(0)
+  , m_peakMemoryUsage(0)
+  , m_currentObjects(0)
+  , m_peakObjects(0)
+  , m_totalObjects(0)
+  , m_leakDumpStream(NULL)
 {
   const char * env = getenv("PTLIB_MEMORY_CHECK");
-  m_state = env == NULL || atoi(env) > 0 ? e_Active : e_Disabled;
+  switch (atoi(env != NULL ? env : "1")) {
+    case 0 :
+      m_state = e_Disabled;
+      break;
 
-  listHead = NULL;
-  listTail = NULL;
+    case 2 :
+      m_state = e_TrackOnly;
+      break;
 
-  allocationRequest = 1;
-  firstRealObject = 0;
-  flags = NoLeakPrint;
-
-  allocFillChar = '\xCD'; // Microsoft debug heap values
-  freeFillChar = '\xDD';
-
-  currentMemoryUsage = 0;
-  peakMemoryUsage = 0;
-  currentObjects = 0;
-  peakObjects = 0;
-  totalObjects = 0;
+    default :
+      m_state = e_Active;
+      break;
+  }
 
   for (PINDEX i = 0; i < Header::NumGuardBytes; i++)
     Header::GuardBytes[i] = '\xFD';
 
-  memset(&DeletedPtr, freeFillChar, sizeof(DeletedPtr));
-  memset(&UninitialisedPtr, allocFillChar, sizeof(UninitialisedPtr));
+  memset(&DeletedPtr, m_freeFillChar, sizeof(DeletedPtr));
+  memset(&UninitialisedPtr, m_allocFillChar, sizeof(UninitialisedPtr));
   memset(&GuardedPtr, '\xFD', sizeof(GuardedPtr));
 
 #if defined(_WIN32)
-  InitializeCriticalSection(&mutex);
+  InitializeCriticalSection(&m_mutex);
   static PDebugStream debug;
-  leakDumpStream = &debug;
+  m_leakDumpStream = &debug;
 #else
 #if defined(P_PTHREADS)
 #ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
   pthread_mutex_t recursiveMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-  mutex = recursiveMutex;
+  m_mutex = recursiveMutex;
 #else
- pthread_mutex_init(&mutex, NULL);
+ pthread_mutex_init(&m_mutex, NULL);
 #endif
 #elif defined(P_VXWORKS)
-  mutex = semMCreate(SEM_Q_FIFO);
+  m_mutex = semMCreate(SEM_Q_FIFO);
 #endif
-  leakDumpStream = &cerr;
+  m_leakDumpStream = &cerr;
 #endif
 }
 
@@ -415,52 +399,62 @@ PMemoryHeap::~PMemoryHeap()
 {
   m_state = e_Destroyed;
 
-  if (leakDumpStream != NULL) {
-    *leakDumpStream << "Final memory statistics:\n";
-    InternalDumpStatistics(*leakDumpStream);
-    InternalDumpObjectsSince(firstRealObject, *leakDumpStream);
+  if (m_leakDumpStream != NULL) {
+    *m_leakDumpStream << "Final memory statistics:\n";
+    InternalDumpStatistics(*m_leakDumpStream);
+    InternalDumpObjectsSince(m_firstRealObject, *m_leakDumpStream);
   }
 
 #if defined(_WIN32)
-  DeleteCriticalSection(&mutex);
+  DeleteCriticalSection(&m_mutex);
   PProcess::Current().WaitOnExitConsoleWindow();
 #elif defined(P_PTHREADS)
-  pthread_mutex_destroy(&mutex);
+  pthread_mutex_destroy(&m_mutex);
 #elif defined(P_VXWORKS)
-  semDelete((SEM_ID)mutex);
+  semDelete((SEM_ID)m_mutex);
+#endif
+}
+
+
+void PMemoryHeap::Lock()
+{
+#if defined(_WIN32)
+  EnterCriticalSection(&m_mutex);
+#elif defined(P_PTHREADS)
+  pthread_mutex_lock(&m_mutex);
+#elif defined(P_VXWORKS)
+  semTake((SEM_ID)m_mutex, WAIT_FOREVER);
+#endif
+}
+
+
+void PMemoryHeap::Unlock()
+{
+#if defined(_WIN32)
+  LeaveCriticalSection(&m_mutex);
+#elif defined(P_PTHREADS)
+  pthread_mutex_unlock(&m_mutex);
+#elif defined(P_VXWORKS)
+  semGive((SEM_ID)m_mutex);
 #endif
 }
 
 
 void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
 {
-  Wrapper mem;
-  if (mem->m_state == e_Disabled)
-    return malloc(nSize);
-  return mem->InternalAllocate(nSize, file, line, className);
+  return GetInstance().InternalAllocate(nSize, file, line, className, false);
 }
 
 
 void * PMemoryHeap::Allocate(size_t count, size_t size, const char * file, int line)
 {
-  Wrapper mem;
-  if (mem->m_state == e_Disabled)
-    return calloc(count, size);
-
-  char oldFill = mem->allocFillChar;
-  mem->allocFillChar = '\0';
-
-  void * data = mem->InternalAllocate(count*size, file, line, NULL);
-
-  mem->allocFillChar = oldFill;
-
-  return data;
+  return GetInstance().InternalAllocate(count*size, file, line, NULL, true);
 }
 
 
-void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, const char * className)
+void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, const char * className, bool zeroFill)
 {
-  if (m_state != e_Active)
+  if (m_state <= e_Disabled)
     return malloc(nSize);
 
   Header * obj = (Header *)malloc(sizeof(Header) + nSize + sizeof(Header::GuardBytes));
@@ -469,50 +463,58 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
     return NULL;
   }
 
+  Lock();
+
+  if (m_allocationBreakpoint != 0 && m_allocationRequest == m_allocationBreakpoint)
+    PBreakToDebugger();
+
   // Ignore all allocations made before main() is called. This is indicated
   // by PProcess::PreInitialise() clearing the NoLeakPrint flag. Why do we do
   // this? because the GNU compiler is broken in the way it does static global
   // C++ object construction and destruction.
-  if (firstRealObject == 0 && (flags&NoLeakPrint) == 0) {
-    if (leakDumpStream != NULL)
-      *leakDumpStream << "PTLib memory checking activated." << endl;
-    firstRealObject = allocationRequest;
+  if (m_firstRealObject == 0 && (m_flags&NoLeakPrint) == 0) {
+    if (m_leakDumpStream != NULL)
+      *m_leakDumpStream << "PTLib memory checking activated." << endl;
+    m_firstRealObject = m_allocationRequest;
   }
 
-  if (allocationBreakpoint != 0 && allocationRequest == allocationBreakpoint)
-    PBreakToDebugger();
+  m_currentMemoryUsage += nSize;
+  if (m_currentMemoryUsage > m_peakMemoryUsage)
+    m_peakMemoryUsage = m_currentMemoryUsage;
 
-  currentMemoryUsage += nSize;
-  if (currentMemoryUsage > peakMemoryUsage)
-    peakMemoryUsage = currentMemoryUsage;
+  m_currentObjects++;
+  if (m_currentObjects > m_peakObjects)
+    m_peakObjects = m_currentObjects;
+  m_totalObjects++;
 
-  currentObjects++;
-  if (currentObjects > peakObjects)
-    peakObjects = currentObjects;
-  totalObjects++;
+  obj->m_request = m_allocationRequest++;
+
+  obj->m_prev = m_listTail;
+  if (m_listTail != NULL)
+    m_listTail->m_next = obj;
+  m_listTail = obj;
+  if (m_listHead == NULL)
+    m_listHead = obj;
+  obj->m_next = NULL;
+
+  Unlock();
+
+  obj->m_size      = nSize;
+  obj->m_fileName  = file;
+  obj->m_line      = (WORD)line;
+  obj->m_threadId  = PThread::GetCurrentThreadId();
+  obj->m_className = className;
+  obj->m_flags     = m_flags;
 
   char * data = (char *)&obj[1];
 
-  obj->prev      = listTail;
-  obj->next      = NULL;
-  obj->size      = nSize;
-  obj->fileName  = file;
-  obj->line      = (WORD)line;
-   obj->threadId = PThread::GetCurrentThreadId();
-  obj->className = className;
-  obj->request   = allocationRequest++;
-  obj->flags     = flags;
-  memcpy(obj->guard, obj->GuardBytes, sizeof(obj->guard));
-  memset(data, allocFillChar, nSize);
-  memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->guard));
-
-  if (listTail != NULL)
-    listTail->next = obj;
-
-  listTail = obj;
-
-  if (listHead == NULL)
-    listHead = obj;
+  if (m_state == e_Active) {
+    memcpy(obj->m_guard, obj->GuardBytes, sizeof(obj->m_guard));
+    memset(data, zeroFill ? '\0' : m_allocFillChar, nSize);
+    memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->m_guard));
+  }
+  else if (zeroFill)
+    memset(data, '\0', nSize);
 
   return data;
 }
@@ -520,6 +522,15 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
 
 void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
 {
+  return GetInstance().InternalReallocate(ptr, nSize, file, line);
+}
+
+
+void * PMemoryHeap::InternalReallocate(void * ptr, size_t nSize, const char * file, int line)
+{
+  if (m_state <= e_Disabled)
+    return realloc(ptr, nSize);
+
   if (ptr == NULL)
     return Allocate(nSize, file, line, NULL);
 
@@ -528,43 +539,46 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
     return NULL;
   }
 
-  Wrapper mem;
-
-  if (mem->m_state != e_Active)
-    return realloc(ptr, nSize);
-
-  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok)
+  if (InternalValidate(ptr, NULL, m_leakDumpStream) != Ok)
     return NULL;
 
-  Header * obj = (Header *)realloc(((Header *)ptr)-1, sizeof(Header) + nSize + sizeof(obj->guard));
+  Header * obj = (Header *)realloc(((Header *)ptr)-1, sizeof(Header) + nSize + sizeof(obj->m_guard));
   if (obj == NULL) {
     PAssertAlways(POutOfMemory);
     return NULL;
   }
 
-  if (mem->allocationBreakpoint != 0 && mem->allocationRequest == mem->allocationBreakpoint)
+  Lock();
+
+  if (m_allocationBreakpoint != 0 && m_allocationRequest == m_allocationBreakpoint)
     PBreakToDebugger();
 
-  mem->currentMemoryUsage -= obj->size;
-  mem->currentMemoryUsage += nSize;
-  if (mem->currentMemoryUsage > mem->peakMemoryUsage)
-    mem->peakMemoryUsage = mem->currentMemoryUsage;
+  m_currentMemoryUsage -= obj->m_size;
+  m_currentMemoryUsage += nSize;
+  if (m_currentMemoryUsage > m_peakMemoryUsage)
+    m_peakMemoryUsage = m_currentMemoryUsage;
+
+  obj->m_request = m_allocationRequest++;
+
+  if (obj->m_prev != NULL)
+    obj->m_prev->m_next = obj;
+  else
+    m_listHead = obj;
+  if (obj->m_next != NULL)
+    obj->m_next->m_prev = obj;
+  else
+    m_listTail = obj;
+
+  Unlock();
+
+  obj->m_size     = nSize;
+  obj->m_fileName = file;
+  obj->m_line     = (WORD)line;
 
   char * data = (char *)&obj[1];
-  memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->guard));
 
-  obj->size      = nSize;
-  obj->fileName  = file;
-  obj->line      = (WORD)line;
-  obj->request   = mem->allocationRequest++;
-  if (obj->prev != NULL)
-    obj->prev->next = obj;
-  else
-    mem->listHead = obj;
-  if (obj->next != NULL)
-    obj->next->prev = obj;
-  else
-    mem->listTail = obj;
+  if (m_state == e_Active)
+    memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->m_guard));
 
   return data;
 }
@@ -572,40 +586,53 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
 
 void PMemoryHeap::Deallocate(void * ptr, const char * className)
 {
+  GetInstance().InternalDeallocate(ptr, className);
+}
+
+
+void PMemoryHeap::InternalDeallocate(void * ptr, const char * className)
+{
+  if (m_state <= e_Disabled)
+    return free(ptr);
+
   if (ptr == NULL)
     return;
 
-  Wrapper mem;
-
   Header * obj = ((Header *)ptr)-1;
 
-  switch (mem->InternalValidate(ptr, className, mem->leakDumpStream)) {
+  switch (InternalValidate(ptr, className, m_leakDumpStream)) {
     case Trashed :
       free(obj);  // Try and free out extended version, and continue
       return;
 
     case Inactive :
     case Bad :
-      free(ptr);  // Try and free it as if we didn't extend it, and continue
+      free(ptr);  // Try and free it as if we didn't allocate it, and continue
       return;
 
     default :
       break;
   }
 
-  if (obj->prev != NULL)
-    obj->prev->next = obj->next;
-  else
-    mem->listHead = obj->next;
-  if (obj->next != NULL)
-    obj->next->prev = obj->prev;
-  else
-    mem->listTail = obj->prev;
+  Lock();
 
-  mem->currentMemoryUsage -= obj->size;
-  mem->currentObjects--;
+  if (obj->m_prev != NULL)
+    obj->m_prev->m_next = obj->m_next;
+  else
+    m_listHead = obj->m_next;
+  if (obj->m_next != NULL)
+    obj->m_next->m_prev = obj->m_prev;
+  else
+    m_listTail = obj->m_prev;
 
-  memset(ptr, mem->freeFillChar, obj->size);  // Make use of freed data noticable
+  m_currentMemoryUsage -= obj->m_size;
+  m_currentObjects--;
+
+  Unlock();
+
+  if (m_state == e_Active)
+    memset(ptr, m_freeFillChar, obj->m_size);  // Make use of freed data noticable
+
   free(obj);
 }
 
@@ -614,8 +641,7 @@ PMemoryHeap::Validation PMemoryHeap::Validate(const void * ptr,
                                               const char * className,
                                               ostream * error)
 {
-  Wrapper mem;
-  return mem->InternalValidate(ptr, className, error);
+  return GetInstance().InternalValidate(ptr, className, error);
 }
 
 
@@ -629,22 +655,30 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
                                                       const char * className,
                                                       ostream * error)
 {
-  if (m_state != e_Active)
+  if (m_state <= e_Disabled)
     return Inactive;
 
   if (ptr == NULL)
     return Bad;
 
-  Header * obj = ((Header *)ptr)-1;
+  Header * obj = ((Header *)ptr) - 1;
+  Header * link = obj;
 
-  unsigned count = currentObjects;
-  Header * link = listTail;
-  while (link != NULL && link != obj && count-- > 0) {
-    if (link->prev == DeletedPtr || link->prev == UninitialisedPtr || link->prev == GuardedPtr) {
-      PMEMORY_VALIDATE_ERROR("Block " << ptr << " trashed!");
-      return Trashed;
+  if (m_state == e_Active) {
+    Lock();
+
+    unsigned count = m_currentObjects;
+    Header * link = m_listTail;
+    while (link != NULL && link != obj && count-- > 0) {
+      if (link->m_prev == DeletedPtr || link->m_prev == UninitialisedPtr || link->m_prev == GuardedPtr) {
+        PMEMORY_VALIDATE_ERROR("Block " << ptr << " trashed!");
+        Unlock();
+        return Trashed;
+      }
+      link = link->m_prev;
     }
-    link = link->prev;
+
+    Unlock();
   }
 
   if (link != obj) {
@@ -652,21 +686,23 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
     return Bad;
   }
 
-  if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
-    PMEMORY_VALIDATE_ERROR("Underrun at " << ptr << '[' << obj->size << "] #" << obj->request);
-    return Corrupt;
+  if (m_state == e_Active) {
+    if (memcmp(obj->m_guard, obj->GuardBytes, sizeof(obj->m_guard)) != 0) {
+      PMEMORY_VALIDATE_ERROR("Underrun at " << ptr << '[' << obj->m_size << "] #" << obj->m_request);
+      return Corrupt;
+    }
+
+    if (memcmp((char *)ptr + obj->m_size, obj->GuardBytes, sizeof(obj->m_guard)) != 0) {
+      PMEMORY_VALIDATE_ERROR("Overrun at " << ptr << '[' << obj->m_size << "] #" << obj->m_request);
+      return Corrupt;
+    }
   }
-  
-  if (memcmp((char *)ptr+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
-    PMEMORY_VALIDATE_ERROR("Overrun at " << ptr << '[' << obj->size << "] #" << obj->request);
-    return Corrupt;
-  }
-  
-  if (!(className == NULL && obj->className == NULL) &&
-       (className == NULL || obj->className == NULL ||
-       (className != obj->className && strcmp(obj->className, className) != 0))) {
-    PMEMORY_VALIDATE_ERROR("PObject " << ptr << '[' << obj->size << "] #" << obj->request
-                           << " allocated as \"" << (obj->className != NULL ? obj->className : "<NULL>")
+
+  if (!(className == NULL && obj->m_className == NULL) &&
+       (className == NULL || obj->m_className == NULL ||
+       (className != obj->m_className && strcmp(obj->m_className, className) != 0))) {
+    PMEMORY_VALIDATE_ERROR("PObject " << ptr << '[' << obj->m_size << "] #" << obj->m_request
+                           << " allocated as \"" << (obj->m_className != NULL ? obj->m_className : "<NULL>")
                            << "\" and should be \"" << (className != NULL ? className : "<NULL>") << "\".");
     return Corrupt;
   }
@@ -677,26 +713,41 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(const void * ptr,
 
 PBoolean PMemoryHeap::ValidateHeap(ostream * error)
 {
-  Wrapper mem;
+  return GetInstance().InternalValidateHeap(error);
+}
 
-  if (error == NULL)
-    error = mem->leakDumpStream;
 
-  Header * obj = mem->listHead;
-  while (obj != NULL) {
-    if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
-      if (error != NULL)
-        *error << "Underrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
+bool PMemoryHeap::InternalValidateHeap(ostream * error)
+{
+  if (error == NULL) {
+    error = m_leakDumpStream;
+    if (error == NULL)
       return false;
-    }
-  
-    if (memcmp((char *)(obj+1)+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
-      if (error != NULL)
-        *error << "Overrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
-      return false;
+  }
+
+  if (m_state == e_Active) {
+    Lock();
+
+    Header * obj = m_listHead;
+    while (obj != NULL) {
+      if (memcmp(obj->m_guard, obj->GuardBytes, sizeof(obj->m_guard)) != 0) {
+        if (error != NULL)
+          *error << "Underrun at " << (obj + 1) << '[' << obj->m_size << "] #" << obj->m_request << endl;
+        Unlock();
+        return false;
+      }
+
+      if (memcmp((char *)(obj + 1) + obj->m_size, obj->GuardBytes, sizeof(obj->m_guard)) != 0) {
+        if (error != NULL)
+          *error << "Overrun at " << (obj + 1) << '[' << obj->m_size << "] #" << obj->m_request << endl;
+        Unlock();
+        return false;
+      }
+
+      obj = obj->m_next;
     }
 
-    obj = obj->next;
+    Unlock();
   }
 
 #if defined(_WIN32) && defined(_DEBUG)
@@ -714,14 +765,14 @@ PBoolean PMemoryHeap::ValidateHeap(ostream * error)
 
 PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 {
-  Wrapper mem;
+  PMemoryHeap & mem = GetInstance();
 
-  PBoolean ignoreAllocations = (mem->flags&NoLeakPrint) != 0;
+  PBoolean ignoreAllocations = (mem.m_flags&NoLeakPrint) != 0;
 
   if (ignore)
-    mem->flags |= NoLeakPrint;
+    mem.m_flags |= NoLeakPrint;
   else
-    mem->flags &= ~NoLeakPrint;
+    mem.m_flags &= ~NoLeakPrint;
 
   return ignoreAllocations;
 }
@@ -729,7 +780,7 @@ PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
 
 void PMemoryHeap::DumpStatistics()
 {
-  ostream * strm = Wrapper()->leakDumpStream;
+  ostream * strm = GetInstance().m_leakDumpStream;
   if (strm != NULL)
     DumpStatistics(*strm);
 }
@@ -768,94 +819,99 @@ void PMemoryHeap::DumpStatistics(ostream & strm)
     OutputMemory(strm, usage.m_current);
   }
 
-  Wrapper mem;
-  mem->InternalDumpStatistics(strm);
+  GetInstance().InternalDumpStatistics(strm);
 }
 
 
 void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 {
+  Lock();
+
   strm << "\n"
           "Current memory usage     : ";
-  OutputMemory(strm, currentMemoryUsage);
+  OutputMemory(strm, m_currentMemoryUsage);
   strm << "\n"
-          "Current objects count    : " << currentObjects << "\n"
+          "Current objects count    : " << m_currentObjects << "\n"
           "Peak memory usage        : ";
-  OutputMemory(strm, peakMemoryUsage);
+  OutputMemory(strm, m_peakMemoryUsage);
   strm << "\n"
-          "Peak objects created     : " << peakObjects << "\n"
-          "Total objects created    : " << totalObjects << "\n"
-          "Next allocation request  : " << allocationRequest << '\n'
+          "Peak objects created     : " << m_peakObjects << "\n"
+          "Total objects created    : " << m_totalObjects << "\n"
+          "Next allocation request  : " << m_allocationRequest << '\n'
        << endl;
+
+  Unlock();
 }
 
 
 void PMemoryHeap::GetState(State & state)
 {
-  Wrapper mem;
-  state.allocationNumber = mem->allocationRequest;
+  state.allocationNumber = GetInstance().m_allocationRequest;
 }
 
 
-void PMemoryHeap::SetAllocationBreakpoint(DWORD point)
+void PMemoryHeap::SetAllocationBreakpoint(alloc_t point)
 {
-  allocationBreakpoint = point;
+  GetInstance().m_allocationBreakpoint = point;
 }
 
 
 void PMemoryHeap::DumpObjectsSince(const State & state)
 {
-  Wrapper mem;
-  if (mem->leakDumpStream != NULL)
-    mem->InternalDumpObjectsSince(state.allocationNumber, *mem->leakDumpStream);
+  PMemoryHeap & mem = GetInstance();
+  if (mem.m_leakDumpStream != NULL)
+    mem.InternalDumpObjectsSince(state.allocationNumber, *mem.m_leakDumpStream);
 }
 
 
 void PMemoryHeap::DumpObjectsSince(const State & state, ostream & strm)
 {
-  Wrapper mem;
-  mem->InternalDumpObjectsSince(state.allocationNumber, strm);
+  GetInstance().InternalDumpObjectsSince(state.allocationNumber, strm);
 }
 
 
 void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 {
+  Lock();
+
   bool first = true;
-  for (Header * obj = listHead; obj != NULL; obj = obj->next) {
-    if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
+  for (Header * obj = m_listHead; obj != NULL; obj = obj->m_next) {
+    if (obj->m_request < objectNumber || (obj->m_flags&NoLeakPrint) != 0)
       continue;
 
     if (first && m_state == e_Destroyed) {
-      *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
+      *m_leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
 #if !defined(_WIN32)
       cin.get();
 #endif
-      *leakDumpStream << '\n';
+      *m_leakDumpStream << '\n';
       first = false;
     }
 
     BYTE * data = (BYTE *)&obj[1];
 
-    if (obj->fileName != NULL)
-      strm << obj->fileName << '(' << obj->line << ") : ";
+    if (obj->m_fileName != NULL)
+      strm << obj->m_fileName << '(' << obj->m_line << ") : ";
 
-    strm << '#' << obj->request << ' ' << (void *)data << " [" << obj->size << "] ";
+    strm << '#' << obj->m_request << ' ' << (void *)data << " [" << obj->m_size << "] ";
 
-    if (obj->className != NULL)
-      strm << "class=\"" << obj->className << "\" ";
+    if (obj->m_className != NULL)
+      strm << "class=\"" << obj->m_className << "\" ";
 
-    if (PProcess::IsInitialised() && obj->threadId != PNullThreadIdentifier) {
+    if (PProcess::IsInitialised() && obj->m_threadId != PNullThreadIdentifier) {
       strm << "thread=";
-      PThread * thread = PProcess::Current().GetThread(obj->threadId);
+      PThread * thread = PProcess::Current().GetThread(obj->m_threadId);
       if (thread != NULL)
         strm << '"' << thread->GetThreadName() << "\" ";
       else
-        strm << "0x" << hex << obj->threadId << dec << ' ';
+        strm << "0x" << hex << obj->m_threadId << dec << ' ';
     }
 
-    strm << '\n' << hex << setfill('0') << PBYTEArray(data, std::min(MaxMemoryDumBytes, obj->size), false)
+    strm << '\n' << hex << setfill('0') << PBYTEArray(data, std::min(MaxMemoryDumBytes, obj->m_size), false)
                  << dec << setfill(' ') << endl;
   }
+
+  Unlock();
 }
 
 
