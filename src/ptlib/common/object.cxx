@@ -1052,7 +1052,7 @@ void PMemoryHeap::DumpObjectsSince(const State & state, ostream & /*strm*/)
 }
 
 
-void PMemoryHeap::SetAllocationBreakpoint(DWORD objectNumber)
+void PMemoryHeap::SetAllocationBreakpoint(alloc_t objectNumber)
 {
   CreateInstance();
   _CrtSetBreakAlloc(objectNumber);
