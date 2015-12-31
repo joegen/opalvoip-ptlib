@@ -89,8 +89,7 @@ static PBoolean PAssertThreadOp(int retval,
     return false;
   }
 
-  int err = errno;
-  switch (err) {
+  switch (retval) {
   case EPERM :
     PTRACE(1, "PTLib\tNo permission to use " << funcname);
     return false;
@@ -105,7 +104,7 @@ static PBoolean PAssertThreadOp(int retval,
   }
 
 #if P_USE_ASSERTS
-  PAssertFunc(file, line, NULL, psprintf("Function %s failed, errno=%i", funcname, err));
+  PAssertFunc(file, line, NULL, psprintf("Function %s failed, errno=%i", funcname, retval));
 #endif
   return false;
 }
@@ -1511,7 +1510,9 @@ PBoolean PSyncPoint::Wait(const PTimeInterval & waitTime)
     if (err == 0 || err == ETIMEDOUT)
       break;
 
-    PAssertOS(err == EINTR && errno == EINTR);
+    /* PAssertOS reports errno, so set it before */
+    errno = err;
+    PAssertOS(err == EINTR);
   }
 
   if (err == 0)
