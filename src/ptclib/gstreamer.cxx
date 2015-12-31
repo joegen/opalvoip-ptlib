@@ -568,8 +568,7 @@ PGstElement::StateResult PGstElement::WaitStateChange()
 
 PGstElement::StateResult PGstElement::WaitStateChange(const PTimeInterval & timeout)
 {
-  return IsValid() ? (StateResult)gst_element_get_state(As<GstElement>(), NULL, NULL,
-                                                        timeout.GetMilliSeconds()*1000000) : Failed;
+  return IsValid() ? (StateResult)gst_element_get_state(As<GstElement>(), NULL, NULL, timeout.GetNanoSeconds()) : Failed;
 }
 
 
@@ -846,7 +845,7 @@ bool PGstBus::Pop(PGstMessage & message)
 
 bool PGstBus::Pop(PGstMessage & message, PTimeInterval & wait)
 {
-  return IsValid() && message.Attach(gst_bus_timed_pop(As<GstBus>(), wait.GetMilliSeconds()*1000000));
+  return IsValid() && message.Attach(gst_bus_timed_pop(As<GstBus>(), wait.GetNanoSeconds()));
 }
 
 
