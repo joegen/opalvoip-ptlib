@@ -88,10 +88,16 @@ class PTimeInterval : public PObject
     PTimeInterval & operator=(const PTimeInterval & other);
 
     /// Return a PTimeInterval in nanoseconds
-    static PTimeInterval NanoSeconds(int64_t nsecs);
+    static PTimeInterval NanoSeconds(
+      int64_t nsecs,
+      int secs = 0
+    );
 
     /// Return a PTimeInterval in microseconds
-    static PTimeInterval MicroSeconds(int64_t usecs);
+    static PTimeInterval MicroSeconds(
+      int64_t usecs,
+      int secs = 0
+    );
   //@}
 
   /**@name Overrides from class PObject */
@@ -165,7 +171,10 @@ class PTimeInterval : public PObject
 
     /** Set the number of nanoseconds for the time interval.
      */
-    void SetNanoSeconds(PInt64 nsecs);
+    void SetNanoSeconds(
+      int64_t nsecs,
+      int secs = 0
+    );
 
     /** Get the number of microseconds for the time interval.
     
@@ -176,7 +185,10 @@ class PTimeInterval : public PObject
 
     /** Set the number of microseconds for the time interval.
      */
-    void SetMicroSeconds(PInt64 usecs);
+    void SetMicroSeconds(
+      int64_t usecs,
+      int secs = 0
+    );
 
     /** Get the number of milliseconds for the time interval.
     
@@ -442,6 +454,12 @@ class PTimeInterval : public PObject
 
   private:
     atomic<int64_t> m_nanoseconds;
+    static int64_t const MicroToNano = 1000;
+    static int64_t const MilliToNano = MicroToNano*1000;
+    static int64_t const SecsToNano  = MilliToNano*1000;
+    static int64_t const MinsToNano  = SecsToNano*60;
+    static int64_t const HoursToNano = MinsToNano*60;
+    static int64_t const DaysToNano  = HoursToNano*24;
 
 
 // Include platform dependent part of class

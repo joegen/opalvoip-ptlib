@@ -35,7 +35,7 @@
 // PTimeInterval
 
 PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
-  : m_nanoseconds(millisecs*1000000) { }
+  : m_nanoseconds(millisecs*MilliToNano) { }
 
 PINLINE PTimeInterval::PTimeInterval(const PTimeInterval & other)
   : m_nanoseconds(other.InternalGet()) { }
@@ -46,41 +46,41 @@ PINLINE PTimeInterval & PTimeInterval::operator=(const PTimeInterval & other)
 PINLINE PObject * PTimeInterval::Clone() const
   { return PNEW PTimeInterval(GetMilliSeconds()); }
 
-PINLINE PTimeInterval PTimeInterval::NanoSeconds(int64_t nsecs)
-  { PTimeInterval t; t.SetNanoSeconds(nsecs); return t; }
+PINLINE PTimeInterval PTimeInterval::NanoSeconds(int64_t nsecs, int secs)
+  { PTimeInterval t; t.SetNanoSeconds(nsecs, secs); return t; }
 
-PINLINE PTimeInterval PTimeInterval::MicroSeconds(int64_t usecs)
-  { PTimeInterval t; t.SetMicroSeconds(usecs); return t; }
+PINLINE PTimeInterval PTimeInterval::MicroSeconds(int64_t usecs, int secs)
+  { PTimeInterval t; t.SetMicroSeconds(usecs, secs); return t; }
 
 PINLINE PInt64 PTimeInterval::GetNanoSeconds() const
   { return InternalGet(); }
 
-PINLINE void PTimeInterval::SetNanoSeconds(PInt64 nsecs)
-  { InternalSet(nsecs); }
+PINLINE void PTimeInterval::SetNanoSeconds(PInt64 nsecs, int secs)
+  { InternalSet(nsecs+secs*SecsToNano); }
 
 PINLINE PInt64 PTimeInterval::GetMicroSeconds() const
-  { return InternalGet()/1000; }
+  { return InternalGet()/MicroToNano; }
 
-PINLINE void PTimeInterval::SetMicroSeconds(PInt64 usecs)
-  { InternalSet(usecs*1000); }
+PINLINE void PTimeInterval::SetMicroSeconds(PInt64 usecs, int secs)
+  { InternalSet(usecs*MicroToNano+secs*SecsToNano); }
 
 PINLINE PInt64 PTimeInterval::GetMilliSeconds() const
-  { return InternalGet()/1000000; }
+  { return InternalGet()/MilliToNano; }
 
 PINLINE void PTimeInterval::SetMilliSeconds(PInt64 msecs)
-  { InternalSet(msecs*1000000); }
+  { InternalSet(msecs*MilliToNano); }
 
 PINLINE long PTimeInterval::GetSeconds() const
-  { return (long)(GetMilliSeconds()/1000); }
+  { return (long)(InternalGet()/SecsToNano); }
 
 PINLINE long PTimeInterval::GetMinutes() const
-  { return (long)(GetMilliSeconds()/60000); }
+  { return (long)(InternalGet()/MinsToNano); }
 
 PINLINE int PTimeInterval::GetHours() const
-  { return (int)(GetMilliSeconds()/3600000); }
+  { return (int)(InternalGet()/HoursToNano); }
 
 PINLINE int PTimeInterval::GetDays() const
-  { return (int)(GetMilliSeconds()/86400000); }
+  { return (int)(InternalGet()/DaysToNano); }
 
 
 PINLINE PTimeInterval PTimeInterval::operator-() const
