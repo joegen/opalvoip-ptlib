@@ -619,7 +619,7 @@ class PTime : public PObject
 
     // Member variables
     atomic<int64_t> m_microSecondsSinceEpoch;
-    enum { Micro = 1000000 };
+    static int64_t const Micro = 1000000;
 
 // Include platform dependent part of class
 #ifdef _WIN32
