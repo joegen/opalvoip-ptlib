@@ -390,7 +390,7 @@ sem4wait( SHMIFmap *smap, int waitTimeinMS )
 #endif
    // Absolute time, not relative
    timeout.tv_sec = currsec1.tv_sec + waitTimeSeconds; //TIMEOUT;
-   timeout.tv_nsec = (currsec1.tv_usec * 1000) + waitTimeMSec;
+   timeout.tv_nsec = (currsec1.tv_usec * 1000) + waitTimeMSec * 1000000ULL;
 
    rc = sem_timedwait( smap->pSem, &timeout );
    if ( rc < 0 ) {

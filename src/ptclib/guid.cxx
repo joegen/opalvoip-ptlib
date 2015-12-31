@@ -62,42 +62,14 @@ PGloballyUniqueID::PGloballyUniqueID()
   PWaitAndSignal wait(mutex);
 
   // Want time of UTC in 0.1 microseconds since 15 Oct 1582.
-  PInt64 timestamp;
-  static PInt64 deltaTime = PInt64(10000000)*24*60*60*
-                            (  16            // Days from 15th October
-                             + 31            // Days in December 1583
-                             + 30            // Days in November 1583
-#ifdef _WIN32
-                             + (1601-1583)*365   // Whole years
-                             + (1601-1583)/4);   // Leap days
-
-  // Get nanoseconds since 1601
-#ifndef _WIN32_WCE
-  GetSystemTimeAsFileTime((LPFILETIME)&timestamp);
-#else
-  SYSTEMTIME SystemTime;
-  GetSystemTime(&SystemTime);
-  SystemTimeToFileTime(&SystemTime, (LPFILETIME)&timestamp);
-#endif // _WIN32_WCE
-
-  timestamp /= 100;
-#else // _WIN32
-                             + (1970-1583)*365 // Days in years
-                             + (1970-1583)/4   // Leap days
-                             - 3);             // Allow for 1700, 1800, 1900 not leap years
-
-#ifdef P_VXWORKS
-  struct timespec ts;
-  clock_gettime(0,&ts);
-  timestamp = (ts.tv_sec*(PInt64)1000000 + ts.tv_nsec*1000)*10;
-#else
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  timestamp = (tv.tv_sec*(PInt64)1000000 + tv.tv_usec)*10;
-#endif // P_VXWORKS
-#endif // _WIN32
-
-  timestamp += deltaTime;
+  static PTimeInterval const delta(0, 0, 0, 0,
+                                   16              // Days from 15th October
+                                 + 31              // Days in December 1583
+                                 + 30              // Days in November 1583
+                                 + (1970-1583)*365 // Days in years
+                                 + (1970-1583)/4   // Leap days
+                                 - 3);             // Allow for 1700, 1800, 1900 not leap years
+  int64_t timestamp = (PTime() + delta).GetTimestamp()*10;
 
   theArray[0] = (BYTE)(timestamp&0xff);
   theArray[1] = (BYTE)((timestamp>>8)&0xff);
