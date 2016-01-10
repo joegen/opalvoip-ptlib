@@ -277,7 +277,7 @@ void PAbstractArray::PrintOn(ostream & strm) const
   char separator = strm.fill();
   int width = (int)strm.width();
   for (PINDEX  i = 0; i < GetSize(); i++) {
-    if (i > 0 && separator != '\0')
+    if (i > 0 && separator != '\0' && !isdigit(separator))
       strm << separator;
     strm.width(width);
     PrintElementOn(strm, i);
