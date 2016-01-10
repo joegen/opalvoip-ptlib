@@ -50,7 +50,7 @@ extern "C" {
   #pragma comment(lib, P_LUA_LIBRARY)
 #endif
 
-#ifndef lua_objlen
+#if LUA_VERSION_NUM > 501 && !defined(lua_objlen)
   #define lua_objlen lua_rawlen
 #endif
 
