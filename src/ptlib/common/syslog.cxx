@@ -272,6 +272,7 @@ void PSystemLogToTrace::Output(PSystemLog::Level level, const char * msg)
 
 PSystemLogToFile::PSystemLogToFile(const PFilePath & filename)
   : m_rotateInfo(filename.GetDirectory())
+  , m_outputting(false)
 {
   m_file.SetFilePath(filename);
 }
@@ -281,11 +282,17 @@ void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 {
   PWaitAndSignal mutex(m_mutex);
 
-  if (!InternalOpen())
-    return;
+  if (m_outputting)
+      return;
 
-  OutputToStream(m_file, level, msg);
-  Rotate(false);
+  m_outputting = true;
+
+  if (InternalOpen()) {
+      OutputToStream(m_file, level, msg);
+      Rotate(false);
+  }
+
+  m_outputting = false;
 }
 
 
