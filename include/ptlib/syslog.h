@@ -313,6 +313,7 @@ class PSystemLogToFile : public PSystemLogTarget
     PTextFile  m_file;
     RotateInfo m_rotateInfo;
     PMutex     m_mutex;
+    bool       m_outputting;
 };
 
 
