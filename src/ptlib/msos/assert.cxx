@@ -134,6 +134,12 @@
         __out_opt PDWORD64 pdwDisplacement,
         __inout PIMAGEHLP_SYMBOL64  Symbol
       );
+      BOOL (__stdcall *m_SymGetLineFromAddr64)(
+        _In_  HANDLE           hProcess,
+        _In_  DWORD64          dwAddr,
+        _Out_ PDWORD           pdwDisplacement,
+        _Out_ PIMAGEHLP_LINE64 Line
+      );
 
       PFUNCTION_TABLE_ACCESS_ROUTINE64 m_SymFunctionTableAccess64;
       PGET_MODULE_BASE_ROUTINE64       m_SymGetModuleBase64;
@@ -162,6 +168,9 @@
           strm << "\n    Invalid stack walk DLL: " << GetName() << " not all functions present.";
           return;
         }
+
+        if (!GetFunction("SymGetLineFromAddr64", (Function &)m_SymGetLineFromAddr64))
+          m_SymGetLineFromAddr64 = NULL;
 
         HANDLE hProcess = GetCurrentProcess();
 
@@ -322,6 +331,13 @@
             strm << " + 0x" << displacement;
 
           strm << dec << setfill(' ');
+
+          IMAGEHLP_LINE64 line;
+          line.SizeOfStruct = sizeof(line);
+          DWORD dwDisplacement;
+          if (m_SymGetLineFromAddr64 != NULL && m_SymGetLineFromAddr64(hProcess, frame.AddrPC.Offset, &dwDisplacement, &line))
+            strm << ' ' << line.FileName << '(' << line.LineNumber << ')';
+
           if (error != 0)
             strm << " - symbol lookup error=" << error;
 
