@@ -329,10 +329,16 @@ bool PSystemLogToFile::Rotate(bool force)
   if (!force && m_file.GetLength() < m_rotateInfo.m_maxSize)
     return false;
 
-  PFilePath rotatedFile = m_rotateInfo.m_directory +
-                          m_rotateInfo.m_prefix +
-                          PTime().AsString(m_rotateInfo.m_timestamp) +
-                          m_rotateInfo.m_suffix;
+  PFilePath rotatedFile;
+  PString timestamp = PTime().AsString(m_rotateInfo.m_timestamp);
+  PString tiebreak;
+  do {
+      rotatedFile = PSTRSTRM(m_rotateInfo.m_directory <<
+                             m_rotateInfo.m_prefix <<
+                             timestamp << tiebreak <<
+                             m_rotateInfo.m_suffix);
+      tiebreak = tiebreak.AsInteger()-1;
+  } while (PFile::Exists(rotatedFile));
 
   if (m_file.IsOpen()) {
     OutputToStream(m_file, PSystemLog::StdError, "Log rotated to " + rotatedFile);
