@@ -272,6 +272,7 @@ void PSystemLogToTrace::Output(PSystemLog::Level level, const char * msg)
 
 PSystemLogToFile::PSystemLogToFile(const PFilePath & filename)
   : m_rotateInfo(filename.GetDirectory())
+  , m_outputting(false)
 {
   m_file.SetFilePath(filename);
 }
@@ -281,11 +282,17 @@ void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
 {
   PWaitAndSignal mutex(m_mutex);
 
-  if (!InternalOpen())
-    return;
+  if (m_outputting)
+      return;
 
-  OutputToStream(m_file, level, msg);
-  Rotate(false);
+  m_outputting = true;
+
+  if (InternalOpen()) {
+      OutputToStream(m_file, level, msg);
+      Rotate(false);
+  }
+
+  m_outputting = false;
 }
 
 
@@ -322,10 +329,16 @@ bool PSystemLogToFile::Rotate(bool force)
   if (!force && m_file.GetLength() < m_rotateInfo.m_maxSize)
     return false;
 
-  PFilePath rotatedFile = m_rotateInfo.m_directory +
-                          m_rotateInfo.m_prefix +
-                          PTime().AsString(m_rotateInfo.m_timestamp) +
-                          m_rotateInfo.m_suffix;
+  PFilePath rotatedFile;
+  PString timestamp = PTime().AsString(m_rotateInfo.m_timestamp);
+  PString tiebreak;
+  do {
+      rotatedFile = PSTRSTRM(m_rotateInfo.m_directory <<
+                             m_rotateInfo.m_prefix <<
+                             timestamp << tiebreak <<
+                             m_rotateInfo.m_suffix);
+      tiebreak = tiebreak.AsInteger()-1;
+  } while (PFile::Exists(rotatedFile));
 
   if (m_file.IsOpen()) {
     OutputToStream(m_file, PSystemLog::StdError, "Log rotated to " + rotatedFile);
