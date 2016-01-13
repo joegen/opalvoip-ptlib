@@ -3137,7 +3137,7 @@ struct PJPEGConverter::Context
   {
     m_colourSpace = colourSpace;
 
-    unsigned nativeWidth, nativeHeight;
+    unsigned nativeWidth = 0, nativeHeight = 0;
     if (!Start(srcFrameBuffer, srcFrameBytes, nativeWidth, nativeHeight))
         return false;
 
