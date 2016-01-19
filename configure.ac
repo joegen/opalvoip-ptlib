@@ -317,8 +317,8 @@ if test "${enable_sanitize_address}" = "yes" ; then
       [],
       [],
       [
-         CFLAGS="-fsanitize=address $CFLAGS"
-         CXXFLAGS="-fsanitize=address $CXXFLAGS"
+         CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=address $LDFLAGS"
          MEMORY_CHECKER="GCC AddressSanitizer"
       ]
@@ -335,8 +335,8 @@ if test "${enable_sanitize_thread}" = "yes" ; then
       [],
       [],
       [
-         CFLAGS="-fsanitize=thread $CFLAGS"
-         CXXFLAGS="-fsanitize=thread $CXXFLAGS"
+         CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=thread $LDFLAGS"
       ]
    )
