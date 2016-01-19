@@ -7542,8 +7542,8 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-         CFLAGS="-fsanitize=address $CFLAGS"
-         CXXFLAGS="-fsanitize=address $CXXFLAGS"
+         CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=address $LDFLAGS"
          MEMORY_CHECKER="GCC AddressSanitizer"
 
@@ -7590,8 +7590,8 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
-         CFLAGS="-fsanitize=thread $CFLAGS"
-         CXXFLAGS="-fsanitize=thread $CXXFLAGS"
+         CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=thread $LDFLAGS"
 
 
