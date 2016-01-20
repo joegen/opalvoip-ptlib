@@ -93,15 +93,11 @@ PBoolean PSafeObject::SafeDereference()
     m_safeReferenceCount--;
     mayBeDeleted = m_safeReferenceCount == 0 && !m_safelyBeingRemoved;
   }
-#if PTRACING
-  unsigned tracedReferenceCount = m_safeReferenceCount;
-  unsigned traceContextIdentifier = m_traceContextIdentifier;
-#endif
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         GetClass() << ' ' << (void *)this << " decremented reference count to " << m_safeReferenceCount);
   m_safetyMutex.Signal();
 
-  PTRACE(traceContextIdentifier == 1234567890 ? 3 : 7,
-         GetClass() << ' ' << (void *)this << " decremented reference count to " << tracedReferenceCount);
-
+  // At this point the object could be deleted in another trhead, do not use it anymore!
   return mayBeDeleted;
 }
 
