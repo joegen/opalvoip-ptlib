@@ -86,10 +86,7 @@ PBoolean PSafeObject::SafeReference()
 
 PBoolean PSafeObject::SafeDereference()
 {
-  PBoolean mayBeDeleted = false;
-#if PTRACING
-  unsigned tracedReferenceCount;
-#endif
+  bool mayBeDeleted = false;
 
   m_safetyMutex.Wait();
   if (PAssert(m_safeReferenceCount > 0, PLogicError)) {
@@ -97,11 +94,12 @@ PBoolean PSafeObject::SafeDereference()
     mayBeDeleted = m_safeReferenceCount == 0 && !m_safelyBeingRemoved;
   }
 #if PTRACING
-  tracedReferenceCount = m_safeReferenceCount;
+  unsigned tracedReferenceCount = m_safeReferenceCount;
+  unsigned traceContextIdentifier = m_traceContextIdentifier;
 #endif
   m_safetyMutex.Signal();
 
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+  PTRACE(traceContextIdentifier == 1234567890 ? 3 : 7,
          GetClass() << ' ' << (void *)this << " decremented reference count to " << tracedReferenceCount);
 
   return mayBeDeleted;
