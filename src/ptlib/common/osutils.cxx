@@ -142,7 +142,7 @@ class PTraceInfo : public PTrace
 
 public:
   unsigned        m_currentLevel;
-  unsigned        m_thresholdLevel;
+  atomic<unsigned> m_thresholdLevel;
   unsigned        m_options;
   PCaselessString m_filename;
   ostream       * m_stream;
@@ -234,7 +234,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       optEnv = getenv("PTLIB_TRACE_OPTIONS");
 
     if (levelEnv != NULL || fileEnv != NULL || optEnv != NULL)
-      InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel,
+      InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel.load(),
                          fileEnv,
                          NULL,
                          optEnv != NULL ? atoi(optEnv) : m_options);
@@ -686,11 +686,7 @@ unsigned PTrace::GetOptions()
 
 void PTrace::SetLevel(unsigned level)
 {
-  PTraceInfo & info = PTraceInfo::Instance();
-  if (info.m_thresholdLevel != level) {
-    info.m_thresholdLevel = level;
-    PTRACE(2, "Trace threshold set to " << level);
-  }
+  PTRACE_IF(1, PTraceInfo::Instance().m_thresholdLevel.exchange(level) != level, "Trace threshold set to " << level);
 }
 
 
