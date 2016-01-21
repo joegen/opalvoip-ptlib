@@ -602,7 +602,8 @@ PString PSoundChannelDirectSound::GetErrorText (Errors lastError, int osError) /
 
 PString PSoundChannelDirectSound::GetErrorText(ErrorGroup group) const // public
 {
-  return GetErrorText(lastErrorCode[group], lastErrorNumber[group]);
+  PWaitAndSignal mutex(m_errorMutex);
+  return GetErrorText(m_lastErrorCode[group], m_lastErrorNumber[group]);
 }
 
 

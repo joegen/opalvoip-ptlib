@@ -1267,12 +1267,14 @@ void PTimedMutex::Construct()
 
 PTimedMutex::~PTimedMutex()
 {
-  int result = pthread_mutex_destroy(&m_mutex);
-  if (result == EBUSY) {
-    // In case it is us
-    while (pthread_mutex_unlock(&m_mutex) == 0)
+  int result;
+  if (m_lockerId == pthread_self()) {
+    // Unlock first
+    while (m_lockCount-- > 0 && pthread_mutex_unlock(&m_mutex) == 0)
       ;
-
+    result = pthread_mutex_destroy(&m_mutex);
+  }
+  else {
     // Wait a bit for someone else to unlock it
     for (PINDEX i = 0; i < 100; ++i) {
       if ((result = pthread_mutex_destroy(&m_mutex)) != EBUSY)

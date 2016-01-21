@@ -144,8 +144,8 @@ PChannel::PChannel()
   , writeTimeout(PMaxTimeInterval)
 {
   os_handle = -1;
-  memset(lastErrorCode, 0, sizeof(lastErrorCode));
-  memset(lastErrorNumber, 0, sizeof(lastErrorNumber));
+  memset(m_lastErrorCode, 0, sizeof(m_lastErrorCode));
+  memset(m_lastErrorNumber, 0, sizeof(m_lastErrorNumber));
   lastReadCount = lastWriteCount = 0;
   Construct();
 }
@@ -186,10 +186,9 @@ bool PChannel::CheckNotOpen()
   if (IsOpen())
     return false;
 
-  for (size_t i = 0; i <= NumErrorGroups; ++i) {
-    lastErrorCode[i] = NotOpen;
-    lastErrorNumber[i] = EBADF;
-  }
+  for (int i = 0; i <= NumErrorGroups; ++i)
+    SetErrorValues(NotOpen, EBADF, (ErrorGroup)i);
+
   return true;
 }
 
@@ -515,14 +514,16 @@ PChannel * PChannel::GetBaseWriteChannel() const
 
 PString PChannel::GetErrorText(ErrorGroup group) const
 {
-  return GetErrorText(lastErrorCode[group], lastErrorNumber[group]);
+  PWaitAndSignal mutex(m_errorMutex);
+  return GetErrorText(m_lastErrorCode[group], m_lastErrorNumber[group]);
 }
 
 
 PBoolean PChannel::SetErrorValues(Errors errorCode, int errorNum, ErrorGroup group)
 {
-  lastErrorCode[NumErrorGroups] = lastErrorCode[group] = errorCode;
-  lastErrorNumber[NumErrorGroups] = lastErrorNumber[group] = errorNum;
+  PWaitAndSignal mutex(m_errorMutex);
+  m_lastErrorCode[NumErrorGroups] = m_lastErrorCode[group] = errorCode;
+  m_lastErrorNumber[NumErrorGroups] = m_lastErrorNumber[group] = errorNum;
   return errorCode == NoError;
 }
 

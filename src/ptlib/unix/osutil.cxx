@@ -222,32 +222,33 @@ extern "C" {
 };
 #endif
 
-static PMutex waterMarkMutex;
-static int lowWaterMark = INT_MAX;
-static int highWaterMark = 0;
-  
+#if PTRACING
+  static PMutex s_waterMarkMutex;
+  static int s_highWaterMark = 0;
+#endif
+
 int PX_NewHandle(const char * clsName, int fd)
 {
+#if PTRACING
   if (fd < 0 || !PProcess::IsInitialised())
     return fd;
 
-  PWaitAndSignal m(waterMarkMutex);
+  s_waterMarkMutex.Wait();
 
-  if (fd > highWaterMark) {
-    highWaterMark = fd;
-    lowWaterMark = fd;
+  bool newHigh = fd > s_highWaterMark;
+  if (newHigh)
+    s_highWaterMark = fd;
 
+  s_waterMarkMutex.Signal();
+
+  if (newHigh) {
     int maxHandles = PProcess::Current().GetMaxHandles();
-    if (fd < (maxHandles-maxHandles/20))
+    if (fd < (maxHandles - maxHandles / 20))
       PTRACE(2, "PTLib", "File handle high water mark set: " << fd << ' ' << clsName);
     else
       PTRACE(1, "PTLib", "File handle high water mark within 5% of maximum: " << fd << ' ' << clsName);
   }
-
-  if (fd < lowWaterMark) {
-    lowWaterMark = fd;
-    PTRACE(4, "PTLib", "File handle low water mark set: " << fd << ' ' << clsName);
-  }
+#endif
 
   return fd;
 }

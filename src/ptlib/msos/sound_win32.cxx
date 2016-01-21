@@ -1465,10 +1465,11 @@ PString PSoundChannelWin32::GetErrorText(ErrorGroup group) const
 {
   char str[256];
 
-  if ((lastErrorNumber[group]&PWIN32ErrorFlag) == 0)
+  int err = GetErrorNumber(group);
+  if ((err&PWIN32ErrorFlag) == 0)
     return PChannel::GetErrorText(group);
 
-  DWORD osError = lastErrorNumber[group]&~PWIN32ErrorFlag;
+  DWORD osError = err&~PWIN32ErrorFlag;
   if (activeDirection == Recorder) {
     if (waveInGetErrorText(osError, str, sizeof(str)) != MMSYSERR_NOERROR)
       return PChannel::GetErrorText(group);

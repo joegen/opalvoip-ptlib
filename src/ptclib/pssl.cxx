@@ -2416,10 +2416,11 @@ PBoolean PSSLChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group
 
 PString PSSLChannel::GetErrorText(ErrorGroup group) const
 {
-  if ((lastErrorNumber[group]&0x80000000) == 0)
+  int err = GetErrorNumber(group);
+  if ((err&0x80000000) == 0)
     return PIndirectChannel::GetErrorText(group);
 
-  return PSSLError(lastErrorNumber[group]&0x7fffffff);
+  return PSSLError(err&0x7fffffff);
 }
 
 
