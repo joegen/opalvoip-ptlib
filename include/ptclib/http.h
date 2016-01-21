@@ -1173,7 +1173,7 @@ class PHTTPServer : public PHTTP
     void SetDefaultMIMEInfo(
       PMIMEInfo & info,      ///< Extra MIME information in command.
       const PHTTPConnectionInfo & connectInfo   ///< Connection information
-    );
+    ) const;
 
     /**Get the connection info for this connection.
       */
@@ -1900,7 +1900,7 @@ class PHTTPResource : public PObject
     PURL             baseURL;     ///< Base URL for the resource, may accept URLS with a longer hierarchy
     PString          contentType; ///< MIME content type for the resource
     PHTTPAuthority * authority;   ///< Authorisation method for the resource
-    volatile DWORD   hitCount;    ///< COunt of number of times resource was accessed.
+    atomic<unsigned> hitCount;    ///< COunt of number of times resource was accessed.
 };
 
 
