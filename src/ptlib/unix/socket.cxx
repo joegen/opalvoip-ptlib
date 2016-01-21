@@ -497,7 +497,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
       SetErrorValues(BufferTooSmall, EMSGSIZE, LastReadError);
       return false;
     }
-  } while (lastErrorNumber[LastReadError] == EWOULDBLOCK && PXSetIOBlock(PXReadBlock, readTimeout));
+  } while (GetErrorNumber(LastReadError) == EWOULDBLOCK && PXSetIOBlock(PXReadBlock, readTimeout));
 
   return false;
 }
@@ -528,7 +528,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
       lastWriteCount = result;
       return true;
     }
-  } while (lastErrorNumber[LastWriteError] == EWOULDBLOCK && PXSetIOBlock(PXWriteBlock, writeTimeout));
+  } while (GetErrorNumber(LastWriteError) == EWOULDBLOCK && PXSetIOBlock(PXWriteBlock, writeTimeout));
 
   return false;
 }
