@@ -716,10 +716,10 @@ class PChannel : public PObject, public std::iostream
     /// The operating system file handle return by standard open() function.
     P_INT_PTR os_handle;
 
-    /// The platform independant error code.
-    Errors lastErrorCode[NumErrorGroups+1];
-    /// The operating system error number (eg as returned by errno).
-    int lastErrorNumber[NumErrorGroups+1];
+    PMutex m_errorMutex; 
+    Errors m_lastErrorCode[NumErrorGroups+1];    ///< The platform independant error code. 
+    int    m_lastErrorNumber[NumErrorGroups+1];  ///< The operating system error number (eg as returned by errno).
+
     /// Number of byte last read by the Read() function.
     PINDEX lastReadCount;
     /// Number of byte last written by the Write() function.

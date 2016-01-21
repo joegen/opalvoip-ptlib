@@ -1012,16 +1012,17 @@ PBoolean PSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
   if (PChannel::ConvertOSError(libcReturnValue, group))
     return true;
 
-  switch (lastErrorNumber[group]) {
+  int err = GetErrorNumber(group);
+  switch (err) {
     case ECONNRESET :
     case ECONNREFUSED :
     case EHOSTUNREACH :
     case ENETUNREACH :
-      SetErrorValues(Unavailable, lastErrorNumber[group], group);
+      SetErrorValues(Unavailable, err, group);
       break;
 
     case EMSGSIZE :
-      return SetErrorValues(BufferTooSmall, lastErrorNumber[group], group);
+      return SetErrorValues(BufferTooSmall, err, group);
   }
 
   return false;
