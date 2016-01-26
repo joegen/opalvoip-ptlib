@@ -2840,7 +2840,7 @@ PThread::LocalStorageBase::LocalStorageBase()
 }
 
 
-void PThread::LocalStorageBase::~LocalStorageBase()
+PThread::LocalStorageBase::~LocalStorageBase()
 {
   pthread_key_delete(m_key);
 }
