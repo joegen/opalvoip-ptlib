@@ -815,7 +815,7 @@ bool PMonitoredSocketChannel::GetLocal(PIPSocket::Address & address, WORD & port
 bool PMonitoredSocketChannel::GetLocal(PIPSocket::AddressAndPort & ap, bool usingNAT)
 {
   PIPAddress ip;
-  WORD port;
+  WORD port = 0;
   PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
   if (bundle == NULL || !bundle->GetAddress(GetInterface(), ip, port, usingNAT))
     return false;
