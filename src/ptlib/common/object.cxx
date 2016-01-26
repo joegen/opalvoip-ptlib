@@ -164,8 +164,8 @@ bool PAssertFunc(const char * file, int line, const char * className, const char
   if (className != NULL)
     str << ", class " << className;
   if (err != 0)
-    str << ", Error=" << err;
-  str << ends;
+    str << ", error=" << err;
+  str << ", when=" << PTime().AsString(PTime::LoggingFormat) << ends;
   
   return PAssertFunc(str.str().c_str());
 }
