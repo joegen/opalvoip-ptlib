@@ -2276,7 +2276,7 @@ PBoolean PSSLChannel::Read(void * buf, PINDEX len)
 
   channelPointerMutex.StartRead();
 
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   PBoolean returnValue = false;
   if (readChannel == NULL)
@@ -2287,7 +2287,7 @@ PBoolean PSSLChannel::Read(void * buf, PINDEX len)
     readChannel->SetReadTimeout(readTimeout);
 
     int readResult = SSL_read(m_ssl, (char *)buf, len);
-    lastReadCount = readResult;
+    SetLastReadCount(readResult);
     returnValue = readResult > 0;
     if (readResult < 0 && GetErrorCode(LastReadError) == NoError)
       ConvertOSError(-1, LastReadError);
@@ -2329,7 +2329,7 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
 
   channelPointerMutex.StartRead();
 
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   PBoolean returnValue;
   if (writeChannel == NULL) {
@@ -2340,8 +2340,7 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
     writeChannel->SetWriteTimeout(writeTimeout);
 
     int writeResult = SSL_write(m_ssl, (const char *)buf, len);
-    lastWriteCount = writeResult;
-    returnValue = lastWriteCount >= len;
+    returnValue = SetLastWriteCount(writeResult) >= len;
     if (writeResult < 0 && GetErrorCode(LastWriteError) == NoError)
       ConvertOSError(-1, LastWriteError);
   }

@@ -255,9 +255,7 @@ PBoolean PSoundChannel_Tones::StartRecording()
 PBoolean PSoundChannel_Tones::Read(void * data, PINDEX size)
 {
   PINDEX samples = std::min(size/2, m_tones.GetSize() - m_bufferPosition);
-
-  lastReadCount = samples*sizeof(short);
-  memcpy(data, &m_tones[m_bufferPosition], lastReadCount);
+  memcpy(data, &m_tones[m_bufferPosition], SetLastReadCount(samples*sizeof(short)));
 
   m_bufferPosition += samples;
   if (m_bufferPosition >= m_tones.GetSize()) {

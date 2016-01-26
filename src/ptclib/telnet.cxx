@@ -114,12 +114,12 @@ PBoolean PTelnetSocket::Write(void const * buffer, PINDEX length)
       // send the characters
       if (!PTCPSocket::Write(base, (next - base) + 1))
         return false;
-      count += lastWriteCount;
+      count += GetLastWriteCount();
 
       char null = '\0';
       if (!PTCPSocket::Write(&null, 1))
         return false;
-      count += lastWriteCount;
+      count += GetLastWriteCount();
 
       base = next+1;
     }
@@ -128,7 +128,7 @@ PBoolean PTelnetSocket::Write(void const * buffer, PINDEX length)
       // send the characters
       if (!PTCPSocket::Write(base, (next - base) + 1))
         return false;
-      count += lastWriteCount;
+      count += GetLastWriteCount();
       base = next;
     }
 
@@ -139,10 +139,10 @@ PBoolean PTelnetSocket::Write(void const * buffer, PINDEX length)
   if (next > base) {
     if (!PTCPSocket::Write(base, next - base))
       return false;
-    count += lastWriteCount;
+    count += GetLastWriteCount();
   }
 
-  lastWriteCount = count;
+  SetLastWriteCount(count);
   return true;
 }
 
@@ -512,14 +512,13 @@ PBoolean PTelnetSocket::Read(void * data, PINDEX bytesToRead)
 
   while (charsLeft > 0) {
     BYTE * src = buffer.GetPointer(charsLeft);
-    if (!PTCPSocket::Read(src, charsLeft)) {
-      lastReadCount = bytesToRead - charsLeft;
-      return lastReadCount > 0;
-    }
+    if (!PTCPSocket::Read(src, charsLeft))
+      return SetLastReadCount(bytesToRead - charsLeft) > 0;
 
-    while (lastReadCount > 0) {
+    PINDEX readCount = GetLastReadCount();
+    while (readCount > 0) {
       BYTE currentByte = *src++;
-      lastReadCount--;
+      readCount--;
       switch (state) {
         case StateCarriageReturn :
           state = StateNormal;
@@ -645,7 +644,7 @@ PBoolean PTelnetSocket::Read(void * data, PINDEX bytesToRead)
       }
     }
   }
-  lastReadCount = bytesToRead;
+  SetLastReadCount(bytesToRead);
   return true;
 }
 

@@ -602,8 +602,7 @@ PString PSoundChannelDirectSound::GetErrorText (Errors lastError, int osError) /
 
 PString PSoundChannelDirectSound::GetErrorText(ErrorGroup group) const // public
 {
-  PWaitAndSignal mutex(m_errorMutex);
-  return GetErrorText(m_lastErrorCode[group], m_lastErrorNumber[group]);
+  return GetErrorText(m_status[group]->m_lastErrorCode, m_status[group]->m_lastErrorNumber);
 }
 
 
@@ -836,7 +835,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
   {
     PWaitAndSignal mutex(m_bufferMutex); // prevent closing while active
     ResetEvent(m_triggerEvent[SOUNDEVENT_ABORT]);
-    lastWriteCount = 0;
+    SetLastWriteCount(0);
     if (!m_playbackBuffer) { // check this before direction=Closed causes assertion
       SetErrorValues(NotOpen, EBADF, LastWriteError);
       PTRACE(4, "Write fail: Device closed");
@@ -848,6 +847,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
   PAssertNULL(buf);
 
   char * src = (char *) buf;
+  PINDEX written = 0;
   while (len > 0) {
     // wait for output space to become available
     if (!WaitForPlayBufferFree())       // sets m_movePos and m_available
@@ -887,13 +887,15 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
     PINDEX writeCount = length1 + length2;
     src += writeCount;
     len -= writeCount;
-    lastWriteCount += writeCount;
+    written += writeCount;
     m_movePos += writeCount;
     m_movePos %= m_bufferSize;
     m_moved += writeCount;
                                         // tell DirectSound to play
     m_playbackBuffer->Play(0, 0, m_isStreaming ? DSBPLAY_LOOPING : 0L);
   }
+
+  SetLastWriteCount(written);
   return true;
 }
 
@@ -1145,7 +1147,7 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
   {
     PWaitAndSignal mutex(m_bufferMutex); // prevent closing while active
     ResetEvent(m_triggerEvent[SOUNDEVENT_ABORT]);
-    lastReadCount = 0;
+    SetLastReadCount(0);
     if (!m_captureBuffer) { // check this before direction=Closed causes assertion
       SetErrorValues(NotOpen, EBADF, LastReadError);
       PTRACE(4, "Read fail: Device closed");
@@ -1157,6 +1159,7 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
   PAssertNULL(buf);
 
   char * dest = (char *) buf;
+  PINDEX readCount = 0;
   while (len > 0) {
     if (!WaitForRecordBufferFull())     // sets m_movePos and m_available
       return false;                     // aborted/closed
@@ -1187,11 +1190,12 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
     PINDEX readCount = length1 + length2;
     dest += readCount;
     len -= readCount;
-    lastReadCount += readCount;
+    readCount += readCount;
     m_movePos += readCount;
     m_movePos %= m_bufferSize;
     m_moved += readCount;
   }
+  SetLastReadCount(readCount);
   return true;
 }
 

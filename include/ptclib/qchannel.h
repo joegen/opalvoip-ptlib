@@ -71,6 +71,13 @@ class PQueueChannel : public PChannel
 
   /**@name Overrides from class PChannel */
   //@{
+    /** Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in <code>PFile</code> type channels.
+
+       @return the name of the channel.
+     */
+    virtual PString GetName() const { return "Queue"; }
+
     /**Low level read from the file channel. The read timeout is ignored for
        file I/O. The GetLastReadCount() function returns the actual number
        of bytes read.

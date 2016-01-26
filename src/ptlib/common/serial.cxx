@@ -107,6 +107,12 @@ void PSerialChannel::SaveSettings(PConfig & cfg)
 #endif // P_CONFIG_FILE
 
 
+PString PSerialChannel::GetName() const
+{
+  return m_portName;
+}
+
+
 void PSerialChannel::ClearDTR()
 {
   SetDTR(false);

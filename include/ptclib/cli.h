@@ -999,6 +999,7 @@ class PCLICurses : public PCLI
 
     public:
       // Overrides from PChannel
+      virtual PString GetName() const { return "CursesWindow"; }
       virtual PBoolean Write(const void * data, PINDEX length);
 
       // New functions

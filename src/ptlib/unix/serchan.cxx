@@ -122,7 +122,7 @@ PBoolean PSerialChannel::Close()
   if (os_handle >= 0) {
 
     // delete the lockfile
-    PFile::Remove(PString(LOCK_PREFIX) + channelName);
+    PFile::Remove(PString(LOCK_PREFIX) + m_portName);
 
     // restore the original terminal settings
     TCSETATTR(os_handle, &oldTermio);
@@ -159,7 +159,7 @@ PBoolean PSerialChannel::Open(const PString & port,
 //  }
 
   // save the port name
-  channelName = port;
+  m_portName = port;
 
 #if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
@@ -209,7 +209,7 @@ PBoolean PSerialChannel::Open(const PString & port,
   }
 
   // save the channel name
-  channelName = port;
+  m_portName = port;
 
   // save the current port setup
   TCGETATTR(os_handle, &oldTermio);

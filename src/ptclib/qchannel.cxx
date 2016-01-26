@@ -105,7 +105,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
 {
   mutex.Wait();
 
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (CheckNotOpen()) {
     mutex.Signal();
@@ -160,7 +160,7 @@ PBoolean PQueueChannel::Read(void * buf, PINDEX count)
 
     // Copy data out and increment pointer, decrement bytes yet to dequeue
     memcpy(buffer, queueBuffer+dequeuePos, copyLen);
-    lastReadCount += copyLen;
+    SetLastReadCount(GetLastReadCount() + copyLen);
     buffer += copyLen;
     count -= copyLen;
 
@@ -191,7 +191,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
 {
   mutex.Wait();
 
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (CheckNotOpen()) {
     mutex.Signal();
@@ -199,6 +199,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
   }
 
   const BYTE * buffer = (BYTE *)buf;
+  PINDEX written = 0;
   while (count > 0) {
     /* If queue is full then we should block for the time specifed in the
         write timeout.
@@ -238,7 +239,7 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
 
     // Move the data in and increment pointer, decrement bytes yet to queue
     memcpy(queueBuffer + enqueuePos, buffer, copyLen);
-    lastWriteCount += copyLen;
+    written += copyLen;
     buffer += copyLen;
     count -= copyLen;
 
@@ -259,9 +260,10 @@ PBoolean PQueueChannel::Write(const void * buf, PINDEX count)
       unempty.Signal();
     }
   }
-  
+
   mutex.Signal();
 
+  SetLastWriteCount(written);
   return true;
 }
 

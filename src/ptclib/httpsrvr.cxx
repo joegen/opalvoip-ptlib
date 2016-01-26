@@ -1083,7 +1083,7 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
         break;
 
       case ConnectionClose :
-        lastReadCount = 0;
+        SetLastReadCount(0);
         return false;
 
       default:
