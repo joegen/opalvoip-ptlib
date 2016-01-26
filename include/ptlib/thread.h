@@ -433,21 +433,22 @@ class PThread : public PObject
     class LocalStorageBase
     {
       public:
-        virtual ~LocalStorageBase() { }
+        virtual ~LocalStorageBase();
       protected:
-        LocalStorageBase() { }
+        LocalStorageBase();
         void StorageDestroyed();
         virtual void * Allocate() const = 0;
         virtual void Deallocate(void * ptr) const = 0;
         virtual void * GetStorage() const;
       private:
-        void ThreadDestroyed(PThread * thread) const;
-        typedef std::map<PThread *, void *> StorageMap;
-        mutable StorageMap m_storage;
-        PCriticalSection m_mutex;
-      friend class PThread;
+        std::list<void *> m_data;
+#if defined(_WIN32)
+        typedef DWORD KeyType;
+#elif defined(P_PTHREADS)
+        typedef pthread_key_t KeyType;
+#endif
+        KeyType m_key;
     };
-    friend class LocalStorageBase;
 
   private:
     PThread(bool isProcess);
@@ -474,9 +475,6 @@ class PThread : public PObject
     PCriticalSection m_threadNameMutex;
 
     PThreadIdentifier m_threadId;
-
-    typedef std::list<const LocalStorageBase *> LocalStorageList;
-    LocalStorageList m_localStorage;
 
 // Include platform dependent part of class
 #ifdef _WIN32
