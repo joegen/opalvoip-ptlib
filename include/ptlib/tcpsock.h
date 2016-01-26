@@ -143,7 +143,7 @@ class PTCPSocket : public PIPSocket
        normal channel data.
 
        This is subject to the write timeout and sets the
-       <code>lastWriteCount</code> member variable in the same way as usual
+       last write count member variable in the same way as usual
        <code>PChannel::Write()</code> function.
        
        @return

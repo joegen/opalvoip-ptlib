@@ -79,7 +79,7 @@ PBoolean PInternetProtocol::Read(void * buf, PINDEX len)
     UnRead(readAhead, GetLastReadCount());
   }
 
-  lastReadCount = PMIN(unReadCount, len);
+  SetLastReadCount(PMIN(unReadCount, len));
   const char * unReadPtr = ((const char *)unReadBuffer)+unReadCount;
   char * bufptr = (char *)buf;
   while (unReadCount > 0 && len > 0) {
@@ -89,12 +89,12 @@ PBoolean PInternetProtocol::Read(void * buf, PINDEX len)
   }
 
   if (len > 0) {
-    PINDEX saveCount = lastReadCount;
+    PINDEX saveCount = GetLastReadCount();
     PIndirectChannel::Read(bufptr, len);
-    lastReadCount += saveCount;
+    SetLastReadCount(GetLastReadCount() + saveCount);
   }
 
-  return lastReadCount > 0;
+  return GetLastReadCount() > 0;
 }
 
 
@@ -110,7 +110,7 @@ int PInternetProtocol::ReadChar()
       return -1;
   }
 
-  lastReadCount = 1;
+  SetLastReadCount(1);
   return (unReadBuffer[--unReadCount]&0xff);
 }
 
@@ -136,11 +136,11 @@ PBoolean PInternetProtocol::Write(const void * buf, PINDEX len)
               if (current > base) {
                 if (!PIndirectChannel::Write(base, current - base))
                   return false;
-                totalWritten += lastWriteCount;
+                totalWritten += GetLastWriteCount();
               }
               if (!PIndirectChannel::Write("\r", 1))
                 return false;
-              totalWritten += lastWriteCount;
+              totalWritten += GetLastWriteCount();
               base = current;
             }
         }
@@ -155,11 +155,11 @@ PBoolean PInternetProtocol::Write(const void * buf, PINDEX len)
           if (current > base) {
             if (!PIndirectChannel::Write(base, current - base))
               return false;
-            totalWritten += lastWriteCount;
+            totalWritten += GetLastWriteCount();
           }
           if (!PIndirectChannel::Write(".", 1))
             return false;
-          totalWritten += lastWriteCount;
+          totalWritten += GetLastWriteCount();
           base = current;
         }
         // Then do default state
@@ -174,11 +174,10 @@ PBoolean PInternetProtocol::Write(const void * buf, PINDEX len)
   if (current > base) {  
     if (!PIndirectChannel::Write(base, current - base))  
       return false;  
-    totalWritten += lastWriteCount;  
+    totalWritten += GetLastWriteCount();  
   }  
   
-  lastWriteCount = totalWritten;  
-  return lastWriteCount > 0;
+  return SetLastWriteCount(totalWritten) > 0;
 }
 
 

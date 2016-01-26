@@ -291,14 +291,8 @@ PINLINE PTimeInterval PChannel::GetWriteTimeout() const
 PINLINE P_INT_PTR PChannel::GetHandle() const
   { return os_handle; }
 
-PINLINE PChannel::Errors PChannel::GetErrorCode(ErrorGroup group) const
-  { PWaitAndSignal mutex(m_errorMutex); return m_lastErrorCode[group]; }
-
-PINLINE int PChannel::GetErrorNumber(ErrorGroup group) const
-  { PWaitAndSignal mutex(m_errorMutex); return m_lastErrorNumber[group]; }
-
 PINLINE void PChannel::AbortCommandString()
-  { abortCommandString = true; }
+  { m_abortCommandString = true; }
 
 
 ///////////////////////////////////////////////////////////////////////////////

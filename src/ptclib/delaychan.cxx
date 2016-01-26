@@ -124,7 +124,7 @@ PBoolean PDelayChannel::Read(void * buf, PINDEX count)
     return false;
 
   if (mode != DelayWritesOnly)
-    Wait(lastReadCount, nextReadTick);
+    Wait(GetLastReadCount(), nextReadTick);
 
   return true;
 }
@@ -136,7 +136,7 @@ PBoolean PDelayChannel::Write(const void * buf, PINDEX count)
     return false;
 
   if (mode != DelayReadsOnly)
-    Wait(lastWriteCount, nextWriteTick);
+    Wait(GetLastWriteCount(), nextWriteTick);
 
   return true;
 }

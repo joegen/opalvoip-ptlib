@@ -404,6 +404,7 @@ class PMonitoredSocketChannel : public PChannel
 
   /**@name Overrides from class PSocket */
   //@{
+    virtual PString GetName() const;
     virtual PBoolean IsOpen() const;
     virtual PBoolean Close();
 

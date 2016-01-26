@@ -61,15 +61,9 @@ void PSerialChannel::Construct()
 }
 
 
-PString PSerialChannel::GetName() const
-{
-  return portName;
-}
-
-
 PBoolean PSerialChannel::Read(void * buf, PINDEX len)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (CheckNotOpen())
     return false;
@@ -103,9 +97,8 @@ PBoolean PSerialChannel::Read(void * buf, PINDEX len)
 
     bytesToGo -= readCount;
     bufferPtr += readCount;
-    lastReadCount += readCount;
-    if (lastReadCount >= len || timeToGo == 0)
-      return lastReadCount > 0;
+    if (SetLastReadCount(GetLastReadCount() + readCount) >= len || timeToGo == 0)
+      return GetLastReadCount() > 0;
 
     if (!::WaitCommEvent(commsResource, &eventMask, &overlap)) {
       if (::GetLastError()!= ERROR_IO_PENDING)
@@ -114,7 +107,7 @@ PBoolean PSerialChannel::Read(void * buf, PINDEX len)
       if (err == WAIT_TIMEOUT) {
         SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
         ::CancelIo(commsResource);
-        return lastReadCount > 0;
+        return GetLastReadCount() > 0;
       }
       else if (err == WAIT_FAILED)
         return ConvertOSError(-2, LastReadError);
@@ -125,7 +118,7 @@ PBoolean PSerialChannel::Read(void * buf, PINDEX len)
 
 PBoolean PSerialChannel::Write(const void * buf, PINDEX len)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (CheckNotOpen())
     return false;
@@ -142,12 +135,13 @@ PBoolean PSerialChannel::Write(const void * buf, PINDEX len)
   PAssertOS(SetCommTimeouts(commsResource, &cto));
 
   PWin32Overlapped overlap;
-  if (WriteFile(commsResource, buf, len, (LPDWORD)&lastWriteCount, &overlap)) 
-    return lastWriteCount == len;
+  DWORD written;
+  if (WriteFile(commsResource, buf, len, &written, &overlap)) 
+    return SetLastWriteCount(written) == len;
 
   if (GetLastError() == ERROR_IO_PENDING)
-    if (GetOverlappedResult(commsResource, &overlap, (LPDWORD)&lastWriteCount, true)) {
-      return lastWriteCount == len;
+    if (GetOverlappedResult(commsResource, &overlap, &written, true)) {
+      return SetLastWriteCount(written) == len;
     }
 
   ConvertOSError(-2, LastWriteError);
@@ -255,10 +249,10 @@ PBoolean PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
 {
   Close();
 
-  portName = port;
-  if (portName.Find(PDIR_SEPARATOR) == P_MAX_INDEX)
-    portName = "\\\\.\\" + port;
-  commsResource = CreateFile(portName,
+  m_portName = port;
+  if (m_portName.Find(PDIR_SEPARATOR) == P_MAX_INDEX)
+    m_portName = "\\\\.\\" + port;
+  commsResource = CreateFile(m_portName,
                              GENERIC_READ|GENERIC_WRITE,
                              0,
                              NULL,

@@ -422,9 +422,6 @@ public:
   bool RawSetPosition(off_t pos, FilePositionOrigin origin);
   off_t RawGetDataLength() { return m_dataLength; }
 
-  void SetLastReadCount(PINDEX v) { lastReadCount = v; }
-  void SetLastWriteCount(PINDEX v) { lastWriteCount = v; }
-
   // Restored for backward compatibility reasons
   static PWAVFile * format(const PString & format);
   static PWAVFile * format(const PString & format, OpenMode mode, OpenOptions opts = ModeDefault);

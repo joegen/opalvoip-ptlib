@@ -1762,7 +1762,7 @@ bool PTURNUDPSocket::InternalWriteTo(const Slice * slices, size_t sliceCount, co
   bool status = PUDPSocket::InternalWriteTo(&m_txVect[0], i+1, m_serverAddress);
 
   if (status)
-    lastWriteCount -= sizeof(m_txVect[1].GetLength());
+    SetLastWriteCount(GetLastWriteCount() - sizeof(m_txVect[1].GetLength()));
 
   return status;
 }
@@ -1788,7 +1788,7 @@ bool PTURNUDPSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPSock
   ipAndPort = m_peerIpAndPort;
 
   if (status)
-    lastReadCount = m_rxHeader.m_length;
+    SetLastReadCount(m_rxHeader.m_length);
 
   return status;
 }
