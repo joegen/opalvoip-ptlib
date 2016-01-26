@@ -2797,10 +2797,6 @@ PThread::~PThread()
 
   InternalDestroy();
 
-  // Clean up any thread local storage
-  for (LocalStorageList::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
-    (*it)->ThreadDestroyed(this);
-
   if (m_type != e_IsProcess)
     PProcess::Current().InternalThreadEnded(this);
 }
@@ -2808,49 +2804,57 @@ PThread::~PThread()
 
 void PThread::LocalStorageBase::StorageDestroyed()
 {
-  m_mutex.Wait();
-  for (StorageMap::iterator it = m_storage.begin(); it != m_storage.end(); ++it) {
-    Deallocate(it->second);
-    it->first->m_localStorage.remove(this);
-  }
-  m_storage.clear();
-  m_mutex.Signal();
+  for (std::list<void *>::iterator it = m_data.begin(); it != m_data.end(); ++it)
+    Deallocate(*it);
 }
 
 
-void PThread::LocalStorageBase::ThreadDestroyed(PThread * thread) const
+#if defined(_WIN32)
+
+PThread::LocalStorageBase::LocalStorageBase()
 {
-  PWaitAndSignal mutex(m_mutex);
+  m_key = TlsAlloc();
+  PAssert(m_key != TLS_OUT_OF_INDEXES, POperatingSystemError);
+}
 
-  StorageMap::iterator it = m_storage.find(thread);
-  if (!PAssert(it != m_storage.end(), PLogicError))
-    return;
 
-  Deallocate(it->second);
-  m_storage.erase(it);
+PThread::LocalStorageBase::~LocalStorageBase()
+{
+  TlsFree(m_key);
 }
 
 
 void * PThread::LocalStorageBase::GetStorage() const
 {
-  PThread * thread = PThread::Current();
-  if (thread == NULL)
-    return NULL;
-
-  PWaitAndSignal mutex(m_mutex);
-
-  StorageMap::const_iterator it = m_storage.find(thread);
-  if (it != m_storage.end())
-    return it->second;
-
-  void * threadLocal = Allocate();
-  if (threadLocal == NULL)
-    return NULL;
-
-  m_storage[thread] = threadLocal;
-  thread->m_localStorage.push_back(this);
-  return threadLocal;
+  void * tls = TlsGetValue(m_key);
+  if (tls == NULL && PAssert(GetLastError() == ERROR_SUCCESS, POperatingSystemError))
+    TlsSetValue(m_key, tls = Allocate());
+  return tls;
 }
+
+#elif defined(P_PTHREADS)
+
+PThread::LocalStorageBase::LocalStorageBase()
+{
+  PAssert(pthread_key_create(&m_key, NULL) == 0, POperatingSystemError);
+}
+
+
+void PThread::LocalStorageBase::~LocalStorageBase()
+{
+  pthread_key_delete(m_key);
+}
+
+
+void * PThread::LocalStorageBase::GetStorage() const
+{
+  void * tls = pthread_getspecific(m_key);
+  if (tls == NULL)
+    pthread_setspecific(m_key, tls = Allocate());
+  return tls;
+}
+
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
