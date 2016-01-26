@@ -144,6 +144,13 @@ class PSerialChannel : public PChannel
 
   /**@name Open functions */
   //@{
+    /** Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in <code>PFile</code> type channels.
+
+       @return the name of the channel.
+     */
+    virtual PString GetName() const = 0;
+
     /**Open a serial channal.
        The channel is opened it on the specified port and with the specified
        attributes.
@@ -380,6 +387,7 @@ class PSerialChannel : public PChannel
     void Construct();
     // Platform dependent construct of the serial channel.
 
+    PString m_portName;
 
 // Include platform dependent part of class
 #ifdef _WIN32

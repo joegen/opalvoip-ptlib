@@ -229,7 +229,7 @@ PBoolean PPipeChannel::Kill(int signal)
 
 PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   DWORD count = 0;
 
@@ -241,7 +241,7 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
     if (!ConvertOSError(ReadFile(m_hFromChild, buffer, 1, &count, NULL) ? 0 : -2, LastReadError))
       return false;
 
-    lastReadCount = 1;
+    SetLastReadCount(1);
     if (len == 1)
       return true;
 
@@ -279,19 +279,17 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
   if (!ConvertOSError(ReadFile(m_hFromChild, buffer, len, &count, NULL) ? 0 : -2, LastReadError))
     return false;
 
-  lastReadCount += count;
-  return lastReadCount > 0;
+  return SetLastReadCount(GetLastReadCount() + count) > 0;
 }
       
 
 PBoolean PPipeChannel::Write(const void * buffer, PINDEX len)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
   DWORD count;
   if (!ConvertOSError(WriteFile(m_hToChild, buffer, len, &count, NULL) ? 0 : -2, LastWriteError))
     return false;
-  lastWriteCount = count;
-  return lastWriteCount >= len;
+  return SetLastWriteCount(count) >= len;
 }
 
 

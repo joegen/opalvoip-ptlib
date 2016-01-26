@@ -1455,11 +1455,11 @@ PBoolean PRFC822Channel::Write(const void * buf, PINDEX len)
 
   flush();
 
-  // Always return the lastWriteCount as the number of bytes expected to be
+  // Always return the last write count as the number of bytes expected to be
   // written, not teh actual number which with base64 encoding etc may be
   // significantly more.
   if (ok)
-    lastWriteCount = len;
+    SetLastWriteCount(len);
   return ok;
 }
 

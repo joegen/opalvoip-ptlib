@@ -472,7 +472,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
 bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t * addrlen)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   do {
     msghdr readData;
@@ -489,9 +489,9 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
       int result = ::recvmsg(os_handle, &readData, flags);
     );
     if (ConvertOSError(result, LastReadError)) {
-      lastReadCount = result;
+      SetLastReadCount(result);
       if ((readData.msg_flags&MSG_TRUNC) == 0)
-        return lastReadCount > 0;
+        return GetLastReadCount() > 0;
 
       PTRACE(4, "Truncated packet read, returning EMSGSIZE");
       SetErrorValues(BufferTooSmall, EMSGSIZE, LastReadError);
@@ -505,7 +505,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
 
 bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t addrLen)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (CheckNotOpen())
     return false;
@@ -525,7 +525,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
       int result = ::sendmsg(os_handle, &writeData, flags);
     );
     if (ConvertOSError(result, LastWriteError)) {
-      lastWriteCount = result;
+      SetLastWriteCount(result);
       return true;
     }
   } while (GetErrorNumber(LastWriteError) == EWOULDBLOCK && PXSetIOBlock(PXWriteBlock, writeTimeout));
@@ -604,9 +604,8 @@ PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 //  PTCPSocket
 //
 PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
-
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   // wait until select indicates there is data to read, or until
   // a timeout occurs
@@ -626,8 +625,7 @@ PBoolean PTCPSocket::Read(void * buf, PINDEX maxLen)
   if (!ConvertOSError(r, LastReadError))
     return false;
 
-  lastReadCount = r;
-  return lastReadCount > 0;
+  return SetLastReadCount(r) > 0;
 }
 
 
@@ -640,12 +638,12 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
     return false;
 
   PPROFILE_SYSTEM(
-    int lastReadCount = ::recv(os_handle, (char *)buf, len, 0);
+    int result = ::recv(os_handle, (char *)buf, len, 0);
   );
-  if (ConvertOSError(lastReadCount))
-    return lastReadCount > 0;
+  if (ConvertOSError(result))
+    return SetLastReadCount(result) > 0;
 
-  lastReadCount = 0;
+  SetLastReadCount(0);
   return false;
 }
 
@@ -656,7 +654,7 @@ bool PSocket::Write(const void * buf, PINDEX len)
 
 PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (CheckNotOpen())
     return false;
@@ -666,19 +664,19 @@ PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
     return SetErrorValues(BadParameter, EINVAL, LastReadError);
 
   os_vread(slices, sliceCount, 0, NULL, NULL);
-  return lastReadCount > 0;
+  return GetLastReadCount() > 0;
 }
 
 
 PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (CheckNotOpen())
     return false;
 
   flush();
-  return os_vwrite(slices, sliceCount, 0, NULL, 0) && lastWriteCount >= 0;
+  return os_vwrite(slices, sliceCount, 0, NULL, 0) && GetLastWriteCount() >= 0;
 }
 
 

@@ -205,9 +205,8 @@ PBoolean PSoundChannel_WAVFile::GetBuffers(PINDEX & size, PINDEX & count)
 
 PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
 {
-  PBoolean ok = m_WAVFile.Write(data, size);
-  lastWriteCount = m_WAVFile.GetLastWriteCount();
-  m_Pacing.Delay(lastWriteCount*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate()/m_WAVFile.GetChannels());
+  bool ok = m_WAVFile.Write(data, size);
+  m_Pacing.Delay(SetLastWriteCount(m_WAVFile.GetLastWriteCount())*8/m_WAVFile.GetSampleSize()*1000/m_WAVFile.GetSampleRate()/m_WAVFile.GetChannels());
   return ok;
 }
 
@@ -234,8 +233,7 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 {
   for (int retry = 0; retry < 2; ++retry) {
     if (m_WAVFile.Read(data, size)) {
-      lastReadCount = m_WAVFile.GetLastReadCount();
-      m_Pacing.Delay(lastReadCount * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate());
+      m_Pacing.Delay(SetLastReadCount(m_WAVFile.GetLastReadCount()) * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate());
       return true;
     }
 

@@ -36,11 +36,6 @@
 // PSerialChannel
 
   public:
-    // Overrides from class PChannel
-    virtual PString GetName() const;
-      // Return the name of the channel.
-
-      
     virtual PBoolean Read(void * buf, PINDEX len);
       // Low level read from the channel. This function will block until the
       // requested number of characters were read.
@@ -60,7 +55,6 @@
 
   // Member variables
     HANDLE  commsResource;
-    PString portName;
 
     enum { InputQueueSize = 2048, OutputQueueSize = 1024 };
     DCB deviceControlBlock;

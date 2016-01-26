@@ -244,9 +244,9 @@ PBoolean PWAVFile::Read(void * buf, PINDEX len)
   }
 
   PINDEX srcSize = (m_readBufCount - m_readBufPos)*sizeof(short);
-  lastReadCount = len;
   PSound::ConvertPCM(&m_readBuffer[m_readBufPos], srcSize, m_wavFmtChunk.sampleRate, m_wavFmtChunk.numChannels,
-                     (short *)buf, lastReadCount, m_readSampleRate, m_readChannels);
+                     (short *)buf, len, m_readSampleRate, m_readChannels);
+  SetLastReadCount(len);
   m_readBufPos += srcSize / sizeof(short);
   return true;
 }
@@ -261,8 +261,8 @@ bool PWAVFile::RawRead(void * buf, PINDEX len)
 
   off_t pos = PFile::GetPosition();
   if (pos >= fileLength) {
-    // indicate eof (return false, but error=0, lastReadCount=0)
-    lastReadCount = 0;
+    // indicate eof (return false, but error=0, last read count=0)
+    SetLastReadCount(0);
     ConvertOSError(0, LastReadError);
     return false;
   }
@@ -1031,7 +1031,7 @@ PBoolean PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
   for (i = 0; i < samples; i++)
     *pcmPtr++ = pcm8[i] == 0 ? 0 : (unsigned short)((pcm8[i] << 8) - 0x8000);
 
-  // fake the lastReadCount
+  // fake the last read count
   file.SetLastReadCount(len);
 
   return true;

@@ -470,7 +470,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     virtual PBoolean Write(const void * buf, PINDEX len)
     {
-      lastWriteCount = 0;
+      SetLastWriteCount(0);
 
       if (CheckNotOpen())
         return false;
@@ -519,7 +519,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
     virtual PBoolean Read(void * buf, PINDEX len)
     {
-      lastReadCount = 0;
+      SetLastReadCount(0);
 
       if (CheckNotOpen())
         return false;

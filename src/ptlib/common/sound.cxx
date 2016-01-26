@@ -886,7 +886,7 @@ PBoolean PSoundChannelNull::Write(const void *, PINDEX len)
   if (m_sampleRate <= 0)
     return false;
 
-  lastWriteCount = len;
+  SetLastWriteCount(len);
   m_Pacing.Delay(1000*len/m_sampleRate/m_channels/m_bytesPerSample);
   return true;
 }
@@ -897,7 +897,7 @@ PBoolean PSoundChannelNull::Read(void * buf, PINDEX len)
     return false;
 
   memset(buf, 0, len);
-  lastReadCount = len;
+  SetLastReadCount(len);
   m_Pacing.Delay(1000*len/m_sampleRate/m_channels/m_bytesPerSample);
   return true;
 }

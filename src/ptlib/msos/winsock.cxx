@@ -232,7 +232,7 @@ HANDLE PSocket::GetAsyncWriteHandle() const
 
 PBoolean PSocket::Read(void * buf, PINDEX len)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (CheckNotOpen())
     return false;
@@ -242,44 +242,44 @@ PBoolean PSocket::Read(void * buf, PINDEX len)
 
   Slice slice(buf, len);
   os_vread(&slice, 1, 0, NULL, NULL);
-  return lastReadCount > 0;
+  return GetLastReadCount() > 0;
 }
 
 
 PBoolean PSocket::Read(Slice * slices, size_t sliceCount)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (CheckNotOpen())
     return false;
 
   os_vread(slices, sliceCount, 0, NULL, NULL);
-  return lastReadCount > 0;
+  return GetLastReadCount() > 0;
 }
 
 
 PBoolean PSocket::Write(const void * buf, PINDEX len)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (CheckNotOpen())
     return false;
 
   flush();
   Slice slice(buf, len);
-  return os_vwrite(&slice, 1, 0, NULL, 0) && lastWriteCount >= len;
+  return os_vwrite(&slice, 1, 0, NULL, 0) && GetLastWriteCount() >= len;
 }
 
 
 PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (CheckNotOpen())
     return false;
 
   flush();
-  return os_vwrite(slices, sliceCount, 0, NULL, 0) && lastWriteCount >= 0;
+  return os_vwrite(slices, sliceCount, 0, NULL, 0) && GetLastWriteCount() >= 0;
 }
 
 
@@ -436,7 +436,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount,
                        struct sockaddr * from,
                        socklen_t * fromlen)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   DWORD available;
   if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
@@ -460,7 +460,7 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount,
   if (!ConvertOSError(recvResult, LastReadError))
     return false;
 
-  lastReadCount = receivedCount;
+  SetLastReadCount(receivedCount);
   return true;
 }
 
@@ -471,7 +471,7 @@ bool PSocket::os_vwrite(const Slice * slices,
                         struct sockaddr * to,
                         socklen_t tolen)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (CheckNotOpen())
     return false;
@@ -498,7 +498,7 @@ bool PSocket::os_vwrite(const Slice * slices,
   if (sendResult != 0)
     return false;
 
-  lastWriteCount = bytesSent;
+  SetLastWriteCount(bytesSent);
   return true;
 }
 

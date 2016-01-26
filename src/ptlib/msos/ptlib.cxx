@@ -1013,10 +1013,8 @@ PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
     return ConvertOSError(-2, LastReadError);
 
   DWORD readBytes;
-  if (ReadFile(m_hConsole, buffer, length, &readBytes, NULL)) {
-    lastReadCount = readBytes;
-    return lastReadCount > 0;
-  }
+  if (ReadFile(m_hConsole, buffer, length, &readBytes, NULL))
+    return SetLastReadCount(readBytes) > 0;
 
   return ConvertOSError(-2, LastWriteError);
 }
@@ -1030,10 +1028,8 @@ PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
   flush();
 
   DWORD written;
-  if (WriteFile(m_hConsole, buffer, length, &written, NULL)) {
-    lastWriteCount = written;
-    return lastWriteCount >= length;
-  }
+  if (WriteFile(m_hConsole, buffer, length, &written, NULL))
+    return SetLastWriteCount(written) >= length;
 
   return ConvertOSError(-2, LastWriteError);
 }
