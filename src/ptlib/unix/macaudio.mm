@@ -675,13 +675,13 @@ public:
   
   virtual PBoolean Write(const void * buf, PINDEX len)
   {
-    lastWriteCount = 0;
+    SetLastWriteCount(0);
     
     if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
       return false;
 
     if (m_muted) {
-      lastWriteCount = len;
+      SetLastWriteCount(len);
       return true;
     }
     
@@ -724,7 +724,7 @@ public:
   
   virtual PBoolean Read(void * buf, PINDEX len)
   {
-    lastReadCount = 0;
+    SetLastReadCount(0);
     
     if (!PAssert(activeDirection == Recorder, "Trying to read from player"))
       return false;
@@ -748,7 +748,7 @@ public:
                                                        &ioOutputDataPacketSize, &bufferList, NULL)))
         return false;
 
-      lastReadCount = ioOutputDataPacketSize*m_dataFormat.mBytesPerPacket;
+      SetLastReadCount(ioOutputDataPacketSize*m_dataFormat.mBytesPerPacket);
     }
     else
 #endif

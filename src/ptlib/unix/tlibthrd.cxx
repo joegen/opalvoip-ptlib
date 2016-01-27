@@ -312,7 +312,7 @@ void PThread::PX_ThreadBegin()
   PProcess::Current().OnThreadStart(*this);
 
   if (PX_priority != NormalPriority)
-    SetPriority(PX_priority);
+    SetPriority((Priority)PX_priority.load());
 }
 
 
