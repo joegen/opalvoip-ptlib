@@ -335,6 +335,7 @@ if test "${enable_sanitize_thread}" = "yes" ; then
       [],
       [],
       [
+         CPPFLAGS="-D__SANITIZE_THREAD__ $CPPFLAGS"
          CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
          CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=thread $LDFLAGS"
