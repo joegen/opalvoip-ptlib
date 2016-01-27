@@ -664,25 +664,21 @@ static void CropYUV420P(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeig
 }
 PRAGMA_OPTIMISE_DEFAULT()
 
-#if PTRACING
-static PTrace::Throttle<2,0,2> DummyThrottle;
-#endif
-
 static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight,
-                               unsigned dstFrameWidth, unsigned dstFrameHeight
-                               PTRACE_PARAM(, const char * traceInfo, PTrace::ThrottleBase & traceThrottle = DummyThrottle))
+                               unsigned dstFrameWidth, unsigned dstFrameHeight,
+                               std::ostream * error)
 {
   if (srcFrameWidth == 0 || dstFrameWidth == 0 || srcFrameHeight == 0 || dstFrameHeight == 0) {
-    PTRACE(traceThrottle, traceInfo << "Dimensions cannot be zero: "
-           << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight
-           << traceThrottle);
+    if (error != NULL)
+      *error << "Dimensions cannot be zero: "
+             << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight;
     return false;
   }
 
   if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
-    PTRACE(traceThrottle, traceInfo << "Dimensions must be even: "
-           << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight
-           << traceThrottle);
+    if (error != NULL)
+      *error << "Dimensions must be even: "
+             << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight;
     return false;
   }
 
@@ -692,9 +688,9 @@ static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight,
   if (srcFrameWidth >= dstFrameWidth && srcFrameHeight >= dstFrameHeight)
     return true;
 
-  PTRACE(traceThrottle, traceInfo << "Cannot do one dimension shrinking and the other one growing: "
-         << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight
-         << traceThrottle);
+  if (error != NULL)
+    *error << "Cannot do one dimension shrinking and the other one growing: "
+           << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight;
   return false;
 }
 
@@ -703,8 +699,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
                                    unsigned srcFrameWidth, unsigned srcFrameHeight, const BYTE * srcYUV,
                                    unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
                                    unsigned dstFrameWidth, unsigned dstFrameHeight, BYTE * dstYUV,
-                                   PVideoFrameInfo::ResizeMode resizeMode, bool verticalFlip
-                                   PTRACE_PARAM(, const char * traceInfo, PTrace::ThrottleBase * traceThrottle))
+                                   PVideoFrameInfo::ResizeMode resizeMode, bool verticalFlip, std::ostream * error)
 {
   if (srcX == 0 && srcY == 0 && dstX == 0 && dstY == 0 &&
       srcWidth == dstWidth && srcHeight == dstHeight &&
@@ -714,12 +709,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
     return true;
   }
 
-#if PTRACING
-  if (traceThrottle == NULL)
-      traceThrottle = &DummyThrottle;
-#endif
-
-  if (!ValidateDimensions(srcWidth, srcHeight, dstWidth, dstHeight, traceInfo, *traceThrottle))
+  if (!ValidateDimensions(srcWidth, srcHeight, dstWidth, dstHeight, error))
     return false;
 
   if (srcFrameWidth == 0)
@@ -732,23 +722,27 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
      dstFrameHeight = dstHeight;
 
   if (srcX + srcWidth > srcFrameWidth) {
-    PTRACE(*traceThrottle, PTraceModule(), traceInfo << "Invalid rectangle bounds:"
-           " srcX=" << srcX << " + srcWidth=" << srcWidth << " > frameWidth=" << srcFrameWidth << *traceThrottle);
+    if (error != NULL)
+      *error << "Invalid rectangle bounds:"
+                " srcX=" << srcX << " + srcWidth=" << srcWidth << " > frameWidth=" << srcFrameWidth;
     return false;
   }
   if (srcY + srcHeight > srcFrameHeight) {
-    PTRACE(*traceThrottle, PTraceModule(), traceInfo << "Invalid rectangle bounds:"
-           " srcY=" << srcY << " + srcHeight=" << srcHeight << " > frameHeight=" << srcFrameHeight << *traceThrottle);
+    if (error != NULL)
+      *error << "Invalid rectangle bounds:"
+                " srcY=" << srcY << " + srcHeight=" << srcHeight << " > frameHeight=" << srcFrameHeight;
     return false;
   }
   if (dstX + dstWidth > dstFrameWidth) {
-    PTRACE(*traceThrottle, PTraceModule(), traceInfo << "Invalid rectangle bounds:"
-           " dstX=" << dstX << " + dstWidth=" << dstWidth << " > frameWidth=" << dstFrameWidth << *traceThrottle);
+    if (error != NULL)
+      *error << "Invalid rectangle bounds:"
+                " dstX=" << dstX << " + dstWidth=" << dstWidth << " > frameWidth=" << dstFrameWidth;
     return false;
   }
   if (dstY + dstHeight > dstFrameHeight) {
-    PTRACE(*traceThrottle, PTraceModule(), traceInfo << "Invalid rectangle bounds:"
-           " dstY=" << dstY << " + dstHeight=" << dstHeight << " > frameHeight=" << dstFrameHeight << *traceThrottle);
+    if (error != NULL)
+      *error << "Invalid rectangle bounds:"
+                " dstY=" << dstY << " + dstHeight=" << dstHeight << " > frameHeight=" << dstFrameHeight;
     return false;
   }
 
@@ -1491,7 +1485,7 @@ void PStandardColourConverter::YUY2toYUV420PWithShrink(const BYTE *yuy2, BYTE *y
 
 PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
 {
-  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight PTRACE_PARAM(, "YUY2,YUV420P")))
+  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, NULL))
     return false;
 
   if (m_dstFrameWidth == m_srcFrameWidth)
@@ -1632,7 +1626,7 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
  */
 PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 {
-  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight PTRACE_PARAM(, "YUV422,YUV420P")))
+  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, NULL))
     return false;
 
   if (m_dstFrameWidth == m_srcFrameWidth)
