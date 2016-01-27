@@ -294,8 +294,7 @@ class PColourConverter : public PColourPair
       unsigned dstX, unsigned dstY, unsigned dstWidth, unsigned dstHeight,
       unsigned dstFrameWidth, unsigned dstFrameHeight, BYTE * dstYUV,
       PVideoFrameInfo::ResizeMode resizeMode = PVideoFrameInfo::eScale,
-      bool verticalFlip = false
-      PTRACE_PARAM(, const char * traceInfo = "", PTrace::ThrottleBase * traceThrottle = NULL)
+      bool verticalFlip = false, std::ostream * error = NULL
     );
 
     /**Rotate the video buffer image.
