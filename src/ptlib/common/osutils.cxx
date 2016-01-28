@@ -1345,6 +1345,10 @@ bool PTimer::List::OnTimeout(PIdGenerator::Handle handle)
 
     if (!timer->m_callbackMutex.Try())
       return false; // Try again
+
+    // Remove the expired one shot timers from map
+    if (timer->m_oneshot && !timer->m_running)
+      m_timers.erase(it);
   }
 
   // Must be outside of m_timersMutex and timer->m_timerMutex mutexes
@@ -1361,8 +1365,6 @@ PTimeInterval PTimer::List::Process()
   // Calculate interval before next Process() call
   PTimeInterval nextInterval(0, 1);
 
-  std::list<PIdGenerator::Handle> finishedTimers;
-
   m_timersMutex.Wait();
 
   for (TimerMap::iterator it = m_timers.begin(); it != m_timers.end(); ++it) {
@@ -1377,10 +1379,8 @@ PTimeInterval PTimer::List::Process()
         /* PTimer is stopped and completely removed from the list before it's
            properties are changed from the external code, making this thread
            safe without a mutex. */
-        if (timer.m_oneshot) {
+        if (timer.m_oneshot)
           timer.m_running = false;
-          finishedTimers.push_back(it->first);
-        }
         else {
           timer.m_absoluteTime = now + timer.GetResetTime();
           if (nextInterval > timer.GetResetTime())
@@ -1393,10 +1393,6 @@ PTimeInterval PTimer::List::Process()
       }
     }
   }
-
-  // Remove the expired one shot timers from map
-  for (std::list<PIdGenerator::Handle>::iterator it = finishedTimers.begin(); it != finishedTimers.end(); ++it)
-    m_timers.erase(*it);
 
   m_timersMutex.Signal();
 
