@@ -1246,9 +1246,9 @@ void PTimer::InternalStart(bool once, int64_t resetTime)
 
   if (resetTime > 0) {
     m_absoluteTime = Tick() + GetResetTime();
-    m_running = true;
     list->m_timersMutex.Wait();
     list->m_timers[m_handle] = this;
+    m_running = true;
     list->m_timersMutex.Signal();
 
     PProcess::Current().SignalTimerChange();
@@ -1265,10 +1265,9 @@ void PTimer::Stop(bool wait)
   /* Take out of timer list first, so when callback is waited for it's
      completion it cannot then be called again. */
   list->m_timersMutex.Wait();
-  list->m_timers.erase(m_handle);
-  list->m_timersMutex.Signal();
-
+  PAssert(list->m_timers.erase(m_handle) == 1 || !m_running, PLogicError);
   m_running = false;
+  list->m_timersMutex.Signal();
 
   if (wait) {
     m_callbackMutex.Wait();
@@ -1359,7 +1358,10 @@ PTimeInterval PTimer::List::Process()
   // Calculate interval before next Process() call
   PTimeInterval nextInterval(0, 1);
 
+  std::list<PIdGenerator::Handle> finishedTimers;
+
   m_timersMutex.Wait();
+
   for (TimerMap::iterator it = m_timers.begin(); it != m_timers.end(); ++it) {
     PTimer & timer = *it->second;
     if (timer.m_running) {
@@ -1372,8 +1374,10 @@ PTimeInterval PTimer::List::Process()
         /* PTimer is stopped and completely removed from the list before it's
            properties are changed from the external code, making this thread
            safe without a mutex. */
-        if (timer.m_oneshot)
+        if (timer.m_oneshot) {
           timer.m_running = false;
+          finishedTimers.push_back(it->first);
+        }
         else {
           timer.m_absoluteTime = now + timer.GetResetTime();
           if (nextInterval > timer.GetResetTime())
@@ -1386,6 +1390,11 @@ PTimeInterval PTimer::List::Process()
       }
     }
   }
+
+  // Remove the expired one shot timers from map
+  for (std::list<PIdGenerator::Handle>::iterator it = finishedTimers.begin(); it != finishedTimers.end(); ++it)
+    m_timers.erase(*it);
+
   m_timersMutex.Signal();
 
   if (nextInterval < 10)
