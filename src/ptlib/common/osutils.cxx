@@ -1146,6 +1146,7 @@ static PIdGenerator s_handleGenerator;
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : PTimeInterval(millisecs, seconds, minutes, hours, days)
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1154,6 +1155,7 @@ PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
 PTimer::PTimer(const PTimeInterval & time)
   : PTimeInterval(time)
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1162,6 +1164,7 @@ PTimer::PTimer(const PTimeInterval & time)
 PTimer::PTimer(const PTimer & timer)
   : PTimeInterval(timer.GetResetTime())
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
