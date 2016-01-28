@@ -3123,6 +3123,7 @@ PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
 #endif
   , m_fileOrName(name)
   , m_line(line)
+  , m_excessiveLockTime(false)
 {
   PTRACE(5, "Created read/write mutex " << *this);
 }
@@ -3203,6 +3204,8 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
     return;
   }
 
+  m_excessiveLockTime = true;
+
   NestMap nestedThreadsToDump;
   {
     PWaitAndSignal mutex(m_nestingMutex);
@@ -3258,6 +3261,11 @@ void PReadWriteMutex::EndRead()
   if (nest->m_readerCount > 0 || nest->m_writerCount > 0)
     return;
 
+  if (m_excessiveLockTime) {
+    PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
+    m_excessiveLockTime = false;
+  }
+
   // Do text book read lock
   InternalEndRead(*nest);
 
@@ -3280,6 +3288,11 @@ void PReadWriteMutex::StartWrite()
   // increment is all we haev to do.
   if (nest.m_writerCount > 1)
     return;
+
+  if (m_excessiveLockTime) {
+    PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
+    m_excessiveLockTime = false;
+  }
 
   // If have a read lock already in this thread then do the "real" unlock code
   // but do not change the lock count, calls to EndRead() will now just
