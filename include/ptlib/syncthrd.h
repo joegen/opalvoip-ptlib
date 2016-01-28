@@ -362,6 +362,7 @@ class PReadWriteMutex : public PObject
 
     const char * m_fileOrName;
     unsigned     m_line;
+    mutable bool m_excessiveLockTime;
 
   friend class PSafeObject;
 };
