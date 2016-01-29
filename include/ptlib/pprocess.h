@@ -124,13 +124,10 @@ class PProcess : public PThread
   //@{
     /// Release status for the program.
     enum CodeStatus {
-      /// Code is still very much under construction.
-      AlphaCode,    
-      /// Code is largely complete and is under test.
-      BetaCode,     
-      /// Code has all known bugs removed and is shipping.
-      ReleaseCode,  
-      NumCodeStatuses
+      AlphaCode,        ///< Code is still very much under construction.
+      BetaCode,         ///< Code is largely complete and is under test.
+      ReleaseCode,      ///< Code has all known bugs removed and is shipping.
+      HotfixCode        ///< Code has been updated after shipping
     };
 
     /** Create a new process instance.

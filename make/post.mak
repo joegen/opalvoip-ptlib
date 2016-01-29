@@ -369,26 +369,31 @@ endif
 
 ifneq (,$(REVISION_FILE))
 
-  SVN_REVISION_CMD := \
-    SVN_REVISION=`sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $(REVISION_FILE).in`; \
-
   ifneq (,$(SVN))
-    SVN_REVISION_CMD := \
-      SVN_REVISION=`LC_ALL=C $(SVN) info $(dir $(REVISION_FILE)) 2> /dev/null | sed -n 's/Revision: //p'`; \
-      if [ -z "$$SVN_REVISION" ]; then $(SVN_REVISION_CMD) fi;
+    SVN_REVISION:=$(shell LC_ALL=C $(SVN) info $(dir $(REVISION_FILE)) 2> /dev/null | sed -n 's/Revision: //p')
   endif
 
-  SVN_REVISION_CMD += \
-    sed "s/SVN_REVISION.*/SVN_REVISION $$SVN_REVISION/" $(REVISION_FILE).in > $(REVISION_FILE).tmp; \
-    if diff -q $(REVISION_FILE) $(REVISION_FILE).tmp >/dev/null 2>&1; then \
-      rm $(REVISION_FILE).tmp; \
-    else \
-      mv -f $(REVISION_FILE).tmp $(REVISION_FILE); \
-      echo "Revision file updated to `sed -n 's/.*SVN_REVISION *\(.*\)/\1/p' $(REVISION_FILE)`" ; \
-    fi
+  ifeq (,$(SVN_REVISION))
+    SVN_REVISION:=$(shell sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $(REVISION_FILE).in)
+  endif
+
+  ifneq (,$(GIT))
+    GIT_COMMIT:=$(shell cd $(dir $(REVISION_FILE)) ; LC_ALL=C $(GIT) show 2> /dev/null | sed -n 's/^commit //p')
+  endif
+
 
   $(REVISION_FILE) : $(REVISION_FILE).in FORCE
-	$(Q)$(SVN_REVISION_CMD)
+	$(Q)\
+    sed -e 's/SVN_REVISION.*/SVN_REVISION $(SVN_REVISION)/' \
+        -e 's/GIT_COMMIT.*/GIT_COMMIT "$(GIT_COMMIT)"/' \
+        $(REVISION_FILE).in > $(REVISION_FILE).tmp  ; \
+    if diff -q $(REVISION_FILE) $(REVISION_FILE).tmp >/dev/null 2>&1; then \
+      rm $(REVISION_FILE).tmp ; \
+    else \
+      mv -f $(REVISION_FILE).tmp $(REVISION_FILE) ; \
+      echo "Revision file updated:" ; \
+      sed -n -e 's/.*SVN_REVISION *\(.*\)/  SVN revision: \1/p' -e 's/.*GIT_COMMIT *"\(..*\)"/  GIT commit  : \1/p' $(REVISION_FILE) ; \
+    fi
 
   .PHONY:FORCE
 
