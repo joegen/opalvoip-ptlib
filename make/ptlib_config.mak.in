@@ -72,6 +72,7 @@ MKDIR_P := @MKDIR_P@
 BISON   := @BISON@
 INSTALL := @INSTALL@
 SVN     := @SVN@
+GIT     := @GIT@
 
 CPPFLAGS          := @CPPFLAGS@ $(CPPFLAGS)
 CXXFLAGS          := @CXXFLAGS@ $(CXXFLAGS)
