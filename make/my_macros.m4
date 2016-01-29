@@ -416,6 +416,7 @@ AC_PROG_RANLIB()
 dnl AC_PROG_MKDIR_P()  -- Doesn't work!
 AC_SUBST(MKDIR_P, "mkdir -p")
 AC_PATH_PROG(SVN, svn)
+AC_PATH_PROG(GIT, git)
 
 AC_PROG_INSTALL()
 AC_MSG_CHECKING([install support for -C])
