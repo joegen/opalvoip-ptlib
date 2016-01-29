@@ -471,7 +471,7 @@ ifdef VERSION_FILE
   ifndef CODE_STATUS
     # For historical reasons there is ab it of confusion between CODE_STATUS and BUILD_TYPE
     CODE_STATUS:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
-                 $(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
+                 $(shell grep "define *BUILD_TYPE" $(VERSION_FILE)))))
   endif
   ifndef BUILD_TYPE
     BUILD_TYPE:=$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,$(CODE_STATUS))))
