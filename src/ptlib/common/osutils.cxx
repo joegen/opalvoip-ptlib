@@ -55,7 +55,6 @@
 
 #define PTraceModule() "PTLib"
 
-static const char * const VersionStatus[PProcess::NumCodeStatuses] = { "alpha", "beta", "." };
 static const char DefaultRollOverPattern[] = "_yyyy_MM_dd_hh_mm";
 
 class PExternalThread : public PThread
@@ -2448,21 +2447,38 @@ bool PProcess::IsMultipleInstance() const
 }
 
 
+static const char * const GetVersionStatus(PProcess::CodeStatus status)
+{
+  switch (status) {
+    case PProcess::AlphaCode :
+      return "alpha";
+    case PProcess::BetaCode :
+      return "beta";
+    default:
+      return ".";
+  }
+}
+
+
 PString PProcess::GetVersion(PBoolean full) const
 {
   return psprintf(full ? "%u.%u%s%u" : "%u.%u",
-                  majorVersion, minorVersion, VersionStatus[status], buildNumber);
+                  majorVersion, minorVersion, GetVersionStatus(status), buildNumber);
 }
 
 
 PString PProcess::GetLibVersion()
 {
-  return psprintf("%u.%u%s%u (svn:%u)",
-                  MAJOR_VERSION,
-                  MINOR_VERSION,
-                  VersionStatus[BUILD_TYPE],
-                  BUILD_NUMBER,
-                  SVN_REVISION);
+  PStringStream version;
+  version << MAJOR_VERSION << '.' << MINOR_VERSION << GetVersionStatus(BUILD_TYPE) << " (";
+  static char const GitCommit[] = GIT_COMMIT;
+  if (GitCommit[0] != '\0')
+    version << "git:" << GitCommit;
+  else
+    version << "svn:" << SVN_REVISION;
+  version << ')';
+    
+  return version;
 }
 
 
