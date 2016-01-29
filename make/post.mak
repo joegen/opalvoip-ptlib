@@ -468,10 +468,13 @@ ifdef VERSION_FILE
     MINOR_VERSION:=$(strip $(subst \#define,, $(subst $(MINOR_VERSION_DEFINE),,\
                    $(shell grep "define *$(MINOR_VERSION_DEFINE)" $(VERSION_FILE)))))
   endif
+  ifndef CODE_STATUS
+    # For historical reasons there is ab it of confusion between CODE_STATUS and BUILD_TYPE
+    CODE_STATUS:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
+                 $(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
+  endif
   ifndef BUILD_TYPE
-    BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
-                $(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,\
-                $(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
+    BUILD_TYPE:=$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,$(CODE_STATUS))))
   endif
   ifndef BUILD_NUMBER
     BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
