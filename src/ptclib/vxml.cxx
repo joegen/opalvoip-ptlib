@@ -1994,15 +1994,11 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
 
   if (GetVar(condition.Left(location).Trim()) == GetVar(condition.Mid(location + 2).Trim())) {
     PTRACE(4, "VXML\tCondition matched \"" << condition << '"');
-  }
-  else {
-    PTRACE(4, "VXMLSess\t\tCondition \"" << condition << "\"did not match");
-    if (element.HasSubObjects())
-      // Step to last child element (really last element is NULL?)
-      m_currentNode = element.GetElement(element.GetSize() - 1);
+    return true;
   }
 
-  return true;
+  PTRACE(4, "VXML\t\tCondition \"" << condition << "\"did not match");
+  return false;
 }
 
 
