@@ -433,7 +433,8 @@ class PThread : public PObject
     class LocalStorageBase
     {
       public:
-        virtual ~LocalStorageBase();
+        virtual ~LocalStorageBase() { }
+        void ThreadDestroyed(PThread & thread);
       protected:
         LocalStorageBase();
         void StorageDestroyed();
@@ -441,13 +442,9 @@ class PThread : public PObject
         virtual void Deallocate(void * ptr) const = 0;
         virtual void * GetStorage() const;
       private:
-        std::list<void *> m_data;
-#if defined(_WIN32)
-        typedef DWORD KeyType;
-#elif defined(P_PTHREADS)
-        typedef pthread_key_t KeyType;
-#endif
-        KeyType m_key;
+        typedef std::map<PThreadIdentifier, void *> DataMap;
+        mutable DataMap  m_data;
+        PCriticalSection m_mutex;
     };
 
   private:
