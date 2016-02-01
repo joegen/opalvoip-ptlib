@@ -2816,12 +2816,25 @@ PThread * PThread::Create(const PNotifier & notifier,
 }
 
 
+#define RELEASE_THREAD_LOCAL_STORAGE 1
+#if RELEASE_THREAD_LOCAL_STORAGE
+static std::set<PThread::LocalStorageBase*> s_ThreadLocalStorage;
+static PCriticalSection s_ThreadLocalStorageMutex;
+#endif
+
 PThread::~PThread()
 {
   if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(100))
     Terminate();
 
   PTRACE(5, "Destroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
+
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageMutex.Wait();
+  for (std::set<PThread::LocalStorageBase*>::iterator it = s_ThreadLocalStorage.begin(); it != s_ThreadLocalStorage.end(); ++it)
+    (*it)->ThreadDestroyed(*this);
+  s_ThreadLocalStorageMutex.Signal();
+#endif
 
   InternalDestroy();
 
@@ -2830,59 +2843,52 @@ PThread::~PThread()
 }
 
 
+PThread::LocalStorageBase::LocalStorageBase()
+{
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageMutex.Wait();
+  s_ThreadLocalStorage.insert(this);
+  s_ThreadLocalStorageMutex.Signal();
+#endif
+}
+
+
 void PThread::LocalStorageBase::StorageDestroyed()
 {
-  for (std::list<void *>::iterator it = m_data.begin(); it != m_data.end(); ++it)
-    Deallocate(*it);
-}
-
-
-#if defined(_WIN32)
-
-PThread::LocalStorageBase::LocalStorageBase()
-{
-  m_key = TlsAlloc();
-  PAssert(m_key != TLS_OUT_OF_INDEXES, POperatingSystemError);
-}
-
-
-PThread::LocalStorageBase::~LocalStorageBase()
-{
-  TlsFree(m_key);
-}
-
-
-void * PThread::LocalStorageBase::GetStorage() const
-{
-  void * tls = TlsGetValue(m_key);
-  if (tls == NULL && PAssert(GetLastError() == ERROR_SUCCESS, POperatingSystemError))
-    TlsSetValue(m_key, tls = Allocate());
-  return tls;
-}
-
-#elif defined(P_PTHREADS)
-
-PThread::LocalStorageBase::LocalStorageBase()
-{
-  PAssert(pthread_key_create(&m_key, NULL) == 0, POperatingSystemError);
-}
-
-
-PThread::LocalStorageBase::~LocalStorageBase()
-{
-  pthread_key_delete(m_key);
-}
-
-
-void * PThread::LocalStorageBase::GetStorage() const
-{
-  void * tls = pthread_getspecific(m_key);
-  if (tls == NULL)
-    pthread_setspecific(m_key, tls = Allocate());
-  return tls;
-}
-
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageMutex.Wait();
+  s_ThreadLocalStorage.erase(this);
+  s_ThreadLocalStorageMutex.Signal();
 #endif
+
+  m_mutex.Wait();
+  for (DataMap::iterator it = m_data.begin(); it != m_data.end(); ++it)
+    Deallocate(it->second);
+  m_mutex.Signal();
+}
+
+
+void PThread::LocalStorageBase::ThreadDestroyed(PThread & thread)
+{
+  m_mutex.Wait();
+  DataMap::iterator it = m_data.find(thread.GetThreadId());
+  if (it != m_data.end()) {
+    Deallocate(it->second);
+    m_data.erase(it);
+  }
+  m_mutex.Signal();
+}
+
+
+void * PThread::LocalStorageBase::GetStorage() const
+{
+  PThreadIdentifier threadId = PThread::GetCurrentThreadId();
+  PWaitAndSignal lock(m_mutex);
+  DataMap::iterator it = m_data.find(threadId);
+  if (it == m_data.end())
+    it = m_data.insert(make_pair(threadId, Allocate())).first;
+  return it->second;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
