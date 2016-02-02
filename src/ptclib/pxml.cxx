@@ -1016,7 +1016,7 @@ bool PXML_HTTP::StartAutoReloadURL(const PURL & url,
   m_autoloadURL      = url;
   m_autoLoadWaitTime = timeout;
   m_autoLoadError.MakeEmpty();
-  m_autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout));
+  m_autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout), "XMLReload");
 
   bool stat = AutoLoadURL();
 

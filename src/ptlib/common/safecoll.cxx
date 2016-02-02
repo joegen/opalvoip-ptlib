@@ -415,7 +415,7 @@ void PSafeCollection::SetAutoDeleteObjects()
     return;
 
   m_deleteObjectsTimer = new PTimer();
-  m_deleteObjectsTimer->SetNotifier(PCREATE_NOTIFIER(DeleteObjectsTimeout));
+  m_deleteObjectsTimer->SetNotifier(PCREATE_NOTIFIER(DeleteObjectsTimeout), "SafeDelObj");
   m_deleteObjectsTimer->RunContinuous(1000); // Every second
 #endif
 }
