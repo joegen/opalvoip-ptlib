@@ -1263,6 +1263,7 @@ void PTimer::Stop(bool wait)
   if (list == NULL)
     return;
 
+  unsigned retry = 0;
   do {
     /* Take out of timer list first, so when callback is waited for it's
        completion it cannot then be called again. */
@@ -1277,7 +1278,7 @@ void PTimer::Stop(bool wait)
     }
 
     // We loop in case the callback function restarted the timer.
-  } while (m_running);
+  } while (m_running && PAssert(++retry < 5, PLogicError));
 }
 
 
