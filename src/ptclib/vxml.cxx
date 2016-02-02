@@ -2346,7 +2346,7 @@ PVXMLGrammar::PVXMLGrammar(PVXMLSession & session, PXMLElement & field)
   , m_field(field)
   , m_state(Idle)
 {
-  m_timer.SetNotifier(PCREATE_NOTIFIER(OnTimeout));
+  m_timer.SetNotifier(PCREATE_NOTIFIER(OnTimeout), "VXMLGrammar");
   SetSessionTimeout();
 }
 
