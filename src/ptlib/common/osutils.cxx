@@ -2872,7 +2872,7 @@ void PThread::LocalStorageBase::StorageDestroyed()
 void PThread::LocalStorageBase::ThreadDestroyed(PThread & thread)
 {
   m_mutex.Wait();
-  DataMap::iterator it = m_data.find(thread.GetThreadId());
+  DataMap::iterator it = m_data.find(thread.GetUniqueIdentifier());
   if (it != m_data.end()) {
     Deallocate(it->second);
     m_data.erase(it);
@@ -2883,7 +2883,7 @@ void PThread::LocalStorageBase::ThreadDestroyed(PThread & thread)
 
 void * PThread::LocalStorageBase::GetStorage() const
 {
-  PThreadIdentifier threadId = PThread::GetCurrentThreadId();
+  PThreadIdentifier threadId = PThread::GetCurrentUniqueIdentifier();
   PWaitAndSignal lock(m_mutex);
   DataMap::iterator it = m_data.find(threadId);
   if (it == m_data.end())
