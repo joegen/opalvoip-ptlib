@@ -442,7 +442,7 @@ class PThread : public PObject
         virtual void Deallocate(void * ptr) const = 0;
         virtual void * GetStorage() const;
       private:
-        typedef std::map<PThreadIdentifier, void *> DataMap;
+        typedef std::map<PUniqueThreadIdentifier, void *> DataMap;
         mutable DataMap  m_data;
         PCriticalSection m_mutex;
     };
