@@ -226,14 +226,18 @@ PBoolean PSoundChannelESD::Read(void * buf, PINDEX len)
   if (os_handle < 0) 
     return false;
 
-  lastReadCount = 0;
+  PINDEX lastReadCount = 0;
   // keep looping until we have read 'len' bytes
   while (lastReadCount < len) {
     int retval = ::read(os_handle, ((char *)buf)+lastReadCount, len-lastReadCount);
-    if (retval <= 0) return false;
+    if (retval <= 0) {
+      SetLastReadCount(lastReadCount);
+      return false;
+    }
     lastReadCount += retval;
   }
-  return (true);
+  SetLastReadCount(len);
+  return true;
 }
 
 

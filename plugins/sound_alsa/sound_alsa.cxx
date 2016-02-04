@@ -339,7 +339,7 @@ PBoolean PSoundChannelALSA::Close()
 
 PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   PWaitAndSignal m(device_mutex);
 
@@ -348,6 +348,7 @@ PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
 
   int pos = 0, max_try = 0;
   const char * buf2 = (const char *)buf;
+  PINDEX ilen = len;
   do {
     /* the number of frames to read is the buffer length
     divided by the size of one frame */
@@ -356,11 +357,10 @@ PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
     if (r >= 0) {
       pos += r * frameBytes;
       len -= r * frameBytes;
-      lastWriteCount += r * frameBytes;
     }
     else {
-      PTRACE(5, "ALSA\tBuffer underrun detected. Recovering... ");
       if (r == -EPIPE) {    /* under-run */
+        PTRACE(5, "ALSA\tBuffer underrun detected. Recovering... ");
         r = snd_pcm_prepare(pcm_handle);
         PTRACE_IF(1, r < 0, "ALSA\tCould not prepare device: " << snd_strerror(r));
       }
@@ -379,29 +379,30 @@ PBoolean PSoundChannelALSA::Write(const void *buf, PINDEX len)
       }
 
       max_try++;
-      if (max_try > 5)
+      if (max_try > 5) {
+        SetLastWriteCount(ilen - len);
         return false;
+      }
     }
   } while (len > 0);
 
+  SetLastWriteCount(ilen);
   return true;
 }
 
 
 PBoolean PSoundChannelALSA::Read(void * buf, PINDEX len)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   PWaitAndSignal m(device_mutex);
 
   if (!SetHardwareParams())
     return false;
 
-  memset((char *) buf, 0, len);
-
   int pos = 0, max_try = 0;
   char * buf2 = (char *)buf;
-
+  PINDEX ilen = len;
   do {
     /* the number of frames to read is the buffer length
     divided by the size of one frame */
@@ -410,29 +411,36 @@ PBoolean PSoundChannelALSA::Read(void * buf, PINDEX len)
     if (r >= 0) {
       pos += r * frameBytes;
       len -= r * frameBytes;
-      lastReadCount += r * frameBytes;
     }
     else {
-      if (r == -EPIPE) {    /* under-run */
+      if (r == -EPIPE) {    /* overrun */
+          PTRACE(5, "ALSA\tBuffer overrun detected. Recovering...");
 	  snd_pcm_prepare(pcm_handle);
       }
       else if (r == -ESTRPIPE) {
+        PTRACE(5, "ALSA\tInput suspended. Resuming... ");
         while ((r = snd_pcm_resume(pcm_handle)) == -EAGAIN)
           sleep(1);       /* wait until the suspend flag is released */
 
-        if (r < 0)
+        if (r < 0) {
           snd_pcm_prepare(pcm_handle);
+          PTRACE_IF(1, r < 0, "ALSA\tCould not prepare device: " << snd_strerror(r));
+        }
       }
-
-      PTRACE(1, "ALSA\tCould not read " << max_try << " " << len << " " << snd_strerror(r));
+      else {
+        PTRACE(1, "ALSA\tCould not read " << max_try << " " << len << " " << snd_strerror(r));
+      }
 
       max_try++;
 
-      if (max_try > 5)
+      if (max_try > 5) {
+        SetLastReadCount(ilen - len);
         return false;
+      }
     }
   } while (len > 0);
 
+  SetLastReadCount(ilen);
   return true;
 }
 

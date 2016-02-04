@@ -267,7 +267,7 @@ PBoolean PSoundChannelSHM::Write (const void *buf, PINDEX len)
      DPRINT(("ashm write %d len=%d fb=%d delay=%d\n", prinCounter, len, frameBytes, delay));
   }
 
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
   PWaitAndSignal m(device_mutex);
 
   if ((!isInitialised && !Setup()) || !len || !os_handle)
@@ -275,8 +275,8 @@ PBoolean PSoundChannelSHM::Write (const void *buf, PINDEX len)
 
   writeSample( (void*)buf, len );
 
-   m_Pacing.Delay(delay);
-   lastWriteCount = 640;   //len;
+  m_Pacing.Delay(delay);
+  SetLastWriteCount(640);
 
   return true;
 }
