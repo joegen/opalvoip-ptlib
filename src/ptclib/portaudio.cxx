@@ -382,8 +382,8 @@ bool PSoundChannelPortAudio::Write(const void * data, PINDEX size)
     PTRACE(1, "PortAudio\tWrite error - not started");
     return false;
   }
-    
-  lastWriteCount = size;
+
+  SetLastWriteCount(size);
 
 #ifndef P_PORT_MIXER
   if (m_mute || (m_volume == 0)) {
@@ -434,8 +434,8 @@ bool PSoundChannelPortAudio::Read(void * data, PINDEX size)
     PTRACE(1, "PortAudio\tRead error - not started");
     return false;
   }
-    
-  lastReadCount = size;
+
+  SetLastReadCount(size);
 
   int err = Pa_ReadStream(m_stream, data, size / m_bytesPerSample);
   if (err != paNoError) {
