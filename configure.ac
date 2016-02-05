@@ -317,6 +317,7 @@ if test "${enable_sanitize_address}" = "yes" ; then
       [],
       [],
       [
+         AC_SUBST(HAS_ADDRESS_SANITIZER, 1)
          CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
          CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=address $LDFLAGS"
@@ -335,6 +336,7 @@ if test "${enable_sanitize_thread}" = "yes" ; then
       [],
       [],
       [
+         AC_SUBST(HAS_THREAD_SANITIZER, 1)
          CPPFLAGS="-D__SANITIZE_THREAD__ $CPPFLAGS"
          CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
          CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
