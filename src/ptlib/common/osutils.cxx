@@ -148,8 +148,6 @@ public:
   PTimeInterval   m_startTick;
   PString         m_rolloverPattern;
   unsigned        m_lastRotate;
-  ios::fmtflags   m_oldStreamFlags;
-  std::streamsize m_oldPrecision;
 
 
 #if defined(_WIN32)
@@ -209,8 +207,6 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , m_startTick(PTimer::Tick())
     , m_rolloverPattern(DefaultRollOverPattern)
     , m_lastRotate(0)
-    , m_oldStreamFlags(ios::left)
-    , m_oldPrecision(0)
   {
     InitMutex();
 
@@ -747,9 +743,6 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
 
-  m_oldStreamFlags = stream.flags();
-  m_oldPrecision   = stream.precision();
-
   if (!HasOption(SystemLogStream)) {
     if (HasOption(DateAndTime)) {
       PTime now;
@@ -852,9 +845,6 @@ ostream & PTrace::End(ostream & paramStream)
 ostream & PTraceInfo::InternalEnd(ostream & paramStream)
 {
   PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? m_threadStorage.Get() : NULL;
-
-  paramStream.flags(m_oldStreamFlags);
-  paramStream.precision(m_oldPrecision);
 
   unsigned currentLevel;
 
