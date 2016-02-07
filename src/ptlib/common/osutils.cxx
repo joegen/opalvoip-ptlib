@@ -1264,18 +1264,22 @@ void PTimer::Stop(bool wait)
   if (list == NULL)
     return;
 
-  /* Take out of timer list first, so when callback is waited for it's
-     completion it cannot then be called again. */
-  list->m_timersMutex.Wait();
-  list->m_timers.erase(m_handle);
-  list->m_timersMutex.Signal();
+  unsigned retry = 0;
+  do {
+    /* Take out of timer list first, so when callback is waited for it's
+       completion it cannot then be called again. */
+    list->m_timersMutex.Wait();
+    PAssert(list->m_timers.erase(m_handle) == 1 || !m_running, PLogicError);
+    m_running = false;
+    list->m_timersMutex.Signal();
 
-  m_running = false;
+    if (wait) {
+      m_callbackMutex.Wait();
+      m_callbackMutex.Signal();
+    }
 
-  if (wait) {
-    m_callbackMutex.Wait();
-    m_callbackMutex.Signal();
-  }
+    // We loop in case the callback function restarted the timer.
+  } while (m_running && PAssert(++retry < 5, PLogicError));
 }
 
 
