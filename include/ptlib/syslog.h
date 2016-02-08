@@ -159,7 +159,7 @@ class PSystemLogTarget : public PObject
   //@}
 
   protected:
-    PSystemLog::Level m_thresholdLevel;
+    PAtomicEnum<PSystemLog::Level> m_thresholdLevel;
 
   private:
     PSystemLogTarget(const PSystemLogTarget & other);
