@@ -257,7 +257,7 @@ class PThreadPool : public PThreadPoolBase
         }
 
       public:
-        virtual void AddWork(Work_T * work) = 0;
+        virtual void AddWork(Work_T * work, const string & group) = 0;
         virtual void RemoveWork(Work_T * work) = 0;
         virtual void Main() = 0;
   
@@ -344,7 +344,7 @@ class PThreadPool : public PThreadPoolBase
       m_externalToInternalWorkMap.insert(make_pair(work, internalWork));
 
       // give the work to the worker
-      internalWork.m_worker->AddWork(work);
+      internalWork.m_worker->AddWork(work, internalWork.m_group);
     
       return true;
     }
@@ -392,6 +392,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
   protected:
     PTimeInterval m_workerIncreaseLatency;
     unsigned      m_workerIncreaseLimit;
+    PTime         m_nextWorkerIncreaseTime;
 
   public:
     //
@@ -433,10 +434,10 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         {
         }
 
-        void AddWork(Work_T * work)
+        void AddWork(Work_T * work, const string & group)
         {
           if (PAssertNULL(work) != NULL)
-            this->m_queue.Enqueue(QueuedWork(work));
+            this->m_queue.Enqueue(QueuedWork(work, group));
         }
 
         void RemoveWork(Work_T * work)
@@ -466,7 +467,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
             this->m_working = false;
 
             if (latency > pool.m_workerIncreaseLatency)
-              pool.OnMaxWaitTime(latency);
+              pool.OnMaxWaitTime(latency, item.m_group);
           }
         }
 
@@ -480,28 +481,38 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         struct QueuedWork
         {
           QueuedWork() : m_time(0), m_work(NULL) { }
-          explicit QueuedWork(Work_T * work) : m_work(work) { }
+          explicit QueuedWork(Work_T * work, const string & group) : m_work(work), m_group(group) { }
           PTime    m_time;
           Work_T * m_work;
+          string   m_group;
         };
         PSyncQueue<QueuedWork> m_queue;
         bool                   m_working;
     };
 
-    virtual void OnMaxWaitTime(const PTimeInterval & PTRACE_PARAM(latency))
+    virtual void OnMaxWaitTime(const PTimeInterval & PTRACE_PARAM(latency), const string & PTRACE_PARAM(group))
     {
-      unsigned newMaxWorkers = std::min((this->m_maxWorkerCount*11+9)/10, m_workerIncreaseLimit);
-      if (newMaxWorkers != this->m_maxWorkerCount) {
-        PTRACE(2, NULL, "ThreadPool", "Thread pool latency excessive"
+      PTime now;
+      if (this->m_nextWorkerIncreaseTime > now) {
+        PTRACE(2, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
                " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
-               " increasing maximum threads from " << this->m_maxWorkerCount << " to " << newMaxWorkers);
-        this->m_maxWorkerCount = newMaxWorkers;
+               " not increasing threads past " << this->m_workerIncreaseLimit << " due to recent adjustment");
+        return;
       }
-      else {
-        PTRACE(2, NULL, "ThreadPool", "Thread pool latency excessive"
+
+      unsigned newMaxWorkers = std::min((this->m_maxWorkerCount*11+9)/10, this->m_workerIncreaseLimit);
+      if (newMaxWorkers == this->m_maxWorkerCount) {
+        PTRACE(2, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
                " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
-               " cannot increase threads past " << m_workerIncreaseLimit);
+               " cannot increase threads past " << this->m_workerIncreaseLimit);
+        return;
       }
+
+      PTRACE(2, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
+              " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
+              " increasing maximum threads from " << this->m_maxWorkerCount << " to " << newMaxWorkers);
+      this->m_maxWorkerCount = newMaxWorkers;
+      this->m_nextWorkerIncreaseTime = now + latency; // Don't increase again until oafter this blockage removed.
     }
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
