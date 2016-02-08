@@ -494,11 +494,13 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     {
       PTime now;
       if (this->m_nextWorkerIncreaseTime > now) {
-        PTRACE(2, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
+        PTRACE(3, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
                " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
-               " not increasing threads past " << this->m_workerIncreaseLimit << " due to recent adjustment");
+               " not increasing threads past " << this->m_maxWorkerCount << " due to recent adjustment");
         return;
       }
+
+      this->m_nextWorkerIncreaseTime = now + latency; // Don't increase again until oafter this blockage removed.
 
       unsigned newMaxWorkers = std::min((this->m_maxWorkerCount*11+9)/10, this->m_workerIncreaseLimit);
       if (newMaxWorkers == this->m_maxWorkerCount) {
@@ -512,7 +514,6 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
               " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
               " increasing maximum threads from " << this->m_maxWorkerCount << " to " << newMaxWorkers);
       this->m_maxWorkerCount = newMaxWorkers;
-      this->m_nextWorkerIncreaseTime = now + latency; // Don't increase again until oafter this blockage removed.
     }
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
