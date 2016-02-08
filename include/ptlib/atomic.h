@@ -35,6 +35,8 @@
 
 #include <atomic>
 
+#define PAtomicEnum std::atomic
+
 #else
 
 #ifdef P_ATOMICITY_HEADER
@@ -222,6 +224,20 @@ private:
 
 #endif
 
+  template <typename Enum> struct PAtomicEnum
+  {
+    __inline PAtomicEnum() { }
+    __inline PAtomicEnum(Enum value) : m_enum(value) { }
+    __inline PAtomicEnum(const PAtomicEnum & other) : m_enum(other.m_enum) { }
+    __inline Enum operator=(const PAtomicEnum & other) { Enum value = other; this->store(value); return value; }
+    __inline operator Enum() const { return this->load(); }
+    __inline Enum load() const { return (Enum)this->m_enum.load(); }
+    __inline void store(Enum value) { this->m_enum.store(value); }
+    __inline Enum exchange(Enum value) { return (Enum)this->m_enum.exchange(value); }
+    __inline bool compare_exchange_strong(Enum & comp, Enum value) { return this->m_enum.compare_exchange_strong((int &)comp, value); }
+  private:
+    atomic<int> m_enum;
+  };
 
 #endif // P_STD_ATOMIC
 
