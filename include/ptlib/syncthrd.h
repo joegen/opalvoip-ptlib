@@ -264,8 +264,9 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
   /**@name Construction */
   //@{
     explicit PReadWriteMutex(
-        const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
-        unsigned line = 0          ///< Line number, if non zero, name is assumed to be a filename
+      const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
+      unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
+      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero is default.
     );
     ~PReadWriteMutex();
   //@}
@@ -364,8 +365,14 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
 };
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
-#define PDECLARE_READ_WRITE_MUTEX(var) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_READ_WRITE_MUTEX2(var, name) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#name) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_1(var)                struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(__FILE__,__LINE__) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_2(var, name)          struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#name            ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_3(var, name, timeout) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#name, 0, timeout) { } } var
+
+#define PDECLARE_READ_WRITE_MUTEX_PART1(narg, args) PDECLARE_READ_WRITE_MUTEX_PART2(narg, args)
+#define PDECLARE_READ_WRITE_MUTEX_PART2(narg, args) PDECLARE_READ_WRITE_MUTEX_ARG_##narg args
+
+#define PDECLARE_READ_WRITE_MUTEX(...) PDECLARE_READ_WRITE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 
 /**This class starts a read operation for the PReadWriteMutex on construction
