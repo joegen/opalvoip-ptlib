@@ -1743,8 +1743,8 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
-PTimedMutex::PTimedMutex(const char * name, unsigned line)
-  : PMutexExcessiveLockInfo(name, line)
+PTimedMutex::PTimedMutex(const char * name, unsigned line, unsigned timeout)
+  : PMutexExcessiveLockInfo(name, line, timeout)
   , m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
   , m_lastUniqueId(0)

@@ -1215,8 +1215,8 @@ void PSemaphore::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PTimedMutex::PTimedMutex(const char * name, unsigned line)
-  : PMutexExcessiveLockInfo(name, line)
+PTimedMutex::PTimedMutex(const char * name, unsigned line, unsigned timeout)
+  : PMutexExcessiveLockInfo(name, line, timeout)
 {
   Construct();
 }
