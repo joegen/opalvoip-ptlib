@@ -1148,6 +1148,7 @@ static PIdGenerator s_handleGenerator;
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : PTimeInterval(millisecs, seconds, minutes, hours, days)
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1156,6 +1157,7 @@ PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
 PTimer::PTimer(const PTimeInterval & time)
   : PTimeInterval(time)
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1164,6 +1166,7 @@ PTimer::PTimer(const PTimeInterval & time)
 PTimer::PTimer(const PTimer & timer)
   : PTimeInterval(timer.GetResetTime())
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1248,9 +1251,9 @@ void PTimer::InternalStart(bool once, int64_t resetTime)
 
   if (resetTime > 0) {
     m_absoluteTime = Tick() + GetResetTime();
-    m_running = true;
     list->m_timersMutex.Wait();
     list->m_timers[m_handle] = this;
+    m_running = true;
     list->m_timersMutex.Signal();
 
     PProcess::Current().SignalTimerChange();
@@ -1349,6 +1352,10 @@ bool PTimer::List::OnTimeout(PIdGenerator::Handle handle)
 
     if (!timer->m_callbackMutex.Try())
       return false; // Try again
+
+    // Remove the expired one shot timers from map
+    if (timer->m_oneshot && !timer->m_running)
+      m_timers.erase(it);
   }
 
   // Must be outside of m_timersMutex and timer->m_timerMutex mutexes
@@ -1366,6 +1373,7 @@ PTimeInterval PTimer::List::Process()
   PTimeInterval nextInterval(0, 1);
 
   m_timersMutex.Wait();
+
   for (TimerMap::iterator it = m_timers.begin(); it != m_timers.end(); ++it) {
     PTimer & timer = *it->second;
     if (timer.m_running) {
@@ -1392,6 +1400,7 @@ PTimeInterval PTimer::List::Process()
       }
     }
   }
+
   m_timersMutex.Signal();
 
   if (nextInterval < 10)
