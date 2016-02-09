@@ -2927,6 +2927,38 @@ static unsigned InitExcessiveLockWaitTime()
 
 unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime()*1000;
 
+
+PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line)
+  : m_fileOrName(name)
+  , m_fileLine(line)
+  , m_excessiveLockTimeout(PTimedMutex::ExcessiveLockWaitTime)
+  , m_excessiveLockActive(false)
+{
+}
+
+
+PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other)
+  : m_excessiveLockTimeout(other.m_excessiveLockTimeout)
+  , m_fileOrName(other.m_fileOrName)
+  , m_fileLine(other.m_fileLine)
+  , m_excessiveLockActive(false)
+{
+}
+
+
+void PMutexExcessiveLockInfo::PrintOn(ostream &strm) const
+{
+  if (m_fileOrName != NULL) {
+    strm << " (";
+    if (m_fileLine != 0)
+      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_fileLine;
+    else
+      strm << m_fileOrName;
+    strm << ')';
+  }
+}
+
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -2949,15 +2981,15 @@ void PTimedMutex::ExcessiveLockWait()
   PAssertAlways(PSTRSTRM("Possible deadlock in mutex " << *this));
 #endif
 
-  m_excessiveLockTime = true;
+  m_excessiveLockActive = true;
 }
 
 
 void PTimedMutex::CommonSignal()
 {
-  if (m_excessiveLockTime) {
+  if (m_excessiveLockActive) {
     PTRACE(0, "Released phantom deadlock in mutex " << *this);
-    m_excessiveLockTime = false;
+    m_excessiveLockActive = false;
   }
 
   m_lockerId = PNullThreadIdentifier;
@@ -2967,14 +2999,7 @@ void PTimedMutex::CommonSignal()
 void PTimedMutex::PrintOn(ostream &strm) const
 {
   strm << this;
-  if (m_fileOrName != NULL) {
-    strm << " (";
-    if (m_line != 0)
-      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
-    else
-      strm << m_fileOrName;
-    strm << ')';
-  }
+  PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
 
@@ -3124,22 +3149,20 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 /////////////////////////////////////////////////////////////////////////////
 
 PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
+  : PMutexExcessiveLockInfo(name, line)
 #if P_READ_WRITE_ALGO2
-  : m_inSemaphore(1, 1)
+  , m_inSemaphore(1, 1)
   , m_inCount(0)
   , m_outSemaphore(1, 1)
   , m_outCount(0)
   , m_writeSemaphore(0, 1)
   , m_wait(false)
 #else
-  : m_readerSemaphore(1, 1)
+  , m_readerSemaphore(1, 1)
   , m_readerCount(0)
   , m_writerSemaphore(1, 1)
   , m_writerCount(0)
 #endif
-  , m_fileOrName(name)
-  , m_line(line)
-  , m_excessiveLockTime(false)
 {
   PTRACE(5, "Created read/write mutex " << *this);
 }
@@ -3215,12 +3238,12 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
   nest.m_waiting = true;
 
 #if PTRACING
-  if (sync.Wait(PTimedMutex::ExcessiveLockWaitTime)) {
+  if (sync.Wait(m_excessiveLockTimeout)) {
     nest.m_waiting = false;
     return;
   }
 
-  m_excessiveLockTime = true;
+  m_excessiveLockActive = true;
 
   NestMap nestedThreadsToDump;
   {
@@ -3228,21 +3251,23 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
     nestedThreadsToDump = m_nestedThreads;
   }
 
-  ostream & trace = PTRACE_BEGIN(0, "PTLib");
-  trace << "Possible deadlock in read/write mutex " << *this << " :\n";
-  for (NestMap::const_iterator it = nestedThreadsToDump.begin(); it != nestedThreadsToDump.end(); ++it) {
-    if (it != nestedThreadsToDump.begin())
-      trace << '\n';
-    trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
-              " unique-id=" << it->second.m_uniqueId << ","
-              " readers=" << it->second.m_readerCount << ","
-              " writers=" << it->second.m_writerCount;
-    if (!it->second.m_waiting)
-      trace << ", LOCKER";
-    if (PTimedMutex::EnableDeadlockStackWalk)
-      PTrace::WalkStack(trace, it->first);
+  {
+    ostream & trace = PTRACE_BEGIN(0, "PTLib");
+    trace << "Possible deadlock in read/write mutex " << *this << " :\n";
+    for (NestMap::const_iterator it = nestedThreadsToDump.begin(); it != nestedThreadsToDump.end(); ++it) {
+      if (it != nestedThreadsToDump.begin())
+        trace << '\n';
+      trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
+        " unique-id=" << it->second.m_uniqueId << ","
+        " readers=" << it->second.m_readerCount << ","
+        " writers=" << it->second.m_writerCount;
+      if (!it->second.m_waiting)
+        trace << ", LOCKER";
+      if (PTimedMutex::EnableDeadlockStackWalk)
+        PTrace::WalkStack(trace, it->first);
+    }
+    trace << PTrace::End;
   }
-  trace << PTrace::End;
 
   sync.Wait();
 
@@ -3277,9 +3302,9 @@ void PReadWriteMutex::EndRead()
   if (nest->m_readerCount > 0 || nest->m_writerCount > 0)
     return;
 
-  if (m_excessiveLockTime) {
+  if (m_excessiveLockActive) {
     PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
-    m_excessiveLockTime = false;
+    m_excessiveLockActive = false;
   }
 
   // Do text book read lock
@@ -3305,9 +3330,9 @@ void PReadWriteMutex::StartWrite()
   if (nest.m_writerCount > 1)
     return;
 
-  if (m_excessiveLockTime) {
+  if (m_excessiveLockActive) {
     PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
-    m_excessiveLockTime = false;
+    m_excessiveLockActive = false;
   }
 
   // If have a read lock already in this thread then do the "real" unlock code
@@ -3444,14 +3469,7 @@ void PReadWriteMutex::InternalEndWrite(Nest & nest)
 void PReadWriteMutex::PrintOn(ostream & strm) const
 {
   strm << this;
-  if (m_fileOrName != NULL) {
-    strm << " (";
-    if (m_line != 0)
-      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
-    else
-      strm << m_fileOrName;
-    strm << ')';
-  }
+  PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
 

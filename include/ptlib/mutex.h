@@ -41,6 +41,21 @@
 #include <ptlib/atomic.h>
 #include <ptlib/semaphor.h>
 
+
+class PMutexExcessiveLockInfo
+{
+  protected:
+    const char * m_fileOrName;
+    unsigned     m_fileLine;
+    unsigned     m_excessiveLockTimeout;
+    mutable bool m_excessiveLockActive;
+
+    PMutexExcessiveLockInfo(const char * name, unsigned line);
+    PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
+    void PrintOn(ostream &strm) const;
+};
+
+
 /**This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
    To prevent this the PMutex is used in the following manner:
@@ -62,7 +77,7 @@
     <code>Signal()</code> function, releasing the second thread.
  */
 
-class PTimedMutex : public PSync
+class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
 {
     PCLASSINFO(PTimedMutex, PSync)
   public:
@@ -119,9 +134,6 @@ class PTimedMutex : public PSync
     PThreadIdentifier       m_lastLockerId;
     PUniqueThreadIdentifier m_lastUniqueId;
     unsigned                m_lockCount;
-    bool                    m_excessiveLockTime;
-    const char *            m_fileOrName;
-    unsigned                m_line;
 
     void ExcessiveLockWait();
     void CommonSignal();

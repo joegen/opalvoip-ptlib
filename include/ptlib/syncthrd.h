@@ -257,7 +257,7 @@ class PIntCondMutex : public PCondMutex
    http://arxiv.org/ftp/arxiv/papers/1309/1309.4507.pdf to improve efficiency.
  */
 
-class PReadWriteMutex : public PObject
+class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
 {
   PCLASSINFO(PReadWriteMutex, PObject);
   public:
@@ -359,10 +359,6 @@ class PReadWriteMutex : public PObject
     void InternalStartWrite(Nest & nest);
     void InternalEndWrite(Nest & nest);
     void InternalWait(Nest & nest, PSync & sync) const;
-
-    const char * m_fileOrName;
-    unsigned     m_line;
-    mutable bool m_excessiveLockTime;
 
   friend class PSafeObject;
 };
