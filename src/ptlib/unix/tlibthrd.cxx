@@ -1216,15 +1216,13 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 
 PTimedMutex::PTimedMutex(const char * name, unsigned line)
-  : m_fileOrName(name)
-  , m_line(line)
+  : PMutexExcessiveLockInfo(name, line)
 {
   Construct();
 }
 
 PTimedMutex::PTimedMutex(const PTimedMutex & other)
-  : m_fileOrName(other.m_fileOrName)
-  , m_line(other.m_line)
+  : PMutexExcessiveLockInfo(other)
 {
   Construct();
 }
@@ -1301,8 +1299,8 @@ void PTimedMutex::Wait()
   struct timeval now;
   gettimeofday(&now, NULL);
   struct timespec absTime;
-  absTime.tv_sec = now.tv_sec + ExcessiveLockWaitTime/1000;
-  absTime.tv_nsec = now.tv_usec*1000 + (ExcessiveLockWaitTime%1000)*1000000;
+  absTime.tv_sec = now.tv_sec + m_excessiveLockTimeout/1000;
+  absTime.tv_nsec = now.tv_usec*1000 + (m_excessiveLockTimeout%1000)*1000000;
   if (absTime.tv_nsec >= 1000000000) {
     absTime.tv_nsec -= 1000000000;
     ++absTime.tv_sec;
