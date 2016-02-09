@@ -2938,9 +2938,9 @@ PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned lin
 
 
 PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other)
-  : m_excessiveLockTimeout(other.m_excessiveLockTimeout)
-  , m_fileOrName(other.m_fileOrName)
+  : m_fileOrName(other.m_fileOrName)
   , m_fileLine(other.m_fileLine)
+  , m_excessiveLockTimeout(other.m_excessiveLockTimeout)
   , m_excessiveLockActive(false)
 {
 }
