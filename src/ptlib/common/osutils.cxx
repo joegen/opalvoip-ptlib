@@ -2928,10 +2928,10 @@ static unsigned InitExcessiveLockWaitTime()
 unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime()*1000;
 
 
-PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line)
+PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout)
   : m_fileOrName(name)
   , m_fileLine(line)
-  , m_excessiveLockTimeout(PTimedMutex::ExcessiveLockWaitTime)
+  , m_excessiveLockTimeout(timeout > 0 ? timeout : PTimedMutex::ExcessiveLockWaitTime)
   , m_excessiveLockActive(false)
 {
 }
@@ -3148,8 +3148,8 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 
 /////////////////////////////////////////////////////////////////////////////
 
-PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
-  : PMutexExcessiveLockInfo(name, line)
+PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line, unsigned timeout)
+  : PMutexExcessiveLockInfo(name, line, timeout)
 #if P_READ_WRITE_ALGO2
   , m_inSemaphore(1, 1)
   , m_inCount(0)

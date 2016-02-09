@@ -50,7 +50,7 @@ class PMutexExcessiveLockInfo
     unsigned     m_excessiveLockTimeout;
     mutable bool m_excessiveLockActive;
 
-    PMutexExcessiveLockInfo(const char * name, unsigned line);
+    PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout);
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     void PrintOn(ostream &strm) const;
 };
@@ -88,8 +88,9 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
        The name/line parameters are used for deadlock detection debugging.
      */
     explicit PTimedMutex(
-        const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
-        unsigned line = 0          ///< Line number, if non zero, name is assumed to be a filename
+      const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
+      unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
+      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero is default.
     );
 
     /**Copy constructor is allowed but does not copy, allocating a new mutex.
@@ -149,8 +150,15 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
 typedef PTimedMutex PMutex;
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
-#define PDECLARE_MUTEX(var) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_MUTEX2(var, name) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name) { } } var
+
+#define PDECLARE_MUTEX_ARG_1(var)                struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
+#define PDECLARE_MUTEX_ARG_2(var, name)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name            ) { } } var
+#define PDECLARE_MUTEX_ARG_3(var, name, timeout) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name, 0, timeout) { } } var
+
+#define PDECLARE_MUTEX_PART1(narg, args) PDECLARE_MUTEX_PART2(narg, args)
+#define PDECLARE_MUTEX_PART2(narg, args) PDECLARE_MUTEX_ARG_##narg args
+
+#define PDECLARE_MUTEX(...) PDECLARE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 
 /** This class implements critical section mutexes using the most efficient
