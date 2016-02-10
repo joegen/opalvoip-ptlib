@@ -141,15 +141,13 @@ class PTraceInfo : public PTrace
 
 public:
   unsigned        m_currentLevel;
-  unsigned        m_thresholdLevel;
+  atomic<unsigned> m_thresholdLevel;
   unsigned        m_options;
   PCaselessString m_filename;
   ostream       * m_stream;
   PTimeInterval   m_startTick;
   PString         m_rolloverPattern;
   unsigned        m_lastRotate;
-  ios::fmtflags   m_oldStreamFlags;
-  std::streamsize m_oldPrecision;
 
 
 #if defined(_WIN32)
@@ -209,8 +207,6 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , m_startTick(PTimer::Tick())
     , m_rolloverPattern(DefaultRollOverPattern)
     , m_lastRotate(0)
-    , m_oldStreamFlags(ios::left)
-    , m_oldPrecision(0)
   {
     InitMutex();
 
@@ -233,7 +229,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       optEnv = getenv("PTLIB_TRACE_OPTIONS");
 
     if (levelEnv != NULL || fileEnv != NULL || optEnv != NULL)
-      InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel,
+      InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel.load(),
                          fileEnv,
                          NULL,
                          optEnv != NULL ? atoi(optEnv) : m_options);
@@ -685,10 +681,8 @@ unsigned PTrace::GetOptions()
 
 void PTrace::SetLevel(unsigned level)
 {
-  PTraceInfo & info = PTraceInfo::Instance();
-  if (info.m_thresholdLevel != level) {
-    info.m_thresholdLevel = level;
-    PTRACE(2, "Trace threshold set to " << level);
+  if (PTraceInfo::Instance().m_thresholdLevel.exchange(level) != level) {
+    PTRACE(1, "Trace threshold set to " << level);
   }
 }
 
@@ -748,9 +742,6 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
 
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
-
-  m_oldStreamFlags = stream.flags();
-  m_oldPrecision   = stream.precision();
 
   if (!HasOption(SystemLogStream)) {
     if (HasOption(DateAndTime)) {
@@ -854,9 +845,6 @@ ostream & PTrace::End(ostream & paramStream)
 ostream & PTraceInfo::InternalEnd(ostream & paramStream)
 {
   PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? m_threadStorage.Get() : NULL;
-
-  paramStream.flags(m_oldStreamFlags);
-  paramStream.precision(m_oldPrecision);
 
   unsigned currentLevel;
 
@@ -1147,6 +1135,7 @@ static PIdGenerator s_handleGenerator;
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : PTimeInterval(millisecs, seconds, minutes, hours, days)
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1155,6 +1144,7 @@ PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
 PTimer::PTimer(const PTimeInterval & time)
   : PTimeInterval(time)
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1163,6 +1153,7 @@ PTimer::PTimer(const PTimeInterval & time)
 PTimer::PTimer(const PTimer & timer)
   : PTimeInterval(timer.GetResetTime())
   , m_handle(s_handleGenerator.Create())
+  , m_running(false)
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1247,9 +1238,9 @@ void PTimer::InternalStart(bool once, int64_t resetTime)
 
   if (resetTime > 0) {
     m_absoluteTime = Tick() + GetResetTime();
-    m_running = true;
     list->m_timersMutex.Wait();
     list->m_timers[m_handle] = this;
+    m_running = true;
     list->m_timersMutex.Signal();
 
     PProcess::Current().SignalTimerChange();
@@ -1268,7 +1259,7 @@ void PTimer::Stop(bool wait)
     /* Take out of timer list first, so when callback is waited for it's
        completion it cannot then be called again. */
     list->m_timersMutex.Wait();
-    list->m_timers.erase(m_handle);
+    PAssert(list->m_timers.erase(m_handle) == 1 || !m_running, PLogicError);
     m_running = false;
     list->m_timersMutex.Signal();
 
@@ -1348,6 +1339,10 @@ bool PTimer::List::OnTimeout(PIdGenerator::Handle handle)
 
     if (!timer->m_callbackMutex.Try())
       return false; // Try again
+
+    // Remove the expired one shot timers from map
+    if (timer->m_oneshot && !timer->m_running)
+      m_timers.erase(it);
   }
 
   // Must be outside of m_timersMutex and timer->m_timerMutex mutexes
@@ -1365,6 +1360,7 @@ PTimeInterval PTimer::List::Process()
   PTimeInterval nextInterval(0, 1);
 
   m_timersMutex.Wait();
+
   for (TimerMap::iterator it = m_timers.begin(); it != m_timers.end(); ++it) {
     PTimer & timer = *it->second;
     if (timer.m_running) {
@@ -1391,6 +1387,7 @@ PTimeInterval PTimer::List::Process()
       }
     }
   }
+
   m_timersMutex.Signal();
 
   if (nextInterval < 10)
@@ -2810,6 +2807,12 @@ PThread * PThread::Create(const PNotifier & notifier,
 }
 
 
+#define RELEASE_THREAD_LOCAL_STORAGE 1
+#if RELEASE_THREAD_LOCAL_STORAGE
+static std::set<PThread::LocalStorageBase*> s_ThreadLocalStorage;
+static PCriticalSection s_ThreadLocalStorageMutex;
+#endif
+
 PThread::~PThread()
 {
   if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(100))
@@ -2817,61 +2820,65 @@ PThread::~PThread()
 
   PTRACE(5, "Destroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
 
-  InternalDestroy();
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageMutex.Wait();
+  for (std::set<PThread::LocalStorageBase*>::iterator it = s_ThreadLocalStorage.begin(); it != s_ThreadLocalStorage.end(); ++it)
+    (*it)->ThreadDestroyed(*this);
+  s_ThreadLocalStorageMutex.Signal();
+#endif
 
-  // Clean up any thread local storage
-  for (LocalStorageList::iterator it = m_localStorage.begin(); it != m_localStorage.end(); ++it)
-    (*it)->ThreadDestroyed(this);
+  InternalDestroy();
 
   if (m_type != e_IsProcess)
     PProcess::Current().InternalThreadEnded(this);
 }
 
 
+PThread::LocalStorageBase::LocalStorageBase()
+{
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageMutex.Wait();
+  s_ThreadLocalStorage.insert(this);
+  s_ThreadLocalStorageMutex.Signal();
+#endif
+}
+
+
 void PThread::LocalStorageBase::StorageDestroyed()
 {
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageMutex.Wait();
+  s_ThreadLocalStorage.erase(this);
+  s_ThreadLocalStorageMutex.Signal();
+#endif
+
   m_mutex.Wait();
-  for (StorageMap::iterator it = m_storage.begin(); it != m_storage.end(); ++it) {
+  for (DataMap::iterator it = m_data.begin(); it != m_data.end(); ++it)
     Deallocate(it->second);
-    it->first->m_localStorage.remove(this);
-  }
-  m_storage.clear();
   m_mutex.Signal();
 }
 
 
-void PThread::LocalStorageBase::ThreadDestroyed(PThread * thread) const
+void PThread::LocalStorageBase::ThreadDestroyed(PThread & thread)
 {
-  PWaitAndSignal mutex(m_mutex);
-
-  StorageMap::iterator it = m_storage.find(thread);
-  if (!PAssert(it != m_storage.end(), PLogicError))
-    return;
-
-  Deallocate(it->second);
-  m_storage.erase(it);
+  m_mutex.Wait();
+  DataMap::iterator it = m_data.find(thread.GetUniqueIdentifier());
+  if (it != m_data.end()) {
+    Deallocate(it->second);
+    m_data.erase(it);
+  }
+  m_mutex.Signal();
 }
 
 
 void * PThread::LocalStorageBase::GetStorage() const
 {
-  PThread * thread = PThread::Current();
-  if (thread == NULL)
-    return NULL;
-
-  PWaitAndSignal mutex(m_mutex);
-
-  StorageMap::const_iterator it = m_storage.find(thread);
-  if (it != m_storage.end())
-    return it->second;
-
-  void * threadLocal = Allocate();
-  if (threadLocal == NULL)
-    return NULL;
-
-  m_storage[thread] = threadLocal;
-  thread->m_localStorage.push_back(this);
-  return threadLocal;
+  PThreadIdentifier threadId = PThread::GetCurrentUniqueIdentifier();
+  PWaitAndSignal lock(m_mutex);
+  DataMap::iterator it = m_data.find(threadId);
+  if (it == m_data.end())
+    it = m_data.insert(make_pair(threadId, Allocate())).first;
+  return it->second;
 }
 
 
@@ -2920,6 +2927,38 @@ static unsigned InitExcessiveLockWaitTime()
 
 unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime()*1000;
 
+
+PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout)
+  : m_fileOrName(name)
+  , m_fileLine(line)
+  , m_excessiveLockTimeout(timeout > 0 ? timeout : PTimedMutex::ExcessiveLockWaitTime)
+  , m_excessiveLockActive(false)
+{
+}
+
+
+PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other)
+  : m_fileOrName(other.m_fileOrName)
+  , m_fileLine(other.m_fileLine)
+  , m_excessiveLockTimeout(other.m_excessiveLockTimeout)
+  , m_excessiveLockActive(false)
+{
+}
+
+
+void PMutexExcessiveLockInfo::PrintOn(ostream &strm) const
+{
+  if (m_fileOrName != NULL) {
+    strm << " (";
+    if (m_fileLine != 0)
+      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_fileLine;
+    else
+      strm << m_fileOrName;
+    strm << ')';
+  }
+}
+
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -2942,15 +2981,15 @@ void PTimedMutex::ExcessiveLockWait()
   PAssertAlways(PSTRSTRM("Possible deadlock in mutex " << *this));
 #endif
 
-  m_excessiveLockTime = true;
+  m_excessiveLockActive = true;
 }
 
 
 void PTimedMutex::CommonSignal()
 {
-  if (m_excessiveLockTime) {
+  if (m_excessiveLockActive) {
     PTRACE(0, "Released phantom deadlock in mutex " << *this);
-    m_excessiveLockTime = false;
+    m_excessiveLockActive = false;
   }
 
   m_lockerId = PNullThreadIdentifier;
@@ -2960,14 +2999,7 @@ void PTimedMutex::CommonSignal()
 void PTimedMutex::PrintOn(ostream &strm) const
 {
   strm << this;
-  if (m_fileOrName != NULL) {
-    strm << " (";
-    if (m_line != 0)
-      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
-    else
-      strm << m_fileOrName;
-    strm << ')';
-  }
+  PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
 
@@ -3116,22 +3148,21 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 
 /////////////////////////////////////////////////////////////////////////////
 
-PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line)
+PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line, unsigned timeout)
+  : PMutexExcessiveLockInfo(name, line, timeout)
 #if P_READ_WRITE_ALGO2
-  : m_inSemaphore(1, 1)
+  , m_inSemaphore(1, 1)
   , m_inCount(0)
   , m_outSemaphore(1, 1)
   , m_outCount(0)
   , m_writeSemaphore(0, 1)
   , m_wait(false)
 #else
-  : m_readerSemaphore(1, 1)
+  , m_readerSemaphore(1, 1)
   , m_readerCount(0)
   , m_writerSemaphore(1, 1)
   , m_writerCount(0)
 #endif
-  , m_fileOrName(name)
-  , m_line(line)
 {
   PTRACE(5, "Created read/write mutex " << *this);
 }
@@ -3207,10 +3238,12 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
   nest.m_waiting = true;
 
 #if PTRACING
-  if (sync.Wait(PTimedMutex::ExcessiveLockWaitTime)) {
+  if (sync.Wait(m_excessiveLockTimeout)) {
     nest.m_waiting = false;
     return;
   }
+
+  m_excessiveLockActive = true;
 
   NestMap nestedThreadsToDump;
   {
@@ -3218,21 +3251,23 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
     nestedThreadsToDump = m_nestedThreads;
   }
 
-  ostream & trace = PTRACE_BEGIN(0, "PTLib");
-  trace << "Possible deadlock in read/write mutex " << *this << " :\n";
-  for (NestMap::const_iterator it = nestedThreadsToDump.begin(); it != nestedThreadsToDump.end(); ++it) {
-    if (it != nestedThreadsToDump.begin())
-      trace << '\n';
-    trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
-              " unique-id=" << it->second.m_uniqueId << ","
-              " readers=" << it->second.m_readerCount << ","
-              " writers=" << it->second.m_writerCount;
-    if (!it->second.m_waiting)
-      trace << ", LOCKER";
-    if (PTimedMutex::EnableDeadlockStackWalk)
-      PTrace::WalkStack(trace, it->first);
+  {
+    ostream & trace = PTRACE_BEGIN(0, "PTLib");
+    trace << "Possible deadlock in read/write mutex " << *this << " :\n";
+    for (NestMap::const_iterator it = nestedThreadsToDump.begin(); it != nestedThreadsToDump.end(); ++it) {
+      if (it != nestedThreadsToDump.begin())
+        trace << '\n';
+      trace << "  thread-id=" << it->first << " (0x" << std::hex << it->first << std::dec << "),"
+        " unique-id=" << it->second.m_uniqueId << ","
+        " readers=" << it->second.m_readerCount << ","
+        " writers=" << it->second.m_writerCount;
+      if (!it->second.m_waiting)
+        trace << ", LOCKER";
+      if (PTimedMutex::EnableDeadlockStackWalk)
+        PTrace::WalkStack(trace, it->first);
+    }
+    trace << PTrace::End;
   }
-  trace << PTrace::End;
 
   sync.Wait();
 
@@ -3267,6 +3302,11 @@ void PReadWriteMutex::EndRead()
   if (nest->m_readerCount > 0 || nest->m_writerCount > 0)
     return;
 
+  if (m_excessiveLockActive) {
+    PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
+    m_excessiveLockActive = false;
+  }
+
   // Do text book read lock
   InternalEndRead(*nest);
 
@@ -3289,6 +3329,11 @@ void PReadWriteMutex::StartWrite()
   // increment is all we haev to do.
   if (nest.m_writerCount > 1)
     return;
+
+  if (m_excessiveLockActive) {
+    PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
+    m_excessiveLockActive = false;
+  }
 
   // If have a read lock already in this thread then do the "real" unlock code
   // but do not change the lock count, calls to EndRead() will now just
@@ -3424,14 +3469,7 @@ void PReadWriteMutex::InternalEndWrite(Nest & nest)
 void PReadWriteMutex::PrintOn(ostream & strm) const
 {
   strm << this;
-  if (m_fileOrName != NULL) {
-    strm << " (";
-    if (m_line != 0)
-      strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_line;
-    else
-      strm << m_fileOrName;
-    strm << ')';
-  }
+  PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
 

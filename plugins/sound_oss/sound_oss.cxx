@@ -480,7 +480,7 @@ PBoolean PSoundChannelOSS::IsOpen() const
 
 PBoolean PSoundChannelOSS::Write(const void * buf, PINDEX len)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (!Setup() || os_handle < 0)
     return false;
@@ -489,12 +489,10 @@ PBoolean PSoundChannelOSS::Write(const void * buf, PINDEX len)
     while (!ConvertOSError(::write(os_handle, (void *)buf, len))) 
       if (GetErrorCode() != Interrupted)
         return false;
-    lastWriteCount += len;
   }
 
   else {
     // cut the data into 1K blocks and upsample it
-    lastWriteCount = 0;
     BYTE resampleBuffer[1024];
     const BYTE * src    = (const BYTE *)buf;
     const BYTE * srcEnd = src + len;
@@ -512,21 +510,23 @@ PBoolean PSoundChannelOSS::Write(const void * buf, PINDEX len)
         }
         src += 2;
       }
-      lastWriteCount += src - srcStart;
       while (!ConvertOSError(::write(os_handle, resampleBuffer, dst - resampleBuffer))) {
-        if (GetErrorCode() != Interrupted) 
+        if (GetErrorCode() != Interrupted) {
+          SetLastWriteCount(len - srcEnd + src);
           return false;
+        }
       }
     }
 
   }
 
+  SetLastWriteCount(len);
   return true;
 }
 
 PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (!Setup() || os_handle < 0)
     return false;
@@ -548,7 +548,6 @@ PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
         PTRACE(6, "OSS\tRead completed short - " << total << " vs " << len << ". Reading more data");
       }
     }
-    lastReadCount = total;
   }
 
   else {
@@ -557,7 +556,6 @@ PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
 
     BYTE * dst    = (BYTE *)buf;
     BYTE * dstEnd = dst + len;
-    lastReadCount = 0;
 
     PBYTEArray resampleBuffer((1024 / resampleRate) * resampleRate);
 
@@ -572,8 +570,11 @@ PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
       {
         PINDEX bufLen = PMIN(resampleBuffer.GetSize(), srcBytes);
         while (!ConvertOSError(bytes = ::read(os_handle, resampleBuffer.GetPointer(), bufLen))) {
-          if (GetErrorCode() != Interrupted) 
+          if (GetErrorCode() != Interrupted) {
+            SetLastReadCount(len - dstEnd + dst);
+            PTRACE(6, "OSS\tRead completed short - " << len - dstEnd + dst << " vs " << len);
             return false;
+          }
         }
       }
 
@@ -588,16 +589,12 @@ PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
         }
         *(PUInt16l *)dst = sample / resampleRate;
         dst +=2 ;
-        lastReadCount += 2;
       }
     }
   }
 
-  if (lastReadCount != len)
-    PTRACE(6, "OSS\tRead completed short - " << lastReadCount << " vs " << len);
-  else
-    PTRACE(6, "OSS\tRead completed");
-
+  SetLastReadCount(len);
+  PTRACE(6, "OSS\tRead completed");
   return true;
 }
 

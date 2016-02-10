@@ -1513,10 +1513,7 @@ PBoolean PSoundChannelBeOS::Write(const void *buf, PINDEX len)
 		// Wait until there is space
 		mBuffer->WaitForState(CircularBuffer::EmptyEnough);
 
-  		// This function needs to update the last write count
-  		// Store len before it gets modified
-		lastWriteCount=len;
-
+		PINDEX ilen = len;
 #ifdef FILEDUMP
 		if (playwriter)
 		{
@@ -1527,13 +1524,11 @@ PBoolean PSoundChannelBeOS::Write(const void *buf, PINDEX len)
 		// Store data into the buffer
 		mBuffer->Fill((const BYTE **)&buf, (size_t*) &len);
 
-		// Update last write count
-		lastWriteCount-=len;
-		
-  		return true;
-  	}
-  	
-  	return false;
+		SetLastWriteCount(ilen - len);
+		return true;
+	}
+
+	return false;
 }
 
 

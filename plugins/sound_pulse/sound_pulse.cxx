@@ -317,7 +317,7 @@ PBoolean PSoundChannelPulse::Write(const void * buf, PINDEX len)
     buff+=ws;
   }
 
-  lastWriteCount = len;
+  SetLastWriteCount(len);
 
   PTRACE(6, "Pulse\tWrite completed");
   return true;
@@ -352,7 +352,7 @@ PBoolean PSoundChannelPulse::Read(void * buf, PINDEX len)
     if (!record_len) pa_stream_drop(s);
   }
 
-  lastReadCount = len;
+  SetLastReadCount(len);
 
   PTRACE(6, "Pulse\tRead completed of " <<len << " bytes");
   return true;

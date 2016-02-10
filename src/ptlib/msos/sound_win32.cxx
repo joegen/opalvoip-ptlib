@@ -1099,7 +1099,7 @@ int PSoundChannelWin32::WaitEvent(ErrorGroup group)
 
 PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   if (hWaveOut == NULL)
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
@@ -1109,6 +1109,7 @@ PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
   bufferMutex.Wait();
 
   DWORD osError = MMSYSERR_NOERROR;
+  PINDEX written = 0;
   while (size > 0) {
     PWaveBuffer & buffer = buffers[bufferIndex];
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
@@ -1136,13 +1137,14 @@ PBoolean PSoundChannelWin32::Write(const void * data, PINDEX size)
       break;
 
     bufferIndex = (bufferIndex+1)%buffers.GetSize();
-    lastWriteCount += count;
+    written += count;
     size -= count;
     ptr += count;
   }
 
   bufferMutex.Signal();
 
+  SetLastWriteCount(written);
   if (size != 0)
     return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
 
@@ -1255,7 +1257,7 @@ PBoolean PSoundChannelWin32::StartRecording()
 
 PBoolean PSoundChannelWin32::Read(void * data, PINDEX size)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (hWaveIn == NULL)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
@@ -1271,13 +1273,12 @@ PBoolean PSoundChannelWin32::Read(void * data, PINDEX size)
 
   PWaveBuffer & buffer = buffers[bufferIndex];
 
-  lastReadCount = buffer.header.dwBytesRecorded - bufferByteOffset;
-  if (lastReadCount > size)
-    lastReadCount = size;
+  if (SetLastReadCount(buffer.header.dwBytesRecorded - bufferByteOffset) > size)
+    SetLastReadCount(size);
 
-  memcpy(data, &buffer[bufferByteOffset], lastReadCount);
+  memcpy(data, &buffer[bufferByteOffset], GetLastReadCount());
 
-  bufferByteOffset += lastReadCount;
+  bufferByteOffset += GetLastReadCount();
   if (bufferByteOffset >= (PINDEX)buffer.header.dwBytesRecorded) {
     DWORD osError;
     if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
@@ -1465,10 +1466,11 @@ PString PSoundChannelWin32::GetErrorText(ErrorGroup group) const
 {
   char str[256];
 
-  if ((lastErrorNumber[group]&PWIN32ErrorFlag) == 0)
+  int err = GetErrorNumber(group);
+  if ((err&PWIN32ErrorFlag) == 0)
     return PChannel::GetErrorText(group);
 
-  DWORD osError = lastErrorNumber[group]&~PWIN32ErrorFlag;
+  DWORD osError = err&~PWIN32ErrorFlag;
   if (activeDirection == Recorder) {
     if (waveInGetErrorText(osError, str, sizeof(str)) != MMSYSERR_NOERROR)
       return PChannel::GetErrorText(group);

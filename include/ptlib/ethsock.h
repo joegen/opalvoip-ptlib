@@ -105,6 +105,13 @@ class PEthSocket : public PSocket
 
   /**@name Overrides from class PChannel */
   //@{
+    /** Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in <code>PFile</code> type channels.
+
+       @return the name of the channel.
+     */
+    virtual PString GetName() const { return m_channelName; }
+
     /**Close the channel, shutting down the link to the data source.
 
        @return
@@ -356,6 +363,7 @@ class PEthSocket : public PSocket
     virtual PBoolean OpenSocket();
     virtual const char * GetProtocolName() const;
 
+    PString  m_channelName;
     bool     m_promiscuous;
     unsigned m_snapLength;
     PString  m_filter;  // Filter expression

@@ -88,7 +88,8 @@ PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
   {
   flush();
   cin >> (char *)buffer;
-  PINDEX buflen =lastReadCount = strlen((char *)buffer);
+  PINDEX buflen = strlen((char *)buffer);
+  SetLastReadCount(buflen);
 
   return buflen < length ? buflen : length;
   }

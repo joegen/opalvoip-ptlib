@@ -86,24 +86,18 @@ PBoolean PSafeObject::SafeReference()
 
 PBoolean PSafeObject::SafeDereference()
 {
-  PBoolean mayBeDeleted = false;
-#if PTRACING
-  unsigned tracedReferenceCount;
-#endif
+  bool mayBeDeleted = false;
 
   m_safetyMutex.Wait();
   if (PAssert(m_safeReferenceCount > 0, PLogicError)) {
     m_safeReferenceCount--;
     mayBeDeleted = m_safeReferenceCount == 0 && !m_safelyBeingRemoved;
   }
-#if PTRACING
-  tracedReferenceCount = m_safeReferenceCount;
-#endif
+  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
+         GetClass() << ' ' << (void *)this << " decremented reference count to " << m_safeReferenceCount);
   m_safetyMutex.Signal();
 
-  PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7,
-         GetClass() << ' ' << (void *)this << " decremented reference count to " << tracedReferenceCount);
-
+  // At this point the object could be deleted in another trhead, do not use it anymore!
   return mayBeDeleted;
 }
 
@@ -421,7 +415,7 @@ void PSafeCollection::SetAutoDeleteObjects()
     return;
 
   m_deleteObjectsTimer = new PTimer();
-  m_deleteObjectsTimer->SetNotifier(PCREATE_NOTIFIER(DeleteObjectsTimeout));
+  m_deleteObjectsTimer->SetNotifier(PCREATE_NOTIFIER(DeleteObjectsTimeout), "SafeDelObj");
   m_deleteObjectsTimer->RunContinuous(1000); // Every second
 #endif
 }

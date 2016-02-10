@@ -825,6 +825,8 @@ ax_pthread_config
 CXXCPP
 PTLIB_EXCEPTIONS
 HAS_EXCEPTIONS
+HAS_THREAD_SANITIZER
+HAS_ADDRESS_SANITIZER
 BISON
 PTLIB_VERSION
 PTLIB_STAGE
@@ -7583,6 +7585,8 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
+         HAS_ADDRESS_SANITIZER=1
+
          CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
          CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=address $LDFLAGS"
@@ -7631,6 +7635,9 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
 
+         HAS_THREAD_SANITIZER=1
+
+         CPPFLAGS="-D__SANITIZE_THREAD__ $CPPFLAGS"
          CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
          CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
          LDFLAGS="-fsanitize=thread $LDFLAGS"

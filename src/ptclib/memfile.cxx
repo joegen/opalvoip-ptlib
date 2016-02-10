@@ -89,7 +89,7 @@ PBoolean PMemoryFile::Read(void * buf, PINDEX len)
     return false;
 
   if ((PINDEX)m_position > m_data.GetSize()) {
-    lastReadCount = 0;
+    SetLastReadCount(0);
     return true;
   }
 
@@ -98,9 +98,7 @@ PBoolean PMemoryFile::Read(void * buf, PINDEX len)
 
   memcpy(buf, m_position + (const BYTE * )m_data, len);
   m_position += len;
-  lastReadCount = len;
-
-  return lastReadCount > 0;
+  return SetLastReadCount(len) > 0;
 }
 
 
@@ -115,7 +113,7 @@ PBoolean PMemoryFile::Write(const void * buf, PINDEX len)
 
   memcpy(ptr + m_position, buf, len);
   m_position += len;
-  lastWriteCount = len;
+  SetLastWriteCount(len);
   return true;
 }
 

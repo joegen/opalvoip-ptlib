@@ -694,21 +694,34 @@ PMonitoredSocketChannel::PMonitoredSocketChannel(const PMonitoredSocketsPtr & so
 }
 
 
+PString PMonitoredSocketChannel::GetName() const
+{
+  PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
+  if (bundle != NULL && bundle->IsOpen())
+    return PSTRSTRM("SocketBundle:" << bundle->GetPort());
+
+  return PString::Empty();
+}
+
+
 PBoolean PMonitoredSocketChannel::IsOpen() const
 {
-  return !m_closing && m_socketBundle != NULL && m_socketBundle->IsOpen();
+  PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
+  return !m_closing && bundle != NULL && bundle->IsOpen();
 }
 
 
 PBoolean PMonitoredSocketChannel::Close()
 {
   m_closing = true;
-  return m_sharedBundle || m_socketBundle == NULL || m_socketBundle->Close();
+  PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
+  return m_sharedBundle || bundle == NULL || bundle->Close();
 }
 
 
 PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 {
+  PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
   if (CheckNotOpen())
     return false;
 
@@ -718,10 +731,10 @@ PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
     param.m_buffer = buffer;
     param.m_length = length;
     param.m_timeout = readTimeout;
-    m_socketBundle->ReadFromBundle(param);
+    bundle->ReadFromBundle(param);
     m_lastReceivedAP.SetAddress(param.m_addr, param.m_port);
     m_lastReceivedInterface = param.m_iface;
-    lastReadCount = param.m_lastCount;
+    SetLastReadCount(param.m_lastCount);
     if (!SetErrorValues(param.m_errorCode, param.m_errorNumber, LastReadError))
       return false;
 
@@ -740,6 +753,7 @@ PBoolean PMonitoredSocketChannel::Read(void * buffer, PINDEX length)
 
 PBoolean PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
 {
+  PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
   if (CheckNotOpen())
     return false;
 
@@ -750,8 +764,8 @@ PBoolean PMonitoredSocketChannel::Write(const void * buffer, PINDEX length)
   param.m_port = m_remoteAP.GetPort();
   param.m_iface = GetInterface();
   param.m_timeout = readTimeout;
-  m_socketBundle->WriteToBundle(param);
-  lastWriteCount = param.m_lastCount;
+  bundle->WriteToBundle(param);
+  SetLastWriteCount(param.m_lastCount);
   return SetErrorValues(param.m_errorCode, param.m_errorNumber, LastWriteError);
 }
 
@@ -793,15 +807,17 @@ PString PMonitoredSocketChannel::GetInterface()
 
 bool PMonitoredSocketChannel::GetLocal(PIPSocket::Address & address, WORD & port, bool usingNAT)
 {
-  return m_socketBundle->GetAddress(GetInterface(), address, port, usingNAT);
+  PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
+  return bundle != NULL && bundle->GetAddress(GetInterface(), address, port, usingNAT);
 }
 
 
 bool PMonitoredSocketChannel::GetLocal(PIPSocket::AddressAndPort & ap, bool usingNAT)
 {
   PIPAddress ip;
-  WORD port;
-  if (!m_socketBundle->GetAddress(GetInterface(), ip, port, usingNAT))
+  WORD port = 0;
+  PMonitoredSocketsPtr bundle = m_socketBundle; // Avoid race condition
+  if (bundle == NULL || !bundle->GetAddress(GetInterface(), ip, port, usingNAT))
     return false;
 
   ap.SetAddress(ip);

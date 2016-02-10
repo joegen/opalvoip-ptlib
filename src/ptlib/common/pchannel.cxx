@@ -142,11 +142,9 @@ PChannel::PChannel()
   : P_DISABLE_MSVC_WARNINGS(4355, std::iostream(new PChannelStreamBuffer(this)))
   , readTimeout(PMaxTimeInterval)
   , writeTimeout(PMaxTimeInterval)
+  , os_handle(-1)
+  , m_abortCommandString(false)
 {
-  os_handle = -1;
-  memset(lastErrorCode, 0, sizeof(lastErrorCode));
-  memset(lastErrorNumber, 0, sizeof(lastErrorNumber));
-  lastReadCount = lastWriteCount = 0;
   Construct();
 }
 
@@ -186,10 +184,9 @@ bool PChannel::CheckNotOpen()
   if (IsOpen())
     return false;
 
-  for (size_t i = 0; i <= NumErrorGroups; ++i) {
-    lastErrorCode[i] = NotOpen;
-    lastErrorNumber[i] = EBADF;
-  }
+  for (int i = 0; i <= NumErrorGroups; ++i)
+    SetErrorValues(NotOpen, EBADF, (ErrorGroup)i);
+
   return true;
 }
 
@@ -205,21 +202,24 @@ PBoolean PChannel::IsOpen() const
   return os_handle != -1;
 }
 
+
 PINDEX PChannel::GetLastReadCount() const
 { 
-  return lastReadCount; 
+  return m_status[LastReadError]->m_lastCount; 
 }
 
-PINDEX PChannel::GetLastWriteCount() const
-{ 
-  return lastWriteCount; 
+
+PINDEX PChannel::SetLastReadCount(PINDEX count)
+{
+  return m_status[LastReadError]->m_lastCount = count;
 }
+
 
 int PChannel::ReadChar()
 {
   BYTE c;
   PBoolean retVal = Read(&c, 1);
-  return (retVal && lastReadCount == 1) ? c : -1;
+  return (retVal && GetLastReadCount() == 1) ? c : -1;
 }
 
 
@@ -241,11 +241,11 @@ PBoolean PChannel::ReadBlock(void * buf, PINDEX len)
   PINDEX numRead = 0;
 
   while (numRead < len && Read(ptr+numRead, len - numRead))
-    numRead += lastReadCount;
+    numRead += GetLastReadCount();
 
-  lastReadCount = numRead;
+  SetLastReadCount(numRead);
 
-  return lastReadCount == len;
+  return numRead == len;
 }
 
 
@@ -258,7 +258,7 @@ PString PChannel::ReadString(PINDEX len)
       char chunk[1000];
       if (!Read(chunk, sizeof(chunk)))
         break;
-      str += PString(chunk, lastReadCount);
+      str += PString(chunk, GetLastReadCount());
     }
   }
   else {
@@ -270,18 +270,30 @@ PString PChannel::ReadString(PINDEX len)
 }
 
 
+PINDEX PChannel::GetLastWriteCount() const
+{ 
+  return m_status[LastWriteError]->m_lastCount; 
+}
+
+
+PINDEX PChannel::SetLastWriteCount(PINDEX count)
+{
+  return m_status[LastWriteError]->m_lastCount = count;
+}
+
+
 PBoolean PChannel::WriteString(const PString & str)
 {
   PINDEX len = str.GetLength();
   PINDEX written = 0;
   while (written < len) {
     if (!Write((const char *)str + written, len - written)) {
-      lastWriteCount += written;
+      SetLastWriteCount(GetLastWriteCount() + written);
       return false;
     }
-    written += lastWriteCount;
+    written += GetLastWriteCount();
   }
-  lastWriteCount = written;
+  SetLastWriteCount(written);
   return true;
 }
 
@@ -433,14 +445,14 @@ PBoolean PChannel::ReceiveCommandString(int nextChar,
 
 PBoolean PChannel::SendCommandString(const PString & command)
 {
-  abortCommandString = false;
+  m_abortCommandString = false;
 
   int nextChar;
   PINDEX sendPosition = 0;
   PTimeInterval timeout;
   SetWriteTimeout(10000);
 
-  while (!abortCommandString) { // not aborted
+  while (!m_abortCommandString) { // not aborted
     nextChar = GetNextChar(command, sendPosition, &timeout);
     switch (nextChar) {
       default :
@@ -463,13 +475,13 @@ PBoolean PChannel::SendCommandString(const PString & command)
         if (GetNextChar(command, receivePosition) < 0) {
           SetReadTimeout(timeout);
           while (ReadChar() >= 0)
-            if (abortCommandString) // aborted
+            if (m_abortCommandString) // aborted
               return false;
         }
         else {
           receivePosition = sendPosition;
           do {
-            if (abortCommandString) // aborted
+            if (m_abortCommandString) // aborted
               return false;
             if ((nextChar = ReadCharWithTimeout(timeout)) < 0)
               return false;
@@ -513,16 +525,28 @@ PChannel * PChannel::GetBaseWriteChannel() const
 }
 
 
+PChannel::Errors PChannel::GetErrorCode(ErrorGroup group) const
+{
+  return m_status[group]->m_lastErrorCode;
+}
+
+
+int PChannel::GetErrorNumber(ErrorGroup group) const
+{
+  return m_status[group]->m_lastErrorNumber;
+}
+
+
 PString PChannel::GetErrorText(ErrorGroup group) const
 {
-  return GetErrorText(lastErrorCode[group], lastErrorNumber[group]);
+  return GetErrorText(m_status[group]->m_lastErrorCode, m_status[group]->m_lastErrorNumber);
 }
 
 
 PBoolean PChannel::SetErrorValues(Errors errorCode, int errorNum, ErrorGroup group)
 {
-  lastErrorCode[NumErrorGroups] = lastErrorCode[group] = errorCode;
-  lastErrorNumber[NumErrorGroups] = lastErrorNumber[group] = errorNum;
+  m_status[NumErrorGroups]->m_lastErrorCode = m_status[group]->m_lastErrorCode = errorCode;
+  m_status[NumErrorGroups]->m_lastErrorNumber = m_status[group]->m_lastErrorNumber = errorNum;
   return errorCode == NoError;
 }
 
@@ -576,21 +600,20 @@ void PChannel::OnWriteComplete(AsyncContext & context)
 
 PNullChannel::PNullChannel()
 {
-  channelName = "null";
   os_handle = 0;
 }
 
 
 PBoolean PNullChannel::Read(void *, PINDEX)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
   return false;
 }
 
 
 PBoolean PNullChannel::Write(const void *, PINDEX length)
 {
-  lastWriteCount = length;
+  SetLastWriteCount(length);
   return true;
 }
 
@@ -716,7 +739,7 @@ PBoolean PIndirectChannel::Read(void * buf, PINDEX len)
   SetErrorValues(readChannel->GetErrorCode(LastReadError),
                  readChannel->GetErrorNumber(LastReadError),
                  LastReadError);
-  lastReadCount = readChannel->GetLastReadCount();
+  SetLastReadCount(readChannel->GetLastReadCount());
 
   return returnValue;
 }
@@ -737,7 +760,7 @@ int PIndirectChannel::ReadChar()
   SetErrorValues(readChannel->GetErrorCode(LastReadError),
                  readChannel->GetErrorNumber(LastReadError),
                  LastReadError);
-  lastReadCount = readChannel->GetLastReadCount();
+  SetLastReadCount(readChannel->GetLastReadCount());
 
   return returnValue;
 }
@@ -761,7 +784,7 @@ PBoolean PIndirectChannel::Write(const void * buf, PINDEX len)
                  writeChannel->GetErrorNumber(LastWriteError),
                  LastWriteError);
 
-  lastWriteCount = writeChannel->GetLastWriteCount();
+  SetLastWriteCount(writeChannel->GetLastWriteCount());
 
   return returnValue;
 }
@@ -996,11 +1019,11 @@ PBoolean PFile::Read(void * buffer, PINDEX amount)
     return false;
 
 #ifdef WOT_NO_FILESYSTEM
-  lastReadCount = 0;
+  return false;
 #else
-  lastReadCount = _read(GetOSHandleAsInt(), buffer, amount);
+  int result = _read(GetOSHandleAsInt(), buffer, amount);
+  return ConvertOSError(result, LastReadError) && SetLastReadCount(result) > 0;
 #endif
-  return ConvertOSError(lastReadCount, LastReadError) && lastReadCount > 0;
 }
 
 
@@ -1011,11 +1034,11 @@ PBoolean PFile::Write(const void * buffer, PINDEX amount)
 
   flush();
 #ifdef WOT_NO_FILESYSTEM
-  lastWriteCount = amount;
+  return false;
 #else
-  lastWriteCount = _write(GetOSHandleAsInt(), buffer, amount);
+  int result = _write(GetOSHandleAsInt(), buffer, amount);
+  return ConvertOSError(result, LastWriteError) && SetLastWriteCount(result) >= amount;
 #endif
-  return ConvertOSError(lastWriteCount, LastWriteError) && lastWriteCount >= amount;
 }
 
 

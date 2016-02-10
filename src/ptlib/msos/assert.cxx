@@ -435,7 +435,7 @@ bool PAssertFunc(const char * msg)
   if (PProcess::Current().IsGUIProcess()) {
     PVarString msg = str;
     PVarString name = PProcess::Current().GetName();
-    AssertAction(MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL));
+    AssertAction(MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_APPLMODAL));
   }
   else {
     do {

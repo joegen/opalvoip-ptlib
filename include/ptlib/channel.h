@@ -166,7 +166,7 @@ class PChannel : public PObject, public std::iostream
 
        @return the name of the channel.
      */
-    virtual PString GetName() const { return channelName; }
+    virtual PString GetName() const = 0;
 
     /** Get the integer operating system handle for the channel.
 
@@ -331,7 +331,8 @@ class PChannel : public PObject, public std::iostream
        @return
        the number of bytes read.
      */
-    PINDEX GetLastReadCount() const;
+    virtual PINDEX GetLastReadCount() const;
+    virtual PINDEX SetLastReadCount(PINDEX count);
 
     /** Read a single character from the channel. If one was not available
        within the read timeout period, or an I/O error occurred, then the
@@ -441,6 +442,7 @@ class PChannel : public PObject, public std::iostream
        the number of bytes written.
      */
     virtual PINDEX GetLastWriteCount() const;
+    virtual PINDEX SetLastWriteCount(PINDEX count);
 
     /** Write a single character to the channel. This function simply uses the
        Write() function so all comments on that function also apply.
@@ -713,23 +715,24 @@ class PChannel : public PObject, public std::iostream
     virtual int os_errno() const;
 
     // Member variables
-    /// The operating system file handle return by standard open() function.
-    P_INT_PTR os_handle;
+    PTimeInterval readTimeout;  ///< Timeout for read operations.
+    PTimeInterval writeTimeout; ///< Timeout for write operations.
+ 
+    P_INT_PTR os_handle; ///< The operating system file handle return by standard open() function.
 
-    /// The platform independant error code.
-    Errors lastErrorCode[NumErrorGroups+1];
-    /// The operating system error number (eg as returned by errno).
-    int lastErrorNumber[NumErrorGroups+1];
-    /// Number of byte last read by the Read() function.
-    PINDEX lastReadCount;
-    /// Number of byte last written by the Write() function.
-    PINDEX lastWriteCount;
-    /// Timeout for read operations.
-    PTimeInterval readTimeout;
-    /// Timeout for write operations.
-    PTimeInterval writeTimeout;
-    /// Name of channel
-    PString channelName;
+    struct Status
+    {
+      PINDEX m_lastCount;        ///< Last read/write count
+      Errors m_lastErrorCode;    ///< The platform independant error code. 
+      int    m_lastErrorNumber;  ///< The operating system error number (eg as returned by errno).
+
+      Status()
+        : m_lastCount(0)
+        , m_lastErrorCode(NoError)
+        , m_lastErrorNumber(0)
+      { }
+    };
+    PThreadLocalStorage<Status> m_status[NumErrorGroups+1];
 
   private:
     // New functions for class
@@ -737,7 +740,7 @@ class PChannel : public PObject, public std::iostream
       // Complete platform dependent construction.
 
     // Member variables
-    PBoolean abortCommandString;
+    bool m_abortCommandString;
       // Flag to abort the transmission of a command in SendCommandString().
 
 
@@ -759,8 +762,9 @@ class PNullChannel : public PChannel
   public:
     PNullChannel();
 
-    PBoolean Read(void *, PINDEX);
-    PBoolean Write(const void *, PINDEX);
+    virtual PString GetName() const { return "null"; }
+    virtual PBoolean Read(void *, PINDEX);
+    virtual PBoolean Write(const void *, PINDEX);
 };
 
 

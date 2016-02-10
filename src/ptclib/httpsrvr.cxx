@@ -627,8 +627,7 @@ PBoolean PHTTPServer::StartResponse(StatusCode code,
 }
 
 
-void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
-                     const PHTTPConnectionInfo & connectInfo)
+void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info, const PHTTPConnectionInfo & connectInfo) const
 {
   if (!info.Contains(DateTag))
     info.SetAt(DateTag, PTime().AsString(PTime::RFC1123, PTime::GMT));
@@ -1084,7 +1083,7 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
         break;
 
       case ConnectionClose :
-        lastReadCount = 0;
+        SetLastReadCount(0);
         return false;
 
       default:
@@ -1442,35 +1441,37 @@ PBoolean PHTTPConnectionInfo::IsCompatible(int major, int minor) const
 
 PHTTPResource::PHTTPResource(const PURL & url)
   : baseURL(url)
+  , authority(NULL)
+  , hitCount(0)
 {
-  authority = NULL;
-  hitCount = 0;
 }
 
 
 PHTTPResource::PHTTPResource(const PURL & url, const PHTTPAuthority & auth)
   : baseURL(url)
+  , authority(auth.CloneAs<PHTTPAuthority>())
+  , hitCount(0)
 {
-  authority = (PHTTPAuthority *)auth.Clone();
-  hitCount = 0;
 }
 
 
 PHTTPResource::PHTTPResource(const PURL & url, const PString & type)
-  : baseURL(url), contentType(type)
+  : baseURL(url)
+  , contentType(type)
+  , authority(NULL)
+  , hitCount(0)
 {
-  authority = NULL;
-  hitCount = 0;
 }
 
 
 PHTTPResource::PHTTPResource(const PURL & url,
                              const PString & type,
                              const PHTTPAuthority & auth)
-  : baseURL(url), contentType(type)
+  : baseURL(url)
+  , contentType(type)
+  , authority(auth.CloneAs<PHTTPAuthority>())
+  , hitCount(0)
 {
-  authority = (PHTTPAuthority *)auth.Clone();
-  hitCount = 0;
 }
 
 

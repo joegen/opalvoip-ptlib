@@ -131,11 +131,11 @@ PBoolean PEthSocket::Connect(const PString & newName)
 {
   Close();
 
-  channelName = newName.Left(newName.Find('\t'));
+  m_channelName = newName.Left(newName.Find('\t'));
 
   char errbuf[PCAP_ERRBUF_SIZE];
-  if ((m_internal->m_pcap = pcap_open_live(channelName, m_snapLength, m_promiscuous, GetReadTimeout().GetInterval(), errbuf)) == NULL) {
-    PTRACE(1, "Could not open interface \"" << channelName << "\", error: " << errbuf);
+  if ((m_internal->m_pcap = pcap_open_live(m_channelName, m_snapLength, m_promiscuous, GetReadTimeout().GetInterval(), errbuf)) == NULL) {
+    PTRACE(1, "Could not open interface \"" << m_channelName << "\", error: " << errbuf);
     return false;
   }
 
@@ -209,7 +209,7 @@ PBoolean PEthSocket::Read(void * data, PINDEX length)
   switch (err) {
     case 1 :
       memcpy(data, pkt_data, std::min(length, (PINDEX)header->caplen));
-      lastReadCount = header->caplen;
+      SetLastReadCount(header->caplen);
       m_lastPacketTime = PTime(header->ts.tv_sec, header->ts.tv_usec);
       return true;
 
@@ -236,7 +236,7 @@ PBoolean PEthSocket::Write(const void * data, PINDEX length)
     return false;
   }
 
-  lastWriteCount = length;
+  SetLastWriteCount(length);
   return true;
 }
 

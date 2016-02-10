@@ -268,7 +268,7 @@ PBoolean PSoundChannelSunAudio::Write(const void * buffer, PINDEX length)
       PTRACE(6, "SunAudio\tWrite completed short - " << total << " vs " << length << ". Write more data");
   }
 
-  lastWriteCount = total;
+  SetLastWriteCount(total);
 
   // Reset all the errors.
   return ConvertOSError(0, LastWriteError);
@@ -355,6 +355,7 @@ PBoolean PSoundChannelSunAudio::Read(void * buffer, PINDEX length)
 
     while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned char *)buffer) + total), length-total))) {
       if ((GetErrorCode() != Interrupted) || (os_handle < 0)) {
+        SetLastReadCount(total);
         PTRACE(6, "SunAudio\tRead failed");
         return false;
       }
@@ -366,13 +367,8 @@ PBoolean PSoundChannelSunAudio::Read(void * buffer, PINDEX length)
       PTRACE(6, "SunAudio\tRead completed short - " << total << " vs " << length << ". Reading more data");
   }
 
-  lastReadCount = total;
-
-  if (lastReadCount != length)
-    PTRACE(6, "SunAudio\tRead completed short - " << lastReadCount << " vs " << length);
-  else
-    PTRACE(6, "SunAudio\tRead completed");
- 
+  SetLastReadCount(total);
+  PTRACE(6, "SunAudio\tRead completed");
   return true;
 }
 

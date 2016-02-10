@@ -44,16 +44,6 @@
 #include "../common/pchannel.cxx"
 
 
-#ifdef P_NEED_IOSTREAM_MUTEX
-static PMutex iostreamMutex;
-#define IOSTREAM_MUTEX_WAIT()   iostreamMutex.Wait();
-#define IOSTREAM_MUTEX_SIGNAL() iostreamMutex.Signal();
-#else
-#define IOSTREAM_MUTEX_WAIT()
-#define IOSTREAM_MUTEX_SIGNAL()
-#endif
-
-
 void PChannel::Construct()
 {
   os_handle = -1;
@@ -158,7 +148,7 @@ FILE * PChannel::FDOpen(const char * mode)
 
 PBoolean PChannel::Read(void * buf, PINDEX len)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
@@ -168,7 +158,7 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
       int result = ::read(os_handle, buf, len);
     );
     if (result >= 0)
-      return ConvertOSError(lastReadCount = result, LastReadError);
+      return ConvertOSError(SetLastReadCount(result), LastReadError);
 
     switch (errno) {
       case EINTR :
@@ -191,21 +181,20 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
 
 PBoolean PChannel::Write(const void * buf, PINDEX len)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   // if the os_handle isn't open, no can do
   if (os_handle < 0)
     return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
   // flush the buffer before doing a write
-  IOSTREAM_MUTEX_WAIT();
   flush();
-  IOSTREAM_MUTEX_SIGNAL();
 
+  PINDEX written = 0;
   while (len > 0) {
 
     int result;
-    while ((result = ::write(os_handle, ((char *)buf)+lastWriteCount, len)) < 0) {
+    while ((result = ::write(os_handle, ((char *)buf)+written, len)) < 0) {
       switch (errno) {
         case EINTR :
           break;
@@ -223,12 +212,12 @@ PBoolean PChannel::Write(const void * buf, PINDEX len)
       }
     }
 
-    lastWriteCount += result;
+    written += result;
     len -= result;
   }
 
   // Reset all the errors.
-  return ConvertOSError(0, LastWriteError);
+  return ConvertOSError(0, LastWriteError) && SetLastWriteCount(written) > 0;
 }
 
 
@@ -343,11 +332,9 @@ int PChannel::PXClose()
   PTRACE(6, "PTLib\tClosing channel, fd=" << os_handle);
 
   // make sure we don't have any problems
-  IOSTREAM_MUTEX_WAIT();
   flush();
   int handle = os_handle;
   os_handle = -1;
-  IOSTREAM_MUTEX_SIGNAL();
 
   AbortIO(px_readThread, px_threadMutex);
   AbortIO(px_writeThread, px_threadMutex);

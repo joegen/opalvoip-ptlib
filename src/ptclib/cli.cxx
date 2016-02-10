@@ -100,7 +100,7 @@ PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
   if (!PIndirectChannel::Write(str, len))
     return false;
 
-  lastWriteCount = written + GetLastWriteCount();
+  SetLastWriteCount(written + GetLastWriteCount());
   return true;
 }
 
@@ -1899,7 +1899,7 @@ PCLICurses::Window::Window(PCLICurses & owner, PCLICurses::Borders border)
 
 PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   unsigned row, col;
   GetCursor(row, col);
@@ -1908,6 +1908,7 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
   GetSize(rows, cols, false);
 
   const char * ptr = (const char *)data;
+  PINDEX written = 0;
   while (length-- > 0) {
     switch (*ptr) {
       case '\x7f' :
@@ -1949,10 +1950,11 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
       --row;
     }
 
-    ++lastWriteCount;
+    ++written;
     ++ptr;
   }
 
+  SetLastWriteCount(written);
   SetCursor(row, col);
 
   Refresh();

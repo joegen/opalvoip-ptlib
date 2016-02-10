@@ -1994,15 +1994,11 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
 
   if (GetVar(condition.Left(location).Trim()) == GetVar(condition.Mid(location + 2).Trim())) {
     PTRACE(4, "VXML\tCondition matched \"" << condition << '"');
-  }
-  else {
-    PTRACE(4, "VXMLSess\t\tCondition \"" << condition << "\"did not match");
-    if (element.HasSubObjects())
-      // Step to last child element (really last element is NULL?)
-      m_currentNode = element.GetElement(element.GetSize() - 1);
+    return true;
   }
 
-  return true;
+  PTRACE(4, "VXML\t\tCondition \"" << condition << "\"did not match");
+  return false;
 }
 
 
@@ -2350,7 +2346,7 @@ PVXMLGrammar::PVXMLGrammar(PVXMLSession & session, PXMLElement & field)
   , m_field(field)
   , m_state(Idle)
 {
-  m_timer.SetNotifier(PCREATE_NOTIFIER(OnTimeout));
+  m_timer.SetNotifier(PCREATE_NOTIFIER(OnTimeout), "VXMLGrammar");
   SetSessionTimeout();
 }
 
@@ -2636,10 +2632,10 @@ PBoolean PVXMLChannel::Write(const void * buf, PINDEX len)
 
   // write the data and do the correct delay
   if (WriteFrame(buf, len))
-    m_totalData += lastWriteCount;
+    m_totalData += GetLastWriteCount();
   else {
     EndRecording(true);
-    lastWriteCount = len;
+    SetLastWriteCount(len);
     Wait(len, nextWriteTick);
   }
 
@@ -2692,7 +2688,7 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
 
     // if the read succeeds, we are done
     if (ReadFrame(buffer, amount)) {
-      m_totalData += lastReadCount;
+      m_totalData += GetLastReadCount();
       return true; // Already done real time delay
     }
 
@@ -2741,8 +2737,8 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
   }
 
 double_break:
-  lastReadCount = CreateSilenceFrame(buffer, amount);
-  Wait(lastReadCount, nextReadTick);
+  SetLastReadCount(CreateSilenceFrame(buffer, amount));
+  Wait(GetLastReadCount(), nextReadTick);
   return true;
 }
 
@@ -2955,7 +2951,7 @@ PBoolean PVXMLChannelG7231::ReadFrame(void * buffer, PINDEX /*amount*/)
   if (len != 1) {
     if (!PIndirectChannel::Read(1+(BYTE *)buffer, len-1))
       return false;
-    lastReadCount++;
+    SetLastReadCount(GetLastReadCount()+1);
   }
 
   return true;

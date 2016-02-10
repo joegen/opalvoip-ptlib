@@ -41,6 +41,21 @@
 #include <ptlib/atomic.h>
 #include <ptlib/semaphor.h>
 
+
+class PMutexExcessiveLockInfo
+{
+  protected:
+    const char * m_fileOrName;
+    unsigned     m_fileLine;
+    unsigned     m_excessiveLockTimeout;
+    mutable bool m_excessiveLockActive;
+
+    PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout);
+    PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
+    void PrintOn(ostream &strm) const;
+};
+
+
 /**This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
    To prevent this the PMutex is used in the following manner:
@@ -62,7 +77,7 @@
     <code>Signal()</code> function, releasing the second thread.
  */
 
-class PTimedMutex : public PSync
+class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
 {
     PCLASSINFO(PTimedMutex, PSync)
   public:
@@ -73,8 +88,9 @@ class PTimedMutex : public PSync
        The name/line parameters are used for deadlock detection debugging.
      */
     explicit PTimedMutex(
-        const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
-        unsigned line = 0          ///< Line number, if non zero, name is assumed to be a filename
+      const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
+      unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
+      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero is default.
     );
 
     /**Copy constructor is allowed but does not copy, allocating a new mutex.
@@ -119,9 +135,6 @@ class PTimedMutex : public PSync
     PThreadIdentifier       m_lastLockerId;
     PUniqueThreadIdentifier m_lastUniqueId;
     unsigned                m_lockCount;
-    bool                    m_excessiveLockTime;
-    const char *            m_fileOrName;
-    unsigned                m_line;
 
     void ExcessiveLockWait();
     void CommonSignal();
@@ -137,8 +150,15 @@ class PTimedMutex : public PSync
 typedef PTimedMutex PMutex;
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
-#define PDECLARE_MUTEX(var) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_MUTEX2(var, name) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name) { } } var
+
+#define PDECLARE_MUTEX_ARG_1(var)                struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
+#define PDECLARE_MUTEX_ARG_2(var, name)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name            ) { } } var
+#define PDECLARE_MUTEX_ARG_3(var, name, timeout) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name, 0, timeout) { } } var
+
+#define PDECLARE_MUTEX_PART1(narg, args) PDECLARE_MUTEX_PART2(narg, args)
+#define PDECLARE_MUTEX_PART2(narg, args) PDECLARE_MUTEX_ARG_##narg args
+
+#define PDECLARE_MUTEX(...) PDECLARE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 
 /** This class implements critical section mutexes using the most efficient

@@ -312,7 +312,7 @@ void PThread::PX_ThreadBegin()
   PProcess::Current().OnThreadStart(*this);
 
   if (PX_priority != NormalPriority)
-    SetPriority(PX_priority);
+    SetPriority((Priority)PX_priority.load());
 }
 
 
@@ -1215,16 +1215,14 @@ void PSemaphore::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PTimedMutex::PTimedMutex(const char * name, unsigned line)
-  : m_fileOrName(name)
-  , m_line(line)
+PTimedMutex::PTimedMutex(const char * name, unsigned line, unsigned timeout)
+  : PMutexExcessiveLockInfo(name, line, timeout)
 {
   Construct();
 }
 
 PTimedMutex::PTimedMutex(const PTimedMutex & other)
-  : m_fileOrName(other.m_fileOrName)
-  , m_line(other.m_line)
+  : PMutexExcessiveLockInfo(other)
 {
   Construct();
 }
@@ -1260,19 +1258,20 @@ void PTimedMutex::Construct()
   m_lastLockerId = m_lockerId = PNullThreadIdentifier;
   m_lastUniqueId = 0;
   m_lockCount = 0;
-  m_excessiveLockTime = false;
   InitialiseRecursiveMutex(&m_mutex);
 }
 
 
 PTimedMutex::~PTimedMutex()
 {
-  int result = pthread_mutex_destroy(&m_mutex);
-  if (result == EBUSY) {
-    // In case it is us
-    while (pthread_mutex_unlock(&m_mutex) == 0)
+  int result;
+  if (m_lockerId == pthread_self()) {
+    // Unlock first
+    while (m_lockCount-- > 0 && pthread_mutex_unlock(&m_mutex) == 0)
       ;
-
+    result = pthread_mutex_destroy(&m_mutex);
+  }
+  else {
     // Wait a bit for someone else to unlock it
     for (PINDEX i = 0; i < 100; ++i) {
       if ((result = pthread_mutex_destroy(&m_mutex)) != EBUSY)
@@ -1299,8 +1298,8 @@ void PTimedMutex::Wait()
   struct timeval now;
   gettimeofday(&now, NULL);
   struct timespec absTime;
-  absTime.tv_sec = now.tv_sec + ExcessiveLockWaitTime/1000;
-  absTime.tv_nsec = now.tv_usec*1000 + (ExcessiveLockWaitTime%1000)*1000000;
+  absTime.tv_sec = now.tv_sec + m_excessiveLockTimeout/1000;
+  absTime.tv_nsec = now.tv_usec*1000 + (m_excessiveLockTimeout%1000)*1000000;
   if (absTime.tv_nsec >= 1000000000) {
     absTime.tv_nsec -= 1000000000;
     ++absTime.tv_sec;
@@ -1314,7 +1313,9 @@ void PTimedMutex::Wait()
   else {
     ExcessiveLockWait();
     PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+#if PTRACING
     PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in mutex " << *this << PTrace::End;
+#endif
   }
   PPROFILE_POST_SYSTEM();
 #else

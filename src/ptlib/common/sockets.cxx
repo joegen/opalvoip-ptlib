@@ -1012,16 +1012,17 @@ PBoolean PSocket::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group)
   if (PChannel::ConvertOSError(libcReturnValue, group))
     return true;
 
-  switch (lastErrorNumber[group]) {
+  int err = GetErrorNumber(group);
+  switch (err) {
     case ECONNRESET :
     case ECONNREFUSED :
     case EHOSTUNREACH :
     case ENETUNREACH :
-      SetErrorValues(Unavailable, lastErrorNumber[group], group);
+      SetErrorValues(Unavailable, err, group);
       break;
 
     case EMSGSIZE :
-      return SetErrorValues(BufferTooSmall, lastErrorNumber[group], group);
+      return SetErrorValues(BufferTooSmall, err, group);
   }
 
   return false;
@@ -2311,11 +2312,12 @@ PBoolean PTCPSocket::Write(const void * buf, PINDEX len)
     Slice slice(((char *)buf)+writeCount, len);
     if (!os_vwrite(&slice, 1, 0, NULL, 0))
       return false;
-    writeCount += lastWriteCount;
-    len -= lastWriteCount;
+    PINDEX count = GetLastWriteCount();
+    writeCount += count;
+    len -= count;
   } while (len > 0);
 
-  lastWriteCount = writeCount;
+  SetLastWriteCount(writeCount);
   return true;
 }
 
@@ -2362,11 +2364,11 @@ PBoolean PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
   int count = ::send(os_handle, (const char *)buf, len, MSG_OOB);
 #endif
   if (count < 0) {
-    lastWriteCount = 0;
+    SetLastWriteCount(0);
     return ConvertOSError(count, LastWriteError);
   }
   else {
-    lastWriteCount = count;
+    SetLastWriteCount(count);
     return true;
   }
 }
@@ -2418,7 +2420,7 @@ bool PIPDatagramSocket::ReadFrom(Slice * slices, size_t sliceCount, PIPSocketAdd
 
 bool PIPDatagramSocket::InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort)
 {
-  lastReadCount = 0;
+  SetLastReadCount(0);
 
   if (CheckNotOpen())
     return false;
@@ -2465,7 +2467,7 @@ bool PIPDatagramSocket::WriteTo(const Slice * slices, size_t sliceCount, const P
 
 bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount, const PIPSocketAddressAndPort & ipAndPort)
 {
-  lastWriteCount = 0;
+  SetLastWriteCount(0);
 
   const PIPSocket::Address & addr = ipAndPort.GetAddress();
   WORD port = ipAndPort.GetPort();
