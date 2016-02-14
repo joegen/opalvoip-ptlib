@@ -2377,11 +2377,11 @@ void PVXMLGrammar::Start()
 
 void PVXMLGrammar::OnTimeout(PTimer &, P_INT_PTR)
 {
-  PTRACE(3, "VXML\tTimeout for grammar " << *this);
+	PTRACE(3, "VXML\tTimeout for grammar " << *this );
   m_mutex.Wait();
 
   if (m_state == Started) {
-    m_state = NoInput;
+    m_state = IsFilled() ? Filled : NoInput;
     m_session.Trigger();
   }
 
@@ -2484,20 +2484,31 @@ void PVXMLDigitsGrammar::OnUserInput(const char ch)
   if (m_state != Started)
     return;
 
-  PINDEX len = m_value.GetLength();
-
   // is this char the terminator?
   if (m_terminators.Find(ch) != P_MAX_INDEX) {
-    m_state = (len >= m_minDigits && len <= m_maxDigits) ? Filled : NoMatch;
+    m_state = IsFilled() ? Filled : NoMatch;
     return;
   }
 
   // Otherwise add to the grammar and check to see if we're done
+  PINDEX len = m_value.GetLength();
+
   m_value += ch;
   if (++len >= m_maxDigits)
     m_state = PVXMLGrammar::Filled;   // the grammar is filled!
 }
 
+bool PVXMLDigitsGrammar::IsFilled()
+{
+	PINDEX len = m_value.GetLength();
+	bool filled = len >= m_minDigits && len <= m_maxDigits;
+
+	PTRACE(4, "VXML\t Grammar " << *this << 
+		(filled ? " has been FILLED" : " has NOT yet been filled" ) 
+		<< ". Collected value=" << m_value << ", length: " << len << ", while min=" << m_minDigits << " max=" << m_maxDigits);
+
+	return filled;
+}
 
 //////////////////////////////////////////////////////////////////
 
