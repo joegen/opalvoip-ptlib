@@ -87,6 +87,8 @@ class PVXMLGrammar : public PObject
   protected:
     PDECLARE_NOTIFIER(PTimer, PVXMLGrammar, OnTimeout);
 
+	virtual bool IsFilled() { return false; }
+
     PVXMLSession & m_session;
     PXMLElement  & m_field;
     PString        m_value;
@@ -124,6 +126,8 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
     );
 
     virtual void OnUserInput(const char ch);
+
+	virtual bool IsFilled();
 
   protected:
     PINDEX  m_minDigits;
