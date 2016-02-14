@@ -2467,11 +2467,13 @@ bool PIPDatagramSocket::InternalWriteTo(const Slice * slices, size_t sliceCount,
 {
   lastWriteCount = 0;
 
-  const PIPSocket::Address & addr = ipAndPort.GetAddress();
-  WORD port = ipAndPort.GetPort();
-
   if (CheckNotOpen())
     return false;
+
+  const PIPSocket::Address & addr = ipAndPort.GetAddress();
+  WORD port = ipAndPort.GetPort();
+  if (!addr.IsValid() || port == 0)
+    return SetErrorValues(BadParameter, EINVAL, LastWriteError);
 
   PBoolean broadcast = addr.IsAny() || addr.IsBroadcast();
   if (broadcast) {
