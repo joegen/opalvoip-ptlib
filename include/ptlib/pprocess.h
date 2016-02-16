@@ -543,6 +543,20 @@ class PProcess : public PThread
        String for library version.
      */
     static PString GetLibVersion();
+
+    /// Version information
+    struct VersionInfo
+    {
+      unsigned     m_major;
+      unsigned     m_minor;
+      CodeStatus   m_status;
+      unsigned     m_build;
+      unsigned     m_svn;
+      const char * m_git;
+
+      /// Build standard format string from version information
+      PString AsString(bool full = true);
+    };
   //@}
 
     /**Internal initialisation function called directly from
