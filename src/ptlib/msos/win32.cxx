@@ -1734,9 +1734,8 @@ PBoolean PSemaphore::Wait(const PTimeInterval & timeout)
 
 void PSemaphore::Signal()
 {
-  if (!ReleaseSemaphore(m_handle, 1, NULL))
-    PAssertOS(::GetLastError() != ERROR_INVALID_HANDLE);
-  SetLastError(ERROR_SUCCESS);
+  if (PAssertOS(ReleaseSemaphore(m_handle, 1, NULL) || ::GetLastError() == ERROR_INVALID_HANDLE))
+    SetLastError(ERROR_SUCCESS);
 }
 
 

@@ -2448,38 +2448,50 @@ bool PProcess::IsMultipleInstance() const
 }
 
 
-static const char * const GetVersionStatus(PProcess::CodeStatus status)
-{
-  switch (status) {
-    case PProcess::AlphaCode :
-      return "alpha";
-    case PProcess::BetaCode :
-      return "beta";
-    default:
-      return ".";
-  }
-}
-
-
 PString PProcess::GetVersion(PBoolean full) const
 {
-  return psprintf(full ? "%u.%u%s%u" : "%u.%u",
-                  majorVersion, minorVersion, GetVersionStatus(status), buildNumber);
+  VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER };
+  return ver.AsString(full);
 }
 
 
 PString PProcess::GetLibVersion()
 {
-  PStringStream version;
-  version << MAJOR_VERSION << '.' << MINOR_VERSION << GetVersionStatus(BUILD_TYPE) << " (";
-  static char const GitCommit[] = GIT_COMMIT;
-  if (GitCommit[0] != '\0')
-    version << "git:" << GitCommit;
-  else
-    version << "svn:" << SVN_REVISION;
-  version << ')';
-    
-  return version;
+  VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER, SVN_REVISION, GIT_COMMIT };
+  return ver.AsString();
+}
+
+
+PString PProcess::VersionInfo::AsString(bool full)
+{
+  PStringStream str;
+  str << m_major << '.' << m_minor;
+
+  if (full) {
+    switch (m_status) {
+      case PProcess::AlphaCode :
+        str << "alpha";
+        break;
+
+      case PProcess::BetaCode :
+        str << "beta";
+        break;
+
+      default:
+        if (m_build != UINT_MAX)
+          str << '.';
+    }
+
+    if (m_build != UINT_MAX)
+      str << m_build;
+
+    if (m_git != NULL && *m_git != '\0')
+      str << " (git:" << m_git << ')';
+    else if (m_svn > 0)
+      str << " (svn:" << m_svn << ')';
+  }
+
+  return str;
 }
 
 
