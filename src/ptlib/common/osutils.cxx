@@ -2471,17 +2471,24 @@ PString PProcess::VersionInfo::AsString(bool full)
     switch (m_status) {
       case PProcess::AlphaCode :
         str << "alpha";
+        break;
+
       case PProcess::BetaCode :
         str << "beta";
+        break;
+
       default:
-        str << '.';
+        if (m_build != UINT_MAX)
+          str << '.';
     }
-    str << " (";
+
+    if (m_build != UINT_MAX)
+      str << m_build;
+
     if (m_git != NULL && *m_git != '\0')
-      str << "git:" << m_git;
+      str << " (git:" << m_git << ')';
     else if (m_svn > 0)
-      str << "svn:" << m_svn;
-    str << ')';
+      str << " (svn:" << m_svn << ')';
   }
 
   return str;
