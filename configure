@@ -6106,7 +6106,7 @@ fi
 
 case "$target_os" in
    darwin* | iPhone* )
-      SHARED_LDFLAGS="-dynamiclib"
+      SHARED_LDFLAGS='-dynamiclib -Wl,-install_name,@executable_path/$(LIB_SONAME)'
       SHAREDLIBEXT="dylib"
       DEBUGINFOEXT="dSYM"
       AR="libtool"
