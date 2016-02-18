@@ -717,6 +717,14 @@ MY_COMPILE_IFELSE(
    [CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"]
 )
 
+MY_COMPILE_IFELSE(
+   [Disable potentially evaluated expression warning (-Wno-potentially-evaluated-expression)],
+   [-Werror -Wno-potentially-evaluated-expression],
+   [],
+   [],
+   [CXXFLAGS="$CXXFLAGS -Wno-potentially-evaluated-expression"]
+)
+
 AC_LANG_POP(C++)
 
 MY_COMPILE_IFELSE(
