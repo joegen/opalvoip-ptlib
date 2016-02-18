@@ -469,7 +469,7 @@ AC_ARG_ENABLE(cpp11, AS_HELP_STRING([--enable-cpp11],[Enable C++11 build]),AC_SU
 
 case "$target_os" in
    darwin* | iPhone* )
-      SHARED_LDFLAGS="-dynamiclib"
+      SHARED_LDFLAGS='-dynamiclib -Wl,-install_name,@executable_path/$(LIB_SONAME)'
       SHAREDLIBEXT="dylib"
       DEBUGINFOEXT="dSYM"
       AR="libtool"
