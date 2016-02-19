@@ -387,6 +387,14 @@ class PSynonymColour : public PColourConverter {
 
 #if P_JPEG_DECODER
 
+/**Class to convert a JPEG image to other formats.
+   Simplest usage is to load to a YUV420P buffer:
+   <code>
+     PBYTEArray yuv;
+     PJPEGConverter converter;
+     converter.Load(file, yuv)
+   </code>
+ */
 class PJPEGConverter : public PColourConverter
 {
   protected:
@@ -394,24 +402,52 @@ class PJPEGConverter : public PColourConverter
     Context * m_context;
 
   public:
+    /**Construct a JPEG converter that outputs YUV420P at same resolution as the JPEG itself.
+      */
+    PJPEGConverter();
+    /**Construct a JPEG converter that outputs YUV420P at same resolution as the JPEG itself.
+      */
+    PJPEGConverter(
+      unsigned width,   ///< Output width, zero indicates same is JPEG input
+      unsigned height,  ///< Output height, zero indicates same is JPEG input
+      PVideoFrameInfo::ResizeMode resizeMode = PVideoFrameInfo::eScale, ///< How to produce output
+      const PString & colourFormat = "YUV420P" ///< Output colour format
+    );
+    /**Construct a JPEG converter.
+       This is used for the PColourConverter factory.
+      */
     PJPEGConverter(
       const PColourPair & colours
     );
+
+    /**Deprecated, used for backward compatibility.
+      */
     PJPEGConverter(
       const PVideoFrameInfo & src,
       const PVideoFrameInfo & dst
     );
+
+    /// Destroy the JPEG converter
     ~PJPEGConverter();
 
+    /** Convert JPEG information in a memory buffer to another memory buffer.
+        Note if scaling is required
+      */
     virtual PBoolean Convert(
       const BYTE * srcFrameBuffer,  ///< Frame store for source pixels
       BYTE * dstFrameBuffer,        ///< Frame store for destination pixels
       PINDEX * bytesReturned = NULL ///< Bytes written to dstFrameBuffer
     );
 
+    /** Load a file and convert to the output format for the converter.
+      */
     bool Load(
-      PFile & file,
-      PBYTEArray & dstFrameBuffer
+      const PFilePath & filename,   ///< Name of file to load
+      PBYTEArray & dstFrameBuffer   ///< Buffer to receive converted output
+    );
+    bool Load(
+      PFile & file,                 ///< File to read JPEG from.
+      PBYTEArray & dstFrameBuffer   ///< Buffer to receive converted output
     );
 };
 
