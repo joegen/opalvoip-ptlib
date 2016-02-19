@@ -81,6 +81,7 @@ class PSync : public PObject
 class PSyncNULL : public PSync
 {
   public:
+    PSyncNULL() { }
     virtual void Wait() { }
     virtual PBoolean Wait(const PTimeInterval &) { return true; }
     virtual void Signal() { }
