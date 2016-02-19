@@ -3227,7 +3227,7 @@ struct PJPEGConverter::Context
     }
 
     PBYTEArray temporaryBuffer;
-    if (!Finish(frameBuffer.GetPointer(GetBufferSizeForColour(nativeWidth, nativeHeight)), nativeWidth, nativeHeight))
+    if (!Finish(m_temporaryBuffer.GetPointer(GetBufferSizeForColour(nativeWidth, nativeHeight)), nativeWidth, nativeHeight))
       return false;
 
     return CopyYUV420P(0, 0, nativeWidth, nativeHeight, nativeWidth, nativeHeight, m_temporaryBuffer,
