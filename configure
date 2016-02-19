@@ -6106,7 +6106,7 @@ fi
 
 case "$target_os" in
    darwin* | iPhone* )
-      SHARED_LDFLAGS="-dynamiclib"
+      SHARED_LDFLAGS='-dynamiclib -Wl,-install_name,@executable_path/$(LIB_SONAME)'
       SHAREDLIBEXT="dylib"
       DEBUGINFOEXT="dSYM"
       AR="libtool"
@@ -6671,6 +6671,40 @@ $as_echo "$usable" >&6; }
 
    if test "x$usable" = "xyes"; then :
   CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"
+
+fi
+
+
+
+
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS -Werror -Wno-potentially-evaluated-expression"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Disable potentially evaluated expression warning (-Wno-potentially-evaluated-expression)" >&5
+$as_echo_n "checking Disable potentially evaluated expression warning (-Wno-potentially-evaluated-expression)... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+
+   if test "x$usable" = "xyes"; then :
+  CXXFLAGS="$CXXFLAGS -Wno-potentially-evaluated-expression"
 
 fi
 
