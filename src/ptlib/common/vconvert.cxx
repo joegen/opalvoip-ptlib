@@ -3222,6 +3222,22 @@ struct PJPEGConverter::Context
 };
 
 
+PJPEGConverter::PJPEGConverter()
+  : PColourConverter(PColourPair("JPEG", "YUV420P"))
+  , m_context(new Context)
+{
+}
+
+
+PJPEGConverter::PJPEGConverter(unsigned width, unsigned height, PVideoFrameInfo::ResizeMode resizeMode, const PString & colourFormat)
+  : PColourConverter(PColourPair("JPEG", colourFormat))
+  , m_context(new Context)
+{
+  SetResizeMode(resizeMode);
+  SetDstFrameSize(width, height);
+}
+
+
 PJPEGConverter::PJPEGConverter(const PColourPair & colours)
   : PColourConverter(colours)
   , m_context(new Context)
@@ -3254,6 +3270,13 @@ PBoolean PJPEGConverter::Convert(const BYTE * srcFrameBuffer, BYTE * dstFrameBuf
                             m_dstFrameWidth, m_dstFrameHeight,
                             bytesReturned, m_context->m_colourSpace,
                             m_resizeMode);
+}
+
+
+bool PJPEGConverter::Load(const PFilePath & filename, PBYTEArray & dstFrameBuffer)
+{
+  PFile file;
+  return file.Open(filename, PFile::ReadOnly) && Load(file, dstFrameBuffer);
 }
 
 
