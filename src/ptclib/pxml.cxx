@@ -122,14 +122,29 @@ static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
 }
 
 
-PXMLParserBase::PXMLParserBase(bool withNS)
+static void PXML_EntityDeclHandler(void *userData,
+                                   const XML_Char *entityName,
+                                   int is_parameter_entity,
+                                   const XML_Char *value,
+                                   int value_length,
+                                   const XML_Char *base,
+                                   const XML_Char *systemId,
+                                   const XML_Char *publicId,
+                                   const XML_Char *notationName)
+{
+  ((PXMLParserBase *)userData)->Entity(entityName, is_parameter_entity, value, value_length, base, systemId, publicId, notationName);
+}
+
+
+PXMLParserBase::PXMLParserBase(PXMLBase::Options options)
   : m_parsing(true)
   , m_total(0)
   , m_consumed(0)
   , m_percent(0)
   , m_userAborted(false)
+  , m_expandEntities(options & PXMLBase::ExpandEntities)
 {
-  if (withNS)
+  if (options & PXMLBase::WithNS)
     m_context = XML_ParserCreateNS(NULL, '|');
   else
     m_context = XML_ParserCreate(NULL);
@@ -141,6 +156,7 @@ PXMLParserBase::PXMLParserBase(bool withNS)
   XML_SetXmlDeclHandler      (MY_CONTEXT, PXML_XmlDeclHandler);
   XML_SetDoctypeDeclHandler  (MY_CONTEXT, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
   XML_SetNamespaceDeclHandler(MY_CONTEXT, PXML_StartNamespaceDeclHandler, PXML_EndNamespaceDeclHandler);
+  XML_SetEntityDeclHandler   (MY_CONTEXT, PXML_EntityDeclHandler);
 }
 
 
@@ -238,7 +254,7 @@ bool PXMLParserBase::Parse(istream & strm)
 
 PXMLParser::PXMLParser(PXML & doc, Options options, off_t progressTotal)
   : PXMLBase(options)
-  , PXMLParserBase(options & WithNS)
+  , PXMLParserBase(options)
   , m_document(doc)
   , m_currentElement(NULL)
   , m_lastData(NULL)
@@ -335,7 +351,7 @@ void PXMLParser::AddCharacterData(const char * data, int len)
   unsigned checkLen = len + ((m_lastData != NULL) ? m_lastData->GetString().GetLength() : 0);
   if (checkLen >= m_maxEntityLength) {
     PTRACE(2, "PXML\tAborting XML parse at size " << m_maxEntityLength << " - possible 'billion laugh' attack");
-    XML_StopParser((XML_Parser)m_context, XML_FALSE);
+    XML_StopParser(MY_CONTEXT, XML_FALSE);
     return;
   }
 
@@ -362,6 +378,24 @@ void PXMLParser::AddCharacterData(const char * data, int len)
   GetFilePosition(col, line);
   newData->SetFilePosition(col, line);
   m_lastData = newData;
+}
+
+
+void PXMLParserBase::Entity(const char * /*entityName*/,
+                            int /*is_parameter_entity*/,
+                            const char * /*value*/,
+                            int /*value_length*/,
+                            const char * /*base*/,
+                            const char * /*systemId*/,
+                            const char * /*publicId*/,
+                            const char * /*notationName*/)
+{
+  if (m_expandEntities)
+    return;
+
+  // Disable entity expansion completely to prevent billion laughs attack
+  PTRACE(2, "PXML\tAborting XML parse at when expanding entity - possible 'billion laughs' attack");
+  XML_StopParser(MY_CONTEXT, XML_FALSE);
 }
 
 
