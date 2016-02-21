@@ -54,12 +54,12 @@ class PXMLBase : public PObject
     PCLASSINFO(PXMLBase, PObject);
   public:
     enum {
-      DEFAULT_MAX_ENTITY_LENGTH = 4096
+      DEFAULT_MAX_ENTITY_LENGTH = 65536
     };
 
     P_DECLARE_BITWISE_ENUM_EX(
       Options,
-      7,
+      8,
       (
         NoOptions,
         Indent,
@@ -68,9 +68,10 @@ class PXMLBase : public PObject
         NoIgnoreWhiteSpace,
         CloseExtended,
         WithNS,
-        FragmentOnly
+        FragmentOnly,
+        ExpandEntities
       ),
-      AllOptions = (1<<(6+1))-1
+      AllOptions = (1<<8)-1
     );
 
     enum StandAloneType {
@@ -499,7 +500,7 @@ class PXMLRootElement : public PXMLElement
 class PXMLParserBase
 {
   protected:
-    PXMLParserBase(bool withNS);
+    PXMLParserBase(PXMLBase::Options options);
 
   public:
     ~PXMLParserBase();
@@ -515,6 +516,14 @@ class PXMLParserBase
     virtual void StartElement(const char * name, const char **attrs) = 0;
     virtual void EndElement(const char * name) = 0;
     virtual void AddCharacterData(const char * data, int len) = 0;
+    virtual void Entity(const char *entityName,
+                        int is_parameter_entity,
+                        const char *value,
+                        int value_length,
+                        const char *base,
+                        const char *systemId,
+                        const char *publicId,
+                        const char *notationName);
 
     virtual bool Progress() { return true; }
 
@@ -530,6 +539,7 @@ class PXMLParserBase
     off_t    m_consumed;
     unsigned m_percent;
     bool     m_userAborted;
+    bool     m_expandEntities;
 };
 
 
