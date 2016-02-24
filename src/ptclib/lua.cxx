@@ -56,7 +56,8 @@ extern "C" {
 
 #define PTraceModule() "Lua"
 
-PFACTORY_CREATE(PFactory<PScriptLanguage>, PLua, "Lua", false);
+static PConstString const LuaName("Lua");
+PFACTORY_CREATE(PFactory<PScriptLanguage>, PLua, LuaName, false);
 
 #define new PNEW
 
@@ -106,6 +107,18 @@ PLua::PLua()
 PLua::~PLua()
 {
   lua_close(m_lua);
+}
+
+
+PString PLua::LanguageName()
+{
+  return LuaName;
+}
+
+
+PString PLua::GetLanguageName() const
+{
+  return LuaName;
 }
 
 
@@ -612,7 +625,7 @@ bool PLua::OnLuaError(int code, const PString & str, int pop)
     if (luaError.IsEmpty())
       OnError(code, psprintf("Error code %i", code));
     else
-      OnError(code, str);
+      OnError(code, luaError);
   }
 
   if (pop > 0)

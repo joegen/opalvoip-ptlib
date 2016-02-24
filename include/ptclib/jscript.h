@@ -62,8 +62,14 @@ class PJavaScript : public PScriptLanguage
     ~PJavaScript();
   //@}
 
-  /**@name Path addition functions */
+  /**@name Scripting functions */
   //@{
+    /// Get the name of this scripting language
+    static PString LanguageName();
+
+    /// Get the name of this scripting language
+    virtual PString GetLanguageName() const;
+
     /**Load a JavaScript script from a file.
       */
     virtual bool LoadFile(
