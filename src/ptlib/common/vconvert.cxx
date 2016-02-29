@@ -3205,7 +3205,7 @@ struct PJPEGConverter::Context
   }
 
 
-  bool Load(PFile & file, PBYTEArray & frameBuffer, unsigned & width, unsigned & height)
+  bool Load(PFile & file, PBYTEArray & frameBuffer, unsigned & width, unsigned & height, PVideoFrameInfo::ResizeMode resizeMode)
   {
     PBYTEArray jpegData;
     if (!PAssert(jpegData.SetSize(file.GetLength()),POutOfMemory))
@@ -3216,8 +3216,23 @@ struct PJPEGConverter::Context
       return false;
     }
 
-    return Start(jpegData, jpegData.GetSize(), width, height) &&
-           Finish(frameBuffer.GetPointer(GetBufferSizeForColour(width, height)), width, height);
+    unsigned nativeWidth = 0, nativeHeight = 0;
+    if (!Start(jpegData, jpegData.GetSize(), nativeWidth, nativeHeight))
+        return false;
+
+    if (m_colourSpace != MY_JPEG_YUV420P || width == 0 || width == 0 || (width == nativeWidth && height == nativeHeight)) {
+      width = nativeWidth;
+      height = nativeHeight;
+      return Finish(frameBuffer.GetPointer(GetBufferSizeForColour(width, height)), width, height);
+    }
+
+    PBYTEArray temporaryBuffer;
+    if (!Finish(m_temporaryBuffer.GetPointer(GetBufferSizeForColour(nativeWidth, nativeHeight)), nativeWidth, nativeHeight))
+      return false;
+
+    return CopyYUV420P(0, 0, nativeWidth, nativeHeight, nativeWidth, nativeHeight, m_temporaryBuffer,
+                       0, 0, width, height, width, height, frameBuffer.GetPointer(GetBufferSizeForColour(width, height)),
+                       resizeMode);
   }
 };
 
@@ -3285,7 +3300,7 @@ bool PJPEGConverter::Load(PFile & file, PBYTEArray & dstFrameBuffer)
   if (!m_context->SetColourSpace(m_dstColourFormat))
     return false;
 
-  return m_context->Load(file, dstFrameBuffer, m_dstFrameWidth, m_dstFrameHeight);
+  return m_context->Load(file, dstFrameBuffer, m_dstFrameWidth, m_dstFrameHeight, m_resizeMode);
 }
 
 
