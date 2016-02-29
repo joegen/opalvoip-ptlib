@@ -2827,8 +2827,10 @@ static PCriticalSection s_ThreadLocalStorageMutex;
 
 PThread::~PThread()
 {
-  if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(100))
+  if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(1000)) {
     Terminate();
+    WaitForTermination(1000);
+  }
 
   PTRACE(5, "Destroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
 
