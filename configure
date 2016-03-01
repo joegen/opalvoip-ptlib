@@ -7274,22 +7274,22 @@ fi
 
 
    if ${PTLIB_MAJOR+:} false; then :
-  major=$PTLIB[_MAJOR]
+  major=${PTLIB_MAJOR}
 else
   major=`cat $VERSION_DIR/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
 fi
    if ${PTLIB_MINOR+:} false; then :
-  minor=$PTLIB[_MINOR]
+  minor=${PTLIB_MINOR}
 else
   minor=`cat $VERSION_DIR/version.h | grep MINOR_VERSION | cut -f3 -d' '`
 fi
    if ${PTLIB_BUILD+:} false; then :
-  build=$PTLIB[_BUILD]
+  build=${PTLIB_BUILD}
 else
   build=`cat $VERSION_DIR/version.h | grep BUILD_NUMBER  | cut -f3 -d' '`
 fi
    if ${PTLIB_STAGE+:} false; then :
-  stage=$PTLIB[_STAGE]
+  stage=${PTLIB_STAGE}
 else
   stage=`cat $VERSION_DIR/version.h | grep BUILD_TYPE    | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
 fi
