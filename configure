@@ -7273,10 +7273,26 @@ fi
 
 
 
-   major=`cat $VERSION_DIR/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
-   minor=`cat $VERSION_DIR/version.h | grep MINOR_VERSION | cut -f3 -d' '`
-   build=`cat $VERSION_DIR/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
-   stage=`cat $VERSION_DIR/version.h | grep BUILD_TYPE | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+   if ${PTLIB_MAJOR+:} false; then :
+  major=$PTLIB[_MAJOR]
+else
+  major=`cat $VERSION_DIR/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
+fi
+   if ${PTLIB_MINOR+:} false; then :
+  minor=$PTLIB[_MINOR]
+else
+  minor=`cat $VERSION_DIR/version.h | grep MINOR_VERSION | cut -f3 -d' '`
+fi
+   if ${PTLIB_BUILD+:} false; then :
+  build=$PTLIB[_BUILD]
+else
+  build=`cat $VERSION_DIR/version.h | grep BUILD_NUMBER  | cut -f3 -d' '`
+fi
+   if ${PTLIB_STAGE+:} false; then :
+  stage=$PTLIB[_STAGE]
+else
+  stage=`cat $VERSION_DIR/version.h | grep BUILD_TYPE    | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+fi
    version="${major}.${minor}.${build}"
 
    if test -z "$major" -o -z "$minor" -o -z "$build"; then :
@@ -7291,7 +7307,7 @@ fi
 
    PTLIB_STAGE=$stage
 
-   PTLIB_VERSION="${major}.${minor}.${build}"
+   PTLIB_VERSION="${version}"
 
 
 
