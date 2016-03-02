@@ -2215,17 +2215,12 @@ void PProcess::HouseKeeping()
       cleanExternalThreads = CleanExternalThreadsTime;
       if (!m_externalThreads.IsEmpty()) {
         m_threadMutex.Wait();
-#ifdef __GLIBC__
-        // Cannot rely on IsTerminated() not crashing in GLIBC due to a dickhead developer there
-        m_externalThreads.RemoveAll();
-#else
         for (ThreadList::iterator it = m_externalThreads.begin(); it != m_externalThreads.end();) {
           if (it->IsTerminated())
             m_externalThreads.erase(it++);
           else
             ++it;
         }
-#endif
         m_threadMutex.Signal();
       }
     }
