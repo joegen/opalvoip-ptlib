@@ -2927,22 +2927,23 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThrea
 #endif
 
 
-static unsigned InitExcessiveLockWaitTime()
-{
-  const char * env = getenv("PTLIB_DEADLOCK_TIME");
-  int seconds = env != NULL ? atoi(env) : 0;
-  return seconds > 0 ? seconds : 15;
-}
-
-unsigned PTimedMutex::ExcessiveLockWaitTime = InitExcessiveLockWaitTime()*1000;
+unsigned PTimedMutex::ExcessiveLockWaitTime;
 
 
 PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout)
   : m_fileOrName(name)
   , m_fileLine(line)
-  , m_excessiveLockTimeout(timeout > 0 ? timeout : PTimedMutex::ExcessiveLockWaitTime)
+  , m_excessiveLockTimeout(timeout)
   , m_excessiveLockActive(false)
 {
+  if (m_excessiveLockTimeout == 0) {
+    if (PTimedMutex::ExcessiveLockWaitTime == 0) {
+      const char * env = getenv("PTLIB_DEADLOCK_TIME");
+      int seconds = env != NULL ? atoi(env) : 0;
+      PTimedMutex::ExcessiveLockWaitTime = seconds > 0 ? seconds*1000 : 15000;
+    }
+    m_excessiveLockTimeout = PTimedMutex::ExcessiveLockWaitTime;
+  }
 }
 
 
