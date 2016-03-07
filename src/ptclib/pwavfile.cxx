@@ -267,7 +267,7 @@ bool PWAVFile::RawRead(void * buf, PINDEX len)
     return false;
   }
 
-  if ((pos + len) > fileLength)
+  if ((pos + (off_t)len) > fileLength)
     len = fileLength - pos;
 
   if (m_formatHandler != NULL)
