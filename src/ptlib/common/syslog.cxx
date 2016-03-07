@@ -229,7 +229,7 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
       "Warning",
       "Info"
     };
-    if (level < PARRAYSIZE(levelName))
+    if ((PINDEX)level < PARRAYSIZE(levelName))
       stream << levelName[level];
     else
       stream << "Debug" << (level - PSystemLog::Info);
@@ -589,7 +589,7 @@ void PSystemLogToSyslog::Output(PSystemLog::Level level, const char * msg)
         "WARNING",  // LogWarning,
         "INFO",     // LogInfo,
     };
-    if (level < PARRAYSIZE(levelName))
+    if ((PINDEX)level < PARRAYSIZE(levelName))
       syslog(priority, "%-8s%s", levelName[level], msg);
     else
       syslog(priority, "DEBUG%-3u%s", level - PSystemLog::Info, msg);

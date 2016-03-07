@@ -140,7 +140,7 @@ PBoolean PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
       break;
 
     case Current:
-      if (pos < -m_position || pos > (m_data.GetSize() - m_position))
+      if (pos < -m_position || pos > ((off_t)m_data.GetSize() - m_position))
         return false;
       m_position += pos;
       break;
