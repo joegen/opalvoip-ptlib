@@ -76,6 +76,14 @@ using namespace std; // Not a good practice (name space polution), but will take
 #endif
 
 
+#if PINDEX_SIGNED
+  #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+#else
+  #define PASSERTINDEX(idx)
+#endif
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define P_REMOVE_VIRTUAL_INTERNAL_BASE(fn) __inline virtual struct ptlib_virtual_function_changed_or_removed ****** fn { return 0; }
