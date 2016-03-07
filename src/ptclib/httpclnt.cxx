@@ -356,11 +356,11 @@ bool PHTTPClient::WriteCommand(Commands cmd,
 {
   if (!outMIME.Contains(ContentLengthTag())) {
     processor.Reset();
-    PINDEX total = 0;
+    uint64_t total = 0;
     PINDEX len;
     while (processor.GetBuffer(len) != NULL)
       total += len;
-    outMIME.SetInteger(ContentLengthTag(), total);
+    outMIME.SetVar(ContentLengthTag(), total);
   }
 
   PString cmdName = commandNames[cmd];
