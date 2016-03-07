@@ -2946,7 +2946,7 @@ bool PIPSocket::PortRange::Listen(PIPSocket ** sockets,
     return true;
   }
 
-  if (numSockets >= (m_max - m_base)) {
+  if (numSockets >= (PINDEX)(m_max - m_base)) {
     PTRACE(2, NULL, PTraceModule(), "Listen failed, not enough room from "
            << m_base << " to " << m_max << " for " << numSockets << " sockets");
     return false;

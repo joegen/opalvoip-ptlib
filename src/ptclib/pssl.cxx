@@ -1078,7 +1078,7 @@ bool PSSLCipherContext::SetKey(const BYTE * keyPtr, PINDEX keyLen)
 {
   PTRACE(4, "Setting key: " << hex << fixed << setfill('0') << PBYTEArray(keyPtr, keyLen, false));
 
-  if (keyLen < EVP_CIPHER_CTX_key_length(m_context)) {
+  if (keyLen < (PINDEX)EVP_CIPHER_CTX_key_length(m_context)) {
     PTRACE(2, "Incorrect key length for encryption");
     return false;
   }
@@ -1100,7 +1100,7 @@ bool PSSLCipherContext::SetPadding(PadMode pad)
 
 bool PSSLCipherContext::SetIV(const BYTE * ivPtr, PINDEX ivLen)
 {
-  if (ivLen < EVP_CIPHER_CTX_iv_length(m_context)) {
+  if (ivLen < (PINDEX)EVP_CIPHER_CTX_iv_length(m_context)) {
     PTRACE(2, "Incorrect inital vector length for encryption");
     return false;
   }
