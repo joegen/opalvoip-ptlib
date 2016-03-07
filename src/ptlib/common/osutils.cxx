@@ -2969,6 +2969,29 @@ void PMutexExcessiveLockInfo::PrintOn(ostream &strm) const
 }
 
 
+void PMutexExcessiveLockInfo::ExcessiveLockPhantom(const PObject & mutex) const
+{
+#if PTRACING
+  PTRACE_BEGIN(0, "PTLib") << "Assertion fail: Phantom deadlock in " << mutex << PTrace::End;
+#else
+  PAssertAlways(PSTRSTRM("Phantom deadlock in mutex " << mutex));
+#endif
+}
+
+
+void PMutexExcessiveLockInfo::LockReleased(const PObject & mutex)
+{
+  if (m_excessiveLockActive) {
+#if PTRACING
+    PTRACE_BEGIN(0, "PTLib") << "Assertion fail: Released phantom deadlock in " << mutex << PTrace::End;
+#else
+    PAssertAlways(PSTRSTRM("Released phantom deadlock in mutex " << *this));
+#endif
+    m_excessiveLockActive = false;
+  }
+}
+
+
 void PTimedMutex::ExcessiveLockWait()
 {
 #if PTRACING
@@ -2977,7 +3000,7 @@ void PTimedMutex::ExcessiveLockWait()
   PUniqueThreadIdentifier lastUniqueId = m_lastUniqueId;
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
-  trace << "Possible deadlock in mutex " << *this << "\n  Blocked Thread";
+  trace << "Assertion fail: Possible deadlock in " << *this << "\n  Blocked Thread";
   OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), EnableDeadlockStackWalk);
   trace << "\n  Owner Thread ";
   if (lockerId != PNullThreadIdentifier)
@@ -2988,7 +3011,7 @@ void PTimedMutex::ExcessiveLockWait()
   }
   trace << PTrace::End;
 #else
-  PAssertAlways(PSTRSTRM("Possible deadlock in mutex " << *this));
+  PAssertAlways(PSTRSTRM("Possible deadlock in " << *this));
 #endif
 
   m_excessiveLockActive = true;
@@ -2997,18 +3020,14 @@ void PTimedMutex::ExcessiveLockWait()
 
 void PTimedMutex::CommonSignal()
 {
-  if (m_excessiveLockActive) {
-    PTRACE(0, "Released phantom deadlock in mutex " << *this);
-    m_excessiveLockActive = false;
-  }
-
+  LockReleased(*this);
   m_lockerId = PNullThreadIdentifier;
 }
 
 
 void PTimedMutex::PrintOn(ostream &strm) const
 {
-  strm << this;
+  strm << "mutex " << this;
   PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
@@ -3247,7 +3266,6 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
 {
   nest.m_waiting = true;
 
-#if PTRACING
   if (sync.Wait(m_excessiveLockTimeout)) {
     nest.m_waiting = false;
     return;
@@ -3261,9 +3279,10 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
     nestedThreadsToDump = m_nestedThreads;
   }
 
+#if PTRACING
   {
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
-    trace << "Possible deadlock in read/write mutex " << *this << " :\n";
+    trace << "Assertion fail: Possible deadlock in " << *this << " :\n";
     for (NestMap::const_iterator it = nestedThreadsToDump.begin(); it != nestedThreadsToDump.end(); ++it) {
       if (it != nestedThreadsToDump.begin())
         trace << '\n';
@@ -3278,14 +3297,12 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
     }
     trace << PTrace::End;
   }
-
-  sync.Wait();
-
-  PTRACE_BEGIN(0, "PTLib") << "Phantom deadlock in read/write mutex " << *this << PTrace::End;
 #else
-  sync.Wait();
+  PAssertAlways(PSTRSTRM("Possible deadlock in " << *this));
 #endif
 
+  sync.Wait();
+  ExcessiveLockPhantom(*this);
 
   nest.m_waiting = false;
 }
@@ -3312,10 +3329,7 @@ void PReadWriteMutex::EndRead()
   if (nest->m_readerCount > 0 || nest->m_writerCount > 0)
     return;
 
-  if (m_excessiveLockActive) {
-    PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
-    m_excessiveLockActive = false;
-  }
+  LockReleased(*this);
 
   // Do text book read lock
   InternalEndRead(*nest);
@@ -3340,10 +3354,7 @@ void PReadWriteMutex::StartWrite()
   if (nest.m_writerCount > 1)
     return;
 
-  if (m_excessiveLockActive) {
-    PTRACE(0, "Released phantom deadlock in read/write mutex " << *this);
-    m_excessiveLockActive = false;
-  }
+  LockReleased(*this);
 
   // If have a read lock already in this thread then do the "real" unlock code
   // but do not change the lock count, calls to EndRead() will now just
@@ -3478,7 +3489,7 @@ void PReadWriteMutex::InternalEndWrite(Nest & nest)
 
 void PReadWriteMutex::PrintOn(ostream & strm) const
 {
-  strm << this;
+  strm << "read/write mutex " << this;
   PMutexExcessiveLockInfo::PrintOn(strm);
 }
 

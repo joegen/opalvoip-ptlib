@@ -1769,7 +1769,7 @@ void PTimedMutex::Wait()
   if (!m_handle.Wait(m_excessiveLockTimeout)) {
     ExcessiveLockWait();
     m_handle.Wait(INFINITE);
-    PTRACE(0, "PTLib", "Phantom deadlock in mutex " << *this);
+    ExcessiveLockPhantom(*this);
   }
 
   if (m_lockCount++ == 0)
