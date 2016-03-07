@@ -487,7 +487,7 @@ PSTUNAttribute * PSTUNMessage::GetFirstAttribute() const
   if (length < (int)sizeof(PSTUNAttribute))
     return NULL;
 
-  if (GetSize() < ((int)sizeof(PSTUNMessageHeader) + length))
+  if (GetSize() < (PINDEX)(sizeof(PSTUNMessageHeader) + length))
     return NULL;
 
   PSTUNAttribute * attr = (PSTUNAttribute *)(theArray+sizeof(PSTUNMessageHeader)); 
@@ -525,7 +525,7 @@ bool PSTUNMessage::IsValid() const
 
   int length = header->msgLength;
 
-  if (GetSize() < ((int)sizeof(PSTUNMessageHeader) + length))
+  if (GetSize() < (PINDEX)(sizeof(PSTUNMessageHeader) + length))
     return false;
 
   // check attributes
