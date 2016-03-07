@@ -424,7 +424,7 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       PString body;
       if (lastResponseCode >= 300) {
 #if PTRACING
-        if ((int)replyMIME.GetInteger(ContentLengthTag(), INT_MAX) <= MaxTraceContentSize)
+        if (replyMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
         else
 #endif
