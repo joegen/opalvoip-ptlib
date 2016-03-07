@@ -938,6 +938,7 @@ enable_sanitize_address
 enable_sanitize_thread
 enable_exceptions
 with_allocator
+enable_pindex_is_size_t
 enable_pthread_kill
 enable_ipv6
 enable_backtrace
@@ -1693,6 +1694,8 @@ Optional Features:
   --enable-sanitize-thread
                           Enable GCC/clang Thread Sanitizer
   --enable-exceptions     enable C++ exceptions
+  --enable-pindex-is-size_t
+                          enable PINDEX set to size_t
   --disable-pthread_kill  Disable use of pthread_kill for checking on thread
                           terminated
   --disable-ipv6          disable IPV6 support
@@ -8202,6 +8205,58 @@ $as_echo "#define USE_SYSTEM_SWAB /**/" >>confdefs.h
 fi
 
 fi
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking enable PINDEX set to size_t" >&5
+$as_echo_n "checking enable PINDEX set to size_t... " >&6; }
+
+   # Check whether --enable-pindex-is-size_t was given.
+if test "${enable_pindex_is_size_t+set}" = set; then :
+  enableval=$enable_pindex_is_size_t; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=no
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+  $as_echo "#define P_PINDEX_IS_SIZE_T 1" >>confdefs.h
+
+
+fi
+
+
+   enable_pindex-is-size_t="$enableval"
+
 
 
 ac_ext=cpp

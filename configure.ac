@@ -472,7 +472,14 @@ if test "$target_os" != "solaris"; then
 fi
 
 
-PTLIB_SIMPLE_OPTION([pindex-is-size_t], [P_PINDEX_IS_SIZE_T], [Set PINDEX to be size_t])
+dnl ########################################################################
+
+MY_ARG_ENABLE(
+   [pindex-is-size_t],
+   [enable PINDEX set to size_t],
+   [no],
+   [AC_DEFINE(P_PINDEX_IS_SIZE_T, 1)]
+)
 
 
 dnl ########################################################################

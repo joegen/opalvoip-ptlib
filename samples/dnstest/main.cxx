@@ -157,7 +157,7 @@ void DNSTest::Main()
 
 #if P_URL
     if (args.HasOption('u')) {
-      if (args.GetCount() < 0) {
+      if (args.GetCount() == 0) {
         Usage();
         return;
       }

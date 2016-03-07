@@ -578,21 +578,24 @@ typedef intptr_t      INT;
 #if P_PINDEX_IS_SIZE_T
 
   typedef size_t PINDEX;
-  #define P_MAX_INDEX (std::numeric_limits<size_t>::max())
+  #if P_64BIT
+    const size_t P_MAX_INDEX = 0xffffffffffffffff;
+  #else
+    const size_t P_MAX_INDEX = 0xffffffff;
+  #endif
 
-  #define PABSINDEX(idx) (idx)
-  #define PASSERTINDEX(idx)
+  #define PINDEX_SIGNED 0
 
 #else // P_PINDEX_IS_SIZE_T
 
   typedef int PINDEX;
   #define P_MAX_INDEX INT_MAX
 
-  inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
-  #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+  #define PINDEX_SIGNED 1
 
 #endif // P_PINDEX_IS_SIZE_T
 
 #endif // PTLIB_PLATFORM_H
+
 
 // End of file
