@@ -53,6 +53,8 @@ class PMutexExcessiveLockInfo
     PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout);
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     void PrintOn(ostream &strm) const;
+    void ExcessiveLockPhantom(const PObject & mutex) const;
+    void LockReleased(const PObject & mutex);
 };
 
 
