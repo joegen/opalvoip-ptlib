@@ -1028,13 +1028,8 @@ PString PFilePath::GetTitle() const
 
 PString PFilePath::GetType() const
 {
-  PINDEX p = FindLast('.');
-  PINDEX l = (p == P_MAX_INDEX) ? 0 : (GetLength() - p);
-
-  if (p < 0 || l < 2)
-    return PString::Empty();
-  else
-    return Mid(p);
+  PINDEX pos = FindLast('.');
+  return pos == P_MAX_INDEX || (GetLength()-pos) < 2 ? PString::Empty() : Mid(pos);
 }
 
 
@@ -1052,15 +1047,14 @@ PString PFilePath::GetFileName() const
 
 {
   PINDEX pos = FindLast('/');
-  return pos == P_MAX_INDEX ? *this : Mid(pos+1);
+  return pos == P_MAX_INDEX ? static_cast<PString>(*this) : Mid(pos+1);
 }
 
 
 PDirectory PFilePath::GetDirectory() const
 {
-  static const PConstString curdir("./");
   PINDEX pos = FindLast('/');
-  return pos == P_MAX_INDEX ? curdir : Left(i);
+  return pos == P_MAX_INDEX ? PString("./") : Left(pos);
 }
 
 

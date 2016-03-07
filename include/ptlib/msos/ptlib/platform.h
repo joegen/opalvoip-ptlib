@@ -174,8 +174,7 @@ typedef uint64_t PUInt64;
   #if P_64BIT
     typedef size_t PINDEX;
     const PINDEX P_MAX_INDEX = 0xffffffffffffffff;
-    inline PINDEX PABSINDEX(PINDEX idx) { return idx; }
-    #define PASSERTINDEX(idx)
+    #define PINDEX_SIGNED 0
   #else
     #define PINDEX int
     #if defined(_WIN32) || defined(_WIN32_WCE)
@@ -183,8 +182,7 @@ typedef uint64_t PUInt64;
     #else
       const PINDEX P_MAX_INDEX = 0x7fff;
     #endif
-    inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
-    #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+    #define PINDEX_SIGNED 1
   #endif
 
 #else
@@ -195,8 +193,7 @@ typedef uint64_t PUInt64;
   #else
      const PINDEX P_MAX_INDEX = 0xffffffff;
   #endif
-  #define PABSINDEX(idx) (idx)
-  #define PASSERTINDEX(idx)
+  #define PINDEX_SIGNED 0
 
 #endif
 

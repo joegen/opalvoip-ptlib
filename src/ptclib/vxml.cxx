@@ -350,7 +350,7 @@ PBoolean PVXMLPlayableFileList::Open(PVXMLChannel & chan, const PStringArray & l
 
   m_currentIndex = 0;
 
-  return PVXMLPlayable::Open(chan, PString::Empty(), delay, ((repeat >= 0) ? repeat : 1) * m_fileNames.GetSize(), autoDelete);
+  return PVXMLPlayable::Open(chan, PString::Empty(), delay, ((repeat > 0) ? repeat : 1) * m_fileNames.GetSize(), autoDelete);
 }
 
 
