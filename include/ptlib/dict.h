@@ -107,7 +107,7 @@ class PKey : public PObject
     virtual PINDEX HashFunction() const
     {
 #if PINDEX_SIGNED
-      return ((PINDEX)(this->m_key<0?-this->m_key:this->m_key))%23;
+      return std::abs((PINDEX)this->m_key)%23;
 #else
       return ((PINDEX)this->m_key)%23;
 #endif
