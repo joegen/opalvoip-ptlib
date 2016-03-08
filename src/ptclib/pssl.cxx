@@ -986,7 +986,7 @@ PAESContext::PAESContext(bool encrypt, const void * data, PINDEX numBits)
   if (encrypt)
     SetEncrypt(data, numBits);
   else
-    SetEncrypt(data, numBits);
+    SetDecrypt(data, numBits);
 }
 
 
