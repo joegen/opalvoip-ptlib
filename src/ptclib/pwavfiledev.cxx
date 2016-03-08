@@ -132,8 +132,10 @@ bool PSoundChannel_WAVFile::Open(const Params & params)
     return false;
   }
 
-  if (params.m_sampleRate >= 8000 && m_WAVFile.GetSampleSize() == params.m_bitsPerSample)
+  if (params.m_sampleRate >= 8000 && m_WAVFile.GetSampleSize() == params.m_bitsPerSample) {
+    SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
     return true;
+  }
 
   Close();
 
