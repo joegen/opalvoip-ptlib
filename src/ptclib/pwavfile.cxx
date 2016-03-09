@@ -257,7 +257,7 @@ bool PWAVFile::RawRead(void * buf, PINDEX len)
   // Some wav files have extra data after the sound samples in a LIST chunk.
   // e.g. WAV files made in GoldWave have a copyright and a URL in this chunk.
   // We do not want to return this data by mistake.
-  PINDEX fileLength = m_headerLength + m_dataLength;
+  off_t fileLength = m_headerLength + m_dataLength;
 
   off_t pos = PFile::GetPosition();
   if (pos >= fileLength) {
@@ -267,7 +267,7 @@ bool PWAVFile::RawRead(void * buf, PINDEX len)
     return false;
   }
 
-  if ((pos + len) > fileLength)
+  if ((pos + (off_t)len) > fileLength)
     len = fileLength - pos;
 
   if (m_formatHandler != NULL)

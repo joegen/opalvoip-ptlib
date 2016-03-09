@@ -473,6 +473,16 @@ fi
 
 
 dnl ########################################################################
+
+MY_ARG_ENABLE(
+   [pindex-is-size_t],
+   [enable PINDEX set to size_t],
+   [no],
+   [AC_DEFINE(P_PINDEX_IS_SIZE_T, 1)]
+)
+
+
+dnl ########################################################################
 dnl check for headers
 AC_CHECK_HEADERS(limits.h alloca.h signal.h fcntl.h sys/time.h termios.h sys/termios.h \
                  ioctl.h sys/ioctl.h sys/sockio.h sys/sysctl.h sys/socket.h \

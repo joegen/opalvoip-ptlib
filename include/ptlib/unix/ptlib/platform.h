@@ -575,13 +575,27 @@ typedef intptr_t      INT;
 ///////////////////////////////////////////
 // Type used for array indexes and sizes
 
-typedef int PINDEX;
-#define P_MAX_INDEX INT_MAX
+#if P_PINDEX_IS_SIZE_T
 
-inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
-#define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+  typedef size_t PINDEX;
+  #if P_64BIT
+    const size_t P_MAX_INDEX = 0xffffffffffffffff;
+  #else
+    const size_t P_MAX_INDEX = 0xffffffff;
+  #endif
 
+  #define PINDEX_SIGNED 0
+
+#else // P_PINDEX_IS_SIZE_T
+
+  typedef int PINDEX;
+  #define P_MAX_INDEX INT_MAX
+
+  #define PINDEX_SIGNED 1
+
+#endif // P_PINDEX_IS_SIZE_T
 
 #endif // PTLIB_PLATFORM_H
+
 
 // End of file

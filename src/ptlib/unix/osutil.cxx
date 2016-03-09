@@ -1012,17 +1012,14 @@ void PFilePath::AssignContents(const PContainer & cont)
 
 
 PString PFilePath::GetPath() const
-
 {
-  int i;
-
-  PAssert((i = FindLast('/')) != P_MAX_INDEX, PInvalidArrayIndex);
-  return Left(i+1);
+  PINDEX pos = FindLast('/');
+  PAssert(pos != P_MAX_INDEX, PInvalidArrayIndex);
+  return Left(pos+1);
 }
 
 
 PString PFilePath::GetTitle() const
-
 {
   PString fn(GetFileName());
   return fn(0, fn.FindLast('.')-1);
@@ -1030,15 +1027,9 @@ PString PFilePath::GetTitle() const
 
 
 PString PFilePath::GetType() const
-
 {
-  int p = FindLast('.');
-  int l = (p == P_MAX_INDEX) ? 0 : (GetLength() - p);
-
-  if (p < 0 || l < 2)
-    return PString("");
-  else
-    return (*this)(p, P_MAX_INDEX);
+  PINDEX pos = FindLast('.');
+  return pos == P_MAX_INDEX || (GetLength()-pos) < 2 ? PString::Empty() : Mid(pos);
 }
 
 
@@ -1055,23 +1046,15 @@ void PFilePath::SetType(const PString & type)
 PString PFilePath::GetFileName() const
 
 {
-  int i;
-
-  if ((i = FindLast('/')) == P_MAX_INDEX)
-    return *this;
-  else
-    return Right(GetLength()-i-1);
+  PINDEX pos = FindLast('/');
+  return pos == P_MAX_INDEX ? static_cast<PString>(*this) : Mid(pos+1);
 }
 
 
 PDirectory PFilePath::GetDirectory() const
 {
-  int i;
-
-  if ((i = FindLast('/')) == P_MAX_INDEX)
-    return "./";
-  else
-    return Left(i);
+  PINDEX pos = FindLast('/');
+  return pos == P_MAX_INDEX ? PString("./") : Left(pos);
 }
 
 

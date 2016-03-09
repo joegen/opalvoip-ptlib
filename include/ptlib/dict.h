@@ -104,7 +104,14 @@ class PKey : public PObject
        @return
        hash table bucket number.
      */
-    virtual PINDEX HashFunction() const { return PABSINDEX(this->m_key)%23; }
+    virtual PINDEX HashFunction() const
+    {
+#if PINDEX_SIGNED
+      return std::abs((PINDEX)this->m_key)%23;
+#else
+      return ((PINDEX)this->m_key)%23;
+#endif
+    }
 
     /**Output the ordinal index to the specified stream. This is identical to
        outputting the PINDEX, i.e. integer, value.

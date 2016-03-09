@@ -147,9 +147,11 @@ void PContainer::DestroyReference()
 
 PBoolean PContainer::SetMinSize(PINDEX minSize)
 {
+#if PINDEX_SIGNED
   PASSERTINDEX(minSize);
   if (minSize < 0)
     minSize = 0;
+#endif
   if (minSize < GetSize())
     minSize = GetSize();
   return SetSize(minSize);
@@ -343,8 +345,10 @@ PBoolean PAbstractArray::SetSize(PINDEX newSize)
 
 PBoolean PAbstractArray::InternalSetSize(PINDEX newSize, PBoolean force)
 {
+#if PINDEX_SIGNED
   if (newSize < 0)
-    newSize = 0;
+    return false;
+#endif
 
   PINDEX newsizebytes = elementSize*newSize;
   PINDEX oldsizebytes = elementSize*GetSize();
@@ -1206,13 +1210,13 @@ PINDEX PString::HashFunction() const
 
   static const PINDEX MaxCount = 18; // Make sure big enough to cover whole PGloballyUniqueID::AsString()
   PINDEX count = std::min(m_length / 2, MaxCount);
-  PINDEX hash = 0;
+  unsigned hash = 0;
   PINDEX i;
   for (i = 0; i < count; i++)
     hash = (hash << 5) ^ tolower(theArray[i] & 0xff) ^ hash;
   for (i = m_length - count - 1; i < m_length; i++)
     hash = (hash << 5) ^ tolower(theArray[i] & 0xff) ^ hash;
-  return PABSINDEX(hash) % 127;
+  return hash % 127;
 }
 
 
@@ -1377,7 +1381,11 @@ PString & PString::operator&=(char ch)
 
 PString & PString::Delete(PINDEX start, PINDEX len)
 {
-  if (start < 0 || len < 0)
+#if PINDEX_SIGNED
+  if (start < 0 || len <= 0)
+#else
+  if (len == 0)
+#endif
     return *this;
 
   MakeUnique();
@@ -1403,7 +1411,12 @@ PString & PString::Delete(PINDEX start, PINDEX len)
 
 PString PString::operator()(PINDEX start, PINDEX end) const
 {
-  if (end < 0 || start < 0 || end < start)
+#if PINDEX_SIGNED
+  if (end < 0 || start < 0)
+    return Empty();
+#endif
+
+  if (end < start)
     return Empty();
 
   PINDEX len = GetLength();
@@ -1447,7 +1460,11 @@ PString PString::Right(PINDEX len) const
 
 PString PString::Mid(PINDEX start, PINDEX len) const
 {
+#if PINDEX_SIGNED
   if (len <= 0 || start < 0)
+#else
+  if (len == 0)
+#endif
     return Empty();
 
   if (len == P_MAX_INDEX || start+len < start) // If open ended or check for wraparound
@@ -1475,8 +1492,11 @@ bool PString::operator*=(const char * cstr) const
 
 PObject::Comparison PString::NumCompare(const PString & str, PINDEX count, PINDEX offset) const
 {
+#if PINDEX_SIGNED
   if (offset < 0 || count < 0)
     return LessThan;
+#endif
+
   PINDEX len = str.GetLength();
   if (count > len)
     count = len;
@@ -1486,8 +1506,11 @@ PObject::Comparison PString::NumCompare(const PString & str, PINDEX count, PINDE
 
 PObject::Comparison PString::NumCompare(const char * cstr, PINDEX count, PINDEX offset) const
 {
+#if PINDEX_SIGNED
   if (offset < 0 || count < 0)
     return LessThan;
+#endif
+
   PINDEX len = ::strlen(cstr);
   if (count > len)
     count = len;
@@ -1497,8 +1520,11 @@ PObject::Comparison PString::NumCompare(const char * cstr, PINDEX count, PINDEX 
 
 PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 {
+#if PINDEX_SIGNED
   if (offset < 0)
     return LessThan;
+#endif
+
   const int ch = theArray[offset] & 0xff;
   if (ch < (c & 0xff))
     return LessThan;
@@ -1510,13 +1536,15 @@ PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 
 PObject::Comparison PString::InternalCompare(PINDEX offset, PINDEX length, const char * cstr) const
 {
+#if PINDEX_SIGNED
   if (offset < 0 || length < 0)
     return LessThan;
+#endif
 
   if (offset == 0 && theArray == cstr)
     return EqualTo;
 
-  if (offset < 0 || cstr == NULL)
+  if (cstr == NULL)
     return IsEmpty() ? EqualTo : LessThan;
 
   int retval;
@@ -1537,8 +1565,10 @@ PObject::Comparison PString::InternalCompare(PINDEX offset, PINDEX length, const
 
 PINDEX PString::Find(char ch, PINDEX offset) const
 {
+#if PINDEX_SIGNED
   if (offset < 0)
     return P_MAX_INDEX;
+#endif
 
   PINDEX len = GetLength();
   while (offset < len) {
@@ -1552,7 +1582,12 @@ PINDEX PString::Find(char ch, PINDEX offset) const
 
 PINDEX PString::Find(const char * cstr, PINDEX offset) const
 {
-  if (cstr == NULL || *cstr == '\0' || offset < 0)
+#if PINDEX_SIGNED
+  if (offset < 0)
+    return P_MAX_INDEX;
+#endif
+
+  if (cstr == NULL || *cstr == '\0')
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
@@ -1594,9 +1629,15 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
 
 PINDEX PString::FindLast(char ch, PINDEX offset) const
 {
-  PINDEX len = GetLength();
-  if (len == 0 || offset < 0)
+#if PINDEX_SIGNED
+  if (offset < 0)
     return P_MAX_INDEX;
+#endif
+
+  PINDEX len = GetLength();
+  if (len == 0)
+    return P_MAX_INDEX;
+
   if (offset >= len)
     offset = len-1;
 
@@ -1612,7 +1653,12 @@ PINDEX PString::FindLast(char ch, PINDEX offset) const
 
 PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 {
-  if (cstr == NULL || *cstr == '\0' || offset < 0)
+#if PINDEX_SIGNED
+  if (offset < 0)
+    return P_MAX_INDEX;
+#endif
+
+  if (cstr == NULL || *cstr == '\0')
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
@@ -1645,7 +1691,12 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 
 PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 {
-  if (cset == NULL || *cset == '\0' || offset < 0)
+#if PINDEX_SIGNED
+  if (offset < 0)
+    return P_MAX_INDEX;
+#endif
+
+  if (cset == NULL || *cset == '\0')
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
@@ -1664,7 +1715,12 @@ PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 
 PINDEX PString::FindSpan(const char * cset, PINDEX offset) const
 {
-  if (cset == NULL || *cset == '\0' || offset < 0)
+#if PINDEX_SIGNED
+  if (offset < 0)
+    return P_MAX_INDEX;
+#endif
+
+  if (cset == NULL || *cset == '\0')
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
@@ -1682,8 +1738,10 @@ PINDEX PString::FindSpan(const char * cset, PINDEX offset) const
 
 PINDEX PString::FindRegEx(const PRegularExpression & regex, PINDEX offset) const
 {
+#if PINDEX_SIGNED
   if (offset < 0)
     return P_MAX_INDEX;
+#endif
 
   PINDEX pos = 0;
   PINDEX len = 0;
@@ -1700,8 +1758,13 @@ PBoolean PString::FindRegEx(const PRegularExpression & regex,
                         PINDEX offset,
                         PINDEX maxPos) const
 {
+#if PINDEX_SIGNED
+  if (offset < 0 || maxPos < 0)
+    return false;
+#endif
+
   PINDEX olen = GetLength();
-  if (offset < 0 || maxPos < 0 || offset > olen)
+  if (offset > olen)
     return false;
 
   if (offset == olen) {
@@ -1733,8 +1796,10 @@ PBoolean PString::MatchesRegEx(const PRegularExpression & regex) const
 
 PString & PString::Replace(const PString & target, const PString & subs, PBoolean all, PINDEX offset)
 {
+#if PINDEX_SIGNED
   if (offset < 0)
     return *this;
+#endif
     
   MakeUnique();
 
@@ -1754,8 +1819,10 @@ PString & PString::Replace(const PString & target, const PString & subs, PBoolea
 
 PString & PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
 {
+#if PINDEX_SIGNED
   if (len < 0 || pos < 0)
     return *this;
+#endif
 
   PINDEX slen = GetLength();
   if (pos >= slen)
@@ -2264,8 +2331,10 @@ PObject * PCaselessString::Clone() const
 
 PObject::Comparison PCaselessString::InternalCompare(PINDEX offset, char c) const
 {
+#if PINDEX_SIGNED
   if (offset < 0)
     return LessThan;
+#endif
 
   int c1 = toupper(theArray[offset] & 0xff);
   int c2 = toupper(c & 0xff);
@@ -2280,8 +2349,10 @@ PObject::Comparison PCaselessString::InternalCompare(PINDEX offset, char c) cons
 PObject::Comparison PCaselessString::InternalCompare(
                          PINDEX offset, PINDEX length, const char * cstr) const
 {
+#if PINDEX_SIGNED
   if (offset < 0 || length < 0)
     return LessThan;
+#endif
 
   if (cstr == NULL)
     return IsEmpty() ? EqualTo : LessThan;

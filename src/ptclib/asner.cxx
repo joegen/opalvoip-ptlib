@@ -68,7 +68,11 @@ static PINDEX CountBits(unsigned range)
 inline PBoolean CheckByteOffset(PINDEX offset, PINDEX upper = MaximumStringSize)
 {
   // a 1mbit PDU has got to be an error
-  return (0 <= offset && offset <= upper);
+#if PINDEX_SIGNED
+  if (offset < 0)
+    return false;
+#endif
+  return offset <= upper;
 }
 
 static PINDEX FindNameByValue(const PASN_Names *names, PINDEX namesCount, unsigned value)
@@ -495,7 +499,7 @@ PObject * PASN_Enumeration::Clone() const
 
 void PASN_Enumeration::PrintOn(ostream & strm) const
 {
-  unsigned idx = FindNameByValue(names, namesCount, value);
+  PINDEX idx = FindNameByValue(names, namesCount, value);
   if (idx != P_MAX_INDEX)
     strm << names[idx].name;
   else
@@ -1294,8 +1298,6 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
       if (memchr(set, canonicalSet[i], setSize) != NULL)
         characterSet[count++] = canonicalSet[i];
     }
-    if (count < 0)
-      return;
     characterSet.SetSize(count);
   }
 

@@ -356,11 +356,11 @@ bool PHTTPClient::WriteCommand(Commands cmd,
 {
   if (!outMIME.Contains(ContentLengthTag())) {
     processor.Reset();
-    PINDEX total = 0;
+    uint64_t total = 0;
     PINDEX len;
     while (processor.GetBuffer(len) != NULL)
       total += len;
-    outMIME.SetInteger(ContentLengthTag(), total);
+    outMIME.SetVar(ContentLengthTag(), total);
   }
 
   PString cmdName = commandNames[cmd];
@@ -424,7 +424,7 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       PString body;
       if (lastResponseCode >= 300) {
 #if PTRACING
-        if ((int)replyMIME.GetInteger(ContentLengthTag(), INT_MAX) <= MaxTraceContentSize)
+        if (replyMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= (int64_t)MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
         else
 #endif

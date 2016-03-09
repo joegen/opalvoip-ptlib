@@ -565,9 +565,8 @@ PBoolean PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & res
       PStringArray lines = replyBody.Lines();
       for ( int offset = -2; offset <= 2; offset++ ) {
         int line = response.GetErrorLine() + offset;
-        
-        if ( line >= 0 && line < lines.GetSize() )
-          txt << lines[ ( PINDEX ) line ];
+        if (line >= 0 && (PINDEX)line < lines.GetSize())
+          txt << lines[(PINDEX)line];
       }
     }
   }

@@ -95,7 +95,7 @@ PStringArray PPluginDeviceDescriptor::GetDeviceNames(P_INT_PTR) const
 bool PPluginDeviceDescriptor::ValidateDeviceName(const PString & name, P_INT_PTR userData) const
 {
   PStringArray devices = GetDeviceNames(userData);
-  if (name.GetLength() == 2 && name[0] == '#' && isdigit(name[1]) && (name[1]-'0') < devices.GetSize())
+  if (name.GetLength() == 2 && name[0] == '#' && isdigit(name[1]) && (PINDEX)(name[1]-'0') < devices.GetSize())
     return true;
 
   for (PINDEX i = 0; i < devices.GetSize(); i++) {

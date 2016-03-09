@@ -676,7 +676,7 @@ PBoolean PSocket::Write(const Slice * slices, size_t sliceCount)
     return false;
 
   flush();
-  return os_vwrite(slices, sliceCount, 0, NULL, 0) && GetLastWriteCount() >= 0;
+  return os_vwrite(slices, sliceCount, 0, NULL, 0) && GetLastWriteCount() > 0;
 }
 
 

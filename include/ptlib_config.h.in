@@ -82,6 +82,8 @@
 // Integer/char types
 //
 
+#undef P_PINDEX_IS_SIZE_T
+
 #if defined(_WIN64) && !defined(P_64BIT)
   #define P_64BIT 1
 #endif
