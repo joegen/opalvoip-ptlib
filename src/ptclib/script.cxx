@@ -74,7 +74,7 @@ void PScriptLanguage::OnError(int code, const PString & str)
   m_lastErrorText = str;
   m_mutex.Signal();
 
-  PTRACE(2, GetClass(), "Error " << code << ": " << str);
+  PTRACE(2, GetLanguageName(), "Error " << code << ": " << str);
 }
 
 
