@@ -71,8 +71,14 @@ class PLua : public PScriptLanguage
     ~PLua();
   //@}
 
-  /**@name Path addition functions */
+  /**@name Scripting functions */
   //@{
+    /// Get the name of this scripting language
+    static PString LanguageName();
+
+    /// Get the name of this scripting language
+    virtual PString GetLanguageName() const;
+
     /**Load a Lua script from a file.
       */
     virtual bool LoadFile(

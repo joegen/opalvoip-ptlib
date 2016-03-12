@@ -75,7 +75,8 @@
 #define PTraceModule() "JavaScript"
 
 
-PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, "Java", false);
+static PConstString const JavaName("Java");
+PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
 
 static atomic<bool> V8_initialised;
 
@@ -250,16 +251,16 @@ public:
   }
   
   
-  void SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
+  bool SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
   {
     if (m_isolate == NULL)
-      return;
+      return false;
 
     // set flags if array access
     if (name[0] == '[')
-      object->Set(name.Mid(1).AsInteger(), value);
+      return object->Set(name.Mid(1).AsInteger(), value);
     else
-      object->Set(NewString(name), value);
+      return object->Set(NewString(name), value);
   }
 
 
@@ -346,6 +347,12 @@ public:
   }
 
 
+  bool NewObject(const PString & name)
+  {
+    return false;
+  }
+
+
   bool SetVar(const PString & key, const PVarType & var)
   {
     if (m_isolate == NULL)
@@ -358,40 +365,34 @@ public:
 
     PStringArray tokens;
     if (ParseKey(key, tokens) < 1) {
-      PTRACE(5, "SetVar '" << key << " is too short");
+      PTRACE(3, "SetVar \"" << key << "\" is too short");
       return false;
     }
 
     v8::Handle<v8::Object> object = context->Global();
 
-    int i = 0;
-
-    while (i > 0) {
-
+    PINDEX i;
+    for (i = 0; i < tokens.GetSize()-1; ++i) {
       // get the member variable
       v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
       if (value.IsEmpty()) {
-        PTRACE(5, "Cannot get element '" << tokens[i] << "'");
+        PTRACE(3, "Cannot get element \"" << tokens[i] << '"');
+        return false;
+      }
+
+      // if path has ended, return error
+      object = value->ToObject();
+      if (object.IsEmpty()) {
+        PTRACE(3, "SetVar intermediate element \"" << tokens[i] << "\" not found");
         return false;
       }
 
       // terminals must not be composites, internal nodes must be composites
       bool isObject = value->IsObject();
       if (!isObject) {
-        tokens.SetSize(i + 1);
-        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
+        PTRACE(3, "SetVar intermediate element \"" << tokens[i] << "\" is not a composite");
         return false;
       }
-
-      // if path has ended, return error
-      object = value->ToObject();
-      if (object->IsNull()) {
-        tokens.SetSize(i + 1);
-        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << " not found");
-        return false;
-      }
-
-      i++;
     }
 
     v8::Handle<v8::Value> value;
@@ -439,11 +440,11 @@ public:
       case PVarType::VarStaticBinary:
       case PVarType::VarDynamicBinary:
       default:
+        value = v8::Object::New(m_isolate);
         break;
     }
 
-    SetMember(object, tokens[i], value);
-    return true;
+    return SetMember(object, tokens[i], value);
   }
 
 
@@ -502,6 +503,18 @@ PJavaScript::~PJavaScript()
 }
 
 
+PString PJavaScript::LanguageName()
+{
+  return JavaName;
+}
+
+
+PString PJavaScript::GetLanguageName() const
+{
+  return JavaName;
+}
+
+
 bool PJavaScript::LoadFile(const PFilePath & /*filename*/)
 {
   return false;
@@ -520,9 +533,11 @@ bool PJavaScript::Run(const char * text)
 }
 
 
-bool PJavaScript::CreateComposite(const PString & /*name*/)
+bool PJavaScript::CreateComposite(const PString & name)
 {
-  return false;
+  PVarType dummy;
+  dummy.SetType(PVarType::VarStaticBinary);
+  return m_private->SetVar(name, dummy);
 }
 
 
