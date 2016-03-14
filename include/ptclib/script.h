@@ -52,7 +52,7 @@ class PScriptLanguage : public PObject
     {
       return PFactory<PScriptLanguage>::CreateInstance(language);
     }
-    static PStringList GetLanguages()
+    static PStringArray GetLanguages()
     {
       return PFactory<PScriptLanguage>::GetKeyList();
     }
