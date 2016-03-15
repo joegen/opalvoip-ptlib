@@ -2473,11 +2473,11 @@ PString PProcess::VersionInfo::AsString(bool full)
         break;
 
       default:
-        if (m_build != UINT_MAX)
+        if (m_build < 0x10000)
           str << '.';
     }
 
-    if (m_build != UINT_MAX)
+    if (m_build < 0x10000)
       str << m_build;
 
     if (m_git != NULL && *m_git != '\0')
