@@ -37,7 +37,7 @@
 #undef    PTLIB_BUILD
 #undef    PTLIB_VERSION
 
-#define PTLIB_VERSION_INT(major,minor,build) ((major<<24)|(minor<<16)|build)
+#define PTLIB_VERSION_INT(major,minor,build) ((major<<24)|(minor<<16)|(build&0xffff))
 #define PTLIB_CHECK_VERSION(major,minor,build) \
           (PTLIB_VERSION_INT(PTLIB_MAJOR,PTLIB_MINOR,PTLIB_BUILD) >= PTLIB_VERSION_INT(major,minor,build))
 

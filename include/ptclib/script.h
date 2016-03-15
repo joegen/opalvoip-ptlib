@@ -48,7 +48,14 @@ class PScriptLanguage : public PObject
 {
   PCLASSINFO(PScriptLanguage, PObject)
   public:
-    static PScriptLanguage * Create(const PString & language);
+    static PScriptLanguage * Create(const PString & language)
+    {
+      return PFactory<PScriptLanguage>::CreateInstance(language);
+    }
+    static PStringArray GetLanguages()
+    {
+      return PFactory<PScriptLanguage>::GetKeyList();
+    }
 
   /**@name Construction */
   //@{
@@ -60,8 +67,11 @@ class PScriptLanguage : public PObject
     ~PScriptLanguage();
   //@}
 
-  /**@name Path addition functions */
+  /**@name Scripting functions */
   //@{
+    /// Get the name of this scripting language
+    virtual PString GetLanguageName() const = 0;
+
     /**Load a script from a file.
       */
     virtual bool LoadFile(

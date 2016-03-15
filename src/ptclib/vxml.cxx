@@ -167,6 +167,10 @@ PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverseLog, "Log", true);
 #define MEDIUM_BREAK_MSECS  2500
 #define LARGE_BREAK_MSECS   5000
 
+static PConstString ApplicationScope("application");
+static PConstString DialogScope("dialog");
+static PConstString PropertyScope("property");
+
 
 //////////////////////////////////////////////////////////
 
@@ -759,6 +763,17 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   , m_transferStatus(NotTransfering)
   , m_transferStartTime(0)
 {
+#if P_SCRIPTS
+  m_scriptContext = PScriptLanguage::Create("Java");
+  if (m_scriptContext == NULL)
+    m_scriptContext = PScriptLanguage::Create("Lua"); // Back up
+  if (m_scriptContext != NULL) {
+    m_scriptContext->CreateComposite(ApplicationScope);
+    m_scriptContext->CreateComposite(DialogScope);
+    m_scriptContext->CreateComposite(PropertyScope);
+  }
+#endif
+
   SetVar("property.timeout" , "10s");
   SetVar("property.bargein", "true");
 }
@@ -770,6 +785,10 @@ PVXMLSession::~PVXMLSession()
 
   if (m_autoDeleteTextToSpeech)
     delete m_textToSpeech;
+
+#if P_SCRIPTS
+  delete m_scriptContext;
+#endif
 }
 
 
@@ -913,7 +932,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
       return false;
     }
 
-    m_variableScope = m_variableScope.IsEmpty() ? "application" : "document";
+    m_variableScope = m_variableScope.IsEmpty() ? ApplicationScope : "document";
 
     PURL pathURL = m_rootURL;
     pathURL.ChangePath(PString::Empty()); // Remove last element of root URL
@@ -1495,6 +1514,16 @@ PString PVXMLSession::GetXMLError() const
 
 PString PVXMLSession::EvaluateExpr(const PString & expr)
 {
+#if P_SCRIPTS
+  if (m_scriptContext != NULL) {
+    static PConstString const EvalVarName("PTLibEvaluateExpressionResult");
+    if (m_scriptContext->Run(PSTRSTRM(EvalVarName<<'='<<expr)))
+      return m_scriptContext->GetString(EvalVarName);
+    PTRACE(2, "VXML\tCould not evaluate expression \"" << expr << "\" with script language " << m_scriptContext->GetLanguageName());
+    return PString::Empty();
+  }
+#endif
+
   // Should be full ECMAScript but ...
   // We only support expressions of the form 'literal'+variable or all digits
 
@@ -1544,6 +1573,11 @@ PCaselessString PVXMLSession::GetVar(const PString & varName) const
   if (varName.Find('.') == P_MAX_INDEX)
     fullVarName = m_variableScope+'.'+varName;
 
+#if P_SCRIPTS
+  if (m_scriptContext != NULL)
+    return m_scriptContext->GetString(fullVarName);
+#endif
+
   return m_variables(fullVarName);
 }
 
@@ -1553,6 +1587,11 @@ void PVXMLSession::SetVar(const PString & varName, const PString & value)
   PString fullVarName = varName;
   if (varName.Find('.') == P_MAX_INDEX)
     fullVarName = m_variableScope+'.'+varName;
+
+#if P_SCRIPTS
+  if (m_scriptContext != NULL)
+    m_scriptContext->SetString(fullVarName, value);
+#endif
 
   m_variables.SetAt(fullVarName, value);
 }
@@ -2268,14 +2307,14 @@ PBoolean PVXMLSession::TraverseDisconnect(PXMLElement &)
 
 PBoolean PVXMLSession::TraverseForm(PXMLElement &)
 {
-  m_variableScope = "dialog";
+  m_variableScope = DialogScope;
   return true;
 }
 
 
 PBoolean PVXMLSession::TraversedForm(PXMLElement &)
 {
-  m_variableScope = "application";
+  m_variableScope = ApplicationScope;
   return true;
 }
 

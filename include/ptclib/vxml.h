@@ -44,6 +44,7 @@
 #include <ptclib/pwavfile.h>
 #include <ptclib/ptts.h>
 #include <ptclib/url.h>
+#include <ptclib/script.h>
 
 #include <queue>
 
@@ -329,6 +330,9 @@ class PVXMLSession : public PIndirectChannel
 
     PStringToString  m_variables;
     PString          m_variableScope;
+#if P_SCRIPTS
+    PScriptLanguage *m_scriptContext;
+#endif
 
     std::queue<char> m_userInputQueue;
     PDECLARE_MUTEX(m_userInputMutex);
