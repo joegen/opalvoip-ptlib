@@ -1484,7 +1484,8 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
     SetVar(m_recordingName + "$.size", '0');
   }
 
-  m_recordStopOnDTMF = element.HasAttribute("dtmfterm")|| !(element.GetAttribute("dtmfterm") *= "false");
+  // Disable stop on DTMF if attribute explicitly false, default is true
+  m_recordStopOnDTMF = !(element.GetAttribute("dtmfterm") *= "false");
 
   PFile::Remove(destination);
 
