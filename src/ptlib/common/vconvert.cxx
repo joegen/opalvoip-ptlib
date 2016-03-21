@@ -1146,12 +1146,7 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
                                             unsigned blueOffset)
 {
   if (srcFrameBuffer == dstFrameBuffer) {
-    PTRACE(2,"Cannot do in-place conversion, not implemented.");
-    return false;
-  }
-
-  if ((m_dstFrameWidth | m_dstFrameHeight) & 1) {
-    PTRACE(2,"Cannot have odd output width or height.");
+    PAssertAlways(PUnimplementedFunction);
     return false;
   }
 
@@ -1160,20 +1155,21 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
   const BYTE * scanLinePtrRGB = srcFrameBuffer;
   int scanLineSizeRGB = (rgbIncrement*m_srcFrameWidth+3)&~3;
 
-  unsigned scanLineSizeY = m_dstFrameWidth;
+  unsigned planeHeight = (m_dstFrameHeight+1)&~1;
+  unsigned scanLineSizeY = (m_dstFrameWidth+1)&~1;
   unsigned scanLineSizeUV = scanLineSizeY/2;
   BYTE * scanLinePtrY = dstFrameBuffer;                                 // 1 byte Y (luminance) for each pixel
-  BYTE * scanLinePtrU = scanLinePtrY+m_dstFrameHeight*scanLineSizeY;    // 1 byte U for a block of 4 pixels
-  BYTE * scanLinePtrV = scanLinePtrU+m_dstFrameHeight*scanLineSizeUV/2; // 1 byte V for a block of 4 pixels
+  BYTE * scanLinePtrU = scanLinePtrY+planeHeight*scanLineSizeY;    // 1 byte U for a block of 4 pixels
+  BYTE * scanLinePtrV = scanLinePtrU+planeHeight*scanLineSizeUV/2; // 1 byte V for a block of 4 pixels
 
   if (m_verticalFlip) {
     scanLinePtrRGB += (m_srcFrameHeight - 1) * scanLineSizeRGB;
     scanLineSizeRGB = -scanLineSizeRGB;
   }
 
-  if (m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight) {
+  if (m_srcFrameWidth == scanLineSizeY && m_srcFrameHeight == planeHeight) {
     int RGBOffset[4] = { 0, (int)rgbIncrement, scanLineSizeRGB, scanLineSizeRGB+(int)rgbIncrement };
-    unsigned YUVOffset[4] = { 0, 1, m_dstFrameWidth, m_dstFrameWidth + 1 };
+    unsigned YUVOffset[4] = { 0, 1, scanLineSizeY, scanLineSizeY + 1 };
     scanLineSizeRGB *= 2;
     rgbIncrement *= 2;
     for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
@@ -1203,7 +1199,7 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
   }
   else {
     bool evenLine = true;
-    PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 1);
+    PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, scanLineSizeY, planeHeight, 2, 1);
     do {
       while (raster.HasDutyY()) {
         const BYTE * pixelRGB1 = scanLinePtrRGB;
@@ -3099,7 +3095,7 @@ struct PJPEGConverter::Context
 
   bool SetColourSpace(const PCaselessString & colourFormat)
   {
-    if (colourFormat == "YUV420P")
+    if (colourFormat == PVideoFrameInfo::YUV420P())
       m_colourSpace = MY_JPEG_YUV420P;
     else if (colourFormat == "RGB24")
       m_colourSpace = MY_JPEG_RGB24;
@@ -3238,7 +3234,7 @@ struct PJPEGConverter::Context
 
 
 PJPEGConverter::PJPEGConverter()
-  : PColourConverter(PColourPair("JPEG", "YUV420P"))
+  : PColourConverter(PColourPair("JPEG", PVideoFrameInfo::YUV420P()))
   , m_context(new Context)
 {
 }
