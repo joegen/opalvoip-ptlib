@@ -705,7 +705,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       srcWidth == dstWidth && srcHeight == dstHeight &&
       srcFrameWidth == dstFrameWidth && srcFrameHeight == dstFrameHeight &&
       srcWidth == srcFrameWidth && srcHeight == srcFrameHeight) {
-    memcpy(dstYUV, srcYUV, srcFrameWidth*srcFrameHeight*3/2);
+    memcpy(dstYUV, srcYUV, PVideoFrameInfo::CalculateFrameBytes(dstFrameWidth, dstFrameHeight));
     return true;
   }
 
@@ -745,6 +745,11 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
                 " dstY=" << dstY << " + dstHeight=" << dstHeight << " > frameHeight=" << dstFrameHeight;
     return false;
   }
+
+  srcFrameWidth  = (srcFrameWidth+1)&~1;
+  srcFrameHeight = (srcFrameHeight+1)&~1;
+  dstFrameWidth  = (dstFrameWidth+1)&~1;
+  dstFrameHeight = (dstFrameHeight+1)&~1;
 
   void(*rowFunction)(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
                      BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstFrameWidth) = CropYUV420P;
@@ -868,6 +873,8 @@ bool PColourConverter::RotateYUV420P(int angle, unsigned width, unsigned height,
   if (dstYUV == NULL || srcYUV == dstYUV)
     dstYUV = storage.GetPointer(size);
 
+  width  = (width+1)&~1;
+  height = (height+1)&~1;
   struct PlaneInfo {
     unsigned int width;
     unsigned int height;
@@ -927,6 +934,11 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
                                    unsigned frameWidth, unsigned frameHeight, BYTE * yuv,
                                    unsigned r, unsigned g, unsigned b)
 {
+  if (frameWidth == 0)
+     frameWidth = width;
+  if (frameHeight == 0)
+     frameHeight = height;
+
   if (frameWidth == 0 || frameHeight == 0 || x + width > frameWidth || y + height > frameHeight) {
     PAssertAlways(PInvalidParameter);
     return false;
@@ -935,29 +947,27 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
   BYTE Y, U, V;
   PColourConverter::RGBtoYUV(r, g, b, Y, U, V);
 
-  x &= 0xfffffffe; // Make sure is even
+  unsigned planeWidth  = (frameWidth+1)&~1;
+  unsigned planeHeight = (frameHeight+1)&~1;
 
-  int offset       = ( y * frameWidth ) + x;
-  int colourOffset = ( (y * frameWidth) >> 2) + (x >> 1);
-
-  unsigned char * Yptr  = yuv + offset;
-  unsigned char * Uptr = yuv + (frameWidth * frameHeight) + colourOffset;
-  unsigned char * Vptr = yuv + (frameWidth * frameHeight) + (frameWidth * frameHeight/4)  + colourOffset;
+  unsigned char * Yptr  = yuv + ( y * planeWidth ) + x;
+  unsigned char * Uptr = yuv + (planeWidth * planeHeight) + ( (y * planeWidth) >> 2) + (x >> 1);
+  unsigned char * Vptr = Uptr + planeWidth * planeHeight / 4;
 
   int halfRectWidth  = width/2;
-  int halfFrameWidth = frameWidth/2;
-  
+  int halfPlaneWidth = planeWidth/2;
+
   for (unsigned dy = 0; dy < height; dy += 2) {
     memset(Yptr, Y, width);
-    Yptr += frameWidth;
+    Yptr += planeWidth;
     memset(Yptr, Y, width);
-    Yptr += frameWidth;
+    Yptr += planeWidth;
 
     memset(Uptr, U, halfRectWidth);
     memset(Vptr, V, halfRectWidth);
 
-    Uptr += halfFrameWidth;
-    Vptr += halfFrameWidth;
+    Uptr += halfPlaneWidth;
+    Vptr += halfPlaneWidth;
   }
 
   return true;
