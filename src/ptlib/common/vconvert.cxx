@@ -675,13 +675,6 @@ static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight,
     return false;
   }
 
-  if ((srcFrameWidth | dstFrameWidth | srcFrameHeight | dstFrameHeight) & 1) {
-    if (error != NULL)
-      *error << "Dimensions must be even: "
-             << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight;
-    return false;
-  }
-
   if (srcFrameWidth <= dstFrameWidth && srcFrameHeight <= dstFrameHeight)
     return true;
 
