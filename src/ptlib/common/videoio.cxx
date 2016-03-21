@@ -45,44 +45,56 @@
 
 const PString & PVideoFrameInfo::YUV420P() { static PConstString const s(PTLIB_VIDEO_YUV420P); return s; }
 
+static PINDEX CalculateFrameBytesYUV420P(unsigned width, unsigned height)
+{
+  // Need to round up with Y plane
+  return ((width+1)&~1) * ((height+1)&~1) *3 / 2;
+}
+
+static PINDEX CalculateFrameBytesRGB24(unsigned width, unsigned height)
+{
+  return ((width*3+3)&~3) * height;
+}
+
 //Colour format bit per pixel table.
 // These are in rough order of colour gamut size and "popularity"
 static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
-  unsigned     alignmentMinus1; // Power of 2 minus 1
+  PINDEX (*calculate)(unsigned width, unsigned height);
 
   PINDEX CalculateFrameBytes(unsigned width, unsigned height)
   {
-      return  (((width * bitsPerPixel / 8) + alignmentMinus1) & ~alignmentMinus1)
-                                * ((height + alignmentMinus1) & ~alignmentMinus1);
+      if (calculate)
+          return calculate(width, height);
+      return  (width * bitsPerPixel / 8) * height;
   }
 } ColourFormatBPPTab[] = {
-  { PTLIB_VIDEO_YUV420P, 12, 1 },
-  { "I420",    12, 1 },
-  { "IYUV",    12, 1 },
-  { "YUV420",  12, 1 },
-  { "RGB32",   32, 3 },
-  { "BGR32",   32, 3 },
-  { "RGB24",   24, 3 },
-  { "BGR24",   24, 3 },
-  { "YUY2",    16, 0 },
-  { "YUV422",  16, 0 },
-  { "YUV422P", 16, 0 },
-  { "YUV411",  12, 0 },
-  { "YUV411P", 12, 0 },
-  { "RGB565",  16, 3 },
-  { "RGB555",  16, 3 },
-  { "RGB16",   16, 1 },
-  { "YUV410",  10, 0 },
-  { "YUV410P", 10, 0 },
-  { "Grey",     8, 0 },
-  { "GreyF",    8, 0 },
-  { "UYVY422", 16, 1 },
-  { "UYV444",  24, 0 },
-  { "SBGGR8",   8, 0 },
-  { "JPEG",    24, 0 },
-  { "MJPEG",    8, 0 }
+  { PTLIB_VIDEO_YUV420P, 12, CalculateFrameBytesYUV420P },
+  { "I420",              12, CalculateFrameBytesYUV420P },
+  { "IYUV",              12, CalculateFrameBytesYUV420P },
+  { "YUV420",            12 },
+  { "RGB32",             32 },
+  { "BGR32",             32 },
+  { "RGB24",             24, CalculateFrameBytesRGB24 },
+  { "BGR24",             24, CalculateFrameBytesRGB24 },
+  { "YUY2",              16 },
+  { "YUV422",            16 },
+  { "YUV422P",           16 },
+  { "YUV411",            12 },
+  { "YUV411P",           12 },
+  { "RGB565",            16 },
+  { "RGB555",            16 },
+  { "RGB16",             16 },
+  { "YUV410",            10 },
+  { "YUV410P",           10 },
+  { "Grey",               8 },
+  { "GreyF",              8 },
+  { "UYVY422",           16 },
+  { "UYV444",            24 },
+  { "SBGGR8",             8 },
+  { "JPEG",              24 },
+  { "MJPEG",              8 }
 };
 
 
