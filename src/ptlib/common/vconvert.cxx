@@ -853,7 +853,7 @@ bool PColourConverter::RotateYUV420P(int angle, unsigned width, unsigned height,
   if (!PAssert(width > 16 && height > 16, PInvalidParameter))
     return false;
 
-  unsigned size = width*height*3/2;
+  unsigned size = PVideoFrameInfo::CalculateFrameBytes(width, height);
 
   if (angle == 0) {
     if (dstYUV != NULL && srcYUV != dstYUV)
@@ -3145,7 +3145,7 @@ struct PJPEGConverter::Context
         return width*height;
 
       case MY_JPEG_YUV420P :
-        return width*height*3/2;
+        return PVideoFrameInfo::CalculateFrameBytes(width, height);
 
       default :
         PAssertAlways(PInvalidParameter);
@@ -3193,7 +3193,7 @@ struct PJPEGConverter::Context
       return false;
     }
 
-    if (!Finish(m_temporaryBuffer.GetPointer(nativeWidth*nativeHeight*3/2), nativeWidth, nativeHeight))
+    if (!Finish(m_temporaryBuffer.GetPointer(PVideoFrameInfo::CalculateFrameBytes(nativeWidth, nativeHeight)), nativeWidth, nativeHeight))
       return false;
 
     return CopyYUV420P(0, 0, nativeWidth, nativeHeight, nativeWidth, nativeHeight, m_temporaryBuffer,
