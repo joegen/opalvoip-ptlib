@@ -943,12 +943,12 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
   unsigned planeWidth  = (frameWidth+1)&~1;
   unsigned planeHeight = (frameHeight+1)&~1;
 
-  unsigned char * Yptr  = yuv + ( y * planeWidth ) + x;
-  unsigned char * Uptr = yuv + (planeWidth * planeHeight) + ( (y * planeWidth) >> 2) + (x >> 1);
-  unsigned char * Vptr = Uptr + planeWidth * planeHeight / 4;
-
   int halfRectWidth  = width/2;
   int halfPlaneWidth = planeWidth/2;
+
+  unsigned char * Yptr  = yuv + y*planeWidth + x;
+  unsigned char * Uptr = yuv + (planeWidth * planeHeight) + y/2*halfPlaneWidth + x/2;
+  unsigned char * Vptr = Uptr + planeWidth * planeHeight / 4;
 
   for (unsigned dy = 0; dy < height; dy += 2) {
     memset(Yptr, Y, width);
@@ -1883,7 +1883,9 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   if (bytesReturned != NULL)
     *bytesReturned = m_dstFrameBytes;
 
-  unsigned yPlaneSize = m_srcFrameWidth*m_srcFrameHeight;
+  unsigned planeWidth = (m_srcFrameWidth+1)&~1;
+  unsigned planeHeight = (m_srcFrameHeight+1)&~1;
+  unsigned yPlaneSize = planeWidth*planeHeight;
   const BYTE * scanLinePtrY = srcFrameBuffer;            // 1 byte Y (luminance) for each pixel
   const BYTE * scanLinePtrU = scanLinePtrY+yPlaneSize;   // 1 byte U for a block of 4 pixels
   const BYTE * scanLinePtrV = scanLinePtrU+yPlaneSize/4; // 1 byte V for a block of 4 pixels
@@ -1917,7 +1919,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   BYTE * scanLinePtrRGB = dstFrameBuffer;
   int scanLineSizeRGB = (int)((rgbIncrement*m_dstFrameWidth+3)&~3);
 
-  unsigned srcPixpos[4] = { 0, 1, m_srcFrameWidth, m_srcFrameWidth + 1 };
+  unsigned srcPixpos[4] = { 0, 1, planeWidth, planeWidth + 1 };
   unsigned dstPixpos[4] = { 0, rgbIncrement, (unsigned)scanLineSizeRGB, (unsigned)scanLineSizeRGB+rgbIncrement };
 
   if (m_verticalFlip) {
@@ -1952,8 +1954,9 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
       BYTE * pixelRGB = scanLinePtrRGB;
       for (unsigned x = 0; x < m_srcFrameWidth; x += 2) {
+        unsigned pixels = x < m_srcFrameWidth-1 ? 4 : 2;
         YUV420PtoRGB_PIXEL_UV(scanLinePtrU, scanLinePtrV);
-        for (unsigned p = 0; p < 4; p++) {
+        for (unsigned p = 0; p < pixels; p++) {
           BYTE * rgbPtr = pixelRGB + dstPixpos[p];
           YUV420PtoRGB_PIXEL_RGB(scanLinePtrY);
           if (rgbIncrement == 4)
@@ -1965,12 +1968,12 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
         scanLinePtrV++;
       }
       scanLinePtrRGB += scanLineSizeRGB;
-      scanLinePtrY += m_srcFrameWidth;
+      scanLinePtrY += planeWidth;
     }
   }
   else {
-    unsigned scanLineSizeY = m_srcFrameWidth*2; // Actually two scan lines
-    unsigned scanLineSizeUV = m_srcFrameWidth/2;
+    unsigned scanLineSizeY = planeWidth*2; // Actually two scan lines
+    unsigned scanLineSizeUV = planeWidth/2;
 
     PRasterDutyCycle raster(m_resizeMode, m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, 2, 2);
     do {
