@@ -2985,7 +2985,7 @@ void PMutexExcessiveLockInfo::LockReleased(const PObject & mutex)
 #if PTRACING
     PTRACE_BEGIN(0, "PTLib") << "Assertion fail: Released phantom deadlock in " << mutex << PTrace::End;
 #else
-    PAssertAlways(PSTRSTRM("Released phantom deadlock in mutex " << *this));
+    PAssertAlways(PSTRSTRM("Released phantom deadlock in mutex " << mutex));
 #endif
     m_excessiveLockActive = false;
   }
