@@ -1614,7 +1614,7 @@ PBoolean PVideoInputDevice_FakeVideo::SetColourFormat(const PString & newFormat)
     m_internalColourFormat = eRGB32;
   else if (newFormat *= "RGB24")
     m_internalColourFormat = eRGB24;
-  else if (newFormat *= "YUV420P")
+  else if (newFormat *= PVideoFrameInfo::YUV420P())
     m_internalColourFormat = eYUV420P;
   else if ((newFormat *= "YUV422") || (newFormat *= "YUY2"))
     m_internalColourFormat = eYUV422;

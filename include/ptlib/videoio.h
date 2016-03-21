@@ -46,6 +46,9 @@
 class PColourConverter;
 
 
+#define PTLIB_VIDEO_YUV420P "YUV420P"
+
+
 class PVideoFrameInfo : public PObject
 {
     PCLASSINFO(PVideoFrameInfo, PObject);
@@ -73,12 +76,14 @@ class PVideoFrameInfo : public PObject
       MaxWidth   = 1920, MaxHeight   = 1200
     };
 
+    static const PString & YUV420P();
+
     /// Construct video frame information
     PVideoFrameInfo();
     PVideoFrameInfo(
       unsigned        frameWidth,
       unsigned        frameHeight,
-      const PString & colourFormat = "YUV420P",
+      const PString & colourFormat = PVideoFrameInfo::YUV420P(),
       unsigned        frameRate = 15,
       ResizeMode      resizeMode = eScale
     );
@@ -214,9 +219,9 @@ class PVideoFrameInfo : public PObject
       */
     PINDEX CalculateFrameBytes() const { return CalculateFrameBytes(frameWidth, frameHeight, colourFormat); }
     static PINDEX CalculateFrameBytes(
-      unsigned width,               ///< WIdth of frame
+      unsigned width,               ///< Width of frame
       unsigned height,              ///< Height of frame
-      const PString & colourFormat  ///< Colour format of frame
+      const PString & colourFormat = PVideoFrameInfo::YUV420P()  ///< Colour format of frame
     );
 
     /** Parse a descriptor string for the video format.
@@ -355,7 +360,7 @@ class PVideoInteractionInfo : public PObject
      "YUV411"   YUV 4:1:1 packed
      "YUV411P"  YUV 4:1:1 planar
      "YUV420"   YUV 4:2:0 packed
-     "YUV420P"  YUV 4:2:0 planar
+     "YUV420P"  YUV 4:2:0 planar, use PTLIB_VIDEO_YUV420P or PVideoFrameInfo::YUV420P()
      "YUV410"   YUV 4:1:0 packed
      "YUV410P"  YUV 4:1:0 planar
      "MJPEG"    Motion JPEG

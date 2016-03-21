@@ -245,7 +245,7 @@ static struct FormatTableEntry {
   { "RGB555",  15, TRUE,  BI_BITFIELDS },
 
   // http://support.microsoft.com/support/kb/articles/q294/8/80.asp
-  { "YUV420P", 12, FALSE, mmioFOURCC('I','Y','U','V') },
+  { PTLIB_VIDEO_YUV420P, 12, FALSE, mmioFOURCC('I','Y','U','V') },
   { "IYUV",    12, FALSE, mmioFOURCC('I','Y','U','V') }, // Synonym for IYUV
   { "I420",    12, FALSE, mmioFOURCC('I','4','2','0') }, // Synonym for IYUV
   { "YV12",    12, FALSE, mmioFOURCC('Y','V','1','2') }, // same as IYUV except that U and V planes are switched
@@ -1001,7 +1001,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   }
 #endif
   
-  return SetFrameRate(frameRate) && SetColourFormatConverter(colourFormat.IsEmpty() ? PString("YUV420P") : colourFormat);
+  return SetFrameRate(frameRate) && SetColourFormatConverter(colourFormat.IsEmpty() ? PVideoFrameInfo::YUV420P() : colourFormat);
 }
 
 
