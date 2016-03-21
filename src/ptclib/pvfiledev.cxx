@@ -74,7 +74,7 @@ PVideoInputDevice_VideoFile::PVideoInputDevice_VideoFile()
   , m_frameRateAdjust(0)
   , m_opened(false)
 {
-  SetColourFormat("YUV420P");
+  SetColourFormat(PVideoFrameInfo::YUV420P());
 }
 
 
@@ -464,7 +464,7 @@ PStringArray PVideoOutputDevice_VideoFile::GetOutputDeviceNames()
 
 PBoolean PVideoOutputDevice_VideoFile::SetColourFormat(const PString & newFormat)
 {
-  return (newFormat *= "YUV420P") && PVideoDevice::SetColourFormat(newFormat);
+  return (newFormat *= PVideoFrameInfo::YUV420P()) && PVideoDevice::SetColourFormat(newFormat);
 }
 
 

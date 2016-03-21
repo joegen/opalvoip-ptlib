@@ -43,17 +43,25 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const PString & PVideoFrameInfo::YUV420P() { static PConstString const s(PTLIB_VIDEO_YUV420P); return s; }
+
 //Colour format bit per pixel table.
 // These are in rough order of colour gamut size and "popularity"
 static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
-  unsigned     alignmentMinus1;
+  unsigned     alignmentMinus1; // Power of 2 minus 1
+
+  PINDEX CalculateFrameBytes(unsigned width, unsigned height)
+  {
+      return  (((width * bitsPerPixel / 8) + alignmentMinus1) & ~alignmentMinus1)
+                                * ((height + alignmentMinus1) & ~alignmentMinus1);
+  }
 } ColourFormatBPPTab[] = {
-  { "YUV420P", 12, 0 },
-  { "I420",    12, 0 },
-  { "IYUV",    12, 0 },
-  { "YUV420",  12, 0 },
+  { PTLIB_VIDEO_YUV420P, 12, 1 },
+  { "I420",    12, 1 },
+  { "IYUV",    12, 1 },
+  { "YUV420",  12, 1 },
   { "RGB32",   32, 3 },
   { "BGR32",   32, 3 },
   { "RGB24",   24, 3 },
@@ -126,7 +134,7 @@ PVideoFrameInfo::PVideoFrameInfo()
   , sarWidth(1)
   , sarHeight(1)
   , frameRate(25)
-  , colourFormat("YUV420P")
+  , colourFormat(PVideoFrameInfo::YUV420P())
   , resizeMode(eScale)
 {
 }
@@ -294,7 +302,7 @@ PINDEX PVideoFrameInfo::CalculateFrameBytes(unsigned width, unsigned height,
 {
   for (PINDEX i = 0; i < PARRAYSIZE(ColourFormatBPPTab); i++) {
     if (colourFormat *= ColourFormatBPPTab[i].colourFormat)
-      return  height * ((width * ColourFormatBPPTab[i].bitsPerPixel/8 + ColourFormatBPPTab[i].alignmentMinus1) & (~ColourFormatBPPTab[i].alignmentMinus1));
+      return ColourFormatBPPTab[i].CalculateFrameBytes(width, height);
   }
   return 0;
 }
@@ -472,7 +480,7 @@ PVideoDevice::OpenArgs::OpenArgs()
     deviceName("#1"),
     videoFormat(Auto),
     channelNumber(-1),
-    colourFormat("YUV420P"),
+    colourFormat(PVideoFrameInfo::YUV420P()),
     convertFormat(true),
     rate(0),
     width(CIFWidth),

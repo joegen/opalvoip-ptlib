@@ -310,7 +310,7 @@ PVideoOutputDevice_SDL::PVideoOutputDevice_SDL()
   , m_x(0)
   , m_y(0)
 {
-  colourFormat = "YUV420P";
+  colourFormat = PVideoFrameInfo::YUV420P();
   PTRACE(5, "Constructed.");
 }
 
@@ -364,7 +364,7 @@ PBoolean PVideoOutputDevice_SDL::Close()
 
 PBoolean PVideoOutputDevice_SDL::SetColourFormat(const PString & colourFormat)
 {
-  if (colourFormat *= "YUV420P")
+  if (colourFormat *= PVideoFrameInfo::YUV420P())
     return PVideoOutputDevice::SetColourFormat(colourFormat);
 
   return false;
