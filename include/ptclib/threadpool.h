@@ -490,7 +490,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         bool                   m_working;
     };
 
-    virtual void OnMaxWaitTime(const PTimeInterval & PTRACE_PARAM(latency), const string & PTRACE_PARAM(group))
+    virtual void OnMaxWaitTime(const PTimeInterval & latency, const string & PTRACE_PARAM(group))
     {
       PTime now;
       if (this->m_nextWorkerIncreaseTime > now) {
