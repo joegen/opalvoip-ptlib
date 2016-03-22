@@ -285,6 +285,13 @@ class PColourConverter : public PColourPair
       BYTE   & y, BYTE   & u, BYTE   & v
     );
 
+    /**Convert YUV to RGB.
+      */
+    static void YUVtoRGB(
+      unsigned y, unsigned u, unsigned v,
+      BYTE   & r, BYTE   & g, BYTE   & b
+    );
+
     /**Copy a section of the source frame to a section of the destination
        frame with scaling/cropping as required.
       */
