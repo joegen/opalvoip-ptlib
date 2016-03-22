@@ -246,7 +246,7 @@ bool PYUVFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissi
 
         case 'C' :
           if (param == "C420")
-            m_videoInfo.SetColourFormat("YUV420P");
+            m_videoInfo.SetColourFormat(PVideoFrameInfo::YUV420P());
           else if (param == "C422")
             m_videoInfo.SetColourFormat("YUV422P");
           else {

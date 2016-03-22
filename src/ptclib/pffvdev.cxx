@@ -103,7 +103,7 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
 
 PVideoInputDevice_FFMPEG::PVideoInputDevice_FFMPEG()
 {
-  SetColourFormat("YUV420P");
+  SetColourFormat(PVideoFrameInfo::YUV420P());
   channelNumber = 0; 
   grabCount = 0;
   SetFrameRate(10);
@@ -182,7 +182,7 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
   }
 
   // file is now open
-  m_ffmpegFrameSize = CalculateFrameBytes(m_ffmpegFrameWidth, m_ffmpegFrameHeight, "yuv420p");
+  m_ffmpegFrameSize = CalculateFrameBytes(m_ffmpegFrameWidth, m_ffmpegFrameHeight, PVideoFrameInfo::YUV420P());
   SetFrameSize(m_ffmpegFrameWidth, m_ffmpegFrameHeight);
 
   deviceName = _deviceName;
@@ -236,7 +236,7 @@ PBoolean PVideoInputDevice_FFMPEG::SetVideoFormat(VideoFormat newFormat)
 
 PBoolean PVideoInputDevice_FFMPEG::SetColourFormat(const PString & newFormat)
 {
-  if (!(newFormat *= "YUV420P"))
+  if (!(newFormat *= PVideoFrameInfo::YUV420P()))
     return false;
 
   return PVideoDevice::SetColourFormat(newFormat);

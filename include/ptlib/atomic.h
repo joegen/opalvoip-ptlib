@@ -262,6 +262,14 @@ class PAtomicBoolean : public atomic<bool>
     bool TestAndSet(bool value) { return exchange(value); }
 };
 
+
+// Template class for thread safe singleton
+template <class Type, Type * (*Creator)() = PSingletonCreatorDefault<Type> >
+class PSafeSingleton : public PSingleton<Type, atomic<unsigned>, Creator>
+{
+};
+
+
 #endif // PTLIB_CRITICALSECTION_H
 
 
