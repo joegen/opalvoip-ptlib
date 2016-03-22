@@ -1868,6 +1868,25 @@ static FixedPoint const YUVtoB_Coeff  =  FIX_FROM_FLOAT(1.77200);
  * B = Y + 1.772 (Cb-128)
  * 
  */
+
+void PColourConverter::YUVtoRGB(unsigned y, unsigned u, unsigned v,
+                                BYTE   & r, BYTE   & g, BYTE   & b)
+{
+    FixedPoint cb = u - 128;
+    FixedPoint cr = v - 128;
+    FixedPoint rd = ROUND(YUVtoR_Coeff * cr);
+    FixedPoint gd = ROUND(YUVtoG_Coeff1 * cb - YUVtoG_Coeff2 * cr);
+    FixedPoint bd = ROUND(YUVtoB_Coeff * cb);
+    FixedPoint yvalue = y << ScaleBitShift;
+    FixedPoint rvalue = yvalue + rd;
+    FixedPoint gvalue = yvalue + gd;
+    FixedPoint bvalue = yvalue + bd;
+    r = CLAMP(rvalue);
+    g = CLAMP(gvalue);
+    b = CLAMP(bvalue);
+}
+
+
 bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
                                             BYTE * dstFrameBuffer,
                                             PINDEX * bytesReturned,
