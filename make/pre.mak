@@ -87,7 +87,7 @@ endif
 
 
 ifeq ($(V)$(VERBOSE),)
-  ifeq ($(DEBUG_BUILD),yes)
+  ifeq ($(Q_SUFFIX)$(DEBUG_BUILD),yes)
     Q_SUFFIX := " dbg"
   endif
   Q   := @
