@@ -552,6 +552,11 @@ void PServiceProcess::OnContinue()
 }
 
 
+void PServiceProcess::OnControl()
+{
+}
+
+
 void PServiceProcess::Terminate()
 {
   if (isTerminating) {
