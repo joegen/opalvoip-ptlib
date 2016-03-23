@@ -108,7 +108,7 @@ class PServiceProcess : public PProcess
 
     /** The Control menu option was used in the SysTray menu.
      */
-    virtual void OnControl() = 0;
+    virtual void OnControl();
   //@}
 
   /**@name Miscellaneous functions */
