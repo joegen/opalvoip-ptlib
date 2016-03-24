@@ -609,7 +609,7 @@ class PHTML : public PStringStream
       AlignRight,
       AlignJustify,
       AlignBaseline,
-      AlignBotton,
+      AlignBottom,
       AlignMiddle,
       AlignTop
     };
