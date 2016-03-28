@@ -440,7 +440,11 @@ public:
       case PVarType::VarStaticBinary:
       case PVarType::VarDynamicBinary:
       default:
+#if P_V8_API > 1
         value = v8::Object::New(m_isolate);
+#else
+        value = v8::Object::New();
+#endif
         break;
     }
 
