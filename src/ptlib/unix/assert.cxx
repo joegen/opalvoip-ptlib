@@ -61,7 +61,7 @@
     FD_SET(fileno(fp), &rd);
 
     P_timeval tv(1);
-    if (select(1, &rd, NULL, NULL, tv) != 0)
+    if (select(1, &rd, NULL, NULL, tv) != 1)
       return false;
 
     if (fgets(buffer, size, fp) == NULL)
