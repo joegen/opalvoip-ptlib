@@ -194,7 +194,6 @@ int PServiceProcess::InitialiseService()
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
-    PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 #if PTRACING
     PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
 #if _DEBUG
@@ -453,6 +452,8 @@ int PServiceProcess::InitialiseService()
 
   if (!daemon)
     return -1;
+
+  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 
 #if !defined(BE_THREADS) && !defined(P_RTEMS)
 
