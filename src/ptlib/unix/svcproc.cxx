@@ -358,6 +358,9 @@ int PServiceProcess::InitialiseService()
 
   // set flag for console messages
   if (args.HasOption('c')) {
+#if PTRACING
+    PSetErrorStream(PTrace::GetStream());
+#endif
     PSystemLog::SetTarget(new PSystemLogToStderr());
     m_debugMode = true;
   }
