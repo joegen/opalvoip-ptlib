@@ -611,7 +611,7 @@ static PConstString const AttStr[] =
   "align=right",
   "align=justify",
   "valign=baseline",
-  "valign=botton",
+  "valign=bottom",
   "valign=middle",
   "valign=top"
 };
