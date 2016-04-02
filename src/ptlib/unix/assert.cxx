@@ -56,13 +56,22 @@
 
   static bool fgets_nonl(char * buffer, size_t size, FILE * fp)
   {
+    int fd = fileno(fp);
     fd_set rd;
     FD_ZERO(&rd);
-    FD_SET(fileno(fp), &rd);
+    FD_SET(fd, &rd);
 
-    P_timeval tv(1);
-    if (select(1, &rd, NULL, NULL, tv) != 0)
-      return false;
+    P_timeval tv(1,0);
+    switch (select(fd+1, &rd, NULL, NULL, tv)) {
+      case 1 :
+        break;
+      case 0 :
+        strncpy(buffer, "StackWalk timeout with addr2line", size);
+        return false;
+      default :
+        snprintf(buffer, size, "StackWalk error %d with addr2line", errno);
+        return false;
+    }
 
     if (fgets(buffer, size, fp) == NULL)
       return false;
@@ -83,8 +92,11 @@
     FILE * p = popen("which addr2line", "r");
     if (p != NULL) {
       char line[100];
+      line[0] = '\0';
       if (fgets_nonl(line, sizeof(line), p) && access(line, R_OK|X_OK) == 0)
         addr2line = line;
+      if (addr2line.empty())
+        cerr << "Could not locate addr2line: " << line << endl;
       fclose(p);
     }
 
@@ -112,7 +124,13 @@
       FILE * p = popen(cmd.str().c_str(), "r");
       if (p != NULL) {
         char line[200];
-        for (i = skip; i < addressCount && fgets_nonl(line, sizeof(line), p); ++i) {
+        for (i = skip; i < addressCount; ++i) {
+          line[0] = '\0';
+          if (!fgets_nonl(line, sizeof(line), p)) {
+            if (line[0] != '\0')
+              strm << line << '\n';
+            break;
+          }
           if (strcmp(line, "??:0") != 0)
             lines[i] = line;
         }
