@@ -2108,8 +2108,9 @@ PProcess::PProcess(const char * manuf, const char * name,
   PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
   PProcessInstance = this;
 
+  /* Try to get the real image path for this process using platform dependent
+     code, if this fails, then use the value urigivally set via argv[0] */
 #if defined(_WIN32)
-  // Try to get the real image path for this process
   TCHAR shortName[_MAX_PATH];
   if (GetModuleFileName(GetModuleHandle(NULL), shortName, sizeof(shortName)) > 0) {
     TCHAR longName[32768]; // Space for long image path
@@ -2125,14 +2126,16 @@ PProcess::PProcess(const char * manuf, const char * name,
   if (_NSGetExecutablePath(path, &size) == 0)
     executableFile = path;
 #elif defined(P_RTEMS)
-
   cout << "Enter program arguments:\n";
   arguments.ReadFrom(cin);
 #else
-  // Hope for a /proc, dertainly works for Linux
+  // Hope for a /proc, certainly works for Linux
   char path[10000];
-  if (readlink("/proc/self/exe", path, sizeof(path)) >= 0)
+  int len = readlink("/proc/self/exe", path, sizeof(path));
+  if (len >= 0) {
+    path[len] = '\0';
     executableFile = path;
+  }
 #endif // _WIN32
 
   if (productName.IsEmpty())

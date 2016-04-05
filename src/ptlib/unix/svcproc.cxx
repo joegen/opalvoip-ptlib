@@ -194,7 +194,6 @@ int PServiceProcess::InitialiseService()
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
-    PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 #if PTRACING
     PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
 #if _DEBUG
@@ -359,6 +358,9 @@ int PServiceProcess::InitialiseService()
 
   // set flag for console messages
   if (args.HasOption('c')) {
+#if PTRACING
+    PSetErrorStream(PTrace::GetStream());
+#endif
     PSystemLog::SetTarget(new PSystemLogToStderr());
     m_debugMode = true;
   }
@@ -433,14 +435,7 @@ int PServiceProcess::InitialiseService()
   bool daemon = args.HasOption('d');
 
   // Remove the service arguments
-  if (args.GetCount() == 0)
-    args.SetArgs("");
-  else {
-    PStringArray programArgs(args.GetCount());
-    for (PINDEX arg = 0; arg < args.GetCount(); ++arg)
-      programArgs = args[arg];
-    args.SetArgs(programArgs);
-  }
+  args.SetArgs(args.GetParameters());
 
  // We are a service, don't want to get blocked on input from stdin during asserts
   if (!m_debugMode)
@@ -453,6 +448,8 @@ int PServiceProcess::InitialiseService()
 
   if (!daemon)
     return -1;
+
+  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 
 #if !defined(BE_THREADS) && !defined(P_RTEMS)
 
