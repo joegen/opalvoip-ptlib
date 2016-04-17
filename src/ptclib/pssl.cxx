@@ -1881,7 +1881,6 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case TLSv1:
       meth = TLSv1_method(); 
       break;
-#if OPENSSL_VERSION_NUMBER > 0x0090819fL
     case TLSv1_1 :
       meth = TLSv1_1_method(); 
       break;
@@ -1905,7 +1904,6 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case DTLSv1_2_v1_0 :
       meth = DTLSv1_method();
       break;
-#endif
 #endif
     default :
       PAssertAlways("Unsupported TLS/DTLS version");
