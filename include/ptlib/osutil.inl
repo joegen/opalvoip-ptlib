@@ -176,7 +176,7 @@ PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(*this); }
 
 PINLINE PBoolean PTime::IsValid() const
-  { return m_microSecondsSinceEpoch.load() > 46800000000; }
+  { return m_microSecondsSinceEpoch.load() > 46800000000LL; }
 
 PINLINE PInt64 PTime::GetTimestamp() const
   { return m_microSecondsSinceEpoch.load(); }
