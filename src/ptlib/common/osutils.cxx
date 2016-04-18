@@ -654,9 +654,9 @@ void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const
   if (m_rolloverPattern.IsEmpty())
     m_rolloverPattern = DefaultRollOverPattern;
   m_lastRotate = GetRotateVal(options);
+  m_thresholdLevel = level;
   AdjustOptions(options, UINT_MAX);
   OpenTraceFile(filename, level > 0);
-  m_thresholdLevel = level;
 }
 
 
