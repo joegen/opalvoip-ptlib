@@ -240,19 +240,27 @@ AC_MSG_NOTICE(Default extension for C++ files is $ac_ext)
 
 
 dnl ########################################################################
-dnl check for old gcc version
-
-AC_MSG_CHECKING(checking if pragma implementation should be used)
+dnl check for old gcc versions
 
 gcc_version=`$CC -dumpversion`
 if test "x$gcc_version" != "x" ; then
+   AC_MSG_NOTICE($CC version is $gcc_version);
+
+   AC_MSG_CHECKING(checking if pragma implementation should be used)
    if test `echo $gcc_version | sed 's/\..*$//'` -lt 4 ; then
       CPPFLAGS="$CPPFLAGS -DP_USE_PRAGMA"
       AC_MSG_RESULT(yes)
    else
       AC_MSG_RESULT(no)
+
+      AC_MSG_CHECKING(checking if bogus warning on strict aliasing)
+      if test `echo $gcc_version | sed -e 's/^4\.//' -e 's/\..*$//'` -le 4 ; then
+         CPPFLAGS="$CPPFLAGS -Wno-strict-aliasing"
+         AC_MSG_RESULT(yes)
+      else
+         AC_MSG_RESULT(no)
+      fi
    fi
-   AC_MSG_NOTICE($CC version is $gcc_version);
 fi
 
 dnl ########################################################################
