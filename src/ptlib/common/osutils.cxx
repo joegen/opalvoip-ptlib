@@ -3191,8 +3191,11 @@ PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line, unsigned time
   , m_wait(false)
 #else
   , m_readerSemaphore(1, 1)
+  , m_readerMutex(name, line, timeout)
   , m_readerCount(0)
+  , m_starvationPreventer(name, line, timeout)
   , m_writerSemaphore(1, 1)
+  , m_writerMutex(name, line, timeout)
   , m_writerCount(0)
 #endif
 {
