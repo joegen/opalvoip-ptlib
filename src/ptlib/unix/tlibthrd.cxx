@@ -389,7 +389,7 @@ void PThread::PX_StartThread()
 
 #if defined(P_LINUX)
   struct sched_param sched_params;
-  PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, GetSchedParam(PX_priority, sched_params)));
+  PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, GetSchedParam((Priority)PX_priority.load(), sched_params)));
   PAssertPTHREAD(pthread_attr_setschedparam,  (&threadAttr, &sched_params));
 #elif defined(P_RTEMS)
   pthread_attr_setinheritsched(&threadAttr, PTHREAD_EXPLICIT_SCHED);
@@ -566,7 +566,7 @@ GetThreadBasePriority ()
 void PThread::SetPriority(Priority priorityLevel)
 {
   PTRACE(4, "PTLib", "Setting thread priority to " << priorityLevel);
-  PX_priority = priorityLevel;
+  PX_priority.store(priorityLevel);
 
   if (IsTerminated())
     return;
