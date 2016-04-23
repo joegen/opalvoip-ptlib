@@ -1818,7 +1818,7 @@ The use of the <code>#PDECLARE_CLASS</code> macro is no longer recommended for r
 of compatibility with documentation systems.
 */
 
-#define PCLASSINFO(cls, par) PCLASSINFO_ALIGNED(cls, par, 0)
+#define PCLASSINFO(cls, par) PCLASSINFO_ALIGNED(cls, (par), 0)
 
 /// Declare all the standard PTLib class information, plus Clone().
 #define PCLASSINFO_WITH_CLONE(cls, par) \
