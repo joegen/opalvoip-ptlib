@@ -512,7 +512,7 @@ PBoolean PSoundChannelOSS::Write(const void * buf, PINDEX len)
       }
       while (!ConvertOSError(::write(os_handle, resampleBuffer, dst - resampleBuffer))) {
         if (GetErrorCode() != Interrupted) {
-          SetLastWriteCount(len - srcEnd + src);
+          SetLastWriteCount(src - srcStart);
           return false;
         }
       }
@@ -571,8 +571,8 @@ PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
         PINDEX bufLen = PMIN(resampleBuffer.GetSize(), srcBytes);
         while (!ConvertOSError(bytes = ::read(os_handle, resampleBuffer.GetPointer(), bufLen))) {
           if (GetErrorCode() != Interrupted) {
-            SetLastReadCount(len - dstEnd + dst);
-            PTRACE(6, "OSS\tRead completed short - " << len - dstEnd + dst << " vs " << len);
+            SetLastReadCount(dst - (dstEnd - len));
+            PTRACE(6, "OSS\tRead completed short - " << GetLastReadCount() << " vs " << len);
             return false;
           }
         }
