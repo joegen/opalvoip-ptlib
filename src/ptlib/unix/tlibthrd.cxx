@@ -798,7 +798,7 @@ PBoolean PThread::IsTerminated() const
     case PX_finished:
       return true;
     default :
-      break:
+      break;
   }
 
   // See if thread is still running, copy variable in case changes between two statements
