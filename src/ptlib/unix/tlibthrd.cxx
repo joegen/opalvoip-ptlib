@@ -791,8 +791,15 @@ PBoolean PThread::IsTerminated() const
   if (m_type == e_IsProcess)
     return false; // Process is always still running
 
-  if (PX_state == PX_finished)
-    return true;
+  switch (PX_state) {
+    case PX_starting :
+    case PX_firstResume :
+      return false;
+    case PX_finished:
+      return true;
+    default :
+      break;
+  }
 
   // See if thread is still running, copy variable in case changes between two statements
   pthread_t id = m_threadId;
