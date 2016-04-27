@@ -725,7 +725,7 @@ PIPSocket::Address NetmaskV6WithPrefix(unsigned prefixbits, unsigned masklen = 0
     memset(&fullmask, 0, sizeof(fullmask));
     memcpy(&fullmask, mask, std::min((size_t)masklen, sizeof(fullmask)));
   }
-  for(unsigned i=128; i >= prefixbits; --i) {
+  for(unsigned i=128; i > prefixbits; --i) {
     ResetBit(i, fullmask);
   }
   return PIPSocket::Address(16, (BYTE*)&fullmask);
