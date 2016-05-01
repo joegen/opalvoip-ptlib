@@ -185,36 +185,60 @@ static char *tzname[2] = { "STD", "DST" };
 
 #if defined(__arm__) && !defined(__llvm__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
 
-// ARM build doesn't link before v4.6
-// This code shamelessly stolen from GCC 4.6 source
-typedef int (__kernel_cmpxchg64_t) (const long long* oldval,
-                                    const long long* newval,
-                                    long long *ptr);
-#define __kernel_cmpxchg64 (*(__kernel_cmpxchg64_t *) 0xffff0f60)
+// ARM build doesn't link before GCC v4.6
+// This code mostly, and shamelessly, stolen from 4.6 source
+
+typedef int (*__kernel_cmpxchg64_t)(const uint64_t * oldval,
+                                    const uint64_t * newval,
+                                    volatile void * ptr);
+
+static int dummy_cmpxchg64(const uint64_t *,
+                           const uint64_t * newval,
+                           volatile void * ptr)
+{
+  // Do it without memory barrier
+  *(uint64_t *)ptr = *newval;
+  return 0;
+}
+
+static __kernel_cmpxchg64_t get_kernel_cmpxchg64()
+{
+  if (*(unsigned int *)0xffff0ffc >= 5) // kernel_helper_version
+    return (__kernel_cmpxchg64_t)0xffff0f60;
+
+  static const char err[] = "WARNING: __kernel_cmpxchg64 helper not in kernel, no 64 bit atomic operations.\n";
+  if (write(2, err, sizeof(err)-1) != sizeof(err) - 1)
+    abort();
+  return dummy_cmpxchg64;
+}
 
 extern "C" {
-  long long __sync_lock_test_and_set_8(long long * ptr, long long val)
+  uint64_t __sync_lock_test_and_set_8(volatile void * ptr, uint64_t val)
   {
+    static __kernel_cmpxchg64_t kernel_cmpxchg64 = get_kernel_cmpxchg64();
+
     int failure;
-    long long oldval;
+    uint64_t oldval;
 
     do {
-      oldval = *ptr;
-      failure = __kernel_cmpxchg64(&oldval, &val, ptr);
+      oldval = *(uint64_t *)ptr;
+      failure = kernel_cmpxchg64(&oldval, &val, ptr);
     } while (failure != 0);
 
     return oldval;
   }
 
-  long long __sync_add_and_fetch_8(long long * ptr, long long val)
+  uint64_t __sync_add_and_fetch_8(volatile void * ptr, uint64_t val)
   {
+    static __kernel_cmpxchg64_t kernel_cmpxchg64 = get_kernel_cmpxchg64();
+
     int failure;
-    long long tmp1,tmp2;
+    uint64_t tmp1,tmp2;
 
     do {
-      tmp1 = *ptr;
+      tmp1 = *(uint64_t *)ptr;
       tmp2 = tmp1 + val;
-      failure = __kernel_cmpxchg64(&tmp1, &tmp2, ptr);
+      failure = kernel_cmpxchg64(&tmp1, &tmp2, ptr);
     } while (failure != 0);
 
     return tmp2;
