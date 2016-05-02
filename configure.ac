@@ -2085,6 +2085,7 @@ dnl check for GStreamer library
 dnl MSWIN_DISPLAY    gstreamer,GStreamer 0.10 (OSSBuild)
 dnl MSWIN_CHECK_FILE gstreamer,include\gstreamer-0.10\gst\gst.h,P_GSTREAMER_WIN32=1
 dnl MSWIN_DIR_SYMBOL gstreamer,GSTREAMER_DIR
+dnl MSWIN_CHECK_DIR  gstreamer,..\external\gstreamer-sdk\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,\gstreamer-sdk\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,%ProgramFiles%\gstreamer-sdk\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,%ProgramW6432%\gstreamer-sdk\0.10\x86
@@ -2093,7 +2094,10 @@ dnl MSWIN_DISPLAY    gstreamer1,GStreamer 1.0
 dnl MSWIN_CHECK_FILE gstreamer1,include\gstreamer-1.0\gst\gst.h,P_GSTREAMER_WIN32=1
 dnl MSWIN_DIR_SYMBOL gstreamer1,GSTREAMER1_DIR
 dnl MSWIN_DEFINE     gstreamer1,P_GSTREAMER_1_0_API
+dnl MSWIN_CHECK_DIR  gstreamer1,..\external\gstreamer\1.0\x86
 dnl MSWIN_CHECK_DIR  gstreamer1,\gstreamer\1.0\x86
+dnl MSWIN_CHECK_DIR  gstreamer1,%ProgramFiles%\gstreamer-sdk\1.0\x86
+dnl MSWIN_CHECK_DIR  gstreamer1,%ProgramW6432%\gstreamer-sdk\1.0\x86
 
 PTLIB_MODULE_OPTION(
    [GSTREAMER], 
