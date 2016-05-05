@@ -176,7 +176,7 @@ PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(*this); }
 
 PINLINE PBoolean PTime::IsValid() const
-  { return m_microSecondsSinceEpoch.load() > 46800000000; }
+  { return m_microSecondsSinceEpoch.load() > 46800000000LL; }
 
 PINLINE PInt64 PTime::GetTimestamp() const
   { return m_microSecondsSinceEpoch.load(); }
@@ -194,13 +194,13 @@ PINLINE unsigned PTime::GetMicrosecond() const
   { return m_microSecondsSinceEpoch.load()%Micro; }
 
 PINLINE PTimeInterval PTime::GetElapsed() const
-  { return PTime() - *this; }
+  { return IsValid() ? (PTime() - *this) : 0; }
 
 PINLINE bool PTime::IsPast() const
-  { return GetTimeInSeconds() < PTime().GetTimeInSeconds(); }
+  { return GetElapsed() < 0; }
 
 PINLINE bool PTime::IsFuture() const
-  { return GetTimeInSeconds() > PTime().GetTimeInSeconds(); }
+  { return GetElapsed() > 0; }
 
 
 PINLINE PString PTime::AsString(const PString & format, int zone) const
