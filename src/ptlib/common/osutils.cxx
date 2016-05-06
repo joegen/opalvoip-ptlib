@@ -1188,7 +1188,7 @@ void PTimer::PrintOn(ostream & strm) const
 int64_t PTimer::InternalGet() const
 {
   if (!m_running)
-      return PTimeInterval::InternalGet();
+      return 0;
 
   PTimeInterval diff = m_absoluteTime - Tick();
   if (diff < 0)
