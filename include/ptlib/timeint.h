@@ -150,11 +150,12 @@ class PTimeInterval : public PObject
     };
 
     /** Output the time interval as a string.
-        The \p width, if negative, can control which components (hours/minutes)
-        are output. < -6 suppresses hour, < -3 suppresses minutes.
+        If \p precision is <= 0 and \p format is NormalFormat then the
+        format used will be IncludeDays, and the positive value
+        for \p precision is then used as number of decimals.
       */
     PString AsString(
-      int decimals = 3,                 ///< DEcimals for milliseconds part
+      int decimals = 3,                 ///< Decimals for milliseconds part
       Formats format = NormalFormat,    ///< Output format options
       int width = 1                     ///< Width of output
     ) const;
@@ -448,18 +449,19 @@ class PTimeInterval : public PObject
     ) const;
   //@}
 
-  protected:
-    virtual int64_t InternalGet() const;
-    virtual void InternalSet(int64_t t);
-
-  private:
-    atomic<int64_t> m_nanoseconds;
     static int64_t const MicroToNano = 1000;
     static int64_t const MilliToNano = MicroToNano*1000;
     static int64_t const SecsToNano  = MilliToNano*1000;
     static int64_t const MinsToNano  = SecsToNano*60;
     static int64_t const HoursToNano = MinsToNano*60;
     static int64_t const DaysToNano  = HoursToNano*24;
+
+  protected:
+    virtual int64_t InternalGet() const;
+    virtual void InternalSet(int64_t t);
+
+  private:
+    atomic<int64_t> m_nanoseconds;
 
 
 // Include platform dependent part of class
