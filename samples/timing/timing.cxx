@@ -49,6 +49,26 @@ void TimingTest::Main()
 {
   cout << "Timing Test Program\n" << endl;
 
+  PTimeInterval nano = PTimeInterval::NanoSeconds(-543210123456789LL);
+  int w, p;
+  for (w = 1; w <= 18; w++)
+    for (p = 0; p <= 9; p++)
+      cout << "TimeInterval scientific, width " << w << ", precision " << p << ": \""
+             << setiosflags(ios::scientific)
+             << setw(w) << setprecision(p) << nano
+             << resetiosflags(ios::scientific) << '"' << endl;
+  nano.SetNanoSeconds(PTimeInterval::DaysToNano*10+
+                      PTimeInterval::HoursToNano*12+
+                      PTimeInterval::MinsToNano*34+
+                      PTimeInterval::SecsToNano*56+
+                      123456789);
+  for (w = 1; w <= 23; w++)
+    for (p = -9; p <= 9; p++)
+      cout << "TimeInterval output, width " << w << ", precision " << p << ": \""
+           << setw(w) << setprecision(p) << nano << '"' << endl;
+
+  cout << "\n\n";
+
   PTime now;
   cout << "Time is now " << now.AsString("h:m:s.u d/M/y") << "\n"
           "Time is now " << now.AsString("yyyy/MM/dd h:m:s.uuuu") << "\n"
@@ -118,19 +138,6 @@ void TimingTest::Main()
 
   cout << "Actual resolution is " << 1000000/count << "us\n"
           "Current tick: \"" << newTick << '"' << endl;
-
-  oldTick = 123456;
-  int w, p;
-  for (w = 1; w <= 10; w++)
-    for (p = 0; p < 4; p++)
-      cout << "TimeInterval output, width " << w << ", precision " << p << ": \""
-           << setw(w) << setprecision(p) << oldTick << '"' << endl;
-  for (w = 1; w <= 8; w++)
-    for (p = 0; p < 4; p++)
-      cout << "TimeInterval scientific, width " << w << ", precision " << p << ": \""
-             << setiosflags(ios::scientific)
-             << setw(w) << setprecision(p) << oldTick
-             << resetiosflags(ios::scientific) << '"' << endl;
 
   cout << "\nTesting sleep function" << endl;
   PTime start_time1;

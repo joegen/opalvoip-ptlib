@@ -64,17 +64,9 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 
 void PTimeInterval::PrintOn(ostream & stream) const
 {
-  int precision = (int)stream.precision();
-
-  Formats fmt = NormalFormat;
-  if ((stream.flags()&ios::scientific) != 0)
-    fmt = SecondsOnly;
-  else if (precision > -4 && precision < 0) {
-    fmt = IncludeDays;
-    precision = -precision;
-  }
-
-  stream << AsString(precision, fmt, (int)stream.width());
+  stream << AsString((int)stream.precision(),
+                     (stream.flags()&ios::scientific) != 0 ? SecondsOnly : NormalFormat,
+                     (int)stream.width());
 }
 
 
@@ -103,93 +95,57 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
 
   str << right << setfill('0');
 
-  if (precision > 3)
-    precision = 3;
-  else if (precision < -9)
-    precision = -9;
-  else if (precision < -6)
-    precision = -6;
-  else if (precision < -3)
-    precision = -3;
+  if (precision <= 0 && format == NormalFormat) {
+    format = IncludeDays;
+    precision = -precision;
+  }
+  if (precision > 9)
+    precision = 9;
 
-  PInt64 ms = GetMilliSeconds();
-  if (ms < 0) {
+  PInt64 ns = GetNanoSeconds();
+  if (ns < 0) {
     str << '-';
-    ms = -ms;
+    ns = -ns;
   }
 
-  if (format == SecondsOnly) {
-    switch (precision) {
-      case 1 :
-        str << ms/1000 << '.' << (int)(ms%1000+50)/100;
-        break;
+  if (format == SecondsOnly)
+    str << ns/SecsToNano;
+  else {
+    bool hadPrevious = false;
 
-      case 2 :
-        str << ms/1000 << '.' << setw(2) << (int)(ms%1000+5)/10;
-        break;
-
-      case 3 :
-        str << ms/1000 << '.' << setw(3) << (int)(ms%1000);
-        break;
-
-      default :
-        str << (ms+500)/1000;
-    }
-
-    return str;
-  }
-
-  PBoolean hadPrevious = false;
-  long tmp;
-
-  if (format == IncludeDays) {
-    tmp = (long)(ms/86400000);
-    if (tmp > 0 || width > (precision+10)) {
-      str << tmp << 'd';
+    if (format == IncludeDays && (ns > DaysToNano || width > (precision + 10))) {
+      str << ns/DaysToNano << 'd';
+      ns = ns % DaysToNano;
       hadPrevious = true;
     }
 
-    tmp = (long)(ms%86400000)/3600000;
-  }
-  else
-    tmp = (long)(ms/3600000);
-
-  if (precision >= -9) {
-    if (hadPrevious || tmp > 0 || width > (precision+7)) {
+    if (hadPrevious || ns > HoursToNano || width > (precision + 7)) {
       if (hadPrevious)
         str << ':' << setw(2);
-      str << tmp;
+      str << ns/HoursToNano;
       hadPrevious = true;
     }
-  }
 
-  if (precision >= -6) {
-    tmp = (long)(ms%3600000)/60000;
-    if (hadPrevious || tmp > 0 || width > (precision+4)) {
+    ns = ns % HoursToNano;
+    if (hadPrevious || ns > MinsToNano || width > (precision + 4)) {
       if (hadPrevious)
         str << ':' << setw(2);
-      str << tmp;
+      str << ns/MinsToNano;
       hadPrevious = true;
     }
-  }
 
-  if (precision >= -3) {
     if (hadPrevious)
       str << ':' << setw(2);
-    str << (long)(ms%60000)/1000;
+    str << (ns % MinsToNano) / SecsToNano;
   }
 
-  switch (precision) {
-    case 1 :
-      str << '.' << (int)(ms%1000)/100;
-      break;
+  ns = ns%SecsToNano;
 
-    case 2 :
-      str << '.' << setw(2) << (int)(ms%1000)/10;
-      break;
-
-    case 3 :
-      str << '.' << setw(3) << (int)(ms%1000);
+  if (precision > 0) {
+    int64_t powerOfTen = SecsToNano;
+    for (int i = 0; i < precision; ++i)
+      powerOfTen /= 10;
+    str << '.' << setw(precision) << (int)(ns%SecsToNano+powerOfTen/2)/powerOfTen;
   }
 
   return str;
