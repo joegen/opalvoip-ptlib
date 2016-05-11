@@ -463,7 +463,9 @@ bool PSTUNMessage::IsRFC5389() const
   if (GetSize() < (PINDEX)sizeof(PSTUNMessageHeader))
     return false;
 
-  return *(PUInt32b *)&((*this)->transactionId) == RFC5389_MAGIC_COOKIE;
+  const BYTE * ptr = (*this)->transactionId;
+
+  return *((const PUInt32b *)ptr) == RFC5389_MAGIC_COOKIE;
 }
 
 
@@ -539,7 +541,8 @@ bool PSTUNMessage::IsValid() const
     return false;
 
   // do checks for RFC5389: magic cookie and top two bits of type must be 00
-  if (*(PUInt32b *)&(header->transactionId) == RFC5389_MAGIC_COOKIE && ((header->msgType & 0x00c0) != 0x00)) {
+  const BYTE * ptr = header->transactionId;
+  if (*(PUInt32b *)ptr == RFC5389_MAGIC_COOKIE && ((header->msgType & 0x00c0) != 0x00)) {
     PTRACE(3, "STUN\tPacket received with magic cookie, but type bits are incorrect.");
     return false;
   }

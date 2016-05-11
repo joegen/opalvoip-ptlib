@@ -453,7 +453,7 @@ PString XMPP::Stanza::GetTo() const
 
 PXMLElement * XMPP::Stanza::GetElement(const PString& name, PINDEX i)
 {
-  return GetElement(name, i);
+  return PXML::GetElement(name, i);
 }
 
 
