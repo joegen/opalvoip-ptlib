@@ -125,6 +125,11 @@ using namespace std; // Not a good practice (name space polution), but will take
 #endif // _MSC_VER
 #define P_DISABLE_MSVC_WARNINGS(warnings, statement) P_PUSH_MSVC_WARNINGS(warnings) statement P_POP_MSVC_WARNINGS()
 
+#ifdef _MSC_VER
+  #define PIGNORE_RETURN(t,e)	(void)(e)
+#else
+  #define PIGNORE_RETURN(t,e)	do { t unused __attribute__((unused)) = (e); } while(0)
+#endif
 
 // We are gradually converting over to standard C++ names, these
 // are for backward compatibility only
