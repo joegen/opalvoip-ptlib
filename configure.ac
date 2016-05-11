@@ -1685,7 +1685,7 @@ dnl MSWIN_CHECK_DIR  lua,%ProgramW6432%\Lua\5.1
 
 AC_LANG_PUSH(C)
 
-LUA_PKG=`pkg-config --list-all | sed -n "s/\(lua[[0-9\.-]]*\).*/\1/p" | head -1`
+LUA_PKG=`pkg-config --list-all | sed -n "s/\(lua-*[[0-9\.]]*\).*/\1/p" | head -1`
 PTLIB_MODULE_OPTION(
    [LUA],
    [lua],
