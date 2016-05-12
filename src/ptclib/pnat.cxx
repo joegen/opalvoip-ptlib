@@ -354,14 +354,20 @@ PNatMethod::RTPSupportTypes PNatMethod::GetRTPSupport(bool force)
 void PNatMethod::PrintOn(ostream & strm) const
 {
   strm << GetFriendlyName() << (IsActive() ? " active" : " deactivated");
+
   PString server = GetServer();
   if (!server.IsEmpty())
     strm << " server " << server;
+
   if (m_natType != UnknownNat) {
     strm << " replies " << GetNatTypeName();
     if (m_externalAddress.IsValid())
       strm << " with address " << m_externalAddress;
   }
+
+  PIPSocket::Address iface;
+  if (GetInterfaceAddress(iface))
+    strm << " on interface " << iface;
 }
 
 
