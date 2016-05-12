@@ -251,7 +251,7 @@ class PNatMethod  : public PObject
 
     /**Return the interface NAT router is using.
       */
-    bool GetInterfaceAddress(
+    virtual bool GetInterfaceAddress(
       PIPSocket::Address & internalAddress  ///< NAT router internal address returned.
     ) const;
 
