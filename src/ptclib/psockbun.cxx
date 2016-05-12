@@ -451,14 +451,17 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   if (m_natMethods != NULL) {
     PNatMethod * natMethod = m_natMethods->GetMethod(binding, this);
     if (natMethod) {
-      PIPSocket::Address address;
-      WORD port;
-      natMethod->GetServerAddress(address, port);
-      if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, address)) {
+      PIPAddressAndPort ap;
+      natMethod->GetServerAddress(ap);
+      if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, ap.GetAddress())) {
         if (natMethod->CreateSocket(info.socket, binding, m_localPort)) {
-          info.socket->PUDPSocket::GetLocalAddress(address, port);
+          PNATUDPSocket * natSocket = dynamic_cast<PNATUDPSocket*>(info.socket);
+          if (natSocket != NULL)
+            natSocket->GetBaseAddress(ap);
+          else
+            ap.SetAddress(0);
           PTRACE(4, "Created bundled UDP socket via " << natMethod->GetMethodName()
-                 << ", internal=" << address << ':' << port << ", external=" << info.socket->GetLocalAddress());
+                 << ", internal=" << ap << ", external=" << info.socket->GetLocalAddress());
           return true;
         }
       }
