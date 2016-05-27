@@ -125,12 +125,7 @@ void PCLI::Context::Stop()
   PChannel * base = GetBaseReadChannel();
   if (base != NULL)
     base->Close();
-
-  if (m_thread != NULL && PThread::Current() != m_thread) {
-    m_thread->WaitForTermination(10000);
-    delete m_thread;
-    m_thread = NULL;
-  }
+  PThread::WaitAndDelete(m_thread);
 }
 
 
@@ -1117,12 +1112,7 @@ bool PCLISocket::Start(bool runInBackground)
 void PCLISocket::Stop()
 {
   m_listenSocket.Close();
-
-  if (m_thread != NULL && PThread::Current() != m_thread) {
-    m_thread->WaitForTermination(10000);
-    delete m_thread;
-    m_thread = NULL;
-  }
+  PThread::WaitAndDelete(m_thread);
 
   PCLI::Stop();
 }
