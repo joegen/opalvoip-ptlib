@@ -1095,29 +1095,14 @@ PBoolean PVXMLSession::Execute()
 
 PBoolean PVXMLSession::Close()
 {
-  PThread * thread = NULL;
-
   m_sessionMutex.Wait();
 
   LoadGrammar(NULL);
 
-  if (PThread::Current() != m_vxmlThread) {
-    thread = m_vxmlThread;
-    m_vxmlThread = NULL;
-  }
-
-  m_sessionMutex.Signal();
-
-  if (thread != NULL) {
-    PTRACE(3, "VXML\tClosing session, fast forwarding through script");
-
-    // Stop condition for thread
-    m_abortVXML = true;
-    Trigger();
-
-    PAssert(thread->WaitForTermination(10000), "VXML thread did not exit in time.");
-    delete thread;
-  }
+  // Stop condition for thread
+  m_abortVXML = true;
+  Trigger();
+  PThread::WaitAndDelete(m_vxmlThread, 10000, &m_sessionMutex, false);
 
   return PIndirectChannel::Close();
 }

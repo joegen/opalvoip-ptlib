@@ -187,6 +187,27 @@ class PThread : public PObject
       const PTimeInterval & maxWait  ///< Maximum time to wait for termination.
     ) const;
 
+    /**Wait for thread termination and delete object.
+       The thread pointer is set to NULL within an optional mutex. The mutex is
+       released before waiting for thread termination, which avoids deadlock
+       scenarios. The \p lock parameter indicates if the mutex is already locked
+       on entry and should not be locked again, preventing the unlock from
+       occurring due to nested mutex semantics.
+
+       If the \p maxTime timeout occurs, the thread is preemptively destroyed
+       which is very likely to cause many issues, see PThread::Terminate() so
+       a PAssert is raised when this condition occurs.
+
+       @return
+       <code>true</code> if the thread forcibly terminated, <code>false</code> if orderly exit.
+      */
+    static bool WaitAndDelete(
+      PThread * & thread,                    ///< Thread to delete
+      const PTimeInterval & maxWait = 10000, ///< Maximum time to wait for termination.
+      PMutex * mutex = NULL,                 ///< Optional mutex to protect setting of thread variable
+      bool lock = true                       ///< Mutex should be locked.
+    );
+
     /** Suspend or resume the thread.
     
        If <code>susp</code> is <code>true</code> this increments an internal count of

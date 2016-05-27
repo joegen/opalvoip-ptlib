@@ -1399,11 +1399,7 @@ PBoolean PVideoOutputDevice_Window::Close()
 
   SendMessage(m_hWnd, WM_CLOSE, 0, 0);
 
-  if (m_thread != NULL) {
-    m_thread->WaitForTermination(3000);
-    delete m_thread;
-    m_thread = NULL;
-  }
+  PThread::WaitAndDelete(m_thread, 3000);
 
   return true;
 }
