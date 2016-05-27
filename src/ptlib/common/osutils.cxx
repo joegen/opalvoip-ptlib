@@ -2817,6 +2817,55 @@ PThread * PThread::Create(const PNotifier & notifier,
 }
 
 
+bool PThread::WaitAndDelete(PThread * & threadToDelete, const PTimeInterval & maxWait, PMutex * mutex, bool lock)
+{
+  if (mutex != NULL && lock)
+    mutex->Wait();
+
+  PThread * thread = threadToDelete;
+  threadToDelete = NULL;
+
+  if (mutex != NULL)
+    mutex->Signal();
+
+  if (thread == NULL)
+    return false;
+
+  if (PThread::Current() == thread) {
+    // Is me!
+    thread->SetAutoDelete();
+    return false;
+  }
+
+  if (thread->IsSuspended()) {
+    // Ended before it started
+    delete thread;
+    return false;
+  }
+
+  PTRACE(4, thread, "Waiting for thread " << *thread << " to terminate in " << maxWait << " seconds");
+  if (thread->WaitForTermination(maxWait)) {
+    // Orderly exit
+    delete thread;
+    return false;
+  }
+
+  ostringstream strm;
+  strm << "Thread \"" << *thread << "\""
+#if PTRACING
+          "\n";
+  PTrace::WalkStack(strm, thread->GetThreadId());
+  strm << "  "
+#endif
+          " failed to terminate in " << maxWait << " seconds";
+  PAssertAlways(strm.str().c_str());
+
+  delete thread;
+
+  return true;
+}
+
+
 #define RELEASE_THREAD_LOCAL_STORAGE 1
 #if RELEASE_THREAD_LOCAL_STORAGE
 static std::set<PThread::LocalStorageBase*> s_ThreadLocalStorage;
