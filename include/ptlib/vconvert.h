@@ -319,7 +319,8 @@ class PColourConverter : public PColourPair
     static bool FillYUV420P(
       unsigned x, unsigned y, unsigned width, unsigned height,
       unsigned frameWidth, unsigned frameHeight, BYTE * yuv,
-      unsigned r, unsigned g, unsigned b
+      unsigned r_or_y, unsigned g_or_u, unsigned b_or_v,
+      bool rgb = true
     );
 
   protected:

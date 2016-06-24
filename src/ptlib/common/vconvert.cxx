@@ -925,7 +925,7 @@ bool PColourConverter::RotateYUV420P(int angle, unsigned width, unsigned height,
 
 bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsigned height,
                                    unsigned frameWidth, unsigned frameHeight, BYTE * yuv,
-                                   unsigned r, unsigned g, unsigned b)
+                                   unsigned r_or_y, unsigned g_or_u, unsigned b_or_v, bool rgb)
 {
   if (frameWidth == 0)
      frameWidth = width;
@@ -938,7 +938,13 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
   }
 
   BYTE Y, U, V;
-  PColourConverter::RGBtoYUV(r, g, b, Y, U, V);
+  if (rgb)
+    PColourConverter::RGBtoYUV(r_or_y, g_or_u, b_or_v, Y, U, V);
+  else {
+      Y = (BYTE)r_or_y;
+      U = (BYTE)g_or_u;
+      V = (BYTE)b_or_v;
+  }
 
   unsigned planeWidth  = (frameWidth+1)&~1;
   unsigned planeHeight = (frameHeight+1)&~1;
