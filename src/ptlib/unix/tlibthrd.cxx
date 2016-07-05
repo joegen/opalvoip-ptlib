@@ -324,9 +324,10 @@ void PThread::PX_ThreadEnd()
 
   PProcess & process = PProcess::Current();
   process.OnThreadEnded(*this);
-  process.InternalThreadEnded(this);
 
-  PX_state = PX_finished; // Must be last thing to avoid races
+  PX_state = PX_finished;
+  process.InternalThreadEnded(this);
+  // "this" may have been deleted at this point
 }
 
 
