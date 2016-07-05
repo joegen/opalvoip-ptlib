@@ -2540,17 +2540,20 @@ void PProcess::InternalThreadEnded(PThread * thread)
   if (PAssertNULL(thread) == NULL)
     return;
 
-  if (thread->IsAutoDelete()) {
-    PTRACE(5, thread, "Queuing auto-delete of thread " << *thread);
-    thread->SetNoAutoDelete();
-    m_autoDeleteThreads.Enqueue(thread);
-  }
+  // Do the log before mutex and thread being removed from m_activeThreads
+  PTRACE_IF(5, thread->IsAutoDelete(), thread, "Queuing auto-delete of thread " << *thread);
 
   PWaitAndSignal mutex(m_threadMutex);
 
   ThreadMap::iterator it = m_activeThreads.find(thread->GetThreadId());
   if (it != m_activeThreads.end() && it->second == thread)
     m_activeThreads.erase(it); // Not already gone, or re-used the thread ID for new thread.
+
+  // Must be last thing to avoid race condition
+  if (thread->IsAutoDelete()) {
+    thread->SetNoAutoDelete();
+    m_autoDeleteThreads.Enqueue(thread);
+  }
 }
 
 
