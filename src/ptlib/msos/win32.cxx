@@ -1945,7 +1945,7 @@ PBoolean PDynaLink::Open(const PString & names)
   }
 
   m_lastError.sprintf("0x%x", ::GetLastError());
-  PTRACE(1, "DLL\tError loading DLL: " << m_lastError);
+  PTRACE(1, "DLL\tError loading DLL (" << setfill(',') << filenames << "), error=" << m_lastError);
   return false;
 }
 
