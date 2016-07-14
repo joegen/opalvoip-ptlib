@@ -712,8 +712,8 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
     if (srcWidthByDstHeight < dstWidthBySrcHeight) {
       unsigned outputWidth = (srcWidthByDstHeight/srcHeight)&~1;
       unsigned ouputX = ((dstWidth - outputWidth)/2)&~1;
-      FillYUV420P(                 0, 0, ouputX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-      FillYUV420P(outputWidth-ouputX, 0, ouputX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      FillYUV420P(              0, 0, ouputX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      FillYUV420P(dstWidth-ouputX, 0, ouputX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
       return CopyYUV420P(srcX, srcY, srcWidth, srcHeight, srcFrameWidth, srcFrameHeight, srcYUV,
                          ouputX, 0, outputWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV,
                          PVideoFrameInfo::eScale, verticalFlip, error);
@@ -721,8 +721,8 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
     else if (srcWidthByDstHeight > dstWidthBySrcHeight) {
       unsigned outputHeight = (dstWidthBySrcHeight/srcWidth)&~1;
       unsigned outputY = ((dstHeight - outputHeight)/2)&~1;
-      FillYUV420P(0,                    0, dstWidth, outputY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-      FillYUV420P(0, outputHeight-outputY, dstWidth, outputY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      FillYUV420P(0,                 0, dstWidth, outputY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      FillYUV420P(0, dstHeight-outputY, dstWidth, outputY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
       return CopyYUV420P(srcX, srcY, srcWidth, srcHeight, srcFrameWidth, srcFrameHeight, srcYUV,
                          0, outputY, dstWidth, outputHeight, dstFrameWidth, dstFrameHeight, dstYUV,
                          PVideoFrameInfo::eScale, verticalFlip, error);
@@ -788,38 +788,43 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       break;
 
     case PVideoFrameInfo::eCropTopLeft :
-      if (srcWidth <= dstWidth) {
-        FillYUV420P(dstX + srcWidth, dstY, dstWidth - srcWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-        if (srcHeight < dstHeight)
-          FillYUV420P(dstX, dstY + srcHeight, dstWidth, dstHeight - srcHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-        dstWidth = srcWidth;
-        dstHeight = srcHeight;
-      }
-      else {
+      if (srcWidth >= dstWidth)
         srcWidth = dstWidth;
+      else {
+        FillYUV420P(dstX + srcWidth, dstY, dstWidth - srcWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+        dstWidth = srcWidth;
+      }
+
+      if (srcHeight >= dstHeight)
         srcHeight = dstHeight;
+      else {
+        FillYUV420P(dstX, dstY + srcHeight, dstWidth, dstHeight - srcHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+        dstHeight = srcHeight;
       }
       break;
 
     case PVideoFrameInfo::eCropCentre :
-      if (srcWidth <= dstWidth) {
-        unsigned deltaX = (dstWidth - srcWidth)/2;
-        unsigned deltaY = (dstHeight - srcHeight)/2;
-        FillYUV420P(dstX, dstY, deltaX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-        FillYUV420P(dstX+deltaX+srcWidth, dstY, deltaX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-        if (srcHeight < dstHeight) {
-          FillYUV420P(dstX+deltaX, dstY, srcWidth, deltaY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-          FillYUV420P(dstX+deltaX, dstY+deltaY+srcHeight, srcWidth, deltaY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
-        }
-        dstX += deltaX;
-        dstY += deltaY;
+      if (dstWidth > srcWidth) {
+        unsigned fillWidth = ((dstWidth - srcWidth)/2)&~1;
+        FillYUV420P(              dstX, dstY, fillWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+        FillYUV420P(dstWidth-fillWidth, dstY, fillWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+        dstX += fillWidth;
         dstWidth = srcWidth;
-        dstHeight = srcHeight;
       }
       else {
         srcX += (srcWidth - dstWidth)/2;
-        srcY += (srcHeight - dstHeight)/2;
         srcWidth = dstWidth;
+      }
+
+      if (dstHeight > srcHeight) {
+        unsigned fillHeight = ((dstHeight - srcHeight)/2)&~1;
+        FillYUV420P(dstX,                 dstY, dstWidth, fillHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+        FillYUV420P(dstX, dstHeight-fillHeight, dstWidth, fillHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+        dstY += fillHeight;
+        dstWidth = srcHeight;
+      }
+      else {
+        srcY += (srcHeight - dstHeight)/2;
         srcHeight = dstHeight;
       }
       break;
