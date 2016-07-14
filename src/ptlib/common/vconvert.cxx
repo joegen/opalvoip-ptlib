@@ -2938,6 +2938,7 @@ struct PJPEGConverter::Context
     }
 
     tinyjpeg_set_flags(m_decoder, TINYJPEG_FLAGS_MJPEG_TABLE);
+    PTRACE(4, NULL, "JPEG", "TinyJpeg decoder created");
   }
 
 
@@ -2945,6 +2946,7 @@ struct PJPEGConverter::Context
   {
     if (m_decoder != NULL)
       free(m_decoder);
+    PTRACE(4, NULL, "JPEG", "TinyJpeg decoder destroyed");
   }
 
 
@@ -2962,7 +2964,7 @@ struct PJPEGConverter::Context
 
   bool Finish(BYTE * dstFrameBuffer, unsigned width, unsigned height)
   {
-    if (dstFrameBuffer == NULL)
+    if (PAssertNULL(dstFrameBuffer) == NULL)
       return false;
 
     int componentCount = 1;
@@ -3008,12 +3010,14 @@ struct PJPEGConverter::Context
   {
     m_decoder.err = jpeg_std_error(&m_error_mgr);
     jpeg_create_decompress(&m_decoder);
+    PTRACE(4, NULL, "JPEG", "libjpeg decoder created");
   }
 
 
   ~Context()
   {
     jpeg_destroy_decompress(&m_decoder);
+    PTRACE(4, NULL, "JPEG", "libjpeg decoder destroyed");
   }
 
 
@@ -3227,8 +3231,13 @@ struct PJPEGConverter::Context
     if (!Finish(m_temporaryBuffer.GetPointer(PVideoFrameInfo::CalculateFrameBytes(nativeWidth, nativeHeight)), nativeWidth, nativeHeight))
       return false;
 
-    return CopyYUV420P(0, 0, nativeWidth, nativeHeight, nativeWidth, nativeHeight, m_temporaryBuffer,
-                       0, 0, outputWidth, outputHeight, outputWidth, outputHeight, dstFrameBuffer, resizeMode);
+    PStringStream error;
+    if (CopyYUV420P(0, 0, nativeWidth, nativeHeight, nativeWidth, nativeHeight, m_temporaryBuffer,
+                    0, 0, outputWidth, outputHeight, outputWidth, outputHeight, dstFrameBuffer, resizeMode, false, &error))
+      return true;
+
+    PTRACE(3, NULL, "JPEG", "Cannot resize output: " << error);
+    return false;
   }
 
 
