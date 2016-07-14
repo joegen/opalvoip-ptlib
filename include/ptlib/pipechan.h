@@ -378,6 +378,26 @@ class PPipeChannel : public PChannel
       PBoolean wait = false   ///< Flag to indicate if function should block
     );
 
+    /**Run the command synchonously and return the output.
+       Note it is expected that no output to the command is required, so stdin
+       will be EOF immediately. It is also expected that the command will run
+       to complation and all output, stdout and stderr, is captured to the
+       \p output parameter.
+
+       @return
+       status code of the sub-process, if it ran to completion. If -1 then the
+       command failed to run at all. Other negative values indicates that the
+       process was terminated in an abnormal manner, e.g. crashed. The values
+       are platform specific, for Linux this is the negative value of signal
+       that the process was terminated with.
+      */
+    static int Run(
+        const PString & command,    ///< Command to execute
+        PString & output,           ///< Output of command
+        bool includeStderr = true,  ///< Include stderr in the above output
+        const PTimeInterval & timeout = PMaxTimeInterval  ///< Timeout for waiting on output from sub-process
+    );
+
     /**Determine if the platform can support simultaneous read and writes from
        the PPipeChannel (eg MSDOS returns false, Unix returns true).
        

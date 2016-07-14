@@ -355,4 +355,20 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 #endif // !_WIN32_WCE
 
 
+int PPipeChannel::Run(const PString & command, PString & output, bool includeStderr, const PTimeInterval & timeout)
+{
+    PPipeChannel pipe;
+    pipe.SetReadTimeout(timeout);
+
+    if (!pipe.Open(command, PPipeChannel::ReadOnly, true, !includeStderr) | !pipe.Execute())
+        return -1;
+
+    // Read until end of file, or timeout
+    output = pipe.ReadString(P_MAX_INDEX);
+
+    // Wait for completion, which should have already happened
+    return pipe.WaitForTermination(1000);
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////
