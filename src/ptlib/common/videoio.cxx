@@ -134,6 +134,8 @@ ostream & operator<<(ostream & strm, PVideoFrameInfo::ResizeMode mode)
       return strm << "Centred";
     case PVideoFrameInfo::eCropTopLeft :
       return strm << "Cropped";
+    case PVideoFrameInfo::eScaleKeepAspect :
+      return strm << "Aspect";
     default :
       return strm << "ResizeMode<" << (int)mode << '>';
   }
@@ -349,7 +351,10 @@ bool PVideoFrameInfo::Parse(const PString & str)
       { "centered",eCropCentre },
       { "crop",    eCropTopLeft },
       { "cropped", eCropTopLeft },
-      { "topleft", eCropTopLeft }
+      { "topleft", eCropTopLeft },
+      { "scalekeepaspect", eScaleKeepAspect },
+      { "keepaspect", eScaleKeepAspect },
+      { "aspect",  eScaleKeepAspect },
     };
 
     PCaselessString crop = str.Mid(resizeOffset+1);
