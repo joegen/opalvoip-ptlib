@@ -490,7 +490,7 @@ int PPipeChannel::Run(const PString & command, PString & output, bool includeStd
     cmdWithStderr += " 2>&1";
   FILE * pipe = popen(cmdWithStderr, "r");
   if (pipe == NULL) {
-    PTRACE(2, NULL, "Could not execute command [" << command << "] - " << strerror(errno));
+    PTRACE2(2, NULL, "Could not execute command [" << command << "] - errno=" << errno);
     return -1;
   }
 
@@ -501,13 +501,12 @@ int PPipeChannel::Run(const PString & command, PString & output, bool includeStd
   int status = pclose(pipe);
 
 #if PTRACING
-  ostream & trace = PTRACE_BEGIN(4);
-  trace << "Sub-process [" << command << "] executed: status=" << WEXITSTATUS(errorCode);
-  if (WIFSIGNALED(errorCode))
-      trace << ", signal=" << WTERMSIG(errorCode);
-  if (WCOREDUMP(errorCode))
+  ostream & trace = PTRACE_BEGIN(4, NULL, PTraceModule());
+  trace << "Sub-process [" << command << "] executed: status=" << WEXITSTATUS(status);
+  if (WIFSIGNALED(status))
+      trace << ", signal=" << WTERMSIG(status);
+  if (WCOREDUMP(status))
       trace << ", core dumped";
-  }
   trace << PTrace::End;
 #endif
 
