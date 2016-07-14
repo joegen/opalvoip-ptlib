@@ -134,7 +134,7 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     static const int TraceLevel = 5;
     if (PTrace::CanTrace(TraceLevel)) {
       ostream & log = PTRACE_BEGIN(TraceLevel);
-      log << "Forked child process \"" << subProgram << '"';
+      log << "Forked child process (pid=" << m_childPID << ") \"" << subProgram << '"';
       for (PINDEX i = 0; i < argumentList.GetSize(); ++i)
         log << " \"" << argumentList[i] << '"';
       log << PTrace::End;
@@ -478,6 +478,46 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 #endif
 
   return status;
+}
+
+
+int PPipeChannel::Run(const PString & command, PString & output, bool includeStderr, const PTimeInterval & timeout)
+{
+  output.MakeEmpty();
+
+  PString cmdWithStderr = command;
+  if (includeStderr)
+    cmdWithStderr += " 2>&1";
+  FILE * pipe = popen(cmdWithStderr, "r");
+  if (pipe == NULL) {
+    PTRACE(2, NULL, "Could not execute command [" << command << "] - " << strerror(errno));
+    return -1;
+  }
+
+  int c;
+  while ((c = fgetc(pipe)) != EOF)
+    output += (char)c;
+
+  int status = pclose(pipe);
+
+#if PTRACING
+  ostream & trace = PTRACE_BEGIN(4);
+  trace << "Sub-process [" << command << "] executed: status=" << WEXITSTATUS(errorCode);
+  if (WIFSIGNALED(errorCode))
+      trace << ", signal=" << WTERMSIG(errorCode);
+  if (WCOREDUMP(errorCode))
+      trace << ", core dumped";
+  }
+  trace << PTrace::End;
+#endif
+
+  if (WCOREDUMP(status))
+    return INT_MIN;
+
+  if (WIFSIGNALED(status))
+    return - WTERMSIG(status);
+
+  return WEXITSTATUS(status);
 }
 
 
