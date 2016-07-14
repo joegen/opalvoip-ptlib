@@ -1335,6 +1335,7 @@ class PHTTPRequest : public PObject
     PIPSocket::Address localAddr;   ///< IP address of local interface for request
     WORD               localPort;   ///< Port number of local server for request
     PHTTPResource    * m_resource;  ///< HTTP resource found for the request
+    PTime              m_arrivalTime; ///< Time of arrival of the HTTP request
 };
 
 
