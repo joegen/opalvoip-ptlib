@@ -666,6 +666,7 @@ PRAGMA_OPTIMISE_DEFAULT()
 
 static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight,
                                unsigned dstFrameWidth, unsigned dstFrameHeight,
+                               PVideoFrameInfo::ResizeMode resizeMode,
                                std::ostream * error)
 {
   if (srcFrameWidth == 0 || dstFrameWidth == 0 || srcFrameHeight == 0 || dstFrameHeight == 0) {
@@ -674,6 +675,9 @@ static bool ValidateDimensions(unsigned srcFrameWidth, unsigned srcFrameHeight,
              << srcFrameWidth << 'x' << srcFrameHeight << " -> " << dstFrameWidth << 'x' << dstFrameHeight;
     return false;
   }
+
+  if (resizeMode != PVideoFrameInfo::eScale)
+      return true;
 
   if (srcFrameWidth <= dstFrameWidth && srcFrameHeight <= dstFrameHeight)
     return true;
@@ -725,7 +729,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
     }
   }
 
-  if (!ValidateDimensions(srcWidth, srcHeight, dstWidth, dstHeight, error))
+  if (!ValidateDimensions(srcWidth, srcHeight, dstWidth, dstHeight, resizeMode, error))
     return false;
 
   if (srcFrameWidth == 0)
@@ -1512,7 +1516,7 @@ void PStandardColourConverter::YUY2toYUV420PWithShrink(const BYTE *yuy2, BYTE *y
 
 PSTANDARD_COLOUR_CONVERTER(YUY2,YUV420P)
 {
-  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, NULL))
+  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, m_resizeMode, NULL))
     return false;
 
   if (m_dstFrameWidth == m_srcFrameWidth)
@@ -1653,7 +1657,7 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV420P)
  */
 PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 {
-  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, NULL))
+  if (!ValidateDimensions(m_srcFrameWidth, m_srcFrameHeight, m_dstFrameWidth, m_dstFrameHeight, m_resizeMode, NULL))
     return false;
 
   if (m_dstFrameWidth == m_srcFrameWidth)
