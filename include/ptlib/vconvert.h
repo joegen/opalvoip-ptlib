@@ -418,7 +418,7 @@ class PJPEGConverter : public PColourConverter
     PJPEGConverter(
       unsigned width,   ///< Output width, zero indicates same is JPEG input
       unsigned height,  ///< Output height, zero indicates same is JPEG input
-      PVideoFrameInfo::ResizeMode resizeMode = PVideoFrameInfo::eScale, ///< How to produce output
+      PVideoFrameInfo::ResizeMode resizeMode = PVideoFrameInfo::eScaleKeepAspect, ///< How to produce output
       const PString & colourFormat = PVideoFrameInfo::YUV420P() ///< Output colour format
     );
     /**Construct a JPEG converter.

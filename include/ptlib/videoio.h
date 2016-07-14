@@ -56,7 +56,8 @@ class PVideoFrameInfo : public PObject
     P_DECLARE_ENUM_EX(ResizeMode,eMaxResizeMode,
       eScale,0,
       eCropCentre,
-      eCropTopLeft
+      eCropTopLeft,
+      eScaleKeepAspect
     );
     friend ostream & operator<<(ostream & strm, ResizeMode mode);
 

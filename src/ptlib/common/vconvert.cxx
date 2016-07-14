@@ -702,6 +702,29 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
     return true;
   }
 
+  if (resizeMode == PVideoFrameInfo::eScaleKeepAspect) {
+	unsigned srcWidthByDstHeight = srcWidth * dstHeight;
+	unsigned dstWidthBySrcHeight = dstWidth * srcHeight;
+    if (srcWidthByDstHeight < dstWidthBySrcHeight) {
+      unsigned outputWidth = (srcWidthByDstHeight/srcHeight)&~1;
+      unsigned ouputX = ((dstWidth - outputWidth)/2)&~1;
+      FillYUV420P(                 0, 0, ouputX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      FillYUV420P(outputWidth-ouputX, 0, ouputX, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      return CopyYUV420P(srcX, srcY, srcWidth, srcHeight, srcFrameWidth, srcFrameHeight, srcYUV,
+                         ouputX, 0, outputWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV,
+                         PVideoFrameInfo::eScale, verticalFlip, error);
+    }
+    else if (srcWidthByDstHeight > dstWidthBySrcHeight) {
+      unsigned outputHeight = (dstWidthBySrcHeight/srcWidth)&~1;
+      unsigned outputY = ((dstHeight - outputHeight)/2)&~1;
+      FillYUV420P(0,                    0, dstWidth, outputY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      FillYUV420P(0, outputHeight-outputY, dstWidth, outputY, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
+      return CopyYUV420P(srcX, srcY, srcWidth, srcHeight, srcFrameWidth, srcFrameHeight, srcYUV,
+                         0, outputY, dstWidth, outputHeight, dstFrameWidth, dstFrameHeight, dstYUV,
+                         PVideoFrameInfo::eScale, verticalFlip, error);
+    }
+  }
+
   if (!ValidateDimensions(srcWidth, srcHeight, dstWidth, dstHeight, error))
     return false;
 
@@ -748,7 +771,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
                      BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstFrameWidth) = CropYUV420P;
 
   switch (resizeMode) {
-    case PVideoFrameInfo::eScale :
+    default : // Scaling options
       if (srcWidth > dstWidth)
         rowFunction = ShrinkBothYUV420P;
       else if (srcWidth < dstWidth)
@@ -760,7 +783,6 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
       // else use crop
       break;
 
-    default :
     case PVideoFrameInfo::eCropTopLeft :
       if (srcWidth <= dstWidth) {
         FillYUV420P(dstX + srcWidth, dstY, dstWidth - srcWidth, dstHeight, dstFrameWidth, dstFrameHeight, dstYUV, 0, 0, 0);
@@ -3277,6 +3299,7 @@ PJPEGConverter::PJPEGConverter()
   : PColourConverter(PColourPair("JPEG", PVideoFrameInfo::YUV420P()))
   , m_context(new Context)
 {
+  SetResizeMode(PVideoFrameInfo::eScaleKeepAspect);
 }
 
 
@@ -3293,6 +3316,7 @@ PJPEGConverter::PJPEGConverter(const PColourPair & colours)
   : PColourConverter(colours)
   , m_context(new Context)
 {
+  SetResizeMode(PVideoFrameInfo::eScaleKeepAspect);
 }
 
 
