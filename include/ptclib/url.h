@@ -365,6 +365,7 @@ class PURL : public PObject
       PString       m_certificate;  // File or data
       PString       m_privateKey;   // File or data
 #endif
+      PStringOptions m_customOptions; // E.g. headers for http
     };
     /**Get the resource the URL is pointing at.
        The data returned is obtained according to the scheme and the factory

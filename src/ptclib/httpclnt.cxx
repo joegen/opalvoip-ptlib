@@ -381,6 +381,8 @@ bool PHTTPClient::WriteCommand(Commands cmd,
       strm << '/';
     else
       strm << url;
+    if (PTrace::CanTrace(4))
+      strm << '\n' << outMIME;
     strm << PTrace::End;
   }
 #endif
@@ -1263,7 +1265,7 @@ class PURL_HttpLoader : public PURLLoader
 #if P_SSL
       http.SetSSLCredentials(params.m_authority, params.m_certificate, params.m_privateKey);
 #endif
-      PMIMEInfo outMIME, replyMIME;
+      PMIMEInfo outMIME = params.m_customOptions, replyMIME;
       if (!http.GetDocument(url, outMIME, replyMIME))
         return false;
 
