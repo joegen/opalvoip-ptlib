@@ -72,6 +72,18 @@ void PThreadPoolBase::Shutdown()
 }
 
 
+void PThreadPoolBase::SetMaxWorkers(unsigned count)
+{
+  m_mutex.Wait();
+  bool needReclamation = m_maxWorkerCount > count;
+  m_maxWorkerCount = count;
+  m_mutex.Signal();
+
+  if (needReclamation)
+    ReclaimWorkers();
+}
+
+
 PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::AllocateWorker()
 {
   // Assumes m_mutex already locked
@@ -79,31 +91,30 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::AllocateWorker()
   // find the worker thread with the minimum number of work units
   // shortcut the search if we find an empty one
   WorkerList_t::iterator minWorker = m_workers.end();
-  size_t minSizeFound = 0x7ffff;
-  WorkerList_t::iterator iter;
-  for (iter = m_workers.begin(); iter != m_workers.end(); ++iter) {
+  size_t minSizeFound = INT_MAX;
+  for (WorkerList_t::iterator iter = m_workers.begin(); iter != m_workers.end(); ++iter) {
     WorkerThreadBase & worker = **iter;
     PWaitAndSignal m2(worker.m_workerMutex);
     if (!worker.m_shutdown && (worker.GetWorkSize() <= minSizeFound)) {
       minSizeFound = worker.GetWorkSize();
-      minWorker = iter;
       if (minSizeFound == 0)
-        break;
+        return &worker; // if there is an idle worker, use it
+      minWorker = iter;
     }
   }
 
-  // if there is an idle worker, use it
-  if (iter != m_workers.end())
-    return *minWorker;
-
-  // if there is a per-worker limit, increase workers in quanta of the max worker count
-  // otherwise only allow maximum number of workers
-  if (m_maxWorkUnitCount > 0) {
-    if (((m_workers.size() % m_maxWorkerCount) == 0) && (minSizeFound < m_maxWorkUnitCount)) 
-      return *minWorker;
+  if (minWorker != m_workers.end()) {
+    // if there is a per-worker limit, increase workers in quanta of the max worker count
+    // otherwise only allow maximum number of workers
+    if (m_maxWorkUnitCount > 0) {
+      if (((m_workers.size() % m_maxWorkerCount) == 0) && (minSizeFound < m_maxWorkUnitCount))
+        return *minWorker;
+    }
+    else {
+      if (m_workers.size() >= m_maxWorkerCount)
+        return *minWorker;
+    }
   }
-  else if ((m_workers.size() > 0) && (m_workers.size() == m_maxWorkerCount))
-    return *minWorker;
 
   // create a new worker thread
   WorkerThreadBase * worker = CreateWorkerThread();

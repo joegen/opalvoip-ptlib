@@ -192,7 +192,7 @@ class PThreadPoolBase : public PObject
 
     void SetMaxWorkers(
       unsigned count
-    ) { m_maxWorkerCount = count; }
+    );
 
     unsigned GetMaxUnits() const { return m_maxWorkUnitCount; }
 
