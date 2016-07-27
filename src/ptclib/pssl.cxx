@@ -769,7 +769,7 @@ bool PSSLCertificate::GetIssuerName(X509_Name & name) const
   if (m_certificate == NULL)
     return false;
 
-  name = X509_Name(X509_get_subject_name(m_certificate));
+  name = X509_Name(X509_get_issuer_name(m_certificate));
   return name.IsValid();
 }
 
@@ -854,7 +854,7 @@ PString PSSLCertificate::X509_Name::AsString(int indent) const
   if (bio == NULL)
     return str;
 
-  X509_NAME_print_ex(bio, m_name, std::max(0, indent), indent < 0 ? XN_FLAG_ONELINE : XN_FLAG_MULTILINE);
+  X509_NAME_print_ex(bio, m_name, std::max(0, indent), indent < 0 ? XN_FLAG_ONELINE : (XN_FLAG_MULTILINE|XN_FLAG_DUMP_UNKNOWN_FIELDS));
 
   char * data;
   int len = BIO_get_mem_data(bio, &data);
@@ -1810,21 +1810,36 @@ static void InfoCallback(const SSL * PTRACE_PARAM(ssl), int PTRACE_PARAM(locatio
 static void TraceVerifyCallback(int ok, X509_STORE_CTX * ctx)
 {
   const unsigned Level = ok ? 5 : 2;
-  if (PTrace::GetLevel() >= Level) {
-    int err = X509_STORE_CTX_get_error(ctx);
-    int depth = X509_STORE_CTX_get_error_depth(ctx);
-    PSSLCertificate cert(X509_STORE_CTX_get_current_cert(ctx));
-    PSSLCertificate::X509_Name issuer, subject;
-    cert.GetIssuerName(issuer);
-    cert.GetSubjectName(subject);
+  if (PTrace::CanTrace(Level)) {
+    ostream & trace = PTRACE_BEGIN(Level);
+    trace << "Verify callback: depth=" << X509_STORE_CTX_get_error_depth(ctx);
 
-    PTRACE_BEGIN(Level)
-      << "Verify callback: depth="
-      << depth
-      << ", err=" << err << " - " << X509_verify_cert_error_string(err)
-      << "\n  Subject:\n" << subject.AsString(4)
-      << "\n  Issuer:\n" << issuer.AsString(4)
-      << PTrace::End;
+    int err = X509_STORE_CTX_get_error(ctx);
+    if (err != 0)
+      trace << ", err=" << err << " - " << X509_verify_cert_error_string(err);
+
+    PSSLCertificate cert(X509_STORE_CTX_get_current_cert(ctx));
+
+    PSSLCertificate::X509_Name x509;
+    bool good = cert.GetSubjectName(x509);
+    trace << "\n  Subject:";
+    if (good)
+      trace << '\n' << x509.AsString(4);
+    else
+      trace << " Invalid!";
+
+    good = cert.GetIssuerName(x509);
+    trace << "\n  Issuer:";
+    if (good)
+      trace << '\n' << x509.AsString(4);
+    else
+      trace << " Invalid!";
+
+    PString alt = cert.GetSubjectAltName();
+    if (!alt)
+      trace << "\n  Subject-Alt: \"" << alt << '"';
+
+    trace << PTrace::End;
   }
 }
 #else
