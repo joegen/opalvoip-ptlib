@@ -52,12 +52,11 @@ PCREATE_PROCESS(HTTPTest)
 void HTTPTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("h-help.    print this help message.\n"
-             "G.         do a GET\n"
-             "P.         do a PUT"
-             "p-port:    port number to listen on(default 80 or 443).\n"
+  args.Parse("h-help.       print this help message.\n"
+             "O-operation:  do a GET/POST/PUT/DELETE, if absent then acts as server\n"
+             "p-port:       port number to listen on (default 80 or 443).\n"
 #if P_SSL
-             "s-secure.     SSL/TLS mode.\n"
+             "s-secure.     SSL/TLS mode for server.\n"
              "-ca:          SSL/TLS client certificate authority file/directory.\n"
              "-certificate: SSL/TLS server certificate.\n"
              "-private-key: SSL/TLS server private key.\n"
@@ -74,30 +73,49 @@ void HTTPTest::Main()
     return;
   }
 
-  if (args.HasOption('G')) {
+  if (args.HasOption('O')) {
     if (args.GetCount() < 1) {
       cerr << args.Usage("url");
       return;
     }
-    PString str;
-    PHTTPClient client;
-    if (client.GetTextDocument(args[0], str))
-      cout << str << endl;
-    else
-      cout << "Error " << client.GetErrorText() << endl;
-    return;
-  }
 
-  if (args.HasOption('P')) {
-    if (args.GetCount() < 2) {
-      cerr << args.Usage("url file");
-      return;
-    }
     PHTTPClient client;
-    if (client.PutDocument(args[0], PFilePath(args[1])))
-      cout << "Put succeeded\n";
+#if P_SSL
+    client.SetSSLCredentials(args.GetOptionString("ca"),
+                             args.GetOptionString("certificate"),
+                             args.GetOptionString("private-key"));
+#endif
+
+    PCaselessString op = args.GetOptionString('O');
+    bool ok;
+    if (op == "GET") {
+      PString str;
+      ok = client.GetTextDocument(args[0], str);
+      if (ok)
+        cout << str << endl;
+    }
+    else if (op == "GET")
+      ok = client.DeleteDocument(args[0]);
+    else {
+      if (args.GetCount() < 2) {
+        cerr << args.Usage("url file");
+        return;
+      }
+
+      if (op == "PUT")
+        ok = client.PutDocument(args[0], PFilePath(args[1]));
+      else if (op == "POST")
+        ok = client.PostData(args[0], PFilePath(args[1]));
+      else {
+        cerr << args.Usage("[ url [ file ] ]");
+        return;
+      }
+    }
+    if (ok)
+      cout << op << " sucessful.";
     else
-      cout << "Error " << client.GetErrorText() << endl;
+      cout << "Error in " << op << ' ' << client.GetErrorText();
+    cout << endl;
     return;
   }
 
