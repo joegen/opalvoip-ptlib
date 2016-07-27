@@ -94,7 +94,7 @@ void HTTPTest::Main()
       if (ok)
         cout << str << endl;
     }
-    else if (op == "GET")
+    else if (op == "DELETE")
       ok = client.DeleteDocument(args[0]);
     else {
       if (args.GetCount() < 2) {
@@ -104,8 +104,10 @@ void HTTPTest::Main()
 
       if (op == "PUT")
         ok = client.PutDocument(args[0], PFilePath(args[1]));
-      else if (op == "POST")
-        ok = client.PostData(args[0], PFilePath(args[1]));
+      else if (op == "POST") {
+        PMIMEInfo outMIME;
+        ok = client.PostData(args[0], outMIME, args[1]);
+      }
       else {
         cerr << args.Usage("[ url [ file ] ]");
         return;
