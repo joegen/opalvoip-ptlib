@@ -166,11 +166,11 @@ bool PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certifica
     key.Save(certificateFile, true);
   }
 
-  return SetServerCertificates(certificateFile, certificateFile, PString::Empty());
+  return SetServerCredentials(certificateFile, certificateFile, PString::Empty());
 }
 
 
-bool PSecureHTTPServiceProcess::SetServerCertificates(const PString & cert, const PString & key, const PString & ca)
+bool PSecureHTTPServiceProcess::SetServerCredentials(const PString & cert, const PString & key, const PString & ca)
 {
   if (m_sslContext == NULL)
     m_sslContext = new PSSLContext(PSSLContext::TLSv1);

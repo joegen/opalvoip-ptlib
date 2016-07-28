@@ -77,10 +77,10 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
       const char * dn = NULL        ///< Distinguished Name to use if creating new self signed certificate.
     );
 
-    /** Set the server certificates to use.
+    /** Set the server credentials, certificates etc, to use.
         Must be called before ListenForHTTP() or https will not be supported.
       */
-    bool SetServerCertificates(
+    bool SetServerCredentials(
       const PString & cert,   ///< Certificate file or text string
       const PString & key,    ///< Private key file or text string
       const PString & ca      ///< Certificate authority file, directory or text string
