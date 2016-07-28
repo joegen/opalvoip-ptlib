@@ -92,7 +92,7 @@ void HTTPTest::Main()
       PString str;
       ok = client.GetTextDocument(args[0], str);
       if (ok)
-        cout << str << endl;
+        cout << "Response body: \"" << str << '"' << endl;
     }
     else if (op == "DELETE")
       ok = client.DeleteDocument(args[0]);
@@ -116,7 +116,9 @@ void HTTPTest::Main()
     if (ok)
       cout << op << " sucessful.";
     else
-      cout << "Error in " << op << ' ' << client.GetErrorText();
+      cout << "Error in " << op
+           << " code=" << client.GetLastResponseCode()
+           << " info=\"" << client.GetLastResponseInfo() << '"';
     cout << endl;
     return;
   }
