@@ -130,6 +130,7 @@ PChannel * PSecureHTTPServiceProcess::CreateChannelForHTTP(PChannel * channel)
     return ssl;
 
   PSYSTEMLOG(Error, "Accept failed: " << ssl->GetErrorText());
+  ssl->Detach();
   delete ssl;
   return NULL;
 }
@@ -175,7 +176,7 @@ bool PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certifica
 bool PSecureHTTPServiceProcess::SetServerCertificates(const PString & cert, const PString & key, const PString & ca)
 {
   if (m_sslContext == NULL)
-    m_sslContext = new PSSLContext;
+    m_sslContext = new PSSLContext(PSSLContext::TLSv1);
 
   return m_sslContext->SetCredentials(ca, cert, key);
 }
