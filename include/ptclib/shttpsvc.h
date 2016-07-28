@@ -68,10 +68,22 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
     virtual PChannel * CreateChannelForHTTP(PChannel * channel);
     virtual void OnHTTPStarted(PHTTPServer & server);
 
+    /** Set/Create the server certificate to use.
+        Must be called before ListenForHTTP() or https will not be supported.
+      */
     bool SetServerCertificate(
-      const PFilePath & certFile,
-      bool create = false,
-      const char * dn = NULL
+      const PFilePath & certFile,   ///< Combined certificate/private key file
+      bool create = false,          ///< Flag indicating a self signed certificate should be generated if it does not exist.
+      const char * dn = NULL        ///< Distinguished Name to use if creating new self signed certificate.
+    );
+
+    /** Set the server certificates to use.
+        Must be called before ListenForHTTP() or https will not be supported.
+      */
+    bool SetServerCertificates(
+      const PString & cert,   ///< Certificate file or text string
+      const PString & key,    ///< Private key file or text string
+      const PString & ca      ///< Certificate authority file, directory or text string
     );
 
     virtual PBoolean OnDetectedNonSSLConnection(PChannel * chan, const PString & line);
