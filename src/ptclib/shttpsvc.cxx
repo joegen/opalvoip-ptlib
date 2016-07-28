@@ -75,6 +75,7 @@ PSecureHTTPServiceProcess::~PSecureHTTPServiceProcess()
 
 void PSecureHTTPServiceProcess::DisableSSL()
 {
+  PSYSTEMLOG(Info, "SSL disabled");
   delete m_sslContext;
   m_sslContext = NULL;
 }
@@ -165,11 +166,7 @@ bool PSecureHTTPServiceProcess::SetServerCertificate(const PFilePath & certifica
     key.Save(certificateFile, true);
   }
 
-  if (SetServerCertificates(certificateFile, certificateFile, PString::Empty()))
-    return true;
-
-  DisableSSL();
-  return false;
+  return SetServerCertificates(certificateFile, certificateFile, PString::Empty());
 }
 
 
@@ -178,7 +175,11 @@ bool PSecureHTTPServiceProcess::SetServerCertificates(const PString & cert, cons
   if (m_sslContext == NULL)
     m_sslContext = new PSSLContext(PSSLContext::TLSv1);
 
-  return m_sslContext->SetCredentials(ca, cert, key);
+  if (m_sslContext->SetCredentials(ca, cert, key))
+      return true;
+
+  DisableSSL();
+  return false;
 }
 
 PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, const PString & line)
