@@ -294,9 +294,14 @@
 #endif // P_HAS_BACKTRACE
 
 
-#define OUTPUT_MESSAGE(msg) \
-    PTRACE_IF(0, PTrace::GetStream() != &PError, NULL, "PTLib", msg); \
-    PError << msg << endl
+#if PTRACING
+  #define OUTPUT_MESSAGE(msg) \
+    PTRACE(0, NULL, "PTLib", msg); \
+    if (PTrace::GetStream() != &PError) \
+      PError << msg << endl
+#else
+  #define OUTPUT_MESSAGE(msg) PError << msg << endl
+#endif
 
 
 #if defined(P_ANDROID)
