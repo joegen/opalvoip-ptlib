@@ -106,6 +106,73 @@ PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, P
 
 #else
 
+static PCriticalSection s_AssertMutex;
+extern void PPlatformAssertFunc(const char * msg, char defaultAction);
+extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip);
+
+#if PTRACING
+  void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
+  {
+    s_AssertMutex.Wait();
+    PPlatformWalkStack(strm, id, 1); // 1 means skip reporting PTrace::WalkStack
+    s_AssertMutex.Signal();
+  }
+#endif // PTRACING
+
+
+static void InternalAssertFunc(const char * file, int line, const char * className, const char * msg)
+{
+#if defined(_WIN32)
+  DWORD errorCode = GetLastError();
+#else
+  int errorCode = errno;
+#endif
+
+#if P_EXCEPTIONS
+  //Throw a runtime exception if the environment variable is set
+  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
+  if (env != NULL) {
+    throw std::runtime_error(msg);
+    return;
+  }
+#endif
+
+  PWaitAndSignal lock(s_AssertMutex);
+  static bool s_RecursiveAssert = false;
+  if (s_RecursiveAssert)
+    return;
+
+  s_RecursiveAssert = true;
+
+  std::string str;
+  {
+    ostringstream strm;
+    strm << "Assertion fail: ";
+    if (msg != NULL)
+      strm << msg << ", ";
+    strm << "file " << file << ", line " << line;
+    if (className != NULL)
+      strm << ", class " << className;
+    if (errorCode != 0)
+      strm << ", error=" << errorCode;
+    strm << ", when=" << PTime().AsString(PTime::LoggingFormat);
+    PPlatformWalkStack(strm, PNullThreadIdentifier, 2); // 2 means skip reporting InternalAssertFunc & PAssertFunc
+    strm << ends;
+    str = strm.str();
+  }
+
+  const char * env = ::getenv("PTLIB_ASSERT_ACTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_ACTION");
+
+  PPlatformAssertFunc(str.c_str(), env != NULL ? *env : '\0');
+
+  s_RecursiveAssert = false;
+}
+
+
 bool PAssertFunc(const char * file,
                  int line,
                  const char * className,
@@ -117,7 +184,8 @@ bool PAssertFunc(const char * file,
     static const char fmt[] = "Out of memory at file %.100s, line %u, class %.30s";
     char msgbuf[sizeof(fmt)+100+10+30];
     sprintf(msgbuf, fmt, file, line, className);
-    return PAssertFunc(msgbuf);
+    PPlatformAssertFunc(msgbuf, 'A');
+    return false;
   }
 
   static const char * const textmsg[PMaxStandardAssertMessage] = {
@@ -136,39 +204,24 @@ bool PAssertFunc(const char * file,
     "Invalid or closed operating system window"
   };
 
-  const char * theMsg;
-  char msgbuf[20];
   if (msg < PMaxStandardAssertMessage)
-    theMsg = textmsg[msg];
+    InternalAssertFunc(file, line, className, textmsg[msg]);
   else {
+    char msgbuf[20];
     sprintf(msgbuf, "Assertion %i", msg);
-    theMsg = msgbuf;
+    InternalAssertFunc(file, line, className, msgbuf);
   }
-  return PAssertFunc(file, line, className, theMsg);
+  return false;
 }
 
 
 bool PAssertFunc(const char * file, int line, const char * className, const char * msg)
 {
-#if defined(_WIN32)
-  DWORD err = GetLastError();
-#else
-  int err = errno;
-#endif
-
-  ostringstream str;
-  str << "Assertion fail: ";
-  if (msg != NULL)
-    str << msg << ", ";
-  str << "file " << file << ", line " << line;
-  if (className != NULL)
-    str << ", class " << className;
-  if (err != 0)
-    str << ", error=" << err;
-  str << ", when=" << PTime().AsString(PTime::LoggingFormat) << ends;
-  
-  return PAssertFunc(str.str().c_str());
+  // Done this way so WalkStack removes the correct number of irrelevant frames
+  InternalAssertFunc(file, line, className, msg);
+  return false;
 }
+
 
 #endif // !P_USE_ASSERTS
 

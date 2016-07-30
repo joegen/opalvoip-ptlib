@@ -99,6 +99,12 @@
   #include <DbgHelp.h>
   #include <Psapi.h>
 
+  #if PTRACING
+    #define InternalMaxStackWalk PTrace::MaxStackWalk
+  #else
+    #define InternalMaxStackWalk 20
+  #endif // PTRACING
+
   class PDebugDLL : public PDynaLink
   {
     PCLASSINFO(PDebugDLL, PDynaLink)
@@ -155,7 +161,7 @@
           m_SymCleanup(GetCurrentProcess());
       }
 
-      void StackWalk(ostream & strm, PThreadIdentifier id, unsigned maxWalk)
+      void WalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip)
       {
         if (!GetFunction("SymInitialize", (Function &)m_SymInitialize) ||
             !GetFunction("SymCleanup", (Function &)m_SymCleanup) ||
@@ -226,7 +232,6 @@
 
         // The thread information.
         HANDLE hThread;
-        unsigned framesToSkip = 0;
         int resumeCount = -1;
 
         CONTEXT threadContext;
@@ -236,7 +241,11 @@
         if (id == PNullThreadIdentifier || id == GetCurrentThreadId()) {
           hThread = GetCurrentThread();
           RtlCaptureContext(&threadContext);
-          framesToSkip = 2;
+#if P_64BIT
+          framesToSkip += 2;
+#else
+          ++framesToSkip;
+#endif
         }
         else {
           hThread = OpenThread(THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT|THREAD_SUSPEND_RESUME, FALSE, id);
@@ -281,7 +290,7 @@
         #endif
 
         unsigned frameCount = 0;
-        while (frameCount++ < maxWalk) {
+        while (frameCount++ < InternalMaxStackWalk) {
           if (!m_StackWalk64(imageType,
                              hProcess,
                              hThread,
@@ -351,28 +360,15 @@
   };
 
 
-  static PCriticalSection StackWalkMutex;
-
-  #if PTRACING
-    #define InternalStackWalk    PTrace::WalkStack
-    #define InternalMaxStackWalk PTrace::MaxStackWalk
-  #else
-    #define InternalMaxStackWalk 20
-    static
-  #endif // PTRACING
-  void InternalStackWalk(ostream & strm, PThreadIdentifier id)
+  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip)
   {
-    StackWalkMutex.Wait();
     PDebugDLL debughelp;
     if (debughelp.IsLoaded())
-      debughelp.StackWalk(strm, id, InternalMaxStackWalk);
-    StackWalkMutex.Signal();
+      debughelp.WalkStack(strm, id, framesToSkip);
   }
 
 #endif // _WIN32_WCE
 
-
-static PCriticalSection AssertMutex;
 
 static bool AssertAction(int c)
 {
@@ -404,46 +400,30 @@ static bool AssertAction(int c)
 }
 
 
-bool PAssertFunc(const char * msg)
+void PPlatformAssertFunc(const char * msg, char defaultAction)
 {
-  std::string str;
-  {
-    ostringstream strm;
-    strm << msg;
-    InternalStackWalk(strm, PNullThreadIdentifier);
-    strm << ends;
-    str = strm.str();
-  }
-
 #ifndef _WIN32_WCE
   if (PProcess::Current().IsServiceProcess()) {
-    PSYSTEMLOG(Fatal, str);
-    return false;
+    PSYSTEMLOG(Fatal, msg);
+    return;
   }
 #endif // !_WIN32_WCE
 
-  PTRACE(0, str);
+  PTRACE(0, msg);
 
-  PWaitAndSignal mutex(AssertMutex);
-
-  const char * env = ::getenv("PTLIB_ASSERT_ACTION");
-  if (env == NULL)
-    env = ::getenv("PWLIB_ASSERT_ACTION");
-  if (env != NULL && *env != EOF && AssertAction(*env))
-    return false;
-
-  if (PProcess::Current().IsGUIProcess()) {
-    PVarString msg = str;
-    PVarString name = PProcess::Current().GetName();
-    AssertAction(MessageBox(NULL, msg, name, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL));
+  if (defaultAction != '\0')
+    AssertAction(defaultAction);
+  else if (PProcess::Current().IsGUIProcess()) {
+    PVarString boxMsg = msg;
+    PVarString boxTitle = PProcess::Current().GetName();
+    AssertAction(MessageBox(NULL, boxMsg, boxTitle, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL));
   }
   else {
     do {
-      cerr << str << "\n<A>bort, <B>reak, <I>gnore? ";
+      cerr << msg << "\n<A>bort, <B>reak, <I>gnore? ";
       cerr.flush();
     } while (AssertAction(cin.get()));
   }
-  return false;
 }
 
 
