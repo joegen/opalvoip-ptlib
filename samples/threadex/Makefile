@@ -31,5 +31,6 @@ ifdef PTLIBDIR
 else
   include $(shell pkg-config ptlib --variable=makedir)/ptlib.mak
 endif
+LIBS += -lpthread
 
 # End of Makefile

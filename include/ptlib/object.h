@@ -329,7 +329,6 @@ enum PStandardAssertMessage {
 
 bool PAssertFunc(const char * file, int line, const char * className, PStandardAssertMessage msg);
 bool PAssertFunc(const char * file, int line, const char * className, const char * msg);
-bool PAssertFunc(const char * full_msg);
 
 
 /** This macro is used to assert that a condition must be true.

@@ -593,7 +593,12 @@ PBoolean PSSLCertificate::CreateRoot(const PString & subject,
 
   if (X509_set_version(m_certificate, 2)) {
     /* Set version to V3 */
-    ASN1_INTEGER_set(X509_get_serialNumber(m_certificate), 0L);
+    {
+      static PMutex s_mutex;
+      PWaitAndSignal lock(s_mutex);
+      static map<PString, long> s_sequenceNumbers;
+      ASN1_INTEGER_set(X509_get_serialNumber(m_certificate), ++s_sequenceNumbers[subject]);
+    }
 
     X509_NAME * name = X509_NAME_new();
     for (POrdinalToString::iterator it = info.begin(); it != info.end(); ++it)

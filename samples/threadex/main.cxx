@@ -47,9 +47,32 @@ PCREATE_PROCESS(Threadex);
 PAtomicInteger autoDeleteThreadsStarted;
 PAtomicInteger autoDeleteThreadsFinished;
 
+PAtomicInteger manualDeleteThreadsStarted;
+PAtomicInteger manualDeleteThreadsFinished;
+
 PMutex setMutex;
-typedef std::set<PThreadIdentifer> ThreadSet;
+typedef std::set<PThreadIdentifier> ThreadSet;
 ThreadSet threadSet;
+
+PString NumberWithCommas(unsigned long long v)
+{
+    PStringStream answer;
+    while (true) {
+        unsigned long long nv = v / 1000;
+        unsigned long long tv = v % 1000;
+        if (answer.GetLength() > 0)
+            answer = PString(",") + answer;
+        if (nv > 0)
+            answer = psprintf("%03d", tv) + answer;
+        else
+            answer = psprintf("%d", tv) + answer;
+        if (nv == 0)
+            break;
+        else
+            v = nv;
+    }
+    return answer;
+}
 
 Threadex::Threadex()
   : PProcess("Derek Smithies code factory", "threadex", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
@@ -72,6 +95,7 @@ void Threadex::Main()
              "c-create."             "-no-create."
              "h-help."               "-no-help."
              "d-delay:"              "-no-delay."
+	     "g-gap:"                "-no-gap."
              "b-busywait."           "-no-busywait."
 #if PTRACING
              "o-output:"             "-no-output."
@@ -101,25 +125,39 @@ void Threadex::Main()
            << "-h  or --help        :print this help" << endl
            << "-v  or --version      print version info" << endl
            << "-d  or --delay ##     where ## specifies how many milliseconds the created thread waits for" << endl
+           << "-g  or --gap ##       where ## specifies how many milliseconds betweeen iterations - big value slows down rate of thread construction" << endl
            << "-b  or --busywait     where if specified will cause the created thread to be tested for termination using a busy wait." << endl
            << "-a  or --autodelete   where the pwlib methods for auto deleting a thread are used" << endl
            << "-c  or --create       Use the pwlib PThread::Create method to create a thread of the reqired type" << endl
 #if PTRACING
            << "o-output              output file name for trace" << endl
-           << "t-trace.              trace level to use." << endl
+           << "t-trace.              trace level to use." << endl;
 #endif
-           << endl
+    if (GetOSName() == "Linux")
+      PError << "              -->You can get error 24 - this program can  creates BILLIONs of threads.  run ulimit -n 100000 to increment the number of " << endl
+             << "                 file handles available - so it can create lots of threads without running out of file handles. " << endl;
+    PError << endl
            << endl << endl;
     return;
   }
 
   delay = 2000;
-  if (args.HasOption('d'))
+  if (args.HasOption('d')) {
     delay = args.GetOptionString('d').AsInteger();
+    delay = PMIN(1000000, PMAX(0, delay));
+    cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
+  } else
+    cout << "Delay (or time each thread runs for) is not specified. Default value is 0 ms" << endl;
 
-  delay = PMIN(1000000, PMAX(0, delay));
-  cout << "Created thread will wait for " << delay << " milliseconds before ending" << endl;
- 
+  gapIteration = 0;
+  if (args.HasOption('g')) {
+    gapIteration = args.GetOptionString('g').AsInteger();
+    gapIteration = PMIN(1000, PMAX(0, gapIteration));
+    cout << "A gap of " << gapIteration << " milliseconds between launching threads" << endl;  
+  } else
+    cout << "Gap between the launching of threads not specified. Default value is 0 milliseconds, which gives the highest launch rate of threads." << endl;
+												 
+
   doBusyWait = args.HasOption('b');
 
   doAutoDelete = args.HasOption('a');
@@ -133,7 +171,7 @@ void Threadex::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void AddToThreadSet(PThreadIdentifer id)
+void AddToThreadSet(PThreadIdentifier id)
 {
   PWaitAndSignal m(setMutex);
   if (threadSet.find(id) != threadSet.end()) {
@@ -143,7 +181,7 @@ void AddToThreadSet(PThreadIdentifer id)
   threadSet.insert(id);
 }
 
-void RemoveFromThreadSet(PThreadIdentifer id)
+void RemoveFromThreadSet(PThreadIdentifier id)
 {
   PWaitAndSignal m(setMutex);
   if (threadSet.find(id) == threadSet.end()) {
@@ -159,12 +197,13 @@ DelayThread::DelayThread(PINDEX _delay)
   : PThread(10000, NoAutoDeleteThread), delay(_delay)
 {
   PTRACE(5, "ThreadEx\tConstructor for a non auto deleted delay thread");
+  ++manualDeleteThreadsStarted;
 }    
 
 DelayThread::DelayThread(PINDEX _delay, PBoolean)
   : PThread(10000, AutoDeleteThread), delay(_delay)
 {
-  PTRACE(5, "ThreadEx\tConstructor for an auto deleted  delay thread");
+  PTRACE(3, "ThreadEx\tConstructor for an auto deleted  delay thread");
 
   ++autoDeleteThreadsStarted;
 }
@@ -175,6 +214,8 @@ DelayThread::~DelayThread()
   RemoveFromThreadSet(id);
   if (IsAutoDelete())
     ++autoDeleteThreadsFinished;
+  else
+    ++manualDeleteThreadsFinished;
   //This thread must not have a PTRACE statement in the debugger, if it is an autodeleted thread.
   //If a PTRACE statement is here, the PTRACE will fail as the PThread::Current() returns empty.
 }
@@ -208,10 +249,16 @@ void * ExternalThreadMain(void *)
 void LauncherThread::AutoCreatedMain(PThread &, INT param)
 {
   PThread::Sleep(param);
+
+  if (Threadex::Current().AutoDelete())
+    ++autoDeleteThreadsFinished;
+  else
+    ++manualDeleteThreadsFinished;
 }
 
 void LauncherThread::Main()
 {
+  PINDEX gapIteration = Threadex::Current().GapIteration();
   PINDEX delay = Threadex::Current().Delay();
   PBoolean   doCreate = Threadex::Current().Create();
 
@@ -219,6 +266,7 @@ void LauncherThread::Main()
   if (Threadex::Current().AutoDelete()) {
     while (keepGoing) {
       if (doCreate) {
+	++autoDeleteThreadsStarted;
         thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
                                      PThread::AutoDeleteThread,
                                      PThread::NormalPriority,
@@ -229,6 +277,8 @@ void LauncherThread::Main()
       }
       //     PThread::Sleep(1);
       iteration++;
+      if (gapIteration > 0)
+	PThread::Sleep(gapIteration);
     }
     return;
   }
@@ -236,6 +286,7 @@ void LauncherThread::Main()
   if (Threadex::Current().BusyWait()) {
     while (keepGoing) {
       if (doCreate) {
+	++manualDeleteThreadsStarted;
         thread = PThread::Create(PCREATE_NOTIFIER(AutoCreatedMain), delay,
                                  PThread::NoAutoDeleteThread,
                                  PThread::NormalPriority,
@@ -248,6 +299,8 @@ void LauncherThread::Main()
       while (!thread->IsTerminated());
       delete thread;
       iteration++;
+      if (gapIteration > 0)
+	PThread::Sleep(gapIteration);
     }
     return;
   }
@@ -265,6 +318,8 @@ void LauncherThread::Main()
     thread->WaitForTermination();
     delete thread;
     iteration++;
+      if (gapIteration > 0)
+	PThread::Sleep(gapIteration);
   }
 }
 
@@ -303,11 +358,16 @@ void UserInterfaceThread::Main()
       break;
 
     case 'r' :
-      cout << "\nHave completed " << launch.GetIteration() << " iterations" << endl;
+      cout << "\nHave created  " << NumberWithCommas(launch.GetIteration()) << " threads" << endl;
       {
         int a = autoDeleteThreadsStarted;
         int b = autoDeleteThreadsFinished;
-        cout << "Auto-delete threads : " << a << " - " << b << " = " << a-b << endl;
+        int c = manualDeleteThreadsStarted;
+        int d = manualDeleteThreadsFinished;
+	if (a > 0)
+	  cout << "Auto-delete threads in the system : " << NumberWithCommas((int)(a-b)) << endl;
+	if (c > 0)
+	  cout << "Manual-delete threads in the system : " << NumberWithCommas((int)(c-d)) << endl;
       }
       break;
 
@@ -334,6 +394,7 @@ void UserInterfaceThread::Main()
       cout << "Exiting." << endl;
       launch.Terminate();
       launch.WaitForTermination();
+      exit(0);
       return;
 
     case '?' :

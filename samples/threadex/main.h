@@ -53,7 +53,7 @@ public:
     
  protected:
   PINDEX delay;
-  PThreadIdentifer id;
+  PThreadIdentifier id;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,10 +123,14 @@ class Threadex : public PProcess
 
     PBoolean Create()     { return doCreate; }
 
+    PINDEX GapIteration() { return gapIteration; }
+
    static Threadex & Current()
       { return (Threadex &)PProcess::Current(); }
 
  protected:
+
+    PINDEX gapIteration;
 
     PINDEX delay;
 
