@@ -543,6 +543,10 @@ class PString : public PCharArray
        new characters are initialised to zero. If the string is made smaller
        then the data beyond the new size is lost.
 
+       This does not set the actual length of the string, but only allocates
+       space for it. It is expected that GetPointerAndSetLength() or
+       MakeMinimumSize() is used to set the actual length of the string.
+
        Note that this function will break the current instance from multiple
        references to an array. A new array is allocated and the data from the
        old array copied to it.
