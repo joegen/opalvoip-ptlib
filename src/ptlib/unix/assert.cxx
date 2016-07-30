@@ -104,14 +104,12 @@
   }
 
 
-  static void InternalWalkStack(ostream & strm, int skip, void * const * addresses, int addressCount)
+  static void InternalWalkStack(ostream & strm, unsigned framesToSkip, void * const * addresses, unsigned addressCount)
   {
-    if (addressCount <= skip) {
+    if (addressCount <= framesToSkip) {
       strm << "\n\tStack back trace empty, possibly corrupt.";
       return;
     }
-
-    int i;
 
     std::vector<std::string> lines(addressCount);
 
@@ -119,12 +117,12 @@
     if (!addr2line.empty()) {
       std::stringstream cmd;
       cmd << addr2line << " -e \"" << PProcess::Current().GetFile() << '"';
-      for (i = skip; i < addressCount; ++i)
+      for (unsigned i = framesToSkip; i < addressCount; ++i)
         cmd << ' ' << addresses[i];
       FILE * p = popen(cmd.str().c_str(), "r");
       if (p != NULL) {
         char line[200];
-        for (i = skip; i < addressCount; ++i) {
+        for (unsigned i = framesToSkip; i < addressCount; ++i) {
           line[0] = '\0';
           if (!fgets_nonl(line, sizeof(line), p)) {
             if (line[0] != '\0')
@@ -140,7 +138,7 @@
 
 
     char ** symbols = backtrace_symbols(addresses, addressCount);
-    for (i = skip; i < addressCount; ++i) {
+    for (unsigned i = framesToSkip; i < addressCount; ++i) {
       strm << "\n\t";
 
       if (symbols[i] == NULL || symbols[i][0] == '\0') {
@@ -177,15 +175,6 @@
   }
 
 
-  static void InternalWalkStack(ostream & strm, int skip)
-  {
-    const size_t maxStackWalk = InternalMaxStackWalk + skip;
-    void * addresses[maxStackWalk];
-    InternalWalkStack(strm, skip, addresses, backtrace(addresses, maxStackWalk));
-  }
-
-
-  #if PTRACING
     #if P_PTHREADS
       struct PWalkStackInfo
       {
@@ -273,12 +262,21 @@
     static PWalkStackInfo s_otherThreadStack;
 
 
-    void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
+    void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip)
     {
-      if (id == PNullThreadIdentifier || id == PThread::GetCurrentThreadId())
-        InternalWalkStack(strm, 2);
-      else if (PProcess::IsInitialised())
+      if (!PProcess::IsInitialised())
+        return;
+
+      if (id != PNullThreadIdentifier && id != PThread::GetCurrentThreadId())
         s_otherThreadStack.WalkOther(strm, id);
+      else {
+        // Allow for some bizarre optimisation when called from PTrace::WalkStack()
+        if (framesToSkip == 1)
+          framesToSkip = 0;
+        const size_t maxStackWalk = InternalMaxStackWalk + framesToSkip;
+        void * addresses[maxStackWalk];
+        InternalWalkStack(strm, framesToSkip, addresses, backtrace(addresses, maxStackWalk));
+      }
     }
 
     void PProcess::InternalWalkStackSignaled()
@@ -286,17 +284,12 @@
       if (IsInitialised())
         s_otherThreadStack.OthersWalk();
     }
-  #endif // PTRACING
 
 #else
 
-  #define InternalWalkStack(...)
-
-  #if PTRACING
-    void PTrace::WalkStack(ostream &, PThreadIdentifier)
-    {
-    }
-  #endif // PTRACING
+  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, unsigned skip)
+  {
+  }
 
 #endif // P_HAS_BACKTRACE
 
@@ -412,37 +405,15 @@
 #endif
 
 
-static void InternalAssertFunc(const char * msg)
+void PPlatformAssertFunc(const char * msg, char defaultAction)
 {
-  std::string str;
-  {
-    ostringstream strm;
-    strm << msg;
-    InternalWalkStack(strm, 3);
-    strm << ends;
-    str = strm.str();
-  }
+  OUTPUT_MESSAGE(msg);
 
-  OUTPUT_MESSAGE(str);
-
-  char *env;
-
-#if P_EXCEPTIONS
-  //Throw a runtime exception if the environment variable PWLIB_ASSERT_EXCEPTION is set
-  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
-  if (env == NULL)
-    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
-  if (env != NULL) {
-    throw std::runtime_error(msg);
+  // DO default action is specified
+  if (defaultAction != '\0') {
+    AssertAction(defaultAction, msg);
     return;
   }
-#endif
-
-  env = ::getenv("PTLIB_ASSERT_ACTION");
-  if (env == NULL)
-    env = ::getenv("PWLIB_ASSERT_ACTION");
-  if (env != NULL && *env != EOF && AssertAction(*env, msg))
-    return;
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (isatty(STDIN_FILENO) != 1) {
@@ -450,25 +421,10 @@ static void InternalAssertFunc(const char * msg)
     return;
   }
 
+  // Keep asking for action till we get a legal one
   do {
     PError << '\n' << ActionMessage << "? " << flush;
   } while (AssertAction(getchar(), msg));
-}
-
-
-static PCriticalSection s_AssertMutex;
-static bool s_TopLevelAssert = true;
-
-bool PAssertFunc(const char * msg)
-{
-  s_AssertMutex.Wait();
-  if (s_TopLevelAssert) {
-    s_TopLevelAssert = false;
-    InternalAssertFunc(msg);
-    s_TopLevelAssert = true;
-  }
-  s_AssertMutex.Signal();
-  return false;
 }
 
 
