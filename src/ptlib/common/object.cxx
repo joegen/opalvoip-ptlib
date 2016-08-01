@@ -128,6 +128,7 @@ static void InternalAssertFunc(const char * file, int line, const char * classNa
   int errorCode = errno;
 #endif
 
+  const char * env;
 #if P_EXCEPTIONS
   //Throw a runtime exception if the environment variable is set
   env = ::getenv("PTLIB_ASSERT_EXCEPTION");
@@ -163,7 +164,7 @@ static void InternalAssertFunc(const char * file, int line, const char * classNa
     str = strm.str();
   }
 
-  const char * env = ::getenv("PTLIB_ASSERT_ACTION");
+  env = ::getenv("PTLIB_ASSERT_ACTION");
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
 
