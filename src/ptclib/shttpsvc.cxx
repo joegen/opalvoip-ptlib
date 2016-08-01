@@ -183,7 +183,7 @@ bool PSecureHTTPServiceProcess::SetServerCredentials(const PString & cert, const
 }
 
 PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, const PString & line)
-{ 
+{
   // get the MIME info
   PMIMEInfo mime(*chan);
 
@@ -214,7 +214,10 @@ PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, 
     }
   }
 
-  PString str = CreateNonSSLMessage(PString("http://") + url);
+  url.Splice("http://", 0);
+  PSYSTEMLOG(Info, "Detected non-SSL connection, redirecting to " << url);
+
+  PString str = CreateNonSSLMessage(url);
   
   chan->WriteString(str);
   chan->Close();
