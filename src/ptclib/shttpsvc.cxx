@@ -235,9 +235,11 @@ PString PSecureHTTPServiceProcess::CreateNonSSLMessage(const PString & url)
 
 PString PSecureHTTPServiceProcess::CreateRedirectMessage(const PString & url)
 {
-  return PString("HTTP/1.1 301 Moved Permanently\r\n") +
-                 "Location: " + url + "\r\n" +
-                 "\r\n";
+  static const char * CRLF = "\r\n";
+  return PSTRSTRM("HTTP/1.1 301 Moved Permanently" << CRLF <<
+                  PHTTP::LocationTag() << ": " << url << CRLF <<
+                  PHTTP::ContentLengthTag() << ": 0" << CRLF <<
+                  CRLF);
 }
 
 HTTP_PSSLChannel::HTTP_PSSLChannel(PSecureHTTPServiceProcess * _svc, PSSLContext * context)
