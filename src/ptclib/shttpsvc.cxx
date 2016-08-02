@@ -214,8 +214,8 @@ PBoolean PSecureHTTPServiceProcess::OnDetectedNonSSLConnection(PChannel * chan, 
     }
   }
 
-  url.Splice("http://", 0);
-  PSYSTEMLOG(Info, "Detected non-SSL connection, redirecting to " << url);
+  url.Splice("https://", 0);
+  PSYSTEMLOG(Info, "Detected non-SSL connection, host=\"" << host << "\", redirecting to " << url);
 
   PString str = CreateNonSSLMessage(url);
   
