@@ -551,6 +551,10 @@ void PSSLCertificate::FreeCertificate()
   if (m_certificate != NULL) {
     X509_free(m_certificate);
     m_certificate = NULL;
+
+    for (X509_Chain::iterator it = m_chain.begin(); it != m_chain.end(); ++it)
+      X509_free(*it);
+    m_chain.clear();
   }
 }
 
@@ -674,6 +678,9 @@ bool PSSLCertificate::Parse(const PString & certStr)
 
 PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileType)
 {
+  if (fileType == PSSLFileTypeDEFAULT)
+    return Load(certFile, PSSLFileTypePEM) || Load(certFile, PSSLFileTypeASN1);
+
   FreeCertificate();
 
   PSSL_BIO in;
@@ -681,6 +688,8 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
     PTRACE(2, "Could not open certificate file \"" << certFile << '"');
     return false;
   }
+
+  X509 * ca;
 
   switch (fileType) {
     case PSSLFileTypeASN1 :
@@ -693,22 +702,16 @@ PBoolean PSSLCertificate::Load(const PFilePath & certFile, PSSLFileTypes fileTyp
 
     case PSSLFileTypePEM :
       m_certificate = PEM_read_bio_X509(in, NULL, NULL, NULL);
-      if (m_certificate != NULL)
-        break;
-
-      PTRACE(2, "Invalid PEM certificate file \"" << certFile << '"');
-      return false;
+      if (m_certificate == NULL) {
+        PTRACE(2, "Invalid PEM certificate file \"" << certFile << '"');
+        return false;
+      }
+      while ((ca = PEM_read_bio_X509(in, NULL, NULL, NULL)) != NULL)
+        m_chain.push_back(ca);
+      break;
 
     default :
-      m_certificate = PEM_read_bio_X509(in, NULL, NULL, NULL);
-      if (m_certificate != NULL)
-        break;
-
-      m_certificate = d2i_X509_bio(in, NULL);
-      if (m_certificate != NULL)
-        break;
-
-      PTRACE(2, "Invalid certificate file \"" << certFile << '"');
+      PTRACE(2, "Unsupported certificate file \"" << certFile << '"');
       return false;
   }
 
@@ -2060,9 +2063,31 @@ bool PSSLContext::AddClientCA(const PList<PSSLCertificate> & certificates)
 
 bool PSSLContext::UseCertificate(const PSSLCertificate & certificate)
 {
-  return PAssertNULL(m_context) != NULL &&
-         certificate.IsValid() &&
-         SSL_CTX_use_certificate(m_context, certificate) > 0;
+  if (PAssertNULL(m_context) == NULL)
+    return false;
+
+  if (!certificate.IsValid())
+    return false;
+
+  if (SSL_CTX_use_certificate(m_context, certificate) == 0) {
+    PTRACE(2, "Could not use certificate: " << PSSLError());
+    return false;
+  }
+
+  SSL_CTX_clear_chain_certs(m_context);
+
+  const PSSLCertificate::X509_Chain & chain = certificate.GetChain();
+  for (PSSLCertificate::X509_Chain::const_iterator it = chain.begin(); it != chain.end(); ++it) {
+    X509 * ca = X509_dup(*it);
+    if (!SSL_CTX_add0_chain_cert(m_context, ca)) {
+      PTRACE(2, "Could not use certificate chain: " << PSSLError());
+      X509_free(ca);
+      return false;
+    }
+  }
+
+  PTRACE(5, "Using certificate with " << chain.size() << " CAs in chain");
+  return true;
 }
 
 

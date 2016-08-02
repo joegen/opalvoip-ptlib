@@ -362,9 +362,13 @@ class PSSLCertificate : public PObject
 
     virtual void PrintOn(ostream & strm) const { strm << GetSubjectName(); }
 
+    typedef std::list<x509_st *> X509_Chain;
+    const X509_Chain & GetChain() const { return m_chain; }
+
   protected:
     void FreeCertificate();
     x509_st * m_certificate;
+    X509_Chain m_chain;
 };
 
 
