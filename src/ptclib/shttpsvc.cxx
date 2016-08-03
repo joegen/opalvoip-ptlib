@@ -50,11 +50,13 @@ class HTTP_PSSLChannel : public PSSLChannel
     virtual int BioRead(char * out, int outl);
 
   protected:
-    enum { PreRead_Size = 4 };
-
-    PSecureHTTPServiceProcess * svc;
-    PINDEX preReadLen;
-    char preRead[PreRead_Size];
+    PSecureHTTPServiceProcess * m_serviceProcess;
+    PCaselessString             m_preReadData;
+    enum {
+      e_Starting,
+      e_IsSSL,
+      e_Finished }
+    m_preReadState;
 };
 
 #define new PNEW
@@ -242,51 +244,61 @@ PString PSecureHTTPServiceProcess::CreateRedirectMessage(const PString & url)
                   CRLF);
 }
 
-HTTP_PSSLChannel::HTTP_PSSLChannel(PSecureHTTPServiceProcess * _svc, PSSLContext * context)
-  : PSSLChannel(context), svc(_svc)
+HTTP_PSSLChannel::HTTP_PSSLChannel(PSecureHTTPServiceProcess * svc, PSSLContext * context)
+  : PSSLChannel(context)
+  , m_serviceProcess(svc)
+  , m_preReadState(e_Starting)
 {
-  preReadLen = P_MAX_INDEX;
 }
 
 
 int HTTP_PSSLChannel::BioRead(char * buf, int len)
-{ 
-  if (preReadLen == 0)
-    return PSSLChannel::BioRead(buf, len); 
+{
+  if (m_preReadState == e_Finished)
+    return PSSLChannel::BioRead(buf, len);
 
-  if (preReadLen == P_MAX_INDEX) {
+  if (m_preReadState == e_Starting) {
     PChannel * chan = GetReadChannel();
 
-    // read some bytes from the channel
-    preReadLen = 0;
-    while (preReadLen < PreRead_Size) {
-      PBoolean b = chan->Read(preRead + preReadLen, PreRead_Size - preReadLen); 
-      if (!b)
-        break;
-      preReadLen += chan->GetLastReadCount();
-    }
-
-    // see if these bytes correspond to a GET or POST
-    if (
-         (preReadLen == PreRead_Size) &&
-         ((strncmp(preRead, "GET", 3) == 0) || (strncmp(preRead, "POST", 4) == 0))
-        ) {
-
-      // read in the rest of the line
-      PString line(preRead, 4);
-      int ch;
-      while (((ch = chan->ReadChar()) > 0) && (ch != '\n'))
-        line += (char)ch;
-
-      if (!svc->OnDetectedNonSSLConnection(chan, line))
+    // read first line from the channel
+    for (;;) {
+      int c = chan->ReadChar();
+      if (c < 0)
         return -1;
+
+      m_preReadData += (char)c;
+
+      if (c == '\n' && m_preReadData.Find("HTTP/1") != P_MAX_INDEX) {
+        if (m_serviceProcess->OnDetectedNonSSLConnection(chan, m_preReadData))
+          chan->Close();
+        return -1;
+      }
+
+      if (c == '\r' || !iscntrl(c))
+        continue;
+
+      if (!m_preReadData.IsEmpty()) {
+        m_preReadState = e_IsSSL;
+        break;
+      }
+
+      m_preReadState = e_Finished;
+      *buf = (char)c;
+      len = 1;
+      return len;
     }
   }
 
-  // copy some bytes to the returned buffer, but no more than the buffer will allow
-  len = std::min(len, (int)preReadLen);
-  memcpy(buf, preRead, len);
-  preReadLen -= len;
+  // copy pre-read bytes to the supplied buffer, but no more than the buffer will allow
+  if (len < (int)m_preReadData.GetLength()) {
+    memcpy(buf, m_preReadData.GetPointer(), len);
+    m_preReadData.Delete(0, len);
+  }
+  else {
+    len = m_preReadData.GetLength();
+    memcpy(buf, m_preReadData.GetPointer(), len);
+    m_preReadState = e_Finished;
+  }
   return len;
 }
 
