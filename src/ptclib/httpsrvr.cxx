@@ -289,7 +289,10 @@ PBoolean PHTTPServer::ProcessCommand()
   // make sure the form info is reset for each new operation
   connectInfo.ResetMultipartFormInfo();
 
-  PTRACE(5, "Transaction " << connectInfo.GetCommandName() << " \"" << args << "\" url=" << connectInfo.GetURL());
+  PTRACE(5, "Transaction: " << connectInfo.GetCommandName() << " \"" << args << "\","
+            " url=" << connectInfo.GetURL() << ","
+            " persist=" << std::boolalpha << connectInfo.IsPersistent() << ","
+            " proxy=" << connectInfo.IsProxyConnection());
 
   if (connectInfo.IsWebSocket()) {
     if (!OnWebSocket(connectInfo))
@@ -323,11 +326,13 @@ PBoolean PHTTPServer::ProcessCommand()
   // we always close the socket so the client will get the correct end of file
   if (persist && connectInfo.IsPersistent()) {
     unsigned max = connectInfo.GetPersistenceMaximumTransations();
-    if (max == 0 || transactionCount < max)
+    if (max == 0 || transactionCount < max) {
+      PTRACE(5, "Connection persisting: transactions=" << transactionCount << ", max=" << max);
       return true;
+    }
   }
 
-  PTRACE(5, "Connection end: " << connectInfo.IsPersistent());
+  PTRACE(5, "Connection persistence ended: requested=" << std::boolalpha << connectInfo.IsPersistent() << ", persist=" << persist);
 
   // close the output stream now and return false
   Shutdown(ShutdownWrite);
