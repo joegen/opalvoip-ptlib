@@ -2861,7 +2861,7 @@ bool PThread::WaitAndDelete(PThread * & threadToDelete, const PTimeInterval & ma
   strm << "Thread \"" << *thread << "\""
 #if PTRACING
           "\n";
-  PTrace::WalkStack(strm, thread->GetThreadId());
+  PTrace::WalkStack(strm, thread->GetThreadId(), thread->GetUniqueIdentifier());
   strm << "  "
 #endif
           " failed to terminate in " << maxWait << " seconds";
@@ -2981,7 +2981,7 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThrea
 {
   strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << " name=\"" << PThread::GetThreadName(tid) << '"';
   if (walkStack)
-    PTrace::WalkStack(strm, tid);
+    PTrace::WalkStack(strm, tid, uid);
 }
 #endif
 
@@ -3355,7 +3355,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
       if (!it->second.m_waiting)
         trace << ", LOCKER";
       if (PTimedMutex::EnableDeadlockStackWalk)
-        PTrace::WalkStack(trace, it->first);
+        PTrace::WalkStack(trace, it->first, it->second.m_uniqueId);
     }
     trace << PTrace::End;
   }

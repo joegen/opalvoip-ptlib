@@ -180,14 +180,16 @@
       {
         enum { OtherThreadSkip = 6 };
         pthread_mutex_t   m_mainMutex;
-        PThreadIdentifier m_id;
+        PThreadIdentifier m_threadId;
+        PUniqueThreadIdentifier m_uniqueId;
         vector<void *>    m_addresses;
         int               m_addressCount;
         pthread_mutex_t   m_condMutex;
         pthread_cond_t    m_condVar;
 
         PWalkStackInfo()
-          : m_id(PNullThreadIdentifier)
+          : m_threadId(PNullThreadIdentifier)
+          , m_uniqueId(0)
           , m_addressCount(-1)
         {
           pthread_mutex_init(&m_mainMutex, NULL);
@@ -195,11 +197,12 @@
           pthread_cond_init(&m_condVar, NULL);
         }
 
-        void WalkOther(ostream & strm, PThreadIdentifier id)
+        void WalkOther(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid)
         {
           pthread_mutex_lock(&m_mainMutex);
 
-          m_id = id;
+          m_threadId = id;
+          m_uniqueId = uid;
           m_addressCount = -1;
           m_addresses.resize(InternalMaxStackWalk+OtherThreadSkip);
           if (!PThread::PX_kill(id, PProcess::WalkStackSignal)) {
@@ -226,20 +229,23 @@
           else
             InternalWalkStack(strm, OtherThreadSkip, m_addresses.data(), m_addressCount);
 
-          m_id = PNullThreadIdentifier;
+          m_threadId = PNullThreadIdentifier;
+          m_uniqueId = 0;
 
           pthread_mutex_unlock(&m_mainMutex);
         }
 
         void OthersWalk()
         {
-          PThreadIdentifier id = PThread::GetCurrentThreadId();
-          if (m_id != id) {
-            if (id == PNullThreadIdentifier)
+          PThreadIdentifier tid = PThread::GetCurrentThreadId();
+          PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
+
+          if (m_threadId != tid || (m_uniqueId != 0 && m_uniqueId != uid)) {
+            if (tid == PNullThreadIdentifier)
               PTRACE(0, "StackWalk", "Thread took too long to respond to signal");
             else
-              PTRACE(0, "StackWalk", "Signal received on " << id << " (0x" << hex << id << ")"
-                                     " but expected " << m_id << " (0x" << hex << m_id << ')');
+              PTRACE(0, "StackWalk", "Signal received on " << PThread::GetIdentifiersAsString(tid, uid) <<
+                                     " but expected " << PThread::GetIdentifiersAsString(m_threadId, m_uniqueId));
             return;
           }
 
@@ -262,13 +268,13 @@
     static PWalkStackInfo s_otherThreadStack;
 
 
-    void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip)
+    void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip)
     {
       if (!PProcess::IsInitialised())
         return;
 
       if (id != PNullThreadIdentifier && id != PThread::GetCurrentThreadId())
-        s_otherThreadStack.WalkOther(strm, id);
+        s_otherThreadStack.WalkOther(strm, id, uid);
       else {
         // Allow for some bizarre optimisation when called from PTrace::WalkStack()
         if (framesToSkip == 1)
@@ -287,7 +293,7 @@
 
 #else
 
-  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, unsigned skip)
+  void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned skip)
   {
   }
 

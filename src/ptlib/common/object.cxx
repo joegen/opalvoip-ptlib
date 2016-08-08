@@ -108,13 +108,13 @@ PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, P
 
 static PCriticalSection s_AssertMutex;
 extern void PPlatformAssertFunc(const char * msg, char defaultAction);
-extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, unsigned framesToSkip);
+extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip);
 
 #if PTRACING
-  void PTrace::WalkStack(ostream & strm, PThreadIdentifier id)
+  void PTrace::WalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid)
   {
     s_AssertMutex.Wait();
-    PPlatformWalkStack(strm, id, 1); // 1 means skip reporting PTrace::WalkStack
+    PPlatformWalkStack(strm, id, uid, 1); // 1 means skip reporting PTrace::WalkStack
     s_AssertMutex.Signal();
   }
 #endif // PTRACING
@@ -159,7 +159,7 @@ static void InternalAssertFunc(const char * file, int line, const char * classNa
     if (errorCode != 0)
       strm << ", error=" << errorCode;
     strm << ", when=" << PTime().AsString(PTime::LoggingFormat);
-    PPlatformWalkStack(strm, PNullThreadIdentifier, 2); // 2 means skip reporting InternalAssertFunc & PAssertFunc
+    PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2); // 2 means skip reporting InternalAssertFunc & PAssertFunc
     strm << ends;
     str = strm.str();
   }
