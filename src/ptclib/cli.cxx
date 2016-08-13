@@ -410,6 +410,8 @@ void PCLI::Context::OnCompletedLine()
   if (CheckInternalCommand(line, m_cli.GetCommentCommand(), true))
     return;
 
+  clear();
+
   if (CheckInternalCommand(line, m_cli.GetRepeatCommand())) {
     if (m_commandHistory.IsEmpty()) {
       *this << m_cli.GetNoHistoryError() << endl;
@@ -601,6 +603,8 @@ bool PCLI::Start(bool runInBackground)
 
 void PCLI::Stop()
 {
+  SetPrompt(PString::Empty());
+
   m_contextMutex.Wait();
   for (ContextList_t::iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
     (*iter)->Stop();
