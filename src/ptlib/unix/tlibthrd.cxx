@@ -911,6 +911,12 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
   PTRACE(7, "PTLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
 
+  if ((handle < 0) || (handle >= PProcess::Current().GetMaxHandles())) {
+    PTRACE(2, "PTLib\tAttempt to use illegal handle in PThread::PXBlockOnIO, handle=" << handle);
+    errno = EBADF;
+    return -1;
+  }
+
   int retval;
 
 #if P_HAS_POLL
@@ -945,13 +951,6 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 
 #else // P_HAS_POLL
 
-  if ((handle < 0) || (handle >= PProcess::Current().GetMaxHandles())) {
-    PTRACE(2, "PTLib\tAttempt to use illegal handle in PThread::PXBlockOnIO, handle=" << handle);
-    errno = EBADF;
-    return -1;
-  }
-
-  // make sure we flush the buffer before doing a write
   P_fd_set read_fds;
   P_fd_set write_fds;
   P_fd_set exception_fds;

@@ -67,6 +67,9 @@ void PChannel::Construct()
 
 PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
 {
+  if (CheckNotOpen())
+    return false;
+
   ErrorGroup group;
   switch (type) {
     case PXReadBlock :
@@ -78,9 +81,6 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
     default :
       group = LastGeneralError;
   }
-
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF, group);
 
   PThread * blockedThread = PThread::Current();
 
@@ -150,8 +150,8 @@ PBoolean PChannel::Read(void * buf, PINDEX len)
 {
   SetLastReadCount(0);
 
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
   for (;;) {
     PPROFILE_SYSTEM(
@@ -183,9 +183,8 @@ PBoolean PChannel::Write(const void * buf, PINDEX len)
 {
   SetLastWriteCount(0);
 
-  // if the os_handle isn't open, no can do
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF, LastWriteError);
+  if (CheckNotOpen())
+    return false;
 
   // flush the buffer before doing a write
   flush();
@@ -306,9 +305,9 @@ PBoolean PChannel::WriteAsync(AsyncContext & context)
 
 PBoolean PChannel::Close()
 {
-  if (os_handle < 0)
-    return SetErrorValues(NotOpen, EBADF);
-  
+  if (CheckNotOpen())
+    return false;
+
   return ConvertOSError(PXClose());
 }
 
