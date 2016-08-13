@@ -2858,13 +2858,13 @@ bool PThread::WaitAndDelete(PThread * & threadToDelete, const PTimeInterval & ma
   }
 
   ostringstream strm;
-  strm << "Thread \"" << *thread << "\""
+  strm << "Thread \"" << *thread << "\" failed to terminate"
 #if PTRACING
-          "\n";
+          " at stack location:";
   PTrace::WalkStack(strm, thread->GetThreadId(), thread->GetUniqueIdentifier());
-  strm << "  "
+  strm << "\n   "
 #endif
-          " failed to terminate in " << maxWait << " seconds";
+          " in " << maxWait << " seconds";
   PAssertAlways(strm.str().c_str());
 
   delete thread;
