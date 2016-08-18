@@ -408,21 +408,25 @@ class PFactory : public PFactoryTemplate<AbstractClass, const KeyType &, KeyType
     class Worker : protected WorkerBase_T
     {
       private:
-        Key_T m_key;
+        Key_T * m_key;
       public:
         Worker(const Key_T & key, bool singleton = false)
           : WorkerBase_T(singleton)
-          , m_key(key)
+          , m_key(new Key_T(key))
         {
           PAssert(Register(key, this), "Factory Worker already registered");
         }
 
         ~Worker()
         {
-          Unregister(m_key);
+          if (m_key == NULL)
+            return;
+          Unregister(*m_key);
+          delete m_key;
+          m_key = NULL;
         }
 
-        const Key_T & GetKey() const { return m_key; }
+        const Key_T & GetKey() const { return *m_key; }
 
       protected:
         virtual Abstract_T * Create(Param_T) const
@@ -469,21 +473,25 @@ class PParamFactory : public PFactoryTemplate<AbstractClass, ParamType, KeyType>
     class Worker : protected WorkerBase_T
     {
       private:
-        Key_T m_key;
+        Key_T * m_key;
       public:
         Worker(const Key_T & key, bool singleton = false)
           : WorkerBase_T(singleton)
-          , m_key(key)
+          , m_key(new Key_T(key))
         {
           PAssert(Register(key, this), "Factory Worker already registered");
         }
 
         ~Worker()
         {
-          Unregister(m_key);
+          if (m_key == NULL)
+            return;
+          Unregister(*m_key);
+          delete m_key;
+          m_key = NULL;
         }
 
-        const Key_T & GetKey() const { return m_key; }
+        const Key_T & GetKey() const { return *m_key; }
 
       protected:
         virtual Abstract_T * Create(Param_T param) const
