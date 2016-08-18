@@ -664,7 +664,7 @@ void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(options, 0)) {
-    PTRACE(2, "Trace options set to " << info.m_options);
+    PTRACE(2, "Trace options 0x" << hex << options << " added, now 0x" << info.m_options);
   }
 }
 
@@ -673,7 +673,7 @@ void PTrace::ClearOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(0, options)) {
-    PTRACE(2, "Trace options set to " << info.m_options);
+    PTRACE(2, "Trace options 0x" << hex << options << " removed, now 0x" << info.m_options);
   }
 }
 
