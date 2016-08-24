@@ -405,9 +405,13 @@ int PServiceProcess::InitialiseService()
 
   if (args.HasOption('H')) {
     int uid = geteuid();
-    PIGNORE_RETURN(int,seteuid(getuid())); // Switch back to starting uid for next call
-    SetMaxHandles(args.GetOptionString('H').AsInteger());
-    PIGNORE_RETURN(int,seteuid(uid));
+    PAssertOS(seteuid(getuid()) == 0); // Switch back to starting uid for next call
+    unsigned maxHandles = args.GetOptionString('H').AsUnsigned();
+    if (SetMaxHandles(maxHandles))
+      cout << "Maximum handles set to " << maxHandles << endl;
+    else
+      cout << "Could not set maximum handles to " << maxHandles << endl;
+    PAssertOS(seteuid(uid) == 0);
   }
 
 #ifdef P_LINUX
@@ -418,7 +422,7 @@ int PServiceProcess::InitialiseService()
       cout << "Could not get current core file size : error = " << errno << endl;
     else {
       int uid = geteuid();
-      PIGNORE_RETURN(int,seteuid(getuid())); // Switch back to starting uid for next call
+      PAssertOS(seteuid(getuid()) == 0); // Switch back to starting uid for next call
       int v = args.GetOptionString('C').AsInteger();
       rlim.rlim_cur = v;
       if (setrlimit(RLIMIT_CORE, &rlim) != 0) 
@@ -427,7 +431,7 @@ int PServiceProcess::InitialiseService()
         getrlimit(RLIMIT_CORE, &rlim);
         cout << "Core file size set to " << rlim.rlim_cur << "/" << rlim.rlim_max << endl;
       }
-      PIGNORE_RETURN(int,seteuid(uid));
+      PAssertOS(seteuid(uid) == 0);
     }
   }
 #endif

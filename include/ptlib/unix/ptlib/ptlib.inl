@@ -79,6 +79,9 @@ PINLINE bool PDirectory::Change(const PString & p)
 PINLINE PString PFilePath::GetVolume() const
   { return PString::Empty(); }
 
+PINLINE PString PFilePath::GetPath() const
+  { return GetDirectory(); }
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE bool PFile::Remove(const PFilePath & name, bool)

@@ -659,7 +659,7 @@ void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(options, 0)) {
-    PTRACE(2, "Trace options set to " << info.m_options);
+    PTRACE(2, "Trace options 0x" << hex << options << " added, now 0x" << info.m_options);
   }
 }
 
@@ -668,7 +668,7 @@ void PTrace::ClearOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
   if (info.AdjustOptions(0, options)) {
-    PTRACE(2, "Trace options set to " << info.m_options);
+    PTRACE(2, "Trace options 0x" << hex << options << " removed, now 0x" << info.m_options);
   }
 }
 
@@ -3666,5 +3666,73 @@ bool PIdGenerator::IsValid(Handle id) const
   PWaitAndSignal mutex(*m_mutex);
   return m_inUse.find(id) != m_inUse.end();
 }
+
+
+///////////////////////////////////////////////////////////////////////
+
+PFilePath::PFilePath(const PString & str)
+  : PFilePathString(Canonicalise(str, false))
+{
+}
+
+
+PFilePath::PFilePath(const char * cstr)
+  : PFilePathString(Canonicalise(cstr, false))
+{
+}
+
+
+void PFilePath::AssignContents(const PContainer & cont)
+{
+  PFilePathString::AssignContents(cont);
+  PFilePathString::AssignContents(Canonicalise(*this, false));
+}
+
+
+PDirectory PFilePath::GetDirectory() const
+{
+  if (!IsEmpty()) {
+    PINDEX sep = FindLast(PDIR_SEPARATOR);
+    if (PAssert(sep != P_MAX_INDEX, "Bad file path"))
+      return Left(sep);
+  }
+  return PString::Empty();
+}
+
+
+PFilePathString PFilePath::GetFileName() const
+{
+  if (!IsEmpty()) {
+    PINDEX sep = FindLast(PDIR_SEPARATOR);
+    if (PAssert(sep != P_MAX_INDEX, "Bad file path"))
+      return Mid(sep+1);
+  }
+  return PString::Empty();
+}
+
+
+PFilePathString PFilePath::GetTitle() const
+{
+  PFilePathString filename = GetFileName();
+  return filename.Left(filename.FindLast('.'));
+}
+
+
+PFilePathString PFilePath::GetType() const
+{
+  PFilePathString filename = GetFileName();
+  return filename.Mid(filename.FindLast('.'));
+}
+
+
+void PFilePath::SetType(const PFilePathString & newType)
+{
+  PFilePathString oldType = GetType();
+  if (oldType.IsEmpty())
+    *this += newType;
+  else
+    Splice(newType, GetLength() - oldType.GetLength(), oldType.GetLength());
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////

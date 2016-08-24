@@ -39,7 +39,4 @@
     WIN32_FIND_DATA fileinfo;
     bool InternalEntryCheck();
 
-  public:
-    static PString CreateFullPath(const PString & path, PBoolean isDirectory);
-
 // End Of File ///////////////////////////////////////////////////////////////

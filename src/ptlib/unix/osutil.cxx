@@ -329,23 +329,27 @@ static PString CanonicaliseDirectory(const PString & path)
 }
 
 
-static PString CanonicaliseFilename(const PString & filename)
+PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDirectory)
 {
-  if (filename.IsEmpty())
-    return filename;
+  if (path.IsEmpty())
+    return path;
 
-  PINDEX p;
+  if (isDirectory)
+    return CanonicaliseDirectory(path);
+
+  PINDEX pos;
   PString dirname;
 
   // if there is a slash in the string, extract the dirname
-  if ((p = filename.FindLast('/')) != P_MAX_INDEX) {
-    dirname = filename(0,p);
-    while (filename[p] == '/')
-      p++;
-  } else
-    p = 0;
+  if ((pos = path.FindLast('/')) == P_MAX_INDEX)
+    pos = 0;
+  else {
+    dirname = path(0, pos);
+    while (path[pos] == '/')
+      pos++;
+  }
 
-  return CanonicaliseDirectory(dirname) + filename(p, P_MAX_INDEX);
+  return CanonicaliseDirectory(dirname) + path(pos, P_MAX_INDEX);
 }
 
 
@@ -987,20 +991,7 @@ bool PFile::SetPermissions(const PFilePath & name, PFileInfo::Permissions permis
 ///////////////////////////////////////////////////////////////////////////////
 // PFilePath
 
-PFilePath::PFilePath(const PString & str)
-  : PString(CanonicaliseFilename(str))
-{
-}
-
-
-PFilePath::PFilePath(const char * cstr)
-  : PString(CanonicaliseFilename(cstr))
-{
-}
-
-
 PFilePath::PFilePath(const char * prefix, const char * dir)
-  : PString()
 {
   if (prefix == NULL)
     prefix = "tmp";
@@ -1025,60 +1016,6 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
       break;
   }
 #endif // P_VXWORKS
-}
-
-
-void PFilePath::AssignContents(const PContainer & cont)
-{
-  PString::AssignContents(cont);
-  PString::AssignContents(CanonicaliseFilename(*this));
-}
-
-
-PString PFilePath::GetPath() const
-{
-  PINDEX pos = FindLast('/');
-  PAssert(pos != P_MAX_INDEX, PInvalidArrayIndex);
-  return Left(pos+1);
-}
-
-
-PString PFilePath::GetTitle() const
-{
-  PString fn(GetFileName());
-  return fn(0, fn.FindLast('.')-1);
-}
-
-
-PString PFilePath::GetType() const
-{
-  PINDEX pos = FindLast('.');
-  return pos == P_MAX_INDEX || (GetLength()-pos) < 2 ? PString::Empty() : Mid(pos);
-}
-
-
-void PFilePath::SetType(const PString & type)
-{
-  PINDEX dot = Find('.', FindLast('/'));
-  if (dot != P_MAX_INDEX)
-    Splice(type, dot, GetLength()-dot);
-  else
-    *this += type;
-}
-
-
-PString PFilePath::GetFileName() const
-
-{
-  PINDEX pos = FindLast('/');
-  return pos == P_MAX_INDEX ? static_cast<PString>(*this) : Mid(pos+1);
-}
-
-
-PDirectory PFilePath::GetDirectory() const
-{
-  PINDEX pos = FindLast('/');
-  return pos == P_MAX_INDEX ? PString("./") : Left(pos);
 }
 
 

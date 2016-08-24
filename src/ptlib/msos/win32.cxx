@@ -273,7 +273,7 @@ void PDirectory::Construct()
 {
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
-  PCaselessString::AssignContents(CreateFullPath(*this, true));
+  PCaselessString::AssignContents(PFilePath::Canonicalise(*this, true));
 }
 
 
@@ -348,7 +348,7 @@ void PDirectory::Close()
 }
 
 
-PString PDirectory::CreateFullPath(const PString & path, PBoolean isDirectory)
+PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDirectory)
 {
   if (path.IsEmpty())
     return path;

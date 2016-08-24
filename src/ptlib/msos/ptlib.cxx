@@ -359,18 +359,6 @@ bool PDirectory::Exists(const PString & path)
 ///////////////////////////////////////////////////////////////////////////////
 // File Path
 
-PFilePath::PFilePath(const PString & str)
-  : PCaselessString(PDirectory::CreateFullPath(str, false))
-{
-}
-
-
-PFilePath::PFilePath(const char * cstr)
-  : PCaselessString(PDirectory::CreateFullPath(cstr, false))
-{
-}
-
-
 PFilePath::PFilePath(const char * prefix, const char * dir)
 {
   if (dir != NULL) {
@@ -394,13 +382,6 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
     *this += "PW";
   *this += "XXXXXX";
   PAssert(_mktemp(theArray) != NULL, "Could not make temporary file");
-}
-
-
-void PFilePath::AssignContents(const PContainer & cont)
-{
-  PCaselessString::AssignContents(cont);
-  PCaselessString::AssignContents(PDirectory::CreateFullPath(*this, false));
 }
 
 
@@ -432,69 +413,9 @@ PCaselessString PFilePath::GetVolume() const
 }
 
 
-PDirectory PFilePath::GetDirectory() const
-{
-  PINDEX backslash = FindLast('\\');
-  if (backslash != P_MAX_INDEX)
-    return Left(backslash+1);
-
-  return PCaselessString();
-}
-
-
 PCaselessString PFilePath::GetPath() const
 {
   return operator()(GetVolumeSubStringLength(*this), FindLast('\\', GetLength()-2));
-}
-
-
-PCaselessString PFilePath::GetFileName() const
-{
-  PINDEX backslash = FindLast('\\', GetLength()-2);
-  if (backslash == P_MAX_INDEX)
-    backslash = 0;
-  else
-    backslash++;
-
-  return Mid(backslash);
-}
-
-
-PCaselessString PFilePath::GetTitle() const
-{
-  PINDEX backslash = FindLast('\\', GetLength()-2);
-  if (backslash == P_MAX_INDEX)
-    backslash = 0;
-  else
-    backslash++;
-
-  PINDEX last_dot = FindLast('.');
-  if (last_dot < backslash)
-    last_dot = P_MAX_INDEX;
-
-  return operator()(backslash, last_dot-1);
-}
-
-
-PCaselessString PFilePath::GetType() const
-{
-  PINDEX slash = FindLast('\\');
-  if (slash == P_MAX_INDEX)
-    slash = 0;
-  PINDEX dot = FindLast('.');
-  if (dot < slash)
-    return PCaselessString();
-  return operator()(dot, P_MAX_INDEX);
-}
-
-
-void PFilePath::SetType(const PCaselessString & type)
-{
-  PINDEX dot = Find('.', FindLast('\\'));
-  if (dot != P_MAX_INDEX)
-    Splice(type, dot, GetLength()-dot);
-  else
-    *this += type;
 }
 
 
