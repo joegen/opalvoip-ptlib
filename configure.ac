@@ -483,7 +483,7 @@ fi
 dnl ########################################################################
 
 MY_ARG_ENABLE(
-   [pindex-is-size_t],
+   [pindex_is_size_t],
    [enable PINDEX set to size_t],
    [no],
    [AC_DEFINE(P_PINDEX_IS_SIZE_T, 1)]
