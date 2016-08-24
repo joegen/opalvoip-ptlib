@@ -355,27 +355,9 @@ endif
 
 
 ######################################################################
-
-ifneq (,$(SVN))
-  update: svnupdate bothdepend both
-  svnupdate:
-	$(SVN) update
-	@echo =====================================================
-endif
-
-
-######################################################################
-# common rule to generate SVN revision
+# common rule to generate Git revision
 
 ifneq (,$(REVISION_FILE))
-
-  ifneq (,$(SVN))
-    SVN_REVISION:=$(shell LC_ALL=C $(SVN) info $(dir $(REVISION_FILE)) 2> /dev/null | sed -n 's/Revision: //p')
-  endif
-
-  ifeq (,$(SVN_REVISION))
-    SVN_REVISION:=$(shell sed -n -e 's/.*Revision: \([0-9]*\).*/\1/p' $(REVISION_FILE).in)
-  endif
 
   ifneq (,$(GIT))
     GIT_COMMIT:=$(shell cd $(dir $(REVISION_FILE)) ; LC_ALL=C $(GIT) show 2> /dev/null | sed -n 's/^commit //p')
@@ -384,15 +366,14 @@ ifneq (,$(REVISION_FILE))
 
   $(REVISION_FILE) : $(REVISION_FILE).in FORCE
 	$(Q)\
-    sed -e 's/SVN_REVISION.*/SVN_REVISION $(SVN_REVISION)/' \
-        -e 's/GIT_COMMIT.*/GIT_COMMIT "$(GIT_COMMIT)"/' \
+    sed -e 's/GIT_COMMIT.*/GIT_COMMIT "$(GIT_COMMIT)"/' \
         $(REVISION_FILE).in > $(REVISION_FILE).tmp  ; \
     if diff -q $(REVISION_FILE) $(REVISION_FILE).tmp >/dev/null 2>&1; then \
       rm $(REVISION_FILE).tmp ; \
     else \
       mv -f $(REVISION_FILE).tmp $(REVISION_FILE) ; \
       echo "Revision file updated:" ; \
-      sed -n -e 's/.*SVN_REVISION *\(.*\)/  SVN revision: \1/p' -e 's/.*GIT_COMMIT *"\(..*\)"/  GIT commit  : \1/p' $(REVISION_FILE) ; \
+      sed -n -e 's/.*GIT_COMMIT *"\(..*\)"/  GIT commit  : \1/p' $(REVISION_FILE) ; \
     fi
 
   .PHONY:FORCE

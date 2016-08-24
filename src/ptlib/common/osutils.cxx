@@ -2459,7 +2459,7 @@ PString PProcess::GetVersion(PBoolean full) const
 
 PString PProcess::GetLibVersion()
 {
-  VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER, SVN_REVISION, GIT_COMMIT };
+  VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER, 0, GIT_COMMIT };
   return ver.AsString();
 }
 
