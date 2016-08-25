@@ -7,5 +7,5 @@ revision.h
 make/ptlib_config.mak
 include/ptlib_config.h
 src/ptlib/common/getdate.c
-lib_*
+lib*
 
