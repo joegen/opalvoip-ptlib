@@ -9,3 +9,5 @@ include/ptlib_config.h
 src/ptlib/common/getdate.c
 lib_*
 
+.DS_Store
+aclocal.m4
