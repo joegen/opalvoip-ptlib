@@ -2473,12 +2473,12 @@ PString PProcess::GetVersion(PBoolean full) const
 
 PString PProcess::GetLibVersion()
 {
-  return psprintf("%u.%u%s%u (svn:%u)",
+  return psprintf("%u.%u%s%u (git:%s)",
                   MAJOR_VERSION,
                   MINOR_VERSION,
                   VersionStatus[BUILD_TYPE],
                   BUILD_NUMBER,
-                  SVN_REVISION);
+                  GIT_COMMIT);
 }
 
 

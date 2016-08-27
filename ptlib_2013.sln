@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World Static", "samples\hello_world\hello_2013.vcxproj", "{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
 EndProject
@@ -13,8 +13,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "configure", "tools\configure\configure_2013.vcxproj", "{9C8D0100-6709-4628-9993-69F443AF69E8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World DLL", "samples\hello_world\helloDLL_2013.vcxproj", "{86680AA2-ACF3-4247-AF25-8E3D80855868}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVN Get Revision", "tools\svn_getrev\svn_getrev_2013.vcxproj", "{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,18 +112,6 @@ Global
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|Win32.Build.0 = Release|Win32
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|x64.ActiveCfg = Release|x64
 		{86680AA2-ACF3-4247-AF25-8E3D80855868}.Release|x64.Build.0 = Release|x64
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|Android.ActiveCfg = Debug|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|Win32.Build.0 = Debug|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Debug|x64.ActiveCfg = Debug|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|Android.ActiveCfg = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|Win32.ActiveCfg = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|Win32.Build.0 = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.No Trace|x64.ActiveCfg = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|Android.ActiveCfg = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|Win32.ActiveCfg = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|Win32.Build.0 = Release|Win32
-		{1E4B1EE5-3036-4CE8-8CD1-62E1BD3BD83C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

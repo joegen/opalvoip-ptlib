@@ -3,7 +3,7 @@
  *
  * SVN revision number header file for PTLib
  *
- * Copyright (c) 2010 Equivalence Pty. Ltd.
+ * Copyright (c) 2010-2016 Equivalence Pty. Ltd.
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.0 (the "License"); you may not use this file except in
@@ -21,14 +21,12 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): ______________________________________.
- *
- * Revision: 33847 
  */
 
 #ifndef _PTLib_REVISION_H
 #define _PTLib_REVISION_H
 
-#define SVN_REVISION $WCREV$
+#define GIT_COMMIT ""
 
 #endif  // _PTLib_REVISION_H
 
