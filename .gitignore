@@ -9,3 +9,7 @@ include/ptlib_config.h
 src/ptlib/common/getdate.c
 lib*
 
+*.sdf
+*.opensdf
+*.suo
+ipch/
