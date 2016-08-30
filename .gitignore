@@ -13,3 +13,4 @@ lib*
 *.opensdf
 *.suo
 ipch/
+bin/
