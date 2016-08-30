@@ -1,7 +1,7 @@
 /*
  * revision.h 
  *
- * SVN revision number header file for PTLib
+ * GIT commit string header file for PTLib
  *
  * Copyright (c) 2010-2016 Equivalence Pty. Ltd.
  *
