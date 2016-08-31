@@ -1103,37 +1103,37 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../lib/$(Platform)/" --no-se
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
@@ -1145,17 +1145,17 @@ if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Android'">cd %(RootDir)%(Directory)
+PATH=%PATH%;"C:\Program Files\Git\bin"
 sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath) %(RootDir)%(Directory)%(FIleName)
-</Command>
+if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Android'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Android'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Android'">Updating revision include file.</Message>
