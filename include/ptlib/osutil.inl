@@ -197,10 +197,10 @@ PINLINE PTimeInterval PTime::GetElapsed() const
   { return IsValid() ? (PTime() - *this) : 0; }
 
 PINLINE bool PTime::IsPast() const
-  { return GetElapsed() < 0; }
+  { return GetElapsed() > 0; }
 
 PINLINE bool PTime::IsFuture() const
-  { return GetElapsed() > 0; }
+  { return GetElapsed() < 0; }
 
 
 PINLINE PString PTime::AsString(const PString & format, int zone) const
