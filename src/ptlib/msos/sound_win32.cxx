@@ -310,10 +310,10 @@ void PWaveFormat::SetFormat(unsigned numChannels,
 }
 
 
-void PWaveFormat::SetFormat(const void * data, PINDEX size)
+void PWaveFormat::SetFormat(const void * data, PINDEX len)
 {
-  SetSize(size);
-  memcpy(waveFormat, data, size);
+  SetSize(len);
+  memcpy(waveFormat, data, len);
 }
 
 

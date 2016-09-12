@@ -235,16 +235,16 @@ class PSNMPClient : public PSNMP
 
     PBoolean ReadRequest(PBYTEArray & readBuffer);
 
-    PString   hostName;
-    PString   community;
-    PASNInt   requestId;
-    PASNInt   version;
-    PINDEX    retryMax;
-    PINDEX    lastErrorIndex;
-    ErrorType lastErrorCode;
-    PBYTEArray readBuffer;
-    PINDEX     maxRxSize;
-    PINDEX     maxTxSize;
+    PString    m_hostName;
+    PString    m_community;
+    PASNInt    m_requestId;
+    PASNInt    m_version;
+    PINDEX     m_retryMax;
+    PINDEX     m_lastErrorIndex;
+    ErrorType  m_lastErrorCode;
+    PBYTEArray m_readBuffer;
+    PINDEX     m_maxRxSize;
+    PINDEX     m_maxTxSize;
 };
 
 
@@ -285,15 +285,15 @@ class PSNMPServer : public PSNMP
   
   protected:
     PThreadObj<PSNMPServer> m_thread;
-    PString       community;
-    PASN_Integer  version;
-    PINDEX        lastErrorIndex;
-    ErrorType     lastErrorCode;
-    PBYTEArray    readBuffer;
-    PINDEX        maxRxSize;
-    PINDEX        maxTxSize;
-    PUDPSocket   *baseSocket;
-    PDictionary<PRFC1155_ObjectName, PRFC1155_ObjectSyntax>  objList;
+    PString       m_community;
+    PASN_Integer  m_version;
+    PINDEX        m_lastErrorIndex;
+    ErrorType     m_lastErrorCode;
+    PBYTEArray    m_readBuffer;
+    PINDEX        m_maxRxSize;
+    PINDEX        m_maxTxSize;
+    PUDPSocket  * m_baseSocket;
+    PDictionary<PRFC1155_ObjectName, PRFC1155_ObjectSyntax> m_objList;
 };
 
 #endif // P_SNMP

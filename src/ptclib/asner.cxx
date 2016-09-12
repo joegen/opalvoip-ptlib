@@ -86,22 +86,22 @@ static PINDEX FindNameByValue(const PASN_Names *names, PINDEX namesCount, unsign
 
 PASN_Object::PASN_Object(unsigned theTag, TagClass theTagClass, PBoolean extend)
 {
-  extendable = extend;
+  m_extendable = extend;
 
-  tag = theTag;
+  m_tag = theTag;
 
   if (theTagClass != DefaultTagClass)
-    tagClass = theTagClass;
+    m_tagClass = theTagClass;
   else
-    tagClass = ContextSpecificTagClass;
+    m_tagClass = ContextSpecificTagClass;
 }
 
 
 void PASN_Object::SetTag(unsigned newTag, TagClass tagClass_)
 {
-  tag = newTag;
+  m_tag = newTag;
   if (tagClass_ != DefaultTagClass)
-    tagClass = tagClass_;
+    m_tagClass = tagClass_;
 }
 
 
@@ -109,8 +109,8 @@ PINDEX PASN_Object::GetObjectLength() const
 {
   PINDEX len = 1;
 
-  if (tag >= 31)
-    len += (CountBits(tag)+6)/7;
+  if (m_tag >= 31)
+    len += (CountBits(m_tag)+6)/7;
 
   PINDEX dataLen = GetDataLength();
   if (dataLen < 128)
@@ -181,7 +181,7 @@ void PASN_ConstrainedObject::SetConstraintBounds(ConstraintType ctype,
     upper = UINT_MAX;
   }
 
-  extendable = ctype == ExtendableConstraint;
+  m_extendable = ctype == ExtendableConstraint;
 //  if ((lower >= 0 && upper < 0x7fffffff) ||
 //     (lower < 0 && (unsigned)lower <= upper)) {
     lowerLimit = lower;
@@ -1829,17 +1829,17 @@ void PASN_Choice::SetTag(unsigned newTag, TagClass tagClass)
 
 PString PASN_Choice::GetTagName() const
 {
-  PINDEX idx = FindNameByValue(names, namesCount, tag);
+  PINDEX idx = FindNameByValue(names, namesCount, m_tag);
   if (idx != P_MAX_INDEX)
     return names[idx].name;
 
   if (CheckCreate() &&
       PIsDescendant(choice, PASN_Choice) &&
-      choice->GetTag() == tag &&
-      choice->GetTagClass() == tagClass)
+      choice->GetTag() == m_tag &&
+      choice->GetTagClass() == m_tagClass)
     return PString(choice->GetClass()) + "->" + ((PASN_Choice *)choice)->GetTagName();
 
-  return psprintf("<%u>", tag);
+  return psprintf("<%u>", m_tag);
 }
 
 
@@ -1922,10 +1922,10 @@ PObject::Comparison PASN_Choice::Compare(const PObject & obj) const
   if (other.choice == NULL)
     return GreaterThan;
 
-  if (tag < other.tag)
+  if (m_tag < other.m_tag)
     return LessThan;
 
-  if (tag > other.tag)
+  if (m_tag > other.m_tag)
     return GreaterThan;
 
   return choice->Compare(*other.choice);
@@ -2046,7 +2046,7 @@ void PASN_Sequence::IncludeOptionalField(PINDEX opt)
   if (opt < (PINDEX)optionMap.GetSize())
     optionMap.Set(opt);
   else {
-    PAssert(extendable, "Must be extendable type");
+    PAssert(m_extendable, "Must be extendable type");
     opt -= optionMap.GetSize();
     if (opt >= (PINDEX)extensionMap.GetSize())
       extensionMap.SetSize(opt+1);
@@ -2060,7 +2060,7 @@ void PASN_Sequence::RemoveOptionalField(PINDEX opt)
   if (opt < (PINDEX)optionMap.GetSize())
     optionMap.Clear(opt);
   else {
-    PAssert(extendable, "Must be extendable type");
+    PAssert(m_extendable, "Must be extendable type");
     opt -= optionMap.GetSize();
     extensionMap.Clear(opt);
   }

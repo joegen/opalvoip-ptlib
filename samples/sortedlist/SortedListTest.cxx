@@ -96,7 +96,8 @@ void SortedListTest::Main()
 
 
 DoSomeThing1::DoSomeThing1(PINDEX _index)
-  : PThread(1000, AutoDeleteThread, NormalPriority, psprintf("DoSomeThing1 %u", _index)), index(_index)
+  : PThread(1000, AutoDeleteThread, NormalPriority, psprintf("DoSomeThing1 %u", _index))
+  , m_index(_index)
 {
   Resume();
 }
@@ -145,20 +146,20 @@ void DoSomeThing1::Main()
 
 
 PSafeString::PSafeString(const PString & _string)
-  : string(_string)
+  : m_string(_string)
 {
 }
 
 
 void PSafeString::PrintOn(ostream &strm) const
 {
-  strm << string;
+  strm << m_string;
 }
 
 
-DoSomeThing2::DoSomeThing2(PINDEX _index)
-  : PThread(1000, AutoDeleteThread, NormalPriority, psprintf("DoSomeThing2 %u", _index))
-  , index(_index)
+DoSomeThing2::DoSomeThing2(PINDEX index)
+  : PThread(1000, AutoDeleteThread, NormalPriority, psprintf("DoSomeThing2 %u", index))
+  , m_index(index)
 {
   Resume();
 }

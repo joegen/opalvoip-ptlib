@@ -198,13 +198,13 @@ static bool IsCode(const PIntArray & codes, int ch)
 }
 
 
-bool PCLI::Context::InternalMoveCursor(bool left, PINDEX count)
+bool PCLI::Context::InternalMoveCursor(bool toLeft, PINDEX count)
 {
   if (m_cli.GetRequireEcho() && m_state != e_Password) {
     while (count-- > 0) {
-      if (!EchoInput(left ? '\b' : m_commandLine[m_editPosition]))
+      if (!EchoInput(toLeft ? '\b' : m_commandLine[m_editPosition]))
         return false;
-      m_editPosition += left ? -1 : 1;
+      m_editPosition += toLeft ? -1 : 1;
     }
   }
 

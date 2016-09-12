@@ -1669,9 +1669,9 @@ bool PProcess::HostSystemURLHandlerInfo::Register()
   // delete existing commands
   PString keyRoot("HKEY_CLASSES_ROOT\\" + type);
   {
-    RegistryKey key(keyRoot + "\\shell", RegistryKey::ReadOnly);
+    RegistryKey keyShell(keyRoot + "\\shell", RegistryKey::ReadOnly);
     PString str;
-    for (PINDEX idx = 0; key.EnumKey(idx, str); ++idx) {
+    for (PINDEX idx = 0; keyShell.EnumKey(idx, str); ++idx) {
       {
         RegistryKey key(keyRoot + "\\shell\\" + str, RegistryKey::ReadOnly);
         key.DeleteKey("command");

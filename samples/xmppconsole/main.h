@@ -24,6 +24,10 @@
 #include <ptclib/xmpp_muc.h>
 
 
+#if !P_EXPAT
+#error Must have XML support for this application
+#else
+
 class XMPPFrame : public PObject
 {
   PCLASSINFO(XMPPFrame, PObject);
@@ -127,6 +131,8 @@ public:
   PTime startTime;
 };
 
+
+#endif
 
 #endif  // _XMPPConsole_MAIN_H
 

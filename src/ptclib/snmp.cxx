@@ -250,7 +250,7 @@ PSNMP_PDUs::operator const PSNMP_Trap_PDU &() const
 
 PBoolean PSNMP_PDUs::CreateObject()
 {
-  switch (tag) {
+  switch (m_tag) {
     case e_get_request :
       choice = new PSNMP_GetRequest_PDU();
       return true;

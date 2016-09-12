@@ -417,16 +417,16 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
     result = capSetCallbackOnFrame(hCaptureWindow, VideoHandler);
 
   if (!result) {
-    lastError = ::GetLastError();
-    PTRACE(1, "Failed to set callback on VfW - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "Failed to set callback on VfW - " << m_lastError);
     return false;
   }
 
   CAPTUREPARMS parms;
   memset(&parms, 0, sizeof(parms));
   if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    lastError = ::GetLastError();
-    PTRACE(1, "capCaptureGetSetup: failed - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "capCaptureGetSetup: failed - " << m_lastError);
     return false;
   }
 
@@ -441,8 +441,8 @@ bool PVideoInputDevice_VideoForWindows::SetCaptureMode(unsigned mode)
   }
 
   if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    lastError = ::GetLastError();
-    PTRACE(1, "capCaptureSetSetup: failed - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "capCaptureSetSetup: failed - " << m_lastError);
     return false;
   }
 
@@ -456,7 +456,7 @@ PBoolean PVideoInputDevice_VideoForWindows::Open(const PString & devName, PBoole
 
   operationMutex.Wait();
 
-  deviceName = devName;
+  m_deviceName = devName;
 
   captureThread = PThread::Create(PCREATE_NOTIFIER(HandleCapture), "VidIn");
 
@@ -536,11 +536,11 @@ bool PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(Capabilities * cap
         PVideoFrameInfo frameInfo;
         frameInfo.SetFrameSize(winTestResTable[prefResizeIdx].device_width,
                                winTestResTable[prefResizeIdx].device_height);
-        caps->framesizes.push_back(frameInfo);
+        caps->m_frameSizes.push_back(frameInfo);
       }
     }
   }
-  return !caps->framesizes.empty();
+  return !caps->m_frameSizes.empty();
 }
 
 
@@ -566,8 +566,8 @@ PBoolean PVideoInputDevice_VideoForWindows::Start()
     return isCapturingNow;
   }
 
-  lastError = ::GetLastError();
-  PTRACE(1, "capCaptureSequenceNoFile: failed - " << lastError);
+  m_lastError = ::GetLastError();
+  PTRACE(1, "capCaptureSequenceNoFile: failed - " << m_lastError);
   return false;
 }
 
@@ -588,8 +588,8 @@ PBoolean PVideoInputDevice_VideoForWindows::Stop()
   if (capCaptureStop(hCaptureWindow))
     return true;
 
-  lastError = ::GetLastError();
-  PTRACE(1, "capCaptureStop: failed - " << lastError);
+  m_lastError = ::GetLastError();
+  PTRACE(1, "capCaptureStop: failed - " << m_lastError);
   return false;
 }
 
@@ -611,7 +611,7 @@ PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colo
   if (running)
     Stop();
 
-  PString oldFormat = colourFormat;
+  PString oldFormat = m_colourFormat;
 
   if (!PVideoDevice::SetColourFormat(colourFmt))
     return false;
@@ -633,16 +633,16 @@ PBoolean PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colo
   }
 
   // set frame width and height
-  bi->bmiHeader.biWidth = frameWidth;
-  bi->bmiHeader.biHeight = frameHeight;
+  bi->bmiHeader.biWidth = m_frameWidth;
+  bi->bmiHeader.biHeight = m_frameHeight;
   if (!bi.ApplyFormat(hCaptureWindow, FormatTable[i])) {
-    lastError = ::GetLastError();
+    m_lastError = ::GetLastError();
     PVideoDevice::SetColourFormat(oldFormat);
     return false;
   }
 
   // Didn't do top down, tell everything we are up side down
-  nativeVerticalFlip = FormatTable[i].negHeight && bi->bmiHeader.biHeight > 0;
+  m_nativeVerticalFlip = FormatTable[i].negHeight && bi->bmiHeader.biHeight > 0;
 
   if (running)
     return Start();
@@ -669,14 +669,14 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
   memset(&parms, 0, sizeof(parms));
 
   if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    lastError = ::GetLastError();
-    PTRACE(1, "capCaptureGetSetup: failed - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "capCaptureGetSetup: failed - " << m_lastError);
     return false;
   }
 
   // keep current (default) framerate if 0==frameRate   
-  if (0 != frameRate)
-    parms.dwRequestMicroSecPerFrame = 1000000 / frameRate;
+  if (0 != m_frameRate)
+    parms.dwRequestMicroSecPerFrame = 1000000 / m_frameRate;
 
   parms.fMakeUserHitOKToCapture = false;
   parms.wPercentDropForError = 100;
@@ -686,8 +686,8 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
   parms.fLimitEnabled = false;
 
   if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    lastError = ::GetLastError();
-    PTRACE(1, "capCaptureSetSetup: failed - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "capCaptureSetSetup: failed - " << m_lastError);
     return false;
   }
     
@@ -714,18 +714,18 @@ PBoolean PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigne
          << bi->bmiHeader.biWidth << 'x' << bi->bmiHeader.biHeight << " to " << width << 'x' << height);
 
   PINDEX i = 0;
-  while (FormatTable[i].colourFormat != NULL && !(colourFormat *= FormatTable[i].colourFormat))
+  while (FormatTable[i].colourFormat != NULL && !(m_colourFormat *= FormatTable[i].colourFormat))
     i++;
 
   bi->bmiHeader.biWidth = width;
   bi->bmiHeader.biHeight = height;
   if (!bi.ApplyFormat(hCaptureWindow, FormatTable[i])) {
-    lastError = ::GetLastError();
+    m_lastError = ::GetLastError();
     return false;
   }
 
   // Didn't do top down, tell everything we are up side down
-  nativeVerticalFlip = FormatTable[i].negHeight && bi->bmiHeader.biHeight > 0;
+  m_nativeVerticalFlip = FormatTable[i].negHeight && bi->bmiHeader.biHeight > 0;
 
   // verify that the driver really took the frame size
   if (!VerifyHardwareFrameSize(width, height)) 
@@ -815,8 +815,8 @@ PBoolean PVideoInputDevice_VideoForWindows::GetFrameDataNoDelay(BYTE * buffer, P
   lastFrameMutex.Wait();
 
   if (lastFrameData != NULL) {
-    if (NULL != converter)
-      retval = converter->Convert(lastFrameData, buffer, bytesReturned);
+    if (NULL != m_converter)
+      retval = m_converter->Convert(lastFrameData, buffer, bytesReturned);
     else {
       memcpy(buffer, lastFrameData, lastFrameSize);
       if (bytesReturned != NULL)
@@ -898,12 +898,12 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   if ((hCaptureWindow = capCreateCaptureWindow("Capture Window",
                                                WS_POPUP | WS_CAPTION,
                                                CW_USEDEFAULT, CW_USEDEFAULT,
-                                               frameWidth + GetSystemMetrics(SM_CXFIXEDFRAME),
-                                               frameHeight + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
+                                               m_frameWidth + GetSystemMetrics(SM_CXFIXEDFRAME),
+                                               m_frameHeight + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
                                                (HWND)0,
                                                0)) == NULL) {
-    lastError = ::GetLastError();
-    PTRACE(1, "capCreateCaptureWindow failed - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "capCreateCaptureWindow failed - " << m_lastError);
     return false;
   }
 
@@ -916,8 +916,8 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
     result = capSetCallbackOnFrame(hCaptureWindow, VideoHandler);
 
   if (!result) {
-    lastError = ::GetLastError();
-    PTRACE(1, "Failed to set callback on VfW - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "Failed to set callback on VfW - " << m_lastError);
     return false;
   }
 
@@ -937,14 +937,14 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   }
 #endif
 
-  if (deviceName.GetLength() == 1 && isdigit(deviceName[0]))
-    devId = (WORD)(deviceName[0] - '0');
+  if (m_deviceName.GetLength() == 1 && isdigit(m_deviceName[0]))
+    devId = (WORD)(m_deviceName[0] - '0');
   else {
     for (devId = 0; devId < 10; devId++) {
       char name[100];
       char version[200];
       if (capGetDriverDescription(devId, name, sizeof(name), version, sizeof(version)) &&
-          (deviceName *= name))
+          (m_deviceName *= name))
         break;
     }
   }
@@ -953,16 +953,16 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
 
   // Use first driver available.
   if (!capDriverConnect(hCaptureWindow, devId)) {
-    lastError = ::GetLastError();
-    PTRACE(1, "capDriverConnect failed - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "capDriverConnect failed - " << m_lastError);
     return false;
   }
 
   CAPDRIVERCAPS driverCaps;
   memset(&driverCaps, 0, sizeof(driverCaps));
   if (!capDriverGetCaps(hCaptureWindow, &driverCaps, sizeof(driverCaps))) {
-    lastError = ::GetLastError();
-    PTRACE(1, "capGetDriverCaps failed - " << lastError);
+    m_lastError = ::GetLastError();
+    PTRACE(1, "capGetDriverCaps failed - " << m_lastError);
     return false;
   }
 
@@ -1001,7 +1001,7 @@ PBoolean PVideoInputDevice_VideoForWindows::InitialiseCapture()
   }
 #endif
   
-  return SetFrameRate(frameRate) && SetColourFormatConverter(colourFormat.IsEmpty() ? PString("YUV420P") : colourFormat);
+  return SetFrameRate(m_frameRate) && SetColourFormatConverter(m_colourFormat.IsEmpty() ? PString("YUV420P") : m_colourFormat);
 }
 
 
@@ -1254,8 +1254,8 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   m_fixedSize.cy = 0;
 
   m_bitmap.bmiHeader.biSize = sizeof(m_bitmap.bmiHeader);
-  m_bitmap.bmiHeader.biWidth = frameWidth;
-  m_bitmap.bmiHeader.biHeight = -(int)frameHeight;
+  m_bitmap.bmiHeader.biWidth = m_frameWidth;
+  m_bitmap.bmiHeader.biHeight = -(int)m_frameHeight;
   m_bitmap.bmiHeader.biPlanes = 1;
   m_bitmap.bmiHeader.biBitCount = 32;
   m_bitmap.bmiHeader.biCompression = BI_RGB;
@@ -1263,7 +1263,7 @@ PVideoOutputDevice_Window::PVideoOutputDevice_Window()
   m_bitmap.bmiHeader.biYPelsPerMeter = 0;
   m_bitmap.bmiHeader.biClrImportant = 0;
   m_bitmap.bmiHeader.biClrUsed = 0;
-  m_bitmap.bmiHeader.biSizeImage = frameStore.GetSize();
+  m_bitmap.bmiHeader.biSizeImage = m_frameStore.GetSize();
 }
 
 
@@ -1307,20 +1307,20 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
 
   m_openCloseMutex.Wait();
 
-  deviceName = name;
+  m_deviceName = name;
 
   m_hParent = NULL;
-  PINDEX pos = deviceName.Find("PARENT=");
+  PINDEX pos = m_deviceName.Find("PARENT=");
   if (pos != P_MAX_INDEX) {
-    m_hParent = (HWND)strtoul(((const char *)deviceName)+pos+7, NULL, 0);
+    m_hParent = (HWND)m_deviceName.Mid(+pos+7).AsUnsigned64();
     if (!::IsWindow(m_hParent)) {
       PTRACE(2, "Illegal parent window " << m_hParent << " specified.");
       return false;
     }
   }
 
-  pos = deviceName.Find("STYLE=");
-  m_dwStyle = pos == P_MAX_INDEX ? DEFAULT_STYLE : strtoul(((const char *)deviceName)+pos+6, NULL, 0);
+  pos = m_deviceName.Find("STYLE=");
+  m_dwStyle = pos == P_MAX_INDEX ? DEFAULT_STYLE : strtoul(((const char *)m_deviceName)+pos+6, NULL, 0);
   if ((m_dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
     PTRACE(1, "Window must be WS_POPUP or WS_CHILD window.");
     return false;
@@ -1332,40 +1332,40 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
     return false;
   }
 
-  m_lastPosition.x = GetTokenValue(deviceName, "X=", CW_USEDEFAULT);
-  m_lastPosition.y = GetTokenValue(deviceName, "Y=", CW_USEDEFAULT);
-  m_fixedSize.cx   = GetTokenValue(deviceName, "WIDTH=", 0);
-  m_fixedSize.cy   = GetTokenValue(deviceName, "HEIGHT=", 0);
-  m_bgColour       = GetTokenValue(deviceName, "BACKGROUND=", 0);
-  m_rotation       = GetTokenValue(deviceName, "ROTATION=", 0);
+  m_lastPosition.x = GetTokenValue(m_deviceName, "X=", CW_USEDEFAULT);
+  m_lastPosition.y = GetTokenValue(m_deviceName, "Y=", CW_USEDEFAULT);
+  m_fixedSize.cx   = GetTokenValue(m_deviceName, "WIDTH=", 0);
+  m_fixedSize.cy   = GetTokenValue(m_deviceName, "HEIGHT=", 0);
+  m_bgColour       = GetTokenValue(m_deviceName, "BACKGROUND=", 0);
+  m_rotation       = GetTokenValue(m_deviceName, "ROTATION=", 0);
 
-  m_mouseEnabled = deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
-  m_hidden = !startImmediate || deviceName.Find("HIDE") != P_MAX_INDEX;
+  m_mouseEnabled = m_deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
+  m_hidden = !startImmediate || m_deviceName.Find("HIDE") != P_MAX_INDEX;
 
-  if (deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
+  if (m_deviceName.Find("FULLSCREEN") != P_MAX_INDEX)
     m_sizeMode = FullScreen;
-  else if (deviceName.Find("HALF") != P_MAX_INDEX)
+  else if (m_deviceName.Find("HALF") != P_MAX_INDEX)
     m_sizeMode = HalfSize;
-  else if (deviceName.Find("DOUBLE") != P_MAX_INDEX)
+  else if (m_deviceName.Find("DOUBLE") != P_MAX_INDEX)
     m_sizeMode = DoubleSize;
   else if (m_fixedSize.cx > 0 && m_fixedSize.cy > 0)
     m_sizeMode = FixedSize;
-  channelNumber = m_sizeMode;
+  m_channelNumber = m_sizeMode;
 
   if (m_lastPosition.x == CW_USEDEFAULT && m_lastPosition.y == CW_USEDEFAULT) {
     if (m_hParent != NULL) {
       RECT rect;
       GetWindowRect(m_hParent, &rect);
-      m_lastPosition.x = (rect.right + rect.left - frameWidth)/2;
-      m_lastPosition.y = (rect.bottom + rect.top - frameHeight)/2;
+      m_lastPosition.x = (rect.right + rect.left - m_frameWidth)/2;
+      m_lastPosition.y = (rect.bottom + rect.top - m_frameHeight)/2;
     }
     else {
-      m_lastPosition.x = (GetSystemMetrics(SM_CXSCREEN) - frameWidth)/2;
-      m_lastPosition.y = (GetSystemMetrics(SM_CYSCREEN) - frameHeight)/2;
+      m_lastPosition.x = (GetSystemMetrics(SM_CXSCREEN) - m_frameWidth)/2;
+      m_lastPosition.y = (GetSystemMetrics(SM_CYSCREEN) - m_frameHeight)/2;
     }
   }
   
-  m_showInfo = deviceName.Find("SHOWINFO") != P_MAX_INDEX;
+  m_showInfo = m_deviceName.Find("SHOWINFO") != P_MAX_INDEX;
 
   if (m_hParent != NULL) {
     // This is a sneaky way to get a callback in the context of the parent windows thread
@@ -1449,7 +1449,7 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
     UINT flags = m_hidden ? SWP_HIDEWINDOW : SWP_SHOWWINDOW;
 
     if (m_sizeMode == FullScreen) {
-      if (channelNumber == FullScreen)
+      if (m_channelNumber == FullScreen)
         return true;
 
       SetWindowLong(m_hWnd, GWL_STYLE, m_dwStyle);
@@ -1462,20 +1462,20 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
     rect.bottom = rect.top = m_lastPosition.y;
     bool adjust = true;
     bool swapForRotation = m_rotation%180 != 0;
-    switch (channelNumber) {
+    switch (m_channelNumber) {
       case NormalSize :
-        rect.right = frameWidth;
-        rect.bottom = frameHeight;
+        rect.right = m_frameWidth;
+        rect.bottom = m_frameHeight;
         break;
 
       case HalfSize :
-        rect.right = frameWidth/2;
-        rect.bottom = frameHeight/2;
+        rect.right = m_frameWidth/2;
+        rect.bottom = m_frameHeight/2;
         break;
 
       case DoubleSize :
-        rect.right = frameWidth*2;
-        rect.bottom = frameHeight*2;
+        rect.right = m_frameWidth*2;
+        rect.bottom = m_frameHeight*2;
         break;
 
       case FixedSize :
@@ -1510,13 +1510,13 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
       AdjustWindowRectEx(&rect, m_dwStyle, false, m_dwExStyle);
     }
 
-    PTRACE(4, "SetWindowPos: chan=" << channelNumber
+    PTRACE(4, "SetWindowPos: chan=" << m_channelNumber
            << " pos=" << rect.left << 'x' << rect.top
            << " size=" << rect.right-rect.left << 'x' << rect.bottom-rect.top);
     ::SetWindowPos(m_hWnd, HWND_TOP, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, flags);
   }
 
-  m_sizeMode = (SizeMode)channelNumber;
+  m_sizeMode = (SizeMode)m_channelNumber;
   return true;
 }
 
@@ -1528,7 +1528,7 @@ PBoolean PVideoOutputDevice_Window::SetColourFormat(const PString & colourFormat
   if (((colourFormat *= "BGR24") || (colourFormat *= "BGR32")) &&
                 PVideoOutputDeviceRGB::SetColourFormat(colourFormat)) {
     m_bitmap.bmiHeader.biBitCount = (WORD)(bytesPerPixel*8);
-    m_bitmap.bmiHeader.biSizeImage = frameStore.GetSize();
+    m_bitmap.bmiHeader.biSizeImage = m_frameStore.GetSize();
     return true;
   }
 
@@ -1545,7 +1545,7 @@ PBoolean PVideoOutputDevice_Window::GetVFlipState()
 PBoolean PVideoOutputDevice_Window::SetVFlipState(PBoolean newVFlip)
 {
   m_flipped = newVFlip;
-  m_bitmap.bmiHeader.biHeight = m_flipped ? frameHeight : -(int)frameHeight;
+  m_bitmap.bmiHeader.biHeight = m_flipped ? m_frameHeight : -(int)m_frameHeight;
   return true;
 }
 
@@ -1555,15 +1555,15 @@ PBoolean PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height
   {
     PWaitAndSignal m(mutex);
 
-    if (width == frameWidth && height == frameHeight)
+    if (width == m_frameWidth && height == m_frameHeight)
       return true;
 
     if (!PVideoOutputDeviceRGB::SetFrameSize(width, height))
       return false;
 
-    m_bitmap.bmiHeader.biWidth = frameWidth;
-    m_bitmap.bmiHeader.biHeight = m_flipped ? frameHeight : -(int)frameHeight;
-    m_bitmap.bmiHeader.biSizeImage = frameStore.GetSize();
+    m_bitmap.bmiHeader.biWidth = m_frameWidth;
+    m_bitmap.bmiHeader.biHeight = m_flipped ? m_frameHeight : -(int)m_frameHeight;
+    m_bitmap.bmiHeader.biSizeImage = m_frameStore.GetSize();
   }
 
   // Must be outside of mutex
@@ -1696,18 +1696,18 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
 
   HBRUSH brush = m_bgColour < 0x1000000 ? CreateSolidBrush(m_bgColour) : NULL;
 
-  if (frameStore.IsEmpty()) {
+  if (m_frameStore.IsEmpty()) {
     if (brush != NULL)
       FillRect(hDC, &rect, brush);
   }
   else {
-    int imageWidth = frameWidth;
-    int imageHeight = frameHeight;
+    int imageWidth = m_frameWidth;
+    int imageHeight = m_frameHeight;
     if (m_rotation != 0) {
-      Rotate(frameStore, frameWidth, frameHeight, bytesPerPixel, m_rotation);
+      Rotate(m_frameStore, m_frameWidth, m_frameHeight, bytesPerPixel, m_rotation);
       if (m_rotation != 180) {
-        imageWidth = frameHeight;
-        imageHeight = frameWidth;
+        imageWidth = m_frameHeight;
+        imageHeight = m_frameWidth;
       }
     }
 
@@ -1719,7 +1719,7 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
       result = SetDIBitsToDevice(hDC,
                                  0, 0, imageWidth, imageHeight,
                                  0, 0, 0, imageHeight,
-                                 frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
+                                 m_frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS);
     else {
       int frameAspect = 1000*imageWidth/imageHeight;
       int windowAspect = 1000*rect.right/rect.bottom;
@@ -1764,14 +1764,14 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
       result = StretchDIBits(hDC,
                              x, y, w, h,
                              0, 0, imageWidth, imageHeight,
-                             frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS, SRCCOPY);
+                             m_frameStore.GetPointer(), &m_bitmap, DIB_RGB_COLORS, SRCCOPY);
     }
 
     if (result != imageHeight) {
-      lastError = ::GetLastError();
+      m_lastError = ::GetLastError();
       PTRACE(2, "Drawing image failed: resolution=" << rect.right << 'x' << rect.bottom
              << ", bitmap=" << imageWidth << 'x' << imageHeight
-             << ", size=" << m_bitmap.bmiHeader.biSizeImage << ", result=" << result << ", error=" << lastError);
+             << ", size=" << m_bitmap.bmiHeader.biSizeImage << ", result=" << result << ", error=" << m_lastError);
     }
   }
 
@@ -1780,7 +1780,7 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
 
   if (m_showInfo) {
     PStringStream strm;
-    strm << " Video: " << frameWidth << 'x' << frameHeight;
+    strm << " Video: " << m_frameWidth << 'x' << m_frameHeight;
 
     ++m_frameCount;
     if (m_rateTimer.HasExpired()) {
@@ -1794,7 +1794,7 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
     else
       strm << " (stalled)";
 
-    if (frameWidth != (unsigned)rect.right && frameHeight != (unsigned)rect.bottom)
+    if (m_frameWidth != (unsigned)rect.right && m_frameHeight != (unsigned)rect.bottom)
       strm << " Window: " << rect.right << 'x' << rect.bottom;
 
     SetTextColor(hDC, RGB(192,192,192));
@@ -1809,9 +1809,9 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   if (uMsg == WM_CREATE)
-    SetWindowLong(hWnd, 0, (LONG)((LPCREATESTRUCT)lParam)->lpCreateParams);
+    SetWindowLongPtr(hWnd, 0, (LONG_PTR)((LPCREATESTRUCT)lParam)->lpCreateParams);
 
-  PVideoOutputDevice_Window * vodw = (PVideoOutputDevice_Window *)GetWindowLong(hWnd, 0);
+  PVideoOutputDevice_Window * vodw = (PVideoOutputDevice_Window *)GetWindowLongPtr(hWnd, 0);
   if (vodw != NULL)
     return vodw->WndProc(uMsg, wParam, lParam);
 
@@ -1843,14 +1843,14 @@ void PVideoOutputDevice_Window::CreateDisplayWindow()
   }
 
   PVarString title = DEFAULT_TITLE;
-  PINDEX pos = deviceName.Find("TITLE=\"");
+  PINDEX pos = m_deviceName.Find("TITLE=\"");
   if (pos != P_MAX_INDEX)
-    title = PString(PString::Literal, deviceName.Mid(pos+6));
+    title = PString(PString::Literal, m_deviceName.Mid(pos+6));
 
   if ((m_hWnd = CreateWindow(wndClassName,
                              title, 
                              m_dwStyle,
-                             m_lastPosition.x , m_lastPosition.y, frameWidth, frameHeight,
+                             m_lastPosition.x , m_lastPosition.y, m_frameWidth, m_frameHeight,
                              m_hParent, NULL, GetModuleHandle(NULL), this)) != NULL) {
     m_dwExStyle = GetWindowLong(m_hWnd, GWL_EXSTYLE);
     SetChannel(GetChannel());

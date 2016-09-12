@@ -531,7 +531,7 @@ class PSocket : public PChannel
 
   // Member variables
     /// Port to be used by the socket when opening the channel.
-    WORD port;
+    WORD m_port;
 
 // Include platform dependent part of class
 #ifdef _WIN32

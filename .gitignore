@@ -14,3 +14,4 @@ lib*
 *.suo
 ipch/
 bin/
+*.VC.db

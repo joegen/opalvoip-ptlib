@@ -232,7 +232,7 @@ PINDEX PVideoInputDevice_Application::GetMaxFrameBytes()
   if (GetWindowBitmap(bitmap))
     size = bitmap.bmHeight*bitmap.bmWidthBytes;
   else
-    size = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+    size = CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat);
 
   return GetMaxFrameBytesConverted(size);
 }
@@ -250,7 +250,7 @@ PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDE
   PWaitAndSignal mutex(m_lastFrameMutex);
 
   BITMAP bitmap;
-  if (converter == NULL) {
+  if (m_converter == NULL) {
     if (GetWindowBitmap(bitmap, buffer)) {
       if (bytesReturned != NULL)
         *bytesReturned = bitmap.bmHeight*bitmap.bmWidthBytes;
@@ -259,8 +259,8 @@ PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDE
   }
   else {
     if (GetWindowBitmap(bitmap, NULL, true)) {
-      converter->SetSrcFrameSize(frameWidth, frameHeight);
-      if (converter->Convert(m_tempPixelBuffer, buffer, bytesReturned))
+      m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
+      if (m_converter->Convert(m_tempPixelBuffer, buffer, bytesReturned))
         return true;
     }
 
@@ -372,7 +372,7 @@ bool PVideoInputDevice_Application::GetWindowBitmap(BITMAP & bitmap, BYTE * pixe
     return false;
   }
 
-  if (pixels != NULL && ((unsigned)bitmap.bmWidth > frameWidth || (unsigned)bitmap.bmHeight > frameHeight)) {
+  if (pixels != NULL && ((unsigned)bitmap.bmWidth > m_frameWidth || (unsigned)bitmap.bmHeight > m_frameHeight)) {
     PTRACE(2, "AppInput\tWindow increased in size, buffer may not be large enough.");
     return true;
   }

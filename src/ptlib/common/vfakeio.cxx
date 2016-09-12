@@ -1507,7 +1507,7 @@ PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
   , m_Pacing(500)
 {
   SetColourFormat(GetColourFormat());
-  channelNumber = eBouncingBoxes;
+  m_channelNumber = eBouncingBoxes;
 
   m_grabCount = 0;
   SetFrameRate(10);
@@ -1519,7 +1519,7 @@ PBoolean PVideoInputDevice_FakeVideo::Open(const PString & devName, PBoolean /*s
   for (PINDEX chan = 0; chan < PARRAYSIZE(FakeDeviceNames)-1; ++chan) {
     PINDEX equals = devName.Find('=');
     if (devName.Left(equals) *= FakeDeviceNames[chan]) {
-      deviceName = FakeDeviceNames[chan];
+      m_deviceName = FakeDeviceNames[chan];
       SetChannel(chan);
 
       if (chan == eText) {
@@ -1626,7 +1626,7 @@ PBoolean PVideoInputDevice_FakeVideo::SetColourFormat(const PString & newFormat)
   if (!PVideoDevice::SetColourFormat(newFormat))
     return false;
 
-  return SetFrameSize(frameWidth, frameHeight);
+  return SetFrameSize(m_frameWidth, m_frameHeight);
 }
 
 
@@ -1660,14 +1660,14 @@ PBoolean PVideoInputDevice_FakeVideo::SetFrameSize(unsigned width, unsigned heig
   if (!PVideoDevice::SetFrameSize(width, height))
     return false;
 
-  m_videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+  m_videoFrameSize = CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat);
   if (m_videoFrameSize == 0) {
     PTRACE(1, "Could not calculate video frame size using resolution "
-           << frameWidth << 'x' << frameHeight << " and format \"" << colourFormat << '"');
+           << m_frameWidth << 'x' << m_frameHeight << " and format \"" << m_colourFormat << '"');
     return false;
   }
 
-  m_scanLineWidth = m_videoFrameSize/frameHeight;
+  m_scanLineWidth = m_videoFrameSize/m_frameHeight;
   return true;
 }
 
@@ -1693,7 +1693,7 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
   m_grabCount++;
 
   // Make sure are NUM_PATTERNS cases here.
-  switch(channelNumber){       
+  switch(m_channelNumber){       
      case eMovingBlocks : 
        GrabMovingBlocksTestFrame(destFrame);
        break;
@@ -1720,8 +1720,8 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
        return false;
   }
 
-  if (NULL != converter) {
-    if (!converter->ConvertInPlace(destFrame, bytesReturned))
+  if (NULL != m_converter) {
+    if (!m_converter->ConvertInPlace(destFrame, bytesReturned))
       return false;
   }
   else {
@@ -1736,39 +1736,39 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
 void PVideoInputDevice_FakeVideo::GrabBouncingBoxes(BYTE *resFrame)
 {
   FillRect(resFrame,
-           0, 0, frameWidth, frameHeight, //Fill the whole frame with the colour.
+           0, 0, m_frameWidth, m_frameHeight, //Fill the whole frame with the colour.
            200,200,200); //a light grey colour.
 
   double t= ((int)(m_grabCount%50)) -25 ;
-  double h=  t*t*frameHeight*0.85/625;
+  double h=  t*t*m_frameHeight*0.85/625;
   int    yBox = (int)h;
   yBox= (yBox>>1) * 2;  //yBox is even.
   
-  int boxHeight= (int)(frameHeight*0.1);
+  int boxHeight= (int)(m_frameHeight*0.1);
   boxHeight= (boxHeight >>1) * 2;
-  int boxWidth = (int)(frameWidth*0.1);
+  int boxWidth = (int)(m_frameWidth*0.1);
   boxWidth = (boxWidth >>1) * 2;
 
   FillRect(resFrame,
-           frameWidth >> 2, yBox,  boxWidth, boxHeight,
+           m_frameWidth >> 2, yBox,  boxWidth, boxHeight,
            255, 0, 0); // Red Box.
 
   t= ((int)(m_grabCount%40)) -20 ;
-  h= t*t*frameHeight*0.85/400 ;
+  h= t*t*m_frameHeight*0.85/400 ;
   yBox = (int)h;
   yBox= (yBox>>1) * 2;  //yBox is even.
 
   FillRect(resFrame,
-           frameWidth>>1, yBox, boxWidth, boxHeight,
+           m_frameWidth>>1, yBox, boxWidth, boxHeight,
            0, 255, 0); // Green
 
   t= ((int)(m_grabCount%100)) -50 ;
-  h= t*t*frameHeight*0.85/2500;      
+  h= t*t*m_frameHeight*0.85/2500;      
   yBox = (int)h;
   yBox= (yBox>>1) * 2;  //yBox is even.
 
   FillRect(resFrame,
-           (frameWidth>>1) + (frameWidth>>2), yBox,  boxWidth, boxHeight,
+           (m_frameWidth>>1) + (m_frameWidth>>2), yBox,  boxWidth, boxHeight,
            0, 0, 255); // Blue
 }
 
@@ -1813,20 +1813,20 @@ void PVideoInputDevice_FakeVideo::GrabNTSCTestFrame(BYTE *resFrame)
 
   static int row3c[3] = { 19,  19,  19 };
 
-  int row1Height = (int)(0.66 * frameHeight);
-  int row2Height = (int)((0.75 * frameHeight) - row1Height);
+  int row1Height = (int)(0.66 * m_frameHeight);
+  int row2Height = (int)((0.75 * m_frameHeight) - row1Height);
   row1Height = (row1Height>>1)*2;     //Require that height is even.
   row2Height = (row2Height>>1)*2;     
-  int row3Height = frameHeight - row1Height - row2Height;
+  int row3Height = m_frameHeight - row1Height - row2Height;
 
   int columns[8];
   PINDEX i;
 
   for(i=0;i<7;i++) {    
-    columns[i]= i*frameWidth/7;
+    columns[i]= i*m_frameWidth/7;
     columns[i]= (columns[i]>>1)*2;  // require that columns[i] is even.
   }
-  columns[7] = frameWidth;
+  columns[7] = m_frameWidth;
 
 
   // first row
@@ -1858,7 +1858,7 @@ void PVideoInputDevice_FakeVideo::GrabNTSCTestFrame(BYTE *resFrame)
              row3a[i][0], row3a[i][1], row3a[i][2]);
 
   for (i=0; i<3; i++) {
-    columnBot[i] = columns[4]+(i*frameWidth)/(7*3);
+    columnBot[i] = columns[4]+(i*m_frameWidth)/(7*3);
     columnBot[i] = 2 * (columnBot[i]>>1);       //Force even.
   }
   columnBot[3]= columns[5];
@@ -1899,16 +1899,16 @@ void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
   int columns[9];
   int heights[9];
   int offset;
-  offset = (frameWidth >> 3) & 0xffe;
+  offset = (m_frameWidth >> 3) & 0xffe;
 
   for(wi = 0; wi < 8; wi++) 
     columns[wi] = wi * offset;
-  columns[8] = frameWidth;
+  columns[8] = m_frameWidth;
 
-  offset = (frameHeight >> 3) & 0xffe;
+  offset = (m_frameHeight >> 3) & 0xffe;
   for(hi = 0; hi < 9; hi++) 
     heights[hi] = hi * offset;
-  heights[8] = frameHeight;
+  heights[8] = m_frameHeight;
 
   m_grabCount++;
   colourIndex = PRandom::Number();
@@ -1923,18 +1923,18 @@ void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
     }
 
     //Draw a black box rapidly moving down the left of the window.
-    boxSize= frameHeight / 10;
-    hi = ((3 * colourIndex) % (frameHeight-boxSize)) & 0xffe; //Make certain hi is even.
+    boxSize= m_frameHeight / 10;
+    hi = ((3 * colourIndex) % (m_frameHeight-boxSize)) & 0xffe; //Make certain hi is even.
     FillRect(resFrame, 10, hi, boxSize, boxSize, 0, 0, 0); //Black Box.
 
     //Draw four parallel black lines, which move up the middle of the window.
     colourIndex = colourIndex / 3;     //Every three seconds, lines move.
 
     for(wi = 0; wi < 2; wi++) 
-      columns[wi]= (((wi + 1)  * frameWidth) / 3) & 0xffe;// Force columns to be even.
+      columns[wi]= (((wi + 1)  * m_frameWidth) / 3) & 0xffe;// Force columns to be even.
 
-    hi = colourIndex % ((frameHeight - 16) / 2);
-    hi = (frameHeight - 16) - (hi * 2);     //hi is even, Lines move in opp. direction to box.
+    hi = colourIndex % ((m_frameHeight - 16) / 2);
+    hi = (m_frameHeight - 16) - (hi * 2);     //hi is even, Lines move in opp. direction to box.
 
     unsigned yi;    
     for(yi = 0; yi < 4; yi++) 
@@ -1958,10 +1958,10 @@ void PVideoInputDevice_FakeVideo::GrabMovingLineTestFrame(BYTE *resFrame)
   g = (100+v) & 255;
   b = (000+v) & 255;
 
-  FillRect(resFrame, 0, 0,frameWidth, frameHeight, r, g, b);
+  FillRect(resFrame, 0, 0,m_frameWidth, m_frameHeight, r, g, b);
 
-  int hi = (v % (frameHeight-2) >> 1) *2;
-  FillRect(resFrame, 0, hi, frameWidth, 2, 0, 0, 0);
+  int hi = (v % (m_frameHeight-2) >> 1) *2;
+  FillRect(resFrame, 0, hi, m_frameWidth, 2, 0, 0, 0);
 }
 
 
@@ -1969,9 +1969,9 @@ void PVideoInputDevice_FakeVideo::GrabSolidColour(BYTE *resFrame)
 {
   // Change colour every second, cycle is:
   // black, red, green, yellow, blue, magenta, cyan, white
-  int mask = m_grabCount/frameRate;
+  int mask = m_grabCount/m_frameRate;
   FillRect(resFrame,
-           0, 0, frameWidth, frameHeight, //Fill the whole frame with the colour.
+           0, 0, m_frameWidth, m_frameHeight, //Fill the whole frame with the colour.
            (mask&1) ? 255 : 0, // red
            (mask&2) ? 255 : 0, // green
            (mask&4) ? 255 : 0);//blue
@@ -1981,7 +1981,7 @@ void PVideoInputDevice_FakeVideo::GrabSolidColour(BYTE *resFrame)
 void PVideoInputDevice_FakeVideo::GrabOriginalMovingBlocksFrame(BYTE *frame)
 {
   unsigned wi,hi,colourIndex,colourNumber;
-  int framesize = frameWidth*frameHeight;
+  int framesize = m_frameWidth*m_frameHeight;
 
   static int gCount=0;
   gCount++;
@@ -1989,22 +1989,22 @@ void PVideoInputDevice_FakeVideo::GrabOriginalMovingBlocksFrame(BYTE *frame)
   colourIndex = gCount/10;
   colourNumber= (colourIndex/10)%7;   //Every 10 seconds, coloured background blocks move.
 
-  for(hi=0; hi<frameHeight; hi++)               //slow moving group of lines going upwards.
-    for(wi=0; wi<frameWidth; wi++) 
-      if ( (wi>frameWidth/3)&&(wi<frameWidth*2/3)&&
-        ( ((gCount+hi)%frameHeight)<16)&&
+  for(hi=0; hi<m_frameHeight; hi++)               //slow moving group of lines going upwards.
+    for(wi=0; wi<m_frameWidth; wi++) 
+      if ( (wi>m_frameWidth/3)&&(wi<m_frameWidth*2/3)&&
+        ( ((gCount+hi)%m_frameHeight)<16)&&
         ( (hi%4)<2)                     )
-        frame[(hi*frameWidth)+wi] = 16;
+        frame[(hi*m_frameWidth)+wi] = 16;
       else
-        frame[(hi*frameWidth)+wi] = (BYTE)(((colourNumber+((wi*7)/frameWidth))%7)*35+26);
+        frame[(hi*m_frameWidth)+wi] = (BYTE)(((colourNumber+((wi*7)/m_frameWidth))%7)*35+26);
 
-  for(hi=1; hi<=frameHeight; hi++)                 //fast moving block going downwards.
-    for(wi=frameWidth/9; wi<(2*frameWidth/9); wi++) 
-      if(  (( (gCount*4)+hi)%frameHeight)<20)
-        frame[((frameHeight-hi)*frameWidth)+wi] = 16;
+  for(hi=1; hi<=m_frameHeight; hi++)                 //fast moving block going downwards.
+    for(wi=m_frameWidth/9; wi<(2*m_frameWidth/9); wi++) 
+      if(  (( (gCount*4)+hi)%m_frameHeight)<20)
+        frame[((m_frameHeight-hi)*m_frameWidth)+wi] = 16;
 
-  unsigned halfWidth  = frameWidth/2;
-  unsigned halfHeight = frameHeight/2;
+  unsigned halfWidth  = m_frameWidth/2;
+  unsigned halfHeight = m_frameHeight/2;
   for(hi=1; hi<halfHeight; hi++)  
     for(wi=0; wi<halfWidth; wi++)
       frame[framesize+(hi*halfWidth)+wi] = (BYTE)(((((hi*7)/halfHeight)+colourNumber)%7)*35+26);
@@ -2018,23 +2018,23 @@ void PVideoInputDevice_FakeVideo::GrabTextVideoFrame(BYTE *resFrame)
 
   m_grabCount++;
   FillRect(resFrame,
-           0, 0, frameWidth, frameHeight, //Fill the whole frame with the colour.
+           0, 0, m_frameWidth, m_frameHeight, //Fill the whole frame with the colour.
            200, 200, 200); //a light grey colour.
 
 
   if (textLine[0].GetLength() < 2)
     return;
 
-  PINDEX boxSize = (frameHeight / (PVideoFont::MAX_L_HEIGHT * 2) ) & 0xffe;
+  PINDEX boxSize = (m_frameHeight / (PVideoFont::MAX_L_HEIGHT * 2) ) & 0xffe;
   int index = (int)((PTime() - startTime).GetMilliSeconds() / 300);
 
-  PINDEX maxI = (frameWidth / boxSize) - 2;
+  PINDEX maxI = (m_frameWidth / boxSize) - 2;
   for (i = 0; i < maxI; i++)
     for (j = 0; j < PVideoFont::MAX_L_HEIGHT; j++) {
       PINDEX ii = (index + i) % textLine[0].GetLength();
       if (textLine[j][ii] != ' ')
         FillRect(resFrame,
-                 (i + 1) * boxSize, (frameHeight / 3) + ((j + 1) * boxSize), //x,y start pos
+                 (i + 1) * boxSize, (m_frameHeight / 3) + ((j + 1) * boxSize), //x,y start pos
                  boxSize, boxSize,                    //x,y dimension
                  250, 00, 00); //red box.
     }
@@ -2103,7 +2103,7 @@ void PVideoInputDevice_FakeVideo::FillRect(BYTE * frame,
       break;
 
     case eYUV420P :
-      PColourConverter::FillYUV420P(x, y, width, height, frameWidth, frameHeight, frame, r, g, b);
+      PColourConverter::FillYUV420P(x, y, width, height, m_frameWidth, m_frameHeight, frame, r, g, b);
       break;
 
     case eYUV422 :
@@ -2195,7 +2195,7 @@ static PConstString const NullVideoOut(P_NULL_VIDEO_DEVICE);
 
 PVideoOutputDevice_NULLOutput::PVideoOutputDevice_NULLOutput()
 {
-  deviceName = NullVideoOut;
+  m_deviceName = NullVideoOut;
 }
 
 
@@ -2233,7 +2233,7 @@ PStringArray PVideoOutputDevice_NULLOutput::GetOutputDeviceNames()
 
 PINDEX PVideoOutputDevice_NULLOutput::GetMaxFrameBytes()
 {
-  return GetMaxFrameBytesConverted(CalculateFrameBytes(frameWidth, frameHeight, colourFormat));
+  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
 }
 
 

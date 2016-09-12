@@ -1044,3 +1044,20 @@ EXPORTS
     _WspiapiParseV4Address@8
     _WspiapiQueryDNS@24
     _WspiapiStrdup@4
+	___local_stdio_printf_options
+	___local_stdio_scanf_options
+	__pAtlLcidToLocaleNameTable
+	__pAtlLocaleNameToIndexTable
+	__snprintf
+	_sprintf
+	_sscanf
+	__vscprintf
+	__vscprintf_l
+	__vsnprintf
+	__vsnprintf_l
+	__vsnprintf_s
+	__vsnprintf_s_l
+	__vsprintf_l
+	__vsscanf_l
+	__vswprintf_s_l
+	_swprintf_s

@@ -260,7 +260,7 @@ PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractList::PAbstractList()
-  : info(new PListInfo) { PAssert(info != NULL, POutOfMemory); }
+  : m_info(new PListInfo) { PAssert(m_info != NULL, POutOfMemory); }
 
 ///////////////////////////////////////////////////////////////////////////////
 

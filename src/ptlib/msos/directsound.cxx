@@ -677,7 +677,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   DSBUFFERDESC bufferDescription = {
     sizeof(DSBUFFERDESC),
     DSBCAPS_GLOBALFOCUS + DSBCAPS_CTRLPOSITIONNOTIFY + DSBCAPS_GETCURRENTPOSITION2,
-    m_bufferSize, // calculated by SetBuffers
+    (DWORD)m_bufferSize, // calculated by SetBuffers
     0,            // reserved
     &m_waveFormat // format
   };
@@ -964,7 +964,7 @@ PBoolean PSoundChannelDirectSound::OpenCaptureBuffer () // private
   DSCBUFFERDESC bufferDescription = {
     sizeof(DSCBUFFERDESC),
     DSCBCAPS_WAVEMAPPED,    // use wave mapper for formats unsupported by device
-    m_bufferSize,           // calculated by SetBuffers
+    (DWORD)m_bufferSize,           // calculated by SetBuffers
     0,                      // reserved
     &m_waveFormat           // format
   };

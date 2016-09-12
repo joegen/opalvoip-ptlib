@@ -622,14 +622,7 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXMLElement & pdu)
     if (digest) {
       PMessageDigest::Result bin_digest;
       PMessageDigestSHA1::Encode(m_StreamID + m_Password, bin_digest);
-      PString digest;
-
-      const BYTE * data = bin_digest.GetPointer();
-
-      for (PINDEX i = 0, max = bin_digest.GetSize(); i < max ; i++)
-        digest.sprintf("%02x", (unsigned)data[i]);
-
-      auth += "<digest>" + digest + "</digest>";
+      auth += "<digest>" + bin_digest.AsHex() + "</digest>";
     }
     else 
 #endif

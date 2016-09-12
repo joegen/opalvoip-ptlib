@@ -187,11 +187,11 @@ PBoolean PFTPClient::CreateDirectory(const PString & path)
 PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
 {
   if (ExecuteCommand(STATcmd, path)/100 == 2 && lastResponseInfo.Find(path) != P_MAX_INDEX) {
-    PINDEX start = lastResponseInfo.Find('\n');
-    if (start != P_MAX_INDEX) {
-      PINDEX end = lastResponseInfo.Find('\n', ++start);
-      if (end != P_MAX_INDEX)
-        return lastResponseInfo(start, end-1);
+    PINDEX startPos = lastResponseInfo.Find('\n');
+    if (startPos != P_MAX_INDEX) {
+      PINDEX endPos = lastResponseInfo.Find('\n', ++startPos);
+      if (endPos != P_MAX_INDEX)
+        return lastResponseInfo(startPos, endPos-1);
     }
   }
 
@@ -204,9 +204,9 @@ PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
   delete socket;
   ReadResponse();
 
-  PINDEX end = str.FindOneOf("\r\n");
-  if (end != P_MAX_INDEX)
-    str[end] = '\0';
+  PINDEX endPos = str.FindOneOf("\r\n");
+  if (endPos != P_MAX_INDEX)
+    str[endPos] = '\0';
   return str;
 }
 

@@ -1549,10 +1549,10 @@ PCaselessString PVXMLSession::GetVar(const PString & varName) const
 {
   // Check for literal
   if (varName[0] == '\'' || varName[0] == '"') {
-    PINDEX end = varName.GetLength() - 1;
-    if (varName[end] == '\'' || varName[end] == '"')
-      --end;
-    return varName(1, end);
+    PINDEX endPos = varName.GetLength() - 1;
+    if (varName[endPos] == '\'' || varName[endPos] == '"')
+      --endPos;
+    return varName(1, endPos);
   }
 
   PString fullVarName = varName;
@@ -2925,13 +2925,13 @@ PBoolean PVXMLChannelPCM::IsSilenceFrame(const void * buf, PINDEX len) const
   // Calculate the average signal level of this frame
   int sum = 0;
 
-  const short * pcm = (const short *)buf;
-  const short * end = pcm + len/2;
-  while (pcm != end) {
-    if (*pcm < 0)
-      sum -= *pcm++;
+  const short * pcmPtr = (const short *)buf;
+  const short * endPtr = pcmPtr + len/2;
+  while (pcmPtr != endPtr) {
+    if (*pcmPtr < 0)
+      sum -= *pcmPtr++;
     else
-      sum += *pcm++;
+      sum += *pcmPtr++;
   }
 
   // calc average
@@ -3061,7 +3061,7 @@ class TextToSpeech_Sample : public PTextToSpeech
     unsigned GetVolume();
     PBoolean OpenFile   (const PFilePath & fn);
     PBoolean OpenChannel(PChannel * chanel);
-    PBoolean IsOpen()    { return opened; }
+    PBoolean IsOpen()    { return m_opened; }
     PBoolean Close();
     PBoolean Speak(const PString & text, TextType hint = Default);
     PBoolean SpeakNumber(unsigned number);
@@ -3072,23 +3072,23 @@ class TextToSpeech_Sample : public PTextToSpeech
     //PTextToSpeech * defaultEngine;
 
     PDECLARE_MUTEX(mutex);
-    PBoolean opened;
-    PBoolean usingFile;
-    PString text;
-    PFilePath path;
-    unsigned volume, rate;
-    PString voice;
+    bool      m_opened;
+    bool      m_usingFile;
+    PString   m_text;
+    PFilePath m_path;
+    unsigned  m_volume, m_rate;
+    PString   m_voice;
 
-    std::vector<PFilePath> filenames;
+    std::vector<PFilePath> m_filenames;
 };
 
 
 TextToSpeech_Sample::TextToSpeech_Sample()
 {
   PWaitAndSignal m(mutex);
-  usingFile = opened = false;
-  rate = 8000;
-  volume = 100;
+  m_usingFile = m_opened = false;
+  m_rate = 8000;
+  m_volume = 100;
 }
 
 
@@ -3101,34 +3101,34 @@ PStringArray TextToSpeech_Sample::GetVoiceList()
 
 PBoolean TextToSpeech_Sample::SetVoice(const PString & v)
 {
-  voice = v;
+  m_voice = v;
   return true;
 }
 
 
 PBoolean TextToSpeech_Sample::SetRate(unsigned v)
 {
-  rate = v;
+  m_rate = v;
   return true;
 }
 
 
 unsigned TextToSpeech_Sample::GetRate()
 {
-  return rate;
+  return m_rate;
 }
 
 
 PBoolean TextToSpeech_Sample::SetVolume(unsigned v)
 {
-  volume = v;
+  m_volume = v;
   return true;
 }
 
 
 unsigned TextToSpeech_Sample::GetVolume()
 {
-  return volume;
+  return m_volume;
 }
 
 
@@ -3137,9 +3137,9 @@ PBoolean TextToSpeech_Sample::OpenFile(const PFilePath & fn)
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = true;
-  path = fn;
-  opened = true;
+  m_usingFile = true;
+  m_path = fn;
+  m_opened = true;
 
   PTRACE(3, "TTS\tWriting speech to " << fn);
 
@@ -3152,8 +3152,8 @@ PBoolean TextToSpeech_Sample::OpenChannel(PChannel * /*chanel*/)
   PWaitAndSignal m(mutex);
 
   Close();
-  usingFile = false;
-  opened = false;
+  m_usingFile = false;
+  m_opened = false;
 
   return true;
 }
@@ -3163,21 +3163,21 @@ PBoolean TextToSpeech_Sample::Close()
 {
   PWaitAndSignal m(mutex);
 
-  if (!opened)
+  if (!m_opened)
     return true;
 
   PBoolean stat = true;
 
 #if P_WAVFILE
-  if (usingFile) {
-    PWAVFile outputFile("PCM-16", path, PFile::WriteOnly);
+  if (m_usingFile) {
+    PWAVFile outputFile("PCM-16", m_path, PFile::WriteOnly);
     if (!outputFile.IsOpen()) {
-      PTRACE(1, "TTS\tCannot create output file " << path);
+      PTRACE(1, "TTS\tCannot create output file " << m_path);
       stat = false;
     }
     else {
       std::vector<PFilePath>::const_iterator r;
-      for (r = filenames.begin(); r != filenames.end(); ++r) {
+      for (r = m_filenames.begin(); r != m_filenames.end(); ++r) {
         PFilePath f = *r;
         PWAVFile file;
         file.SetAutoconvert();
@@ -3195,11 +3195,11 @@ PBoolean TextToSpeech_Sample::Close()
         }
       }
     }
-    filenames.erase(filenames.begin(), filenames.end());
+    m_filenames.erase(m_filenames.begin(), m_filenames.end());
   }
 #endif // P_WAVFILE
 
-  opened = false;
+  m_opened = false;
   return stat;
 }
 
@@ -3342,16 +3342,16 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
 
         case Spell:
           PTRACE(4, "TTS\tSpelling " << text);
-          for (PINDEX i = 0; i < text.GetLength(); ++i)
-            SpeakFile(PString(text[i]));
+          for (PINDEX k = 0; k < text.GetLength(); ++k)
+            SpeakFile(text[k]);
           break;
 
         case Phone:
         case Digits:
           PTRACE(4, "TTS\tSpeaking digits " << text);
-          for (PINDEX i = 0; i < text.GetLength(); ++i) {
-            if (isdigit(text[i]))
-              SpeakFile(PString(text[i]));
+          for (PINDEX k = 0; k < text.GetLength(); ++k) {
+            if (isdigit(text[k]))
+              SpeakFile(text[k]);
           }
           break;
 
@@ -3403,13 +3403,13 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
           {
             PIPSocket::Address addr(line);
             PTRACE(4, "TTS\tSpeaking IP address " << addr);
-            for (PINDEX i = 0; i < 4; ++i) {
-              int octet = addr[i];
+            for (PINDEX k = 0; k < 4; ++k) {
+              int octet = addr[k];
               if (octet < 100)
                 SpeakNumber(octet);
               else
                 Speak(octet, Digits);
-              if (i != 3)
+              if (k != 3)
                 SpeakFile("dot");
             }
           }
@@ -3424,12 +3424,12 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
 
 PBoolean TextToSpeech_Sample::SpeakFile(const PString & text)
 {
-  PFilePath f = PDirectory(voice) + (text.ToLower() + ".wav");
+  PFilePath f = PDirectory(m_voice) + (text.ToLower() + ".wav");
   if (!PFile::Exists(f)) {
     PTRACE(2, "TTS\tUnable to find explicit file for " << text);
     return false;
   }
-  filenames.push_back(f);
+  m_filenames.push_back(f);
   return true;
 }
 

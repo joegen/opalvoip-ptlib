@@ -42,7 +42,7 @@ bool PSTUNServer::Open(WORD port)
 {
   Close();
 
-  PIPSocket::Address addr;
+  PIPSocket::Address ip;
 
   // get interfaces to bind to
   PIPSocket::InterfaceTable interfaces;
@@ -76,17 +76,17 @@ bool PSTUNServer::Open(WORD port)
   // open sockets
   size_t j;
   for (j = 0; j < interfaceAddresses.size(); ++j) {
-    PIPSocketAddressAndPort addr(interfaceAddresses[j], port);
+    PIPSocketAddressAndPort ap(interfaceAddresses[j], port);
     if (!CreateAndAddSocket(interfaceAddresses[j], port)) {
-      PTRACE(2, "Cannot open socket on " << addr);
+      PTRACE(2, "Cannot open socket on " << ap);
       Close();
       return false;
     }
-    PTRACE(2, "Listening on " << addr);
+    PTRACE(2, "Listening on " << ap);
   }
 
   if (m_sockets.GetSize() == 0) {
-    PTRACE(2, "Unable to open any ports" << addr);
+    PTRACE(2, "Unable to open any ports on " << ip);
     return false;
   }
 
@@ -211,18 +211,20 @@ bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketI
     for (PINDEX i = 0; i < m_sockets.GetSize(); ++i)
       m_selectList += m_sockets[i];
 
-    int r = PIPSocket::Select(m_selectList);
-    if (r == PChannel::Timeout)
-      return true;
-    if (r != PChannel::NoError)
-      return false;
-    if (m_selectList.GetSize() == 0)
-      return true;
+    switch (PIPSocket::Select(m_selectList)) {
+      default:
+        return false;
+      case PChannel::Timeout:
+        return true;
+      case PChannel::NoError:
+        if (m_selectList.GetSize() == 0)
+          return true;
+    }
   }
 
-  PSocket::SelectList::iterator r = m_selectList.begin();
-  PUDPSocket * socket = (PUDPSocket *)&(*r);
-  m_selectList.erase(r);
+  PSocket::SelectList::iterator selection = m_selectList.begin();
+  PUDPSocket * socket = (PUDPSocket *)&(*selection);
+  m_selectList.erase(selection);
 
   if (!message.Read(*socket)) {
     // ignore read errors - they are likely to be connection
@@ -232,14 +234,12 @@ bool PSTUNServer::Read(PSTUNMessage & message, PSTUNServer::SocketInfo & socketI
     return true;
   }  
 
-  {
-    SocketToSocketInfoMap::iterator r = m_socketToSocketInfoMap.find(socket);
-    if (r == m_socketToSocketInfoMap.end()) {
-      PTRACE(2, "Unable to find interface for received request - ignoring");
-      return false;
-    }
-    socketInfo = r->second;
+  SocketToSocketInfoMap::iterator it = m_socketToSocketInfoMap.find(socket);
+  if (it == m_socketToSocketInfoMap.end()) {
+    PTRACE(2, "Unable to find interface for received request - ignoring");
+    return false;
   }
+  socketInfo = it->second;
 
   return true;
 }

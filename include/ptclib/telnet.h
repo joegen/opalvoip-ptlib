@@ -310,7 +310,7 @@ class PTelnetSocket : public PTCPSocket
     void SetOurOption(
       BYTE code,          ///< Option to check.
       PBoolean state = true   ///< New state for for option.
-    ) { option[code].weCan = state; }
+    ) { m_option[code].weCan = state; }
 
     /** Set if the option on their side is desired, this does not mean it is set
        it only means that in response to a WILL we DO rather than DONT.
@@ -318,7 +318,7 @@ class PTelnetSocket : public PTCPSocket
     void SetTheirOption(
       BYTE code,          ///< Option to check.
       PBoolean state = true  ///< New state for for option.
-    ) { option[code].theyShould = state; }
+    ) { m_option[code].theyShould = state; }
 
     /** Determine if the option on our side is enabled.
 
@@ -327,7 +327,7 @@ class PTelnetSocket : public PTCPSocket
      */
     PBoolean IsOurOption(
       BYTE code    ///< Option to check.
-    ) const { return option[code].ourState == OptionInfo::IsYes; }
+    ) const { return m_option[code].ourState == OptionInfo::IsYes; }
 
     /** Determine if the option on their side is enabled.
 
@@ -336,14 +336,14 @@ class PTelnetSocket : public PTCPSocket
      */
     PBoolean IsTheirOption(
       BYTE code    ///< Option to check.
-    ) const { return option[code].theirState == OptionInfo::IsYes; }
+    ) const { return m_option[code].theirState == OptionInfo::IsYes; }
 
     void SetTerminalType(
       const PString & newType   ///< New terminal type description string.
     );
     // Set the terminal type description string for TELNET protocol.
 
-    const PString & GetTerminalType() const { return terminalType; }
+    const PString & GetTerminalType() const { return m_terminalType; }
     // Get the terminal type description string for TELNET protocol.
 
     void SetWindowSize(
@@ -441,17 +441,18 @@ class PTelnetSocket : public PTCPSocket
       unsigned theirState:3;
     };
     
-    OptionInfo option[MaxOptions];
+    OptionInfo m_option[MaxOptions];
     // Information on protocol options.
 
-    PString terminalType;
+    PString m_terminalType;
     // Type of terminal connected to telnet socket, defaults to "UNKNOWN"
 
-    WORD windowWidth, windowHeight;
+    WORD m_windowWidth, m_windowHeight;
     // Size of the "window" used by the NVT.
 
 
   private:
+    // Internal states for the TELNET decoder
     enum State {
       StateNormal,
       StateCarriageReturn,
@@ -463,15 +464,10 @@ class PTelnetSocket : public PTCPSocket
       StateSubNegotiations,
       StateEndNegotiations
     };
-    // Internal states for the TELNET decoder
 
-    State state;
-    // Current state of incoming characters.
-
-    PBYTEArray subOption;
-    // Storage for sub-negotiated options
-
-    unsigned synchronising;
+    State      m_state;         // Current state of incoming characters.
+    PBYTEArray m_subOption;     // Storage for sub-negotiated options
+    unsigned   m_synchronising;
 };
 
 

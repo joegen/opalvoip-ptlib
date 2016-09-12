@@ -17,7 +17,7 @@ public:
   DoSomeThing1(PINDEX _index);
   void Main();
 private:
-  PINDEX index;
+  PINDEX m_index;
   PSortedList<PString> list;
 };
 
@@ -26,7 +26,7 @@ class PSafeString:public PSafeObject {
   PSafeString(const PString & _string);
   void PrintOn(ostream &strm) const;
 private:
-  PString string;
+  PString m_string;
 };
 
 class DoSomeThing2:public PThread {
@@ -35,7 +35,7 @@ public:
   DoSomeThing2(PINDEX _index);
   void Main();
 private:
-  PINDEX index;
+  PINDEX m_index;
   PSafeSortedList<PSafeString> list;
 };
 

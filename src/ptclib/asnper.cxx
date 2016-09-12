@@ -28,7 +28,7 @@ PBoolean PASN_ConstrainedObject::ConstrainedLengthDecode(PPER_Stream & strm, uns
 {
   // The execution order is important in the following. The SingleBitDecode() function
   // must be called if extendable is true, no matter what.
-  if ((extendable && strm.SingleBitDecode()) || constraint == Unconstrained)
+  if ((m_extendable && strm.SingleBitDecode()) || constraint == Unconstrained)
     return strm.LengthDecode(0, INT_MAX, length);
   else
     return strm.LengthDecode(lowerLimit, upperLimit, length);
@@ -46,7 +46,7 @@ void PASN_ConstrainedObject::ConstrainedLengthEncode(PPER_Stream & strm, unsigne
 
 PBoolean PASN_ConstrainedObject::ConstraintEncode(PPER_Stream & strm, unsigned value) const
 {
-  if (!extendable)
+  if (!m_extendable)
     return constraint != FixedConstraint;
 
   PBoolean needsExtending = value > upperLimit;
@@ -186,7 +186,7 @@ PBoolean PASN_Enumeration::DecodePER(PPER_Stream & strm)
 {
   // X.691 Section 13
 
-  if (extendable) {  // 13.3
+  if (m_extendable) {  // 13.3
     if (strm.SingleBitDecode()) {
       unsigned len = 0;
       return strm.SmallUnsignedDecode(len) &&
@@ -203,7 +203,7 @@ void PASN_Enumeration::EncodePER(PPER_Stream & strm) const
 {
   // X.691 Section 13
 
-  if (extendable) {  // 13.3
+  if (m_extendable) {  // 13.3
     PBoolean extended = value > maxEnumValue;
     strm.SingleBitEncode(extended);
     if (extended) {
@@ -685,12 +685,12 @@ PBoolean PASN_Choice::DecodePER(PPER_Stream & strm)
   if (strm.IsAtEnd())
     return false;
 
-  if (extendable) {
+  if (m_extendable) {
     if (strm.SingleBitDecode()) {
-      if (!strm.SmallUnsignedDecode(tag))
+      if (!strm.SmallUnsignedDecode(m_tag))
         return false;
 
-      tag += numChoices;
+      m_tag += numChoices;
 
       unsigned len = 0;
       if (!strm.LengthDecode(0, INT_MAX, len))
@@ -718,9 +718,9 @@ PBoolean PASN_Choice::DecodePER(PPER_Stream & strm)
   }
 
   if (numChoices < 2)
-    tag = 0;
+    m_tag = 0;
   else {
-    if (!strm.UnsignedDecode(0, numChoices-1, tag))
+    if (!strm.UnsignedDecode(0, numChoices-1, m_tag))
       return false;
   }
 
@@ -732,18 +732,18 @@ void PASN_Choice::EncodePER(PPER_Stream & strm) const
 {
   PAssert(CheckCreate(), PLogicError);
 
-  if (extendable) {
-    PBoolean extended = tag >= numChoices;
+  if (m_extendable) {
+    PBoolean extended = m_tag >= numChoices;
     strm.SingleBitEncode(extended);
     if (extended) {
-      strm.SmallUnsignedEncode(tag - numChoices);
+      strm.SmallUnsignedEncode(m_tag - numChoices);
       strm.AnyTypeEncode(choice);
       return;
     }
   }
 
   if (numChoices > 1)
-    strm.UnsignedEncode(tag, 0, numChoices-1);
+    strm.UnsignedEncode(m_tag, 0, numChoices-1);
 
   choice->Encode(strm);
 }
@@ -769,7 +769,7 @@ PBoolean PASN_Sequence::PreambleDecodePER(PPER_Stream & strm)
   totalExtensions = 0;
   extensionMap.SetSize(0);
 
-  if (extendable) {
+  if (m_extendable) {
     if (strm.IsAtEnd())
       return false;
     if (strm.SingleBitDecode()) // 18.1
@@ -784,7 +784,7 @@ void PASN_Sequence::PreambleEncodePER(PPER_Stream & strm) const
 {
   // X.691 Section 18
 
-  if (extendable) {
+  if (m_extendable) {
     PBoolean hasExtensions = false;
     for (unsigned i = 0; i < extensionMap.GetSize(); i++) {
       if (extensionMap[i]) {

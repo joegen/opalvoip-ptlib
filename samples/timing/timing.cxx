@@ -137,9 +137,9 @@ void TimingTest::Main()
   PINDEX loop;
   for (loop = 1; loop < 5; loop++) {
     cout << "Sleeping " << loop << " seconds" << endl;
-    PSimpleTimer then;
+    PSimpleTimer beforeSleep;
     PThread::Sleep(PTimeInterval(0, loop));
-    cout << then.GetElapsed() << ' ' << (PTime()-start_time1) << endl;
+    cout << beforeSleep.GetElapsed() << ' ' << (PTime()-start_time1) << endl;
   }
   cout << "The first loop took " << (PTime()-start_time1) << " seconds." << endl;
 

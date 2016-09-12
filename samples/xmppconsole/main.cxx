@@ -20,11 +20,7 @@
 #include "main.h"
 #include "version.h"
 
-#if !P_EXPAT
-#error Must have XML support for this application
-#endif
-
-
+#if P_EXPAT
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -465,5 +461,6 @@ void UserInterface::ProcessDirectedMessage(PString & message)
   SendThisMessageTo(send, subject, str[node - 1]);
 }
 
+#endif
 
 // End of File ///////////////////////////////////////////////////////////////

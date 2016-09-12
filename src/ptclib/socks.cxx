@@ -315,7 +315,7 @@ PBoolean PSocksSocket::Connect(const PString & address)
   if (!SendSocksCommand(*this, SOCKS_CMD_CONNECT, address, 0))
     return false;
 
-  port = remotePort;
+  m_port = remotePort;
   return true;
 }
 
@@ -325,7 +325,7 @@ PBoolean PSocksSocket::Connect(const Address & addr)
   if (!SendSocksCommand(*this, SOCKS_CMD_CONNECT, NULL, addr))
     return false;
 
-  port = remotePort;
+  m_port = remotePort;
   return true;
 }
 
@@ -339,13 +339,13 @@ PBoolean PSocksSocket::Connect(WORD, const Address &)
 
 PBoolean PSocksSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 {
-  PAssert(newPort == 0 && port == 0, PUnsupportedFeature);
+  PAssert(newPort == 0 && m_port == 0, PUnsupportedFeature);
   PAssert(reuse, PUnsupportedFeature);
 
   if (!SendSocksCommand(*this, SOCKS_CMD_BIND, NULL, 0))
     return false;
 
-  port = localPort;
+  m_port = localPort;
   return true;
 }
 
@@ -569,7 +569,7 @@ PSocksUDPSocket::PSocksUDPSocket(const PString & host, WORD port)
 
 PObject * PSocksUDPSocket::Clone() const
 {
-  return new PSocksUDPSocket(port);
+  return new PSocksUDPSocket(m_port);
 }
 
 
@@ -602,14 +602,14 @@ PBoolean PSocksUDPSocket::Connect(WORD, const Address &)
 
 PBoolean PSocksUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 {
-  PAssert(newPort == 0 && port == 0, PUnsupportedFeature);
+  PAssert(newPort == 0 && m_port == 0, PUnsupportedFeature);
   PAssert(reuse, PUnsupportedFeature);
 
   if (!SendSocksCommand(socksControl, SOCKS_CMD_UDP_ASSOCIATE, NULL, 0))
     return false;
 
   socksControl.GetPeerAddress(serverAddress);
-  port = localPort;
+  m_port = localPort;
   return true;
 }
 

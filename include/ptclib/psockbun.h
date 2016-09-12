@@ -342,14 +342,14 @@ class PMonitoredSockets : public PSafeObject
   protected:
     struct SocketInfo {
       SocketInfo()
-        : socket(NULL)
-        , inUse(false)
+        : m_socket(NULL)
+        , m_inUse(false)
       { }
       void Read(PMonitoredSockets & bundle, BundleParams & param);
       void Write(BundleParams & param);
 
-      PUDPSocket * socket;
-      bool         inUse;
+      PUDPSocket * m_socket;
+      bool         m_inUse;
     };
     friend struct SocketInfo;
 
