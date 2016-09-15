@@ -3023,7 +3023,7 @@ void PMutexExcessiveLockInfo::PrintOn(ostream &strm) const
       strm << PFilePath(m_fileOrName).GetFileName() << ':' << m_fileLine;
     else
       strm << m_fileOrName;
-    strm << ')';
+    strm << ',' << m_excessiveLockTimeout << "ms)";
   }
 }
 
