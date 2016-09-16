@@ -146,7 +146,8 @@ class PTimeInterval : public PObject
     enum Formats {
       NormalFormat,     ///< Output as "hh:mm:ss.uuu"
       IncludeDays,      ///< Output as "d:hh:mm:ss.uuu"
-      SecondsOnly       ///< Output as "s.uuu"
+      SecondsOnly,      ///< Output as "s.uuu"
+      SecondsSI         ///< Ouptut using SI units, ns, us, ms, s, though not ks, Ms etc
     };
 
     /** Output the time interval as a string.

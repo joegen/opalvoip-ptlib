@@ -108,9 +108,17 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
     ns = -ns;
   }
 
-  if (format == SecondsOnly)
+  switch (format) {
+  case SecondsSI :
+    if (ns < SecsToNano)
+      return str + PString(PString::ScaleSI, ns/(double)SecsToNano, precision);
+    // else next case
+
+  case SecondsOnly :
     str << ns/SecsToNano;
-  else {
+    break;
+
+  default :
     std::streamsize digits = 1;
 
     if (format == IncludeDays && (ns > DaysToNano || width > (precision + 10))) {
