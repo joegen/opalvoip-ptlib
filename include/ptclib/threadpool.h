@@ -407,7 +407,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
       unsigned workerIncreaseLimit = 0
     ) : PThreadPool<Work_T>(maxWorkers, maxWorkUnits, threadName, priority)
       , m_workerIncreaseLatency(workerIncreaseLatency)
-      , m_workerIncreaseLimit(workerIncreaseLimit)
+      , m_workerIncreaseLimit(std::max(maxWorkers, workerIncreaseLimit))
     {
         PTRACE(4, NULL, "ThreadPool", "Thread pool created:"
                                       " maxWorkers=" << maxWorkers << ","
