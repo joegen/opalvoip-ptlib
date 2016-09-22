@@ -1209,7 +1209,7 @@ void PSemaphore::Signal()
 #else
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
-  if (currentCount < m_maxCOunt)
+  if (currentCount < m_maximum)
     currentCount++;
 
   if (queuedLocks > 0) 

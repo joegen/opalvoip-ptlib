@@ -50,7 +50,7 @@
     mutable pthread_cond_t  condVar;
     mutable unsigned currentCount;
     mutable unsigned queuedLocks;
-    friend void PThread::Terminate();
+    friend class PThread;
   #endif
 
 #elif defined(__BEOS__)
