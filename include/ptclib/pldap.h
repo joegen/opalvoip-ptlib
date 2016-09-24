@@ -83,7 +83,7 @@ class PLDAPSession : public PObject
 
     /**Determine of session is open.
       */
-    PBoolean IsOpen() const { return ldapContext != NULL; }
+    PBoolean IsOpen() const { return m_ldapContext != NULL; }
 
     /**Set LDAP option parameter (OpenLDAp specific values)
       */
@@ -140,9 +140,9 @@ class PLDAPSession : public PObject
         );
 
       public:
-        const PString & GetName() const { return name; }
+        const PString & GetName() const { return m_name; }
 
-        Operation GetOperation() const { return op; }
+        Operation GetOperation() const { return m_op; }
 
         void SetLDAPMod(
           struct ldapmod & mod,
@@ -153,8 +153,8 @@ class PLDAPSession : public PObject
         virtual PBoolean IsBinary() const = 0;
         virtual void SetLDAPModVars(struct ldapmod & mod) = 0;
 
-        PString   name;
-        Operation op;
+        PString   m_name;
+        Operation m_op;
     };
 
     class StringModAttrib : public ModAttrib {
@@ -184,8 +184,8 @@ class PLDAPSession : public PObject
         virtual PBoolean IsBinary() const;
         virtual void SetLDAPModVars(struct ldapmod & mod);
 
-        PStringArray values;
-        PBaseArray<const char *> pointers;
+        PStringArray m_values;
+        PBaseArray<const char *> m_pointers;
     };
 
     class BinaryModAttrib : public ModAttrib {
@@ -215,9 +215,9 @@ class PLDAPSession : public PObject
         virtual PBoolean IsBinary() const;
         virtual void SetLDAPModVars(struct ldapmod & mod);
 
-        PArray<PBYTEArray> values;
-        PBaseArray<struct berval *> pointers;
-        PBYTEArray bervals;
+        PArray<PBYTEArray> m_values;
+        PBaseArray<struct berval *> m_pointers;
+        PBYTEArray m_bervals;
     };
 
     /**Add a new distringuished name to LDAP dirctory.
@@ -299,14 +299,14 @@ class PLDAPSession : public PObject
         SearchContext();
         ~SearchContext();
 
-        PBoolean IsCompleted() const { return completed; }
+        PBoolean IsCompleted() const { return m_completed; }
 
       private:
-        int              msgid;
-        struct ldapmsg * result;
-        struct ldapmsg * message;
-        PBoolean             found;
-        PBoolean             completed;
+        int              m_msgid;
+        struct ldapmsg * m_result;
+        struct ldapmsg * m_message;
+        bool             m_found;
+        bool             m_completed;
 
       friend class PLDAPSession;
     };
@@ -387,15 +387,15 @@ class PLDAPSession : public PObject
       */
     void SetBaseDN(
       const PString & dn
-    ) { defaultBaseDN = dn; }
+    ) { m_defaultBaseDN = dn; }
 
     /**Set the default base DN for use if not specified for searches.
       */
-    const PString & GetBaseDN() const { return defaultBaseDN; }
+    const PString & GetBaseDN() const { return m_defaultBaseDN; }
 
     /**Get the last OpenLDAP error code.
       */
-    int GetErrorNumber() const { return errorNumber; }
+    int GetErrorNumber() const { return m_errorNumber; }
 
     /**Get the last OpenLDAP error as text string.
       */
@@ -403,32 +403,32 @@ class PLDAPSession : public PObject
 
     /**Get the OpenLDAP context structure.
       */
-    struct ldap * GetOpenLDAP() const { return ldapContext; }
+    struct ldap * GetOpenLDAP() const { return m_ldapContext; }
 
     /**Get the timeout for LDAP operations.
       */
-    const PTimeInterval & GetTimeout() const { return timeout; }
+    const PTimeInterval & GetTimeout() const { return m_timeout; }
 
     /**Set the timeout for LDAP operations.
       */
     void SetTimeout(
       const PTimeInterval & t
-    ) { timeout = t; }
+    ) { m_timeout = t; }
 
     /**Set a limit on the number of results to return
       */
      void SetSearchLimit(
       const unsigned s
-    ) { searchLimit = s; }
+    ) { m_searchLimit = s; }
 
   protected:
-    struct ldap * ldapContext;
-    int           errorNumber;
-    unsigned      protocolVersion;
-    PString       defaultBaseDN;
-    unsigned      searchLimit;
-    PTimeInterval timeout;
-    PString       multipleValueSeparator;
+    struct ldap * m_ldapContext;
+    int           m_errorNumber;
+    unsigned      m_protocolVersion;
+    PString       m_defaultBaseDN;
+    unsigned      m_searchLimit;
+    PTimeInterval m_timeout;
+    PString       m_multipleValueSeparator;
 };
 
 
@@ -441,8 +441,8 @@ class PLDAPAttributeBase : public PObject
   public:
     PLDAPAttributeBase(const char * name, void * pointer, PINDEX size);
 
-    const char * GetName() const { return name; }
-    PBoolean IsBinary() const { return pointer != NULL; }
+    const char * GetName() const { return m_name; }
+    PBoolean IsBinary() const { return m_pointer != NULL; }
 
     virtual void Copy(const PLDAPAttributeBase & other) = 0;
 
@@ -452,9 +452,9 @@ class PLDAPAttributeBase : public PObject
     virtual void FromBinary(const PArray<PBYTEArray> & data);
 
   protected:
-    const char * name;
-    void       * pointer;
-    PINDEX       size;
+    const char * m_name;
+    void       * m_pointer;
+    PINDEX       m_size;
 };
 
 
@@ -472,21 +472,21 @@ class PLDAPStructBase : public PObject {
     void PrintOn(ostream & strm) const;
 
     typedef PDictionary<PString, PLDAPAttributeBase> AttribDict;
-    AttribDict & GetAttributes() { return attributes; }
-    const AttribDict & GetAttributes() const { return attributes; }
-    PLDAPAttributeBase * GetAttribute(const char * name) const { return attributes.GetAt(name); }
+    AttribDict & GetAttributes() { return m_attributes; }
+    const AttribDict & GetAttributes() const { return m_attributes; }
+    PLDAPAttributeBase * GetAttribute(const char * name) const { return m_attributes.GetAt(name); }
 
     void AddAttribute(PLDAPAttributeBase * var);
-    static PLDAPStructBase & GetInitialiser() { return *PAssertNULL(initialiserInstance); }
+    static PLDAPStructBase & GetInitialiser() { return *PAssertNULL(m_initialiserInstance); }
 
   protected:
     void EndConstructor();
 
-    AttribDict attributes;
+    AttribDict m_attributes;
 
-    PLDAPStructBase        * initialiserStack;
-    static PMutex            initialiserMutex;
-    static PLDAPStructBase * initialiserInstance;
+    PLDAPStructBase        * m_initialiserStack;
+    static PMutex            m_initialiserMutex;
+    static PLDAPStructBase * m_initialiserInstance;
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -546,9 +546,9 @@ class PLDAPSchema : public PObject
     typedef std::map<PString,PBYTEArray> ldapBinAttributes;
 
 
-    attributeList           attributelist;
-    ldapAttributes          attributes;
-    ldapBinAttributes       binattributes;   
+    attributeList           m_attributelist;
+    ldapAttributes          m_attributes;
+    ldapBinAttributes       m_binattributes;   
 };
 
 

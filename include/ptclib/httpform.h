@@ -778,7 +778,7 @@ class PHTTPEnumField : public PHTTPSelectField
       const char * help = NULL
     ) : PHTTPSelectField(name, title, count, valueStrings, initVal, help, true) { }
 
-    virtual PHTTPField * NewField() const { return new PHTTPEnumField(baseName, title, m_values, (Enumeration)m_initialValue, help); }
+    virtual PHTTPField * NewField() const { return new PHTTPEnumField(m_baseName, m_title, m_values, (Enumeration)m_initialValue, m_help); }
 };
 
 
