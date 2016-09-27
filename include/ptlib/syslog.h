@@ -137,6 +137,16 @@ class PSystemLogTarget : public PObject
        Log level.
      */
     PSystemLog::Level GetThresholdLevel() const { return m_thresholdLevel; }
+
+    /** Set flag to output the level name ("Eror", "Warning" etc).
+      */
+    void SetOutputLevelName(
+      bool flag  ///< New flag
+    ) { m_outputLevelName = flag; }
+
+    /** Get flag to output the level name ("Eror", "Warning" etc).
+     */
+    bool GetOutputLevelName() const { return m_outputLevelName; }
   //@}
 
   protected:
@@ -160,6 +170,7 @@ class PSystemLogTarget : public PObject
 
   protected:
     PAtomicEnum<PSystemLog::Level> m_thresholdLevel;
+    bool m_outputLevelName;
 
   private:
     PSystemLogTarget(const PSystemLogTarget & other);

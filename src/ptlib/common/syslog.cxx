@@ -196,6 +196,7 @@ void PSystemLog::SetTarget(PSystemLogTarget * target, bool autoDelete)
 
 PSystemLogTarget::PSystemLogTarget()
   : m_thresholdLevel(PSystemLog::Warning)
+  , m_outputLevelName(true)
 {
 }
 
@@ -220,22 +221,25 @@ void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level,
   PTime now;
   stream << now.AsString(PTime::LoggingFormat) << '\t';
 
-  if (level < 0)
-    stream << "Message";
-  else {
-    static const char * const levelName[] = {
-      "Fatal error",
-      "Error",
-      "Warning",
-      "Info"
-    };
-    if ((PINDEX)level < PARRAYSIZE(levelName))
-      stream << levelName[level];
-    else
-      stream << "Debug" << (level - PSystemLog::Info);
+  if (m_outputLevelName) {
+    if (level < 0)
+      stream << "Message";
+    else {
+      static const char * const levelName[] = {
+        "Fatal error",
+        "Error",
+        "Warning",
+        "Info"
+      };
+      if ((PINDEX)level < PARRAYSIZE(levelName))
+        stream << levelName[level];
+      else
+        stream << "Debug" << (level - PSystemLog::Info);
+    }
+    stream << '\t';
   }
 
-  stream << '\t' << msg;
+  stream << msg;
   if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
     stream << endl;
 }
