@@ -434,6 +434,11 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         {
         }
 
+        ~QueuedWorkerThread()
+        {
+            WaitForTermination();
+        }
+
         void AddWork(Work_T * work, const string & group)
         {
           if (PAssertNULL(work) != NULL)

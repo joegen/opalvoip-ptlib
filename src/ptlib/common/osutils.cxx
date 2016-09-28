@@ -96,7 +96,14 @@ class PSimpleThread : public PThread
       const PString & threadName,
       PINDEX stackSize
     );
+
+    ~PSimpleThread()
+    {
+        WaitForTermination();
+    }
+
     void Main();
+
   protected:
     PNotifier callback;
     INT parameter;

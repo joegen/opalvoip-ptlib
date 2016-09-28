@@ -531,6 +531,11 @@ class PThreadMain : public PThread
       PThread::Resume();
     }
 
+    ~PThreadMain()
+    {
+        WaitForTermination();
+    }
+
     virtual void Main()
     {
       (*m_function)();
@@ -563,6 +568,11 @@ class PThreadFunctor : public PThread
       , m_funct(funct)
     {
       PThread::Resume();
+    }
+
+    ~PThreadFunctor()
+    {
+        WaitForTermination();
     }
 
     virtual void Main()
@@ -605,6 +615,11 @@ class PThread1Arg : public PThread
       , m_arg1(arg1)
     {
       PThread::Resume();
+    }
+
+    ~PThread1Arg()
+    {
+        WaitForTermination();
     }
 
     virtual void Main()
@@ -651,6 +666,11 @@ class PThread2Arg : public PThread
       PThread::Resume();
     }
     
+    ~PThread2Arg()
+    {
+        WaitForTermination();
+    }
+
     virtual void Main()
     {
       (*m_function)(m_arg1, m_arg2);
@@ -697,6 +717,11 @@ class PThread3Arg : public PThread
       PThread::Resume();
     }
     
+    ~PThread3Arg()
+    {
+        WaitForTermination();
+    }
+
     virtual void Main()
     {
       (*m_function)(m_arg1, m_arg2, m_arg3);
@@ -746,6 +771,11 @@ class PThreadObj : public PThread
       , m_function(function)
     {
       PThread::Resume();
+    }
+
+    ~PThreadObj()
+    {
+        WaitForTermination();
     }
 
     void Main()
@@ -800,6 +830,11 @@ class PThreadObj1Arg : public PThread
       PThread::Resume();
     }
 
+    ~PThreadObj1Arg()
+    {
+        WaitForTermination();
+    }
+
     void Main()
     {
       (m_object.*m_function)(m_arg1);
@@ -836,6 +871,11 @@ class PThreadObj2Arg : public PThread
       , m_arg2(arg2)
     {
       PThread::Resume();
+    }
+
+    ~PThreadObj2Arg()
+    {
+        WaitForTermination();
     }
 
     void Main()
