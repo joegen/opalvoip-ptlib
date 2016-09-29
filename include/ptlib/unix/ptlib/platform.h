@@ -597,5 +597,8 @@ typedef intptr_t      INT;
 
 #endif // PTLIB_PLATFORM_H
 
+#if __GLIBC__
+  #include <byteswap.h>
+#endif
 
 // End of file

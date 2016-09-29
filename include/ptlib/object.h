@@ -2138,24 +2138,50 @@ struct PIntSameOrder {
 
 template <typename type>
 struct PIntReversedOrder {
-  __inline PIntReversedOrder()                                : data(0)              { }
-  __inline PIntReversedOrder(type value)                                             { ReverseBytes(value, data); }
-  __inline PIntReversedOrder(const PIntReversedOrder & value) : data(value.data)     { }
-  __inline PIntReversedOrder & operator=(type value)                                 { ReverseBytes(value, data); return *this; }
-  __inline PIntReversedOrder & operator=(const PIntReversedOrder & value)            { data = value.data; return *this; }
-  __inline operator type() const                                                     { type value; ReverseBytes(data, value); return value; }
-  __inline friend ostream & operator<<(ostream & s, const PIntReversedOrder & value) { return s << (type)value; }
-  __inline friend istream & operator>>(istream & s, PIntReversedOrder & v)           { type val; s >> val; v = val; return s; }
+  __inline PIntReversedOrder()                                : data(0)                   { }
+  __inline PIntReversedOrder(type value)                      : data(ReverseBytes(value)) { }
+  __inline PIntReversedOrder(const PIntReversedOrder & value) : data(value.data)          { }
+  __inline PIntReversedOrder & operator=(type value)                                      { data = ReverseBytes(value);  return *this; }
+  __inline PIntReversedOrder & operator=(const PIntReversedOrder & value)                 { data = value.data;           return *this; }
+  __inline operator type() const                                                          { return ReverseBytes(data); }
+  __inline friend ostream & operator<<(ostream & s, const PIntReversedOrder & value)      { return s << value.data; }
+  __inline friend istream & operator>>(istream & s, PIntReversedOrder & value)            { return s >> value.data; }
 
   private:
     type data;
 
-  static __inline void ReverseBytes(const type & src, type & dst)
+#if _MSC_VER
+__inline static  int8_t  ReverseBytes(const  int8_t  src) { return src; }
+__inline static uint8_t  ReverseBytes(const uint8_t  src) { return src; }
+__inline static  int16_t ReverseBytes(const  int16_t src) { return _byteswap_ushort(src); }
+__inline static uint16_t ReverseBytes(const uint16_t src) { return _byteswap_ushort(src); }
+__inline static  int32_t ReverseBytes(const  int32_t src) { return _byteswap_ulong(src); }
+__inline static uint32_t ReverseBytes(const uint32_t src) { return _byteswap_ulong(src); }
+__inline static  int64_t ReverseBytes(const  int64_t src) { return _byteswap_uint64(src); }
+__inline static uint64_t ReverseBytes(const uint64_t src) { return _byteswap_uint64(src); }
+__inline static float    ReverseBytes(const    float src) { uint32_t dst = ReverseBytes(*(uint32_t *)&src); return *(float *)&dst; }
+__inline static double   ReverseBytes(const   double src) { uint64_t dst = ReverseBytes(*(uint64_t *)&src); return *(double *)&dst; }
+#elif __GLIBC__
+__inline static  int8_t  ReverseBytes(const  int8_t  src) { return src; }
+__inline static uint8_t  ReverseBytes(const uint8_t  src) { return src; }
+__inline static  int16_t ReverseBytes(const  int16_t src) { return __bswap_16(src); }
+__inline static uint16_t ReverseBytes(const uint16_t src) { return __bswap_16(src); }
+__inline static  int32_t ReverseBytes(const  int32_t src) { return __bswap_32(src); }
+__inline static uint32_t ReverseBytes(const uint32_t src) { return __bswap_32(src); }
+__inline static  int64_t ReverseBytes(const  int64_t src) { return __bswap_64(src); }
+__inline static uint64_t ReverseBytes(const uint64_t src) { return __bswap_64(src); }
+__inline static float    ReverseBytes(const    float src) { uint32_t dst = ReverseBytes(*(uint32_t *)&src); return *(float *)&dst; }
+__inline static double   ReverseBytes(const   double src) { uint64_t dst = ReverseBytes(*(uint64_t *)&src); return *(double *)&dst; }
+#else
+  static __inline type ReverseBytes(const type & src)
   {
+    type dst;
     size_t s = sizeof(type)-1;
     for (size_t d = 0; d < sizeof(type); ++d,--s)
       ((BYTE *)&dst)[d] = ((const BYTE *)&src)[s];
+    return dst;
   }
+#endif
 };
 
 #ifndef PCHAR8
@@ -2163,83 +2189,83 @@ struct PIntReversedOrder {
 #endif
 
 #if PCHAR8==PANSI_CHAR
-typedef PIntSameOrder<char> PChar8;
+typedef PIntSameOrder<int8_t> PChar8;
 #endif
 
-typedef PIntSameOrder<char> PInt8;
+typedef PIntSameOrder<int8_t> PInt8;
 
-typedef PIntSameOrder<unsigned char> PUInt8;
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntSameOrder<PInt16> PInt16l;
-#elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntReversedOrder<PInt16> PInt16l;
-#endif
+typedef PIntSameOrder<uint8_t> PUInt8;
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntReversedOrder<PInt16> PInt16b;
+typedef PIntSameOrder<int16_t> PInt16l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntSameOrder<PInt16> PInt16b;
+typedef PIntReversedOrder<int16_t> PInt16l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntSameOrder<WORD> PUInt16l;
+typedef PIntReversedOrder<int16_t> PInt16b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntReversedOrder<WORD> PUInt16l;
+typedef PIntSameOrder<int16_t> PInt16b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntReversedOrder<WORD> PUInt16b;
+typedef PIntSameOrder<uint16_t> PUInt16l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntSameOrder<WORD> PUInt16b;
+typedef PIntReversedOrder<uint16_t> PUInt16l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntSameOrder<PInt32> PInt32l;
+typedef PIntReversedOrder<uint16_t> PUInt16b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntReversedOrder<PInt32> PInt32l;
+typedef PIntSameOrder<uint16_t> PUInt16b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntReversedOrder<PInt32> PInt32b;
+typedef PIntSameOrder<int32_t> PInt32l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntSameOrder<PInt32> PInt32b;
+typedef PIntReversedOrder<int32_t> PInt32l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntSameOrder<DWORD> PUInt32l;
+typedef PIntReversedOrder<int32_t> PInt32b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntReversedOrder<DWORD> PUInt32l;
+typedef PIntSameOrder<PInt32> int32_t;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntReversedOrder<DWORD> PUInt32b;
+typedef PIntSameOrder<uint32_t> PUInt32l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntSameOrder<DWORD> PUInt32b;
+typedef PIntReversedOrder<uint32_t> PUInt32l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntSameOrder<PInt64> PInt64l;
+typedef PIntReversedOrder<uint32_t> PUInt32b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntReversedOrder<PInt64> PInt64l;
+typedef PIntSameOrder<uint32_t> PUInt32b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntReversedOrder<PInt64> PInt64b;
+typedef PIntSameOrder<int64_t> PInt64l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntSameOrder<PInt64> PInt64b;
+typedef PIntReversedOrder<int64_t> PInt64l;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntSameOrder<PUInt64> PUInt64l;
+typedef PIntReversedOrder<int64_t> PInt64b;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntReversedOrder<PUInt64> PUInt64l;
+typedef PIntSameOrder<int64_t> PInt64b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-typedef PIntReversedOrder<PUInt64> PUInt64b;
+typedef PIntSameOrder<uint64_t> PUInt64l;
 #elif PBYTE_ORDER==PBIG_ENDIAN
-typedef PIntSameOrder<PUInt64> PUInt64b;
+typedef PIntReversedOrder<uint64_t> PUInt64l;
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+typedef PIntReversedOrder<uint64_t> PUInt64b;
+#elif PBYTE_ORDER==PBIG_ENDIAN
+typedef PIntSameOrder<uint64_t> PUInt64b;
 #endif
 
 #if PBYTE_ORDER==PLITTLE_ENDIAN
