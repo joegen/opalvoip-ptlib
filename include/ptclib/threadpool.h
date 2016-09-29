@@ -436,7 +436,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         ~QueuedWorkerThread()
         {
-            WaitForTermination();
+            this->WaitForTermination();
         }
 
         void AddWork(Work_T * work, const string & group)
