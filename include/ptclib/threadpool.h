@@ -472,7 +472,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
             this->m_working = false;
 
             if (latency > pool.m_workerIncreaseLatency)
-              pool.OnMaxWaitTime(latency, item.m_group);
+              pool.OnMaxWaitTime(*this, latency, item.m_group);
           }
         }
 
@@ -495,31 +495,60 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
         bool                   m_working;
     };
 
-    virtual void OnMaxWaitTime(const PTimeInterval & latency, const string & PTRACE_PARAM(group))
+    P_REMOVE_VIRTUAL_VOID(OnMaxWaitTime(const PTimeInterval&,const string&))
+
+    virtual void OnMaxWaitTime(const QueuedWorkerThread & PTRACE_PARAM(thread),
+                               const PTimeInterval & latency,
+                               const string & PTRACE_PARAM(group))
     {
       PTime now;
       if (this->m_nextWorkerIncreaseTime > now) {
-        PTRACE(3, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
-               " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
-               " not increasing threads past " << this->m_maxWorkerCount << " due to recent adjustment");
+#if PTRACING
+        TraceMaxWaitTime(5, "recent adjustment prevents increase of", 0, thread, latency, group);
+#endif
         return;
       }
 
-      this->m_nextWorkerIncreaseTime = now + latency; // Don't increase again until oafter this blockage removed.
+      this->m_nextWorkerIncreaseTime = now + this->m_workerIncreaseLatency; // Don't increase again until had some time to clear backlog.
 
       unsigned newMaxWorkers = std::min((this->m_maxWorkerCount*11+9)/10, this->m_workerIncreaseLimit);
       if (newMaxWorkers == this->m_maxWorkerCount) {
-        PTRACE(2, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
-               " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
-               " cannot increase threads past " << this->m_workerIncreaseLimit);
+#if PTRACING
+        TraceMaxWaitTime(2, "cannot increase", newMaxWorkers, thread, latency, group);
+#endif
         return;
       }
 
-      PTRACE(2, NULL, "ThreadPool", "Thread pool (group=\"" << group << "\") latency excessive"
-              " (" << latency << "s > " << this->m_workerIncreaseLatency << "s),"
-              " increasing maximum threads from " << this->m_maxWorkerCount << " to " << newMaxWorkers);
+#if PTRACING
+      TraceMaxWaitTime(2, "increasing pool", newMaxWorkers, thread, latency, group);
+#endif
       this->m_maxWorkerCount = newMaxWorkers;
     }
+
+  protected:
+#if PTRACING
+    void TraceMaxWaitTime(unsigned level,
+                          const char * msg,
+                          size_t newMaxWorkers,
+                          const QueuedWorkerThread & thread,
+                          const PTimeInterval & latency,
+                          const string & group)
+    {
+      if (PTrace::CanTrace(level)) {
+        ostream & trace = PTRACE_BEGIN(level, NULL, "ThreadPool");
+        trace << "Thread pool ";
+        if (!group.empty())
+          trace << "(group=\"" << group << "\") ";
+        trace << " latency excessive (" << latency << "s > " << this->m_workerIncreaseLatency << "s,"
+                 " work-size=" << thread.GetWorkSize() << "), "
+              << msg << " threads from " << this->m_maxWorkerCount;
+        if (newMaxWorkers > 0)
+          trace << " to " << newMaxWorkers;
+        trace << ", max=" << this->m_workerIncreaseLimit
+              << PTrace::End;
+      }
+    }
+#endif
 
     virtual PThreadPoolBase::WorkerThreadBase * CreateWorkerThread()
     {
