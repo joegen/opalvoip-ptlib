@@ -536,9 +536,9 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     {
       if (PTrace::CanTrace(level)) {
         ostream & trace = PTRACE_BEGIN(level, NULL, "ThreadPool");
-        trace << "Thread pool ";
+        trace << "Thread pool";
         if (!group.empty())
-          trace << "(group=\"" << group << "\") ";
+          trace << " (group=\"" << group << "\")";
         trace << " latency excessive (" << latency << "s > " << this->m_workerIncreaseLatency << "s,"
                  " work-size=" << thread.GetWorkSize() << "), "
               << msg << " threads from " << this->m_maxWorkerCount;
