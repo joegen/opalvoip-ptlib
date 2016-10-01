@@ -216,7 +216,10 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , m_lastRotate(0)
   {
     InitMutex();
+  }
 
+  void InitialiseFromEnvironment()
+  {
     const char * levelEnv = getenv("PTLIB_TRACE_LEVEL");
     if (levelEnv == NULL) {
       levelEnv = getenv("PWLIB_TRACE_LEVEL");
@@ -345,16 +348,20 @@ PTHREAD_MUTEX_RECURSIVE_NP
     else {
       PDirectory dir(m_filename);
       if (dir.Exists())
-        m_filename = dir + "opal_%P.log";
+        m_filename = dir + "%N_%P.log";
 
       PFilePath fn(m_filename);
-      fn.Replace("%P", PString(PProcess::GetCurrentProcessID()));
 
+      PString rollover;
       if ((m_options & RotateLogMask) != 0)
-        fn = fn.GetDirectory() +
-             fn.GetTitle() +
-             PTime().AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local)) +
-             fn.GetType();
+        rollover = PTime().AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local));
+
+      fn.Replace("%D", rollover, true);
+      fn.Replace("%N", PProcess::Current().GetName(), true);
+      fn.Replace("%P", PString(PProcess::GetCurrentProcessID()), true);
+
+      if (!rollover.empty() && fn.Find(rollover) == P_MAX_INDEX)
+        fn = fn.GetDirectory() + fn.GetTitle() + rollover + fn.GetType();
 
       PFile::OpenOptions options = PFile::Create;
       if ((m_options & AppendToFile) == 0)
@@ -2118,6 +2125,10 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
   PProcessInstance = this;
+
+#if PTRACING
+  PTraceInfo::Instance().InitialiseFromEnvironment();
+#endif
 
   /* Try to get the real image path for this process using platform dependent
      code, if this fails, then use the value urigivally set via argv[0] */
