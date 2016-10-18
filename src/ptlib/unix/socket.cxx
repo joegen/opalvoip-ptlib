@@ -510,6 +510,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
   if (CheckNotOpen())
     return false;
 
+  unsigned noBufferRetry = 100;
   do {
     msghdr writeData;
     memset(&writeData, 0, sizeof(writeData));
@@ -527,6 +528,10 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
     if (ConvertOSError(result, LastWriteError)) {
       SetLastWriteCount(result);
       return true;
+    }
+    if (GetErrorNumber(LastWriteError) == ENOBUFS && --noBufferRetry > 0) {
+        PThread::Yield();
+        continue;
     }
   } while (GetErrorNumber(LastWriteError) == EWOULDBLOCK && PXSetIOBlock(PXWriteBlock, writeTimeout));
 
