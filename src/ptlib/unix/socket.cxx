@@ -511,7 +511,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
     return false;
 
   unsigned noBufferRetry = 100;
-  do {
+  for (;;) {
     msghdr writeData;
     memset(&writeData, 0, sizeof(writeData));
 
@@ -525,17 +525,27 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
     PPROFILE_SYSTEM(
       int result = ::sendmsg(os_handle, &writeData, flags);
     );
+
     if (ConvertOSError(result, LastWriteError)) {
       SetLastWriteCount(result);
       return true;
     }
-    if (GetErrorNumber(LastWriteError) == ENOBUFS && --noBufferRetry > 0) {
-        PThread::Yield();
-        continue;
-    }
-  } while (GetErrorNumber(LastWriteError) == EWOULDBLOCK && PXSetIOBlock(PXWriteBlock, writeTimeout));
 
-  return false;
+    switch (GetErrorNumber(LastWriteError)) {
+      case ENOBUFS :
+        if (--noBufferRetry == 0)
+          return false;
+        usleep(100);
+        break;
+
+      case EWOULDBLOCK :
+        if (PXSetIOBlock(PXWriteBlock, writeTimeout))
+          break;
+        // else default case
+      default :
+        return false;
+    }
+  }
 }
 
 #else // P_RECVMSG
