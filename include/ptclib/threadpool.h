@@ -498,7 +498,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
     P_REMOVE_VIRTUAL_VOID(OnMaxWaitTime(const PTimeInterval&,const string&))
 
     virtual void OnMaxWaitTime(const QueuedWorkerThread & PTRACE_PARAM(thread),
-                               const PTimeInterval & latency,
+                               const PTimeInterval & PTRACE_PARAM(latency),
                                const string & PTRACE_PARAM(group))
     {
       PTime now;

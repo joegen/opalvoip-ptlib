@@ -114,10 +114,10 @@ PURL_LEGACY_SCHEME(wss,       false, false, true,  false,  true,   true,  false,
 // PURL
 
 PURL::PURL()
-  : schemeInfo(NULL)
-  , port(0)
-  , portSupplied (false)
-  , relativePath(false)
+  : m_schemeInfo(NULL)
+  , m_port(0)
+  , m_portSupplied (false)
+  , m_relativePath(false)
 {
 }
 
@@ -135,11 +135,11 @@ PURL::PURL(const PString & str, const char * defaultScheme)
 
 
 PURL::PURL(const PFilePath & filePath)
-  : schemeInfo(PURLSchemeFactory::CreateInstance(FILE_SCHEME))
-  , scheme(FILE_SCHEME)
-  , port(0)
-  , portSupplied(false)
-  , relativePath(false)
+  : m_schemeInfo(PURLSchemeFactory::CreateInstance(FILE_SCHEME))
+  , m_scheme(FILE_SCHEME)
+  , m_port(0)
+  , m_portSupplied(false)
+  , m_relativePath(false)
 {
   PStringArray pathArray = filePath.GetDirectory().GetPath();
   if (pathArray.IsEmpty())
@@ -157,7 +157,7 @@ PURL::PURL(const PFilePath & filePath)
 PObject::Comparison PURL::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PURL), PInvalidCast);
-  return urlString.Compare(((const PURL &)obj).urlString);
+  return m_urlString.Compare(((const PURL &)obj).m_urlString);
 }
 
 PURL::PURL(const PURL & other)
@@ -173,36 +173,36 @@ PURL & PURL::operator=(const PURL & other)
 
 void PURL::CopyContents(const PURL & other)
 {
-  schemeInfo   = other.schemeInfo;
-  urlString    = other.urlString;
-  scheme       = other.scheme;
-  username     = other.username;
-  password     = other.password;
-  hostname     = other.hostname;
-  port         = other.port;
-  portSupplied = other.portSupplied;
-  relativePath = other.relativePath;
-  path         = other.path;
-  fragment     = other.fragment;
+  m_schemeInfo   = other.m_schemeInfo;
+  m_urlString    = other.m_urlString;
+  m_scheme       = other.m_scheme;
+  m_username     = other.m_username;
+  m_password     = other.m_password;
+  m_hostname     = other.m_hostname;
+  m_port         = other.m_port;
+  m_portSupplied = other.m_portSupplied;
+  m_relativePath = other.m_relativePath;
+  m_path         = other.m_path;
+  m_fragment     = other.m_fragment;
 
-  paramVars    = other.paramVars;
-  paramVars.MakeUnique();
+  m_paramVars    = other.m_paramVars;
+  m_paramVars.MakeUnique();
 
-  queryVars    = other.queryVars;
-  queryVars.MakeUnique();
+  m_queryVars    = other.m_queryVars;
+  m_queryVars.MakeUnique();
 
   m_contents   = other.m_contents;
 }
 
 PINDEX PURL::HashFunction() const
 {
-  return urlString.HashFunction();
+  return m_urlString.HashFunction();
 }
 
 
 void PURL::PrintOn(ostream & stream) const
 {
-  stream << urlString;
+  stream << m_urlString;
 }
 
 
@@ -433,22 +433,22 @@ PCaselessString PURL::ExtractScheme(const char * cstr)
 
 PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
 {
-  scheme.MakeEmpty();
-  username.MakeEmpty();
-  password.MakeEmpty();
-  hostname.MakeEmpty();
-  port = 0;
-  portSupplied = false;
-  relativePath = false;
-  path.SetSize(0);
-  paramVars.RemoveAll();
-  fragment.MakeEmpty();
-  queryVars.RemoveAll();
+  m_scheme.MakeEmpty();
+  m_username.MakeEmpty();
+  m_password.MakeEmpty();
+  m_hostname.MakeEmpty();
+  m_port = 0;
+  m_portSupplied = false;
+  m_relativePath = false;
+  m_path.SetSize(0);
+  m_paramVars.RemoveAll();
+  m_fragment.MakeEmpty();
+  m_queryVars.RemoveAll();
   m_contents.MakeEmpty();
 
   // get information which tells us how to parse URL for this
   // particular scheme
-  schemeInfo = NULL;
+  m_schemeInfo = NULL;
 
   if (cstr == NULL)
     return false;
@@ -461,27 +461,27 @@ PBoolean PURL::InternalParse(const char * cstr, const char * defaultScheme)
   if (*cstr == '\0')
     return false;
 
-  scheme = ExtractScheme(cstr);
-  if (!scheme.IsEmpty()) {
+  m_scheme = ExtractScheme(cstr);
+  if (!m_scheme.IsEmpty()) {
     // get the scheme information
-    schemeInfo = PURLSchemeFactory::CreateInstance(scheme);
-    if (schemeInfo != NULL)
+    m_schemeInfo = PURLSchemeFactory::CreateInstance(m_scheme);
+    if (m_schemeInfo != NULL)
       cstr = strchr(cstr, ':')+1;
   }
 
   // if we could not match a scheme, then use the specified default scheme
-  if (schemeInfo == NULL && defaultScheme != NULL && *defaultScheme != '\0') {
-    scheme = defaultScheme;
-    schemeInfo = PURLSchemeFactory::CreateInstance(defaultScheme);
-    PAssert(schemeInfo != NULL, "Default scheme " + scheme + " not available");
+  if (m_schemeInfo == NULL && defaultScheme != NULL && *defaultScheme != '\0') {
+    m_scheme = defaultScheme;
+    m_schemeInfo = PURLSchemeFactory::CreateInstance(defaultScheme);
+    PAssert(m_schemeInfo != NULL, "Default scheme " + m_scheme + " not available");
   }
 
   // if that still fails, then there is nowehere to go
-  if (schemeInfo == NULL)
+  if (m_schemeInfo == NULL)
     return false;
 
   // Now parse using the the scheme info.
-  return schemeInfo->Parse(cstr, *this) && !IsEmpty();
+  return m_schemeInfo->Parse(cstr, *this) && !IsEmpty();
 }
 
 
@@ -497,11 +497,11 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
     if (str.GetLength() > 2 && str[0] == '/' && str[1] == '/')
       start = 2;
     else
-      relativePath = true;
+      m_relativePath = true;
   }
 
   // parse user/password/host/port
-  if (!relativePath && schemeInfo->hasHostPort) {
+  if (!m_relativePath && schemeInfo->hasHostPort) {
     PString endHostChars;
     if (schemeInfo->hasPath)
       endHostChars += '/';
@@ -547,10 +547,10 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
         case P_MAX_INDEX :
           if (schemeInfo->defaultToUserIfNoAt) {
             if (pos3 == P_MAX_INDEX)
-              username = UntranslateString(uphp, LoginTranslation);
+              m_username = UntranslateString(uphp, LoginTranslation);
             else {
-              username = UntranslateString(uphp.Left(pos3), LoginTranslation);
-              password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
+              m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
+              m_password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
             }
             uphp.MakeEmpty();
           }
@@ -558,10 +558,10 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
 
         default :
           if (pos3 > pos2)
-            username = UntranslateString(uphp.Left(pos2), LoginTranslation);
+            m_username = UntranslateString(uphp.Left(pos2), LoginTranslation);
           else {
-            username = UntranslateString(uphp.Left(pos3), LoginTranslation);
-            password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
+            m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
+            m_password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
           }
           uphp.Delete(0, pos2+1);
       }
@@ -569,53 +569,53 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
 
     // if the URL does not have a port, then this is the hostname
     if (schemeInfo->defaultPort == 0)
-      hostname = UntranslateString(uphp, LoginTranslation);
+      m_hostname = UntranslateString(uphp, LoginTranslation);
     else {
       // determine if the URL has a port number
       // Allow for [ipv6] form
       if (uphp[0] == '[' && (pos = uphp.Find(']')) != P_MAX_INDEX) {
-        hostname = uphp.Left(pos+1); // No translation if inside []
+        m_hostname = uphp.Left(pos+1); // No translation if inside []
         pos = uphp.Find(':', pos);
       }
       else {
         pos = uphp.Find(':');
-        hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
+        m_hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
       }
 
       if (pos != P_MAX_INDEX) {
-        port = (WORD)uphp.Mid(pos+1).AsUnsigned();
-        portSupplied = true;
+        m_port = (WORD)uphp.Mid(pos+1).AsUnsigned();
+        m_portSupplied = true;
       }
 
-      if (hostname.IsEmpty() && schemeInfo->defaultHostToLocal)
-        hostname = PIPSocket::GetHostName();
+      if (m_hostname.IsEmpty() && schemeInfo->defaultHostToLocal)
+        m_hostname = PIPSocket::GetHostName();
     }
   }
 
   // chop off any trailing query
   if (schemeInfo->hasQuery && (pos = str.Find('?', start)) < end) {
-    SplitQueryVars(str(pos+1, end), queryVars);
+    SplitQueryVars(str(pos+1, end), m_queryVars);
     end = pos-1;
   }
 
   // chop off any trailing parameters
   if (schemeInfo->hasParameters && (pos = str.Find(';', start)) < end) {
-    SplitVars(str(pos+1, end), paramVars);
+    SplitVars(str(pos+1, end), m_paramVars);
     end = pos-1;
   }
 
   // chop off any trailing fragment
   if (schemeInfo->hasFragments && (pos = str.Find('#', start)) < end) {
-    fragment = UntranslateString(str(pos+1, end), PathTranslation);
+    m_fragment = UntranslateString(str(pos+1, end), PathTranslation);
     end = pos-1;
   }
 
-  if (port == 0 && !relativePath) {
+  if (m_port == 0 && !m_relativePath) {
     // Yes another horrible, horrible special case!
-    if (scheme == "h323" && paramVars("type") == "gk")
-      port = DEFAULT_H323RAS_PORT;
+    if (m_scheme == "h323" && m_paramVars("type") == "gk")
+      m_port = DEFAULT_H323RAS_PORT;
     else
-      port = schemeInfo->defaultPort;
+      m_port = schemeInfo->defaultPort;
   }
 
   if (schemeInfo->hasPath) {
@@ -639,21 +639,21 @@ PFilePath PURL::AsFilePath() const
      implication RFC 1808 that the path is absolute unless the relative
      path rules of that RFC apply. We follow that logic. */
 
-  if (path.IsEmpty() || scheme != FILE_SCHEME || (!hostname.IsEmpty() && hostname != "localhost"))
+  if (m_path.IsEmpty() || m_scheme != FILE_SCHEME || (!m_hostname.IsEmpty() && m_hostname != "localhost"))
     return PString::Empty();
 
   PStringStream str;
 
-  if (path[0].GetLength() == 2 && path[0][1] == '|')
-    str << path[0][0] << ':' << PDIR_SEPARATOR; // Special case for Windows paths with drive letter
+  if (m_path[0].GetLength() == 2 && m_path[0][1] == '|')
+    str << m_path[0][0] << ':' << PDIR_SEPARATOR; // Special case for Windows paths with drive letter
   else {
-    if (!relativePath)
+    if (!m_relativePath)
       str << PDIR_SEPARATOR;
-    str << path[0];
+    str << m_path[0];
   }
 
-  for (PINDEX i = 1; i < path.GetSize(); i++)
-    str << PDIR_SEPARATOR << path[i];
+  for (PINDEX i = 1; i < m_path.GetSize(); i++)
+    str << PDIR_SEPARATOR << m_path[i];
 
   return str;
 }
@@ -662,12 +662,12 @@ PFilePath PURL::AsFilePath() const
 PString PURL::AsString(UrlFormat fmt) const
 {
   if (fmt == FullURL)
-    return urlString;
+    return m_urlString;
 
-  if (scheme.IsEmpty() || schemeInfo == NULL)
+  if (m_scheme.IsEmpty() || m_schemeInfo == NULL)
     return PString::Empty();
 
-  return schemeInfo->AsString(fmt, *this);
+  return m_schemeInfo->AsString(fmt, *this);
 }
 
 
@@ -675,38 +675,38 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
 {
   PStringStream str;
 
-  if (fmt != RelativeOnly && !(relativePath && schemeInfo->relativeImpliesScheme))
-    str << scheme << ':';
+  if (fmt != RelativeOnly && !(m_relativePath && schemeInfo->relativeImpliesScheme))
+    str << m_scheme << ':';
 
-  if (fmt == LocationOnly && relativePath)
+  if (fmt == LocationOnly && m_relativePath)
     return str;
 
-  if (fmt != RelativeOnly && !relativePath) {
+  if (fmt != RelativeOnly && !m_relativePath) {
     if (schemeInfo->hasPath && schemeInfo->hasHostPort)
       str << "//";
 
     if (schemeInfo->hasUsername) {
-      if (!username) {
-        str << TranslateString(username, LoginTranslation);
-        if (schemeInfo->hasPassword && !password)
-          str << ':' << TranslateString(password, LoginTranslation);
-        if (schemeInfo->hasHostPort && !hostname.IsEmpty())
+      if (!m_username) {
+        str << TranslateString(m_username, LoginTranslation);
+        if (schemeInfo->hasPassword && !m_password)
+          str << ':' << TranslateString(m_password, LoginTranslation);
+        if (schemeInfo->hasHostPort && !m_hostname.IsEmpty())
           str << '@';
       }
     }
 
     if (schemeInfo->hasHostPort) {
-      if (hostname[0] == '[') // Should be IPv6 address
-        str << hostname;
-      else if (hostname.Find(':') != P_MAX_INDEX) // Assume it is an IPv6 address
-        str << '[' << hostname << ']';
+      if (m_hostname[0] == '[') // Should be IPv6 address
+        str << m_hostname;
+      else if (m_hostname.Find(':') != P_MAX_INDEX) // Assume it is an IPv6 address
+        str << '[' << m_hostname << ']';
       else
-        str << TranslateString(hostname, LoginTranslation);
+        str << TranslateString(m_hostname, LoginTranslation);
     }
 
     if (schemeInfo->defaultPort != 0) {
-      if (port != schemeInfo->defaultPort || portSupplied)
-        str << ':' << port;
+      if (m_port != schemeInfo->defaultPort || m_portSupplied)
+        str << ':' << m_port;
     }
 
     if (fmt == LocationOnly) {
@@ -717,7 +717,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
       if (schemeInfo->defaultToUserIfNoAt)
         return str;
 
-      if (str.GetLength() > scheme.GetLength()+1)
+      if (str.GetLength() > m_scheme.GetLength()+1)
         return str;
 
       // Cannot JUST have the scheme: ....
@@ -727,23 +727,23 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
 
   // RelativeOnly and PathOnly
   if (schemeInfo->hasPath) {
-    for (PINDEX i = 0; i < path.GetSize(); i++) {
-      if (i > 0 || !relativePath)
+    for (PINDEX i = 0; i < m_path.GetSize(); i++) {
+      if (i > 0 || !m_relativePath)
         str << '/';
-      str << TranslateString(path[i], PathTranslation);
+      str << TranslateString(m_path[i], PathTranslation);
     }
-    if (!relativePath && str.IsEmpty())
+    if (!m_relativePath && str.IsEmpty())
       str << '/';
   }
   else
     str << TranslateString(m_contents, PathTranslation);
 
   if (fmt == FullURL || fmt == RelativeOnly) {
-    if (!fragment)
-      str << "#" << TranslateString(fragment, PathTranslation);
+    if (!m_fragment)
+      str << "#" << TranslateString(m_fragment, PathTranslation);
 
-    OutputVars(str, paramVars, ';', ';', '=', ParameterTranslation);
-    OutputVars(str, queryVars, '?', '&', '=', QueryTranslation);
+    OutputVars(str, m_paramVars, ';', ';', '=', ParameterTranslation);
+    OutputVars(str, m_queryVars, '?', '&', '=', QueryTranslation);
   }
 
   return str;
@@ -756,13 +756,13 @@ bool PURL::SetScheme(const PString & newScheme)
   if (newSchemeInfo == NULL)
     return false;
 
-  scheme = newScheme;
-  schemeInfo = newSchemeInfo;
+  m_scheme = newScheme;
+  m_schemeInfo = newSchemeInfo;
 
-  if (!portSupplied) {
-    const PURLLegacyScheme * legacy = dynamic_cast<const PURLLegacyScheme *>(schemeInfo);
+  if (!m_portSupplied) {
+    const PURLLegacyScheme * legacy = dynamic_cast<const PURLLegacyScheme *>(m_schemeInfo);
     if (legacy != NULL)
-      port = legacy->defaultPort;
+      m_port = legacy->defaultPort;
   }
 
   Recalculate();
@@ -772,21 +772,21 @@ bool PURL::SetScheme(const PString & newScheme)
 
 void PURL::SetUserName(const PString & u)
 {
-  username = u;
+  m_username = u;
   Recalculate();
 }
 
 
 void PURL::SetPassword(const PString & p)
 {
-  password = p;
+  m_password = p;
   Recalculate();
 }
 
 
 void PURL::SetHostName(const PString & h)
 {
-  hostname = h;
+  m_hostname = h;
   Recalculate();
 }
 
@@ -794,12 +794,12 @@ void PURL::SetHostName(const PString & h)
 void PURL::SetPort(WORD newPort)
 {
   if (newPort != 0) {
-    port = newPort;
-    portSupplied = true;
+    m_port = newPort;
+    m_portSupplied = true;
   }
   else {
-    port = schemeInfo != NULL ? schemeInfo->GetDefaultPort() : 0;
-    portSupplied = false;
+    m_port = m_schemeInfo != NULL ? m_schemeInfo->GetDefaultPort() : 0;
+    m_portSupplied = false;
   }
   Recalculate();
 }
@@ -808,25 +808,25 @@ void PURL::SetPort(WORD newPort)
 PString PURL::GetHostPort() const
 {
   PStringStream strm;
-  strm << hostname;
-  if (portSupplied)
-    strm << ':' << port;
+  strm << m_hostname;
+  if (m_portSupplied)
+    strm << ':' << m_port;
   return strm;
 }
 
 
 void PURL::SetPathStr(const PString & pathStr)
 {
-  path = pathStr.Tokenise("/", true);
+  m_path = pathStr.Tokenise("/", true);
 
-  if (path.GetSize() > 0 && path[0].IsEmpty()) 
-    path.RemoveAt(0);
+  if (m_path.GetSize() > 0 && m_path[0].IsEmpty()) 
+    m_path.RemoveAt(0);
 
-  for (PINDEX i = 0; i < path.GetSize(); i++) {
-    path[i] = UntranslateString(path[i], PathTranslation);
-    if (i > 0 && path[i] == ".." && path[i-1] != "..") {
-      path.RemoveAt(i--);
-      path.RemoveAt(i--);
+  for (PINDEX i = 0; i < m_path.GetSize(); i++) {
+    m_path[i] = UntranslateString(m_path[i], PathTranslation);
+    if (i > 0 && m_path[i] == ".." && m_path[i-1] != "..") {
+      m_path.RemoveAt(i--);
+      m_path.RemoveAt(i--);
     }
   }
 
@@ -837,10 +837,10 @@ void PURL::SetPathStr(const PString & pathStr)
 PString PURL::GetPathStr() const
 {
   PStringStream strm;
-  for (PINDEX i = 0; i < path.GetSize(); i++) {
-    if (i > 0 || !relativePath)
+  for (PINDEX i = 0; i < m_path.GetSize(); i++) {
+    if (i > 0 || !m_relativePath)
       strm << '/';
-    strm << TranslateString(path[i], PathTranslation);
+    strm << TranslateString(m_path[i], PathTranslation);
   }
   return strm;
 }
@@ -848,35 +848,35 @@ PString PURL::GetPathStr() const
 
 void PURL::SetPath(const PStringArray & p)
 {
-  path = p;
-  path.MakeUnique();
+  m_path = p;
+  m_path.MakeUnique();
   Recalculate();
 }
 
 
 void PURL::AppendPath(const PString & segment)
 {
-  path.MakeUnique();
-  path.AppendString(segment);
+  m_path.MakeUnique();
+  m_path.AppendString(segment);
   Recalculate();
 }
 
 
 void PURL::ChangePath(const PString & segment, PINDEX idx)
 {
-  path.MakeUnique();
+  m_path.MakeUnique();
 
-  if (path.IsEmpty()) {
+  if (m_path.IsEmpty()) {
     if (!segment.IsEmpty())
-      path.AppendString(segment);
+      m_path.AppendString(segment);
   }
   else {
-    if (idx >= path.GetSize())
-      idx = path.GetSize()-1;
+    if (idx >= m_path.GetSize())
+      idx = m_path.GetSize()-1;
     if (segment.IsEmpty())
-      path.RemoveAt(idx);
+      m_path.RemoveAt(idx);
     else
-      path[idx] = segment;
+      m_path[idx] = segment;
   }
 
   Recalculate();
@@ -886,14 +886,14 @@ void PURL::ChangePath(const PString & segment, PINDEX idx)
 PString PURL::GetParameters() const
 {
   PStringStream strm;
-  OutputVars(strm, paramVars, '\0', ';', '=', ParameterTranslation);
+  OutputVars(strm, m_paramVars, '\0', ';', '=', ParameterTranslation);
   return strm;
 }
 
 
 void PURL::SetParameters(const PString & parameters)
 {
-  SplitVars(parameters, paramVars);
+  SplitVars(parameters, m_paramVars);
   Recalculate();
 }
 
@@ -901,10 +901,10 @@ void PURL::SetParameters(const PString & parameters)
 void PURL::SetParamVars(const PStringToString & p, bool merge)
 {
   if (merge)
-    paramVars.Merge(p, PStringToString::e_MergeIgnore);
+    m_paramVars.Merge(p, PStringToString::e_MergeIgnore);
   else {
-    paramVars = p;
-    paramVars.MakeUnique();
+    m_paramVars = p;
+    m_paramVars.MakeUnique();
   }
   Recalculate();
 }
@@ -913,9 +913,9 @@ void PURL::SetParamVars(const PStringToString & p, bool merge)
 void PURL::SetParamVar(const PString & key, const PString & data, bool emptyDataDeletes)
 {
   if (emptyDataDeletes && data.IsEmpty())
-    paramVars.RemoveAt(key);
+    m_paramVars.RemoveAt(key);
   else
-    paramVars.SetAt(key, data);
+    m_paramVars.SetAt(key, data);
   Recalculate();
 }
 
@@ -923,21 +923,21 @@ void PURL::SetParamVar(const PString & key, const PString & data, bool emptyData
 PString PURL::GetQuery() const
 {
   PStringStream strm;
-  OutputVars(strm, queryVars, '\0', '&', '=', QueryTranslation);
+  OutputVars(strm, m_queryVars, '\0', '&', '=', QueryTranslation);
   return strm;
 }
 
 
 void PURL::SetQuery(const PString & queryStr)
 {
-  SplitQueryVars(queryStr, queryVars);
+  SplitQueryVars(queryStr, m_queryVars);
   Recalculate();
 }
 
 
 void PURL::SetQueryVars(const PStringToString & q)
 {
-  queryVars = q;
+  m_queryVars = q;
   Recalculate();
 }
 
@@ -945,9 +945,9 @@ void PURL::SetQueryVars(const PStringToString & q)
 void PURL::SetQueryVar(const PString & key, const PString & data)
 {
   if (data.IsEmpty())
-    queryVars.RemoveAt(key);
+    m_queryVars.RemoveAt(key);
   else
-    queryVars.SetAt(key, data);
+    m_queryVars.SetAt(key, data);
   Recalculate();
 }
 
@@ -997,10 +997,10 @@ bool PURL::OpenBrowser(const PString & url)
 
 void PURL::Recalculate()
 {
-  if (schemeInfo != NULL)
-    urlString = schemeInfo->AsString(FullURL, *this);
+  if (m_schemeInfo != NULL)
+    m_urlString = m_schemeInfo->AsString(FullURL, *this);
   else
-    urlString.MakeEmpty();
+    m_urlString.MakeEmpty();
 }
 
 

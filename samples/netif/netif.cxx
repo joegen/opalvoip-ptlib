@@ -141,10 +141,10 @@ void NetTest::Main()
   }
   else {
     for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
-      PIPSocket::Address addr(args[arg]);
-      if (addr.IsValid())
-        cout << "Interface used for " << addr
-             << " is " << PIPSocket::GetRouteInterfaceAddress(addr) << endl;
+      PIPSocket::Address ip(args[arg]);
+      if (ip.IsValid())
+        cout << "Interface used for " << ip
+             << " is " << PIPSocket::GetRouteInterfaceAddress(ip) << endl;
       else
         cout << "Invalid IP address \"" << args[arg] << '"' << endl;
     }

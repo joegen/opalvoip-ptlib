@@ -522,8 +522,7 @@ void PluginLoaderStartup::OnStartup()
 
   // load the plugin module managers
   PFactory<PPluginModuleManager>::KeyList_T keyList = PFactory<PPluginModuleManager>::GetKeyList();
-  PFactory<PPluginModuleManager>::KeyList_T::const_iterator it;
-  for (it = keyList.begin(); it != keyList.end(); ++it)
+  for (PFactory<PPluginModuleManager>::KeyList_T::const_iterator it = keyList.begin(); it != keyList.end(); ++it)
     PFactory<PPluginModuleManager>::CreateInstance(*it)->OnStartup();
 
   // load the actual DLLs, which will also load the system plugins

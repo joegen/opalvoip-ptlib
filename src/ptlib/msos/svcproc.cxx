@@ -930,7 +930,7 @@ void PServiceProcess::DebugOutput(const char * out)
   if (!IsWindowVisible(m_controlWindow) && !m_debugHidden)
     ShowWindow(m_controlWindow, SW_SHOWDEFAULT);
 
-  int len = strlen(out);
+  size_t len = strlen(out);
   while (GetWindowTextLength(m_debugWindow)+len >= 128000) {
     SendMessage(m_debugWindow, WM_SETREDRAW, false, 0);
     DWORD start, finish;
@@ -947,7 +947,7 @@ void PServiceProcess::DebugOutput(const char * out)
   const char * prev = out;
   while ((lf = strchr(prev, '\n')) != NULL) {
     if (lf == out || *(lf-1) != '\r') {
-      size_t len = lf - out;
+      len = lf - out;
       char * line = (char *)alloca(len+3);
       memcpy(line, out, len);
       strcpy(line+len, crlfString);

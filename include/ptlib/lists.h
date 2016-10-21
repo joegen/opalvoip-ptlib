@@ -209,7 +209,7 @@ class PAbstractList : public PCollection
        pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveHead()
-      { return RemoveElement(info->head); }
+      { return RemoveElement(m_info->head); }
 
     /**Remove the tail object from the list. If the AllowDeleteObjects option
        is set then the object is also deleted.
@@ -218,7 +218,7 @@ class PAbstractList : public PCollection
        pointer to the object being removed, or NULL if it was deleted.
      */
     virtual PObject * RemoveTail()
-      { return RemoveElement(info->tail); }
+      { return RemoveElement(m_info->tail); }
 
 
     /**Remove the object at the specified ordinal index from the collection.
@@ -313,7 +313,7 @@ class PAbstractList : public PCollection
 
     // The types below cannot be nested as DevStudio 2005 AUTOEXP.DAT doesn't like it
     typedef PListElement Element;
-    PListInfo * info;
+    PListInfo * m_info;
 };
 
 
@@ -381,9 +381,9 @@ template <class T> class PList : public PAbstractList
         value_type & operator* () const { return *this->Ptr(); }
     };
 
-    iterator begin()  { return this->info->head; }
+    iterator begin()  { return this->m_info->head; }
     iterator end()    { return iterator(); }
-    iterator rbegin() { return this->info->tail; }
+    iterator rbegin() { return this->m_info->tail; }
     iterator rend()   { return iterator(); }
     iterator find(const value_type & obj) { return this->FindElement(obj, NULL); }
     void insert(const iterator & pos, value_type * obj) { this->InsertElement(pos.element, obj); }
@@ -402,14 +402,14 @@ template <class T> class PList : public PAbstractList
         const value_type & operator* () const { return *this->Ptr(); }
     };
 
-    const_iterator begin()  const { return this->info->head; }
+    const_iterator begin()  const { return this->m_info->head; }
     const_iterator end()    const { return const_iterator(); }
-    const_iterator rbegin() const { return this->info->tail; }
+    const_iterator rbegin() const { return this->m_info->tail; }
     const_iterator rend()   const { return const_iterator(); }
     const_iterator find(const value_type & obj) const { return this->FindElement(obj, NULL); }
 
-    value_type & front() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->head)->data); }
-    value_type & back() const { return dynamic_cast<value_type &>(*PAssertNULL(this->info->tail)->data); }
+    value_type & front() const { return dynamic_cast<value_type &>(*PAssertNULL(this->m_info->head)->data); }
+    value_type & back() const { return dynamic_cast<value_type &>(*PAssertNULL(this->m_info->tail)->data); }
     __inline void erase(const iterator & it) { this->RemoveElement(it.element); }
     __inline void erase(const const_iterator & it) { this->RemoveElement(it.element); }
     __inline void push_front(const value_type & value) { this->InsertAt(0, new value_type(value)); }
@@ -646,7 +646,7 @@ template <class T> class PStack : public PAbstractList
        reference to object on top of the stack.
      */
     virtual T & Top()
-      { PAssert(this->GetSize() > 0, PStackEmpty); return dynamic_cast<T &>(*this->info->head->data); }
+      { PAssert(this->GetSize() > 0, PStackEmpty); return dynamic_cast<T &>(*this->m_info->head->data); }
     __inline T & front() { Top(); }
   //@}
 

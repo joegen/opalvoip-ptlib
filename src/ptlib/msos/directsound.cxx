@@ -677,7 +677,7 @@ PBoolean PSoundChannelDirectSound::OpenPlaybackBuffer () // private
   DSBUFFERDESC bufferDescription = {
     sizeof(DSBUFFERDESC),
     DSBCAPS_GLOBALFOCUS + DSBCAPS_CTRLPOSITIONNOTIFY + DSBCAPS_GETCURRENTPOSITION2,
-    m_bufferSize, // calculated by SetBuffers
+    (DWORD)m_bufferSize, // calculated by SetBuffers
     0,            // reserved
     &m_waveFormat // format
   };
@@ -967,7 +967,7 @@ PBoolean PSoundChannelDirectSound::OpenCaptureBuffer () // private
   DSCBUFFERDESC bufferDescription = {
     sizeof(DSCBUFFERDESC),
     DSCBCAPS_WAVEMAPPED,    // use wave mapper for formats unsupported by device
-    m_bufferSize,           // calculated by SetBuffers
+    (DWORD)m_bufferSize,           // calculated by SetBuffers
     0,                      // reserved
     &m_waveFormat           // format
   };
@@ -1159,7 +1159,7 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
   PAssertNULL(buf);
 
   char * dest = (char *) buf;
-  PINDEX readCount = 0;
+  PINDEX totalReadCount = 0;
   while (len > 0) {
     if (!WaitForRecordBufferFull())     // sets m_movePos and m_available
       return false;                     // aborted/closed
@@ -1190,12 +1190,12 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
     PINDEX readCount = length1 + length2;
     dest += readCount;
     len -= readCount;
-    readCount += readCount;
+    totalReadCount += readCount;
     m_movePos += readCount;
     m_movePos %= m_bufferSize;
     m_moved += readCount;
   }
-  SetLastReadCount(readCount);
+  SetLastReadCount(totalReadCount);
   return true;
 }
 

@@ -310,7 +310,7 @@ PVideoOutputDevice_SDL::PVideoOutputDevice_SDL()
   , m_x(0)
   , m_y(0)
 {
-  colourFormat = PVideoFrameInfo::YUV420P();
+  m_colourFormat = PVideoFrameInfo::YUV420P();
   PTRACE(5, "Constructed.");
 }
 
@@ -338,7 +338,7 @@ PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImme
 {
   Close();
 
-  deviceName = name;
+  m_deviceName = name;
 
   PSDL_Window::GetInstance().Run();
   PostEvent(PSDL_Window::e_AddDevice, true);
@@ -373,7 +373,7 @@ PBoolean PVideoOutputDevice_SDL::SetColourFormat(const PString & colourFormat)
 
 PBoolean PVideoOutputDevice_SDL::SetFrameSize(unsigned width, unsigned height)
 {
-  if (width == frameWidth && height == frameHeight)
+  if (width == m_frameWidth && height == m_frameHeight)
     return true;
 
   if (!PVideoOutputDevice::SetFrameSize(width, height))
@@ -388,7 +388,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameSize(unsigned width, unsigned height)
 
 PINDEX PVideoOutputDevice_SDL::GetMaxFrameBytes()
 {
-  return GetMaxFrameBytesConverted(CalculateFrameBytes(frameWidth, frameHeight, colourFormat));
+  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
 }
 
 
@@ -400,22 +400,22 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
   if (!IsOpen())
     return false;
 
-  if (x != 0 || y != 0 || width != frameWidth || height != frameHeight || data == NULL || !endFrame)
+  if (x != 0 || y != 0 || width != m_frameWidth || height != m_frameHeight || data == NULL || !endFrame)
     return false;
 
   PWaitAndSignal mutex(PSDL_Window::GetInstance());
 
   ::SDL_LockYUVOverlay(m_overlay);
 
-  PAssert(frameWidth == (unsigned)m_overlay->w && frameHeight == (unsigned)m_overlay->h, PLogicError);
-  PINDEX pixelsFrame = frameWidth * frameHeight;
+  PAssert(m_frameWidth == (unsigned)m_overlay->w && m_frameHeight == (unsigned)m_overlay->h, PLogicError);
+  PINDEX pixelsFrame = m_frameWidth * m_frameHeight;
   PINDEX pixelsQuartFrame = pixelsFrame >> 2;
 
   const BYTE * dataPtr = data;
 
   PBYTEArray tempStore;
-  if (converter != NULL) {
-    converter->Convert(data, tempStore.GetPointer(pixelsFrame+2*pixelsQuartFrame));
+  if (m_converter != NULL) {
+    m_converter->Convert(data, tempStore.GetPointer(pixelsFrame+2*pixelsQuartFrame));
     dataPtr = tempStore;
   }
 
@@ -432,11 +432,11 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
 
 PString PVideoOutputDevice_SDL::GetTitle() const
 {
-  PINDEX pos = deviceName.Find("TITLE=\"");
+  PINDEX pos = m_deviceName.Find("TITLE=\"");
   if (pos != P_MAX_INDEX) {
     pos += 6;
-    PINDEX quote = deviceName.FindLast('"');
-    return PString(PString::Literal, deviceName(pos, quote > pos ? quote : P_MAX_INDEX));
+    PINDEX quote = m_deviceName.FindLast('"');
+    return PString(PString::Literal, m_deviceName(pos, quote > pos ? quote : P_MAX_INDEX));
   }
 
   return "Video Output";
@@ -451,8 +451,8 @@ void PVideoOutputDevice_SDL::UpdateContent()
   SDL_Rect rect;
   rect.x = (Uint16)m_x;
   rect.y = (Uint16)m_y;
-  rect.w = (Uint16)frameWidth;
-  rect.h = (Uint16)frameHeight;
+  rect.w = (Uint16)m_frameWidth;
+  rect.h = (Uint16)m_frameHeight;
   ::SDL_DisplayYUVOverlay(m_overlay, &rect);
 }
 
@@ -462,13 +462,13 @@ void PVideoOutputDevice_SDL::CreateOverlay(struct SDL_Surface * surface)
   if (m_overlay != NULL)
     return;
 
-  m_overlay = ::SDL_CreateYUVOverlay(frameWidth, frameHeight, SDL_IYUV_OVERLAY, surface);
+  m_overlay = ::SDL_CreateYUVOverlay(m_frameWidth, m_frameHeight, SDL_IYUV_OVERLAY, surface);
   if (m_overlay == NULL) {
     PTRACE(1, "Couldn't create SDL overlay: " << ::SDL_GetError());
     return;
   }
 
-  PINDEX sz = frameWidth*frameHeight;
+  PINDEX sz = m_frameWidth*m_frameHeight;
   memset(m_overlay->pixels[0], 0, sz);
   sz /= 4;
   memset(m_overlay->pixels[1], 0x80, sz);

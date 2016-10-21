@@ -1571,8 +1571,8 @@ ostream & PArgList::Usage(ostream & strm, const char * usage, const char * prefi
       strm << '\n';
     else {
       strm << "  : " << lines[0] << '\n';
-      for (PINDEX i = 1; i < lines.GetSize(); ++i)
-        strm << setw(maxNameLength+14) << ' ' << lines[i] << '\n';
+      for (PINDEX j = 1; j < lines.GetSize(); ++j)
+        strm << setw(maxNameLength+14) << ' ' << lines[j] << '\n';
     }
   }
 

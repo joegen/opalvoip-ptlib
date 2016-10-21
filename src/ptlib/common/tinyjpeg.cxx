@@ -357,20 +357,20 @@ static void process_Huffman_data_unit(struct jdec_private *priv, int component)
   unsigned int huff_code;
   unsigned char size_val, count_0;
 
-  struct component *c = &priv->component_infos[component];
+  struct component *comp = &priv->component_infos[component];
   short int DCT[64];
 
   /* Initialize the DCT coef table */
   memset(DCT, 0, sizeof(DCT));
 
   /* DC coefficient decoding */
-  huff_code = get_next_huffman_code(priv, c->DC_table);
+  huff_code = get_next_huffman_code(priv, comp->DC_table);
   if (huff_code) {
      get_nbits(priv->reservoir, priv->nbits_in_reservoir, priv->stream, huff_code, DCT[0]);
-     DCT[0] += c->previous_DC;
-     c->previous_DC = DCT[0];
+     DCT[0] += comp->previous_DC;
+     comp->previous_DC = DCT[0];
   } else {
-     DCT[0] = c->previous_DC;
+     DCT[0] = comp->previous_DC;
   }
 
 
@@ -378,7 +378,7 @@ static void process_Huffman_data_unit(struct jdec_private *priv, int component)
   j = 1;
   while (j<64)
    {
-     huff_code = get_next_huffman_code(priv, c->AC_table);
+     huff_code = get_next_huffman_code(priv, comp->AC_table);
 
      size_val = huff_code & 0xF;
      count_0 = huff_code >> 4;
@@ -400,7 +400,7 @@ static void process_Huffman_data_unit(struct jdec_private *priv, int component)
 
   for (j = 0; j < 64; j++)
 #ifndef P_MEDIALIB
-    c->DCT[j] = DCT[zigzag[j]];
+    comp->DCT[j] = DCT[zigzag[j]];
 #else
   {
     c->DCT[j] = DCT[zigzag[j]] * c->Q_table[j];

@@ -448,14 +448,14 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
 
   // Sort so we have unique sizes from largest to smallest
   for (std::set<PVideoFrameInfo, std::greater<PVideoFrameInfo> >::iterator it = fsizes.begin(); it != fsizes.end(); ++it) {
-    PTRACE(5, "Format["<< caps->framesizes.size() << "] = " << *it);
-    caps->framesizes.push_back(*it);
+    PTRACE(5, "Format["<< caps->m_frameSizes.size() << "] = " << *it);
+    caps->m_frameSizes.push_back(*it);
   }
 
 #ifndef _WIN32_WCE
   for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
     if (m_controlInfo[type].IsValid())
-      caps->controls.push_back(m_controlInfo[type]);
+      caps->m_controls.push_back(m_controlInfo[type]);
   }
 #endif
 
@@ -500,21 +500,21 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
         (
           useDefaultColourOrSize >= 2 ||
           (
-            scc.MinOutputSize.cx <= (LONG)frameWidth  && (LONG)frameWidth  <= scc.MaxOutputSize.cx &&
-            scc.MinOutputSize.cy <= (LONG)frameHeight && (LONG)frameHeight <= scc.MaxOutputSize.cy &&
+            scc.MinOutputSize.cx <= (LONG)m_frameWidth  && (LONG)m_frameWidth  <= scc.MaxOutputSize.cx &&
+            scc.MinOutputSize.cy <= (LONG)m_frameHeight && (LONG)m_frameHeight <= scc.MaxOutputSize.cy &&
             (
               useDefaultColourOrSize >= 1 ||
-              GUID2Format(pMediaFormat->subtype) == colourFormat
+              GUID2Format(pMediaFormat->subtype) == m_colourFormat
             )
           )
         )) {
       VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER *)pMediaFormat->pbFormat;
 
       if (useDefaultColourOrSize >= 1) {
-        colourFormat = GUID2Format(pMediaFormat->subtype);
+        m_colourFormat = GUID2Format(pMediaFormat->subtype);
         if (useDefaultColourOrSize >= 2) {
-          frameWidth = scc.MaxOutputSize.cx;
-          frameHeight = scc.MaxOutputSize.cy;
+          m_frameWidth = scc.MaxOutputSize.cx;
+          m_frameHeight = scc.MaxOutputSize.cy;
           PTRACE(3, "Camera format forced resolution to " << *this);
         }
         else
@@ -522,11 +522,11 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
       }
 
       m_selectedGUID = pMediaFormat->subtype;
-      m_maxFrameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
-      m_fixedSizeFrames = colourFormat.Find("JPEG") == P_MAX_INDEX;
+      m_maxFrameBytes = CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat);
+      m_fixedSizeFrames = m_colourFormat.Find("JPEG") == P_MAX_INDEX;
 
-      if (pVih->bmiHeader.biHeight > 0 && colourFormat.NumCompare("BGR") == EqualTo) {
-        nativeVerticalFlip = true;
+      if (pVih->bmiHeader.biHeight > 0 && m_colourFormat.NumCompare("BGR") == EqualTo) {
+        m_nativeVerticalFlip = true;
         PTRACE(3, "Image up side down");
       }
 
@@ -534,9 +534,9 @@ bool PVideoInputDevice_DirectShow::SetPinFormat(unsigned useDefaultColourOrSize)
       if (running)
         PCOM_RETURN_ON_FAILED(m_pMediaControl->Stop,());
 
-      pVih->AvgTimePerFrame = 10000000 / frameRate;
-      pVih->bmiHeader.biWidth = frameWidth;
-      pVih->bmiHeader.biHeight = pVih->bmiHeader.biHeight < 0 ? -(LONG)frameHeight : frameHeight;
+      pVih->AvgTimePerFrame = 10000000 / m_frameRate;
+      pVih->bmiHeader.biWidth = m_frameWidth;
+      pVih->bmiHeader.biHeight = pVih->bmiHeader.biHeight < 0 ? -(LONG)m_frameHeight : m_frameHeight;
       pVih->bmiHeader.biSizeImage = m_maxFrameBytes;
       PCOM_RETURN_ON_FAILED(pStreamConfig->SetFormat,(pMediaFormat));
 
@@ -618,7 +618,7 @@ PBoolean PVideoInputDevice_DirectShow::Open(const PString & devName,
     Start();
 
   PTRACE(4, "Device " << devName << " opened as " << this);
-  deviceName = devName;
+  m_deviceName = devName;
   return true;
 }
 
@@ -716,10 +716,10 @@ PBoolean PVideoInputDevice_DirectShow::IsCapturing()
 
 PBoolean PVideoInputDevice_DirectShow::SetColourFormat(const PString & newColourFormat)
 {
-  if (colourFormat == newColourFormat)
+  if (m_colourFormat == newColourFormat)
     return true;
 
-  PString oldColourFormat = colourFormat;
+  PString oldColourFormat = m_colourFormat;
 
   if (!PVideoDevice::SetColourFormat(newColourFormat))
     return false;
@@ -734,10 +734,10 @@ PBoolean PVideoInputDevice_DirectShow::SetColourFormat(const PString & newColour
 
 PBoolean PVideoInputDevice_DirectShow::SetFrameRate(unsigned newRate)
 {
-  if (frameRate == newRate)
+  if (m_frameRate == newRate)
     return true;
 
-  unsigned oldRate = frameRate;
+  unsigned oldRate = m_frameRate;
 
   if (!PVideoDevice::SetFrameRate(newRate))
     return false;
@@ -752,11 +752,11 @@ PBoolean PVideoInputDevice_DirectShow::SetFrameRate(unsigned newRate)
 
 PBoolean PVideoInputDevice_DirectShow::SetFrameSize(unsigned width, unsigned height)
 {
-  if (frameWidth == width && frameHeight == height)
+  if (m_frameWidth == width && m_frameHeight == height)
     return true;
 
-  unsigned oldWidth = frameWidth;
-  unsigned oldHeight = frameHeight;
+  unsigned oldWidth = m_frameWidth;
+  unsigned oldHeight = m_frameHeight;
 
   if (!PVideoDevice::SetFrameSize(width, height))
     return false;
@@ -794,7 +794,7 @@ bool PVideoInputDevice_DirectShow::FlowControl(const void * flowData)
 
 PINDEX PVideoInputDevice_DirectShow::GetMaxFrameBytes()
 {
-  return GetMaxFrameBytesConverted(CalculateFrameBytes(frameWidth, frameHeight, colourFormat));
+  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
 }
 
 PBoolean PVideoInputDevice_DirectShow::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
@@ -807,13 +807,13 @@ PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PIN
   PWaitAndSignal mutex(m_lastFrameMutex);
 
   PINDEX bufferSize = GetCurrentBufferSize();
-  PTRACE(6, "Grabbing Frame " << frameWidth << 'x' << frameHeight << " (" << bufferSize << ')');
+  PTRACE(6, "Grabbing Frame " << m_frameWidth << 'x' << m_frameHeight << " (" << bufferSize << ')');
 
-  if (converter != NULL) {
+  if (m_converter != NULL) {
     if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize), bufferSize))
       return false;
-    converter->SetSrcFrameBytes(bufferSize);
-    if (!converter->Convert(m_tempFrame, destFrame, bytesReturned))
+    m_converter->SetSrcFrameBytes(bufferSize);
+    if (!m_converter->Convert(m_tempFrame, destFrame, bytesReturned))
       return false;
   }
   else {
@@ -1523,7 +1523,7 @@ bool PVideoInputDevice_DirectShow::PlatformOpen()
 
   // Query for camera controls
   if (FAILED(m_pCaptureFilter->QueryInterface(IID_IAMCameraControl, (void **)&m_pCameraControls))) {
-    PTRACE(3, "Camera " << deviceName << " does not support Camera Controls.");
+    PTRACE(3, "Camera " << m_deviceName << " does not support Camera Controls.");
     m_pCameraControls = NULL;
   }
   else {

@@ -131,7 +131,7 @@ PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*s
 
   *static_cast<PVideoFrameInfo *>(this) = *m_file;
 
-  deviceName = m_file->GetFilePath();
+  m_deviceName = m_file->GetFilePath();
   m_opened = true;
   return true;
 }
@@ -149,7 +149,7 @@ PBoolean PVideoInputDevice_VideoFile::Close()
 
   PBoolean ok = m_file != NULL && m_file->Close();
 
-  PThread::Sleep(1000/frameRate);
+  PThread::Sleep(1000/m_frameRate);
 
   delete m_file;
   m_file = NULL;
@@ -213,7 +213,7 @@ PStringArray PVideoInputDevice_VideoFile::GetChannelNames()
 
 PBoolean PVideoInputDevice_VideoFile::SetColourFormat(const PString & newFormat)
 {
-  return (colourFormat *= newFormat);
+  return (m_colourFormat *= newFormat);
 }
 
 
@@ -266,7 +266,7 @@ PINDEX PVideoInputDevice_VideoFile::GetMaxFrameBytes()
 
 PBoolean PVideoInputDevice_VideoFile::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  m_pacing.Delay(1000/frameRate);
+  m_pacing.Delay(1000/m_frameRate);
 
   if (!m_opened || PAssertNULL(m_file) == NULL) {
     PTRACE(5, "VidFileDev\tAbort GetFrameData, closed.");
@@ -276,19 +276,19 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameData(BYTE * buffer, PINDEX * bytes
   off_t frameNumber = m_file->GetPosition();
 
   unsigned fileRate = m_file->GetFrameRate();
-  if (fileRate > frameRate) {
+  if (fileRate > m_frameRate) {
     m_frameRateAdjust += fileRate;
-    while (m_frameRateAdjust > frameRate) {
-      m_frameRateAdjust -= frameRate;
+    while (m_frameRateAdjust > m_frameRate) {
+      m_frameRateAdjust -= m_frameRate;
       ++frameNumber;
     }
     --frameNumber;
   }
-  else if (fileRate < frameRate) {
-    if (m_frameRateAdjust < frameRate)
+  else if (fileRate < m_frameRate) {
+    if (m_frameRateAdjust < m_frameRate)
       m_frameRateAdjust += fileRate;
     else {
-      m_frameRateAdjust -= frameRate;
+      m_frameRateAdjust -= m_frameRate;
       --frameNumber;
     }
   }
@@ -307,7 +307,7 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
     return false;
   }
 
-  BYTE * readBuffer = converter != NULL ? frameStore.GetPointer(m_file->GetFrameBytes()) : frame;
+  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(m_file->GetFrameBytes()) : frame;
 
   if (m_file->IsOpen()) {
     if (!m_file->ReadFrame(readBuffer))
@@ -315,14 +315,14 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
   }
 
   if (!m_file->IsOpen()) {
-    switch (channelNumber) {
+    switch (m_channelNumber) {
       case Channel_PlayAndClose:
       default:
         PTRACE(4, "VidFileDev\tCompleted play and close of " << m_file->GetFilePath());
         return false;
 
       case Channel_PlayAndRepeat:
-        m_file->Open(deviceName, PFile::ReadOnly, PFile::MustExist);
+        m_file->Open(m_deviceName, PFile::ReadOnly, PFile::MustExist);
         if (!m_file->SetPosition(0)) {
           PTRACE(2, "VidFileDev\tCould not rewind " << m_file->GetFilePath());
           return false;
@@ -338,27 +338,27 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
       case Channel_PlayAndShowBlack:
         PTRACE(4, "VidFileDev\tCompleted play and show black of " << m_file->GetFilePath());
         PColourConverter::FillYUV420P(0, 0,
-                                      frameWidth, frameHeight,
-                                      frameWidth, frameHeight,
+                                      m_frameWidth, m_frameHeight,
+                                      m_frameWidth, m_frameHeight,
                                       readBuffer,
                                       100, 100, 100);
         break;
     }
   }
 
-  if (converter == NULL) {
+  if (m_converter == NULL) {
     if (bytesReturned != NULL)
       *bytesReturned = m_file->GetFrameBytes();
   }
   else {
-    converter->SetSrcFrameSize(frameWidth, frameHeight);
-    if (!converter->Convert(readBuffer, frame, bytesReturned)) {
-      PTRACE(2, "VidFileDev\tConversion failed with " << *converter);
+    m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
+    if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
+      PTRACE(2, "VidFileDev\tConversion failed with " << *m_converter);
       return false;
     }
 
     if (bytesReturned != NULL)
-      *bytesReturned = converter->GetMaxDstFrameBytes();
+      *bytesReturned = m_converter->GetMaxDstFrameBytes();
   }
 
   return true;
@@ -415,7 +415,7 @@ PBoolean PVideoOutputDevice_VideoFile::Open(const PString & devName, PBoolean /*
     return false;
   }
 
-  deviceName = m_file->GetFilePath();
+  m_deviceName = m_file->GetFilePath();
   m_opened = true;
   return true;
 }
@@ -436,7 +436,7 @@ PBoolean PVideoOutputDevice_VideoFile::Close()
 
 PBoolean PVideoOutputDevice_VideoFile::Start()
 {
-  return m_file != NULL && m_file->SetFrameSize(frameHeight, frameWidth);
+  return m_file != NULL && m_file->SetFrameSize(m_frameHeight, m_frameWidth);
 }
 
 PBoolean PVideoOutputDevice_VideoFile::Stop()
@@ -470,7 +470,7 @@ PBoolean PVideoOutputDevice_VideoFile::SetColourFormat(const PString & newFormat
 
 PINDEX PVideoOutputDevice_VideoFile::GetMaxFrameBytes()
 {
-  return GetMaxFrameBytesConverted(CalculateFrameBytes(frameWidth, frameHeight, colourFormat));
+  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
 }
 
 
@@ -484,7 +484,7 @@ PBoolean PVideoOutputDevice_VideoFile::SetFrameData(unsigned x, unsigned y,
     return false;
   }
 
-  if (x != 0 || y != 0 || width != frameWidth || height != frameHeight) {
+  if (x != 0 || y != 0 || width != m_frameWidth || height != m_frameHeight) {
     PTRACE(1, "VideoFile\tOutput device only supports full frame writes");
     return false;
   }
@@ -492,11 +492,11 @@ PBoolean PVideoOutputDevice_VideoFile::SetFrameData(unsigned x, unsigned y,
   if (!m_file->SetFrameSize(width, height))
     return false;
 
-  if (converter == NULL)
+  if (m_converter == NULL)
     return m_file->WriteFrame(data);
 
-  converter->Convert(data, frameStore.GetPointer(GetMaxFrameBytes()));
-  return m_file->WriteFrame(frameStore);
+  m_converter->Convert(data, m_frameStore.GetPointer(GetMaxFrameBytes()));
+  return m_file->WriteFrame(m_frameStore);
 }
 
 

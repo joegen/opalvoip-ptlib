@@ -1114,11 +1114,11 @@ bool PIPSocket::SetQoS(const QoS & qos)
     }
 
     if (qos.m_transmit.m_maxBandwidth > 0) {
-      QOS_FLOWRATE_OUTGOING out;
-      out.Bandwidth = qos.m_transmit.m_maxBandwidth;
-      out.ShapingBehavior = QOSUseNonConformantMarkings;
-      out.Reason = QOSFlowRateNotApplicable;
-      if (!QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetOutgoingRate, sizeof(out), &out, 0, NULL)) {
+      QOS_FLOWRATE_OUTGOING outQoS;
+	  outQoS.Bandwidth = qos.m_transmit.m_maxBandwidth;
+	  outQoS.ShapingBehavior = QOSUseNonConformantMarkings;
+	  outQoS.Reason = QOSFlowRateNotApplicable;
+      if (!QOSSetFlow(PWinSock::GetInstance().m_hQoS, m_qosFlowId, QOSSetOutgoingRate, sizeof(outQoS), &outQoS, 0, NULL)) {
         PTRACE(2, "Could not set QoS rates, error=" << ::GetLastError());
       }
     }

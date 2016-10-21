@@ -213,7 +213,7 @@ PBoolean PASN_Choice::DecodeXER(PXER_Stream & strm)
   {
     if (choice_elem->GetName() == names[i].name)
     {
-      tag = names[i].value;
+      m_tag = names[i].value;
       if (!CreateObject())
         return false;
       strm.SetCurrentElement(choice_elem);

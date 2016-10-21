@@ -72,14 +72,14 @@ class PHTTPField : public PObject
        @return
        String for field name.
      */
-    const PCaselessString & GetName() const { return fullName; }
+    const PCaselessString & GetName() const { return m_fullName; }
 
     /** Get the identifier name of the field.
 
        @return
        String for field name.
      */
-    const PCaselessString & GetBaseName() const { return baseName; }
+    const PCaselessString & GetBaseName() const { return m_baseName; }
 
     /** Set the name for the field.
      */
@@ -101,18 +101,18 @@ class PHTTPField : public PObject
        @return
        String for title placed next to the field.
      */
-    const PString & GetTitle() const { return title; }
+    const PString & GetTitle() const { return m_title; }
 
     /** Get the title of the field.
 
        @return
        String for title placed next to the field.
      */
-    const PString & GetHelp() const { return help; }
+    const PString & GetHelp() const { return m_help; }
 
     void SetHelp(
       const PString & text        // Help text.
-    ) { help = text; }
+    ) { m_help = text; }
     void SetHelp(
       const PString & hotLinkURL, // URL for link to help page.
       const PString & linkText    // Help text in the link.
@@ -221,15 +221,15 @@ class PHTTPField : public PObject
     ) const;
 
 
-    PBoolean NotYetInHTML() const { return notInHTML; }
-    void SetInHTML() { notInHTML = false; }
+    PBoolean NotYetInHTML() const { return m_notInHTML; }
+    void SetInHTML() { m_notInHTML = false; }
 
   protected:
-    PCaselessString baseName;
-    PCaselessString fullName;
-    PString title;
-    PString help;
-    PBoolean notInHTML;
+    PCaselessString m_baseName;
+    PCaselessString m_fullName;
+    PString         m_title;
+    PString         m_help;
+    bool            m_notInHTML;
 };
 
 
@@ -304,12 +304,12 @@ class PHTTPCompositeField : public PHTTPField
     virtual PINDEX GetSize() const;
 
     void Append(PHTTPField * fld);
-    PHTTPField & operator[](PINDEX idx) const { return fields[idx]; }
-    void RemoveAt(PINDEX idx) { fields.RemoveAt(idx); }
-    void RemoveAll() { fields.RemoveAll(); }
+    PHTTPField & operator[](PINDEX idx) const { return m_fields[idx]; }
+    void RemoveAt(PINDEX idx) { m_fields.RemoveAt(idx); }
+    void RemoveAll() { m_fields.RemoveAll(); }
 
   protected:
-    PHTTPFields fields;
+    PHTTPFields m_fields;
     bool        m_includeHeaders;
 };
 
@@ -331,9 +331,9 @@ class PHTTPSubForm : public PHTTPCompositeField
   void GetHTMLHeading(PHTML & html) const;
 
   protected:
-    PString subFormName;
-    PINDEX primary;
-    PINDEX secondary;
+    PString m_subFormName;
+    PINDEX  m_primary;
+    PINDEX  m_secondary;
 };
 
 
@@ -388,9 +388,9 @@ class PHTTPFieldArray : public PHTTPCompositeField
     void AddArrayControlBox(PHTML & html, PINDEX fld) const;
     void SetArrayFieldName(PINDEX idx) const;
 
-    PHTTPField * baseField;
-    PBoolean orderedArray;
-    PBoolean canAddElements;
+    PHTTPField * m_baseField;
+    bool         m_orderedArray;
+    bool         m_canAddElements;
 };
 
 
@@ -430,11 +430,11 @@ class PHTTPStringField : public PHTTPField
 
 
   protected:
-    PString value;
-    PString initialValue;
-    PINDEX maxLength;
-    int rows;
-    int columns;
+    PString m_value;
+    PString m_initialValue;
+    PINDEX  m_maxLength;
+    int     m_rows;
+    int     m_columns;
 };
 
 
@@ -544,9 +544,9 @@ class PHTTPIntegerField : public PHTTPField
 
 
   protected:
-    int low, high, value;
-    int initialValue;
-    PString units;
+    int m_low, m_high, m_value;
+    int m_initialValue;
+    PString m_units;
 };
 
 
@@ -591,7 +591,7 @@ class PHTTPBooleanField : public PHTTPField
 
 
   protected:
-    PBoolean value, initialValue;
+    bool m_value, m_initialValue;
 };
 
 
@@ -678,10 +678,10 @@ class PHTTPRadioField : public PHTTPField
 
 
   protected:
-    PStringArray values;
-    PStringArray titles;
-    PString value;
-    PString initialValue;
+    PStringArray m_values;
+    PStringArray m_titles;
+    PString      m_value;
+    PString      m_initialValue;
 };
 
 
@@ -778,7 +778,7 @@ class PHTTPEnumField : public PHTTPSelectField
       const char * help = NULL
     ) : PHTTPSelectField(name, title, count, valueStrings, initVal, help, true) { }
 
-    virtual PHTTPField * NewField() const { return new PHTTPEnumField(baseName, title, m_values, (Enumeration)m_initialValue, help); }
+    virtual PHTTPField * NewField() const { return new PHTTPEnumField(m_baseName, m_title, m_values, (Enumeration)m_initialValue, m_help); }
 };
 
 
@@ -822,7 +822,10 @@ class PHTTPForm : public PHTTPString
       PHTTPField * fld
     );
     void RemoveAllFields()
-      { fields.RemoveAll(); fieldNames.RemoveAll(); }
+    {
+      m_fields.RemoveAll();
+      m_fieldNames.RemoveAll();
+    }
 
     enum BuildOptions {
       CompleteHTML,
@@ -843,8 +846,8 @@ class PHTTPForm : public PHTTPString
 
 
   protected:
-    PHTTPCompositeField fields;
-    PStringSet fieldNames;
+    PHTTPCompositeField m_fields;
+    PStringSet          m_fieldNames;
 };
 
 
@@ -896,11 +899,11 @@ class PHTTPConfig : public PHTTPForm
        @return
        String for config file section.
      */
-    const PString & GetConfigSection() const { return section; }
+    const PString & GetConfigSection() const { return m_section; }
 
     void SetConfigSection(
       const PString & sect   ///< New section for the config page.
-    ) { section = sect; }
+    ) { m_section = sect; }
     // Set the configuration file section.
 
     /** Add a field that will determine the name opf the secontion into which
@@ -990,12 +993,12 @@ class PHTTPConfig : public PHTTPForm
     );
 
   protected:
-    PString section;
-    PString sectionPrefix;
-    PString sectionSuffix;
-    PHTTPField * sectionField;
-    PHTTPField * keyField;
-    PHTTPField * valField;
+    PString      m_section;
+    PString      m_sectionPrefix;
+    PString      m_sectionSuffix;
+    PHTTPField * m_sectionField;
+    PHTTPField * m_keyField;
+    PHTTPField * m_valField;
 
   private:
     void Construct();
@@ -1031,11 +1034,11 @@ class PHTTPConfigSectionList : public PHTTPString
     );
 
   protected:
-    PString sectionPrefix;
-    PString additionalValueName;
-    PString newSectionLink;
-    PString newSectionTitle;
-    PString editSectionLink;
+    PString m_sectionPrefix;
+    PString m_additionalValueName;
+    PString m_newSectionLink;
+    PString m_newSectionTitle;
+    PString m_editSectionLink;
 };
 
 

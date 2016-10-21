@@ -46,14 +46,14 @@
 //  FTPServer
 
 PFTPServer::PFTPServer()
-  : readyString(PIPSocket::GetHostName() & READY_STRING)
+  : m_readyString(PIPSocket::GetHostName() & READY_STRING)
 {
   Construct();
 }
 
 
 PFTPServer::PFTPServer(const PString & readyStr)
-  : readyString(readyStr)
+  : m_readyString(readyStr)
 {
   Construct();
 }
@@ -61,19 +61,19 @@ PFTPServer::PFTPServer(const PString & readyStr)
 
 void PFTPServer::Construct()
 {
-  thirdPartyPort = false;
-  illegalPasswordCount = 0;
-  state     = NotConnected;
-  type      = 'A';
-  structure = 'F';
-  mode      = 'S';
-  passiveSocket = NULL;
+  m_thirdPartyPort = false;
+  m_illegalPasswordCount = 0;
+  m_state     = NotConnected;
+  m_type      = 'A';
+  m_structure = 'F';
+  m_mode      = 'S';
+  m_passiveSocket = NULL;
 }
 
 
 PFTPServer::~PFTPServer()
 {
-  delete passiveSocket;
+  delete m_passiveSocket;
 }
 
 
@@ -84,11 +84,11 @@ PBoolean PFTPServer::OnOpen()
   if (socket == NULL)
     return false;
 
-  state = NeedUser;
-  if (!WriteResponse(220, readyString))
+  m_state = NeedUser;
+  if (!WriteResponse(220, m_readyString))
     return false;
 
-  socket->GetPeerAddress(remoteHost, remotePort);
+  socket->GetPeerAddress(m_remoteHost, m_remotePort);
   return true;
 }
 
@@ -128,7 +128,7 @@ PBoolean PFTPServer::ProcessCommand()
     return OnUnknown(args);
 
   //  handle commands that require login
-  if (state == Connected || !CheckLoginRequired(code)) 
+  if (m_state == Connected || !CheckLoginRequired(code))
     return DispatchCommand(code, args);
   
   // otherwise enforce login
@@ -300,8 +300,8 @@ void PFTPServer::OnCommandSuccessful(PINDEX cmdNum)
 
 PBoolean PFTPServer::OnUSER(const PCaselessString & args)
 {
-  userName = args;
-  state    = NeedPassword;
+  m_userName = args;
+  m_state    = NeedPassword;
   WriteResponse(331, "Password required for " + args + ".");
   return true;
 }
@@ -309,19 +309,19 @@ PBoolean PFTPServer::OnUSER(const PCaselessString & args)
 
 PBoolean PFTPServer::OnPASS(const PCaselessString & args)
 {
-  PBoolean replied = false;
-  if (state != NeedPassword) 
+  bool replied = false;
+  if (m_state != NeedPassword)
     WriteResponse(503, "Login with USER first.");
-  else if (!AuthoriseUser(userName, args, replied)) {
+  else if (!AuthoriseUser(m_userName, args, replied)) {
     if (!replied)
       WriteResponse(530, "Login incorrect.");
-    if (illegalPasswordCount++ == MaxIllegalPasswords)
+    if (m_illegalPasswordCount++ == MaxIllegalPasswords)
       return false;
   } else {
     if (!replied)
-      WriteResponse(230, GetHelloString(userName));
-    illegalPasswordCount = 0;
-    state = Connected;
+      WriteResponse(230, GetHelloString(m_userName));
+    m_illegalPasswordCount = 0;
+    m_state = Connected;
   }
   return true;
 }
@@ -354,15 +354,15 @@ PBoolean PFTPServer::OnPORT(const PCaselessString & args)
     if (socket == NULL)
       OnError(590, PORT, "not available on non-TCP transport.");
     else {
-      remoteHost = PIPSocket::Address((BYTE)values[0],
+      m_remoteHost = PIPSocket::Address((BYTE)values[0],
                               (BYTE)values[1], (BYTE)values[2], (BYTE)values[3]);
-      remotePort = (WORD)(values[4]*256 + values[5]);
-      if (remotePort < 1024 && remotePort != socket->GetPort()-1)
+      m_remotePort = (WORD)(values[4]*256 + values[5]);
+      if (m_remotePort < 1024 && m_remotePort != socket->GetPort()-1)
         OnError(590, PORT, "cannot access privileged port number.");
       else {
         PIPSocket::Address controlHost;
         GetSocket()->GetPeerAddress(controlHost);
-        if (thirdPartyPort || remoteHost == controlHost)
+        if (m_thirdPartyPort || m_remoteHost == controlHost)
           OnCommandSuccessful(PORT);
         else
           OnError(591, PORT, "three way transfer not allowed.");
@@ -375,13 +375,13 @@ PBoolean PFTPServer::OnPORT(const PCaselessString & args)
 
 PBoolean PFTPServer::OnPASV(const PCaselessString &)
 {
-  if (passiveSocket != NULL)
-    delete passiveSocket;
+  if (m_passiveSocket != NULL)
+    delete m_passiveSocket;
 
-  passiveSocket = new PTCPSocket;
-  passiveSocket->Listen();
+  m_passiveSocket = new PTCPSocket;
+  m_passiveSocket->Listen();
 
-  WORD portNo = passiveSocket->GetPort();
+  WORD portNo = m_passiveSocket->GetPort();
   PIPSocket::Address ourAddr;
   PIPSocket * socket = GetSocket();
   if (socket != NULL)
@@ -405,10 +405,10 @@ PBoolean PFTPServer::OnTYPE(const PCaselessString & args)
   else {
     switch (toupper(args[0])) {
       case 'A':
-        type = 'A';
+        m_type = 'A';
         break;
       case 'I':
-        type = 'I';
+        m_type = 'I';
         break;
       case 'E':
       case 'L':
@@ -432,7 +432,7 @@ PBoolean PFTPServer::OnMODE(const PCaselessString & args)
   else {
     switch (toupper(args[0])) {
       case 'S':
-        structure = 'S';
+        m_structure = 'S';
         break;
       case 'B':
       case 'C':
@@ -455,7 +455,7 @@ PBoolean PFTPServer::OnSTRU(const PCaselessString & args)
   else {
     switch (toupper(args[0])) {
       case 'F':
-        structure = 'F';
+        m_structure = 'F';
         break;
       case 'R':
       case 'P':
@@ -654,16 +654,16 @@ void PFTPServer::SendToClient(const PFilePath & filename)
     WriteResponse(450, filename + ": file not found");
   else {
     PTCPSocket * dataSocket;
-    if (passiveSocket != NULL) {
-      dataSocket = new PTCPSocket(*passiveSocket);
-      delete passiveSocket;
-      passiveSocket = NULL;
+    if (m_passiveSocket != NULL) {
+      dataSocket = new PTCPSocket(*m_passiveSocket);
+      delete m_passiveSocket;
+      m_passiveSocket = NULL;
     } else
-      dataSocket = new PTCPSocket(remoteHost, remotePort);
+      dataSocket = new PTCPSocket(m_remoteHost, m_remotePort);
     if (!dataSocket->IsOpen())
       WriteResponse(425, "Cannot open data connection");
     else {
-      if (type == 'A') {
+      if (m_type == 'A') {
         PTextFile file(filename, PFile::ReadOnly);
         if (!file.IsOpen())
           WriteResponse(450, filename + ": cannot open file");

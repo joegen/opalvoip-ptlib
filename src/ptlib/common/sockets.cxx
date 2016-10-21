@@ -773,8 +773,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 // PSocket
 
 PSocket::PSocket()
+  : m_port(0)
 {
-  port = 0;
 }
 
 
@@ -918,26 +918,26 @@ PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 void PSocket::SetPort(WORD newPort)
 {
   PAssert(!IsOpen(), "Cannot change port number of opened socket");
-  port = newPort;
+  m_port = newPort;
 }
 
 
 void PSocket::SetPort(const PString & service)
 {
   PAssert(!IsOpen(), "Cannot change port number of opened socket");
-  port = GetPortByService(service);
+  m_port = GetPortByService(service);
 }
 
 
 WORD PSocket::GetPort() const
 {
-  return port;
+  return m_port;
 }
 
 
 PString PSocket::GetService() const
 {
-  return GetServiceByPort(port);
+  return GetServiceByPort(m_port);
 }
 
 
@@ -1349,9 +1349,9 @@ PBoolean PIPSocket::Connect(const Address & iface, WORD localPort, const Address
     Close();
 
   // make sure we have a port
-  PAssert(port != 0, "Cannot connect socket without setting port");
+  PAssert(m_port != 0, "Cannot connect socket without setting port");
 
-  PIPSocket::sockaddr_wrapper sa(addr, port);
+  PIPSocket::sockaddr_wrapper sa(addr, m_port);
 
   // attempt to create a socket with the right family
   if (!OpenSocket(sa->sa_family)) {
@@ -1396,9 +1396,9 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
 
   // make sure we have a port
   if (newPort != 0)
-    port = newPort;
+    m_port = newPort;
 
-  PIPSocket::sockaddr_wrapper sa(bindAddr, port);
+  PIPSocket::sockaddr_wrapper sa(bindAddr, m_port);
 
   // Always close and re-open as the bindAddr address family might change.
   os_close();
@@ -1430,7 +1430,7 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
     return false;
   }
 
-  if (port != 0)
+  if (m_port != 0)
     return true;
 
   socklen_t size = sa.GetSize();
@@ -1440,7 +1440,7 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
     return false;
   }
 
-  port = sa.GetPort();
+  m_port = sa.GetPort();
   return true;
 }
 
@@ -2276,7 +2276,7 @@ PTCPSocket::PTCPSocket(PTCPSocket & tcpSocket)
 
 PObject * PTCPSocket::Clone() const
 {
-  return new PTCPSocket(port);
+  return new PTCPSocket(m_port);
 }
 
 
@@ -2347,7 +2347,7 @@ PBoolean PTCPSocket::Accept(PSocket & socket)
   if (!os_accept(socket, sa, &size))
     return false;
     
-  port = ((PIPSocket &)socket).GetPort(); 
+  m_port = ((PIPSocket &)socket).GetPort();
   return true;
 }
 

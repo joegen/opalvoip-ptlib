@@ -1058,11 +1058,11 @@ PBoolean PMemoryHeap::ValidateHeap(ostream * /*strm*/)
 }
 
 
-PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignore)
+PBoolean PMemoryHeap::SetIgnoreAllocations(PBoolean ignoreAlloc)
 {
   CreateInstance();
   int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-  if (ignore)
+  if (ignoreAlloc)
     _CrtSetDbgFlag(flags & ~_CRTDBG_ALLOC_MEM_DF);
   else
     _CrtSetDbgFlag(flags | _CRTDBG_ALLOC_MEM_DF);
@@ -1857,7 +1857,7 @@ namespace PProfiling
         threadNameWidth = len;
 
       for (FunctionMap::const_iterator func = thrd->second.m_functions.begin(); func != thrd->second.m_functions.end(); ++func) {
-        std::streamsize len = func->first.length();
+        len = func->first.length();
         if (len > functionNameWidth)
           functionNameWidth = len;
       }
@@ -2076,9 +2076,9 @@ namespace PProfiling
 
         ThreadByID::iterator thrd = analysis.m_threadByID.find(entry->m_threadUniqueId);
         if (thrd == analysis.m_threadByID.end()) {
-          PThread::Times times;
-          PThread::GetTimes(entry->m_threadIdentifier, times);
-          thrd = AddThreadByID(analysis.m_threadByID, times);
+          PThread::Times threadTimes;
+          PThread::GetTimes(entry->m_threadIdentifier, threadTimes);
+          thrd = AddThreadByID(analysis.m_threadByID, threadTimes);
         }
 
         FunctionMap & functions = thrd->second.m_functions;

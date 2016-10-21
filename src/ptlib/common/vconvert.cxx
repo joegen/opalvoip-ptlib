@@ -1949,7 +1949,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 #if P_IPP
   if (!m_verticalFlip && m_srcFrameWidth == m_dstFrameWidth && m_srcFrameHeight == m_dstFrameHeight && g_intel.IsLoaded()) {
     const Ipp8u * srcPlanes[3] = { scanLinePtrY, scanLinePtrU, scanLinePtrV };
-    int srcStep[3] = { m_srcFrameWidth, m_srcFrameWidth/2, m_srcFrameWidth/2 };
+    int srcStep[3] = { (int)m_srcFrameWidth, (int)m_srcFrameWidth/2, (int)m_srcFrameWidth/2 };
     int dstStep = m_srcFrameWidth*rgbIncrement;
     IppiSize size;
     size.width = m_srcFrameWidth;

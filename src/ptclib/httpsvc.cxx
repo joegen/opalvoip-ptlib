@@ -331,7 +331,7 @@ PString PHTTPServiceProcess::ClearLogPage::LoadText(PHTTPRequest & request)
        << m_process.GetCopyrightText()
        << PHTML::Body();
 
-  string = html;
+  m_string = html;
 
   return PServiceHTTPString::LoadText(request);
 }
@@ -617,7 +617,7 @@ PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
 
 PString PRegisterPage::LoadText(PHTTPRequest & request)
 {
-  if (fields.GetSize() > 0)
+  if (m_fields.GetSize() > 0)
     return PConfigPage::LoadText(request);
 
   PString mailURL = "mailto:" + process.GetEMailAddress();
@@ -868,7 +868,7 @@ PBoolean PRegisterPage::Post(PHTTPRequest & request,
                          const PStringToString & data,
                          PHTML & reply)
 {
-  if (fields.GetSize() == 0)
+  if (m_fields.GetSize() == 0)
     LoadText(request);
 
   PBoolean retval = PHTTPConfig::Post(request, data, reply);
@@ -955,26 +955,26 @@ PServiceHTML::PServiceHTML(const char * title, const char * help, const char * h
 }
 
 
-PString PServiceHTML::ExtractSignature(PString & out)
+PString PServiceHTML::ExtractSignature(PString & outStr)
 {
-  return ExtractSignature(*this, out);
+  return ExtractSignature(*this, outStr);
 }
 
 
 PString PServiceHTML::ExtractSignature(const PString & html,
-                                       PString & out,
+                                       PString & outStr,
                                        const char * keyword)
 {
-  out = html;
+  outStr = html;
 
   PRegularExpression SignatureRegEx("<?!--" + PString(keyword) + "[ \t\r\n]+"
                                      "signature[ \t\r\n]+(-?[^-])+-->?",
                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
   PINDEX pos, len;
-  if (out.FindRegEx(SignatureRegEx, pos, len)) {
-    PString tag = out.Mid(pos, len);
-    out.Delete(pos, len);
+  if (outStr.FindRegEx(SignatureRegEx, pos, len)) {
+    PString tag = outStr.Mid(pos, len);
+    outStr.Delete(pos, len);
     return tag(tag.Find("signature")+10, tag.FindLast('-')-2).Trim();
   }
 
@@ -988,13 +988,13 @@ PString PServiceHTML::CalculateSignature()
 }
 
 
-PString PServiceHTML::CalculateSignature(const PString & out)
+PString PServiceHTML::CalculateSignature(const PString & outStr)
 {
-  return CalculateSignature(out, PHTTPServiceProcess::Current().GetSignatureKey());
+  return CalculateSignature(outStr, PHTTPServiceProcess::Current().GetSignatureKey());
 }
 
 
-PString PServiceHTML::CalculateSignature(const PString & out,
+PString PServiceHTML::CalculateSignature(const PString & outStr,
                                          const PTEACypher::Key & sig)
 {
   // calculate the MD5 digest of the HTML data
@@ -1002,15 +1002,15 @@ PString PServiceHTML::CalculateSignature(const PString & out,
 
   PINDEX p1 = 0;
   PINDEX p2;
-  while ((p2 = out.FindOneOf("\r\n", p1)) != P_MAX_INDEX) {
+  while ((p2 = outStr.FindOneOf("\r\n", p1)) != P_MAX_INDEX) {
     if (p2 > p1)
-      digestor.Process(out(p1, p2-1));
+      digestor.Process(outStr(p1, p2-1));
     digestor.Process("\r\n", 2);
     p1 = p2 + 1;
-    if (out[p2] == '\r' && out[p1] == '\n') // CR LF pair
+    if (outStr[p2] == '\r' && outStr[p1] == '\n') // CR LF pair
       p1++;
   }
-  digestor.Process(out(p1, P_MAX_INDEX));
+  digestor.Process(outStr(p1, P_MAX_INDEX));
 
   PMessageDigest5::Code md5;
   digestor.Complete(md5);
@@ -1036,11 +1036,11 @@ PBoolean PServiceHTML::CheckSignature(const PString & html)
     return true;
 
   // extract the signature from the file
-  PString out;
-  PString signature = ExtractSignature(html, out);
+  PString outStr;
+  PString signature = ExtractSignature(html, outStr);
 
   // calculate the signature on the data
-  PString checkSignature = CalculateSignature(out);
+  PString checkSignature = CalculateSignature(outStr);
 
   // return true or false
   return checkSignature == signature;

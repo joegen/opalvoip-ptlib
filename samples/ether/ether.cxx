@@ -135,13 +135,13 @@ TestThread::TestThread(PINDEX idx, PArgList & args)
 {
   PString interf = args[0];
   if (interf[0] == '#') {
-    PINDEX idx = interf.Mid(1).AsUnsigned();
+    PINDEX ordinal = interf.Mid(1).AsUnsigned();
     PStringArray interfaces = PEthSocket::EnumInterfaces(false);
-    if (idx >= interfaces.GetSize()) {
+    if (ordinal >= interfaces.GetSize()) {
       cerr << "Invalid index for interface." << endl;
       return;
     }
-    interf = interfaces[idx];
+    interf = interfaces[ordinal];
   }
 
   m_socket.SetReadTimeout(1000);

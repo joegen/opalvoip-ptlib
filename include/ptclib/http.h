@@ -1030,7 +1030,7 @@ class PHTTPServer : public PHTTP
        @return
        URL name space tree.
      */
-    PHTTPSpace & GetURLSpace() { return urlSpace; }
+    PHTTPSpace & GetURLSpace() { return m_urlSpace; }
 
     /// Use a new URL name space for this HTTP socket.
     void SetURLSpace(
@@ -1177,7 +1177,7 @@ class PHTTPServer : public PHTTP
 
     /**Get the connection info for this connection.
       */
-    PHTTPConnectionInfo & GetConnectionInfo() { return connectInfo; }
+    PHTTPConnectionInfo & GetConnectionInfo() { return m_connectInfo; }
 
     /**Called when a request is received. 
        By default, this intercepts the GET, HEAD and POST commands
@@ -1233,10 +1233,10 @@ class PHTTPServer : public PHTTP
   protected:
     void Construct();
 
-    PHTTPSpace          urlSpace;
-    PHTTPConnectionInfo connectInfo;
-    unsigned            transactionCount;
-    PTimeInterval       nextTimeout;
+    PHTTPSpace          m_urlSpace;
+    PHTTPConnectionInfo m_connectInfo;
+    unsigned            m_transactionCount;
+    PTimeInterval       m_nextTimeout;
 
     std::map<PString, WebSocketNotifier> m_webSocketNotifiers;
 
@@ -1461,27 +1461,27 @@ class PHTTPSimpleAuth : public PHTTPAuthority
        @return
        String for the authorisation realm name.
      */
-    const PString & GetLocalRealm() const { return realm; }
+    const PString & GetLocalRealm() const { return m_realm; }
 
     /** Get the user name allocated to this simple authorisation.
 
        @return
        String for the authorisation user name.
      */
-    const PString & GetUserName() const { return username; }
+    const PString & GetUserName() const { return m_username; }
 
     /** Get the password allocated to this simple authorisation.
 
        @return
        String for the authorisation password.
      */
-    const PString & GetPassword() const { return password; }
+    const PString & GetPassword() const { return m_password; }
 
 
   protected:
-    PString realm;
-    PString username;
-    PString password;
+    PString m_realm;
+    PString m_username;
+    PString m_password;
 };
 
 
@@ -1562,8 +1562,8 @@ class PHTTPMultiSimpAuth : public PHTTPAuthority
 
 
   protected:
-    PString realm;
-    PStringToString users;
+    PString         m_realm;
+    PStringToString m_users;
 };
 
 
@@ -1608,18 +1608,18 @@ class PHTTPResource : public PObject
        @return
        The URL for this resource.
      */
-    const PURL & GetURL() const { return baseURL; }
+    const PURL & GetURL() const { return m_baseURL; }
 
     /**Get relative hot link for this resouce.
       */
-    PString GetHotLink() const { return baseURL.AsString(PURL::PathOnly); }
+    PString GetHotLink() const { return m_baseURL.AsString(PURL::PathOnly); }
 
     /** Get the current content type for the resource.
 
        @return
        string for the current MIME content type.
      */
-    const PString & GetContentType() const { return contentType; }
+    const PString & GetContentType() const { return m_contentType; }
 
     /** Get the current authority for the resource.
 
@@ -1627,7 +1627,7 @@ class PHTTPResource : public PObject
        Pointer to authority or NULL if unrestricted.
      */
 
-    PHTTPAuthority * GetAuthority() const { return authority; }
+    PHTTPAuthority * GetAuthority() const { return m_authority; }
 
     /** Set the current authority for the resource.
      */
@@ -1645,10 +1645,10 @@ class PHTTPResource : public PObject
        @return
        Hit count for the resource.
      */
-    DWORD GetHitCount() const { return hitCount; }
+    DWORD GetHitCount() const { return m_hitCount; }
 
     /// Clear the hit count for the resource.
-    void ClearHitCount() { hitCount = 0; }
+    void ClearHitCount() { m_hitCount = 0; }
 
     /**Called when a request indicates a swtch to WebSocket protocol.
        This will handle a WebScoket protocol change.
@@ -1898,10 +1898,10 @@ class PHTTPResource : public PObject
     );
 
 
-    PURL             baseURL;     ///< Base URL for the resource, may accept URLS with a longer hierarchy
-    PString          contentType; ///< MIME content type for the resource
-    PHTTPAuthority * authority;   ///< Authorisation method for the resource
-    atomic<unsigned> hitCount;    ///< COunt of number of times resource was accessed.
+    PURL             m_baseURL;     ///< Base URL for the resource, may accept URLS with a longer hierarchy
+    PString          m_contentType; ///< MIME content type for the resource
+    PHTTPAuthority * m_authority;   ///< Authorisation method for the resource
+    atomic<unsigned> m_hitCount;    ///< Count of number of times resource was accessed.
 };
 
 
@@ -1979,17 +1979,17 @@ class PHTTPString : public PHTTPResource
        @return
        String for resource.
      */
-    const PString & GetString() { return string; }
+    const PString & GetString() { return m_string; }
 
     /** Set the string to be returned by this resource.
      */
     void SetString(
       const PString & str   // New string for the resource.
-    ) { string = str; }
+    ) { m_string = str; }
 
 
   protected:
-    PString string;
+    PString m_string;
 };
 
 
@@ -2096,7 +2096,7 @@ class PHTTPFile : public PHTTPResource
     // Constructor used by PHTTPDirectory
 
 
-    PFilePath filePath;
+    PFilePath m_filePath;
 };
 
 
@@ -2112,7 +2112,7 @@ class PHTTPFileRequest : public PHTTPRequest
       PHTTPServer & server
     );
 
-    PFile file;
+    PFile m_file;
 };
 
 
@@ -2282,9 +2282,9 @@ class PHTTPDirectory : public PHTTPFile
 
     PBoolean FindAuthorisations(const PDirectory & dir, PString & realm, PStringToString & authorisations);
 
-    PDirectory basePath;
-    PString authorisationRealm;
-    PBoolean allowDirectoryListing;
+    PDirectory m_basePath;
+    PString    m_authorisationRealm;
+    bool       m_allowDirectoryListing;
 };
 
 
@@ -2300,8 +2300,8 @@ class PHTTPDirRequest : public PHTTPFileRequest
       PHTTPServer & server
     );
 
-    PString fakeIndex;
-    PFilePath realPath;
+    PString   m_fakeIndex;
+    PFilePath m_realPath;
 };
 
 

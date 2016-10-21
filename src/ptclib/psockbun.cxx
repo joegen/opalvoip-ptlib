@@ -444,8 +444,8 @@ bool PMonitoredSockets::GetInterfaceInfo(const PString & iface, InterfaceEntry &
 
 bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address & binding)
 {
-  delete info.socket;
-  info.socket = NULL;
+  delete info.m_socket;
+  info.m_socket = NULL;
   
 #if P_NAT
   if (m_natMethods != NULL) {
@@ -454,14 +454,14 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
       PIPAddressAndPort ap;
       natMethod->GetServerAddress(ap);
       if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, ap.GetAddress())) {
-        if (natMethod->CreateSocket(info.socket, binding, m_localPort)) {
-          PNATUDPSocket * natSocket = dynamic_cast<PNATUDPSocket*>(info.socket);
+        if (natMethod->CreateSocket(info.m_socket, binding, m_localPort)) {
+          PNATUDPSocket * natSocket = dynamic_cast<PNATUDPSocket*>(info.m_socket);
           if (natSocket != NULL)
             natSocket->GetBaseAddress(ap);
           else
             ap.SetAddress(0);
           PTRACE(4, "Created bundled UDP socket via " << natMethod->GetMethodName()
-                 << ", internal=" << ap << ", external=" << info.socket->GetLocalAddress());
+                 << ", internal=" << ap << ", external=" << info.m_socket->GetLocalAddress());
           return true;
         }
       }
@@ -469,59 +469,59 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
   }
 #endif
 
-  info.socket = new PUDPSocket(m_localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
-  if (info.socket->Listen(binding, 0, m_localPort, m_reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
-    PTRACE(4, "Created bundled UDP socket " << binding << ':' << info.socket->GetPort());
+  info.m_socket = new PUDPSocket(m_localPort, (int) (binding.GetVersion() == 6 ? AF_INET6 : AF_INET));
+  if (info.m_socket->Listen(binding, 0, m_localPort, m_reuseAddress?PIPSocket::CanReuseAddress:PIPSocket::AddressIsExclusive)) {
+    PTRACE(4, "Created bundled UDP socket " << binding << ':' << info.m_socket->GetPort());
     int sz = 0;
-    if (info.socket->GetOption(SO_RCVBUF, sz) && sz < UDP_BUFFER_SIZE) {
-      if (!info.socket->SetOption(SO_RCVBUF, UDP_BUFFER_SIZE)) {
-        PTRACE(1, "SetOption(SO_RCVBUF) failed: " << info.socket->GetErrorText());
+    if (info.m_socket->GetOption(SO_RCVBUF, sz) && sz < UDP_BUFFER_SIZE) {
+      if (!info.m_socket->SetOption(SO_RCVBUF, UDP_BUFFER_SIZE)) {
+        PTRACE(1, "SetOption(SO_RCVBUF) failed: " << info.m_socket->GetErrorText());
       }
     }
 
-    info.socket->SetReadTimeout(0);
+    info.m_socket->SetReadTimeout(0);
     return true;
   }
 
   PTRACE(1, "Could not listen on "
          << binding << ':' << m_localPort
-         << " - " << info.socket->GetErrorText());
-  delete info.socket;
-  info.socket = NULL;
+         << " - " << info.m_socket->GetErrorText());
+  delete info.m_socket;
+  info.m_socket = NULL;
   return false;
 }
 
 
 bool PMonitoredSockets::DestroySocket(SocketInfo & info)
 {
-  if (info.socket == NULL)
+  if (info.m_socket == NULL)
     return false;
 
-  PBoolean result = info.socket->Close();
+  PBoolean result = info.m_socket->Close();
 
 #if PTRACING
   if (result)
-    PTRACE(4, "Closed UDP socket " << info.socket);
+    PTRACE(4, "Closed UDP socket " << info.m_socket);
   else
-    PTRACE(2, "Close failed for UDP socket " << info.socket);
+    PTRACE(2, "Close failed for UDP socket " << info.m_socket);
 #endif
 
   // This is pretty ugly, but needed to make sure multi-threading doesn't crash
   unsigned failSafe = 100; // Approx. two seconds
-  while (info.inUse) {
+  while (info.m_inUse) {
     UnlockReadWrite();
     PThread::Sleep(20);
     if (!LockReadWrite())
       return false;
     if (--failSafe == 0) {
-      PTRACE(1, "Read thread break for UDP socket " << info.socket << " taking too long.");
+      PTRACE(1, "Read thread break for UDP socket " << info.m_socket << " taking too long.");
       break;
     }
   }
 
-  PTRACE(4, "Deleting UDP socket " << info.socket);
-  delete info.socket;
-  info.socket = NULL;
+  PTRACE(4, "Deleting UDP socket " << info.m_socket);
+  delete info.m_socket;
+  info.m_socket = NULL;
 
   return result;
 }
@@ -532,14 +532,14 @@ bool PMonitoredSockets::GetSocketAddress(const SocketInfo & info,
                                          WORD & port,
                                          bool usingNAT) const
 {
-  if (info.socket == NULL)
+  if (info.m_socket == NULL)
     return false;
 
   if (usingNAT)
-    return info.socket->GetLocalAddress(address, port);
+    return info.m_socket->GetLocalAddress(address, port);
 
   PIPSocketAddressAndPort addrAndPort;
-  if (!info.socket->PUDPSocket::InternalGetLocalAddress(addrAndPort))
+  if (!info.m_socket->PUDPSocket::InternalGetLocalAddress(addrAndPort))
     return false;
 
   address = addrAndPort.GetAddress();
@@ -550,10 +550,10 @@ bool PMonitoredSockets::GetSocketAddress(const SocketInfo & info,
 
 void PMonitoredSockets::SocketInfo::Write(BundleParams & param)
 {
-  socket->WriteTo(param.m_buffer, param.m_length, param.m_addr, param.m_port);
-  param.m_lastCount = socket->GetLastWriteCount();
-  param.m_errorCode = socket->GetErrorCode(PChannel::LastWriteError);
-  param.m_errorNumber = socket->GetErrorNumber(PChannel::LastWriteError);
+  m_socket->WriteTo(param.m_buffer, param.m_length, param.m_addr, param.m_port);
+  param.m_lastCount = m_socket->GetLastWriteCount();
+  param.m_errorCode = m_socket->GetErrorCode(PChannel::LastWriteError);
+  param.m_errorNumber = m_socket->GetErrorNumber(PChannel::LastWriteError);
 }
 
 
@@ -637,7 +637,7 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
 {
   // Assume is already locked
 
-  if (inUse) {
+  if (m_inUse) {
     PTRACE(2, &bundle, PTraceModule(), "Cannot read from multiple threads.");
     param.m_errorCode = PChannel::DeviceInUse;
     return;
@@ -647,11 +647,11 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
 
   do {
     PSocket::SelectList sockets;
-    if (socket == NULL || !socket->IsOpen())
-      inUse = false; // socket closed by monitor thread. release the inUse flag
+    if (socket == NULL || !m_socket->IsOpen())
+      m_inUse = false; // socket closed by monitor thread. release the inUse flag
     else {
-      sockets += *socket;
-      inUse = true;
+      sockets += *m_socket;
+      m_inUse = true;
     }
     sockets += bundle.m_interfaceAddedSignal;
 
@@ -659,7 +659,7 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
     bundle.ReadFromSocketList(sockets, socket, param);
   } while (param.m_errorCode == PChannel::NoError && param.m_lastCount == 0);
 
-  inUse = false;
+  m_inUse = false;
 }
 
 
@@ -959,7 +959,7 @@ void PMonitoredSocketBundle::OpenSocket(const PString & iface)
   if (CreateSocket(info, binding)) {
     if (m_localPort == 0) {
       PIPSocketAddressAndPort addrAndPort;
-      info.socket->PUDPSocket::InternalGetLocalAddress(addrAndPort);
+      info.m_socket->PUDPSocket::InternalGetLocalAddress(addrAndPort);
       m_localPort = addrAndPort.GetPort();
     }
     m_socketInfoMap[iface] = info;
@@ -1018,15 +1018,15 @@ void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
       PSocket::SelectList readers;
 
       for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
-        if (iter->second.inUse) {
+        if (iter->second.m_inUse) {
           PTRACE(2, "Cannot read from multiple threads.");
           UnlockReadWrite();
           param.m_errorCode = PChannel::DeviceInUse;
           return;
         }
-        if (iter->second.socket->IsOpen()) {
-          readers += *iter->second.socket;
-          iter->second.inUse = true;
+        if (iter->second.m_socket->IsOpen()) {
+          readers += *iter->second.m_socket;
+          iter->second.m_inUse = true;
         }
       }
       readers += m_interfaceAddedSignal;
@@ -1035,9 +1035,9 @@ void PMonitoredSocketBundle::ReadFromBundle(BundleParams & param)
       ReadFromSocketList(readers, socket, param);
 
       for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
-        if (iter->second.socket == socket)
+        if (iter->second.m_socket == socket)
           param.m_iface = iter->first;
-        iter->second.inUse = false;
+        iter->second.m_inUse = false;
       }
     } while (param.m_errorCode == PChannel::NoError && param.m_lastCount == 0);
   }
@@ -1109,7 +1109,7 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (m_opened && m_localPort == port && m_info.socket != NULL && m_info.socket->IsOpen())
+  if (m_opened && m_localPort == port && m_info.m_socket != NULL && m_info.m_socket->IsOpen())
     return true;
 
   Close();
@@ -1126,7 +1126,7 @@ PBoolean PSingleMonitoredSocket::Open(WORD port)
   if (!CreateSocket(m_info, m_entry.GetAddress()))
     return false;
     
-  m_localPort = m_info.socket->PUDPSocket::GetPort();
+  m_localPort = m_info.m_socket->PUDPSocket::GetPort();
   return true;
 }
 
@@ -1159,7 +1159,7 @@ void PSingleMonitoredSocket::WriteToBundle(BundleParams & param)
 {
   PSafeLockReadWrite guard(*this);
 
-  if (guard.IsLocked() && m_info.socket != NULL && IsInterface(param.m_iface))
+  if (guard.IsLocked() && m_info.m_socket != NULL && IsInterface(param.m_iface))
     m_info.Write(param);
   else
     param.m_errorCode = PChannel::NotFound;

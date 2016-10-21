@@ -564,10 +564,10 @@ PBoolean PDNS::RDSLookup(const PURL & url,
 }
 
 PBoolean PDNS::RDSLookup(
-        const PURL & url,
-        const PString & service,
-   const PStringArray & naptrSpaces,
-         PStringList & returnStr
+  const PURL & url,
+  const PString & service,
+  const PStringArray & naptrSpaces,
+  PStringList & returnStr
 )
 {
 
@@ -578,43 +578,42 @@ PBoolean PDNS::RDSLookup(
     // do the initial lookup - if no answer then no URN RDS records for that domain
     if (!PDNS::GetRecords(naptrSpaces[i], records))
       continue;
-     
-	// Do a universal domain rewrite Ref: RFC 2915 sect 7.1 
+
+    // Do a universal domain rewrite Ref: RFC 2915 sect 7.1 
     PString newURL = PString();
-	if (!RewriteDomain(url.AsString(), records, newURL))
-	  continue;
+    if (!RewriteDomain(url.AsString(), records, newURL))
+      continue;
 
-	// Retrieve the NAPTR records associated with that rewritten domain.
-	PDNS::NAPTRRecordList subrecords;
+    // Retrieve the NAPTR records associated with that rewritten domain.
+    PDNS::NAPTRRecordList subrecords;
     if (!PDNS::GetRecords(newURL, subrecords))
-        continue;
+      continue;
 
-	// Retrieve the SRV records for the service 
-    PString srvRecord = PString(); 
-	if (!InternalRDSLookup(url.AsString(),service,subrecords,srvRecord))
-	    continue;
+    // Retrieve the SRV records for the service 
+    PString srvRecord = PString();
+    if (!InternalRDSLookup(url.AsString(), service, subrecords, srvRecord))
+      continue;
 
-	// Should be in the form "_h323ls._udp.mydomain.com";
-	// Need to find the second "." to retrieve the service record type
+    // Should be in the form "_h323ls._udp.mydomain.com";
+    // Need to find the second "." to retrieve the service record type
     PINDEX dot = 0;
-	for (PINDEX i = 0;  i < 2; i++) {
-	   dot = srvRecord.Find('.',dot+1);
-	}
+    for (PINDEX j = 0; j < 2; j++)
+      dot = srvRecord.Find('.', dot + 1);
 
-	// Rewrite the userName
-	PString finaluser = url.GetScheme() + ":" + url.GetUserName() + "@" + srvRecord.Mid(dot+1); 
-	// Retrieve the service record type
-	PString srvrec = srvRecord.Left(dot+1);
+    // Rewrite the userName
+    PString finaluser = url.GetScheme() + ":" + url.GetUserName() + "@" + srvRecord.Mid(dot + 1);
+    // Retrieve the service record type
+    PString srvrec = srvRecord.Left(dot + 1);
 
-	// Lookup the SRV record for the hosted domain.
-	PStringList retStr;
-	if (!PDNS::LookupSRV(finaluser,srvrec,retStr)) 
-	    continue;
-		
-	if (retStr.GetSize() > 0) {   // We have found records 
-		returnStr = retStr;
-	    return true;
-	}
+    // Lookup the SRV record for the hosted domain.
+    PStringList retStr;
+    if (!PDNS::LookupSRV(finaluser, srvrec, retStr))
+      continue;
+
+    if (retStr.GetSize() > 0) {   // We have found records 
+      returnStr = retStr;
+      return true;
+    }
   }
 
   return false;

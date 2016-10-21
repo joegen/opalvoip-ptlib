@@ -76,8 +76,8 @@ class PASN_Object : public PObject
     virtual PBoolean Decode(PASN_Stream &) = 0;
     virtual void Encode(PASN_Stream &) const = 0;
 
-    PBoolean IsExtendable() const { return extendable; }
-    void SetExtendable(PBoolean ext = true) { extendable = ext; }
+    PBoolean IsExtendable() const { return m_extendable; }
+    void SetExtendable(PBoolean ext = true) { m_extendable = ext; }
 
     enum TagClass {
       UniversalTagClass,
@@ -86,7 +86,7 @@ class PASN_Object : public PObject
       PrivateTagClass,
       DefaultTagClass
     };
-    TagClass GetTagClass() const { return tagClass; }
+    TagClass GetTagClass() const { return m_tagClass; }
 
     enum UniversalTags {
       InvalidUniversalTag,
@@ -118,7 +118,7 @@ class PASN_Object : public PObject
       UniversalBMPString = 30
     };
 
-    unsigned GetTag() const  { return tag; }
+    unsigned GetTag() const  { return m_tag; }
     virtual void SetTag(unsigned newTag, TagClass tagClass = DefaultTagClass);
 
     enum ConstraintType {
@@ -153,12 +153,10 @@ class PASN_Object : public PObject
   protected:
     PASN_Object(unsigned tag, TagClass tagClass, PBoolean extend = false);
 
-    /// PER extension capability
-    PBoolean extendable;
-    /// BER tag class
-    TagClass tagClass;
-    /// ASN object tag
-    unsigned tag;
+   
+    PBoolean m_extendable;  ///< PER extension capability
+    TagClass m_tagClass;    ///< BER tag class
+    unsigned m_tag;         ///< ASN object tag
 };
 
 

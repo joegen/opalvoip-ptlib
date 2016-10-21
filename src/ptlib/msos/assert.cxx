@@ -96,8 +96,10 @@
       EnumWindows(EnumWindowsProc, GetCurrentProcessId());
   }
 
+  #pragma warning(disable:4091)
   #include <DbgHelp.h>
   #include <Psapi.h>
+  #pragma warning(default:4091)
 
   #if PTRACING
     #define InternalMaxStackWalk PTrace::MaxStackWalk

@@ -1652,6 +1652,7 @@ dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_DEBUG,expat.lib,x64/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_RELEASE,expat.lib,x64/Release
 dnl MSWIN_CHECK_DIR  expat,..\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\expat\
+dnl MSWIN_CHECK_DIR  expat,..\external\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\expat\

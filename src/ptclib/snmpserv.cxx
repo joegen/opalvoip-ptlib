@@ -44,19 +44,19 @@ static const char defaultCommunity[] = "public";
 
 PSNMPServer::PSNMPServer(PIPSocket::Address binding, WORD localPort, PINDEX timeout, PINDEX rxSize, PINDEX txSize)
  : P_DISABLE_MSVC_WARNINGS(4355, m_thread(*this, &PSNMPServer::Main, true, "SNMP Server"))
- , community(defaultCommunity)
- , version(SNMP_VERSION)
- , maxRxSize(rxSize)
- , maxTxSize(txSize)
+ , m_community(defaultCommunity)
+ , m_version(SNMP_VERSION)
+ , m_maxRxSize(rxSize)
+ , m_maxTxSize(txSize)
 {
   SetReadTimeout(PTimeInterval(0, timeout));
-  baseSocket = new PUDPSocket;
+  m_baseSocket = new PUDPSocket;
 
-  if (!baseSocket->Listen(binding, 0, localPort)) {
+  if (!m_baseSocket->Listen(binding, 0, localPort)) {
     PTRACE(4,"SNMPsrv\tError: Unable to Listen on port " << localPort);
   }
   else {
-    Open(baseSocket);
+    Open(m_baseSocket);
     m_thread.Resume();
   }
 }
@@ -76,7 +76,7 @@ PBoolean PSNMPServer::HandleChannel()
 {
 
   PBYTEArray readBuffer;
-  PBYTEArray sendBuffer(maxTxSize);
+  PBYTEArray sendBuffer(m_maxTxSize);
 
 
   for (;;) {
@@ -85,18 +85,18 @@ PBoolean PSNMPServer::HandleChannel()
 
 		// Reading
 	    PINDEX rxSize = 0;
-		readBuffer.SetSize(maxRxSize);
+		readBuffer.SetSize(m_maxRxSize);
 		for (;;) {
-			if (!Read(readBuffer.GetPointer()+rxSize, maxRxSize - rxSize)) {
+			if (!Read(readBuffer.GetPointer()+rxSize, m_maxRxSize - rxSize)) {
 
 			// if the buffer was too small, then we are receiving datagrams
 			// and the datagram was too big
 			if (PChannel::GetErrorCode() == PChannel::BufferTooSmall) 
-				lastErrorCode = RxBufferTooSmall;
+				m_lastErrorCode = RxBufferTooSmall;
 			else
-				lastErrorCode = NoResponse;
+				m_lastErrorCode = NoResponse;
 
-			PTRACE(4,"SNMPsrv\tRenewing Socket due to timeout" << lastErrorCode);
+			PTRACE(4,"SNMPsrv\tRenewing Socket due to timeout" << m_lastErrorCode);
 
 			} else if ((rxSize + GetLastReadCount()) >= 10)
 			break;
@@ -110,7 +110,7 @@ PBoolean PSNMPServer::HandleChannel()
 
 		PIPSocket::Address remoteAddress;
 		WORD remotePort;
-		baseSocket->GetLastReceiveAddress(remoteAddress, remotePort);
+		m_baseSocket->GetLastReceiveAddress(remoteAddress, remotePort);
 
 		if (!Authorise(remoteAddress)) {
 		  PTRACE(4,"SNMPsrv\tReceived UnAuthorized Message from IP " << remoteAddress);
@@ -119,13 +119,13 @@ PBoolean PSNMPServer::HandleChannel()
 		// process the request
 		if (ProcessPDU(readBuffer, sendBuffer) == true) {
 			// send the packet
-			baseSocket->SetSendAddress(remoteAddress, remotePort);
+			m_baseSocket->SetSendAddress(remoteAddress, remotePort);
 			PTRACE(4, "SNMPsrv\tWriting " << sendBuffer.GetSize() << " Bytes to basesocket");
 			if (!Write(sendBuffer, sendBuffer.GetSize())) {
 			    PTRACE(4,"SNMPsrv\tWrite Error.");
 			    continue;
 			}
-			sendBuffer.SetSize(maxTxSize); //revert to max tx
+			sendBuffer.SetSize(m_maxTxSize); //revert to max tx
 		}
   }
 
@@ -140,7 +140,7 @@ PBoolean PSNMPServer::Authorise(const PIPSocket::Address & /*received*/)
 
 void PSNMPServer::SetVersion(PASNInt newVersion)
 {
-  version = newVersion;
+  m_version = newVersion;
 }
 
 
@@ -213,7 +213,7 @@ PBoolean PSNMPServer::MIB_LocalMatch(PSNMP_PDU & pdu)
   PINDEX size = vars.GetSize();
  
   for(PINDEX x = 0 ;x < size; x++){
-    PRFC1155_ObjectSyntax *obj = (PRFC1155_ObjectSyntax*) objList.GetAt(vars[x].m_name);
+    PRFC1155_ObjectSyntax *obj = (PRFC1155_ObjectSyntax*) m_objList.GetAt(vars[x].m_name);
     if (obj != NULL){
       vars[x].m_value = *obj;
       found = true;
@@ -232,7 +232,7 @@ PBoolean PSNMPServer::ConfirmCommunity(PASN_OctetString & /*community*/)
 
 PBoolean PSNMPServer::ConfirmVersion(PASN_Integer vers)
 {
-  return version == vers ? true : false;
+  return m_version == vers ? true : false;
 }
 
 PBoolean PSNMPServer::ProcessPDU(const PBYTEArray & readBuffer, PBYTEArray & sendBuffer)

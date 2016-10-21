@@ -15,3 +15,5 @@ ipch/
 bin/
 .DS_Store
 aclocal.m4
+*.VC.db
+*.opendb

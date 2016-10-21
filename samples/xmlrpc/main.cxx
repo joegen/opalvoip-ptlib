@@ -30,7 +30,7 @@
 #include <ptclib/pxmlrpc.h>
 
 #if !P_EXPAT
-#error Must have Expat XML support for this application
+#error Must have XML support for this application
 #endif
 
 

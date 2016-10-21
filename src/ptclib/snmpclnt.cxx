@@ -50,65 +50,65 @@ static const char defaultCommunity[] = "public";
 
 PSNMPClient::PSNMPClient(PINDEX retry, PINDEX timeout,
                          PINDEX rxSize, PINDEX txSize)
- : community(defaultCommunity),
-   version(SNMP_VERSION),
-   retryMax(retry),
-   maxRxSize(rxSize),
-   maxTxSize(txSize)
+ : m_community(defaultCommunity),
+   m_version(SNMP_VERSION),
+   m_retryMax(retry),
+   m_maxRxSize(rxSize),
+   m_maxTxSize(txSize)
 {
   SetReadTimeout(PTimeInterval(0, timeout));
-  requestId = rand() % 0x7fffffff;
+  m_requestId = rand() % 0x7fffffff;
 }
 
 
 PSNMPClient::PSNMPClient(const PString & host, PINDEX retry,
                          PINDEX timeout, PINDEX rxSize, PINDEX txSize)
- : hostName(host),
-   community(defaultCommunity),
-   version(SNMP_VERSION),
-   retryMax(retry),
-   maxRxSize(rxSize),
-   maxTxSize(txSize)
+ : m_hostName(host),
+   m_community(defaultCommunity),
+   m_version(SNMP_VERSION),
+   m_retryMax(retry),
+   m_maxRxSize(rxSize),
+   m_maxTxSize(txSize)
 {
   SetReadTimeout(PTimeInterval(0, timeout));
   Open(new PUDPSocket(host, SNMP_PORT));
-  requestId = rand() % 0x7fffffff;
+  m_requestId = rand() % 0x7fffffff;
 }
 
 
 void PSNMPClient::SetVersion(PASNInt newVersion)
 {
-  version = newVersion;
+  m_version = newVersion;
 }
 
 
 PASNInt PSNMPClient::GetVersion() const
 {
-  return version;
+  return m_version;
 }
 
 
 void PSNMPClient::SetCommunity(const PString & str)
 {
-  community = str;
+  m_community = str;
 }
 
 
 PString PSNMPClient::GetCommunity() const
 {
-  return community;
+  return m_community;
 }
 
 
 void PSNMPClient::SetRequestID(PASNInt newRequestID)
 {
-  requestId = newRequestID;
+  m_requestId = newRequestID;
 }
 
 
 PASNInt PSNMPClient::GetRequestID() const
 {
-  return requestId;
+  return m_requestId;
 }
 
 
@@ -135,36 +135,36 @@ PBoolean PSNMPClient::WriteSetRequest(PSNMPVarBindingList & varsIn,
 
 PSNMP::ErrorType PSNMPClient::GetLastErrorCode() const
 {
-  return lastErrorCode;
+  return m_lastErrorCode;
 }
 
 
 PINDEX PSNMPClient::GetLastErrorIndex() const
 {
-  return lastErrorIndex;
+  return m_lastErrorIndex;
 }
 
 
 PString PSNMPClient::GetLastErrorText() const
 {
-  return PSNMP::GetErrorText(lastErrorCode);
+  return PSNMP::GetErrorText(m_lastErrorCode);
 }
 
 PBoolean PSNMPClient::ReadRequest(PBYTEArray & readBuffer)
 {
-  readBuffer.SetSize(maxRxSize);
+  readBuffer.SetSize(m_maxRxSize);
   PINDEX rxSize = 0;
 
   for (;;) {
 
-    if (!Read(readBuffer.GetPointer()+rxSize, maxRxSize - rxSize)) {
+    if (!Read(readBuffer.GetPointer()+rxSize, m_maxRxSize - rxSize)) {
 
       // if the buffer was too small, then we are receiving datagrams
       // and the datagram was too big
       if (PChannel::GetErrorCode() == PChannel::BufferTooSmall) 
-        lastErrorCode = RxBufferTooSmall;
+        m_lastErrorCode = RxBufferTooSmall;
       else
-        lastErrorCode = NoResponse;
+        m_lastErrorCode = NoResponse;
       return false;
 
     } else if ((rxSize + GetLastReadCount()) >= 10)
@@ -182,7 +182,7 @@ PBoolean PSNMPClient::ReadRequest(PBYTEArray & readBuffer)
   WORD len;
   if ((readBuffer[0] != 0x30) ||
       !PASNObject::DecodeASNLength(readBuffer, hdrLen, len)) {
-    lastErrorCode = MalformedResponse;
+    m_lastErrorCode = MalformedResponse;
     return false;
   }
 
@@ -190,10 +190,10 @@ PBoolean PSNMPClient::ReadRequest(PBYTEArray & readBuffer)
   len = (WORD)(len + hdrLen);
 
   // return true if we have the packet, else return false
-  if (len <= maxRxSize) 
+  if (len <= m_maxRxSize) 
     return true;
 
-  lastErrorCode = RxBufferTooSmall;
+  m_lastErrorCode = RxBufferTooSmall;
   return false;
 
 #if 0
@@ -221,16 +221,16 @@ PBoolean PSNMPClient::WriteRequest(PASNInt requestCode,
   PASNSequence * pduData     = new PASNSequence((BYTE)requestCode);
   PASNSequence * bindingList = new PASNSequence();
 
-  lastErrorIndex = 0;
+  m_lastErrorIndex = 0;
 
   // build a get request PDU
-  pdu.AppendInteger(version);
-  pdu.AppendString(community);
+  pdu.AppendInteger(m_version);
+  pdu.AppendString(m_community);
   pdu.Append(pduData);
 
   // build the PDU data
-  PASNInt thisRequestId = requestId;
-  requestId = rand() % 0x7fffffff;
+  PASNInt thisRequestId = m_requestId;
+  m_requestId = rand() % 0x7fffffff;
   pduData->AppendInteger(thisRequestId);
   pduData->AppendInteger(0);           // error status
   pduData->AppendInteger(0);           // error index
@@ -249,34 +249,34 @@ PBoolean PSNMPClient::WriteRequest(PASNInt requestCode,
   PBYTEArray sendBuffer;
   pdu.Encode(sendBuffer);
 
-  if (sendBuffer.GetSize() > maxTxSize) {
-    lastErrorCode = TxDataTooBig;
+  if (sendBuffer.GetSize() > m_maxTxSize) {
+    m_lastErrorCode = TxDataTooBig;
     return false;
   }
 
   varsOut.RemoveAll();
 
-  PINDEX retry = retryMax;
+  PINDEX retry = m_retryMax;
 
   for (;;) {
 
     // send the packet
     if (!Write(sendBuffer, sendBuffer.GetSize())) {
-      lastErrorCode = SendFailed;
+      m_lastErrorCode = SendFailed;
       return false;
     }
 
     // receive a packet
-    if (ReadRequest(readBuffer))
+    if (ReadRequest(m_readBuffer))
       break;
-    else if ((lastErrorCode != NoResponse) || (retry == 0))
+    else if ((m_lastErrorCode != NoResponse) || (retry == 0))
       return false;
     else
       retry--;
   }
 
   // parse the response
-  PASNSequence response(readBuffer);
+  PASNSequence response(m_readBuffer);
   PINDEX seqLen = response.GetSize();
 
   // check PDU
@@ -284,7 +284,7 @@ PBoolean PSNMPClient::WriteRequest(PASNInt requestCode,
       response[0].GetType() != PASNObject::Integer ||
       response[1].GetType() != PASNObject::String ||
       response[2].GetType() != PASNObject::Choice) {
-    lastErrorCode = MalformedResponse;
+    m_lastErrorCode = MalformedResponse;
     return false;
   }
 
@@ -297,22 +297,22 @@ PBoolean PSNMPClient::WriteRequest(PASNInt requestCode,
       rPduData[1].GetType() != PASNObject::Integer ||
       rPduData[2].GetType() != PASNObject::Integer ||
       rPduData[3].GetType() != PASNObject::Sequence) {
-    lastErrorCode = MalformedResponse;
+    m_lastErrorCode = MalformedResponse;
     return false;
   }
 
   // check the request ID
   PASNInt returnedRequestId = rPduData[0].GetInteger();
   if (returnedRequestId != thisRequestId) {
-    lastErrorCode = MalformedResponse;
+    m_lastErrorCode = MalformedResponse;
     return false;
   }
   
   // check the error status and return if non-zero
   PASNInt errorStatus = rPduData[1].GetInteger();
   if (errorStatus != 0) {
-    lastErrorIndex = rPduData[2].GetInteger(); 
-    lastErrorCode = (ErrorType)errorStatus;
+    m_lastErrorIndex = rPduData[2].GetInteger(); 
+    m_lastErrorCode = (ErrorType)errorStatus;
     return false;
   }
 
@@ -323,21 +323,21 @@ PBoolean PSNMPClient::WriteRequest(PASNInt requestCode,
   // create the return list
   for (i = 0; i < bindingCount; i++) {
     if (rBindings[i].GetType() != PASNObject::Sequence) {
-      lastErrorIndex = i+1;
-      lastErrorCode  = MalformedResponse;
+      m_lastErrorIndex = i+1;
+      m_lastErrorCode  = MalformedResponse;
       return false;
     }
     const PASNSequence & rVar = rBindings[i].GetSequence();
     if (rVar.GetSize() != 2 ||
         rVar[0].GetType() != PASNObject::ObjectID) {
-      lastErrorIndex = i+1;
-      lastErrorCode = MalformedResponse;
+      m_lastErrorIndex = i+1;
+      m_lastErrorCode = MalformedResponse;
       return false;
     }
     varsOut.Append(rVar[0].GetString(), (PASNObject *)rVar[1].Clone());
   }
 
-  lastErrorCode = NoError;
+  m_lastErrorCode = NoError;
   return true;
 }
 

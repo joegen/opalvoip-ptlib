@@ -104,7 +104,7 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
 PVideoInputDevice_FFMPEG::PVideoInputDevice_FFMPEG()
 {
   SetColourFormat(PVideoFrameInfo::YUV420P());
-  channelNumber = 0; 
+  m_channelNumber = 0; 
   grabCount = 0;
   SetFrameRate(10);
 }
@@ -185,7 +185,7 @@ PBoolean PVideoInputDevice_FFMPEG::Open(const PString & _deviceName, PBoolean /*
   m_ffmpegFrameSize = CalculateFrameBytes(m_ffmpegFrameWidth, m_ffmpegFrameHeight, PVideoFrameInfo::YUV420P());
   SetFrameSize(m_ffmpegFrameWidth, m_ffmpegFrameHeight);
 
-  deviceName = _deviceName;
+  m_deviceName = _deviceName;
   return true;    
 }
 
@@ -303,8 +303,8 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
 
   BYTE * readBuffer = destFrame;
 
-  if (converter != NULL)
-    readBuffer = frameStore.GetPointer(m_ffmpegFrameSize);
+  if (m_converter != NULL)
+    readBuffer = m_frameStore.GetPointer(m_ffmpegFrameSize);
 
   unsigned len = 0;
   while (len < m_ffmpegFrameSize) {
@@ -315,15 +315,15 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
     len += m_command.GetLastReadCount();
   }
 
-  if (converter == NULL) {
+  if (m_converter == NULL) {
     if (bytesReturned != NULL)
       *bytesReturned = m_ffmpegFrameSize;
   } else {
-    converter->SetSrcFrameSize(m_ffmpegFrameWidth, m_ffmpegFrameHeight);
-    if (!converter->Convert(readBuffer, destFrame, bytesReturned))
+    m_converter->SetSrcFrameSize(m_ffmpegFrameWidth, m_ffmpegFrameHeight);
+    if (!m_converter->Convert(readBuffer, destFrame, bytesReturned))
       return false;
     if (bytesReturned != NULL)
-      *bytesReturned = converter->GetMaxDstFrameBytes();
+      *bytesReturned = m_converter->GetMaxDstFrameBytes();
   }
 
   return true;

@@ -220,7 +220,7 @@ PHTTPServer::PHTTPServer()
 
 
 PHTTPServer::PHTTPServer(const PHTTPSpace & space)
-  : urlSpace(space)
+  : m_urlSpace(space)
 {
   Construct();
 }
@@ -228,7 +228,7 @@ PHTTPServer::PHTTPServer(const PHTTPSpace & space)
 
 void PHTTPServer::Construct()
 {
-  transactionCount = 0;
+  m_transactionCount = 0;
   SetReadLineTimeout(ReadLineTimeout);
 }
 
@@ -240,35 +240,35 @@ PBoolean PHTTPServer::ProcessCommand()
 
   // if this is not the first command received by this socket, then set
   // the read timeout appropriately.
-  if (transactionCount > 0) 
-    SetReadTimeout(nextTimeout);
+  if (m_transactionCount > 0) 
+    SetReadTimeout(m_nextTimeout);
 
   // this will only return false upon timeout or completely invalid command
   if (!ReadCommand(cmd, args))
     return false;
 
-  connectInfo.commandCode = (Commands)cmd;
+  m_connectInfo.commandCode = (Commands)cmd;
   if (cmd < NumCommands)
-    connectInfo.commandName = commandNames[cmd];
+    m_connectInfo.commandName = commandNames[cmd];
   else {
     PINDEX spacePos = args.Find(' ');
-    connectInfo.commandName = args.Left(spacePos);
+    m_connectInfo.commandName = args.Left(spacePos);
     args = args.Mid(spacePos);
   }
 
   // if no tokens, error
   if (args.IsEmpty()) {
-    OnError(BadRequest, args, connectInfo);
+    OnError(BadRequest, args, m_connectInfo);
     return false;
   }
 
-  if (!connectInfo.Initialise(*this, args))
+  if (!m_connectInfo.Initialise(*this, args))
     return false;
 
   // now that we've decided we did receive a HTTP request, increment the
   // count of transactions
-  transactionCount++;
-  nextTimeout = connectInfo.GetPersistenceTimeout();
+  m_transactionCount++;
+  m_nextTimeout = m_connectInfo.GetPersistenceTimeout();
 
   PIPSocket * socket = GetSocket();
   WORD myPort = (WORD)(socket != NULL ? socket->GetPort() : 80);
@@ -277,25 +277,25 @@ PBoolean PHTTPServer::ProcessCommand()
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistent
   if (cmd == CONNECT) 
-    connectInfo.url.Parse("https://" + args);
+    m_connectInfo.url.Parse("https://" + args);
   else {
-    connectInfo.url.Parse(args, "http");
-    if (connectInfo.url.GetPort() == 0)
-      connectInfo.url.SetPort(myPort);
+    m_connectInfo.url.Parse(args, "http");
+    if (m_connectInfo.url.GetPort() == 0)
+      m_connectInfo.url.SetPort(myPort);
   }
 
   bool persist;
   
   // make sure the form info is reset for each new operation
-  connectInfo.ResetMultipartFormInfo();
+  m_connectInfo.ResetMultipartFormInfo();
 
-  PTRACE(5, "Transaction: " << connectInfo.GetCommandName() << " \"" << args << "\","
-            " url=" << connectInfo.GetURL() << ","
-            " persist=" << std::boolalpha << connectInfo.IsPersistent() << ","
-            " proxy=" << connectInfo.IsProxyConnection());
+  PTRACE(5, "Transaction: " << m_connectInfo.GetCommandName() << " \"" << args << "\","
+            " url=" << m_connectInfo.GetURL() << ","
+            " persist=" << std::boolalpha << m_connectInfo.IsPersistent() << ","
+            " proxy=" << m_connectInfo.IsProxyConnection());
 
-  if (connectInfo.IsWebSocket()) {
-    if (!OnWebSocket(connectInfo))
+  if (m_connectInfo.IsWebSocket()) {
+    if (!OnWebSocket(m_connectInfo))
       return false;
     persist = true;
   }
@@ -306,14 +306,14 @@ PBoolean PHTTPServer::ProcessCommand()
     // it anyway even though we are not a proxy. The usage of GetHostName()
     // below are to catch every way of specifying the host (name, alias, any of
     // several IP numbers etc).
-    const PURL & url = connectInfo.GetURL();
+    const PURL & url = m_connectInfo.GetURL();
     if (url.GetScheme() != "http" ||
         (url.GetPort() != 0 && url.GetPort() != myPort) ||
         (!url.GetHostName() && !PIPSocket::IsLocalHost(url.GetHostName())))
-      persist = OnProxy(connectInfo);
+      persist = OnProxy(m_connectInfo);
     else {
-      connectInfo.entityBody = ReadEntityBody();
-      persist = OnCommand(cmd, url, args, connectInfo);
+      m_connectInfo.entityBody = ReadEntityBody();
+      persist = OnCommand(cmd, url, args, m_connectInfo);
     }
   }
 
@@ -324,15 +324,15 @@ PBoolean PHTTPServer::ProcessCommand()
   // routines above must make sure that their return value is false if
   // if there was no ContentLength field in the response. This ensures that
   // we always close the socket so the client will get the correct end of file
-  if (persist && connectInfo.IsPersistent()) {
-    unsigned max = connectInfo.GetPersistenceMaximumTransations();
-    if (max == 0 || transactionCount < max) {
-      PTRACE(5, "Connection persisting: transactions=" << transactionCount << ", max=" << max);
+  if (persist && m_connectInfo.IsPersistent()) {
+    unsigned max = m_connectInfo.GetPersistenceMaximumTransations();
+    if (max == 0 || m_transactionCount < max) {
+      PTRACE(5, "Connection persisting: transactions=" << m_transactionCount << ", max=" << max);
       return true;
     }
   }
 
-  PTRACE(5, "Connection persistence ended: requested=" << std::boolalpha << connectInfo.IsPersistent() << ", persist=" << persist);
+  PTRACE(5, "Connection persistence ended: requested=" << std::boolalpha << m_connectInfo.IsPersistent() << ", persist=" << persist);
 
   // close the output stream now and return false
   Shutdown(ShutdownWrite);
@@ -399,10 +399,10 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
     return !connectInfo.IsWebSocket();
   }
 
-  urlSpace.StartRead();
-  PHTTPResource * resource = urlSpace.FindResource(connectInfo.GetURL());
+  m_urlSpace.StartRead();
+  PHTTPResource * resource = m_urlSpace.FindResource(connectInfo.GetURL());
   bool persist = resource != NULL && resource->OnWebSocket(*this, connectInfo);
-  urlSpace.EndRead();
+  m_urlSpace.EndRead();
 
   return persist;
 #else
@@ -428,11 +428,11 @@ void PHTTPServer::ClearWebSocketNotifier(const PString & protocol)
 
 PString PHTTPServer::ReadEntityBody()
 {
-  if (connectInfo.GetMajorVersion() < 1)
+  if (m_connectInfo.GetMajorVersion() < 1)
     return PString();
 
   PString entityBody;
-  long contentLength = connectInfo.GetEntityBodyLength();
+  long contentLength = m_connectInfo.GetEntityBodyLength();
   // a content length of > 0 means read explicit length
   // a content length of < 0 means read until EOF
   // a content length of 0 means read nothing
@@ -444,7 +444,7 @@ PString PHTTPServer::ReadEntityBody()
     entityBody = ReadString(P_MAX_INDEX);
 
   // close the connection, if not persistent
-  if (!connectInfo.IsPersistent()) {
+  if (!m_connectInfo.IsPersistent()) {
     PIPSocket * socket = GetSocket();
     if (socket != NULL)
       socket->Shutdown(PIPSocket::ShutdownRead);
@@ -462,51 +462,51 @@ PString PHTTPServer::GetServerName() const
 
 void PHTTPServer::SetURLSpace(const PHTTPSpace & space)
 {
-  urlSpace = space;
+  m_urlSpace = space;
 }
 
 
 bool PHTTPServer::OnGET(const PHTTPConnectionInfo & conInfo)
 {
-  urlSpace.StartRead();
-  PHTTPResource * resource = urlSpace.FindResource(conInfo.GetURL());
+  m_urlSpace.StartRead();
+  PHTTPResource * resource = m_urlSpace.FindResource(conInfo.GetURL());
   if (resource == NULL) {
-    urlSpace.EndRead();
-    return OnError(NotFound, conInfo.GetURL().AsString(), connectInfo);
+    m_urlSpace.EndRead();
+    return OnError(NotFound, conInfo.GetURL().AsString(), m_connectInfo);
   }
 
-  bool retval = resource->OnGET(*this, connectInfo);
-  urlSpace.EndRead();
+  bool retval = resource->OnGET(*this, m_connectInfo);
+  m_urlSpace.EndRead();
   return retval;
 }
 
 
 bool PHTTPServer::OnHEAD(const PHTTPConnectionInfo & conInfo)
 {
-  urlSpace.StartRead();
-  PHTTPResource * resource = urlSpace.FindResource(conInfo.GetURL());
+  m_urlSpace.StartRead();
+  PHTTPResource * resource = m_urlSpace.FindResource(conInfo.GetURL());
   if (resource == NULL) {
-    urlSpace.EndRead();
-    return OnError(NotFound, conInfo.GetURL().AsString(), connectInfo);
+    m_urlSpace.EndRead();
+    return OnError(NotFound, conInfo.GetURL().AsString(), m_connectInfo);
   }
 
-  bool retval = resource->OnHEAD(*this, connectInfo);
-  urlSpace.EndRead();
+  bool retval = resource->OnHEAD(*this, m_connectInfo);
+  m_urlSpace.EndRead();
   return retval;
 }
 
 
 bool PHTTPServer::OnPOST(const PHTTPConnectionInfo & conInfo)
 {
-  urlSpace.StartRead();
-  PHTTPResource * resource = urlSpace.FindResource(conInfo.GetURL());
+  m_urlSpace.StartRead();
+  PHTTPResource * resource = m_urlSpace.FindResource(conInfo.GetURL());
   if (resource == NULL) {
-    urlSpace.EndRead();
-    return OnError(NotFound, conInfo.GetURL().AsString(), connectInfo);
+    m_urlSpace.EndRead();
+    return OnError(NotFound, conInfo.GetURL().AsString(), m_connectInfo);
   }
 
-  bool retval = resource->OnPOST(*this, connectInfo);
-  urlSpace.EndRead();
+  bool retval = resource->OnPOST(*this, m_connectInfo);
+  m_urlSpace.EndRead();
   return retval;
 }
 
@@ -578,31 +578,31 @@ PBoolean PHTTPServer::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 long bodySize)
 {
-  if (connectInfo.majorVersion < 1) 
+  if (m_connectInfo.majorVersion < 1) 
     return false;
 
   httpStatusCodeStruct dummyInfo;
   const httpStatusCodeStruct * statusInfo;
-  if (connectInfo.commandCode < NumCommands)
+  if (m_connectInfo.commandCode < NumCommands)
     statusInfo = GetStatusCodeStruct(code);
   else {
     dummyInfo.text = "";
     dummyInfo.code = code;
     dummyInfo.allowedBody = true;
-    dummyInfo.majorVersion = connectInfo.majorVersion;
-    dummyInfo.minorVersion = connectInfo.minorVersion;
+    dummyInfo.majorVersion = m_connectInfo.majorVersion;
+    dummyInfo.minorVersion = m_connectInfo.minorVersion;
     statusInfo = &dummyInfo;
   }
 
   // output the command line
-  *this << "HTTP/" << connectInfo.majorVersion << '.' << connectInfo.minorVersion
+  *this << "HTTP/" << m_connectInfo.majorVersion << '.' << m_connectInfo.minorVersion
         << ' ' << statusInfo->code << ' ' << statusInfo->text << "\r\n";
 
   PBoolean chunked = false;
 
   // If do not have user set content length, decide if we should add one
   if (!headers.Contains(ContentLengthTag())) {
-    if (connectInfo.minorVersion < 1) {
+    if (m_connectInfo.minorVersion < 1) {
       // v1.0 client, don't put in ContentLength if the bodySize is zero because
       // that can be confused by some browsers as meaning there is no body length.
       if (bodySize > 0)
@@ -624,8 +624,8 @@ PBoolean PHTTPServer::StartResponse(StatusCode code,
   // The following is a work around for a strange bug in Netscape where it
   // locks up when a persistent connection is made and data less than 1k
   // (including MIME headers) is sent. Go figure....
-  if (bodySize < 1024 && connectInfo.GetMIME()(UserAgentTag()).Find("Mozilla/2.0") != P_MAX_INDEX)
-    nextTimeout.SetInterval(STRANGE_NETSCAPE_BUG*1000);
+  if (bodySize < 1024 && m_connectInfo.GetMIME()(UserAgentTag()).Find("Mozilla/2.0") != P_MAX_INDEX)
+    m_nextTimeout.SetInterval(STRANGE_NETSCAPE_BUG*1000);
 #endif
 
   return chunked;
@@ -935,10 +935,12 @@ PBoolean PHTTPAuthority::IsActive() const
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSimpleAuth
 
-PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm_,
-                                 const PString & username_,
-                                 const PString & password_)
-  : realm(realm_), username(username_), password(password_)
+PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm,
+                                 const PString & username,
+                                 const PString & password)
+  : m_realm(realm)
+  , m_username(username)
+  , m_password(password)
 {
   PAssert(!realm, "Must have a realm!");
 }
@@ -946,19 +948,19 @@ PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm_,
 
 PObject * PHTTPSimpleAuth::Clone() const
 {
-  return new PHTTPSimpleAuth(realm, username, password);
+  return new PHTTPSimpleAuth(m_realm, m_username, m_password);
 }
 
 
 PBoolean PHTTPSimpleAuth::IsActive() const
 {
-  return !username || !password;
+  return !m_username || !m_password;
 }
 
 
 PString PHTTPSimpleAuth::GetRealm(const PHTTPRequest &) const
 {
-  return realm;
+  return m_realm;
 }
 
 
@@ -967,7 +969,7 @@ PBoolean PHTTPSimpleAuth::Validate(const PHTTPRequest &,
 {
   PString user, pass;
   DecodeBasicAuthority(authInfo, user, pass);
-  return username == user && password == pass;
+  return m_username == user && m_password == pass;
 }
 
 
@@ -975,15 +977,15 @@ PBoolean PHTTPSimpleAuth::Validate(const PHTTPRequest &,
 // PHTTPMultiSimpAuth
 
 PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm_)
-  : realm(realm_)
+  : m_realm(realm_)
 {
-  PAssert(!realm, "Must have a realm!");
+  PAssert(!m_realm, "Must have a realm!");
 }
 
 
-PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm_,
-                                       const PStringToString & users_)
-  : realm(realm_), users(users_)
+PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm, const PStringToString & users)
+  : m_realm(realm)
+  , m_users(users)
 {
   PAssert(!realm, "Must have a realm!");
 }
@@ -991,19 +993,19 @@ PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm_,
 
 PObject * PHTTPMultiSimpAuth::Clone() const
 {
-  return new PHTTPMultiSimpAuth(realm, users);
+  return new PHTTPMultiSimpAuth(m_realm, m_users);
 }
 
 
 PBoolean PHTTPMultiSimpAuth::IsActive() const
 {
-  return !users.IsEmpty();
+  return !m_users.IsEmpty();
 }
 
 
 PString PHTTPMultiSimpAuth::GetRealm(const PHTTPRequest &) const
 {
-  return realm;
+  return m_realm;
 }
 
 
@@ -1012,13 +1014,13 @@ PBoolean PHTTPMultiSimpAuth::Validate(const PHTTPRequest &,
 {
   PString user, pass;
   DecodeBasicAuthority(authInfo, user, pass);
-  return users.Contains(user) && users[user] == pass;
+  return m_users.Contains(user) && m_users[user] == pass;
 }
 
 
 void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & password)
 {
-  users.SetAt(username, password);
+  m_users.SetAt(username, password);
 }
 
 
@@ -1445,26 +1447,26 @@ PBoolean PHTTPConnectionInfo::IsCompatible(int major, int minor) const
 // PHTTPResource
 
 PHTTPResource::PHTTPResource(const PURL & url)
-  : baseURL(url)
-  , authority(NULL)
-  , hitCount(0)
+  : m_baseURL(url)
+  , m_authority(NULL)
+  , m_hitCount(0)
 {
 }
 
 
 PHTTPResource::PHTTPResource(const PURL & url, const PHTTPAuthority & auth)
-  : baseURL(url)
-  , authority(auth.CloneAs<PHTTPAuthority>())
-  , hitCount(0)
+  : m_baseURL(url)
+  , m_authority(auth.CloneAs<PHTTPAuthority>())
+  , m_hitCount(0)
 {
 }
 
 
 PHTTPResource::PHTTPResource(const PURL & url, const PString & type)
-  : baseURL(url)
-  , contentType(type)
-  , authority(NULL)
-  , hitCount(0)
+  : m_baseURL(url)
+  , m_contentType(type)
+  , m_authority(NULL)
+  , m_hitCount(0)
 {
 }
 
@@ -1472,17 +1474,17 @@ PHTTPResource::PHTTPResource(const PURL & url, const PString & type)
 PHTTPResource::PHTTPResource(const PURL & url,
                              const PString & type,
                              const PHTTPAuthority & auth)
-  : baseURL(url)
-  , contentType(type)
-  , authority(auth.CloneAs<PHTTPAuthority>())
-  , hitCount(0)
+  : m_baseURL(url)
+  , m_contentType(type)
+  , m_authority(auth.CloneAs<PHTTPAuthority>())
+  , m_hitCount(0)
 {
 }
 
 
 PHTTPResource::~PHTTPResource()
 {
-  delete authority;
+  delete m_authority;
 }
 
 
@@ -1553,7 +1555,7 @@ PBoolean PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
     else if (!isGET)
       retVal = request->outMIME.Contains(PHTTP::ContentLengthTag());
     else {
-      hitCount++;
+      m_hitCount++;
       retVal = OnGETData(server, url, connectInfo, *request);
     }
   }
@@ -1639,10 +1641,10 @@ PBoolean PHTTPResource::CheckAuthority(PHTTPServer & server,
                             const PHTTPRequest & request,
                      const PHTTPConnectionInfo & connectInfo)
 {
-  if (authority == NULL)
+  if (m_authority == NULL)
     return true;
 
-  return CheckAuthority(*authority, server, request, connectInfo);
+  return CheckAuthority(*m_authority, server, request, connectInfo);
 }
     
     
@@ -1696,15 +1698,15 @@ PBoolean PHTTPResource::CheckAuthority(PHTTPAuthority & authority,
 
 void PHTTPResource::SetAuthority(const PHTTPAuthority & auth)
 {
-  delete authority;
-  authority = (PHTTPAuthority *)auth.Clone();
+  delete m_authority;
+  m_authority = (PHTTPAuthority *)auth.Clone();
 }
 
 
 void PHTTPResource::ClearAuthority()
 {
-  delete authority;
-  authority = NULL;
+  delete m_authority;
+  m_authority = NULL;
 }
 
 
@@ -1750,8 +1752,8 @@ PBoolean PHTTPResource::LoadHeaders(PHTTPRequest & request)
 
 void PHTTPResource::SendData(PHTTPRequest & request)
 {
-  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !contentType)
-    request.outMIME.SetAt(PHTTP::ContentTypeTag, contentType);
+  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !m_contentType)
+    request.outMIME.SetAt(PHTTP::ContentTypeTag, m_contentType);
 
   PCharArray data;
   if (LoadData(request, data)) {
@@ -1830,7 +1832,8 @@ PHTTPString::PHTTPString(const PURL & url,
 
 
 PHTTPString::PHTTPString(const PURL & url, const PString & str)
-  : PHTTPResource(url, "text/html"), string(str)
+  : PHTTPResource(url, "text/html")
+  , m_string(str)
 {
 }
 
@@ -1838,7 +1841,8 @@ PHTTPString::PHTTPString(const PURL & url, const PString & str)
 PHTTPString::PHTTPString(const PURL & url,
                          const PString & str,
                          const PString & type)
-  : PHTTPResource(url, type), string(str)
+  : PHTTPResource(url, type)
+  , m_string(str)
 {
 }
 
@@ -1846,7 +1850,8 @@ PHTTPString::PHTTPString(const PURL & url,
 PHTTPString::PHTTPString(const PURL & url,
                          const PString & str,
                          const PHTTPAuthority & auth)
-  : PHTTPResource(url, "text/html", auth), string(str)
+  : PHTTPResource(url, "text/html", auth)
+  , m_string(str)
 {
 }
 
@@ -1855,21 +1860,22 @@ PHTTPString::PHTTPString(const PURL & url,
                          const PString & str,
                          const PString & type,
                          const PHTTPAuthority & auth)
-  : PHTTPResource(url, type, auth), string(str)
+  : PHTTPResource(url, type, auth)
+  , m_string(str)
 {
 }
 
 
 PBoolean PHTTPString::LoadHeaders(PHTTPRequest & request)
 {
-  request.contentSize = string.GetLength();
+  request.contentSize = m_string.GetLength();
   return true;
 }
 
 
 PString PHTTPString::LoadText(PHTTPRequest &)
 {
-  return string;
+  return m_string;
 }
 
 
@@ -1883,21 +1889,22 @@ PHTTPFile::PHTTPFile(const PURL & url, int)
 
 
 PHTTPFile::PHTTPFile(const PString & filename)
-  : PHTTPResource(filename, PMIMEInfo::GetContentType(PFilePath(filename).GetType())),
-    filePath(filename)
+  : PHTTPResource(filename, PMIMEInfo::GetContentType(PFilePath(filename).GetType()))
+  , m_filePath(filename)
 {
 }
 
 
 PHTTPFile::PHTTPFile(const PString & filename, const PHTTPAuthority & auth)
-  : PHTTPResource(filename, auth), filePath(filename)
+  : PHTTPResource(filename, auth)
+  , m_filePath(filename)
 {
 }
 
 
 PHTTPFile::PHTTPFile(const PURL & url, const PFilePath & path)
-  : PHTTPResource(url, PMIMEInfo::GetContentType(path.GetType())),
-    filePath(path)
+  : PHTTPResource(url, PMIMEInfo::GetContentType(path.GetType()))
+  , m_filePath(path)
 {
 }
 
@@ -1905,7 +1912,8 @@ PHTTPFile::PHTTPFile(const PURL & url, const PFilePath & path)
 PHTTPFile::PHTTPFile(const PURL & url,
                      const PFilePath & path,
                      const PString & type)
-  : PHTTPResource(url, type), filePath(path)
+  : PHTTPResource(url, type)
+  , m_filePath(path)
 {
 }
 
@@ -1913,8 +1921,8 @@ PHTTPFile::PHTTPFile(const PURL & url,
 PHTTPFile::PHTTPFile(const PURL & url,
                      const PFilePath & path,
                      const PHTTPAuthority & auth)
-  : PHTTPResource(url, PMIMEInfo::GetContentType(path.GetType()), auth),
-    filePath(path)
+  : PHTTPResource(url, PMIMEInfo::GetContentType(path.GetType()), auth)
+  , m_filePath(path)
 {
 }
 
@@ -1923,7 +1931,8 @@ PHTTPFile::PHTTPFile(const PURL & url,
                      const PFilePath & path,
                      const PString & type,
                      const PHTTPAuthority & auth)
-  : PHTTPResource(url, type, auth), filePath(path)
+  : PHTTPResource(url, type, auth)
+  , m_filePath(path)
 {
 }
 
@@ -1949,9 +1958,9 @@ PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
 
 PBoolean PHTTPFile::LoadHeaders(PHTTPRequest & request)
 {
-  PFile & file = ((PHTTPFileRequest&)request).file;
+  PFile & file = ((PHTTPFileRequest&)request).m_file;
 
-  if (!file.Open(filePath, PFile::ReadOnly)) {
+  if (!file.Open(m_filePath, PFile::ReadOnly)) {
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -1963,7 +1972,7 @@ PBoolean PHTTPFile::LoadHeaders(PHTTPRequest & request)
 
 PBoolean PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
 {
-  PFile & file = ((PHTTPFileRequest&)request).file;
+  PFile & file = ((PHTTPFileRequest&)request).m_file;
 
   PString contentType = GetContentType();
   if (contentType.IsEmpty())
@@ -1992,7 +2001,7 @@ PBoolean PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
 PString PHTTPFile::LoadText(PHTTPRequest & request)
 {
   PString text;
-  PFile & file = ((PHTTPFileRequest&)request).file;
+  PFile & file = ((PHTTPFileRequest&)request).m_file;
   if (PAssert(file.IsOpen(), PLogicError)) {
     text = file.ReadString(file.GetLength());
     PAssert(file.Close(), PLogicError);
@@ -2061,7 +2070,7 @@ PBoolean PHTTPTailFile::LoadHeaders(PHTTPRequest & request)
 
 PBoolean PHTTPTailFile::LoadData(PHTTPRequest & request, PCharArray & data)
 {
-  PFile & file = ((PHTTPFileRequest&)request).file;
+  PFile & file = ((PHTTPFileRequest&)request).m_file;
 
   if (file.GetPosition() == 0)
     file.SetPosition(file.GetLength()-request.url.GetQueryVars()("offset", "10000").AsUnsigned());
@@ -2081,7 +2090,9 @@ PBoolean PHTTPTailFile::LoadData(PHTTPRequest & request, PCharArray & data)
 // PHTTPDirectory
 
 PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
-  : PHTTPFile(url, 0), basePath(dir), allowDirectoryListing(true)
+  : PHTTPFile(url, 0)
+  , m_basePath(dir)
+  , m_allowDirectoryListing(true)
 {
 }
 
@@ -2089,7 +2100,9 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
 PHTTPDirectory::PHTTPDirectory(const PURL & url,
                                const PDirectory & dir,
                                const PHTTPAuthority & auth)
-  : PHTTPFile(url, PString(), auth), basePath(dir), allowDirectoryListing(true)
+  : PHTTPFile(url, PString(), auth)
+  , m_basePath(dir)
+  , m_allowDirectoryListing(true)
 {
 }
 
@@ -2112,17 +2125,17 @@ PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
   PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, this, socket);
 
   const PStringArray & path = url.GetPath();
-  request->realPath = basePath;
+  request->m_realPath = m_basePath;
   PINDEX i;
   for (i = GetURL().GetPath().GetSize(); i < path.GetSize()-1; i++)
-    request->realPath += path[i] + PDIR_SEPARATOR;
+    request->m_realPath += path[i] + PDIR_SEPARATOR;
 
   // append the last path element
   if (i < path.GetSize())
-    request->realPath += path[i];
+    request->m_realPath += path[i];
 
-  if (request->realPath.Find(basePath) != 0)
-    request->realPath = basePath;
+  if (request->m_realPath.Find(m_basePath) != 0)
+    request->m_realPath = m_basePath;
 
   return request;
 }
@@ -2130,7 +2143,7 @@ PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
 
 void PHTTPDirectory::EnableAuthorisation(const PString & realm)
 {
-  authorisationRealm = realm;
+  m_authorisationRealm = realm;
 }
 
 
@@ -2154,7 +2167,7 @@ PBoolean PHTTPDirectory::FindAuthorisations(const PDirectory & dir, PString & re
     return true;
   }
     
-  if (dir.IsRoot() || (dir == basePath))
+  if (dir.IsRoot() || (dir == m_basePath))
     return false;
 
   return FindAuthorisations(dir.GetParent(), realm, authorisations);
@@ -2167,8 +2180,8 @@ PBoolean PHTTPDirectory::CheckAuthority(PHTTPServer & server,
   // if access control is enabled, then search parent directories for password files
   PStringToString authorisations;
   PString newRealm;
-  if (authorisationRealm.IsEmpty() ||
-      !FindAuthorisations(((PHTTPDirRequest&)request).realPath.GetDirectory(), newRealm, authorisations) ||
+  if (m_authorisationRealm.IsEmpty() ||
+      !FindAuthorisations(((PHTTPDirRequest&)request).m_realPath.GetDirectory(), newRealm, authorisations) ||
       authorisations.GetSize() == 0)
     return true;
 
@@ -2178,7 +2191,7 @@ PBoolean PHTTPDirectory::CheckAuthority(PHTTPServer & server,
 
 PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 {
-  PFilePath & realPath = ((PHTTPDirRequest&)request).realPath;
+  PFilePath & realPath = ((PHTTPDirRequest&)request).m_realPath;
     
   // if not able to obtain resource information, then consider the resource "not found"
   PFileInfo info;
@@ -2188,17 +2201,17 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   }
 
   // if the resource is a file, and the file can't be opened, then return "not found"
-  PFile & file = ((PHTTPDirRequest&)request).file;
+  PFile & file = ((PHTTPDirRequest&)request).m_file;
   if (info.type != PFileInfo::SubDirectory) {
     if (!file.Open(realPath, PFile::ReadOnly) ||
-        (!authorisationRealm.IsEmpty() && realPath.GetFileName() == accessFilename)) {
+        (!m_authorisationRealm.IsEmpty() && realPath.GetFileName() == accessFilename)) {
       request.code = PHTTP::NotFound;
       return false;
     }
   } 
 
   // resource is a directory - if index files disabled, then return "not found"
-  else if (!allowDirectoryListing) {
+  else if (!m_allowDirectoryListing) {
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2213,7 +2226,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   }
 
   // open the file and return information
-  PString & fakeIndex = ((PHTTPDirRequest&)request).fakeIndex;
+  PString & fakeIndex = ((PHTTPDirRequest&)request).m_fakeIndex;
   if (file.IsOpen()) {
     request.outMIME.SetAt(PHTTP::ContentTypeTag(),
                           PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
@@ -2252,7 +2265,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 
 PString PHTTPDirectory::LoadText(PHTTPRequest & request)
 {
-  PString & fakeIndex = ((PHTTPDirRequest&)request).fakeIndex;
+  PString & fakeIndex = ((PHTTPDirRequest&)request).m_fakeIndex;
   if (fakeIndex.IsEmpty())
     return PHTTPFile::LoadText(request);
 

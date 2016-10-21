@@ -252,33 +252,33 @@ PINDEX PArrayObjects::GetValuesIndex(const PObject & obj) const
 void PAbstractList::DestroyContents()
 {
   RemoveAll();
-  delete info;
-  info = NULL;
+  delete m_info;
+  m_info = NULL;
 }
 
 
 void PAbstractList::CopyContents(const PAbstractList & list)
 {
-  info = list.info;
+  m_info = list.m_info;
 }
 
 
 void PAbstractList::CloneContents(const PAbstractList * list)
 {
-  Element * element = list->info->head;
+  Element * element = list->m_info->head;
 
-  info = new PListInfo;
-  PAssert(info != NULL, POutOfMemory);
+  m_info = new PListInfo;
+  PAssert(m_info != NULL, POutOfMemory);
 
   while (element != NULL) {
     Element * newElement = new Element(element->data->Clone());
 
-    if (info->head == NULL)
-      info->head = info->tail = newElement;
+    if (m_info->head == NULL)
+      m_info->head = m_info->tail = newElement;
     else {
-      newElement->prev = info->tail;
-      info->tail->next = newElement;
-      info->tail = newElement;
+      newElement->prev = m_info->tail;
+      m_info->tail->next = newElement;
+      m_info->tail = newElement;
     }
 
     element = element->next;
@@ -289,8 +289,8 @@ void PAbstractList::CloneContents(const PAbstractList * list)
 PObject::Comparison PAbstractList::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PAbstractList), PInvalidCast);
-  Element * elmt1 = info->head;
-  Element * elmt2 = ((const PAbstractList &)obj).info->head;
+  Element * elmt1 = m_info->head;
+  Element * elmt2 = ((const PAbstractList &)obj).m_info->head;
   while (elmt1 != NULL || elmt2 != NULL) {
     if (elmt1 == NULL)
       return LessThan;
@@ -319,13 +319,13 @@ PINDEX PAbstractList::Append(PObject * obj)
     return P_MAX_INDEX;
 
   Element * element = new Element(obj);
-  if (info->tail != NULL)
-    info->tail->next = element;
-  element->prev = info->tail;
+  if (m_info->tail != NULL)
+    m_info->tail->next = element;
+  element->prev = m_info->tail;
   element->next = NULL;
-  if (info->head == NULL)
-    info->head = element;
-  info->tail = element;
+  if (m_info->head == NULL)
+    m_info->head = element;
+  m_info->tail = element;
 
   return reference->size++;
 }
@@ -337,13 +337,13 @@ void PAbstractList::Prepend(PObject * obj)
     return;
 
   Element * element = new Element(obj);
-  if (info->head != NULL)
-    info->head->prev = element;
+  if (m_info->head != NULL)
+    m_info->head->prev = element;
   element->prev = NULL;
-  element->next = info->head;
-  if (info->tail == NULL)
-    info->tail = element;
-  info->head = element;
+  element->next = m_info->head;
+  if (m_info->tail == NULL)
+    m_info->tail = element;
+  m_info->head = element;
   ++reference->size;
 }
 
@@ -372,7 +372,7 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
   if (element->prev != NULL)
     element->prev->next = newElement;
   else
-    info->head = newElement;
+    m_info->head = newElement;
   newElement->prev = element->prev;
   newElement->next = element;
   element->prev = newElement;
@@ -384,10 +384,10 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
 
 PBoolean PAbstractList::Remove(const PObject * obj)
 {
-  if (PAssertNULL(info) == NULL)
+  if (PAssertNULL(m_info) == NULL)
     return false;
 
-  Element * elmt = info->head;
+  Element * elmt = m_info->head;
   while (elmt != NULL) {
     if (elmt->data == obj) {
       RemoveElement(elmt);
@@ -402,7 +402,7 @@ PBoolean PAbstractList::Remove(const PObject * obj)
 
 PObject * PAbstractList::RemoveAt(PINDEX index)
 {
-  if (PAssertNULL(info) == NULL)
+  if (PAssertNULL(m_info) == NULL)
     return NULL;
 
   Element * element = FindElement(index);
@@ -421,7 +421,7 @@ void PAbstractList::InsertElement(PListElement * element, PObject * obj)
   if (element->prev != NULL)
     element->prev->next = newElement;
   else
-    info->head = newElement;
+    m_info->head = newElement;
   newElement->prev = element->prev;
   newElement->next = element;
   element->prev = newElement;
@@ -431,7 +431,7 @@ void PAbstractList::InsertElement(PListElement * element, PObject * obj)
 
 PObject * PAbstractList::RemoveElement(PListElement * elmt)
 {
-  if (PAssertNULL(info) == NULL)
+  if (PAssertNULL(m_info) == NULL)
     return NULL;
   
   if (elmt == NULL)
@@ -440,17 +440,17 @@ PObject * PAbstractList::RemoveElement(PListElement * elmt)
   if (elmt->prev != NULL)
     elmt->prev->next = elmt->next;
   else {
-    info->head = elmt->next;
-    if (info->head != NULL)
-      info->head->prev = NULL;
+    m_info->head = elmt->next;
+    if (m_info->head != NULL)
+      m_info->head->prev = NULL;
   }
 
   if (elmt->next != NULL)
     elmt->next->prev = elmt->prev;
   else {
-    info->tail = elmt->prev;
-    if (info->tail != NULL)
-      info->tail->next = NULL;
+    m_info->tail = elmt->prev;
+    if (m_info->tail != NULL)
+      m_info->tail->next = NULL;
   }
 
   if((reference == NULL) || (reference->size == 0)){
@@ -511,7 +511,7 @@ PBoolean PAbstractList::ReplaceAt(PINDEX index, PObject * val)
 PINDEX PAbstractList::GetObjectsIndex(const PObject * obj) const
 {
   PINDEX index = 0;
-  Element * element = info->head;
+  Element * element = m_info->head;
 
   while (element != NULL) {
     if (element->data == obj) 
@@ -540,11 +540,11 @@ PListElement * PAbstractList::FindElement(PINDEX index) const
   PINDEX lastIndex;
   if (index < GetSize()/2) {
     lastIndex = 0;
-    lastElement = info->head;
+    lastElement = m_info->head;
   }
   else {
     lastIndex = GetSize()-1;
-    lastElement = info->tail;
+    lastElement = m_info->tail;
   }
 
   while (lastIndex < index) {
@@ -563,11 +563,11 @@ PListElement * PAbstractList::FindElement(PINDEX index) const
 
 PListElement * PAbstractList::FindElement(const PObject & obj, PINDEX * indexPtr) const
 {
-  if (PAssertNULL(info) == NULL)
+  if (PAssertNULL(m_info) == NULL)
     return NULL;
 
   PINDEX index = 0;
-  Element * element = info->head;
+  Element * element = m_info->head;
   while (element != NULL) {
     if (*element->data == obj)
       break;

@@ -210,15 +210,15 @@ class PVideoFrameInfo : public PObject
     */
     void SetResizeMode(
       ResizeMode mode
-    ) { if (resizeMode < eMaxResizeMode) resizeMode = mode; }
+    ) { if (m_resizeMode < eMaxResizeMode) m_resizeMode = mode; }
 
     /**Get the resize mode to be used.
     */
-    ResizeMode GetResizeMode() const { return resizeMode; }
+    ResizeMode GetResizeMode() const { return m_resizeMode; }
 
     /** Get the number of bytes of an image, given a particular width, height and colour format.
       */
-    PINDEX CalculateFrameBytes() const { return CalculateFrameBytes(frameWidth, frameHeight, colourFormat); }
+    PINDEX CalculateFrameBytes() const { return CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat); }
     static PINDEX CalculateFrameBytes(
       unsigned width,               ///< Width of frame
       unsigned height,              ///< Height of frame
@@ -266,13 +266,13 @@ class PVideoFrameInfo : public PObject
     static PStringArray GetSizeNames();
 
   protected:
-    unsigned   frameWidth;
-    unsigned   frameHeight;
-    unsigned   sarWidth;
-    unsigned   sarHeight;
-    unsigned   frameRate;
-    PString    colourFormat;
-    ResizeMode resizeMode;
+    unsigned   m_frameWidth;
+    unsigned   m_frameHeight;
+    unsigned   m_sarWidth;
+    unsigned   m_sarHeight;
+    unsigned   m_frameRate;
+    PString    m_colourFormat;
+    ResizeMode m_resizeMode;
 };
 
 
@@ -397,7 +397,7 @@ class PVideoDevice : public PVideoFrameInfo
     /**Get the device name of the open device.
       */
     const PString & GetDeviceName() const
-      { return deviceName; }
+      { return m_deviceName; }
 
     /**Get a list of all of the drivers available.
       */
@@ -641,7 +641,7 @@ class PVideoDevice : public PVideoFrameInfo
     
     /**Get the last error code. This is a platform dependent number.
       */
-    int GetLastError() const { return lastError; }
+    int GetLastError() const { return m_lastError; }
 
 
     /** Is the device a camera, and obtain video
@@ -672,27 +672,26 @@ class PVideoDevice : public PVideoFrameInfo
     /**Set preferred native colour format from video capture device.
        Note empty == no preference.
      */
-    void SetPreferredColourFormat(const PString & colourFmt) { preferredColourFormat = colourFmt; }
+    void SetPreferredColourFormat(const PString & colourFmt) { m_preferredColourFormat = colourFmt; }
 
     /**Get preferred native colour format from video capture device.
        Returns empty == no preference
      */
-    const PString & GetPreferredColourFormat() { return preferredColourFormat; }
+    const PString & GetPreferredColourFormat() { return m_preferredColourFormat; }
     
   protected:
     PINDEX GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const;
     PString GetDeviceNameFromOpenArgs(const OpenArgs & args) const;
 
-    PCaselessString deviceName;
-    int          lastError;
-    VideoFormat  videoFormat;
-    int          channelNumber;
-    // Preferred native colour format from video input device, empty == no preference
-    PString      preferredColourFormat;
-    PBoolean         nativeVerticalFlip;
+    PCaselessString m_deviceName;
+    int             m_lastError;
+    VideoFormat     m_videoFormat;
+    int             m_channelNumber;
+    PString         m_preferredColourFormat; // Preferred native colour format from video input device, empty == no preference
+    bool            m_nativeVerticalFlip;
 
-    PColourConverter * converter;
-    PBYTEArray         frameStore;
+    PColourConverter * m_converter;
+    PBYTEArray         m_frameStore;
 
   private:
     P_REMOVE_VIRTUAL(int, GetBrightness(), 0);
@@ -1062,9 +1061,9 @@ class PVideoInputDevice : public PVideoDevice
       bool                             m_hue;
       bool                             m_gamma;
       bool                             m_exposure;
-      std::list<PVideoFrameInfo>       framesizes;
-      std::list<PVideoControlInfo>     controls;
-      std::list<PVideoInteractionInfo> interactions;
+      std::list<PVideoFrameInfo>       m_frameSizes;
+      std::list<PVideoControlInfo>     m_controls;
+      std::list<PVideoInteractionInfo> m_interactions;
     };
 
     /**Retrieve a list of Device Capabilities

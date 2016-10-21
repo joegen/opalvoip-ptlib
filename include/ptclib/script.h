@@ -198,13 +198,14 @@ class PScriptLanguage : public PObject
     /// Vector of parameters as used by Signature structure.
     struct ParamVector : public vector<PVarType>
     {
-      ParamVector(size_t sz = 0) : vector<PVarType>(sz) { }
+      explicit ParamVector(size_t sz = 0) : vector<PVarType>(sz) { }
       void Push(void * state);
       void Pop(void * state);
     };
 
     /// Signature of Lua function and callback.
     struct Signature {
+      Signature() { }
       ParamVector m_arguments;
       ParamVector m_results;
     };

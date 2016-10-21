@@ -230,43 +230,43 @@ class PURL : public PObject
     static PCaselessString ExtractScheme(const char * str);
 
     /// Get the scheme field of the URL.
-    const PCaselessString & GetScheme() const { return scheme; }
+    const PCaselessString & GetScheme() const { return m_scheme; }
 
     /// Set the scheme field of the URL
     bool SetScheme(const PString & scheme);
 
     /// Get the username field of the URL.
-    const PString & GetUserName() const { return username; }
+    const PString & GetUserName() const { return m_username; }
 
     /// Set the username field of the URL.
     void SetUserName(const PString & username);
 
     /// Get the password field of the URL.
-    const PString & GetPassword() const { return password; }
+    const PString & GetPassword() const { return m_password; }
 
     /// Set the password field of the URL.
     void SetPassword(const PString & password);
 
     /// Get the hostname field of the URL.
-    const PCaselessString & GetHostName() const { return hostname; }
+    const PCaselessString & GetHostName() const { return m_hostname; }
 
     /// Set the hostname field of the URL.
     void SetHostName(const PString & hostname);
 
     /// Get the port field of the URL.
-    WORD GetPort() const { return port; }
+    WORD GetPort() const { return m_port; }
 
     /// Set the port field in the URL. Zero resets to default.
     void SetPort(WORD newPort);
     
     /// Get if explicit port is specified.
-    PBoolean GetPortSupplied() const { return portSupplied; }
+    PBoolean GetPortSupplied() const { return m_portSupplied; }
 
     /// Get the hostname and optional port fields of the URL.
     PString GetHostPort() const;
 
     /// Get if path is relative or absolute
-    PBoolean GetRelativePath() const { return relativePath; }
+    PBoolean GetRelativePath() const { return m_relativePath; }
 
     /// Get the path field of the URL as a string.
     PString GetPathStr() const;
@@ -275,7 +275,7 @@ class PURL : public PObject
     void SetPathStr(const PString & pathStr);
 
     /// Get the path field of the URL as a string array.
-    const PStringArray & GetPath() const { return path; }
+    const PStringArray & GetPath() const { return m_path; }
 
     /// Set the path field of the URL as a string array.
     void SetPath(const PStringArray & path);
@@ -297,7 +297,7 @@ class PURL : public PObject
 
     /// Get the parameter (;) field(s) of the URL as a string dictionary.
     /// Note the values have already been translated using UntranslateString
-    const PStringOptions & GetParamVars() const { return paramVars; }
+    const PStringOptions & GetParamVars() const { return m_paramVars; }
 
     /// Set the parameter (;) field(s) of the URL as a string dictionary.
     /// Note the values will be translated using TranslateString
@@ -315,7 +315,7 @@ class PURL : public PObject
     );
 
     /// Get the fragment (\#) field of the URL.
-    const PString & GetFragment() const { return fragment; }
+    const PString & GetFragment() const { return m_fragment; }
 
     /// Get the Query (?) field of the URL as a string.
     PString GetQuery() const;
@@ -326,7 +326,7 @@ class PURL : public PObject
 
     /// Get the Query (?) field of the URL as a string dictionary.
     /// Note the values have already been translated using UntranslateString
-    const PStringOptions & GetQueryVars() const { return queryVars; }
+    const PStringOptions & GetQueryVars() const { return m_queryVars; }
 
     /// Set the Query (?) field(s) of the URL as a string dictionary.
     /// Note the values will be translated using TranslateString
@@ -343,7 +343,7 @@ class PURL : public PObject
     void SetContents(const PString & str);
 
     /// Return true if the URL is an empty string.
-    PBoolean IsEmpty() const { return urlString.IsEmpty(); }
+    PBoolean IsEmpty() const { return m_urlString.IsEmpty(); }
 
 
     struct LoadParams {
@@ -411,20 +411,20 @@ class PURL : public PObject
     );
     void Recalculate();
 
-    const PURLScheme * schemeInfo;
-    PString urlString;
+    const PURLScheme * m_schemeInfo;
+    PString            m_urlString;
 
-    PCaselessString scheme;
-    PString         username;
-    PString         password;
-    PCaselessString hostname;
-    WORD            port;
-    bool            portSupplied;          /// port was supplied in string input
-    bool            relativePath;
-    PStringArray    path;
-    PStringOptions paramVars;
-    PString         fragment;
-    PStringOptions queryVars;
+    PCaselessString m_scheme;
+    PString         m_username;
+    PString         m_password;
+    PCaselessString m_hostname;
+    WORD            m_port;
+    bool            m_portSupplied;          /// port was supplied in string input
+    bool            m_relativePath;
+    PStringArray    m_path;
+    PStringOptions  m_paramVars;
+    PString         m_fragment;
+    PStringOptions  m_queryVars;
     PString         m_contents;  // Anything left after parsing other elements
 };
 

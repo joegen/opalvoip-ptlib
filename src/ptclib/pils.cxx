@@ -78,7 +78,7 @@ ostream & operator<<(ostream & s, PILSSession::MSIPAddress & a)
 PILSSession::PILSSession()
   : PLDAPSession("objectClass=RTPerson")
 {
-  protocolVersion = 2;
+  m_protocolVersion = 2;
 }
 
 

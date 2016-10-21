@@ -308,10 +308,10 @@ class PFTPServer : public PFTP
     virtual PString GetSystemTypeString() const;
 
     /// return the thirdPartyPort flag, allowing 3 host put and get.
-    PBoolean GetAllowThirdPartyPort() const { return thirdPartyPort; }
+    PBoolean GetAllowThirdPartyPort() const { return m_thirdPartyPort; }
 
     /// Set the thirdPartyPort flag.
-    void SetAllowThirdPartyPort(PBoolean state) { thirdPartyPort = state; }
+    void SetAllowThirdPartyPort(PBoolean state) { m_thirdPartyPort = state; }
 
     /** Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
@@ -454,8 +454,8 @@ class PFTPServer : public PFTP
     PBoolean OnOpen();
     void Construct();
 
-    PString readyString;
-    PBoolean    thirdPartyPort;
+    PString m_readyString;
+    bool    m_thirdPartyPort;
 
     enum {
       NotConnected,
@@ -463,18 +463,18 @@ class PFTPServer : public PFTP
       NeedPassword,
       Connected,
       ClientConnect
-    } state;
+    } m_state;
 
-    PIPSocket::Address remoteHost;
-    WORD remotePort;
+    PIPSocket::Address m_remoteHost;
+    WORD m_remotePort;
 
-    PTCPSocket * passiveSocket;
+    PTCPSocket * m_passiveSocket;
 
-    char    type;
-    char    structure;
-    char    mode;
-    PString userName;
-    int     illegalPasswordCount;
+    char    m_type;
+    char    m_structure;
+    char    m_mode;
+    PString m_userName;
+    int     m_illegalPasswordCount;
 };
 
 
