@@ -2360,8 +2360,13 @@ int PSSLChannel::BioRead(char * buf, int len)
   if (PIndirectChannel::Read(buf, len))
     return GetLastReadCount();
 
-  if (GetErrorCode(PChannel::LastReadError) == PChannel::Interrupted)
-    BIO_set_retry_read(m_bio);
+  switch (GetErrorCode(PChannel::LastReadError)) {
+    case PChannel::Interrupted :
+    case PChannel::Unavailable :
+      BIO_set_retry_read(m_bio); // Non fatal, keep trying
+    default :
+        break;
+  }
 
   return -1;
 }
@@ -2412,8 +2417,13 @@ int PSSLChannel::BioWrite(const char * buf, int len)
   if (PIndirectChannel::Write(buf, len))
     return GetLastWriteCount();
 
-  if (GetErrorCode(PChannel::LastWriteError) == PChannel::Interrupted)
-    BIO_set_retry_write(m_bio);
+  switch (GetErrorCode(PChannel::LastWriteError)) {
+    case PChannel::Interrupted :
+    case PChannel::Unavailable :
+      BIO_set_retry_write(m_bio); // Non fatal, keep trying
+    default :
+        break;
+  }
 
   return -1;
 }
