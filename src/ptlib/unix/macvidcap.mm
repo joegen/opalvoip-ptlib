@@ -234,10 +234,10 @@ PVideoInputDevice_Mac::PVideoInputDevice_Mac()
   , m_captureOutput(nil)
   , m_captureFrame(nil)
 {
-  colourFormat = "YUV420P";
-  frameWidth = 640;
-  frameHeight = 480;
-  m_frameSizeBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+  m_colourFormat = "YUV420P";
+  m_frameWidth = 640;
+  m_frameHeight = 480;
+  m_frameSizeBytes = CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat);
   PTRACE(5, "Constructed.");
 }
 
@@ -299,9 +299,9 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
   
   [m_captureOutput setPixelBufferAttributes:
       [NSDictionary dictionaryWithObjectsAndKeys:
-          [NSNumber numberWithInt:frameWidth],
+          [NSNumber numberWithInt:m_frameWidth],
                   (id)kCVPixelBufferWidthKey,
-          [NSNumber numberWithInt:frameHeight],
+          [NSNumber numberWithInt:m_frameHeight],
                   (id)kCVPixelBufferHeightKey,
           [NSNumber numberWithUnsignedInt:kCVPixelFormatType_420YpCbCr8Planar],
                   (id)kCVPixelBufferPixelFormatTypeKey,
@@ -310,7 +310,7 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
   ];
 
   if ([m_captureOutput respondsToSelector:@selector(setMinimumVideoFrameInterval)])
-    [m_captureOutput setMinimumVideoFrameInterval:(1.0/frameRate)];
+    [m_captureOutput setMinimumVideoFrameInterval:(1.0/m_frameRate)];
 
   if (![m_session addOutput:m_captureOutput error:&error] || error != nil) {
     PTRACE(2, "Could not add output for device "
@@ -321,11 +321,11 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
   m_captureFrame = [[PVideoInputDevice_MacFrame alloc] init];
   [m_captureOutput setDelegate:m_captureFrame];
   
-  deviceName = devName;
-  m_frameSizeBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+  m_deviceName = devName;
+  m_frameSizeBytes = CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat);
 
   PTRACE(3, "Opened \"" << devName << "\""
-            " res=" << frameWidth << 'x' << frameHeight << '@' << frameRate);
+            " res=" << m_frameWidth << 'x' << m_frameHeight << '@' << m_frameRate);
   
   if (startImmediate)
     return Start();
@@ -342,7 +342,7 @@ PBoolean PVideoInputDevice_Mac::IsOpen()
 
 PBoolean PVideoInputDevice_Mac::Close()
 {
-  PTRACE_IF(4, IsOpen(), "Closing \"" << deviceName << '"');
+  PTRACE_IF(4, IsOpen(), "Closing \"" << m_deviceName << '"');
   
   Stop();
 
@@ -380,7 +380,7 @@ PBoolean PVideoInputDevice_Mac::Close()
 
   m_mutex.EndWrite();
 
-  PTRACE(5, "Closed \"" << deviceName << '"');
+  PTRACE(5, "Closed \"" << m_deviceName << '"');
   return true;
 }
 
@@ -397,7 +397,7 @@ PBoolean PVideoInputDevice_Mac::Start()
   if ([m_session isRunning])
     return true;
 
-  PTRACE(3, "Starting \"" << deviceName << '"');
+  PTRACE(3, "Starting \"" << m_deviceName << '"');
   [m_session startRunning];
   for (int retry = 0; retry < 50; ++retry) {
     if ([m_session isRunning])
@@ -406,7 +406,7 @@ PBoolean PVideoInputDevice_Mac::Start()
   }
   
   [m_session stopRunning];
-  PTRACE(2, "Could not start \"" << deviceName << '"');
+  PTRACE(2, "Could not start \"" << m_deviceName << '"');
   return false;
 }
 
@@ -420,19 +420,19 @@ PBoolean PVideoInputDevice_Mac::Stop()
   
   PLocalMemoryPool localPool;
   
-  PTRACE(3, "Stopping \"" << deviceName << '"');
+  PTRACE(3, "Stopping \"" << m_deviceName << '"');
   [m_session stopRunning];
   [m_captureFrame stop];
   
   for (int retry = 0; retry < 50; ++retry) {
     if (![m_session isRunning]) {
-      PTRACE(5, "Stopped \"" << deviceName << '"');
+      PTRACE(5, "Stopped \"" << m_deviceName << '"');
       return true;
     }
     PThread::Sleep(20);
   }
   
-  PTRACE(2, "Could not stop \"" << deviceName << '"');
+  PTRACE(2, "Could not stop \"" << m_deviceName << '"');
   return false;
 }
 
@@ -478,7 +478,7 @@ PBoolean PVideoInputDevice_Mac::SetFrameRate(unsigned rate)
   else if (rate > 50)
     rate = 50;
 
-  if (rate == frameRate)
+  if (rate == m_frameRate)
     return true;
 
   if (!PVideoDevice::SetFrameRate(rate))
@@ -491,7 +491,7 @@ PBoolean PVideoInputDevice_Mac::SetFrameRate(unsigned rate)
   if (restart)
     Stop();
   
-  PTRACE(3, "Setting frame rate of \"" << deviceName << "\" to " << rate);
+  PTRACE(3, "Setting frame rate of \"" << m_deviceName << "\" to " << rate);
   
   PLocalMemoryPool localPool;
   
@@ -511,7 +511,7 @@ PBoolean PVideoInputDevice_Mac::SetFrameRate(unsigned rate)
 
 PBoolean PVideoInputDevice_Mac::SetFrameSize(unsigned width, unsigned height)
 {
-  if (width == frameWidth && height == frameHeight)
+  if (width == m_frameWidth && height == m_frameHeight)
     return true;
 
   // Searched and searched but cannot figure out how to do this programmatically.
@@ -523,10 +523,10 @@ PBoolean PVideoInputDevice_Mac::SetFrameSize(unsigned width, unsigned height)
   if (!PVideoDevice::SetFrameSize(width, height))
     return false;
 
-  m_frameSizeBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+  m_frameSizeBytes = CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat);
   
   if (IsOpen())
-    return Open(deviceName, IsCapturing());
+    return Open(m_deviceName, IsCapturing());
   
   return true;
 }
@@ -536,15 +536,15 @@ bool PVideoInputDevice_Mac::GetDeviceCapabilities(const PString &, Capabilities 
 {
   PVideoFrameInfo frameInfo;
   frameInfo.SetFrameSize(160, 120);
-  caps->framesizes.push_back(frameInfo);
+  caps->m_frameSizes.push_back(frameInfo);
   frameInfo.SetFrameSize(320, 240);
-  caps->framesizes.push_back(frameInfo);
+  caps->m_frameSizes.push_back(frameInfo);
   frameInfo.SetFrameSize(640, 480);
-  caps->framesizes.push_back(frameInfo);
+  caps->m_frameSizes.push_back(frameInfo);
   frameInfo.SetFrameSize(176, 144);
-  caps->framesizes.push_back(frameInfo);
+  caps->m_frameSizes.push_back(frameInfo);
   frameInfo.SetFrameSize(352, 288);
-  caps->framesizes.push_back(frameInfo);
+  caps->m_frameSizes.push_back(frameInfo);
   return true;
 }
 
@@ -569,20 +569,20 @@ PBoolean PVideoInputDevice_Mac::GetFrameData(BYTE * buffer, PINDEX * bytesReturn
  
 PBoolean PVideoInputDevice_Mac::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
-  PTRACE_DETAILED(5, "Get frame, converter=" << converter);
+  PTRACE_DETAILED(5, "Get frame, converter=" << m_converter);
   
   if (!IsCapturing())
     return false;
 
   PReadWaitAndSignal mutex(m_mutex);
 
-  if (converter != NULL) {
-    [m_captureFrame grabFrame:m_tempFrame.GetPointer(m_frameSizeBytes) withWidth:frameWidth andHeight:frameHeight];
-    if (!converter->Convert(m_tempFrame, destFrame, bytesReturned))
+  if (m_converter != NULL) {
+    [m_captureFrame grabFrame:m_tempFrame.GetPointer(m_frameSizeBytes) withWidth:m_frameWidth andHeight:m_frameHeight];
+    if (!m_converter->Convert(m_tempFrame, destFrame, bytesReturned))
       return false;
   }
   else {
-    [m_captureFrame grabFrame:destFrame withWidth:frameWidth andHeight:frameHeight];
+    [m_captureFrame grabFrame:destFrame withWidth:m_frameWidth andHeight:m_frameHeight];
     if (bytesReturned != NULL)
       *bytesReturned = m_frameSizeBytes;
   }

@@ -647,7 +647,7 @@ void PMonitoredSockets::SocketInfo::Read(PMonitoredSockets & bundle, BundleParam
 
   do {
     PSocket::SelectList sockets;
-    if (socket == NULL || !m_socket->IsOpen())
+    if (m_socket == NULL || !m_socket->IsOpen())
       m_inUse = false; // socket closed by monitor thread. release the inUse flag
     else {
       sockets += *m_socket;
