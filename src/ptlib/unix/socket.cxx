@@ -503,6 +503,10 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
 }
 
 
+#if PTRACING
+static PTrace::Throttle<2, 10000, 5> s_NoBufsThrottle;
+#endif
+
 bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t addrLen)
 {
   SetLastWriteCount(0);
@@ -510,7 +514,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
   if (CheckNotOpen())
     return false;
 
-  unsigned noBufferRetry = 100;
+  unsigned noBufferRetry = 0;
   for (;;) {
     msghdr writeData;
     memset(&writeData, 0, sizeof(writeData));
@@ -527,13 +531,15 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
     );
 
     if (ConvertOSError(result, LastWriteError)) {
+      PTRACE_IF(s_NoBufsThrottle, noBufferRetry > 0, "PTLib",
+                "Socket write: No buffer space available for " << noBufferRetry << " retries" << s_NoBufsThrottle);
       SetLastWriteCount(result);
       return true;
     }
 
     switch (GetErrorNumber(LastWriteError)) {
       case ENOBUFS :
-        if (--noBufferRetry == 0)
+        if (++noBufferRetry > 1000)
           return false;
         usleep(100);
         break;
