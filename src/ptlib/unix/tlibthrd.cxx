@@ -318,6 +318,12 @@ void PThread::PX_ThreadBegin()
 
 void PThread::PX_ThreadEnd()
 {
+  /* Bizarely, this can get called by pthread_cleanup_push() when a thread
+     is started! Seems to be a load and/or race on use of thread ID's inside
+     the system library. Anyway, need to make sure we are really ending. */
+  if (PX_state != PX_running)
+    return;
+
 #if defined(P_LINUX)
   PX_endTick = PTimer::Tick();
 #endif
