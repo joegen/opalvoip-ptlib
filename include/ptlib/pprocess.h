@@ -555,7 +555,7 @@ class PProcess : public PThread
       const char * m_git;
 
       /// Build standard format string from version information
-      PString AsString(bool full = true);
+      PString AsString(bool full = true) const;
     };
   //@}
 
@@ -637,22 +637,19 @@ class PProcess : public PThread
 
   // Member variables
     bool m_library;                   // Indication PTLib is being used as a library for an external process.
-    int  terminationValue;            // Application return value
+    int  m_terminationValue;            // Application return value
 
-    PString manufacturer;             // Application manufacturer name.
-    PString productName;              // Application executable base name from argv[0]
+    PString m_manufacturer;             // Application manufacturer name.
+    PString m_productName;              // Application executable base name from argv[0]
 
-    unsigned   majorVersion;          // Major version number of the product
-    unsigned   minorVersion;          // Minor version number of the product
-    CodeStatus status;                // Development status of the product
-    unsigned   buildNumber;           // Build number of the product
+    VersionInfo m_version;            // Process (applications) version
 
-    PFilePath    executableFile;      // Application executable file from argv[0] (not open)
-    PStringArray configurationPaths;  // Explicit file or set of directories to find default PConfig
-    PArgList     arguments;           // The list of arguments
-    int          maxHandles;          // Maximum number of file handles process can open.
+    PFilePath    m_executableFile;      // Application executable file from argv[0] (not open)
+    PStringArray m_configurationPaths;  // Explicit file or set of directories to find default PConfig
+    PArgList     m_arguments;           // The list of arguments
+    int          m_maxHandles;          // Maximum number of file handles process can open.
 
-    PTime programStartTime;           // time at which process was intantiated, i.e. started
+    PTime m_programStartTime;           // time at which process was intantiated, i.e. started
 
     bool   m_shuttingDown;
     PCriticalSection m_threadMutex;

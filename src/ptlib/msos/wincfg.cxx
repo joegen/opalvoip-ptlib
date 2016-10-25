@@ -499,19 +499,19 @@ static PString GetDefaultRegistryPath(const PString & manuf, const PString & app
 PString PProcess::GetConfigurationFile()
 {
   // No paths set, use defaults
-  if (configurationPaths.IsEmpty()) {
-    configurationPaths.AppendString(executableFile.GetVolume() + executableFile.GetPath());
-    configurationPaths.AppendString(GetDefaultRegistryPath(GetManufacturer(), GetName()));
+  if (m_configurationPaths.IsEmpty()) {
+    m_configurationPaths.AppendString(m_executableFile.GetVolume() + m_executableFile.GetPath());
+    m_configurationPaths.AppendString(GetDefaultRegistryPath(GetManufacturer(), GetName()));
   }
 
   // See if explicit filename
-  if (configurationPaths.GetSize() == 1 && !PDirectory::Exists(configurationPaths[0]))
-    return configurationPaths[0];
+  if (m_configurationPaths.GetSize() == 1 && !PDirectory::Exists(m_configurationPaths[0]))
+    return m_configurationPaths[0];
 
-  PString iniFilename = executableFile.GetTitle() + ".INI";
+  PString iniFilename = m_executableFile.GetTitle() + ".INI";
 
-  for (PINDEX i = 0; i < configurationPaths.GetSize(); i++) {
-    PString path = configurationPaths[i];
+  for (PINDEX i = 0; i < m_configurationPaths.GetSize(); i++) {
+    PString path = m_configurationPaths[i];
     if (IsRegistryPath(path))
       return path;
     PFilePath cfgFile = PDirectory(path) + iniFilename;

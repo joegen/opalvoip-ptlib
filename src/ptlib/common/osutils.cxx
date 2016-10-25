@@ -2071,28 +2071,28 @@ PProcess * PProcessInstance = NULL;
 int PProcess::InternalMain(void *)
 {
   Main();
-  return terminationValue;
+  return m_terminationValue;
 }
 
 
 void PProcess::PreInitialise(int c, char ** v)
 {
-  if (executableFile.IsEmpty()) {
+  if (m_executableFile.IsEmpty()) {
     PString execFile = v[0];
     if (PFile::Exists(execFile))
-      executableFile = execFile;
+      m_executableFile = execFile;
     else {
       execFile += ".exe";
       if (PFile::Exists(execFile))
-        executableFile = execFile;
+        m_executableFile = execFile;
     }
   }
 
-  if (productName.IsEmpty())
-    productName = executableFile.GetTitle().ToLower();
+  if (m_productName.IsEmpty())
+    m_productName = m_executableFile.GetTitle().ToLower();
 
-  arguments.SetArgs(c-1, v+1);
-  arguments.SetCommandName(executableFile.GetTitle());
+  m_arguments.SetArgs(c-1, v+1);
+  m_arguments.SetCommandName(m_executableFile.GetTitle());
 }
 
 
@@ -2101,14 +2101,10 @@ PProcess::PProcess(const char * manuf, const char * name,
                    bool library, bool suppressStartup)
   : PThread(true)
   , m_library(library)
-  , terminationValue(0)
-  , manufacturer(manuf)
-  , productName(name)
-  , majorVersion(major)
-  , minorVersion(minor)
-  , status(stat)
-  , buildNumber(build)
-  , maxHandles(INT_MAX)
+  , m_terminationValue(0)
+  , m_manufacturer(manuf)
+  , m_productName(name)
+  , m_maxHandles(INT_MAX)
   , m_shuttingDown(false)
   , m_keepingHouse(false)
   , m_houseKeeper(NULL)
@@ -2116,6 +2112,11 @@ PProcess::PProcess(const char * manuf, const char * name,
   , m_processID(GetCurrentProcessID())
 #endif
 {
+  m_version.m_major = major;
+  m_version.m_minor = minor;
+  m_version.m_status = stat;
+  m_version.m_build = build;
+
   m_activeThreads[GetThreadId()] = this;
 
 #if PTRACING
@@ -2137,10 +2138,10 @@ PProcess::PProcess(const char * manuf, const char * name,
   if (GetModuleFileName(GetModuleHandle(NULL), shortName, sizeof(shortName)) > 0) {
     TCHAR longName[32768]; // Space for long image path
     if (GetLongPathName(shortName, longName, sizeof(longName)) > 0)
-      executableFile = longName;
+      m_executableFile = longName;
     else
-      executableFile = shortName;
-    executableFile.Replace("\\\\?\\", ""); // Name can contain \\?\ prefix, remove it
+      m_executableFile = shortName;
+    m_executableFile.Replace("\\\\?\\", ""); // Name can contain \\?\ prefix, remove it
   }
 #elif defined(P_MACOSX)
   char path[10000];
@@ -2160,8 +2161,8 @@ PProcess::PProcess(const char * manuf, const char * name,
   }
 #endif // _WIN32
 
-  if (productName.IsEmpty())
-    productName = executableFile.GetTitle().ToLower();
+  if (m_productName.IsEmpty())
+    m_productName = m_executableFile.GetTitle().ToLower();
 
   SetThreadName(GetName());
 
@@ -2440,7 +2441,7 @@ PBoolean PProcess::IsInitialised()
 PObject::Comparison PProcess::Compare(const PObject & obj) const
 {
   PAssert(PIsDescendant(&obj, PProcess), PInvalidCast);
-  return productName.Compare(((const PProcess &)obj).productName);
+  return m_productName.Compare(((const PProcess &)obj).m_productName);
 }
 
 
@@ -2449,14 +2450,14 @@ void PProcess::Terminate()
 #ifdef _WINDLL
   FatalExit(terminationValue);
 #else
-  exit(terminationValue);
+  exit(m_terminationValue);
 #endif
 }
 
 
 PTime PProcess::GetStartTime() const
 { 
-  return programStartTime; 
+  return m_programStartTime; 
 }
 
 
@@ -2470,19 +2471,18 @@ bool PProcess::IsMultipleInstance() const
 
 PString PProcess::GetVersion(PBoolean full) const
 {
-  VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER };
-  return ver.AsString(full);
+  return m_version.AsString(full);
 }
 
 
 PString PProcess::GetLibVersion()
 {
-  VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER, 0, GIT_COMMIT };
+  static const VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER, SVN_REVISION, GIT_COMMIT };
   return ver.AsString();
 }
 
 
-PString PProcess::VersionInfo::AsString(bool full)
+PString PProcess::VersionInfo::AsString(bool full) const
 {
   PStringStream str;
   str << m_major << '.' << m_minor;
@@ -2518,8 +2518,8 @@ PString PProcess::VersionInfo::AsString(bool full)
 #if P_CONFIG_FILE
 void PProcess::SetConfigurationPath(const PString & path)
 {
-  configurationPaths = path.Tokenise(PPATH_SEPARATOR, false);
-  PTRACE(3, "Configuration path set to " << setfill(PPATH_SEPARATOR) << configurationPaths);
+  m_configurationPaths = path.Tokenise(PPATH_SEPARATOR, false);
+  PTRACE(3, "Configuration path set to " << setfill(PPATH_SEPARATOR) << m_configurationPaths);
 }
 #endif
 

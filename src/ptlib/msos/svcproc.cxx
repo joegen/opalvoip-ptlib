@@ -330,6 +330,7 @@ int PServiceProcess::InternalMain(void * arg)
     return 1;
   }
 
+  PArgList & arguments = GetArguments();
   m_debugMode = arguments.GetCount() > 0 && 
 	              (strcasecmp(arguments[0], "Debug") == 0 || strcasecmp(arguments[0], "foreground") == 0);
   m_debugHidden = arguments.GetCount() > 0 && strcasecmp(arguments[0], "DebugHidden") == 0;
@@ -1008,7 +1009,7 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
 
   CloseHandle(m_startedEvent);
   CloseHandle(m_terminationEvent);
-  ReportStatus(SERVICE_STOPPED, terminationValue);
+  ReportStatus(SERVICE_STOPPED, GetTerminationValue());
 }
 
 
@@ -1046,7 +1047,7 @@ void PServiceProcess::ThreadEntry()
       DebugOutput("Failed to initialise service.\n");
   }
 
-  ReportStatus(SERVICE_STOP_PENDING, terminationValue, 1, 30000);
+  ReportStatus(SERVICE_STOP_PENDING, GetTerminationValue(), 1, 30000);
   SetEvent(m_terminationEvent);
 }
 

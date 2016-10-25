@@ -560,25 +560,25 @@ PINLINE PArgList & PArgList::operator>>(int sh)
 // PProcess
 
 PINLINE PArgList & PProcess::GetArguments()
-  { return arguments; }
+  { return m_arguments; }
 
 PINLINE const PString & PProcess::GetManufacturer() const
-  { return manufacturer; }
+  { return m_manufacturer; }
 
 PINLINE const PString & PProcess::GetName() const
-  { return productName; }
+  { return m_productName; }
 
 PINLINE const PFilePath & PProcess::GetFile() const
-  { return executableFile; }
+  { return m_executableFile; }
 
 PINLINE int PProcess::GetMaxHandles() const
-  { return maxHandles; }
+  { return m_maxHandles; }
 
 PINLINE void PProcess::SetTerminationValue(int value)
-  { terminationValue = value; }
+  { m_terminationValue = value; }
 
 PINLINE int PProcess::GetTerminationValue() const
-  { return terminationValue; }
+  { return m_terminationValue; }
 
 PINLINE void PThreadYield()
   { PThread::Yield(); }
