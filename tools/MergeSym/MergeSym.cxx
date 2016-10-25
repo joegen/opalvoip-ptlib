@@ -81,6 +81,20 @@ std::ostream & operator<<(std::ostream & strm, const SortedSymbolList::iterator 
 }
 
 
+class WildcardNames : public list<PCaselessString>
+{
+public:
+  bool Matches(const PCaselessString & str) const
+  {
+    for (const_iterator it = begin(); it != end(); ++it) {
+      if (str.Find(*it) != P_MAX_INDEX)
+        return true;
+    }
+    return false;
+  }
+};
+
+
 
 PDECLARE_CLASS(MergeSym, PProcess)
   public:
@@ -92,7 +106,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 9, ReleaseCode, 2, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 10, ReleaseCode, 0, false, true)
 {
 }
 
@@ -153,6 +167,7 @@ void MergeSym::Main()
 
   SortedSymbolList def_symbols;
   std::vector<bool> ordinals_used(65536);
+  WildcardNames wildcards;
 
   if (args.HasOption('x')) {
     PStringArray include_path;
@@ -194,7 +209,11 @@ void MergeSym::Main()
               PINDEX end = start;
               while (line[end] != '\0' && !isspace(line[end]))
                 end++;
-              def_symbols[line(start, end-1)]; // Create default
+              PString symName = line(start, end-1);
+              if (symName.Find('*') != P_MAX_INDEX)
+                wildcards.push_back(symName.Replace("*", "", true));
+              else
+                def_symbols[symName]; // Create default
               if (args.HasOption('v') && def_symbols.size()%100 == 0)
                 cout << '.' << flush;
             }
@@ -315,7 +334,7 @@ void MergeSym::Main()
           unmangled = namepos;
           endunmangle = nameend;
         }
-        lib_symbols[name].Set(line(unmangled, endunmangle-1), 0, false, explicitExports.find(name) == explicitExports.end());
+        lib_symbols[name].Set(line(unmangled, endunmangle-1), 0, wildcards.Matches(name), explicitExports.find(name) == explicitExports.end());
       }
     }
     else if ((namepos = line.Find("/EXPORT:")) != P_MAX_INDEX) {
@@ -379,7 +398,7 @@ void MergeSym::Main()
       cout << '.' << flush;
   }
   for (i = 0, it = lib_symbols.begin(); it != lib_symbols.end(); ++it, ++i) {
-    if (def_symbols.find(it->first) == def_symbols.end())
+    if (def_symbols.find(it->first) == def_symbols.end() && !it->second.IsExternal())
       merged_symbols.insert(*it);
     if (args.HasOption('v') && i%100 == 0)
       cout << '.' << flush;

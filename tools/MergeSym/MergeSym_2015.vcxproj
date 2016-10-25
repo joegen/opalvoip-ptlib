@@ -102,6 +102,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <DelayLoadDLLs>QWAVE.DLL</DelayLoadDLLs>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
       <Command>
