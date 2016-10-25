@@ -17,3 +17,4 @@ bin/
 aclocal.m4
 *.VC.db
 *.opendb
+*.user
