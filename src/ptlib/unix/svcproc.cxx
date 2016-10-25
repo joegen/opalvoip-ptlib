@@ -248,8 +248,8 @@ int PServiceProcess::InitialiseService()
 
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
-    cout << "Product Name: " << productName << "\n"
-            "Manufacturer: " << manufacturer << "\n"
+    cout << "Product Name: " << GetName() << "\n"
+            "Manufacturer: " << GetManufacturer() << "\n"
             "Version     : " << GetVersion(true) << "\n"
             "System      : " << PProcess::GetOSClass() << ' '
                              << GetOSName() << ' '
@@ -514,19 +514,20 @@ int PServiceProcess::InitialiseService()
 
 int PServiceProcess::InternalMain(void *)
 {
-  if ((terminationValue = InitialiseService()) < 0) {
+  SetTerminationValue(InitialiseService());
+  if (GetTerminationValue() < 0) {
     // Make sure housekeeping thread is going so signals are handled.
     SignalTimerChange();
 
-    terminationValue = 1;
+    SetTerminationValue(1);
     if (OnStart()) {
-      terminationValue = 0;
+      SetTerminationValue(0);
       Main();
       Terminate();
     }
   }
 
-  return terminationValue;
+  return GetTerminationValue();
 }
 
 
@@ -585,7 +586,7 @@ void PServiceProcess::Terminate()
 
   // Now end the program, or let main exit normally
   if (PThread::Current() != this)
-    exit(terminationValue);
+    exit(GetTerminationValue());
 }
 
 static atomic<bool> InSignalHandler(false);

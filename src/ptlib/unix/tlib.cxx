@@ -581,10 +581,10 @@ void PProcess::CommonConstruct()
   // get the file descriptor limit
   struct rlimit rl;
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-  maxHandles = rl.rlim_cur;
-  PTRACE(4, "PTLib\tMaximum per-process file handles is " << maxHandles);
+  m_maxHandles = rl.rlim_cur;
+  PTRACE(4, "PTLib\tMaximum per-process file handles is " << m_maxHandles);
 #else
-  maxHandles = 500; // arbitrary value
+  m_maxHandles = 500; // arbitrary value
 #endif
 }
 
@@ -608,16 +608,16 @@ PBoolean PProcess::SetMaxHandles(int newMax)
   rl.rlim_cur = newMax;
   if (setrlimit(RLIMIT_NOFILE, &rl) == 0) {
     PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-    maxHandles = rl.rlim_cur;
-    if (maxHandles == newMax) {
-      PTRACE(2, "PTLib\tNew maximum per-process file handles set to " << maxHandles);
+    m_maxHandles = rl.rlim_cur;
+    if (m_maxHandles == newMax) {
+      PTRACE(2, "PTLib\tNew maximum per-process file handles set to " << m_maxHandles);
       return true;
     }
   }
 #endif // !P_RTEMS
 
   PTRACE(1, "PTLib\tCannot set per-process file handle limit to "
-         << newMax << " (is " << maxHandles << ") - check permissions");
+         << newMax << " (is " << m_maxHandles << ") - check permissions");
   return false;
 }
 

@@ -2157,7 +2157,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   int len = readlink("/proc/self/exe", path, sizeof(path));
   if (len >= 0) {
     path[len] = '\0';
-    executableFile = path;
+    m_executableFile = path;
   }
 #endif // _WIN32
 

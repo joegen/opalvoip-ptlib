@@ -463,26 +463,26 @@ void PConfig::SetString(const PString & theSection,
 
 PString PProcess::GetConfigurationFile()
 {
-  if (configurationPaths.IsEmpty()) {
-    configurationPaths.AppendString(GetHomeDirectory() + ".ptlib_config/");
-    configurationPaths.AppendString(GetHomeDirectory() + ".pwlib_config/");
-    configurationPaths.AppendString("/usr/local/share/ptlib/");
-    configurationPaths.AppendString("/usr/local/pwlib/");
+  if (m_configurationPaths.IsEmpty()) {
+    m_configurationPaths.AppendString(GetHomeDirectory() + ".ptlib_config/");
+    m_configurationPaths.AppendString(GetHomeDirectory() + ".pwlib_config/");
+    m_configurationPaths.AppendString("/usr/local/share/ptlib/");
+    m_configurationPaths.AppendString("/usr/local/pwlib/");
   }
 
   // See if explicit filename
-  if (configurationPaths.GetSize() == 1 && !PDirectory::Exists(configurationPaths[0]))
-    return configurationPaths[0];
+  if (m_configurationPaths.GetSize() == 1 && !PDirectory::Exists(m_configurationPaths[0]))
+    return m_configurationPaths[0];
 
-  PString iniFilename = executableFile.GetTitle() + ".ini";
+  PString iniFilename = m_executableFile.GetTitle() + ".ini";
 
-  for (PINDEX i = 0; i < configurationPaths.GetSize(); i++) {
-    PFilePath cfgFile = PDirectory(configurationPaths[i]) + iniFilename;
+  for (PINDEX i = 0; i < m_configurationPaths.GetSize(); i++) {
+    PFilePath cfgFile = PDirectory(m_configurationPaths[i]) + iniFilename;
     if (PFile::Exists(cfgFile))
       return cfgFile;
   }
 
-  return PDirectory(configurationPaths[0]) + iniFilename;
+  return PDirectory(m_configurationPaths[0]) + iniFilename;
 }
 
 
