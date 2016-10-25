@@ -318,6 +318,12 @@ void PThread::PX_ThreadBegin()
 
 void PThread::PX_ThreadEnd()
 {
+  /* Bizarely, this can get called by pthread_cleanup_push() when a thread
+     is started! Seems to be a load and/or race on use of thread ID's inside
+     the system library. Anyway, need to make sure we are really ending. */
+  if (PX_state.exchange(PX_finishing) != PX_running)
+    return;
+
 #if defined(P_LINUX)
   PX_endTick = PTimer::Tick();
 #endif
@@ -325,7 +331,6 @@ void PThread::PX_ThreadEnd()
   PProcess & process = PProcess::Current();
   process.OnThreadEnded(*this);
 
-  PX_state = PX_finished;
   process.InternalThreadEnded(this);
   // "this" may have been deleted at this point
 }
@@ -349,10 +354,10 @@ void * PThread::PX_ThreadMain(void * arg)
   thread->Main();
 
 #if P_USE_THREAD_CANCEL
-  pthread_cleanup_pop(1); // execute the cleanup routine
-#else
-  PX_ThreadEnd(arg);
+  pthread_cleanup_pop(0);
 #endif
+
+  thread->PX_ThreadEnd();
 
   return NULL;
 }

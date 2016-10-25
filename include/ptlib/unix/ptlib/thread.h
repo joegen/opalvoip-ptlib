@@ -73,6 +73,7 @@
       PX_firstResume,
       PX_starting,
       PX_running,
+      PX_finishing,
       PX_finished
     } PX_state;
 
