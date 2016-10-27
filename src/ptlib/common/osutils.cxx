@@ -2571,11 +2571,18 @@ void PProcess::InternalThreadEnded(PThread * thread)
   if (it != m_activeThreads.end() && it->second == thread)
     m_activeThreads.erase(it); // Not already gone, or re-used the thread ID for new thread.
 
-  // Must be last thing to avoid race condition
+  // All of this is carefully constructed to avoid race condition deleting "thread"
   if (thread->IsAutoDelete()) {
     thread->SetNoAutoDelete();
+#ifdef P_PTHREADS
+    thread->PX_state = PThread::PX_finished;
+#endif
     m_autoDeleteThreads.Enqueue(thread);
   }
+#ifdef P_PTHREADS
+  else
+    thread->PX_state = PThread::PX_finished;
+#endif
 }
 
 
