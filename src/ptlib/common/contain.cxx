@@ -873,7 +873,7 @@ template <typename S, typename U> PINDEX p_signed2string(S value, unsigned base,
     return p_unsigned2string<U>(value, base, str);
 
   *str++ = '-';
-  return p_unsigned2string<U>(-value, base, str);
+  return p_unsigned2string<U>(-value, base, str) + 1;
 }
 
 
