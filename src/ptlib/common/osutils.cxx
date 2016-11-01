@@ -2116,6 +2116,8 @@ PProcess::PProcess(const char * manuf, const char * name,
   m_version.m_minor = minor;
   m_version.m_status = stat;
   m_version.m_build = build;
+  m_version.m_svn = 0;
+  m_version.m_git = NULL;
 
   m_activeThreads[GetThreadId()] = this;
 
