@@ -2149,7 +2149,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   char path[10000];
   uint32_t size = sizeof(path);
   if (_NSGetExecutablePath(path, &size) == 0)
-    executableFile = path;
+    m_executableFile = path;
 #elif defined(P_RTEMS)
   cout << "Enter program arguments:\n";
   arguments.ReadFrom(cin);
