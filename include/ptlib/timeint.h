@@ -482,7 +482,6 @@ namespace std
   public:
     static PTimeInterval min() { return -PMaxTimeInterval; }
     static PTimeInterval max() { return  PMaxTimeInterval; }
-    static PTimeInterval lowest() { return PTimeInterval::NanoSeconds(numeric_limits<int64_t>::lowest()); }
     static PTimeInterval epsilon() { return PTimeInterval::NanoSeconds(1); }
     static PTimeInterval round_error() { return PTimeInterval::NanoSeconds(1); }
     static PTimeInterval denorm_min() { return PTimeInterval::NanoSeconds(numeric_limits<int64_t>::denorm_min()); }
