@@ -497,7 +497,7 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
     if (str.GetLength() > 2 && str[0] == '/' && str[1] == '/')
       start = 2;
     else
-      m_relativePath = true;
+      m_relativePath = schemeInfo->relativeImpliesScheme || str[0] != '/';
   }
 
   // parse user/password/host/port
@@ -1233,7 +1233,7 @@ class PURL_FileLoader : public PURLLoader
     virtual bool Load(PString & str, const PURL & url, const PURL::LoadParams &) const
     {
       PFile file;
-      if (!file.Open(url.AsFilePath()))
+      if (!file.Open(url.AsFilePath(), PFile::ReadOnly))
         return false;
       str = file.ReadString(file.GetLength());
       return true;
@@ -1242,7 +1242,7 @@ class PURL_FileLoader : public PURLLoader
     virtual bool Load(PBYTEArray & data, const PURL & url, const PURL::LoadParams &) const
     {
       PFile file;
-      if (!file.Open(url.AsFilePath()))
+      if (!file.Open(url.AsFilePath(), PFile::ReadOnly))
         return false;
       if (!data.SetSize(file.GetLength()))
         return false;
