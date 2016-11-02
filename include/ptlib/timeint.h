@@ -473,6 +473,26 @@ class PTimeInterval : public PObject
 #endif
 };
 
+
+namespace std
+{
+    /// Specialisation of numeric_limits for PTimeInterval
+  template<> class numeric_limits<PTimeInterval>
+  {
+  public:
+    static PTimeInterval min() { return -PMaxTimeInterval; }
+    static PTimeInterval max() { return  PMaxTimeInterval; }
+    static PTimeInterval lowest() { return PTimeInterval::NanoSeconds(numeric_limits<int64_t>::lowest()); }
+    static PTimeInterval epsilon() { return PTimeInterval::NanoSeconds(1); }
+    static PTimeInterval round_error() { return PTimeInterval::NanoSeconds(1); }
+    static PTimeInterval denorm_min() { return PTimeInterval::NanoSeconds(numeric_limits<int64_t>::denorm_min()); }
+    static PTimeInterval infinity() { return PTimeInterval::NanoSeconds(numeric_limits<int64_t>::infinity()); }
+    static PTimeInterval quiet_NaN() { return PTimeInterval::NanoSeconds(numeric_limits<int64_t>::quiet_NaN()); }
+    static PTimeInterval signaling_NaN() { return PTimeInterval::NanoSeconds(numeric_limits<int64_t>::signaling_NaN()); }
+  };
+};
+
+
 #endif // PTLIB_TIMEINTERVAL_H
 
 
