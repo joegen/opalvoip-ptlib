@@ -64,9 +64,14 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 
 void PTimeInterval::PrintOn(ostream & stream) const
 {
-  stream << AsString((int)stream.precision(),
-                     (stream.flags()&ios::scientific) != 0 ? SecondsOnly : NormalFormat,
-                     (int)stream.width());
+  Formats format;
+  if ((stream.flags()&ios::floatfield) != ios::scientific)
+    format = NormalFormat;
+  else if (stream.flags()&ios::showbase)
+    format = SecondsSI;
+  else
+    format = SecondsOnly;
+  stream << AsString((int)stream.precision(), format, (int)stream.width());
 }
 
 
