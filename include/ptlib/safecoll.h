@@ -280,7 +280,7 @@ class PSafeObject : public PObject
   //@}
 
   private:
-    mutable PMutex    m_safetyMutex;
+    mutable PCriticalSection m_safetyMutex;
     unsigned          m_safeReferenceCount;
     bool              m_safelyBeingRemoved;
     PReadWriteMutex   m_safeInUseMutex;
