@@ -1428,52 +1428,48 @@ istream & istream::operator>>(PUInt64 & v)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if P_PROFILING
-// Currently only supported in GNU && *nix
-
 namespace PProfiling
 {
+  static uint64_t InitFrequency()
+  {
+#if defined(P_LINUX)
+    ifstream cpuinfo("/proc/cpuinfo", ios::in);
+    while (cpuinfo.good()) {
+      char line[100];
+      cpuinfo.getline(line, sizeof(line));
+      if (strncmp(line, "cpu MHz", 7) == 0)
+        return (uint64_t)(atof(strchr(line, ':')+1)*1000000);
+    }
+    return 2000000000; // 2GHz
+#elif defined(_M_IX86) || defined(_M_X64) || defined(_WIN32)
+    LARGE_INTEGER li;
+    QueryPerformanceFrequency(&li);
+    return li.QuadPart * 1000;
+#elif defined(CLOCK_MONOTONIC)
+    return 1000000000ULL;
+#else
+    return 1000000ULL;
+#endif
+  }
 
-  #if defined(__i386__) || defined(__x86_64__)
-    void GetFrequency(uint64_t & freq)
-    {
-      freq = 2000000000; // 2GHz
-      ifstream cpuinfo("/proc/cpuinfo", ios::in);
-      while (cpuinfo.good()) {
-        char line[100];
-        cpuinfo.getline(line, sizeof(line));
-        if (strncmp(line, "cpu MHz", 7) == 0) {
-          freq = (uint64_t)(atof(strchr(line, ':')+1)*1000000);
-          break;
-        }
-      }
-    }
-  #elif defined(_M_IX86) || defined(_M_X64)
-    void GetFrequency(uint64_t & freq)
-    {
-      LARGE_INTEGER li;
-      QueryPerformanceFrequency(&li);
-      freq = li.QuadPart*1000;
-    }
-  #elif defined(_WIN32)
-    void GetFrequency(uint64_t & freq)
-    {
-      LARGE_INTEGER li;
-      QueryPerformanceFrequency(&li);
-      freq = li.QuadPart;
-    }
-  #elif defined(CLOCK_MONOTONIC)
-    void GetFrequency(uint64_t & freq)
-    {
-      freq = 1000000000ULL;
-    }
-  #else
-    void GetFrequency(uint64_t & freq)
-    {
-      freq = 1000000ULL;
-    }
-  #endif
+  static uint64_t gs_Frequency = InitFrequency();
 
+  int64_t CyclesToNanoseconds(uint64_t cycles)
+  {
+    return cycles*PTimeInterval::SecsToNano/gs_Frequency;
+  }
+
+
+  float CyclesToSeconds(uint64_t cycles)
+  {
+    return (float)((double)cycles/gs_Frequency);
+  }
+
+
+
+
+#if P_PROFILING
+// Currently only supported in GNU && *nix
 
   enum FunctionType
   {
@@ -1551,10 +1547,10 @@ namespace PProfiling
     PPROFILE_EXCLUDE(Database());
     PPROFILE_EXCLUDE(~Database());
 
-    uint64_t m_start;
     bool     m_enabled;
     atomic<FunctionRawData *> m_functions;
     atomic<ThreadRawData *>   m_threads;
+    uint64_t m_start;
   };
   static Database s_database;
 
@@ -1565,11 +1561,11 @@ namespace PProfiling
     : m_type(type)
     , m_threadIdentifier(PThread::GetCurrentThreadId())
     , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
+    , m_when(GetCycles())
   {
     m_function.m_pointer = function;
     m_function.m_caller = caller;
 
-    PProfilingGetCycles(m_when);
     m_link = s_database.m_functions.exchange(this);
   }
 
@@ -1578,12 +1574,12 @@ namespace PProfiling
     : m_type(type)
     , m_threadIdentifier(PThread::GetCurrentThreadId())
     , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
+    , m_when(GetCycles())
   {
     m_function.m_name = name;
     m_function.m_file = file;
     m_function.m_line = line;
 
-    PProfilingGetCycles(m_when);
     m_link = s_database.m_functions.exchange(this);
   }
 
@@ -1689,8 +1685,8 @@ namespace PProfiling
     : m_enabled(getenv("PTLIB_PROFILING_ENABLED") != NULL)
     , m_functions(NULL)
     , m_threads(NULL)
+    , m_start(GetCycles())
   {
-    PProfilingGetCycles(m_start);
   }
 
 
@@ -1731,7 +1727,7 @@ namespace PProfiling
 
   void Reset()
   {
-    PProfilingGetCycles(s_database.m_start);
+    s_database.m_start = GetCycles();
     ThreadRawData * thrd = s_database.m_threads.exchange(NULL);
     FunctionRawData * func = s_database.m_functions.exchange(NULL);
 
@@ -1779,9 +1775,9 @@ namespace PProfiling
       double   m_time;
 
     public:
-      CpuTime(const Analysis & analysis, uint64_t cycles)
+      CpuTime(uint64_t cycles)
         : m_cycles(cycles)
-        , m_time(analysis.CyclesToSeconds(cycles))
+        , m_time(CyclesToSeconds(cycles))
       {
       }
 
@@ -1841,12 +1837,6 @@ namespace PProfiling
   }
 
 
-  float Analysis::CyclesToSeconds(uint64_t cycles) const
-  {
-    return (float)((double)cycles / m_frequency);
-  }
-
-
   void Analysis::ToText(ostream & strm) const
   {
     std::streamsize threadNameWidth = 0;
@@ -1869,7 +1859,7 @@ namespace PProfiling
             " threads="   << m_threadByID.size() << ","
             " functions=" << m_functionCount  << ","
             " cycles="    << m_durationCycles << ","
-            " frequency=" << m_frequency      << ","
+            " frequency=" << gs_Frequency      << ","
             " time="      << left << fixed << setprecision(3) << CyclesToSeconds(m_durationCycles) << '\n';
     for (ThreadByUsage::const_iterator thrd = m_threadByUsage.begin(); thrd != m_threadByUsage.end(); ++thrd) {
       strm << "   Thread \"" << setw(threadNameWidth) << (thrd->second.m_name+'"')
@@ -1885,9 +1875,9 @@ namespace PProfiling
         uint64_t avg = func->second.m_sum / func->second.m_count;
         strm << "      " << left << setw(functionNameWidth) << func->first
               << " count=" << setw(10) << func->second.m_count
-              << " min=" << setw(24) << CpuTime(*this, func->second.m_minimum)
-              << " max=" << setw(24) << CpuTime(*this, func->second.m_maximum)
-              << " avg=" << setw(24) << CpuTime(*this, avg);
+              << " min=" << setw(24) << CpuTime(func->second.m_minimum)
+              << " max=" << setw(24) << CpuTime(func->second.m_maximum)
+              << " avg=" << setw(24) << CpuTime(avg);
         if (thrd->second.m_realTime > 0)
           strm << " (" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_realTime) << "%)";
         strm << '\n';
@@ -1942,7 +1932,7 @@ namespace PProfiling
             "<td align=center>" << m_threadByID.size()
          << "<td align=center>" << m_functionCount
          << "<td align=center>" << m_durationCycles
-         << "<td align=center>" << m_frequency
+         << "<td align=center>" << gs_Frequency
          << "<td align=center>" << fixed << setprecision(3) << CyclesToSeconds(m_durationCycles)
          << "</table>"
             "<p>"
@@ -1986,9 +1976,9 @@ namespace PProfiling
           strm << "<tr>"
                   "<td>" << EscapedHTML(func->first)
                << "<td align=center>" << func->second.m_count
-               << "<td align=center nowrap>" << CpuTime(*this, func->second.m_minimum)
-               << "<td align=center nowrap>" << CpuTime(*this, func->second.m_maximum)
-               << "<td align=center nowrap>" << CpuTime(*this, avg);
+               << "<td align=center nowrap>" << CpuTime(func->second.m_minimum)
+               << "<td align=center nowrap>" << CpuTime(func->second.m_maximum)
+               << "<td align=center nowrap>" << CpuTime(avg);
           if (thrd->second.m_realTime > 0)
             strm << "<td align=right>" << setprecision(2) << Percentage(CyclesToSeconds(func->second.m_sum), thrd->second.m_realTime) << '%';
         }
@@ -2012,10 +2002,7 @@ namespace PProfiling
 
   void Analyse(Analysis & analysis)
   {
-    PProfilingGetCycles(analysis.m_durationCycles);
-    analysis.m_durationCycles -= s_database.m_start;
-
-    GetFrequency(analysis.m_frequency);
+    analysis.m_durationCycles = GetCycles() - s_database.m_start;
 
     std::list<PThread::Times> times;
     PThread::GetTimes(times);
@@ -2116,7 +2103,151 @@ namespace PProfiling
     else
       analysis.ToText(strm);
   }
-};
+
+#endif // P_PROFILING
+
+#if PTRACING
+
+  struct TimeScope::Implementation
+  {
+    const char  * const m_name;
+    const char  * const m_file;
+    unsigned      const m_line;
+    PTimeInterval const m_thresholdTime;
+    PTimeInterval const m_throttleTime;
+    unsigned      const m_throttledLogLevel;
+    unsigned      const m_unthrottledLogLevel;
+    unsigned      const m_thresholdPercent;
+    unsigned      const m_maxHistory;
+
+    PMinMaxAvg<PTimeInterval> m_mma;
+    unsigned                  m_countTimesOverThreshold;
+    PTime                     m_lastOutputTime;
+
+    struct History
+    {
+        explicit History(const PTimeInterval & duration)
+            : m_when(), m_duration(duration) { }
+
+        PTime         m_when;
+        PTimeInterval m_duration;
+    };
+
+    std::list<History> m_history;
+
+    PCriticalSection m_mutex;
+
+    Implementation(const char * name,
+                   const char * file,
+                   unsigned line,
+                   unsigned thresholdTime,
+                   unsigned throttleTime,
+                   unsigned throttledLogLevel,
+                   unsigned unthrottledLogLevel,
+                   unsigned thresholdPercent,
+                   unsigned maxHistory)
+      : m_name(name)
+      , m_file(file)
+      , m_line(line)
+      , m_thresholdTime(thresholdTime)
+      , m_throttleTime(throttleTime)
+      , m_throttledLogLevel(throttledLogLevel)
+      , m_unthrottledLogLevel(unthrottledLogLevel)
+      , m_thresholdPercent(thresholdPercent)
+      , m_maxHistory(maxHistory)
+      , m_mma("s")
+      , m_countTimesOverThreshold(0)
+      , m_lastOutputTime(0)
+    {
+    }
+
+    void EndMeasurement(const void *, const PObject * object, const PTimeInterval & duration)
+    {
+      PWaitAndSignal lock(m_mutex);
+
+      m_mma.Accumulate(duration);
+
+      if (!PTrace::CanTrace(m_throttledLogLevel) || duration < m_thresholdTime)
+        return;
+
+      ++m_countTimesOverThreshold;
+
+      if (m_mma.GetCount() < 3)
+        return;
+
+      PTime now;
+      unsigned percentOver = m_countTimesOverThreshold * 100 / m_mma.GetCount();
+      bool isTime = (now - m_lastOutputTime) > m_throttleTime;
+      unsigned level = isTime && percentOver >= m_thresholdPercent ? m_throttledLogLevel : m_unthrottledLogLevel;
+
+      if (PTrace::CanTrace(level)) {
+        ostream & trace = PTrace::Begin(level, m_file, m_line, object, "TimeScope");
+        trace << m_name << ":"
+                  " since=" << m_lastOutputTime.AsString(PTime::TodayFormat) << ","
+              << setprecision(3) << scientific << showbase << m_mma << noshowbase
+              << " thresh=" << m_thresholdTime.AsString(3, PTimeInterval::SecondsSI) << "s;" << m_thresholdPercent << "%,"
+                   " slow=" << m_countTimesOverThreshold << '/' << m_mma.GetCount() << ' ' << percentOver << '%';
+        for (list<History>::iterator it = m_history.begin(); it != m_history.end(); ++it)
+          trace << "\n    when=" << it->m_when.AsString(PTime::TodayFormat) << ","
+                    " duration=" << it->m_duration.AsString(3, PTimeInterval::SecondsSI) << 's';
+        trace << PTrace::End;
+      }
+
+      if (isTime) {
+        m_mma.Reset();
+        m_countTimesOverThreshold = 0;
+        m_lastOutputTime = now;
+        m_history.clear();
+      }
+
+      if (m_maxHistory > 0) {
+          m_history.push_back(History(duration));
+          if (m_history.size() > m_maxHistory)
+              m_history.pop_front();
+      }
+    }
+  };
+
+  TimeScope::TimeScope(const char * name,
+                       const char * file,
+                       unsigned line,
+                       unsigned thresholdTime,
+                       unsigned throttleTime,
+                       unsigned throttledLogLevel,
+                       unsigned unthrottledLogLevel,
+                       unsigned thresholdPercent,
+                       unsigned maxHistory)
+    // Note that there is a race here on he static definition of the TimeScope isntance,
+    // that would leak precisely one Implementation object, big deal.
+    : m_implementation(new Implementation(name,
+                                          file,
+                                          line,
+                                          thresholdTime,
+                                          throttleTime,
+                                          throttledLogLevel,
+                                          unthrottledLogLevel,
+                                          thresholdPercent,
+                                          maxHistory))
+  {
+  }
+
+
+  TimeScope::~TimeScope()
+  {
+    delete m_implementation;
+  }
+
+  
+  void TimeScope::EndMeasurement(const void * context, const PObject * object, uint64_t startCycle)
+  {
+    m_implementation->EndMeasurement(context, object, PTimeInterval::NanoSeconds(CyclesToNanoseconds(GetCycles() - startCycle)));
+  }
+
+#endif // PTRACING
+
+}; // namespace PProfiling
+
+#if P_PROFILING
 
 #ifdef __GNUC__
 extern "C"

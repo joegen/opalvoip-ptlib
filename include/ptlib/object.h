@@ -1050,6 +1050,58 @@ class PTraceSaveContextIdentifier
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/**Template class for integral types (incluing PTimeInterval) for calcualting
+   minimum, maximum and average. */
+template <typename ValueType, typename AccumType = ValueType>
+class PMinMaxAvg
+{
+protected:
+    ValueType   m_minimum;
+    ValueType   m_maximum;
+    AccumType   m_accumulator;
+    unsigned    m_count;
+    std::string m_units;
+public:
+    explicit PMinMaxAvg(const char * units = "")
+        : m_units(units)
+    {
+        Reset();
+    }
+
+    void Accumulate(const ValueType & value)
+    {
+        if (value < m_minimum)
+            m_minimum = value;
+        if (value > m_maximum)
+            m_maximum = value;
+        m_accumulator += value;
+        ++m_count;
+    }
+
+    void Reset()
+    {
+        m_minimum = numeric_limits<ValueType>::max();
+        m_maximum = 0;
+        m_accumulator = 0;
+        m_count = 0;
+    }
+
+    ValueType GetMinimum() const { return m_minimum; }
+    ValueType GetMaximum() const { return m_maximum; }
+    ValueType GetAverage() const { return m_count > 0 ? (ValueType)(m_accumulator/m_count) : 0; }
+    unsigned  GetCount()   const { return m_count; }
+
+    friend ostream & operator<<(ostream & strm, const PMinMaxAvg & mma)
+    {
+        return strm << " min=" << mma.GetMinimum() << mma.m_units << ","
+                       " avg=" << mma.GetAverage() << mma.m_units << ","
+                       " max=" << mma.GetMaximum() << mma.m_units;
+    }
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Profiling
 
 #if defined( __GNUC__) && !defined(__clang__)
@@ -1063,26 +1115,39 @@ class PTraceSaveContextIdentifier
   #endif
 #endif
 
-#if P_PROFILING
-
 class PThread;
 class PTimeInterval;
 
 namespace PProfiling
 {
-  #if defined(__i386__) || defined(__x86_64__)
-    #define PProfilingGetCycles(when) { uint32_t l,h; __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h)); when = ((uint64_t)h<<32)|l; }
-  #elif defined(_M_IX86) || defined(_M_X64)
-    #define PProfilingGetCycles(when) when = __rdtsc()
-  #elif defined(_WIN32)
-    #define PProfilingGetCycles(when) { LARGE_INTEGER li; QueryPerformanceCounter(&li); when = li.QuadPart; }
-  #elif defined(CLOCK_MONOTONIC)
-    #define PProfilingGetCycles(when) { timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); when = ts.ts_sec*1000000000ULL+ts.ts_nsec; }
-  #else
-    #define PProfilingGetCycles(when) { timeval tv; gettimeofday(&tv, NULL); when = tv.tv_sec*1000000ULL+tv.tv_usec; }
-  #endif
+  __inline uint64_t GetCycles()
+  {
+#if defined(_M_IX86) || defined(_M_X64) || defined(__GNUC__)
+    return __rdtsc();
+#elif defined(__i386__) || defined(__x86_64__)
+    uint32_t l,h;
+    __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h));
+    return ((uint64_t)h<<32)|l; }
+#elif defined(_WIN32)
+    LARGE_INTEGER li;
+    QueryPerformanceCounter(&li);
+    return li.QuadPart;
+#elif defined(CLOCK_MONOTONIC)
+    timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.ts_sec*1000000000ULL+ts.ts_nsec;
+#else
+    timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec*1000000ULL+tv.tv_usec;
+#endif
+  }
 
-  PPROFILE_EXCLUDE(void GetFrequency(uint64_t & freq));
+  PPROFILE_EXCLUDE(int64_t CyclesToNanoseconds(uint64_t cycles));
+  PPROFILE_EXCLUDE(float CyclesToSeconds(uint64_t cycles));
+
+
+#if P_PROFILING
 
   struct Function
   {
@@ -1135,19 +1200,16 @@ namespace PProfiling
   struct Analysis
   {
     uint64_t      m_durationCycles;
-    uint64_t      m_frequency;
     unsigned      m_functionCount;
     ThreadByID    m_threadByID;
     ThreadByUsage m_threadByUsage;
 
     Analysis()
       : m_durationCycles(0)
-      , m_frequency(0)
       , m_functionCount(0)
     {
     }
 
-    float CyclesToSeconds(uint64_t cycles) const;
     void ToText(ostream & strm) const;
     void ToHTML(ostream & strm) const;
   };
@@ -1205,7 +1267,6 @@ namespace PProfiling
   #define PPROFILE_PRE_SYSTEM()  ::PProfiling::PreSystem()
   #define PPROFILE_POST_SYSTEM() ::PProfiling::PostSystem()
   #define PPROFILE_SYSTEM(...)  PPROFILE_PRE_SYSTEM(); __VA_ARGS__; PPROFILE_POST_SYSTEM()
-};
 #else
   #define PPROFILE_BLOCK(...)
   #define PPROFILE_FUNCTION()
@@ -1213,6 +1274,91 @@ namespace PProfiling
   #define PPROFILE_POST_SYSTEM()
   #define PPROFILE_SYSTEM(...) __VA_ARGS__
 #endif
+
+#if PTRACING
+  /**This class, along with the PPROFILE_TIMESCOPE() macro, allows the measurement of
+     the time used by a section of code delimited by the scope (block till the close
+     brace) with minimum, maximum and averages displayed as a PTRACE().
+    */
+  class TimeScope
+  {
+    protected:
+      struct Implementation;
+      Implementation * const m_implementation;
+
+      void EndMeasurement(
+        const void * context,
+        const PObject * object,
+        uint64_t start
+      );
+
+    private:
+      TimeScope(const TimeScope &) : m_implementation(0) { }
+      void operator=(const TimeScope &) { }
+
+    public:
+      /**Create a TimeScope instance. This is usually created as a static variable
+         by the PPROFILE_TIMESCOPE() macro.
+        */
+      TimeScope(
+        const char * name,                ///< Name of the measurement point
+        const char * file,                ///< Source file, typically __FILE__
+        unsigned line,                    ///< Source line, typically __LINE__
+        unsigned thresholdTime,           ///< Threshold time in milliseconds
+        unsigned throttleTime = 10000,    ///< Time between PTRACE outpout in milliseconds
+        unsigned throttledLogLevel = 2,   ///< PTRACE level to use if enough samples are above thresholdTime
+        unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
+        unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
+        unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
+      );
+
+      /// Destroy scope timer
+      ~TimeScope();
+
+      /** Class used by PPROFILE_TIMESCOPE() macro to do the measurement of
+          time between construction and destruction.
+        */
+      class Measure
+      {
+        protected:
+          TimeScope     &       m_scope;
+          const void    * const m_context;
+          const PObject * const m_object;
+          uint64_t        const m_startCycle;
+
+        public:
+          Measure(TimeScope & scope, const PObject * object)
+            : m_scope(scope)
+            , m_context(object)
+            , m_object(object)
+            , m_startCycle(GetCycles())
+          {
+          }
+
+          Measure(TimeScope & scope, const void * context)
+            : m_scope(scope)
+            , m_context(context)
+            , m_object(NULL)
+            , m_startCycle(GetCycles())
+          {
+          }
+
+          ~Measure()
+          {
+            m_scope.EndMeasurement(m_context, m_object, m_startCycle);
+          }
+      };
+      friend Measure::~Measure();
+  };
+
+  #define PPROFILE_TIMESCOPE(name, context, ...) \
+      static ::PProfiling::TimeScope p_profile_timescope_static_instance##name(#name, __FILE__, __LINE__, __VA_ARGS__); \
+      ::PProfiling::TimeScope::Measure p_profile_timescope_instance##name(p_profile_timescope_static_instance##name, context)
+#else
+  #define PPROFILE_TIMESCOPE(...)
+#endif // PTRACING
+
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
