@@ -2696,14 +2696,27 @@ bool PSSLChannelDTLS::ExecuteHandshake()
   SSL_set_read_ahead(m_ssl, 1);
   SSL_CTX_set_read_ahead(*m_context, 1);
 
-  int errorCode = SSL_do_handshake(m_ssl);
-  if (errorCode == 1) {
-    PTRACE(3, "DTLS handshake successful.");
-    return true;
-  }
+  for (;;) {
+    int ret = SSL_do_handshake(m_ssl);
+    if (ret == 1) {
+      PTRACE(3, "DTLS handshake successful.");
+      return true;
+    }
 
-  PTRACE_IF(2, IsOpen(), "DTLS handshake failed (" << errorCode <<") - " << PSSLError(SSL_get_error(m_ssl, errorCode)));
-  return false;
+    if (!IsOpen())
+      return false;
+
+    int errorCode = SSL_get_error(m_ssl, ret);
+    switch (errorCode) {
+      case SSL_ERROR_WANT_READ :
+      case SSL_ERROR_WANT_WRITE :
+        break; // Do handshake again
+
+      default :
+        PTRACE(2, "DTLS handshake failed (" << ret << ") - " << PSSLError(errorCode));
+        return false;
+    }
+  }
 }
 
 
