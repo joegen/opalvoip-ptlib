@@ -350,7 +350,7 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
     };
     typedef std::map<PThreadIdentifier, Nest> NestMap;
     NestMap m_nestedThreads;
-    PMutex  m_nestingMutex;
+    PCriticalSection m_nestingMutex;
 
     Nest * GetNest();
     Nest & StartNest();
