@@ -120,6 +120,8 @@ extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThre
 #endif // PTRACING
 
 
+bool PAssertWalksStack = true;
+
 static void InternalAssertFunc(const char * file, int line, const char * className, const char * msg)
 {
 #if defined(_WIN32)
@@ -159,7 +161,8 @@ static void InternalAssertFunc(const char * file, int line, const char * classNa
     if (errorCode != 0)
       strm << ", error=" << errorCode;
     strm << ", when=" << PTime().AsString(PTime::LoggingFormat);
-    PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2); // 2 means skip reporting InternalAssertFunc & PAssertFunc
+    if (PAssertWalksStack)
+      PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2); // 2 means skip reporting InternalAssertFunc & PAssertFunc
     strm << ends;
     str = strm.str();
   }

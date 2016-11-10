@@ -327,6 +327,7 @@ enum PStandardAssertMessage {
 
 #define __CLASS__ NULL
 
+extern bool PAssertWalksStack;
 bool PAssertFunc(const char * file, int line, const char * className, PStandardAssertMessage msg);
 bool PAssertFunc(const char * file, int line, const char * className, const char * msg);
 
