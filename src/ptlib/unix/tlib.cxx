@@ -849,8 +849,8 @@ void PProcess::GetMemoryUsage(MemoryUsage & usage)
 #endif // P_HAS_MALLOC_INFO
   {
     struct mallinfo info = mallinfo();
-    usage.m_max = info.usmblks > 0 ? info.usmblks : ((size_t)info.uordblks + (size_t)info.fordblks + (size_t)info.fsmblks);
-    usage.m_current = info.uordblks;
+    usage.m_current = (unsigned)info.uordblks;
+    usage.m_max = info.usmblks != 0 ? (unsigned)info.usmblks : (usage.m_current + (unsigned)info.fordblks + (unsigned)info.fsmblks);
     usage.m_blocks = info.hblks;
   }
 }
