@@ -1122,12 +1122,12 @@ namespace PProfiling
 {
   __inline uint64_t GetCycles()
   {
-#if defined(_M_IX86) || defined(_M_X64) || defined(__GNUC__)
+#if defined(_MSC_VER) || defined(P_LINUX)
     return __rdtsc();
 #elif defined(__i386__) || defined(__x86_64__)
     uint32_t l,h;
     __asm__ __volatile__ ("rdtsc" : "=a"(l), "=d"(h));
-    return ((uint64_t)h<<32)|l; }
+    return ((uint64_t)h<<32)|l;
 #elif defined(_WIN32)
     LARGE_INTEGER li;
     QueryPerformanceCounter(&li);
