@@ -6,6 +6,8 @@ ptlib.pc
 ptlib_cfg.dxy
 revision.h
 aclocal.m4
+lib/
+obj/
 lib_*/
 obj_*/
 *.sdf
