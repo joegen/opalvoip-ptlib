@@ -505,7 +505,8 @@ case "$target_os" in
       target_release=`sw_vers -productVersion`
 
       CPPFLAGS="-mmacosx-version-min=10.8 $CPPFLAGS"
-      LIBS="-framework QTKit -framework CoreVideo -framework AudioUnit $LIBS"
+      LDFLAGS="-mmacosx-version-min=10.8 $LDFLAGS"
+      LIBS="-framework AVFoundation -framework CoreVideo -framework CoreMedia -framework AudioUnit $LIBS"
    ;;
 
    linux* | Linux* | uclibc* )

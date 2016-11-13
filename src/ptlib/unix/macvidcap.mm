@@ -43,7 +43,7 @@
 
 #include <Foundation/NSAutoreleasePool.h>
 #import <Foundation/NSLock.h>
-#import <QTKit/QTKit.h>
+#import <AVFoundation/AVFoundation.h>
 
 #define PTraceModule() "MacVideo"
 #define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
@@ -58,9 +58,9 @@ public:
 };
 
 
-@interface PVideoInputDevice_MacFrame : NSObject
+@interface PVideoInputDevice_MacFrame : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate>
 {
-  CVImageBufferRef m_videoFrame;
+  CMSampleBufferRef m_videoFrame;
   PSyncPoint       m_grabbed;
   bool             m_frameAvailable;
 }
@@ -81,11 +81,10 @@ public:
 }
 
 
-// QTCapture delegate method, called when a frame has been loaded by the camera
-- (void)captureOutput:(QTCaptureOutput *)captureOutput
-        didOutputVideoFrame:(CVImageBufferRef)videoFrame
-        withSampleBuffer:(QTSampleBuffer *)sampleBuffer
-        fromConnection:(QTCaptureConnection *)connection
+// AVCapture delegate method, called when a frame has been loaded by the camera
+- (void)captureOutput:        (AVCaptureOutput *)captureOutput
+        didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+        fromConnection:       (AVCaptureConnection *)connection
 {
   PTRACE_DETAILED(5, "Frame received: m_frameAvailable=" << m_frameAvailable);
 
@@ -93,19 +92,13 @@ public:
   if (m_frameAvailable)
     return;
 
-  // Retain the videoFrame so it won't disappear
-  CVBufferRetain(videoFrame);
-  CVImageBufferRef imageBufferToRelease = m_videoFrame;
-
   // The Apple docs state that this action must be synchronized
   // as this method will be run on another thread
   @synchronized (self) {
-    m_videoFrame = videoFrame;
+    m_videoFrame = sampleBuffer;
     m_frameAvailable = true;
     m_grabbed.Signal();
   }
-  
-  CVBufferRelease(imageBufferToRelease);
 }
 
 
@@ -131,7 +124,7 @@ public:
   CVPixelBufferRef pixels;
   
   @synchronized (self){
-    pixels = CVBufferRetain(m_videoFrame);
+    pixels = CMSampleBufferGetImageBuffer(m_videoFrame);
     m_frameAvailable = false;
   }
 
@@ -213,10 +206,10 @@ class PVideoInputDevice_Mac : public PVideoInputDevice
     virtual PBoolean SetFrameSize(unsigned width, unsigned height);
 
   protected:
-    QTCaptureSession * m_session;
-    QTCaptureDevice * m_device;
-    QTCaptureDeviceInput * m_captureInput;
-    QTCaptureDecompressedVideoOutput * m_captureOutput;
+    AVCaptureSession * m_session;
+    AVCaptureDevice * m_device;
+    AVCaptureDeviceInput * m_captureInput;
+    AVCaptureVideoDataOutput * m_captureOutput;
     PVideoInputDevice_MacFrame * m_captureFrame;
   
     PINDEX m_frameSizeBytes;
@@ -254,72 +247,66 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
   Close();
   
   PLocalMemoryPool localPool;
+  NSError *error = nil;
   
   PWriteWaitAndSignal mutex(m_mutex);
   
-  bool opened;
-  NSError *error = nil;
+  m_session = [[AVCaptureSession alloc] init];
 
-  m_session = [[QTCaptureSession alloc] init];
-
-  if (devName.IsEmpty() || (devName *= "default")) {
-    m_device = [QTCaptureDevice defaultInputDeviceWithMediaType:QTMediaTypeVideo];
-    opened = [m_device open:&error];
-  }
+  if (devName.IsEmpty() || (devName *= "default"))
+    m_device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
   else {
     NSString * name = [NSString stringWithUTF8String:devName];
-    m_device = [QTCaptureDevice deviceWithUniqueID:name];
-    opened = [m_device open:&error];
-    if (!opened || error != nil) {
-      NSArray * devices = [QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo];
-      for (QTCaptureDevice * device in devices) {
-        if ([[device localizedDisplayName] caseInsensitiveCompare:name] == 0) {
-          m_device = [QTCaptureDevice deviceWithUniqueID:[device uniqueID]];
-          opened = [m_device open:&error];
-          break;
-        }
+    NSArray * devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    for (AVCaptureDevice * device in devices) {
+      if ([[device localizedName] caseInsensitiveCompare:name] == 0) {
+        m_device = [AVCaptureDevice deviceWithUniqueID:[device uniqueID]];
+        break;
       }
     }
   }
 
-  if (!opened || error != nil) {
+  if (m_device == nil || error != nil) {
     PTRACE(2, "Could not open device \"" << devName << "\": " << [error localizedDescription]);
     return false;
   }
-  
-  m_captureInput = [[QTCaptureDeviceInput alloc] initWithDevice:m_device];
-  
-  if (![m_session addInput:m_captureInput error:&error] || error != nil) {
-    PTRACE(2, "Could not add input device "
+
+  [m_device setActiveVideoMinFrameDuration:CMTimeMake(1, m_frameRate)];
+  [m_device setActiveVideoMaxFrameDuration:CMTimeMake(1, m_frameRate)];
+
+  m_captureInput = [AVCaptureDeviceInput deviceInputWithDevice:m_device error:&error];
+  if (error != nil) {
+    PTRACE(2, "Could not get input device "
            "\"" << devName << "\": " << [error localizedDescription]);
     return false;
   }
   
-  m_captureOutput = [[QTCaptureDecompressedVideoOutput alloc] init];
+  if (![m_session canAddInput:m_captureInput]) {
+    PTRACE(2, "Could not add input device \"" << devName << '"');
+    return false;
+  }
+
+  [m_session addInput:m_captureInput];
   
-  [m_captureOutput setPixelBufferAttributes:
+  m_captureOutput = [[AVCaptureVideoDataOutput alloc] init];
+
+  m_captureOutput.alwaysDiscardsLateVideoFrames = NO;
+  m_captureOutput.videoSettings =
       [NSDictionary dictionaryWithObjectsAndKeys:
           [NSNumber numberWithInt:m_frameWidth],
                   (id)kCVPixelBufferWidthKey,
           [NSNumber numberWithInt:m_frameHeight],
                   (id)kCVPixelBufferHeightKey,
-          [NSNumber numberWithUnsignedInt:kCVPixelFormatType_420YpCbCr8Planar],
+          [NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8Planar],
                   (id)kCVPixelBufferPixelFormatTypeKey,
           nil
-      ]
-  ];
+      ];
 
-  if ([m_captureOutput respondsToSelector:@selector(setMinimumVideoFrameInterval)])
-    [m_captureOutput setMinimumVideoFrameInterval:(1.0/m_frameRate)];
-
-  if (![m_session addOutput:m_captureOutput error:&error] || error != nil) {
-    PTRACE(2, "Could not add output for device "
-           "\"" << devName << "\": " << [error localizedDescription]);
-    return false;
-  }
+  [m_session addOutput:m_captureOutput];
   
   m_captureFrame = [[PVideoInputDevice_MacFrame alloc] init];
-  [m_captureOutput setDelegate:m_captureFrame];
+  dispatch_queue_t captureQueue = dispatch_queue_create( "captureQueue", DISPATCH_QUEUE_SERIAL );
+  [m_captureOutput setSampleBufferDelegate:m_captureFrame queue:captureQueue];
   
   m_deviceName = devName;
   m_frameSizeBytes = CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat);
@@ -350,11 +337,6 @@ PBoolean PVideoInputDevice_Mac::Close()
 
   PLocalMemoryPool localPool;
 
-  if (m_device != nil) {
-    [m_device close];
-    m_device = nil;
-  }
-
   if (m_captureInput != nil) {
     [m_session removeInput:m_captureInput];
     [m_captureInput release];
@@ -363,7 +345,7 @@ PBoolean PVideoInputDevice_Mac::Close()
 
   if (m_captureOutput != nil) {
     [m_session removeOutput:m_captureOutput];
-    [m_captureOutput setDelegate:nil];
+    [m_captureOutput setSampleBufferDelegate:nil queue:nil];
     [m_captureOutput release];
     m_captureOutput = nil;
   }
@@ -373,6 +355,11 @@ PBoolean PVideoInputDevice_Mac::Close()
     m_captureFrame = nil;
   }
   
+  if (m_device != nil) {
+    [m_device release];
+    m_device = nil;
+  }
+
   if (m_session != nil) {
     [m_session release];
     m_session = nil;
@@ -457,9 +444,9 @@ PStringArray PVideoInputDevice_Mac::GetDeviceNames() const
   
   PStringArray names;
 
-  NSArray * devices = [QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo];
-  for (QTCaptureDevice * device in devices)
-    names += [[device localizedDisplayName] cStringUsingEncoding:NSUTF8StringEncoding];
+  NSArray * devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+  for (AVCaptureDevice * device in devices)
+    names += [[device localizedName] cStringUsingEncoding:NSUTF8StringEncoding];
 
   return names;
 }
@@ -497,9 +484,9 @@ PBoolean PVideoInputDevice_Mac::SetFrameRate(unsigned rate)
   
   m_mutex.StartRead();
   
-  if ([m_captureOutput respondsToSelector:@selector(setMinimumVideoFrameInterval)])
-    [m_captureOutput setMinimumVideoFrameInterval:(1.0/rate)];
-  
+  [m_device setActiveVideoMinFrameDuration:CMTimeMake(1, m_frameRate)];
+  [m_device setActiveVideoMaxFrameDuration:CMTimeMake(1, m_frameRate)];
+
   m_mutex.EndRead();
   
   if (restart)

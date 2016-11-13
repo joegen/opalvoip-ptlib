@@ -249,6 +249,7 @@ ifdef PROG
     STRINGSFILE= #InfoPlist.strings
 
     $(BUNDLE_DIR): $(TARGET) Info.plist version.plist $(PROG).icns $(STRINGSFILE)
+	@-rm -rf $@
 	@for dir in $@ \
 	           $@/Contents \
 	           $@/Contents/MacOS \
