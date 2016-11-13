@@ -767,10 +767,15 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
   MIXERLINE line;
 
   MMRESULT osError = MMSYSERR_BADDEVICEID;
+  DWORD flags = CALLBACK_EVENT;
+#ifdef WAVE_MAPPED_DEFAULT_COMMUNICATION_DEVICE
+  if (id == WAVE_MAPPER)
+    flags |= WAVE_MAPPED_DEFAULT_COMMUNICATION_DEVICE;
+#endif
   switch (activeDirection) {
     case Player :
       PTRACE(4, "WinSnd\twaveOutOpen, id=" << id);
-      osError = waveOutOpen(&hWaveOut, (UINT)id, format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveOutOpen(&hWaveOut, (UINT)id, format, (DWORD_PTR)hEventDone, 0, flags);
       if (osError == MMSYSERR_NOERROR) {
         if (mixerGetID((HMIXEROBJ)hWaveOut, &mixerId, MIXER_OBJECTF_HWAVEOUT) == MMSYSERR_NOERROR)
           line.dwComponentType = MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT;
@@ -779,7 +784,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
 
     case Recorder :
       PTRACE(4, "WinSnd\twaveInOpen, id=" << id);
-      osError = waveInOpen(&hWaveIn, (UINT)id, format, (DWORD_PTR)hEventDone, 0, CALLBACK_EVENT);
+      osError = waveInOpen(&hWaveIn, (UINT)id, format, (DWORD_PTR)hEventDone, 0, flags);
       if (osError == MMSYSERR_NOERROR) {
         if (mixerGetID((HMIXEROBJ)hWaveIn, &mixerId, MIXER_OBJECTF_HWAVEIN) == MMSYSERR_NOERROR)
           line.dwComponentType = MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
