@@ -808,16 +808,12 @@ scope it is defined in.
 This macro outputs a trace of a source file line execution.
 */
 #define PTRACE_LINE() \
-    if (PTrace::CanTrace(1)) \
-      PTrace::Begin(1, __FILE__, __LINE__) << __FILE__ << '(' << __LINE__ << ')' << PTrace::End; \
-    else (void)0
+    (PTrace::CanTrace(1)) ? (void)(PTrace::Begin(1, __FILE__, __LINE__) << __FILE__ << '(' << __LINE__ << ')' << PTrace::End) : (void)0
 
 
 
 #define PTRACE_INTERNAL(level, condition, args, ...) \
-    if (PTrace::CanTrace(level) condition) \
-      PTrace::Begin(level, __FILE__, __LINE__, __VA_ARGS__) << args << PTrace::End; \
-    else (void)0
+    (PTrace::CanTrace(level) condition) ? ((PTrace::Begin(level, __FILE__, __LINE__, __VA_ARGS__) << args << PTrace::End), true) : false
 
 #define PTRACE_NO_CONDITION
 
