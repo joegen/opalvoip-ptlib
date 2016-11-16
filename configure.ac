@@ -797,7 +797,7 @@ dnl MSWIN_DEFINE     atomic,P_STD_ATOMIC
 
 MY_COMPILE_IFELSE(
    [if has std::atomic],
-   [$CPP11_FLAGS],
+   [$CPLUSPLUS_STD],
    [#include <atomic>],
    [
       std::atomic<unsigned> val;

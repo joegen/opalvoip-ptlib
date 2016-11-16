@@ -136,15 +136,15 @@ endif
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPP11_FLAGS) $(CXXFLAGS)) -c $<
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.cpp 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPP11_FLAGS) $(CXXFLAGS)) -c $<
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
-	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPP11_FLAGS) $(CXXFLAGS)) -c $<
+	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
@@ -175,17 +175,17 @@ DEPS	  = $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPP11_FLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPP11_FLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPP11_FLAGS)) -M $< >> $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
