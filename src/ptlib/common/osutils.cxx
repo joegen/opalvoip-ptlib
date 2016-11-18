@@ -311,7 +311,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
     AdjustOptions(0, SystemLogStream);
 
-    if (m_filename == "stderr")
+    if (m_filename == "stderr" || !PProcess::IsInitialised())
       SetStream(&cerr);
     else if (m_filename == "stdout")
       SetStream(&cout);
@@ -389,6 +389,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
         fputs(msgstrm.str().c_str(), stderr);
 #endif
         delete traceOutput;
+        SetStream(&cerr);
       }
     }
 
@@ -741,11 +742,9 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
 
     if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
       unsigned rotateVal = GetRotateVal(m_options);
-      if (rotateVal != m_lastRotate) {
+      if (rotateVal != m_lastRotate || GetStream() == &cerr) {
         m_lastRotate = rotateVal;
         OpenTraceFile(m_filename, true);
-        if (m_stream == NULL)
-          SetStream(&cerr);
         if (threadInfo == NULL)
           streamPtr = m_stream;
       }
