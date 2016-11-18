@@ -1167,6 +1167,7 @@ PTimer::PTimer(const PTimer & timer)
   : PTimeInterval(timer.GetResetTime())
   , m_handle(s_handleGenerator.Create())
   , m_running(false)
+  , m_callbackMutex("PTimerCallback")
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
