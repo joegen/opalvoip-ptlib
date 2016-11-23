@@ -213,13 +213,13 @@ PSystemLogTarget & PSystemLogTarget::operator=(const PSystemLogTarget &)
 }
 
 
-void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level, const char * msg)
+void PSystemLogTarget::OutputToStream(ostream & stream, PSystemLog::Level level, const char * msg, int timeZone)
 {
   if (level > m_thresholdLevel || !PProcess::IsInitialised())
     return;
 
   PTime now;
-  stream << now.AsString(PTime::LoggingFormat) << '\t';
+  stream << now.AsString(PTime::LoggingFormat, timeZone) << '\t';
 
   if (m_outputLevelName) {
     if (level < 0)
@@ -292,7 +292,7 @@ void PSystemLogToFile::Output(PSystemLog::Level level, const char * msg)
   m_outputting = true;
 
   if (InternalOpen()) {
-      OutputToStream(m_file, level, msg);
+      OutputToStream(m_file, level, msg, m_rotateInfo.m_timeZone);
       Rotate(false);
   }
 
@@ -309,13 +309,19 @@ bool PSystemLogToFile::Clear()
   if (!m_file.Open())
     return false;
 
-  OutputToStream(m_file, PSystemLog::Warning, "Cleared log file.");
+  OutputToStream(m_file, PSystemLog::Warning, "Cleared log file.", m_rotateInfo.m_timeZone);
   return true;
 }
 
 
 void PSystemLogToFile::SetRotateInfo(const RotateInfo & info, bool force)
 {
+#if PTRACING
+  if (info.m_timeZone == PTime::GMT)
+    PTrace::SetOptions(PTrace::GMTTime);
+  else
+    PTrace::ClearOptions(PTrace::GMTTime);
+#endif
   m_mutex.Wait();
   m_rotateInfo = info;
   Rotate(force);
@@ -334,7 +340,7 @@ bool PSystemLogToFile::Rotate(bool force)
     return false;
 
   PFilePath rotatedFile;
-  PString timestamp = PTime().AsString(m_rotateInfo.m_timestamp);
+  PString timestamp = PTime().AsString(m_rotateInfo.m_timestamp, m_rotateInfo.m_timeZone);
   PString tiebreak;
   do {
       rotatedFile = PSTRSTRM(m_rotateInfo.m_directory <<
@@ -345,7 +351,7 @@ bool PSystemLogToFile::Rotate(bool force)
   } while (PFile::Exists(rotatedFile));
 
   if (m_file.IsOpen()) {
-    OutputToStream(m_file, PSystemLog::StdError, "Log rotated to " + rotatedFile);
+    OutputToStream(m_file, PSystemLog::StdError, "Log rotated to " + rotatedFile, m_rotateInfo.m_timeZone);
     m_file.Close();
   }
 
@@ -371,9 +377,9 @@ bool PSystemLogToFile::Rotate(bool force)
       while (rotatedFiles.size() > m_rotateInfo.m_maxFileCount) {
         PFilePath filePath = rotatedFiles.begin()->second;
         if (PFile::Remove(filePath))
-          OutputToStream(m_file, PSystemLog::Info, "Removed excess rotated log " + filePath);
+          OutputToStream(m_file, PSystemLog::Info, "Removed excess rotated log " + filePath, m_rotateInfo.m_timeZone);
         else
-          OutputToStream(m_file, PSystemLog::Warning, "Could not remove excess rotated log " + filePath);
+          OutputToStream(m_file, PSystemLog::Warning, "Could not remove excess rotated log " + filePath, m_rotateInfo.m_timeZone);
         rotatedFiles.erase(rotatedFiles.begin());
       }
     }
@@ -383,9 +389,9 @@ bool PSystemLogToFile::Rotate(bool force)
       while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
         PFilePath filePath = rotatedFiles.begin()->second;
         if (PFile::Remove(filePath))
-          OutputToStream(m_file, PSystemLog::Info, "Removed aged rotated log " + filePath);
+          OutputToStream(m_file, PSystemLog::Info, "Removed aged rotated log " + filePath, m_rotateInfo.m_timeZone);
         else
-          OutputToStream(m_file, PSystemLog::Warning, "Could not remove aged rotated log " + filePath);
+          OutputToStream(m_file, PSystemLog::Warning, "Could not remove aged rotated log " + filePath, m_rotateInfo.m_timeZone);
         rotatedFiles.erase(rotatedFiles.begin());
       }
     }
@@ -412,8 +418,18 @@ bool PSystemLogToFile::InternalOpen()
       << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
       << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
          " with PTLib (v" << PProcess::GetLibVersion() << ")"
-         " to \"" << m_file.GetFilePath() << '"';
-  OutputToStream(m_file, PSystemLog::StdError, log);
+         " to \"" << m_file.GetFilePath() << "\", ";
+  switch (m_rotateInfo.m_timeZone) {
+    case PTime::GMT :
+      log << "GMT";
+      break;
+    case PTime::Local :
+      log << "Local Time";
+      break;
+    default :
+      log << "Time Zone: " << setw(4) << setfill('0') << showpos << m_rotateInfo.m_timeZone;
+  }
+  OutputToStream(m_file, PSystemLog::StdError, log, m_rotateInfo.m_timeZone);
   return true;
 }
 
@@ -422,6 +438,11 @@ PSystemLogToFile::RotateInfo::RotateInfo(const PDirectory & dir)
   : m_directory(dir)
   , m_prefix(PProcess::Current().GetName())
   , m_timestamp("_yyyy_MM_dd_hh_mm")
+#if PTRACING
+  , m_timeZone((PTrace::GetOptions()&PTrace::GMTTime) ? PTime::GMT : PTime::Local)
+#else
+  , m_timeZone(PTime::Local)
+#endif
   , m_suffix(".log")
   , m_maxSize(0)
   , m_maxFileCount(0)

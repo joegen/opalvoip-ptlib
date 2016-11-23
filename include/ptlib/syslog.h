@@ -164,7 +164,8 @@ class PSystemLogTarget : public PObject
     void OutputToStream(
       ostream & strm,           ///< Stream to output
       PSystemLog::Level level,  ///< Level of this message
-      const char * msg          ///< Message to be logged
+      const char * msg,         ///< Message to be logged
+      int timeZone = PTime::Local ///< Zone for time output
     );
   //@}
 
@@ -289,6 +290,7 @@ class PSystemLogToFile : public PSystemLogTarget
       PDirectory      m_directory;    ///< Destination directory for rotated file, default to same s log file
       PFilePathString m_prefix;       ///< File name prefix, default PProcess::GetName()
       PString         m_timestamp;    ///< Time template for rotated file, default "_yyyy_MM_dd_hh_mm"
+      int             m_timeZone;     ///< TIme zone for output and rotated file names
       PFilePathString m_suffix;       ///< File name suffix, default ".log"
       off_t           m_maxSize;      ///< Size in bytes which triggers a rotation, default zero disables
       unsigned        m_maxFileCount; ///< When this many files have been rotated, oldest is deleted
