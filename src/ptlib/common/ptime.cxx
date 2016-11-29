@@ -402,7 +402,7 @@ PString PTime::AsString(TimeFormat format, int zone) const
       PTime now;
       static const PTimeInterval halfDay(0, 0, 0, 12);
       if (*this > (now - halfDay) && *this < (now + halfDay))
-        return AsString("hh:mm:ss.uuu");
+        return AsString("hh:mm:ss.uuu", zone);
       // Do next case
     }
 
