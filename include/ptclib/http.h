@@ -924,11 +924,11 @@ class PHTTPConnectionInfo : public PObject
 
     /**Get the maximum time a persistent connection may persist.
       */
-    PTimeInterval GetPersistenceTimeout() const { return persistenceTimeout; }
+    PTimeInterval GetPersistenceTimeout() const { return PTimeInterval(0,persistenceSeconds); }
 
     /**Set the maximum time a persistent connection may persist.
       */
-    void SetPersistenceTimeout(const PTimeInterval & t) { persistenceTimeout = t; }
+    void SetPersistenceTimeout(const PTimeInterval & t) { persistenceSeconds = t.GetSeconds(); }
 
     /**Get the maximum number of transations (GET/POST etc) for persistent connection.
        If this is zero then there is no maximum.
@@ -967,7 +967,7 @@ class PHTTPConnectionInfo : public PObject
     int             minorVersion;
     PString         entityBody;        // original entity body (POST only)
     long            entityBodyLength;
-    PTimeInterval   persistenceTimeout;
+    unsigned        persistenceSeconds;
     unsigned        persistenceMaximum;
     PMultiPartList  m_multipartFormInfo;
 

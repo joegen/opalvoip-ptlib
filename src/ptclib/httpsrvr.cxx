@@ -1328,7 +1328,7 @@ bool PWebSocket::WriteHeader(OpCodes  opCode,
 // PHTTPConnectionInfo
 
 PHTTPConnectionInfo::PHTTPConnectionInfo()
-  : persistenceTimeout(0, DEFAULT_PERSIST_TIMEOUT) // maximum lifetime (in seconds) of persistent connections
+  : persistenceSeconds(DEFAULT_PERSIST_TIMEOUT) // maximum lifetime (in seconds) of persistent connections
 {
   // maximum lifetime (in transactions) of persistent connections
   persistenceMaximum = DEFAULT_PERSIST_TRANSATIONS;
