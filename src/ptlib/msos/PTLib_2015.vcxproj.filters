@@ -7,22 +7,22 @@
     <ResourceCompile Include="libver.rc" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\lib\Win32\release\PTLib.def">
+    <CustomBuild Include="..\..\..\lib\Win32\release\dll\PTLib.def">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\Win32\debug\PTLibd.def">
+    <CustomBuild Include="..\..\..\lib\Win32\debug\dll\PTLibd.def">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\Win32\No Trace\PTLibn.def">
+    <CustomBuild Include="..\..\..\lib\Win32\No Trace\dll\PTLibn.def">
       <Filter>Win32</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\x64\Release\PTLib64.def">
+    <CustomBuild Include="..\..\..\lib\x64\Release\dll\PTLib64.def">
       <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\x64\Debug\PTLib64d.def">
+    <CustomBuild Include="..\..\..\lib\x64\Debug\dll\PTLib64d.def">
       <Filter>Win64</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\x64\no trace\PTLib64n.def">
+    <CustomBuild Include="..\..\..\lib\x64\no trace\dll\PTLib64n.def">
       <Filter>Win64</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ptlib\msos\ptlib.ignore" />

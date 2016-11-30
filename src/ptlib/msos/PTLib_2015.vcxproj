@@ -161,7 +161,7 @@
     </ResourceCompile>
     <ProjectReference />
     <Link>
-      <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ptlibsd.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -203,7 +203,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ptlib64sd.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 /ignore:4199 %(AdditionalOptions)</AdditionalOptions>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib</IgnoreSpecificDefaultLibraries>
@@ -247,7 +247,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ptlibs.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
       <AdditionalOptions>/ignore:4099 /ignore:4199 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -292,7 +292,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ptlib64s.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 /ignore:4199 %(AdditionalOptions)</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -326,7 +326,7 @@
     </ResourceCompile>
     <ProjectReference />
     <Link>
-      <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ptlibsn.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
       <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <DataExecutionPrevention>
@@ -373,7 +373,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ptlib64sn.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 /ignore:4199 %(AdditionalOptions)</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -383,7 +383,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\lib\Win32\release\PTLib.def">
+    <CustomBuild Include="..\..\..\lib\Win32\release\dll\PTLib.def">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
@@ -422,7 +422,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibs.lib" "%(Fu
       </Outputs>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\Win32\debug\PTLibd.def">
+    <CustomBuild Include="..\..\..\lib\Win32\debug\dll\PTLibd.def">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -451,7 +451,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibsd.lib" "%(F
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\Win32\No Trace\PTLibn.def">
+    <CustomBuild Include="..\..\..\lib\Win32\No Trace\dll\PTLibn.def">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -480,7 +480,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibsn.lib" "%(F
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\x64\Release\PTLib64.def">
+    <CustomBuild Include="..\..\..\lib\x64\Release\dll\PTLib64.def">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
@@ -500,7 +500,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64s.lib" "%(
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName).def;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../../include/ptlib/msos/ptlib.ignore;$(OutDir)ptlib64s.lib;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\x64\Debug\PTLib64d.def">
+    <CustomBuild Include="..\..\..\lib\x64\Debug\dll\PTLib64d.def">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
@@ -520,7 +520,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64sd.lib" "%
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName).def;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../../include/ptlib/msos/ptlib.ignore;$(OutDir)ptlib64sd.lib;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\lib\x64\no trace\PTLib64n.def">
+    <CustomBuild Include="..\..\..\lib\x64\no trace\dll\PTLib64n.def">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
@@ -594,7 +594,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64sn.lib" "%
       <Private>false</Private>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
