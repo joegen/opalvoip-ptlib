@@ -60,7 +60,20 @@ class SymbolInfo
     bool IsExternal() const { return m_external; }
     bool NoName() const { return m_noName; }
     void KeepName() { m_noName = false; }
-    const PString & GetSynonym() const { return m_synonym; }
+    void Print(std::ostream & strm, const PString & name)
+    {
+      strm << "    ";
+      if (!m_synonym.IsEmpty())
+        strm << m_synonym << '=';
+      strm << name;
+      if (m_ordinal > 0)
+        strm << " @" << m_ordinal;
+      if (m_noName)
+        strm << " NONAME";
+      if (!m_unmangled.IsEmpty() && name != m_unmangled)
+        strm << "\n    ;" << m_unmangled;
+      strm << '\n';
+    }
 
   private:
     PString m_unmangled;
@@ -75,15 +88,8 @@ typedef std::map<PCaselessString, SymbolInfo> SortedSymbolList;
 
 std::ostream & operator<<(std::ostream & strm, const SortedSymbolList::iterator & it)
 {
-  strm << "    ";
-  if (!it->second.GetSynonym().IsEmpty())
-    strm << it->second.GetSynonym() << '=';
-  strm << it->first;
-  if (it->second.GetOrdinal() > 0)
-    strm << " @" << it->second.GetOrdinal();
-  if (it->second.NoName())
-    strm << " NONAME";
-  return strm << '\n';
+  it->second.Print(strm, it->first);
+  return strm;
 }
 
 
@@ -112,7 +118,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 11, ReleaseCode, 0, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 12, ReleaseCode, 0, false, true)
 {
 }
 
@@ -174,6 +180,23 @@ void MergeSym::Main()
   SortedSymbolList def_symbols;
   std::vector<bool> ordinals_used(65536);
   WildcardNames wildcards;
+
+  const char * const DefaultWildcards[] = {
+    "$$F",
+    "??_C@_",
+    "?__LINE__Var@",
+    "_CT?",
+    "__real@",
+    "__xmm@",
+    "__m2mep@?",
+    "__mep@?",
+    "__t2m@?",
+    "___@",
+    "__@@_PchSym_@",
+    "_TI2?AVbad_cast@std"
+  };
+  for (PINDEX i = 0; i < PARRAYSIZE(DefaultWildcards); ++i)
+    wildcards.push_back(DefaultWildcards[i]);
 
   if (args.HasOption('x')) {
     PStringArray include_path;
@@ -256,27 +279,25 @@ void MergeSym::Main()
         PINDEX start = 0;
         while (isspace(line[start]))
           start++;
-        PINDEX end = start;
-        while (line[end] != '\0' && !isspace(line[end]))
-          end++;
-        PINDEX ordpos = line.Find('@', end);
-        if (ordpos != P_MAX_INDEX) {
-          PINDEX ordinal = line.Mid(ordpos+1).AsInteger();
-          ordinals_used[ordinal] = true;
-          if (ordinal > next_ordinal)
-            next_ordinal = ordinal;
-          PINDEX unmanglepos = line.Find(';', ordpos);
-          if (unmanglepos != P_MAX_INDEX)
-            unmanglepos++;
-          bool noname = line.Find("NONAME", ordpos) < unmanglepos;
-          PString unmangled(line.Mid(unmanglepos));
-          PCaselessString synonym, symbol;
-          line(start, end-1).Split('=', synonym, symbol, PString::SplitDefaultToAfter|PString::SplitTrim);
-          if (def_symbols.find(symbol) == def_symbols.end())
-            def_symbols[symbol].Set(unmangled, ordinal, false, noname, synonym);
-          removed++;
-          if (args.HasOption('v') && def_symbols.size()%100 == 0)
-            cout << '.' << flush;
+        if (line[start] != ';') {
+          PINDEX end = start;
+          while (line[end] != '\0' && !isspace(line[end]))
+            end++;
+          PINDEX ordpos = line.Find('@', end);
+          if (ordpos != P_MAX_INDEX) {
+            PINDEX ordinal = line.Mid(ordpos+1).AsInteger();
+            ordinals_used[ordinal] = true;
+            if (ordinal > next_ordinal)
+              next_ordinal = ordinal;
+            bool noname = line.Find("NONAME", ordpos) != P_MAX_INDEX;
+            PCaselessString synonym, symbol;
+            line(start, end-1).Split('=', synonym, symbol, PString::SplitDefaultToAfter|PString::SplitTrim);
+            if (def_symbols.find(symbol) == def_symbols.end())
+              def_symbols[symbol].Set(PString::Empty(), ordinal, false, noname, synonym);
+            removed++;
+            if (args.HasOption('v') && def_symbols.size()%100 == 0)
+              cout << '.' << flush;
+          }
         }
       }
     }
@@ -325,27 +346,46 @@ void MergeSym::Main()
         line.Find(" UNDEF ") == P_MAX_INDEX &&
         line.Find(" External ") != P_MAX_INDEX &&
         line.Find("deleting destructor") == P_MAX_INDEX) {
+
       while (line[++namepos] == ' ')
         ;
       PINDEX nameend = line.FindOneOf("\r\n\t ", namepos);
       PString name = line(namepos, nameend-1);
-      if (name.NumCompare("??_C@_") != EqualTo &&
-          name.NumCompare("__real@") != EqualTo &&
-          name.NumCompare("?__LINE__Var@") != EqualTo &&
-          name.FindOneOf("'\"=") == P_MAX_INDEX &&
-          lib_symbols.find(name) == lib_symbols.end()) {
-        PINDEX endunmangle, unmangled = line.Find('(', nameend);
-        if (unmangled != P_MAX_INDEX)
-          endunmangle = line.Find(')', ++unmangled);
-        else {
-          unmangled = namepos;
-          endunmangle = nameend;
+      if (name.FindOneOf("'\"=") == P_MAX_INDEX && lib_symbols.find(name) == lib_symbols.end()) {
+        bool add = true;
+        PString unmangled;
+
+        PINDEX unmangledpos = line.Find('(', nameend);
+        if (unmangledpos != P_MAX_INDEX) {
+          unmangled = line(unmangledpos+1, line.FindLast(')')-1);
+          if (unmangled.FindOneOf("%^") != P_MAX_INDEX)
+            add = false;
+          else {
+            static const char * const ConventionNames[] = {
+              "__cdecl", "__clrcall", "__stdcall", "__fastcall", "__thiscall", "__vectorcall"
+            };
+            PINDEX convention;
+            for (PINDEX i = 0; i < PARRAYSIZE(ConventionNames); ++i) {
+              if ((convention = unmangled.Find(ConventionNames[i])) != P_MAX_INDEX)
+                break;
+            }
+            PINDEX colons = unmangled.Find("::", convention);
+            PINDEX paren = unmangled.Find('(', convention);
+            if (colons < paren && colons > 4 && unmangled.NumCompare(" std", 4, colons-4) == EqualTo)
+              add = false;
+          }
         }
-        lib_symbols[name].Set(line(unmangled, endunmangle-1),
-                              0,
-                              wildcards.Matches(name),
-                              explicitExports.find(name) == explicitExports.end(),
-                              PString::Empty());
+        else {
+          if (name[0] != '_' && !isalnum(name[0]))
+              add = false;
+        }
+
+        if (add)
+          lib_symbols[name].Set(unmangled,
+                                0,
+                                wildcards.Matches(name),
+                                explicitExports.find(name) == explicitExports.end(),
+                                PString::Empty());
       }
     }
     else if ((namepos = line.Find("/EXPORT:")) != P_MAX_INDEX) {
