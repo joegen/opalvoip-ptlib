@@ -1215,6 +1215,8 @@ PString PProcess::GetOSClass()
 PString PProcess::GetOSName()
 {
 #if P_VERSION_HELPERS
+  if (IsWindowsVersionOrGreater(10,0,0))
+    return "10";
   if (IsWindows8Point1OrGreater())
     return "8.1";
   if (IsWindows8OrGreater())
