@@ -874,6 +874,7 @@ void PHTTPListener::Worker::Work()
     PTRACE(2, "Creation failed" << socketInfo);
     return;
   }
+  server->SetServiceStartTime(m_queuedTime);
 
   PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
   if (channel == NULL) {

@@ -1230,9 +1230,16 @@ class PHTTPServer : public PHTTP
       const PString & protocol
     );
 
+    /// Set start of service time
+    void SetServiceStartTime(const PTime & startTime) { m_serviceStartTime = startTime; }
+
+    /// Get start of service time
+    const PTime & GetServiceStartTime() const { return m_serviceStartTime; }
+
   protected:
     void Construct();
 
+    PTime               m_serviceStartTime;
     PHTTPSpace          m_urlSpace;
     PHTTPConnectionInfo m_connectInfo;
     unsigned            m_transactionCount;
@@ -1286,6 +1293,7 @@ public:
 
     PHTTPListener & m_listener;
     PTCPSocket    * m_socket;
+    PTime           m_queuedTime;
   };
   typedef PQueuedThreadPool<Worker> ThreadPool;
   const ThreadPool & GetThreadPool() const { return m_threadPool; }
