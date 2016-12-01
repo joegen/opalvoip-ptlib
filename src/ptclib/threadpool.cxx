@@ -59,7 +59,7 @@ PThreadPoolBase::PThreadPoolBase(unsigned int maxWorkerCount,
 
 void PThreadPoolBase::Shutdown()
 {
-  PTRACE(3, "PTLib", "Shutting down thread pool \"" << m_threadName << '"');
+  PTRACE(3, PThreadPoolTraceModule, "Shutting down thread pool \"" << m_threadName << '"');
 
   while (!m_workers.empty()) {
     m_mutex.Wait();
@@ -118,18 +118,7 @@ PThreadPoolBase::WorkerThreadBase * PThreadPoolBase::AllocateWorker()
 
   // create a new worker thread
   WorkerThreadBase * worker = CreateWorkerThread();
-
   m_workers.push_back(PAssertNULL(worker));
-
-#if PTRACING
-  if (m_workers.size() > m_highWaterMark) {
-    m_highWaterMark = m_workers.size();
-    PTRACE(2, "PTLib", "Created new pool thread \"" << worker->GetThreadName() << "\", high water mark=" << m_highWaterMark);
-  }
-  else
-    PTRACE(4, "PTLib", "Created new pool thread \"" << worker->GetThreadName() << '"');
-#endif
-
   worker->Resume();
   return worker;
 }
@@ -172,8 +161,37 @@ void PThreadPoolBase::StopWorker(WorkerThreadBase * worker)
   if (worker == NULL)
     return;
 
-  PTRACE(4, "PTLib", "Shutting down pool thread " << worker);
+  PTRACE(4, PThreadPoolTraceModule, "Shutting down pool thread " << worker);
   worker->Shutdown();
   PAssert(worker->WaitForTermination(10000), "Worker did not terminate promptly");
   delete worker;
+}
+
+
+bool PThreadPoolBase::OnWorkerStarted(WorkerThreadBase & thread)
+{
+  if (m_workers.size() <= m_highWaterMark)
+    PTRACE(3, PThreadPoolTraceModule, "Started pool thread.");
+  else {
+    m_highWaterMark = m_workers.size();
+    PTRACE(2, PThreadPoolTraceModule, "Started new pool thread \"" << thread << "\", high water mark=" << m_highWaterMark);
+  }
+  return true;
+}
+
+
+PThreadPoolBase::WorkerThreadBase::WorkerThreadBase(PThreadPoolBase & pool, Priority priority, const char * threadName)
+  : PThread(100, NoAutoDeleteThread, priority, threadName)
+  , m_pool(pool)
+  , m_shutdown(false)
+{
+}
+
+void PThreadPoolBase::WorkerThreadBase::Main()
+{
+  if (m_pool.OnWorkerStarted(*this)) {
+    while (Work())
+      PTRACE(6, PThreadPoolTraceModule, "Processed work.");
+  }
+  PTRACE(2, PThreadPoolTraceModule, "Finished pool thread.");
 }

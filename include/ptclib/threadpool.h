@@ -46,6 +46,7 @@
 #include <queue>
 
 
+#define PThreadPoolTraceModule "ThreadPool"
 /**
 
    These classes and templates implement a generic thread pooling mechanism
@@ -81,7 +82,7 @@
             void OnRemoveWork(work_unit *);
 
             void Shutdown();
-            void Main();
+            bool Work();
  
       - A class that describes the thread pool itself. This is defined using PThreadPool template
 
@@ -98,7 +99,7 @@
           MyWorkerThread(PThreadPoolBase & threadPool)
             : PThreadPoolWorkerBase(threadPool) { }
 
-          void Main();
+          bool Work();
           void Shutdown();
           unsigned GetWorkSize() const;
           void OnAddWork(MyWorkUnit * work);
@@ -118,8 +119,8 @@
        Constructor 
           Called whenever a new worker thread is required
 
-       void Main()
-          Called when the worker thread starts up
+       bool Work()
+          Called continuously by worker thread, until it returns false
 
        unsigned GetWorkSize()
           Called whenever the thread pool wants to know how "busy" the
@@ -156,17 +157,17 @@ class PThreadPoolBase : public PObject
     class WorkerThreadBase : public PThread
     {
       protected:
-        WorkerThreadBase(Priority priority, const char * threadName)
-          : PThread(100, NoAutoDeleteThread, priority, threadName)
-          , m_shutdown(false)
-        { }
+        WorkerThreadBase(PThreadPoolBase & pool, Priority priority, const char * threadName);
+        virtual void Main();
 
       public:
+        virtual bool Work() = 0;
         virtual void Shutdown() = 0;
         virtual unsigned GetWorkSize() const = 0;
 
-        bool   m_shutdown;
-        PMutex m_workerMutex;
+        PThreadPoolBase & m_pool;
+        bool              m_shutdown;
+        PMutex            m_workerMutex;
     };
 
     class InternalWorkBase
@@ -211,6 +212,7 @@ class PThreadPoolBase : public PObject
     virtual WorkerThreadBase * AllocateWorker();
     virtual WorkerThreadBase * CreateWorkerThread() = 0;
     virtual void StopWorker(WorkerThreadBase * worker);
+    virtual bool OnWorkerStarted(WorkerThreadBase & thread);
 
     typedef std::vector<WorkerThreadBase *> WorkerList_t;
     WorkerList_t m_workers;
@@ -251,18 +253,13 @@ class PThreadPool : public PThreadPoolBase
     {
       protected:
         WorkerThread(PThreadPool & pool, Priority priority = NormalPriority, const char * threadName = NULL)
-          : WorkerThreadBase(priority, threadName)
-          , m_pool(pool)
+          : WorkerThreadBase(pool, priority, threadName)
         {
         }
 
       public:
         virtual void AddWork(Work_T * work, const string & group) = 0;
         virtual void RemoveWork(Work_T * work) = 0;
-        virtual void Main() = 0;
-  
-      protected:
-        PThreadPool & m_pool;
     };
 
     //
@@ -329,14 +326,14 @@ class PThreadPool : public PThreadPoolBase
         // add group ID to map
         if (!internalWork.m_group.empty()) {
           m_groupInfoMap.insert(make_pair(internalWork.m_group, GroupInfo(internalWork.m_worker)));
-          PTRACE(6, "ThreadPool", "Setting worker thread \"" << *internalWork.m_worker << "\""
+          PTRACE(6, PThreadPoolTraceModule, "Setting worker thread \"" << *internalWork.m_worker << "\""
                              " with group Id \"" << internalWork.m_group << '"');
         }
       }
       else {
         internalWork.m_worker = iterGroup->second.m_worker;
         ++iterGroup->second.m_count;
-        PTRACE(6, "ThreadPool", "Using existing worker thread \"" << *internalWork.m_worker << "\""
+        PTRACE(6, PThreadPoolTraceModule, "Using existing worker thread \"" << *internalWork.m_worker << "\""
                            " with group Id \"" << internalWork.m_group << "\", count=" << iterGroup->second.m_count);
       }
 
@@ -367,7 +364,7 @@ class PThreadPool : public PThreadPoolBase
       if (!internalWork.m_group.empty()) {
         typename GroupInfoMap_t::iterator iterGroup = m_groupInfoMap.find(internalWork.m_group);
         if (PAssert(iterGroup != m_groupInfoMap.end(), "Unknown work group") && --iterGroup->second.m_count == 0) {
-          PTRACE(6, "ThreadPool", "Removing worker thread \"" << *internalWork.m_worker << "\""
+          PTRACE(6, PThreadPoolTraceModule, "Removing worker thread \"" << *internalWork.m_worker << "\""
                                   " from group Id \"" << internalWork.m_group << '"');
           m_groupInfoMap.erase(iterGroup);
         }
@@ -409,7 +406,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
       , m_workerIncreaseLatency(workerIncreaseLatency)
       , m_workerIncreaseLimit(std::max(maxWorkers, workerIncreaseLimit))
     {
-        PTRACE(4, NULL, "ThreadPool", "Thread pool created:"
+        PTRACE(4, NULL, PThreadPoolTraceModule, "Thread pool created:"
                                       " maxWorkers=" << maxWorkers << ","
                                       " maxWorkUnits=" << maxWorkUnits << ","
                                       " threadName=" << this->m_threadName << ","
@@ -455,25 +452,27 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
           return (unsigned)this->m_queue.size()+this->m_working;
         }
 
-        void Main()
+        virtual bool Work()
         {
           QueuedWork item;
-          while (this->m_queue.Dequeue(item)) {
-            this->m_working = true;
+          if (!this->m_queue.Dequeue(item))
+              return false;
 
-            PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(this->m_pool);
-            PTimeInterval latency = item.m_time.GetElapsed();
+          this->m_working = true;
 
-            item.m_work->Work();
+          PQueuedThreadPool & pool = dynamic_cast<PQueuedThreadPool &>(this->m_pool);
+          PTimeInterval latency = item.m_time.GetElapsed();
 
-            if (!pool.RemoveWork(item.m_work))
-              this->RemoveWork(item.m_work);
+          item.m_work->Work();
 
-            this->m_working = false;
+          if (!pool.RemoveWork(item.m_work))
+            this->RemoveWork(item.m_work);
 
-            if (latency > pool.m_workerIncreaseLatency)
-              pool.OnMaxWaitTime(*this, latency, item.m_group);
-          }
+          this->m_working = false;
+
+          if (latency > pool.m_workerIncreaseLatency)
+            pool.OnMaxWaitTime(*this, latency, item.m_group);
+          return true;
         }
 
         void Shutdown()
@@ -501,10 +500,17 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
                                const PTimeInterval & PTRACE_PARAM(latency),
                                const string & PTRACE_PARAM(group))
     {
+      if (this->m_maxWorkUnitCount > 0) {
+#if PTRACING
+        TraceMaxWaitTime(2, "using max work units, threads=", 0, thread, latency, group);
+#endif
+        return;
+      }
+
       PTime now;
       if (this->m_nextWorkerIncreaseTime > now) {
 #if PTRACING
-        TraceMaxWaitTime(5, "recent adjustment prevents increase of", 0, thread, latency, group);
+        TraceMaxWaitTime(5, "recent adjustment prevents increase, threads=", 0, thread, latency, group);
 #endif
         return;
       }
@@ -514,13 +520,13 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
       unsigned newMaxWorkers = std::min((this->m_maxWorkerCount*11+9)/10, this->m_workerIncreaseLimit);
       if (newMaxWorkers == this->m_maxWorkerCount) {
 #if PTRACING
-        TraceMaxWaitTime(2, "cannot increase", newMaxWorkers, thread, latency, group);
+        TraceMaxWaitTime(2, "cannot increase threads from ", newMaxWorkers, thread, latency, group);
 #endif
         return;
       }
 
 #if PTRACING
-      TraceMaxWaitTime(2, "increasing pool", newMaxWorkers, thread, latency, group);
+      TraceMaxWaitTime(2, "increasing pool threads from ", newMaxWorkers, thread, latency, group);
 #endif
       this->m_maxWorkerCount = newMaxWorkers;
     }
@@ -535,16 +541,16 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
                           const string & group)
     {
       if (PTrace::CanTrace(level)) {
-        ostream & trace = PTRACE_BEGIN(level, NULL, "ThreadPool");
+        ostream & trace = PTRACE_BEGIN(level, NULL, PThreadPoolTraceModule);
         trace << "Thread pool";
         if (!group.empty())
           trace << " (group=\"" << group << "\")";
         trace << " latency excessive (" << latency << "s > " << this->m_workerIncreaseLatency << "s,"
                  " work-size=" << thread.GetWorkSize() << "), "
-              << msg << " threads from " << this->m_maxWorkerCount;
+              << msg << this->m_maxWorkerCount;
         if (newMaxWorkers > 0)
           trace << " to " << newMaxWorkers;
-        trace << ", max=" << this->m_workerIncreaseLimit
+        trace << ", limit=" << this->m_workerIncreaseLimit
               << PTrace::End;
       }
     }
