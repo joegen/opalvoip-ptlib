@@ -43,6 +43,7 @@
 #include <ptlib/pprocess.h>
 #include <ptlib/svcproc.h>
 #include <ptlib/pluginmgr.h>
+#include <ptlib/syslog.h>
 #include "../../../version.h"
 #include "../../../revision.h"
 
@@ -859,24 +860,34 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
 {
   PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? m_threadStorage.Get() : NULL;
 
-  unsigned currentLevel;
+  int currentLevel;
 
   if (threadInfo != NULL && !threadInfo->m_traceStreams.IsEmpty()) {
     PStringStream * stackStream = threadInfo->m_traceStreams.Pop();
     if (!PAssert(&paramStream == stackStream, PLogicError))
       return paramStream;
+
     *stackStream << ends << flush;
+
     PINDEX tab = stackStream->Find('\t', threadInfo->m_prefixLength);
     if (tab != P_MAX_INDEX) {
       PINDEX len = tab - threadInfo->m_prefixLength;
       if (len < 8)
         stackStream->Splice("      ", tab, 0);
     }
-    Lock();
-    *m_stream << *stackStream;
-    delete stackStream;
 
-    currentLevel = threadInfo->m_traceLevel;
+    Lock();
+
+    if (HasOption(SystemLogStream)) {
+      PSystemLog::OutputToTarget(PSystemLog::LevelFromInt(threadInfo->m_traceLevel), stackStream->GetPointer());
+      currentLevel = -1;
+    }
+    else {
+      *m_stream << *stackStream;
+      currentLevel = threadInfo->m_traceLevel;
+    }
+
+    delete stackStream;
   }
   else {
     if (!PAssert(&paramStream == m_stream, PLogicError)) {
@@ -888,16 +899,18 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
     // Inherit lock from PTrace::Begin()
   }
 
-  if (HasOption(SystemLogStream)) {
-    // Get the trace level for this message and set the stream width to that
-    // level so that the PSystemLog can extract the log level back out of the
-    // ios structure. There could be portability issues with this though it
-    // should work pretty universally.
-    m_stream->width(currentLevel + 1);
+  if (currentLevel >= 0) {
+    if (HasOption(SystemLogStream)) {
+      // Get the trace level for this message and set the stream width to that
+      // level so that the PSystemLog can extract the log level back out of the
+      // ios structure. There could be portability issues with this though it
+      // should work pretty universally.
+      m_stream->width(currentLevel + 1);
+    }
+    else
+      *m_stream << '\n';
+    m_stream->flush();
   }
-  else
-    *m_stream << '\n';
-  m_stream->flush();
 
   Unlock();
   return paramStream;

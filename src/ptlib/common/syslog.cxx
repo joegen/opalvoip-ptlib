@@ -146,28 +146,31 @@ streambuf::int_type PSystemLog::Buffer::underflow()
 
 int PSystemLog::Buffer::sync()
 {
-  PSystemLog::Level logLevel = m_log->m_logLevel;
-
-#if PTRACING
-  if (m_log->width() > 0 && (PTrace::GetOptions()&PTrace::SystemLogStream) != 0) {
-    // Trace system sets the ios stream width as the last thing it does before
-    // doing a flush, which gets us here. SO now we can get a PTRACE looking
-    // exactly like a PSYSTEMLOG of appropriate level.
-    unsigned traceLevel = (unsigned)m_log->width() - 1;
-    m_log->width(0);
-    if (traceLevel >= PSystemLog::NumLogLevels)
-      traceLevel = PSystemLog::NumLogLevels-1;
-    logLevel = (Level)traceLevel;
-  }
-#endif
-
   // Make sure there is a trailing NULL at end of string
   overflow('\0');
 
-  g_SystemLogTarget.m_targetMutex.Wait();
-  if (g_SystemLogTarget.m_targetPointer != NULL)
-    g_SystemLogTarget.m_targetPointer->Output(logLevel, m_string);
-  g_SystemLogTarget.m_targetMutex.Signal();
+#if PTRACING
+  PSystemLog::Level logLevel = m_log->m_logLevel;
+
+  if ((PTrace::GetOptions()&PTrace::SystemLogStream) != 0) {
+    /* If we get called via PTrace::End, then the "width" is set to the log level
+       used. If it is set to special value, then this is a PSYSTEMLOG output and
+       we go through the tracing system so get consistent output format. */
+    if (m_log->width() == -12345678) {
+      PTrace::Begin(logLevel, NULL, 0, NULL, "SystemLog") << m_string << PTrace::End;
+      logLevel = NumLogLevels;
+    }
+    else if (m_log->width() > 0) {
+      unsigned traceLevel = (unsigned)m_log->width() - 1;
+      m_log->width(0);
+      logLevel = traceLevel < NumLogLevels ? LevelFromInt(traceLevel) : EndLevel;
+    }
+  }
+  if (logLevel < NumLogLevels)
+    OutputToTarget(logLevel, m_string);
+#else
+  OutputToTarget(m_log->m_logLevel, m_string);
+#endif
 
   PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
@@ -189,6 +192,15 @@ PSystemLogTarget & PSystemLog::GetTarget()
 void PSystemLog::SetTarget(PSystemLogTarget * target, bool autoDelete)
 {
   g_SystemLogTarget.Set(target, autoDelete);
+}
+
+
+void PSystemLog::OutputToTarget(PSystemLog::Level level, const char * msg)
+{
+  g_SystemLogTarget.m_targetMutex.Wait();
+  if (g_SystemLogTarget.m_targetPointer != NULL)
+    g_SystemLogTarget.m_targetPointer->Output(level, msg);
+  g_SystemLogTarget.m_targetMutex.Signal();
 }
 
 

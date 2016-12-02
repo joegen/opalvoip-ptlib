@@ -90,6 +90,12 @@ class PSystemLog : public PObject, public std::ostream
       PSystemLogTarget * target,  ///< New target/destination for logging.
       bool autoDelete = true      ///< Indicate target is to be deleted when no longer in use.
     );
+
+    /// Output string to active target.
+    static void OutputToTarget(
+      PSystemLog::Level level,  ///< Level of this message
+      const char * msg          ///< Message to be logged
+    );
   //@}
 
   private:
@@ -177,7 +183,7 @@ class PSystemLogTarget : public PObject
     PSystemLogTarget(const PSystemLogTarget & other);
     PSystemLogTarget & operator=(const PSystemLogTarget &);
 
-  friend class PSystemLog::Buffer;
+  friend void PSystemLog::OutputToTarget(PSystemLog::Level level, const char * msg);
 };
 
 
@@ -434,6 +440,7 @@ as a stream output sequence which is them output to the system log.
   if (PSystemLog::GetTarget().GetThresholdLevel() >= PSystemLog::level) { \
     PSystemLog P_systemlog(PSystemLog::level); \
     P_systemlog << variables; \
+    P_systemlog.width(-12345678); \
   } else (void)0
 
 
