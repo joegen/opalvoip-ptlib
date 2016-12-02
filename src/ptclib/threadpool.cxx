@@ -168,14 +168,15 @@ void PThreadPoolBase::StopWorker(WorkerThreadBase * worker)
 }
 
 
-bool PThreadPoolBase::OnWorkerStarted(WorkerThreadBase & thread)
+bool PThreadPoolBase::OnWorkerStarted(WorkerThreadBase & PTRACE_PARAM(thread))
 {
-  if (m_workers.size() <= m_highWaterMark)
-    PTRACE(3, PThreadPoolTraceModule, "Started pool thread.");
-  else {
+#if PTRACING
+  bool higherWatermark = m_workers.size() > m_highWaterMark;
+  PTRACE(higherWatermark ? 2 : 3, PThreadPoolTraceModule,
+         "Started new pool thread \"" << thread << "\", high water mark=" << m_workers.size());
+  if (higherWatermark)
     m_highWaterMark = m_workers.size();
-    PTRACE(2, PThreadPoolTraceModule, "Started new pool thread \"" << thread << "\", high water mark=" << m_highWaterMark);
-  }
+#endif
   return true;
 }
 

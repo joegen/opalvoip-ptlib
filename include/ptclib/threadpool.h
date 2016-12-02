@@ -78,8 +78,8 @@
  
             Constructor with one parameter declared as "PThreadPoolBase & threadPool"
             unsigned GetWorkSize() const;
-            void OnAddWork(work_unit *);
-            void OnRemoveWork(work_unit *);
+            void AddWork(Work_T *);
+            void RemoveWork(Work_T *);
 
             void Shutdown();
             bool Work();
@@ -102,8 +102,8 @@
           bool Work();
           void Shutdown();
           unsigned GetWorkSize() const;
-          void OnAddWork(MyWorkUnit * work);
-          void OnRemoveWork(MyWorkUnit * work);
+          void AddWork(Work_T * work);
+          void RemoveWork(Work_T * work);
       };
 
       
@@ -126,10 +126,10 @@
           Called whenever the thread pool wants to know how "busy" the
           thread is. This is used when deciding how to allocate new work units
              
-       void OnAddWork(work_unit *)
+       void AddWork(Work_T *)
           Called to add a new work unit to the thread
 
-       void OnRemoveWork(work_unit *);
+       void RemoveWork(Work_T *);
           Called to remove a work unit from the thread
 
        void Shutdown();
