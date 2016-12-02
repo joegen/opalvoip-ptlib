@@ -241,7 +241,7 @@
           PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
 
           if (m_threadId != tid || (m_uniqueId != 0 && m_uniqueId != uid)) {
-            if (tid == PNullThreadIdentifier)
+            if (m_threadId == PNullThreadIdentifier)
               PTRACE(0, "StackWalk", "Thread took too long to respond to signal");
             else
               PTRACE(0, "StackWalk", "Signal received on " << PThread::GetIdentifiersAsString(tid, uid) <<
