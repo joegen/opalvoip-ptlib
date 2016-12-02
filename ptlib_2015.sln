@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Blend for Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World Static", "samples\hello_world\hello_2015.vcxproj", "{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
 EndProject
@@ -80,14 +80,14 @@ Global
 		{85F4F26A-1A5D-4685-A48A-448102C5C5BC}.Release|x64.Build.0 = Release|x64
 		{F34BE504-015A-42E6-9342-3800EAD5F561}.Debug|Android.ActiveCfg = Debug|Win32
 		{F34BE504-015A-42E6-9342-3800EAD5F561}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F34BE504-015A-42E6-9342-3800EAD5F561}.Debug|x64.ActiveCfg = Debug|Win32
+		{F34BE504-015A-42E6-9342-3800EAD5F561}.Debug|x64.ActiveCfg = Debug|x64
 		{F34BE504-015A-42E6-9342-3800EAD5F561}.No Trace|Android.ActiveCfg = No Trace|Win32
 		{F34BE504-015A-42E6-9342-3800EAD5F561}.No Trace|Win32.ActiveCfg = No Trace|Win32
-		{F34BE504-015A-42E6-9342-3800EAD5F561}.No Trace|x64.ActiveCfg = No Trace|Win32
+		{F34BE504-015A-42E6-9342-3800EAD5F561}.No Trace|x64.ActiveCfg = No Trace|x64
 		{F34BE504-015A-42E6-9342-3800EAD5F561}.Release|Android.ActiveCfg = Release|Win32
-		{F34BE504-015A-42E6-9342-3800EAD5F561}.Release|Win32.ActiveCfg = Release|Win32
-		{F34BE504-015A-42E6-9342-3800EAD5F561}.Release|Win32.Build.0 = Release|Win32
-		{F34BE504-015A-42E6-9342-3800EAD5F561}.Release|x64.ActiveCfg = Release|Win32
+		{F34BE504-015A-42E6-9342-3800EAD5F561}.Release|Win32.ActiveCfg = Release|x64
+		{F34BE504-015A-42E6-9342-3800EAD5F561}.Release|Win32.Build.0 = Release|x64
+		{F34BE504-015A-42E6-9342-3800EAD5F561}.Release|x64.ActiveCfg = Release|x64
 		{9C8D0100-6709-4628-9993-69F443AF69E8}.Debug|Android.ActiveCfg = Debug|Win32
 		{9C8D0100-6709-4628-9993-69F443AF69E8}.Debug|Win32.ActiveCfg = Debug|Win32
 		{9C8D0100-6709-4628-9993-69F443AF69E8}.Debug|x64.ActiveCfg = Debug|Win32
