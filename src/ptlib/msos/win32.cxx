@@ -1324,6 +1324,8 @@ PString PProcess::GetOSHardware()
 PString PProcess::GetOSVersion()
 {
 #if P_VERSION_HELPERS
+  if (IsWindowsVersionOrGreater(10,0,0))
+    return "v10.0";
   if (IsWindows8Point1OrGreater())
     return "v6.3";
   if (IsWindows8OrGreater())
