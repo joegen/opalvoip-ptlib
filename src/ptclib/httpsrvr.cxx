@@ -1092,6 +1092,7 @@ bool PWebSocket::WriteHeader(OpCodes  opCode,
                              int64_t  masking)
 {
   BYTE header[14];
+  PUInt64b * pLen = (PUInt64b *)&header[2];
   PINDEX len = 2;
 
   header[0] = (BYTE)opCode;
@@ -1102,12 +1103,12 @@ bool PWebSocket::WriteHeader(OpCodes  opCode,
     header[1] = (BYTE)payloadLength;
   else if (payloadLength < 65536) {
     header[1] = 126;
-    *(PUInt16b *)&header[len] = (uint16_t)payloadLength;
+    *(PUInt16b *)pLen = (uint16_t)payloadLength;
     len += 2;
   }
   else {
     header[1] = 127;
-    *(PUInt64b *)&header[len] = payloadLength;
+    *pLen = payloadLength;
     len += 8;
   }
 
