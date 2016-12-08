@@ -34,6 +34,7 @@
 
 #include <ptlib.h>
 #include <ptclib/httpform.h>
+#include <ptclib/random.h>
 
 #if P_HTTPFORMS
 
@@ -421,6 +422,38 @@ PBoolean PHTTPField::ValidateAll(const PStringToString & data, PStringStream & m
   if (data.Contains(m_fullName))
     return Validated(data[m_fullName], msg);
   return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPDividerField
+
+PHTTPDividerField::PHTTPDividerField()
+  : PHTTPField(PRandom::String(8), NULL, NULL)
+{
+}
+
+
+PHTTPField * PHTTPDividerField::NewField() const
+{
+  return new PHTTPDividerField();
+}
+
+
+void PHTTPDividerField::GetHTMLTag(PHTML & html) const
+{
+  html << PHTML::HRule();
+}
+
+
+PString PHTTPDividerField::GetValue(PBoolean) const
+{
+  return PString::Empty();
+}
+
+
+void PHTTPDividerField::SetValue(const PString &)
+{
 }
 
 
@@ -1992,14 +2025,21 @@ void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
   html << PHTML::TableStart("cellspacing=8");
   for (PINDEX fld = 0; fld < m_fields.GetSize(); fld++) {
     PHTTPField & field = m_fields[fld];
+    bool isDivider = dynamic_cast<PHTTPDividerField *>(&field) != NULL;
     if (field.NotYetInHTML()) {
       html << PHTML::TableRow()
-           << PHTML::TableData("align=right")
-           << PHTML::Escaped(field.GetTitle())
-           << PHTML::TableData("align=left")
+           << PHTML::TableData("align=right");
+      if (isDivider)
+        html << PHTML::HRule();
+      else
+        html << PHTML::Escaped(field.GetTitle());
+      html << PHTML::TableData("align=left")
            << "<!--#form html " << field.GetName() << "-->"
-           << PHTML::TableData()
-           << field.GetHelp();
+           << PHTML::TableData();
+      if (isDivider)
+        html << PHTML::HRule();
+      else
+        html << field.GetHelp();
       field.SetInHTML();
     }
   }

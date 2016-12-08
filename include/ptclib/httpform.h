@@ -235,6 +235,20 @@ class PHTTPField : public PObject
 
 PARRAY(PHTTPFields, PHTTPField);
 
+
+class PHTTPDividerField : public PHTTPField
+{
+    PCLASSINFO(PHTTPDividerField, PHTTPField)
+  public:
+    PHTTPDividerField();
+
+    virtual PHTTPField * NewField() const;
+    virtual void GetHTMLTag(PHTML & html) const;
+    virtual PString GetValue(PBoolean dflt = false) const;
+    virtual void SetValue(const PString & newValue);
+};
+
+
 class PHTTPCompositeField : public PHTTPField
 {
   PCLASSINFO(PHTTPCompositeField, PHTTPField)
