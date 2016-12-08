@@ -719,13 +719,13 @@ PHTTPListener::PHTTPListener(unsigned maxWorkers)
 }
 
 
-bool PHTTPListener::ListenForHTTP(WORD port, PSocket::Reusability reuse)
+bool PHTTPListener::ListenForHTTP(WORD port, PSocket::Reusability reuse, unsigned queueSize)
 {
-  return ListenForHTTP(PString::Empty(), port, reuse);
+  return ListenForHTTP(PString::Empty(), port, reuse, queueSize);
 }
 
 
-bool PHTTPListener::ListenForHTTP(const PString & interfaces, WORD port, PSocket::Reusability reuse)
+bool PHTTPListener::ListenForHTTP(const PString & interfaces, WORD port, PSocket::Reusability reuse, unsigned queueSize)
 {
   if (port == 0) {
     PAssertAlways(PInvalidParameter);
@@ -752,7 +752,7 @@ bool PHTTPListener::ListenForHTTP(const PString & interfaces, WORD port, PSocket
     PIPSocket::Address binding(ifaces[i]);
     if (binding.IsValid()) {
       PTCPSocket * listener = new PTCPSocket(port);
-      if (listener->Listen(binding, 5, 0, reuse)) {
+      if (listener->Listen(binding, queueSize, 0, reuse)) {
         PTRACE(3, "Listening for HTTP on " << listener->GetLocalAddress());
         m_httpListeningSockets.Append(listener);
         atLeastOne = true;

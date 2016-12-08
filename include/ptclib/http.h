@@ -1267,12 +1267,14 @@ public:
 
   bool ListenForHTTP(
     WORD port,
-    PSocket::Reusability reuse = PSocket::CanReuseAddress
+    PSocket::Reusability reuse = PSocket::CanReuseAddress,
+    unsigned queueSize = 10
   );
   bool ListenForHTTP(
     const PString & interfaces,
     WORD port,
-    PSocket::Reusability reuse = PSocket::CanReuseAddress
+    PSocket::Reusability reuse = PSocket::CanReuseAddress,
+    unsigned queueSize = 10
   );
   void ShutdownListeners();
 
