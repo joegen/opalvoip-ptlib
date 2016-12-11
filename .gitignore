@@ -1,6 +1,7 @@
 config.log
 config.status
 autom4te.cache
+aclocal.m4
 ptlib.pc
 ptlib_cfg.dxy
 revision.h
