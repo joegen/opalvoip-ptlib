@@ -935,7 +935,7 @@ PBoolean PASN_BitString::SetSize(unsigned nBits)
 bool PASN_BitString::operator[](PINDEX bit) const
 {
   if ((unsigned)bit < totalBits)
-    return (bitData[bit>>3] & (1 << (7 - (bit&7)))) != 0;
+    return (bitData[(unsigned)bit>>3] & (1 << (7 - ((unsigned)bit&7)))) != 0;
   return false;
 }
 
