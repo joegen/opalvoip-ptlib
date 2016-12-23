@@ -46,19 +46,24 @@ class PMutexExcessiveLockInfo
 {
   protected:
     const char * m_fileOrName;
-    unsigned     m_fileLine;
-    unsigned     m_excessiveLockTimeout;
-    mutable bool m_excessiveLockActive;
+#if PTRACING
     PProfiling::TimeScope * m_timeWait;
     PProfiling::TimeScope * m_timeHeld;
     uint64_t                m_samplePointCycle;
+#endif
+    unsigned     m_fileLine;
+    unsigned     m_excessiveLockTimeout;
+    mutable bool m_excessiveLockActive;
 
     PMutexExcessiveLockInfo(
       const char * name,
       unsigned line,
-      unsigned timeout,
+      unsigned timeout
+#if PTRACING
+      ,
       PProfiling::TimeScope * timeWait,
       PProfiling::TimeScope * timeHeld
+#endif
     );
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     void PrintOn(ostream &strm) const;
@@ -103,9 +108,12 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
     explicit PTimedMutex(
       const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
       unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
-      unsigned timeout = 0,      ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+#if PTRACING
+      ,
       PProfiling::TimeScope * timeWait = NULL, ///< Detailed logging of the mutex wait times.
       PProfiling::TimeScope * timeHeld = NULL  ///< Detailed logging of the mutex hold times.
+#endif
     );
 
     /**Copy constructor is allowed but does not copy, allocating a new mutex.

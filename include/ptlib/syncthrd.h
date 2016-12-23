@@ -266,9 +266,12 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
     explicit PReadWriteMutex(
       const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
       unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
-      unsigned timeout = 0,      ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+#if PTRACING
+      ,
       PProfiling::TimeScope * timeWait = NULL, ///< Detailed logging of the mutex wait times.
       PProfiling::TimeScope * timeHeld = NULL  ///< Detailed logging of the mutex hold times.
+#endif
     );
     ~PReadWriteMutex();
   //@}

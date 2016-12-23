@@ -3029,18 +3029,23 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThrea
 unsigned PTimedMutex::ExcessiveLockWaitTime;
 
 
+#if PTRACING
 PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name,
                                                  unsigned line,
                                                  unsigned timeout,
                                                  PProfiling::TimeScope * timeWait,
                                                  PProfiling::TimeScope * timeHeld)
   : m_fileOrName(name)
-  , m_fileLine(line)
-  , m_excessiveLockTimeout(timeout)
-  , m_excessiveLockActive(false)
   , m_timeWait(timeWait)
   , m_timeHeld(timeHeld)
   , m_samplePointCycle(0)
+#else
+PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout)
+  : m_fileOrName(name)
+#endif
+  , m_fileLine(line)
+  , m_excessiveLockTimeout(timeout)
+  , m_excessiveLockActive(false)
 {
   if (m_excessiveLockTimeout == 0) {
     if (PTimedMutex::ExcessiveLockWaitTime == 0) {
@@ -3055,12 +3060,14 @@ PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name,
 
 PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other)
   : m_fileOrName(other.m_fileOrName)
-  , m_fileLine(other.m_fileLine)
-  , m_excessiveLockTimeout(other.m_excessiveLockTimeout)
-  , m_excessiveLockActive(false)
+#if PTRACING
   , m_timeWait(other.m_timeWait)
   , m_timeHeld(other.m_timeHeld)
   , m_samplePointCycle(0)
+#endif
+  , m_fileLine(other.m_fileLine)
+  , m_excessiveLockTimeout(other.m_excessiveLockTimeout)
+  , m_excessiveLockActive(false)
 {
 }
 
@@ -3090,23 +3097,29 @@ void PMutexExcessiveLockInfo::ExcessiveLockPhantom(const PObject & mutex) const
 
 void PMutexExcessiveLockInfo::AcquiringLock()
 {
+#if PTRACING
   m_samplePointCycle = PProfiling::GetCycles();
+#endif
 }
 
 
-void PMutexExcessiveLockInfo::AcquiredLock(const PObject & mutex)
+void PMutexExcessiveLockInfo::AcquiredLock(const PObject & PTRACE_PARAM(mutex))
 {
+#if PTRACING
   if (m_timeWait)
     m_timeWait->EndMeasurement(&mutex, &mutex, m_samplePointCycle);
 
   m_samplePointCycle = PProfiling::GetCycles();
+#endif
 }
 
 
 void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex)
 {
+#if PTRACING
   if (m_timeHeld)
     m_timeHeld->EndMeasurement(&mutex, &mutex, m_samplePointCycle);
+#endif
 
   if (m_excessiveLockActive) {
 #if PTRACING
@@ -3322,12 +3335,17 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 
 /////////////////////////////////////////////////////////////////////////////
 
+#if PTRACING
 PReadWriteMutex::PReadWriteMutex(const char * name,
                                  unsigned line,
                                  unsigned timeout,
                                  PProfiling::TimeScope * timeWait,
                                  PProfiling::TimeScope * timeHeld)
   : PMutexExcessiveLockInfo(name, line, timeout, timeWait, timeHeld)
+#else
+PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line, unsigned timeout)
+  : PMutexExcessiveLockInfo(name, line, timeout)
+#endif
 #if P_READ_WRITE_ALGO2
   , m_inSemaphore(1, 1)
   , m_inCount(0)
