@@ -49,12 +49,23 @@ class PMutexExcessiveLockInfo
     unsigned     m_fileLine;
     unsigned     m_excessiveLockTimeout;
     mutable bool m_excessiveLockActive;
+    PProfiling::TimeScope * m_timeWait;
+    PProfiling::TimeScope * m_timeHeld;
+    uint64_t                m_samplePointCycle;
 
-    PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout);
+    PMutexExcessiveLockInfo(
+      const char * name,
+      unsigned line,
+      unsigned timeout,
+      PProfiling::TimeScope * timeWait,
+      PProfiling::TimeScope * timeHeld
+    );
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     void PrintOn(ostream &strm) const;
     void ExcessiveLockPhantom(const PObject & mutex) const;
-    void LockReleased(const PObject & mutex);
+    void AcquiringLock();
+    void AcquiredLock(const PObject & mutex);
+    void ReleasedLock(const PObject & mutex);
 };
 
 
@@ -92,7 +103,9 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
     explicit PTimedMutex(
       const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
       unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
-      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero is default.
+      unsigned timeout = 0,      ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+      PProfiling::TimeScope * timeWait = NULL, ///< Detailed logging of the mutex wait times.
+      PProfiling::TimeScope * timeHeld = NULL  ///< Detailed logging of the mutex hold times.
     );
 
     /**Copy constructor is allowed but does not copy, allocating a new mutex.
@@ -139,7 +152,8 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
     unsigned                m_lockCount;
 
     void ExcessiveLockWait();
-    void CommonSignal();
+    void CommonWaitComplete();
+    bool CommonSignal();
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -153,14 +167,30 @@ typedef PTimedMutex PMutex;
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
 
-#define PDECLARE_MUTEX_ARG_1(var)                struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_MUTEX_ARG_2(var, name)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name            ) { } } var
-#define PDECLARE_MUTEX_ARG_3(var, name, timeout) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#name, 0, timeout) { } } var
+#define PDECLARE_MUTEX_ARG_1(var)              struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
+#define PDECLARE_MUTEX_ARG_2(var,nam)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam             ) { } } var
+#define PDECLARE_MUTEX_ARG_3(var,nam,t)        struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,0,to        ) { } } var
+#define PDECLARE_MUTEX_ARG_4(var,nam,t,w)      struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,0,to,tw     ) { } } var
+#define PDECLARE_MUTEX_ARG_5(var,nam,to,tw,th) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,0,to,tw,th  ) { } } var
 
 #define PDECLARE_MUTEX_PART1(narg, args) PDECLARE_MUTEX_PART2(narg, args)
 #define PDECLARE_MUTEX_PART2(narg, args) PDECLARE_MUTEX_ARG_##narg args
 
 #define PDECLARE_MUTEX(...) PDECLARE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
+
+#if PTRACING
+  #define PDECLARE_INSTRUMENTED_MUTEX(var, name, waitTime, heldTime, ...) \
+    struct PTimedMutex_##name : PTimedMutex { \
+      PProfiling::TimeScope m_timeWaitContext, m_timeHeldContext; \
+      PTimedMutex_##name() \
+        : PTimedMutex(#name, 0, std::max((int)1000, (int)waitTime*2), &m_timeWaitContext, &m_timeHeldContext) \
+        , m_timeWaitContext("Wait " #name, __FILE__,__LINE__, waitTime, ##__VA_ARGS__) \
+        , m_timeHeldContext("Held " #name, __FILE__,__LINE__, heldTime, ##__VA_ARGS__) \
+      { } } var
+#else
+  #define PDECLARE_INSTRUMENTED_MUTEX(var, name, waitTime, heldTime, ...) \
+                       PDECLARE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))
+#endif
 
 
 /** This class implements critical section mutexes using the most efficient

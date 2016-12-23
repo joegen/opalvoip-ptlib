@@ -1746,8 +1746,12 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
-PTimedMutex::PTimedMutex(const char * name, unsigned line, unsigned timeout)
-  : PMutexExcessiveLockInfo(name, line, timeout)
+PTimedMutex::PTimedMutex(const char * name,
+                         unsigned line,
+                         unsigned timeout,
+                         PProfiling::TimeScope * timeWait,
+                         PProfiling::TimeScope * timeHeld)
+  : PMutexExcessiveLockInfo(name, line, timeout, timeWait, timeHeld)
   , m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
   , m_lastUniqueId(0)
@@ -1770,33 +1774,33 @@ PTimedMutex::PTimedMutex(const PTimedMutex & other)
 
 void PTimedMutex::Wait()
 {
+  AcquiringLock();
+
   if (!m_handle.Wait(m_excessiveLockTimeout)) {
     ExcessiveLockWait();
     m_handle.Wait(INFINITE);
     ExcessiveLockPhantom(*this);
   }
 
-  if (m_lockCount++ == 0)
-    m_lastUniqueId = m_lastLockerId = m_lockerId = ::GetCurrentThreadId();
+  CommonWaitComplete();
 }
 
 
 PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
 {
+  AcquiringLock();
+
   if (!m_handle.Wait(timeout.GetInterval()))
     return false;
 
-  if (m_lockCount++ == 0)
-    m_lastUniqueId = m_lastLockerId = m_lockerId = ::GetCurrentThreadId();
+  CommonWaitComplete();
   return true;
 }
 
 
 void PTimedMutex::Signal()
 {
-  if (--m_lockCount == 0)
-    CommonSignal();
-
+  CommonSignal();
   PAssertOS(::ReleaseMutex(m_handle));
 }
 

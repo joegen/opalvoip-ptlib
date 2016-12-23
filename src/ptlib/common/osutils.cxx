@@ -3029,11 +3029,18 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThrea
 unsigned PTimedMutex::ExcessiveLockWaitTime;
 
 
-PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout)
+PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name,
+                                                 unsigned line,
+                                                 unsigned timeout,
+                                                 PProfiling::TimeScope * timeWait,
+                                                 PProfiling::TimeScope * timeHeld)
   : m_fileOrName(name)
   , m_fileLine(line)
   , m_excessiveLockTimeout(timeout)
   , m_excessiveLockActive(false)
+  , m_timeWait(timeWait)
+  , m_timeHeld(timeHeld)
+  , m_samplePointCycle(0)
 {
   if (m_excessiveLockTimeout == 0) {
     if (PTimedMutex::ExcessiveLockWaitTime == 0) {
@@ -3051,6 +3058,9 @@ PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo &
   , m_fileLine(other.m_fileLine)
   , m_excessiveLockTimeout(other.m_excessiveLockTimeout)
   , m_excessiveLockActive(false)
+  , m_timeWait(other.m_timeWait)
+  , m_timeHeld(other.m_timeHeld)
+  , m_samplePointCycle(0)
 {
 }
 
@@ -3078,8 +3088,26 @@ void PMutexExcessiveLockInfo::ExcessiveLockPhantom(const PObject & mutex) const
 }
 
 
-void PMutexExcessiveLockInfo::LockReleased(const PObject & mutex)
+void PMutexExcessiveLockInfo::AcquiringLock()
 {
+  m_samplePointCycle = PProfiling::GetCycles();
+}
+
+
+void PMutexExcessiveLockInfo::AcquiredLock(const PObject & mutex)
+{
+  if (m_timeWait)
+    m_timeWait->EndMeasurement(&mutex, &mutex, m_samplePointCycle);
+
+  m_samplePointCycle = PProfiling::GetCycles();
+}
+
+
+void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex)
+{
+  if (m_timeHeld)
+    m_timeHeld->EndMeasurement(&mutex, &mutex, m_samplePointCycle);
+
   if (m_excessiveLockActive) {
 #if PTRACING
     PTRACE_BEGIN(0, "PTLib") << "Assertion fail: Released phantom deadlock in " << mutex << PTrace::End;
@@ -3117,10 +3145,28 @@ void PTimedMutex::ExcessiveLockWait()
 }
 
 
-void PTimedMutex::CommonSignal()
+void PTimedMutex::CommonWaitComplete()
 {
-  LockReleased(*this);
+  // Note this is protected by the mutex itself only the thread with
+  // the lock can alter these variables.
+
+  if (m_lockCount++ == 0) {
+    m_lastLockerId = m_lockerId = PThread::GetCurrentThreadId();
+    m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
+  }
+
+  AcquiredLock(*this);
+}
+
+
+bool PTimedMutex::CommonSignal()
+{
+  if (--m_lockCount > 0)
+    return true;
+
+  ReleasedLock(*this);
   m_lockerId = PNullThreadIdentifier;
+  return false;
 }
 
 
@@ -3276,8 +3322,12 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 
 /////////////////////////////////////////////////////////////////////////////
 
-PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line, unsigned timeout)
-  : PMutexExcessiveLockInfo(name, line, timeout)
+PReadWriteMutex::PReadWriteMutex(const char * name,
+                                 unsigned line,
+                                 unsigned timeout,
+                                 PProfiling::TimeScope * timeWait,
+                                 PProfiling::TimeScope * timeHeld)
+  : PMutexExcessiveLockInfo(name, line, timeout, timeWait, timeHeld)
 #if P_READ_WRITE_ALGO2
   , m_inSemaphore(1, 1)
   , m_inCount(0)
@@ -3349,6 +3399,8 @@ PReadWriteMutex::Nest & PReadWriteMutex::StartNest()
 
 void PReadWriteMutex::StartRead()
 {
+  AcquiringLock();
+
   // Get the nested thread info structure, create one it it doesn't exist
   Nest & nest = StartNest();
 
@@ -3361,6 +3413,8 @@ void PReadWriteMutex::StartRead()
   // lock, otherwise we leave it as just having incremented the reader count.
   if (nest.m_readerCount == 1 && nest.m_writerCount == 0)
     InternalStartRead(nest);
+
+  AcquiredLock(*this);
 }
 
 
@@ -3431,7 +3485,7 @@ void PReadWriteMutex::EndRead()
   if (nest->m_readerCount > 0 || nest->m_writerCount > 0)
     return;
 
-  LockReleased(*this);
+  ReleasedLock(*this);
 
   // Do text book read lock
   InternalEndRead(*nest);
@@ -3444,6 +3498,8 @@ void PReadWriteMutex::EndRead()
 
 void PReadWriteMutex::StartWrite()
 {
+  AcquiringLock();
+
   // Get the nested thread info structure, create one it it doesn't exist
   Nest & nest = StartNest();
 
@@ -3456,8 +3512,6 @@ void PReadWriteMutex::StartWrite()
   if (nest.m_writerCount > 1)
     return;
 
-  LockReleased(*this);
-
   // If have a read lock already in this thread then do the "real" unlock code
   // but do not change the lock count, calls to EndRead() will now just
   // decrement the count instead of doing the unlock (its already done!)
@@ -3467,6 +3521,8 @@ void PReadWriteMutex::StartWrite()
   // Note in this gap another thread could grab the write lock
 
   InternalStartWrite(nest);
+
+  AcquiredLock(*this);
 }
 
 
@@ -3490,6 +3546,8 @@ void PReadWriteMutex::EndWrite()
   // don't do the actual write unlock.
   if (nest->m_writerCount > 0)
     return;
+
+  ReleasedLock(*this);
 
   InternalEndWrite(*nest);
 

@@ -133,7 +133,10 @@ class PSafeObject : public PObject
     /**Create a thread safe object.
      */
     explicit PSafeObject(
-        PSafeObject * indirectLock = NULL ///< Other safe object to be locked when this is locked
+      PSafeObject * indirectLock = NULL ///< Other safe object to be locked when this is locked
+    );
+    explicit PSafeObject(
+      PReadWriteMutex & mutex ///< Mutex to be locked when this is locked
     );
   //@}
 

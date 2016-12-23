@@ -50,6 +50,14 @@ PSafeObject::PSafeObject(PSafeObject * indirectLock)
 }
 
 
+PSafeObject::PSafeObject(PReadWriteMutex & mutex)
+  : m_safeReferenceCount(0)
+  , m_safelyBeingRemoved(false)
+  , m_safeInUse(&mutex)
+{
+}
+
+
 PBoolean PSafeObject::SafeReference()
 {
 #if PTRACING

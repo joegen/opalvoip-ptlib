@@ -1283,14 +1283,7 @@ namespace PProfiling
       struct Implementation;
       Implementation * const m_implementation;
 
-      void EndMeasurement(
-        const void * context,
-        const PObject * object,
-        uint64_t start
-      );
-
     private:
-      TimeScope(const TimeScope &) : m_implementation(0) { }
       void operator=(const TimeScope &) { }
 
     public:
@@ -1308,9 +1301,17 @@ namespace PProfiling
         unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
         unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
       );
+      TimeScope(const TimeScope & other);
 
       /// Destroy scope timer
       ~TimeScope();
+
+      /// End and process a measurement period
+      void EndMeasurement(
+        const void * context,
+        const PObject * object,
+        uint64_t startTime
+      );
 
       /** Class used by PPROFILE_TIMESCOPE() macro to do the measurement of
           time between construction and destruction.

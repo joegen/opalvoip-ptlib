@@ -1227,8 +1227,12 @@ void PSemaphore::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PTimedMutex::PTimedMutex(const char * name, unsigned line, unsigned timeout)
-  : PMutexExcessiveLockInfo(name, line, timeout)
+PTimedMutex::PTimedMutex(const char * name,
+                         unsigned line,
+                         unsigned timeout,
+                         PProfiling::TimeScope * timeWait,
+                         PProfiling::TimeScope * timeHeld)
+  : PMutexExcessiveLockInfo(name, line, timeout, timeWait, timeHeld)
 {
   Construct();
 }
@@ -1302,7 +1306,7 @@ PTimedMutex::~PTimedMutex()
 
 void PTimedMutex::Wait() 
 {
-  pthread_t currentThreadId = pthread_self();
+  AcquiringLock();
 
 #if P_HAS_RECURSIVE_MUTEX
 
@@ -1334,16 +1338,11 @@ void PTimedMutex::Wait()
   );
 #endif
 
-  if (m_lockCount++ == 0) {
-    m_lastLockerId = m_lockerId = currentThreadId;
-    m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
-  }
-
 #else //P_HAS_RECURSIVE_MUTEX
 
   // if the mutex is already acquired by this thread,
   // then just increment the lock count
-  if (pthread_equal(m_lockerId, currentThreadId)) {
+  if (pthread_equal(m_lockerId, pthread_self())) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
     ++m_lockCount;
@@ -1358,12 +1357,9 @@ void PTimedMutex::Wait()
   PAssert(m_lockerId == PNullThreadIdentifier && m_lockCount == 0,
           "PMutex acquired whilst locked by another thread");
 
-  // Note this is protected by the mutex itself only the thread with
-  // the lock can alter it.
-  m_lastLockerId = m_lockerId = currentThreadId;
-  m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
-
 #endif // P_HAS_RECURSIVE_MUTEX
+
+  CommonWaitComplete();
 }
 
 
@@ -1375,11 +1371,11 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
     return true;
   }
 
-  pthread_t currentThreadId = pthread_self();
+  AcquiringLock();
 
 #if !P_HAS_RECURSIVE_MUTEX
   // if we already have the mutex, return immediately
-  if (pthread_equal(m_lockerId, currentThreadId)) {
+  if (pthread_equal(m_lockerId, pthread_self())) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
     ++m_lockCount;
@@ -1416,25 +1412,12 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
 
 #endif // P_PTHREADS_XPG6
 
-#if P_HAS_RECURSIVE_MUTEX
-
-  if (m_lockCount++ == 0) {
-    m_lastLockerId = m_lockerId = currentThreadId;
-    m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
-  }
-
-#else
-
+#if !P_HAS_RECURSIVE_MUTEX
   PAssert((lockerId == PNullThreadIdentifier) && m_lockCount == 0,
           "PMutex acquired whilst locked by another thread");
-
-  // Note this is protected by the mutex itself only the thread with
-  // the lock can alter it.
-  m_lastLockerId = m_lockerId = currentThreadId;
-  m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
-
 #endif
 
+  CommonWaitComplete();
   return true;
 }
 
@@ -1443,8 +1426,7 @@ void PTimedMutex::Signal()
 {
 #if P_HAS_RECURSIVE_MUTEX
 
-  if (--m_lockCount == 0)
-    CommonSignal();
+  CommonSignal();
 
 #else
 
@@ -1456,12 +1438,8 @@ void PTimedMutex::Signal()
   // if lock was recursively acquired, then decrement the counter
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
-  if (m_lockCount > 0) {
-    --m_lockCount;
+  if (CommonSignal())
     return;
-  }
-
-  CommonSignal();
 
 #endif
 

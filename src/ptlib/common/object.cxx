@@ -2235,6 +2235,20 @@ namespace PProfiling
   }
 
 
+  TimeScope::TimeScope(const TimeScope & other)
+    : m_implementation(new Implementation(other.m_implementation->m_name,
+                                          other.m_implementation->m_file,
+                                          other.m_implementation->m_line,
+                                          other.m_implementation->m_thresholdTime.GetSeconds(),
+                                          other.m_implementation->m_throttleTime.GetSeconds(),
+                                          other.m_implementation->m_throttledLogLevel,
+                                          other.m_implementation->m_unthrottledLogLevel,
+                                          other.m_implementation->m_thresholdPercent,
+                                          other.m_implementation->m_maxHistory))
+  {
+  }
+
+
   TimeScope::~TimeScope()
   {
     delete m_implementation;

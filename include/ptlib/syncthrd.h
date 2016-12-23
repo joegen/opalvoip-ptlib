@@ -266,7 +266,9 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
     explicit PReadWriteMutex(
       const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
       unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
-      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero is default.
+      unsigned timeout = 0,      ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+      PProfiling::TimeScope * timeWait = NULL, ///< Detailed logging of the mutex wait times.
+      PProfiling::TimeScope * timeHeld = NULL  ///< Detailed logging of the mutex hold times.
     );
     ~PReadWriteMutex();
   //@}
@@ -365,15 +367,30 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
 };
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
-#define PDECLARE_READ_WRITE_MUTEX_ARG_1(var)                struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_READ_WRITE_MUTEX_ARG_2(var, name)          struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#name            ) { } } var
-#define PDECLARE_READ_WRITE_MUTEX_ARG_3(var, name, timeout) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#name, 0, timeout) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_1(var)              struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(__FILE__,__LINE__) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_2(var,nam)          struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam             ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_3(var,nam,to)       struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,0,to        ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_4(var,nam,to,tw)    struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,0,to,tw     ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_5(var,nam,to,tw,th) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,0,to,tw,th  ) { } } var
 
 #define PDECLARE_READ_WRITE_MUTEX_PART1(narg, args) PDECLARE_READ_WRITE_MUTEX_PART2(narg, args)
 #define PDECLARE_READ_WRITE_MUTEX_PART2(narg, args) PDECLARE_READ_WRITE_MUTEX_ARG_##narg args
 
 #define PDECLARE_READ_WRITE_MUTEX(...) PDECLARE_READ_WRITE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
+#if PTRACING
+  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
+    struct PReadWriteMutex_##name : PReadWriteMutex { \
+      PProfiling::TimeScope m_timeWaitContext, m_timeHeldContext; \
+      PReadWriteMutex_##name() \
+        : PReadWriteMutex(#name, 0, std::max((int)1000, (int)waitTime*2), &m_timeWaitContext, &m_timeHeldContext) \
+        , m_timeWaitContext("Wait " #name, __FILE__,__LINE__, waitTime, ##__VA_ARGS__) \
+        , m_timeHeldContext("Held " #name, __FILE__,__LINE__, heldTime, ##__VA_ARGS__) \
+      { } } var
+#else
+  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
+                       PDECLARE_READ_WRITE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))
+#endif
 
 /**This class starts a read operation for the PReadWriteMutex on construction
    and automatically ends the read operation on destruction.
