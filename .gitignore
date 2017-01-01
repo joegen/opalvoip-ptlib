@@ -9,7 +9,7 @@ make/ptlib_config.mak
 include/ptlib_config.h
 src/ptlib/common/getdate.c
 lib*
-
+obj*/
 *.sdf
 *.opensdf
 *.suo
