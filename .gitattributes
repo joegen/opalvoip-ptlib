@@ -1,1 +1,4 @@
-*.sh binary
+*.sh      text eol=lf
+*.vcproj  text eol=crlf
+*.jpg     -text
+
