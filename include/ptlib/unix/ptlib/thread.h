@@ -82,6 +82,8 @@
     atomic<int> PX_state;
 #endif
 
+    std::auto_ptr<PSyncPoint> PX_synchroniseThreadFinish;
+
 #ifndef P_HAS_SEMAPHORES
     PSemaphore      * PX_waitingSemaphore;
     pthread_mutex_t   PX_WaitSemMutex;
