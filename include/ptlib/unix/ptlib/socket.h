@@ -35,5 +35,7 @@
     virtual bool Write(const void * buf, PINDEX len);
     ~PSocket();
 
+    static unsigned NoBufferRetryCount;
+
 
 //End Of File ////////////////////////////////////////////////////////////////

@@ -503,6 +503,8 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount, int flags, struct sock
 static PTrace::Throttle<2, 10000, 5> s_NoBufsThrottle;
 #endif
 
+unsigned PSocket::NoBufferRetryCount = 1000;
+
 bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, struct sockaddr * addr, socklen_t addrLen)
 {
   SetLastWriteCount(0);
@@ -535,7 +537,9 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
 
     switch (GetErrorNumber(LastWriteError)) {
       case ENOBUFS :
-        if (++noBufferRetry > 1000)
+        if (NoBufferRetryCount == 0)
+          return true; // Ignore error if retries disabled
+        if (++noBufferRetry > NoBufferRetryCount)
           return false;
         usleep(100);
         break;
