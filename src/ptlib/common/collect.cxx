@@ -1156,9 +1156,10 @@ void PHashTableInfo::AppendElement(PObject * key, PObject * data PTRACE_PARAM(, 
 #if PTRACING
   ++list.m_size;
   PINDEX totalSize = owner->GetSize();
-  PTRACE_IF(1, list.m_size > 20 && list.m_size > totalSize/2, owner, "PTLib",
+  PTRACE_IF(m_throttlePoorHashFunction, list.m_size > 20 && list.m_size > totalSize/2, owner, "PTLib",
             "Poor hash function used, more than 50% of " << totalSize <<
-            " items in same bucket for class " << owner->GetClass());
+            " items in same bucket for class=\"" << owner->GetClass() << "\""
+            " key=\"" << *key << "\" bucket=" << bucket);
 #endif
 }
 

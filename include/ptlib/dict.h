@@ -205,7 +205,8 @@ class PHashTableInfo : public PBaseArray<PHashTableList>
     PHashTableElement * NextElement(PHashTableElement * element) const;
     PHashTableElement * PrevElement(PHashTableElement * element) const;
 
-    PBoolean deleteKeys;
+    bool deleteKeys;
+    PTRACE_THROTTLE(m_throttlePoorHashFunction, 1);
 
   friend class PHashTable;
   friend class PAbstractSet;
