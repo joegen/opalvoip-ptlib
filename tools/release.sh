@@ -18,9 +18,8 @@ fi
 #  set common globals
 #
 
-SVN="svn"
+GIT="git"
 RSYNC="rsync -e ssh -avz"
-SVN2CL="svn2cl"
 TAR=tar
 ZIP=zip
 
@@ -33,7 +32,7 @@ WEB_CHANGELOG_DIR=${WEB_HTML_DIR}/docs/ChangeLogs
 BINARY_EXT=( exe dll lib wav png gif ico sw mdb dsp dsw vcp vcw wpj wsp )
 
 COMMAND_NAMES=(show \
-               co \
+               clean \
                trytag \
                tag \
                log \
@@ -44,7 +43,7 @@ COMMAND_NAMES=(show \
                all \
               )
 FUNCTIONS=(    show_tags \
-               check_out \
+               clean_copy \
                try_tag \
                create_tag \
                create_changelog \
@@ -80,17 +79,17 @@ fi
 
 case "$base" in
   ptlib | opal)
-    repository=svn+ssh://$SOURCEFORGE_USERNAME@svn.code.sf.net/p/opalvoip/code/$base
+    repository=ssh://$SOURCEFORGE_USERNAME@git.code.sf.net/p/opalvoip/$base
   ;;
   ipp-codecs)
-    repository=svn+ssh://$SOURCEFORGE_USERNAME@svn.code.sf.net/p/ippcodecs/code
+    repository=ssh://$SOURCEFORGE_USERNAME@git.code.sf.net/p/ippcodecs
   ;;
   *)
     echo Unknown base project: $base
     exit
 esac
 
-extract_versions_cmd="$SVN ls ${repository}/tags | awk '/v[0-9]+_[0-9]*["
+extract_versions_cmd="$GIT ls-remote ${repository} | awk '/refs\/tags\/v[0-9]+_[0-9]*["
 if [ "$1" = "stable" ]; then
   extract_versions_cmd+=02468
   shift
@@ -98,7 +97,7 @@ else
   extract_versions_cmd+=13579
 fi
 
-extract_versions_cmd+=']_[0-9]+/{gsub("v|/","");gsub("_"," ");print}'
+extract_versions_cmd+=']_[0-9]+/{gsub(/.*v/,"");gsub("\^.*$","");gsub("_"," ");print}'
 extract_versions_cmd+="' | sort -k1n -k2n -k3n"
 
 release_tag=$1
@@ -111,6 +110,7 @@ echo "Releasing ${base}: \"${COMMANDS[*]}\" $release_tag $previous_tag"
 # get release tag
 #
 
+#echo "Getting previous version: ${extract_versions_cmd}"
 release_version=
 previous_version=( `/bin/sh -c "${extract_versions_cmd} | tail -1"` )
 if [ -z $previous_version ]; then
@@ -136,10 +136,11 @@ else
   previous_version=( `echo $previous_tag | awk '/v[0-9]+_[0-9]+_[0-9]+/{gsub("v","");gsub("_"," ");print}'` )
 fi
 
-release_branch=branches/v${release_version[0]}_${release_version[1]}
-exists=`$SVN info ${repository}/$release_branch 2>/dev/null`
+release_branch=v${release_version[0]}_${release_version[1]}
+exists=`$GIT ls-remote --heads ${repository} | grep "$release_branch" 2>/dev/null`
 if [ -z "$exists" ]; then
-  release_branch=trunk
+  echo "Branch ${release_branch} does not exist yet, using master"
+  release_branch=master
 fi
 
 previous_verstr=${previous_version[0]}.${previous_version[1]}.${previous_version[2]}
@@ -180,16 +181,28 @@ function show_tags () {
 # check out
 #
 
-function check_out () {
-  echo "Deleting $base"
-  rm -rf $base
-  exists=`$SVN info ${repository}/tags/$release_tag 2>/dev/null`
-  if [ -n "$exists" ]; then
-    echo "Checking out $release_tag of $base"
-    $SVN co ${repository}/tags/${release_tag} $base >/dev/null
+function clean_copy () {
+  exists=`$GIT ls-remote --tags ${repository} | grep "$release_tag" 2>/dev/null`
+  if [ -d "$base" ]; then
+    echo "Cleaning $base"
+    pushd $base >/dev/null
+    $GIT clean -x --force --quiet
+    if [ -n "$exists" ]; then
+      echo "Switching to $release_tag of $base"
+      $GIT checkout ${release_tag}
+    else
+      echo "Switching to HEAD of $release_branch of $base"
+      $GIT checkout ${release_branch}
+    fi
+    popd >/dev/null
   else
-    echo "Checking out HEAD of $release_branch of $base"
-    $SVN co ${repository}/$release_branch $base >/dev/null
+    if [ -n "$exists" ]; then
+      echo "Cloning $release_tag of $base"
+      $GIT clone --branch ${release_tag} ${repository} "$base"
+    else
+      echo "Cloning HEAD of $release_branch of $base"
+      $GIT clone --branch ${release_branch} ${repository} "$base"
+    fi
   fi
 }
 
@@ -200,16 +213,16 @@ function check_out () {
 
 function switch_to_version () {
   if [ -d $base ]; then
-    exists=`$SVN info ${repository}/tags/$release_tag 2>/dev/null`
+    exists=`$GIT ls-remote --tags ${repository} | grep "$release_tag" 2>/dev/null`
     if [ -n "$exists" ]; then
       echo "Switching to $release_tag of $base"
-      ( cd $base ; $SVN switch ${repository}/tags/${release_tag} )
+      ( cd $base ; $GIT checkout ${release_tag} )
     else
       echo "Switching to HEAD of $release_branch of $base"
-      ( cd $base ; $SVN switch ${repository}/$release_branch >/dev/null )
+      ( cd $base ; $GIT checkout $release_branch >/dev/null )
     fi
   else
-    check_out
+    clean_copy
   fi
 }
 
@@ -219,7 +232,7 @@ function switch_to_version () {
 #
 
 function create_tag () {
-  exists=`$SVN info ${repository}/tags/$release_tag 2>/dev/null`
+  exists=`$GIT ls-remote --tags ${repository} | grep "$release_tag" 2>/dev/null`
   if [ -n "$exists" ]; then
     echo "Tag $release_tag in $base already exists!"
     return
@@ -227,22 +240,20 @@ function create_tag () {
 
   if [ -d $base ]; then
     echo "Switching to $release_branch of $base"
-    ( cd $base ; $SVN switch ${repository}/$release_branch >/dev/null )
+    ( cd $base ; $GIT checkout $release_branch >/dev/null )
   else
     echo "Checking out $release_branch of $base"
-    $SVN co ${repository}/$release_branch $base >/dev/null
+    $GIT clone --branch ${release_branch} ${repository} "$base" >/dev/null
   fi
 
   if [ "$release_branch" = "trunk" -a ${release_version[2]} = 0 ]; then
     release_branch=branches/v${release_version[0]}_${release_version[1]}
     if [ -n "$debug_tagging" ]; then
-      echo "Would svn copy from ${repository}/trunk ${repository}/$release_branch"
+      echo "Would tag ${repository} ${repository}/$release_branch"
       echo "Would switch to $release_branch of $base"
     else
       echo "Creating branch $release_tag in $base"
-      $SVN copy ${repository}/trunk ${repository}/$release_branch
-      echo "Switching to $release_branch of $base"
-      ( cd $base ; $SVN switch ${repository}/$release_branch >/dev/null )
+      $GIT tag $release_branch
     fi
   fi
 
@@ -276,19 +287,19 @@ function create_tag () {
       msg="Update release version number to $release_verstr"
       if [ -n "$debug_tagging" ]; then
         echo $msg
-        $SVN diff "$VERSION_FILE" "$REVISION_FILE"
-        $SVN revert "$VERSION_FILE" "$REVISION_FILE"
+        $GIT diff "$VERSION_FILE" "$REVISION_FILE"
+        $GIT checkout "$VERSION_FILE" "$REVISION_FILE"
       else
-        $SVN commit --message "$msg" "$VERSION_FILE" "$REVISION_FILE"
+        $GIT commit --message "$msg" "$VERSION_FILE" "$REVISION_FILE"
       fi
     fi
   fi
 
   if [ -n "$debug_tagging" ]; then
-    echo "Would svn copy from ${repository}/$release_branch ${repository}/tags/$release_tag"
+    echo "Would tag ${repository}/$release_branch ${repository}/tags/$release_tag"
   else
     echo "Creating tag $release_tag in $base"
-    $SVN copy ${repository}/$release_branch ${repository}/tags/$release_tag -m "Tagging $release_tag"
+    $GIT tag $release_tag
   fi
 
   if [ -e "$VERSION_FILE" ]; then
@@ -300,10 +311,10 @@ function create_tag () {
     msg="Update version number for beta v${new_version[0]}.${new_version[1]}.${new_version[2]}"
     if [ -n "$debug_tagging" ]; then
       echo $msg
-      $SVN diff "$VERSION_FILE"
-      $SVN revert "$VERSION_FILE"
+      $GIT diff "$VERSION_FILE"
+      $GIT checkout "$VERSION_FILE"
     else
-      $SVN commit --message "$msg" "$VERSION_FILE"
+      $GIT commit --message "$msg" "$VERSION_FILE"
     fi
   fi
 }
@@ -315,7 +326,7 @@ function create_tag () {
 
 function try_tag () {
   debug_tagging=yes
-  echo "Trial tagging, SVN repository will NOT be changed!"
+  echo "Trial tagging, repository will NOT be changed!"
   create_tag
 }
 
@@ -330,29 +341,8 @@ function create_changelog () {
     return
   fi
 
-  last_rev=`$SVN log --stop-on-copy ${repository}/tags/${previous_tag} | tail -4 | head -1 | awk '{print substr($1,2,100)}'`
-  if [ -z $last_rev ]; then
-    echo "Tag $previous_tag in $base does not exist!"
-    return
-  fi
-
-  let last_rev=last_rev+1
-
-  if [ -d $base ]; then
-    output_name="-o $CHANGELOG_FILE"
-  else
-    output_name=--stdout
-  fi
-
-  release_rev=`$SVN log --stop-on-copy ${repository}/tags/${release_tag} 2>/dev/null | tail -4 | head -1 | awk '{print substr($1,2,100)}'`
-  if [ -z $release_rev ]; then
-    release_rev=HEAD
-    echo "Creating $CHANGELOG_FILE between $release_branch HEAD and tag $previous_tag (rev $last_rev)"
-  else
-    echo "Creating $CHANGELOG_FILE between tags $release_tag (rev $release_rev) and $previous_tag (rev $last_rev)"
-  fi
-
-  $SVN2CL --break-before-msg --include-rev ${output_name} -r ${last_rev}:${release_rev} ${repository}/$release_branch
+  echo "Creating $CHANGELOG_FILE between tags $release_tag (rev $release_rev) and $previous_tag"
+  $GIT log ${previous_tag}:${release_tag} > $CHANGELOG_FILE
 }
 
 #
@@ -361,13 +351,13 @@ function create_changelog () {
 
 function create_archive () {
 
-  check_out
+  clean_copy
 
   echo Creating source archive $SRC_ARCHIVE_TBZ2
   if [ "${base}" != "${BASE_TAR}" ]; then
     mv ${base} ${BASE_TAR}
   fi
-  exclusions="--exclude=.svn --exclude=.cvsignore"
+  exclusions="--exclude=.gitignore --exclude=.gitattributes"
   $TAR -cjf $SRC_ARCHIVE_TBZ2 $exclusions ${BASE_TAR} >/dev/null
   if [ "${base}" != "${BASE_TAR}" ]; then
     mv ${BASE_TAR} ${base}
@@ -377,7 +367,7 @@ function create_archive () {
   if [ "${base}" != "${BASE_ZIP}" ]; then
     mv ${base} ${BASE_ZIP}
   fi
-  exclusions="-x *.svn* -x .cvsignore"
+  exclusions="-x .gitignore -x .gitattributes"
   for ext in ${BINARY_EXT[*]} ; do
     files=`find ${BASE_ZIP} -name \*.${ext}`
     if [ -n "$files" ]; then
@@ -502,7 +492,7 @@ function update_website () {
 #
 
 function do_all_for_release () {
-  check_out
+  clean_copy
   create_changelog
   create_tag
   create_archive
