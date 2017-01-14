@@ -40,7 +40,7 @@
 #include <ptlib/pprocess.h>
 
 
-#if P_HAS_BACKTRACE
+#if P_HAS_BACKTRACE && PTRACING
 
   #include <execinfo.h>
   #if P_HAS_DEMANGLE
