@@ -42,6 +42,8 @@
 
 #if P_HAS_BACKTRACE && PTRACING
 
+  #define DEBUG_CERR(arg) // std::cerr << arg << std::endl
+
   #include <execinfo.h>
   #if P_HAS_DEMANGLE
     #include <cxxabi.h>
@@ -54,58 +56,46 @@
   #endif // PTRACING
 
 
-  static bool fgets_nonl(char * buffer, size_t size, FILE * fp)
+  static bool fgetstr(std::string & str, FILE * fp)
   {
-    int fd = fileno(fp);
-    fd_set rd;
-    FD_ZERO(&rd);
-    FD_SET(fd, &rd);
+    for (;;) {
+      struct pollfd pfd;
+      pfd.fd = fileno(fp);
+      pfd.events = POLLIN;
+      pfd.revents = 0;
 
-    P_timeval tv(1,0);
-    switch (select(fd+1, &rd, NULL, NULL, tv)) {
-      case 1 :
-        break;
-      case 0 :
-        strncpy(buffer, "StackWalk timeout with addr2line", size);
+      int pollStatus = ::poll(&pfd, 1, 10000);
+
+      if (pollStatus < 0) {
+        if (errno == EINTR)
+          continue;
+        str = strerror(errno);
         return false;
-      default :
-        snprintf(buffer, size, "StackWalk error %d with addr2line", errno);
+      }
+
+      if (pollStatus == 0) {
+        str = "Timed out";
         return false;
+      }
+
+      char c;
+      if (read(pfd.fd, &c, 1) <= 0) {
+        str += " - fgetc - ";
+        str += strerror(errno);
+        return false;
+      }
+
+      if (c == '\n')
+        return true;
+
+      str += (char)c;
     }
-
-    if (fgets(buffer, size, fp) == NULL)
-      return false;
-
-    size_t len = strlen(buffer);
-    if (len == 0)
-      return true;
-
-    if (buffer[--len] == '\n')
-      buffer[len] = '\0';
-    return true;
-}
-
-  static std::string Locate_addr2line()
-  {
-    std::string addr2line;
-
-    FILE * p = popen("which addr2line", "r");
-    if (p != NULL) {
-      char line[100];
-      line[0] = '\0';
-      if (fgets_nonl(line, sizeof(line), p) && access(line, R_OK|X_OK) == 0)
-        addr2line = line;
-      if (addr2line.empty())
-        cerr << "Could not locate addr2line: " << line << endl;
-      fclose(p);
-    }
-
-    return addr2line;
   }
 
 
   static void InternalWalkStack(ostream & strm, unsigned framesToSkip, void * const * addresses, unsigned addressCount)
   {
+    DEBUG_CERR("InternalWalkStack: count=" << addressCount << ", framesToSkip=" << framesToSkip);
     if (addressCount <= framesToSkip) {
       strm << "\n\tStack back trace empty, possibly corrupt.";
       return;
@@ -113,31 +103,40 @@
 
     std::vector<std::string> lines(addressCount);
 
-    static std::string addr2line = Locate_addr2line();
-    if (!addr2line.empty()) {
-      std::stringstream cmd;
-      cmd << addr2line << " -e \"" << PProcess::Current().GetFile() << '"';
-      for (unsigned i = framesToSkip; i < addressCount; ++i)
-        cmd << ' ' << addresses[i];
-      FILE * p = popen(cmd.str().c_str(), "r");
-      if (p != NULL) {
-        char line[200];
+    {
+      FILE * pipe;
+      {
+        std::stringstream cmd;
+        cmd << "addr2line -e \"" << PProcess::Current().GetFile() << '"';
+        for (unsigned i = framesToSkip; i < addressCount; ++i)
+          cmd << ' ' << addresses[i];
+        std::string cmdstr = cmd.str();
+        DEBUG_CERR("InternalWalkStack: before " << cmdstr);
+        pipe = popen(cmdstr.c_str(), "r");
+      }
+      DEBUG_CERR("InternalWalkStack: addr2line pipe=" << pipe);
+      if (pipe != NULL) {
         for (unsigned i = framesToSkip; i < addressCount; ++i) {
-          line[0] = '\0';
-          if (!fgets_nonl(line, sizeof(line), p)) {
-            if (line[0] != '\0')
-              strm << line << '\n';
+          std::string & line = lines[i];
+          if (!fgetstr(line, pipe)) {
+            DEBUG_CERR("InternalWalkStack: fgetstr error: " << line);
+            if (!line.empty())
+              strm << "\n\tStack trace error with addr2line: " << line;
             break;
           }
-          if (strcmp(line, "??:0") != 0)
-            lines[i] = line;
+          DEBUG_CERR("InternalWalkStack: line=\"" << line << '"');
+          if (line == "??:0")
+            line.clear();
         }
-        fclose(p);
+        DEBUG_CERR("InternalWalkStack: closing pipe=" << pipe);
+        fclose(pipe);
       }
     }
 
 
+    DEBUG_CERR("InternalWalkStack: before backtrace_symbols");
     char ** symbols = backtrace_symbols(addresses, addressCount);
+    DEBUG_CERR("InternalWalkStack: after backtrace_symbols");
     for (unsigned i = framesToSkip; i < addressCount; ++i) {
       strm << "\n\t";
 
@@ -172,6 +171,8 @@
       strm << symbols[i] << ' ' << lines[i];
     }
     runtime_free(symbols);
+
+    DEBUG_CERR("InternalWalkStack: done");
   }
 
 
@@ -201,7 +202,18 @@
 
         void WalkOther(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid)
         {
-          pthread_mutex_lock(&m_mainMutex);
+          DEBUG_CERR("WalkOther: " << PThread::GetIdentifiersAsString(tid, uid));
+
+          // Needs to all be done within X seconds
+          struct timespec absTime;
+          clock_gettime(CLOCK_REALTIME, &absTime);
+          absTime.tv_sec += 2;
+
+          if (pthread_mutex_timedlock(&m_mainMutex, &absTime) != 0) {
+            strm << "\n\tStack trace system is too busy to WalkOther";
+            DEBUG_CERR("WalkOther: mutex timeout");
+            return;
+          }
 
           m_threadId = tid;
           m_uniqueId = uid;
@@ -209,14 +221,12 @@
           m_addresses.resize(InternalMaxStackWalk+OtherThreadSkip);
           m_signalSentTime.SetCurrentTime();
           if (!PThread::PX_kill(tid, PProcess::WalkStackSignal)) {
-            strm << "\n    Thread " << PThread::GetIdentifiersAsString(tid, uid) << " is no longer running";
+            strm << "\n\tThread " << PThread::GetIdentifiersAsString(tid, uid) << " is no longer running";
+            pthread_mutex_unlock(&m_mainMutex);
             return;
           }
 
           int err = 0;
-          struct timespec absTime;
-          absTime.tv_sec = time(NULL) + 2;
-          absTime.tv_nsec = 0;
 
           pthread_mutex_lock(&m_condMutex);
           while (m_addressCount < 0) {
@@ -226,9 +236,9 @@
           pthread_mutex_unlock(&m_condMutex);
 
           if (err == ETIMEDOUT)
-            strm << "\n    No response getting stack trace for " << PThread::GetIdentifiersAsString(tid, uid);
+            strm << "\n\tNo response getting stack trace for " << PThread::GetIdentifiersAsString(tid, uid);
           else if (err != 0)
-            strm << "\n    Error " << err << " getting stack trace for " << PThread::GetIdentifiersAsString(tid, uid);
+            strm << "\n\tError " << err << " getting stack trace for " << PThread::GetIdentifiersAsString(tid, uid);
           else
             InternalWalkStack(strm, OtherThreadSkip, m_addresses.data(), m_addressCount);
 
@@ -236,6 +246,7 @@
           m_uniqueId = 0;
 
           pthread_mutex_unlock(&m_mainMutex);
+          DEBUG_CERR("WalkOther: done");
         }
 
         void OthersWalk()
@@ -286,12 +297,13 @@
       if (id != PNullThreadIdentifier && id != PThread::GetCurrentThreadId())
         s_otherThreadStack.WalkOther(strm, id, uid);
       else {
+        DEBUG_CERR("PPlatformWalkStack: id=0x" << hex << id << dec);
         // Allow for some bizarre optimisation when called from PTrace::WalkStack()
         if (framesToSkip == 1)
           framesToSkip = 0;
         const size_t maxStackWalk = InternalMaxStackWalk + framesToSkip;
-        void * addresses[maxStackWalk];
-        InternalWalkStack(strm, framesToSkip, addresses, backtrace(addresses, maxStackWalk));
+        vector<void *> addresses(maxStackWalk);
+        InternalWalkStack(strm, framesToSkip, addresses.data(), backtrace(addresses.data(), maxStackWalk));
       }
     }
 
