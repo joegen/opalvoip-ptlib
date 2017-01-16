@@ -151,7 +151,13 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
     virtual void PrintOn(ostream &strm) const;
 
     static unsigned ExcessiveLockWaitTime;
-    static bool     EnableDeadlockStackWalk;
+    enum DeadlockStackWalkModes
+    {
+        DeadlockStackWalkDisabled,
+        DeadlockStackWalkEnabled,
+        DeadlockStackWalkOnPhantomRelease
+    };
+    static DeadlockStackWalkModes DeadlockStackWalkMode;
 
   protected:
     PThreadIdentifier       m_lockerId;

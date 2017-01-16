@@ -3014,7 +3014,19 @@ void PSimpleThread::Main()
 
 /////////////////////////////////////////////////////////////////////////////
 
-bool PTimedMutex::EnableDeadlockStackWalk = getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") == NULL;
+static PTimedMutex::DeadlockStackWalkModes InitialiseDeadlockStackWalkMode()
+{
+  const char * env = getenv("PTLIB_DEADLOCK_STACK_WALK_MODE");
+  if (env != NULL)
+    return (PTimedMutex::DeadlockStackWalkModes)std::min((int)PTimedMutex::DeadlockStackWalkOnPhantomRelease, std::abs(atoi(env)));
+
+  if (getenv("PTLIB_DISABLE_DEADLOCK_STACK_WALK") != NULL)
+    return PTimedMutex::DeadlockStackWalkDisabled;
+
+  return PTimedMutex::DeadlockStackWalkEnabled;
+}
+
+PTimedMutex::DeadlockStackWalkModes PTimedMutex::DeadlockStackWalkMode = InitialiseDeadlockStackWalkMode();
 
 #if PTRACING
 static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool walkStack)
@@ -3123,7 +3135,11 @@ void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex)
 
   if (m_excessiveLockActive) {
 #if PTRACING
-    PTRACE_BEGIN(0, "PTLib") << "Assertion fail: Released phantom deadlock in " << mutex << PTrace::End;
+    ostream & trace = PTRACE_BEGIN(0, "PTLib");
+    trace << "Assertion fail: Released phantom deadlock in " << mutex;
+    if (PTimedMutex::DeadlockStackWalkMode == PTimedMutex::DeadlockStackWalkOnPhantomRelease)
+      PTrace::WalkStack(trace);
+    trace << PTrace::End;
 #else
     PAssertAlways(PSTRSTRM("Released phantom deadlock in mutex " << mutex));
 #endif
@@ -3141,10 +3157,10 @@ void PTimedMutex::ExcessiveLockWait()
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
   trace << "Assertion fail: Possible deadlock in " << *this << "\n  Blocked Thread";
-  OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), EnableDeadlockStackWalk);
+  OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), DeadlockStackWalkMode == DeadlockStackWalkEnabled);
   trace << "\n  Owner Thread ";
   if (lockerId != PNullThreadIdentifier)
-    OutputThreadInfo(trace, lockerId, lastUniqueId, EnableDeadlockStackWalk);
+    OutputThreadInfo(trace, lockerId, lastUniqueId, DeadlockStackWalkMode == DeadlockStackWalkEnabled);
   else {
     trace << "no longer has lock, last owner:";
     OutputThreadInfo(trace, lastLockerId, lastUniqueId, false);
@@ -3466,7 +3482,7 @@ void PReadWriteMutex::InternalWait(Nest & nest, PSync & sync) const
         " writers=" << it->second.m_writerCount;
       if (!it->second.m_waiting)
         trace << ", LOCKER";
-      if (PTimedMutex::EnableDeadlockStackWalk)
+      if (PTimedMutex::DeadlockStackWalkMode == PTimedMutex::DeadlockStackWalkEnabled)
         PTrace::WalkStack(trace, it->first, it->second.m_uniqueId);
     }
     trace << PTrace::End;
