@@ -351,6 +351,13 @@ bool PSystemLogToFile::Rotate(bool force)
   if (!force && m_file.GetLength() < m_rotateInfo.m_maxSize)
     return false;
 
+  if (!m_rotateInfo.m_directory.Exists()) {
+    if (!m_rotateInfo.m_directory.Create(PFileInfo::DefaultDirPerms, true)) {
+      OutputToStream(m_file, PSystemLog::StdError, "Cannot create log rotation directory: " + m_rotateInfo.m_directory, m_rotateInfo.m_timeZone);
+      return false;
+    }
+  }
+
   PFilePath rotatedFile;
   PString timestamp = PTime().AsString(m_rotateInfo.m_timestamp, m_rotateInfo.m_timeZone);
   PString tiebreak;
