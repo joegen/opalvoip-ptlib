@@ -3386,6 +3386,10 @@ int PReadEnum(std::istream & strm, int begin, int end, char const * const * name
   int match = end;
   for (int value = begin; value < end; ++value) {
     const char * cmp = names[value-begin];
+
+    if ((matchCase ? strcmp(name, cmp) : strcasecmp(name, cmp)) == 0) // Exact match
+      return value;
+
     if ((matchCase ? strncmp(name, cmp, len) : strncasecmp(name, cmp, len)) == 0) {
       if (match < end) {
         match = end; // Not unique for the length
