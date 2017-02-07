@@ -3110,7 +3110,8 @@ void PMutexExcessiveLockInfo::ExcessiveLockPhantom(const PObject & mutex) const
 void PMutexExcessiveLockInfo::AcquiringLock()
 {
 #if PTRACING
-  m_samplePointCycle = PProfiling::GetCycles();
+  if (m_samplePointCycle == 0)
+    m_samplePointCycle = PProfiling::GetCycles();
 #endif
 }
 
@@ -3131,12 +3132,19 @@ void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex)
 #if PTRACING
   if (m_timeHeld)
     m_timeHeld->EndMeasurement(&mutex, &mutex, m_samplePointCycle);
+  m_samplePointCycle = 0;
 #endif
 
   if (m_excessiveLockActive) {
 #if PTRACING
+    PTime releaseTime;
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
-    trace << "Assertion fail: Released phantom deadlock in " << mutex;
+    trace << "Assertion fail: Released phantom deadlock";
+    if (m_timeHeld)
+      trace << ", held from " << (releaseTime-m_timeHeld->GetLastDuration()).AsString(PTime::TodayFormat)
+            << " to " << releaseTime.AsString(PTime::TodayFormat)
+            << " (" << m_timeHeld->GetLastDuration() << "s),";
+    trace << " in " << mutex;
     if (PTimedMutex::DeadlockStackWalkMode == PTimedMutex::DeadlockStackWalkOnPhantomRelease)
       PTrace::WalkStack(trace);
     trace << PTrace::End;
@@ -3156,9 +3164,15 @@ void PTimedMutex::ExcessiveLockWait()
   PUniqueThreadIdentifier lastUniqueId = m_lastUniqueId;
 
   ostream & trace = PTRACE_BEGIN(0, "PTLib");
-  trace << "Assertion fail: Possible deadlock in " << *this << "\n  Blocked Thread";
-  OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), DeadlockStackWalkMode == DeadlockStackWalkEnabled);
-  trace << "\n  Owner Thread ";
+  trace << "Assertion fail: Possible deadlock in " << *this;
+  if (DeadlockStackWalkMode != DeadlockStackWalkEnabled)
+    trace << ", ";
+  else {
+    trace << "\n  Blocked Thread";
+    OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), true);
+    trace << "\n  ";
+  }
+  trace << "Owner Thread ";
   if (lockerId != PNullThreadIdentifier)
     OutputThreadInfo(trace, lockerId, lastUniqueId, DeadlockStackWalkMode == DeadlockStackWalkEnabled);
   else {
@@ -3180,11 +3194,10 @@ void PTimedMutex::CommonWaitComplete()
   // the lock can alter these variables.
 
   if (m_lockCount++ == 0) {
+    AcquiredLock(*this);
     m_lastLockerId = m_lockerId = PThread::GetCurrentThreadId();
     m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
   }
-
-  AcquiredLock(*this);
 }
 
 
@@ -3445,10 +3458,10 @@ void PReadWriteMutex::StartRead()
   // If this is the first call to StartRead() and there has not been a
   // previous call to StartWrite() then actually do the text book read only
   // lock, otherwise we leave it as just having incremented the reader count.
-  if (nest.m_readerCount == 1 && nest.m_writerCount == 0)
+  if (nest.m_readerCount == 1 && nest.m_writerCount == 0) {
     InternalStartRead(nest);
-
-  AcquiredLock(*this);
+    AcquiredLock(*this);
+  }
 }
 
 

@@ -1313,6 +1313,9 @@ namespace PProfiling
         uint64_t startTime
       );
 
+      // Get the last measurement duration. Must be after EndMeasurement() is called.
+      const PTimeInterval & GetLastDuration() const;
+
       /** Class used by PPROFILE_TIMESCOPE() macro to do the measurement of
           time between construction and destruction.
         */

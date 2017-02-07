@@ -2126,6 +2126,7 @@ namespace PProfiling
     PMinMaxAvg<PTimeInterval> m_mma;
     unsigned                  m_countTimesOverThreshold;
     PTime                     m_lastOutputTime;
+    PTimeInterval             m_lastDuration;
 
     struct History
     {
@@ -2168,6 +2169,7 @@ namespace PProfiling
     {
       PWaitAndSignal lock(m_mutex);
 
+      m_lastDuration = duration;
       m_mma.Accumulate(duration);
 
       if (!PTrace::CanTrace(m_throttledLogLevel) || duration < m_thresholdTime)
@@ -2260,6 +2262,10 @@ namespace PProfiling
     m_implementation->EndMeasurement(context, object, PTimeInterval::NanoSeconds(CyclesToNanoseconds(GetCycles() - startCycle)));
   }
 
+  const PTimeInterval & TimeScope::GetLastDuration() const
+  {
+    return m_implementation->m_lastDuration;
+  }
 #endif // PTRACING
 
 }; // namespace PProfiling
