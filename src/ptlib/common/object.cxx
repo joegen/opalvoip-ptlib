@@ -1459,7 +1459,8 @@ namespace PProfiling
 
   int64_t CyclesToNanoseconds(uint64_t cycles)
   {
-    return cycles*PTimeInterval::SecsToNano/gs_Frequency;
+    static long double const gs_CyclesPerNanoseconds = (long double)gs_Frequency/PTimeInterval::SecsToNano;
+    return (int64_t)(cycles/gs_CyclesPerNanoseconds);
   }
 
 

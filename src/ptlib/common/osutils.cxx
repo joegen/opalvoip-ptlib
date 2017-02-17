@@ -3041,23 +3041,12 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThrea
 unsigned PTimedMutex::ExcessiveLockWaitTime;
 
 
-#if PTRACING
-PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name,
-                                                 unsigned line,
-                                                 unsigned timeout,
-                                                 PProfiling::TimeScope * timeWait,
-                                                 PProfiling::TimeScope * timeHeld)
-  : m_fileOrName(name)
-  , m_timeWait(timeWait)
-  , m_timeHeld(timeHeld)
-  , m_samplePointCycle(0)
-#else
 PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned line, unsigned timeout)
   : m_fileOrName(name)
-#endif
   , m_fileLine(line)
   , m_excessiveLockTimeout(timeout)
   , m_excessiveLockActive(false)
+  , m_startHeldSamplePoint(0)
 {
   if (m_excessiveLockTimeout == 0) {
     if (PTimedMutex::ExcessiveLockWaitTime == 0) {
@@ -3072,14 +3061,10 @@ PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const char * name, unsigned lin
 
 PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other)
   : m_fileOrName(other.m_fileOrName)
-#if PTRACING
-  , m_timeWait(other.m_timeWait)
-  , m_timeHeld(other.m_timeHeld)
-  , m_samplePointCycle(0)
-#endif
   , m_fileLine(other.m_fileLine)
   , m_excessiveLockTimeout(other.m_excessiveLockTimeout)
   , m_excessiveLockActive(false)
+  , m_startHeldSamplePoint(0)
 {
 }
 
@@ -3107,44 +3092,23 @@ void PMutexExcessiveLockInfo::ExcessiveLockPhantom(const PObject & mutex) const
 }
 
 
-void PMutexExcessiveLockInfo::AcquiringLock()
+void PMutexExcessiveLockInfo::AcquiredLock(uint64_t, bool)
 {
-#if PTRACING
-  if (m_samplePointCycle == 0)
-    m_samplePointCycle = PProfiling::GetCycles();
-#endif
 }
 
 
-void PMutexExcessiveLockInfo::AcquiredLock(const PObject & PTRACE_PARAM(mutex))
+void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool)
 {
-#if PTRACING
-  if (m_timeWait)
-    m_timeWait->EndMeasurement(&mutex, &mutex, m_samplePointCycle);
-
-  m_samplePointCycle = PProfiling::GetCycles();
-#endif
-}
-
-
-void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex)
-{
-#if PTRACING
-  if (m_timeHeld)
-    m_timeHeld->EndMeasurement(&mutex, &mutex, m_samplePointCycle);
-  m_samplePointCycle = 0;
-#endif
-
   if (m_excessiveLockActive) {
 #if PTRACING
     PTime releaseTime;
+    PTimeInterval heldDuration = PTimeInterval::NanoSeconds(PProfiling::CyclesToNanoseconds(PProfiling::GetCycles() - startHeldSamplePoint));
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
-    trace << "Assertion fail: Released phantom deadlock";
-    if (m_timeHeld)
-      trace << ", held from " << (releaseTime-m_timeHeld->GetLastDuration()).AsString(PTime::TodayFormat)
-            << " to " << releaseTime.AsString(PTime::TodayFormat)
-            << " (" << m_timeHeld->GetLastDuration() << "s),";
-    trace << " in " << mutex;
+    trace << "Assertion fail: Released phantom deadlock"
+          << ", held from " << (releaseTime - heldDuration).AsString(PTime::TodayFormat)
+          << " to " << releaseTime.AsString(PTime::TodayFormat)
+          << " (" << heldDuration << "s),"
+          << " in " << mutex;
     if (PTimedMutex::DeadlockStackWalkMode == PTimedMutex::DeadlockStackWalkOnPhantomRelease)
       PTrace::WalkStack(trace);
     trace << PTrace::End;
@@ -3188,13 +3152,14 @@ void PTimedMutex::ExcessiveLockWait()
 }
 
 
-void PTimedMutex::CommonWaitComplete()
+void PTimedMutex::CommonWaitComplete(uint64_t startWaitCycle)
 {
   // Note this is protected by the mutex itself only the thread with
   // the lock can alter these variables.
 
   if (m_lockCount++ == 0) {
-    AcquiredLock(*this);
+    AcquiredLock(startWaitCycle, false);
+    m_startHeldSamplePoint = PProfiling::GetCycles();
     m_lastLockerId = m_lockerId = PThread::GetCurrentThreadId();
     m_lastUniqueId = PThread::GetCurrentUniqueIdentifier();
   }
@@ -3206,7 +3171,7 @@ bool PTimedMutex::CommonSignal()
   if (--m_lockCount > 0)
     return true;
 
-  ReleasedLock(*this);
+  ReleasedLock(*this, m_startHeldSamplePoint, false);
   m_lockerId = PNullThreadIdentifier;
   return false;
 }
@@ -3217,6 +3182,21 @@ void PTimedMutex::PrintOn(ostream &strm) const
   strm << "mutex " << this;
   PMutexExcessiveLockInfo::PrintOn(strm);
 }
+
+
+#if PTRACING
+void PInstrumentedMutex::AcquiredLock(uint64_t startWaitCycle, bool)
+{
+  m_timeWaitContext.EndMeasurement(this, this, startWaitCycle);
+}
+
+
+void PInstrumentedMutex::ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly)
+{
+  m_timeHeldContext.EndMeasurement(this, this, startHeldSamplePoint);
+  PTimedMutex::ReleasedLock(mutex, startHeldSamplePoint, readOnly);
+}
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3364,17 +3344,8 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if PTRACING
-PReadWriteMutex::PReadWriteMutex(const char * name,
-                                 unsigned line,
-                                 unsigned timeout,
-                                 PProfiling::TimeScope * timeWait,
-                                 PProfiling::TimeScope * timeHeld)
-  : PMutexExcessiveLockInfo(name, line, timeout, timeWait, timeHeld)
-#else
 PReadWriteMutex::PReadWriteMutex(const char * name, unsigned line, unsigned timeout)
   : PMutexExcessiveLockInfo(name, line, timeout)
-#endif
 #if P_READ_WRITE_ALGO2
   , m_inSemaphore(1, 1)
   , m_inCount(0)
@@ -3446,7 +3417,7 @@ PReadWriteMutex::Nest & PReadWriteMutex::StartNest()
 
 void PReadWriteMutex::StartRead()
 {
-  AcquiringLock();
+  uint64_t startWaitCycle = PProfiling::GetCycles();
 
   // Get the nested thread info structure, create one it it doesn't exist
   Nest & nest = StartNest();
@@ -3460,7 +3431,8 @@ void PReadWriteMutex::StartRead()
   // lock, otherwise we leave it as just having incremented the reader count.
   if (nest.m_readerCount == 1 && nest.m_writerCount == 0) {
     InternalStartRead(nest);
-    AcquiredLock(*this);
+    AcquiredLock(startWaitCycle, true);
+    nest.m_startHeldCycle = PProfiling::GetCycles();
   }
 }
 
@@ -3532,7 +3504,7 @@ void PReadWriteMutex::EndRead()
   if (nest->m_readerCount > 0 || nest->m_writerCount > 0)
     return;
 
-  ReleasedLock(*this);
+  ReleasedLock(*this, nest->m_startHeldCycle, true);
 
   // Do text book read lock
   InternalEndRead(*nest);
@@ -3545,7 +3517,7 @@ void PReadWriteMutex::EndRead()
 
 void PReadWriteMutex::StartWrite()
 {
-  AcquiringLock();
+  uint64_t startWaitCycle = PProfiling::GetCycles();
 
   // Get the nested thread info structure, create one it it doesn't exist
   Nest & nest = StartNest();
@@ -3569,7 +3541,8 @@ void PReadWriteMutex::StartWrite()
 
   InternalStartWrite(nest);
 
-  AcquiredLock(*this);
+  AcquiredLock(startWaitCycle, false);
+  m_startHeldSamplePoint = PProfiling::GetCycles();
 }
 
 
@@ -3594,7 +3567,7 @@ void PReadWriteMutex::EndWrite()
   if (nest->m_writerCount > 0)
     return;
 
-  ReleasedLock(*this);
+  ReleasedLock(*this, m_startHeldSamplePoint, false);
 
   InternalEndWrite(*nest);
 
@@ -3699,6 +3672,28 @@ void PReadWriteMutex::PrintOn(ostream & strm) const
   strm << "read/write mutex " << this;
   PMutexExcessiveLockInfo::PrintOn(strm);
 }
+
+
+#if PTRACING
+void PInstrumentedReadWriteMutex::AcquiredLock(uint64_t startWaitCycle, bool readOnly)
+{
+  if (readOnly)
+    m_timeWaitReadOnlyContext.EndMeasurement(this, this, startWaitCycle);
+  else
+    m_timeWaitReadWriteContext.EndMeasurement(this, this, startWaitCycle);
+}
+
+
+void PInstrumentedReadWriteMutex::ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly)
+{
+  if (readOnly)
+    m_timeHeldReadOnlyContext.EndMeasurement(this, this, startHeldSamplePoint);
+  else
+    m_timeHeldReadWriteContext.EndMeasurement(this, this, startHeldSamplePoint);
+
+  PReadWriteMutex::ReleasedLock(mutex, startHeldSamplePoint, readOnly);
+}
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

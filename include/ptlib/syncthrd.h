@@ -267,11 +267,6 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
       const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
       unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
       unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
-#if PTRACING
-      ,
-      PProfiling::TimeScope * timeWait = NULL, ///< Detailed logging of the mutex wait times.
-      PProfiling::TimeScope * timeHeld = NULL  ///< Detailed logging of the mutex hold times.
-#endif
     );
     ~PReadWriteMutex();
   //@}
@@ -346,6 +341,10 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
       bool     m_waiting;
       PUniqueThreadIdentifier m_uniqueId;
 
+#if PTRACING
+    uint64_t m_startHeldCycle;
+#endif
+
       Nest()
         : m_readerCount(0)
         , m_writerCount(0)
@@ -354,7 +353,7 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
       { }
     };
     typedef std::map<PThreadIdentifier, Nest> NestMap;
-    NestMap m_nestedThreads;
+    NestMap          m_nestedThreads;
     PCriticalSection m_nestingMutex;
 
     Nest * GetNest();
@@ -382,14 +381,46 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
 #define PDECLARE_READ_WRITE_MUTEX(...) PDECLARE_READ_WRITE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 #if PTRACING
-  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
-    struct PReadWriteMutex_##name : PReadWriteMutex { \
-      PProfiling::TimeScope m_timeWaitContext, m_timeHeldContext; \
-      PReadWriteMutex_##name() \
-        : PReadWriteMutex(#name, 0, std::max((int)1000, (int)waitTime*2), &m_timeWaitContext, &m_timeHeldContext) \
-        , m_timeWaitContext("Wait " #name, __FILE__,__LINE__, waitTime, ##__VA_ARGS__) \
-        , m_timeHeldContext("Held " #name, __FILE__,__LINE__, heldTime, ##__VA_ARGS__) \
-      { } } var
+  class PInstrumentedReadWriteMutex : public PReadWriteMutex
+  {
+    public:
+      PInstrumentedReadWriteMutex(
+        const char * name,
+        const char * file,
+        unsigned line,
+        const char * waitReadOnlyName,
+        const char * heldReadOnlyName,
+        const char * waitReadWriteName,
+        const char * heldReadWriteName,
+        unsigned waitTime,
+        unsigned heldTime,
+        unsigned throttleTime = 10000,    ///< Time between PTRACE outpout in milliseconds
+        unsigned throttledLogLevel = 2,   ///< PTRACE level to use if enough samples are above thresholdTime
+        unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
+        unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
+        unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
+      ) : PReadWriteMutex(name, 0, std::max((int)1000, (int)waitTime*2))
+        , m_timeWaitReadOnlyContext(waitReadOnlyName, file, line, waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeHeldReadOnlyContext(heldReadOnlyName, file, line, heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeWaitReadWriteContext(waitReadWriteName, file, line, waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeHeldReadWriteContext(heldReadWriteName, file, line, heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+      { }
+
+    protected:
+      virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly);
+      virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly);
+
+      PProfiling::TimeScope m_timeWaitReadOnlyContext;
+      PProfiling::TimeScope m_timeHeldReadOnlyContext;
+      PProfiling::TimeScope m_timeWaitReadWriteContext;
+      PProfiling::TimeScope m_timeHeldReadWriteContext;
+  };
+
+  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, ...) \
+    struct PInstrumentedReadWriteMutex_##name : PInstrumentedReadWriteMutex { \
+      PInstrumentedReadWriteMutex_##name() : PInstrumentedReadWriteMutex(#name, __FILE__,__LINE__, \
+               "Wait R/O " #name, "Held R/O " #name, "Wait R/W " #name, "Held R/W " #name, __VA_ARGS__) { } \
+    } var
 #else
   #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
                        PDECLARE_READ_WRITE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))

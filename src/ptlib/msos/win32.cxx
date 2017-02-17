@@ -1746,17 +1746,8 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
-#if PTRACING
-PTimedMutex::PTimedMutex(const char * name,
-                         unsigned line,
-                         unsigned timeout,
-                         PProfiling::TimeScope * timeWait,
-                         PProfiling::TimeScope * timeHeld)
-  : PMutexExcessiveLockInfo(name, line, timeout, timeWait, timeHeld)
-#else
 PTimedMutex::PTimedMutex(const char * name, unsigned line, unsigned timeout)
   : PMutexExcessiveLockInfo(name, line, timeout)
-#endif
   , m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
   , m_lastUniqueId(0)
@@ -1779,7 +1770,7 @@ PTimedMutex::PTimedMutex(const PTimedMutex & other)
 
 void PTimedMutex::Wait()
 {
-  AcquiringLock();
+  uint64_t startWaitCycle = PProfiling::GetCycles();
 
   if (!m_handle.Wait(m_excessiveLockTimeout)) {
     ExcessiveLockWait();
@@ -1787,18 +1778,18 @@ void PTimedMutex::Wait()
     ExcessiveLockPhantom(*this);
   }
 
-  CommonWaitComplete();
+  CommonWaitComplete(startWaitCycle);
 }
 
 
 PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
 {
-  AcquiringLock();
+  uint64_t startWaitCycle = PProfiling::GetCycles();
 
   if (!m_handle.Wait(timeout.GetInterval()))
     return false;
 
-  CommonWaitComplete();
+  CommonWaitComplete(startWaitCycle);
   return true;
 }
 

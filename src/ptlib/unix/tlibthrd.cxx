@@ -1258,10 +1258,8 @@ void PSemaphore::Signal()
 
 PTimedMutex::PTimedMutex(const char * name,
                          unsigned line,
-                         unsigned timeout,
-                         PProfiling::TimeScope * timeWait,
-                         PProfiling::TimeScope * timeHeld)
-  : PMutexExcessiveLockInfo(name, line, timeout, timeWait, timeHeld)
+                         unsigned timeout)
+  : PMutexExcessiveLockInfo(name, line, timeout)
 {
   Construct();
 }
@@ -1335,7 +1333,7 @@ PTimedMutex::~PTimedMutex()
 
 void PTimedMutex::Wait() 
 {
-  AcquiringLock();
+  uint64_t startWaitCycle = PProfiling::GetCycles();
 
 #if P_HAS_RECURSIVE_MUTEX
 
@@ -1388,7 +1386,7 @@ void PTimedMutex::Wait()
 
 #endif // P_HAS_RECURSIVE_MUTEX
 
-  CommonWaitComplete();
+  CommonWaitComplete(startWaitCycle);
 }
 
 
@@ -1400,7 +1398,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
     return true;
   }
 
-  AcquiringLock();
+  uint64_t startWaitCycle = PProfiling::GetCycles();
 
 #if !P_HAS_RECURSIVE_MUTEX
   // if we already have the mutex, return immediately
@@ -1446,7 +1444,7 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
           "PMutex acquired whilst locked by another thread");
 #endif
 
-  CommonWaitComplete();
+  CommonWaitComplete(startWaitCycle);
   return true;
 }
 

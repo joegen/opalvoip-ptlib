@@ -46,31 +46,22 @@ class PMutexExcessiveLockInfo
 {
   protected:
     const char * m_fileOrName;
-#if PTRACING
-    PProfiling::TimeScope * m_timeWait;
-    PProfiling::TimeScope * m_timeHeld;
-    uint64_t                m_samplePointCycle;
-#endif
     unsigned     m_fileLine;
     unsigned     m_excessiveLockTimeout;
     mutable bool m_excessiveLockActive;
+    uint64_t     m_startHeldSamplePoint;
 
     PMutexExcessiveLockInfo(
       const char * name,
       unsigned line,
       unsigned timeout
-#if PTRACING
-      ,
-      PProfiling::TimeScope * timeWait,
-      PProfiling::TimeScope * timeHeld
-#endif
     );
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
+    virtual ~PMutexExcessiveLockInfo() { }
     void PrintOn(ostream &strm) const;
     void ExcessiveLockPhantom(const PObject & mutex) const;
-    void AcquiringLock();
-    void AcquiredLock(const PObject & mutex);
-    void ReleasedLock(const PObject & mutex);
+    virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly);
+    virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly);
 };
 
 
@@ -109,11 +100,6 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
       const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
       unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
       unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
-#if PTRACING
-      ,
-      PProfiling::TimeScope * timeWait = NULL, ///< Detailed logging of the mutex wait times.
-      PProfiling::TimeScope * timeHeld = NULL  ///< Detailed logging of the mutex hold times.
-#endif
     );
 
     /**Copy constructor is allowed but does not copy, allocating a new mutex.
@@ -166,7 +152,7 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
     unsigned                m_lockCount;
 
     void ExcessiveLockWait();
-    void CommonWaitComplete();
+    void CommonWaitComplete(uint64_t startWaitCycle);
     bool CommonSignal();
 
 // Include platform dependent part of class
@@ -193,14 +179,39 @@ typedef PTimedMutex PMutex;
 #define PDECLARE_MUTEX(...) PDECLARE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 #if PTRACING
-  #define PDECLARE_INSTRUMENTED_MUTEX(var, name, waitTime, heldTime, ...) \
-    struct PTimedMutex_##name : PTimedMutex { \
-      PProfiling::TimeScope m_timeWaitContext, m_timeHeldContext; \
-      PTimedMutex_##name() \
-        : PTimedMutex(#name, 0, std::max((int)1000, (int)waitTime*2), &m_timeWaitContext, &m_timeHeldContext) \
-        , m_timeWaitContext("Wait " #name, __FILE__,__LINE__, waitTime, ##__VA_ARGS__) \
-        , m_timeHeldContext("Held " #name, __FILE__,__LINE__, heldTime, ##__VA_ARGS__) \
-      { } } var
+  class PInstrumentedMutex : public PTimedMutex
+  {
+    public:
+      PInstrumentedMutex(
+        const char * name,
+        const char * file,
+        unsigned line,
+        const char * waitName,
+        const char * heldName,
+        unsigned waitTime,
+        unsigned heldTime,
+        unsigned throttleTime = 10000,    ///< Time between PTRACE outpout in milliseconds
+        unsigned throttledLogLevel = 2,   ///< PTRACE level to use if enough samples are above thresholdTime
+        unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
+        unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
+        unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
+      ) : PTimedMutex(name, 0, std::max((int)1000, (int)waitTime*2))
+        , m_timeWaitContext(waitName, file, line, waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeHeldContext(heldName, file, line, heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+      { }
+
+    protected:
+      virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly);
+      virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly);
+
+      PProfiling::TimeScope m_timeWaitContext;
+      PProfiling::TimeScope m_timeHeldContext;
+  };
+
+  #define PDECLARE_INSTRUMENTED_MUTEX(var, name, ...) \
+    struct PInstrumentedMutex_##name : PInstrumentedMutex { \
+      PInstrumentedMutex_##name() : PInstrumentedMutex(#name, __FILE__,__LINE__, "Wait " #name, "Held " #name, __VA_ARGS__) { } \
+    } var
 #else
   #define PDECLARE_INSTRUMENTED_MUTEX(var, name, waitTime, heldTime, ...) \
                        PDECLARE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))
