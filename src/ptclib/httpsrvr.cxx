@@ -1498,52 +1498,33 @@ bool PHTTPResource::OnWebSocket(PHTTPServer &, PHTTPConnectionInfo &)
 
 bool PHTTPResource::OnGET(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  return OnGETOrHEAD(server, connectInfo.GetURL(), connectInfo.GetMIME(), connectInfo, true);
-}
-
-
-PBoolean PHTTPResource::OnGET(PHTTPServer & server,
-                           const PURL & url,
-                      const PMIMEInfo & info,
-            const PHTTPConnectionInfo & connectInfo)
-{
-  return OnGETOrHEAD(server, url, info, connectInfo, true);
+  return InternalOnCommand(server, connectInfo, PHTTP::GET);
 }
 
 
 bool PHTTPResource::OnHEAD(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  return OnGETOrHEAD(server, connectInfo.GetURL(), connectInfo.GetMIME(), connectInfo, false);
+  return InternalOnCommand(server, connectInfo, PHTTP::HEAD);
 }
 
 
-PBoolean PHTTPResource::OnHEAD(PHTTPServer & server,
-                           const PURL & url,
-                      const PMIMEInfo & info,
-            const PHTTPConnectionInfo & connectInfo)
-{
-  return OnGETOrHEAD(server, url, info, connectInfo, false);
-}
-
-
-PBoolean PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
-                           const PURL & url,
-                      const PMIMEInfo & info,
-            const PHTTPConnectionInfo & connectInfo,
-                                   PBoolean isGET)
+bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
+                        const PHTTPConnectionInfo & connectInfo,
+                                   PHTTP::Commands cmd)
 {
   // Nede to split songle if into 2 so the Tornado compiler won't end with
   // 'internal compiler error'
-  if (isGET && info.Contains(PHTTP::IfModifiedSinceTag()))
-    if (!IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag()])))
-      return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
+  if (cmd == PHTTP::GET && connectInfo.GetMIME().Contains(PHTTP::IfModifiedSinceTag()))
+    if (!IsModifiedSince(PTime(connectInfo.GetMIME()[PHTTP::IfModifiedSinceTag()])))
+      return server.OnError(PHTTP::NotModified, connectInfo.GetURL().AsString(), connectInfo);
 
-  PHTTPRequest * request = CreateRequest(url,
-                                         info,
+  PHTTPRequest * request = CreateRequest(connectInfo.GetURL(),
+                                         connectInfo.GetMIME(),
                                          connectInfo.GetMultipartFormInfo(),
                                          server);
+  request->entityBody = connectInfo.GetEntityBody();
 
-  PBoolean retVal = true;
+  bool retVal = true;
   if (CheckAuthority(server, *request, connectInfo)) {
     retVal = false;
     server.SetDefaultMIMEInfo(request->outMIME, connectInfo);
@@ -1552,13 +1533,24 @@ PBoolean PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
     if (GetExpirationDate(expiryDate))
       request->outMIME.Set(PHTTP::ExpiresTag, expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
+    if (cmd == PHTTP::POST) {
+      PStringToString postData;
+      static const PConstCaselessString UrlEncoded("application/x-www-form-urlencoded");
+      if (UrlEncoded == connectInfo.GetMIME().Get(PHTTP::ContentTypeTag(), UrlEncoded))
+        PURL::SplitQueryVars(connectInfo.GetEntityBody(), postData);
+      if (!OnPOSTData(*request, postData)) {
+        if (request->code != PHTTP::RequestOK)
+          server.OnError(request->code, "", connectInfo);
+        retVal = false;
+      }
+    }
     if (!LoadHeaders(*request)) 
-      retVal = server.OnError(request->code, url.AsString(), connectInfo);
-    else if (!isGET)
+      retVal = server.OnError(request->code, connectInfo.GetURL().AsString(), connectInfo);
+    else if (cmd != PHTTP::GET)
       retVal = request->outMIME.Contains(PHTTP::ContentLengthTag());
     else {
       m_hitCount++;
-      retVal = OnGETData(server, url, connectInfo, *request);
+      retVal = OnGETData(server, connectInfo.GetURL(), connectInfo, *request);
     }
   }
 
@@ -1580,37 +1572,7 @@ PBoolean PHTTPResource::OnGETData(PHTTPServer & /*server*/,
 
 bool PHTTPResource::OnPOST(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  PStringToString postData;
-  static const PConstCaselessString UrlEncoded("application/x-www-form-urlencoded");
-  if (UrlEncoded == connectInfo.GetMIME().Get(PHTTP::ContentTypeTag(), UrlEncoded))
-    PURL::SplitQueryVars(connectInfo.GetEntityBody(), postData);
-  return OnPOST(server, connectInfo.GetURL(), connectInfo.GetMIME(), postData, connectInfo);
-}
-
-
-PBoolean PHTTPResource::OnPOST(PHTTPServer & server,
-                            const PURL & url,
-                       const PMIMEInfo & info,
-                 const PStringToString & data,
-             const PHTTPConnectionInfo & connectInfo)
-{
-  PHTTPRequest * request = CreateRequest(url,
-                                         info,
-                                         connectInfo.GetMultipartFormInfo(),
-                                         server);
-
-  request->entityBody = connectInfo.GetEntityBody();
-
-  PBoolean persist = true;
-  if (CheckAuthority(server, *request, connectInfo)) {
-    server.SetDefaultMIMEInfo(request->outMIME, connectInfo);
-    persist = OnPOSTData(*request, data);
-    if (request->code != PHTTP::RequestOK)
-      persist = server.OnError(request->code, "", connectInfo) && persist;
-  }
-
-  delete request;
-  return persist;
+  return InternalOnCommand(server, connectInfo, PHTTP::POST);
 }
 
 

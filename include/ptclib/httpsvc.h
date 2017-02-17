@@ -223,11 +223,8 @@ class PConfigPage : public PHTTPConfig
 
     void OnLoadedText(PHTTPRequest &, PString & text);
 
-    PBoolean OnPOST(
+    virtual PBoolean OnPOST(
       PHTTPServer & server,
-      const PURL & url,
-      const PMIMEInfo & info,
-      const PStringToString & data,
       const PHTTPConnectionInfo & connectInfo
     );
 
@@ -266,11 +263,8 @@ class PConfigSectionsPage : public PHTTPConfigSectionList
 
     void OnLoadedText(PHTTPRequest &, PString & text);
 
-    PBoolean OnPOST(
+    virtual PBoolean OnPOST(
       PHTTPServer & server,
-      const PURL & url,
-      const PMIMEInfo & info,
-      const PStringToString & data,
       const PHTTPConnectionInfo & connectInfo
     );
 

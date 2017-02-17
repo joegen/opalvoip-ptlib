@@ -922,6 +922,10 @@ class PHTTPConnectionInfo : public PObject
 
     long GetEntityBodyLength() const  { return entityBodyLength; }
 
+    /**Do not persist.
+      */
+    void DisablePersistence() { isPersistent = false; }
+
     /**Get the maximum time a persistent connection may persist.
       */
     PTimeInterval GetPersistenceTimeout() const { return PTimeInterval(0,persistenceSeconds); }
@@ -1696,12 +1700,6 @@ class PHTTPResource : public PObject
       PHTTPServer & server,       ///< HTTP server that received the request
       const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
     );
-    virtual PBoolean OnGET(
-      PHTTPServer & server,       ///< HTTP server that received the request
-      const PURL & url,           ///< Universal Resource Locator for document.
-      const PMIMEInfo & info,     ///< Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo   ///< HTTP connection information
-    );
 
     /**Send the data associated with a GET command.
 
@@ -1734,12 +1732,6 @@ class PHTTPResource : public PObject
       PHTTPServer & server,       ///< HTTP server that received the request
       const PHTTPConnectionInfo & conInfo ///< HTTP connection information
     );
-    virtual PBoolean OnHEAD(
-      PHTTPServer & server,       ///< HTTP server that received the request
-      const PURL & url,           ///< Universal Resource Locator for document.
-      const PMIMEInfo & info,     ///< Extra MIME information in command.
-      const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
-    );
 
     /** Handle the POST command passed from the HTTP socket.
 
@@ -1755,13 +1747,6 @@ class PHTTPResource : public PObject
     virtual bool OnPOST(
       PHTTPServer & server,       ///< HTTP server that received the request
       const PHTTPConnectionInfo & conInfo ///< HTTP connection information
-    );
-    virtual PBoolean OnPOST(
-      PHTTPServer & server,         ///< HTTP server that received the request
-      const PURL & url,             ///< Universal Resource Locator for document.
-      const PMIMEInfo & info,       ///< Extra MIME information in command.
-      const PStringToString & data, ///< Variables in the POST data.
-      const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
     );
 
     /**Send the data associated with a POST command.
@@ -1899,12 +1884,10 @@ class PHTTPResource : public PObject
 
 
     /** common code for GET and HEAD commands */
-    virtual PBoolean OnGETOrHEAD(
+    virtual bool InternalOnCommand(
       PHTTPServer & server,       ///<  HTTP server that received the request
-      const PURL & url,           ///<  Universal Resource Locator for document.
-      const PMIMEInfo & info,     ///<  Extra MIME information in command.
       const PHTTPConnectionInfo & conInfo,  ///< Connection information
-      PBoolean isGet              ///< Flag indicating is GET or HEAD
+      PHTTP::Commands cmd              ///< Command being processed
     );
 
 
@@ -1912,6 +1895,11 @@ class PHTTPResource : public PObject
     PString          m_contentType; ///< MIME content type for the resource
     PHTTPAuthority * m_authority;   ///< Authorisation method for the resource
     atomic<unsigned> m_hitCount;    ///< Count of number of times resource was accessed.
+
+    P_REMOVE_VIRTUAL(PBoolean,OnGET(PHTTPServer&,const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo&),false);
+    P_REMOVE_VIRTUAL(PBoolean,OnHEAD(PHTTPServer&,const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo &),false);
+    P_REMOVE_VIRTUAL(PBoolean,OnGETOrHEAD(PHTTPServer&,const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo&,PBoolean),false);
+    P_REMOVE_VIRTUAL(PBoolean,OnPOST(PHTTPServer&,const PURL&,const PMIMEInfo&,const PStringToString&,const PHTTPConnectionInfo&),false);
 };
 
 

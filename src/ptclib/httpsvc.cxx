@@ -510,14 +510,10 @@ void PConfigPage::OnLoadedText(PHTTPRequest & request, PString & text)
 }
 
 
-PBoolean PConfigPage::OnPOST(PHTTPServer & server,
-                         const PURL & url,
-                         const PMIMEInfo & info,
-                         const PStringToString & data,
-                         const PHTTPConnectionInfo & connectInfo)
+PBoolean PConfigPage::OnPOST(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPConfig::OnPOST(server, url, info, data, connectInfo);
-  return false;    // Make sure we break any persistent connections
+  server.GetConnectionInfo().DisablePersistence();
+  return PHTTPConfig::OnPOST(server, connectInfo);
 }
 
 
@@ -575,14 +571,10 @@ void PConfigSectionsPage::OnLoadedText(PHTTPRequest & request, PString & text)
 }
 
 
-PBoolean PConfigSectionsPage::OnPOST(PHTTPServer & server,
-                                 const PURL & url,
-                                 const PMIMEInfo & info,
-                                 const PStringToString & data,
-                                 const PHTTPConnectionInfo & connectInfo)
+PBoolean PConfigSectionsPage::OnPOST(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPConfigSectionList::OnPOST(server, url, info, data, connectInfo);
-  return false;    // Make sure we break any persistent connections
+  server.GetConnectionInfo().DisablePersistence();
+  return PHTTPConfigSectionList::OnPOST(server, connectInfo);
 }
 
 
