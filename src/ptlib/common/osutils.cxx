@@ -454,6 +454,12 @@ ostream * PTrace::GetStream()
 }
 
 
+int PTrace::GetTimeZone()
+{
+  return (GetOptions()&PTrace::GMTTime) ? PTime::GMT : PTime::Local;
+}
+
+
 ostream & PTrace::PrintInfo(ostream & strm, bool crlf)
 {
   PTraceInfo & info = PTraceInfo::Instance();
@@ -3097,7 +3103,7 @@ void PMutexExcessiveLockInfo::AcquiredLock(uint64_t, bool)
 }
 
 
-void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool)
+void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex, uint64_t PTRACE_PARAM(startHeldSamplePoint), bool)
 {
   if (m_excessiveLockActive) {
 #if PTRACING
@@ -3105,8 +3111,8 @@ void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex, uint64_t start
     PTimeInterval heldDuration = PTimeInterval::NanoSeconds(PProfiling::CyclesToNanoseconds(PProfiling::GetCycles() - startHeldSamplePoint));
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
     trace << "Assertion fail: Released phantom deadlock"
-          << ", held from " << (releaseTime - heldDuration).AsString(PTime::TodayFormat)
-          << " to " << releaseTime.AsString(PTime::TodayFormat)
+          << ", held from " << (releaseTime - heldDuration).AsString(PTime::TodayFormat, PTrace::GetTimeZone())
+          << " to " << releaseTime.AsString(PTime::TodayFormat, PTrace::GetTimeZone())
           << " (" << heldDuration << "s),"
           << " in " << mutex;
     if (PTimedMutex::DeadlockStackWalkMode == PTimedMutex::DeadlockStackWalkOnPhantomRelease)

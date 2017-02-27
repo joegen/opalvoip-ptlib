@@ -639,6 +639,9 @@ public:
   */
   static ostream * GetStream();
 
+  /// Get the time zone being used for logging.
+  static int GetTimeZone();
+
   /** Output trace parameters (level, output, options etc) to stream.
     */
   static ostream & PrintInfo(

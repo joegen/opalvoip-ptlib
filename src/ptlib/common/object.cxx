@@ -2189,12 +2189,12 @@ namespace PProfiling
       if (PTrace::CanTrace(level)) {
         ostream & trace = PTrace::Begin(level, m_file, m_line, object, "TimeScope");
         trace << m_name << ":"
-                  " since=" << m_lastOutputTime.AsString(PTime::TodayFormat) << ","
+                  " since=" << m_lastOutputTime.AsString(PTime::TodayFormat, PTrace::GetTimeZone()) << ","
               << setprecision(3) << scientific << showbase << m_mma << noshowbase
               << " thresh=" << m_thresholdTime.AsString(3, PTimeInterval::SecondsSI) << "s;" << m_thresholdPercent << "%,"
                    " slow=" << m_countTimesOverThreshold << '/' << m_mma.GetCount() << ' ' << percentOver << '%';
         for (list<History>::iterator it = m_history.begin(); it != m_history.end(); ++it)
-          trace << "\n    when=" << it->m_when.AsString(PTime::TodayFormat) << ","
+          trace << "\n    when=" << it->m_when.AsString(PTime::TodayFormat, PTrace::GetTimeZone()) << ","
                     " duration=" << it->m_duration.AsString(3, PTimeInterval::SecondsSI) << 's';
         trace << PTrace::End;
       }
