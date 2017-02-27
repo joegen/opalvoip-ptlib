@@ -339,16 +339,14 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
       unsigned m_readerCount;
       unsigned m_writerCount;
       bool     m_waiting;
+      uint64_t m_startHeldCycle;
       PUniqueThreadIdentifier m_uniqueId;
-
-#if PTRACING
-    uint64_t m_startHeldCycle;
-#endif
 
       Nest()
         : m_readerCount(0)
         , m_writerCount(0)
         , m_waiting(false)
+        , m_startHeldCycle(0)
         , m_uniqueId(PThread::GetCurrentUniqueIdentifier())
       { }
     };
