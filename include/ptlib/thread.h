@@ -564,8 +564,13 @@ class PThreadFunctor : public PThread
 {
     PCLASSINFO(PThreadFunctor, PThread);
   public:
-    PThreadFunctor(Functor & funct, bool autoDel = false)
-      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread)
+    PThreadFunctor(
+      Functor & funct,
+      bool autoDel = false,
+      const char * name = NULL,
+      PThread::Priority priority = PThread::NormalPriority
+    )
+      : PThread(10000, autoDel ? PThread::AutoDeleteThread : PThread::NoAutoDeleteThread, priority, name)
       , m_funct(funct)
     {
       PThread::Resume();
