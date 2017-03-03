@@ -450,19 +450,19 @@ void PThread::PX_StartThread()
 }
 
 
-bool PThread::PX_kill(PThreadIdentifier id, int sig)
+bool PThread::PX_kill(PThreadIdentifier tid, PUniqueThreadIdentifier uid, int sig)
 {
 #if defined(P_LINUX)
   if (!PProcess::IsInitialised())
     return false;
   PProcess & process = PProcess::Current();
   PWaitAndSignal mutex(process.m_threadMutex);
-  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(id);
-  if (it == process.m_activeThreads.end())
+  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(tid);
+  if (it == process.m_activeThreads.end() || (uid != 0 && it->second->GetUniqueIdentifier() != uid))
     return false;
 #endif
 
-  return pthread_kill(id, sig) == 0;
+  return pthread_kill(tid, sig) == 0;
 }
 
 
