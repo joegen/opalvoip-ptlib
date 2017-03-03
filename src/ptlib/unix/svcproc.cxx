@@ -559,36 +559,6 @@ void PServiceProcess::OnControl()
 }
 
 
-void PServiceProcess::Terminate()
-{
-  if (isTerminating) {
-    PSYSTEMLOG(Error, "Nested call to process termination!");
-    // If we are the process itself and another thread is terminating us,
-    // just stop and wait forever for us to go away via exit() below
-    if (PThread::Current() == this)
-      Sleep(PMaxTimeInterval);
-    return;
-  }
-
-  isTerminating = true;
-
-  PSYSTEMLOG(Warning, "Stopping service process \"" << GetName() << "\" v" << GetVersion(true));
-
-  // Avoid strange errors caused by threads (and the process itself!) being destoyed 
-  // before they have EVER been scheduled
-  Yield();
-
-  // Do the services stop code
-  OnStop();
-
-  PSYSTEMLOG(Error, "Stopped service process \"" << GetName() << "\" v" << GetVersion(true));
-  PSystemLog::SetTarget(NULL);
-
-  // Now end the program, or let main exit normally
-  if (PThread::Current() != this)
-    exit(GetTerminationValue());
-}
-
 static atomic<bool> InSignalHandler(false);
 
 void PServiceProcess::PXOnAsyncSignal(int sig)
@@ -657,11 +627,8 @@ void PServiceProcess::PXOnSignal(int sig)
   };
 
   switch (sig) {
-    case SIGINT :
     case SIGHUP :
-    case SIGTERM :
-      PTRACE(3, "PTLib", "Starting thread to terminate service process, signal " << sig);
-      new PThreadObj<PServiceProcess>(*this, &PServiceProcess::Terminate);
+      OnControl();
       return;
 
     case TraceUpSignal :

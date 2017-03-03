@@ -2468,11 +2468,8 @@ PObject::Comparison PProcess::Compare(const PObject & obj) const
 
 void PProcess::Terminate()
 {
-#ifdef _WINDLL
-  FatalExit(terminationValue);
-#else
-  exit(m_terminationValue);
-#endif
+  // With extreme prejudice
+  _exit(m_terminationValue);
 }
 
 

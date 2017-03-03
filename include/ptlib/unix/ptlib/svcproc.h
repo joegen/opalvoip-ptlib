@@ -33,7 +33,6 @@
 
   public:
     ~PServiceProcess();
-    virtual void Terminate();
   protected:
     int  InitialiseService();
     void _PXShowSystemWarning(PINDEX num, const PString & str);
