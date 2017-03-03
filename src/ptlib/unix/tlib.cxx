@@ -516,6 +516,7 @@ void PProcess::PXOnAsyncSignal(int sig)
     case SIGTERM:
       if (OnInterrupt(sig == SIGTERM))
         return;
+      break;
 
 #if P_HAS_BACKTRACE && PTRACING
     case WalkStackSignal:
@@ -531,13 +532,14 @@ void PProcess::PXOnAsyncSignal(int sig)
 void PProcess::PXOnSignal(int sig)
 {
   SIGNALS_DEBUG("\nSYNCSIG<%u>\n",sig);
-  PTRACE(3, "PTLib", "Handling signal " << sig);
+  PTRACE(2, "PTLib", "Handling signal " << sig);
 
   switch (sig) {
     case SIGINT:
     case SIGHUP:
     case SIGTERM:
-      raise(SIGKILL);
+      Terminate();
+      abort(); // Shouldn't get here, but just in case ...
 
 #ifdef _DEBUG
     case 28 :
