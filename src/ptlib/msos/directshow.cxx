@@ -29,10 +29,6 @@
  * Initial work sponsored by Requestec Ltd.
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 

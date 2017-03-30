@@ -22,10 +22,6 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

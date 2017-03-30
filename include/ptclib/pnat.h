@@ -25,10 +25,6 @@
  *
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_PNAT_H

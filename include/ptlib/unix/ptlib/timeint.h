@@ -25,10 +25,6 @@
  * All Rights Reserved.
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #define PMaxTimeInterval PTimeInterval((long)0x7fffffff)

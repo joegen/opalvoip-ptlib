@@ -25,10 +25,6 @@
  * All Rights Reserved.
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #define P_DISABLE_FACTORY_INSTANCES

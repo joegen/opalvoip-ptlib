@@ -25,10 +25,6 @@
  * Metreos Corporation (http://www.metros.com).
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

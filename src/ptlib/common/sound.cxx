@@ -23,10 +23,6 @@
  *
  * Contributor(s): Craig Southeren
  *                 Snark at GnomeMeeting
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

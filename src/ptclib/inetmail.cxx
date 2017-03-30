@@ -22,10 +22,6 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

@@ -4,10 +4,6 @@
  * Abstract Syntax Notation 1 Encoding Rules
  *
  * Portable Windows Library
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 ///////////////////////////////////////////////////////////////////////

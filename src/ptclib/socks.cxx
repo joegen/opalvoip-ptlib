@@ -20,10 +20,6 @@
  * The Original Code is Portable Windows Library.
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

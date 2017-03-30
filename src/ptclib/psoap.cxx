@@ -22,10 +22,6 @@
  * The Initial Developer of the Original Code is Andreas Sikkema
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

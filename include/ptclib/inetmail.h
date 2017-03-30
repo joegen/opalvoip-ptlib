@@ -23,10 +23,6 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): Federico Pinna and Reitek S.p.A.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_INETMAIL_H
