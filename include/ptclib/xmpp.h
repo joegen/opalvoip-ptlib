@@ -22,10 +22,6 @@
  * The Initial Developer of the Original Code is Post Increment
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_XMPP_H

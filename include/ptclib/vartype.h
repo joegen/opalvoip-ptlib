@@ -22,10 +22,6 @@
  * The Initial Developer of the Original Code is Vox Lucida Pty. Ltd.
  *
  * Contributor(s): Robert Jongbloed
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_VARTYPE_H

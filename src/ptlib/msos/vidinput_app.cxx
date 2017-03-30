@@ -18,10 +18,6 @@
  *
  *
  * Contributor(s): Craig Southeren, Post Increment (C) 2008
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 

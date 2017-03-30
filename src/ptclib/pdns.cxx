@@ -22,10 +22,6 @@
  * Contributor(s): ______________________________________.
  *
  * Copyright 2003 Equivalence Pty. Ltd.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

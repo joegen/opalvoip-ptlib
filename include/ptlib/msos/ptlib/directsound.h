@@ -23,10 +23,6 @@
  * Vincent Luba <vincent.luba@novacom.be>
  *
  * Contributor(s): Ted Szoczei, Nimajin Software Consulting
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef __DIRECTSOUND_H__

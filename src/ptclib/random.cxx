@@ -24,10 +24,6 @@
  * Contributor(s): ______________________________________.
  *
  * Based on code originally by Bob Jenkins.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 

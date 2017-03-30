@@ -25,10 +25,6 @@
  * All Rights Reserved.
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #define _read(fd,vp,st)         ::read(fd, vp, (size_t)st)

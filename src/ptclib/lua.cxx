@@ -23,10 +23,6 @@
  *
  * Contributor(s): Craig Southeren
  *                 Robert Jongbloed
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

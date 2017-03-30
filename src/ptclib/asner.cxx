@@ -22,12 +22,6 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): ______________________________________.
- *
- * $Log: asner.cxx,v $
- * Revision 1.93  2005/11/30 12:47:41  csoutheren
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

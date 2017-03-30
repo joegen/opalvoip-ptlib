@@ -23,10 +23,6 @@
  *  * Portable Windows Library
  *
  * Contributor(s): Snark at GnomeMeeting
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

@@ -23,10 +23,6 @@
  *
  * Contributor(s): ______________________________________.
  *                 Walter H Whitlock (twohives@nc.rr.com)
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

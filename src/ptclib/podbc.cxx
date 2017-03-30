@@ -26,10 +26,6 @@
 *   Portions: Simple ODBC Wrapper Article www.codeproject.com
 *
 * Contributor(s): ______________________________________.
-*
-* $Revision$
-* $Author$
-* $Date$
 */
 
 #include <ptlib.h>

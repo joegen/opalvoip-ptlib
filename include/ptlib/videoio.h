@@ -22,10 +22,6 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 

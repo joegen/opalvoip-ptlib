@@ -6,10 +6,6 @@
  * Portable Windows Library
  *
  * Contributor(s): Snark at GnomeMeeting
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_PLUGINMGR_H

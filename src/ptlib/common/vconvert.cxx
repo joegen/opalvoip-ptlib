@@ -24,10 +24,6 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *   Mark Cooke (mpc@star.sr.bham.ac.uk)
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

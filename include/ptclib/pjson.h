@@ -23,10 +23,6 @@
  *
  * Contributor(s): Robert Jongbloed
  *                 Blackboard, inc
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_PJSON_H

@@ -26,10 +26,6 @@
  * All Rights Reserved.
  *
  * Contributor(s): ______________________________________.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

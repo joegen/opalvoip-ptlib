@@ -23,10 +23,6 @@
  *
  * Contributor(s): Robert Jongbloed
  *                 Blackboard, inc
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifdef __GNUC__

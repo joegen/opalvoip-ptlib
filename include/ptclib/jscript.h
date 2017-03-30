@@ -22,10 +22,6 @@
  * The Initial Developer of the Original Code is Post Increment
  *
  * Contributor(s): Craig Southeren
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_V8SCRIPT_H

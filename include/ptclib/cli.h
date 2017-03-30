@@ -27,10 +27,6 @@
  * Experimentation (J9) http://www.jfcom.mil/about/abt_j9.htm
  *
  * Further assistance for enhancements from Imagicle spa
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_CLI_H
