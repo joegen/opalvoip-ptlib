@@ -1023,13 +1023,8 @@ LONG WINAPI MyExceptionHandler(_EXCEPTION_POINTERS * info)
   str << "Unhandled exception: code=" << info->ExceptionRecord->ExceptionCode
       << ", when=" << PTime().AsString(PTime::LoggingFormat) << ends;
   
-  PAssertFunc(str.str().c_str());
+  PAssertAlways(str.str().c_str());
   ExitProcess(1);
-}
-
-PBoolean PProcess::IsGUIProcess() const
-{
-  return GetConsoleWindow() == NULL;
 }
 
 #else
