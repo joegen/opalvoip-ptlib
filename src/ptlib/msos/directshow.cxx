@@ -1211,6 +1211,8 @@ PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
     }
   }
 
+  PTRACE_IF(3, devices.IsEmpty(), "No video capture devices available.");
+
   return devices;
 }
 
