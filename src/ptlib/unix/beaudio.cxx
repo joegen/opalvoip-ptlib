@@ -28,9 +28,6 @@
  * Yuri Kiryanov, ykiryanov at users.sourceforge.net,
  * Jac Goudsmit <jac@be.com>.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

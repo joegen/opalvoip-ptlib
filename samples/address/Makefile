@@ -19,9 +19,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
 
 PROG    = local
 SOURCES = local.cxx

@@ -7,9 +7,6 @@
  *
  * Copyright 2004 Reitek S.p.A.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include "main.h"

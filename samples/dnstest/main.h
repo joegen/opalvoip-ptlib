@@ -5,9 +5,6 @@
  *
  * Copyright 2003 Equivalence
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef _DNSTest_MAIN_H

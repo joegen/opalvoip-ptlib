@@ -21,9 +21,6 @@
  *
  * The Initial Developer of the Original Code is Roger Hardiman
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

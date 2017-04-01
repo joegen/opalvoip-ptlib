@@ -23,9 +23,6 @@
  *
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #pragma implementation "vidinput_bsd.h"

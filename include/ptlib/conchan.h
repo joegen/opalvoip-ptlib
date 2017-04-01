@@ -26,9 +26,6 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_CONSOLECHANNEL_H

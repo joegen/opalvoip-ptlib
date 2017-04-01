@@ -6,10 +6,6 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * Original code by William Ingle (address unknown)
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef __EPACKET_H

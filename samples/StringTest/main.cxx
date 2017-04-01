@@ -23,9 +23,6 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 #include  <ptlib.h>
 #include <ptlib/pprocess.h>

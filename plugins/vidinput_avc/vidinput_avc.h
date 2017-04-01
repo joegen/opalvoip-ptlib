@@ -23,9 +23,6 @@
  *
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 

@@ -5,9 +5,6 @@
  *
  * Author: Derek J Smithies, <derek@indranet.co.nz>
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 #include <ptlib.h>
 #include <ptlib/pprocess.h>

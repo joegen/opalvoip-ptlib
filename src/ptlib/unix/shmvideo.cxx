@@ -12,9 +12,6 @@
  * compliance with the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

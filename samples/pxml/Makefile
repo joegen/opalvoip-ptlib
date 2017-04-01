@@ -19,9 +19,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
 
 PROG = PxmlTest
 SOURCES := main.cxx precompile.cxx

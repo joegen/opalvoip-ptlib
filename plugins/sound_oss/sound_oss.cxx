@@ -26,9 +26,6 @@
  *
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #pragma implementation "sound_oss.h"

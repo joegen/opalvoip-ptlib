@@ -26,9 +26,6 @@
  *
  * Contributor(s): Derek Smithies - from a modification of oss module.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
    
 

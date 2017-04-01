@@ -10,9 +10,6 @@
  * Copied by Derek Smithies, 1)removed all the wxwidget stuff.
  *                           2)turned into a console application.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

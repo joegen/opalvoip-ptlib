@@ -21,9 +21,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
 
 PROG		= queue
 SOURCES		:= main.cxx precompile.cxx

@@ -21,9 +21,6 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision: 25564 $
- * $Author: csoutheren $
- * $Date: 2011-04-14 15:49:56 +1000 (Thu, 14 Apr 2011) $
  */
 
 #include <ptlib.h>

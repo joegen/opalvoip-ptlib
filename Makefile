@@ -23,9 +23,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
 #
 
 # autoconf.mak uses this for if we are run as "make -f ../Makefile"

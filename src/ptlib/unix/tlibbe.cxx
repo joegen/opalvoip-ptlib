@@ -26,9 +26,6 @@
  *
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 class PThread;

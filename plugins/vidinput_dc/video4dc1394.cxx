@@ -129,11 +129,6 @@
  * the License for the specific language governing rights and limitations
  * under the License.
  *
- *
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #pragma implementation "videoio1394dc.h"

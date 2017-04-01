@@ -21,9 +21,6 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision: 25359 $
- * $Author: rjongbloed $
- * $Date: 2011-03-18 15:47:47 +1100 (Fri, 18 Mar 2011) $
  */
 
 #ifndef _ScatterTest_MAIN_H

@@ -25,10 +25,6 @@
  * All Rights Reserved.
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 ///////////////////////////////////////////////////////////////////////////////

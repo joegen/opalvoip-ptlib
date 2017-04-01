@@ -127,13 +127,13 @@
     <LibraryPath>$(ProjectDir)..\..\..\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">
-    <ExecutablePath>..\..\..\lib;$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
+    <ExecutablePath>..\..\..\lib;..\..\..\tools;$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExecutablePath>..\..\..\lib;$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
+    <ExecutablePath>..\..\..\lib;..\..\..\tools;$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ExecutablePath>..\..\..\lib;$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
+    <ExecutablePath>..\..\..\lib;..\..\..\tools;$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -167,7 +167,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>libcmt;libcmtd</IgnoreSpecificDefaultLibraries>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalOptions>/ignore:4099 /ignore:4199 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -395,9 +395,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Merging symbols ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Merging symbols ...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibs.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">PATH=$(OutDir);../../../tools;%PATH%
+MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibs.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibs.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">PATH=$(OutDir);../../../tools;%PATH%
+MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibs.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">../../../include/ptlib/msos/ptlib.ignore;$(OutDir)ptlibs.lib;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">../../../include/ptlib/msos/ptlib.ignore;$(OutDir)ptlibs.lib;%(AdditionalInputs)</AdditionalInputs>
@@ -406,7 +408,7 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Merging symbols ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PATH=%PATH%;$(OutDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PATH=$(OutDir);../../../tools;%PATH%
 MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibs.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -431,7 +433,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibs.lib" "%(Fu
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Merging symbols ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PATH=%PATH%;$(OutDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PATH=$(OutDir);../../../tools;%PATH%
 MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibsd.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -462,7 +464,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibsd.lib" "%(F
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Merging symbols ...</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">
       </Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">PATH=%PATH%;$(OutDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">PATH=$(OutDir);../../../tools;%PATH%
 MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibsn.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">
@@ -491,7 +493,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlibsn.lib" "%(F
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PATH=%PATH%;$(OutDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PATH=$(OutDir);../../../tools;%PATH%
 MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64s.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Merging symbols ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName).def;%(Outputs)</Outputs>
@@ -511,7 +513,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64s.lib" "%(
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PATH=%PATH%;$(OutDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PATH=$(OutDir);../../../tools;%PATH%
 MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64sd.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Merging symbols ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName).def;%(Outputs)</Outputs>
@@ -531,7 +533,7 @@ MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64sd.lib" "%
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">PATH=%PATH%;$(OutDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">PATH=$(OutDir);../../../tools;%PATH%
 MergeSym -x ../../../include/ptlib/msos/ptlib.ignore "$(OutDir)ptlib64sn.lib" "%(FullPath)" "$(IntDir)$(TargetName).def"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Merging symbols ...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(IntDir)$(TargetName).def;%(Outputs)</Outputs>

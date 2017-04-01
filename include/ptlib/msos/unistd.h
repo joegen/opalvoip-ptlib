@@ -26,9 +26,6 @@
  *
  * Contributor(s):
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 

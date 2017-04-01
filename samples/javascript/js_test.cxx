@@ -21,9 +21,6 @@
  *
  * Contributor(s): Craig Southeren
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>
