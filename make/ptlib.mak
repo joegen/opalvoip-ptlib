@@ -26,10 +26,6 @@
 # 
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
-#
 
 # Same place as this make file
 PTLIB_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))

@@ -21,9 +21,6 @@
  *
  * The Initial Developer of the Original Code is Vox Lucida Pty. Ltd.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

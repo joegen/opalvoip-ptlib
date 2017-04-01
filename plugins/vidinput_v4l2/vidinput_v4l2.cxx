@@ -30,9 +30,6 @@
  * Contributor(s): Guilhem Tardy (gtardy@salyens.com)
  *  Nicola Orru' <nigu@itadinanta.it>
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #pragma implementation "vidinput_v4l2.h"

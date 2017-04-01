@@ -52,7 +52,7 @@
 #define MkStr2(s) #s
 #define MkStr(s) MkStr2(s)
 
-#define VERSION_STRING MkStr(MAJOR_VERSION) "." MkStr(MINOR_VERSION) MkStr(BUILD_TYPE) MkStr(BUILD_NUMBER) " ("  MkStr(SVN_REVISION) ")"
+#define VERSION_STRING MkStr(MAJOR_VERSION) "." MkStr(MINOR_VERSION) MkStr(BUILD_TYPE) MkStr(BUILD_NUMBER)
 
 
 #ifndef PRODUCT_NAME

@@ -23,10 +23,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
-#
 
 ifndef PTLIB_PRE_INCLUDED
 PTLIB_PRE_INCLUDED:=1

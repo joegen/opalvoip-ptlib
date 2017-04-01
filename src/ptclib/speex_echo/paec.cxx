@@ -23,10 +23,6 @@
  * rewritten amd made generic ptlib by Simon Horne
  *
  * Contributor(s): Miguel Rodriguez Perez.
- *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #include <ptlib.h>

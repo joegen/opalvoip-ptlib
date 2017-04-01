@@ -19,10 +19,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
-#
 # Initial release of a console application to test XMPP messages between running applications.
 # Thanks to Indranet Technologies ltd for sponsoring the work.
 # Thanks to Federico Pinna & Reitek S.p.A for the inital work of getting XMPP going.

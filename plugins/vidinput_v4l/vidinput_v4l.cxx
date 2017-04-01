@@ -24,9 +24,6 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #pragma implementation "vidinput_v4l.h"

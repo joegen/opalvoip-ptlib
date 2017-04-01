@@ -23,10 +23,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
-#
 
 ifndef TOP_LEVEL_MAKE
   TOP_LEVEL_MAKE := $(abspath $(TOP_LEVEL_DIR)/make/toplevel.mak)

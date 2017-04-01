@@ -7,8 +7,6 @@
  *
  * Copyright 2009 Derek J Smithies
  *
- * $Revision$
- * 
  *  You can read the comments to this program in the file main.h
  *
  *  In linux, you can get nice html docs by doing "make docs"

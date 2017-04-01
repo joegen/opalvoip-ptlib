@@ -5,9 +5,6 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef _XMLRPCApp_MAIN_H

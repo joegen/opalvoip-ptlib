@@ -26,9 +26,6 @@
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_VIDEO_H

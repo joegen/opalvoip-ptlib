@@ -24,9 +24,6 @@
  *
  * Contributor(s): Miguel Rodriguez Perez
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef PTLIB_PAEC_H

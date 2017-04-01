@@ -19,9 +19,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
 
 PROG	= factory
 SOURCES	:= main.cxx concrete.cxx solid.cxx

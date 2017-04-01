@@ -8,9 +8,6 @@
  * Copied by Derek Smithies, 1)removed all the wxwidget stuff.
  *                           2)turned into a console application.
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #ifndef _XMPPConsole_MAIN_H

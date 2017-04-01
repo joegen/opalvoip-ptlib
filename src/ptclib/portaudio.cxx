@@ -23,9 +23,6 @@
  *
  * Contributor(s): ______________________________________.
  *
- * $Revision: 28635 $
- * $Author: rjongbloed $
- * $Date: 2012-12-04 14:32:16 +1100 (Tue, 04 Dec 2012) $
  */
 
 #include <ptlib.h>

@@ -26,10 +26,6 @@
 # 
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
-#
 
 PTLIB_MAJOR :=@PTLIB_MAJOR@
 PTLIB_MINOR :=@PTLIB_MINOR@

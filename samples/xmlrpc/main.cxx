@@ -7,9 +7,6 @@
  *
  * Copyright 2002 Equivalence
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 /*

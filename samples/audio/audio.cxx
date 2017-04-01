@@ -12,9 +12,6 @@
 *
 * Updated by Robert Jongbloed (robertj@voxlucida.com.au)
 *
-* $Revision$
-* $Author$
-* $Date$
 */
 
 #include <ptlib.h>

@@ -19,9 +19,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
 
 PROG = xmlrpcsrvr
 SOURCES := main.cxx custom.cxx

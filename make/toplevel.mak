@@ -23,10 +23,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
-#
 
 PTLIB_TOP_LEVEL_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
 ifneq ($(CURDIR),$(PTLIB_TOP_LEVEL_DIR))

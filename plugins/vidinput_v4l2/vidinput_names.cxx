@@ -25,9 +25,6 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *                 Nicola Orru' <nigu@itadinanta.it>
  *
- * $Revision$
- * $Author$
- * $Date$
  */
 #include "vidinput_names.h"
 

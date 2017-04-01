@@ -23,11 +23,6 @@
  * under the License.
  *
  * Contributor(s): /
- *
- * $Version: 100 $
- * $Revision$
- * $Author$
- * $Date$
  */
 
 #pragma implementation "sound_shm.h"

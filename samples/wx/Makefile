@@ -21,10 +21,6 @@
 #
 # Contributor(s): ______________________________________.
 #
-# $Revision$
-# $Author$
-# $Date$
-#
 
 PROG		:= $(shell sed -n -e 's/^.*EXE_NAME_TEXT.*"\(.*\)"/\1/p' version.h)
 SOURCES		:= main.cxx resource.cxx

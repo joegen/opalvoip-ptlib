@@ -21,9 +21,6 @@
  *
  * The author of this code is Derek J Smithies
  * *
- * $Revision$
- * $Author$
- * $Date$
  */
 
 /*! \mainpage Thread safe test of PSafeXXX
