@@ -724,9 +724,15 @@ class PString : public PCharArray
     );
 
 
-    /**Concatenate two strings to produce a third. The original strings are
-       not modified, an entirely new unique reference to a string is created.
-       
+    /**Concatenate a PString to another PString to produce a third. The original
+       string is not modified, an entirely new unique reference to a string
+       is created
+
+       This function differes from operator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
+
        @return
        new string with concatenation of the object and parameter.
      */
@@ -816,7 +822,12 @@ class PString : public PCharArray
       const PString & str   ///< String to concatenate.
     );
 
-    /**Concatenate a string to another string, modifiying that string.
+    /**Concatenate a PString to a PString, modifiying that string.
+
+       This function differes from operator+ in that it assures there is at
+       least one space between the strings. Exactly one space is added if
+       there is not a space at the end of the first or beggining of the last
+       string.
 
        @return
        reference to string that was concatenated to.
