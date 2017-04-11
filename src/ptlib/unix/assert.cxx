@@ -210,7 +210,24 @@
           clock_gettime(CLOCK_REALTIME, &absTime);
           absTime.tv_sec += 2;
 
-          if (pthread_mutex_timedlock(&m_mainMutex, &absTime) != 0) {
+#if P_PTHREADS_XPG6
+          bool failed = pthread_mutex_timedlock(&m_mainMutex, &absTime) != 0;
+#else
+          bool failed;
+          for (;;) {
+            failed = pthread_mutex_trylock(&m_mainMutex) != 0;
+            if (!failed)
+              break;
+
+            struct timespec now;
+            clock_gettime(CLOCK_REALTIME, &now);
+            if (now.tv_sec > absTime.tv_sec && now.tv_nsec > absTime.tv_nsec)
+              break;
+
+            usleep(10000);
+          }
+#endif
+          if (failed) {
             strm << "\n\tStack trace system is too busy to WalkOther";
             DEBUG_CERR("WalkOther: mutex timeout");
             return;

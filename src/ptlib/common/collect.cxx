@@ -479,7 +479,8 @@ PObject & PAbstractList::GetReferenceAt(PINDEX index) const
     return *element->data;
 
   PAssertAlways(PInvalidArrayIndex);
-  return *(PObject *)NULL;
+  static struct PAbstractListDummy : PObject { } dummy;
+  return dummy;
 }
 
 PBoolean PAbstractList::SetAt(PINDEX index, PObject * val)
