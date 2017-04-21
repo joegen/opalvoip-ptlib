@@ -396,8 +396,11 @@ PTHREAD_MUTEX_RECURSIVE_NP
       if (PProcess::IsInitialised()) {
         PProcess & process = PProcess::Current();
         log << process.GetName()
-            << " version " << process.GetVersion(true)
-            << " by " << process.GetManufacturer()
+            << " version " << process.GetVersion(true);
+#if _DEBUG
+        log << " [debug]";
+#endif
+        log << " by " << process.GetManufacturer()
             << " on ";
       }
 
