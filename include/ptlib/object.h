@@ -165,9 +165,16 @@ typedef bool   PBoolean;
 // Handy macros
 
 /// Count the number of arguments passed in macro
-#define PARG_COUNT(...) PARG_COUNT_PART1(PARG_COUNT_PART2(__VA_ARGS__,40,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0))
-#define PARG_COUNT_PART1(arg) arg
-#define PARG_COUNT_PART2(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,_33,_34,_35,_36,_37,_38,_39,_40,N,...) N
+#if _MSC_VER
+  #define PARG_COUNT(...) PARG_COUNT_PART2(PARG_COUNT_PART1(__VA_ARGS__))
+  #define PARG_COUNT_PART1(...) unused, __VA_ARGS__
+  #define PARG_COUNT_PART2(...) PARG_COUNT_PART3(PARG_COUNT_PART4(__VA_ARGS__,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0))
+  #define PARG_COUNT_PART3(x) x
+  #define PARG_COUNT_PART4(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,_33,_34,_35,_36,_37,_38,_39,_40,N,...) N
+#else
+  #define PARG_COUNT(...) PARG_COUNT_INTERNAL(0,##__VA_ARGS__,40,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
+  #define PARG_COUNT_INTERNAL(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,_33,_34,_35,_36,_37,_38,_39,_40,N,...) N
+#endif
 
 /// Turn the argument into a string
 #define P_STRINGISE(v) P_STRINGISE_PART2(v)
@@ -938,8 +945,8 @@ See PTRACE() for more information on level, instance, module and stream.
 /**Execute trace precisely once, and no more.
 
 Note, this will execute once only if the current log level is sufficient.
-Thus, if log level is increased it will stillexecute even if the statement
-was passed peviously.
+Thus, if log level is increased it will still execute even if the statement
+was passed previously.
 
 See PTRACE() for more information on level, instance, module and stream.
 */
@@ -1393,7 +1400,7 @@ namespace PProfiling
 
           ~Measure()
           {
-            m_scope.EndMeasurement(m_context, m_object, PDebugLocation(), m_startCycle);
+            m_scope.EndMeasurement(m_context, m_object, PDebugLocation::None, m_startCycle);
           }
       };
   };
