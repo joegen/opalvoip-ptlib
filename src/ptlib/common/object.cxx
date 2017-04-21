@@ -50,6 +50,32 @@
 #endif
 
 
+PDebugLocation const PDebugLocation::None;
+
+void PDebugLocation::PrintOn(ostream & strm, const char * prefix) const
+{
+  if (m_file == NULL && m_extra == NULL)
+    return;
+
+  if (prefix != NULL)
+    strm << prefix;
+
+  if (m_file != NULL) {
+    strm << m_file;
+    if (m_line > 0)
+      strm << '(' << m_line << ')';
+  }
+
+  if (m_extra != NULL) {
+    if (m_file != NULL)
+      strm << ' ';
+    strm << m_extra;
+  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PFactoryBase::FactoryMap & PFactoryBase::GetFactories()
 {
   static FactoryMap factories;
@@ -118,7 +144,7 @@ extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThre
 
 bool PAssertWalksStack = true;
 
-static void InternalAssertFunc(const char * file, int line, const char * className, const char * msg)
+static void InternalAssertFunc(const PDebugLocation & location, const char * msg)
 {
 #if defined(_WIN32)
   DWORD errorCode = GetLastError();
@@ -151,9 +177,9 @@ static void InternalAssertFunc(const char * file, int line, const char * classNa
     strm << "Assertion fail: ";
     if (msg != NULL)
       strm << msg << ", ";
-    strm << "file " << file << ", line " << line;
-    if (className != NULL)
-      strm << ", class " << className;
+    strm << "file " << location.m_file << ", line " << location.m_line;
+    if (location.m_extra != NULL)
+      strm << ", class " << location.m_extra;
     if (errorCode != 0)
       strm << ", error=" << errorCode;
     strm << ", when=" << PTime().AsString(PTime::LoggingFormat);
@@ -173,17 +199,14 @@ static void InternalAssertFunc(const char * file, int line, const char * classNa
 }
 
 
-bool PAssertFunc(const char * file,
-                 int line,
-                 const char * className,
-                 PStandardAssertMessage msg)
+bool PAssertFunc(const PDebugLocation & location, PStandardAssertMessage msg)
 {
   if (msg == POutOfMemory) {
     // Special case, do not use ostrstream in other PAssertFunc if have
     // a memory out situation as that would probably also fail!
     static const char fmt[] = "Out of memory at file %.100s, line %u, class %.30s";
     char msgbuf[sizeof(fmt)+100+10+30];
-    sprintf(msgbuf, fmt, file, line, className);
+    sprintf(msgbuf, fmt, location.m_file, location.m_line, location.m_extra);
     PPlatformAssertFunc(msgbuf, 'A');
     return false;
   }
@@ -205,20 +228,20 @@ bool PAssertFunc(const char * file,
   };
 
   if (msg < PMaxStandardAssertMessage)
-    InternalAssertFunc(file, line, className, textmsg[msg]);
+    InternalAssertFunc(location, textmsg[msg]);
   else {
     char msgbuf[20];
     sprintf(msgbuf, "Assertion %i", msg);
-    InternalAssertFunc(file, line, className, msgbuf);
+    InternalAssertFunc(location, msgbuf);
   }
   return false;
 }
 
 
-bool PAssertFunc(const char * file, int line, const char * className, const char * msg)
+bool PAssertFunc(const PDebugLocation & location, const char * msg)
 {
   // Done this way so WalkStack removes the correct number of irrelevant frames
-  InternalAssertFunc(file, line, className, msg);
+  InternalAssertFunc(location, msg);
   return false;
 }
 
@@ -1484,7 +1507,7 @@ namespace PProfiling
   struct FunctionRawData
   {
     PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, void * function, void * caller));
-    PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, const char * name, const char * file, unsigned line));
+    PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, const PDebugLocation & location));
 
     PPROFILE_EXCLUDE(void Dump(ostream & out) const);
 
@@ -1570,15 +1593,15 @@ namespace PProfiling
   }
 
 
-  FunctionRawData::FunctionRawData(FunctionType type, const char * name, const char * file, unsigned line)
+  FunctionRawData::FunctionRawData(FunctionType type, const PDebugLocation & location)
     : m_type(type)
     , m_threadIdentifier(PThread::GetCurrentThreadId())
     , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
     , m_when(GetCycles())
   {
-    m_function.m_name = name;
-    m_function.m_file = file;
-    m_function.m_line = line;
+    m_function.m_name = location.m_extra;
+    m_function.m_file = location.m_file;
+    m_function.m_line = location.m_line;
 
     m_link = s_database.m_functions.exchange(this);
   }
@@ -1664,18 +1687,18 @@ namespace PProfiling
 
   /////////////////////////////////////////////////////////////////////
 
-  Block::Block(const char * name, const char * file, unsigned line)
-    : m_name(name)
+  Block::Block(const PDebugLocation & location)
+    : m_location(location)
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_ManualEntry, name, file, line);
+      new FunctionRawData(e_ManualEntry, location);
   }
 
 
   Block::~Block()
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_ManualExit, m_name, NULL, 0);
+      new FunctionRawData(e_ManualExit, m_location);
   }
 
 
@@ -1748,14 +1771,14 @@ namespace PProfiling
   void PreSystem()
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_SystemEntry, NULL, NULL, 0);
+      new FunctionRawData(e_SystemEntry, PDebugLocation::None);
   }
 
 
   void PostSystem()
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_SystemExit, NULL, NULL, 0);
+      new FunctionRawData(e_SystemExit, PDebugLocation::None);
   }
 
 
@@ -2110,15 +2133,13 @@ namespace PProfiling
 
   struct TimeScope::Implementation
   {
-    const char  * const m_name;
-    const char  * const m_file;
-    unsigned      const m_line;
-    PTimeInterval const m_thresholdTime;
-    PTimeInterval const m_throttleTime;
-    unsigned      const m_throttledLogLevel;
-    unsigned      const m_unthrottledLogLevel;
-    unsigned      const m_thresholdPercent;
-    unsigned      const m_maxHistory;
+    PDebugLocation m_location;
+    PTimeInterval  m_thresholdTime;
+    PTimeInterval  m_throttleTime;
+    unsigned       m_throttledLogLevel;
+    unsigned       m_unthrottledLogLevel;
+    unsigned       m_thresholdPercent;
+    unsigned       m_maxHistory;
 
     PMinMaxAvg<PTimeInterval> m_mma;
     unsigned                  m_countTimesOverThreshold;
@@ -2127,29 +2148,26 @@ namespace PProfiling
 
     struct History
     {
-        explicit History(const PTimeInterval & duration)
-            : m_when(), m_duration(duration) { }
+        explicit History(const PTimeInterval & duration, const PDebugLocation & location)
+            : m_when(), m_duration(duration), m_location(location) { }
 
-        PTime         m_when;
-        PTimeInterval m_duration;
+        PTime          const m_when;
+        PTimeInterval  const m_duration;
+        PDebugLocation const m_location;
     };
 
     std::list<History> m_history;
 
     PCriticalSection m_mutex;
 
-    Implementation(const char * name,
-                   const char * file,
-                   unsigned line,
+    Implementation(const PDebugLocation & location,
                    unsigned thresholdTime,
                    unsigned throttleTime,
                    unsigned throttledLogLevel,
                    unsigned unthrottledLogLevel,
                    unsigned thresholdPercent,
                    unsigned maxHistory)
-      : m_name(name)
-      , m_file(file)
-      , m_line(line)
+      : m_location(location)
       , m_thresholdTime(thresholdTime)
       , m_throttleTime(throttleTime)
       , m_throttledLogLevel(throttledLogLevel)
@@ -2162,7 +2180,7 @@ namespace PProfiling
     {
     }
 
-    void EndMeasurement(const void *, const PObject * object, const PTimeInterval & duration)
+    void EndMeasurement(const void * ptr, const PObject * object, const PDebugLocation & location, const PTimeInterval & duration)
     {
       PWaitAndSignal lock(m_mutex);
 
@@ -2183,15 +2201,18 @@ namespace PProfiling
       unsigned level = isTime && percentOver >= m_thresholdPercent ? m_throttledLogLevel : m_unthrottledLogLevel;
 
       if (PTrace::CanTrace(level)) {
-        ostream & trace = PTrace::Begin(level, m_file, m_line, object, "TimeScope");
-        trace << m_name << ":"
+        ostream & trace = PTrace::Begin(level, m_location.m_file, m_location.m_line, object, "TimeScope");
+        trace << m_location.m_extra << '(' << ptr << "):"
                   " since=" << m_lastOutputTime.AsString(PTime::TodayFormat, PTrace::GetTimeZone()) << ","
               << setprecision(3) << scientific << showbase << m_mma << noshowbase
               << " thresh=" << m_thresholdTime.AsString(3, PTimeInterval::SecondsSI) << "s;" << m_thresholdPercent << "%,"
                    " slow=" << m_countTimesOverThreshold << '/' << m_mma.GetCount() << ' ' << percentOver << '%';
-        for (list<History>::iterator it = m_history.begin(); it != m_history.end(); ++it)
+        location.PrintOn(trace, " where=");
+        for (list<History>::iterator it = m_history.begin(); it != m_history.end(); ++it) {
           trace << "\n    when=" << it->m_when.AsString(PTime::TodayFormat, PTrace::GetTimeZone()) << ","
-                    " duration=" << it->m_duration.AsString(3, PTimeInterval::SecondsSI) << 's';
+                   " duration=" << it->m_duration.AsString(3, PTimeInterval::SecondsSI) << 's';
+          it->m_location.PrintOn(trace, "where=");
+        }
         trace << PTrace::End;
       }
 
@@ -2203,16 +2224,14 @@ namespace PProfiling
       }
 
       if (m_maxHistory > 0) {
-          m_history.push_back(History(duration));
+          m_history.push_back(History(duration, location));
           if (m_history.size() > m_maxHistory)
               m_history.pop_front();
       }
     }
   };
 
-  TimeScope::TimeScope(const char * name,
-                       const char * file,
-                       unsigned line,
+  TimeScope::TimeScope(const PDebugLocation & location,
                        unsigned thresholdTime,
                        unsigned throttleTime,
                        unsigned throttledLogLevel,
@@ -2221,9 +2240,7 @@ namespace PProfiling
                        unsigned maxHistory)
     // Note that there is a race here on he static definition of the TimeScope isntance,
     // that would leak precisely one Implementation object, big deal.
-    : m_implementation(new Implementation(name,
-                                          file,
-                                          line,
+    : m_implementation(new Implementation(location,
                                           thresholdTime,
                                           throttleTime,
                                           throttledLogLevel,
@@ -2235,9 +2252,7 @@ namespace PProfiling
 
 
   TimeScope::TimeScope(const TimeScope & other)
-    : m_implementation(new Implementation(other.m_implementation->m_name,
-                                          other.m_implementation->m_file,
-                                          other.m_implementation->m_line,
+    : m_implementation(new Implementation(other.m_implementation->m_location,
                                           other.m_implementation->m_thresholdTime.GetSeconds(),
                                           other.m_implementation->m_throttleTime.GetSeconds(),
                                           other.m_implementation->m_throttledLogLevel,
@@ -2253,10 +2268,40 @@ namespace PProfiling
     delete m_implementation;
   }
 
-  
-  void TimeScope::EndMeasurement(const void * context, const PObject * object, uint64_t startCycle)
+  void TimeScope::SetThrottleTime(unsigned throttleTime)
   {
-    m_implementation->EndMeasurement(context, object, PTimeInterval::NanoSeconds(CyclesToNanoseconds(GetCycles() - startCycle)));
+    PWaitAndSignal lock(m_implementation->m_mutex);
+    m_implementation->m_throttleTime = throttleTime;
+  }
+
+  void TimeScope::SetThrottledLogLevel(unsigned throttledLogLevel)
+  {
+    PWaitAndSignal lock(m_implementation->m_mutex);
+    m_implementation->m_throttledLogLevel = throttledLogLevel;
+  }
+
+  void TimeScope::SetUnthrottledLogLevel(unsigned unthrottledLogLevel)
+  {
+      PWaitAndSignal lock(m_implementation->m_mutex);
+      m_implementation->m_unthrottledLogLevel = unthrottledLogLevel;
+  }
+
+  void TimeScope::SetThresholdPercent(unsigned thresholdPercent)
+  {
+      PWaitAndSignal lock(m_implementation->m_mutex);
+      m_implementation->m_thresholdPercent = thresholdPercent;
+  }
+
+  void TimeScope::SetMaxHistory(unsigned maxHistory)
+  {
+      PWaitAndSignal lock(m_implementation->m_mutex);
+      m_implementation->m_maxHistory = maxHistory;
+  }
+
+  void TimeScope::EndMeasurement(const void * context, const PObject * object, const PDebugLocation & location, uint64_t startCycle)
+  {
+    m_implementation->EndMeasurement(context, object, location,
+                                     PTimeInterval::NanoSeconds(CyclesToNanoseconds(GetCycles() - startCycle)));
   }
 
   const PTimeInterval & TimeScope::GetLastDuration() const

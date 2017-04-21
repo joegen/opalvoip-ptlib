@@ -41,23 +41,21 @@
 class PMutexExcessiveLockInfo
 {
   protected:
-    const char * m_fileOrName;
-    unsigned     m_fileLine;
-    unsigned     m_excessiveLockTimeout;
-    mutable bool m_excessiveLockActive;
-    uint64_t     m_startHeldSamplePoint;
+    PDebugLocation m_location;
+    unsigned       m_excessiveLockTimeout;
+    mutable bool   m_excessiveLockActive;
+    uint64_t       m_startHeldSamplePoint;
 
     PMutexExcessiveLockInfo(
-      const char * name,
-      unsigned line,
+      const PDebugLocation & location,
       unsigned timeout
     );
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     virtual ~PMutexExcessiveLockInfo() { }
     void PrintOn(ostream &strm) const;
     void ExcessiveLockPhantom(const PObject & mutex) const;
-    virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly);
-    virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly);
+    virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);
+    virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly, const PDebugLocation & location);
 };
 
 
@@ -93,8 +91,7 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
        The name/line parameters are used for deadlock detection debugging.
      */
     explicit PTimedMutex(
-      const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
-      unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
+      const PDebugLocation & location = PDebugLocation::None, ///< Source file/line of mutex definition
       unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
     );
 
@@ -147,9 +144,11 @@ class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
     PUniqueThreadIdentifier m_lastUniqueId;
     unsigned                m_lockCount;
 
-    void ExcessiveLockWait();
-    void CommonWaitComplete(uint64_t startWaitCycle);
-    bool CommonSignal();
+    bool PlatformWait(const PTimeInterval & timeout);
+    void PlatformSignal(const PDebugLocation & location);
+    void CommonWait(const PDebugLocation & location);
+    void CommonWaitComplete(uint64_t startWaitCycle, const PDebugLocation & location);
+    bool CommonSignal(const PDebugLocation & location);
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -163,11 +162,11 @@ typedef PTimedMutex PMutex;
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
 
-#define PDECLARE_MUTEX_ARG_1(var)              struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_MUTEX_ARG_2(var,nam)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam             ) { } } var
-#define PDECLARE_MUTEX_ARG_3(var,nam,t)        struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,0,to        ) { } } var
-#define PDECLARE_MUTEX_ARG_4(var,nam,t,w)      struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,0,to,tw     ) { } } var
-#define PDECLARE_MUTEX_ARG_5(var,nam,to,tw,th) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,0,to,tw,th  ) { } } var
+#define PDECLARE_MUTEX_ARG_1(var)              struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(P_DEBUG_LOCATION) { } } var
+#define PDECLARE_MUTEX_ARG_2(var,nam)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam            ) { } } var
+#define PDECLARE_MUTEX_ARG_3(var,nam,t)        struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to         ) { } } var
+#define PDECLARE_MUTEX_ARG_4(var,nam,t,w)      struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to,tw      ) { } } var
+#define PDECLARE_MUTEX_ARG_5(var,nam,to,tw,th) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to,tw,th   ) { } } var
 
 #define PDECLARE_MUTEX_PART1(narg, args) PDECLARE_MUTEX_PART2(narg, args)
 #define PDECLARE_MUTEX_PART2(narg, args) PDECLARE_MUTEX_ARG_##narg args
@@ -179,7 +178,7 @@ typedef PTimedMutex PMutex;
   {
     public:
       PInstrumentedMutex(
-        const char * name,
+        const char * baseName,
         const char * file,
         unsigned line,
         const char * waitName,
@@ -191,14 +190,29 @@ typedef PTimedMutex PMutex;
         unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
         unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
         unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
-      ) : PTimedMutex(name, 0, std::max((int)1000, (int)waitTime*2))
-        , m_timeWaitContext(waitName, file, line, waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
-        , m_timeHeldContext(heldName, file, line, heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+      ) : PTimedMutex      (PDebugLocation(file, line, baseName), std::max((int)1000, (int)waitTime*2))
+        , m_timeWaitContext(PDebugLocation(file, line, waitName), waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeHeldContext(PDebugLocation(file, line, heldName), heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
       { }
 
+      void SetWaitThrottleTime(unsigned throttleTime) { m_timeWaitContext.SetThrottleTime(throttleTime); }
+      void SetWaitThrottledLogLevel(unsigned throttledLogLevel) { m_timeWaitContext.SetThrottledLogLevel(throttledLogLevel); }
+      void SetWaitUnthrottledLogLevel(unsigned unthrottledLogLevel) { m_timeWaitContext.SetUnthrottledLogLevel(unthrottledLogLevel); }
+      void SetWaitThresholdPercent(unsigned thresholdPercent) { m_timeWaitContext.SetThresholdPercent(thresholdPercent); }
+      void SetWaitMaxHistory(unsigned maxHistory) { m_timeWaitContext.SetMaxHistory(maxHistory); }
+
+      void SetHeldThrottleTime(unsigned throttleTime) { m_timeHeldContext.SetThrottleTime(throttleTime); }
+      void SetHeldThrottledLogLevel(unsigned throttledLogLevel) { m_timeHeldContext.SetThrottledLogLevel(throttledLogLevel); }
+      void SetHeldUnthrottledLogLevel(unsigned unthrottledLogLevel) { m_timeHeldContext.SetUnthrottledLogLevel(unthrottledLogLevel); }
+      void SetHeldThresholdPercent(unsigned thresholdPercent) { m_timeHeldContext.SetThresholdPercent(thresholdPercent); }
+      void SetHeldMaxHistory(unsigned maxHistory) { m_timeHeldContext.SetMaxHistory(maxHistory); }
+
+      virtual bool InstrumentedWait(const PTimeInterval & timeout, const PDebugLocation & location);
+      virtual void InstrumentedSignal(const PDebugLocation & location) { PlatformSignal(location); }
+
     protected:
-      virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly);
-      virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly);
+      virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);
+      virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly, const PDebugLocation & location);
 
       PProfiling::TimeScope m_timeWaitContext;
       PProfiling::TimeScope m_timeHeldContext;
@@ -206,8 +220,9 @@ typedef PTimedMutex PMutex;
 
   #define PDECLARE_INSTRUMENTED_MUTEX(var, name, ...) \
     struct PInstrumentedMutex_##name : PInstrumentedMutex { \
-      PInstrumentedMutex_##name() : PInstrumentedMutex(#name, __FILE__,__LINE__, "Wait " #name, "Held " #name, __VA_ARGS__) { } \
+      PInstrumentedMutex_##name() : PInstrumentedMutex(#name, __FILE__, __LINE__, "Wait " #name, "Held " #name, __VA_ARGS__) { } \
     } var
+
 #else
   #define PDECLARE_INSTRUMENTED_MUTEX(var, name, waitTime, heldTime, ...) \
                        PDECLARE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))

@@ -62,9 +62,15 @@ class PSync : public PObject
       const PTimeInterval & timeout // Amount of time to wait.
     ) = 0;
 
+    /// As for Wait() but with location of call for instrumentation. Mostly used internally.
+    virtual bool InstrumentedWait(const PTimeInterval & timeout, const PDebugLocation & /*location*/) { return Wait(timeout); }
+
      /**Signal that the synchronisation object is available.
      */
     virtual void Signal() = 0;
+
+    /// As for Signal() but with location of call for instrumentation. Mostly used internally.
+    virtual void InstrumentedSignal(const PDebugLocation & /*location*/) { Signal(); }
   //@}
 
   private:
@@ -106,29 +112,89 @@ class PSyncNULL : public PSync
     }
 </code></pre>
  */
-
-class PWaitAndSignal {
+class PWaitAndSignal
+{
   public:
     /**Create the semaphore wait instance.
        This will wait on the specified semaphore using the Wait() function
        before returning.
       */
-    inline PWaitAndSignal(
-      const PSync & sem,   ///< Semaphore descendent to wait/signal.
-      PBoolean wait = true    ///< Wait for semaphore before returning.
-    ) : sync((PSync &)sem)
-    { if (wait) sync.Wait(); }
+    __inline explicit PWaitAndSignal(
+      const PSync & sem   ///< Semaphore descendent to wait/signal.
+    ) : sync(const_cast<PSync &>(sem))
+    {
+      sync.Wait();
+    }
+
+    __inline PWaitAndSignal(
+      const PSync & sem,  ///< Semaphore descendent to wait/signal.
+      bool wait           ///< Wait for semaphore before returning.
+    ) : sync(const_cast<PSync &>(sem))
+    {
+      if (wait)
+        sync.Wait();
+    }
 
     /** Signal the semaphore.
         This will execute the Signal() function on the semaphore that was used
         in the construction of this instance.
      */
-    ~PWaitAndSignal()
-    { sync.Signal(); }
+    __inline ~PWaitAndSignal()
+    {
+      sync.Signal();
+    }
 
   protected:
     PSync & sync;
 };
+
+#if PTRACING
+class PInstrumentedWaitAndSignal
+{
+  public:
+    /**Create the semaphore wait instance.
+       This will wait on the specified semaphore using the Wait() function
+       before returning.
+      */
+    __inline explicit PInstrumentedWaitAndSignal(
+      const PDebugLocation & location, ///< Source file/line for instance
+      const PSync & sem   ///< Semaphore descendent to wait/signal.
+    ) : m_location(location)
+      , sync(const_cast<PSync &>(sem))
+    {
+      sync.InstrumentedWait(PMaxTimeInterval, m_location);
+    }
+
+    __inline PInstrumentedWaitAndSignal(
+      const PDebugLocation & location, ///< Source file/line for instance
+      const PSync & sem,  ///< Semaphore descendent to wait/signal.
+      bool wait           ///< Wait for semaphore before returning.
+    ) : m_location(location)
+      , sync(const_cast<PSync &>(sem))
+    {
+      if (wait)
+        sync.InstrumentedWait(PMaxTimeInterval, m_location);
+    }
+
+    /** Signal the semaphore.
+        This will execute the Signal() function on the semaphore that was used
+        in the construction of this instance.
+     */
+    __inline ~PInstrumentedWaitAndSignal()
+    {
+      sync.InstrumentedSignal(m_location);
+    }
+
+  protected:
+    PDebugLocation const m_location;
+    PSync & sync;
+};
+
+#define P_INSTRUMENTED_WAIT_AND_SIGNAL2(var, mutex) PInstrumentedWaitAndSignal var(P_DEBUG_LOCATION, mutex)
+#else // P_TRACING
+#define P_INSTRUMENTED_WAIT_AND_SIGNAL2(var, mutex) PWaitAndSignal var(mutex)
+#endif // P_TRACING
+#define P_INSTRUMENTED_WAIT_AND_SIGNAL(mutex) P_INSTRUMENTED_WAIT_AND_SIGNAL2(lock,mutex)
 
 
 #endif // PTLIB_SYNC_H

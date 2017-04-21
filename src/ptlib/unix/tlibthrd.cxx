@@ -100,7 +100,7 @@ static PBoolean PAssertThreadOp(int retval,
   }
 
 #if P_USE_ASSERTS
-  PAssertFunc(file, line, NULL, psprintf("Function %s failed, errno=%i", funcname, retval));
+  PAssertFunc(PDebugLocation(file, line), psprintf("Function %s failed, errno=%i", funcname, retval));
 #endif
   return false;
 }
@@ -1252,10 +1252,8 @@ void PSemaphore::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PTimedMutex::PTimedMutex(const char * name,
-                         unsigned line,
-                         unsigned timeout)
-  : PMutexExcessiveLockInfo(name, line, timeout)
+PTimedMutex::PTimedMutex(const PDebugLocation & location, unsigned timeout)
+  : PMutexExcessiveLockInfo(location, timeout)
 {
   Construct();
 }
@@ -1327,75 +1325,8 @@ PTimedMutex::~PTimedMutex()
 }
 
 
-void PTimedMutex::Wait() 
+PBoolean PTimedMutex::PlatformWait(const PTimeInterval & waitTime) 
 {
-  uint64_t startWaitCycle = PProfiling::GetCycles();
-
-#if P_HAS_RECURSIVE_MUTEX
-
-#if P_PTHREADS_XPG6
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  struct timespec absTime;
-  absTime.tv_sec = now.tv_sec + m_excessiveLockTimeout/1000;
-  absTime.tv_nsec = now.tv_usec*1000 + (m_excessiveLockTimeout%1000)*1000000;
-  if (absTime.tv_nsec >= 1000000000) {
-    absTime.tv_nsec -= 1000000000;
-    ++absTime.tv_sec;
-  }
-  PPROFILE_PRE_SYSTEM();
-  /* Note, from man page "This function shall not return an error code of [EINTR]"
-     so we do not need a loop to retry. */
-  int err = pthread_mutex_timedlock(&m_mutex, &absTime);
-  if (err != ETIMEDOUT)
-    PAssertOS(err == 0);
-  else {
-    ExcessiveLockWait();
-    PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
-    ExcessiveLockPhantom(*this);
-  }
-  PPROFILE_POST_SYSTEM();
-#else
-  PPROFILE_SYSTEM(
-    PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
-  );
-#endif
-
-#else //P_HAS_RECURSIVE_MUTEX
-
-  // if the mutex is already acquired by this thread,
-  // then just increment the lock count
-  if (pthread_equal(m_lockerId, pthread_self())) {
-    // Note this does not need a lock as it can only be touched by the thread
-    // which already has the mutex locked.
-    ++m_lockCount;
-    return;
-  }
-
-  // acquire the lock for real
-  PPROFILE_SYSTEM(
-    PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
-  );
-
-  PAssert(m_lockerId == PNullThreadIdentifier && m_lockCount == 0,
-          "PMutex acquired whilst locked by another thread");
-
-#endif // P_HAS_RECURSIVE_MUTEX
-
-  CommonWaitComplete(startWaitCycle);
-}
-
-
-PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime) 
-{
-  // if waiting indefinitely, then do so
-  if (waitTime == PMaxTimeInterval) {
-    Wait();
-    return true;
-  }
-
-  uint64_t startWaitCycle = PProfiling::GetCycles();
-
 #if !P_HAS_RECURSIVE_MUTEX
   // if we already have the mutex, return immediately
   if (pthread_equal(m_lockerId, pthread_self())) {
@@ -1405,6 +1336,14 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
     return true;
   }
 #endif
+
+  // if waiting indefinitely, then do so
+  if (waitTime == PMaxTimeInterval) {
+    PPROFILE_SYSTEM(
+      PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+    );
+    return true;
+  }
 
   // create absolute finish time
   PTime finishTime;
@@ -1440,16 +1379,15 @@ PBoolean PTimedMutex::Wait(const PTimeInterval & waitTime)
           "PMutex acquired whilst locked by another thread");
 #endif
 
-  CommonWaitComplete(startWaitCycle);
   return true;
 }
 
 
-void PTimedMutex::Signal()
+void PTimedMutex::PlatformSignal(const PDebugLocation & location)
 {
 #if P_HAS_RECURSIVE_MUTEX
 
-  CommonSignal();
+  CommonSignal(location);
 
 #else
 
@@ -1461,7 +1399,7 @@ void PTimedMutex::Signal()
   // if lock was recursively acquired, then decrement the counter
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
-  if (CommonSignal())
+  if (CommonSignal(location))
     return;
 
 #endif

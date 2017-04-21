@@ -1742,8 +1742,8 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
-PTimedMutex::PTimedMutex(const char * name, unsigned line, unsigned timeout)
-  : PMutexExcessiveLockInfo(name, line, timeout)
+PTimedMutex::PTimedMutex(const PDebugLocation & location, unsigned timeout)
+  : PMutexExcessiveLockInfo(location, timeout)
   , m_lockerId(PNullThreadIdentifier)
   , m_lastLockerId(PNullThreadIdentifier)
   , m_lastUniqueId(0)
@@ -1764,35 +1764,15 @@ PTimedMutex::PTimedMutex(const PTimedMutex & other)
 }
 
 
-void PTimedMutex::Wait()
+PBoolean PTimedMutex::PlatformWait(const PTimeInterval & timeout)
 {
-  uint64_t startWaitCycle = PProfiling::GetCycles();
-
-  if (!m_handle.Wait(m_excessiveLockTimeout)) {
-    ExcessiveLockWait();
-    m_handle.Wait(INFINITE);
-    ExcessiveLockPhantom(*this);
-  }
-
-  CommonWaitComplete(startWaitCycle);
+  return m_handle.Wait(timeout.GetInterval());
 }
 
 
-PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
+void PTimedMutex::PlatformSignal(const PDebugLocation & fileLine)
 {
-  uint64_t startWaitCycle = PProfiling::GetCycles();
-
-  if (!m_handle.Wait(timeout.GetInterval()))
-    return false;
-
-  CommonWaitComplete(startWaitCycle);
-  return true;
-}
-
-
-void PTimedMutex::Signal()
-{
-  CommonSignal();
+  CommonSignal(fileLine);
   PAssertOS(::ReleaseMutex(m_handle));
 }
 

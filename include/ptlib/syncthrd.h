@@ -260,9 +260,8 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
   /**@name Construction */
   //@{
     explicit PReadWriteMutex(
-      const char * name = NULL,  ///< Arbitrary name, or filename of mutex variable declaration
-      unsigned line = 0,         ///< Line number, if non zero, name is assumed to be a filename
-      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+      const PDebugLocation & location = PDebugLocation::None, ///< Source file/line of mutex definition
+      unsigned timeout = 0          ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
     );
     ~PReadWriteMutex();
   //@}
@@ -273,11 +272,11 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
         This call may be nested and must have an equal number of EndRead()
         calls for the mutex to be released.
      */
-    void StartRead();
+    void StartRead(const PDebugLocation & location = PDebugLocation::None);
 
     /** This function attempts to release the mutex for reading.
      */
-    void EndRead();
+    void EndRead(const PDebugLocation & location = PDebugLocation::None);
 
     /** This function attempts to acquire the mutex for writing.
         This call may be nested and must have an equal number of EndWrite()
@@ -294,7 +293,7 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
         lock to write lock without the possiblility of the object being
         changed and application logic should take this into account.
      */
-    void StartWrite();
+    void StartWrite(const PDebugLocation & location = PDebugLocation::None);
 
     /** This function attempts to release the mutex for writing.
         Note, if the same thread had a read lock when the StartWrite() was
@@ -307,7 +306,7 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
         read lock without the possiblility of the object being changed and
         application logic should take this into account.
      */
-    void EndWrite();
+    void EndWrite(const PDebugLocation & location = PDebugLocation::None);
   //@}
 
     virtual void PrintOn(ostream &strm) const;
@@ -353,72 +352,55 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
     Nest * GetNest();
     Nest & StartNest();
     void EndNest();
-    void InternalStartRead(Nest & nest);
-    void InternalEndRead(Nest & nest);
-    void InternalStartWrite(Nest & nest);
-    void InternalEndWrite(Nest & nest);
-    void InternalWait(Nest & nest, PSync & sync) const;
+    void InternalStartRead(Nest & nest, const PDebugLocation & location);
+    void InternalEndRead(Nest & nest, const PDebugLocation & location);
+    void InternalStartWrite(Nest & nest, const PDebugLocation & location);
+    void InternalEndWrite(Nest & nest, const PDebugLocation & location);
+    void InternalWait(Nest & nest, PSync & sync, const PDebugLocation & location) const;
 
   friend class PSafeObject;
 };
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
-#define PDECLARE_READ_WRITE_MUTEX_ARG_1(var)              struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(__FILE__,__LINE__) { } } var
-#define PDECLARE_READ_WRITE_MUTEX_ARG_2(var,nam)          struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam             ) { } } var
-#define PDECLARE_READ_WRITE_MUTEX_ARG_3(var,nam,to)       struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,0,to        ) { } } var
-#define PDECLARE_READ_WRITE_MUTEX_ARG_4(var,nam,to,tw)    struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,0,to,tw     ) { } } var
-#define PDECLARE_READ_WRITE_MUTEX_ARG_5(var,nam,to,tw,th) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,0,to,tw,th  ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_1(var)              struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(P_DEBUG_LOCATION) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_2(var,nam)          struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,           ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_3(var,nam,to)       struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,to         ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_4(var,nam,to,tw)    struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,to,tw      ) { } } var
+#define PDECLARE_READ_WRITE_MUTEX_ARG_5(var,nam,to,tw,th) struct PReadWriteMutex_##var : PReadWriteMutex { PReadWriteMutex_##var() : PReadWriteMutex(#nam,to,tw,th   ) { } } var
 
 #define PDECLARE_READ_WRITE_MUTEX_PART1(narg, args) PDECLARE_READ_WRITE_MUTEX_PART2(narg, args)
 #define PDECLARE_READ_WRITE_MUTEX_PART2(narg, args) PDECLARE_READ_WRITE_MUTEX_ARG_##narg args
 
 #define PDECLARE_READ_WRITE_MUTEX(...) PDECLARE_READ_WRITE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
-#if PTRACING
-  class PInstrumentedReadWriteMutex : public PReadWriteMutex
-  {
-    public:
-      PInstrumentedReadWriteMutex(
-        const char * name,
-        const char * file,
-        unsigned line,
-        const char * waitReadOnlyName,
-        const char * heldReadOnlyName,
-        const char * waitReadWriteName,
-        const char * heldReadWriteName,
-        unsigned waitTime,
-        unsigned heldTime,
-        unsigned throttleTime = 10000,    ///< Time between PTRACE outpout in milliseconds
-        unsigned throttledLogLevel = 2,   ///< PTRACE level to use if enough samples are above thresholdTime
-        unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
-        unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
-        unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
-      ) : PReadWriteMutex(name, 0, std::max((int)1000, (int)waitTime*2))
-        , m_timeWaitReadOnlyContext(waitReadOnlyName, file, line, waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
-        , m_timeHeldReadOnlyContext(heldReadOnlyName, file, line, heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
-        , m_timeWaitReadWriteContext(waitReadWriteName, file, line, waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
-        , m_timeHeldReadWriteContext(heldReadWriteName, file, line, heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
-      { }
+class PReadWriteWaitAndSignalBase
+{
+  protected:
+    typedef void (PReadWriteMutex:: * StartFn)(const PDebugLocation & location);
+    typedef void (PReadWriteMutex:: * EndFn)(const PDebugLocation & location);
 
-    protected:
-      virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly);
-      virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly);
+    PReadWriteWaitAndSignalBase(const PReadWriteMutex & mutex, const PDebugLocation & location, StartFn start, EndFn end)
+      : m_mutex(const_cast<PReadWriteMutex &>(mutex))
+      , m_location(location)
+      , m_end(end)
+    {
+      if (start)
+        (m_mutex.*start)(m_location);
+    }
 
-      PProfiling::TimeScope m_timeWaitReadOnlyContext;
-      PProfiling::TimeScope m_timeHeldReadOnlyContext;
-      PProfiling::TimeScope m_timeWaitReadWriteContext;
-      PProfiling::TimeScope m_timeHeldReadWriteContext;
-  };
+  public:
+    ~PReadWriteWaitAndSignalBase()
+    {
+      (m_mutex.*m_end)(m_location);
+    }
 
-  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, ...) \
-    struct PInstrumentedReadWriteMutex_##name : PInstrumentedReadWriteMutex { \
-      PInstrumentedReadWriteMutex_##name() : PInstrumentedReadWriteMutex(#name, __FILE__,__LINE__, \
-               "Wait R/O " #name, "Held R/O " #name, "Wait R/W " #name, "Held R/W " #name, __VA_ARGS__) { } \
-    } var
-#else
-  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
-                       PDECLARE_READ_WRITE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))
-#endif
+  protected:
+    PReadWriteMutex & m_mutex;
+    PDebugLocation    m_location;
+    EndFn             m_end;
+};
+
+
 
 /**This class starts a read operation for the PReadWriteMutex on construction
    and automatically ends the read operation on destruction.
@@ -437,24 +419,17 @@ class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
     }
 </code></pre>
  */
-class PReadWaitAndSignal {
+class PReadWaitAndSignal : public PReadWriteWaitAndSignalBase
+{
   public:
     /**Create the PReadWaitAndSignal wait instance.
        This will wait on the specified PReadWriteMutex using the StartRead()
        function before returning.
       */
     PReadWaitAndSignal(
-      const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
-      PBoolean start = true    ///< Start read operation on PReadWriteMutex before returning.
-    );
-    /** End read operation on the PReadWriteMutex.
-        This will execute the EndRead() function on the PReadWriteMutex that
-        was used in the construction of this instance.
-     */
-    ~PReadWaitAndSignal();
-
-  protected:
-    PReadWriteMutex & mutex;
+      const PReadWriteMutex & mutex,  ///< PReadWriteMutex descendent to wait/signal.
+      bool start = true               ///< Start read operation on PReadWriteMutex before returning.
+    ) : PReadWriteWaitAndSignalBase(mutex, PDebugLocation::None, start ? &PReadWriteMutex::StartRead : NULL, &PReadWriteMutex::EndRead) { }
 };
 
 
@@ -475,25 +450,109 @@ class PReadWaitAndSignal {
     }
 </code></pre>
  */
-class PWriteWaitAndSignal {
+class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
+{
   public:
     /**Create the PWriteWaitAndSignal wait instance.
        This will wait on the specified PReadWriteMutex using the StartWrite()
        function before returning.
       */
     PWriteWaitAndSignal(
-      const PReadWriteMutex & rw,   ///< PReadWriteMutex descendent to wait/signal.
-      PBoolean start = true    ///< Start write operation on PReadWriteMutex before returning.
-    );
-    /** End write operation on the PReadWriteMutex.
-        This will execute the EndWrite() function on the PReadWriteMutex that
-        was used in the construction of this instance.
-     */
-    ~PWriteWaitAndSignal();
-
-  protected:
-    PReadWriteMutex & mutex;
+      const PReadWriteMutex & mutex,  ///< PReadWriteMutex descendent to wait/signal.
+      PBoolean start = true           ///< Start write operation on PReadWriteMutex before returning.
+    ) : PReadWriteWaitAndSignalBase(mutex, PDebugLocation::None, start ? &PReadWriteMutex::StartWrite : NULL, &PReadWriteMutex::EndWrite) { }
 };
+
+
+#if PTRACING
+  class PInstrumentedReadWriteMutex : public PReadWriteMutex
+  {
+    public:
+      PInstrumentedReadWriteMutex(
+        const char * baseName,
+        const char * file,
+        unsigned line,
+        const char * waitReadOnlyName,
+        const char * heldReadOnlyName,
+        const char * waitReadWriteName,
+        const char * heldReadWriteName,
+        unsigned waitTime,
+        unsigned heldTime,
+        unsigned throttleTime = 10000,    ///< Time between PTRACE outpout in milliseconds
+        unsigned throttledLogLevel = 2,   ///< PTRACE level to use if enough samples are above thresholdTime
+        unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
+        unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
+        unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
+      ) : PReadWriteMutex           (PDebugLocation(file, line, baseName         ), std::max((int)1000, (int)waitTime*2))
+        , m_timeWaitReadOnlyContext (PDebugLocation(file, line, waitReadOnlyName ), waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeHeldReadOnlyContext (PDebugLocation(file, line, heldReadOnlyName ), heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeWaitReadWriteContext(PDebugLocation(file, line, waitReadWriteName), waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+        , m_timeHeldReadWriteContext(PDebugLocation(file, line, heldReadWriteName), heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
+      { }
+
+      void SetWaitReadOnlyThrottleTime(unsigned throttleTime) { m_timeWaitReadOnlyContext.SetThrottleTime(throttleTime); }
+      void SetWaitReadOnlyThrottledLogLevel(unsigned throttledLogLevel) { m_timeWaitReadOnlyContext.SetThrottledLogLevel(throttledLogLevel); }
+      void SetWaitReadOnlyUnthrottledLogLevel(unsigned unthrottledLogLevel) { m_timeWaitReadOnlyContext.SetUnthrottledLogLevel(unthrottledLogLevel); }
+      void SetWaitReadOnlyThresholdPercent(unsigned thresholdPercent) { m_timeWaitReadOnlyContext.SetThresholdPercent(thresholdPercent); }
+      void SetWaitReadOnlyMaxHistory(unsigned maxHistory) { m_timeWaitReadOnlyContext.SetMaxHistory(maxHistory); }
+
+      void SetHeldReadOnlyThrottleTime(unsigned throttleTime) { m_timeHeldReadOnlyContext.SetThrottleTime(throttleTime); }
+      void SetHeldReadOnlyThrottledLogLevel(unsigned throttledLogLevel) { m_timeHeldReadOnlyContext.SetThrottledLogLevel(throttledLogLevel); }
+      void SetHeldReadOnlyUnthrottledLogLevel(unsigned unthrottledLogLevel) { m_timeHeldReadOnlyContext.SetUnthrottledLogLevel(unthrottledLogLevel); }
+      void SetHeldReadOnlyThresholdPercent(unsigned thresholdPercent) { m_timeHeldReadOnlyContext.SetThresholdPercent(thresholdPercent); }
+      void SetHeldReadOnlyMaxHistory(unsigned maxHistory) { m_timeHeldReadOnlyContext.SetMaxHistory(maxHistory); }
+
+      void SetWaitReadWriteThrottleTime(unsigned throttleTime) { m_timeWaitReadWriteContext.SetThrottleTime(throttleTime); }
+      void SetWaitReadWriteThrottledLogLevel(unsigned throttledLogLevel) { m_timeWaitReadWriteContext.SetThrottledLogLevel(throttledLogLevel); }
+      void SetWaitReadWriteUnthrottledLogLevel(unsigned unthrottledLogLevel) { m_timeWaitReadWriteContext.SetUnthrottledLogLevel(unthrottledLogLevel); }
+      void SetWaitReadWriteThresholdPercent(unsigned thresholdPercent) { m_timeWaitReadWriteContext.SetThresholdPercent(thresholdPercent); }
+      void SetWaitReadWriteMaxHistory(unsigned maxHistory) { m_timeWaitReadWriteContext.SetMaxHistory(maxHistory); }
+
+      void SetHeldReadWriteThrottleTime(unsigned throttleTime) { m_timeHeldReadWriteContext.SetThrottleTime(throttleTime); }
+      void SetHeldReadWriteThrottledLogLevel(unsigned throttledLogLevel) { m_timeHeldReadWriteContext.SetThrottledLogLevel(throttledLogLevel); }
+      void SetHeldReadWriteUnthrottledLogLevel(unsigned unthrottledLogLevel) { m_timeHeldReadWriteContext.SetUnthrottledLogLevel(unthrottledLogLevel); }
+      void SetHeldReadWriteThresholdPercent(unsigned thresholdPercent) { m_timeHeldReadWriteContext.SetThresholdPercent(thresholdPercent); }
+      void SetHeldReadWriteMaxHistory(unsigned maxHistory) { m_timeHeldReadWriteContext.SetMaxHistory(maxHistory); }
+
+    protected:
+      virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);
+      virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly, const PDebugLocation & location);
+
+      PProfiling::TimeScope m_timeWaitReadOnlyContext;
+      PProfiling::TimeScope m_timeHeldReadOnlyContext;
+      PProfiling::TimeScope m_timeWaitReadWriteContext;
+      PProfiling::TimeScope m_timeHeldReadWriteContext;
+  };
+
+  class PInstrumentedReadWaitAndSignal : public PReadWriteWaitAndSignalBase
+  {
+    public:
+      PInstrumentedReadWaitAndSignal(
+        const PReadWriteMutex & mutex,
+        const PDebugLocation & location,
+        bool start = true
+      ) : PReadWriteWaitAndSignalBase(mutex, location, start ? &PReadWriteMutex::StartRead : NULL, &PReadWriteMutex::EndRead) { }
+  };
+
+  class PInstrumentedWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
+  {
+    public:
+      PInstrumentedWriteWaitAndSignal(
+        const PReadWriteMutex & mutex,
+        const PDebugLocation & location,
+        PBoolean start = true
+      ) : PReadWriteWaitAndSignalBase(mutex, location, start ? &PReadWriteMutex::StartWrite : NULL, &PReadWriteMutex::EndWrite) { }
+  };
+
+  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, ...) \
+    struct PInstrumentedReadWriteMutex_##name : PInstrumentedReadWriteMutex { \
+      PInstrumentedReadWriteMutex_##name() : PInstrumentedReadWriteMutex(#name, __FILE__, __LINE__, \
+               "Wait R/O " #name, "Held R/O " #name, "Wait R/W " #name, "Held R/W " #name, __VA_ARGS__) { } \
+    } var
+#else
+  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
+                       PDECLARE_READ_WRITE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))
+#endif
 
 
 /** A synchronous queue of objects.

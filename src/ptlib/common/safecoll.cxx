@@ -110,7 +110,7 @@ PBoolean PSafeObject::SafeDereference()
 }
 
 
-PBoolean PSafeObject::LockReadOnly() const
+PBoolean PSafeObject::LockReadOnly(const PDebugLocation & location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting read ("<<(void *)this<<")");
   m_safetyMutex.Wait();
@@ -121,25 +121,25 @@ PBoolean PSafeObject::LockReadOnly() const
     return false;
   }
 
-  if (m_safeInUse->m_fileOrName == NULL)
-      m_safeInUse->m_fileOrName = typeid(*this).name();
+  if (m_safeInUse->m_location.m_extra == NULL)
+      m_safeInUse->m_location.m_extra = typeid(*this).name();
 
   m_safetyMutex.Signal();
 
-  m_safeInUse->StartRead();
+  m_safeInUse->StartRead(location);
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked read ("<<(void *)this<<")");
   return true;
 }
 
 
-void PSafeObject::UnlockReadOnly() const
+void PSafeObject::UnlockReadOnly(const PDebugLocation & location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked read ("<<(void *)this<<")");
-  m_safeInUse->EndRead();
+  m_safeInUse->EndRead(location);
 }
 
 
-PBoolean PSafeObject::LockReadWrite()
+PBoolean PSafeObject::LockReadWrite(const PDebugLocation & location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting readWrite ("<<(void *)this<<")");
   m_safetyMutex.Wait();
@@ -150,21 +150,21 @@ PBoolean PSafeObject::LockReadWrite()
     return false;
   }
 
-  if (m_safeInUse->m_fileOrName == NULL)
-      m_safeInUse->m_fileOrName = typeid(*this).name();
+  if (m_safeInUse->m_location.m_extra == NULL)
+      m_safeInUse->m_location.m_extra = typeid(*this).name();
 
   m_safetyMutex.Signal();
 
-  m_safeInUse->StartWrite();
+  m_safeInUse->StartWrite(location);
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked readWrite ("<<(void *)this<<")");
   return true;
 }
 
 
-void PSafeObject::UnlockReadWrite()
+void PSafeObject::UnlockReadWrite(const PDebugLocation & location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked readWrite ("<<(void *)this<<")");
-  m_safeInUse->EndWrite();
+  m_safeInUse->EndWrite(location);
 }
 
 
@@ -191,64 +191,32 @@ bool PSafeObject::GarbageCollection()
 
 /////////////////////////////////////////////////////////////////////////////
 
-PSafeLockReadOnly::PSafeLockReadOnly(const PSafeObject & object)
+PSafeLockBase::PSafeLockBase(const PSafeObject & object, const PDebugLocation & location, LockFn lock, UnlockFn unlock)
   : m_safeObject(const_cast<PSafeObject &>(object))
-  , m_locked(object.LockReadOnly())
+  , m_location(location)
+  , m_lock(lock)
+  , m_unlock(unlock)
+  , m_locked((m_safeObject.*lock)(m_location))
 {
 }
 
-
-PSafeLockReadOnly::~PSafeLockReadOnly()
+PSafeLockBase::~PSafeLockBase()
 {
   if (m_locked)
-    m_safeObject.UnlockReadOnly();
+    (m_safeObject.*m_unlock)(m_location);
 }
 
-
-PBoolean PSafeLockReadOnly::Lock()
+bool PSafeLockBase::Lock()
 {
-  m_locked = m_safeObject.LockReadOnly();
+  if (!m_locked)
+    m_locked = (m_safeObject.*m_lock)(m_location);
   return m_locked;
 }
 
-
-void PSafeLockReadOnly::Unlock()
+void PSafeLockBase::Unlock()
 {
   if (m_locked) {
-    m_safeObject.UnlockReadOnly();
-    m_locked = false;
-  }
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-
-PSafeLockReadWrite::PSafeLockReadWrite(const PSafeObject & object)
-  : m_safeObject(const_cast<PSafeObject &>(object))
-  , m_locked(m_safeObject.LockReadWrite())
-{
-}
-
-
-PSafeLockReadWrite::~PSafeLockReadWrite()
-{
-  if (m_locked)
-    m_safeObject.UnlockReadWrite();
-}
-
-
-PBoolean PSafeLockReadWrite::Lock()
-{
-  m_locked = m_safeObject.LockReadWrite();
-  return m_locked;
-}
-
-
-void PSafeLockReadWrite::Unlock()
-{
-  if (m_locked) {
-    m_safeObject.UnlockReadWrite();
+    (m_safeObject.*m_unlock)(m_location);
     m_locked = false;
   }
 }

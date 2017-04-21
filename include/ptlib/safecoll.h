@@ -187,7 +187,7 @@ class PSafeObject : public PObject
        recommended that the PSafePtr<> class is used to automatically manage
        the reference counting and locking of objects.
       */
-    PBoolean LockReadOnly() const;
+    PBoolean LockReadOnly(const PDebugLocation & location = PDebugLocation::None) const;
 
     /**Release the read only lock on an object.
        Unlock the read only mutex that a thread had obtained. Multiple threads
@@ -199,7 +199,7 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to automatically
        manage the reference counting and unlocking of objects.
       */
-    void UnlockReadOnly() const;
+    void UnlockReadOnly(const PDebugLocation & location = PDebugLocation::None) const;
 
     /**Lock the object for Read/Write access.
        This will lock the object in read/write mode. Multiple threads may lock
@@ -218,7 +218,7 @@ class PSafeObject : public PObject
        recommended that the PSafePtr<> class is used to automatically manage
        the reference counting and locking of objects.
       */
-    PBoolean LockReadWrite();
+    PBoolean LockReadWrite(const PDebugLocation & location = PDebugLocation::None) const;
 
     /**Release the read/write lock on an object.
        Unlock the read/write mutex that a thread had obtained. Multiple threads
@@ -230,7 +230,7 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to automatically
        manage the reference counting and unlocking of objects.
       */
-    void UnlockReadWrite();
+    void UnlockReadWrite(const PDebugLocation & location = PDebugLocation::None) const;
 
     /**Set the removed flag.
        This flags the object as beeing removed but does not physically delete
@@ -290,42 +290,84 @@ class PSafeObject : public PObject
 };
 
 
-/**Lock a PSafeObject for read only and automatically unlock it when go out of scope.
-  */
-class PSafeLockReadOnly
+class PSafeLockBase
 {
+  protected:
+    typedef bool (PSafeObject:: * LockFn)(const PDebugLocation & location) const;
+    typedef void (PSafeObject:: * UnlockFn)(const PDebugLocation & location) const;
+
+    PSafeLockBase(const PSafeObject & object, const PDebugLocation & location, LockFn lock, UnlockFn unlock);
+
   public:
-    PSafeLockReadOnly(const PSafeObject & object);
-    ~PSafeLockReadOnly();
+    ~PSafeLockBase();
+
     bool Lock();
     void Unlock();
-    PBoolean IsLocked() const { return m_locked; }
+
+    bool IsLocked() const { return m_locked; }
     bool operator!() const { return !m_locked; }
 
   protected:
-    PSafeObject & m_safeObject;
-    bool          m_locked;
+    PSafeObject  & m_safeObject;
+    PDebugLocation m_location;
+    LockFn         m_lock;
+    UnlockFn       m_unlock;
+    bool           m_locked;
 };
 
+
+/**Lock a PSafeObject for read only and automatically unlock it when go out of scope.
+  */
+class PSafeLockReadOnly : public PSafeLockBase
+{
+  public:
+    PSafeLockReadOnly(const PSafeObject & object)
+      : PSafeLockBase(object, PDebugLocation::None, &PSafeObject::LockReadOnly, &PSafeObject::UnlockReadOnly)
+    { }
+};
 
 
 /**Lock a PSafeObject for read/write and automatically unlock it when go out of scope.
   */
-class PSafeLockReadWrite
+class PSafeLockReadWrite : public PSafeLockBase
 {
   public:
-    PSafeLockReadWrite(const PSafeObject & object);
-    ~PSafeLockReadWrite();
-    bool Lock();
-    void Unlock();
-    PBoolean IsLocked() const { return m_locked; }
-    bool operator!() const { return !m_locked; }
-
-  protected:
-    PSafeObject & m_safeObject;
-    bool          m_locked;
+    PSafeLockReadWrite(const PSafeObject & object)
+      : PSafeLockBase(object, PDebugLocation::None, &PSafeObject::LockReadWrite, &PSafeObject::UnlockReadWrite)
+    { }
 };
 
+
+#if PTRACING
+  class PInstrumentedSafeLockReadOnly : public PSafeLockBase
+  {
+    public:
+      PInstrumentedSafeLockReadOnly(const PSafeObject & object, const PDebugLocation & location)
+        : PSafeLockBase(object, location, &PSafeObject::LockReadOnly, &PSafeObject::UnlockReadOnly)
+      { }
+  };
+
+  class PInstrumentedSafeLockReadWrite : public PSafeLockBase
+  {
+    public:
+      PInstrumentedSafeLockReadWrite(const PSafeObject & object, const PDebugLocation & location)
+        : PSafeLockBase(object, location, &PSafeObject::LockReadWrite, &PSafeObject::UnlockReadWrite)
+      { }
+  };
+
+  #define P_INSTRUMENTED_LOCK_READ_ONLY2(var, obj)  PInstrumentedSafeLockReadOnly  var((obj), P_DEBUG_LOCATION)
+  #define P_INSTRUMENTED_LOCK_READ_WRITE2(var, obj) PInstrumentedSafeLockReadWrite var((obj), P_DEBUG_LOCATION)
+#else // P_TRACING
+  #define P_INSTRUMENTED_LOCK_READ_ONLY2(var, obj)  PSafeLockReadOnly  var((obj))
+  #define P_INSTRUMENTED_LOCK_READ_WRITE2(var, obj) PSafeLockReadWrite var((obj))
+#endif // P_TRACING
+#define P_READ_WRITE_RETURN_ARG_0()
+#define P_READ_WRITE_RETURN_ARG_1(arg) ; if (!lock.IsLocked()) arg
+#define P_READ_WRITE_RETURN_PART1(narg, args) P_READ_WRITE_RETURN_PART2(narg, args)
+#define P_READ_WRITE_RETURN_PART2(narg, args) P_READ_WRITE_RETURN_ARG_##narg args
+
+#define P_INSTRUMENTED_LOCK_READ_ONLY(...)  P_INSTRUMENTED_LOCK_READ_ONLY2(lock,*this) P_READ_WRITE_RETURN_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
+#define P_INSTRUMENTED_LOCK_READ_WRITE(...) P_INSTRUMENTED_LOCK_READ_WRITE2(lock,*this) P_READ_WRITE_RETURN_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 
 /** This class defines a thread-safe collection of objects.
