@@ -556,6 +556,12 @@ public:
     unsigned options = Timestamp | Thread | Blocks
   ) { Initialise(level, filename, options, rolloverPattern); }
 
+  /** Set the trace output file.
+  */
+  static void SetFilename(
+    const char * filename ///< New output file for tracing
+  );
+
   /** Set the trace options.
       The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
       may contain assorted values. These are defined by the #Options enum.
