@@ -676,6 +676,11 @@ void PTraceInfo::InternalInitialise(unsigned level, const char * filename, const
 }
 
 
+void PTrace::SetFilename(const char * filename)
+{
+  PTraceInfo::Instance().OpenTraceFile(filename, GetLevel() > 0);
+}
+
 void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
