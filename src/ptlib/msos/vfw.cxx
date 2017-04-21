@@ -1364,10 +1364,14 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
   m_showInfo = m_deviceName.Find("SHOWINFO") != P_MAX_INDEX;
 
   if (m_hParent != NULL) {
-    // This is a sneaky way to get a callback in the context of the parent windows thread
-    SetTimer(m_hParent, (UINT_PTR)this, USER_TIMER_MINIMUM, TimerProc);
-    m_started.Wait();
-    KillTimer(m_hParent, (UINT_PTR)this);
+    if (GetWindowThreadProcessId(m_hParent, NULL) == GetCurrentThreadId())
+      CreateDisplayWindow();
+    else {
+      // This is a sneaky way to get a callback in the context of the parent windows thread
+      SetTimer(m_hParent, (UINT_PTR)this, USER_TIMER_MINIMUM, TimerProc);
+      m_started.Wait();
+      KillTimer(m_hParent, (UINT_PTR)this);
+    }
     m_openCloseMutex.Signal();
   }
   else {
