@@ -913,6 +913,20 @@ See PTRACE() for more information on level, instance, module and stream.
 */
 #define PTRACE_IF(...) PTRACE_IF_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
+/**Execute trace precisely once, and no more.
+
+Note, this will execute once only if the current log level is sufficient.
+Thus, if log level is increased it will stillexecute even if the statement
+was passed peviously.
+
+See PTRACE() for more information on level, instance, module and stream.
+*/
+#define PTRACE_ONCE(level, ...) \
+    { \
+      static PAtomicBoolean firstTrace(true); \
+      PTRACE_IF((level), firstTrace.TestAndSet(false), __VA_ARGS__); \
+    }
+
 /** Begin output trace.
 This macro returns a ostream & for trace output.
 
