@@ -3098,7 +3098,7 @@ void PMutexExcessiveLockInfo::AcquiredLock(uint64_t, bool, const PDebugLocation 
 void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex,
                                            uint64_t PTRACE_PARAM(startHeldSamplePoint),
                                            bool,
-                                           const PDebugLocation & location)
+                                           const PDebugLocation & PTRACE_PARAM(location))
 {
   if (m_excessiveLockActive) {
 #if PTRACING

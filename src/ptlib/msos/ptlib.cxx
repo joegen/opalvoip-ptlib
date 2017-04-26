@@ -1069,7 +1069,7 @@ void PProcess::Construct()
   PreviousSigTermHandler = signal(SIGTERM, SignalHandler);
 #ifdef _WIN32
   SetUnhandledExceptionFilter(MyExceptionHandler);
-  HRESULT result = WerAddExcludedApplication(m_executableFile.AsUCS2(), false);
+  PTRACE_PARAM(HRESULT result =) WerAddExcludedApplication(m_executableFile.AsUCS2(), false);
   PTRACE_IF(1, result != 0, "PTLib", "Error excluding application from WER crash dialogs: err=" << result);
 #endif
 #endif
