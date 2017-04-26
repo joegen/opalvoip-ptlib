@@ -957,10 +957,10 @@ was passed previously.
 See PTRACE() for more information on level, instance, module and stream.
 */
 #define PTRACE_ONCE(level, ...) \
-    { \
-      static PAtomicBoolean firstTrace(true); \
-      PTRACE_IF((level), firstTrace.TestAndSet(false), __VA_ARGS__); \
-    }
+    { \
+      static PAtomicBoolean firstTrace(true); \
+      PTRACE_IF((level), firstTrace.TestAndSet(false), __VA_ARGS__); \
+    }
 
 /** Begin output trace.
 This macro returns a ostream & for trace output.
