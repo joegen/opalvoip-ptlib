@@ -619,15 +619,18 @@ bool PEthSocket::Frame::GetUDP(PBYTEArray & payload, PIPSocketAddressAndPort & s
 }
 
 
-BYTE * PEthSocket::Frame::CreateUDP(const PIPSocketAddressAndPort & src, const PIPSocketAddressAndPort & dst, PINDEX length)
+BYTE * PEthSocket::Frame::CreateUDP(const PIPSocketAddressAndPort & src, const PIPSocketAddressAndPort & dst, PINDEX length, const void * data)
 {
-  length += 8;
-  BYTE * udp = CreateIP(src.GetAddress(), dst.GetAddress(), 0x11, length);
+  PINDEX udpLength = length + 8;
+  BYTE * udp = CreateIP(src.GetAddress(), dst.GetAddress(), 0x11, udpLength);
   *(PUInt16b*)(udp+0) = src.GetPort();
   *(PUInt16b*)(udp+2) = dst.GetPort();
-  *(PUInt16b*)(udp+4) = (uint16_t)length;
+  *(PUInt16b*)(udp+4) = (uint16_t)udpLength;
   *(uint16_t*)(udp+6) = 0;
-  return udp+8;
+  BYTE * payload = udp+8;
+  if (data != NULL)
+    memcpy(payload, data, length);
+  return payload;
 }
 
 
@@ -666,16 +669,17 @@ bool PEthSocket::Frame::GetTCP(PBYTEArray & payload, PIPSocketAddressAndPort & s
 }
 
 
-BYTE * PEthSocket::Frame::CreateTCP(const PIPSocketAddressAndPort & src, const PIPSocketAddressAndPort & dst, PINDEX length)
+BYTE * PEthSocket::Frame::CreateTCP(const PIPSocketAddressAndPort & src, const PIPSocketAddressAndPort & dst, PINDEX length, const void * data)
 {
-  length += 20;
-
-  BYTE * tcp = CreateIP(src.GetAddress(), dst.GetAddress(), 6, length);
+  BYTE * tcp = CreateIP(src.GetAddress(), dst.GetAddress(), 6, length+20);
   memset(tcp, 0, 20);
   tcp[12] = 0x50;
   *(PUInt16b*)(tcp+0) = src.GetPort();
   *(PUInt16b*)(tcp+2) = dst.GetPort();
-  return tcp+20;
+  BYTE * payload = tcp+20;
+  if (data != NULL)
+    memcpy(payload, data, length);
+  return payload;
 }
 
 

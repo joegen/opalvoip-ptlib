@@ -301,7 +301,8 @@ class PEthSocket : public PSocket
         BYTE * CreateUDP(
           const PIPSocketAddressAndPort & src,
           const PIPSocketAddressAndPort & dst,
-          PINDEX length
+          PINDEX length,
+          const void * data = NULL
         );
 
         /** Extract the TCP payload.
@@ -320,7 +321,8 @@ class PEthSocket : public PSocket
         BYTE * CreateTCP(
           const PIPSocketAddressAndPort & src,
           const PIPSocketAddressAndPort & dst,
-          PINDEX length
+          PINDEX length,
+          const void * data = NULL
         );
 
         const PTime & GetTimestamp() const { return m_timestamp; }
