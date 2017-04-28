@@ -62,6 +62,7 @@ class PJSON : public PObject
     class Object : public Base, public std::map<PString, Base *>
     {
       public:
+        Object() { }
         ~Object();
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
@@ -86,11 +87,16 @@ class PJSON : public PObject
         bool SetString(const PString & name, const PString & value);
         bool SetNumber(const PString & name, double value);
         bool SetBoolean(const PString & name, bool value);
+
+      private:
+        Object(const Object &) { }
+        void operator=(const Object &) { }
     };
 
     class Array : public Base, public std::vector<Base *>
     {
       public:
+        Array() { }
         ~Array();
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
@@ -114,6 +120,10 @@ class PJSON : public PObject
         void AppendString(const PString & value);
         void AppendNumber(double value);
         void AppendBoolean(bool value);
+
+      private:
+        Array(const Array &) { }
+        void operator=(const Array &) { }
     };
 
     class String : public Base, public PString
@@ -190,6 +200,10 @@ class PJSON : public PObject
   protected:
     Base * m_root;
     bool   m_valid;
+
+  private:
+    PJSON(const PJSON &) { }
+    void operator=(const PJSON &) { }
 };
 
 
