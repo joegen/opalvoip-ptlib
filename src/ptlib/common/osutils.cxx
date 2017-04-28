@@ -3076,7 +3076,7 @@ PMutexExcessiveLockInfo::PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo &
 
 void PMutexExcessiveLockInfo::PrintOn(ostream &strm) const
 {
-  strm << m_location << ',' << m_excessiveLockTimeout << "ms)";
+  strm << " (" << m_location << ',' << m_excessiveLockTimeout << "ms)";
 }
 
 
