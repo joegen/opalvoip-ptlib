@@ -56,6 +56,9 @@ class PMutexExcessiveLockInfo
     void ExcessiveLockPhantom(const PObject & mutex) const;
     virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);
     virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly, const PDebugLocation & location);
+
+  public:
+    void SetLocationName(const char * name) { m_location.m_extra = name; }
 };
 
 
@@ -80,7 +83,7 @@ class PMutexExcessiveLockInfo
     <code>Signal()</code> function, releasing the second thread.
  */
 
-class PTimedMutex : public PSync, protected PMutexExcessiveLockInfo
+class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
 {
     PCLASSINFO(PTimedMutex, PSync)
   public:
@@ -218,9 +221,12 @@ typedef PTimedMutex PMutex;
       PProfiling::TimeScope m_timeHeldContext;
   };
 
-  #define PDECLARE_INSTRUMENTED_MUTEX(var, name, ...) \
-    struct PInstrumentedMutex_##name : PInstrumentedMutex { \
-      PInstrumentedMutex_##name() : PInstrumentedMutex(#name, __FILE__, __LINE__, "Wait " #name, "Held " #name, __VA_ARGS__) { } \
+  #define PDECLARE_INSTRUMENTED_MUTEX(var, name, ...)           \
+    struct PInstrumentedMutex_##name : PInstrumentedMutex {     \
+      PInstrumentedMutex_##name(const char * mutexName = #name) \
+            : PInstrumentedMutex(mutexName, __FILE__, __LINE__, \
+                                 "Wait " #name, "Held " #name,  \
+                                 __VA_ARGS__) { }               \
     } var
 
 #else

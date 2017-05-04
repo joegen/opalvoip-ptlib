@@ -253,7 +253,7 @@ class PIntCondMutex : public PCondMutex
    http://arxiv.org/ftp/arxiv/papers/1309/1309.4507.pdf to improve efficiency.
  */
 
-class PReadWriteMutex : public PObject, protected PMutexExcessiveLockInfo
+class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
 {
   PCLASSINFO(PReadWriteMutex, PObject);
   public:
@@ -544,10 +544,13 @@ class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
       ) : PReadWriteWaitAndSignalBase(mutex, location, start ? &PReadWriteMutex::StartWrite : NULL, &PReadWriteMutex::EndWrite) { }
   };
 
-  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, ...) \
-    struct PInstrumentedReadWriteMutex_##name : PInstrumentedReadWriteMutex { \
-      PInstrumentedReadWriteMutex_##name() : PInstrumentedReadWriteMutex(#name, __FILE__, __LINE__, \
-               "Wait R/O " #name, "Held R/O " #name, "Wait R/W " #name, "Held R/W " #name, __VA_ARGS__) { } \
+  #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, ...)                \
+    struct PInstrumentedReadWriteMutex_##name : PInstrumentedReadWriteMutex {   \
+      PInstrumentedReadWriteMutex_##name(const char * mutexName = #name)        \
+            : PInstrumentedReadWriteMutex(mutexName, __FILE__, __LINE__,        \
+                                          "Wait R/O " #name, "Held R/O " #name, \
+                                          "Wait R/W " #name, "Held R/W " #name, \
+                                          __VA_ARGS__) { }                      \
     } var
 #else
   #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
