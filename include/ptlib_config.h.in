@@ -404,7 +404,6 @@
 #endif
 
 #if P_SSL
-  #undef P_SSL_AES
   #undef P_SSL_SRTP
   #undef P_SSL_USE_CONST
 #endif
@@ -414,6 +413,9 @@
   #if P_64BIT
 
     #define P_SSL_USE_CONST 1
+
+    #undef P_SSL_AES64
+	#define P_SSL_AES P_SSL_AES64
 
     #define P_SSL_INCLUDE(inc) include_alias(<inc>, <@SSL_WIN64_DIR@/include/inc>)
 
@@ -428,6 +430,9 @@
   #elif P_SSL_WIN32==2
 
     #define P_SSL_USE_CONST 1
+
+    #undef P_SSL_AES32
+	#define P_SSL_AES P_SSL_AES32
 
     #define P_SSL_INCLUDE(inc) include_alias(<inc>, <@SSL_WIN32_DIR@/include/inc>)
 
