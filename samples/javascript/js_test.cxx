@@ -27,7 +27,13 @@
 #include <ptlib/pprocess.h>
 #include <ptclib/jscript.h>
 
-// Sample command line:  -ttttodebugstream "myString='after';"
+/*
+Sample command line:  -ttttodebugstream "myString='after';"
+
+Note that three files, icudtl.dat, natives_blob.bin & snapshot_blob.bin, must be
+copied to the executable directory of any application that uses the V8 system.
+They are usually in the output directory of the build, e.g. out.gn\x64.release
+*/
 
 #if P_V8
 

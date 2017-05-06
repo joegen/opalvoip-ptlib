@@ -33,20 +33,47 @@
 
 #if P_V8
 
+#include <ptlib/pprocess.h>
+
 /*
-  Requires V8 version with SVN tag http://v8.googlecode.com/svn/tags/3.26.11
+Requires Google's V8 version 6 or later
 
-  Need to build V8 DLL's for compatibility across compilers.
+For Unix variants, follow build isntructions for v8 or just use distro.
 
-  For Windows the following commands were used to build the VisualStudio solution:
-    svn co http://v8.googlecode.com/svn/tags/3.26.11 where/ever
-    cd where/ever
-    svn co http://gyp.googlecode.com/svn/trunk build/gyp
-    svn co http://src.chromium.org/svn/trunk/deps/third_party/cygwin@66844 third_party/cygwin
-    svn co http://src.chromium.org/svn/trunk/tools/third_party/python_26@89111 third_party/python_26
-    .\third_party\cygwin\bin\bash.exe -c "./third_party/python_26/python26.exe ./build/gyp_v8 -Dtarget_arch=ia32 -Dcomponent=shared_library"
+For Windows the following commands was used to build V8:
 
-  then use .\build\all.sln
+Install Visual Studio 2015
+Install Windows 10 SDK from https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
+Download https://storage.googleapis.com/chrome-infra/depot_tools.zip
+Unpack to somehere, e.g. C:\tools\depot_tools
+set DEPOT_TOOLS_WIN_TOOLCHAIN=0
+set GYP_MSVS_VERSION=2015
+PATH=C:\tools\depot_tools;%PATH%
+mkdir <v8-dir>   ;e.g. if PTLib is in C:\Work\ptlib, use C:\Work\v8 or C:\Work\external\v8
+cd <v8-dir>
+fetch v8
+Wait a while, this step is notorious for failing in myserious ways
+cd v8
+Edit build\config\win\BUILD.gn and change ":static_crt" to ":dynamic_crt"
+
+Then do any or all of the following
+.\tools\dev\v8gen.py x64.release -- v8_static_library=true is_component_build=false
+ninja -C out.gn\x64.release
+
+.\tools\dev\v8gen.py x64.debug -- v8_static_library=true is_component_build=false
+ninja -C out.gn\x64.debug
+
+.\tools\dev\v8gen.py ia32.release -- v8_static_library=true is_component_build=false
+ninja -C out.gn\ia32.release
+
+.\tools\dev\v8gen.py ia32.debug -- v8_static_library=true is_component_build=false
+ninja -C out.gn\ia32.debug
+
+Then reconfigure PTLib.
+
+Note that three files, icudtl.dat, natives_blob.bin & snapshot_blob.bin, must be
+copied to the executable directory of any application that uses the V8 system.
+They are usually in the output directory of the build, e.g. out.gn\x64.release
 */
 
 #ifdef _MSC_VER
@@ -58,12 +85,48 @@
 #include <iomanip>
 
 #include <v8.h>
+#include <libplatform/libplatform.h>
+
 
 #ifdef _MSC_VER
+  #pragma comment(lib, "winmm.lib")
+  #pragma comment(lib, "dbghelp.lib")
   #if defined(_DEBUG)
-    #pragma comment(lib, P_V8_DEBUG_LIB)
+    #if defined(P_64BIT)
+      #pragma comment(lib, P_V8_BASE_DEBUG64)
+      #pragma comment(lib, P_V8_LIBBASE_DEBUG64)
+      #pragma comment(lib, P_V8_SNAPSHOT_DEBUG64)
+      #pragma comment(lib, P_V8_LIBPLATFORM_DEBUG64)
+      #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG64)
+      #pragma comment(lib, P_V8_ICUI18N_DEBUG64)
+      #pragma comment(lib, P_V8_ICUUC_DEBUG64)
+    #else
+      #pragma comment(lib, P_V8_BASE_DEBUG32)
+      #pragma comment(lib, P_V8_LIBBASE_DEBUG32)
+      #pragma comment(lib, P_V8_SNAPSHOT_DEBUG32)
+      #pragma comment(lib, P_V8_LIBPLATFORM_DEBUG32)
+      #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG32)
+      #pragma comment(lib, P_V8_ICUI18N_DEBUG32)
+      #pragma comment(lib, P_V8_ICUUC_DEBUG32)
+    #endif
   #else
-    #pragma comment(lib, P_V8_RELEASE_LIB)
+    #if defined(P_64BIT)
+      #pragma comment(lib, P_V8_BASE_RELEASE64)
+      #pragma comment(lib, P_V8_LIBBASE_RELEASE64)
+      #pragma comment(lib, P_V8_SNAPSHOT_RELEASE64)
+      #pragma comment(lib, P_V8_LIBPLATFORM_RELEASE64)
+      #pragma comment(lib, P_V8_LIBSAMPLER_RELEASE64)
+      #pragma comment(lib, P_V8_ICUI18N_RELEASE64)
+      #pragma comment(lib, P_V8_ICUUC_RELEASE64)
+    #else
+      #pragma comment(lib, P_V8_BASE_DEBUG32)
+      #pragma comment(lib, P_V8_LIBBASE_DEBUG32)
+      #pragma comment(lib, P_V8_SNAPSHOT_DEBUG32)
+      #pragma comment(lib, P_V8_LIBPLATFORM_DEBUG32)
+      #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG32)
+      #pragma comment(lib, P_V8_ICUI18N_DEBUG32)
+      #pragma comment(lib, P_V8_ICUUC_DEBUG32)
+    #endif
   #endif
 #endif
 
@@ -74,21 +137,16 @@
 static PConstString const JavaName("Java");
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
 
-static atomic<bool> V8_initialised;
-
-#ifndef P_V8_API
-  #define P_V8_API 1
+#ifndef V8_MAJOR_VERSION
+  #define V8_MAJOR_VERSION 3
 #endif
 
 #if PTRACING
-  #if P_V8_API > 2
     static void LogEventCallback(const char * PTRACE_PARAM(name), int PTRACE_PARAM(event))
     {
       PTRACE(4, "V8-Log", "Event=" << event << " - " << name);
     }
-  #endif
 
-  #if P_V8_API > 1
     static void TraceFunction(const v8::FunctionCallbackInfo<v8::Value>& args)
     {
       if (args.Length() < 2)
@@ -113,7 +171,6 @@ static atomic<bool> V8_initialised;
 
       trace << PTrace::End;
     }
-  #endif // P_V8_API
 #endif // PTRACING
 
 
@@ -155,60 +212,77 @@ struct PJavaScript::Private : PObject
 {
   PCLASSINFO(PJavaScript::Private, PObject);
 private:
+#if V8_MAJOR_VERSION > 3
+  v8::Isolate::CreateParams m_isolateParams;
+#endif
   v8::Isolate * m_isolate;
   v8::Persistent<v8::Context> m_context;
-
-#if P_V8_API > 1
-  struct HandleScope : v8::HandleScope
-  {
-    HandleScope(Private * prvt) : v8::HandleScope(prvt->m_isolate) { }
-  };
-
-  struct EscapableHandleScope : v8::EscapableHandleScope
-  {
-    EscapableHandleScope(Private * prvt) : v8::EscapableHandleScope(prvt->m_isolate) { }
-  };
 
   v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
   template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
   v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_isolate, m_context); }
+
+  struct Intialisation
+  {
+#if V8_MAJOR_VERSION > 3
+    v8::Platform * m_platform;
+    bool           m_initialised;
+
+    Intialisation()
+      : m_platform(NULL)
+      , m_initialised(false)
+    {
+      PFilePath exeFile = PProcess::Current().GetFile();
+      if (!v8::V8::InitializeICUDefaultLocation(exeFile)) {
+        PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed.");
+        return;
+      }
+
+      v8::V8::InitializeExternalStartupData(exeFile);
+      m_platform = v8::platform::CreateDefaultPlatform();
+      v8::V8::InitializePlatform(m_platform);
+
+      if (!v8::V8::Initialize()) {
+        PTRACE(2, NULL, PTraceModule(), "v8::V8::Initialize() failed.");
+        return;
+      }
+
+      m_initialised = true;
+    }
+
+    ~Intialisation()
+    {
+      v8::V8::Dispose();
+      v8::V8::ShutdownPlatform();
+      delete m_platform;
+    }
 #else
-  struct HandleScope : v8::HandleScope
-  {
-    HandleScope(Private *) { }
-  };
-
-  struct EscapableHandleScope : v8::HandleScope
-  {
-    EscapableHandleScope(Private *) { }
-    template <class T> v8::Local<T> Escape(v8::Local<T> value) { return v8::HandleScope::Close(value); }
-  };
-
-  v8::Local<v8::String> NewString(const char * str) const { return v8::String::New(str); }
-  template <class CLS, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return CLS::New(param); }
-  v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_context); }
+    Intialisation()
+    {
+      v8::V8::InitializeICU();
+    }
 #endif
-
+  };
 
 public:
   Private()
+    : m_isolate(NULL)
   {
-    if (!V8_initialised.exchange(true)) {
-#if P_V8_API > 1
-      v8::V8::InitializeICU();
-#endif
-    }
+    if (!PSafeSingleton<Intialisation>()->m_initialised)
+      return;
 
-    m_isolate = v8::Isolate::New();
+    #if V8_MAJOR_VERSION > 3
+      m_isolateParams.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+      m_isolate = v8::Isolate::New(m_isolateParams);
+    #else
+      m_isolate = v8::Isolate::New();
+    #endif
 
     v8::Isolate::Scope isolateScope(m_isolate);
-    HandleScope handleScope(this);
+    v8::HandleScope handleScope(m_isolate);
 
-#if P_V8_API > 1
   #if PTRACING
-    #if P_V8_API > 2
-      m_isolate->SetEventLogger(LogEventCallback);
-    #endif
+    m_isolate->SetEventLogger(LogEventCallback);
 
     // Bind the global 'PTRACE' function to the PTLib trace callback.
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
@@ -218,9 +292,6 @@ public:
   #else
     m_context.Reset(m_isolate, v8::Context::New(m_isolate));
   #endif
-#else
-    m_context = v8::Context::New();
-#endif
   }
 
 
@@ -228,6 +299,10 @@ public:
   {
     if (m_isolate != NULL)
       m_isolate->Dispose();
+
+#if V8_MAJOR_VERSION > 3
+    delete m_isolateParams.array_buffer_allocator;
+#endif
   }
 
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
@@ -266,7 +341,7 @@ public:
       return false;
 
     v8::Isolate::Scope isolateScope(m_isolate);
-    HandleScope handleScope(this);
+    v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
 
@@ -355,7 +430,7 @@ public:
       return false;
 
     v8::Isolate::Scope isolateScope(m_isolate);
-    HandleScope handleScope(this);
+    v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
 
@@ -436,11 +511,7 @@ public:
       case PVarType::VarStaticBinary:
       case PVarType::VarDynamicBinary:
       default:
-#if P_V8_API > 1
         value = v8::Object::New(m_isolate);
-#else
-        value = v8::Object::New();
-#endif
         break;
     }
 
@@ -455,7 +526,7 @@ public:
 
     // create a V8 scopes
     v8::Isolate::Scope isolateScope(m_isolate);
-    HandleScope handleScope(this);
+    v8::HandleScope handleScope(m_isolate);
 
     // make context scope availabke
     v8::Local<v8::Context> context = GetContext();

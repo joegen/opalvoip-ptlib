@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Blend for Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hello World Static", "samples\hello_world\hello_2015.vcxproj", "{D38CA533-D522-4D9E-B2C9-D59F6C415268}"
 EndProject
@@ -246,6 +246,7 @@ Global
 		{45E06E4E-62D2-9590-405E-1A76C072F5D8}.Debug|Win32.ActiveCfg = Debug|Win32
 		{45E06E4E-62D2-9590-405E-1A76C072F5D8}.Debug|Win32.Build.0 = Debug|Win32
 		{45E06E4E-62D2-9590-405E-1A76C072F5D8}.Debug|x64.ActiveCfg = Debug|x64
+		{45E06E4E-62D2-9590-405E-1A76C072F5D8}.Debug|x64.Build.0 = Debug|x64
 		{45E06E4E-62D2-9590-405E-1A76C072F5D8}.No Trace|Win32.ActiveCfg = No Trace|Win32
 		{45E06E4E-62D2-9590-405E-1A76C072F5D8}.No Trace|Win32.Build.0 = No Trace|Win32
 		{45E06E4E-62D2-9590-405E-1A76C072F5D8}.No Trace|x64.ActiveCfg = No Trace|x64
