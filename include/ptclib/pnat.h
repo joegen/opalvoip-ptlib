@@ -370,19 +370,20 @@ class PNatCandidate : public PObject
       HostType,
       ServerReflexiveType,
       PeerReflexiveType,
-      RelayType
+      RelayType,
+      FinalType
     );
 
     PNatCandidate(
       Types type = EndTypes,
       PNatMethod::Component component = PNatMethod::eComponent_Unknown,
-      const char * foundation = NULL
+      const char * foundation = NULL,
+      unsigned priority = 1,
+      const char * protocol = "udp"
     );
 
     virtual Comparison Compare(const PObject & other) const;
     virtual void PrintOn(ostream & strm) const;
-
-    void CalculatePriority();
 
     Types                   m_type;
     PNatMethod::Component   m_component;

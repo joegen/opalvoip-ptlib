@@ -441,12 +441,16 @@ bool PNATUDPSocket::InternalGetBaseAddress(PIPSocketAddressAndPort & addr)
 
 ////////////////////////////////////////////////////
 
-PNatCandidate::PNatCandidate(Types type, PNatMethod::Component component, const char * foundation)
+PNatCandidate::PNatCandidate(Types type,
+                             PNatMethod::Component component,
+                             const char * foundation,
+                             unsigned priority,
+                             const char * protocol)
   : m_type(type)
   , m_component(component)
-  , m_priority(0)
+  , m_priority(priority)
   , m_foundation(foundation)
-  , m_protocol("udp")
+  , m_protocol(protocol)
 {
 }
 
