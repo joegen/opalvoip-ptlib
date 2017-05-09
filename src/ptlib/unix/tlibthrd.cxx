@@ -1337,49 +1337,61 @@ PBoolean PTimedMutex::PlatformWait(const PTimeInterval & waitTime)
   }
 #endif
 
+  int result;
+
   // if waiting indefinitely, then do so
   if (waitTime == PMaxTimeInterval) {
     PPROFILE_SYSTEM(
-      PAssertPTHREAD(pthread_mutex_lock, (&m_mutex));
+      result = pthread_mutex_lock(&m_mutex);
     );
-    return true;
   }
-
-  // create absolute finish time
-  PTime finishTime;
-  finishTime += waitTime;
+  else {
+    // create absolute finish time
+    PTime finishTime;
+    finishTime += waitTime;
 
 #if P_PTHREADS_XPG6
-  
-  struct timespec absTime;
-  absTime.tv_sec  = finishTime.GetTimeInSeconds();
-  absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-  PPROFILE_PRE_SYSTEM();
-  if (pthread_mutex_timedlock(&m_mutex, &absTime) != 0) {
-    PPROFILE_POST_SYSTEM();
-    return false;
-  }
-  PPROFILE_POST_SYSTEM();
+    struct timespec absTime;
+    absTime.tv_sec = finishTime.GetTimeInSeconds();
+    absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
+
+    PPROFILE_SYSTEM(
+      result = pthread_mutex_timedlock(&m_mutex, &absTime);
+    );
 
 #else // P_PTHREADS_XPG6
 
-  PPROFILE_PRE_SYSTEM();
-  while (pthread_mutex_trylock(&m_mutex) != 0) {
-    if (PTime() >= finishTime)
-      return false;
-    usleep(10000);
-  }
-  PPROFILE_POST_SYSTEM();
+    PPROFILE_PRE_SYSTEM();
+    while ((result = pthread_mutex_trylock(&m_mutex)) != 0 && errno != EBUSY) {
+      if (PTime() >= finishTime) {
+        PPROFILE_POST_SYSTEM();
+        return false;
+      }
+      usleep(10000);
+    }
+    PPROFILE_POST_SYSTEM();
 
 #endif // P_PTHREADS_XPG6
 
 #if !P_HAS_RECURSIVE_MUTEX
-  PAssert((lockerId == PNullThreadIdentifier) && m_lockCount == 0,
-          "PMutex acquired whilst locked by another thread");
+    PAssert((lockerId == PNullThreadIdentifier) && m_lockCount == 0,
+            "PMutex acquired whilst locked by another thread");
 #endif
+  }
 
-  return true;
+  if (result == 0)
+    return true; // Got the lock
+
+  switch (errno) {
+    case EDEADLK :
+      return true;// Just a recursive call
+    case ETIMEDOUT :
+      return false; // No assert
+  }
+
+  PAssertAlways(psprintf("Mutex lock failed, errno=%i", errno));
+  return false;
 }
 
 
