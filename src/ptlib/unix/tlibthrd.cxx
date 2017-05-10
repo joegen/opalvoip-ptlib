@@ -1363,7 +1363,7 @@ PBoolean PTimedMutex::PlatformWait(const PTimeInterval & waitTime)
 #else // P_PTHREADS_XPG6
 
     PPROFILE_PRE_SYSTEM();
-    while ((result = pthread_mutex_trylock(&m_mutex)) != 0 && errno != EBUSY) {
+    while ((result = pthread_mutex_trylock(&m_mutex)) == EBUSY) {
       if (PTime() >= finishTime) {
         PPROFILE_POST_SYSTEM();
         return false;
@@ -1373,24 +1373,21 @@ PBoolean PTimedMutex::PlatformWait(const PTimeInterval & waitTime)
     PPROFILE_POST_SYSTEM();
 
 #endif // P_PTHREADS_XPG6
-
-#if !P_HAS_RECURSIVE_MUTEX
-    PAssert((lockerId == PNullThreadIdentifier) && m_lockCount == 0,
-            "PMutex acquired whilst locked by another thread");
-#endif
   }
 
-  if (result == 0)
-    return true; // Got the lock
-
-  switch (errno) {
-    case EDEADLK :
-      return true;// Just a recursive call
+  switch (result) {
+    case 0 :       // Got the lock
+    case EDEADLK : // Just a recursive call
+#if !P_HAS_RECURSIVE_MUTEX
+      PAssert(lockerId == PNullThreadIdentifier && m_lockCount == 0,
+          "PMutex acquired whilst locked by another thread");
+#endif
+      return true;
     case ETIMEDOUT :
       return false; // No assert
   }
 
-  PAssertAlways(psprintf("Mutex lock failed, errno=%i", errno));
+  PAssertAlways(psprintf("Mutex lock failed, result=%i", result));
   return false;
 }
 
