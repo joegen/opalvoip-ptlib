@@ -1180,7 +1180,7 @@ namespace PProfiling
 #elif defined(CLOCK_MONOTONIC)
     timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.ts_sec*1000000000ULL+ts.ts_nsec;
+    return ts.tv_sec*1000000000ULL+ts.tv_nsec;
 #else
     timeval tv;
     gettimeofday(&tv, NULL);
