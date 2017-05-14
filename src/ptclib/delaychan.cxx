@@ -56,6 +56,12 @@ PBoolean PAdaptiveDelay::DelayInterval(const PTimeInterval & delta)
   if (delta <= 0)
     return true;
 
+  // System time changed backward
+  if (m_targetTime > (PTime() + delta)) {
+    m_targetTime.SetCurrentTime();
+    PTRACE(2, "AdaptiveDelay\tSystem time changed backward - resynchronise");
+  }
+
   // Set the new target
   m_targetTime += delta;
 
