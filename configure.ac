@@ -1768,31 +1768,9 @@ PTLIB_MODULE_OPTION(
    [-lv8],
    [#include <v8.h>],
    [
-      v8::Isolate * isolate = v8::Isolate::GetCurrent();
-   ],
-   [MY_COMPILE_IFELSE(
-      [V8 Javascript API version 2],
-      [$V8_CFLAGS],
-      [#include <v8.h>],
-      [
-         v8::Isolate * isolate;
-         const char * name;
-         v8::String::NewFromUtf8(isolate, name);
-         v8::V8::InitializeICU();
-      ],
-      [MY_COMPILE_IFELSE(
-         [V8 Javascript API version 3],
-         [$V8_CFLAGS],
-         [#include <v8.h>],
-         [
-            v8::Isolate * isolate;
-            isolate->SetEventLogger(NULL);
-         ],
-         [AC_DEFINE(P_V8_API, 3)],
-         [AC_DEFINE(P_V8_API, 2)]
-      )],
-      [AC_DEFINE(P_V8_API, 1)]
-   )]
+      v8::Isolate * isolate;
+      isolate->SetEventLogger(NULL);
+   ]
 )
 
 

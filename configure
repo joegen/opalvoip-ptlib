@@ -13142,7 +13142,9 @@ int
 main ()
 {
 
-      v8::Isolate * isolate = v8::Isolate::GetCurrent();
+      v8::Isolate * isolate;
+      isolate->SetEventLogger(NULL);
+
 
   ;
   return 0;
@@ -13197,89 +13199,7 @@ fi
 
 
 
-   if test "x$usable" = "xyes"; then :
 
-   oldCPPFLAGS="$CPPFLAGS"
-   CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript API version 2" >&5
-$as_echo_n "checking V8 Javascript API version 2... " >&6; }
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <v8.h>
-int
-main ()
-{
-
-         v8::Isolate * isolate;
-         const char * name;
-         v8::String::NewFromUtf8(isolate, name);
-         v8::V8::InitializeICU();
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  usable=yes
-else
-  usable=no
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
-$as_echo "$usable" >&6; }
-   CPPFLAGS="$oldCPPFLAGS"
-
-   if test "x$usable" = "xyes"; then :
-
-   oldCPPFLAGS="$CPPFLAGS"
-   CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript API version 3" >&5
-$as_echo_n "checking V8 Javascript API version 3... " >&6; }
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <v8.h>
-int
-main ()
-{
-
-            v8::Isolate * isolate;
-            isolate->SetEventLogger(NULL);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  usable=yes
-else
-  usable=no
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
-$as_echo "$usable" >&6; }
-   CPPFLAGS="$oldCPPFLAGS"
-
-   if test "x$usable" = "xyes"; then :
-  $as_echo "#define P_V8_API 3" >>confdefs.h
-
-else
-  $as_echo "#define P_V8_API 2" >>confdefs.h
-
-
-fi
-
-
-else
-  $as_echo "#define P_V8_API 1" >>confdefs.h
-
-
-fi
-
-
-
-fi
 
 
 
