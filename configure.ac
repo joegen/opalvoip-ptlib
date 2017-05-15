@@ -461,6 +461,23 @@ MY_COMPILE_IFELSE(
 
 
 dnl ########################################################################
+dnl Do we have __rdtsc
+
+dnl MSWIN_DISPLAY rdtsc,Has read TSC function
+dnl MSWIN_DEFINE  rdtsc,P_HAS_RDTSC=1
+
+MY_COMPILE_IFELSE(
+   [if has read TSC function],
+   [],
+   [#include <x86intrin.h>],
+   [unsigned long long = __rdtsc()],
+   [
+      AC_DEFINE(P_HAS_RDTSC, 1)
+   ]
+)
+
+
+dnl ########################################################################
 dnl check the endianness
 
 dnl MSWIN_DISPLAY byteorder,Byte Order

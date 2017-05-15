@@ -597,4 +597,8 @@ typedef intptr_t      INT;
   #include <byteswap.h>
 #endif
 
+#if P_HAS_RDTSC
+  #include <x86intrin.h>
+#endif
+
 // End of file

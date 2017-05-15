@@ -1167,7 +1167,7 @@ namespace PProfiling
 {
   __inline uint64_t GetCycles()
   {
-#if defined(_MSC_VER) || defined(P_LINUX)
+#if defined(P_HAS_RDTSC)
     return __rdtsc();
 #elif defined(__i386__) || defined(__x86_64__)
     uint32_t l,h;

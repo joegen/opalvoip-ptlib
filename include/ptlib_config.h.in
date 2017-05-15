@@ -279,6 +279,7 @@
 #undef P_LPIA
 #undef USE_SYSTEM_SWAB
 #undef P_SHM_VIDEO
+#undef P_HAS_RDTSC
 
 
 /////////////////////////////////////////////////
