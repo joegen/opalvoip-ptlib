@@ -386,6 +386,9 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 dnl ########################################################################
 dnl this reduces the size of all executables and libraries
 
+dnl MSWIN_DISPLAY exceptions,C++ Exceptions
+dnl MSWIN_DEFINE  exceptions,P_EXCEPTIONS=1
+
 PTLIB_SIMPLE_OPTION([exceptions], [EXCEPTIONS], [enable C++ exceptions])
 
 if test "x${HAS_EXCEPTIONS}" = "x1" ; then

@@ -283,7 +283,7 @@ void PThread::InternalDestroy()
 }
 
 
-void PThread::PX_ThreadBegin()
+void PThread::InternalPreMain()
 { 
   // Added this to guarantee that the thread creation (PThread::Restart)
   // has completed before we start the thread. Then the m_threadId has
@@ -304,14 +304,6 @@ void PThread::PX_ThreadBegin()
 
   PX_Suspended();
 
-#if defined(P_LINUX)
-  PTRACE(5, "PTLib\tStarted thread " << this << " (" << PX_linuxId << ") \"" << m_threadName << '"');
-#else
-  PTRACE(5, "PTLib\tStarted thread " << this << ' ' << m_threadName);
-#endif
-
-  PProcess::Current().OnThreadStart(*this);
-
   if (PX_priority != NormalPriority)
     SetPriority((Priority)PX_priority.load());
 
@@ -323,7 +315,7 @@ void PThread::PX_ThreadBegin()
 }
 
 
-void PThread::PX_ThreadEnd()
+void PThread::InternalPostMain()
 {
   /* Bizarely, this can get called by pthread_cleanup_push() when a thread
      is started! Seems to be a load and/or race on use of thread ID's inside
@@ -335,10 +327,7 @@ void PThread::PX_ThreadEnd()
   PX_endTick = PTimer::Tick();
 #endif
 
-  PProcess & process = PProcess::Current();
-  process.OnThreadEnded(*this);
-
-  /* Need to check this before the process.InternalThreadEnded() as an auto
+  /* Need to check this before the InternalThreadEnded() as an auto
      delete thread would be deleted in that function. */
   bool doThreadFinishedSignal = PX_synchroniseThreadFinish.get() != NULL;
 
@@ -351,7 +340,7 @@ void PThread::PX_ThreadEnd()
 
   /* If auto delete, "this" may have be deleted any nanosecond after
      this function, as it is asynchronously done by the housekeeping thread. */
-  process.InternalThreadEnded(this);
+  PProcess::Current().InternalThreadEnded(this);
 
   /* We know the thread is not auto delete and the destructor is either
      not run yet, or is waiting on this signal, so "this" is still safe
@@ -363,8 +352,6 @@ void PThread::PX_ThreadEnd()
 
 void * PThread::PX_ThreadMain(void * arg)
 {
-  PThread * thread = reinterpret_cast<PThread *>(arg);
-
 #if P_USE_THREAD_CANCEL
   // make sure the cleanup routine is called when the threade cancelled
   pthread_cleanup_push(&PThread::PX_ThreadEnd, arg);
@@ -373,16 +360,11 @@ void * PThread::PX_ThreadMain(void * arg)
   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 #endif
 
-  thread->PX_ThreadBegin();
-
-  // now call the the thread main routine
-  thread->Main();
+  reinterpret_cast<PThread *>(PAssertNULL(arg))->InternalThreadMain();
 
 #if P_USE_THREAD_CANCEL
   pthread_cleanup_pop(0);
 #endif
-
-  thread->PX_ThreadEnd();
 
   return NULL;
 }
@@ -390,7 +372,7 @@ void * PThread::PX_ThreadMain(void * arg)
 
 void PThread::PX_ThreadEnd(void * arg)
 {
-  ((PThread *)arg)->PX_ThreadEnd();
+  reinterpret_cast<PThread *>(PAssertNULL(arg))->InternalPostMain();
 }
 
 

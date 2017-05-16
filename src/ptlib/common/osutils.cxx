@@ -2093,7 +2093,22 @@ PProcess * PProcessInstance = NULL;
 
 int PProcess::InternalMain(void *)
 {
+#if P_EXCEPTIONS
+  try {
+    Main();
+  }
+  catch (std::exception & e) {
+    PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in process main, terminating"));
+    std::terminate();
+  }
+  catch (...) {
+    PAssertAlways(PSTRSTRM("Exception caught in process main, terminating"));
+    std::terminate();
+  }
+#else
   Main();
+#endif
+
   return m_terminationValue;
 }
 
@@ -2382,8 +2397,9 @@ PProcess & PProcess::Current()
 }
 
 
-void PProcess::OnThreadStart(PThread & /*thread*/)
+void PProcess::OnThreadStart(PThread & PTRACE_PARAM(thread))
 {
+  PTRACE(5, "Started thread " << thread);
 }
 
 
@@ -2631,6 +2647,36 @@ bool PProcess::HostSystemURLHandlerInfo::RegisterTypes(const PString & _types, b
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
+
+void PThread::InternalThreadMain()
+{
+  InternalPreMain();
+
+  PProcess & process = PProcess::Current();
+
+#if P_EXCEPTIONS
+  try {
+    process.OnThreadStart(*this);
+    Main();
+    process.OnThreadEnded(*this);
+  }
+  catch (std::exception & e) {
+    PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in thread " << *this << ", terminating"));
+    std::terminate();
+  }
+  catch (...) {
+    PAssertAlways(PSTRSTRM("Exception caught in thread " << *this << ", terminating"));
+    std::terminate();
+  }
+#else
+  process.OnThreadStart(*this);
+  Main();
+  process.OnThreadEnded(*this);
+#endif
+
+  InternalPostMain();
+}
+
 
 PThreadIdentifier PThread::GetThreadId() const
 {

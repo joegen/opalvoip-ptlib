@@ -469,6 +469,9 @@ class PThread : public PObject
     PThread(bool isProcess);
     // Create a new thread instance as part of a <code>PProcess</code> class.
 
+    void InternalThreadMain();
+    void InternalPreMain();
+    void InternalPostMain();
     void InternalDestroy();
 
     friend class PProcess;

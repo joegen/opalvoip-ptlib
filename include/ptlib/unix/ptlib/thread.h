@@ -51,8 +51,6 @@
 
   protected:
     void PX_StartThread();
-    void PX_ThreadBegin();
-    void PX_ThreadEnd();
     void PX_Suspended();
     static void * PX_ThreadMain(void *);
     static void PX_ThreadEnd(void *);

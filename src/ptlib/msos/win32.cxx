@@ -808,31 +808,20 @@ void PWin32Overlapped::Reset()
 
 UINT __stdcall PThread::MainFunction(void * threadPtr)
 {
-  PThread * thread = (PThread *)PAssertNULL(threadPtr);
-  thread->SetThreadName(thread->GetThreadName());
-
-  PProcess & process = PProcess::Current();
-
-/*
- * Removed this code because it causes a linear increase
- * in thread startup time when there are many (< 500) threads.
- * If this functionality is needed, call Win32AttachThreadInput
- * after the thread has been started
- *
-#ifndef _WIN32_WCE
-  AttachThreadInput(thread->threadId, ((PThread&)process).threadId, true);
-  AttachThreadInput(((PThread&)process).threadId, thread->threadId, true);
-#endif
-*/
-
-  process.InternalThreadStarted(thread);
-
-  process.OnThreadStart(*thread);
-  thread->Main();
-  process.OnThreadEnded(*thread);
-
-  process.InternalThreadEnded(thread);
+  reinterpret_cast<PThread *>(PAssertNULL(threadPtr))->InternalThreadMain();
   return 0;
+}
+
+
+void PThread::InternalPreMain()
+{
+  SetThreadName(GetThreadName());
+}
+
+
+void PThread::InternalPostMain()
+{
+  PProcess::Current().InternalThreadEnded(this);
 }
 
 
@@ -888,6 +877,8 @@ PThread::PThread(PINDEX stackSize,
   PAssertOS(m_threadHandle.IsValid());
 
   SetPriority(priorityLevel);
+
+  PProcess::Current().InternalThreadStarted(this);
 }
 
 

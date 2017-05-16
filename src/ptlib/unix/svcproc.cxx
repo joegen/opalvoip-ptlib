@@ -516,9 +516,26 @@ int PServiceProcess::InternalMain(void *)
     SignalTimerChange();
 
     SetTerminationValue(1);
-    if (OnStart()) {
+    bool started;
+#if P_EXCEPTIONS
+    try {
+      started = OnStart();
+    }
+    catch (std::exception & e) {
+      PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in service process start, terminating"));
+      std::terminate();
+    }
+    catch (...) {
+      PAssertAlways(PSTRSTRM("Exception caught in service process start, terminating"));
+      std::terminate();
+    }
+#else
+    started = OnStart();
+#endif
+  
+    if (started) {
       SetTerminationValue(0);
-      Main();
+      PProcess::InternalMain(NULL);
       Terminate();
     }
   }
