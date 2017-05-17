@@ -31,6 +31,7 @@
 
 #include <atomic>
 
+using std::atomic;
 #define PAtomicEnum std::atomic
 
 #else
@@ -256,13 +257,6 @@ class PAtomicBoolean : public atomic<bool>
     explicit PAtomicBoolean(bool value = false) : atomic<bool>(value) { }
     __inline PAtomicBoolean & operator=(bool value) { atomic<bool>::operator=(value); return *this; }
     bool TestAndSet(bool value) { return exchange(value); }
-};
-
-
-// Template class for thread safe singleton
-template <class Type, Type * (*Creator)() = PSingletonCreatorDefault<Type> >
-class PSafeSingleton : public PSingleton<Type, atomic<unsigned>, Creator>
-{
 };
 
 

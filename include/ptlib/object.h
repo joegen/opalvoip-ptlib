@@ -34,6 +34,8 @@
 #pragma interface
 #endif
 
+#include <ptlib_config.h>
+
 #if defined(_WIN32)
 #include "msos/ptlib/platform.h"
 #else
@@ -60,6 +62,8 @@
 #include <limits>
 #include <typeinfo>
 #include <memory>
+
+#include "atomic.h"
 
 using namespace std; // Not a good practice (name space polution), but will take too long to fix.
 
@@ -779,36 +783,58 @@ public:
         PTRACE_THROTTLE_STATIC(m_throttleIt, 2, 2000);
         PTRACE(m_throttleIt, "A very frequent log" << m_throttleIt);
       </code></pre>
+
+      The maxShown parameter indicates the maximum number of trace outputs that
+      can occur in the time interval.
+
+      Additional note: the "repeated" count optionally output is not 100% accurate
+      in multi-threaded usage.
     */
   class ThrottleBase
   {
     public:
       ThrottleBase(
         unsigned lowLevel,          ///< Level at which low frequency logs made
-        unsigned interval = 60000,  ///< TIme between low frequency logs
-        unsigned highLevel = 6      ///> Level for high frequency (every) logs
+        unsigned interval = 60000,  ///< Time between low frequency logs
+        unsigned highLevel = 6,     ///< Level for high frequency (every) logs
+        unsigned maxShown = 1       ///< Max shown messages in time interval
       );
+      ThrottleBase(const ThrottleBase & other);
 
-      bool CanTrace();
+      bool CanTrace(int64_t now = 0);
       operator unsigned() const { return m_currentLevel; }
 
       friend ostream & operator<<(ostream & strm, const ThrottleBase & throttle);
 
-      unsigned GetLowLevel() const { return m_lowLevel; }
-      unsigned GetHighLevel() const { return m_highLevel; }
+      __inline unsigned GetLowLevel() const { return m_lowLevel; }
+      __inline unsigned GetHighLevel() const { return m_highLevel; }
+      __inline unsigned GetCurrentLevel() const { return m_currentLevel; }
+      __inline unsigned GetHiddenCount() const { return m_hiddenCount; }
 
     protected:
-      unsigned m_interval;
-      unsigned m_lowLevel;
-      unsigned m_highLevel;
-      unsigned m_currentLevel;
-      uint64_t m_lastLog;
-      unsigned m_count;
+      const unsigned   m_interval;
+      const unsigned   m_lowLevel;
+      const unsigned   m_highLevel;
+      const unsigned   m_maxShown;
+      atomic<unsigned> m_currentLevel;
+      atomic<int64_t>  m_nextLog;
+      atomic<unsigned> m_repeatCount;
+      atomic<unsigned> m_hiddenCount;
+
+    private:
+      void operator=(const ThrottleBase &) { }
   };
 
-  template <unsigned lowLevel, unsigned interval = 60000, unsigned highLevel = 6> struct Throttle : ThrottleBase
+  /** Template class to reduce noise level for some logging.
+      This is primarily to set configuration values to compile time defaults
+      without needing to be in ctor. */
+  template <unsigned lowLevel,          ///< Level at which low frequency logs made
+            unsigned interval = 60000,  ///< Time between low frequency logs
+            unsigned highLevel = 6,     ///< Level for high frequency (every) logs
+            unsigned maxShown = 1       ///< Max repeated message in time interval
+           > struct Throttle : ThrottleBase
   {
-    Throttle() : ThrottleBase(lowLevel, interval, highLevel) { }
+    Throttle() : ThrottleBase(lowLevel, interval, highLevel, maxShown) { }
   };
 
   static bool CanTrace(const ThrottleBase & throttle) { return const_cast<ThrottleBase &>(throttle).CanTrace(); }
@@ -1944,6 +1970,13 @@ class PSingleton
 
     Type * operator->() const { return  m_instance; }
     Type & operator* () const { return *m_instance; }
+};
+
+
+// Template class for thread safe singleton
+template <class Type, Type * (*Creator)() = PSingletonCreatorDefault<Type> >
+class PSafeSingleton : public PSingleton<Type, atomic<unsigned>, Creator>
+{
 };
 
 

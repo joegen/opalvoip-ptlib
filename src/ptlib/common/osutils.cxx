@@ -976,41 +976,74 @@ PTrace::Block::~Block()
 }
 
 
-PTrace::ThrottleBase::ThrottleBase(unsigned lowLevel, unsigned interval, unsigned highLevel)
+PTrace::ThrottleBase::ThrottleBase(unsigned lowLevel, unsigned interval, unsigned highLevel, unsigned maxShown)
   : m_interval(interval)
   , m_lowLevel(lowLevel)
   , m_highLevel(highLevel)
-  , m_lastLog(0)
-  , m_count(0)
+  , m_maxShown(maxShown)
+  , m_currentLevel(highLevel)
+  , m_nextLog(0)
+  , m_repeatCount(0)
+  , m_hiddenCount(0)
 {
 }
 
 
-bool PTrace::ThrottleBase::CanTrace()
+PTrace::ThrottleBase::ThrottleBase(const ThrottleBase & other)
+  : m_interval(other.m_interval)
+  , m_lowLevel(other.m_lowLevel)
+  , m_highLevel(other.m_highLevel)
+  , m_maxShown(other.m_maxShown)
+  , m_currentLevel(other.m_highLevel)
+  , m_nextLog(0)
+  , m_repeatCount(0)
+  , m_hiddenCount(0)
 {
-  PTimeInterval now = PTimer::Tick();
+}
 
-  if (m_lastLog == 0 || (now - m_lastLog) > m_interval) {
-    m_currentLevel = m_lowLevel;
-    m_lastLog = now.GetMilliSeconds();
+
+bool PTrace::ThrottleBase::CanTrace(int64_t now)
+{
+  if (!PTrace::CanTrace(m_lowLevel))
+    return false;
+
+  if (PTrace::CanTrace(m_highLevel))
+    return true;
+
+  if (now == 0)
+    now = PTimer::Tick().GetMilliSeconds();
+
+  int64_t nextLog = m_nextLog.load();
+  if (now > nextLog) {
+    if (m_nextLog.compare_exchange_strong(nextLog, now + m_interval)) {
+      m_currentLevel = m_lowLevel;
+      m_repeatCount = 1;
+    }
+    /* Note, there is a race in the else clause here, where one extra log could
+       "escape" without being counted in m_hiddenCount or m_repeatCount. It is
+       a minor thing, really, and deemed better to have that one extra output
+       than to suppress it */
   }
-  else if (m_currentLevel == m_highLevel) {
-    if (!PTrace::CanTrace(m_highLevel))
-      ++m_count;
-  }
+  else if (++m_repeatCount <= m_maxShown)
+    m_hiddenCount = 0; // Note this only occurs if m_currentLevel == m_lowLevel
   else {
-    m_count = 1;
-    m_currentLevel = m_highLevel;
+    unsigned otherLevel = m_lowLevel;
+    if (m_currentLevel.compare_exchange_strong(otherLevel, m_highLevel))
+      m_hiddenCount = 0;
   }
 
-  return PTrace::CanTrace(m_currentLevel);
+  if (PTrace::CanTrace(m_currentLevel))
+    return true;
+
+  ++m_hiddenCount;
+  return false;
 }
 
 
 std::ostream & operator<<(ostream & strm, const PTrace::ThrottleBase & throttle)
 {
-  if (throttle.m_count > 1)
-    strm << " (repeated " << throttle.m_count << " times)";
+  if (throttle.m_hiddenCount > 1)
+    strm << " (repeated " << std::dec << throttle.m_hiddenCount << " times)";
   return strm;
 }
 
