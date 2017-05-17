@@ -121,13 +121,13 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
       #pragma comment(lib, P_V8_ICUI18N_RELEASE64)
       #pragma comment(lib, P_V8_ICUUC_RELEASE64)
     #else
-      #pragma comment(lib, P_V8_BASE_DEBUG32)
-      #pragma comment(lib, P_V8_LIBBASE_DEBUG32)
-      #pragma comment(lib, P_V8_SNAPSHOT_DEBUG32)
-      #pragma comment(lib, P_V8_LIBPLATFORM_DEBUG32)
-      #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG32)
-      #pragma comment(lib, P_V8_ICUI18N_DEBUG32)
-      #pragma comment(lib, P_V8_ICUUC_DEBUG32)
+      #pragma comment(lib, P_V8_BASE_RELEASE32)
+      #pragma comment(lib, P_V8_LIBBASE_RELEASE32)
+      #pragma comment(lib, P_V8_SNAPSHOT_RELEASE32)
+      #pragma comment(lib, P_V8_LIBPLATFORM_RELEASE32)
+      #pragma comment(lib, P_V8_LIBSAMPLER_RELEASE32)
+      #pragma comment(lib, P_V8_ICUI18N_RELEASE32)
+      #pragma comment(lib, P_V8_ICUUC_RELEASE32)
     #endif
   #endif
 #endif
