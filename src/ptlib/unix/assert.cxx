@@ -431,7 +431,8 @@
           cmd &= PProcess::Current().GetFile();
           cmd.sprintf(" %d", getpid());
           PError << "\nStarting debugger \"" << cmd << '"' << endl;
-          system((const char *)cmd);
+          if (system((const char *)cmd) < 0)
+            PError << "Could not execute debugger!" << endl;
         }
         return false;
   #endif
