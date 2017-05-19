@@ -692,12 +692,20 @@ bool PHTTPClient::GetHeader(const PURL & url, PMIMEInfo & outMIME, PMIMEInfo & r
 
 bool PHTTPClient::PostData(const PURL & url, const PStringToString & data)
 {
+  PMIMEInfo replyMIME;
+  PString replyBody;
+  return PostData(url, data, replyMIME, replyBody);
+}
+
+
+bool PHTTPClient::PostData(const PURL & url, const PStringToString & data, PMIMEInfo & replyMIME, PString & replyBody)
+{
   PStringStream entityBody;
   PURL::OutputVars(entityBody, data, '\0', '&', '=', PURL::QueryTranslation);
   entityBody << "\r\n"; // Add CRLF for compatibility with some CGI servers.
 
   PMIMEInfo outMIME;
-  return PostData(url, outMIME, entityBody);
+  return PostData(url, outMIME, entityBody, replyMIME, replyBody);
 }
 
 

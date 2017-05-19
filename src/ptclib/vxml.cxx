@@ -2088,8 +2088,10 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
 
     PMIMEInfo replyMIME;
 	PString body;
-    if (client.GetTextDocument(url, body))
-      return InternalLoadVXML(body, PString::Empty());
+	if (client.GetTextDocument(url, body)) {
+		PTRACE(4, "VXML\t<submit> GET " << url << " succeeded and returned body:\n" << body);
+		return InternalLoadVXML(body, PString::Empty());
+	}
 
     PTRACE(1, "VXML\t<submit> GET " << url << " failed with "
            << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
@@ -2105,8 +2107,12 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
         vars.SetAt(namelist[i], GetVar(namelist[i]));
     }
 
-    if (client.PostData(url, vars))
-      return true;
+	PMIMEInfo replyMIME;
+	PString replyBody;
+	if (client.PostData(url, vars, replyMIME, replyBody)) {
+		PTRACE(4, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
+		return InternalLoadVXML(replyBody, PString::Empty());
+	}
 
     PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
            << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
@@ -2157,8 +2163,12 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     return false;
   }
 
-  if (client.PostData(url, sendMIME, entityBody))
-    return true;
+  PMIMEInfo replyMIME;
+  PString replyBody;
+  if (client.PostData(url, sendMIME, entityBody, replyMIME, replyBody)) {
+	  PTRACE(1, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
+	  return InternalLoadVXML(replyBody, PString::Empty());
+  }
 
   PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
          << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
