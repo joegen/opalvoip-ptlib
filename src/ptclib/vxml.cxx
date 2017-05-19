@@ -2131,6 +2131,19 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
   PStringStream entityBody;
 
   for (PINDEX i = 0; i < namelist.GetSize(); ++i) {
+    PString type = GetVar(namelist[i] + ".type");
+    if (type.IsEmpty()) {
+      PMIMEInfo part1;
+
+      part1.Set(PMIMEInfo::ContentTypeTag, "text/plain");
+      part1.Set(PMIMEInfo::ContentDispositionTag, "form-data; name=\"" + namelist[i] + "\"; ");
+
+      entityBody << "--" << boundary << "\r\n"
+                 << part1 << GetVar(namelist[i]) << "\r\n";
+
+      continue;
+    }
+
     if (GetVar(namelist[i] + ".type") != "audio/wav" ) {
       PTRACE(1, "VXML\t<submit> does not (yet) support submissions of types other than \"audio/wav\"");
       continue;
