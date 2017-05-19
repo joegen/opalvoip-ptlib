@@ -602,7 +602,13 @@ bool PJavaScript::LoadText(const PString & /*text*/)
 
 bool PJavaScript::Run(const char * text)
 {
-  return m_private->Run(text, m_resultText);
+  PString script(text);
+
+  PTextFile file(text, PFile::ReadOnly);
+  if (file.IsOpen())
+    script = file.ReadString(P_MAX_INDEX);
+
+  return m_private->Run(script, m_resultText);
 }
 
 
