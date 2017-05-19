@@ -250,6 +250,10 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>copy  /y "$(SolutionDir)lib\ptlib.dll" "$(TargetDir)"
+copy  /y "$(SolutionDir)lib\ptlib.pdb" "$(TargetDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>

@@ -77,17 +77,7 @@ Vxmltest::Vxmltest()
 void Vxmltest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse(
-             "t.-trace."
-             "o:output:"
-             "-tts:"
-             );
-
-#if PTRACING
-  PTrace::Initialise(args.GetOptionCount('t'),
-                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
-         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
-#endif
+  PTRACE_INITIALISE(args);
 
   if (args.GetCount() < 1) {
     PError << "usage: vxmltest [opts] doc\n";
