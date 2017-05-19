@@ -105,6 +105,7 @@ TRAVERSE_NODE(Submit);
 TRAVERSE_NODE(Choice);
 TRAVERSE_NODE(Property);
 TRAVERSE_NODE(Disconnect);
+TRAVERSE_NODE(Script);
 
 #define TRAVERSE_NODE2(name) \
   class PVXMLTraverse##name : public PVXMLNodeHandler { \
@@ -942,6 +943,14 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
         TraverseVar(*element);
     }
 
+    // traverse global <script> elements
+    {
+      PINDEX idx = 0;
+      PXMLElement * element;
+      while ((element = root->GetElement("script", idx++)) != NULL)
+        TraverseScript(*element);
+    }
+
     // find the first form
     if (!SetCurrentForm(firstForm, false)) {
       PTRACE(1, "VXML\tNo form element");
@@ -1494,6 +1503,33 @@ PString PVXMLSession::GetXMLError() const
 }
 
 
+
+PBoolean PVXMLSession::TraverseScript(PXMLElement & element)
+{
+#if P_SCRIPTS
+  if (m_scriptContext != NULL) {
+    PString src = element.GetAttribute("src");
+    PString data = element.GetData();
+    PString script = src.IsEmpty() ? data : src;
+
+    PTRACE(4, "VXML\tTraverse script> " << script);
+  
+    if (m_scriptContext->Run(PSTRSTRM(script)))
+    {
+      PTRACE(4, "VXML\tscript executed properly!");
+      return true;
+    }
+
+    PTRACE(2, "VXML\tCould not evaluate script \"" << script << "\" with script language " << m_scriptContext->GetLanguageName());
+  }
+#else
+  PTRACE(2, "VXML\tUnsupported <script> element");
+#endif
+
+  return false;
+}
+
+
 PString PVXMLSession::EvaluateExpr(const PString & expr)
 {
 #if P_SCRIPTS
@@ -1557,7 +1593,11 @@ PCaselessString PVXMLSession::GetVar(const PString & varName) const
 
 #if P_SCRIPTS
   if (m_scriptContext != NULL)
-    return m_scriptContext->GetString(fullVarName);
+  {
+	  PString value = m_scriptContext->GetString(fullVarName);
+	  PTRACE(4, "VXML\tGetVar[" << fullVarName << "]=" << value);
+	  return value;
+  }
 #endif
 
   return m_variables(fullVarName);
@@ -1576,6 +1616,7 @@ void PVXMLSession::SetVar(const PString & varName, const PString & value)
 #endif
 
   m_variables.SetAt(fullVarName, value);
+  PTRACE(4, "VXML\tSetAt [" << fullVarName << "]=" << value);
 }
 
 
@@ -2021,6 +2062,7 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
   PTRACE(4, "VXML\t\tCondition \"" << condition << "\"did not match");
   return false;
 }
+
 
 
 PBoolean PVXMLSession::TraverseExit(PXMLElement &)

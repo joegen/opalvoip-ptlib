@@ -285,6 +285,7 @@ class PVXMLSession : public PIndirectChannel
     virtual PBoolean TraversedField(PXMLElement & element);
     virtual PBoolean TraverseTransfer(PXMLElement & element);
     virtual PBoolean TraversedTransfer(PXMLElement & element);
+	virtual PBoolean TraverseScript(PXMLElement & element);
 
     __inline PVXMLChannel * GetVXMLChannel() const { return (PVXMLChannel *)readChannel; }
 
