@@ -2087,11 +2087,11 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     }
 
     PMIMEInfo replyMIME;
-	PString body;
-	if (client.GetTextDocument(url, body)) {
-		PTRACE(4, "VXML\t<submit> GET " << url << " succeeded and returned body:\n" << body);
-		return InternalLoadVXML(body, PString::Empty());
-	}
+    PString body;
+    if (client.GetTextDocument(url, body)) {
+      PTRACE(4, "VXML\t<submit> GET " << url << " succeeded and returned body:\n" << body);
+      return InternalLoadVXML(body, PString::Empty());
+    }
 
     PTRACE(1, "VXML\t<submit> GET " << url << " failed with "
            << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
@@ -2107,12 +2107,12 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
         vars.SetAt(namelist[i], GetVar(namelist[i]));
     }
 
-	PMIMEInfo replyMIME;
-	PString replyBody;
-	if (client.PostData(url, vars, replyMIME, replyBody)) {
-		PTRACE(4, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
-		return InternalLoadVXML(replyBody, PString::Empty());
-	}
+    PMIMEInfo replyMIME;
+    PString replyBody;
+    if (client.PostData(url, vars, replyMIME, replyBody)) {
+      PTRACE(4, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
+      return InternalLoadVXML(replyBody, PString::Empty());
+    }
 
     PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
            << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
@@ -2166,8 +2166,8 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
   PMIMEInfo replyMIME;
   PString replyBody;
   if (client.PostData(url, sendMIME, entityBody, replyMIME, replyBody)) {
-	  PTRACE(1, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
-	  return InternalLoadVXML(replyBody, PString::Empty());
+    PTRACE(1, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
+    return InternalLoadVXML(replyBody, PString::Empty());
   }
 
   PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
@@ -2408,7 +2408,7 @@ void PVXMLGrammar::Start()
 
 void PVXMLGrammar::OnTimeout(PTimer &, P_INT_PTR)
 {
-	PTRACE(3, "VXML\tTimeout for grammar " << *this );
+  PTRACE(3, "VXML\tTimeout for grammar " << *this );
   m_mutex.Wait();
 
   if (m_state == Started) {
@@ -2531,14 +2531,13 @@ void PVXMLDigitsGrammar::OnUserInput(const char ch)
 
 bool PVXMLDigitsGrammar::IsFilled()
 {
-	PINDEX len = m_value.GetLength();
-	bool filled = len >= m_minDigits && len <= m_maxDigits;
+  PINDEX len = m_value.GetLength();
+  bool filled = len >= m_minDigits && len <= m_maxDigits;
 
-	PTRACE(4, "VXML\t Grammar " << *this << 
-		(filled ? " has been FILLED" : " has NOT yet been filled" ) 
-		<< ". Collected value=" << m_value << ", length: " << len << ", while min=" << m_minDigits << " max=" << m_maxDigits);
+  PTRACE(4, "VXML\t Grammar " << *this << (filled ? " has been FILLED" : " has NOT yet been filled") << "."
+            " Collected value=" << m_value << ", length: " << len << ", while min=" << m_minDigits << " max=" << m_maxDigits);
 
-	return filled;
+  return filled;
 }
 
 //////////////////////////////////////////////////////////////////
