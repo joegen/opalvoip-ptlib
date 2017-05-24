@@ -2184,7 +2184,7 @@ namespace PProfiling
     {
     }
 
-    void EndMeasurement(const void * ptr, const PObject * object, const PDebugLocation & location, const PTimeInterval & duration)
+    void EndMeasurement(const void * ptr, const PObject * object, const PDebugLocation & location, const PNanoSeconds & duration)
     {
       PWaitAndSignal lock(m_mutex);
 
@@ -2304,8 +2304,7 @@ namespace PProfiling
 
   void TimeScope::EndMeasurement(const void * context, const PObject * object, const PDebugLocation & location, uint64_t startCycle)
   {
-    m_implementation->EndMeasurement(context, object, location,
-                                     PTimeInterval::NanoSeconds(CyclesToNanoseconds(GetCycles() - startCycle)));
+    m_implementation->EndMeasurement(context, object, location, CyclesToNanoseconds(GetCycles() - startCycle));
   }
 
   const PTimeInterval & TimeScope::GetLastDuration() const

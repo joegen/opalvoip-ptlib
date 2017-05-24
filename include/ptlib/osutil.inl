@@ -46,6 +46,9 @@ PINLINE PTimeInterval & PTimeInterval::operator=(const PTimeInterval & other)
 PINLINE PObject * PTimeInterval::Clone() const
   { return PNEW PTimeInterval(GetMilliSeconds()); }
 
+PINLINE PTimeInterval PTimeInterval::Frequency(double frequency)
+  { PTimeInterval t; t.SetFrequency(frequency); return t; }
+
 PINLINE PTimeInterval PTimeInterval::NanoSeconds(int64_t nsecs, int secs)
   { PTimeInterval t; t.SetNanoSeconds(nsecs, secs); return t; }
 
@@ -69,6 +72,12 @@ PINLINE PInt64 PTimeInterval::GetMilliSeconds() const
 
 PINLINE void PTimeInterval::SetMilliSeconds(PInt64 msecs)
   { InternalSet(msecs*MilliToNano); }
+
+PINLINE double PTimeInterval::GetFrequency() const
+  { return 1000000000.0/InternalGet(); }
+
+PINLINE void PTimeInterval::SetFrequency(double frequency)
+  { InternalSet((int64_t)(SecsToNano/frequency)); }
 
 PINLINE long PTimeInterval::GetSeconds() const
   { return (long)(InternalGet()/SecsToNano); }

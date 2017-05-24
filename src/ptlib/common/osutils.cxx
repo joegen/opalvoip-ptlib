@@ -3182,7 +3182,7 @@ void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex,
   if (m_excessiveLockActive) {
 #if PTRACING
     PTime releaseTime;
-    PTimeInterval heldDuration = PTimeInterval::NanoSeconds(PProfiling::CyclesToNanoseconds(PProfiling::GetCycles() - startHeldSamplePoint));
+    PNanoSeconds heldDuration(PProfiling::CyclesToNanoseconds(PProfiling::GetCycles() - startHeldSamplePoint));
     ostream & trace = PTRACE_BEGIN(0, "PTLib");
     trace << "Assertion fail: Released phantom deadlock"
           << ", held from " << (releaseTime - heldDuration).AsString(PTime::TodayFormat, PTrace::GetTimeZone())

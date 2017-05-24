@@ -94,6 +94,11 @@ class PTimeInterval : public PObject
       int64_t usecs,
       int secs = 0
     );
+
+    /// Return a PTimeInterval from a frequency
+    static PTimeInterval Frequency(
+      double frequency
+    );
   //@}
 
   /**@name Overrides from class PObject */
@@ -187,6 +192,14 @@ class PTimeInterval : public PObject
       int64_t usecs,
       int secs = 0
     );
+
+    /** Get time interval as a frequency.
+      */
+    double GetFrequency() const;
+
+    /** Set time interval from a frequency.
+      */
+    void SetFrequency(double frequency);
 
     /** Get the number of milliseconds for the time interval.
     
@@ -467,6 +480,28 @@ class PTimeInterval : public PObject
 #else
 #include "unix/ptlib/timeint.h"
 #endif
+};
+
+
+/// Class wrapper of PTimeInterval to initialise to nanoseconds.
+struct PNanoSeconds : PTimeInterval
+{
+  PNanoSeconds(int64_t nanoseconds) { SetNanoSeconds(nanoseconds); }
+};
+
+/// Class wrapper of PTimeInterval to initialise to microseconds.
+struct PMicroSeconds : PTimeInterval
+{
+  PMicroSeconds(int64_t microseconds) { SetMicroSeconds(microseconds); }
+};
+
+/// As we have PNanoSeconds & PMicroSeconds, this is for completeness.
+typedef PTimeInterval PMilliSeconds;
+
+/// Class wrapper of PTimeInterval to initialise to a frequency.
+struct PFrequencyTime : PTimeInterval
+{
+  PFrequencyTime(double frequency) { SetFrequency(frequency); }
 };
 
 
