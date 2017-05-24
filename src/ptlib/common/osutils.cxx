@@ -3209,6 +3209,11 @@ void PTimedMutex::Wait()
 
 PBoolean PTimedMutex::Wait(const PTimeInterval & timeout)
 {
+  if (timeout == PMaxTimeInterval) {
+    CommonWait(PDebugLocation::None);
+    return true;
+  }
+
   uint64_t startWaitCycle = PProfiling::GetCycles();
 
   if (!PlatformWait(timeout))
@@ -3303,7 +3308,7 @@ bool PInstrumentedMutex::InstrumentedWait(const PTimeInterval & timeout, const P
 {
   uint64_t startWaitCycle = PProfiling::GetCycles();
 
-  if (timeout != PMaxTimeInterval) {
+  if (timeout == PMaxTimeInterval) {
     CommonWait(location);
     return true;
   }
