@@ -301,6 +301,9 @@ bool PTones::Generate(const PString & descriptor, unsigned sampleRate, unsigned 
     m_masterVolume = masterVolume;
   Reset();
 
+  if (descriptor.IsEmpty())
+    return false;
+
   PStringArray toneChunks = descriptor.Tokenise('/');
   if (toneChunks.IsEmpty()) {
     PTRACE(3, "No '/' found in \"" << descriptor << '"');
