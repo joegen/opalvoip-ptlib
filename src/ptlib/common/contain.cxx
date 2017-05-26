@@ -2179,7 +2179,7 @@ void PString::InternalFromUCS2(const wchar_t * ptr, PINDEX len)
         theArray[count++] = (char)(0x80+(v&0x3f));
       }
       else {
-        theArray[count++] = (char)(0xd0+(v>>12));
+        theArray[count++] = (char)(0xe0+(v>>12));
         theArray[count++] = (char)(0x80+((v>>6)&0x3f));
         theArray[count++] = (char)(0x80+(v&0x3f));
       }
