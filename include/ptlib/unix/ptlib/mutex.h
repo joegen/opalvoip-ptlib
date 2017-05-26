@@ -36,7 +36,6 @@
     static void InitialiseRecursiveMutex(pthread_mutex_t *mutex);
   protected:
     mutable pthread_mutex_t m_mutex;
-    void Construct();
 #endif
 
 

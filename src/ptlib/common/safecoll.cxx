@@ -110,7 +110,7 @@ PBoolean PSafeObject::SafeDereference()
 }
 
 
-PBoolean PSafeObject::LockReadOnly(const PDebugLocation & location) const
+bool PSafeObject::InternalLockReadOnly(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting read ("<<(void *)this<<")");
   m_safetyMutex.Wait();
@@ -132,14 +132,14 @@ PBoolean PSafeObject::LockReadOnly(const PDebugLocation & location) const
 }
 
 
-void PSafeObject::UnlockReadOnly(const PDebugLocation & location) const
+void PSafeObject::InternalUnlockReadOnly(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked read ("<<(void *)this<<")");
   m_safeInUse->EndRead(location);
 }
 
 
-PBoolean PSafeObject::LockReadWrite(const PDebugLocation & location) const
+bool PSafeObject::InternalLockReadWrite(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting readWrite ("<<(void *)this<<")");
   m_safetyMutex.Wait();
@@ -161,7 +161,7 @@ PBoolean PSafeObject::LockReadWrite(const PDebugLocation & location) const
 }
 
 
-void PSafeObject::UnlockReadWrite(const PDebugLocation & location) const
+void PSafeObject::InternalUnlockReadWrite(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked readWrite ("<<(void *)this<<")");
   m_safeInUse->EndWrite(location);
@@ -191,32 +191,32 @@ bool PSafeObject::GarbageCollection()
 
 /////////////////////////////////////////////////////////////////////////////
 
-PSafeLockBase::PSafeLockBase(const PSafeObject & object, const PDebugLocation & location, LockFn lock, UnlockFn unlock)
+PSafeLockBase::PSafeLockBase(const PSafeObject & object, const PDebugLocation * location, LockFn lock, UnlockFn unlock)
   : m_safeObject(const_cast<PSafeObject &>(object))
   , m_location(location)
   , m_lock(lock)
   , m_unlock(unlock)
-  , m_locked((m_safeObject.*lock)(m_location))
+  , m_locked((m_safeObject.*lock)(&m_location))
 {
 }
 
 PSafeLockBase::~PSafeLockBase()
 {
   if (m_locked)
-    (m_safeObject.*m_unlock)(m_location);
+    (m_safeObject.*m_unlock)(&m_location);
 }
 
 bool PSafeLockBase::Lock()
 {
   if (!m_locked)
-    m_locked = (m_safeObject.*m_lock)(m_location);
+    m_locked = (m_safeObject.*m_lock)(&m_location);
   return m_locked;
 }
 
 void PSafeLockBase::Unlock()
 {
   if (m_locked) {
-    (m_safeObject.*m_unlock)(m_location);
+    (m_safeObject.*m_unlock)(&m_location);
     m_locked = false;
   }
 }

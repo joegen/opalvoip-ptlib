@@ -187,7 +187,8 @@ class PSafeObject : public PObject
        recommended that the PSafePtr<> class is used to automatically manage
        the reference counting and locking of objects.
       */
-    PBoolean LockReadOnly(const PDebugLocation & location = PDebugLocation::None) const;
+    __inline bool LockReadOnly() const { return InternalLockReadOnly(NULL); }
+    __inline bool LockReadOnly(const PDebugLocation & location) const { return InternalLockReadOnly(&location); }
 
     /**Release the read only lock on an object.
        Unlock the read only mutex that a thread had obtained. Multiple threads
@@ -199,7 +200,8 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to automatically
        manage the reference counting and unlocking of objects.
       */
-    void UnlockReadOnly(const PDebugLocation & location = PDebugLocation::None) const;
+    __inline void UnlockReadOnly() const { InternalUnlockReadOnly(NULL); }
+    __inline void UnlockReadOnly(const PDebugLocation & location) const { InternalUnlockReadOnly(&location); }
 
     /**Lock the object for Read/Write access.
        This will lock the object in read/write mode. Multiple threads may lock
@@ -218,7 +220,8 @@ class PSafeObject : public PObject
        recommended that the PSafePtr<> class is used to automatically manage
        the reference counting and locking of objects.
       */
-    PBoolean LockReadWrite(const PDebugLocation & location = PDebugLocation::None) const;
+    __inline bool LockReadWrite() const { return InternalLockReadWrite(NULL); }
+    __inline bool LockReadWrite(const PDebugLocation & location) const { return InternalLockReadWrite(&location); }
 
     /**Release the read/write lock on an object.
        Unlock the read/write mutex that a thread had obtained. Multiple threads
@@ -230,7 +233,8 @@ class PSafeObject : public PObject
        It is recommended that the PSafePtr<> class is used to automatically
        manage the reference counting and unlocking of objects.
       */
-    void UnlockReadWrite(const PDebugLocation & location = PDebugLocation::None) const;
+    __inline void UnlockReadWrite() const { InternalUnlockReadWrite(NULL); }
+    __inline void UnlockReadWrite(const PDebugLocation & location) const { InternalUnlockReadWrite(&location); }
 
     /**Set the removed flag.
        This flags the object as beeing removed but does not physically delete
@@ -279,6 +283,11 @@ class PSafeObject : public PObject
   //@}
 
   private:
+    bool InternalLockReadOnly(const PDebugLocation * location) const;
+    void InternalUnlockReadOnly(const PDebugLocation * location) const;
+    bool InternalLockReadWrite(const PDebugLocation * location) const;
+    void InternalUnlockReadWrite(const PDebugLocation * location) const;
+
     mutable PCriticalSection m_safetyMutex;
     unsigned          m_safeReferenceCount;
     bool              m_safelyBeingRemoved;
@@ -287,16 +296,20 @@ class PSafeObject : public PObject
 
   friend class PSafeCollection;
   friend class PSafePtrBase;
+  friend class PSafeLockReadOnly;
+  friend class PSafeLockReadWrite;
+  friend class PInstrumentedSafeLockReadOnly;
+  friend class PInstrumentedSafeLockReadWrite;
 };
 
 
 class PSafeLockBase
 {
   protected:
-    typedef bool (PSafeObject:: * LockFn)(const PDebugLocation & location) const;
-    typedef void (PSafeObject:: * UnlockFn)(const PDebugLocation & location) const;
+    typedef bool (PSafeObject:: * LockFn)(const PDebugLocation * location) const;
+    typedef void (PSafeObject:: * UnlockFn)(const PDebugLocation * location) const;
 
-    PSafeLockBase(const PSafeObject & object, const PDebugLocation & location, LockFn lock, UnlockFn unlock);
+    PSafeLockBase(const PSafeObject & object, const PDebugLocation * location, LockFn lock, UnlockFn unlock);
 
   public:
     ~PSafeLockBase();
@@ -322,7 +335,7 @@ class PSafeLockReadOnly : public PSafeLockBase
 {
   public:
     PSafeLockReadOnly(const PSafeObject & object)
-      : PSafeLockBase(object, PDebugLocation::None, &PSafeObject::LockReadOnly, &PSafeObject::UnlockReadOnly)
+      : PSafeLockBase(object, NULL, &PSafeObject::InternalLockReadOnly, &PSafeObject::InternalUnlockReadOnly)
     { }
 };
 
@@ -333,7 +346,7 @@ class PSafeLockReadWrite : public PSafeLockBase
 {
   public:
     PSafeLockReadWrite(const PSafeObject & object)
-      : PSafeLockBase(object, PDebugLocation::None, &PSafeObject::LockReadWrite, &PSafeObject::UnlockReadWrite)
+      : PSafeLockBase(object, NULL, &PSafeObject::InternalLockReadWrite, &PSafeObject::InternalUnlockReadWrite)
     { }
 };
 
@@ -343,7 +356,7 @@ class PSafeLockReadWrite : public PSafeLockBase
   {
     public:
       PInstrumentedSafeLockReadOnly(const PSafeObject & object, const PDebugLocation & location)
-        : PSafeLockBase(object, location, &PSafeObject::LockReadOnly, &PSafeObject::UnlockReadOnly)
+        : PSafeLockBase(object, &location, &PSafeObject::InternalLockReadOnly, &PSafeObject::InternalUnlockReadOnly)
       { }
   };
 
@@ -351,7 +364,7 @@ class PSafeLockReadWrite : public PSafeLockBase
   {
     public:
       PInstrumentedSafeLockReadWrite(const PSafeObject & object, const PDebugLocation & location)
-        : PSafeLockBase(object, location, &PSafeObject::LockReadWrite, &PSafeObject::UnlockReadWrite)
+        : PSafeLockBase(object, &location, &PSafeObject::InternalLockReadWrite, &PSafeObject::InternalUnlockReadWrite)
       { }
   };
 

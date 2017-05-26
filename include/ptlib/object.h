@@ -310,10 +310,9 @@ struct PDebugLocation
       : m_file(NULL), m_line(0), m_extra(extra) { }
     PDebugLocation(const char * file, unsigned line, const char * extra = NULL)
       : m_file(file), m_line(line), m_extra(extra) { }
+    PDebugLocation(const PDebugLocation * location);
 
     void PrintOn(ostream & strm, const char * prefix = NULL) const;
-
-    static PDebugLocation const None;
 };
 
 __inline ostream & operator<<(ostream & strm, const PDebugLocation & location) { location.PrintOn(strm); return strm; }
@@ -1395,7 +1394,7 @@ namespace PProfiling
       void EndMeasurement(
         const void * context,
         const PObject * object,
-        const PDebugLocation & location,
+        const PDebugLocation * location,
         uint64_t startTime
       );
 
@@ -1432,7 +1431,7 @@ namespace PProfiling
 
           ~Measure()
           {
-            m_scope.EndMeasurement(m_context, m_object, PDebugLocation::None, m_startCycle);
+            m_scope.EndMeasurement(m_context, m_object, NULL, m_startCycle);
           }
       };
   };

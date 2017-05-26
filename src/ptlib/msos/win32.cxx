@@ -1733,25 +1733,9 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
-PTimedMutex::PTimedMutex(const PDebugLocation & location, unsigned timeout)
-  : PMutexExcessiveLockInfo(location, timeout)
-  , m_lockerId(PNullThreadIdentifier)
-  , m_lastLockerId(PNullThreadIdentifier)
-  , m_lastUniqueId(0)
-  , m_lockCount(0)
-  , m_handle(::CreateMutex(NULL, FALSE, NULL))
+void PTimedMutex::PlatformConstruct()
 {
-}
-
-
-PTimedMutex::PTimedMutex(const PTimedMutex & other)
-  : PMutexExcessiveLockInfo(other)
-  , m_lockerId(PNullThreadIdentifier)
-  , m_lastLockerId(PNullThreadIdentifier)
-  , m_lastUniqueId(0)
-  , m_lockCount(0)
-  , m_handle(::CreateMutex(NULL, FALSE, NULL))
-{
+  m_handle = ::CreateMutex(NULL, FALSE, NULL);
 }
 
 
@@ -1761,9 +1745,9 @@ PBoolean PTimedMutex::PlatformWait(const PTimeInterval & timeout)
 }
 
 
-void PTimedMutex::PlatformSignal(const PDebugLocation & fileLine)
+void PTimedMutex::PlatformSignal(const PDebugLocation * location)
 {
-  CommonSignal(fileLine);
+  InternalSignal(location);
   PAssertOS(::ReleaseMutex(m_handle));
 }
 

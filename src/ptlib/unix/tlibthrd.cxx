@@ -1234,19 +1234,6 @@ void PSemaphore::Signal()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PTimedMutex::PTimedMutex(const PDebugLocation & location, unsigned timeout)
-  : PMutexExcessiveLockInfo(location, timeout)
-{
-  Construct();
-}
-
-PTimedMutex::PTimedMutex(const PTimedMutex & other)
-  : PMutexExcessiveLockInfo(other)
-{
-  Construct();
-}
-
-
 void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
 {
 #if P_HAS_RECURSIVE_MUTEX
@@ -1272,11 +1259,8 @@ void PTimedMutex::InitialiseRecursiveMutex(pthread_mutex_t *mutex)
 }
 
 
-void PTimedMutex::Construct()
+void PTimedMutex::PlatformConstruct()
 {
-  m_lastLockerId = m_lockerId = PNullThreadIdentifier;
-  m_lastUniqueId = 0;
-  m_lockCount = 0;
   InitialiseRecursiveMutex(&m_mutex);
 }
 
@@ -1374,11 +1358,11 @@ PBoolean PTimedMutex::PlatformWait(const PTimeInterval & waitTime)
 }
 
 
-void PTimedMutex::PlatformSignal(const PDebugLocation & location)
+void PTimedMutex::PlatformSignal(const PDebugLocation * location)
 {
 #if P_HAS_RECURSIVE_MUTEX
 
-  CommonSignal(location);
+  InternalSignal(location);
 
 #else
 
@@ -1390,7 +1374,7 @@ void PTimedMutex::PlatformSignal(const PDebugLocation & location)
   // if lock was recursively acquired, then decrement the counter
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
-  if (CommonSignal(location))
+  if (InternalSignal(location))
     return;
 
 #endif

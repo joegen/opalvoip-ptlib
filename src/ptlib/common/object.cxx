@@ -50,7 +50,19 @@
 #endif
 
 
-PDebugLocation const PDebugLocation::None;
+PDebugLocation::PDebugLocation(const PDebugLocation * location)
+{
+  if (location) {
+    m_file = location->m_file;
+    m_line = location->m_line;
+    m_extra = location->m_extra;
+  }
+  else {
+    m_file = NULL;
+    m_line = 0;
+    m_extra = NULL;
+  }
+}
 
 void PDebugLocation::PrintOn(ostream & strm, const char * prefix) const
 {
@@ -1511,7 +1523,7 @@ namespace PProfiling
   struct FunctionRawData
   {
     PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, void * function, void * caller));
-    PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, const PDebugLocation & location));
+    PPROFILE_EXCLUDE(FunctionRawData(FunctionType type, const PDebugLocation * location));
 
     PPROFILE_EXCLUDE(void Dump(ostream & out) const);
 
@@ -1597,15 +1609,22 @@ namespace PProfiling
   }
 
 
-  FunctionRawData::FunctionRawData(FunctionType type, const PDebugLocation & location)
+  FunctionRawData::FunctionRawData(FunctionType type, const PDebugLocation * location)
     : m_type(type)
     , m_threadIdentifier(PThread::GetCurrentThreadId())
     , m_threadUniqueId(PThread::GetCurrentUniqueIdentifier())
     , m_when(GetCycles())
   {
-    m_function.m_name = location.m_extra;
-    m_function.m_file = location.m_file;
-    m_function.m_line = location.m_line;
+    if (location) {
+      m_function.m_name = location->m_extra;
+      m_function.m_file = location->m_file;
+      m_function.m_line = location->m_line;
+    }
+    else {
+      m_function.m_name = NULL;
+      m_function.m_file = NULL;
+      m_function.m_line = 0;
+    }
 
     m_link = s_database.m_functions.exchange(this);
   }
@@ -1695,14 +1714,14 @@ namespace PProfiling
     : m_location(location)
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_ManualEntry, location);
+      new FunctionRawData(e_ManualEntry, &location);
   }
 
 
   Block::~Block()
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_ManualExit, m_location);
+      new FunctionRawData(e_ManualExit, &m_location);
   }
 
 
@@ -1775,14 +1794,14 @@ namespace PProfiling
   void PreSystem()
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_SystemEntry, PDebugLocation::None);
+      new FunctionRawData(e_SystemEntry, NULL);
   }
 
 
   void PostSystem()
   {
     if (s_database.m_enabled)
-      new FunctionRawData(e_SystemExit, PDebugLocation::None);
+      new FunctionRawData(e_SystemExit, NULL);
   }
 
 
@@ -2184,7 +2203,7 @@ namespace PProfiling
     {
     }
 
-    void EndMeasurement(const void * ptr, const PObject * object, const PDebugLocation & location, const PNanoSeconds & duration)
+    void EndMeasurement(const void * ptr, const PObject * object, const PDebugLocation * location, const PNanoSeconds & duration)
     {
       PWaitAndSignal lock(m_mutex);
 
@@ -2211,7 +2230,8 @@ namespace PProfiling
               << setprecision(3) << scientific << showbase << m_mma << noshowbase
               << " thresh=" << m_thresholdTime.AsString(3, PTimeInterval::SecondsSI) << "s;" << m_thresholdPercent << "%,"
                    " slow=" << m_countTimesOverThreshold << '/' << m_mma.GetCount() << ' ' << percentOver << '%';
-        location.PrintOn(trace, " where=");
+        if (location)
+          location->PrintOn(trace, " where=");
         for (list<History>::iterator it = m_history.begin(); it != m_history.end(); ++it) {
           trace << "\n    when=" << it->m_when.AsString(PTime::TodayFormat, PTrace::GetTimeZone()) << ","
                    " duration=" << it->m_duration.AsString(3, PTimeInterval::SecondsSI) << 's';
@@ -2302,7 +2322,7 @@ namespace PProfiling
       m_implementation->m_maxHistory = maxHistory;
   }
 
-  void TimeScope::EndMeasurement(const void * context, const PObject * object, const PDebugLocation & location, uint64_t startCycle)
+  void TimeScope::EndMeasurement(const void * context, const PObject * object, const PDebugLocation * location, uint64_t startCycle)
   {
     m_implementation->EndMeasurement(context, object, location, CyclesToNanoseconds(GetCycles() - startCycle));
   }

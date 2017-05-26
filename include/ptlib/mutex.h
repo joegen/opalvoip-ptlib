@@ -46,12 +46,14 @@ class PMutexExcessiveLockInfo
     mutable bool   m_excessiveLockActive;
     uint64_t       m_startHeldSamplePoint;
 
+    PMutexExcessiveLockInfo();
     PMutexExcessiveLockInfo(
       const PDebugLocation & location,
       unsigned timeout
     );
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     virtual ~PMutexExcessiveLockInfo() { }
+    void Construct(unsigned timeout);
     void PrintOn(ostream &strm) const;
     void ExcessiveLockPhantom(const PObject & mutex) const;
     virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);
@@ -93,9 +95,10 @@ class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
 
        The name/line parameters are used for deadlock detection debugging.
      */
+    explicit PTimedMutex();
     explicit PTimedMutex(
-      const PDebugLocation & location = PDebugLocation::None, ///< Source file/line of mutex definition
-      unsigned timeout = 0       ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+      const PDebugLocation & location, ///< Source file/line of mutex definition
+      unsigned timeout = 0             ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
     );
 
     /**Copy constructor is allowed but does not copy, allocating a new mutex.
@@ -147,11 +150,13 @@ class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
     PUniqueThreadIdentifier m_lastUniqueId;
     unsigned                m_lockCount;
 
+    void Construct();
+    void PlatformConstruct();
     bool PlatformWait(const PTimeInterval & timeout);
-    void PlatformSignal(const PDebugLocation & location);
-    void CommonWait(const PDebugLocation & location);
-    void CommonWaitComplete(uint64_t startWaitCycle, const PDebugLocation & location);
-    bool CommonSignal(const PDebugLocation & location);
+    void PlatformSignal(const PDebugLocation * location);
+    void InternalWait(const PDebugLocation * location);
+    void InternalWaitComplete(uint64_t startWaitCycle, const PDebugLocation * location);
+    bool InternalSignal(const PDebugLocation * location);
 
 // Include platform dependent part of class
 #ifdef _WIN32
@@ -177,7 +182,7 @@ typedef PTimedMutex PMutex;
 #define PDECLARE_MUTEX(...) PDECLARE_MUTEX_PART1(PARG_COUNT(__VA_ARGS__), (__VA_ARGS__))
 
 #if PTRACING
-  class PInstrumentedMutex : public PTimedMutex
+  class PInstrumentedMutex : PDebugLocation, public PTimedMutex
   {
     public:
       PInstrumentedMutex(
@@ -193,7 +198,8 @@ typedef PTimedMutex PMutex;
         unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
         unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
         unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
-      ) : PTimedMutex      (PDebugLocation(file, line, baseName), std::max((int)1000, (int)waitTime*2))
+      ) : PDebugLocation(file, line, baseName)
+        , PTimedMutex(this, std::max((int)1000, (int)waitTime*2))
         , m_timeWaitContext(PDebugLocation(file, line, waitName), waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
         , m_timeHeldContext(PDebugLocation(file, line, heldName), heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
       { }
@@ -211,7 +217,7 @@ typedef PTimedMutex PMutex;
       void SetHeldMaxHistory(unsigned maxHistory) { m_timeHeldContext.SetMaxHistory(maxHistory); }
 
       virtual bool InstrumentedWait(const PTimeInterval & timeout, const PDebugLocation & location);
-      virtual void InstrumentedSignal(const PDebugLocation & location) { PlatformSignal(location); }
+      virtual void InstrumentedSignal(const PDebugLocation & location) { PlatformSignal(&location); }
 
     protected:
       virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);

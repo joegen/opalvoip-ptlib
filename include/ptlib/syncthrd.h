@@ -259,9 +259,10 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
   public:
   /**@name Construction */
   //@{
+    explicit PReadWriteMutex();
     explicit PReadWriteMutex(
-      const PDebugLocation & location = PDebugLocation::None, ///< Source file/line of mutex definition
-      unsigned timeout = 0          ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
+      const PDebugLocation & location, ///< Source file/line of mutex definition
+      unsigned timeout = 0             ///< Timeout in ms, before declaring a possible deadlock. Zero uses default.
     );
     ~PReadWriteMutex();
   //@}
@@ -272,11 +273,13 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
         This call may be nested and must have an equal number of EndRead()
         calls for the mutex to be released.
      */
-    void StartRead(const PDebugLocation & location = PDebugLocation::None);
+    __inline void StartRead() { InternalStartRead(NULL); }
+    __inline void StartRead(const PDebugLocation & location) { InternalStartRead(&location); }
 
     /** This function attempts to release the mutex for reading.
      */
-    void EndRead(const PDebugLocation & location = PDebugLocation::None);
+    __inline void EndRead() { InternalEndRead(NULL); }
+    __inline void EndRead(const PDebugLocation & location) { InternalEndRead(&location); }
 
     /** This function attempts to acquire the mutex for writing.
         This call may be nested and must have an equal number of EndWrite()
@@ -293,7 +296,8 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
         lock to write lock without the possiblility of the object being
         changed and application logic should take this into account.
      */
-    void StartWrite(const PDebugLocation & location = PDebugLocation::None);
+    __inline void StartWrite() { InternalStartWrite(NULL); }
+    __inline void StartWrite(const PDebugLocation & location) { InternalStartWrite(&location); }
 
     /** This function attempts to release the mutex for writing.
         Note, if the same thread had a read lock when the StartWrite() was
@@ -306,12 +310,18 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
         read lock without the possiblility of the object being changed and
         application logic should take this into account.
      */
-    void EndWrite(const PDebugLocation & location = PDebugLocation::None);
+    void EndWrite() { InternalEndWrite(NULL); }
+    void EndWrite(const PDebugLocation & location) { InternalEndWrite(&location); }
   //@}
 
     virtual void PrintOn(ostream &strm) const;
 
   protected:
+    void InternalStartRead(const PDebugLocation * location);
+    void InternalEndRead(const PDebugLocation * location);
+    void InternalStartWrite(const PDebugLocation * location);
+    void InternalEndWrite(const PDebugLocation * location);
+
 #if P_READ_WRITE_ALGO2
     PSemaphore  m_inSemaphore;
     unsigned    m_inCount;
@@ -352,13 +362,17 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
     Nest * GetNest();
     Nest & StartNest();
     void EndNest();
-    void InternalStartRead(Nest & nest, const PDebugLocation & location);
-    void InternalEndRead(Nest & nest, const PDebugLocation & location);
-    void InternalStartWrite(Nest & nest, const PDebugLocation & location);
-    void InternalEndWrite(Nest & nest, const PDebugLocation & location);
+    void InternalStartReadWithNest(Nest & nest, const PDebugLocation & location);
+    void InternalEndReadWithNest(Nest & nest, const PDebugLocation & location);
+    void InternalStartWriteWithNest(Nest & nest, const PDebugLocation & location);
+    void InternalEndWriteWithNest(Nest & nest, const PDebugLocation & location);
     void InternalWait(Nest & nest, PSync & sync, const PDebugLocation & location) const;
 
   friend class PSafeObject;
+  friend class PReadWaitAndSignal;
+  friend class PWriteWaitAndSignal;
+  friend class PInstrumentedReadWaitAndSignal;
+  friend class PInstrumentedWriteWaitAndSignal;
 };
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
@@ -376,22 +390,22 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
 class PReadWriteWaitAndSignalBase
 {
   protected:
-    typedef void (PReadWriteMutex:: * StartFn)(const PDebugLocation & location);
-    typedef void (PReadWriteMutex:: * EndFn)(const PDebugLocation & location);
+    typedef void (PReadWriteMutex:: * StartFn)(const PDebugLocation * location);
+    typedef void (PReadWriteMutex:: * EndFn)(const PDebugLocation * location);
 
-    PReadWriteWaitAndSignalBase(const PReadWriteMutex & mutex, const PDebugLocation & location, StartFn start, EndFn end)
+    PReadWriteWaitAndSignalBase(const PReadWriteMutex & mutex, const PDebugLocation * location, StartFn start, EndFn end)
       : m_mutex(const_cast<PReadWriteMutex &>(mutex))
       , m_location(location)
       , m_end(end)
     {
       if (start)
-        (m_mutex.*start)(m_location);
+        (m_mutex.*start)(&m_location);
     }
 
   public:
     ~PReadWriteWaitAndSignalBase()
     {
-      (m_mutex.*m_end)(m_location);
+      (m_mutex.*m_end)(&m_location);
     }
 
   protected:
@@ -429,7 +443,7 @@ class PReadWaitAndSignal : public PReadWriteWaitAndSignalBase
     PReadWaitAndSignal(
       const PReadWriteMutex & mutex,  ///< PReadWriteMutex descendent to wait/signal.
       bool start = true               ///< Start read operation on PReadWriteMutex before returning.
-    ) : PReadWriteWaitAndSignalBase(mutex, PDebugLocation::None, start ? &PReadWriteMutex::StartRead : NULL, &PReadWriteMutex::EndRead) { }
+    ) : PReadWriteWaitAndSignalBase(mutex, NULL, start ? &PReadWriteMutex::InternalStartRead : NULL, &PReadWriteMutex::InternalEndRead) { }
 };
 
 
@@ -460,7 +474,7 @@ class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
     PWriteWaitAndSignal(
       const PReadWriteMutex & mutex,  ///< PReadWriteMutex descendent to wait/signal.
       PBoolean start = true           ///< Start write operation on PReadWriteMutex before returning.
-    ) : PReadWriteWaitAndSignalBase(mutex, PDebugLocation::None, start ? &PReadWriteMutex::StartWrite : NULL, &PReadWriteMutex::EndWrite) { }
+    ) : PReadWriteWaitAndSignalBase(mutex, NULL, start ? &PReadWriteMutex::InternalStartWrite : NULL, &PReadWriteMutex::InternalEndWrite) { }
 };
 
 
@@ -531,7 +545,7 @@ class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
         const PReadWriteMutex & mutex,
         const PDebugLocation & location,
         bool start = true
-      ) : PReadWriteWaitAndSignalBase(mutex, location, start ? &PReadWriteMutex::StartRead : NULL, &PReadWriteMutex::EndRead) { }
+      ) : PReadWriteWaitAndSignalBase(mutex, &location, start ? &PReadWriteMutex::InternalStartRead : NULL, &PReadWriteMutex::InternalEndRead) { }
   };
 
   class PInstrumentedWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
@@ -541,7 +555,7 @@ class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
         const PReadWriteMutex & mutex,
         const PDebugLocation & location,
         PBoolean start = true
-      ) : PReadWriteWaitAndSignalBase(mutex, location, start ? &PReadWriteMutex::StartWrite : NULL, &PReadWriteMutex::EndWrite) { }
+      ) : PReadWriteWaitAndSignalBase(mutex, &location, start ? &PReadWriteMutex::InternalStartWrite : NULL, &PReadWriteMutex::InternalEndWrite) { }
   };
 
   #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, ...)                \
