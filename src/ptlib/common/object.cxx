@@ -1858,7 +1858,7 @@ namespace PProfiling
             strm.precision(2);
           else
             strm.precision(3);
-          strm << 1000000.0*m_time << 'µ';
+          strm << 1000000.0*m_time << '\xb5'; // Greek mu, micro symbol in most fonts
         }
         strm << "s)";
       }
