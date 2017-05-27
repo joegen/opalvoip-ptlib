@@ -830,9 +830,9 @@
   #pragma P_SDL_INCLUDE(SDL_main.h)
 
   #ifdef P_64BIT
-    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x64/SDL.lib"
+    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x64/SDL2.lib"
   #else
-    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x86/SDL.lib"
+    #define P_SDL_LIBRARY "@SDL_DIR@/lib/x86/SDL2.lib"
   #endif
 
 #endif

@@ -167,12 +167,6 @@ class PSDL_System
         return;
       }
 
-      //SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
-      
-#ifdef _WIN32
-      SDL_SetModuleHandle(GetModuleHandle(NULL));
-#endif
-
       m_started.Signal();
 
       PTRACE(4, "Starting main event loop");
