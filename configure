@@ -906,7 +906,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -1108,7 +1107,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1361,15 +1359,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1507,7 +1496,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1660,7 +1649,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1772,7 +1760,7 @@ Optional Features:
   --disable-appshare      disable application sharing support
   --disable-shmvideo      disable shared memory video devices
   --disable-curses        disable disable Curses (text mode windows) support
-  --disable-sdl           disable disable libSDL (video display) support
+  --disable-sdl           disable disable libSDL2 (video display) support
   --disable-gstreamer     disable GStreamer 0.10 support
   --disable-gstreamer     disable GStreamer 1.0 support
   --disable-odbc          disable ODBC database support
@@ -7781,6 +7769,7 @@ $as_echo "no" >&6; }
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 
 
 
@@ -16981,8 +16970,8 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking disable libSDL (video display) support" >&5
-$as_echo_n "checking disable libSDL (video display) support... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking disable libSDL2 (video display) support" >&5
+$as_echo_n "checking disable libSDL2 (video display) support... " >&6; }
 
    # Check whether --enable-sdl was given.
 if test "${enable_sdl+set}" = set; then :
@@ -17059,12 +17048,12 @@ if test -n "$SDL_CFLAGS"; then
     pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sdl2") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_SDL_CFLAGS=`$PKG_CONFIG --cflags "sdl" 2>/dev/null`
+  pkg_cv_SDL_CFLAGS=`$PKG_CONFIG --cflags "sdl2" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -17076,12 +17065,12 @@ if test -n "$SDL_LIBS"; then
     pkg_cv_SDL_LIBS="$SDL_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sdl2") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_SDL_LIBS=`$PKG_CONFIG --libs "sdl" 2>/dev/null`
+  pkg_cv_SDL_LIBS=`$PKG_CONFIG --libs "sdl2" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -17102,9 +17091,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sdl" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sdl2" 2>&1`
         else
-	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sdl" 2>&1`
+	        SDL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sdl2" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$SDL_PKG_ERRORS" >&5
@@ -17131,18 +17120,23 @@ fi
    MY_LINK_IFELSE_LIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
    LIBS="$SDL_LIBS $LIBS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for disable libSDL (video display) support usability" >&5
-$as_echo_n "checking for disable libSDL (video display) support usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for disable libSDL2 (video display) support usability" >&5
+$as_echo_n "checking for disable libSDL2 (video display) support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+      #define SDL_MAIN_HANDLED 1
       #include <SDL.h>
-      #undef main
 
 int
 main ()
 {
-SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE)
+
+      #if !SDL_VERSION_ATLEAST(2,0,0)
+         #error Unsupported version
+      #endif
+      SDL_Init(SDL_INIT_VIDEO)
+
   ;
   return 0;
 }
@@ -21251,9 +21245,9 @@ fi
 
 
    if ${PTLIB_SDL+:} false; then :
-  $as_echo "                              SDL : ${PTLIB_SDL}"
+  $as_echo "                             SDL2 : ${PTLIB_SDL}"
 else
-  $as_echo "                              SDL : no"
+  $as_echo "                             SDL2 : no"
 
 fi
 

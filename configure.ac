@@ -2146,14 +2146,19 @@ dnl MSWIN_CHECK_DIR  libsdl,%ProgramW6432%\OSSBuild\GStreamer\v0.10.6\sdk
 PTLIB_MODULE_OPTION(
    [SDL], 
    [sdl],
-   [disable libSDL (video display) support],
-   [sdl], 
+   [disable libSDL2 (video display) support],
+   [sdl2], 
    [],[],
    [
+      #define SDL_MAIN_HANDLED 1
       #include <SDL.h>
-      #undef main
    ],
-   [SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE)],
+   [
+      #if !SDL_VERSION_ATLEAST(2,0,0)
+         #error Unsupported version
+      #endif
+      SDL_Init(SDL_INIT_VIDEO)
+   ],
    [],
    [],
    [HAS_VIDEO]
@@ -2737,7 +2742,7 @@ MY_OUTPUT_SUMMARY(
    [                              shm], PTLIB_AUDIOSHM,
    [], [],
    [                            Video], PTLIB_VIDEO,
-   [                              SDL], PTLIB_SDL,
+   [                             SDL2], PTLIB_SDL,
    [                     Video4linux ], PTLIB_V4L,
    [                     Video4linux2], PTLIB_V4L2,
    [                              BSD], PTLIB_BSDVIDEOCAP,

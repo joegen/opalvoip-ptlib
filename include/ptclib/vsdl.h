@@ -112,19 +112,19 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
       PBoolean endFrame = true
     );
 
-  protected:
-    struct SDL_Overlay * m_overlay;
-    PSyncPoint    m_operationComplete;
-    unsigned      m_x, m_y;
-
   private:
-    PString GetTitle() const;
-    void UpdateContent();
-    void CreateOverlay(struct SDL_Surface * surface);
-    void FreeOverlay();
-    void PostEvent(unsigned codei, bool wait);
+    struct SDL_Window * m_window;
+    struct SDL_Renderer * m_renderer;
+    struct SDL_Texture * m_texture;
+    PSyncPoint           m_operationComplete;
 
-  friend class PSDL_Window;
+    bool InternalOpen();
+    void InternalClose();
+    void InternalSetFrameSize();
+    void InternalSetFrameData();
+    void PostEvent(unsigned code, bool wait);
+
+  friend class PSDL_System;
 };
 
 
