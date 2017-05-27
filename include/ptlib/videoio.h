@@ -854,6 +854,10 @@ class PVideoOutputDevice : public PVideoDevice
       int x,  // X position of device surface
       int y   // Y position of device surface
     );
+  
+#ifdef P_MACOSX
+  virtual void ApplicationMain() { }
+#endif
 };
 
 

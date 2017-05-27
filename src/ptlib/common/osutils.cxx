@@ -47,6 +47,7 @@
   #include <ptlib/msos/ptlib/debstrm.h>
 #elif defined(P_MACOSX)
   #include <mach-o/dyld.h>
+  #include <ptlib/videoio.h>
 #endif
 
 
@@ -2126,6 +2127,12 @@ PProcess * PProcessInstance = NULL;
 
 int PProcess::InternalMain(void *)
 {
+#if P_SDL && defined(P_MACOSX)
+  PVideoOutputDevice * device = PVideoOutputDevice::CreateDeviceByName(P_SDL_VIDEO_PREFIX);
+  if (device != NULL)
+    device->ApplicationMain();
+#endif
+  
 #if P_EXCEPTIONS
   try {
     Main();

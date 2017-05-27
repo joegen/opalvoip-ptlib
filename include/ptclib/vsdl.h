@@ -112,6 +112,10 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
       PBoolean endFrame = true
     );
 
+#ifdef P_MACOSX
+    virtual void ApplicationMain();
+#endif
+  
   private:
     struct SDL_Window * m_window;
     struct SDL_Renderer * m_renderer;

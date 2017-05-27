@@ -37,6 +37,10 @@
 #include <ptclib/vsdl.h>
 #include <ptlib/vconvert.h>
 
+#ifdef P_MACOSX
+  #include <ptlib/pprocess.h>
+#endif
+
 #define new PNEW
 #define PTraceModule() "SDL"
 
@@ -66,7 +70,7 @@ PCREATE_VIDOUTPUT_PLUGIN_EX(SDL,
 
 ///////////////////////////////////////////////////////////////////////
 
-class PSDL_System : public PMutex
+class PSDL_System
 {
   public:
     static PSDL_System & GetInstance()
@@ -80,14 +84,45 @@ class PSDL_System : public PMutex
       e_Open,
       e_Close,
       e_SetFrameSize,
-      e_SetFrameData
+      e_SetFrameData,
+      e_ForceQuit
     };
 
+  
+    void ForceQuit()
+    {
+      PTRACE(3, "Forcing quit of event thread");
+      
+      SDL_Event sdlEvent;
+      sdlEvent.type = SDL_USEREVENT;
+      sdlEvent.user.code = e_ForceQuit;
+      sdlEvent.user.data1 = NULL;
+      ::SDL_PushEvent(&sdlEvent);
+    }
+  
+#ifdef P_MACOSX
+  void ReturnToApplicationMain()
+  {
+    PProcess::Current().InternalMain();
+    ForceQuit();
+  }
+  
+  void ApplicationMain()
+  {
+    if (m_thread != NULL)
+      return;
+    
+    m_thread = PThread::Current();
+
+    new PThreadObj<PSDL_System>(*this, &PSDL_System::ReturnToApplicationMain, true, PProcess::Current().GetName());
+    MainLoop();
+  }
+#endif
 
     void Run()
     {
       if (m_thread == NULL) {
-        PTRACE(3, "Shutting down SDL thread.");
+        PTRACE(3, "Starting event thread.");
         m_thread = new PThreadObj<PSDL_System>(*this, &PSDL_System::MainLoop, true, "SDL");
         m_started.Wait();
       }
@@ -98,9 +133,7 @@ class PSDL_System : public PMutex
     PThread     * m_thread;
     PSyncPoint    m_started;
   
-    PSyncQueue<SDL_Event> m_queue;
-
-    typedef std::list<PVideoOutputDevice_SDL *> DeviceList;
+    typedef std::set<PVideoOutputDevice_SDL *> DeviceList;
     DeviceList m_devices;
 
     PSDL_System()
@@ -110,21 +143,9 @@ class PSDL_System : public PMutex
 
     ~PSDL_System()
     {
-      if (m_thread == NULL)
-        return;
-      
-      m_queue.Close(true);
-      m_thread->WaitForTermination();
-      delete m_thread;
+      ForceQuit();
     }
 
-    static int AddToLocalQueue(void * userdata, SDL_Event * event)
-    {
-      reinterpret_cast<PSDL_System *>(userdata)->m_queue.Enqueue(*event);
-      return 1;
-    }
-  
-  
     virtual void MainLoop()
     {
 #if PTRACING
@@ -146,22 +167,22 @@ class PSDL_System : public PMutex
         return;
       }
 
-      SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+      //SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
       
 #ifdef _WIN32
       SDL_SetModuleHandle(GetModuleHandle(NULL));
 #endif
 
-      // We need to redirect events to our own queue as on some platforms (Mac OS-X)
-      // this needs to be in the "main thread", and this is not always practical.
-      SDL_SetEventFilter(&PSDL_System::AddToLocalQueue, this);
-      
       m_started.Signal();
 
       PTRACE(4, "Starting main event loop");
       SDL_Event sdlEvent;
-      while (m_queue.Dequeue(sdlEvent) && sdlEvent.type != SDL_QUIT)
-        HandleEvent(sdlEvent);
+      do {
+        if (!SDL_WaitEvent(&sdlEvent)) {
+          PTRACE(1, "Error in WaitEvent: " << ::SDL_GetError());
+          break;
+        }
+      } while (HandleEvent(sdlEvent));
 
       PTRACE(3, "Quitting SDL");
       for (DeviceList::iterator it = m_devices.begin(); it != m_devices.end(); ++it)
@@ -176,10 +197,8 @@ class PSDL_System : public PMutex
     }
 
 
-    void HandleEvent(SDL_Event & sdlEvent)
+    bool HandleEvent(SDL_Event & sdlEvent)
     {
-      PWaitAndSignal mutex(*this);
-
       switch (sdlEvent.type) {
         case SDL_USEREVENT :
         {
@@ -187,21 +206,27 @@ class PSDL_System : public PMutex
           switch (sdlEvent.user.code) {
             case e_Open :
               if (device->InternalOpen())
-                m_devices.push_back(device);
+                m_devices.insert(device);
               break;
 
             case e_Close :
               device->InternalClose();
-              m_devices.remove(device);
+              if (m_devices.erase(device) == 0)
+                PTRACE(2, "Close of unknown device: " << device);
               break;
 
             case e_SetFrameSize :
-              device->InternalSetFrameSize();
+              if (m_devices.find(device) != m_devices.end())
+                device->InternalSetFrameSize();
               break;
 
             case e_SetFrameData :
-              device->InternalSetFrameData();
+              if (m_devices.find(device) != m_devices.end())
+                device->InternalSetFrameData();
               break;
+
+            case e_ForceQuit :
+              return false;
 
             default :
               PTRACE(5, "Unhandled user event " << sdlEvent.user.code);
@@ -223,11 +248,21 @@ class PSDL_System : public PMutex
         default :
           PTRACE(5, "Unhandled event " << (unsigned)sdlEvent.type);
       }
+      
+      return true;
     }
 };
 
 
 ///////////////////////////////////////////////////////////////////////
+
+#ifdef P_MACOSX
+void PVideoOutputDevice_SDL::ApplicationMain()
+{
+  PSDL_System::GetInstance().ApplicationMain();
+}
+#endif
+
 
 PVideoOutputDevice_SDL::PVideoOutputDevice_SDL()
   : m_window(NULL)
@@ -235,14 +270,14 @@ PVideoOutputDevice_SDL::PVideoOutputDevice_SDL()
   , m_texture(NULL)
 {
   m_colourFormat = PVideoFrameInfo::YUV420P();
-  PTRACE(5, "Constructed.");
+  PTRACE(5, "Constructed device: " << this);
 }
 
 
 PVideoOutputDevice_SDL::~PVideoOutputDevice_SDL()
 { 
   Close();
-  PTRACE(5, "Destroyed.");
+  PTRACE(5, "Destroyed device: " << this);
 }
 
 
@@ -264,6 +299,7 @@ PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImme
 
   m_deviceName = name;
 
+  PTRACE(5, "Opening device " << this << ' ' << m_deviceName);
   PSDL_System::GetInstance().Run();
   PostEvent(PSDL_System::e_Open, true);
   return IsOpen();
@@ -312,7 +348,7 @@ bool PVideoOutputDevice_SDL::InternalOpen()
     return false;
   }
   
-  PTRACE(3, "Opened SDL device: " << m_deviceName);
+  PTRACE(3, "Opened window for device: " << this << ' ' << m_deviceName);
   return true;
 }
 
@@ -328,7 +364,7 @@ PBoolean PVideoOutputDevice_SDL::Close()
   if (!IsOpen())
     return false;
   
-  PTRACE(3, "Closing SDL device: " << m_deviceName);
+  PTRACE(5, "Closing device: " << this << ' ' << m_deviceName);
   PostEvent(PSDL_System::e_Close, true);
   return true;
 }
@@ -339,6 +375,7 @@ void PVideoOutputDevice_SDL::InternalClose()
   SDL_DestroyTexture(m_texture);   m_texture  = NULL;
   SDL_DestroyRenderer(m_renderer); m_renderer = NULL;
   SDL_DestroyWindow(m_window);     m_window   = NULL;
+  PTRACE(3, "Closed window on device " << this << ' ' << m_deviceName);
   m_operationComplete.Signal();
 }
 
@@ -402,9 +439,12 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
   if (x != 0 || y != 0 || width != m_frameWidth || height != m_frameHeight || data == NULL || !endFrame)
     return false;
 
-  PWaitAndSignal mutex(PSDL_System::GetInstance());
-
-  SDL_UpdateTexture(m_texture, NULL, data, width);
+  void * ptr;
+  int pitch;
+  SDL_LockTexture(m_texture, NULL, &ptr, &pitch);
+  if (pitch == width)
+    memcpy(ptr, data, width*height*3/2);
+  SDL_UnlockTexture(m_texture);
   
   PostEvent(PSDL_System::e_SetFrameData, false);
   return true;
@@ -413,7 +453,8 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
 
 void PVideoOutputDevice_SDL::InternalSetFrameData()
 {
-  PWaitAndSignal sync(m_operationComplete, false);
+  if (m_texture == NULL)
+    return;
   
   SDL_RenderClear(m_renderer);
   SDL_RenderCopy(m_renderer, m_texture, NULL, NULL);
