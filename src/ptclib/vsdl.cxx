@@ -442,7 +442,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
   void * ptr;
   int pitch;
   SDL_LockTexture(m_texture, NULL, &ptr, &pitch);
-  if (pitch == width)
+  if (pitch == (int)width)
     memcpy(ptr, data, width*height*3/2);
   SDL_UnlockTexture(m_texture);
   
