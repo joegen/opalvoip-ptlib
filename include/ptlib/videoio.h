@@ -383,6 +383,16 @@ class PVideoDevice : public PVideoFrameInfo
      */
     virtual ~PVideoDevice();
 
+    /** Output the contents of the object to the stream. The exact output is
+       dependent on the exact semantics of the descendent class. This is
+       primarily used by the standard <code>#operator<<</code> function.
+
+       The default behaviour is to print the class name.
+     */
+    virtual void PrintOn(
+      ostream & strm   // Stream to print the object into.
+    ) const;
+
     P_DECLARE_STREAMABLE_ENUM(VideoFormat,
       PAL,
       NTSC,

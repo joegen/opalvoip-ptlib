@@ -37,6 +37,9 @@
 #include <ptlib/vconvert.h>
 
 
+#define PTraceModule() "PVidDev"
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 const PString & PVideoFrameInfo::YUV420P() { static PConstString const s(PTLIB_VIDEO_YUV420P); return s; }
@@ -477,6 +480,27 @@ PVideoDevice::~PVideoDevice()
 }
 
 
+void PVideoDevice::PrintOn(ostream & strm) const
+{
+  strm << '&' << this << ' ';
+  PVideoFrameInfo::PrintOn(strm);
+  strm << " [" << m_deviceName << "] {";
+
+  if (m_channelNumber >= 0)
+    strm << "channel=" << m_channelNumber << ',';
+
+  if (m_converter) {
+    strm << "converted";
+    if (m_converter->GetVFlipState())
+      strm << ",flipped";
+  }
+  else 
+    strm << "native";
+
+  strm << '}';
+}
+
+
 PVideoDevice::Attributes::Attributes()
   : m_brightness(-1)
   , m_contrast(-1)
@@ -625,12 +649,12 @@ PBoolean PVideoDevice::SetChannel(int newChannelNumber)
         return true;
     }
 
-    PTRACE(2, "PVidDev\tCannot set any possible channel number!");
+    PTRACE(2, "Cannot set any possible channel number on " << *this);
     return false;
   }
 
   if (newChannelNumber >= GetNumChannels()) {
-    PTRACE(2, "PVidDev\tSetChannel number (" << newChannelNumber << ") too large.");
+    PTRACE(2, "SetChannel number (" << newChannelNumber << ") too large on " << *this);
     return false;
   }
 
@@ -648,26 +672,26 @@ int PVideoDevice::GetChannel() const
 bool PVideoDevice::SetFrameInfoConverter(const PVideoFrameInfo & info)
 {
   if (!SetColourFormatConverter(info.GetColourFormat())) {
-    PTRACE(1, "PVidDev\tCould not set colour format in "
-           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
+    PTRACE(1, "Could not set colour format in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info << " on " << *this);
     return false;
   }
 
   if (!SetFrameSizeConverter(info.GetFrameWidth(), info.GetFrameHeight(), info.GetResizeMode())) {
-    PTRACE(1, "PVidDev\tCould not set frame size in "
-           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
+    PTRACE(1, "Could not set frame size in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info << " on " << *this);
     return false;
   }
 
   if (info.GetFrameRate() != 0) {
     if (!SetFrameRate(info.GetFrameRate())) {
-      PTRACE(1, "PVidDev\tCould not set frame rate in "
-           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info);
+      PTRACE(1, "Could not set frame rate in "
+           << (CanCaptureVideo() ? "grabber" : "display") << " to " << info << " on " << *this);
       return false;
     }
   }
 
-  PTRACE(4, "PVidDev\tVideo " << (CanCaptureVideo() ? "grabber" : "display") << " set to " << info);
+  PTRACE(4, "Video " << (CanCaptureVideo() ? "grabber" : "display") << " set to " << info << " on " << *this);
   return true;
 }
 
@@ -707,13 +731,13 @@ PBoolean PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
     PINDEX knownFormatIdx = 0;
     while (!SetColourFormat(ColourFormatBPPTab[knownFormatIdx].colourFormat)) {
       if (++knownFormatIdx >= PARRAYSIZE(ColourFormatBPPTab)) {
-        PTRACE(2, "PVidDev\tSetColourFormatConverter FAILED for " << newColourFormat);
+        PTRACE(2, "SetColourFormatConverter FAILED for " << newColourFormat << " on " << *this);
         return false;
       }
     }
   }
 
-  PTRACE(3, "PVidDev\tSetColourFormatConverter success for native " << m_colourFormat);
+  PTRACE(3, "SetColourFormatConverter success for native " << m_colourFormat << " on " << *this);
 
   PVideoFrameInfo src = *this;
   PVideoFrameInfo dst = *this;
@@ -737,7 +761,7 @@ PBoolean PVideoDevice::SetColourFormatConverter(const PString & newColourFmt)
 
     m_converter = PColourConverter::Create(src, dst);
     if (m_converter == NULL) {
-      PTRACE(2, "PVidDev\tSetColourFormatConverter failed to create converter from " << src << " to " << dst);
+      PTRACE(2, "SetColourFormatConverter failed to create converter from " << src << " to " << dst << " on " << *this);
       return false;
     }
 
@@ -787,14 +811,14 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
 {
   // Try and get the most compatible physical frame size to convert from/to
   if (!SetNearestFrameSize(width, height)) {
-    PTRACE(1, "PVidDev\tCannot set an apropriate size to scale from.");
+    PTRACE(1, "Cannot set an apropriate size to scale from on " << *this);
     return false;
   }
 
   // Now create the converter ( if not already exist)
   if (m_converter == NULL) {
     if (!m_nativeVerticalFlip && m_frameWidth == width && m_frameHeight == height) {
-      PTRACE(3,"PVidDev\tNo converter required for " << width << 'x' << height);
+      PTRACE(4,"No converter required for " << width << 'x' << height << " on " << *this);
       return true;
     }
 
@@ -807,7 +831,7 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
     dst.SetResizeMode(resizeMode);
     m_converter = PColourConverter::Create(src, dst);
     if (m_converter == NULL) {
-      PTRACE(1, "PVidDev\tSetFrameSizeConverter Colour converter creation failed");
+      PTRACE(1, "SetFrameSizeConverter Colour converter creation failed on " << *this);
       return false;
     }
   }
@@ -821,8 +845,15 @@ PBoolean PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height, Re
 
   m_converter->SetVFlipState(m_nativeVerticalFlip);
 
-  PTRACE(3,"PVidDev\tColour converter used from " << m_converter->GetSrcFrameWidth() << 'x' << m_converter->GetSrcFrameHeight() << " [" << m_converter->GetSrcColourFormat() << "]"
-         << " to " << m_converter->GetDstFrameWidth() << 'x' << m_converter->GetDstFrameHeight() << " [" << m_converter->GetDstColourFormat() << "]");
+#if PTRACING
+  static const unsigned level = 3;
+  if (PTrace::CanTrace(level)) {
+    PVideoFrameInfo src, dst;
+    m_converter->GetSrcFrameInfo(src);
+    m_converter->GetDstFrameInfo(dst);
+    PTRACE_BEGIN(level) << "Colour converter used from " << src << " to " << dst << " on " << *this << PTrace::End;
+  }
+#endif
 
   return true;
 }
@@ -858,12 +889,12 @@ PBoolean PVideoDevice::SetFrameSize(unsigned width, unsigned height)
     return false;
 
   if (m_converter != NULL && !m_converter->SetFrameSize(width, height)) {
-    PTRACE(1, "PVidDev\tSetFrameSize with converter failed with " << width << 'x' << height);
+    PTRACE(1, "SetFrameSize with converter failed with " << width << 'x' << height << " on " << *this);
     return false;
   }
 
   PTRACE_IF(3, oldWidth != m_frameWidth || oldHeight != m_frameHeight,
-            "PVidDev\tSetFrameSize to " << m_frameWidth << 'x' << m_frameHeight);
+            "SetFrameSize to " << m_frameWidth << 'x' << m_frameHeight << " on " << *this);
   return true;
 }
 
@@ -1048,8 +1079,6 @@ bool PVideoOutputDevice::SetPosition(int, int)
 
 PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
 {
-  PTRACE(6, "RGB\t Constructor of PVideoOutputDeviceRGB");
-
   m_colourFormat = "RGB24";
   bytesPerPixel = 3;
   swappedRedAndBlue = false;
@@ -1151,78 +1180,6 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
 
   return true;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PVideoOutputDevicePPM
-
-#ifdef SHOULD_BE_MOVED_TO_PLUGIN
-
-PVideoOutputDevicePPM::PVideoOutputDevicePPM()
-{
-  PTRACE(6, "PPM\t Constructor of PVideoOutputDevicePPM");
-  frameNumber = 0;
-}
-
-
-PBoolean PVideoOutputDevicePPM::Open(const PString & name,
-                                 PBoolean /*startImmediate*/)
-{
-  Close();
-
-  PFilePath path = name;
-  if (!PDirectory::Exists(path.GetDirectory()))
-    return false;
-
-  if (path != psprintf(path, 12345))
-    deviceName = path;
-  else
-    deviceName = path.GetDirectory() + path.GetTitle() + "%u" + path.GetType();
-
-  return true;
-}
-
-
-PBoolean PVideoOutputDevicePPM::IsOpen()
-{
-  return !deviceName;
-}
-
-
-PBoolean PVideoOutputDevicePPM::Close()
-{
-  deviceName.MakeEmpty();
-  return true;
-}
-
-
-PStringArray PVideoOutputDevicePPM::GetDeviceNames() const
-{
-  return PDirectory();
-}
-
-
-PBoolean PVideoOutputDevicePPM::EndFrame()
-{
-  PFile file;
-  if (!file.Open(psprintf(deviceName, frameNumber++), PFile::WriteOnly)) {
-    PTRACE(1, "PPMVid\tFailed to open PPM output file \""
-           << file.GetName() << "\": " << file.GetErrorText());
-    return false;
-  }
-
-  file << "P6 " << frameWidth  << " " << frameHeight << " " << 255 << "\n";
-
-  if (!file.Write(frameStore, frameStore.GetSize())) {
-    PTRACE(1, "PPMVid\tFailed to write frame data to PPM output file " << file.GetName());
-    return false;
-  }
-
-  PTRACE(6, "PPMVid\tFinished writing PPM file " << file.GetName());
-  return file.Close();
-}
-
-#endif // SHOULD_BE_MOVED_TO_PLUGIN
 
 
 ///////////////////////////////////////////////////////////////////////////////
