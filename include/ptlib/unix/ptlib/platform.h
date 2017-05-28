@@ -136,9 +136,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
 
-#define P_STRTOQ strtoq
-#define P_STRTOUQ strtouq
-
 #define HAS_IFREQ
 
 #if __GNU_LIBRARY__ < 6
@@ -156,14 +153,8 @@
 #define P_THREAD_SAFE_LIBC
 #define P_NO_CANCEL
 
-#define P_STRTOQ strtoll
-#define P_STRTOUQ strtoull
-
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_FREEBSD)
-
-#define P_STRTOQ strtoq
-#define P_STRTOUQ strtouq
 
 /* socklen_t is defined in FreeBSD 3.4-STABLE, 4.0-RELEASE and above */
 #if (P_FREEBSD <= 340000)
@@ -175,24 +166,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_OPENBSD)
 
-#define P_STRTOQ strtoq
-#define P_STRTOUQ strtouq
-
 #define HAS_IFREQ
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_NETBSD)
 
-#define P_STRTOQ strtoq
-#define P_STRTOUQ strtouq
-
 #define HAS_IFREQ
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_SOLARIS)
-
-#define P_STRTOQ strtoll
-#define P_STRTOUQ strtoull
 
 #if !defined(P_HAS_UPAD128_T)
   typedef union {
@@ -220,9 +202,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_SUN4)
-
-#define P_STRTOQ strtoq
-#define P_STRTOUQ strtouq
 
 #define HAS_IFREQ
 #define raise(s)    kill(getpid(),s)
@@ -287,9 +266,6 @@ extern "C" {
 #include <OS.h>
 #include <cpp/stl.h>
 
-#define P_STRTOQ strtoll
-#define P_STRTOUQ strtoull
-
 #define SOCK_RAW 3 // raw-protocol interface, not suported in R4
 #define PF_INET AF_INET
 #define TCP_NODELAY 1
@@ -316,25 +292,16 @@ extern "C" {
 #define P_IPHONEOS P_IOS // For backward compatibility
 #endif
 
-#define P_STRTOQ strtoq
-#define P_STRTOUQ strtouq
-
 #define HAS_IFREQ
 
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_AIX)
 
-#define P_STRTOQ strtoll
-#define P_STRTOUQ strtoull
-
 #define HAS_IFREQ
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_IRIX)
-
-#define P_STRTOQ strtoll
-#define P_STRTOUQ strtoull
 
 typedef int socklen_t;
 
@@ -355,9 +322,6 @@ typedef int socklen_t;
 // VxWorks uses some #define m_data <to-something-else> constructions
 #undef m_data
 #undef m_type
-
-#define P_STRTOQ strtol
-#define P_STRTOUQ strtoul
 
 #define HAS_IFREQ
 
@@ -383,9 +347,6 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_RTEMS)
 
-#define P_STRTOQ strtol
-#define P_STRTOUQ strtoul
-
 typedef int socklen_t;
 typedef int64_t         quad_t;
 extern "C" {
@@ -403,16 +364,10 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_QNX)
 
-#define P_STRTOQ strtoll
-#define P_STRTOUQ strtoull
-
 #define HAS_IFREQ
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_CYGWIN)
-
-#define P_STRTOQ strtoq
-#define P_STRTOUQ strtouq
 
 ///////////////////////////////////////////////////////////////////////////////
 

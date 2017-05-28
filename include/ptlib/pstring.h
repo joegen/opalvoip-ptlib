@@ -1731,8 +1731,9 @@ class PString : public PCharArray
        All characters up to the first illegal character for the number base are
        converted. Case is not significant for bases greater than 10.
 
-       The number base may only be from 2 to 36 and the function will assert
-       if it is not in this range.
+       The number base may only be zero, or from 2 to 36 and the function will
+       assert if it is not in this range. If zero the base is determined by the
+       prefix characters, e.g. 0x.
 
        This function uses the standard C library <code>strtol()</code> function.
 
@@ -1740,14 +1741,15 @@ class PString : public PCharArray
        integer value for the string.
      */
     long AsInteger(
-      unsigned base = 10    ///< Number base to convert the string in.
+      unsigned base = 0    ///< Number base to convert the string in.
     ) const;
     /**Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
        converted. Case is not significant for bases greater than 10.
 
-       The number base may only be from 2 to 36 and the function will assert
-       if it is not in this range.
+       The number base may only be zero, or from 2 to 36 and the function will
+       assert if it is not in this range. If zero the base is determined by the
+       prefix characters, e.g. 0x.
 
        This function uses the standard C library <code>strtoul()</code> function.
 
@@ -1755,14 +1757,15 @@ class PString : public PCharArray
        integer value for the string.
      */
     DWORD AsUnsigned(
-      unsigned base = 10    ///< Number base to convert the string in.
+      unsigned base = 0    ///< Number base to convert the string in.
     ) const;
     /**Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
        converted. Case is not significant for bases greater than 10.
 
-       The number base may only be from 2 to 36 and the function will assert
-       if it is not in this range.
+       The number base may only be zero, or from 2 to 36 and the function will
+       assert if it is not in this range. If zero the base is determined by the
+       prefix characters, e.g. 0x.
 
        This function uses the standard C library <code>strtoq()</code>
        or <code>strtoul()</code> function.
@@ -1770,15 +1773,19 @@ class PString : public PCharArray
        @return
        integer value for the string.
      */
-    PInt64 AsInt64(
-      unsigned base = 10    ///< Number base to convert the string in.
+    int64_t AsInteger64(
+      unsigned base = 0    ///< Number base to convert the string in.
     ) const;
+
+    __inline PInt64 AsInt64(unsigned base = 0) const { return AsInteger(base); } // Backward compatibility
+
     /**Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
        converted. Case is not significant for bases greater than 10.
 
-       The number base may only be from 2 to 36 and the function will assert
-       if it is not in this range.
+       The number base may only be zero, or from 2 to 36 and the function will
+       assert if it is not in this range. If zero the base is determined by the
+       prefix characters, e.g. 0x.
 
        This function uses the standard C library <code>strtouq()</code>
        or <code>strtoul()</code> function.
@@ -1786,8 +1793,8 @@ class PString : public PCharArray
        @return
        integer value for the string.
      */
-    PUInt64 AsUnsigned64(
-      unsigned base = 10    ///< Number base to convert the string in.
+    uint64_t AsUnsigned64(
+      unsigned base = 0    ///< Number base to convert the string in.
     ) const;
 
     /**Convert the string to a floating point number. This number may be in

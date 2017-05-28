@@ -349,19 +349,6 @@ PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDir
 }
 
 
-PInt64 PString::AsInt64(unsigned base) const
-{
-  char * dummy;
-  return P_STRTOQ(theArray, &dummy, base);
-}
-
-PUInt64 PString::AsUnsigned64(unsigned base) const
-{
-  char * dummy;
-  return P_STRTOUQ(theArray, &dummy, base);
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // timer
