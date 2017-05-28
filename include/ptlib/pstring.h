@@ -1767,8 +1767,7 @@ class PString : public PCharArray
        assert if it is not in this range. If zero the base is determined by the
        prefix characters, e.g. 0x.
 
-       This function uses the standard C library <code>strtoq()</code>
-       or <code>strtoul()</code> function.
+       This function uses the standard C library <code>strtoll()</code> function.
 
        @return
        integer value for the string.
@@ -1787,8 +1786,7 @@ class PString : public PCharArray
        assert if it is not in this range. If zero the base is determined by the
        prefix characters, e.g. 0x.
 
-       This function uses the standard C library <code>strtouq()</code>
-       or <code>strtoul()</code> function.
+       This function uses the standard C library <code>strtoull()</code> function.
 
        @return
        integer value for the string.
