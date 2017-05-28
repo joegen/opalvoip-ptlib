@@ -303,25 +303,11 @@ PBoolean PVideoOutputDevice_SDL::Open(const PString & name, PBoolean /*startImme
 bool PVideoOutputDevice_SDL::InternalOpen()
 {
   PWaitAndSignal sync(m_operationComplete, false);
-  
-  int x = SDL_WINDOWPOS_UNDEFINED;
-  int y = SDL_WINDOWPOS_UNDEFINED;
-  PINDEX x_pos = m_deviceName.Find("X=");
-  PINDEX y_pos = m_deviceName.Find("Y=");
-  if (x_pos != P_MAX_INDEX && y_pos != P_MAX_INDEX) {
-    x = atoi(&m_deviceName[x_pos+2]);
-    y = atoi(&m_deviceName[y_pos+2]);
-  }
-  
-  PString title = "Video Output";
-  PINDEX pos = m_deviceName.Find("TITLE=\"");
-  if (pos != P_MAX_INDEX) {
-    pos += 6;
-    PINDEX quote = m_deviceName.FindLast('"');
-    title = PString(PString::Literal, m_deviceName(pos, quote > pos ? quote : P_MAX_INDEX));
-  }
-  
-  m_window = SDL_CreateWindow(title, x, y, GetFrameWidth(), GetFrameHeight(), SDL_WINDOW_RESIZABLE);
+
+  m_window = SDL_CreateWindow(ParseDeviceNameTokenString("TITLE", "Video Output"),
+                              ParseDeviceNameTokenInt("X", SDL_WINDOWPOS_UNDEFINED),
+                              ParseDeviceNameTokenInt("Y", SDL_WINDOWPOS_UNDEFINED),
+                              GetFrameWidth(), GetFrameHeight(), SDL_WINDOW_RESIZABLE);
   if (m_window == NULL) {
     PTRACE(1, "Couldn't create SDL window: " << ::SDL_GetError());
     return false;
@@ -413,12 +399,6 @@ void PVideoOutputDevice_SDL::InternalSetFrameSize()
                                 SDL_TEXTUREACCESS_STREAMING,
                                 GetFrameWidth(), GetFrameHeight());
   PTRACE_IF(1, m_texture == NULL, "Couldn't create SDL texture: " << ::SDL_GetError());
-}
-
-
-PINDEX PVideoOutputDevice_SDL::GetMaxFrameBytes()
-{
-  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
 }
 
 

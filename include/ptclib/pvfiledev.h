@@ -265,13 +265,6 @@ class PVideoOutputDevice_VideoFile : public PVideoOutputDevice
       const PString & colourFormat   // New colour format for device.
     );
     
-    /**Get the maximum frame size in bytes.
-
-       Note a particular device may be able to provide variable length
-       frames (eg motion JPEG) so will be the maximum size of all frames.
-      */
-    virtual PINDEX GetMaxFrameBytes();
-
     /**Set a section of the output frame buffer.
       */
     virtual PBoolean SetFrameData(

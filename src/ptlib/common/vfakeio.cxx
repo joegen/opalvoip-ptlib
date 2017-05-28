@@ -2154,13 +2154,6 @@ class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
       */
     virtual PBoolean IsOpen();
 
-    /**Get the maximum frame size in bytes.
-
-       Note a particular device may be able to provide variable length
-       frames (eg motion JPEG) so will be the maximum size of all frames.
-      */
-    virtual PINDEX GetMaxFrameBytes();
-
     /**Set a section of the output frame buffer.
       */
     virtual PBoolean SetFrameData(
@@ -2224,12 +2217,6 @@ PBoolean PVideoOutputDevice_NULLOutput::IsOpen()
 PStringArray PVideoOutputDevice_NULLOutput::GetOutputDeviceNames()
 {
   return NullVideoOut;
-}
-
-
-PINDEX PVideoOutputDevice_NULLOutput::GetMaxFrameBytes()
-{
-  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
 }
 
 

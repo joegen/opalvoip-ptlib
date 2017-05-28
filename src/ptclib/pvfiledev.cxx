@@ -464,12 +464,6 @@ PBoolean PVideoOutputDevice_VideoFile::SetColourFormat(const PString & newFormat
 }
 
 
-PINDEX PVideoOutputDevice_VideoFile::GetMaxFrameBytes()
-{
-  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
-}
-
-
 PBoolean PVideoOutputDevice_VideoFile::SetFrameData(unsigned x, unsigned y,
                                               unsigned width, unsigned height,
                                               const BYTE * data,

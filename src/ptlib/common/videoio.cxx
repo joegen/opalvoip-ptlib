@@ -887,6 +887,12 @@ const PString& PVideoDevice::GetColourFormat() const
 }
 
 
+PINDEX PVideoDevice::GetMaxFrameBytes()
+{
+  return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
+}
+
+
 PINDEX PVideoDevice::GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const
 {
   if (m_converter == NULL)
@@ -924,6 +930,29 @@ PBoolean PVideoDevice::SetVideoChannelFormat (int newNumber, VideoFormat newForm
 PStringArray PVideoDevice::GetDeviceNames() const
 {
   return PStringArray();
+}
+
+
+PString PVideoDevice::ParseDeviceNameTokenString(const char * token, const char * defaultValue)
+{
+  PString search = token;
+  search += '=';
+  PINDEX pos = m_deviceName.Find(search);
+  if (pos == P_MAX_INDEX)
+    return defaultValue;
+
+  pos += search.GetLength();
+  PINDEX quote = m_deviceName.FindLast('"');
+  return PString(PString::Literal, m_deviceName(pos, quote > pos ? quote : P_MAX_INDEX));
+}
+
+
+int PVideoDevice::ParseDeviceNameTokenInt(const char * token, int defaultValue)
+{
+  PString search = token;
+  search += '=';
+  PINDEX pos = m_deviceName.Find(search);
+  return pos != P_MAX_INDEX ? m_deviceName.Mid(pos+search.GetLength()).AsInteger() : defaultValue;
 }
 
 

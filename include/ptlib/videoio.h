@@ -632,7 +632,7 @@ class PVideoDevice : public PVideoFrameInfo
        Note, a particular device may be able to provide variable length
        frames (eg motion JPEG) so this will be the maximum size of all frames.
       */
-    virtual PINDEX GetMaxFrameBytes() = 0;
+    virtual PINDEX GetMaxFrameBytes();
 
     
     /**Get the last error code. This is a platform dependent number.
@@ -678,6 +678,9 @@ class PVideoDevice : public PVideoFrameInfo
   protected:
     PINDEX GetMaxFrameBytesConverted(PINDEX rawFrameBytes) const;
     PString GetDeviceNameFromOpenArgs(const OpenArgs & args) const;
+    PString ParseDeviceNameTokenString(const char * token, const char * defaultValue);
+    int ParseDeviceNameTokenInt(const char * token, int defaultValue);
+
 
     PCaselessString m_deviceName;
     int             m_lastError;
