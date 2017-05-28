@@ -46,7 +46,11 @@ STANDARD_TARGETS +=\
 
 # Default goal
 ifeq (,$(.DEFAULT_GOAL))
-  .DEFAULT_GOAL:=opt
+  ifeq ($(DEBUG_BUILD),yes)
+    .DEFAULT_GOAL:=debug
+  else
+    .DEFAULT_GOAL:=opt
+  endif
 endif
 
 internal_build ::
