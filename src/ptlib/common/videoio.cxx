@@ -956,6 +956,15 @@ int PVideoDevice::ParseDeviceNameTokenInt(const char * token, int defaultValue)
 }
 
 
+uint64_t PVideoDevice::ParseDeviceNameTokenUnsigned(const char * token, uint64_t defaultValue)
+{
+  PString search = token;
+  search += '=';
+  PINDEX pos = m_deviceName.Find(search);
+  return pos != P_MAX_INDEX ? m_deviceName.Mid(pos+search.GetLength()).AsUnsigned64() : defaultValue;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 void PVideoControlInfo::PrintOn(ostream & strm) const

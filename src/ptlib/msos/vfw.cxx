@@ -1295,17 +1295,13 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
 
   m_deviceName = name;
 
-  m_hParent = NULL;
-  PINDEX pos = m_deviceName.Find("PARENT=");
-  if (pos != P_MAX_INDEX) {
-    m_hParent = (HWND)m_deviceName.Mid(+pos+7).AsUnsigned64();
-    if (!::IsWindow(m_hParent)) {
-      PTRACE(2, "Illegal parent window " << m_hParent << " specified.");
-      return false;
-    }
+  m_hParent = (HWND)ParseDeviceNameTokenUnsigned("PARENT", 0);
+  if (m_hParent != NULL && !::IsWindow(m_hParent)) {
+    PTRACE(2, "Illegal parent window " << m_hParent << " specified.");
+    return false;
   }
 
-  m_dwStyle = ParseDeviceNameTokenInt("STYLE", DEFAULT_STYLE);
+  m_dwStyle = ParseDeviceNameTokenUnsigned("STYLE", DEFAULT_STYLE);
   if ((m_dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
     PTRACE(1, "Window must be WS_POPUP or WS_CHILD window.");
     return false;

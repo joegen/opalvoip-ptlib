@@ -680,7 +680,7 @@ class PVideoDevice : public PVideoFrameInfo
     PString GetDeviceNameFromOpenArgs(const OpenArgs & args) const;
     PString ParseDeviceNameTokenString(const char * token, const char * defaultValue);
     int ParseDeviceNameTokenInt(const char * token, int defaultValue);
-
+    uint64_t ParseDeviceNameTokenUnsigned(const char * token, uint64_t defaultValue);
 
     PCaselessString m_deviceName;
     int             m_lastError;
