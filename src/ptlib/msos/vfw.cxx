@@ -1301,7 +1301,7 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
     return false;
   }
 
-  m_dwStyle = ParseDeviceNameTokenUnsigned("STYLE", DEFAULT_STYLE);
+  m_dwStyle = (DWORD)ParseDeviceNameTokenUnsigned("STYLE", DEFAULT_STYLE);
   if ((m_dwStyle&(WS_POPUP|WS_CHILD)) == 0) {
     PTRACE(1, "Window must be WS_POPUP or WS_CHILD window.");
     return false;
@@ -1508,11 +1508,11 @@ PBoolean PVideoOutputDevice_Window::SetChannel(int newChannelNumber)
 
 PBoolean PVideoOutputDevice_Window::SetColourFormat(const PString & colourFormat)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal lock(m_mutex);
 
   if (((colourFormat *= "BGR24") || (colourFormat *= "BGR32")) &&
                 PVideoOutputDeviceRGB::SetColourFormat(colourFormat)) {
-    m_bitmap.bmiHeader.biBitCount = (WORD)(bytesPerPixel*8);
+    m_bitmap.bmiHeader.biBitCount = (WORD)(m_bytesPerPixel*8);
     m_bitmap.bmiHeader.biSizeImage = m_frameStore.GetSize();
     return true;
   }
@@ -1538,7 +1538,7 @@ PBoolean PVideoOutputDevice_Window::SetVFlipState(PBoolean newVFlip)
 PBoolean PVideoOutputDevice_Window::SetFrameSize(unsigned width, unsigned height)
 {
   {
-    PWaitAndSignal m(mutex);
+    PWaitAndSignal lock(m_mutex);
 
     if (width == m_frameWidth && height == m_frameHeight)
       return true;
@@ -1563,7 +1563,7 @@ PBoolean PVideoOutputDevice_Window::FrameComplete()
   if (m_hidden)
     m_hidden = !ShowWindow(m_hWnd, SW_SHOW);
 
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal lock(m_mutex);
 
   if (m_hWnd == NULL)
     return false;
@@ -1689,7 +1689,7 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
     int imageWidth = m_frameWidth;
     int imageHeight = m_frameHeight;
     if (m_rotation != 0) {
-      Rotate(m_frameStore, m_frameWidth, m_frameHeight, bytesPerPixel, m_rotation);
+      Rotate(m_frameStore, m_frameWidth, m_frameHeight, m_bytesPerPixel, m_rotation);
       if (m_rotation != 180) {
         imageWidth = m_frameHeight;
         imageHeight = m_frameWidth;
@@ -1855,7 +1855,7 @@ void PVideoOutputDevice_Window::HandleDisplay(PThread &, P_INT_PTR)
 
 LRESULT PVideoOutputDevice_Window::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal lock(m_mutex);
 
   switch (uMsg) {
     case WM_PAINT :

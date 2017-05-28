@@ -1078,35 +1078,35 @@ bool PVideoOutputDevice::SetPosition(int, int)
 // PVideoOutputDeviceRGB
 
 PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
+  : m_bytesPerPixel(3)
+  , m_scanLineWidth(((m_frameWidth*3+3)/4)*4)
+  , m_swappedRedAndBlue(false)
 {
   m_colourFormat = "RGB24";
-  bytesPerPixel = 3;
-  swappedRedAndBlue = false;
-//  SetFrameSize(frameWidth, frameHeight);
 }
 
 
 PBoolean PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal lock(m_mutex);
 
   PINDEX newBytesPerPixel;
 
   if (colourFormat *= "RGB32") {
     newBytesPerPixel = 4;
-    swappedRedAndBlue = false;
+    m_swappedRedAndBlue = false;
   }
   else if (colourFormat *= "RGB24") {
     newBytesPerPixel = 3;
-    swappedRedAndBlue = false;
+    m_swappedRedAndBlue = false;
   }
   else if (colourFormat *= "BGR32") {
     newBytesPerPixel = 4;
-    swappedRedAndBlue = true;
+    m_swappedRedAndBlue = true;
   }
   else if (colourFormat *= "BGR24") {
     newBytesPerPixel = 3;
-    swappedRedAndBlue = true;
+    m_swappedRedAndBlue = true;
   }
   else
     return false;
@@ -1114,15 +1114,15 @@ PBoolean PVideoOutputDeviceRGB::SetColourFormat(const PString & colourFormat)
   if (!PVideoOutputDevice::SetColourFormat(colourFormat))
     return false;
 
-  bytesPerPixel = newBytesPerPixel;
-  scanLineWidth = ((m_frameWidth*bytesPerPixel+3)/4)*4;
-  return m_frameStore.SetSize(m_frameHeight*scanLineWidth);
+  m_bytesPerPixel = newBytesPerPixel;
+  m_scanLineWidth = ((m_frameWidth*m_bytesPerPixel+3)/4)*4;
+  return m_frameStore.SetSize(m_frameHeight*m_scanLineWidth);
 }
 
 
 PBoolean PVideoOutputDeviceRGB::SetFrameSize(unsigned width, unsigned height)
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal lock(m_mutex);
 
   if (m_frameWidth == width && m_frameHeight == height)
     return true;
@@ -1130,14 +1130,14 @@ PBoolean PVideoOutputDeviceRGB::SetFrameSize(unsigned width, unsigned height)
   if (!PVideoOutputDevice::SetFrameSize(width, height))
     return false;
 
-  scanLineWidth = ((m_frameWidth*bytesPerPixel+3)/4)*4;
-  return m_frameStore.SetSize(m_frameHeight*scanLineWidth);
+  m_scanLineWidth = ((m_frameWidth*m_bytesPerPixel+3)/4)*4;
+  return m_frameStore.SetSize(m_frameHeight*m_scanLineWidth);
 }
 
 
 PINDEX PVideoOutputDeviceRGB::GetMaxFrameBytes()
 {
-  PWaitAndSignal m(mutex);
+  PWaitAndSignal lock(m_mutex);
   return GetMaxFrameBytesConverted(m_frameStore.GetSize());
 }
 
@@ -1148,7 +1148,10 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
                                          PBoolean endFrame)
 {
   {
-    PWaitAndSignal m(mutex);
+    PWaitAndSignal lock(m_mutex);
+
+    if (!IsOpen())
+      return false;
 
     if (x+width > m_frameWidth || y+height > m_frameHeight || PAssertNULL(data) == NULL)
       return false;
@@ -1157,7 +1160,7 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
       if (m_converter != NULL)
         m_converter->Convert(data, m_frameStore.GetPointer());
       else
-        memcpy(m_frameStore.GetPointer(), data, height*scanLineWidth);
+        memcpy(m_frameStore.GetPointer(), data, height*m_scanLineWidth);
     }
     else {
       if (m_converter != NULL) {
@@ -1166,11 +1169,11 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
       }
 
       if (x == 0 && width == m_frameWidth)
-        memcpy(m_frameStore.GetPointer() + y*scanLineWidth, data, height*scanLineWidth);
+        memcpy(m_frameStore.GetPointer() + y*m_scanLineWidth, data, height*m_scanLineWidth);
       else {
         for (unsigned dy = 0; dy < height; dy++)
-          memcpy(m_frameStore.GetPointer() + (y+dy)*scanLineWidth + x*bytesPerPixel,
-                 data + dy*width*bytesPerPixel, width*bytesPerPixel);
+          memcpy(m_frameStore.GetPointer() + (y+dy)*m_scanLineWidth + x*m_bytesPerPixel,
+                 data + dy*width*m_bytesPerPixel, width*m_bytesPerPixel);
       }
     }
   }

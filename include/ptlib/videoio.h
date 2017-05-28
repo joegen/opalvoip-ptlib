@@ -935,10 +935,10 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
     virtual PBoolean FrameComplete() = 0;
 
   protected:
-    PMutex     mutex;
-    PINDEX     bytesPerPixel;
-    PINDEX     scanLineWidth;
-    bool       swappedRedAndBlue;
+    PMutex m_mutex;
+    PINDEX m_bytesPerPixel;
+    PINDEX m_scanLineWidth;
+    bool   m_swappedRedAndBlue;
 };
 
 
