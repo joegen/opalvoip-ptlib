@@ -2133,6 +2133,7 @@ dnl ########################################################################
 dnl look for SDL
 
 dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
+dnl MSWIN_DEFAULT    libsdl,Disabled
 dnl MSWIN_CHECK_FILE libsdl,lib\x86\SDL2.lib,P_SDL_WIN32=1
 dnl MSWIN_CHECK_FILE libsdl,lib\x64\SDL2.lib,P_SDL_WIN64=1
 dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
