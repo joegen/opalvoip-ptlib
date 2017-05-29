@@ -110,16 +110,18 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
 
   int stat = blockedThread->PXBlockOnIO(os_handle, type, timeout);
 
-  px_threadMutex.Wait();
   if (type != PXWriteBlock) {
+    px_threadMutex.Wait();
     px_lastBlockType = PXReadBlock;
     px_readThread = NULL;
+    px_threadMutex.Signal();
   }
   else {
+    px_writeMutex.Signal(); // Must be outside of px_threadMutex
+    px_threadMutex.Wait();
     px_writeThread = NULL;
-    px_writeMutex.Signal();
+    px_threadMutex.Signal();
   }
-  px_threadMutex.Signal();
 
   // if select returned < 0, then convert errno into lastError and return false
   if (stat < 0)

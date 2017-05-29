@@ -40,13 +40,13 @@
     P_INT_PTR GetOSHandleAsInt() const { return os_handle; }
     int  PXClose();
 
-    PMutex      px_threadMutex;
-    PXBlockType px_lastBlockType;
-    PThread   * px_readThread;
-    PThread   * px_writeThread;
-    PMutex      px_writeMutex;
-    PThread   * px_selectThread[3];
-    PMutex      px_selectMutex[3];
+    PDECLARE_MUTEX(  px_threadMutex);
+    PXBlockType      px_lastBlockType;
+    PThread        * px_readThread;
+    PThread        * px_writeThread;
+    PDECLARE_MUTEX(  px_writeMutex);
+    PThread        * px_selectThread[3];
+    PCriticalSection px_selectMutex[3];
 
 
 // End Of File ////////////////////////////////////////////////////////////////
