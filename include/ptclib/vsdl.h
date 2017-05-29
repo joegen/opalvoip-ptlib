@@ -106,7 +106,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     );
 
 #ifdef P_MACOSX
-    virtual void ApplicationMain();
+    virtual bool ApplicationMain();
 #endif
   
   private:

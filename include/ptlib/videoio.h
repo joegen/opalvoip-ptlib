@@ -869,7 +869,7 @@ class PVideoOutputDevice : public PVideoDevice
     );
   
 #ifdef P_MACOSX
-  virtual void ApplicationMain() { }
+  virtual bool ApplicationMain() { return false; }
 #endif
 };
 

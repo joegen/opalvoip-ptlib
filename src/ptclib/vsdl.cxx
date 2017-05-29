@@ -107,15 +107,16 @@ class PSDL_System
     ForceQuit();
   }
   
-  void ApplicationMain()
+  bool ApplicationMain()
   {
     if (m_thread != NULL)
-      return;
+      return false;
     
     m_thread = PThread::Current();
 
     new PThreadObj<PSDL_System>(*this, &PSDL_System::ReturnToApplicationMain, true, PProcess::Current().GetName());
     MainLoop();
+    return true;
   }
 #endif
 
@@ -185,7 +186,9 @@ class PSDL_System
       m_devices.clear();
       
       ::SDL_Quit();
+#ifndef P_MACOSX
       m_thread = NULL;
+#endif
 
       PTRACE(4, "End of event thread");
     }
@@ -251,9 +254,9 @@ class PSDL_System
 ///////////////////////////////////////////////////////////////////////
 
 #ifdef P_MACOSX
-void PVideoOutputDevice_SDL::ApplicationMain()
+bool PVideoOutputDevice_SDL::ApplicationMain()
 {
-  PSDL_System::GetInstance().ApplicationMain();
+  return PSDL_System::GetInstance().ApplicationMain();
 }
 #endif
 

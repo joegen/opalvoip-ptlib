@@ -2129,8 +2129,8 @@ int PProcess::InternalMain(void *)
 {
 #if P_SDL && defined(P_MACOSX)
   PVideoOutputDevice * device = PVideoOutputDevice::CreateDeviceByName(P_SDL_VIDEO_PREFIX);
-  if (device != NULL)
-    device->ApplicationMain();
+  if (device != NULL && device->ApplicationMain())
+    return m_terminationValue;
 #endif
   
 #if P_EXCEPTIONS
