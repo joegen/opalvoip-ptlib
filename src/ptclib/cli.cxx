@@ -79,7 +79,7 @@ PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
   while (len > 0 && (nextline = strchr(str, '\n')) != NULL) {
     PINDEX lineLen = nextline - str;
 
-    if (!PIndirectChannel::Write(str, lineLen))
+    if (lineLen > 0 && !PIndirectChannel::Write(str, lineLen))
       return false;
 
     written += GetLastWriteCount();
