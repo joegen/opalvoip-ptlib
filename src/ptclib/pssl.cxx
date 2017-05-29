@@ -101,7 +101,7 @@ extern "C" {
 #endif
 };
 
-#if (OPENSSL_VERSION_NUMBER < 0x00906000)
+#if (OPENSSL_VERSION_NUMBER < 0x1000105fL)
   #error OpenSSL too old!
 #endif
 
@@ -1881,10 +1881,7 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
 {
   // create the new SSL context
-#if OPENSSL_VERSION_NUMBER > 0x0090819fL
-  const
-#endif
-       SSL_METHOD * meth;
+  const SSL_METHOD * meth;
 
   switch (m_method) {
     case SSLv23:
@@ -1899,7 +1896,6 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case TLSv1:
       meth = TLSv1_method(); 
       break;
-#if OPENSSL_VERSION_NUMBER > 0x0090819fL
     case TLSv1_1 :
       meth = TLSv1_1_method(); 
       break;
@@ -1923,7 +1919,6 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
     case DTLSv1_2_v1_0 :
       meth = DTLSv1_method();
       break;
-#endif
 #endif
     default :
       PAssertAlways("Unsupported TLS/DTLS version");
@@ -2069,12 +2064,21 @@ bool PSSLContext::UseCertificate(const PSSLCertificate & certificate)
     return false;
   }
 
-  SSL_CTX_clear_chain_certs(m_context);
-
   const PSSLCertificate::X509_Chain & chain = certificate.GetChain();
+
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+  SSL_CTX_clear_chain_certs(m_context);
+#else
+  SSL_CTX_clear_extra_chain_certs(m_context);
+#endif
+
   for (PSSLCertificate::X509_Chain::const_iterator it = chain.begin(); it != chain.end(); ++it) {
     X509 * ca = X509_dup(*it);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L
     if (!SSL_CTX_add0_chain_cert(m_context, ca)) {
+#else
+    if (!SSL_CTX_add_extra_chain_cert(m_context, ca)) {
+#endif
       PTRACE(2, "Could not use certificate chain: " << PSSLError());
       X509_free(ca);
       return false;
