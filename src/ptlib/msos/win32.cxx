@@ -1184,15 +1184,6 @@ void PThread::Yield()
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-PProcess::~PProcess()
-{
-  // do whatever needs to shutdown
-  PreShutdown();
-  WaitOnExitConsoleWindow();
-  PostShutdown();
-}
-
-
 PString PProcess::GetOSClass()
 {
   return "Windows";

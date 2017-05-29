@@ -156,22 +156,6 @@ static pthread_mutex_t MutexInitialiser = PTHREAD_MUTEX_INITIALIZER;
 #define new PNEW
 
 
-void PProcess::Construct()
-{
-  CommonConstruct();
-}
-
-
-PProcess::~PProcess()
-{
-  PreShutdown();
-
-  CommonDestruct();
-
-  PostShutdown();
-}
-
-
 //////////////////////////////////////////////////////////////////////////////
 
 //

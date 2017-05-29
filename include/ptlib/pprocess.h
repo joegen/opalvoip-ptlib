@@ -563,14 +563,30 @@ class PProcess : public PThread
       char ** argv  // Array of strings for program arguments.
     );
 
-    /**Internal shutdown function called directly from the ~PProcess
-       <code>InternalMain()</code>. The user should never call this function.
-     */
-    void PreShutdown();
-    static void PostShutdown();
-
     /// Main function for process, called from real main after initialisation
     virtual int InternalMain(void * arg = NULL);
+
+  //@{
+    /// Add all the C run-time signal handlers
+    virtual void AddRunTimeSignalHandlers(
+      const int * signals = NULL
+    );
+
+    /// Remove all the C run-time signal handlers
+    virtual void RemoveRunTimeSignalHandlers();
+
+    /// Asynchronous C run-time signal handler, direct callback from OS
+    virtual void AsynchronousRunTimeSignal(
+      int signal, ///< Signal number
+      int source  ///< Source for signal, typically the PID of the sender
+    );
+
+    /// Synchronous C run-time signal handler, this is executed in the housekeeper thread
+    virtual void HandleRunTimeSignal(int signal);
+
+    /// Get the name of the signal
+    static PString GetRunTimeSignalName(int signal);
+  //@}
 
     /**@name Operating System URL manager functions */
     /**
@@ -629,7 +645,8 @@ class PProcess : public PThread
     bool SignalTimerChange();
 
   protected:
-    void Construct();
+    void PlatformConstruct();
+    void PlatformDestruct();
 
   // Member variables
     bool m_library;                   // Indication PTLib is being used as a library for an external process.
@@ -670,6 +687,16 @@ class PProcess : public PThread
 #endif
 
     PProcessIdentifier m_processID;
+
+    static PRunTimeSignalHandler PlatformSetRunTimeSignalHandler(int signal);
+    static void PlatformResetRunTimeSignalHandler(int signal, PRunTimeSignalHandler previous);
+    static POrdinalToString::Initialiser const InternalSigNames[];
+
+    std::map<unsigned, PRunTimeSignalHandler> m_previousRunTimeSignalHandlers;
+    std::queue<unsigned> m_synchronousRunTimeSignals;
+    PCriticalSection m_synchronousRunTimeSignalMutex;
+    void InternalPostRunTimeSignal(int signal);
+
 
   friend class PThread;
 

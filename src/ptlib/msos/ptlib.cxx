@@ -37,7 +37,6 @@
 #endif
 
 #ifndef _WIN32_WCE
-#include <signal.h>
 #include <share.h>
 #ifdef _WIN32
 #include <WERAPI.H>
@@ -933,9 +932,6 @@ bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-static void (__cdecl * PreviousSigIntHandler)(int);
-static void (__cdecl * PreviousSigTermHandler)(int);
-
 #ifdef _WIN32_WCE
 
 PBoolean PProcess::IsGUIProcess() const
@@ -943,7 +939,15 @@ PBoolean PProcess::IsGUIProcess() const
   return true;
 }
 
-#else
+void PProcess::AddRunTimeSignalHandlers()
+{
+}
+
+void PProcess::RemoveRunTimeSignalHandlers()
+{
+}
+
+#else // _WIN32_WCE
 
 #ifdef _WIN32
 
@@ -957,31 +961,49 @@ LONG WINAPI MyExceptionHandler(_EXCEPTION_POINTERS * info)
   ExitProcess(1);
 }
 
-#else
+#else // _WIN32
 
 PBoolean PProcess::IsGUIProcess() const
 {
   return false;
 }
 
-#endif
+#endif // _WIN32
 
-void SignalHandler(int sig)
+static void StaticSignalHandler(int signal)
 {
-  if (PProcess::Current().OnInterrupt(sig == SIGTERM))
-    return;
-
-  void (__cdecl * previous)(int) = (sig == SIGTERM ? PreviousSigTermHandler : PreviousSigIntHandler);
- 
-  if (previous == SIG_DFL)
-    raise(sig);
-  else if (previous != SIG_IGN)
-    previous(sig);
+  PProcess::Current().AsynchronousRunTimeSignal(signal, 0);
 }
 
-#endif
 
-void PProcess::Construct()
+PRunTimeSignalHandler PProcess::PlatformSetRunTimeSignalHandler(int signum)
+{
+  return ::signal(signum, StaticSignalHandler);
+}
+
+
+void PProcess::PlatformResetRunTimeSignalHandler(int signum, PRunTimeSignalHandler previous)
+{
+  ::signal(signum, previous);
+}
+
+
+#define SIG_NAME(s) { s, #s }
+POrdinalToString::Initialiser const PProcess::InternalSigNames[] = {
+  SIG_NAME(SIGABRT),
+  SIG_NAME(SIGBREAK),
+  SIG_NAME(SIGFPE),
+  SIG_NAME(SIGILL),
+  SIG_NAME(SIGINT),
+  SIG_NAME(SIGSEGV),
+  SIG_NAME(SIGTERM),
+  { }
+};
+
+#endif // _WIN32_WCE
+
+
+void PProcess::PlatformConstruct()
 {
   m_waitOnExitConsoleWindow = true;
   PSetErrorStream(&cerr);
@@ -993,16 +1015,12 @@ void PProcess::Construct()
   ws._type = _WINSIZEMAX;
   _wsetsize(1, &ws);
 #endif
+}
 
-#ifndef _WIN32_WCE 
-  PreviousSigIntHandler = signal(SIGINT, SignalHandler);
-  PreviousSigTermHandler = signal(SIGTERM, SignalHandler);
-#ifdef _WIN32
-  SetUnhandledExceptionFilter(MyExceptionHandler);
-  PTRACE_PARAM(HRESULT result =) WerAddExcludedApplication(m_executableFile.AsUCS2(), false);
-  PTRACE_IF(1, result != 0, "PTLib", "Error excluding application from WER crash dialogs: err=" << result);
-#endif
-#endif
+
+void PProcess::PlatformDestruct()
+{
+  WaitOnExitConsoleWindow();
 }
 
 

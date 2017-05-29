@@ -29,11 +29,12 @@
 
   public:
     ~PServiceProcess();
+    virtual void AddRunTimeSignalHandlers(const int * signals = NULL);
+    virtual void AsynchronousRunTimeSignal(int signal, int source);
+    virtual void HandleRunTimeSignal(int signal);
   protected:
     int  InitialiseService();
     void _PXShowSystemWarning(PINDEX num, const PString & str);
-    void PXOnSignal(int);
-    void PXOnAsyncSignal(int);
     PString pidFileToRemove;
     PBoolean isTerminating;
 

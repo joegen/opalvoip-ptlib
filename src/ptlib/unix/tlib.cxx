@@ -58,7 +58,6 @@
 #include <pwd.h>
 #include <grp.h>
 #endif // P_VXWORKS
-#include <signal.h>
 #include <sys/wait.h>
 #include <errno.h>
 
@@ -444,132 +443,73 @@ void PProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
   PError << "PWLib " << GetOSClass() << " error #" << code << '-' << str << endl;
 }
 
-void PXSignalHandler(int sig)
+
+static void StaticSignalHandler(int signal, siginfo_t * info, void *)
 {
-  SIGNALS_DEBUG("\nSIGNAL<%u>\n",sig);
-  PProcess::Current().PXOnAsyncSignal(sig);
-  signal(sig, PXSignalHandler);
-}
-
-void PProcess::PXCheckSignals()
-{
-  if (m_pxSignals == 0)
-    return;
-
-  PTRACE(3, "PTLib", "Checking signals: 0x" << hex << m_pxSignals << dec);
-
-  for (int sig = 0; sig < 32; ++sig) {
-    int bit = 1 << sig;
-    if (m_pxSignals&bit) {
-      m_pxSignals &= ~bit;
-      PXOnSignal(sig);
-    }
-  }
+  PProcess::Current().AsynchronousRunTimeSignal(signal, info ? info->si_pid : 0);
 }
 
 
-static void SetSignals(void (*handler)(int))
+PRunTimeSignalHandler PProcess::PlatformSetRunTimeSignalHandler(int signal)
 {
-  SIGNALS_DEBUG("\nSETSIG<%p>\n",handler);
-
-  if (handler == NULL)
-    handler = SIG_DFL;
-
-#ifdef SIGHUP
-  signal(SIGHUP, handler);
-#endif
-#ifdef SIGINT
-  signal(SIGINT, handler);
-#endif
-#ifdef SIGUSR1
-  signal(SIGUSR1, handler);
-#endif
-#ifdef SIGUSR2
-  signal(SIGUSR2, handler);
-#endif
-#ifdef SIGPIPE
-  signal(SIGPIPE, handler);
-#endif
-#ifdef SIGTERM
-  signal(SIGTERM, handler);
-#endif
-#ifdef SIGWINCH
-  signal(SIGWINCH, handler);
-#endif
-#ifdef SIGTRAP
-  signal(SIGTRAP, handler);
-#endif
+  struct sigaction action, previous;
+  memset(&action, 0, sizeof(action));
+  action.sa_sigaction = StaticSignalHandler;
+  action.sa_flags = SA_SIGINFO;
+  PAssertOS(sigaction(signal, &action, &previous) == 0);
+  return previous.sa_sigaction;
 }
 
 
-void PProcess::PXOnAsyncSignal(int sig)
+void PProcess::PlatformResetRunTimeSignalHandler(int signal, PRunTimeSignalHandler previous)
 {
-  SIGNALS_DEBUG("\nASYNCSIG<%u>\n",sig);
-
-  switch (sig) {
-    case SIGINT:
-    case SIGHUP:
-    case SIGTERM:
-      if (OnInterrupt(sig == SIGTERM))
-        return;
-      break;
-
-#if P_HAS_BACKTRACE && PTRACING
-    case WalkStackSignal:
-      InternalWalkStackSignaled();
-      break;
-#endif
-  }
-
-  m_pxSignals |= 1 << sig;
-  SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_sigaction = previous;
+  PAssertOS(sigaction(signal, &action, NULL) == 0);
 }
 
-void PProcess::PXOnSignal(int sig)
+
+#define SIG_NAME(s) { s, #s }
+POrdinalToString::Initialiser const PProcess::InternalSigNames[] = {
+  SIG_NAME(SIGHUP   ),      /* Hangup (POSIX).  */
+  SIG_NAME(SIGINT   ),      /* Interrupt (ANSI).  */
+  SIG_NAME(SIGQUIT  ),      /* Quit (POSIX).  */
+  SIG_NAME(SIGILL   ),      /* Illegal instruction (ANSI).  */
+  SIG_NAME(SIGTRAP  ),      /* Trace trap (POSIX).  */
+  SIG_NAME(SIGABRT  ),      /* Abort (ANSI).  */
+  SIG_NAME(SIGIOT   ),      /* IOT trap (4.2 BSD).  */
+  SIG_NAME(SIGBUS   ),      /* BUS error (4.2 BSD).  */
+  SIG_NAME(SIGFPE   ),      /* Floating-point exception (ANSI).  */
+  SIG_NAME(SIGKILL  ),      /* Kill, unblockable (POSIX).  */
+  SIG_NAME(SIGUSR1  ),      /* User-defined signal 1 (POSIX).  */
+  SIG_NAME(SIGSEGV  ),      /* Segmentation violation (ANSI).  */
+  SIG_NAME(SIGUSR2  ),      /* User-defined signal 2 (POSIX).  */
+  SIG_NAME(SIGPIPE  ),      /* Broken pipe (POSIX).  */
+  SIG_NAME(SIGALRM  ),      /* Alarm clock (POSIX).  */
+  SIG_NAME(SIGTERM  ),      /* Termination (ANSI).  */
+  SIG_NAME(SIGSTKFLT),      /* Stack fault.  */
+  SIG_NAME(SIGCHLD  ),      /* Child status has changed (POSIX).  */
+  SIG_NAME(SIGCONT  ),      /* Continue (POSIX).  */
+  SIG_NAME(SIGSTOP  ),      /* Stop, unblockable (POSIX).  */
+  SIG_NAME(SIGTSTP  ),      /* Keyboard stop (POSIX).  */
+  SIG_NAME(SIGTTIN  ),      /* Background read from tty (POSIX).  */
+  SIG_NAME(SIGTTOU  ),      /* Background write to tty (POSIX).  */
+  SIG_NAME(SIGURG   ),      /* Urgent condition on socket (4.2 BSD).  */
+  SIG_NAME(SIGXCPU  ),      /* CPU limit exceeded (4.2 BSD).  */
+  SIG_NAME(SIGXFSZ  ),      /* File size limit exceeded (4.2 BSD).  */
+  SIG_NAME(SIGVTALRM),      /* Virtual alarm clock (4.2 BSD).  */
+  SIG_NAME(SIGPROF  ),      /* Profiling alarm clock (4.2 BSD).  */
+  SIG_NAME(SIGWINCH ),      /* Window size change (4.3 BSD, Sun).  */
+  SIG_NAME(SIGIO    ),      /* I/O now possible (4.2 BSD).  */
+  SIG_NAME(SIGPWR   ),      /* Power failure restart (System V).  */
+  SIG_NAME(SIGSYS   ),      /* Bad system call.  */
+  { }
+};
+
+
+void PProcess::PlatformConstruct()
 {
-  SIGNALS_DEBUG("\nSYNCSIG<%u>\n",sig);
-  PTRACE(2, "PTLib", "Handling signal " << sig);
-
-  switch (sig) {
-    case SIGINT:
-    case SIGHUP:
-    case SIGTERM:
-      Terminate();
-      abort(); // Shouldn't get here, but just in case ...
-
-#ifdef _DEBUG
-    case 28 :
-      #if PMEMORY_CHECK
-        PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
-        static PMemoryHeap::State state;
-        PMemoryHeap::GetState(state);
-      #endif // PMEMORY_CHECK
-      PStringStream strm;
-      m_threadMutex.Wait();
-      strm << "===============\n"
-           << m_activeThreads.size() << " active threads\n";
-      for (ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it)
-        strm << "  " << *it->second << "\n";
-      #if PMEMORY_CHECK
-        strm << "---------------\n";
-        PMemoryHeap::DumpObjectsSince(state, strm);
-        PMemoryHeap::GetState(state);
-      #endif // PMEMORY_CHECK
-      strm << "===============\n";
-      m_threadMutex.Signal();
-      fprintf(stderr, "%s", (const char *)strm);
-#endif // _DEBUG
-  }
-}
-
-void PProcess::CommonConstruct()
-{
-  // Setup signal handlers
-  m_pxSignals = 0;
-
-  if (!m_library)
-    SetSignals(&PXSignalHandler);
-
 #if !defined(P_VXWORKS) && !defined(P_RTEMS)
   // initialise the timezone information
   tzset();
@@ -586,12 +526,9 @@ void PProcess::CommonConstruct()
 #endif
 }
 
-void PProcess::CommonDestruct()
-{
-  if (!m_library)
-    SetSignals(NULL);
 
-  m_keepingHouse = false;
+void PProcess::PlatformDestruct()
+{
 }
 
 
@@ -993,22 +930,6 @@ P_fd_set & P_fd_set::operator-=(intptr_t fd)
 #else
 
 #warning No thread support, practically nothing will work!
-
-
-void PProcess::Construct()
-{
-  CommonConstruct();
-}
-
-
-PProcess::~PProcess()
-{
-  PreShutdown();
-
-  CommonDestruct();
-
-  PostShutdown();
-}
 
 
 PThread::PThread(bool isProcess)

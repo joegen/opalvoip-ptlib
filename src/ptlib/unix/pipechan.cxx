@@ -31,6 +31,7 @@
 
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
+#include <ptlib/pprocess.h>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -211,10 +212,9 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
     ::close(m_stderrChildPipe[0]); 
   }
 
-  // set the SIGINT and SIGQUIT to ignore so the child process doesn't
+  // Restore signal handlers so the child process doesn't
   // inherit them from the parent
-  signal(SIGINT,  SIG_IGN);
-  signal(SIGQUIT, SIG_IGN);
+  PProcess::Current().RemoveRunTimeSignalHandlers();
 
   // and set ourselves as out own process group so we don't get signals
   // from our parent's terminal (hopefully!)

@@ -88,7 +88,7 @@ PServiceProcess::PServiceProcess(const char * manuf,
                                      unsigned minorVersion,
                                    CodeStatus status,
                                      unsigned buildNumber)
-  : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
+  : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber, false, true)
 {
   isTerminating = false;
 }
@@ -441,13 +441,10 @@ int PServiceProcess::InitialiseService()
   if (!m_debugMode)
     ::close(STDIN_FILENO);
 
-  // We intercept the core dumping signals so get a message in the log file.
-  signal(SIGSEGV, PXSignalHandler);
-  signal(SIGFPE, PXSignalHandler);
-  signal(SIGBUS, PXSignalHandler);
-
-  if (!daemon)
+  if (!daemon) {
+    Startup();
     return -1;
+  }
 
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
 
@@ -466,9 +463,8 @@ int PServiceProcess::InitialiseService()
     }
   }
 
-  // Need to get rid of the config write thread before fork, as on
-  // pthreads platforms the forked process does not have the thread
-  CommonDestruct();
+  // Need to put signals back before fork
+  RemoveRunTimeSignalHandlers();
 
   pid_t pid = fork();
   switch (pid) {
@@ -499,7 +495,9 @@ int PServiceProcess::InitialiseService()
   // from our parent's terminal (hopefully!)
   PSETPGRP();
 
-  CommonConstruct();
+  // As new process, need to re-initialise some things
+  PlatformConstruct();
+  Startup();
 
   pidFileToRemove = pidfilename;
 
@@ -572,44 +570,54 @@ void PServiceProcess::OnControl()
 }
 
 
+void PServiceProcess::AddRunTimeSignalHandlers(const int * signals)
+{
+  static int const ExtraSignals[] = { SIGSEGV, SIGFPE, SIGBUS };
+  PProcess::AddRunTimeSignalHandlers(ExtraSignals);
+}
+
+
 static atomic<bool> InSignalHandler(false);
 
-void PServiceProcess::PXOnAsyncSignal(int sig)
+void PServiceProcess::AsynchronousRunTimeSignal(int signal, int source)
 {
   const char * sigmsg;
 
   // Override the default behavious for these signals as that just
   // summarily exits the program. Allow PXOnSignal() to do orderly exit.
 
-  switch (sig) {
+  switch (signal) {
+    case SIGHUP :
+      PTRACE(2, "PTLib", "Received SIGHUP, executing PServiceProcess::OnControl()");
+      InternalPostRunTimeSignal(signal);
+      return; // Don't call base class function, as it terminates app
+
     case SIGSEGV :
-      sigmsg = "segmentation fault (SIGSEGV)";
+      sigmsg = "segmentation fault";
       break;
 
     case SIGFPE :
-      sigmsg = "floating point exception (SIGFPE)";
+      sigmsg = "floating point exception";
       break;
 
 #ifndef __BEOS__ // In BeOS, SIGBUS is the same value as SIGSEGV
     case SIGBUS :
-      sigmsg = "bus error (SIGBUS)";
+      sigmsg = "bus error";
       break;
 #endif
     default :
-      PProcess::PXOnAsyncSignal(sig);
+      PProcess::AsynchronousRunTimeSignal(signal, source);
       return;
   }
 
-  signal(SIGSEGV, SIG_DFL);
-  signal(SIGFPE, SIG_DFL);
-  signal(SIGBUS, SIG_DFL);
+  RemoveRunTimeSignalHandlers();
 
   if (!InSignalHandler.exchange(true)) {
     PThreadIdentifier tid = GetCurrentThreadId();
     PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
 
     PSystemLog log(PSystemLog::Fatal);
-    log << "Caught " << sigmsg << ","
+    log << "Caught " << sigmsg << " (" << GetRunTimeSignalName(signal) << "),"
            " thread-id=" << PThread::GetIdentifiersAsString(tid, uid) << ","
            " name=\"" << PThread::GetThreadName(tid) << '"';
 
@@ -620,11 +628,11 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   }
 
   abort(); // Dump core
-  _exit(sig); // Fail safe if raise() didn't dump core and exit
+  _exit(signal+100); // Fail safe if raise() didn't dump core and exit
 }
 
 
-void PServiceProcess::PXOnSignal(int sig)
+void PServiceProcess::HandleRunTimeSignal(int signal)
 {
   static const char * const LevelName[PSystemLog::NumLogLevels] = {
     "Fatal error",
@@ -639,7 +647,7 @@ void PServiceProcess::PXOnSignal(int sig)
     "Debug6",
   };
 
-  switch (sig) {
+  switch (signal) {
     case SIGHUP :
       OnControl();
       return;
@@ -661,6 +669,6 @@ void PServiceProcess::PXOnSignal(int sig)
       break;
   }
 
-  PProcess::PXOnSignal(sig);
+  PProcess::HandleRunTimeSignal(signal);
 }
 

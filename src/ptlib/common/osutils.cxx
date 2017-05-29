@@ -2246,7 +2246,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 
   SetThreadName(GetName());
 
-  Construct();
+  PlatformConstruct();
 
 #if P_TIMERS
   m_timerList = new PTimer::List();
@@ -2265,6 +2265,9 @@ PProcess::PProcess(const char * manuf, const char * name,
 void PProcess::Startup()
 {
   PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
+
+  if (!m_library)
+    AddRunTimeSignalHandlers();
 
   // create one instance of each class registered in the PProcessStartup abstract factory
   // But make sure we have plugins first, to avoid bizarre behaviour where static objects
@@ -2336,18 +2339,26 @@ void PProcess::HouseKeeping()
     while (m_autoDeleteThreads.Dequeue(thread, 0))
       delete thread;
 
-#ifndef _WIN32
-    PXCheckSignals();
-#endif
+    m_synchronousRunTimeSignalMutex.Wait();
+    while (!m_synchronousRunTimeSignals.empty()) {
+      int signal = m_synchronousRunTimeSignals.front();
+      m_synchronousRunTimeSignals.pop();
+      m_synchronousRunTimeSignalMutex.Signal();
+      HandleRunTimeSignal(signal);
+      m_synchronousRunTimeSignalMutex.Wait();
+    }
+    m_synchronousRunTimeSignalMutex.Signal();
   }
 }
 
 
-void PProcess::PreShutdown()
+PProcess::~PProcess()
 {
   PTRACE(4, "Starting process destruction.");
 
   m_shuttingDown = true;
+
+  RemoveRunTimeSignalHandlers();
 
   // Get rid of the house keeper (majordomocide)
   if (m_houseKeeper != NULL && m_houseKeeper->GetThreadId() != PThread::GetCurrentThreadId()) {
@@ -2408,11 +2419,10 @@ void PProcess::PreShutdown()
   m_threadMutex.Signal();
 
   OnThreadEnded(*this);
-}
 
+  PlatformDestruct();
 
-void PProcess::PostShutdown()
-{
+  // Last chance to log anything ...
   PTRACE(4, PProcessInstance, "Completed process destruction.");
 
   PFactoryBase::GetFactories().DestroySingletons();
@@ -2505,6 +2515,117 @@ void PProcess::OnThreadEnded(PThread &
 #endif //PTRACING
 }
 
+
+static int SignalsToHandle[] = {
+  SIGINT,
+  SIGTERM,
+#ifdef SIGHUP
+  SIGHUP,
+#endif
+#ifdef SIGUSR1
+  SIGUSR1,
+#endif
+#ifdef SIGUSR2
+  SIGUSR2,
+#endif
+#ifdef SIGPIPE
+  SIGPIPE,
+#endif
+#ifdef SIGWINCH
+  SIGWINCH,
+#endif
+#ifdef SIGTRAP
+  SIGTRAP,
+#endif
+  0
+};
+
+void PProcess::AddRunTimeSignalHandlers(const int * signals)
+{
+  if (signals != SignalsToHandle)
+    PProcess::AddRunTimeSignalHandlers(SignalsToHandle);
+
+  if (signals == NULL)
+    return;
+
+  int signal;
+  while ((signal = *signals++) != 0) {
+    PRunTimeSignalHandler & previous = m_previousRunTimeSignalHandlers[signal];
+    if (previous == NULL)
+      previous = PlatformSetRunTimeSignalHandler(signal);
+  }
+}
+
+
+void PProcess::RemoveRunTimeSignalHandlers()
+{
+  for (std::map<unsigned, PRunTimeSignalHandler>::iterator it  = m_previousRunTimeSignalHandlers.begin();
+                                                           it != m_previousRunTimeSignalHandlers.end(); ++it) {
+    if (it->second != NULL)
+      PlatformResetRunTimeSignalHandler(it->first, it->second);
+  }
+  m_previousRunTimeSignalHandlers.clear();
+}
+
+
+void PProcess::AsynchronousRunTimeSignal(int signal, int source)
+{
+  PTRACE(2, "PTLib", "Received signal " << GetRunTimeSignalName(signal) << " from source=" << source);
+
+  switch (signal) {
+    case SIGINT:
+    case SIGTERM:
+#ifdef SIGHUP
+    case SIGHUP:
+#endif
+      if (OnInterrupt(signal == SIGTERM))
+        return;
+      break;
+
+#if P_HAS_BACKTRACE && PTRACING
+    case WalkStackSignal:
+      InternalWalkStackSignaled();
+      break;
+#endif
+  }
+
+  InternalPostRunTimeSignal(signal);
+}
+
+
+void PProcess::InternalPostRunTimeSignal(int signal)
+{
+  m_synchronousRunTimeSignalMutex.Wait();
+  m_synchronousRunTimeSignals.push(signal);
+  m_synchronousRunTimeSignalMutex.Signal();
+  SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
+}
+
+
+void PProcess::HandleRunTimeSignal(int signal)
+{
+  PTRACE(2, "PTLib", "Handling signal " << GetRunTimeSignalName(signal));
+
+  switch (signal) {
+    case SIGINT:
+    case SIGTERM:
+#ifdef SIGHUP
+    case SIGHUP:
+#endif
+      Terminate();
+      _exit(1); // Shouldn't get here, but just in case ...
+  }
+}
+
+
+PString PProcess::GetRunTimeSignalName(int signal)
+{
+  for (POrdinalToString::Initialiser const * name = InternalSigNames; name->key != 0; ++name) {
+    if (name->key == signal)
+      return name->value;
+  }
+  return psprintf("SIG%i", signal);
+}
 
 
 bool PProcess::OnInterrupt(bool)

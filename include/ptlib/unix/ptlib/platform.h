@@ -398,6 +398,7 @@ typedef int SOCKET;
 #endif
 
 typedef pid_t PProcessIdentifier;
+typedef void (*PRunTimeSignalHandler)(int, siginfo_t *, void *);
 
 #ifdef P_PTHREADS
   #ifndef _THREAD_SAFE

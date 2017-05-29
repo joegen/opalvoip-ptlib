@@ -323,6 +323,8 @@ typedef DWORD PProcessIdentifier;
   #include <direct.h>
   #include <time.h>
 
+  #include <signal.h>
+  typedef void (__cdecl * PRunTimeSignalHandler)(int);
 #else
 
   #include <ptlib/wm/stdlibx.h>

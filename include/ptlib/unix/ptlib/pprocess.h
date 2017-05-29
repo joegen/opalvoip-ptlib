@@ -35,24 +35,14 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
   public:
     friend class PApplication;
     friend class PServiceProcess;
-    friend void PXSignalHandler(int);
 
     ~PProcess();
-
-    friend void PXSigHandler(int);
-    virtual void PXOnSignal(int);
-    virtual void PXOnAsyncSignal(int);
-    void         PXCheckSignals();
 
     static void PXShowSystemWarning(PINDEX code);
     static void PXShowSystemWarning(PINDEX code, const PString & str);
 
   protected:
-    void         CommonConstruct();
-    void         CommonDestruct();
-
     virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
-    uint32_t m_pxSignals;
 
 #if P_HAS_BACKTRACE && PTRACING
   public:
