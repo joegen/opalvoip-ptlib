@@ -363,11 +363,13 @@ bool PCLI::Context::ProcessInput(int ch)
 bool PCLI::Context::EchoInput(char ch)
 {
   switch (ch) {
-    case '\n' :
-      return WriteString(m_cli.GetNewLine());
-
     case '\x7f' :
       return WriteString("\b \b");
+
+    case '\n' :
+      if (!m_cli.GetNewLine().IsEmpty())
+        return WriteString(m_cli.GetNewLine());
+      // Otherwise default
 
     default :
       return WriteChar(ch);
@@ -524,8 +526,7 @@ static int NextCmdCodes[]  = { 'N'-64 };
 static int AutoFillCodes[] = { '\t' };
 
 PCLI::PCLI(const char * prompt)
-  : m_newLine("\r\n")
-  , m_requireEcho(false)
+  : m_requireEcho(false)
   , m_editCodes(EditCodes, PARRAYSIZE(EditCodes), false)
   , m_eraseCodes(EraseCodes, PARRAYSIZE(EraseCodes), false)
   , m_leftCodes(LeftCodes, PARRAYSIZE(LeftCodes), false)
@@ -1081,6 +1082,7 @@ PCLISocket::PCLISocket(WORD port, const char * prompt, bool singleThreadForAll)
   , m_listenSocket(port)
   , m_thread(NULL)
 {
+  SetNewLine("\r\n");
 }
 
 
