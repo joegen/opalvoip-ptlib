@@ -72,15 +72,11 @@ class PThread : public PObject
   //@{
     /// Codes for thread priorities.
     P_DECLARE_TRACED_ENUM(Priority,
-      LowestPriority,  ///< Will only run if all other threads are blocked.
-
-      LowPriority,     ///< Runs approximately half as often as normal.
-
-      NormalPriority,  ///< Normal priority for a thread.
-
-      HighPriority,    ///< Runs approximately twice as often as normal.
-
-      HighestPriority  ///< Is only thread that will run, unless blocked.
+      LowestPriority,  ///< Corresponds to Win32 THREAD_PRIORITY_LOWEST and posix SCHED_BATCH.
+      LowPriority,     ///< Corresponds to Win32 THREAD_PRIORITY_BELOW_NORMAL and posix SCHED_BATCH.
+      NormalPriority,  ///< Corresponds to Win32 THREAD_PRIORITY_NORMAL and posix SCHED_OTHER.
+      HighPriority,    ///< Corresponds to Win32 THREAD_PRIORITY_ABOVE_NORMAL and posix SCHED_RR with sched_priority at 50%.
+      HighestPriority  ///< Corresponds to Win32 THREAD_PRIORITY_HIGHEST and posix SCHED_RR with sched_priority at max.
     );
 
     /// Codes for thread autodelete flag
