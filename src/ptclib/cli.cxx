@@ -52,8 +52,8 @@ PCLI::Context::Context(PCLI & cli)
   , m_ignoreNextEOL(false)
   , m_historyPosition(0)
   , m_thread(NULL)
-  , m_state(cli.GetUsername().IsEmpty() ? (cli.GetPassword().IsEmpty() ? e_CommandEntry : e_Password) : e_Username)
   , m_pagedLines(0)
+  , m_state(cli.GetUsername().IsEmpty() ? (cli.GetPassword().IsEmpty() ? e_CommandEntry : e_Password) : e_Username)
 {
 }
 
