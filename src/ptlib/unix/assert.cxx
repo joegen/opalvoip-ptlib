@@ -337,16 +337,21 @@
   {
   }
 
-#endif // P_HAS_BACKTRACE
+  #endif // P_HAS_BACKTRACE
 
 
-#if PTRACING
-  #define OUTPUT_MESSAGE(msg) \
-    PTRACE(0, NULL, "PTLib", msg); \
+
+  #if PTRACING
+  #define TRACE_MESSAGE() \
+    PTrace::Begin(0, location.m_file, location.m_line, NULL, "PAssert") << msg << PTrace::End
+
+  #define OUTPUT_MESSAGE() \
+    TRACE_MESSAGE(); \
     if (PTrace::GetStream() != &PError) \
       PError << msg << endl
 #else
-  #define OUTPUT_MESSAGE(msg) PError << msg << endl
+  #define TRACE_MESSAGE()
+  #define OUTPUT_MESSAGE() PError << msg << endl
 #endif
 
 
@@ -355,8 +360,8 @@
   #include <android/log.h>
 
   #undef  OUTPUT_MESSAGE
-  #define OUTPUT_MESSAGE(msg) \
-      PTRACE(0, NULL, "PTLib", msg); \
+  #define OUTPUT_MESSAGE() \
+      TRACE_MESSAGE(); \
       __android_log_assert("", PProcess::Current().GetName(), "%s", msg.c_str());
 
   static const char ActionMessage[] = "Ignoring";
@@ -457,9 +462,9 @@
 #endif
 
 
-void PPlatformAssertFunc(const char * msg, char defaultAction)
+void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const char * msg, char defaultAction)
 {
-  OUTPUT_MESSAGE(msg);
+  OUTPUT_MESSAGE();
 
   // DO default action is specified
   if (defaultAction != '\0') {

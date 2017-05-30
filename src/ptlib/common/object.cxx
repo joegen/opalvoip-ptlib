@@ -141,7 +141,7 @@ PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, P
 #else
 
 static PCriticalSection s_AssertMutex;
-extern void PPlatformAssertFunc(const char * msg, char defaultAction);
+extern void PPlatformAssertFunc(const PDebugLocation & location, const char * msg, char defaultAction);
 extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip);
 
 #if PTRACING
@@ -209,7 +209,7 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
 
-  PPlatformAssertFunc(str.c_str(), env != NULL ? *env : '\0');
+  PPlatformAssertFunc(location, str.c_str(), env != NULL ? *env : '\0');
 
   s_RecursiveAssert = false;
 }
@@ -223,7 +223,7 @@ bool PAssertFunc(const PDebugLocation & location, PStandardAssertMessage msg)
     static const char fmt[] = "Out of memory at file %.100s, line %u, class %.30s";
     char msgbuf[sizeof(fmt)+100+10+30];
     sprintf(msgbuf, fmt, location.m_file, location.m_line, location.m_extra);
-    PPlatformAssertFunc(msgbuf, 'A');
+    PPlatformAssertFunc(location, msgbuf, 'A');
     return false;
   }
 

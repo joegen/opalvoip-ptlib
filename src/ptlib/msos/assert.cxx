@@ -398,7 +398,7 @@ static bool AssertAction(int c)
 }
 
 
-void PPlatformAssertFunc(const char * msg, char defaultAction)
+void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const char * msg, char defaultAction)
 {
 #ifndef _WIN32_WCE
   if (PProcess::Current().IsServiceProcess()) {
@@ -407,7 +407,9 @@ void PPlatformAssertFunc(const char * msg, char defaultAction)
   }
 #endif // !_WIN32_WCE
 
-  PTRACE(0, msg);
+#if PTRACING
+  PTrace::Begin(0, location.m_file, location.m_line, NULL, "PAssert") << msg << PTrace::End;
+#endif
 
   if (defaultAction != '\0')
     AssertAction(defaultAction);
