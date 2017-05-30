@@ -150,6 +150,12 @@
   #include <mach/mach_time.h>
 #endif
 
+#if HAVE_IOCTL_H
+  #include <ioctl.h>
+#elif HAVE_SYS_IOCTL_H
+  #include <sys/ioctl.h>
+#endif
+
 
 #define  LINE_SIZE_STEP  100
 
