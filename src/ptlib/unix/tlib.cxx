@@ -488,7 +488,9 @@ POrdinalToString::Initialiser const PProcess::InternalSigNames[] = {
   SIG_NAME(SIGPIPE  ),      /* Broken pipe (POSIX).  */
   SIG_NAME(SIGALRM  ),      /* Alarm clock (POSIX).  */
   SIG_NAME(SIGTERM  ),      /* Termination (ANSI).  */
+#ifdef SIGSTKFLT
   SIG_NAME(SIGSTKFLT),      /* Stack fault.  */
+#endif
   SIG_NAME(SIGCHLD  ),      /* Child status has changed (POSIX).  */
   SIG_NAME(SIGCONT  ),      /* Continue (POSIX).  */
   SIG_NAME(SIGSTOP  ),      /* Stop, unblockable (POSIX).  */
@@ -502,7 +504,9 @@ POrdinalToString::Initialiser const PProcess::InternalSigNames[] = {
   SIG_NAME(SIGPROF  ),      /* Profiling alarm clock (4.2 BSD).  */
   SIG_NAME(SIGWINCH ),      /* Window size change (4.3 BSD, Sun).  */
   SIG_NAME(SIGIO    ),      /* I/O now possible (4.2 BSD).  */
+#ifdef SIGPWR
   SIG_NAME(SIGPWR   ),      /* Power failure restart (System V).  */
+#endif
   SIG_NAME(SIGSYS   ),      /* Bad system call.  */
   { }
 };
