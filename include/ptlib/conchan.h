@@ -153,7 +153,7 @@ class PConsoleChannel : public PChannel
     );
   //@}
 
-  /**@name Open functions */
+  /**@name New functions */
   //@{
     /**Open a serial channal.
        The channel is opened it on the specified port and with the specified
@@ -161,6 +161,13 @@ class PConsoleChannel : public PChannel
      */
     virtual PBoolean Open(
       ConsoleType type  /// Type of console for object
+    );
+
+    /**Get output terminal size, if known.
+      */
+    virtual bool GetTerminalSize(
+      unsigned & rows,      ///< Terminal rows
+      unsigned & columns    ///< Terminal columns
     );
   //@}
 

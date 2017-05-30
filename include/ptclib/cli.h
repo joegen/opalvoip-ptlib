@@ -159,6 +159,13 @@ class PCLI : public PObject
            Control is then passed on to PCLI::OnReceivedLine().
           */
         virtual void OnCompletedLine();
+
+        /** Get the terminal size from the operating system.
+          */
+        virtual bool GetTerminalSize(
+          unsigned & rows,
+          unsigned & columns
+        );
       //@}
 
       /**@name Member access */
@@ -185,6 +192,7 @@ class PCLI : public PObject
         PStringList m_commandHistory;
         PINDEX      m_historyPosition;
         PThread   * m_thread;
+        int         m_pagedLines;
 
         enum State {
           e_Username,
@@ -450,7 +458,7 @@ class PCLI : public PObject
     /**Set new line string output at the end of every line.
        Default is "\n".
       */
-    void SetNewLine(const PString & newLine) { m_newLine = newLine; }
+    void SetNewLine(const PString & newLine);
 
     /**Get flag for echo is required for entered characters.
        Default is false.
@@ -733,6 +741,28 @@ class PCLI : public PObject
        Default is "Script file could not be found".
       */
     void SetNoScriptError(const PString & noScriptError) { m_noScriptError = noScriptError; }
+
+    /**Get number of lines to emimt before pausing and prompting for input.
+       Zero indicates disabled, -1 indicates the value is determined from the operating
+       system, and if unavailable, disabled.
+      */
+    int GetPagerLines() const { return m_pagerLines; }
+
+    /**Set number of lines to emimt before pausing and prompting for input.
+       Zero indicates disabled, -1 indicates the value is determined from the operating
+       system, and if unavailable, disabled.
+      */
+    void SetPagerLines(int lines) { m_pagerLines = lines; }
+
+    /**Get prompt used for waiting on a page of display output.
+       Default is "Press a key for more ...".
+      */
+    const PString & GetPageWaitPrompt() const { return m_pagerWaitPrompt; }
+
+    /**Set prompt used for waiting on a page of display output.
+       Default is "Press a key for more ...".
+      */
+    void SetPageWaitPrompt(const PString & prompt) { m_pagerWaitPrompt = prompt; }
   //@}
 
 
@@ -766,6 +796,10 @@ class PCLI : public PObject
     PString         m_ambiguousCommandError;
     PCaselessString m_scriptCommand;
     PString         m_noScriptError;
+    int             m_pagerLines;
+    PString         m_pagerWaitPrompt;
+
+    virtual bool InternalPageWait(Context & context);
 
     struct InternalCommand
     {
@@ -988,8 +1022,6 @@ class PCLICurses : public PCLI
       PCLICurses & m_owner;
       Borders      m_border;
       bool         m_focus;
-      bool         m_pageMode;
-      unsigned     m_pagedRows;
 
       Window(PCLICurses & owner, Borders border);
 
@@ -1039,12 +1071,6 @@ class PCLICurses : public PCLI
       virtual void Clear() = 0;
       virtual void Scroll(int n = 1) = 0;
 
-      void SetPageMode(
-        bool on = true
-      );
-
-      bool GetPageMode() const { return m_pageMode; }
-
       virtual void SetFocus();
       bool HasFocus() const { return m_focus; }
     };
@@ -1080,22 +1106,10 @@ class PCLICurses : public PCLI
 
     virtual void Refresh();
 
-    virtual bool WaitPage();
-
-    /**Get prompt used for waiting on a page of display output.
-       Default is "Press a key for more ...".
-      */
-    const PString & GetPageWaitPrompt() const { return m_pageWaitPrompt; }
-
-    /**Set prompt used for waiting on a page of display output.
-       Default is "Press a key for more ...".
-      */
-    void SetPageWaitPrompt(const PString & prompt) { m_pageWaitPrompt = prompt; }
-
   protected:
     void Construct();
 
-    PString        m_pageWaitPrompt;
+    virtual bool InternalPageWait(Context & context);
 
     PArray<Window> m_windows;
     unsigned       m_maxRows;

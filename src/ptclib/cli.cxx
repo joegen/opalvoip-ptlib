@@ -53,6 +53,7 @@ PCLI::Context::Context(PCLI & cli)
   , m_historyPosition(0)
   , m_thread(NULL)
   , m_state(cli.GetUsername().IsEmpty() ? (cli.GetPassword().IsEmpty() ? e_CommandEntry : e_Password) : e_Username)
+  , m_pagedLines(0)
 {
 }
 
@@ -66,8 +67,13 @@ PCLI::Context::~Context()
 
 PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
 {
-  if (m_cli.GetNewLine().IsEmpty())
-    return PIndirectChannel::Write(buf, len);
+  unsigned rows, columns;
+  if (!GetTerminalSize(rows, columns))
+    rows = columns = INT_MAX;
+
+  int pagerLines = m_cli.GetPagerLines();
+  if (pagerLines < 0)
+    pagerLines = rows - 1; // Allow for the "press a key" line
 
   const char * newLinePtr = m_cli.GetNewLine();
   PINDEX newLineLen = m_cli.GetNewLine().GetLength();
@@ -78,19 +84,30 @@ PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
   const char * nextline;
   while (len > 0 && (nextline = strchr(str, '\n')) != NULL) {
     PINDEX lineLen = nextline - str;
+    if (lineLen > columns)
+      lineLen = columns;
 
     if (lineLen > 0 && !PIndirectChannel::Write(str, lineLen))
       return false;
 
     written += GetLastWriteCount();
+    len -= lineLen;
+    str += lineLen;
 
-    if (!PIndirectChannel::Write(newLinePtr, newLineLen))
-      return false;
+    if (*str == '\n') {
+      if (!PIndirectChannel::Write(newLinePtr, newLineLen))
+        return false;
 
-    written += GetLastWriteCount();
+      written += GetLastWriteCount();
+      --len;
+      ++str;
+    }
 
-    len -= lineLen+1;
-    str = nextline+1;
+    if (++m_pagedLines >= pagerLines) {
+      m_pagedLines = 0;
+      if (!m_cli.InternalPageWait(*this))
+        return false;
+    }
   }
 
   if (!PIndirectChannel::Write(str, len))
@@ -479,6 +496,13 @@ void PCLI::Context::OnCompletedLine()
 }
 
 
+bool PCLI::Context::GetTerminalSize(unsigned & rows, unsigned & columns)
+{
+  PConsoleChannel * console = dynamic_cast<PConsoleChannel *>(GetBaseWriteChannel());
+  return console != NULL && console->GetTerminalSize(rows, columns);
+}
+
+
 void PCLI::Context::ThreadMain(PThread &, P_INT_PTR)
 {
   PTRACE(4, "Context thread started");
@@ -526,7 +550,8 @@ static int NextCmdCodes[]  = { 'N'-64 };
 static int AutoFillCodes[] = { '\t' };
 
 PCLI::PCLI(const char * prompt)
-  : m_requireEcho(false)
+  : m_newLine('\n')
+  , m_requireEcho(false)
   , m_editCodes(EditCodes, PARRAYSIZE(EditCodes), false)
   , m_eraseCodes(EraseCodes, PARRAYSIZE(EraseCodes), false)
   , m_leftCodes(LeftCodes, PARRAYSIZE(LeftCodes), false)
@@ -561,6 +586,8 @@ PCLI::PCLI(const char * prompt)
   , m_ambiguousCommandError("Ambiguous command")
   , m_scriptCommand("<\nread")
   , m_noScriptError("Script file could not be found")
+  , m_pagerLines(-1)
+  , m_pagerWaitPrompt("Press ENTER for more ...")
 {
 }
 
@@ -1045,6 +1072,30 @@ void PCLI::ShowHelp(Context & context, const PArgList & partial)
   }
 
   context.flush();
+}
+
+
+void PCLI::SetNewLine(const PString & newLine)
+{
+  if (newLine.IsEmpty())
+    m_newLine = '\n';
+  else
+    m_newLine = newLine;
+}
+
+
+bool PCLI::InternalPageWait(Context & context)
+{
+  if (!context.WriteString(GetPageWaitPrompt()))
+    return false;
+
+  for (;;) {
+    int ch = context.ReadChar();
+    if (ch < 0)
+      return false;
+    if (ch == '\n')
+      return context.WriteString(GetNewLine());
+  }
 }
 
 
@@ -1765,13 +1816,13 @@ void PCLICurses::Construct()
 
   m_requireEcho = true;
 
-  m_pageWaitPrompt = "Press a key for more ...";
+  SetPageWaitPrompt("Press a key for more ...");
 
   PConsoleChannel * input = new PConsoleChannel(PConsoleChannel::StandardInput);
   input->SetLocalEcho(false); // We do all this
   input->SetLineBuffered(false);
 
-  NewWindow(0, 0, m_maxRows-2, m_maxCols, NoBorder).SetPageMode(true);
+  NewWindow(0, 0, m_maxRows-2, m_maxCols, NoBorder);
   NewWindow(m_maxRows-2, 0, 2, m_maxCols, BorderAbove).SetFocus();
 
   StartContext(input, &m_windows[0], true, false, false);
@@ -1799,7 +1850,6 @@ public:
     if (!wnd.WriteString(m_cli.GetPrompt()))
       return false;
 
-    m_cli[0].SetPageMode();
     m_cli.Refresh();
     return true;
   }
@@ -1808,6 +1858,13 @@ public:
   virtual bool EchoInput(char ch)
   {
     return m_cli[m_cli.GetWindowCount() > 1 ? 1 : 0].WriteChar(ch);
+  }
+
+
+  virtual bool GetTerminalSize(unsigned & rows, unsigned & columns)
+  {
+    m_cli[0].GetSize(rows, columns, false);
+    return rows;
   }
 };
 
@@ -1857,10 +1914,12 @@ PCLICurses::Window * PCLICurses::GetFocusWindow() const
 }
 
 
-bool PCLICurses::WaitPage()
+bool PCLICurses::InternalPageWait(Context &)
 {
   PCLICurses::Window & wnd = m_windows[m_windows.GetSize() > 1 ? 1 : 0];
   wnd.Clear();
+  Refresh();
+
   if (!wnd.WriteString(GetPageWaitPrompt()))
     return false;
 
@@ -1883,8 +1942,6 @@ PCLICurses::Window::Window(PCLICurses & owner, PCLICurses::Borders border)
   : m_owner(owner)
   , m_border(border)
   , m_focus(false)
-  , m_pageMode(false)
-  , m_pagedRows(0)
 {
 }
 
@@ -1927,13 +1984,6 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
       case '\n' :
         col = 0;
         ++row;
-
-        if (m_pageMode && ++m_pagedRows >= rows) {
-          m_pagedRows = 0;
-          Refresh();
-          if (!m_owner.WaitPage())
-            return false;
-        }
         break;
     }
 
@@ -1951,13 +2001,6 @@ PBoolean PCLICurses::Window::Write(const void * data, PINDEX length)
 
   Refresh();
   return true;
-}
-
-
-void PCLICurses::Window::SetPageMode(bool on)
-{
-  m_pageMode = on;
-  m_pagedRows = 0;
 }
 
 

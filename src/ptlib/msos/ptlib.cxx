@@ -908,6 +908,24 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
 }
 
 
+bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
+{
+  if (!m_hConsole.IsValid())
+    return ConvertOSError(-2, LastReadError);
+
+  CONSOLE_SCREEN_BUFFER_INFO info;
+  if (!GetConsoleScreenBufferInfo(m_hConsole, &info))
+    return false;
+
+  if (info.srWindow.Right <= info.srWindow.Left || info.srWindow.Bottom <= info.srWindow.Top)
+    return false;
+
+  rows = info.srWindow.Bottom - info.srWindow.Top + 1;
+  columns = info.srWindow.Right - info.srWindow.Left + 1;
+  return true;
+}
+
+
 bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
 {
   if (os_handle != StandardInput)
