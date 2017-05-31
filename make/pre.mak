@@ -135,7 +135,7 @@ ifeq ($(USING_WX_WIDGETS),yes)
   CPPFLAGS += $(shell $(WX_CONFIG) --cppflags)
   CXXFLAGS += $(shell $(WX_CONFIG) --cxxflags)
   CFLAGS   += $(shell $(WX_CONFIG) --cflags)
-  LDFLAGS  += $(shell $(WX_CONFIG) --libs)
+  LIBS     += $(shell $(WX_CONFIG) --libs)
 endif
 
 
