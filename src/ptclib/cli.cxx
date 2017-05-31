@@ -83,7 +83,7 @@ PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
   const char * str = (const char *)buf;
   const char * nextline;
   while (len > 0 && (nextline = strchr(str, '\n')) != NULL) {
-    PINDEX lineLen = nextline - str;
+    unsigned lineLen = (unsigned)(nextline - str);
     if (lineLen > columns)
       lineLen = columns;
 
