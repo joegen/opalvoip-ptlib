@@ -33,11 +33,16 @@
 
 /////////////////////////////////////////////////////////
 
+#define PTraceModule() "AdaptDelay"
+
 PAdaptiveDelay::PAdaptiveDelay(const PTimeInterval & maximumSlip, const PTimeInterval & minimumDelay)
-  : m_jitterLimit(-maximumSlip)
+  : m_maximumSlip(-maximumSlip)
   , m_minimumDelay(minimumDelay)
   , m_targetTime(0)
   , m_firstTime(true)
+#if PTRACING
+  , m_traceLevel(3)
+#endif
 {
 }
 
@@ -46,48 +51,60 @@ void PAdaptiveDelay::Restart()
   m_firstTime = true;
 }
 
-PBoolean PAdaptiveDelay::DelayInterval(const PTimeInterval & delta)
+PAdaptiveDelay::DelayResult PAdaptiveDelay::DelayInterval(const PTimeInterval & delta)
 {
   if (m_firstTime) {
     m_firstTime = false;
     m_targetTime.SetCurrentTime();   // targetTime is the time we want to delay to
   }
 
-  if (delta <= 0)
-    return true;
+  if (delta <= 0) {
+    m_actualDelay = 0;
+    return eBadDelta;
+  }
+
+  PTime now;
 
   // System time changed backward
-  if (m_targetTime > (PTime() + delta)) {
+  if (m_targetTime > (now + delta)) {
     m_targetTime.SetCurrentTime();
-    PTRACE(2, "AdaptiveDelay\tSystem time changed backward - resynchronise");
+    PTRACE(m_traceLevel, "Resyncronised due to backward system time change.");
   }
 
   // Set the new target
   m_targetTime += delta;
 
   // Calculate the sleep time so we delay until the target time
-  PTimeInterval delay = m_targetTime - PTime();
+  PTimeInterval delay = m_targetTime - now;
 
   // Catch up if we are too late and the featue is enabled
-  if (m_jitterLimit < 0 && delay < m_jitterLimit) {
-    unsigned i = 0;
-    while (delay < 0) { 
-      m_targetTime += delta;
-      delay += delta;
-      i++;
-    }
-    PTRACE (4, "AdaptiveDelay\tResynchronise skipped " << i << " frames");
+  if (m_maximumSlip < 0 && delay < m_maximumSlip) {
+    PTRACE(m_traceLevel, "Resyncronised due to max slip reached, skipped " << (-delay/delta) << " delta intervals of " << delta);
+    m_targetTime.SetCurrentTime();
+    m_actualDelay = 0;
+    return eSlipped;
   }
 
   // Else sleep only if necessary
-  if (delay > m_minimumDelay)
+  if (delay < m_minimumDelay)
+    m_actualDelay = 0;
+  else {
     PThread::Sleep(delay);
+    m_actualDelay = now.GetElapsed();
+    if (m_actualDelay > delay+delta*2) {
+      PTRACE(m_traceLevel, "Over slept: expected=" << delay << " actual=" << m_actualDelay);
+      return eOverSlept;
+    }
+  }
 
-  return delay <= -delta;
+  return delay <= -delta ? eLate : eOnTime;
 }
 
 
 /////////////////////////////////////////////////////////
+
+#undef  PTraceModule
+#define PTraceModule() "DelayChan"
 
 PDelayChannel::PDelayChannel(Mode m,
                              unsigned delay,
@@ -115,9 +132,9 @@ PDelayChannel::PDelayChannel(PChannel &channel,
 {
   maximumSlip = -PTimeInterval(max);
   if(Open(channel) == false){
-    PTRACE(1,"Delay\tPDelayChannel cannot open channel");
+    PTRACE(1, "PDelayChannel cannot open channel");
   }
-  PTRACE(5,"Delay\tdelay = " << frameDelay << ", size = " << frameSize);
+  PTRACE(5, "delay = " << frameDelay << ", size = " << frameSize);
 }
 
 PBoolean PDelayChannel::Read(void * buf, PINDEX count)
@@ -153,9 +170,9 @@ void PDelayChannel::Wait(PINDEX count, PTimeInterval & nextTick)
 
   PTimeInterval delay = nextTick - thisTick;
   if (delay > maximumSlip)
-    PTRACE(6, "Delay\t" << delay);
+    PTRACE(6, delay);
   else {
-    PTRACE(6, "Delay\t" << delay << " ignored, too large");
+    PTRACE(6, delay << " ignored, too large");
     nextTick = thisTick;
     delay = 0;
   }

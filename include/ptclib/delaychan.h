@@ -72,15 +72,36 @@ class PAdaptiveDelay : public PObject
        If @a maximumSlip is 0, this feature is disabled.
       */
     void SetMaximumSlip(const PTimeInterval & maximumSlip)
-    { m_jitterLimit = -maximumSlip; }
+    { m_maximumSlip = -maximumSlip; }
 
     /**Get the current slip time. */
     PTimeInterval GetMaximumSlip() const
-    { return -m_jitterLimit; }
+    { return -m_maximumSlip; }
+
+    /// Get the actual sleep time of the last call to the delay function
+    const PTimeInterval & GetActualDelay() const { return m_actualDelay; }
   //@}
 
   /**@name Functionality */
   //@{
+    ///< Result of call to Delay() or DelayInterval() function call
+    enum DelayResult
+    {
+        eOnTime,    /**< The function was called within the delta time of the expected
+                         time and a possible sleep was performed. A sleep may be skipped
+                         if below m_minimumDelay, as very short sleeps are not performed
+                         very well by many operating systems. */
+        eOverSlept, /**< The function was called in time, and a sleep was performed, but
+                         the operating system did not return control within two delta
+                         time intervals of the expected delay. The next two calls to the
+                         delay function will not pause at all. */
+        eLate,      /**< The function was called greater than delta time intervals late,
+                         no sleep was made. */
+        eSlipped,   /**< The function was called more than the m_maximumSlip time late,
+                         the adaptation is reset, no sleep is performed. */
+        eBadDelta   ///< The delta time interval was zero or negative
+    };
+
     /**Wait until the specified number of milliseconds have elapsed from
        the previous call (on average). The first time the function is called,
        no delay occurs. If the maximum slip time is set and the caller
@@ -95,10 +116,10 @@ class PAdaptiveDelay : public PObject
        true if we are "too late" of @a time milliseconds (unrelated to
        the maximum slip time).
       */
-    bool Delay(int msec) { return DelayInterval(msec); }
+    DelayResult Delay(int deltaMS) { return DelayInterval(deltaMS); }
 
     /// As for Delay() but for more accurate timing.
-    bool DelayInterval(const PTimeInterval & delta);
+    DelayResult DelayInterval(const PTimeInterval & delta);
 
     /**Invalidate the timer. The timing of this function call is not
        important, the timer will restart at the next call to Delay().
@@ -107,10 +128,14 @@ class PAdaptiveDelay : public PObject
   //@}
  
   protected:
-    PTimeInterval  m_jitterLimit;
+    PTimeInterval  m_maximumSlip;
     PTimeInterval  m_minimumDelay;
+    PTimeInterval  m_actualDelay;
     PTime          m_targetTime;
     bool           m_firstTime;
+#if PTRACING
+    unsigned m_traceLevel;
+#endif
 };
 
 
