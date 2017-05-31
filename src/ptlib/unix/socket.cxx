@@ -530,7 +530,7 @@ bool PSocket::os_vwrite(const Slice * slices, size_t sliceCount, int flags, stru
 
     if (ConvertOSError(result, LastWriteError)) {
       PTRACE_IF(s_NoBufsThrottle, noBufferRetry > 0, "PTLib",
-                "Socket write: No buffer space available for " << noBufferRetry << " retries" << s_NoBufsThrottle);
+                "WARNING: No buffer space available for " << noBufferRetry << " retries of socket write" << s_NoBufsThrottle);
       SetLastWriteCount(result);
       return true;
     }
