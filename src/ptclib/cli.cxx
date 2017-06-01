@@ -333,6 +333,9 @@ bool PCLI::Context::ProcessInput(int ch)
     return true;
   }
 
+  if (m_commandLine.IsEmpty())
+    return WritePrompt();
+
   m_editPosition = 0;
   m_historyPosition = m_commandHistory.GetSize()+1;
 
@@ -1102,7 +1105,7 @@ bool PCLI::InternalPageWait(Context & context)
     if (ch < 0)
       return false;
     if (ch == '\n')
-      return context.WriteString(GetNewLine());
+      return true;
   }
 }
 
