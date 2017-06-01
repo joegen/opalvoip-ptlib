@@ -3000,10 +3000,15 @@ static void SetOperatingSystemThreadName(DWORD threadId, const char * threadName
   }
 }
 
-#elif defined(P_PTHREADS)
-
-#define SetOperatingSystemThreadName(threadId, threadName) pthread_setname_np(threadId, threadName.Left(15))
-
+#elif defined(P_PTHREADS) && !defined(P_MACOSX)
+  #if defined(P_MACOSX)
+    // For some bizarre reason Mac OS-X version of this function only has one argument.
+    // So can only be called from the current thread, other calls to SetThreadName() will be ignored
+    #define SetOperatingSystemThreadName(threadId, threadName) \
+                    if (pthread_self() == threadId) pthread_setname_np(threadId, threadName.Left(15))
+  #else
+    #define SetOperatingSystemThreadName(threadId, threadName) pthread_setname_np(threadId, threadName.Left(15))
+  #endif
 #else
 
 #define SetOperatingSystemThreadName(p1,p2)
