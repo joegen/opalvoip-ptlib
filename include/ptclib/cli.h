@@ -763,6 +763,16 @@ class PCLI : public PObject
        Default is "Press a key for more ...".
       */
     void SetPageWaitPrompt(const PString & prompt) { m_pagerWaitPrompt = prompt; }
+
+    /**Get name of command to adjust pager lines.
+       Default is "set page".
+      */
+    const PString & GetPagerCommand() const { return m_pagerCommand; }
+
+    /**Set name of command to adjust pager lines.
+       Default is "set page".
+      */
+    void SetPagerCommand(const PString & cmd) { m_pagerCommand = cmd; }
   //@}
 
 
@@ -798,6 +808,7 @@ class PCLI : public PObject
     PString         m_noScriptError;
     int             m_pagerLines;
     PString         m_pagerWaitPrompt;
+    PCaselessString m_pagerCommand;
 
     virtual bool InternalPageWait(Context & context);
 

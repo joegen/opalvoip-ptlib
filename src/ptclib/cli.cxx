@@ -473,6 +473,13 @@ void PCLI::Context::OnCompletedLine()
     return;
   }
 
+  if (CheckInternalCommand(line, m_cli.GetPagerCommand())) {
+    if (!line.IsEmpty())
+      m_cli.SetPagerLines(line.AsInteger());
+    *this << m_cli.GetPagerLines() << endl;
+    return;
+  }
+
   if (line.NumCompare(m_cli.GetHistoryCommand()) == EqualTo) {
     PINDEX cmdNum = line.Mid(m_cli.GetHistoryCommand().GetLength()).AsUnsigned();
     if (cmdNum <= 0 || cmdNum > m_commandHistory.GetSize()) {
@@ -571,10 +578,10 @@ PCLI::PCLI(const char * prompt)
                  "Help"
                  "----"
                  "Use ? or 'help' to display help\n"
-                 "Use ! to list history of commands\n"
+                 "Use ! or 'history' to list history of commands\n"
                  "Use !n to repeat the n'th command\n"
                  "Use !! to repeat last command\n"
-                 "Use read <filename> to read a script file as commands\n"
+                 "Use < or 'read' to read a script file as commands\n"
                  "\n"
                  "Commands available are:")
   , m_repeatCommand("!!")
@@ -588,6 +595,7 @@ PCLI::PCLI(const char * prompt)
   , m_noScriptError("Script file could not be found")
   , m_pagerLines(-1)
   , m_pagerWaitPrompt("Press ENTER for more ...")
+  , m_pagerCommand("pager")
 {
 }
 
