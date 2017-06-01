@@ -563,10 +563,10 @@ PBoolean PProcess::SetMaxHandles(int newMax)
 
 #if defined(P_LINUX)
 
-static inline PTimeInterval jiffies_to_msecs(const uint64_t jiffies)
+static inline PMicroSeconds jiffies_to_usecs(const uint64_t jiffies)
 {
   static long sysconf_HZ = sysconf(_SC_CLK_TCK);
-  return (jiffies * 1000) / sysconf_HZ;
+  return (jiffies * 1000000) / sysconf_HZ;
 }
 
 
@@ -686,8 +686,8 @@ static bool InternalGetTimes(const char * filename, PThread::Times & times)
     if (count != 42)
       continue;
 
-    times.m_kernel = jiffies_to_msecs(stime);
-    times.m_user = jiffies_to_msecs(utime);
+    times.m_kernel = jiffies_to_usecs(stime);
+    times.m_user = jiffies_to_usecs(utime);
     return true;
   }
 
@@ -704,6 +704,7 @@ bool PThread::GetTimes(Times & times)
 #if P_PTHREADS
   times.m_real = (PX_endTick != 0 ? PX_endTick : PTimer::Tick()) - PX_startTick;
 #endif
+  times.m_sample.SetCurrentTime();
 
   std::stringstream path;
   path << "/proc/self/task/" << times.m_uniqueId << "/stat";
@@ -715,6 +716,7 @@ bool PProcess::GetProcessTimes(Times & times) const
 {
   times.m_name = "Process Total";
   times.m_real = PTime() - GetStartTime();
+  times.m_sample.SetCurrentTime();
   return InternalGetTimes("/proc/self/stat", times);
 }
 
@@ -730,9 +732,10 @@ bool PProcess::GetSystemTimes(Times & times)
     uint64_t user, nice, system, idle, iowait, irq, softirq, steal;
     statfile >> dummy >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal;
     if (statfile.good()) {
-      times.m_kernel = jiffies_to_msecs(system);
-      times.m_user = jiffies_to_msecs(user);
-      times.m_real = times.m_kernel + times.m_user + jiffies_to_msecs(idle);
+      times.m_kernel = jiffies_to_usecs(system);
+      times.m_user = jiffies_to_usecs(user);
+      times.m_real = times.m_kernel + times.m_user + jiffies_to_usecs(idle);
+      times.m_sample.SetCurrentTime();
       return true;
     }
   }

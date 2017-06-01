@@ -985,9 +985,9 @@ std::ostream & operator<<(std::ostream & strm, const PComVariant & var)
 #endif // P_WIN_COM
 
 
-__inline static ULONGLONG GetMillisecondFromFileTime(const FILETIME & ft)
+__inline static PNanoSeconds GetNanoFromFileTime(const FILETIME & ft)
 {
-  return (reinterpret_cast<const ULARGE_INTEGER *>(&ft)->QuadPart+9999)/10000;
+  return reinterpret_cast<const ULARGE_INTEGER *>(&ft)->QuadPart*100;
 }
 
 
@@ -1010,15 +1010,16 @@ struct PWindowsTimes
 
   void ToTimes(PThread::Times & times)
   {
-    times.m_kernel.SetInterval(GetMillisecondFromFileTime(m_kernel));
-    times.m_user.SetInterval(GetMillisecondFromFileTime(m_user));
+    times.m_kernel = GetNanoFromFileTime(m_kernel);
+    times.m_user = GetNanoFromFileTime(m_user);
     if (m_idle.dwHighDateTime != 0 || m_idle.dwLowDateTime != 0)
-      times.m_real.SetInterval(GetMillisecondFromFileTime(m_kernel) + GetMillisecondFromFileTime(m_user) + GetMillisecondFromFileTime(m_idle));
+      times.m_real = GetNanoFromFileTime(m_kernel) + GetNanoFromFileTime(m_user) + GetNanoFromFileTime(m_idle);
     else {
       if (m_exit.dwHighDateTime == 0 && m_exit.dwLowDateTime == 0)
         GetSystemTimeAsFileTime(&m_exit);
-      times.m_real.SetInterval(GetMillisecondFromFileTime(m_exit) - GetMillisecondFromFileTime(m_created));
+      times.m_real = GetNanoFromFileTime(m_exit) - GetNanoFromFileTime(m_created);
     }
+    times.m_sample.SetCurrentTime();
   }
 };
 

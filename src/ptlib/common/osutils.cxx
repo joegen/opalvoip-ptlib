@@ -2908,6 +2908,9 @@ bool PThread::GetTimes(PThreadIdentifier id, Times & times)
   if (!PProcess::IsInitialised())
     return false;
 
+  if (id == PNullThreadIdentifier)
+    return Current()->GetTimes(times);
+
   PProcess & process = PProcess::Current();
 
   PWaitAndSignal mutex(process.m_threadMutex);
@@ -2930,9 +2933,28 @@ void PThread::GetTimes(std::list<Times> & allThreadTimes)
 }
 
 
+int PThread::GetPercentageCPU(Times & previousTimes, const PTimeInterval & period, PThreadIdentifier id)
+{
+  if (!previousTimes.m_sample.IsValid())
+    return GetTimes(id, previousTimes) ? -2 : -1;
+
+  if (previousTimes.m_sample.GetElapsed() < period)
+    return -2;
+
+  Times newTimes;
+  if (!GetTimes(id, newTimes))
+    return -1;
+
+  Times delta = newTimes - previousTimes;
+  previousTimes = newTimes;
+  return (delta.m_user + delta.m_kernel)*100/delta.m_real;
+}
+
+
 PThread::Times::Times()
   : m_threadId(PNullThreadIdentifier)
   , m_uniqueId(0)
+  , m_sample(0)
 {
 }
 

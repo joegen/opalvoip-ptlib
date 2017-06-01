@@ -366,6 +366,7 @@ class PThread : public PObject
       PTimeInterval           m_real;     ///< Total real time since thread start in milliseconds.
       PTimeInterval           m_kernel;   ///< Total kernel CPU time in milliseconds.
       PTimeInterval           m_user;     ///< Total user CPU time in milliseconds.
+      PTime                   m_sample;   ///< Time of sample
     };
 
     PPROFILE_EXCLUDE(
@@ -389,6 +390,25 @@ class PThread : public PObject
     static void GetTimes(
       std::list<Times> & times         ///< Times for thread execution.
     ));
+
+    /** Calculate the percentage CPU used over a period of time.
+        Usage:
+           PThread::Times previous;
+           for (;;) {
+             DoStuff();
+             unsigned percentage;
+             if (PThread::GetPercentageCPU(previous, percentage, 2000) && percentage > 90)
+               cout << "Excessive CPU used!" << end;
+           }
+
+        @returns percentage value if calculated, -1 if thread id incorrect or -2 if
+                 it is not yet time to calculate the percentage based on \p period.
+      */
+    static int GetPercentageCPU(
+      Times & previousTimes,                             ///< Previous CPU times, contecxt for calculations
+      const PTimeInterval & period = PTimeInterval(0,1), ///< Time over which to integrate the average CPU usage.
+      PThreadIdentifier id = PNullThreadIdentifier       ///< Thread ID to get CPU usage, null means current thread
+    );
 
     /**Get number of processors, or processor cores, this machine has available.
       */
