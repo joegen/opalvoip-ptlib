@@ -653,37 +653,28 @@ static bool InternalGetTimes(const char * filename, PThread::Times & times)
     if (!statfile.good())
       continue;
 
-    int pid;
-    char comm[100];
-    char state;
-    int ppid, pgrp, session, tty_nr, tpgid;
-    unsigned long flags, minflt, cminflt, majflt, cmajflt, utime, stime;
-    long cutime, cstime, priority, nice, num_threads, itrealvalue;
-    unsigned long starttime, vsize;
-    long rss;
-    unsigned long rlim, startcode, endcode, startstack, kstkesp, kstkeip, signal, blocked, sigignore, sigcatch, wchan, nswap, cnswap;
-    int exit_signal, processor;
-    unsigned long rt_priority, policy;
-    unsigned long long delayacct_blkio_ticks;
-
-    // 17698 (maxmcu) R 1 17033 8586 34833 17467 4202560 7
+    // 17698 (MyApp:1234) R 1 17033 8586 34833 17467 4202560 7
     // 0 0 0 0 0 0 0 -100 0 16
     // 0 55172504 258756608 6741 4294967295 134512640 137352760 3217892976 8185700 15991824
     // 0 0 4 201349635 0 0 0 -1 7 99
     // 2 0
-
-    int count = sscanf(line,
-                       "%d%s %c%d%d%d%d%d%lu%lu"
-                       "%lu%lu%lu%lu%lu%ld%ld%ld%ld%ld"
-                       "%ld%lu%lu%ld%lu%lu%lu%lu%lu%lu"
-                       "%lu%lu%lu%lu%lu%lu%lu%d%d%lu"
-                       "%lu%llu",
-                       &pid, comm, &state, &ppid, &pgrp, &session, &tty_nr, &tpgid, &flags, &minflt,
-                       &cminflt, &majflt, &cmajflt, &utime, &stime, &cutime, &cstime, &priority, &nice, &num_threads,
-                       &itrealvalue, &starttime, &vsize, &rss, &rlim, &startcode, &endcode, &startstack, &kstkesp, &kstkeip,
-                       &signal, &blocked, &sigignore, &sigcatch, &wchan, &nswap, &cnswap, &exit_signal, &processor, &rt_priority,
-                       &policy, &delayacct_blkio_ticks);
-    if (count != 42)
+    //
+    char * str = line;
+    while (*str != '\0' && *str++ != ')'); //  get past pid and thread name
+    while (*str != '\0' && !isdigit(*str++)); // get past state
+    while (*str != '\0' && *str++ != ' '); // ppid
+    while (*str != '\0' && *str++ != ' '); // pgrp
+    while (*str != '\0' && *str++ != ' '); // session
+    while (*str != '\0' && *str++ != ' '); // tty_nr
+    while (*str != '\0' && *str++ != ' '); // tpgid
+    while (*str != '\0' && *str++ != ' '); // flags
+    while (*str != '\0' && *str++ != ' '); // minflt
+    while (*str != '\0' && *str++ != ' '); // cminflt
+    while (*str != '\0' && *str++ != ' '); // majflt
+    while (*str != '\0' && *str++ != ' '); // cmajflt
+    uint64_t utime = strtoull(str, &str, 10);
+    uint64_t stime = strtoull(str, &str, 10);
+    if (*str == '\0')
       continue;
 
     times.m_kernel = jiffies_to_usecs(stime);
@@ -691,6 +682,7 @@ static bool InternalGetTimes(const char * filename, PThread::Times & times)
     return true;
   }
 
+  PTRACE(4, "Could not obtain thread times from " << filename);
   return false;
 }
 
