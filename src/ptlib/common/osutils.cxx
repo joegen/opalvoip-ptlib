@@ -2568,7 +2568,7 @@ void PProcess::RemoveRunTimeSignalHandlers()
 }
 
 
-void PProcess::AsynchronousRunTimeSignal(int signal, int source)
+void PProcess::AsynchronousRunTimeSignal(int signal, int PTRACE_PARAM(source))
 {
   PTRACE(2, "PTLib", "Received signal " << GetRunTimeSignalName(signal) << " from source=" << source);
 
