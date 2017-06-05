@@ -242,7 +242,9 @@ class PTimer : public PTimeInterval
        While OnTimeout() is running this method will wait until OnTimeout()
        will finish.
        
-       The wait flag is deprecated and not used in this implementation.
+       The wait flag indicates that, if the timer had fired and the OnTimeout()
+       is executing, this will wait until it has completed before returning.
+       Care must be taken as this can be a nasty source of deadlocks. 
        */
     void Stop(
       bool wait = true
