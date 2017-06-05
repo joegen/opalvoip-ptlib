@@ -242,9 +242,15 @@ class PTimer : public PTimeInterval
        While OnTimeout() is running this method will wait until OnTimeout()
        will finish.
        
-       The wait flag indicates that, if the timer had fired and the OnTimeout()
-       is executing, this will wait until it has completed before returning.
-       Care must be taken as this can be a nasty source of deadlocks. 
+       The \p wait flag indicates that, if the timer had fired and the OnTimeout()
+       is executing, this will wait until it has completed before returning. Care
+       has to be made in this case as deadlocks can happen easily if the timeout
+       callback needs to acuire another mutex.
+       
+       Note, if the \p wait flag is false, and the OnTimeout() call back restarts
+       the timer, then you have a race where Stop() is not guranteed to stop the
+       timer at all. So, the coder has to be extremely careful of possible
+       deadlocks in one case and possible races in the other.
        */
     void Stop(
       bool wait = true
