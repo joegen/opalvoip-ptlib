@@ -359,6 +359,9 @@ class PThread : public PObject
       PPROFILE_EXCLUDE(
         Times & operator-=(const Times & rhs)
       );
+      PPROFILE_EXCLUDE(
+        bool operator<(const Times & rhs) const { return m_uniqueId < rhs.m_uniqueId; }
+      );
 
       PString                 m_name;     ///< Name of thread
       PThreadIdentifier       m_threadId; ///< Operating system thread ID
@@ -388,8 +391,14 @@ class PThread : public PObject
     /** Get the thread execution times for all threads.
      */
     static void GetTimes(
-      std::list<Times> & times         ///< Times for thread execution.
+      std::vector<Times> & times    ///< Times for thread execution.
     ));
+    static void GetTimes(
+      std::list<Times> & times      ///< Times for thread execution.
+    );
+    static void GetTimes(
+      std::set<Times> & times      ///< Times for thread execution.
+    );
 
     /** Calculate the percentage CPU used over a period of time.
         Usage:

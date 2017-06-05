@@ -2453,14 +2453,27 @@ void PProcess::OnThreadStart(PThread & PTRACE_PARAM(thread))
 }
 
 
-static void OutputTime(ostream & strm, const char * name, const PTimeInterval & cpu, const PTimeInterval & real)
+static void OutputInterval(ostream & strm, const char * name, const PTimeInterval & interval)
 {
-  strm << ", " << name << '=' << cpu << " (";
+  strm << name << '=';
+  if (interval > 0 && interval < PTimeInterval(0, 100))
+    strm << scientific << showbase << setprecision(3);
+  else
+    strm << fixed << noshowbase << setprecision(1);
+  strm << interval << 's';
+}
+
+static void OutputWithPercent(ostream & strm, const char * name, const PTimeInterval & real, const PTimeInterval & cpu)
+{
+  strm << ", ";
+  OutputInterval(strm, name, cpu);
+
+  strm << " (";
 
   if (real == 0)
     strm << '0';
   else {
-    unsigned percent = (unsigned)((cpu.GetMilliSeconds()*1000)/real.GetMilliSeconds());
+    unsigned percent = (unsigned)((cpu.GetMicroSeconds()*1000)/real.GetMicroSeconds());
     if (percent == 0)
       strm << '0';
     else
@@ -2473,10 +2486,10 @@ static void OutputTime(ostream & strm, const char * name, const PTimeInterval & 
 
 ostream & operator<<(ostream & strm, const PThread::Times & times)
 {
-  strm << "real=" << scientific << times.m_real;
-  OutputTime(strm, "kernel", times.m_kernel, times.m_real);
-  OutputTime(strm, "user", times.m_user, times.m_real);
-  OutputTime(strm, "both", times.m_kernel + times.m_user, times.m_real);
+  OutputInterval   (strm, "real",   times.m_real);
+  OutputWithPercent(strm, "kernel", times.m_real, times.m_kernel);
+  OutputWithPercent(strm, "user",   times.m_real, times.m_user);
+  OutputWithPercent(strm, "both",   times.m_real, times.m_kernel + times.m_user);
   return strm;
 }
 
@@ -2919,15 +2932,52 @@ bool PThread::GetTimes(PThreadIdentifier id, Times & times)
 }
 
 
+bool PProcess::GetAllThreadIdentifiers(std::vector<PThreadIdentifier> & identifiers)
+{
+  if (!PProcess::IsInitialised())
+    return false;
+
+  PWaitAndSignal mutex(m_threadMutex);
+  identifiers.reserve(m_activeThreads.size());
+  for (PProcess::ThreadMap::iterator it = m_activeThreads.begin(); it != m_activeThreads.end(); ++it)
+    identifiers.push_back(it->first);
+  return !identifiers.empty();
+}
+
+void PThread::GetTimes(std::vector<Times> & allThreadTimes)
+{
+  std::vector<PThreadIdentifier> identifiers;
+  if (PProcess::Current().GetAllThreadIdentifiers(identifiers)) {
+    Times threadTimes;
+    for (std::vector<PThreadIdentifier>::iterator it = identifiers.begin(); it != identifiers.end(); ++it) {
+      if (GetTimes(*it, threadTimes))
+        allThreadTimes.push_back(threadTimes);
+    }
+  }
+}
+
+
 void PThread::GetTimes(std::list<Times> & allThreadTimes)
 {
-  if (PProcess::IsInitialised()) {
+  std::vector<PThreadIdentifier> identifiers;
+  if (PProcess::Current().GetAllThreadIdentifiers(identifiers)) {
     Times threadTimes;
-    PProcess & process = PProcess::Current();
-    PWaitAndSignal mutex(process.m_threadMutex);
-    for (PProcess::ThreadMap::iterator it = process.m_activeThreads.begin(); it != process.m_activeThreads.end(); ++it) {
-      if (it->second->GetTimes(threadTimes))
+    for (std::vector<PThreadIdentifier>::iterator it = identifiers.begin(); it != identifiers.end(); ++it) {
+      if (GetTimes(*it, threadTimes))
         allThreadTimes.push_back(threadTimes);
+    }
+  }
+}
+
+
+void PThread::GetTimes(std::set<Times> & allThreadTimes)
+{
+  std::vector<PThreadIdentifier> identifiers;
+  if (PProcess::Current().GetAllThreadIdentifiers(identifiers)) {
+    Times threadTimes;
+    for (std::vector<PThreadIdentifier>::iterator it = identifiers.begin(); it != identifiers.end(); ++it) {
+      if (GetTimes(*it, threadTimes))
+        allThreadTimes.insert(threadTimes);
     }
   }
 }

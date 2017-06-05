@@ -174,6 +174,25 @@ class PProcess : public PThread
       */
     void Startup();
 
+    /** Return the operating system thread identifiers of all threads.
+        Note, this only returns the threads that PTLib knows about. Typically
+        as it was created using a PThread. Also the thread could disappear at
+        any moment and the individual identifier no longer be valid.
+        @rturn true if there are identifiers available.
+      */
+    bool GetAllThreadIdentifiers(
+      std::vector<PThreadIdentifier> & identifiers   ///< Returned identifiers
+    );
+
+    /** Return the thread for the operating system thread identifier.
+        Note, the return value is very dangerous to use as, under some
+        circumstances, it may be deleted at any moment. For example, if the
+        thread is an AutoDeleteThread mode.
+      */
+    PThread * GetThread(
+      PThreadIdentifier threadId    ///< Identifier if thread to get
+    ) const;
+
     /**Callback for when a thread is started by the PTLib system. Note this is
        called in the context of the new thread.
       */
@@ -641,7 +660,6 @@ class PProcess : public PThread
     };
   //@}
 
-    PThread * GetThread(PThreadIdentifier threadId) const;
     bool SignalTimerChange();
 
   protected:
