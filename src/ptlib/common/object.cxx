@@ -73,7 +73,11 @@ void PDebugLocation::PrintOn(ostream & strm, const char * prefix) const
     strm << prefix;
 
   if (m_file != NULL) {
-    strm << m_file;
+    const char * name = strrchr(m_file, PDIR_SEPARATOR);
+    if (name != NULL)
+      strm << name+1;
+    else
+      strm << m_file;
     if (m_line > 0)
       strm << '(' << m_line << ')';
   }
