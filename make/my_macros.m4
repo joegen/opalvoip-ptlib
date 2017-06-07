@@ -357,6 +357,12 @@ AC_DEFUN([MY_OUTPUT_SUMMARY],[
    AS_ECHO("")
    m4_map_args_pair([INTERNAL_OUTPUT_SUMMARY], [AS_ECHO], $@)
    AS_ECHO("")
+   INTERNAL_OUTPUT_SUMMARY([                         CPPFLAGS], [CPPFLAGS])
+   INTERNAL_OUTPUT_SUMMARY([                           CFLAGS], [CFLAGS])
+   INTERNAL_OUTPUT_SUMMARY([                         CXXFLAGS], [CXXFLAGS])
+   INTERNAL_OUTPUT_SUMMARY([                          LDFLAGS], [CXXFLAGS])
+   INTERNAL_OUTPUT_SUMMARY([                             LIBS], [LIBS])
+   AS_ECHO("")
    AS_ECHO("========================================================================")
 ])
 
@@ -689,7 +695,7 @@ MY_COMPILE_IFELSE(
    [],
    [
       CFLAGS="-fno-omit-frame-pointer $CFLAGS"
-      CPPFLAGS="-fno-omit-frame-pointer $CPPFLAGS"
+      CXXFLAGS="-fno-omit-frame-pointer $CXXFLAGS"
    ]
 )
 

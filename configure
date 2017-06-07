@@ -6572,7 +6572,7 @@ $as_echo "$usable" >&6; }
    if test "x$usable" = "xyes"; then :
 
       CFLAGS="-fno-omit-frame-pointer $CFLAGS"
-      CPPFLAGS="-fno-omit-frame-pointer $CPPFLAGS"
+      CXXFLAGS="-fno-omit-frame-pointer $CXXFLAGS"
 
 
 fi
@@ -7165,7 +7165,7 @@ DEFAULT_PORTAUDIO=no
 DEFAULT_VFW_CAPTURE=no
 DEFAULT_SAMPLES=no
 DEFAULT_PLUGINS=yes
-DEFAULT_EXCEPTIONS=no
+DEFAULT_EXCEPTIONS=yes
 MEMORY_CHECKER=None
 
 
@@ -21333,6 +21333,52 @@ fi
   $as_echo "                        JPEG File : ${PTLIB_LIBJPEG}"
 else
   $as_echo "                        JPEG File : no"
+
+fi
+
+
+   $as_echo ""
+
+   if ${CPPFLAGS+:} false; then :
+  $as_echo "                         CPPFLAGS : ${CPPFLAGS}"
+else
+  $as_echo "                         CPPFLAGS : no"
+
+fi
+
+
+
+   if ${CFLAGS+:} false; then :
+  $as_echo "                           CFLAGS : ${CFLAGS}"
+else
+  $as_echo "                           CFLAGS : no"
+
+fi
+
+
+
+   if ${CXXFLAGS+:} false; then :
+  $as_echo "                         CXXFLAGS : ${CXXFLAGS}"
+else
+  $as_echo "                         CXXFLAGS : no"
+
+fi
+
+
+
+   if ${CXXFLAGS+:} false; then :
+  $as_echo "                          LDFLAGS : ${CXXFLAGS}"
+else
+  $as_echo "                          LDFLAGS : no"
+
+fi
+
+
+
+   if ${LIBS+:} false; then :
+  $as_echo "                             LIBS : ${LIBS}"
+else
+  $as_echo "                             LIBS : no"
 
 fi
 
