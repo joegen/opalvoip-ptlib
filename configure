@@ -6543,6 +6543,43 @@ fi
 
 
 
+   oldCPPFLAGS="$CPPFLAGS"
+   CPPFLAGS="$CPPFLAGS -fno-omit-frame-pointer"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Don't omit frame pointers for stack walking (-fno-omit-frame-pointer)" >&5
+$as_echo_n "checking Don't omit frame pointers for stack walking (-fno-omit-frame-pointer)... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$oldCPPFLAGS"
+
+   if test "x$usable" = "xyes"; then :
+
+      CFLAGS="-fno-omit-frame-pointer $CFLAGS"
+      CPPFLAGS="-fno-omit-frame-pointer $CPPFLAGS"
+
+
+fi
+
+
+
+
 
 
    oldCPPFLAGS="$CPPFLAGS"

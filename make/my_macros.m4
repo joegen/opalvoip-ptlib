@@ -682,6 +682,17 @@ MY_COMPILE_IFELSE(
 )
 AC_SUBST(OPT_CFLAGS)
 
+MY_COMPILE_IFELSE(
+   [Don't omit frame pointers for stack walking (-fno-omit-frame-pointer)],
+   [-fno-omit-frame-pointer],
+   [],
+   [],
+   [
+      CFLAGS="-fno-omit-frame-pointer $CFLAGS"
+      CPPFLAGS="-fno-omit-frame-pointer $CPPFLAGS"
+   ]
+)
+
 
 dnl Warn about everything, well, nearly everything
 
