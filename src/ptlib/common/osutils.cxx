@@ -3106,7 +3106,8 @@ void PThread::SetThreadName(const PString & name)
       m_threadName += idStr;
   }
 
-  SetOperatingSystemThreadName(GetThreadId(), m_threadName);
+  if (&PProcess::Current() != this)
+    SetOperatingSystemThreadName(GetThreadId(), m_threadName);
 }
  
 
