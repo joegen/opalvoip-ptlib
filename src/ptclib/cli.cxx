@@ -336,6 +336,7 @@ bool PCLI::Context::ProcessInput(int ch)
   if (m_commandLine.IsEmpty())
     return WritePrompt();
 
+  m_pagedLines = 0;
   m_editPosition = 0;
   m_historyPosition = m_commandHistory.GetSize()+1;
 
