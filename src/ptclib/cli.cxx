@@ -811,7 +811,7 @@ void PCLI::OnReceivedLine(Arguments & args)
   {
     Commands_t::iterator nextCmd = cmd;
     if (++nextCmd != m_commands.end() && nextCmd->IsMatch(args)) {
-      args.GetContext() << GetAmbiguousCommandError() << endl;
+      args.GetContext() << GetAmbiguousCommandError() <<  " \"" << args << '"' << endl;
       return;
     }
   }
