@@ -1831,13 +1831,13 @@ PCLICurses::~PCLICurses()
 
 void PCLICurses::Construct()
 {
-  m_editCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyBackSpace);
+  m_editCodes.SetAt(m_editCodes.GetSize(), PConsoleChannel::KeyBackSpace);
   m_leftCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyLeft);
-  m_rightCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyRight);
-  m_beginCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyHome);
-  m_endCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyEnd);
-  m_prevCmdCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyUp);
-  m_nextCmdCodes.SetAt(m_leftCodes.GetSize(), PConsoleChannel::KeyDown);
+  m_rightCodes.SetAt(m_rightCodes.GetSize(), PConsoleChannel::KeyRight);
+  m_beginCodes.SetAt(m_beginCodes.GetSize(), PConsoleChannel::KeyHome);
+  m_endCodes.SetAt(m_endCodes.GetSize(), PConsoleChannel::KeyEnd);
+  m_prevCmdCodes.SetAt(m_prevCmdCodes.GetSize(), PConsoleChannel::KeyUp);
+  m_nextCmdCodes.SetAt(m_nextCmdCodes.GetSize(), PConsoleChannel::KeyDown);
 
   m_requireEcho = true;
 
