@@ -40,6 +40,16 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
+#if P_IMAGEMAGICK==2
+  #include <MagickWand/MagickWand.h>
+#elif P_IMAGEMAGICK
+  #include <wand/MagickWand.h>
+#endif
+
+#ifdef P_IMAGEMAGICK_LIB
+  #pragma comment(lib, P_IMAGEMAGICK_LIB)
+#endif
+
 
 #define PTraceModule() "VidFile"
 
@@ -304,191 +314,264 @@ PBoolean PYUVFile::ReadFrame(void * frame)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class PStillImageVideoFile : public PVideoFile
+{
+    PCLASSINFO(PStillImageVideoFile, PVideoFile);
+  protected:
+    PBYTEArray m_pixelData;
+
+  public:
+    PStillImageVideoFile() { }
+    ~PStillImageVideoFile() { Close(); }
+
+    virtual bool Close()
+    { 
+      m_pixelData.SetSize(0);
+      return true;
+    }
+
+    virtual PBoolean IsOpen() const
+    { 
+      return !m_pixelData.IsEmpty();
+    }
+
+    virtual off_t GetLength() const
+    {
+      return 1;
+    }
+
+
+    virtual off_t GetPosition() const
+    {
+      return 0;
+    }
+
+
+    virtual bool SetPosition(off_t pos, PFile::FilePositionOrigin)
+    {
+      return pos == 0;
+    }
+
+    virtual PBoolean WriteFrame(const void *)
+    {
+      return false;
+    }
+
+    virtual PBoolean ReadFrame(void * frame)
+    {
+      if (!IsOpen())
+        return false;
+
+      memcpy(frame, m_pixelData, m_frameBytes);
+      return true;
+    }
+
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#if P_IMAGEMAGICK
+
+class PImageMagickFile : public PStillImageVideoFile
+{
+    PCLASSINFO(PImageMagickFile, PStillImageVideoFile);
+
+  protected:
+    struct Initialiser
+    {
+      Initialiser() { MagickWandGenesis(); }
+      ~Initialiser() { MagickWandTerminus(); }
+    };
+
+    struct Wand
+    {
+      MagickWand * m_wand;
+      Wand() : m_wand(NewMagickWand()) { }
+      ~Wand() { DestroyMagickWand(m_wand); }
+      operator MagickWand *() const { return m_wand; }
+      MagickWand * operator->() const { return m_wand; }
+    };
+
+    virtual bool InternalOpen(OpenMode mode, OpenOptions, PFileInfo::Permissions)
+    {
+      if (mode != PFile::ReadOnly)
+        return false;
+
+      static Initialiser initialised;
+
+      Wand wand;
+      if (!MagickReadImage(wand, m_path)) {
+        PTRACE(2, "ImageMagick could not read " << m_path);
+        return false;
+      }
+
+      unsigned width = m_videoInfo.GetFrameWidth();
+      unsigned height = m_videoInfo.GetFrameHeight();
+
+#if P_IMAGEMAGICK==2
+      if (!MagickResizeImage(wand, width, height, LanczosFilter)) {
+#else
+      if (!MagickResizeImage(wand, width, height, LanczosFilter, 1)) {
+#endif
+        PTRACE(2, "ImageMagick could not resize iamge in " << m_path << " to " << width << 'x' << height);
+        return false;
+      }
+
+      PBYTEArray rgb(width*height*4);
+      MagickExportImagePixels(wand, 0, 0, width, height, "RGBA", CharPixel, rgb.GetPointer());
+
+      PColourConverter * converter = PColourConverter::Create(PVideoFrameInfo(width, height, "RGB32"), m_videoInfo);
+      if (converter == NULL)
+        return false;
+
+      bool converted = m_pixelData.SetSize(m_frameBytes) && converter->Convert(rgb, m_pixelData.GetPointer());
+      delete converter;
+      return converted;
+    }
+};
+
+PFACTORY_CREATE(PVideoFileFactory, PImageMagickFile,        ".bmp");
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, dib,  ".dib");
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, jpg,  ".jpg");
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, jpeg, ".jpeg");
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, gif,  ".gif");
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, png,  ".png");
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, tif,  ".tif");
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, tiff, ".tiff");
+
+#else // P_IMAGEMAGICK
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**A file containing a single image, which is repeatedly output.
+  */
+class PBMPFile : public PStillImageVideoFile
+{
+    PCLASSINFO(PBMPFile, PStillImageVideoFile);
+
+  protected:
+    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
+    {
+      if (mode != PFile::ReadOnly)
+        return false;
+
+      if (!PVideoFile::InternalOpen(mode, opts, permissions))
+        return false;
+
+    #pragma pack(1)
+      struct {
+        PUInt16l m_FileType;     /* File type, always 4D42h ("BM") */
+        PUInt32l m_FileSize;     /* Size of the file in bytes */
+        PUInt16l m_Reserved1;    /* Always 0 */
+        PUInt16l m_Reserved2;    /* Always 0 */
+        PUInt32l m_BitmapOffset; /* Starting position of image data in bytes */
+      } fileHeader;
+    #pragma pack()
+
+      if (!Read(&fileHeader, sizeof(fileHeader)))
+        return false;
+
+      if (fileHeader.m_FileType != 0x4D42)
+        return false;
+
+    #pragma pack(1)
+      struct {
+        PUInt32l m_Size;            /* Size of this header in bytes */
+        PInt32l  m_Width;           /* Image width in pixels */
+        PInt32l  m_Height;          /* Image height in pixels */
+        PUInt16l m_Planes;          /* Number of color planes */
+        PUInt16l m_BitsPerPixel;    /* Number of bits per pixel */
+        PUInt32l m_Compression;     /* Compression methods used */
+        PUInt32l m_SizeOfBitmap;    /* Size of bitmap in bytes */
+        PInt32l  m_HorzResolution;  /* Horizontal resolution in pixels per meter */
+        PInt32l  m_VertResolution;  /* Vertical resolution in pixels per meter */
+        PUInt32l m_ColorsUsed;      /* Number of colors in the image */
+        PUInt32l m_ColorsImportant; /* Minimum number of important colors */
+      } bitmapHeader;
+    #pragma pack()
+
+      if (!Read(&bitmapHeader.m_Size, sizeof(bitmapHeader.m_Size)))
+        return false;
+      if (!PFile::SetPosition(sizeof(fileHeader)))
+        return false;
+      if (!Read(&bitmapHeader, std::min((uint32_t)bitmapHeader.m_Size, (uint32_t)sizeof(bitmapHeader))))
+        return false;
+      if (bitmapHeader.m_Planes != 1)
+        return false;
+      if (bitmapHeader.m_BitsPerPixel != 24 && bitmapHeader.m_BitsPerPixel != 32)
+        return false;
+      if (bitmapHeader.m_Compression != 0)
+        return false;
+
+      m_headerOffset =bitmapHeader.m_Size + sizeof(fileHeader);
+      if (!PFile::SetPosition(m_headerOffset))
+        return false;
+
+      m_videoInfo.SetFrameSize(bitmapHeader.m_Width, std::abs(bitmapHeader.m_Height));
+      m_frameBytes = m_videoInfo.CalculateFrameBytes();
+
+      PVideoFrameInfo rgb = m_videoInfo;
+      rgb.SetColourFormat(bitmapHeader.m_BitsPerPixel == 24 ? "BGR24" : "BGR32");
+
+      PBYTEArray temp;
+      if (!temp.SetSize(rgb.CalculateFrameBytes()))
+        return false;
+
+      if (!Read(temp.GetPointer(), temp.GetSize()))
+        return false;
+
+      PColourConverter * converter = PColourConverter::Create(rgb, m_videoInfo);
+      if (converter == NULL)
+        return false;
+
+      converter->SetVFlipState(bitmapHeader.m_Height > 0);
+
+      bool converted = m_pixelData.SetSize(m_frameBytes) && converter->Convert(temp, m_pixelData.GetPointer());
+      delete converter;
+      return converted;
+    }
+};
+
 PFACTORY_CREATE(PVideoFileFactory, PBMPFile, ".bmp");
 PFACTORY_SYNONYM(PVideoFileFactory, PBMPFile, dib, ".dib");
-
-PBMPFile::PBMPFile()
-{
-}
-
-
-bool PBMPFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
-{
-  if (mode != PFile::ReadOnly)
-    return false;
-
-  if (!PVideoFile::InternalOpen(mode, opts, permissions))
-    return false;
-
-#pragma pack(1)
-  struct {
-    PUInt16l m_FileType;     /* File type, always 4D42h ("BM") */
-    PUInt32l m_FileSize;     /* Size of the file in bytes */
-    PUInt16l m_Reserved1;    /* Always 0 */
-    PUInt16l m_Reserved2;    /* Always 0 */
-    PUInt32l m_BitmapOffset; /* Starting position of image data in bytes */
-  } fileHeader;
-#pragma pack()
-
-  if (!Read(&fileHeader, sizeof(fileHeader)))
-    return false;
-
-  if (fileHeader.m_FileType != 0x4D42)
-    return false;
-
-#pragma pack(1)
-  struct {
-    PUInt32l m_Size;            /* Size of this header in bytes */
-    PInt32l  m_Width;           /* Image width in pixels */
-    PInt32l  m_Height;          /* Image height in pixels */
-    PUInt16l m_Planes;          /* Number of color planes */
-    PUInt16l m_BitsPerPixel;    /* Number of bits per pixel */
-    PUInt32l m_Compression;     /* Compression methods used */
-    PUInt32l m_SizeOfBitmap;    /* Size of bitmap in bytes */
-    PInt32l  m_HorzResolution;  /* Horizontal resolution in pixels per meter */
-    PInt32l  m_VertResolution;  /* Vertical resolution in pixels per meter */
-    PUInt32l m_ColorsUsed;      /* Number of colors in the image */
-    PUInt32l m_ColorsImportant; /* Minimum number of important colors */
-  } bitmapHeader;
-#pragma pack()
-
-  if (!Read(&bitmapHeader.m_Size, sizeof(bitmapHeader.m_Size)))
-    return false;
-  if (!PFile::SetPosition(sizeof(fileHeader)))
-    return false;
-  if (!Read(&bitmapHeader, std::min((uint32_t)bitmapHeader.m_Size, (uint32_t)sizeof(bitmapHeader))))
-    return false;
-  if (bitmapHeader.m_Planes != 1)
-    return false;
-  if (bitmapHeader.m_BitsPerPixel != 24 && bitmapHeader.m_BitsPerPixel != 32)
-    return false;
-  if (bitmapHeader.m_Compression != 0)
-    return false;
-
-  m_headerOffset =bitmapHeader.m_Size + sizeof(fileHeader);
-  if (!SetPosition(0))
-    return false;
-
-  m_videoInfo.SetFrameSize(bitmapHeader.m_Width, std::abs(bitmapHeader.m_Height));
-  m_frameBytes = m_videoInfo.CalculateFrameBytes();
-  if (!m_imageData.SetSize(m_frameBytes))
-    return false;
-
-  PVideoFrameInfo rgb = m_videoInfo;
-  rgb.SetColourFormat(bitmapHeader.m_BitsPerPixel == 24 ? "BGR24" : "BGR32");
-
-  PBYTEArray temp;
-  if (!temp.SetSize(rgb.CalculateFrameBytes()))
-    return false;
-
-  if (!Read(temp.GetPointer(), temp.GetSize()))
-    return false;
-
-  PColourConverter * converter = PColourConverter::Create(rgb, m_videoInfo);
-  if (converter == NULL)
-    return false;
-
-  converter->SetVFlipState(bitmapHeader.m_Height > 0);
-  bool converted = converter->Convert(temp, m_imageData.GetPointer());
-  delete converter;
-  return converted;
-}
-
-
-PBoolean PBMPFile::WriteFrame(const void *)
-{
-  return false;
-}
-
-
-PBoolean PBMPFile::ReadFrame(void * frame)
-{
-  if (m_imageData.IsEmpty() || !IsOpen())
-    return false;
-
-  memcpy(frame, m_imageData, m_frameBytes);
-  return true;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #if P_JPEG_DECODER
 
-#include <ptlib/vconvert.h>
+/**A file containing a JPEG image, which is repeatedly output.
+  */
+class PJPEGFile : public PStillImageVideoFile
+{
+    PCLASSINFO(PJPEGFile, PStillImageVideoFile);
+
+  protected:
+    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
+    {
+      if (mode != PFile::ReadOnly)
+        return false;
+
+      if (!PVideoFile::InternalOpen(mode, opts, permissions))
+        return false;
+
+      PJPEGConverter decoder(PVideoFrameInfo(m_videoInfo.GetFrameWidth(), m_videoInfo.GetFrameHeight(), "JPEG"), m_videoInfo);
+      if (!decoder.Load(*this, m_pixelData))
+        return false;
+
+      decoder.GetDstFrameInfo(m_videoInfo);
+      return true;
+    }
+
+    PBYTEArray m_pixelData;
+};
 
 PFACTORY_CREATE(PVideoFileFactory, PJPEGFile, ".jpg");
 PFACTORY_SYNONYM(PVideoFileFactory, PJPEGFile, jpeg, ".jpeg");
 
-PJPEGFile::PJPEGFile()
-{
-}
 
-
-PJPEGFile::~PJPEGFile()
-{
-  Close();
-}
-
-PBoolean PJPEGFile::IsOpen() const 
-{ 
-  return !m_pixelData.IsEmpty();
-}
-
-
-PBoolean PJPEGFile::Close() 
-{ 
-  m_pixelData.SetSize(0);
-  return true;
-}
-
-
-bool PJPEGFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
-{
-  if (mode != PFile::ReadOnly)
-    return false;
-
-  if (!PVideoFile::InternalOpen(mode, opts, permissions))
-    return false;
-
-  PJPEGConverter decoder(PVideoFrameInfo(m_videoInfo.GetFrameWidth(), m_videoInfo.GetFrameHeight(), "JPEG"), m_videoInfo);
-  if (!decoder.Load(*this, m_pixelData))
-    return false;
-
-  decoder.GetDstFrameInfo(m_videoInfo);
-  return true;
-}
-
-
-off_t PJPEGFile::GetLength() const
-{
-  return 1;
-}
-
-
-off_t PJPEGFile::GetPosition() const
-{
-  return 0;
-}
-
-
-bool PJPEGFile::SetPosition(off_t pos, PFile::FilePositionOrigin)
-{
-  return pos == 0;
-}
-
-
-bool PJPEGFile::WriteFrame(const void * )
-{
-  return false;
-}
-
-
-PBoolean PJPEGFile::ReadFrame(void * frame)
-{
-  memcpy(frame, m_pixelData, m_pixelData.GetSize());
-  return true;
-}
 #endif  // P_JPEG_DECODER
+#endif  // P_IMAGEMAGICK
 #endif  // P_VIDFILE
 #endif  // P_VIDEO

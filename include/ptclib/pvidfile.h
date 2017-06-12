@@ -117,57 +117,6 @@ class PYUVFile : public PVideoFile
 
 PFACTORY_LOAD(PYUVFile);
 
-
-/**A file containing a single image, which is repeatedly output.
-  */
-class PBMPFile : public PVideoFile
-{
-    PCLASSINFO(PBMPFile, PVideoFile);
-  public:
-    PBMPFile();
-
-    virtual PBoolean WriteFrame(const void * frame);
-    virtual PBoolean ReadFrame(void * frame);
-
-  protected:
-    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
-
-    PBYTEArray m_imageData;
-};
-
-PFACTORY_LOAD(PBMPFile);
-
-
-#if P_JPEG_DECODER
-
-/**A file containing a JPEG image, which is repeatedly output.
-  */
-class PJPEGFile : public PVideoFile
-{
-  PCLASSINFO(PJPEGFile, PVideoFile);
-  public:
-    PJPEGFile();
-    ~PJPEGFile();
-
-    virtual bool Close();
-    virtual PBoolean IsOpen() const;
-    virtual off_t GetLength() const;
-    virtual off_t GetPosition() const;
-    virtual bool SetPosition(off_t pos, PFile::FilePositionOrigin origin);
-
-    virtual PBoolean WriteFrame(const void * frame);
-    virtual PBoolean ReadFrame(void * frame);
-
-  protected:
-    virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions);
-
-    PBYTEArray m_pixelData;
-};
-
-PFACTORY_LOAD(PJPEGFile);
-
-#endif  // P_JPEG_DECODER
-
 #endif  // P_VIDFILE
 
 #endif  // P_VIDEO

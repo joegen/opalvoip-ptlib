@@ -1387,9 +1387,33 @@ PTLIB_SUBST(PCAP)
 
 
 dnl ########################################################################
+dnl check for ImageMagick
+
+dnl MSWIN_DISPLAY    imagemagick,ImageMagick support
+dnl MSWIN_CHECK_FILE imagemagick,include\MagickWand\MagickWand.h,P_IMAGEMAGICK=2
+dnl MSWIN_DIR_SYMBOL imagemagick,IMAGEMAGICK_DIR
+dnl MSWIN_CHECK_DIR  imagemagick,\ImageMagick*
+dnl MSWIN_CHECK_DIR  imagemagick,..\external\ImageMagick*
+dnl MSWIN_CHECK_DIR  imagemagick,%ProgramFiles%\ImageMagick*
+dnl MSWIN_CHECK_DIR  imagemagick,%ProgramW6432%\ImageMagick*
+
+PTLIB_MODULE_OPTION(
+   [IMAGEMAGICK],
+   [imagemagick],
+   [ImageMagick support],
+   [MagickWand],
+   [],
+   [],
+   [#include <wand/MagickWand.h>],
+   [MagickWandGenesis()]
+)
+
+
+dnl ########################################################################
 dnl check for libjpeg
 
 dnl MSWIN_DISPLAY    libjpeg,libjpeg support
+dnl MSWIN_IF_FEATURE libjpeg,!imagemagick
 dnl MSWIN_CHECK_FILE libjpeg,lib\jpeg.lib,P_LIBJPEG_WIN32=1
 dnl MSWIN_CHECK_FILE libjpeg,lib\win32\libjpeg.lib,P_LIBJPEG_WIN32=1
 dnl MSWIN_CHECK_FILE libjpeg,lib\x64\libjpeg.lib,P_LIBJPEG_WIN64=1
@@ -2747,5 +2771,6 @@ MY_OUTPUT_SUMMARY(
    [                              BSD], PTLIB_BSDVIDEOCAP,
    [                    IEEE-1394/AVC], PTLIB_AVC1394,
    [                    IEEE-1394/DC ], PTLIB_DC1394,
+   [                      ImageMagick], [PTLIB_IMAGEMAGICK],
    [                        JPEG File], [PTLIB_LIBJPEG]dnl
 )

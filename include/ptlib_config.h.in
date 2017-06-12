@@ -853,6 +853,19 @@
 
 /////////////////////////////////////////////////
 //
+// ImageMagick support
+//
+
+#undef P_IMAGEMAGICK
+
+#if defined(_MSC_VER) && P_IMAGEMAGICK
+  #pragma include_alias(<MagickWand/MagickWand.h>, <@IMAGEMAGICK_DIR@/include/MagickWand/MagickWand.h>)
+#define P_IMAGEMAGICK_LIB "@IMAGEMAGICK_DIR@/lib/CORE_RL_MagickWand_.lib"
+#endif
+
+
+/////////////////////////////////////////////////
+//
 // libjpeg support
 //
 

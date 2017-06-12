@@ -724,7 +724,12 @@
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</BufferSecurityCheck>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files (x86)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\common\vfakeio.cxx" />
     <ClCompile Include="vfw.cxx">
@@ -872,7 +877,14 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pvfiledev.cxx" />
-    <ClCompile Include="..\..\ptclib\pvidfile.cxx" />
+    <ClCompile Include="..\..\ptclib\pvidfile.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\pwavfile.cxx" />
     <ClCompile Include="..\..\ptclib\pwavfiledev.cxx" />
     <ClCompile Include="..\..\ptclib\pxml.cxx" />
