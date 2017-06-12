@@ -808,6 +808,12 @@ LIBJPEG_USABLE
 LIBJPEG_LIBS
 LIBJPEG_CFLAGS
 LIBJPEG_SYSTEM
+PTLIB_IMAGEMAGICK
+HAS_IMAGEMAGICK
+IMAGEMAGICK_USABLE
+IMAGEMAGICK_LIBS
+IMAGEMAGICK_CFLAGS
+IMAGEMAGICK_SYSTEM
 PTLIB_PCAP
 HAS_PCAP
 PTLIB_DNS_RESOLVER
@@ -949,6 +955,7 @@ enable_trace_instance
 enable_internalregex
 enable_resolver
 enable_pcap
+enable_imagemagick
 enable_libjpeg
 with_libjpeg_dir
 enable_mlib
@@ -1045,6 +1052,8 @@ CXXFLAGS
 CCC
 CPP
 CXXCPP
+IMAGEMAGICK_CFLAGS
+IMAGEMAGICK_LIBS
 LIBJPEG_CFLAGS
 LIBJPEG_LIBS
 OPENLDAP_CFLAGS
@@ -1709,6 +1718,7 @@ Optional Features:
   --enable-internalregex  Force internal regex library
   --disable-resolver      disable DNS resolver support
   --disable-pcap          disable PCAP support
+  --disable-imagemagick   disable ImageMagick support
   --disable-libjpeg       disable libJPEG support
   --disable-mlib          disable SUN mlib support
   --disable-sasl          disable SASL support
@@ -1823,6 +1833,10 @@ Some influential environment variables:
   CXXFLAGS    C++ compiler flags
   CPP         C preprocessor
   CXXCPP      C++ preprocessor
+  IMAGEMAGICK_CFLAGS
+              C compiler flags for IMAGEMAGICK, overriding pkg-config
+  IMAGEMAGICK_LIBS
+              linker flags for IMAGEMAGICK, overriding pkg-config
   LIBJPEG_CFLAGS
               C compiler flags for LIBJPEG, overriding pkg-config
   LIBJPEG_LIBS
@@ -11232,6 +11246,242 @@ fi
    else
       PTLIB_PCAP=no
    fi
+
+
+
+
+
+
+
+
+
+   IMAGEMAGICK_SYSTEM="yes"
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ImageMagick support" >&5
+$as_echo_n "checking ImageMagick support... " >&6; }
+
+   # Check whether --enable-imagemagick was given.
+if test "${enable_imagemagick+set}" = set; then :
+  enableval=$enable_imagemagick; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_IMAGEMAGICK:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_imagemagick="$enableval"
+
+
+   if test "x$usable" = xyes; then :
+
+
+
+      if test "x$IMAGEMAGICK_SYSTEM" = xyes; then :
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for IMAGEMAGICK" >&5
+$as_echo_n "checking for IMAGEMAGICK... " >&6; }
+
+if test -n "$IMAGEMAGICK_CFLAGS"; then
+    pkg_cv_IMAGEMAGICK_CFLAGS="$IMAGEMAGICK_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"MagickWand\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "MagickWand") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_IMAGEMAGICK_CFLAGS=`$PKG_CONFIG --cflags "MagickWand" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$IMAGEMAGICK_LIBS"; then
+    pkg_cv_IMAGEMAGICK_LIBS="$IMAGEMAGICK_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"MagickWand\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "MagickWand") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_IMAGEMAGICK_LIBS=`$PKG_CONFIG --libs "MagickWand" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        IMAGEMAGICK_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "MagickWand" 2>&1`
+        else
+	        IMAGEMAGICK_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "MagickWand" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$IMAGEMAGICK_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	IMAGEMAGICK_CFLAGS=$pkg_cv_IMAGEMAGICK_CFLAGS
+	IMAGEMAGICK_LIBS=$pkg_cv_IMAGEMAGICK_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+         if test "x$usable" = xyes; then :
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $IMAGEMAGICK_CFLAGS"
+   LIBS="$IMAGEMAGICK_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ImageMagick support usability" >&5
+$as_echo_n "checking for ImageMagick support usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wand/MagickWand.h>
+int
+main ()
+{
+MagickWandGenesis()
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Adding CPPFLAGS: $IMAGEMAGICK_CFLAGS" >&5
+$as_echo "$as_me: Adding CPPFLAGS: $IMAGEMAGICK_CFLAGS" >&6;}
+      CPPFLAGS="$IMAGEMAGICK_CFLAGS $CPPFLAGS"
+
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Adding LIBS: $IMAGEMAGICK_LIBS" >&5
+$as_echo "$as_me: Adding LIBS: $IMAGEMAGICK_LIBS" >&6;}
+      LIBS="$IMAGEMAGICK_LIBS $LIBS"
+
+
+
+else
+  usable=no
+
+fi
+
+
+
+fi
+
+
+
+fi
+
+fi
+
+   IMAGEMAGICK_USABLE=$usable
+
+
+
+
+
+
+
+   HAS_IMAGEMAGICK=$IMAGEMAGICK_USABLE
+
+   if test "x$HAS_IMAGEMAGICK" = "xyes" ; then
+      HAS_IMAGEMAGICK=1
+   fi
+
+   if test "x$HAS_IMAGEMAGICK" = "x0" || test "x$HAS_IMAGEMAGICK" = "xno" ; then
+      HAS_IMAGEMAGICK=
+   fi
+
+
+
+   if test "x$HAS_IMAGEMAGICK" = "x1" ; then
+      PTLIB_IMAGEMAGICK=yes
+      $as_echo "#define P_IMAGEMAGICK 1" >>confdefs.h
+
+   else
+      PTLIB_IMAGEMAGICK=no
+   fi
+
 
 
 
@@ -21325,6 +21575,14 @@ fi
   $as_echo "                    IEEE-1394/DC  : ${PTLIB_DC1394}"
 else
   $as_echo "                    IEEE-1394/DC  : no"
+
+fi
+
+
+   if ${PTLIB_IMAGEMAGICK+:} false; then :
+  $as_echo "                      ImageMagick : ${PTLIB_IMAGEMAGICK}"
+else
+  $as_echo "                      ImageMagick : no"
 
 fi
 
