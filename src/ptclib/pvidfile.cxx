@@ -321,8 +321,15 @@ class PStillImageVideoFile : public PVideoFile
     PBYTEArray m_pixelData;
 
   public:
-    PStillImageVideoFile() { }
-    ~PStillImageVideoFile() { Close(); }
+    PStillImageVideoFile()
+    {
+      m_fixedFrameSize = true;
+    }
+    
+    ~PStillImageVideoFile()
+    {
+      Close();
+    }
 
     virtual bool Close()
     { 
@@ -406,17 +413,10 @@ class PImageMagickFile : public PStillImageVideoFile
         return false;
       }
 
-      unsigned width = m_videoInfo.GetFrameWidth();
-      unsigned height = m_videoInfo.GetFrameHeight();
-
-#if P_IMAGEMAGICK==2
-      if (!MagickResizeImage(wand, width, height, LanczosFilter)) {
-#else
-      if (!MagickResizeImage(wand, width, height, LanczosFilter, 1)) {
-#endif
-        PTRACE(2, "ImageMagick could not resize iamge in " << m_path << " to " << width << 'x' << height);
-        return false;
-      }
+      unsigned width = MagickGetImageWidth(wand);
+      unsigned height = MagickGetImageHeight(wand);
+      m_videoInfo.SetFrameSize(width, height);
+      m_frameBytes = m_videoInfo.CalculateFrameBytes();
 
       PBYTEArray rgb(width*height*4);
       MagickExportImagePixels(wand, 0, 0, width, height, "RGBA", CharPixel, rgb.GetPointer());
@@ -556,11 +556,12 @@ class PJPEGFile : public PStillImageVideoFile
       if (!PVideoFile::InternalOpen(mode, opts, permissions))
         return false;
 
-      PJPEGConverter decoder(PVideoFrameInfo(m_videoInfo.GetFrameWidth(), m_videoInfo.GetFrameHeight(), "JPEG"), m_videoInfo);
+      PJPEGConverter decoder(PVideoFrameInfo(0, 0, "JPEG"), m_videoInfo);
       if (!decoder.Load(*this, m_pixelData))
         return false;
 
       decoder.GetDstFrameInfo(m_videoInfo);
+      m_frameBytes = m_videoInfo.CalculateFrameBytes();
       return true;
     }
 
