@@ -1356,7 +1356,7 @@ public:
         // writing to the bottom right corner of the window
         int rows, cols;
         getmaxyx(m_inner, rows, cols);
-        if (row == rows-1 && col == cols-1)
+        if ((int)row == rows-1 && (int)col == cols-1)
           return true;
 
         PTRACE(2, "Write failed: win=" << m_inner << ", row=" << row <<", col=" << col << ", ch=" << ch);
