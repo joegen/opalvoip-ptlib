@@ -177,9 +177,6 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
       unsigned height   /// New height of frame
     );
 
-    void ClearMapping() { return ; }
-
-
  protected:
    unsigned       m_ffmpegFrameWidth;
    unsigned       m_ffmpegFrameHeight;

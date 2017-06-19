@@ -1462,8 +1462,6 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       unsigned height   /// New height of frame
     );
          
-    void ClearMapping() { return ; }
-
 
  protected:
    bool m_open;
