@@ -724,12 +724,12 @@
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</BufferSecurityCheck>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include;..\..\..\..\external\ffmpeg-win32-dev\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include;..\..\..\..\external\ffmpeg-win32-dev\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include;..\..\..\..\external\ffmpeg-win32-dev\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include;..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include;..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProgramFiles)\Intel\Composer XE 2013\ipp\include;..\..\..\..\external\libjpeg-turbo\include;..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\common\vfakeio.cxx" />
     <ClCompile Include="vfw.cxx">
@@ -833,7 +833,14 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pasn.cxx" />
     <ClCompile Include="..\..\ptclib\pdns.cxx" />
-    <ClCompile Include="..\..\ptclib\pffvdev.cxx" />
+    <ClCompile Include="..\..\ptclib\pffvdev.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\pils.cxx" />
     <ClCompile Include="..\..\ptclib\pldap.cxx">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\..\external\openldap\include</AdditionalIncludeDirectories>

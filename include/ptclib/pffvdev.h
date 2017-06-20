@@ -128,15 +128,6 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
     );
 
 
-    /**Set the video format to be used.
-
-       Default behaviour sets the value of the videoFormat variable and then
-       returns the IsOpen() status.
-    */
-    virtual PBoolean SetVideoFormat(
-      VideoFormat videoFormat   /// New video format
-    );
-
     /**Set the colour format to be used.
 
        Default behaviour sets the value of the colourFormat variable and then
@@ -146,15 +137,6 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
       const PString & colourFormat   // New colour format for device.
     );
     
-    /**Set the video frame rate to be used on the device.
-
-       Default behaviour sets the value of the frameRate variable and then
-       return the IsOpen() status.
-    */
-    virtual PBoolean SetFrameRate(
-      unsigned rate  /// Frames per second
-    );
-         
     /**Get the minimum & maximum size of a frame on the device.
 
        Default behaviour returns the value 1 to UINT_MAX for both and returns
@@ -178,14 +160,10 @@ class PVideoInputDevice_FFMPEG : public PVideoInputDevice
     );
 
  protected:
-   unsigned       m_ffmpegFrameWidth;
-   unsigned       m_ffmpegFrameHeight;
-   unsigned       m_ffmpegFrameRate;
-   unsigned       m_ffmpegFrameSize;
-   PPipeChannel   m_command;
-   PINDEX         m_videoFrameSize;
-   unsigned       grabCount;
-   PAdaptiveDelay pacing;
+   struct Implementation;
+   Implementation * m_implementation;
+   PAdaptiveDelay   m_pacing;
+   PMutex           m_mutex;
 };
 
 

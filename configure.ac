@@ -1,4 +1,4 @@
-:nl
+dnl
 dnl PTLib configuration
 dnl
 
@@ -1170,18 +1170,18 @@ else
          HAS_BACKTRACE=1
          AC_DEFINE(P_HAS_BACKTRACE, 1, "Stack back trace enabled")
 
-	 MY_COMPILE_IFELSE(
-	    [for C++ demangle support],
-	    [],
-	    [#include <cxxabi.h>],
-	    [
-	       char name[100];
-	       size_t size;
-	       int status;
-	       abi::__cxa_demangle("something", name, &size, &status);
-	    ],
-	    [AC_DEFINE(P_HAS_DEMANGLE, 1, "C++ demangle enabled")]
-	 )
+      MY_COMPILE_IFELSE(
+         [for C++ demangle support],
+            [],
+            [#include <cxxabi.h>],
+            [
+               char name[100];
+               size_t size;
+               int status;
+               abi::__cxa_demangle("something", name, &size, &status);
+            ],
+            [AC_DEFINE(P_HAS_DEMANGLE, 1, "C++ demangle enabled")]
+         )
       ]
    )
 fi
@@ -1384,6 +1384,80 @@ else
 fi
 
 PTLIB_SUBST(PCAP)
+
+
+dnl ########################################################################
+dnl check for FFMPEG
+
+dnl MSWIN_DISPLAY    ffmpeg32,FFMPEG 32 bit support
+dnl MSWIN_CHECK_FILE ffmpeg32,include\libavformat\avformat.h,P_FFMPEG_WIN32=1
+dnl MSWIN_DIR_SYMBOL ffmpeg32,FFMPEG_WIN32_DIR
+dnl MSWIN_CHECK_DIR  ffmpeg32,\ffmpeg-win32-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg32,..\external\ffmpeg-win32-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramFiles%\ffmpeg-win32-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramW6432%\ffmpeg-win32-dev*
+
+dnl MSWIN_DISPLAY    ffmpeg64,FFMPEG 64 bit support
+dnl MSWIN_CHECK_FILE ffmpeg64,include\libavformat\avformat.h,P_FFMPEG_WIN64=1
+dnl MSWIN_DIR_SYMBOL ffmpeg64,FFMPEG_WIN64_DIR
+dnl MSWIN_CHECK_DIR  ffmpeg64,\ffmpeg-win64-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg64,..\external\ffmpeg-win64-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramFiles%\ffmpeg-win64-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramW6432%\ffmpeg-win64-dev*
+
+HAVE_FFMPEG=no
+oldLIBS="$LIBS"
+MY_MODULE_OPTION(
+   [LIBAVUTIL],
+   [libavutil],
+   [FFMPEG libavutil library],
+   [libavutil >= 54.0.0],
+   [],
+   [-lavutil],
+   [#include <libavutil/avutil.h>],
+   [avutil_version()],
+   [MY_MODULE_OPTION(
+      [LIBSWRESAMPLE],
+      [libswresample],
+      [FFMPEG libswresample library],
+      [libswresample >= 1.1.0],
+      [],
+      [-lswresample],
+      [#include <libswresample/swresample.h>],
+      [swresample_version()],
+      [MY_MODULE_OPTION(
+         [LIBAVCODEC],
+         [libavcodec],
+         [FFMPEG libavcodec library],
+         [libavcodec >= 56.0.0],
+         [],
+         [-lavcodec],
+         [#include <libavcodec/avcodec.h>],
+         [avcodec_version()],
+         [
+            [MY_MODULE_OPTION(
+               [LIBAVFORMAT],
+               [libavformat],
+               [FFMPEG libavformat library],
+               [libavformat >= 56.0.0],
+               [],
+               [-lavformat],
+               [#include <libavformat/avformat.h>],
+               [avformat_version()],
+               [
+                  AC_SUBST(HAS_FFMPEG, 1)
+                  PTLIB_FFMPEG=yes
+                  AC_DEFINE(P_FFMPEG, 1)
+               ],
+               [LIBS="$oldLIBS"]
+            )],
+         ],
+         [LIBS="$oldLIBS"]
+      )],
+      [LIBS="$oldLIBS"]
+   )],
+   [LIBS="$oldLIBS"]
+)
 
 
 dnl ########################################################################
@@ -2682,7 +2756,7 @@ if test "x$enable_plugins" != "xno" ; then
                  const char *dma_device_file;
                  dc1394_cameracapture *camera;
                  dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
-			                  do_extra_buffering, drop_frames, dma_device_file, camera);
+                                          do_extra_buffering, drop_frames, dma_device_file, camera);
                  return 0;
                }
             ])],
@@ -2771,6 +2845,7 @@ MY_OUTPUT_SUMMARY(
    [                              BSD], PTLIB_BSDVIDEOCAP,
    [                    IEEE-1394/AVC], PTLIB_AVC1394,
    [                    IEEE-1394/DC ], PTLIB_DC1394,
+   [                           FFMPEG], [PTLIB_FFMPEG],
    [                      ImageMagick], [PTLIB_IMAGEMAGICK],
    [                        JPEG File], [PTLIB_LIBJPEG]dnl
 )

@@ -853,6 +853,39 @@
 
 /////////////////////////////////////////////////
 //
+// FFMPEG support
+//
+
+#undef P_FFMPEG
+#undef P_FFMPEG_WIN32
+#undef P_FFMPEG_WIN64
+
+#if (defined(P_FFMPEG_WIN64) &&  defined(P_64BIT))
+  #define P_FFMPEG 1
+  #if defined(_MSC_VER)
+    #pragma include_alias(<libswscale/swscale.h>, <@FFMPEG_WIN64_DIR@/include/libswscale/swscale.h>)
+    #define P_FFMPEG_LIBDIR "@FFMPEG_WIN64_DIR@/lib/"
+  #endif
+#endif
+
+#if (defined(P_FFMPEG_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
+  #define P_FFMPEG 1
+  #if defined(_MSC_VER)
+    #pragma include_alias(<libswscale/swscale.h>, <@FFMPEG_WIN32_DIR@/include/libswscale/swscale.h>)
+    #define P_FFMPEG_LIBDIR "@FFMPEG_WIN32_DIR@/lib/"
+  #endif
+#endif
+
+#ifdef P_FFMPEG_LIBDIR
+  #define P_AVFORMAT_LIB    P_FFMPEG_LIBDIR "avformat.lib"
+  #define P_AVCODEC_LIB     P_FFMPEG_LIBDIR "avcodec.lib"
+  #define P_AVUTIL_LIB      P_FFMPEG_LIBDIR "avutil.lib"
+  #define P_SWRESAMPLE_LIB  P_FFMPEG_LIBDIR "swresample.lib"
+  #define P_SWSCALE_LIB     P_FFMPEG_LIBDIR "swscale.lib"
+#endif
+
+/////////////////////////////////////////////////
+//
 // ImageMagick support
 //
 
