@@ -309,12 +309,13 @@ PStringArray PPluginManager::GetPluginDeviceNames(const PString & serviceName,
 {
   PWaitAndSignal mutex(m_servicesMutex);
 
-  if (!serviceName.IsEmpty() && serviceName != "*") {
+  if (!serviceName.IsEmpty() && serviceName.Find('*') == P_MAX_INDEX) {
     const PPluginDeviceDescriptor * descriptor = dynamic_cast<const PPluginDeviceDescriptor *>(GetServiceDescriptor(serviceName, serviceType));
     return descriptor != NULL ? descriptor->GetDeviceNames(userData) : PStringArray();
   }
 
-  PStringToString deviceToPluginMap;  
+  PStringToString deviceToPluginMap;
+  bool alwaysShowDriver = serviceName.Find(PPluginServiceDescriptor::SeparatorChar) != P_MAX_INDEX;
 
   // First we run through all of the drivers and their lists of devices and
   // use the dictionary to assure all names are unique
@@ -325,7 +326,9 @@ PStringArray PPluginManager::GetPluginDeviceNames(const PString & serviceName,
       PStringArray devices = descriptor->GetDeviceNames(userData);
       for (PINDEX j = 0; j < devices.GetSize(); j++) {
         PCaselessString device = devices[j];
-        if (deviceToPluginMap.Contains(device)) {
+        if (alwaysShowDriver)
+            deviceToPluginMap.SetAt(driver+PPluginServiceDescriptor::SeparatorChar+device, driver);
+        else if (deviceToPluginMap.Contains(device)) {
           PString oldDriver = deviceToPluginMap[device];
           if (!oldDriver.IsEmpty()) {
             // Make name unique by prepending driver name and a tab character
