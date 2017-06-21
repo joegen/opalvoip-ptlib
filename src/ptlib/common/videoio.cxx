@@ -116,6 +116,9 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
 
     adjustedDeviceName = devices[0];
   }
+  else if (adjustedDriverName.IsEmpty() && adjustedDeviceName.Find(PPluginServiceDescriptor::SeparatorChar) != P_MAX_INDEX) {
+    adjustedDeviceName.Split(PPluginServiceDescriptor::SeparatorChar, adjustedDriverName, adjustedDeviceName);
+  }
 
   return VideoDevice::CreateDeviceByName(adjustedDeviceName, adjustedDriverName, pluginMgr);
 }
