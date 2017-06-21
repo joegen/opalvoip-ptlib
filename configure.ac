@@ -1405,59 +1405,58 @@ dnl MSWIN_CHECK_DIR  ffmpeg64,..\external\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramFiles%\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramW6432%\ffmpeg-win64-dev*
 
-HAVE_FFMPEG=no
+AC_LANG_PUSH(C)
+
 oldLIBS="$LIBS"
-MY_MODULE_OPTION(
+CFLAGS="$CFLAGS -D__STDC_CONSTANT_MACROS"
+
+MY_PKG_CHECK_MODULE(
    [LIBAVUTIL],
-   [libavutil],
-   [FFMPEG libavutil library],
-   [libavutil >= 54.0.0],
-   [],
-   [-lavutil],
+   [libavutil >= 55],
    [#include <libavutil/avutil.h>],
    [avutil_version()],
-   [MY_MODULE_OPTION(
-      [LIBSWRESAMPLE],
-      [libswresample],
-      [FFMPEG libswresample library],
-      [libswresample >= 1.1.0],
-      [],
-      [-lswresample],
-      [#include <libswresample/swresample.h>],
-      [swresample_version()],
-      [MY_MODULE_OPTION(
-         [LIBAVCODEC],
-         [libavcodec],
-         [FFMPEG libavcodec library],
-         [libavcodec >= 56.0.0],
-         [],
-         [-lavcodec],
-         [#include <libavcodec/avcodec.h>],
-         [avcodec_version()],
-         [
-            [MY_MODULE_OPTION(
-               [LIBAVFORMAT],
-               [libavformat],
-               [FFMPEG libavformat library],
-               [libavformat >= 56.0.0],
-               [],
-               [-lavformat],
-               [#include <libavformat/avformat.h>],
-               [avformat_version()],
-               [
-                  AC_SUBST(HAS_FFMPEG, 1)
-                  PTLIB_FFMPEG=yes
-                  AC_DEFINE(P_FFMPEG, 1)
-               ],
-               [LIBS="$oldLIBS"]
-            )],
-         ],
-         [LIBS="$oldLIBS"]
-      )],
-      [LIBS="$oldLIBS"]
-   )],
-   [LIBS="$oldLIBS"]
+   [HAS_LIBAVUTIL=1]
 )
+
+MY_PKG_CHECK_MODULE(
+   [LIBSWRESAMPLE],
+   [libswresample],
+   [#include <libswresample/swresample.h>],
+   [swresample_version()],
+   [HAS_LIBSWRESAMPLE=1]
+)
+
+MY_PKG_CHECK_MODULE(
+   [LIBSWSCALE],
+   [libswscale >= 4],
+   [#include <libswscale/swscale.h>],
+   [swscale_version()],
+   [HAS_LIBSWSCALE=1]
+)
+
+MY_PKG_CHECK_MODULE(
+   [LIBAVCODEC],
+   [libavcodec >= 57],
+   [#include <libavcodec/avcodec.h>],
+   [avcodec_version()],
+   [HAS_LIBAVCODEC=1]
+)
+
+MY_PKG_CHECK_MODULE(
+   [LIBAVFORMAT],
+   [libavformat >= 57],
+   [#include <libavformat/avformat.h>],
+   [avformat_version()],
+   [HAS_LIBAVFORMAT=1]
+)
+
+if test "$HAS_LIBAVUTIL" = 1 -a "$HAS_LIBSWRESAMPLE" = 1 -a "$HAS_LIBSWSCALE" = 1 -a "$HAS_LIBAVCODEC" = 1 -a "$HAS_LIBAVFORMAT" = 1; then
+   PTLIB_SUBST(FFMPEG, 1)
+else
+   LIBS="$oldLIBS"
+fi
+
+AC_LANG_POP(C)
 
 
 dnl ########################################################################
@@ -2187,7 +2186,7 @@ dnl check for enabling FFMpeg video file support
 dnl MSWIN_DISPLAY    ffvdev,FFMpeg video file support
 dnl MSWIN_DEFINE     ffvdev,P_FFVDEV
 
-PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [FFMpeg video file support], [HAS_VIDEO], [HAS_PIPECHAN])
+PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [FFMPEG application video file support], [HAS_VIDEO], [HAS_PIPECHAN])
 
 dnl ########################################################################
 dnl check for enabling app share support

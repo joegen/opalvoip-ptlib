@@ -814,6 +814,18 @@ IMAGEMAGICK_USABLE
 IMAGEMAGICK_LIBS
 IMAGEMAGICK_CFLAGS
 IMAGEMAGICK_SYSTEM
+PTLIB_FFMPEG
+HAS_FFMPEG
+LIBAVFORMAT_LIBS
+LIBAVFORMAT_CFLAGS
+LIBAVCODEC_LIBS
+LIBAVCODEC_CFLAGS
+LIBSWSCALE_LIBS
+LIBSWSCALE_CFLAGS
+LIBSWRESAMPLE_LIBS
+LIBSWRESAMPLE_CFLAGS
+LIBAVUTIL_LIBS
+LIBAVUTIL_CFLAGS
 PTLIB_PCAP
 HAS_PCAP
 PTLIB_DNS_RESOLVER
@@ -1052,6 +1064,16 @@ CXXFLAGS
 CCC
 CPP
 CXXCPP
+LIBAVUTIL_CFLAGS
+LIBAVUTIL_LIBS
+LIBSWRESAMPLE_CFLAGS
+LIBSWRESAMPLE_LIBS
+LIBSWSCALE_CFLAGS
+LIBSWSCALE_LIBS
+LIBAVCODEC_CFLAGS
+LIBAVCODEC_LIBS
+LIBAVFORMAT_CFLAGS
+LIBAVFORMAT_LIBS
 IMAGEMAGICK_CFLAGS
 IMAGEMAGICK_LIBS
 LIBJPEG_CFLAGS
@@ -1766,7 +1788,7 @@ Optional Features:
   --disable-wavfile       disable WAVFILE support
   --disable-video         disable video device support
   --disable-vidfile       disable video file support
-  --disable-ffvdev        disable FFMpeg video file support
+  --disable-ffvdev        disable FFMPEG application video file support
   --disable-appshare      disable application sharing support
   --disable-shmvideo      disable shared memory video devices
   --disable-curses        disable disable Curses (text mode windows) support
@@ -1833,6 +1855,26 @@ Some influential environment variables:
   CXXFLAGS    C++ compiler flags
   CPP         C preprocessor
   CXXCPP      C++ preprocessor
+  LIBAVUTIL_CFLAGS
+              C compiler flags for LIBAVUTIL, overriding pkg-config
+  LIBAVUTIL_LIBS
+              linker flags for LIBAVUTIL, overriding pkg-config
+  LIBSWRESAMPLE_CFLAGS
+              C compiler flags for LIBSWRESAMPLE, overriding pkg-config
+  LIBSWRESAMPLE_LIBS
+              linker flags for LIBSWRESAMPLE, overriding pkg-config
+  LIBSWSCALE_CFLAGS
+              C compiler flags for LIBSWSCALE, overriding pkg-config
+  LIBSWSCALE_LIBS
+              linker flags for LIBSWSCALE, overriding pkg-config
+  LIBAVCODEC_CFLAGS
+              C compiler flags for LIBAVCODEC, overriding pkg-config
+  LIBAVCODEC_LIBS
+              linker flags for LIBAVCODEC, overriding pkg-config
+  LIBAVFORMAT_CFLAGS
+              C compiler flags for LIBAVFORMAT, overriding pkg-config
+  LIBAVFORMAT_LIBS
+              linker flags for LIBAVFORMAT, overriding pkg-config
   IMAGEMAGICK_CFLAGS
               C compiler flags for IMAGEMAGICK, overriding pkg-config
   IMAGEMAGICK_LIBS
@@ -10728,10 +10770,10 @@ int
 main ()
 {
 
-	       char name[100];
-	       size_t size;
-	       int status;
-	       abi::__cxa_demangle("something", name, &size, &status);
+               char name[100];
+               size_t size;
+               int status;
+               abi::__cxa_demangle("something", name, &size, &status);
 
   ;
   return 0;
@@ -11248,6 +11290,660 @@ fi
    fi
 
 
+
+
+
+
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+oldLIBS="$LIBS"
+CFLAGS="$CFLAGS -D__STDC_CONSTANT_MACROS"
+
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVUTIL" >&5
+$as_echo_n "checking for LIBAVUTIL... " >&6; }
+
+if test -n "$LIBAVUTIL_CFLAGS"; then
+    pkg_cv_LIBAVUTIL_CFLAGS="$LIBAVUTIL_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 55\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavutil >= 55") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBAVUTIL_CFLAGS=`$PKG_CONFIG --cflags "libavutil >= 55" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBAVUTIL_LIBS"; then
+    pkg_cv_LIBAVUTIL_LIBS="$LIBAVUTIL_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 55\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavutil >= 55") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBAVUTIL_LIBS=`$PKG_CONFIG --libs "libavutil >= 55" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBAVUTIL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavutil >= 55" 2>&1`
+        else
+	        LIBAVUTIL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavutil >= 55" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBAVUTIL_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	LIBAVUTIL_CFLAGS=$pkg_cv_LIBAVUTIL_CFLAGS
+	LIBAVUTIL_LIBS=$pkg_cv_LIBAVUTIL_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $LIBAVUTIL_CFLAGS"
+   LIBS="$LIBAVUTIL_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVUTIL usability" >&5
+$as_echo_n "checking for LIBAVUTIL usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libavutil/avutil.h>
+int
+main ()
+{
+avutil_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+            CPPFLAGS="$CPPFLAGS $LIBAVUTIL_CFLAGS"
+            LIBS="$LIBAVUTIL_LIBS $LIBS"
+
+
+fi
+
+
+fi
+
+   if test "x$usable" = "xyes"; then :
+  HAS_LIBAVUTIL=1
+
+fi
+
+
+
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSWRESAMPLE" >&5
+$as_echo_n "checking for LIBSWRESAMPLE... " >&6; }
+
+if test -n "$LIBSWRESAMPLE_CFLAGS"; then
+    pkg_cv_LIBSWRESAMPLE_CFLAGS="$LIBSWRESAMPLE_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswresample\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswresample") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBSWRESAMPLE_CFLAGS=`$PKG_CONFIG --cflags "libswresample" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBSWRESAMPLE_LIBS"; then
+    pkg_cv_LIBSWRESAMPLE_LIBS="$LIBSWRESAMPLE_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswresample\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswresample") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBSWRESAMPLE_LIBS=`$PKG_CONFIG --libs "libswresample" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBSWRESAMPLE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libswresample" 2>&1`
+        else
+	        LIBSWRESAMPLE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libswresample" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBSWRESAMPLE_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	LIBSWRESAMPLE_CFLAGS=$pkg_cv_LIBSWRESAMPLE_CFLAGS
+	LIBSWRESAMPLE_LIBS=$pkg_cv_LIBSWRESAMPLE_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $LIBSWRESAMPLE_CFLAGS"
+   LIBS="$LIBSWRESAMPLE_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSWRESAMPLE usability" >&5
+$as_echo_n "checking for LIBSWRESAMPLE usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libswresample/swresample.h>
+int
+main ()
+{
+swresample_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+            CPPFLAGS="$CPPFLAGS $LIBSWRESAMPLE_CFLAGS"
+            LIBS="$LIBSWRESAMPLE_LIBS $LIBS"
+
+
+fi
+
+
+fi
+
+   if test "x$usable" = "xyes"; then :
+  HAS_LIBSWRESAMPLE=1
+
+fi
+
+
+
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSWSCALE" >&5
+$as_echo_n "checking for LIBSWSCALE... " >&6; }
+
+if test -n "$LIBSWSCALE_CFLAGS"; then
+    pkg_cv_LIBSWSCALE_CFLAGS="$LIBSWSCALE_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswscale >= 4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswscale >= 4") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBSWSCALE_CFLAGS=`$PKG_CONFIG --cflags "libswscale >= 4" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBSWSCALE_LIBS"; then
+    pkg_cv_LIBSWSCALE_LIBS="$LIBSWSCALE_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswscale >= 4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswscale >= 4") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBSWSCALE_LIBS=`$PKG_CONFIG --libs "libswscale >= 4" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBSWSCALE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libswscale >= 4" 2>&1`
+        else
+	        LIBSWSCALE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libswscale >= 4" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBSWSCALE_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	LIBSWSCALE_CFLAGS=$pkg_cv_LIBSWSCALE_CFLAGS
+	LIBSWSCALE_LIBS=$pkg_cv_LIBSWSCALE_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $LIBSWSCALE_CFLAGS"
+   LIBS="$LIBSWSCALE_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSWSCALE usability" >&5
+$as_echo_n "checking for LIBSWSCALE usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libswscale/swscale.h>
+int
+main ()
+{
+swscale_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+            CPPFLAGS="$CPPFLAGS $LIBSWSCALE_CFLAGS"
+            LIBS="$LIBSWSCALE_LIBS $LIBS"
+
+
+fi
+
+
+fi
+
+   if test "x$usable" = "xyes"; then :
+  HAS_LIBSWSCALE=1
+
+fi
+
+
+
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVCODEC" >&5
+$as_echo_n "checking for LIBAVCODEC... " >&6; }
+
+if test -n "$LIBAVCODEC_CFLAGS"; then
+    pkg_cv_LIBAVCODEC_CFLAGS="$LIBAVCODEC_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavcodec >= 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavcodec >= 57") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBAVCODEC_CFLAGS=`$PKG_CONFIG --cflags "libavcodec >= 57" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBAVCODEC_LIBS"; then
+    pkg_cv_LIBAVCODEC_LIBS="$LIBAVCODEC_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavcodec >= 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavcodec >= 57") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBAVCODEC_LIBS=`$PKG_CONFIG --libs "libavcodec >= 57" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBAVCODEC_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavcodec >= 57" 2>&1`
+        else
+	        LIBAVCODEC_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavcodec >= 57" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBAVCODEC_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	LIBAVCODEC_CFLAGS=$pkg_cv_LIBAVCODEC_CFLAGS
+	LIBAVCODEC_LIBS=$pkg_cv_LIBAVCODEC_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $LIBAVCODEC_CFLAGS"
+   LIBS="$LIBAVCODEC_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVCODEC usability" >&5
+$as_echo_n "checking for LIBAVCODEC usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libavcodec/avcodec.h>
+int
+main ()
+{
+avcodec_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+            CPPFLAGS="$CPPFLAGS $LIBAVCODEC_CFLAGS"
+            LIBS="$LIBAVCODEC_LIBS $LIBS"
+
+
+fi
+
+
+fi
+
+   if test "x$usable" = "xyes"; then :
+  HAS_LIBAVCODEC=1
+
+fi
+
+
+
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVFORMAT" >&5
+$as_echo_n "checking for LIBAVFORMAT... " >&6; }
+
+if test -n "$LIBAVFORMAT_CFLAGS"; then
+    pkg_cv_LIBAVFORMAT_CFLAGS="$LIBAVFORMAT_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavformat >= 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavformat >= 57") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBAVFORMAT_CFLAGS=`$PKG_CONFIG --cflags "libavformat >= 57" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBAVFORMAT_LIBS"; then
+    pkg_cv_LIBAVFORMAT_LIBS="$LIBAVFORMAT_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavformat >= 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavformat >= 57") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBAVFORMAT_LIBS=`$PKG_CONFIG --libs "libavformat >= 57" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBAVFORMAT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavformat >= 57" 2>&1`
+        else
+	        LIBAVFORMAT_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavformat >= 57" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBAVFORMAT_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	LIBAVFORMAT_CFLAGS=$pkg_cv_LIBAVFORMAT_CFLAGS
+	LIBAVFORMAT_LIBS=$pkg_cv_LIBAVFORMAT_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $LIBAVFORMAT_CFLAGS"
+   LIBS="$LIBAVFORMAT_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVFORMAT usability" >&5
+$as_echo_n "checking for LIBAVFORMAT usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libavformat/avformat.h>
+int
+main ()
+{
+avformat_version()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+            CPPFLAGS="$CPPFLAGS $LIBAVFORMAT_CFLAGS"
+            LIBS="$LIBAVFORMAT_LIBS $LIBS"
+
+
+fi
+
+
+fi
+
+   if test "x$usable" = "xyes"; then :
+  HAS_LIBAVFORMAT=1
+
+fi
+
+
+
+if test "$HAS_LIBAVUTIL" = 1 -a "$HAS_LIBSWRESAMPLE" = 1 -a "$HAS_LIBSWSCALE" = 1 -a "$HAS_LIBAVCODEC" = 1 -a "$HAS_LIBAVFORMAT" = 1; then
+
+   HAS_FFMPEG=1
+
+   if test "x$HAS_FFMPEG" = "xyes" ; then
+      HAS_FFMPEG=1
+   fi
+
+   if test "x$HAS_FFMPEG" = "x0" || test "x$HAS_FFMPEG" = "xno" ; then
+      HAS_FFMPEG=
+   fi
+
+
+
+   if test "x$HAS_FFMPEG" = "x1" ; then
+      PTLIB_FFMPEG=yes
+      $as_echo "#define P_FFMPEG 1" >>confdefs.h
+
+   else
+      PTLIB_FFMPEG=no
+   fi
+
+
+
+else
+   LIBS="$oldLIBS"
+fi
+
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
@@ -16667,8 +17363,8 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking FFMpeg video file support" >&5
-$as_echo_n "checking FFMpeg video file support... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking FFMPEG application video file support" >&5
+$as_echo_n "checking FFMPEG application video file support... " >&6; }
 
    # Check whether --enable-ffvdev was given.
 if test "${enable_ffvdev+set}" = set; then :
@@ -19835,7 +20531,7 @@ $as_echo_n "checking if dc1394_dma_setup_capture has 12 parms... " >&6; }
                  const char *dma_device_file;
                  dc1394_cameracapture *camera;
                  dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
-			                  do_extra_buffering, drop_frames, dma_device_file, camera);
+                                          do_extra_buffering, drop_frames, dma_device_file, camera);
                  return 0;
                }
 
@@ -21575,6 +22271,14 @@ fi
   $as_echo "                    IEEE-1394/DC  : ${PTLIB_DC1394}"
 else
   $as_echo "                    IEEE-1394/DC  : no"
+
+fi
+
+
+   if ${PTLIB_FFMPEG+:} false; then :
+  $as_echo "                           FFMPEG : ${PTLIB_FFMPEG}"
+else
+  $as_echo "                           FFMPEG : no"
 
 fi
 
