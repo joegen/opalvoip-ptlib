@@ -288,32 +288,6 @@ bool PDirectory::Exists(const PString & path)
 ///////////////////////////////////////////////////////////////////////////////
 // File Path
 
-PFilePath::PFilePath(const char * prefix, const char * dir)
-{
-  if (dir != NULL) {
-    PDirectory tmpdir(dir);
-    operator=(tmpdir);
-  }
-  else {
-    PString path = getenv("TMPDIR");
-    if (path.IsEmpty()) {
-      path = getenv("TMP");
-      if (path.IsEmpty())
-        path = getenv("TEMP");
-    }
-    if (path.IsEmpty() || path[path.GetLength()-1] != '\\')
-      path += '\\';
-    *this = path;
-  }
-  if (prefix != NULL)
-    *this += prefix;
-  else
-    *this += "PW";
-  *this += "XXXXXX";
-  PAssert(_mktemp(theArray) != NULL, "Could not make temporary file");
-}
-
-
 static PINDEX GetVolumeSubStringLength(const PString & path)
 {
   if (path[1] == ':')

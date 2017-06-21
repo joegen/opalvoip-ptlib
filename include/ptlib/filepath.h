@@ -110,7 +110,8 @@ class PFilePath : public PFilePathString
      */
     PFilePath(
       const char * prefix,  ///< Prefix string for file title.
-      const char * dir      ///< Directory in which to place the file.
+      const char * dir,     ///< Directory in which to place the file.
+      const char * suffix = NULL ///< Optional suffix for file
     );
 
     /**Change the file specification object to the specified file name.

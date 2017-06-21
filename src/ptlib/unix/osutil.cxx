@@ -980,34 +980,6 @@ bool PFile::SetPermissions(const PFilePath & name, PFileInfo::Permissions permis
 ///////////////////////////////////////////////////////////////////////////////
 // PFilePath
 
-PFilePath::PFilePath(const char * prefix, const char * dir)
-{
-  if (prefix == NULL)
-    prefix = "tmp";
-  
-  PDirectory s(dir);
-  if (dir == NULL) 
-    s = PDirectory("/tmp");
-
-#ifdef P_VXWORKS
-  int number = 0;
-  for (;;) {
-    *this = s + prefix + psprintf("%06x", number++);
-    if (!PFile::Exists(*this))
-      break;
-  }
-#else
-  PString p;
-  srandom(getpid());
-  for (;;) {
-    *this = s + prefix + psprintf("%i_%06x", getpid(), random() % 1000000);
-    if (!PFile::Exists(*this))
-      break;
-  }
-#endif // P_VXWORKS
-}
-
-
 PBoolean PFilePath::IsValid(char c)
 {
   return c != '/';

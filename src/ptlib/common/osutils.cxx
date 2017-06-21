@@ -40,6 +40,7 @@
 #include <ptlib/svcproc.h>
 #include <ptlib/pluginmgr.h>
 #include <ptlib/syslog.h>
+#include <ptclib/random.h>
 #include "../../../version.h"
 #include "../../../revision.h"
 
@@ -4201,6 +4202,59 @@ PFilePath::PFilePath(const char * cstr)
 {
 }
 
+
+PFilePath::PFilePath(const char * prefix, const char * dir, const char * suffix)
+{
+  PStringStream path;
+  if (dir != NULL)
+    path << PDirectory(dir);
+  else {
+    PString tmpdir = getenv("TMPDIR");
+    if (tmpdir.IsEmpty()) {
+      tmpdir = getenv("TMP");
+      if (tmpdir.IsEmpty())
+        tmpdir = getenv("TEMP");
+    }
+    if (!tmpdir.IsEmpty())
+      path << PDirectory(tmpdir);
+    else
+#ifdef _WIN32
+      path << "C:\\";
+#else
+      path = "/tmp/";
+#endif
+  }
+
+  PProcess & process = PProcess::Current();
+  if (prefix != NULL)
+    path << prefix;
+  else {
+    PString appName = process.GetName().Left(10);
+    appName.Replace(" ", "_", true);
+    path << appName;
+  }
+
+  path << '_' << PProcess::Current().GetUniqueIdentifier() << '_';
+
+  PThread * thread = PThread::Current();
+  if (thread != &process)
+    path << thread->GetUniqueIdentifier() << '_';
+
+  if (suffix == NULL)
+    suffix = "";
+
+  PString base = path;
+  path << setfill('0') << hex;
+  for (unsigned tieBreak = 0; tieBreak < 1000; ++tieBreak) {
+    path << setw(5) << PRandom::Number(0x100000) << suffix;
+    *this = path;
+    if (!PFile::Exists(*this))
+      return;
+    path = base;
+  }
+
+  PAssertAlways("Could not generate a unique temporary file name, using base " + path);
+}
 
 void PFilePath::AssignContents(const PContainer & cont)
 {
