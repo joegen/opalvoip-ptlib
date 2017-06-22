@@ -101,7 +101,7 @@ extern "C" {
 #endif
 };
 
-#if (OPENSSL_VERSION_NUMBER < 0x1000105fL)
+#if (OPENSSL_VERSION_NUMBER < 0x0090819fL)
   #error OpenSSL too old!
 #endif
 
@@ -1884,28 +1884,33 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
   const SSL_METHOD * meth;
 
   switch (m_method) {
-    case SSLv23:
-      meth = SSLv23_method();
-      break;
-#ifndef OPENSSL_NO_SSL3
-    // fall through to SSLv23_method if unsupported
     case SSLv3:
+#ifndef OPENSSL_NO_SSL3
+      // fall through to SSLv23_method if unsupported
       meth = SSLv3_method();
       break;
 #endif
-    case TLSv1:
-      meth = TLSv1_method(); 
+    case SSLv23:
+      meth = SSLv23_method();
       break;
+
+#if OPENSSL_VERSION_NUMBER > 0x0090819fL
     case TLSv1_1 :
       meth = TLSv1_1_method(); 
       break;
     case TLSv1_2 :
       meth = TLSv1_2_method(); 
       break;
-#if OPENSSL_VERSION_NUMBER > 0x10002000L
-    case DTLSv1:
-      meth = DTLSv1_method();
+#else
+  #pragma message ("Using " OPENSSL_VERSION_TEXT " - TLS 1.1 & 1.2 not available, using 1.0")
+    case TLSv1_1 :
+    case TLSv1_2 :
+#endif
+    case TLSv1:
+      meth = TLSv1_method(); 
       break;
+
+#if OPENSSL_VERSION_NUMBER > 0x10002000L
     case DTLSv1_2 :
       meth = DTLSv1_2_method(); 
       break;
@@ -1913,13 +1918,13 @@ void PSSLContext::Construct(const void * sessionId, PINDEX idSize)
       meth = DTLS_method(); 
       break;
 #else
-  #pragma message ("Using " OPENSSL_VERSION_TEXT " - DTLS 1.2 not available")
-    case DTLSv1:
+  #pragma message ("Using " OPENSSL_VERSION_TEXT " - DTLS 1.2 not available, using 1.0")
     case DTLSv1_2 :
     case DTLSv1_2_v1_0 :
+#endif
+    case DTLSv1:
       meth = DTLSv1_method();
       break;
-#endif
     default :
       PAssertAlways("Unsupported TLS/DTLS version");
       m_context = NULL;
