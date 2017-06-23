@@ -240,7 +240,7 @@ int PServiceProcess::InitialiseService()
              "T-timeout:          timeout for terminate/kill (default 30 seconds)\n"
              "U-trace-up.         increase the trace log level\n"
              "D-trace-down.       reduce the trace log level\n"
-             , false);
+             );
 
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
@@ -434,8 +434,8 @@ int PServiceProcess::InitialiseService()
 
   bool daemon = args.HasOption('d');
 
-  // Remove the service arguments
-  args.SetArgs(args.GetParameters());
+  // Move past the service process arguments
+  args.Parse("");
 
  // We are a service, don't want to get blocked on input from stdin during asserts
   if (!m_debugMode)

@@ -1711,13 +1711,14 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
   m_parsed = false;
   m_parseError.MakeEmpty();
 
-  // Find starting point, start at shift if first Parse() call.
-  PINDEX arg = m_options.empty() ? m_shift : 0;
+  PINDEX arg;
 
   // If not in parse all mode, have been parsed before, and had some parameters
   // from last time, then start argument parsing somewhere along instead of start.
-  if (optionsBeforeParams && !m_options.empty() && m_argsParsed > 0)
+  if (optionsBeforeParams && m_argsParsed > 0)
     arg = m_argsParsed;
+  else
+    arg = m_shift;
 
   if (spec == NULL) {
     if (InternalSpecificationError(m_options.empty() || !optionsBeforeParams, "Cannot reparse without any options."))
@@ -1803,7 +1804,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
 
   // Now work through the parameters and split out the options
   PINDEX param = 0;
-  PBoolean hadMinusMinus = false;
+  bool hadMinusMinus = m_options.empty();
   while (arg < m_argumentArray.GetSize()) {
     const PString & argStr = m_argumentArray[arg];
     if (hadMinusMinus || argStr[0] != '-' || argStr[1] == '\0') {
