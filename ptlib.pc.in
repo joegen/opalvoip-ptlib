@@ -14,11 +14,15 @@ target=@target@
 suffix=
 objdir=obj/@target@$(suffix)
 
-cppflags=-I${includedir} @CPPFLAGS@
-cxxflags=-I${includedir} @CPPFLAGS@ @CXXFLAGS@ @CPLUSPLUS_STD@
 Cflags: -I${includedir} @CPPFLAGS@ @CFLAGS@
 Libs.private: @LDFLAGS@ @LIBS@
 Libs: -L${libdir} -lpt${suffix}
+
+CPPFLAGS=-I${includedir} @CPPFLAGS@
+CXXFLAGS=-I${includedir} @CPPFLAGS@ @CXXFLAGS@ @CPLUSPLUS_STD@
+LDFLAGS=@LDFLAGS@
+SHARED_CPPFLAGS=@SHARED_CPPFLAGS@
+SHARED_LDFLAGS=@SHARED_LDFLAGS@
 
 PTLIB_IPV6=@PTLIB_IPV6@
 PTLIB_DNS_RESOLVER=@PTLIB_DNS_RESOLVER@
