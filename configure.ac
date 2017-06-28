@@ -17,7 +17,6 @@ AC_CONFIG_AUX_DIR(make)
 
 AC_CONFIG_SRCDIR([include/ptlib.h])
 
-m4_include(make/my_macros.m4)
 m4_include(make/ptlib.m4)
 m4_include(make/m4_ax_pthread.m4)
 
