@@ -3051,7 +3051,7 @@ PString PThread::GetThreadName() const
   return reply; 
 }
 
-#if defined(_DEBUG) && defined(_MSC_VER) && !defined(_WIN32_WCE)
+#if defined(_MSC_VER) && !defined(_WIN32_WCE)
 
 static void SetOperatingSystemThreadName(DWORD threadId, const char * threadName)
 {
