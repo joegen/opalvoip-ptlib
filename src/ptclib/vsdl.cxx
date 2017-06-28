@@ -133,12 +133,14 @@ class PSDL_System
   private:
     PThread     * m_thread;
     PSyncPoint    m_started;
+    bool          m_initVideo;
   
     typedef std::set<PVideoOutputDevice_SDL *> DeviceList;
     DeviceList m_devices;
 
     PSDL_System()
       : m_thread(NULL)
+      , m_initVideo(true)
     {
     }
 
@@ -162,9 +164,9 @@ class PSDL_System
 #endif
 
       // initialise the SDL library
-      int err = ::SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS);
+      int err = ::SDL_Init(SDL_INIT_EVENTS);
       if (err != 0) {
-        PTRACE(1, "Couldn't initialize SDL: error=" << err << ' ' << ::SDL_GetError());
+        PTRACE(1, "Couldn't initialize SDL events: error=" << err << ' ' << ::SDL_GetError());
         return;
       }
 
@@ -202,6 +204,13 @@ class PSDL_System
           PVideoOutputDevice_SDL * device = reinterpret_cast<PVideoOutputDevice_SDL *>(sdlEvent.user.data1);
           switch (sdlEvent.user.code) {
             case e_Open :
+              if (m_initVideo) {
+                int err = ::SDL_Init(SDL_INIT_VIDEO);
+                if (err != 0)
+                  PTRACE(1, "Couldn't initialize SDL video: error=" << err << ' ' << ::SDL_GetError());
+                else
+                  m_initVideo = false;
+              }
               if (device->InternalOpen())
                 m_devices.insert(device);
               break;
