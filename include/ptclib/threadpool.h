@@ -658,7 +658,7 @@ class PSafeWorkArg3 : public PSafeWork
       PtrClass * ptr,
       Arg1Type arg1,
       Arg2Type arg2,
-      Arg2Type arg3,
+      Arg3Type arg3,
       Function function
     ) : PSafeWork(ptr)
       , m_function(function)
