@@ -368,7 +368,7 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
       }
 
       PINDEX frameBytes = CalculateFrameBytes();
-      unsigned len = 0;
+      PINDEX len = 0;
       while (len < frameBytes) {
         if (!m_command.Read(readBuffer+len, frameBytes-len)) {
           m_command.Close();
