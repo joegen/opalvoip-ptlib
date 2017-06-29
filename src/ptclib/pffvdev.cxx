@@ -40,6 +40,7 @@
 
 #include <ptlib/vconvert.h>
 #include <ptclib/pffvdev.h>
+#include <ptclib/pvfiledev.h>
 #include <ptlib/pfactory.h>
 #include <ptlib/pluginmgr.h>
 #include <ptlib/videoio.h>
@@ -90,11 +91,21 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
   PPlugin_PVideoInputDevice_FFMPEG::PPlugin_PVideoInputDevice_FFMPEG()
   {
     av_register_all();
+
+#if P_VIDFILE
+    PStringSet extensionsAlreadyAvailable = PVideoInputDevice_VideoFile::GetInputDeviceNames();
+#endif
+
     AVInputFormat *fmt = NULL;
     while ((fmt = av_iformat_next(fmt)) != NULL) {
       PStringArray extensions(PString(fmt->extensions).Tokenise(","));
-      for (PINDEX i = 0; i < extensions.GetSize(); ++i)
+      for (PINDEX i = 0; i < extensions.GetSize(); ++i) {
+#if P_VIDFILE
+        if (extensionsAlreadyAvailable.Contains(extensions[i]))
+          continue;
+#endif
         m_extensions += "." + extensions[i];
+      }
     }
   }
 
