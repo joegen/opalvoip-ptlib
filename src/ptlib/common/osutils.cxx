@@ -3039,7 +3039,7 @@ PThread::Times & PThread::Times::operator-=(const Times & rhs)
 
 void PThread::PrintOn(ostream & strm) const
 {
-  strm << GetThreadName();
+  strm << GetThreadName() << '@' << this;
 }
 
 
