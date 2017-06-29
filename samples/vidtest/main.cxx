@@ -104,7 +104,7 @@ void VidTest::Main()
     else
       cerr << ", default device";
     cerr << ", device name must be one of:\n";
-    PStringList devices = PVideoInputDevice::GetDriversDeviceNames("*");
+    PStringList devices = PVideoInputDevice::GetDriversDeviceNames("*\t*");
     for (PINDEX i = 0; i < devices.GetSize(); i++)
       cerr << "   " << devices[i] << '\n';
     cerr << endl;
@@ -177,7 +177,7 @@ void VidTest::Main()
     else
       cerr << ", default device";
     cerr << ", device name must be one of:\n";
-    PStringList devices = PVideoOutputDevice::GetDriversDeviceNames("*");
+    PStringList devices = PVideoOutputDevice::GetDriversDeviceNames("*\t*");
     for (PINDEX i = 0; i < devices.GetSize(); i++)
       cerr << "   " << devices[i] << '\n';
     cerr << endl;
