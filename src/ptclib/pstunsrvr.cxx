@@ -285,20 +285,22 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     PSTUNStringAttribute * userAttr = request.FindAttributeAs<PSTUNStringAttribute>(PSTUNAttribute::USERNAME);
     if (userAttr == NULL) {
       PTRACE(2, "No USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress);
-      response.SetErrorType(400, request.GetTransactionID());
+      response.SetErrorType(432, request.GetTransactionID());
       goto sendResponse;
     }
 
     if (userAttr->GetString() != m_userName) {
       PTRACE(2, "Incorrect USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress
              << ", got \"" << userAttr->GetString() << "\", expected \"" << m_userName << '"');
-      response.SetErrorType(401, request.GetTransactionID());
+      response.SetErrorType(436, request.GetTransactionID());
       goto sendResponse;
     }
 
-    if (!request.CheckMessageIntegrity(m_password)) {
-      PTRACE(2, "Integrity check failed for " << request << " on interface " << socketInfo.m_socketAddress);
-      response.SetErrorType(401, request.GetTransactionID());
+    unsigned errorCode = request.CheckMessageIntegrity(m_password);
+    if (errorCode != 0) {
+      PTRACE(2, "Integrity check failed (" << errorCode << ") for " << request << " on interface " << socketInfo.m_socketAddress);
+      response.SetErrorType(errorCode, request.GetTransactionID());
+      response.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::USERNAME, m_userName));
       goto sendResponse;
     }
   }

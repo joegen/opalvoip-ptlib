@@ -228,7 +228,7 @@ void PSTUN::AppendMessageIntegrity(PSTUNMessage & message)
 
 bool PSTUN::ValidateMessageIntegrity(const PSTUNMessage & message)
 {
-  if (!message.CheckMessageIntegrity(m_password)) {
+  if (message.CheckMessageIntegrity(m_password) != 0) {
     PTRACE(2, "STUN\tIntegrity check failed for user=" << m_userName << ", incorrect password");
     return false;
   }
@@ -346,7 +346,7 @@ int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & requ
   }
 
   // integrity in response must be valid, if we have a username
-  if (!response.CheckMessageIntegrity(m_password)) {
+  if (response.CheckMessageIntegrity(m_password) != 0) {
     PTRACE(2, "STUN\tServer response failed message integrity check");
     return -1;
   }
@@ -703,22 +703,22 @@ void PSTUNMessage::AddMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX c
 }
 
 
-bool PSTUNMessage::CheckMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen) const
+unsigned PSTUNMessage::CheckMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen) const
 {
   if (credentialsHashPtr == NULL || credentialsHashLen == 0)
-    return true;
+    return 0;
 
   // get message integrity attribute
   PSTUNMessageIntegrity * mi = FindAttributeAs<PSTUNMessageIntegrity>(PSTUNAttribute::MESSAGE_INTEGRITY);
   if (mi == NULL)
-    return false;
+    return 401;
 
 #if P_SSL
   BYTE hmac[PHMAC::KeyLength];
   CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, hmac);
-  return memcmp(hmac, mi->m_hmac, PHMAC::KeyLength) == 0;
+  return memcmp(hmac, mi->m_hmac, PHMAC::KeyLength) == 0 ? 0 : 431;
 #else
-  return true;
+  return 0;
 #endif
 }
 
@@ -836,10 +836,10 @@ void PSTUNMessage::PrintOn(ostream & strm) const
       strm << "Refresh Error";
       break;
     case Send:
-      strm << "Send";
+      strm << "Send Indication";
       break;
     case Data:
-      strm << "Data";
+      strm << "Data Indication";
       break;
     case CreatePermission:
       strm << "Create Permission";
@@ -878,7 +878,7 @@ void PSTUNMessage::PrintOn(ostream & strm) const
       strm << "Connection Bind Error";
       break;
     case ConnectionAttempt:
-      strm << "Connection Attempt";
+      strm << "Connection Attempt Indication";
       break;
     default :
       strm << "Unknown message 0x" << hex << (unsigned)GetType();

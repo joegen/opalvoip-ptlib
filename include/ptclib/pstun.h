@@ -482,8 +482,8 @@ class PSTUNMessage : public PBYTEArray
     void AddMessageIntegrity(const PBYTEArray & credentialsHash) { AddMessageIntegrity(credentialsHash, credentialsHash.GetSize()); }
     void AddMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi = NULL);
 
-    bool CheckMessageIntegrity(const PBYTEArray & credentialsHash) const { return CheckMessageIntegrity(credentialsHash, credentialsHash.GetSize()); }
-    bool CheckMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen) const;
+    unsigned CheckMessageIntegrity(const PBYTEArray & credentialsHash) const { return CheckMessageIntegrity(credentialsHash, credentialsHash.GetSize()); }
+    unsigned CheckMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen) const;
 
     void AddFingerprint(PSTUNFingerprint * fp = NULL);
     bool CheckFingerprint(bool required) const;
