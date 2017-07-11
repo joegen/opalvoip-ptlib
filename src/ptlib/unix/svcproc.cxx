@@ -256,21 +256,27 @@ int PServiceProcess::InitialiseService()
   }
 
     // Validate the various command line options
-  const char Set1[] = "dx";
-  const char Set2[] = "ktsR";
-  const char Set3[] = "clr";
-  int set1 = CountOptionSet(args, Set1);
-  int set2 = CountOptionSet(args, Set2);
-  int set3 = CountOptionSet(args, Set3);
-  if (args.HasOption('h') || !((set1 == 0 && set2 == 1) || (set1 == 1 && set2 == 0)) || set3 > 1) {
-    if (set1 > 1)
-      cerr << "error: must specify exactly one of " << ExpandOptionSet(Set1) << "\n\n";
-    else if (set1 > 0 && set2 > 0)
-      cerr << "error: cannot specify " << ExpandOptionSet(Set1) << " with " << ExpandOptionSet(Set2) << "\n\n";
-    else if (set2 > 1)
-      cerr << "error: must specify at most one of " << ExpandOptionSet(Set2) << "\n\n";
-    else if (set3 > 1)
-      cerr << "error: must specify at most one of " << ExpandOptionSet(Set3) << "\n\n";
+  const char RunOptionSet[] = "dx";
+  const char CtrlOptionSet[] = "ktsUD";
+  const char LogOptionSet[] = "clr";
+  int runOptionsCount = CountOptionSet(args, RunOptionSet);
+  int ctrlOptionsCount = CountOptionSet(args, CtrlOptionSet);
+  int logOptionsCount = CountOptionSet(args, LogOptionSet);
+  if (  args.HasOption('h') ||
+        !(
+            (runOptionsCount == 0 && ctrlOptionsCount == 1) ||
+            (runOptionsCount == 1 && ctrlOptionsCount == 0)
+         ) ||
+         logOptionsCount > 1)
+  {
+    if (runOptionsCount > 1)
+      cerr << "error: must specify exactly one of " << ExpandOptionSet(RunOptionSet) << "\n\n";
+    else if (runOptionsCount > 0 && ctrlOptionsCount > 0)
+      cerr << "error: cannot specify " << ExpandOptionSet(RunOptionSet) << " with " << ExpandOptionSet(CtrlOptionSet) << "\n\n";
+    else if (ctrlOptionsCount > 1)
+      cerr << "error: must specify at most one of " << ExpandOptionSet(CtrlOptionSet) << "\n\n";
+    else if (logOptionsCount > 1)
+      cerr << "error: must specify at most one of " << ExpandOptionSet(LogOptionSet) << "\n\n";
 
     cerr << "usage: " << progName << " [ options ]\n";
     args.Usage(cerr);
@@ -286,7 +292,7 @@ int PServiceProcess::InitialiseService()
   if (!pidfilename && PDirectory::Exists(pidfilename))
     pidfilename = PDirectory(pidfilename) + progName + ".pid";
 
-  if (set2 > 0) {
+  if (ctrlOptionsCount > 0) {
     pid_t pid;
 
     {
