@@ -1421,7 +1421,7 @@ bool PIPSocket::InternalListen(const Address & bindAddr,
 #endif
 
   if (!ConvertOSError(::bind(os_handle, sa, sa.GetSize()))) {
-    PTRACE(4, "bind to " << bindAddr << ':' << port << " failed: " << GetErrorText());
+    PTRACE(4, "bind to " << bindAddr << ':' << m_port << " failed: " << GetErrorText());
     os_close();
     return false;
   }
