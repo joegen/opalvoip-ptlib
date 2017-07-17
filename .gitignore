@@ -22,3 +22,4 @@ ptlib.xcodeproj/xcuserdata
 make/ptlib_config.mak
 include/ptlib_config.h
 src/ptlib/common/getdate.c
+.vs

@@ -24,13 +24,16 @@
 #include <ptlib.h>
 #include "main.h"
 
+PCREATE_PROCESS(XMLRPCApp);
+
+XMLRPCApp::XMLRPCApp()
+  : PProcess("Equivalence", "XMLRPCApp", 1, 0, AlphaCode, 1)
+{
+}
+
+#if P_EXPAT
+
 #include <ptclib/pxmlrpc.h>
-
-#if !P_EXPAT
-#error Must have XML support for this application
-#endif
-
-
 
 PXMLRPC_STRUCT_BEGIN(NestedStruct)
     PXMLRPC_STRING  (NestedStruct, PString, another_string);
@@ -50,9 +53,6 @@ PXMLRPC_STRUCT_BEGIN     (TestStruct)
     PXMLRPC_STRUCT       (TestStruct, NestedStruct, nested_struct);
     PXMLRPC_ARRAY_STRUCT (TestStruct, NestedStruct, array_struct);
 PXMLRPC_STRUCT_END()
- 
-
-PCREATE_PROCESS(XMLRPCApp);
 
 
 bool AddParam(PXMLRPCBlock & request, PArgList & args,PXMLElement * params)
@@ -102,11 +102,6 @@ bool AddParam(PXMLRPCBlock & request, PArgList & args,PXMLElement * params)
 
 
 /////////////////////////////////////////////////////////////////////////////
-
-XMLRPCApp::XMLRPCApp()
-  : PProcess("Equivalence", "XMLRPCApp", 1, 0, AlphaCode, 1)
-{
-}
 
 void XMLRPCApp::Main()
 {
@@ -244,5 +239,15 @@ void XMLRPCApp::Main()
     cout << endl;
   }
 }
+
+#else
+#pragma message("Must have XML support for this application")
+
+void XMLRPCApp::Main()
+{
+}
+
+#endif
+
 
 // End of File ///////////////////////////////////////////////////////////////

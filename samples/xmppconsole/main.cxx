@@ -17,6 +17,15 @@
 #include "main.h"
 #include "version.h"
 
+
+PCREATE_PROCESS(XMPPConsole);
+
+XMPPConsole::XMPPConsole()
+  : PProcess("Reitek S.p.A & Derek Smithies code factory.", "XMPPConsole", 
+             MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+{
+}
+
 #if P_EXPAT
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -208,14 +217,6 @@ PStringArray & XMPPFrame::GetAvailableNodes()
   
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PCREATE_PROCESS(XMPPConsole);
-
-XMPPConsole::XMPPConsole()
-  : PProcess("Reitek S.p.A & Derek Smithies code factory.", "XMPPConsole", 
-             MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
-{
-}
 
 void XMPPConsole::Main()
 {
@@ -458,6 +459,12 @@ void UserInterface::ProcessDirectedMessage(PString & message)
   SendThisMessageTo(send, subject, str[node - 1]);
 }
 
+#else
+#pragma message("Must have XML support for this application")
+
+void XMPPConsole::Main()
+{
+}
 #endif
 
 // End of File ///////////////////////////////////////////////////////////////

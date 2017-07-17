@@ -32,8 +32,6 @@
 #include <ptlib/pprocess.h>
 #include <ptclib/podbc.h>
 
-#if P_ODBC
-
 class ODBCtest : public PProcess
 {
   PCLASSINFO(ODBCtest, PProcess)
@@ -41,10 +39,11 @@ public:
   void Main();
 };
 
-
 PCREATE_PROCESS(ODBCtest)
 
-  void ODBCtest::Main()
+#if P_ODBC
+
+void ODBCtest::Main()
 {
   cout << "ODBC Component for the Pwlib Library Test Program\n"
           "=================================================\n\n";
@@ -339,5 +338,10 @@ PCREATE_PROCESS(ODBCtest)
 }
 
 #else
-#error Cannot compile Lua test program without ODBC support!
+
+#pragma message("Cannot compile test program without ODBC support!")
+
+void ODBCtest::Main()
+{
+}
 #endif // P_ODBC

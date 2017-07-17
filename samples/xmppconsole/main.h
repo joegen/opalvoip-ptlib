@@ -15,15 +15,14 @@
 
 #include <ptlib.h>
 #include <ptlib/pprocess.h>
+
+#if P_EXPAT
+
 #include <ptlib/notifier_ext.h>
 #include <ptclib/xmpp_c2s.h>
 #include <ptclib/xmpp_roster.h>
 #include <ptclib/xmpp_muc.h>
 
-
-#if !P_EXPAT
-#error Must have XML support for this application
-#else
 
 class XMPPFrame : public PObject
 {
@@ -76,32 +75,6 @@ private:
 };
 
 
-class XMPPConsole :public PProcess
-{
-  PCLASSINFO(XMPPConsole, PProcess);
-
-public:
-  XMPPConsole();
-
-  void Main();
-
-  PString GetPassword() { return password; }
-
-  PString GetUserName() { return userName; }
-
-  PString GetServer()   { return server; }
-
-  static XMPPConsole & Current() { return (XMPPConsole &)PProcess::Current(); }
-
-protected:
-
-  PString password;
-  PString userName;
-  PString server;
-
-};
-
-
 class UserInterface: public PThread
 {
   PCLASSINFO(UserInterface, PThread);
@@ -128,8 +101,29 @@ public:
   PTime startTime;
 };
 
-
 #endif
+
+class XMPPConsole :public PProcess
+{
+  PCLASSINFO(XMPPConsole, PProcess);
+
+public:
+  XMPPConsole();
+
+  void Main();
+
+  PString GetPassword() { return password; }
+  PString GetUserName() { return userName; }
+  PString GetServer()   { return server; }
+
+  static XMPPConsole & Current() { return (XMPPConsole &)PProcess::Current(); }
+
+protected:
+  PString password;
+  PString userName;
+  PString server;
+};
+
 
 #endif  // _XMPPConsole_MAIN_H
 

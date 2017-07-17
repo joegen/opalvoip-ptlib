@@ -21,11 +21,14 @@ class Vxmltest : public PProcess
   public:
     Vxmltest();
     void Main();
-    PDECLARE_NOTIFIER(PThread, Vxmltest, InputThread);
 
   protected:
     PBoolean inputRunning;
     PVXMLSession * vxml;
+
+#if P_EXPAT
+    PDECLARE_NOTIFIER(PThread, Vxmltest, InputThread);
+#endif
 };
 
 

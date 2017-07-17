@@ -1035,6 +1035,7 @@ dnl ########################################################################
 dnl look for IPV6 functions
 
 dnl MSWIN_DISPLAY    ipv6,IPv6 Support
+dnl MSWIN_CHECK_FILE ipv6,ws2tcpip.h,P_HAS_IPV6=1
 dnl MSWIN_CHECK_FILE ipv6,include\ws2tcpip.h,P_HAS_IPV6=1
 dnl MSWIN_CHECK_FILE ipv6,include\um\ws2tcpip.h,P_HAS_IPV6=1
 dnl MSWIN_CHECK_DIR  ipv6,%ProgramFiles%\Windows Kits\8.*
@@ -1267,6 +1268,7 @@ dnl on some systems, the resolver is in libc
 dnl but needs resolv.h included which defines res_search as __res_search
 
 dnl MSWIN_DISPLAY    resolver,DNS Resolver
+dnl MSWIN_CHECK_FILE resolver,windns.h,P_DNS_RESOLVER=1
 dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS_RESOLVER=1
 dnl MSWIN_CHECK_FILE resolver,include\um\windns.h,P_DNS_RESOLVER=1
 dnl MSWIN_CHECK_DIR  resolver,%ProgramFiles%\Windows Kits\8.*
@@ -2003,6 +2005,7 @@ PTLIB_SIMPLE_OPTION([jabber], [JABBER], [Jabber support], [HAS_EXPAT])
 dnl ########################################################################
 dnl Speech
 dnl MSWIN_DISPLAY    sapi,Speech API
+dnl MSWIN_CHECK_FILE sapi,sphelper.h,P_SAPI=1
 dnl MSWIN_CHECK_FILE sapi,include\sphelper.h,P_SAPI=1
 dnl MSWIN_CHECK_FILE sapi,include\um\sphelper.h,P_SAPI=1
 dnl MSWIN_DEFINE     sapi,P_TTS
@@ -2453,6 +2456,7 @@ if test "x$enable_plugins" != "xno" ; then
       dnl look for Direct Sound
 
       dnl MSWIN_DISPLAY    dsound,Direct Sound Support
+      dnl MSWIN_CHECK_FILE dsound,dsound.h,P_DIRECTSOUND=1
       dnl MSWIN_CHECK_FILE dsound,include\dsound.h,P_DIRECTSOUND=1
       dnl MSWIN_CHECK_FILE dsound,include\um\dsound.h,P_DIRECTSOUND=1
       dnl MSWIN_FIND_FILE  dsound,P_DIRECTSOUND_DXERR_H,dxerr.h,include
@@ -2465,6 +2469,7 @@ if test "x$enable_plugins" != "xno" ; then
       dnl look for Direct Show (video)
 
       dnl MSWIN_DISPLAY    dshow,Direct Show Support
+      dnl MSWIN_CHECK_FILE dshow,dshow.h,P_DIRECTSHOW=1
       dnl MSWIN_CHECK_FILE dshow,include\dshow.h,P_DIRECTSHOW=1
       dnl MSWIN_CHECK_FILE dshow,include\um\dshow.h,P_DIRECTSHOW=1
       dnl MSWIN_FIND_FILE  dshow,P_DIRECTSHOW_QEDIT_H,Qedit.h,include

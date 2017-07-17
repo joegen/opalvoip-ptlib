@@ -30,18 +30,20 @@
 #include <ptlib/pprocess.h>
 #include <ptclib/lua.h>
 
-#if P_LUA
-
 class MyProcess : public PProcess
 {
     PCLASSINFO(MyProcess, PProcess)
   public:
     void Main();
+#if P_LUA
     PDECLARE_LuaFunctionNotifier(MyProcess, LuaTestFunction);
+#endif
 };
 
 PCREATE_PROCESS(MyProcess)
 
+
+#if P_LUA
 
 #define LUA_TO_C_FUNCTION "lua_to_c_test"
 #define C_TO_LUA_FUNCTION "c_to_lua_test"
@@ -189,5 +191,9 @@ void MyClass::LuaTestFunction(PLua&, PLua::Signature & sig)
 
 
 #else
-#error Cannot compile Lua test program without Lua support!
+#pragma message("Cannot compile test program without Lua support!")
+
+void MyProcess::Main()
+{
+}
 #endif // P_LUA

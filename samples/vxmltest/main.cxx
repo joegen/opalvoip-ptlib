@@ -13,15 +13,18 @@
 #include <ptlib/sound.h>
 #include <ptclib/vxml.h>
 
-#if !P_EXPAT
-#error Must have XML support for this application
-#endif
-
-
 #include "main.h"
 
-
 PCREATE_PROCESS(Vxmltest);
+
+Vxmltest::Vxmltest()
+  : PProcess("Equivalence", "vxmltest", 1, 0, AlphaCode, 1)
+  , vxml(NULL)
+{
+}
+
+
+#if P_EXPAT
 
 #define BUFFER_SIZE 1024
 
@@ -67,12 +70,6 @@ void ChannelCopyThread::Main()
     }
   }
 }
-
-Vxmltest::Vxmltest()
-  : PProcess("Equivalence", "vxmltest", 1, 0, AlphaCode, 1)
-{
-}
-
 
 void Vxmltest::Main()
 {
@@ -138,6 +135,14 @@ void Vxmltest::InputThread(PThread &, P_INT_PTR)
       vxml->OnUserInput(PString((char)ch));
   }
 }
+
+#else
+#pragma message("Cannot compile test application without XML support!")
+
+void Vxmltest::Main()
+{
+}
+#endif
 
 
 // End of File ///////////////////////////////////////////////////////////////

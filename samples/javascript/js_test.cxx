@@ -35,8 +35,6 @@ copied to the executable directory of any application that uses the V8 system.
 They are usually in the output directory of the build, e.g. out.gn\x64.release
 */
 
-#if P_V8
-
 class MyProcess : public PProcess
 {
     PCLASSINFO(MyProcess, PProcess)
@@ -46,6 +44,8 @@ class MyProcess : public PProcess
 
 PCREATE_PROCESS(MyProcess)
 
+
+#if P_V8
 
 class MyClass : public PObject {
   public:
@@ -103,5 +103,9 @@ void MyProcess::Main()
 }
 
 #else
-#error Cannot compile JavaScript test program without JavaScript support!
+#pragma message("Cannot compile test program without JavaScript support!")
+
+void MyProcess::Main()
+{
+}
 #endif // P_V8
