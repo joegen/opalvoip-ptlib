@@ -844,10 +844,30 @@ PMonitoredSocketBundle::PMonitoredSocketBundle(const PString & fixedInterface,
 {
   PInterfaceMonitor::GetInstance().AddNotifier(m_onInterfaceChange);
 
-  PTRACE(4, "Created socket bundle for "
-         << (fixedInterface.IsEmpty() ? "all" : "fixed")
-         << (ipVersion != 4 ? ipVersion != 6 ? " " : " IPv6 " : " IPv4 " )
-         << "interface" << (fixedInterface.IsEmpty() ? "s." : ": ") << fixedInterface);
+#if PTRACING
+  static const unsigned Level = 4;
+  if (PTrace::CanTrace(Level)) {
+    ostream & trace = PTRACE_BEGIN(Level);
+    trace << "Created socket bundle for";
+    switch (ipVersion) {
+      case 4 :
+        trace << " IPv4";
+        break;
+      case 6 :
+        trace << " IPv6";
+    }
+#if P_NAT
+    if (natMethods != NULL)
+      trace << " (" << setfill(',') << *natMethods << ')';
+#endif
+    trace << " interface";
+    if (fixedInterface.IsEmpty())
+      trace << "s.";
+    else
+      trace << ": " << fixedInterface;
+    trace << PTrace::End;
+  }
+#endif
 }
 
 
