@@ -1355,6 +1355,7 @@ dnl MSWIN_DISPLAY    pcap,WinPCAP Support
 dnl MSWIN_CHECK_FILE pcap,include\pcap\pcap.h,P_PCAP_WIN32=1
 dnl MSWIN_CHECK_FILE pcap,lib\x64\wpcap.lib,P_PCAP_WIN64=1
 dnl MSWIN_DIR_SYMBOL pcap,PCAP_DIR
+dnl MSWIN_CHECK_DIR  pcap,%PCAPDIR%\
 dnl MSWIN_CHECK_DIR  pcap,..\WpdPack
 dnl MSWIN_CHECK_DIR  pcap,..\external\WpdPack*
 dnl MSWIN_CHECK_DIR  pcap,\WpdPack\
@@ -1394,7 +1395,7 @@ dnl check for FFMPEG
 dnl MSWIN_DISPLAY    ffmpeg32,FFMPEG 32 bit support
 dnl MSWIN_CHECK_FILE ffmpeg32,include\libavformat\avformat.h,P_FFMPEG_WIN32=1
 dnl MSWIN_DIR_SYMBOL ffmpeg32,FFMPEG_WIN32_DIR
-dnl MSWIN_CHECK_DIR  ffmpeg32,\ffmpeg-win32-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg32,%FFMPEGDIR%\
 dnl MSWIN_CHECK_DIR  ffmpeg32,..\external\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramFiles%\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramW6432%\ffmpeg-win32-dev*
@@ -1402,7 +1403,7 @@ dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramW6432%\ffmpeg-win32-dev*
 dnl MSWIN_DISPLAY    ffmpeg64,FFMPEG 64 bit support
 dnl MSWIN_CHECK_FILE ffmpeg64,include\libavformat\avformat.h,P_FFMPEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL ffmpeg64,FFMPEG_WIN64_DIR
-dnl MSWIN_CHECK_DIR  ffmpeg64,\ffmpeg-win64-dev*
+dnl MSWIN_CHECK_DIR  ffmpeg64,%FFMPEG64DIR%\
 dnl MSWIN_CHECK_DIR  ffmpeg64,..\external\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramFiles%\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramW6432%\ffmpeg-win64-dev*
@@ -1467,7 +1468,7 @@ dnl check for ImageMagick
 dnl MSWIN_DISPLAY    imagemagick,ImageMagick support
 dnl MSWIN_CHECK_FILE imagemagick,include\MagickWand\MagickWand.h,P_IMAGEMAGICK=2
 dnl MSWIN_DIR_SYMBOL imagemagick,IMAGEMAGICK_DIR
-dnl MSWIN_CHECK_DIR  imagemagick,\ImageMagick*
+dnl MSWIN_CHECK_DIR  imagemagick,%IMAGEMAGICKDIR%\ImageMagick*
 dnl MSWIN_CHECK_DIR  imagemagick,..\external\ImageMagick*
 dnl MSWIN_CHECK_DIR  imagemagick,%ProgramFiles%\ImageMagick*
 dnl MSWIN_CHECK_DIR  imagemagick,%ProgramW6432%\ImageMagick*
@@ -1494,7 +1495,7 @@ dnl MSWIN_CHECK_FILE libjpeg,lib\win32\libjpeg.lib,P_LIBJPEG_WIN32=1
 dnl MSWIN_CHECK_FILE libjpeg,lib\x64\libjpeg.lib,P_LIBJPEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL libjpeg,LIBJPEG_DIR
 dnl MSWIN_FIND_FILE  libjpeg,P_LIBJPEG_LIBRARY,jpeg.lib,lib
-dnl MSWIN_CHECK_DIR  libjpeg,\libjpeg-turbo
+dnl MSWIN_CHECK_DIR  libjpeg,%JPEGTURBODIR%\libjpeg-turbo
 dnl MSWIN_CHECK_DIR  libjpeg,..\external\libjpeg-turbo
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramFiles%\libjpeg-turbo
 dnl MSWIN_CHECK_DIR  libjpeg,%ProgramW6432%\libjpeg-turbo
@@ -1560,11 +1561,11 @@ dnl Look for SASL
 dnl MSWIN_DISPLAY    sasl,Cyrus SASL
 dnl MSWIN_CHECK_FILE sasl,include\sasl.h,P_SASL_WIN32=1
 dnl MSWIN_DIR_SYMBOL sasl,SASL_DIR
+dnl MSWIN_CHECK_DIR  sasl,%SASLDIR%\sasl\
 dnl MSWIN_CHECK_DIR  sasl,..\sasl\
 dnl MSWIN_CHECK_DIR  sasl,..\cyrus-sasl\
 dnl MSWIN_CHECK_DIR  sasl,..\external\sasl\
 dnl MSWIN_CHECK_DIR  sasl,..\external\cyrus-sasl\
-dnl MSWIN_CHECK_DIR  sasl,\sasl\
 dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
@@ -1618,9 +1619,9 @@ dnl MSWIN_DISPLAY    openldap,Open LDAP
 dnl MSWIN_IF_FEATURE openldap,sasl
 dnl MSWIN_CHECK_FILE openldap,include\ldap.h|OpenLDAP,P_LDAP_WIN32=1
 dnl MSWIN_DIR_SYMBOL openldap,LDAP_DIR
+dnl MSWIN_CHECK_DIR  openldap,%OPENLDAPDIR%\openldap\
 dnl MSWIN_CHECK_DIR  openldap,..\openldap\
 dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
-dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
 AC_LANG_PUSH(C)
@@ -1659,10 +1660,10 @@ dnl MSWIN_CHECK_FILE openssl,include\openssl\ssl.h,P_SSL_WIN32=2
 dnl MSWIN_FIND_FILE  openssl,P_SSL_AES32,aes.h,...
 dnl MSWIN_DEFINE     openssl,P_SSL_SRTP
 dnl MSWIN_DIR_SYMBOL openssl,SSL_WIN32_DIR
+dnl MSWIN_CHECK_DIR  openssl,%OPENSSLDIR%\
 dnl MSWIN_CHECK_DIR  openssl,..\openssl\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
-dnl MSWIN_CHECK_DIR  openssl,\libs\openssl\
 dnl MSWIN_CHECK_DIR  openssl,%ProgramFiles%\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,%ProgramW6432%\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,%ProgramFiles%\OpenSSL\
@@ -1674,6 +1675,7 @@ dnl MSWIN_CHECK_FILE openssl64,include\openssl\ssl.h,P_SSL_WIN64=1
 dnl MSWIN_FIND_FILE  openssl64,P_SSL_AES64,aes.h,...
 dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
 dnl MSWIN_DEFINE     openssl64,P_SSL_SRTP
+dnl MSWIN_CHECK_DIR  openssl64,%OPENSSL64DIR%\
 dnl MSWIN_CHECK_DIR  openssl64,..\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,..\external\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,\openssl64\
@@ -1770,10 +1772,10 @@ dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_DEBUG,expat.lib,wm6/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_RELEASE,expat.lib,wm6/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_DEBUG,expat.lib,x64/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_RELEASE,expat.lib,x64/Release
+dnl MSWIN_CHECK_DIR  expat,%EXPATDIR%\expat
 dnl MSWIN_CHECK_DIR  expat,..\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,C:\Work\external\Expat\expat\
-dnl MSWIN_CHECK_DIR  expat,\Expat\expat
 dnl MSWIN_CHECK_DIR  expat,c:\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,\libs\Expat\expat\
 
@@ -1801,6 +1803,7 @@ dnl look for Lua library
 dnl MSWIN_DISPLAY    lua,Lua interpreter
 dnl MSWIN_CHECK_FILE lua,include\lua.h,P_LUA_WIN32=1
 dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
+dnl MSWIN_CHECK_DIR  lua,%LUADIR%\5.1
 dnl MSWIN_CHECK_DIR  lua,%ProgramFiles%\Lua\5.1
 dnl MSWIN_CHECK_DIR  lua,%ProgramW6432%\Lua\5.1
 
@@ -1856,6 +1859,7 @@ dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_DEBUG64,icuuc.lib,out.gn/x64.debug/...
 dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_RELEASE64,icuuc.lib,out.gn/x64.release/...
 
 dnl MSWIN_DIR_SYMBOL v8,V8_DIR
+dnl MSWIN_CHECK_DIR  v8,%V8DIR%\
 dnl MSWIN_CHECK_DIR  v8,..\v8
 dnl MSWIN_CHECK_DIR  v8,..\v8\v8
 dnl MSWIN_CHECK_DIR  v8,..\external\v8
@@ -2270,6 +2274,7 @@ dnl check for GStreamer library
 dnl MSWIN_DISPLAY    gstreamer,GStreamer 0.10 (OSSBuild)
 dnl MSWIN_CHECK_FILE gstreamer,include\gstreamer-0.10\gst\gst.h,P_GSTREAMER_WIN32=1
 dnl MSWIN_DIR_SYMBOL gstreamer,GSTREAMER_DIR
+dnl MSWIN_CHECK_DIR  gstreamer,%GSTREAMERDIR%\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,..\external\gstreamer-sdk\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,\gstreamer-sdk\0.10\x86
 dnl MSWIN_CHECK_DIR  gstreamer,%ProgramFiles%\gstreamer-sdk\0.10\x86
@@ -2279,6 +2284,7 @@ dnl MSWIN_DISPLAY    gstreamer1,GStreamer 1.0
 dnl MSWIN_CHECK_FILE gstreamer1,include\gstreamer-1.0\gst\gst.h,P_GSTREAMER_WIN32=1
 dnl MSWIN_DIR_SYMBOL gstreamer1,GSTREAMER1_DIR
 dnl MSWIN_DEFINE     gstreamer1,P_GSTREAMER_1_0_API
+dnl MSWIN_CHECK_DIR  gstreamer,%GSTREAMERDIR%\1.0\x86
 dnl MSWIN_CHECK_DIR  gstreamer1,..\external\gstreamer\1.0\x86
 dnl MSWIN_CHECK_DIR  gstreamer1,\gstreamer\1.0\x86
 dnl MSWIN_CHECK_DIR  gstreamer1,%ProgramFiles%\gstreamer-sdk\1.0\x86
