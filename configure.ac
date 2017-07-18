@@ -1770,12 +1770,12 @@ dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_DEBUG,expat.lib,wm6/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_RELEASE,expat.lib,wm6/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_DEBUG,expat.lib,x64/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_RELEASE,expat.lib,x64/Release
-dnl MSWIN_CHECK_DIR  expat,..\expat\
-dnl MSWIN_CHECK_DIR  expat,..\external\expat\
+dnl MSWIN_CHECK_DIR  expat,..\Expat\expat\
+dnl MSWIN_CHECK_DIR  expat,..\external\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,C:\Work\external\Expat\expat\
-dnl MSWIN_CHECK_DIR  expat,\expat
-dnl MSWIN_CHECK_DIR  expat,c:\expat\
-dnl MSWIN_CHECK_DIR  expat,\libs\expat\
+dnl MSWIN_CHECK_DIR  expat,\Expat\expat
+dnl MSWIN_CHECK_DIR  expat,c:\Expat\expat\
+dnl MSWIN_CHECK_DIR  expat,\libs\Expat\expat\
 
 dnl MSWIN_DISPLAY    expat32,Expat XML (precompiled)
 dnl MSWIN_CHECK_FILE expat32,Source\lib\expat.h,P_EXPAT_WIN32=1
