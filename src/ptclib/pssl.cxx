@@ -645,7 +645,7 @@ bool PSSLCertificate::CreateRoot(const PString & subject,
       if (X509_sign(m_certificate, privateKey, pDigest) > 0)
         return true;
 
-      PTRACE(1, "Cannot sign root certiicate: " <<  <PSSLError());
+      PTRACE(1, "Cannot sign root certificate: " << PSSLError());
     }
   }
 
