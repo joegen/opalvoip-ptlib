@@ -563,13 +563,28 @@ void PSSLCertificate::Attach(x509_st * cert)
 }
 
 
-PBoolean PSSLCertificate::CreateRoot(const PString & subject,
-                                 const PSSLPrivateKey & privateKey)
+bool PSSLCertificate::CreateRoot(const PString & subject,
+                                 const PSSLPrivateKey & privateKey,
+                                 const char * digest,
+                                 unsigned version)
 {
   FreeCertificate();
 
-  if (privateKey == NULL)
+  if (!privateKey.IsValid()) {
+    PTRACE(1, "Cannot create root certiicate: invalid private key");
     return false;
+  }
+
+  const EVP_MD * pDigest;
+  if (digest == NULL)
+    pDigest = EVP_sha1();
+  else {
+    pDigest = EVP_get_digestbyname(digest);
+    if (pDigest == NULL) {
+      PTRACE(1, "Cannot create root certiicate: invalid digest algorithm \"" << digest << '"');
+      return false;
+    }
+  }
 
   POrdinalToString info;
   PStringArray fields = subject.Tokenise('/', false);
@@ -583,15 +598,21 @@ PBoolean PSSLCertificate::CreateRoot(const PString & subject,
         info.SetAt(nid, field.Mid(equals+1));
     }
   }
-  if (info.IsEmpty())
+  if (info.IsEmpty()) {
+    PTRACE(1, "Cannot create root certiicate: invalid subject \"" << subject << '"');
     return false;
+  }
 
   m_certificate = X509_new();
-  if (m_certificate == NULL)
+  if (PAssertNULL(m_certificate) == NULL)
     return false;
 
-  if (X509_set_version(m_certificate, 2)) {
-    /* Set version to V3 */
+  if (version == 0)
+    version = 2;
+
+  if (X509_set_version(m_certificate, version) == 0)
+    PTRACE(1, "Cannot create root certiicate: invalid version " << version);
+  else {
     {
       static PMutex s_mutex;
       PWaitAndSignal lock(s_mutex);
@@ -621,8 +642,10 @@ PBoolean PSSLCertificate::CreateRoot(const PString & subject,
       EVP_PKEY_free(pkey);
       X509_PUBKEY_free(pubkey);
 
-      if (X509_sign(m_certificate, privateKey, EVP_md5()) > 0)
+      if (X509_sign(m_certificate, privateKey, pDigest) > 0)
         return true;
+
+      PTRACE(1, "Cannot sign root certiicate: " <<  <PSSLError());
     }
   }
 

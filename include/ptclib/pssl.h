@@ -277,9 +277,11 @@ class PSSLCertificate : public PObject
           "/OU=Certification Services Division/CN=Thawte Server CA"
           "/Email=server-certs@thawte.com"
      */
-    PBoolean CreateRoot(
+    bool CreateRoot(
       const PString & subject,    ///< Subject name for certificate
-      const PSSLPrivateKey & key  ///< Key to sign certificate with
+      const PSSLPrivateKey & key, ///< Key to sign certificate with
+      const char * digest = NULL, ///< Digest algorithm to use, default is "sha-1"
+      unsigned version = 0        ///< Certificate version, default latest
     );
 
     /**Set the certificate as binary ASN1 DER encoded data.
