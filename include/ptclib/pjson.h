@@ -68,6 +68,8 @@ class PJSON : public PObject
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
 
+        bool IsType(const PString & name, Types type) const;
+
         template <class T> T * Get(const PString & name) const
         {
           const_iterator it = find(name);
@@ -101,6 +103,8 @@ class PJSON : public PObject
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
+
+        bool IsType(size_t index, Types type) const;
 
         template <class T> T * Get(size_t index) const
         {
@@ -189,6 +193,8 @@ class PJSON : public PObject
     PString AsString(std::streamsize indent = 0) const;
 
     bool IsValid() const { return m_valid; }
+
+    bool IsType(Types type) { return PAssertNULL(m_root)->IsType(type); }
 
     template <class T> T & GetAs() const { return dynamic_cast<T &>(*PAssertNULL(m_root)); }
     Object  & GetObject()  const { return GetAs<Object>();  }

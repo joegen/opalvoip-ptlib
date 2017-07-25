@@ -333,6 +333,13 @@ void PJSON::Object::PrintOn(ostream & strm) const
 }
 
 
+bool PJSON::Object::IsType(const PString & name, Types type) const
+{
+  const_iterator it = find(name);
+  return it != end() ? it->second->IsType(type) : (type == e_Null);
+}
+
+
 PJSON::Object & PJSON::Object::GetObject(const PString & name) const
 {
   Object * obj = Get<Object>(name);
@@ -377,8 +384,8 @@ double PJSON::Object::GetNumber(const PString & name) const
 
 bool PJSON::Object::GetBoolean(const PString & name) const
 {
-    Boolean * flag = Get<Boolean>(name);
-    return flag != NULL && flag->GetValue();
+  Boolean * flag = Get<Boolean>(name);
+  return flag != NULL && flag->GetValue();
 }
 
 
@@ -499,6 +506,18 @@ void PJSON::Array::PrintOn(ostream & strm) const
   if (indent > 0 && !empty())
     strm << '\n' << std::setw(indent + 1);
   strm << ']';
+}
+
+
+bool PJSON::Array::IsType(size_t index, Types type) const
+{
+    if (index < size()) {
+        Base * obj = at(index);
+        if (obj != NULL)
+            return obj->IsType(type);
+    }
+
+    return type == e_Null;
 }
 
 
