@@ -113,9 +113,15 @@ extern "C" {
 
 // On Windows, use a define from the header to guess the API type
 #ifdef _WIN32
-#ifdef SSL_OP_NO_QUERY_MTU
-#define P_SSL_USE_CONST 1
-#endif
+  #include <wincrypt.h>
+  #include <cryptuiapi.h>
+  #undef X509_NAME
+  #pragma comment (lib, "crypt32.lib")
+  #pragma comment (lib, "cryptui.lib")
+
+  #ifdef SSL_OP_NO_QUERY_MTU
+    #define P_SSL_USE_CONST 1
+  #endif
 #endif
 
 #define PTraceModule() "SSL"
@@ -2002,13 +2008,67 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
     return false;
 
   PString caPath = caDir.Left(caDir.GetLength()-1);
-  if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
-                                               caPath.IsEmpty() ? NULL : (const char *)caPath)) {
-    PTRACE(4, "Set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
-    return true;
+
+  if (caFile.IsEmpty() && caPath.IsEmpty()) {
+#if _WIN32
+    HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
+    if (hStore != NULL) {
+      X509_STORE *store = X509_STORE_new();
+      unsigned count = 0;
+
+      PCCERT_CONTEXT pContext = NULL;
+      while (pContext = CertEnumCertificatesInStore(hStore, pContext)) {
+        X509 *x509 = d2i_X509(NULL, (const unsigned char **)&pContext->pbCertEncoded, pContext->cbCertEncoded);
+        if (x509 == NULL)
+          PTRACE(2, "Could not create OpenSSL X.509 certificate from Windows Certificate Store: " << PSSLError());
+        else {
+          if (X509_STORE_add_cert(store, x509))
+            ++count;
+          else {
+            unsigned long err = ERR_peek_error();
+            PTRACE_IF(2, err != 0x0B07C065, "Could not add certificate OpenSSL X.509 store: " << PSSLError(err));
+          }
+          X509_free(x509);
+        }
+      }
+
+      CertFreeCertificateContext(pContext);
+      CertCloseStore(hStore, 0);
+
+      if (count > 0) {
+        SSL_CTX_set_cert_store(m_context, store);
+        PTRACE(4, "Set context " << m_context << " to use " << count << " certificates from Windows Certificate Store");
+      }
+      else
+        PTRACE(2, "No usable certificates in Windows System Certificate store for context " << m_context);
+    }
+    else
+      PTRACE(2, "Could not open Windows System Certificate store for context " << m_context);
+#else
+    static const char * const caBundles[] = {
+      "/etc/pki/tls/certs/ca-bundle.crt",
+      "/etc/ssl/certs/ca-bundle.crt"
+    };
+    for (PINDEX i = 0; i < PARRAYSIZE(caBundles); ++i) {
+      if (SSL_CTX_load_verify_locations(m_context, caBundles[i], NULL)) {
+        PTRACE(4, "Set context " << m_context << " to system certificates store at " << caBundles[i]);
+        return true;
+      }
+    }
+
+    PTRACE(2, "Could not set context " << m_context << " to system certficate store.");
+#endif // _WIN32
+  }
+  else {
+    if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
+                                      caPath.IsEmpty() ? NULL : (const char *)caPath)) {
+      PTRACE(4, "Set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+      return true;
+    }
+
+    PTRACE(2, "Could not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
   }
 
-  PTRACE(2, "Could not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
   return SSL_CTX_set_default_verify_paths(m_context);
 }
 
@@ -2152,7 +2212,9 @@ bool PSSLContext::SetCredentials(const PString & authority,
 
   if (!authority.IsEmpty()) {
     bool ok;
-    if (PDirectory::Exists(authority))
+    if (authority == "*")
+      ok = SetVerifyLocations(PString::Empty(), PString::Empty());
+    else if (PDirectory::Exists(authority))
       ok = SetVerifyLocations(PString::Empty(), authority);
     else if (PFile::Exists(authority))
       ok = SetVerifyLocations(authority, PString::Empty());
