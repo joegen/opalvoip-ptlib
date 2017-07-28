@@ -213,6 +213,7 @@ bool PYUVFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissi
     PStringArray params = info.Tokenise(" \t", false); // Really is juts a space, but be forgiving
     if (params.IsEmpty() || params[0] != "YUV4MPEG2") {
       PTRACE(2, "Invalid file format, does not start with YUV4MPEG2");
+      SetErrorValues(Miscellaneous, EINVAL);
       return false;
     }
 
@@ -402,14 +403,19 @@ class PImageMagickFile : public PStillImageVideoFile
 
     virtual bool InternalOpen(OpenMode mode, OpenOptions, PFileInfo::Permissions)
     {
-      if (mode != PFile::ReadOnly)
+      if (mode != PFile::ReadOnly) {
+        SetErrorValues(Miscellaneous, EINVAL);
         return false;
+      }
 
       static Initialiser initialised;
 
       Wand wand;
       if (!MagickReadImage(wand, m_path)) {
-        PTRACE(2, "ImageMagick could not read " << m_path);
+        ExceptionType severity;
+        char * description = MagickGetException(wand, &severity);
+        PTRACE(2, "ImageMagick error: " << description);
+        MagickRelinquishMemory(description);
         return false;
       }
 
@@ -422,11 +428,15 @@ class PImageMagickFile : public PStillImageVideoFile
       MagickExportImagePixels(wand, 0, 0, width, height, "RGBA", CharPixel, rgb.GetPointer());
 
       PColourConverter * converter = PColourConverter::Create(PVideoFrameInfo(width, height, "RGB32"), m_videoInfo);
-      if (converter == NULL)
+      if (converter == NULL) {
+        PTRACE(2, "Could not create colour converter from RGB32 to " << m_videoInfo);
+        SetErrorValues(Miscellaneous, EINVAL);
         return false;
+      }
 
       bool converted = m_pixelData.SetSize(m_frameBytes) && converter->Convert(rgb, m_pixelData.GetPointer());
       delete converter;
+      PTRACE_IF(2, !converted, "Could not do colour conversion from RGB32 to " << m_videoInfo);
       return converted;
     }
 };
@@ -453,8 +463,10 @@ class PBMPFile : public PStillImageVideoFile
   protected:
     virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
     {
-      if (mode != PFile::ReadOnly)
+      if (mode != PFile::ReadOnly) {
+        SetErrorValues(Miscellaneous, EINVAL);
         return false;
+      }
 
       if (!PVideoFile::InternalOpen(mode, opts, permissions))
         return false;
@@ -550,8 +562,10 @@ class PJPEGFile : public PStillImageVideoFile
   protected:
     virtual bool InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions permissions)
     {
-      if (mode != PFile::ReadOnly)
+      if (mode != PFile::ReadOnly) {
+        SetErrorValues(Miscellaneous, EINVAL);
         return false;
+      }
 
       if (!PVideoFile::InternalOpen(mode, opts, permissions))
         return false;

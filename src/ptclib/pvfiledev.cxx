@@ -43,7 +43,7 @@
 
 
 #define new PNEW
-
+#define PTraceModule() "VidFileDev"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice_VideoFile
@@ -100,7 +100,7 @@ PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*s
   if (filePath.Find('*') != P_MAX_INDEX) {
     bool noFilesOfType = true;
     PDirectory dir = filePath.GetDirectory();
-    PTRACE(1, "VidFileDev", "Searching directory \"" << dir << '"');
+    PTRACE(1, "Searching directory \"" << dir << '"');
     if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
       do {
         PFilePath dirFile = dir + dir.GetEntryName();
@@ -112,18 +112,23 @@ PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*s
       } while (dir.Next());
     }
     if (noFilesOfType) {
-      PTRACE(1, "VidFileDev\tCannot find any file using " << PDirectory()  << " as source for video input device");
+      PTRACE(1, "Cannot find any file using " << PDirectory()  << " as source for video input device");
       return false;
     }
   }
 
   m_file = PVideoFileFactory::CreateInstance(filePath.GetType());
-  if (m_file == NULL || !m_file->Open(filePath, PFile::ReadOnly, PFile::MustExist)) {
-    PTRACE(1, "VidFileDev\tCannot open file \"" << filePath << "\" as video input device");
+  if (m_file == NULL) {
+    PTRACE(1, "Cannot open file of type \"" << filePath.GetType() << "\" as video input device");
     return false;
   }
 
-  PTRACE(3, "VidFileDev", "Opening file " << filePath);
+  if (!m_file->Open(filePath, PFile::ReadOnly, PFile::MustExist)) {
+    PTRACE(1, "Cannot open file \"" << filePath << "\" as video input device: " << m_file->GetErrorText());
+    return false;
+  }
+
+  PTRACE(3, "Opening file " << filePath);
 
   *static_cast<PVideoFrameInfo *>(this) = *m_file;
 
@@ -229,7 +234,7 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & maxHeight) 
 {
   if (m_file == NULL) {
-    PTRACE(2, "VidFileDev\tCannot get frame size limits, no file opened.");
+    PTRACE(2, "Cannot get frame size limits, no file opened.");
     return false;
   }
 
@@ -246,7 +251,7 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameSizeLimits(unsigned & minWidth,
 PBoolean PVideoInputDevice_VideoFile::SetFrameSize(unsigned width, unsigned height)
 {
   if (m_file == NULL) {
-    PTRACE(2, "VidFileDev\tCannot set frame size, no file opened.");
+    PTRACE(2, "Cannot set frame size, no file opened.");
     return false;
   }
 
@@ -265,7 +270,7 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameData(BYTE * buffer, PINDEX * bytes
   m_pacing.Delay(1000/m_frameRate);
 
   if (!m_opened || PAssertNULL(m_file) == NULL) {
-    PTRACE(5, "VidFileDev\tAbort GetFrameData, closed.");
+    PTRACE(5, "Abort GetFrameData, closed.");
     return false;
   }
 
@@ -289,7 +294,7 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameData(BYTE * buffer, PINDEX * bytes
     }
   }
 
-  PTRACE(6, "VidFileDev\tPlaying frame number " << frameNumber);
+  PTRACE(6, "Playing frame number " << frameNumber);
   m_file->SetPosition(frameNumber);
 
   return GetFrameDataNoDelay(buffer, bytesReturned);
@@ -299,7 +304,7 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameData(BYTE * buffer, PINDEX * bytes
 PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
 {
   if (!m_opened || PAssertNULL(m_file) == NULL) {
-    PTRACE(5, "VidFileDev\tAbort GetFrameDataNoDelay, closed.");
+    PTRACE(5, "Abort GetFrameDataNoDelay, closed.");
     return false;
   }
 
@@ -314,13 +319,13 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
     switch (m_channelNumber) {
       case Channel_PlayAndClose:
       default:
-        PTRACE(4, "VidFileDev\tCompleted play and close of " << m_file->GetFilePath());
+        PTRACE(4, "Completed play and close of " << m_file->GetFilePath());
         return false;
 
       case Channel_PlayAndRepeat:
         m_file->Open(m_deviceName, PFile::ReadOnly, PFile::MustExist);
         if (!m_file->SetPosition(0)) {
-          PTRACE(2, "VidFileDev\tCould not rewind " << m_file->GetFilePath());
+          PTRACE(2, "Could not rewind " << m_file->GetFilePath());
           return false;
         }
         if (!m_file->ReadFrame(readBuffer))
@@ -328,11 +333,11 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
         break;
 
       case Channel_PlayAndKeepLast:
-        PTRACE(4, "VidFileDev\tCompleted play and keep last of " << m_file->GetFilePath());
+        PTRACE(4, "Completed play and keep last of " << m_file->GetFilePath());
         break;
 
       case Channel_PlayAndShowBlack:
-        PTRACE(4, "VidFileDev\tCompleted play and show black of " << m_file->GetFilePath());
+        PTRACE(4, "Completed play and show black of " << m_file->GetFilePath());
         PColourConverter::FillYUV420P(0, 0,
                                       m_frameWidth, m_frameHeight,
                                       m_frameWidth, m_frameHeight,
@@ -349,7 +354,7 @@ PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX *
   else {
     m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
     if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
-      PTRACE(2, "VidFileDev\tConversion failed with " << *m_converter);
+      PTRACE(2, "Conversion failed with " << *m_converter);
       return false;
     }
 
@@ -407,7 +412,7 @@ PBoolean PVideoOutputDevice_VideoFile::Open(const PString & devName, PBoolean /*
 
   m_file = PVideoFileFactory::CreateInstance(fileName.GetType());
   if (m_file == NULL || !m_file->Open(fileName, PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
-    PTRACE(1, "VideoFile\tCannot create file " << fileName << " as video output device");
+    PTRACE(1, "Cannot create file " << fileName << " as video output device");
     return false;
   }
 
@@ -470,12 +475,12 @@ PBoolean PVideoOutputDevice_VideoFile::SetFrameData(unsigned x, unsigned y,
                                               PBoolean /*endFrame*/)
 {
   if (!m_opened || PAssertNULL(m_file) == NULL) {
-    PTRACE(5, "VidFileDev\tAbort SetFrameData, closed.");
+    PTRACE(5, "Abort SetFrameData, closed.");
     return false;
   }
 
   if (x != 0 || y != 0 || width != m_frameWidth || height != m_frameHeight) {
-    PTRACE(1, "VideoFile\tOutput device only supports full frame writes");
+    PTRACE(1, "Output device only supports full frame writes");
     return false;
   }
 
