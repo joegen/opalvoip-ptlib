@@ -2024,10 +2024,8 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
         else {
           if (X509_STORE_add_cert(store, x509))
             ++count;
-          else {
-            unsigned long err = ERR_peek_error();
-            PTRACE_IF(2, err != 0x0B07C065, "Could not add certificate OpenSSL X.509 store: " << PSSLError(err));
-          }
+          else
+            PTRACE_IF(2, ERR_peek_error() != 0x0B07C065, "Could not add certificate OpenSSL X.509 store: " << PSSLError());
           X509_free(x509);
         }
       }
