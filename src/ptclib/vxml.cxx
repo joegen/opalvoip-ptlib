@@ -2093,7 +2093,7 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
 
   bool urlencoded;
   PCaselessString str = element.GetAttribute("enctype");
-  if (str.IsEmpty() || str == "x-www-form-urlencoded")
+  if (str.IsEmpty() || str == PHTTP::FormUrlEncoded())
     urlencoded = true;
   else if (str == "multipart/form-data")
     urlencoded = false;

@@ -86,6 +86,7 @@ const PCaselessString & PHTTP::ProxyAuthenticateTag() { static const PConstCasel
 const PCaselessString & PHTTP::ForwardedTag        () { static const PConstCaselessString s("Forwarded"); return s; }
 const PCaselessString & PHTTP::SetCookieTag        () { static const PConstCaselessString s("Set-Cookie"); return s; }
 const PCaselessString & PHTTP::CookieTag           () { static const PConstCaselessString s("Cookie"); return s; }
+const PCaselessString & PHTTP::FormUrlEncoded      () { static const PConstCaselessString s("application/x-www-form-urlencoded"); return s; }
 
 
 

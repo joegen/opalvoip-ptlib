@@ -722,7 +722,7 @@ bool PHTTPClient::PostData(const PURL & url,
                             PMIMEInfo & replyMIME)
 {
   if (!outMIME.Contains(ContentTypeTag()))
-    outMIME.SetAt(ContentTypeTag(), "application/x-www-form-urlencoded");
+    outMIME.SetAt(ContentTypeTag(), PHTTP::FormUrlEncoded());
 
   return IsOK(ExecuteCommand(POST, url, outMIME, data, replyMIME));
 }

@@ -1531,8 +1531,7 @@ bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
 
     if (cmd == PHTTP::POST) {
       PStringToString postData;
-      static const PConstCaselessString UrlEncoded("application/x-www-form-urlencoded");
-      if (UrlEncoded == connectInfo.GetMIME().Get(PHTTP::ContentTypeTag(), UrlEncoded))
+      if (PHTTP::FormUrlEncoded() == connectInfo.GetMIME().Get(PHTTP::ContentTypeTag(), PHTTP::FormUrlEncoded()))
         PURL::SplitQueryVars(connectInfo.GetEntityBody(), postData);
       if (!OnPOSTData(*request, postData)) {
         if (request->code != PHTTP::RequestOK)

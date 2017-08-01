@@ -252,6 +252,8 @@ class PHTTP : public PInternetProtocol
     static const PCaselessString & SetCookieTag();
     static const PCaselessString & CookieTag();
 
+    static const PCaselessString & FormUrlEncoded();
+
   protected:
     /** Create a TCP/IP HTTP protocol channel.
      */
