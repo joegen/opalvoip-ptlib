@@ -191,6 +191,8 @@ bool PCLI::Context::WritePrompt()
       // Do next case
 
     default :
+      // On prompt, waiting on user input, so reset the pager to full screen again
+      m_pagedLines = 0;
       return WriteString(m_cli.GetPrompt());
   }
 }
