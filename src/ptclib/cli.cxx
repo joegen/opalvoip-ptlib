@@ -65,6 +65,18 @@ PCLI::Context::~Context()
 }
 
 
+bool PCLI::Context::InternalWrite(const char * str, PINDEX len, PINDEX & written)
+{
+  if (PIndirectChannel::Write(str, len)) {
+    written += GetLastWriteCount();
+    return true;
+  }
+
+  PTRACE(2, "Error writing to context: " << GetErrorText());
+  return false;
+}
+
+
 PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
 {
   unsigned rows, columns;
@@ -87,18 +99,16 @@ PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
     if (lineLen > columns)
       lineLen = columns;
 
-    if (lineLen > 0 && !PIndirectChannel::Write(str, lineLen))
+    if (lineLen > 0 && !InternalWrite(str, lineLen, written))
       return false;
 
-    written += GetLastWriteCount();
     len -= lineLen;
     str += lineLen;
 
     if (*str == '\n') {
-      if (!PIndirectChannel::Write(newLinePtr, newLineLen))
+      // Handle non-line wrapped lines, output new line string
+      if (!InternalWrite(newLinePtr, newLineLen, written))
         return false;
-
-      written += GetLastWriteCount();
       --len;
       ++str;
     }
@@ -110,10 +120,10 @@ PBoolean PCLI::Context::Write(const void * buf, PINDEX len)
     }
   }
 
-  if (!PIndirectChannel::Write(str, len))
+  if (len > 0 && !InternalWrite(str, len, written))
     return false;
 
-  SetLastWriteCount(written + GetLastWriteCount());
+  SetLastWriteCount(written);
   return true;
 }
 

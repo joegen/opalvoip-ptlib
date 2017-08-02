@@ -184,6 +184,7 @@ class PCLI : public PObject
         bool InternalMoveCursor(bool left, PINDEX count);
         bool InternalEchoCommandLine(PINDEX echoPosition, PINDEX moveLeftCount);
         bool InternalMoveHistoryCommand(int direction);
+        bool InternalWrite(const char * str, PINDEX len, PINDEX & written);
 
         PCLI      & m_cli;
         PString     m_commandLine;
