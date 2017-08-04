@@ -808,16 +808,25 @@ PBoolean PThread::IsTerminated() const
   if (m_type != e_IsExternal)
     return false;
 
-#if P_NO_PTHREAD_KILL
   /* Some flavours of Linux crash in pthread_kill() if the thread id
      is invalid. Now, IMHO, a pthread function that is not itself
      thread safe is utter madness, but apparently, the authors would
      rather change the Posix standard than fix the problem!  What is
      the point of an ESRCH error return for invalid id if it can
-     crash on an invalid id? As I said, complete madness. */
+     crash on an invalid id? As I said, complete madness.
+     
+     So, if we have a /proc, we always use that mechanism to determine
+     if the external thread still exists. */
   char fn[100];
   snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), PX_linuxId);
-  return access(fn, R_OK) != 0;
+  if (access(fn, R_OK) == 0)
+    return false;
+
+#if P_NO_PTHREAD_KILL
+  /* No way to tell, so always so it is terminated. This will, at least,
+     cause a performance hit is the object is constantly created and
+     destroyed. But, nothing else to do. */
+  return true;
 #else
   int error = pthread_kill(id, 0);
   switch (error) {

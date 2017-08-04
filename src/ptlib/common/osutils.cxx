@@ -64,12 +64,16 @@ class PExternalThread : public PThread
       : PThread(false)
     {
       SetThreadName("External thread");
-      PTRACE(5, "Created external thread " << this << ", id=" << GetCurrentThreadId());
+      PTRACE(5, "Created external thread " << this << ","
+                " thread-id=" << GetCurrentThreadId() << ","
+                " unique-id=" << GetCurrentUniqueIdentifier());
     }
 
     ~PExternalThread()
     {
-      PTRACE(5, "Destroyed external thread " << this << ", id " << GetThreadId());
+      PTRACE(5, "Destroyed external thread " << this << ","
+                " thread-id=" << GetThreadId() << ","
+                " unique-id=" << GetUniqueIdentifier());
     }
 
     virtual void Main()
@@ -78,7 +82,9 @@ class PExternalThread : public PThread
 
     virtual void Terminate()
     {
-      PTRACE(2, "Cannot terminate external thread " << this << ", id " << GetThreadId());
+      PTRACE(2, "Cannot terminate external thread " << this << ","
+                " thread-id=" << GetThreadId() << ","
+                " unique-id=" << GetUniqueIdentifier());
     }
 };
 
