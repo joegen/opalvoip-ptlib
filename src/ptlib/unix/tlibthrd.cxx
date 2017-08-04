@@ -852,7 +852,7 @@ PBoolean PThread::IsTerminated() const
      So, if we have a /proc, we always use that mechanism to determine
      if the external thread still exists. */
   char fn[100];
-  snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), PX_linuxId);
+  snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), GetUniqueIdentifier());
   if (access(fn, R_OK) == 0)
     return false;
 
