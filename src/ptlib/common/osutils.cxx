@@ -62,12 +62,16 @@ class PExternalThread : public PThread
       : PThread(false)
     {
       SetThreadName("External thread");
-      PTRACE(5, "Created external thread " << this << ", id=" << GetCurrentThreadId());
+      PTRACE(5, "Created external thread " << this << ","
+                " thread-id=" << GetCurrentThreadId() << ","
+                " unique-id=" << GetCurrentUniqueIdentifier());
     }
 
     ~PExternalThread()
     {
-      PTRACE(5, "Destroyed external thread " << this << ", id " << GetThreadId());
+      PTRACE(5, "Destroyed external thread " << this << ","
+                " thread-id=" << GetThreadId() << ","
+                " unique-id=" << GetUniqueIdentifier());
     }
 
     virtual void Main()
@@ -76,7 +80,9 @@ class PExternalThread : public PThread
 
     virtual void Terminate()
     {
-      PTRACE(2, "Cannot terminate external thread " << this << ", id " << GetThreadId());
+      PTRACE(2, "Cannot terminate external thread " << this << ","
+                " thread-id=" << GetThreadId() << ","
+                " unique-id=" << GetUniqueIdentifier());
     }
 };
 
@@ -2246,17 +2252,12 @@ void PProcess::HouseKeeping()
       cleanExternalThreads = CleanExternalThreadsTime;
       if (!m_externalThreads.IsEmpty()) {
         m_threadMutex.Wait();
-#ifdef __GLIBC__
-        // Cannot rely on IsTerminated() not crashing in GLIBC due to a dickhead developer there
-        m_externalThreads.RemoveAll();
-#else
         for (ThreadList::iterator it = m_externalThreads.begin(); it != m_externalThreads.end();) {
           if (it->IsTerminated())
             m_externalThreads.erase(it++);
           else
             ++it;
         }
-#endif
         m_threadMutex.Signal();
       }
     }
