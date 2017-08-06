@@ -31,8 +31,6 @@
 // PConsoleChannel
 
   public:
-    ~PConsoleChannel();
-
     virtual PBoolean Read(void * buf, PINDEX len);
       // Low level read from the channel. This function will block until the
       // requested number of characters were read.

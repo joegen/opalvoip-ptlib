@@ -105,7 +105,10 @@ class PConsoleChannel : public PChannel
     PConsoleChannel(
       ConsoleType type  /// Type of console for object
     );
-  //@}
+
+    /// Make sure dtor closes channel
+    ~PConsoleChannel() { Close(); }
+    //@}
 
   /**@name Overrides from PChannel */
   //@{

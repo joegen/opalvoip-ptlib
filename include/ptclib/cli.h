@@ -166,6 +166,11 @@ class PCLI : public PObject
           unsigned & rows,
           unsigned & columns
         );
+
+        /// Handle Broadcast
+        virtual void Broadcast(
+          const PString & message  ///< Message to broadcase
+        );
       //@}
 
       /**@name Member access */

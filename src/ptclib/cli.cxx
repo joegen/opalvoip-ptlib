@@ -526,6 +526,12 @@ bool PCLI::Context::GetTerminalSize(unsigned & rows, unsigned & columns)
 }
 
 
+void PCLI::Context::Broadcast(const PString & message)
+{
+  WriteString(message);
+  WriteChar('\n');
+}
+
 void PCLI::Context::ThreadMain(PThread &, P_INT_PTR)
 {
   PTRACE(4, "Context thread started");
@@ -924,8 +930,8 @@ bool PCLI::OnLogIn(const PString & username, const PString & password)
 void PCLI::Broadcast(const PString & message) const
 {
   for (ContextList_t::const_iterator iter = m_contextList.begin(); iter != m_contextList.end(); ++iter)
-    **iter << message << endl;
-  PTRACE(4, "Broadcast \"" << message << '"');
+    (*iter)->Broadcast(message);
+  PTRACE(4, "Broadcast to " << m_contextList.size() << " contexts: \"" << message << '"');
 }
 
 
@@ -1524,7 +1530,6 @@ PCLICurses::PCLICurses()
   }
 
   nonl();               // Don't automaticall wrap at end of line
-  keypad(stdscr, TRUE); // Enable special keys (arrows, keypad etc)
   refresh();            // the wrefresh() for a window is not enough, must do this first. Weird.
 
   getmaxyx(stdscr, m_maxRows, m_maxCols);
@@ -1872,6 +1877,9 @@ void PCLICurses::Construct()
 class PCLICursesContext : public PCLI::Context
 {
   PCLICurses & m_cli;
+
+  PCLICurses::Window & GetPromptWindow() { return m_cli[m_cli.GetWindowCount() > 1 ? 1 : 0]; }
+
 public:
   PCLICursesContext(PCLICurses & cli)
     : PCLI::Context(cli)
@@ -1883,7 +1891,7 @@ public:
   {
     PTRACE(4, "Writing prompt");
 
-    PCLICurses::Window & wnd = m_cli[m_cli.GetWindowCount() > 1 ? 1 : 0];
+    PCLICurses::Window & wnd = GetPromptWindow();
     wnd.Clear();
     if (!wnd.WriteString(m_cli.GetPrompt()))
       return false;
@@ -1895,9 +1903,19 @@ public:
 
   virtual bool EchoInput(char ch)
   {
-    return m_cli[m_cli.GetWindowCount() > 1 ? 1 : 0].WriteChar(ch);
+    return GetPromptWindow().WriteChar(ch);
   }
 
+  virtual void Broadcast(const PString & message)
+  {
+    PCLICurses::Window & wnd = GetPromptWindow();
+    unsigned row, column;
+    wnd.GetCursor(row, column);
+    WriteString(message);
+    WriteChar('\n');
+    wnd.SetCursor(row, column);
+    wnd.Refresh();
+  }
 
   virtual bool GetTerminalSize(unsigned & rows, unsigned & columns)
   {

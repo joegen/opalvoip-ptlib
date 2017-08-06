@@ -1041,6 +1041,11 @@ PString PConsoleChannel::GetName() const
 
 PBoolean PConsoleChannel::Close()
 {
+  if (os_handle == 0) {
+    SetLocalEcho(true);
+    SetLineBuffered(true);
+  }
+
   os_handle = -1;
   return true;
 }
@@ -1092,13 +1097,12 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
   if (CheckNotOpen())
     return false;
 
-  #if P_CURSES==1
-  if (stdscr) {
-    if (localEcho)
-      return echo() == OK;
-    else
-      return noecho() == OK;
-  }
+  if (os_handle != 0)
+    return SetErrorValues(Miscellaneous, EINVAL);
+
+#if P_CURSES==1
+  if ((localEcho ? echo() : noecho()) == OK)
+    return true;
 #endif
 
   struct termios ios;
@@ -1118,12 +1122,13 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
   if (CheckNotOpen())
     return false;
 
+  if (os_handle != 0)
+    return SetErrorValues(Miscellaneous, EINVAL);
+
 #if P_CURSES==1
-  if (stdscr) {
-    if (lineBuffered)
-      return nocbreak() == OK;
-    else
-      return cbreak() == OK;
+  if ((lineBuffered ? nocbreak() : cbreak()) == OK) {
+    keypad(stdscr, !lineBuffered); // Enable special keys (arrows, keypad etc)
+    return true;
   }
 #endif
 

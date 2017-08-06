@@ -715,12 +715,6 @@ PConsoleChannel::PConsoleChannel(ConsoleType type)
 }
 
 
-PConsoleChannel::~PConsoleChannel()
-{
-  Close();
-}
-
-
 PBoolean PConsoleChannel::Open(ConsoleType type)
 {
   if (!PAssert(type >= StandardInput && type <= StandardError, PInvalidParameter))
