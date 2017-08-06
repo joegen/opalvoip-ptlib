@@ -54,7 +54,7 @@ ifeq (,$(.DEFAULT_GOAL))
 endif
 
 internal_build ::
-	@echo Build: OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
+	@echo Building $(notdir $(CURDIR)): OS=$(target_os), CPU=$(target_cpu), DEBUG_BUILD=$(DEBUG_BUILD)
 
 help :
 	@echo "The following targets are available:"
