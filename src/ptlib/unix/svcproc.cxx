@@ -31,6 +31,8 @@
 
 #pragma implementation "svcproc.h"
 #include <ptlib/svcproc.h>
+#include <ptlib/pluginmgr.h>
+
 
 #ifdef P_VXWORKS
 #include <logLib.h>
@@ -222,6 +224,7 @@ int PServiceProcess::InitialiseService()
                                  "if directory, then file is <dir>/" + progName + ".pid\n"
              "i-ini-file:         set the ini file to use, may be explicit file path or\r"
                                  "if directory, then file is <dir>/" + progName + ".ini\n"
+             "P-plugin-dir:       set plugin directory, overrides environment variable\n"
              "u-uid:              set user id to run as\n"
              "g-gid:              set group id to run as\n"
              "c-console.          output messages to stdout instead of syslog\n"
@@ -437,6 +440,9 @@ int PServiceProcess::InitialiseService()
     }
   }
 #endif
+
+  if (args.HasOption('P'))
+    PPluginManager::GetPluginManager().SetDirectories(args.GetOptionString('P').Lines());
 
   bool daemon = args.HasOption('d');
 
