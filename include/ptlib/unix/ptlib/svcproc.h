@@ -30,7 +30,7 @@
   public:
     ~PServiceProcess();
     virtual void AddRunTimeSignalHandlers(const int * signals = NULL);
-    virtual void AsynchronousRunTimeSignal(int signal, int source);
+    virtual void AsynchronousRunTimeSignal(int signal, PProcessIdentifier source);
     virtual void HandleRunTimeSignal(int signal);
   protected:
     int  InitialiseService();

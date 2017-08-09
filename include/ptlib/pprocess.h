@@ -597,7 +597,7 @@ class PProcess : public PThread
     /// Asynchronous C run-time signal handler, direct callback from OS
     virtual void AsynchronousRunTimeSignal(
       int signal, ///< Signal number
-      int source  ///< Source for signal, typically the PID of the sender
+      PProcessIdentifier source  ///< Source for signal, typically the PID of the sender
     );
 
     /// Synchronous C run-time signal handler, this is executed in the housekeeper thread

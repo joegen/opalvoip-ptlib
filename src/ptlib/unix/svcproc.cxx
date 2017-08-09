@@ -586,7 +586,7 @@ void PServiceProcess::AddRunTimeSignalHandlers(const int * signals)
 
 static atomic<bool> InSignalHandler(false);
 
-void PServiceProcess::AsynchronousRunTimeSignal(int signal, int source)
+void PServiceProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier source)
 {
   const char * sigmsg;
 

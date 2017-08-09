@@ -2589,7 +2589,7 @@ void PProcess::RemoveRunTimeSignalHandlers()
 }
 
 
-void PProcess::AsynchronousRunTimeSignal(int signal, int PTRACE_PARAM(source))
+void PProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier PTRACE_PARAM(source))
 {
 #if PTRACING
   if (PTrace::CanTrace(2)) {
