@@ -2591,7 +2591,22 @@ void PProcess::RemoveRunTimeSignalHandlers()
 
 void PProcess::AsynchronousRunTimeSignal(int signal, int PTRACE_PARAM(source))
 {
-  PTRACE(2, "PTLib", "Received signal " << GetRunTimeSignalName(signal) << " from source=" << source);
+#if PTRACING
+  if (PTrace::CanTrace(2)) {
+    ostream & trace = PTRACE_BEGIN(2);
+    trace << "Received signal " << GetRunTimeSignalName(signal) << " from ";
+    if (source == GetCurrentProcessID())
+      trace << "self";
+    else {
+      PTextFile proc(PSTRSTRM("/proc/" << source << "/cmdline"), PFile::ReadOnly);
+      if (proc.IsOpen())
+        trace << "pid=" << source << " cmdline=\"" << proc.ReadString(P_MAX_INDEX) << '"';
+      else if (source != 0)
+        trace << "source=" << source;
+    }
+    trace << PTrace::End;
+  }
+#endif // PTRACING
 
   switch (signal) {
     case SIGINT:
