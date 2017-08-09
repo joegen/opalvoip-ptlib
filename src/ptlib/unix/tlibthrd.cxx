@@ -416,10 +416,12 @@ bool PThread::PX_kill(PThreadIdentifier tid, PUniqueThreadIdentifier uid, int si
     return false;
 
   PProcess & process = PProcess::Current();
-  PWaitAndSignal mutex(process.m_threadMutex);
-  PProcess::ThreadMap::iterator it = process.m_activeThreads.find(tid);
-  if (it == process.m_activeThreads.end() || (uid != 0 && it->second->GetUniqueIdentifier() != uid))
-    return false;
+  {
+    PWaitAndSignal mutex(process.m_threadMutex);
+    PProcess::ThreadMap::iterator it = process.m_activeThreads.find(tid);
+    if (it == process.m_activeThreads.end() || (uid != 0 && it->second->GetUniqueIdentifier() != uid))
+      return false;
+  }
 
 #if !P_NO_PTHREAD_KILL
   int error = pthread_kill(tid, sig);
@@ -427,13 +429,14 @@ bool PThread::PX_kill(PThreadIdentifier tid, PUniqueThreadIdentifier uid, int si
     case 0:
       return true;
 
+      // If just test for existance, is true even if we don't have permission
     case EPERM:
-      return sig == 0; // If just test for existance, is true even if we don't have permission
+    case ENOTSUP: // Mac OS-X does this for GCD threads
+      return sig == 0; 
 
 #if PTRACING
     case ESRCH:   // Thread not running any more
     case EINVAL:  // Id has never been used for a thread
-    case ENOTSUP: // Mac OS-X does this
       break;
 
     default:
