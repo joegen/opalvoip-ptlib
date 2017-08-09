@@ -825,7 +825,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
 
   struct SwsContext * context = sws_getContext(srcWidth, srcHeight, AV_PIX_FMT_YUV420P,
                                                dstWidth, dstHeight, AV_PIX_FMT_YUV420P,
-                                               SWS_BILINEAR, nullptr, nullptr, nullptr);
+                                               SWS_BILINEAR, NULL, NULL, NULL);
   if (context != NULL) {
     const uint8_t* srcSlice[] = {
         ffmpeg_yuvptr(srcYUV, srcFrameWidth, srcFrameHeight, srcX, srcY, 0),
@@ -1305,7 +1305,7 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
     m_swsContext = sws_getContext(m_srcFrameWidth, m_srcFrameHeight, fmt,
                                   m_dstFrameWidth, m_dstFrameHeight, AV_PIX_FMT_YUV420P,
                                   SWS_BILINEAR,
-                                  nullptr, nullptr, nullptr);
+                                  NULL, NULL, NULL);
   }
   if (m_swsContext != NULL) {
     const uint8_t* srcSlice[] = { scanLinePtrRGB };
@@ -2111,7 +2111,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     m_swsContext = sws_getContext(m_srcFrameWidth, m_srcFrameHeight, AV_PIX_FMT_YUV420P,
                                   m_dstFrameWidth, m_dstFrameHeight, fmt,
                                   SWS_BILINEAR,
-                                  nullptr, nullptr, nullptr);
+                                  NULL, NULL, NULL);
   }
   if (m_swsContext != NULL) {
     const uint8_t* srcSlice[] = { scanLinePtrY, scanLinePtrU, scanLinePtrV };
