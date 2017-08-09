@@ -87,9 +87,6 @@ PINLINE bool PFile::Remove(const PFilePath & name, bool force)
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
   { return ::GetCurrentThreadId(); }
 
-PINLINE PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
-  { return GetThreadId(); }
-
 PINLINE PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
   { return ::GetCurrentThreadId(); }
 

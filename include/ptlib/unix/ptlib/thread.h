@@ -62,7 +62,6 @@
 #endif
     
 #if defined(P_LINUX)
-    mutable pid_t     PX_linuxId;
     PTimeInterval     PX_startTick;
     PTimeInterval     PX_endTick;
 #endif

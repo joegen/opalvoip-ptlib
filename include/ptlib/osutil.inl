@@ -565,6 +565,17 @@ PINLINE PArgList & PArgList::operator<<(int sh)
 PINLINE PArgList & PArgList::operator>>(int sh)
   { Shift(-sh); return *this; }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PThread
+
+PINLINE PThreadIdentifier PThread::GetThreadId() const
+  { return m_threadId; }
+
+PINLINE PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
+  { return m_uniqueId; }
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 

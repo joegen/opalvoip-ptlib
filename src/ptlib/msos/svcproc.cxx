@@ -443,7 +443,7 @@ int PServiceProcess::InternalMain(void * arg)
   // Set thread ID for process to this thread
   m_threadMutex.Wait();
   m_activeThreads.erase(m_threadId);
-  m_threadId = GetCurrentThreadId();
+  m_uniqueId = m_threadId = GetCurrentThreadId();
   m_threadHandle.Detach();
   m_threadHandle = GetCurrentThread();
   m_activeThreads[m_threadId] = this;
@@ -1018,7 +1018,7 @@ void PServiceProcess::StaticThreadEntry(void * arg)
 void PServiceProcess::ThreadEntry()
 {
   m_threadMutex.Wait();
-  m_threadId = ::GetCurrentThreadId();
+  m_uniqueId = m_threadId = ::GetCurrentThreadId();
   m_activeThreads[m_threadId] = this;
   m_threadMutex.Signal();
 

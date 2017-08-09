@@ -172,9 +172,9 @@ PThread::PThread(bool isProcess)
   : m_type(isProcess ? e_IsProcess : e_IsExternal)
   , m_originalStackSize(0)
   , m_threadId(pthread_self())
+  , m_uniqueId(GetCurrentUniqueIdentifier())
   , PX_priority(NormalPriority)
 #if defined(P_LINUX)
-  , PX_linuxId(GetCurrentUniqueIdentifier())
   , PX_startTick(PTimer::Tick())
 #endif
   , PX_suspendMutex(MutexInitialiser)
@@ -212,10 +212,8 @@ PThread::PThread(PINDEX stackSize,
   , m_originalStackSize(std::max(stackSize, PThreadMinimumStack))
   , m_threadName(name)
   , m_threadId(PNullThreadIdentifier)  // indicates thread has not started
+  , m_uniqueId(0)
   , PX_priority(priorityLevel)
-#if defined(P_LINUX)
-  , PX_linuxId(0)
-#endif
   , PX_suspendMutex(MutexInitialiser)
   , PX_suspendCount(1)
   , PX_state(PX_firstResume) // new thread is actually started the first time Resume() is called.
@@ -277,8 +275,8 @@ void PThread::InternalPreMain()
   PAssert(PX_state == PX_starting, PLogicError);
   PX_state = PX_running;
 
+  m_uniqueId = GetCurrentUniqueIdentifier();
 #if defined(P_LINUX)
-  PX_linuxId = GetCurrentUniqueIdentifier();
   PX_startTick = PTimer::Tick();
 #endif
 
@@ -882,34 +880,18 @@ PBoolean PThread::WaitForTermination(const PTimeInterval & maxWait) const
 }
 
 
+
+PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
+{
 #if defined(P_LINUX)
-
-PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
-{
-  return PX_linuxId;
-}
-
-
-PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
-{
   return syscall(SYS_gettid);
-}
-
-
+#elif defined(P_MACOSX)
+  PUniqueThreadIdentifier id;
+  return pthread_threadid_np(::pthread_self(), &id) == 0 ? id : 0;
 #else
-
-PUniqueThreadIdentifier PThread::GetUniqueIdentifier() const
-{
-  return GetThreadId();
-}
-
-
-PUniqueThreadIdentifier PThread::GetCurrentUniqueIdentifier()
-{
-  return GetCurrentThreadId();
-}
-
+  return (PUniqueThreadIdentifier)GetCurrentThreadId();
 #endif
+}
 
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)

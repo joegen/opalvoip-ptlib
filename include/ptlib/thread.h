@@ -317,12 +317,12 @@ class PThread : public PObject
     PPROFILE_EXCLUDE(
       /** Get operating system specific thread identifier for this thread.
       */
-    virtual PThreadIdentifier GetThreadId() const;
+      PThreadIdentifier GetThreadId() const
     );
 
+    PPROFILE_EXCLUDE(
     /** Get operating system specific thread identifier for the current thread.
       */
-    PPROFILE_EXCLUDE(
       static PThreadIdentifier GetCurrentThreadId()
     );
 
@@ -332,7 +332,7 @@ class PThread : public PObject
         e.g. Linux, it is different and GetThreadId() return values get
         re-used during the run of the process.
       */
-    PUniqueThreadIdentifier GetUniqueIdentifier() const
+      PUniqueThreadIdentifier GetUniqueIdentifier() const
     );
 
     PPROFILE_EXCLUDE(
@@ -517,7 +517,8 @@ class PThread : public PObject
     PString m_threadName; // Give the thread a name for debugging purposes.
     PCriticalSection m_threadNameMutex;
 
-    PThreadIdentifier m_threadId;
+    PThreadIdentifier       m_threadId;
+    PUniqueThreadIdentifier m_uniqueId;
 
 // Include platform dependent part of class
 #ifdef _WIN32

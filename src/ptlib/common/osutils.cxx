@@ -2860,12 +2860,6 @@ void PThread::InternalThreadMain()
 }
 
 
-PThreadIdentifier PThread::GetThreadId() const
-{
-  return m_threadId;
-}
-
-
 PThread * PThread::Current()
 {
   if (!PProcess::IsInitialised())
@@ -3285,11 +3279,11 @@ void PThread::LocalStorageBase::ThreadDestroyed(PThread & thread)
 
 void * PThread::LocalStorageBase::GetStorage() const
 {
-  PThreadIdentifier threadId = PThread::GetCurrentUniqueIdentifier();
+  PUniqueThreadIdentifier uinqueId = PThread::GetCurrentUniqueIdentifier();
   PWaitAndSignal lock(m_mutex);
-  DataMap::iterator it = m_data.find(threadId);
+  DataMap::iterator it = m_data.find(uinqueId);
   if (it == m_data.end())
-    it = m_data.insert(make_pair(threadId, Allocate())).first;
+    it = m_data.insert(make_pair(uinqueId, Allocate())).first;
   return it->second;
 }
 

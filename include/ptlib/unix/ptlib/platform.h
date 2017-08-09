@@ -413,6 +413,9 @@ typedef void (*PRunTimeSignalHandler)(int, siginfo_t *, void *);
   #ifdef P_LINUX
     typedef pid_t PUniqueThreadIdentifier;
     #define P_UNIQUE_THREAD_ID_FMT "%u"
+  #elif defined(P_MACOSX)
+    typedef uint64_t PUniqueThreadIdentifier;
+    #define P_UNIQUE_THREAD_ID_FMT "%llu"
   #else
     typedef pthread_t PUniqueThreadIdentifier;
   #endif

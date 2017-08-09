@@ -839,6 +839,7 @@ PThread::PThread(bool isProcess)
   : m_type(isProcess ? e_IsProcess : e_IsExternal)
   , m_originalStackSize(0)
   , m_threadId(GetCurrentThreadId())
+  , m_uniqueId(m_threadId)
 #if defined(P_WIN_COM)
   , m_comInitialised(false)
 #endif
@@ -1066,6 +1067,7 @@ void PThread::Restart()
   m_threadHandle = CreateThread(NULL, m_originalStackSize, 
                                   (LPTHREAD_START_ROUTINE)MainFunction, this, 0, (LPDWORD)&m_threadId);
 #endif
+  m_uniqueId = m_threadId;
   PAssertOS(m_threadHandle.IsValid());
 }
 

@@ -92,9 +92,7 @@ PINLINE bool PFile::Remove(const PString & name, bool)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef BE_THREADS
-PINLINE PThreadIdentifier PThread::GetThreadId() const { return mId; }
-#elif defined(P_PTHREADS)
+#if defined(P_PTHREADS)
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return ::pthread_self(); }
 #elif defined(VX_TASKS)
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId() { return ::taskIdSelf(); }
