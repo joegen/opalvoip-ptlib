@@ -307,8 +307,8 @@ void AudioTest::AudioInfo::ReadLoop()
 {
   PTRACE(2, "Starting read loop");
 
-  PINDEX size, count;
-  GetBuffers(size, count);
+  PINDEX size, dummy;
+  GetBuffers(size, dummy);
   PBYTEArray buffer(size);
 
   m_avgTime = m_lastTime = PTimer::Tick();
@@ -336,8 +336,8 @@ void AudioTest::AudioInfo::WriteLoop()
 {
   PTRACE(2, "Starting write loop");
 
-  PINDEX size, count;
-  GetBuffers(size, count);
+  PINDEX size, dummy;
+  GetBuffers(size, dummy);
   PBYTEArray buffer(size);
 
   m_avgTime = m_lastTime = PTimer::Tick();
