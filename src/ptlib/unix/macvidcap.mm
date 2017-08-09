@@ -43,7 +43,10 @@
 #import <AVFoundation/AVFoundation.h>
 
 #define PTraceModule() "MacVideo"
-#define PTRACE_DETAILED(...) PTRACE(__VA_ARGS__)
+#define PTRACE_DETAILED(...) PTRACE(4, __VA_ARGS__)
+
+
+static OSType const s_PixelFormat = kCVPixelFormatType_420YpCbCr8Planar;
 
 
 class PLocalMemoryPool
@@ -85,61 +88,55 @@ public:
         didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         fromConnection:       (AVCaptureConnection *)connection
 {
-  PTRACE_DETAILED(5, "Frame received: m_frameAvailable=" << m_frameAvailable);
 
   // If we have not processed previous frame, ignore this one
-  if (m_frameAvailable)
+  if (m_frameAvailable) {
+    PTRACE_DETAILED("Frame received, but previous framenot yet processed");
     return;
+  }
 
   // The Apple docs state that this action must be synchronized
   // as this method will be run on another thread
   @synchronized (self) {
-    CVPixelBufferRef pixels = CMSampleBufferGetImageBuffer(sampleBuffer);
+    CVImageBufferRef pixels = CMSampleBufferGetImageBuffer(sampleBuffer);
+    if (pixels == NULL) {
+      PTRACE(2, "Could not get image buffer form sample.");
+      return;
+    }
     
     OSType sourcePixelFormat = CVPixelBufferGetPixelFormatType(pixels);
     unsigned actualWidth = CVPixelBufferGetWidth(pixels);
     unsigned actualHeight = CVPixelBufferGetHeight(pixels);
-    PTRACE_DETAILED(5, "Frame grabbed: " << actualWidth << 'x' << actualHeight);
     
-    if (sourcePixelFormat != kCVPixelFormatType_420YpCbCr8Planar || actualWidth != m_frameWidth || actualHeight != m_frameHeight) {
-      CVBufferRelease(pixels);
+    if (sourcePixelFormat != s_PixelFormat || actualWidth != m_frameWidth || actualHeight != m_frameHeight) {
+      PTRACE(4, "Buffer has incorrect resolution or pixel format.");
       return;
     }
     
     uint8_t * buffer = m_frameBuffer.GetPointer();
     
-    CVPixelBufferLockBaseAddress(pixels, 0);
-    
-    const uint8_t * src = (const uint8_t *)CVPixelBufferGetBaseAddressOfPlane(pixels, 0);
-    size_t rowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixels, 0);
-    for (unsigned y = 0; y < actualHeight; ++y) {
-      memcpy(buffer, src, actualWidth);
-      buffer += actualWidth;
-      src += rowBytes;
+    CVPixelBufferLockBaseAddress(pixels, kCVPixelBufferLock_ReadOnly);
+
+    size_t planes = CVPixelBufferGetPlaneCount(pixels);
+    for (int plane = 0; plane < planes; ++plane) {
+      const uint8_t * src = (const uint8_t *)CVPixelBufferGetBaseAddressOfPlane(pixels, plane);
+      size_t rowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixels, plane);
+      for (unsigned y = 0; y < actualHeight; ++y) {
+        memcpy(buffer, src, actualWidth);
+        buffer += actualWidth;
+        src += rowBytes;
+      }
+      
+      if (plane == 0) {
+        actualWidth /= 2;
+        actualHeight /= 2;
+      }
     }
     
-    actualWidth /= 2;
-    actualHeight /= 2;
+    CVPixelBufferUnlockBaseAddress(pixels, kCVPixelBufferLock_ReadOnly);
     
-    src = (const uint8_t *)CVPixelBufferGetBaseAddressOfPlane(pixels, 1);
-    rowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixels, 1);
-    for (unsigned y = 0; y < actualHeight; ++y) {
-      memcpy(buffer, src, actualWidth);
-      buffer += actualWidth;
-      src += rowBytes;
-    }
-    
-    src = (const uint8_t *)CVPixelBufferGetBaseAddressOfPlane(pixels, 2);
-    rowBytes = CVPixelBufferGetBytesPerRowOfPlane(pixels, 2);
-    for (unsigned y = 0; y < actualHeight; ++y) {
-      memcpy(buffer, src, actualWidth);
-      buffer += actualWidth;
-      src += rowBytes;
-    }
-    
-    CVPixelBufferUnlockBaseAddress(pixels, 0);
-    CVBufferRelease(pixels);
-    
+    PTRACE_DETAILED("Frame grabbed: " << actualWidth << 'x' << actualHeight << ", "
+                    << (buffer - m_frameBuffer.GetPointer()) << " bytes copied, size=" << m_frameBuffer.GetSize());
     m_frameAvailable = true;
     m_grabbed.Signal();
   }
@@ -155,7 +152,7 @@ public:
 
 - (void)waitFrame
 {
-  PTRACE_DETAILED(5, "Waiting");
+  PTRACE_DETAILED("Waiting");
   m_grabbed.Wait();
 }
 
@@ -305,7 +302,7 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
       [NSDictionary dictionaryWithObjectsAndKeys:
         [NSNumber numberWithInt:m_frameWidth],  (id)kCVPixelBufferWidthKey,
         [NSNumber numberWithInt:m_frameHeight], (id)kCVPixelBufferHeightKey,
-        [NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8Planar], (id)kCVPixelBufferPixelFormatTypeKey,
+        [NSNumber numberWithInt:s_PixelFormat], (id)kCVPixelBufferPixelFormatTypeKey,
         nil
       ];
 
@@ -350,14 +347,6 @@ PBoolean PVideoInputDevice_Mac::Close()
 
   m_mutex.StartWrite();
 
-  PLocalMemoryPool localPool;
-
-  if (m_captureInput != nil) {
-    [m_session removeInput:m_captureInput];
-    [m_captureInput release];
-    m_captureInput = nil;
-  }
-
   if (m_captureOutput != nil) {
     [m_session removeOutput:m_captureOutput];
     [m_captureOutput setSampleBufferDelegate:nil queue:nil];
@@ -368,6 +357,11 @@ PBoolean PVideoInputDevice_Mac::Close()
   if (m_captureFrame != nil) {
     [m_captureFrame release];
     m_captureFrame = nil;
+  }
+  
+  if (m_captureInput != nil) {
+    [m_session removeInput:m_captureInput];
+    m_captureInput = nil;
   }
   
   if (m_device != nil) {
@@ -588,7 +582,7 @@ PBoolean PVideoInputDevice_Mac::GetFrameData(BYTE * buffer, PINDEX * bytesReturn
  
 PBoolean PVideoInputDevice_Mac::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
-  PTRACE_DETAILED(5, "Get frame, converter=" << m_converter);
+  PTRACE_DETAILED("Get frame, converter=" << m_converter);
   
   if (!IsCapturing())
     return false;
