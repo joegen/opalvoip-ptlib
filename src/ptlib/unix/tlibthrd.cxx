@@ -412,17 +412,41 @@ void PThread::PX_StartThread()
 
 bool PThread::PX_kill(PThreadIdentifier tid, PUniqueThreadIdentifier uid, int sig)
 {
-#if defined(P_LINUX)
   if (!PProcess::IsInitialised())
     return false;
+
   PProcess & process = PProcess::Current();
   PWaitAndSignal mutex(process.m_threadMutex);
   PProcess::ThreadMap::iterator it = process.m_activeThreads.find(tid);
   if (it == process.m_activeThreads.end() || (uid != 0 && it->second->GetUniqueIdentifier() != uid))
     return false;
-#endif
 
-  return pthread_kill(tid, sig) == 0;
+#if !P_NO_PTHREAD_KILL
+  int error = pthread_kill(tid, sig);
+  switch (error) {
+    case 0:
+      return true;
+
+    case EPERM:
+      return sig == 0; // If just test for existance, is true even if we don't have permission
+
+#if PTRACING
+    case ESRCH:   // Thread not running any more
+    case EINVAL:  // Id has never been used for a thread
+    case ENOTSUP: // Mac OS-X does this
+      break;
+
+    default:
+      // Output direct to stream, do not use PTRACE as it might cause an infinite recursion.
+      ostream * trace = PTrace::GetStream();
+      if (trace != NULL)
+          *trace << "pthread_kill failed for thread " << GetIdentifiersAsString(tid, uid)
+                 << " errno " << error << ' ' << strerror(error) << endl;
+#endif // PTRACING
+  }
+#endif // !defined(P_MACOSX) && !P_NO_PTHREAD_KILL
+
+  return false;
 }
 
 
@@ -817,36 +841,7 @@ PBoolean PThread::IsTerminated() const
      if the external thread still exists. */
   char fn[100];
   snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), (unsigned)(intptr_t)GetUniqueIdentifier());
-  if (access(fn, R_OK) == 0)
-    return false;
-
-#if P_NO_PTHREAD_KILL
-  /* No way to tell, so always so it is terminated. This will, at least,
-     cause a performance hit is the object is constantly created and
-     destroyed. But, nothing else to do. */
-  return true;
-#else
-  int error = pthread_kill(id, 0);
-  switch (error) {
-    case 0 :
-    case EPERM : // Thread exists, even if we can't send signal
-     return false;
-
-#if PTRACING
-    case ESRCH :  // Thread not running any more
-    case EINVAL : // Id has never been used for a thread
-      break;
-
-    default :
-      // Output direct to stream, do not use PTRACE as it might cause an infinite recursion.
-      ostream * trace = PTrace::GetStream();
-      if (trace != NULL)
-        *trace << "Error " << error << " calling pthread_kill: thread=" << this << ", id=" << id << endl;
-#endif
-  }
-
-  return true;
-#endif
+  return access(fn, R_OK) != 0 && !PX_kill(id, GetUniqueIdentifier(), 0);
 }
 
 
