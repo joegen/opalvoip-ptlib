@@ -74,11 +74,9 @@ ifndef STATIC_BUILD
 endif
 
 ifdef DEBUG
-  DEBUG_BUILD:=yes
-endif
-
-ifndef DEBUG_BUILD
-  DEBUG_BUILD:=no
+  ifneq (0,$(DEBUG))
+    DEBUG_BUILD:=yes
+  endif
 endif
 
 
@@ -207,6 +205,8 @@ ifdef PROG
 endif
 
 
+ifdef DEBUG_BUILD
+
 ###############################################################################
 # Add common directory to include path
 # Note also have include directory that is always relative to the
@@ -248,5 +248,7 @@ else
     endif
   endif
 endif
+
+endif # DEBUG_BUILD
 
 endif # PTLIB_PRE_INCLUDED
