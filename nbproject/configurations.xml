@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="src">
+        <df name="ptclib">
+          <in>asner.cxx</in>
+          <in>cli.cxx</in>
+          <in>cypher.cxx</in>
+          <in>delaychan.cxx</in>
+          <in>dtmf.cxx</in>
+          <in>enum.cxx</in>
+          <in>ftp.cxx</in>
+          <in>ftpclnt.cxx</in>
+          <in>ftpsrvr.cxx</in>
+          <in>guid.cxx</in>
+          <in>html.cxx</in>
+          <in>http.cxx</in>
+          <in>httpclnt.cxx</in>
+          <in>httpform.cxx</in>
+          <in>httpsrvr.cxx</in>
+          <in>httpsvc.cxx</in>
+          <in>inetmail.cxx</in>
+          <in>inetprot.cxx</in>
+          <in>ipacl.cxx</in>
+          <in>json.cxx</in>
+          <in>memfile.cxx</in>
+          <in>modem.cxx</in>
+          <in>pasn.cxx</in>
+          <in>pdns.cxx</in>
+          <in>pffvdev.cxx</in>
+          <in>pnat.cxx</in>
+          <in>psnmp.cxx</in>
+          <in>psoap.cxx</in>
+          <in>psockbun.cxx</in>
+          <in>pssl.cxx</in>
+          <in>pstun.cxx</in>
+          <in>pstunsrvr.cxx</in>
+          <in>ptts.cxx</in>
+          <in>pvfiledev.cxx</in>
+          <in>pvidfile.cxx</in>
+          <in>pwavfile.cxx</in>
+          <in>pwavfiledev.cxx</in>
+          <in>pxml.cxx</in>
+          <in>pxmlrpc.cxx</in>
+          <in>pxmlrpcs.cxx</in>
+          <in>qchannel.cxx</in>
+          <in>random.cxx</in>
+          <in>rfc1155.cxx</in>
+          <in>script.cxx</in>
+          <in>shttpsvc.cxx</in>
+          <in>snmp.cxx</in>
+          <in>snmpclnt.cxx</in>
+          <in>snmpserv.cxx</in>
+          <in>socks.cxx</in>
+          <in>spooldir.cxx</in>
+          <in>ssdp.cxx</in>
+          <in>telnet.cxx</in>
+          <in>threadpool.cxx</in>
+          <in>tonedev.cxx</in>
+          <in>url.cxx</in>
+          <in>vartype.cxx</in>
+          <in>vcard.cxx</in>
+        </df>
+        <df name="ptlib">
+          <df name="common">
+            <in>collect.cxx</in>
+            <in>contain.cxx</in>
+            <in>getdate.c</in>
+            <in>jidctflt.cxx</in>
+            <in>notifier_ext.cxx</in>
+            <in>object.cxx</in>
+            <in>osutils.cxx</in>
+            <in>pluginmgr.cxx</in>
+            <in>ptime.cxx</in>
+            <in>pvidchan.cxx</in>
+            <in>safecoll.cxx</in>
+            <in>sockets.cxx</in>
+            <in>sound.cxx</in>
+            <in>syslog.cxx</in>
+            <in>tinyjpeg.cxx</in>
+            <in>vconvert.cxx</in>
+            <in>vfakeio.cxx</in>
+            <in>videoio.cxx</in>
+          </df>
+          <df name="unix">
+            <in>assert.cxx</in>
+            <in>channel.cxx</in>
+            <in>config.cxx</in>
+            <in>osutil.cxx</in>
+            <in>pipechan.cxx</in>
+            <in>remconn.cxx</in>
+            <in>serchan.cxx</in>
+            <in>socket.cxx</in>
+            <in>svcproc.cxx</in>
+            <in>tlib.cxx</in>
+            <in>udll.cxx</in>
+            <in>uicmp.cxx</in>
+          </df>
+        </df>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>configure</itemPath>
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>BB_GNU_5.1.0|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-fPIC -O3"/>
+        <element flagsID="1" commonFlags="-fPIC -std=c++14 -O3"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile -j4</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <standard>10</standard>
+            <incDir>
+              <pElem>include</pElem>
+              <pElem>/opt/bbcollab/include</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>NDEBUG</Elem>
+              <Elem>PTRACING=2</Elem>
+              <Elem>P_64BIT</Elem>
+              <Elem>_REENTRANT</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <standard>11</standard>
+            <incDir>
+              <pElem>include</pElem>
+              <pElem>/opt/bbcollab/include</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>NDEBUG</Elem>
+              <Elem>PTRACING=2</Elem>
+              <Elem>P_64BIT</Elem>
+              <Elem>_REENTRANT</Elem>
+            </preprocessorList>
+          </ccTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand>./configure CC=${IDE_CC} CXX=${IDE_CXX} CFLAGS="-g3 -gdwarf-2" CXXFLAGS="-g3 -gdwarf-2" --enable-exceptions --with-profiling=manual --disable-pthread_kill --disable-vxml --disable-sdl --disable-sasl --disable-openldap --disable-plugins --enable-cpp14</preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="src/ptclib/asner.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/cli.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/cypher.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/delaychan.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/dtmf.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/enum.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/ftp.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/ftpclnt.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/ftpsrvr.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/guid.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/html.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/http.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/httpclnt.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/httpform.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/httpsrvr.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/httpsvc.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/inetmail.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/inetprot.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/ipacl.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/json.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/memfile.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/modem.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pasn.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pdns.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pffvdev.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pnat.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/psnmp.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/psoap.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/psockbun.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pssl.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pstun.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pstunsrvr.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/ptts.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pvfiledev.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pvidfile.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pwavfile.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pwavfiledev.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pxml.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pxmlrpc.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/pxmlrpcs.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/qchannel.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/random.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/rfc1155.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/script.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/shttpsvc.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/snmp.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/snmpclnt.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/snmpserv.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/socks.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/spooldir.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/ssdp.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/telnet.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/threadpool.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/tonedev.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/url.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/vartype.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptclib/vcard.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/collect.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/contain.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/getdate.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="src/ptlib/common/jidctflt.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/notifier_ext.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/object.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/osutils.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/pluginmgr.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/ptime.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/pvidchan.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/safecoll.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/sockets.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/sound.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/syslog.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/tinyjpeg.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/vconvert.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/vfakeio.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/common/videoio.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/assert.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/channel.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/config.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/osutil.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/pipechan.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/remconn.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/serchan.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/socket.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/svcproc.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/tlib.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/udll.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="src/ptlib/unix/uicmp.cxx" ex="false" tool="1" flavor2="11">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
