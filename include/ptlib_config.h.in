@@ -563,18 +563,20 @@
 
   #if P_EXPAT_BUILD
     #pragma include_alias(<expat.h>, <@EXPAT_BUILD_DIR@/lib/expat.h>)
-  #else
+  #elif defined(P_EXPAT_WIN32)
     #pragma include_alias(<expat.h>, <@EXPAT_WIN32_DIR@/Source/lib/expat.h>)
+  #else
+    #pragma include_alias(<expat.h>, <@EXPAT_WIN64_DIR@/include/expat.h>)
   #endif
 
-  #if P_64BIT
+  #if defined(P_EXPAT_WIN32) || defined(P_EXPAT_WIN64)
+    #undef P_EXPAT_LIBRARY
+  #elif defined(P_64BIT)
     #if defined(_DEBUG)
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W64_DEBUG
     #else
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W64_RELEASE
     #endif
-  #elif defined(P_EXPAT_WIN32)
-    #undef P_EXPAT_LIBRARY
   #elif !defined(_WIN32_WCE)
     #if defined(_DEBUG)
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W32_DEBUG
@@ -863,25 +865,42 @@
 #if (defined(P_FFMPEG_WIN64) &&  defined(P_64BIT))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
-    #pragma include_alias(<libswscale/swscale.h>, <@FFMPEG_WIN64_DIR@/include/libswscale/swscale.h>)
-    #define P_FFMPEG_LIBDIR "@FFMPEG_WIN64_DIR@/lib/"
+    #pragma include_alias(<libavformat/avformat.h>,    <@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavformat/avformat.h>)
+    #pragma include_alias("libavformat/version.h",     "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavformat/version.h")
+    #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavcodec/avcodec.h")
+    #pragma include_alias(<libswscale/swscale.h>,      <@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libswscale/swscale.h>)
+    #pragma include_alias("libavutil/avutil.h",        "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/avutil.h")
+    #pragma include_alias("libavutil/avconfig.h",      "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/avconfig.h")
+    #pragma include_alias("libavutil/common.h",        "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/common.h")
+    #pragma include_alias("libavutil/dict.h",          "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/dict.h")
+    #pragma include_alias("libavutil/log.h",           "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/log.h")
+    #pragma include_alias("libavutil/pixfmt.h",        "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/pixfmt.h")
+    #pragma include_alias("libavutil/samplefmt.h",     "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/samplefmt.h")
+    #pragma include_alias("libavutil/version.h",       "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/version.h")
+    #pragma include_alias("libavutil/attributes.h",    "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/attributes.h")
+    #pragma include_alias("libavutil/buffer.h",        "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/buffer.h")
+    #pragma include_alias("libavutil/cpu.h",           "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/cpu.h")
+    #pragma include_alias("libavutil/mem.h",           "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/mem.h")
+    #pragma include_alias("libavutil/channel_layout.h","@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/channel_layout.h")
+    #pragma include_alias("libavutil/frame.h",         "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/frame.h")
+    #pragma include_alias("libavutil/rational.h",      "@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/rational.h")
+    #pragma include_alias(<libavutil/imgutils.h>,      <@FFMPEG_WIN64_DIR@@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/imgutils.h>)
   #endif
 #endif
 
 #if (defined(P_FFMPEG_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
-    #pragma include_alias(<libswscale/swscale.h>, <@FFMPEG_WIN32_DIR@/include/libswscale/swscale.h>)
-    #define P_FFMPEG_LIBDIR "@FFMPEG_WIN32_DIR@/lib/"
+    #define P_FFMPEG_INCLUDE(inc) include_alias(#inc, "@FFMPEG_WIN32_DIR@@FFMPEG_WINBUILDS_WIN32_DIR@/include/" #inc)
   #endif
 #endif
 
-#ifdef P_FFMPEG_LIBDIR
-  #define P_AVFORMAT_LIB    P_FFMPEG_LIBDIR "avformat.lib"
-  #define P_AVCODEC_LIB     P_FFMPEG_LIBDIR "avcodec.lib"
-  #define P_AVUTIL_LIB      P_FFMPEG_LIBDIR "avutil.lib"
-  #define P_SWRESAMPLE_LIB  P_FFMPEG_LIBDIR "swresample.lib"
-  #define P_SWSCALE_LIB     P_FFMPEG_LIBDIR "swscale.lib"
+#if P_FFMPEG && defined(_MSC_VER)
+  #undef P_AVFORMAT_LIB
+  #undef P_AVCODEC_LIB
+  #undef P_AVUTIL_LIB
+  #undef P_SWRESAMPLE_LIB
+  #undef P_SWSCALE_LIB
 #endif
 
 /////////////////////////////////////////////////

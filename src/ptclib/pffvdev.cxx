@@ -76,6 +76,8 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
     P_POP_MSVC_WARNINGS()
   };
 
+#if LIBAVFORMAT_VERSION_INT > AV_VERSION_INT(57,71,0)
+
   #ifdef P_AVFORMAT_LIB
     #pragma comment(lib, P_AVFORMAT_LIB)
   #endif
@@ -540,6 +542,6 @@ PBoolean PVideoInputDevice_FFMPEG::GetFrameDataNoDelay(BYTE *destFrame, PINDEX *
   return true;
 }
 
-#endif
-#endif
-
+#endif // #if LIBAVFORMAT_VERSION_INT > AV_VERSION_INT(57,71,0)
+#endif // #if P_FFVDEV
+#endif // #if P_VIDEO
