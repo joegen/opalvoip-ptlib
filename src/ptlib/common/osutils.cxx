@@ -1213,6 +1213,7 @@ PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : PTimeInterval(millisecs, seconds, minutes, hours, days)
   , m_handle(s_handleGenerator.Create())
   , m_running(false)
+  , m_callbackMutex(PDebugLocation("PTimerCallback"))
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
@@ -1222,6 +1223,7 @@ PTimer::PTimer(const PTimeInterval & time)
   : PTimeInterval(time)
   , m_handle(s_handleGenerator.Create())
   , m_running(false)
+  , m_callbackMutex(PDebugLocation("PTimerCallback"))
 {
   InternalStart(true, PTimeInterval::InternalGet());
 }
