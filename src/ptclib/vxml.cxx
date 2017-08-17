@@ -2177,7 +2177,7 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     if (type.IsEmpty()) {
       PMIMEInfo part1;
 
-      part1.Set(PMIMEInfo::ContentTypeTag, "text/plain");
+      part1.Set(PMIMEInfo::ContentTypeTag, PMIMEInfo::TextPlain());
       part1.Set(PMIMEInfo::ContentDispositionTag, "form-data; name=\"" + namelist[i] + "\"; ");
 
       entityBody << "--" << boundary << "\r\n"

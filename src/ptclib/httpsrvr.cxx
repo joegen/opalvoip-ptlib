@@ -697,7 +697,7 @@ PBoolean PHTTPServer::OnError(StatusCode code,
     reply = html;
   }
 
-  headers.SetAt(ContentTypeTag(), "text/html");
+  headers.SetAt(ContentTypeTag(), PMIMEInfo::TextHTML());
   StartResponse(code, headers, reply.GetLength());
   WriteString(reply);
   return statusInfo->code == RequestOK;
@@ -1588,7 +1588,7 @@ PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request,
         << PHTML::Heading(1) << (unsigned)PHTTP::RequestOK << " OK" << PHTML::Heading(1)
         << PHTML::Body();
 
-  request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/html");
+  request.outMIME.SetAt(PHTTP::ContentTypeTag(), PMIMEInfo::TextHTML());
 
   PINDEX len = msg.GetLength();
   request.server.StartResponse(request.code, request.outMIME, len);
@@ -1626,7 +1626,7 @@ PBoolean PHTTPResource::CheckAuthority(PHTTPAuthority & authority,
   server.SetDefaultMIMEInfo(headers, connectInfo);
   headers.SetAt(PHTTP::WWWAuthenticateTag(),
                        "Basic realm=\"" + authority.GetRealm(request) + "\"");
-  headers.SetAt(PHTTP::ContentTypeTag(), "text/html");
+  headers.SetAt(PHTTP::ContentTypeTag(), PMIMEInfo::TextHTML());
 
   const httpStatusCodeStruct * statusInfo =
                                GetStatusCodeStruct(PHTTP::UnAuthorised);
@@ -1778,20 +1778,20 @@ PBoolean PHTTPResource::Post(PHTTPRequest & request,
 // PHTTPString
 
 PHTTPString::PHTTPString(const PURL & url)
-  : PHTTPResource(url, "text/html")
+  : PHTTPResource(url, PMIMEInfo::TextHTML())
 {
 }
 
 
 PHTTPString::PHTTPString(const PURL & url,
                          const PHTTPAuthority & auth)
-  : PHTTPResource(url, "text/html", auth)
+  : PHTTPResource(url, PMIMEInfo::TextHTML(), auth)
 {
 }
 
 
 PHTTPString::PHTTPString(const PURL & url, const PString & str)
-  : PHTTPResource(url, "text/html")
+  : PHTTPResource(url, PMIMEInfo::TextHTML())
   , m_string(str)
 {
 }
@@ -1809,7 +1809,7 @@ PHTTPString::PHTTPString(const PURL & url,
 PHTTPString::PHTTPString(const PURL & url,
                          const PString & str,
                          const PHTTPAuthority & auth)
-  : PHTTPResource(url, "text/html", auth)
+  : PHTTPResource(url, PMIMEInfo::TextHTML(), auth)
   , m_string(str)
 {
 }
@@ -2198,7 +2198,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   }
 
   // construct a directory listing
-  request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/html");
+  request.outMIME.SetAt(PHTTP::ContentTypeTag(), PMIMEInfo::TextHTML());
   PHTML reply("Directory of " + request.url.AsString());
 
   PDirectory::Entries listing;

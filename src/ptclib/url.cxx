@@ -36,6 +36,7 @@
 
 #include <ptlib/sockets.h>
 #include <ptclib/cypher.h>
+#include <ptclib/mime.h>
 #include <ctype.h>
 
 #if defined(_WIN32) && !defined(_WIN32_WCE)
@@ -1188,7 +1189,7 @@ class PURL_DataScheme : public PURLScheme
       const PStringToString & params = purl.GetParamVars();
       PStringStream strm;
 
-      strm << "data:" + params("type", "text/plain");
+      strm << "data:" + params("type", PMIMEInfo::TextPlain());
 
       bool base64 = false;
       for (PStringOptions::const_iterator it = params.begin(); it != params.end(); ++it) {
