@@ -1395,11 +1395,6 @@ dnl check for FFMPEG
 dnl MSWIN_DISPLAY    ffmpeg32,FFMPEG 32 bit support
 dnl MSWIN_CHECK_FILE ffmpeg32,include\libavformat\avformat.h,P_FFMPEG_WIN32=1
 dnl MSWIN_DIR_SYMBOL ffmpeg32,FFMPEG_WIN32_DIR
-dnl MSWIN_FIND_FILE  ffmpeg32,P_AVFORMAT_LIB,avformat.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32,P_AVCODEC_LIB,avcodec.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32,P_AVUTIL_LIB,avutil.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32,P_SWRESAMPLE_LIB,swresample.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32,P_SWSCALE_LIB,swscale.lib,lib
 dnl MSWIN_CHECK_DIR  ffmpeg32,%FFMPEGDIR%\
 dnl MSWIN_CHECK_DIR  ffmpeg32,..\external\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramFiles%\ffmpeg-win32-dev*
@@ -1408,11 +1403,6 @@ dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramW6432%\ffmpeg-win32-dev*
 dnl MSWIN_DISPLAY    ffmpeg64,FFMPEG 64 bit support
 dnl MSWIN_CHECK_FILE ffmpeg64,include\libavformat\avformat.h,P_FFMPEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL ffmpeg64,FFMPEG_WIN64_DIR
-dnl MSWIN_FIND_FILE  ffmpeg64,P_AVFORMAT_LIB,avformat.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg64,P_AVCODEC_LIB,avcodec.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg64,P_AVUTIL_LIB,avutil.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg64,P_SWRESAMPLE_LIB,swresample.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg64,P_SWSCALE_LIB,swscale.lib,lib
 dnl MSWIN_CHECK_DIR  ffmpeg64,%FFMPEG64DIR%\
 dnl MSWIN_CHECK_DIR  ffmpeg64,..\external\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramFiles%\ffmpeg-win64-dev*
@@ -1422,11 +1412,6 @@ dnl MSWIN_DISPLAY    ffmpeg32wb,FFMPEG 32 bit support (Win-Builds)
 dnl MSWIN_IF_FEATURE ffmpeg32wb,!ffmpeg32
 dnl MSWIN_CHECK_FILE ffmpeg32wb,include\libavformat\avformat.h,P_FFMPEG_WINBUILDS_WIN32=1
 dnl MSWIN_DIR_SYMBOL ffmpeg32wb,FFMPEG_WINBUILDS_WIN32_DIR
-dnl MSWIN_FIND_FILE  ffmpeg32wb,P_AVFORMAT_LIB,avformat.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32wb,P_AVCODEC_LIB,avcodec.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32wb,P_AVUTIL_LIB,avutil.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32wb,P_SWRESAMPLE_LIB,swresample.lib,lib
-dnl MSWIN_FIND_FILE  ffmpeg32wb,P_SWSCALE_LIB,swscale.lib,lib
 dnl MSWIN_CHECK_DIR  ffmpeg32wb,%WINBUILDSDIR%\
 dnl MSWIN_CHECK_DIR  ffmpeg32wb,..\Win-Builds\
 dnl MSWIN_CHECK_DIR  ffmpeg32wb,..\external\Win-Builds\
@@ -1436,11 +1421,6 @@ dnl MSWIN_DISPLAY    ffmpeg64wb,FFMPEG 64 bit support (Win-Builds)
 dnl MSWIN_IF_FEATURE ffmpeg64wb,!ffmpeg64
 dnl MSWIN_CHECK_FILE ffmpeg64wb,include\libavformat\avformat.h,P_FFMPEG_WINBUILDS_WIN64=1
 dnl MSWIN_DIR_SYMBOL ffmpeg64wb,FFMPEG_WINBUILDS_WIN64_DIR
-dnl MSWIN_FIND_FILE  ffmpeg64wb,P_AVFORMAT_LIB,avformat.lib,lib64
-dnl MSWIN_FIND_FILE  ffmpeg64wb,P_AVCODEC_LIB,avcodec.lib,lib64
-dnl MSWIN_FIND_FILE  ffmpeg64wb,P_AVUTIL_LIB,avutil.lib,lib64
-dnl MSWIN_FIND_FILE  ffmpeg64wb,P_SWRESAMPLE_LIB,swresample.lib,lib64
-dnl MSWIN_FIND_FILE  ffmpeg64wb,P_SWSCALE_LIB,swscale.lib,lib64
 dnl MSWIN_CHECK_DIR  ffmpeg64wb,%WINBUILDSDIR%\
 dnl MSWIN_CHECK_DIR  ffmpeg64wb,..\Win-Builds\
 dnl MSWIN_CHECK_DIR  ffmpeg64wb,..\external\Win-Builds\

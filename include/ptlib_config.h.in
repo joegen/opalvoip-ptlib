@@ -867,6 +867,7 @@
 #if (defined(P_FFMPEG_WIN64) &&  defined(P_64BIT))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
+    #define P_FFMPEG_LIBDIR "@FFMPEG_WIN64_DIR@/lib/"
     #pragma include_alias(<libavformat/avformat.h>,    <@FFMPEG_WIN64_DIR@/include/libavformat/avformat.h>)
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WIN64_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WIN64_DIR@/include/libavcodec/avcodec.h")
@@ -893,6 +894,7 @@
 #if (defined(P_FFMPEG_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
+    #define P_FFMPEG_LIBDIR "@FFMPEG_WIN32_DIR@/lib/"
     #pragma include_alias(<libavformat/avformat.h>,    <@FFMPEG_WIN32_DIR@/include/libavformat/avformat.h>)
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WIN32_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WIN32_DIR@/include/libavcodec/avcodec.h")
@@ -919,6 +921,7 @@
 #if (defined(P_FFMPEG_WINBUILDS_WIN64) &&  defined(P_64BIT))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
+    #define P_FFMPEG_LIBDIR "@FFMPEG_WINBUILDS_WIN32_DIR@/lib/"
     #pragma include_alias(<libavformat/avformat.h>,    <@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavformat/avformat.h>)
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavcodec/avcodec.h")
@@ -945,6 +948,7 @@
 #if (defined(P_FFMPEG_WINBUILDS_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
+    #define P_FFMPEG_LIBDIR "@FFMPEG_WINBUILDS_WIN64_DIR@/lib64/"
     #pragma include_alias(<libavformat/avformat.h>,    <@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavformat/avformat.h>)
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavcodec/avcodec.h")
@@ -969,11 +973,11 @@
 #endif
 
 #if P_FFMPEG && defined(_MSC_VER)
-  #undef P_AVFORMAT_LIB
-  #undef P_AVCODEC_LIB
-  #undef P_AVUTIL_LIB
-  #undef P_SWRESAMPLE_LIB
-  #undef P_SWSCALE_LIB
+  #define P_AVFORMAT_LIB   P_FFMPEG_LIBDIR "avformat.lib"
+  #define P_AVCODEC_LIB    P_FFMPEG_LIBDIR "avcodec.lib"
+  #define P_AVUTIL_LIB     P_FFMPEG_LIBDIR "avutil.lib"
+  #define P_SWRESAMPLE_LIB P_FFMPEG_LIBDIR "swresample.lib"
+  #define P_SWSCALE_LIB    P_FFMPEG_LIBDIR "swscale.lib"
 #endif
 
 /////////////////////////////////////////////////
