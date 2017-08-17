@@ -838,8 +838,10 @@ void PMIMEInfo::AddMultiPartList(PMultiPartList & parts, const PCaselessString &
 static const PStringToString::Initialiser DefaultContentTypes[] = {
   { ".txt", "text/plain" },
   { ".text", "text/plain" },
+  { ".log", "text/plain" },
   { ".html", "text/html" },
   { ".htm", "text/html" },
+  { ".csv", "text/csv" },
   { ".aif", "audio/aiff" },
   { ".aiff", "audio/aiff" },
   { ".au", "audio/basic" },

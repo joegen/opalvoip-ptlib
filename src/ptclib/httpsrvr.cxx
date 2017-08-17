@@ -2150,11 +2150,12 @@ PBoolean PHTTPDirectory::CheckAuthority(PHTTPServer & server,
 
 PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 {
-  PFilePath & realPath = ((PHTTPDirRequest&)request).m_realPath;
+  PFilePath & realPath = dynamic_cast<PHTTPDirRequest&>(request).m_realPath;
     
   // if not able to obtain resource information, then consider the resource "not found"
   PFileInfo info;
   if (!PFile::GetInfo(realPath, info)) {
+    PTRACE(4, "Directory " << realPath << " does not exist.");
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2164,6 +2165,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   if (info.type != PFileInfo::SubDirectory) {
     if (!file.Open(realPath, PFile::ReadOnly) ||
         (!m_authorisationRealm.IsEmpty() && realPath.GetFileName() == accessFilename)) {
+      PTRACE(4, "No permission to access " << realPath);
       request.code = PHTTP::NotFound;
       return false;
     }
@@ -2171,6 +2173,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 
   // resource is a directory - if index files disabled, then return "not found"
   else if (!m_allowDirectoryListing) {
+    PTRACE(4, "No directory listing allowed for " << realPath);
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2179,14 +2182,14 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   else {
     PINDEX i;
     for (i = 0; i < PARRAYSIZE(HTMLIndexFiles); i++)
-      if (file.Open(realPath +
-                          PDIR_SEPARATOR + HTMLIndexFiles[i], PFile::ReadOnly))
+      if (file.Open(realPath + PDIR_SEPARATOR + HTMLIndexFiles[i], PFile::ReadOnly))
         break;
   }
 
   // open the file and return information
   PString & fakeIndex = ((PHTTPDirRequest&)request).m_fakeIndex;
   if (file.IsOpen()) {
+    PTRACE(4, "Delivering file " << file.GetFilePath());
     request.outMIME.SetAt(PHTTP::ContentTypeTag(),
                           PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
     request.contentSize = file.GetLength();
@@ -2197,25 +2200,62 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   // construct a directory listing
   request.outMIME.SetAt(PHTTP::ContentTypeTag(), "text/html");
   PHTML reply("Directory of " + request.url.AsString());
-  PDirectory dir = realPath;
-  if (dir.Open()) {
-    do {
-      const char * imgName;
-      if (dir.IsSubDir())
-        imgName = "internal-gopher-menu";
-      else if (PMIMEInfo::GetContentType(
-                    PFilePath(dir.GetEntryName()).GetType())(0,4) == "text/")
-        imgName = "internal-gopher-text";
-      else
-        imgName = "internal-gopher-unknown";
-      reply << PHTML::Image(imgName) << ' '
-            << PHTML::HotLink(realPath.GetFileName()+'/'+dir.GetEntryName())
-            << dir.GetEntryName()
-            << PHTML::HotLink()
-            << PHTML::BreakLine();
-    } while (dir.Next());
+
+  PDirectory::Entries listing;
+  PCaselessString sort = request.url.GetQueryVars().GetString("sort", "name");
+  bool reversed = request.url.GetQueryVars().GetBoolean("reversed");
+
+  PDirectory(realPath).GetEntries(listing, sort);
+  if (reversed)
+    std::reverse(listing.begin(), listing.end());
+
+  reply << PHTML::TableStart(PHTML::Border1, PHTML::CellPad4)
+          << PHTML::TableRow();
+
+  static struct {
+    const char * m_name;
+    const char * m_title;
+  } const Columns[] = {
+    { "name",        "File Name" },
+    { "type",        "Type" },
+    { "size",        "Size" },
+    { "modified",    "Modified" },
+    { "permissions", "Permissions" }
+  };
+  for (PINDEX i = 0; i < PARRAYSIZE(Columns); ++i) {
+    PStringStream url;
+    url << m_baseURL << "?sort=" << Columns[i].m_name;
+    if (sort == Columns[i].m_name)
+      url << "&reversed=" << boolalpha << !reversed;
+    reply << PHTML::TableHeader() << PHTML::HotLink(url) << Columns[i].m_title << PHTML::HotLink();
   }
-  reply << PHTML::Body();
+
+  for (PDirectory::Entries::iterator it = listing.begin(); it != listing.end(); ++it) {
+    PURL entryURL = request.url;
+    entryURL.AppendPath(it->m_name);
+    reply << PHTML::TableRow()
+          << PHTML::TableData()
+          << PHTML::HotLink(entryURL.AsString()) << it->m_name << PHTML::HotLink()
+          << PHTML::TableData(PHTML::AlignCentre);
+    if (it->type&PFileInfo::SymbolicLink)
+      reply << "Link";
+    else if (it->type&PFileInfo::RegularFile)
+      reply << "File";
+    else if (it->type&(PFileInfo::SubDirectory|PFileInfo::ParentDirectory|PFileInfo::CurrentDirectory))
+      reply << "Directory";
+    else if (it->type&(PFileInfo::CharDevice|PFileInfo::BlockDevice|PFileInfo::SocketDevice|PFileInfo::Fifo))
+      reply << "Device";
+    else
+      reply << "Unknown";
+    reply << PHTML::TableData(PHTML::AlignRight)
+          << PString(::PString::ScaleSI, it->size) << 'B'
+          << PHTML::TableData()
+          << it->modified.AsString("hh:mm:ss dd/mmm/yyyy")
+          << PHTML::TableData(PHTML::AlignCentre)
+          << std::oct << '0' << it->permissions << std::dec;
+  }
+  reply << PHTML::TableEnd()
+        << PHTML::Body();
   fakeIndex = reply;
 
   return true;
