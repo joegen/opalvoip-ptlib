@@ -1121,6 +1121,68 @@ bool PDirectory::Create(const PString & p, int perm, bool recurse)
 }
 
 
+bool PDirectory::GetEntries(Entries & entries, const PCaselessString & sortBy)
+{
+  if (sortBy.NumCompare("name") == EqualTo)
+    return GetEntries(entries, SortByName);
+
+  if (sortBy.NumCompare("type") == EqualTo)
+    return GetEntries(entries, SortByType);
+
+  if (sortBy.NumCompare("size") == EqualTo)
+    return GetEntries(entries, SortBySize);
+
+  if (sortBy.NumCompare("created") == EqualTo)
+    return GetEntries(entries, SortByCreated);
+
+  if (sortBy.NumCompare("modified") == EqualTo)
+    return GetEntries(entries, SortByModified);
+
+  if (sortBy.NumCompare("accessed") == EqualTo)
+    return GetEntries(entries, SortByAccessed);
+
+  if (sortBy.NumCompare("permissions") == EqualTo)
+    return GetEntries(entries, SortByPermission);
+
+  return GetEntries(entries);
+}
+
+
+bool PDirectory::GetEntries(Entries & entries, Sorting sortBy)
+{
+  if (!Open())
+    return false;
+
+  do {
+    Entry entry;
+    if (GetInfo(entry)) {
+      entry.m_name = GetEntryName();
+      entries.push_back(entry);
+    }
+  } while (Next());
+
+#define SORT_BY(key, field) \
+    case key : { \
+      struct key##Pred { bool operator()(const Entry& first, const Entry& second) { return first.field < second.field; } }; \
+      std::sort(entries.begin(), entries.end(), key##Pred()); \
+    } break
+
+  switch (sortBy) {
+    SORT_BY(SortByName, m_name);
+    SORT_BY(SortByType, type);
+    SORT_BY(SortBySize, size);
+    SORT_BY(SortByCreated, created);
+    SORT_BY(SortByModified, modified);
+    SORT_BY(SortByAccessed, accessed);
+    SORT_BY(SortByPermission, permissions);
+    default :
+      break;
+  }
+
+  return true;
+}
+
+
 #if P_TIMERS
 
 ///////////////////////////////////////////////////////////////////////////////

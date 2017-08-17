@@ -440,6 +440,33 @@ class PDirectory : public PFilePathString
     virtual bool GetInfo(
       PFileInfo & info    ///< Object to receive the file information.
     ) const;
+
+    struct Entry : PFileInfo {
+      PString m_name;
+    };
+    typedef std::vector<Entry> Entries;
+
+    enum Sorting {
+      Unsorted,
+      SortByType,
+      SortByName,
+      SortBySize,
+      SortByCreated,
+      SortByModified,
+      SortByAccessed,
+      SortByPermission
+    };
+
+    /**Get all the entries in this directory.
+      */
+    bool GetEntries(
+      Entries & entries,          ///< Entries in directory.
+      Sorting sortBy = Unsorted   ///< Field to sort list on
+    );
+    bool GetEntries(
+      Entries & entries,             ///< Entries in directory.
+      const PCaselessString & sortBy ///< Field to sort list on
+    );
   //@}
 
 
