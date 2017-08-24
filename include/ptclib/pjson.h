@@ -56,6 +56,8 @@ class PJSON : public PObject
       private:
         Base(const Base &) { }
         void operator=(const Base &);
+
+      friend ostream & operator<<(ostream & s, const Base & b) { b.PrintOn(s); return s; }
     };
 
     class Array;
