@@ -49,15 +49,21 @@ void JSONTest::Main()
   arr1.AppendBoolean(true);
   obj1.Set("five", PJSON::e_Null);
 
-  cout << json1 << endl;
+  cout << "Test 1\n" << json1 << endl;
 
   PJSON json2("{\n\"test\" : \"hello world\",\n\"field2\" : null }");
-  cout << json2 << endl;
+  cout << "Test 2\n" << json2 << endl;
 
   PJSON json3("\n[ \"test\", \"hello world\"]");
-  cout << json3 << endl;
+  cout << "Test 3\n" << json3 << endl;
 
   PJSON json4(json1.AsString());
-  cout << json4 << endl;
+  cout << "Test 4\n" << json4 << endl;
+
+  PJSON json5(json4);
+  cout << "Test 5\n" << json5 << endl;
+
+  json5 = json3;
+  cout << "Test 6\n" << json5 << endl;
 }
 
