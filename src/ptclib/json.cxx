@@ -716,7 +716,7 @@ void PJSON::Boolean::PrintOn(ostream & strm) const
 
 bool PJSON::Null::IsType(Types type) const
 {
-  return type == e_String;
+  return type == e_Null;
 }
 
 
