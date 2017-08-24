@@ -68,8 +68,8 @@ PJSON::PJSON(Types type)
   : m_root(CreateByType(type))
   , m_valid(m_root != NULL)
 {
-    if (m_root == NULL)
-        m_root = new Null;
+  if (m_root == NULL)
+    m_root = new Null;
 }
 
 
@@ -78,6 +78,22 @@ PJSON::PJSON(const PString & str)
   , m_valid(false)
 {
   FromString(str);
+}
+
+
+PJSON::PJSON(const PJSON & other)
+  : m_root(other.m_root->DeepClone())
+  , m_valid(other.m_valid)
+{
+}
+
+
+PJSON & PJSON::operator=(const PJSON & other)
+{
+  delete m_root;
+  m_root = other.m_root->DeepClone();
+  m_valid = other.m_valid;
+  return *this;
 }
 
 
@@ -333,6 +349,15 @@ void PJSON::Object::PrintOn(ostream & strm) const
 }
 
 
+PJSON::Base * PJSON::Object::DeepClone() const
+{
+  PJSON::Object * obj = new Object();
+  for (std::map<PString, Base *>::const_iterator it = begin(); it != end(); ++it)
+      obj->insert(make_pair(it->first, it->second->DeepClone()));
+  return obj;
+}
+
+
 bool PJSON::Object::IsType(const PString & name, Types type) const
 {
   const_iterator it = find(name);
@@ -509,6 +534,16 @@ void PJSON::Array::PrintOn(ostream & strm) const
 }
 
 
+PJSON::Base * PJSON::Array::DeepClone() const
+{
+  PJSON::Array * arr = new Array();
+  arr->resize(size());
+  for (size_t i = 0; i < size(); ++i)
+      arr->at(i) = at(i)->DeepClone();
+  return arr;
+}
+
+
 bool PJSON::Array::IsType(size_t index, Types type) const
 {
     if (index < size()) {
@@ -631,6 +666,12 @@ void PJSON::String::PrintOn(ostream & strm) const
 }
 
 
+PJSON::Base * PJSON::String::DeepClone() const
+{
+  return new String(GetPointer());
+}
+
+
 PJSON::Number::Number(double value)
   : m_value(value)
 {
@@ -666,6 +707,12 @@ void PJSON::Number::PrintOn(ostream & strm) const
     }
   }
     strm << m_value;
+}
+
+
+PJSON::Base * PJSON::Number::DeepClone() const
+{
+  return new Number(m_value);
 }
 
 
@@ -714,6 +761,12 @@ void PJSON::Boolean::PrintOn(ostream & strm) const
 }
 
 
+PJSON::Base * PJSON::Boolean::DeepClone() const
+{
+  return new Boolean(m_value);
+}
+
+
 bool PJSON::Null::IsType(Types type) const
 {
   return type == e_Null;
@@ -735,4 +788,10 @@ void PJSON::Null::ReadFrom(istream & strm)
 void PJSON::Null::PrintOn(ostream & strm) const
 {
   strm << "null";
+}
+
+
+PJSON::Base * PJSON::Null::DeepClone() const
+{
+  return new Null();
 }

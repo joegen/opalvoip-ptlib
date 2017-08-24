@@ -52,6 +52,7 @@ class PJSON : public PObject
         virtual bool IsType(Types type) const = 0;
         virtual void ReadFrom(istream & strm) = 0;
         virtual void PrintOn(ostream & strm) const = 0;
+        virtual Base * DeepClone() const = 0;
       private:
         Base(const Base &) { }
         void operator=(const Base &);
@@ -67,6 +68,7 @@ class PJSON : public PObject
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
+        virtual Base * DeepClone() const;
 
         bool IsType(const PString & name, Types type) const;
 
@@ -103,6 +105,7 @@ class PJSON : public PObject
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
+        virtual Base * DeepClone() const;
 
         bool IsType(size_t index, Types type) const;
 
@@ -133,9 +136,11 @@ class PJSON : public PObject
     class String : public Base, public PString
     {
       public:
+        String(const char * str = NULL) : PString(str) { }
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
+        virtual Base * DeepClone() const;
         String & operator=(const char * str) { PString::operator=(str); return *this; }
         String & operator=(const PString & str) { PString::operator=(str); return *this; }
     };
@@ -149,6 +154,7 @@ class PJSON : public PObject
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
+        virtual Base * DeepClone() const;
         Number & operator=(double value) { m_value = value; return *this; }
         void SetValue(double value) { m_value = value; }
         double GetValue() const { return m_value; }
@@ -163,6 +169,7 @@ class PJSON : public PObject
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
+        virtual Base * DeepClone() const;
         Boolean & operator=(bool value) { m_value = value; return *this; }
         void SetValue(bool value) { m_value = value; }
         bool GetValue() const { return m_value; }
@@ -174,12 +181,15 @@ class PJSON : public PObject
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
+        virtual Base * DeepClone() const;
     };
 
     ///< Constructor
     PJSON();
     explicit PJSON(Types type);
     explicit PJSON(const PString & str);
+    PJSON(const PJSON & other);
+    PJSON & operator=(const PJSON & other);
 
     ~PJSON() { delete m_root; }
 
@@ -206,10 +216,6 @@ class PJSON : public PObject
   protected:
     Base * m_root;
     bool   m_valid;
-
-  private:
-    PJSON(const PJSON &) { }
-    void operator=(const PJSON &) { }
 };
 
 
