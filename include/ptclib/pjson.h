@@ -194,7 +194,7 @@ class PJSON : public PObject
 
     bool IsValid() const { return m_valid; }
 
-    bool IsType(Types type) { return PAssertNULL(m_root)->IsType(type); }
+    bool IsType(Types type) const { return PAssertNULL(m_root)->IsType(type); }
 
     template <class T> T & GetAs() const { return dynamic_cast<T &>(*PAssertNULL(m_root)); }
     Object  & GetObject()  const { return GetAs<Object>();  }
