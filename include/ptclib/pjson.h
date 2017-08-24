@@ -72,13 +72,21 @@ class PJSON : public PObject
 
         bool IsType(const PString & name, Types type) const;
 
-        template <class T> T * Get(const PString & name) const
+        template <class T> const T * Get(const PString & name) const
         {
           const_iterator it = find(name);
+          return it != end() ? dynamic_cast<const T *>(it->second) : NULL;
+        }
+        template <class T> T * Get(const PString & name)
+        {
+          iterator it = find(name);
           return it != end() ? dynamic_cast<T *>(it->second) : NULL;
         }
-        Object & GetObject(const PString & name) const;
-        Array & GetArray(const PString & name) const;
+        const Object & GetObject(const PString & name) const { return *Get<Object>(name); }
+              Object & GetObject(const PString & name)       { return *Get<Object>(name); }
+        const Array & GetArray(const PString & name)   const { return *Get<Array>(name); }
+              Array & GetArray(const PString & name)         { return *Get<Array>(name); }
+
         PString GetString(const PString & name) const;
         int GetInteger(const PString & name) const;
         unsigned GetUnsigned(const PString & name) const;
@@ -109,12 +117,13 @@ class PJSON : public PObject
 
         bool IsType(size_t index, Types type) const;
 
-        template <class T> T * Get(size_t index) const
-        {
-          return index < size() ? dynamic_cast<T *>(at(index)) : NULL;
-        }
-        Object & GetObject(size_t index) const;
-        Array & GetArray(size_t index) const;
+        template <class T> const T * Get(size_t index) const { return index < size() ? dynamic_cast<const T *>(at(index)) : NULL; }
+        template <class T>       T * Get(size_t index)       { return index < size() ? dynamic_cast<      T *>(at(index)) : NULL; }
+        const Object & GetObject(size_t index)         const { return *Get<Object>(index); }
+              Object & GetObject(size_t index)               { return *Get<Object>(index); }
+        const Array & GetArray(size_t index)           const { return *Get<Array>(index); }
+              Array & GetArray(size_t index)                 { return *Get<Array>(index); }
+
         PString GetString(size_t index) const;
         int GetInteger(size_t index) const;
         unsigned GetUnsigned(size_t index) const;
@@ -206,12 +215,18 @@ class PJSON : public PObject
 
     bool IsType(Types type) const { return PAssertNULL(m_root)->IsType(type); }
 
-    template <class T> T & GetAs() const { return dynamic_cast<T &>(*PAssertNULL(m_root)); }
-    Object  & GetObject()  const { return GetAs<Object>();  }
-    Array   & GetArray ()  const { return GetAs<Array>();   }
-    String  & GetString()  const { return GetAs<String>();  }
-    Number  & GetNumber()  const { return GetAs<Number>();  }
-    Boolean & GetBoolean() const { return GetAs<Boolean>(); }
+    template <class T> const T & GetAs() const { return dynamic_cast<const T &>(*PAssertNULL(m_root)); }
+    template <class T>       T & GetAs()       { return dynamic_cast<      T &>(*PAssertNULL(m_root)); }
+    const Object  & GetObject()  const { return GetAs<Object>();  }
+          Object  & GetObject()        { return GetAs<Object>();  }
+    const Array   & GetArray ()  const { return GetAs<Array>();   }
+          Array   & GetArray ()        { return GetAs<Array>();   }
+    const String  & GetString()  const { return GetAs<String>();  }
+          String  & GetString()        { return GetAs<String>();  }
+    const Number  & GetNumber()  const { return GetAs<Number>();  }
+          Number  & GetNumber()        { return GetAs<Number>();  }
+    const Boolean & GetBoolean() const { return GetAs<Boolean>(); }
+          Boolean & GetBoolean()       { return GetAs<Boolean>(); }
 
   protected:
     Base * m_root;
