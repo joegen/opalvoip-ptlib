@@ -2250,7 +2250,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
     reply << PHTML::TableData(PHTML::AlignRight)
           << PString(::PString::ScaleSI, it->size) << 'B'
           << PHTML::TableData()
-          << it->modified.AsString("hh:mm:ss dd/mmm/yyyy")
+          << it->modified.AsString("hh:mm:ss dd-MMM-yyyy")
           << PHTML::TableData(PHTML::AlignCentre)
           << std::oct << '0' << it->permissions << std::dec;
   }
