@@ -245,7 +245,10 @@ static bool ReadString(istream & strm, PString & str)
           str += '\t';
           break;
         case 'u' :
-          str += '\b';
+          char hex[5];
+          strm.read(hex, 4);
+          hex[4] = '\0';
+          str += (char)strtoul(hex, NULL, 16);
           break;
       }
     }
@@ -259,15 +262,35 @@ static void PrintString(ostream & strm, const PString & str)
 {
   strm << '"';
   for (PINDEX i = 0; i < str.GetLength(); ++i) {
-    switch (str[i]) {
+    unsigned c = str[i] & 0xff;
+    switch (c) {
       case '"' :
         strm << "\\\"";
         break;
       case '\\' :
         strm << "\\\\";
         break;
+      case '\t' :
+        strm << "\\t";
+        break;
+      case '\r' :
+        strm << "\\r";
+        break;
+      case '\n' :
+        strm << "\\n";
+        break;
       default :
+        if (c >= ' ')
         strm << str[i];
+        else {
+          char oldFill = strm.fill('0');
+          ios_base::fmtflags oldFlags = strm.setf(ios_base::hex, ios_base::dec);
+
+          strm << "\\u" << setw(4) << c;
+
+          strm.setf(oldFlags);
+          strm.fill(oldFill);
+        }
     }
   }
   strm << '"';
