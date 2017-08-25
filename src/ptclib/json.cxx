@@ -281,7 +281,7 @@ static void PrintString(ostream & strm, const PString & str)
         break;
       default :
         if (c >= ' ')
-        strm << str[i];
+          strm << str[i];
         else {
           char oldFill = strm.fill('0');
           ios_base::fmtflags oldFlags = strm.setf(ios_base::hex, ios_base::dec);
@@ -688,20 +688,21 @@ void PJSON::Number::ReadFrom(istream & strm)
 void PJSON::Number::PrintOn(ostream & strm) const
 {
   if (m_value < 0) {
-    int intval = (int)m_value;
+    int64_t intval = (int64_t)m_value;
     if (intval == m_value) {
       strm << intval;
       return;
     }
   }
-  else if (m_value < UINT_MAX) {
-    unsigned uintval = (unsigned)m_value;
+  else {
+    uint64_t uintval = (uint64_t)m_value;
     if (uintval == m_value) {
       strm << uintval;
       return;
     }
   }
-    strm << m_value;
+
+  strm << m_value;
 }
 
 
