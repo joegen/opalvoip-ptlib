@@ -1147,6 +1147,45 @@ bool PDirectory::GetEntries(Entries & entries, const PCaselessString & sortBy)
   return GetEntries(entries);
 }
 
+struct PDirectorySortPred
+{
+  PDirectory::Sorting m_sortBy;
+  PDirectorySortPred(PDirectory::Sorting sortBy) : m_sortBy(sortBy) { }
+
+  struct Base {
+    ~Base() {}
+    virtual bool Compare(const PDirectory::Entry& first, const PDirectory::Entry& second) const = 0;
+  };
+
+  #define SORT_BY(key, field) \
+      static struct key##Pred : Base { \
+        key##Pred() { s_PredTable.m_entry[PDirectory::key] = this; } \
+        bool Compare(const PDirectory::Entry& first, const PDirectory::Entry& second) const { return first.field < second.field; } \
+      } s_##key##Pred
+
+  struct Table {
+    Base const * m_entry[PDirectory::NumSorting];
+    Table()
+    {
+      SORT_BY(SortByName, m_name);
+      SORT_BY(SortByType, type);
+      SORT_BY(SortBySize, size);
+      SORT_BY(SortByCreated, created);
+      SORT_BY(SortByModified, modified);
+      SORT_BY(SortByAccessed, accessed);
+      SORT_BY(SortByPermission, permissions);
+    }
+  };
+  static Table s_PredTable;
+
+  bool operator()(const PDirectory::Entry& first, const PDirectory::Entry& second)
+  {
+    return s_PredTable.m_entry[m_sortBy]->Compare(first, second);
+  }
+};
+
+PDirectorySortPred::Table PDirectorySortPred::s_PredTable;
+
 
 bool PDirectory::GetEntries(Entries & entries, Sorting sortBy)
 {
@@ -1161,23 +1200,7 @@ bool PDirectory::GetEntries(Entries & entries, Sorting sortBy)
     }
   } while (Next());
 
-#define SORT_BY(key, field) \
-    case key : { \
-      struct key##Pred { bool operator()(const Entry& first, const Entry& second) { return first.field < second.field; } }; \
-      std::sort(entries.begin(), entries.end(), key##Pred()); \
-    } break
-
-  switch (sortBy) {
-    SORT_BY(SortByName, m_name);
-    SORT_BY(SortByType, type);
-    SORT_BY(SortBySize, size);
-    SORT_BY(SortByCreated, created);
-    SORT_BY(SortByModified, modified);
-    SORT_BY(SortByAccessed, accessed);
-    SORT_BY(SortByPermission, permissions);
-    default :
-      break;
-  }
+  std::sort(entries.begin(), entries.end(), PDirectorySortPred(sortBy));
 
   return true;
 }

@@ -446,7 +446,7 @@ class PDirectory : public PFilePathString
     };
     typedef std::vector<Entry> Entries;
 
-    enum Sorting {
+    P_DECLARE_ENUM(Sorting,
       Unsorted,
       SortByType,
       SortByName,
@@ -455,7 +455,7 @@ class PDirectory : public PFilePathString
       SortByModified,
       SortByAccessed,
       SortByPermission
-    };
+    );
 
     /**Get all the entries in this directory.
       */
