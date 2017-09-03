@@ -55,6 +55,9 @@ PINLINE PTimeInterval PTimeInterval::NanoSeconds(int64_t nsecs, int secs)
 PINLINE PTimeInterval PTimeInterval::MicroSeconds(int64_t usecs, int secs)
   { PTimeInterval t; t.SetMicroSeconds(usecs, secs); return t; }
 
+PINLINE PTimeInterval PTimeInterval::Seconds(double secs)
+  { PTimeInterval t; t.SetSeconds(secs); return t; }
+
 PINLINE PInt64 PTimeInterval::GetNanoSeconds() const
   { return InternalGet(); }
 
@@ -81,6 +84,12 @@ PINLINE void PTimeInterval::SetFrequency(double frequency)
 
 PINLINE long PTimeInterval::GetSeconds() const
   { return (long)(InternalGet()/SecsToNano); }
+
+PINLINE double PTimeInterval::GetSecondsAsDouble() const
+  { return InternalGet()/(double)SecsToNano; }
+
+PINLINE void PTimeInterval::SetSeconds(double secs)
+  { InternalSet((int64_t)(secs*SecsToNano)); }
 
 PINLINE long PTimeInterval::GetMinutes() const
   { return (long)(InternalGet()/MinsToNano); }

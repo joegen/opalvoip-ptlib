@@ -95,6 +95,11 @@ class PTimeInterval : public PObject
       int secs = 0
     );
 
+    /// Return a PTimeInterval in seconds
+    static PTimeInterval Seconds(
+      double secs
+    );
+
     /// Return a PTimeInterval from a frequency
     static PTimeInterval Frequency(
       double frequency
@@ -218,6 +223,19 @@ class PTimeInterval : public PObject
        long integer number of seconds.
      */
     long GetSeconds() const;
+
+    /** Get the number of seconds, and partial seconds, as floating point, for the time interval.
+    
+       @return
+       number of seconds as double.
+     */
+    double GetSecondsAsDouble() const;
+
+    /** Set the number of seconds for the time interval.
+     */
+    void SetSeconds(
+      double secs
+    );
 
     /** Get the number of whole minutes for the time interval.
     
