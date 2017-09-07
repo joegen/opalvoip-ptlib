@@ -245,7 +245,7 @@ PBoolean PRemoteConnection::Open(const PString & name,
     argArray[argCount++] = chatStr & ("-t" + (timeoutStr & chatCmd));
   }
 
-  if (!addressStr)
+  if (!addressStr.IsEmpty())
     argArray[argCount++] = addressStr + ":";
 
   ///////////////////////////////////////////

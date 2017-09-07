@@ -98,7 +98,7 @@ PServiceProcess::PServiceProcess(const char * manuf,
 
 PServiceProcess::~PServiceProcess()
 {
-  if (!pidFileToRemove)
+  if (!pidFileToRemove.IsEmpty())
     PFile::Remove(pidFileToRemove);
 }
 
@@ -292,7 +292,7 @@ int PServiceProcess::InitialiseService()
   else
     pidfilename =  _PATH_VARRUN;
 
-  if (!pidfilename && PDirectory::Exists(pidfilename))
+  if (!pidfilename.IsEmpty() && PDirectory::Exists(pidfilename))
     pidfilename = PDirectory(pidfilename) + progName + ".pid";
 
   if (ctrlOptionsCount > 0) {
@@ -463,7 +463,7 @@ int PServiceProcess::InitialiseService()
 #if !defined(BE_THREADS) && !defined(P_RTEMS)
 
   // Run as a daemon, ie fork
-  if (!pidfilename) {
+  if (!pidfilename.IsEmpty()) {
     ifstream pidfile((const char *)pidfilename);
     if (pidfile.is_open()) {
       pid_t pid;
@@ -489,7 +489,7 @@ int PServiceProcess::InitialiseService()
 
     default : // Parent process
       cout << "Daemon started with pid " << pid << endl;
-      if (!pidfilename) {
+      if (!pidfilename.IsEmpty()) {
         // Write out the child pid to magic file in /var/run (at least for linux)
         ofstream pidfile((const char *)pidfilename);
         if (pidfile.is_open())
