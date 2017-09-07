@@ -408,7 +408,7 @@ void PHTTPField::GetAllNames(PStringArray & list) const
 
 void PHTTPField::SetAllValues(const PStringToString & data)
 {
-  if (!m_baseName && data.Contains(m_fullName))
+  if (!m_baseName.IsEmpty() && data.Contains(m_fullName))
     SetValue(data[m_fullName]);
 }
 
@@ -1867,7 +1867,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
 
   // See if are a subform, set root composite field accordingly
   PString prefix = request.url.GetQueryVars()("subformprefix");
-  if (!prefix) {
+  if (!prefix.IsEmpty()) {
     static PRegularExpression SubFormPrefix("<?!--#form[ \t\r\n]+subformprefix[ \t\r\n]*-->?",
                                             PRegularExpression::Extended|PRegularExpression::IgnoreCase);
     while (text.FindRegEx(SubFormPrefix, pos, len))
@@ -2184,7 +2184,7 @@ void PHTTPConfig::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   if (m_sectionField == NULL) {
     PString sectionName = request.url.GetQueryVars()("section", m_section);
-    if (!sectionName) {
+    if (!sectionName.IsEmpty()) {
       m_section = sectionName;
       LoadFromConfig();
     }
@@ -2199,7 +2199,7 @@ PBoolean PHTTPConfig::Post(PHTTPRequest & request,
                        PHTML & msg)
 {
   // Make sure the internal structure is up to date before accepting new data
-  if (!m_section)
+  if (!m_section.IsEmpty())
     LoadFromConfig();
 
 
@@ -2233,7 +2233,7 @@ PBoolean PHTTPConfig::Post(PHTTPRequest & request,
     PHTTPField & field = m_fields[fld];
     if (&field == m_keyField) {
       PString key = field.GetValue();
-      if (!key)
+      if (!key.IsEmpty())
         cfg.SetString(key, m_valField->GetValue());
     }
     else if (&field != m_valField && &field != m_sectionField)
@@ -2419,7 +2419,7 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
                << PHTML::HotLink(m_editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation))
                << PHTML::Escaped(name)
                << PHTML::HotLink();
-          if (!m_additionalValueName)
+          if (!m_additionalValueName.IsEmpty())
             html << PHTML::TableData()
                  << PHTML::HotLink(m_editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation))
                  << PHTML::Escaped(cfg.GetString(nameList[i], m_additionalValueName, ""))
@@ -2450,7 +2450,7 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
           text.Replace("<!--#form hotlink-->",
                        m_editSectionLink + PURL::TranslateString(name, PURL::QueryTranslation),
                        true, pos);
-          if (!m_additionalValueName)
+          if (!m_additionalValueName.IsEmpty())
             text.Replace("<!--#form additional-->",
                          cfg.GetString(nameList[i], m_additionalValueName, ""),
                          true, pos);

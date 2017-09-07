@@ -471,15 +471,12 @@ static PString GetDefaultRegistryPath(const PString & manuf, const PString & app
 {
   PStringStream regPath;
 
-  regPath << CurrentUserStr << "SOFTWARE\\";
+  regPath << CurrentUserStr << "SOFTWARE\\" << manuf;
 
-  if (!manuf)
-    regPath << manuf;
-
-  if (!manuf && !appname)
+  if (!manuf.IsEmpty() && !appname.IsEmpty())
     regPath << '\\';
 
-  if (!appname)
+  if (!appname.IsEmpty())
     regPath << appname;
   else if (manuf.IsEmpty())
     regPath << "PTLib";
@@ -540,7 +537,7 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
         location = PString();
       else {
         PProcess & proc = PProcess::Current();
-        if (!manuf || !appname)
+        if (!manuf.IsEmpty() || !appname.IsEmpty())
           location = GetDefaultRegistryPath(manuf, appname);
         else {
           PString cfgPath = proc.GetConfigurationFile();

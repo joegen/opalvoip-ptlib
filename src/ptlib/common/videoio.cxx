@@ -293,7 +293,7 @@ unsigned PVideoFrameInfo::GetFrameRate() const
 
 PBoolean PVideoFrameInfo::SetColourFormat(const PString & colourFmt)
 {
-  if (!colourFmt) {
+  if (!colourFmt.IsEmpty()) {
     m_colourFormat = colourFmt.ToUpper();
     return true;
   }

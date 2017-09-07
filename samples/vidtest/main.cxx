@@ -97,9 +97,9 @@ void VidTest::Main()
     if (inputDriverName.IsEmpty() && inputDriverName.IsEmpty())
       cerr << "default ";
     cerr << "video grab";
-    if (!inputDriverName)
+    if (!inputDriverName.IsEmpty())
       cerr << ", driver \"" << inputDriverName << '"';
-    if (!inputDeviceName)
+    if (!inputDeviceName.IsEmpty())
       cerr << ", device \"" << inputDeviceName << '"';
     else
       cerr << ", default device";
@@ -170,9 +170,9 @@ void VidTest::Main()
     if (outputDriverName.IsEmpty() && outputDriverName.IsEmpty())
       cerr << "default ";
     cerr << "video display";
-    if (!outputDriverName)
+    if (!outputDriverName.IsEmpty())
       cerr << ", driver \"" << outputDriverName << '"';
-    if (!outputDeviceName)
+    if (!outputDeviceName.IsEmpty())
       cerr << ", device \"" << outputDeviceName << '"';
     else
       cerr << ", default device";

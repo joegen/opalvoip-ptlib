@@ -604,14 +604,6 @@ class PString : public PCharArray
        length of the null terminated string.
      */
     virtual PINDEX GetLength() const { return m_length; }
-
-    /**Determine if the string is NOT empty. This is semantically identical
-       to executing !IsEmpty() on the string.
-
-       @return
-       true if non-null characters in string.
-     */
-    bool operator!() const;
   //@}
 
   /**@name Concatenation operators **/

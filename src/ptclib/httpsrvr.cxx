@@ -305,7 +305,7 @@ PBoolean PHTTPServer::ProcessCommand()
     const PURL & url = m_connectInfo.GetURL();
     if (url.GetScheme() != "http" ||
         (url.GetPort() != 0 && url.GetPort() != myPort) ||
-        (!url.GetHostName() && !PIPSocket::IsLocalHost(url.GetHostName())))
+        (!url.GetHostName().IsEmpty() && !PIPSocket::IsLocalHost(url.GetHostName())))
       persist = OnProxy(m_connectInfo);
     else {
       m_connectInfo.entityBody = ReadEntityBody();
@@ -939,7 +939,7 @@ PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm,
   , m_username(username)
   , m_password(password)
 {
-  PAssert(!realm, "Must have a realm!");
+  PAssert(!realm.IsEmpty(), "Must have a realm!");
 }
 
 
@@ -951,7 +951,7 @@ PObject * PHTTPSimpleAuth::Clone() const
 
 PBoolean PHTTPSimpleAuth::IsActive() const
 {
-  return !m_username || !m_password;
+  return !m_username.IsEmpty() || !m_password.IsEmpty();
 }
 
 
@@ -976,7 +976,7 @@ PBoolean PHTTPSimpleAuth::Validate(const PHTTPRequest &,
 PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm_)
   : m_realm(realm_)
 {
-  PAssert(!m_realm, "Must have a realm!");
+  PAssert(!m_realm.IsEmpty(), "Must have a realm!");
 }
 
 
@@ -984,7 +984,7 @@ PHTTPMultiSimpAuth::PHTTPMultiSimpAuth(const PString & realm, const PStringToStr
   : m_realm(realm)
   , m_users(users)
 {
-  PAssert(!realm, "Must have a realm!");
+  PAssert(!realm.IsEmpty(), "Must have a realm!");
 }
 
 
@@ -1383,7 +1383,7 @@ PBoolean PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
     str = mimeInfo(PHTTP::ConnectionTag());
 
   // get any connection options
-  if (!str) {
+  if (!str.IsEmpty()) {
     PStringArray tokens = str.Tokenise(", \t\r\n", false);
     for (PINDEX i = 0; i < tokens.GetSize(); i++) {
       PCaselessString token(tokens[i]);
@@ -1711,7 +1711,7 @@ PBoolean PHTTPResource::LoadHeaders(PHTTPRequest & request)
 
 void PHTTPResource::SendData(PHTTPRequest & request)
 {
-  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !m_contentType)
+  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !m_contentType.IsEmpty())
     request.outMIME.SetAt(PHTTP::ContentTypeTag, m_contentType);
 
   PCharArray data;

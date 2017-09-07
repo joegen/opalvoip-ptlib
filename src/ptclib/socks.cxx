@@ -144,7 +144,7 @@ PBoolean PSocksProtocol::SendSocksCommand(PTCPSocket & socket,
     socket << SOCKS_VERSION_5
            << (authenticationUsername.IsEmpty() ? '\001' : '\002') // length
            << SOCKS_AUTH_NONE;
-    if (!authenticationUsername)
+    if (!authenticationUsername.IsEmpty())
       socket << SOCKS_AUTH_USER_PASS;  // Simple cleartext username/password
     socket.flush();
 

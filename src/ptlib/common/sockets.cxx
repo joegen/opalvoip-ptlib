@@ -2147,9 +2147,9 @@ void PIPSocket::InterfaceEntry::SanitiseName(PString & name)
 void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 {
   strm << m_ipAddress;
-  if (!m_macAddress)
+  if (!m_macAddress.IsEmpty())
     strm << " <" << m_macAddress << '>';
-  if (!m_name)
+  if (!m_name.IsEmpty())
     strm << " (" << m_name << ')';
 }
 

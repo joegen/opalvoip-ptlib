@@ -1868,7 +1868,7 @@ static void TraceVerifyCallback(int ok, X509_STORE_CTX * ctx)
       trace << " Invalid!";
 
     PString alt = cert.GetSubjectAltName();
-    if (!alt)
+    if (!alt.IsEmpty())
       trace << "\n  Subject-Alt: \"" << alt << '"';
 
     trace << PTrace::End;
