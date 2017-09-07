@@ -133,10 +133,10 @@ PString PILSSession::RTPerson::GetDN() const
 {
   PStringStream dn;
 
-  if (!c)
+  if (!c.IsEmpty())
     dn << "c=" << c << ", ";
 
-  if (!o)
+  if (!o.IsEmpty())
     dn << "o=" << o << ", ";
 
   dn << "cn=" + cn + ", objectClass=" + objectClass;

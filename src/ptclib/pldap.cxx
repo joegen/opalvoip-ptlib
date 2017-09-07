@@ -345,7 +345,7 @@ static PArray<PLDAPSession::ModAttrib> AttribsFromStruct(const PLDAPStructBase &
       attrs.Append(new PLDAPSession::BinaryModAttrib(attr.GetName(), attr.ToBinary()));
     else {
       PString str = attr.ToString();
-      if (!str)
+      if (!str.IsEmpty())
         attrs.Append(new PLDAPSession::StringModAttrib(attr.GetName(), str));
     }
   }
@@ -552,7 +552,7 @@ PBoolean PLDAPSession::GetSearchResult(SearchContext & context, PStringToString 
       PString value = data(attrib);
 
       for (PINDEX i = 0; bvals[i] != NULL; i++ ) {
-        if (!value)
+        if (!value.IsEmpty())
           value += m_multipleValueSeparator;
         value += PString(bvals[i]->bv_val, bvals[i]->bv_len);
       }
@@ -595,7 +595,7 @@ PBoolean PLDAPSession::GetSearchResult(SearchContext & context,
 
   PINDEX count = ldap_count_values(values);
   for (PINDEX i = 0; i < count; i++) {
-    if (!data)
+    if (!data.IsEmpty())
       data += m_multipleValueSeparator;
     data += values[i];
   }
