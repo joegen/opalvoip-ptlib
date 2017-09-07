@@ -365,30 +365,6 @@ PBoolean cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX *
 
 
 
-/**Define synonym colour format converter.
-   This is a class that defines for which no conversion is required between
-   the specified colour format names.
-  */
-class PSynonymColour : public PColourConverter {
-  public:
-    PSynonymColour(
-      const PColourPair & colours
-    ) : PColourConverter(colours) { }
-    virtual PBoolean Convert(const BYTE *, BYTE *, PINDEX * = NULL);
-};
-
-
-/**Define synonym colour format.
-   This is a class that defines for which no conversion is required between
-   the specified colour format names.
-   */
-#define PSYNONYM_COLOUR_CONVERTER(from,to) \
-  class PColourConverter_##from##_##to : public PSynonymColour { \
-    public: PColourConverter_##from##_##to() : PSynonymColour(PColourPair(#from, #to)) { }\
-  }; \
-  PColourConverterFactory::Worker<PColourConverter_##from##_##to> PColourConverter_##from##_##to##_instance(PColourPair(#from, #to))
-
-
 #if P_JPEG_DECODER
 
 /**Class to convert a JPEG image to other formats.
