@@ -36,12 +36,13 @@ PTLIB_MAKE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 include $(PTLIB_MAKE_DIR)/pre.mak
 
+ifndef OSSBUILD
 LIBS := $(PTLIB_LIBS) $(LIBS)
 
 include $(PTLIB_MAKE_DIR)/post.mak
 
 install uninstall:
 	@true
-
+#endif
 
 # End of ptlib.mak
