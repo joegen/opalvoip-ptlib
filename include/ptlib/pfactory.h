@@ -225,6 +225,10 @@ class PFactoryTemplate : public PFactoryBase
         Types        m_type;
         Abstract_T * m_singletonInstance;
 
+      private:
+        WorkerBase(const WorkerBase &) { }
+        void operator=(const WorkerBase &) { }
+
       friend class PFactoryTemplate;
     };
 
