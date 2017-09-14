@@ -274,7 +274,7 @@ class PNotifierListTemplate : public PObject
     /// Remove notifier from teh list
     bool Remove(const Notifier & handler)
     {
-      List::iterator it = std::find(this->m_list.begin(), this->m_list.end(), handler);
+      typename List::iterator it = std::find(this->m_list.begin(), this->m_list.end(), handler);
       if (it == this->m_list.end())
           return false;
       this->m_list.erase(it);
