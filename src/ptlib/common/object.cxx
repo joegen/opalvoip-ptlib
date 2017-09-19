@@ -49,6 +49,9 @@
 #include <signal.h>
 #endif
 
+#if P_EXCEPTIONS
+#include <stdexcept>
+#endif
 
 PDebugLocation::PDebugLocation(const PDebugLocation * location)
 {
