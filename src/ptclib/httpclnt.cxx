@@ -264,7 +264,7 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
   if (!m_userAgentName.IsEmpty() && !outMIME.Contains(UserAgentTag()))
     outMIME.SetAt(UserAgentTag(), m_userAgentName);
 
-  if (m_persist)
+  if (m_persist && !outMIME.Contains(ConnectionTag()))
     outMIME.SetAt(ConnectionTag(), KeepAliveTag());
 
   bool needAuthentication = true;
@@ -378,7 +378,7 @@ bool PHTTPClient::WriteCommand(Commands cmd,
     else
       strm << url;
     if (PTrace::CanTrace(4))
-      strm << '\n' << outMIME;
+      strm << " HTTP/1.1\n" << outMIME;
     strm << PTrace::End;
   }
 #endif

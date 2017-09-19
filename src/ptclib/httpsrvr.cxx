@@ -1186,11 +1186,20 @@ bool PWebSocket::WriteMasked(const uint32_t * data, PINDEX len, uint32_t mask)
 }
 
 
-bool PWebSocket::Connect(const PStringArray & protocols, PString * selectedProtocol)
+bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PString * selectedProtocol)
 {
-  PHTTPClient http;
-  if (!http.Open(*this))
-    return false;
+  PHTTPClient * http = new PHTTPClient;
+  if (IsOpen()) {
+    PChannel * upstream = Detach();
+    if (upstream)
+      http->Open(upstream);
+    else {
+      http->SetReadChannel(Detach(ShutdownRead));
+      http->SetWriteChannel(Detach(ShutdownWrite));
+    }
+  }
+
+  Open(http);
 
   PString key = PBase64::Encode("What is in here?");
   PMIMEInfo outMIME, replyMIME;
@@ -1200,17 +1209,23 @@ bool PWebSocket::Connect(const PStringArray & protocols, PString * selectedProto
   outMIME.SetAt(PHTTP::WebSocketProtocolTag(), PSTRSTRM(std::setfill(',') << protocols));
   outMIME.SetAt(PHTTP::WebSocketKeyTag(), key);
 
-  if (!http.GetDocument(PURL(), outMIME, replyMIME))
+  int result = http->ExecuteCommand(PHTTP::GET, url, outMIME, PString::Empty(), replyMIME);
+  if (result < 100 || result >= 300) {
+    PTRACE(2, "WebSocket reply error: " << result);
+    SetErrorValues(ProtocolFailure, EPROTO);
     return false;
+  }
 
   if (replyMIME(PHTTP::WebSocketAcceptTag()) != PMessageDigestSHA1::Encode(key + WebSocketGUID)) {
     PTRACE(2, "WebSocket reply accept is unacceptable.");
+    SetErrorValues(ProtocolFailure, EPROTO);
     return false;
   }
 
   PString protocol = outMIME(PHTTP::WebSocketProtocolTag());
   if (protocols.GetValuesIndex(protocol) == P_MAX_INDEX) {
     PTRACE(2, "WebSocket selected a protocol we did not offer.");
+    SetErrorValues(ProtocolFailure, EPROTO);
     return false;
   }
 

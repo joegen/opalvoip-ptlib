@@ -820,6 +820,7 @@ class PWebSocket : public PIndirectChannel
         This performs the HTTP handshake for the WebSocket establishment.
       */
     bool Connect(
+      const PURL & url,                  ///< Base URL for connection ("ws:" or "wss:")
       const PStringArray & protocols,    ///< WebSocket sub-protocol to use.
       PString * selectedProtocol = NULL  ///< Selected protocol by server
     );
