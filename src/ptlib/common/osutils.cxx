@@ -1964,7 +1964,7 @@ int PArgList::InternalParseOption(const PString & optStr, PINDEX offset, PINDEX 
     if (opt.m_type == NoString)
       return 0;
 
-    if (!opt.m_string)
+    if (!opt.m_string.IsEmpty())
       opt.m_string += '\n';
 
     if (opt.m_type == OptionalString && (offset == P_MAX_INDEX || m_argumentArray[arg][offset] == '\0'))

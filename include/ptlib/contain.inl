@@ -62,9 +62,6 @@ PINLINE PString & PString::operator=(const char * cstr)
 PINLINE PString & PString::operator=(char ch)
   { AssignContents(PString(ch)); return *this; }
 
-PINLINE bool PString::operator!() const
-  { return !IsEmpty(); }
-
 PINLINE PString PString::operator+(const PString & str) const
   { return operator+((const char *)str); }
 

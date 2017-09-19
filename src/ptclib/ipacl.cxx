@@ -72,7 +72,7 @@ PObject::Comparison PIpAccessControlEntry::Compare(const PObject & obj) const
   if (mask < other.mask)
     return GreaterThan;
 
-  if (!domain && !other.domain)
+  if (!domain.IsEmpty() && !other.domain.IsEmpty())
     return domain.Compare(other.domain);
 
   if (address > other.address)
@@ -232,7 +232,7 @@ PString PIpAccessControlEntry::AsString() const
 
 PBoolean PIpAccessControlEntry::IsValid()
 {
-  return address != 0 || !domain;
+  return address != 0 || !domain.IsEmpty();
 }
 
 

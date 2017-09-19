@@ -1315,7 +1315,7 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
 
   PString vkey = GetString(securityKey);
   if (allEmpty)
-    return (!vkey || GetBoolean(pendingPrefix + securityKey)) ? Pending : Defaults;
+    return (!vkey.IsEmpty() || GetBoolean(pendingPrefix + securityKey)) ? Pending : Defaults;
 
   PMessageDigest5::Code code;
   digestor.Complete(code);

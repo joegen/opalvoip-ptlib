@@ -85,7 +85,7 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
 PInt64 PConfig::GetInt64(const PString & section, const PString & key, PInt64 dflt) const
 {
   PString str = GetString(section, key, "");
-  if (!str)
+  if (!str.IsEmpty())
     return str.AsInt64();
   return dflt;
 }

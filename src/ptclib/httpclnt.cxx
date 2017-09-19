@@ -261,7 +261,7 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
   if (!outMIME.Contains(DateTag()))
     outMIME.SetAt(DateTag(), PTime().AsString());
 
-  if (!m_userAgentName && !outMIME.Contains(UserAgentTag()))
+  if (!m_userAgentName.IsEmpty() && !outMIME.Contains(UserAgentTag()))
     outMIME.SetAt(UserAgentTag(), m_userAgentName);
 
   if (m_persist)
@@ -401,7 +401,7 @@ bool PHTTPClient::WriteCommand(Commands cmd,
 bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
   PString http = ReadString(7);
-  if (!http) {
+  if (!http.IsEmpty()) {
     UnRead(http);
 
     if (http.Find("HTTP/") == P_MAX_INDEX) {

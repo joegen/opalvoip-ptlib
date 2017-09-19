@@ -1443,7 +1443,7 @@ PCREATE_SERVICE_MACRO(Query,request,args)
   PString variable, value;
   if (ExtractVariables(args, variable, value)) {
     value = request.url.GetQueryVars()(variable, value);
-    if (!value)
+    if (!value.IsEmpty())
       return value;
   }
   return PString::Empty();
@@ -1460,7 +1460,7 @@ PCREATE_SERVICE_MACRO(Get,request,args)
       section += variable.Left(slash);
       variable = variable.Mid(slash+1);
     }
-    if (!section && !variable) {
+    if (!section.IsEmpty() && !variable.IsEmpty()) {
       PConfig config(section);
       return config.GetString(variable, value);
     }
@@ -1479,7 +1479,7 @@ PCREATE_SERVICE_MACRO(Include,P_EMPTY,args)
 {
   PString text;
 
-  if (!args) {
+  if (!args.IsEmpty()) {
     PFile file;
     if (file.Open(args, PFile::ReadOnly))
       text = file.ReadString(file.GetLength());
@@ -1493,7 +1493,7 @@ PCREATE_SERVICE_MACRO(SignedInclude,P_EMPTY,args)
 {
   PString text;
 
-  if (!args) {
+  if (!args.IsEmpty()) {
     PFile file;
     if (file.Open(args, PFile::ReadOnly)) {
       text = file.ReadString(file.GetLength());
@@ -1605,7 +1605,7 @@ bool PServiceHTML::ProcessMacros(PHTTPRequest & request,
         filename = defaultFile;
     }
 
-    if (!filename) {
+    if (!filename.IsEmpty()) {
       PString alreadyLoaded = "<!--#loadedfrom " + filename + "-->\r\n";
       alreadyLoadedPrefixLength = alreadyLoaded.GetLength();
 

@@ -103,18 +103,41 @@
 #endif
 
 
-PSYNONYM_COLOUR_CONVERTER(YUV420P,IYUV);
-PSYNONYM_COLOUR_CONVERTER(IYUV,   YUV420P);
-PSYNONYM_COLOUR_CONVERTER(YUV420P,I420);
-PSYNONYM_COLOUR_CONVERTER(I420,   YUV420P);
-
-
 class PStandardColourConverter : public PColourConverter
 {
     PCLASSINFO(PStandardColourConverter, PColourConverter);
   protected:
 #if P_FFMPEG
     SwsContext * m_swsContext;
+
+    void AdjustRGBPixelFormat(AVPixelFormat & fmt, unsigned rgbIncrement, unsigned redOffset)
+    {
+      if (fmt == AV_PIX_FMT_NONE) {
+        if (rgbIncrement == 3)
+          fmt = redOffset == 0 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_BGR24;
+        else
+          fmt = redOffset == 0 ? AV_PIX_FMT_RGBA : AV_PIX_FMT_BGRA;
+      }
+    }
+
+    bool CanUseFFMPEG(AVPixelFormat srcFmt, AVPixelFormat dstFmt, unsigned rgbIncrement, unsigned redOffset)
+    {
+      if (m_swsContext != NULL)
+        return true;
+      
+      AdjustRGBPixelFormat(srcFmt, rgbIncrement, redOffset);
+      AdjustRGBPixelFormat(dstFmt, rgbIncrement, redOffset);
+      
+      m_swsContext = sws_getContext(m_srcFrameWidth, m_srcFrameHeight, srcFmt,
+                                    m_dstFrameWidth, m_dstFrameHeight, dstFmt,
+                                    SWS_BILINEAR,
+                                    NULL, NULL, NULL);
+      if (m_swsContext != NULL)
+        return true;
+      
+      PTRACE(2, "Cannot create FFMPEG scaler from " << srcFmt << " to " << dstFmt);
+      return false;
+    }
 #endif
 
     PStandardColourConverter(const PColourPair & colours)
@@ -1089,60 +1112,7 @@ bool PColourConverter::FillYUV420P(unsigned x, unsigned y, unsigned width, unsig
 
   return true;
 }
-PRAGMA_OPTIMISE_DEFAULT()
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-PRAGMA_OPTIMISE_ON()
-PBoolean PSynonymColour::Convert(const BYTE *srcFrameBuffer,
-                             BYTE *dstFrameBuffer,
-                             PINDEX * bytesReturned)
-{
-  if (m_srcFrameWidth != m_dstFrameWidth || m_srcFrameHeight != m_dstFrameHeight) {
-    PTRACE(2,"Cannot do synonym conversion, source and destination size not equal: " << *this);
-    return false;
-  }
-
-  if (m_verticalFlip) {
-    PINDEX rowSize = m_dstFrameBytes/m_srcFrameHeight;
-    if (rowSize*(PINDEX)m_srcFrameHeight != m_dstFrameBytes) {
-      PTRACE(2,"Cannot do synonym conversion, frame does not have equal scan lines: " << *this);
-      return false;
-    }
-
-    if (srcFrameBuffer != dstFrameBuffer) {
-      const BYTE * srcRowPtr = srcFrameBuffer;
-      BYTE * dstRowPtr = dstFrameBuffer + m_srcFrameHeight*rowSize;
-      for (unsigned y = 0; y < m_srcFrameHeight; y++) {
-        dstRowPtr -= rowSize;
-        memcpy(dstRowPtr, srcRowPtr, rowSize);
-        srcRowPtr += rowSize;
-      }
-    }
-    else {
-      BYTE * rowPtr1 = dstFrameBuffer;
-      BYTE * rowPtr2 = dstFrameBuffer + m_srcFrameHeight*rowSize;
-      PBYTEArray temp(rowSize);
-      for (unsigned y = 0; y < m_srcFrameHeight; y += 2) {
-        rowPtr2 -= rowSize;
-        memcpy(temp.GetPointer(), rowPtr1, rowSize);
-        memcpy(rowPtr1, rowPtr2, rowSize);
-        memcpy(rowPtr2, temp.GetPointer(), rowSize);
-        rowPtr1 += rowSize;
-      }
-    }
-  }
-  else {
-    if (srcFrameBuffer != dstFrameBuffer)
-      memcpy(dstFrameBuffer, srcFrameBuffer, m_dstFrameBytes);
-  }
-
-  if (bytesReturned != NULL)
-    *bytesReturned = m_dstFrameBytes;
-
-  return true;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1296,18 +1266,7 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
 
 #if P_FFMPEG
 
-  if (m_swsContext == NULL) {
-    AVPixelFormat fmt;
-    if (rgbIncrement == 3)
-      fmt = redOffset == 0 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_BGR24;
-    else
-      fmt = redOffset == 0 ? AV_PIX_FMT_RGBA : AV_PIX_FMT_BGRA;
-    m_swsContext = sws_getContext(m_srcFrameWidth, m_srcFrameHeight, fmt,
-                                  m_dstFrameWidth, m_dstFrameHeight, AV_PIX_FMT_YUV420P,
-                                  SWS_BILINEAR,
-                                  NULL, NULL, NULL);
-  }
-  if (m_swsContext != NULL) {
+  if (CanUseFFMPEG(AV_PIX_FMT_NONE, AV_PIX_FMT_YUV420P, rgbIncrement, redOffset)) {
     const uint8_t* srcSlice[] = { scanLinePtrRGB };
     const int srcStride[] = { scanLineSizeRGB };
 
@@ -1451,7 +1410,7 @@ PSTANDARD_COLOUR_CONVERTER(BGR32,YUV420P)
  * off: 16  U00 U02 U20 U22
  * off: 20  V00 V02 V20 V22
  * 
- * So, we lose some bit of information when converting YUY2 to YUV420 
+ * So, we lose some bit of information when converting YUY2 to YUV420P
  *
  * NOTE: This algorithm works only if the width and the height is pair.
  */
@@ -1503,7 +1462,7 @@ void  PStandardColourConverter::YUY2toYUV420PSameSize(const BYTE *yuy2, BYTE *yu
  * off: 16  U00 U02 U20 U22
  * off: 20  V00 V02 V20 V22
  * 
- * So, we lose some bit of information when converting YUY2 to YUV420 
+ * So, we lose some bit of information when converting YUY2 to YUV420P
  *
  * NOTE: This algorithm works only if the width and the height are even numbers.
  */
@@ -2102,22 +2061,11 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
 #if P_FFMPEG
 
-  if (m_swsContext == NULL) {
-    AVPixelFormat fmt;
-    if (rgbIncrement == 3)
-      fmt = redOffset == 0 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_BGR24;
-    else
-      fmt = redOffset == 0 ? AV_PIX_FMT_RGBA : AV_PIX_FMT_BGRA;
-    m_swsContext = sws_getContext(m_srcFrameWidth, m_srcFrameHeight, AV_PIX_FMT_YUV420P,
-                                  m_dstFrameWidth, m_dstFrameHeight, fmt,
-                                  SWS_BILINEAR,
-                                  NULL, NULL, NULL);
-  }
-  if (m_swsContext != NULL) {
+  if (CanUseFFMPEG(AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE, rgbIncrement, redOffset)) {
     const uint8_t* srcSlice[] = { scanLinePtrY, scanLinePtrU, scanLinePtrV };
     const int srcStride[] = { (int)planeWidth, (int)planeWidth/2, (int)planeWidth/2 };
 
-    uint8_t* dstSlice[] = {  scanLinePtrRGB-scanLineSizeRGB };
+    uint8_t* dstSlice[] = { scanLinePtrRGB };
     const int dstStride[] = { scanLineSizeRGB };
 
     sws_scale(m_swsContext, srcSlice, srcStride, 0, m_srcFrameHeight, dstSlice, dstStride);
@@ -2292,6 +2240,34 @@ PBoolean PStandardColourConverter::YUV420PtoRGB565(const BYTE * srcFrameBuffer,
   return true;
 }
 
+
+#if P_FFMPEG
+
+PSTANDARD_COLOUR_CONVERTER(YUV420B,YUV420P)
+{
+  if (!CanUseFFMPEG(AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, 0, 0))
+    return false;
+  
+  int planeHeight = (m_dstFrameHeight+1)&~1;
+  int scanLineSizeY = (m_dstFrameWidth+1)&~1;
+  int scanLineSizeUV = scanLineSizeY/2;
+  int planeSizeY = planeHeight*scanLineSizeY;
+  
+  const uint8_t* srcSlice[] = { srcFrameBuffer, srcFrameBuffer+planeSizeY };
+  const int srcStride[] = { scanLineSizeY, scanLineSizeY };
+  
+  uint8_t* dstSlice[] = { dstFrameBuffer, dstFrameBuffer+planeSizeY, dstFrameBuffer+planeSizeY*5/4 };
+  const int dstStride[] = { scanLineSizeY, scanLineSizeUV, scanLineSizeUV };
+    
+  sws_scale(m_swsContext, srcSlice, srcStride, 0, m_srcFrameHeight, dstSlice, dstStride);
+  
+  if (bytesReturned != NULL)
+    *bytesReturned = m_dstFrameBytes;
+  
+  return true;
+}
+
+#endif // P_FFMPEG
 
 PSTANDARD_COLOUR_CONVERTER(SBGGR8,RGB24)
 {

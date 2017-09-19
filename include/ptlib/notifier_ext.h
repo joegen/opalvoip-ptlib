@@ -263,16 +263,22 @@ class PNotifierListTemplate : public PObject
     PINDEX GetSize() const { return this->m_list.size(); }
 
     /// Add a notifier to the list
-    void Add(const Notifier & handler)
+    bool Add(const Notifier & handler)
     {
-      if (std::find(this->m_list.begin(), this->m_list.end(), handler) == this->m_list.end())
+        if (std::find(this->m_list.begin(), this->m_list.end(), handler) != this->m_list.end())
+            return false;
         this->m_list.push_back(handler);
+        return true;
     }
 
     /// Remove notifier from teh list
-    void Remove(const Notifier & handler)
+    bool Remove(const Notifier & handler)
     {
-      this->m_list.remove(handler);
+      typename List::iterator it = std::find(this->m_list.begin(), this->m_list.end(), handler);
+      if (it == this->m_list.end())
+          return false;
+      this->m_list.erase(it);
+      return true;
     }
 
     struct IsTarget : public std::unary_function<PObject, bool> 

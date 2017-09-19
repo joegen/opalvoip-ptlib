@@ -344,7 +344,7 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
     }
 
     key = PURL::UntranslateString(key, type);
-    if (!key) {
+    if (!key.IsEmpty()) {
       data = PURL::UntranslateString(data, type);
       if (vars.Contains(key))
         vars.SetAt(key, vars[key] + '\n' + data);
@@ -683,9 +683,9 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
       str << "//";
 
     if (schemeInfo->hasUsername) {
-      if (!m_username) {
+      if (!m_username.IsEmpty()) {
         str << TranslateString(m_username, LoginTranslation);
-        if (schemeInfo->hasPassword && !m_password)
+        if (schemeInfo->hasPassword && !m_password.IsEmpty())
           str << ':' << TranslateString(m_password, LoginTranslation);
         if (schemeInfo->hasHostPort && !m_hostname.IsEmpty())
           str << '@';
@@ -736,7 +736,7 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
     str << TranslateString(m_contents, PathTranslation);
 
   if (fmt == FullURL || fmt == RelativeOnly) {
-    if (!m_fragment)
+    if (!m_fragment.IsEmpty())
       str << "#" << TranslateString(m_fragment, PathTranslation);
 
     OutputVars(str, m_paramVars, ';', ';', '=', ParameterTranslation);
@@ -1036,7 +1036,7 @@ class PURL_CalltoScheme : public PURLScheme
 
       PString hostname = url.GetParamVars()("gateway");
       PString username;
-      if (!hostname)
+      if (!hostname.IsEmpty())
         username = PURL::UntranslateString(str(start, end), PURL::LoginTranslation);
       else {
         PCaselessString type = url.GetParamVars()("type");
@@ -1204,7 +1204,7 @@ class PURL_DataScheme : public PURLScheme
         strm << ';' << PURL::TranslateString(key, PURL::ParameterTranslation);
 
         PString data = it->second;
-        if (!data)
+        if (!data.IsEmpty())
           strm << '=' << PURL::TranslateString(data, PURL::ParameterTranslation);
       }
 

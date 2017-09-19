@@ -362,13 +362,13 @@ bool PSMTPClient::InternalBeginMessage(bool useEightBitMIME)
 
   if (m_fromAddress[0] != '"' && m_fromAddress.Find(' ') != P_MAX_INDEX)
     m_fromAddress = '"' + m_fromAddress + '"';
-  if (!localHost && m_fromAddress.Find('@') == P_MAX_INDEX)
+  if (!localHost.IsEmpty() && m_fromAddress.Find('@') == P_MAX_INDEX)
     m_fromAddress += '@' + localHost;
   if (ExecuteCommand(MAIL, "FROM:<" + m_fromAddress + '>')/100 != 2)
     return false;
 
   for (PStringList::iterator i = m_toNames.begin(); i != m_toNames.end(); i++) {
-    if (!peerHost && i->Find('@') == P_MAX_INDEX)
+    if (!peerHost.IsEmpty() && i->Find('@') == P_MAX_INDEX)
       *i += '@' + peerHost;
     if (ExecuteCommand(RCPT, "TO:<" + *i + '>')/100 != 2)
       return false;
@@ -659,10 +659,10 @@ void PSMTPServer::OnRCPT(const PCaselessString & recipient)
         break;
 
       case WillForward :
-        if (!forwardList)
+        if (!forwardList.IsEmpty())
           forwardList += ":";
         forwardList += toName;
-        if (!toDomain)
+        if (!toDomain.IsEmpty())
           forwardList += "@" + toDomain;
         toNames.AppendString(toName);
         toDomains.AppendString(forwardList);
@@ -725,7 +725,7 @@ void PSMTPServer::OnSOML(const PCaselessString & sender)
 
 void PSMTPServer::OnSendMail(const PCaselessString & sender)
 {
-  if (!fromAddress) {
+  if (!fromAddress.IsEmpty()) {
     WriteResponse(503, "Sender already specified.");
     return;
   }

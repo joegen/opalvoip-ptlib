@@ -719,7 +719,7 @@ PStringArray PDirectory::GetPath() const
 
   PINDEX count = 1; // First path field is volume name, empty under unix
   for (PINDEX i = 0; i < tokens.GetSize(); i++) {
-    if (!tokens[i])
+    if (!tokens[i].IsEmpty())
      path[count++] = tokens[i];
   }
 

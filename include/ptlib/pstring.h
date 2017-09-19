@@ -604,14 +604,6 @@ class PString : public PCharArray
        length of the null terminated string.
      */
     virtual PINDEX GetLength() const { return m_length; }
-
-    /**Determine if the string is NOT empty. This is semantically identical
-       to executing !IsEmpty() on the string.
-
-       @return
-       true if non-null characters in string.
-     */
-    bool operator!() const;
   //@}
 
   /**@name Concatenation operators **/
@@ -3158,7 +3150,7 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
     /** Initialise the string dictionary from the string.
         The string is expected to be of the form "key=value\\nkey=value".
       */
-    PStringToString(
+    explicit PStringToString(
       const PString & str  ///< String to read dictionary from
     ) { FromString(str); }
   //@}
@@ -3235,7 +3227,7 @@ class PStringOptions : public PStringToString
 {
   public:
     PStringOptions() { }
-    PStringOptions(const PString & str) : PStringToString(str) { }
+    explicit PStringOptions(const PString & str) : PStringToString(str) { }
     PStringOptions(const PStringToString & other) : PStringToString(other) { }
     PStringOptions & operator=(const PStringToString & other) { PStringToString::operator=(other); return *this; }
 

@@ -44,10 +44,10 @@
 
 const PString & PVideoFrameInfo::YUV420P() { static PConstString const s(PTLIB_VIDEO_YUV420P); return s; }
 
-static PINDEX CalculateFrameBytesYUV420P(unsigned width, unsigned height)
+static PINDEX CalculateFrameBytesYUV420(unsigned width, unsigned height)
 {
-  // Need to round up with Y plane
-  return ((width+1)&~1) * ((height+1)&~1) *3 / 2;
+  // Cannot have odd dimensions due to UV resolution reduction
+  return ((width+1)&~1) * ((height+1)&~1) * 3 / 2;
 }
 
 static PINDEX CalculateFrameBytesRGB24(unsigned width, unsigned height)
@@ -61,6 +61,7 @@ static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
   PINDEX (*calculate)(unsigned width, unsigned height);
+  const char * synonym;
 
   PINDEX CalculateFrameBytes(unsigned width, unsigned height)
   {
@@ -69,14 +70,17 @@ static struct {
       return  (width * bitsPerPixel / 8) * height;
   }
 } ColourFormatBPPTab[] = {
-  { PTLIB_VIDEO_YUV420P, 12, CalculateFrameBytesYUV420P },
-  { "I420",              12, CalculateFrameBytesYUV420P },
-  { "IYUV",              12, CalculateFrameBytesYUV420P },
+  { PTLIB_VIDEO_YUV420P, 12, CalculateFrameBytesYUV420 },
+  { "I420",              12, CalculateFrameBytesYUV420, PTLIB_VIDEO_YUV420P },
+  { "IYUV",              12, CalculateFrameBytesYUV420, PTLIB_VIDEO_YUV420P },
   { "YUV420",            12 },
   { "RGB32",             32 },
   { "BGR32",             32 },
   { "RGB24",             24, CalculateFrameBytesRGB24 },
   { "BGR24",             24, CalculateFrameBytesRGB24 },
+  { "YUV420B",           12, CalculateFrameBytesYUV420 },
+  { "NV12",              12, CalculateFrameBytesYUV420, "YUV420B" },
+  { "420v",              12, CalculateFrameBytesYUV420, "YUV420B" },
   { "YUY2",              16 },
   { "YUV422",            16 },
   { "YUV422P",           16 },
@@ -293,13 +297,22 @@ unsigned PVideoFrameInfo::GetFrameRate() const
 
 PBoolean PVideoFrameInfo::SetColourFormat(const PString & colourFmt)
 {
-  if (!colourFmt) {
+  if (!colourFmt.IsEmpty()) {
+    // Check for synonyms
+    for (PINDEX i = 0; i < PARRAYSIZE(ColourFormatBPPTab); i++) {
+      if (ColourFormatBPPTab[i].synonym != NULL && colourFmt == ColourFormatBPPTab[i].colourFormat) {
+        m_colourFormat = ColourFormatBPPTab[i].synonym;
+        return true;
+      }
+    }
+  
     m_colourFormat = colourFmt.ToUpper();
     return true;
   }
 
   for (PINDEX i = 0; i < PARRAYSIZE(ColourFormatBPPTab); i++) {
-    if (SetColourFormat(ColourFormatBPPTab[i].colourFormat))
+    if (SetColourFormat(ColourFormatBPPTab[i].colourFormat) ||
+          (ColourFormatBPPTab[i].synonym != NULL && SetColourFormat(ColourFormatBPPTab[i].synonym)))
       return true;
   }
 
@@ -1335,9 +1348,8 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const OpenArgs & args,
   if (device == NULL)
     return NULL;
 
-  device->m_colourFormat = args.colourFormat;
-  device->m_frameWidth = args.width;
-  device->m_frameHeight = args.height;
+  device->SetColourFormat(args.colourFormat);
+  device->SetFrameSize(args.width, args.height);
   if (device->OpenFull(adjustedArgs, startImmediate))
     return device;
 
