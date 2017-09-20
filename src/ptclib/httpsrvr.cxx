@@ -1326,7 +1326,7 @@ bool PWebSocket::WriteHeader(OpCodes  opCode,
 
   if (masking >= 0) {
     header[1] |= 0x80;
-    *(PUInt32b *)&header[len] = (uint32_t)masking;
+    *(uint32_t *)&header[len] = (uint32_t)masking;
     len += 4;
   }
 
