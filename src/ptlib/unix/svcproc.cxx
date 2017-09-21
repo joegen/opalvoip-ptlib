@@ -542,11 +542,10 @@ int PServiceProcess::InternalMain(void *)
 #else
     started = OnStart();
 #endif
-  
+
     if (started) {
       SetTerminationValue(0);
       PProcess::InternalMain(NULL);
-      Terminate();
     }
   }
 
