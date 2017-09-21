@@ -2772,6 +2772,7 @@ PObject::Comparison PProcess::Compare(const PObject & obj) const
 void PProcess::Terminate()
 {
   // With extreme prejudice
+  PTRACE(0, "Process \"" << GetName() << "\" terminating without clean up!");
   _exit(m_terminationValue);
 }
 
