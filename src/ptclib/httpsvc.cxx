@@ -147,11 +147,8 @@ PBoolean PHTTPServiceProcess::OnPause()
 
 void PHTTPServiceProcess::OnContinue()
 {
-  if (Initialise("Restarted"))
-    return;
-
-  OnStop();
-  Terminate();
+  if (!Initialise("Restarted"))
+    OnStop();
 }
 
 
@@ -387,15 +384,19 @@ void PHTTPServiceProcess::OnHTTPEnded(PHTTPServer & /*server*/)
   if (!IsListening())
     return;
 
+  bool initFailed = true;
+
   m_httpNameSpace.StartWrite();
 
-  if (Initialise("Restart\tInitialisation"))
+  if (Initialise("Restart\tInitialisation")) {
     m_restartThread = NULL;
+    initFailed = false;
+  }
 
   m_httpNameSpace.EndWrite();
 
-  if (m_restartThread != NULL)
-    Terminate();
+  if (initFailed)
+    OnStop();
 }
 
 
