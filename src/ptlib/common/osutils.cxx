@@ -2535,8 +2535,7 @@ PProcess & PProcess::Current()
 {
   if (PProcessInstance == NULL) {
     PAssertAlways("Catastrophic failure, PProcess::Current() = NULL!!");
-    PBreakToDebugger();
-    _exit(1);
+    abort();
   }
   return *PProcessInstance;
 }

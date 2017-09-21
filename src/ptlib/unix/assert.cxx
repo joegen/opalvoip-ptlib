@@ -415,7 +415,7 @@
       case 'a' :
       case 'A' :
         PError << "\nAborting.\n";
-        _exit(1);
+        abort();
         return true;
 
   #if P_EXCEPTIONS
