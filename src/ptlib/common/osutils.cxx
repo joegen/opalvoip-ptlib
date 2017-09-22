@@ -3528,6 +3528,20 @@ void PMutexExcessiveLockInfo::ReleasedLock(const PObject & mutex,
 }
 
 
+unsigned PMutexExcessiveLockInfo::MinDeadlockTime(unsigned waitTime)
+{
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+  /* The sanitizers slow things down a LOT, so increase the
+      time before indication of phantom deadlocks. */
+  return std::max(waitTime*10U, 10000U);
+#else
+  return std::max(waitTime*2U,  1000U);
+#endif
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PTimedMutex::PTimedMutex()
   : PMutexExcessiveLockInfo()
 {

@@ -497,7 +497,7 @@ class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
         unsigned unthrottledLogLevel = 6, ///< PTRACE level to use otherwise
         unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
         unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
-      ) : PReadWriteMutex           (PDebugLocation(file, line, baseName         ), std::max((int)1000, (int)waitTime*2))
+      ) : PReadWriteMutex           (PDebugLocation(file, line, baseName         ), MinDeadlockTime(waitTime))
         , m_timeWaitReadOnlyContext (PDebugLocation(file, line, waitReadOnlyName ), waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
         , m_timeHeldReadOnlyContext (PDebugLocation(file, line, heldReadOnlyName ), heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
         , m_timeWaitReadWriteContext(PDebugLocation(file, line, waitReadWriteName), waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
@@ -568,7 +568,7 @@ class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
     } var
 #else
   #define PDECLARE_INSTRUMENTED_READ_WRITE_MUTEX(var, name, waitTime, heldTime, ...) \
-                       PDECLARE_READ_WRITE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))
+                       PDECLARE_READ_WRITE_MUTEX(var, name, MinDeadlockTime(waitTime))
 #endif
 
 

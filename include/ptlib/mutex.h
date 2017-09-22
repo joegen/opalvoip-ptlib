@@ -59,6 +59,8 @@ class PMutexExcessiveLockInfo
     virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);
     virtual void ReleasedLock(const PObject & mutex, uint64_t startHeldSamplePoint, bool readOnly, const PDebugLocation & location);
 
+    static unsigned MinDeadlockTime(unsigned waitTime);
+
   public:
     void SetLocationName(const char * name) { m_location.m_extra = name; }
 };
@@ -199,7 +201,7 @@ typedef PTimedMutex PMutex;
         unsigned thresholdPercent = 5,    ///< Percentage of samples above thresholdTime to trigger throttledLogLevel
         unsigned maxHistory = 0           ///< Optional number of samples above thresholdTime to display sincle last PTRACE()
       ) : PDebugLocation(file, line, baseName)
-        , PTimedMutex(this, std::max((int)1000, (int)waitTime*2))
+        , PTimedMutex(this, MinDeadlockTime(waitTime))
         , m_timeWaitContext(PDebugLocation(file, line, waitName), waitTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
         , m_timeHeldContext(PDebugLocation(file, line, heldName), heldTime, throttleTime, throttledLogLevel, unthrottledLogLevel, thresholdPercent, maxHistory)
       { }
@@ -237,7 +239,7 @@ typedef PTimedMutex PMutex;
 
 #else
   #define PDECLARE_INSTRUMENTED_MUTEX(var, name, waitTime, heldTime, ...) \
-                       PDECLARE_MUTEX(var, name, std::max((int)1000, (int)waitTime*2))
+                       PDECLARE_MUTEX(var, name, MinDeadlockTime(waitTime))
 #endif
 
 
