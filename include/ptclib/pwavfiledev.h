@@ -79,6 +79,9 @@ class PSoundChannel_WAVFile : public PSoundChannel
 
   protected:
     PINDEX         m_bufferSize;
+    PINDEX         m_bufferCount;
+    PINDEX         m_bufferPos;
+    PBYTEArray     m_buffer;
     bool           m_autoRepeat;
     PWAVFile       m_WAVFile;
     PAdaptiveDelay m_Pacing;
