@@ -134,6 +134,8 @@ static PJSON::Base * CreateFromStream(istream & strm)
     case '7' :
     case '8' :
     case '9' :
+    case '-' :
+    case '.' :
       return new PJSON::Number;
     case 'T' :
     case 't' :
