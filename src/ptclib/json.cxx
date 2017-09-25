@@ -439,6 +439,22 @@ bool PJSON::Object::Set(const PString & name, Types type)
 }
 
 
+bool PJSON::Object::Set(const PString & name, const Base & toInsert)
+{
+  if (find(name) != end())
+    return false;
+
+  insert(make_pair(name, toInsert.DeepClone()));
+  return true;
+}
+
+
+bool PJSON::Object::Set(const PString & name, const PJSON & toInsert)
+{
+  return Set(name, toInsert.GetAs<Base>());
+}
+
+
 PJSON::Object & PJSON::Object::SetObject(const PString & name)
 {
   Set(name, e_Object);
@@ -607,6 +623,18 @@ void PJSON::Array::Append(Types type)
   Base * ptr = CreateByType(type);
   if (ptr != NULL)
     push_back(ptr);
+}
+
+
+void PJSON::Array::Append(const Base & toAppend)
+{
+  push_back(toAppend.DeepClone());
+}
+
+
+void PJSON::Array::Append(const PJSON & toAppend)
+{
+  Append(toAppend.GetAs<Base>());
 }
 
 

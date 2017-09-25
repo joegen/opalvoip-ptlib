@@ -96,6 +96,8 @@ class PJSON : public PObject
         bool GetBoolean(const PString & name) const;
 
         bool Set(const PString & name, Types type);
+        bool Set(const PString & name, const Base & toInsert);
+        bool Set(const PString & name, const PJSON & toInsert);
         Object & SetObject(const PString & name);
         Array & SetArray(const PString & name);
         bool SetString(const PString & name, const PString & value);
@@ -133,6 +135,8 @@ class PJSON : public PObject
         bool GetBoolean(size_t index) const;
 
         void Append(Types type);
+        void Append(const Base & toAppend);
+        void Append(const PJSON & toAppend);
         Object & AppendObject();
         Array & AppendArray();
         void AppendString(const PString & value);
