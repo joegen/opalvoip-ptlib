@@ -813,7 +813,7 @@ PBoolean PThread::IsTerminated() const
   if (m_type == e_IsProcess)
     return false; // Process is always still running
 
-  switch (PX_state) {
+  switch (PX_state.load()) {
     case PX_starting :
     case PX_firstResume :
       return false;
