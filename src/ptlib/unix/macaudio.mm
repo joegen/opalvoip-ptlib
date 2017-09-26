@@ -465,7 +465,7 @@ protected:
       if (!m_queue.Open(m_bufferSize*m_bufferCount*deviceFormat.mSampleRate/m_dataFormat.mSampleRate))
         return false;
 
-      m_resampleBuffer.resize(m_dataFormat.mBytesPerPacket*deviceFormat.mSampleRate/m_dataFormat.mSampleRate);
+      m_resampleBuffer.resize(m_bufferCount*m_dataFormat.mBytesPerPacket*deviceFormat.mSampleRate/m_dataFormat.mSampleRate);
     }
 #else
     // Weirdly iOS is easier the OS-X! We can simply set record sample rate
