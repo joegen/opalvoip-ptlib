@@ -527,8 +527,8 @@ internal_depend :: $(DEPS)
 	@true
 
 ifndef NODEPS
-  ifneq ($(wildcard $(DEPDIR)/*.dep),)
-    include $(DEPDIR)/*.dep
+  ifeq ($(findstring depend,$(MAKECMDGOALS))$(findstring clean,$(MAKECMDGOALS)),)
+    -include $(DEPS)
   endif
 endif
 
