@@ -281,6 +281,18 @@ class PNotifierListTemplate : public PObject
       return true;
     }
 
+    /// Determine if notifier is in list
+    bool Contains(const Notifier & handler) const
+    {
+      return std::find(this->m_list.begin(), this->m_list.end(), handler) != this->m_list.end();
+    }
+
+    /// Indicate notifier list is empty
+    bool IsEmpty() const
+    {
+      return this->m_list.empty();
+    }
+
     struct IsTarget : public std::unary_function<PObject, bool> 
     {
       PObject * m_obj;
