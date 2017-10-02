@@ -507,7 +507,7 @@ bool PTones::Juxtapose(unsigned frequency1, unsigned frequency2, unsigned millis
 
 bool PTones::Modulate(unsigned frequency1, unsigned modulator, unsigned milliseconds, unsigned volume)
 {
-  if (frequency1 > m_maxFrequency || frequency1 > m_maxFrequency) {
+  if (frequency1 < MinFrequency || frequency1 > m_maxFrequency) {
     PTRACE(3, "Frequency out of range: f=" << frequency1 << ", min=" << MinFrequency << ", max=" << m_maxFrequency);
     return false;
   }
