@@ -406,10 +406,9 @@ int PServiceProcess::InternalMain(void * arg)
   SetTerminationValue(0);
 
   MSG msg;
-  msg.message = WM_QUIT+1; //Want somethingthat is not WM_QUIT
+  msg.message = WM_QUIT+1; // Want something that is not WM_QUIT
   do {
-    switch (MsgWaitForMultipleObjects(1, &m_terminationEvent,
-                                      false, INFINITE, QS_ALLINPUT)) {
+    switch (MsgWaitForMultipleObjects(1, &m_terminationEvent, false, INFINITE, QS_ALLINPUT)) {
       case WAIT_OBJECT_0+1 :
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
           if (msg.message != WM_QUIT) {
@@ -421,14 +420,13 @@ int PServiceProcess::InternalMain(void * arg)
 
       default :
         // This is a work around for '95 coming up with an erroneous error
-        if (::GetLastError() == ERROR_INVALID_HANDLE &&
-                          WaitForSingleObject(m_terminationEvent, 0) == WAIT_TIMEOUT)
+        if (::GetLastError() == ERROR_INVALID_HANDLE && WaitForSingleObject(m_terminationEvent, 0) == WAIT_TIMEOUT)
           break;
         // Else fall into next case
 
       case WAIT_OBJECT_0 :
-        if (!m_debugMode || m_controlWindow == NULL)
-          msg.message = WM_QUIT;
+        if (!m_debugMode || m_controlWindow == NULL || m_controlWindow == (HWND)-1)
+          msg.message = WM_QUIT; // really terminate
         else {
           DebugOutput("\nService simulation stopped.\n\n"
                       "Close window to terminate.");
@@ -655,6 +653,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       m_controlWindow = m_debugWindow = (HWND)-1;
 
       PostQuitMessage(0);
+      SetEvent(m_terminationEvent);
       break;
 
     case WM_ENDSESSION :
