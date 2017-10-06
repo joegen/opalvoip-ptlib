@@ -874,6 +874,7 @@ PThread::PThread(PINDEX stackSize,
   m_threadHandle = CreateThread(NULL, m_originalStackSize, 
                        (LPTHREAD_START_ROUTINE)MainFunction, this, CREATE_SUSPENDED, (LPDWORD) &m_threadId);
 #endif
+  m_uniqueId = m_threadId;
 
   PAssertOS(m_threadHandle.IsValid());
 
