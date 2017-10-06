@@ -56,6 +56,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E-Mail Test", "samples\emai
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JSON Test", "samples\json\json_2015.vcxproj", "{8298F530-F757-4E34-A6A5-DCCEEF9FC842}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Media File Test", "samples\mediafile\mediafile_2015.vcxproj", "{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -382,6 +384,18 @@ Global
 		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Release|Win32.Build.0 = Release|Win32
 		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Release|x64.ActiveCfg = Release|x64
 		{8298F530-F757-4E34-A6A5-DCCEEF9FC842}.Release|x64.Build.0 = Release|x64
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Debug|Win32.Build.0 = Debug|Win32
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Debug|x64.ActiveCfg = Debug|x64
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Debug|x64.Build.0 = Debug|x64
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.No Trace|Win32.ActiveCfg = No Trace|Win32
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.No Trace|Win32.Build.0 = No Trace|Win32
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.No Trace|x64.ActiveCfg = No Trace|x64
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.No Trace|x64.Build.0 = No Trace|x64
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Release|Win32.ActiveCfg = Release|Win32
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Release|Win32.Build.0 = Release|Win32
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Release|x64.ActiveCfg = Release|x64
+		{7E93C0CA-6DE9-4CD4-B22D-19A1BA8B02A9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

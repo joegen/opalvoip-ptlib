@@ -369,7 +369,7 @@ public:
      Note this can only be performed for WriteOnly files, and before the first
      call to Write() is executed.
     */
-  virtual void SetChannels(unsigned v);
+  virtual bool SetChannels(unsigned v);
 
   /**Get the sample rate of the WAV file in Hz.
    */
@@ -379,7 +379,7 @@ public:
      Note this can only be performed for WriteOnly files, and before the first
      call to Write() is executed.
    */
-  virtual void SetSampleRate(unsigned v);
+  virtual bool SetSampleRate(unsigned v);
 
   /**Get how many bits there are per sample, eg 8 or 16.
    */
@@ -392,7 +392,7 @@ public:
      Note this can only be performed for WriteOnly files, and before the first
      call to Write() is executed.
    */
-  virtual void SetSampleSize(unsigned v);
+  virtual bool SetSampleSize(unsigned v);
 
   /**Get how may bytes there are per second
    */

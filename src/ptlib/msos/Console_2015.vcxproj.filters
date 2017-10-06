@@ -379,6 +379,9 @@
     <ClCompile Include="..\..\ptclib\json.cxx">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ptclib\mediafile.cxx">
+      <Filter>Source Files\Components\Media</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Include\PtLib\Args.h">
@@ -950,6 +953,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
     <ClInclude Include="..\..\..\include\ptclib\pjson.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptclib\mediafile.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>

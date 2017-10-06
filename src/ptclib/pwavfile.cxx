@@ -365,7 +365,7 @@ unsigned PWAVFile::GetChannels() const
 }
 
 
-void PWAVFile::SetChannels(unsigned channels) 
+bool PWAVFile::SetChannels(unsigned channels) 
 {
   switch (m_status) {
     case e_Reading :
@@ -385,7 +385,10 @@ void PWAVFile::SetChannels(unsigned channels)
 
     default :
       PTRACE(2, "SetChannels ignored after write started, or number of channels unsupported");
+      return false;
   }
+
+  return true;
 }
 
 
@@ -397,7 +400,7 @@ unsigned PWAVFile::GetSampleRate() const
 }
 
 
-void PWAVFile::SetSampleRate(unsigned rate) 
+bool PWAVFile::SetSampleRate(unsigned rate) 
 {
   switch (m_status) {
     case e_Reading :
@@ -412,7 +415,10 @@ void PWAVFile::SetSampleRate(unsigned rate)
 
     default :
       PTRACE(2, "SetSampleRate ignored after write started");
+      return false;
   }
+
+  return true;
 }
 
 
@@ -428,15 +434,19 @@ unsigned PWAVFile::GetRawSampleSize() const
 }
 
 
-void PWAVFile::SetSampleSize(unsigned v) 
+bool PWAVFile::SetSampleSize(unsigned v) 
 {
-  if (m_status == e_PreWrite) {
-    m_wavFmtChunk.bitsPerSample = (WORD)v;
-    if (m_wavFmtChunk.format == fmt_PCM) {
-      m_wavFmtChunk.bytesPerSample = m_wavFmtChunk.bitsPerSample*8;
-      m_wavFmtChunk.bytesPerSec = m_wavFmtChunk.sampleRate * m_wavFmtChunk.bytesPerSample;
-    }
-  }
+  if (m_status != e_PreWrite)
+    return false;
+
+  m_wavFmtChunk.bitsPerSample = (WORD)v;
+  if (m_wavFmtChunk.format != fmt_PCM)
+    return v == m_wavFmtChunk.bytesPerSample;
+
+  m_wavFmtChunk.bytesPerSample = (WORD)v;
+  m_wavFmtChunk.bitsPerSample  = (WORD)(v/8);
+  m_wavFmtChunk.bytesPerSec    = v*m_wavFmtChunk.sampleRate;
+  return true;
 }
 
 

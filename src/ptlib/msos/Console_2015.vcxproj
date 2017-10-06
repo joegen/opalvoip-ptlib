@@ -387,6 +387,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\ptclib\json.cxx" />
+    <ClCompile Include="..\..\ptclib\mediafile.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\tonedev.cxx" />
     <ClCompile Include="..\unix\opensl_es.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -1227,6 +1235,7 @@ if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
     <None Include="..\..\..\tools\get_revision.sh" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\ptclib\mediafile.h" />
     <ClInclude Include="..\..\..\include\ptclib\pjson.h" />
     <ClInclude Include="..\..\..\include\ptlib\id_generator.h" />
     <ClInclude Include="..\..\..\include\ptclib\gstreamer.h" />
