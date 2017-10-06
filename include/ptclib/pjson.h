@@ -221,6 +221,8 @@ class PJSON : public PObject
 
     bool IsType(Types type) const { return PAssertNULL(m_root)->IsType(type); }
 
+    void Set(Types type);
+
     template <class T> const T & GetAs() const { return dynamic_cast<const T &>(*PAssertNULL(m_root)); }
     template <class T>       T & GetAs()       { return dynamic_cast<      T &>(*PAssertNULL(m_root)); }
     const Object  & GetObject()  const { return GetAs<Object>();  }

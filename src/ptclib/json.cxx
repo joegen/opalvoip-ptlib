@@ -114,6 +114,15 @@ PString PJSON::AsString(std::streamsize indent) const
 }
 
 
+void PJSON::Set(Types type)
+{
+  delete m_root;
+  m_root = CreateByType(type);
+  if (m_root == NULL)
+    m_root = new Null;
+}
+
+
 static PJSON::Base * CreateFromStream(istream & strm)
 {
   strm >> ws;
