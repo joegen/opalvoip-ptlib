@@ -423,7 +423,6 @@ bool PThread::PX_kill(PThreadIdentifier tid, PUniqueThreadIdentifier uid, int si
       return false;
   }
 
-#if !P_NO_PTHREAD_KILL
   int error = pthread_kill(tid, sig);
   switch (error) {
     case 0:
@@ -447,7 +446,6 @@ bool PThread::PX_kill(PThreadIdentifier tid, PUniqueThreadIdentifier uid, int si
                  << " errno " << error << ' ' << strerror(error) << endl;
 #endif // PTRACING
   }
-#endif // !defined(P_MACOSX) && !P_NO_PTHREAD_KILL
 
   return false;
 }
@@ -833,6 +831,7 @@ PBoolean PThread::IsTerminated() const
   if (m_type != e_IsExternal)
     return false;
 
+#if P_NO_PTHREAD_KILL
   /* Some flavours of Linux crash in pthread_kill() if the thread id
      is invalid. Now, IMHO, a pthread function that is not itself
      thread safe is utter madness, but apparently, the authors would
@@ -844,7 +843,10 @@ PBoolean PThread::IsTerminated() const
      if the external thread still exists. */
   char fn[100];
   snprintf(fn, sizeof(fn), "/proc/%u/task/%u/stat", getpid(), (unsigned)(intptr_t)GetUniqueIdentifier());
-  return access(fn, R_OK) != 0 && !PX_kill(id, GetUniqueIdentifier(), 0);
+  return access(fn, R_OK) != 0;
+#else
+  return !PX_kill(id, GetUniqueIdentifier(), 0);
+#endif
 }
 
 
