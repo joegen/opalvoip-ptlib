@@ -325,13 +325,6 @@ PCaselessString PFilePath::GetPath() const
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-void PFile::SetFilePath(const PString & newName)
-{
-  if (!IsOpen())
-    m_path = newName;
-}
-
-
 bool PFile::Access(const PFilePath & name, OpenMode mode)
 {
   int accmode;

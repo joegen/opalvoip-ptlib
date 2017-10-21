@@ -288,7 +288,7 @@ class PFilePath : public PFilePathString
     );
   //@}
 
-    // Internal function to take partial path and make a full canonoical path form it.
+    // Internal function to take partial path and make a full canonical path from it.
     static PFilePathString Canonicalise(const PFilePathString & path, bool isDirectory);
 
   protected:

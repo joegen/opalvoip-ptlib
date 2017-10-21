@@ -293,6 +293,8 @@ static PString CanonicaliseDirectory(const PString & path)
     // if the path doesn't end in a slash, add one
     if (canonical_path[canonical_path.GetLength()-1] != '/')
       canonical_path += '/';
+    if (path.IsEmpty() || path == ".")
+      return canonical_path; // Return current directory
   }
 
   const char * ptr = path;
@@ -333,9 +335,6 @@ static PString CanonicaliseDirectory(const PString & path)
 
 PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDirectory)
 {
-  if (path.IsEmpty())
-    return path;
-
   if (isDirectory)
     return CanonicaliseDirectory(path);
 
@@ -422,8 +421,6 @@ void PDirectory::Construct ()
   directory   = NULL;
   entryBuffer = NULL;
   entryInfo   = NULL;
-
-  PString::AssignContents(CanonicaliseDirectory(*this));
 }
 
 bool PDirectory::Open(PFileInfo::FileTypes ScanMask)
@@ -733,17 +730,6 @@ PStringArray PDirectory::GetPath() const
 //
 // PFile
 //
-
-void PFile::SetFilePath(const PString & newName)
-{
-  PINDEX p;
-
-  if ((p = newName.FindLast('/')) == P_MAX_INDEX) 
-    m_path = CanonicaliseDirectory("") + newName;
-  else
-    m_path = CanonicaliseDirectory(newName(0, p)) + newName(p + 1, P_MAX_INDEX);
-}
-
 
 bool PFile::InternalOpen(OpenMode mode, OpenOptions opt, PFileInfo::Permissions permissions)
 

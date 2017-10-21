@@ -269,7 +269,6 @@ void PDirectory::Construct()
 {
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
-  PCaselessString::AssignContents(PFilePath::Canonicalise(*this, true));
 }
 
 
@@ -346,24 +345,24 @@ void PDirectory::Close()
 
 PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDirectory)
 {
-  if (path.IsEmpty())
-    return path;
-
 #ifdef _WIN32_WCE //doesn't support Current Directory so the path suppose to be full
   PString fullpath=path;
   PINDEX len = fullpath.GetLength();
 
 #else
   PString partialpath = path;
-
-  // Look for special case of "\c:\" at start of string as some generalised
-  // directory processing algorithms have a habit of adding a leading
-  // PDIR_SEPARATOR as it would be for Unix.
-  if (partialpath.NumCompare("\\\\\\") == EqualTo ||
-        (partialpath.GetLength() > 3 &&
-         partialpath[0] == PDIR_SEPARATOR &&
-         partialpath[2] == ':'))
-    partialpath.Delete(0, 1);
+  if (partialpath.IsEmpty())
+    partialpath = ".";
+  else {
+    // Look for special case of "\c:\" at start of string as some generalised
+    // directory processing algorithms have a habit of adding a leading
+    // PDIR_SEPARATOR as it would be for Unix.
+    if (partialpath.NumCompare("\\\\\\") == EqualTo ||
+      (partialpath.GetLength() > 3 &&
+       partialpath[0] == PDIR_SEPARATOR &&
+       partialpath[2] == ':'))
+      partialpath.Delete(0, 1);
+  }
 
   LPSTR dummy;
   DWORD len = (PINDEX)GetFullPathName(partialpath, 0, NULL, &dummy);
@@ -372,8 +371,10 @@ PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDir
    PString fullpath;
    GetFullPathName(partialpath, len+1, fullpath.GetPointerAndSetLength(len), &dummy);
 #endif
+
   if (isDirectory && len > 0 && fullpath[len-1] != PDIR_SEPARATOR)
     fullpath += PDIR_SEPARATOR;
+
   PINDEX pos = 0;
   while ((pos = fullpath.Find('/', pos)) != P_MAX_INDEX)
     fullpath[pos] = PDIR_SEPARATOR;

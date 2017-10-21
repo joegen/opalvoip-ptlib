@@ -1096,6 +1096,27 @@ PTraceSaveContextIdentifier::~PTraceSaveContextIdentifier()
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
+PDirectory::PDirectory()
+  : PFilePathString(PFilePath::Canonicalise(PString::Empty(), true))
+{
+  Construct();
+}
+
+
+PDirectory::PDirectory(const char * cpathname)  
+  : PFilePathString(PFilePath::Canonicalise(cpathname, true))
+{
+  Construct();
+}
+  
+
+PDirectory::PDirectory(const PString & pathname)
+  : PFilePathString(PFilePath::Canonicalise(pathname, true))
+{
+  Construct();
+}
+
+
 void PDirectory::CloneContents(const PDirectory * d)
 {
   CopyContents(*d);
@@ -4432,6 +4453,13 @@ void PFilePath::SetType(const PFilePathString & newType)
     *this += newType;
   else
     Splice(newType, GetLength() - oldType.GetLength(), oldType.GetLength());
+}
+
+
+void PFile::SetFilePath(const PString & newName)
+{
+  Close();
+  m_path = PFilePath::Canonicalise(newName, false);
 }
 
 
