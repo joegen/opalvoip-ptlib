@@ -36,21 +36,6 @@
 #include <ptlib/pprocess.h>
 
 
-#if P_FFMPEG
-  extern "C" {
-    P_PUSH_MSVC_WARNINGS(4244)
-    #include <libavformat/avformat.h>
-    #include <libavutil/imgutils.h>
-    #include <libswresample/swresample.h>
-    P_POP_MSVC_WARNINGS()
-  };
-
-  #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,71,0)
-    #undef P_FFMPEG
-  #endif
-#endif
-
-
 #define PTraceModule() "MediaFile"
 
 
@@ -310,7 +295,15 @@ public:
 PFACTORY_CREATE(PMediaFile::Factory, PMediaFile_WAV, ".wav");
 
 
-#if P_FFMPEG
+#if P_FFMPEG_FULL
+
+extern "C" {
+  P_PUSH_MSVC_WARNINGS(4244)
+  #include <libavformat/avformat.h>
+  #include <libavutil/imgutils.h>
+  #include <libswresample/swresample.h>
+  P_POP_MSVC_WARNINGS()
+};
 
 #ifdef P_AVFORMAT_LIB
   #pragma comment(lib, P_AVFORMAT_LIB)
@@ -324,6 +317,7 @@ PFACTORY_CREATE(PMediaFile::Factory, PMediaFile_WAV, ".wav");
 #ifdef P_SWRESAMPLE_LIB
   #pragma comment(lib, P_SWRESAMPLE_LIB)
 #endif
+
 
 class PMediaFile_FFMPEG : public PMediaFile
 {
@@ -1831,4 +1825,4 @@ public:
 PFACTORY_CREATE(PMediaFile::Factory, PMediaFile_AVI, ".avi");
 
 
-#endif // P_FFMPEG
+#endif // P_FFMPEG_FULL

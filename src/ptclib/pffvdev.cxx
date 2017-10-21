@@ -68,20 +68,13 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
 );
 
 
-#if P_FFMPEG
+#if P_FFMPEG_FULL
   extern "C" {
     P_PUSH_MSVC_WARNINGS(4244)
     #include <libavformat/avformat.h>
     #include <libavutil/imgutils.h>
     P_POP_MSVC_WARNINGS()
   };
-
-  #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57,71,0)
-    #undef P_FFMPEG
-  #endif
-#endif
-
-#if P_FFMPEG
 
   #ifdef P_AVFORMAT_LIB
     #pragma comment(lib, P_AVFORMAT_LIB)
@@ -272,7 +265,7 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
     }
   };
 
-#else // P_FFMPEG
+#else // P_FFMPEG_FULL
 
   #if _WIN32
     static const char * ffmpegExe = "ffmpeg.exe";
@@ -398,7 +391,7 @@ PCREATE_VIDINPUT_PLUGIN_EX(FFMPEG,
     }
   };
 
-#endif // P_FFMPEG
+#endif // P_FFMPEG_FULL
 
 
 

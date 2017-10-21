@@ -51,7 +51,7 @@
   #endif
 #endif
 
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
   extern "C" {
     P_PUSH_MSVC_WARNINGS(4244)
     #include <libswscale/swscale.h>
@@ -61,7 +61,7 @@
   #ifdef P_SWSCALE_LIB
     #pragma comment(lib, P_SWSCALE_LIB)
   #endif
-#endif // P_FFMPEG
+#endif // P_FFMPEG_SWSCALE
 
 #ifdef P_MEDIALIB
   #include <mlib.h>
@@ -107,7 +107,7 @@ class PStandardColourConverter : public PColourConverter
 {
     PCLASSINFO(PStandardColourConverter, PColourConverter);
   protected:
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
     SwsContext * m_swsContext;
 
     void AdjustRGBPixelFormat(AVPixelFormat & fmt, unsigned rgbIncrement, unsigned redOffset)
@@ -142,12 +142,12 @@ class PStandardColourConverter : public PColourConverter
 
     PStandardColourConverter(const PColourPair & colours)
       : PColourConverter(colours)
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
       , m_swsContext(NULL)
 #endif
     { }
 
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
     ~PStandardColourConverter()
     {
       sws_freeContext(m_swsContext); // NULL is OK
@@ -568,7 +568,7 @@ class PRasterDutyCycle
 };
 
 
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
 
 // given yuv buffer, get ptr to location (x,y)
 static BYTE* ffmpeg_yuvptr(const BYTE* frame, unsigned planeWidth, unsigned planeHeight, int x, int y, int plane)
@@ -592,7 +592,7 @@ static BYTE* ffmpeg_yuvptr(const BYTE* frame, unsigned planeWidth, unsigned plan
     return const_cast<BYTE*>(frame);
 }
 
-#endif // P_FFMPEG
+#endif // P_FFMPEG_SWSCALE
 
 
 // Consider a YUV420P image of 4x4 pixels.
@@ -844,7 +844,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
   dstFrameWidth  = (dstFrameWidth+1)&~1;
   dstFrameHeight = (dstFrameHeight+1)&~1;
 
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
 
   struct SwsContext * context = sws_getContext(srcWidth, srcHeight, AV_PIX_FMT_YUV420P,
                                                dstWidth, dstHeight, AV_PIX_FMT_YUV420P,
@@ -878,7 +878,7 @@ bool PColourConverter::CopyYUV420P(unsigned srcX, unsigned srcY, unsigned srcWid
     return true;
   }
 
-#endif // P_FFMPEG
+#endif // P_FFMPEG_SWSCALE
 
   void(*rowFunction)(const BYTE * srcPtr, unsigned srcWidth, unsigned srcHeight, unsigned srcLineSpan,
                      BYTE * dstPtr, unsigned dstWidth, unsigned dstHeight, int dstFrameWidth) = CropYUV420P;
@@ -1264,7 +1264,7 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
     scanLineSizeRGB = -scanLineSizeRGB;
   }
 
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
 
   if (CanUseFFMPEG(AV_PIX_FMT_NONE, AV_PIX_FMT_YUV420P, rgbIncrement, redOffset)) {
     const uint8_t* srcSlice[] = { scanLinePtrRGB };
@@ -1277,7 +1277,7 @@ bool PStandardColourConverter::RGBtoYUV420P(const BYTE * srcFrameBuffer,
     return true;
   }
 
-#endif // P_FFMPEG
+#endif // P_FFMPEG_SWSCALE
 
   if (m_srcFrameWidth == scanLineSizeY && m_srcFrameHeight == planeHeight) {
     int RGBOffset[4] = { 0, (int)rgbIncrement, scanLineSizeRGB, scanLineSizeRGB+(int)rgbIncrement };
@@ -2059,7 +2059,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     dstPixpos[3] = rgbIncrement;
   }
 
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
 
   if (CanUseFFMPEG(AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE, rgbIncrement, redOffset)) {
     const uint8_t* srcSlice[] = { scanLinePtrY, scanLinePtrU, scanLinePtrV };
@@ -2072,7 +2072,7 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     return true;
   }
 
-#endif // P_FFMPEG
+#endif // P_FFMPEG_SWSCALE
 
   scanLineSizeRGB *= 2;
 
@@ -2241,7 +2241,7 @@ PBoolean PStandardColourConverter::YUV420PtoRGB565(const BYTE * srcFrameBuffer,
 }
 
 
-#if P_FFMPEG
+#if P_FFMPEG_SWSCALE
 
 PSTANDARD_COLOUR_CONVERTER(YUV420B,YUV420P)
 {
@@ -2267,7 +2267,7 @@ PSTANDARD_COLOUR_CONVERTER(YUV420B,YUV420P)
   return true;
 }
 
-#endif // P_FFMPEG
+#endif // P_FFMPEG_SWSCALE
 
 PSTANDARD_COLOUR_CONVERTER(SBGGR8,RGB24)
 {

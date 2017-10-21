@@ -872,6 +872,7 @@
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WIN64_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WIN64_DIR@/include/libavcodec/avcodec.h")
     #pragma include_alias(<libswscale/swscale.h>,      <@FFMPEG_WIN64_DIR@/include/libswscale/swscale.h>)
+    #pragma include_alias(<libswscale/version.h>,      <@FFMPEG_WIN64_DIR@/include/libswscale/version.h>)
     #pragma include_alias("libavutil/avutil.h",        "@FFMPEG_WIN64_DIR@/include/libavutil/avutil.h")
     #pragma include_alias("libavutil/avconfig.h",      "@FFMPEG_WIN64_DIR@/include/libavutil/avconfig.h")
     #pragma include_alias("libavutil/common.h",        "@FFMPEG_WIN64_DIR@/include/libavutil/common.h")
@@ -899,6 +900,7 @@
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WIN32_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WIN32_DIR@/include/libavcodec/avcodec.h")
     #pragma include_alias(<libswscale/swscale.h>,      <@FFMPEG_WIN32_DIR@/include/libswscale/swscale.h>)
+    #pragma include_alias(<libswscale/version.h>,      <@FFMPEG_WIN32_DIR@/include/libswscale/version.h>)
     #pragma include_alias("libavutil/avutil.h",        "@FFMPEG_WIN32_DIR@/include/libavutil/avutil.h")
     #pragma include_alias("libavutil/avconfig.h",      "@FFMPEG_WIN32_DIR@/include/libavutil/avconfig.h")
     #pragma include_alias("libavutil/common.h",        "@FFMPEG_WIN32_DIR@/include/libavutil/common.h")
@@ -926,6 +928,7 @@
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavcodec/avcodec.h")
     #pragma include_alias(<libswscale/swscale.h>,      <@FFMPEG_WINBUILDS_WIN64_DIR@/include/libswscale/swscale.h>)
+    #pragma include_alias(<libswscale/version.h>,      <@FFMPEG_WINBUILDS_WIN64_DIR@/include/libswscale/version.h>)
     #pragma include_alias("libavutil/avutil.h",        "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/avutil.h")
     #pragma include_alias("libavutil/avconfig.h",      "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/avconfig.h")
     #pragma include_alias("libavutil/common.h",        "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/common.h")
@@ -953,6 +956,7 @@
     #pragma include_alias("libavformat/version.h",     "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavformat/version.h")
     #pragma include_alias("libavcodec/avcodec.h",      "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavcodec/avcodec.h")
     #pragma include_alias(<libswscale/swscale.h>,      <@FFMPEG_WINBUILDS_WIN32_DIR@/include/libswscale/swscale.h>)
+    #pragma include_alias(<libswscale/version.h>,      <@FFMPEG_WINBUILDS_WIN32_DIR@/include/libswscale/version.h>)
     #pragma include_alias("libavutil/avutil.h",        "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavutil/avutil.h")
     #pragma include_alias("libavutil/avconfig.h",      "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavutil/avconfig.h")
     #pragma include_alias("libavutil/common.h",        "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavutil/common.h")
@@ -972,12 +976,25 @@
   #endif
 #endif
 
-#if P_FFMPEG && defined(_MSC_VER)
-  #define P_AVFORMAT_LIB   P_FFMPEG_LIBDIR "avformat.lib"
-  #define P_AVCODEC_LIB    P_FFMPEG_LIBDIR "avcodec.lib"
-  #define P_AVUTIL_LIB     P_FFMPEG_LIBDIR "avutil.lib"
-  #define P_SWRESAMPLE_LIB P_FFMPEG_LIBDIR "swresample.lib"
-  #define P_SWSCALE_LIB    P_FFMPEG_LIBDIR "swscale.lib"
+#if P_FFMPEG
+
+  #include <libswscale/version.h>
+  #if LIBSWSCALE_VERSION_INT >= AV_VERSION_INT(4,6,0)
+    #define P_FFMPEG_SWSCALE 1
+  #endif
+
+  #include "libavformat/version.h"
+  #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57,71,0)
+    #define P_FFMPEG_FULL 1
+  #endif
+
+  #ifdef _MSC_VER
+    #define P_AVFORMAT_LIB   P_FFMPEG_LIBDIR "avformat.lib"
+    #define P_AVCODEC_LIB    P_FFMPEG_LIBDIR "avcodec.lib"
+    #define P_AVUTIL_LIB     P_FFMPEG_LIBDIR "avutil.lib"
+    #define P_SWRESAMPLE_LIB P_FFMPEG_LIBDIR "swresample.lib"
+    #define P_SWSCALE_LIB    P_FFMPEG_LIBDIR "swscale.lib"
+  #endif
 #endif
 
 /////////////////////////////////////////////////
