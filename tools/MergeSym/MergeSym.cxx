@@ -114,7 +114,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 12, ReleaseCode, 0, false, true)
+  : PProcess("Equivalence", "MergeSym", 1, 12, ReleaseCode, 1, false, true)
 {
 }
 
@@ -214,7 +214,11 @@ void MergeSym::Main()
       PINDEX previous_def_symbols_size = def_symbols.size();
       PINDEX inc_index = 0;
       for (inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
-        PString trial_filename = PDirectory(include_path[inc_index]) + ext_filename;
+        PString trial_filename;
+        if (PFilePath::IsAbsolutePath(ext_filename))
+          trial_filename = ext_filename;
+        else
+          trial_filename = PDirectory(include_path[inc_index]) + ext_filename;
         if (args.HasOption('v'))
           cout << "\nTrying " << trial_filename << " ..." << flush;
         PTextFile ext;
