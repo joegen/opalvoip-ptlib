@@ -1195,35 +1195,68 @@ PString PProcess::GetOSClass()
 }
 
 
+static bool RealGetVersion(POSVERSIONINFOW info)
+{
+  memset(info, 0, sizeof(*info));
+  info->dwOSVersionInfoSize = sizeof(*info);
+
+  HMODULE hNTDLL = ::GetModuleHandleW(L"ntdll.dll");
+  if (hNTDLL != NULL) {
+    typedef LONG (WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+    RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hNTDLL, "RtlGetVersion");
+    if (fxPtr != NULL && fxPtr(info) == 0)
+      return true;
+  }
+
+#ifdef P_VERSION_HELPERS
+  info->dwPlatformId = VER_PLATFORM_WIN32_NT;
+  if (IsWindows8Point1OrGreater()) {
+    info->dwMajorVersion = 8;
+    info->dwMinorVersion = 1;
+    return true;
+  }
+  if (IsWindows8OrGreater()) {
+    info->dwMajorVersion = 8;
+    info->dwMinorVersion = 0;
+    return true;
+  }
+  if (IsWindows7SP1OrGreater()) {
+    info->dwMajorVersion = 7;
+    info->dwMinorVersion = 1;
+    return true;
+  }
+  if (IsWindows7OrGreater()) {
+    info->dwMajorVersion = 7;
+    info->dwMinorVersion = 0;
+    return true;
+  }
+  if (IsWindowsVistaOrGreater()) {
+    info->dwMajorVersion = 6;
+    info->dwMinorVersion = 0;
+    return true;
+  }
+  if (IsWindowsServer()) {
+    info->dwMajorVersion = 5;
+    info->dwMinorVersion = 2;
+    return true;
+  }
+  if (IsWindowsXPOrGreater()) {
+    info->dwMajorVersion = 5;
+    info->dwMinorVersion = 1;
+    return true;
+  }
+  return false;
+#else
+  return GetVersionEx(&info);
+#endif
+}
+
+
 PString PProcess::GetOSName()
 {
-#if P_VERSION_HELPERS
-  if (IsWindowsVersionOrGreater(10,0,0))
-    return "10";
-  if (IsWindows8Point1OrGreater())
-    return "8.1";
-  if (IsWindows8OrGreater())
-    return "8";
-  if (IsWindows7SP1OrGreater())
-    return "7 sp1";
-  if (IsWindows7OrGreater())
-    return "7";
-  if (IsWindowsVistaSP2OrGreater())
-    return "Vista sp2";
-  if (IsWindowsVistaSP1OrGreater())
-    return "Vista sp1";
-  if (IsWindowsVistaOrGreater())
-    return "Vista";
-  if (IsWindowsServer())
-    return "Server 2003";
-  if (IsWindowsXPSP3OrGreater())
-    return "XP sp3";
-  if (IsWindowsXPOrGreater())
-    return "XP";
-#else
-  OSVERSIONINFO info;
-  info.dwOSVersionInfoSize = sizeof(info);
-  GetVersionEx(&info);
+  OSVERSIONINFOW info;
+  RealGetVersion(&info);
+
   switch (info.dwPlatformId) {
     case VER_PLATFORM_WIN32s :
       return "32s";
@@ -1262,9 +1295,15 @@ PString PProcess::GetOSName()
             case 2 :
               return info.dwBuildNumber < 9200 ? "8" : "8.1";
           }
+          break;
+
+        default :
+          if (info.dwMinorVersion == 0)
+            return info.dwMajorVersion;
+          else
+            return psprintf("%u.%u", info.dwMajorVersion, info.dwMinorVersion);
       }
   }
-#endif // P_VERSION_HELPERS
   return "?";
 }
 
@@ -1294,11 +1333,14 @@ PString PProcess::GetOSHardware()
     case PROCESSOR_ARCHITECTURE_PPC :
       return "ppc";
 
-#ifdef PROCESSOR_ARCHITECTURE_AMD64
-    case PROCESSOR_ARCHITECTURE_AMD64:
-      return "AMD64";
-#endif
+    case PROCESSOR_ARCHITECTURE_ARM :
+      return "arm";
 
+    case PROCESSOR_ARCHITECTURE_AMD64:
+      return "x64";
+
+    case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 :
+      return "x86/x64";
   }
   return "?";
 }
@@ -1306,38 +1348,11 @@ PString PProcess::GetOSHardware()
 
 PString PProcess::GetOSVersion()
 {
-#if P_VERSION_HELPERS
-  if (IsWindowsVersionOrGreater(10,0,0))
-    return "v10.0";
-  if (IsWindows8Point1OrGreater())
-    return "v6.3";
-  if (IsWindows8OrGreater())
-    return "v6.2";
-  if (IsWindows7SP1OrGreater())
-    return "v6.1.1";
-  if (IsWindows7OrGreater())
-    return "v6.1";
-  if (IsWindowsVistaSP2OrGreater())
-    return "v6.0.2";
-  if (IsWindowsVistaSP1OrGreater())
-    return "v6.0.1";
-  if (IsWindowsVistaOrGreater())
-    return "v6.0";
-  if (IsWindowsServer())
-    return "v5.2";
-  if (IsWindowsXPSP3OrGreater())
-    return "v5.1.3";
-  if (IsWindowsXPOrGreater())
-    return "v5.1";
-  return "?";
-#else
-  OSVERSIONINFO info;
-  info.dwOSVersionInfoSize = sizeof(info);
-  GetVersionEx(&info);
+  OSVERSIONINFOW info;
+  RealGetVersion(&info);
   WORD wBuildNumber = (WORD)info.dwBuildNumber;
   return psprintf(wBuildNumber > 0 ? "v%u.%u.%u" : "v%u.%u",
                   info.dwMajorVersion, info.dwMinorVersion, wBuildNumber);
-#endif // P_VERSION_HELPERS
 }
 
 
