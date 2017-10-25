@@ -1037,12 +1037,14 @@ void PSemaphore::Reset(unsigned initial, unsigned maximum)
       static pthread_mutex_t semCreationMutex = PTHREAD_MUTEX_INITIALIZER;
       PAssertPTHREAD(pthread_mutex_lock, (&semCreationMutex));
 
-      const char * semName;
-      if (m_name.IsEmpty())
-        sem_unlink(semName = "/ptlib_sem");
-      else
-        semName = m_name;
-      m_namedSemaphore.ptr = sem_open(semName, (O_CREAT | O_EXCL), 700, m_initial);
+      if (!m_name.IsEmpty())
+        m_namedSemaphore.ptr = sem_open(m_name, (O_CREAT | O_EXCL), 700, m_initial);
+      else {
+        PStringStream generatedName;
+        generatedName << "/ptlib/" << getpid() << '/' << this;
+        sem_unlink(generatedName);
+        m_namedSemaphore.ptr = sem_open(generatedName, (O_CREAT | O_EXCL), 700, m_initial);
+      }
   
       PAssertPTHREAD(pthread_mutex_unlock, (&semCreationMutex));
   
