@@ -721,7 +721,7 @@ bool PIPSocket::SetQoS(const QoS & qos)
     44<<2, // VoiceQoS
     46<<2  // ControlQoS
   };
-  if (SetOption(IP_TOS, qos.m_dscp < 0 || qos.m_dscp > 63 ? DSCP[qos.m_type] : qos.m_dscp, IPPROTO_IP))
+  if (SetOption(IP_TOS, qos.m_dscp < 0 || qos.m_dscp > 63 ? DSCP[qos.m_type] : (qos.m_dscp<<2), IPPROTO_IP))
     return true;
 
   PTRACE(1, "Could not set TOS field in IP header: " << GetErrorText());
