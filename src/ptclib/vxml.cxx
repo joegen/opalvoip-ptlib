@@ -1549,7 +1549,16 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
 
   PINDEX pos = 0;
   while (pos < expr.GetLength()) {
-    if (expr[pos] == '\'') {
+    if (expr(pos, pos + 4) == "eval(") {
+      PINDEX closedBracket = expr.Find(')', pos);
+      PTRACE_IF(2, closedBracket == P_MAX_INDEX, "VXML\tMismatched parenthesis");
+      PString expression = expr(pos + 5, closedBracket - 1);
+      PTRACE(4, "VXML\tFound eval() function: expression=\"" << expression << "\"");
+      PString evalRes = EvaluateExpr(expression);
+      result += EvaluateExpr(evalRes);
+      pos = closedBracket + 1;
+    }
+    else if (expr[pos] == '\'') {
       PINDEX quote = expr.Find('\'', ++pos);
       PTRACE_IF(2, quote == P_MAX_INDEX, "VXML\tMismatched quote, ignoring transfer");
       result += expr(pos, quote-1);
@@ -2054,7 +2063,7 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
     return false;
   }
 
-  if (GetVar(condition.Left(location).Trim()) == GetVar(condition.Mid(location + 2).Trim())) {
+  if (EvaluateExpr(condition.Left(location).Trim()) == EvaluateExpr(condition.Mid(location + 2).Trim())) {
     PTRACE(4, "VXML\tCondition matched \"" << condition << '"');
     return true;
   }
