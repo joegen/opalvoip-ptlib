@@ -858,6 +858,10 @@ class PIPSocket : public PSocket
      This describes in a platform and as protocol independent way as possible
      the quality of service. How it produces, for example, DiffServ and RSVP
      is up to the underlying operating system.
+
+     When reading from a string, the codes "CS0" to "CS7" and "AF11", "AF12"
+     etc, as defined by various RFC's, is supported to map to the correct
+     DSCP values.
     */
   //@{
     struct QoS

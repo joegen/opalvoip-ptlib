@@ -1466,7 +1466,7 @@ ostream & operator<<(ostream & strm, const PIPSocket::QoS & qos)
   if (qos.m_dscp >= 0)
     strm << "0x" << hex << qos.m_dscp << dec;
   else
-    strm << 'C' << (int)qos.m_type;
+    strm << 'T' << (int)qos.m_type;
 
   return strm;
 }
@@ -1474,10 +1474,30 @@ ostream & operator<<(ostream & strm, const PIPSocket::QoS & qos)
 
 istream & operator>>(istream & strm, PIPSocket::QoS & qos)
 {
-  if (strm.peek() != 'C')
+  char ch;
+  strm >> ch;
+  if (isdigit(ch)) {
+    strm.putback(ch);
     strm >> qos.m_dscp;
-  else {
+  }
+  else if (ch == 'A' && strm.peek() == 'F') {
     strm.ignore(1);
+    char ch2;
+    strm >> ch >> ch2;
+    if (ch < '1' || ch > '4' || ch2 < '1' || ch2 > '3')
+      strm.setstate(ios::badbit);
+    else
+      qos.m_dscp = ((ch - '0') << 3) | ((ch2 - '0') << 1);
+  }
+  else if (ch == 'C' && strm.peek() == 'S') {
+    strm.ignore(1);
+    strm >> ch;
+    if (ch < '0' || ch > '7')
+      strm.setstate(ios::badbit);
+    else
+      qos.m_dscp = (ch - '0') << 3;
+  }
+  else {
     int i;
     strm >> i;
     qos.m_type = (PIPSocket::QoSType)i;
