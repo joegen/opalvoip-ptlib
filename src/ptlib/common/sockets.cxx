@@ -1480,6 +1480,14 @@ istream & operator>>(istream & strm, PIPSocket::QoS & qos)
     strm.putback(ch);
     strm >> qos.m_dscp;
   }
+  else if (ch == 'E' && strm.peek() == 'F') {
+    strm.ignore(1);
+    qos.m_dscp = 46;
+  }
+  else if (ch == 'D' && strm.peek() == 'F') {
+    strm.ignore(1);
+    qos.m_dscp = 0;
+  }
   else if (ch == 'A' && strm.peek() == 'F') {
     strm.ignore(1);
     char ch2;
