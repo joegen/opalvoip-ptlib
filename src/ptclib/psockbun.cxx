@@ -451,6 +451,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
       natMethod->GetServerAddress(ap);
       if (PInterfaceMonitor::GetInstance().IsValidBindingForDestination(binding, ap.GetAddress())) {
         if (natMethod->CreateSocket(info.m_socket, binding, m_localPort)) {
+          info.m_socket->SetQoS(m_qos);
           PNATUDPSocket * natSocket = dynamic_cast<PNATUDPSocket*>(info.m_socket);
           if (natSocket != NULL)
             natSocket->GetBaseAddress(ap);
@@ -476,6 +477,7 @@ bool PMonitoredSockets::CreateSocket(SocketInfo & info, const PIPSocket::Address
     }
 
     info.m_socket->SetReadTimeout(0);
+    info.m_socket->SetQoS(m_qos);
     return true;
   }
 
@@ -930,6 +932,24 @@ PBoolean PMonitoredSocketBundle::Close()
 }
 
 
+bool PMonitoredSocketBundle::SetQoS(const PIPSocket::QoS & qos)
+{
+  PSafeLockReadOnly guard(*this);
+
+  bool result = false;
+
+  if (guard.IsLocked()) {
+    m_qos = qos;
+    for (SocketInfoMap_T::iterator iter = m_socketInfoMap.begin(); iter != m_socketInfoMap.end(); ++iter) {
+      if (iter->second.m_socket->SetQoS(qos))
+        result = true;
+    }
+  }
+
+  return result;
+}
+
+
 PBoolean PMonitoredSocketBundle::GetAddress(const PString & iface,
                                         PIPSocket::Address & address,
                                         WORD & port,
@@ -1157,6 +1177,15 @@ PBoolean PSingleMonitoredSocket::Close()
   m_opened = false;
   m_interfaceAddedSignal.Close(); // Fail safe break out of Select()
   return DestroySocket(m_info);
+}
+
+
+bool PSingleMonitoredSocket::SetQoS(const PIPSocket::QoS & qos)
+{
+  PSafeLockReadWrite guard(*this);
+
+  m_qos = qos;
+  return guard.IsLocked() && m_info.m_socket != NULL && m_info.m_socket->SetQoS(qos);
 }
 
 

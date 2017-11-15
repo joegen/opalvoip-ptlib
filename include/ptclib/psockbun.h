@@ -243,6 +243,11 @@ class PMonitoredSockets : public PSafeObject
     /// Return the local port number being used by the socket(s)
     WORD GetPort() const { return m_localPort; }
 
+    /// Set the quality of service for sockets
+    virtual bool SetQoS(
+      const PIPSocket::QoS & qos
+    ) = 0;
+
     /// Get the local address for the given interface.
     virtual PBoolean GetAddress(
       const PString & iface,        ///< Interface to get address for
@@ -373,8 +378,9 @@ class PMonitoredSockets : public PSafeObject
     PNatMethods * m_natMethods;
 #endif
 
-    bool          m_opened;
-    PUDPSocket    m_interfaceAddedSignal;
+    bool           m_opened;
+    PUDPSocket     m_interfaceAddedSignal;
+    PIPSocket::QoS m_qos;
 };
 
 typedef PSafePtr<PMonitoredSockets> PMonitoredSocketsPtr;
@@ -548,6 +554,11 @@ class PMonitoredSocketBundle : public PMonitoredSockets
     /// Close all socket(s)
     virtual PBoolean Close();
 
+    /// Set the quality of service for sockets
+    virtual bool SetQoS(
+      const PIPSocket::QoS & qos
+    );
+
     /// Get the local address for the given interface.
     virtual PBoolean GetAddress(
       const PString & iface,        ///< Interface to get address for
@@ -629,6 +640,11 @@ class PSingleMonitoredSocket : public PMonitoredSockets
 
     /// Close all socket(s)
     virtual PBoolean Close();
+
+    /// Set the quality of service for sockets
+    virtual bool SetQoS(
+      const PIPSocket::QoS & qos
+    );
 
     /// Get the local address for the given interface.
     virtual PBoolean GetAddress(
