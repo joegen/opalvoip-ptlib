@@ -65,7 +65,9 @@ static atomic<bool> Crc32Table_initialised;
 
 PSTUN::PSTUN()
   : m_pollRetries(DEFAULT_POLL_RETRIES)
-  , replyTimeout(DEFAULT_REPLY_TIMEOUT)
+  , m_replyTimeout(DEFAULT_REPLY_TIMEOUT)
+  , m_iceRole(NoIceRole)
+  , m_iceTieBreak(0)
 {
 }
 
@@ -76,7 +78,7 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
   PIPSocketAddressAndPort & externalAddressAndPort
 )
 {  
-  socket->SetReadTimeout(replyTimeout);
+  socket->SetReadTimeout(m_replyTimeout);
 
   socket->GetLocalAddress(baseAddressAndPort);
   socket->PUDPSocket::InternalSetSendAddress(serverAddress);
@@ -218,6 +220,21 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
 
 void PSTUN::AppendMessageIntegrity(PSTUNMessage & message)
 {
+  if (m_userName.IsEmpty() || m_password.IsEmpty())
+    return;
+
+  switch (m_iceRole) {
+    case IceLite :
+    case IceControlled :
+      message.AddAttribute(PSTUNIceRole(PSTUNAttribute::ICE_CONTROLLED, m_iceTieBreak));
+      break;
+    case IceControlling :
+      message.AddAttribute(PSTUNIceRole(PSTUNAttribute::ICE_CONTROLLING, m_iceTieBreak));
+      break;
+    default :
+      break;
+  }
+
   message.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::USERNAME, m_userName));
   message.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::REALM,    m_realm));
   if (!m_nonce.IsEmpty())
@@ -249,7 +266,7 @@ bool PSTUN::ValidateMessageIntegrity(const PSTUNMessage & message)
 
 int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & request, PSTUNMessage & response)
 {
-  socket->SetReadTimeout(replyTimeout);
+  socket->SetReadTimeout(m_replyTimeout);
 
   PSTUNErrorCode * errorAttribute;
 
@@ -377,6 +394,16 @@ void PSTUN::SetCredentials(const PString & username, const PString & password, c
     PMessageDigest5::Encode(m_userName + ':' + m_realm + ':' + saslPassword, hash);
     m_password = hash;
   }
+}
+
+
+void PSTUN::SetIceRole(IceRole role)
+{
+  m_iceRole = role;
+  if (role == IceLite)
+    m_iceTieBreak = 0;
+  else
+    memcpy(&m_iceTieBreak, PRandom::Octets(sizeof(m_iceTieBreak)), sizeof(m_iceTieBreak));
 }
 
 
@@ -1280,7 +1307,7 @@ void PSTUNClient::InternalUpdate()
     }
 
     m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
-    m_socket->SetReadTimeout(replyTimeout);
+    m_socket->SetReadTimeout(m_replyTimeout);
 
     PIPSocketAddressAndPort baseAddress;
     m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
@@ -1332,7 +1359,7 @@ void PSTUNClient::InternalUpdate()
       return; // Could not send on any interface!
 
     // wait for reply
-    PChannel::Errors error = PIPSocket::Select(selectList, replyTimeout);
+    PChannel::Errors error = PIPSocket::Select(selectList, m_replyTimeout);
     if (error != PChannel::NoError) {
       PTRACE(1, "STUN\tError in select - " << PChannel::GetErrorText(error));
       return;
@@ -1363,7 +1390,7 @@ void PSTUNClient::InternalUpdate()
 
   // complete discovery
   m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
-  m_socket->SetReadTimeout(replyTimeout);
+  m_socket->SetReadTimeout(m_replyTimeout);
   PIPSocketAddressAndPort ap;
   m_socket->GetBaseAddress(ap);
   m_interface = ap.GetAddress();
@@ -1459,7 +1486,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   for (PINDEX i = 0; i < m_numSocketsForPairing; ++i) {
     PSTUNSocketPairInfo & info = socketInfo[i];
     info.m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
-    info.m_socket->SetReadTimeout(replyTimeout);
+    info.m_socket->SetReadTimeout(m_replyTimeout);
     info.m_request = PSTUNMessage(PSTUNMessage::BindingRequest);
     if (!info.m_request.Write(*info.m_socket)) {
       PTRACE(1, "STUN\tSocket write failed: " << info.m_socket->GetErrorText(PChannel::LastWriteError));

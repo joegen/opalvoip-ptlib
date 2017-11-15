@@ -326,6 +326,44 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     goto sendResponse;
   }
 
+  PSTUNIceRole * roleAttribute;
+  switch (m_iceRole) {
+    case IceLite:
+      if (request.FindAttribute(PSTUNAttribute::ICE_CONTROLLED) != NULL) {
+        // We are ALWAYS controlled
+        response.SetErrorType(487, request.GetTransactionID());
+        goto sendResponse;
+      }
+      break;
+
+    case IceControlled:
+      roleAttribute = (PSTUNIceRole *)request.FindAttribute(PSTUNAttribute::ICE_CONTROLLED);
+      if (roleAttribute != NULL) {
+        if (m_iceTieBreak >= roleAttribute->m_tieBreak)
+          m_iceRole = IceControlling;
+        else {
+          response.SetErrorType(487, request.GetTransactionID());
+          goto sendResponse;
+        }
+      }
+      break;
+
+    case IceControlling :
+      roleAttribute = (PSTUNIceRole *)request.FindAttribute(PSTUNAttribute::ICE_CONTROLLING);
+      if (roleAttribute != NULL) {
+        if (m_iceTieBreak < roleAttribute->m_tieBreak)
+          m_iceRole = IceControlled;
+        else {
+          response.SetErrorType(487, request.GetTransactionID());
+          goto sendResponse;
+        }
+      }
+      break;
+
+    default :
+      break;
+  }
+
   // initialise the response
   response.SetType(PSTUNMessage::BindingResponse, request.GetTransactionID());
 

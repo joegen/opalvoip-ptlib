@@ -101,13 +101,13 @@ class PSTUN {
 
     /**Get the timeout for responses from STUN server.
       */
-    virtual const PTimeInterval GetTimeout() const { return replyTimeout; }
+    virtual const PTimeInterval GetTimeout() const { return m_replyTimeout; }
 
     /**Set the timeout for responses from STUN server.
       */
     virtual void SetTimeout(
       const PTimeInterval & timeout   ///< New timeout in milliseconds
-    ) { replyTimeout = timeout; }
+    ) { m_replyTimeout = timeout; }
 
     /**Get the number of retries for responses from STUN server.
       */
@@ -119,6 +119,17 @@ class PSTUN {
       PINDEX retries    ///< Number of retries
     ) { m_pollRetries = retries; }
 
+    enum IceRole {
+      NoIceRole,
+      IceLite,
+      IceControlled,
+      IceControlling
+    };
+    virtual void SetIceRole(
+      IceRole role
+    );
+
+  protected:
     PINDEX                  m_pollRetries;
     PSASLString             m_userName;
     PSASLString             m_realm;
@@ -126,7 +137,9 @@ class PSTUN {
     PBYTEArray              m_password; // text for short term, MD5 for long term
     PIPSocket::Address      m_interface;
     PIPSocketAddressAndPort m_serverAddress;
-    PTimeInterval           replyTimeout;
+    PTimeInterval           m_replyTimeout;
+    IceRole                 m_iceRole;
+    uint64_t                m_iceTieBreak;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -301,6 +314,21 @@ class PSTUNFingerprint : public PSTUNAttribute
 
     bool IsValid() const { return type == FINGERPRINT && length == sizeof(m_crc); }
 };
+
+
+P_PUSH_MSVC_WARNINGS(4315)
+class PSTUNIceRole : public PSTUNAttribute
+{
+  public:
+    PUInt64b m_tieBreak;
+
+    PSTUNIceRole(Types newType, uint64_t tieBreak)
+      : PSTUNAttribute(newType, sizeof(m_tieBreak))
+      , m_tieBreak(tieBreak)
+    {
+    }
+};
+P_POP_MSVC_WARNINGS()
 
 
 class PSTUNErrorCode : public PSTUNAttribute
