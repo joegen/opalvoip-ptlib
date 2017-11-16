@@ -541,6 +541,15 @@ class PSTUNClient : public PNatMethod, public PSTUN
     static const char * MethodName();
     virtual PCaselessString GetMethodName() const;
 
+    /**Set the authentication credentials.
+       Override of PNatMethod virtual.
+      */
+    virtual void SetCredentials(
+      const PString & username, 
+      const PString & password, 
+      const PString & realm
+    );
+
     /**Set the STUN server to use.
        The server string may be of the form host:port. If :port is absent
        then the default port 3478 is used. The substring port can also be
@@ -549,14 +558,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
       */
     bool SetServer(
       const PString & server
-    );
-
-    /**Set the authentication credentials.
-      */
-    virtual void SetCredentials(
-      const PString & username, 
-      const PString & password, 
-      const PString & realm
     );
 
     /**Get the current server address name.
