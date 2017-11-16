@@ -3637,6 +3637,8 @@ void PTimedMutex::InternalWait(const PDebugLocation * location)
   uint64_t startWaitCycle = PProfiling::GetCycles();
 
   if (!PlatformWait(m_excessiveLockTimeout)) {
+    m_excessiveLockActive = true;
+
 #if PTRACING
     PThreadIdentifier lockerId = m_lockerId;
     PThreadIdentifier lastLockerId = m_lastLockerId;
@@ -3662,8 +3664,6 @@ void PTimedMutex::InternalWait(const PDebugLocation * location)
 #else
     PAssertAlways(PSTRSTRM("Possible deadlock in " << *this));
 #endif
-
-    m_excessiveLockActive = true;
 
     PlatformWait(PMaxTimeInterval);
     ExcessiveLockPhantom(*this);
