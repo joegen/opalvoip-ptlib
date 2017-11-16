@@ -1170,11 +1170,7 @@ bool PSTUNClient::Open(const PIPSocket::Address & binding)
     m_interface = binding;
   }
 
-  if (m_serverAddress.IsValid() || SetServer(m_serverName))
-    return GetNatType(true) != UnknownNat;
-
-  PTRACE(1, "Server port not set.");
-  return false;
+  return GetNatType(true) != UnknownNat;
 }
 
 
@@ -1202,32 +1198,36 @@ void PSTUNClient::Close()
 
 bool PSTUNClient::SetServer(const PString & server)
 {
-  if (server.IsEmpty())
-    return false;
-
-  m_serverName = server;
-
 #if P_DNS_RESOLVER
   PIPSocketAddressAndPortVector addresses;
-  if (PDNS::LookupSRV(server, "_stun._udp.", DefaultPort, addresses) && !addresses.empty()) {
-    PTRACE(3, "STUN\tUsing DNS SRV record for server at " << addresses[0]);
-    return InternalSetServer(addresses[0]);
+  if (PDNS::LookupSRV(server, "_stun._udp.", DefaultPort, addresses)) {
+    for (size_t i = 0; i < addresses.size(); ++i) {
+      if (InternalSetServer(server, addresses[i] PTRACE_PARAM(, "DNS SRV record ")))
+        return true;
+    }
   }
+  else
+    PTRACE(4, "No _stun._udp DNS SRV record for \"" << server << '"');
 #endif
 
-  return InternalSetServer(PIPSocketAddressAndPort(server, DefaultPort));
+  return InternalSetServer(server, PIPSocketAddressAndPort(server, DefaultPort) PTRACE_PARAM(, "host/IP"));
 }
 
 
-bool PSTUNClient::InternalSetServer(const PIPSocketAddressAndPort & addr)
+bool PSTUNClient::InternalSetServer(const PString & server, const PIPSocketAddressAndPort & addr PTRACE_PARAM(, const char * source))
 {
-  if (!addr.IsValid())
+  if (!addr.IsValid()) {
+    PTRACE(2, "Invalid server " << source << " \"" << server << '"');
+    Close();
     return false;
+  }
 
   PWaitAndSignal m(m_mutex);
 
+  m_serverName = server;
+
   if (m_serverAddress != addr) {
-    PTRACE(4, "STUN\tServer set to " << addr << " (" << m_serverName << ')');
+    PTRACE(2, "Server set from " << source << " to " << addr << " (" << m_serverName << ')');
     m_serverAddress = addr;
     Close();
   }
@@ -1239,14 +1239,9 @@ bool PSTUNClient::InternalSetServer(const PIPSocketAddressAndPort & addr)
 PString PSTUNClient::GetServer() const
 {
   PWaitAndSignal m(m_mutex);
-
-  if (!m_serverName.IsEmpty())
-    return m_serverName;
-
-  if (m_serverAddress.IsValid())
-    return m_serverAddress.AsString();
-
-  return PString::Empty();
+  PString s = m_serverName;
+  s.MakeUnique();
+  return s;
 }
 
 
@@ -1286,11 +1281,9 @@ void PSTUNClient::InternalUpdate()
   if (!m_interface.IsValid())
     return;
 
-  if (!m_serverAddress.IsValid() && !SetServer(m_serverName)) {
-    PTRACE(1, "STUN\tServer not set");
-    Close();
+  // Make sure we update server address as DNS pooling may have it change
+  if (!SetServer(m_serverName))
     return;
-  }
 
   if (m_socket != NULL) {
     PIPSocketAddressAndPort baseAddress;
@@ -1631,6 +1624,10 @@ int PTURNUDPSocket::OpenTURN(PTURNClient & client)
     PTRACE(2, "Using STUN for non RTP socket");
     return OpenSTUN(client) ? 0 : -1;
   }
+
+  // Make sure we update server address as DNS pooling may have it change
+  if (!client.SetServer(client.GetServer()))
+    return -1;
 
   client.GetServerAddress(m_serverAddress);
 

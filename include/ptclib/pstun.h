@@ -627,7 +627,7 @@ class PSTUNClient : public PNatMethod, public PSTUN
   protected:
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
     virtual void InternalUpdate();
-    bool InternalSetServer(const PIPSocketAddressAndPort & addr);
+    bool InternalSetServer(const PString & server, const PIPSocketAddressAndPort & addr PTRACE_PARAM(, const char * source));
 
     PSTUNUDPSocket * m_socket;
 
