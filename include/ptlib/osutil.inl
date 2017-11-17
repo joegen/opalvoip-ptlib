@@ -125,7 +125,7 @@ PINLINE PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
 PINLINE PTimeInterval PTimeInterval::operator*(int f) const
   { return PTimeInterval::NanoSeconds(GetNanoSeconds() * f); }
 
-PINLINE PTimeInterval operator*(int64_t left, const PTimeInterval & right)
+PINLINE PTimeInterval operator*(int left, const PTimeInterval & right)
   { return PTimeInterval::NanoSeconds(left * right.GetNanoSeconds()); }
 
 PINLINE PTimeInterval & PTimeInterval::operator*=(int f)
