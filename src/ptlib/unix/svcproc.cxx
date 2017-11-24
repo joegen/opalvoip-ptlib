@@ -361,6 +361,27 @@ int PServiceProcess::InitialiseService()
     return 0;
   }
 
+
+  // Set UID/GID before we open log file so has right ownership.
+
+  // Set the gid we are running under
+  if (args.HasOption('g')) {
+    PString gidstr = args.GetOptionString('g');
+    if (!SetGroupName(gidstr)) {
+      cout << "Could not set GID to \"" << gidstr << "\" - " << strerror(errno) << endl;
+      return 1;
+    }
+  }
+
+  // Set the uid we are running under
+  if (args.HasOption('u')) {
+    PString uidstr = args.GetOptionString('u');
+    if (!SetUserName(uidstr)) {
+      cout << "Could not set UID to \"" << uidstr << "\" - " << strerror(errno) << endl;
+      return 1;
+    }
+  }
+
   // set flag for console messages
   if (args.HasOption('c')) {
 #if PTRACING
@@ -387,24 +408,6 @@ int PServiceProcess::InitialiseService()
   // open the system logger for this program
   PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(true));
 
-  // Set the gid we are running under
-  if (args.HasOption('g')) {
-    PString gidstr = args.GetOptionString('g');
-    if (!SetGroupName(gidstr)) {
-      cout << "Could not set GID to \"" << gidstr << "\" - " << strerror(errno) << endl;
-      return 1;
-    }
-  }
-
-  // Set the uid we are running under
-  if (args.HasOption('u')) {
-    PString uidstr = args.GetOptionString('u');
-    if (!SetUserName(uidstr)) {
-      cout << "Could not set UID to \"" << uidstr << "\" - " << strerror(errno) << endl;
-      return 1;
-    }
-  }
-
   if (args.HasOption('i'))
     SetConfigurationPath(args.GetOptionString('i'));
 
@@ -413,9 +416,9 @@ int PServiceProcess::InitialiseService()
     PAssertOS(seteuid(getuid()) == 0); // Switch back to starting uid for next call
     unsigned maxHandles = args.GetOptionString('H').AsUnsigned();
     if (SetMaxHandles(maxHandles))
-      cout << "Maximum handles set to " << maxHandles << endl;
+      PSYSTEMLOG(StdError, "Maximum handles set to " << maxHandles);
     else
-      cout << "Could not set maximum handles to " << maxHandles << endl;
+      PSYSTEMLOG(StdError, "Could not set maximum handles to " << maxHandles);
     PAssertOS(seteuid(uid) == 0);
   }
 
@@ -424,17 +427,17 @@ int PServiceProcess::InitialiseService()
   if (args.HasOption('C')) {
     struct rlimit rlim;
     if (getrlimit(RLIMIT_CORE, &rlim) != 0) 
-      cout << "Could not get current core file size : error = " << errno << endl;
+      PSYSTEMLOG(StdError, "Could not get current core file size : error = " << errno);
     else {
       int uid = geteuid();
       PAssertOS(seteuid(getuid()) == 0); // Switch back to starting uid for next call
       int v = args.GetOptionString('C').AsInteger();
       rlim.rlim_cur = v;
       if (setrlimit(RLIMIT_CORE, &rlim) != 0) 
-        cout << "Could not set current core file size to " << v << " : error = " << errno << endl;
+        PSYSTEMLOG(StdError, "Could not set current core file size to " << v << " : error = " << errno);
       else {
         getrlimit(RLIMIT_CORE, &rlim);
-        cout << "Core file size set to " << rlim.rlim_cur << "/" << rlim.rlim_max << endl;
+        PSYSTEMLOG(StdError, "Core file size set to " << rlim.rlim_cur << "/" << rlim.rlim_max);
       }
       PAssertOS(seteuid(uid) == 0);
     }
@@ -501,7 +504,7 @@ int PServiceProcess::InitialiseService()
       return 0;
   }
 
-  PTRACE(3, "PTLib", "Forked to PID " << getpid());
+  PSYSTEMLOG(StdError, "Forked to PID " << getpid());
 
   // Set ourselves as out own process group so we don't get signals
   // from our parent's terminal (hopefully!)
