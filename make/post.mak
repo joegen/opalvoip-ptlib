@@ -527,7 +527,7 @@ internal_depend :: $(DEPS)
 	@true
 
 ifndef NODEPS
-  ifeq ($(findstring depend,$(MAKECMDGOALS))$(findstring clean,$(MAKECMDGOALS)),)
+  ifneq ($(findstring internal_,$(MAKECMDGOALS)),)
     -include $(DEPS)
   endif
 endif
