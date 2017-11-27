@@ -215,7 +215,9 @@ class PJSON : public PObject
       const PString & str
     );
 
-    PString AsString(std::streamsize indent = 0) const;
+    PString AsString(
+      std::streamsize initialIndent = 0,
+      std::streamsize subsequentIndent = 0) const;
 
     bool IsValid() const { return m_valid; }
 

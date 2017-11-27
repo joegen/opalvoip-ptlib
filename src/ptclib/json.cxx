@@ -105,10 +105,11 @@ bool PJSON::FromString(const PString & str)
 }
 
 
-PString PJSON::AsString(std::streamsize indent) const
+PString PJSON::AsString(std::streamsize initialIndent, std::streamsize subsequentIndent) const
 {
   PStringStream strm;
-  strm.width(indent);
+  strm.width(initialIndent);
+  strm.precision(subsequentIndent != 0 ? subsequentIndent : (initialIndent != 0 ? 2 : 6));
   PrintOn(strm);
   return strm;
 }
@@ -356,20 +357,24 @@ void PJSON::Object::ReadFrom(istream & strm)
 void PJSON::Object::PrintOn(ostream & strm) const
 {
   std::streamsize indent = strm.width();
+  std::streamsize increment = strm.precision();
+  bool pretty = indent != 0 || increment != 6; // std::ios defaults
+  if (increment == 6)
+    increment = 2;
 
-  if (indent > 0)
+  if (pretty)
     strm << std::right << std::setw(indent + 1);
   strm << '{';
   for (const_iterator it = begin(); it != end(); ++it) {
     if (it != begin())
       strm << ',';
-    if (indent > 0)
-      strm << '\n' << std::setw(indent+2) << ' ';
+    if (pretty)
+      strm << '\n' << std::setw(indent + increment) << ' ';
     PrintString(strm, it->first);
-    if (indent > 0) {
+    if (pretty) {
       strm << " :";
       if (it->second->IsType(e_Object) || it->second->IsType(e_Array))
-        strm << '\n' << std::setw(indent + 2);
+        strm << '\n' << std::setw(indent + increment);
       else
         strm << ' ';
     }
@@ -377,7 +382,7 @@ void PJSON::Object::PrintOn(ostream & strm) const
       strm << ':';
     it->second->PrintOn(strm);
   }
-  if (indent > 0 && !empty())
+  if (pretty && !empty())
     strm << '\n' << std::setw(indent+1);
   strm << '}';
 }
@@ -547,24 +552,28 @@ void PJSON::Array::ReadFrom(istream & strm)
 void PJSON::Array::PrintOn(ostream & strm) const
 {
   std::streamsize indent = strm.width();
+  std::streamsize increment = strm.precision();
+  bool pretty = indent != 0 || increment != 6; // std::ios defaults
+  if (increment == 6)
+    increment = 2;
 
-  if (indent > 0)
+  if (pretty)
     strm << std::right << std::setw(indent + 1);
   strm << '[';
   for (const_iterator it = begin(); it != end(); ++it) {
     const PJSON::Base & item = **it;
     if (it != begin())
       strm << ',';
-    if (indent > 0) {
+    if (pretty) {
       strm << '\n';
       if (item.IsType(e_Object) || item.IsType(e_Array))
-        strm.width(indent + 2);
+        strm.width(indent + increment);
       else
-        strm << std::setw(indent + 2) << ' ';
+        strm << std::setw(indent + increment) << ' ';
     }
     item.PrintOn(strm);
   }
-  if (indent > 0 && !empty())
+  if (pretty && !empty())
     strm << '\n' << std::setw(indent + 1);
   strm << ']';
 }

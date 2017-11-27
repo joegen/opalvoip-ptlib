@@ -65,5 +65,10 @@ void JSONTest::Main()
 
   json5 = json3;
   cout << "Test 6\n" << json5 << endl;
+
+  cout << "Test 1 pretty A\n" << setw(4) << json1 << "\n"
+          "Test 1 pretty B\n" << setprecision(4) << json1 << "\n"
+          "Test 1 pretty C\n" << setprecision(3) << setw(6) << json1
+       << endl;
 }
 
