@@ -32,6 +32,7 @@
 #endif
 
 #include <ptlib.h>
+#include <ptlib/pfactory.h>
 #include <ptlib/videoio.h>
 
 
@@ -102,9 +103,11 @@ class PMediaFile : public PObject
     virtual bool ReadAudio(unsigned track, BYTE * data, PINDEX size, PINDEX & length) = 0;
     virtual bool WriteAudio(unsigned track, const BYTE * data, PINDEX length, PINDEX & written) = 0;
 
+#if OPAL_VIDEO
     virtual bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo) = 0;
     virtual bool ReadVideo(unsigned track, BYTE * data) = 0;
     virtual bool WriteVideo(unsigned track, const BYTE * data) = 0;
+#endif
 };
 
 

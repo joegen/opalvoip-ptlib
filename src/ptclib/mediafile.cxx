@@ -274,6 +274,7 @@ public:
   }
 
 
+#if OPAL_VIDEO
   bool ConfigureVideo(unsigned, const PVideoFrameInfo &)
   {
     return false;
@@ -290,6 +291,7 @@ public:
   {
     return false;
   }
+#endif // OPAL_VIDEO
 };
 
 PFACTORY_CREATE(PMediaFile::Factory, PMediaFile_WAV, ".wav");
@@ -776,6 +778,7 @@ class PMediaFile_FFMPEG : public PMediaFile
       }
 
 
+#if OPAL_VIDEO
       static AVPixelFormat GetPixelFormatFromColourFormat(const PCaselessString & colourFormat)
       {
         static struct {
@@ -890,6 +893,7 @@ class PMediaFile_FFMPEG : public PMediaFile
         m_frame->linesize[2] = m_width/2;
         return EncodeAndWriteFrame();
       }
+#endif // OPAL_VIDEO
     };
 
     std::vector<TrackContext> m_tracks;
@@ -1062,6 +1066,7 @@ class PMediaFile_FFMPEG : public PMediaFile
   }
 
 
+#if OPAL_VIDEO
   bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo)
   {
     PWaitAndSignal mutex(m_mutex);
@@ -1082,6 +1087,7 @@ class PMediaFile_FFMPEG : public PMediaFile
     PWaitAndSignal mutex(m_mutex);
     return CheckOpenAndTrack(track) && m_tracks[track].WriteVideo(data);
   }
+#endif // OPAL_VIDEO
 };
 
 
@@ -1800,6 +1806,7 @@ public:
   }
 
 
+#if OPAL_VIDEO
   bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo)
   {
     PWaitAndSignal mutex(m_mutex);
@@ -1820,6 +1827,7 @@ public:
     PWaitAndSignal mutex(m_mutex);
     return CheckOpenAndTrack(track) && m_tracks[track].WriteVideo(data);
   }
+#endif // OPAL_VIDEO
 };
 
 PFACTORY_CREATE(PMediaFile::Factory, PMediaFile_AVI, ".avi");
