@@ -1822,8 +1822,8 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 PString PIPSocket::Address::AsString(bool IPV6_PARAM(bracketIPv6),
                                      bool IPV6_PARAM(excludeScope)) const
 {
-  if (m_version == 0)
-    return PString::Empty();
+  if (!IsValid())
+    return "<invalid-IP>";
 
 #if defined(P_VXWORKS)
   char ipStorage[INET_ADDR_LEN];

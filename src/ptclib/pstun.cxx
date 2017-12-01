@@ -1229,7 +1229,6 @@ bool PSTUNClient::InternalSetServer(const PString & server, const PIPSocketAddre
   if (m_serverAddress != addr) {
     PTRACE(2, "Server set from " << source << " to " << addr << " (" << m_serverName << ')');
     m_serverAddress = addr;
-    Close();
   }
 
   return true;
@@ -1278,8 +1277,10 @@ void PSTUNClient::InternalUpdate()
 
   m_natType = UnknownNat;
 
-  if (!m_interface.IsValid())
+  if (!m_interface.IsValid()) {
+    PTRACE(2, "Invalid IP address for local inteface, cannot update NAT type.");
     return;
+  }
 
   // Make sure we update server address as DNS pooling may have it change
   if (!SetServer(m_serverName))
@@ -1295,8 +1296,8 @@ void PSTUNClient::InternalUpdate()
   if (!m_interface.IsAny()) {
     m_socket = new PSTUNUDPSocket(eComponent_Unknown);
 
-    if (!m_singlePortRange.Listen(*m_socket,m_interface)) {
-      PTRACE(1, "Unable to open a socket on interface " << m_interface << "");
+    if (!m_singlePortRange.Listen(*m_socket, m_interface)) {
+      PTRACE(1, "Unable to open a socket on interface " << m_interface);
       Close();
       return;
     }
