@@ -530,7 +530,7 @@ bool PFilePath::IsAbsolutePath(const PString & path)
 
 bool PFile::Touch(const PFilePath & name, const PTime & accessTime, const PTime & modTime)
 {
-  PWin32Handle hFile(::CreateFile(name,FILE_WRITE_ATTRIBUTES,0,NULL,0,0,NULL));
+  PWin32Handle hFile(::CreateFile(name,FILE_WRITE_ATTRIBUTES,FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,NULL));
   if (!hFile.IsValid())
     return false;
 
