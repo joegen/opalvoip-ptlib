@@ -608,6 +608,12 @@ public:
     const char * filename ///< New output file for tracing
   );
 
+  /**Get the current filename for trace output.
+     Note that the returned pointer is only valid until the next call to
+     SetFilename() or Initialise().
+   */
+  static const char * GetFilename();
+
   /** Set the trace options.
       The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
       may contain assorted values. These are defined by the #Options enum.

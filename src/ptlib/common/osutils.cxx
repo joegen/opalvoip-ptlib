@@ -689,6 +689,13 @@ void PTrace::SetFilename(const char * filename)
   PTraceInfo::Instance().OpenTraceFile(filename, GetLevel() > 0);
 }
 
+
+const char * PTrace::GetFilename()
+{
+  return PTraceInfo::Instance().m_filename;
+}
+
+
 void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
