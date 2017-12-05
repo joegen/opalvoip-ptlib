@@ -224,11 +224,18 @@ PNatMethod::NatTypes PNatMethod::GetNatType(const PTimeInterval & maxAge)
 {
   PWaitAndSignal mutex(m_mutex);
 
-  if ((PTime() - m_updateTime) > maxAge) {
-    InternalUpdate();
-    m_updateTime.SetCurrentTime();
-  }
+  // Make sure we update server address as DNS pooling may have it change
+  PIPAddressAndPort oldAP, newAP;
+  GetServerAddress(oldAP); // Don't check return result here as may be first time
 
+  if (!SetServer(GetServer()) || !GetServerAddress(newAP))
+    return m_natType = UnknownNat;
+
+  if (newAP == oldAP && m_updateTime.GetElapsed() < maxAge)
+    return m_natType;
+
+  InternalUpdate();
+  m_updateTime.SetCurrentTime();
   return m_natType;
 }
 
@@ -237,10 +244,8 @@ bool PNatMethod::GetExternalAddress(PIPSocket::Address & externalAddress, const 
 {
   PWaitAndSignal mutex(m_mutex);
 
-  if ((PTime() - m_updateTime) > maxAge) {
-    InternalUpdate();
-    m_updateTime.SetCurrentTime();
-  }
+  if (GetNatType(maxAge) == UnknownNat)
+    return false;
 
   return static_cast<const PNatMethod *>(this)->GetExternalAddress(externalAddress);
 }

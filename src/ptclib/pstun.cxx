@@ -1282,10 +1282,6 @@ void PSTUNClient::InternalUpdate()
     return;
   }
 
-  // Make sure we update server address as DNS pooling may have it change
-  if (!SetServer(m_serverName))
-    return;
-
   if (m_socket != NULL) {
     PIPSocketAddressAndPort baseAddress;
     m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
