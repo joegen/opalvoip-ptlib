@@ -975,9 +975,10 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
       m_converter->Convert(videoBuffer[buf.index], buffer, bytesReturned);
     }
     else {
-      memcpy(buffer, videoBuffer[buf.index], buf.bytesused);
+      size_t count = std::min((size_t)frameBytes, (size_t)buf.bytesused);
+      memcpy(buffer, videoBuffer[buf.index], count);
       if (bytesReturned != NULL)
-        *bytesReturned = buf.bytesused;
+        *bytesReturned = count;
     }
 
     PTRACE(8,"V4L2\tget frame data of " << buf.bytesused << "bytes, fd=" << videoFd);
