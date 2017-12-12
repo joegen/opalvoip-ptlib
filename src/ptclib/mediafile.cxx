@@ -1413,7 +1413,7 @@ protected:
       if (m_stream == NULL)
         return false;
 
-      if (size < samples*m_size)
+      if (size < (PINDEX)(samples*m_size))
         return false;
 
       LONG samplesWritten;
