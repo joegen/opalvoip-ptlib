@@ -52,6 +52,7 @@ class PHTML : public PStringStream
       InHead,
       InBody,
       InTitle,
+      InStyle,
       InHeading,
       InDivision,
       InPreFormat,
@@ -91,6 +92,15 @@ class PHTML : public PStringStream
       InForm,
       InSelect,
       InTextArea,
+      InCustom1,
+      InCustom2,
+      InCustom3,
+      InCustom4,
+      InCustom5,
+      InCustom6,
+      InCustom7,
+      InCustom8,
+      InCustom9,
       NumElementsInSet
     };
 
@@ -140,7 +150,7 @@ class PHTML : public PStringStream
         Escaped(const char * str) : m_str(str) { }
       private:
         void Output(ostream & strm) const;
-        const char * m_str;
+        PString m_str;
       friend ostream & operator<<(ostream & strm, const Escaped & e) { e.Output(strm); return strm; }
     };
     static PString Escape(const char * str);
@@ -158,37 +168,41 @@ class PHTML : public PStringStream
     class Element {
       public: 
         virtual ~Element() {}
-      protected:
         enum OptionalCRLF { NoCRLF, OpenCRLF, CloseCRLF, BothCRLF };
         Element(
           const char * nam,
+          ElementInSet elmt = NumElementsInSet,
+          ElementInSet req = InBody,
+          OptionalCRLF opt = BothCRLF
+        );
+        Element(
+          const char * nam,
           const char * att,
-          ElementInSet elmt,
-          ElementInSet req,
-          OptionalCRLF opt
-        ) : name(nam), attr(att), inElement(elmt), reqElement(req), crlf(opt) { }
+          ElementInSet elmt = NumElementsInSet,
+          ElementInSet req = InBody,
+          OptionalCRLF opt = BothCRLF
+        );
+      protected:
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
       private:
-        PString      name;
-        PString      attr;
-        ElementInSet inElement;
-        ElementInSet reqElement;
-        OptionalCRLF crlf;
+        PString      m_name;
+        PString      m_attr;
+        ElementInSet m_inElement;
+        ElementInSet m_reqElement;
+        OptionalCRLF m_crlf;
       friend ostream & operator<<(ostream & strm, const Element & elmt)
-        { elmt.Output((PHTML&)strm); return strm; }
+        { elmt.Output(dynamic_cast<PHTML&>(strm)); return strm; }
     };
 
     class HTML : public Element {
       public:
         HTML(const char * attr = NULL);
-        virtual ~HTML() {}
     };
 
     class Head : public Element {
       public:
         Head();
-        virtual ~Head() {}
       protected:
         virtual void Output(PHTML & html) const;
     };
@@ -196,7 +210,6 @@ class PHTML : public PStringStream
     class Body : public Element {
       public:
         Body(const char * attr = NULL);
-        virtual ~Body() {}
       protected:
         virtual void Output(PHTML & html) const;
     };
@@ -206,23 +219,52 @@ class PHTML : public PStringStream
         Title();
         Title(const char * titleCStr);
         Title(const PString & titleStr);
-        virtual ~Title() {}
       protected:
         virtual void Output(PHTML & html) const;
       private:
-        const char * titleString;
+        PString m_titleString;
+    };
+
+    class Style : public Element {
+      public:
+        Style();
+        Style(const char * cssText);
+        Style(const PString & titleStr);
+      protected:
+        virtual void Output(PHTML & html) const;
+      private:
+        PString m_cssString;
+    };
+
+    class StyleLink : public Element {
+      public:
+        StyleLink(const char * linkCStr);
+        StyleLink(const PString & linkStr);
+      protected:
+        virtual void AddAttr(PHTML & html) const;
+        virtual void Output(PHTML & html) const;
+      private:
+        PString m_styleLink;
     };
 
     class Banner : public Element {
       public:
         Banner(const char * attr = NULL);
-        virtual ~Banner() {}
     };
 
-    class Division : public Element {
+    class DivisionStart : public Element {
       public:
-        Division(const char * attr = NULL);
-        virtual ~Division() {}
+        DivisionStart(const char * attr = NULL);
+      protected:
+        virtual void Output(PHTML & html) const;
+        virtual void AddAttr(PHTML & html) const;
+    };
+
+    class DivisionEnd : public Element {
+      public:
+        DivisionEnd();
+      protected:
+        virtual void Output(PHTML & html) const;
     };
 
     class Heading : public Element {
@@ -241,56 +283,51 @@ class PHTML : public PStringStream
                 int sequence = 0,
                 int skip = 0,
                 const char * attr = NULL);
-        virtual ~Heading() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        int num;
-        const char * srcString;
-        int seqNum, skipSeq;
+        int     m_level;
+        PString m_srcString;
+        int     m_seqNum;
+        int     m_skipSeq;
     };
 
     class BreakLine : public Element {
       public:
         BreakLine(const char * attr = NULL);
-        virtual ~BreakLine() {}
     };
 
     class Paragraph : public Element {
       public:
         Paragraph(const char * attr = NULL);
-        virtual ~Paragraph() {}
     };
 
     class PreFormat : public Element {
       public:
         PreFormat(int widthInChars = 0,
                   const char * attr = NULL);
-        virtual ~PreFormat() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        int width;
+        int m_width;
     };
 
     class HotLink : public Element {
       public:
         HotLink(const char * href = NULL, const char * attr = NULL);
-        virtual ~HotLink() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * hrefString;
+        PString m_hrefString;
     };
 
     class Target : public Element {
       public:
         Target(const char * name = NULL, const char * attr = NULL);
-        virtual ~Target() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * nameString;
+        PString m_nameString;
     };
 
     class ImageElement : public Element {
@@ -301,9 +338,9 @@ class PHTML : public PStringStream
                      ElementInSet req,
                      OptionalCRLF opt,
                      const char * image);
-        virtual ~ImageElement() {}
         virtual void AddAttr(PHTML & html) const;
-        const char * srcString;
+
+        PString m_srcString;
     };
 
     class Image : public ImageElement {
@@ -317,215 +354,182 @@ class PHTML : public PStringStream
               int width = 0,
               int height = 0,
               const char * attr = NULL);
-        virtual ~Image() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * altString;
-        int width, height;
+        PString m_altString;
+        int m_width, m_height;
     };
 
     class HRule : public ImageElement {
       public:
         HRule(const char * image = NULL, const char * attr = NULL);
-        virtual ~HRule() {}
     };
 
     class Note : public ImageElement {
       public:
         Note(const char * image = NULL, const char * attr = NULL);
-        virtual ~Note() {}
     };
 
     class Address : public Element {
       public:
         Address(const char * attr = NULL);
-        virtual ~Address() {}
     };
 
     class BlockQuote : public Element {
       public:
         BlockQuote(const char * attr = NULL);
-        virtual ~BlockQuote() {}
     };
 
     class Credit : public Element {
       public:
         Credit(const char * attr = NULL);
-        virtual ~Credit() {}
     };
 
     class SetTab : public Element {
       public:
         SetTab(const char * id, const char * attr = NULL);
-        virtual ~SetTab() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * ident;
+        PString m_ident;
     };
 
     class Tab : public Element {
       public:
         Tab(int indent, const char * attr = NULL);
         Tab(const char * id, const char * attr = NULL);
-        virtual ~Tab() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * ident;
-        int indentSize;
+        PString m_ident;
+        int m_indentSize;
     };
 
 
     class Bold : public Element {
       public: Bold() : Element("B", NULL, InBold, InBody, NoCRLF) { }
-      virtual ~Bold() {}
     };
     class Italic : public Element {
       public: 
         Italic() 
           : Element("I", NULL, InItalic, InBody, NoCRLF) { }
-        virtual ~Italic() {}
     };
     class TeleType : public Element {
       public: 
         TeleType() 
           : Element("TT", NULL, InTeleType, InBody, NoCRLF) { }
-        virtual ~TeleType() {}
     };
     class Underline : public Element {
       public: 
         Underline() 
           : Element("U", NULL, InUnderline, InBody, NoCRLF) { }
-        virtual ~Underline() {}
     };
     class StrikeThrough : public Element {
       public: 
         StrikeThrough()
           : Element("S", NULL, InStrikeThrough, InBody, NoCRLF) { }
-        virtual ~StrikeThrough() {}
     };
     class Big : public Element {
       public: 
         Big() 
           : Element("BIG", NULL, InBig, InBody, NoCRLF) { }
-        virtual ~Big() {}
     };
     class Small : public Element {
       public: 
         Small() 
           : Element("SMALL", NULL, InSmall, InBody, NoCRLF) { }
-        virtual ~Small() {}
     };
     class Subscript : public Element {
       public: 
         Subscript()
           : Element("SUB", NULL, InSubscript, InBody, NoCRLF) { }
-        virtual ~Subscript() {}
     };
     class Superscript : public Element {
       public: 
         Superscript()
           : Element("SUP", NULL, InSuperscript, InBody, NoCRLF) { }
-        virtual ~Superscript() {}
     };
     class Emphasis : public Element {
       public: 
         Emphasis() 
           : Element("EM", NULL, InEmphasis, InBody, NoCRLF) { }
-        virtual ~Emphasis() {}
     };
     class Cite : public Element {
       public: 
         Cite() 
           : Element("CITE", NULL, InCite, InBody, NoCRLF) { }
-      virtual ~Cite() {}
     };
     class Strong : public Element {
       public: 
         Strong() 
           : Element("STRONG", NULL, InStrong, InBody, NoCRLF) { }
-        virtual ~Strong() {}
     };
     class Code : public Element {
       public: 
         Code() 
           : Element("CODE", NULL, InCode, InBody, NoCRLF) { }
-      virtual ~Code() {}
     };
     class Sample : public Element {
       public: 
         Sample() 
           : Element("SAMP", NULL, InSample, InBody, NoCRLF) { }
-      virtual ~Sample() {}
     };
     class Keyboard : public Element {
       public: 
         Keyboard() 
           : Element("KBD", NULL, InKeyboard, InBody, NoCRLF) { }
-        virtual ~Keyboard() {}
     };
     class Variable : public Element {
       public: 
         Variable() 
           : Element("VAR", NULL, InVariable, InBody, NoCRLF) { }
-        virtual ~Variable() {}
     };
     class Definition : public Element {
       public: 
         Definition()
           : Element("DFN", NULL, InDefinition, InBody, NoCRLF) { }
-        virtual ~Definition() {}
     };
     class Quote : public Element {
       public: 
         Quote() 
           : Element("Q", NULL, InQuote, InBody, NoCRLF) { }
-        virtual ~Quote() {}
     };
     class Author : public Element {
       public: 
         Author() 
           : Element("AU", NULL, InAuthor, InBody, NoCRLF) { }
-        virtual ~Author() {}
     };
     class Person : public Element {
       public: 
         Person() 
           : Element("PERSON", NULL, InPerson, InBody, NoCRLF) { }
-        virtual ~Person() {}
     };
     class Acronym : public Element {
       public: 
         Acronym()
           : Element("ACRONYM", NULL, InAcronym, InBody, NoCRLF) { }
-        virtual ~Acronym() {}
     };
     class Abbrev : public Element {
       public: 
         Abbrev() 
           : Element("ABBREV", NULL, InAbbrev, InBody, NoCRLF) { }
-        virtual ~Abbrev() {}
     };
     class InsertedText : public Element {
       public: 
         InsertedText()
           : Element("INS", NULL, InInsertedText, InBody, NoCRLF) { }
-        virtual ~InsertedText() {}
     };
     class DeletedText : public Element {
       public: 
         DeletedText()
           : Element("DEL", NULL, InDeletedText, InBody, NoCRLF) { }
       public: 
-        virtual ~DeletedText() {}
     };
 
     class SimpleList : public Element {
       public:
         SimpleList(const char * attr = NULL);
-        virtual ~SimpleList() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
     };
@@ -533,45 +537,39 @@ class PHTML : public PStringStream
     class BulletList : public Element {
       public:
         BulletList(const char * attr = NULL);
-        virtual ~BulletList() {}
     };
 
     class OrderedList : public Element {
       public:
         OrderedList(int seqNum = 0, const char * attr = NULL);
-        virtual ~OrderedList() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        int sequenceNum;
+        int m_sequenceNum;
     };
 
     class DefinitionList : public Element {
       public:
         DefinitionList(const char * attr = NULL);
-        virtual ~DefinitionList() {}
     };
 
     class ListHeading : public Element {
       public:
         ListHeading(const char * attr = NULL);
-        virtual ~ListHeading() {}
     };
 
     class ListItem : public Element {
       public:
         ListItem(int skip = 0, const char * attr = NULL);
-        virtual ~ListItem() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        int skipSeq;
+        int m_skipSeq;
     };
 
     class DefinitionTerm : public Element {
       public:
         DefinitionTerm(const char * attr = NULL);
-        virtual ~DefinitionTerm() {}
       protected:
         virtual void Output(PHTML & html) const;
     };
@@ -579,7 +577,6 @@ class PHTML : public PStringStream
     class DefinitionItem : public Element {
       public:
         DefinitionItem(const char * attr = NULL);
-        virtual ~DefinitionItem() {}
       protected:
         virtual void Output(PHTML & html) const;
     };
@@ -633,9 +630,6 @@ class PHTML : public PStringStream
     {
       public:
         P_DECL_HTML_TABLE_CTOR(TableStart)
-        virtual ~TableStart()
-        {
-        }
       protected:
         virtual void Output(PHTML & html) const;
         virtual void AddAttr(PHTML & html) const;
@@ -645,7 +639,6 @@ class PHTML : public PStringStream
     class TableEnd : public TableElement {
       public:
         TableEnd();
-        virtual ~TableEnd() {}
       protected:
         virtual void Output(PHTML & html) const;
     };
@@ -654,19 +647,16 @@ class PHTML : public PStringStream
     class TableRow : public TableElement {
       public:
         P_DECL_HTML_TABLE_CTOR(TableRow)
-        virtual ~TableRow() {}
     };
 
     class TableHeader : public TableElement {
       public:
         P_DECL_HTML_TABLE_CTOR(TableHeader)
-        virtual ~TableHeader() {}
     };
 
     class TableData : public TableElement {
       public:
         P_DECL_HTML_TABLE_CTOR(TableData)
-        virtual ~TableData() {}
     };
 
 
@@ -679,14 +669,13 @@ class PHTML : public PStringStream
           const char * script = NULL,
           const char * attr = NULL
         );
-        virtual ~Form() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * methodString;
-        const char * actionString;
-        const char * mimeTypeString;
-        const char * scriptString;
+        PString m_methodString;
+        PString m_actionString;
+        PString m_mimeTypeString;
+        PString m_scriptString;
     };
 
     enum DisableCodes {
@@ -702,10 +691,9 @@ class PHTML : public PStringStream
           OptionalCRLF opt,
           DisableCodes disabled
         );
-        virtual ~FieldElement() {}
         virtual void AddAttr(PHTML & html) const;
       private:
-        PBoolean disabledFlag;
+        bool m_disabledFlag;
     };
 
     class Select : public FieldElement {
@@ -719,11 +707,10 @@ class PHTML : public PStringStream
           DisableCodes disabled,
           const char * attr = NULL
         );
-        virtual ~Select() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * nameString;
+        PString m_nameString;
     };
 
     enum SelectionCodes {
@@ -748,11 +735,10 @@ class PHTML : public PStringStream
           DisableCodes disabled,
           const char * attr = NULL
         );
-        virtual ~Option() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        PBoolean selectedFlag;
+        bool m_selectedFlag;
     };
 
     class FormField : public FieldElement {
@@ -765,10 +751,9 @@ class PHTML : public PStringStream
           DisableCodes disabled,
           const char * fname
         );
-        virtual ~FormField() {}
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * nameString;
+        PString m_nameString;
     };
 
     class TextArea : public FormField {
@@ -784,11 +769,10 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~TextArea() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        int numRows, numCols;
+        int m_numRows, m_numCols;
     };
 
     class InputField : public FormField {
@@ -799,10 +783,9 @@ class PHTML : public PStringStream
           DisableCodes disabled,
           const char * attr
         );
-        virtual ~InputField() {}
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * typeString;
+        PString m_typeString;
     };
 
     class HiddenField : public InputField {
@@ -812,11 +795,10 @@ class PHTML : public PStringStream
           const char * value,
           const char * attr = NULL
         );
-        virtual ~HiddenField() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * valueString;
+        PString m_valueString;
     };
 
     class InputText : public InputField {
@@ -848,7 +830,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputText() {}
       protected:
         InputText(
           const char * type,
@@ -861,8 +842,8 @@ class PHTML : public PStringStream
         );
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * value;
-        int width, length;
+        PString m_value;
+        int m_width, m_length;
     };
 
     class InputPassword : public InputText {
@@ -894,7 +875,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputPassword() {}
     };
 
     enum CheckedCodes {
@@ -921,7 +901,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~RadioButton() {}
       protected:
         RadioButton(
           const char * type,
@@ -933,8 +912,8 @@ class PHTML : public PStringStream
         );
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * valueString;
-        PBoolean checkedFlag;
+        PString m_valueString;
+        bool m_checkedFlag;
     };
 
     class CheckBox : public RadioButton {
@@ -954,7 +933,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~CheckBox() {}
     };
 
 
@@ -967,7 +945,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputNumber() {}
       protected:
         InputNumber(
           const char * type,
@@ -980,7 +957,7 @@ class PHTML : public PStringStream
         virtual void AddAttr(PHTML & html) const;
       private:
         void Construct(int min, int max, int value);
-        int minValue, maxValue, initValue;
+        int m_minValue, m_maxValue, m_initValue;
     };
 
     class InputReal : public InputField {
@@ -993,12 +970,11 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputReal() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        double minValue, maxValue, initValue;
-        int decimals;
+        double m_minValue, m_maxValue, m_initValue;
+        int m_decimals;
     };
 
     class InputRange : public InputNumber {
@@ -1010,7 +986,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputRange() {}
     };
 
     class InputFile : public InputField {
@@ -1021,11 +996,10 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputFile() {}
       protected:
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * acceptString;
+        PString m_acceptString;
     };
 
     class InputImage : public InputField {
@@ -1036,7 +1010,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputImage() {}
       protected:
         InputImage(
           const char * type,
@@ -1047,7 +1020,7 @@ class PHTML : public PStringStream
         );
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * srcString;
+        PString m_srcString;
     };
 
     class InputScribble : public InputImage {
@@ -1058,7 +1031,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~InputScribble() {}
     };
 
     class ResetButton : public InputImage {
@@ -1070,7 +1042,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~ResetButton() {}
       protected:
         ResetButton(
           const char * type,
@@ -1082,7 +1053,7 @@ class PHTML : public PStringStream
         );
         virtual void AddAttr(PHTML & html) const;
       private:
-        const char * titleString;
+        PString m_titleString;
     };
 
     class SubmitButton : public ResetButton {
@@ -1094,7 +1065,6 @@ class PHTML : public PStringStream
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-        virtual ~SubmitButton() {}
     };
 
 
@@ -1102,9 +1072,10 @@ class PHTML : public PStringStream
     virtual void AssignContents(const PContainer & c);
 
   private:
-    ElementInSet initialElement;
-    BYTE elementSet[NumElementsInSet/8+1];
-    PINDEX tableNestLevel;
+    ElementInSet m_initialElement;
+    BYTE         m_elementSet[NumElementsInSet/8+1];
+    PINDEX       m_tableNestLevel;
+    PINDEX       m_divisionNestLevel;
 };
 
 

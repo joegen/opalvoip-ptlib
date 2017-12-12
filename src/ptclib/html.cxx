@@ -38,10 +38,12 @@
 // PHTML
 
 PHTML::PHTML(ElementInSet initialState)
+  : m_initialElement(initialState)
+  , m_tableNestLevel(0)
+  , m_divisionNestLevel(0)
 {
-  memset(elementSet, 0, sizeof(elementSet));
-  tableNestLevel = 0;
-  initialElement = initialState;
+  memset(m_elementSet, 0, sizeof(m_elementSet));
+
   switch (initialState) {
     case NumElementsInSet :
       break;
@@ -59,20 +61,24 @@ PHTML::PHTML(ElementInSet initialState)
 
 
 PHTML::PHTML(const char * cstr)
+  : m_initialElement(NumElementsInSet)
+  , m_tableNestLevel(0)
+  , m_divisionNestLevel(0)
 {
-  memset(elementSet, 0, sizeof(elementSet));
-  tableNestLevel = 0;
-  initialElement = NumElementsInSet;
+  memset(m_elementSet, 0, sizeof(m_elementSet));
+
   ostream & this_stream = *this;
   this_stream << Title(cstr) << Body() << Heading(1) << cstr << Heading(1);
 }
 
 
 PHTML::PHTML(const PString & str)
+  : m_initialElement(NumElementsInSet)
+  , m_tableNestLevel(0)
+  , m_divisionNestLevel(0)
 {
-  memset(elementSet, 0, sizeof(elementSet));
-  tableNestLevel = 0;
-  initialElement = NumElementsInSet;
+  memset(m_elementSet, 0, sizeof(m_elementSet));
+
   ostream & this_stream = *this;
   this_stream << Title(str) << Body() << Heading(1) << str << Heading(1);
 }
@@ -81,12 +87,12 @@ PHTML::PHTML(const PString & str)
 PHTML::~PHTML()
 {
 #ifndef NDEBUG
-  if (initialElement != NumElementsInSet) {
-    Clr(initialElement);
+  if (m_initialElement != NumElementsInSet) {
+    Clr(m_initialElement);
     Clr(InBody);
   }
-  for (PINDEX i = 0; i < PARRAYSIZE(elementSet); i++)
-    PAssert(elementSet[i] == 0, psprintf("Failed to close element %u", i));
+  for (PINDEX i = 0; i < PARRAYSIZE(m_elementSet); i++)
+    PAssert(m_elementSet[i] == 0, psprintf("Failed to close element %u", i));
 #endif
 }
 
@@ -94,31 +100,31 @@ PHTML::~PHTML()
 void PHTML::AssignContents(const PContainer & cont)
 {
   PStringStream::AssignContents(cont);
-  memset(elementSet, 0, sizeof(elementSet));
+  memset(m_elementSet, 0, sizeof(m_elementSet));
 }
 
 
 PBoolean PHTML::Is(ElementInSet elmt) const
 {
-  return (elementSet[elmt>>3]&(1<<(elmt&7))) != 0;
+  return (m_elementSet[elmt>>3]&(1<<(elmt&7))) != 0;
 }
 
 
 void PHTML::Set(ElementInSet elmt)
 {
-  elementSet[elmt>>3] |= (1<<(elmt&7));
+  m_elementSet[elmt>>3] |= (1<<(elmt&7));
 }
 
 
 void PHTML::Clr(ElementInSet elmt)
 {
-  elementSet[elmt>>3] &= ~(1<<(elmt&7));
+  m_elementSet[elmt>>3] &= ~(1<<(elmt&7));
 }
 
 
 void PHTML::Toggle(ElementInSet elmt)
 {
-  elementSet[elmt>>3] ^= (1<<(elmt&7));
+  m_elementSet[elmt>>3] ^= (1<<(elmt&7));
 }
 
 
@@ -162,30 +168,56 @@ void PHTML::NonBreakSpace::Output(ostream & strm) const
 }
 
 
+PHTML::Element::Element(const char * nam,
+                        ElementInSet elmt,
+                        ElementInSet req,
+                        OptionalCRLF opt)
+  : m_name(nam)
+  , m_inElement(elmt)
+  , m_reqElement(req)
+  , m_crlf(opt)
+{
+}
+
+
+PHTML::Element::Element(const char * nam,
+                        const char * att,
+                        ElementInSet elmt,
+                        ElementInSet req,
+                        OptionalCRLF opt)
+  : m_name(nam)
+  , m_attr(att)
+  , m_inElement(elmt)
+  , m_reqElement(req)
+  , m_crlf(opt)
+{
+}
+
+
 void PHTML::Element::Output(PHTML & html) const
 {
-  PAssert(reqElement == NumElementsInSet || html.Is(reqElement),
+  PAssert(m_reqElement == NumElementsInSet || html.Is(m_reqElement),
                                                 "HTML element out of context");
 
-  if (crlf == BothCRLF || (crlf == OpenCRLF && !html.Is(inElement)))
+  if (m_crlf == BothCRLF || (m_crlf == OpenCRLF && !html.Is(m_inElement)))
     html << "\r\n";
 
   html << '<';
-  if (html.Is(inElement))
+  if (html.Is(m_inElement))
     html << '/';
-  html << name;
+  html << m_name;
 
   AddAttr(html);
 
-  if (attr != NULL)
-    html << ' ' << attr;
+  if (m_attr != NULL)
+    html << ' ' << m_attr;
 
   html << '>';
-  if (crlf == BothCRLF || (crlf == CloseCRLF && html.Is(inElement)))
+  if (m_crlf == BothCRLF || (m_crlf == CloseCRLF && html.Is(m_inElement)))
     html << "\r\n";
 
-  if (inElement != NumElementsInSet)
-    html.Toggle(inElement);
+  if (m_inElement != NumElementsInSet)
+    html.Toggle(m_inElement);
 }
 
 
@@ -236,19 +268,18 @@ void PHTML::Body::Output(PHTML & html) const
 PHTML::Title::Title()
   : Element("TITLE", NULL, InTitle, InHead, CloseCRLF)
 {
-  titleString = NULL;
 }
 
 PHTML::Title::Title(const char * titleCStr)
   : Element("TITLE", NULL, InTitle, InHead, CloseCRLF)
+  , m_titleString(titleCStr)
 {
-  titleString = titleCStr;
 }
 
 PHTML::Title::Title(const PString & titleStr)
   : Element("TITLE", NULL, InTitle, InHead, CloseCRLF)
+  , m_titleString(titleStr)
 {
-  titleString = titleStr;
 }
 
 void PHTML::Title::Output(PHTML & html) const
@@ -257,17 +288,76 @@ void PHTML::Title::Output(PHTML & html) const
   if (!html.Is(InHead))
     html << Head();
   if (html.Is(InTitle)) {
-    if (titleString != NULL)
-      html << titleString;
+    html << m_titleString;
     Element::Output(html);
   }
   else {
     Element::Output(html);
-    if (titleString != NULL) {
-      html << titleString;
+    if (!m_titleString.IsEmpty()) {
+      html << m_titleString;
       Element::Output(html);
     }
   }
+}
+
+
+PHTML::Style::Style()
+  : Element("STYLE", NULL, InTitle, InHTML, BothCRLF)
+{
+}
+
+PHTML::Style::Style(const char * cssCStr)
+  : Element("STYLE", NULL, InTitle, InHTML, BothCRLF)
+  , m_cssString(cssCStr)
+{
+}
+
+PHTML::Style::Style(const PString & cssStr)
+  : Element("STYLE", NULL, InTitle, InHTML, BothCRLF)
+  , m_cssString(cssStr)
+{
+}
+
+void PHTML::Style::Output(PHTML & html) const
+{
+  if (!html.Is(InHTML))
+    html << HTML();
+  if (html.Is(InStyle)) {
+    html << m_cssString;
+    Element::Output(html);
+  }
+  else {
+    Element::Output(html);
+    if (!m_cssString.IsEmpty()) {
+      html << m_cssString;
+      Element::Output(html);
+    }
+  }
+}
+
+
+PHTML::StyleLink::StyleLink(const char * linkCStr)
+  : Element("LINK", NULL, NumElementsInSet, InHTML, CloseCRLF)
+  , m_styleLink(linkCStr)
+{
+}
+
+PHTML::StyleLink::StyleLink(const PString & linkStr)
+  : Element("LINK", NULL, NumElementsInSet, InHTML, CloseCRLF)
+  , m_styleLink(linkStr)
+{
+}
+
+void PHTML::StyleLink::AddAttr(PHTML & html) const
+{
+  html << " rel=\"stylesheet\" type=\"text/css\" href=\"" << m_styleLink << '"';
+}
+
+void PHTML::StyleLink::Output(PHTML & html) const
+{
+  if (!html.Is(InHTML))
+    html << HTML();
+  Element::Output(html);
 }
 
 
@@ -277,9 +367,38 @@ PHTML::Banner::Banner(const char * attr)
 }
 
 
-PHTML::Division::Division(const char * attr)
+PHTML::DivisionStart::DivisionStart(const char * attr)
   : Element("DIV", attr, InDivision, InBody, BothCRLF)
 {
+}
+
+
+void PHTML::DivisionStart::Output(PHTML & html) const
+{
+  if (html.m_divisionNestLevel > 0)
+    html.Clr(InDivision);
+  Element::Output(html);
+}
+
+void PHTML::DivisionStart::AddAttr(PHTML & html) const
+{
+  html.m_divisionNestLevel++;
+}
+
+
+PHTML::DivisionEnd::DivisionEnd()
+  : Element("DIV", "", InDivision, InBody, BothCRLF)
+{
+}
+
+
+void PHTML::DivisionEnd::Output(PHTML & html) const
+{
+  PAssert(html.m_divisionNestLevel > 0, "Table nesting error");
+  Element::Output(html);
+  html.m_divisionNestLevel--;
+  if (html.m_divisionNestLevel > 0)
+    html.Set(InDivision);
 }
 
 
@@ -288,11 +407,10 @@ PHTML::Heading::Heading(int number,
                         int skip,
                         const char * attr)
   : Element("H", attr, InHeading, InBody, CloseCRLF)
+  , m_level(number)
+  , m_seqNum(sequence)
+  , m_skipSeq(skip)
 {
-  num = number;
-  srcString = NULL;
-  seqNum = sequence;
-  skipSeq = skip;
 }
 
 PHTML::Heading::Heading(int number,
@@ -301,11 +419,11 @@ PHTML::Heading::Heading(int number,
                         int skip,
                         const char * attr)
   : Element("H", attr, InHeading, InBody, CloseCRLF)
+  , m_level(number)
+  , m_srcString(image)
+  , m_seqNum(sequence)
+  , m_skipSeq(skip)
 {
-  num = number;
-  srcString = image;
-  seqNum = sequence;
-  skipSeq = skip;
 }
 
 PHTML::Heading::Heading(int number,
@@ -314,23 +432,23 @@ PHTML::Heading::Heading(int number,
                         int skip,
                         const char * attr)
   : Element("H", attr, InHeading, InBody, CloseCRLF)
+  , m_level(number)
+  , m_srcString(imageStr)
+  , m_seqNum(sequence)
+  , m_skipSeq(skip)
 {
-  num = number;
-  srcString = imageStr;
-  seqNum = sequence;
-  skipSeq = skip;
 }
 
 void PHTML::Heading::AddAttr(PHTML & html) const
 {
-  PAssert(num >= 1 && num <= 6, "Bad heading number");
-  html << num;
-  if (srcString != NULL)
-    html << " SRC=\"" << Escaped(srcString) << '"';
-  if (seqNum > 0)
-    html << " SEQNUM=" << seqNum;
-  if (skipSeq > 0)
-    html << " SKIP=" << skipSeq;
+  PAssert(m_level >= 1 && m_level <= 6, "Bad heading number");
+  html << m_level;
+  if (!m_srcString.IsEmpty())
+    html << " SRC=\"" << Escaped(m_srcString) << '"';
+  if (m_seqNum > 0)
+    html << " SEQNUM=" << m_seqNum;
+  if (m_skipSeq > 0)
+    html << " SKIP=" << m_skipSeq;
 }
 
 
@@ -348,28 +466,28 @@ PHTML::Paragraph::Paragraph(const char * attr)
 
 PHTML::PreFormat::PreFormat(int widthInChars, const char * attr)
   : Element("PRE", attr, InPreFormat, InBody, CloseCRLF)
+  , m_width(widthInChars)
 {
-  width = widthInChars;
 }
 
 
 void PHTML::PreFormat::AddAttr(PHTML & html) const
 {
-  if (width > 0)
-    html << " WIDTH=" << width;
+  if (m_width > 0)
+    html << " WIDTH=" << m_width;
 }
 
 
 PHTML::HotLink::HotLink(const char * href, const char * attr)
   : Element("A", attr, InAnchor, InBody, NoCRLF)
+  , m_hrefString(href)
 {
-  hrefString = href;
 }
 
 void PHTML::HotLink::AddAttr(PHTML & html) const
 {
-  if (hrefString != NULL && *hrefString != '\0')
-    html << " HREF=\"" << Escaped(hrefString) << '"';
+  if (!m_hrefString.IsEmpty())
+    html << " HREF=\"" << Escaped(m_hrefString) << '"';
   else
     PAssert(html.Is(InAnchor), PInvalidParameter);
 }
@@ -377,14 +495,14 @@ void PHTML::HotLink::AddAttr(PHTML & html) const
 
 PHTML::Target::Target(const char * name, const char * attr)
   : Element("A", attr, NumElementsInSet, InBody, NoCRLF)
+  , m_nameString(name)
 {
-  nameString = name;
 }
 
 void PHTML::Target::AddAttr(PHTML & html) const
 {
-  if (nameString != NULL && *nameString != '\0')
-    html << " NAME=\"" << Escaped(nameString) << '"';
+  if (!m_nameString.IsEmpty())
+    html << " NAME=\"" << Escaped(m_nameString) << '"';
 }
 
 
@@ -395,24 +513,23 @@ PHTML::ImageElement::ImageElement(const char * n,
                                   OptionalCRLF c,
                                   const char * image)
   : Element(n, attr, elmt, req, c)
+  , m_srcString(image)
 {
-  srcString = image;
 }
 
 
 void PHTML::ImageElement::AddAttr(PHTML & html) const
 {
-  if (srcString != NULL)
-    html << " SRC=\"" << Escaped(srcString) << '"';
+  if (!m_srcString.IsEmpty())
+    html << " SRC=\"" << Escaped(m_srcString) << '"';
 }
 
 
 PHTML::Image::Image(const char * src, int w, int h, const char * attr)
   : ImageElement("IMG", attr, NumElementsInSet, InBody, NoCRLF, src)
+  , m_width(w)
+  , m_height(h)
 {
-  altString = NULL;
-  width = w;
-  height = h;
 }
 
 PHTML::Image::Image(const char * src,
@@ -420,21 +537,21 @@ PHTML::Image::Image(const char * src,
                     int w, int h,
                     const char * attr)
   : ImageElement("IMG", attr, NumElementsInSet, InBody, NoCRLF, src)
+  , m_altString(alt)
+  , m_width(w)
+  , m_height(h)
 {
-  altString = alt;
-  width = w;
-  height = h;
 }
 
 void PHTML::Image::AddAttr(PHTML & html) const
 {
-  PAssert(srcString != NULL && *srcString != '\0', PInvalidParameter);
-  if (altString != NULL)
-    html << " ALT=\"" << Escaped(altString) << '"';
-  if (width != 0)
-    html << " WIDTH=" << width;
-  if (height != 0)
-    html << " HEIGHT=" << height;
+  PAssert(!m_srcString.IsEmpty(), PInvalidParameter);
+  if (!m_altString.IsEmpty())
+    html << " ALT=\"" << Escaped(m_altString) << '"';
+  if (m_width != 0)
+    html << " WIDTH=" << m_width;
+  if (m_height != 0)
+    html << " HEIGHT=" << m_height;
   ImageElement::AddAttr(html);
 }
 
@@ -470,38 +587,37 @@ PHTML::Credit::Credit(const char * attr)
 
 PHTML::SetTab::SetTab(const char * id, const char * attr)
   : Element("TAB", attr, NumElementsInSet, InBody, NoCRLF)
+  , m_ident(id)
 {
-  ident = id;
 }
 
 void PHTML::SetTab::AddAttr(PHTML & html) const
 {
-  PAssert(ident != NULL && *ident != '\0', PInvalidParameter);
-  html << " ID=" << ident;
+  PAssert(!m_ident.IsEmpty(), PInvalidParameter);
+  html << " ID=" << m_ident;
 }
 
 
 PHTML::Tab::Tab(int indent, const char * attr)
   : Element("TAB", attr, NumElementsInSet, InBody, NoCRLF)
+  , m_indentSize(indent)
 {
-  ident = NULL;
-  indentSize = indent;
 }
 
 PHTML::Tab::Tab(const char * id, const char * attr)
   : Element("TAB", attr, NumElementsInSet, InBody, NoCRLF)
+  , m_ident(id)
+  , m_indentSize(0)
 {
-  ident = id;
-  indentSize = 0;
 }
 
 void PHTML::Tab::AddAttr(PHTML & html) const
 {
-  PAssert(indentSize!=0 || (ident!=NULL && *ident!='\0'), PInvalidParameter);
-  if (indentSize > 0)
-    html << " INDENT=" << indentSize;
+  PAssert(m_indentSize != 0 || !m_ident.IsEmpty(), PInvalidParameter);
+  if (m_indentSize > 0)
+    html << " INDENT=" << m_indentSize;
   else
-    html << " TO=" << ident;
+    html << " TO=" << m_ident;
 }
 
 
@@ -524,15 +640,15 @@ PHTML::BulletList::BulletList(const char * attr)
 
 PHTML::OrderedList::OrderedList(int seqNum, const char * attr)
   : Element("OL", attr, InList, InBody, BothCRLF)
+  , m_sequenceNum(seqNum)
 {
-  sequenceNum = seqNum;
 }
 
 void PHTML::OrderedList::AddAttr(PHTML & html) const
 {
-  if (sequenceNum > 0)
-    html << " SEQNUM=" << sequenceNum;
-  if (sequenceNum < 0)
+  if (m_sequenceNum > 0)
+    html << " SEQNUM=" << m_sequenceNum;
+  if (m_sequenceNum < 0)
     html << " CONTINUE";
 }
 
@@ -550,14 +666,14 @@ PHTML::ListHeading::ListHeading(const char * attr)
 
 PHTML::ListItem::ListItem(int skip, const char * attr)
   : Element("LI", attr, NumElementsInSet, InList, OpenCRLF)
+  , m_skipSeq(skip)
 {
-  skipSeq = skip;
 }
 
 void PHTML::ListItem::AddAttr(PHTML & html) const
 {
-  if (skipSeq > 0)
-    html << " SKIP=" << skipSeq;
+  if (m_skipSeq > 0)
+    html << " SKIP=" << m_skipSeq;
 }
 
 
@@ -643,14 +759,14 @@ void PHTML::TableElement::Output(PHTML & html) const
 
 void PHTML::TableStart::Output(PHTML & html) const
 {
-  if (html.tableNestLevel > 0)
+  if (html.m_tableNestLevel > 0)
     html.Clr(InTable);
   TableElement::Output(html);
 }
 
 void PHTML::TableStart::AddAttr(PHTML & html) const
 {
-  html.tableNestLevel++;
+  html.m_tableNestLevel++;
 }
 
 
@@ -661,10 +777,10 @@ PHTML::TableEnd::TableEnd()
 
 void PHTML::TableEnd::Output(PHTML & html) const
 {
-  PAssert(html.tableNestLevel > 0, "Table nesting error");
+  PAssert(html.m_tableNestLevel > 0, "Table nesting error");
   TableElement::Output(html);
-  html.tableNestLevel--;
-  if (html.tableNestLevel > 0)
+  html.m_tableNestLevel--;
+  if (html.m_tableNestLevel > 0)
     html.Set(InTable);
 }
 
@@ -675,23 +791,23 @@ PHTML::Form::Form(const char * method,
                   const char * script,
                   const char * attr)
   : Element("FORM", attr, InForm, InBody, BothCRLF)
+  , m_methodString(method)
+  , m_actionString(action)
+  , m_mimeTypeString(mimeType)
+  , m_scriptString(script)
 {
-  methodString = method;
-  actionString = action;
-  mimeTypeString = mimeType;
-  scriptString = script;
 }
 
 void PHTML::Form::AddAttr(PHTML & html) const
 {
-  if (methodString != NULL)
-    html << " METHOD=" << methodString;
-  if (actionString != NULL)
-    html << " ACTION=\"" << actionString << '"';
-  if (mimeTypeString != NULL)
-    html << " ENCTYPE=\"" << mimeTypeString << '"';
-  if (scriptString != NULL)
-    html << " SCRIPT=\"" << Escaped(scriptString) << '"';
+  if (m_methodString != NULL)
+    html << " METHOD=" << m_methodString;
+  if (m_actionString != NULL)
+    html << " ACTION=\"" << m_actionString << '"';
+  if (m_mimeTypeString != NULL)
+    html << " ENCTYPE=\"" << m_mimeTypeString << '"';
+  if (m_scriptString != NULL)
+    html << " SCRIPT=\"" << Escaped(m_scriptString) << '"';
 }
 
 
@@ -701,36 +817,36 @@ PHTML::FieldElement::FieldElement(const char * n,
                                   OptionalCRLF c,
                                   DisableCodes disabled)
   : Element(n, attr, elmt, InForm, c)
+  , m_disabledFlag(disabled == Disabled)
 {
-  disabledFlag = disabled == Disabled;
 }
 
 void PHTML::FieldElement::AddAttr(PHTML & html) const
 {
-  if (disabledFlag)
+  if (m_disabledFlag)
     html << " DISABLED";
 }
 
 
 PHTML::Select::Select(const char * fname, const char * attr)
   : FieldElement("SELECT", attr, InSelect, BothCRLF, Enabled)
+  , m_nameString(fname)
 {
-  nameString = fname;
 }
 
 PHTML::Select::Select(const char * fname,
                       DisableCodes disabled,
                       const char * attr)
   : FieldElement("SELECT", attr, InSelect, BothCRLF, disabled)
+  , m_nameString(fname)
 {
-  nameString = fname;
 }
 
 void PHTML::Select::AddAttr(PHTML & html) const
 {
   if (!html.Is(InSelect)) {
-    PAssert(nameString != NULL && *nameString != '\0', PInvalidParameter);
-    html << " NAME=\"" << Escaped(nameString) << '"';
+    PAssert(!m_nameString.IsEmpty(), PInvalidParameter);
+    html << " NAME=\"" << Escaped(m_nameString) << '"';
   }
   FieldElement::AddAttr(html);
 }
@@ -738,35 +854,35 @@ void PHTML::Select::AddAttr(PHTML & html) const
 
 PHTML::Option::Option(const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, Enabled)
+  , m_selectedFlag(false)
 {
-  selectedFlag = false;
 }
 
 PHTML::Option::Option(SelectionCodes select,
                       const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, Enabled)
+  , m_selectedFlag(select == Selected)
 {
-  selectedFlag = select == Selected;
 }
 
 PHTML::Option::Option(DisableCodes disabled,
                       const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, disabled)
+  , m_selectedFlag(false)
 {
-  selectedFlag = false;
 }
 
 PHTML::Option::Option(SelectionCodes select,
                       DisableCodes disabled,
                       const char * attr)
   : FieldElement("OPTION", attr, NumElementsInSet, NoCRLF, disabled)
+  , m_selectedFlag(select == Selected)
 {
-  selectedFlag = select == Selected;
 }
 
 void PHTML::Option::AddAttr(PHTML & html) const
 {
-  if (selectedFlag)
+  if (m_selectedFlag)
     html << " SELECTED";
   FieldElement::AddAttr(html);
 }
@@ -779,14 +895,14 @@ PHTML::FormField::FormField(const char * n,
                             DisableCodes disabled,
                             const char * fname)
   : FieldElement(n, attr, elmt, c, disabled)
+  , m_nameString(fname)
 {
-  nameString = fname;
 }
 
 void PHTML::FormField::AddAttr(PHTML & html) const
 {
-  PAssert(nameString != NULL && *nameString != '\0', PInvalidParameter);
-  html << " NAME=\"" << Escaped(nameString) << '"';
+  PAssert(!m_nameString.IsEmpty(), PInvalidParameter);
+  html << " NAME=\"" << Escaped(m_nameString) << '"';
   FieldElement::AddAttr(html);
 }
 
@@ -795,8 +911,9 @@ PHTML::TextArea::TextArea(const char * fname,
                           DisableCodes disabled,
                           const char * attr)
   : FormField("TEXTAREA", attr, InSelect, BothCRLF, disabled, fname)
+  , m_numRows(0)
+  , m_numCols(0)
 {
-  numRows = numCols = 0;
 }
 
 PHTML::TextArea::TextArea(const char * fname,
@@ -804,17 +921,17 @@ PHTML::TextArea::TextArea(const char * fname,
                           DisableCodes disabled,
                           const char * attr)
   : FormField("TEXTAREA", attr, InSelect, BothCRLF, disabled, fname)
+  , m_numRows(rows)
+  , m_numCols(cols)
 {
-  numRows = rows;
-  numCols = cols;
 }
 
 void PHTML::TextArea::AddAttr(PHTML & html) const
 {
-  if (numRows > 0)
-    html << " ROWS=" << numRows;
-  if (numCols > 0)
-    html << " COLS=" << numCols;
+  if (m_numRows > 0)
+    html << " ROWS=" << m_numRows;
+  if (m_numCols > 0)
+    html << " COLS=" << m_numCols;
   FormField::AddAttr(html);
 }
 
@@ -824,14 +941,14 @@ PHTML::InputField::InputField(const char * type,
                               DisableCodes disabled,
                               const char * attr)
   : FormField("INPUT", attr, NumElementsInSet, NoCRLF, disabled, fname)
+  , m_typeString(type)
 {
-  typeString = type;
 }
 
 void PHTML::InputField::AddAttr(PHTML & html) const
 {
-  PAssert(typeString != NULL && *typeString != '\0', PInvalidParameter);
-  html << " TYPE=" << typeString;
+  PAssert(!m_typeString.IsEmpty(), PInvalidParameter);
+  html << " TYPE=" << m_typeString;
   FormField::AddAttr(html);
 }
 
@@ -840,15 +957,14 @@ PHTML::HiddenField::HiddenField(const char * fname,
                                 const char * value,
                                 const char * attr)
   : InputField("hidden", fname, Enabled, attr)
+  , m_valueString(value)
 {
-  valueString = value;
 }
 
 void PHTML::HiddenField::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  PAssert(valueString != NULL, PInvalidParameter);
-  html << " VALUE=\"" << Escaped(valueString) << '"';
+  html << " VALUE=\"" << Escaped(m_valueString) << '"';
 }
 
 
@@ -857,10 +973,10 @@ PHTML::InputText::InputText(const char * fname,
                             const char * init,
                             const char * attr)
   : InputField("text", fname, Enabled, attr)
+  , m_width(size)
+  , m_length(0)
+  , m_value(init)
 {
-  width = size;
-  length = 0;
-  value = init;
 }
 
 PHTML::InputText::InputText(const char * fname,
@@ -868,10 +984,9 @@ PHTML::InputText::InputText(const char * fname,
                             DisableCodes disabled,
                             const char * attr)
   : InputField("text", fname, disabled, attr)
+  , m_width(size)
+  , m_length(0)
 {
-  width = size;
-  length = 0;
-  value = NULL;
 }
 
 PHTML::InputText::InputText(const char * fname,
@@ -880,10 +995,9 @@ PHTML::InputText::InputText(const char * fname,
                             DisableCodes disabled,
                             const char * attr)
   : InputField("text", fname, disabled, attr)
+  , m_width(size)
+  , m_length(maxLength)
 {
-  width = size;
-  length = maxLength;
-  value = NULL;
 }
 
 PHTML::InputText::InputText(const char * fname,
@@ -893,10 +1007,10 @@ PHTML::InputText::InputText(const char * fname,
                             DisableCodes disabled,
                             const char * attr)
   : InputField("text", fname, disabled, attr)
+  , m_width(size)
+  , m_length(maxLength)
+  , m_value(init)
 {
-  width = size;
-  length = maxLength;
-  value = init;
 }
 
 PHTML::InputText::InputText(const char * type,
@@ -907,21 +1021,21 @@ PHTML::InputText::InputText(const char * type,
                             DisableCodes disabled,
                             const char * attr)
   : InputField(type, fname, disabled, attr)
+  , m_width(size)
+  , m_length(maxLength)
+  , m_value(init)
 {
-  width = size;
-  length = maxLength;
-  value = init;
 }
 
 void PHTML::InputText::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  if (width > 0)
-    html << " SIZE=" << width;
-  if (length > 0)
-    html << " MAXLENGTH=" << length;
-  if (value != NULL)
-    html << " VALUE=\"" << Escaped(value) << '"';
+  if (m_width > 0)
+    html << " SIZE=" << m_width;
+  if (m_length > 0)
+    html << " MAXLENGTH=" << m_length;
+  if (m_value != NULL)
+    html << " VALUE=\"" << Escaped(m_value) << '"';
 }
 
 
@@ -965,9 +1079,9 @@ PHTML::RadioButton::RadioButton(const char * fname,
                                 const char * value,
                                 const char * attr)
   : InputField("radio", fname, Enabled, attr)
+  , m_valueString(value)
+  , m_checkedFlag(false)
 {
-  valueString = value;
-  checkedFlag = false;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,
@@ -975,9 +1089,9 @@ PHTML::RadioButton::RadioButton(const char * fname,
                                 DisableCodes disabled,
                                 const char * attr)
   : InputField("radio", fname, disabled, attr)
+  , m_valueString(value)
+  , m_checkedFlag(false)
 {
-  valueString = value;
-  checkedFlag = false;
 }
 
 PHTML::RadioButton::RadioButton(const char * fname,
@@ -986,9 +1100,9 @@ PHTML::RadioButton::RadioButton(const char * fname,
                                 DisableCodes disabled,
                                 const char * attr)
   : InputField("radio", fname, disabled, attr)
+  , m_valueString(value)
+  , m_checkedFlag(check == Checked)
 {
-  valueString = value;
-  checkedFlag = check == Checked;
 }
 
 PHTML::RadioButton::RadioButton(const char * type,
@@ -998,17 +1112,17 @@ PHTML::RadioButton::RadioButton(const char * type,
                                 DisableCodes disabled,
                                 const char * attr)
   : InputField(type, fname, disabled, attr)
+  , m_valueString(value)
+  , m_checkedFlag(check == Checked)
 {
-  valueString = value;
-  checkedFlag = check == Checked;
 }
 
 void PHTML::RadioButton::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  PAssert(valueString != NULL, PInvalidParameter);
-  html << " VALUE=\"" << Escaped(valueString) << '"';
-  if (checkedFlag)
+  PAssert(!m_valueString.IsEmpty(), PInvalidParameter);
+  html << " VALUE=\"" << Escaped(m_valueString) << '"';
+  if (m_checkedFlag)
     html << " CHECKED";
 }
 
@@ -1057,29 +1171,29 @@ PHTML::InputNumber::InputNumber(const char * type,
 void PHTML::InputNumber::Construct(int min, int max, int value)
 {
   PAssert(min <= max, PInvalidParameter);
-  minValue = min;
-  maxValue = max;
+  m_minValue = min;
+  m_maxValue = max;
   if (value < min)
-    initValue = min;
+    m_initValue = min;
   else if (value > max)
-    initValue = max;
+    m_initValue = max;
   else
-    initValue = value;
+    m_initValue = value;
 }
 
 void PHTML::InputNumber::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  int range = PMAX(-minValue, maxValue);
-  PINDEX width = 3;
+  int range = std::max(-m_minValue, m_maxValue);
+  int width = 3;
   while (range > 10) {
     width++;
     range /= 10;
   }
   html << " SIZE=" << width
-       << " MIN=" << minValue
-       << " MAX=" << maxValue
-       << " VALUE=\"" << initValue << '"';
+       << " MIN=" << m_minValue
+       << " MAX=" << m_maxValue
+       << " VALUE=\"" << m_initValue << '"';
 }
 
 
@@ -1091,25 +1205,25 @@ PHTML::InputReal::InputReal(const char * fname,
   : InputField("number", fname, disabled, attr)
 {
   PAssert(minimum <= maximum, PInvalidParameter);
-  minValue = minimum;
-  maxValue = maximum;
+  m_minValue = minimum;
+  m_maxValue = maximum;
   if (value < minimum)
-    initValue = minimum;
+    m_initValue = minimum;
   else if (value > maximum)
-    initValue = maximum;
+    m_initValue = maximum;
   else
-    initValue = value;
-  decimals = decs;
+    m_initValue = value;
+  m_decimals = decs;
 }
 
 void PHTML::InputReal::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  html << std::fixed << std::setprecision(decimals)
-       << " MIN=" << minValue
-       << " MAX=" << maxValue
-       << " VALUE=" << initValue
-       << " STEP=" << pow(10, -decimals);
+  html << std::fixed << std::setprecision(m_decimals)
+       << " MIN=" << m_minValue
+       << " MAX=" << m_maxValue
+       << " VALUE=" << m_initValue
+       << " STEP=" << pow(10, -m_decimals);
 }
 
 
@@ -1127,15 +1241,15 @@ PHTML::InputFile::InputFile(const char * fname,
                             DisableCodes disabled,
                             const char * attr)
   : InputField("file", fname, disabled, attr)
+  , m_acceptString(accept)
 {
-  acceptString = accept;
 }
 
 void PHTML::InputFile::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  if (acceptString != NULL)
-    html << " ACCEPT=\"" << Escaped(acceptString) << '"';
+  if (!m_acceptString.IsEmpty())
+    html << " ACCEPT=\"" << Escaped(m_acceptString) << '"';
 }
 
 
@@ -1144,8 +1258,8 @@ PHTML::InputImage::InputImage(const char * fname,
                               DisableCodes disabled,
                               const char * attr)
   : InputField("image", fname, disabled, attr)
+  , m_srcString(src)
 {
-  srcString = src;
 }
 
 PHTML::InputImage::InputImage(const char * type,
@@ -1154,15 +1268,15 @@ PHTML::InputImage::InputImage(const char * type,
                               DisableCodes disabled,
                               const char * attr)
   : InputField(type, fname, disabled, attr)
+  , m_srcString(src)
 {
-  srcString = src;
 }
 
 void PHTML::InputImage::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
-  if (srcString != NULL)
-    html << " SRC=\"" << Escaped(srcString) << '"';
+  if (!m_srcString.IsEmpty())
+    html << " SRC=\"" << Escaped(m_srcString) << '"';
 }
 
 
@@ -1180,8 +1294,8 @@ PHTML::ResetButton::ResetButton(const char * title,
                                 DisableCodes disabled,
                                 const char * attr)
   : InputImage("reset", fname != NULL ? fname : "reset", src, disabled, attr)
+  , m_titleString(title)
 {
-  titleString = title;
 }
 
 PHTML::ResetButton::ResetButton(const char * type,
@@ -1191,15 +1305,15 @@ PHTML::ResetButton::ResetButton(const char * type,
                                 DisableCodes disabled,
                                 const char * attr)
   : InputImage(type, fname, src, disabled, attr)
+  , m_titleString(title)
 {
-  titleString = title;
 }
 
 void PHTML::ResetButton::AddAttr(PHTML & html) const
 {
   InputImage::AddAttr(html);
-  if (titleString != NULL)
-    html << " VALUE=\"" << Escaped(titleString) << '"';
+  if (!m_titleString.IsEmpty())
+    html << " VALUE=\"" << Escaped(m_titleString) << '"';
 }
 
 
