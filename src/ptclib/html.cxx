@@ -973,9 +973,9 @@ PHTML::InputText::InputText(const char * fname,
                             const char * init,
                             const char * attr)
   : InputField("text", fname, Enabled, attr)
+  , m_value(init)
   , m_width(size)
   , m_length(0)
-  , m_value(init)
 {
 }
 
@@ -1007,9 +1007,9 @@ PHTML::InputText::InputText(const char * fname,
                             DisableCodes disabled,
                             const char * attr)
   : InputField("text", fname, disabled, attr)
+  , m_value(init)
   , m_width(size)
   , m_length(maxLength)
-  , m_value(init)
 {
 }
 
@@ -1021,9 +1021,9 @@ PHTML::InputText::InputText(const char * type,
                             DisableCodes disabled,
                             const char * attr)
   : InputField(type, fname, disabled, attr)
+  , m_value(init)
   , m_width(size)
   , m_length(maxLength)
-  , m_value(init)
 {
 }
 
