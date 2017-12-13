@@ -356,6 +356,7 @@ enum PStandardAssertMessage {
 #define __CLASS__ NULL
 
 extern bool PAssertWalksStack;
+extern unsigned PAssertCount;
 bool PAssertFunc(const PDebugLocation & location, PStandardAssertMessage msg);
 bool PAssertFunc(const PDebugLocation & location, const char * msg);
 

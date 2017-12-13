@@ -159,6 +159,7 @@ extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThre
 
 
 bool PAssertWalksStack = true;
+unsigned PAssertCount;
 
 static void InternalAssertFunc(const PDebugLocation & location, const char * msg)
 {
@@ -186,6 +187,8 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
     return;
 
   s_RecursiveAssert = true;
+
+  ++PAssertCount;
 
   std::string str;
   {
