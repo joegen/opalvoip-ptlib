@@ -361,7 +361,7 @@ endif
 ifneq (,$(REVISION_FILE))
 
   ifneq (,$(GIT))
-    GIT_COMMIT:=$(shell cd $(dir $(REVISION_FILE)) ; LC_ALL=C $(GIT) show 2> /dev/null | sed -n 's/^commit //p')
+    GIT_COMMIT:=$(shell cd $(dir $(REVISION_FILE)) ; export LC_ALL=C ; $(GIT) show 2> /dev/null | sed -n 's/^commit //p')
   endif
 
 
