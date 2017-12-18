@@ -105,7 +105,7 @@ debugshared debugstatic debugclean debugdepend debuglibs :: INTERNAL_DEBUG_BUILD
 optshared debugshared optclean debugclean optdepend debugdepend optlibs debuglibs :: INTERNAL_STATIC_BUILD:=no
 optstatic debugstatic :: INTERNAL_STATIC_BUILD:=yes
 
-clean optclean debugclean :: MAKEFLAGS+=--no-print-directory
+clean optclean debugclean :: MAKEFLAGS+=--no-print-directory NODEPS=yes
 
 ifndef ALLOW_PARALLEL
 .NOTPARALLEL:
