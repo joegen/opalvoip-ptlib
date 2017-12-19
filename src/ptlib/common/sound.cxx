@@ -264,10 +264,14 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 
   PStringArray devices = GetDeviceNames(dir);
 
+  static PConstString const DefaultDeviceName("Default");
+  if (devices.GetValuesIndex(DefaultDeviceName) != P_MAX_INDEX)
+    return DefaultDeviceName;
+
   for (PINDEX i = 0; i < devices.GetSize(); ++i) {
     device = devices[i];
     if (device != PPlugin_PSoundChannel_NullAudio::ServiceName() && device != "*.wav" && device.NumCompare("Tones") != EqualTo)
-      break;
+      return device;
   }
 
   return PPlugin_PSoundChannel_NullAudio::ServiceName();
