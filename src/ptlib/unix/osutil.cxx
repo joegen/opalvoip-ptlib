@@ -338,6 +338,9 @@ PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDir
   if (isDirectory)
     return CanonicaliseDirectory(path);
 
+  if (path.IsEmpty())
+    return path;
+
   PINDEX pos;
   PString dirname;
 

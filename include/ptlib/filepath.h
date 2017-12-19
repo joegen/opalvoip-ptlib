@@ -65,45 +65,49 @@ class PFilePath : public PFilePathString
   public:
   /**@name Construction */
   //@{
-    /**Create a file specification object.
+    /**Create an empty file path description.
      */
     PFilePath();
 
-    /**Create a file specification object with the specified file name.
+    /**Create a file path description with the specified string.
     
        The string passed in may be a full or partial specification for a file
        as determined by the platform. It is unusual for this to be a literal
        string, unless only the file title is specified, as that would be
        platform specific.
 
-       The partial file specification is translated into a canonical form
+       The partial file path description is translated into a canonical form
        which always absolutely references the file.
+
+       if cstr is NULL or empty string, then PFilePath is empty.
      */
     PFilePath(
       const char * cstr   ///< Partial C string for file name.
     );
 
-    /**Create a file specification object with the specified file name.
+    /**Create a file path description with the specified string.
     
        The string passed in may be a full or partial specification for a file
        as determined by the platform. It is unusual for this to be a literal
        string, unless only the file title is specified, as that would be
        platform specific.
 
-       The partial file specification is translated into a canonical form
+       The partial file path description is translated into a canonical form
        which always absolutely references the file.
+
+       if str is an empty string, then PFilePath is empty.
      */
     PFilePath(
       const PString & str ///< Partial PString for file name.
     );
 
-    /**Create a file specification object with the specified file name.
+    /**Create a file path description with the specified file name.
      */
     PFilePath(
       const PFilePath & path ///< Previous path for file name.
     );
 
-    /**Create a file spec object with a generated temporary name. The first
+    /**Create a file path description with a generated temporary name. The first
        parameter is a prefix for the filename to which a unique number is
        appended. The second parameter is the directory in which the file is to
        be placed. If this is NULL a system standard directory is used.
@@ -114,33 +118,37 @@ class PFilePath : public PFilePathString
       const char * suffix = NULL ///< Optional suffix for file
     );
 
-    /**Change the file specification object to the specified file name.
+    /**Change the file path description to the specified file name.
      */
     PFilePath & operator=(
       const PFilePath & path ///< Previous path for file name.
     );
-    /**Change the file specification object to the specified file name.
+    /**Change the file path description to the specified file name.
 
        The string passed in may be a full or partial specifiaction for a file
        as determined by the platform. It is unusual for this to be a literal
        string, unless only the file title is specified, as that would be
        platform specific.
 
-       The partial file specification is translated into a canonical form
-       which always absolutely references the file.
+       The partial file path is translated into a canonical form which always
+       absolutely references the file.
+
+       if str is an empty string, then PFilePath is empty.
      */
     PFilePath & operator=(
       const PString & str ///< Partial PString for file name.
     );
-    /**Change the file specification object to the specified file name.
+    /**Change the file path description to the specified file name.
 
        The string passed in may be a full or partial specifiaction for a file
        as determined by the platform. It is unusual for this to be a literal
        string, unless only the file title is specified, as that would be
        platform specific.
 
-       The partial file specification is translated into a canonical form
-       which always absolutely references the file.
+       The partial file path is translated into a canonical form which always
+       absolutely references the file.
+
+       if cstr is NULL or empty string, then PFilePath is empty.
      */
     PFilePath & operator=(
       const char * cstr ///< Partial "C" string for file name.
@@ -187,31 +195,31 @@ class PFilePath : public PFilePathString
 
   /**@name Path decoding access functions */
   //@{
-    /**Get the drive/volume name component of the full file specification. This
+    /**Get the drive/volume name component of the full file path description. This
        is very platform specific. For example in DOS & NT it is the drive
        letter followed by a colon ("C:"), for Macintosh it is the volume name
        ("Untitled") and for Unix it is empty ("").
        
        @return
-       string for the volume name part of the file specification..
+       string for the volume name part of file path description.
      */
     PFilePathString GetVolume() const;
       
-    /**Get the directory path component of the full file specification. This
+    /**Get the directory path component of the full file path description. This
        will include leading and trailing directory separators. For example
        on DOS this could be "\SRC\PWLIB\", for Macintosh ":Source:PwLib:" and
        for Unix "/users/equivalence/src/pwlib/".
 
        @return
-       string for the path part of the file specification.
+       string for the path part of the file path description.
      */
     PFilePathString GetPath() const;
 
-    /**Get the title component of the full file specification, eg for the DOS
+    /**Get the title component of the full file path description, eg for the DOS
        file "C:\SRC\PWLIB\FRED.DAT" this would be "FRED".
 
        @return
-       string for the title part of the file specification.
+       string for the title part of the file path description.
      */
     PFilePathString GetTitle() const;
 
@@ -224,7 +232,7 @@ class PFilePath : public PFilePathString
        and some Macintosh file types, eg "TEXT".
 
        @return
-       string for the type part of the file specification.
+       string for the type part of the file path description.
      */
     PFilePathString GetType() const;
 
@@ -235,7 +243,7 @@ class PFilePath : public PFilePathString
        would be "FRED.TXT".
 
        @return
-       string for the file name part of the file specification.
+       string for the file name part of the file path description.
      */
     PFilePathString GetFileName() const;
 
@@ -253,7 +261,7 @@ class PFilePath : public PFilePathString
      */
     PDirectory GetDirectory() const;
 
-    /**Set the type component of the full file specification, eg for the DOS
+    /**Set the type component of the full file path description, eg for the DOS
        file "C:\SRC\PWLIB\FRED.DAT" would become "C:\SRC\PWLIB\FRED.TXT".
      */
     void SetType(

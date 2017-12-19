@@ -351,8 +351,11 @@ PFilePathString PFilePath::Canonicalise(const PFilePathString & path, bool isDir
 
 #else
   PString partialpath = path;
-  if (partialpath.IsEmpty())
-    partialpath = ".";
+  if (partialpath.IsEmpty()) {
+      if (!isDirectory)
+        return path;
+      partialpath = ".";
+  }
   else {
     // Look for special case of "\c:\" at start of string as some generalised
     // directory processing algorithms have a habit of adding a leading
