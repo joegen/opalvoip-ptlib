@@ -2046,17 +2046,9 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
   BYTE * scanLinePtrRGB = dstFrameBuffer;
   int scanLineSizeRGB = (int)((rgbIncrement*m_dstFrameWidth+3)&~3);
-
-  unsigned srcPixpos[4] = { 0, 1, planeWidth, planeWidth + 1 };
-  unsigned dstPixpos[4] = { 0, rgbIncrement, (unsigned)scanLineSizeRGB, (unsigned)scanLineSizeRGB+rgbIncrement };
-
   if (m_verticalFlip) {
-    scanLinePtrRGB += (m_dstFrameHeight - 2) * scanLineSizeRGB;
+    scanLinePtrRGB += (m_dstFrameHeight - 1) * scanLineSizeRGB;
     scanLineSizeRGB = -scanLineSizeRGB;
-    dstPixpos[0] = dstPixpos[2];
-    dstPixpos[1] = dstPixpos[3];
-    dstPixpos[2] = 0;
-    dstPixpos[3] = rgbIncrement;
   }
 
 #if P_FFMPEG_SWSCALE
@@ -2073,6 +2065,23 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   }
 
 #endif // P_FFMPEG_SWSCALE
+
+  unsigned srcPixpos[4] = { 0, 1, planeWidth, planeWidth + 1 };
+  unsigned dstPixpos[4];
+
+  if (m_verticalFlip) {
+    scanLinePtrRGB -= scanLineSizeRGB;
+    dstPixpos[0] = dstPixpos[2];
+    dstPixpos[1] = dstPixpos[3];
+    dstPixpos[2] = 0;
+    dstPixpos[3] = rgbIncrement;
+  }
+  else {
+    dstPixpos[0] = 0;
+    dstPixpos[1] = rgbIncrement;
+    dstPixpos[2] = (unsigned)scanLineSizeRGB;
+    dstPixpos[3] = (unsigned)scanLineSizeRGB+rgbIncrement;
+  }
 
   scanLineSizeRGB *= 2;
 
