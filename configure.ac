@@ -2214,11 +2214,11 @@ dnl MSWIN_DEFINE     vidfile,P_VIDFILE
 PTLIB_SIMPLE_OPTION([vidfile], [VIDFILE], [video file support], [HAS_VIDEO])
 
 dnl ########################################################################
-dnl check for enabling FFMpeg video file support
-dnl MSWIN_DISPLAY    ffvdev,FFMpeg video file support
-dnl MSWIN_DEFINE     ffvdev,P_FFVDEV
+dnl check for enabling media file support
+dnl MSWIN_DISPLAY    mediafile,Media file support
+dnl MSWIN_DEFINE     mediafile,P_MEDIAFILE
 
-PTLIB_SIMPLE_OPTION([ffvdev], [FFVDEV], [FFMPEG application video file support], [HAS_VIDEO], [HAS_PIPECHAN])
+PTLIB_SIMPLE_OPTION([mediafile], [MEDIAFILE], [Media file support])
 
 dnl ########################################################################
 dnl check for enabling app share support

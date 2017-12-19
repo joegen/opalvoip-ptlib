@@ -350,8 +350,8 @@
   #endif
 #endif
 
+#undef P_MEDIAFILE
 #undef P_VIDFILE
-#undef P_FFVDEV
 #undef P_PORTAUDIO
 #undef P_PORTMIXER
 

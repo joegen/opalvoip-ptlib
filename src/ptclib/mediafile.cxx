@@ -31,6 +31,9 @@
 #include <ptlib.h>
 
 #include <ptclib/mediafile.h>
+
+#if P_MEDIAFILE
+
 #include <ptclib/pwavfile.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/pprocess.h>
@@ -101,6 +104,40 @@ bool PMediaFile::CheckModeAndTrackType(bool reading, const PString & expectedTra
 }
 
 
+bool PMediaFile::SetErrorText(const PString & error)
+{
+  m_lastErrorText = error;
+  PTRACE(2, "Error: " << error);
+  return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PMediaFile::TrackInfo::TrackInfo(const PString & type, const PString & format)
+  : m_type(type)
+  , m_format(format)
+  , m_size(0)
+  , m_frames(-1)
+  , m_rate(0)
+  , m_channels(1)
+  , m_width(0)
+  , m_height(0)
+{
+}
+
+
+bool PMediaFile::TrackInfo::operator==(const TrackInfo & other) const
+{
+  return m_type     == other.m_type     &&
+         m_format   == other.m_format   &&
+         m_rate     == other.m_rate     &&
+         m_channels == other.m_channels &&
+         m_width    == other.m_width    &&
+         m_height   == other .m_height;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class PMediaFile_WAV : public PMediaFile
@@ -130,15 +167,23 @@ public:
 
   bool OpenForReading(const PFilePath & filePath)
   {
+    if (!m_wavFile.Open(filePath, PFile::ReadOnly))
+      return SetErrorText(m_wavFile.GetErrorText());
+
     m_reading = true;
-    return m_wavFile.Open(filePath, PFile::ReadOnly);
+    m_filePath = filePath;
+    return true;
   }
 
 
   bool OpenForWriting(const PFilePath & filePath)
   {
+    if (!m_wavFile.Open(filePath, PFile::WriteOnly))
+      return SetErrorText(m_wavFile.GetErrorText());
+
     m_reading = false;
-    return m_wavFile.Open(filePath, PFile::ReadOnly);
+    m_filePath = filePath;
+    return true;
   }
 
 
@@ -162,10 +207,8 @@ public:
 
   bool GetTracks(TracksInfo & tracks)
   {
-    if (!m_wavFile.IsOpen()) {
-      PTRACE(2, "Cannot get tracks info when WAV file not open");
-      return false;
-    }
+    if (!m_wavFile.IsOpen())
+      return SetErrorText("Cannot get tracks info when WAV file not open");
 
     TrackInfo info(Audio(), m_wavFile.GetFormatString());
     info.m_size = m_wavFile.GetSampleSize() / 8;
@@ -180,37 +223,27 @@ public:
 
   bool SetTracks(const TracksInfo & tracks)
   {
-    if (!m_wavFile.IsOpen()) {
-      PTRACE(2, "Cannot set tracks info when WAV file not open");
-      return false;
-    }
+    if (!m_wavFile.IsOpen())
+      return SetErrorText("Cannot Set tracks info when WAV file not open");
 
-    if (m_reading) {
-      PTRACE(2, "Cannot set tracks info when reading WAV file");
-      return false;
-    }
+    if (m_reading)
+      return SetErrorText("Cannot set tracks info when reading WAV file");
 
-    if (tracks.size() != 1) {
-      PTRACE(2, "WAV file only supports one track");
-      return false;
-    }
+    if (tracks.size() != 1)
+      return SetErrorText("WAV file only supports one track");
 
     const TrackInfo & track = tracks.front();
 
-    if (track.m_type != Audio()) {
-      PTRACE(2, "WAV file only supports audio");
-      return false;
-    }
+    if (track.m_type != Audio())
+      return SetErrorText("WAV file only supports audio");
 
-    if (!m_wavFile.SetFormat(track.m_format) ||
-        !m_wavFile.SetSampleSize(track.m_size) ||
-        !m_wavFile.SetSampleRate((unsigned)track.m_rate) ||
-        !m_wavFile.SetChannels(track.m_channels))
-    {
-      PTRACE(2, "Cannot set WAV file track after started writing");
-      return false;
-    }
+    if (  !m_wavFile.SetFormat(track.m_format) ||
+          !m_wavFile.SetSampleSize(track.m_size) ||
+          !m_wavFile.SetSampleRate((unsigned)track.m_rate) ||
+          !m_wavFile.SetChannels(track.m_channels))
+      return SetErrorText("Cannot set WAV file track after started writing");
 
+    PTRACE(4, "Track set for WAV file");
     return true;
   }
 
@@ -274,7 +307,7 @@ public:
   }
 
 
-#if OPAL_VIDEO
+#if P_VIDEO
   bool ConfigureVideo(unsigned, const PVideoFrameInfo &)
   {
     return false;
@@ -291,7 +324,7 @@ public:
   {
     return false;
   }
-#endif // OPAL_VIDEO
+#endif // P_VIDEO
 };
 
 PFACTORY_CREATE(PMediaFile::Factory, PMediaFile_WAV, ".wav");
@@ -321,11 +354,52 @@ extern "C" {
 #endif
 
 
+PStringSet PMediaFile::GetAllFileTypes()
+{
+  // Can't rely on factory initialisation, as is used by other factories
+  av_register_all();
+
+  PStringSet fileTypes(PFilePathString(".wav"));
+
+  AVInputFormat *fmt = NULL;
+  while ((fmt = av_iformat_next(fmt)) != NULL) {
+    PStringArray formatsExtensions(PString(fmt->extensions).Tokenise(","));
+    for (PINDEX i = 0; i < formatsExtensions.GetSize(); ++i)
+      fileTypes += PFilePathString('.' + formatsExtensions[i]);
+  }
+
+  return fileTypes;
+}
+
+
 class PMediaFile_FFMPEG : public PMediaFile
 {
     PCLASSINFO(PMediaFile_FFMPEG, PMediaFile);
+  public:
+    struct FactoryInitialiser : PMediaFile::Factory::WorkerBase
+    {
+      FactoryInitialiser()
+      {
+        PStringSet fileTypes = PMediaFile::GetAllFileTypes();
+
+        PCaselessString firstExt;
+        for (PStringSet::iterator it = fileTypes.begin(); it != fileTypes.end(); ++it) {
+          if (!firstExt.IsEmpty())
+            PMediaFile::Factory::RegisterAs(*it, firstExt);
+          else {
+            PMediaFile::Factory::Register(*it, this);
+            firstExt = *it;
+          }
+        }
+      }
+
+      virtual PMediaFile * Create(PMediaFile::Factory::Param_T) const
+      {
+        return new PMediaFile_FFMPEG();
+      }
+    };
+
   protected:
-    PFilePath         m_filePath;
     AVFormatContext * m_formatContext;
     PMutex            m_mutex;
 
@@ -382,6 +456,14 @@ class PMediaFile_FFMPEG : public PMediaFile
         , m_currentTime(0)
         , m_swrContext(NULL)
       {
+      }
+
+
+      TrackContext & operator=(const TrackInfo & info)
+      {
+        Close();
+        TrackInfo::operator=(info);
+        return *this;
       }
 
 
@@ -778,7 +860,7 @@ class PMediaFile_FFMPEG : public PMediaFile
       }
 
 
-#if OPAL_VIDEO
+#if P_VIDEO
       static AVPixelFormat GetPixelFormatFromColourFormat(const PCaselessString & colourFormat)
       {
         static struct {
@@ -893,7 +975,7 @@ class PMediaFile_FFMPEG : public PMediaFile
         m_frame->linesize[2] = m_width/2;
         return EncodeAndWriteFrame();
       }
-#endif // OPAL_VIDEO
+#endif // P_VIDEO
     };
 
     std::vector<TrackContext> m_tracks;
@@ -940,10 +1022,10 @@ class PMediaFile_FFMPEG : public PMediaFile
     bool OpenForReading(const PFilePath & filePath)
     {
       m_reading = true;
+      m_filePath = filePath;
+
       if (CHECK_ERROR(avformat_open_input, (&m_formatContext, filePath, nullptr, nullptr)))
         return false;
-
-      m_filePath = filePath;
 
       if (CHECK_ERROR(avformat_find_stream_info, (m_formatContext, nullptr)))
         return false;
@@ -962,6 +1044,7 @@ class PMediaFile_FFMPEG : public PMediaFile
     bool OpenForWriting(const PFilePath & filePath)
     {
       m_reading = false;
+      m_filePath = filePath;
 
       if (avformat_alloc_output_context2(&m_formatContext, nullptr, nullptr, filePath) < 0) {
         if (CHECK_ERROR(avformat_alloc_output_context2,(&m_formatContext, nullptr, "mpeg", filePath)))
@@ -1024,9 +1107,12 @@ class PMediaFile_FFMPEG : public PMediaFile
 
       m_tracks.resize(tracks.size());
       for (size_t i = 0; i < m_tracks.size(); ++i) {
-        static_cast<TrackInfo &>(m_tracks[i]) = tracks[i];
-        if (!m_tracks[i].Create(this, i))
-          return false;
+        TrackContext existingTrack = m_tracks[i];
+        if (existingTrack != tracks[i]) {
+          existingTrack = tracks[i];
+          if (!existingTrack.Create(this, i))
+            return false;
+        }
       }
 
       /* Write the stream header, if any. */
@@ -1066,7 +1152,7 @@ class PMediaFile_FFMPEG : public PMediaFile
   }
 
 
-#if OPAL_VIDEO
+#if P_VIDEO
   bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo)
   {
     PWaitAndSignal mutex(m_mutex);
@@ -1087,39 +1173,10 @@ class PMediaFile_FFMPEG : public PMediaFile
     PWaitAndSignal mutex(m_mutex);
     return CheckOpenAndTrack(track) && m_tracks[track].WriteVideo(data);
   }
-#endif // OPAL_VIDEO
+#endif // P_VIDEO
 };
 
-
-static struct FFMPEG_Initialiser : PMediaFile::Factory::WorkerBase
-{
-  FFMPEG_Initialiser()
-  {
-    av_register_all();
-
-    PCaselessString firstExt;
-    AVInputFormat *fmt = NULL;
-    while ((fmt = av_iformat_next(fmt)) != NULL) {
-      PStringArray extensions(PString(fmt->extensions).Tokenise(","));
-      for (PINDEX i = 0; i < extensions.GetSize(); ++i) {
-        PCaselessString ext = '.' + extensions[i];
-        if (ext == ".WAV")
-          continue;
-        if (!firstExt.IsEmpty())
-          PAssert(PMediaFile::Factory::RegisterAs(ext, firstExt), "Factory Worker already registered");
-        else {
-          PAssert(PMediaFile::Factory::Register(ext, this), "Factory Worker already registered");
-          firstExt = ext;
-        }
-      }
-    }
-  }
-
-  virtual PMediaFile * Create(PMediaFile::Factory::Param_T) const
-  {
-    return new PMediaFile_FFMPEG();
-  }
-} FFMPEG_Initialiser_instance;
+static PMediaFile_FFMPEG::FactoryInitialiser PMediaFile_FFMPEG_FactoryInitialiser_instance;
 
 
 #elif WIN32
@@ -1179,7 +1236,7 @@ protected:
     return true;
   }
 
-#define IS_RESULT_ERROR(result, msg) IsResultError(this, result, msg)
+#define IS_RESULT_ERROR(owner, result, msg) IsResultError(owner, result, msg)
 
 #else
 
@@ -1188,7 +1245,7 @@ protected:
 #endif
 
 
-  struct TrackContext : PObject, TrackInfo
+  struct TrackContext : TrackInfo
   {
     PMediaFile_AVI   * m_owner;
     PAVISTREAM         m_stream;
@@ -1209,21 +1266,29 @@ protected:
     { }
 
 
+    TrackContext & operator=(const TrackInfo & info)
+    {
+      Close();
+      TrackInfo::operator=(info);
+      return *this;
+    }
+
+
     bool Open(PMediaFile_AVI * owner, PAVIFILE file, DWORD index)
     {
       m_owner = owner;
 
-      if (IS_RESULT_ERROR(AVIFileGetStream(file, &m_stream, 0, index), "getting stream"))
+      if (IS_RESULT_ERROR(m_owner, AVIFileGetStream(file, &m_stream, 0, index), "getting stream"))
         return false;
 
       AVISTREAMINFO sinfo;
-      if (IS_RESULT_ERROR(AVIStreamInfo(m_stream, &sinfo, sizeof(sinfo)), "getting stream info"))
+      if (IS_RESULT_ERROR(m_owner, AVIStreamInfo(m_stream, &sinfo, sizeof(sinfo)), "getting stream info"))
         return false;
 
       PBYTEArray formatInfo;
       LONG fmtSize;
       if (AVIStreamReadFormat(m_stream, 0, NULL, &fmtSize) == 0) {
-        if (IS_RESULT_ERROR(AVIStreamReadFormat(m_stream, 0, formatInfo.GetPointer(fmtSize), &fmtSize), "getting stream format info"))
+        if (IS_RESULT_ERROR(m_owner, AVIStreamReadFormat(m_stream, 0, formatInfo.GetPointer(fmtSize), &fmtSize), "getting stream format info"))
           return false;
       }
 
@@ -1246,7 +1311,7 @@ protected:
           m_format = "GSM-06.10";
           break;
         default:
-          PTRACE(2, "Unsupported audio format: " << wave.wf.wFormatTag);
+          PTRACE(2, m_owner, "Unsupported audio format: " << wave.wf.wFormatTag);
           return false;
         }
       }
@@ -1264,7 +1329,7 @@ protected:
         else {
           m_format = FromFOURCC(bmh.biCompression);
           if (m_format.IsEmpty()) {
-            PTRACE(2, "Unsupported video compression: " << bmh.biCompression);
+            PTRACE(2, m_owner, "Unsupported video compression: " << bmh.biCompression);
             return false;
           }
         }
@@ -1279,7 +1344,7 @@ protected:
 
     bool CreateAudio(PAVIFILE file)
     {
-      PTRACE(4, "Creating AVI stream for audio format '" << m_format << '\'');
+      PTRACE(4, m_owner, "Creating AVI stream for audio format '" << m_format << '\'');
 
       WAVEFORMATEX fmt;
       fmt.wFormatTag = m_format == "GSM-06.10" ? PWAVFile::fmt_GSM : WAVE_FORMAT_PCM;
@@ -1301,10 +1366,10 @@ protected:
       info.dwQuality = (DWORD)-1;
       strcpy(info.szName, fmt.nChannels == 2 ? "Stereo Audio" : "Mixed Audio");
 
-      if (IS_RESULT_ERROR(AVIFileCreateStream(file, &m_stream, &info), "creating AVI audio stream"))
+      if (IS_RESULT_ERROR(m_owner, AVIFileCreateStream(file, &m_stream, &info), "creating AVI audio stream"))
         return false;
 
-      if (IS_RESULT_ERROR(AVIStreamSetFormat(m_stream, 0, &fmt, sizeof(fmt)), "setting format of AVI audio stream"))
+      if (IS_RESULT_ERROR(m_owner, AVIStreamSetFormat(m_stream, 0, &fmt, sizeof(fmt)), "setting format of AVI audio stream"))
         return false;
 
       return true;
@@ -1349,12 +1414,12 @@ protected:
       }
       else {
         if (!GetVideoCompressorInfo(m_format, videoCompressorKeyFrameRate, videoCompressorQuality)) {
-          PTRACE(2, "AVI file recording does not (yet) support format " << m_format);
+          PTRACE(2, m_owner, "AVI file recording does not (yet) support format " << m_format);
           return false;
         }
       }
 
-      PTRACE(4, "Creating AVI stream for video format " << m_format);
+      PTRACE(4, m_owner, "Creating AVI stream for video format " << m_format);
 
       AVISTREAMINFO info;
       memset(&info, 0, sizeof(info));
@@ -1366,7 +1431,7 @@ protected:
       info.dwSuggestedBufferSize = m_width*m_height;
       info.dwQuality = videoCompressorQuality;
 
-      return IS_RESULT_ERROR(AVIFileCreateStream(file, &m_stream, &info), "creating AVI video stream");
+      return IS_RESULT_ERROR(m_owner, AVIFileCreateStream(file, &m_stream, &info), "creating AVI video stream");
     }
 
 
@@ -1392,14 +1457,15 @@ protected:
 
       LONG bytesRead = size;
       LONG samplesRead;
-      if (IS_RESULT_ERROR(AVIStreamRead(m_stream,
+      if (IS_RESULT_ERROR(m_owner,
+                          AVIStreamRead(m_stream,
                                         m_position, samples,
                                         data, size,
                                         &bytesRead, &samplesRead),
                           "reading AVI native stream"))
         return false;
 
-      PTRACE(6, "Read " << samplesRead << ' ' << m_type << " samples"
+      PTRACE(6, m_owner, "Read " << samplesRead << ' ' << m_type << " samples"
              " (" << bytesRead << " bytes) at position " << m_position);
       m_position += samplesRead;
       samples = samplesRead;
@@ -1418,14 +1484,15 @@ protected:
 
       LONG samplesWritten;
       LONG bytesWritten;
-      if (IS_RESULT_ERROR(AVIStreamWrite(m_stream,
+      if (IS_RESULT_ERROR(m_owner,
+                          AVIStreamWrite(m_stream,
                                          m_position, samples,
                                          const_cast<BYTE *>(data), samples*m_size,
                                          0, &samplesWritten, &bytesWritten),
                           "writing AVI native stream"))
         return false;
 
-      PTRACE(6, "Written " << samplesWritten << ' ' << m_type << " samples at " << m_position);
+      PTRACE(6, m_owner, "Written " << samplesWritten << ' ' << m_type << " samples at " << m_position);
       m_position += samplesWritten;
       samples = samplesWritten;
       size = bytesWritten;
@@ -1442,14 +1509,15 @@ protected:
         return false;
 
       LONG bytesRead, samplesRead;
-      if (IS_RESULT_ERROR(AVIStreamRead(m_stream,
+      if (IS_RESULT_ERROR(m_owner,
+                          AVIStreamRead(m_stream,
                                         m_position, size / m_size,
                                         data, size,
                                         &bytesRead, &samplesRead),
                           "reading AVI PCM stream"))
         return false;
 
-      PTRACE(6, "Read " << bytesRead << " bytes of PCM at position " << m_position);
+      PTRACE(6, m_owner, "Read " << bytesRead << " bytes of PCM at position " << m_position);
       m_position += samplesRead;
       length = bytesRead;
       return true;
@@ -1465,14 +1533,15 @@ protected:
         return false;
 
       LONG bytesWritten, samplesWritten;
-      if (IS_RESULT_ERROR(AVIStreamWrite(m_stream,
+      if (IS_RESULT_ERROR(m_owner,
+                          AVIStreamWrite(m_stream,
                                          m_position, size / m_size,
                                          const_cast<BYTE *>(data), size,
                                          0, &samplesWritten, &bytesWritten),
                           "writing AVI PCM stream"))
         return false;
 
-      PTRACE(6, "Written " << bytesWritten << " bytes of PCM at " << m_position);
+      PTRACE(6, m_owner, "Written " << bytesWritten << " bytes of PCM at " << m_position);
       m_position += samplesWritten;
       written = samplesWritten;
       return true;
@@ -1499,24 +1568,24 @@ protected:
 
       m_decompressor = AVIStreamGetFrameOpen(m_stream, &fmt);
       if (m_decompressor == NULL) {
-        PTRACE(4, "Decompressor cannot be found for " << m_format);
+        PTRACE(4, m_owner, "Decompressor cannot be found for " << m_format);
         return false;
       }
 
       if (frameInfo.GetFrameWidth() == m_width &&
           frameInfo.GetFrameHeight() == m_height &&
           frameInfo.GetColourFormat() == rgb.GetColourFormat()) {
-        PTRACE(4, "Decompressor to RGB created, frame size=" << fmt.biSizeImage);
+        PTRACE(4, m_owner, "Decompressor to RGB created, frame size=" << fmt.biSizeImage);
         return true;
       }
 
       m_videoConverter = PColourConverter::Create(rgb, frameInfo);
       if (m_videoConverter == NULL) {
-        PTRACE(2, "Decompressor requires RGB, but cannot create converter to " << frameInfo);
+        PTRACE(2, m_owner, "Decompressor requires RGB, but cannot create converter to " << frameInfo);
         return false;
       }
 
-      PTRACE(4, "Decompressor requires RGB, created converter to " << frameInfo << ", buffer size=" << fmt.biSizeImage);
+      PTRACE(4, m_owner, "Decompressor requires RGB, created converter to " << frameInfo << ", buffer size=" << fmt.biSizeImage);
       return true;
     }
 
@@ -1541,12 +1610,12 @@ protected:
         memcpy(data, image, m_size);
       else {
         if (!m_videoConverter->Convert(image, data)) {
-          PTRACE(2, "Conversion of RGB24 to YUV420P failed!");
+          PTRACE(2, m_owner, "Conversion of RGB24 to YUV420P failed!");
           return false;
         }
       }
 
-      PTRACE(6, "Read video frame " << m_position << ", size=" << m_size);
+      PTRACE(6, m_owner, "Read video frame " << m_position << ", size=" << m_size);
       return true;
     }
 
@@ -1570,7 +1639,7 @@ protected:
       opts.dwKeyFrameEvery = videoCompressorKeyFrameRate;
       opts.dwBytesPerSecond = 100000;
       opts.dwFlags = AVICOMPRESSF_KEYFRAMES | AVICOMPRESSF_DATARATE;
-      if (IS_RESULT_ERROR(AVIMakeCompressedStream(&m_compressor, m_stream, &opts, NULL), "creating AVI video compressor"))
+      if (IS_RESULT_ERROR(m_owner, AVIMakeCompressedStream(&m_compressor, m_stream, &opts, NULL), "creating AVI video compressor"))
         return false;
 
       BITMAPINFOHEADER fmt;
@@ -1588,7 +1657,7 @@ protected:
         fmt.biSizeImage = frameInfo.CalculateFrameBytes();
 
         if (AVIStreamSetFormat(m_compressor, 0, &fmt, sizeof(fmt)) == AVIERR_OK) {
-          PTRACE(4, "Compressor can use YUV420P directly, no converter needed, buffer size=" << fmt.biSizeImage);
+          PTRACE(4, m_owner, "Compressor can use YUV420P directly, no converter needed, buffer size=" << fmt.biSizeImage);
           return true;
         }
       }
@@ -1600,26 +1669,26 @@ protected:
       fmt.biPlanes = 1;
       fmt.biSizeImage = rgb.CalculateFrameBytes();
 
-      if (IS_RESULT_ERROR(AVIStreamSetFormat(m_compressor, 0, &fmt, sizeof(fmt)), "setting format of AVI video compressor"))
+      if (IS_RESULT_ERROR(m_owner, AVIStreamSetFormat(m_compressor, 0, &fmt, sizeof(fmt)), "setting format of AVI video compressor"))
         return false;
 
       if (frameInfo.GetFrameWidth() == m_width &&
           frameInfo.GetFrameHeight() == m_height &&
           frameInfo.GetColourFormat() == PVideoFrameInfo::YUV420P()) {
-        PTRACE(4, "Compressor from RGB created, frame size=" << fmt.biSizeImage);
+        PTRACE(4, m_owner, "Compressor from RGB created, frame size=" << fmt.biSizeImage);
         return true;
       }
 
       m_videoConverter = PColourConverter::Create(frameInfo, rgb);
       if (m_videoConverter == NULL) {
-        PTRACE(2, "Compressor requires RGB, but cannot create converter from " << frameInfo);
+        PTRACE(2, m_owner, "Compressor requires RGB, but cannot create converter from " << frameInfo);
         return false;
       }
 
       if (!PAssert(m_videoBuffer.SetSize(fmt.biSizeImage), POutOfMemory))
         return false;
 
-      PTRACE(4, "Compressor requires RGB, created converter from " << frameInfo << ", buffer size=" << fmt.biSizeImage);
+      PTRACE(4, m_owner, "Compressor requires RGB, created converter from " << frameInfo << ", buffer size=" << fmt.biSizeImage);
       return true;
     }
 
@@ -1645,19 +1714,20 @@ protected:
         bufferPtr = m_videoBuffer.GetPointer(m_videoConverter->GetMaxDstFrameBytes());
         bufferSize = m_videoBuffer.GetSize();
         if (!m_videoConverter->Convert(data, bufferPtr, &bufferSize)) {
-          PTRACE(2, "Conversion of YUV420P to RGB24 failed!");
+          PTRACE(2, m_owner, "Conversion of YUV420P to RGB24 failed!");
           return false;
         }
       }
 
-      if (IS_RESULT_ERROR(AVIStreamWrite(m_compressor,
+      if (IS_RESULT_ERROR(m_owner,
+                          AVIStreamWrite(m_compressor,
                                          ++m_position, 1,
                                          bufferPtr, bufferSize,
                                          0, NULL, NULL),
                           "writing AVI video stream"))
         return false;
 
-      PTRACE(6, "Written video frame " << m_position << ", size=" << bufferSize);
+      PTRACE(6, m_owner, "Written video frame " << m_position << ", size=" << bufferSize);
       return true;
     }
   };
@@ -1689,11 +1759,13 @@ public:
   bool OpenForReading(const PFilePath & filePath)
   {
     m_reading = true;
-    if (IS_RESULT_ERROR(AVIFileOpen(&m_file, filePath, m_reading ? OF_READ : (OF_WRITE | OF_CREATE), NULL), "opening AVI file"))
+    m_filePath = filePath;
+
+    if (IS_RESULT_ERROR(this, AVIFileOpen(&m_file, filePath, m_reading ? OF_READ : (OF_WRITE | OF_CREATE), NULL), "opening AVI file"))
       return false;
 
     AVIFILEINFO finfo;
-    if (IS_RESULT_ERROR(AVIFileInfo(m_file, &finfo, sizeof(finfo)), "getting file info"))
+    if (IS_RESULT_ERROR(this, AVIFileInfo(m_file, &finfo, sizeof(finfo)), "getting file info"))
       return false;
 
     m_tracks.resize(finfo.dwStreams);
@@ -1709,7 +1781,8 @@ public:
   bool OpenForWriting(const PFilePath & filePath)
   {
     m_reading = false;
-    return !IS_RESULT_ERROR(AVIFileOpen(&m_file, filePath, OF_WRITE | OF_CREATE, NULL), "opening AVI file");
+    m_filePath = filePath;
+    return !IS_RESULT_ERROR(this, AVIFileOpen(&m_file, filePath, OF_WRITE | OF_CREATE, NULL), "opening AVI file");
   }
 
 
@@ -1762,16 +1835,19 @@ public:
     m_tracks.resize(tracks.size());
 
     for (size_t i = 0; i < tracks.size(); ++i) {
-      static_cast<TrackInfo &>(m_tracks[i]) = tracks[i];
-      m_tracks[i].m_owner = this;
+      TrackContext & existingTrack = m_tracks[i];
+      if (existingTrack != tracks[i]) {
+        existingTrack = tracks[i];
+        existingTrack.m_owner = this;
 
-      if (tracks[i].m_type == Audio()) {
-        if (!m_tracks[i].CreateAudio(m_file))
-          return false;
-      }
-      else if (tracks[i].m_type == Video()) {
-        if (!m_tracks[i].CreateVideo(m_file))
-          return false;
+        if (existingTrack.m_type == Audio()) {
+          if (!existingTrack.CreateAudio(m_file))
+            return false;
+        }
+        else if (existingTrack.m_type == Video()) {
+          if (!existingTrack.CreateVideo(m_file))
+            return false;
+        }
       }
     }
     return false;
@@ -1806,7 +1882,7 @@ public:
   }
 
 
-#if OPAL_VIDEO
+#if P_VIDEO
   bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo)
   {
     PWaitAndSignal mutex(m_mutex);
@@ -1827,10 +1903,467 @@ public:
     PWaitAndSignal mutex(m_mutex);
     return CheckOpenAndTrack(track) && m_tracks[track].WriteVideo(data);
   }
-#endif // OPAL_VIDEO
+#endif // P_VIDEO
 };
 
 PFACTORY_CREATE(PMediaFile::Factory, PMediaFile_AVI, ".avi");
 
 
+PStringSet PMediaFile::GetAllFileTypes()
+{
+  // Can't rely on factory initialisation, as is used by other factories
+  static const char * const SuperBasic[] = { ".wav", ".avi" };
+  return PStringSet(PARRAYSIZE(SuperBasic), SuperBasic, true);
+}
+
+#else // P_FFMPEG_FULL - WIN32
+
+PStringSet PMediaFile::GetAllFileTypes()
+{
+  // Can't rely on factory initialisation, as is used by other factories
+  return ".wav";
+}
+
 #endif // P_FFMPEG_FULL
+
+
+#if P_VIDEO
+
+///////////////////////////////////////////////////////////////////////////////
+// PVideoInputDevice_MediaFile
+
+PCREATE_VIDINPUT_PLUGIN_EX(MediaFile,
+
+  virtual const char * GetFriendlyName() const
+  {
+    return "Media File Video Input";
+  }
+
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    PMediaFile::Factory::KeyList_T keyList = PMediaFile::Factory::GetKeyList();
+    return std::find(keyList.begin(), keyList.end(), PFilePath(deviceName).GetType()) != keyList.end();
+  }
+);
+
+
+
+PVideoInputDevice_MediaFile::PVideoInputDevice_MediaFile()
+  : m_file(NULL)
+  , m_pacing(500)
+  , m_frameRateAdjust(0)
+  , m_track(0)
+{
+  SetColourFormat(PVideoFrameInfo::YUV420P());
+}
+
+
+PVideoInputDevice_MediaFile::~PVideoInputDevice_MediaFile()
+{
+  Close();
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::Open(const PString & devName, PBoolean /*startImmediate*/)
+{
+  Close();
+
+  if (devName.IsEmpty())
+    return false;
+
+  PFilePath filePath;
+
+  PINDEX pos = devName.GetLength()-1;
+  if (devName[pos] != '*')
+    filePath = devName;
+  else {
+    filePath = devName.Left(pos);
+    SetChannel(Channel_PlayAndRepeat);
+  }
+
+  if (filePath.Find('*') != P_MAX_INDEX) {
+    bool noFilesOfType = true;
+    PDirectory dir = filePath.GetDirectory();
+    PTRACE(1, "Searching directory \"" << dir << '"');
+    if (dir.Open(PFileInfo::RegularFile|PFileInfo::SymbolicLink)) {
+      do {
+        PFilePath dirFile = dir + dir.GetEntryName();
+        if (dirFile.GetType() == filePath.GetType()) {
+          filePath = dirFile;
+          noFilesOfType = false;
+          break;
+        }
+      } while (dir.Next());
+    }
+    if (noFilesOfType) {
+      PTRACE(1, "Cannot find any file using " << PDirectory()  << " as source for video input device");
+      return false;
+    }
+  }
+
+  std::auto_ptr<PMediaFile> file(PMediaFile::Factory::CreateInstance(filePath.GetType()));
+  if (file.get() == NULL) {
+    PTRACE(1, "Cannot open file of type \"" << filePath.GetType() << "\" as video input device");
+    return false;
+  }
+
+  if (!file->OpenForReading(filePath)) {
+    PTRACE(1, "Cannot open file \"" << filePath << "\" as video input device: " << m_file->GetErrorText());
+    return false;
+  }
+
+  PMediaFile::TracksInfo tracks;
+  if (!file->GetTracks(tracks)) {
+    PTRACE(1, "Cannot get tracks in file \"" << filePath << "\" as video input device: " << m_file->GetErrorText());
+    return false;
+  }
+
+  for (m_track = 0; m_track < tracks.size(); ++m_track) {
+    if (tracks[m_track].m_type == PMediaFile::Video())
+      break;
+  }
+
+  if (m_track >= tracks.size()) {
+    PTRACE(1, "no video track in file \"" << filePath << "\" as video input device: " << m_file->GetErrorText());
+    return false;
+  }
+
+  PTRACE(3, "Opening file " << filePath);
+
+  m_frameWidth = tracks[m_track].m_width;
+  m_frameHeight = tracks[m_track].m_height;
+  m_frameRate = (unsigned)(tracks[m_track].m_rate+0.5);
+  m_deviceName = file->GetFilePath();
+  m_file = file.release();
+  return true;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::IsOpen() 
+{
+  return m_file != NULL;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::Close()
+{
+  bool ok = m_file != NULL && m_file->Close();
+
+  PThread::Sleep(1000/m_frameRate);
+
+  delete m_file;
+  m_file = NULL;
+
+  return ok;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::Start()
+{
+  return true;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::Stop()
+{
+  return true;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::IsCapturing()
+{
+  return IsOpen();
+}
+
+
+PStringArray PVideoInputDevice_MediaFile::GetInputDeviceNames()
+{
+  PStringArray names;
+
+  PMediaFile::Factory::KeyList_T keyList = PMediaFile::Factory::GetKeyList();
+  for (PMediaFile::Factory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
+    names.AppendString("*" + *it);
+
+  return names;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::SetVideoFormat(VideoFormat newFormat)
+{
+  return PVideoDevice::SetVideoFormat(newFormat);
+}
+
+
+int PVideoInputDevice_MediaFile::GetNumChannels() 
+{
+  return ChannelCount;  
+}
+
+
+PStringArray PVideoInputDevice_MediaFile::GetChannelNames()
+{
+  PStringArray names(ChannelCount);
+  names[0] = "Once, then close";
+  names[1] = "Repeat";
+  names[2] = "Once, then still";
+  names[3] = "Once, then black";
+  return names;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::SetColourFormat(const PString & newFormat)
+{
+  return (m_colourFormat *= newFormat);
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::SetFrameRate(unsigned rate)
+{
+  return rate == m_frameRate;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::GetFrameSizeLimits(unsigned & minWidth,
+                                           unsigned & minHeight,
+                                           unsigned & maxWidth,
+                                           unsigned & maxHeight) 
+{
+  if (m_file == NULL) {
+    PTRACE(2, "Cannot get frame size limits, no file opened.");
+    return false;
+  }
+
+  minWidth  = maxWidth  = m_frameWidth;
+  minHeight = maxHeight = m_frameHeight;
+  return true;
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::SetFrameSize(unsigned width, unsigned height)
+{
+  return width == m_frameWidth && height == m_frameHeight;
+}
+
+
+PINDEX PVideoInputDevice_MediaFile::GetMaxFrameBytes()
+{
+  return GetMaxFrameBytesConverted(CalculateFrameBytes());
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+{
+  m_pacing.Delay(1000/m_frameRate);
+  return GetFrameDataNoDelay(buffer, bytesReturned);
+}
+
+
+PBoolean PVideoInputDevice_MediaFile::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
+{
+  if (m_file == NULL) {
+    PTRACE(5, "Abort GetFrameDataNoDelay, closed.");
+    return false;
+  }
+
+  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(CalculateFrameBytes()) : frame;
+
+  if (m_file->IsOpen()) {
+    if (!m_file->ReadVideo(m_track, readBuffer))
+      m_file->Close();
+  }
+
+  if (!m_file->IsOpen()) {
+    switch (m_channelNumber) {
+      case Channel_PlayAndClose:
+      default:
+        PTRACE(4, "Completed play and close of " << m_file->GetFilePath());
+        return false;
+
+      case Channel_PlayAndRepeat:
+        if (!m_file->OpenForReading(m_deviceName)) {
+          PTRACE(2, "Could not rewind " << m_file->GetFilePath());
+          return false;
+        }
+        if (!m_file->ReadVideo(m_track, readBuffer))
+          return false;
+        break;
+
+      case Channel_PlayAndKeepLast:
+        PTRACE(4, "Completed play and keep last of " << m_file->GetFilePath());
+        break;
+
+      case Channel_PlayAndShowBlack:
+        PTRACE(4, "Completed play and show black of " << m_file->GetFilePath());
+        PColourConverter::FillYUV420P(0, 0,
+                                      m_frameWidth, m_frameHeight,
+                                      m_frameWidth, m_frameHeight,
+                                      readBuffer,
+                                      100, 100, 100);
+        break;
+    }
+  }
+
+  if (m_converter == NULL) {
+    if (bytesReturned != NULL)
+      *bytesReturned = CalculateFrameBytes();
+  }
+  else {
+    m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
+    if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
+      PTRACE(2, "Conversion failed with " << *m_converter);
+      return false;
+    }
+
+    if (bytesReturned != NULL)
+      *bytesReturned = m_converter->GetMaxDstFrameBytes();
+  }
+
+  return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PVideoOutputDevice_MediaFile
+
+PCREATE_VIDOUTPUT_PLUGIN_EX(MediaFile,
+
+  virtual const char * GetFriendlyName() const
+  {
+    return "Media File Video Output";
+  }
+
+  virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
+  {
+    PMediaFile::Factory::KeyList_T keyList = PMediaFile::Factory::GetKeyList();
+    return std::find(keyList.begin(), keyList.end(), PFilePath(deviceName).GetType()) != keyList.end() &&
+           (!PFile::Exists(deviceName) || PFile::Access(deviceName, PFile::WriteOnly));
+  }
+);
+
+
+PVideoOutputDevice_MediaFile::PVideoOutputDevice_MediaFile()
+  : m_file(NULL)
+{
+}
+
+
+PVideoOutputDevice_MediaFile::~PVideoOutputDevice_MediaFile()
+{
+  Close();
+}
+
+static const char DefaultYUVFileName[] = "*.yuv";
+
+PBoolean PVideoOutputDevice_MediaFile::Open(const PString & devName, PBoolean /*startImmediate*/)
+{
+  PFilePath fileName;
+  if (devName != DefaultYUVFileName)
+    fileName = devName;
+  else {
+    unsigned unique = 0;
+    do {
+      fileName.Empty();
+      fileName.sprintf("video%03u.yuv", ++unique);
+    } while (PFile::Exists(fileName));
+  }
+
+  m_file = PMediaFile::Factory::CreateInstance(fileName.GetType());
+  if (m_file == NULL) {
+    PTRACE(1, "Cannot create file " << fileName << " as video output device");
+    return false;
+  }
+
+  if (!m_file->OpenForWriting(fileName)) {
+    PTRACE(1, "Error creating file " << fileName << " as video output device");
+    delete m_file;
+    m_file = NULL;
+    return false;
+  }
+
+  m_deviceName = m_file->GetFilePath();
+  return true;
+}
+
+PBoolean PVideoOutputDevice_MediaFile::Close()
+{
+  bool ok = m_file == NULL || m_file->Close();
+
+  PThread::Sleep(10);
+
+  delete m_file;
+  m_file = NULL;
+
+  return ok;
+}
+
+
+PBoolean PVideoOutputDevice_MediaFile::Start()
+{
+  if (m_file == NULL)
+    return false;
+ 
+  PMediaFile::TracksInfo tracks;
+  tracks.push_back(PMediaFile::TrackInfo(PMediaFile::Video(), YUV420P()));
+  tracks.back().m_width = m_frameWidth;
+  tracks.back().m_height = m_frameHeight;
+  tracks.back().m_rate = m_frameRate;
+  return m_file->SetTracks(tracks);
+}
+
+
+PBoolean PVideoOutputDevice_MediaFile::Stop()
+{
+  return true;
+}
+
+
+PBoolean PVideoOutputDevice_MediaFile::IsOpen()
+{
+  return m_file != NULL;
+}
+
+
+PStringArray PVideoOutputDevice_MediaFile::GetOutputDeviceNames()
+{
+  PStringArray names;
+
+  PMediaFile::Factory::KeyList_T keyList = PMediaFile::Factory::GetKeyList();
+  for (PMediaFile::Factory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
+    names.AppendString("*" + *it);
+
+  return names;
+}
+
+
+PBoolean PVideoOutputDevice_MediaFile::SetColourFormat(const PString & newFormat)
+{
+  return (newFormat *= PVideoFrameInfo::YUV420P()) && PVideoDevice::SetColourFormat(newFormat);
+}
+
+
+PBoolean PVideoOutputDevice_MediaFile::SetFrameData(unsigned x, unsigned y,
+                                              unsigned width, unsigned height,
+                                              const BYTE * data,
+                                              PBoolean /*endFrame*/)
+{
+  if (m_file == NULL) {
+    PTRACE(5, "Abort SetFrameData, closed.");
+    return false;
+  }
+
+  if (x != 0 || y != 0 || width != m_frameWidth || height != m_frameHeight) {
+    PTRACE(1, "Output device only supports full frame writes");
+    return false;
+  }
+
+  if (m_converter == NULL)
+    return m_file->WriteVideo(0, data);
+
+  m_converter->Convert(data, m_frameStore.GetPointer(GetMaxFrameBytes()));
+  return m_file->WriteVideo(0, m_frameStore);
+}
+
+
+#endif // P_VIDEO
+
+#endif // P_MEDIAFILE

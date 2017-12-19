@@ -289,9 +289,6 @@
     <ClCompile Include="..\common\jidctflt.cxx">
       <Filter>Source Files\Components\Media</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\pffvdev.cxx">
-      <Filter>Source Files\Components\Media</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\pvfiledev.cxx">
       <Filter>Source Files\Components\Media</Filter>
     </ClCompile>
@@ -559,9 +556,6 @@
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\pils.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ptclib\pffvdev.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\pdns.h">

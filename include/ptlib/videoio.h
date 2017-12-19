@@ -1238,8 +1238,8 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
   PPLUGIN_STATIC_LOAD(Application, PVideoInputDevice);
 #endif
 
-#if P_FFVDEV
-  PPLUGIN_STATIC_LOAD(FFMPEG, PVideoInputDevice);
+#if P_MEDIAFILE
+  PPLUGIN_STATIC_LOAD(MediaFile, PVideoInputDevice);
 #endif
 
 #if P_VIDFILE

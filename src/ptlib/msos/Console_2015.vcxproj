@@ -841,14 +841,6 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pasn.cxx" />
     <ClCompile Include="..\..\ptclib\pdns.cxx" />
-    <ClCompile Include="..\..\ptclib\pffvdev.cxx">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\pils.cxx" />
     <ClCompile Include="..\..\ptclib\pldap.cxx">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\..\external\openldap\include</AdditionalIncludeDirectories>
@@ -1392,7 +1384,6 @@ if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
     <ClInclude Include="..\..\..\include\ptclib\modem.h" />
     <ClInclude Include="..\..\..\include\ptclib\pasn.h" />
     <ClInclude Include="..\..\..\include\ptclib\pdns.h" />
-    <ClInclude Include="..\..\..\include\ptclib\pffvdev.h" />
     <ClInclude Include="..\..\..\include\ptclib\pils.h" />
     <ClInclude Include="..\..\..\include\ptclib\pldap.h" />
     <ClInclude Include="..\..\..\include\ptclib\podbc.h" />
