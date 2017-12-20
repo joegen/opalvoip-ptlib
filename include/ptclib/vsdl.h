@@ -113,6 +113,7 @@ class PVideoOutputDevice_SDL : public PVideoOutputDevice
     struct SDL_Window * m_window;
     struct SDL_Renderer * m_renderer;
     struct SDL_Texture * m_texture;
+    PMutex               m_texture_mutex;
     PSyncPoint           m_operationComplete;
 
     bool InternalOpen();
