@@ -1539,6 +1539,9 @@ PStringArray PVideoOutputDevice::GetDriversDeviceNames(const PString & driverNam
     P_SDL_VIDEO_DRIVER,
 #endif
     P_NULL_VIDEO_DRIVER,
+#ifdef P_MEDIA_FILE_DRIVER
+    P_MEDIA_FILE_DRIVER,
+#endif
 #ifdef P_VIDEO_FILE_DRIVER
     P_VIDEO_FILE_DRIVER,
 #endif

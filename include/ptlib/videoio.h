@@ -1239,6 +1239,7 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 #endif
 
 #if P_MEDIAFILE
+  #define P_MEDIA_FILE_DRIVER "MediaFile"
   PPLUGIN_STATIC_LOAD(MediaFile, PVideoInputDevice);
 #endif
 
