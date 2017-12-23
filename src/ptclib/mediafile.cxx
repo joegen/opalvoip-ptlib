@@ -211,9 +211,9 @@ public:
       return SetErrorText("Cannot get tracks info when WAV file not open");
 
     TrackInfo info(Audio(), m_wavFile.GetFormatString());
-    info.m_size = m_wavFile.GetSampleSize() / 8;
+    info.m_size = m_wavFile.GetChannels()*(m_wavFile.GetSampleSize()+7)/8;
     info.m_rate = m_wavFile.GetSampleRate();
-    info.m_frames = m_wavFile.GetLength() / info.m_size;
+    info.m_frames = m_wavFile.GetLength()/info.m_size;
     info.m_channels = m_wavFile.GetChannels();
     tracks.clear();
     tracks.push_back(info);
@@ -238,7 +238,7 @@ public:
       return SetErrorText("WAV file only supports audio");
 
     if (  !m_wavFile.SetFormat(track.m_format) ||
-          !m_wavFile.SetSampleSize(track.m_size) ||
+          !m_wavFile.SetSampleSize(track.m_size*8/track.m_channels) ||
           !m_wavFile.SetSampleRate((unsigned)track.m_rate) ||
           !m_wavFile.SetChannels(track.m_channels))
       return SetErrorText("Cannot set WAV file track after started writing");

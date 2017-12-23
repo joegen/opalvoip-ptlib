@@ -441,10 +441,9 @@ bool PWAVFile::SetSampleSize(unsigned v)
 
   m_wavFmtChunk.bitsPerSample = (WORD)v;
   if (m_wavFmtChunk.format != fmt_PCM)
-    return v == m_wavFmtChunk.bytesPerSample;
+    return (v/8) == m_wavFmtChunk.bytesPerSample;
 
-  m_wavFmtChunk.bytesPerSample = (WORD)v;
-  m_wavFmtChunk.bitsPerSample  = (WORD)(v/8);
+  m_wavFmtChunk.bytesPerSample = (WORD)(v/8);
   m_wavFmtChunk.bytesPerSec    = v*m_wavFmtChunk.sampleRate;
   return true;
 }
