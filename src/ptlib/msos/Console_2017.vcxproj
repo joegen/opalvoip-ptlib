@@ -325,6 +325,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\ptclib\json.cxx" />
+    <ClCompile Include="..\..\ptclib\mediafile.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\..\..\external\ffmpeg-win64-dev\include;$(FFMPEG64DIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\tonedev.cxx" />
     <ClCompile Include="..\unix\opensl_es.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -654,14 +662,6 @@
     <ClCompile Include="..\..\ptclib\modem.cxx" />
     <ClCompile Include="..\..\ptclib\pasn.cxx" />
     <ClCompile Include="..\..\ptclib\pdns.cxx" />
-    <ClCompile Include="..\..\ptclib\pffvdev.cxx">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(FFMPEG64DIR)\include;..\..\..\..\external\ffmpeg-win64-dev\include;$(WINBUILDSDIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(FFMPEG64DIR)\include;..\..\..\..\external\ffmpeg-win64-dev\include;$(WINBUILDSDIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(FFMPEG64DIR)\include;..\..\..\..\external\ffmpeg-win64-dev\include;$(WINBUILDSDIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\external\ffmpeg-win32-dev\include;$(FFMPEGDIR)\include</AdditionalIncludeDirectories>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\pils.cxx" />
     <ClCompile Include="..\..\ptclib\pldap.cxx">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\..\external\openldap\include</AdditionalIncludeDirectories>
@@ -885,7 +885,6 @@ bison -o ../common/getdate_tab.c ../common/getdate.y
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd $(ProjectDir)..\..\..
 pwd
-echo %Include%
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd $(ProjectDir)..\..\..
@@ -977,6 +976,7 @@ if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
     <None Include="..\..\..\tools\get_revision.sh" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\include\ptclib\mediafile.h" />
     <ClInclude Include="..\..\..\include\ptclib\pjson.h" />
     <ClInclude Include="..\..\..\include\ptlib\id_generator.h" />
     <ClInclude Include="..\..\..\include\ptclib\gstreamer.h" />
@@ -1133,7 +1133,6 @@ if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
     <ClInclude Include="..\..\..\include\ptclib\modem.h" />
     <ClInclude Include="..\..\..\include\ptclib\pasn.h" />
     <ClInclude Include="..\..\..\include\ptclib\pdns.h" />
-    <ClInclude Include="..\..\..\include\ptclib\pffvdev.h" />
     <ClInclude Include="..\..\..\include\ptclib\pils.h" />
     <ClInclude Include="..\..\..\include\ptclib\pldap.h" />
     <ClInclude Include="..\..\..\include\ptclib\podbc.h" />

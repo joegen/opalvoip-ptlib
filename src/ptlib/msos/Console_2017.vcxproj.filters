@@ -289,9 +289,6 @@
     <ClCompile Include="..\common\jidctflt.cxx">
       <Filter>Source Files\Components\Media</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ptclib\pffvdev.cxx">
-      <Filter>Source Files\Components\Media</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ptclib\pvfiledev.cxx">
       <Filter>Source Files\Components\Media</Filter>
     </ClCompile>
@@ -378,6 +375,9 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\json.cxx">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ptclib\mediafile.cxx">
+      <Filter>Source Files\Components\Media</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -556,9 +556,6 @@
       <Filter>Header Files\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\pils.h">
-      <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ptclib\pffvdev.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\pdns.h">
@@ -950,6 +947,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h" />
     <ClInclude Include="..\..\..\include\ptclib\pjson.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptclib\mediafile.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>

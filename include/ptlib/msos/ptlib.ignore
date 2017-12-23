@@ -122,3 +122,4 @@ EXPORTS
     _TI2?AVbad_cast@std@@
     __TI3?AVlength_error@std@@
 	_CTA2?AVbad_cast@std@@
+    _wmemcpy
