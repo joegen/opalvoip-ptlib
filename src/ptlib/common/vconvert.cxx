@@ -116,7 +116,11 @@ class PStandardColourConverter : public PColourConverter
         if (rgbIncrement == 3)
           fmt = redOffset == 0 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_BGR24;
         else
+#ifdef P_MACOSX
+          fmt = redOffset == 0 ? AV_PIX_FMT_ABGR : AV_PIX_FMT_ARGB;
+#else
           fmt = redOffset == 0 ? AV_PIX_FMT_RGBA : AV_PIX_FMT_BGRA;
+#endif
       }
     }
 
@@ -2257,15 +2261,16 @@ PSTANDARD_COLOUR_CONVERTER(YUV420B,YUV420P)
   if (!CanUseFFMPEG(AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, 0, 0))
     return false;
   
+  const uint8_t* srcSlice[] = { srcFrameBuffer, srcFrameBuffer+m_srcFrameWidth*m_srcFrameHeight };
+  const int srcStride[] = { m_srcFrameWidth, m_srcFrameWidth };
+  
   int planeHeight = (m_dstFrameHeight+1)&~1;
   int scanLineSizeY = (m_dstFrameWidth+1)&~1;
   int scanLineSizeUV = scanLineSizeY/2;
   int planeSizeY = planeHeight*scanLineSizeY;
-  
-  const uint8_t* srcSlice[] = { srcFrameBuffer, srcFrameBuffer+planeSizeY };
-  const int srcStride[] = { scanLineSizeY, scanLineSizeY };
-  
-  uint8_t* dstSlice[] = { dstFrameBuffer, dstFrameBuffer+planeSizeY, dstFrameBuffer+planeSizeY*5/4 };
+  int planeSizeUV = planeHeight/2*scanLineSizeUV;
+
+  uint8_t* dstSlice[] = { dstFrameBuffer, dstFrameBuffer+planeSizeY, dstFrameBuffer+planeSizeY+planeSizeUV };
   const int dstStride[] = { scanLineSizeY, scanLineSizeUV, scanLineSizeUV };
     
   sws_scale(m_swsContext, srcSlice, srcStride, 0, m_srcFrameHeight, dstSlice, dstStride);
