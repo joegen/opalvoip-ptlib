@@ -686,8 +686,8 @@ PTLIB_SHM_VIDEO
 HAS_SHM_VIDEO
 PTLIB_APPSHARE
 HAS_APPSHARE
-PTLIB_FFVDEV
-HAS_FFVDEV
+PTLIB_MEDIAFILE
+HAS_MEDIAFILE
 PTLIB_VIDFILE
 HAS_VIDFILE
 PTLIB_VIDEO
@@ -1019,7 +1019,7 @@ enable_audio
 enable_wavfile
 enable_video
 enable_vidfile
-enable_ffvdev
+enable_mediafile
 enable_appshare
 enable_shmvideo
 enable_curses
@@ -1788,7 +1788,7 @@ Optional Features:
   --disable-wavfile       disable WAVFILE support
   --disable-video         disable video device support
   --disable-vidfile       disable video file support
-  --disable-ffvdev        disable FFMPEG application video file support
+  --disable-mediafile     disable Media file support
   --disable-appshare      disable application sharing support
   --disable-shmvideo      disable shared memory video devices
   --disable-curses        disable disable Curses (text mode windows) support
@@ -11296,6 +11296,9 @@ fi
 
 
 
+
+
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -13432,6 +13435,7 @@ fi
    else
       PTLIB_SSL_AES=no
    fi
+
 
 
 
@@ -17363,18 +17367,18 @@ fi
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking FFMPEG application video file support" >&5
-$as_echo_n "checking FFMPEG application video file support... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Media file support" >&5
+$as_echo_n "checking Media file support... " >&6; }
 
-   # Check whether --enable-ffvdev was given.
-if test "${enable_ffvdev+set}" = set; then :
-  enableval=$enable_ffvdev; if test "x$enableval" = xno; then :
+   # Check whether --enable-mediafile was given.
+if test "${enable_mediafile+set}" = set; then :
+  enableval=$enable_mediafile; if test "x$enableval" = xno; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
 $as_echo "disabled by user" >&6; }
 fi
 else
 
-         enableval=${DEFAULT_FFVDEV:-yes}
+         enableval=${DEFAULT_MEDIAFILE:-yes}
          if test "x$enableval" = xno; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
 $as_echo "disabled by default" >&6; }
@@ -17386,28 +17390,8 @@ fi
 
 
 
-      if test "x${enableval}" = "xyes" && \
-             test "x$HAS_VIDEO" != "x1" && \
-             test "x$HAS_VIDEO" != "xyes"; then :
-
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&5
-$as_echo "disabled due to disabled dependency HAS_VIDEO=$HAS_VIDEO" >&6; }
-         enableval=no
-
-fi
 
 
-
-
-      if test "x${enableval}" = "xyes" && \
-             test "x$HAS_PIPECHAN" != "x1" && \
-             test "x$HAS_PIPECHAN" != "xyes"; then :
-
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_PIPECHAN=$HAS_PIPECHAN" >&5
-$as_echo "disabled due to disabled dependency HAS_PIPECHAN=$HAS_PIPECHAN" >&6; }
-         enableval=no
-
-fi
 
 
 
@@ -17424,34 +17408,34 @@ fi
 
    if test "x$enableval" = "xyes"; then :
 
-   HAS_FFVDEV=1
+   HAS_MEDIAFILE=1
 
-   if test "x$HAS_FFVDEV" = "xyes" ; then
-      HAS_FFVDEV=1
+   if test "x$HAS_MEDIAFILE" = "xyes" ; then
+      HAS_MEDIAFILE=1
    fi
 
-   if test "x$HAS_FFVDEV" = "x0" || test "x$HAS_FFVDEV" = "xno" ; then
-      HAS_FFVDEV=
+   if test "x$HAS_MEDIAFILE" = "x0" || test "x$HAS_MEDIAFILE" = "xno" ; then
+      HAS_MEDIAFILE=
    fi
 
 
 
-   if test "x$HAS_FFVDEV" = "x1" ; then
-      PTLIB_FFVDEV=yes
-      $as_echo "#define P_FFVDEV 1" >>confdefs.h
+   if test "x$HAS_MEDIAFILE" = "x1" ; then
+      PTLIB_MEDIAFILE=yes
+      $as_echo "#define P_MEDIAFILE 1" >>confdefs.h
 
    else
-      PTLIB_FFVDEV=no
+      PTLIB_MEDIAFILE=no
    fi
 
 
 
 else
-  HAS_FFVDEV=
+  HAS_MEDIAFILE=
 fi
 
 
-   enable_ffvdev="$enableval"
+   enable_mediafile="$enableval"
 
 
 
