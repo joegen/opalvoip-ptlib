@@ -618,6 +618,9 @@ class PMediaFile_FFMPEG : public PMediaFile
             m_stream->codecpar->profile = m_options.GetInteger("Profile");
             m_stream->codecpar->level = m_options.GetInteger("Level");
             break;
+
+          default:
+            break;
         }
 
         if (!CreateCodecContext())
@@ -625,12 +628,13 @@ class PMediaFile_FFMPEG : public PMediaFile
 
         // some formats want stream headers to be separate
         if (m_owner->m_formatContext->oformat->flags & AVFMT_GLOBALHEADER)
-          m_codecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+          m_codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
         switch (m_codecContext->codec_type) {
           case AVMEDIA_TYPE_AUDIO:
             m_codecContext->sample_fmt = m_codecInfo->sample_fmts ? m_codecInfo->sample_fmts[0] : AV_SAMPLE_FMT_FLTP;
-            m_codecContext->time_base = { 1, m_codecContext->sample_rate };
+            m_codecContext->time_base.num = 1;
+            m_codecContext->time_base.den = m_codecContext->sample_rate;
 
             // AAC has been experimental for a decade ...
             if (m_codecContext->codec_id == AV_CODEC_ID_AAC)
@@ -642,7 +646,8 @@ class PMediaFile_FFMPEG : public PMediaFile
             m_codecContext->bit_rate_tolerance = (int)(m_codecContext->bit_rate / 2);
             m_codecContext->rc_buffer_size = (int)(m_codecContext->bit_rate * 5);
             m_codecContext->gop_size = m_options.GetInteger("KeyFrameInterval");
-            m_codecContext->time_base = { 1, 90000 };
+            m_codecContext->time_base.num = 1;
+            m_codecContext->time_base.den = 90000;
 
             if ((m_owner->m_formatContext->oformat->flags & AVFMT_VARIABLE_FPS) == 0) {
               AVRational frameRate = av_d2q(m_rate, 90000);
