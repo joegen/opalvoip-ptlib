@@ -405,8 +405,8 @@ ifeq ($(HAS_VIDFILE),1)
              $(COMPONENT_SRC_DIR)/pvfiledev.cxx 
 endif
 
-ifeq ($(HAS_FFVDEV),1)
-  SOURCES += $(COMPONENT_SRC_DIR)/pffvdev.cxx
+ifeq ($(HAS_MEDIAFILE),1)
+  SOURCES += $(COMPONENT_SRC_DIR)/mediafile.cxx
 endif
 
 ifeq ($(HAS_CYPHER),1)
