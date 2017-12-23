@@ -222,7 +222,8 @@ class PVideoInputDevice_Mac : public PVideoInputDevice
     virtual PBoolean SetColourFormat(const PString & colourFormat);
     virtual PBoolean SetFrameRate(unsigned rate);
     virtual PBoolean SetFrameSize(unsigned width, unsigned height);
-
+    virtual PBoolean GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight);
+  
   protected:
     AVCaptureSession * m_session;
     AVCaptureDevice * m_device;
@@ -248,6 +249,8 @@ PVideoInputDevice_Mac::PVideoInputDevice_Mac()
   , m_captureFrame(nil)
 {
   m_colourFormat.MakeEmpty();
+  m_frameWidth = 640;
+  m_frameHeight = 480;
   PTRACE(5, "Constructed.");
 }
 
@@ -534,11 +537,27 @@ PBoolean PVideoInputDevice_Mac::SetFrameRate(unsigned rate)
 }
 
 
+PBoolean PVideoInputDevice_Mac::GetFrameSizeLimits(unsigned & minWidth,
+                                                   unsigned & minHeight,
+                                                   unsigned & maxWidth,
+                                                   unsigned & maxHeight)
+{
+  minWidth = maxWidth = 640;
+  minHeight = maxHeight = 480;
+  return true;
+}
+
+
 PBoolean PVideoInputDevice_Mac::SetFrameSize(unsigned width, unsigned height)
 {
   if (width == m_frameWidth && height == m_frameHeight)
     return true;
 
+  // We only allow VGA right now, until we figure out how to detemine
+  // what the camera can do via the torturous API.
+  if (width != 640 || height != 480)
+    return false;
+  
   if (!PVideoDevice::SetFrameSize(width, height))
     return false;
 
@@ -549,10 +568,6 @@ PBoolean PVideoInputDevice_Mac::SetFrameSize(unsigned width, unsigned height)
 bool PVideoInputDevice_Mac::GetDeviceCapabilities(const PString &, Capabilities * caps)
 {
   PVideoFrameInfo frameInfo;
-  frameInfo.SetFrameSize(160, 120);
-  caps->m_frameSizes.push_back(frameInfo);
-  frameInfo.SetFrameSize(320, 240);
-  caps->m_frameSizes.push_back(frameInfo);
   frameInfo.SetFrameSize(640, 480);
   caps->m_frameSizes.push_back(frameInfo);
   return true;
