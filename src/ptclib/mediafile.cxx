@@ -30,6 +30,8 @@
 
 #include <ptlib.h>
 
+#define P_FORCE_STATIC_PLUGIN 1
+ 
 #include <ptclib/mediafile.h>
 
 #if P_MEDIAFILE
