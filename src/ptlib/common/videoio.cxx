@@ -115,6 +115,7 @@ static VideoDevice * CreateDeviceWithDefaults(PString & adjustedDeviceName,
 
   if (adjustedDeviceName.IsEmpty()) {
     PStringArray devices = VideoDevice::GetDriversDeviceNames(adjustedDriverName);
+    PTRACE(4, "Available video devices for driver \"" << adjustedDriverName << "\": " << setfill(',') << devices);
     if (devices.IsEmpty())
       return NULL;
 
@@ -1220,22 +1221,30 @@ PStringArray PVideoInputDevice::GetDriversDeviceNames(const PString & driverName
 {
   // Give precedence to drivers like camera grabbers, Window
   static const char * const PrioritisedDrivers[] = {
-#ifdef P_DIRECTSHOW
+#ifdef P_DIRECT_SHOW_DRIVER
     P_DIRECT_SHOW_DRIVER,
 #endif
-#ifdef WIN32
+#ifdef P_VIDEO_FOR_WINDOWS_DRIVER
     P_VIDEO_FOR_WINDOWS_DRIVER,
 #endif
+#if !defined(WIN32) && !defined(P_MACOSX)
     "V4L",
     "V4L2",
     "1394DC",
     "1394AVC",
     "BSDCAPTURE",
-    P_NULL_VIDEO_DRIVER,
-#ifdef P_APPSHARE
+#endif
+#ifdef P_MAC_VIDEO_DRIVER
+    P_MAC_VIDEO_DRIVER,
+#endif
+    P_FAKE_VIDEO_DRIVER,
+#ifdef P_APPLICATION_VIDEO_DRIVER
     P_APPLICATION_VIDEO_DRIVER,
 #endif
-#if P_VIDFILE
+#ifdef P_MEDIA_FILE_DRIVER
+    P_MEDIA_FILE_DRIVER,
+#endif
+#ifdef P_VIDEO_FILE_DRIVER
     P_VIDEO_FILE_DRIVER,
 #endif
     NULL
@@ -1332,6 +1341,7 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
   if (device == NULL)
     return NULL;
 
+  PTRACE(4, device, "Found video input device \"" << device->GetDeviceName() << '"');
   if (device->Open(adjustedDeviceName, startImmediate))
     return device;
 
@@ -1522,15 +1532,14 @@ PStringArray PVideoOutputDevice::GetDriversDeviceNames(const PString & driverNam
 {
   // Give precedence to drivers like camera grabbers, Window
   static const char * const PrioritisedDrivers[] = {
-#ifdef WIN32
+#ifdef P_MSWIN_VIDEO_DRIVER
     P_MSWIN_VIDEO_DRIVER,
 #endif
-#if P_SDL
+#ifdef P_SDL_VIDEO_DRIVER
     P_SDL_VIDEO_DRIVER,
 #endif
-    P_FAKE_VIDEO_DRIVER,
     P_NULL_VIDEO_DRIVER,
-#if P_VIDFILE
+#ifdef P_VIDEO_FILE_DRIVER
     P_VIDEO_FILE_DRIVER,
 #endif
     NULL

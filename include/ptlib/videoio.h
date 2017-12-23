@@ -1258,6 +1258,7 @@ PPLUGIN_STATIC_LOAD(FakeVideo, PVideoInputDevice);
 #endif
 
 #if defined(P_MACOSX)
+  #define P_MAC_VIDEO_DRIVER "Mac"
   PPLUGIN_STATIC_LOAD(Mac, PVideoInputDevice);
 #endif
 

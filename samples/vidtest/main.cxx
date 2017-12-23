@@ -91,7 +91,7 @@ void VidTest::Main()
 
   PString inputDriverName = args.GetOptionString("input-driver");
   PString inputDeviceName = args.GetOptionString("input-device");
-  m_grabber = PVideoInputDevice::CreateOpenedDevice(inputDriverName, inputDeviceName, FALSE);
+  m_grabber = PVideoInputDevice::CreateOpenedDevice(inputDriverName, inputDeviceName, false);
   if (m_grabber == NULL) {
     cerr << "Cannot use ";
     if (inputDriverName.IsEmpty() && inputDriverName.IsEmpty())
@@ -101,7 +101,7 @@ void VidTest::Main()
       cerr << ", driver \"" << inputDriverName << '"';
     if (!inputDeviceName.IsEmpty())
       cerr << ", device \"" << inputDeviceName << '"';
-    else
+    else if (!inputDriverName.IsEmpty())
       cerr << ", default device";
     cerr << ", device name must be one of:\n";
     PStringList devices = PVideoInputDevice::GetDriversDeviceNames("*\t*");
@@ -164,7 +164,7 @@ void VidTest::Main()
 
   PString outputDriverName = args.GetOptionString("output-driver");
   PString outputDeviceName = args.GetOptionString("output-device");
-  m_display = PVideoOutputDevice::CreateOpenedDevice(outputDriverName, outputDeviceName, FALSE);
+  m_display = PVideoOutputDevice::CreateOpenedDevice(outputDriverName, outputDeviceName, false);
   if (m_display == NULL) {
     cerr << "Cannot use ";
     if (outputDriverName.IsEmpty() && outputDriverName.IsEmpty())
@@ -174,7 +174,7 @@ void VidTest::Main()
       cerr << ", driver \"" << outputDriverName << '"';
     if (!outputDeviceName.IsEmpty())
       cerr << ", device \"" << outputDeviceName << '"';
-    else
+    else if (!outputDriverName.IsEmpty())
       cerr << ", default device";
     cerr << ", device name must be one of:\n";
     PStringList devices = PVideoOutputDevice::GetDriversDeviceNames("*\t*");
