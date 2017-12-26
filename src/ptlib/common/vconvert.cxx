@@ -2262,7 +2262,7 @@ PSTANDARD_COLOUR_CONVERTER(YUV420B,YUV420P)
     return false;
   
   const uint8_t* srcSlice[] = { srcFrameBuffer, srcFrameBuffer+m_srcFrameWidth*m_srcFrameHeight };
-  const int srcStride[] = { m_srcFrameWidth, m_srcFrameWidth };
+  const int srcStride[] = { (int)m_srcFrameWidth, (int)m_srcFrameWidth };
   
   int planeHeight = (m_dstFrameHeight+1)&~1;
   int scanLineSizeY = (m_dstFrameWidth+1)&~1;
