@@ -524,6 +524,33 @@ class PSTUNMessage : public PBYTEArray
     PIPSocketAddressAndPort m_sourceAddressAndPort;
 };
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <PSTUNAttribute::Types ATTR_TYPE, typename PARAM_TYPE>
+class PSTUNAttribute1 : public PSTUNAttribute
+{
+  public:
+    PARAM_TYPE m_parameter;
+
+    PSTUNAttribute1()
+      : PSTUNAttribute(ATTR_TYPE, sizeof(m_parameter))
+    {
+    }
+
+    PSTUNAttribute1(PARAM_TYPE parameter)
+      : PSTUNAttribute(ATTR_TYPE, sizeof(m_parameter))
+      , m_parameter(parameter)
+    {
+    }
+
+    bool IsValid() const { return type == ATTR_TYPE && length == sizeof(m_parameter); }
+
+    static PSTUNAttribute1 * Find(const PSTUNMessage & message) { return message.FindAttributeAs<PSTUNAttribute1>(ATTR_TYPE); }
+};
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**STUN client.
