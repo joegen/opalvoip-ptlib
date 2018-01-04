@@ -102,6 +102,7 @@
     std::vector<std::string> lines(addressCount);
 
 #ifndef P_MACOSX
+    {
       FILE * pipe;
       {
         std::stringstream cmd;
