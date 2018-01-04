@@ -581,12 +581,12 @@ class PMediaFile_FFMPEG : public PMediaFile
           else
             m_codecInfo = avcodec_find_encoder_by_name(m_format);
         }
-        if (m_codecInfo == nullptr) {
+        if (m_codecInfo == NULL) {
           PTRACE(2, m_owner, "Cannot find output encoder \"" << m_format << '"');
           return false;
         }
 
-        if ((m_stream = avformat_new_stream(m_owner->m_formatContext, m_codecInfo)) == nullptr) {
+        if ((m_stream = avformat_new_stream(m_owner->m_formatContext, m_codecInfo)) == NULL) {
           PTRACE(2, m_owner, "Cannot allocate FFMPEG stream!");
           return false;
         }
@@ -598,7 +598,7 @@ class PMediaFile_FFMPEG : public PMediaFile
         m_stream->codecpar->bit_rate = m_options.GetInteger("BitRate");
         switch (m_codecInfo->type) {
           case AVMEDIA_TYPE_AUDIO:
-            if (m_codecInfo->supported_samplerates == nullptr)
+            if (m_codecInfo->supported_samplerates == NULL)
               m_stream->codecpar->sample_rate = (int)m_rate;
             else {
               m_stream->codecpar->sample_rate = m_codecInfo->supported_samplerates[0];
@@ -653,7 +653,7 @@ class PMediaFile_FFMPEG : public PMediaFile
 
             if ((m_owner->m_formatContext->oformat->flags & AVFMT_VARIABLE_FPS) == 0) {
               AVRational frameRate = av_d2q(m_rate, 90000);
-              if (m_codecInfo->supported_framerates == nullptr)
+              if (m_codecInfo->supported_framerates == NULL)
                 m_codecContext->framerate = frameRate;
               else {
                 int idx = av_find_nearest_q_idx(m_codecContext->framerate, m_codecInfo->supported_framerates);
@@ -1031,10 +1031,10 @@ class PMediaFile_FFMPEG : public PMediaFile
       m_reading = true;
       m_filePath = filePath;
 
-      if (CHECK_ERROR(avformat_open_input, (&m_formatContext, filePath, nullptr, nullptr)))
+      if (CHECK_ERROR(avformat_open_input, (&m_formatContext, filePath, NULL, NULL)))
         return false;
 
-      if (CHECK_ERROR(avformat_find_stream_info, (m_formatContext, nullptr)))
+      if (CHECK_ERROR(avformat_find_stream_info, (m_formatContext, NULL)))
         return false;
 
       m_tracks.resize(m_formatContext->nb_streams);
@@ -1053,8 +1053,8 @@ class PMediaFile_FFMPEG : public PMediaFile
       m_reading = false;
       m_filePath = filePath;
 
-      if (avformat_alloc_output_context2(&m_formatContext, nullptr, nullptr, filePath) < 0) {
-        if (CHECK_ERROR(avformat_alloc_output_context2,(&m_formatContext, nullptr, "mpeg", filePath)))
+      if (avformat_alloc_output_context2(&m_formatContext, NULL, NULL, filePath) < 0) {
+        if (CHECK_ERROR(avformat_alloc_output_context2,(&m_formatContext, NULL, "mpeg", filePath)))
           return false;
         PTRACE(3, "Could not deduce FFMPEG format for \"" << filePath << "\", assuming MPEG");
       }
