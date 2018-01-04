@@ -2074,9 +2074,9 @@ bool PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   unsigned dstPixpos[4];
 
   if (m_verticalFlip) {
-    scanLinePtrRGB -= scanLineSizeRGB;
-    dstPixpos[0] = dstPixpos[2];
-    dstPixpos[1] = dstPixpos[3];
+    scanLinePtrRGB -= scanLineSizeRGB; // We do two scan lines at a time
+    dstPixpos[0] = (unsigned)scanLineSizeRGB;
+    dstPixpos[1] =  (unsigned)scanLineSizeRGB+rgbIncrement;
     dstPixpos[2] = 0;
     dstPixpos[3] = rgbIncrement;
   }
@@ -2201,7 +2201,7 @@ PBoolean PStandardColourConverter::YUV420PtoRGB565(const BYTE * srcFrameBuffer,
   BYTE * dstScanLine   = dstFrameBuffer;
 
   unsigned int srcPixpos[4] = { 0, 1, m_srcFrameWidth, m_srcFrameWidth + 1 };
-  unsigned int dstPixpos[4] = { 0, rgbIncrement, m_dstFrameWidth*rgbIncrement, (m_dstFrameWidth+1)*rgbIncrement };
+  unsigned int dstPixpos[4];
 
   if (m_verticalFlip) {
     dstScanLine += (m_dstFrameHeight - 2) * m_dstFrameWidth * rgbIncrement;
@@ -2209,6 +2209,12 @@ PBoolean PStandardColourConverter::YUV420PtoRGB565(const BYTE * srcFrameBuffer,
     dstPixpos[1] = (m_dstFrameWidth +1)*rgbIncrement;
     dstPixpos[2] = 0;
     dstPixpos[3] = 1*rgbIncrement;
+  }
+  else {
+    dstPixpos[0] = 0;
+    dstPixpos[1] = rgbIncrement;
+    dstPixpos[2] = m_dstFrameWidth * rgbIncrement;
+    dstPixpos[3] = (m_dstFrameWidth + 1)*rgbIncrement;
   }
 
   for (unsigned y = 0; y < height; y += 2)
