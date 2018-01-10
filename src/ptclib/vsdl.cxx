@@ -331,6 +331,8 @@ bool PVideoOutputDevice_SDL::InternalOpen()
     return false;
   }
   
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+
   m_texture = SDL_CreateTexture(m_renderer,
                                 SDL_PIXELFORMAT_IYUV,
                                 SDL_TEXTUREACCESS_STREAMING,
