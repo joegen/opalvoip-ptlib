@@ -38,6 +38,9 @@
 #include <ptclib/http.h>
 
 
+#define PTraceModule() "VXML"
+
+
 class PVXMLChannelPCM : public PVXMLChannel
 {
   PCLASSINFO(PVXMLChannelPCM, PVXMLChannel);
@@ -253,7 +256,7 @@ PBoolean PVXMLPlayableFile::Open(PVXMLChannel & chan, const PString & fn, PINDEX
 {
   m_filePath = chan.AdjustWavFilename(fn);
   if (!PFile::Exists(m_filePath)) {
-    PTRACE(2, "VXML\tPlayable file \"" << m_filePath << "\" not found.");
+    PTRACE(2, "Playable file \"" << m_filePath << "\" not found.");
     return false;
   }
 
@@ -273,7 +276,7 @@ bool PVXMLPlayableFile::OnStart()
   if (m_filePath.GetType() == ".wav") {
     file = m_vxmlChannel->CreateWAVFile(m_filePath);
     if (file == NULL) {
-      PTRACE(2, "VXML\tCannot open WAV file \"" << m_filePath << '"');
+      PTRACE(2, "Cannot open WAV file \"" << m_filePath << '"');
       return false;
     }
   }
@@ -283,13 +286,13 @@ bool PVXMLPlayableFile::OnStart()
     // Assume file just has bytes of correct media format
     file = new PFile(m_filePath);
     if (!file->Open(PFile::ReadOnly)) {
-      PTRACE(2, "VXML\tCould not open audio file \"" << m_filePath << '"');
+      PTRACE(2, "Could not open audio file \"" << m_filePath << '"');
       delete file;
       return false;
     }
   }
 
-  PTRACE(3, "VXML\tPlaying file \"" << m_filePath << "\", " << file->GetLength() << " bytes");
+  PTRACE(3, "Playing file \"" << m_filePath << "\", " << file->GetLength() << " bytes");
   m_subChannel = file;
   return m_vxmlChannel->SetReadChannel(file, false);
 }
@@ -310,7 +313,7 @@ void PVXMLPlayableFile::OnStop()
   PVXMLPlayable::OnStop();
 
   if (m_autoDelete && !m_filePath.IsEmpty()) {
-    PTRACE(3, "VXML\tDeleting file \"" << m_filePath << "\"");
+    PTRACE(3, "Deleting file \"" << m_filePath << "\"");
     PFile::Remove(m_filePath);
   }
 }
@@ -340,12 +343,12 @@ PBoolean PVXMLPlayableFileList::Open(PVXMLChannel & chan, const PStringArray & l
     if (PFile::Exists(fn))
       m_fileNames.AppendString(fn);
     else {
-      PTRACE(2, "VXML\tAudio file \"" << fn << "\" does not exist.");
+      PTRACE(2, "Audio file \"" << fn << "\" does not exist.");
     }
   }
 
   if (m_fileNames.GetSize() == 0) {
-    PTRACE(2, "VXML\tNo files in list exist.");
+    PTRACE(2, "No files in list exist.");
     return false;
   }
 
@@ -380,7 +383,7 @@ void PVXMLPlayableFileList::OnStop()
 
   if (m_autoDelete)  {
     for (PINDEX i = 0; i < m_fileNames.GetSize(); ++i) {
-      PTRACE(3, "VXML\tDeleting file \"" << m_fileNames[i] << "\"");
+      PTRACE(3, "Deleting file \"" << m_fileNames[i] << "\"");
       PFile::Remove(m_fileNames[i]);
     }
   }
@@ -396,7 +399,7 @@ PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableFileList, "FileList");
 PBoolean PVXMLPlayableCommand::Open(PVXMLChannel & chan, const PString & cmd, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 {
   if (cmd.IsEmpty()) {
-    PTRACE(2, "VXML\tEmpty command line.");
+    PTRACE(2, "Empty command line.");
     return false;
   }
 
@@ -417,17 +420,17 @@ bool PVXMLPlayableCommand::OnStart()
   // execute a command and send the output through the stream
   PPipeChannel * pipe = new PPipeChannel;
   if (!pipe->Open(cmd, PPipeChannel::ReadOnly)) {
-    PTRACE(2, "VXML\tCannot open command \"" << cmd << '"');
+    PTRACE(2, "Cannot open command \"" << cmd << '"');
     delete pipe;
     return false;
   }
 
   if (!pipe->Execute()) {
-    PTRACE(2, "VXML\tCannot start command \"" << cmd << '"');
+    PTRACE(2, "Cannot start command \"" << cmd << '"');
     return false;
   }
 
-  PTRACE(3, "VXML\tPlaying command \"" << cmd << '"');
+  PTRACE(3, "Playing command \"" << cmd << '"');
   m_subChannel = pipe;
   return m_vxmlChannel->SetReadChannel(pipe, false);
 }
@@ -467,7 +470,7 @@ bool PVXMLPlayableData::OnStart()
     return false;
 
   m_subChannel = new PMemoryFile(m_data);
-  PTRACE(3, "VXML\tPlaying " << m_data.GetSize() << " bytes of memory");
+  PTRACE(3, "Playing " << m_data.GetSize() << " bytes of memory");
   return m_vxmlChannel->SetReadChannel(m_subChannel, false);
 }
 
@@ -494,7 +497,7 @@ PBoolean PVXMLPlayableTone::Open(PVXMLChannel & chan, const PString & toneSpec, 
   PTones tones;
 
   if (!tones.Generate(toneSpec)) {
-    PTRACE(2, "VXML\tCOuld not generate tones with \"" << toneSpec << '"');
+    PTRACE(2, "Could not generate tones with \"" << toneSpec << '"');
     return false;
   }
 
@@ -514,7 +517,7 @@ PFACTORY_CREATE(PFactory<PVXMLPlayable>, PVXMLPlayableTone, "Tone");
 PBoolean PVXMLPlayableURL::Open(PVXMLChannel & chan, const PString & url, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 {
   if (!m_url.Parse(url)) {
-    PTRACE(2, "VXML\tInvalid URL \"" << url << '"');
+    PTRACE(2, "Invalid URL \"" << url << '"');
     return false;
   }
 
@@ -571,7 +574,7 @@ bool PVXMLRecordableFilename::OnStart(PVXMLChannel & outgoingChannel)
   if (m_fileName.GetType() == ".wav") {
     file = outgoingChannel.CreateWAVFile(m_fileName, true);
     if (file == NULL) {
-      PTRACE(2, "VXML\tCannot open WAV file \"" << m_fileName << '"');
+      PTRACE(2, "Cannot open WAV file \"" << m_fileName << '"');
       return false;
     }
   }
@@ -580,13 +583,13 @@ bool PVXMLRecordableFilename::OnStart(PVXMLChannel & outgoingChannel)
   {
     file = new PFile(m_fileName);
     if (!file->Open(PFile::WriteOnly)) {
-      PTRACE(2, "VXML\tCannot open audio file \"" << m_fileName << '"');
+      PTRACE(2, "Cannot open audio file \"" << m_fileName << '"');
       delete file;
       return false;
     }
   }
 
-  PTRACE(3, "VXML\tRecording to file \"" << m_fileName << "\","
+  PTRACE(3, "Recording to file \"" << m_fileName << "\","
             " duration=" << m_maxDuration << ", silence=" << m_finalSilence);
   outgoingChannel.SetWriteChannel(file, true);
 
@@ -600,7 +603,7 @@ PBoolean PVXMLRecordableFilename::OnFrame(PBoolean isSilence)
 {
   if (isSilence) {
     if (m_silenceTimer.HasExpired()) {
-      PTRACE(4, "VXML\tRecording silence detected.");
+      PTRACE(4, "Recording silence detected.");
       return true;
     }
   }
@@ -608,7 +611,7 @@ PBoolean PVXMLRecordableFilename::OnFrame(PBoolean isSilence)
     m_silenceTimer = m_finalSilence;
 
   if (m_recordTimer.HasExpired()) {
-    PTRACE(3, "VXML\tRecording finished due to max time exceeded.");
+    PTRACE(3, "Recording finished due to max time exceeded.");
     return true;
   }
 
@@ -639,7 +642,7 @@ PFilePath PVXMLCache::CreateFilename(const PString & prefix, const PString & key
 {
   if (!m_directory.Exists()) {
     if (!m_directory.Create()) {
-      PTRACE(2, "VXML\tCould not create cache directory \"" << m_directory << '"');
+      PTRACE(2, "Could not create cache directory \"" << m_directory << '"');
     }
   }
 
@@ -676,25 +679,25 @@ bool PVXMLCache::Get(const PString & prefix,
     if (keyFile.Open()) {
       if (keyFile.ReadString(P_MAX_INDEX) == key) {
         if (dataFile.GetLength() != 0) {
-          PTRACE(5, "VXML\tCache data found for \"" << key << '"');
+          PTRACE(5, "Cache data found for \"" << key << '"');
           filename = dataFile.GetFilePath();
           return true;
         }
         else {
-          PTRACE(2, "VXML\tCached data empty for \"" << key << '"');
+          PTRACE(2, "Cached data empty for \"" << key << '"');
         }
       }
       else {
-        PTRACE(2, "VXML\tCache coherence problem for \"" << key << '"');
+        PTRACE(2, "Cache coherence problem for \"" << key << '"');
       }
     }
     else {
-      PTRACE(2, "VXML\tCannot open cache key file \"" << keyFile.GetFilePath() << "\""
+      PTRACE(2, "Cannot open cache key file \"" << keyFile.GetFilePath() << "\""
                 " for \"" << key << "\", error: " << keyFile.GetErrorText());
     }
   }
   else {
-    PTRACE(2, "VXML\tCannot open cache data file \"" << dataFile.GetFilePath() << "\""
+    PTRACE(2, "Cannot open cache data file \"" << dataFile.GetFilePath() << "\""
               " for \"" << key << "\", error: " << dataFile.GetErrorText());
   }
 
@@ -713,7 +716,7 @@ bool PVXMLCache::PutWithLock(const PString & prefix,
 
   // create the filename for the cache files
   if (!dataFile.Open(CreateFilename(prefix, key, "." + fileType), PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
-    PTRACE(2, "VXML\tCannot create cache data file \"" << dataFile.GetFilePath() << "\""
+    PTRACE(2, "Cannot create cache data file \"" << dataFile.GetFilePath() << "\""
               " for \"" << key << "\", error: " << dataFile.GetErrorText());
     return false;
   }
@@ -723,16 +726,16 @@ bool PVXMLCache::PutWithLock(const PString & prefix,
   if (keyFile.IsOpen()) {
     if (keyFile.WriteString(key)) {
       LockReadWrite();
-      PTRACE(5, "VXML\tCache data created for \"" << key << '"');
+      PTRACE(5, "Cache data created for \"" << key << '"');
       return true;
     }
     else {
-      PTRACE(2, "VXML\tCannot write cache key file \"" << keyFile.GetFilePath() << "\""
+      PTRACE(2, "Cannot write cache key file \"" << keyFile.GetFilePath() << "\""
                 " for \"" << key << "\", error: " << keyFile.GetErrorText());
     }
   }
   else {
-    PTRACE(2, "VXML\tCannot create cache key file \"" << keyFile.GetFilePath() << "\""
+    PTRACE(2, "Cannot create cache key file \"" << keyFile.GetFilePath() << "\""
               " for \"" << key << "\", error: " << keyFile.GetErrorText());
   }
 
@@ -864,11 +867,11 @@ PBoolean PVXMLSession::Load(const PString & source)
 
 PBoolean PVXMLSession::LoadFile(const PFilePath & filename, const PString & firstForm)
 {
-  PTRACE(4, "VXML\tLoading file: " << filename);
+  PTRACE(4, "Loading file: " << filename);
 
   PTextFile file(filename, PFile::ReadOnly);
   if (!file.IsOpen()) {
-    PTRACE(1, "VXML\tCannot open " << filename);
+    PTRACE(1, "Cannot open " << filename);
     return false;
   }
 
@@ -879,7 +882,7 @@ PBoolean PVXMLSession::LoadFile(const PFilePath & filename, const PString & firs
 
 PBoolean PVXMLSession::LoadURL(const PURL & url)
 {
-  PTRACE(4, "VXML\tLoading URL " << url);
+  PTRACE(4, "Loading URL " << url);
 
   // retreive the document (may be a HTTP get)
 
@@ -889,7 +892,7 @@ PBoolean PVXMLSession::LoadURL(const PURL & url)
     return InternalLoadVXML(xmlStr, url.GetFragment());
   }
 
-  PTRACE(1, "VXML\tCannot load document " << url);
+  PTRACE(1, "Cannot load document " << url);
   return false;
 }
 
@@ -919,13 +922,13 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     // parse the XML
     m_xml.RemoveAll();
     if (!m_xml.Load(xmlText)) {
-      PTRACE(1, "VXML\tCannot parse root document: " << GetXMLError());
+      PTRACE(1, "Cannot parse root document: " << GetXMLError());
       return false;
     }
 
     PXMLElement * root = m_xml.GetRootElement();
     if (root == NULL) {
-      PTRACE(1, "VXML\tNo root element");
+      PTRACE(1, "No root element");
       return false;
     }
 
@@ -953,13 +956,13 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
 
     // find the first form
     if (!SetCurrentForm(firstForm, false)) {
-      PTRACE(1, "VXML\tNo form element");
+      PTRACE(1, "No form element");
       m_xml.RemoveAll();
       return false;
     }
   }
 
-  PTRACE(4, "VXML\tStarting with variables:\n" << m_variables);
+  PTRACE(4, "Starting with variables:\n" << m_variables);
   return Execute();
 }
 
@@ -1000,12 +1003,12 @@ bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
 
   if (fullURI) {
     if (searchId.IsEmpty()) {
-      PTRACE(3, "VXML\tFull URI required for this form/menu search");
+      PTRACE(3, "Full URI required for this form/menu search");
       return false;
     }
 
     if (searchId[0] != '#') {
-      PTRACE(4, "VXML\tSearching form/menu \"" << searchId << '"');
+      PTRACE(4, "Searching form/menu \"" << searchId << '"');
       return LoadURL(NormaliseResourceName(searchId));
     }
 
@@ -1024,7 +1027,7 @@ bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
               (xmlElement->GetName() == "form" || xmlElement->GetName() == "menu") &&
               (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
            ) {
-          PTRACE(3, "VXML\tFound <" << xmlElement->GetName() << " id=\"" << xmlElement->GetAttribute("id") << "\">");
+          PTRACE(3, "Found <" << xmlElement->GetName() << " id=\"" << xmlElement->GetAttribute("id") << "\">");
 
           if (m_currentNode != NULL) {
             PXMLElement * element = m_currentNode->GetParent();
@@ -1033,7 +1036,7 @@ bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
               PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
               if (handler != NULL) {
                 handler->Finish(*this, *element);
-                PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
+                PTRACE(4, "Processed VoiceXML element: <" << nodeType << '>');
               }
               element = element->GetParent();
             }
@@ -1046,7 +1049,7 @@ bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
     }
   }
 
-  PTRACE(3, "VXML\tNo form/menu with id \"" << searchId << '"');
+  PTRACE(3, "No form/menu with id \"" << searchId << '"');
   return false;
 }
 
@@ -1066,7 +1069,7 @@ PBoolean PVXMLSession::Open(const PString & mediaFormat)
 {
   PVXMLChannel * chan = PFactory<PVXMLChannel>::CreateInstance(mediaFormat);
   if (chan == NULL) {
-    PTRACE(1, "VXML\tCannot create VXML channel with format " << mediaFormat);
+    PTRACE(1, "Cannot create VXML channel with format " << mediaFormat);
     return false;
   }
 
@@ -1115,7 +1118,7 @@ PBoolean PVXMLSession::Close()
 
 void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
 {
-  PTRACE(4, "VXML\tExecution thread started");
+  PTRACE(4, "Execution thread started");
 
   m_sessionMutex.Wait();
 
@@ -1137,7 +1140,7 @@ void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
     if (m_currentNode != NULL)
       continue;
 
-    PTRACE(3, "VXML\tEnd of VoiceXML elements.");
+    PTRACE(3, "End of VoiceXML elements.");
 
     m_sessionMutex.Signal();
     OnEndDialog();
@@ -1155,7 +1158,7 @@ void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
 
   OnEndSession();
 
-  PTRACE(4, "VXML\tExecution thread ended");
+  PTRACE(4, "Execution thread ended");
 }
 
 
@@ -1188,7 +1191,7 @@ bool PVXMLSession::ProcessEvents()
   else {
     ch = m_userInputQueue.front();
     m_userInputQueue.pop();
-    PTRACE(3, "VXML\tHandling user input " << ch);
+    PTRACE(3, "Handling user input " << ch);
   }
   m_userInputMutex.Signal();
 
@@ -1200,7 +1203,7 @@ bool PVXMLSession::ProcessEvents()
       }
     }
     else if (m_bargeIn) {
-      PTRACE(4, "VXML\tBarging in");
+      PTRACE(4, "Barging in");
       m_bargingIn = true;
       vxmlChannel->FlushQueue();
     }
@@ -1210,20 +1213,20 @@ bool PVXMLSession::ProcessEvents()
   }
 
   if (vxmlChannel->IsPlaying()) {
-    PTRACE(4, "VXML\tIs playing, awaiting event");
+    PTRACE(4, "Is playing, awaiting event");
   }
   else if (vxmlChannel->IsRecording()) {
-    PTRACE(4, "VXML\tIs recording, awaiting event");
+    PTRACE(4, "Is recording, awaiting event");
   }
   else if (m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started) {
-    PTRACE(4, "VXML\tAwaiting input, awaiting event");
+    PTRACE(4, "Awaiting input, awaiting event");
     PlaySilence(500);
   }
   else if (m_transferStatus == TransferInProgress) {
-    PTRACE(4, "VXML\tTransfer in progress, awaiting event");
+    PTRACE(4, "Transfer in progress, awaiting event");
   }
   else {
-    PTRACE(4, "VXML\tNothing happening, processing next node");
+    PTRACE(4, "Nothing happening, processing next node");
     return false;
   }
 
@@ -1234,7 +1237,7 @@ bool PVXMLSession::ProcessEvents()
   if (!m_xmlChanged)
     return true;
 
-  PTRACE(4, "VXML\tXML changed, flushing queue");
+  PTRACE(4, "XML changed, flushing queue");
 
   // Clear out any audio being output, so can start fresh on new VXML.
   if (IsOpen())
@@ -1285,15 +1288,15 @@ bool PVXMLSession::NextNode(bool processChildren)
       if (!handler->Finish(*this, *element)) {
         if (m_currentNode != NULL) {
           PTRACE_IF(4, (element = dynamic_cast<PXMLElement *>(m_currentNode)) != NULL,
-                    "VXML\tException handling <" << element->GetName() << "> for VoiceXML element: <" << nodeType << '>');
+                    "Exception handling <" << element->GetName() << "> for VoiceXML element: <" << nodeType << '>');
           return false;
         }
 
-        PTRACE(4, "VXML\tContinue processing VoiceXML element: <" << nodeType << '>');
+        PTRACE(4, "Continue processing VoiceXML element: <" << nodeType << '>');
         m_currentNode = element;
         return true;
       }
-      PTRACE(4, "VXML\tProcessed VoiceXML element: <" << nodeType << '>');
+      PTRACE(4, "Processed VoiceXML element: <" << nodeType << '>');
     }
 
     if ((m_currentNode = element->GetNextObject()) != NULL)
@@ -1307,7 +1310,7 @@ bool PVXMLSession::NextNode(bool processChildren)
 
 void PVXMLSession::ClearBargeIn()
 {
-  PTRACE_IF(4, m_bargingIn, "VXML\tEnding barge in");
+  PTRACE_IF(4, m_bargingIn, "Ending barge in");
   m_bargingIn = false;
 }
 
@@ -1324,7 +1327,7 @@ void PVXMLSession::FlushInput()
 bool PVXMLSession::ProcessGrammar()
 {
   if (m_grammar == NULL) {
-    PTRACE(4, "VXML\tNo grammar was created!");
+    PTRACE(4, "No grammar was created!");
     return true;
   }
 
@@ -1343,7 +1346,7 @@ bool PVXMLSession::ProcessGrammar()
 
       PVXMLGrammar * grammar = m_grammar;
       m_grammar = NULL;
-      PTRACE(2, "VXML\tProcessing grammar " << *grammar);
+      PTRACE(2, "Processing grammar " << *grammar);
       bool nextNode = grammar->Process();
       delete grammar;
       return nextNode;
@@ -1376,13 +1379,13 @@ bool PVXMLSession::ProcessNode()
   PCaselessString nodeType = element->GetName();
   PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
   if (handler == NULL) {
-    PTRACE(2, "VXML\tUnknown/unimplemented VoiceXML element: <" << nodeType << '>');
+    PTRACE(2, "Unknown/unimplemented VoiceXML element: <" << nodeType << '>');
     return false;
   }
 
-  PTRACE(3, "VXML\tProcessing VoiceXML element: <" << nodeType << '>');
+  PTRACE(3, "Processing VoiceXML element: <" << nodeType << '>');
   bool started = handler->Start(*this, *element);
-  PTRACE_IF(4, !started, "VXML\tSkipping VoiceXML element: <" << nodeType << '>');
+  PTRACE_IF(4, !started, "Skipping VoiceXML element: <" << nodeType << '>');
   return started;
 }
 
@@ -1427,7 +1430,7 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
     typeMIME = PMIMEInfo::GetContentType(supportedFileType);
 
   if (typeMIME != PMIMEInfo::GetContentType(supportedFileType)) {
-    PTRACE(2, "VXML\tCannot save to file type \"" << typeMIME << '"');
+    PTRACE(2, "Cannot save to file type \"" << typeMIME << '"');
     return true;
   }
 
@@ -1452,7 +1455,7 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
 
   if (destination.IsEmpty()) {
     if (!m_recordDirectory.Create()) {
-      PTRACE(2, "VXML\tCould not create recording directory \"" << m_recordDirectory << '"');
+      PTRACE(2, "Could not create recording directory \"" << m_recordDirectory << '"');
     }
 
     PStringStream fn;
@@ -1512,18 +1515,18 @@ PBoolean PVXMLSession::TraverseScript(PXMLElement & element)
     PString data = element.GetData();
     PString script = src.IsEmpty() ? data : src;
 
-    PTRACE(4, "VXML\tTraverse script> " << script);
+    PTRACE(4, "Traverse script> " << script);
   
     if (m_scriptContext->Run(PSTRSTRM(script)))
     {
-      PTRACE(4, "VXML\tscript executed properly!");
+      PTRACE(4, "script executed properly!");
       return true;
     }
 
-    PTRACE(2, "VXML\tCould not evaluate script \"" << script << "\" with script language " << m_scriptContext->GetLanguageName());
+    PTRACE(2, "Could not evaluate script \"" << script << "\" with script language " << m_scriptContext->GetLanguageName());
   }
 #else
-  PTRACE(2, "VXML\tUnsupported <script> element");
+  PTRACE(2, "Unsupported <script> element");
 #endif
 
   return false;
@@ -1537,7 +1540,7 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
     static PConstString const EvalVarName("PTLibEvaluateExpressionResult");
     if (m_scriptContext->Run(PSTRSTRM(EvalVarName<<'='<<expr)))
       return m_scriptContext->GetString(EvalVarName);
-    PTRACE(2, "VXML\tCould not evaluate expression \"" << expr << "\" with script language " << m_scriptContext->GetLanguageName());
+    PTRACE(2, "Could not evaluate expression \"" << expr << "\" with script language " << m_scriptContext->GetLanguageName());
     return PString::Empty();
   }
 #endif
@@ -1551,16 +1554,16 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
   while (pos < expr.GetLength()) {
     if (expr(pos, pos + 4) == "eval(") {
       PINDEX closedBracket = expr.Find(')', pos);
-      PTRACE_IF(2, closedBracket == P_MAX_INDEX, "VXML\tMismatched parenthesis");
+      PTRACE_IF(2, closedBracket == P_MAX_INDEX, "Mismatched parenthesis");
       PString expression = expr(pos + 5, closedBracket - 1);
-      PTRACE(4, "VXML\tFound eval() function: expression=\"" << expression << "\"");
+      PTRACE(4, "Found eval() function: expression=\"" << expression << "\"");
       PString evalRes = EvaluateExpr(expression);
       result += EvaluateExpr(evalRes);
       pos = closedBracket + 1;
     }
     else if (expr[pos] == '\'') {
       PINDEX quote = expr.Find('\'', ++pos);
-      PTRACE_IF(2, quote == P_MAX_INDEX, "VXML\tMismatched quote, ignoring transfer");
+      PTRACE_IF(2, quote == P_MAX_INDEX, "Mismatched quote, ignoring transfer");
       result += expr(pos, quote-1);
       pos = quote+1;
     }
@@ -1577,7 +1580,7 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
     else if (expr[pos] == '+' || isspace(expr[pos]))
       pos++;
     else {
-      PTRACE(2, "VXML\tOnly '+' operator supported.");
+      PTRACE(2, "Only '+' operator supported.");
       break;
     }
   }
@@ -1604,7 +1607,7 @@ PCaselessString PVXMLSession::GetVar(const PString & varName) const
   if (m_scriptContext != NULL)
   {
 	  PString value = m_scriptContext->GetString(fullVarName);
-	  PTRACE(4, "VXML\tGetVar[" << fullVarName << "]=" << value);
+	  PTRACE(4, "GetVar[" << fullVarName << "]=" << value);
 	  return value;
   }
 #endif
@@ -1625,7 +1628,7 @@ void PVXMLSession::SetVar(const PString & varName, const PString & value)
 #endif
 
   m_variables.SetAt(fullVarName, value);
-  PTRACE(4, "VXML\tSetAt [" << fullVarName << "]=" << value);
+  PTRACE(4, "SetAt [" << fullVarName << "]=" << value);
 }
 
 
@@ -1662,7 +1665,7 @@ PBoolean PVXMLSession::PlayElement(PXMLElement & element)
   if (str.IsEmpty()) {
     str = EvaluateExpr(element.GetAttribute("expr"));
     if (str.IsEmpty()) {
-      PTRACE(2, "VXML\tNo src attribute to play element.");
+      PTRACE(2, "No src attribute to play element.");
       return false;
     }
   }
@@ -1693,7 +1696,7 @@ PBoolean PVXMLSession::PlayElement(PXMLElement & element)
 
   PBYTEArray data;
   if (!url.LoadResource(data)) {
-    PTRACE(2, "VXML\tCannot load resource " << url);
+    PTRACE(2, "Cannot load resource " << url);
     return false;
   }
 
@@ -1743,13 +1746,13 @@ PBoolean PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX dela
 
 PBoolean PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
 {
-  PTRACE_IF(2, m_grammar != NULL && grammar == NULL, "VXML\tGrammar cleared from " << *m_grammar);
+  PTRACE_IF(2, m_grammar != NULL && grammar == NULL, "Grammar cleared from " << *m_grammar);
 
   delete m_grammar;
   m_grammar = grammar;
   ClearBargeIn();
 
-  PTRACE_IF(2, grammar != NULL, "VXML\tGrammar set to " << *grammar);
+  PTRACE_IF(2, grammar != NULL, "Grammar set to " << *grammar);
   return true;
 }
 
@@ -1762,7 +1765,7 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
   if (!IsOpen() || textToPlay.IsEmpty() || m_bargingIn)
     return false;
 
-  PTRACE(5, "VXML\tConverting \"" << textToPlay << "\" to speech");
+  PTRACE(5, "Converting \"" << textToPlay << "\" to speech");
 
   PString prefix(PString::Printf, "tts%i", type);
   bool useCache = GetVar("caching") != "safe";
@@ -1806,14 +1809,14 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
   PVXMLPlayableFileList * playable = new PVXMLPlayableFileList;
   if (!playable->Open(*GetVXMLChannel(), fileList, delay, repeat, !useCache)) {
     delete playable;
-    PTRACE(1, "VXML\tCannot create playable for filename list");
+    PTRACE(1, "Cannot create playable for filename list");
     return false;
   }
 
   if (!GetVXMLChannel()->QueuePlayable(playable))
     return false;
 
-  PTRACE(2, "VXML\tQueued filename list for playing");
+  PTRACE(2, "Queued filename list for playing");
 
   return true;
 }
@@ -1915,7 +1918,7 @@ PBoolean PVXMLSession::TraverseGrammar(PXMLElement & element)
 
   // Right now we only support one active grammar.
   if (m_grammar != NULL) {
-    PTRACE(2, "VXML\tWarning: can only process one grammar at a time, ignoring previous grammar");
+    PTRACE(2, "Warning: can only process one grammar at a time, ignoring previous grammar");
     LoadGrammar(NULL);
   }
 
@@ -1923,17 +1926,17 @@ PBoolean PVXMLSession::TraverseGrammar(PXMLElement & element)
 
   PCaselessString attrib = element.GetAttribute("mode");
   if (!attrib.IsEmpty() && attrib != "dtmf") {
-    PTRACE(2, "VXML\tOnly DTMF mode supported for grammar");
+    PTRACE(2, "Only DTMF mode supported for grammar");
     return false;
   }
 
   attrib = element.GetAttribute("type");
   if (!attrib.IsEmpty() && attrib != "X-OPAL/digits") {
-    PTRACE(2, "VXML\tOnly \"digits\" type supported for grammar");
+    PTRACE(2, "Only \"digits\" type supported for grammar");
     return false;
   }
 
-  PTRACE(4, "VXML\tLoading new grammar");
+  PTRACE(4, "Loading new grammar");
   PStringToString tokens;
   PURL::SplitVars(element.GetData(), tokens, ';', '=');
   return LoadGrammar(new PVXMLDigitsGrammar(*this,
@@ -1972,7 +1975,7 @@ bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & event
 
     level = level->GetParent();
     if (level == NULL) {
-      PTRACE(4, "VXML\tNo event handler found for \"" << eventName << '"');
+      PTRACE(4, "No event handler found for \"" << eventName << '"');
       return true;
     }
   }
@@ -1980,7 +1983,7 @@ bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & event
 gotHandler:
   handler->SetAttribute("fired", "true");
   m_currentNode = handler;
-  PTRACE(4, "VXML\tSetting event handler to node " << handler << " for \"" << eventName << '"');
+  PTRACE(4, "Setting event handler to node " << handler << " for \"" << eventName << '"');
   return false;
 }
 
@@ -2059,16 +2062,16 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
   // Find comparison type
   PINDEX location = condition.Find("==");
   if (location == P_MAX_INDEX) {
-    PTRACE(1, "VXML\t<if> element contains condition with operator other than ==, not implemented" );
+    PTRACE(1, "<if> element contains condition with operator other than ==, not implemented" );
     return false;
   }
 
   if (EvaluateExpr(condition.Left(location).Trim()) == EvaluateExpr(condition.Mid(location + 2).Trim())) {
-    PTRACE(4, "VXML\tCondition matched \"" << condition << '"');
+    PTRACE(4, "Condition matched \"" << condition << '"');
     return true;
   }
 
-  PTRACE(4, "VXML\t\tCondition \"" << condition << "\"did not match");
+  PTRACE(4, "\tCondition \"" << condition << "\"did not match");
   return false;
 }
 
@@ -2076,7 +2079,7 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
 
 PBoolean PVXMLSession::TraverseExit(PXMLElement &)
 {
-  PTRACE(2, "VXML\tExiting, fast forwarding through script");
+  PTRACE(2, "Exiting, fast forwarding through script");
   m_abortVXML = true;
   Trigger();
   return true;
@@ -2092,11 +2095,11 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
   else if (element.HasAttribute("next"))
     url.Parse(element.GetAttribute("next"));
   else {
-    PTRACE(1, "VXML\t<submit> does not contain \"next\" or \"expr\" attribute.");
+    PTRACE(1, "<submit> does not contain \"next\" or \"expr\" attribute.");
     return false;
   }
   if (url.IsEmpty()) {
-    PTRACE(1, "VXML\t<submit> has an invalid URL.");
+    PTRACE(1, "<submit> has an invalid URL.");
     return false;
   }
 
@@ -2107,7 +2110,7 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
   else if (str == "multipart/form-data")
     urlencoded = false;
   else {
-    PTRACE(1, "VXML\t<submit> has unknown \"enctype\" attribute of \"" << str << '"');
+    PTRACE(1, "<submit> has unknown \"enctype\" attribute of \"" << str << '"');
     return false;
   }
 
@@ -2120,7 +2123,7 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
   else if (str == "POST")
     get = false;
   else {
-    PTRACE(1, "VXML\t<submit> has unknown \"method\" attribute of \"" << str << '"');
+    PTRACE(1, "<submit> has unknown \"method\" attribute of \"" << str << '"');
     return false;
   }
 
@@ -2140,11 +2143,11 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     PMIMEInfo replyMIME;
     PString body;
     if (client.GetTextDocument(url, body)) {
-      PTRACE(4, "VXML\t<submit> GET " << url << " succeeded and returned body:\n" << body);
+      PTRACE(4, "<submit> GET " << url << " succeeded and returned body:\n" << body);
       return InternalLoadVXML(body, PString::Empty());
     }
 
-    PTRACE(1, "VXML\t<submit> GET " << url << " failed with "
+    PTRACE(1, "<submit> GET " << url << " failed with "
            << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
     return false;
   }
@@ -2161,11 +2164,11 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     PMIMEInfo replyMIME;
     PString replyBody;
     if (client.PostData(url, vars, replyMIME, replyBody)) {
-      PTRACE(4, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
+      PTRACE(4, "<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
       return InternalLoadVXML(replyBody, PString::Empty());
     }
 
-    PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
+    PTRACE(1, "<submit> POST " << url << " failed with "
            << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
     return false;
   }
@@ -2196,13 +2199,13 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
     }
 
     if (GetVar(namelist[i] + ".type") != "audio/wav" ) {
-      PTRACE(1, "VXML\t<submit> does not (yet) support submissions of types other than \"audio/wav\"");
+      PTRACE(1, "<submit> does not (yet) support submissions of types other than \"audio/wav\"");
       continue;
     }
 
     PFile file(GetVar(namelist[i] + ".filename"), PFile::ReadOnly);
     if (!file.IsOpen()) {
-      PTRACE(1, "VXML\t<submit> could not find file \"" << file.GetFilePath() << '"');
+      PTRACE(1, "<submit> could not find file \"" << file.GetFilePath() << '"');
       continue;
     }
 
@@ -2223,18 +2226,18 @@ PBoolean PVXMLSession::TraverseSubmit(PXMLElement & element)
   }
 
   if (entityBody.IsEmpty()) {
-    PTRACE(1, "VXML\t<submit> could not find anything to send using \"" << setfill(',') << namelist << '"');
+    PTRACE(1, "<submit> could not find anything to send using \"" << setfill(',') << namelist << '"');
     return false;
   }
 
   PMIMEInfo replyMIME;
   PString replyBody;
   if (client.PostData(url, sendMIME, entityBody, replyMIME, replyBody)) {
-    PTRACE(1, "VXML\t<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
+    PTRACE(1, "<submit> POST " << url << " succeeded and returned body:\n" << replyBody);
     return InternalLoadVXML(replyBody, PString::Empty());
   }
 
-  PTRACE(1, "VXML\t<submit> POST " << url << " failed with "
+  PTRACE(1, "<submit> POST " << url << " failed with "
          << client.GetLastResponseCode() << ' ' << client.GetLastResponseInfo());
   return false;
 }
@@ -2310,7 +2313,7 @@ PBoolean PVXMLSession::TraversedTransfer(PXMLElement & element)
 
 void PVXMLSession::SetTransferComplete(bool state)
 {
-  PTRACE(3, "VXML\tTransfer " << (state ? "completed" : "failed"));
+  PTRACE(3, "Transfer " << (state ? "completed" : "failed"));
   m_transferStatus = state ? TransferSuccessful : TransferFailed;
   Trigger();
 }
@@ -2345,7 +2348,7 @@ PBoolean PVXMLSession::TraverseVar(PXMLElement & element)
   PString expr = element.GetAttribute("expr");
 
   if (name.IsEmpty() || expr.IsEmpty()) {
-    PTRACE(1, "VXML\t<var> must have both \"name=\" and \"expr=\" attributes." );
+    PTRACE(1, "<var> must have both \"name=\" and \"expr=\" attributes." );
     return false;
   }
 
@@ -2428,7 +2431,7 @@ void PVXMLSession::OnEndRecording(PINDEX bytesRecorded, bool timedOut)
 
 void PVXMLSession::Trigger()
 {
-  PTRACE(4, "VXML\tEvent triggered");
+  PTRACE(4, "Event triggered");
   m_waitForEvent.Signal();
 }
 
@@ -2466,13 +2469,13 @@ void PVXMLGrammar::Start()
 {
   m_state = Started;
   m_timer = m_timeout;
-  PTRACE(3, "VXML\tStarted grammar " << *this << ", timeout=" << m_timeout);
+  PTRACE(3, "Started grammar " << *this << ", timeout=" << m_timeout);
 }
 
 
 void PVXMLGrammar::OnTimeout(PTimer &, P_INT_PTR)
 {
-  PTRACE(3, "VXML\tTimeout for grammar " << *this );
+  PTRACE(3, "Timeout for grammar " << *this );
   m_mutex.Wait();
 
   if (m_state == Started) {
@@ -2534,7 +2537,7 @@ bool PVXMLMenuGrammar::Process()
     while ((choice = m_field.GetElement("choice", index++)) != NULL) {
       // Check if DTMF value for grammarResult matches the DTMF value for the choice
       if (choice->GetAttribute("dtmf") == m_value) {
-        PTRACE(3, "VXML\tMatched menu choice: " << m_value);
+        PTRACE(3, "Matched menu choice: " << m_value);
         PString next = choice->GetAttribute("next");
         if (next.IsEmpty())
           next = m_session.EvaluateExpr(choice->GetAttribute("expr"));
@@ -2598,7 +2601,7 @@ bool PVXMLDigitsGrammar::IsFilled()
   PINDEX len = m_value.GetLength();
   bool filled = len >= m_minDigits && len <= m_maxDigits;
 
-  PTRACE(4, "VXML\t Grammar " << *this << (filled ? " has been FILLED" : " has NOT yet been filled") << "."
+  PTRACE(4, " Grammar " << *this << (filled ? " has been FILLED" : " has NOT yet been filled") << "."
             " Collected value=" << m_value << ", length: " << len << ", while min=" << m_minDigits << " max=" << m_maxDigits);
 
   return filled;
@@ -2624,7 +2627,7 @@ PBoolean PVXMLChannel::Open(PVXMLSession * session)
   m_currentPlayItem = NULL;
   m_vxmlSession = session;
   m_silenceTimer.SetInterval(500); // 1/2 a second delay before we start outputting stuff
-  PTRACE(4, "VXML\tOpening channel " << this);
+  PTRACE(4, "Opening channel " << this);
   return true;
 }
 
@@ -2644,7 +2647,7 @@ PBoolean PVXMLChannel::IsOpen() const
 PBoolean PVXMLChannel::Close()
 {
   if (!m_closed) {
-    PTRACE(4, "VXML\tClosing channel " << this);
+    PTRACE(4, "Closing channel " << this);
 
     EndRecording(true);
     FlushQueue();
@@ -2692,25 +2695,25 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
     wav->SetSampleSize(16);
     wav->SetSampleRate(GetSampleFrequency());
     if (!wav->SetFormat(mediaFormat))
-      PTRACE(2, "VXML\tUnsupported codec " << mediaFormat);
+      PTRACE(2, "Unsupported codec " << mediaFormat);
     else if (!wav->Open(fn, PFile::WriteOnly))
-      PTRACE(2, "VXML\tCould not create WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
+      PTRACE(2, "Could not create WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
     else if (!wav->SetAutoconvert())
-      PTRACE(2, "VXML\tWAV file cannot convert to " << mediaFormat);
+      PTRACE(2, "WAV file cannot convert to " << mediaFormat);
     else
       return wav;
   }
   else {
     if (!wav->Open(fn, PFile::ReadOnly))
-      PTRACE(2, "VXML\tCould not open WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
+      PTRACE(2, "Could not open WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
     else if (wav->GetFormatString() != mediaFormat && !wav->SetAutoconvert())
-      PTRACE(2, "VXML\tWAV file cannot convert from " << wav->GetFormatString());
+      PTRACE(2, "WAV file cannot convert from " << wav->GetFormatString());
     else if (wav->GetChannels() != 1)
-      PTRACE(2, "VXML\tWAV file has unsupported channel count " << wav->GetChannels());
+      PTRACE(2, "WAV file has unsupported channel count " << wav->GetChannels());
     else if (wav->GetSampleSize() != 16)
-      PTRACE(2, "VXML\tWAV file has unsupported sample size " << wav->GetSampleSize());
+      PTRACE(2, "WAV file has unsupported sample size " << wav->GetSampleSize());
     else if (wav->GetSampleRate() != GetSampleFrequency())
-      PTRACE(2, "VXML\tWAV file has unsupported sample rate " << wav->GetSampleRate());
+      PTRACE(2, "WAV file has unsupported sample rate " << wav->GetSampleRate());
     else
       return wav;
   }
@@ -2771,7 +2774,7 @@ PBoolean PVXMLChannel::EndRecording(bool timedOut)
   if (m_recordable == NULL)
     return false;
 
-  PTRACE(3, "VXML\tFinished recording " << m_totalData << " bytes");
+  PTRACE(3, "Finished recording " << m_totalData << " bytes");
   SetWriteChannel(NULL, false, true);
   m_recordable->OnStop();
   delete m_recordable;
@@ -2806,7 +2809,7 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
 
     // if current item still active, check for trailing actions
     if (m_currentPlayItem != NULL) {
-      PTRACE(3, "VXML\tFinished playing " << *m_currentPlayItem << ", " << m_totalData << " bytes");
+      PTRACE(3, "Finished playing " << *m_currentPlayItem << ", " << m_totalData << " bytes");
 
       if (m_currentPlayItem->OnRepeat())
         continue;
@@ -2836,7 +2839,7 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
       delete m_currentPlayItem;
     }
 
-    PTRACE(4, "VXML\tStarted playing " << *m_currentPlayItem);
+    PTRACE(4, "Started playing " << *m_currentPlayItem);
     SetReadTimeout(frameDelay);
     m_totalData = 0;
   }
@@ -2850,7 +2853,7 @@ double_break:
 
 void PVXMLChannel::SetSilence(unsigned msecs)
 {
-  PTRACE(3, "VXML\tPlaying silence for " << msecs << "ms");
+  PTRACE(3, "Playing silence for " << msecs << "ms");
   m_silenceTimer.SetInterval(msecs);
 }
 
@@ -2866,12 +2869,12 @@ PBoolean PVXMLChannel::QueuePlayable(const PString & type,
 
   PVXMLPlayable * item = PFactory<PVXMLPlayable>::CreateInstance(type);
   if (item == NULL) {
-    PTRACE(2, "VXML\tCannot find playable of type " << type);
+    PTRACE(2, "Cannot find playable of type " << type);
     return false;
   }
 
   if (item->Open(*this, arg, delay, repeat, autoDelete)) {
-    PTRACE(3, "VXML\tEnqueueing playable " << type << " with arg \"" << arg
+    PTRACE(3, "Enqueueing playable " << type << " with arg \"" << arg
            << "\" for playing " << repeat << " times, followed by " << delay << "ms silence");
     return QueuePlayable(item);
   }
@@ -2907,16 +2910,16 @@ PBoolean PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX del
 
 PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  PTRACE(3, "VXML\tEnqueueing " << data.GetSize() << " bytes for playing, followed by " << delay << "ms silence");
+  PTRACE(3, "Enqueueing " << data.GetSize() << " bytes for playing, followed by " << delay << "ms silence");
   PVXMLPlayableData * item = PFactory<PVXMLPlayable>::CreateInstanceAs<PVXMLPlayableData>("PCM Data");
   if (item == NULL) {
-    PTRACE(2, "VXML\tCannot find playable of type 'PCM Data'");
+    PTRACE(2, "Cannot find playable of type 'PCM Data'");
     delete item;
     return false;
   }
 
   if (!item->Open(*this, "", delay, repeat, true)) {
-    PTRACE(2, "VXML\tCannot open playable of type 'PCM Data'");
+    PTRACE(2, "Cannot open playable of type 'PCM Data'");
     delete item;
     return false;
   }
@@ -2929,7 +2932,7 @@ PBoolean PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX 
 
 void PVXMLChannel::FlushQueue()
 {
-  PTRACE(4, "VXML\tFlushing playable queue");
+  PTRACE(4, "Flushing playable queue");
 
   PWaitAndSignal mutex(m_channelReadMutex);
 
@@ -2947,7 +2950,7 @@ void PVXMLChannel::FlushQueue()
 
   m_silenceTimer.Stop();
 
-  PTRACE(4, "VXML\tFlushed playable queue");
+  PTRACE(4, "Flushed playable queue");
 }
 
 
@@ -3118,6 +3121,9 @@ PBoolean PVXMLChannelG729::IsSilenceFrame(const void * /*buf*/, PINDEX /*len*/) 
 
 //////////////////////////////////////////////////////////////////////////////////
 
+#undef  PTraceModule
+#define PTraceModule() "VXML-TTS"
+
 class TextToSpeech_Sample : public PTextToSpeech
 {
   public:
@@ -3210,7 +3216,7 @@ PBoolean TextToSpeech_Sample::OpenFile(const PFilePath & fn)
   m_path = fn;
   m_opened = true;
 
-  PTRACE(3, "TTS\tWriting speech to " << fn);
+  PTRACE(3, "Writing speech to " << fn);
 
   return true;
 }
@@ -3241,7 +3247,7 @@ PBoolean TextToSpeech_Sample::Close()
   if (m_usingFile) {
     PWAVFile outputFile("PCM-16", m_path, PFile::WriteOnly);
     if (!outputFile.IsOpen()) {
-      PTRACE(1, "TTS\tCannot create output file " << m_path);
+      PTRACE(1, "Cannot create output file " << m_path);
       stat = false;
     }
     else {
@@ -3251,10 +3257,10 @@ PBoolean TextToSpeech_Sample::Close()
         PWAVFile file;
         file.SetAutoconvert();
         if (!file.Open(f, PFile::ReadOnly)) {
-          PTRACE(1, "TTS\tCannot open input file " << f);
+          PTRACE(1, "Cannot open input file " << f);
           stat = false;
         } else {
-          PTRACE(1, "TTS\tReading from " << f);
+          PTRACE(1, "Reading from " << f);
           BYTE buffer[1024];
           for (;;) {
             if (!file.Read(buffer, 1024))
@@ -3290,10 +3296,10 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (line.IsEmpty())
       continue;
 
-    PTRACE(3, "TTS\tAsked to speak " << text << " with type " << hint);
+    PTRACE(3, "Asked to speak " << text << " with type " << hint);
 
     if (hint == DateAndTime) {
-      PTRACE(3, "TTS\tSpeaking date and time");
+      PTRACE(3, "Speaking date and time");
       Speak(text, Date);
       Speak(text, Time);
       continue;
@@ -3302,7 +3308,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (hint == Date) {
       PTime time(line);
       if (time.IsValid()) {
-        PTRACE(4, "TTS\tSpeaking date " << time);
+        PTRACE(4, "Speaking date " << time);
         SpeakFile(time.GetDayName(time.GetDayOfWeek(), PTime::FullName));
         SpeakNumber(time.GetDay());
         SpeakFile(time.GetMonthName(time.GetMonth(), PTime::FullName));
@@ -3314,7 +3320,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
     if (hint == Time) {
       PTime time(line);
       if (time.IsValid()) {
-        PTRACE(4, "TTS\tSpeaking time " << time);
+        PTRACE(4, "Speaking time " << time);
         int hour = time.GetHour();
         if (hour < 13) {
           SpeakNumber(hour);
@@ -3337,12 +3343,12 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
       for (i = 0; !isDate && i < 7; ++i) {
         isDate = isDate || (line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::FullName)) != P_MAX_INDEX);
         isDate = isDate || (line.Find(PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated)) != P_MAX_INDEX);
-        PTRACE(4, "TTS\t " << isDate << " - " << PTime::GetDayName((PTime::Weekdays)i, PTime::FullName) << "," << PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
+        PTRACE(4, " " << isDate << " - " << PTime::GetDayName((PTime::Weekdays)i, PTime::FullName) << "," << PTime::GetDayName((PTime::Weekdays)i, PTime::Abbreviated));
       }
       for (i = 1; !isDate && i <= 12; ++i) {
         isDate = isDate || (line.Find(PTime::GetMonthName((PTime::Months)i, PTime::FullName)) != P_MAX_INDEX);
         isDate = isDate || (line.Find(PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated)) != P_MAX_INDEX);
-        PTRACE(4, "TTS\t " << isDate << " - " << PTime::GetMonthName((PTime::Months)i, PTime::FullName) << "," << PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
+        PTRACE(4, " " << isDate << " - " << PTime::GetMonthName((PTime::Months)i, PTime::FullName) << "," << PTime::GetMonthName((PTime::Months)i, PTime::Abbreviated));
       }
 
       if (!isTime)
@@ -3351,17 +3357,17 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
         isDate = line.Find(PTime::GetDateSeparator()) != P_MAX_INDEX;
 
       if (isDate && isTime) {
-        PTRACE(4, "TTS\tDefault changed to DateAndTime");
+        PTRACE(4, "Default changed to DateAndTime");
         Speak(line, DateAndTime);
         continue;
       }
       if (isDate) {
-        PTRACE(4, "TTS\tDefault changed to Date");
+        PTRACE(4, "Default changed to Date");
         Speak(line, Date);
         continue;
       }
       else if (isTime) {
-        PTRACE(4, "TTS\tDefault changed to Time");
+        PTRACE(4, "Default changed to Time");
         Speak(line, Time);
         continue;
       }
@@ -3372,7 +3378,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
       PString word = tokens[j].Trim();
       if (word.IsEmpty())
         continue;
-      PTRACE(4, "TTS\tSpeaking word " << word << " as " << hint);
+      PTRACE(4, "Speaking word " << word << " as " << hint);
       switch (hint) {
 
         case Time:
@@ -3397,27 +3403,27 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
             }
 
             if (isIpAddress) {
-              PTRACE(4, "TTS\tDefault changed to IPAddress");
+              PTRACE(4, "Default changed to IPAddress");
               Speak(word, IPAddress);
             } else if (isDigits) {
-              PTRACE(4, "TTS\tDefault changed to Number");
+              PTRACE(4, "Default changed to Number");
               Speak(word, Number);
             } else {
-              PTRACE(4, "TTS\tDefault changed to Spell");
+              PTRACE(4, "Default changed to Spell");
               Speak(word, Spell);
             }
           }
           break;
 
         case Spell:
-          PTRACE(4, "TTS\tSpelling " << text);
+          PTRACE(4, "Spelling " << text);
           for (PINDEX k = 0; k < text.GetLength(); ++k)
             SpeakFile(text[k]);
           break;
 
         case Phone:
         case Digits:
-          PTRACE(4, "TTS\tSpeaking digits " << text);
+          PTRACE(4, "Speaking digits " << text);
           for (PINDEX k = 0; k < text.GetLength(); ++k) {
             if (isdigit(text[k]))
               SpeakFile(text[k]);
@@ -3429,7 +3435,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
         case Number:
           {
             int number = atoi(line);
-            PTRACE(4, "TTS\tSpeaking number " << number);
+            PTRACE(4, "Speaking number " << number);
             if (number < 0) {
               SpeakFile("negative");
               number = -number;
@@ -3471,7 +3477,7 @@ PBoolean TextToSpeech_Sample::Speak(const PString & text, TextType hint)
         case IPAddress:
           {
             PIPSocket::Address addr(line);
-            PTRACE(4, "TTS\tSpeaking IP address " << addr);
+            PTRACE(4, "Speaking IP address " << addr);
             for (PINDEX k = 0; k < 4; ++k) {
               int octet = addr[k];
               if (octet < 100)
@@ -3495,7 +3501,7 @@ PBoolean TextToSpeech_Sample::SpeakFile(const PString & text)
 {
   PFilePath f = PDirectory(m_voice) + (text.ToLower() + ".wav");
   if (!PFile::Exists(f)) {
-    PTRACE(2, "TTS\tUnable to find explicit file for " << text);
+    PTRACE(2, "Unable to find explicit file for " << text);
     return false;
   }
   m_filenames.push_back(f);
