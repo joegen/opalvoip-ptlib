@@ -48,16 +48,24 @@ void PCollection::PrintOn(ostream &strm) const
 {
   char separator = strm.fill();
   int width = (int)strm.width();
+
   for (PINDEX  i = 0; i < GetSize(); i++) {
     if (i > 0 && separator != ' ')
       strm << separator;
+
     PObject * obj = GetAt(i);
-    if (obj != NULL) {
-      if (separator != ' ')
-        strm.width(width);
-      strm << *obj;
-    }
+    if (obj == NULL)
+      continue;
+
+    if (separator == '\n' && width < 0)
+      strm << setfill(' ') << setw(-width) << ' ';
+
+    if (separator != ' ')
+      strm.width(width);
+
+    strm << *obj;
   }
+
   if (separator == '\n')
     strm << '\n';
 }
