@@ -413,6 +413,9 @@ void PVideoOutputDevice_SDL::InternalSetFrameSize()
                                 SDL_TEXTUREACCESS_STREAMING,
                                 GetFrameWidth(), GetFrameHeight());
   PTRACE_IF(1, m_texture == NULL, "Couldn't create SDL texture: " << ::SDL_GetError());
+
+  if (m_window)
+      SDL_SetWindowSize(m_window, GetFrameWidth(), GetFrameHeight());
 }
 
 
