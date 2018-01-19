@@ -706,9 +706,9 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include;$(ProgramW6432)\ImageMagick\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include;$(ProgramW6432)\ImageMagick\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProgramW6432)\ImageMagick-7.0.5-Q16\include;$(ProgramW6432)\ImageMagick\include</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pwavfile.cxx" />
     <ClCompile Include="..\..\ptclib\pwavfiledev.cxx" />

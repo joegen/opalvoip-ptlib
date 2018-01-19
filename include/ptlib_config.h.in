@@ -1003,7 +1003,7 @@
 //
 
 // Have not yet determined how to disambiguate Windows 32 bit and 64 bit versions of ImageMagick
-#if !defined(_WIN32) || defined(P_WIN64)
+#if !defined(_WIN32) || defined(P_64BIT)
   #undef P_IMAGEMAGICK
 #endif
 
