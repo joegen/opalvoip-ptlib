@@ -445,7 +445,10 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
 
         unsigned GetWorkSize() const
         {
-          return (unsigned)this->m_queue.size()+this->m_working;
+          unsigned work = this->m_queue.size();
+          if (this->m_working)
+              ++work;
+          return work;
         }
 
         virtual bool Work()
@@ -487,7 +490,7 @@ class PQueuedThreadPool : public PThreadPool<Work_T>
           string   m_group;
         };
         PSyncQueue<QueuedWork> m_queue;
-        bool                   m_working;
+        atomic<bool>           m_working;
     };
 
     P_REMOVE_VIRTUAL_VOID(OnMaxWaitTime(const PTimeInterval&,const string&))

@@ -397,7 +397,7 @@ class PTimer : public PTimeInterval
     PString              m_threadName;
     bool                 m_oneshot;      // Timer operates once then stops.
     PIdGenerator::Handle m_handle;
-    bool                 m_running;
+    atomic<bool>         m_running;
     PTimeInterval        m_absoluteTime;
     mutable PTimedMutex  m_callbackMutex;
 

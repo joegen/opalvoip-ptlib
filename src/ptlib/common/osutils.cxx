@@ -152,14 +152,14 @@ class PTraceInfo : public PTrace
    */
 
 public:
-  unsigned        m_currentLevel;
+  atomic<unsigned> m_currentLevel;
   atomic<unsigned> m_thresholdLevel;
-  unsigned        m_options;
-  PCaselessString m_filename;
-  ostream       * m_stream;
-  PTimeInterval   m_startTick;
-  PString         m_rolloverPattern;
-  unsigned        m_lastRotate;
+  atomic<unsigned> m_options;
+  PCaselessString  m_filename;
+  ostream        * m_stream;
+  PTimeInterval    m_startTick;
+  PString          m_rolloverPattern;
+  unsigned         m_lastRotate;
 
 
 #if defined(_WIN32)
@@ -247,7 +247,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel.load(),
                          fileEnv,
                          NULL,
-                         optEnv != NULL ? atoi(optEnv) : m_options);
+                         optEnv != NULL ? atoi(optEnv) : m_options.load());
   }
 
   ~PTraceInfo()
@@ -750,7 +750,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
 {
   PThread * thread = NULL;
   PTraceInfo::ThreadLocalInfo * threadInfo = NULL;
-  ostream * streamPtr = m_stream;
+  ostream * streamPtr = NULL;
 
   if (topLevel) {
     if (PProcess::IsInitialised()) {
@@ -771,13 +771,11 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
       if (rotateVal != m_lastRotate || GetStream() == &cerr) {
         m_lastRotate = rotateVal;
         OpenTraceFile(m_filename, true);
-        if (threadInfo == NULL)
-          streamPtr = m_stream;
       }
     }
   }
 
-  ostream & stream = *streamPtr;
+  ostream & stream = *(streamPtr ? streamPtr : m_stream);
 
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
@@ -1411,7 +1409,8 @@ void PTimer::InternalSet(int64_t nanoseconds)
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  InternalStart(false, time.GetNanoSeconds());
+  if (!m_running || GetResetTime() != time)
+    InternalStart(false, time.GetNanoSeconds());
 }
 
 
@@ -1452,8 +1451,7 @@ void PTimer::Stop(bool wait)
     /* Take out of timer list first, so when callback is waited for it's
        completion it cannot then be called again. */
     list->m_timersMutex.Wait();
-    PAssert(list->m_timers.erase(m_handle) == 1 || !m_running, PLogicError);
-    m_running = false;
+    PAssert((list->m_timers.erase(m_handle) == 1) | !m_running.exchange(false), PLogicError);
     list->m_timersMutex.Signal();
 
     if (wait) {

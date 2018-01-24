@@ -576,7 +576,7 @@ class PWriteWaitAndSignal : public PReadWriteWaitAndSignalBase
     This implements a queue of objects between threads. The dequeue action will
     always block until an object is placed into the queue.
   */
-template <class T> class PSyncQueue : public PObject, public std::queue<T>
+template <class T> class PSyncQueue : public PObject
 {
     PCLASSINFO(PSyncQueue, PObject);
   public:
@@ -608,7 +608,7 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T>
       PWaitAndSignal lock(m_mutex);
       if (m_state == e_Closed)
         return false;
-      BaseQueue::push(obj);
+      m_queue.push(obj);
       m_available.Signal();
       return true;
     }
@@ -635,9 +635,9 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T>
             bool available = m_available.Wait(timeout);
             m_mutex.Wait();
 
-            if (available && !BaseQueue::empty()) {
-              value = BaseQueue::front();
-              BaseQueue::pop();
+            if (available && !m_queue.empty()) {
+              value = m_queue.front();
+              m_queue.pop();
               dequeued = true;
             }
           }
@@ -667,8 +667,8 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T>
       bool blocked = m_state == e_Blocked;
       m_state = e_Closed;
 
-      while (!BaseQueue::empty())
-        BaseQueue::pop();
+      while (!m_queue.empty())
+        m_queue.pop();
 
       m_available.Signal();
       m_mutex.Signal();
@@ -689,8 +689,8 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T>
     {
       m_mutex.Wait();
       if (m_state == e_Closed) {
-        while (!BaseQueue::empty())
-          BaseQueue::pop();
+        while (!m_queue.empty())
+          m_queue.pop();
         while (m_available.Wait(0))
           ;
         m_state = e_Open;
@@ -699,20 +699,35 @@ template <class T> class PSyncQueue : public PObject, public std::queue<T>
     }
 
 
+    /// Get the current size of the queue
+    size_t size() const
+    {
+      PWaitAndSignal lock(m_mutex);
+      return m_queue.size();
+    }
+
+
+    /// Determine if queue is empty
+    bool empty() const
+    {
+      PWaitAndSignal lock(m_mutex);
+      return m_queue.empty();
+    }
+
+
     __inline const PMutex & GetMutex() const { return m_mutex; }
     __inline       PMutex & GetMutex()       { return m_mutex; }
 
   protected:
-    State          m_state;
-    PSemaphore     m_available;
-    PMutex         m_mutex;
-    PSyncPoint     m_closed;
+    BaseQueue  m_queue;
+    State      m_state;
+    PSemaphore m_available;
+    PMutex     m_mutex;
+    PSyncPoint m_closed;
 
   private:
     __inline PSyncQueue(const PSyncQueue & other) : PObject(other) { }
     __inline void operator=(const PSyncQueue &) { }
-    __inline void push(T * obj) { BaseQueue::push(obj); }
-    __inline void pop() { BaseQueue::pop(); }
 };
 
 

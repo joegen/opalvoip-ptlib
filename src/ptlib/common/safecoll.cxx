@@ -357,24 +357,30 @@ void PSafeCollection::SafeRemoveObject(PSafeObject * obj)
 
 PBoolean PSafeCollection::DeleteObjectsToBeRemoved()
 {
-  PWaitAndSignal lock(m_removalMutex);
+  {
+    PWaitAndSignal lock(m_removalMutex);
 
-  PList<PSafeObject>::iterator it = m_toBeRemoved.begin();
-  while (it != m_toBeRemoved.end()) {
-    if (it->GarbageCollection() && it->SafelyCanBeDeleted()) {
-      PObject * obj = &*it;
-      m_toBeRemoved.Remove(obj);
-      m_removalMutex.Signal();
-      DeleteObject(obj);
-      m_removalMutex.Wait();
+    PList<PSafeObject>::iterator it = m_toBeRemoved.begin();
+    while (it != m_toBeRemoved.end()) {
+      if (it->GarbageCollection() && it->SafelyCanBeDeleted()) {
+        PObject * obj = &*it;
+        m_toBeRemoved.Remove(obj);
+        m_removalMutex.Signal();
+        DeleteObject(obj);
+        m_removalMutex.Wait();
 
-      it = m_toBeRemoved.begin(); // Restart looking through list
+        it = m_toBeRemoved.begin(); // Restart looking through list
+      }
+      else
+        ++it;
     }
-    else
-      ++it;
+
+    if (!m_toBeRemoved.IsEmpty())
+      return false;
   }
 
-  return m_toBeRemoved.IsEmpty() && m_collection->IsEmpty();
+  PWaitAndSignal lock(m_collectionMutex);
+  return m_collection->IsEmpty();
 }
 
 

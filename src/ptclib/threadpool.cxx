@@ -167,12 +167,17 @@ void PThreadPoolBase::StopWorker(WorkerThreadBase * worker)
 bool PThreadPoolBase::OnWorkerStarted(WorkerThreadBase & PTRACE_PARAM(thread))
 {
 #if PTRACING
+  m_mutex.Wait();
+
   bool higherWatermark = m_workers.size() > m_highWaterMark;
   PTRACE(higherWatermark ? 2 : 3, PThreadPoolTraceModule,
          "Started new pool thread \"" << thread << "\", high water mark=" << m_workers.size());
   if (higherWatermark)
     m_highWaterMark = m_workers.size();
-#endif
+
+  m_mutex.Signal();
+#endif // PTRACING
+
   return true;
 }
 
