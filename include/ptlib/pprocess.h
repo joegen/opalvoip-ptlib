@@ -604,7 +604,7 @@ class PProcess : public PThread
     virtual void HandleRunTimeSignal(int signal);
 
     /// Get the name of the signal
-    static PString GetRunTimeSignalName(int signal);
+    static const char * GetRunTimeSignalName(int signal);
   //@}
 
     /**@name Operating System URL manager functions */
@@ -710,7 +710,7 @@ class PProcess : public PThread
     static void PlatformResetRunTimeSignalHandler(int signal, PRunTimeSignalHandler previous);
     static POrdinalToString::Initialiser const InternalSigNames[];
 
-    std::map<unsigned, PRunTimeSignalHandler> m_previousRunTimeSignalHandlers;
+    std::vector<PRunTimeSignalHandler> m_previousRunTimeSignalHandlers;
     std::queue<unsigned> m_synchronousRunTimeSignals;
     PCriticalSection m_synchronousRunTimeSignalMutex;
     void InternalPostRunTimeSignal(int signal);

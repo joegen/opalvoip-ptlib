@@ -586,7 +586,7 @@ void PServiceProcess::OnControl()
 
 void PServiceProcess::AddRunTimeSignalHandlers(const int * signals)
 {
-  static int const ExtraSignals[] = { SIGSEGV, SIGFPE, SIGBUS, 0 };
+  static int const ExtraSignals[] = { SIGILL, SIGSEGV, SIGFPE, SIGBUS, 0 };
   PProcess::AddRunTimeSignalHandlers(ExtraSignals);
   PProcess::AddRunTimeSignalHandlers(signals);
 }
@@ -607,6 +607,10 @@ void PServiceProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier s
       InternalPostRunTimeSignal(signal);
       return; // Don't call base class function, as it terminates app
 
+    case SIGILL :
+      sigmsg = "illegal instruction";
+      break;
+
     case SIGSEGV :
       sigmsg = "segmentation fault";
       break;
@@ -620,6 +624,7 @@ void PServiceProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier s
       sigmsg = "bus error";
       break;
 #endif
+
     default :
       PProcess::AsynchronousRunTimeSignal(signal, source);
       return;
@@ -631,10 +636,23 @@ void PServiceProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier s
     PThreadIdentifier tid = GetCurrentThreadId();
     PUniqueThreadIdentifier uid = PThread::GetCurrentUniqueIdentifier();
 
+    const char * couldNotWrite = ", stderr write failed";
+    {
+      /* We get basic crash information using purely static memory (we hope) as,
+         if the heap is trashed, all the PTRACE/PSystemLog stuff is very likely
+         to also crash, and we never see this info. */
+      char buffer[1000];
+      int length = snprintf(buffer, sizeof(buffer),
+                            "\nCaught %s (%s), in thread " P_THREAD_ID_FMT " (" P_UNIQUE_THREAD_ID_FMT ")\n",
+                            sigmsg, GetRunTimeSignalName(signal), tid, uid);
+      if (length > 0 && write(STDERR_FILENO, buffer, length) >= length)
+        couldNotWrite = "";
+    }
+
     PSystemLog log(PSystemLog::Fatal);
     log << "Caught " << sigmsg << " (" << GetRunTimeSignalName(signal) << "),"
            " thread-id=" << PThread::GetIdentifiersAsString(tid, uid) << ","
-           " name=\"" << PThread::GetThreadName(tid) << '"';
+           " name=\"" << PThread::GetThreadName(tid) << '"' << couldNotWrite;
 
 #if PTRACING
     log << ", stack:";

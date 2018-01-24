@@ -325,6 +325,7 @@ typedef DWORD PProcessIdentifier;
 
   #include <signal.h>
   typedef void (__cdecl * PRunTimeSignalHandler)(int);
+  #define SIGRTMAX NSIG
 #else
 
   #include <ptlib/wm/stdlibx.h>

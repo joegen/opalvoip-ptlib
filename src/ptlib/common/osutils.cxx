@@ -1449,7 +1449,8 @@ void PTimer::Stop(bool wait)
   unsigned retry = 0;
   do {
     /* Take out of timer list first, so when callback is waited for it's
-       completion it cannot then be called again. */
+       completion it cannot then be called again. Note, the bitwise OR is
+       intentional! We don't want McCarthy breaking things. */
     list->m_timersMutex.Wait();
     PAssert((list->m_timers.erase(m_handle) == 1) | !m_running.exchange(false), PLogicError);
     list->m_timersMutex.Signal();
@@ -2307,9 +2308,8 @@ PProcess::PProcess(const char * manuf, const char * name,
   , m_shuttingDown(false)
   , m_keepingHouse(false)
   , m_houseKeeper(NULL)
-#ifndef P_VXWORKS
   , m_processID(GetCurrentProcessID())
-#endif
+  , m_previousRunTimeSignalHandlers(SIGRTMAX)
 {
   m_version.m_major = major;
   m_version.m_minor = minor;
@@ -2692,12 +2692,12 @@ void PProcess::AddRunTimeSignalHandlers(const int * signals)
 
 void PProcess::RemoveRunTimeSignalHandlers()
 {
-  for (std::map<unsigned, PRunTimeSignalHandler>::iterator it  = m_previousRunTimeSignalHandlers.begin();
-                                                           it != m_previousRunTimeSignalHandlers.end(); ++it) {
-    if (it->second != NULL)
-      PlatformResetRunTimeSignalHandler(it->first, it->second);
+  for (size_t sig = 0; sig < m_previousRunTimeSignalHandlers.size(); ++sig) {
+    if (m_previousRunTimeSignalHandlers[sig] != NULL) {
+      PlatformResetRunTimeSignalHandler(sig, m_previousRunTimeSignalHandlers[sig]);
+      m_previousRunTimeSignalHandlers[sig] = NULL;
+    }
   }
-  m_previousRunTimeSignalHandlers.clear();
 }
 
 
@@ -2775,13 +2775,20 @@ void PProcess::HandleRunTimeSignal(int signal)
 }
 
 
-PString PProcess::GetRunTimeSignalName(int signal)
+const char * PProcess::GetRunTimeSignalName(int signal)
 {
   for (POrdinalToString::Initialiser const * name = InternalSigNames; name->key != 0; ++name) {
     if (name->key == signal)
       return name->value;
   }
-  return psprintf("SIG%i", signal);
+
+  /* Not strictly thread safe, but should be extremely rare for two signal
+     handlers in two differnt threads get an unknown signal at exactly
+     the same time, and we don't want to do any heap operations here in
+     case the heap is trashed and the signal is a SIGSEGV etc. */
+  static char buffer[100];
+  snprintf(buffer, sizeof(buffer), "SIG%i", signal);
+  return buffer;
 }
 
 
