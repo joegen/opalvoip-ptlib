@@ -292,8 +292,11 @@ PChannel::Errors PSocket::Select(SelectList & read,
       pfd[j].events |= EventBit[i];
 
 #if P_PTHREADS
-      it->px_selectMutex[i].Wait();
-      it->px_selectThread[i] = unblockThread;
+      PSocket & socket = *it;
+      socket.px_selectMutex[i].Wait();
+      socket.px_threadMutex.Wait();
+      socket.px_selectThread[i] = unblockThread;
+      socket.px_threadMutex.Signal();
 #endif
     }
   }
@@ -323,7 +326,9 @@ PChannel::Errors PSocket::Select(SelectList & read,
     SelectList::iterator it = list[i]->begin();
     while (it != list[i]->end()) {
       PSocket & socket = *it;
+      socket.px_threadMutex.Wait();
       socket.px_selectThread[i] = NULL;
+      socket.px_threadMutex.Signal();
       socket.px_selectMutex[i].Signal();
       if (lastError != NoError)
         ++it;
@@ -367,7 +372,9 @@ PChannel::Errors PSocket::Select(SelectList & read,
       }
 #if P_PTHREADS
       socket.px_selectMutex[i].Wait();
+      socket.px_threadMutex.Wait();
       socket.px_selectThread[i] = unblockThread;
+      socket.px_threadMutex.Signal();
 #endif
     }
   }
@@ -406,7 +413,9 @@ PChannel::Errors PSocket::Select(SelectList & read,
     SelectList::iterator it = list[i]->begin();
     while (it != list[i]->end()) {
       PSocket & socket = *it;
+      socket.px_threadMutex.Wait();
       socket.px_selectThread[i] = NULL;
+      socket.px_threadMutex.Signal();
       socket.px_selectMutex[i].Signal();
       if (lastError != NoError)
         ++it;
