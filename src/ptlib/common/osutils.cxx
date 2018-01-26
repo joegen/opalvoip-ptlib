@@ -280,17 +280,18 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   bool AdjustOptions(unsigned addedOptions, unsigned removedOptions)
   {
-    unsigned oldOptions = m_options;
-    m_options &= ~removedOptions;
-    m_options |= addedOptions;
-    if (m_options == oldOptions)
+    /* Not strictly thread safe when this function is called by multiple
+       threads, but this should be very, very rare as options are usually
+       set up during initialisation and not everywhere in the code */
+    unsigned newOptions = (m_options&~removedOptions)|addedOptions;
+    if ((newOptions & HasFilePermissions) == 0)
+      newOptions |= HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
+
+    if (m_options.exchange(newOptions) == newOptions)
       return false;
 
-    if ((m_options & HasFilePermissions) == 0)
-      m_options |= HasFilePermissions | (PFileInfo::DefaultPerms << FilePermissionShift);
-
 #if P_SYSTEMLOG
-    bool syslogBit = (m_options&SystemLogStream) != 0;
+    bool syslogBit = (newOptions&SystemLogStream) != 0;
     bool syslogStrm = dynamic_cast<PSystemLog *>(m_stream) != NULL;
     if (syslogBit != syslogStrm) {
       SetStream(syslogBit ? new PSystemLog : &cerr);
