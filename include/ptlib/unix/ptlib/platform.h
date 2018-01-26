@@ -293,6 +293,7 @@ extern "C" {
 #endif
 
 #define HAS_IFREQ
+#define SIGRTMAX NSIG
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -408,16 +409,19 @@ typedef void (*PRunTimeSignalHandler)(int, siginfo_t *, void *);
   #include <pthread.h>
   typedef pthread_t PThreadIdentifier;
   #define PNullThreadIdentifier ((PThreadIdentifier)-1)
-  #define P_THREAD_ID_FMT "0x%lx"
 
   #ifdef P_LINUX
     typedef pid_t PUniqueThreadIdentifier;
     #define P_UNIQUE_THREAD_ID_FMT "%u"
+    #define P_THREAD_ID_FMT "0x%lx"
   #elif defined(P_MACOSX)
     typedef uint64_t PUniqueThreadIdentifier;
     #define P_UNIQUE_THREAD_ID_FMT "%llu"
+    #define P_THREAD_ID_FMT "%p"
   #else
     typedef pthread_t PUniqueThreadIdentifier;
+    #define P_UNIQUE_THREAD_ID_FMT "%u"
+    #define P_THREAD_ID_FMT "%u"
   #endif
 
   #if defined(P_HAS_SEMAPHORES) || defined(P_HAS_NAMED_SEMAPHORES)
