@@ -75,6 +75,9 @@ class PLua : public PScriptLanguage
     /// Get the name of this scripting language
     virtual PString GetLanguageName() const;
 
+    /// Indicate language has initialised successfully
+    virtual bool IsInitialised() const;
+
     /**Load a Lua script from a file.
       */
     virtual bool LoadFile(

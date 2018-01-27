@@ -766,7 +766,11 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
 #if P_SCRIPTS
   m_scriptContext = PScriptLanguage::Create("Java");
   if (m_scriptContext == NULL)
+  if (m_scriptContext == NULL || !m_scriptContext->IsInitialised()) {
+    delete m_scriptContext;
     m_scriptContext = PScriptLanguage::Create("Lua"); // Back up
+  }
+
   if (m_scriptContext != NULL) {
     m_scriptContext->CreateComposite(ApplicationScope);
     m_scriptContext->CreateComposite(DialogScope);

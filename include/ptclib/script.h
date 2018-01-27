@@ -62,6 +62,9 @@ class PScriptLanguage : public PObject
     /// Get the name of this scripting language
     virtual PString GetLanguageName() const = 0;
 
+    /// Indicate language has initialised successfully
+    virtual bool IsInitialised() const = 0;
+
     /**Load a script from a file.
       */
     virtual bool LoadFile(

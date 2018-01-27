@@ -213,7 +213,7 @@ PINDEX ParseKey(const PString & name, PStringArray & tokens)
 struct PJavaScript::Private : PObject
 {
   PCLASSINFO(PJavaScript::Private, PObject);
-private:
+
 #if V8_MAJOR_VERSION > 3
   v8::Isolate::CreateParams m_isolateParams;
 #endif
@@ -585,6 +585,12 @@ PString PJavaScript::LanguageName()
 PString PJavaScript::GetLanguageName() const
 {
   return JavaName;
+}
+
+
+bool PJavaScript::IsInitialised() const
+{
+  return m_private->m_isolate != NULL;
 }
 
 

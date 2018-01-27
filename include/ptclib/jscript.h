@@ -66,6 +66,9 @@ class PJavaScript : public PScriptLanguage
     /// Get the name of this scripting language
     virtual PString GetLanguageName() const;
 
+    /// Indicate language has initialised successfully
+    virtual bool IsInitialised() const;
+
     /**Load a JavaScript script from a file.
       */
     virtual bool LoadFile(

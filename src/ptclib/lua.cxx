@@ -118,6 +118,12 @@ PString PLua::GetLanguageName() const
 }
 
 
+bool PLua::IsInitialised() const
+{
+  return m_lua != NULL;
+}
+
+
 bool PLua::LoadFile(const PFilePath & filename)
 {
   PWaitAndSignal mutex(m_mutex);
