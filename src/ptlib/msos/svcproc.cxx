@@ -71,7 +71,8 @@ enum {
   SvcCmdTray,
   SvcCmdNoTray,
   SvcCmdVersion,
-  SvcCmdInstall,
+  SvcCmdInstall, // For backward compatibility
+  SvcCmdRegister,
   SvcCmdRemove,
   SvcCmdStart,
   SvcCmdStop,
@@ -91,6 +92,7 @@ static const char * const ServiceCommandNames[NumSvcCmds] = {
   "NoTray",
   "Version",
   "Install",
+  "Register",
   "Remove",
   "Start",
   "Stop",
@@ -531,7 +533,7 @@ PBoolean PServiceProcess::CreateControlWindow(PBoolean createDebugWindow)
   AppendMenu(menubar, MF_POPUP, (UINT_PTR)menu, "&Edit");
 
   menu = CreatePopupMenu();
-  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdInstall, "&Install");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdRegister, "&Register");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdRemove, "&Remove");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdDeinstall, "&Deinstall");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStart, "&Start");
@@ -1151,78 +1153,105 @@ void PServiceProcess::OnControl()
 class NT_ServiceManager
 {
   public:
-    NT_ServiceManager()  { schSCManager = schService = NULL; error = 0; }
+    NT_ServiceManager(PServiceProcess & process)
+      : m_process(process)
+      , m_schSCManager(NULL)
+      , m_schService(NULL)
+      , m_error(0)
+    {}
+
     ~NT_ServiceManager();
 
-    bool Create(PServiceProcess * svc);
-    bool Remove(PServiceProcess * svc);
-    bool Start(PServiceProcess * svc);
-    bool Stop(PServiceProcess * svc)   { return Control(svc, SERVICE_CONTROL_STOP); }
-    bool Pause(PServiceProcess * svc)  { return Control(svc, SERVICE_CONTROL_PAUSE); }
-    bool Resume(PServiceProcess * svc) { return Control(svc, SERVICE_CONTROL_CONTINUE); }
-    bool SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action);
-    bool IsInstalled(PServiceProcess * svc);
-    bool IsRunning(PServiceProcess * svc);
+    bool Create();
+    bool Remove();
+    bool Start();
+    bool Stop()   { return Control(SERVICE_CONTROL_STOP); }
+    bool Pause()  { return Control(SERVICE_CONTROL_PAUSE); }
+    bool Resume() { return Control(SERVICE_CONTROL_CONTINUE); }
+    bool SetConfig(SC_ACTION_TYPE action);
+    bool IsInstalled();
+    bool IsRunning();
 
-    DWORD GetError() const { return error; }
+    DWORD GetError() const { return m_error; }
 
   private:
     bool OpenManager();
-    bool Open(PServiceProcess * svc);
-    bool Control(PServiceProcess * svc, DWORD command);
+    bool Open();
+    bool Control(DWORD command);
 
-    SC_HANDLE schSCManager, schService;
-    DWORD error;
+    PServiceProcess & m_process;
+    SC_HANDLE m_schSCManager, m_schService;
+    DWORD m_error;
 };
 
 
 NT_ServiceManager::~NT_ServiceManager()
 {
-  if (schService != NULL)
-    CloseServiceHandle(schService);
-  if (schSCManager != NULL)
-    CloseServiceHandle(schSCManager);
+  if (m_schService != NULL)
+    CloseServiceHandle(m_schService);
+  if (m_schSCManager != NULL)
+    CloseServiceHandle(m_schSCManager);
 }
 
 
 bool NT_ServiceManager::OpenManager()
 {
-  schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-  if (schSCManager != NULL)
+  m_schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+  if (m_schSCManager != NULL)
     return true;
 
-  error = ::GetLastError();
-  PError << "Could not open Service Manager, error=" << error << endl;
+  m_error = ::GetLastError();
+  if (m_error != ERROR_ACCESS_DENIED) {
+    PError << "Could not open Service Manager, error=" << m_error << endl;
+    return false;
+  }
+
+  if (MessageBox(NULL, "Requires elevation to manage service, continue?", PProcess::Current().GetName(), MB_YESNO | MB_TASKMODAL) != IDYES)
+    return false;
+
+  SHELLEXECUTEINFO info;
+  memset(&info, 0, sizeof(info));
+  info.cbSize = sizeof(info);
+  info.lpVerb = "runas";
+  info.lpFile = m_process.GetFile();
+  PString params = m_process.GetArguments().GetParameters().ToString();
+  info.lpParameters = params;
+  info.nShow = SW_NORMAL;
+  if (ShellExecuteEx(&info))
+    ExitProcess(1);
+  else
+    PError << "Could not run elevated process, error=" << m_error << endl;
+
   return false;
 }
 
 
-bool NT_ServiceManager::Open(PServiceProcess * svc)
+bool NT_ServiceManager::Open()
 {
   if (!OpenManager())
     return false;
 
-  schService = OpenService(schSCManager, svc->GetName(), SERVICE_ALL_ACCESS);
-  if (schService != NULL)
+  m_schService = OpenService(m_schSCManager, m_process.GetName(), SERVICE_ALL_ACCESS);
+  if (m_schService != NULL)
     return true;
 
-  error = ::GetLastError();
-  PError << "Could not open service, error=" << error << endl;
+  m_error = ::GetLastError();
+  PError << "Could not open service, error=" << m_error << endl;
   return false;
 }
 
 
-bool NT_ServiceManager::Create(PServiceProcess * svc)
+bool NT_ServiceManager::Create()
 {
   if (!OpenManager())
     return false;
 
   char binaryFilename[_MAX_PATH];
-  PINDEX fnlen = GetShortPathName(svc->GetFile(), binaryFilename, sizeof(binaryFilename));
-  schService = CreateService(
-                    schSCManager,                   // SCManager database
-                    svc->GetName(),                 // name of service
-                    svc->GetName(),                 // name to display
+  PINDEX fnlen = GetShortPathName(m_process.GetFile(), binaryFilename, sizeof(binaryFilename));
+  m_schService = CreateService(
+                    m_schSCManager,                 // SCManager database
+                    m_process.GetName(),            // name of service
+                    m_process.GetName(),            // name to display
                     SERVICE_ALL_ACCESS,             // desired access
                     SERVICE_WIN32_OWN_PROCESS,      // service type
                     SERVICE_AUTO_START,             // start type
@@ -1230,99 +1259,99 @@ bool NT_ServiceManager::Create(PServiceProcess * svc)
                     binaryFilename,                 // service's binary
                     NULL,                           // no load ordering group
                     NULL,                           // no tag identifier
-                    svc->GetServiceDependencies(),  // no dependencies
+                    m_process.GetServiceDependencies(),  // no dependencies
                     NULL,                           // LocalSystem account
                     NULL);                          // no password
-  if (schService == NULL) {
-    error = ::GetLastError();
-    PError << "Could not create service, error=" << error << endl;
+  if (m_schService == NULL) {
+    m_error = ::GetLastError();
+    PError << "Could not create service, error=" << m_error << endl;
     return false;
   }
 
-  PString description = svc->GetDescription();
+  PString description = m_process.GetDescription();
   if (!description.IsEmpty()) {
     SERVICE_DESCRIPTION sd;
     sd.lpDescription = (LPTSTR)description.GetPointer();
-    if (!ChangeServiceConfig2(schService, SERVICE_CONFIG_DESCRIPTION, &sd)) {
-      error = ::GetLastError();
-      PError << "Could not set service description, error=" << error << endl;
+    if (!ChangeServiceConfig2(m_schService, SERVICE_CONFIG_DESCRIPTION, &sd)) {
+      m_error = ::GetLastError();
+      PError << "Could not set service description, error=" << m_error << endl;
     }
   }
 
   HKEY key;
-  if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
+  if ((m_error = RegCreateKey(HKEY_LOCAL_MACHINE,
              "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" +
-                                       svc->GetName(), &key)) != ERROR_SUCCESS)
+                                       m_process.GetName(), &key)) != ERROR_SUCCESS)
     return false;
 
   LPBYTE fn = (LPBYTE)binaryFilename;
-  if ((error = RegSetValueEx(key, "EventMessageFile",
+  if ((m_error = RegSetValueEx(key, "EventMessageFile",
                              0, REG_EXPAND_SZ, fn, fnlen)) == ERROR_SUCCESS &&
-      (error = RegSetValueEx(key, "CategoryMessageFile",
+      (m_error = RegSetValueEx(key, "CategoryMessageFile",
                              0, REG_EXPAND_SZ, fn, fnlen)) == ERROR_SUCCESS) {
     DWORD dwData = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
-    if ((error = RegSetValueEx(key, "TypesSupported",
+    if ((m_error = RegSetValueEx(key, "TypesSupported",
                                0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD))) == ERROR_SUCCESS) {
       dwData = PSystemLog::NumLogLevels;
-      error = RegSetValueEx(key, "CategoryCount", 0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD));
+      m_error = RegSetValueEx(key, "CategoryCount", 0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD));
     }
   }
 
   RegCloseKey(key);
 
-  return error == ERROR_SUCCESS;
+  return m_error == ERROR_SUCCESS;
 }
 
 
-bool NT_ServiceManager::Remove(PServiceProcess * svc)
+bool NT_ServiceManager::Remove()
 {
-  if (!Open(svc))
+  if (!Open())
     return false;
 
-  PString name = "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" + svc->GetName();
-  error = ::RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
+  PString name = "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" + m_process.GetName();
+  m_error = ::RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
 
-  if (::DeleteService(schService))
+  if (::DeleteService(m_schService))
     return true;
 
-  error = ::GetLastError();
-  PError << "Could not delete service, error=" << error << endl;
+  m_error = ::GetLastError();
+  PError << "Could not delete service, error=" << m_error << endl;
   return false;
 }
 
 
-bool NT_ServiceManager::Start(PServiceProcess * svc)
+bool NT_ServiceManager::Start()
 {
-  if (!Open(svc))
+  if (!Open())
     return false;
 
-  if (::StartService(schService, 0, NULL)) {
-    if (IsRunning(svc))
+  if (::StartService(m_schService, 0, NULL)) {
+    if (IsRunning())
       return true;
-    error = ERROR_SERVICE_NEVER_STARTED;
+    m_error = ERROR_SERVICE_NEVER_STARTED;
   }
   else {
-    error = ::GetLastError();
-    PError << "Could not start service, error=" << error << endl;
+    m_error = ::GetLastError();
+    PError << "Could not start service, error=" << m_error << endl;
   }
   return false;
 }
 
 
-bool NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
+bool NT_ServiceManager::Control(DWORD command)
 {
-  if (!Open(svc))
+  if (!Open())
     return false;
 
   SERVICE_STATUS status;
-  bool ok = ::ControlService(schService, command, &status);
-  error = ::GetLastError();
+  bool ok = ::ControlService(m_schService, command, &status);
+  m_error = ::GetLastError();
   return ok;
 }
 
-bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
+bool NT_ServiceManager::SetConfig(SC_ACTION_TYPE action)
 {
-  if (!Open(svc))
+  if (!Open())
     return false;
 
   SC_ACTION scAction[4];
@@ -1341,27 +1370,27 @@ bool NT_ServiceManager::SetConfig(PServiceProcess * svc, SC_ACTION_TYPE action)
   sfActions.cActions = ++count;
   sfActions.lpsaActions = scAction;
 
-  return ChangeServiceConfig2(schService, SERVICE_CONFIG_FAILURE_ACTIONS, &sfActions);
+  return ChangeServiceConfig2(m_schService, SERVICE_CONFIG_FAILURE_ACTIONS, &sfActions);
 }
 
 
-bool NT_ServiceManager::IsInstalled(PServiceProcess * svc)
+bool NT_ServiceManager::IsInstalled()
 {
-  return Open(svc);
+  return Open();
 }
 
 
-bool NT_ServiceManager::IsRunning(PServiceProcess * svc)
+bool NT_ServiceManager::IsRunning()
 {
-  if (!Open(svc))
+  if (!Open())
     return false;
 
   SERVICE_STATUS serviceStatus;
 
   // query the service status
-  if (!QueryServiceStatus(schService, &serviceStatus)) {
-    error = ::GetLastError();
-    PError << "QueryServiceStatus failed, error=" << error << endl;
+  if (!QueryServiceStatus(m_schService, &serviceStatus)) {
+    m_error = ::GetLastError();
+    PError << "QueryServiceStatus failed, error=" << m_error << endl;
     return false;
   }
 
@@ -1370,9 +1399,9 @@ bool NT_ServiceManager::IsRunning(PServiceProcess * svc)
     DWORD waitTime = std::min(serviceStatus.dwWaitHint / 10, 10000UL);
     Sleep(waitTime);
 
-    if (!QueryServiceStatus(schService, &serviceStatus)) {
-      error = ::GetLastError();
-      PError << "QueryServiceStatus failed, error=" << error << endl;
+    if (!QueryServiceStatus(m_schService, &serviceStatus)) {
+      m_error = ::GetLastError();
+      PError << "QueryServiceStatus failed, error=" << m_error << endl;
       return false;
     }
   }
@@ -1381,7 +1410,7 @@ bool NT_ServiceManager::IsRunning(PServiceProcess * svc)
     return true;
 
   PError << "Service nor running." << endl;
-  error = serviceStatus.dwWin32ExitCode;
+  m_error = serviceStatus.dwWin32ExitCode;
   return false;
 }
 
@@ -1400,7 +1429,7 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
       break;
   }
 
-  NT_ServiceManager svcManager;
+  NT_ServiceManager svcManager(*this);
 
   PStringStream msg;
   bool good = false;
@@ -1442,12 +1471,12 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
       break;
 
     case SvcCmdDefault : // run app with no params.
-      if (svcManager.IsInstalled(this)) {
-        if (svcManager.IsRunning(this)) {
+      if (svcManager.IsInstalled()) {
+        if (svcManager.IsRunning()) {
           if (MessageBox(NULL, "Do you wish to stop the service?", GetName(), MB_YESNO|MB_TASKMODAL) != IDYES)
             return false;
 
-          good = svcManager.Stop(this);
+          good = svcManager.Stop();
         }
         else {
           switch (MessageBox(NULL,
@@ -1455,11 +1484,11 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
                              GetName(),
                              MB_YESNOCANCEL|MB_TASKMODAL)) {
             case IDYES :
-              good = svcManager.Start(this);
+              good = svcManager.Start();
               break;
 
             case IDNO :
-              good = svcManager.Remove(this);
+              good = svcManager.Remove();
               TrayIconRegistry(this, DelTrayIcon);
               break;
 
@@ -1472,10 +1501,10 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
         if (MessageBox(NULL, "Do you wish to install & start the service?", GetName(), MB_YESNO|MB_TASKMODAL) != IDYES)
           return false;
 
-        good = svcManager.Create(this);
+        good = svcManager.Create();
         if (good) {
           TrayIconRegistry(this, AddTrayIcon);
-          good = svcManager.Start(this);
+          good = svcManager.Start();
         }
       }
       else {
@@ -1484,43 +1513,44 @@ bool PServiceProcess::ProcessCommand(const char * cmd)
       }
       break;
 
-    case SvcCmdInstall : // install
-      good = svcManager.Create(this);
+    case SvcCmdRegister : // Register with system as a service
+    case SvcCmdInstall : // Backard compatibility
+      good = svcManager.Create();
       if (good)
         TrayIconRegistry(this, AddTrayIcon);
       break;
 
     case SvcCmdRemove : // remove
-      good = svcManager.Remove(this);
+      good = svcManager.Remove();
       TrayIconRegistry(this, DelTrayIcon);
       break;
 
     case SvcCmdStart : // start
-      good = svcManager.Start(this);
+      good = svcManager.Start();
       break;
 
     case SvcCmdStop : // stop
-      good = svcManager.Stop(this);
+      good = svcManager.Stop();
       break;
 
     case SvcCmdPause : // pause
-      good = svcManager.Pause(this);
+      good = svcManager.Pause();
       break;
 
     case SvcCmdResume : // resume
-      good = svcManager.Resume(this);
+      good = svcManager.Resume();
       break;
 
     case SvcCmdAutoRestart :
-      good = svcManager.SetConfig(this, SC_ACTION_RESTART);
+      good = svcManager.SetConfig(SC_ACTION_RESTART);
       break;
 
     case SvcCmdNoRestart :
-      good = svcManager.SetConfig(this, SC_ACTION_NONE);
+      good = svcManager.SetConfig(SC_ACTION_NONE);
       break;
 
     case SvcCmdDeinstall : // deinstall
-      svcManager.Remove(this);
+      svcManager.Remove();
       TrayIconRegistry(this, DelTrayIcon);
 #if P_CONFIG_FILE
       {
