@@ -98,3 +98,30 @@ void PScriptLanguage::InternalRemoveFunction(const PString & prefix)
       m_functions.erase(it++);
   }
 }
+
+
+PScriptLanguage * PScriptLanguage::Create(const PString & language)
+{
+  PScriptLanguage * script = PFactory<PScriptLanguage>::CreateInstance(language);
+  if (script != NULL && script->IsInitialised())
+    return script;
+
+  delete script;
+  return NULL;
+}
+
+
+PStringArray PScriptLanguage::GetLanguages()
+{
+  PStringArray names = PFactory<PScriptLanguage>::GetKeyList();
+  for (PINDEX i = 0; i < names.GetSize(); ) {
+    PScriptLanguage * script = Create(names[i]);
+    if (script == NULL)
+      names.RemoveAt(i);
+    else {
+      delete script;
+      ++i;
+    }
+  }
+  return names;
+}

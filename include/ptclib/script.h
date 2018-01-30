@@ -44,14 +44,8 @@ class PScriptLanguage : public PObject
 {
   PCLASSINFO(PScriptLanguage, PObject)
   public:
-    static PScriptLanguage * Create(const PString & language)
-    {
-      return PFactory<PScriptLanguage>::CreateInstance(language);
-    }
-    static PStringArray GetLanguages()
-    {
-      return PFactory<PScriptLanguage>::GetKeyList();
-    }
+    static PScriptLanguage * Create(const PString & language);
+    static PStringArray GetLanguages();
 
   /**@name Construction */
   //@{
