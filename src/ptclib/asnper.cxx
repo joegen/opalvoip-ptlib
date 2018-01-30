@@ -1085,7 +1085,7 @@ void PPER_Stream::SingleBitEncode(PBoolean value)
 
 PBoolean PPER_Stream::MultiBitDecode(unsigned nBits, unsigned & value)
 {
-  if (nBits > sizeof(value)*8)
+  if (!PAssert(nBits <= sizeof(value)*8, PInvalidParameter))
     return false;
 
   unsigned bitsLeft = (GetSize() - byteOffset)*8 - (8 - bitOffset);
@@ -1130,7 +1130,7 @@ void PPER_Stream::MultiBitEncode(unsigned value, unsigned nBits)
 {
   PAssert(byteOffset != P_MAX_INDEX, PLogicError);
 
-  if (nBits == 0)
+  if (nBits == 0 || !PAssert(nBits <= sizeof(value)*8, PInvalidParameter))
     return;
 
   if (byteOffset+nBits/8+1 >= (unsigned)GetSize())
