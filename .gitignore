@@ -24,3 +24,4 @@ include/ptlib_config.h
 src/ptlib/common/getdate.c
 .vs
 nbproject/private/
+/samples/vxmltest/cache/
