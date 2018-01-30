@@ -293,8 +293,7 @@ int PSocket::os_close()
 {
   clear();
 
-  SOCKET s = os_handle;
-  os_handle = -1;
+  SOCKET s = os_handle.exchange(-1);
 
   int retval;
   while ((retval = closesocket(s)) < 0 && GetLastError() == WSAEWOULDBLOCK)

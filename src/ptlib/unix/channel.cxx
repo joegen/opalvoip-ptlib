@@ -330,8 +330,7 @@ int PChannel::PXClose()
 
   // make sure we don't have any problems
   flush();
-  int handle = os_handle;
-  os_handle = -1;
+  int handle = os_handle.exchange(-1);
 
   AbortIO(px_readThread, px_threadMutex);
   AbortIO(px_writeThread, px_threadMutex);

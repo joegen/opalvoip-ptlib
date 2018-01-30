@@ -36,7 +36,7 @@
     virtual HANDLE GetAsyncWriteHandle() const;
 
    public:
-     int GetOSHandleAsInt() const { return PtrToLong((void*)os_handle); }
+     int GetOSHandleAsInt() const { return PtrToLong((void*)os_handle.load()); }
 
 
 // End Of File ///////////////////////////////////////////////////////////////

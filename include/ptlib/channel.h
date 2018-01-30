@@ -714,7 +714,7 @@ class PChannel : public PObject, public std::iostream
     PTimeInterval readTimeout;  ///< Timeout for read operations.
     PTimeInterval writeTimeout; ///< Timeout for write operations.
  
-    P_INT_PTR os_handle; ///< The operating system file handle return by standard open() function.
+    atomic<P_INT_PTR> os_handle; ///< The operating system file handle return by standard open() function.
 
     struct Status
     {
