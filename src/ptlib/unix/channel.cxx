@@ -313,12 +313,17 @@ PBoolean PChannel::Close()
 static void AbortIO(PThread * & thread, PMutex & mutex)
 {
   mutex.Wait();
-  if (thread != NULL)
+  if (thread != NULL) {
     thread->PXAbortBlock();
-  mutex.Signal();
 
-  while (thread != NULL)
-    PThread::Yield();
+    while (thread != NULL) {
+      mutex.Signal();
+      usleep(1);
+      mutex.Wait();
+    }
+  }
+
+  mutex.Signal();
 }
 
 int PChannel::PXClose()
