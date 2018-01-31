@@ -1130,14 +1130,14 @@ void PPER_Stream::MultiBitEncode(unsigned value, unsigned nBits)
 {
   PAssert(byteOffset != P_MAX_INDEX, PLogicError);
 
-  if (nBits == 0 || !PAssert(nBits <= sizeof(value)*8, PInvalidParameter))
+  if (nBits == 0 || !PAssert(!((nBits < sizeof(value)*8) && (value > (value & ((1 << nBits) - 1)))), PInvalidParameter))
     return;
 
   if (byteOffset+nBits/8+1 >= (unsigned)GetSize())
     SetSize(byteOffset+10);
 
   // Make sure value is in bounds of bit available.
-  if (nBits < sizeof(int)*8)
+  if (nBits < sizeof(value)*8)
     value &= ((1 << nBits) - 1);
 
   if (!CheckByteOffset(byteOffset))
