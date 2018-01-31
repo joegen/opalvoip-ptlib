@@ -2463,10 +2463,10 @@ void PProcess::HouseKeeping()
 
     m_synchronousRunTimeSignalMutex.Wait();
     while (!m_synchronousRunTimeSignals.empty()) {
-      int signal = m_synchronousRunTimeSignals.front();
+      RunTimeSignalInfo info = m_synchronousRunTimeSignals.front();
       m_synchronousRunTimeSignals.pop();
       m_synchronousRunTimeSignalMutex.Signal();
-      HandleRunTimeSignal(signal);
+      InternalHandleRunTimeSignal(info);
       m_synchronousRunTimeSignalMutex.Wait();
     }
     m_synchronousRunTimeSignalMutex.Signal();
@@ -2702,18 +2702,43 @@ void PProcess::RemoveRunTimeSignalHandlers()
 }
 
 
-void PProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier PTRACE_PARAM(source))
+void PProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier source)
+{
+#if P_HAS_BACKTRACE && PTRACING
+  if (signal == WalkStackSignal)
+    InternalWalkStackSignaled();
+#endif
+
+  InternalPostRunTimeSignal(signal, source);
+}
+
+
+void PProcess::InternalPostRunTimeSignal(int signal, PProcessIdentifier source)
+{
+  RunTimeSignalInfo info;
+  info.m_signal = signal;
+  info.m_source = source;
+
+  m_synchronousRunTimeSignalMutex.Wait();
+  m_synchronousRunTimeSignals.push(info);
+  m_synchronousRunTimeSignalMutex.Signal();
+
+  SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
+}
+
+
+void PProcess::InternalHandleRunTimeSignal(const RunTimeSignalInfo & signalInfo)
 {
 #if PTRACING
   if (PTrace::CanTrace(2)) {
     ostream & trace = PTRACE_BEGIN(2);
-    trace << "Received signal " << GetRunTimeSignalName(signal) << " from ";
-    if (source == GetCurrentProcessID())
+    trace << "Received signal " << GetRunTimeSignalName(signalInfo.m_signal) << " from ";
+    if (signalInfo.m_source == GetCurrentProcessID())
       trace << "self";
-    else if (source != 0) {
-      PFile proc(PSTRSTRM("/proc/" << source << "/cmdline"), PFile::ReadOnly);
+    else if (signalInfo.m_source != 0) {
+      PFile proc(PSTRSTRM("/proc/" << signalInfo.m_source << "/cmdline"), PFile::ReadOnly);
       if (!proc.IsOpen())
-        trace << "source=" << source;
+        trace << "source=" << signalInfo.m_source;
       else {
         PString cmdline;
         int c;
@@ -2723,13 +2748,25 @@ void PProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier PTRACE_P
           else
             cmdline += (char)c;
         }
-        trace << "pid=" << source << ", cmdline=\"" << cmdline.RightTrim() << '"';
+        trace << "pid=" << signalInfo.m_source << ", cmdline=\"" << cmdline.RightTrim() << '"';
       }
     }
     trace << PTrace::End;
   }
 #endif // PTRACING
 
+  HandleRunTimeSignal(signalInfo);
+}
+
+
+void PProcess::HandleRunTimeSignal(const RunTimeSignalInfo & signalInfo)
+{
+  HandleRunTimeSignal(signalInfo.m_signal);
+}
+
+
+void PProcess::HandleRunTimeSignal(int signal)
+{
   switch (signal) {
     case SIGINT:
     case SIGTERM:
@@ -2738,38 +2775,7 @@ void PProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier PTRACE_P
 #endif
       if (OnInterrupt(signal == SIGTERM))
         return;
-      break;
 
-#if P_HAS_BACKTRACE && PTRACING
-    case WalkStackSignal:
-      InternalWalkStackSignaled();
-      break;
-#endif
-  }
-
-  InternalPostRunTimeSignal(signal);
-}
-
-
-void PProcess::InternalPostRunTimeSignal(int signal)
-{
-  m_synchronousRunTimeSignalMutex.Wait();
-  m_synchronousRunTimeSignals.push(signal);
-  m_synchronousRunTimeSignalMutex.Signal();
-  SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
-}
-
-
-void PProcess::HandleRunTimeSignal(int signal)
-{
-  PTRACE(2, "PTLib", "Handling signal " << GetRunTimeSignalName(signal));
-
-  switch (signal) {
-    case SIGINT:
-    case SIGTERM:
-#ifdef SIGHUP
-    case SIGHUP:
-#endif
       Terminate();
       _exit(1); // Shouldn't get here, but just in case ...
   }

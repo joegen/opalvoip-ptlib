@@ -600,8 +600,14 @@ class PProcess : public PThread
       PProcessIdentifier source  ///< Source for signal, typically the PID of the sender
     );
 
+    struct RunTimeSignalInfo {
+      int                m_signal;
+      PProcessIdentifier m_source;
+    };
+
     /// Synchronous C run-time signal handler, this is executed in the housekeeper thread
-    virtual void HandleRunTimeSignal(int signal);
+    virtual void HandleRunTimeSignal(const RunTimeSignalInfo & signalInfo);
+    virtual void HandleRunTimeSignal(int signal); // Backward compatibility
 
     /// Get the name of the signal
     static const char * GetRunTimeSignalName(int signal);
@@ -711,9 +717,10 @@ class PProcess : public PThread
     static POrdinalToString::Initialiser const InternalSigNames[];
 
     std::vector<PRunTimeSignalHandler> m_previousRunTimeSignalHandlers;
-    std::queue<unsigned> m_synchronousRunTimeSignals;
+    std::queue<RunTimeSignalInfo> m_synchronousRunTimeSignals;
     PCriticalSection m_synchronousRunTimeSignalMutex;
-    void InternalPostRunTimeSignal(int signal);
+    void InternalPostRunTimeSignal(int signal, PProcessIdentifier source);
+    void InternalHandleRunTimeSignal(const RunTimeSignalInfo & signalInfo);
 
 
   friend class PThread;

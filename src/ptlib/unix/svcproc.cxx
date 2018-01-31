@@ -603,8 +603,7 @@ void PServiceProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier s
 
   switch (signal) {
     case SIGHUP :
-      PTRACE(2, "PTLib", "Received SIGHUP, executing PServiceProcess::OnControl()");
-      InternalPostRunTimeSignal(signal);
+      InternalPostRunTimeSignal(signal, source);
       return; // Don't call base class function, as it terminates app
 
     case SIGILL :
@@ -682,6 +681,7 @@ void PServiceProcess::HandleRunTimeSignal(int signal)
 
   switch (signal) {
     case SIGHUP :
+      PTRACE(2, "PTLib", "Received SIGHUP, executing PServiceProcess::OnControl()");
       OnControl();
       return;
 
