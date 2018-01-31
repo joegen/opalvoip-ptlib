@@ -1825,12 +1825,26 @@ PTLIB_MODULE_OPTION(
 
 dnl ########################################################################
 dnl look for Lua library
-dnl MSWIN_DISPLAY    lua,Lua interpreter
-dnl MSWIN_CHECK_FILE lua,include\lua.h,P_LUA_WIN32=1
-dnl MSWIN_DIR_SYMBOL lua,LUA_DIR
-dnl MSWIN_CHECK_DIR  lua,%LUADIR%\5.1
-dnl MSWIN_CHECK_DIR  lua,%ProgramFiles%\Lua\5.1
-dnl MSWIN_CHECK_DIR  lua,%ProgramW6432%\Lua\5.1
+dnl MSWIN_DISPLAY    lua32,Lua interpreter (32 bit)
+dnl MSWIN_CHECK_FILE lua32,include\lua.h,P_LUA_WIN32=1
+dnl MSWIN_DIR_SYMBOL lua32,LUA_DIR_WIN32
+dnl MSWIN_CHECK_DIR  lua32,%LUADIR%
+dnl MSWIN_CHECK_DIR  lua32,..\Lua-win32\
+dnl MSWIN_CHECK_DIR  lua32,..\external\Lua-win32\
+dnl MSWIN_CHECK_DIR  lua32,C:\Work\external\Lua-win32\
+dnl MSWIN_CHECK_DIR  lua32,c:\Expat\Lua-win32\
+dnl MSWIN_CHECK_DIR  lua32,\libs\Expat\Lua-win32\
+
+dnl MSWIN_DISPLAY    lua64,Lua interpreter (64 bit)
+dnl MSWIN_CHECK_FILE lua64,include\lua.h,P_LUA_WIN64=1
+dnl MSWIN_DIR_SYMBOL lua64,LUA_DIR_WIN64
+dnl MSWIN_CHECK_DIR  lua64,%LUA64DIR%
+dnl MSWIN_CHECK_DIR  lua64,..\Lua-win64\
+dnl MSWIN_CHECK_DIR  lua64,..\external\Lua-win64\
+dnl MSWIN_CHECK_DIR  lua64,C:\Work\external\Lua-win64\
+dnl MSWIN_CHECK_DIR  lua64,c:\Expat\Lua-win64\
+dnl MSWIN_CHECK_DIR  lua64,\libs\Expat\Lua-win64\
+
 
 AC_LANG_PUSH(C)
 

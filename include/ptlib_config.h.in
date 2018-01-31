@@ -637,12 +637,18 @@
 #endif
 
 #if defined(_MSC_VER) && defined(P_LUA)
-  #pragma include_alias(<lua.hpp>,   <@LUA_DIR@/include/lua.hpp>)
-  #pragma include_alias(<lua.h>,     <@LUA_DIR@/include/lua.h>)
-  #pragma include_alias(<lauxlib.h>, <@LUA_DIR@/include/lauxlib.h>)
-  #pragma include_alias(<lualib.h>,  <@LUA_DIR@/include/lualib.h>)
-  
-  #define P_LUA_LIBRARY "@LUA_DIR@/lib/lua5.1.lib"
+  #if defined(P_64BIT)
+    #define P_LUA_INCLUDE(inc) include_alias(<inc>, <@LUA_DIR_WIN64@/include/inc>)
+    #define P_LUA_LIBRARY "@LUA_DIR_WIN64@/liblua53.a"
+  #else
+    #define P_LUA_INCLUDE(inc) include_alias(<inc>, <@LUA_DIR_WIN32@/include/inc>)
+    #define P_LUA_LIBRARY "@LUA_DIR_WIN32@/liblua53.a"
+  #endif
+
+  #pragma P_LUA_INCLUDE(lua.hpp)
+  #pragma P_LUA_INCLUDE(lua.h)
+  #pragma P_LUA_INCLUDE(lauxlib.h)
+  #pragma P_LUA_INCLUDE(lualib.h)
 #endif
 
 

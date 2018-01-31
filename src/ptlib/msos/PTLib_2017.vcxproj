@@ -164,7 +164,7 @@
     <Link>
       <AdditionalDependencies>ptlibsd.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA53.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -200,7 +200,7 @@
     </ResourceCompile>
     <ProjectReference />
     <Link>
-      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA53.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -244,7 +244,7 @@
     <ProjectReference />
     <Link>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA53.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -290,7 +290,7 @@
     </ProjectReference>
     <Link>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA53.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -330,7 +330,7 @@
     <Link>
       <AdditionalDependencies>ptlibsn.lib;DelayImp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA53.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
@@ -372,7 +372,7 @@
     <ProjectReference />
     <Link>
       <ModuleDefinitionFile>$(IntDir)$(TargetName).def</ModuleDefinitionFile>
-      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA5.1.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>LIBGSTREAMER-1.0-0.DLL;LIBGSTREAMER-0.10-0.DLL;LIBGSTAPP-1.0-0.DLL;LIBGSTAPP-0.10-0.DLL;LIBGOBJECT-2.0-0.DLL;LIBGLIB-2.0-0.DLL;LIBGIO-2.0-0.DLL;WPCAP.DLL;V8.DLL;SDL2.DLL;LUA53.DLL;OPENLDAP.DLL;LIBSASL.DLL;JPEG62.DLL;QWAVE.DLL;%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <DataExecutionPrevention>
       </DataExecutionPrevention>

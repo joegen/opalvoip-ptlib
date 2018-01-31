@@ -354,7 +354,7 @@ int PLua::GetInteger(const PString & name)
   if (!InternalGetVariable(name))
     return false;
 
-  int result = lua_tointeger(m_lua, -1);
+  int result = (int)lua_tointeger(m_lua, -1);
   lua_pop(m_lua, 1);
   return result;
 }
@@ -516,7 +516,7 @@ bool PLua::Call(const PString & name, const char * signature, ...)
 
         case 'I':
         case 'i':
-          *va_arg(args, int *) = lua_tointeger(m_lua, result++);
+          *va_arg(args, int *) = (int)lua_tointeger(m_lua, result++);
           break;
 
         case 'N':
