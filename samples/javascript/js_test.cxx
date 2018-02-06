@@ -74,10 +74,30 @@ void MyProcess::Main()
 
   PJavaScript jscript;
 
-  jscript.SetString ("myString", "before");
-  jscript.SetInteger("myInt",    -1234);
-  jscript.SetNumber ("myNumber", -3.14);
+  PConstString const myString("before");
+  jscript.SetString ("myString", myString);
+  cout << "myString = \"" << jscript.GetString("myString") << "\" expected \"" << myString << '"' << endl;
+
+  static int const myInt = -1234;
+  jscript.SetInteger("myInt", myInt);
+  cout << "myInt = " << jscript.GetInteger("myInt") << " expected " << myInt << endl;
+
+  static double const myNumber = -3.141;
+  jscript.SetNumber ("myNumber", myNumber);
+
+  cout << "myNumber = " << jscript.GetNumber("myNumber") << " expected " << myNumber << endl;
+
   jscript.SetBoolean("myBool", true);
+  cout << "myBool = " << jscript.GetBoolean("myBool") << " expected true" << endl;
+
+  jscript.SetBoolean("myBool", false);
+  cout << "myBool = " << jscript.GetBoolean("myBool") << " expected false" << endl;
+
+  jscript.CreateComposite("Top");
+  jscript.CreateComposite("Top.Middle");
+  jscript.CreateComposite("Top.Middle.Bottom");
+  jscript.SetNumber("Top.Middle.Bottom.Number", myNumber);
+  cout << "Top.Middle.Bottom.Number = " << jscript.GetNumber("Top.Middle.Bottom.Number") << " expected " << myNumber  << endl;
 
   for (PINDEX arg = 0; arg < args.GetCount(); ++arg) {
     if (jscript.Run(args[arg]))
@@ -85,21 +105,6 @@ void MyProcess::Main()
     else
       cerr << jscript.GetLastErrorText() << " executing '" << args[arg] << "'" << endl;
   }
-
-  PVarType var;
-  jscript.GetVar("myArray[0].var", var);
-
-  cout << "myString             = '" << jscript.GetString("myString") << "'" << endl
-       << "myInt                = "  << jscript.GetInteger("myInt") << endl
-       << "myNumber             = "  << jscript.GetNumber("myNumber") << endl
-       << "myBool               = "  << jscript.GetBoolean("myBool") << endl
-       << "myObject.pi          = "  << jscript.GetNumber("myObject.pi") << endl
-       << "myObject.subObject.e = "  << jscript.GetNumber("myObject.subObject.e") << endl
-       << "myArray[0].number    = "  << jscript.GetNumber("myArray[0].number") << endl
-       << "myArray[0].string    = "  << jscript.GetString("myArray[0].string") << endl
-       << "myArray[0].var       = "  << var << endl
-       << endl;
-       ;
 }
 
 #else

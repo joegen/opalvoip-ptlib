@@ -93,41 +93,54 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
 #ifdef _MSC_VER
   #pragma comment(lib, "winmm.lib")
   #pragma comment(lib, "dbghelp.lib")
+  #pragma comment(lib, "shlwapi.lib")
   #if defined(_DEBUG)
     #if defined(P_64BIT)
-      #pragma comment(lib, P_V8_BASE_DEBUG64)
+      #pragma comment(lib, P_V8_BASE0_DEBUG64)
+      #pragma comment(lib, P_V8_BASE1_DEBUG64)
       #pragma comment(lib, P_V8_LIBBASE_DEBUG64)
       #pragma comment(lib, P_V8_SNAPSHOT_DEBUG64)
       #pragma comment(lib, P_V8_LIBPLATFORM_DEBUG64)
       #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG64)
       #pragma comment(lib, P_V8_ICUI18N_DEBUG64)
       #pragma comment(lib, P_V8_ICUUC_DEBUG64)
+      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_DEBUG64;
+      static char NativeBlob[] = P_V8_NATIVES_BLOB_DEBUG64;
     #else
-      #pragma comment(lib, P_V8_BASE_DEBUG32)
+      #pragma comment(lib, P_V8_BASE0_DEBUG32)
+      #pragma comment(lib, P_V8_BASE1_DEBUG32)
       #pragma comment(lib, P_V8_LIBBASE_DEBUG32)
       #pragma comment(lib, P_V8_SNAPSHOT_DEBUG32)
       #pragma comment(lib, P_V8_LIBPLATFORM_DEBUG32)
       #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG32)
       #pragma comment(lib, P_V8_ICUI18N_DEBUG32)
       #pragma comment(lib, P_V8_ICUUC_DEBUG32)
+      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_DEBUG32;
+      static char NativeBlob[] = P_V8_NATIVES_BLOB_DEBUG32;
     #endif
   #else
     #if defined(P_64BIT)
-      #pragma comment(lib, P_V8_BASE_RELEASE64)
+      #pragma comment(lib, P_V8_BASE0_RELEASE64)
+      #pragma comment(lib, P_V8_BASE1_RELEASE64)
       #pragma comment(lib, P_V8_LIBBASE_RELEASE64)
       #pragma comment(lib, P_V8_SNAPSHOT_RELEASE64)
       #pragma comment(lib, P_V8_LIBPLATFORM_RELEASE64)
       #pragma comment(lib, P_V8_LIBSAMPLER_RELEASE64)
       #pragma comment(lib, P_V8_ICUI18N_RELEASE64)
       #pragma comment(lib, P_V8_ICUUC_RELEASE64)
+      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_RELEASE64;
+      static char NativeBlob[] = P_V8_NATIVES_BLOB_RELEASE64;
     #else
-      #pragma comment(lib, P_V8_BASE_RELEASE32)
+      #pragma comment(lib, P_V8_BASE0_RELEASE32)
+      #pragma comment(lib, P_V8_BASE1_RELEASE32)
       #pragma comment(lib, P_V8_LIBBASE_RELEASE32)
       #pragma comment(lib, P_V8_SNAPSHOT_RELEASE32)
       #pragma comment(lib, P_V8_LIBPLATFORM_RELEASE32)
       #pragma comment(lib, P_V8_LIBSAMPLER_RELEASE32)
       #pragma comment(lib, P_V8_ICUI18N_RELEASE32)
       #pragma comment(lib, P_V8_ICUUC_RELEASE32)
+      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_RELEASE32;
+      static char NativeBlob[] = P_V8_NATIVES_BLOB_RELEASE32;
     #endif
   #endif
 #endif
@@ -237,10 +250,15 @@ struct PJavaScript::Private : PObject
       PFilePath exeFile = PProcess::Current().GetFile();
       if (!v8::V8::InitializeICUDefaultLocation(exeFile)) {
         PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed.");
-        return;
       }
 
+      // We do this primarily for debug environments
+      v8::V8::InitializeExternalStartupData(NativeBlob, SnapshotBlob);
+
+      // This one is for production/installed execution
       v8::V8::InitializeExternalStartupData(exeFile);
+
+      // Start it up!
       m_platform = v8::platform::CreateDefaultPlatform();
       v8::V8::InitializePlatform(m_platform);
 
