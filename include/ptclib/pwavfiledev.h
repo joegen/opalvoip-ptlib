@@ -76,8 +76,14 @@ class PSoundChannel_WAVFile : public PSoundChannel
     PBoolean AreAllRecordBuffersFull();
     PBoolean WaitForRecordBufferFull();
     PBoolean WaitForAllRecordBuffersFull();
+    PBoolean SetVolume(unsigned volume);
+    PBoolean GetVolume(unsigned & volume);
+    bool SetMute(bool mute);
+    bool GetMute(bool & mute);
 
   protected:
+    bool InternalWrite(const void * buf, PINDEX len);
+
     PINDEX         m_bufferSize;
     PINDEX         m_bufferCount;
     PINDEX         m_bufferPos;
@@ -85,6 +91,7 @@ class PSoundChannel_WAVFile : public PSoundChannel
     bool           m_autoRepeat;
     PWAVFile       m_WAVFile;
     PAdaptiveDelay m_Pacing;
+    bool           m_muted;
 };
 
 

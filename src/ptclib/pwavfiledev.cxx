@@ -83,6 +83,7 @@ PSoundChannel_WAVFile::PSoundChannel_WAVFile()
   , m_bufferPos(0)
   , m_autoRepeat(false)
   , m_Pacing(1000)
+  , m_muted(false)
 {
 }
 
@@ -214,6 +215,22 @@ PBoolean PSoundChannel_WAVFile::GetBuffers(PINDEX & size, PINDEX & count)
 
 PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
 {
+  if (!m_muted)
+    return InternalWrite(data, size);
+
+  short zero = 0;
+  for (int i = 0; i < size; i += sizeof(zero)) {
+    if (!InternalWrite(&zero, sizeof(zero)))
+      return false;
+  }
+
+  SetLastWriteCount(size);
+  return true;
+}
+
+
+bool PSoundChannel_WAVFile::InternalWrite(const void * data, PINDEX size)
+{
   bool ok = true;
   if (m_bufferPos == 0 && size >= m_buffer.GetSize()) {
     ok = m_WAVFile.Write(data, size);
@@ -266,7 +283,11 @@ PBoolean PSoundChannel_WAVFile::Read(void * data, PINDEX size)
 {
   for (int retry = 0; retry < 2; ++retry) {
     if (m_WAVFile.Read(data, size)) {
-      m_Pacing.Delay(SetLastReadCount(m_WAVFile.GetLastReadCount()) * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate());
+      PINDEX count = m_WAVFile.GetLastReadCount();
+      if (m_muted)
+        memset(data, 0, count);
+      m_Pacing.Delay(count * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate());
+      SetLastReadCount(count);
       return true;
     }
 
@@ -309,6 +330,37 @@ PBoolean PSoundChannel_WAVFile::WaitForRecordBufferFull()
 
 PBoolean PSoundChannel_WAVFile::WaitForAllRecordBuffersFull()
 {
+  return true;
+}
+
+
+PBoolean PSoundChannel_WAVFile::SetVolume(unsigned volume)
+{
+  if (volume > 100)
+    return false;
+
+  m_muted = volume == 0;
+  return true;
+}
+
+
+PBoolean PSoundChannel_WAVFile::GetVolume(unsigned & volume)
+{
+  volume = m_muted ? 0 : 100;
+  return true;
+}
+
+
+bool PSoundChannel_WAVFile::SetMute(bool mute)
+{
+  m_muted = mute;
+  return true;
+}
+
+
+bool PSoundChannel_WAVFile::GetMute(bool & mute)
+{
+  mute = m_muted;
   return true;
 }
 
