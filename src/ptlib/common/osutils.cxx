@@ -2311,6 +2311,9 @@ PProcess::PProcess(const char * manuf, const char * name,
   , m_houseKeeper(NULL)
   , m_processID(GetCurrentProcessID())
   , m_previousRunTimeSignalHandlers(SIGRTMAX)
+  , m_RunTimeSignalsQueueBuffer(10)
+  , m_RunTimeSignalsQueueIn(0)
+  , m_RunTimeSignalsQueueOut(0)
 {
   m_version.m_major = major;
   m_version.m_minor = minor;
@@ -2461,15 +2464,15 @@ void PProcess::HouseKeeping()
     while (m_autoDeleteThreads.Dequeue(thread, 0))
       delete thread;
 
-    m_synchronousRunTimeSignalMutex.Wait();
-    while (!m_synchronousRunTimeSignals.empty()) {
-      RunTimeSignalInfo info = m_synchronousRunTimeSignals.front();
-      m_synchronousRunTimeSignals.pop();
-      m_synchronousRunTimeSignalMutex.Signal();
+    m_RunTimeSignalsQueueMutex.Wait();
+    while (m_RunTimeSignalsQueueIn != m_RunTimeSignalsQueueOut) {
+      RunTimeSignalInfo info = m_RunTimeSignalsQueueBuffer[m_RunTimeSignalsQueueOut];
+      m_RunTimeSignalsQueueOut = (m_RunTimeSignalsQueueOut + 1) % m_RunTimeSignalsQueueBuffer.size();
+      m_RunTimeSignalsQueueMutex.Signal();
       InternalHandleRunTimeSignal(info);
-      m_synchronousRunTimeSignalMutex.Wait();
+      m_RunTimeSignalsQueueMutex.Wait();
     }
-    m_synchronousRunTimeSignalMutex.Signal();
+    m_RunTimeSignalsQueueMutex.Signal();
   }
 }
 
@@ -2715,13 +2718,11 @@ void PProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier source)
 
 void PProcess::InternalPostRunTimeSignal(int signal, PProcessIdentifier source)
 {
-  RunTimeSignalInfo info;
-  info.m_signal = signal;
-  info.m_source = source;
-
-  m_synchronousRunTimeSignalMutex.Wait();
-  m_synchronousRunTimeSignals.push(info);
-  m_synchronousRunTimeSignalMutex.Signal();
+  m_RunTimeSignalsQueueMutex.Wait();
+  m_RunTimeSignalsQueueBuffer[m_RunTimeSignalsQueueIn].m_signal = signal;
+  m_RunTimeSignalsQueueBuffer[m_RunTimeSignalsQueueIn].m_source = source;
+  m_RunTimeSignalsQueueIn = (m_RunTimeSignalsQueueIn + 1) % m_RunTimeSignalsQueueBuffer.size();
+  m_RunTimeSignalsQueueMutex.Signal();
 
   SignalTimerChange(); // Inform house keeping thread we have a signal to be processed
 }
