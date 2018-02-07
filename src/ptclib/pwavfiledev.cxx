@@ -219,10 +219,15 @@ PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
   PINDEX written = 0;
 
   if (m_muted) {
-    m_bufferPos = 0;
-    m_buffer.SetMinSize(size);
-    memset(m_buffer.GetPointer(), 0, size);
-    ok = m_WAVFile.Write(m_buffer.GetPointer(), size);
+    if (m_bufferPos > 0) {
+      PTRACE(4, "Muted, flushing write buffer: " << m_bufferPos << " bytes");
+      ok = m_WAVFile.Write(m_buffer, m_bufferPos);
+      m_bufferPos = 0;
+    }
+    if (ok) {
+      memset(m_buffer.GetPointer(size), 0, size);
+      ok = m_WAVFile.Write(m_buffer.GetPointer(), size);
+    }
   }
   else if (size >= m_buffer.GetSize()) {
     if (m_bufferPos > 0) {
