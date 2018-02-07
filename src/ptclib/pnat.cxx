@@ -456,6 +456,8 @@ PNatCandidate::PNatCandidate(Types type,
   , m_priority(priority)
   , m_foundation(foundation)
   , m_protocol(protocol)
+  , m_networkCost(0)
+  , m_networkId(0)
 {
 }
 
@@ -463,57 +465,56 @@ PNatCandidate::PNatCandidate(Types type,
 PObject::Comparison PNatCandidate::Compare(const PObject & obj) const
 {
   const PNatCandidate & other = dynamic_cast<const PNatCandidate &>(obj);
-  if (m_priority < other.m_priority)
-    return LessThan;
-  if (m_priority > other.m_priority)
-    return GreaterThan;
-  if (m_type < other.m_type)
-    return LessThan;
-  if (m_type > other.m_type)
-    return GreaterThan;
-  if (m_component < other.m_component)
-    return LessThan;
-  if (m_component > other.m_component)
-    return GreaterThan;
-  if (m_protocol < other.m_protocol)
-    return LessThan;
-  if (m_protocol > other.m_protocol)
-    return GreaterThan;
-  return m_foundation.Compare(other.m_foundation);
+
+  Comparison result;
+  if ((result = Compare2(m_networkCost, other.m_networkCost)) == EqualTo &&
+      (result = Compare2(m_priority, other.m_priority)) == EqualTo &&
+      (result = Compare2(m_type, other.m_type)) == EqualTo &&
+      (result = Compare2(m_component, other.m_component)) == EqualTo &&
+      (result = m_protocol.Compare(other.m_protocol)) == EqualTo)
+       result = m_foundation.Compare(other.m_foundation);
+
+  return result;
 }
 
 
 void PNatCandidate::PrintOn(ostream & strm) const
 {
+  bool columns = strm.width() != 0;
+
+  static const char * TypeNames[NumTypes] = {
+    "Host", "Server-Reflexive", "Peer-Reflexive", "Relay", "Final"
+  };
+  strm << left << setw(columns ? 17 : 0) << TypeNames[m_type];
+
   switch (m_type) {
     case HostType :
-      strm << "Host " << m_baseTransportAddress;
+      strm << setw(columns ? 44 : 0) << m_baseTransportAddress.AsString();
       break;
     case ServerReflexiveType :
-      strm << "Server Reflexive " << m_baseTransportAddress << '/' << m_localTransportAddress;
-      break;
     case PeerReflexiveType :
-      strm << "Peer Reflexive " << m_baseTransportAddress << '/' << m_localTransportAddress;
-      break;
     case RelayType :
-      strm << "Relay " << m_baseTransportAddress << '/' << m_localTransportAddress;
+      strm << right << setw(columns ? 21 : 0) << m_baseTransportAddress
+           << '/' << left << setw(columns ? 22 : 0) << m_localTransportAddress;
       break;
     default:
-      strm << "Unknown type";
+      if (columns)
+        strm << setw(44) << ' ';
       break;
   }
 
-  if (!m_protocol.IsEmpty())
-    strm << ' ' << m_protocol;
+  if (columns || !m_protocol.IsEmpty())
+    strm << right << setw(4) << m_protocol;
 
-  if (m_component > 0)
-    strm << " component=" << m_component;
+  strm << " component=" << m_component
+       << " priority=" << left << setw(columns ? 10 : 0) <<  m_priority;
 
-  if (m_priority > 0)
-    strm << " priority=" << m_priority;
+  if (m_networkCost > 0 || m_networkId > 0)
+    strm << " network-cost=" << setw(columns ? 3 : 0) << m_networkCost
+         << " network-id=" << setw(columns ? 2 : 0) << m_networkId;
 
   if (!m_foundation.IsEmpty())
-    strm << " foundation=\"" << m_foundation << '"';
+    strm << " foundation=\"" << left << setw(columns ? 15 : 0) << (m_foundation+'"');
 }
 
 

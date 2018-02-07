@@ -390,6 +390,8 @@ class PNatCandidate : public PObject
     unsigned                m_priority;
     PString                 m_foundation;             // ICE support
     PCaselessString         m_protocol;               // Almost invariably "udp"
+    unsigned                m_networkCost;            // https://tools.ietf.org/html/draft-thatcher-ice-network-cost-01
+    unsigned                m_networkId;
     PIPSocketAddressAndPort m_baseTransportAddress;   // Address of physical host
     PIPSocketAddressAndPort m_localTransportAddress;  // Address presented to remote system
 };
