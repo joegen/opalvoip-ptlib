@@ -82,8 +82,6 @@ class PSoundChannel_WAVFile : public PSoundChannel
     bool GetMute(bool & mute);
 
   protected:
-    bool InternalWrite(const void * buf, PINDEX len);
-
     PINDEX         m_bufferSize;
     PINDEX         m_bufferCount;
     PINDEX         m_bufferPos;

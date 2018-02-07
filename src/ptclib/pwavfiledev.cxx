@@ -215,49 +215,49 @@ PBoolean PSoundChannel_WAVFile::GetBuffers(PINDEX & size, PINDEX & count)
 
 PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
 {
-  if (!m_muted)
-    return InternalWrite(data, size);
-
-  short zero = 0;
-  for (int i = 0; i < size; i += sizeof(zero)) {
-    if (!InternalWrite(&zero, sizeof(zero)))
-      return false;
-  }
-
-  SetLastWriteCount(size);
-  return true;
-}
-
-
-bool PSoundChannel_WAVFile::InternalWrite(const void * data, PINDEX size)
-{
   bool ok = true;
-  if (m_bufferPos == 0 && size >= m_buffer.GetSize()) {
+  PINDEX written = 0;
+
+  if (m_muted) {
+    m_bufferPos = 0;
+    m_buffer.SetMinSize(size);
+    memset(m_buffer.GetPointer(), 0, size);
     ok = m_WAVFile.Write(data, size);
-    if (ok)
-      SetLastWriteCount(m_WAVFile.GetLastWriteCount());
   }
-  else {
-    if (m_bufferPos + size > m_buffer.GetSize()) {
-      PTRACE(4, "Flushing write buffer: " << m_bufferPos << " bytes");
+  else if (size >= m_buffer.GetSize()) {
+    if (m_bufferPos > 0) {
+      PTRACE(4, "Write too big, flushing write buffer: " << m_bufferPos << " bytes");
       ok = m_WAVFile.Write(m_buffer, m_bufferPos);
       m_bufferPos = 0;
     }
-
-    if (ok) {
-      memcpy(m_buffer.GetPointer() + m_bufferPos, data, size);
-      m_bufferPos += size;
-      SetLastWriteCount(size);
-    }
+    if (ok)
+      ok = m_WAVFile.Write(data, size);
+  }
+  else if (m_bufferPos + size > m_buffer.GetSize()) {
+    PTRACE(4, "Flushing write buffer: " << m_bufferPos << " bytes");
+    ok = m_WAVFile.Write(m_buffer, m_bufferPos);
+    memcpy(m_buffer.GetPointer(), data, size);
+    m_bufferPos = size;
+    written = size;
+  }
+  else {
+    memcpy(m_buffer.GetPointer() + m_bufferPos, data, size);
+    m_bufferPos += size;
+    written = size;
   }
 
-  if (ok)
-    m_Pacing.Delay(GetLastWriteCount() * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate() / m_WAVFile.GetChannels());
-  else {
+  if (!ok) {
     SetLastWriteCount(0);
     SetErrorValues(m_WAVFile.GetErrorCode(), m_WAVFile.GetErrorNumber());
+    return false;
   }
-  return ok;
+
+  if (written == 0)
+    written = m_WAVFile.GetLastWriteCount();
+  SetLastWriteCount(written);
+
+  m_Pacing.Delay(written * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate() / m_WAVFile.GetChannels());
+  return true;
 }
 
 
