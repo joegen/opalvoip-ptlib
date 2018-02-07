@@ -222,7 +222,7 @@ PBoolean PSoundChannel_WAVFile::Write(const void * data, PINDEX size)
     m_bufferPos = 0;
     m_buffer.SetMinSize(size);
     memset(m_buffer.GetPointer(), 0, size);
-    ok = m_WAVFile.Write(data, size);
+    ok = m_WAVFile.Write(m_buffer.GetPointer(), size);
   }
   else if (size >= m_buffer.GetSize()) {
     if (m_bufferPos > 0) {
