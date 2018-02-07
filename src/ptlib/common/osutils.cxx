@@ -2708,8 +2708,10 @@ void PProcess::RemoveRunTimeSignalHandlers()
 void PProcess::AsynchronousRunTimeSignal(int signal, PProcessIdentifier source)
 {
 #if P_HAS_BACKTRACE && PTRACING
-  if (signal == WalkStackSignal)
+  if (signal == WalkStackSignal) {
     InternalWalkStackSignaled();
+    return;
+  }
 #endif
 
   InternalPostRunTimeSignal(signal, source);
