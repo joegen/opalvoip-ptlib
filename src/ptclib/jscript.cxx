@@ -149,7 +149,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
 #define PTraceModule() "JavaScript"
 
 
-static PConstString const JavaName("Java");
+static PConstString const JavaName("JavaScript");
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
 
 #ifndef V8_MAJOR_VERSION
