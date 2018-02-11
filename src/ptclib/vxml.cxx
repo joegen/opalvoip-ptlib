@@ -775,6 +775,10 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
     m_scriptContext->CreateComposite(ApplicationScope);
     m_scriptContext->CreateComposite(DialogScope);
     m_scriptContext->CreateComposite(PropertyScope);
+    m_scriptContext->CreateComposite("session");
+    m_scriptContext->CreateComposite("session.connection");
+    m_scriptContext->CreateComposite("session.connection.local");
+    m_scriptContext->CreateComposite("session.connection.remote");
   }
 #endif
 
