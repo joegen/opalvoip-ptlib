@@ -227,10 +227,10 @@ void PSTUN::AppendMessageIntegrity(PSTUNMessage & message)
   switch (m_iceRole) {
     case IceLite :
     case IceControlled :
-      message.AddAttribute(PSTUNIceRole(PSTUNAttribute::ICE_CONTROLLED, m_iceTieBreak));
+      message.AddAttribute(PSTUNIceControlled(m_iceTieBreak));
       break;
     case IceControlling :
-      message.AddAttribute(PSTUNIceRole(PSTUNAttribute::ICE_CONTROLLING, m_iceTieBreak));
+      message.AddAttribute(PSTUNIceControlling(m_iceTieBreak));
       break;
     default :
       break;
