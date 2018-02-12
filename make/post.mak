@@ -27,6 +27,7 @@
 # Contributor(s): ______________________________________.
 #
 
+ifndef OSSBUILD
 
 ######################################################################
 #
@@ -73,8 +74,8 @@ help :
 	@echo
 	@echo "  make optclean      Remove optimised files"
 	@echo "  make debugclean    Remove debug files"
-	@echo "  make clean         Remove both debug and optimised files"
-	@echo "  make distclean     Remove everything"
+	@echo "  make pt_clean         Remove both debug and optimised files"
+	@echo "  make pt_distclean     Remove everything"
 	@echo
 	@echo "  make optlibs       Make optimised libraries project depends on"
 	@echo "  make debuglibs     Make debug libraries project depends on"
@@ -86,10 +87,10 @@ help :
 	@echo "  make release       Package up optimised version int tar.gz file"
 
 
-ifneq ($(LIBDIRS),)
-  all :: bothlibs
-endif
-all :: bothdepend both
+#ifneq ($(LIBDIRS),)
+#  all :: bothlibs
+#endif
+#all :: bothdepend both
 both :: opt debug
 bothshared :: optshared debugshared
 bothstatic :: optstatic debugstatic
@@ -97,7 +98,7 @@ bothdepend :: optdepend debugdepend
 bothlibs :: optlibs debuglibs
 opt :: optshared
 debug :: debugshared
-clean :: optclean debugclean
+pt_clean :: optclean debugclean
 
   optshared   optstatic   optclean   optdepend   optlibs :: INTERNAL_DEBUG_BUILD:=no
 debugshared debugstatic debugclean debugdepend debuglibs :: INTERNAL_DEBUG_BUILD:=yes
@@ -334,7 +335,7 @@ internal_clean ::
 
 DIST_CLEAN_FILES += $(CLEAN_FILES) config.log config.err autom4te.cache config.status a.out aclocal.m4 lib* samples/*/obj_*
 
-distclean ::
+pt_distclean ::
 	rm -rf $(DIST_CLEAN_FILES)
 
 
@@ -532,5 +533,5 @@ ifndef NODEPS
   endif
 endif
 
-
+endif #OSSBUILD
 # End of post.mak
