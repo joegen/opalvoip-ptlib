@@ -1188,18 +1188,18 @@ bool PWebSocket::WriteMasked(const uint32_t * data, PINDEX len, uint32_t mask)
 
 bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PString * selectedProtocol)
 {
-  PHTTPClient * http = new PHTTPClient;
-  if (IsOpen()) {
-    PChannel * upstream = Detach();
-    if (upstream)
-      http->Open(upstream);
-    else {
-      http->SetReadChannel(Detach(ShutdownRead));
-      http->SetWriteChannel(Detach(ShutdownWrite));
-    }
+  channelPointerMutex.StartWrite();
+
+  // See if we already have a HTTP client in the chain
+  PHTTPClient * http = FindChannel<PHTTPClient>();
+  if (http == NULL) {
+    http = new PHTTPClient;
+    http->SetReadChannel(Detach(ShutdownRead));
+    http->SetWriteChannel(Detach(ShutdownWrite));
+    Open(http);
   }
 
-  Open(http);
+  channelPointerMutex.EndWrite();
 
   PString key = PBase64::Encode("What is in here?");
   PMIMEInfo outMIME, replyMIME;

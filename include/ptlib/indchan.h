@@ -307,6 +307,22 @@ class PIndirectChannel : public PChannel
       bool autoDelete = true,     ///< Automatically delete the channel
       bool closeExisting = false  ///< Close (and auto-delete) the existing read channel
     );
+
+    /**Locate a channel of a specific class in the indirect chain.
+      */
+    template <class ChannelClass> ChannelClass * FindChannel()
+    {
+      ChannelClass * channel = dynamic_cast<ChannelClass *>(this);
+      if (channel == NULL) {
+        PIndirectChannel * indirect = dynamic_cast<PIndirectChannel *>(readChannel);
+        if (indirect == NULL || (channel = indirect->FindChannel<ChannelClass>()) == NULL) {
+          indirect = dynamic_cast<PIndirectChannel *>(writeChannel);
+          if (indirect != NULL)
+            channel = indirect->FindChannel<ChannelClass>();
+        }
+      }
+      return channel;
+    }
   //@}
 
 
