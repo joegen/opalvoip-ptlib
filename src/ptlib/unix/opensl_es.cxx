@@ -206,7 +206,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
   
     bool InternalOpen()
     {
-      PTRACE(5, "Opening " << activeDirection<< " \"" << m_deviceName << '"');
+      PTRACE(5, "Opening " << m_activeDirection<< " \"" << m_deviceName << '"');
 
       if (CHECK_SL_ERROR(slCreateEngine, (m_object.GetPtr(), 0, NULL, 0, NULL, NULL)))
         return false;
@@ -217,7 +217,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       if (CHECK_SL_ERROR(m_engine.Create, (m_object)))
         return false;
       
-      switch (activeDirection) {
+      switch (m_activeDirection) {
         case Player :
           if (CHECK_SL_ERROR(m_engine.CreateOutputMix, (m_outputMix, OpenSLES::Interfaces())))
             return false;
@@ -337,7 +337,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
           return false;
       }
 
-      PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
+      PTRACE(3, "Opened " << m_activeDirection<< " \"" << m_deviceName << '"');
       os_handle = 1;
       return true;
     }
@@ -389,7 +389,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
     {
       Close();
 
-      activeDirection = params.m_direction;
+      m_activeDirection = params.m_direction;
       m_deviceName = params.m_device;
 
       return SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample) &&
@@ -426,7 +426,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       m_object.Destroy();
 
       os_handle = -1;
-      PTRACE_IF(5, !GetName().IsEmpty(), activeDirection << " closed \"" << GetName() << '"');
+      PTRACE_IF(5, !GetName().IsEmpty(), m_activeDirection << " closed \"" << GetName() << '"');
       return true;
     }
 
@@ -438,7 +438,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
 
       bool ok = true;
 
-      switch (activeDirection) {
+      switch (m_activeDirection) {
         case Player :
           if (CHECK_SL_ERROR(m_player.SetPlayState, (SL_PLAYSTATE_STOPPED)))
             ok = false;
@@ -459,7 +459,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       // Break any read/write block
       m_queue.Close();
 
-      PTRACE(5, activeDirection << " aborted: ok=" << ok);
+      PTRACE(5, m_activeDirection << " aborted: ok=" << ok);
       return ok;
     }
 
@@ -471,7 +471,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       if (CheckNotOpen())
         return false;
 
-      if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
+      if (!PAssert(m_activeDirection == Player, "Trying to write to recorder"))
         return false;
 
       SLuint32 state;
@@ -520,7 +520,7 @@ class PSoundChannel_OpenSL_ES : public PSoundChannel
       if (CheckNotOpen())
         return false;
 
-      if (!PAssert(activeDirection == Recorder, "Trying to read from player"))
+      if (!PAssert(m_activeDirection == Recorder, "Trying to read from player"))
         return false;
 
       if (!StartRecording())

@@ -336,7 +336,7 @@ bool PSoundChannelDirectSound::Open(const Params & params)
   Close();
 
   m_deviceName = params.m_device;
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
   m_available = 0;
   m_dsMoved = 0ui64;
   m_moved = 0ui64;
@@ -344,7 +344,7 @@ bool PSoundChannelDirectSound::Open(const Params & params)
 
   // get info for all devices for direction
   PDSoundDeviceInfoVector devices;
-  PComResult result = GetFilteredDSoundDeviceInfo(GUID_NULL, activeDirection, PString::Empty(), -1, devices);
+  PComResult result = GetFilteredDSoundDeviceInfo(GUID_NULL, m_activeDirection, PString::Empty(), -1, devices);
   if (result.Failed()) {
     SetErrorValues(Miscellaneous, GetErrorNumber());
     PTRACE(4, "Open" << GetDirectionText() << ": Could not get device list: " << result);
@@ -358,7 +358,7 @@ bool PSoundChannelDirectSound::Open(const Params & params)
   }
   if (deviceInfo == devices.end()) {
     GUID deviceGUID;
-    result = GetDefaultDeviceGUID(m_deviceName, activeDirection, deviceGUID);
+    result = GetDefaultDeviceGUID(m_deviceName, m_activeDirection, deviceGUID);
     if (result.Failed()) {
       SetErrorValues(Miscellaneous, result.GetErrorNumber());
       PTRACE(4, "Open" << GetDirectionText() << ": Could not get default device ID: " << result);
@@ -379,7 +379,7 @@ bool PSoundChannelDirectSound::Open(const Params & params)
   SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
 
   // open for playback
-  if (activeDirection == Player) {
+  if (m_activeDirection == Player) {
     if (!OpenPlayback(&deviceInfo->m_DeviceId))
       return false;
   }
@@ -417,7 +417,7 @@ PBoolean PSoundChannelDirectSound::Close () // public
   PWaitAndSignal mutex(m_bufferMutex);  // wait for read/write completion
   Abort(); // abort waiting for I/O
 
-  switch (activeDirection) {
+  switch (m_activeDirection) {
   case Player:
     PTRACE(4, "Closing Playback device \"" << m_deviceName << '"');
     ClosePlayback();
@@ -431,7 +431,7 @@ PBoolean PSoundChannelDirectSound::Close () // public
     break;
   }
   CloseMixer();
-  activeDirection = Closed;
+  m_activeDirection = Closed;
   return true;
 }
 
@@ -473,11 +473,11 @@ PBoolean PSoundChannelDirectSound::SetFormat (unsigned numChannels, // public
 
     Abort(); // abort waiting for I/O
     SetWaveFormat(m_waveFormat, numChannels, sampleRate, bitsPerSample);
-    if (activeDirection == Player) {
+    if (m_activeDirection == Player) {
       if (!OpenPlaybackBuffer()) // if this fails, channel is closed
         return false;
     }
-    else if (activeDirection == Recorder) {
+    else if (m_activeDirection == Recorder) {
       if (!OpenCaptureBuffer()) // if this fails, channel is closed
         return false;
     }
@@ -515,11 +515,11 @@ PBoolean PSoundChannelDirectSound::SetBuffers (PINDEX size, PINDEX count) // pub
 
     Abort(); // abort waiting for I/O
     SetBufferSections(size, count);
-    if (activeDirection == Player) {
+    if (m_activeDirection == Player) {
       if (!OpenPlaybackBuffer())
         return false;
     }
-    else if (activeDirection == Recorder) {
+    else if (m_activeDirection == Recorder) {
       if (!OpenCaptureBuffer()) // if this fails, channel is closed
         return false;
     }
@@ -839,7 +839,7 @@ PBoolean PSoundChannelDirectSound::Write (const void *buf, PINDEX len) // public
     }
   }                                     // unlock to allow Abort while waiting for buffer
 
-  PAssert(activeDirection == Player, "Invalid device direction");
+  PAssert(m_activeDirection == Player, "Invalid device direction");
   PAssertNULL(buf);
 
   char * src = (char *) buf;
@@ -914,7 +914,7 @@ PBoolean PSoundChannelDirectSound::WaitForPlayCompletion () // public
 
 PBoolean PSoundChannelDirectSound::PlaySound (const PSound & sound, PBoolean wait) // public
 {
-  PAssert(activeDirection == Player, "Invalid device direction");
+  PAssert(m_activeDirection == Player, "Invalid device direction");
 
   if (!SetBuffers(sound.GetSize(), 1)) // Aborts
     return false;
@@ -1151,7 +1151,7 @@ PBoolean PSoundChannelDirectSound::Read (void * buf, PINDEX len) // public
     }
   }                                     // unlock to allow Abort while waiting for buffer
 
-  PAssert(activeDirection == Recorder, "Invalid device direction");
+  PAssert(m_activeDirection == Recorder, "Invalid device direction");
   PAssertNULL(buf);
 
   char * dest = (char *) buf;
@@ -1212,7 +1212,7 @@ PBoolean PSoundChannelDirectSound::WaitForAllRecordBuffersFull() // public
 
 PBoolean PSoundChannelDirectSound::RecordSound (PSound & /*sound*/) // public
 {
-  PAssert(activeDirection == Recorder, "Invalid device direction");
+  PAssert(m_activeDirection == Recorder, "Invalid device direction");
   PTRACE(4, "RecordSound unimplemented");
   return false;
 }
@@ -1220,7 +1220,7 @@ PBoolean PSoundChannelDirectSound::RecordSound (PSound & /*sound*/) // public
 
 PBoolean PSoundChannelDirectSound::RecordFile (const PFilePath & /*filename*/) // public
 {
-  PAssert(activeDirection == Recorder, "Invalid device direction");
+  PAssert(m_activeDirection == Recorder, "Invalid device direction");
   PTRACE(4, "RecordFile unimplemented");
   return false;
 }
@@ -1235,13 +1235,13 @@ PBoolean PSoundChannelDirectSound::RecordFile (const PFilePath & /*filename*/) /
 
 PBoolean PSoundChannelDirectSound::OpenMixer (UINT waveDeviceId)
 {
-  mixerOpen(&m_mixer, waveDeviceId, NULL, NULL, (activeDirection == Player)? MIXER_OBJECTF_WAVEOUT : MIXER_OBJECTF_WAVEIN);
+  mixerOpen(&m_mixer, waveDeviceId, NULL, NULL, (m_activeDirection == Player)? MIXER_OBJECTF_WAVEOUT : MIXER_OBJECTF_WAVEIN);
   if (m_mixer == NULL) {
     PTRACE(4, "Open" << GetDirectionText() << ": Failed to open mixer - volume control will not function");
     return false;
   }
   MIXERLINE line = { sizeof(MIXERLINE) };
-  line.dwComponentType = (activeDirection == Player)? MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT : MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
+  line.dwComponentType = (m_activeDirection == Player)? MIXERLINE_COMPONENTTYPE_SRC_WAVEOUT : MIXERLINE_COMPONENTTYPE_DST_WAVEIN;
   if (mixerGetLineInfo((HMIXEROBJ)m_mixer, &line, MIXER_OBJECTF_HMIXER | MIXER_GETLINEINFOF_COMPONENTTYPE) != MMSYSERR_NOERROR) {
     PTRACE(4, "Open" << GetDirectionText() << ": Failed to access mixer line - volume control will not function");
     CloseMixer();

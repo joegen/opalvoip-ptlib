@@ -727,7 +727,7 @@ bool PSoundChannelWin32::Open(const Params & params)
   waveFormat.SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
   SetBuffers(params.m_bufferSize, params.m_bufferCount);
 
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
   return OpenDevice(id);
 }
 
@@ -743,7 +743,7 @@ PBoolean PSoundChannelWin32::Open(const PString & device,
 
   waveFormat = format;
 
-  activeDirection = dir;
+  m_activeDirection = dir;
   return OpenDevice(id);
 }
 
@@ -768,7 +768,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
   if (id == WAVE_MAPPER)
     flags |= WAVE_MAPPED_DEFAULT_COMMUNICATION_DEVICE;
 #endif
-  switch (activeDirection) {
+  switch (m_activeDirection) {
     case Player :
       PTRACE(4, "WinSnd\twaveOutOpen, id=" << id);
       osError = waveOutOpen(&hWaveOut, (UINT)id, format, (DWORD_PTR)hEventDone, 0, flags);
@@ -816,7 +816,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
     bool haveControl = true;
     MIXERLINECONTROLS controls;
 
-    if ((activeDirection == Recorder) && !PProcess::IsOSVersion(6,0,0)) { //5=XP/win2003
+    if ((m_activeDirection == Recorder) && !PProcess::IsOSVersion(6,0,0)) { //5=XP/win2003
       /* There is no "master" for the recording side, so need to find the
          single selected input or at least individual microphone input
          No need to do all of these on Vista/Win7/Win2008 as there is
@@ -926,7 +926,7 @@ PBoolean PSoundChannelWin32::OpenDevice(P_INT_PTR id)
         if ((osError = mixerGetLineControls((HMIXEROBJ)hMixer, &controls,
                 MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE)) != MMSYSERR_NOERROR) {
           PTRACE(2, "WinSnd\tFailed to get mixer line mute control ("
-                 << (activeDirection == Recorder ? "Recorder" : "Player") << "), error=" << osError);
+                 << (m_activeDirection == Recorder ? "Recorder" : "Player") << "), error=" << osError);
         }
         return true;
       }
@@ -1472,7 +1472,7 @@ PString PSoundChannelWin32::GetErrorText(ErrorGroup group) const
     return PChannel::GetErrorText(group);
 
   DWORD osError = err&~PWIN32ErrorFlag;
-  if (activeDirection == Recorder) {
+  if (m_activeDirection == Recorder) {
     if (waveInGetErrorText(osError, str, sizeof(str)) != MMSYSERR_NOERROR)
       return PChannel::GetErrorText(group);
   }

@@ -174,13 +174,13 @@ bool PSoundChannelPortAudio::OpenStream(unsigned numChannels, unsigned sampleRat
   m_streamParms.device           = m_deviceId;
   m_streamParms.channelCount     = m_channels;
   m_streamParms.sampleFormat     = m_sampleFormat;
-  m_streamParms.suggestedLatency = (activeDirection == Recorder) ? m_deviceInfo->defaultLowInputLatency : m_deviceInfo->defaultLowOutputLatency;
-  //m_streamParms.suggestedLatency = (activeDirection == Recorder) ? m_deviceInfo->defaultHighInputLatency : m_deviceInfo->defaultHighOutputLatency;
+  m_streamParms.suggestedLatency = (m_activeDirection == Recorder) ? m_deviceInfo->defaultLowInputLatency : m_deviceInfo->defaultLowOutputLatency;
+  //m_streamParms.suggestedLatency = (m_activeDirection == Recorder) ? m_deviceInfo->defaultHighInputLatency : m_deviceInfo->defaultHighOutputLatency;
   m_streamParms.hostApiSpecificStreamInfo = NULL; // host API specific
 
   if (Pa_IsFormatSupported(
-                      (activeDirection == Recorder) ? &m_streamParms : NULL,
-                      (activeDirection == Player)   ? &m_streamParms : NULL,
+                      (m_activeDirection == Recorder) ? &m_streamParms : NULL,
+                      (m_activeDirection == Player)   ? &m_streamParms : NULL,
                       m_sampleRate) != paFormatIsSupported) {
     PTRACE(1, "PortAudio\tformat not supported: sample/sec=" << m_sampleRate << ",bits/sample=" << m_bitsPerSample << "(" << m_bytesPerSample << "),channels=" << m_channels);
     return false;
@@ -188,8 +188,8 @@ bool PSoundChannelPortAudio::OpenStream(unsigned numChannels, unsigned sampleRat
 
   int err = Pa_OpenStream(
                       &m_stream,
-                      (activeDirection == Recorder) ? &m_streamParms : NULL,
-                      (activeDirection == Player)   ? &m_streamParms : NULL,
+                      (m_activeDirection == Recorder) ? &m_streamParms : NULL,
+                      (m_activeDirection == Player)   ? &m_streamParms : NULL,
                       m_sampleRate,
                       m_playBufferSize / m_bytesPerSample,
                       paClipOff,           /* we won't output out of range samples so don't bother clipping them */
@@ -222,11 +222,11 @@ bool PSoundChannelPortAudio::Open(const Params & params)
   Close();
 
   m_deviceName = params.m_device;
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
 
-  m_deviceInfo = GetDeviceInfo(params.m_device, activeDirection, m_deviceId);
+  m_deviceInfo = GetDeviceInfo(params.m_device, m_activeDirection, m_deviceId);
   if (m_deviceInfo == NULL) {
-    PTRACE(3, "PortAudio\tCannot get info for " << ((activeDirection == Player) ? "output" : "input") << " device '" << params.m_device << "'");
+    PTRACE(3, "PortAudio\tCannot get info for " << ((m_activeDirection == Player) ? "output" : "input") << " device '" << params.m_device << "'");
     return false;
   }
 
@@ -411,7 +411,7 @@ bool PSoundChannelPortAudio::StartRecording()
 {
   PWaitAndSignal m(m_mutex);
 
-  if (activeDirection != Recorder)
+  if (m_activeDirection != Recorder)
     return false;
 
   if (m_started)
@@ -541,10 +541,10 @@ bool PSoundChannelPortAudio::SetVolume(unsigned newVolume)
 
   m_volume = newVolume;
 
-  PTRACE(1, "PortAudio\tSetting " << ((activeDirection == Recorder) ? "Recorder" : "Player") << " volume to " << newVolume);
+  PTRACE(1, "PortAudio\tSetting " << ((m_activeDirection == Recorder) ? "Recorder" : "Player") << " volume to " << newVolume);
 
 #ifdef P_PORTMIXER
-  if (activeDirection == Player) {
+  if (m_activeDirection == Player) {
     if (m_mixer == NULL)
       return false;
     Px_SetPCMOutputVolume(m_mixer, newVolume / 100.0);
@@ -569,7 +569,7 @@ bool PSoundChannelPortAudio::GetVolume(unsigned & oldVolume)
   PWaitAndSignal m(m_mutex);
 
 #ifdef P_PORTMIXER
-  if (activeDirection == Player) {
+  if (m_activeDirection == Player) {
     if (m_mixer == NULL)
       return false;
     oldVolume = Px_GetPCMOutputVolume(m_mixer) * 100;
@@ -589,7 +589,7 @@ bool PSoundChannelPortAudio::SetMute(bool newMute)
   m_mute = newMute;
 
 #ifdef P_PORTMIXER
-  if (activeDirection == Player) {
+  if (m_activeDirection == Player) {
     if (m_mute)
       Px_SetPCMOutputVolume(m_mixer, 0.0);
     else
@@ -604,7 +604,7 @@ bool PSoundChannelPortAudio::SetMute(bool newMute)
     }
   }
 
-  PTRACE(1, "PortAudio\t" << ((activeDirection == Recorder) ? "Recorder" : "Player") << " mute is " << (newMute ? "on" : "off"));
+  PTRACE(1, "PortAudio\t" << ((m_activeDirection == Recorder) ? "Recorder" : "Player") << " mute is " << (newMute ? "on" : "off"));
   
   return true;
 }

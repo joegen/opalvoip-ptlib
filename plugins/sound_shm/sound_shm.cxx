@@ -182,7 +182,7 @@ DPRINT(("ashm Open channel=%d sampleRate=%d bitsperSample=%d\n",
   Close();
 
   prinCounter = 20;
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
   mNumChannels = params.m_numChannels;
   mSampleRate = params.m_sampleRate;
   mBitsPerSample = params.m_bitsPerSample;
