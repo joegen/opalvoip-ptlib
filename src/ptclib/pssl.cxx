@@ -2772,6 +2772,22 @@ bool PSSLChannelDTLS::SetMTU(unsigned mtu)
 }
 
 
+PBoolean PSSLChannelDTLS::Read(void * buf, PINDEX len)
+{
+  /* Unlike PSSLChannel, data not associated with handshake, which will use
+     the BioRead() function, just pass through to the real channel. */
+  return PIndirectChannel::Read(buf, len);
+}
+
+
+PBoolean PSSLChannelDTLS::Write(const void * buf, PINDEX len)
+{
+  /* Unlike PSSLChannel, data not associated with handshake, which will use
+     the BioWrite() function, just pass through to the real channel. */
+  return PIndirectChannel::Write(buf, len);
+}
+
+
 bool PSSLChannelDTLS::ExecuteHandshake()
 {
   if (PAssertNULL(m_ssl) == NULL)
