@@ -13,21 +13,28 @@
 #include <ptlib/pprocess.h>
 
 class PVXMLSession;
+class PVideoOutputDevice;
 
-class Vxmltest : public PProcess
+
+class VxmlTest : public PProcess
 {
-  PCLASSINFO(Vxmltest, PProcess)
+  PCLASSINFO(VxmlTest, PProcess)
 
   public:
-    Vxmltest();
+    VxmlTest();
     void Main();
 
   protected:
-    PBoolean inputRunning;
-    PVXMLSession * vxml;
+    PSoundChannel      * m_player;
+    PVideoOutputDevice * m_viewer;
+    PVXMLSession       * m_vxml;
 
-#if P_EXPAT
-    PDECLARE_NOTIFIER(PThread, Vxmltest, InputThread);
+#if P_VXML
+    void HandleInput(PConsoleChannel & console);
+    void CopyAudio();
+#if P_VIDEO
+    void CopyVideo();
+#endif
 #endif
 };
 

@@ -2067,7 +2067,12 @@ dnl MSWIN_DEFINE     vxml,P_VXML
 dnl MSWIN_IF_FEATURE vxml,http&sapi&expat
 dnl MSWIN_IF_FEATURE vxml,http&sapi&expat32
 
+dnl MSWIN_DISPLAY    vxmlvideo,VXML (video) Support
+dnl MSWIN_DEFINE     vxmlvideo,P_VXML_VIDEO
+dnl MSWIN_IF_FEATURE vxmlvideo,vxml
+
 PTLIB_SIMPLE_OPTION([vxml], [VXML], [VXML support], [HAS_EXPAT], [HAS_HTTP], [HAS_TTS])
+PTLIB_SIMPLE_OPTION([vxmlvideo], [VXML_VIDEO], [VXML (video) support], [HAS_VXML])
 
 dnl ########################################################################
 dnl XMLRPC

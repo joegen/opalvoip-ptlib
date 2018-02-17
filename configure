@@ -728,6 +728,8 @@ PTLIB_SOAP
 HAS_SOAP
 PTLIB_XMLRPC
 HAS_XMLRPC
+PTLIB_VXML_VIDEO
+HAS_VXML_VIDEO
 PTLIB_VXML
 HAS_VXML
 PTLIB_TTS
@@ -1000,6 +1002,7 @@ enable_vcard
 enable_jabber
 enable_tts
 enable_vxml
+enable_vxmlvideo
 enable_xmlrpc
 enable_soap
 enable_asn
@@ -1780,6 +1783,7 @@ Optional Features:
   --disable-jabber        disable Jabber support
   --disable-tts           disable Text-To-Speech server support
   --disable-vxml          disable VXML support
+  --disable-vxmlvideo     disable VXML (video) support
   --disable-xmlrpc        disable XMLRPC support
   --disable-soap          disable SOAP support
   --disable-asn           disable ASN decoding/encoding support
@@ -13709,6 +13713,8 @@ fi
 
 
 
+
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -15660,6 +15666,7 @@ fi
 
 
 
+
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking VXML support" >&5
 $as_echo_n "checking VXML support... " >&6; }
 
@@ -15763,6 +15770,89 @@ fi
 
 
    enable_vxml="$enableval"
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking VXML (video) support" >&5
+$as_echo_n "checking VXML (video) support... " >&6; }
+
+   # Check whether --enable-vxmlvideo was given.
+if test "${enable_vxmlvideo+set}" = set; then :
+  enableval=$enable_vxmlvideo; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_VXML_VIDEO:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+      if test "x${enableval}" = "xyes" && \
+             test "x$HAS_VXML" != "x1" && \
+             test "x$HAS_VXML" != "xyes"; then :
+
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_VXML=$HAS_VXML" >&5
+$as_echo "disabled due to disabled dependency HAS_VXML=$HAS_VXML" >&6; }
+         enableval=no
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_VXML_VIDEO=1
+
+   if test "x$HAS_VXML_VIDEO" = "xyes" ; then
+      HAS_VXML_VIDEO=1
+   fi
+
+   if test "x$HAS_VXML_VIDEO" = "x0" || test "x$HAS_VXML_VIDEO" = "xno" ; then
+      HAS_VXML_VIDEO=
+   fi
+
+
+
+   if test "x$HAS_VXML_VIDEO" = "x1" ; then
+      PTLIB_VXML_VIDEO=yes
+      $as_echo "#define P_VXML_VIDEO 1" >>confdefs.h
+
+   else
+      PTLIB_VXML_VIDEO=no
+   fi
+
+
+
+else
+  HAS_VXML_VIDEO=
+fi
+
+
+   enable_vxmlvideo="$enableval"
 
 
 

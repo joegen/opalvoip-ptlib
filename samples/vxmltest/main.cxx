@@ -15,131 +15,166 @@
 
 #include "main.h"
 
-PCREATE_PROCESS(Vxmltest);
+PCREATE_PROCESS(VxmlTest);
 
-Vxmltest::Vxmltest()
+VxmlTest::VxmlTest()
   : PProcess("Equivalence", "vxmltest", 1, 0, AlphaCode, 1)
-  , vxml(NULL)
+  , m_player(NULL)
+  , m_viewer(NULL)
+  , m_vxml(NULL)
 {
 }
 
+#if P_VXML
 
-#if P_EXPAT
-
-#define BUFFER_SIZE 1024
-
-class ChannelCopyThread : public PThread
-{
-  PCLASSINFO(ChannelCopyThread, PThread);
-  public:
-    ChannelCopyThread(PChannel & _from, PChannel & _to)
-      : PThread(1000, NoAutoDeleteThread), from(_from), to(_to)
-    { Resume(); }
-
-    void Main();
-
-  protected:
-    PChannel & from;
-    PChannel & to;
-};
-
-void ChannelCopyThread::Main()
-{
-  for (;;) {
-
-    from.SetReadTimeout(P_MAX_INDEX);
-    PBYTEArray readData;
-    if (!from.Read(readData.GetPointer(BUFFER_SIZE), 2)) {
-      PTRACE(2, "Read error 1");
-      break;
-    }
-    from.SetReadTimeout(0);
-    if (!from.Read(readData.GetPointer()+2, BUFFER_SIZE-2)) {
-      if (from.GetErrorCode(PChannel::LastReadError) != PChannel::Timeout) {
-        PTRACE(2, "Read error 2");
-        break;
-      }
-    }
-    readData.SetSize(from.GetLastReadCount()+2);
-
-    if (readData.GetSize() > 0) {
-      if (!to.Write((const BYTE *)readData, readData.GetSize())) {
-        PTRACE(2, "Write error");
-        break;
-      }
-    }
-  }
-}
-
-void Vxmltest::Main()
+void VxmlTest::Main()
 {
   PArgList & args = GetArguments();
+  if (!args.Parse("S-sound-driver: Output to sound driver\n"
+                  "s-sound-device: Output to sound device\n"
+                  "T-tts: Text to speech method\n"
+#if P_VIDEO
+                  "V-video-driver: Output to video driver\n"
+                  "v-video-device: Output to video device\n"
+#endif
+                  PTRACE_ARGLIST)) {
+    args.Usage(cerr, "[ options ] <vxml-file>");
+    return;
+  }
+
   PTRACE_INITIALISE(args);
 
-  if (args.GetCount() < 1) {
-    PError << "usage: vxmltest [opts] doc\n";
+  PSoundChannel::Params audioParams;
+  audioParams.m_direction = PSoundChannel::Player;
+  audioParams.m_driver = args.GetOptionString('S');
+  audioParams.m_device = args.GetOptionString('s');
+  m_player = PSoundChannel::CreateOpenedChannel(audioParams);
+  if (m_player == NULL) {
+    PError << "error: cannot open sound device \"" << audioParams.m_device << "\"" << endl;
     return;
   }
+  cout << "Using audio device \"" << m_player->GetName() << "\"" << endl;
 
-  PTextToSpeech * tts = NULL;
-  PFactory<PTextToSpeech>::KeyList_T engines = PFactory<PTextToSpeech>::GetKeyList();
-  if (engines.size() != 0)
-    tts = PFactory<PTextToSpeech>::CreateInstance(engines[0]);
+
+#if P_VIDEO
+  PVideoOutputDevice::OpenArgs videoArgs;
+  videoArgs.driverName = args.GetOptionString('V');
+  videoArgs.deviceName = args.GetOptionString('v');
+  m_viewer = PVideoOutputDevice::CreateOpenedDevice(videoArgs);
+  if (m_player == NULL) {
+    PError << "error: cannot open video device \"" << videoArgs.deviceName << "\"" << endl;
+    return;
+  }
+  cout << "Using video device \"" << m_viewer->GetDeviceName() << "\"" << endl;
+#endif
+
+
+  PTextToSpeech * tts = PFactory<PTextToSpeech>::CreateInstance(args.GetOptionString('T', "Microsoft SAPI"));
   if (tts == NULL) {
-    PError << "error: cannot select default text to speech engine" << endl;
+    PFactory<PTextToSpeech>::KeyList_T engines = PFactory<PTextToSpeech>::GetKeyList();
+    if (!engines.empty()) {
+      tts = PFactory<PTextToSpeech>::CreateInstance(engines[0]);
+      if (tts == NULL) {
+        PError << "error: cannot select default text to speech engine" << endl;
+        return;
+      }
+    }
+  }
+  cout << "Using text to speech \"" << tts->GetVoiceList() << "\"" << endl;
+
+
+  m_vxml = new PVXMLSession(tts);
+  if (!m_vxml->Load(args[0])) {
+    PError << "error: cannot loading VXML document \"" << args[0] << "\" - " << m_vxml->GetXMLError() << endl;
     return;
   }
 
-  vxml = new PVXMLSession(tts);
-  PString device = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
-  PSoundChannel player;
-  if (!player.Open(device, PSoundChannel::Player)) {
-    PError << "error: cannot open sound device \"" << device << "\"" << endl;
-    return;
-  }
-  cout << "Using audio device \"" << device << "\"" << endl;
-
-  if (!vxml->Load(args[0])) {
-    PError << "error: cannot loading VXML document \"" << args[0] << "\" - " << vxml->GetXMLError() << endl;
-    return;
-  }
-
-  if (!vxml->Open(true)) {
+  if (!m_vxml->Open(VXML_PCM16)) {
     PError << "error: cannot open VXML device in PCM mode" << endl;
     return;
   }
 
   cout << "Starting media" << endl;
-  PThread * thread1 = new ChannelCopyThread(*vxml, player);
+  PConsoleChannel console(PConsoleChannel::StandardInput);
+  console.SetLineBuffered(false);
+  PThread * inputThread = new PThreadObj1Arg<VxmlTest, PConsoleChannel&>(*this, console, &VxmlTest::HandleInput, false, "HandleInput");
 
-  inputRunning = true;
-  PThread * inputThread = PThread::Create(PCREATE_NOTIFIER(InputThread), 0, NoAutoDeleteThread);
+#if P_VIDEO
+  PThread * videoThread = new PThreadObj<VxmlTest>(*this, &VxmlTest::CopyVideo, false, "CopyVideo");
+#endif
 
-  thread1->WaitForTermination();
+  PThread * audioThread = new PThreadObj<VxmlTest>(*this, &VxmlTest::CopyAudio, false, "CopyAudio");
+  audioThread->WaitForTermination();
 
-  inputRunning = false;
-  cout << "Press a key to continue" << endl;
+  delete audioThread;
+#if P_VIDEO
+  delete videoThread;
+  delete m_viewer;
+#endif
+  delete m_player;
+
+  cout << "Completed VXML text" << endl;
+  console.Close();
   inputThread->WaitForTermination();
 
-  cout << "Media finished" << endl;
+  delete inputThread;
+  delete m_vxml;
 }
 
-void Vxmltest::InputThread(PThread &, P_INT_PTR)
-{
-  PConsoleChannel console(PConsoleChannel::StandardInput);
 
-  while (inputRunning) {
-    console.SetReadTimeout(100);
-    int ch = console.ReadChar();
-    if (ch > 0)
-      vxml->OnUserInput(PString((char)ch));
+void VxmlTest::HandleInput(PConsoleChannel & console)
+{
+  int inp;
+  while ((inp = console.ReadChar()) >= 0)
+    m_vxml->OnUserInput((char)inp);
+}
+
+
+void VxmlTest::CopyAudio()
+{
+  PBYTEArray audioPCM(1024);
+
+  for (;;) {
+    if (!m_vxml->Read(audioPCM.GetPointer(), audioPCM.GetSize())) {
+      if (m_vxml->GetErrorCode(PChannel::LastReadError) != PChannel::NotOpen) {
+        PTRACE(2, "Read error " << m_vxml->GetErrorText());
+      }
+      break;
+    }
+
+    if (!m_player->Write(audioPCM, m_vxml->GetLastReadCount())) {
+      PTRACE(2, "Write error " << m_player->GetErrorText());
+      break;
+    }
   }
 }
+
+
+#if P_VIDEO
+void VxmlTest::CopyVideo()
+{
+  PBYTEArray frame;
+
+  for (;;) {
+    unsigned width, height;
+    if (!m_vxml->GetVideoSender().GetFrame(frame, width, height)) {
+      PTRACE(2, "Grab video failed");
+      break;
+    }
+
+    m_viewer->SetFrameSize(width, height);
+    if (!m_viewer->SetFrameData(0, 0, width, height, frame)) {
+      PTRACE(2, "Output video failed");
+      break;
+    }
+  }
+}
+#endif
 
 #else
 #pragma message("Cannot compile test application without XML support!")
 
-void Vxmltest::Main()
+void VxmlTest::Main()
 {
 }
 #endif

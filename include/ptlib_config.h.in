@@ -601,6 +601,9 @@
 #ifdef P_EXPAT
   #if P_TTS
     #undef P_VXML
+    #if P_VIDEO && P_VXML
+      #undef P_VXML_VIDEO
+    #endif
   #endif
   #undef P_JABBER
   #undef P_XMLRPC
@@ -1018,7 +1021,7 @@
 //
 
 // Have not yet determined how to disambiguate Windows 32 bit and 64 bit versions of ImageMagick
-#if !defined(_WIN32) || defined(P_64BIT)
+#if (!defined(_WIN32) || defined(P_64BIT)) && !defined(P_FFMPEG_FULL)
   #undef P_IMAGEMAGICK
 #endif
 

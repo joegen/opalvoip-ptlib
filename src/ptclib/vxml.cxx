@@ -33,9 +33,12 @@
 #if P_VXML
 
 #include <ptclib/vxml.h>
+
+#include <ptlib/pprocess.h>
 #include <ptclib/memfile.h>
 #include <ptclib/random.h>
 #include <ptclib/http.h>
+#include <ptclib/mediafile.h>
 
 
 #define PTraceModule() "VXML"
@@ -254,7 +257,7 @@ bool PVXMLPlayableStop::OnStart()
 
 PBoolean PVXMLPlayableFile::Open(PVXMLChannel & chan, const PString & fn, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 {
-  m_filePath = chan.AdjustWavFilename(fn);
+  m_filePath = chan.AdjustMediaFilename(fn);
   if (!PFile::Exists(m_filePath)) {
     PTRACE(2, "Playable file \"" << m_filePath << "\" not found.");
     return false;
@@ -269,32 +272,12 @@ bool PVXMLPlayableFile::OnStart()
   if (PAssertNULL(m_vxmlChannel) == NULL)
     return false;
 
-  PFile * file = NULL;
+  m_subChannel = m_vxmlChannel->OpenMediaFile(m_filePath, false);
+  if (m_subChannel == NULL)
+    return false;
 
-#if P_WAVFILE
-  // check the file extension and open a .wav or a raw (.sw or .g723) file
-  if (m_filePath.GetType() == ".wav") {
-    file = m_vxmlChannel->CreateWAVFile(m_filePath);
-    if (file == NULL) {
-      PTRACE(2, "Cannot open WAV file \"" << m_filePath << '"');
-      return false;
-    }
-  }
-  else
-#endif // P_WAVFILE
-  {
-    // Assume file just has bytes of correct media format
-    file = new PFile(m_filePath);
-    if (!file->Open(PFile::ReadOnly)) {
-      PTRACE(2, "Could not open audio file \"" << m_filePath << '"');
-      delete file;
-      return false;
-    }
-  }
-
-  PTRACE(3, "Playing file \"" << m_filePath << "\", " << file->GetLength() << " bytes");
-  m_subChannel = file;
-  return m_vxmlChannel->SetReadChannel(file, false);
+  PTRACE(3, "Playing file \"" << m_filePath << '"');
+  return m_vxmlChannel->SetReadChannel(m_subChannel, false);
 }
 
 
@@ -339,7 +322,7 @@ PBoolean PVXMLPlayableFileList::Open(PVXMLChannel & chan, const PString & list, 
 PBoolean PVXMLPlayableFileList::Open(PVXMLChannel & chan, const PStringArray & list, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 {
   for (PINDEX i = 0; i < list.GetSize(); ++i) {
-    PString fn = chan.AdjustWavFilename(list[i]);
+    PString fn = chan.AdjustMediaFilename(list[i]);
     if (PFile::Exists(fn))
       m_fileNames.AppendString(fn);
     else {
@@ -567,27 +550,9 @@ PBoolean PVXMLRecordableFilename::Open(const PString & arg)
 
 bool PVXMLRecordableFilename::OnStart(PVXMLChannel & outgoingChannel)
 {
-  PFile * file = NULL;
-
-#if P_WAVFILE
-  // check the file extension and open a .wav or a raw (.sw or .g723) file
-  if (m_fileName.GetType() == ".wav") {
-    file = outgoingChannel.CreateWAVFile(m_fileName, true);
-    if (file == NULL) {
-      PTRACE(2, "Cannot open WAV file \"" << m_fileName << '"');
-      return false;
-    }
-  }
-  else
-#endif // P_WAVFILE
-  {
-    file = new PFile(m_fileName);
-    if (!file->Open(PFile::WriteOnly)) {
-      PTRACE(2, "Cannot open audio file \"" << m_fileName << '"');
-      delete file;
-      return false;
-    }
-  }
+  PChannel * file = outgoingChannel.OpenMediaFile(m_fileName, true);
+  if (file == NULL)
+    return false;
 
   PTRACE(3, "Recording to file \"" << m_fileName << "\","
             " duration=" << m_maxDuration << ", silence=" << m_finalSilence);
@@ -748,7 +713,11 @@ bool PVXMLCache::PutWithLock(const PString & prefix,
 
 PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   : m_textToSpeech(tts)
+  , m_ttsCache(NULL)
   , m_autoDeleteTextToSpeech(autoDelete)
+#if P_VXML_VIDEO
+  , m_videoReceiver(*this)
+#endif
   , m_vxmlThread(NULL)
   , m_abortVXML(false)
   , m_currentNode(NULL)
@@ -760,6 +729,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   , m_defaultMenuDTMF('N') /// Disabled
   , m_recordingStatus(NotRecording)
   , m_recordStopOnDTMF(false)
+  , m_recordingStartTime(0)
   , m_transferStatus(NotTransfering)
   , m_transferStartTime(0)
 {
@@ -783,6 +753,10 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
 
   SetVar("property.timeout" , "10s");
   SetVar("property.bargein", "true");
+
+#if P_VXML_VIDEO
+  SetRealVideoSender(NULL);
+#endif // P_VXML_VIDEO
 }
 
 
@@ -1176,6 +1150,7 @@ void PVXMLSession::OnEndDialog()
 
 void PVXMLSession::OnEndSession()
 {
+  Close();
 }
 
 
@@ -2443,6 +2418,79 @@ void PVXMLSession::Trigger()
 }
 
 
+#if P_VXML_VIDEO
+bool PVXMLSession::SetVideoRecogniser(const PString & dllName)
+{
+  if (!m_videoRecogniserLibrary.Open(dllName)) {
+    PTRACE(2, "Could not open dynamic library \"" << dllName << '"');
+    return false;
+  }
+
+  PDynaLink::Function initialise;
+  if (!m_videoRecogniserLibrary.GetFunction("Initialise", initialise, true) ||
+      !m_videoRecogniserLibrary.GetFunction("Process", m_videoRecogniserFunction, true)) {
+    PTRACE(2, "Incorrect functions in dynamic library \"" << dllName << '"');
+    return false;
+  }
+
+  if (reinterpret_cast<bool (*)(void)>(initialise)())
+    return true;
+
+  m_videoRecogniserLibrary.Close();
+  return false;
+}
+
+
+void PVXMLSession::SetRealVideoSender(PVideoInputDevice * device)
+{
+  if (device == NULL) {
+    PVideoInputDevice::OpenArgs videoArgs;
+    videoArgs.driverName = P_FAKE_VIDEO_DRIVER;
+    videoArgs.deviceName = P_FAKE_VIDEO_TEXT "=" + PProcess::Current().GetName();
+    device = PVideoInputDevice::CreateOpenedDevice(videoArgs);
+  }
+
+  m_videoSender.SetActualDevice(device);
+}
+
+
+PVXMLSession::VideoReceiverDevice::VideoReceiverDevice(PVXMLSession & vxmlSession)
+  : m_vxmlSession(vxmlSession)
+{
+}
+
+
+PStringArray PVXMLSession::VideoReceiverDevice::GetDeviceNames() const
+{
+  return PStringArray();
+}
+
+
+PBoolean PVXMLSession::VideoReceiverDevice::Open(const PString &, PBoolean)
+{
+  return true;
+}
+
+
+PBoolean PVXMLSession::VideoReceiverDevice::IsOpen()
+{
+  return true;
+}
+
+
+PBoolean PVXMLSession::VideoReceiverDevice::FrameComplete()
+{
+  if (m_vxmlSession.m_videoRecogniserLibrary.IsLoaded()) {
+    int result = reinterpret_cast<int(*)(unsigned, unsigned, void *)>(m_vxmlSession.m_videoRecogniserFunction)
+                                                      (m_frameWidth, m_frameHeight, m_frameStore.GetPointer());
+    if (result > 0)
+      m_vxmlSession.OnUserInput((char)result);
+  }
+
+  return true;
+}
+#endif // P_VXML_VIDEO
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2668,9 +2716,9 @@ PBoolean PVXMLChannel::Close()
 }
 
 
-PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
+PString PVXMLChannel::AdjustMediaFilename(const PString & ofn)
 {
-  if (wavFilePrefix.IsEmpty())
+  if (m_mediaFilePrefix.IsEmpty())
     return ofn;
 
   PString fn = ofn;
@@ -2678,58 +2726,91 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
   // add in suffix required for channel format, if any
   PINDEX pos = ofn.FindLast('.');
   if (pos == P_MAX_INDEX) {
-    if (fn.Right(wavFilePrefix.GetLength()) != wavFilePrefix)
-      fn += wavFilePrefix;
+    if (fn.Right(m_mediaFilePrefix.GetLength()) != m_mediaFilePrefix)
+      fn += m_mediaFilePrefix;
   }
   else {
     PString basename = ofn.Left(pos);
     PString ext      = ofn.Mid(pos+1);
-    if (basename.Right(wavFilePrefix.GetLength()) != wavFilePrefix)
-      basename += wavFilePrefix;
+    if (basename.Right(m_mediaFilePrefix.GetLength()) != m_mediaFilePrefix)
+      basename += m_mediaFilePrefix;
     fn = basename + "." + ext;
   }
   return fn;
 }
 
 
-#if P_WAVFILE
-
-PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, PBoolean recording)
+PChannel * PVXMLChannel::OpenMediaFile(const PFilePath & fn, bool recording)
 {
-  PWAVFile * wav = new PWAVFile;
-  if (recording) {
-    wav->SetChannels(1);
-    wav->SetSampleSize(16);
-    wav->SetSampleRate(GetSampleFrequency());
-    if (!wav->SetFormat(mediaFormat))
-      PTRACE(2, "Unsupported codec " << mediaFormat);
-    else if (!wav->Open(fn, PFile::WriteOnly))
-      PTRACE(2, "Could not create WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
-    else if (!wav->SetAutoconvert())
-      PTRACE(2, "WAV file cannot convert to " << mediaFormat);
-    else
-      return wav;
+#if P_WAVFILE
+  if (fn.GetType() == ".wav") {
+    PWAVFile * wav = new PWAVFile;
+    if (recording) {
+      wav->SetChannels(1);
+      wav->SetSampleSize(16);
+      wav->SetSampleRate(GetSampleFrequency());
+      if (!wav->SetFormat(m_mediaFormat))
+        PTRACE(2, "Unsupported codec " << m_mediaFormat);
+      else if (!wav->Open(fn, PFile::WriteOnly))
+        PTRACE(2, "Could not create WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
+      else if (!wav->SetAutoconvert())
+        PTRACE(2, "WAV file cannot convert to " << m_mediaFormat);
+      else
+        return wav;
+    }
+    else {
+      if (!wav->Open(fn, PFile::ReadOnly))
+        PTRACE(2, "Could not open WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
+      else if (wav->GetFormatString() != m_mediaFormat && !wav->SetAutoconvert())
+        PTRACE(2, "WAV file cannot convert from " << wav->GetFormatString());
+      else if (wav->GetChannels() != 1)
+        PTRACE(2, "WAV file has unsupported channel count " << wav->GetChannels());
+      else if (wav->GetSampleSize() != 16)
+        PTRACE(2, "WAV file has unsupported sample size " << wav->GetSampleSize());
+      else if (wav->GetSampleRate() != GetSampleFrequency())
+        PTRACE(2, "WAV file has unsupported sample rate " << wav->GetSampleRate());
+      else
+        return wav;
+    }
+    delete wav;
+    return NULL;
   }
-  else {
-    if (!wav->Open(fn, PFile::ReadOnly))
-      PTRACE(2, "Could not open WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
-    else if (wav->GetFormatString() != mediaFormat && !wav->SetAutoconvert())
-      PTRACE(2, "WAV file cannot convert from " << wav->GetFormatString());
-    else if (wav->GetChannels() != 1)
-      PTRACE(2, "WAV file has unsupported channel count " << wav->GetChannels());
-    else if (wav->GetSampleSize() != 16)
-      PTRACE(2, "WAV file has unsupported sample size " << wav->GetSampleSize());
-    else if (wav->GetSampleRate() != GetSampleFrequency())
-      PTRACE(2, "WAV file has unsupported sample rate " << wav->GetSampleRate());
-    else
-      return wav;
+#endif // P_WAVFILE
+
+#if P_MEDIAFILE
+  PMediaFile::Ptr mediaFile = PMediaFile::Create(fn);
+  if (!mediaFile.IsNULL()) {
+    PSoundChannel * audio = new PMediaFile::SoundChannel(mediaFile);
+    PSoundChannel::Params params;
+    params.m_direction = recording ? PSoundChannel::Player : PSoundChannel::Recorder; // Counter intuitive
+    params.m_driver = fn;
+    if (audio->Open(params)) {
+#if P_VXML_VIDEO
+      PVideoInputDevice * video = new PMediaFile::VideoInputDevice(mediaFile);
+      video->SetChannel(PMediaFile::VideoInputDevice::Channel_PlayAndKeepLast);
+      if (video->Open(fn))
+        m_vxmlSession->SetRealVideoSender(video);
+      else
+        delete video;
+#endif //P_VXML_VIDEO
+      return audio;
+    }
+    delete audio;
+  }
+  else
+    PTRACE(2, "No media file handler for " << fn);
+#endif // P_MEDIAFILE
+
+  // Assume file just has bytes of correct media format
+  PFile * file = new PFile(fn, recording ? PFile::WriteOnly : PFile::ReadOnly);
+  if (file->Open(PFile::ReadOnly)) {
+    return file;
   }
 
-  delete wav;
+  PTRACE(2, "Could not open raw audio file \"" << fn << '"');
+  delete file;
   return NULL;
 }
-
-#endif // P_WAVFILE
 
 
 PBoolean PVXMLChannel::Write(const void * buf, PINDEX len)
@@ -2968,8 +3049,8 @@ PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelPCM, VXML_PCM16);
 PVXMLChannelPCM::PVXMLChannelPCM()
   : PVXMLChannel(10, 160)
 {
-  mediaFormat    = VXML_PCM16;
-  wavFilePrefix  = PString::Empty();
+  m_mediaFormat    = VXML_PCM16;
+  m_mediaFilePrefix.MakeEmpty();
 }
 
 
@@ -2988,6 +3069,7 @@ PBoolean PVXMLChannelPCM::ReadFrame(void * buffer, PINDEX amount)
     len += GetLastReadCount();
   }
 
+  SetLastReadCount(len);
   return true;
 }
 
@@ -3040,8 +3122,8 @@ PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelG7231, VXML_G7231);
 PVXMLChannelG7231::PVXMLChannelG7231()
   : PVXMLChannel(30, 0)
 {
-  mediaFormat     = VXML_G7231;
-  wavFilePrefix  = "_g7231";
+  m_mediaFormat     = VXML_G7231;
+  m_mediaFilePrefix  = "_g7231";
 }
 
 
@@ -3097,8 +3179,8 @@ PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelG729, VXML_G729);
 PVXMLChannelG729::PVXMLChannelG729()
   : PVXMLChannel(10, 0)
 {
-  mediaFormat    = VXML_G729;
-  wavFilePrefix  = "_g729";
+  m_mediaFormat    = VXML_G729;
+  m_mediaFilePrefix  = "_g729";
 }
 
 
@@ -3252,7 +3334,7 @@ PBoolean TextToSpeech_Sample::Close()
 
 #if P_WAVFILE
   if (m_usingFile) {
-    PWAVFile outputFile("PCM-16", m_path, PFile::WriteOnly);
+    PWAVFile outputFile(PSOUND_PCM16, m_path, PFile::WriteOnly);
     if (!outputFile.IsOpen()) {
       PTRACE(1, "Cannot create output file " << m_path);
       stat = false;

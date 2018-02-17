@@ -36,6 +36,8 @@
 
 #include <ptlib/pfactory.h>
 #include <ptlib/pipechan.h>
+#include <ptlib/sound.h>
+#include <ptlib/videoio.h>
 #include <ptclib/delaychan.h>
 #include <ptclib/pwavfile.h>
 #include <ptclib/ptts.h>
@@ -49,8 +51,9 @@ class PVXMLSession;
 class PVXMLDialog;
 class PVXMLSession;
 
+
 // these are the same strings as the Opal equivalents, but as this is PWLib, we can't use Opal contants
-#define VXML_PCM16         "PCM-16"
+#define VXML_PCM16         PSOUND_PCM16
 #define VXML_G7231         "G.723.1"
 #define VXML_G729          "G.729"
 
@@ -288,6 +291,13 @@ class PVXMLSession : public PIndirectChannel
 	virtual PBoolean TraverseScript(PXMLElement & element);
 
     __inline PVXMLChannel * GetVXMLChannel() const { return (PVXMLChannel *)readChannel; }
+#if P_VXML_VIDEO
+    const PVideoOutputDevice & GetVideoReceiver() const { return m_videoReceiver; }
+          PVideoOutputDevice & GetVideoReceiver()       { return m_videoReceiver; }
+    const PVideoInputDevice & GetVideoSender() const { return m_videoSender; }
+          PVideoInputDevice & GetVideoSender()       { return m_videoSender; }
+    bool SetVideoRecogniser(const PString & dllName);
+#endif // P_VXML_VIDEO
 
   protected:
     virtual bool InternalLoadVXML(const PString & xml, const PString & firstForm);
@@ -312,6 +322,27 @@ class PVXMLSession : public PIndirectChannel
     PTextToSpeech  * m_textToSpeech;
     PVXMLCache     * m_ttsCache;
     bool             m_autoDeleteTextToSpeech;
+
+#if P_VXML_VIDEO
+    void SetRealVideoSender(PVideoInputDevice * device);
+
+    class VideoReceiverDevice : public PVideoOutputDeviceRGB
+    {
+      PCLASSINFO(VideoReceiverDevice, PVideoOutputDeviceRGB)
+    public:
+      VideoReceiverDevice(PVXMLSession & vxmlSession);
+      virtual PStringArray GetDeviceNames() const;
+      virtual PBoolean Open(const PString & deviceName, PBoolean startImmediate = true);
+      virtual PBoolean IsOpen();
+      virtual PBoolean FrameComplete();
+    protected:
+      PVXMLSession & m_vxmlSession;
+    };
+    VideoReceiverDevice       m_videoReceiver;
+    PVideoInputDeviceIndirect m_videoSender;
+    PDynaLink                 m_videoRecogniserLibrary;
+    PDynaLink::Function       m_videoRecogniserFunction;
+#endif // P_VXML_VIDEO
 
     PThread     *    m_vxmlThread;
     bool             m_abortVXML;
@@ -352,6 +383,9 @@ class PVXMLSession : public PIndirectChannel
       TransferCompleted
     }     m_transferStatus;
     PTime m_transferStartTime;
+
+    friend class PVXMLChannel;
+    friend class VideoReceiverDevice;
 };
 
 
@@ -559,14 +593,11 @@ class PVXMLChannel : public PDelayChannel
     virtual PBoolean Read(void * buffer, PINDEX amount);
     virtual PBoolean Write(const void * buf, PINDEX len);
 
-#if P_WAVFILE
     // new functions
-    virtual PWAVFile * CreateWAVFile(const PFilePath & fn, PBoolean recording = false);
-#endif
-
-    const PString & GetMediaFormat() const { return mediaFormat; }
-    PBoolean IsMediaPCM() const { return mediaFormat == "PCM-16"; }
-    virtual PString AdjustWavFilename(const PString & fn);
+    const PString & GetMediaFormat() const { return m_mediaFormat; }
+    PBoolean IsMediaPCM() const { return m_mediaFormat == VXML_PCM16; }
+    virtual PString AdjustMediaFilename(const PString & fn);
+    virtual PChannel * OpenMediaFile(const PFilePath & fn, bool recording);
 
     // Incoming channel functions
     virtual PBoolean WriteFrame(const void * buf, PINDEX len) = 0;
@@ -606,8 +637,8 @@ class PVXMLChannel : public PDelayChannel
     PVXMLSession * m_vxmlSession;
 
     unsigned m_sampleFrequency;
-    PString mediaFormat;
-    PString wavFilePrefix;
+    PString  m_mediaFormat;
+    PString  m_mediaFilePrefix;
 
     PDECLARE_MUTEX(m_channelWriteMutex);
     PDECLARE_MUTEX(m_channelReadMutex);
@@ -622,6 +653,11 @@ class PVXMLChannel : public PDelayChannel
     PVXMLQueue      m_playQueue;
     PVXMLPlayable * m_currentPlayItem;
     PSimpleTimer    m_silenceTimer;
+
+#if P_WAVFILE
+    P_REMOVE_VIRTUAL(PWAVFile*,CreateWAVFile(const PFilePath&,PBoolean),NULL);
+    P_REMOVE_VIRTUAL(PString,AdjustWavFilename(const PString&),NULL);
+#endif
 };
 
 
