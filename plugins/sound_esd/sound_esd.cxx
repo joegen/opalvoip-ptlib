@@ -114,7 +114,7 @@ bool PSoundChannelESD::Open(const Params & params)
   default:
     return (false);
   }
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
 
   if (params.m_direction == Recorder) 
     os_handle = esd_record_stream_fallback( format, mSampleRate, host, name );

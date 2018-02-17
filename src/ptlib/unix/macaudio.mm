@@ -334,7 +334,7 @@ protected:
 
   bool InternalOpenDevice(AudioUnitElement busElement)
   {
-    Devices devices(activeDirection);
+    Devices devices(m_activeDirection);
     Devices::iterator it = devices.find(m_deviceName);
     if (it != devices.end())
       return !CHECK_ERROR_AudioUnitSetProperty(m_audioUnit,
@@ -500,7 +500,7 @@ protected:
   
   bool InternalOpen()
   {
-    PTRACE(5, "Opening " << activeDirection<< " \"" << m_deviceName << '"');
+    PTRACE(5, "Opening " << m_activeDirection<< " \"" << m_deviceName << '"');
 
     AudioComponentDescription desc;
     desc.componentType = kAudioUnitType_Output;
@@ -527,7 +527,7 @@ protected:
     if (CHECK_ERROR(AudioComponentInstanceNew,(component, &m_audioUnit)))
       return false;
 
-    switch (activeDirection) {
+    switch (m_activeDirection) {
       case Player :
         if (!InternalOpenPlayer())
           return false;
@@ -546,7 +546,7 @@ protected:
     if (CHECK_ERROR(AudioUnitInitialize,(m_audioUnit)))
       return false;
 
-    PTRACE(3, "Opened " << activeDirection<< " \"" << m_deviceName << '"');
+    PTRACE(3, "Opened " << m_activeDirection<< " \"" << m_deviceName << '"');
     os_handle = 1;
     return true;
   }
@@ -606,7 +606,7 @@ public:
   {
     Close();
     
-    activeDirection = params.m_direction;
+    m_activeDirection = params.m_direction;
     m_deviceName = params.m_device;
 
     return SetBuffers(params.m_bufferSize, params.m_bufferCount) &&
@@ -660,7 +660,7 @@ public:
     if (!IsOpen())
       return false;
 
-    PTRACE(4, activeDirection << " aborted");
+    PTRACE(4, m_activeDirection << " aborted");
     
     CHECK_SUCCESS(AudioOutputUnitStop,(m_audioUnit));
 
@@ -674,7 +674,7 @@ public:
   {
     SetLastWriteCount(0);
     
-    if (!PAssert(activeDirection == Player, "Trying to write to recorder"))
+    if (!PAssert(m_activeDirection == Player, "Trying to write to recorder"))
       return false;
 
     if (m_muted) {
@@ -723,7 +723,7 @@ public:
   {
     SetLastReadCount(0);
     
-    if (!PAssert(activeDirection == Recorder, "Trying to read from player"))
+    if (!PAssert(m_activeDirection == Recorder, "Trying to read from player"))
       return false;
     
     PReadWaitAndSignal mutex(channelPointerMutex);
@@ -760,7 +760,7 @@ public:
   
   virtual PBoolean StartRecording()
   {
-    if (!IsOpen() || !PAssert(activeDirection == Recorder, "Trying to start recording from player"))
+    if (!IsOpen() || !PAssert(m_activeDirection == Recorder, "Trying to start recording from player"))
       return false;
 
     PReadWaitAndSignal mutex(channelPointerMutex);
@@ -875,7 +875,7 @@ public:
   
   virtual PBoolean SetVolume(unsigned newVolume)
   {
-    if (!IsOpen() || activeDirection != Player)
+    if (!IsOpen() || m_activeDirection != Player)
       return false;
     
     Float32 volume = newVolume/100.0;
@@ -895,7 +895,7 @@ public:
   {
     oldVolume = 0;
     
-    if (!IsOpen() || activeDirection != Player)
+    if (!IsOpen() || m_activeDirection != Player)
       return false;
     
     Float32 volume = 0;

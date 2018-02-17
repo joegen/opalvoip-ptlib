@@ -1024,9 +1024,9 @@ __inline const char * PTraceModule() { return NULL; }
    the logs from various threads become very interleaved.
   */
 #define PTRACE_CONTEXT_ID_NEW() SetTraceContextIdentifier(PTrace::GetNextContextIdentifier())
-#define PTRACE_CONTEXT_ID_SET(to, from) PObject::SetTraceContextIdentifier(to, from)
+#define PTRACE_CONTEXT_ID_SET(to, from) PObject::CopyTraceContextIdentifier(to, from)
 #define PTRACE_CONTEXT_ID_FROM(obj) SetTraceContextIdentifier(obj)
-#define PTRACE_CONTEXT_ID_TO(obj) GetTraceContextIdentifier(obj)
+#define PTRACE_CONTEXT_ID_TO(obj) CopyTraceContextIdentifier(obj)
 
 class PTraceSaveContextIdentifier
 {
@@ -2118,14 +2118,14 @@ class PObject {
       */
     __inline unsigned GetTraceContextIdentifier() const { return m_traceContextIdentifier; }
     __inline void SetTraceContextIdentifier(unsigned id) { m_traceContextIdentifier = id; }
-    __inline void GetTraceContextIdentifier(PObject & obj) const { obj.m_traceContextIdentifier = m_traceContextIdentifier; }
-    __inline void GetTraceContextIdentifier(PObject * obj) const { if (obj != NULL) obj->m_traceContextIdentifier = m_traceContextIdentifier; }
     __inline void SetTraceContextIdentifier(const PObject & obj) { m_traceContextIdentifier = obj.m_traceContextIdentifier; }
     __inline void SetTraceContextIdentifier(const PObject * obj) { if (obj != NULL) m_traceContextIdentifier = obj->m_traceContextIdentifier; }
-    __inline static void SetTraceContextIdentifier(PObject & to, const PObject & from) { to.SetTraceContextIdentifier(from); }
-    __inline static void SetTraceContextIdentifier(PObject & to, const PObject * from) { to.SetTraceContextIdentifier(from); }
-    __inline static void SetTraceContextIdentifier(PObject * to, const PObject & from) { from.GetTraceContextIdentifier(to); }
-    __inline static void SetTraceContextIdentifier(PObject * to, const PObject * from) { if (to != NULL) to->SetTraceContextIdentifier(from); }
+    __inline void CopyTraceContextIdentifier(PObject & obj) const { obj.m_traceContextIdentifier = m_traceContextIdentifier; }
+    __inline void CopyTraceContextIdentifier(PObject * obj) const { if (obj != NULL) obj->m_traceContextIdentifier = m_traceContextIdentifier; }
+    __inline static void CopyTraceContextIdentifier(PObject & to, const PObject & from) { to.SetTraceContextIdentifier(from); }
+    __inline static void CopyTraceContextIdentifier(PObject & to, const PObject * from) { to.SetTraceContextIdentifier(from); }
+    __inline static void CopyTraceContextIdentifier(PObject * to, const PObject & from) { from.CopyTraceContextIdentifier(to); }
+    __inline static void CopyTraceContextIdentifier(PObject * to, const PObject * from) { if (to != NULL) to->SetTraceContextIdentifier(from); }
 #endif // PTRACING==2
 
   protected:

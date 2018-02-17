@@ -388,7 +388,7 @@ void AudioTest::AudioInfo::DisplayStatistics()
 {
   m_mutex.Wait();
 
-  std::cout << activeDirection << " min=" << m_minTime << ", max=" << m_maxTime << ", avg=";
+  std::cout << GetDirection() << " min=" << m_minTime << ", max=" << m_maxTime << ", avg=";
   if (m_avgCount == 0)
     std::cout << "n/a";
   else

@@ -444,7 +444,7 @@ class PSoundChannel : public PIndirectChannel
     /// Get the direction of the channel
     Directions GetDirection() const
     {
-      return activeDirection;
+      return m_activeDirection;
     }
 
     /// Get text representing the direction of a channel
@@ -453,7 +453,7 @@ class PSoundChannel : public PIndirectChannel
     /// Get text representing the direction of the channel
     virtual const char * GetDirectionText() const
     {
-      return GetDirectionText(activeDirection);
+      return GetDirectionText(m_activeDirection);
     }
 
     /** Abort the background playing/recording of the sound channel.
@@ -744,9 +744,9 @@ class PSoundChannel : public PIndirectChannel
 
     /**This is the direction that this sound channel is opened for use
        in.  Should the user attempt to used this opened class instance
-       in a direction opposite to that specified in activeDirection,
+       in a direction opposite to that specified in m_activeDirection,
        an assert happens. */
-    Directions activeDirection;
+    Directions m_activeDirection;
 
     P_REMOVE_VIRTUAL(PBoolean, Open(const PString &,Directions,unsigned,unsigned,unsigned),false);
 };

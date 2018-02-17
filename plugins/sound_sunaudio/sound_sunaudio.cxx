@@ -89,7 +89,7 @@ bool PSoundChannelSunAudio::Open(const Params & params)
   if (!ConvertOSError(os_handle = ::open(params.m_device, (params.m_direction == Player ? O_WRONLY : O_RDONLY), 0 )))
     return false;
 
-  activeDirection = params.m_dir;
+  m_activeDirection = params.m_dir;
 
   err = ::ioctl(os_handle,AUDIO_MIXER_MULTIPLE_OPEN);
 
@@ -142,7 +142,7 @@ PBoolean PSoundChannelSunAudio::SetFormat(unsigned numChannels,
 
   // Change only the values needed below
   AUDIO_INITINFO(&audio_info);	
-  if (activeDirection == Player){
+  if (m_activeDirection == Player){
     // sett parameters for playing sound
     mSampleRate = audio_info.play.sample_rate = sampleRate;	
     mNumChannels = audio_info.play.channels = numChannels;
@@ -165,7 +165,7 @@ PBoolean PSoundChannelSunAudio::SetFormat(unsigned numChannels,
   // Let's recheck the configuration...
   AUDIO_INITINFO(&audio_info);	
   err = ::ioctl(os_handle, AUDIO_GETINFO, &audio_info);	
-  actualSampleRate =  (activeDirection == Player) ? audio_info.play.sample_rate : audio_info.record.sample_rate;
+  actualSampleRate =  (m_activeDirection == Player) ? audio_info.play.sample_rate : audio_info.record.sample_rate;
 
   return true;
 }
@@ -199,7 +199,7 @@ PBoolean PSoundChannelSunAudio::SetBuffers(PINDEX size, PINDEX count)
   /* There is just one buffer for audio on solaris */
   AUDIO_INITINFO(&audio_info);
 
-  if (activeDirection == Player)
+  if (m_activeDirection == Player)
     audio_info.play.buffer_size = count*size;	
   else
     audio_info.record.buffer_size = count*size;	// Recorder
@@ -229,7 +229,7 @@ PBoolean PSoundChannelSunAudio::GetBuffers(PINDEX & size, PINDEX & count)
   if (err == EINVAL || err == EBUSY)
     return false;
 
-  if (activeDirection == Player)
+  if (m_activeDirection == Player)
     size = audio_info.play.buffer_size;
   else 
     size = audio_info.record.buffer_size;
@@ -468,7 +468,7 @@ PBoolean PSoundChannelSunAudio::SetVolume(unsigned newVolume)
    newVolume = (newVolume * (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN)) / 100;
 
    AUDIO_INITINFO(&audio_info);
-   if (activeDirection == Player)
+   if (m_activeDirection == Player)
      audio_info.play.gain = newVolume;
    else 
      audio_info.record.gain = newVolume; 
@@ -497,7 +497,7 @@ PBoolean  PSoundChannelSunAudio::GetVolume(unsigned & volume)
      return false;
    }
 
-   volume =  (activeDirection == Player) ?  audio_info.play.gain : audio_info.record.gain;
+   volume =  (m_activeDirection == Player) ?  audio_info.play.gain : audio_info.record.gain;
 
    volume = (volume * 100) / (AUDIO_MAX_GAIN - AUDIO_MIN_GAIN);
 

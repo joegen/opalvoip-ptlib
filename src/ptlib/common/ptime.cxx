@@ -128,13 +128,13 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
       digits = 2;
     }
 
-    if (digits > 1 || ns > HoursToNano || width > (precision + 7)) {
+    if (digits > 1 || ns >= HoursToNano || width > (precision + 7)) {
       str << setw(digits) << ns/HoursToNano << ':';
       digits = 2;
     }
 
     ns = ns % HoursToNano;
-    if (digits > 1 || ns > MinsToNano || width > (precision + 4)) {
+    if (digits > 1 || ns >= MinsToNano || width > (precision + 4)) {
       str << setw(digits) << ns/MinsToNano << ':';
       digits = 2;
     }

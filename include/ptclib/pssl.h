@@ -1010,6 +1010,10 @@ class PSSLChannelDTLS : public PSSLChannel
     */
     ~PSSLChannelDTLS();
 
+    // Overrides from PChannel
+    virtual PBoolean Read(void * buf, PINDEX len);
+    virtual PBoolean Write(const void * buf, PINDEX len);
+
     /** Set the MTU for DTLS handshake.
         Note, should be done before calling ExecuteHandshake().
       */

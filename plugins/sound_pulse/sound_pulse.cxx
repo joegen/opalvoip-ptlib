@@ -191,7 +191,7 @@ bool PSoundChannelPulse::Open(const Params & params)
   PWaitAndSignal m(deviceMutex);
   PTRACE(6, "Pulse\t Open on device name of " << params.m_device);
   Close();
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
   mNumChannels = params.m_channels;
   mSampleRate = params.m_sampleRate;
   mBitsPerSample = params.m_bitsPerSample;
@@ -227,7 +227,7 @@ bool PSoundChannelPulse::Open(const Params & params)
     return false;
   }
 
-  if (activeDirection == Player) {
+  if (m_activeDirection == Player) {
     int err=pa_stream_connect_playback(s,dev,NULL,PA_STREAM_NOFLAGS,NULL,NULL);
     if (err) {
       PTRACE(2, ": pa_connect_playback() failed: " << pa_strerror(err));
@@ -472,14 +472,14 @@ PBoolean PSoundChannelPulse::SetVolume(unsigned newVal)
     int dev=pa_stream_get_device_index(s);
     pa_operation* operation;
     pa_cvolume volume;
-    if (activeDirection==Player) {
+    if (m_activeDirection==Player) {
       operation=pa_context_get_sink_info_by_index(context,dev,sink_volume_cb,&volume);
     } else {
       operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);
     }
     if (!lock.waitFor(operation)) return false;
     pa_cvolume_scale(&volume,newVal*PA_VOLUME_NORM/100);
-    if (activeDirection==Player) {
+    if (m_activeDirection==Player) {
       pa_context_set_sink_volume_by_index(context,dev,&volume,NULL,NULL);
     } else {
       pa_context_set_source_volume_by_index(context,dev,&volume,NULL,NULL);
@@ -495,7 +495,7 @@ PBoolean  PSoundChannelPulse::GetVolume(unsigned &devVol)
     int dev=pa_stream_get_device_index(s);
     pa_operation* operation;
     pa_cvolume volume;
-    if (activeDirection==Player) {
+    if (m_activeDirection==Player) {
       operation=pa_context_get_sink_info_by_index(context,dev,sink_volume_cb,&volume);
     } else {
       operation=pa_context_get_source_info_by_index(context,dev,source_volume_cb,&volume);

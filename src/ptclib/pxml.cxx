@@ -1146,11 +1146,7 @@ PXMLObject * PXMLObject::GetNextObject() const
     return NULL;
 
   // get the next object
-  ++idx;
-  if (idx >= m_parent->GetSize())
-    return NULL;
-
-  return (*m_parent).GetElement(idx);
+  return m_parent->GetSubObject(idx+1);
 }
 
 

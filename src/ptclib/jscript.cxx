@@ -104,8 +104,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
       #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG64)
       #pragma comment(lib, P_V8_ICUI18N_DEBUG64)
       #pragma comment(lib, P_V8_ICUUC_DEBUG64)
-      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_DEBUG64;
-      static char NativeBlob[] = P_V8_NATIVES_BLOB_DEBUG64;
+      #define V8_BLOBS_DIR V8_DIR "/out.gn/x64.debug"
     #else
       #pragma comment(lib, P_V8_BASE0_DEBUG32)
       #pragma comment(lib, P_V8_BASE1_DEBUG32)
@@ -115,8 +114,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
       #pragma comment(lib, P_V8_LIBSAMPLER_DEBUG32)
       #pragma comment(lib, P_V8_ICUI18N_DEBUG32)
       #pragma comment(lib, P_V8_ICUUC_DEBUG32)
-      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_DEBUG32;
-      static char NativeBlob[] = P_V8_NATIVES_BLOB_DEBUG32;
+      #define V8_BLOBS_DIR V8_DIR "/out.gn/ia32.debug"
     #endif
   #else
     #if defined(P_64BIT)
@@ -128,8 +126,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
       #pragma comment(lib, P_V8_LIBSAMPLER_RELEASE64)
       #pragma comment(lib, P_V8_ICUI18N_RELEASE64)
       #pragma comment(lib, P_V8_ICUUC_RELEASE64)
-      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_RELEASE64;
-      static char NativeBlob[] = P_V8_NATIVES_BLOB_RELEASE64;
+      #define V8_BLOBS_DIR V8_DIR "/out.gn/x64.release"
     #else
       #pragma comment(lib, P_V8_BASE0_RELEASE32)
       #pragma comment(lib, P_V8_BASE1_RELEASE32)
@@ -139,8 +136,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
       #pragma comment(lib, P_V8_LIBSAMPLER_RELEASE32)
       #pragma comment(lib, P_V8_ICUI18N_RELEASE32)
       #pragma comment(lib, P_V8_ICUUC_RELEASE32)
-      static char SnapshotBlob[] = P_V8_SNAPSHOT_BLOB_RELEASE32;
-      static char NativeBlob[] = P_V8_NATIVES_BLOB_RELEASE32;
+      #define V8_BLOBS_DIR V8_DIR "/out.gn/ia32.release"
     #endif
   #endif
 #endif
@@ -149,7 +145,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
 #define PTraceModule() "JavaScript"
 
 
-static PConstString const JavaName("Java");
+static PConstString const JavaName("JavaScript");
 PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
 
 #ifndef V8_MAJOR_VERSION
@@ -223,6 +219,21 @@ PINDEX ParseKey(const PString & name, PStringArray & tokens)
 }
 
 
+static bool MyInitializeExternalStartupData(const PDirectory dir)
+{
+  /* For some exceptionally stupid reason, the initialisation function for the
+     external start up files returns no success/failure, it just crashes later
+     when you try and create an Isolate object */
+  if (!PFile::Exists(dir + "snapshot_blob.bin"))
+    return false;
+  if (!PFile::Exists(dir + "natives_blob.bin"))
+    return false;
+
+  v8::V8::InitializeExternalStartupData(dir);
+  return true;
+}
+
+
 struct PJavaScript::Private : PObject
 {
   PCLASSINFO(PJavaScript::Private, PObject);
@@ -247,16 +258,22 @@ struct PJavaScript::Private : PObject
       : m_platform(NULL)
       , m_initialised(false)
     {
-      PFilePath exeFile = PProcess::Current().GetFile();
-      if (!v8::V8::InitializeICUDefaultLocation(exeFile)) {
-        PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed.");
+      PDirectory exeDir = PProcess::Current().GetFile().GetDirectory();
+
+      // Initialise some basics
+      if (!MyInitializeExternalStartupData(exeDir)) {
+        const char * dir = getenv("V8_BLOBS_DIR");
+        if (dir == NULL || !MyInitializeExternalStartupData(dir)) {
+          if (!MyInitializeExternalStartupData(V8_BLOBS_DIR)) {
+            PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeExternalStartupData() failed.");
+            return;
+          }
+        }
       }
 
-      // We do this primarily for debug environments
-      v8::V8::InitializeExternalStartupData(NativeBlob, SnapshotBlob);
-
-      // This one is for production/installed execution
-      v8::V8::InitializeExternalStartupData(exeFile);
+      if (!v8::V8::InitializeICUDefaultLocation(exeDir)) {
+        PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed.");
+      }
 
       // Start it up!
       m_platform = v8::platform::CreateDefaultPlatform();

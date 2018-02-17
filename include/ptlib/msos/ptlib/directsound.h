@@ -95,7 +95,7 @@ public:
 
   PBoolean IsOpen() const
   {
-    return (activeDirection == Player)? (m_playbackDevice != NULL) : (m_captureDevice != NULL);
+    return (m_activeDirection == Player)? (m_playbackDevice != NULL) : (m_captureDevice != NULL);
   }
 
   /** Stop the Read/Write wait

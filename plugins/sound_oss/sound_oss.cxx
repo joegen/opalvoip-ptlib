@@ -326,7 +326,7 @@ bool PSoundChannelOSS::Open(const Params & params)
   }
    
   // save the direction and device
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
   device          = params.m_device;
   isInitialised   = false;
 
@@ -455,7 +455,7 @@ PBoolean PSoundChannelOSS::Close()
   PAssert((entry = handleDict().GetAt(device)) != NULL, "Unknown sound device \"" + device + "\" found");
 
   // modify the directions bit mask in the dictionary
-  entry->direction ^= (activeDirection+1);
+  entry->direction ^= (m_activeDirection+1);
 
   // if this is the last usage of this entry, then remove it
   if (entry->direction == 0) {
@@ -823,7 +823,7 @@ PBoolean PSoundChannelOSS::SetVolume(unsigned newVal)
 
   int rc, deviceVol = (newVal << 8) | newVal;
 
-  if (activeDirection == Player) 
+  if (m_activeDirection == Player) 
     rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_VOLUME), &deviceVol);
    else 
     rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_MIC), &deviceVol);
@@ -842,7 +842,7 @@ PBoolean  PSoundChannelOSS::GetVolume(unsigned &devVol)
     return false;
   
   int vol, rc;
-  if (activeDirection == Player)
+  if (m_activeDirection == Player)
     rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_VOLUME), &vol);
   else
     rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_MIC), &vol);

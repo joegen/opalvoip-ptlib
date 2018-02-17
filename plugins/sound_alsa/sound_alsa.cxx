@@ -163,7 +163,7 @@ bool PSoundChannelALSA::Open(const Params & params)
 
   PWaitAndSignal m(device_mutex);
 
-  activeDirection = params.m_direction;
+  m_activeDirection = params.m_direction;
   mNumChannels = params.m_channels;
   mSampleRate = params.m_sampleRate;
   mBitsPerSample = params.m_bitsPerSample;
@@ -176,9 +176,9 @@ bool PSoundChannelALSA::Open(const Params & params)
     card_nr = -2;
   }
   else {
-    PStringToOrdinal & devices = activeDirection == Recorder ? capture_devices : playback_devices;
+    PStringToOrdinal & devices = m_activeDirection == Recorder ? capture_devices : playback_devices;
     if (devices.IsEmpty())
-      UpdateDictionary(activeDirection);
+      UpdateDictionary(m_activeDirection);
 
     POrdinalKey * index = devices.GetAt(params.m_device);
     if (index == NULL) {
@@ -193,7 +193,7 @@ bool PSoundChannelALSA::Open(const Params & params)
   /* Open in NONBLOCK mode */
   if (snd_pcm_open(&pcm_handle,
                    real_device_name,
-                   activeDirection == Recorder ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK,
+                   m_activeDirection == Recorder ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK,
                    SND_PCM_NONBLOCK) < 0) {
     PTRACE(1, "ALSA\tOpen failed for \"" << params.m_device << "\", card=" << card_nr);
     return false;
@@ -229,7 +229,7 @@ bool PSoundChannelALSA::SetHardwareParams()
   if (frameBytes == 0)
     frameBytes = 2;
 
-  PTRACE(4,"ALSA\tSetHardwareParams " << ((activeDirection == Player) ? "Player" : "Recorder")
+  PTRACE(4,"ALSA\tSetHardwareParams " << ((m_activeDirection == Player) ? "Player" : "Recorder")
          << " channels=" << mNumChannels
          << " sample rate=" << mSampleRate
          << " buffer size=" << m_bufferSize
@@ -485,7 +485,7 @@ unsigned PSoundChannelALSA::GetSampleSize() const
 PBoolean PSoundChannelALSA::SetBuffers(PINDEX size, PINDEX count)
 {
   PTRACE(4,"ALSA\tSetBuffers direction=" <<
-	         ((activeDirection == Player) ? "Player" : "Recorder") << " size=" << size << " count=" << count);
+	         ((m_activeDirection == Player) ? "Player" : "Recorder") << " size=" << size << " count=" << count);
 
   m_bufferSize = size;
   m_bufferCount = count;
@@ -644,10 +644,10 @@ PBoolean PSoundChannelALSA::Volume(PBoolean set, unsigned set_vol, unsigned &get
   }
 
   do {
-    snd_mixer_selem_id_set_name(sid, (activeDirection == Player)?play_mix_name[i]:rec_mix_name[i]);
+    snd_mixer_selem_id_set_name(sid, (m_activeDirection == Player)?play_mix_name[i]:rec_mix_name[i]);
     elem = snd_mixer_find_selem(handle, sid);
     i++;
-  } while (!elem && ((activeDirection == Player && play_mix_name[i] != NULL) || (activeDirection == Recorder && rec_mix_name[i] != NULL)));
+  } while (!elem && ((m_activeDirection == Player && play_mix_name[i] != NULL) || (m_activeDirection == Recorder && rec_mix_name[i] != NULL)));
 
   if (!elem) {
     PTRACE(1, "ALSA\tUnable to find simple control.");
@@ -656,7 +656,7 @@ PBoolean PSoundChannelALSA::Volume(PBoolean set, unsigned set_vol, unsigned &get
   }
 
   if (set) {
-    if (activeDirection == Player) {
+    if (m_activeDirection == Player) {
       snd_mixer_selem_get_playback_volume_range(elem, &pmin, &pmax);
       vol = (set_vol * (pmax?pmax:31)) / 100;
       snd_mixer_selem_set_playback_volume_all(elem, vol);
@@ -669,7 +669,7 @@ PBoolean PSoundChannelALSA::Volume(PBoolean set, unsigned set_vol, unsigned &get
     PTRACE(4, "ALSA\tSet volume to " << vol);
   }
   else {
-    if (activeDirection == Player) {
+    if (m_activeDirection == Player) {
       snd_mixer_selem_get_playback_volume_range(elem, &pmin, &pmax);
       snd_mixer_selem_get_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT, &vol);
     }

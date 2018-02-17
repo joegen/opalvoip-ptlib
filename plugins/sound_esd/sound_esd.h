@@ -32,7 +32,7 @@ class PSoundChannelESD: public PSoundChannel
     static PString GetDefaultDevice(PSoundChannel::Directions);
     bool Open(const Params & params);
     PBoolean Close();
-    PString GetName() const { return GetDefaultDevice(activeDirection); }
+    PString GetName() const { return GetDefaultDevice(m_activeDirection); }
     PBoolean Write(const void * buf, PINDEX len);
     PBoolean Read(void * buf, PINDEX len);
     PBoolean SetFormat(unsigned numChannels,

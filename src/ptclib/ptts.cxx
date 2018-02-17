@@ -214,8 +214,12 @@ PStringArray PTextToSpeech_SAPI::GetVoiceList()
       while (ulCount-- > 0) {
         CComPtr<ISpObjectToken> cpVoiceToken;
         if (hr.Succeeded(cpEnum->Next(1, &cpVoiceToken, NULL))) {
-          voiceList.AppendString("voice");
-          PTRACE(4, "SAPI-TTS", "Found voice:" << cpVoiceToken);
+          PWSTR pDescription = NULL;
+          SpGetDescription(cpVoiceToken, &pDescription);
+          PWideString desc(pDescription);
+          CoTaskMemFree(pDescription);
+          voiceList.AppendString(desc);
+          PTRACE(4, "SAPI-TTS", "Found voice: " << desc);
         }
       } 
     }

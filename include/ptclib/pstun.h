@@ -145,6 +145,7 @@ class PSTUN {
 ////////////////////////////////////////////////////////////////////////////////
 
 #pragma pack(1)
+P_PUSH_MSVC_WARNINGS(4315)
 
 struct PSTUNAttribute
 {
@@ -183,6 +184,7 @@ struct PSTUNAttribute
     USE_CANDIDATE       = 0x0025,   // RFC 5245 (ICE)
     ICE_CONTROLLED      = 0x8029,   // RFC 5245 (ICE)
     ICE_CONTROLLING     = 0x802A,   // RFC 5245 (ICE)
+    ICE_NETWORK_COST    = 0xC057,   // https://tools.ietf.org/html/draft-thatcher-ice-network-cost-01
 
     PADDING             = 0x0026,   // RFC 5389 (added in RFC 5780)
     RESPONSE_PORT       = 0x0027,   // RFC 5389 (added in RFC 5780)
@@ -206,6 +208,30 @@ struct PSTUNAttribute
 
   PSTUNAttribute * GetNext() const;
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <PSTUNAttribute::Types ATTR_TYPE, class PARAMS_TYPE>
+class PSTUNAttributeTemplate : public PSTUNAttribute, public PARAMS_TYPE
+{
+  public:
+    PSTUNAttributeTemplate()
+      : PSTUNAttribute(ATTR_TYPE, sizeof(PARAMS_TYPE))
+    {
+    }
+
+    PSTUNAttributeTemplate(PARAMS_TYPE parameters)
+      : PSTUNAttribute(ATTR_TYPE, sizeof(PARAMS_TYPE))
+      , PARAMS_TYPE(parameters)
+    {
+    }
+
+    bool IsValid() const { return type == ATTR_TYPE && length == sizeof(PARAMS_TYPE); }
+
+    static __inline PSTUNAttributeTemplate * Find(const PSTUNMessage & message);
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -301,34 +327,28 @@ class PSTUNMessageIntegrity : public PSTUNAttribute
 };
 
 
-class PSTUNFingerprint : public PSTUNAttribute
-{
-  public:
-    PUInt32b m_crc;
-
-    PSTUNFingerprint(DWORD crc = 0)
-      : PSTUNAttribute(FINGERPRINT, sizeof(m_crc))
-      , m_crc(crc)
-    {
-    }
-
-    bool IsValid() const { return type == FINGERPRINT && length == sizeof(m_crc); }
+struct PSTUNFingerprintCRC {
+  PUInt32b m_crc;
 };
+typedef PSTUNAttributeTemplate<PSTUNAttribute::FINGERPRINT, PSTUNFingerprintCRC> PSTUNFingerprint;
 
-
-P_PUSH_MSVC_WARNINGS(4315)
-class PSTUNIceRole : public PSTUNAttribute
-{
-  public:
-    PUInt64b m_tieBreak;
-
-    PSTUNIceRole(Types newType, uint64_t tieBreak)
-      : PSTUNAttribute(newType, sizeof(m_tieBreak))
-      , m_tieBreak(tieBreak)
-    {
-    }
+struct PSTUNIceTieBreak {
+  PUInt64b m_tieBreak;
+  PSTUNIceTieBreak(uint64_t tieBreak) { m_tieBreak = tieBreak; }
 };
-P_POP_MSVC_WARNINGS()
+typedef PSTUNAttributeTemplate<PSTUNAttribute::ICE_CONTROLLED,  PSTUNIceTieBreak> PSTUNIceControlled;
+typedef PSTUNAttributeTemplate<PSTUNAttribute::ICE_CONTROLLING, PSTUNIceTieBreak> PSTUNIceControlling;
+
+struct PSTUNIcePriorityValue {
+  PUInt32b m_priority;
+};
+typedef PSTUNAttributeTemplate<PSTUNAttribute::PRIORITY, PSTUNIcePriorityValue> PSTUNIcePriority;
+
+struct PSTUNIceNetworkCostParams {
+  PUInt16b m_networkId;
+  PUInt16b m_networkCost;
+};
+typedef PSTUNAttributeTemplate<PSTUNAttribute::ICE_NETWORK_COST, PSTUNIceNetworkCostParams> PSTUNIceNetworkCost;
 
 
 class PSTUNErrorCode : public PSTUNAttribute
@@ -376,6 +396,7 @@ struct PSTUNMessageHeader
   BYTE           transactionId[16];
 };
 
+P_POP_MSVC_WARNINGS()
 #pragma pack()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -525,30 +546,12 @@ class PSTUNMessage : public PBYTEArray
 };
 
 
-////////////////////////////////////////////////////////////////////////////////
-
-template <PSTUNAttribute::Types ATTR_TYPE, typename PARAM_TYPE>
-class PSTUNAttribute1 : public PSTUNAttribute
+template <PSTUNAttribute::Types ATTR_TYPE, typename PARAMS_TYPE>
+PSTUNAttributeTemplate<ATTR_TYPE, PARAMS_TYPE> * PSTUNAttributeTemplate<ATTR_TYPE, PARAMS_TYPE>::Find(const PSTUNMessage & message)
 {
-  public:
-    PARAM_TYPE m_parameter;
-
-    PSTUNAttribute1()
-      : PSTUNAttribute(ATTR_TYPE, sizeof(m_parameter))
-    {
-    }
-
-    PSTUNAttribute1(PARAM_TYPE parameter)
-      : PSTUNAttribute(ATTR_TYPE, sizeof(m_parameter))
-      , m_parameter(parameter)
-    {
-    }
-
-    bool IsValid() const { return type == ATTR_TYPE && length == sizeof(m_parameter); }
-
-    static PSTUNAttribute1 * Find(const PSTUNMessage & message) { return message.FindAttributeAs<PSTUNAttribute1>(ATTR_TYPE); }
-};
-
+  PSTUNAttributeTemplate * attribute = message.FindAttributeAs<PSTUNAttributeTemplate>(ATTR_TYPE);
+  return attribute != NULL && attribute->IsValid() ? attribute : NULL;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
