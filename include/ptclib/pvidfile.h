@@ -83,7 +83,7 @@ class PVideoFile : public PFile
     unsigned GetFrameWidth() const { return m_videoInfo.GetFrameWidth(); }
     unsigned GetFrameHeight() const { return m_videoInfo.GetFrameHeight(); }
     unsigned GetFrameRate() const { return m_videoInfo.GetFrameRate(); }
-    const PString & GetColourFormat() const { return m_videoInfo.GetColourFormat(); }
+    PString GetColourFormat() const { return m_videoInfo.GetColourFormat(); }
 
   protected:
     bool   m_fixedFrameSize;
