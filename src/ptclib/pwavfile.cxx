@@ -798,7 +798,7 @@ class PWAVFileFormatPCM : public PWAVFileFormat
     }
 };
 
-PCREATE_WAVFILE_FORMAT_FACTORY(PWAVFileFormatPCM, PWAVFile::fmt_PCM, "PCM-16");
+PCREATE_WAVFILE_FORMAT_FACTORY(PWAVFileFormatPCM, PWAVFile::fmt_PCM, PSOUND_PCM16);
 
 
 //////////////////////////////////////////////////////////////////
