@@ -36,15 +36,17 @@
 #if P_MEDIAFILE
 
 #include <ptlib/pfactory.h>
+#include <ptlib/smartptr.h>
+#include <ptlib/sound.h>
 #include <ptlib/videoio.h>
 #include <ptclib/delaychan.h>
 
 
 /**Abstract class for a file containing a audio/visual media.
   */
-class PMediaFile : public PObject
+class PMediaFile : public PSmartObject
 {
-  PCLASSINFO(PMediaFile, PObject);
+  PCLASSINFO(PMediaFile, PSmartObject);
   protected:
     PMediaFile();
 
@@ -61,6 +63,8 @@ class PMediaFile : public PObject
 
   public:
     typedef PFactory<PMediaFile, PFilePathString> Factory;
+
+    typedef PSmartPtr<PMediaFile> Ptr;
 
     static PMediaFile * Create(const PFilePath & file) { return Factory::CreateInstance(file.GetType()); }
     static PStringSet GetAllFileTypes();
@@ -83,6 +87,10 @@ class PMediaFile : public PObject
     struct TrackInfo
     {
       TrackInfo(const PString & type = PString::Empty(), const PString & format = PString::Empty());
+      TrackInfo(unsigned rate, unsigned channels); // Audio track
+#if P_VIDEO
+      TrackInfo(unsigned width, unsigned height, double rate); // Video track
+#endif
 
       bool operator==(const TrackInfo & other) const;
       bool operator!=(const TrackInfo & other) const { return !operator==(other); }
@@ -105,6 +113,7 @@ class PMediaFile : public PObject
     virtual bool ReadNative(unsigned track, BYTE * data, PINDEX & size, unsigned & frames) = 0;
     virtual bool WriteNative(unsigned track, const BYTE * data, PINDEX & size, unsigned & frames) = 0;
 
+    virtual bool ConfigureAudio(unsigned track, unsigned channels, unsigned sampleRate) = 0;
     virtual bool ReadAudio(unsigned track, BYTE * data, PINDEX size, PINDEX & length) = 0;
     virtual bool WriteAudio(unsigned track, const BYTE * data, PINDEX length, PINDEX & written) = 0;
 
@@ -113,6 +122,69 @@ class PMediaFile : public PObject
     virtual bool ReadVideo(unsigned track, BYTE * data) = 0;
     virtual bool WriteVideo(unsigned track, const BYTE * data) = 0;
 #endif
+
+
+    class SoundChannel : public PSoundChannelEmulation
+    {
+      PCLASSINFO(SoundChannel, PSoundChannelEmulation);
+      public:
+        explicit SoundChannel(const Ptr & mediaFile = Ptr(), unsigned track = 0);
+        ~SoundChannel();
+
+        virtual bool Open(const Params & params);
+        virtual PString GetName() const;
+        virtual PBoolean Close();
+        virtual PBoolean IsOpen() const;
+
+      protected:
+        virtual bool RawWrite(const void * buf, PINDEX len);
+        virtual bool RawRead(void * buf, PINDEX len);
+        virtual bool Rewind();
+
+        Ptr      m_mediaFile;
+        unsigned m_track;
+    };
+
+#if P_VIDEO
+    class VideoInputDevice : public PVideoInputDevice
+    {
+      PCLASSINFO(VideoInputDevice, PVideoInputDevice);
+      public:
+        explicit VideoInputDevice(const Ptr & mediaFile = Ptr(), unsigned track = 0);
+        ~VideoInputDevice();
+
+        enum {
+          Channel_PlayAndClose     = 0,
+          Channel_PlayAndRepeat    = 1,
+          Channel_PlayAndKeepLast  = 2,
+          Channel_PlayAndShowBlack = 3,
+          ChannelCount             = 4
+        };
+
+        virtual PStringArray GetDeviceNames() const;
+        virtual PBoolean Open(const PString & deviceName, PBoolean startImmediate = true);
+        virtual PBoolean IsOpen();
+        virtual PBoolean Close();
+        virtual PBoolean Start();
+        virtual PBoolean Stop();
+        virtual PBoolean IsCapturing();
+        virtual PBoolean GetFrameData(BYTE * buffer, PINDEX * bytesReturned = NULL);
+        virtual PBoolean GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned = NULL);
+        virtual PINDEX GetMaxFrameBytes();
+        virtual int GetNumChannels();
+        virtual PStringArray GetChannelNames();
+        virtual PBoolean SetColourFormat(const PString & colourFormat);
+        virtual PBoolean SetFrameRate(unsigned rate);
+        virtual PBoolean GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight);
+        virtual PBoolean SetFrameSize(unsigned width, unsigned height);
+
+      protected:
+        Ptr            m_mediaFile;
+        unsigned       m_track;
+        PAdaptiveDelay m_pacing;
+        unsigned       m_frameRateAdjust;
+    };
+#endif // P_VIDEO
 };
 
 
@@ -120,171 +192,6 @@ PFACTORY_LOAD(PMediaFile_WAV);
 
 
 #if P_VIDEO
-
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-// This class defines a video capture (input) device that reads video from a raw YUV file
-//
-
-class PVideoInputDevice_MediaFile : public PVideoInputDevice
-{
-  PCLASSINFO(PVideoInputDevice_MediaFile, PVideoInputDevice);
-  public:
-    enum {
-      Channel_PlayAndClose     = 0,
-      Channel_PlayAndRepeat    = 1,
-      Channel_PlayAndKeepLast  = 2,
-      Channel_PlayAndShowBlack = 3,
-      ChannelCount             = 4
-    };
-
-    /** Create a new file based video input device.
-    */
-    PVideoInputDevice_MediaFile();
-
-    /** Destroy video input device.
-    */
-    virtual ~PVideoInputDevice_MediaFile();
-
-
-    /**Open the device given the device name.
-      */
-    PBoolean Open(
-      const PString & deviceName,   /// Device name to open
-      PBoolean startImmediate = true    /// Immediately start device
-    );
-
-    /**Determine of the device is currently open.
-      */
-    PBoolean IsOpen() ;
-
-    /**Close the device.
-      */
-    PBoolean Close();
-
-    /**Start the video device I/O.
-      */
-    PBoolean Start();
-
-    /**Stop the video device I/O capture.
-      */
-    PBoolean Stop();
-
-    /**Determine if the video device I/O capture is in progress.
-      */
-    PBoolean IsCapturing();
-
-    /**Get a list of all of the drivers available.
-      */
-    static PStringArray GetInputDeviceNames();
-
-    virtual PStringArray GetDeviceNames() const
-      { return GetInputDeviceNames(); }
-
-    /**Retrieve a list of Device Capabilities
-      */
-    static bool GetDeviceCapabilities(
-      const PString & /*deviceName*/, ///< Name of device
-      Capabilities * /*caps*/         ///< List of supported capabilities
-    ) { return false; }
-
-    /**Get the maximum frame size in bytes.
-
-       Note a particular device may be able to provide variable length
-       frames (eg motion JPEG) so will be the maximum size of all frames.
-      */
-    virtual PINDEX GetMaxFrameBytes();
-
-    /**Grab a frame. 
-
-       There will be a delay in returning, as specified by frame rate.
-      */
-    virtual PBoolean GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// Optional bytes returned.
-    );
-
-    /**Grab a frame.
-
-       Do not delay according to the current frame rate.
-      */
-    virtual PBoolean GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-
-    /**Set the video format to be used.
-
-       Default behaviour sets the value of the videoFormat variable and then
-       returns the IsOpen() status.
-    */
-    virtual PBoolean SetVideoFormat(
-      VideoFormat videoFormat   /// New video format
-    );
-
-    /**Get the number of video channels available on the device.
-        0 (default) = play file and close device
-        1           = play file and repeat
-        2           = play file and replay last frame
-        3           = play file and display black frame
-
-       Default behaviour returns 4.
-    */
-    virtual int GetNumChannels();
-
-    /**Get the names of video channels available on the device.
-    */
-    virtual PStringArray GetChannelNames();
-
-    /**Set the colour format to be used.
-
-       Default behaviour sets the value of the colourFormat variable and then
-       returns the IsOpen() status.
-    */
-    virtual PBoolean SetColourFormat(
-      const PString & colourFormat   // New colour format for device.
-    );
-    
-    /**Set the video frame rate to be used on the device.
-
-       Default behaviour sets the value of the frameRate variable and then
-       return the IsOpen() status.
-    */
-    virtual PBoolean SetFrameRate(
-      unsigned rate  /// Frames per second
-    );
-         
-    /**Get the minimum & maximum size of a frame on the device.
-
-       Default behaviour returns the value 1 to UINT_MAX for both and returns
-       false.
-    */
-    virtual PBoolean GetFrameSizeLimits(
-      unsigned & minWidth,   /// Variable to receive minimum width
-      unsigned & minHeight,  /// Variable to receive minimum height
-      unsigned & maxWidth,   /// Variable to receive maximum width
-      unsigned & maxHeight   /// Variable to receive maximum height
-    ) ;
-
-    /**Set the frame size to be used.
-
-       Default behaviour sets the frameWidth and frameHeight variables and
-       returns the IsOpen() status.
-    */
-    virtual PBoolean SetFrameSize(
-      unsigned width,   /// New width of frame
-      unsigned height   /// New height of frame
-    );
-
-   
- protected:
-   PMediaFile   * m_file;
-   PAdaptiveDelay m_pacing;
-   unsigned       m_frameRateAdjust;
-   unsigned       m_track;
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
