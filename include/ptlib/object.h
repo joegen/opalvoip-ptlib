@@ -494,6 +494,7 @@ public:
                                   ///< Mask for all the rotate bits
     ObjectInstance    = 0x1000,   ///< Include object instance in all trace output
     ContextIdentifier = 0x2000,   ///< Include context identifier in all trace output
+    SingleLine        = 0x4000,   ///< Assure trace output is always on a single line
     SystemLogStream   = 0x8000,   /**< SystemLog flag for tracing within a PServiceProcess
                                        application. Setting this flag will automatically
                                        execute <code>#SetStream(new PSystemLog)</code>. */
@@ -515,6 +516,7 @@ public:
     "  file     source file name and line number\r" \
     "  object   PObject pointer\r" \
     "  context  context identifier\r" \
+    "  single   single line output\r" \
     "  daily    rotate output file daily\r" \
     "  hour     rotate output file hourly\r" \
     "  minute   rotate output file every minute\r" \

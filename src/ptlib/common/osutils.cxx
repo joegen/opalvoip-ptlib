@@ -604,6 +604,8 @@ void PTrace::Initialise(const PArgList & args,
         operation(options, ObjectInstance);
       else if (optStr.NumCompare("context", P_MAX_INDEX, pos) == PObject::EqualTo)
         operation(options, ContextIdentifier);
+      else if (optStr.NumCompare("single", P_MAX_INDEX, pos) == PObject::EqualTo)
+        operation(options, SingleLine);
       else if (optStr.NumCompare("gmt", P_MAX_INDEX, pos) == PObject::EqualTo)
         operation(options, GMTTime);
       else if (optStr.NumCompare("daily", P_MAX_INDEX, pos) == PObject::EqualTo)
@@ -898,6 +900,12 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
       PINDEX len = tab - threadInfo->m_prefixLength;
       if (len < 8)
         stackStream->Splice("      ", tab, 0);
+    }
+
+    if (HasOption(SingleLine)) {
+        stackStream->Replace("\\", "\\\\", true);
+        stackStream->Replace("\r", "\\r", true);
+        stackStream->Replace("\n", "\\n", true);
     }
 
     Lock();
