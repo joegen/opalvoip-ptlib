@@ -51,6 +51,7 @@
   #include <ptlib/videoio.h>
 #endif
 
+#define ENABLE_THREAD_INFO_TRACE 0
 
 #define PTraceModule() "PTLib"
 
@@ -749,11 +750,15 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
 
 ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
 {
+#if ENABLE_THREAD_INFO_TRACE
   PThread * thread = NULL;
   PTraceInfo::ThreadLocalInfo * threadInfo = NULL;
+#endif
+  
   ostream * streamPtr = NULL;
 
   if (topLevel) {
+#if ENABLE_THREAD_INFO_TRACE
     if (PProcess::IsInitialised()) {
       thread = PThread::Current();
 
@@ -764,7 +769,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
         streamPtr = stringStreamPtr;
       }
     }
-
+#endif
     Lock();
 
     if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
@@ -794,6 +799,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
   if (HasOption(TraceLevel))
     stream << level << '\t';
 
+#if ENABLE_THREAD_INFO_TRACE
   if (HasOption(Thread)) {
     PString name = thread != NULL ? thread->GetThreadName() : PThread::GetCurrentThreadName();
 #if P_64BIT && !defined(WIN32) && !defined(P_UNIQUE_THREAD_ID_FMT)
@@ -810,7 +816,8 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
 
   if (HasOption(ThreadAddress))
     stream << hex << setfill('0') << setw(7) << (void *)thread << dec << setfill(' ') << '\t';
-
+#endif
+  
   if (HasOption(FileAndLine)) {
     const char * file;
     if (fileName == NULL)
@@ -844,6 +851,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     stream << '\t';
   }
 
+#if ENABLE_THREAD_INFO_TRACE
 #if PTRACING==2
   if (HasOption(ContextIdentifier)) {
     unsigned id = instance != NULL ? instance->GetTraceContextIdentifier() : 0;
@@ -856,19 +864,25 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     stream << '\t';
   }
 #endif
-
+#endif
+  
   if (module != NULL)
     stream << left << setw(8) << module << right << '\t';
-
+#if ENABLE_THREAD_INFO_TRACE
   // Save log level for this message so End() function can use. This is
   // protected by the PTraceMutex or is thread local
-  if (threadInfo == NULL)
+  if (threadInfo == NULL) {
     m_currentLevel = level;
-  else {
+  } else if (threadInfo && threadInfo->m_traceStreams.GetSize() > 0) {
     threadInfo->m_traceLevel = level;
     threadInfo->m_prefixLength = threadInfo->m_traceStreams.Top().GetLength();
     Unlock();
+  } else {
+    m_currentLevel = level;
   }
+#else
+  m_currentLevel = level;
+#endif
 
   return stream;
 }
@@ -882,10 +896,13 @@ ostream & PTrace::End(ostream & paramStream)
 
 ostream & PTraceInfo::InternalEnd(ostream & paramStream)
 {
+#if ENABLE_THREAD_INFO_TRACE
   PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? m_threadStorage.Get() : NULL;
-
+#endif
+  
   int currentLevel;
-
+  
+#if ENABLE_THREAD_INFO_TRACE
   if (threadInfo != NULL && !threadInfo->m_traceStreams.IsEmpty()) {
     PStringStream * stackStream = threadInfo->m_traceStreams.Pop();
     if (!PAssert(&paramStream == stackStream, PLogicError))
@@ -922,7 +939,10 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
     currentLevel = m_currentLevel;
     // Inherit lock from PTrace::Begin()
   }
-
+#else
+  currentLevel = m_currentLevel;
+#endif
+  
   if (currentLevel >= 0) {
     if (HasOption(SystemLogStream)) {
       // Get the trace level for this message and set the stream width to that
@@ -946,13 +966,16 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
   , line(lineNum)
   , name(traceName)
 {
+  
   if (PTraceInfo::Instance().HasOption(Blocks)) {
     unsigned indent = 20;
 
+#if ENABLE_THREAD_INFO_TRACE
     PTraceInfo::ThreadLocalInfo * threadInfo = PTraceInfo::Instance().m_threadStorage.Get();
     if (threadInfo != NULL)
       indent = (threadInfo->m_traceBlockIndentLevel += 2);
-
+#endif
+    
     ostream & s = PTrace::Begin(1, file, line);
     s << "B-Entry\t";
     for (unsigned i = 0; i < indent; i++)
@@ -974,13 +997,13 @@ PTrace::Block::~Block()
 {
   if (PTraceInfo::Instance().HasOption(Blocks)) {
     unsigned indent = 20;
-
+#if ENABLE_THREAD_INFO_TRACE
     PTraceInfo::ThreadLocalInfo * threadInfo = PTraceInfo::Instance().m_threadStorage.Get();
     if (threadInfo != NULL) {
       indent = threadInfo->m_traceBlockIndentLevel;
       threadInfo->m_traceBlockIndentLevel -= 2;
     }
-
+#endif
     ostream & s = PTrace::Begin(1, file, line);
     s << "B-Exit\t<";
     for (unsigned i = 0; i < indent; i++)
