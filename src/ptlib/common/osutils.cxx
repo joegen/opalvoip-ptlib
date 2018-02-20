@@ -816,6 +816,8 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
 
   if (HasOption(ThreadAddress))
     stream << hex << setfill('0') << setw(7) << (void *)thread << dec << setfill(' ') << '\t';
+#else
+  stream << setfill(' ');
 #endif
   
   if (HasOption(FileAndLine)) {
@@ -864,6 +866,8 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
     stream << '\t';
   }
 #endif
+#else
+  stream << setfill(' ');
 #endif
   
   if (module != NULL)
