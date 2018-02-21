@@ -146,13 +146,13 @@ PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, P
 
 static PCriticalSection s_AssertMutex;
 extern void PPlatformAssertFunc(const PDebugLocation & location, const char * msg, char defaultAction);
-extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip);
+extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip, bool noSymbols);
 
 #if PTRACING
-  void PTrace::WalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid)
+  void PTrace::WalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, bool noSymbols)
   {
     s_AssertMutex.Wait();
-    PPlatformWalkStack(strm, id, uid, 1); // 1 means skip reporting PTrace::WalkStack
+    PPlatformWalkStack(strm, id, uid, 1, noSymbols); // 1 means skip reporting PTrace::WalkStack
     s_AssertMutex.Signal();
   }
 #endif // PTRACING
@@ -207,7 +207,7 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
 #endif
                                           );
     if (PAssertWalksStack)
-      PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2); // 2 means skip reporting InternalAssertFunc & PAssertFunc
+      PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2, true); // 2 means skip reporting InternalAssertFunc & PAssertFunc
     strm << ends;
     str = strm.str();
   }

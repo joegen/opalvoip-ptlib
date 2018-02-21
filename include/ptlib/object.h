@@ -850,7 +850,8 @@ public:
   static void WalkStack(
     ostream & strm,
     PThreadIdentifier id = PNullThreadIdentifier,
-    PUniqueThreadIdentifier uid = 0
+    PUniqueThreadIdentifier uid = 0,
+    bool noSymbols = false
   );
 
   static unsigned MaxStackWalk; // Default 20

@@ -142,7 +142,8 @@ class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
     {
         DeadlockStackWalkDisabled,
         DeadlockStackWalkEnabled,
-        DeadlockStackWalkOnPhantomRelease
+        DeadlockStackWalkOnPhantomRelease,
+        DeadlockStackWalkNoSymbols
     };
     static DeadlockStackWalkModes DeadlockStackWalkMode;
 
