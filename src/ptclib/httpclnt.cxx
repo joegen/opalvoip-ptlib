@@ -781,7 +781,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
   if (host.IsEmpty()) {
     lastResponseCode = BadRequest;
     lastResponseInfo = "No host specified";
-    return SetErrorValues(ProtocolFailure, 0, LastReadError);
+    return SetErrorValues(ProtocolFailure, 0);
   }
 
 #if P_SSL

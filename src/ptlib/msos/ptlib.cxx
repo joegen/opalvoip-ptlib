@@ -827,14 +827,14 @@ PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
   if (ReadFile(m_hConsole, buffer, length, &readBytes, NULL))
     return SetLastReadCount(readBytes) > 0;
 
-  return ConvertOSError(-2, LastWriteError);
+  return ConvertOSError(-2, LastReadError);
 }
 
 
 PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 {
   if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+    return ConvertOSError(-2, LastWriteError);
 
   flush();
 
@@ -872,7 +872,7 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
 bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
 {
   if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+    return ConvertOSError(-2);
 
   CONSOLE_SCREEN_BUFFER_INFO info;
   if (!GetConsoleScreenBufferInfo(m_hConsole, &info))
@@ -890,10 +890,10 @@ bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
 bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
 {
   if (os_handle != StandardInput)
-    return ConvertOSError(-2, LastReadError);
+    return ConvertOSError(-2);
 
   if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+    return ConvertOSError(-2);
 
   DWORD mode;
   if (!GetConsoleMode(m_hConsole, &mode))

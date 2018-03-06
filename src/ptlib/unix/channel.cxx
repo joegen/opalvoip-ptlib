@@ -85,7 +85,7 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
     switch (type) {
       case PXWriteBlock :
         if (px_readThread != NULL && px_lastBlockType != PXReadBlock)
-          return SetErrorValues(DeviceInUse, EBUSY, LastReadError);
+          return SetErrorValues(DeviceInUse, EBUSY, group);
 
         PTRACE(6, "PTLib\tBlocking on write.");
         px_writeMutex.Wait();
@@ -102,7 +102,7 @@ PBoolean PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
 
       default :
         if (px_readThread != NULL)
-          return SetErrorValues(DeviceInUse, EBUSY, LastReadError);
+          return SetErrorValues(DeviceInUse, EBUSY, group);
         px_readThread = blockedThread;
         px_lastBlockType = type;
     }
@@ -205,7 +205,7 @@ PBoolean PChannel::Write(const void * buf, PINDEX len)
           // Next case
 
         default :
-          return ConvertOSError(-1, LastReadError);
+          return ConvertOSError(-1, LastWriteError);
       }
     }
 

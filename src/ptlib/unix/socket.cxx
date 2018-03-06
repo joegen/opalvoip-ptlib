@@ -238,7 +238,7 @@ PBoolean PSocket::os_accept(PSocket & listener, struct sockaddr * addr, socklen_
         // Next case
 
       default :
-        return ConvertOSError(-1, LastReadError);
+        return ConvertOSError(-1, LastGeneralError);
     }
   }
 
