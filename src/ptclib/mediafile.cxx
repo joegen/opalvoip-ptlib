@@ -2518,8 +2518,19 @@ PStringArray PVideoOutputDevice_MediaFile::GetOutputDeviceNames()
   PStringArray names;
 
   PMediaFile::Factory::KeyList_T keyList = PMediaFile::Factory::GetKeyList();
-  for (PMediaFile::Factory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
+  for (PMediaFile::Factory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it) {
+#if P_IMAGEMAGICK
+    extern const char * PImageMagickExtensions[];
+    const char * const * ext;
+    for (ext = PImageMagickExtensions; *ext != NULL; ++ext) {
+      if (*it == *ext)
+        break;
+    }
+    if (*ext != NULL)
+      continue;
+#endif
     names.AppendString("*" + *it);
+  }
 
   return names;
 }

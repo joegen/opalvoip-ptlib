@@ -441,14 +441,26 @@ class PImageMagickFile : public PStillImageVideoFile
     }
 };
 
-PFACTORY_CREATE(PVideoFileFactory, PImageMagickFile,        ".bmp");
-PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, dib,  ".dib");
-PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, jpg,  ".jpg");
-PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, jpeg, ".jpeg");
-PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, gif,  ".gif");
-PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, png,  ".png");
-PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, tif,  ".tif");
-PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, tiff, ".tiff");
+const char * PImageMagickExtensions[] = {
+  ".bmp",
+  ".dib",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".png",
+  ".tif",
+  ".tiff",
+  NULL
+};
+
+PFACTORY_CREATE(PVideoFileFactory, PImageMagickFile,        PImageMagickExtensions[0]);
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, dib,  PImageMagickExtensions[1]);
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, jpg,  PImageMagickExtensions[2]);
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, jpeg, PImageMagickExtensions[3]);
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, gif,  PImageMagickExtensions[4]);
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, png,  PImageMagickExtensions[5]);
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, tif,  PImageMagickExtensions[6]);
+PFACTORY_SYNONYM(PVideoFileFactory, PImageMagickFile, tiff, PImageMagickExtensions[7]);
 
 #else // P_IMAGEMAGICK
 
