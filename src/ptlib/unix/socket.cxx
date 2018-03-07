@@ -458,8 +458,12 @@ PChannel::Errors PSocket::Select(SelectList & read,
       for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&errorData); cmsg != NULL; cmsg = CMSG_NXTHDR(&errorData, cmsg)) {
         if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_RECVERR) {
           struct sock_extended_err * sock_error = (struct sock_extended_err *)CMSG_DATA(cmsg);
-          PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP,
-                    "ICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error), sizeof(sockaddr)));
+          PTRACE_IF(4, sock_error->ee_origin == SO_EE_ORIGIN_ICMP || sock_error->ee_origin == SO_EE_ORIGIN_ICMP6,
+                    "ICMP error from " << PIPSocketAddressAndPort(SO_EE_OFFENDER(sock_error),
+                                                                  cmsg->cmsg_len - sizeof(*cmsg) - sizeof(cmsghdr)) <<
+                    " errno=" << sock_error->ee_errno <<
+                    " type=" << (unsigned)sock_error->ee_type <<
+                    " code=" << (unsigned)sock_error->ee_code);
           return errno = sock_error->ee_errno;
         }
       }
