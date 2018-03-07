@@ -2690,21 +2690,30 @@ PBoolean PUDPSocket::Write(const void * buf, PINDEX len)
 }
 
 
-void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
+bool PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort, int mtuDiscovery)
 {
-  InternalSetSendAddress(PIPSocketAddressAndPort(newAddress, newPort));
+  return InternalSetSendAddress(PIPSocketAddressAndPort(newAddress, newPort), mtuDiscovery);
 }
 
 
-void PUDPSocket::SetSendAddress(const PIPSocketAddressAndPort & addressAndPort)
+bool PUDPSocket::SetSendAddress(const PIPSocketAddressAndPort & addressAndPort, int mtuDiscovery)
 {
-  InternalSetSendAddress(addressAndPort);
+  return InternalSetSendAddress(addressAndPort, mtuDiscovery);
 }
 
 
-void PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr)
+bool PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery)
 {
   m_sendAddressAndPort = addr;
+
+  if (mtuDiscovery < 0)
+    return true;
+
+  if (!SetOption(IP_MTU_DISCOVER, mtuDiscovery, IPPROTO_IP))
+    return false;
+
+  PIPSocket::sockaddr_wrapper sa(addr);
+  return os_connect(sa, sa.GetSize());
 }
 
 
@@ -2765,6 +2774,21 @@ void PUDPSocket::InternalGetLastReceiveAddress(PIPSocketAddressAndPort & ap) con
 void PUDPSocket::InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & ap)
 {
   m_lastReceiveAddressAndPort = ap;
+}
+
+
+int PUDPSocket::GetCurrentMTU()
+{
+  int mtu;
+
+#if defined (IP_MTU)
+  if (!GetOption(IP_MTU, mtu, IPPROTO_IP))
+#elif defined(SO_MAX_MSG_SIZE)
+  if (!GetOption(SO_MAX_MSG_SIZE, mtu))
+#endif
+    mtu = -1;
+
+  return mtu;
 }
 
 

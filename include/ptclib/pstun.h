@@ -756,7 +756,7 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
     bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
     bool InternalWriteTo(const Slice * slices, size_t sliceCount, const PIPSocketAddressAndPort & ipAndPort);
     bool InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort);
-    void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
+    bool InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery = -1);
     void InternalGetSendAddress(PIPSocketAddressAndPort & addr);
 
     bool m_allocationMade;

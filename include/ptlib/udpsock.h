@@ -92,14 +92,20 @@ class PUDPSocket : public PIPDatagramSocket
 
   /**@name New functions for class */
   //@{
-    /** Set the address to use for connectionless Write() or Windows QoS
+    /** Set the address to use for connectionless Write() or Windows QoS.
+        If the \p mtuDiscovery parameter is >= 0, then the socket MT discovery
+        mode is set. See IP_MTU_DISCOVER socket option for mopre infor. Note
+        the connect() function is used for exclusive use of this socket to one
+        destination, thus WriteTo() will only work with this send address.
      */
-    void SetSendAddress(
+    bool SetSendAddress(
       const Address & address,    ///< IP address to send packets.
-      WORD port                   ///< Port to send packets.
+      WORD port,                  ///< Port to send packets.
+      int mtuDiscovery = -1       ///< MTU discovery mode
     );
-    void SetSendAddress(
-      const PIPSocketAddressAndPort & addressAndPort
+    bool SetSendAddress(
+      const PIPSocketAddressAndPort & addressAndPort, ///< IP address and port to send packets.
+      int mtuDiscovery = -1                           ///< MTU discovery mode
     );
 
     /** Get the address to use for connectionless Write().
@@ -125,12 +131,17 @@ class PUDPSocket : public PIPDatagramSocket
       PIPSocketAddressAndPort & addressAndPort    ///< IP address and port to send packets.
     ) const;
     PString GetLastReceiveAddress() const;
+
+    /**Get the current MTU size.
+       Note this usually needs to be enabled with SetSendAddress()
+     */
+    int GetCurrentMTU();
   //@}
 
     // Normally, one would expect these to be protected, but they are just so darn
     // useful that it's just easier if they are public
     virtual bool InternalReadFrom(Slice * slices, size_t sliceCount, PIPSocketAddressAndPort & ipAndPort);
-    virtual void InternalSetSendAddress(const PIPSocketAddressAndPort & addr);
+    virtual bool InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery = -1);
     virtual void InternalGetSendAddress(PIPSocketAddressAndPort & addr) const;
     virtual void InternalSetLastReceiveAddress(const PIPSocketAddressAndPort & addr);
     virtual void InternalGetLastReceiveAddress(PIPSocketAddressAndPort & addr) const;

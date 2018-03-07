@@ -1712,10 +1712,10 @@ void PTURNUDPSocket::InternalGetSendAddress(PIPSocketAddressAndPort & addr)
 }
 
 
-void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAndPort)
+bool PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAndPort, int mtuDiscovery)
 {
   if (!m_usingTURN)
-    return PUDPSocket::InternalSetSendAddress(ipAndPort);
+    return PUDPSocket::InternalSetSendAddress(ipAndPort, mtuDiscovery);
 
   // set permission on TURN server
   if (ipAndPort != m_peerIpAndPort) {
@@ -1739,12 +1739,14 @@ void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAn
 
     PIPSocketAddressAndPort ap;
     PUDPSocket::InternalGetSendAddress(ap);
-    PUDPSocket::InternalSetSendAddress(m_serverAddress);
+    if (!PUDPSocket::InternalSetSendAddress(m_serverAddress, mtuDiscovery))
+      return false;
 
     PSTUNMessage permissionResponse;
     bool stat = MakeAuthenticatedRequest(this, permissionRequest, permissionResponse) == 0;
 
-    PUDPSocket::InternalSetSendAddress(ap);
+    if (!PUDPSocket::InternalSetSendAddress(ap, mtuDiscovery))
+      return false;
 
     if (!stat) {
       PSTUNErrorCode * errorAttribute = (PSTUNErrorCode *)permissionResponse.FindAttribute(PSTUNAttribute::ERROR_CODE);
@@ -1754,6 +1756,8 @@ void PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAn
         PTRACE(2, "ChannelBind failed with error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
     }
   }
+
+  return true;
 }
 
 
