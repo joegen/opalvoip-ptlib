@@ -2709,11 +2709,16 @@ bool PUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr, in
   if (mtuDiscovery < 0)
     return true;
 
+#ifdef IP_MTU_DISCOVER
   if (!SetOption(IP_MTU_DISCOVER, mtuDiscovery, IPPROTO_IP))
     return false;
 
   PIPSocket::sockaddr_wrapper sa(addr);
   return os_connect(sa, sa.GetSize());
+#else
+  PTRACE(2, "IP_MTU_DISCOVER is not supported!");
+  return false;
+#endif
 }
 
 
