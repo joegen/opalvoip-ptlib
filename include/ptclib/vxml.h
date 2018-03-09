@@ -438,6 +438,7 @@ class PVXMLPlayable : public PObject
   PCLASSINFO(PVXMLPlayable, PObject);
   public:
     PVXMLPlayable();
+    ~PVXMLPlayable();
 
     virtual PBoolean Open(PVXMLChannel & chan, const PString & arg, PINDEX delay, PINDEX repeat, PBoolean autoDelete);
 
@@ -640,8 +641,8 @@ class PVXMLChannel : public PDelayChannel
     PString  m_mediaFormat;
     PString  m_mediaFilePrefix;
 
-    PDECLARE_MUTEX(m_channelWriteMutex);
-    PDECLARE_MUTEX(m_channelReadMutex);
+    PDECLARE_MUTEX(m_recordingMutex);
+    PDECLARE_MUTEX(m_playQueueMutex);
     bool     m_closed;
     bool     m_paused;
     PINDEX   m_totalData;

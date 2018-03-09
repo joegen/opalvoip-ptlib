@@ -46,7 +46,7 @@
   */
 class PMediaFile : public PSmartObject
 {
-  PCLASSINFO(PMediaFile, PSmartObject);
+    PCLASSINFO(PMediaFile, PSmartObject);
   protected:
     PMediaFile();
 
@@ -62,6 +62,8 @@ class PMediaFile : public PSmartObject
     bool SetErrorText(const PString & error);
 
   public:
+    ~PMediaFile();
+
     typedef PFactory<PMediaFile, PFilePathString> Factory;
 
     typedef PSmartPtr<PMediaFile> Ptr;

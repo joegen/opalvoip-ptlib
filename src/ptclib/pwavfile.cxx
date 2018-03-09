@@ -118,11 +118,13 @@ PWAVFile::~PWAVFile()
   Close();
   delete m_autoConverter;
   delete m_formatHandler;
+  PTRACE(4, "Deleted " << this);
 }
 
 
 void PWAVFile::Construct(OpenMode mode)
 {
+  PTRACE(4, "Constructed " << this);
   m_createFormat = fmt_PCM;
   m_headerLength = 0;
   m_dataLength = 0;

@@ -186,6 +186,14 @@ PVXMLPlayable::PVXMLPlayable()
   , m_autoDelete(false)
   , m_delayDone(false)
 {
+  PTRACE(4, "Constructed PVXMLPlayable " << this);
+}
+
+
+PVXMLPlayable::~PVXMLPlayable()
+{
+  OnStop();
+  PTRACE(4, "Destroyed PVXMLPlayable " << this);
 }
 
 
@@ -238,6 +246,7 @@ void PVXMLPlayable::OnStop()
     m_vxmlChannel->SetReadChannel(NULL, false, true);
 
   delete m_subChannel;
+  m_subChannel = NULL;
 }
 
 
@@ -2674,6 +2683,7 @@ PVXMLChannel::PVXMLChannel(unsigned frameDelay, PINDEX frameSize)
   , m_recordable(NULL)
   , m_currentPlayItem(NULL)
 {
+  PTRACE(4, "Constructed channel " << this);
 }
 
 
@@ -2690,6 +2700,7 @@ PBoolean PVXMLChannel::Open(PVXMLSession * session)
 PVXMLChannel::~PVXMLChannel()
 {
   Close();
+  PTRACE(4, "Destroyed channel " << this);
 }
 
 
@@ -2818,13 +2829,13 @@ PBoolean PVXMLChannel::Write(const void * buf, PINDEX len)
   if (m_closed)
     return false;
 
-  m_channelWriteMutex.Wait();
+  m_recordingMutex.Wait();
 
   // let the recordable do silence detection
   if (m_recordable != NULL && m_recordable->OnFrame(IsSilenceFrame(buf, len)))
     EndRecording(true);
 
-  m_channelWriteMutex.Signal();
+  m_recordingMutex.Signal();
 
   // write the data and do the correct delay
   if (WriteFrame(buf, len))
@@ -2847,7 +2858,7 @@ PBoolean PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
   EndRecording(true);
 
   // insert the new recordable
-  PWaitAndSignal mutex(m_channelWriteMutex);
+  PWaitAndSignal mutex(m_recordingMutex);
   m_recordable = newItem;
   m_totalData = 0;
   SetReadTimeout(frameDelay);
@@ -2857,7 +2868,7 @@ PBoolean PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
 
 PBoolean PVXMLChannel::EndRecording(bool timedOut)
 {
-  PWaitAndSignal mutex(m_channelWriteMutex);
+  PWaitAndSignal mutex(m_recordingMutex);
 
   if (m_recordable == NULL)
     return false;
@@ -2893,7 +2904,7 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
       break;
 
     // Other errors mean end of the playable
-    PWaitAndSignal mutex(m_channelReadMutex);
+    PWaitAndSignal mutex(m_playQueueMutex);
 
     // if current item still active, check for trailing actions
     if (m_currentPlayItem != NULL) {
@@ -2980,9 +2991,9 @@ PBoolean PVXMLChannel::QueuePlayable(PVXMLPlayable * newItem)
   }
 
   newItem->SetSampleFrequency(GetSampleFrequency());
-  m_channelReadMutex.Wait();
+  m_playQueueMutex.Wait();
   m_playQueue.Enqueue(newItem);
-  m_channelReadMutex.Signal();
+  m_playQueueMutex.Signal();
   return true;
 }
 
@@ -3022,7 +3033,7 @@ void PVXMLChannel::FlushQueue()
 {
   PTRACE(4, "Flushing playable queue");
 
-  PWaitAndSignal mutex(m_channelReadMutex);
+  PWaitAndSignal mutex(m_playQueueMutex);
 
   PVXMLPlayable * qItem;
   while ((qItem = m_playQueue.Dequeue()) != NULL) {

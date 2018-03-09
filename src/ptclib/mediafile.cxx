@@ -50,6 +50,13 @@ const PString & PMediaFile::Video() { static PConstString s("video"); return s; 
 PMediaFile::PMediaFile()
   : m_reading(false)
 {
+  PTRACE(4, "Constructed " << this);
+}
+
+
+PMediaFile::~PMediaFile()
+{
+  PTRACE(4, "Deleted " << this);
 }
 
 
