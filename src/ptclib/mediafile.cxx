@@ -1943,6 +1943,12 @@ protected:
     }
 
 
+    bool ConfigureAudio(unsigned channels, unsigned sampleRate)
+    {
+      return m_channels == channels && m_rate == sampleRate;
+    }
+
+
     bool ReadAudio(BYTE * data, PINDEX size, PINDEX & length)
     {
       if (!m_owner->CheckModeAndTrackType(true, Audio(), m_type))
