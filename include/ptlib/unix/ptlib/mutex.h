@@ -32,7 +32,6 @@
 
 #if defined(P_PTHREADS) || defined(VX_TASKS)
   public:
-    virtual ~PTimedMutex();
     static void InitialiseRecursiveMutex(pthread_mutex_t *mutex);
   protected:
     mutable pthread_mutex_t m_mutex;

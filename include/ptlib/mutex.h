@@ -113,6 +113,9 @@ class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
       */
     PTimedMutex & operator=(const PTimedMutex &) { return *this; }
 
+    /// Destruction
+    ~PTimedMutex();
+
     /**Block until the synchronisation object is available.
      */
     virtual void Wait();
@@ -146,6 +149,9 @@ class PTimedMutex : public PSync, public PMutexExcessiveLockInfo
         DeadlockStackWalkNoSymbols
     };
     static DeadlockStackWalkModes DeadlockStackWalkMode;
+#if PTRACING
+    static unsigned CtorDtorLogLevel;
+#endif
 
   protected:
     PThreadIdentifier       m_lockerId;

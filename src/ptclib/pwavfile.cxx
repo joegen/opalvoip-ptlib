@@ -118,7 +118,7 @@ PWAVFile::~PWAVFile()
   Close();
   delete m_autoConverter;
   delete m_formatHandler;
-  PTRACE(4, "Deleted " << this);
+  PTRACE(4, "Destroyed " << this);
 }
 
 

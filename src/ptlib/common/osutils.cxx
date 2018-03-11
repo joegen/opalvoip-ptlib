@@ -3489,6 +3489,15 @@ static PTimedMutex::DeadlockStackWalkModes InitialiseDeadlockStackWalkMode()
 PTimedMutex::DeadlockStackWalkModes PTimedMutex::DeadlockStackWalkMode = InitialiseDeadlockStackWalkMode();
 
 #if PTRACING
+
+static unsigned InitialiseCtorDtorLogLevel()
+{
+  const char * env = getenv("PTLIB_MUTEX_CTOR_DTOR_LOG");
+  return env != NULL ? atoi(env) : 5;
+}
+
+unsigned PTimedMutex::CtorDtorLogLevel = InitialiseCtorDtorLogLevel();
+
 static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid)
 {
   strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << " name=\"" << PThread::GetThreadName(tid) << '"';
@@ -3503,7 +3512,8 @@ static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThrea
     break;
   }
 }
-#endif
+
+#endif // PTRACING
 
 
 unsigned PTimedMutex::ExcessiveLockWaitTime;
@@ -3648,6 +3658,7 @@ void PTimedMutex::Construct()
   m_lastUniqueId = 0;
   m_lockCount = 0;
   PlatformConstruct();
+  PTRACE(PTimedMutex::CtorDtorLogLevel, "Constructed " << *this);
 }
 
 
@@ -3752,13 +3763,6 @@ bool PTimedMutex::InternalSignal(const PDebugLocation * location)
   ReleasedLock(*this, m_startHeldSamplePoint, false, location);
   m_lockerId = PNullThreadIdentifier;
   return false;
-}
-
-
-void PTimedMutex::PrintOn(ostream &strm) const
-{
-  strm << "mutex " << this;
-  PMutexExcessiveLockInfo::PrintOn(strm);
 }
 
 
@@ -3958,7 +3962,7 @@ PReadWriteMutex::PReadWriteMutex()
   , m_writerCount(0)
 #endif
 {
-  PTRACE(5, "Created read/write mutex " << *this);
+  PTRACE(PTimedMutex::CtorDtorLogLevel, "Constructed " << *this);
 }
 
 PReadWriteMutex::PReadWriteMutex(const PDebugLocation & location, unsigned timeout)
@@ -3980,14 +3984,12 @@ PReadWriteMutex::PReadWriteMutex(const PDebugLocation & location, unsigned timeo
   , m_writerCount(0)
 #endif
 {
-  PTRACE(5, "Created read/write mutex " << *this);
+  PTRACE(PTimedMutex::CtorDtorLogLevel, "Constructed " << *this);
 }
 
 
 PReadWriteMutex::~PReadWriteMutex()
 {
-  PTRACE(5, "Destroying read/write mutex " << *this);
-
   EndNest(); // Destruction while current thread has a lock is OK
 
   /* There is a small window during destruction where another thread is on the
@@ -4005,6 +4007,8 @@ PReadWriteMutex::~PReadWriteMutex()
    */
   while (!m_nestedThreads.empty())
     PThread::Sleep(10);
+
+  PTRACE(PTimedMutex::CtorDtorLogLevel, "Destroyed " << *this);
 }
 
 

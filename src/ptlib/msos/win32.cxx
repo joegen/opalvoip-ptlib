@@ -1747,6 +1747,19 @@ void PSemaphore::Signal()
 ///////////////////////////////////////////////////////////////////////////////
 // PTimedMutex
 
+PTimedMutex::~PTimedMutex()
+{
+  PTRACE(PTimedMutex::CtorDtorLogLevel, "Destroyed " << *this);
+}
+
+
+void PTimedMutex::PrintOn(ostream &strm) const
+{
+  strm << "timed mutex " << this << '[' << GetHandle() << ']';
+  PMutexExcessiveLockInfo::PrintOn(strm);
+}
+
+
 void PTimedMutex::PlatformConstruct()
 {
   m_handle = ::CreateMutex(NULL, FALSE, NULL);

@@ -368,6 +368,10 @@ class PReadWriteMutex : public PObject, public PMutexExcessiveLockInfo
     void InternalEndWriteWithNest(Nest & nest, const PDebugLocation & location);
     void InternalWait(Nest & nest, PSync & sync, const PDebugLocation & location) const;
 
+  private:
+    PReadWriteMutex(const PReadWriteMutex & other) : PObject(other) { }
+    void operator=(const PReadWriteMutex &) { }
+
   friend class PSafeObject;
   friend class PReadWaitAndSignal;
   friend class PWriteWaitAndSignal;

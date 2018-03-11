@@ -58,7 +58,7 @@ static const PConstString WebSocketGUID("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
 
 PHTTPSpace::PHTTPSpace()
 {
-  mutex = new PReadWriteMutex;
+  mutex = new PReadWriteMutex("HTTP Space");
   root = new Node(PString(), NULL);
 }
 
@@ -72,7 +72,7 @@ void PHTTPSpace::DestroyContents()
 
 void PHTTPSpace::CloneContents(const PHTTPSpace * c)
 {
-  mutex = new PReadWriteMutex;
+  mutex = new PReadWriteMutex("HTTP Space");
   root = new Node(*c->root);
 }
 
