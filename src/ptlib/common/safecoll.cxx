@@ -41,7 +41,8 @@
 PSafeObject::PSafeObject(PSafeObject * indirectLock)
   : m_safeReferenceCount(0)
   , m_safelyBeingRemoved(false)
-  , m_safeInUse(indirectLock != NULL ? indirectLock->m_safeInUse : &m_safeInUseMutex)
+  , m_safeMutexCreated(indirectLock == NULL)
+  , m_safeInUseMutex(m_safeMutexCreated ? NULL : indirectLock->m_safeInUseMutex)
 {
 }
 
@@ -49,8 +50,16 @@ PSafeObject::PSafeObject(PSafeObject * indirectLock)
 PSafeObject::PSafeObject(PReadWriteMutex & mutex)
   : m_safeReferenceCount(0)
   , m_safelyBeingRemoved(false)
-  , m_safeInUse(&mutex)
+  , m_safeMutexCreated(false)
+  , m_safeInUseMutex(&mutex)
 {
+}
+
+
+PSafeObject::~PSafeObject()
+{
+  if (m_safeMutexCreated)
+    delete m_safeInUseMutex;
 }
 
 
@@ -110,6 +119,15 @@ PBoolean PSafeObject::SafeDereference()
 }
 
 
+PReadWriteMutex & PSafeObject::InternalGetMutex() const
+{
+  PWaitAndSignal lock(m_safetyMutex);
+  if (m_safeInUseMutex == NULL)
+    const_cast<PSafeObject *>(this)->m_safeInUseMutex = new PReadWriteMutex(typeid(*this).name());
+  return *m_safeInUseMutex;
+}
+
+
 bool PSafeObject::InternalLockReadOnly(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Waiting read ("<<(void *)this<<")");
@@ -121,12 +139,9 @@ bool PSafeObject::InternalLockReadOnly(const PDebugLocation * location) const
     return false;
   }
 
-  if (m_safeInUse->m_location.m_extra == NULL)
-      m_safeInUse->m_location.m_extra = typeid(*this).name();
-
   m_safetyMutex.Signal();
 
-  m_safeInUse->StartRead(location);
+  InternalGetMutex().StartRead(location);
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked read ("<<(void *)this<<")");
   return true;
 }
@@ -135,7 +150,7 @@ bool PSafeObject::InternalLockReadOnly(const PDebugLocation * location) const
 void PSafeObject::InternalUnlockReadOnly(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked read ("<<(void *)this<<")");
-  m_safeInUse->EndRead(location);
+  InternalGetMutex().EndRead(location);
 }
 
 
@@ -150,12 +165,9 @@ bool PSafeObject::InternalLockReadWrite(const PDebugLocation * location) const
     return false;
   }
 
-  if (m_safeInUse->m_location.m_extra == NULL)
-      m_safeInUse->m_location.m_extra = typeid(*this).name();
-
   m_safetyMutex.Signal();
 
-  m_safeInUse->StartWrite(location);
+  InternalGetMutex().StartWrite(location);
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Locked readWrite ("<<(void *)this<<")");
   return true;
 }
@@ -164,7 +176,7 @@ bool PSafeObject::InternalLockReadWrite(const PDebugLocation * location) const
 void PSafeObject::InternalUnlockReadWrite(const PDebugLocation * location) const
 {
   PTRACE(m_traceContextIdentifier == 1234567890 ? 3 : 7, "Unlocked readWrite ("<<(void *)this<<")");
-  m_safeInUse->EndWrite(location);
+  InternalGetMutex().EndWrite(location);
 }
 
 
