@@ -243,6 +243,10 @@ PTHREAD_MUTEX_RECURSIVE_NP
     if (optEnv == NULL)
       optEnv = getenv("PTLIB_TRACE_OPTIONS");
 
+    const char * mutEnv = getenv("PTLIB_MUTEX_CTOR_DTOR_LOG");
+    if (mutEnv != NULL)
+      PTimedMutex::CtorDtorLogLevel = atoi(mutEnv);
+
     if (levelEnv != NULL || fileEnv != NULL || optEnv != NULL)
       InternalInitialise(levelEnv != NULL ? atoi(levelEnv) : m_thresholdLevel.load(),
                          fileEnv,
@@ -3490,13 +3494,7 @@ PTimedMutex::DeadlockStackWalkModes PTimedMutex::DeadlockStackWalkMode = Initial
 
 #if PTRACING
 
-static unsigned InitialiseCtorDtorLogLevel()
-{
-  const char * env = getenv("PTLIB_MUTEX_CTOR_DTOR_LOG");
-  return env != NULL ? atoi(env) : 5;
-}
-
-unsigned PTimedMutex::CtorDtorLogLevel = InitialiseCtorDtorLogLevel();
+unsigned PTimedMutex::CtorDtorLogLevel = 5;
 
 static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid)
 {
