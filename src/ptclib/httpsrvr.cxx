@@ -1201,6 +1201,11 @@ bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PStri
 
   channelPointerMutex.EndWrite();
 
+  // Before starting up, make sure underlying socket is closed, so reconnects
+  PChannel * base = http->GetBaseReadChannel();
+  if (base != NULL)
+    base->Close();
+
   PString key = PBase64::Encode("What is in here?");
   PMIMEInfo outMIME, replyMIME;
   outMIME.SetAt(PHTTP::ConnectionTag(), PHTTP::UpgradeTag());
