@@ -75,7 +75,7 @@ static struct PSystemLogTargetGlobal
     m_targetMutex.Signal();
   }
 
-  PMutex             m_targetMutex;
+  PCriticalSection   m_targetMutex;
   PSystemLogTarget * m_targetPointer;
   bool               m_targetAutoDelete;
 } g_SystemLogTarget;

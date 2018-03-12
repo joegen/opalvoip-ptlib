@@ -77,7 +77,7 @@
       virtual HRESULT ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop);
       virtual HRESULT DoRenderSample(IMediaSample *sample);
 
-      PMutex m_sampleMutex;
+      PDECLARE_MUTEX(m_sampleMutex);
       long   m_sampleSize;
       BYTE * m_sampleData;
   };
@@ -161,7 +161,7 @@
       PBYTEArray m_buffer;
       bool       m_stopped;
       PINDEX     m_actualSize;
-      PMutex     m_mutex;
+      PDECLARE_MUTEX(m_mutex);
       PSyncPoint m_frameReady;
       PINDEX     m_skipInitialGrabs;
 #if PTRACING
@@ -271,7 +271,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     PINDEX     m_maxFrameBytes;
     bool       m_fixedSizeFrames; // Not JPEG
     PBYTEArray m_tempFrame;
-    PMutex     m_lastFrameMutex;
+    PDECLARE_MUTEX(m_lastFrameMutex);
 };
 
 

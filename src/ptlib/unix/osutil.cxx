@@ -249,7 +249,7 @@ extern "C" {
 #endif
 
 #if PTRACING
-  static PMutex s_waterMarkMutex;
+  static PCriticalSection s_waterMarkMutex;
   static int s_highWaterMark = 0;
 #endif
 

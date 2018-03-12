@@ -179,11 +179,9 @@ typedef PTimedMutex PMutex;
 
 /// Declare a PReadWriteMutex with compiled file/line for deadlock debugging
 
-#define PDECLARE_MUTEX_ARG_1(var)              struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(P_DEBUG_LOCATION) { } } var
-#define PDECLARE_MUTEX_ARG_2(var,nam)          struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam            ) { } } var
-#define PDECLARE_MUTEX_ARG_3(var,nam,t)        struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to         ) { } } var
-#define PDECLARE_MUTEX_ARG_4(var,nam,t,w)      struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to,tw      ) { } } var
-#define PDECLARE_MUTEX_ARG_5(var,nam,to,tw,th) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to,tw,th   ) { } } var
+#define PDECLARE_MUTEX_ARG_1(var)        struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(P_DEBUG_LOCATION) { } } var
+#define PDECLARE_MUTEX_ARG_2(var,nam)    struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam            ) { } } var
+#define PDECLARE_MUTEX_ARG_3(var,nam,to) struct PTimedMutex_##var : PTimedMutex { PTimedMutex_##var() : PTimedMutex(#nam,to         ) { } } var
 
 #define PDECLARE_MUTEX_PART1(narg, args) PDECLARE_MUTEX_PART2(narg, args)
 #define PDECLARE_MUTEX_PART2(narg, args) PDECLARE_MUTEX_ARG_##narg args

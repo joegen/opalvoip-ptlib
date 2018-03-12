@@ -299,7 +299,7 @@ class PTextToSpeech_Festival : public PTextToSpeech
     PBoolean Speak(const PString & str, TextType hint);
 
   protected:
-    PMutex    m_mutex;
+    PDECLARE_MUTEX(m_mutex);
     bool      m_opened;
     PString   m_text;
     PFilePath m_filePath;

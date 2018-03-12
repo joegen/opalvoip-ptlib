@@ -285,11 +285,11 @@ class PHostByName : PHostByName_private
     PBoolean GetHostAliases(const PString & name, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PString & name);
-    PMutex mutex;
+    PDECLARE_MUTEX(mutex);
   friend void PIPSocket::ClearNameCache();
 };
 
-static PMutex creationMutex;
+static PCriticalSection creationMutex;
 static PHostByName & pHostByName()
 {
   PWaitAndSignal m(creationMutex);
@@ -324,7 +324,7 @@ class PHostByAddr : PHostByAddr_private
     PBoolean GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PIPSocket::Address & addr);
-    PMutex mutex;
+    PDECLARE_MUTEX(mutex);
   friend void PIPSocket::ClearNameCache();
 };
 

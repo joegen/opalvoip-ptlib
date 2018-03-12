@@ -723,11 +723,11 @@ template <class T> class PSyncQueue : public PObject
     __inline       PMutex & GetMutex()       { return m_mutex; }
 
   protected:
-    BaseQueue  m_queue;
-    State      m_state;
-    PSemaphore m_available;
-    PMutex     m_mutex;
-    PSyncPoint m_closed;
+    BaseQueue      m_queue;
+    State          m_state;
+    PSemaphore     m_available;
+    PDECLARE_MUTEX(m_mutex);
+    PSyncPoint     m_closed;
 
   private:
     __inline PSyncQueue(const PSyncQueue & other) : PObject(other) { }

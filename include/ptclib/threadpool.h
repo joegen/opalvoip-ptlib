@@ -163,7 +163,7 @@ class PThreadPoolBase : public PObject
 
         PThreadPoolBase & m_pool;
         bool              m_shutdown;
-        PMutex            m_workerMutex;
+        PDECLARE_MUTEX(   m_workerMutex);
     };
 
     class InternalWorkBase
@@ -211,8 +211,8 @@ class PThreadPoolBase : public PObject
     virtual bool OnWorkerStarted(WorkerThreadBase & thread);
 
     typedef std::vector<WorkerThreadBase *> WorkerList_t;
-    WorkerList_t m_workers;
-    PMutex       m_mutex;
+    WorkerList_t   m_workers;
+    PDECLARE_MUTEX(m_mutex);
 
     unsigned          m_maxWorkerCount;
     unsigned          m_maxWorkUnitCount;

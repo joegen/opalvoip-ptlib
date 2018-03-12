@@ -280,9 +280,7 @@ class PXMLRPCStructBase : public PObject {
     PArray<PXMLRPCVariableBase>               variablesByOrder;
     PDictionary<PString, PXMLRPCVariableBase> variablesByName;
 
-    PXMLRPCStructBase        * initialiserStack;
-    static PMutex              initialiserMutex;
-    static PXMLRPCStructBase * initialiserInstance;
+    PXMLRPCStructBase * initialiserStack;
 };
 
 

@@ -200,13 +200,13 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
     PSyncPoint    threadStarted;
 
     HWND          hCaptureWindow;
-    PMutex        operationMutex;
+    PDECLARE_MUTEX(operationMutex);
 
     PSyncPoint    frameAvailable;
     bool          useVideoMode;
     LPBYTE        lastFrameData;
     unsigned      lastFrameSize;
-    PMutex        lastFrameMutex;
+    PDECLARE_MUTEX(lastFrameMutex);
     bool          isCapturingNow;
     PAdaptiveDelay m_Pacing;
 };
@@ -1191,7 +1191,7 @@ class PVideoOutputDevice_Window : public PVideoOutputDeviceRGB
     bool       m_mouseEnabled;
     bool       m_hidden;
     PThread  * m_thread;
-    PMutex     m_openCloseMutex;
+    PDECLARE_MUTEX(m_openCloseMutex);
     PSyncPoint m_started;
     BITMAPINFO m_bitmap;
     bool       m_flipped;

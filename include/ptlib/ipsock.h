@@ -441,7 +441,7 @@ class PIPSocket : public PSocket
         WORD GetMax() const { return m_max; }
 
       protected:
-        PMutex m_mutex;
+        PDECLARE_MUTEX(m_mutex);
         WORD   m_base;
         WORD   m_max;
     };

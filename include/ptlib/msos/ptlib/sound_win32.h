@@ -190,7 +190,7 @@ class PSoundChannelWin32: public PSoundChannel
     PWaveBufferArray buffers;
     PINDEX           bufferIndex;
     PINDEX           bufferByteOffset;
-    PMutex           bufferMutex;
+    PDECLARE_MUTEX(  bufferMutex);
 
   private:
     PBoolean OpenDevice(P_INT_PTR id);

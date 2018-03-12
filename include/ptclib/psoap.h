@@ -174,7 +174,7 @@ class PSOAPServerResource : public PHTTPResource
     void SetSOAPAction( PString saction ) { soapAction = saction; }
 
   protected:
-    PMutex methodMutex;
+    PDECLARE_MUTEX(methodMutex);
     PSOAPServerMethodList methodList;
   private:
     PString soapAction;

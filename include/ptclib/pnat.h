@@ -349,7 +349,7 @@ class PNatMethod  : public PObject
     PNatMethod::NatTypes    m_natType;
     PIPSocketAddressAndPort m_externalAddress;
     PTime                   m_updateTime;
-    PMutex                  m_mutex;
+    PDECLARE_MUTEX(         m_mutex);
 
   private:
     unsigned m_priority;

@@ -48,7 +48,7 @@
 
 static PMutex & GetDNSMutex()
 {
-  static PMutex mutex;
+  static PMutex mutex(PDebugLocation(__FILE__, __LINE__, "DNS"));
   return mutex;
 }
 

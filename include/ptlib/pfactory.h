@@ -119,7 +119,7 @@ class PFactoryBase
 
     virtual void DestroySingletons() = 0;
 
-    class FactoryMap : public std::map<std::string, PFactoryBase *>, public PMutex
+    class FactoryMap : public std::map<std::string, PFactoryBase *>, public PCriticalSection
     {
       public:
         ~FactoryMap();
@@ -139,7 +139,7 @@ class PFactoryBase
     }
 
   protected:
-    PMutex m_mutex;
+    PDECLARE_MUTEX(m_mutex, "PFactoryBase");
 
   private:
     PFactoryBase(const PFactoryBase &) {}

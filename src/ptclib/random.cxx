@@ -174,7 +174,7 @@ uint32_t PRandom::Generate(uint32_t minimum, uint32_t maximum)
 
 uint32_t PRandom::Number()
 {
-  static PMutex mutex;
+  static PCriticalSection mutex;
   PWaitAndSignal wait(mutex);
 
   static PRandom rand;
@@ -215,7 +215,7 @@ void PRandom::Octets(BYTE * octets, PINDEX size)
   if (octets == NULL || size == 0)
     return;
 
-  static PMutex mutex;
+  static PCriticalSection mutex;
   PWaitAndSignal wait(mutex);
 
   static PRandom rand;
@@ -236,7 +236,7 @@ PString PRandom::String(PINDEX size)
   if (size == 0)
     return PString::Empty();
 
-  static PMutex mutex;
+  static PCriticalSection mutex;
   PWaitAndSignal wait(mutex);
 
   static PRandom rand;

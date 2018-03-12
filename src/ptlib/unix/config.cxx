@@ -71,7 +71,7 @@ class PConfig::Cached : public PDictionary<PCaselessString, PStringOptions>
 
     PFilePath      m_filePath;
     atomic<uint32_t> m_instanceCount;
-    PMutex         m_mutex;
+    PDECLARE_MUTEX(m_mutex);
     bool           m_dirty;
     bool           m_canSave;
     PTimer         m_flushTimer;
@@ -106,7 +106,7 @@ class PConfigCache : public PProcessStartup
     PFACTORY_GET_SINGLETON(PProcessStartupFactory, PConfigCache);
 
   protected:
-    PMutex   m_mutex;
+    PDECLARE_MUTEX(m_mutex);
     PConfig::Cached  * m_environmentCache;
 
     typedef PDictionary<PFilePath, PConfig::Cached> CacheDict;

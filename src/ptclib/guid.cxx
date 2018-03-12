@@ -54,7 +54,7 @@ static PEthSocket::Address s_macAddress;
 PGloballyUniqueID::PGloballyUniqueID()
   : PBYTEArray(Size)
 {
-  static PMutex mutex;
+  static PMutex mutex(PDebugLocation(__FILE__, __LINE__, "GUID"));
   PWaitAndSignal wait(mutex);
 
   // Want time of UTC in 0.1 microseconds since 15 Oct 1582.

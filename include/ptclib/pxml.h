@@ -281,7 +281,7 @@ class PXML_HTTP : public PXML
     PTimer        m_autoLoadTimer;
     PURL          m_autoloadURL;
     PTimeInterval m_autoLoadWaitTime;
-    PMutex        m_autoLoadMutex;
+    PDECLARE_MUTEX(m_autoLoadMutex);
     PString       m_autoLoadError;
 };
 #endif // P_HTTP

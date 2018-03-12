@@ -924,10 +924,10 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
     virtual PBoolean FrameComplete() = 0;
 
   protected:
-    PMutex m_mutex;
-    PINDEX m_bytesPerPixel;
-    PINDEX m_scanLineWidth;
-    bool   m_swappedRedAndBlue;
+    PDECLARE_MUTEX(m_mutex);
+    PINDEX         m_bytesPerPixel;
+    PINDEX         m_scanLineWidth;
+    bool           m_swappedRedAndBlue;
 };
 
 
@@ -1230,7 +1230,7 @@ class PVideoInputDeviceIndirect : public PVideoInputDevice
     virtual bool SetControl(PVideoControlInfo::Types type, int value, ControlMode mode);
 
   protected:
-    PMutex              m_actualDeviceMutex;
+    PDECLARE_MUTEX(     m_actualDeviceMutex);
     PVideoInputDevice * m_actualDevice;
     bool                m_autoDeleteActualDevice;
 };

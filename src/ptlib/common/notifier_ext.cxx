@@ -126,7 +126,7 @@ class PAsyncNotifierQueueMap : std::map<PNotifierIdentifer, PAsyncNotifierQueue>
 {
   unsigned m_state; // 0 = pre-constructor, 1 = active, 2 = destroyed
   unsigned m_nextId;
-  PMutex   m_mutex;
+  PDECLARE_MUTEX(m_mutex);
 
 public:
   PAsyncNotifierQueueMap()

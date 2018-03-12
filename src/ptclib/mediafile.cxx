@@ -824,7 +824,7 @@ class PMediaFile_FFMPEG : public PMediaFile
 
   protected:
     AVFormatContext * m_formatContext;
-    PMutex            m_mutex;
+    PDECLARE_MUTEX(   m_mutex);
 
 #if PTRACING
     bool CheckError(int result, const char * fn)
@@ -1644,7 +1644,7 @@ class PMediaFile_AVI : public PMediaFile
 {
   PCLASSINFO(PMediaFile_AVI, PMediaFile);
 protected:
-  PMutex     m_mutex;
+  PDECLARE_MUTEX(m_mutex);
   PAVIFILE   m_file;
 
 #if PTRACING

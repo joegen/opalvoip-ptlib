@@ -201,7 +201,7 @@ namespace XMPP
       PDictionary<PString, PNotifierList> m_IQNamespaceHandlers;
       PDictionary<JID, PNotifierList> m_MessageSenderHandlers;
 
-      PMutex              m_PendingIQsLock;
+      PDECLARE_MUTEX(     m_PendingIQsLock);
       StanzaList          m_PendingIQs;
 
       enum StreamState

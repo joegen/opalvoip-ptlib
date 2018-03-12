@@ -53,6 +53,9 @@ static PConstString const DateTimeType("dateTime.iso8601");
 static PConstString const ArrayType("array");
 static PConstString const DataType("data");
 
+static PCriticalSection    initialiserMutex;
+static PXMLRPCStructBase * initialiserInstance = NULL;
+
 
 /////////////////////////////////////////////////////////////////
 
@@ -1183,10 +1186,6 @@ void PXMLRPCArrayObjectsBase::FromString(PINDEX i, const PString & str)
 
 
 /////////////////////////////////////////////////////////////////
-
-PMutex              PXMLRPCStructBase::initialiserMutex;
-PXMLRPCStructBase * PXMLRPCStructBase::initialiserInstance = NULL;
-
 
 PXMLRPCStructBase::PXMLRPCStructBase()
 {

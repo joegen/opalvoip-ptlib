@@ -330,8 +330,9 @@ private:
   };
   HANDLE m_triggerEvent[2];
   
-  PMutex m_bufferMutex;     // prevents closing while active, protects xDevice and xBuffer members
-                            // and also m_bufferSectionCount, m_bufferSectionSize & m_bufferSize
+  PDECLARE_MUTEX(m_bufferMutex); // prevents closing while active, protects xDevice and xBuffer members
+                                 // and also m_bufferSectionCount, m_bufferSectionSize & m_bufferSize
+
   HMIXER       m_mixer;     // for volume control
   MIXERCONTROL m_volumeControl;
 

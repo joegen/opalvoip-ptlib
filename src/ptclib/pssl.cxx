@@ -1779,7 +1779,8 @@ void PSSLInitialiser::OnStartup()
   RAND_seed(seed, sizeof(seed));
 
   // set up multithread stuff
-  mutexes.resize(CRYPTO_num_locks());
+  for (int i = 0; i < CRYPTO_num_locks(); ++i)
+    mutexes.push_back(PMutex(PDebugLocation(__FILE__, __LINE__, "SSLMutex")));
   CRYPTO_set_locking_callback(::LockingCallback);
 }
 
