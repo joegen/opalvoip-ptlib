@@ -796,6 +796,7 @@ void PSafePtrBase::DeleteObject(PSafeObject * obj)
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(PSafeObject * obj, PSafetyMode mode)
   : PSafePtrBase(NULL, mode)
+  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
   , m_objectToDelete(NULL)
 {
   LockPtr();
