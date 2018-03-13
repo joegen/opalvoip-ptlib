@@ -38,12 +38,34 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
+PSafeObject::PSafeObject()
+  : m_safeReferenceCount(0)
+  , m_safelyBeingRemoved(false)
+  , m_safeMutexCreated(true)
+  , m_safeInUseMutex(NULL)
+{
+}
+
+
+PSafeObject::PSafeObject(const PSafeObject & other)
+  : PObject(other)
+  , m_safeReferenceCount(0)
+  , m_safelyBeingRemoved(false)
+  , m_safeMutexCreated(true)
+  , m_safeInUseMutex(NULL)
+{
+}
+
+
 PSafeObject::PSafeObject(PSafeObject * indirectLock)
   : m_safeReferenceCount(0)
   , m_safelyBeingRemoved(false)
-  , m_safeMutexCreated(indirectLock == NULL)
-  , m_safeInUseMutex(m_safeMutexCreated ? NULL : indirectLock->m_safeInUseMutex)
+  , m_safeMutexCreated(false)
 {
+  if (PAssert(indirectLock != NULL, PNullPointerReference))
+    m_safeInUseMutex = &indirectLock->InternalGetMutex();
+  else
+    m_safeInUseMutex = NULL;
 }
 
 
