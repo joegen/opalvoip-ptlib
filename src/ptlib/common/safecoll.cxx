@@ -840,8 +840,8 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
 
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enumerator)
-  : m_objectToDelete(NULL)
-  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
+  : m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
+  , m_objectToDelete(NULL)
 {
   LockPtr();
   enumerator.m_mutex.Wait();
