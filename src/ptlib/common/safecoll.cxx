@@ -238,7 +238,9 @@ void PSafeLockBase::Unlock()
 
 PSafeCollection::PSafeCollection(PCollection * coll)
   : m_collection(PAssertNULL(coll))
+  , m_collectionMutex(PDebugLocation(__FILE__, __LINE__, "SafeCollection"))
   , m_deleteObjects(true)
+  , m_removalMutex(PDebugLocation(__FILE__, __LINE__, "SafeRemoval"))
 #if P_TIMERS
   , m_deleteObjectsTimer(NULL)
 #endif
@@ -787,6 +789,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
                                              PSafetyMode mode,
                                              PINDEX idx)
   : PSafePtrBase(NULL, mode)
+  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
   , m_objectToDelete(NULL)
 {
   LockPtr();
@@ -802,6 +805,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
                                              PSafetyMode mode,
                                              PSafeObject * obj)
   : PSafePtrBase(NULL, mode)
+  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
   , m_objectToDelete(NULL)
 {
   LockPtr();
@@ -815,6 +819,7 @@ PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafeCollection & safeCollect
 
 PSafePtrMultiThreaded::PSafePtrMultiThreaded(const PSafePtrMultiThreaded & enumerator)
   : m_objectToDelete(NULL)
+  , m_mutex(PDebugLocation(__FILE__, __LINE__, "PSafePtrMultiThreaded"))
 {
   LockPtr();
   enumerator.m_mutex.Wait();
