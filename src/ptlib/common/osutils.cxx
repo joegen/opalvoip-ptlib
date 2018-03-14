@@ -3494,7 +3494,7 @@ PTimedMutex::DeadlockStackWalkModes PTimedMutex::DeadlockStackWalkMode = Initial
 
 #if PTRACING
 
-unsigned PTimedMutex::CtorDtorLogLevel = 5;
+unsigned PTimedMutex::CtorDtorLogLevel = 6;
 
 static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid)
 {
