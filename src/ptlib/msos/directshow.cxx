@@ -637,19 +637,6 @@ PBoolean PVideoInputDevice_DirectShow::Close()
 
   m_lastFrameMutex.Wait();
 
-  // Release filters
-#ifdef _WIN32_WCE
-  if (m_pSampleGrabber != NULL) {
-    m_pSampleGrabber->Release();
-    delete m_pSampleGrabber;
-  }
-#else
-  m_pNullRenderer.Release();
-  m_pSampleGrabberCB.Release();
-  m_pSampleGrabber.Release();
-  m_pCameraControls.Release();
-#endif
-
   // Release the Camera and interfaces
   m_pMediaControl.Release();
   m_pCameraOutPin.Release(); 
@@ -658,6 +645,19 @@ PBoolean PVideoInputDevice_DirectShow::Close()
 
   // Relase DirectShow Graph
   m_pGraphBuilder.Release(); 
+
+  // Release filters
+#ifdef _WIN32_WCE
+  if (m_pSampleGrabber != NULL) {
+    m_pSampleGrabber->Release();
+    delete m_pSampleGrabber;
+  }
+#else
+  m_pNullRenderer.Release();
+  m_pCameraControls.Release();
+  m_pSampleGrabber.Release();
+  delete m_pSampleGrabberCB.Detach();
+#endif
 
   m_lastFrameMutex.Signal();
 
