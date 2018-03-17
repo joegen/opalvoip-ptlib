@@ -905,12 +905,15 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
 #endif
   
   int currentLevel;
+  Lock();
   
 #if ENABLE_THREAD_INFO_TRACE
   if (threadInfo != NULL && !threadInfo->m_traceStreams.IsEmpty()) {
     PStringStream * stackStream = threadInfo->m_traceStreams.Pop();
-    if (!PAssert(&paramStream == stackStream, PLogicError))
+    if (!PAssert(&paramStream == stackStream, PLogicError)) {
+      Unlock();
       return paramStream;
+    }
 
     *stackStream << ends << flush;
 
@@ -920,8 +923,6 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
       if (len < 8)
         stackStream->Splice("      ", tab, 0);
     }
-
-    Lock();
 
     if (HasOption(SystemLogStream)) {
       PSystemLog::OutputToTarget(PSystemLog::LevelFromInt(threadInfo->m_traceLevel), stackStream->GetPointer());
