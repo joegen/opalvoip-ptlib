@@ -750,75 +750,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum, cons
 
 ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * fileName, int lineNum, const PObject * instance, const char * module)
 {
-#if ENABLE_THREAD_INFO_TRACE
-  PThread * thread = NULL;
-  PTraceInfo::ThreadLocalInfo * threadInfo = NULL;
-#endif
-  
-  ostream * streamPtr = NULL;
-
-  if (topLevel) {
-#if ENABLE_THREAD_INFO_TRACE
-    if (PProcess::IsInitialised()) {
-      thread = PThread::Current();
-
-      threadInfo = m_threadStorage.Get();
-      if (threadInfo != NULL) {
-        PStringStream * stringStreamPtr = new PStringStream;
-        threadInfo->m_traceStreams.Push(stringStreamPtr);
-        streamPtr = stringStreamPtr;
-      }
-    }
-#endif
-    Lock();
-
-    if (!m_filename.IsEmpty() && HasOption(RotateLogMask)) {
-      unsigned rotateVal = GetRotateVal(m_options);
-      if (rotateVal != m_lastRotate || GetStream() == &cerr) {
-        m_lastRotate = rotateVal;
-        OpenTraceFile(m_filename, true);
-      }
-    }
-  }
-
-  ostream & stream = *(streamPtr ? streamPtr : m_stream);
-
+   ostream & stream = *(m_stream);
   // Before we do new trace, make sure we clear any errors on the stream
   stream.clear();
-
-  if (!HasOption(SystemLogStream)) {
-    if (HasOption(DateAndTime)) {
-      PTime now;
-      stream << now.AsString(PTime::LoggingFormat, HasOption(GMTTime) ? PTime::GMT : PTime::Local) << '\t';
-    }
-
-    if (HasOption(Timestamp))
-      stream << setprecision(3) << setw(10) << (PTimer::Tick()-m_startTick) << '\t';
-  }
-
-  if (HasOption(TraceLevel))
-    stream << level << '\t';
-
-#if ENABLE_THREAD_INFO_TRACE
-  if (HasOption(Thread)) {
-    PString name = thread != NULL ? thread->GetThreadName() : PThread::GetCurrentThreadName();
-#if P_64BIT && !defined(WIN32) && !defined(P_UNIQUE_THREAD_ID_FMT)
-    static const PINDEX ThreadNameWidth = 31;
-#else
-    static const PINDEX ThreadNameWidth = 23;
-#endif
-    if (name.GetLength() <= ThreadNameWidth)
-      stream << setw(ThreadNameWidth) << name;
-    else
-      stream << name.Left(10) << "..." << name.Right(ThreadNameWidth-13);
-    stream << '\t';
-  }
-
-  if (HasOption(ThreadAddress))
-    stream << hex << setfill('0') << setw(7) << (void *)thread << dec << setfill(' ') << '\t';
-#else
   stream << setfill(' ');
-#endif
   
   if (HasOption(FileAndLine)) {
     const char * file;
@@ -846,48 +781,7 @@ ostream & PTraceInfo::InternalBegin(bool topLevel, unsigned level, const char * 
 
     stream << '\t';
   }
-
-  if (HasOption(ObjectInstance)) {
-    if (instance != NULL)
-      stream << instance->GetClass() << ':' << instance;
-    stream << '\t';
-  }
-
-#if ENABLE_THREAD_INFO_TRACE
-#if PTRACING==2
-  if (HasOption(ContextIdentifier)) {
-    unsigned id = instance != NULL ? instance->GetTraceContextIdentifier() : 0;
-    if (id == 0 && thread != NULL)
-      id = thread->GetTraceContextIdentifier();
-    if (id != 0)
-      stream << setfill('0') << setw(13) << id << setfill(' ');
-    else
-      stream << "- - - - - - -";
-    stream << '\t';
-  }
-#endif
-#else
-  stream << setfill(' ');
-#endif
-  
-  if (module != NULL)
-    stream << left << setw(8) << module << right << '\t';
-#if ENABLE_THREAD_INFO_TRACE
-  // Save log level for this message so End() function can use. This is
-  // protected by the PTraceMutex or is thread local
-  if (threadInfo == NULL) {
-    m_currentLevel = level;
-  } else if (threadInfo && threadInfo->m_traceStreams.GetSize() > 0) {
-    threadInfo->m_traceLevel = level;
-    threadInfo->m_prefixLength = threadInfo->m_traceStreams.Top().GetLength();
-    Unlock();
-  } else {
-    m_currentLevel = level;
-  }
-#else
   m_currentLevel = level;
-#endif
-
   return stream;
 }
 
@@ -897,71 +791,10 @@ ostream & PTrace::End(ostream & paramStream)
   return PTraceInfo::Instance().InternalEnd(paramStream);
 }
 
-
 ostream & PTraceInfo::InternalEnd(ostream & paramStream)
 {
-#if ENABLE_THREAD_INFO_TRACE
-  PTraceInfo::ThreadLocalInfo * threadInfo = PProcess::IsInitialised() ? m_threadStorage.Get() : NULL;
-#endif
-  
-  int currentLevel;
-  Lock();
-  
-#if ENABLE_THREAD_INFO_TRACE
-  if (threadInfo != NULL && !threadInfo->m_traceStreams.IsEmpty()) {
-    PStringStream * stackStream = threadInfo->m_traceStreams.Pop();
-    if (!PAssert(&paramStream == stackStream, PLogicError)) {
-      Unlock();
-      return paramStream;
-    }
-
-    *stackStream << ends << flush;
-
-    PINDEX tab = stackStream->Find('\t', threadInfo->m_prefixLength);
-    if (tab != P_MAX_INDEX) {
-      PINDEX len = tab - threadInfo->m_prefixLength;
-      if (len < 8)
-        stackStream->Splice("      ", tab, 0);
-    }
-
-    if (HasOption(SystemLogStream)) {
-      PSystemLog::OutputToTarget(PSystemLog::LevelFromInt(threadInfo->m_traceLevel), stackStream->GetPointer());
-      currentLevel = -1;
-    }
-    else {
-      *m_stream << *stackStream;
-      currentLevel = threadInfo->m_traceLevel;
-    }
-
-    delete stackStream;
-  }
-  else {
-    if (!PAssert(&paramStream == m_stream, PLogicError)) {
-      Unlock();
-      return paramStream;
-    }
-
-    currentLevel = m_currentLevel;
-    // Inherit lock from PTrace::Begin()
-  }
-#else
-  currentLevel = m_currentLevel;
-#endif
-  
-  if (currentLevel >= 0) {
-    if (HasOption(SystemLogStream)) {
-      // Get the trace level for this message and set the stream width to that
-      // level so that the PSystemLog can extract the log level back out of the
-      // ios structure. There could be portability issues with this though it
-      // should work pretty universally.
-      m_stream->width(currentLevel + 1);
-    }
-    else
-      *m_stream << '\n';
-    m_stream->flush();
-  }
-
-  Unlock();
+  *m_stream << '\n';
+  m_stream->flush();
   return paramStream;
 }
 
