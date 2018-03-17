@@ -1749,7 +1749,7 @@ void PSemaphore::Signal()
 
 PTimedMutex::~PTimedMutex()
 {
-  PTRACE(PTimedMutex::CtorDtorLogLevel, "Destroyed " << *this);
+  PMUTEX_DESTROYED();
 }
 
 

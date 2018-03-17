@@ -1266,7 +1266,7 @@ PTimedMutex::~PTimedMutex()
   PAssert(result == 0, "Error destroying mutex");
 #endif
 
-  PTRACE(PTimedMutex::CtorDtorLogLevel, "Destroyed " << *this);
+  Destroyed(*this);
 }
 
 

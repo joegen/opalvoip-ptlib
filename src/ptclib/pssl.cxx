@@ -1789,6 +1789,7 @@ void PSSLInitialiser::OnShutdown()
 {
   CRYPTO_set_locking_callback(NULL);
   ERR_free_strings();
+  mutexes.clear();
 }
 
 

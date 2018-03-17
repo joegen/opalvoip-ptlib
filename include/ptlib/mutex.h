@@ -54,6 +54,17 @@ class PMutexExcessiveLockInfo
     PMutexExcessiveLockInfo(const PMutexExcessiveLockInfo & other);
     virtual ~PMutexExcessiveLockInfo() { }
     void Construct(unsigned timeout);
+
+#if PTRACING
+    void Constructed(const PObject & mutex) const;
+    void Destroyed(const PObject & mutex) const;
+    #define PMUTEX_CONSTRUCTED() Constructed(*this)
+    #define PMUTEX_DESTROYED() Destroyed(*this)
+#else
+    #define PMUTEX_CONSTRUCTED()
+    #define PMUTEX_DESTROYED()
+#endif
+
     void PrintOn(ostream &strm) const;
     void ExcessiveLockPhantom(const PObject & mutex) const;
     virtual void AcquiredLock(uint64_t startWaitCycle, bool readOnly, const PDebugLocation & location);

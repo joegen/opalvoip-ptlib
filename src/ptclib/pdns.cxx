@@ -46,12 +46,7 @@
 
 /////////////////////////////////////////////////
 
-static PMutex & GetDNSMutex()
-{
-  static PMutex mutex(PDebugLocation(__FILE__, __LINE__, "DNS"));
-  return mutex;
-}
-
+static PMutex dns_mutex(PDebugLocation(__FILE__, __LINE__, "DNS"));
 
 struct DNSCacheInfo {
   DNSCacheInfo() : m_results(NULL), m_status(-1) { }
@@ -222,7 +217,7 @@ DNS_STATUS DnsQuery_A(const char * service,
 #endif
 #else
   res_init();
-  GetDNSMutex().Wait();
+  dns_mutex.Wait();
 #endif
 
   union {
@@ -240,7 +235,7 @@ DNS_STATUS DnsQuery_A(const char * service,
       service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
 #else
   int replyLen = res_search(service, C_IN, requestType, (BYTE *)&reply, sizeof(reply));
-  GetDNSMutex().Signal();
+  dns_mutex.Signal();
 #endif
 
   if (replyLen < 1)
@@ -697,7 +692,7 @@ DNS_STATUS PDNS::Cached_DnsQuery(
     void * )
 {
   PTime now;
-  PWaitAndSignal m(GetDNSMutex());
+  PWaitAndSignal m(dns_mutex);
 
   DNSCache::iterator r;
 
