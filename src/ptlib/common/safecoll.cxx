@@ -619,7 +619,7 @@ void PSafePtrBase::Assign(PINDEX idx)
 
   m_currentObject = NULL;
 
-  if (m_collection == NULL)
+  if (PAssertNULL(m_collection) == NULL)
     return;
 
   m_collection->m_collectionMutex.Wait();
@@ -642,7 +642,7 @@ void PSafePtrBase::Assign(PINDEX idx)
 
 void PSafePtrBase::Next()
 {
-  if (m_collection == NULL || m_currentObject == NULL)
+  if (PAssertNULL(m_collection) == NULL || m_currentObject == NULL)
     return;
 
   ExitSafetyMode(NoDereference);
@@ -673,7 +673,7 @@ void PSafePtrBase::Next()
 
 void PSafePtrBase::Previous()
 {
-  if (m_collection == NULL || m_currentObject == NULL)
+  if (PAssertNULL(m_collection) == NULL || m_currentObject == NULL)
     return;
 
   ExitSafetyMode(NoDereference);

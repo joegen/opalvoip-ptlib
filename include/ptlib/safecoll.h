@@ -1293,7 +1293,22 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
        PSafeObject and lock to the object in the mode specified. The lock
        will remain until the PSafePtr goes out of scope.
       */
-    virtual PSafePtr<Base> FindWithLock(
+    virtual PSafePtr<Base> Find(
+      const Key & key,
+      PSafetyMode mode = PSafeReadWrite
+    ) const {
+        this->m_collectionMutex.Wait();
+        PSafePtr<Base> ptr(dynamic_cast<Coll &>(*this->m_collection).GetAt(key), PSafeReference);
+        this->m_collectionMutex.Signal();
+        ptr.SetSafetyMode(mode);
+        return ptr;
+      }
+
+    /**Find instance and use PSafePtr as an iterator.
+       This is not recommended for use, as the there is a true iterator class
+       available which is much more efficient
+      */
+    virtual PSafePtr<Base> FindIterator(
       const Key & key,
       PSafetyMode mode = PSafeReadWrite
     ) const {
@@ -1303,6 +1318,11 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
         ptr.SetSafetyMode(mode);
         return ptr;
       }
+
+    P_DEPRECATED virtual PSafePtr<Base> FindWithLock(
+      const Key & key,
+      PSafetyMode mode = PSafeReadWrite
+    ) const { return FindIterator(key, mode); }
 
     /** Move an object from one key location to another.
       */
@@ -1409,7 +1429,7 @@ template <class K, class D>
 
           this->m_position = position;
           this->m_internal_first  = &this->m_keys[position];
-          this->m_internal_second = this->m_dictionary->FindWithLock(*this->m_internal_first, PSafeReference);
+          this->m_internal_second = this->m_dictionary->Find(*this->m_internal_first, PSafeReference);
           return this->m_internal_second == NULL;
         }
 
