@@ -2824,7 +2824,7 @@ void PProcess::HandleRunTimeSignal(int signal)
 const char * PProcess::GetRunTimeSignalName(int signal)
 {
   for (POrdinalToString::Initialiser const * name = InternalSigNames; name->key != 0; ++name) {
-    if (name->key == signal)
+    if ((int)name->key == signal)
       return name->value;
   }
 

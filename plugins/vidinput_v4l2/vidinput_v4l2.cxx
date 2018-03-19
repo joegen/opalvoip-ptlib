@@ -1012,7 +1012,7 @@ PBoolean PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytes
     bytesRead = frameBytes;
   }
 
-  if ((PINDEX)bytesRead != frameBytes) {
+  if (bytesRead != (ssize_t)frameBytes) {
     PTRACE(1,"V4L2\tread returned fewer bytes than expected");
     // May result from a compressed format, otherwise indicates an error.
   }

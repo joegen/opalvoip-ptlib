@@ -310,9 +310,9 @@ class MapDictionary : public PProcess
     void Test(const Tester & tester);
 
   protected:
-    int m_size;
-    int m_lookups;
-    int m_iterates;
+    PINDEX m_size;
+    PINDEX m_lookups;
+    PINDEX m_iterates;
 };
 
 
