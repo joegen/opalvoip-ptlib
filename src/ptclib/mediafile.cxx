@@ -2555,25 +2555,22 @@ PBoolean PVideoOutputDevice_MediaFile::SetColourFormat(const PString & newFormat
 }
 
 
-PBoolean PVideoOutputDevice_MediaFile::SetFrameData(unsigned x, unsigned y,
-                                              unsigned width, unsigned height,
-                                              const BYTE * data,
-                                              PBoolean /*endFrame*/)
+PBoolean PVideoOutputDevice_MediaFile::SetFrameData(const FrameData & frameData)
 {
   if (m_file == NULL) {
     PTRACE(5, "Abort SetFrameData, closed.");
     return false;
   }
 
-  if (x != 0 || y != 0 || width != m_frameWidth || height != m_frameHeight) {
+  if (frameData.x != 0 || frameData.y != 0 || frameData.width != m_frameWidth || frameData.height != m_frameHeight) {
     PTRACE(1, "Output device only supports full frame writes");
     return false;
   }
 
   if (m_converter == NULL)
-    return m_file->WriteVideo(0, data);
+    return m_file->WriteVideo(0, frameData.pixels);
 
-  m_converter->Convert(data, m_frameStore.GetPointer(GetMaxFrameBytes()));
+  m_converter->Convert(frameData.pixels, m_frameStore.GetPointer(GetMaxFrameBytes()));
   return m_file->WriteVideo(0, m_frameStore);
 }
 

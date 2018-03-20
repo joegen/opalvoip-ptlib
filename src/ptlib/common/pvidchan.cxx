@@ -123,30 +123,31 @@ PBoolean PVideoChannel::Write(const void * buf, PINDEX /*len*/, void * mark)
     return false;
 
 
-  bool keyFrameNeeded;
   if (mpInput == NULL) {
     PTRACE(6,"PVC\t::Write, frame size is "
               << mpOutput->GetFrameWidth() << "x" << mpOutput->GetFrameHeight() << 
               " VideoGrabber is unavailable");
-    return mpOutput->SetFrameData(0, 0,
-        mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(),
-        mpOutput->GetSarWidth(),   mpOutput->GetSarHeight(),
-                                  (const BYTE *)buf,
-                                  true,
-                                  keyFrameNeeded,
-                                  mark);
+    PVideoOutputDevice::FrameData frameData;
+    frameData.width = mpOutput->GetFrameWidth();
+    frameData.height = mpOutput->GetFrameHeight();
+    frameData.sarWidth = mpOutput->GetSarWidth();
+    frameData.sarHeight = mpOutput->GetSarHeight();
+    frameData.pixels = (const BYTE *)buf;
+    frameData.mark = mark;
+    return mpOutput->SetFrameData(frameData);
   }
 
   PTRACE(6,"PVC\t::Write, frame size is " 
                << mpInput->GetFrameWidth() << "x" << mpInput->GetFrameHeight() << 
                " VideoGrabber is source of size");
-  return mpOutput->SetFrameData(0, 0,
-        mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
-        mpInput->GetSarWidth(),   mpInput->GetSarHeight(),
-                                (const BYTE *)buf,
-                                true,
-                                keyFrameNeeded,
-                                mark);  
+  PVideoOutputDevice::FrameData frameData;
+  frameData.width = mpInput->GetFrameWidth();
+  frameData.height = mpInput->GetFrameHeight();
+  frameData.sarWidth = mpInput->GetSarWidth();
+  frameData.sarHeight = mpInput->GetSarHeight();
+  frameData.pixels = (const BYTE *)buf;
+  frameData.mark = mark;
+  return mpOutput->SetFrameData(frameData);  
 
 }
 

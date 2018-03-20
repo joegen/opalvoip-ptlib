@@ -795,36 +795,46 @@ class PVideoOutputDevice : public PVideoDevice
      */
     virtual PBoolean CanCaptureVideo() const;
 
+    struct FrameData
+    {
+      unsigned     x;               ///< Horizontal position in frame where data is put
+      unsigned     y;               ///< Vertical position in frame where data is put
+      unsigned     width;           ///< Width of area in frame where data is put
+      unsigned     height;          ///< Height of area in frame where data is put
+      unsigned     sarWidth;        ///< Aspect ratio width of area in frame where data is put
+      unsigned     sarHeight;       ///< Aspect ratio height of area in frame where data is put
+      int64_t      timestamp;       ///< Display time for the frame
+      const BYTE * pixels;          ///< Data to put into the video frame store
+      bool         partialFrame;    ///< Indicate partial video frame
+      bool *       keyFrameNeeded;  ///< Indicates bad video and a new key frame is required
+      void *       mark;            // For backward compatibility, not sure what it is for ...
+
+      FrameData() { memset(this, 0, sizeof(*this)); }
+    };
+
     /**Set a section of the output frame buffer.
       */
     virtual PBoolean SetFrameData(
-      unsigned x,               ///< Horizontal position in frame where data is put
-      unsigned y,               ///< Vertical position in frame where data is put
-      unsigned width,           ///< Width of area in frame where data is put
-      unsigned height,          ///< Height of area in frame where data is put
-      const BYTE * data,        ///< Data to put into the video frame store
-      PBoolean endFrame = true  ///< Indicate no more data for this video frame
+      const FrameData & frameData   ///< Data for frame output
     ) = 0;
-    virtual PBoolean SetFrameData(
+
+    // For backward compatibility
+    bool SetFrameData(
       unsigned x,               ///< Horizontal position in frame where data is put
       unsigned y,               ///< Vertical position in frame where data is put
       unsigned width,           ///< Width of area in frame where data is put
       unsigned height,          ///< Height of area in frame where data is put
       const BYTE * data,        ///< Data to put into the video frame store
-      PBoolean endFrame,        ///< Indicate no more data for this video frame
-      bool & keyFrameNeeded     ///< Indicates bad video and a new key frame is required
+      bool endFrame = true      ///< Indicate no more data for this video frame
     );
-    virtual PBoolean SetFrameData(
+    bool SetFrameData(
       unsigned x,               ///< Horizontal position in frame where data is put
       unsigned y,               ///< Vertical position in frame where data is put
       unsigned width,           ///< Width of area in frame where data is put
       unsigned height,          ///< Height of area in frame where data is put
-      unsigned sarWidth,        ///< Aspect ratio width of area in frame where data is put
-      unsigned sarHeight,       ///< Aspect ratio height of area in frame where data is put
       const BYTE * data,        ///< Data to put into the video frame store
-      PBoolean endFrame,        ///< Indicate no more data for this video frame
-      bool & keyFrameNeeded,    ///< Indicates bad video and a new key frame is required
-      const void * mark
+      bool endFrame,            ///< Indicate no more data for this video frame
+      bool & keyFrameNeeded     ///< Indicates bad video and a new key frame is required
     );
 
     /**Allow the outputdevice decide whether the 
@@ -910,14 +920,7 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
 
     /**Set a section of the output frame buffer.
       */
-    virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame = true
-    );
+    virtual PBoolean SetFrameData(const FrameData & frameData);
 
     /**Indicate frame may be displayed.
       */

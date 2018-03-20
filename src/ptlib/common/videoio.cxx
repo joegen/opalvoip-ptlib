@@ -1159,10 +1159,7 @@ PINDEX PVideoOutputDeviceRGB::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
-                                         unsigned width, unsigned height,
-                                         const BYTE * data,
-                                         PBoolean endFrame)
+PBoolean PVideoOutputDeviceRGB::SetFrameData(const FrameData & frameData)
 {
   {
     PWaitAndSignal lock(m_mutex);
@@ -1170,14 +1167,14 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
     if (!IsOpen())
       return false;
 
-    if (x+width > m_frameWidth || y+height > m_frameHeight || PAssertNULL(data) == NULL)
+    if (frameData.x+frameData.width > m_frameWidth || frameData.y+frameData.height > m_frameHeight || PAssertNULL(frameData.pixels) == NULL)
       return false;
 
-    if (x == 0 && width == m_frameWidth && y == 0 && height == m_frameHeight) {
+    if (frameData.x == 0 && frameData.width == m_frameWidth && frameData.y == 0 && frameData.height == m_frameHeight) {
       if (m_converter != NULL)
-        m_converter->Convert(data, m_frameStore.GetPointer());
+        m_converter->Convert(frameData.pixels, m_frameStore.GetPointer());
       else
-        memcpy(m_frameStore.GetPointer(), data, height*m_scanLineWidth);
+        memcpy(m_frameStore.GetPointer(), frameData.pixels, frameData.height*m_scanLineWidth);
     }
     else {
       if (m_converter != NULL) {
@@ -1185,20 +1182,20 @@ PBoolean PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
         return false;
       }
 
-      if (x == 0 && width == m_frameWidth)
-        memcpy(m_frameStore.GetPointer() + y*m_scanLineWidth, data, height*m_scanLineWidth);
+      if (frameData.x == 0 && frameData.width == m_frameWidth)
+        memcpy(m_frameStore.GetPointer() + frameData.y*m_scanLineWidth, frameData.pixels, frameData.height*m_scanLineWidth);
       else {
-        for (unsigned dy = 0; dy < height; dy++)
-          memcpy(m_frameStore.GetPointer() + (y+dy)*m_scanLineWidth + x*m_bytesPerPixel,
-                 data + dy*width*m_bytesPerPixel, width*m_bytesPerPixel);
+        for (unsigned dy = 0; dy < frameData.height; dy++)
+          memcpy(m_frameStore.GetPointer() + (frameData.y+dy)*m_scanLineWidth + frameData.x*m_bytesPerPixel,
+                 frameData.pixels + dy*frameData.width*m_bytesPerPixel, frameData.width*m_bytesPerPixel);
       }
     }
   }
 
-  if (endFrame)
-    return FrameComplete();
+  if (frameData.partialFrame)
+    return true;
 
-  return true;
+  return FrameComplete();
 }
 
 
@@ -1489,34 +1486,35 @@ bool PVideoInputDevice::SetControl(PVideoControlInfo::Types, int, ControlMode)
 }
 
 
-PBoolean PVideoOutputDevice::SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame,
-      bool & /*keyFrameNeeded*/
-)
+bool PVideoOutputDevice::SetFrameData(unsigned x, unsigned y,
+                                      unsigned width, unsigned height,
+                                      const BYTE * pixels, bool endFrame)
 {
-  return SetFrameData(x, y, width, height, data, endFrame);
+  FrameData frameData;
+  frameData.x = x;
+  frameData.y = y;
+  frameData.width = width;
+  frameData.height = height;
+  frameData.pixels = pixels;
+  frameData.partialFrame = !endFrame;
+  return SetFrameData(frameData);
 }
 
 
-PBoolean PVideoOutputDevice::SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      unsigned /*saWidth*/,
-      unsigned /*sarHeight*/,
-      const BYTE * data,
-      PBoolean endFrame,
-      bool & keyFrameNeeded,
-    const void * /*mark*/
-)
+bool PVideoOutputDevice::SetFrameData(unsigned x, unsigned y,
+                                      unsigned width, unsigned height,
+                                      const BYTE * pixels, bool endFrame,
+                                      bool & keyFrameNeeded)
 {
-  return SetFrameData(x, y, width, height, data, endFrame, keyFrameNeeded);
+  FrameData frameData;
+  frameData.x = x;
+  frameData.y = y;
+  frameData.width = width;
+  frameData.height = height;
+  frameData.pixels = pixels;
+  frameData.partialFrame = !endFrame;
+  frameData.keyFrameNeeded = &keyFrameNeeded;
+  return SetFrameData(frameData);
 }
 
 

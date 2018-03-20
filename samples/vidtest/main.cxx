@@ -401,29 +401,31 @@ void VidTest::GrabAndDisplay(PThread &, P_INT_PTR)
       cerr << "Frame grab " << (grabberState ? "restored." : "failed!") << endl;
     }
 
-    unsigned width, height;
-    m_grabber->GetFrameSize(width, height);
+  PVideoOutputDevice::FrameData frameData;
+    m_grabber->GetFrameSize(frameData.width, frameData.height);
 
     for (PINDEX frameIndex = 0; frameIndex < m_converters.GetSize(); ++frameIndex) {
       if (m_converters[frameIndex].Convert(frames[frameIndex],
                                             frames[frameIndex+1].GetPointer(m_converters[frameIndex].GetMaxDstFrameBytes())))
-        m_converters[frameIndex].GetDstFrameSize(width, height);
+        m_converters[frameIndex].GetDstFrameSize(frameData.width, frameData.height);
       else
         cerr << "Frame conversion failed!" << endl;
     }
 
-    m_display->SetFrameSize(width, height);
+    m_display->SetFrameSize(frameData.width, frameData.height);
+    frameData.pixels = frames.back();
 
-    bool displayState = m_display->SetFrameData(0, 0, width, height, frames.back());
+    bool displayState = m_display->SetFrameData(frameData);
     if (oldDisplayState != displayState) {
       oldDisplayState = displayState;
       cerr << "Frame display " << (displayState ? "restored." : "failed!") << endl;
     }
 
     if (m_secondary != NULL) {
-      m_secondary->SetFrameSize(width, height);
+      m_secondary->SetFrameSize(frameData.width, frameData.height);
+      frameData.pixels = frames.back();
 
-      displayState = m_secondary->SetFrameData(0, 0, width, height, frames.back());
+      displayState = m_secondary->SetFrameData(frameData);
       if (oldSecondaryState != displayState) {
         oldSecondaryState = displayState;
         cerr << "Secondary Frame display " << (displayState ? "restored." : "failed!") << endl;

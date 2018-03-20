@@ -419,15 +419,14 @@ void PVideoOutputDevice_SDL::InternalSetFrameSize()
 }
 
 
-PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
-                                          unsigned width, unsigned height,
-                                          const BYTE * data,
-                                          PBoolean endFrame) 
+PBoolean PVideoOutputDevice_SDL::SetFrameData(const FrameData & frameData) 
 {
   if (!IsOpen())
     return false;
 
-  if (x != 0 || y != 0 || width != m_frameWidth || height != m_frameHeight || data == NULL || !endFrame)
+  if (frameData.x != 0 || frameData.y != 0 ||
+      frameData.width != m_frameWidth || frameData.height != m_frameHeight ||
+      frameData.pixels == NULL || frameData.partialFrame)
     return false;
 
   {
@@ -436,7 +435,7 @@ PBoolean PVideoOutputDevice_SDL::SetFrameData(unsigned x, unsigned y,
     PWaitAndSignal lock(m_texture_mutex);
     SDL_LockTexture(m_texture, NULL, &ptr, &pitch);
     if (pitch == (int)width)
-      memcpy(ptr, data, width*height*3/2);
+      memcpy(ptr, frameData.pixels, frameData.width*frameData.height*3/2);
     SDL_UnlockTexture(m_texture);
   }
   

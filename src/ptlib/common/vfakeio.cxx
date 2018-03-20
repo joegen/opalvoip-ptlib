@@ -2154,14 +2154,7 @@ class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
 
     /**Set a section of the output frame buffer.
       */
-    virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame = true
-    );
+    virtual PBoolean SetFrameData(const FrameData & frameData);
 
     /**Indicate frame may be displayed.
       */
@@ -2218,10 +2211,7 @@ PStringArray PVideoOutputDevice_NULLOutput::GetOutputDeviceNames()
 }
 
 
-PBoolean PVideoOutputDevice_NULLOutput::SetFrameData(unsigned /*x*/, unsigned /*y*/,
-                                          unsigned /*width*/, unsigned /*height*/,
-                                          const BYTE * /*data*/,
-                                          PBoolean /*endFrame*/)
+PBoolean PVideoOutputDevice_NULLOutput::SetFrameData(const FrameData &)
 {
   return true;
 }

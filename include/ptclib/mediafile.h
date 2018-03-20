@@ -254,14 +254,7 @@ class PVideoOutputDevice_MediaFile : public PVideoOutputDevice
     
     /**Set a section of the output frame buffer.
       */
-    virtual PBoolean SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      PBoolean endFrame = true
-    );
+    virtual PBoolean SetFrameData(const FrameData & frameData);
 
   protected:  
    PMediaFile * m_file;
