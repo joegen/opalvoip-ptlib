@@ -785,7 +785,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
   }
 
 #if P_SSL
-  if (url.GetScheme() == "https") {
+  if (url.GetScheme() == "https" || url.GetScheme() == "wss") {
     PSSLChannel * ssl = NULL;
     PSSLContext::Method method = PSSLContext::HighestTLS;
     for (;;) {
