@@ -79,9 +79,11 @@ class PVideoFile : public PFile
     bool SetFPSFromFilename(const PString & fn);
 
     operator const PVideoFrameInfo &() const { return m_videoInfo; }
+    bool IsFixedFrameSize() const { return m_fixedFrameSize; }
     bool GetFrameSize(unsigned & w, unsigned & h) const { return m_videoInfo.GetFrameSize(w, h); }
     unsigned GetFrameWidth() const { return m_videoInfo.GetFrameWidth(); }
     unsigned GetFrameHeight() const { return m_videoInfo.GetFrameHeight(); }
+    bool IsFixedFrameRate() const { return m_fixedFrameRate; }
     unsigned GetFrameRate() const { return m_videoInfo.GetFrameRate(); }
     PString GetColourFormat() const { return m_videoInfo.GetColourFormat(); }
 

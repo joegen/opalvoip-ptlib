@@ -39,6 +39,7 @@
 #include <ptclib/pwavfile.h>
 #include <ptlib/vconvert.h>
 #include <ptlib/pprocess.h>
+#include <ptclib/pvidfile.h>
 
 
 #define PTraceModule() "MediaFile"
@@ -318,10 +319,7 @@ bool PMediaFile::SoundChannel::Rewind()
 PMediaFile::VideoInputDevice::VideoInputDevice(const Ptr & mediaFile, unsigned track)
   : m_mediaFile(mediaFile)
   , m_track(track)
-  , m_pacing(500)
-  , m_frameRateAdjust(0)
 {
-  SetColourFormat(PVideoFrameInfo::YUV420P());
 }
 
 
@@ -334,6 +332,9 @@ PMediaFile::VideoInputDevice::~VideoInputDevice()
 PStringArray PMediaFile::VideoInputDevice::GetDeviceNames() const
 {
   PStringArray s;
+  PMediaFile::Factory::KeyList_T keys = PMediaFile::Factory::GetKeyList();
+  for (PMediaFile::Factory::KeyList_T::iterator it = keys.begin(); it != keys.end(); ++it)
+    s.AppendString(*it);
   return s;
 }
 
@@ -406,149 +407,9 @@ PBoolean PMediaFile::VideoInputDevice::Close()
 }
 
 
-PBoolean PMediaFile::VideoInputDevice::Start()
+bool PMediaFile::VideoInputDevice::InternalGetFrameData(BYTE * frame)
 {
-  return true;
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::Stop()
-{
-  return true;
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::IsCapturing()
-{
-  return IsOpen();
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{
-  m_pacing.Delay(1000/m_frameRate);
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
-{
-  if (m_mediaFile.IsNULL()) {
-    PTRACE(5, "Abort GetFrameDataNoDelay, closed.");
-    return false;
-  }
-
-  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(CalculateFrameBytes()) : frame;
-
-  if (m_mediaFile->IsOpen()) {
-    if (!m_mediaFile->ReadVideo(m_track, readBuffer))
-      m_mediaFile->Close();
-  }
-
-  if (!m_mediaFile->IsOpen()) {
-    switch (m_channelNumber) {
-      case Channel_PlayAndClose:
-      default:
-        PTRACE(4, "Completed play and close of " << m_mediaFile->GetFilePath());
-        return false;
-
-      case Channel_PlayAndRepeat:
-        if (!m_mediaFile->OpenForReading(m_deviceName)) {
-          PTRACE(2, "Could not rewind " << m_mediaFile->GetFilePath());
-          return false;
-        }
-        if (!m_mediaFile->ReadVideo(m_track, readBuffer))
-          return false;
-        break;
-
-      case Channel_PlayAndKeepLast:
-        PTRACE(4, "Completed play and keep last of " << m_mediaFile->GetFilePath());
-        break;
-
-      case Channel_PlayAndShowBlack:
-        PTRACE(4, "Completed play and show black of " << m_mediaFile->GetFilePath());
-        PColourConverter::FillYUV420P(0, 0,
-                                      m_frameWidth, m_frameHeight,
-                                      m_frameWidth, m_frameHeight,
-                                      readBuffer,
-                                      100, 100, 100);
-        break;
-    }
-  }
-
-  if (m_converter == NULL) {
-    if (bytesReturned != NULL)
-      *bytesReturned = CalculateFrameBytes();
-  }
-  else {
-    m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
-    if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
-      PTRACE(2, "Conversion failed with " << *m_converter);
-      return false;
-    }
-
-    if (bytesReturned != NULL)
-      *bytesReturned = m_converter->GetMaxDstFrameBytes();
-  }
-
-  return true;
-}
-
-
-PINDEX PMediaFile::VideoInputDevice::GetMaxFrameBytes()
-{
-  return GetMaxFrameBytesConverted(CalculateFrameBytes());
-}
-
-
-int PMediaFile::VideoInputDevice::GetNumChannels() 
-{
-  return ChannelCount;  
-}
-
-
-PStringArray PMediaFile::VideoInputDevice::GetChannelNames()
-{
-  PStringArray names(ChannelCount);
-  names[0] = "Once, then close";
-  names[1] = "Repeat";
-  names[2] = "Once, then still";
-  names[3] = "Once, then black";
-  return names;
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::SetColourFormat(const PString & newFormat)
-{
-  return (m_colourFormat *= newFormat);
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::SetFrameRate(unsigned rate)
-{
-  return rate == m_frameRate;
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
-                                                          unsigned & minHeight,
-                                                          unsigned & maxWidth,
-                                                          unsigned & maxHeight) 
-{
-  if (m_mediaFile.IsNULL()) {
-    PTRACE(2, "Cannot get frame size limits, no file opened.");
-    return false;
-  }
-
-  minWidth  = maxWidth  = m_frameWidth;
-  minHeight = maxHeight = m_frameHeight;
-  return true;
-}
-
-
-PBoolean PMediaFile::VideoInputDevice::SetFrameSize(unsigned width, unsigned height)
-{
-  return width == m_frameWidth && height == m_frameHeight;
+  return m_mediaFile->ReadVideo(m_track, frame);
 }
 
 
@@ -2396,9 +2257,13 @@ public:
   {
     PStringArray names;
 
+    PVideoFileFactory::KeyList_T ignoreExt = PVideoFileFactory::GetKeyList();
+
     PMediaFile::Factory::KeyList_T keyList = PMediaFile::Factory::GetKeyList();
-    for (PMediaFile::Factory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
-      names.AppendString("*" + *it);
+    for (PMediaFile::Factory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it) {
+      if (std::find(ignoreExt.begin(), ignoreExt.end(), *it) == ignoreExt.end())
+        names.AppendString("*" + *it);
+    }
 
     return names;
   }
@@ -2419,8 +2284,7 @@ PCREATE_VIDINPUT_PLUGIN_EX(MediaFile,
 
   virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
   {
-    PMediaFile::Factory::KeyList_T keyList = PMediaFile::Factory::GetKeyList();
-    return std::find(keyList.begin(), keyList.end(), PFilePath(deviceName).GetType()) != keyList.end();
+    return PVideoInputDevice_MediaFile::GetInputDeviceNames().GetValuesIndex("*"+PFilePath(deviceName).GetType()) != P_MAX_INDEX;
   }
 );
 

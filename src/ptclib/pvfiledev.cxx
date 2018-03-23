@@ -66,9 +66,6 @@ PCREATE_VIDINPUT_PLUGIN_EX(VideoFile,
 
 PVideoInputDevice_VideoFile::PVideoInputDevice_VideoFile()
   : m_file(NULL)
-  , m_pacing(500)
-  , m_frameRateAdjust(0)
-  , m_opened(false)
 {
   SetColourFormat(PVideoFrameInfo::YUV420P());
 }
@@ -80,8 +77,28 @@ PVideoInputDevice_VideoFile::~PVideoInputDevice_VideoFile()
 }
 
 
+PStringArray PVideoInputDevice_VideoFile::GetInputDeviceNames()
+{
+  PStringArray names;
+
+  PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
+  for (PVideoFileFactory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
+    names.AppendString("*" + *it);
+
+  return names;
+}
+
+
+PStringArray PVideoInputDevice_VideoFile::GetDeviceNames() const
+{
+  return GetInputDeviceNames();
+}
+
+
 PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*startImmediate*/)
 {
+  PWriteWaitAndSignal lock(m_mutex);
+
   Close();
 
   if (devName.IsEmpty())
@@ -132,21 +149,24 @@ PBoolean PVideoInputDevice_VideoFile::Open(const PString & devName, PBoolean /*s
 
   *static_cast<PVideoFrameInfo *>(this) = *m_file;
 
+  if (m_file->IsFixedFrameRate())
+    m_fixedFrameRate = m_file->GetFrameRate();
+
   m_deviceName = m_file->GetFilePath();
-  m_opened = true;
   return true;
 }
 
 
 PBoolean PVideoInputDevice_VideoFile::IsOpen() 
 {
-  return m_opened;
+  PReadWaitAndSignal lock(m_mutex);
+  return m_file != NULL && m_file->IsOpen();
 }
 
 
 PBoolean PVideoInputDevice_VideoFile::Close()
 {
-  m_opened = false;
+  PWriteWaitAndSignal lock(m_mutex);
 
   PBoolean ok = m_file != NULL && m_file->Close();
 
@@ -159,210 +179,11 @@ PBoolean PVideoInputDevice_VideoFile::Close()
 }
 
 
-PBoolean PVideoInputDevice_VideoFile::Start()
+bool PVideoInputDevice_VideoFile::InternalGetFrameData(BYTE * frame)
 {
-  return true;
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::Stop()
-{
-  return true;
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::IsCapturing()
-{
-  return IsOpen();
-}
-
-
-PStringArray PVideoInputDevice_VideoFile::GetInputDeviceNames()
-{
-  PStringArray names;
-
-  PVideoFileFactory::KeyList_T keyList = PVideoFileFactory::GetKeyList();
-  for (PVideoFileFactory::KeyList_T::iterator it = keyList.begin(); it != keyList.end(); ++it)
-    names.AppendString("*" + *it);
-
-  return names;
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::SetVideoFormat(VideoFormat newFormat)
-{
-  return PVideoDevice::SetVideoFormat(newFormat);
-}
-
-
-int PVideoInputDevice_VideoFile::GetNumChannels() 
-{
-  return ChannelCount;  
-}
-
-
-PStringArray PVideoInputDevice_VideoFile::GetChannelNames()
-{
-  PStringArray names(ChannelCount);
-  names[0] = "Once, then close";
-  names[1] = "Repeat";
-  names[2] = "Once, then still";
-  names[3] = "Once, then black";
-  return names;
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::SetColourFormat(const PString & newFormat)
-{
-  return (m_colourFormat *= newFormat);
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::SetFrameRate(unsigned rate)
-{
-  // Set file, if it will change, if not convert in GetFrameData
-  if (m_file != NULL)
-    m_file->SetFrameRate(rate);
-
-  return PVideoDevice::SetFrameRate(rate);
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::GetFrameSizeLimits(unsigned & minWidth,
-                                           unsigned & minHeight,
-                                           unsigned & maxWidth,
-                                           unsigned & maxHeight) 
-{
-  if (m_file == NULL) {
-    PTRACE(2, "Cannot get frame size limits, no file opened.");
-    return false;
-  }
-
-  unsigned width, height;
-  if (!m_file->GetFrameSize(width, height))
-    return false;
-
-  minWidth  = maxWidth  = width;
-  minHeight = maxHeight = height;
-  return true;
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::SetFrameSize(unsigned width, unsigned height)
-{
-  if (m_file == NULL) {
-    PTRACE(2, "Cannot set frame size, no file opened.");
-    return false;
-  }
-
-  return m_file->SetFrameSize(width, height) && PVideoDevice::SetFrameSize(width, height);
-}
-
-
-PINDEX PVideoInputDevice_VideoFile::GetMaxFrameBytes()
-{
-  return GetMaxFrameBytesConverted(m_file->GetFrameBytes());
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{
-  m_pacing.Delay(1000/m_frameRate);
-
-  if (!m_opened || PAssertNULL(m_file) == NULL) {
-    PTRACE(5, "Abort GetFrameData, closed.");
-    return false;
-  }
-
-  off_t frameNumber = m_file->GetPosition();
-
-  unsigned fileRate = m_file->GetFrameRate();
-  if (fileRate > m_frameRate) {
-    m_frameRateAdjust += fileRate;
-    while (m_frameRateAdjust > m_frameRate) {
-      m_frameRateAdjust -= m_frameRate;
-      ++frameNumber;
-    }
-    --frameNumber;
-  }
-  else if (fileRate < m_frameRate) {
-    if (m_frameRateAdjust < m_frameRate)
-      m_frameRateAdjust += fileRate;
-    else {
-      m_frameRateAdjust -= m_frameRate;
-      --frameNumber;
-    }
-  }
-
-  PTRACE(6, "Playing frame number " << frameNumber);
-  m_file->SetPosition(frameNumber);
-
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
-
-PBoolean PVideoInputDevice_VideoFile::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
-{
-  if (!m_opened || PAssertNULL(m_file) == NULL) {
-    PTRACE(5, "Abort GetFrameDataNoDelay, closed.");
-    return false;
-  }
-
-  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(m_file->GetFrameBytes()) : frame;
-
-  if (m_file->IsOpen()) {
-    if (!m_file->ReadFrame(readBuffer))
-      m_file->Close();
-  }
-
-  if (!m_file->IsOpen()) {
-    switch (m_channelNumber) {
-      case Channel_PlayAndClose:
-      default:
-        PTRACE(4, "Completed play and close of " << m_file->GetFilePath());
-        return false;
-
-      case Channel_PlayAndRepeat:
-        m_file->Open(m_deviceName, PFile::ReadOnly, PFile::MustExist);
-        if (!m_file->SetPosition(0)) {
-          PTRACE(2, "Could not rewind " << m_file->GetFilePath());
-          return false;
-        }
-        if (!m_file->ReadFrame(readBuffer))
-          return false;
-        break;
-
-      case Channel_PlayAndKeepLast:
-        PTRACE(4, "Completed play and keep last of " << m_file->GetFilePath());
-        break;
-
-      case Channel_PlayAndShowBlack:
-        PTRACE(4, "Completed play and show black of " << m_file->GetFilePath());
-        PColourConverter::FillYUV420P(0, 0,
-                                      m_frameWidth, m_frameHeight,
-                                      m_frameWidth, m_frameHeight,
-                                      readBuffer,
-                                      100, 100, 100);
-        break;
-    }
-  }
-
-  if (m_converter == NULL) {
-    if (bytesReturned != NULL)
-      *bytesReturned = m_file->GetFrameBytes();
-  }
-  else {
-    m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
-    if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
-      PTRACE(2, "Conversion failed with " << *m_converter);
-      return false;
-    }
-
-    if (bytesReturned != NULL)
-      *bytesReturned = m_converter->GetMaxDstFrameBytes();
-  }
-
-  return true;
+  PReadWaitAndSignal lock(m_mutex);
+  m_file->SetPosition(m_frameNumber++);
+  return m_file->ReadFrame(frame);
 }
 
 

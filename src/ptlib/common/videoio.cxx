@@ -1338,7 +1338,7 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString & driver
   if (device == NULL)
     return NULL;
 
-  PTRACE(4, device, "Found video input device \"" << device->GetDeviceName() << '"');
+  PTRACE(4, device, "Found video input device: " << device->GetClass());
   if (device->Open(adjustedDeviceName, startImmediate))
     return device;
 
@@ -1945,6 +1945,183 @@ bool PVideoInputDeviceIndirect::SetControl(PVideoControlInfo::Types type, int va
 {
   PWaitAndSignal lock(m_actualDeviceMutex);
   return m_actualDevice != NULL && m_actualDevice->SetControl(type, value, mode);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+PVideoInputEmulatedDevice::PVideoInputEmulatedDevice()
+  : m_pacing(500)
+  , m_fixedFrameRate(0)
+  , m_frameRateAdjust(0)
+  , m_frameNumber(0)
+{
+}
+
+
+PVideoInputEmulatedDevice::~PVideoInputEmulatedDevice()
+{
+  Close();
+}
+
+
+PBoolean PVideoInputEmulatedDevice::Start()
+{
+  return true;
+}
+
+
+PBoolean PVideoInputEmulatedDevice::Stop()
+{
+  return true;
+}
+
+
+PBoolean PVideoInputEmulatedDevice::IsCapturing()
+{
+  return IsOpen();
+}
+
+
+PBoolean PVideoInputEmulatedDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+{
+  m_pacing.Delay(1000/m_frameRate);
+
+  if (!IsOpen()) {
+    PTRACE(5, "Abort GetFrameData, closed.");
+    return false;
+  }
+
+  if (m_fixedFrameRate > 0) {
+    if (m_fixedFrameRate > m_frameRate) {
+      m_frameRateAdjust += m_fixedFrameRate;
+      while (m_frameRateAdjust > m_frameRate) {
+        m_frameRateAdjust -= m_frameRate;
+        ++m_frameNumber;
+      }
+      --m_frameNumber;
+    }
+    else if (m_fixedFrameRate < m_frameRate) {
+      if (m_frameRateAdjust < m_frameRate)
+        m_frameRateAdjust += m_fixedFrameRate;
+      else {
+        m_frameRateAdjust -= m_frameRate;
+        --m_frameNumber;
+      }
+    }
+
+    PTRACE(6, "Playing frame number " << m_frameNumber);
+  }
+
+  return GetFrameDataNoDelay(buffer, bytesReturned);
+}
+
+
+PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
+{
+  if (!IsOpen()) {
+    PTRACE(5, "Abort GetFrameDataNoDelay, closed.");
+    return false;
+  }
+
+  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(GetMaxFrameBytes()) : frame;
+
+  if (!InternalGetFrameData(readBuffer)) {
+    switch (m_channelNumber) {
+      case Channel_PlayAndClose:
+      default:
+        PTRACE(4, "Completed play and close of " << GetDeviceName());
+        return false;
+
+      case Channel_PlayAndRepeat:
+        m_frameNumber = 0;
+        if (!InternalGetFrameData(readBuffer)) {
+          return false;
+        }
+        break;
+
+      case Channel_PlayAndKeepLast:
+        PTRACE(4, "Completed play and keep last of " << GetDeviceName());
+        break;
+
+      case Channel_PlayAndShowBlack:
+        PTRACE(4, "Completed play and show black of " << GetDeviceName());
+        PColourConverter::FillYUV420P(0, 0,
+                                      m_frameWidth, m_frameHeight,
+                                      m_frameWidth, m_frameHeight,
+                                      readBuffer,
+                                      0, 0, 0);
+        break;
+
+      case Channel_PlayAndShowWhite:
+        PTRACE(4, "Completed play and show white of " << GetDeviceName());
+        PColourConverter::FillYUV420P(0, 0,
+                                      m_frameWidth, m_frameHeight,
+                                      m_frameWidth, m_frameHeight,
+                                      readBuffer,
+                                      255, 255, 255);
+        break;
+    }
+  }
+
+  if (m_converter != NULL) {
+    m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
+    if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
+      PTRACE(2, "Conversion failed with " << *m_converter);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+PBoolean PVideoInputEmulatedDevice::SetColourFormat(const PString & newFormat)
+{
+  return (m_colourFormat *= newFormat);
+}
+
+
+int PVideoInputEmulatedDevice::GetNumChannels() 
+{
+  return ChannelCount;  
+}
+
+
+PStringArray PVideoInputEmulatedDevice::GetChannelNames()
+{
+  PStringArray names(ChannelCount);
+  names[0] = "Once, then close";
+  names[1] = "Repeat";
+  names[2] = "Once, then still";
+  names[3] = "Once, then black";
+  return names;
+}
+
+
+PBoolean PVideoInputEmulatedDevice::GetFrameSizeLimits(unsigned & minWidth,
+                                                       unsigned & minHeight,
+                                                       unsigned & maxWidth,
+                                                       unsigned & maxHeight) 
+{
+  if (m_frameWidth == 0 || m_frameHeight == 0)
+    return false;
+
+  minWidth  = maxWidth  = m_frameWidth;
+  minHeight = maxHeight = m_frameHeight;
+  return true;
+}
+
+
+PBoolean PVideoInputEmulatedDevice::SetFrameRate(unsigned rate)
+{
+  return rate == m_frameRate;
+}
+
+
+PBoolean PVideoInputEmulatedDevice::SetFrameSize(unsigned width, unsigned height)
+{
+  return width == m_frameWidth && height == m_frameHeight;
 }
 
 
