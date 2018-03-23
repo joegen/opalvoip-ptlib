@@ -1051,6 +1051,9 @@ class PVideoInputDevice : public PVideoDevice
       PPluginManager * pluginMgr = NULL     ///< Plug in manager, use default if NULL
     );
 
+    static PBoolean GetInputDeviceCapabilities(const PString &, Capabilities *)
+      { return false; }
+
     /**Open the device given the device name.
       */
     virtual PBoolean Open(

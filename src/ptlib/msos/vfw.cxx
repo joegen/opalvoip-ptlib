@@ -106,10 +106,10 @@ class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
 
     /**Retrieve a list of Device Capabilities
       */
-    bool GetDeviceCapabilities(
+    virtual bool GetDeviceCapabilities(
       Capabilities * /*caps*/         ///< List of supported capabilities
     );
-    static PBoolean GetDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
+    static PBoolean GetInputDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
 
     /**Start the video device I/O.
       */
@@ -512,7 +512,7 @@ PBoolean PVideoInputDevice_VideoForWindows::Close()
 }
 
 
-PBoolean PVideoInputDevice_VideoForWindows::GetDeviceCapabilities(const PString & deviceName,
+PBoolean PVideoInputDevice_VideoForWindows::GetInputDeviceCapabilities(const PString & deviceName,
                                                                   Capabilities * capabilities)
 {
   PVideoInputDevice_VideoForWindows instance;

@@ -1344,13 +1344,6 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     virtual PStringArray GetDeviceNames() const
       { return GetInputDeviceNames(); }
 
-    /**Retrieve a list of Device Capabilities
-      */
-    static bool GetDeviceCapabilities(
-      const PString & /*deviceName*/, ///< Name of device
-      Capabilities * /*caps*/         ///< List of supported capabilities
-    ) { return false; }
-
     /**Get the maximum frame size in bytes.
 
        Note a particular device may be able to provide variable length

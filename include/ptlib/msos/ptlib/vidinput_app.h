@@ -55,13 +55,6 @@ class PVideoInputDevice_Application : public PVideoInputDevice
 
     virtual PStringArray GetDeviceNames() const;
 
-    /**Retrieve a list of Device Capabilities
-    */
-    static PBoolean GetDeviceCapabilities(
-      const PString & deviceName, ///< Name of device
-      Capabilities * caps         ///< List of supported capabilities
-    );
-
     /**Open the device given the device name.
       */
     virtual PBoolean Open(

@@ -218,7 +218,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
 
     static PStringArray GetInputDeviceNames();
     virtual PStringArray GetDeviceNames() const;
-    static PBoolean GetDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
+    static PBoolean GetInputDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
     virtual bool GetDeviceCapabilities(Capabilities * capabilities) const;
 #ifndef _WIN32_WCE
     virtual bool SetControl(PVideoControlInfo::Types type, int value, ControlMode mode);
@@ -393,7 +393,7 @@ PStringArray PVideoInputDevice_DirectShow::GetInputDeviceNames()
 }
 
 
-PBoolean PVideoInputDevice_DirectShow::GetDeviceCapabilities(const PString & deviceName,
+PBoolean PVideoInputDevice_DirectShow::GetInputDeviceCapabilities(const PString & deviceName,
                                                              Capabilities * capabilities)
 {
   PVideoInputDevice_DirectShow instance;

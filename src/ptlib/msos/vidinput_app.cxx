@@ -147,12 +147,6 @@ PStringArray PVideoInputDevice_Application::GetInputDeviceNames()
 }
 
 
-PBoolean PVideoInputDevice_Application::GetDeviceCapabilities(const PString & /*deviceName*/, Capabilities * /*caps*/)  
-{ 
-  return false; 
-}
-
-
 PBoolean PVideoInputDevice_Application::Open(const PString & deviceName, PBoolean /*startImmediate*/)
 {
   Close();

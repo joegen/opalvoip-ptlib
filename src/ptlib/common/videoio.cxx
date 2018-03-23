@@ -1262,9 +1262,9 @@ PVideoInputDevice * PVideoInputDevice::CreateDeviceByName(const PString & device
 }
 
 
-bool PVideoInputDevice::GetDeviceCapabilities(Capabilities * capabilities) const
+bool PVideoInputDevice::GetDeviceCapabilities(Capabilities * /*capabilities*/) const
 {
-  return GetDeviceCapabilities(GetDeviceName(), capabilities);
+  return false;
 }
 
 
