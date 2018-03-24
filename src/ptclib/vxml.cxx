@@ -320,6 +320,8 @@ public:
   }
 
 
+  class PreviewVideoDevice;
+
   int Preview(int instance, unsigned width, unsigned height, uint8_t * pixels)
   {
     PReadWaitAndSignal lock(m_mutex);
@@ -335,53 +337,52 @@ public:
 
     return m_library->SLPreview(&data);
   }
-
-
-  class PreviewVideoDevice : public PVideoInputEmulatedDevice
-  {
-    int m_instance;
-
-  public:
-    PreviewVideoDevice(int instance)
-      : m_instance(instance)
-    {
-      SetColourFormat(s_SignLanguageAnalyser.GetColourFormat());
-    }
-
-    virtual PStringArray GetDeviceNames() const
-    {
-      return SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION;
-    }
-
-    virtual PBoolean Open(const PString &, PBoolean)
-    {
-      return IsOpen();
-    }
-
-    virtual PBoolean IsOpen()
-    {
-      return m_instance >= 0;
-    }
-
-    virtual PBoolean Close()
-    {
-      m_instance = -1;
-      return true;
-    }
-
-  protected:
-    virtual bool InternalGetFrameData(BYTE * buffer)
-    {
-      int result = s_SignLanguageAnalyser.Preview(m_instance, m_frameWidth, m_frameHeight, buffer);
-      if (result >= 0)
-        return true;
-
-      PTRACE(2, "SignLanguageAnalyser preview failed with code: " << result);
-      return false;
-    }
-  };
 } s_SignLanguageAnalyser;
 
+
+class PVXMLSession::SignLanguageAnalyser::PreviewVideoDevice : public PVideoInputEmulatedDevice
+{
+  int m_instance;
+
+public:
+  PreviewVideoDevice(int instance)
+    : m_instance(instance)
+  {
+    SetColourFormat(s_SignLanguageAnalyser.GetColourFormat());
+  }
+
+  virtual PStringArray GetDeviceNames() const
+  {
+    return SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION;
+  }
+
+  virtual PBoolean Open(const PString &, PBoolean)
+  {
+    return IsOpen();
+  }
+
+  virtual PBoolean IsOpen()
+  {
+    return m_instance >= 0;
+  }
+
+  virtual PBoolean Close()
+  {
+    m_instance = -1;
+    return true;
+  }
+
+protected:
+  virtual bool InternalGetFrameData(BYTE * buffer)
+  {
+    int result = s_SignLanguageAnalyser.Preview(m_instance, m_frameWidth, m_frameHeight, buffer);
+    if (result >= 0)
+      return true;
+
+    PTRACE(2, "SignLanguageAnalyser preview failed with code: " << result);
+    return false;
+  }
+};
 #endif // P_VXML_VIDEO
 
 
