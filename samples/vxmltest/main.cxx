@@ -42,6 +42,7 @@ void VxmlTest::Main()
                   "C-input-channel: Video input channel\n"
                   "-output-driver: Video output driver\n"
                   "O-output-device: Video output device\n"
+                  "-output-channel: Video output channel\n"
 #endif
                   PTRACE_ARGLIST)) {
     args.Usage(cerr, "[ options ] <vxml-file>");
@@ -67,7 +68,7 @@ void VxmlTest::Main()
     PVideoOutputDevice::OpenArgs videoArgs;
     videoArgs.driverName = args.GetOptionString("input-driver");
     videoArgs.deviceName = args.GetOptionString("input-device");
-    videoArgs.channelNumber = args.GetOptionString("input-channel", "0").AsInteger();
+    videoArgs.channelNumber = args.GetOptionString("input-channel", "-1").AsInteger();
     m_grabber = PVideoInputDevice::CreateOpenedDevice(videoArgs);
     if (m_grabber == NULL) {
       cerr << "error: cannot open video device \"" << videoArgs.deviceName << "\"" << endl;
@@ -77,6 +78,7 @@ void VxmlTest::Main()
 
     videoArgs.driverName = args.GetOptionString("output-driver");
     videoArgs.deviceName = args.GetOptionString("output-device");
+    videoArgs.channelNumber = args.GetOptionString("output-channel", "-1").AsInteger();
     m_viewer = PVideoOutputDevice::CreateOpenedDevice(videoArgs);
     if (m_player == NULL) {
       cerr << "error: cannot open video device \"" << videoArgs.deviceName << "\"" << endl;
