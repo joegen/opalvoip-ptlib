@@ -2727,7 +2727,7 @@ PBoolean PVXMLSession::VideoReceiverDevice::SetColourFormat(const PString & colo
 
 PBoolean PVXMLSession::VideoReceiverDevice::SetFrameData(const FrameData & frameData)
 {
-  if (m_analayserInstance < -0 || frameData.partialFrame || frameData.x != 0 && frameData.y != 0)
+  if (m_analayserInstance < 0 || frameData.partialFrame || frameData.x != 0 || frameData.y != 0)
     return false;
 
   const void * pixels;
