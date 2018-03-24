@@ -294,7 +294,7 @@ public:
   bool ReleaseInstance(int instance)
   {
     PWriteWaitAndSignal lock(m_mutex);
-    if (instance >= m_instancesInUse.size())
+    if (instance >= (int)m_instancesInUse.size())
       return false;
 
     m_instancesInUse[instance] = false;
@@ -305,7 +305,7 @@ public:
   int Analyse(int instance, unsigned width, unsigned height, int64_t timestamp, const void * pixels)
   {
     PReadWaitAndSignal lock(m_mutex);
-    if (m_library == NULL || instance >= m_instancesInUse.size())
+    if (m_library == NULL || instance >= (int)m_instancesInUse.size())
       return 0;
 
     SLAnalyserData data;
@@ -323,7 +323,7 @@ public:
   int Preview(int instance, unsigned width, unsigned height, uint8_t * pixels)
   {
     PReadWaitAndSignal lock(m_mutex);
-    if (m_library == NULL || instance >= m_instancesInUse.size())
+    if (m_library == NULL || instance >= (int)m_instancesInUse.size())
       return 0;
 
     SLPreviewData data;
@@ -2621,7 +2621,7 @@ PBoolean PVXMLSession::TraversedPrompt(PXMLElement &)
 }
 
 
-PBoolean PVXMLSession::TraverseField(PXMLElement & element)
+PBoolean PVXMLSession::TraverseField(PXMLElement &)
 {
   return true;
 }
@@ -2709,8 +2709,10 @@ PBoolean PVXMLSession::VideoReceiverDevice::Close()
   if (!IsOpen())
     return false;
 
-  if (s_SignLanguageAnalyser.ReleaseInstance(m_analayserInstance))
+  if (s_SignLanguageAnalyser.ReleaseInstance(m_analayserInstance)) {
     PTRACE(3, "Closing SignLanguageAnalyser instance " << m_analayserInstance);
+  }
+
   m_analayserInstance = -1;
   return true;
 }
