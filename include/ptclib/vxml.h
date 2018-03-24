@@ -296,7 +296,7 @@ class PVXMLSession : public PIndirectChannel
           PVideoOutputDevice & GetVideoReceiver()       { return m_videoReceiver; }
     const PVideoInputDevice & GetVideoSender() const { return m_videoSender; }
           PVideoInputDevice & GetVideoSender()       { return m_videoSender; }
-    bool SetVideoRecogniser(const PString & dllName);
+    static bool SetSignLanguageAnalyser(const PString & dllName);
 #endif // P_VXML_VIDEO
 
   protected:
@@ -325,23 +325,28 @@ class PVXMLSession : public PIndirectChannel
 
 #if P_VXML_VIDEO
     void SetRealVideoSender(PVideoInputDevice * device);
+    class SignLanguageAnalyser;
+    PDECLARE_ScriptFunctionNotifier(PVXMLSession, SignLanguagePreviewFunction);
 
-    class VideoReceiverDevice : public PVideoOutputDeviceRGB
+    class VideoReceiverDevice : public PVideoOutputDevice
     {
-      PCLASSINFO(VideoReceiverDevice, PVideoOutputDeviceRGB)
+      PCLASSINFO(VideoReceiverDevice, PVideoOutputDevice)
     public:
       VideoReceiverDevice(PVXMLSession & vxmlSession);
+      ~VideoReceiverDevice() { Close(); }
       virtual PStringArray GetDeviceNames() const;
       virtual PBoolean Open(const PString & deviceName, PBoolean startImmediate = true);
       virtual PBoolean IsOpen();
-      virtual PBoolean FrameComplete();
+      virtual PBoolean Close();
+      virtual PBoolean SetColourFormat(const PString & colourFormat);
+      virtual PBoolean SetFrameData(const FrameData & frameData);
+      int GetAnalayserInstance() const { return m_analayserInstance; }
     protected:
       PVXMLSession & m_vxmlSession;
+      int            m_analayserInstance;
     };
     VideoReceiverDevice       m_videoReceiver;
     PVideoInputDeviceIndirect m_videoSender;
-    PDynaLink                 m_videoRecogniserLibrary;
-    PDynaLink::Function       m_videoRecogniserFunction;
 #endif // P_VXML_VIDEO
 
     PThread     *    m_vxmlThread;

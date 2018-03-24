@@ -13,6 +13,7 @@
 #include <ptlib/pprocess.h>
 
 class PVXMLSession;
+class PVideoInputDevice;
 class PVideoOutputDevice;
 
 
@@ -26,14 +27,16 @@ class VxmlTest : public PProcess
 
   protected:
     PSoundChannel      * m_player;
+    PVideoInputDevice  * m_grabber;
     PVideoOutputDevice * m_viewer;
     PVXMLSession       * m_vxml;
 
 #if P_VXML
     void HandleInput(PConsoleChannel & console);
     void CopyAudio();
-#if P_VIDEO
-    void CopyVideo();
+#if P_VXML_VIDEO
+    void CopyVideoSender();
+    void CopyVideoReceiver();
 #endif
 #endif
 };

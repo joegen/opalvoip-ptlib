@@ -35,10 +35,12 @@
 #include <ptclib/vxml.h>
 
 #include <ptlib/pprocess.h>
+#include <ptlib/vconvert.h>
 #include <ptclib/memfile.h>
 #include <ptclib/random.h>
 #include <ptclib/http.h>
 #include <ptclib/mediafile.h>
+#include <ptclib/SignLanguageAnalyser.h>
 
 
 #define PTraceModule() "VXML"
@@ -173,6 +175,214 @@ PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverseLog, "Log", true);
 static PConstString ApplicationScope("application");
 static PConstString DialogScope("dialog");
 static PConstString PropertyScope("property");
+
+
+//////////////////////////////////////////////////////////
+
+#if P_VXML_VIDEO
+
+#define SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION "SignLanguageAnalyserPreview"
+
+class PVXMLSession::SignLanguageAnalyser : public PObject
+{
+  PDECLARE_READ_WRITE_MUTEX(m_mutex);
+  PString      m_colourFormat;
+  vector<bool> m_instancesInUse;
+
+
+  struct Library : PDynaLink
+  {
+    EntryPoint<SLInitialiseFn> SLInitialise;
+    EntryPoint<SLAnalyseFn>    SLAnalyse;
+    EntryPoint<SLPreviewFn>    SLPreview;
+
+    Library(const PFilePath & dllName)
+      : PDynaLink(dllName)
+      , P_DYNALINK_ENTRY_POINT(SLInitialise)
+      , P_DYNALINK_ENTRY_POINT(SLAnalyse)
+      , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLPreview)
+    {
+    }
+  } *m_library;
+
+public:
+  bool SetAnalyser(const PFilePath & dllName)
+  {
+    PWriteWaitAndSignal lock(m_mutex);
+
+    delete m_library;
+    m_library = new Library(dllName);
+
+    if (!m_library->IsLoaded())
+      PTRACE(2, NULL, PTraceModule(), "Could not open Sign Language Analyser dynamic library \"" << dllName << '"');
+    else {
+      SLAnalyserInit init;
+      memset(&init, 0, sizeof(init));
+      init.m_apiVersion = SL_API_VERSION;
+      int error = m_library->SLInitialise(&init);
+      if (error < 0)
+        PTRACE(2, "Error " << error << " initialising Sign Language Analyser dynamic library \"" << dllName << '"');
+      else {
+        switch (init.m_videoFormat) {
+          case SL_GreyScale:
+            m_colourFormat = "Grey";
+            break;
+          case SL_RGB24:
+            m_colourFormat = "RGB24";
+            break;
+          case SL_BGR24:
+            m_colourFormat = "BGR24";
+            break;
+          case SL_RGB32:
+            m_colourFormat = "RGB32";
+            break;
+          case SL_BGR32:
+            m_colourFormat = "BGR32";
+            break;
+          default:
+            break;
+        }
+
+        m_instancesInUse.resize(init.m_maxInstances);
+
+        PTRACE(3, "Loaded Sign Language Analyser dynamic library \"" << dllName << '"');
+        return true;
+      }
+    }
+
+    delete m_library;
+    m_library = NULL;
+    return false;
+  }
+
+
+  SignLanguageAnalyser()
+    : m_library(NULL)
+  {
+  }
+
+
+  ~SignLanguageAnalyser()
+  {
+    delete m_library;
+  }
+
+
+  const PString & GetColourFormat() const
+  {
+    return m_colourFormat;
+  }
+
+
+  int AllocateInstance()
+  {
+    PWriteWaitAndSignal lock(m_mutex);
+    if (m_library == NULL)
+      return INT_MAX;
+
+    for (size_t i = 0; i < m_instancesInUse.size(); ++i) {
+      if (!m_instancesInUse[i]) {
+        m_instancesInUse[i] = true;
+        return i;
+      }
+    }
+
+    return INT_MAX;
+  }
+
+
+  bool ReleaseInstance(int instance)
+  {
+    PWriteWaitAndSignal lock(m_mutex);
+    if (instance >= m_instancesInUse.size())
+      return false;
+
+    m_instancesInUse[instance] = false;
+    return true;
+  }
+
+
+  int Analyse(int instance, unsigned width, unsigned height, int64_t timestamp, const void * pixels)
+  {
+    PReadWaitAndSignal lock(m_mutex);
+    if (m_library == NULL || instance >= m_instancesInUse.size())
+      return 0;
+
+    SLAnalyserData data;
+    memset(&data, 0, sizeof(data));
+    data.m_instance = instance;
+    data.m_width = width;
+    data.m_height = height;
+    data.m_timestamp = static_cast<unsigned>(timestamp);
+    data.m_pixels = pixels;
+
+    return m_library->SLAnalyse(&data);
+  }
+
+
+  int Preview(int instance, unsigned width, unsigned height, uint8_t * pixels)
+  {
+    PReadWaitAndSignal lock(m_mutex);
+    if (m_library == NULL || instance >= m_instancesInUse.size())
+      return 0;
+
+    SLPreviewData data;
+    memset(&data, 0, sizeof(data));
+    data.m_instance = instance;
+    data.m_width = width;
+    data.m_height = height;
+    data.m_pixels = pixels;
+
+    return m_library->SLPreview(&data);
+  }
+
+
+  class PreviewVideoDevice : public PVideoInputEmulatedDevice
+  {
+    int m_instance;
+
+  public:
+    PreviewVideoDevice(int instance)
+      : m_instance(instance)
+    {
+      SetColourFormat(s_SignLanguageAnalyser.GetColourFormat());
+    }
+
+    virtual PStringArray GetDeviceNames() const
+    {
+      return SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION;
+    }
+
+    virtual PBoolean Open(const PString &, PBoolean)
+    {
+      return IsOpen();
+    }
+
+    virtual PBoolean IsOpen()
+    {
+      return m_instance >= 0;
+    }
+
+    virtual PBoolean Close()
+    {
+      m_instance = -1;
+      return true;
+    }
+
+  protected:
+    virtual bool InternalGetFrameData(BYTE * buffer)
+    {
+      int result = s_SignLanguageAnalyser.Preview(m_instance, m_frameWidth, m_frameHeight, buffer);
+      if (result >= 0)
+        return true;
+
+      PTRACE(2, "SignLanguageAnalyser preview failed with code: " << result);
+      return false;
+    }
+  };
+} s_SignLanguageAnalyser;
+
+#endif // P_VXML_VIDEO
 
 
 //////////////////////////////////////////////////////////
@@ -757,6 +967,9 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
     m_scriptContext->CreateComposite("session.connection");
     m_scriptContext->CreateComposite("session.connection.local");
     m_scriptContext->CreateComposite("session.connection.remote");
+#if P_VXML_VIDEO
+    m_scriptContext->SetFunction(SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION, PCREATE_NOTIFIER(SignLanguagePreviewFunction));
+#endif
   }
 #endif
 
@@ -1101,6 +1314,11 @@ PBoolean PVXMLSession::Close()
   m_abortVXML = true;
   Trigger();
   PThread::WaitAndDelete(m_vxmlThread, 10000, &m_sessionMutex, false);
+
+#if P_VXML_VIDEO
+  m_videoReceiver.Close();
+  m_videoSender.Close();
+#endif // P_VXML_VIDEO
 
   return PIndirectChannel::Close();
 }
@@ -1508,13 +1726,10 @@ PBoolean PVXMLSession::TraverseScript(PXMLElement & element)
 
     PTRACE(4, "Traverse script> " << script);
   
-    if (m_scriptContext->Run(PSTRSTRM(script)))
-    {
+    if (m_scriptContext->Run(script))
       PTRACE(4, "script executed properly!");
-      return true;
-    }
-
-    PTRACE(2, "Could not evaluate script \"" << script << "\" with script language " << m_scriptContext->GetLanguageName());
+    else
+      PTRACE(2, "Could not evaluate script \"" << script << "\" with script language " << m_scriptContext->GetLanguageName());
   }
 #else
   PTRACE(2, "Unsupported <script> element");
@@ -1536,10 +1751,17 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
   }
 #endif
 
-  // Should be full ECMAScript but ...
-  // We only support expressions of the form 'literal'+variable or all digits
+  /* If we don't have full ECMAScript, or any other script engine for that matter ...
+     We only support extremeley limited expressions, generally of the form
+     'literal' or all numeric digits, with + signs allow concatenation of
+     those elements. */
 
   PString result;
+
+#if P_VXML_VIDEO
+  if (expr == SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION "()")
+    SetRealVideoSender(new SignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver.GetAnalayserInstance()));
+#endif
 
   PINDEX pos = 0;
   while (pos < expr.GetLength()) {
@@ -1651,6 +1873,10 @@ PBoolean PVXMLSession::PlayElement(PXMLElement & element)
 {
   if (m_bargingIn)
     return false;
+
+#if P_VXML_VIDEO
+  SetRealVideoSender(NULL);
+#endif // P_VXML_VIDEO
 
   PString str = element.GetAttribute("src").Trim();
   if (str.IsEmpty()) {
@@ -1928,13 +2154,13 @@ PBoolean PVXMLSession::TraverseGrammar(PXMLElement & element)
   }
 
   PTRACE(4, "Loading new grammar");
-  PStringToString tokens;
+  PStringOptions tokens;
   PURL::SplitVars(element.GetData(), tokens, ';', '=');
   return LoadGrammar(new PVXMLDigitsGrammar(*this,
                                             *element.GetParent(),
-                                            tokens("minDigits", "1").AsUnsigned(),
-                                            tokens("maxDigits", "10").AsUnsigned(),
-                                            tokens("terminators", "#")));
+                                            tokens.GetInteger("minDigits", 1),
+                                            tokens.GetInteger("maxDigits", 10),
+                                            tokens.GetString("terminators", "#")));
 }
 
 
@@ -2395,7 +2621,7 @@ PBoolean PVXMLSession::TraversedPrompt(PXMLElement &)
 }
 
 
-PBoolean PVXMLSession::TraverseField(PXMLElement &)
+PBoolean PVXMLSession::TraverseField(PXMLElement & element)
 {
   return true;
 }
@@ -2428,27 +2654,11 @@ void PVXMLSession::Trigger()
 
 
 #if P_VXML_VIDEO
-bool PVXMLSession::SetVideoRecogniser(const PString & dllName)
+
+bool PVXMLSession::SetSignLanguageAnalyser(const PString & dllName)
 {
-  if (!m_videoRecogniserLibrary.Open(dllName)) {
-    PTRACE(2, "Could not open dynamic library \"" << dllName << '"');
-    return false;
-  }
-
-  PDynaLink::Function initialise;
-  if (!m_videoRecogniserLibrary.GetFunction("Initialise", initialise, true) ||
-      !m_videoRecogniserLibrary.GetFunction("Process", m_videoRecogniserFunction, true)) {
-    PTRACE(2, "Incorrect functions in dynamic library \"" << dllName << '"');
-    return false;
-  }
-
-  if (reinterpret_cast<bool (*)(void)>(initialise)())
-    return true;
-
-  m_videoRecogniserLibrary.Close();
-  return false;
+  return s_SignLanguageAnalyser.SetAnalyser(dllName);
 }
-
 
 void PVXMLSession::SetRealVideoSender(PVideoInputDevice * device)
 {
@@ -2463,38 +2673,73 @@ void PVXMLSession::SetRealVideoSender(PVideoInputDevice * device)
 }
 
 
+void PVXMLSession::SignLanguagePreviewFunction(PScriptLanguage &, PScriptLanguage::Signature &)
+{
+  SetRealVideoSender(new SignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver.GetAnalayserInstance()));
+}
+
+
 PVXMLSession::VideoReceiverDevice::VideoReceiverDevice(PVXMLSession & vxmlSession)
   : m_vxmlSession(vxmlSession)
+  , m_analayserInstance(s_SignLanguageAnalyser.AllocateInstance())
 {
 }
 
 
 PStringArray PVXMLSession::VideoReceiverDevice::GetDeviceNames() const
 {
-  return PStringArray();
+  return "SignLanguageAnalyser";
 }
 
 
 PBoolean PVXMLSession::VideoReceiverDevice::Open(const PString &, PBoolean)
 {
-  return true;
+  return IsOpen();
 }
 
 
 PBoolean PVXMLSession::VideoReceiverDevice::IsOpen()
 {
+  return m_analayserInstance >= 0;
+}
+
+
+PBoolean PVXMLSession::VideoReceiverDevice::Close()
+{
+  if (!IsOpen())
+    return false;
+
+  if (s_SignLanguageAnalyser.ReleaseInstance(m_analayserInstance))
+    PTRACE(3, "Closing SignLanguageAnalyser instance " << m_analayserInstance);
+  m_analayserInstance = -1;
   return true;
 }
 
 
-PBoolean PVXMLSession::VideoReceiverDevice::FrameComplete()
+PBoolean PVXMLSession::VideoReceiverDevice::SetColourFormat(const PString & colourFormat)
 {
-  if (m_vxmlSession.m_videoRecogniserLibrary.IsLoaded()) {
-    int result = reinterpret_cast<int(*)(unsigned, unsigned, void *)>(m_vxmlSession.m_videoRecogniserFunction)
-                                                      (m_frameWidth, m_frameHeight, m_frameStore.GetPointer());
-    if (result > 0)
-      m_vxmlSession.OnUserInput((char)result);
+  return colourFormat == s_SignLanguageAnalyser.GetColourFormat();
+}
+
+
+PBoolean PVXMLSession::VideoReceiverDevice::SetFrameData(const FrameData & frameData)
+{
+  if (m_analayserInstance < -0 || frameData.partialFrame || frameData.x != 0 && frameData.y != 0)
+    return false;
+
+  const void * pixels;
+  if (m_converter != NULL) {
+    BYTE * storePtr = m_frameStore.GetPointer(m_converter->GetMaxDstFrameBytes());
+    if (!m_converter->Convert(frameData.pixels, storePtr))
+      return false;
+    pixels = storePtr;
   }
+  else
+    pixels = frameData.pixels;
+
+  int result = s_SignLanguageAnalyser.Analyse(m_analayserInstance, frameData.width, frameData.height, frameData.timestamp, pixels);
+  if (result > 0)
+    m_vxmlSession.OnUserInput((char)result);
 
   return true;
 }
