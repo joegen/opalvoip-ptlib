@@ -343,7 +343,7 @@ void PURL::SplitVars(const PString & str, PStringToString & vars, char sep1, cha
       }
     }
 
-    key = PURL::UntranslateString(key, type);
+    key = PURL::UntranslateString(key.Trim(), type);
     if (!key.IsEmpty()) {
       data = PURL::UntranslateString(data, type);
       if (vars.Contains(key))
