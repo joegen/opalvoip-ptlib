@@ -34,6 +34,8 @@
 #if P_V8
 
 #include <ptlib/pprocess.h>
+#include <ptlib/notifier_ext.h>
+
 
 /*
 Requires Google's V8 version 6 or later
@@ -238,6 +240,8 @@ struct PJavaScript::Private : PObject
 {
   PCLASSINFO(PJavaScript::Private, PObject);
 
+  PJavaScript & m_owner;
+
 #if V8_MAJOR_VERSION > 3
   v8::Isolate::CreateParams m_isolateParams;
 #endif
@@ -302,8 +306,9 @@ struct PJavaScript::Private : PObject
   };
 
 public:
-  Private()
-    : m_isolate(NULL)
+  Private(PJavaScript & owner)
+    : m_owner(owner)
+    , m_isolate(NULL)
   {
     if (!PSafeSingleton<Intialisation>()->m_initialised)
       return;
@@ -372,59 +377,50 @@ public:
   }
 
 
-  bool GetVar(const PString & key, PVarType & var)
+  v8::Handle<v8::Object> GetObjectHandle(const v8::Local<v8::Context> & context, const PString & key, PString & var)
   {
-    if (m_isolate == NULL)
-      return false;
-
-    v8::Isolate::Scope isolateScope(m_isolate);
-    v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Context> context = GetContext();
-    v8::Context::Scope contextScope(context);
-
     PStringArray tokens;
     if (ParseKey(key, tokens) < 1) {
-      PTRACE(5, "GetVar '" << key << " is too short");
-      return false;
+      PTRACE(3, "SetVar \"" << key << "\" is too short");
+      return v8::Handle<v8::Object>();
     }
 
-    v8::Handle<v8::Value> value;
     v8::Handle<v8::Object> object = context->Global();
 
-    int i = 0;
-
-    for (;;) {
-
+    PINDEX i;
+    for (i = 0; i < tokens.GetSize()-1; ++i) {
       // get the member variable
-      value = GetMember(object, tokens[i]);
+      v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
       if (value.IsEmpty()) {
-        PTRACE(5, "Cannot get element '" << tokens[i] << "'");
-        return false;
-      }
-
-      // see if end of path
-      if (i == (tokens.GetSize() - 1))
+        PTRACE(3, "Cannot get element \"" << tokens[i] << '"');
+        object.Clear();
         break;
-
-      // terminals must not be composites, internal nodes must be composites
-      bool isObject = value->IsObject();
-      if (!isObject) {
-        tokens.SetSize(i + 1);
-        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << "' is not a composite");
-        return false;
       }
 
       // if path has ended, return error
       object = value->ToObject();
-      if (object->IsNull()) {
-        tokens.SetSize(i + 1);
-        PTRACE(5, "GetVar intermediate node '" << setfill('.') << tokens << " not found");
-        return false;
+      if (object.IsEmpty()) {
+        PTRACE(3, "Intermediate element \"" << tokens[i] << "\" not found");
+        object.Clear();
+        break;
       }
 
-      i++;
+      // terminals must not be composites, internal nodes must be composites
+      bool isObject = value->IsObject();
+      if (!isObject) {
+        PTRACE(3, "Intermediate element \"" << tokens[i] << "\" is not a composite");
+        object.Clear();
+        break;
+      }
     }
 
+    var = tokens[i];
+    return object;
+  }
+
+
+  bool GetVarValue(v8::Handle<v8::Value> value, PVarType & var PTRACE_PARAM(, const PString & key))
+  {
     if (value->IsInt32()) {
       var = PVarType(value->Int32Value());
       return true;
@@ -450,14 +446,78 @@ public:
       return true;
     }
 
-    PTRACE(5, "Unable to determine type of '" << key << "' = " << *v8::String::Utf8Value(value));
+    PTRACE(3, "Unable to determine type of '" << key << "' = " << *v8::String::Utf8Value(value));
+    var.SetType(PVarType::VarNULL);
     return false;
+  }
+
+
+  bool GetVar(const PString & key, PVarType & var)
+  {
+    if (m_isolate == NULL)
+      return false;
+
+    v8::Isolate::Scope isolateScope(m_isolate);
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Context> context = GetContext();
+    v8::Context::Scope contextScope(context);
+
+    PString varName;
+    v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
+    if (object.IsEmpty())
+      return false;
+
+    return GetVarValue(GetMember(object, varName), var PTRACE_PARAM(, key));
   }
 
 
   bool NewObject(const PString & name)
   {
     return false;
+  }
+
+
+  v8::Handle<v8::Value> SetVarValue(const PVarType & var PTRACE_PARAM(, const PString & key))
+  {
+    switch (var.GetType()) {
+      case PVarType::VarNULL:
+        return v8::Handle<v8::Value>();
+
+      case PVarType::VarBoolean:
+        return NewObject<v8::Boolean>(var.AsBoolean());
+
+      case PVarType::VarChar:
+      case PVarType::VarStaticString:
+      case PVarType::VarFixedString:
+      case PVarType::VarDynamicString:
+      case PVarType::VarGUID:
+        return NewString(var.AsString());
+
+      case PVarType::VarInt8:
+      case PVarType::VarInt16:
+      case PVarType::VarInt32:
+        return NewObject<v8::Int32>(var.AsInteger());
+
+      case PVarType::VarUInt8:
+      case PVarType::VarUInt16:
+      case PVarType::VarUInt32:
+        return NewObject<v8::Uint32>(var.AsUnsigned());
+
+      case PVarType::VarInt64:
+      case PVarType::VarUInt64:
+        // Until V8 suppies a 64 bit integer, we use double
+
+      case PVarType::VarFloatSingle:
+      case PVarType::VarFloatDouble:
+      case PVarType::VarFloatExtended:
+        return NewObject<v8::Number>(var.AsFloat());
+
+      case PVarType::VarTime:
+      case PVarType::VarStaticBinary:
+      case PVarType::VarDynamicBinary:
+      default:
+        return v8::Object::New(m_isolate);
+    }
   }
 
 
@@ -471,88 +531,76 @@ public:
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
 
-    PStringArray tokens;
-    if (ParseKey(key, tokens) < 1) {
-      PTRACE(3, "SetVar \"" << key << "\" is too short");
+    PString varName;
+    v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
+    if (object.IsEmpty())
       return false;
-    }
 
-    v8::Handle<v8::Object> object = context->Global();
+    return SetMember(object, varName, SetVarValue(var PTRACE_PARAM(, key)));
+  }
 
-    PINDEX i;
-    for (i = 0; i < tokens.GetSize()-1; ++i) {
-      // get the member variable
-      v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
-      if (value.IsEmpty()) {
-        PTRACE(3, "Cannot get element \"" << tokens[i] << '"');
-        return false;
-      }
 
-      // if path has ended, return error
-      object = value->ToObject();
-      if (object.IsEmpty()) {
-        PTRACE(3, "SetVar intermediate element \"" << tokens[i] << "\" not found");
-        return false;
-      }
+  struct NotifierInfo {
+    PJavaScript    & m_owner;
+    PString          m_key;
+    PNotifierListTemplate<Signature &> m_notifiers;
+    NotifierInfo(PJavaScript & owner, const PString & key)
+      : m_owner(owner)
+      , m_key(key)
+    { }
+  };
+  std::map<PString, NotifierInfo> m_notifiers;
 
-      // terminals must not be composites, internal nodes must be composites
-      bool isObject = value->IsObject();
-      if (!isObject) {
-        PTRACE(3, "SetVar intermediate element \"" << tokens[i] << "\" is not a composite");
-        return false;
-      }
-    }
+  void FunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& callbackInfo, NotifierInfo & notifierInfo)
+  {
+    Signature signature;
 
-    v8::Handle<v8::Value> value;
+    int nargs = callbackInfo.Length();
+    signature.m_arguments.resize(nargs);
+    for (int arg = 0; arg < nargs; ++arg)
+      GetVarValue(callbackInfo[arg], signature.m_arguments[arg] PTRACE_PARAM(, notifierInfo.m_key));
 
-    switch (var.GetType()) {
-      case PVarType::VarNULL:
-        //return object->Set(strKey, v8::Null::New());
-        break;
+    notifierInfo.m_notifiers(notifierInfo.m_owner, signature);
 
-      case PVarType::VarBoolean:
-        value = NewObject<v8::Boolean>(var.AsBoolean());
-        break;
+    if (!signature.m_results.empty())
+      callbackInfo.GetReturnValue().Set(SetVarValue(signature.m_results[0] PTRACE_PARAM(, notifierInfo.m_key)));
+  }
 
-      case PVarType::VarChar:
-      case PVarType::VarStaticString:
-      case PVarType::VarFixedString:
-      case PVarType::VarDynamicString:
-      case PVarType::VarGUID:
-        value = NewString(var.AsString());
-        break;
+  static void StaticFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& callbackInfo)
+  {
+    v8::Local<v8::Value> callbackData = callbackInfo.Data();
+    if (callbackData.IsEmpty() || !callbackData->IsExternal())
+      return;
 
-      case PVarType::VarInt8:
-      case PVarType::VarInt16:
-      case PVarType::VarInt32:
-        value = NewObject<v8::Int32>(var.AsInteger());
-        break;
+    NotifierInfo & notifierInfo = *reinterpret_cast<NotifierInfo *>(v8::Local<v8::External>::Cast(callbackData)->Value());
+    notifierInfo.m_owner.m_private->FunctionCallback(callbackInfo, notifierInfo);
+  }
 
-      case PVarType::VarUInt8:
-      case PVarType::VarUInt16:
-      case PVarType::VarUInt32:
-        value = NewObject<v8::Uint32>(var.AsUnsigned());
-        break;
+  bool SetFunction(const PString & key, const FunctionNotifier & notifier)
+  {
+    if (m_isolate == NULL)
+      return false;
 
-      case PVarType::VarInt64:
-      case PVarType::VarUInt64:
-        // Until V8 suppies a 64 bit integer, we use double
+    v8::Isolate::Scope isolateScope(m_isolate);
+    v8::HandleScope handleScope(m_isolate);
+    v8::Local<v8::Context> context = GetContext();
+    v8::Context::Scope contextScope(context);
 
-      case PVarType::VarFloatSingle:
-      case PVarType::VarFloatDouble:
-      case PVarType::VarFloatExtended:
-        value = NewObject<v8::Number>(var.AsFloat());
-        break;
+    PString varName;
+    v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
+    if (object.IsEmpty())
+      return false;
 
-      case PVarType::VarTime:
-      case PVarType::VarStaticBinary:
-      case PVarType::VarDynamicBinary:
-      default:
-        value = v8::Object::New(m_isolate);
-        break;
-    }
+    std::map<PString, NotifierInfo>::iterator it = m_notifiers.find(key);
+    if (it == m_notifiers.end())
+      it = m_notifiers.insert(make_pair(key, NotifierInfo(m_owner, key))).first;
+    NotifierInfo & info = it->second;
+    info.m_notifiers.Add(notifier);
 
-    return SetMember(object, tokens[i], value);
+    v8::Local<v8::External> data = v8::External::New(m_isolate, &info);
+    v8::Handle<v8::Value> value = v8::Function::New(m_isolate, StaticFunctionCallback, data);
+
+    return object->Set(NewString(varName), value);
   }
 
 
@@ -599,7 +647,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 PJavaScript::PJavaScript()
-  : m_private(new Private)
+  : m_private(new Private(*this))
 {
   PTRACE_CONTEXT_ID_TO(m_private);
 }
@@ -754,9 +802,9 @@ bool PJavaScript::Call(const PString & /*name*/, Signature & /*signature*/)
 }
 
 
-bool PJavaScript::SetFunction(const PString & /*name*/, const FunctionNotifier & /*func*/)
+bool PJavaScript::SetFunction(const PString & name, const FunctionNotifier & func)
 {
-  return false;
+  return m_private->SetFunction(name, func);
 }
 #endif // P_V8
 
