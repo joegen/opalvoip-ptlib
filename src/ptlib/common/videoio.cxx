@@ -1537,6 +1537,9 @@ void PVideoInputDeviceIndirect::SetActualDevice(PVideoInputDevice * actualDevice
 
   m_actualDevice = actualDevice;
   m_autoDeleteActualDevice = autoDelete;
+
+  if (m_actualDevice != NULL)
+    m_actualDevice->SetFrameInfoConverter(*this);
 }
 
 
