@@ -1313,12 +1313,12 @@ PBoolean PVideoOutputDevice_Window::Open(const PString & name, PBoolean startImm
     return false;
   }
 
-  m_lastPosition.x = ParseDeviceNameTokenInt("X=", CW_USEDEFAULT);
-  m_lastPosition.y = ParseDeviceNameTokenInt("Y=", CW_USEDEFAULT);
-  m_fixedSize.cx   = ParseDeviceNameTokenInt("WIDTH=", 0);
-  m_fixedSize.cy   = ParseDeviceNameTokenInt("HEIGHT=", 0);
-  m_bgColour       = ParseDeviceNameTokenInt("BACKGROUND=", 0);
-  m_rotation       = ParseDeviceNameTokenInt("ROTATION=", 0);
+  m_lastPosition.x = ParseDeviceNameTokenInt("X", CW_USEDEFAULT);
+  m_lastPosition.y = ParseDeviceNameTokenInt("Y", CW_USEDEFAULT);
+  m_fixedSize.cx   = ParseDeviceNameTokenInt("WIDTH", 0);
+  m_fixedSize.cy   = ParseDeviceNameTokenInt("HEIGHT", 0);
+  m_bgColour       = ParseDeviceNameTokenInt("BACKGROUND", 0);
+  m_rotation       = ParseDeviceNameTokenInt("ROTATION", 0);
 
   m_mouseEnabled = m_deviceName.Find("NO-MOUSE") == P_MAX_INDEX;
   m_hidden = !startImmediate || m_deviceName.Find("HIDE") != P_MAX_INDEX;
