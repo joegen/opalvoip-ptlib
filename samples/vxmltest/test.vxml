@@ -19,7 +19,7 @@
 
     <!-- The next attribute here indicats what <form> to go to when the menu is selected -->
     <choice dtmf="1" next="#PlayFile">
-      Press 1 to play a file
+      Press 1 to play files
     </choice>
     
     <choice dtmf="2" next="#RecordFile">
