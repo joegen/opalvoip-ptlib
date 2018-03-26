@@ -2571,7 +2571,7 @@ PProcess::~PProcess()
   PIPSocket::ClearNameCache();
 
 #if PTRACING
-  if (s_MutexLeakCheck) {
+  if (s_MutexLeakCheck && PTrace::CanTrace(PTimedMutex::CtorDtorLogLevel)) {
     ostream & trace = PTRACE_BEGIN(PTimedMutex::CtorDtorLogLevel, NULL, "Mutex");
     if (s_MutexLeakCheck->empty())
       trace << "No mutex leaks.";
