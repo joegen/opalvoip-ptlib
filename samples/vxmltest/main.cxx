@@ -17,6 +17,9 @@
 
 PCREATE_PROCESS(VxmlTest);
 
+#define PTraceModule() "VXMLTest"
+
+
 VxmlTest::VxmlTest()
   : PProcess("Equivalence", "vxmltest", 1, 0, AlphaCode, 1)
   , m_player(NULL)
@@ -146,9 +149,8 @@ void VxmlTest::Main()
 
   cout << "Completed VXML text" << endl;
   console.Close();
-  inputThread->WaitForTermination();
+  PThread::WaitAndDelete(inputThread);
 
-  delete inputThread;
   delete m_vxml;
 }
 
@@ -156,8 +158,12 @@ void VxmlTest::Main()
 void VxmlTest::HandleInput(PConsoleChannel & console)
 {
   int inp;
-  while ((inp = console.ReadChar()) >= 0)
-    m_vxml->OnUserInput((char)inp);
+  while ((inp = console.ReadChar()) >= 0) {
+    if (inp >= ' ' && inp < '~') {
+      m_vxml->OnUserInput((char)inp);
+      cout << (char)inp << endl;
+    }
+  }
 }
 
 
