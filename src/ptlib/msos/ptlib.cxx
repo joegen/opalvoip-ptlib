@@ -45,6 +45,9 @@
 #endif
 
 
+#define PTraceModule() "PTLib"
+
+
 ostream & operator<<(ostream & s, PInt64 v)
 {
   char buffer[25];
@@ -734,6 +737,9 @@ PString PConsoleChannel::GetName() const
 
 int PConsoleChannel::ReadChar()
 {
+  if (CheckNotOpen())
+    return false;
+
   {
     DWORD mode;
     if (!GetConsoleMode(m_hConsole, &mode))
@@ -746,7 +752,10 @@ int PConsoleChannel::ReadChar()
     INPUT_RECORD input;
     DWORD numRead;
     if (!ReadConsoleInput(m_hConsole, &input, 1, &numRead))
-      return PChannel::ReadChar();
+      return ConvertOSError(-2, LastReadError);
+
+    if (CheckNotOpen())
+      return -1;
 
     if (numRead == 0)
       continue;
@@ -820,8 +829,8 @@ int PConsoleChannel::ReadChar()
 
 PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
 {
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastReadError);
+  if (CheckNotOpen())
+    return false;
 
   DWORD readBytes;
   if (ReadFile(m_hConsole, buffer, length, &readBytes, NULL))
@@ -833,8 +842,8 @@ PBoolean PConsoleChannel::Read(void * buffer, PINDEX length)
 
 PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 {
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2, LastWriteError);
+  if (CheckNotOpen())
+    return false;
 
   flush();
 
@@ -848,11 +857,19 @@ PBoolean PConsoleChannel::Write(const void * buffer, PINDEX length)
 
 PBoolean PConsoleChannel::Close()
 {
-  if (!m_hConsole.IsValid())
+  if (!IsOpen())
     return false;
 
-  m_hConsole.Close();
+  PTRACE(4, "PTLib", "Closing console channel.");
   os_handle = -1;
+
+  INPUT_RECORD input;
+  memset(&input, 0, sizeof(input));
+  DWORD written = 0;
+  if (!WriteConsoleInput(m_hConsole, &input, 1, &written) || written != 1)
+    PTRACE(2, "WriteConsoleInput failed: error=" << ::GetLastError());
+
+  m_hConsole.Close();
   return true;
 }
 
@@ -871,8 +888,8 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
 
 bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
 {
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2);
+  if (CheckNotOpen())
+    return false;
 
   CONSOLE_SCREEN_BUFFER_INFO info;
   if (!GetConsoleScreenBufferInfo(m_hConsole, &info))
@@ -889,11 +906,11 @@ bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
 
 bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
 {
-  if (os_handle != StandardInput)
-    return ConvertOSError(-2);
+  if (CheckNotOpen())
+    return false;
 
-  if (!m_hConsole.IsValid())
-    return ConvertOSError(-2);
+  if (os_handle != StandardInput)
+    return SetErrorValues(Miscellaneous, EINVAL);
 
   DWORD mode;
   if (!GetConsoleMode(m_hConsole, &mode))
