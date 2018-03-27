@@ -1239,11 +1239,10 @@ bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
           if (m_currentNode != NULL) {
             PXMLElement * element = m_currentNode->GetParent();
             while (element != NULL) {
-              PCaselessString nodeType = element->GetName();
-              PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
+              PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(element->GetName());
               if (handler != NULL) {
                 handler->Finish(*this, *element);
-                PTRACE(4, "Processed VoiceXML element: <" << nodeType << '>');
+                PTRACE(4, "Processed VoiceXML element: " << element->PrintTrace());
               }
               element = element->GetParent();
             }
@@ -1495,21 +1494,20 @@ bool PVXMLSession::NextNode(bool processChildren)
 
   // No children, move to sibling
   do {
-    PCaselessString nodeType = element->GetName();
-    PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
+    PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(element->GetName());
     if (handler != NULL) {
       if (!handler->Finish(*this, *element)) {
         if (m_currentNode != NULL) {
-          PTRACE_IF(4, (element = dynamic_cast<PXMLElement *>(m_currentNode)) != NULL,
-                    "Exception handling <" << element->GetName() << "> for VoiceXML element: <" << nodeType << '>');
+          PTRACE(4, "Exception handling via element: " << dynamic_cast<PXMLElement *>(m_currentNode)->PrintTrace()
+                 << ", for VoiceXML element: " << element->PrintTrace());
           return false;
         }
 
-        PTRACE(4, "Continue processing VoiceXML element: <" << nodeType << '>');
+        PTRACE(4, "Continue processing VoiceXML element: " << element->PrintTrace());
         m_currentNode = element;
         return true;
       }
-      PTRACE(4, "Processed VoiceXML element: <" << nodeType << '>');
+      PTRACE(4, "Processed VoiceXML element: " << element->PrintTrace());
     }
 
     if ((m_currentNode = element->GetNextObject()) != NULL)
@@ -1537,7 +1535,7 @@ void PVXMLSession::FlushInput()
 }
 
 
-bool PVXMLSession::ProcessGrammar()
+bool PVXMLSession::ProcessGrammar(PXMLElement & PTRACE_PARAM(element))
 {
   if (m_grammar == NULL) {
     PTRACE(4, "No grammar was created!");
@@ -1559,8 +1557,10 @@ bool PVXMLSession::ProcessGrammar()
 
       PVXMLGrammar * grammar = m_grammar;
       m_grammar = NULL;
-      PTRACE(2, "Processing grammar " << *grammar);
       bool nextNode = grammar->Process();
+      PTRACE(2, "Processed grammar: " << *grammar << ", "
+                 "nextNode=" << std::boolalpha << nextNode << ", "
+                 "element=" << element.PrintTrace());
       delete grammar;
       return nextNode;
   }
@@ -1589,16 +1589,15 @@ bool PVXMLSession::ProcessNode()
   m_speakNodeData = true;
 
   PXMLElement * element = (PXMLElement*)m_currentNode;
-  PCaselessString nodeType = element->GetName();
-  PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(nodeType);
+  PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(element->GetName());
   if (handler == NULL) {
-    PTRACE(2, "Unknown/unimplemented VoiceXML element: <" << nodeType << '>');
+    PTRACE(2, "Unknown/unimplemented VoiceXML element: " << element->PrintTrace());
     return false;
   }
 
-  PTRACE(3, "Processing VoiceXML element: <" << nodeType << '>');
+  PTRACE(3, "Processing VoiceXML element: " << element->PrintTrace());
   bool started = handler->Start(*this, *element);
-  PTRACE_IF(4, !started, "Skipping VoiceXML element: <" << nodeType << '>');
+  PTRACE_IF(4, !started, "Skipping VoiceXML element: " << element->PrintTrace());
   return started;
 }
 
@@ -1728,7 +1727,7 @@ PBoolean PVXMLSession::TraverseScript(PXMLElement & element)
     PString data = element.GetData();
     PString script = src.IsEmpty() ? data : src;
 
-    PTRACE(4, "Traverse script> " << script);
+    PTRACE(4, "Traverse <script> " << script.ToLiteral());
   
     if (m_scriptContext->Run(script))
       PTRACE(4, "script executed properly!");
@@ -1764,7 +1763,7 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
 
 #if P_VXML_VIDEO
   if (expr == SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION "()")
-    SetRealVideoSender(new SignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver.GetAnalayserInstance()));
+    SetRealVideoSender(new SignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver));
 #endif
 
   PINDEX pos = 0;
@@ -2204,7 +2203,7 @@ bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & event
 gotHandler:
   handler->SetAttribute("fired", "true");
   m_currentNode = handler;
-  PTRACE(4, "Setting event handler to node " << handler << " for \"" << eventName << '"');
+  PTRACE(4, "Setting event handler to node " << handler->PrintTrace() << " for \"" << eventName << '"');
   return false;
 }
 
@@ -2548,9 +2547,9 @@ PBoolean PVXMLSession::TraverseMenu(PXMLElement & element)
 }
 
 
-PBoolean PVXMLSession::TraversedMenu(PXMLElement &)
+PBoolean PVXMLSession::TraversedMenu(PXMLElement & element)
 {
-  return ProcessGrammar();
+  return ProcessGrammar(element);
 }
 
 
@@ -2631,9 +2630,9 @@ PBoolean PVXMLSession::TraverseField(PXMLElement &)
 }
 
 
-PBoolean PVXMLSession::TraversedField(PXMLElement &)
+PBoolean PVXMLSession::TraversedField(PXMLElement & element)
 {
-  return ProcessGrammar();
+  return ProcessGrammar(element);
 }
 
 
@@ -2679,7 +2678,7 @@ void PVXMLSession::SetRealVideoSender(PVideoInputDevice * device)
 
 void PVXMLSession::SignLanguagePreviewFunction(PScriptLanguage &, PScriptLanguage::Signature &)
 {
-  SetRealVideoSender(new SignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver.GetAnalayserInstance()));
+  SetRealVideoSender(new SignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver));
 }
 
 
@@ -2744,7 +2743,7 @@ PBoolean PVXMLSession::VideoReceiverDevice::SetFrameData(const FrameData & frame
     pixels = frameData.pixels;
 
   int result = s_SignLanguageAnalyser.Analyse(m_analayserInstance, frameData.width, frameData.height, frameData.timestamp, pixels);
-  if (result > 0)
+  if (result >= ' ')
     m_vxmlSession.OnUserInput((char)result);
 
   return true;
@@ -2774,7 +2773,8 @@ void PVXMLGrammar::SetTimeout(const PTimeInterval & timeout)
 {
   if (timeout > 0) {
     m_timeout = timeout;
-    if (m_timer.IsRunning())
+    PTRACE(4, "Set timeout on " << *this << ", timeout=" << m_timeout << ", state=" << m_state);
+    if (m_state != Idle)
       m_timer = timeout;
   }
 }
@@ -2838,6 +2838,7 @@ void PVXMLMenuGrammar::OnUserInput(const char ch)
   m_mutex.Wait();
 
   m_value = ch;
+  PTRACE(4, "Menu grammar filled with '" << ch << '\'');
   m_state = PVXMLGrammar::Filled;
 
   m_mutex.Signal();
@@ -2852,7 +2853,7 @@ bool PVXMLMenuGrammar::Process()
     while ((choice = m_field.GetElement("choice", index++)) != NULL) {
       // Check if DTMF value for grammarResult matches the DTMF value for the choice
       if (choice->GetAttribute("dtmf") == m_value) {
-        PTRACE(3, "Matched menu choice: " << m_value);
+        PTRACE(3, "Matched menu choice: " << m_value << " to " << choice->PrintTrace());
         PString next = choice->GetAttribute("next");
         if (next.IsEmpty())
           next = m_session.EvaluateExpr(choice->GetAttribute("expr"));
@@ -2863,6 +2864,7 @@ bool PVXMLMenuGrammar::Process()
       }
     }
 
+    PTRACE(3, "No match on menu choice: " << m_value.ToLiteral() << " on " << m_field.PrintTrace());
     m_state = NoMatch;
   }
 
@@ -2903,12 +2905,10 @@ void PVXMLDigitsGrammar::OnUserInput(const char ch)
     return;
   }
 
-  // Otherwise add to the grammar and check to see if we're done
-  PINDEX len = m_value.GetLength();
+  m_value += ch; // Add to collected digits string
 
-  m_value += ch;
-  if (++len >= m_maxDigits)
-    m_state = PVXMLGrammar::Filled;   // the grammar is filled!
+  if (IsFilled())
+    m_state = PVXMLGrammar::Filled;
 }
 
 bool PVXMLDigitsGrammar::IsFilled()
