@@ -1872,10 +1872,10 @@ bool PWin32Handle::Wait(DWORD timeout) const
 }
 
 
-bool PWin32Handle::Duplicate(HANDLE h, DWORD flags)
+bool PWin32Handle::Duplicate(HANDLE h, DWORD flags, DWORD access)
 {
   Close();
-  return DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(), &m_handle, 0, 0, flags);
+  return DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(), &m_handle, access, 0, flags);
 }
 
 

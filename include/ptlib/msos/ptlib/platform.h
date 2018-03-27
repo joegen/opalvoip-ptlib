@@ -236,7 +236,7 @@ class PWin32Handle
     operator HANDLE() const { return m_handle; }
 
     bool Wait(DWORD timeout) const;
-    bool Duplicate(HANDLE h, DWORD flags = DUPLICATE_SAME_ACCESS);
+    bool Duplicate(HANDLE h, DWORD flags = DUPLICATE_SAME_ACCESS, DWORD access = 0);
 
   private:
     PWin32Handle(const PWin32Handle &) { }
