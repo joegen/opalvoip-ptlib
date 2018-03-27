@@ -1461,6 +1461,17 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
 }
 
 
+#if PTRACING
+ostream & operator<<(ostream & strm, const PXMLElement::PrintTraceClass & e)
+{
+  strm << '<' << e.m_element.GetName() << '>';
+  if (e.m_element.m_lineNumber != 0)
+    strm << " [" << e.m_element.m_lineNumber << ',' << e.m_element.m_column << ']';
+  return strm;
+}
+#endif
+
+
 PXMLObject * PXMLElement::AddSubObject(PXMLObject * obj, bool setDirty)
 {
   if (PAssertNULL(obj) == NULL)

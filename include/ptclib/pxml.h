@@ -391,6 +391,16 @@ class PXMLElement : public PXMLObject
     void PrintOn(ostream & strm) const;
     void Output(ostream & strm, const PXMLBase & xml, int indent) const;
 
+#if PTRACING
+    struct PrintTraceClass
+    {
+      const PXMLElement & m_element;
+      PrintTraceClass(const PXMLElement & element) : m_element(element) { }
+    };
+    friend ostream & operator<<(ostream & strm, const PrintTraceClass & e);
+    PrintTraceClass PrintTrace() const { return PrintTraceClass(*this); }
+#endif
+
     const PCaselessString & GetName() const
       { return m_name; }
 
