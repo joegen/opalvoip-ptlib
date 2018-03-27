@@ -499,7 +499,7 @@ PVideoDevice::~PVideoDevice()
 
 void PVideoDevice::PrintOn(ostream & strm) const
 {
-  strm << '&' << this << ' ';
+  strm << GetClass() << " &" << this << ' ';
   PVideoFrameInfo::PrintOn(strm);
   strm << " [" << m_deviceName << "] {";
 
@@ -708,7 +708,7 @@ bool PVideoDevice::SetFrameInfoConverter(const PVideoFrameInfo & info)
     }
   }
 
-  PTRACE(4, "Video " << (CanCaptureVideo() ? "grabber" : "display") << " set to " << info << " on " << *this);
+  PTRACE(4, "Video " << (CanCaptureVideo() ? "grabber" : "display") << " frame info set on " << *this);
   return true;
 }
 
@@ -1433,8 +1433,14 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
 
 PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
 {
+  PINDEX size = GetMaxFrameBytes();
+  if (size == 0) {
+    PTRACE(2, "Frame size in bytes not available on " << *this);
+    return false;
+  }
+
   PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
+  if (!GetFrameData(frame.GetPointer(size), &returned))
     return false;
 
   frame.SetSize(returned);
@@ -1538,8 +1544,12 @@ void PVideoInputDeviceIndirect::SetActualDevice(PVideoInputDevice * actualDevice
   m_actualDevice = actualDevice;
   m_autoDeleteActualDevice = autoDelete;
 
-  if (m_actualDevice != NULL)
+  if (m_actualDevice != NULL) {
+    PTRACE(3, "Actual video device set to " << *m_actualDevice);
     m_actualDevice->SetFrameInfoConverter(*this);
+  }
+  else
+    PTRACE(3, "Actual video device reset");
 }
 
 
@@ -1562,6 +1572,8 @@ void PVideoInputDeviceIndirect::PrintOn(ostream & strm) const
   PWaitAndSignal lock(m_actualDeviceMutex);
   if (m_actualDevice != NULL)
     m_actualDevice->PrintOn(strm);
+  else
+    strm << "PVideoInputDeviceIndirect: <null>";
 }
 
 
@@ -1991,7 +2003,7 @@ PBoolean PVideoInputEmulatedDevice::GetFrameData(BYTE * buffer, PINDEX * bytesRe
   m_pacing.Delay(1000/m_frameRate);
 
   if (!IsOpen()) {
-    PTRACE(5, "Abort GetFrameData, closed.");
+    PTRACE(5, "Abort GetFrameData, closed " << *this);
     return false;
   }
 
@@ -2013,7 +2025,7 @@ PBoolean PVideoInputEmulatedDevice::GetFrameData(BYTE * buffer, PINDEX * bytesRe
       }
     }
 
-    PTRACE(6, "Playing frame number " << m_frameNumber);
+    PTRACE(6, "Playing frame number " << m_frameNumber << " on " << *this);
   }
 
   return GetFrameDataNoDelay(buffer, bytesReturned);
@@ -2023,17 +2035,18 @@ PBoolean PVideoInputEmulatedDevice::GetFrameData(BYTE * buffer, PINDEX * bytesRe
 PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
 {
   if (!IsOpen()) {
-    PTRACE(5, "Abort GetFrameDataNoDelay, closed.");
+    PTRACE(5, "Abort GetFrameDataNoDelay, closed " << *this);
     return false;
   }
 
-  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(GetMaxFrameBytes()) : frame;
+  PINDEX frameBytes = GetMaxFrameBytes();
+  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(frameBytes) : frame;
 
   if (!InternalGetFrameData(readBuffer)) {
     switch (m_channelNumber) {
       case Channel_PlayAndClose:
       default:
-        PTRACE(4, "Completed play and close of " << GetDeviceName());
+        PTRACE(4, "Completed play and close of " << *this);
         return false;
 
       case Channel_PlayAndRepeat:
@@ -2044,11 +2057,11 @@ PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * b
         break;
 
       case Channel_PlayAndKeepLast:
-        PTRACE(4, "Completed play and keep last of " << GetDeviceName());
+        PTRACE(4, "Completed play and keep last of " << *this);
         break;
 
       case Channel_PlayAndShowBlack:
-        PTRACE(4, "Completed play and show black of " << GetDeviceName());
+        PTRACE(4, "Completed play and show black of " << *this);
         PColourConverter::FillYUV420P(0, 0,
                                       m_frameWidth, m_frameHeight,
                                       m_frameWidth, m_frameHeight,
@@ -2057,7 +2070,7 @@ PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * b
         break;
 
       case Channel_PlayAndShowWhite:
-        PTRACE(4, "Completed play and show white of " << GetDeviceName());
+        PTRACE(4, "Completed play and show white of " << *this);
         PColourConverter::FillYUV420P(0, 0,
                                       m_frameWidth, m_frameHeight,
                                       m_frameWidth, m_frameHeight,
@@ -2070,9 +2083,13 @@ PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * b
   if (m_converter != NULL) {
     m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
     if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
-      PTRACE(2, "Conversion failed with " << *m_converter);
+      PTRACE(2, "Conversion failed with " << *m_converter << " on " << *this);
       return false;
     }
+  }
+  else {
+    if (bytesReturned != NULL)
+      *bytesReturned = frameBytes;
   }
 
   return true;
