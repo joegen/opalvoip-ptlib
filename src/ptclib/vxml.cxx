@@ -345,9 +345,12 @@ class PVXMLSession::SignLanguageAnalyser::PreviewVideoDevice : public PVideoInpu
   int m_instance;
 
 public:
-  PreviewVideoDevice(int instance)
-    : m_instance(instance)
+  PreviewVideoDevice(const VideoReceiverDevice & analyser)
+    : m_instance(analyser.GetAnalayserInstance())
   {
+    unsigned width, height;
+    analyser.GetFrameSize(width, height);
+    SetFrameSize(width, height);
     SetColourFormat(s_SignLanguageAnalyser.GetColourFormat());
   }
 
