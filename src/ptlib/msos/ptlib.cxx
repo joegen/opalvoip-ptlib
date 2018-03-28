@@ -866,8 +866,9 @@ PBoolean PConsoleChannel::Close()
   INPUT_RECORD input;
   memset(&input, 0, sizeof(input));
   DWORD written = 0;
-  if (!WriteConsoleInput(m_hConsole, &input, 1, &written) || written != 1)
+  if (!WriteConsoleInput(m_hConsole, &input, 1, &written) || written != 1) {
     PTRACE(2, "WriteConsoleInput failed: error=" << ::GetLastError());
+  }
 
   m_hConsole.Close();
   return true;
