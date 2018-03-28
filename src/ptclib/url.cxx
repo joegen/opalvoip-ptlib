@@ -523,11 +523,11 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
     else
       pos = str.FindOneOf(endHostChars, start);
 
-    PString uphp = str(start, pos-1);
-    if (pos != P_MAX_INDEX)
+    PString uphp;
+    if (pos > start) {
+      uphp = str(start, pos - 1);
       start = pos;
-    else
-      start = P_MAX_INDEX;
+    }
 
     // if the URL is of type UserPasswordHostPort, then parse it
     if (schemeInfo->hasUsername) {
