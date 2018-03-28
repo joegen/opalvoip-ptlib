@@ -735,28 +735,25 @@ PStringArray PDirectory::GetPath() const
 //
 
 bool PFile::InternalOpen(OpenMode mode, OpenOptions opt, PFileInfo::Permissions permissions)
-
 {
   Close();
   clear();
 
-  if (opt > 0)
-    m_removeOnClose = (opt & Temporary) != 0;
+  if (opt != ModeDefault)
+    m_removeOnClose = opt & Temporary;
 
   if (m_path.IsEmpty()) {
-    char templateStr[3+6+1];
-    strcpy(templateStr, "PWLXXXXXX");
+    m_path = PDirectory::GetTemporary() + "PTLXXXXXX";
 #ifndef P_VXWORKS
 #ifdef P_RTEMS
     _reent _reent_data;
     memset(&_reent_data, 0, sizeof(_reent_data));
-    os_handle = _mkstemp_r(&_reent_data, templateStr);
+    os_handle = _mkstemp_r(&_reent_data, m_path.GetPointerAndSetLength(m_path.GetLength())); // Shouldn't change length
 #else
-    os_handle = mkstemp(templateStr);
+    os_handle = mkstemp(m_path.GetPointerAndSetLength(m_path.GetLength())); // Shouldn't change length
 #endif // P_RTEMS
     if (!ConvertOSError(os_handle))
       return false;
-    m_path = templateStr;
   } else {
 #else
     static int number = 0;

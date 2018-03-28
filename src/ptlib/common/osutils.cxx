@@ -1143,6 +1143,26 @@ void PDirectory::CloneContents(const PDirectory * d)
 }
 
 
+PDirectory PDirectory::GetTemporary()
+{
+  const char * tmpdir = getenv("TMPDIR");
+  if (tmpdir == NULL) {
+    tmpdir = getenv("TMP");
+    if (tmpdir == NULL)
+      tmpdir = getenv("TEMP");
+  }
+
+  if (tmpdir != NULL && *tmpdir != '\0')
+    return tmpdir;
+
+#ifdef _WIN32
+  return PDirectory("C:\\");
+#else
+  return PDirectory("/tmp");
+#endif
+}
+
+
 bool PDirectory::Create(const PString & p, int perm, bool recurse)
 {
   PAssert(!p.IsEmpty(), "attempt to create dir with empty name");
@@ -4475,22 +4495,8 @@ PFilePath::PFilePath(const char * prefix, const char * dir, const char * suffix)
   PStringStream path;
   if (dir != NULL)
     path << PDirectory(dir);
-  else {
-    PString tmpdir = getenv("TMPDIR");
-    if (tmpdir.IsEmpty()) {
-      tmpdir = getenv("TMP");
-      if (tmpdir.IsEmpty())
-        tmpdir = getenv("TEMP");
-    }
-    if (!tmpdir.IsEmpty())
-      path << PDirectory(tmpdir);
-    else
-#ifdef _WIN32
-      path << "C:\\";
-#else
-      path = "/tmp/";
-#endif
-  }
+  else
+    path << PDirectory::GetTemporary();
 
   PProcess & process = PProcess::Current();
   if (prefix != NULL)

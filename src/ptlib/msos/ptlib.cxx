@@ -653,8 +653,8 @@ bool PFile::InternalOpen(OpenMode mode, OpenOptions opts, PFileInfo::Permissions
   if (opts & Truncate)
     oflags |= O_TRUNC;
 
-  if (opts & Temporary)
-    m_removeOnClose = true;
+  if (opts != ModeDefault)
+    m_removeOnClose = opts & Temporary;
 
   int sflags = _SH_DENYNO;
   if (opts & DenySharedRead)
