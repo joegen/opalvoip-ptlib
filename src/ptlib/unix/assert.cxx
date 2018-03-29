@@ -482,10 +482,8 @@ void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const ch
   OUTPUT_MESSAGE();
 
   // DO default action is specified
-  if (defaultAction != '\0') {
-    AssertAction(defaultAction, msg);
+  if (defaultAction != '\0' && !AssertAction(defaultAction, msg))
     return;
-  }
 
   // Check for if stdin is not a TTY and just ignore the assert if so.
   if (isatty(STDIN_FILENO) != 1) {

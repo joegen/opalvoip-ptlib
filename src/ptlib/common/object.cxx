@@ -169,18 +169,6 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
   int errorCode = errno;
 #endif
 
-  const char * env;
-#if P_EXCEPTIONS
-  //Throw a runtime exception if the environment variable is set
-  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
-  if (env == NULL)
-    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
-  if (env != NULL) {
-    throw std::runtime_error(msg);
-    return;
-  }
-#endif
-
   PWaitAndSignal lock(s_AssertMutex);
   static bool s_RecursiveAssert = false;
   if (s_RecursiveAssert)
@@ -212,7 +200,17 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
     str = strm.str();
   }
 
-  env = ::getenv("PTLIB_ASSERT_ACTION");
+  const char * env;
+#if P_EXCEPTIONS
+  //Throw a runtime exception if the environment variable is set
+  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
+  if (env != NULL)
+    env = "T";
+  else
+#endif
+    env = ::getenv("PTLIB_ASSERT_ACTION");
   if (env == NULL)
     env = ::getenv("PWLIB_ASSERT_ACTION");
 

@@ -368,7 +368,13 @@
 #endif // _WIN32_WCE
 
 
-static bool AssertAction(int c)
+  static const char ActionMessage[] = "<A>bort, <B>reak, "
+  #if P_EXCEPTIONS
+                                      "<T>hrow exception, "
+  #endif
+                                      "<I>gnore";
+
+static bool AssertAction(int c, const char * msg)
 {
   switch (c) {
     case 'A':
@@ -384,6 +390,13 @@ static bool AssertAction(int c)
     case IDRETRY :
       PBreakToDebugger();
       return false; // Then ignore it
+
+  #if P_EXCEPTIONS
+      case 't' :
+      case 'T' :
+        PError << "\nThrowing exception.\n";
+        throw std::runtime_error(msg);
+  #endif
 
     case 'I':
     case 'i':
@@ -411,18 +424,18 @@ void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const ch
   PTrace::Begin(0, location.m_file, location.m_line, NULL, "PAssert") << msg << PTrace::End;
 #endif
 
-  if (defaultAction != '\0')
-    AssertAction(defaultAction);
+  if (defaultAction != '\0' && !AssertAction(defaultAction, msg))
+      return;
+
   else if (PProcess::Current().IsGUIProcess()) {
     PVarString boxMsg = msg;
     PVarString boxTitle = PProcess::Current().GetName();
-    AssertAction(MessageBox(NULL, boxMsg, boxTitle, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL));
+    AssertAction(MessageBox(NULL, boxMsg, boxTitle, MB_ABORTRETRYIGNORE|MB_ICONHAND|MB_TASKMODAL), msg);
   }
   else {
     do {
-      cerr << msg << "\n<A>bort, <B>reak, <I>gnore? ";
-      cerr.flush();
-    } while (AssertAction(cin.get()));
+      cerr << msg << '\n' << ActionMessage << "? " << flush;
+    } while (AssertAction(cin.get(), msg));
   }
 }
 
