@@ -356,7 +356,6 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL &, const PString & args, PHTT
       persist = OnPOST(connectInfo);
       break;
 
-    case P_MAX_INDEX:
     default:
       persist = OnUnknown(args, connectInfo);
   }

@@ -536,31 +536,27 @@ bool PURL::LegacyParse(const char * cstr, const PURLLegacyScheme * schemeInfo)
       PINDEX pos3 = P_MAX_INDEX;
       if (schemeInfo->hasPassword)
         pos3 = uphp.Find(':');
-      switch (pos2) {
-        case 0 :
-          uphp.Delete(0, 1);
-          break;
-
-        case P_MAX_INDEX :
-          if (schemeInfo->defaultToUserIfNoAt) {
-            if (pos3 == P_MAX_INDEX)
-              m_username = UntranslateString(uphp, LoginTranslation);
-            else {
-              m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
-              m_password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
-            }
-            uphp.MakeEmpty();
-          }
-          break;
-
-        default :
-          if (pos3 > pos2)
-            m_username = UntranslateString(uphp.Left(pos2), LoginTranslation);
+      if (pos2 == 0)
+        uphp.Delete(0, 1);
+      else if (pos2 == P_MAX_INDEX) {
+        if (schemeInfo->defaultToUserIfNoAt) {
+          if (pos3 == P_MAX_INDEX)
+            m_username = UntranslateString(uphp, LoginTranslation);
           else {
             m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
-            m_password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
+            m_password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
           }
-          uphp.Delete(0, pos2+1);
+          uphp.MakeEmpty();
+        }
+      }
+      else {
+        if (pos3 > pos2)
+          m_username = UntranslateString(uphp.Left(pos2), LoginTranslation);
+        else {
+          m_username = UntranslateString(uphp.Left(pos3), LoginTranslation);
+          m_password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
+        }
+        uphp.Delete(0, pos2+1);
       }
     }
 

@@ -249,16 +249,15 @@ static bool SplitInterfaceDescription(const PString & iface,
   if (iface[0] == '[')
     right = iface.Find(']');
   PINDEX percent = iface.Find('%', right);
-  switch (percent) {
-    case 0 :
-      address = PIPSocket::GetDefaultIpAny();
-      name = iface.Mid(1);
-      return !name.IsEmpty();
-
-    case P_MAX_INDEX :
-      address = iface;
-      name = PString::Empty();
-      return !address.IsAny();
+  if (percent == 0) {
+    address = PIPSocket::GetDefaultIpAny();
+    name = iface.Mid(1);
+    return !name.IsEmpty();
+  }
+  if (percent == P_MAX_INDEX) {
+    address = iface;
+    name = PString::Empty();
+    return !address.IsAny();
   }
 
   if (iface[0] == '*')
