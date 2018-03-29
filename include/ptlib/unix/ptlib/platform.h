@@ -535,24 +535,12 @@ typedef intptr_t      INT;
 // Type used for array indexes and sizes
 
 #if P_PINDEX_IS_SIZE_T
-
   typedef size_t PINDEX;
-  #if P_64BIT
-    const size_t P_MAX_INDEX = 0xffffffffffffffff;
-  #else
-    const size_t P_MAX_INDEX = 0xffffffff;
-  #endif
-
   #define PINDEX_SIGNED 0
-
-#else // P_PINDEX_IS_SIZE_T
-
+#else
   typedef int PINDEX;
-  #define P_MAX_INDEX INT_MAX
-
   #define PINDEX_SIGNED 1
-
-#endif // P_PINDEX_IS_SIZE_T
+#endif
 
 #endif // PTLIB_PLATFORM_H
 

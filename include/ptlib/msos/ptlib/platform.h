@@ -102,7 +102,10 @@
 
   #include <windows.h>
 
-  #undef DELETE   // Remove define from NT headers.
+  // Remove some stupid defines from Windows headers.
+  #undef DELETE
+  #undef min
+  #undef max
 
 
 #else
@@ -165,33 +168,14 @@ typedef uint64_t PUInt64;
 
 // Standard array index type (depends on compiler)
 // Type used in array indexes especially that required by operator[] functions.
-#if defined(_MSC_VER) || defined(__MINGW32__)
-
-  #if P_64BIT
-    typedef size_t PINDEX;
-    const PINDEX P_MAX_INDEX = 0xffffffffffffffff;
-    #define PINDEX_SIGNED 0
-  #else
-    #define PINDEX int
-    #if defined(_WIN32) || defined(_WIN32_WCE)
-      const PINDEX P_MAX_INDEX = 0x7fffffff;
-    #else
-      const PINDEX P_MAX_INDEX = 0x7fff;
-    #endif
-    #define PINDEX_SIGNED 1
-  #endif
-
+#if defined(_MSC_VER) && !P_64BIT
+  #define PINDEX int
+  #define PINDEX_SIGNED 1
 #else
-
   typedef size_t PINDEX;
-  #if SIZEOF_INT == 8
-     const PINDEX P_MAX_INDEX = 0xffffffffffffffff;
-  #else
-     const PINDEX P_MAX_INDEX = 0xffffffff;
-  #endif
   #define PINDEX_SIGNED 0
-
 #endif
+
 
 #ifndef _WIN32_WCE 
 
