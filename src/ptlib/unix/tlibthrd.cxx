@@ -738,12 +738,11 @@ void PThread::Sleep(const PTimeInterval & timeout)
 
   PPROFILE_PRE_SYSTEM();
 
-  while (nanosleep(&ts, &ts) < 0 && PAssert(errno == EINTR || errno == EAGAIN, POperatingSystemError)) {
+  while (nanosleep(&ts, &ts) < 0 && errno == EINTR) {
 #if P_USE_THREAD_CANCEL
     pthread_testcancel();
 #endif
   }
-
   PPROFILE_POST_SYSTEM();
 }
 
