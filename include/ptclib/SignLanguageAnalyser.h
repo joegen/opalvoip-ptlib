@@ -1,9 +1,8 @@
 /*
- Sign language recognition API
 */
 
 #ifndef SL_HEADER
-#define SL_HEADER 1
+#define SL_HEADER
 
 
 #define SL_API_VERSION 1
@@ -61,7 +60,17 @@ extern "C" {
   } SLAnalyserInit;
 
   SL_EXPORT int SL_STDCALL SLInitialise(SLAnalyserInit * init);
-  typedef int (*SLInitialiseFn)(SLAnalyserInit * init);
+  typedef int(*SLInitialiseFn)(SLAnalyserInit * init);
+
+  /* Clean up the Sign Language analyser system.
+     This is called whe the user no longer requires the DLL. It will allow the
+     library to clean up any resources it uses.
+
+     The function return value is zero for success, and a negative number for
+     failure.
+  */
+  SL_EXPORT int SL_STDCALL SLRelease();
+  typedef int (*SLReleaseFn)();
 
 
   /* Analyse video frame data.

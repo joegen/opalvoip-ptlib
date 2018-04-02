@@ -193,15 +193,25 @@ class PVXMLSession::SignLanguageAnalyser : public PObject
   struct Library : PDynaLink
   {
     EntryPoint<SLInitialiseFn> SLInitialise;
+    EntryPoint<SLReleaseFn>    SLRelease;
     EntryPoint<SLAnalyseFn>    SLAnalyse;
     EntryPoint<SLPreviewFn>    SLPreview;
 
     Library(const PFilePath & dllName)
       : PDynaLink(dllName)
       , P_DYNALINK_ENTRY_POINT(SLInitialise)
+      , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLRelease)
       , P_DYNALINK_ENTRY_POINT(SLAnalyse)
       , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLPreview)
     {
+    }
+
+    ~Library()
+    {
+      if (SLRelease.IsPresent()) {
+        int result = SLRelease();
+        PTRACE(result < 0 ? 2 : 5, "Sign Language Analyser dynamic library released: result=" << result);
+      }
     }
   } *m_library;
 
@@ -322,11 +332,20 @@ public:
 
   class PreviewVideoDevice;
 
+  bool CanPreview(int instance) const
+  {
+    PReadWaitAndSignal lock(m_mutex);
+    return m_library != NULL &&
+           m_library->SLPreview.IsPresent() &&
+           instance >= 0 &&
+           instance < (int)m_instancesInUse.size();
+  }
+
   int Preview(int instance, unsigned width, unsigned height, uint8_t * pixels)
   {
     PReadWaitAndSignal lock(m_mutex);
-    if (m_library == NULL || instance >= (int)m_instancesInUse.size())
-      return 0;
+    if (!CanPreview(instance))
+      return -1000;
 
     SLPreviewData data;
     memset(&data, 0, sizeof(data));
@@ -366,7 +385,7 @@ public:
 
   virtual PBoolean IsOpen()
   {
-    return m_instance >= 0;
+    return s_SignLanguageAnalyser.CanPreview(m_instance);
   }
 
   virtual PBoolean Close()
@@ -378,6 +397,9 @@ public:
 protected:
   virtual bool InternalGetFrameData(BYTE * buffer)
   {
+    if (!IsOpen())
+      return false;
+
     int result = s_SignLanguageAnalyser.Preview(m_instance, m_frameWidth, m_frameHeight, buffer);
     if (result >= 0)
       return true;
@@ -2665,6 +2687,11 @@ bool PVXMLSession::SetSignLanguageAnalyser(const PString & dllName)
 
 void PVXMLSession::SetRealVideoSender(PVideoInputDevice * device)
 {
+  if (device != NULL && !device->IsOpen()) {
+    delete device;
+    device = NULL;
+  }
+
   if (device == NULL) {
     PVideoInputDevice::OpenArgs videoArgs;
     videoArgs.driverName = P_FAKE_VIDEO_DRIVER;
