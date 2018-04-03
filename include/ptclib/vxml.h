@@ -325,7 +325,7 @@ class PVXMLSession : public PIndirectChannel
 
 #if P_VXML_VIDEO
     void SetRealVideoSender(PVideoInputDevice * device);
-    class SignLanguageAnalyser;
+    friend class PVXMLSignLanguageAnalyser;
     PDECLARE_ScriptFunctionNotifier(PVXMLSession, SignLanguagePreviewFunction);
 
     class VideoReceiverDevice : public PVideoOutputDevice
