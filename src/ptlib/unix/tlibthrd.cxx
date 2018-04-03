@@ -737,12 +737,15 @@ void PThread::Sleep(const PTimeInterval & timeout)
   ts.tv_nsec = timeout.GetNanoSeconds()%1000000000;
 
   PPROFILE_PRE_SYSTEM();
-
+#if 0
   while (nanosleep(&ts, &ts) < 0 && errno == EINTR) {
 #if P_USE_THREAD_CANCEL
     pthread_testcancel();
 #endif
   }
+#else
+  nanosleep(&ts, &ts);
+#endif
   PPROFILE_POST_SYSTEM();
 }
 
