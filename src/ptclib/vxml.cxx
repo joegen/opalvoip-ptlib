@@ -2950,9 +2950,12 @@ void PVXMLDigitsGrammar::OnUserInput(const char ch)
 
   m_value += ch; // Add to collected digits string
 
-  if (IsFilled())
+  if (m_value.GetLength() >= m_maxDigits) {
+    PTRACE(4, " Grammar " << *this << " has been FILLED, max=" << m_maxDigits);
     m_state = PVXMLGrammar::Filled;
+  }
 }
+
 
 bool PVXMLDigitsGrammar::IsFilled()
 {
