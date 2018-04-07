@@ -209,7 +209,7 @@ class PVXMLSignLanguageAnalyser : public PProcessStartup
     ~Library()
     {
       if (SLRelease.IsPresent()) {
-        int result = SLRelease();
+        PTRACE_PARAM(int result =) SLRelease();
         PTRACE(result < 0 ? 2 : 3, "Released Sign Language Analyser dynamic library"
                                   " \"" << GetName(true) << "\", result=" << result);
       }
