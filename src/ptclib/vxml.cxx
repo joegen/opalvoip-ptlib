@@ -244,6 +244,9 @@ public:
     PWriteWaitAndSignal lock(m_mutex);
 
     if (!dllName.IsEmpty()) {
+      if (m_library != NULL && dllName == m_library->GetName(true))
+        return true;
+
       delete m_library;
       m_library = new Library(dllName);
 
