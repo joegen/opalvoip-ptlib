@@ -482,24 +482,31 @@ void PNatCandidate::PrintOn(ostream & strm) const
 {
   bool columns = strm.width() != 0;
 
-  static const char * TypeNames[NumTypes] = {
+  static const char * const TypeNames[NumTypes] = {
     "Host", "Server-Reflexive", "Peer-Reflexive", "Relay", "Final"
   };
-  strm << left << setw(columns ? 17 : 0) << TypeNames[m_type];
+  strm << left << setw(columns ? strlen(TypeNames[ServerReflexiveType]) : 0) << TypeNames[m_type] << ' ';
 
+  static const unsigned AddrWidth = 21;
   switch (m_type) {
     case HostType :
-      strm << setw(columns ? 44 : 0) << m_baseTransportAddress.AsString();
+      strm << right << setw(columns ? AddrWidth : 0) << m_baseTransportAddress;
+      if (columns)
+        strm << setw(AddrWidth+2) << ' ';
       break;
     case ServerReflexiveType :
     case PeerReflexiveType :
     case RelayType :
-      strm << right << setw(columns ? 21 : 0) << m_baseTransportAddress
-           << '/' << left << setw(columns ? 22 : 0) << m_localTransportAddress;
+      strm << right << setw(columns ? AddrWidth : 0) << m_baseTransportAddress
+           << '/' << left << setw(columns ? AddrWidth+1 : 0);
+      if (m_localTransportAddress.IsValid())
+        strm << m_localTransportAddress;
+      else
+        strm << "----";
       break;
     default:
       if (columns)
-        strm << setw(44) << ' ';
+        strm << setw((AddrWidth+1)*2) << ' ';
       break;
   }
 
@@ -509,11 +516,11 @@ void PNatCandidate::PrintOn(ostream & strm) const
   strm << " component=" << m_component
        << " priority=" << left << setw(columns ? 10 : 0) <<  m_priority;
 
-  if (m_networkCost > 0 || m_networkId > 0)
+  if (columns || m_networkCost > 0 || m_networkId > 0)
     strm << " network-cost=" << setw(columns ? 3 : 0) << m_networkCost
          << " network-id=" << setw(columns ? 2 : 0) << m_networkId;
 
-  if (!m_foundation.IsEmpty())
+  if (columns || !m_foundation.IsEmpty())
     strm << " foundation=\"" << left << setw(columns ? 15 : 0) << (m_foundation+'"');
 }
 
