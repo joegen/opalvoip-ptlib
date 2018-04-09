@@ -480,7 +480,7 @@ PObject::Comparison PNatCandidate::Compare(const PObject & obj) const
 
 void PNatCandidate::PrintOn(ostream & strm) const
 {
-  bool columns = strm.width() != 0;
+  bool columns = strm.width() < 0;
 
   static const char * const TypeNames[NumTypes] = {
     "Host", "Server-Reflexive", "Peer-Reflexive", "Relay", "Final"
