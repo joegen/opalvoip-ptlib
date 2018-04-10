@@ -58,6 +58,41 @@ class PVXMLSession;
 #define VXML_G729          "G.729"
 
 
+/*! \page pageVXML Voice XML support
+
+\section secOverview Overview 
+The VXML implementation here is highly piecemeal. It is not even close to
+complete and while roughly following the VXML 2.0 standard there are many
+incompatibilities. Below is a list of functionality that is available.
+\section secSupported Supported Elements & Attributes
+\li <menu>     - "dtmf"
+\li <choice>   - "dtmf", "next", "expr", "event"
+\li <form>     - "id"
+\li <field>    - "name"
+\li <prompt>   - "bargein", the ECMA variable "property.bargein" is also honoured
+\li <grammar>  - "mode" (only "dtmf" support), "type" (only "X-OPAL/digits" supported),
+grammar itself consists of three parameters of the form "minDigits=1; maxDigits=5; terminators=#"
+\li <filled>   - no attributes supported
+\li <noinput>  - no attributes supported
+\li <nomatch>  - no attributes supported
+\li <error>    - no attributes supported
+\li <catch>    - "event"
+\li <goto>     - "nextitem", "expritem", "expr"
+\li <exit>     - no attributes supported
+\li <submit>   - "next", "expr", "enctype", "method", "fetchtimeout", "namelist"
+\li <disconnect>
+\li <audio>    - "src", "expr"
+\li <break>    - "msecs", "time", "size"
+\li <value>    - "expr"
+\li <sayas>    - Obsolete
+\li <script>   - "src"
+\li <var>      - "name", "expr"
+\li <property> - "name", "value"
+\li <if>       - "cond"
+\li <transfer> - "name", "dest", "destexpr", "bridge"
+\li <record>   - "name", "type", "beep", "dtmfterm", "maxtime", "finalsilence"
+*/
+
 //////////////////////////////////////////////////////////////////
 
 class PVXMLGrammar : public PObject
@@ -304,7 +339,7 @@ class PVXMLSession : public PIndirectChannel
 
     virtual bool ProcessNode();
     virtual bool ProcessEvents();
-    virtual bool ProcessGrammar(PXMLElement & element);
+    virtual bool ProcessGrammar();
     virtual bool NextNode(bool processChildren);
     void ClearBargeIn();
     void FlushInput();

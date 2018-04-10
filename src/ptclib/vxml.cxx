@@ -1575,7 +1575,7 @@ void PVXMLSession::FlushInput()
 }
 
 
-bool PVXMLSession::ProcessGrammar(PXMLElement & PTRACE_PARAM(element))
+bool PVXMLSession::ProcessGrammar()
 {
   if (m_grammar == NULL) {
     PTRACE(4, "No grammar was created!");
@@ -1598,9 +1598,10 @@ bool PVXMLSession::ProcessGrammar(PXMLElement & PTRACE_PARAM(element))
       PVXMLGrammar * grammar = m_grammar;
       m_grammar = NULL;
       bool nextNode = grammar->Process();
+      // Note the PXML objects may have been replaced at this time,
+      // pointers can't be used as we work back up the call stack.
       PTRACE(2, "Processed grammar: " << *grammar << ", "
-                 "nextNode=" << std::boolalpha << nextNode << ", "
-                 "element=" << element.PrintTrace());
+                 "nextNode=" << std::boolalpha << nextNode);
       delete grammar;
       return nextNode;
   }
@@ -2319,20 +2320,26 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
 
   PString condition = element.GetAttribute("cond");
 
-  // Find comparison type
-  PINDEX location = condition.Find("==");
-  if (location == P_MAX_INDEX) {
-    PTRACE(1, "<if> element contains condition with operator other than ==, not implemented" );
-    return false;
+  bool result;
+
+#if P_SCRIPTS
+  if (m_scriptContext != NULL)
+    result = EvaluateExpr(condition) == "true";
+  else
+#endif
+  {
+    // Find comparison type
+    PINDEX location = condition.Find("==");
+    if (location == P_MAX_INDEX) {
+      PTRACE(1, "<if> element contains condition with operator other than ==, not implemented");
+      return false;
+    }
+
+    result = EvaluateExpr(condition.Left(location).Trim()) == EvaluateExpr(condition.Mid(location + 2).Trim());
   }
 
-  if (EvaluateExpr(condition.Left(location).Trim()) == EvaluateExpr(condition.Mid(location + 2).Trim())) {
-    PTRACE(4, "Condition matched \"" << condition << '"');
-    return true;
-  }
-
-  PTRACE(4, "\tCondition \"" << condition << "\"did not match");
-  return false;
+  PTRACE(4, "\tCondition \"" << condition << "\" " << (result ? "matched" : "did not match"));
+  return result;
 }
 
 
@@ -2587,9 +2594,9 @@ PBoolean PVXMLSession::TraverseMenu(PXMLElement & element)
 }
 
 
-PBoolean PVXMLSession::TraversedMenu(PXMLElement & element)
+PBoolean PVXMLSession::TraversedMenu(PXMLElement &)
 {
-  return ProcessGrammar(element);
+  return ProcessGrammar();
 }
 
 
@@ -2670,9 +2677,9 @@ PBoolean PVXMLSession::TraverseField(PXMLElement &)
 }
 
 
-PBoolean PVXMLSession::TraversedField(PXMLElement & element)
+PBoolean PVXMLSession::TraversedField(PXMLElement &)
 {
-  return ProcessGrammar(element);
+  return ProcessGrammar();
 }
 
 
