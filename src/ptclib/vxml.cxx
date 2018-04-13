@@ -1536,10 +1536,10 @@ bool PVXMLSession::NextNode(bool processChildren)
   do {
     PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(element->GetName());
     if (handler != NULL) {
+      PTRACE(4, "Finish processing VoiceXML element: " << element->PrintTrace());
       if (!handler->Finish(*this, *element)) {
         if (m_currentNode != NULL) {
-          PTRACE(4, "Exception handling via element: " << dynamic_cast<PXMLElement *>(m_currentNode)->PrintTrace()
-                 << ", for VoiceXML element: " << element->PrintTrace());
+          PTRACE(4, "Exception handling via element: " << dynamic_cast<PXMLElement *>(m_currentNode)->PrintTrace());
           return false;
         }
 
