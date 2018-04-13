@@ -103,29 +103,32 @@ incompatibilities. Below is a list of what is available.
 </TABLE>
 \section secScripting Scripting support
 Depending on how the system was built there are three possibilities:
-\li Ultra-primitive where all variables are string types, the only expressions
+<TABLE>
+<TR><TD>Ultra-primitive<TD>Here, all variables are string types, the only expressions
     possible are string concatenation using '+' operator. Literals using single
     quotes are allowed. For &lt;if&gt; only the == and != operator may be used.
-\li Lua can be used for. While full scripting language, this is not ECMA
-    compatible, so is not compliant to standards.
-\li V8 is the most compliant to ECMA and the default scripting language, if
-    available.
+<TR><TD>Lua<TD>While a full scripting language, this is not ECMA
+    compatible, so is not compliant to standards. However it can be on option if
+    compiling V* proves too dificult.
+<TR><TD>Google V8<TD>THis is the most compliant to ECMA, and the default scripting
+    language, if available.
+</TABLE>
 
 Default variables:
 <TABLE>
-<TR><TD>On VXML load
+<TR><TD colspan=2>On VXML load
 <TR><TD>document.uri                    <TD>URI for currently loaded VXML document
 <TR><TD>document.path                   <TD>Root of URI
-<TR><TD>Recoding element
+<TR><TD colspan=2>Recoding element
 <TR><TD>{name}$.type                    <TD>MIME type for recording output
 <TR><TD>{name}$.uri                     <TD>URI for recording output
 <TR><TD>{name}$.maxtime                 <TD>Boolean flag for recording hit maximum time
 <TR><TD>{name}$.termchar                <TD>Value used if recording ended by termination character
 <TR><TD>{name}$.duration                <TD>Duration of the recording
 <TR><TD>{name}$.size                    <TD>Size in bytes of the recording
-<TR><TD>Transfer element
+<TR><TD colspan=2>Transfer element
 <TR><TD>{name}$.duration                <TD>Duration of transfer operation
-<TR><TD>When executed from OPAL call
+<TR><TD colspan=2>When executed from OPAL call
 <TR><TD>session.time                    <TD>Wall clock time of call start
 <TR><TD>session.connection.local.uri    <TD>Local party URI
 <TR><TD>session.connection.local.dnis   <TD>Called party number
@@ -134,6 +137,7 @@ Default variables:
 <TR><TD>session.connection.remote.ip    <TD>Remote party media IP address
 <TR><TD>session.connection.remote.port  <TD>REmote party media port numner
 <TR><TD>session.connection.calltoken    <TD>Call token (OPAL internal)
+</TABLE>
 */
 
 //////////////////////////////////////////////////////////////////
