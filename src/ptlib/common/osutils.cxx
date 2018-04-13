@@ -2448,7 +2448,7 @@ void PProcess::Startup()
   }
 
 #if PTRACING
-  if (!s_MutexLeakCheck)
+  if (PTimedMutex::CtorDtorLogLevel != UINT_MAX)
     s_MutexLeakCheck = new PMutexLeakCheck();
 #endif
 }
@@ -2591,7 +2591,7 @@ PProcess::~PProcess()
   PIPSocket::ClearNameCache();
 
 #if PTRACING
-  if (s_MutexLeakCheck && PTrace::CanTrace(PTimedMutex::CtorDtorLogLevel)) {
+  if (s_MutexLeakCheck != NULL) {
     ostream & trace = PTRACE_BEGIN(PTimedMutex::CtorDtorLogLevel, NULL, "Mutex");
     if (s_MutexLeakCheck->empty())
       trace << "No mutex leaks.";
@@ -3538,7 +3538,7 @@ PTimedMutex::DeadlockStackWalkModes PTimedMutex::DeadlockStackWalkMode = Initial
 
 #if PTRACING
 
-unsigned PTimedMutex::CtorDtorLogLevel = 6;
+unsigned PTimedMutex::CtorDtorLogLevel = UINT_MAX;
 
 static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid)
 {
