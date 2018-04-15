@@ -88,7 +88,7 @@ incompatibilities. Below is a list of what is available.
 <TR><TD>&lt;goto&gt;    <TD>nextitem, expritem, expr
 <TR><TD>&lt;exit&gt;    <TD>No attributes supported
 <TR><TD>&lt;submit&gt;  <TD>next, expr, enctype, method, fetchtimeout, namelist
-<TR><TD>&lt;disconnect&gt;<TD>No attributes specified
+<TR><TD>&lt;disconnect&gt;<TD>No attributes needed
 <TR><TD>&lt;audio&gt;   <TD>src, expr
 <TR><TD>&lt;break&gt;   <TD>msecs, time, size
 <TR><TD>&lt;value&gt;   <TD>expr, class, voice
@@ -98,6 +98,8 @@ incompatibilities. Below is a list of what is available.
 <TR><TD>&lt;var&gt;     <TD>name, expr
 <TR><TD>&lt;property&gt;<TD>name", value
 <TR><TD>&lt;if&gt;      <TD>cond
+<TR><TD>&lt;elseif&gt;  <TD>cond
+<TR><TD>&lt;else&gt;    <TD>No attributes needed
 <TR><TD>&lt;transfer&gt;<TD>name, dest, destexpr, bridge
 <TR><TD>&lt;record&gt;  <TD>name, type, beep, dtmfterm, maxtime, finalsilence
 </TABLE>
@@ -354,6 +356,9 @@ class PVXMLSession : public PIndirectChannel
     virtual PBoolean TraverseRecord(PXMLElement & element);
     virtual PBoolean TraversedRecord(PXMLElement & element);
     virtual PBoolean TraverseIf(PXMLElement & element);
+    virtual PBoolean TraversedIf(PXMLElement & element);
+    virtual PBoolean TraverseElseIf(PXMLElement & element);
+    virtual PBoolean TraverseElse(PXMLElement & element);
     virtual PBoolean TraverseExit(PXMLElement & element);
     virtual PBoolean TraverseVar(PXMLElement & element);
     virtual PBoolean TraverseSubmit(PXMLElement & element);
@@ -384,10 +389,11 @@ class PVXMLSession : public PIndirectChannel
   protected:
     virtual bool InternalLoadVXML(const PString & xml, const PString & firstForm);
 
-    virtual bool ProcessNode();
+    virtual bool ProcessNode(bool skipDialogs);
     virtual bool ProcessEvents();
     virtual bool ProcessGrammar();
     virtual bool NextNode(bool processChildren);
+    bool ExecuteCondition(PXMLElement & element);
     void ClearBargeIn();
     void FlushInput();
 

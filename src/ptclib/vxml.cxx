@@ -106,7 +106,8 @@ TRAVERSE_NODE(Value);
 TRAVERSE_NODE(SayAs);
 TRAVERSE_NODE(Goto);
 TRAVERSE_NODE(Grammar);
-TRAVERSE_NODE(If);
+TRAVERSE_NODE(ElseIf);
+TRAVERSE_NODE(Else);
 TRAVERSE_NODE(Exit);
 TRAVERSE_NODE(Var);
 TRAVERSE_NODE(Submit);
@@ -130,6 +131,7 @@ TRAVERSE_NODE2(Field);
 TRAVERSE_NODE2(Transfer);
 TRAVERSE_NODE2(Record);
 TRAVERSE_NODE2(Prompt);
+TRAVERSE_NODE2(If);
 
 class PVXMLTraverseEvent : public PVXMLNodeHandler
 {
@@ -1186,20 +1188,13 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
     SetVar("path", pathURL);
     SetVar("uri", m_rootURL);
 
-    {
-      PINDEX idx = 0;
-      PXMLElement * element;
-      while ((element = root->GetElement("var", idx++)) != NULL)
-        TraverseVar(*element);
-    }
-
-    // traverse global <script> elements
-    {
-      PINDEX idx = 0;
-      PXMLElement * element;
-      while ((element = root->GetElement("script", idx++)) != NULL)
-        TraverseScript(*element);
-    }
+    // traverse global elements
+    m_currentNode = root->GetElement(0);
+    do {
+      bool processChildren = ProcessNode(true);
+      while (NextNode(processChildren))
+        ;
+    }  while (m_currentNode != NULL);
 
     // find the first form
     if (!SetCurrentForm(firstForm, false)) {
@@ -1375,7 +1370,7 @@ void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
 
   while (!m_abortVXML) {
     // process current node in the VXML script
-    bool processChildren = ProcessNode();
+    bool processChildren = ProcessNode(false);
 
     /* wait for something to happen, usually output of some audio. But under
         some circumstances we want to abort the script, but we  have to make
@@ -1608,7 +1603,7 @@ bool PVXMLSession::ProcessGrammar()
 }
 
 
-bool PVXMLSession::ProcessNode()
+bool PVXMLSession::ProcessNode(bool skipDialogs)
 {
   // m_sessionMutex already locked
 
@@ -1622,14 +1617,17 @@ bool PVXMLSession::ProcessNode()
 
   PXMLData * nodeData = dynamic_cast<PXMLData *>(m_currentNode);
   if (nodeData != NULL) {
-    if (m_speakNodeData)
+    if (m_speakNodeData && !skipDialogs)
       PlayText(nodeData->GetString().Trim());
     return true;
   }
 
   m_speakNodeData = true;
 
-  PXMLElement * element = (PXMLElement*)m_currentNode;
+  PXMLElement * element = dynamic_cast<PXMLElement *>(m_currentNode);
+  if (skipDialogs && (element->GetName() == "menu" || element->GetName() == "form"))
+    return false;
+
   PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(element->GetName());
   if (handler == NULL) {
     PTRACE(2, "Unknown/unimplemented VoiceXML element: " << element->PrintTrace());
@@ -2160,7 +2158,7 @@ PBoolean PVXMLSession::TraverseGoto(PXMLElement & element)
   }
 
   if (SetCurrentForm(target, fullURI))
-    return ProcessNode();
+    return ProcessNode(false);
 
   // LATER: throw "error.semantic" or "error.badfetch" -- lookup which
   return false;
@@ -2313,11 +2311,8 @@ PTimeInterval PVXMLSession::StringToTime(const PString & str, int dflt)
 }
 
 
-PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
+bool PVXMLSession::ExecuteCondition(PXMLElement & element)
 {
-  // If 'cond' parameter evaluates to true, enter child entities, else
-  // go to next element.
-
   PString condition = element.GetAttribute("cond");
 
   bool result;
@@ -2331,17 +2326,108 @@ PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
     // Find comparison type
     PINDEX location = condition.Find("==");
     if (location == P_MAX_INDEX) {
-      PTRACE(1, "<if> element contains condition with operator other than ==, not implemented");
-      return false;
+      location = condition.Find("!=");
+      if (location == P_MAX_INDEX) {
+        PTRACE(1, "<if> element contains condition with operator other than == or !=, not implemented");
+        return false;
+      }
     }
 
-    result = EvaluateExpr(condition.Left(location).Trim()) == EvaluateExpr(condition.Mid(location + 2).Trim());
+    PString leftExpr = EvaluateExpr(condition.Left(location).Trim());
+    PString rightExpr = EvaluateExpr(condition.Mid(location + 2).Trim());
+    if (condition[location] == '=')
+      result = leftExpr == rightExpr;
+    else
+      result = leftExpr != rightExpr;
   }
 
-  PTRACE(4, "\tCondition \"" << condition << "\" " << (result ? "matched" : "did not match"));
+  PTRACE(4, "\tCondition \"" << condition << "\" is " << ::boolalpha << result);
   return result;
 }
 
+
+static PXMLObject * NextElseIfNode(PXMLElement & ifElement, PINDEX pos)
+{
+  PXMLObject * previousObject = ifElement.GetSubObject(pos);
+  for (PINDEX i = pos; i < ifElement.GetSize(); ++i) {
+    PXMLObject * thisObject = ifElement.GetSubObject(i);
+    if (thisObject->IsElement()) {
+      PXMLElement * thisElement = dynamic_cast<PXMLElement *>(thisObject);
+      if (thisElement->GetName() == "else")
+        return thisObject;
+      if (thisElement->GetName() == "elseif") {
+        if (previousObject->IsElement()) {
+          // Need a non-element as previous, so NextNode() logic works
+          previousObject = new PXMLData(PString::Empty());
+          previousObject->SetParent(&ifElement);
+          ifElement.GetSubObjects().InsertAt(i, previousObject);
+        }
+        return previousObject;
+      }
+    }
+    previousObject = thisObject;
+  }
+
+  return NULL;
+}
+
+
+static PConstString const IfStateAttributeName("PTLibInternalIfState");
+
+PBoolean PVXMLSession::TraverseIf(PXMLElement & element)
+{
+  // If 'cond' parameter evaluates to true, enter child entities, else
+  // go to next element.
+
+  if (ExecuteCondition(element)) {
+    element.SetAttribute(IfStateAttributeName, "done");
+    return true;
+  }
+
+  PXMLObject * nextNode = NextElseIfNode(element, 0);
+  if (nextNode == NULL)
+    return false; // Skip if subelements
+
+  m_currentNode = nextNode;
+  return true; // Do subelements
+}
+
+
+PBoolean PVXMLSession::TraversedIf(PXMLElement & element)
+{
+  element.SetAttribute(IfStateAttributeName, PString::Empty());
+  return true;
+}
+
+
+PBoolean PVXMLSession::TraverseElseIf(PXMLElement & element)
+{
+  PXMLElement * ifElement = element.GetParent();
+  PString state = ifElement->GetAttribute(IfStateAttributeName);
+  if (state == "done") {
+    m_currentNode = element.GetParent();
+    return false;
+  }
+
+  if (ExecuteCondition(element)) {
+    ifElement->SetAttribute(IfStateAttributeName, "done");
+    return true;
+  }
+
+  PXMLObject * nextNode = NextElseIfNode(*ifElement, ifElement->FindObject(&element)+1);
+  if (nextNode == NULL)
+    return false; // Skip if subelements
+
+  m_currentNode = nextNode;
+  return true; // Do subelements
+}
+
+
+PBoolean PVXMLSession::TraverseElse(PXMLElement & element)
+{
+  m_currentNode = element.GetParent();
+  return false;
+}
 
 
 PBoolean PVXMLSession::TraverseExit(PXMLElement &)
