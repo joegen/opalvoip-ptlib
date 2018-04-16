@@ -144,29 +144,35 @@ class PBase64 : public PObject
        @return
        Base64 encoded string for the processed data.
      */
-    PString CompleteEncoding();
+    PString CompleteEncoding(
+      bool noFill = false   ///< Suppress the fill (trailing = signs)
+    );
 
 
     static PString Encode(
       const PString & str,            ///< String to be encoded to Base64
       const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      PINDEX width = 76,              ///< Line widths if endOfLine non empty
+      bool noFill = false             ///< Suppress the fill (trailing = signs)
     );
     static PString Encode(
       const char * cstr,              ///< C String to be encoded to Base64
       const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      PINDEX width = 76,              ///< Line widths if endOfLine non empty
+      bool noFill = false             ///< Suppress the fill (trailing = signs)
     );
     static PString Encode(
       const PBYTEArray & data,        ///< Data block to be encoded to Base64
       const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      PINDEX width = 76,              ///< Line widths if endOfLine non empty
+      bool noFill = false             ///< Suppress the fill (trailing = signs)
     );
     static PString Encode(
       const void * dataBlock,         ///< Pointer to data to be encoded to Base64
       PINDEX length,                  ///< Length of the data block.
       const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76               ///< Line widths if endOfLine non empty
+      PINDEX width = 76,              ///< Line widths if endOfLine non empty
+      bool noFill = false             ///< Suppress the fill (trailing = signs)
     );
     // Encode the data in memory to Base 64 data returnin the string.
 

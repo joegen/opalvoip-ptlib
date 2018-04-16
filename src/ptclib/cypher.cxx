@@ -258,7 +258,7 @@ PString PBase64::GetEncodedString()
 }
 
 
-PString PBase64::CompleteEncoding()
+PString PBase64::CompleteEncoding(bool noFill)
 {
   encodedString.SetMinSize(encodedString.GetLength() + 5);
 
@@ -266,6 +266,8 @@ PString PBase64::CompleteEncoding()
     case 1 :
       encodedString += Binary2Base64[saveTriple[0] >> 2];
       encodedString += Binary2Base64[(saveTriple[0]&3)<<4];
+      if (noFill)
+        return encodedString;
       encodedString += '=';
       encodedString += '=';
       break;
@@ -274,6 +276,8 @@ PString PBase64::CompleteEncoding()
       encodedString += Binary2Base64[saveTriple[0] >> 2];
       encodedString += Binary2Base64[((saveTriple[0]&3)<<4) | (saveTriple[1]>>4)];
       encodedString += Binary2Base64[((saveTriple[1]&15)<<2)];
+      if (noFill)
+        return encodedString;
       encodedString += '=';
   }
 
@@ -281,34 +285,34 @@ PString PBase64::CompleteEncoding()
 }
 
 
-PString PBase64::Encode(const PString & str, const char * endOfLine, PINDEX width)
+PString PBase64::Encode(const PString & str, const char * endOfLine, PINDEX width, bool noFill)
 {
   if (str.IsEmpty())
     return PString::Empty();
 
-  return Encode((const char *)str, str.GetLength(), endOfLine, width);
+  return Encode((const char *)str, str.GetLength(), endOfLine, width, noFill);
 }
 
 
-PString PBase64::Encode(const char * cstr, const char * endOfLine, PINDEX width)
+PString PBase64::Encode(const char * cstr, const char * endOfLine, PINDEX width, bool noFill)
 {
   if (cstr == NULL || *cstr == '\0')
     return PString::Empty();
 
-  return Encode((const BYTE *)cstr, (PINDEX)strlen(cstr), endOfLine, width);
+  return Encode((const BYTE *)cstr, (PINDEX)strlen(cstr), endOfLine, width, noFill);
 }
 
 
-PString PBase64::Encode(const PBYTEArray & data, const char * endOfLine, PINDEX width)
+PString PBase64::Encode(const PBYTEArray & data, const char * endOfLine, PINDEX width, bool noFill)
 {
   if (data.IsEmpty())
     return PString::Empty();
 
-  return Encode(data, data.GetSize(), endOfLine, width);
+  return Encode(data, data.GetSize(), endOfLine, width, noFill);
 }
 
 
-PString PBase64::Encode(const void * data, PINDEX length, const char * endOfLine, PINDEX width)
+PString PBase64::Encode(const void * data, PINDEX length, const char * endOfLine, PINDEX width, bool noFill)
 {
   if (length == 0)
     return PString::Empty();
@@ -316,7 +320,7 @@ PString PBase64::Encode(const void * data, PINDEX length, const char * endOfLine
   PBase64 encoder;
   encoder.StartEncoding(endOfLine, width);
   encoder.ProcessEncoding(data, length);
-  return encoder.CompleteEncoding();
+  return encoder.CompleteEncoding(noFill);
 }
 
 
