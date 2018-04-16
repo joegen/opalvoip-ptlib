@@ -1359,12 +1359,12 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
   if (vkey.IsEmpty())
     return Invalid;
 
-  BYTE info[sizeof(code)+1+sizeof(DWORD)];
+  BYTE info[PMessageDigest5::DigestLength+1+sizeof(DWORD)];
   PTEACypher crypt(productKey);
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return Invalid;
 
-  if (memcmp(info, &code, sizeof(code)) != 0)
+  if (memcmp(info, code, PMessageDigest5::DigestLength) != 0)
     return Invalid;
 
   PTime now;
@@ -1385,19 +1385,19 @@ PBoolean PSecureConfig::ValidatePending()
     return true;
 
   PMessageDigest5::Code code;
-  BYTE info[sizeof(code)+1+sizeof(DWORD)];
+  BYTE info[PMessageDigest5::DigestLength+1+sizeof(DWORD)];
   PTEACypher crypt(productKey);
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return false;
 
   PTime expiryDate(0, 0, 0,
-            1, info[sizeof(code)]&15, (info[sizeof(code)]>>4)+1996, PTime::GMT);
+            1, info[PMessageDigest5::DigestLength]&15, (info[PMessageDigest5::DigestLength]>>4)+1996, PTime::GMT);
   PString expiry = expiryDate.AsString("d MMME yyyy", PTime::GMT);
 
   // This is for alignment problems on processors that care about such things
   PUInt32b opt;
   void * dst = &opt;
-  void * src = &info[sizeof(code)+1];
+  void * src = &info[PMessageDigest5::DigestLength+1];
   memcpy(dst, src, sizeof(opt));
   PString options(PString::Unsigned, (DWORD)opt);
 
@@ -1409,7 +1409,7 @@ PBoolean PSecureConfig::ValidatePending()
   digestor.Process(options);
   digestor.Complete(code);
 
-  if (memcmp(info, &code, sizeof(code)) != 0)
+  if (memcmp(info, code, PMessageDigest5::DigestLength) != 0)
     return false;
 
   SetString(expiryDateKey, expiry);

@@ -1006,9 +1006,9 @@ PString PServiceHTML::CalculateSignature(const PString & outStr,
 
   // encode it
   PTEACypher cypher(sig);
-  BYTE buf[sizeof(md5)+7];
-  memcpy(buf, &md5, sizeof(md5));
-  memset(&buf[sizeof(md5)], 0, sizeof(buf)-sizeof(md5));
+  BYTE buf[PMessageDigest5::DigestLength+7];
+  memcpy(buf, md5, PMessageDigest5::DigestLength);
+  memset(&buf[PMessageDigest5::DigestLength], 0, sizeof(buf)-PMessageDigest5::DigestLength);
   return cypher.Encode(buf, sizeof(buf));
 }
 

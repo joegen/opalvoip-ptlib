@@ -742,7 +742,7 @@ unsigned PSTUNMessage::CheckMessageIntegrity(const BYTE * credentialsHashPtr, PI
     return 401;
 
 #if P_SSL
-  BYTE hmac[sizeof(PSTUNMessageIntegrity::m_hmac)];
+  BYTE hmac[sizeof(mi->m_hmac)];
   CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, hmac);
   return memcmp(hmac, mi->m_hmac, sizeof(hmac)) == 0 ? 0 : 431;
 #else

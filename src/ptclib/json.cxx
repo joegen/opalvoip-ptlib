@@ -871,7 +871,7 @@ static PHMAC * CreateHMAC(const PJWT::Algorithm algorithm)
       return new PHMAC_SHA512;
     default :
       PAssertAlways("Unknown algorithm");
-      return false;
+      return NULL;
   }
 }
 
