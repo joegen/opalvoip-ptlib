@@ -1,8 +1,16 @@
 <?xml version="1.0"?>
 <vxml version="2.1" xmlns="http://www.w3.org/2001/vxml">
 
-  <var name="application.base_url" expr="'file:///D:/Temp/IVR-test/'" />
-  
+  <if cond="1+1==20">
+    <var name="application.base_url" expr="'file:///D:/Temp/IVR-test/'" />
+  <elseif cond="2+2==5" />
+    <var name="application.base_url" expr="'file:///E:/Temp/IVR-test/'" />
+  <elseif cond="3+3==5" />
+    <var name="application.base_url" expr="'file:///F:/Temp/IVR-test/'" />
+  <else/>
+    <var name="application.base_url" expr="'file:///C:/Temp/IVR-test/'" />
+  </if>
+
   <!-- Main menu -->
   <menu id="MainMenu">
 

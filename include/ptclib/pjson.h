@@ -244,4 +244,57 @@ class PJSON : public PObject
 };
 
 
+#if P_SSL
+
+/** Encode/Decode JSON payload as a JSON Web Token.
+    The JSON is always of Object type.
+  */
+class PJWT : public PJSON
+{
+    PCLASSINFO(PJWT, PJSON);
+  public:
+    PJWT();
+    explicit PJWT(
+      const PString & str,
+      const PString & secret = PString::Empty()
+    );
+
+    P_DECLARE_STREAMABLE_ENUM(Algorithm,
+      none,
+      HS256,
+      HS384,
+      HS512
+    );
+
+    PString Encode(
+      const PString & secret = PString::Empty(),
+      const Algorithm algorithm = HS256
+    );
+
+    bool Decode(
+      const PString & str,
+      const PString & secret = PString::Empty()
+    );
+
+    void SetIssuer(const PString & str);
+    PString GetIssuer() const;
+    void SetSubject(const PString & str);
+    PString GetSubject() const;
+    void SetAudience(const PString & str);
+    PString GetAudience() const;
+    void SetExpiration(const PTime & when);
+    PTime GetExpiration() const;
+    void SetNotBefore(const PTime & when);
+    PTime GetNotBefore() const;
+    void SetIssuedAt(const PTime & when);
+    PTime GetIssuedAt() const;
+    void SetTokenId(const PString & str);
+    PString GetTokenId() const;
+
+    void SetPrivate(const PString & key, const PString & str);
+    PString GetPrivate(const PString & key) const;
+};
+
+#endif // P_SSL
+
 #endif  // PTLIB_PJSON_H

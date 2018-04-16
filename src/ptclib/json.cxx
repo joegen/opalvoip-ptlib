@@ -32,8 +32,11 @@
 #include <ptlib.h>
 
 #include <ptclib/pjson.h>
+#include <ptclib/cypher.h>
+
 
 #define new PNEW
+#define PTraceModule() "JSON"
 
 
 static PJSON::Base * CreateByType(PJSON::Types type)
@@ -839,3 +842,203 @@ PJSON::Base * PJSON::Null::DeepClone() const
 {
   return new Null();
 }
+
+
+#if P_SSL
+
+PJWT::PJWT()
+  : PJSON(e_Object)
+{
+}
+
+
+PJWT::PJWT(const PString & str, const PString & secret)
+{
+  m_valid = Decode(str, secret);
+}
+
+
+static PHMAC * CreateHMAC(const PJWT::Algorithm algorithm)
+{
+  switch (algorithm) {
+    case PJWT::HS256:
+      return new PHMAC_SHA256;
+      break;
+    case PJWT::HS384:
+      return new PHMAC_SHA384;
+      break;
+    case PJWT::HS512:
+      return new PHMAC_SHA512;
+    default :
+      PAssertAlways("Unknown algorithm");
+      return false;
+  }
+}
+
+
+PString PJWT::Encode(const PString & secret, const Algorithm algorithm)
+{
+  std::auto_ptr<PHMAC> hmac(CreateHMAC(algorithm));
+  if (!hmac.get())
+    return PString::Empty();
+
+  hmac->SetKey(secret);
+
+  PJSON hdr(e_Object);
+  Object & hdrObj = hdr.GetObject();
+  hdrObj.SetString("typ", "JWT");
+  hdrObj.SetString("alg", PSTRSTRM(algorithm));
+
+  PStringStream token;
+  token << PBase64::Encode(hdr.AsString(), PBase64::e_URL) << '.' << PBase64::Encode(AsString(), PBase64::e_URL);
+  PINDEX prefixLength = token.GetLength();
+
+  token << '.' << hmac->Encode(token.GetPointer(), prefixLength);
+
+  return token;
+}
+
+
+bool PJWT::Decode(const PString & str, const PString & secret)
+{
+  PStringArray section = str.Tokenise(".");
+  if (section.size() != 3) {
+    PTRACE(2, "Invalid JWT header: \"" << str.Left(100) << '"');
+    return false;
+  }
+
+  PJSON hdr(PBase64::Decode(section[0]));
+  if (!hdr.IsValid()) {
+    PTRACE(2, "Invalid JWT header JSON.");
+    return false;
+  }
+
+  if (!hdr.IsType(e_Object)) {
+    PTRACE(2, "Invalid JWT header JSON type.");
+    return false;
+  }
+
+  Object & hdrObj = hdr.GetObject();
+  if (hdrObj.GetString("typ") != "JWT") {
+    PTRACE(2, "Unsupported JWT type.");
+    return false;
+  }
+
+  std::auto_ptr<PHMAC> hmac(CreateHMAC(AlgorithmFromString(hdrObj.GetString("alg"))));
+  if (!hmac.get()) {
+    PTRACE(2, "Unsupported JWT algorithm.");
+    return false;
+  }
+
+  hmac->SetKey(secret);
+
+  if (section[2] != hmac->Encode(str.GetPointer(), str.FindLast('.'))) {
+    PTRACE(2, "JWT signature does not match.");
+    return false;
+  }
+
+  if (!FromString(PBase64::Decode(section[1]))) {
+    PTRACE(2, "Invalid JWT payload JSON.");
+    return false;
+  }
+
+  return true;
+}
+
+void PJWT::SetIssuer(const PString & str)
+{
+  GetObject().SetString("iss", str);
+}
+
+
+PString PJWT::GetIssuer() const
+{
+  return GetObject().GetString("iss");
+}
+
+
+void PJWT::SetSubject(const PString & str)
+{
+  GetObject().SetString("sub", str);
+}
+
+
+PString PJWT::GetSubject() const
+{
+  return GetObject().GetString("sub");
+}
+
+
+void PJWT::SetAudience(const PString & str)
+{
+  GetObject().SetString("aud", str);
+}
+
+
+PString PJWT::GetAudience() const
+{
+  return GetObject().GetString("aud");
+}
+
+
+void PJWT::SetExpiration(const PTime & when)
+{
+  GetObject().SetNumber("exp", (double)when.GetTimeInSeconds());
+}
+
+
+PTime PJWT::GetExpiration() const
+{
+  return GetObject().GetUnsigned("exp");
+}
+
+
+void PJWT::SetNotBefore(const PTime & when)
+{
+  GetObject().SetNumber("nbf", (double)when.GetTimeInSeconds());
+}
+
+
+PTime PJWT::GetNotBefore() const
+{
+  return GetObject().GetUnsigned("nbf");
+}
+
+
+void PJWT::SetIssuedAt(const PTime & when)
+{
+  GetObject().SetNumber("iat", (double)when.GetTimeInSeconds());
+}
+
+
+PTime PJWT::GetIssuedAt() const
+{
+  return GetObject().GetUnsigned("iat");
+}
+
+
+void PJWT::SetTokenId(const PString & str)
+{
+  GetObject().SetString("jti", str);
+}
+
+
+PString PJWT::GetTokenId() const
+{
+  return GetObject().GetString("jti");
+}
+
+
+void PJWT::SetPrivate(const PString & key, const PString & str)
+{
+  GetObject().SetString(key, str);
+}
+
+
+PString PJWT::GetPrivate(const PString & key) const
+{
+  return GetObject().GetString(key);
+}
+
+
+#endif // P_SSL
