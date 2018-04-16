@@ -312,7 +312,7 @@ class PSTUNChangeRequest : public PSTUNAttribute
 class PSTUNMessageIntegrity : public PSTUNAttribute
 {
   public:
-    BYTE m_hmac[PHMAC::KeyLength];
+    BYTE m_hmac[PMessageDigestSHA1::DigestLength];
 
     PSTUNMessageIntegrity(const BYTE * hmac = NULL)
       : PSTUNAttribute(MESSAGE_INTEGRITY, sizeof(m_hmac))

@@ -911,15 +911,6 @@ PString PHTTPClientAuthentication::GetAuthParam(const PString & auth, const char
   return value;
 }
 
-PString PHTTPClientAuthentication::AsHex(PMessageDigest5::Code & digest) const
-{
-  PStringStream out;
-  out << hex << setfill('0');
-  for (PINDEX i = 0; i < 16; i++)
-    out << setw(2) << (unsigned)((BYTE *)&digest)[i];
-  return out;
-}
-
 PString PHTTPClientAuthentication::AsHex(const PBYTEArray & data) const
 {
   PStringStream out;

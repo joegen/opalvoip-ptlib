@@ -742,9 +742,9 @@ unsigned PSTUNMessage::CheckMessageIntegrity(const BYTE * credentialsHashPtr, PI
     return 401;
 
 #if P_SSL
-  BYTE hmac[PHMAC::KeyLength];
+  BYTE hmac[sizeof(PSTUNMessageIntegrity::m_hmac)];
   CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, hmac);
-  return memcmp(hmac, mi->m_hmac, PHMAC::KeyLength) == 0 ? 0 : 431;
+  return memcmp(hmac, mi->m_hmac, sizeof(hmac)) == 0 ? 0 : 431;
 #else
   return 0;
 #endif
@@ -762,14 +762,15 @@ void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PI
   WORD oldLength = hdr->msgLength;
   hdr->msgLength = checkLength - sizeof(PSTUNMessageHeader) + sizeof(PSTUNMessageIntegrity);
 
-  PHMAC_SHA1 hmac(credentialsHashPtr, credentialsHashLen);
+  PHMAC_SHA1 hmac;
+  hmac.SetKey(credentialsHashPtr, credentialsHashLen);
   PHMAC_SHA1::Result result;
   hmac.Process((BYTE *)theArray, checkLength, result);
 
   hdr->msgLength = oldLength;
 
   // copy the hash to the returned buffer
-  memcpy(checkHmac, result.GetPointer(), PHMAC::KeyLength);
+  memcpy(checkHmac, result.GetPointer(), result.GetSize());
 }
 #else
 void PSTUNMessage::CalculateMessageIntegrity(const BYTE *, PINDEX, PSTUNMessageIntegrity *, BYTE * checkHmac) const

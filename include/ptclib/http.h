@@ -332,7 +332,7 @@ class PHTTPClientAuthentication : public PObject
     virtual void SetAuthRealm(const PString &)     { }
 
     PString GetAuthParam(const PString & auth, const char * name) const;
-    PString AsHex(PMessageDigest5::Code & digest) const;
+    PString AsHex(const PMessageDigest::Result & digest) const { return digest.AsHex(); }
     PString AsHex(const PBYTEArray & data) const;
 
     static PHTTPClientAuthentication * ParseAuthenticationRequired(bool isProxy, const PMIMEInfo & line, PString & errorMsg);
