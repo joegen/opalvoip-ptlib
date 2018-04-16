@@ -101,21 +101,36 @@ class PBase64 : public PObject
   PCLASSINFO(PBase64, PObject);
 
   public:
+    /// Encoding options
+    enum Options {
+      e_CRLF, ///< Line endings are CR LF
+      e_LF,   ///< Line endings are LF only
+      e_URL   ///< URL safe encofding, no line breaks, no trailing '= and alternate alphabet
+    };
+
     /** Construct a base 64 encoder/decoder and initialise both encode and
        decode members as in <code>StartEncoding()</code> and <code>StartDecoding()</code>.
      */
-    PBase64();
+    explicit PBase64(
+      Options options = e_CRLF,  ///< Options for encoding.
+      PINDEX width = 76          ///< Line widths if usCRLF true
+    );
 
+    /// Start a base 64 encoding operation, initialising the object instance.
     void StartEncoding(
-      bool useCRLFs = true,  ///< Use CR, LF pairs in end of line characters.
-      PINDEX width = 76      ///< Line widths if usCRLF true
+      Options options = e_CRLF,  ///< Options for encoding.
+      PINDEX width = 76          ///< Line widths if usCRLF true
     );
     void StartEncoding(
       const char * endOfLine,  ///< String to use for end of line.
       PINDEX width = 76        ///< Line widths if endOfLine non empty
     );
-    // Begin a base 64 encoding operation, initialising the object instance.
+    void StartEncoding(
+      bool useCRLFs,         ///< Use CR, LF pairs in end of line characters.
+      PINDEX width = 76      ///< Line widths if usCRLF true
+    ) { StartEncoding(useCRLFs ? e_CRLF : e_LF, width); }
 
+    /// Incorporate the specified data into the base 64 encoding.
     void ProcessEncoding(
       const PString & str      // String to be encoded
     );
@@ -129,7 +144,6 @@ class PBase64 : public PObject
       const void * dataBlock,  // Pointer to data to be encoded
       PINDEX length            // Length of the data block.
     );
-    // Incorporate the specified data into the base 64 encoding.
 
     /** Get the partial Base64 string for the data encoded so far.
     
@@ -144,37 +158,52 @@ class PBase64 : public PObject
        @return
        Base64 encoded string for the processed data.
      */
-    PString CompleteEncoding(
-      bool noFill = false   ///< Suppress the fill (trailing = signs)
-    );
+    PString CompleteEncoding();
 
 
+    /// Encode the data in memory to Base 64 data returnin the string.
     static PString Encode(
-      const PString & str,            ///< String to be encoded to Base64
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76,              ///< Line widths if endOfLine non empty
-      bool noFill = false             ///< Suppress the fill (trailing = signs)
+      const PString & str,    ///< String to be encoded to Base64
+      Options options = e_LF, ///< Options for encoding.
+      PINDEX width = 76       ///< Line widths if endOfLine non empty
     );
     static PString Encode(
-      const char * cstr,              ///< C String to be encoded to Base64
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76,              ///< Line widths if endOfLine non empty
-      bool noFill = false             ///< Suppress the fill (trailing = signs)
+      const PString & str,    ///< String to be encoded to Base64
+      const char * endOfLine, ///< String to use for end of line.
+      PINDEX width = 76       ///< Line widths if endOfLine non empty
     );
     static PString Encode(
-      const PBYTEArray & data,        ///< Data block to be encoded to Base64
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76,              ///< Line widths if endOfLine non empty
-      bool noFill = false             ///< Suppress the fill (trailing = signs)
+      const char * cstr,      ///< C String to be encoded to Base64
+      Options options = e_LF, ///< Options for encoding.
+      PINDEX width = 76       ///< Line widths if endOfLine non empty
     );
     static PString Encode(
-      const void * dataBlock,         ///< Pointer to data to be encoded to Base64
-      PINDEX length,                  ///< Length of the data block.
-      const char * endOfLine = "\n",  ///< String to use for end of line.
-      PINDEX width = 76,              ///< Line widths if endOfLine non empty
-      bool noFill = false             ///< Suppress the fill (trailing = signs)
+      const char * cstr,      ///< C String to be encoded to Base64
+      const char * endOfLine, ///< String to use for end of line.
+      PINDEX width = 76       ///< Line widths if endOfLine non empty
     );
-    // Encode the data in memory to Base 64 data returnin the string.
+    static PString Encode(
+      const PBYTEArray & data, ///< Data block to be encoded to Base64
+      Options options = e_LF,  ///< Options for encoding.
+      PINDEX width = 76        ///< Line widths if endOfLine non empty
+    );
+    static PString Encode(
+      const PBYTEArray & data, ///< Data block to be encoded to Base64
+      const char * endOfLine,  ///< String to use for end of line.
+      PINDEX width = 76        ///< Line widths if endOfLine non empty
+    );
+    static PString Encode(
+      const void * dataBlock,  ///< Pointer to data to be encoded to Base64
+      PINDEX length,           ///< Length of the data block.
+      Options options = e_LF,  ///< Options for encoding.
+      PINDEX width = 76        ///< Line widths if endOfLine non empty
+    );
+    static PString Encode(
+      const void * dataBlock,  ///< Pointer to data to be encoded to Base64
+      PINDEX length,           ///< Length of the data block.
+      const char * endOfLine,  ///< String to use for end of line.
+      PINDEX width = 76        ///< Line widths if endOfLine non empty
+    );
 
 
     void StartDecoding();
@@ -210,7 +239,7 @@ class PBase64 : public PObject
        @return
        Decoded data for the processed Base64 string.
      */
-    PBoolean IsDecodeOK() { return perfectDecode; }
+    PBoolean IsDecodeOK() { return m_perfectDecode; }
 
 
     /** Convert a printable text string to binary data using the Internet MIME
@@ -242,17 +271,18 @@ class PBase64 : public PObject
   private:
     void OutputBase64(const BYTE * data);
 
-    PString encodedString;
-    BYTE    saveTriple[3];
-    PINDEX  saveCount;
-    PString endOfLine;
-    PINDEX  maxLineLength;
-    PINDEX  currentLineLength;
+    PString m_encodedString;
+    BYTE    m_saveTriple[3];
+    PINDEX  m_saveCount;
+    PString m_endOfLine;
+    PINDEX  m_maxLineLength;
+    PINDEX  m_currentLineLength;
+    const char * m_alphabet;
 
-    bool       perfectDecode;
-    PINDEX     quadPosition;
-    PBYTEArray decodedData;
-    PINDEX     decodeSize;
+    bool       m_perfectDecode;
+    PINDEX     m_quadPosition;
+    PBYTEArray m_decodedData;
+    PINDEX     m_decodeSize;
 };
 
 
@@ -270,7 +300,7 @@ class PMessageDigest : public PObject
       public:
         virtual void PrintOn(ostream & strm) const;
 
-        PString AsBase64() const { return PBase64::Encode(*this, NULL, 0, true); }
+        PString AsBase64(PBase64::Options options = PBase64::e_URL) const { return PBase64::Encode(*this, options); }
         PString AsHex() const;
     };
 
