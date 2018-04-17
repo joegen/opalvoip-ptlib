@@ -539,7 +539,8 @@ class PSTUNMessage : public PBYTEArray
 
   protected:
     PSTUNAttribute * GetFirstAttribute() const;
-    void CalculateMessageIntegrity(const BYTE * credentialsHash, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi, BYTE * hmac) const;
+    void CalculateMessageIntegrity(const BYTE * credentialsHash, PINDEX credentialsHashLen,
+                                   PSTUNMessageIntegrity * mi, BYTE * hmacPtr, PINDEX hmacSize) const;
     DWORD CalculateFingerprint(PSTUNFingerprint * fp) const;
 
     PIPSocketAddressAndPort m_sourceAddressAndPort;
