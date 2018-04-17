@@ -253,29 +253,39 @@ class PJWT : public PJSON
 {
     PCLASSINFO(PJWT, PJSON);
   public:
+    /// Construct empty Object type JSON
     PJWT();
+
+    /** Create and decode the JWT.
+        Use IsValid() afterward to cerify if decode was successful.
+     */
     explicit PJWT(
       const PString & str,
       const PString & secret = PString::Empty(),
       const PTime & verifyTime = PTime(0)
     );
 
+    /// Available token algorithms 
     P_DECLARE_STREAMABLE_ENUM(Algorithm,
       none,
-      HS256,
-      HS384,
-      HS512
+      HS256,  // HMAC SHA-256
+      HS384,  // HMAC SHA-384
+      HS512   // HMAC SHA-512
     );
 
+    /**Encode the JWT using the shared secret and algorithm.
+      */
     PString Encode(
-      const PString & secret = PString::Empty(),
-      const Algorithm algorithm = HS256
+      const PString & secret = PString::Empty(),  ///< Shared secret
+      const Algorithm algorithm = HS256           ///< Algorithm
     );
 
+    /**Decode the JWT using the shared secret and algorithm.
+      */
     bool Decode(
-      const PString & str,
-      const PString & secret = PString::Empty(),
-      const PTime & verifyTime = PTime(0)
+      const PString & str,                        ///< Encoded JWT string
+      const PString & secret = PString::Empty(),  ///< Shared secret
+      const PTime & verifyTime = PTime(0)         ///< Optional time to use for verification
     );
 
     void SetIssuer(const PString & str);
