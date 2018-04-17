@@ -932,7 +932,10 @@ bool PJWT::Decode(const PString & str, const PString & secret, const PTime & ver
 
   hmac->SetKey(secret);
 
-  if (section[2] != hmac->Encode(str.GetPointer(), str.FindLast('.'))) {
+  PHMAC::Result theirs, ours;
+  PBase64::Decode(section[2], theirs);
+  hmac->Process(str.GetPointer(), str.FindLast('.'), ours);
+  if (!ours.ConstantTimeCompare(theirs)) {
     PTRACE(2, "JWT signature does not match.");
     return false;
   }

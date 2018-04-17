@@ -300,6 +300,8 @@ class PMessageDigest : public PObject
       public:
         virtual void PrintOn(ostream & strm) const;
 
+        bool ConstantTimeCompare(const Result & other) const;
+
         PString AsBase64(PBase64::Options options = PBase64::e_URL) const { return PBase64::Encode(*this, options); }
         PString AsHex() const;
     };
