@@ -984,6 +984,7 @@ class PSSLChannel : public PIndirectChannel
     ssl_st       * m_ssl;
     bio_st       * m_bio;
     VerifyNotifier m_verifyNotifier;
+    PDECLARE_MUTEX(m_writeMutex);
 
     P_REMOVE_VIRTUAL(PBoolean,RawSSLRead(void *, PINDEX &),false);
 };

@@ -1767,6 +1767,12 @@ static void LockingCallback(int mode, int n, const char * /*file*/, int /*line*/
 }
 
 
+static unsigned long ThreadIdCallback()
+{
+  return PThread::GetCurrentUniqueIdentifier();
+}
+
+
 void PSSLInitialiser::OnStartup()
 {
   SSL_library_init();
@@ -1782,6 +1788,7 @@ void PSSLInitialiser::OnStartup()
   for (int i = 0; i < CRYPTO_num_locks(); ++i)
     mutexes.push_back(PMutex(PDebugLocation(__FILE__, __LINE__, "SSLMutex")));
   CRYPTO_set_locking_callback(::LockingCallback);
+  CRYPTO_set_id_callback(ThreadIdCallback);
 }
 
 
@@ -2467,6 +2474,10 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
     return false;
 
   flush();
+
+  /* OpenSSL claims to be thread safe if we use CRYPTO_set_locking_callback().
+     However, evidence is, that simultaneous writes are still ... bad. */
+  PWaitAndSignal lock(m_writeMutex);
 
   channelPointerMutex.StartRead();
 
