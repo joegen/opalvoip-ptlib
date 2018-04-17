@@ -2394,8 +2394,8 @@ struct PIntReversedOrder {
   __inline PIntReversedOrder & operator=(type value)                                      { data = ReverseBytes(value);  return *this; }
   __inline PIntReversedOrder & operator=(const PIntReversedOrder & value)                 { data = value.data;           return *this; }
   __inline operator type() const                                                          { return ReverseBytes(data); }
-  __inline friend ostream & operator<<(ostream & s, const PIntReversedOrder & value)      { return s << value.data; }
-  __inline friend istream & operator>>(istream & s, PIntReversedOrder & value)            { return s >> value.data; }
+  __inline friend ostream & operator<<(ostream & s, const PIntReversedOrder & value)      { return s << ReverseBytes(value.data); }
+  __inline friend istream & operator>>(istream & s, PIntReversedOrder & value)            { type i; s >> i; value = i; return s; }
 
   private:
     type data;
