@@ -256,7 +256,8 @@ class PJWT : public PJSON
     PJWT();
     explicit PJWT(
       const PString & str,
-      const PString & secret = PString::Empty()
+      const PString & secret = PString::Empty(),
+      const PTime & verifyTime = PTime(0)
     );
 
     P_DECLARE_STREAMABLE_ENUM(Algorithm,
@@ -273,7 +274,8 @@ class PJWT : public PJSON
 
     bool Decode(
       const PString & str,
-      const PString & secret = PString::Empty()
+      const PString & secret = PString::Empty(),
+      const PTime & verifyTime = PTime(0)
     );
 
     void SetIssuer(const PString & str);

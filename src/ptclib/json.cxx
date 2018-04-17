@@ -852,9 +852,9 @@ PJWT::PJWT()
 }
 
 
-PJWT::PJWT(const PString & str, const PString & secret)
+PJWT::PJWT(const PString & str, const PString & secret, const PTime & verifyTime)
 {
-  m_valid = Decode(str, secret);
+  m_valid = Decode(str, secret, verifyTime);
 }
 
 
@@ -899,7 +899,7 @@ PString PJWT::Encode(const PString & secret, const Algorithm algorithm)
 }
 
 
-bool PJWT::Decode(const PString & str, const PString & secret)
+bool PJWT::Decode(const PString & str, const PString & secret, const PTime & verifyTime)
 {
   PStringArray section = str.Tokenise(".");
   if (section.size() != 3) {
@@ -940,6 +940,20 @@ bool PJWT::Decode(const PString & str, const PString & secret)
   if (!FromString(PBase64::Decode(section[1]))) {
     PTRACE(2, "Invalid JWT payload JSON.");
     return false;
+  }
+
+  if (verifyTime.IsValid()) {
+    PTime exp = GetExpiration();
+    if (exp.IsValid() && exp < verifyTime) {
+      PTRACE(2, "JWT expired at " << exp);
+      return false;
+    }
+
+    PTime nbf = GetNotBefore();
+    if (nbf.IsValid() && nbf >= verifyTime) {
+      PTRACE(2, "JWT not available before " << nbf);
+      return false;
+    }
   }
 
   return true;
