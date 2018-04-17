@@ -105,7 +105,7 @@ class PBase64 : public PObject
     enum Options {
       e_CRLF, ///< Line endings are CR LF
       e_LF,   ///< Line endings are LF only
-      e_URL   ///< URL safe encofding, no line breaks, no trailing '= and alternate alphabet
+      e_URL   ///< URL safe encoding, no line breaks, no trailing '= and alternate alphabet
     };
 
     /** Construct a base 64 encoder/decoder and initialise both encode and
@@ -113,13 +113,13 @@ class PBase64 : public PObject
      */
     explicit PBase64(
       Options options = e_CRLF,  ///< Options for encoding.
-      PINDEX width = 76          ///< Line widths if usCRLF true
+      PINDEX width = 76          ///< Line widths if options != e_URL
     );
 
     /// Start a base 64 encoding operation, initialising the object instance.
     void StartEncoding(
       Options options = e_CRLF,  ///< Options for encoding.
-      PINDEX width = 76          ///< Line widths if usCRLF true
+      PINDEX width = 76          ///< Line widths if options != e_URL
     );
     void StartEncoding(
       const char * endOfLine,  ///< String to use for end of line.
@@ -127,7 +127,7 @@ class PBase64 : public PObject
     );
     void StartEncoding(
       bool useCRLFs,         ///< Use CR, LF pairs in end of line characters.
-      PINDEX width = 76      ///< Line widths if usCRLF true
+      PINDEX width = 76      ///< Line widths
     ) { StartEncoding(useCRLFs ? e_CRLF : e_LF, width); }
 
     /// Incorporate the specified data into the base 64 encoding.
@@ -165,7 +165,7 @@ class PBase64 : public PObject
     static PString Encode(
       const PString & str,    ///< String to be encoded to Base64
       Options options = e_LF, ///< Options for encoding.
-      PINDEX width = 76       ///< Line widths if endOfLine non empty
+      PINDEX width = 76       ///< Line widths if options != e_URL
     );
     static PString Encode(
       const PString & str,    ///< String to be encoded to Base64
@@ -175,7 +175,7 @@ class PBase64 : public PObject
     static PString Encode(
       const char * cstr,      ///< C String to be encoded to Base64
       Options options = e_LF, ///< Options for encoding.
-      PINDEX width = 76       ///< Line widths if endOfLine non empty
+      PINDEX width = 76       ///< Line widths if options != e_URL
     );
     static PString Encode(
       const char * cstr,      ///< C String to be encoded to Base64
@@ -185,7 +185,7 @@ class PBase64 : public PObject
     static PString Encode(
       const PBYTEArray & data, ///< Data block to be encoded to Base64
       Options options = e_LF,  ///< Options for encoding.
-      PINDEX width = 76        ///< Line widths if endOfLine non empty
+      PINDEX width = 76        ///< Line widths if options != e_URL
     );
     static PString Encode(
       const PBYTEArray & data, ///< Data block to be encoded to Base64
@@ -196,7 +196,7 @@ class PBase64 : public PObject
       const void * dataBlock,  ///< Pointer to data to be encoded to Base64
       PINDEX length,           ///< Length of the data block.
       Options options = e_LF,  ///< Options for encoding.
-      PINDEX width = 76        ///< Line widths if endOfLine non empty
+      PINDEX width = 76        ///< Line widths if options != e_URL
     );
     static PString Encode(
       const void * dataBlock,  ///< Pointer to data to be encoded to Base64
@@ -308,33 +308,33 @@ class PMessageDigest : public PObject
     void Start() { InternalStart(); }
 
     void Process(
-      const void * dataBlock,  ///< Pointer to data to be part of the MD5
+      const void * dataBlock,  ///< Pointer to data to be part of the digest
       PINDEX length            ///< Length of the data block.
     );
 
     /** Incorporate the specified data into the message digest. */
     void Process(
-      const PString & str      ///< String to be part of the MD5
+      const PString & str      ///< String to be part of the digest
     );
     /** Incorporate the specified data into the message digest. */
     void Process(
-      const char * cstr        ///< C String to be part of the MD5
+      const char * cstr        ///< C String to be part of the digest
     );
     /** Incorporate the specified data into the message digest. */
     void Process(
-      const PBYTEArray & data  ///< Data block to be part of the MD5
+      const PBYTEArray & data  ///< Data block to be part of the digest
     );
 
     /**
     Complete the message digest and return the magic number result.
-    The parameterless form returns the MD5 code as a Base64 string.
+    The parameterless form returns the digest code as a Base64 string.
     
     @return
-       Base64 encoded MD5 code for the processed data.
+       Base64 encoded digest code for the processed data.
     */
     PString Complete();
     void Complete(
-      Result & result   ///< The resultant 128 bit MD5 code
+      Result & result   ///< The resultant digest value
     ) { InternalCompleteDigest(result); }
 
   protected:
@@ -349,24 +349,24 @@ template <class Digestor> struct PMessageDigestStatics
     /** Encode the data in memory to and digest value. */
     static PString Encode(
       const PString & str      ///< String to be encoded to digest
-    ) { return Encode((const char *)str); }
+    ) { return Encode(str.GetPointer(), str.GetLength()); }
 
     /** Encode the data in memory to and digest value. */
     static void Encode(
       const PString & str,            ///< String to be encoded to digest
       PMessageDigest::Result & result ///< The resultant digest code
-    ) { Encode((const char *)str, result); }
+    ) { Encode(str.GetPointer(), str.GetLength(), result); }
 
     /** Encode the data in memory to and digest value. */
     static PString Encode(
       const char * cstr        ///< C String to be encoded to digest
-    ) { return Encode((const BYTE *)cstr, (int)strlen(cstr)); }
+    ) { return Encode(cstr, (PINDEX)strlen(cstr)); }
 
     /** Encode the data in memory to and digest value. */
     static void Encode(
-      const char * cstr,       ///< C String to be encoded to MD5
+      const char * cstr,       ///< C String to be encoded to digest
       PMessageDigest::Result & result            ///< The resultant digest code
-    ) { Encode((const BYTE *)cstr, (int)strlen(cstr), result); }
+    ) { Encode(cstr, (PINDEX)strlen(cstr), result); }
 
     /** Encode the data in memory to and digest value. */
     static PString Encode(
@@ -389,7 +389,7 @@ template <class Digestor> struct PMessageDigestStatics
       return result.AsBase64();
     }
 
-    /** Encode the data in memory to and MD5 hash value.
+    /** Encode the data in memory to digest value.
     */
     static void Encode(
       const void * dataBlock,  ///< Pointer to data to be encoded to digest

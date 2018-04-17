@@ -1180,7 +1180,7 @@ void PHMAC::Process(const PString & str, PHMAC::Result & result)             { I
 
 void PHMAC_MD5::InitKey(const void * key, PINDEX len)
 {
-  // ensure the key is at least one block long and pad out if necessary
+  // Ensure the key is no longer than a block, if so, do a digest of it.
   if (len <= BlockSize)
     memcpy(m_key.GetPointer(len), key,  len);
   else {
