@@ -77,7 +77,8 @@ void JSONTest::Main()
   jwt.SetIssuedAt(1516239022);
   jwt.SetPrivate("name", "Fred Nurk");
   PString enc = jwt.Encode("secret");
-  cout << "JWT: " << enc << endl;
+  bool good = enc == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MTYyMzkwMjIsImlzcyI6IlZveCBMdWNpZGEsIFB0eS4gTHRkLiIsIm5hbWUiOiJGcmVkIE51cmsifQ.FVEXKAMmqRiOIozsmAZcSoGsN1GbPl4iZ_wCHRGjMQU";
+  cout << "JWT: " << (good ? "(good) " : "(bad) ") << enc << endl;
 
   PJWT dec(enc, "secret");
   if (dec.IsValid())
