@@ -849,7 +849,7 @@ class PSSLChannel : public PIndirectChannel
     virtual PBoolean Read(void * buf, PINDEX len);
     virtual PBoolean Write(const void * buf, PINDEX len);
     virtual PBoolean Close();
-    virtual PBoolean Shutdown(ShutdownValue) { return true; }
+    virtual PBoolean Shutdown(ShutdownValue);
     virtual PString GetErrorText(ErrorGroup group = NumErrorGroups) const;
     virtual PBoolean ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group = LastGeneralError);
 
