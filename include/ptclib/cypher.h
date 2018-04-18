@@ -105,6 +105,7 @@ class PBase64 : public PObject
     enum Options {
       e_CRLF, ///< Line endings are CR LF
       e_LF,   ///< Line endings are LF only
+      e_NoLF, ///< No line endings
       e_URL   ///< URL safe encoding, no line breaks, no trailing '= and alternate alphabet
     };
 
@@ -302,7 +303,7 @@ class PMessageDigest : public PObject
 
         bool ConstantTimeCompare(const Result & other) const;
 
-        PString AsBase64(PBase64::Options options = PBase64::e_URL) const { return PBase64::Encode(*this, options); }
+        PString AsBase64(PBase64::Options options = PBase64::e_NoLF) const { return PBase64::Encode(*this, options); }
         PString AsHex() const;
     };
 
@@ -418,9 +419,9 @@ class PHMAC : public PObject
     void SetKey(const PBYTEArray & key)       { InitKey((const BYTE *)key, key.GetSize()); }
     void SetKey(const BYTE * key, PINDEX len) { InitKey(key, len); }
 
-    PString Encode(const void * data, PINDEX len);
-    PString Encode(const PBYTEArray & data);
-    PString Encode(const PString & str);
+    PString Encode(const void * data, PINDEX len, PBase64::Options options = PBase64::e_NoLF);
+    PString Encode(const PBYTEArray & data, PBase64::Options options = PBase64::e_NoLF);
+    PString Encode(const PString & str, PBase64::Options options = PBase64::e_NoLF);
 
     typedef PMessageDigest::Result Result;
     virtual void Process(const void * data, PINDEX len, Result & result);

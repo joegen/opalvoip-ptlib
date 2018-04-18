@@ -893,7 +893,7 @@ PString PJWT::Encode(const PString & secret, const Algorithm algorithm)
   token << PBase64::Encode(hdr.AsString(), PBase64::e_URL) << '.' << PBase64::Encode(AsString(), PBase64::e_URL);
   PINDEX prefixLength = token.GetLength();
 
-  token << '.' << hmac->Encode(token.GetPointer(), prefixLength);
+  token << '.' << hmac->Encode(token.GetPointer(), prefixLength, PBase64::e_URL);
 
   return token;
 }
