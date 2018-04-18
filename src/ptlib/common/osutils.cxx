@@ -2789,8 +2789,13 @@ void PProcess::InternalPostRunTimeSignal(int signal, PProcessIdentifier source)
 void PProcess::InternalHandleRunTimeSignal(const RunTimeSignalInfo & signalInfo)
 {
 #if PTRACING
-  if (PTrace::CanTrace(2)) {
-    ostream & trace = PTRACE_BEGIN(2);
+  unsigned level =
+#ifdef SIGPIPE
+                   signalInfo.m_signal == SIGPIPE ? 4 :
+#endif
+                   2;
+  if (PTrace::CanTrace(level)) {
+    ostream & trace = PTRACE_BEGIN(level);
     trace << "Received signal " << GetRunTimeSignalName(signalInfo.m_signal) << " from ";
     if (signalInfo.m_source == GetCurrentProcessID())
       trace << "self";
