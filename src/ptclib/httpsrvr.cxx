@@ -1205,7 +1205,7 @@ bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PStri
   if (base != NULL)
     base->Close();
 
-  PString key = PBase64::Encode("What is in here?");
+  PString key = PBase64::Encode(PRandom::Octets(16));
   PMIMEInfo outMIME, replyMIME;
   outMIME.SetAt(PHTTP::ConnectionTag(), PHTTP::UpgradeTag());
   outMIME.SetAt(PHTTP::UpgradeTag(), PHTTP::WebSocketTag());
@@ -1220,8 +1220,12 @@ bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PStri
     return false;
   }
 
-  if (replyMIME(PHTTP::WebSocketAcceptTag()) != PMessageDigestSHA1::Encode(key + WebSocketGUID)) {
-    PTRACE(2, "WebSocket reply accept is unacceptable.");
+  PMessageDigestSHA1::Result theirHash, ourHash;
+  PBase64::Decode(replyMIME(PHTTP::WebSocketAcceptTag()), theirHash);
+  PMessageDigestSHA1::Encode(key + WebSocketGUID, ourHash);
+
+  if (!ourHash.ConstantTimeCompare(theirHash)) {
+    PTRACE(2, "WebSocket reply Accept header is unacceptable: ours=" << ourHash << ", theirs=" << theirHash);
     SetErrorValues(ProtocolFailure, EPROTO);
     return false;
   }
