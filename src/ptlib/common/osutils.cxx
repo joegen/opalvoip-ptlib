@@ -3545,19 +3545,12 @@ PTimedMutex::DeadlockStackWalkModes PTimedMutex::DeadlockStackWalkMode = Initial
 
 unsigned PTimedMutex::CtorDtorLogLevel = UINT_MAX;
 
-static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid)
+static void OutputThreadInfo(ostream & strm, PThreadIdentifier tid, PUniqueThreadIdentifier uid, bool noSymbols)
 {
-  strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << " name=\"" << PThread::GetThreadName(tid) << '"';
-  switch (PTimedMutex::DeadlockStackWalkMode) {
-  case PTimedMutex::DeadlockStackWalkEnabled:
-    PTrace::WalkStack(strm, tid, uid);
-  case PTimedMutex::DeadlockStackWalkNoSymbols:
-    strm << " stack: ";
-    PTrace::WalkStack(strm, tid, uid, true);
-    break;
-  default:
-    break;
-  }
+  strm << " id=" << PThread::GetIdentifiersAsString(tid, uid) << ", name=\"" << PThread::GetThreadName(tid) << '"';
+  if (noSymbols)
+    strm << ", stack=";
+  PTrace::WalkStack(strm, tid, uid, noSymbols);
 }
 
 #endif // PTRACING
@@ -3784,25 +3777,36 @@ void PTimedMutex::InternalWait(const PDebugLocation * location)
     switch (DeadlockStackWalkMode) {
     case DeadlockStackWalkEnabled :
       trace << "\n  Blocked Thread";
-      OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier());
+      OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), false);
       trace << "\n  ";
       break;
     case DeadlockStackWalkNoSymbols :
-      trace << ", Blocked Thread: ";
-      PTrace::WalkStack(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), true);
+      trace << ", Blocked Thread:";
+      OutputThreadInfo(trace, PThread::GetCurrentThreadId(), PThread::GetCurrentUniqueIdentifier(), true);
       // do next case
     default :
       trace << ", ";
     }
 
-    if (lockerId != PNullThreadIdentifier) {
+    if (lockerId != PNullThreadIdentifier)
       trace << "Owner Thread:";
-      OutputThreadInfo(trace, lockerId, lastUniqueId);
-    }
     else {
       trace << "Owner no longer has lock, last owner:";
-      OutputThreadInfo(trace, lastLockerId, lastUniqueId);
+      lockerId = lastLockerId;
     }
+
+    switch (DeadlockStackWalkMode) {
+    case DeadlockStackWalkEnabled :
+      trace << '\n';
+      OutputThreadInfo(trace, lockerId, lastUniqueId, false);
+      break;
+    case DeadlockStackWalkNoSymbols :
+      OutputThreadInfo(trace, lockerId, lastUniqueId, true);
+      break;
+    default :
+      break;
+    }
+
     trace << PTrace::End;
 #else
     PAssertAlways(PSTRSTRM("Possible deadlock in " << *this));
