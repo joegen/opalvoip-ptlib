@@ -868,7 +868,7 @@ template <
   CtxType m_ctx;
   virtual bool Init() { return InitFn(&m_ctx) != 0; }
   virtual bool Update(const void * dataPtr, PINDEX length) { return UpdateFn(&m_ctx, dataPtr, length) != 0; }
-  virtual bool Final(PBYTEArray & digest) { return FinalFn(digest.GetPointer(DigestSize), &m_ctx) != 0; }
+  virtual bool Final(PBYTEArray & digest) { return digest.SetSize(DigestSize) && FinalFn(digest.GetPointer(), &m_ctx) != 0; }
 };
 
 
@@ -925,7 +925,7 @@ void PMessageDigestSHA::InternalCompleteDigest(Result & result)
 
 
 PMessageDigestSHA1::PMessageDigestSHA1()
-  : PMessageDigestSHA(new PMessageDigestContextTemplate<SHA_CTX, SHA_DIGEST_LENGTH, SHA_Init, SHA_Update, SHA_Final>())
+  : PMessageDigestSHA(new PMessageDigestContextTemplate<SHA_CTX, SHA_DIGEST_LENGTH, SHA1_Init, SHA1_Update, SHA1_Final>())
 {
 }
 
