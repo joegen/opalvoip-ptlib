@@ -251,6 +251,10 @@ class PNatMethod  : public PObject
       PIPSocket::Address & internalAddress  ///< NAT router internal address returned.
     ) const;
 
+    /**Return the interface NAT router is using.
+      */
+    PString GetInterface() const;
+
     /**Open the NAT method.
       */
     virtual bool Open(

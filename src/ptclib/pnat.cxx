@@ -270,6 +270,13 @@ bool PNatMethod::GetInterfaceAddress(PIPSocket::Address & internalAddress) const
 }
 
 
+PString PNatMethod::GetInterface() const
+{
+  PIPSocket::Address internalAddress;
+  return GetInterfaceAddress(internalAddress) ? internalAddress.AsString(true) : PString::Empty();
+}
+
+
 bool PNatMethod::Open(const PIPSocket::Address &)
 {
   return true;
@@ -354,11 +361,11 @@ PNatMethod::RTPSupportTypes PNatMethod::GetRTPSupport(bool force)
 
 void PNatMethod::PrintOn(ostream & strm) const
 {
-  strm << GetFriendlyName() << (IsActive() ? " active" : " deactivated");
+  strm << GetFriendlyName() << (IsActive() ? " active" : " deactivated") << ',';
 
   PString server = GetServer();
   if (!server.IsEmpty())
-    strm << " server " << server;
+    strm << ' ' << server;
 
   if (m_natType != UnknownNat) {
     strm << " replies " << GetNatTypeName();
