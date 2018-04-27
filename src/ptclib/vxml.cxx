@@ -1158,7 +1158,6 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
   {
     PWaitAndSignal mutex(m_sessionMutex);
 
-    m_xmlChanged = true;
     m_speakNodeData = true;
     m_bargeIn = true;
     m_bargingIn = false;
@@ -1205,6 +1204,7 @@ bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & fir
   }
 
   PTRACE(4, "Starting with variables:\n" << m_variables);
+  m_xmlChanged = true;
   return Execute();
 }
 
