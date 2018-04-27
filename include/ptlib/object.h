@@ -76,7 +76,13 @@ using namespace std; // Not a good practice (name space polution), but will take
 #endif
 
 
-const PINDEX P_MAX_INDEX = ::std::numeric_limits<PINDEX>::max();
+#if !defined __GNUC__ || __GNUC__ >= 5
+  const PINDEX P_MAX_INDEX = ::std::numeric_limits<PINDEX>::max();
+#elif P_PINDEX_IS_SIZE_T
+  const PINDEX P_MAX_INDEX = SIZE_MAX;
+#else
+  const PINDEX P_MAX_INDEX = INT_MAX;
+#endif
 
 #if PINDEX_SIGNED
   #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)

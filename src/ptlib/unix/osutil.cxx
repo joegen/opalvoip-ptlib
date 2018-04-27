@@ -248,17 +248,16 @@ extern "C" {
 };
 #endif
 
-#if PTRACING
-  static PCriticalSection s_waterMarkMutex;
-  static int s_highWaterMark = 0;
-#endif
-
 int PX_NewHandle(const char * clsName, int fd)
 {
 #if PTRACING
   if (fd < 0 || !PProcess::IsInitialised())
     return fd;
 
+#if PTRACING
+  static PCriticalSection s_waterMarkMutex;
+  static int s_highWaterMark = 0;
+#endif
   s_waterMarkMutex.Wait();
 
   bool newHigh = fd > s_highWaterMark;

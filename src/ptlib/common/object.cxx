@@ -144,16 +144,15 @@ PFactoryBase & PFactoryBase::InternalGetFactory(const std::string & className, P
 
 #else
 
-static PCriticalSection s_AssertMutex;
+static PCriticalSection & GetAssertMutex() { static PCriticalSection cs; return cs; }
 extern void PPlatformAssertFunc(const PDebugLocation & location, const char * msg, char defaultAction);
 extern void PPlatformWalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, unsigned framesToSkip, bool noSymbols);
 
 #if PTRACING
   void PTrace::WalkStack(ostream & strm, PThreadIdentifier id, PUniqueThreadIdentifier uid, bool noSymbols)
   {
-    s_AssertMutex.Wait();
+    PWaitAndSignal lock(GetAssertMutex());
     PPlatformWalkStack(strm, id, uid, 1, noSymbols); // 1 means skip reporting PTrace::WalkStack
-    s_AssertMutex.Signal();
   }
 #endif // PTRACING
 
@@ -169,7 +168,7 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
   int errorCode = errno;
 #endif
 
-  PWaitAndSignal lock(s_AssertMutex);
+  PWaitAndSignal lock(GetAssertMutex());
   static bool s_RecursiveAssert = false;
   if (s_RecursiveAssert)
     return;
