@@ -986,7 +986,6 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   , m_vxmlThread(NULL)
   , m_abortVXML(false)
   , m_currentNode(NULL)
-  , m_xmlChanged(false)
   , m_speakNodeData(true)
   , m_bargeIn(true)
   , m_bargingIn(false)
@@ -1155,57 +1154,66 @@ PBoolean PVXMLSession::LoadVXML(const PString & xmlText, const PString & firstFo
 
 bool PVXMLSession::InternalLoadVXML(const PString & xmlText, const PString & firstForm)
 {
-  {
-    PWaitAndSignal mutex(m_sessionMutex);
+  PWaitAndSignal mutex(m_sessionMutex);
 
-    m_speakNodeData = true;
-    m_bargeIn = true;
-    m_bargingIn = false;
-    m_recordingStatus = NotRecording;
-    m_transferStatus = NotTransfering;
-    m_currentNode = NULL;
+  m_speakNodeData = true;
+  m_bargeIn = true;
+  m_bargingIn = false;
+  m_recordingStatus = NotRecording;
+  m_transferStatus = NotTransfering;
+  m_currentNode = NULL;
 
-    FlushInput();
+  FlushInput();
 
-    // parse the XML
-    m_xml.RemoveAll();
-    if (!m_xml.Load(xmlText)) {
-      PTRACE(1, "Cannot parse root document: " << GetXMLError());
+  // parse the XML
+  auto_ptr<PXML> xml(new PXML);
+  if (!xml->Load(xmlText)) {
+    m_lastXMLError = PSTRSTRM(m_rootURL <<
+                              '(' << xml->GetErrorLine() <<
+                              ':' << xml->GetErrorColumn() << ")"
+                              " " << xml->GetErrorString());
+    PTRACE(1, "Cannot parse root document: " << m_lastXMLError);
+    return false;
+  }
+
+  PXMLElement * root = xml->GetRootElement();
+  if (root == NULL) {
+    PTRACE(1, "No root element");
+    return false;
+  }
+
+  if (root->GetName() != "vxml") {
+    PTRACE(1, "Invalid root element: " << root->PrintTrace());
+    return false;
+  }
+
+  if (firstForm.IsEmpty()) {
+    if (root->GetElement("form") == NULL && root->GetElement("menu") == NULL) {
+      PTRACE(1, "No form or menu element.");
       return false;
     }
-
-    PXMLElement * root = m_xml.GetRootElement();
-    if (root == NULL) {
-      PTRACE(1, "No root element");
-      return false;
-    }
-
-    m_variableScope = m_variableScope.IsEmpty() ? ApplicationScope : "document";
-
-    PURL pathURL = m_rootURL;
-    pathURL.ChangePath(PString::Empty()); // Remove last element of root URL
-    SetVar("path", pathURL);
-    SetVar("uri", m_rootURL);
-
-    // traverse global elements
-    m_currentNode = root->GetElement(0);
-    do {
-      bool processChildren = ProcessNode(true);
-      while (NextNode(processChildren))
-        ;
-    }  while (m_currentNode != NULL);
-
-    // find the first form
-    if (!SetCurrentForm(firstForm, false)) {
-      PTRACE(1, "No form element");
-      m_xml.RemoveAll();
+  }
+  else {
+    if (root->GetElement("form", "id", firstForm) == NULL) {
+      PTRACE(1, "No form or menu element with id=\"" << firstForm << '"');
       return false;
     }
   }
 
-  PTRACE(4, "Starting with variables:\n" << m_variables);
-  m_xmlChanged = true;
-  return Execute();
+  m_variableScope = m_variableScope.IsEmpty() ? ApplicationScope : "document";
+
+  PURL pathURL = m_rootURL;
+  pathURL.ChangePath(PString::Empty()); // Remove last element of root URL
+  SetVar("path", pathURL);
+  SetVar("uri", m_rootURL);
+
+  if (m_currentXML.get() == NULL)
+    m_currentXML = xml;
+  else
+    m_newXML = xml;
+  m_newFormName = firstForm;
+  InternalStartThread();
+  return true;
 }
 
 
@@ -1259,7 +1267,7 @@ bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
 
   // Only handle search of top level nodes for <form>/<menu> element
   // NOTE: should have some flag to know if it is loaded
-  PXMLElement * root = m_xml.GetRootElement();
+  PXMLElement * root = m_currentXML->GetRootElement();
   if (root != NULL) {
     for (PINDEX i = 0; i < root->GetSize(); i++) {
       PXMLObject * xmlObject = root->GetElement(i);
@@ -1323,22 +1331,21 @@ PBoolean PVXMLSession::Open(const PString & mediaFormat)
   if (!PIndirectChannel::Open(chan, chan))
     return false;
 
-  return Execute();
+  InternalStartThread();
+  return true;
 }
 
 
-PBoolean PVXMLSession::Execute()
+void PVXMLSession::InternalStartThread()
 {
   PWaitAndSignal mutex(m_sessionMutex);
 
-  if (IsLoaded()) {
+  if (IsOpen() && IsLoaded()) {
     if (m_vxmlThread == NULL)
-      m_vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), "VXML");
+      m_vxmlThread = new PThreadObj<PVXMLSession>(*this, &PVXMLSession::InternalThreadMain, false, "VXML");
     else
       Trigger();
   }
-
-  return true;
 }
 
 
@@ -1362,11 +1369,13 @@ PBoolean PVXMLSession::Close()
 }
 
 
-void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
+void PVXMLSession::InternalThreadMain()
 {
-  PTRACE(4, "Execution thread started");
+  PTRACE(4, "Execution thread started with variables:\n" << m_variables);
 
   m_sessionMutex.Wait();
+
+  InternalStartVXML();
 
   while (!m_abortVXML) {
     // process current node in the VXML script
@@ -1381,6 +1390,13 @@ void PVXMLSession::VXMLExecute(PThread &, P_INT_PTR)
       while (ProcessEvents())
         ;
     } while (NextNode(processChildren));
+
+    if (m_newXML.get() != NULL) {
+      /* Replace old XML with new, now it is safe to do so and no XML elements
+         pointers are being referenced by the code any more */
+      m_currentXML = m_newXML;
+      InternalStartVXML();
+    }
 
     // Determine if we should quit
     if (m_currentNode != NULL)
@@ -1481,7 +1497,7 @@ bool PVXMLSession::ProcessEvents()
   m_waitForEvent.Wait();
   m_sessionMutex.Wait();
 
-  if (!m_xmlChanged)
+  if (m_newXML.get() == NULL)
     return true;
 
   PTRACE(4, "XML changed, flushing queue");
@@ -1491,6 +1507,23 @@ bool PVXMLSession::ProcessEvents()
     GetVXMLChannel()->FlushQueue();
 
   return false;
+}
+
+
+void PVXMLSession::InternalStartVXML()
+{
+  LoadGrammar(NULL);
+
+  PTRACE(4, "Processing global elements.");
+  m_currentNode = m_currentXML->GetRootElement()->GetElement(0);
+  do {
+    bool processGlobalChildren = ProcessNode(true);
+    while (NextNode(processGlobalChildren))
+      ;
+  } while (m_currentNode != NULL);
+
+  PTRACE(4, "Setting initial form \"" << m_newFormName << '"');
+  SetCurrentForm(m_newFormName, false);
 }
 
 
@@ -1505,7 +1538,8 @@ bool PVXMLSession::NextNode(bool processChildren)
   if (m_currentNode == NULL)
     return false;
 
-  if (m_xmlChanged)
+  // Check for new XML to replace current
+  if (m_newXML.get() != NULL)
     return false;
 
   PXMLElement * element = dynamic_cast<PXMLElement *>(m_currentNode);
@@ -1612,8 +1646,6 @@ bool PVXMLSession::ProcessNode(bool skipDialogs)
 
   if (m_currentNode == NULL)
     return false;
-
-  m_xmlChanged = false;
 
   PXMLData * nodeData = dynamic_cast<PXMLData *>(m_currentNode);
   if (nodeData != NULL) {
@@ -1749,13 +1781,6 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
   m_recordingStartTime.SetCurrentTime();
   return false; // Are recording, stay in <record> element
 }
-
-
-PString PVXMLSession::GetXMLError() const
-{
-  return psprintf("(%i:%i) ", m_xml.GetErrorLine(), m_xml.GetErrorColumn()) + m_xml.GetErrorString();
-}
-
 
 
 PBoolean PVXMLSession::TraverseScript(PXMLElement & element)

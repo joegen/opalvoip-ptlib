@@ -284,12 +284,10 @@ class PVXMLSession : public PIndirectChannel
     virtual PBoolean LoadFile(const PFilePath & file, const PString & firstForm = PString::Empty());
     virtual PBoolean LoadURL(const PURL & url);
     virtual PBoolean LoadVXML(const PString & xml, const PString & firstForm = PString::Empty());
-    virtual PBoolean IsLoaded() const { return m_xml.IsLoaded(); }
+    virtual PBoolean IsLoaded() const { return m_currentXML.get() != NULL; }
 
     virtual PBoolean Open(const PString & mediaFormat);
     virtual PBoolean Close();
-
-    virtual PBoolean Execute();
 
     PVXMLChannel * GetAndLockVXMLChannel();
     void UnLockVXMLChannel() { m_sessionMutex.Signal(); }
@@ -317,7 +315,7 @@ class PVXMLSession : public PIndirectChannel
 
     virtual void OnUserInput(const PString & str);
 
-    PString GetXMLError() const;
+    PString GetXMLError() const { return m_lastXMLError; }
 
     virtual void OnEndDialog();
     virtual void OnEndSession();
@@ -336,8 +334,6 @@ class PVXMLSession : public PIndirectChannel
     virtual PString EvaluateExpr(const PString & oexpr);
 
     static PTimeInterval StringToTime(const PString & str, int dflt = 0);
-
-    PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
     bool SetCurrentForm(const PString & id, bool fullURI);
     bool GoToEventHandler(PXMLElement & element, const PString & eventName);
@@ -388,6 +384,9 @@ class PVXMLSession : public PIndirectChannel
 
   protected:
     virtual bool InternalLoadVXML(const PString & xml, const PString & firstForm);
+    virtual void InternalStartThread();
+    virtual void InternalThreadMain();
+    virtual void InternalStartVXML();
 
     virtual bool ProcessNode(bool skipDialogs);
     virtual bool ProcessEvents();
@@ -405,7 +404,6 @@ class PVXMLSession : public PIndirectChannel
     PDECLARE_MUTEX(m_sessionMutex);
 
     PURL             m_rootURL;
-    PXML             m_xml;
 
     PTextToSpeech  * m_textToSpeech;
     PVXMLCache     * m_ttsCache;
@@ -440,8 +438,11 @@ class PVXMLSession : public PIndirectChannel
     PThread     *    m_vxmlThread;
     bool             m_abortVXML;
     PSyncPoint       m_waitForEvent;
+    auto_ptr<PXML>   m_newXML;
+    PString          m_lastXMLError;
+    PString          m_newFormName;
+    auto_ptr<PXML>   m_currentXML;
     PXMLObject  *    m_currentNode;
-    bool             m_xmlChanged;
     bool             m_speakNodeData;
     bool             m_bargeIn;
     bool             m_bargingIn;
