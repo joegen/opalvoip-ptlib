@@ -18,10 +18,15 @@
     <property name="timeout" value="30s"/>
 
     <!-- A prompt outputs to the remote -->
-    <prompt bargein="false">
+    <prompt bargein="false" count="1">
       <!-- Audio plays the URI in src, or if absent uses speech synthesis of the body text -->
       <audio src="file:menu_prompt.wav">
         Welcome to the P T lib I V R test script.
+      </audio>
+    </prompt>
+    <prompt count="2">
+      <audio src="file:menu_prompt.wav">
+        Test script.
       </audio>
     </prompt>
 
@@ -60,23 +65,25 @@
     <!-- This section is executed when does not match any <choice> -->
     <nomatch>
       <audio src="file:menu_nomatch.wav">
-        Please enter 1 to 4 or 0.
+        Please enter 1 to 4, or 0.
       </audio>
-
-      <!-- To play main menu again must explicitly go there, or it moves to next node -->
-      <goto nextitem="MainMenu"/>
+    </nomatch>
+    <nomatch count="2">
+      <audio>
+        Get it right!
+      </audio>
     </nomatch>
   </menu>
 
   <!-- This form is demonstrates how to just play some things -->
   <form id="PlayFile">
     <log expr="'Playing WAV file'"/>
-    <audio expr="application.base_url+'0.mp4'"/>
-    <audio expr="application.base_url+'1.mp4'"/>
-    <audio expr="application.base_url+'2.mp4'"/>
-    <audio expr="application.base_url+'3.mp4'"/>
-    <audio expr="application.base_url+'4.mp4'"/>
-    <audio expr="application.base_url+'5.mp4'"/>
+    <audio expr="application.base_url+'0.mp4'">Could not find first file</audio>
+    <audio expr="application.base_url+'1.mp4'">Could not find second file</audio>
+    <audio expr="application.base_url+'2.mp4'">Could not find third file</audio>
+    <audio expr="application.base_url+'3.mp4'">Could not find fourth file</audio>
+    <audio expr="application.base_url+'4.mp4'">Could not find fifth file</audio>
+    <audio expr="application.base_url+'5.mp4'">Could not find sixth file</audio>
     <goto next="#MainMenu"/>
   </form>
 

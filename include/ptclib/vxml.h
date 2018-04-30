@@ -72,23 +72,25 @@ incompatibilities. Below is a list of what is available.
 <TR><TD>&lt;choice&gt;  <TD>dtmf, next, expr, event
 <TR><TD>&lt;form&gt;    <TD>id
                         <TD>property.timeout is supported
-<TR><TD>&lt;field&gt;   <TD>name
-<TR><TD>&lt;prompt&gt;  <TD>bargein
+<TR><TD>&lt;field&gt;   <TD>name, cond
+<TR><TD>&lt;prompt&gt;  <TD>bargein, cond
                         <TD>property.bargein is supported
 <TR><TD>&lt;grammar&gt; <TD>mode, type
                         <TD>Only "dtmf" is supported for "mode"<BR>
                             Only "X-OPAL/digits" is supported for "type"<BR>
                             The "X-OPAL/digits" grammar consists of three parameters
                             of the form: minDigits=1; maxDigits=5; terminators=#
-<TR><TD>&lt;filled&gt;  <TD>count
-<TR><TD>&lt;noinput&gt; <TD>count
-<TR><TD>&lt;nomatch&gt; <TD>count
-<TR><TD>&lt;error&gt;   <TD>count
+<TR><TD>&lt;filled&gt;  <TD>
+<TR><TD>&lt;noinput&gt; <TD>count, cond
+<TR><TD>&lt;nomatch&gt; <TD>count, cond
+<TR><TD>&lt;error&gt;   <TD>count, cond
 <TR><TD>&lt;catch&gt;   <TD>count, event
+                        <TD>Note there is a limited set of events that are thrown
 <TR><TD>&lt;goto&gt;    <TD>nextitem, expritem, expr
 <TR><TD>&lt;exit&gt;    <TD>No attributes supported
 <TR><TD>&lt;submit&gt;  <TD>next, expr, enctype, method, fetchtimeout, namelist
 <TR><TD>&lt;disconnect&gt;<TD>No attributes needed
+<TR><TD>&lt;block&gt;   <TD>cond
 <TR><TD>&lt;audio&gt;   <TD>src, expr
 <TR><TD>&lt;break&gt;   <TD>msecs, time, size
 <TR><TD>&lt;value&gt;   <TD>expr, class, voice
@@ -100,8 +102,8 @@ incompatibilities. Below is a list of what is available.
 <TR><TD>&lt;if&gt;      <TD>cond
 <TR><TD>&lt;elseif&gt;  <TD>cond
 <TR><TD>&lt;else&gt;    <TD>No attributes needed
-<TR><TD>&lt;transfer&gt;<TD>name, dest, destexpr, bridge
-<TR><TD>&lt;record&gt;  <TD>name, type, beep, dtmfterm, maxtime, finalsilence
+<TR><TD>&lt;transfer&gt;<TD>name, dest, destexpr, bridge, cond
+<TR><TD>&lt;record&gt;  <TD>name, type, beep, dtmfterm, maxtime, finalsilence, cond
 </TABLE>
 \section secScripting Scripting support
 Depending on how the system was built there are three possibilities:
@@ -337,12 +339,14 @@ class PVXMLSession : public PIndirectChannel
 
     bool SetCurrentForm(const PString & id, bool fullURI);
     bool GoToEventHandler(PXMLElement & element, const PString & eventName);
+    PXMLElement * FindElementWithCount(PXMLElement & parent, const PString & name, unsigned count);
 
     // overrides from VXMLChannelInterface
     virtual void OnEndRecording(PINDEX bytesRecorded, bool timedOut);
     virtual void Trigger();
 
 
+    virtual PBoolean TraverseBlock(PXMLElement & element);
     virtual PBoolean TraverseAudio(PXMLElement & element);
     virtual PBoolean TraverseBreak(PXMLElement & element);
     virtual PBoolean TraverseValue(PXMLElement & element);
@@ -388,7 +392,7 @@ class PVXMLSession : public PIndirectChannel
     virtual void InternalThreadMain();
     virtual void InternalStartVXML();
 
-    virtual bool ProcessNode(bool skipDialogs);
+    virtual bool ProcessNode();
     virtual bool ProcessEvents();
     virtual bool ProcessGrammar();
     virtual bool NextNode(bool processChildren);
@@ -447,6 +451,9 @@ class PVXMLSession : public PIndirectChannel
     bool             m_bargeIn;
     bool             m_bargingIn;
 
+    std::map<PString, unsigned> m_eventCount;
+    unsigned                    m_promptCount;
+
     PVXMLGrammar *   m_grammar;
     char             m_defaultMenuDTMF;
 
@@ -480,6 +487,7 @@ class PVXMLSession : public PIndirectChannel
 
     friend class PVXMLChannel;
     friend class VideoReceiverDevice;
+    friend class PVXMLTraverseEvent;
 };
 
 

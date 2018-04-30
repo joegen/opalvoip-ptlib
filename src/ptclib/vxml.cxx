@@ -52,6 +52,7 @@ static PConstString const PropertyScope("property");
 
 static PConstString const FormElement("form");
 static PConstString const MenuElement("menu");
+static PConstString const PromptElement("prompt");
 static PConstString const FilledElement("filled");
 static PConstString const NameAttribute("name");
 static PConstString const IdAttribute("id");
@@ -107,8 +108,6 @@ class PVXMLChannelG729 : public PVXMLChannel
 };
 
 
-PFACTORY_CREATE(PVXMLNodeFactory, PVXMLNodeHandler, "Block", true);
-
 #define TRAVERSE_NODE(name) \
   class PVXMLTraverse##name : public PVXMLNodeHandler { \
     virtual bool Start(PVXMLSession & session, PXMLElement & element) const \
@@ -116,6 +115,7 @@ PFACTORY_CREATE(PVXMLNodeFactory, PVXMLNodeHandler, "Block", true);
   }; \
   PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverse##name, #name, true)
 
+TRAVERSE_NODE(Block);
 TRAVERSE_NODE(Audio);
 TRAVERSE_NODE(Break);
 TRAVERSE_NODE(Value);
@@ -149,17 +149,24 @@ TRAVERSE_NODE2(Record);
 TRAVERSE_NODE2(Prompt);
 TRAVERSE_NODE2(If);
 
+
+static PConstString const InternalEventStateAttribute("PTLibInternalEventState");
+
 class PVXMLTraverseEvent : public PVXMLNodeHandler
 {
   virtual bool Start(PVXMLSession &, PXMLElement & element) const
   {
-    return element.GetAttribute("fired") == "true";
+    return element.GetAttribute(InternalEventStateAttribute) == "true";
   }
 
-  virtual bool Finish(PVXMLSession &, PXMLElement & element) const
+  virtual bool Finish(PVXMLSession & session, PXMLElement & element) const
   {
-    element.SetAttribute("fired", "false");
-    return true;
+    if (element.GetAttribute(InternalEventStateAttribute) != "true")
+      return true;
+
+    element.SetAttribute(InternalEventStateAttribute, "false");
+    session.m_currentNode = element.GetParent();
+    return false;
   }
 };
 PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverseEvent, "Filled", true);
@@ -1001,6 +1008,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   , m_speakNodeData(true)
   , m_bargeIn(true)
   , m_bargingIn(false)
+  , m_promptCount(0)
   , m_grammar(NULL)
   , m_defaultMenuDTMF('N') /// Disabled
   , m_recordingStatus(NotRecording)
@@ -1260,6 +1268,8 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
 bool PVXMLSession::SetCurrentForm(const PString & searchId, bool fullURI)
 {
   ClearBargeIn();
+  m_eventCount.clear();
+  m_promptCount = 0;
 
   PString id = searchId;
 
@@ -1391,7 +1401,7 @@ void PVXMLSession::InternalThreadMain()
 
   while (!m_abortVXML) {
     // process current node in the VXML script
-    bool processChildren = ProcessNode(false);
+    bool processChildren = ProcessNode();
 
     /* wait for something to happen, usually output of some audio. But under
         some circumstances we want to abort the script, but we  have to make
@@ -1529,7 +1539,12 @@ void PVXMLSession::InternalStartVXML()
   PTRACE(4, "Processing global elements.");
   m_currentNode = m_currentXML->GetRootElement()->GetElement(0);
   do {
-    bool processGlobalChildren = ProcessNode(true);
+    PXMLElement * element;
+    while ((element = dynamic_cast<PXMLElement *>(m_currentNode)) != NULL &&
+           (element->GetName() == MenuElement || element->GetName() == FormElement))
+      m_currentNode = m_currentNode->GetNextObject();
+
+    bool processGlobalChildren = ProcessNode();
     while (NextNode(processGlobalChildren))
       ;
   } while (m_currentNode != NULL);
@@ -1580,7 +1595,7 @@ bool PVXMLSession::NextNode(bool processChildren)
       PTRACE(4, "Finish processing VoiceXML element: " << element->PrintTrace());
       if (!handler->Finish(*this, *element)) {
         if (m_currentNode != NULL) {
-          PTRACE(4, "Exception handling via element: " << dynamic_cast<PXMLElement *>(m_currentNode)->PrintTrace());
+          PTRACE(4, "Moved node after processing VoiceXML element: from=" << element->PrintTrace());
           return false;
         }
 
@@ -1649,7 +1664,7 @@ bool PVXMLSession::ProcessGrammar()
 }
 
 
-bool PVXMLSession::ProcessNode(bool skipDialogs)
+bool PVXMLSession::ProcessNode()
 {
   // m_sessionMutex already locked
 
@@ -1661,7 +1676,7 @@ bool PVXMLSession::ProcessNode(bool skipDialogs)
 
   PXMLData * nodeData = dynamic_cast<PXMLData *>(m_currentNode);
   if (nodeData != NULL) {
-    if (m_speakNodeData && !skipDialogs)
+    if (m_speakNodeData)
       PlayText(nodeData->GetString().Trim());
     return true;
   }
@@ -1669,9 +1684,6 @@ bool PVXMLSession::ProcessNode(bool skipDialogs)
   m_speakNodeData = true;
 
   PXMLElement * element = dynamic_cast<PXMLElement *>(m_currentNode);
-  if (skipDialogs && (element->GetName() == MenuElement || element->GetName() == FormElement))
-    return false;
-
   PVXMLNodeHandler * handler = PVXMLNodeFactory::CreateInstance(element->GetName());
   if (handler == NULL) {
     PTRACE(2, "Unknown/unimplemented VoiceXML element: " << element->PrintTrace());
@@ -1696,8 +1708,11 @@ void PVXMLSession::OnUserInput(const PString & str)
 }
 
 
-PBoolean PVXMLSession::TraverseRecord(PXMLElement &)
+PBoolean PVXMLSession::TraverseRecord(PXMLElement & element)
 {
+  if (!ExecuteCondition(element))
+    return false;
+
   m_recordingStatus = NotRecording;
   return true;
 }
@@ -1806,7 +1821,7 @@ PBoolean PVXMLSession::TraverseScript(PXMLElement & element)
     PTRACE(4, "Traverse <script> " << script.ToLiteral());
   
     if (m_scriptContext->Run(script))
-      PTRACE(4, "script executed properly!");
+      PTRACE(4, m_scriptContext->GetLanguageName() << " executed properly!");
     else
       PTRACE(2, "Could not evaluate script \"" << script << "\" with script language " << m_scriptContext->GetLanguageName());
   }
@@ -2125,6 +2140,12 @@ void PVXMLSession::SetPause(PBoolean pause)
 }
 
 
+PBoolean PVXMLSession::TraverseBlock(PXMLElement & element)
+{
+  return ExecuteCondition(element);
+}
+
+
 PBoolean PVXMLSession::TraverseAudio(PXMLElement & element)
 {
   return !PlayElement(element);
@@ -2195,7 +2216,7 @@ PBoolean PVXMLSession::TraverseGoto(PXMLElement & element)
   }
 
   if (SetCurrentForm(target, fullURI))
-    return ProcessNode(false);
+    return ProcessNode();
 
   // LATER: throw "error.semantic" or "error.badfetch" -- lookup which
   return false;
@@ -2250,25 +2271,10 @@ bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & event
   PXMLElement * level = &element;
   PXMLElement * handler = NULL;
 
-  int actualCount = 1; // Need to increment this with state stored ... somewhere
+  unsigned actualCount = ++m_eventCount[eventName];
 
   // Look in all the way up the tree for a handler either explicitly or in a catch
-  for (;;) {
-    for (int testCount = actualCount; testCount >= 0; --testCount) {
-      // Check for an explicit hander - i.e. <error>, <filled>, <noinput>, <nomatch>, <help>
-      if ((handler = level->GetElement(eventName)) != NULL &&
-              handler->GetAttribute("count").AsInteger() == testCount)
-        goto gotHandler;
-
-      // Check for a <catch>
-      PINDEX index = 0;
-      while ((handler = level->GetElement("catch", index++)) != NULL) {
-        if ((handler->GetAttribute("event") *= eventName) &&
-                handler->GetAttribute("count").AsInteger() == testCount)
-          goto gotHandler;
-      }
-    }
-
+  while ((handler = FindElementWithCount(*level, eventName, actualCount)) == NULL) {
     level = level->GetParent();
     if (level == NULL) {
       PTRACE(4, "No event handler found for \"" << eventName << '"');
@@ -2276,11 +2282,50 @@ bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & event
     }
   }
 
-gotHandler:
-  handler->SetAttribute("fired", "true");
+  handler->SetAttribute(InternalEventStateAttribute, "true");
   m_currentNode = handler;
   PTRACE(4, "Setting event handler to node " << handler->PrintTrace() << " for \"" << eventName << '"');
   return false;
+}
+
+
+static unsigned GetCountAttribute(PXMLElement & element)
+{
+  PString str = element.GetAttribute("count");
+  return str.IsEmpty() ? 1 : str.AsUnsigned();
+}
+
+
+PXMLElement * PVXMLSession::FindElementWithCount(PXMLElement & parent, const PString & name, unsigned count)
+{
+  std::map<unsigned, PXMLElement *> elements;
+  PXMLElement * element;
+  PINDEX idx = 0;
+  while ((element = parent.GetElement(idx++)) != NULL) {
+    if (element->GetName() == name)
+      elements[GetCountAttribute(*element)] = element;
+    else if (element->GetName() == "catch") {
+      PStringArray events = element->GetAttribute("event").Tokenise(" ", false);
+      for (size_t i = 0; i < events.size(); ++i) {
+        if (events[i] *= name) {
+          elements[GetCountAttribute(*element)] = element;
+          break;
+        }
+      }
+    }
+  }
+
+  if (elements.empty())
+    return NULL;
+
+  while (count > 0) {
+    std::map<unsigned, PXMLElement *>::iterator it = elements.find(count);
+    if (it != elements.end() && ExecuteCondition(*it->second))
+      return it->second;
+    --count;
+  }
+
+  return NULL;
 }
 
 
@@ -2351,6 +2396,8 @@ PTimeInterval PVXMLSession::StringToTime(const PString & str, int dflt)
 bool PVXMLSession::ExecuteCondition(PXMLElement & element)
 {
   PString condition = element.GetAttribute("cond");
+  if (condition.IsEmpty())
+    return true;
 
   bool result;
 
@@ -2642,7 +2689,11 @@ PBoolean PVXMLSession::TraverseProperty(PXMLElement & element)
 }
 
 
+PBoolean PVXMLSession::TraverseTransfer(PXMLElement & element)
 {
+  if (!ExecuteCondition(element))
+    return false;
+
   m_transferStatus = NotTransfering;
   return true;
 }
@@ -2712,6 +2763,7 @@ PBoolean PVXMLSession::TraverseMenu(PXMLElement & element)
 {
   LoadGrammar(new PVXMLMenuGrammar(*this, element));
   m_defaultMenuDTMF = (element.GetAttribute(DtmfAttribute) *= "true") ? '1' : 'N';
+  ++m_promptCount;
   return true;
 }
 
@@ -2756,6 +2808,7 @@ PBoolean PVXMLSession::TraverseDisconnect(PXMLElement &)
 PBoolean PVXMLSession::TraverseForm(PXMLElement &)
 {
   m_variableScope = DialogScope;
+  ++m_promptCount;
   return true;
 }
 
@@ -2769,9 +2822,11 @@ PBoolean PVXMLSession::TraversedForm(PXMLElement &)
 
 PBoolean PVXMLSession::TraversePrompt(PXMLElement & element)
 {
-  // LATER:
-  // check 'cond' attribute to see if the children of this node should be processed
-  // check 'count' attribute to see if this node should be processed
+  PXMLElement * validPrompt = FindElementWithCount(*element.GetParent(), PromptElement, m_promptCount);
+  if (validPrompt == NULL || GetCountAttribute(*validPrompt) != GetCountAttribute(element)) {
+    PTRACE(3, "Prompt count/cond attribute preventing execution: " << element.PrintTrace());
+    return false;
+  }
 
   // Update timeout of current recognition (if 'timeout' attribute is set)
   if (m_grammar != NULL)
@@ -2793,9 +2848,9 @@ PBoolean PVXMLSession::TraversedPrompt(PXMLElement &)
 }
 
 
-PBoolean PVXMLSession::TraverseField(PXMLElement &)
+PBoolean PVXMLSession::TraverseField(PXMLElement & element)
 {
-  return true;
+  return ExecuteCondition(element);
 }
 
 
