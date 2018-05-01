@@ -1195,6 +1195,8 @@ bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PStri
     http = new PHTTPClient;
     http->SetReadChannel(Detach(ShutdownRead));
     http->SetWriteChannel(Detach(ShutdownWrite));
+    http->SetReadTimeout(GetReadTimeout()); // Set timeouts, as Open() copies form subchannel
+    http->SetWriteTimeout(GetWriteTimeout());
     Open(http);
   }
 
