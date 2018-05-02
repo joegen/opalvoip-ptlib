@@ -2796,23 +2796,26 @@ void PProcess::InternalHandleRunTimeSignal(const RunTimeSignalInfo & signalInfo)
                    2;
   if (PTrace::CanTrace(level)) {
     ostream & trace = PTRACE_BEGIN(level);
-    trace << "Received signal " << GetRunTimeSignalName(signalInfo.m_signal) << " from ";
-    if (signalInfo.m_source == GetCurrentProcessID())
-      trace << "self";
-    else if (signalInfo.m_source != 0) {
-      PFile proc(PSTRSTRM("/proc/" << signalInfo.m_source << "/cmdline"), PFile::ReadOnly);
-      if (!proc.IsOpen())
-        trace << "source=" << signalInfo.m_source;
+    trace << "Received signal " << GetRunTimeSignalName(signalInfo.m_signal);
+    if (signalInfo.m_source != 0) {
+      trace << " from ";
+      if (signalInfo.m_source == GetCurrentProcessID())
+        trace << "self";
       else {
-        PString cmdline;
-        int c;
-        while ((c = proc.ReadChar()) >= 0) {
-          if (c == '\0')
-            cmdline += ' ';
-          else
-            cmdline += (char)c;
+        PFile proc(PSTRSTRM("/proc/" << signalInfo.m_source << "/cmdline"), PFile::ReadOnly);
+        if (!proc.IsOpen())
+          trace << "source=" << signalInfo.m_source;
+        else {
+          PString cmdline;
+          int c;
+          while ((c = proc.ReadChar()) >= 0) {
+            if (c == '\0')
+              cmdline += ' ';
+            else
+              cmdline += (char)c;
+          }
+          trace << "pid=" << signalInfo.m_source << ", cmdline=\"" << cmdline.RightTrim() << '"';
         }
-        trace << "pid=" << signalInfo.m_source << ", cmdline=\"" << cmdline.RightTrim() << '"';
       }
     }
     trace << PTrace::End;
