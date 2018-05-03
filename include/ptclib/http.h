@@ -854,6 +854,12 @@ class PWebSocket : public PIndirectChannel
       bool txt = true
     ) { m_binaryWrite = !txt; }
 
+    void SetSSLCredentials(
+      const PString & authority,
+      const PString & certificate,
+      const PString & privateKey
+    );
+
 
   protected:
     enum OpCodes
@@ -895,6 +901,10 @@ class PWebSocket : public PIndirectChannel
     bool     m_fragmentedRead;
 
     bool     m_recursiveRead;
+
+    PString  m_authority;    // Directory, file or data
+    PString  m_certificate;  // File or data
+    PString  m_privateKey;   // File or data
 };
 
 #endif // P_SSL
