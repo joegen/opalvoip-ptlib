@@ -1434,6 +1434,12 @@ void PVXMLSession::InternalThreadMain()
     while (ProcessEvents())
       ;
 
+    if (m_newXML.get() != NULL) {
+      // OnEndDialog() loaded some more XML to do.
+      m_currentXML = m_newXML;
+      InternalStartVXML();
+    }
+
     if (m_currentNode == NULL)
       m_abortVXML = true;
   }
