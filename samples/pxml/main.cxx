@@ -39,28 +39,39 @@ static const char * billionLaughs =
 "]>"
 "<lolz>&lol9;</lolz>";
 
+
+static void TestXML(const PArgList & args, const PString & str)
+{
+  PXML xml(PXML::Indent);
+  if (xml.Load(str, args.GetOptionString('e')))
+    cout << xml << endl;
+  else
+    cerr << "Parse error: line " << xml.GetErrorLine() << ", col " << xml.GetErrorColumn() << ", " << xml.GetErrorString() << endl;
+}
+
+
 void PxmlTest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("f:b");
-
-  PXML xml;
- 
-  bool status;
-  if (args.HasOption('f')) {
-    status = xml.LoadFile(args.GetOptionString('f'));
-  }
-  else if (args.HasOption('b')) {
-    status = xml.Load(billionLaughs); 
-  }
+  if (!args.Parse("s-simple.         Simple test\n"
+                  "b-billion-laughs. Billion laugh test\n"
+                  "e-encoding:       Set encoding character set\n"
+                  PTRACE_ARGLIST
+  ))
+    cerr << args.Usage("[ -e ] -s | -b | { file ... }") << endl;
+  else if (args.HasOption('s'))
+    TestXML(args, testXML); 
+  else if (args.HasOption('b'))
+    TestXML(args, billionLaughs); 
   else {
-    status = xml.Load(testXML); 
+    for (PINDEX i = 0; i < args.GetCount(); ++i) {
+      PTextFile file;
+      if (!file.Open(args[i], PFile::ReadOnly))
+        cerr << "Could not open file: " << args[i] << " - " << file.GetErrorText() << endl;
+      else
+        TestXML(args, file.ReadString(P_MAX_INDEX));
+    }
   }
-
-  if (!status) 
-    cerr << "parse error: line " << xml.GetErrorLine() << ", col " << xml.GetErrorColumn() << ", " << xml.GetErrorString() << endl;
-  else
-    xml.PrintOn(cout);
 }
 
 // End of File ///////////////////////////////////////////////////////////////

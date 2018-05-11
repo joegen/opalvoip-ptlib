@@ -719,7 +719,14 @@
     </ClCompile>
     <ClCompile Include="..\..\ptclib\pwavfile.cxx" />
     <ClCompile Include="..\..\ptclib\pwavfiledev.cxx" />
-    <ClCompile Include="..\..\ptclib\pxml.cxx" />
+    <ClCompile Include="..\..\ptclib\pxml.cxx">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)..\..\..\..\external\expat\expat/lib</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\ptclib\pxmlrpc.cxx" />
     <ClCompile Include="..\..\ptclib\pxmlrpcs.cxx" />
     <ClCompile Include="..\..\ptclib\qchannel.cxx" />

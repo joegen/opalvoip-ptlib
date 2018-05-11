@@ -58,6 +58,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JSON Test", "samples\json\j
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VXML Sign Language DLL", "samples\vxmltest\SLAnalyserTest\SLAnalyserTest.vcxproj", "{84F81908-A9A8-41EF-A14C-1665E22ACEAC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PXML Test", "samples\pxml\PxmlTest_2017.vcxproj", "{D1A52BAD-27C1-4F0C-8FA9-81542272911A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -396,6 +398,18 @@ Global
 		{84F81908-A9A8-41EF-A14C-1665E22ACEAC}.Release|Win32.Build.0 = Release|Win32
 		{84F81908-A9A8-41EF-A14C-1665E22ACEAC}.Release|x64.ActiveCfg = Release|x64
 		{84F81908-A9A8-41EF-A14C-1665E22ACEAC}.Release|x64.Build.0 = Release|x64
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Debug|Win32.Build.0 = Debug|Win32
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Debug|x64.ActiveCfg = Debug|x64
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Debug|x64.Build.0 = Debug|x64
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.No Trace|Win32.ActiveCfg = Release|Win32
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.No Trace|Win32.Build.0 = Release|Win32
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.No Trace|x64.ActiveCfg = Release|x64
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.No Trace|x64.Build.0 = Release|x64
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Release|Win32.ActiveCfg = Release|Win32
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Release|Win32.Build.0 = Release|Win32
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Release|x64.ActiveCfg = Release|x64
+		{D1A52BAD-27C1-4F0C-8FA9-81542272911A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
