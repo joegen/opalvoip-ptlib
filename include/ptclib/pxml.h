@@ -104,7 +104,8 @@ class PXML : public PXMLBase
   public:
     PXML(
       Options options = NoOptions,
-      const char * noIndentElements = NULL
+      const char * noIndentElements = NULL,
+      const char * defaultEncoding = NULL
     );
     PXML(const PXML & xml);
     ~PXML();
@@ -116,7 +117,7 @@ class PXML : public PXMLBase
     bool IsDirty() const;
 
     bool Load(const PString & data);
-    bool Load(const PString & data, Options options);
+    bool Load(const PString & data, Options options, const char * defaultEncoding = NULL);
     bool LoadFile(const PFilePath & fn);
     bool LoadFile(const PFilePath & fn, Options options);
 
@@ -506,7 +507,7 @@ class PXMLRootElement : public PXMLElement
 class PXMLParserBase
 {
   protected:
-    PXMLParserBase(PXMLBase::Options options);
+    PXMLParserBase(PXMLBase::Options options, const char * encoding);
 
   public:
     ~PXMLParserBase();

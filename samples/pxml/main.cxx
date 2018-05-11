@@ -42,8 +42,8 @@ static const char * billionLaughs =
 
 static void TestXML(const PArgList & args, const PString & str)
 {
-  PXML xml(PXML::Indent);
-  if (xml.Load(str, args.GetOptionString('e')))
+  PXML xml(PXML::Indent, NULL, args.GetOptionString('e'));
+  if (xml.Load(str))
     cout << xml << endl;
   else
     cerr << "Parse error: line " << xml.GetErrorLine() << ", col " << xml.GetErrorColumn() << ", " << xml.GetErrorString() << endl;
