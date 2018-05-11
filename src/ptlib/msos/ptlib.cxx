@@ -723,6 +723,11 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
   if (!m_hConsole.Duplicate(GetStdHandle(HandleNames[type])))
     return ConvertOSError(-2);
 
+  if (type == StandardInput)
+    SetConsoleCP(CP_UTF8);
+  else
+    SetConsoleOutputCP(CP_UTF8);
+
   os_handle = type;
   return true;
 #endif

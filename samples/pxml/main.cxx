@@ -44,7 +44,7 @@ static void TestXML(const PArgList & args, const PString & str)
 {
   PXML xml(PXML::Indent, NULL, args.GetOptionString('e'));
   if (xml.Load(str))
-    cout << xml << endl;
+    PConsoleChannel(PConsoleChannel::StandardOutput) << xml << endl; // Use this so presents UTF-8 correctly
   else
     cerr << "Parse error: line " << xml.GetErrorLine() << ", col " << xml.GetErrorColumn() << ", " << xml.GetErrorString() << endl;
 }
