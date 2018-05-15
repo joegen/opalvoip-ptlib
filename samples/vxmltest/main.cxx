@@ -216,6 +216,8 @@ void VxmlTest::CopyVideoReceiver()
   PVideoOutputDevice::FrameData frameData;
   PVideoOutputDevice & receiver = m_vxml->GetVideoReceiver();
 
+  receiver.SetColourFormatConverter(m_grabber->GetColourFormat());
+
   while (m_grabber != NULL) {
     if (!m_grabber->GetFrame(frame, frameData.width, frameData.height)) {
       PTRACE(2, "Grab video failed");

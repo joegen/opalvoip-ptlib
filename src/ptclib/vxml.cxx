@@ -303,7 +303,9 @@ public:
 
           m_instancesInUse.resize(init.m_maxInstances);
 
-          PTRACE(3, "Loaded Sign Language Analyser dynamic library \"" << m_library->GetName(true) << '"');
+          PTRACE(3, "Loaded Sign Language Analyser dynamic library"
+                    " \"" << m_library->GetName(true) << "\","
+                    " required format: " << init.m_videoFormat);
           return true;
         }
       }
@@ -363,6 +365,10 @@ public:
     data.m_timestamp = static_cast<unsigned>(timestamp);
     data.m_pixels = pixels;
 
+    PTRACE(5, "Sign Language Analyse of video frame:"
+              " " << width << 'x' << height << ","
+              " ts=" << timestamp << ","
+              " instance=" << instance);
     return m_library->SLAnalyse(&data);
   }
 
@@ -2922,6 +2928,7 @@ PVXMLSession::VideoReceiverDevice::VideoReceiverDevice(PVXMLSession & vxmlSessio
   : m_vxmlSession(vxmlSession)
   , m_analayserInstance(PVXMLSignLanguageAnalyser::GetInstance().AllocateInstance())
 {
+  m_colourFormat = PVXMLSignLanguageAnalyser::GetInstance().GetColourFormat();
 }
 
 
@@ -2959,7 +2966,7 @@ PBoolean PVXMLSession::VideoReceiverDevice::Close()
 
 PBoolean PVXMLSession::VideoReceiverDevice::SetColourFormat(const PString & colourFormat)
 {
-  return colourFormat == PVXMLSignLanguageAnalyser::GetInstance().GetColourFormat();
+  return colourFormat == m_colourFormat;
 }
 
 
