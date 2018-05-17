@@ -1,0 +1,3 @@
+usr/lib/*/libpt*.*
+usr/lib/*/ptlib*/
+usr/lib/*/pkgconfig/ptlib*

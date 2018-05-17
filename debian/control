@@ -1,0 +1,29 @@
+Source: ossptlib
+Section: libs
+Priority: extra
+Maintainer: Joegen Baclor <joegen@ossapp.com>
+Uploaders: Joegen Baclor <joegen@ossapp.com>
+Build-Depends: flex, bison, libssl-dev, debhelper (>= 9.0.0), pkg-config, dh-autoreconf, devscripts
+Homepage: http://www.ossapp.com/
+Standards-Version: 3.9.5
+Vcs-Git: https://github.com/joegen/opalvoip-ptlib.git
+Vcs-Browser: https://github.com/joegen/opalvoip-ptlib
+
+Package: libosspt
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libpt
+Description: Portable Tools Library - shared libraries
+ Portable Tools Library
+ 
+
+Package: libosspt-dev
+Section: libdevel
+Architecture: any
+Depends: libosspt (= ${binary:Version}), ${misc:Depends}
+Conflicts: libpt-dev
+Replaces: libosscore-dev
+Description: Portable Tools Library - development files
+ This package provides header files for Portable Tools Library
+
