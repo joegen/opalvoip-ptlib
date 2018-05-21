@@ -144,11 +144,21 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
       m_toChildPipe[0] = -1;
     }
 
+    if (m_fromChildPipe[0] != -1) {
+      int cmd = 1;
+      PAssert(::ioctl(m_fromChildPipe[0], FIONBIO, &cmd) == 0, POperatingSystemError);
+    }
+
     if (m_fromChildPipe[1] != -1) {
       ::close(m_fromChildPipe[1]);
       m_fromChildPipe[1] = -1;
     }
  
+    if (m_stderrChildPipe[0] != -1) {
+      int cmd = 1;
+      PAssert(::ioctl(m_stderrChildPipe[0], FIONBIO, &cmd) == 0, POperatingSystemError);
+    }
+
     if (m_stderrChildPipe[1] != -1) {
       ::close(m_stderrChildPipe[1]);
       m_stderrChildPipe[1] = -1;
