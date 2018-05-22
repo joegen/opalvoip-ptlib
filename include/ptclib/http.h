@@ -1279,36 +1279,53 @@ class PHTTPServer : public PHTTP
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PHTTPNetworkServer
+// PHTTPListener
 
 class PTCPSocket;
 
+/** Listener for incoming HTTP request with thread pool to handle those
+    requests.
+ */
 class PHTTPListener
 {
 public:
+  /** Construct new HTTP listsner with specified maximum number of threads in pool.
+    */
   PHTTPListener(
     unsigned maxWorkers = 10
   );
 
+  /** Start listening for HTTP connections.
+    */
   bool ListenForHTTP(
-    WORD port,
-    PSocket::Reusability reuse = PSocket::CanReuseAddress,
-    unsigned queueSize = 10
+    WORD port,                ///< Port to listen on
+    PSocket::Reusability reuse = PSocket::CanReuseAddress,  ///< Can/Cant listen more than once.
+    unsigned queueSize = 10   ///< Number of pending accepts that may be queued.
   );
   bool ListenForHTTP(
-    const PString & interfaces,
-    WORD port,
-    PSocket::Reusability reuse = PSocket::CanReuseAddress,
-    unsigned queueSize = 10
+    const PString & interfaces, ///< Comma separated list of interfaces to listen on.
+    WORD port,                  ///< Port to listen on
+    PSocket::Reusability reuse = PSocket::CanReuseAddress,  ///< Can/Cant listen more than once.
+    unsigned queueSize = 10     ///< Number of pending accepts that may be queued.
   );
+
+  /// Shut down the listener socket, it's thread, and all threads in the pool.
   void ShutdownListeners();
 
+  /// Indicate is currently listening and processing requests.
   bool IsListening() const { return !m_httpListeningSockets.IsEmpty() && m_httpListeningSockets.front().IsOpen(); }
 
+  /** Call back to create transport socket, or TLS, channel.
+    */
   virtual PChannel * CreateChannelForHTTP(PChannel * channel);
   virtual PHTTPServer * CreateServerForHTTP();
 
+  /** Callback when a new HTTP connection has begun.
+    */
   virtual void OnHTTPStarted(PHTTPServer & server);
+
+  /** Callback when an existing HTTP connection has ended.
+    */
   virtual void OnHTTPEnded(PHTTPServer & server);
 
   struct Worker
@@ -1323,6 +1340,8 @@ public:
     PTime           m_queuedTime;
   };
   typedef PQueuedThreadPool<Worker> ThreadPool;
+
+  /// Get the thread pool in use for this HTTP listener.
   const ThreadPool & GetThreadPool() const { return m_threadPool; }
         ThreadPool & GetThreadPool()       { return m_threadPool; }
 
