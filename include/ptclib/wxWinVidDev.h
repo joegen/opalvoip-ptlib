@@ -29,9 +29,9 @@
 
 #ifndef P_WXWINDOWS_IMPLEMENTATION_ONLY
 
-#define P_WXWINDOWS_DRIVER_NAME  wxWindows
+#define P_WXWINDOWS_DRIVER_NAME "wxWindows"
 #define P_WXWINDOWS_DEVICE_NAME "wxWindows"
-#define P_WXWINDOWS_DEVICE_CLASS  PVideoOutputDevice_##P_WXWINDOWS_DRIVER_NAME
+#define P_WXWINDOWS_DEVICE_CLASS  PVideoOutputDevice_##wxWindows
 
 
 /**Display data to the wxWindows window.
@@ -123,7 +123,7 @@ BEGIN_EVENT_TABLE(P_WXWINDOWS_DEVICE_CLASS, wxFrame)
   EVT_PAINT(P_WXWINDOWS_DEVICE_CLASS::OnPaint)
 END_EVENT_TABLE()
 
-PCREATE_VIDOUTPUT_PLUGIN_EX(P_WXWINDOWS_DRIVER_NAME,
+PCREATE_VIDOUTPUT_PLUGIN_EX(wxWindows,
   virtual bool ValidateDeviceName(const PString & deviceName, P_INT_PTR /*userData*/) const
   {
     return deviceName.NumCompare(GetServiceName()) == PObject::EqualTo;
@@ -243,7 +243,6 @@ PBoolean P_WXWINDOWS_DEVICE_CLASS::SetFrameSize(unsigned width, unsigned height)
     }
 
     PTRACE(4, P_WXWINDOWS_DEVICE_NAME, "Resized wxBitmap to " << m_frameWidth << 'x' << m_frameHeight << " on " << *this);
-    SetSize(width, height);
   }
 
   return true;
@@ -278,6 +277,7 @@ void P_WXWINDOWS_DEVICE_CLASS::InternalFrameComplete()
   PWaitAndSignal lock(m_mutex);
 
   if (IsOpen()) {
+    SetSize(m_bitmap.GetWidth(), m_bitmap.GetHeight());
     Show(true);
     Refresh(false);
   }
