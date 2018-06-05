@@ -193,6 +193,8 @@ void VxmlTest::CopyVideoSender()
   PBYTEArray frame;
   PVideoOutputDevice::FrameData frameData;
   PVideoInputDevice & sender = m_vxml->GetVideoSender();
+  sender.SetColourFormatConverter(PVideoFrameInfo::YUV420P());
+  m_viewer->SetColourFormatConverter(PVideoFrameInfo::YUV420P());
 
   while (m_viewer != NULL) {
     if (!sender.GetFrame(frame, frameData.width, frameData.height)) {
