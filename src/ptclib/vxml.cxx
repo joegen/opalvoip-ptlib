@@ -305,7 +305,7 @@ public:
 
           PTRACE(3, "Loaded Sign Language Analyser dynamic library"
                     " \"" << m_library->GetName(true) << "\","
-                    " required format: " << init.m_videoFormat);
+                    " required format: " << m_colourFormat << " (" << init.m_videoFormat << ')');
           return true;
         }
       }
@@ -406,16 +406,13 @@ PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PVXMLSignLanguageAnalyser);
 
 class PVXMLSignLanguageAnalyser::PreviewVideoDevice : public PVideoInputEmulatedDevice
 {
-  int m_instance;
+  const PVXMLSession::VideoReceiverDevice & m_receiver;
 
 public:
-  PreviewVideoDevice(const PVXMLSession::VideoReceiverDevice & analyser)
-    : m_instance(analyser.GetAnalayserInstance())
+  PreviewVideoDevice(const PVXMLSession::VideoReceiverDevice & receiver)
+    : m_receiver(receiver)
   {
-    unsigned width, height;
-    analyser.GetFrameSize(width, height);
-    SetFrameSize(width, height);
-    SetColourFormat(GetInstance().GetColourFormat());
+    m_colourFormat = GetInstance().GetColourFormat();
   }
 
   virtual PStringArray GetDeviceNames() const
@@ -430,14 +427,24 @@ public:
 
   virtual PBoolean IsOpen()
   {
-    return PVXMLSignLanguageAnalyser::GetInstance().CanPreview(m_instance);
+    return PVXMLSignLanguageAnalyser::GetInstance().CanPreview(m_receiver.GetAnalayserInstance());
   }
 
   virtual PBoolean Close()
   {
-    m_instance = -1;
     return true;
   }
+
+  virtual PBoolean SetFrameSize(unsigned width, unsigned height)
+  {
+    return width == m_frameWidth && height == m_frameHeight;
+  }
+
+  PBoolean SetColourFormat(const PString & colourFormat)
+  {
+    return colourFormat == m_colourFormat;
+  }
+
 
 protected:
   virtual bool InternalGetFrameData(BYTE * buffer)
@@ -445,7 +452,18 @@ protected:
     if (!IsOpen())
       return false;
 
-    int result = PVXMLSignLanguageAnalyser::GetInstance().Preview(m_instance, m_frameWidth, m_frameHeight, buffer);
+    // If remote resolution changes, we need to change the preview as well
+    unsigned oldWidth, oldHeight;
+    GetFrameSize(oldWidth, oldHeight);
+    unsigned newWidth, newHeight;
+    m_receiver.GetFrameSize(newWidth, newHeight);
+    if (newWidth != oldWidth || newHeight != oldHeight) {
+      m_frameWidth = newWidth;
+      m_frameHeight = newHeight;
+      SetFrameSizeConverter(oldWidth, oldHeight);
+    }
+
+    int result = PVXMLSignLanguageAnalyser::GetInstance().Preview(m_receiver.GetAnalayserInstance(), m_frameWidth, m_frameHeight, buffer);
     if (result >= 0)
       return true;
 
