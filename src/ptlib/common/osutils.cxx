@@ -3136,6 +3136,14 @@ PString PThread::GetIdentifiersAsString(PThreadIdentifier tid, PUniqueThreadIden
 #endif
 
 
+PINDEX PThread::GetTotalCount()
+{
+    PProcess & process = PProcess::Current();
+    PWaitAndSignal mutex(process.m_threadMutex);
+    return process.m_activeThreads.size();
+}
+
+
 bool PThread::GetTimes(PThreadIdentifier id, Times & times)
 {
   if (!PProcess::IsInitialised())

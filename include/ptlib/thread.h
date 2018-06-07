@@ -341,6 +341,12 @@ class PThread : public PObject
       static PUniqueThreadIdentifier GetCurrentUniqueIdentifier()
     );
 
+    PPROFILE_EXCLUDE(
+    /** Get the total number of threads.
+     */
+      static PINDEX GetTotalCount()
+    );
+
     /// Times for execution of the thread.
     struct Times
     {
