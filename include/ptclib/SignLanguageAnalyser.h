@@ -97,7 +97,7 @@ extern "C" {
     unsigned     m_instance;  // In - Index of the analyser instance, value from 0 .. m_maxInstances-1
     unsigned     m_width;     // In - Width of video frame
     unsigned     m_height;    // In - Height of video frame
-    unsigned     m_timestamp; // In - Timestamp in milliseconds from some arbitrary starting point
+    unsigned     m_timestamp; // In - Timestamp in microseconds from some arbitrary starting point
     const void * m_pixels;    // In - Video pixel data
   } SLAnalyserData;
 

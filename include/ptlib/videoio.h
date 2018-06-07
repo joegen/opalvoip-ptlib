@@ -804,7 +804,7 @@ class PVideoOutputDevice : public PVideoDevice
       unsigned     height;          ///< Height of area in frame where data is put
       unsigned     sarWidth;        ///< Aspect ratio width of area in frame where data is put
       unsigned     sarHeight;       ///< Aspect ratio height of area in frame where data is put
-      int64_t      timestamp;       ///< Display time for the frame
+      int64_t      timestamp;       ///< Display time for the frame (microseconds)
       const BYTE * pixels;          ///< Data to put into the video frame store
       bool         partialFrame;    ///< Indicate partial video frame
       bool *       keyFrameNeeded;  ///< Indicates bad video and a new key frame is required

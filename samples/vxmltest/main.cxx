@@ -228,6 +228,7 @@ void VxmlTest::CopyVideoReceiver()
 
     receiver.SetFrameSize(frameData.width, frameData.height);
     frameData.pixels = frame;
+    frameData.timestamp = PTime().GetTimestamp();
 
     if (!receiver.SetFrameData(frameData)) {
       PTRACE(2, "Output video failed");
