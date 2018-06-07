@@ -2294,7 +2294,7 @@ int PProcess::InternalMain(void *)
   try {
     Main();
   }
-  catch (std::exception & e) {
+  catch (const std::exception & e) {
     PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in process main, terminating"));
     std::terminate();
   }
@@ -3060,7 +3060,7 @@ void PThread::InternalThreadMain()
     Main();
     process.OnThreadEnded(*this);
   }
-  catch (std::exception & e) {
+  catch (const std::exception & e) {
     PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in thread " << *this << ", terminating"));
     std::terminate();
   }

@@ -534,7 +534,7 @@ int PServiceProcess::InternalMain(void *)
     try {
       started = OnStart();
     }
-    catch (std::exception & e) {
+    catch (const std::exception & e) {
       PAssertAlways(PSTRSTRM("Exception (" << typeid(e).name() << " \"" << e.what() << "\") caught in service process start, terminating"));
       std::terminate();
     }
