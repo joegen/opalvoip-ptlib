@@ -92,7 +92,10 @@ static bool PAssertThreadOp(int retval,
 
   int err = retval < 0 ? errno : retval;
 
-  // Retry on thes temporary error, but up and assert after a suitably huge effort
+  /* Retry on a temporary error. Technically an EINTR only happens on a signal,
+     and EAGAIN not at all for most of the functions, but expereince is that when
+     the system gets really busy, they do occur, lots. So we have to keep trying,
+     but still give up and assert after a suitably huge effort. */
   if ((err == EINTR || err == EAGAIN) && ++retry < 1000) {
     PThread::Sleep(10); // Basically just swap out thread to try and clear blockage
     return true;        // Return value to try again
