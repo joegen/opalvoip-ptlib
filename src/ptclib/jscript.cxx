@@ -269,14 +269,14 @@ struct PJavaScript::Private : PObject
         const char * dir = getenv("V8_BLOBS_DIR");
         if (dir == NULL || !MyInitializeExternalStartupData(dir)) {
           if (!MyInitializeExternalStartupData(V8_BLOBS_DIR)) {
-            PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeExternalStartupData() failed.");
+            PTRACE(1, NULL, PTraceModule(), "v8::V8::InitializeExternalStartupData() failed, not loaded.");
             return;
           }
         }
       }
 
       if (!v8::V8::InitializeICUDefaultLocation(exeDir)) {
-        PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed.");
+        PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed, continuing.");
       }
 
       // Start it up!
@@ -284,7 +284,7 @@ struct PJavaScript::Private : PObject
       v8::V8::InitializePlatform(m_platform);
 
       if (!v8::V8::Initialize()) {
-        PTRACE(2, NULL, PTraceModule(), "v8::V8::Initialize() failed.");
+        PTRACE(1, NULL, PTraceModule(), "v8::V8::Initialize() failed, not loaded.");
         return;
       }
 
