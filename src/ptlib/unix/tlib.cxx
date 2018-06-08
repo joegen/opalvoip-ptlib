@@ -455,7 +455,7 @@ PRunTimeSignalHandler PProcess::PlatformSetRunTimeSignalHandler(int signal)
   struct sigaction action, previous;
   memset(&action, 0, sizeof(action));
   action.sa_sigaction = StaticSignalHandler;
-  action.sa_flags = SA_SIGINFO;
+  action.sa_flags = SA_SIGINFO|SA_RESTART;
   PAssertOS(sigaction(signal, &action, &previous) == 0);
   return previous.sa_sigaction;
 }
