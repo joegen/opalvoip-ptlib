@@ -734,6 +734,22 @@ class PSSLContext : public PObject
       const PDirectory & caDir  ///< Directory for CA certificates
     );
 
+    /**Set the locations for CA certificates used to verify peer certificates.
+      */
+    bool SetVerifyDirectory(
+      const PDirectory & caDir  ///< Directory for CA certificates
+    );
+
+    /**Set the locations for CA certificates used to verify peer certificates.
+      */
+    bool SetVerifyFile(
+      const PFilePath & caFile  ///< File for CA certificates
+    );
+
+    /**Set the locations for CA certificates used to verify peer certificates.
+      */
+    bool SetVerifySystemDefault();
+
     /**Set the CA certificate used to verify peer certificates.
       */
     bool SetVerifyCertificate(

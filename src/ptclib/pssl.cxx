@@ -2016,9 +2016,45 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
   if (PAssertNULL(m_context) == NULL)
     return false;
 
-  PString caPath = caDir.Left(caDir.GetLength()-1);
+  if (caFile.IsEmpty())
+    return SetVerifyDirectory(caDir); // Directory can never be empty.
 
-  if (caFile.IsEmpty() && caPath.IsEmpty()) {
+  if (SSL_CTX_load_verify_locations(m_context, caFile, caDir)) {
+    PTRACE(4, "Set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+    return true;
+  }
+
+  PTRACE(2, "Could not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
+  return SSL_CTX_set_default_verify_paths(m_context);
+}
+
+
+bool PSSLContext::SetVerifyDirectory(const PDirectory & caDir)
+{
+  if (SSL_CTX_load_verify_locations(m_context, NULL, caDir)) {
+    PTRACE(4, "Set context " << m_context << " verify directory \"" << caDir << '"');
+    return true;
+  }
+
+  PTRACE(2, "Could not set context " << m_context << " verify directory \"" << caDir << '"');
+  return SSL_CTX_set_default_verify_paths(m_context);
+}
+
+
+bool PSSLContext::SetVerifyFile(const PFilePath & caFile)
+{
+  if (SSL_CTX_load_verify_locations(m_context, caFile, NULL)) {
+    PTRACE(4, "Set context " << m_context << " verify file \"" << caFile << '"');
+    return true;
+  }
+
+  PTRACE(2, "Could not set context " << m_context << " verify locations file \"" << caFile << '"');
+  return SSL_CTX_set_default_verify_paths(m_context);
+}
+
+
+bool PSSLContext::SetVerifySystemDefault()
+{
 #if _WIN32
     HCERTSTORE hStore = CertOpenSystemStore(NULL, "ROOT");
     if (hStore != NULL) {
@@ -2045,9 +2081,10 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
       if (count > 0) {
         SSL_CTX_set_cert_store(m_context, store);
         PTRACE(4, "Set context " << m_context << " to use " << count << " certificates from Windows Certificate Store");
+        return true;
       }
-      else
-        PTRACE(2, "No usable certificates in Windows System Certificate store for context " << m_context);
+
+      PTRACE(2, "No usable certificates in Windows System Certificate store for context " << m_context);
     }
     else
       PTRACE(2, "Could not open Windows System Certificate store for context " << m_context);
@@ -2065,16 +2102,6 @@ bool PSSLContext::SetVerifyLocations(const PFilePath & caFile, const PDirectory 
 
     PTRACE(2, "Could not set context " << m_context << " to system certficate store.");
 #endif // _WIN32
-  }
-  else {
-    if (SSL_CTX_load_verify_locations(m_context, caFile.IsEmpty() ? NULL : (const char *)caFile,
-                                      caPath.IsEmpty() ? NULL : (const char *)caPath)) {
-      PTRACE(4, "Set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
-      return true;
-    }
-
-    PTRACE(2, "Could not set context " << m_context << " verify locations file=\"" << caFile << "\", dir=\"" << caDir << '"');
-  }
 
   return SSL_CTX_set_default_verify_paths(m_context);
 }
@@ -2220,11 +2247,11 @@ bool PSSLContext::SetCredentials(const PString & authority,
   if (!authority.IsEmpty()) {
     bool ok;
     if (authority == "*")
-      ok = SetVerifyLocations(PString::Empty(), PString::Empty());
+      ok = SetVerifySystemDefault();
     else if (PDirectory::Exists(authority))
-      ok = SetVerifyLocations(PString::Empty(), authority);
+      ok = SetVerifyDirectory(authority);
     else if (PFile::Exists(authority))
-      ok = SetVerifyLocations(authority, PString::Empty());
+      ok = SetVerifyFile(authority);
     else
       ok = SetVerifyCertificate(PSSLCertificate(authority));
     if (!ok) {
