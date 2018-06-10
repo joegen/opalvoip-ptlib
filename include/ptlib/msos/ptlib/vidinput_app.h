@@ -103,20 +103,6 @@ class PVideoInputDevice_Application : public PVideoInputDevice
       */
     virtual PINDEX GetMaxFrameBytes();
 
-    /**Grab a frame, after a delay as specified by the frame rate.
-      */
-    virtual PBoolean GetFrameData(
-      BYTE * buffer,                 ///< Buffer to receive frame
-      PINDEX * bytesReturned         ///< OPtional bytes returned.
-    );
-
-    /**Grab a frame. Do not delay according to the current frame rate parameter.
-      */
-    virtual PBoolean GetFrameDataNoDelay(
-      BYTE * buffer,                 ///< Buffer to receive frame
-      PINDEX * bytesReturned         ///< OPtional bytes returned.
-    );
-
     /**Set the Handle of the window you wish to capture
       */
     void AttachCaptureWindow(
@@ -125,6 +111,7 @@ class PVideoInputDevice_Application : public PVideoInputDevice
     );
 
   protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
     bool GetWindowBitmap(BITMAP & bitmapInfo, BYTE * pixels = NULL, bool useTemp = false);
 
     HWND       m_hWnd;               ///< Handle of Window to Capture

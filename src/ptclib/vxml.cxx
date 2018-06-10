@@ -448,7 +448,7 @@ public:
 
 
 protected:
-  virtual bool InternalGetFrameData(BYTE * buffer)
+  virtual bool InternalReadFrameData(BYTE * buffer)
   {
     if (!IsOpen())
       return false;

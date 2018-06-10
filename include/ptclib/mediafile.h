@@ -161,7 +161,7 @@ class PMediaFile : public PSmartObject
         virtual PBoolean Close();
 
       protected:
-        virtual bool InternalGetFrameData(BYTE * frame);
+        virtual bool InternalReadFrameData(BYTE * frame);
 
         Ptr            m_mediaFile;
         unsigned       m_track;

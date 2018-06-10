@@ -108,21 +108,6 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
       */
     PINDEX GetMaxFrameBytes();
 
-    /**Grab a frame, after a delay as specified by the frame rate.
-      */
-    PBoolean GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-    /**Grab a frame. Do not delay according to the current frame rate parameter.
-      */
-    PBoolean GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-
     /**Get the minimum & maximum size of a frame on the device.
     */
     PBoolean GetFrameSizeLimits(
@@ -159,6 +144,7 @@ class PVideoInputDevice_1394AVC : public PVideoInputDevice
 
 
  protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
 
     raw1394handle_t handle;
     PBoolean is_capturing;

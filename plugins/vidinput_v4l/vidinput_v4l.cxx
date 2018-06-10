@@ -958,17 +958,13 @@ PINDEX PVideoInputDevice_V4L::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_V4L::GetFrameData(BYTE *buffer, PINDEX *bytesReturned)
+bool PVideoInputDevice_V4L::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  m_pacing.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
+  if (wait)
+    m_pacing.Delay(1000/GetFrameRate());
 
-
-PBoolean PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
-{
   if (canMap < 0) {
-    //When canMap is < 0, it is the first use of GetFrameData. Check for memory mapping.
+    //When canMap is < 0, it is the first use of InternalGetFrameData. Check for memory mapping.
     if (::ioctl(videoFd, VIDIOCGMBUF, &frame) < 0) {
       canMap=0;
       PTRACE(3, "VideoGrabber " << deviceName << " cannot do memory mapping - GMBUF failed.");
@@ -997,7 +993,7 @@ PBoolean PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byte
         int ret;
         ret = ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]);
         if (ret < 0) {
-          PTRACE(1,"PVideoInputDevice_V4L::GetFrameData mcapture1 failed : " << ::strerror(errno));
+          PTRACE(1,"PVideoInputDevice_V4L::InternalGetFrameData mcapture1 failed : " << ::strerror(errno));
           ClearMapping();  
           canMap = 0;
           //This video device cannot do memory mapping.
@@ -1009,7 +1005,7 @@ PBoolean PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byte
 
   if (canMap == 0) 
     {
-      return NormalReadProcess(buffer, bytesReturned);
+      return NormalReadProcess(buffer, &bytesReturned);
     }
 
   /*****************************
@@ -1041,11 +1037,11 @@ PBoolean PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byte
   
   ret = ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[ 1 - currentFrame ]);
   if ( ret < 0 ) {
-    PTRACE(1,"PVideoInputDevice_V4L::GetFrameData mcapture2 failed : " << ::strerror(errno));
+    PTRACE(1,"PVideoInputDevice_V4L::InternalGetFrameData mcapture2 failed : " << ::strerror(errno));
     ClearMapping();
     canMap = 0;
     
-    return NormalReadProcess(buffer, bytesReturned);
+    return NormalReadProcess(buffer, &bytesReturned);
   }
   pendingSync[ 1 - currentFrame ] = true;
   
@@ -1055,21 +1051,20 @@ PBoolean PVideoInputDevice_V4L::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byte
   ret = ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
   pendingSync[currentFrame] = false;    
   if (ret < 0) {
-    PTRACE(1,"PVideoInputDevice_V4L::GetFrameData csync failed : " << ::strerror(errno));
+    PTRACE(1,"PVideoInputDevice_V4L::InternalGetFrameData csync failed : " << ::strerror(errno));
     ClearMapping();
     canMap = 0;
  
-    return NormalReadProcess(buffer, bytesReturned);
+    return NormalReadProcess(buffer, &bytesReturned);
   }
  
   // If converting on the fly do it from frame store to output buffer, otherwise do
   // straight copy.
   if (converter != NULL)
-      converter->Convert(videoBuffer + frame.offsets[currentFrame], buffer, bytesReturned);
+      converter->Convert(videoBuffer + frame.offsets[currentFrame], buffer, &bytesReturned);
   else {
     memcpy(buffer, videoBuffer + frame.offsets[currentFrame], frameBytes);
-    if (bytesReturned != NULL)
-      *bytesReturned = frameBytes;
+    bytesReturned = frameBytes;
   }
   
   // change buffers
@@ -1105,10 +1100,9 @@ PBoolean PVideoInputDevice_V4L::NormalReadProcess(BYTE *resultBuffer, PINDEX *by
     }
     
     if (converter != NULL)
-      return converter->ConvertInPlace(resultBuffer, bytesReturned);
+      return converter->ConvertInPlace(resultBuffer, &bytesReturned);
 
-    if (bytesReturned != NULL)
-      *bytesReturned = frameBytes;
+    bytesReturned = frameBytes;
 
     return true;
 }
@@ -1120,7 +1114,7 @@ void PVideoInputDevice_V4L::ClearMapping()
       if (pendingSync[i]) {
         int res = ::ioctl(videoFd, VIDIOCSYNC, &i);
         if (res < 0) {
-          PTRACE(1,"PVideoInputDevice_V4L::GetFrameData csync failed : " << ::strerror(errno));
+          PTRACE(1,"PVideoInputDevice_V4L::InternalGetFrameData csync failed : " << ::strerror(errno));
         }
         pendingSync[i] = false;    
       }

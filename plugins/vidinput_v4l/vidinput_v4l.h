@@ -34,9 +34,6 @@ public:
 
   PINDEX GetMaxFrameBytes();
 
-  PBoolean GetFrameData(BYTE*, PINDEX*);
-  PBoolean GetFrameDataNoDelay(BYTE*, PINDEX*);
-
   PBoolean GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
 
@@ -60,6 +57,9 @@ public:
 
   void ClearMapping();
   PBoolean RefreshCapabilities();
+
+protected:
+  virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
 
   PAdaptiveDelay m_pacing;
 

@@ -71,21 +71,6 @@ class PVideoInputDevice_BeOSVideo : public PVideoInputDevice
       PBYTEArray & frame
     );
 
-    /**Grab a frame, after a delay as specified by the frame rate.
-      */
-    virtual PBoolean GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-    /**Grab a frame. Do not delay according to the current frame rate parameter.
-      */
-    virtual PBoolean GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-
     /**Try all known video formats & see which ones are accepted by the video driver
      */
     virtual PBoolean TestAllFormats();
@@ -101,6 +86,8 @@ class PVideoInputDevice_BeOSVideo : public PVideoInputDevice
     void StopNodes();
 
   protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+
     BMediaRoster* fMediaRoster;
     VideoConsumer* fVideoConsumer;
 

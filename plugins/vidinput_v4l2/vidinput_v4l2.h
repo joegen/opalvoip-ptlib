@@ -70,9 +70,6 @@ public:
 
   PINDEX GetMaxFrameBytes();
 
-  PBoolean GetFrameData(BYTE*, PINDEX*);
-  PBoolean GetFrameDataNoDelay(BYTE*, PINDEX*);
-
   PBoolean GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
 
@@ -105,6 +102,8 @@ public:
   );
 
 private:
+  virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+
   int GetControlCommon(unsigned int control, int *value);
   PBoolean SetControlCommon(unsigned int control, int newValue);
   PBoolean NormalReadProcess(BYTE*, PINDEX*);
@@ -139,7 +138,7 @@ private:
   uint   currentVideoBuffer;
 
   PSemaphore readyToReadMutex;			/** Allow frame reading only from the time Start() used until Stop() */
-  PMutex inCloseMutex;				/** Prevent GetFrameDataNoDelay() to stuck on readyToReadMutex in the middle of device closing operation */
+  PMutex inCloseMutex;				/** Prevent InternalGetFrameData() to stuck on readyToReadMutex in the middle of device closing operation */
   PBoolean isOpen;				/** Has the Video Input Device successfully been opened? */
   PBoolean areBuffersQueued;
   PBoolean isStreaming;

@@ -1431,6 +1431,12 @@ PBoolean PVideoInputDevice::SetNearestFrameSize(unsigned width, unsigned height)
 }
 
 
+PBoolean PVideoInputDevice::GetFrame(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
+{
+  return InternalGetFrameData(buffer, bytesReturned, keyFrame, wait);
+}
+
+
 PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
 {
   PINDEX size = GetMaxFrameBytes();
@@ -1440,7 +1446,8 @@ PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame)
   }
 
   PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(size), &returned))
+  bool keyFrame = true;
+  if (!InternalGetFrameData(frame.GetPointer(size), returned, keyFrame, true))
     return false;
 
   frame.SetSize(returned);
@@ -1456,15 +1463,31 @@ PBoolean PVideoInputDevice::GetFrame(PBYTEArray & frame, unsigned & width, unsig
 
 PBoolean PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned, bool & keyFrame)
 {
-  keyFrame = true;
-  return GetFrameData(buffer, bytesReturned);
+  PINDEX dummy;
+  return InternalGetFrameData(buffer, bytesReturned != NULL ? *bytesReturned : dummy, keyFrame, true);
 }
 
 
-PBoolean PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned, bool & keyFrame)
+PBoolean PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  keyFrame = true;
-  return GetFrameDataNoDelay(buffer, bytesReturned);
+  PINDEX dummy;
+  bool keyFrame = true;
+  return InternalGetFrameData(buffer, bytesReturned != NULL ? *bytesReturned : dummy, keyFrame, true);
+}
+
+
+bool PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned, bool & keyFrame)
+{
+  PINDEX dummy;
+  return InternalGetFrameData(buffer, bytesReturned != NULL ? *bytesReturned : dummy, keyFrame, false);
+}
+
+
+bool PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+{
+  PINDEX dummy;
+  bool keyFrame = true;
+  return InternalGetFrameData(buffer, bytesReturned != NULL ? *bytesReturned : dummy, keyFrame, false);
 }
 
 
@@ -1829,45 +1852,10 @@ PBoolean PVideoInputDeviceIndirect::IsCapturing()
 }
 
 
-PBoolean PVideoInputDeviceIndirect::GetFrame(PBYTEArray & frame)
+bool PVideoInputDeviceIndirect::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
   PWaitAndSignal lock(m_actualDeviceMutex);
-  return m_actualDevice != NULL && m_actualDevice->GetFrame(frame);
-}
-
-
-PBoolean PVideoInputDeviceIndirect::GetFrame(PBYTEArray & frame, unsigned & width, unsigned & height)
-{
-  PWaitAndSignal lock(m_actualDeviceMutex);
-  return m_actualDevice != NULL && m_actualDevice->GetFrame(frame, width, height);
-}
-
-
-PBoolean PVideoInputDeviceIndirect::GetFrameData(BYTE * buffer, PINDEX * bytesReturned, bool & keyFrame)
-{
-  PWaitAndSignal lock(m_actualDeviceMutex);
-  return m_actualDevice != NULL && m_actualDevice->GetFrameData(buffer, bytesReturned, keyFrame);
-}
-
-
-PBoolean PVideoInputDeviceIndirect::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{
-  PWaitAndSignal lock(m_actualDeviceMutex);
-  return m_actualDevice != NULL && m_actualDevice->GetFrameData(buffer, bytesReturned);
-}
-
-
-PBoolean PVideoInputDeviceIndirect::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned, bool & keyFrame)
-{
-  PWaitAndSignal lock(m_actualDeviceMutex);
-  return m_actualDevice != NULL && m_actualDevice->GetFrameDataNoDelay(buffer, bytesReturned, keyFrame);
-}
-
-
-PBoolean PVideoInputDeviceIndirect::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
-{
-  PWaitAndSignal lock(m_actualDeviceMutex);
-  return m_actualDevice != NULL && m_actualDevice->GetFrameDataNoDelay(buffer, bytesReturned);
+  return m_actualDevice != NULL && m_actualDevice->GetFrame(buffer, bytesReturned, keyFrame, wait);
 }
 
 
@@ -1934,14 +1922,17 @@ PBoolean PVideoInputEmulatedDevice::IsCapturing()
 }
 
 
-PBoolean PVideoInputEmulatedDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputEmulatedDevice::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  m_pacing.Delay(1000/m_frameRate);
+  if (wait)
+    m_pacing.Delay(1000/m_frameRate);
 
   if (!IsOpen()) {
-    PTRACE(5, "Abort GetFrameData, closed " << *this);
+    PTRACE(5, "InternalGetFrameData closed " << *this);
     return false;
   }
+
+  keyFrame = true;
 
   if (m_fixedFrameRate > 0) {
     if (m_fixedFrameRate > m_frameRate) {
@@ -1964,21 +1955,10 @@ PBoolean PVideoInputEmulatedDevice::GetFrameData(BYTE * buffer, PINDEX * bytesRe
     PTRACE(6, "Playing frame number " << m_frameNumber << " on " << *this);
   }
 
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
-
-PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * bytesReturned)
-{
-  if (!IsOpen()) {
-    PTRACE(5, "Abort GetFrameDataNoDelay, closed " << *this);
-    return false;
-  }
-
   PINDEX frameBytes = GetMaxFrameBytes();
-  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(frameBytes) : frame;
+  BYTE * readBuffer = m_converter != NULL ? m_frameStore.GetPointer(frameBytes) : buffer;
 
-  if (!InternalGetFrameData(readBuffer)) {
+  if (!InternalReadFrameData(readBuffer)) {
     switch (m_channelNumber) {
       case Channel_PlayAndClose:
       default:
@@ -1987,7 +1967,7 @@ PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * b
 
       case Channel_PlayAndRepeat:
         m_frameNumber = 0;
-        if (!InternalGetFrameData(readBuffer)) {
+        if (!InternalReadFrameData(readBuffer)) {
           return false;
         }
         break;
@@ -2016,16 +1996,14 @@ PBoolean PVideoInputEmulatedDevice::GetFrameDataNoDelay(BYTE * frame, PINDEX * b
     }
   }
 
-  if (m_converter != NULL) {
+  if (m_converter == NULL)
+    bytesReturned = frameBytes;
+  else {
     m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
-    if (!m_converter->Convert(readBuffer, frame, bytesReturned)) {
+    if (!m_converter->Convert(readBuffer, buffer, &bytesReturned)) {
       PTRACE(2, "Conversion failed with " << *m_converter << " on " << *this);
       return false;
     }
-  }
-  else {
-    if (bytesReturned != NULL)
-      *bytesReturned = frameBytes;
   }
 
   return true;

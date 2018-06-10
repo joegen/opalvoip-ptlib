@@ -898,17 +898,11 @@ void PVideoInputDevice_V4L2::ClearMapping()
 }
 
 
-PBoolean PVideoInputDevice_V4L2::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_V4L2::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  PTRACE(8,"V4L2\tGetFrameData()");
+  if (wait)
+    m_pacing.Delay(1000/GetFrameRate());
 
-  m_pacing.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
-
-PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
-{
   PTRACE(8,"V4L2\tGetFrameDataNoDelay()\tstarted:" << started << "  canSelect:" << canSelect);
   {
     PWaitAndSignal m(inCloseMutex);
@@ -921,7 +915,7 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
     return PFalse;
 
   if (!canStream)
-    return NormalReadProcess(buffer, bytesReturned);
+    return NormalReadProcess(buffer, &bytesReturned);
 
   // Using streaming here. Return false, if streaming wasn't started, yet
   if(!isStreaming)
@@ -972,13 +966,12 @@ PBoolean PVideoInputDevice_V4L2::GetFrameDataNoDelay(BYTE * buffer, PINDEX * byt
     // otherwise do straight copy.
     if (m_converter != NULL) {
       m_converter->SetSrcFrameBytes(buf.bytesused);
-      m_converter->Convert(videoBuffer[buf.index], buffer, bytesReturned);
+      m_converter->Convert(videoBuffer[buf.index], buffer, &bytesReturned);
     }
     else {
       size_t count = std::min((size_t)frameBytes, (size_t)buf.bytesused);
       memcpy(buffer, videoBuffer[buf.index], count);
-      if (bytesReturned != NULL)
-        *bytesReturned = count;
+      bytesReturned = count;
     }
 
     PTRACE(8,"V4L2\tget frame data of " << buf.bytesused << "bytes, fd=" << videoFd);
@@ -1018,10 +1011,9 @@ PBoolean PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytes
   }
 
   if (m_converter != NULL)
-    return m_converter->ConvertInPlace(buffer, bytesReturned);
+    return m_converter->ConvertInPlace(buffer, &bytesReturned);
 
-  if (bytesReturned != NULL)
-    *bytesReturned = (PINDEX)bytesRead;
+  bytesReturned = (PINDEX)bytesRead;
 
   return true;
 }

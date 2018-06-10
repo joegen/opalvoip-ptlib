@@ -228,29 +228,26 @@ PINDEX PVideoInputDevice_Application::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_Application::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_Application::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  m_grabDelay.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
+  if (wait)
+    m_grabDelay.Delay(1000/GetFrameRate());
 
+  keyFrame = true;
 
-PBoolean PVideoInputDevice_Application::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
-{
   PWaitAndSignal mutex(m_lastFrameMutex);
 
   BITMAP bitmap;
   if (m_converter == NULL) {
     if (GetWindowBitmap(bitmap, buffer)) {
-      if (bytesReturned != NULL)
-        *bytesReturned = bitmap.bmHeight*bitmap.bmWidthBytes;
+      bytesReturned = bitmap.bmHeight*bitmap.bmWidthBytes;
       return true;
     }
   }
   else {
     if (GetWindowBitmap(bitmap, NULL, true)) {
       m_converter->SetSrcFrameSize(m_frameWidth, m_frameHeight);
-      if (m_converter->Convert(m_tempPixelBuffer, buffer, bytesReturned))
+      if (m_converter->Convert(m_tempPixelBuffer, buffer, &bytesReturned))
         return true;
     }
 

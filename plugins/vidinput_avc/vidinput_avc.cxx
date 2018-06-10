@@ -317,9 +317,11 @@ PINDEX PVideoInputDevice_1394AVC::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
-                                                  PINDEX * bytesReturned)
+bool PVideoInputDevice_1394AVC::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
+  if (wait)
+    m_pacing.Delay(1000/GetFrameRate());
+
   if (!IsCapturing()) return false;
 
   PBoolean frame_complete = false;
@@ -410,7 +412,7 @@ PBoolean PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
               3);
     }
   if (converter != NULL) {
-    converter->Convert((const BYTE *)pixels[0], buffer, bytesReturned);
+    converter->Convert((const BYTE *)pixels[0], buffer, &bytesReturned);
     if (pixels[0] != NULL)
       free(pixels[0]);
   }
@@ -421,12 +423,6 @@ PBoolean PVideoInputDevice_1394AVC::GetFrameDataNoDelay(BYTE * buffer,
   
   return true;
   
-}
-
-PBoolean PVideoInputDevice_1394AVC::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{
-  m_pacing.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
 void PVideoInputDevice_1394AVC::ClearMapping()

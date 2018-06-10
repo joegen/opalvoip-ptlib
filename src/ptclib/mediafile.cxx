@@ -407,7 +407,7 @@ PBoolean PMediaFile::VideoInputDevice::Close()
 }
 
 
-bool PMediaFile::VideoInputDevice::InternalGetFrameData(BYTE * frame)
+bool PMediaFile::VideoInputDevice::InternalReadFrameData(BYTE * frame)
 {
   return m_mediaFile->ReadVideo(m_track, frame);
 }

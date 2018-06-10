@@ -84,21 +84,6 @@ class PVideoInput1394DcDevice : public PVideoInputDevice
       */
     PINDEX GetMaxFrameBytes();
 
-    /**Grab a frame, after a delay as specified by the frame rate.
-      */
-    PBoolean GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-    /**Grab a frame. Do not delay according to the current frame rate parameter.
-      */
-    PBoolean GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-
     /**Get the brightness of the image. 0xffff-Very bright.
      */
     int GetBrightness();
@@ -206,6 +191,8 @@ class PVideoInput1394DcDevice : public PVideoInputDevice
 
 
  protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+
     raw1394handle_t handle;
     PBoolean is_capturing;
     PBoolean UseDMA;

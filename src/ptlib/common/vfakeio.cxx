@@ -1303,10 +1303,10 @@ const PVideoFont::LetterData * PVideoFont::GetLetterData(char ascii)
 */
 class PVideoInputDevice_FakeVideo : public PVideoInputDevice
 {
- PCLASSINFO(PVideoInputDevice_FakeVideo, PVideoInputDevice);
- public:
-  /** Create a new (fake) video input device.
-   */
+    PCLASSINFO(PVideoInputDevice_FakeVideo, PVideoInputDevice);
+  public:
+    /** Create a new (fake) video input device.
+     */
     PVideoInputDevice_FakeVideo();
 
 
@@ -1319,7 +1319,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
 
     /**Determine of the device is currently open.
       */
-    PBoolean IsOpen() ;
+    PBoolean IsOpen();
 
     /**Close the device.
       */
@@ -1342,7 +1342,9 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     static PStringArray GetInputDeviceNames();
 
     virtual PStringArray GetDeviceNames() const
-      { return GetInputDeviceNames(); }
+    {
+      return GetInputDeviceNames();
+    }
 
     /**Get the maximum frame size in bytes.
 
@@ -1351,41 +1353,22 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       */
     virtual PINDEX GetMaxFrameBytes();
 
-    /**Grab a frame. 
-
-       There will be a delay in returning, as specified by frame rate.
-      */
-    virtual PBoolean GetFrameData(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// Optional bytes returned.
-    );
-
-    /**Grab a frame.
-
-       Do not delay according to the current frame rate.
-      */
-    virtual PBoolean GetFrameDataNoDelay(
-      BYTE * buffer,                 /// Buffer to receive frame
-      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
-    );
-
-
     /**A test image that contains area of low and high resolution.
        The picture changes every second*/
     void GrabMovingBlocksTestFrame(BYTE *resFrame);
-    
-    /**a test image consisting of a horizontal line moving down the image, 
+
+    /**a test image consisting of a horizontal line moving down the image,
        with a constantly varying background. */
     void GrabMovingLineTestFrame(BYTE *resFrame);
 
     /**Generate a constant image, which contains the colours for
        a NTSC test frame.*/
     void GrabNTSCTestFrame(BYTE *resFrame);
-        
+
     /**Generate three bouncing boxes, which bounce from a different height
       */
     void GrabBouncingBoxes(BYTE *resFrame);
-    
+
     /**Generate a static image, containing a constant field of grey.
      */
     void GrabSolidColour(BYTE *resFrame);
@@ -1397,13 +1380,13 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     /**Generate a textual output on the fake video image
      */
     void GrabTextVideoFrame(BYTE *resFrame);
-    
+
     /** Fills a region of the image with a constant colour.
      */
     void FillRect(BYTE * frame,
-      int x,         int y,
+                  int x, int y,
                   int rectWidth, int rectHeight,
-                  int r,         int g,          int b);
+                  int r, int g, int b);
 
     /**Get the number of video channels available on the device.
     */
@@ -1423,7 +1406,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     virtual PBoolean SetColourFormat(
       const PString & colourFormat   // New colour format for device.
     );
-    
+
     /**Set the video frame rate to be used on the device.
 
        Default behaviour sets the value of the frameRate variable and then
@@ -1432,7 +1415,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
     virtual PBoolean SetFrameRate(
       unsigned rate  /// Frames per second
     );
-         
+
     /**Get the minimum & maximum size of a frame on the device.
 
        Default behaviour returns the value 1 to UINT_MAX for both and returns
@@ -1443,7 +1426,7 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       unsigned & minHeight,  /// Variable to receive minimum height
       unsigned & maxWidth,   /// Variable to receive maximum width
       unsigned & maxHeight   /// Variable to receive maximum height
-    ) ;
+    );
 
     /**Set the frame size to be used.
 
@@ -1454,10 +1437,12 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       unsigned width,   /// New width of frame
       unsigned height   /// New height of frame
     );
-         
 
- protected:
-   bool m_open;
+
+  protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+
+    bool m_open;
 
     enum {
       eRGB32,
@@ -1466,12 +1451,12 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       eYUV422
     } m_internalColourFormat;
 
-   unsigned       m_grabCount;
-   PINDEX         m_videoFrameSize;
-   PINDEX         m_scanLineWidth;
-   PAdaptiveDelay m_Pacing;
+    unsigned       m_grabCount;
+    PINDEX         m_videoFrameSize;
+    PINDEX         m_scanLineWidth;
+    PAdaptiveDelay m_Pacing;
 
-   PString textLine[PVideoFont::MAX_L_HEIGHT];
+    PString textLine[PVideoFont::MAX_L_HEIGHT];
 };
 
 PCREATE_VIDINPUT_PLUGIN_EX(FakeVideo,
@@ -1665,17 +1650,15 @@ PINDEX PVideoInputDevice_FakeVideo::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_FakeVideo::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
-{    
-  m_Pacing.Delay(1000/GetFrameRate());
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
- 
-PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
+bool PVideoInputDevice_FakeVideo::InternalGetFrameData(BYTE * destFrame, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
+  if (wait)
+    m_Pacing.Delay(1000/GetFrameRate());
+
   if (!IsOpen())
     return false;
+
+  keyFrame = true;
 
   m_grabCount++;
 
@@ -1707,13 +1690,11 @@ PBoolean PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDE
        return false;
   }
 
-  if (NULL != m_converter) {
-    if (!m_converter->ConvertInPlace(destFrame, bytesReturned))
-      return false;
-  }
+  if (m_converter == NULL)
+    bytesReturned = m_videoFrameSize;
   else {
-    if (bytesReturned != NULL)
-      *bytesReturned = m_videoFrameSize;
+    if (!m_converter->ConvertInPlace(destFrame, &bytesReturned))
+      return false;
   }
 
   return true;

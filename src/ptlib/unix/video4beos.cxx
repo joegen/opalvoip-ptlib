@@ -853,19 +853,17 @@ PINDEX PVideoInputDevice_BeOSVideo::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_BeOSVideo::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_BeOSVideo::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
+  if (wait)
+    m_pacing.Delay(1000/GetFrameRate());
 
-PBoolean PVideoInputDevice_BeOSVideo::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
-{
-  PTRACE(TL, "PVideoInputDevice_BeOSVideo::GetFrameDataNoDelay");
+  PTRACE(TL, "PVideoInputDevice_BeOSVideo::InternalGetFrameData");
   if (!IsCapturing()) 
     return false;
   
-  *bytesReturned = GetMaxFrameBytes();
-  fVideoConsumer->GetFrame(buffer, bytesReturned, converter);
+  bytesReturned = GetMaxFrameBytes();
+  fVideoConsumer->GetFrame(buffer, &bytesReturned, converter);
    
   return true;
 }

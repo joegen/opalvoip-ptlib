@@ -179,7 +179,7 @@ PBoolean PVideoInputDevice_VideoFile::Close()
 }
 
 
-bool PVideoInputDevice_VideoFile::InternalGetFrameData(BYTE * frame)
+bool PVideoInputDevice_VideoFile::InternalReadFrameData(BYTE * frame)
 {
   PReadWaitAndSignal lock(m_mutex);
   m_file->SetPosition(m_frameNumber++);

@@ -234,18 +234,17 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     virtual PBoolean SetFrameRate(unsigned rate);
     virtual PBoolean SetFrameSize(unsigned width, unsigned height);
     virtual PINDEX GetMaxFrameBytes();
-    virtual PBoolean GetFrameData(BYTE * buffer, PINDEX * bytesReturned);
-    virtual PBoolean GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned);
     virtual bool FlowControl(const void * flowData);
     virtual bool GetAttributes(Attributes & attributes);
     virtual bool SetAttributes(const Attributes & attributes);
 
 
   protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
     bool BindCaptureDevice(const PString & devName);
     bool PlatformOpen();
     PINDEX GetCurrentBufferSize();
-    bool GetCurrentBufferData(BYTE * data, PINDEX & bufferSize);
+    bool GetCurrentBufferData(BYTE * data, PINDEX & bufferSize, bool wait);
     bool SetPinFormat(unsigned useDefaultColourOrSize = 0);
     bool SetAttributeCommon(long control, int newValue);
     int GetAttributeCommon(long control) const;
@@ -793,32 +792,31 @@ PINDEX PVideoInputDevice_DirectShow::GetMaxFrameBytes()
   return GetMaxFrameBytesConverted(CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat));
 }
 
-PBoolean PVideoInputDevice_DirectShow::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_DirectShow::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
 {
-  return GetFrameDataNoDelay(buffer,bytesReturned);
-}
+  if (!IsOpen())
+    return false;
 
-PBoolean PVideoInputDevice_DirectShow::GetFrameDataNoDelay(BYTE * destFrame, PINDEX * bytesReturned)
-{
+  keyFrame = true;
+
   PWaitAndSignal mutex(m_lastFrameMutex);
 
   PINDEX bufferSize = GetCurrentBufferSize();
   PTRACE(6, "Grabbing Frame " << m_frameWidth << 'x' << m_frameHeight << " (" << bufferSize << ')');
 
   if (m_converter != NULL) {
-    if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize), bufferSize))
+    if (!GetCurrentBufferData(m_tempFrame.GetPointer(bufferSize), bufferSize, wait))
       return false;
     m_converter->SetSrcFrameBytes(bufferSize);
-    if (!m_converter->Convert(m_tempFrame, destFrame, bytesReturned))
+    if (!m_converter->Convert(m_tempFrame, buffer, &bytesReturned))
       return false;
   }
   else {
     if (!PAssert(bufferSize <= m_maxFrameBytes, PLogicError))
       return false;
-    if (!GetCurrentBufferData(destFrame, bufferSize))
+    if (!GetCurrentBufferData(buffer, bufferSize, wait))
       return false;
-    if (bytesReturned != NULL)
-      *bytesReturned = bufferSize;
+    bytesReturned = bufferSize;
   }
 
   return true;
@@ -1546,7 +1544,7 @@ PINDEX PVideoInputDevice_DirectShow::GetCurrentBufferSize()
 }
 
 
-bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bufferSize)
+bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bufferSize, bool wait)
 {
   if (m_pSampleGrabberCB == NULL)
     return false;

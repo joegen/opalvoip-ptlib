@@ -83,7 +83,7 @@ class PVideoInputDevice_VideoFile : public PVideoInputEmulatedDevice
 
    
 protected:
-  virtual bool InternalGetFrameData(BYTE * frame);
+  virtual bool InternalReadFrameData(BYTE * frame);
 
    PVideoFile    * m_file;
    PDECLARE_READ_WRITE_MUTEX(m_mutex);

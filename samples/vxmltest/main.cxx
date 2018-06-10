@@ -202,6 +202,9 @@ void VxmlTest::CopyVideoSender()
       break;
     }
 
+    if (frame.IsEmpty())
+      continue;
+
     m_viewer->SetFrameSize(frameData.width, frameData.height);
     frameData.pixels = frame;
 
@@ -225,6 +228,9 @@ void VxmlTest::CopyVideoReceiver()
       PTRACE(2, "Grab video failed");
       break;
     }
+
+    if (frame.IsEmpty())
+      continue;
 
     receiver.SetFrameSize(frameData.width, frameData.height);
     frameData.pixels = frame;
