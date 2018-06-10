@@ -298,6 +298,7 @@ public:
               m_colourFormat = "BGR32";
               break;
             default:
+              m_colourFormat = PVideoFrameInfo::YUV420P();
               break;
           }
 
