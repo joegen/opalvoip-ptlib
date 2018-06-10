@@ -1011,9 +1011,9 @@ PBoolean PVideoInputDevice_V4L2::NormalReadProcess(BYTE * buffer, PINDEX * bytes
   }
 
   if (m_converter != NULL)
-    return m_converter->ConvertInPlace(buffer, &bytesReturned);
+    return m_converter->ConvertInPlace(buffer, bytesReturned);
 
-  bytesReturned = (PINDEX)bytesRead;
+  *bytesReturned = (PINDEX)bytesRead;
 
   return true;
 }
