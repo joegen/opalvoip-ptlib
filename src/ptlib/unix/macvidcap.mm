@@ -217,14 +217,14 @@ class PVideoInputDevice_Mac : public PVideoInputDevice
     static bool GetDeviceCapabilities(const PString &, Capabilities *);
     virtual bool GetDeviceCapabilities(Capabilities * caps) { return GetDeviceCapabilities(PString::Empty(), caps); }
     virtual PINDEX GetMaxFrameBytes();
-    virtual PBoolean GetFrameData(BYTE * buffer, PINDEX * bytesReturned);
-    virtual PBoolean GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned);
     virtual PBoolean SetColourFormat(const PString & colourFormat);
     virtual PBoolean SetFrameRate(unsigned rate);
     virtual PBoolean SetFrameSize(unsigned width, unsigned height);
     virtual PBoolean GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight);
   
   protected:
+    virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+
     AVCaptureSession * m_session;
     AVCaptureDevice * m_device;
     AVCaptureDeviceInput * m_captureInput;
@@ -580,28 +580,23 @@ PINDEX PVideoInputDevice_Mac::GetMaxFrameBytes()
 }
 
 
-PBoolean PVideoInputDevice_Mac::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+bool PVideoInputDevice_Mac::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyframe, bool wait)
 {
   PReadWaitAndSignal mutex(m_mutex);
   
   if (!IsCapturing())
     return false;
   
-  PTRACE_DETAILED("Waiting");
-  [m_captureFrame waitFrame];
-  return GetFrameDataNoDelay(buffer, bytesReturned);
-}
-
+  if (wait) {
+    PTRACE_DETAILED("Waiting");
+    [m_captureFrame waitFrame];
+    if (!IsCapturing())
+      return false;
+  }
  
-PBoolean PVideoInputDevice_Mac::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
-{
   PTRACE_DETAILED("Get frame: " << *this << ", converter=" << m_converter);
   
-  if (!IsCapturing())
-    return false;
-
-  PReadWaitAndSignal mutex(m_mutex);
-  return [m_captureFrame grabFrame:destFrame withConverter:m_converter returningBytes:bytesReturned];
+  return IsCapturing() && [m_captureFrame grabFrame:buffer withConverter:m_converter returningBytes:&bytesReturned];
 }
 
 
