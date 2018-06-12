@@ -36,12 +36,10 @@
 #include <ptlib/msos/ptlib/ptlib.inl>
 #endif
 
-#ifndef _WIN32_WCE
 #include <share.h>
 #ifdef _WIN32
 #include <WERAPI.H>
 #pragma comment(lib,"wer")
-#endif
 #endif
 
 
@@ -367,55 +365,6 @@ PBoolean PFile::Remove(const PString & name, PBoolean force)
 }
 
 
-#ifdef _WIN32_WCE
-time_t	FileTimeToTime(const FILETIME FileTime);
-time_t	SystemTimeToTime(const LPSYSTEMTIME pSystemTime);
-
-bool PFile::GetInfo(const PFilePath & name, PFileInfo & info)
-{
-  PString fn = name;
-  PINDEX pos = fn.GetLength()-1;
-  while (PDirectory::IsSeparator(fn[pos]))
-    pos--;
-  fn.Delete(pos+1, P_MAX_INDEX);
-  
-  HANDLE hFile = CreateFile(fn.AsUCS2(),0,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-  if (hFile==INVALID_HANDLE_VALUE) 
-    return false;
-  
-  bool res=false;
-  BY_HANDLE_FILE_INFORMATION FInfo;
-  if (GetFileInformationByHandle(hFile,&FInfo))
-  {
-    info.created = FileTimeToTime(FInfo.ftCreationTime);
-    info.modified = FileTimeToTime(FInfo.ftLastWriteTime);
-    info.accessed = FileTimeToTime(FInfo.ftLastAccessTime);
-    info.size = (__int64(FInfo.nFileSizeHigh)<<32)+__int64(FInfo.nFileSizeLow);
-    
-    info.permissions = PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
-    
-    if ((FInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY)==0)
-      info.permissions |= PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
-    
-    if (FInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
-    {
-      info.type = PFileInfo::SubDirectory;
-      info.permissions |= PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
-    }
-    else
-    {
-      info.type = PFileInfo::RegularFile;
-    }
-    info.hidden = (FInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)!=0;
-    res=true;
-  }
-  
-  CloseHandle(hFile);
-  return res;
-}
-
-#else // !_WIN32_WCE
-
 #if defined(_WIN32)
 
 static void TwiddleBits(PFileInfo::Permissions newPermissions,
@@ -596,11 +545,10 @@ bool PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   return true;
 }
 
-#endif // _WIN32_WCE
 
 bool PFile::SetPermissions(const PFilePath & name, PFileInfo::Permissions permissions)
 {
-#if defined(_WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32)
   FileSecurityPermissions(name, permissions);
 #endif
 
@@ -716,9 +664,6 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
   if (!PAssert(type >= StandardInput && type <= StandardError, PInvalidParameter))
     return false;
 
-#ifdef _WIN32_WCE
-  return false;
-#else
   static DWORD HandleNames[] = { STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE };
   if (!m_hConsole.Duplicate(GetStdHandle(HandleNames[type])))
     return ConvertOSError(-2);
@@ -730,7 +675,6 @@ PBoolean PConsoleChannel::Open(ConsoleType type)
 
   os_handle = type;
   return true;
-#endif
 }
 
 
@@ -934,23 +878,6 @@ bool PConsoleChannel::InternalSetConsoleMode(DWORD bit, bool on)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#ifdef _WIN32_WCE
-
-PBoolean PProcess::IsGUIProcess() const
-{
-  return true;
-}
-
-void PProcess::AddRunTimeSignalHandlers()
-{
-}
-
-void PProcess::RemoveRunTimeSignalHandlers()
-{
-}
-
-#else // _WIN32_WCE
-
 #ifdef _WIN32
 
 LONG WINAPI MyExceptionHandler(_EXCEPTION_POINTERS * info)
@@ -1001,8 +928,6 @@ POrdinalToString::Initialiser const PProcess::InternalSigNames[] = {
   SIG_NAME(SIGTERM),
   { }
 };
-
-#endif // _WIN32_WCE
 
 
 void PProcess::PlatformConstruct()

@@ -39,7 +39,7 @@
 #include <ptclib/mime.h>
 #include <ctype.h>
 
-#if defined(_WIN32) && !defined(_WIN32_WCE)
+#if defined(_WIN32)
 #include <shellapi.h>
 #ifdef _MSC_VER
 #pragma comment(lib,"shell32.lib")

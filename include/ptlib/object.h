@@ -1467,7 +1467,7 @@ namespace PProfiling
 ///////////////////////////////////////////////////////////////////////////////
 // Memory management
 
-#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)) 
+#if PMEMORY_CHECK || (defined(_MSC_VER) && defined(_DEBUG)) 
 
 #define PMEMORY_HEAP 1
 

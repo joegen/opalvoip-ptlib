@@ -44,7 +44,6 @@ static PConstString const ClassesRootStr ("HKEY_CLASSES_ROOT\\");
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
 
-#ifndef _WIN32_WCE
 class SecurityID
 {
   public:
@@ -192,7 +191,6 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
                         KEY_ALL_ACCESS, &secattr, &key, &disposition);
 }
 
-#endif // _WIN32_WCE
 
 RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 {
@@ -272,12 +270,9 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
       basekey = HKEY_CURRENT_USER;
   }
 
-#ifndef _WIN32_WCE
   if (basekey != HKEY_CURRENT_USER)
     error = SecureCreateKey(basekey, subkey, key);
-  if (error != ERROR_SUCCESS)
-#endif
-  {
+  if (error != ERROR_SUCCESS) {
     DWORD disposition;
     TCHAR empty[1];
     empty[0] = 0;

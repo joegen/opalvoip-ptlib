@@ -38,11 +38,7 @@
 
 PFACTORY_CREATE_SINGLETON(PProcessStartupFactory, PInterfaceMonitor);
 
-#ifndef _WIN32_WCE
 #define UDP_BUFFER_SIZE 32768
-#else
-#define UDP_BUFFER_SIZE 8192
-#endif
 
 #define PTraceModule() "MonSock"
 

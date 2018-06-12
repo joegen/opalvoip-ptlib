@@ -1145,11 +1145,7 @@ bool PFile::Rename(const PFilePath & oldname, const PString & newname, bool forc
 {
   for (PINDEX i = 0; i< newname.GetLength(); ++i) {
     if (PDirectory::IsSeparator(newname[i])) {
-#ifdef _WIN32_WCE
-      set_errno(EINVAL);
-#else
       errno = EINVAL;
-#endif
       return false;
     }
   }

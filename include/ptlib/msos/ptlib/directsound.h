@@ -40,18 +40,6 @@
 #include <dsound.h>
 
 
-#ifdef _WIN32_WCE
-#define LPDIRECTSOUND8 LPDIRECTSOUND
-#define LPDIRECTSOUNDBUFFER8 LPDIRECTSOUNDBUFFER
-#define LPDIRECTSOUNDCAPTURE8 LPDIRECTSOUNDCAPTURE
-#define LPDIRECTSOUNDCAPTUREBUFFER8 LPDIRECTSOUNDCAPTUREBUFFER
-#define DirectSoundCreate8 DirectSoundCreate
-#define IID_IDirectSoundBuffer8 IID_IDirectSoundBuffer
-#define DirectSoundCaptureCreate8 DirectSoundCaptureCreate
-#define IID_IDirectSoundCaptureBuffer8 IID_IDirectSoundCaptureBuffer
-#endif
-
-
 class PSoundChannelDirectSound: public PSoundChannel
 {
 public:

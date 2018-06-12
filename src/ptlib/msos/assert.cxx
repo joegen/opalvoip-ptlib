@@ -36,15 +36,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#ifdef _WIN32_WCE
-
-  void PProcess::WaitOnExitConsoleWindow()
-  {
-  }
-
-  #define InternalStackWalk(strm, id)
-
-  #elif defined(__MINGW32__)
+#ifdef __MINGW32__
 
   void PProcess::WaitOnExitConsoleWindow()
   {
@@ -383,7 +375,7 @@
       debughelp.WalkStack(strm, id, framesToSkip);
   }
 
-#endif // _WIN32_WCE
+#endif // __MINGW32__
 
 
   static const char ActionMessage[] = "<A>bort, <B>reak, "
@@ -431,12 +423,10 @@ static bool AssertAction(int c, const char * msg)
 
 void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const char * msg, char defaultAction)
 {
-#ifndef _WIN32_WCE
   if (PProcess::Current().IsServiceProcess()) {
     PSYSTEMLOG(Fatal, msg);
     return;
   }
-#endif // !_WIN32_WCE
 
 #if PTRACING
   PTrace::Begin(0, location.m_file, location.m_line, NULL, "PAssert") << msg << PTrace::End;

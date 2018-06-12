@@ -29,7 +29,6 @@
 
 #include <ptlib.h>
 
-#ifndef _WIN32_WCE
 #include <winuser.h>
 #include <winnls.h>
 #include <shellapi.h>
@@ -1615,6 +1614,5 @@ const PString & PServiceProcess::GetDescription() const
   return m_description;
 }
 
-#endif // !_WIN32_WCE
 
 // End Of File ///////////////////////////////////////////////////////////////

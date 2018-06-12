@@ -33,34 +33,31 @@
 #include <svcguid.h>
 #include <iphlpapi.h>
 
-#ifndef _WIN32_WCE
-  #include <nspapi.h>
-  #include <wsipx.h>
-  #include <netioapi.h>
-  #include <tchar.h>
+#include <nspapi.h>
+#include <wsipx.h>
+#include <netioapi.h>
+#include <tchar.h>
 
-  #ifdef _MSC_VER
-    #include <wsnwlink.h>
+#ifdef _MSC_VER
+  #include <wsnwlink.h>
 
-    #pragma comment(lib, "ws2_32.lib")
+  #pragma comment(lib, "ws2_32.lib")
 
-  #else
+#else
 
-    #define IPX_PTYPE 0x4000
+  #define IPX_PTYPE 0x4000
 
-    #ifndef NS_DEFAULT
-      #define NS_DEFAULT 0
-    #endif
-
-    #ifndef SVCID_NETWARE
-    #define SVCID_NETWARE(_SapId) {(0x000B << 16)|(_SapId),0,0,{0xC0,0,0,0,0,0,0,0x46}}
-    #endif /* SVCID_NETWARE */
-
-    #define SVCID_FILE_SERVER SVCID_NETWARE(0x4)
-
+  #ifndef NS_DEFAULT
+    #define NS_DEFAULT 0
   #endif
 
-#endif // !_WIN32_WCE
+  #ifndef SVCID_NETWARE
+  #define SVCID_NETWARE(_SapId) {(0x000B << 16)|(_SapId),0,0,{0xC0,0,0,0,0,0,0,0x46}}
+  #endif /* SVCID_NETWARE */
+
+  #define SVCID_FILE_SERVER SVCID_NETWARE(0x4)
+
+#endif
 
 #if P_GQOS
   #include <qossp.h>

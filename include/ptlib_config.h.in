@@ -58,7 +58,7 @@
 #undef    P_UNKNOWN_OS
 
 // Windows API version for compile
-#if !defined(_WIN32_WCE) && !defined(WINVER)
+#if !defined(WINVER)
   #undef    WINVER
 #endif
 
@@ -263,12 +263,10 @@
 
 #endif //P_ANDROID
 
-#ifndef _WIN32_WCE
-  #undef P_HAS_IPV6
-  #undef P_GQOS
-  #undef P_QWAVE
-  #undef P_QWAVE_DSCP
-#endif //  _WIN32_WCE
+#undef P_HAS_IPV6
+#undef P_GQOS
+#undef P_QWAVE
+#undef P_QWAVE_DSCP
 
 
 /////////////////////////////////////////////////
@@ -395,11 +393,9 @@
 #undef P_OPENSSL
 #undef P_SSL_WIN64
 #undef P_SSL_WIN32
-#undef P_SSL_WINCE
 
-#if (defined(P_SSL_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_SSL_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_SSL_WINCE)                      &&  defined(_WIN32_WCE)) || \
+#if (defined(P_SSL_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_SSL_WIN32) && !defined(P_64BIT)) || \
     P_OPENSSL
   #define P_SSL 1
 #endif
@@ -538,24 +534,15 @@
 #undef P_EXPAT_WIN64
 #undef P_EXPAT_LIBRARY_W32_DEBUG
 #undef P_EXPAT_LIBRARY_W32_RELEASE
-#undef P_EXPAT_LIBRARY_WM5_DEBUG
-#undef P_EXPAT_LIBRARY_WM5_RELEASE
-#undef P_EXPAT_LIBRARY_WM6_DEBUG
-#undef P_EXPAT_LIBRARY_WM6_RELEASE
 #undef P_EXPAT_LIBRARY_W64_DEBUG
 #undef P_EXPAT_LIBRARY_W64_RELEASE
 
-#if (defined(P_EXPAT_WIN64)                 &&  defined(P_64BIT)                        ) || \
-    (defined(P_EXPAT_WIN32)                 && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_EXPAT_WINCE)                                      &&  defined(_WIN32_WCE)) || \
-    ((defined(P_EXPAT_LIBRARY_W64_DEBUG)                                                  || \
-      defined(P_EXPAT_LIBRARY_W64_RELEASE)) &&  defined(P_64BIT))                         || \
-    ((defined(P_EXPAT_LIBRARY_W32_DEBUG)                                                  || \
-      defined(P_EXPAT_LIBRARY_W32_RELEASE)) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    ((defined(P_EXPAT_LIBRARY_WM5_DEBUG)                                                  || \
-      defined(P_EXPAT_LIBRARY_WM5_RELEASE))                      &&  defined(_WIN32_WCE)) || \
-    ((defined(P_EXPAT_LIBRARY_WM6_DEBUG)                                                  || \
-      defined(P_EXPAT_LIBRARY_WM6_RELEASE))                      &&  defined(_WIN32_WCE))
+#if (defined(P_EXPAT_WIN64)                 &&  defined(P_64BIT)) || \
+    (defined(P_EXPAT_WIN32)                 && !defined(P_64BIT)) || \
+    ((defined(P_EXPAT_LIBRARY_W64_DEBUG)                          || \
+      defined(P_EXPAT_LIBRARY_W64_RELEASE)) &&  defined(P_64BIT)) || \
+    ((defined(P_EXPAT_LIBRARY_W32_DEBUG)                          || \
+      defined(P_EXPAT_LIBRARY_W32_RELEASE)) && !defined(P_64BIT))
   #define P_EXPAT 1
 #endif
 
@@ -577,23 +564,11 @@
     #else
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W64_RELEASE
     #endif
-  #elif !defined(_WIN32_WCE)
+  #else
     #if defined(_DEBUG)
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W32_DEBUG
     #else
       #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_W32_RELEASE
-    #endif
-  #elif _WIN32_WCE < 0x502
-    #if defined(_DEBUG)
-      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM5_DEBUG
-    #else
-      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM5_RELEASE
-    #endif
-  #else
-    #if defined(_DEBUG)
-      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM6_DEBUG
-    #else
-      #define P_EXPAT_LIBRARY P_EXPAT_LIBRARY_WM6_RELEASE
     #endif
   #endif
 #endif
@@ -630,12 +605,10 @@
   #undef P_LUA
   #undef P_LUA_WIN64
   #undef P_LUA_WIN32
-  #undef P_LUA_WINCE
 #endif
 
-#if (defined(P_LUA_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_LUA_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_LUA_WINCE)                      &&  defined(_WIN32_WCE))
+#if (defined(P_LUA_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_LUA_WIN32) && !defined(P_64BIT))
   #define P_LUA 1
 #endif
 
@@ -742,12 +715,10 @@
 #undef P_SASL
 #undef P_SASL_WIN64
 #undef P_SASL_WIN32
-#undef P_SASL_WINCE
 #undef P_HAS_SASL_SASL_H 
 
-#if (defined(P_SASL_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_SASL_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_SASL_WINCE)                      &&  defined(_WIN32_WCE))
+#if (defined(P_SASL_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_SASL_WIN32) && !defined(P_64BIT))
   #define P_SASL 1
 #endif
 
@@ -770,11 +741,9 @@
 #undef P_OPENLDAP
 #undef P_LDAP_WIN64
 #undef P_LDAP_WIN32
-#undef P_LDAP_WINCE
 
-#if (defined(P_LDAP_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_LDAP_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_LDAP_WINCE)                      &&  defined(_WIN32_WCE)) || \
+#if (defined(P_LDAP_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_LDAP_WIN32) && !defined(P_64BIT)) || \
              P_OPENLDAP
   #define P_LDAP 1
 #endif
@@ -801,10 +770,8 @@
 // DNS resolver
 //
 
-#ifndef _WIN32_WCE
-  #undef P_DNS_RESOLVER 
-  #undef P_HAS_RES_NINIT
-#endif
+#undef P_DNS_RESOLVER 
+#undef P_HAS_RES_NINIT
 
 
 /////////////////////////////////////////////////
@@ -822,9 +789,7 @@
 // SAPI speech API (Windows only)
 //
 
-#ifndef _WIN32_WCE
-  #undef P_SAPI
-#endif
+#undef P_SAPI
 
 
 /////////////////////////////////////////////////
@@ -865,9 +830,7 @@
 //
 
 #if P_VIDEO
-  #ifndef _WIN32_WCE
-    #undef P_APPSHARE
-  #endif
+  #undef P_APPSHARE
 #endif
 
 
@@ -910,7 +873,7 @@
   #endif
 #endif
 
-#if (defined(P_FFMPEG_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
+#if (defined(P_FFMPEG_WIN32) && !defined(P_64BIT))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
     #define P_FFMPEG_LIBDIR "@FFMPEG_WIN32_DIR@/lib/"
@@ -966,7 +929,7 @@
   #endif
 #endif
 
-#if (defined(P_FFMPEG_WINBUILDS_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
+#if (defined(P_FFMPEG_WINBUILDS_WIN32) && !defined(P_64BIT))
   #define P_FFMPEG 1
   #if defined(_MSC_VER)
     #define P_FFMPEG_LIBDIR "@FFMPEG_WINBUILDS_WIN64_DIR@/lib64/"
@@ -1040,8 +1003,8 @@
 #undef P_LIBJPEG_WIN32
 #undef P_LIBJPEG_WIN64
 
-#if (defined(P_LIBJPEG_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_LIBJPEG_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE))
+#if (defined(P_LIBJPEG_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_LIBJPEG_WIN32) && !defined(P_64BIT))
   #define P_LIBJPEG 1
 #endif
 
@@ -1083,8 +1046,7 @@
 // DirectSound Support (Windows only)
 //
 
-#undef P_DIRECTSOUND_WINCE
-#if P_AUDIO && !defined(_WIN32_WCE) && !defined(P_DIRECTSOUND_WINCE) && defined(_MSC_VER)
+#if P_AUDIO
   #undef P_DIRECTSOUND
   #undef P_DIRECTSOUND_DXERR_H
   #undef P_DIRECTSOUND_LIB
@@ -1100,20 +1062,11 @@
 
   #if defined(_MSC_VER)
 
-    #ifdef _WIN32_WCE
-
-      #undef P_VFW_CAPTURE
-      #define P_DIRECTSHOW 1
-
-    #else // _WIN32_WCE
-
-      #define P_VFW_CAPTURE 1
-      #undef P_DIRECTSHOW
-       #if WINVER < 0x502
-          #undef P_DIRECTSHOW_QEDIT_H
-       #endif
-
-    #endif // _WIN32_WCE
+    #define P_VFW_CAPTURE 1
+    #undef P_DIRECTSHOW
+      #if WINVER < 0x502
+        #undef P_DIRECTSHOW_QEDIT_H
+      #endif
 
   #else /* defined(_MSC_VER)*/
 
@@ -1146,12 +1099,10 @@
 #undef P_GSTREAMER
 #undef P_GSTREAMER_WIN64
 #undef P_GSTREAMER_WIN32
-#undef P_GSTREAMER_WINCE
 #undef P_GSTREAMER_1_0_API
 
-#if (defined(P_GSTREAMER_WIN64) &&  defined(P_64BIT)                        ) || \
-    (defined(P_GSTREAMER_WIN32) && !defined(P_64BIT) && !defined(_WIN32_WCE)) || \
-    (defined(P_GSTREAMER_WINCE)                      &&  defined(_WIN32_WCE))
+#if (defined(P_GSTREAMER_WIN64) &&  defined(P_64BIT)) || \
+    (defined(P_GSTREAMER_WIN32) && !defined(P_64BIT))
   #define P_GSTREAMER 1
 #endif
 
@@ -1538,16 +1489,10 @@
 // COM/DCOM Support (Windows only)
 //
 
-#if defined(_WIN32) || (_WIN32_WCE > 0x500)
+#if defined(_WIN32)
 
   #if defined(_WIN32)
     #define _WIN32_DCOM 1
-  #endif
-
-  #if defined(_WIN32_WCE) && !defined(_CE_DCOM)
-    #ifndef _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA
-      #define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA  1
-    #endif
   #endif
 
   #define P_WIN_COM

@@ -341,13 +341,8 @@ PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PD
   if (
       (dnsRecord->Flags.S.Section == DnsSectionAnswer) && 
       (dnsRecord->wType == DNS_TYPE_SRV) &&
-#ifndef _WIN32_WCE
       (strlen(dnsRecord->Data.SRV.pNameTarget) > 0) &&
       (strcmp(dnsRecord->Data.SRV.pNameTarget, ".") != 0)
-#else
-      (wcslen(dnsRecord->Data.SRV.pNameTarget) > 0) &&
-      (wcscmp(dnsRecord->Data.SRV.pNameTarget, L".") != 0)
-#endif
       ) {
     record = new SRVRecord();
     record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
@@ -620,11 +615,7 @@ PDNS::MXRecord * PDNS::MXRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS
   if (
       (dnsRecord->Flags.S.Section == DnsSectionAnswer) &&
       (dnsRecord->wType == DNS_TYPE_MX) &&
-#ifndef _WIN32_WCE
       (strlen(dnsRecord->Data.MX.pNameExchange) > 0)
-#else
-      (wcslen(dnsRecord->Data.MX.pNameExchange) > 0)
-#endif
      ) {
     record = new MXRecord();
     record->hostName   = PString(dnsRecord->Data.MX.pNameExchange);

@@ -339,11 +339,7 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 
   hostname = host_info->h_name;
   if (host_info->h_addr != NULL)
-#ifndef _WIN32_WCE
     address = *(DWORD *)host_info->h_addr;
-#else
-    address = PIPSocket::Address(host_info->h_length, (const BYTE *)host_info->h_addr);
-#endif
   aliases.AppendString(host_info->h_name);
 
   PINDEX i;
@@ -351,11 +347,7 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
     aliases.AppendString(host_info->h_aliases[i]);
 
   for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
-#ifndef _WIN32_WCE
     PIPSocket::Address ip(*(DWORD *)host_info->h_addr_list[i]);
-#else
-    PIPSocket::Address ip(host_info->h_length, (const BYTE *)host_info->h_addr_list[i]);
-#endif
     aliases.AppendString(ip.AsString());
   }
 

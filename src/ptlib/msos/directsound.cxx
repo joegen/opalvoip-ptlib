@@ -67,15 +67,6 @@ typedef HRESULT (STDAPICALLTYPE *LPFNDLLGETCLASSOBJECT )(REFCLSID, REFIID, LPVOI
 #define FACILITY_WAVEIN  100
 #define FACILITY_WAVEOUT 101
 
-#ifdef _WIN32_WCE
-  #define IID_IDirectSoundBuffer8 IID_IDirectSoundBuffer
-  #define IID_IDirectSoundCaptureBuffer8 IID_IDirectSoundCaptureBuffer
-  DEFINE_GUID(DSDEVID_DefaultPlayback, 0xdef00000, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-  DEFINE_GUID(DSDEVID_DefaultCapture, 0xdef00001, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-  DEFINE_GUID(DSDEVID_DefaultVoicePlayback, 0xdef00002, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-  DEFINE_GUID(DSDEVID_DefaultVoiceCapture, 0xdef00003, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
-#endif
-
 
 /* Instantiate the PWLIBsound plugin */ 
 PCREATE_SOUND_PLUGIN(DirectSound, PSoundChannelDirectSound)

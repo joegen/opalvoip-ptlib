@@ -1723,11 +1723,7 @@ void PVideoOutputDevice_Window::Draw(HDC hDC)
         h = rect.bottom;
       }
 
-#ifdef _WIN32_WCE
-      SetStretchBltMode(hDC, COLORONCOLOR);
-#else
       SetStretchBltMode(hDC, STRETCH_DELETESCANS);
-#endif
       result = StretchDIBits(hDC,
                              x, y, w, h,
                              0, 0, imageWidth, imageHeight,
@@ -1788,11 +1784,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 void PVideoOutputDevice_Window::CreateDisplayWindow()
 {
-#ifndef _WIN32_WCE
   static char const wndClassName[] = "PVideoOutputDevice_Window";
-#else
-  static LPCWSTR const wndClassName = L"PVideoOutputDevice_Window";
-#endif
 
   static bool needRegistration = true;
   if (needRegistration) {

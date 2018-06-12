@@ -84,11 +84,11 @@
     #define WINVER 0x0500
   #endif
 
-  #if !defined(_WIN32_WINNT) && !defined(_WIN32_WCE)
+  #if !defined(_WIN32_WINNT)
     #define _WIN32_WINNT WINVER
   #endif
 
-  #if !defined(_WIN32_WCE) && defined(_WIN32_WINNT) && (_WIN32_WINNT == 0x0500) && P_HAS_IPV6 && !defined(NTDDI_VERSION)
+  #if defined(_WIN32_WINNT) && (_WIN32_WINNT == 0x0500) && P_HAS_IPV6 && !defined(NTDDI_VERSION)
     #define NTDDI_VERSION NTDDI_WIN2KSP1
   #endif
 
@@ -177,17 +177,13 @@ typedef uint64_t PUInt64;
 #endif
 
 
-#ifndef _WIN32_WCE 
-
-  #if _MSC_VER>=1400
-    #define strcasecmp(s1,s2) _stricmp(s1,s2)
-    #define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
-  #elif defined(_MSC_VER)
-    #define strcasecmp(s1,s2) stricmp(s1,s2)
-    #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
-  #endif
-
-#endif // !_WIN32_WCE 
+#if _MSC_VER>=1400
+  #define strcasecmp(s1,s2) _stricmp(s1,s2)
+  #define strncasecmp(s1,s2,n) _strnicmp(s1,s2,n)
+#elif defined(_MSC_VER)
+  #define strcasecmp(s1,s2) stricmp(s1,s2)
+  #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
+#endif
 
 
 class PWin32Overlapped : public OVERLAPPED
@@ -256,13 +252,8 @@ class RegistryKey
     HKEY key;
 };
 
-#ifndef _WIN32_WCE
-  #define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
+#define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
     int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-#else
-  #define PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow) \
-    int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
-#endif
 extern "C" PDEFINE_WINMAIN(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
 #if defined(_MSC_VER) && !defined(_WIN32)
@@ -294,38 +285,20 @@ typedef DWORD PProcessIdentifier;
 #include <mmsystem.h>
 
 
-#ifndef _WIN32_WCE
-
-  #ifdef _MSC_VER
-    #include <crtdbg.h>
-  #endif
-  #include <sys/types.h>
-  #include <sys/stat.h>
-  #include <errno.h>
-  #include <io.h>
-  #include <fcntl.h>
-  #include <direct.h>
-  #include <time.h>
-
-  #include <signal.h>
-  typedef void (__cdecl * PRunTimeSignalHandler)(int);
-  #define SIGRTMAX NSIG
-#else
-
-  #include <ptlib/wm/stdlibx.h>
-  #include <ptlib/wm/errno.h>
-  #include <ptlib/wm/sys/types.h>
-  #if _WIN32_WCE < 0x500
-    #include <ptlib/wm/time.h>
-  #else
-    #include <time.h>
-  #endif
-
-#ifndef MB_TASKMODAL
-  #define MB_TASKMODAL MB_APPLMODAL
+#ifdef _MSC_VER
+  #include <crtdbg.h>
 #endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <io.h>
+#include <fcntl.h>
+#include <direct.h>
+#include <time.h>
 
-#endif
+#include <signal.h>
+typedef void (__cdecl * PRunTimeSignalHandler)(int);
+#define SIGRTMAX NSIG
 
 // used by various modules to disable the winsock2 include to avoid header file problems
 #define _WINSOCK_DEPRECATED_NO_WARNINGS 1

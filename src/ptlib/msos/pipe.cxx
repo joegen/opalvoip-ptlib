@@ -40,12 +40,6 @@ PPipeChannel::PPipeChannel()
 }
 
 
-#ifdef _WIN32_WCE
-PBoolean PPipeChannel::PlatformOpen(const PString &, const PStringArray &, OpenMode, PBoolean, PBoolean, const PStringToString *)
-{
-  return false;
-}
-#else
 PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
                                 const PStringArray & argumentList,
                                 OpenMode mode,
@@ -159,8 +153,6 @@ PBoolean PPipeChannel::PlatformOpen(const PString & subProgram,
 
   return IsOpen();
 }
-#endif // !_WIN32_WCE
-
 
 
 PPipeChannel::~PPipeChannel()
@@ -229,7 +221,6 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 
   DWORD count = 0;
 
-#ifndef _WIN32_WCE
   // Cannot use overlapped I/O with anonymous pipe.
   // So have all this hideous code. :-(
 
@@ -270,7 +261,6 @@ PBoolean PPipeChannel::Read(void * buffer, PINDEX len)
 
   if (len > (PINDEX)count)
     len = count;
-#endif
 
   if (!ConvertOSError(ReadFile(m_hFromChild, buffer, len, &count, NULL) ? 0 : -2, LastReadError))
     return false;
@@ -312,12 +302,6 @@ PBoolean PPipeChannel::Execute()
 }
 
 
-#ifdef _WIN32_WCE
-PBoolean PPipeChannel::ReadStandardError(PString &, PBoolean)
-{
-  return false;
-}
-#else
 PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
 {
   DWORD available, bytesRead;
@@ -348,7 +332,6 @@ PBoolean PPipeChannel::ReadStandardError(PString & errors, PBoolean wait)
                         errors.GetPointerAndSetLength(available+1)+1, available,
                         &bytesRead, NULL) ? 0 : -2, LastReadError);
 }
-#endif // !_WIN32_WCE
 
 
 int PPipeChannel::Run(const PString & command, PString & output, bool includeStderr, const PTimeInterval & timeout)

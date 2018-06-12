@@ -59,16 +59,6 @@ extern "C" {\
        exit( instance.InternalMain() ); \
      } \
 }
-#elif defined(_WIN32_WCE)
-#define PCREATE_PROCESS(cls) \
-  PDEFINE_WINMAIN(hInstance, , lpCmdLine, ) \
-    { \
-      cls *pInstance = new cls(); \
-      pInstance->GetArguments().SetArgs(lpCmdLine); \
-      int terminationValue = pInstance->InternalMain(hInstance); \
-      delete pInstance; \
-      return terminationValue; \
-    }
 #else
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char * argv[]) \

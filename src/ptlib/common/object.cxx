@@ -40,7 +40,7 @@
 #include <limits>
 #ifdef _WIN32
 #include <ptlib/msos/ptlib/debstrm.h>
-#if defined(_MSC_VER) && !defined(_WIN32_WCE)
+#if defined(_MSC_VER)
 #include <crtdbg.h>
 #endif
 #elif defined(__NUCLEUS_PLUS__)
@@ -1013,7 +1013,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #else // PMEMORY_CHECK
 
-#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_WIN32_WCE)
+#if defined(_MSC_VER) && defined(_DEBUG)
 
 static _CRT_DUMP_CLIENT pfnOldCrtDumpClient;
 static bool hadCrtDumpLeak = false;
@@ -1157,7 +1157,7 @@ void PMemoryHeap::SetAllocationBreakpoint(alloc_t objectNumber)
 
 #else // defined(_MSC_VER) && defined(_DEBUG)
 
-#if !defined(P_VXWORKS) && !defined(_WIN32_WCE) && !defined(P_ANDROID)
+#if !defined(P_VXWORKS) && !defined(P_ANDROID)
 
 #if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new[](size_t nSize) throw (std::bad_alloc)

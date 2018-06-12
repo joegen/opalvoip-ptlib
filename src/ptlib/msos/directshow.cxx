@@ -50,149 +50,110 @@
 #define PTraceModule() "DShow"
 
 
-#ifdef _WIN32_WCE
+/* workaround a compile error with mingw-w64 on sprintf member function
+    below. Even though the member function is not the same thing as the
+    global function which _is_ deprecated.
 
-  static const GUID MEDIASUBTYPE_IYUV = { 0x56555949, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 };
-  #define CLSID_CaptureGraphBuilder2 CLSID_CaptureGraphBuilder
+    Also applies to a warning in MSVC.
 
-  #ifdef _DEBUG
-    /* Only the release version is provided as a .lib file, so we need to
-       make sure that the compilation does NOT have the extra fields/functions
-       that are added when DEBUG version. */
-    #undef _DEBUG
-    #include <streams.h>
-    #define _DEBUG
-  #else
-    #include <streams.h>
-  #endif
+    Need to define this before dshow.h inclusion.
+  */
+#define STRSAFE_NO_DEPRECATE
 
-  #include <dshow.h>
+#include <dshow.h>
+#include <ks.h>
+#include <ksmedia.h>
 
-  class PSampleGrabber : public CBaseVideoRenderer
-  {
-    public:
-      PSampleGrabber(HRESULT * hr);
 
-      virtual HRESULT CheckMediaType(const CMediaType *media);
-      virtual HRESULT ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop);
-      virtual HRESULT DoRenderSample(IMediaSample *sample);
+#ifdef P_DIRECTSHOW_QEDIT_H
 
-      PDECLARE_MUTEX(m_sampleMutex);
-      long   m_sampleSize;
-      BYTE * m_sampleData;
+  // Use this to avoid compile error in Qedit.h with DirectX SDK
+  #define __IDxtCompositor_INTERFACE_DEFINED__
+  #define __IDxtAlphaSetter_INTERFACE_DEFINED__
+  #define __IDxtJpeg_INTERFACE_DEFINED__
+  #define __IDxtKey_INTERFACE_DEFINED__
+
+  #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
+
+  #include <rpcsal.h>
+  #include P_DIRECTSHOW_QEDIT_H
+
+#else
+
+  extern "C" {
+    extern const CLSID CLSID_SampleGrabber;
+    extern const IID IID_ISampleGrabber;
+    extern const IID IID_ISampleGrabberCB;
+    extern const CLSID CLSID_NullRenderer;
+    extern const CLSID CLSID_CameraName;
   };
 
-  #pragma comment(lib, "strmbase.lib")
-  #pragma comment(lib, "mmtimer.lib")
-  #pragma comment(lib, "ddraw.lib")
 
-#else // _WIN32_WCE
-
-  /* workaround a compile error with mingw-w64 on sprintf member function
-     below. Even though the member function is not the same thing as the
-     global function which _is_ deprecated.
-
-     Also applies to a warning in MSVC.
-
-     Need to define this before dshow.h inclusion.
-   */
-  #define STRSAFE_NO_DEPRECATE
-
-  #include <dshow.h>
-  #include <ks.h>
-  #include <ksmedia.h>
-
-
-  #ifdef P_DIRECTSHOW_QEDIT_H
-
-    // Use this to avoid compile error in Qedit.h with DirectX SDK
-    #define __IDxtCompositor_INTERFACE_DEFINED__
-    #define __IDxtAlphaSetter_INTERFACE_DEFINED__
-    #define __IDxtJpeg_INTERFACE_DEFINED__
-    #define __IDxtKey_INTERFACE_DEFINED__
-
-    #pragma include_alias("dxtrans.h", "ptlib/msos/dxtrans.h")
-
-    #include <rpcsal.h>
-    #include P_DIRECTSHOW_QEDIT_H
-
-  #else
-
-    extern "C" {
-      extern const CLSID CLSID_SampleGrabber;
-      extern const IID IID_ISampleGrabber;
-      extern const IID IID_ISampleGrabberCB;
-      extern const CLSID CLSID_NullRenderer;
-      extern const CLSID CLSID_CameraName;
-    };
-
-
-    #undef INTERFACE
-    #define INTERFACE ISampleGrabberCB
-    DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
-    {
-      STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
-      STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
-    };
-
-    #undef INTERFACE
-    #define INTERFACE ISampleGrabber
-
-    DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
-    {
-      STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
-      STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-      STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
-      STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
-      STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
-      STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
-      STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
-    };
-
-  #endif // P_DIRECTSHOW_QEDIT_H
-
-  #ifdef _MSC_VER
-    #pragma comment(lib, "quartz.lib")
-  #endif
-
-  class PSampleGrabberCB : public ISampleGrabberCB 
+  #undef INTERFACE
+  #define INTERFACE ISampleGrabberCB
+  DECLARE_INTERFACE_(ISampleGrabberCB, IUnknown)
   {
-    private:
-      PBYTEArray m_buffer;
-      bool       m_stopped;
-      PINDEX     m_actualSize;
-      PDECLARE_MUTEX(m_mutex);
-      PSyncPoint m_frameReady;
-      PINDEX     m_skipInitialGrabs;
-#if PTRACING
-      unsigned     m_totalFrames;
-      PSimpleTimer m_totalTime;
+    STDMETHOD_(HRESULT, SampleCB)(THIS_ double, IMediaSample *) PURE;
+    STDMETHOD_(HRESULT, BufferCB)(THIS_ double, BYTE *, long) PURE;
+  };
+
+  #undef INTERFACE
+  #define INTERFACE ISampleGrabber
+
+  DECLARE_INTERFACE_(ISampleGrabber,IUnknown)
+  {
+    STDMETHOD_(HRESULT, SetOneShot)(THIS_ BOOL) PURE;
+    STDMETHOD_(HRESULT, SetMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+    STDMETHOD_(HRESULT, GetConnectedMediaType)(THIS_ AM_MEDIA_TYPE *) PURE;
+    STDMETHOD_(HRESULT, SetBufferSamples)(THIS_ BOOL) PURE;
+    STDMETHOD_(HRESULT, GetCurrentBuffer)(THIS_ long *, long *) PURE;
+    STDMETHOD_(HRESULT, GetCurrentSample)(THIS_ IMediaSample *) PURE;
+    STDMETHOD_(HRESULT, SetCallback)(THIS_ ISampleGrabberCB *, long) PURE;
+  };
+
+#endif // P_DIRECTSHOW_QEDIT_H
+
+#ifdef _MSC_VER
+  #pragma comment(lib, "quartz.lib")
 #endif
 
-    public:
-      PSampleGrabberCB();
-      ~PSampleGrabberCB();
+class PSampleGrabberCB : public ISampleGrabberCB 
+{
+  private:
+    PBYTEArray m_buffer;
+    bool       m_stopped;
+    PINDEX     m_actualSize;
+    PDECLARE_MUTEX(m_mutex);
+    PSyncPoint m_frameReady;
+    PINDEX     m_skipInitialGrabs;
+#if PTRACING
+    unsigned     m_totalFrames;
+    PSimpleTimer m_totalTime;
+#endif
 
-      void Start();
-      void Stop();
+  public:
+    PSampleGrabberCB();
+    ~PSampleGrabberCB();
 
-      // Fake out any COM ref counting
-      STDMETHODIMP_(ULONG) AddRef() { return 2; }
-      STDMETHODIMP_(ULONG) Release() { return 1; }
+    void Start();
+    void Stop();
 
-      // Fake out any COM QI'ing
-      STDMETHODIMP QueryInterface(REFIID riid, void ** ppv);
+    // Fake out any COM ref counting
+    STDMETHODIMP_(ULONG) AddRef() { return 2; }
+    STDMETHODIMP_(ULONG) Release() { return 1; }
 
-      // We don't implement this one
-      STDMETHODIMP SampleCB( double /*SampleTime*/, IMediaSample * /*pSample*/) { return 0; }
+    // Fake out any COM QI'ing
+    STDMETHODIMP QueryInterface(REFIID riid, void ** ppv);
 
-      // The sample grabber is calling us back on its deliver thread.
-      STDMETHODIMP BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size);
+    // We don't implement this one
+    STDMETHODIMP SampleCB( double /*SampleTime*/, IMediaSample * /*pSample*/) { return 0; }
 
-      bool GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize);
-  };
+    // The sample grabber is calling us back on its deliver thread.
+    STDMETHODIMP BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size);
 
-#endif // _WIN32_WCE
+    bool GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize);
+};
+
 
 #ifdef _MSC_VER
   #pragma comment(lib, "strmiids.lib")
@@ -220,9 +181,7 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     virtual PStringArray GetDeviceNames() const;
     static PBoolean GetInputDeviceCapabilities(const PString & deviceName, Capabilities * capabilities);
     virtual bool GetDeviceCapabilities(Capabilities * capabilities) const;
-#ifndef _WIN32_WCE
     virtual bool SetControl(PVideoControlInfo::Types type, int value, ControlMode mode);
-#endif
 
     virtual PBoolean Open(const PString & deviceName, PBoolean startImmediate);
     virtual PBoolean IsOpen();
@@ -257,13 +216,9 @@ class PVideoInputDevice_DirectShow : public PVideoInputDevice
     CComPtr<IPin>                  m_pCameraOutPin; // Camera output out -> Transform Input pin
     GUID                           m_selectedGUID;
 
-#ifdef _WIN32_WCE
-    PSampleGrabber               * m_pSampleGrabber;
-#else
     CComPtr<ISampleGrabber>        m_pSampleGrabber;
     CComPtr<PSampleGrabberCB>      m_pSampleGrabberCB;
     CComPtr<IAMCameraControl>      m_pCameraControls;
-#endif
     CComPtr<IBaseFilter>           m_pNullRenderer;
     CComPtr<IMediaControl>         m_pMediaControl;
 
@@ -368,9 +323,6 @@ class MediaTypePtr
 PVideoInputDevice_DirectShow::PVideoInputDevice_DirectShow()
   : m_maxFrameBytes(0)
   , m_fixedSizeFrames(true)
-#ifdef _WIN32_WCE
-  , m_pSampleGrabber(NULL)
-#endif
 {
   PTRACE(5, "Constructed " << this);
 
@@ -447,12 +399,10 @@ bool PVideoInputDevice_DirectShow::GetDeviceCapabilities(Capabilities * caps) co
     caps->m_frameSizes.push_back(*it);
   }
 
-#ifndef _WIN32_WCE
   for (PVideoControlInfo::Types type = PVideoControlInfo::BeginTypes; type < PVideoControlInfo::EndTypes; ++type) {
     if (m_controlInfo[type].IsValid())
       caps->m_controls.push_back(m_controlInfo[type]);
   }
-#endif
 
   caps->m_brightness = GetAttributeCommon(VideoProcAmp_Brightness) >= 0;
   caps->m_contrast   = GetAttributeCommon(VideoProcAmp_Contrast) >= 0;
@@ -646,17 +596,10 @@ PBoolean PVideoInputDevice_DirectShow::Close()
   m_pGraphBuilder.Release(); 
 
   // Release filters
-#ifdef _WIN32_WCE
-  if (m_pSampleGrabber != NULL) {
-    m_pSampleGrabber->Release();
-    delete m_pSampleGrabber;
-  }
-#else
   m_pNullRenderer.Release();
   m_pCameraControls.Release();
   m_pSampleGrabber.Release();
   delete m_pSampleGrabberCB.Detach();
-#endif
 
   m_lastFrameMutex.Signal();
 
@@ -899,238 +842,6 @@ PBoolean PVideoInputDevice_DirectShow::SetAttributes(const Attributes & attrib)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#ifdef _WIN32_WCE
-
-class CPropertyBag : public IPropertyBag
-{  
-    struct VAR_LIST
-    {
-      VARIANT var;
-      VAR_LIST *pNext;
-      BSTR pBSTRName;
-    }  * m_pVarList;
-    LONG m_refCount;
-
-  public:
-    CPropertyBag()
-       : m_refCount(1), m_pVarList(0)
-    {
-    }
-
-    ~CPropertyBag()
-    {
-      VAR_LIST *pTemp = m_pVarList;
-      while (pTemp != NULL) {
-        VariantClear(&pTemp->var);
-        SysFreeString(pTemp->pBSTRName);
-
-        VAR_LIST * pDel = pTemp;
-        pTemp = pTemp->pNext;
-        delete pDel;
-      }
-    }
-
-    HRESULT Read(LPCOLESTR pszPropName, VARIANT *pVar, IErrorLog *pErrorLog)
-    {
-      VAR_LIST *pTemp = m_pVarList;
-      while (pTemp != NULL) {
-        if (0 == wcscmp(pszPropName, pTemp->pBSTRName))
-          return VariantCopy(pVar, &pTemp->var);
-        pTemp = pTemp->pNext;
-      }
-
-      return S_FALSE;
-    }
-
-    HRESULT Write(LPCOLESTR pszPropName, VARIANT *pVar)
-    {
-      VAR_LIST *pTemp = new VAR_LIST();
-      if (pTemp == NULL)
-        return E_OUTOFMEMORY;
-
-      pTemp->pNext = m_pVarList;
-      m_pVarList = pTemp;
-
-      pTemp->pBSTRName = SysAllocString(pszPropName);
-
-      VariantInit(&pTemp->var);
-      return VariantCopy(&pTemp->var, pVar);
-    }
-
-    ULONG AddRef()
-    {
-      return InterlockedIncrement(&m_refCount);
-    }
-
-    ULONG Release()
-    {
-      ULONG ret = InterlockedDecrement(&m_refCount);
-      if (ret == 0)
-        delete this; 
-      return ret;
-    }
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv)
-    {
-      if (ppv == NULL) 
-        return E_POINTER;
-
-      if (riid != IID_IPropertyBag) {
-        *ppv = 0;
-        return E_NOINTERFACE;
-      }
-
-      *ppv = static_cast<IPropertyBag*>(this);	
-      AddRef();
-      return S_OK;
-    }
-};
-
-
-PStringArray PVideoInputDevice_DirectShow::GetDeviceNames() const
-{
-  PStringArray devices;
-
-  GUID guidCamera = { 0xCB998A05, 0x122C, 0x4166, 0x84, 0x6A, 0x93, 0x3E, 0x4D, 0x7E, 0x3C, 0x86 };
-  // Note about the above: The driver material doesn't ship as part of the SDK. This GUID is hardcoded
-  // here to be able to enumerate the camera drivers and pass the name of the driver to the video capture filter
-
-  DEVMGR_DEVICE_INFORMATION devInfo;
-  devInfo.dwSize = sizeof(devInfo);
-
-  HANDLE handle = FindFirstDevice(DeviceSearchByGuid, &guidCamera, &devInfo);
-  if (handle == NULL) {
-    PTRACE(1, "FindFirstDevice failed, error=" << ::GetLastError());
-    return devices;
-  }
-
-  do {
-    if (devInfo.hDevice != NULL) {
-      PString devName(devInfo.szLegacyName);
-      devices.AppendString(devName);
-      PTRACE(3, "Found capture device \""<< devName <<'"');
-    }
-  } while (FindNextDevice(handle, &devInfo));
-
-  FindClose(handle);
-
-  PTRACE_IF(2, devices.IsEmpty(), "No video capture devices available.");
-
-  return devices;
-}
-
-
-/* As WinCE does not have the ISampleGrabber component we have to fake it
-   using a custom renderer. */
-
-struct __declspec(  uuid("{71771540-2017-11cf-ae26-0020afd79767}")  ) CLSID_MySampleGrabber;
-
-
-PSampleGrabber::PSampleGrabber(HRESULT * hr)
-  : CBaseVideoRenderer(__uuidof(CLSID_MySampleGrabber), NAME("Frame Sample Grabber"), NULL, hr)
-  , m_sampleSize(0)
-  , m_sampleData(NULL)
-{
-}
-
-
-HRESULT PSampleGrabber::CheckMediaType(const CMediaType *media)
-{
-  return *media->FormatType() == FORMAT_VideoInfo && IsEqualGUID(*media->Type(), MEDIATYPE_Video) ? S_OK : E_FAIL;
-}
-
-
-HRESULT PSampleGrabber::ShouldDrawSampleNow(IMediaSample *sample, REFERENCE_TIME *start, REFERENCE_TIME *stop)
-{
-  return S_OK; // disable dropping of frames
-}
-
-
-HRESULT PSampleGrabber::DoRenderSample(IMediaSample *sample)
-{
-  m_sampleMutex.Wait();
-
-  m_sampleSize = sample->GetActualDataLength();
-  sample->GetPointer(&m_sampleData);
-
-  m_sampleMutex.Signal();
-
-  return  S_OK;
-}
-
-
-PINDEX PVideoInputDevice_DirectShow::GetCurrentBufferSize()
-{
-  return m_pSampleGrabber->m_sampleSize;
-}
-
-
-bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * pData)
-{
-  PWaitAndSignal mutex(m_pSampleGrabber->m_sampleMutex);
-
-  if (pData == NULL)
-    return false;
-
-  memcpy(pData, m_pSampleGrabber->m_sampleData, m_pSampleGrabber->m_sampleSize);
-  return true;
-}
-
-
-bool PVideoInputDevice_DirectShow::BindCaptureDevice(const PString & devName)
-{
-  // Create an instance of the video capture filter
-  PCOM_RETURN_ON_FAILED(CoCreateInstance(CLSID_VideoCapture,
-                                      NULL,
-                                      CLSCTX_INPROC,
-                                      IID_IBaseFilter,
-                                      (LPVOID *)&m_pCaptureFilter));
-
-  CComPtr<IPersistPropertyBag> pPropertyBag;
-  PCOM_RETURN_ON_FAILED(m_pCaptureFilter->QueryInterface(&pPropertyBag));
-
-  PComVariant varName;
-  varName.vt = VT_BSTR;
-  varName.bstrVal = ::SysAllocString(devName.AsUCS2());
-
-  CPropertyBag propBag;
-  PCOM_RETURN_ON_FAILED(propBag.Write(_T("VCapName"), &varName));
-  PCOM_RETURN_ON_FAILED(pPropertyBag->Load(&propBag, NULL));
-  return true;
-}
-
-
-bool PVideoInputDevice_DirectShow::PlatformOpen()
-{
-  HRESULT hr = S_OK;
-  PSampleGrabber * grabber = new PSampleGrabber(&hr);
-  if (FAILED(hr)) {
-    delete grabber;
-    return false;
-  }
-
-  m_pSampleGrabber = grabber;
-
-  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->AddFilter(dynamic_cast<IBaseFilter *>(grabber), L"Sampler"));
-
-  // Find the source's output pin and the renderer's input pin
-  CComPtr<IPin> pCapturePinOut;
-  PCOM_RETURN_ON_FAILED(m_pCaptureFilter->FindPin(L"Capture", &pCapturePinOut));
-
-  CComPtr<IPin> pGrabberPinIn;
-  PCOM_RETURN_ON_FAILED(m_pSampleGrabber->FindPin(L"In", &pGrabberPinIn));
-
-  // Connect these two filters pins
-  PCOM_RETURN_ON_FAILED(m_pGraphBuilder->Connect(pCapturePinOut, pGrabberPinIn));
-
-  return true;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-#else // _WIN32_WCE
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1559,5 +1270,4 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bu
   return false;
 }
 
-#endif  // _WIN32_WCE
 #endif  // P_DIRECTSHOW
