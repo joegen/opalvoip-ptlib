@@ -972,6 +972,12 @@ class PSSLChannel : public PIndirectChannel
       PString * error = NULL
     );
 
+    /**Set the Server Name Indication TLS extension.
+      */
+    bool SetServerNameIndication(
+      const PString & name   ///< For client, this is the server we are conneting to
+    );
+
     PSSLContext * GetContext() const { return m_context; }
 
     /**Get the internal SSL context structure.

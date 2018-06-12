@@ -2780,6 +2780,12 @@ long PSSLChannel::BioControl(int cmd, long num, void * /*ptr*/)
 }
 
 
+bool PSSLChannel::SetServerNameIndication(const PString & name)
+{
+  return m_ssl != NULL && SSL_set_tlsext_host_name(m_ssl, name.GetPointer());
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PSSLChannelDTLS::PSSLChannelDTLS(PSSLContext * context, bool autoDeleteContext)

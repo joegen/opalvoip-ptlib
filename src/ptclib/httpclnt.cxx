@@ -809,6 +809,7 @@ bool PHTTPClient::ConnectURL(const PURL & url)
       }
 
       ssl = new PSSLChannel(context, true);
+      ssl->SetServerNameIndication(host);
       if (ssl->Connect(tcp))
         break;
 
