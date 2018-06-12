@@ -1889,15 +1889,15 @@ static void TraceVerifyCallback(int ok, X509_STORE_CTX * ctx)
 
 static int VerifyCallback(int ok, X509_STORE_CTX * ctx)
 {
+  PSSLChannel::VerifyInfo info(ok, X509_STORE_CTX_get_current_cert(ctx), X509_STORE_CTX_get_error(ctx));
+
+  PSSLChannel * channel;
   SSL * ssl = reinterpret_cast<SSL *>(X509_STORE_CTX_get_app_data(ctx));
-  if (ssl != NULL) {
-    PSSLChannel * channel = reinterpret_cast<PSSLChannel *>(SSL_get_app_data(ssl));
-    if (channel != NULL)
-      ok = channel->OnVerify(ok, X509_STORE_CTX_get_current_cert(ctx));
-  }
+  if (ssl != NULL && (channel = reinterpret_cast<PSSLChannel *>(SSL_get_app_data(ssl))) != NULL)
+    channel->OnVerify(info);
 
   TraceVerifyCallback(ok, ctx);
-  return ok;
+  return info.m_ok;
 }
 
 
@@ -2596,6 +2596,11 @@ PBoolean PSSLChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group
   DWORD osError = 0;
   if (m_ssl != NULL && SSL_get_error(m_ssl, (int)libcReturnValue) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
     osError |= 0x80000000;
+    if (osError == 0x94090086) {
+      int certVerifyError = GetErrorNumber(LastGeneralError);
+      if ((certVerifyError & 0xc0000000) == 0xc0000000)
+        osError = certVerifyError;
+    }
     lastError = AccessDenied;
   }
 
@@ -2608,6 +2613,9 @@ PString PSSLChannel::GetErrorText(ErrorGroup group) const
   int err = GetErrorNumber(group);
   if ((err&0x80000000) == 0)
     return PIndirectChannel::GetErrorText(group);
+
+  if ((err & 0x40000000) != 0)
+    return X509_verify_cert_error_string(err&0x3fffffff);
 
   return PSSLError(err&0x7fffffff);
 }
@@ -2722,14 +2730,13 @@ void PSSLChannel::SetVerifyMode(VerifyMode mode, const VerifyNotifier & notifier
 }
 
 
-bool PSSLChannel::OnVerify(bool ok, const PSSLCertificate & peerCertificate)
+void PSSLChannel::OnVerify(VerifyInfo & info)
 {
-  if (m_verifyNotifier.IsNULL())
-    return ok;
+  if (!m_verifyNotifier.IsNULL())
+    m_verifyNotifier(*this, info);
 
-  VerifyInfo info(ok, peerCertificate);
-  m_verifyNotifier(*this, info);
-  return info.m_ok;
+  if (info.m_errorCode != 0)
+    SetErrorValues(AccessDenied, 0xc0000000 | info.m_errorCode, LastGeneralError);
 }
 
 
