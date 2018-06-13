@@ -824,6 +824,13 @@ bool PHTTPClient::ConnectURL(const PURL & url)
       --method;
     }
 
+    if (!ssl->CheckHostName(host)) {
+        lastResponseCode = TransportConnectError;
+        lastResponseInfo = ssl->GetErrorText();
+        delete ssl;
+        return false;
+    }
+
     if (!Open(ssl)) {
       lastResponseCode = TransportConnectError;
       lastResponseInfo = GetErrorText();

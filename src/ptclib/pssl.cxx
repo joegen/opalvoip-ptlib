@@ -840,6 +840,23 @@ PString PSSLCertificate::GetSubjectAltName() const
 }
 
 
+bool PSSLCertificate::CheckHostName(const PString & hostname, CheckHostFlags flags)
+{
+  int sslFlags = 0;
+  if (flags&CheckHostAlwaysUseSubject)
+    sslFlags |= X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT;
+  if (flags&CheckHostNoWildcards)
+    sslFlags |= X509_CHECK_FLAG_NO_WILDCARDS;
+  if (flags&CheckHostNoPartialWildcards)
+    sslFlags |= X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS;
+  if (flags&CheckHostMultiLabelWildcards)
+    sslFlags |= X509_CHECK_FLAG_MULTI_LABEL_WILDCARDS;
+  if (flags&CheckHostSingleLabelDomains)
+    sslFlags |= X509_CHECK_FLAG_SINGLE_LABEL_SUBDOMAINS;
+  return X509_check_host(m_certificate, hostname, hostname.GetLength(), sslFlags, NULL) > 0;
+}
+
+
 PObject::Comparison PSSLCertificate::X509_Name::Compare(const PObject & other) const
 {
   int cmp = X509_NAME_cmp(m_name, dynamic_cast<const X509_Name &>(other).m_name);
@@ -2614,6 +2631,9 @@ PString PSSLChannel::GetErrorText(ErrorGroup group) const
   if ((err&0x80000000) == 0)
     return PIndirectChannel::GetErrorText(group);
 
+  if (err == 0xe0000000)
+    return "Certificate subject invalid for host";
+
   if ((err & 0x40000000) != 0)
     return X509_verify_cert_error_string(err&0x3fffffff);
 
@@ -2758,7 +2778,10 @@ bool PSSLChannel::GetPeerCertificate(PSSLCertificate & certificate, PString * er
       *error = "Peer did not offer certificate";
   }
 
-  return (SSL_get_verify_mode(m_ssl)&SSL_VERIFY_FAIL_IF_NO_PEER_CERT) == 0;
+  if (err == X509_V_OK && (SSL_get_verify_mode(m_ssl)&SSL_VERIFY_FAIL_IF_NO_PEER_CERT) == 0)
+    return true;
+
+  return SetErrorValues(AccessDenied, 0xc0000000 | err, LastGeneralError);
 }
 
 
@@ -2790,6 +2813,22 @@ long PSSLChannel::BioControl(int cmd, long num, void * /*ptr*/)
 bool PSSLChannel::SetServerNameIndication(const PString & name)
 {
   return m_ssl != NULL && SSL_set_tlsext_host_name(m_ssl, name.GetPointer());
+}
+
+
+bool PSSLChannel::CheckHostName(const PString & hostname, PSSLCertificate::CheckHostFlags flags)
+{
+  if (SSL_get_verify_mode(m_ssl) == 0)
+    return true;
+
+  PSSLCertificate certificate;
+  if (!GetPeerCertificate(certificate))
+    return false;
+
+  if (certificate.CheckHostName(hostname, flags))
+    return true;
+
+  return SetErrorValues(AccessDenied, 0xe0000000, LastGeneralError);
 }
 
 

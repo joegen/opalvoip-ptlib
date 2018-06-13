@@ -358,6 +358,22 @@ class PSSLCertificate : public PObject
       */
     PString GetSubjectAltName() const;
 
+    P_DECLARE_BITWISE_ENUM(CheckHostFlags, 5, (
+      CheckHostNormalRules,
+      CheckHostAlwaysUseSubject,
+      CheckHostNoWildcards,
+      CheckHostNoPartialWildcards,
+      CheckHostMultiLabelWildcards,
+      CheckHostSingleLabelDomains
+    ));
+
+    /**Check the host name against the certificate.
+      */
+    bool CheckHostName(
+      const PString & hostname,
+      CheckHostFlags flags = CheckHostNormalRules
+    );
+
     virtual void PrintOn(ostream & strm) const { strm << GetSubjectName(); }
 
     typedef std::list<x509_st *> X509_Chain;
@@ -963,7 +979,7 @@ class PSSLChannel : public PIndirectChannel
 
     /**Get the peer certificate, if there is one.
        If SetVerifyMode() has been called with VerifyPeer then this will
-       return true if the remote does not offer a certiciate. If set to
+       return true if the remote does not offer a certificate. If set to
        VerifyPeerMandatory, then it will return false. In both cases it will
        return false if the certificate is offered but cannot be authenticated.
       */
@@ -976,6 +992,14 @@ class PSSLChannel : public PIndirectChannel
       */
     bool SetServerNameIndication(
       const PString & name   ///< For client, this is the server we are conneting to
+    );
+
+    /**Check the host name against the certificate.
+       Note if SetVerifyMode() is set to VerifyNone, this always returns true.
+      */
+    bool CheckHostName(
+      const PString & hostname,
+      PSSLCertificate::CheckHostFlags flags = PSSLCertificate::CheckHostNormalRules
     );
 
     PSSLContext * GetContext() const { return m_context; }
