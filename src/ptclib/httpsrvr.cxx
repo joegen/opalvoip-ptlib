@@ -1155,6 +1155,9 @@ PBoolean PWebSocket::Write(const void * buf, PINDEX len)
   if (CheckNotOpen())
     return false;
 
+  // Make sure WriteHeader and WriteMasked/Write of body are atomic
+  PWaitAndSignal lock(m_writeMutex);
+
   if (!m_client)
     return WriteHeader(m_binaryWrite ? BinaryFrame : TextFrame, m_fragmentingWrite, len, -1) && PIndirectChannel::Write(buf, len);
 

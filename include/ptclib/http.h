@@ -895,6 +895,7 @@ class PWebSocket : public PIndirectChannel
     bool     m_client;
     bool     m_fragmentingWrite;
     bool     m_binaryWrite;
+    PDECLARE_MUTEX(m_writeMutex);
 
     uint64_t m_remainingPayload;
     int64_t  m_currentMask;
