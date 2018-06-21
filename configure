@@ -810,7 +810,6 @@ LIBJPEG_USABLE
 LIBJPEG_LIBS
 LIBJPEG_CFLAGS
 LIBJPEG_SYSTEM
-PTLIB_IMAGEMAGICK
 HAS_IMAGEMAGICK
 IMAGEMAGICK_USABLE
 IMAGEMAGICK_LIBS
@@ -926,7 +925,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -1142,7 +1140,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1395,15 +1392,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1541,7 +1529,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1694,7 +1682,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1755,7 +1742,8 @@ Optional Features:
   --enable-internalregex  Force internal regex library
   --disable-resolver      disable DNS resolver support
   --disable-pcap          disable PCAP support
-  --disable-imagemagick   disable ImageMagick support
+  --disable-imagemagick   disable ImageMagick v6 support
+  --disable-imagemagick   disable ImageMagick v7 support
   --disable-libjpeg       disable libJPEG support
   --disable-mlib          disable SUN mlib support
   --disable-sasl          disable SASL support
@@ -5951,18 +5939,18 @@ else
 /* end confdefs.h.  */
 
   /* For now, do not test the preprocessor; as of 2007 there are too many
-         implementations with broken preprocessors.  Perhaps this can
-         be revisited in 2012.  In the meantime, code should not expect
-         #if to work with literals wider than 32 bits.  */
+	 implementations with broken preprocessors.  Perhaps this can
+	 be revisited in 2012.  In the meantime, code should not expect
+	 #if to work with literals wider than 32 bits.  */
       /* Test literals.  */
       long long int ll = 9223372036854775807ll;
       long long int nll = -9223372036854775807LL;
       unsigned long long int ull = 18446744073709551615ULL;
       /* Test constant expressions.   */
       typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       int i = 63;
 int
 main ()
@@ -5971,9 +5959,9 @@ main ()
       long long int llmax = 9223372036854775807ll;
       unsigned long long int ullmax = 18446744073709551615ull;
       return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
-              | (llmax / ll) | (llmax % ll)
-              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
-              | (ullmax / ull) | (ullmax % ull));
+	      | (llmax / ll) | (llmax % ll)
+	      | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+	      | (ullmax / ull) | (ullmax % ull));
   ;
   return 0;
 }
@@ -6005,33 +5993,33 @@ if ${ac_cv_type_long_long_int+:} false; then :
 else
   ac_cv_type_long_long_int=yes
       if test "x${ac_cv_prog_cc_c99-no}" = xno; then
-        ac_cv_type_long_long_int=$ac_cv_type_unsigned_long_long_int
-        if test $ac_cv_type_long_long_int = yes; then
-                                        if test "$cross_compiling" = yes; then :
+	ac_cv_type_long_long_int=$ac_cv_type_unsigned_long_long_int
+	if test $ac_cv_type_long_long_int = yes; then
+	  	  	  	  if test "$cross_compiling" = yes; then :
   :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <limits.h>
-                 #ifndef LLONG_MAX
-                 # define HALF \
-                          (1LL << (sizeof (long long int) * CHAR_BIT - 2))
-                 # define LLONG_MAX (HALF - 1 + HALF)
-                 #endif
+		 #ifndef LLONG_MAX
+		 # define HALF \
+			  (1LL << (sizeof (long long int) * CHAR_BIT - 2))
+		 # define LLONG_MAX (HALF - 1 + HALF)
+		 #endif
 int
 main ()
 {
 long long int n = 1;
-                 int i;
-                 for (i = 0; ; i++)
-                   {
-                     long long int m = n << i;
-                     if (m >> i != n)
-                       return 1;
-                     if (LLONG_MAX / 2 < m)
-                       break;
-                   }
-                 return 0;
+		 int i;
+		 for (i = 0; ; i++)
+		   {
+		     long long int m = n << i;
+		     if (m >> i != n)
+		       return 1;
+		     if (LLONG_MAX / 2 < m)
+		       break;
+		   }
+		 return 0;
   ;
   return 0;
 }
@@ -6045,7 +6033,7 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-        fi
+	fi
       fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_long_long_int" >&5
@@ -6068,18 +6056,18 @@ else
 /* end confdefs.h.  */
 
   /* For now, do not test the preprocessor; as of 2007 there are too many
-         implementations with broken preprocessors.  Perhaps this can
-         be revisited in 2012.  In the meantime, code should not expect
-         #if to work with literals wider than 32 bits.  */
+	 implementations with broken preprocessors.  Perhaps this can
+	 be revisited in 2012.  In the meantime, code should not expect
+	 #if to work with literals wider than 32 bits.  */
       /* Test literals.  */
       long long int ll = 9223372036854775807ll;
       long long int nll = -9223372036854775807LL;
       unsigned long long int ull = 18446744073709551615ULL;
       /* Test constant expressions.   */
       typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
-                     ? 1 : -1)];
+		     ? 1 : -1)];
       int i = 63;
 int
 main ()
@@ -6088,9 +6076,9 @@ main ()
       long long int llmax = 9223372036854775807ll;
       unsigned long long int ullmax = 18446744073709551615ull;
       return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
-              | (llmax / ll) | (llmax % ll)
-              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
-              | (ullmax / ull) | (ullmax % ull));
+	      | (llmax / ll) | (llmax % ll)
+	      | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+	      | (ullmax / ull) | (ullmax % ull));
   ;
   return 0;
 }
@@ -11328,8 +11316,8 @@ CFLAGS="$CFLAGS -D__STDC_CONSTANT_MACROS"
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVUTIL" >&5
-$as_echo_n "checking for LIBAVUTIL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libavutil >= 55" >&5
+$as_echo_n "checking for libavutil >= 55... " >&6; }
 
 if test -n "$LIBAVUTIL_CFLAGS"; then
     pkg_cv_LIBAVUTIL_CFLAGS="$LIBAVUTIL_CFLAGS"
@@ -11369,7 +11357,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -11388,7 +11376,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -11449,8 +11437,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSWRESAMPLE" >&5
-$as_echo_n "checking for LIBSWRESAMPLE... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libswresample" >&5
+$as_echo_n "checking for libswresample... " >&6; }
 
 if test -n "$LIBSWRESAMPLE_CFLAGS"; then
     pkg_cv_LIBSWRESAMPLE_CFLAGS="$LIBSWRESAMPLE_CFLAGS"
@@ -11490,7 +11478,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -11509,7 +11497,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -11570,8 +11558,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSWSCALE" >&5
-$as_echo_n "checking for LIBSWSCALE... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libswscale >= 4" >&5
+$as_echo_n "checking for libswscale >= 4... " >&6; }
 
 if test -n "$LIBSWSCALE_CFLAGS"; then
     pkg_cv_LIBSWSCALE_CFLAGS="$LIBSWSCALE_CFLAGS"
@@ -11611,7 +11599,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -11630,7 +11618,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -11691,8 +11679,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVCODEC" >&5
-$as_echo_n "checking for LIBAVCODEC... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libavcodec >= 57" >&5
+$as_echo_n "checking for libavcodec >= 57... " >&6; }
 
 if test -n "$LIBAVCODEC_CFLAGS"; then
     pkg_cv_LIBAVCODEC_CFLAGS="$LIBAVCODEC_CFLAGS"
@@ -11732,7 +11720,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -11751,7 +11739,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -11812,8 +11800,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBAVFORMAT" >&5
-$as_echo_n "checking for LIBAVFORMAT... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libavformat >= 57" >&5
+$as_echo_n "checking for libavformat >= 57... " >&6; }
 
 if test -n "$LIBAVFORMAT_CFLAGS"; then
     pkg_cv_LIBAVFORMAT_CFLAGS="$LIBAVFORMAT_CFLAGS"
@@ -11853,7 +11841,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -11872,7 +11860,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -11969,13 +11957,12 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
-
    IMAGEMAGICK_SYSTEM="yes"
 
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ImageMagick support" >&5
-$as_echo_n "checking ImageMagick support... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ImageMagick v6 support" >&5
+$as_echo_n "checking ImageMagick v6 support... " >&6; }
 
    # Check whether --enable-imagemagick was given.
 if test "${enable_imagemagick+set}" = set; then :
@@ -12031,8 +12018,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for IMAGEMAGICK" >&5
-$as_echo_n "checking for IMAGEMAGICK... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for MagickWand" >&5
+$as_echo_n "checking for MagickWand... " >&6; }
 
 if test -n "$IMAGEMAGICK_CFLAGS"; then
     pkg_cv_IMAGEMAGICK_CFLAGS="$IMAGEMAGICK_CFLAGS"
@@ -12072,7 +12059,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -12091,7 +12078,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -12110,8 +12097,8 @@ fi
    MY_LINK_IFELSE_LIBS="$LIBS"
    CPPFLAGS="$CPPFLAGS $IMAGEMAGICK_CFLAGS"
    LIBS="$IMAGEMAGICK_LIBS $LIBS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ImageMagick support usability" >&5
-$as_echo_n "checking for ImageMagick support usability... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ImageMagick v6 support usability" >&5
+$as_echo_n "checking for ImageMagick v6 support usability... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wand/MagickWand.h>
@@ -12119,7 +12106,6 @@ int
 main ()
 {
 MagickWandGenesis()
-
   ;
   return 0;
 }
@@ -12173,31 +12159,232 @@ fi
 
 
 
+   if test "x$usable" = "xyes"; then :
 
-
-
-
-   HAS_IMAGEMAGICK=$IMAGEMAGICK_USABLE
-
-   if test "x$HAS_IMAGEMAGICK" = "xyes" ; then
       HAS_IMAGEMAGICK=1
-   fi
 
-   if test "x$HAS_IMAGEMAGICK" = "x0" || test "x$HAS_IMAGEMAGICK" = "xno" ; then
-      HAS_IMAGEMAGICK=
-   fi
+      $as_echo "#define P_IMAGEMAGICK 6" >>confdefs.h
 
+      PTLIB_IMAGEMAGICK="yes (before v7)"
 
+else
 
-   if test "x$HAS_IMAGEMAGICK" = "x1" ; then
-      PTLIB_IMAGEMAGICK=yes
-      $as_echo "#define P_IMAGEMAGICK 1" >>confdefs.h
-
-   else
-      PTLIB_IMAGEMAGICK=no
-   fi
+   IMAGEMAGICK_SYSTEM="yes"
 
 
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking ImageMagick v7 support" >&5
+$as_echo_n "checking ImageMagick v7 support... " >&6; }
+
+   # Check whether --enable-imagemagick was given.
+if test "${enable_imagemagick+set}" = set; then :
+  enableval=$enable_imagemagick; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_IMAGEMAGICK:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_imagemagick="$enableval"
+
+
+   if test "x$usable" = xyes; then :
+
+
+
+      if test "x$IMAGEMAGICK_SYSTEM" = xyes; then :
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for MagickWand" >&5
+$as_echo_n "checking for MagickWand... " >&6; }
+
+if test -n "$IMAGEMAGICK_CFLAGS"; then
+    pkg_cv_IMAGEMAGICK_CFLAGS="$IMAGEMAGICK_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"MagickWand\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "MagickWand") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_IMAGEMAGICK_CFLAGS=`$PKG_CONFIG --cflags "MagickWand" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$IMAGEMAGICK_LIBS"; then
+    pkg_cv_IMAGEMAGICK_LIBS="$IMAGEMAGICK_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"MagickWand\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "MagickWand") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_IMAGEMAGICK_LIBS=`$PKG_CONFIG --libs "MagickWand" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        IMAGEMAGICK_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "MagickWand" 2>&1`
+        else
+	        IMAGEMAGICK_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "MagickWand" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$IMAGEMAGICK_PKG_ERRORS" >&5
+
+	usable=no
+
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	usable=no
+
+else
+	IMAGEMAGICK_CFLAGS=$pkg_cv_IMAGEMAGICK_CFLAGS
+	IMAGEMAGICK_LIBS=$pkg_cv_IMAGEMAGICK_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+
+         if test "x$usable" = xyes; then :
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $IMAGEMAGICK_CFLAGS"
+   LIBS="$IMAGEMAGICK_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ImageMagick v7 support usability" >&5
+$as_echo_n "checking for ImageMagick v7 support usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <MagickWand/MagickWand.h>
+int
+main ()
+{
+MagickWandGenesis()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Adding CPPFLAGS: $IMAGEMAGICK_CFLAGS" >&5
+$as_echo "$as_me: Adding CPPFLAGS: $IMAGEMAGICK_CFLAGS" >&6;}
+      CPPFLAGS="$IMAGEMAGICK_CFLAGS $CPPFLAGS"
+
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Adding LIBS: $IMAGEMAGICK_LIBS" >&5
+$as_echo "$as_me: Adding LIBS: $IMAGEMAGICK_LIBS" >&6;}
+      LIBS="$IMAGEMAGICK_LIBS $LIBS"
+
+
+
+else
+  usable=no
+
+fi
+
+
+
+fi
+
+
+
+fi
+
+fi
+
+   IMAGEMAGICK_USABLE=$usable
+
+
+
+   if test "x$usable" = "xyes"; then :
+
+         HAS_IMAGEMAGICK=1
+
+         $as_echo "#define P_IMAGEMAGICK 7" >>confdefs.h
+
+         PTLIB_IMAGEMAGICK="yes (after v7)"
+
+
+fi
+
+
+
+fi
 
 
 
@@ -12284,8 +12471,8 @@ $as_echo "$as_me: Using directory $withval for libJPEG support" >&6;}
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBJPEG" >&5
-$as_echo_n "checking for LIBJPEG... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libjpeg" >&5
+$as_echo_n "checking for libjpeg... " >&6; }
 
 if test -n "$LIBJPEG_CFLAGS"; then
     pkg_cv_LIBJPEG_CFLAGS="$LIBJPEG_CFLAGS"
@@ -12325,7 +12512,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -12347,7 +12534,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      LIBJPEG_CFLAGS=""
@@ -12844,8 +13031,8 @@ $as_echo "$as_me: Using directory $withval for Open LDAP support" >&6;}
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OPENLDAP" >&5
-$as_echo_n "checking for OPENLDAP... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ldap" >&5
+$as_echo_n "checking for ldap... " >&6; }
 
 if test -n "$OPENLDAP_CFLAGS"; then
     pkg_cv_OPENLDAP_CFLAGS="$OPENLDAP_CFLAGS"
@@ -12885,7 +13072,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -12907,7 +13094,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      OPENLDAP_CFLAGS=""
@@ -13095,8 +13282,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OPENSSL" >&5
-$as_echo_n "checking for OPENSSL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for openssl" >&5
+$as_echo_n "checking for openssl... " >&6; }
 
 if test -n "$OPENSSL_CFLAGS"; then
     pkg_cv_OPENSSL_CFLAGS="$OPENSSL_CFLAGS"
@@ -13136,7 +13323,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -13155,7 +13342,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -13533,8 +13720,8 @@ $as_echo "$as_me: Using directory $withval for expat XML support" >&6;}
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EXPAT" >&5
-$as_echo_n "checking for EXPAT... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for expat" >&5
+$as_echo_n "checking for expat... " >&6; }
 
 if test -n "$EXPAT_CFLAGS"; then
     pkg_cv_EXPAT_CFLAGS="$EXPAT_CFLAGS"
@@ -13574,7 +13761,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -13596,7 +13783,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      EXPAT_CFLAGS=""
@@ -13786,8 +13973,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LUA" >&5
-$as_echo_n "checking for LUA... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $LUA_PKG" >&5
+$as_echo_n "checking for $LUA_PKG... " >&6; }
 
 if test -n "$LUA_CFLAGS"; then
     pkg_cv_LUA_CFLAGS="$LUA_CFLAGS"
@@ -13827,7 +14014,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -13846,7 +14033,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -14039,8 +14226,8 @@ $as_echo "$as_me: Using directory $withval for V8 Javascript script support" >&6
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for V8" >&5
-$as_echo_n "checking for V8... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for v8" >&5
+$as_echo_n "checking for v8... " >&6; }
 
 if test -n "$V8_CFLAGS"; then
     pkg_cv_V8_CFLAGS="$V8_CFLAGS"
@@ -14080,7 +14267,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -14102,7 +14289,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      V8_CFLAGS=""
@@ -17851,8 +18038,8 @@ $as_echo "$as_me: Using directory $withval for disable Curses (text mode windows
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CURSES" >&5
-$as_echo_n "checking for CURSES... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ncurses" >&5
+$as_echo_n "checking for ncurses... " >&6; }
 
 if test -n "$CURSES_CFLAGS"; then
     pkg_cv_CURSES_CFLAGS="$CURSES_CFLAGS"
@@ -17892,7 +18079,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -17914,7 +18101,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      CURSES_CFLAGS=""
@@ -18109,8 +18296,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL" >&5
-$as_echo_n "checking for SDL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl2" >&5
+$as_echo_n "checking for sdl2... " >&6; }
 
 if test -n "$SDL_CFLAGS"; then
     pkg_cv_SDL_CFLAGS="$SDL_CFLAGS"
@@ -18150,7 +18337,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18169,7 +18356,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -18353,8 +18540,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER" >&5
-$as_echo_n "checking for GSTREAMER... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gstreamer-app-0.10" >&5
+$as_echo_n "checking for gstreamer-app-0.10... " >&6; }
 
 if test -n "$GSTREAMER_CFLAGS"; then
     pkg_cv_GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS"
@@ -18394,7 +18581,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18413,7 +18600,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -18560,8 +18747,8 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSTREAMER" >&5
-$as_echo_n "checking for GSTREAMER... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gio-2.0 gstreamer-app-1.0" >&5
+$as_echo_n "checking for gio-2.0 gstreamer-app-1.0... " >&6; }
 
 if test -n "$GSTREAMER_CFLAGS"; then
     pkg_cv_GSTREAMER_CFLAGS="$GSTREAMER_CFLAGS"
@@ -18601,7 +18788,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18620,7 +18807,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -18843,8 +19030,8 @@ $as_echo "$as_me: Using directory $withval for ODBC database support" >&6;}
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ODBC" >&5
-$as_echo_n "checking for ODBC... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for odbc" >&5
+$as_echo_n "checking for odbc... " >&6; }
 
 if test -n "$ODBC_CFLAGS"; then
     pkg_cv_ODBC_CFLAGS="$ODBC_CFLAGS"
@@ -18884,7 +19071,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -18906,7 +19093,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      ODBC_CFLAGS=""
@@ -19068,8 +19255,8 @@ $as_echo "$as_me: Using directory $withval for unixODBC database support" >&6;}
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ODBC" >&5
-$as_echo_n "checking for ODBC... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for unixODBC" >&5
+$as_echo_n "checking for unixODBC... " >&6; }
 
 if test -n "$ODBC_CFLAGS"; then
     pkg_cv_ODBC_CFLAGS="$ODBC_CFLAGS"
@@ -19109,7 +19296,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -19131,7 +19318,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      ODBC_CFLAGS=""
@@ -19863,8 +20050,8 @@ $as_echo "$as_me: ESD audio disabled by user" >&6;}
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ESD" >&5
-$as_echo_n "checking for ESD... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for esound" >&5
+$as_echo_n "checking for esound... " >&6; }
 
 if test -n "$ESD_CFLAGS"; then
     pkg_cv_ESD_CFLAGS="$ESD_CFLAGS"
@@ -19904,7 +20091,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -19923,7 +20110,7 @@ fi
 	usable=no
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	usable=no
 
@@ -20208,8 +20395,8 @@ $as_echo "$as_me: Using directory $withval for PortAudio library" >&6;}
 else
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PORTAUDIO" >&5
-$as_echo_n "checking for PORTAUDIO... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for portaudio" >&5
+$as_echo_n "checking for portaudio... " >&6; }
 
 if test -n "$PORTAUDIO_CFLAGS"; then
     pkg_cv_PORTAUDIO_CFLAGS="$PORTAUDIO_CFLAGS"
@@ -20249,7 +20436,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -20271,7 +20458,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
                      PORTAUDIO_CFLAGS=""

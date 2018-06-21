@@ -40,7 +40,7 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
-#if P_IMAGEMAGICK==2
+#if P_IMAGEMAGICK==7
   #include <MagickWand/MagickWand.h>
 #elif P_IMAGEMAGICK
   #include <wand/MagickWand.h>
