@@ -385,7 +385,7 @@ PString PTime::AsString(TimeFormat format, int zone) const
       return AsString("yyyyMMddThhmmssZ", zone);
 
     case LongISO8601 :
-      return AsString("yyyy-MM-dd T hh:mm:ss Z", zone);
+      return AsString("yyyy-MM-ddThh:mm:ssZ", zone);
 
     case EpochTime:
     {
