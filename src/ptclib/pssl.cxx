@@ -2627,7 +2627,7 @@ PBoolean PSSLChannel::ConvertOSError(P_INT_PTR libcReturnValue, ErrorGroup group
 
 PString PSSLChannel::GetErrorText(ErrorGroup group) const
 {
-  int err = GetErrorNumber(group);
+  unsigned err = GetErrorNumber(group);
   if ((err&0x80000000) == 0)
     return PIndirectChannel::GetErrorText(group);
 
