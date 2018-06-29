@@ -287,7 +287,7 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
     }
 
     // If not persisting need to shut down write so other end stops reading
-    if (!m_persist)
+    if (!m_persist && !outMIME.Has(ContentLengthTag))
       Shutdown(ShutdownWrite);
 
     // Await a response, if all OK exit loop
