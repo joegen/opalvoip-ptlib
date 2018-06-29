@@ -2499,7 +2499,7 @@ void PProcess::HouseKeeping()
     }
 
     // m_autoDeleteThreads is inherently thread safe
-    PThread * thread;
+    PThread * thread = NULL;
     while (m_autoDeleteThreads.Dequeue(thread, 0))
       delete thread;
 

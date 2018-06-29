@@ -577,7 +577,7 @@ PBoolean PSoundChannelOSS::Read(void * buf, PINDEX len)
 
       // use an average, not just a single sample
       const BYTE * src = resampleBuffer;
-      while ( ((src - resampleBuffer) < bytes) && (dst < dstEnd)) {
+      while ( ((PINDEX)(src - resampleBuffer) < bytes) && (dst < dstEnd)) {
         int sample = 0;
         unsigned j;
         for (j = 0; j < resampleRate; ++j) {
