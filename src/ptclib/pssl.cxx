@@ -2573,9 +2573,13 @@ int PSSLChannel::BioWrite(const char * buf, int len)
 }
 
 
-PBoolean PSSLChannel::Shutdown(ShutdownValue)
+PBoolean PSSLChannel::Shutdown(ShutdownValue value)
 {
-  return PAssertNULL(m_ssl) != NULL && SSL_shutdown(m_ssl);
+  if (value != ShutdownReadAndWrite)
+    return SetErrorValues(BadParameter, EINVAL);
+
+  bool ok = PAssertNULL(m_ssl) != NULL && SSL_shutdown(m_ssl);
+  return PIndirectChannel::Shutdown(value) && ok;
 }
 
 
