@@ -310,6 +310,11 @@ PBoolean PNatMethod::CreateSocketPair(PUDPSocket * & socket1, PUDPSocket * & soc
 {
   PWaitAndSignal mutex(m_mutex);
 
+  if (m_pairedPortRange.IsValid()) {
+    PTRACE(1, "Invalid local UDP port range " << m_pairedPortRange);
+    return false;
+  }
+
   PIPSocket * sockets[2];
   sockets[0] = socket1 = InternalCreateSocket(eComponent_RTP, context);
   sockets[1] = socket2 = InternalCreateSocket(eComponent_RTCP, context);
@@ -345,11 +350,11 @@ PNatMethod::RTPSupportTypes PNatMethod::GetRTPSupport(bool force)
     case ConeNat:
     case RestrictedNat:
     case PortRestrictedNat:
+    case SymmetricNat:
       return RTPIfSendMedia;
 
     // types that do not support RTP
     case BlockedNat:
-    case SymmetricNat:
       return RTPUnsupported;
 
     // types that have unknown RTP support

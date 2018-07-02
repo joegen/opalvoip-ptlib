@@ -1037,9 +1037,9 @@ void PSTUNAddressAttribute::SetIPAndPort(const PIPSocketAddressAndPort & addrAnd
 
 /**UDP socket that has been created by the STUN client.
   */
-PSTUNUDPSocket::PSTUNUDPSocket(PNatMethod::Component component)
+PSTUNUDPSocket::PSTUNUDPSocket(PNatMethod::Component component, PNatMethod::NatTypes natType)
   : PNATUDPSocket(component)
-  , m_natType(PNatMethod::UnknownNat)
+  , m_natType(natType)
 {
 }
 
@@ -1130,27 +1130,16 @@ bool PSTUNUDPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
 
 bool PSTUNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery)
 {
-  PIPSocketAddressAndPort existing;
-  GetSendAddress(existing);
-
-  switch (m_natType) {
-    case PNatMethod::RestrictedNat:
-      if (addr.GetAddress() == existing.GetAddress())
-        return PUDPSocket::InternalSetSendAddress(addr, mtuDiscovery);
-      PTRACE(2, "Cannot change send address on restricted NAT");
-      break;
-
-    case PNatMethod::PortRestrictedNat:
-      if (addr == existing)
-        return PUDPSocket::InternalSetSendAddress(addr, mtuDiscovery);
-      PTRACE(2, "Cannot change send address or port on port restricted NAT");
-      break;
-
-    default:
-      return PUDPSocket::InternalSetSendAddress(addr, mtuDiscovery);
+  if (m_natType == PNatMethod::SymmetricNat) {
+    PIPSocketAddressAndPort existing;
+    GetSendAddress(existing);
+    if (existing.IsValid() && addr.IsValid() && existing != addr) {
+      PTRACE(2, "Cannot change send address or port on symmetric NAT");
+      return SetErrorValues(ProtocolFailure, ENOTSUP);
+    }
   }
 
-  return SetErrorValues(ProtocolFailure, ENOTSUP);
+  return PUDPSocket::InternalSetSendAddress(addr, mtuDiscovery);
 }
 
 
@@ -1302,7 +1291,7 @@ bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) con
 
 PNATUDPSocket * PSTUNClient::InternalCreateSocket(Component component, PObject *)
 {
-  return new PSTUNUDPSocket(component);
+  return new PSTUNUDPSocket(component, m_natType);
 }
 
 
@@ -1325,7 +1314,7 @@ void PSTUNClient::InternalUpdate()
 
   // if a specific interface is given, use only that interface
   if (!m_interface.IsAny()) {
-    m_socket = new PSTUNUDPSocket(eComponent_Unknown);
+    m_socket = new PSTUNUDPSocket(eComponent_Unknown, m_natType);
 
     if (!m_singlePortRange.Listen(*m_socket, m_interface)) {
       PTRACE(1, "Unable to open a socket on interface " << m_interface);
@@ -1348,7 +1337,7 @@ void PSTUNClient::InternalUpdate()
     for (PINDEX i =0; i < interfaces.GetSize(); i++) {
       PIPSocket::Address binding = interfaces[i].GetAddress();
       if (!binding.IsLoopback() && (binding.GetVersion() == 4)) {
-        PSTUNUDPSocket * socket = new PSTUNUDPSocket(eComponent_Unknown);
+        PSTUNUDPSocket * socket = new PSTUNUDPSocket(eComponent_Unknown, m_natType);
         if (m_singlePortRange.Listen(*socket, binding))
           sockets.Append(socket);
         else
@@ -1361,7 +1350,7 @@ void PSTUNClient::InternalUpdate()
     }
   }
   else {
-    PSTUNUDPSocket * socket = new PSTUNUDPSocket(eComponent_Unknown);
+    PSTUNUDPSocket * socket = new PSTUNUDPSocket(eComponent_Unknown, m_natType);
     sockets.Append(socket);
     if (!m_singlePortRange.Listen(*socket))
       return;
@@ -1481,18 +1470,12 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 
   switch (GetNatType(false)) {
     case OpenNat:
+    case SymmetricNat :
       return PNatMethod::CreateSocketPair(socket1, socket2, binding, context);
 
     case ConeNat :
     case RestrictedNat :
     case PortRestrictedNat :
-      break;
-
-    case SymmetricNat :
-      if (!m_pairedPortRange.IsValid()) {
-        PTRACE(1, "Invalid local UDP port range " << m_pairedPortRange);
-        return false;
-      }
       break;
 
     default :
@@ -1601,7 +1584,7 @@ PCaselessString PTURNClient::GetMethodName() const
 
 PNATUDPSocket * PTURNClient::InternalCreateSocket(Component component, PObject *)
 {
-  return new PTURNUDPSocket(component);
+  return new PTURNUDPSocket(component, m_natType);
 }
 
 
@@ -1610,8 +1593,8 @@ PNATUDPSocket * PTURNClient::InternalCreateSocket(Component component, PObject *
 #undef PTraceModule
 #define PTraceModule() "TURN"
 
-PTURNUDPSocket::PTURNUDPSocket(PNatMethod::Component component)
-  : PSTUNUDPSocket(component)
+PTURNUDPSocket::PTURNUDPSocket(PNatMethod::Component component, PNatMethod::NatTypes natType)
+  : PSTUNUDPSocket(component, natType)
   , m_allocationMade(false)
   , m_channelNumber(PTURNClient::MinChannelNumber)
   , m_usingTURN(false)
@@ -1903,7 +1886,7 @@ void AllocateSocketFunctor::operator () (PThread &)
   m_status = true;
   while (retryCount > 0) {
 
-    m_turnSocket = new PTURNUDPSocket(PNatMethod::eComponent_RTP);
+    m_turnSocket = new PTURNUDPSocket(PNatMethod::eComponent_RTP, PNatMethod::UnknownNat);
 
     if (!m_portRange.Listen(*m_turnSocket, m_interface)) {
       PTRACE(2, "Could not create socket");
