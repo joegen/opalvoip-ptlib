@@ -91,7 +91,7 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
      RESPONSE-ADDRESS attribute. This causes the server to send the response
      back to the address and port that the request came from. */
   PSTUNMessage requestI(PSTUNMessage::BindingRequestRFC3489);
-  //requestI.AddAttribute(PSTUNChangeRequest(false, false));
+  requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
   if (!responseI.Poll(*socket, requestI, m_pollRetries)) {
     PTRACE(2, "Server " << serverAddress << " did not respond.");
@@ -108,7 +108,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
 )
 {
   // check if server returned "420 Unknown Attribute" - that probably means it cannot do CHANGE_REQUEST even with no changes
-  bool canDoChangeRequest = true;
+  bool cannotDoChangeRequest = false;
 
   PSTUNErrorCode * errorAttribute = (PSTUNErrorCode *)responseI.FindAttribute(PSTUNAttribute::ERROR_CODE);
   if (errorAttribute != NULL) {
@@ -120,7 +120,8 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
       if (ok) { 
         errorAttribute = (PSTUNErrorCode *)responseI.FindAttribute(PSTUNAttribute::ERROR_CODE);
         ok = errorAttribute == NULL;
-        canDoChangeRequest = false;
+        PTRACE(3, "Server does not understand CHANGE request");
+        cannotDoChangeRequest = true;
       }
     }
     if (!ok) {
@@ -129,6 +130,26 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     }
   }
 
+  // Check that response had the change that was requested
+  PIPSocketAddressAndPort secondaryServer;
+  {
+    PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
+    if (changedAddress == NULL)
+      changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::OTHER_ADDRESS);
+    if (changedAddress != NULL) {
+      changedAddress->GetIPAndPort(secondaryServer);
+      if (secondaryServer == m_serverAddress) {
+        PTRACE(3, "Secondary server same as primary server");
+        cannotDoChangeRequest = true; // Does not support RFC3849 discovery
+      }
+    }
+    else {
+      PTRACE(3, "Server did not supply secondary server address");
+      cannotDoChangeRequest = true; // Does not support RFC3849 discovery
+    }
+  }
+
+  // Get the external NAT address
   PSTUNAddressAttribute * mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
   if (mappedAddress == NULL) {
     mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
@@ -143,9 +164,9 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   bool notNAT = (socket->GetPort() == externalAddressAndPort.GetPort()) && PIPSocket::IsLocalHost(externalAddressAndPort.GetAddress());
 
   // can only guess based on a single sample
-  if (!canDoChangeRequest) {
+  if (cannotDoChangeRequest) {
     PNatMethod::NatTypes natType = notNAT ? PNatMethod::OpenNat : PNatMethod::SymmetricNat;
-    PTRACE(3, "Server has only one address - best guess is that NAT is " << PNatMethod::GetNatTypeString(natType));
+    PTRACE(3, "Server badly configured or does not support RFC3849 discovery - best guess is " << PNatMethod::GetNatTypeString(natType));
     return natType;
   }
 
@@ -167,34 +188,16 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     return natType;
   }
 
-  if (testII) {
-    if (responseI.GetSourceAddressAndPort() != responseII.GetSourceAddressAndPort())
-      return PNatMethod::ConeNat;
-    PTRACE(3, "Test II response indicates server does not support RFC3849 discovery.");
-    return PNatMethod::UnknownNat;
-  }
+  if (testII)
+    return PNatMethod::ConeNat;
 
-  PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
-  if (changedAddress == NULL) {
-    changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::OTHER_ADDRESS);
-    if (changedAddress == NULL) {
-      PTRACE(3, "Test II response indicates no alternate address in use - testing finished");
-      return PNatMethod::UnknownNat; // Protocol error
-    }
-  }
-
-  PTRACE(3, "Sending test I to alternate server");
-
-  // Send test I to another server, to see if restricted or symmetric
-  PIPSocket::Address secondaryServer = changedAddress->GetIP();
-  WORD secondaryPort = changedAddress->GetPort();
-  socket->PUDPSocket::InternalSetSendAddress(PIPSocketAddressAndPort(secondaryServer, secondaryPort));
+  PTRACE(3, "Sending test I to alternate server: " << secondaryServer);
+  socket->PUDPSocket::InternalSetSendAddress(secondaryServer);
   PSTUNMessage requestI2(PSTUNMessage::BindingRequestRFC3489);
   requestI2.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI2;
   if (!responseI2.Poll(*socket, requestI2, m_pollRetries)) {
-    PTRACE(3, "Poll of secondary server " << secondaryServer << ':' << secondaryPort
-           << " failed, NAT partially blocked by firewall rules.");
+    PTRACE(3, "Poll of secondary server " << secondaryServer << " failed, NAT partially blocked by firewall rules.");
     return PNatMethod::PartiallyBlocked;
   }
 
@@ -219,6 +222,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
 
+  PTRACE(3, "Sending test III to base server: " << m_serverAddress);
   return responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat;
 }
 
