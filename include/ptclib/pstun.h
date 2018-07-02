@@ -411,8 +411,7 @@ class PSTUNUDPSocket : public PNATUDPSocket
   PCLASSINFO(PSTUNUDPSocket, PNATUDPSocket);
   public:
     PSTUNUDPSocket(
-      PNatMethod::Component component,
-      PNatMethod::NatTypes natType
+      PNatMethod::Component component
     );
 
     virtual const char * GetNatName() const;
@@ -745,8 +744,7 @@ class PTURNUDPSocket : public PSTUNUDPSocket, public PSTUN
     friend class PTURNClient;
 
     PTURNUDPSocket(
-      PNatMethod::Component component,
-      PNatMethod::NatTypes natType
+      PNatMethod::Component component
     );
     ~PTURNUDPSocket();
 
