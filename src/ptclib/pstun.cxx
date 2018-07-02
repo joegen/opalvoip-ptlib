@@ -171,7 +171,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     if (responseI.GetSourceAddressAndPort() != responseII.GetSourceAddressAndPort())
       return PNatMethod::ConeNat;
     PTRACE(3, "Test II response indicates server does not support RFC3849 discovery.");
-    return PNatMethod::PortRestrictedNat;
+    return PNatMethod::UnknownNat;
   }
 
   PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
@@ -1124,6 +1124,32 @@ bool PSTUNUDPSocket::InternalGetLocalAddress(PIPSocketAddressAndPort & addr)
 }
 
 
+bool PSTUNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery)
+{
+  PIPSocketAddressAndPort existing;
+  GetSendAddress(existing);
+
+  switch (m_natType) {
+    case PNatMethod::RestrictedNat:
+      if (addr.GetAddress() == existing.GetAddress())
+        return PUDPSocket::InternalSetSendAddress(addr, mtuDiscovery);
+      PTRACE(2, "Cannot change send address on restricted NAT");
+      break;
+
+    case PNatMethod::PortRestrictedNat:
+      if (addr == existing)
+        return PUDPSocket::InternalSetSendAddress(addr, mtuDiscovery);
+      PTRACE(2, "Cannot change send address or port on port restricted NAT");
+      break;
+
+    default:
+      return PUDPSocket::InternalSetSendAddress(addr, mtuDiscovery);
+  }
+
+  return SetErrorValues(ProtocolFailure, ENOTSUP);
+}
+
+
 ///////////////////////////////////////////////////////////////////////
 
 typedef PSTUNClient PNatMethod_STUN;
@@ -1721,7 +1747,7 @@ void PTURNUDPSocket::InternalGetSendAddress(PIPSocketAddressAndPort & addr)
 bool PTURNUDPSocket::InternalSetSendAddress(const PIPSocketAddressAndPort & ipAndPort, int mtuDiscovery)
 {
   if (!m_usingTURN)
-    return PUDPSocket::InternalSetSendAddress(ipAndPort, mtuDiscovery);
+    return PSTUNUDPSocket::InternalSetSendAddress(ipAndPort, mtuDiscovery);
 
   // set permission on TURN server
   if (ipAndPort != m_peerIpAndPort) {
