@@ -90,7 +90,7 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
      any flags set in the CHANGE-REQUEST attribute, and without the
      RESPONSE-ADDRESS attribute. This causes the server to send the response
      back to the address and port that the request came from. */
-  PSTUNMessage requestI(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestI(PSTUNMessage::BindingRequestRFC3489);
   //requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
   if (!responseI.Poll(*socket, requestI, m_pollRetries)) {
@@ -115,7 +115,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     bool ok = false;
     if (errorAttribute->GetErrorCode() == 420) {
       // try again without CHANGE request
-      PSTUNMessage request(PSTUNMessage::BindingRequest);
+      PSTUNMessage request(PSTUNMessage::BindingRequestRFC3489);
       ok = responseI.Poll(*socket, request, m_pollRetries);
       if (ok) { 
         errorAttribute = (PSTUNErrorCode *)responseI.FindAttribute(PSTUNAttribute::ERROR_CODE);
@@ -153,7 +153,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
 
   /* Test II - the client sends a Binding Request with both the "change IP"
      and "change port" flags from the CHANGE-REQUEST attribute set. */
-  PSTUNMessage requestII(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestII(PSTUNMessage::BindingRequestRFC3489);
   requestII.AddAttribute(PSTUNChangeRequest(true, true));
   PSTUNMessage responseII;
   bool testII = responseII.Poll(*socket, requestII, m_pollRetries);
@@ -167,8 +167,12 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     return natType;
   }
 
-  if (testII)
-    return PNatMethod::ConeNat;
+  if (testII) {
+    if (responseI.GetSourceAddressAndPort() != responseII.GetSourceAddressAndPort())
+      return PNatMethod::ConeNat;
+    PTRACE(3, "Test II response indicates server does not support RFC3849 discovery.");
+    return PNatMethod::PortRestrictedNat;
+  }
 
   PSTUNAddressAttribute * changedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::CHANGED_ADDRESS);
   if (changedAddress == NULL) {
@@ -185,7 +189,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   PIPSocket::Address secondaryServer = changedAddress->GetIP();
   WORD secondaryPort = changedAddress->GetPort();
   socket->PUDPSocket::InternalSetSendAddress(PIPSocketAddressAndPort(secondaryServer, secondaryPort));
-  PSTUNMessage requestI2(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestI2(PSTUNMessage::BindingRequestRFC3489);
   requestI2.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI2;
   if (!responseI2.Poll(*socket, requestI2, m_pollRetries)) {
@@ -211,7 +215,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
   }
 
   socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
-  PSTUNMessage requestIII(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestIII(PSTUNMessage::BindingRequestRFC3489);
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
 
@@ -456,15 +460,14 @@ void PSTUNMessage::SetType(MsgType newType, const BYTE * id)
 
   if (id != NULL)
     memcpy(hdr->transactionId, id, sizeof(hdr->transactionId));
-  else  {
+  else {
     // add magic number for RFC 5389 
-    PUInt32b * n = (PUInt32b *)&(hdr->transactionId);
-    *n = RFC5389_MAGIC_COOKIE;
-
-    for (PINDEX i = 4; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
-       hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
+    PUInt32b * magic = (PUInt32b *)&(hdr->transactionId);
+    *magic = newType == BindingRequestRFC3489 ? ~RFC5389_MAGIC_COOKIE : RFC5389_MAGIC_COOKIE;
+    PRandom::Octets(hdr->transactionId+4, sizeof(hdr->transactionId)-4);
   }
 }
+
 
 void PSTUNMessage::SetErrorType(int code, const BYTE * id, const char * reason)
 {
@@ -1074,7 +1077,7 @@ bool PSTUNUDPSocket::OpenSTUN(PSTUNClient & client)
   SetSendAddress(ap);
 
   // do a binding request to verify the server is there
-  PSTUNMessage request(PSTUNMessage::BindingRequest);
+  PSTUNMessage request(PSTUNMessage::BindingRequestRFC3489);
   PSTUNMessage response;
   SetReadTimeout(client.GetTimeout());
   if (!response.Poll(*this, request, client.GetRetries())) {
@@ -1335,7 +1338,7 @@ void PSTUNClient::InternalUpdate()
   }
 
   // send binding request on all interfaces and wait for a reply
-  PSTUNMessage requestI(PSTUNMessage::BindingRequest);
+  PSTUNMessage requestI(PSTUNMessage::BindingRequestRFC3489);
   requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
 
@@ -1482,7 +1485,7 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
     PSTUNSocketPairInfo & info = socketInfo[i];
     info.m_socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
     info.m_socket->SetReadTimeout(m_replyTimeout);
-    info.m_request = PSTUNMessage(PSTUNMessage::BindingRequest);
+    info.m_request = PSTUNMessage(PSTUNMessage::BindingRequestRFC3489);
     if (!info.m_request.Write(*info.m_socket)) {
       PTRACE(1, "Socket write failed: " << info.m_socket->GetErrorText(PChannel::LastWriteError));
       return false;

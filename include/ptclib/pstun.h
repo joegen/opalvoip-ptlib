@@ -446,6 +446,8 @@ class PSTUNMessage : public PBYTEArray
     enum MsgType {
       InvalidMessage,
 
+      BindingRequestRFC3489 = 0x10001,
+
       BindingRequest        = 0x0001,
       BindingResponse       = 0x0101,
       BindingError          = 0x0111,
