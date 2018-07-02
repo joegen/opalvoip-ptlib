@@ -134,6 +134,7 @@ class PHTTPServiceProcess : public PServiceProcess, public PHTTPListener
       const char *  m_httpPortKey;
       const char *  m_httpInterfacesKey;
       WORD          m_httpPort;         // Output
+      PString       m_httpInterfaces;
     };
     virtual bool InitialiseBase(
       Params & params

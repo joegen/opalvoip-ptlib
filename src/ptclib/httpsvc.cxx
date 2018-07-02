@@ -244,6 +244,8 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
   // HTTP Port number to use.
     params.m_httpPort = (WORD)params.m_configPage->AddIntegerField(params.m_httpPortKey, 1, 65535, params.m_httpPort,
                                                                    "", "Port for HTTP user interface for server.");
+    params.m_httpInterfaces = params.m_configPage->AddStringField(params.m_httpInterfacesKey, 30, params.m_httpInterfaces,
+                                                                 "Local network interface(s) for HTTP user interface for server.");
   }
   else {
     level = cfg.GetEnum(params.m_levelKey, GetLogLevel());
@@ -253,6 +255,7 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
     info.m_maxFileCount = cfg.GetInteger(params.m_rotateCountKey, info.m_maxFileCount);
     info.m_maxFileAge.SetInterval(0, 0, 0, 0, cfg.GetInteger(params.m_rotateAgeKey, info.m_maxFileAge.GetDays()));
     params.m_httpPort = (WORD)cfg.GetInteger(params.m_httpPortKey, params.m_httpPort);
+    params.m_httpInterfaces = cfg.GetString(params.m_httpInterfacesKey, params.m_httpInterfaces);
   }
 
   SetLogLevel(level);
