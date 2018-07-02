@@ -433,7 +433,6 @@ class PSTUNUDPSocket : public PNATUDPSocket
     PIPSocketAddressAndPort m_baseAddressAndPort;
 
     bool InternalGetLocalAddress(PIPSocketAddressAndPort & addr);
-    bool InternalSetSendAddress(const PIPSocketAddressAndPort & addr, int mtuDiscovery = -1);
 
   private:
     PNatMethod::NatTypes m_natType;
