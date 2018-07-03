@@ -1743,6 +1743,8 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
     return LessThan;
   if (m_version > other.m_version)
     return GreaterThan;
+  if (m_version == 0)
+    return EqualTo; // Both invalid
 
 #if P_HAS_IPV6
   if (m_version == 6) {
@@ -1764,10 +1766,7 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
   }
 #endif
 
-  if (operator==((DWORD)other))
-    return EqualTo;
-
-  return ntohl(*this) < ntohl(other) ? LessThan : GreaterThan;
+  return Compare2(ntohl(*this), ntohl(other));
 }
 
 
