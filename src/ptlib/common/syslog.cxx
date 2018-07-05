@@ -283,7 +283,7 @@ void PSystemLogToTrace::Output(PSystemLog::Level level, const char * msg)
 ///////////////////////////////////////////////////////////////
 
 PSystemLogToFile::PSystemLogToFile(const PFilePath & filename)
-  : m_rotateInfo(filename.GetDirectory())
+  : m_rotateInfo(filename.GetDirectory(), filename.GetTitle(), filename.GetType())
   , m_outputting(false)
 {
   m_file.SetFilePath(filename);

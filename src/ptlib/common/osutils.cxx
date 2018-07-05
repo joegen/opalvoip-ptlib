@@ -4638,16 +4638,23 @@ void PFile::SetFilePath(const PString & newName)
 #define PTraceModule() "FileRotate"
 
 
-PFile::RotateInfo::RotateInfo(const PDirectory & dir)
+const PString & PFile::RotateInfo::DefaultTimestamp() { static PConstString s("_yyyy_MM_dd_hh_mm"); return s; }
+
+
+PFile::RotateInfo::RotateInfo(const PDirectory & dir,
+                              const PString & prefix,
+                              const PString & suffix,
+                              const PString & timestamp)
   : m_directory(dir)
-  , m_prefix(PProcess::Current().GetName())
-  , m_timestamp("_yyyy_MM_dd_hh_mm")
+  , m_prefix(prefix.IsEmpty() ? PProcess::Current().GetName() : prefix)
+  , m_suffix(suffix)
+  , m_timestamp(timestamp)
 #if PTRACING
   , m_timeZone((PTrace::GetOptions()&PTrace::GMTTime) ? PTime::GMT : PTime::Local)
 #else
   , m_timeZone(PTime::Local)
 #endif
-  , m_maxSize(0)
+  , m_maxSize(1000000000) // A gigabyte
   , m_period(SizeOnly)
   , m_maxFileCount(0)
   , m_lastTime(0)

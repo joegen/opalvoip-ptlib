@@ -586,7 +586,13 @@ class PFile : public PChannel
     */
     struct RotateInfo
     {
-      explicit RotateInfo(const PDirectory & dir = PDirectory());
+      static const PString & DefaultTimestamp();
+      explicit RotateInfo(
+        const PDirectory & dir = PDirectory(),
+        const PString & prefix = PString::Empty(), // If empty, uses PProcess::Current().GetName()
+        const PString & suffix = PString::Empty(),
+        const PString & timestamp = DefaultTimestamp()
+      );
       RotateInfo(const RotateInfo & other);
       RotateInfo & operator=(const RotateInfo & other);
       virtual ~RotateInfo() { }
