@@ -586,7 +586,9 @@ class PFile : public PChannel
     */
     struct RotateInfo
     {
-      RotateInfo(const PDirectory & dir);
+      explicit RotateInfo(const PDirectory & dir = PDirectory());
+      RotateInfo(const RotateInfo & other);
+      RotateInfo & operator=(const RotateInfo & other);
       virtual ~RotateInfo() { }
 
       /** Inidcate that the RotateInfo is configured so that rotations can be made
@@ -607,7 +609,8 @@ class PFile : public PChannel
         */
       bool Rotate(
         PFile & activeFile,
-        bool force = false  ///< Force rotate regardless of time/size conditions
+        bool force = false, ///< Force rotate regardless of time/size conditions
+        const PTime & now = PTime()
       );
 
       /** Callback when a rotation of an open file is about to be performed.
@@ -632,14 +635,25 @@ class PFile : public PChannel
         const PString & msg   ///< Message to output
       );
 
+      enum Period {
+        SizeOnly,
+        Hourly,
+        Daily,
+        Weekly,
+        Monthly
+      };
+
       PDirectory      m_directory;    ///< Destination directory for rotated file, default to same s log file
       PFilePathString m_prefix;       ///< File name prefix, default PProcess::GetName()
       PString         m_timestamp;    ///< Time template for rotated file, default "_yyyy_MM_dd_hh_mm"
       int             m_timeZone;     ///< TIme zone for output and rotated file names
       PFilePathString m_suffix;       ///< File name suffix, default ".log"
       off_t           m_maxSize;      ///< Size in bytes which triggers a rotation, default zero disables
+      Period          m_period;       ///< Rotate on the peroid regardless of size.
       unsigned        m_maxFileCount; ///< When this many files have been rotated, oldest is deleted
       PTimeInterval   m_maxFileAge;   ///< Rotated files older than this are deleted
+
+      PTime           m_lastTime;
     };
   //@}
 

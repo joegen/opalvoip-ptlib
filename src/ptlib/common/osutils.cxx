@@ -4648,8 +4648,36 @@ PFile::RotateInfo::RotateInfo(const PDirectory & dir)
   , m_timeZone(PTime::Local)
 #endif
   , m_maxSize(0)
+  , m_period(SizeOnly)
   , m_maxFileCount(0)
+  , m_lastTime(0)
 {
+}
+
+
+PFile::RotateInfo::RotateInfo(const RotateInfo & other)
+  : m_directory(other.m_directory)
+  , m_prefix(other.m_prefix)
+  , m_timestamp(other.m_timestamp)
+  , m_timeZone(other.m_timeZone)
+  , m_maxSize(other.m_maxSize)
+  , m_period(other.m_period)
+  , m_maxFileCount(other.m_maxFileCount)
+  , m_lastTime(0)
+{
+}
+
+
+PFile::RotateInfo & PFile::RotateInfo::operator=(const RotateInfo & other)
+{
+  m_directory = other.m_directory;
+  m_prefix = other.m_prefix;
+  m_timestamp = other.m_timestamp;
+  m_timeZone = other.m_timeZone;
+  m_maxSize = other.m_maxSize;
+  m_period = other.m_period;
+  m_maxFileCount = other.m_maxFileCount;
+  return *this;
 }
 
 
@@ -4659,10 +4687,45 @@ bool PFile::RotateInfo::CanRotate() const
 }
 
 
-bool PFile::RotateInfo::Rotate(PFile & file, bool force)
+bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
 {
-  if (m_maxSize == 0 || m_timestamp.IsEmpty() || (!force && file.IsOpen() && file.GetLength() < m_maxSize))
+  if (m_maxSize == 0 || m_timestamp.IsEmpty())
     return false;
+
+  if (file.IsOpen() && file.GetLength() > m_maxSize)
+    force = true;
+
+  switch (m_period) {
+    case Hourly :
+      if (now.GetHour() != m_lastTime.GetHour())
+        force = true;
+      break;
+
+    case Daily :
+      PTRACE(1, &file, now.GetDay() << ' ' << m_lastTime.GetDay());
+      if (now.GetDay() != m_lastTime.GetDay())
+        force = true;
+      break;
+
+    case Weekly :
+      if (now.GetDayOfWeek() != m_lastTime.GetDayOfWeek() && now.GetDayOfWeek() == PTime::Sunday)
+        force = true;
+      break;
+
+    case Monthly :
+      if (now.GetMonth() != m_lastTime.GetMonth())
+        force = true;
+      break;
+
+    default :
+      break;
+  }
+
+  PTRACE(1, &file, m_prefix << ' ' << force);
+  if (!force)
+    return false;
+
+  m_lastTime = now;
 
   PFilePath rotatedFile;
   PString timestamp = PTime().AsString(m_timestamp, m_timeZone);
