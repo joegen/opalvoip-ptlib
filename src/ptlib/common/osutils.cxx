@@ -4632,4 +4632,122 @@ void PFile::SetFilePath(const PString & newName)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+#undef  PTraceModule
+#define PTraceModule() "FileRotate"
+
+
+PFile::RotateInfo::RotateInfo(const PDirectory & dir)
+  : m_directory(dir)
+  , m_prefix(PProcess::Current().GetName())
+  , m_timestamp("_yyyy_MM_dd_hh_mm")
+#if PTRACING
+  , m_timeZone((PTrace::GetOptions()&PTrace::GMTTime) ? PTime::GMT : PTime::Local)
+#else
+  , m_timeZone(PTime::Local)
+#endif
+  , m_maxSize(0)
+  , m_maxFileCount(0)
+{
+}
+
+
+bool PFile::RotateInfo::CanRotate() const
+{
+  return m_maxSize > 0 && !m_timestamp.IsEmpty();
+}
+
+
+bool PFile::RotateInfo::Rotate(PFile & file, bool force)
+{
+  if (m_maxSize == 0 || m_timestamp.IsEmpty() || (!force && file.GetLength() < m_maxSize))
+    return false;
+
+  PFilePath rotatedFile;
+  PString timestamp = PTime().AsString(m_timestamp, m_timeZone);
+  PString tiebreak;
+  do {
+      rotatedFile = PSTRSTRM(m_directory << m_prefix << timestamp << tiebreak << m_suffix);
+      tiebreak = tiebreak.AsInteger()-1; // This appends "-1", "-2" etc
+  } while (PFile::Exists(rotatedFile));
+
+  if (file.IsOpen()) {
+    OnCloseFile(file, rotatedFile);
+    file.Close();
+  }
+
+  bool badMove = PFile::Move(file.GetFilePath(), rotatedFile, false, true);
+
+  bool ok = OnOpenFile(file);
+
+  // Do the OnMessage for bad move after the reopen, in case it uses the newly reopened file.
+  if (badMove)
+    OnMessage(true, PSTRSTRM("Could not move file from " << file.GetFilePath() << " to " << rotatedFile));
+
+  if (m_maxFileCount > 0 || m_maxFileAge > 0) {
+    std::multimap<PTime, PFilePath> rotatedFiles;
+    PDirectory dir(m_directory);
+    if (dir.Open(PFileInfo::RegularFile)) {
+      int failsafe = 10000;
+      do {
+        PString name = dir.GetEntryName();
+        PFileInfo info;
+        if (  m_prefix == name.Left(m_prefix.GetLength()) &&
+              m_suffix == name.Right(m_suffix.GetLength()) &&
+              dir.GetInfo(info))
+          rotatedFiles.insert(std::multimap<PTime, PFilePath>::value_type(info.modified, dir + name));
+      } while (dir.Next() && --failsafe > 0);
+    }
+
+    if (m_maxFileCount > 0) {
+      while (rotatedFiles.size() > m_maxFileCount) {
+        PFilePath filePath = rotatedFiles.begin()->second;
+        if (PFile::Remove(filePath))
+          OnMessage(false, PSTRSTRM("Removed excess file \"" << filePath << '"'));
+        else
+          OnMessage(true, PSTRSTRM("Could not remove excess file \"" << filePath << '"'));
+        rotatedFiles.erase(rotatedFiles.begin());
+      }
+    }
+
+    if (m_maxFileAge > 0) {
+      PTime then = PTime() - m_maxFileAge;
+      while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
+        PFilePath filePath = rotatedFiles.begin()->second;
+        if (PFile::Remove(filePath))
+          OnMessage(false, PSTRSTRM("Removed aged file \"" << filePath << '"'));
+        else
+          OnMessage(true, PSTRSTRM("Could not remove aged file \"" << filePath << '"'));
+        rotatedFiles.erase(rotatedFiles.begin());
+      }
+    }
+  }
+
+  return ok;
+}
+
+
+void PFile::RotateInfo::OnCloseFile(PFile & file, const PFilePath & rotatedTo)
+{
+  OnMessage(false, PSTRSTRM("File renamed from \"" << file.GetFilePath() << "\" to \"" << rotatedTo << '"'));
+}
+
+
+bool PFile::RotateInfo::OnOpenFile(PFile & file)
+{
+  if (file.Open(PFile::WriteOnly))
+    return true;
+
+  OnMessage(true, PSTRSTRM("Could not re-open file \"" << file.GetFilePath() << "\" - " << file.GetErrorText()));
+  return false;
+}
+
+
+void PFile::RotateInfo::OnMessage(bool PTRACE_PARAM(error), const PString & PTRACE_PARAM(msg))
+{
+  PTRACE(error ? 2 : 3, NULL, PTraceModule(), msg);
+}
+
+
 // End Of File ///////////////////////////////////////////////////////////////

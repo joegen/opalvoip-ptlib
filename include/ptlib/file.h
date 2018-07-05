@@ -570,6 +570,77 @@ class PFile : public PChannel
     bool SetPermissions(
       PFileInfo::Permissions permissions  ///< New permissions mask for the file.
     );
+
+    /** Information on how to rotate files.
+        The system will generate a new file path via
+        <code>
+            m_directory + m_prefix + PTime::AsString(m_timeTemplate) + m_suffix
+        </code>
+        which is used with renaming/moving the file.
+
+        The wildcard:
+        <code>
+            m_directory + m_prefix + '*' + m_suffix
+        </code>
+        is used to determine the files to remove.
+    */
+    struct RotateInfo
+    {
+      RotateInfo(const PDirectory & dir);
+      virtual ~RotateInfo() { }
+
+      /** Inidcate that the RotateInfo is configured so that rotations can be made
+          via the Rotate() function.
+        */
+      bool CanRotate() const;
+
+      /** Execute a rotation.
+          The \b file is closed, renamed to new name, and re-opened. The old rotated
+          files are are aos checked and deleted according to the criteria here.
+
+          If \b force is false then the file must be larger than m_maxSize.
+          If \b force is true the the file is moved and re-opened regardless of it's
+          current size.
+
+          Note, m_maxSize must be non zero and m_timestamp must be non-empty string
+          for this to operate, even in the \b force == true case.
+        */
+      bool Rotate(
+        PFile & activeFile,
+        bool force = false  ///< Force rotate regardless of time/size conditions
+      );
+
+      /** Callback when a rotation of an open file is about to be performed.
+          This is called just before the PFile is closed, and new one is opened.
+        */
+      virtual void OnCloseFile(
+        PFile & file,               ///< File to be rotated.
+        const PFilePath & rotatedTo ///< Name to which file will be rotated
+      );
+
+      /** Callback to open the file.
+          The default behaviour calls file.Open(PFile::WriteOnly).
+        */
+      virtual bool OnOpenFile(
+        PFile & file                ///< File to be reopened.
+      );
+
+      /** Callback when have a message on thte rotation
+        */
+      virtual void OnMessage(
+        bool error,           ///< Message is about an error, otherwise just informative.
+        const PString & msg   ///< Message to output
+      );
+
+      PDirectory      m_directory;    ///< Destination directory for rotated file, default to same s log file
+      PFilePathString m_prefix;       ///< File name prefix, default PProcess::GetName()
+      PString         m_timestamp;    ///< Time template for rotated file, default "_yyyy_MM_dd_hh_mm"
+      int             m_timeZone;     ///< TIme zone for output and rotated file names
+      PFilePathString m_suffix;       ///< File name suffix, default ".log"
+      off_t           m_maxSize;      ///< Size in bytes which triggers a rotation, default zero disables
+      unsigned        m_maxFileCount; ///< When this many files have been rotated, oldest is deleted
+      PTimeInterval   m_maxFileAge;   ///< Rotated files older than this are deleted
+    };
   //@}
 
   protected:

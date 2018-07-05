@@ -271,32 +271,12 @@ class PSystemLogToFile : public PSystemLogTarget
       */
     bool Clear();
 
-    /** Information on how to rotate log files.
-        The system will generate a new file path via
-            m_directory + m_prefix + PTime::AsString(m_timeTemplate) + m_suffix
-        which is used with renaming/moving the log file.
-
-        The string
-            m_directory + m_prefix + '*' + m_suffix
-        is used to determine the files to remove.
-    */
-    struct RotateInfo
+    struct RotateInfo : PFile::RotateInfo
     {
-      RotateInfo(const PDirectory & dir);
-
-      bool CanRotate() const
-      {
-        return m_maxSize > 0 && !m_timestamp.IsEmpty();
-      }
-
-      PDirectory      m_directory;    ///< Destination directory for rotated file, default to same s log file
-      PFilePathString m_prefix;       ///< File name prefix, default PProcess::GetName()
-      PString         m_timestamp;    ///< Time template for rotated file, default "_yyyy_MM_dd_hh_mm"
-      int             m_timeZone;     ///< TIme zone for output and rotated file names
-      PFilePathString m_suffix;       ///< File name suffix, default ".log"
-      off_t           m_maxSize;      ///< Size in bytes which triggers a rotation, default zero disables
-      unsigned        m_maxFileCount; ///< When this many files have been rotated, oldest is deleted
-      PTimeInterval   m_maxFileAge;   ///< Rotated files older than this are deleted
+      RotateInfo(const PDirectory & dir) : PFile::RotateInfo(dir) { m_suffix = ".log"; }
+      virtual void OnCloseFile(PFile & file, const PFilePath & rotatedTo);
+      virtual bool OnOpenFile(PFile & file);
+      virtual void OnMessage(bool error, const PString & msg);
     };
 
     /** Set file rotation template information.
@@ -323,8 +303,6 @@ class PSystemLogToFile : public PSystemLogTarget
     //@}
 
   protected:
-    bool InternalOpen();
-
     PTextFile  m_file;
     RotateInfo m_rotateInfo;
     PMutex     m_mutex;
