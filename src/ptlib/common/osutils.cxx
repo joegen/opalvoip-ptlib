@@ -4661,7 +4661,7 @@ bool PFile::RotateInfo::CanRotate() const
 
 bool PFile::RotateInfo::Rotate(PFile & file, bool force)
 {
-  if (m_maxSize == 0 || m_timestamp.IsEmpty() || (!force && file.GetLength() < m_maxSize))
+  if (m_maxSize == 0 || m_timestamp.IsEmpty() || (!force && file.IsOpen() && file.GetLength() < m_maxSize))
     return false;
 
   PFilePath rotatedFile;
@@ -4676,8 +4676,10 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force)
     OnCloseFile(file, rotatedFile);
     file.Close();
   }
+  else
+    file.SetFilePath(m_directory + m_prefix + m_suffix);
 
-  bool badMove = PFile::Move(file.GetFilePath(), rotatedFile, false, true);
+  bool badMove = file.Exists() && !PFile::Move(file.GetFilePath(), rotatedFile, false, true);
 
   bool ok = OnOpenFile(file);
 
