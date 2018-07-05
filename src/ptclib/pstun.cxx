@@ -227,6 +227,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
 }
 
 
+#if P_SSL
 void PSTUN::AppendMessageIntegrity(PSTUNMessage & message)
 {
   if (m_userName.IsEmpty() || m_password.IsEmpty())
@@ -379,6 +380,8 @@ int PSTUN::MakeAuthenticatedRequest(PSTUNUDPSocket * socket, PSTUNMessage & requ
 
   return 0;
 }
+#endif // P_SSL
+
 
 void PSTUN::SetCredentials(const PString & username, const PString & password, const PString & realm)
 {
@@ -726,6 +729,7 @@ bool PSTUNMessage::Poll(PUDPSocket & socket, const PSTUNMessage & request, PINDE
 }
 
 
+#if P_SSL
 void PSTUNMessage::AddMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen, PSTUNMessageIntegrity * mi)
 {
   if (credentialsHashPtr == NULL || credentialsHashLen == 0)
@@ -748,17 +752,12 @@ unsigned PSTUNMessage::CheckMessageIntegrity(const BYTE * credentialsHashPtr, PI
   if (mi == NULL)
     return 401;
 
-#if P_SSL
   BYTE hmac[sizeof(mi->m_hmac)];
   CalculateMessageIntegrity(credentialsHashPtr, credentialsHashLen, mi, hmac, sizeof(hmac));
   return memcmp(hmac, mi->m_hmac, sizeof(hmac)) == 0 ? 0 : 431;
-#else
-  return 0;
-#endif
 }
 
 
-#if P_SSL
 void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PINDEX credentialsHashLen,
                                              PSTUNMessageIntegrity * mi, BYTE * hmacPtr, PINDEX hmacSize) const
 {
@@ -780,13 +779,7 @@ void PSTUNMessage::CalculateMessageIntegrity(const BYTE * credentialsHashPtr, PI
   // copy the hash to the returned buffer
   memcpy(hmacPtr, result.GetPointer(), std::min(hmacSize, result.GetSize()));
 }
-#else
-void PSTUNMessage::CalculateMessageIntegrity(const BYTE *, PINDEX, PSTUNMessageIntegrity *, BYTE * hmacPtr, PINDEX hmacSize) const
-{
-  PTRACE(2, "Cannot calculate HMAC-SHA1 for MESSAGE-INTEGRITY");
-  memset(hmacPtr, 0, hmacSize);
-}
-#endif
+#endif // P_SSL
 
 
 void PSTUNMessage::AddFingerprint(PSTUNFingerprint * fp)
@@ -1540,6 +1533,8 @@ bool PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
 
 //////////////////////////////////////////////////////////////////////
    
+#if P_TURN
+
 void PTURNRequestedTransport::Initialise(BYTE protocol)
 {
   m_protocol = protocol;
@@ -2011,6 +2006,8 @@ bool PTURNClient::RefreshAllocation(DWORD lifetime)
   return MakeAuthenticatedRequest(m_socket, request, response) == 0;
 }
 
+
+#endif // P_TURN
 
 #endif // P_STUN
 

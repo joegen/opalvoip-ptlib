@@ -330,6 +330,9 @@
   #undef P_STUN
   #if P_STUN
     #undef P_STUNSRVR
+    #if P_SSL
+      #undef P_TURN
+    #endif
   #endif
 #endif
 

@@ -296,6 +296,7 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
       goto sendResponse;
     }
 
+#if P_SSL
     unsigned errorCode = request.CheckMessageIntegrity(m_password);
     if (errorCode != 0) {
       PTRACE(2, "Integrity check failed (" << errorCode << ") for " << request << " on interface " << socketInfo.m_socketAddress);
@@ -303,6 +304,7 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
       response.AddAttribute(PSTUNStringAttribute(PSTUNAttribute::USERNAME, m_userName));
       goto sendResponse;
     }
+#endif // P_SSL
   }
 
   PTRACE(m_throttleReceivedPacket, "Received " << request << " on " << socketInfo.m_socketAddress << m_throttleReceivedPacket);
@@ -412,7 +414,9 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
   OnBindingResponse(request, response);
 
 sendResponse:
+#if P_SSL
   response.AddMessageIntegrity(m_password); // Must be last things before sending
+#endif // P_SSL
   response.AddFingerprint();
   response.Write(*replySocket, request.GetSourceAddressAndPort());
 

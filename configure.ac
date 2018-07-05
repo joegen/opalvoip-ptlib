@@ -2115,10 +2115,13 @@ dnl ########################################################################
 dnl check for enabling STUN support
 dnl MSWIN_DISPLAY    stun,STUN Support
 dnl MSWIN_DEFINE     stun,P_STUN
+dnl MSWIN_DISPLAY    turn,TURN support
+dnl MSWIN_DEFINE     turn,P_TURN
 dnl MSWIN_DISPLAY    stunsrv,STUN server support
 dnl MSWIN_DEFINE     stunsrv,P_STUNSRVR
  
 PTLIB_SIMPLE_OPTION([stun],     [STUN],     [STUN support],        [HAS_NAT])
+PTLIB_SIMPLE_OPTION([turn],     [TURN],     [TURN support],        [HAS_STUN], [HAS_OPENSSL])
 PTLIB_SIMPLE_OPTION([stunsrvr], [STUNSRVR], [STUN server support], [HAS_NAT])
 
 dnl ########################################################################
