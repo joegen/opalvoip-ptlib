@@ -4754,12 +4754,13 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
     std::multimap<PTime, PFilePath> rotatedFiles;
     PDirectory dir(m_directory);
     if (dir.Open(PFileInfo::RegularFile)) {
+      PFileInfo info;
       int failsafe = 10000;
       do {
-        PString name = dir.GetEntryName();
-        PFileInfo info;
-        if (  m_prefix == name.Left(m_prefix.GetLength()) &&
-              m_suffix == name.Right(m_suffix.GetLength()) &&
+        PFilePathString name = dir.GetEntryName();
+        if (  name != file.GetFilePath().GetFileName() &&
+              name.NumCompare(m_prefix, m_prefix.GetLength()) == EqualTo &&
+              name.NumCompare(m_suffix, m_suffix.GetLength(), name.GetLength() - m_suffix.GetLength()) == EqualTo &&
               dir.GetInfo(info))
           rotatedFiles.insert(std::multimap<PTime, PFilePath>::value_type(info.modified, dir + name));
       } while (dir.Next() && --failsafe > 0);
