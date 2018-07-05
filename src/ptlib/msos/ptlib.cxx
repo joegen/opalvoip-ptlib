@@ -944,7 +944,7 @@ void PProcess::PlatformConstruct()
 #else
   extern LONG WINAPI PExceptionHandler(PEXCEPTION_POINTERS info);
   SetUnhandledExceptionFilter(PExceptionHandler);
-  HRESULT result = WerAddExcludedApplication(m_executableFile.AsUCS2(), false);
+  PTRACE_PARAM(HRESULT result =) WerAddExcludedApplication(m_executableFile.AsUCS2(), false);
   PTRACE_IF(1, result != S_OK, "PTLib", "Error excluding application from WER crash dialogs: err=" << result);
 #endif
 }
