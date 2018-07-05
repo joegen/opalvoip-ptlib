@@ -309,7 +309,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
   bool HasOption(unsigned options) const { return (m_options & options) != 0; }
 
-  void OpenTraceFile(const char * newFilename, bool outputFirstLog)
+  void OpenTraceFile(const char * newFilename, bool outputFirstLog, const PTime & now = PTime())
   {
     PMEMORY_IGNORE_ALLOCATIONS_FOR_SCOPE;
 
@@ -364,7 +364,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
 
       PString rollover;
       if ((m_options & RotateLogMask) != 0)
-        rollover = PTime().AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local));
+        rollover = now.AsString(m_rolloverPattern, ((m_options&GMTTime) ? PTime::GMT : PTime::Local));
 
       fn.Replace("%D", rollover, true);
       fn.Replace("%N", PProcess::Current().GetName(), true);
@@ -420,7 +420,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
       log << PProcess::GetOSClass() << ' ' << PProcess::GetOSName()
           << " (" << PProcess::GetOSVersion() << '-' << PProcess::GetOSHardware() << ")"
              " with PTLib (v" << PProcess::GetLibVersion() << ")"
-             " at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu") << ","
+             " at " << now.AsString("yyyy/M/d h:mm:ss.uuu") << ","
              " level=" << m_thresholdLevel << ", to ";
       if ((m_options & RotateLogMask) == 0)
         log << '"' << m_filename;
@@ -4728,7 +4728,7 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
   m_lastTime = now;
 
   PFilePath rotatedFile;
-  PString timestamp = PTime().AsString(m_timestamp, m_timeZone);
+  PString timestamp = now.AsString(m_timestamp, m_timeZone);
   PString tiebreak;
   do {
       rotatedFile = PSTRSTRM(m_directory << m_prefix << timestamp << tiebreak << m_suffix);
@@ -4777,7 +4777,7 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
     }
 
     if (m_maxFileAge > 0) {
-      PTime then = PTime() - m_maxFileAge;
+      PTime then = now - m_maxFileAge;
       while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
         PFilePath filePath = rotatedFiles.begin()->second;
         if (PFile::Remove(filePath))
