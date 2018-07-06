@@ -278,7 +278,11 @@ struct PJavaScript::Private : PObject
       }
 #endif // V8_BLOBS_DIR
 
+#if V8_MAJOR_VERSION < 6
       if (!v8::V8::InitializeICU(exeDir)) {
+#else
+      if (!v8::V8::InitializeICUDefaultLocation(exeDir)) {
+#endif
         PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed, continuing.");
       }
 
