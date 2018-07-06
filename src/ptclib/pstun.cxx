@@ -1200,6 +1200,12 @@ void PSTUNClient::Close()
 
 bool PSTUNClient::SetServer(const PString & server)
 {
+  if (server.IsEmpty()) {
+    m_serverName.MakeEmpty();
+    m_serverAddress = PIPSocketAddressAndPort();
+    return true;
+  }
+
 #if P_DNS_RESOLVER
   PIPSocketAddressAndPortVector addresses;
   if (PDNS::LookupSRV(server, "_stun._udp.", DefaultPort, addresses)) {
