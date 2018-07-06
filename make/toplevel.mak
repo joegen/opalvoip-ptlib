@@ -91,38 +91,41 @@ ifeq (1, $(HAS_SAMPLES))
              $(PTLIB_TOP_LEVEL_DIR)/samples/sockbundle \
              $(PTLIB_TOP_LEVEL_DIR)/samples/timing \
              $(PTLIB_TOP_LEVEL_DIR)/samples/thread
-  ifdef HAS_IPV6
+  ifeq ($(HAS_IPV6),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/ipv6test
   endif
-  ifdef HAS_DNS_RESOLVER
+  ifeq ($(HAS_DNS_RESOLVER),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/dnstest
   endif
-  ifdef HAS_STUN
+  ifeq ($(HAS_STUN),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/stunclient
   endif
-  ifdef HAS_URL
+  ifeq ($(HAS_URL),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/url
   endif
-  ifdef HAS_HTTP
+  ifeq ($(HAS_HTTP),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/httptest \
                $(PTLIB_TOP_LEVEL_DIR)/samples/find_ip
   endif
-  ifdef HAS_VCARD
+  ifeq ($(HAS_VCARD),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/vcard
   endif
-  ifdef HAS_ODBC
+  ifeq ($(HAS_ODBC),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/ODBC
   endif
-  ifdef HAS_LUA
+  ifeq ($(HAS_LUA),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/lua
   endif
-  ifdef HAS_PCAP
+  ifeq ($(HAS_V8),1)
+    SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/javascript
+  endif
+  ifeq ($(HAS_PCAP),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/ether
   endif
-  ifdef HAS_AUDIO
+  ifeq ($(HAS_AUDIO),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/audio
   endif
-  ifdef HAS_VIDEO
+  ifeq ($(HAS_VIDEO),1)
     SUBDIRS += $(PTLIB_TOP_LEVEL_DIR)/samples/vidtest
   endif
 endif

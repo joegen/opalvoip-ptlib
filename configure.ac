@@ -1933,12 +1933,26 @@ PTLIB_MODULE_OPTION(
    [V8 Javascript script support],
    [v8],
    [],
-   [-lv8],
+   [-lv8_base -lv8_libbase -lv8_libplatform -lv8_snapshot],
    [#include <v8.h>],
    [
-      v8::Isolate * isolate;
-      isolate->SetEventLogger(NULL);
-   ]
+      int ver = V8_MAJOR_VERSION;
+      v8::V8::Initialize();
+   ],
+   [],
+   [PTLIB_MODULE_OPTION(
+      [V8],
+      [v8],
+      [V8 Javascript script support],
+      [v8],
+      [],
+      [-lv8],
+      [#include <v8.h>],
+      [
+         int ver = V8_MAJOR_VERSION;
+         v8::V8::Initialize();
+      ]
+   )]
 )
 
 

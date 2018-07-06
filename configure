@@ -718,6 +718,8 @@ PTLIB_PIPECHAN
 HAS_PIPECHAN
 PTLIB_STUNSRVR
 HAS_STUNSRVR
+PTLIB_TURN
+HAS_TURN
 PTLIB_STUN
 HAS_STUN
 PTLIB_NAT
@@ -1006,6 +1008,7 @@ enable_soap
 enable_asn
 enable_nat
 enable_stun
+enable_turn
 enable_stunsrvr
 enable_pipechan
 enable_dtmf
@@ -1777,6 +1780,7 @@ Optional Features:
   --disable-asn           disable ASN decoding/encoding support
   --disable-nat           disable NAT traversal support
   --disable-stun          disable STUN support
+  --disable-turn          disable TURN support
   --disable-stunsrvr      disable STUN server support
   --disable-pipechan      disable sub-process (PPipeChannel) support
   --disable-dtmf          disable DTMF protocol support
@@ -6215,8 +6219,8 @@ fi
       target_os=Darwin
       target_release=`xcodebuild -showsdks | sed -n 's/.*macosx\(.*\)/\1/p' | sort | tail -n 1`
 
-      CPPFLAGS="-mmacosx-version-min=10.12 $CPPFLAGS"
-      LDFLAGS="-mmacosx-version-min=10.12 $LDFLAGS"
+      CPPFLAGS="-mmacosx-version-min=$target_release $CPPFLAGS"
+      LDFLAGS="-mmacosx-version-min=$target_release $LDFLAGS"
       LIBS="-framework AVFoundation -framework CoreVideo -framework CoreMedia -framework AudioUnit $LIBS"
    ;;
 
@@ -14221,6 +14225,234 @@ if test "${with_v8_dir+set}" = set; then :
                   { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for V8 Javascript script support" >&5
 $as_echo "$as_me: Using directory $withval for V8 Javascript script support" >&6;}
                   V8_CFLAGS="-I$withval/include "
+                  V8_LIBS="-L$withval/lib -lv8_base -lv8_libbase -lv8_libplatform -lv8_snapshot"
+
+else
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for v8" >&5
+$as_echo_n "checking for v8... " >&6; }
+
+if test -n "$V8_CFLAGS"; then
+    pkg_cv_V8_CFLAGS="$V8_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"v8\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "v8") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_V8_CFLAGS=`$PKG_CONFIG --cflags "v8" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$V8_LIBS"; then
+    pkg_cv_V8_LIBS="$V8_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"v8\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "v8") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_V8_LIBS=`$PKG_CONFIG --libs "v8" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        V8_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "v8" 2>&1`
+        else
+	        V8_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "v8" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$V8_PKG_ERRORS" >&5
+
+
+                     V8_CFLAGS=""
+                     V8_LIBS="-lv8_base -lv8_libbase -lv8_libplatform -lv8_snapshot"
+
+
+elif test $pkg_failed = untried; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+                     V8_CFLAGS=""
+                     V8_LIBS="-lv8_base -lv8_libbase -lv8_libplatform -lv8_snapshot"
+
+
+else
+	V8_CFLAGS=$pkg_cv_V8_CFLAGS
+	V8_LIBS=$pkg_cv_V8_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
+fi
+
+
+         if test "x$usable" = xyes; then :
+
+   MY_LINK_IFELSE_CPPFLAGS="$CPPFLAGS"
+   MY_LINK_IFELSE_LIBS="$LIBS"
+   CPPFLAGS="$CPPFLAGS $V8_CFLAGS"
+   LIBS="$V8_LIBS $LIBS"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for V8 Javascript script support usability" >&5
+$as_echo_n "checking for V8 Javascript script support usability... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <v8.h>
+int
+main ()
+{
+
+      int ver = V8_MAJOR_VERSION;
+      v8::V8::Initialize();
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  usable=yes
+else
+  usable=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $usable" >&5
+$as_echo "$usable" >&6; }
+   CPPFLAGS="$MY_LINK_IFELSE_CPPFLAGS"
+   LIBS="$MY_LINK_IFELSE_LIBS"
+
+   if test "x$usable" = "xyes"; then :
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Adding CPPFLAGS: $V8_CFLAGS" >&5
+$as_echo "$as_me: Adding CPPFLAGS: $V8_CFLAGS" >&6;}
+      CPPFLAGS="$V8_CFLAGS $CPPFLAGS"
+
+
+
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Adding LIBS: $V8_LIBS" >&5
+$as_echo "$as_me: Adding LIBS: $V8_LIBS" >&6;}
+      LIBS="$V8_LIBS $LIBS"
+
+
+
+else
+  usable=no
+
+fi
+
+
+
+fi
+
+
+
+fi
+
+fi
+
+   V8_USABLE=$usable
+
+
+
+   if test "x$usable" = "xyes"; then :
+
+else
+
+
+   V8_SYSTEM="yes"
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking V8 Javascript script support" >&5
+$as_echo_n "checking V8 Javascript script support... " >&6; }
+
+   # Check whether --enable-v8 was given.
+if test "${enable_v8+set}" = set; then :
+  enableval=$enable_v8; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_V8:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+  usable=yes
+else
+  usable=no
+fi
+
+
+   enable_v8="$enableval"
+
+
+   if test "x$usable" = xyes; then :
+
+
+
+      if test "x$V8_SYSTEM" = xyes; then :
+
+
+# Check whether --with-v8-dir was given.
+if test "${with_v8_dir+set}" = set; then :
+  withval=$with_v8_dir;
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: Using directory $withval for V8 Javascript script support" >&5
+$as_echo "$as_me: Using directory $withval for V8 Javascript script support" >&6;}
+                  V8_CFLAGS="-I$withval/include "
                   V8_LIBS="-L$withval/lib -lv8"
 
 else
@@ -14322,8 +14554,8 @@ int
 main ()
 {
 
-      v8::Isolate * isolate;
-      isolate->SetEventLogger(NULL);
+         int ver = V8_MAJOR_VERSION;
+         v8::V8::Initialize();
 
 
   ;
@@ -14380,6 +14612,34 @@ fi
 
 
 
+
+
+
+   HAS_V8=$V8_USABLE
+
+   if test "x$HAS_V8" = "xyes" ; then
+      HAS_V8=1
+   fi
+
+   if test "x$HAS_V8" = "x0" || test "x$HAS_V8" = "xno" ; then
+      HAS_V8=
+   fi
+
+
+
+   if test "x$HAS_V8" = "x1" ; then
+      PTLIB_V8=yes
+      $as_echo "#define P_V8 1" >>confdefs.h
+
+   else
+      PTLIB_V8=no
+   fi
+
+
+
+
+
+fi
 
 
 
@@ -16465,6 +16725,99 @@ fi
 
 
    enable_stun="$enableval"
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking TURN support" >&5
+$as_echo_n "checking TURN support... " >&6; }
+
+   # Check whether --enable-turn was given.
+if test "${enable_turn+set}" = set; then :
+  enableval=$enable_turn; if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by user" >&5
+$as_echo "disabled by user" >&6; }
+fi
+else
+
+         enableval=${DEFAULT_TURN:-yes}
+         if test "x$enableval" = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled by default" >&5
+$as_echo "disabled by default" >&6; }
+fi
+
+
+fi
+
+
+
+
+      if test "x${enableval}" = "xyes" && \
+             test "x$HAS_STUN" != "x1" && \
+             test "x$HAS_STUN" != "xyes"; then :
+
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_STUN=$HAS_STUN" >&5
+$as_echo "disabled due to disabled dependency HAS_STUN=$HAS_STUN" >&6; }
+         enableval=no
+
+fi
+
+
+
+
+      if test "x${enableval}" = "xyes" && \
+             test "x$HAS_OPENSSL" != "x1" && \
+             test "x$HAS_OPENSSL" != "xyes"; then :
+
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled due to disabled dependency HAS_OPENSSL=$HAS_OPENSSL" >&5
+$as_echo "disabled due to disabled dependency HAS_OPENSSL=$HAS_OPENSSL" >&6; }
+         enableval=no
+
+fi
+
+
+
+
+
+
+
+
+
+   if test "x$enableval" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+   if test "x$enableval" = "xyes"; then :
+
+   HAS_TURN=1
+
+   if test "x$HAS_TURN" = "xyes" ; then
+      HAS_TURN=1
+   fi
+
+   if test "x$HAS_TURN" = "x0" || test "x$HAS_TURN" = "xno" ; then
+      HAS_TURN=
+   fi
+
+
+
+   if test "x$HAS_TURN" = "x1" ; then
+      PTLIB_TURN=yes
+      $as_echo "#define P_TURN 1" >>confdefs.h
+
+   else
+      PTLIB_TURN=no
+   fi
+
+
+
+else
+  HAS_TURN=
+fi
+
+
+   enable_turn="$enableval"
 
 
 
