@@ -4709,7 +4709,6 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
       break;
 
     case Daily :
-      PTRACE(1, &file, now.GetDay() << ' ' << m_lastTime.GetDay());
       if (now.GetDay() != m_lastTime.GetDay())
         force = true;
       break;
@@ -4728,7 +4727,6 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
       break;
   }
 
-  PTRACE(1, &file, m_prefix << ' ' << force);
   if (!force)
     return false;
 
