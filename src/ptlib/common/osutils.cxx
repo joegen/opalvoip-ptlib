@@ -4699,28 +4699,38 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
   if (m_maxSize == 0 || m_timestamp.IsEmpty())
     return false;
 
-  if (file.IsOpen() && file.GetLength() > m_maxSize)
+  if (file.IsOpen() && file.GetLength() > m_maxSize) {
+    PTRACE(4, &file, "File greater than " << m_maxSize << " bytes");
     force = true;
+  }
 
   switch (m_period) {
     case Hourly :
-      if (now.GetHour() != m_lastTime.GetHour())
+      if (now.GetHour() != m_lastTime.GetHour()) {
+        PTRACE(4, &file, "Hourly");
         force = true;
+      }
       break;
 
     case Daily :
-      if (now.GetDay() != m_lastTime.GetDay())
+      if (now.GetDay() != m_lastTime.GetDay()) {
+        PTRACE(4, &file, "Daily");
         force = true;
+      }
       break;
 
     case Weekly :
-      if (now.GetDayOfWeek() != m_lastTime.GetDayOfWeek() && now.GetDayOfWeek() == PTime::Sunday)
+      if (now.GetDayOfWeek() != m_lastTime.GetDayOfWeek() && now.GetDayOfWeek() == PTime::Sunday) {
+        PTRACE(4, &file, "Weekly");
         force = true;
+      }
       break;
 
     case Monthly :
-      if (now.GetMonth() != m_lastTime.GetMonth())
+      if (now.GetMonth() != m_lastTime.GetMonth()) {
+        PTRACE(4, &file, "Monthly");
         force = true;
+      }
       break;
 
     default :
@@ -4757,6 +4767,8 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
 
   if (m_maxFileCount > 0 || m_maxFileAge > 0) {
     std::multimap<PTime, PFilePath> rotatedFiles;
+    std::multimap<PTime, PFilePath>::iterator itFile;
+
     PDirectory dir(m_directory);
     if (dir.Open(PFileInfo::RegularFile)) {
       PFileInfo info;
@@ -4773,24 +4785,25 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
 
     if (m_maxFileCount > 0) {
       while (rotatedFiles.size() > m_maxFileCount) {
-        PFilePath filePath = rotatedFiles.begin()->second;
+        itFile = rotatedFiles.begin();
+        PFilePath filePath = itFile->second;
         if (PFile::Remove(filePath))
           OnMessage(false, PSTRSTRM("Removed excess file \"" << filePath << '"'));
         else
           OnMessage(true, PSTRSTRM("Could not remove excess file \"" << filePath << '"'));
-        rotatedFiles.erase(rotatedFiles.begin());
+        rotatedFiles.erase(itFile);
       }
     }
 
     if (m_maxFileAge > 0) {
       PTime then = now - m_maxFileAge;
-      while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then) {
-        PFilePath filePath = rotatedFiles.begin()->second;
+      while (!rotatedFiles.empty() && (itFile = rotatedFiles.begin())->first < then) {
+        PFilePath filePath = itFile->second;
         if (PFile::Remove(filePath))
-          OnMessage(false, PSTRSTRM("Removed aged file \"" << filePath << '"'));
+          OnMessage(false, PSTRSTRM("Removed aged (" << itFile->first << ") file \"" << filePath << '"'));
         else
           OnMessage(true, PSTRSTRM("Could not remove aged file \"" << filePath << '"'));
-        rotatedFiles.erase(rotatedFiles.begin());
+        rotatedFiles.erase(itFile);
       }
     }
   }
