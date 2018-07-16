@@ -1230,7 +1230,7 @@ bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PStri
 
   int result = http->ExecuteCommand(PHTTP::GET, url, outMIME, PString::Empty(), replyMIME);
   if (result < 100 || result >= 300) {
-    PTRACE(2, "WebSocket reply error: " << result);
+    PTRACE(2, "WebSocket reply error: " << result << " - " << http->GetLastResponseInfo());
     SetErrorValues(ProtocolFailure, EPROTO);
     return false;
   }
