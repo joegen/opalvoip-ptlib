@@ -1111,13 +1111,16 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
     switch (count) {
       case 1 :
         *(BYTE *)ptr ^= m_currentMask;
+        m_currentMask = uint32_t(m_currentMask << 24) | (m_currentMask >> 8);
         break;
       case 2:
         *(uint16_t *)ptr ^= m_currentMask;
+        m_currentMask = uint32_t(m_currentMask << 16) | (m_currentMask >> 16);
         break;
       case 3:
         *(uint16_t *)ptr ^= m_currentMask;
         *(BYTE *)(ptr+2) ^= m_currentMask>>16;
+        m_currentMask = uint32_t(m_currentMask << 8) | (m_currentMask >> 24);
         break;
     }
   }
