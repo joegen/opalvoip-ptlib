@@ -5,7 +5,7 @@
 #define SL_HEADER
 
 
-#define SL_API_VERSION 1
+#define SL_API_VERSION 2
 
 
 #if defined(_WIN32)
@@ -125,6 +125,26 @@ extern "C" {
 
   SL_EXPORT int SL_STDCALL SLPreview(const SLPreviewData * data);
   typedef int (*SLPreviewFn)(const SLPreviewData * data);
+
+
+  /** Execute control operation.
+     This will be called to execute arbitrary control operations. Those
+     operations are entirely determined by the library. This would typically
+     be called via the SignLanguageAnalyserControl() ECMA script function
+     available in VXML.
+
+     The function return value is 1 if the control was performed, and a negative
+     number for failure.
+   */
+
+  typedef struct SLControlData
+  {
+    unsigned     m_instance;  // In - Index of the analyser instance, value from 0 .. m_maxInstances-1
+    const char * m_control;   // In - arbitrary control string
+  } SLControlData;
+
+  SL_EXPORT int SL_STDCALL SLControl(const SLControlData * ctrl);
+  typedef int (*SLControlFn)(const SLControlData * ctrl);
 
 
 #ifdef __cplusplus

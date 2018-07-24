@@ -203,6 +203,7 @@ PFACTORY_CREATE(PVXMLNodeFactory, PVXMLTraverseLog, "Log", true);
 #if P_VXML_VIDEO
 
 #define SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION "SignLanguageAnalyserPreview"
+#define SIGN_LANGUAGE_CONTROL_SCRIPT_FUNCTION "SignLanguageAnalyserControl"
 
 class PVXMLSignLanguageAnalyser : public PProcessStartup
 {
@@ -217,6 +218,7 @@ class PVXMLSignLanguageAnalyser : public PProcessStartup
     EntryPoint<SLReleaseFn>    SLRelease;
     EntryPoint<SLAnalyseFn>    SLAnalyse;
     EntryPoint<SLPreviewFn>    SLPreview;
+    EntryPoint<SLControlFn>    SLControl;
 
     Library(const PFilePath & dllName)
       : PDynaLink(dllName)
@@ -224,6 +226,7 @@ class PVXMLSignLanguageAnalyser : public PProcessStartup
       , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLRelease)
       , P_DYNALINK_ENTRY_POINT(SLAnalyse)
       , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLPreview)
+      , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLControl)
     {
     }
 
@@ -399,6 +402,18 @@ public:
     data.m_pixels = pixels;
 
     return m_library->SLPreview(&data);
+  }
+
+  int Control(unsigned instance, const PString & ctrl)
+  {
+    PReadWaitAndSignal lock(m_mutex);
+    if (!m_library->SLControl.IsPresent())
+      return 0;
+
+    SLControlData data;
+    data.m_instance = instance;
+    data.m_control = ctrl;
+    return m_library->SLControl(&data);
   }
 };
 
@@ -1059,6 +1074,7 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
     m_scriptContext->CreateComposite("session.connection.remote");
 #if P_VXML_VIDEO
     m_scriptContext->SetFunction(SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION, PCREATE_NOTIFIER(SignLanguagePreviewFunction));
+    m_scriptContext->SetFunction(SIGN_LANGUAGE_CONTROL_SCRIPT_FUNCTION, PCREATE_NOTIFIER(SignLanguageControlFunction));
 #endif
   }
 #endif
@@ -1864,6 +1880,34 @@ PBoolean PVXMLSession::TraverseScript(PXMLElement & element)
 }
 
 
+static bool IsFunction(const PString & expr, PINDEX offset, PINDEX & endname, PINDEX & startarg, PINDEX & endarg)
+{
+  if (!isalpha(expr[offset]) && expr[offset] != '_')
+    return false;
+
+  PINDEX pos = offset + 1;
+  while (isalnum(expr[pos]) || expr[pos] == '_')
+    ++pos;
+  endname = pos - 1;
+
+  while (iswspace(expr[pos]))
+    ++pos;
+
+  if (expr[pos] != '(')
+    return false;
+
+  startarg = pos + 1;
+
+  endarg = expr.Find(')', startarg);
+  if (endarg != P_MAX_INDEX)
+    --endarg;
+  else
+    PTRACE(2, "Mismatched parenthesis");
+
+  return true;
+}
+
+
 PString PVXMLSession::EvaluateExpr(const PString & expr)
 {
 #if P_SCRIPTS
@@ -1883,21 +1927,22 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
 
   PString result;
 
-#if P_VXML_VIDEO
-  if (expr == SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION "()")
-    SetRealVideoSender(new PVXMLSignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver));
-#endif
-
   PINDEX pos = 0;
   while (pos < expr.GetLength()) {
-    if (expr(pos, pos + 4) == "eval(") {
-      PINDEX closedBracket = expr.Find(')', pos);
-      PTRACE_IF(2, closedBracket == P_MAX_INDEX, "Mismatched parenthesis");
-      PString expression = expr(pos + 5, closedBracket - 1);
-      PTRACE(4, "Found eval() function: expression=\"" << expression << "\"");
-      PString evalRes = EvaluateExpr(expression);
-      result += EvaluateExpr(evalRes);
-      pos = closedBracket + 1;
+    PINDEX endname, startarg, endarg;
+    if (IsFunction(expr, pos, endname, startarg, endarg)) {
+      PString funcname = expr(pos, endname);
+      PString expression = expr(startarg, endarg);
+      PTRACE(4, "Found " << funcname << " function: expression=\"" << expression << "\"");
+      if (funcname == "eval")
+        result += EvaluateExpr(EvaluateExpr(expression));
+#if P_VXML_VIDEO
+      else if (funcname == SIGN_LANGUAGE_PREVIEW_SCRIPT_FUNCTION)
+        SetRealVideoSender(new PVXMLSignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver));
+      else if (funcname == SIGN_LANGUAGE_CONTROL_SCRIPT_FUNCTION)
+          PVXMLSignLanguageAnalyser::GetInstance().Control(m_videoReceiver.GetAnalayserInstance(), EvaluateExpr(expression));
+#endif
+      pos = endarg + 2;
     }
     else if (expr[pos] == '\'') {
       PINDEX quote = expr.Find('\'', ++pos);
@@ -2940,6 +2985,20 @@ void PVXMLSession::SetRealVideoSender(PVideoInputDevice * device)
 void PVXMLSession::SignLanguagePreviewFunction(PScriptLanguage &, PScriptLanguage::Signature &)
 {
   SetRealVideoSender(new PVXMLSignLanguageAnalyser::PreviewVideoDevice(m_videoReceiver));
+}
+
+
+void PVXMLSession::SignLanguageControlFunction(PScriptLanguage &, PScriptLanguage::Signature & sig)
+{
+  int instance = m_videoReceiver.GetAnalayserInstance();
+  PString control;
+  if (!sig.m_arguments.empty())
+    control = sig.m_arguments.front().AsString();
+
+  int result = PVXMLSignLanguageAnalyser::GetInstance().Control(instance, control);
+  sig.m_results.push_back(PVarType(result));
+
+  PTRACE(3, SIGN_LANGUAGE_CONTROL_SCRIPT_FUNCTION "(" << instance << ',' << control.ToLiteral() << ") = " << result);
 }
 
 

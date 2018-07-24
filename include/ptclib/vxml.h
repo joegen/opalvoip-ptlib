@@ -417,6 +417,7 @@ class PVXMLSession : public PIndirectChannel
     void SetRealVideoSender(PVideoInputDevice * device);
     friend class PVXMLSignLanguageAnalyser;
     PDECLARE_ScriptFunctionNotifier(PVXMLSession, SignLanguagePreviewFunction);
+    PDECLARE_ScriptFunctionNotifier(PVXMLSession, SignLanguageControlFunction);
 
     class VideoReceiverDevice : public PVideoOutputDevice
     {
