@@ -687,7 +687,7 @@ PString PConsoleChannel::GetName() const
 int PConsoleChannel::ReadChar()
 {
   if (CheckNotOpen())
-    return false;
+    return -1;
 
   {
     DWORD mode;
