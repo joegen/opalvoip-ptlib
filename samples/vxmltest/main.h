@@ -17,6 +17,37 @@ class PVideoInputDevice;
 class PVideoOutputDevice;
 
 
+class TestInstance
+{
+#if P_VXML
+  public:
+    TestInstance();
+    ~TestInstance();
+
+    bool Initialise(unsigned instance, const PArgList & args);
+    void SendInput(char c);
+
+  protected:
+    unsigned             m_instance;
+    PSoundChannel      * m_player;
+    PVideoInputDevice  * m_grabber;
+    PVideoOutputDevice * m_viewer;
+    PVXMLSession       * m_vxml;
+
+    PThread * m_audioThread;
+    void CopyAudio();
+
+#if P_VXML_VIDEO
+    PThread * m_videoSenderThread;
+    void CopyVideoSender();
+
+    PThread * m_videoReceiverThread;
+    void CopyVideoReceiver();
+#endif // P_VXML_VIDEO
+#endif // P_VXML
+};
+
+
 class VxmlTest : public PProcess
 {
   PCLASSINFO(VxmlTest, PProcess)
@@ -26,19 +57,8 @@ class VxmlTest : public PProcess
     void Main();
 
   protected:
-    PSoundChannel      * m_player;
-    PVideoInputDevice  * m_grabber;
-    PVideoOutputDevice * m_viewer;
-    PVXMLSession       * m_vxml;
-
-#if P_VXML
-    void HandleInput(PConsoleChannel & console);
-    void CopyAudio();
-#if P_VXML_VIDEO
-    void CopyVideoSender();
-    void CopyVideoReceiver();
-#endif
-#endif
+    PDECLARE_NOTIFIER(PCLI::Arguments, VxmlTest, SimulateInput);
+    std::vector<TestInstance> m_tests;
 };
 
 

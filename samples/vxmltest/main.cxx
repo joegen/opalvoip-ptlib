@@ -12,6 +12,7 @@
 #include <ptlib.h>
 #include <ptlib/sound.h>
 #include <ptclib/vxml.h>
+#include <ptclib/cli.h>
 
 #include "main.h"
 
@@ -22,10 +23,6 @@ PCREATE_PROCESS(VxmlTest);
 
 VxmlTest::VxmlTest()
   : PProcess("Equivalence", "vxmltest", 1, 0, AlphaCode, 1)
-  , m_player(NULL)
-  , m_grabber(NULL)
-  , m_viewer(NULL)
-  , m_vxml(NULL)
 {
 }
 
@@ -48,11 +45,93 @@ void VxmlTest::Main()
                   "-output-channel: Video output channel\n"
 #endif
                   PTRACE_ARGLIST)) {
-    args.Usage(cerr, "[ options ] <vxml-file>");
+    args.Usage(cerr, "[ options ] <vxml-file> [ [ \"--\" | options ] <vxml-file> ... ]");
     return;
   }
 
   PTRACE_INITIALISE(args);
+
+  if (args.HasOption("sign-language")) {
+    if (!PVXMLSession::SetSignLanguageAnalyser(args.GetOptionString("sign-language"))) {
+      cerr << "error: cannot load sign language analyser" << endl;
+      return;
+    }
+    cout << "Using sign language analyser." << endl;
+  }
+
+  std::list<TestInstance> tests;
+  do {
+    tests.push_back(TestInstance());
+    if (!tests.back().Initialise(tests.size(), args))
+      tests.pop_back();
+  } while (args.Parse("-sound-driver:S-sound-device:T-tts:"
+#if P_VXML_VIDEO
+                      "V-video."
+                      "-input-driver:I-input-device:C-input-channel:"
+                      "-output-driver:O-output-device:-output-channel:"
+#endif
+  ));
+
+  PCLIStandard cli("VXML-Test> ");
+  cli.SetCommand("input", PCREATE_NOTIFIER(SimulateInput), "Simulate input for VXML instance (1..n)", "<n> <digit>");
+  cli.Start(false);
+}
+
+
+void VxmlTest::SimulateInput(PCLI::Arguments & args, P_INT_PTR)
+{
+  unsigned num;
+  if (args.GetCount() < 2)
+    args.Usage();
+  else if ((num = args[0].AsUnsigned()) == 0 || num > m_tests.size())
+    args.WriteError("Invalid instance number");
+  else
+    m_tests[num-1].SendInput(args[1][0]);
+}
+
+
+
+TestInstance::TestInstance()
+  : m_instance(0)
+  , m_player(NULL)
+  , m_grabber(NULL)
+  , m_viewer(NULL)
+  , m_vxml(NULL)
+  , m_audioThread(NULL)
+  , m_videoSenderThread(NULL)
+  , m_videoReceiverThread(NULL)
+{
+}
+
+
+TestInstance::~TestInstance()
+{
+  if (m_player != NULL) {
+    m_player->Close();
+    PThread::WaitAndDelete(m_audioThread, PMaxTimeInterval);
+    delete m_player;
+  }
+
+#if P_VXML_VIDEO
+  if (m_viewer != NULL) {
+    m_viewer->Close();
+    PThread::WaitAndDelete(m_videoSenderThread, PMaxTimeInterval);
+    delete m_viewer;
+  }
+
+  if (m_grabber != NULL) {
+    m_grabber->Close();
+    PThread::WaitAndDelete(m_videoReceiverThread, PMaxTimeInterval);
+    delete m_grabber;
+  }
+#endif // P_VXML_VIDEO
+
+  delete m_vxml;
+}
+
+bool TestInstance::Initialise(unsigned instance, const PArgList & args)
+{
+  m_instance = instance;
 
   PSoundChannel::Params audioParams;
   audioParams.m_direction = PSoundChannel::Player;
@@ -60,10 +139,10 @@ void VxmlTest::Main()
   audioParams.m_device = args.GetOptionString("sound-device");
   m_player = PSoundChannel::CreateOpenedChannel(audioParams);
   if (m_player == NULL) {
-    cerr << "error: cannot open sound device \"" << audioParams.m_device << "\"" << endl;
-    return;
+    cerr << "Instance " << m_instance << " error: cannot open sound device \"" << audioParams.m_device << "\"" << endl;
+    return false;
   }
-  cout << "Using audio device \"" << m_player->GetName() << "\"" << endl;
+  cout << "Instance " << m_instance << " using audio device \"" << m_player->GetName() << "\"" << endl;
 
 
 #if P_VXML_VIDEO
@@ -74,20 +153,20 @@ void VxmlTest::Main()
     videoArgs.channelNumber = args.GetOptionString("input-channel", "-1").AsInteger();
     m_grabber = PVideoInputDevice::CreateOpenedDevice(videoArgs);
     if (m_grabber == NULL) {
-      cerr << "error: cannot open video device \"" << videoArgs.deviceName << "\"" << endl;
-      return;
+      cerr << "Instance " << m_instance << " error: cannot open video device \"" << videoArgs.deviceName << "\"" << endl;
+      return false;
     }
-    cout << "Using input video device \"" << m_grabber->GetDeviceName() << "\"" << endl;
+    cout << "Instance " << m_instance << " using input video device \"" << m_grabber->GetDeviceName() << "\"" << endl;
 
     videoArgs.driverName = args.GetOptionString("output-driver");
     videoArgs.deviceName = args.GetOptionString("output-device");
     videoArgs.channelNumber = args.GetOptionString("output-channel", "-1").AsInteger();
     m_viewer = PVideoOutputDevice::CreateOpenedDevice(videoArgs);
     if (m_player == NULL) {
-      cerr << "error: cannot open video device \"" << videoArgs.deviceName << "\"" << endl;
-      return;
+      cerr << "Instance " << m_instance << " error: cannot open video device \"" << videoArgs.deviceName << "\"" << endl;
+      return false;
     }
-    cout << "Using output video device \"" << m_viewer->GetDeviceName() << "\"" << endl;
+    cout << "Instance " << m_instance << " using output video device \"" << m_viewer->GetDeviceName() << "\"" << endl;
   }
 #endif
 
@@ -98,89 +177,59 @@ void VxmlTest::Main()
     if (!engines.empty()) {
       tts = PFactory<PTextToSpeech>::CreateInstance(engines[0]);
       if (tts == NULL) {
-        cerr << "error: cannot select default text to speech engine, use one of:\n";
+        cerr << "Instance " << m_instance << " error: cannot select default text to speech engine, use one of:\n";
         for (PFactory<PTextToSpeech>::KeyList_T::iterator it = engines.begin(); it != engines.end(); ++it)
           cerr << "  " << *it << '\n';
-        return;
+        return false;
       }
     }
   }
-  cout << "Using text to speech \"" << tts->GetVoiceList() << "\"" << endl;
-
-  if (args.HasOption("sign-language")) {
-    if (!PVXMLSession::SetSignLanguageAnalyser(args.GetOptionString("sign-language"))) {
-      cerr << "error: cannot load sign language analyser" << endl;
-      return;
-    }
-    cout << "Using sign language analyser." << endl;
-  }
+  cout << "Instance " << m_instance << " using text to speech \"" << tts->GetVoiceList() << "\"" << endl;
 
   m_vxml = new PVXMLSession(tts);
   if (!m_vxml->Load(args[0])) {
-    cerr << "error: cannot loading VXML document \"" << args[0] << "\" - " << m_vxml->GetXMLError() << endl;
-    return;
+    cerr << "Instance " << m_instance << " error: cannot loading VXML document \"" << args[0] << "\" - " << m_vxml->GetXMLError() << endl;
+    return false;
   }
 
   if (!m_vxml->Open(VXML_PCM16)) {
-    cerr << "error: cannot open VXML device in PCM mode" << endl;
-    return;
+    cerr << "Instance " << m_instance << " error: cannot open VXML device in PCM mode" << endl;
+    return false;
   }
 
-  cout << "Starting media, type numeric values to emulate DTMF input." << endl;
-  PConsoleChannel console(PConsoleChannel::StandardInput);
-  console.SetLineBuffered(false);
-  PThread * inputThread = new PThreadObj1Arg<VxmlTest, PConsoleChannel&>(*this, console, &VxmlTest::HandleInput, false, "HandleInput");
-
 #if P_VXML_VIDEO
-  PThread * videoSenderThread = new PThreadObj<VxmlTest>(*this, &VxmlTest::CopyVideoSender, false, "CopyVideoSender");
-  PThread * videoReceiverThread = new PThreadObj<VxmlTest>(*this, &VxmlTest::CopyVideoReceiver, false, "CopyVideoReceiver");
+  m_videoSenderThread = new PThreadObj<TestInstance>(*this, &TestInstance::CopyVideoSender, false, "CopyVideoSender");
+  m_videoReceiverThread = new PThreadObj<TestInstance>(*this, &TestInstance::CopyVideoReceiver, false, "CopyVideoReceiver");
 #endif
 
-  PThread * audioThread = new PThreadObj<VxmlTest>(*this, &VxmlTest::CopyAudio, false, "CopyAudio");
-  PThread::WaitAndDelete(audioThread, PMaxTimeInterval);
+  m_audioThread = new PThreadObj<TestInstance>(*this, &TestInstance::CopyAudio, false, "CopyAudio");
 
-#if P_VXML_VIDEO
-  PThread::WaitAndDelete(videoSenderThread, PMaxTimeInterval);
-  PThread::WaitAndDelete(videoReceiverThread, PMaxTimeInterval);
-  delete m_viewer;
-  delete m_grabber;
-#endif
-  delete m_player;
-
-  cout << "Completed VXML text" << endl;
-  console.Close();
-  PThread::WaitAndDelete(inputThread);
-
-  delete m_vxml;
+  cout << "Started test instance " << m_instance << " on " << args[0].ToLiteral() << endl;
+  return true;
 }
 
 
-void VxmlTest::HandleInput(PConsoleChannel & console)
+void TestInstance::SendInput(char c)
 {
-  int inp;
-  while ((inp = console.ReadChar()) >= 0) {
-    if (inp >= ' ' && inp < '~') {
-      m_vxml->OnUserInput((char)inp);
-      cout << (char)inp << endl;
-    }
-  }
+  if (m_vxml != NULL)
+    m_vxml->OnUserInput(c);
 }
 
 
-void VxmlTest::CopyAudio()
+void TestInstance::CopyAudio()
 {
   PBYTEArray audioPCM(1024);
 
   for (;;) {
     if (!m_vxml->Read(audioPCM.GetPointer(), audioPCM.GetSize())) {
       if (m_vxml->GetErrorCode(PChannel::LastReadError) != PChannel::NotOpen) {
-        PTRACE(2, "Read error " << m_vxml->GetErrorText());
+        PTRACE(2, "Instance " << m_instance << " audio read error " << m_vxml->GetErrorText());
       }
       break;
     }
 
     if (!m_player->Write(audioPCM, m_vxml->GetLastReadCount())) {
-      PTRACE(2, "Write error " << m_player->GetErrorText());
+      PTRACE_IF(2, m_player->IsOpen(), "Instance " << m_instance << " audio write error " << m_player->GetErrorText());
       break;
     }
   }
@@ -188,7 +237,7 @@ void VxmlTest::CopyAudio()
 
 
 #if P_VXML_VIDEO
-void VxmlTest::CopyVideoSender()
+void TestInstance::CopyVideoSender()
 {
   PBYTEArray frame;
   PVideoOutputDevice::FrameData frameData;
@@ -198,7 +247,7 @@ void VxmlTest::CopyVideoSender()
 
   while (m_viewer != NULL) {
     if (!sender.GetFrame(frame, frameData.width, frameData.height)) {
-      PTRACE(2, "Grab video failed");
+      PTRACE(2, "Instance " << m_instance << " vxml video preview failed");
       break;
     }
 
@@ -209,13 +258,13 @@ void VxmlTest::CopyVideoSender()
     frameData.pixels = frame;
 
     if (!m_viewer->SetFrameData(frameData)) {
-      PTRACE(2, "Output video failed");
+      PTRACE_IF(2, m_viewer->IsOpen(), "Instance " << m_instance << " output video failed");
       break;
     }
   }
 }
 
-void VxmlTest::CopyVideoReceiver()
+void TestInstance::CopyVideoReceiver()
 {
   PBYTEArray frame;
   PVideoOutputDevice::FrameData frameData;
@@ -225,7 +274,7 @@ void VxmlTest::CopyVideoReceiver()
 
   while (m_grabber != NULL) {
     if (!m_grabber->GetFrame(frame, frameData.width, frameData.height)) {
-      PTRACE(2, "Grab video failed");
+      PTRACE(2, "Instance " << m_instance << " grab video failed");
       break;
     }
 
@@ -237,7 +286,7 @@ void VxmlTest::CopyVideoReceiver()
     frameData.timestamp = PTime().GetTimestamp();
 
     if (!receiver.SetFrameData(frameData)) {
-      PTRACE(2, "Output video failed");
+      PTRACE(2, "Instance " << m_instance << " vxml video feed failed");
       break;
     }
   }
