@@ -450,7 +450,9 @@ int PServiceProcess::InitialiseService()
   bool daemon = args.HasOption('d');
 
   // Remove the service arguments
-  args.SetArgs(args.GetParameters());
+  PStringArray params = args.GetParameters();
+  args.SetArgs("");
+  args.SetArgs(params);
 
  // We are a service, don't want to get blocked on input from stdin during asserts
   if (!m_debugMode)
