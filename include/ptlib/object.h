@@ -77,7 +77,7 @@ using namespace std; // Not a good practice (name space polution), but will take
 
 
 #if !defined __GNUC__ || __GNUC__ >= 5
-  const PINDEX P_MAX_INDEX = ::std::numeric_limits<PINDEX>::max();
+  #define P_MAX_INDEX ::std::numeric_limits<PINDEX>::max()
 #elif P_PINDEX_IS_SIZE_T
   const PINDEX P_MAX_INDEX = SIZE_MAX;
 #else
