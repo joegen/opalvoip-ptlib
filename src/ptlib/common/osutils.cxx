@@ -2110,6 +2110,9 @@ PStringArray PArgList::GetParameters(PINDEX first, PINDEX last) const
 {
   PStringArray params;
 
+  if (m_parameterIndex.IsEmpty())
+    return params;
+
   if (last != P_MAX_INDEX)
     last += m_shift;
 
