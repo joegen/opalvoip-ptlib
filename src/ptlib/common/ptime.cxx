@@ -296,6 +296,9 @@ PUInt64 PTime::GetNTP() const
 
 bool PTime::InternalLocalTime(struct tm & ts) const
 {
+  if (!IsValid())
+    return false;
+
   time_t t = m_microSecondsSinceEpoch.load()/Micro;
   return os_localtime(&t, &ts) != NULL;
 }
