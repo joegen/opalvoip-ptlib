@@ -579,18 +579,18 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
     return true;
   }
 
-  PINDEX pos = str.FindLast('/');
-  if (pos == P_MAX_INDEX) {
+  PString addr, type;
+  if (!str.Split('/', addr, type)) {
     m_natType = ConeNat;
     return m_externalAddress.Parse(str, 1);
   }
 
-  int newType = str.Mid(pos+1).AsInteger();
-  if (newType < 0 || newType >= NumNatTypes)
-    return false;
+  if (isdigit(type[0]))
+    m_natType = NatTypesFromInt(type.AsInteger());
+  else
+    m_natType = NatTypesFromString(type);
 
-  m_natType = (NatTypes)newType;
-  return m_externalAddress.Parse(str.Left(pos), 1);
+  return m_natType != NatTypes::EndNatTypes && m_externalAddress.Parse(addr);
 }
 
 
