@@ -590,7 +590,7 @@ bool PNatMethod_Fixed::SetServer(const PString & str)
   else
     m_natType = NatTypesFromString(type);
 
-  return m_natType != NatTypes::EndNatTypes && m_externalAddress.Parse(addr);
+  return m_natType != EndNatTypes && m_externalAddress.Parse(addr);
 }
 
 
