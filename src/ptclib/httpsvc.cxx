@@ -212,12 +212,14 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
 
   PSystemLog::Level level;
   PString fileName;
+  PString logFileName;
   PSystemLogToFile::RotateInfo info(GetHomeDirectory());
 
   PSystemLogToFile * logFile = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
-
-  if (logFile != NULL)
+  if (logFile != NULL) {
+    logFileName = logFile->GetFilePath();
     info = logFile->GetRotateInfo();
+  }
 
   if (params.m_configPage != NULL) {
     params.m_configPage->AddStringField(params.m_usernameKey, 25, params.m_authority.GetUserName(), "User name to access HTTP user interface for server.");
@@ -228,7 +230,7 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
                                                PSystemLog::Fatal, PSystemLog::NumLogLevels-1,
                                                GetLogLevel(),
                                                "0=Fatal only, 1=Errors, 2=Warnings, 3=Info, 4=Debug, 5=Detailed"));
-    fileName = params.m_configPage->AddStringField(params.m_fileKey, 0, logFile != NULL ? logFile->GetFilePath() : PString::Empty(),
+    fileName = params.m_configPage->AddStringField(params.m_fileKey, 0, logFileName,
                                              "File for logging output, empty string disables logging", 1, 80);
     info.m_directory = params.m_configPage->AddStringField(params.m_rotateDirKey, 0, info.m_directory,
                                                      "Directory path for log file rotation", 1, 80);
@@ -249,7 +251,7 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
   }
   else {
     level = cfg.GetEnum(params.m_levelKey, GetLogLevel());
-    fileName = cfg.GetString(params.m_fileKey);
+    fileName = cfg.GetString(params.m_fileKey, logFileName);
     info.m_directory = cfg.GetString(params.m_rotateDirKey, info.m_directory);
     info.m_maxSize = cfg.GetInteger(params.m_rotateSizeKey, info.m_maxSize / 1000) * 1000;
     info.m_maxFileCount = cfg.GetInteger(params.m_rotateCountKey, info.m_maxFileCount);
