@@ -1961,6 +1961,7 @@ PBoolean PHTTPFile::LoadHeaders(PHTTPRequest & request)
   PFile & file = ((PHTTPFileRequest&)request).m_file;
 
   if (!file.Open(m_filePath, PFile::ReadOnly)) {
+    PTRACE(3, "Could not open \"" << m_filePath << "\" for URL " << request.url);
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2196,7 +2197,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   // if not able to obtain resource information, then consider the resource "not found"
   PFileInfo info;
   if (!PFile::GetInfo(realPath, info)) {
-    PTRACE(4, "Directory " << realPath << " does not exist.");
+    PTRACE(4, "Directory \"" << realPath << "\" does not exist for URL " << request.url);
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2206,7 +2207,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   if (info.type != PFileInfo::SubDirectory) {
     if (!file.Open(realPath, PFile::ReadOnly) ||
         (!m_authorisationRealm.IsEmpty() && realPath.GetFileName() == accessFilename)) {
-      PTRACE(4, "No permission to access " << realPath);
+      PTRACE(4, "No permission to access \"" << realPath << "\" for URL " << request.url);
       request.code = PHTTP::NotFound;
       return false;
     }
@@ -2214,7 +2215,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
 
   // resource is a directory - if index files disabled, then return "not found"
   else if (!m_allowDirectoryListing) {
-    PTRACE(4, "No directory listing allowed for " << realPath);
+    PTRACE(4, "No directory listing allowed for \"" << realPath << "\" for URL " << request.url);
     request.code = PHTTP::NotFound;
     return false;
   }
@@ -2230,7 +2231,7 @@ PBoolean PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
   // open the file and return information
   PString & fakeIndex = ((PHTTPDirRequest&)request).m_fakeIndex;
   if (file.IsOpen()) {
-    PTRACE(4, "Delivering file " << file.GetFilePath());
+    PTRACE(4, "Delivering file \"" << file.GetFilePath() << "\" for URL " << request.url);
     request.outMIME.SetAt(PHTTP::ContentTypeTag(),
                           PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
     request.contentSize = file.GetLength();
