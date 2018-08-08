@@ -1299,13 +1299,13 @@ public:
   /** Start listening for HTTP connections.
     */
   bool ListenForHTTP(
-    WORD port,                ///< Port to listen on
+    WORD port,                ///< Port to listen on, zero picks a random one
     PSocket::Reusability reuse = PSocket::CanReuseAddress,  ///< Can/Cant listen more than once.
     unsigned queueSize = 10   ///< Number of pending accepts that may be queued.
   );
   bool ListenForHTTP(
     const PString & interfaces, ///< Comma separated list of interfaces to listen on.
-    WORD port,                  ///< Port to listen on
+    WORD port,                  ///< Port to listen on, zero picks a random one
     PSocket::Reusability reuse = PSocket::CanReuseAddress,  ///< Can/Cant listen more than once.
     unsigned queueSize = 10     ///< Number of pending accepts that may be queued.
   );
@@ -1315,6 +1315,9 @@ public:
 
   /// Indicate is currently listening and processing requests.
   bool IsListening() const { return !m_httpListeningSockets.IsEmpty() && m_httpListeningSockets.front().IsOpen(); }
+
+  /// Get the port we are lkstening on.
+  WORD GetPort() const { return m_httpListeningSockets.IsEmpty() ? 0 : m_httpListeningSockets.front().GetPort(); }
 
   /** Call back to create transport socket, or TLS, channel.
     */
@@ -1345,6 +1348,10 @@ public:
   /// Get the thread pool in use for this HTTP listener.
   const ThreadPool & GetThreadPool() const { return m_threadPool; }
         ThreadPool & GetThreadPool()       { return m_threadPool; }
+
+  /// Get the resource space for HTTP listener.
+  const PHTTPSpace & GetSpace() const { return m_httpNameSpace; }
+        PHTTPSpace & GetSpace()       { return m_httpNameSpace; }
 
 protected:
   void ListenMain();
