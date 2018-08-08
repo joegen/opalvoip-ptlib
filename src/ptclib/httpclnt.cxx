@@ -667,7 +667,6 @@ bool PHTTPClient::PostData(const PURL & url, const PStringToString & data, PMIME
 {
   PStringStream entityBody;
   PURL::OutputVars(entityBody, data, '\0', '&', '=', PURL::QueryTranslation);
-  entityBody << "\r\n"; // Add CRLF for compatibility with some CGI servers.
 
   PMIMEInfo outMIME;
   return PostData(url, outMIME, entityBody, replyMIME, replyBody);
