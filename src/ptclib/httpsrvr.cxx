@@ -367,8 +367,6 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL &, const PString & args, PHTT
 #if P_SSL
 bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 {
-  std::map<PString, WebSocketNotifier>::iterator notifier;
-
   const PMIMEInfo & mime = connectInfo.GetMIME();
   PString key = mime(WebSocketKeyTag());
 
