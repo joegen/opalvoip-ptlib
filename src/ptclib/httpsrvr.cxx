@@ -364,47 +364,71 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL &, const PString & args, PHTT
 }
 
 
+#if P_SSL
 bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 {
-#if P_SSL
   std::map<PString, WebSocketNotifier>::iterator notifier;
 
   const PMIMEInfo & mime = connectInfo.GetMIME();
+  PString key = mime(WebSocketKeyTag());
 
   PStringArray protocols = mime(WebSocketProtocolTag()).Tokenise(", \t\r\n", false);
-  for (PINDEX i = 0; ; ++i) {
-    if (i >= protocols.GetSize())
-      return OnError(NotFound, "Unsupported WebSocket protocol", connectInfo);
-
-    if ((notifier = m_webSocketNotifiers.find(protocols[i])) != m_webSocketNotifiers.end())
-      break;
+  for (PINDEX i = 0; i < protocols.GetSize(); ++i) {
+    PString protocol = protocols[i];
+    std::map<PString, WebSocketNotifier>::iterator notifier = m_webSocketNotifiers.find(protocol);
+    if (notifier != m_webSocketNotifiers.end()) {
+      SwitchToWebSocket(protocol, key);
+      notifier->second(*this, connectInfo);
+      return !connectInfo.IsWebSocket();
+    }
   }
 
-  PMIMEInfo reply;
-  reply.SetAt(ConnectionTag(), UpgradeTag());
-  reply.SetAt(UpgradeTag(), WebSocketTag());
-  reply.SetAt(WebSocketProtocolTag(), notifier->first);
-  reply.SetAt(WebSocketAcceptTag(), PMessageDigestSHA1::Encode(mime(WebSocketKeyTag()) + WebSocketGUID));
+  bool persist = false;
+ 
+   m_urlSpace.StartRead();
 
-  StartResponse(SwitchingProtocols, reply, -1);
-  flush();
-
-  if (!notifier->second.IsNULL()) {
-    notifier->second(*this, connectInfo);
-    return !connectInfo.IsWebSocket();
+   PHTTPResource * resource = m_urlSpace.FindResource(connectInfo.GetURL());
+  if (resource == NULL)
+    persist = OnError(NotFound, connectInfo.GetURL().AsString(), connectInfo);
+  else {
+    bool found = false;
+    for (PINDEX i = 0; i < protocols.GetSize(); ++i) {
+      PString protocol = protocols[i];
+      if (resource->SupportsWebSocketProtocol(protocol)) {
+        SwitchToWebSocket(protocol, key);
+        persist = resource->OnWebSocket(*this, connectInfo);
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      persist = OnError(NotFound, "Unsupported WebSocket protocol", connectInfo);
   }
 
-  m_urlSpace.StartRead();
-  PHTTPResource * resource = m_urlSpace.FindResource(connectInfo.GetURL());
-  bool persist = resource != NULL && resource->OnWebSocket(*this, connectInfo);
   m_urlSpace.EndRead();
 
   return persist;
+}
+
+
+void PHTTPServer::SwitchToWebSocket(const PString & protocol, const PString & key)
+{
+  PMIMEInfo reply;
+  reply.SetAt(ConnectionTag(), UpgradeTag());
+  reply.SetAt(UpgradeTag(), WebSocketTag());
+  reply.SetAt(WebSocketProtocolTag(), protocol);
+  reply.SetAt(WebSocketAcceptTag(), PMessageDigestSHA1::Encode(key + WebSocketGUID));
+
+  StartResponse(SwitchingProtocols, reply, -1);
+  flush();
+}
 #else
+bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
+{
   PTRACE(2, "WebSocket refused due to no SSL");
   return OnError(NotFound, "WebSocket unsupported (No SSL)", connectInfo);
-#endif
 }
+#endif // P_SSL
 
 
 void PHTTPServer::SetWebSocketNotifier(const PString & protocol, const WebSocketNotifier & notifier)
@@ -1526,6 +1550,12 @@ PHTTPResource::PHTTPResource(const PURL & url,
 PHTTPResource::~PHTTPResource()
 {
   delete m_authority;
+}
+
+
+bool PHTTPResource::SupportsWebSocketProtocol(const PString &) const
+{
+  return false;
 }
 
 
