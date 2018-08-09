@@ -714,6 +714,12 @@ PHTTPListener::PHTTPListener(unsigned maxWorkers)
 }
 
 
+PHTTPListener::~PHTTPListener()
+{
+  ShutdownListeners();
+}
+
+
 bool PHTTPListener::ListenForHTTP(WORD port, PSocket::Reusability reuse, unsigned queueSize)
 {
   return ListenForHTTP(PString::Empty(), port, reuse, queueSize);

@@ -1296,6 +1296,9 @@ public:
     unsigned maxWorkers = 10
   );
 
+  /// Shut down all listeners on destruction.
+  ~PHTTPListener();
+
   /** Start listening for HTTP connections.
     */
   bool ListenForHTTP(
