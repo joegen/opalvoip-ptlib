@@ -811,6 +811,11 @@ void PHTTPListener::ShutdownListeners()
 
   m_httpListeningSockets.RemoveAll();
 
+  m_serverSocketsMutex.Wait();
+  for (PSocketList::iterator it = m_httpServerSockets.begin(); it != m_httpServerSockets.end(); ++it)
+    it->Close();
+  m_serverSocketsMutex.Signal();
+
   m_threadPool.Shutdown();
 }
 
@@ -829,6 +834,9 @@ void PHTTPListener::ListenMain()
         PTCPSocket * socket = new PTCPSocket;
         if (socket->Accept(*it)) {
           PTRACE(5, "Queuing thread pool work for: local=" << socket->GetLocalAddress() << ", peer=" << socket->GetPeerAddress());
+          m_serverSocketsMutex.Wait();
+          m_httpServerSockets.Append(socket);
+          m_serverSocketsMutex.Signal();
           m_threadPool.AddWork(new Worker(*this, socket));
         }
         else {
@@ -870,7 +878,9 @@ void PHTTPListener::OnHTTPEnded(PHTTPServer & /*server*/)
 
 PHTTPListener::Worker::~Worker()
 {
-  delete m_socket;
+  m_listener.m_serverSocketsMutex.Wait();
+  m_listener.m_httpServerSockets.Remove(m_socket);
+  m_listener.m_serverSocketsMutex.Signal();
 }
 
 
@@ -903,9 +913,7 @@ void PHTTPListener::Worker::Work()
     return;
   }
 
-  m_socket = NULL; // Is now auto-deleted by server.
-
-  if (!server->Open(channel)) {
+  if (!server->Open(channel, channel != m_socket)) {
     PTRACE(2, "Open failed" << socketInfo);
     return;
   }

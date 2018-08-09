@@ -1362,12 +1362,14 @@ public:
 protected:
   void ListenMain();
 
-  PHTTPSpace  m_httpNameSpace;
-  PString     m_listenerInterfaces;
-  WORD        m_listenerPort;
-  PThread   * m_listenerThread;
-  PSocketList m_httpListeningSockets;
-  ThreadPool  m_threadPool;
+  PHTTPSpace     m_httpNameSpace;
+  PString        m_listenerInterfaces;
+  WORD           m_listenerPort;
+  PThread      * m_listenerThread;
+  PSocketList    m_httpListeningSockets;
+  PSocketList    m_httpServerSockets;
+  PDECLARE_MUTEX(m_serverSocketsMutex);
+  ThreadPool     m_threadPool;
 };
 
 
