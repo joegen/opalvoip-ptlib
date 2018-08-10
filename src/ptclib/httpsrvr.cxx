@@ -369,12 +369,18 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 {
   const PMIMEInfo & mime = connectInfo.GetMIME();
   PString key = mime(WebSocketKeyTag());
+  PString supportedGlobally;
 
   PStringArray protocols = mime(WebSocketProtocolTag()).Tokenise(", \t\r\n", false);
   for (PINDEX i = 0; i < protocols.GetSize(); ++i) {
     PString protocol = protocols[i];
     std::map<PString, WebSocketNotifier>::iterator notifier = m_webSocketNotifiers.find(protocol);
     if (notifier != m_webSocketNotifiers.end()) {
+      if (notifier->second.IsNULL()) {
+        supportedGlobally = protocol;
+        break;
+      }
+
       SwitchToWebSocket(protocol, key);
       notifier->second(*this, connectInfo);
       return !connectInfo.IsWebSocket();
@@ -388,6 +394,10 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
    PHTTPResource * resource = m_urlSpace.FindResource(connectInfo.GetURL());
   if (resource == NULL)
     persist = OnError(NotFound, connectInfo.GetURL().AsString(), connectInfo);
+  else if (!supportedGlobally.IsEmpty()) {
+    SwitchToWebSocket(supportedGlobally, key);
+    persist = resource->OnWebSocket(*this, connectInfo);
+  }
   else {
     bool found = false;
     for (PINDEX i = 0; i < protocols.GetSize(); ++i) {
