@@ -160,6 +160,7 @@ public:
   PTimeInterval    m_startTick;
   PString          m_rolloverPattern;
   unsigned         m_lastRotate;
+  atomic<PINDEX>   m_maxLength;
 
 
 #if defined(_WIN32)
@@ -219,6 +220,7 @@ PTHREAD_MUTEX_RECURSIVE_NP
     , m_startTick(PTimer::Tick())
     , m_rolloverPattern(DefaultRollOverPattern)
     , m_lastRotate(0)
+    , m_maxLength(10000)
   {
     InitMutex();
   }
@@ -703,6 +705,18 @@ const char * PTrace::GetFilename()
 }
 
 
+void PTrace::SetMaxLength(PINDEX length)
+{
+  PTraceInfo::Instance().m_maxLength = std::max(PINDEX(50), length);
+}
+
+
+PINDEX PTrace::GetMaxLength()
+{
+  return PTraceInfo::Instance().m_maxLength;
+}
+
+
 void PTrace::SetOptions(unsigned options)
 {
   PTraceInfo & info = PTraceInfo::Instance();
@@ -911,6 +925,9 @@ ostream & PTraceInfo::InternalEnd(ostream & paramStream)
         stackStream->Replace("\r", "\\r", true);
         stackStream->Replace("\n", "\\n", true);
     }
+
+    if (stackStream->GetLength() > m_maxLength)
+      stackStream->Splice("...", m_maxLength - 4, P_MAX_INDEX);
 
     Lock();
 

@@ -625,6 +625,18 @@ public:
    */
   static const char * GetFilename();
 
+  /**Set the mmaximum length for logs.
+     Default is 10k
+    */
+  static void SetMaxLength(
+    PINDEX length   ///< Maximum line length for log
+  );
+
+  /**Get the mmaximum length for logs.
+     Default is 10k
+    */
+  static PINDEX GetMaxLength();
+
   /** Set the trace options.
       The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
       may contain assorted values. These are defined by the #Options enum.
