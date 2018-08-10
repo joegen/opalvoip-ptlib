@@ -258,7 +258,7 @@ class PNatMethod  : public PObject
     /**Open the NAT method.
       */
     virtual bool Open(
-      const PIPSocket::Address & ifaceAddr
+      const PIPSocket::Address & ifaceAddr  ///< The local interface address to use
     );
 
     /**Close the NAT method
@@ -469,8 +469,8 @@ class PNatMethod_Fixed  : public PNatMethod
 
     virtual PString GetServer() const;
     virtual bool SetServer(const PString & str);
-    virtual bool GetInterfaceAddress(PIPSocket::Address & addr) const;
-    virtual bool Open(const PIPSocket::Address & addr);
+    virtual bool GetInterfaceAddress(PIPSocket::Address & ifaceAddr) const;
+    virtual bool Open(const PIPSocket::Address & ifaceAddr);
     virtual bool IsAvailable(const PIPSocket::Address & binding, PObject * context);
 
     class Socket : public PNATUDPSocket
@@ -490,6 +490,27 @@ class PNatMethod_Fixed  : public PNatMethod
     virtual void InternalUpdate();
 
     PIPSocket::Address m_interfaceAddress;
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+
+/** Fixed NAT for AWS support class.
+    This is similar to PNatMethod_Fixed, but obtains the external address
+    via the http://169.254.169.254/latest/meta-data/public-ipv4 API.
+  */
+class PNatMethod_AWS : public PNatMethod_Fixed
+{
+  PCLASSINFO(PNatMethod_AWS, PNatMethod_Fixed);
+  public:
+    PNatMethod_AWS(unsigned priority = DefaultPriority);
+
+    static const char * MethodName();
+    virtual PCaselessString GetMethodName() const;
+
+    virtual PString GetServer() const;
+    virtual bool SetServer(const PString & str);
+    virtual bool Open(const PIPSocket::Address & ifaceAddr);
 };
 
 /////////////////////////////////////////////////////////////

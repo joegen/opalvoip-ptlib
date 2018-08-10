@@ -36,6 +36,8 @@
 #include <ptclib/pnat.h>
 
 #include <ptclib/random.h>
+#include <ptclib/url.h>
+#include <ptclib/mime.h>
 
 
 #define PTraceModule() "NAT"
@@ -624,20 +626,20 @@ void PNatMethod_Fixed::InternalUpdate()
 }
 
 
-bool PNatMethod_Fixed::GetInterfaceAddress(PIPSocket::Address & addr) const
+bool PNatMethod_Fixed::GetInterfaceAddress(PIPSocket::Address & ifaceAddr) const
 {
   PWaitAndSignal mutex(m_mutex);
 
-  addr = m_interfaceAddress;
+  ifaceAddr = m_interfaceAddress;
   return true;
 }
 
 
-bool PNatMethod_Fixed::Open(const PIPSocket::Address & addr)
+bool PNatMethod_Fixed::Open(const PIPSocket::Address & ifaceAddr)
 {
   PWaitAndSignal mutex(m_mutex);
 
-  m_interfaceAddress = addr;
+  m_interfaceAddress = ifaceAddr;
   return m_interfaceAddress.IsValid();
 }
 
@@ -649,6 +651,53 @@ bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding, PObject *
   return PNatMethod::IsAvailable(binding, context) &&
          m_externalAddress.IsValid() &&
          (binding.IsAny() || m_interfaceAddress.IsAny() || binding == m_interfaceAddress);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Fixed, AWS based, NAT support
+//
+
+PCREATE_NAT_PLUGIN(AWS, "AWS System");
+
+PNatMethod_AWS::PNatMethod_AWS(unsigned priority)
+  : PNatMethod_Fixed(priority)
+{
+  m_natType = ConeNat; // AWS is always this
+}
+
+
+const char * PNatMethod_AWS::MethodName()
+{
+  return PPlugin_PNatMethod_AWS::ServiceName();
+}
+
+
+PCaselessString PNatMethod_AWS::GetMethodName() const
+{
+  return MethodName();
+}
+
+
+PString PNatMethod_AWS::GetServer() const
+{
+  return "http://169.254.169.254/latest/meta-data/public-ipv4";
+}
+
+
+bool PNatMethod_AWS::SetServer(const PString &)
+{
+  PString extAddr;
+  static PURL const api(GetServer());
+  static PURL::LoadParams const params(PMIMEInfo::TextPlain(), 500);
+  return api.LoadResource(extAddr, params) && m_externalAddress.Parse(extAddr);
+}
+
+
+bool PNatMethod_AWS::Open(const PIPSocket::Address & ifaceAddr)
+{
+  return PNatMethod_Fixed::Open(ifaceAddr) && SetServer(PString::Empty());
 }
 
 
