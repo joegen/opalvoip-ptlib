@@ -610,7 +610,7 @@ void PMonitoredSockets::ReadFromSocketList(PSocket::SelectList & readers,
       break;
 
     case PChannel::BufferTooSmall :
-      PTRACE(2, "Read UDP packet too large for buffer of " << param.m_length << " bytes.");
+      PTRACE(2, "Read UDP packet too large (" << param.m_lastCount << " bytes) for buffer of " << param.m_length << " bytes.");
       break;
 
     case PChannel::NotFound :
