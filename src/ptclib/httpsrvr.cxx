@@ -288,7 +288,7 @@ PBoolean PHTTPServer::ProcessCommand()
   PTRACE(5, "Transaction: " << m_connectInfo.GetCommandName() << " \"" << args << "\","
             " url=" << m_connectInfo.GetURL() << ","
             " persist=" << std::boolalpha << m_connectInfo.IsPersistent() << ","
-            " proxy=" << m_connectInfo.IsProxyConnection()
+            " proxy=" << m_connectInfo.IsProxyConnection() << ","
             " websocket=" << m_connectInfo.IsWebSocket());
 
   if (m_connectInfo.IsWebSocket()) {
