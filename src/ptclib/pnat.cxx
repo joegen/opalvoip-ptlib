@@ -691,7 +691,17 @@ bool PNatMethod_AWS::SetServer(const PString &)
   PString extAddr;
   static PURL const api(GetServer());
   static PURL::LoadParams const params(PMIMEInfo::TextPlain(), 500);
-  return api.LoadResource(extAddr, params) && m_externalAddress.Parse(extAddr);
+  if (!api.LoadResource(extAddr, params)) {
+    PTRACE(2, "Failed to load " << api);
+    return false;
+  }
+  
+  if (!m_externalAddress.Parse(extAddr)) {
+    PTRACE(2, "Invalid IP \"" << extAddr << "\" loaded from " << api);
+    return false;
+  }
+
+  return true;
 }
 
 
