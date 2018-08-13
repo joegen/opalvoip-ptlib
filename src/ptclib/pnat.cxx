@@ -696,7 +696,7 @@ bool PNatMethod_AWS::SetServer(const PString &)
     return false;
   }
   
-  if (!m_externalAddress.Parse(extAddr)) {
+  if (!m_externalAddress.Parse(extAddr, 1)) {
     PTRACE(2, "Invalid IP \"" << extAddr << "\" loaded from " << api);
     return false;
   }
