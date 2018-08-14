@@ -688,20 +688,30 @@ PString PNatMethod_AWS::GetServer() const
 
 bool PNatMethod_AWS::SetServer(const PString &)
 {
+  InternalUpdate();
+  return m_externalAddress.IsValid();
+}
+
+
+bool PNatMethod_AWS::GetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const
+{
+  externalAddressAndPort.SetAddress(PIPAddress(169,254,169,254), 80);
+  return true;
+}
+
+
+void PNatMethod_AWS::InternalUpdate()
+{
+  m_externalAddress = PIPSocket::GetInvalidAddress();
+
   PString extAddr;
   static PURL const api(GetServer());
   static PURL::LoadParams const params(PMIMEInfo::TextPlain(), 500);
-  if (!api.LoadResource(extAddr, params)) {
-    PTRACE(2, "Failed to load " << api);
-    return false;
-  }
-  
-  if (!m_externalAddress.FromString(extAddr)) {
-    PTRACE(2, "Invalid IP \"" << extAddr << "\" loaded from " << api);
-    return false;
-  }
 
-  return true;
+  if (!api.LoadResource(extAddr, params))
+    PTRACE(2, "Failed to load " << api);
+  else if (!m_externalAddress.FromString(extAddr))
+    PTRACE(2, "Invalid IP \"" << extAddr << "\" loaded from " << api);
 }
 
 
