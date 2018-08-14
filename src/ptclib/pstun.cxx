@@ -72,12 +72,10 @@ PSTUN::PSTUN()
 {
 }
 
-PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
-  PSTUNUDPSocket * socket, 
-  const PIPSocketAddressAndPort & serverAddress,
-  PIPSocketAddressAndPort & baseAddressAndPort, 
-  PIPSocketAddressAndPort & externalAddressAndPort
-)
+PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(PSTUNUDPSocket * socket,
+                                               const PIPSocketAddressAndPort & serverAddress,
+                                               PIPSocketAddressAndPort & baseAddressAndPort,
+                                               PIPSocket::Address & externalAddress)
 {  
   socket->SetReadTimeout(m_replyTimeout);
 
@@ -98,14 +96,13 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(
     return PNatMethod::UnknownNat;
   }
 
-  return FinishRFC3489Discovery(responseI, socket, externalAddressAndPort);
+  return FinishRFC3489Discovery(responseI, socket, externalAddress);
 }
 
-PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
-  PSTUNMessage & responseI,
-  PSTUNUDPSocket * socket, 
-  PIPSocketAddressAndPort & externalAddressAndPort
-)
+
+PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
+                                                   PSTUNUDPSocket * socket,
+                                                   PIPSocket::Address & externalAddress)
 {
   // check if server returned "420 Unknown Attribute" - that probably means it cannot do CHANGE_REQUEST even with no changes
   bool cannotDoChangeRequest = false;
@@ -159,7 +156,9 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(
     }
   }
 
+  PIPSocketAddressAndPort externalAddressAndPort;
   mappedAddress->GetIPAndPort(externalAddressAndPort);
+  externalAddress = externalAddressAndPort.GetAddress();
 
   bool notNAT = (socket->GetPort() == externalAddressAndPort.GetPort()) && PIPSocket::IsLocalHost(externalAddressAndPort.GetAddress());
 

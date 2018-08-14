@@ -65,13 +65,13 @@ class PSTUN {
       PSTUNUDPSocket * socket, 
       const PIPSocketAddressAndPort & serverAddress, 
       PIPSocketAddressAndPort & baseAddressAndPort, 
-      PIPSocketAddressAndPort & externalAddressAndPort
+      PIPSocket::Address & externalAddress
     );
 
     virtual PNatMethod::NatTypes FinishRFC3489Discovery(
       PSTUNMessage & responseI,
       PSTUNUDPSocket * socket, 
-      PIPSocketAddressAndPort & externalAddressAndPort
+      PIPSocket::Address & externalAddress
     );
 
     virtual bool GetFromBindingResponse(
