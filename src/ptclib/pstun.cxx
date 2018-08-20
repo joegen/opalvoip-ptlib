@@ -697,12 +697,11 @@ bool PSTUNMessage::Write(PUDPSocket & socket, const PIPSocketAddressAndPort & ap
   int len = sizeof(PSTUNMessageHeader) + ((PSTUNMessageHeader *)theArray)->msgLength;
   PUDPSocket::Slice slice(theArray, len);
   if (socket.PUDPSocket::InternalWriteTo(&slice, 1, ap)) {
-    PTRACE(5, "Writing " << *this << ", dst=" << ap << " if=" << socket.PUDPSocket::GetLocalAddress());
+    PTRACE(5, "Writing " << *this << " to " << ap << " on " << socket);
     return true;
   }
 
-  PTRACE(2, "Error writing to " << socket.GetSendAddress()
-         << " - " << socket.GetErrorText(PChannel::LastWriteError));
+  PTRACE(2, "Error writing to " << ap << " - " << socket.GetErrorText(PChannel::LastWriteError));
   return false;
 }
 

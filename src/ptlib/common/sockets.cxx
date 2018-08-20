@@ -1029,11 +1029,17 @@ PString PIPSocket::GetName() const
   PStringStream str;
   str << GetProtocolName() << ':';
 
-  AddressAndPort ap;
-  if (GetLocalAddress(ap))
-    str << " local=" << ap;
-  if (GetPeerAddress(ap))
-    str << " peer= " << ap;
+  AddressAndPort peer;
+  if (GetPeerAddress(peer))
+    str << " peer=" << peer;
+
+  AddressAndPort local, iface;
+  if (GetLocalAddress(local) && const_cast<PIPSocket *>(this)->PIPSocket::InternalGetLocalAddress(iface)) {
+    if (local != iface)
+      str << " rflx=" << local << " if=" << iface;
+    else
+      str << " local=" << local;
+  }
 
   return str;
 }
