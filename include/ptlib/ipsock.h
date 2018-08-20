@@ -343,6 +343,15 @@ class PIPSocket : public PSocket
     };
 
 
+    //**@name Overrides from class PObject */
+    //@{
+    /**Output the contents of the URL to the stream as a string.
+     */
+    virtual void PrintOn(
+      ostream &strm   ///< Stream to print the object into.
+    ) const;
+    //@}
+
     //**@name Overrides from class PChannel */
     //@{
     /**Get the platform and I/O channel type name of the channel. For an IP

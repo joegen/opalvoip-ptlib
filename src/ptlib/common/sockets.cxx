@@ -1026,7 +1026,12 @@ void PIPSocket::ClearNameCache()
 
 PString PIPSocket::GetName() const
 {
-  PStringStream str;
+  return PSTRSTRM(*this);
+}
+
+
+void PIPSocket::PrintOn(ostream & str) const
+{
   str << GetProtocolName() << ':';
 
   AddressAndPort peer;
@@ -1040,8 +1045,6 @@ PString PIPSocket::GetName() const
     else
       str << " local=" << local;
   }
-
-  return str;
 }
 
 
