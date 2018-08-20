@@ -1250,7 +1250,7 @@ PString PSTUNClient::GetServer() const
 }
 
 
-bool PSTUNClient::GetServerAddress(PIPSocketAddressAndPort & serverAddress) const
+bool PSTUNClient::InternalGetServerAddress(PIPSocketAddressAndPort & serverAddress) const
 {
   PWaitAndSignal m(m_mutex);
 

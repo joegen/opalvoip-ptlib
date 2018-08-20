@@ -196,7 +196,7 @@ void PNatMethod::Activate(bool active)
 bool PNatMethod::GetServerAddress(PIPSocket::Address & address, WORD & port) const
 {
   PIPSocketAddressAndPort ap;
-  if (!GetServerAddress(ap))
+  if (!InternalGetServerAddress(ap))
     return false;
 
   address = ap.GetAddress();
@@ -207,7 +207,7 @@ bool PNatMethod::GetServerAddress(PIPSocket::Address & address, WORD & port) con
 
 bool PNatMethod::GetServerAddress(PIPSocketAddressAndPort & ap) const
 {
-  return ap.Parse(GetServer());
+  return InternalGetServerAddress(ap);
 }
 
 
@@ -571,6 +571,13 @@ PString PNatMethod_Fixed::GetServer() const
 }
 
 
+bool PNatMethod_Fixed::InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const
+{
+  externalAddressAndPort.SetAddress(m_externalAddress, 80);
+  return true;
+}
+
+
 bool PNatMethod_Fixed::SetServer(const PString & str)
 {
   PWaitAndSignal mutex(m_mutex);
@@ -693,7 +700,7 @@ bool PNatMethod_AWS::SetServer(const PString &)
 }
 
 
-bool PNatMethod_AWS::GetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const
+bool PNatMethod_AWS::InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const
 {
   externalAddressAndPort.SetAddress(PIPAddress(169,254,169,254), 80);
   return true;

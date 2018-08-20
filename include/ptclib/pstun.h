@@ -606,10 +606,6 @@ class PSTUNClient : public PNatMethod, public PSTUN
       */
     virtual PString GetServer() const;
 
-    virtual bool GetServerAddress(
-      PIPSocketAddressAndPort & serverAddressAndPort 
-    ) const;
-
     virtual bool GetInterfaceAddress(
       PIPSocket::Address & internalAddress
     ) const;
@@ -666,6 +662,7 @@ class PSTUNClient : public PNatMethod, public PSTUN
     );
 
   protected:
+    virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const;
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
     virtual void InternalUpdate();
     bool InternalSetServer(const PString & server, const PIPSocketAddressAndPort & addr PTRACE_PARAM(, const char * source));
