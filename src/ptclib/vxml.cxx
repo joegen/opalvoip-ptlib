@@ -1438,6 +1438,13 @@ void PVXMLSession::InternalThreadMain()
 
   m_sessionMutex.Wait();
 
+  {
+    PTime now;
+    SetVar("session.time", now.AsString());
+    SetVar("session.timeISO8601", now.AsString(PTime::ShortISO8601));
+    SetVar("session.timeEpoch", now.GetTimeInSeconds());
+  }
+
   InternalStartVXML();
 
   while (!m_abortVXML) {
