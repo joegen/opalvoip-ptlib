@@ -304,10 +304,19 @@ bool PSTUNServer::OnBindingRequest(const PSTUNMessage & request, const PSTUNServ
     }
 
     if (userAttr->GetString() != m_userName) {
-      PTRACE(2, "Incorrect USERNAME attribute in " << request << " on " << socketInfo
-             << ", got \"" << userAttr->GetString() << "\", expected \"" << m_userName << '"');
-      response.SetErrorType(436, request.GetTransactionID());
-      goto sendResponse;
+      /* If not a pure match, then we make some assumptions for ICE operation, as per
+         https://tools.ietf.org/html/rfc5245#section-7.2 */
+      PString theirLeft, theirRight, ourLeft, ourRight;
+      if (!userAttr->GetString().Split(':', theirLeft, theirRight) ||
+          !m_userName.Split(':', ourLeft, ourRight) ||
+          theirLeft != ourLeft ||
+          (!ourRight.IsEmpty() && theirRight != ourRight))
+      {
+        PTRACE(2, "Incorrect USERNAME attribute in " << request << " on interface " << socketInfo.m_socketAddress
+               << ", got \"" << userAttr->GetString() << "\", expected \"" << m_userName << '"');
+        response.SetErrorType(436, request.GetTransactionID());
+        goto sendResponse;
+      }
     }
 
 #if P_SSL
