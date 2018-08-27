@@ -1125,7 +1125,7 @@ bool PSSLCipherContext::SetAlgorithm(const PString & name)
 
 bool PSSLCipherContext::SetKey(const BYTE * keyPtr, PINDEX keyLen)
 {
-  PTRACE(4, "Setting key: " << hex << fixed << setfill('0') << PBYTEArray(keyPtr, keyLen, false));
+  PTRACE(4, "Setting key: " << PHexDump(keyPtr, keyLen));
 
   if (keyLen < (PINDEX)EVP_CIPHER_CTX_key_length(m_context)) {
     PTRACE(2, "Incorrect key length for encryption");

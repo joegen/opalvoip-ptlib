@@ -565,6 +565,26 @@ void PBYTEArray::ReadFrom(istream &strm)
 }
 
 
+void PHexDump::PrintOn(ostream & strm) const
+{
+  char oldFill = strm.fill('0');
+  std::streamsize oldPrec = strm.precision();
+  int oldFlags = strm.setf(ios::hex, ios::basefield);
+
+  if (m_compact) {
+    strm.precision(0);
+    strm.setf(ios::fixed, ios::floatfield);
+    strm.width(GetSize());
+  }
+
+  PBYTEArray::PrintOn(strm);
+
+  strm.flags(oldFlags);
+  strm.precision(oldPrec);
+  strm.fill(oldFill);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PBitArray::PBitArray(PINDEX initialSize)
