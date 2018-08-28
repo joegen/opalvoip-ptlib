@@ -445,15 +445,11 @@ bool PSocket::os_vread(Slice * slices, size_t sliceCount,
       return SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
   }
 
-  DWORD receivedCount;
+  DWORD receivedCount = 0;
   DWORD dflags = flags;
   int recvResult = WSARecvFrom(os_handle, slices, sliceCount, &receivedCount, &dflags, from, fromlen, NULL, NULL);
-
-  if (!ConvertOSError(recvResult, LastReadError))
-    return false;
-
-  SetLastReadCount(receivedCount);
-  return true;
+  SetLastReadCount(receivedCount); // Always set read bytes, especially for EMSGSIZE
+  return ConvertOSError(recvResult, LastReadError);
 }
 
 
