@@ -569,7 +569,7 @@ void PHexDump::PrintOn(ostream & strm) const
 {
   char oldFill = strm.fill('0');
   std::streamsize oldPrec = strm.precision();
-  int oldFlags = strm.setf(ios::hex, ios::basefield);
+  ios::fmtflags oldFlags = strm.setf(ios::hex, ios::basefield);
 
   if (m_compact) {
     strm.precision(0);
