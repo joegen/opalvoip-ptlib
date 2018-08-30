@@ -34,6 +34,7 @@ void VxmlTest::Main()
   if (!args.Parse("-sound-driver: Output to sound driver\n"
                   "S-sound-device: Output to sound device\n"
                   "T-tts: Text to speech method\n"
+                  "c-cache: Text to speech cache directory\n"
 #if P_VXML_VIDEO
                   "V-video. Enabled video support\n"
                   "L-sign-language: Set sign language analyser library (implicit -V)\n"
@@ -59,11 +60,10 @@ void VxmlTest::Main()
     cout << "Using sign language analyser." << endl;
   }
 
-  std::list<TestInstance> tests;
   do {
-    tests.push_back(TestInstance());
-    if (!tests.back().Initialise(tests.size(), args))
-      tests.pop_back();
+    m_tests.push_back(TestInstance());
+    if (!m_tests.back().Initialise(m_tests.size(), args))
+      m_tests.pop_back();
   } while (args.Parse("-sound-driver:S-sound-device:T-tts:"
 #if P_VXML_VIDEO
                       "V-video."
@@ -73,7 +73,7 @@ void VxmlTest::Main()
   ));
 
   PCLIStandard cli("VXML-Test> ");
-  cli.SetCommand("input", PCREATE_NOTIFIER(SimulateInput), "Simulate input for VXML instance (1..n)", "<n> <digit>");
+  cli.SetCommand("input", PCREATE_NOTIFIER(SimulateInput), "Simulate input for VXML instance (1..n)", "<digit> [ <n> ]");
   cli.Start(false);
 }
 
@@ -81,12 +81,22 @@ void VxmlTest::Main()
 void VxmlTest::SimulateInput(PCLI::Arguments & args, P_INT_PTR)
 {
   unsigned num;
+  if (args.GetCount() < 1) {
+    args.WriteUsage();
+    return;
+  }
+
   if (args.GetCount() < 2)
-    args.Usage();
-  else if ((num = args[0].AsUnsigned()) == 0 || num > m_tests.size())
+    num = 1;
+  else if ((num = args[0].AsUnsigned()) == 0) {
     args.WriteError("Invalid instance number");
+    return;
+  }
+
+  if (num > m_tests.size())
+    args.WriteError("No such instance");
   else
-    m_tests[num-1].SendInput(args[1][0]);
+    m_tests[num - 1].SendInput(args[0]);
 }
 
 
@@ -192,6 +202,9 @@ bool TestInstance::Initialise(unsigned instance, const PArgList & args)
     return false;
   }
 
+  if (args.HasOption('C'))
+    m_vxml->GetCache().SetDirectory(args.GetOptionString('C'));
+
   if (!m_vxml->Open(VXML_PCM16)) {
     cerr << "Instance " << m_instance << " error: cannot open VXML device in PCM mode" << endl;
     return false;
@@ -209,10 +222,10 @@ bool TestInstance::Initialise(unsigned instance, const PArgList & args)
 }
 
 
-void TestInstance::SendInput(char c)
+void TestInstance::SendInput(const PString & digits)
 {
   if (m_vxml != NULL)
-    m_vxml->OnUserInput(c);
+    m_vxml->OnUserInput(digits);
 }
 
 

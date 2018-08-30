@@ -25,7 +25,7 @@ class TestInstance
     ~TestInstance();
 
     bool Initialise(unsigned instance, const PArgList & args);
-    void SendInput(char c);
+    void SendInput(const PString & digits);
 
   protected:
     unsigned             m_instance;
