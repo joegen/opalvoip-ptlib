@@ -175,6 +175,8 @@ PHTTPServiceProcess::Params::Params(const char * configPageName, const char * se
   , m_levelKey("Log Level")
   , m_fileKey("Log File")
   , m_rotateDirKey("Log Rotate Directory")
+  , m_rotatePrefixKey("Log Rotate Prefix")
+  , m_rotateTemplateKey("Log Rotate Template")
   , m_rotateSizeKey("Log Rotate Size")
   , m_rotateCountKey("Log Rotate File Count")
   , m_rotateAgeKey("Log Rotate File Age")
@@ -211,13 +213,12 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
 
 
   PSystemLog::Level level;
-  PString fileName;
-  PString logFileName;
+  PFilePath oldLogFileName, newLogFileName;
   PSystemLogToFile::RotateInfo info(GetHomeDirectory());
 
   PSystemLogToFile * logFile = dynamic_cast<PSystemLogToFile *>(&PSystemLog::GetTarget());
   if (logFile != NULL) {
-    logFileName = logFile->GetFilePath();
+    oldLogFileName = logFile->GetFilePath();
     info = logFile->GetRotateInfo();
   }
 
@@ -230,10 +231,14 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
                                                PSystemLog::Fatal, PSystemLog::NumLogLevels-1,
                                                GetLogLevel(),
                                                "0=Fatal only, 1=Errors, 2=Warnings, 3=Info, 4=Debug, 5=Detailed"));
-    fileName = params.m_configPage->AddStringField(params.m_fileKey, 0, logFileName,
+    newLogFileName = params.m_configPage->AddStringField(params.m_fileKey, 0, oldLogFileName,
                                              "File for logging output, empty string disables logging", 1, 80);
     info.m_directory = params.m_configPage->AddStringField(params.m_rotateDirKey, 0, info.m_directory,
                                                      "Directory path for log file rotation", 1, 80);
+    info.m_prefix = params.m_configPage->AddStringField(params.m_rotatePrefixKey, 0, info.m_prefix,
+                                                     "Prefix for log file rotation", 1, 40);
+    info.m_timestamp = params.m_configPage->AddStringField(params.m_rotateTemplateKey, 0, info.m_timestamp,
+                                                     "Time template for log file rotation", 1, 40);
     info.m_maxSize = params.m_configPage->AddIntegerField(params.m_rotateSizeKey, 0, INT_MAX, info.m_maxSize / 1000,
                                                     "kb", "Size of log file to trigger rotation, zero disables")*1000;
     info.m_maxFileCount = params.m_configPage->AddIntegerField(params.m_rotateCountKey, 0, 10000, info.m_maxFileCount,
@@ -251,8 +256,10 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
   }
   else {
     level = cfg.GetEnum(params.m_levelKey, GetLogLevel());
-    fileName = cfg.GetString(params.m_fileKey, logFileName);
+    newLogFileName = cfg.GetString(params.m_fileKey, oldLogFileName);
     info.m_directory = cfg.GetString(params.m_rotateDirKey, info.m_directory);
+    info.m_prefix = cfg.GetString(params.m_rotatePrefixKey, info.m_prefix);
+    info.m_timestamp = cfg.GetString(params.m_rotateTemplateKey, info.m_timestamp);
     info.m_maxSize = cfg.GetInteger(params.m_rotateSizeKey, info.m_maxSize / 1000) * 1000;
     info.m_maxFileCount = cfg.GetInteger(params.m_rotateCountKey, info.m_maxFileCount);
     info.m_maxFileAge.SetInterval(0, 0, 0, 0, cfg.GetInteger(params.m_rotateAgeKey, info.m_maxFileAge.GetDays()));
@@ -262,15 +269,15 @@ bool PHTTPServiceProcess::InitialiseBase(Params & params)
 
   SetLogLevel(level);
 
-  if (fileName.IsEmpty()) {
+  if (newLogFileName.IsEmpty()) {
     if (logFile != NULL) {
       logFile = NULL;
       PSystemLog::SetTarget(new PSystemLogToNowhere);
     }
   }
   else {
-    if (logFile == NULL || logFile->GetFilePath() != fileName) {
-      logFile = new PSystemLogToFile(fileName);
+    if (logFile == NULL || oldLogFileName != newLogFileName) {
+      logFile = new PSystemLogToFile(newLogFileName);
       PSystemLog::SetTarget(logFile);
     }
   }

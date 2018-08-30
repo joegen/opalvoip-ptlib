@@ -119,6 +119,8 @@ class PHTTPServiceProcess : public PServiceProcess, public PHTTPListener
       const char * m_levelKey;
       const char * m_fileKey;
       const char * m_rotateDirKey;
+      const char * m_rotatePrefixKey;
+      const char * m_rotateTemplateKey;
       const char * m_rotateSizeKey;
       const char * m_rotateCountKey;
       const char * m_rotateAgeKey;
