@@ -166,6 +166,7 @@ class PVXMLGrammar : public PObject
     };
 
     GrammarState GetState() const { return m_state; }
+    void SetIdle() { m_state = Idle; }
 
     void SetSessionTimeout();
     void SetTimeout(const PTimeInterval & timeout);

@@ -1644,7 +1644,7 @@ bool PVXMLSession::NextNode(bool processChildren)
 
         PTRACE(2, "Processed grammar: " << *grammar << ", restarting node " << m_currentNode);
         m_grammar = grammar;
-        m_grammar->Start();
+        m_grammar->SetIdle();
     }
   }
 
