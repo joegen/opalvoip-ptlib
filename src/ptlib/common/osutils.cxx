@@ -4774,8 +4774,10 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
     OnCloseFile(file, rotatedFile);
     file.Close();
   }
-  else
-    file.SetFilePath(m_directory + m_prefix + m_suffix);
+  else {
+    if (file.GetFilePath().IsEmpty())
+      file.SetFilePath(m_directory + m_prefix + m_suffix);
+  }
 
   bool badMove = file.Exists() && !PFile::Move(file.GetFilePath(), rotatedFile, false, true);
 
