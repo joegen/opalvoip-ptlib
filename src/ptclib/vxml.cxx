@@ -1623,6 +1623,31 @@ bool PVXMLSession::NextNode(bool processChildren)
   if (m_newXML.get() != NULL)
     return false;
 
+  if (m_grammar != NULL) {
+    switch (m_grammar->GetState()) {
+      case PVXMLGrammar::Idle:
+      case PVXMLGrammar::Started:
+        break;
+
+      default:
+        ClearBargeIn();
+
+        PVXMLGrammar * grammar = m_grammar;
+        m_grammar = NULL; // Moving to new node can set this, deleting it, so detach
+        if (grammar->Process()) {
+          // Note the PXML objects may have been replaced at this time,
+          // pointers can't be used as we work back up the call stack.
+          PTRACE(2, "Processed grammar: " << *grammar << ", moving to node " << m_currentNode);
+          delete grammar;
+          return false;
+        }
+
+        PTRACE(2, "Processed grammar: " << *grammar << ", restarting node " << m_currentNode);
+        m_grammar = grammar;
+        m_grammar->Start();
+    }
+  }
+
   PXMLElement * element = dynamic_cast<PXMLElement *>(m_currentNode);
   if (element != NULL) {
     // if the current node has children, then process the first child
@@ -1682,39 +1707,6 @@ void PVXMLSession::FlushInput()
   while (!m_userInputQueue.empty())
     m_userInputQueue.pop();
   m_userInputMutex.Signal();
-}
-
-
-bool PVXMLSession::ProcessGrammar()
-{
-  if (m_grammar == NULL) {
-    PTRACE(4, "No grammar was created!");
-    return true;
-  }
-
-  m_grammar->SetSessionTimeout();
-
-  switch (m_grammar->GetState()) {
-    case PVXMLGrammar::Idle :
-      m_grammar->Start();
-      return false;
-
-    case PVXMLGrammar::Started :
-      return false;
-
-    default :
-      ClearBargeIn();
-
-      PVXMLGrammar * grammar = m_grammar;
-      m_grammar = NULL;
-      bool nextNode = grammar->Process();
-      // Note the PXML objects may have been replaced at this time,
-      // pointers can't be used as we work back up the call stack.
-      PTRACE(2, "Processed grammar: " << *grammar << ", "
-                 "nextNode=" << std::boolalpha << nextNode);
-      delete grammar;
-      return nextNode;
-  }
 }
 
 
@@ -1782,7 +1774,7 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
       return false;
 
     case RecordingComplete :
-      return GoToEventHandler(element, FilledElement);
+      return !GoToEventHandler(element, FilledElement);
 
     default :
       break;
@@ -1917,6 +1909,9 @@ static bool IsFunction(const PString & expr, PINDEX offset, PINDEX & endname, PI
 
 PString PVXMLSession::EvaluateExpr(const PString & expr)
 {
+  if (expr.IsEmpty())
+    return PString::Empty();
+
 #if P_SCRIPTS
   if (m_scriptContext != NULL) {
     static PConstString const EvalVarName("PTLibEvaluateExpressionResult");
@@ -2361,14 +2356,14 @@ bool PVXMLSession::GoToEventHandler(PXMLElement & element, const PString & event
     level = level->GetParent();
     if (level == NULL) {
       PTRACE(4, "No event handler found for \"" << eventName << '"');
-      return true;
+      return false;
     }
   }
 
   handler->SetAttribute(InternalEventStateAttribute, "true");
   m_currentNode = handler;
   PTRACE(4, "Setting event handler to node " << handler->PrintTrace() << " for \"" << eventName << '"');
-  return false;
+  return true;
 }
 
 
@@ -2830,7 +2825,7 @@ PBoolean PVXMLSession::TraversedTransfer(PXMLElement & element)
 
   m_transferStatus = TransferCompleted;
 
-  return GoToEventHandler(element, eventName);
+  return !GoToEventHandler(element, eventName);
 }
 
 
@@ -2853,7 +2848,9 @@ PBoolean PVXMLSession::TraverseMenu(PXMLElement & element)
 
 PBoolean PVXMLSession::TraversedMenu(PXMLElement &)
 {
-  return ProcessGrammar();
+  if (m_grammar != NULL)
+    m_grammar->Start();
+  return false;
 }
 
 
@@ -2939,7 +2936,9 @@ PBoolean PVXMLSession::TraverseField(PXMLElement & element)
 
 PBoolean PVXMLSession::TraversedField(PXMLElement &)
 {
-  return ProcessGrammar();
+  if (m_grammar != NULL)
+    m_grammar->Start();
+  return false;
 }
 
 
@@ -3110,6 +3109,7 @@ void PVXMLGrammar::SetTimeout(const PTimeInterval & timeout)
 
 void PVXMLGrammar::Start()
 {
+  SetSessionTimeout();
   m_state = Started;
   m_timer = m_timeout;
   PTRACE(3, "Started grammar " << *this << ", timeout=" << m_timeout);
@@ -3188,7 +3188,7 @@ bool PVXMLMenuGrammar::Process()
           next = m_session.EvaluateExpr(choice->GetAttribute(ExprAttribute));
 
         if (m_session.SetCurrentForm(next, true))
-          return false;
+          return true;
 
         return m_session.GoToEventHandler(m_field, choice->GetAttribute("event"));
       }

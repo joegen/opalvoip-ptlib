@@ -394,7 +394,6 @@ class PVXMLSession : public PIndirectChannel
 
     virtual bool ProcessNode();
     virtual bool ProcessEvents();
-    virtual bool ProcessGrammar();
     virtual bool NextNode(bool processChildren);
     bool ExecuteCondition(PXMLElement & element);
     void ClearBargeIn();
