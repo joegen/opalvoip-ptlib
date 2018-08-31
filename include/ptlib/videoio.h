@@ -1191,7 +1191,7 @@ class PVideoInputDeviceIndirect : public PVideoInputDevice
   public:
     explicit PVideoInputDeviceIndirect(PVideoInputDevice * device = NULL, bool autoDelete = true)
       : m_actualDevice(device), m_autoDeleteActualDevice(autoDelete) { }
-    ~PVideoInputDeviceIndirect() { Close(); }
+    ~PVideoInputDeviceIndirect() { SetActualDevice(NULL); }
 
     virtual void SetActualDevice(PVideoInputDevice * actualDevice, bool autoDelete = true);
     virtual PVideoInputDevice * GetActualDevice() const;
