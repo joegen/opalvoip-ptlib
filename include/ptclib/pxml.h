@@ -340,11 +340,25 @@ class PXMLObject : public PObject
 
     virtual PXMLObject * Clone() const = 0;
 
+#if PTRACING
+    struct PrintTraceClass
+    {
+      const PXMLObject * m_object;
+      PrintTraceClass(const PXMLObject * object) : m_object(object) { }
+    };
+    friend ostream & operator<<(ostream & strm, const PrintTraceClass & e);
+    PrintTraceClass PrintTrace() { return PXMLObject::PrintTraceClass(this); }
+    static PrintTraceClass PrintTrace(PXMLObject * obj) { return PrintTraceClass(obj); }
+#endif
+
   protected:
     PXMLElement * m_parent;
     bool          m_dirty;
     unsigned      m_lineNumber;
     unsigned      m_column;
+#if PTRACING
+    virtual void InternalPrintTrace(ostream & strm) const = 0;
+#endif
 
   P_REMOVE_VIRTUAL(PXMLObject *, Clone(PXMLElement *) const, 0);
 };
@@ -372,6 +386,10 @@ class PXMLData : public PXMLObject
 
   protected:
     PString m_value;
+
+#if PTRACING
+    virtual void InternalPrintTrace(ostream & strm) const;
+#endif
 };
 
 
@@ -391,16 +409,6 @@ class PXMLElement : public PXMLObject
 
     void PrintOn(ostream & strm) const;
     void Output(ostream & strm, const PXMLBase & xml, int indent) const;
-
-#if PTRACING
-    struct PrintTraceClass
-    {
-      const PXMLElement & m_element;
-      PrintTraceClass(const PXMLElement & element) : m_element(element) { }
-    };
-    friend ostream & operator<<(ostream & strm, const PrintTraceClass & e);
-    PrintTraceClass PrintTrace() const { return PrintTraceClass(*this); }
-#endif
 
     const PCaselessString & GetName() const
       { return m_name; }
@@ -475,6 +483,10 @@ class PXMLElement : public PXMLObject
     PCaselessString m_defaultNamespace;
 
     PArray<PXMLObject> m_subObjects;
+
+#if PTRACING
+    virtual void InternalPrintTrace(ostream & strm) const;
+#endif
 };
 
 

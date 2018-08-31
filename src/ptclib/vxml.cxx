@@ -1637,12 +1637,12 @@ bool PVXMLSession::NextNode(bool processChildren)
         if (grammar->Process()) {
           // Note the PXML objects may have been replaced at this time,
           // pointers can't be used as we work back up the call stack.
-          PTRACE(2, "Processed grammar: " << *grammar << ", moving to node " << m_currentNode);
+          PTRACE(2, "Processed grammar: " << *grammar << ", moving to node " << PXMLObject::PrintTrace(m_currentNode));
           delete grammar;
           return false;
         }
 
-        PTRACE(2, "Processed grammar: " << *grammar << ", restarting node " << m_currentNode);
+        PTRACE(2, "Processed grammar: " << *grammar << ", restarting node " << PXMLObject::PrintTrace(m_currentNode));
         m_grammar = grammar;
         m_grammar->SetIdle();
     }

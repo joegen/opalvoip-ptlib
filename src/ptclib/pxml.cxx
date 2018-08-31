@@ -1226,6 +1226,25 @@ PXMLObject * PXMLData::Clone() const
 }
 
 
+#if PTRACING
+ostream & operator<<(ostream & strm, const PXMLObject::PrintTraceClass & ptc)
+{
+  if (ptc.m_object == NULL)
+    return strm << "(null)";
+
+  ptc.m_object->InternalPrintTrace(strm);
+  return strm;
+}
+
+void PXMLData::InternalPrintTrace(ostream & strm) const
+{
+  strm << "XMLData";
+  if (m_lineNumber != 0)
+    strm << " [" << m_lineNumber << ',' << m_column << ']';
+}
+#endif
+
+
 ///////////////////////////////////////////////////////
 
 PXMLElement::PXMLElement(const char * name, const char * data)
@@ -1465,12 +1484,11 @@ void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
 
 
 #if PTRACING
-ostream & operator<<(ostream & strm, const PXMLElement::PrintTraceClass & e)
+void PXMLElement::InternalPrintTrace(ostream & strm) const
 {
-  strm << '<' << e.m_element.GetName() << '>';
-  if (e.m_element.m_lineNumber != 0)
-    strm << " [" << e.m_element.m_lineNumber << ',' << e.m_element.m_column << ']';
-  return strm;
+  strm << '<' << GetName() << '>';
+  if (m_lineNumber != 0)
+    strm << " [" << m_lineNumber << ',' << m_column << ']';
 }
 #endif
 
