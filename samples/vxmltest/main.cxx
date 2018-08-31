@@ -75,6 +75,7 @@ void VxmlTest::Main()
   PCLIStandard cli("VXML-Test> ");
   cli.SetCommand("input", PCREATE_NOTIFIER(SimulateInput), "Simulate input for VXML instance (1..n)", "<digit> [ <n> ]");
   cli.Start(false);
+  m_tests.clear();
 }
 
 
@@ -196,7 +197,7 @@ bool TestInstance::Initialise(unsigned instance, const PArgList & args)
   }
   cout << "Instance " << m_instance << " using text to speech \"" << tts->GetVoiceList() << "\"" << endl;
 
-  m_vxml = new PVXMLSession(tts);
+  m_vxml = new PVXMLSession(tts, true);
   if (!m_vxml->Load(args[0])) {
     cerr << "Instance " << m_instance << " error: cannot loading VXML document \"" << args[0] << "\" - " << m_vxml->GetXMLError() << endl;
     return false;
