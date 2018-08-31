@@ -436,8 +436,22 @@ class PVXMLSession : public PIndirectChannel
       PVXMLSession & m_vxmlSession;
       int            m_analayserInstance;
     };
-    VideoReceiverDevice       m_videoReceiver;
-    PVideoInputDeviceIndirect m_videoSender;
+    VideoReceiverDevice m_videoReceiver;
+
+    class VideoSenderDevice : public PVideoInputDeviceIndirect
+    {
+      PCLASSINFO(VideoSenderDevice, PVideoInputDeviceIndirect)
+    public:
+      VideoSenderDevice();
+      ~VideoSenderDevice() { Close(); }
+      virtual void SetActualDevice(PVideoInputDevice * actualDevice, bool autoDelete = true);
+      virtual PBoolean Start();
+      bool IsRunning() const { return m_running; }
+    protected:
+      virtual bool InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait);
+      bool m_running;
+    };
+    VideoSenderDevice m_videoSender;
 #endif // P_VXML_VIDEO
 
     PThread     *    m_vxmlThread;

@@ -3075,6 +3075,35 @@ PBoolean PVXMLSession::VideoReceiverDevice::SetFrameData(const FrameData & frame
 
   return true;
 }
+
+
+PVXMLSession::VideoSenderDevice::VideoSenderDevice()
+  : m_running(true)
+{
+}
+
+
+void PVXMLSession::VideoSenderDevice::SetActualDevice(PVideoInputDevice * actualDevice, bool autoDelete)
+{
+  m_running = true;
+  PVideoInputDeviceIndirect::SetActualDevice(actualDevice, autoDelete);
+}
+
+
+PBoolean PVXMLSession::VideoSenderDevice::Start()
+{
+  m_running = true;
+  return PVideoInputDeviceIndirect::Start();
+}
+
+
+bool PVXMLSession::VideoSenderDevice::InternalGetFrameData(BYTE * buffer, PINDEX & bytesReturned, bool & keyFrame, bool wait)
+{
+  if (m_running && !PVideoInputDeviceIndirect::InternalGetFrameData(buffer, bytesReturned, keyFrame, wait))
+    m_running = false;
+
+  return true; // Always return true or upstream closes down straight away.
+}
 #endif // P_VXML_VIDEO
 
 
@@ -3382,7 +3411,7 @@ PChannel * PVXMLChannel::OpenMediaFile(const PFilePath & fn, bool recording)
     if (audio->Open(params)) {
 #if P_VXML_VIDEO
       PVideoInputDevice * video = new PMediaFile::VideoInputDevice(mediaFile);
-      video->SetChannel(PMediaFile::VideoInputDevice::Channel_PlayAndKeepLast);
+      video->SetChannel(PMediaFile::VideoInputDevice::Channel_PlayAndClose);
       if (video->Open(fn))
         m_vxmlSession->SetRealVideoSender(video);
       else
@@ -3480,7 +3509,8 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
     // if the read succeeds, we are done
     if (ReadFrame(buffer, amount)) {
       m_totalData += GetLastReadCount();
-      return true; // Already done real time delay
+      if (m_vxmlSession->m_videoSender.IsRunning())
+        return true; // Already done real time delay
     }
 
     // if a timeout, send silence, try again in a bit
