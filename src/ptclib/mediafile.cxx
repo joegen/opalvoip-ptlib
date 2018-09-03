@@ -640,13 +640,20 @@ extern "C" {
 
 PStringSet PMediaFile::GetAllFileTypes()
 {
+  PStringSet fileTypes(PFilePathString(".wav"));
+  const AVInputFormat *fmt;
+
+#if LIBAVFORMAT_VERSION_MAJOR < 58
   // Can't rely on factory initialisation, as is used by other factories
   av_register_all();
 
-  PStringSet fileTypes(PFilePathString(".wav"));
-
-  AVInputFormat *fmt = NULL;
-  while ((fmt = av_iformat_next(fmt)) != NULL) {
+  fmt = NULL;
+  while ((fmt = av_iformat_next(fmt)) != NULL)
+#else
+  void * iter = NULL;
+  while ((fmt = av_demuxer_iterate(&iter)) != NULL)
+#endif
+  {
     PStringArray formatsExtensions(PString(fmt->extensions).Tokenise(","));
     for (PINDEX i = 0; i < formatsExtensions.GetSize(); ++i)
       fileTypes += PFilePathString('.' + formatsExtensions[i]);
