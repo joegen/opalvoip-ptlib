@@ -21,6 +21,13 @@ PCREATE_PROCESS(VxmlTest);
 #define PTraceModule() "VXMLTest"
 
 
+#ifdef _WIN32
+  #define PREVIEW_WINDOW_DEVICE "MSWIN"
+#else
+  #define PREVIEW_WINDOW_DEVICE "SDL"
+#endif
+
+
 VxmlTest::VxmlTest()
   : PProcess("Equivalence", "vxmltest", 1, 0, AlphaCode, 1)
 {
@@ -41,6 +48,7 @@ void VxmlTest::Main()
                   "-input-driver: Video input driver\n"
                   "I-input-device: Video input device\n"
                   "C-input-channel: Video input channel\n"
+                  "P-preview. Show preview window for video input\n"
                   "-output-driver: Video output driver\n"
                   "O-output-device: Video output device\n"
                   "-output-channel: Video output channel\n"
@@ -106,6 +114,7 @@ TestInstance::TestInstance()
   : m_instance(0)
   , m_player(NULL)
   , m_grabber(NULL)
+  , m_preview(NULL)
   , m_viewer(NULL)
   , m_vxml(NULL)
   , m_audioThread(NULL)
@@ -168,6 +177,9 @@ bool TestInstance::Initialise(unsigned instance, const PArgList & args)
       return false;
     }
     cout << "Instance " << m_instance << " using input video device \"" << m_grabber->GetDeviceName() << "\"" << endl;
+
+    if (args.HasOption("preview"))
+      m_preview = PVideoOutputDevice::CreateOpenedDevice(PREVIEW_WINDOW_DEVICE "TITLE=Preview");
 
     videoArgs.driverName = args.GetOptionString("output-driver");
     videoArgs.deviceName = args.GetOptionString("output-device");
@@ -285,6 +297,8 @@ void TestInstance::CopyVideoReceiver()
   PVideoOutputDevice & receiver = m_vxml->GetVideoReceiver();
 
   receiver.SetColourFormatConverter(m_grabber->GetColourFormat());
+  if (m_preview)
+    m_preview->SetColourFormatConverter(m_grabber->GetColourFormat());
 
   while (m_grabber != NULL) {
     if (!m_grabber->GetFrame(frame, frameData.width, frameData.height)) {
@@ -298,6 +312,9 @@ void TestInstance::CopyVideoReceiver()
     receiver.SetFrameSize(frameData.width, frameData.height);
     frameData.pixels = frame;
     frameData.timestamp = PTime().GetTimestamp();
+
+    if (m_preview)
+      m_preview->SetFrameData(frameData);
 
     if (!receiver.SetFrameData(frameData)) {
       PTRACE(2, "Instance " << m_instance << " vxml video feed failed");
