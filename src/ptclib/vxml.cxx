@@ -3070,8 +3070,10 @@ PBoolean PVXMLSession::VideoReceiverDevice::SetFrameData(const FrameData & frame
     pixels = frameData.pixels;
 
   int result = PVXMLSignLanguageAnalyser::GetInstance().Analyse(m_analayserInstance, frameData.width, frameData.height, frameData.timestamp, pixels);
-  if (result >= ' ')
+  if (result >= ' ') {
+    PTRACE(4, "Sign language analyser detected " << result << " '" << (char)result << '\'');
     m_vxmlSession.OnUserInput((char)result);
+  }
 
   return true;
 }
