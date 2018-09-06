@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>stunclient</ProjectName>
     <ProjectGuid>{D0C00ADD-544B-4922-AB52-14415894D684}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="Configuration">

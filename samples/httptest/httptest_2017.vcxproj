@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>HTTP Test</ProjectName>
     <ProjectGuid>{80FCA725-BB88-D3DB-576E-FCF906C5571C}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="Configuration">
