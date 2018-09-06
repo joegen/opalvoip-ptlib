@@ -717,8 +717,9 @@ void PNatMethod_AWS::InternalUpdate()
 
   if (!api.LoadResource(extAddr, params))
     PTRACE(2, "Failed to load " << api);
-  else if (!m_externalAddress.FromString(extAddr))
+  else if (!m_externalAddress.FromString(extAddr)) {
     PTRACE(2, "Invalid IP \"" << extAddr << "\" loaded from " << api);
+  }
 }
 
 
