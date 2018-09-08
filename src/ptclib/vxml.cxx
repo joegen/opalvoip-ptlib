@@ -2046,10 +2046,6 @@ PBoolean PVXMLSession::PlayElement(PXMLElement & element)
   if (m_bargingIn)
     return false;
 
-#if P_VXML_VIDEO
-  SetRealVideoSender(NULL);
-#endif // P_VXML_VIDEO
-
   PString str = element.GetAttribute(SrcAttribute).Trim();
   if (str.IsEmpty()) {
     str = EvaluateExpr(element.GetAttribute(ExprAttribute));
@@ -2226,7 +2222,13 @@ PBoolean PVXMLSession::TraverseBlock(PXMLElement & element)
 
 PBoolean PVXMLSession::TraverseAudio(PXMLElement & element)
 {
-  return !PlayElement(element);
+  if (PlayElement(element))
+    return false; // Playing files, so don't process children
+
+#if P_VXML_VIDEO
+  SetRealVideoSender(NULL);
+#endif // P_VXML_VIDEO
+  return true;
 }
 
 
