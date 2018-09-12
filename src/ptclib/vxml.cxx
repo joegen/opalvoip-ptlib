@@ -1530,25 +1530,32 @@ bool PVXMLSession::ProcessEvents()
   else {
     ch = m_userInputQueue.front();
     m_userInputQueue.pop();
-    PTRACE(3, "Handling user input " << ch);
   }
   m_userInputMutex.Signal();
 
   if (ch != '\0') {
     if (m_recordingStatus == RecordingInProgress) {
+      PTRACE(3, "Recording ended via user input '" << ch << '\'');
       if (m_recordStopOnDTMF && vxmlChannel->EndRecording(false)) {
         if (!m_recordingName.IsEmpty())
           SetVar(m_recordingName + "$.termchar", ch);
       }
     }
     else if (m_bargeIn) {
-      PTRACE(4, "Barging in");
+      PTRACE(3, "Executing bargein with user input '" << ch << '\'');
       m_bargingIn = true;
       vxmlChannel->FlushQueue();
+      if (m_grammar != NULL)
+        m_grammar->OnUserInput(ch);
     }
-
-    if (m_grammar != NULL)
-      m_grammar->OnUserInput(ch);
+    else if (vxmlChannel->IsPlaying()) {
+      PTRACE(3, "No bargein, ignoring user input '" << ch << '\'');
+    }
+    else {
+      PTRACE(3, "Handling user input '" << ch << '\'');
+      if (m_grammar != NULL)
+        m_grammar->OnUserInput(ch);
+    }
   }
 
   if (vxmlChannel->IsPlaying()) {
@@ -1559,7 +1566,6 @@ bool PVXMLSession::ProcessEvents()
   }
   else if (m_grammar != NULL && m_grammar->GetState() == PVXMLGrammar::Started) {
     PTRACE(4, "Awaiting input, awaiting event");
-    PlaySilence(500);
   }
   else if (m_transferStatus == TransferInProgress) {
     PTRACE(4, "Transfer in progress, awaiting event");
@@ -2915,6 +2921,7 @@ PBoolean PVXMLSession::TraversePrompt(PXMLElement & element)
     m_grammar->SetTimeout(StringToTime(element.GetAttribute("timeout")));
 
   if ((element.GetAttribute("bargein") *= "false") || GetVar("property.bargein") == "false") {
+    PTRACE(3, "Prompt bargein disabled.");
     m_bargeIn = false;
     ClearBargeIn();
     FlushInput();
@@ -3524,6 +3531,8 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
     // Other errors mean end of the playable
     PWaitAndSignal mutex(m_playQueueMutex);
 
+    bool wasPlaying = false;
+
     // if current item still active, check for trailing actions
     if (m_currentPlayItem != NULL) {
       PTRACE(3, "Finished playing " << *m_currentPlayItem << ", " << m_totalData << " bytes");
@@ -3539,13 +3548,15 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
       m_currentPlayItem->OnStop();
       delete m_currentPlayItem;
       m_currentPlayItem = NULL;
+      wasPlaying = true;
     }
 
     for (;;) {
       // check the queue for the next action, if none, send silence
       m_currentPlayItem = m_playQueue.Dequeue();
       if (m_currentPlayItem == NULL) {
-        m_vxmlSession->Trigger(); // notify about the end of queue
+        if (wasPlaying)
+          m_vxmlSession->Trigger(); // notify about the end of queue
         goto double_break;
       }
 
