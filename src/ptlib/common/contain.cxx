@@ -2418,7 +2418,7 @@ streambuf::int_type PStringStream::Buffer::overflow(int_type c)
 
     size_t gpos = gptr() - eback();
     size_t ppos = pptr() - pbase();
-    char * newptr = string.GetPointer(string.GetSize() + 32);
+    char * newptr = string.GetPointer(string.GetSize()*2);
     setp(newptr, newptr + string.GetSize() - 1);
     pbump(ppos);
     setg(newptr, newptr + gpos, newptr + ppos);
