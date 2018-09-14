@@ -2536,7 +2536,7 @@ PBoolean PSSLChannel::Write(const void * buf, PINDEX len)
     writeChannel->SetWriteTimeout(writeTimeout);
 
     int writeResult = SSL_write(m_ssl, (const char *)buf, len);
-    returnValue = SetLastWriteCount(writeResult) >= len;
+    returnValue = writeResult > 0 && SetLastWriteCount(writeResult) >= len;
     if (writeResult < 0 && GetErrorCode(LastWriteError) == NoError)
       ConvertOSError(-1, LastWriteError);
   }
