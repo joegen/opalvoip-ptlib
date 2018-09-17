@@ -2313,7 +2313,7 @@ __inline PString PSTRSTRM_support(const ostream & s) { return dynamic_cast<const
       DoSomething(PSTRSTRM("Fred used" << number << " of \"" << item << '"'));
 </code></pre>
  */
-#define PSTRSTRM(arg) PSTRSTRM_support(PStringStream() << arg << std::flush)
+#define PSTRSTRM(arg) PSTRSTRM_support(PStringStream() << std::flush << arg << std::flush)
 
 
 // Definition for template PString memeber function, needs to be after PStringStream
