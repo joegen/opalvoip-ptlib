@@ -1084,8 +1084,8 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
 
 #if P_VXML_VIDEO
   PVideoInputDevice::OpenArgs videoArgs;
-  videoArgs.driverName = P_NULL_VIDEO_DRIVER;
-  videoArgs.deviceName = P_NULL_VIDEO_DEVICE;
+  videoArgs.driverName = P_FAKE_VIDEO_DRIVER;
+  videoArgs.deviceName = P_FAKE_VIDEO_BLACK;
   m_videoSender.SetActualDevice(PVideoInputDevice::CreateOpenedDevice(videoArgs));
 #endif // P_VXML_VIDEO
 }

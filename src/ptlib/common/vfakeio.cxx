@@ -50,6 +50,7 @@ enum {
   eOriginalMovingBlocks,
   eText,
   eNTSCTest,
+  eBlack,
   eNumTestPatterns
 };
 
@@ -61,6 +62,7 @@ static const char * const FakeDeviceNames[] = {
   P_FAKE_VIDEO_PREFIX"OriginalMovingBlocks",
   P_FAKE_VIDEO_TEXT,
   P_FAKE_VIDEO_NTSC,
+  P_FAKE_VIDEO_BLACK,
   "fake" // Always last, ancient history
 };
 
@@ -1684,6 +1686,9 @@ bool PVideoInputDevice_FakeVideo::InternalGetFrameData(BYTE * destFrame, PINDEX 
        break;
      case eNTSCTest :
        GrabNTSCTestFrame(destFrame);
+       break;
+     case eBlack :
+       FillRect(destFrame, 0, 0, m_frameWidth, m_frameHeight, 0, 0, 0);
        break;
      default :
        PAssertAlways(PLogicError);
