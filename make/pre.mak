@@ -44,11 +44,13 @@ else ifndef PTLIBDIR
   PTLIB_LIBDIR := $(shell pkg-config ptlib --variable=libdir)
 else
   ifeq (,$(target))
-    ifneq (,$(OS))
-      ifneq (,$(CPU))
-        target = $(OS)_$(CPU)
-      endif
+    ifeq (,$(OS))
+      OS:=$(shell uname -s)
     endif
+    ifeq (,$(CPU))
+      CPU=$(shell uname -m)
+    endif
+    target = $(OS)_$(CPU)
   endif
   ifneq (,$(wildcard $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)))
     include $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)

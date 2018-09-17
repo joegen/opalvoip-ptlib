@@ -64,7 +64,13 @@ ifeq ($(OS),)
     $(error Must define an OS for CPU=$(CPU))
   endif
   
-  TARGET_DIR := $(CURDIR)
+  ifndef TARGETDIR
+    ifeq ($(MULTIPLATFORM),yes)
+      TARGETDIR := lib_$(shell uname -s)_$(shell uname -m)
+    else
+      TARGETDIR := $(CURDIR)
+    endif
+  endif
   
 else # OS
   
@@ -99,14 +105,16 @@ else # OS
     HOST_CONFIG_PARAM := --host=$(HOST)
   endif
   
-  TARGET_DIR := $(CURDIR)/lib_$(OS)_$(CPU)
+  ifndef TARGETDIR
+    TARGETDIR := $(CURDIR)/lib_$(OS)_$(CPU)
+  endif
   
   $(info Cross compile: OS=$(OS), CPU=$(CPU), HOST=$(HOST))
 endif # OS
 
 
 ifndef CONFIG_STATUS
-  CONFIG_STATUS := $(TARGET_DIR)/config.status
+  CONFIG_STATUS := $(TARGETDIR)/config.status
 endif
 
 ifndef CONFIG_PARMS
@@ -115,13 +123,13 @@ ifndef CONFIG_PARMS
   endif
 endif
 
-CONFIG_FILE_PATHS := $(addprefix $(TARGET_DIR)/, $(CONFIG_FILES))
+CONFIG_FILE_PATHS := $(addprefix $(TARGETDIR)/, $(CONFIG_FILES))
 
 CONFIGURE_CMD := \
-  if test ! -d "$(TARGET_DIR)" ; then \
-    mkdir $(TARGET_DIR); \
+  if test ! -d "$(TARGETDIR)" ; then \
+    mkdir $(TARGETDIR); \
   fi; \
-  cd $(TARGET_DIR); \
+  cd $(TARGETDIR); \
   $(CONFIGURE) $(HOST_CONFIG_PARAM) $(CONFIG_PARMS)
 
 
@@ -164,7 +172,7 @@ config : $(CONFIGURE)
 
 .PHONY:build_top_level
 build_top_level:
-	$(Q)$(MAKE) --file="$(TOP_LEVEL_MAKE)" --directory="$(TARGET_DIR)" $(MAKECMDGOALS)
+	$(Q)$(MAKE) --file="$(TOP_LEVEL_MAKE)" --directory="$(TARGETDIR)" $(MAKECMDGOALS)
 
 
 $(CONFIG_STATUS) : $(CONFIGURE) $(addprefix $(TOP_LEVEL_DIR)/,$(addsuffix .in,$(CONFIG_FILES)))
