@@ -2300,6 +2300,8 @@ class PStringStream : public PString, public std::iostream
 };
 
 
+__inline PString PSTRSTRM_support(const ostream & s) { return dynamic_cast<const PString &>(s); }
+
 /**Output a stream expression to a string parameter.
    This allows a string parameter to a function use a stream expression to
    generate that string. For example, given the function:
@@ -2311,7 +2313,7 @@ class PStringStream : public PString, public std::iostream
       DoSomething(PSTRSTRM("Fred used" << number << " of \"" << item << '"'));
 </code></pre>
  */
-#define PSTRSTRM(arg) dynamic_cast<const PString &>(PStringStream() << std::flush << arg)
+#define PSTRSTRM(arg) PSTRSTRM_support(PStringStream() << arg << std::flush)
 
 
 // Definition for template PString memeber function, needs to be after PStringStream
