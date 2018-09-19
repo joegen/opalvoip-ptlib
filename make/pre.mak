@@ -45,18 +45,21 @@ else ifndef PTLIBDIR
 else
   ifeq (,$(target))
     ifeq (,$(OS))
-      OS:=$(shell uname -s)
+      OS := $(shell uname -s)
     endif
     ifeq (,$(CPU))
-      CPU=$(shell uname -m)
+      CPU := $(shell uname -m)
     endif
-    target = $(OS)_$(CPU)
+    target := $(OS)_$(CPU)
   endif
-  ifneq (,$(wildcard $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)))
-    include $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
-  else
-    include $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
+
+  PTLIB_CONFIG_MAK_PATH := $(PTLIBDIR)/lib_$(target)/make/$(PTLIB_CONFIG_MAK)
+  ifeq (,$(wildcard $(PTLIB_CONFIG_MAK_PATH)))
+    PTLIB_CONFIG_MAK_PATH := $(PTLIBDIR)/make/$(PTLIB_CONFIG_MAK)
   endif
+  #$(info Including $(PTLIB_CONFIG_MAK_PATH))
+  include $(PTLIB_CONFIG_MAK_PATH)
+
   PTLIB_INCFLAGS := -I$(PTLIBDIR)/include
   PTLIB_LIBDIR = $(PTLIBDIR)/lib_$(target)
   LIBDIRS := $(PTLIBDIR) $(LIBDIRS)  # Submodules built with make lib
