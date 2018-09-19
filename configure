@@ -7373,7 +7373,7 @@ fi
 
 if test "x$INTERNAL_PTLIBDIR" != "x"; then
    libdir+=_$target
-   datarootdir="\${libdir}"
+   datarootdir="\${exec_prefix}"
    makedir="\${datarootdir}/make"
    VERSION_DIR="$INTERNAL_PTLIBDIR"
 else
