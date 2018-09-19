@@ -486,7 +486,7 @@ class PThread : public PObject
         void ThreadDestroyed(PThread & thread);
       protected:
         LocalStorageBase();
-        void StorageDestroyed();
+        void DestroyStorage();
         virtual void * Allocate() const = 0;
         virtual void Deallocate(void * ptr) const = 0;
         virtual void * GetStorage() const;
@@ -494,6 +494,7 @@ class PThread : public PObject
         typedef std::map<PUniqueThreadIdentifier, void *> DataMap;
         mutable DataMap  m_data;
         PCriticalSection m_mutex;
+      friend class PThreadLocalStorageData;
     };
 
   private:
@@ -939,7 +940,7 @@ class PThreadLocalStorage : public PThread::LocalStorageBase
   public:
     typedef Storage_T * Ptr_T;
 
-    ~PThreadLocalStorage()        { this->StorageDestroyed(); }
+    ~PThreadLocalStorage()        { this->DestroyStorage(); }
     Ptr_T Get() const             { return  (Ptr_T)this->GetStorage(); }
     operator Ptr_T() const        { return  (Ptr_T)this->GetStorage(); }
     Ptr_T operator->() const      { return  (Ptr_T)this->GetStorage(); }

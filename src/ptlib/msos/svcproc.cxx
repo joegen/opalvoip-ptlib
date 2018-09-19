@@ -439,7 +439,12 @@ int PServiceProcess::InternalMain(void * arg)
   if (m_controlWindow != NULL && m_controlWindow != (HWND)-1)
     DestroyWindow(m_controlWindow);
 
-  // Set thread ID for process to this thread
+  OnStop();
+
+  if (!m_threadHandle.Wait(10000))
+    PTRACE(1, "Timeout waiting for service Main() to exit.");
+
+  // Set thread ID for the process back to this thread, mostly for destruction logging
   m_threadMutex.Wait();
   m_activeThreads.erase(m_threadId);
   m_uniqueId = m_threadId = GetCurrentThreadId();
@@ -447,9 +452,8 @@ int PServiceProcess::InternalMain(void * arg)
   m_threadHandle = GetCurrentThread();
   m_activeThreads[m_threadId] = this;
   m_threadMutex.Signal();
-  OnStop();
 
-  m_controlWindow = NULL; // This stops the logging
+  m_controlWindow = NULL; // This stops the logging direct to Window, but not to file
 
   return GetTerminationValue();
 }

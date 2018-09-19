@@ -115,6 +115,46 @@ class PSimpleThread : public PThread
 };
 
 
+#define RELEASE_THREAD_LOCAL_STORAGE 1
+#if RELEASE_THREAD_LOCAL_STORAGE
+static class PThreadLocalStorageData : private std::set<PThread::LocalStorageBase*>
+{
+  PCriticalSection m_mutex;
+
+public:
+  ~PThreadLocalStorageData()
+  {
+    m_mutex.Wait();
+    for (iterator it = begin(); it != end(); ++it)
+      (*it)->DestroyStorage();
+    m_mutex.Signal();
+  }
+
+  void Construct(PThread::LocalStorageBase * data)
+  {
+    m_mutex.Wait();
+    insert(data);
+    m_mutex.Signal();
+  }
+
+  void Destroy(PThread::LocalStorageBase * data)
+  {
+    m_mutex.Wait();
+    erase(data);
+    m_mutex.Signal();
+  }
+
+  void Destroy(PThread & thread)
+  {
+    m_mutex.Wait();
+    for (iterator it = begin(); it != end(); ++it)
+      (*it)->ThreadDestroyed(thread);
+    m_mutex.Signal();
+  }
+} * s_ThreadLocalStorageData;
+#endif // RELEASE_THREAD_LOCAL_STORAGE
+
+
 #define new PNEW
 
 
@@ -2386,6 +2426,10 @@ PProcess::PProcess(const char * manuf, const char * name,
   PAssert(PProcessInstance == NULL, "Only one instance of PProcess allowed");
   PProcessInstance = this;
 
+#if RELEASE_THREAD_LOCAL_STORAGE
+  s_ThreadLocalStorageData = new PThreadLocalStorageData;
+#endif
+
 #if PTRACING
   PTraceInfo::Instance().InitialiseFromEnvironment();
 #endif
@@ -2607,7 +2651,11 @@ PProcess::~PProcess()
   PlatformDestruct();
 
   PFactoryBase::GetFactories().DestroySingletons();
-
+#if RELEASE_THREAD_LOCAL_STORAGE
+  PThreadLocalStorageData * tls = s_ThreadLocalStorageData;
+  s_ThreadLocalStorageData = NULL;
+  delete tls;
+#endif
   PIPSocket::ClearNameCache();
 
 #if PTRACING
@@ -3457,42 +3505,6 @@ bool PThread::WaitAndDelete(PThread * & threadToDelete, const PTimeInterval & ma
 }
 
 
-#define RELEASE_THREAD_LOCAL_STORAGE 1
-#if RELEASE_THREAD_LOCAL_STORAGE
-class PThreadLocalStorageData : private std::set<PThread::LocalStorageBase*>
-{
-  PCriticalSection m_mutex;
-
-public:
-  void Construct(PThread::LocalStorageBase * data)
-  {
-    m_mutex.Wait();
-    insert(data);
-    m_mutex.Signal();
-  }
-
-  void Destroy(PThread::LocalStorageBase * data)
-  {
-    m_mutex.Wait();
-    erase(data);
-    m_mutex.Signal();
-  }
-
-  void Destroy(PThread & thread)
-  {
-    m_mutex.Wait();
-    for (iterator it = begin(); it != end(); ++it)
-      (*it)->ThreadDestroyed(thread);
-    m_mutex.Signal();
-  }
-};
-
-static PThreadLocalStorageData & GetThreadLocalStorageData()
-{
-  static PThreadLocalStorageData tls; return tls;
-}
-#endif
-
 PThread::~PThread()
 {
   if (m_type != e_IsProcess && m_type != e_IsExternal && !WaitForTermination(1000)) {
@@ -3503,7 +3515,7 @@ PThread::~PThread()
   PTRACE(5, "Destroying thread " << this << ' ' << m_threadName << ", id=" << m_threadId);
 
 #if RELEASE_THREAD_LOCAL_STORAGE
-  GetThreadLocalStorageData().Destroy(*this);
+  if (s_ThreadLocalStorageData) s_ThreadLocalStorageData->Destroy(*this);
 #endif
 
   InternalDestroy();
@@ -3516,20 +3528,21 @@ PThread::~PThread()
 PThread::LocalStorageBase::LocalStorageBase()
 {
 #if RELEASE_THREAD_LOCAL_STORAGE
-  GetThreadLocalStorageData().Construct(this);
+  if (s_ThreadLocalStorageData) s_ThreadLocalStorageData->Construct(this);
 #endif
 }
 
 
-void PThread::LocalStorageBase::StorageDestroyed()
+void PThread::LocalStorageBase::DestroyStorage()
 {
 #if RELEASE_THREAD_LOCAL_STORAGE
-  GetThreadLocalStorageData().Destroy(this);
+  if (s_ThreadLocalStorageData) s_ThreadLocalStorageData->Destroy(this);
 #endif
 
   m_mutex.Wait();
   for (DataMap::iterator it = m_data.begin(); it != m_data.end(); ++it)
     Deallocate(it->second);
+  m_data.clear();
   m_mutex.Signal();
 }
 
