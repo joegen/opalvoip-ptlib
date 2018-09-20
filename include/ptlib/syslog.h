@@ -278,7 +278,7 @@ class PSystemLogToFile : public PSystemLogTarget
         const PString & prefix = PString::Empty(), // If empty, uses PProcess::Current().GetName()
         const PString & suffix = PString::Empty(),
         const PString & timestamp = DefaultTimestamp()
-      ) : PFile::RotateInfo(dir, prefix, suffix, timestamp) { }
+      ) : PFile::RotateInfo(dir, prefix, suffix, timestamp, 0) { }
       virtual void OnCloseFile(PFile & file, const PFilePath & rotatedTo);
       virtual bool OnOpenFile(PFile & file);
       virtual void OnMessage(bool error, const PString & msg);

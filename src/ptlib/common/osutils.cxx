@@ -4677,7 +4677,8 @@ const PString & PFile::RotateInfo::DefaultTimestamp() { static PConstString s("_
 PFile::RotateInfo::RotateInfo(const PDirectory & dir,
                               const PString & prefix,
                               const PString & suffix,
-                              const PString & timestamp)
+                              const PString & timestamp,
+                              PINDEX maxSize)
   : m_directory(dir)
   , m_prefix(prefix.IsEmpty() ? PProcess::Current().GetName() : prefix)
   , m_timestamp(timestamp)
@@ -4687,7 +4688,7 @@ PFile::RotateInfo::RotateInfo(const PDirectory & dir,
   , m_timeZone(PTime::Local)
 #endif
   , m_suffix(suffix)
-  , m_maxSize(1000000000) // A gigabyte
+  , m_maxSize(maxSize)
   , m_period(SizeOnly)
   , m_maxFileCount(0)
   , m_lastTime(0)

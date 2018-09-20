@@ -591,7 +591,8 @@ class PFile : public PChannel
         const PDirectory & dir = PDirectory(),
         const PString & prefix = PString::Empty(), // If empty, uses PProcess::Current().GetName()
         const PString & suffix = PString::Empty(),
-        const PString & timestamp = DefaultTimestamp()
+        const PString & timestamp = DefaultTimestamp(),
+        PINDEX maxSize = 1000000000 // A gigabyte
       );
       RotateInfo(const RotateInfo & other);
       RotateInfo & operator=(const RotateInfo & other);
