@@ -148,8 +148,12 @@ case "$target_os" in
    Darwin )
       OS_TAG="P_MACOSX" 
       dnl Where "port" libraries live
-      CPPFLAGS="$CPPFLAGS -I/opt/local/include"
-      LIBS="-L/opt/local/lib $LIBS"
+      if test -d /opt/local/include; then
+        CPPFLAGS="$CPPFLAGS -I/opt/local/include"
+      fi
+      if test -d /opt/local/lib; then
+        LIBS="-L/opt/local/lib $LIBS"
+      fi
    ;;
 
    iPhone* )
