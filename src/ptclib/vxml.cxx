@@ -219,6 +219,7 @@ class PVXMLSignLanguageAnalyser : public PProcessStartup
     EntryPoint<SLAnalyseFn>    SLAnalyse;
     EntryPoint<SLPreviewFn>    SLPreview;
     EntryPoint<SLControlFn>    SLControl;
+    EntryPoint<SLErrorTextFn>  SLErrorText;
 
     Library(const PFilePath & dllName)
       : PDynaLink(dllName)
@@ -227,6 +228,7 @@ class PVXMLSignLanguageAnalyser : public PProcessStartup
       , P_DYNALINK_ENTRY_POINT(SLAnalyse)
       , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLPreview)
       , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLControl)
+      , P_DYNALINK_OPTIONAL_ENTRY_POINT(SLErrorText)
     {
     }
 
@@ -263,6 +265,33 @@ public:
   }
 
 
+  bool CheckError(int code PTRACE_PARAM(, const char * msg))
+  {
+    if (code >= 0)
+      return true;
+
+#if PTRACING
+    static unsigned const Level = 2;
+    if (PTrace::CanTrace(2)) {
+      ostream & trace = PTRACE_BEGIN(Level);
+      trace << "Error " << code;
+      if (m_library != NULL && m_library->SLErrorText.IsPresent()) {
+        SLErrorData errorData;
+        errorData.m_code = code;
+        memset(errorData.m_text, 0, sizeof(errorData.m_text));
+        m_library->SLErrorText(&errorData);
+        if (errorData.m_text[0] != '\0')
+          trace << " \"" << errorData.m_text << '"';
+      }
+      trace << ' ' << msg
+            << " Sign Language Analyser dynamic library \"" << m_library->GetName(true) << '"'
+            << PTrace::End;
+    }
+#endif
+    return false;
+  }
+
+
   bool SetAnalyser(const PFilePath & dllName)
   {
     PWriteWaitAndSignal lock(m_mutex);
@@ -280,10 +309,7 @@ public:
         SLAnalyserInit init;
         memset(&init, 0, sizeof(init));
         init.m_apiVersion = SL_API_VERSION;
-        int error = m_library->SLInitialise(&init);
-        if (error < 0)
-          PTRACE(2, "Error " << error << " initialising Sign Language Analyser dynamic library \"" << m_library->GetName(true) << '"');
-        else {
+        if (CheckError(m_library->SLInitialise(&init) PTRACE_PARAM(, "initialising"))) {
           switch (init.m_videoFormat) {
             case SL_GreyScale:
               m_colourFormat = "Grey";
@@ -373,7 +399,9 @@ public:
               " " << width << 'x' << height << ","
               " ts=" << timestamp << ","
               " instance=" << instance);
-    return m_library->SLAnalyse(&data);
+    int result = m_library->SLAnalyse(&data);
+    CheckError(result PTRACE_PARAM(, "analysing"));
+    return result;
   }
 
 
@@ -388,11 +416,11 @@ public:
            instance < (int)m_instancesInUse.size();
   }
 
-  int Preview(int instance, unsigned width, unsigned height, uint8_t * pixels)
+  bool Preview(int instance, unsigned width, unsigned height, uint8_t * pixels)
   {
     PReadWaitAndSignal lock(m_mutex);
     if (!CanPreview(instance))
-      return -1000;
+      return false;
 
     SLPreviewData data;
     memset(&data, 0, sizeof(data));
@@ -401,19 +429,21 @@ public:
     data.m_height = height;
     data.m_pixels = pixels;
 
-    return m_library->SLPreview(&data);
+    return CheckError(m_library->SLPreview(&data) PTRACE_PARAM(, "previewing"));
   }
 
   int Control(unsigned instance, const PString & ctrl)
   {
     PReadWaitAndSignal lock(m_mutex);
     if (!m_library->SLControl.IsPresent())
-      return 0;
+      return INT_MIN;
 
     SLControlData data;
     data.m_instance = instance;
     data.m_control = ctrl;
-    return m_library->SLControl(&data);
+    int result = m_library->SLControl(&data);
+    CheckError(result PTRACE_PARAM(, "controlling"));
+    return result;
   }
 };
 
@@ -479,12 +509,7 @@ protected:
       SetFrameSizeConverter(oldWidth, oldHeight);
     }
 
-    int result = PVXMLSignLanguageAnalyser::GetInstance().Preview(m_receiver.GetAnalayserInstance(), m_frameWidth, m_frameHeight, buffer);
-    if (result >= 0)
-      return true;
-
-    PTRACE(2, "SignLanguageAnalyser preview failed with code: " << result);
-    return false;
+    return PVXMLSignLanguageAnalyser::GetInstance().Preview(m_receiver.GetAnalayserInstance(), m_frameWidth, m_frameHeight, buffer);
   }
 };
 #endif // P_VXML_VIDEO

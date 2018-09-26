@@ -147,6 +147,17 @@ extern "C" {
   typedef int (*SLControlFn)(const SLControlData * ctrl);
 
 
+  /** Return text description for a given error code.
+    */
+  typedef struct SLErrorData
+  {
+    int  m_code;       // In  - Error code as returned in the above functions
+    char m_text[1024]; // Out - Memory block to receive text
+  } SLErrorData;
+
+  SL_EXPORT void SL_STDCALL SLErrorText(const SLErrorData * data);
+  typedef int (*SLErrorTextFn)(const SLErrorData * data);
+
 #ifdef __cplusplus
 };
 #endif
