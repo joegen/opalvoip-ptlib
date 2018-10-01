@@ -423,11 +423,6 @@ static bool AssertAction(int c, const char * msg)
 
 void PPlatformAssertFunc(const PDebugLocation & PTRACE_PARAM(location), const char * msg, char defaultAction)
 {
-  if (PProcess::Current().IsServiceProcess()) {
-    PSYSTEMLOG(Fatal, msg);
-    return;
-  }
-
 #if PTRACING
   PTrace::Begin(0, location.m_file, location.m_line, NULL, "PAssert") << msg << PTrace::End;
 #endif
