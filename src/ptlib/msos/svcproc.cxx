@@ -441,8 +441,9 @@ int PServiceProcess::InternalMain(void * arg)
 
   OnStop();
 
-  if (!m_threadHandle.Wait(10000))
+  if (!m_threadHandle.Wait(10000)) {
     PTRACE(1, "Timeout waiting for service Main() to exit.");
+  }
 
   // Set thread ID for the process back to this thread, mostly for destruction logging
   m_threadMutex.Wait();
