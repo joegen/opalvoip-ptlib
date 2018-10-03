@@ -435,7 +435,7 @@ public:
   int Control(unsigned instance, const PString & ctrl)
   {
     PReadWaitAndSignal lock(m_mutex);
-    if (!m_library->SLControl.IsPresent())
+    if (m_library == NULL || !m_library->SLControl.IsPresent())
       return INT_MIN;
 
     SLControlData data;
