@@ -1409,12 +1409,6 @@ PProcessIdentifier PProcess::GetCurrentProcessID()
 }
 
 
-PBoolean PProcess::IsServiceProcess() const
-{
-  return false;
-}
-
-
 void PProcess::GetMemoryUsage(MemoryUsage & usage)
 {
   PROCESS_MEMORY_COUNTERS info;

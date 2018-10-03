@@ -2518,6 +2518,12 @@ void PProcess::Startup()
 }
 
 
+bool PProcess::IsServiceProcess() const
+{
+  return false;
+}
+
+
 bool PProcess::SignalTimerChange()
 {
   if (!PAssert(IsInitialised(), PLogicError) || m_shuttingDown) 

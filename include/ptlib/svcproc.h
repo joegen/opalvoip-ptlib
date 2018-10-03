@@ -146,6 +146,9 @@ class PServiceProcess : public PProcess
     virtual int InternalMain(void * arg = NULL);
 
 
+    virtual bool IsServiceProcess() const;
+
+
   protected:
   // Member variables
     PSyncPoint m_exitMain;

@@ -586,6 +586,12 @@ void PServiceProcess::OnControl()
 }
 
 
+bool PServiceProcess::IsServiceProcess() const
+{
+  return true;
+}
+
+
 void PServiceProcess::AddRunTimeSignalHandlers(const int * signals)
 {
   static int const ExtraSignals[] = { SIGILL, SIGSEGV, SIGFPE, SIGBUS, 0 };

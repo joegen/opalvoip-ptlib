@@ -200,24 +200,22 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
   }
 
   const char * env;
-  if (PProcess::Current().IsServiceProcess())
-    env = "i";
-  else {
 #if P_EXCEPTIONS
-    //Throw a runtime exception if the environment variable is set
-    env = ::getenv("PTLIB_ASSERT_EXCEPTION");
-    if (env == NULL)
-      env = ::getenv("PWLIB_ASSERT_EXCEPTION");
-    if (env != NULL)
-      env = "T";
-    else
+  //Throw a runtime exception if the environment variable is set
+  env = ::getenv("PTLIB_ASSERT_EXCEPTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_EXCEPTION");
+  if (env != NULL)
+    env = "T";
+  else
 #endif
-      env = ::getenv("PTLIB_ASSERT_ACTION");
-    if (env == NULL)
-      env = ::getenv("PWLIB_ASSERT_ACTION");
-  }
+    env = ::getenv("PTLIB_ASSERT_ACTION");
+  if (env == NULL)
+    env = ::getenv("PWLIB_ASSERT_ACTION");
+  if (env == NULL)
+    env = PProcess::Current().IsServiceProcess() ? "i" : "";
 
-  PPlatformAssertFunc(location, str.c_str(), env != NULL ? *env : '\0');
+  PPlatformAssertFunc(location, str.c_str(), *env);
 
   s_RecursiveAssert = false;
 }

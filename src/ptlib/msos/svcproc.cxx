@@ -281,7 +281,7 @@ const char * PServiceProcess::GetServiceDependencies() const
 }
 
 
-PBoolean PServiceProcess::IsServiceProcess() const
+bool PServiceProcess::IsServiceProcess() const
 {
   return !m_debugMode;
 }

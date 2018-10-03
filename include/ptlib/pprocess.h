@@ -656,6 +656,7 @@ class PProcess : public PThread
     };
   //@}
 
+    virtual bool IsServiceProcess() const;
     bool SignalTimerChange();
 
   protected:
