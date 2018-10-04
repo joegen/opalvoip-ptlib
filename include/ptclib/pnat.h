@@ -343,7 +343,7 @@ class PNatMethod  : public PObject
 
   protected:
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context) = 0;
-    virtual void InternalUpdate() = 0;
+    virtual void InternalUpdate(bool externalAddressOnly) = 0;
     virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const = 0;
 
     bool m_active;
@@ -489,7 +489,7 @@ class PNatMethod_Fixed  : public PNatMethod
   protected:
     virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const;
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
-    virtual void InternalUpdate();
+    virtual void InternalUpdate(bool);
 
     PIPSocket::Address m_interfaceAddress;
 };
@@ -516,7 +516,7 @@ class PNatMethod_AWS : public PNatMethod_Fixed
 
   protected:
     virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const;
-    void InternalUpdate();
+    void InternalUpdate(bool);
 };
 
 /////////////////////////////////////////////////////////////

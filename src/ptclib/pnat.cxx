@@ -236,7 +236,7 @@ PNatMethod::NatTypes PNatMethod::GetNatType(const PTimeInterval & maxAge)
   if (newAP == oldAP && m_updateTime.GetElapsed() < maxAge)
     return m_natType;
 
-  InternalUpdate();
+  InternalUpdate(false);
   m_updateTime.SetCurrentTime();
   return m_natType;
 }
@@ -246,8 +246,16 @@ bool PNatMethod::GetExternalAddress(PIPSocket::Address & externalAddress, const 
 {
   PWaitAndSignal mutex(m_mutex);
 
-  if (GetNatType(maxAge) == UnknownNat)
-    return false;
+  if (m_natType == UnknownNat) {
+    if (GetNatType(maxAge) == UnknownNat)
+      return false;
+  }
+  else {
+    if (m_updateTime.GetElapsed() >= maxAge) {
+      InternalUpdate(true);
+      m_updateTime.SetCurrentTime();
+    }
+  }
 
   return static_cast<const PNatMethod *>(this)->GetExternalAddress(externalAddress);
 }
@@ -628,7 +636,7 @@ bool PNatMethod_Fixed::Socket::InternalGetLocalAddress(PIPSocketAddressAndPort &
 }
 
 
-void PNatMethod_Fixed::InternalUpdate()
+void PNatMethod_Fixed::InternalUpdate(bool)
 {
 }
 
@@ -695,7 +703,7 @@ PString PNatMethod_AWS::GetServer() const
 
 bool PNatMethod_AWS::SetServer(const PString &)
 {
-  InternalUpdate();
+  InternalUpdate(false);
   return m_externalAddress.IsValid();
 }
 
@@ -707,7 +715,7 @@ bool PNatMethod_AWS::InternalGetServerAddress(PIPSocketAddressAndPort & external
 }
 
 
-void PNatMethod_AWS::InternalUpdate()
+void PNatMethod_AWS::InternalUpdate(bool)
 {
   m_externalAddress = PIPSocket::GetInvalidAddress();
 

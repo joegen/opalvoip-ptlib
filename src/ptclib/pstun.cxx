@@ -72,10 +72,12 @@ PSTUN::PSTUN()
 {
 }
 
-PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(PSTUNUDPSocket * socket,
-                                               const PIPSocketAddressAndPort & serverAddress,
-                                               PIPSocketAddressAndPort & baseAddressAndPort,
-                                               PIPSocket::Address & externalAddress)
+void PSTUN::DoRFC3489Discovery(PNatMethod::NatTypes & natType,
+                               PSTUNUDPSocket * socket,
+                               const PIPSocketAddressAndPort & serverAddress,
+                               PIPSocketAddressAndPort & baseAddressAndPort,
+                               PIPSocket::Address & externalAddress,
+                               bool externalAddressOnly)
 {  
   socket->SetReadTimeout(m_replyTimeout);
 
@@ -91,18 +93,20 @@ PNatMethod::NatTypes PSTUN::DoRFC3489Discovery(PSTUNUDPSocket * socket,
   PSTUNMessage requestI(PSTUNMessage::BindingRequestRFC3489);
   requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
-  if (!responseI.Poll(*socket, requestI, m_pollRetries)) {
+  if (responseI.Poll(*socket, requestI, m_pollRetries))
+    FinishRFC3489Discovery(natType, responseI, socket, externalAddress, externalAddressOnly);
+  else {
     PTRACE(2, "Server " << serverAddress << " did not respond.");
-    return PNatMethod::UnknownNat;
+    natType = PNatMethod::UnknownNat;
   }
-
-  return FinishRFC3489Discovery(responseI, socket, externalAddress);
 }
 
 
-PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
-                                                   PSTUNUDPSocket * socket,
-                                                   PIPSocket::Address & externalAddress)
+void PSTUN::FinishRFC3489Discovery(PNatMethod::NatTypes & natType,
+                                   PSTUNMessage & responseI,
+                                   PSTUNUDPSocket * socket,
+                                   PIPSocket::Address & externalAddress,
+                                   bool externalAddressOnly)
 {
   // check if server returned "420 Unknown Attribute" - that probably means it cannot do CHANGE_REQUEST even with no changes
   bool cannotDoChangeRequest = false;
@@ -123,7 +127,8 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
     }
     if (!ok) {
       PTRACE(2, "Server " << socket->GetSendAddress() << " returned unexpected error " << errorAttribute->GetErrorCode() << ", reason = '" << errorAttribute->GetReason() << "'");
-      return PNatMethod::BlockedNat;
+      natType = PNatMethod::BlockedNat;
+      return;
     }
   }
 
@@ -152,7 +157,8 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
     mappedAddress = (PSTUNAddressAttribute *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
     if (mappedAddress == NULL) {
       PTRACE(2, "Expected (XOR)mapped address attribute from " << m_serverAddress);
-      return PNatMethod::UnknownNat; // Protocol error
+      natType = PNatMethod::UnknownNat; // Protocol error
+      return;
     }
   }
 
@@ -160,13 +166,16 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
   mappedAddress->GetIPAndPort(externalAddressAndPort);
   externalAddress = externalAddressAndPort.GetAddress();
 
+  if (externalAddressOnly)
+    return;
+
   bool notNAT = (socket->GetPort() == externalAddressAndPort.GetPort()) && PIPSocket::IsLocalHost(externalAddressAndPort.GetAddress());
 
   // can only guess based on a single sample
   if (cannotDoChangeRequest) {
-    PNatMethod::NatTypes natType = notNAT ? PNatMethod::OpenNat : PNatMethod::SymmetricNat;
+    natType = notNAT ? PNatMethod::OpenNat : PNatMethod::SymmetricNat;
     PTRACE(3, "Server badly configured or does not support RFC3849 discovery - best guess is " << PNatMethod::GetNatTypeString(natType));
-    return natType;
+    return;
   }
 
   PTRACE(3, "Test I response received - sending test II (change port and address)");
@@ -181,14 +190,16 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
   PTRACE(3, "Test II response " << (testII ? "" : "not ") << "received");
 
   if (notNAT) {
-    PNatMethod::NatTypes natType = (testII ? PNatMethod::OpenNat : PNatMethod::PartiallyBlocked);
+    natType = (testII ? PNatMethod::OpenNat : PNatMethod::PartiallyBlocked);
     // Is not NAT or symmetric firewall
     PTRACE(2, "Test I and II indicate nat is " << PNatMethod::GetNatTypeString(natType));
-    return natType;
+    return;
   }
 
-  if (testII)
-    return PNatMethod::ConeNat;
+  if (testII) {
+    natType = PNatMethod::ConeNat;
+    return;
+  }
 
   PTRACE(3, "Sending test I to alternate server: " << secondaryServer);
   socket->PUDPSocket::InternalSetSendAddress(secondaryServer);
@@ -197,7 +208,8 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
   PSTUNMessage responseI2;
   if (!responseI2.Poll(*socket, requestI2, m_pollRetries)) {
     PTRACE(3, "Poll of secondary server " << secondaryServer << " failed, NAT partially blocked by firewall rules.");
-    return PNatMethod::PartiallyBlocked;
+    natType = PNatMethod::PartiallyBlocked;
+    return;
   }
 
   mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::XOR_MAPPED_ADDRESS);
@@ -205,15 +217,18 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
     mappedAddress = (PSTUNAddressAttribute *)responseI2.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
     if (mappedAddress == NULL) {
       PTRACE(2, "Expected (XOR)mapped address attribute from " << m_serverAddress);
-      return PNatMethod::UnknownNat; // Protocol error
+      natType = PNatMethod::UnknownNat; // Protocol error
+      return;
     }
   }
 
   {
     PIPSocketAddressAndPort ipAndPort;
     mappedAddress->GetIPAndPort(ipAndPort);
-    if (ipAndPort != externalAddressAndPort)
-      return PNatMethod::SymmetricNat;
+    if (ipAndPort != externalAddressAndPort) {
+      natType = PNatMethod::SymmetricNat;
+      return;
+    }
   }
 
   socket->PUDPSocket::InternalSetSendAddress(m_serverAddress);
@@ -222,7 +237,7 @@ PNatMethod::NatTypes PSTUN::FinishRFC3489Discovery(PSTUNMessage & responseI,
   PSTUNMessage responseIII;
 
   PTRACE(3, "Sending test III to base server: " << m_serverAddress);
-  return responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat;
+  natType = responseIII.Poll(*socket, requestIII, m_pollRetries) ? PNatMethod::RestrictedNat : PNatMethod::PortRestrictedNat;
 }
 
 
@@ -1277,7 +1292,7 @@ PNATUDPSocket * PSTUNClient::InternalCreateSocket(Component component, PObject *
 }
 
 
-void PSTUNClient::InternalUpdate()
+void PSTUNClient::InternalUpdate(bool externalAddressOnly)
 {  
   PWaitAndSignal m(m_mutex);
 
@@ -1290,7 +1305,7 @@ void PSTUNClient::InternalUpdate()
 
   if (m_socket != NULL) {
     PIPSocketAddressAndPort baseAddress;
-    m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    DoRFC3489Discovery(m_natType, m_socket, m_serverAddress, baseAddress, m_externalAddress, externalAddressOnly);
     return;
   }
 
@@ -1308,7 +1323,7 @@ void PSTUNClient::InternalUpdate()
     m_socket->SetReadTimeout(m_replyTimeout);
 
     PIPSocketAddressAndPort baseAddress;
-    m_natType = DoRFC3489Discovery(m_socket, m_serverAddress, baseAddress, m_externalAddress);
+    DoRFC3489Discovery(m_natType, m_socket, m_serverAddress, baseAddress, m_externalAddress, externalAddressOnly);
     return;
   }
 
@@ -1392,7 +1407,7 @@ void PSTUNClient::InternalUpdate()
   PIPSocketAddressAndPort ap;
   m_socket->GetBaseAddress(ap);
   m_interface = ap.GetAddress();
-  m_natType = FinishRFC3489Discovery(responseI, m_socket, m_externalAddress);
+  FinishRFC3489Discovery(m_natType, responseI, m_socket, m_externalAddress, externalAddressOnly);
 }
 
 
