@@ -491,6 +491,7 @@ class PNatMethod_Fixed  : public PNatMethod
     virtual PNATUDPSocket * InternalCreateSocket(Component component, PObject * context);
     virtual void InternalUpdate(bool);
 
+    PString            m_serverString;
     PIPSocket::Address m_interfaceAddress;
 };
 
@@ -512,7 +513,6 @@ class PNatMethod_AWS : public PNatMethod_Fixed
 
     virtual PString GetServer() const;
     virtual bool SetServer(const PString & str);
-    virtual bool Open(const PIPSocket::Address & ifaceAddr);
 
   protected:
     virtual bool InternalGetServerAddress(PIPSocketAddressAndPort & externalAddressAndPort) const;
