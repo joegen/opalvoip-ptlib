@@ -1563,8 +1563,10 @@ protected:
     LONG               m_position;
     PAVISTREAM         m_compressor;
     PGETFRAME          m_decompressor;
+#if P_VIDEO
     PBYTEArray         m_videoBuffer;
     PColourConverter * m_videoConverter;
+#endif
 
 
     TrackContext()
@@ -1573,7 +1575,9 @@ protected:
       , m_position(0)
       , m_compressor(NULL)
       , m_decompressor(NULL)
+#if P_VIDEO
       , m_videoConverter(NULL)
+#endif
     { }
 
 
@@ -1626,6 +1630,7 @@ protected:
           return false;
         }
       }
+#if P_VIDEO
       else if (sinfo.fccType == streamtypeVIDEO) {
         m_type = Video();
 
@@ -1645,6 +1650,7 @@ protected:
           }
         }
       }
+#endif
       else {
         m_type = FromFOURCC(sinfo.fccType);
       }
@@ -1748,7 +1754,9 @@ protected:
 
     void Close()
     {
+#if OPAL_VIDEO
       delete m_videoConverter;
+#endif
 
       if (m_compressor != NULL)
         AVIStreamRelease(m_compressor);
@@ -1865,6 +1873,7 @@ protected:
     }
 
 
+#if P_VIDEO
     bool ConfigureReadVideo(const PVideoFrameInfo & frameInfo)
     {
       if (!m_owner->CheckModeAndTrackType(true, Video(), m_type))
@@ -2047,6 +2056,7 @@ protected:
       PTRACE(6, m_owner, "Written video frame " << m_position << ", size=" << bufferSize);
       return true;
     }
+#endif
   };
 
   std::vector<TrackContext> m_tracks;

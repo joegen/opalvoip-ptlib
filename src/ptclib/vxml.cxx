@@ -3548,8 +3548,10 @@ PBoolean PVXMLChannel::Read(void * buffer, PINDEX amount)
     // if the read succeeds, we are done
     if (ReadFrame(buffer, amount)) {
       m_totalData += GetLastReadCount();
+#if P_VXML_VIDEO
       if (m_vxmlSession->m_videoSender.IsRunning())
         return true; // Already done real time delay
+#endif
     }
 
     // if a timeout, send silence, try again in a bit
