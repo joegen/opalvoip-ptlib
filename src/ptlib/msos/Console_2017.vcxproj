@@ -898,11 +898,9 @@ bison -o ../common/getdate_tab.c ../common/getdate.y
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
@@ -924,11 +922,9 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-se
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Configuring Build Options</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Configuring Build Options</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd $(ProjectDir)..\..\..
-pwd
 configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-search --exclude-env=VSNET2010_PTLIB_CONFIGURE_EXCLUDE_DIRS %PTLIB_CONFIGURE_OPTIONS% %PWLIB_CONFIGURE_OPTIONS%
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\..\configure.ac</AdditionalInputs>
@@ -943,38 +939,38 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-se
     <None Include="..\..\..\configure.ac" />
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "%(RootDir)%(Directory)"
+PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)"
+PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd "%(RootDir)%(Directory)"
+PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd "%(RootDir)%(Directory)"
+PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd %(RootDir)%(Directory)
-PATH=%PATH%;"C:\Program Files\Git\bin"
-sh -c './tools/get_revision.sh %(Filename)'
-if errorlevel 1 copy %(FullPath)+nul %(RootDir)%(Directory)%(FileName)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "%(RootDir)%(Directory)"
+PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)"
+PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+sh -c './tools/get_revision.sh %(FileName)'
+if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
