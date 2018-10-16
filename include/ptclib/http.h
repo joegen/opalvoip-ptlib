@@ -1173,10 +1173,25 @@ class PHTTPServer : public PHTTP
        @return
        true if requires v1.1 chunked transfer encoding.
      */
-    PBoolean StartResponse(
+    bool StartResponse(
       StatusCode code,      ///< Status code for the response.
       PMIMEInfo & headers,  ///< MIME variables included in response.
       long bodySize         ///< Size of the rest of the response.
+    );
+
+    /** Send a response to client.
+
+       @return
+       true if write successful.
+     */
+    bool SendResponse(
+      StatusCode code,      ///< Status code for the response.
+      const PString & body = PString::Empty()  ///< Body to send in response
+    );
+    bool SendResponse(
+      StatusCode code,      ///< Status code for the response.
+      PMIMEInfo & headers,  ///< MIME variables included in response.
+      const PString & body = PString::Empty()  ///< Body to send in response
     );
 
     /** Write an error response for the specified code.

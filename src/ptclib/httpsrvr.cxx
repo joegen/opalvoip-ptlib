@@ -602,7 +602,7 @@ static const httpStatusCodeStruct * GetStatusCodeStruct(int code)
 }
 
 
-PBoolean PHTTPServer::StartResponse(StatusCode code,
+bool PHTTPServer::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 long bodySize)
 {
@@ -657,6 +657,20 @@ PBoolean PHTTPServer::StartResponse(StatusCode code,
 #endif
 
   return chunked;
+}
+
+
+bool PHTTPServer::SendResponse(StatusCode code, const PString & body)
+{
+  PMIMEInfo headers;
+  return SendResponse(code, headers, body);
+}
+
+
+bool PHTTPServer::SendResponse(StatusCode code, PMIMEInfo & headers, const PString & body)
+{
+  StartResponse(code, headers, body.GetLength());
+  return WriteString(body);
 }
 
 
