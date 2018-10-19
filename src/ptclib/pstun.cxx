@@ -1282,7 +1282,7 @@ bool PSTUNClient::GetInterfaceAddress(PIPSocket::Address & interfaceAddress) con
   PWaitAndSignal m(m_mutex);
 
   interfaceAddress = m_interface;
-  return true;
+  return interfaceAddress.IsValid();
 }
 
 

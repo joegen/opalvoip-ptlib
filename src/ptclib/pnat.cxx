@@ -654,7 +654,7 @@ bool PNatMethod_Fixed::GetInterfaceAddress(PIPSocket::Address & ifaceAddr) const
   PWaitAndSignal mutex(m_mutex);
 
   ifaceAddr = m_interfaceAddress;
-  return true;
+  return ifaceAddr.IsValid();
 }
 
 
