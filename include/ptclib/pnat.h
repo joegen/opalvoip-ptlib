@@ -472,6 +472,7 @@ class PNatMethod_Fixed  : public PNatMethod
     virtual bool SetServer(const PString & str);
     virtual bool GetInterfaceAddress(PIPSocket::Address & ifaceAddr) const;
     virtual bool Open(const PIPSocket::Address & ifaceAddr);
+    virtual void Close();
     virtual bool IsAvailable(const PIPSocket::Address & binding, PObject * context);
 
     class Socket : public PNATUDPSocket

@@ -671,6 +671,12 @@ bool PNatMethod_Fixed::Open(const PIPSocket::Address & ifaceAddr)
 }
 
 
+void PNatMethod_Fixed::Close()
+{
+  m_interfaceAddress = PIPSocket::GetInvalidAddress();
+}
+
+
 bool PNatMethod_Fixed::IsAvailable(const PIPSocket::Address & binding, PObject * context)
 {
   PWaitAndSignal mutex(m_mutex);
