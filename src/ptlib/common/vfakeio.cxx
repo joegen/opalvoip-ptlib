@@ -1855,7 +1855,7 @@ void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
 
   Image contains lots of high and low resolution areas.
   */
-  unsigned wi,hi, colourIndex,colNo, boxSize;   
+  unsigned wi, hi, colourIndex, colNo, boxSize;
 
 #define COL(b,x,y) ((b+x+y)%7)
 
@@ -1874,12 +1874,12 @@ void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
   int offset;
   offset = (m_frameWidth >> 3) & 0xffe;
 
-  for(wi = 0; wi < 8; wi++) 
+  for (wi = 0; wi < 8; wi++)
     columns[wi] = wi * offset;
   columns[8] = m_frameWidth;
 
   offset = (m_frameHeight >> 3) & 0xffe;
-  for(hi = 0; hi < 9; hi++) 
+  for (hi = 0; hi < 9; hi++)
     heights[hi] = hi * offset;
   heights[8] = m_frameHeight;
 
@@ -1888,32 +1888,33 @@ void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
   // Provides a difference if run on two ohphone sessions.
   colNo = (colourIndex / 10) % 7;   //Every 10 seconds, coloured background blocks move.
 
-  for(hi = 0; hi < 8; hi++) //Fill the background in.
-    for(wi = 0 ; wi < 8; wi++) {
+  for (hi = 0; hi < 8; hi++) { //Fill the background in.
+    for (wi = 0; wi < 8; wi++) {
       FillRect(resFrame,
                columns[wi], heights[hi], columns[wi + 1] - columns[wi], heights[hi + 1] - heights[hi],
                background[COL(colNo, wi, hi)][0], background[COL(colNo, wi, hi)][1], background[COL(colNo, wi, hi)][2]);
     }
+  }
 
-    //Draw a black box rapidly moving down the left of the window.
-    boxSize= m_frameHeight / 10;
-    hi = ((3 * colourIndex) % (m_frameHeight-boxSize)) & 0xffe; //Make certain hi is even.
-    FillRect(resFrame, 10, hi, boxSize, boxSize, 0, 0, 0); //Black Box.
+  //Draw a black box rapidly moving down the left of the window.
+  boxSize = m_frameHeight / 10;
+  hi = ((3 * colourIndex) % (m_frameHeight - boxSize)) & 0xffe; //Make certain hi is even.
+  FillRect(resFrame, 10, hi, boxSize, boxSize, 0, 0, 0); //Black Box.
 
-    //Draw four parallel black lines, which move up the middle of the window.
-    colourIndex = colourIndex / 3;     //Every three seconds, lines move.
+  //Draw four parallel black lines, which move up the middle of the window.
+  colourIndex = colourIndex / 3;     //Every three seconds, lines move.
 
-    for(wi = 0; wi < 2; wi++) 
-      columns[wi]= (((wi + 1)  * m_frameWidth) / 3) & 0xffe;// Force columns to be even.
+  for (wi = 0; wi < 2; wi++)
+    columns[wi] = (((wi + 1)  * m_frameWidth) / 3) & 0xffe;// Force columns to be even.
 
-    hi = colourIndex % ((m_frameHeight - 16) / 2);
-    hi = (m_frameHeight - 16) - (hi * 2);     //hi is even, Lines move in opp. direction to box.
+  hi = colourIndex % ((m_frameHeight - 16) / 2);
+  hi = (m_frameHeight - 16) - (hi * 2);     //hi is even, Lines move in opp. direction to box.
 
-    unsigned yi;    
-    for(yi = 0; yi < 4; yi++) 
-      FillRect(resFrame,
-               columns[0], hi+(yi * 4), columns[1] - columns[0], 2,
-               0, 0, 0);
+  unsigned yi;
+  for (yi = 0; yi < 4; yi++)
+    FillRect(resFrame,
+             columns[0], hi + (yi * 4), columns[1] - columns[0], 2,
+             0, 0, 0);
 }
 
 
