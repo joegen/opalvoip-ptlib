@@ -156,7 +156,11 @@ class PDynaLink : public PObject
           const char * name,
           bool compulsory = true
         ) {
-          dll.GetFunction(name, (Function &)m_function, compulsory);
+          Function fn;
+          if (dll.GetFunction(name, fn, compulsory))
+            m_function = reinterpret_cast<FuncPtr>(fn);
+          else
+            m_function = NULL;
         }
 
         bool IsPresent() const { return m_function != NULL; }
