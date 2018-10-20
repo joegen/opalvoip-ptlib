@@ -1733,7 +1733,7 @@ PTLIB_MODULE_OPTION(
    [OPENSSL], 
    [openssl],
    [OpenSSL support],
-   [openssl], 
+   [openssl < 1.1], 
    [],[],
    [#include <openssl/ssl.h>],
    [TLSv1_method()],
