@@ -362,6 +362,7 @@ public:
     for (size_t i = 0; i < m_instancesInUse.size(); ++i) {
       if (!m_instancesInUse[i]) {
         m_instancesInUse[i] = true;
+        Control(i, "Instance Allocated");
         return i;
       }
     }
@@ -376,6 +377,7 @@ public:
     if (instance >= (int)m_instancesInUse.size())
       return false;
 
+    Control(instance, "Instance Released");
     m_instancesInUse[instance] = false;
     return true;
   }
