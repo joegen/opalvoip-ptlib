@@ -379,7 +379,9 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 #undef realloc
 #undef free
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void * operator new(size_t nSize)
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new(size_t nSize) throw (std::bad_alloc)
 #else
 void * operator new(size_t nSize)
@@ -389,7 +391,9 @@ void * operator new(size_t nSize)
 }
 
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void * operator new[](size_t nSize)
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new[](size_t nSize) throw (std::bad_alloc)
 #else
 void * operator new[](size_t nSize)
@@ -399,7 +403,9 @@ void * operator new[](size_t nSize)
 }
 
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void operator delete(void * ptr) noexcept
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void operator delete(void * ptr) throw()
 #else
 void operator delete(void * ptr)
@@ -409,7 +415,9 @@ void operator delete(void * ptr)
 }
 
 
-#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
+#if (__cplusplus >= 201103L)
+void operator delete[](void * ptr) noexcept
+#elif (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void operator delete[](void * ptr) throw()
 #else
 void operator delete[](void * ptr)
