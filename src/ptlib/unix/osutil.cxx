@@ -1086,7 +1086,7 @@ bool PConsoleChannel::SetLocalEcho(bool localEcho)
     return SetErrorValues(Miscellaneous, EINVAL);
 
 #if P_CURSES==1
-  if ((localEcho ? echo() : noecho()) == OK)
+  if (stdscr != NULL && (localEcho ? echo() : noecho()) == OK)
     return true;
 #endif
 
@@ -1111,7 +1111,7 @@ bool PConsoleChannel::SetLineBuffered(bool lineBuffered)
     return SetErrorValues(Miscellaneous, EINVAL);
 
 #if P_CURSES==1
-  if ((lineBuffered ? nocbreak() : cbreak()) == OK) {
+  if (stdscr != NULL && (lineBuffered ? nocbreak() : cbreak()) == OK) {
     keypad(stdscr, !lineBuffered); // Enable special keys (arrows, keypad etc)
     return true;
   }
@@ -1135,7 +1135,7 @@ bool PConsoleChannel::GetTerminalSize(unsigned & rows, unsigned & columns)
     return false;
 
 #if P_CURSES==1
-  if (stdscr) {
+  if (stdscr != NULL) {
     getmaxyx(stdscr, rows, columns);
     return rows > 0 && columns > 0;
   }
