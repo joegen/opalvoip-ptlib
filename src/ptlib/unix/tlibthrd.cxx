@@ -159,6 +159,7 @@ static int GetSchedParam(PThread::Priority priority, sched_param & param)
     rl.rlim_max = rl.rlim_cur = param.sched_priority;
     if (setrlimit(RLIMIT_RTPRIO, &rl) != 0) {
       PTRACE(2, "PTLib", "Could not increase Real Time thread priority limit to " << rl.rlim_cur << " - " << strerror(errno));
+      param.sched_priority = 0;
       return SCHED_OTHER;
     }
 
@@ -171,7 +172,7 @@ static int GetSchedParam(PThread::Priority priority, sched_param & param)
     return SCHED_RR;
 
   param.sched_priority = 0;
-  PTRACE(2, "PTLib\tNo permission to set priority level " << priority);
+  PTRACE(2, "PTLib", "No permission to set priority level " << priority);
   return SCHED_OTHER;
 #endif // RLIMIT_RTPRIO
 }
