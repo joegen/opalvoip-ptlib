@@ -273,11 +273,11 @@ PBoolean PHTTPServer::ProcessCommand()
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistent
   if (cmd == CONNECT) 
-    m_connectInfo.url.Parse("https://" + args);
+    m_connectInfo.m_url.Parse("https://" + args);
   else {
-    m_connectInfo.url.Parse(args, "http");
-    if (m_connectInfo.url.GetPort() == 0)
-      m_connectInfo.url.SetPort(myPort);
+    m_connectInfo.m_url.Parse(args, "http");
+    if (m_connectInfo.m_url.GetPort() == 0)
+      m_connectInfo.m_url.SetPort(myPort);
   }
 
   bool persist;
@@ -356,7 +356,10 @@ bool PHTTPServer::OnCommand(PINDEX cmd, const PURL &, const PString & args, PHTT
       connectInfo.DecodeMultipartFormInfo();
       persist = OnPOST(connectInfo);
       break;
-
+   case OPTIONS:
+      connectInfo.DecodeMultipartFormInfo();
+      persist = OnOPTIONS(connectInfo);
+      break;
     default:
       persist = OnUnknown(args, connectInfo);
   }
@@ -539,6 +542,22 @@ bool PHTTPServer::OnPOST(const PHTTPConnectionInfo & conInfo)
 }
 
 
+bool PHTTPServer::OnOPTIONS(const PHTTPConnectionInfo & conInfo)
+{
+  m_urlSpace.StartRead();
+  PHTTPResource * resource = m_urlSpace.FindResource(conInfo.GetURL());
+  if (resource == NULL) {
+    m_urlSpace.EndRead();
+    return OnError(NotFound, conInfo.GetURL().AsString(), m_connectInfo);
+  }
+  
+  bool retval = resource->OnOPTIONS(*this, m_connectInfo);
+ 
+  m_urlSpace.EndRead();
+  return retval;
+}
+
+
 PBoolean PHTTPServer::OnProxy(const PHTTPConnectionInfo & connectInfo)
 {
   return OnError(BadGateway, "Proxy not implemented.", connectInfo) &&
@@ -608,7 +627,7 @@ bool PHTTPServer::StartResponse(StatusCode code,
 {
   if (m_connectInfo.majorVersion < 1) 
     return false;
-
+  
   httpStatusCodeStruct dummyInfo;
   const httpStatusCodeStruct * statusInfo;
   if (m_connectInfo.commandCode < NumCommands)
@@ -681,7 +700,7 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info, const PHTTPConnectionInfo
 
   if (!info.Contains(MIMEVersionTag))
     info.SetAt(MIMEVersionTag, "1.0");
-
+  
   if (!info.Contains(ServerTag))
     info.SetAt(ServerTag, GetServerName());
 
@@ -1080,15 +1099,11 @@ void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & passw
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPRequest
 
-PHTTPRequest::PHTTPRequest(const PURL & _url,
-                      const PMIMEInfo & _mime,
-                 const PMultiPartList & _multipartFormInfo,
-                        PHTTPResource * resource,
-                          PHTTPServer & _server)
-  : server(_server)
-  , url(_url)
-  , inMIME(_mime)
-  , multipartFormInfo(_multipartFormInfo)
+PHTTPRequest::PHTTPRequest(PHTTPServer & _server,
+             const PHTTPConnectionInfo & info,
+                         PHTTPResource * resource)
+  : PHTTPConnectionInfo(info)
+  , server(_server)
   , code(PHTTP::RequestOK)
   , contentSize(P_MAX_INDEX)
   , origin(0)
@@ -1101,6 +1116,18 @@ PHTTPRequest::PHTTPRequest(const PURL & _url,
     socket->GetPeerAddress(origin);
     socket->GetLocalAddress(localAddr, localPort);
   }
+}
+
+
+bool PHTTPRequest::OnError(PHTTP::StatusCode statusCode, const PCaselessString & extra)
+{
+  return server.OnError(statusCode, extra, *this);
+}
+
+
+bool PHTTPRequest::OnError(const PCaselessString & extra)
+{
+  return server.OnError(code >= 200 && code < 300 ? PHTTP::InternalServerError : code, extra, *this);
 }
 
 
@@ -1424,6 +1451,9 @@ bool PWebSocket::WriteHeader(OpCodes  opCode,
 
 PHTTPConnectionInfo::PHTTPConnectionInfo()
   : persistenceSeconds(DEFAULT_PERSIST_TIMEOUT) // maximum lifetime (in seconds) of persistent connections
+  , url(m_url)
+  , inMIME(mimeInfo)
+  , multipartFormInfo(m_multipartFormInfo)
 {
   // maximum lifetime (in transactions) of persistent connections
   persistenceMaximum = DEFAULT_PERSIST_TRANSATIONS;
@@ -1577,6 +1607,18 @@ PHTTPResource::PHTTPResource(const PURL & url,
 {
 }
 
+PHTTPResource::PHTTPResource(const PURL & url,
+                             const PString & type,
+                             const PHTTPAuthority & auth,
+							 const PString & allowedOrigins)   
+  : m_baseURL(url)
+  , m_contentType(type)
+  , m_authority(auth.CloneAs<PHTTPAuthority>())
+  , m_hitCount(0)
+{
+  SetAllowedOrigins(allowedOrigins);
+}
+
 
 PHTTPResource::~PHTTPResource()
 {
@@ -1618,10 +1660,7 @@ bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
     if (!IsModifiedSince(PTime(connectInfo.GetMIME()[PHTTP::IfModifiedSinceTag()])))
       return server.OnError(PHTTP::NotModified, connectInfo.GetURL().AsString(), connectInfo);
 
-  PHTTPRequest * request = CreateRequest(connectInfo.GetURL(),
-                                         connectInfo.GetMIME(),
-                                         connectInfo.GetMultipartFormInfo(),
-                                         server);
+  PHTTPRequest * request = CreateRequest(server, connectInfo);
   request->entityBody = connectInfo.GetEntityBody();
 
   bool retVal = true;
@@ -1649,7 +1688,7 @@ bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
       retVal = request->outMIME.Contains(PHTTP::ContentLengthTag());
     else {
       m_hitCount++;
-      retVal = OnGETData(server, connectInfo.GetURL(), connectInfo, *request);
+      retVal = OnGETData(*request);
     }
   }
 
@@ -1658,14 +1697,23 @@ bool PHTTPResource::InternalOnCommand(PHTTPServer & server,
 }
 
 
-PBoolean PHTTPResource::OnGETData(PHTTPServer & /*server*/,
-                               const PURL & /*url*/,
-                const PHTTPConnectionInfo & /*connectInfo*/,
-                             PHTTPRequest & request)
+PBoolean PHTTPResource::OnGETData(PHTTPRequest & request)
 {
   SendData(request);
   return request.outMIME.Contains(PHTTP::ContentLengthTag()) ||
          request.outMIME.Contains(PHTTP::TransferEncodingTag());
+}
+
+
+bool PHTTPResource::OnOPTIONS(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
+{
+  if (m_corsHeaders.IsEmpty())
+    return InternalOnCommand(server, connectInfo, PHTTP::OPTIONS);
+
+  PMIMEInfo headers;
+  server.SetDefaultMIMEInfo(headers, connectInfo);
+  headers.Merge(m_corsHeaders, PStringOptions::e_MergeOverwrite);
+  return server.StartResponse(PHTTP::RequestOK, headers, 0);
 }
 
 
@@ -1675,8 +1723,7 @@ bool PHTTPResource::OnPOST(PHTTPServer & server, const PHTTPConnectionInfo & con
 }
 
 
-PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request,
-                               const PStringToString & data)
+PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request, const PStringToString & data)
 {
   PHTML msg;
   PBoolean persist = Post(request, data, msg);
@@ -1694,9 +1741,9 @@ PBoolean PHTTPResource::OnPOSTData(PHTTPRequest & request,
 
   request.outMIME.SetAt(PHTTP::ContentTypeTag(), PMIMEInfo::TextHTML());
 
-  PINDEX len = msg.GetLength();
-  request.server.StartResponse(request.code, request.outMIME, len);
-  return request.server.Write((const char *)msg, len) && persist;
+  request.contentSize = msg.GetLength();
+  StartResponse(request);
+  return request.server.Write((const char *)msg, request.contentSize) && persist;
 }
 
 
@@ -1785,12 +1832,9 @@ PBoolean PHTTPResource::GetExpirationDate(PTime &)
 }
 
 
-PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
-                                            const PMIMEInfo & inMIME,
-                                            const PMultiPartList & multipartFormInfo,
-                                            PHTTPServer & socket)
+PHTTPRequest * PHTTPResource::CreateRequest(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  return new PHTTPRequest(url, inMIME, multipartFormInfo, this, socket);
+  return new PHTTPRequest(server, connectInfo, this);
 }
 
 
@@ -1820,7 +1864,7 @@ void PHTTPResource::SendData(PHTTPRequest & request)
 
   PCharArray data;
   if (LoadData(request, data)) {
-    if (request.server.StartResponse(request.code, request.outMIME, request.contentSize)) {
+    if (StartResponse(request)) {
       // Chunked transfer encoding
       request.outMIME.RemoveAll();
       do {
@@ -1838,8 +1882,9 @@ void PHTTPResource::SendData(PHTTPRequest & request)
     }
   }
   else {
-    request.server.StartResponse(request.code, request.outMIME, data.GetSize());
-    request.server.write(data, data.GetSize());
+    request.contentSize = data.GetSize();
+    StartResponse(request);
+    request.server.Write(data, request.contentSize);
   }
 }
 
@@ -1875,6 +1920,29 @@ PBoolean PHTTPResource::Post(PHTTPRequest & request,
   msg = "Error in POST";
   msg << "Post to this resource is not allowed" << PHTML::Body();
   return true;
+}
+
+
+bool PHTTPResource::StartResponse(PHTTPRequest & request)
+{
+  request.outMIME.Merge(m_corsHeaders, PStringOptions::e_MergeOverwrite);
+  return request.server.StartResponse(request.code, request.outMIME, request.contentSize);
+}
+
+
+void PHTTPResource::SetAllowedOrigins(const PString & allowedOrigins)
+{
+  if (allowedOrigins.IsEmpty())
+    m_corsHeaders.RemoveAll();
+  else {
+    if (!m_corsHeaders.Has(PHTTP::AllowHeaderTag))
+      m_corsHeaders.Set(PHTTP::AllowHeaderTag, "Content-Type");
+    if (!m_corsHeaders.Has(PHTTP::AllowMethodTag))
+      m_corsHeaders.Set(PHTTP::AllowMethodTag, "POST, GET, OPTIONS");
+    if (!m_corsHeaders.Has(PHTTP::MaxAgeTAG))
+      m_corsHeaders.SetInteger(PHTTP::MaxAgeTAG, 24*60*60);
+    m_corsHeaders.Set(PHTTP::AllowOriginTag, allowedOrigins);
+  }
 }
 
 
@@ -2000,22 +2068,17 @@ PHTTPFile::PHTTPFile(const PURL & url,
 }
 
 
-PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
-                              const PMIMEInfo & inMIME,
-                         const PMultiPartList & multipartFormInfo,
-                                PHTTPResource * resource,
-                                  PHTTPServer & server)
-  : PHTTPRequest(url, inMIME, multipartFormInfo, resource, server)
+PHTTPFileRequest::PHTTPFileRequest(PHTTPServer & server,
+                     const PHTTPConnectionInfo & connectInfo,
+                                 PHTTPResource * resource)
+  : PHTTPRequest(server, connectInfo, resource)
 {
 }
 
 
-PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME,
-                              const PMultiPartList & multipartFormInfo,
-                                       PHTTPServer & server)
+PHTTPRequest * PHTTPFile::CreateRequest(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  return new PHTTPFileRequest(url, inMIME, multipartFormInfo, this, server);
+  return new PHTTPFileRequest(server, connectInfo, this);
 }
 
 
@@ -2171,24 +2234,19 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url,
 }
 
 
-PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
-                            const PMIMEInfo & inMIME,
-                       const PMultiPartList & multipartFormInfo,
-                              PHTTPResource * resource,
-                                PHTTPServer & server)
-  : PHTTPFileRequest(url, inMIME, multipartFormInfo, resource, server)
+PHTTPDirRequest::PHTTPDirRequest(PHTTPServer & server,
+                   const PHTTPConnectionInfo & connectInfo,
+                               PHTTPResource * resource)
+  : PHTTPFileRequest(server, connectInfo, resource)
 {
 }
 
 
-PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
-                                        const PMIMEInfo & inMIME,
-                                   const PMultiPartList & multipartFormInfo,
-                                            PHTTPServer & socket)
+PHTTPRequest * PHTTPDirectory::CreateRequest(PHTTPServer & server, const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPDirRequest * request = new PHTTPDirRequest(url, inMIME, multipartFormInfo, this, socket);
+  PHTTPDirRequest * request = new PHTTPDirRequest(server, connectInfo, this);
 
-  const PStringArray & path = url.GetPath();
+  const PStringArray & path = connectInfo.url.GetPath();
   request->m_realPath = m_basePath;
   PINDEX i;
   for (i = GetURL().GetPath().GetSize(); i < path.GetSize()-1; i++)

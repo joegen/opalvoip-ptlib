@@ -87,6 +87,10 @@ const PCaselessString & PHTTP::ForwardedTag        () { static const PConstCasel
 const PCaselessString & PHTTP::SetCookieTag        () { static const PConstCaselessString s("Set-Cookie"); return s; }
 const PCaselessString & PHTTP::CookieTag           () { static const PConstCaselessString s("Cookie"); return s; }
 const PCaselessString & PHTTP::FormUrlEncoded      () { static const PConstCaselessString s("application/x-www-form-urlencoded"); return s; }
+const PCaselessString & PHTTP::AllowHeaderTag      () { static const PConstCaselessString s("Access-Control-Allow-Headers"); return s; }
+const PCaselessString & PHTTP::AllowOriginTag      () { static const PConstCaselessString s("Access-Control-Allow-Origin"); return s; }
+const PCaselessString & PHTTP::AllowMethodTag      () { static const PConstCaselessString s("Access-Control-Allow-Methods"); return s; }
+const PCaselessString & PHTTP::MaxAgeTAG           () { static const PConstCaselessString s("Access-Control-Max-Age"); return s; }
 
 
 

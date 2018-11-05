@@ -251,6 +251,10 @@ class PHTTP : public PInternetProtocol
     static const PCaselessString & ForwardedTag();
     static const PCaselessString & SetCookieTag();
     static const PCaselessString & CookieTag();
+    static const PCaselessString & AllowHeaderTag();
+    static const PCaselessString & AllowOriginTag();
+    static const PCaselessString & AllowMethodTag();
+    static const PCaselessString & MaxAgeTAG();
 
     static const PCaselessString & FormUrlEncoded();
 
@@ -983,7 +987,7 @@ class PHTTPConnectionInfo : public PObject
 
     PHTTP::Commands commandCode;
     PString         commandName;
-    PURL            url;
+    PURL            m_url;
     PMIMEInfo       mimeInfo;
     bool            isPersistent;
     bool            wasPersistent;
@@ -996,6 +1000,12 @@ class PHTTPConnectionInfo : public PObject
     unsigned        persistenceSeconds;
     unsigned        persistenceMaximum;
     PMultiPartList  m_multipartFormInfo;
+
+  public:
+    // For backward compatibility
+    const PURL & url;
+    const PMIMEInfo & inMIME;
+    const PMultiPartList & multipartFormInfo;
 
   friend class PHTTPServer;
 };
@@ -1120,6 +1130,18 @@ class PHTTPServer : public PHTTP
       const PHTTPConnectionInfo & conInfo ///< HTTP connection information
     );
 
+    /* Handle a Option command from a client.
+       The default implementation reply with OK 200 if the options command is allowed
+
+       @return
+       true if the connection may persist, false if the connection must close
+       If there is no ContentLength field in the response, this value must
+       be false for correct operation.
+     */
+    virtual bool OnOPTIONS(
+      const PHTTPConnectionInfo & conInfo ///< HTTP connection information
+    );
+    
     /** Handle a proxy command request from a client. This will only get called
        if the request was not for this particular server. If it was a proxy
        request for this server (host and port number) then the appropriate
@@ -1395,31 +1417,37 @@ protected:
    request is passed to handler functions on <code>PHTTPResource</code> descendant
    classes.
  */
-class PHTTPRequest : public PObject
+class PHTTPRequest : public PHTTPConnectionInfo
 {
-  PCLASSINFO(PHTTPRequest, PObject)
+  PCLASSINFO(PHTTPRequest, PHTTPConnectionInfo)
 
   public:
     PHTTPRequest(
-      const PURL & url,             ///< Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,     ///< Extra MIME information in command.
-      const PMultiPartList & multipartFormInfo, ///< multipart form information (if any)
-      PHTTPResource * resource,     ///< Resource associated with request
-      PHTTPServer & server          ///< Server channel that request initiated on
+      PHTTPServer & server,                    ///< Server channel that request initiated on
+      const PHTTPConnectionInfo & connectInfo, ///< Connection info for this request.
+      PHTTPResource * resource                 ///< Resource associated with request
+    );
+
+    /**Send an error response back to server.
+      */
+    bool OnError(
+      PHTTP::StatusCode code,       ///< Status code for the error response.
+      const PCaselessString & extra = PString::Empty() ///< Extra information included in the response.
+    );
+    bool OnError(
+      const PCaselessString & extra = PString::Empty() ///< Extra information included in the response.
     );
 
     PHTTPServer & server;           ///< Server channel that request initiated on
-    const PURL & url;               ///< Universal Resource Locator for document.
-    const PMIMEInfo & inMIME;       ///< Extra MIME information in command.
-    const PMultiPartList & multipartFormInfo; ///< multipart form information, if any
-    PHTTP::StatusCode code;         ///< Status code for OnError() reply.
+    PHTTPResource * const m_resource;  ///< HTTP resource found for the request
+
+    PHTTP::StatusCode code;         ///< Status code for reply.
     PMIMEInfo outMIME;              ///< MIME information used in reply.
     PString entityBody;             ///< original entity body (POST only)
     PINDEX contentSize;             ///< Size of the body of the resource data.
     PIPSocket::Address origin;      ///< IP address of origin host for request
     PIPSocket::Address localAddr;   ///< IP address of local interface for request
     WORD               localPort;   ///< Port number of local server for request
-    PHTTPResource    * m_resource;  ///< HTTP resource found for the request
     PTime              m_arrivalTime; ///< Time of arrival of the HTTP request
 };
 
@@ -1663,6 +1691,7 @@ class PHTTPResource : public PObject
   PCLASSINFO(PHTTPResource, PObject)
 
   protected:
+    // Create a new HTTP Resource.
     PHTTPResource(
       const PURL & url               ///< Name of the resource in URL space.
     );
@@ -1679,8 +1708,12 @@ class PHTTPResource : public PObject
       const PString & contentType,   ///< MIME content type for the resource.
       const PHTTPAuthority & auth    ///< Authorisation for the resource.
     );
-    // Create a new HTTP Resource.
-
+    PHTTPResource(
+      const PURL & url,              ///< Name of the resource in URL space.
+      const PString & contentType,   ///< MIME content type for the resource.
+      const PHTTPAuthority & auth,   ///< Authorisation for the resource.
+	  const PString & allowedOrigins ///< Allow origins for Cross-Origin Resource Sharing (CORS)
+    );
 
   public:
     virtual ~PHTTPResource();
@@ -1787,10 +1820,7 @@ class PHTTPResource : public PObject
        If there is no ContentLength field in the response, this value must
        be false for correct operation.
     */
-    virtual PBoolean OnGETData(
-      PHTTPServer & server,                       ///< HTTP server that received the request
-      const PURL & url,                           ///< Universal Resource Locator for document
-      const PHTTPConnectionInfo & connectInfo,    ///< HTTP connection information
+    virtual bool OnGETData(
       PHTTPRequest & request                      ///< request state information
     );
 
@@ -1824,6 +1854,11 @@ class PHTTPResource : public PObject
     virtual bool OnPOST(
       PHTTPServer & server,       ///< HTTP server that received the request
       const PHTTPConnectionInfo & conInfo ///< HTTP connection information
+    );
+
+    virtual bool OnOPTIONS(
+      PHTTPServer & server,                ///< HTTP server that received the request
+      const PHTTPConnectionInfo & conInfo  ///< HTTP connection information
     );
 
     /**Send the data associated with a POST command.
@@ -1867,10 +1902,8 @@ class PHTTPResource : public PObject
        Pointer to instance of PHTTPRequest descendant class.
      */
     virtual PHTTPRequest * CreateRequest(
-      const PURL & url,                   ///< Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,           ///< Extra MIME information in command.
-      const PMultiPartList & multipartFormInfo,  ///< additional information for multi-part posts
-      PHTTPServer & socket                                ///< socket used for request
+      PHTTPServer & server,                   ///< socket used for request
+      const PHTTPConnectionInfo & connectInfo  ///< HTTP connection information
     );
 
     /** Get the headers for block of data (eg HTML) that the resource contains.
@@ -1942,7 +1975,36 @@ class PHTTPResource : public PObject
       const PStringToString & data, ///<  Variables in the POST data.
       PHTML & replyMessage          ///<  Reply message for post.
     );
+    
+    /** Write a command reply back to the client, based on information
+        in the request structure. 
 
+       @return
+       true if requires v1.1 chunked transfer encoding.
+     */
+    virtual bool StartResponse(
+      PHTTPRequest & request  ///<  Information on this request.
+    );
+
+    /** Get the Allowed Origins for Cross-Origin Resource Sharing (CORS)
+     */
+    PString GetAllowedOrigins() const { return m_corsHeaders.Get(PHTTP::AllowOriginTag); }
+
+    /** Set the Allowed Origins for Cross-Origin Resource Sharing (CORS).
+        If not already set, other CORS headers will be set by this function
+        with default values.
+
+        If allowedOrigins is an empty string then all CORS headers are removed.
+     */
+    void SetAllowedOrigins(
+      const PString & allowedOrigins  ///< Allowed origins for CORS
+    );
+
+    /** Get Cross-Origin Resource Sharing (CORS) headers.
+        This allows the user to adjust the default values for various CORS headers.
+      */
+    const PStringOptions & GetCORSHeaders() const { return m_corsHeaders; }
+          PStringOptions & GetCORSHeaders()       { return m_corsHeaders; }
 
   protected:
     /** See if the resource is authorised given the mime info
@@ -1971,12 +2033,15 @@ class PHTTPResource : public PObject
     PURL             m_baseURL;     ///< Base URL for the resource, may accept URLS with a longer hierarchy
     PString          m_contentType; ///< MIME content type for the resource
     PHTTPAuthority * m_authority;   ///< Authorisation method for the resource
-    atomic<unsigned> m_hitCount;    ///< Count of number of times resource was accessed.
+    PStringOptions   m_corsHeaders; ///< Cross-Origin Resource Sharing (CORS) headers
+    atomic<unsigned> m_hitCount;    ///< Count of number of times resource was accessed. 
 
     P_REMOVE_VIRTUAL(PBoolean,OnGET(PHTTPServer&,const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo&),false);
     P_REMOVE_VIRTUAL(PBoolean,OnHEAD(PHTTPServer&,const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo &),false);
     P_REMOVE_VIRTUAL(PBoolean,OnGETOrHEAD(PHTTPServer&,const PURL&,const PMIMEInfo&,const PHTTPConnectionInfo&,PBoolean),false);
     P_REMOVE_VIRTUAL(PBoolean,OnPOST(PHTTPServer&,const PURL&,const PMIMEInfo&,const PStringToString&,const PHTTPConnectionInfo&),false);
+    P_REMOVE_VIRTUAL(PBoolean,OnGETData(PHTTPServer&,const PURL&,const PHTTPConnectionInfo&,PHTTPRequest&),false);
+    P_REMOVE_VIRTUAL(PHTTPRequest*,CreateRequest(const PURL&,const PMIMEInfo&,const PMultiPartList&,PHTTPServer&),NULL);
 };
 
 
@@ -2123,10 +2188,8 @@ class PHTTPFile : public PHTTPResource
        Pointer to instance of PHTTPRequest descendant class.
      */
     virtual PHTTPRequest * CreateRequest(
-      const PURL & url,                  // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,          // Extra MIME information in command.
-      const PMultiPartList & multipartFormInfo,
-      PHTTPServer & socket
+      PHTTPServer & server,                   ///< socket used for request
+      const PHTTPConnectionInfo & connectInfo  ///< HTTP connection information
     );
 
     /** Get the headers for block of data (eg HTML) that the resource contains.
@@ -2180,11 +2243,9 @@ class PHTTPFileRequest : public PHTTPRequest
   PCLASSINFO(PHTTPFileRequest, PHTTPRequest)
   public:
     PHTTPFileRequest(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,     // Extra MIME information in command.
-      const PMultiPartList & multipartFormInfo,
-      PHTTPResource * resource,
-      PHTTPServer & server
+      PHTTPServer & server,                    ///< Server channel that request initiated on
+      const PHTTPConnectionInfo & connectInfo, ///< Connection info for this request.
+      PHTTPResource * resource                 ///< Resource associated with request
     );
 
     PFile m_file;
@@ -2305,10 +2366,8 @@ class PHTTPDirectory : public PHTTPFile
        Pointer to instance of PHTTPRequest descendant class.
      */
     virtual PHTTPRequest * CreateRequest(
-      const PURL & url,                  // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,          // Extra MIME information in command.
-      const PMultiPartList & multipartFormInfo,
-      PHTTPServer & socket
+      PHTTPServer & server,                   ///< socket used for request
+      const PHTTPConnectionInfo & connectInfo  ///< HTTP connection information
     );
 
     /** Get the headers for block of data (eg HTML) that the resource contains.
@@ -2368,11 +2427,9 @@ class PHTTPDirRequest : public PHTTPFileRequest
   PCLASSINFO(PHTTPDirRequest, PHTTPFileRequest)
   public:
     PHTTPDirRequest(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,     // Extra MIME information in command.
-      const PMultiPartList & multipartFormInfo, 
-      PHTTPResource * resource,
-      PHTTPServer & server
+      PHTTPServer & server,                    ///< Server channel that request initiated on
+      const PHTTPConnectionInfo & connectInfo, ///< Connection info for this request.
+      PHTTPResource * resource                 ///< Resource associated with request
     );
 
     PString   m_fakeIndex;
