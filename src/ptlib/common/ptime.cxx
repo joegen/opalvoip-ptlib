@@ -148,7 +148,7 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
     int64_t powerOfTen = SecsToNano;
     for (int i = 0; i < precision; ++i)
       powerOfTen /= 10;
-    str << '.' << setw(precision) << (int)(ns%SecsToNano+powerOfTen/2)/powerOfTen;
+    str << '.' << setw(precision) << std::min((ns+powerOfTen/2)/powerOfTen, SecsToNano/powerOfTen-1);
   }
 
   return str;
