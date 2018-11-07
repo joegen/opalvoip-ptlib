@@ -1104,12 +1104,12 @@ PHTTPRequest::PHTTPRequest(PHTTPServer & _server,
                          PHTTPResource * resource)
   : PHTTPConnectionInfo(info)
   , server(_server)
+  , m_resource(resource)
   , code(PHTTP::RequestOK)
   , contentSize(P_MAX_INDEX)
   , origin(0)
   , localAddr(0)
   , localPort(0)
-  , m_resource(resource)
 {
   PIPSocket * socket = server.GetSocket();
   if (socket != NULL) {
