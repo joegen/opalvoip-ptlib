@@ -127,13 +127,14 @@ class PTimeInterval : public PObject
       const PObject & obj   ///< Time interval to compare against.
     ) const;
 
-    /** Output the time interval to the I/O stream. This
-       If ios::scientific,  outputs the number of milliseconds as a signed
-       decimal integer number.
-       If ios:fixed then prints as "hh:mm:ss.uuu".
-       The strm.precision() field can be used to set the Formats enum as
-       described in AsString().
-
+    /** Output the time interval to the I/O stream.
+        The output is controlled by various stream flags:
+          ios::scientific, ios::showbase    Output if < 1 then output SI notation, e.g. "234ms", >1 is as below
+          ios::scientific, ios::noshowbase  Output as per a floating point number, e.g. -314.1592
+          ios::fixed, ios::noshowbase       Output as hours/minutes/seconds, e.g. "12:34.567".
+          ios::fixed, ios::showbase         Output as days/hours/minutes/seconds, e.g. "2d13:25:47.312141".
+        The strm.precision() is honoured as expected, controlling number of decimals, clamped to 9.
+        A width() greater than needed, with fillchar('0') will also be honoured, e.g. "01:23:56.678901"
      */
     virtual void PrintOn(
       ostream & strm    ///< I/O stream to output the time interval.
