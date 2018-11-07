@@ -68,7 +68,7 @@ void PTimeInterval::PrintOn(ostream & strm) const
     if ((strm.flags()&ios::showbase) != 0 && ns < SecsToNano)
       strm << PString(PString::ScaleSI, ns/(double)SecsToNano, decimals);
     else {
-      unsigned oldMode = strm.flags()&ios::floatfield;
+      ios::fmtflags oldMode = strm.flags()&ios::floatfield;
       strm << fixed << ns/(double)SecsToNano;
       strm.setf(oldMode, ios::floatfield);
     }
@@ -91,7 +91,7 @@ void PTimeInterval::PrintOn(ostream & strm) const
   std::streamsize nextFieldWidth = 0;
 
   char oldFill = strm.fill();
-  unsigned adjustMode = strm.flags()&ios_base::adjustfield;
+  ios::fmtflags adjustMode = strm.flags()&ios_base::adjustfield;
   strm << right;
 
   if (includeDays && (ns > DaysToNano || width > (decimalsWidth + 9))) {
