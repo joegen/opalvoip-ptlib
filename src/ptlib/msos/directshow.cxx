@@ -151,7 +151,7 @@ class PSampleGrabberCB : public ISampleGrabberCB
     // The sample grabber is calling us back on its deliver thread.
     STDMETHODIMP BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE * buffer, long size);
 
-    bool GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize);
+    bool GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize, bool wait);
 };
 
 
@@ -1057,12 +1057,12 @@ STDMETHODIMP PSampleGrabberCB::BufferCB(double PTRACE_PARAM(dblSampleTime), BYTE
 }
 
 
-bool PSampleGrabberCB::GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize)
+bool PSampleGrabberCB::GetData(BYTE * data, PINDEX maxSize, PINDEX & actualSize, bool wait)
 {
   // Live! Cam Optia AF (VC0100) webcam took 3.1 sec.
-  if (!m_frameReady.Wait(5000)) {
+  if (!m_frameReady.Wait(wait ? 5000 : 0)) {
     PTRACE(1, "Timeout awaiting next frame");
-    return false;
+    return !m_stopped && !wait;
   }
 
   PWaitAndSignal mutex(m_mutex);
@@ -1260,7 +1260,7 @@ bool PVideoInputDevice_DirectShow::GetCurrentBufferData(BYTE * data, PINDEX & bu
   if (m_pSampleGrabberCB == NULL)
     return false;
 
-  while (IsCapturing() && m_pSampleGrabberCB->GetData(data, m_maxFrameBytes, bufferSize)) {
+  while (IsCapturing() && m_pSampleGrabberCB->GetData(data, m_maxFrameBytes, bufferSize, wait)) {
     if (m_fixedSizeFrames ? (bufferSize == m_maxFrameBytes) : (bufferSize <= m_maxFrameBytes))
       return true;
 
