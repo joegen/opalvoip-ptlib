@@ -1183,24 +1183,18 @@ PVXMLCache & PVXMLSession::GetCache()
 
 PBoolean PVXMLSession::Load(const PString & source)
 {
-  // Lets try and guess what was passed, if file exists then is file
+  // See if we have been given a file
   PFilePath file = source;
   if (PFile::Exists(file))
     return LoadFile(file);
 
-  // see if looks like URL
-  PINDEX pos = source.Find(':');
-  if (pos != P_MAX_INDEX) {
-    PString scheme = source.Left(pos);
-    if ((scheme *= "http") || (scheme *= "https") || (scheme *= "file"))
-      return LoadURL(source);
-  }
+  // see if a URL
+  PURL url(source, NULL);
+  if (!url.IsEmpty())
+    return LoadURL(source);
 
-  // See if is actual VXML
-  if (PCaselessString(source).Find("<vxml") != P_MAX_INDEX)
-    return LoadVXML(source);
-
-  return false;
+  // Try and parse it as direct VXML
+  return LoadVXML(source);
 }
 
 
