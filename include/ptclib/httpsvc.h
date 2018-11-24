@@ -56,7 +56,7 @@ class PHTTPServiceProcess : public PServiceProcess, public PHTTPListener
       WORD majorVersion;
       WORD minorVersion;
       CodeStatus buildStatus;    ///< AlphaCode, BetaCode or ReleaseCode
-      WORD buildNumber;
+      WORD patchVersion;
       const char * compilationDate;
 
       PTEACypher::Key productKey;  ///< Poduct key for registration
@@ -78,6 +78,8 @@ class PHTTPServiceProcess : public PServiceProcess, public PHTTPListener
       const char * copyrightHolder;   ///< Name of copyright holder
       const char * copyrightHomePage; ///< Home page for copyright holder
       const char * copyrightEmail;    ///< E-Mail address for copyright holder
+
+      WORD oemVersion;
     };
 
     PHTTPServiceProcess(const Info & inf);

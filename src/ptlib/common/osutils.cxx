@@ -2392,8 +2392,8 @@ void PProcess::PreInitialise(int c, char ** v)
 
 
 PProcess::PProcess(const char * manuf, const char * name,
-                   unsigned major, unsigned minor, CodeStatus stat, unsigned build,
-                   bool library, bool suppressStartup)
+                   unsigned major, unsigned minor, CodeStatus stat, unsigned patch,
+                   bool library, bool suppressStartup, unsigned oemVersion)
   : PThread(true)
   , m_library(library)
   , m_terminationValue(0)
@@ -2412,7 +2412,8 @@ PProcess::PProcess(const char * manuf, const char * name,
   m_version.m_major = major;
   m_version.m_minor = minor;
   m_version.m_status = stat;
-  m_version.m_build = build;
+  m_version.m_patch = patch;
+  m_version.m_oem = oemVersion;
   m_version.m_svn = 0;
   m_version.m_git = NULL;
 
@@ -2989,7 +2990,7 @@ PString PProcess::GetVersion(PBoolean full) const
 
 PString PProcess::GetLibVersion()
 {
-  static const VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER, SVN_REVISION, GIT_COMMIT };
+  static const VersionInfo ver = { MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, PATCH_VERSION, OEM_VERSION, SVN_REVISION, GIT_COMMIT };
   return ver.AsString();
 }
 
@@ -3010,12 +3011,13 @@ PString PProcess::VersionInfo::AsString(bool full) const
         break;
 
       default:
-        if (m_build < 0x10000)
-          str << '.';
+        str << '.';
     }
 
-    if (m_build < 0x10000)
-      str << m_build;
+    str << m_patch;
+
+    if (m_oem > 0)
+      str << '-' << m_oem;
 
     if (m_git != NULL && *m_git != '\0')
       str << " (git:" << m_git << ')';

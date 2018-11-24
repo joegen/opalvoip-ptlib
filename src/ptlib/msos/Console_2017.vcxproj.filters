@@ -819,9 +819,6 @@
     <ClInclude Include="..\..\..\include\ptlib\bitwise_enum.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
-      <Filter>Header Files\MSOS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ptlib\unix\ptlib\pprocess.h">
       <Filter>Header Files\Android</Filter>
     </ClInclude>
@@ -951,6 +948,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ptclib\mediafile.h">
       <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ptlib\msos\ptlib\platform.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

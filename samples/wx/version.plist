@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>BuildVersion</key>
-	<string>MAJOR_VERSION.MINOR_VERSION.BUILD_NUMBER</string>
+	<string>MAJOR_VERSION.MINOR_VERSION.PATCH_VERSION-OEM_VERSION</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>MAJOR_VERSION.MINOR_VERSION.BUILD_NUMBER</string>
+	<string>MAJOR_VERSION.MINOR_VERSION.PATCH_VERSION-OEM_VERSION</string>
 
 	<key>ProjectName</key>
 	<string>PRODUCT_NAME_TEXT</string>

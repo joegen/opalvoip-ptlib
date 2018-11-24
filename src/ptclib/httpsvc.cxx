@@ -57,7 +57,7 @@ static const PTime ImmediateExpiryTime(0, 0, 0, 1, 1, 1980);
 
 PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   : PServiceProcess(inf.manufacturerName, inf.productName,
-                    inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.buildNumber)
+                    inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.patchVersion, inf.oemVersion)
   , m_macroKeyword("macro")
   , m_productKey(inf.productKey)
   , m_securedKeys(inf.securedKeyCount, inf.securedKeys)

@@ -380,7 +380,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h" />
-    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ptlib\msos\Console_2017.vcxproj">

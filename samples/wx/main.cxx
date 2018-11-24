@@ -98,7 +98,7 @@ IMPLEMENT_APP(MyApp)
 
 MyApp::MyApp()
   : PProcess(MANUFACTURER_TEXT, PRODUCT_NAME_TEXT,
-             MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+             MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, PATCH_VERSION)
 {
   wxConfig::Set(new wxConfig(PwxString(GetName()), PwxString(GetManufacturer())));
 }

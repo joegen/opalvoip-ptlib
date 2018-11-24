@@ -70,7 +70,7 @@ SED := sed -e "s/EXE_NAME_TEXT/$(PROG)/g" \
            -e "s/MAJOR_VERSION/$(shell sed -n -e 's/^.*MAJOR_VERSION[ ]*\([0-9]*\)/\1/p' version.h)/g" \
            -e "s/MINOR_VERSION/$(shell sed -n -e 's/^.*MINOR_VERSION[ ]*\([0-9]*\)/\1/p' version.h)/g" \
            -e "s/BUILD_TYPE/$(shell sed -n -e 's/^.*BUILD_TYPE[ ]*\([A-Za-z]*\)/\1/p' version.h)/g" \
-           -e "s/BUILD_NUMBER/$(shell sed -n -e 's/^.*BUILD_NUMBER[ ]*\([0-9]*\)/\1/p' version.h)/g" \
+           -e "s/PATCH_VERSION/$(shell sed -n -e 's/^.*PATCH_VERSION[ ]*\([0-9]*\)/\1/p' version.h)/g" \
 
 $(PROG).app: $(TARGET) Info.plist version.plist $(ICONFILE) $(STRINGSFILE)
 	@ for dir in $@ \

@@ -386,7 +386,6 @@
   <ItemGroup>
     <ClInclude Include="main.h" />
     <ClInclude Include="precompile.h" />
-    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ptlib\msos\PTLib_2017.vcxproj">

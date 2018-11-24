@@ -8,7 +8,7 @@ AC_INIT([PTLib], m4_esyscmd([sed -n \
                              -e "s/ *#define *BUILD_TYPE *AlphaCode/alpha/p" \
                              -e "s/ *#define *BUILD_TYPE *BetaCode/beta/p" \
                              -e "s/ *#define *BUILD_TYPE *ReleaseCode/./p" \
-                             -e "s/ *#define *BUILD_NUMBER *\\(.*\\)/\\1/p" \
+                             -e "s/ *#define *PATCH_VERSION *\\(.*\\)/\\1/p" \
                              version.h | tr -d '\n']))
 
 AC_PREREQ([2.66])
@@ -221,7 +221,8 @@ dnl extract the PTLib version
 dnl MSWIN_DISPLAY version,Version
 dnl MSWIN_VERSION version,PTLIB_MAJOR=MAJOR_VERSION
 dnl MSWIN_VERSION version,PTLIB_MINOR=MINOR_VERSION
-dnl MSWIN_VERSION version,PTLIB_BUILD=BUILD_NUMBER
+dnl MSWIN_VERSION version,PTLIB_PATCH=PATCH_VERSION
+dnl MSWIN_VERSION version,PTLIB_OEM=OEM_VERSION
 dnl MSWIN_VERSION version,PTLIB_VERSION=VERSION
 
 MY_VERSION_FILE([$VERSION_DIR/version.h], [PTLIB])

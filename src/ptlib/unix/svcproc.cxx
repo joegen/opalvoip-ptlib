@@ -89,8 +89,9 @@ PServiceProcess::PServiceProcess(const char * manuf,
                                      unsigned majorVersion,
                                      unsigned minorVersion,
                                    CodeStatus status,
-                                     unsigned buildNumber)
-  : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber, false, true)
+                                     unsigned patchVersion,
+                                     unsigned oemVersion)
+  : PProcess(manuf, name, majorVersion, minorVersion, status, patchVersion, false, true, oemVersion)
 {
   isTerminating = false;
 }

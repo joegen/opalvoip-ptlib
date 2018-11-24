@@ -27,7 +27,6 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 #include <ptlib/sockets.h>
 #include <ptclib/url.h>
@@ -37,7 +36,7 @@ PCREATE_PROCESS(IPV6Test);
 
 
 IPV6Test::IPV6Test()
-  : PProcess("Post Increment", "ipv6test", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Post Increment", "ipv6test")
 {
 }
 

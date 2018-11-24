@@ -259,12 +259,12 @@ function create_tag () {
 
   if [ -n "$release_version" -a -e "$VERSION_FILE" ]; then
     version_file_changed=0
-    file_version=`awk '/MAJOR_VERSION/{printf "%s ",$3};/MINOR_VERSION/{printf "%s ",$3};/BUILD_NUMBER/{printf "%s",$3}' "$VERSION_FILE"`
+    file_version=`awk '/MAJOR_VERSION/{printf "%s ",$3};/MINOR_VERSION/{printf "%s ",$3};/PATCH_VERSION/{printf "%s",$3}' "$VERSION_FILE"`
     if [ "${release_version[*]}" = "${file_version[*]}" ]; then
       echo "Version file $VERSION_FILE already set to ${release_version[*]}"
     else
       echo "Adjusting $VERSION_FILE from ${file_version[*]} to ${release_version[*]}"
-      awk "/MAJOR_VERSION/{print \$1,\$2,\"${release_version[0]}\";next};/MINOR_VERSION/{print \$1,\$2,\"${release_version[1]}\";next};/BUILD_NUMBER/{print \$1,\$2,\"${release_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"ReleaseCode\";next};{print}" "$VERSION_FILE" > "$VERSION_FILE.tmp"
+      awk "/MAJOR_VERSION/{print \$1,\$2,\"${release_version[0]}\";next};/MINOR_VERSION/{print \$1,\$2,\"${release_version[1]}\";next};/PATCH_VERSION/{print \$1,\$2,\"${release_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"ReleaseCode\";next};{print}" "$VERSION_FILE" > "$VERSION_FILE.tmp"
       mv -f "$VERSION_FILE.tmp" "$VERSION_FILE"
       version_file_changed=1
     fi
@@ -306,7 +306,7 @@ function create_tag () {
     new_version=( ${release_version[*]} )
     let new_version[2]++
     echo "Adjusting $VERSION_FILE from ${release_version[*]} ReleaseCode to ${new_version[*]} BetaCode"
-    awk "/BUILD_NUMBER/{print \$1,\$2,\"${new_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"BetaCode\";next};{print}" "$VERSION_FILE" > "$VERSION_FILE.tmp"
+    awk "/PATCH_VERSION/{print \$1,\$2,\"${new_version[2]}\";next};/BUILD_TYPE/{print \$1,\$2,\"BetaCode\";next};{print}" "$VERSION_FILE" > "$VERSION_FILE.tmp"
     mv -f "$VERSION_FILE.tmp" "$VERSION_FILE"
     msg="Update version number for beta v${new_version[0]}.${new_version[1]}.${new_version[2]}"
     if [ -n "$debug_tagging" ]; then
