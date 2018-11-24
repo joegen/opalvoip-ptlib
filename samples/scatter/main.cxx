@@ -25,7 +25,6 @@
 
 #include <ptlib.h>
 #include "main.h"
-#include "version.h"
 
 #include <ptlib/udpsock.h>
 
@@ -34,7 +33,7 @@
 PCREATE_PROCESS(ScatterTest);
 
 ScatterTest::ScatterTest()
-  : PProcess("Post Increment", "ScatterTest", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Post Increment", "ScatterTest")
 {
 }
 

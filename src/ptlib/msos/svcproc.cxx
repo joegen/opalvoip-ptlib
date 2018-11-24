@@ -248,8 +248,8 @@ class PSystemLogToEvent : public PSystemLogTarget
 // PServiceProcess
 
 PServiceProcess::PServiceProcess(const char * manuf, const char * name,
-                                 unsigned major, unsigned minor, CodeStatus stat, unsigned build)
-  : PProcess(manuf, name, major, minor, stat, build, false, true)
+                                 unsigned major, unsigned minor, CodeStatus stat, unsigned patch, unsigned oem)
+  : PProcess(manuf, name, major, minor, stat, patch, false, true, oem)
   , m_controlWindow(NULL)
   , m_debugWindow(NULL)
 {

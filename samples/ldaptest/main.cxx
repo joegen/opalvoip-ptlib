@@ -27,7 +27,6 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 #include <ptclib/pldap.h>
 #include <ptclib/pils.h>
@@ -57,7 +56,7 @@ PCREATE_PROCESS(LDAPTest);
 
 
 LDAPTest::LDAPTest()
-  : PProcess("Equivalence", "LDAP Test", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Equivalence", "LDAP Test")
 {
 }
 

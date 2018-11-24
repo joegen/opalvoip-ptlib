@@ -27,7 +27,6 @@
 
 #include <ptlib.h>
 #include "main.h"
-#include "version.h"
 
 #include <ptclib/pstun.h>
 
@@ -37,7 +36,7 @@ PCREATE_PROCESS(StunClient);
 
 
 StunClient::StunClient()
-  : PProcess("Equivalence", "stunclient", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Equivalence", "stunclient")
 {
 }
 

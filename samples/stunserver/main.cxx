@@ -25,14 +25,13 @@
 
 #include <ptlib.h>
 #include "main.h"
-#include "version.h"
 
 #include <ptclib/pstunsrvr.h>
 
 PCREATE_PROCESS(StunServer);
 
 StunServer::StunServer()
-  : PProcess("Post Increment", "stunserver", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Post Increment", "stunserver")
 {
 }
 

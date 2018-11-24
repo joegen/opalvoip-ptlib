@@ -27,7 +27,6 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 #include  <ptlib/videoio.h>
 #include  <ptlib/vconvert.h>
@@ -36,7 +35,7 @@
 PCREATE_PROCESS(VidTest);
 
 VidTest::VidTest()
-  : PProcess("PwLib Video Example", "vidtest", 1, 0, ReleaseCode, 0)
+  : PProcess("PwLib Video Example", "vidtest")
   , m_grabber(NULL)
   , m_display(NULL)
   , m_secondary(NULL)

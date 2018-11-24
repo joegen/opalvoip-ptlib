@@ -27,7 +27,6 @@
 
 #include "precompile.h"
 #include "main.h"
-#include "version.h"
 
 
 PCREATE_PROCESS(Threadex);
@@ -72,7 +71,7 @@ PString NumberWithCommas(unsigned long long v)
 }
 
 Threadex::Threadex()
-  : PProcess("Derek Smithies code factory", "threadex", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
+  : PProcess("Derek Smithies code factory", "threadex")
 {
 }
 
