@@ -997,7 +997,7 @@ class PMediaFile_FFMPEG : public PMediaFile
 
         AVPacket packet = m_interleaved.front();
         m_interleaved.pop();
-        if (size < packet.size)
+        if (size < (PINDEX)packet.size)
           return false;
 
         size = packet.size;
