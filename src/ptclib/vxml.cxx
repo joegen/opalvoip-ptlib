@@ -1191,7 +1191,7 @@ PBoolean PVXMLSession::Load(const PString & source)
   // see if a URL
   PURL url(source, NULL);
   if (!url.IsEmpty())
-    return LoadURL(source);
+    return LoadURL(url);
 
   // Try and parse it as direct VXML
   return LoadVXML(source);
