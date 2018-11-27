@@ -7416,22 +7416,27 @@ fi
    if ${PTLIB_PATCH+:} false; then :
   patch=${PTLIB_PATCH}
 else
-  build=`cat $VERSION_DIR/version.h | grep PATCH_VERSION | cut -f3 -d' ' | sed 's/0x[1-9]*0*//'`
+  patch=`cat $VERSION_DIR/version.h | grep PATCH_VERSION | cut -f3 -d' '`
 fi
    if { as_var=PTLIB_OEM  ; eval \${$as_var+:} false; }; then :
-  oem=${PTLIB_OEM}
+    oem=${PTLIB_OEM}
 else
-  build=`cat $VERSION_DIR/version.h | grep OEM_VERSION   | cut -f3 -d' ' | sed 's/0x[1-9]*0*//'`
+    oem=`cat $VERSION_DIR/version.h | grep OEM_VERSION   | cut -f3 -d' '`
 fi
    if ${PTLIB_STAGE+:} false; then :
   stage=${PTLIB_STAGE}
 else
-  stage=`cat $VERSION_DIR/version.h | grep BUILD_TYPE    | cut -f 3 -d ' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
+  stage=`cat $VERSION_DIR/version.h | grep BUILD_TYPE    | cut -f3 -d' ' | sed 's/BetaCode/-beta/' | sed 's/AlphaCode/-alpha/' | sed 's/ReleaseCode/\./'`
 fi
-   version="${major}.${minor}.${build}"
 
-   if test -z "$major" -o -z "$minor" -o -z "$build"; then :
+   if test -z "$major" -o -z "$minor" -o -z "$patch"; then :
   as_fn_error $? "Could not determine version number from $VERSION_DIR/version.h" "$LINENO" 5
+fi
+
+   if test "x$oem" = x0; then :
+  version="${major}.${minor}.${patch}"
+else
+  version="${major}.${minor}.${patch}-${oem}"
 fi
 
    PTLIB_MAJOR=$major
@@ -7473,8 +7478,8 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: PTLIB version is $version" >&5
-$as_echo "$as_me: PTLIB version is $version" >&6;}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: PTLIB version is $version (${major}.${minor}${stage}${patch}-${oem})" >&5
+$as_echo "$as_me: PTLIB version is $version (${major}.${minor}${stage}${patch}-${oem})" >&6;}
 
 
 
