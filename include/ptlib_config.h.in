@@ -35,7 +35,7 @@
 #undef    PTLIB_OEM
 #undef    PTLIB_VERSION
 
-#define PTLIB_VERSION_INT_OEM(major,minor,patch,oem) ((major<<24)|(minor<<16)|(patch<<8)|(oem)
+#define PTLIB_VERSION_INT_OEM(major,minor,patch,oem) ((major<<24)|(minor<<16)|(patch<<8)|(oem))
 #define PTLIB_CHECK_VERSION_OEM(major,minor,patch,oem) \
           (PTLIB_VERSION_INT_OEM(PTLIB_MAJOR,PTLIB_MINOR,PTLIB_PATCH,PTLIB_OEM) >= PTLIB_VERSION_INT_OEM(major,minor,patch,oem))
 #define PTLIB_VERSION_INT(major,minor,patch) PTLIB_VERSION_INT_OEM(major,minor,patch,0)
