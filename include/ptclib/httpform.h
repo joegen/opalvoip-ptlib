@@ -479,6 +479,7 @@ class PHTTPPasswordField : public PHTTPStringField
     );
 
     static PString Decrypt(const PString & pword);
+	static PString Encrypt(const PString & clear);
 };
 
 
