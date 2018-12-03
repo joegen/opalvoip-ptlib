@@ -1217,6 +1217,13 @@ PString PHTTPPasswordField::Decrypt(const PString & pword)
 }
 
 
+PString PHTTPPasswordField::Encrypt(const PString & clear)
+{
+	PTEACypher crypt(PasswordKey);
+	return crypt.Encode(clear);
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPDateField
 

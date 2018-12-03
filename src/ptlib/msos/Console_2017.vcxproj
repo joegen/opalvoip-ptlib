@@ -942,11 +942,17 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-se
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "%(RootDir)%(Directory)"
 PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)"
 PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
@@ -954,11 +960,17 @@ if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Comm
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd "%(RootDir)%(Directory)"
 PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd "%(RootDir)%(Directory)"
 PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
@@ -966,11 +978,17 @@ if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Comm
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "%(RootDir)%(Directory)"
 PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)"
 PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>

@@ -1706,7 +1706,9 @@ dnl MSWIN_DEFINE     openssl,P_SSL_SRTP
 dnl MSWIN_DIR_SYMBOL openssl,SSL_WIN32_DIR
 dnl MSWIN_CHECK_DIR  openssl,%OPENSSLDIR%\
 dnl MSWIN_CHECK_DIR  openssl,..\openssl\
+dnl MSWIN_CHECK_DIR  openssl,..\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
+dnl MSWIN_CHECK_DIR  openssl,..\external\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,%ProgramFiles%\OpenSSL-Win32\
 dnl MSWIN_CHECK_DIR  openssl,%ProgramW6432%\OpenSSL-Win32\
@@ -1721,7 +1723,9 @@ dnl MSWIN_DIR_SYMBOL openssl64,SSL_WIN64_DIR
 dnl MSWIN_DEFINE     openssl64,P_SSL_SRTP
 dnl MSWIN_CHECK_DIR  openssl64,%OPENSSL64DIR%\
 dnl MSWIN_CHECK_DIR  openssl64,..\openssl64\
+dnl MSWIN_CHECK_DIR  openssl64,..\OpenSSL-Win64\
 dnl MSWIN_CHECK_DIR  openssl64,..\external\openssl64\
+dnl MSWIN_CHECK_DIR  openssl64,..\external\OpenSSL-Win64\
 dnl MSWIN_CHECK_DIR  openssl64,\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,\libs\openssl64\
 dnl MSWIN_CHECK_DIR  openssl64,%ProgramFiles%\OpenSSL-Win64\
@@ -1817,6 +1821,8 @@ dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_WM6_RELEASE,expat.lib,wm6/Release
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_DEBUG,expat.lib,x64/Debug
 dnl MSWIN_FIND_FILE  expat,P_EXPAT_LIBRARY_W64_RELEASE,expat.lib,x64/Release
 dnl MSWIN_CHECK_DIR  expat,%EXPATDIR%\expat
+dnl MSWIN_CHECK_DIR  expat,..\expat\
+dnl MSWIN_CHECK_DIR  expat,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat,..\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,..\external\Expat\expat\
 dnl MSWIN_CHECK_DIR  expat,C:\Work\external\Expat\expat\
@@ -1827,6 +1833,8 @@ dnl MSWIN_DISPLAY    expat32,Expat XML (32 bit)
 dnl MSWIN_CHECK_FILE expat32,Source\lib\expat.h,P_EXPAT_WIN32=1
 dnl MSWIN_DIR_SYMBOL expat32,EXPAT_WIN32_DIR
 dnl MSWIN_FIND_FILE  expat32,P_EXPAT_LIBRARY,libexpatMT.lib,bin
+dnl MSWIN_CHECK_DIR  expat32,..\expat\
+dnl MSWIN_CHECK_DIR  expat32,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat32,%ProgramFiles%\Expat 2.*
 dnl MSWIN_CHECK_DIR  expat32,%ProgramW6432%\Expat 2.*
 
@@ -1834,6 +1842,8 @@ dnl MSWIN_DISPLAY    expat64,Expat XML (64 bit)
 dnl MSWIN_CHECK_FILE expat64,Source\lib\expat.h,P_EXPAT_WIN64=1
 dnl MSWIN_DIR_SYMBOL expat64,EXPAT_WIN64_DIR
 dnl MSWIN_FIND_FILE  expat64,P_EXPAT_LIBRARY,libexpatMT.lib,bin
+dnl MSWIN_CHECK_DIR  expat64,..\expat\
+dnl MSWIN_CHECK_DIR  expat64,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat64,%ProgramFiles%\Expat 2.*
 dnl MSWIN_CHECK_DIR  expat64,%ProgramW6432%\Expat 2.*
 
