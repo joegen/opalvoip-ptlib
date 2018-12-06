@@ -462,8 +462,8 @@ ifdef VERSION_FILE
     BUILD_TYPE:=$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,$(CODE_STATUS))))
   endif
   ifndef PATCH_VERSION
-    BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(PATCH_VERSION_DEFINE),,\
-                  $(shell grep "define *$(PATCH_VERSION_DEFINE)" $(VERSION_FILE)))))
+    PATCH_VERSION:=$(strip $(subst \#define,,$(subst $(PATCH_VERSION_DEFINE),,\
+                   $(shell grep "define *$(PATCH_VERSION_DEFINE)" $(VERSION_FILE)))))
   endif
   ifndef OEM_VERSION
     OEM_VERSION:=$(strip $(subst \#define,,$(subst $(OEM_VERSION_DEFINE),,\
