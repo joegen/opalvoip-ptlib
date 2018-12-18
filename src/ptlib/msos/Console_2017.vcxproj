@@ -70,27 +70,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="PTLib.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="PTLib.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -160,7 +154,12 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PreBuildEvent>
     <Lib>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
@@ -184,7 +183,12 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PreBuildEvent>
     <Lib />
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
@@ -215,7 +219,12 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PreBuildEvent>
     <Lib>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
@@ -240,7 +249,12 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PreBuildEvent>
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -268,7 +282,12 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PreBuildEvent>
     <Lib>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
@@ -293,7 +312,12 @@
       <Culture>0x0c09</Culture>
     </ResourceCompile>
     <Lib />
-    <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PreBuildEvent>
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -915,84 +939,66 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-se
     <None Include="..\..\..\configure.ac" />
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(PTLibGitRootDir)\.git" (
-  rem we do this so it doesn't rebuild every time in non GIT tree
-  mkdir "$(PTLibGitRootDir)\.git"
-  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
-  echo Created "$(PTLibGitRootDir)\.git\index"
-)
-cd "%(RootDir)%(Directory)"
-PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">if not exist "$(PTLibGitRootDir)\.git" (
-  rem we do this so it doesn't rebuild every time in non GIT tree
-  mkdir "$(PTLibGitRootDir)\.git"
-  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
-  echo Created "$(PTLibGitRootDir)\.git\index"
-)
-cd "%(RootDir)%(Directory)"
-PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">if not exist "$(PTLibGitRootDir)\.git" (
-  rem we do this so it doesn't rebuild every time in non GIT tree
-  mkdir "$(PTLibGitRootDir)\.git"
-  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
-  echo Created "$(PTLibGitRootDir)\.git\index"
-)
-cd "%(RootDir)%(Directory)"
-PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">if not exist "$(PTLibGitRootDir)\.git" (
-  rem we do this so it doesn't rebuild every time in non GIT tree
-  mkdir "$(PTLibGitRootDir)\.git"
-  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
-  echo Created "$(PTLibGitRootDir)\.git\index"
-)
-cd "%(RootDir)%(Directory)"
-PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(PTLibGitRootDir)\.git" (
-  rem we do this so it doesn't rebuild every time in non GIT tree
-  mkdir "$(PTLibGitRootDir)\.git"
-  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
-  echo Created "$(PTLibGitRootDir)\.git\index"
-)
-cd "%(RootDir)%(Directory)"
-PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">if not exist "$(PTLibGitRootDir)\.git" (
-  rem we do this so it doesn't rebuild every time in non GIT tree
-  mkdir "$(PTLibGitRootDir)\.git"
-  copy nul "$(PTLibGitRootDir)\.git\index" &gt; nul
-  echo Created "$(PTLibGitRootDir)\.git\index"
-)
-cd "%(RootDir)%(Directory)"
-PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd"
 sh -c './tools/get_revision.sh %(FileName)'
-if errorlevel 1 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"</Command>
+if not errorlevel 1 exit
+copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
+if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
+copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Updating revision include file.</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PTLibGitRootDir)\.git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
     </CustomBuild>
     <None Include="..\..\..\include\ptlib\unix\ptlib\ptlib.inl" />
     <None Include="..\..\..\tools\get_revision.sh" />

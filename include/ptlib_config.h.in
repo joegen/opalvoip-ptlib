@@ -879,6 +879,7 @@
     #pragma include_alias("libavutil/channel_layout.h","@FFMPEG_WIN64_DIR@/include/libavutil/channel_layout.h")
     #pragma include_alias("libavutil/frame.h",         "@FFMPEG_WIN64_DIR@/include/libavutil/frame.h")
     #pragma include_alias("libavutil/rational.h",      "@FFMPEG_WIN64_DIR@/include/libavutil/rational.h")
+    #pragma include_alias("libavutil/hwcontext.h",     "@FFMPEG_WIN64_DIR@/include/libavutil/hwcontext.h")
     #pragma include_alias(<libavutil/imgutils.h>,      <@FFMPEG_WIN64_DIR@/include/libavutil/imgutils.h>)
     #pragma include_alias(<libavutil/audio_fifo.h>,    <@FFMPEG_WIN64_DIR@/include/libavutil/audio_fifo.h>)
   #endif
