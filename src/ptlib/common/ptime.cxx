@@ -125,7 +125,7 @@ void PTimeInterval::PrintOn(ostream & strm) const
     int64_t powerOfTen = SecsToNano;
     for (int i = 0; i < decimals; ++i)
       powerOfTen /= 10;
-    strm << '.' << setw(decimals) << std::min((ns+powerOfTen/2)/powerOfTen, SecsToNano/powerOfTen-1);
+    strm << '.' << setfill('0') << setw(decimals) << std::min((ns+powerOfTen/2)/powerOfTen, SecsToNano/powerOfTen-1);
   }
 
   strm.setf(adjustMode, ios::adjustfield);
