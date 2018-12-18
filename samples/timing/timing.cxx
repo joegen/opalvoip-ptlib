@@ -46,7 +46,10 @@ void TimingTest::Main()
 {
   cout << "Timing Test Program\n" << endl;
 
-  PTimeInterval nano = PTimeInterval::NanoSeconds(-543210123456789LL);
+  PTimeInterval nano(0,10);
+  cout << "TimeInterval default: " << nano << endl;
+
+  nano = PTimeInterval::NanoSeconds(-543210123456789LL);
   int w, p;
   for (w = 1; w <= 18; w++)
     for (p = 0; p <= 9; p++)
