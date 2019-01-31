@@ -58,6 +58,28 @@ static __inline bool IsOK(int response) { return (response/100) == 2; }
 
 #if PTRACING
 PINDEX PHTTPClient::MaxTraceContentSize = 1000;
+
+class PHTTPClient_OutputBody
+{
+  private:
+    const void * m_body;
+    PINDEX m_length;
+  public:
+    PHTTPClient_OutputBody(const void * body, PINDEX len) : m_body(body), m_length(len) { }
+    friend ostream & operator<<(ostream & strm, const PHTTPClient_OutputBody & ob)
+    {
+      PINDEX len = std::min(ob.m_length, PHTTPClient::MaxTraceContentSize);
+      const char * ptr = static_cast<const char *>(ob.m_body);
+      while (len-- > 0) {
+        if (isspace(*ptr) || isgraph(*ptr))
+          strm << *ptr;
+        ++ptr;
+      }
+      if (ob.m_length > PHTTPClient::MaxTraceContentSize)
+        strm << "\n...";
+      return strm;
+    }
+};
 #endif
 
 
@@ -338,7 +360,7 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
     }
   }
 
-  PTRACE_IF(3, !IsOK(m_lastResponseCode), "Error " << m_lastResponseCode << ' ' << m_lastResponseInfo);
+  PTRACE_IF(3, !IsOK(m_lastResponseCode), "Error " << m_lastResponseCode << ' ' << m_lastResponseInfo.Left(m_lastResponseInfo.FindOneOf("\r\n")));
   return m_lastResponseCode;
 }
 
@@ -365,6 +387,7 @@ bool PHTTPClient::WriteCommand(Commands cmd,
   }
 
 #if PTRACING
+  ostream * trace = NULL;
   if (PTrace::CanTrace(3)) {
     ostream & strm = PTRACE_BEGIN(3);
     strm << "Sending ";
@@ -375,9 +398,13 @@ bool PHTTPClient::WriteCommand(Commands cmd,
       strm << '/';
     else
       strm << url;
-    if (PTrace::CanTrace(4))
+    if (PTrace::CanTrace(4)) {
       strm << " HTTP/1.1\n" << outMIME;
-    strm << PTrace::End;
+      if (outMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= (int64_t)MaxTraceContentSize)
+        trace = &strm;
+    }
+    if (trace == NULL)
+        strm << PTrace::End;
   }
 #endif
 
@@ -388,10 +415,18 @@ bool PHTTPClient::WriteCommand(Commands cmd,
   const void * data;
   PINDEX len = 0;
   while ((data = processor.GetBuffer(len)) != NULL) {
+#if PTRACING
+    if (trace != NULL)
+      *trace << PHTTPClient_OutputBody(data, len);
+#endif
     if (!Write(data, len))
       return false;
   }
 
+#if PTRACING
+  if (trace != NULL)
+    *trace << PTrace::End;
+#endif
   return true;
 }
 
@@ -418,7 +453,7 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       PString body;
       if (m_lastResponseCode >= 300) {
 #if PTRACING
-        if (replyMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= (int64_t)MaxTraceContentSize)
+        if (PTrace::CanTrace(4) && replyMIME.GetVar(ContentLengthTag(), numeric_limits<int64_t>::max()) <= (int64_t)MaxTraceContentSize)
           ReadContentBody(replyMIME, body);
         else
 #endif
@@ -432,11 +467,8 @@ bool PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
         if (PTrace::CanTrace(4))
           strm << '\n';
         strm << m_lastResponseCode << ' ' << m_lastResponseInfo;
-        if (PTrace::CanTrace(4)) {
-          strm << '\n' << replyMIME;
-          if (!body.IsEmpty())
-            strm << body;
-        }
+        if (PTrace::CanTrace(4))
+          strm << '\n' << replyMIME << PHTTPClient_OutputBody(body.GetPointer(), body.GetLength());
         strm << PTrace::End;
       }
 #endif
@@ -593,7 +625,7 @@ bool PHTTPClient::GetTextDocument(const PURL & url,
   }
 
   PTRACE_IF(4, !document.IsEmpty(), "Received body:\n"
-            << document.Left(MaxTraceContentSize) << (document.GetLength() > MaxTraceContentSize ? "\n...." : ""));
+            << PHTTPClient_OutputBody(document.GetPointer(), document.GetLength()));
   return true;
 }
 
@@ -698,7 +730,15 @@ bool PHTTPClient::PostData(const PURL & url,
                             PMIMEInfo & replyMIME,
                               PString & body)
 {
-  return PostData(url, outMIME, data, replyMIME) && ReadContentBody(replyMIME, body);
+  if (!PostData(url, outMIME, data, replyMIME))
+    return false;
+
+  if (!ReadContentBody(replyMIME, body))
+    return false;
+
+  PTRACE_IF(4, !body.IsEmpty(), "Received body:\n"
+            << PHTTPClient_OutputBody(body.GetPointer(), body.GetLength()));
+  return true;
 }
 
 
