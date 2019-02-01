@@ -725,6 +725,28 @@ PBoolean PHTTPServer::OnUnknown(const PCaselessString & cmd,
 }
 
 
+static PString FormatAsHTML(const PCaselessString & message, const httpStatusCodeStruct * statusInfo)
+{
+  if (message.Find("<body") != P_MAX_INDEX)
+    return message;
+
+  PHTML html;
+  html << PHTML::Title()
+       << statusInfo->code
+       << ' '
+       << statusInfo->text
+       << PHTML::Body()
+       << PHTML::Heading(1)
+       << statusInfo->code
+       << PHTML::NonBreakSpace()
+       << statusInfo->text
+       << PHTML::Heading(1)
+       << message
+       << PHTML::Body();
+  return html;
+}
+
+
 PBoolean PHTTPServer::OnError(StatusCode code,
              const PCaselessString & extra,
          const PHTTPConnectionInfo & connectInfo)
@@ -742,25 +764,7 @@ PBoolean PHTTPServer::OnError(StatusCode code,
     return statusInfo->code == RequestOK;
   }
 
-  PString reply;
-  if (extra.Find("<body") != P_MAX_INDEX)
-    reply = extra;
-  else {
-    PHTML html;
-    html << PHTML::Title()
-         << statusInfo->code
-         << ' '
-         << statusInfo->text
-         << PHTML::Body()
-         << PHTML::Heading(1)
-         << statusInfo->code
-         << ' '
-         << statusInfo->text
-         << PHTML::Heading(1)
-         << extra
-         << PHTML::Body();
-    reply = html;
-  }
+  PString reply = FormatAsHTML(extra, statusInfo);
 
   headers.SetAt(ContentTypeTag(), PMIMEInfo::TextHTML());
   StartResponse(code, headers, reply.GetLength());
@@ -1128,6 +1132,25 @@ bool PHTTPRequest::OnError(PHTTP::StatusCode statusCode, const PCaselessString &
 bool PHTTPRequest::OnError(const PCaselessString & extra)
 {
   return server.OnError(code >= 200 && code < 300 ? PHTTP::InternalServerError : code, extra, *this);
+}
+
+
+bool PHTTPRequest::SendResponse()
+{
+  return PAssertNULL(m_resource)->StartResponse(*this); // This version of StartResponse handles CORS
+}
+
+
+bool PHTTPRequest::SendResponse(const PString & body, bool html)
+{
+  if (!outMIME.Contains(PHTTP::ContentTypeTag()))
+    outMIME.Set(PHTTP::ContentTypeTag(), html ? PMIMEInfo::TextPlain() : PMIMEInfo::TextHTML());
+
+  PString finalBody = outMIME.Get(PHTTP::ContentTypeTag()) != PMIMEInfo::TextHTML() ? body : FormatAsHTML(body, GetStatusCodeStruct(code));
+  contentSize = finalBody.GetLength();
+
+  PAssertNULL(m_resource)->StartResponse(*this); // This version of StartResponse handles CORS
+  return server.WriteString(finalBody);
 }
 
 

@@ -1438,16 +1438,44 @@ class PHTTPRequest : public PHTTPConnectionInfo
       const PCaselessString & extra = PString::Empty() ///< Extra information included in the response.
     );
 
-    PHTTPServer & server;           ///< Server channel that request initiated on
-    PHTTPResource * const m_resource;  ///< HTTP resource found for the request
+    /**Send a response based on data in this request.
+       If contentSize > 0 then it is expected the caller will write the body
+       after calling this function.
 
-    PHTTP::StatusCode code;         ///< Status code for reply.
-    PMIMEInfo outMIME;              ///< MIME information used in reply.
-    PString entityBody;             ///< original entity body (POST only)
-    PINDEX contentSize;             ///< Size of the body of the resource data.
-    PIPSocket::Address origin;      ///< IP address of origin host for request
-    PIPSocket::Address localAddr;   ///< IP address of local interface for request
-    WORD               localPort;   ///< Port number of local server for request
+       @return
+       true if requires v1.1 chunked transfer encoding.
+       */
+    bool SendResponse();
+
+    /**Send a response, with a body, based on data in this request.
+       Note contentSize is overwritten with the string length.
+
+       If the outMIME content-type is not set, it is set to text/plain or
+       text/html as per the \p html parameter.
+
+       If outMIME content-type is text/html, from above or by preset, and
+       the \p body string does not contain the string "<body", then the
+       body string will be reformatted as basic HTML, using the status code
+       as the title & heading.
+
+       @return
+       true if sucessfully sent body.
+    */
+    bool SendResponse(
+      const PString & body,   ///< Body to send.
+      bool html = true        ///< Body is sent as HTML
+    );
+
+    PHTTPServer & server;             ///< Server channel that request initiated on
+    PHTTPResource * const m_resource; ///< HTTP resource found for the request
+
+    PHTTP::StatusCode  code;          ///< Status code for reply.
+    PMIMEInfo          outMIME;       ///< MIME information used in reply.
+    PString            entityBody;    ///< original entity body (POST only)
+    PINDEX             contentSize;   ///< Size of the body of the resource data.
+    PIPSocket::Address origin;        ///< IP address of origin host for request
+    PIPSocket::Address localAddr;     ///< IP address of local interface for request
+    WORD               localPort;     ///< Port number of local server for request
     PTime              m_arrivalTime; ///< Time of arrival of the HTTP request
 };
 
