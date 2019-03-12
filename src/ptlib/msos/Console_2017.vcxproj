@@ -993,12 +993,12 @@ copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Updating revision include file.</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory).git\index</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">$(SolutionDir).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">$(SolutionDir).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir).git\index</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir).git\index</AdditionalInputs>
     </CustomBuild>
     <None Include="..\..\..\include\ptlib\unix\ptlib\ptlib.inl" />
     <None Include="..\..\..\tools\get_revision.sh" />
