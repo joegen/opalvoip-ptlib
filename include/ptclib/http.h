@@ -1277,6 +1277,9 @@ class PHTTPServer : public PHTTP
     /// Get start of service time
     const PTime & GetServiceStartTime() const { return m_serviceStartTime; }
 
+    /// Get time last command was read
+    const PTime & GetLastCommandTime() const { return m_lastCommandTime; }
+
   protected:
     void Construct();
 #if P_SSL
@@ -1284,6 +1287,7 @@ class PHTTPServer : public PHTTP
 #endif
 
     PTime               m_serviceStartTime;
+    PTime               m_lastCommandTime;
     PHTTPSpace          m_urlSpace;
     PHTTPConnectionInfo m_connectInfo;
     unsigned            m_transactionCount;

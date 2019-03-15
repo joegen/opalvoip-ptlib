@@ -243,6 +243,10 @@ PBoolean PHTTPServer::ProcessCommand()
   if (!ReadCommand(cmd, args))
     return false;
 
+  PTime now;
+  PTRACE(5, "Delay waiting for next command: " << now - m_lastCommandTime);
+  m_lastCommandTime = now;
+
   m_connectInfo.commandCode = (Commands)cmd;
   if (cmd < NumCommands)
     m_connectInfo.commandName = commandNames[cmd];
@@ -921,7 +925,7 @@ void PHTTPListener::Worker::Work()
   PStringStream socketInfo;
   socketInfo << ": local=" << m_socket->GetLocalAddress() << ", peer=" << m_socket->GetPeerAddress();
 #endif
-  PTRACE(5, "Processing thread pool work for" << socketInfo);
+  PTRACE(5, "Processing thread pool work for" << socketInfo << ", delay=" << m_queuedTime.GetElapsed());
 
   std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
   if (server.get() == NULL) {
@@ -945,13 +949,13 @@ void PHTTPListener::Worker::Work()
   m_listener.OnHTTPStarted(*server);
 
   // process requests
-  while (server->ProcessCommand())
-    ;
+  while (server->ProcessCommand()) {
+    PTRACE(5, "Processed" << socketInfo << ", duration=" << server->GetLastCommandTime().GetElapsed());
+  }
 
   m_listener.OnHTTPEnded(*server);
-  PTRACE(5, "Ended" << socketInfo);
+  PTRACE(5, "Ended" << socketInfo << ", duration=" << m_queuedTime.GetElapsed());
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////
