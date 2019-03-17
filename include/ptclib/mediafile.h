@@ -48,6 +48,8 @@ class PMediaFile : public PSmartObject
 {
     PCLASSINFO(PMediaFile, PSmartObject);
   protected:
+    /** Create the media file abstraction.
+      */
     PMediaFile();
 
     bool      m_reading;
@@ -68,24 +70,64 @@ class PMediaFile : public PSmartObject
 
     typedef PSmartPtr<PMediaFile> Ptr;
 
-    static PMediaFile * Create(const PFilePath & file) { return Factory::CreateInstance(file.GetType()); }
+    /** Create a concreate class for the media file, given it's file extension.
+        Returns: NULL if the file type is not supported.
+      */
+    static PMediaFile * Create(
+      const PFilePath & file      ///< File to create and instance from.
+    ) { return Factory::CreateInstance(file.GetType()); }
+
+    /** Get all of the supported file types across all concrete classes in factory.
+      */
     static PStringSet GetAllFileTypes();
 
+    /// Get string representing an audio track
     static const PString & Audio();
+
+    /// Get a string representing a video track
     static const PString & Video();
 
-    virtual bool IsSupported(const PString & type) const = 0;
+    /**Indicate this media file supports the specified media format.
+       For example, a WAV file would return false for Video().
+      */
+    virtual bool IsSupported(
+      const PString & format    ///< Track media format name
+    ) const = 0;
 
-    virtual bool OpenForReading(const PFilePath & filePath) = 0;
-    virtual bool OpenForWriting(const PFilePath & filePath) = 0;
+    /** Open the media file for reading.
+      */
+    virtual bool OpenForReading(
+      const PFilePath & filePath    ///< File to open for reading
+    ) = 0;
 
+    /** Open the media file for writing.
+        Note, this will always overwrite the existing file.
+    */
+    virtual bool OpenForWriting(
+      const PFilePath & filePath    ///< FIle to open for writing
+    ) = 0;
+
+    /** Indicate the media file is open for reading/writing.
+      */
     virtual bool IsOpen() const = 0;
+
+    /** Close the media file.
+      */
     virtual bool Close() = 0;
 
+    /** Indicate the is a read only or write only file.
+      */
     bool IsReading() const { return m_reading; }
+
+    /** Get the name of the media file that is currently open for reading/writing.
+      */
     const PFilePath & GetFilePath() const { return m_filePath; }
+
+    /** Get the error message for the last failure.
+      */
     const PString & GetErrorText() const { return m_lastErrorText; }
 
+    /// Information about a media track
     struct TrackInfo
     {
       TrackInfo(const PString & type = PString::Empty(), const PString & format = PString::Empty());
@@ -108,21 +150,118 @@ class PMediaFile : public PSmartObject
     };
     typedef std::vector<TrackInfo> TracksInfo;
 
+    /** Get the default track info for the media type.
+        This returns a track info that is guaranteed to be able to be written to
+        the specific media file container. e.g. for WAV files, "PCM-16", mono,
+        16kHz is returned.
+      */
+    virtual bool GetDefaultTrackInfo(
+      const PCaselessString & type,   ///< Media type
+      TrackInfo & info                ///< Default track info
+    ) const = 0;
+
+    /** Get the current count of tracks in the media file.
+        For reading, this is fixed. For writing this may be added to with SetTracks().
+      */
     virtual unsigned GetTrackCount() const = 0;
-    virtual bool GetTracks(TracksInfo & tracks) = 0;
-    virtual bool SetTracks(const TracksInfo & tracks) = 0;
 
-    virtual bool ReadNative(unsigned track, BYTE * data, PINDEX & size, unsigned & frames) = 0;
-    virtual bool WriteNative(unsigned track, const BYTE * data, PINDEX & size, unsigned & frames) = 0;
+    /** Get information on the current tracks in the file.
+        For reading, this is fixed. For writing this may be added to with SetTracks().
+    */
+    virtual bool GetTracks(
+      TracksInfo & tracks   ///< Vector to receive track info
+    ) = 0;
 
-    virtual bool ConfigureAudio(unsigned track, unsigned channels, unsigned sampleRate) = 0;
-    virtual bool ReadAudio(unsigned track, BYTE * data, PINDEX size, PINDEX & length) = 0;
-    virtual bool WriteAudio(unsigned track, const BYTE * data, PINDEX length, PINDEX & written) = 0;
+    /** Set information on the current tracks in the file.
+        This is not allowed for reading, and for writing, you can only add new tracks
+        to the end of the list returned from GetTracks().
+      */
+    virtual bool SetTracks(
+      const TracksInfo & tracks   ///< Vector of track info to create
+    ) = 0;
+
+    /** Read from the media file track in native format.
+        This only applies to a file in reading mode.
+      */
+    virtual bool ReadNative(
+      unsigned track,   ///< Track to read
+      BYTE * data,      ///< Pointer to memory to receive the native data
+      PINDEX & size,    ///< On input maxcimum size of data, on output the actual size of the data
+      unsigned & frames ///< The number of frames, if relevant to the track format
+    ) = 0;
+
+    /** Write to the media file track in native format.
+       This only applies to a file in write mode.
+    */
+    virtual bool WriteNative(
+      unsigned track,     ///< Track to write
+      const BYTE * data,  ///< Data to write to track
+      PINDEX & size,      ///< Size of data to write, on output the amount actually written
+      unsigned & frames ///< The number of frames, if relevant to the track format
+    ) = 0;
+
+    /** Configure the raw PCM-16 audio format to be used.
+        This is the format that is used in ReadAudio()/WriteAudio(), the actual format in the
+        file, which is determined via the TrackInfo fields, is decoded/encoded as required.
+      */
+    virtual bool ConfigureAudio(
+      unsigned track,     ///< Track to configure
+      unsigned channels,  ///< Number of channels of audio
+      unsigned sampleRate ///< Sample rate for the audio
+    ) = 0;
+
+    /** Read the audio from the media file as PCM-16.
+        The number of channels and sample rate are controlled by ConfigureAudio()
+        This function will fail if the track is not an audio track.
+      */
+    virtual bool ReadAudio(
+      unsigned track,   ///< Track to read audio
+      BYTE * data,      ///< Buffer to receive PCM-16 data
+      PINDEX size,      ///< Size of the buffer to receive data
+      PINDEX & length   ///< Actual number of bytes written to buffer
+    ) = 0;
+
+    /** Write the audio to the media file as PCM-16.
+        The number of channels and sample rate are controlled by ConfigureAudio()
+        This function will fail if the track is not an audio track.
+      */
+    virtual bool WriteAudio(
+      unsigned track,     ///< Track to write audio
+      const BYTE * data,  ///< PCM-16 data to write.
+      PINDEX length,      ///< Number of bytes of PCM-16 data to write
+      PINDEX & written    ///< Number of bytes of PCM-16 data actually written
+    ) = 0;
 
 #if P_VIDEO
-    virtual bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo) = 0;
-    virtual bool ReadVideo(unsigned track, BYTE * data) = 0;
-    virtual bool WriteVideo(unsigned track, const BYTE * data) = 0;
+    /** Configure the raw video format to be used.
+        This is the format that is used in ReadVideo()/WriteVideo(), the actual format in the
+        file, which is determined via the TrackInfo fields, is decoded/encoded as required.
+        The frameInfo would typically use "YUV420P" but "RGB24" or "RGB32" is also a common
+        output. The width/height can be set and the media file resolution will be scaled
+        accordingly.
+    */
+    virtual bool ConfigureVideo(
+      unsigned track,                   ///< Track to configure for video
+      const PVideoFrameInfo & frameInfo ///< Frame info (width/height/format) to use.
+    ) = 0;
+
+    /** Read one video frame from the media file.
+        Note the size of the buffer pointed to by data is fixed by the PVideoFrameInfo
+        in the ConfigureVideo() function.
+      */
+    virtual bool ReadVideo(
+      unsigned track,   ///< Track to read video
+      BYTE * data       ///< Buffer to receive the video frame
+    ) = 0;
+
+    /** Write one video frame to the media file.
+        Note the size of the buffer pointed to by data is fixed by the PVideoFrameInfo
+        in the ConfigureVideo() function.
+    */
+    virtual bool WriteVideo(
+      unsigned track,     ///< Track to write video
+      const BYTE * data   ///< Video frame to write to track
+    ) = 0;
 #endif
 
 

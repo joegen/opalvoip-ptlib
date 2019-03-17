@@ -477,6 +477,16 @@ public:
   }
 
 
+  bool GetDefaultTrackInfo(const PCaselessString & type, TrackInfo & info) const
+  {
+    if (type != Audio())
+      return false;
+
+    info = TrackInfo(16000, 1);
+    return true;
+  }
+
+
   unsigned GetTrackCount() const
   {
     return 1;
@@ -1385,6 +1395,34 @@ class PMediaFile_FFMPEG : public PMediaFile
     }
 
 
+    bool GetDefaultTrackInfo(const PCaselessString & type, TrackInfo & info) const
+    {
+      PWaitAndSignal mutex(m_mutex);
+
+      if (m_formatContext == NULL)
+        return false;
+
+      if (type == Audio()) {
+        info = TrackInfo(16000, 1);
+        AVCodec * codec = avcodec_find_encoder(m_formatContext->oformat->audio_codec);
+        if (codec != NULL) {
+          info.m_format = codec->name;
+          info.m_channels = 2;
+          info.m_rate = codec->supported_samplerates ? codec->supported_samplerates[0] : 16000;
+        }
+      }
+      else if (type == Video()) {
+        info = TrackInfo(PVideoFrameInfo::CIF4Width, PVideoFrameInfo::CIF4Height, 25);
+        AVCodec * codec = avcodec_find_encoder(m_formatContext->oformat->video_codec);
+        if (codec != NULL) {
+          info.m_format = codec->name;
+          info.m_rate = codec->supported_framerates ? codec->supported_framerates[0].num : 25;
+        }
+      }
+      return true;
+    }
+
+
     unsigned GetTrackCount() const
     {
       return m_tracks.size();
@@ -1428,62 +1466,62 @@ class PMediaFile_FFMPEG : public PMediaFile
     }
 
 
-  bool ReadNative(unsigned track, BYTE * data, PINDEX & size, unsigned & frames)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenTrackAndMode(track, true) && m_tracks[track].ReadNative(data, size, frames);
-  }
+    bool ReadNative(unsigned track, BYTE * data, PINDEX & size, unsigned & frames)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenTrackAndMode(track, true) && m_tracks[track].ReadNative(data, size, frames);
+    }
 
 
-  bool WriteNative(unsigned track, const BYTE * data, PINDEX & size, unsigned & frames)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenTrackAndMode(track, false) && m_tracks[track].WriteNative(data, size, frames);
-  }
+    bool WriteNative(unsigned track, const BYTE * data, PINDEX & size, unsigned & frames)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenTrackAndMode(track, false) && m_tracks[track].WriteNative(data, size, frames);
+    }
 
 
-  bool ConfigureAudio(unsigned track, unsigned channels, unsigned sampleRate)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenAndTrack(track) && m_tracks[track].ConfigureAudio(channels, sampleRate);
-  }
+    bool ConfigureAudio(unsigned track, unsigned channels, unsigned sampleRate)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenAndTrack(track) && m_tracks[track].ConfigureAudio(channels, sampleRate);
+    }
 
 
-  bool ReadAudio(unsigned track, BYTE * data, PINDEX size, PINDEX & length)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenAndTrack(track) && m_tracks[track].ReadAudio(data, size, length);
-  }
+    bool ReadAudio(unsigned track, BYTE * data, PINDEX size, PINDEX & length)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenAndTrack(track) && m_tracks[track].ReadAudio(data, size, length);
+    }
 
 
-  bool WriteAudio(unsigned track, const BYTE * data, PINDEX length, PINDEX & written)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenAndTrack(track) && m_tracks[track].WriteAudio(data, length, written);
-  }
+    bool WriteAudio(unsigned track, const BYTE * data, PINDEX length, PINDEX & written)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenAndTrack(track) && m_tracks[track].WriteAudio(data, length, written);
+    }
 
 
 #if P_VIDEO
-  bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenAndTrack(track) &&
-          (m_reading ? m_tracks[track].ConfigureReadVideo(frameInfo) : m_tracks[track].ConfigureWriteVideo(frameInfo));
-  }
+    bool ConfigureVideo(unsigned track, const PVideoFrameInfo & frameInfo)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenAndTrack(track) &&
+            (m_reading ? m_tracks[track].ConfigureReadVideo(frameInfo) : m_tracks[track].ConfigureWriteVideo(frameInfo));
+    }
 
 
-  bool ReadVideo(unsigned track, BYTE * data)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenAndTrack(track) && m_tracks[track].ReadVideo(data);
-  }
+    bool ReadVideo(unsigned track, BYTE * data)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenAndTrack(track) && m_tracks[track].ReadVideo(data);
+    }
 
 
-  bool WriteVideo(unsigned track, const BYTE * data)
-  {
-    PWaitAndSignal mutex(m_mutex);
-    return CheckOpenAndTrack(track) && m_tracks[track].WriteVideo(data);
-  }
+    bool WriteVideo(unsigned track, const BYTE * data)
+    {
+      PWaitAndSignal mutex(m_mutex);
+      return CheckOpenAndTrack(track) && m_tracks[track].WriteVideo(data);
+    }
 #endif // P_VIDEO
 };
 
@@ -2134,6 +2172,18 @@ public:
 
     m_mutex.Signal();
 
+    return true;
+  }
+
+
+  bool GetDefaultTrackInfo(const PCaselessString & type, TrackInfo & info) const
+  {
+    if (type == Audio()) {
+      info = TrackInfo(16000, 1);
+    }
+    else if (type == Video()) {
+      info = TrackInfo(PVideoFrameInfo::CIF4Width, PVideoFrameInfo::CIF4Height, 25);
+    }
     return true;
   }
 
