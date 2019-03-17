@@ -320,44 +320,6 @@ if test "${enable_deprecated}" = "no" ; then
    )
 fi
 
-
-AC_ARG_ENABLE(sanitize-address, AS_HELP_STRING([--enable-sanitize-address],[Enable GCC/clang Address Sanitizer]))
-
-if test "${enable_sanitize_address}" = "yes" ; then
-   MY_COMPILE_IFELSE(
-      [compiler -fsanitize=address],
-      [-fsanitize=address],
-      [],
-      [],
-      [
-         AC_SUBST(HAS_ADDRESS_SANITIZER, 1)
-         CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
-         CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
-         LDFLAGS="-fsanitize=address $LDFLAGS"
-         MEMORY_CHECKER="GCC AddressSanitizer"
-      ]
-   )
-fi
-
-
-AC_ARG_ENABLE(sanitize-thread, AS_HELP_STRING([--enable-sanitize-thread],[Enable GCC/clang Thread Sanitizer]))
-
-if test "${enable_sanitize_thread}" = "yes" ; then
-   MY_COMPILE_IFELSE(
-      [compiler -fsanitize=thread],
-      [-fsanitize=thread],
-      [],
-      [],
-      [
-         AC_SUBST(HAS_THREAD_SANITIZER, 1)
-         CPPFLAGS="-D__SANITIZE_THREAD__ $CPPFLAGS"
-         CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
-         CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
-         LDFLAGS="-fsanitize=thread $LDFLAGS"
-      ]
-   )
-fi
-
 AC_LANG_POP(C)
 
 AC_MSG_CHECKING(if compiler uses RTTI by default)
@@ -1196,17 +1158,6 @@ PTLIB_SUBST(BACKTRACE)
 
 
 dnl ########################################################################
-dnl look for MEMORY_CHECK enabled.
-
-AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
-AC_MSG_NOTICE(Memory checking... $enable_memcheck)
-if test "$enable_memcheck" = "yes" ; then
-   AC_DEFINE(PMEMORY_CHECK, 1)
-   MEMORY_CHECKER="Internal"
-fi
-
-
-dnl ########################################################################
 dnl check for tracing
 dnl
 
@@ -1401,7 +1352,6 @@ dnl MSWIN_DISPLAY    ffmpeg32,FFMPEG 32 bit support
 dnl MSWIN_CHECK_FILE ffmpeg32,include\libavformat\avformat.h,P_FFMPEG_WIN32=1
 dnl MSWIN_DIR_SYMBOL ffmpeg32,FFMPEG_WIN32_DIR
 dnl MSWIN_CHECK_DIR  ffmpeg32,%FFMPEGDIR%\
-dnl MSWIN_CHECK_DIR  ffmpeg32,..\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,..\external\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramFiles%\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramW6432%\ffmpeg-win32-dev*
@@ -1410,7 +1360,6 @@ dnl MSWIN_DISPLAY    ffmpeg64,FFMPEG 64 bit support
 dnl MSWIN_CHECK_FILE ffmpeg64,include\libavformat\avformat.h,P_FFMPEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL ffmpeg64,FFMPEG_WIN64_DIR
 dnl MSWIN_CHECK_DIR  ffmpeg64,%FFMPEG64DIR%\
-dnl MSWIN_CHECK_DIR  ffmpeg64,..\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,..\external\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramFiles%\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramW6432%\ffmpeg-win64-dev*
@@ -2887,6 +2836,59 @@ if test "x$enable_plugins" != "xno" ; then
    dnl end of test for video
 
 fi # enable_plugins
+
+
+dnl ########################################################################
+dnl Address and thread sanitizers as part of GNU compiler, must be last thing in configuration
+
+AC_ARG_ENABLE(sanitize-address, AS_HELP_STRING([--enable-sanitize-address],[Enable GCC/clang Address Sanitizer]))
+
+if test "${enable_sanitize_address}" = "yes" ; then
+   MY_COMPILE_IFELSE(
+      [compiler -fsanitize=address],
+      [-fsanitize=address],
+      [],
+      [],
+      [
+         AC_SUBST(HAS_ADDRESS_SANITIZER, 1)
+         CFLAGS="-fsanitize=address -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer $CXXFLAGS"
+         LDFLAGS="-fsanitize=address $LDFLAGS"
+         MEMORY_CHECKER="GCC AddressSanitizer"
+      ]
+   )
+fi
+
+
+AC_ARG_ENABLE(sanitize-thread, AS_HELP_STRING([--enable-sanitize-thread],[Enable GCC/clang Thread Sanitizer]))
+
+if test "${enable_sanitize_thread}" = "yes" ; then
+   MY_COMPILE_IFELSE(
+      [compiler -fsanitize=thread],
+      [-fsanitize=thread],
+      [],
+      [],
+      [
+         AC_SUBST(HAS_THREAD_SANITIZER, 1)
+         CPPFLAGS="-D__SANITIZE_THREAD__ $CPPFLAGS"
+         CFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CFLAGS"
+         CXXFLAGS="-fsanitize=thread -fno-omit-frame-pointer $CXXFLAGS"
+         LDFLAGS="-fsanitize=thread $LDFLAGS"
+      ]
+   )
+fi
+
+dnl ########################################################################
+dnl look for MEMORY_CHECK enabled.
+
+if test "$HAS_ADDRESS_SANITIZER" -ne 1 ; then
+   AC_ARG_ENABLE(memcheck, AS_HELP_STRING([--enable-memcheck],[enable leak testing code (off by default)]))
+   AC_MSG_NOTICE(Memory checking... $enable_memcheck)
+   if test "$enable_memcheck" = "yes" ; then
+      AC_DEFINE(PMEMORY_CHECK, 1)
+      MEMORY_CHECKER="Internal"
+   fi
+fi
 
 
 dnl #########################################################################
