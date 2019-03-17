@@ -61,6 +61,7 @@ static PConstString const SrcAttribute("src");
 static PConstString const NextAttribute("next");
 static PConstString const DtmfAttribute("dtmf");
 static PConstString const DestAttribute("dest");
+static PConstString const DestExprAttribute("destexpr");
 
 
 class PVXMLChannelPCM : public PVXMLChannel
@@ -1838,6 +1839,11 @@ PBoolean PVXMLSession::TraversedRecord(PXMLElement & element)
     if (uri.Parse(element.GetAttribute(DestAttribute), "file"))
       destination = uri.AsFilePath();
   }
+  else if (element.HasAttribute(DestExprAttribute)) {
+    PURL uri;
+    if (uri.Parse(EvaluateExpr(element.GetAttribute(DestExprAttribute)), "file"))
+      destination = uri.AsFilePath();
+  }
 
   if (destination.IsEmpty()) {
     if (!m_recordDirectory.Create()) {
@@ -2835,8 +2841,8 @@ PBoolean PVXMLSession::TraversedTransfer(PXMLElement & element)
       bool started = false;
       if (element.HasAttribute(DestAttribute))
         started = OnTransfer(element.GetAttribute(DestAttribute), type);
-      else if (element.HasAttribute("destexpr"))
-        started = OnTransfer(EvaluateExpr(element.GetAttribute("destexpr")), type);
+      else if (element.HasAttribute(DestExprAttribute))
+        started = OnTransfer(EvaluateExpr(element.GetAttribute(DestExprAttribute)), type);
 
       if (started) {
         m_transferStatus = TransferInProgress;

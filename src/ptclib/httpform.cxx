@@ -453,6 +453,11 @@ void PHTTPDividerField::SetValue(const PString &)
 }
 
 
+void PHTTPDividerField::SaveToConfig(PConfig &) const
+{
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPCompositeField
 

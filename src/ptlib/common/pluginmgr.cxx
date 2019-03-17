@@ -161,12 +161,17 @@ void PPluginManager::LoadDirectory(const PDirectory & directory)
     PTRACE(4, "PLUGIN\tCannot open plugin directory " << dir);
     return;
   }
-  PTRACE(4, "PLUGIN\tEnumerating plugin directory " << dir);
+
+  PTRACE(3, "PLUGIN", "Enumerating plugin directory " << dir
+         << (directory.IsRoot() ? " - not recursing" : ""));
+
   do {
     PString entry = dir + dir.GetEntryName();
     PDirectory subdir = entry;
-    if (subdir.Open())
-      LoadDirectory(entry);
+    if (subdir.Open()) {
+      if (!directory.IsRoot())
+        LoadDirectory(entry);
+    }
     else {
       PFilePath fn(entry);
       for (PStringList::iterator it = m_suffixes.begin(); it != m_suffixes.end(); ++it) {
