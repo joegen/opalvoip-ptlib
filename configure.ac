@@ -1401,6 +1401,7 @@ dnl MSWIN_DISPLAY    ffmpeg32,FFMPEG 32 bit support
 dnl MSWIN_CHECK_FILE ffmpeg32,include\libavformat\avformat.h,P_FFMPEG_WIN32=1
 dnl MSWIN_DIR_SYMBOL ffmpeg32,FFMPEG_WIN32_DIR
 dnl MSWIN_CHECK_DIR  ffmpeg32,%FFMPEGDIR%\
+dnl MSWIN_CHECK_DIR  ffmpeg32,..\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,..\external\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramFiles%\ffmpeg-win32-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg32,%ProgramW6432%\ffmpeg-win32-dev*
@@ -1409,6 +1410,7 @@ dnl MSWIN_DISPLAY    ffmpeg64,FFMPEG 64 bit support
 dnl MSWIN_CHECK_FILE ffmpeg64,include\libavformat\avformat.h,P_FFMPEG_WIN64=1
 dnl MSWIN_DIR_SYMBOL ffmpeg64,FFMPEG_WIN64_DIR
 dnl MSWIN_CHECK_DIR  ffmpeg64,%FFMPEG64DIR%\
+dnl MSWIN_CHECK_DIR  ffmpeg64,..\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,..\external\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramFiles%\ffmpeg-win64-dev*
 dnl MSWIN_CHECK_DIR  ffmpeg64,%ProgramW6432%\ffmpeg-win64-dev*
