@@ -940,14 +940,14 @@ configure "-Dac_top_build_prefix=$(ProjectDir)../../../Lib/$(Platform)/" --no-se
     <CustomBuild Include="..\..\..\revision.h.in">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd "%(RootDir)%(Directory)"
-PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
 sh -c './tools/get_revision.sh %(FileName)'
 if not errorlevel 1 exit
 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
 if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
 copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd "%(RootDir)%(Directory)"
-PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
 sh -c './tools/get_revision.sh %(FileName)'
 if not errorlevel 1 exit
 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
@@ -958,14 +958,14 @@ copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">cd "%(RootDir)%(Directory)"
-PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
 sh -c './tools/get_revision.sh %(FileName)'
 if not errorlevel 1 exit
 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
 if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
 copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">cd "%(RootDir)%(Directory)"
-PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
 sh -c './tools/get_revision.sh %(FileName)'
 if not errorlevel 1 exit
 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
@@ -976,14 +976,14 @@ copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|Win32'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='No Trace|x64'">%(RootDir)%(Directory)%(Filename)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd "%(RootDir)%(Directory)"
-PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
 sh -c './tools/get_revision.sh %(FileName)'
 if not errorlevel 1 exit
 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
 if not exist "%(RootDir)%(Directory).git" mkdir "%(RootDir)%(Directory).git"
 copy nul "%(RootDir)%(Directory).git\index"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd "%(RootDir)%(Directory)"
-PATH=%PATH%;"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr\bin"
+PATH=$(PATH);"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\usr/bin";"$(DevEnvDir)\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd";"C:\Program Files\git\bin"
 sh -c './tools/get_revision.sh %(FileName)'
 if not errorlevel 1 exit
 copy "%(FullPath)"+nul "%(RootDir)%(Directory)%(FileName)"
