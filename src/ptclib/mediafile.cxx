@@ -703,6 +703,7 @@ class PMediaFile_FFMPEG : public PMediaFile
   protected:
     AVFormatContext * m_formatContext;
     PDECLARE_MUTEX(   m_mutex);
+    bool              m_headerWritten;
 
 #if PTRACING
     bool CheckError(int result, const char * fn)
@@ -736,7 +737,7 @@ class PMediaFile_FFMPEG : public PMediaFile
       PMediaFile_FFMPEG  * m_owner;
       int                  m_index;
       AVStream           * m_stream;
-      AVCodec            * m_codecInfo;
+      AVCodec      const * m_codecInfo;
       AVCodecContext     * m_codecContext;
       bool                 m_codecOpened;
       AVFrame            * m_frame;
@@ -1315,9 +1316,24 @@ class PMediaFile_FFMPEG : public PMediaFile
     }
 
 
+    bool WriteHeader()
+    {
+      if (m_headerWritten)
+        return true;
+
+      /* Write the stream header, if any. */
+      AVDictionary * options = NULL;
+      m_headerWritten = !CHECK_ERROR(avformat_write_header, (m_formatContext, &options));
+      av_dict_free(&options);
+
+      return m_headerWritten;
+    }
+
+
   public:
     PMediaFile_FFMPEG()
       : m_formatContext(NULL)
+      , m_headerWritten(false)
     {
     }
 
@@ -1359,6 +1375,7 @@ class PMediaFile_FFMPEG : public PMediaFile
     {
       m_reading = false;
       m_filePath = filePath;
+      m_headerWritten = false;
 
       if (avformat_alloc_output_context2(&m_formatContext, NULL, NULL, filePath) < 0) {
         if (CHECK_ERROR(avformat_alloc_output_context2,(&m_formatContext, NULL, "mpeg", filePath)))
@@ -1404,7 +1421,7 @@ class PMediaFile_FFMPEG : public PMediaFile
 
       if (type == Audio()) {
         info = TrackInfo(16000, 1);
-        AVCodec * codec = avcodec_find_encoder(m_formatContext->oformat->audio_codec);
+        const AVCodec * codec = avcodec_find_encoder(m_formatContext->oformat->audio_codec);
         if (codec != NULL) {
           info.m_format = codec->name;
           info.m_channels = 2;
@@ -1413,7 +1430,7 @@ class PMediaFile_FFMPEG : public PMediaFile
       }
       else if (type == Video()) {
         info = TrackInfo(PVideoFrameInfo::CIF4Width, PVideoFrameInfo::CIF4Height, 25);
-        AVCodec * codec = avcodec_find_encoder(m_formatContext->oformat->video_codec);
+        const AVCodec * codec = avcodec_find_encoder(m_formatContext->oformat->video_codec);
         if (codec != NULL) {
           info.m_format = codec->name;
           info.m_rate = codec->supported_framerates ? codec->supported_framerates[0].num : 25;
@@ -1431,8 +1448,10 @@ class PMediaFile_FFMPEG : public PMediaFile
 
     bool GetTracks(TracksInfo & tracks)
     {
-      if (m_formatContext == NULL)
+      if (m_formatContext == NULL) {
+        PTRACE(2, "Cannot get track info as file not open");
         return false;
+      }
 
       tracks.resize(m_tracks.size());
       for (size_t i = 0; i < m_tracks.size(); ++i)
@@ -1444,23 +1463,26 @@ class PMediaFile_FFMPEG : public PMediaFile
 
     bool SetTracks(const TracksInfo & tracks)
     {
-      if (m_formatContext == NULL)
+      if (m_formatContext == NULL) {
+        PTRACE(2, "Cannot set track info as file not open");
         return false;
+      }
+
+      if (m_headerWritten) {
+        PTRACE(2, "Cannot set track info after file header written");
+        return false;
+      }
 
       m_tracks.resize(tracks.size());
       for (size_t i = 0; i < m_tracks.size(); ++i) {
-        TrackContext existingTrack = m_tracks[i];
+        TrackContext & existingTrack = m_tracks[i];
         if (existingTrack != tracks[i]) {
+          existingTrack.Close();
           existingTrack = tracks[i];
           if (!existingTrack.Create(this, i))
             return false;
         }
       }
-
-      /* Write the stream header, if any. */
-      AVDictionary * opt = NULL;
-      if (CHECK_ERROR(avformat_write_header,(m_formatContext, &opt)))
-        return false;
 
       return true;
     }
@@ -1476,7 +1498,7 @@ class PMediaFile_FFMPEG : public PMediaFile
     bool WriteNative(unsigned track, const BYTE * data, PINDEX & size, unsigned & frames)
     {
       PWaitAndSignal mutex(m_mutex);
-      return CheckOpenTrackAndMode(track, false) && m_tracks[track].WriteNative(data, size, frames);
+      return CheckOpenTrackAndMode(track, false) && WriteHeader() && m_tracks[track].WriteNative(data, size, frames);
     }
 
 
@@ -1497,7 +1519,7 @@ class PMediaFile_FFMPEG : public PMediaFile
     bool WriteAudio(unsigned track, const BYTE * data, PINDEX length, PINDEX & written)
     {
       PWaitAndSignal mutex(m_mutex);
-      return CheckOpenAndTrack(track) && m_tracks[track].WriteAudio(data, length, written);
+      return CheckOpenAndTrack(track) && WriteHeader() && m_tracks[track].WriteAudio(data, length, written);
     }
 
 
@@ -1520,7 +1542,7 @@ class PMediaFile_FFMPEG : public PMediaFile
     bool WriteVideo(unsigned track, const BYTE * data)
     {
       PWaitAndSignal mutex(m_mutex);
-      return CheckOpenAndTrack(track) && m_tracks[track].WriteVideo(data);
+      return CheckOpenAndTrack(track) && WriteHeader() && m_tracks[track].WriteVideo(data);
     }
 #endif // P_VIDEO
 };
