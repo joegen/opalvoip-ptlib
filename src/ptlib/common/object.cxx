@@ -188,11 +188,7 @@ static void InternalAssertFunc(const PDebugLocation & location, const char * msg
       strm << ", class " << location.m_extra;
     if (errorCode != 0)
       strm << ", error=" << errorCode;
-    strm << ", when=" << PTime().AsString(PTime::LoggingFormat
-#if PTRACING
-                                          , PTrace::GetTimeZone()
-#endif
-                                          );
+    strm << ", when=" << PTime().AsString(PTime::LoggingFormat PTRACE_PARAM(, PTrace::GetTimeZone()));
     if (PAssertWalksStack)
       PPlatformWalkStack(strm, PNullThreadIdentifier, 0, 2, true); // 2 means skip reporting InternalAssertFunc & PAssertFunc
     strm << ends;
