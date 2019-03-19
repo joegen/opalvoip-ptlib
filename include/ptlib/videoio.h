@@ -798,19 +798,19 @@ class PVideoOutputDevice : public PVideoDevice
 
     struct FrameData
     {
-      unsigned     x;               ///< Horizontal position in frame where data is put
-      unsigned     y;               ///< Vertical position in frame where data is put
-      unsigned     width;           ///< Width of area in frame where data is put
-      unsigned     height;          ///< Height of area in frame where data is put
-      unsigned     sarWidth;        ///< Aspect ratio width of area in frame where data is put
-      unsigned     sarHeight;       ///< Aspect ratio height of area in frame where data is put
-      int64_t      timestamp;       ///< Display time for the frame (microseconds)
-      const BYTE * pixels;          ///< Data to put into the video frame store
-      bool         partialFrame;    ///< Indicate partial video frame
-      bool *       keyFrameNeeded;  ///< Indicates bad video and a new key frame is required
-      void *       mark;            // For backward compatibility, not sure what it is for ...
+      unsigned      x;               ///< Horizontal position in frame where data is put
+      unsigned      y;               ///< Vertical position in frame where data is put
+      unsigned      width;           ///< Width of area in frame where data is put
+      unsigned      height;          ///< Height of area in frame where data is put
+      unsigned      sarWidth;        ///< Aspect ratio width of area in frame where data is put
+      unsigned      sarHeight;       ///< Aspect ratio height of area in frame where data is put
+      PTimeInterval sampleTime;      ///< Sampling time for the frame
+      const BYTE  * pixels;          ///< Data to put into the video frame store
+      bool          partialFrame;    ///< Indicate partial video frame
+      bool        * keyFrameNeeded;  ///< Indicates bad video and a new key frame is required
+      void        * mark;            // For backward compatibility, not sure what it is for ...
 
-      FrameData() { memset(this, 0, sizeof(*this)); }
+      FrameData() : x(0), y(0), width(0), height(0), sarWidth(0), sarHeight(0), pixels(NULL), partialFrame(false), keyFrameNeeded(NULL), mark(NULL) { }
     };
 
     /**Set a section of the output frame buffer.

@@ -292,6 +292,7 @@ void TestInstance::CopyVideoSender()
 
 void TestInstance::CopyVideoReceiver()
 {
+  PTime start;
   PBYTEArray frame;
   PVideoOutputDevice::FrameData frameData;
   PVideoOutputDevice & receiver = m_vxml->GetVideoReceiver();
@@ -311,7 +312,7 @@ void TestInstance::CopyVideoReceiver()
 
     receiver.SetFrameSize(frameData.width, frameData.height);
     frameData.pixels = frame;
-    frameData.timestamp = PTime().GetTimestamp();
+    frameData.sampleTime = start.GetElapsed();
 
     if (m_preview)
       m_preview->SetFrameData(frameData);
