@@ -468,13 +468,13 @@ static char const IllegalFilenameCharacters[] =
   "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\0x10"
   "\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f";
 
-PBoolean PFilePath::IsValid(char c)
+bool PFilePath::IsValid(char c)
 {
   return strchr(IllegalFilenameCharacters, c) == NULL;
 }
 
 
-PBoolean PFilePath::IsValid(const PString & str)
+bool PFilePath::IsValid(const PString & str)
 {
   return str != "." && str != ".." &&
          str.FindOneOf(IllegalFilenameCharacters) == P_MAX_INDEX;
