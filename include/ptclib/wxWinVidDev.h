@@ -166,8 +166,13 @@ PStringArray P_WXWINDOWS_DEVICE_CLASS::GetOutputDeviceNames()
 
 PBoolean P_WXWINDOWS_DEVICE_CLASS::Open(const PString & deviceName, PBoolean /*startImmediate*/)
 {
-  CallAfter(&P_WXWINDOWS_DEVICE_CLASS::InternalOpen, deviceName);
-  PAssert(m_openComplete.Wait(10000), PLogicError);
+  if (wxThread::IsMain())
+    InternalOpen(deviceName);
+  else {
+    CallAfter(&P_WXWINDOWS_DEVICE_CLASS::InternalOpen, deviceName);
+    PAssert(m_openComplete.Wait(10000), PLogicError);
+  }
+
   return m_opened;
 }
 
@@ -195,9 +200,14 @@ PBoolean P_WXWINDOWS_DEVICE_CLASS::Close()
   if (!IsOpen())
     return false;
 
-  PTRACE(4, P_WXWINDOWS_DEVICE_NAME, "Closing " << *this);
-  CallAfter(&P_WXWINDOWS_DEVICE_CLASS::InternalClose);
-  PAssert(m_closeComplete.Wait(10000), PLogicError);
+  if (wxThread::IsMain())
+    InternalClose();
+  else {
+    PTRACE(4, P_WXWINDOWS_DEVICE_NAME, "Closing " << *this);
+    CallAfter(&P_WXWINDOWS_DEVICE_CLASS::InternalClose);
+    PAssert(m_closeComplete.Wait(10000), PLogicError);
+  }
+
   return true;
 }
   
