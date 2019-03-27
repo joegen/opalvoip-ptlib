@@ -26,6 +26,8 @@
 #include <ptlib.h>
 #include <ptlib/pprocess.h>
 #include <ptclib/mediafile.h>
+#include <ptclib/dtmf.h>
+#include <ptclib/random.h>
 
 
 class Test : public PProcess
@@ -34,7 +36,7 @@ class Test : public PProcess
   public:
     void Main();
     void DoRead(const PFilePath & filename, bool native);
-    void DoWrite(const PFilePath & filename, const PStringArray & trackInfo);
+    void DoWrite(const PFilePath & filename, const PStringArray & trackInfo, bool variableFPS);
 };
 
 
@@ -46,6 +48,7 @@ void Test::Main()
 
   PArgList & args = GetArguments();
   if (!args.Parse("w-write: Write track\n"
+                  "V-variable-fps. Test with variable frame rate\n"
                   "n-native. Use native format\n"
                   PTRACE_ARGLIST)) {
     args.Usage(cerr, "[ args ] <media-file> ...");
@@ -56,7 +59,7 @@ void Test::Main()
 
   if (args.HasOption('w')) {
     for (PINDEX i = 0; i < args.GetCount(); ++i)
-      DoWrite(args[i], args.GetOptionString('w').Lines());
+      DoWrite(args[i], args.GetOptionString('w').Lines(), args.HasOption('V'));
   }
   else {
     for (PINDEX i = 0; i < args.GetCount(); ++i)
@@ -67,7 +70,7 @@ void Test::Main()
 
 void Test::DoRead(const PFilePath & filename, bool native)
 {
-  PMediaFile * file = PMediaFile::Create(filename);
+  PSmartPtr<PMediaFile> file = PMediaFile::Create(filename);
   if (file == NULL) {
     cerr << "Could not create Media File for " << filename << endl;
     return;
@@ -126,10 +129,10 @@ void Test::DoRead(const PFilePath & filename, bool native)
       const PMediaFile::TrackInfo & track = tracks[i];
 
       if (track.m_type == PMediaFile::Audio()) {
-        PBYTEArray buffer((PINDEX)(track.m_rate*track.m_channels*2)); // One second
+        PShortArray buffer((PINDEX)(track.m_rate*track.m_channels)); // One second
         while (audioOutputTime <= videoOutputTime) {
           PINDEX length;
-          if (file->ReadAudio(i, buffer.GetPointer(), buffer.GetSize(), length)) {
+          if (file->ReadAudio(i, buffer.GetPointer(), buffer.GetSize()*2, length)) {
             cout << "Read " << length << " bytes of PCM" << endl;
             audioOutputTime += PTimeInterval::Seconds(length/track.m_rate/2);
           }
@@ -163,9 +166,9 @@ void Test::DoRead(const PFilePath & filename, bool native)
 }
 
 
-void Test::DoWrite(const PFilePath & filename, const PStringArray & trackInfo)
+void Test::DoWrite(const PFilePath & filename, const PStringArray & trackInfo, bool variableFPS)
 {
-  PMediaFile * file = PMediaFile::Create(filename);
+  PSmartPtr<PMediaFile> file = PMediaFile::Create(filename);
   if (file == NULL) {
     cerr << "Could not create Media File for " << filename << endl;
     return;
@@ -176,20 +179,36 @@ void Test::DoWrite(const PFilePath & filename, const PStringArray & trackInfo)
     return;
   }
 
-  PMediaFile::TracksInfo tracks(trackInfo.GetSize());
+  unsigned audioTrack = UINT_MAX, videoTrack = UINT_MAX;
+
+  PMediaFile::TracksInfo tracks(trackInfo.size());
   for (PINDEX i = 0; i < trackInfo.GetSize(); ++i) {
     PStringArray params = trackInfo[i].Tokenise(',');
-    tracks[i].m_type = params[0];
-    if (tracks[i].m_type == PMediaFile::Audio()) {
-      tracks[i].m_format = params[1];
-      tracks[i].m_rate = params[2].AsReal();
-      tracks[i].m_channels = params[3].AsUnsigned();
+    if (params.size() == 1) {
+      if (!file->GetDefaultTrackInfo(params[0], tracks[i])) {
+        cerr << "Could not set get default " << params[0] << " track info for " << filename << endl;
+        return;
+      }
+      if (tracks[i].m_type == PMediaFile::Audio())
+        audioTrack = i;
+      else if (tracks[i].m_type == PMediaFile::Video())
+        videoTrack = i;
     }
-    else if (tracks[i].m_type == PMediaFile::Video()) {
-      tracks[i].m_format = params[1];
-      tracks[i].m_width = params[2].AsUnsigned();
-      tracks[i].m_height = params[3].AsUnsigned();
-      tracks[i].m_rate = params[4].AsReal();
+    else {
+      tracks[i].m_type = params[0];
+      if (tracks[i].m_type == PMediaFile::Audio()) {
+        tracks[i].m_format = params[1];
+        tracks[i].m_rate = params[2].AsReal();
+        tracks[i].m_channels = params[3].AsUnsigned();
+        audioTrack = i;
+      }
+      else if (tracks[i].m_type == PMediaFile::Video()) {
+        tracks[i].m_format = params[1];
+        tracks[i].m_width = params[2].AsUnsigned();
+        tracks[i].m_height = params[3].AsUnsigned();
+        tracks[i].m_rate = params[4].AsReal();
+        videoTrack = i;
+      }
     }
   }
 
@@ -198,12 +217,56 @@ void Test::DoWrite(const PFilePath & filename, const PStringArray & trackInfo)
     return;
   }
 
-  PBYTEArray buffer(16000); // One second
-  PINDEX written;
-  file->WriteAudio(0, buffer, buffer.GetSize(), written);
+  if (audioTrack < tracks.size()) {
+    if (!file->ConfigureAudio(audioTrack, 1, 8000))
+      return;
 
-  buffer.SetSize(640 * 480 * 3 / 2);
-  file->WriteVideo(1, buffer);
+    #if P_DTMF
+      PTones tones("C:0.2/D:0.2/E:0.2/F:0.2/G:0.2/A:0.2/B:0.2/C5:0.2/"
+                   "C5:0.2/B:0.2/A:0.2/G:0.2/F:0.2/E:0.2/D:0.2/C:2.0");
+      unsigned samplesPerBuffer = 320;
+      unsigned totalBuffers = (tones.GetSize()+samplesPerBuffer-1)/samplesPerBuffer;
+      for (unsigned i = 0; i < totalBuffers; ++i) {
+        PINDEX written;
+        if (!file->WriteAudio(audioTrack, tones.GetPointer() + i * samplesPerBuffer, samplesPerBuffer*2, written))
+          return;
+      }
+    #else
+      PBYTEArray silence(16000); // One second
+      PINDEX written;
+      file->WriteAudio(0, silence, silence.GetSize(), written);
+    #endif
+  }
+
+  if (videoTrack < tracks.size()) {
+    std::auto_ptr<PVideoInputDevice> fake(PVideoInputDevice::CreateOpenedDevice(P_FAKE_VIDEO_BOUNCING_BOXES));
+    if (fake.get() == NULL)
+      return;
+
+    fake->SetFrameSize(tracks[videoTrack].m_width, tracks[videoTrack].m_height);
+    fake->SetFrameRate((unsigned)tracks[videoTrack].m_rate);
+
+    if (!file->ConfigureVideo(videoTrack, *fake))
+      return;
+
+    PBYTEArray frame(fake->GetMaxFrameBytes());
+    if (variableFPS) {
+      PTimeInterval ts;
+      PTimeInterval rate = PTimeInterval::Frequency(fake->GetFrameRate());
+      for (PINDEX i = 0; i < fake->GetFrameRate() * 5; i++) {
+        fake->GetFrameDataNoDelay(frame.GetPointer());
+        if (PRandom::Number(2) == 0)
+          file->WriteVideo(videoTrack, frame, ts);
+        ts += rate;
+      }
+    }
+    else {
+      for (PINDEX i = 0; i < fake->GetFrameRate() * 5; i++) {
+        fake->GetFrameDataNoDelay(frame.GetPointer());
+        file->WriteVideo(videoTrack, frame);
+      }
+    }
+  }
 }
 
 
