@@ -185,7 +185,7 @@ class PMediaFile : public PSmartObject
       */
     virtual bool ReadNative(
       unsigned track,   ///< Track to read
-      BYTE * data,      ///< Pointer to memory to receive the native data
+      void * data,      ///< Pointer to memory to receive the native data
       PINDEX & size,    ///< On input maxcimum size of data, on output the actual size of the data
       unsigned & frames ///< The number of frames, if relevant to the track format
     ) = 0;
@@ -195,7 +195,7 @@ class PMediaFile : public PSmartObject
     */
     virtual bool WriteNative(
       unsigned track,     ///< Track to write
-      const BYTE * data,  ///< Data to write to track
+      const void * data,  ///< Data to write to track
       PINDEX & size,      ///< Size of data to write, on output the amount actually written
       unsigned & frames ///< The number of frames, if relevant to the track format
     ) = 0;
@@ -216,8 +216,8 @@ class PMediaFile : public PSmartObject
       */
     virtual bool ReadAudio(
       unsigned track,   ///< Track to read audio
-      BYTE * data,      ///< Buffer to receive PCM-16 data
-      PINDEX size,      ///< Size of the buffer to receive data
+      void * pcm,      ///< Buffer to receive PCM-16 data
+      PINDEX size,      ///< Size of the buffer to receive data in bytes
       PINDEX & length   ///< Actual number of bytes written to buffer
     ) = 0;
 
@@ -227,7 +227,7 @@ class PMediaFile : public PSmartObject
       */
     virtual bool WriteAudio(
       unsigned track,     ///< Track to write audio
-      const BYTE * data,  ///< PCM-16 data to write.
+      const void * pcm,   ///< PCM-16 data to write.
       PINDEX length,      ///< Number of bytes of PCM-16 data to write
       PINDEX & written    ///< Number of bytes of PCM-16 data actually written
     ) = 0;
@@ -251,7 +251,8 @@ class PMediaFile : public PSmartObject
       */
     virtual bool ReadVideo(
       unsigned track,   ///< Track to read video
-      BYTE * data       ///< Buffer to receive the video frame
+      void * data,      ///< Buffer to receive the video frame
+      PTimeInterval * sampleTime = NULL  ///< Optional timestamp for the video frame
     ) = 0;
 
     /** Write one video frame to the media file.
@@ -260,7 +261,8 @@ class PMediaFile : public PSmartObject
     */
     virtual bool WriteVideo(
       unsigned track,     ///< Track to write video
-      const BYTE * data   ///< Video frame to write to track
+      const void * data,  ///< Video frame to write to track
+      const PTimeInterval & sampleTime = -1  ///< Optional timestamp for the video frame
     ) = 0;
 #endif
 

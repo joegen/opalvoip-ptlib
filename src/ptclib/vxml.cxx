@@ -384,7 +384,7 @@ public:
   }
 
 
-  int Analyse(int instance, unsigned width, unsigned height, int64_t timestamp, const void * pixels)
+  int Analyse(int instance, unsigned width, unsigned height, const PTimeInterval & timestamp, const void * pixels)
   {
     PReadWaitAndSignal lock(m_mutex);
     if (m_library == NULL || instance >= (int)m_instancesInUse.size())
@@ -395,7 +395,7 @@ public:
     data.m_instance = instance;
     data.m_width = width;
     data.m_height = height;
-    data.m_timestamp = static_cast<unsigned>(timestamp);
+    data.m_timestamp = static_cast<unsigned>(timestamp.GetMicroSeconds());
     data.m_pixels = pixels;
 
     PTRACE(5, "Sign Language Analyse of video frame:"
@@ -3108,7 +3108,7 @@ PBoolean PVXMLSession::VideoReceiverDevice::SetFrameData(const FrameData & frame
   else
     pixels = frameData.pixels;
 
-  int result = PVXMLSignLanguageAnalyser::GetInstance().Analyse(m_analayserInstance, frameData.width, frameData.height, frameData.timestamp, pixels);
+  int result = PVXMLSignLanguageAnalyser::GetInstance().Analyse(m_analayserInstance, frameData.width, frameData.height, frameData.sampleTime, pixels);
   if (result >= ' ') {
     PTRACE(4, "Sign language analyser detected " << result << " '" << (char)result << '\'');
     m_vxmlSession.OnUserInput((char)result);

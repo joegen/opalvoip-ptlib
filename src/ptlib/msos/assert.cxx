@@ -467,7 +467,7 @@ LONG WINAPI PExceptionHandler(PEXCEPTION_POINTERS info)
       strm << "Unhandled exception: code=0x" << hex << info->ExceptionRecord->ExceptionCode << dec;
   }
 
-  strm << ", when=" << PTime().AsString(PTime::LoggingFormat);
+  strm << ", when=" << PTime().AsString(PTime::LoggingFormat PTRACE_PARAM(, PTrace::GetTimeZone()));
 
   PDebugDLL debughelp;
   if (debughelp.Initialise(strm)) {

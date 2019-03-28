@@ -276,7 +276,7 @@ class PFilePath : public PFilePathString
        @return
        true if the character is valid for a filename.
      */
-    static PBoolean IsValid(
+    static bool IsValid(
       char c    ///< Character to test for validity.
     );
 
@@ -285,8 +285,18 @@ class PFilePath : public PFilePathString
        @return
        true if the character is valid for a filename.
      */
-    static PBoolean IsValid(
+    static bool IsValid(
       const PString & str   ///< String to test for validity.
+    );
+
+    /**Sanitise the string to be a legal filename. Characters that are not
+       legal, or would consitute a directory separator, are are in the \p extra
+       list, are substituted by the \p substitute character.
+      */
+    static PFilePathString Sanitise(
+      const PString & str,    ///< String to sanitise
+      const PString & extra = PString::Empty(), ///< Extra characters to substitute
+      char substitute = '_'   ///< Character to substitiute
     );
 
     /**Test if path is an absolute path or relative path.

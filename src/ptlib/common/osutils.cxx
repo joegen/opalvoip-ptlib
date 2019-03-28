@@ -4666,6 +4666,19 @@ void PFilePath::SetType(const PFilePathString & newType)
 }
 
 
+PFilePathString PFilePath::Sanitise(const PString & str, const PString & extra, char substitute)
+{
+  PFilePathString sanitised;
+  for (PINDEX i = 0; i < str.GetLength(); ++i) {
+    if (!PFilePath::IsValid(str[i]) || extra.Find(str[i]) != P_MAX_INDEX)
+      sanitised += substitute;
+    else
+      sanitised += str[i];
+  }
+  return sanitised;
+}
+
+
 void PFile::SetFilePath(const PString & newName)
 {
   Close();
