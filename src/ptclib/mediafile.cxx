@@ -632,7 +632,7 @@ extern "C" {
   P_PUSH_MSVC_WARNINGS(4244)
   #include <libavformat/avformat.h>
   #include <libavutil/imgutils.h>
-  #include "libavutil/audio_fifo.h"
+  #include <libavutil/audio_fifo.h>
   #include <libswresample/swresample.h>
   P_POP_MSVC_WARNINGS()
 };

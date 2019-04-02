@@ -788,6 +788,7 @@ void PSafePtrBase::DeleteObject(PSafeObject * obj)
     return;
 
   PTRACE(6, "Deleting object (" << obj << ')');
+  obj->GarbageCollection();
   delete obj;
 }
 

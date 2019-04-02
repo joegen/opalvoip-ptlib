@@ -880,6 +880,7 @@
     #pragma include_alias("libavutil/frame.h",         "@FFMPEG_WIN64_DIR@/include/libavutil/frame.h")
     #pragma include_alias("libavutil/rational.h",      "@FFMPEG_WIN64_DIR@/include/libavutil/rational.h")
     #pragma include_alias(<libavutil/imgutils.h>,      <@FFMPEG_WIN64_DIR@/include/libavutil/imgutils.h>)
+    #pragma include_alias(<libavutil/audio_fifo.h>,    <@FFMPEG_WIN64_DIR@/include/libavutil/audio_fifo.h>)
   #endif
 #endif
 
@@ -911,6 +912,7 @@
     #pragma include_alias("libavutil/frame.h",         "@FFMPEG_WIN32_DIR@/include/libavutil/frame.h")
     #pragma include_alias("libavutil/rational.h",      "@FFMPEG_WIN32_DIR@/include/libavutil/rational.h")
     #pragma include_alias(<libavutil/imgutils.h>,      <@FFMPEG_WIN32_DIR@/include/libavutil/imgutils.h>)
+    #pragma include_alias(<libavutil/audio_fifo.h>,    <@FFMPEG_WIN32_DIR@/include/libavutil/audio_fifo.h>)
   #endif
 #endif
 
@@ -942,6 +944,7 @@
     #pragma include_alias("libavutil/frame.h",         "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/frame.h")
     #pragma include_alias("libavutil/rational.h",      "@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/rational.h")
     #pragma include_alias(<libavutil/imgutils.h>,      <@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/imgutils.h>)
+    #pragma include_alias(<libavutil/audio_fifo.h>,    <@FFMPEG_WINBUILDS_WIN64_DIR@/include/libavutil/audio_fifo.h>)
   #endif
 #endif
 
@@ -973,6 +976,7 @@
     #pragma include_alias("libavutil/frame.h",         "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavutil/frame.h")
     #pragma include_alias("libavutil/rational.h",      "@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavutil/rational.h")
     #pragma include_alias(<libavutil/imgutils.h>,      <@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavutil/imgutils.h>)
+    #pragma include_alias(<libavutil/audio_fifo.h>,    <@FFMPEG_WINBUILDS_WIN32_DIR@/include/libavutil/audio_fifo.h>)
   #endif
 #endif
 
