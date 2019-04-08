@@ -400,6 +400,10 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
   if (resource == NULL) {
     if (!m_urlSpace.IsEmpty() || supportedGlobally.IsEmpty())
       persist = OnError(NotFound, connectInfo.GetURL().AsString(), connectInfo);
+    else {
+      SwitchToWebSocket(supportedGlobally, key);
+      persist = resource->OnWebSocket(*this, connectInfo);
+    }
   }
   else if (!supportedGlobally.IsEmpty()) {
     SwitchToWebSocket(supportedGlobally, key);
