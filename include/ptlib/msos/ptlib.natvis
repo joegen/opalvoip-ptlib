@@ -59,11 +59,11 @@
   </Type>
 
   <Type Name="PList&lt;*&gt;">
-    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count._My_val} head={(void *)(info-&gt;head)}}}</DisplayString>
+    <DisplayString>{{size={reference-&gt;size} ref={reference-&gt;count._My_val} head={(void *)(m_info-&gt;head)}}}</DisplayString>
     <Expand>
       <LinkedListItems>
         <Size>reference-&gt;size</Size>
-        <HeadPointer>info-&gt;head</HeadPointer>
+        <HeadPointer>m_info-&gt;head</HeadPointer>
         <NextPointer>next</NextPointer>
         <ValueNode>($T1 *)data</ValueNode>
       </LinkedListItems>
@@ -111,16 +111,16 @@
   </Type>
 
   <Type Name="PSafePtrBase">
-    <DisplayString>{{{{{lockMode}}} obj={currentObject}}}</DisplayString>
+    <DisplayString>{{{{{m_lockMode}}} obj={m_currentObject}}}</DisplayString>
     <Expand>
-      <ExpandedItem>*currentObject</ExpandedItem>
+      <ExpandedItem>*m_currentObject</ExpandedItem>
     </Expand>
   </Type>
 
   <Type Name="PSafeCollection">
-    <DisplayString>{*collection}</DisplayString>
+    <DisplayString>{*m_collection}</DisplayString>
     <Expand>
-      <ExpandedItem>*collection</ExpandedItem>
+      <ExpandedItem>*m_collection</ExpandedItem>
     </Expand>
   </Type>
 

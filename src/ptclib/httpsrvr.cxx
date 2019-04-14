@@ -397,11 +397,17 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 
   bool persist = false;
  
-   m_urlSpace.StartRead();
+  m_urlSpace.StartRead();
 
-   PHTTPResource * resource = m_urlSpace.FindResource(connectInfo.GetURL());
-  if (resource == NULL)
-    persist = OnError(NotFound, connectInfo.GetURL().AsString(), connectInfo);
+  PHTTPResource * resource = m_urlSpace.FindResource(connectInfo.GetURL());
+  if (resource == NULL) {
+    if (!m_urlSpace.IsEmpty() || supportedGlobally.IsEmpty())
+      persist = OnError(NotFound, connectInfo.GetURL().AsString(), connectInfo);
+    else {
+      SwitchToWebSocket(supportedGlobally, key);
+      persist = resource->OnWebSocket(*this, connectInfo);
+    }
+  }
   else if (!supportedGlobally.IsEmpty()) {
     SwitchToWebSocket(supportedGlobally, key);
     persist = resource->OnWebSocket(*this, connectInfo);
