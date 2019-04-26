@@ -418,8 +418,10 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
         break;
       }
     }
-    if (!found)
+    if (!found) {
+      PTRACE(3, "Unsupported WebSocket protocols: " << setfill(',') << protocols);
       persist = OnError(NotFound, "Unsupported WebSocket protocol", connectInfo);
+    }
   }
 
   m_urlSpace.EndRead();
@@ -430,6 +432,7 @@ bool PHTTPServer::OnWebSocket(PHTTPConnectionInfo & connectInfo)
 
 void PHTTPServer::SwitchToWebSocket(const PString & protocol, const PString & key)
 {
+  PTRACE(4, "Switching to WebSocket protocol \"" << protocol << '"');
   PMIMEInfo reply;
   reply.SetAt(ConnectionTag(), UpgradeTag());
   reply.SetAt(UpgradeTag(), WebSocketTag());
@@ -842,10 +845,10 @@ void PHTTPListener::ShutdownListeners()
 
   m_httpListeningSockets.RemoveAll();
 
-  m_serverSocketsMutex.Wait();
-  for (PSocketList::iterator it = m_httpServerSockets.begin(); it != m_httpServerSockets.end(); ++it)
+  m_httpServersMutex.Wait();
+  for (PList<PHTTPServer>::iterator it = m_httpServers.begin(); it != m_httpServers.end(); ++it)
     it->Close();
-  m_serverSocketsMutex.Signal();
+  m_httpServersMutex.Signal();
 
   m_threadPool.Shutdown();
 }
@@ -865,9 +868,6 @@ void PHTTPListener::ListenMain()
         PTCPSocket * socket = new PTCPSocket;
         if (socket->Accept(*it)) {
           PTRACE(5, "Queuing thread pool work for: local=" << socket->GetLocalAddress() << ", peer=" << socket->GetPeerAddress());
-          m_serverSocketsMutex.Wait();
-          m_httpServerSockets.Append(socket);
-          m_serverSocketsMutex.Signal();
           m_threadPool.AddWork(new Worker(*this, socket));
         }
         else {
@@ -907,11 +907,23 @@ void PHTTPListener::OnHTTPEnded(PHTTPServer & /*server*/)
 }
 
 
+PHTTPListener::Worker::Worker(PHTTPListener & listener, PTCPSocket * socket)
+  : m_listener(listener)
+  , m_socket(socket)
+  , m_httpServer(NULL)
+{
+}
+
+
 PHTTPListener::Worker::~Worker()
 {
-  m_listener.m_serverSocketsMutex.Wait();
-  m_listener.m_httpServerSockets.Remove(m_socket);
-  m_listener.m_serverSocketsMutex.Signal();
+  if (m_httpServer != NULL) {
+    m_listener.m_httpServersMutex.Wait();
+    m_listener.m_httpServers.Remove(m_httpServer); // And deletes it
+    m_listener.m_httpServersMutex.Signal();
+  }
+
+  delete m_socket;
 }
 
 
@@ -931,33 +943,35 @@ void PHTTPListener::Worker::Work()
 #endif
   PTRACE(5, "Processing thread pool work for" << socketInfo << ", delay=" << m_queuedTime.GetElapsed());
 
-  std::auto_ptr<PHTTPServer> server(m_listener.CreateServerForHTTP());
-  if (server.get() == NULL) {
+  m_httpServer = m_listener.CreateServerForHTTP();
+  if (m_httpServer == NULL) {
     PTRACE(2, "Creation failed" << socketInfo);
     return;
   }
-  server->SetServiceStartTime(m_queuedTime);
+  m_httpServer->SetServiceStartTime(m_queuedTime);
+  m_listener.m_httpServers.Append(m_httpServer); // Deleted in this list
 
   PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
   if (channel == NULL) {
     PTRACE(2, "Indirect channel creation failed" << socketInfo);
     return;
   }
+  m_socket = NULL; // Will be deleted via PIndirectChannel now
 
-  if (!server->Open(channel, channel != m_socket)) {
+  if (!m_httpServer->Open(channel)) {
     PTRACE(2, "Open failed" << socketInfo);
     return;
   }
 
   PTRACE(5, "Started" << socketInfo);
-  m_listener.OnHTTPStarted(*server);
+  m_listener.OnHTTPStarted(*m_httpServer);
 
   // process requests
-  while (server->ProcessCommand()) {
-    PTRACE(5, "Processed" << socketInfo << ", duration=" << server->GetLastCommandTime().GetElapsed());
+  while (m_httpServer->ProcessCommand()) {
+    PTRACE(5, "Processed" << socketInfo << ", duration=" << m_httpServer->GetLastCommandTime().GetElapsed());
   }
 
-  m_listener.OnHTTPEnded(*server);
+  m_listener.OnHTTPEnded(*m_httpServer);
   PTRACE(5, "Ended" << socketInfo << ", duration=" << m_queuedTime.GetElapsed());
 }
 

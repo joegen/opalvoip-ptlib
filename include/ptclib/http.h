@@ -1359,13 +1359,13 @@ public:
 
   struct Worker
   {
-    Worker(PHTTPListener & listener, PTCPSocket * socket)
-      : m_listener(listener), m_socket(socket) { }
+    Worker(PHTTPListener & listener, PTCPSocket * socket);
     ~Worker();
     void Work();
 
     PHTTPListener & m_listener;
     PTCPSocket    * m_socket;
+    PHTTPServer   * m_httpServer; 
     PTime           m_queuedTime;
   };
   typedef PQueuedThreadPool<Worker> ThreadPool;
@@ -1381,14 +1381,14 @@ public:
 protected:
   void ListenMain();
 
-  PHTTPSpace     m_httpNameSpace;
-  PString        m_listenerInterfaces;
-  WORD           m_listenerPort;
-  PThread      * m_listenerThread;
-  PSocketList    m_httpListeningSockets;
-  PSocketList    m_httpServerSockets;
-  PDECLARE_MUTEX(m_serverSocketsMutex);
-  ThreadPool     m_threadPool;
+  PHTTPSpace         m_httpNameSpace;
+  PString            m_listenerInterfaces;
+  WORD               m_listenerPort;
+  PThread          * m_listenerThread;
+  PSocketList        m_httpListeningSockets;
+  PList<PHTTPServer> m_httpServers;
+  PDECLARE_MUTEX(    m_httpServersMutex);
+  ThreadPool         m_threadPool;
 };
 
 
