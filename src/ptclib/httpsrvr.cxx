@@ -1176,7 +1176,7 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
   if (len > (PINDEX)m_remainingPayload)
     len = (PINDEX)m_remainingPayload;
 
-  if (!PIndirectChannel::ReadBlock(buf, len))
+  if (!ReadBlock(buf, len))
     goto badRead;
 
   if (m_currentMask >= 0) {
@@ -1215,7 +1215,7 @@ badRead:
 
 bool PWebSocket::ReadMessage(PBYTEArray & msg)
 {
-  if (!PAssert(m_remainingPayload == 0, "Cannot call ReadMessage whan have partial frames unread."))
+  if (!PAssert(m_remainingPayload == 0, "Cannot call ReadMessage when have partial frames unread."))
     return false;
 
   PINDEX totalSize = 0;
@@ -1229,6 +1229,23 @@ bool PWebSocket::ReadMessage(PBYTEArray & msg)
   msg.SetSize(totalSize);
 
   return true;
+}
+
+
+bool PWebSocket::ReadText(PString & msg)
+{
+  PBYTEArray data;
+  if (!ReadMessage(data))
+    return false;
+
+  msg = PString(data);
+  return true;
+}
+
+
+bool PWebSocket::IsMessageComplete() const
+{
+  return !m_fragmentedRead && m_remainingPayload == 0;
 }
 
 
@@ -1356,10 +1373,11 @@ bool PWebSocket::ReadHeader(OpCodes  & opCode,
   opCode = (OpCodes)(header1 & 0xf);
 
   PTimeInterval oldTimeout = GetReadTimeout();
+  SetReadTimeout(1000);
   bool ok = false;
 
   BYTE header2;
-  if (!ReadBlock(&header2, 1))
+  if (!Read(&header2, 1))
     goto badHeader;
 
   switch (header2 & 0x7f) {

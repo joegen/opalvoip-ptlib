@@ -819,7 +819,7 @@ class PWebSocket : public PIndirectChannel
     /** Connect to the WebSocket.
         This performs the HTTP handshake for the WebSocket establishment.
       */
-    bool Connect(
+    virtual bool Connect(
       const PURL & url,                  ///< Base URL for connection ("ws:" or "wss:")
       const PStringArray & protocols,    ///< WebSocket sub-protocol to use.
       PString * selectedProtocol = NULL  ///< Selected protocol by server
@@ -831,8 +831,13 @@ class PWebSocket : public PIndirectChannel
       PBYTEArray & msg
     );
 
+    // Read complete WebSocket text message
+    virtual bool ReadText(
+      PString & msg
+    );
+
     /// Indicate the last Read() completed the WebSocket message.
-    bool IsMessageComplete() const { return m_fragmentedRead && m_remainingPayload == 0; }
+    bool IsMessageComplete() const;
 
     /** Indicate Write() calls are fragments of a large or indeterminate
         message. The user should call SetFragmenting(false) before sending
