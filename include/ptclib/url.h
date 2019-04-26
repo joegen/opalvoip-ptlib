@@ -55,7 +55,7 @@ class PURLLegacyScheme;
  */
 class PURL : public PObject
 {
-  PCLASSINFO(PURL, PObject)
+    PCLASSINFO_WITH_CLONE(PURL, PObject)
   public:
     /**Construct a new URL object from the URL string. */
     PURL();
