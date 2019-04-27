@@ -331,7 +331,7 @@ class PVXMLSession : public PIndirectChannel
     virtual bool OnTransfer(const PString & /*destination*/, TransferType /*type*/) { return false; }
     void SetTransferComplete(bool state);
 
-    const PStringToString & GetVariables() { return m_variables; }
+    PStringToString GetVariables() const;
     virtual PCaselessString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
     virtual PString EvaluateExpr(const PString & oexpr);

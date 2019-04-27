@@ -88,6 +88,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
 
 #include <iomanip>
 
+#define V8_DEPRECATION_WARNINGS 1
 #include <v8.h>
 
 #ifndef V8_MAJOR_VERSION
@@ -179,7 +180,7 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
         v8::HandleScope handle_scope(args.GetIsolate());
         if (i > 0)
           trace << ' ';
-        v8::String::Utf8Value str(args[i]);
+        v8::String::Utf8Value str(args.GetIsolate(), args[i]);
         if (*str)
           trace << *str;
       }
@@ -187,40 +188,6 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
       trace << PTrace::End;
     }
 #endif // PTRACING
-
-
-PINDEX ParseKey(const PString & name, PStringArray & tokens)
-{
-  tokens = name.Tokenise('.', false);
-  if (tokens.GetSize() < 1) {
-    PTRACE(5, "V8\tParseKey:node '" << name << " is too short");
-    return 0;
-  }
-  PINDEX i = 0;
-  while (i < tokens.GetSize()) {
-    PString element = tokens[i];
-    PINDEX start = element.Find('[');
-    if (start == P_MAX_INDEX)
-      ++i;
-    else {
-      PINDEX end = element.Find(']', start + 1);
-      if (end != P_MAX_INDEX) {
-        tokens[i] = element(0, start - 1);
-        ++i;
-        tokens.InsertAt(i, new PString(element(start, end - 1)));
-        if (end < element.GetLength() - 1) {
-          i++;
-          tokens.InsertAt(i, new PString(element(end + 1, P_MAX_INDEX)));
-        }
-        else {
-        }
-      }
-      ++i;
-    }
-  }
-
-  return tokens.GetSize();
-}
 
 
 #ifdef V8_BLOBS_DIR
@@ -246,13 +213,14 @@ struct PJavaScript::Private : PObject
 
   PJavaScript & m_owner;
 
-  v8::Isolate::CreateParams m_isolateParams;
-  v8::Isolate * m_isolate;
+  v8::Isolate::CreateParams   m_isolateParams;
+  v8::Isolate               * m_isolate;
   v8::Persistent<v8::Context> m_context;
 
   v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
   template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
   v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_isolate, m_context); }
+  template <typename T> PString ToPString(const T & value) { return *v8::String::Utf8Value(m_isolate, value);  }
 
   struct Intialisation
   {
@@ -283,7 +251,7 @@ struct PJavaScript::Private : PObject
 #else
       if (!v8::V8::InitializeICUDefaultLocation(exeDir)) {
 #endif
-        PTRACE(2, NULL, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed, continuing.");
+        PTRACE(2, PTraceModule(), "v8::V8::InitializeICUDefaultLocation() failed, continuing.");
       }
 
       // Start it up!
@@ -291,15 +259,17 @@ struct PJavaScript::Private : PObject
       v8::V8::InitializePlatform(m_platform);
 
       if (!v8::V8::Initialize()) {
-        PTRACE(1, NULL, PTraceModule(), "v8::V8::Initialize() failed, not loaded.");
+        PTRACE(1, PTraceModule(), "v8::V8::Initialize() failed, not loaded.");
         return;
       }
 
       m_initialised = true;
+      PTRACE(4, PTraceModule(), "V8 initialisation successful.");
     }
 
     ~Intialisation()
     {
+      PTRACE(4, PTraceModule(), "V8 shutdown.");
       v8::V8::Dispose();
       v8::V8::ShutdownPlatform();
       delete m_platform;
@@ -328,8 +298,14 @@ public:
     if (!PSafeSingleton<Intialisation>()->m_initialised)
       return;
 
+    PTRACE_CONTEXT_ID_FROM(owner);
+
     m_isolateParams.array_buffer_allocator = NewDefaultAllocator();
     m_isolate = v8::Isolate::New(m_isolateParams);
+    if (m_isolate == NULL) {
+      PTRACE(1, "Could not create context.");
+      return;
+    }
 
     v8::Isolate::Scope isolateScope(m_isolate);
     v8::HandleScope handleScope(m_isolate);
@@ -342,6 +318,7 @@ public:
     global->Set(NewString("PTRACE"), v8::FunctionTemplate::New(m_isolate, TraceFunction));
 
     m_context.Reset(m_isolate, v8::Context::New(m_isolate, NULL, global));
+    PTRACE(5, "Created context.");
   #else
     m_context.Reset(m_isolate, v8::Context::New(m_isolate));
   #endif
@@ -350,48 +327,63 @@ public:
 
   ~Private()
   {
+    PTRACE(5, "Destroying context.");
+
     if (m_isolate != NULL)
       m_isolate->Dispose();
 
     delete m_isolateParams.array_buffer_allocator;
   }
 
+
   v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
   {
-    v8::Local<v8::Value> value;
+    if (object.IsEmpty())
+      return v8::Handle<v8::Value>();
 
-    if (m_isolate == NULL)
-      return value;
-
-    // set flags if array access
-    if (name[0] == '[')
-      value = object->Get(name.Mid(1).AsInteger());
-    else
-      value = object->Get(NewString(name));
-
-    return value;
+    return name[0] != '[' ? object->Get(NewString(name)) : object->Get(name.Mid(1).AsInteger());
   }
   
   
-  bool SetMember(v8::Handle<v8::Object> object, const PString & name, v8::Handle<v8::Value> value)
+  bool SetMember(v8::Handle<v8::Object> object,
+                 const PString & name,
+                 v8::Handle<v8::Value> value
+                 PTRACE_PARAM(, const PString & key))
   {
-    if (m_isolate == NULL)
-      return false;
+    if (name[0] != '[' ? object->Set(NewString(name), value)
+                       : object->Set(name.Mid(1).AsUnsigned(), value))
+    {
+      PTRACE(5, "Set \"" << key << "\" to " << ToPString(value).Left(100).ToLiteral());
+      return true;
+    }
 
-    // set flags if array access
-    if (name[0] == '[')
-      return object->Set(name.Mid(1).AsInteger(), value);
-    else
-      return object->Set(NewString(name), value);
+    PTRACE(3, "Could not set \"" << key << '"');
+    return false;
   }
 
 
   v8::Handle<v8::Object> GetObjectHandle(const v8::Local<v8::Context> & context, const PString & key, PString & var)
   {
-    PStringArray tokens;
-    if (ParseKey(key, tokens) < 1) {
+    PStringArray tokens = key.Tokenise('.', false);
+    if (tokens.GetSize() < 1) {
       PTRACE(3, "SetVar \"" << key << "\" is too short");
       return v8::Handle<v8::Object>();
+    }
+
+    for (PINDEX i = 0; i < tokens.GetSize(); ++i) {
+      PString element = tokens[i];
+      PINDEX start = element.Find('[');
+      if (start != P_MAX_INDEX) {
+        PINDEX end = element.Find(']', start + 1);
+        if (end != P_MAX_INDEX) {
+          tokens[i] = element(0, start - 1);
+          tokens.InsertAt(++i, new PString(element(start, end - 1)));
+          if (end < element.GetLength() - 1) {
+            i++;
+            tokens.InsertAt(i, new PString(element(end + 1, P_MAX_INDEX)));
+          }
+        }
+      }
     }
 
     v8::Handle<v8::Object> object = context->Global();
@@ -430,32 +422,42 @@ public:
 
   bool GetVarValue(v8::Handle<v8::Value> value, PVarType & var PTRACE_PARAM(, const PString & key))
   {
+    if (value.IsEmpty()) {
+      PTRACE(3, "Cannot get value for \"" << key << '"');
+      return false;
+    }
+
     if (value->IsInt32()) {
       var = PVarType(value->Int32Value());
+      PTRACE(5, "Got Int32 \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsUint32()) {
       var = PVarType(value->Uint32Value());
+      PTRACE(5, "Got Uint32 \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsNumber()) {
       var = PVarType(value->NumberValue());
+      PTRACE(5, "Got Number \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsBoolean()) {
       var = PVarType(value->BooleanValue());
+      PTRACE(5, "Got Boolean \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsString()) {
-      var = PVarType(PString(*v8::String::Utf8Value(value->ToString())));
+      var = PVarType(ToPString(value->ToString()));
+      PTRACE(5, "Got String \"" << key << "\" = " << var.AsString().Left(100).ToLiteral());
       return true;
     }
 
-    PTRACE(3, "Unable to determine type of '" << key << "' = " << *v8::String::Utf8Value(value));
+    PTRACE(3, "Unable to determine type of \"" << key << "\" = \"" << ToPString(value) << '"');
     var.SetType(PVarType::VarNULL);
     return false;
   }
@@ -473,10 +475,7 @@ public:
 
     PString varName;
     v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
-    if (object.IsEmpty())
-      return false;
-
-    return GetVarValue(GetMember(object, varName), var PTRACE_PARAM(, key));
+    return !object.IsEmpty() && GetVarValue(GetMember(object, varName), var PTRACE_PARAM(, key));
   }
 
 
@@ -486,7 +485,7 @@ public:
   }
 
 
-  v8::Handle<v8::Value> SetVarValue(const PVarType & var PTRACE_PARAM(, const PString & key))
+  v8::Handle<v8::Value> SetVarValue(const PVarType & var)
   {
     switch (var.GetType()) {
       case PVarType::VarNULL:
@@ -542,10 +541,7 @@ public:
 
     PString varName;
     v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
-    if (object.IsEmpty())
-      return false;
-
-    return SetMember(object, varName, SetVarValue(var PTRACE_PARAM(, key)));
+    return !object.IsEmpty() && SetMember(object, varName, SetVarValue(var) PTRACE_PARAM(, key));
   }
 
 
@@ -572,7 +568,7 @@ public:
     notifierInfo.m_notifiers(notifierInfo.m_owner, signature);
 
     if (!signature.m_results.empty())
-      callbackInfo.GetReturnValue().Set(SetVarValue(signature.m_results[0] PTRACE_PARAM(, notifierInfo.m_key)));
+      callbackInfo.GetReturnValue().Set(SetVarValue(signature.m_results[0]));
   }
 
   static void StaticFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& callbackInfo)
@@ -609,11 +605,17 @@ public:
     v8::Local<v8::External> data = v8::External::New(m_isolate, &info);
     v8::Handle<v8::Value> value = v8::Function::New(m_isolate, StaticFunctionCallback, data);
 
-    return object->Set(NewString(varName), value);
+    if (object->Set(NewString(varName), value)) {
+      PTRACE(5, "Set function \"" << varName << '"');
+      return true;
+    }
+
+    PTRACE(3, "Could not set function \"" << varName << '"');
+    return false;
   }
 
 
-  bool Run(const char * text, PString & resultText)
+  bool Run(const PString & text, PString & resultText)
   {
     if (m_isolate == NULL)
       return false;
@@ -626,24 +628,22 @@ public:
     v8::Local<v8::Context> context = GetContext();
     v8::Context::Scope contextScope(context);
 
-    // create V8 string to hold the source
-    v8::Handle<v8::String> source = NewString(text);
-
     // compile the source 
-    v8::Handle<v8::Script> script = v8::Script::Compile(source);
-    if (*script == NULL)
+    v8::Local<v8::Script> script;
+    if (!v8::Script::Compile(context, NewString(text)).ToLocal(&script)) {
+      PTRACE(3, "Could not compile source " << text.Left(100).ToLiteral());
       return false;
+    }
 
     // run the code
-    v8::Handle<v8::Value> result = script->Run();
-
-    // return error if no result
-    if (*result == NULL)
+    v8::Handle<v8::Value> result;
+    if (!script->Run(context).ToLocal(&result)) {
+      PTRACE(3, "Script execution did not return a result.");
       return false;
+    }
 
-    // save return value
-    resultText = *v8::String::Utf8Value(result);
-    PTRACE(1, "Returned '" << resultText << "'");
+    resultText = ToPString(result);
+    PTRACE(4, "Script execution returned " << resultText.Left(100).ToLiteral());
 
     return true;
   }
@@ -658,7 +658,6 @@ public:
 PJavaScript::PJavaScript()
   : m_private(new Private(*this))
 {
-  PTRACE_CONTEXT_ID_TO(m_private);
 }
 
 
@@ -703,8 +702,10 @@ bool PJavaScript::Run(const char * text)
   PString script(text);
 
   PTextFile file(text, PFile::ReadOnly);
-  if (file.IsOpen())
+  if (file.IsOpen()) {
+    PTRACE(4, "Reading script file: " << file.GetFilePath());
     script = file.ReadString(P_MAX_INDEX);
+  }
 
   return m_private->Run(script, m_resultText);
 }
