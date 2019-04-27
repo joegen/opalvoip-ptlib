@@ -68,13 +68,13 @@ static bool CheckError(OSStatus status, const char * fn, const char * prop = NUL
     return false;
 
   static POrdinalToString::Initialiser ErrorMessagesInit[] = {
-    { -50,                                    "Invalid Parameter(s)" },
-    { kAudioUnitErr_InvalidProperty,          "Invalid Property" },
-    { kAudioUnitErr_InvalidParameter,         "Invalid Parameter" },
-    { kAudioUnitErr_FormatNotSupported,       "Format Not Supported" },
-    { kAudioUnitErr_PropertyNotWritable,      "Property Not Writable" },
-    { kAudioUnitErr_CannotDoInCurrentContext, "Cannot Do In Current Context" },
-    { kAudioUnitErr_InvalidPropertyValue,     "Invalid Property Value" }
+    { (PINDEX)-50,                                    "Invalid Parameter(s)" },
+    { (PINDEX)kAudioUnitErr_InvalidProperty,          "Invalid Property" },
+    { (PINDEX)kAudioUnitErr_InvalidParameter,         "Invalid Parameter" },
+    { (PINDEX)kAudioUnitErr_FormatNotSupported,       "Format Not Supported" },
+    { (PINDEX)kAudioUnitErr_PropertyNotWritable,      "Property Not Writable" },
+    { (PINDEX)kAudioUnitErr_CannotDoInCurrentContext, "Cannot Do In Current Context" },
+    { (PINDEX)kAudioUnitErr_InvalidPropertyValue,     "Invalid Property Value" }
   };
   static POrdinalToString const ErrorMessages(PARRAYSIZE(ErrorMessagesInit), ErrorMessagesInit);
 
