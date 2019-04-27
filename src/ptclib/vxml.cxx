@@ -425,6 +425,9 @@ public:
     if (!CanPreview(instance))
       return false;
 
+    PTRACE(5, "Sign Language Preview video frame:"
+              " " << width << 'x' << height << ","
+              " instance=" << instance);
     SLPreviewData data;
     memset(&data, 0, sizeof(data));
     data.m_instance = instance;
@@ -1116,11 +1119,15 @@ PVXMLSession::PVXMLSession(PTextToSpeech * tts, PBoolean autoDelete)
   videoArgs.deviceName = P_FAKE_VIDEO_BLACK;
   m_videoSender.SetActualDevice(PVideoInputDevice::CreateOpenedDevice(videoArgs));
 #endif // P_VXML_VIDEO
+
+  PTRACE(4, "Created session: " << this);
 }
 
 
 PVXMLSession::~PVXMLSession()
 {
+  PTRACE(4, "Destroying session: " << this);
+
   Close();
 
   if (m_autoDeleteTextToSpeech)
@@ -1459,7 +1466,7 @@ PBoolean PVXMLSession::Close()
 
 void PVXMLSession::InternalThreadMain()
 {
-  PTRACE(4, "Execution thread started with variables:\n" << m_variables);
+  PTRACE(4, "Execution thread started.");
 
   m_sessionMutex.Wait();
 
@@ -2010,6 +2017,21 @@ PString PVXMLSession::EvaluateExpr(const PString & expr)
 }
 
 
+PStringToString PVXMLSession::GetVariables() const
+{
+#if P_SCRIPTS
+  if (m_scriptContext != NULL) {
+    PStringToString vars;
+    for (PStringToString::const_iterator it = m_variables.begin(); it != m_variables.end(); ++it)
+      vars.SetAt(it->first, m_scriptContext->GetString(it->first));
+    return vars;
+  }
+#endif
+
+  return m_variables;
+}
+
+
 PCaselessString PVXMLSession::GetVar(const PString & varName) const
 {
   // Check for literal
@@ -2026,14 +2048,12 @@ PCaselessString PVXMLSession::GetVar(const PString & varName) const
 
 #if P_SCRIPTS
   if (m_scriptContext != NULL)
-  {
-	  PString value = m_scriptContext->GetString(fullVarName);
-	  PTRACE(4, "GetVar[" << fullVarName << "]=" << value);
-	  return value;
-  }
+    return m_scriptContext->GetString(fullVarName);
 #endif
 
-  return m_variables(fullVarName);
+  PString value = m_variables(fullVarName);
+  PTRACE(4, "GetVar[" << fullVarName << "]=" << value.ToLiteral());
+  return value;
 }
 
 
@@ -2044,12 +2064,15 @@ void PVXMLSession::SetVar(const PString & varName, const PString & value)
     fullVarName = m_variableScope+'.'+varName;
 
 #if P_SCRIPTS
-  if (m_scriptContext != NULL)
+  if (m_scriptContext != NULL) {
     m_scriptContext->SetString(fullVarName, value);
+    m_variables.SetAt(fullVarName, PString::Empty()); // Just to remember what was set, value is always from script
+    return;
+  }
 #endif
 
   m_variables.SetAt(fullVarName, value);
-  PTRACE(4, "SetAt [" << fullVarName << "]=" << value);
+  PTRACE(4, "SetAt [" << fullVarName << "]=" << value.ToLiteral());
 }
 
 
