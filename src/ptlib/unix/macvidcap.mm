@@ -296,7 +296,7 @@ PBoolean PVideoInputDevice_Mac::Open(const PString & devName, PBoolean startImme
   m_availableFormats.clear();
   for (AVCaptureDeviceFormat * format in m_device.formats) {
     FourCharCode subType = CMFormatDescriptionGetMediaSubType(format.formatDescription);
-    char subTypeStr[5] = {(subType >> 24) & 0xFF, (subType >> 16) & 0xFF, (subType >> 8) & 0xFF, subType & 0xFF, 0};
+    char subTypeStr[5] = {(char)(subType >> 24), (char)(subType >> 16), (char)(subType >> 8), (char)subType, 0};
     // Do the SetColourFormat to get the PTLib synonym name for known FourCharCode.
     if (PVideoInputDevice::SetColourFormat(subTypeStr) && CalculateFrameBytes(m_frameWidth, m_frameHeight, m_colourFormat))
       m_availableFormats[m_colourFormat] = format;
