@@ -142,6 +142,10 @@ $(OBJDIR)/%.o : %.cpp
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
 
+$(OBJDIR)/%.o : %.cc 
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	$(Q_CXX)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
+
 $(OBJDIR)/%.o : %.mm 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	$(Q_CC)$(CXX) -o $@ $(strip $(CPPFLAGS) $(CPLUSPLUS_STD) $(CXXFLAGS)) -c $<
@@ -157,6 +161,7 @@ SRC_OBJS := $(SOURCES:.c=.o)
 SRC_OBJS := $(SRC_OBJS:.mm=.o)
 SRC_OBJS := $(SRC_OBJS:.cxx=.o)
 SRC_OBJS := $(SRC_OBJS:.cpp=.o)
+SRC_OBJS := $(SRC_OBJS:.cc=.o)
 OBJS	 := $(strip $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(SRC_OBJS) $(OBJS))))
 
 #
@@ -167,6 +172,7 @@ SRC_DEPS := $(SOURCES:.c=.dep)
 SRC_DEPS := $(SRC_DEPS:.mm=.dep)
 SRC_DEPS := $(SRC_DEPS:.cxx=.dep)
 SRC_DEPS := $(SRC_DEPS:.cpp=.dep)
+SRC_DEPS := $(SRC_DEPS:.cc=.dep)
 DEPS	  = $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS)))
 
 #
@@ -178,6 +184,11 @@ $(DEPDIR)/%.dep : %.cxx
 	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.cpp 
+	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
+	@printf %s $(OBJDIR)/ > $@
+	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
+
+$(DEPDIR)/%.dep : %.cc 
 	@if [ ! -d $(dir $@) ] ; then $(MKDIR_P) $(dir $@) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(Q_DEP)$(CXX) $(strip $(CPPFLAGS) $(CPLUSPLUS_STD)) -M $< >> $@
@@ -194,6 +205,7 @@ $(DEPDIR)/%.dep : %.c
 
 vpath %.cxx $(VPATH_CXX)
 vpath %.cpp $(VPATH_CXX)
+vpath %.cc  $(VPATH_CXX)
 vpath %.mm  $(VPATH_MM)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
