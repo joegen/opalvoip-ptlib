@@ -71,13 +71,21 @@ class PVXMLChannelPCM : public PVXMLChannel
   public:
     PVXMLChannelPCM();
 
-  protected:
     // overrides from PVXMLChannel
+    virtual PString GetAudioFormat() const;
+    virtual unsigned GetSampleRate() const;
+    virtual bool SetSampleRate(unsigned rate);
+    virtual unsigned GetChannels() const;
+    virtual bool SetChannels(unsigned channels);
     virtual PBoolean WriteFrame(const void * buf, PINDEX len);
     virtual PBoolean ReadFrame(void * buffer, PINDEX amount);
     virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
     virtual PBoolean IsSilenceFrame(const void * buf, PINDEX len) const;
     virtual void GetBeepData(PBYTEArray & data, unsigned ms);
+
+  protected:
+    unsigned m_sampleRate;
+    unsigned m_channels;
 };
 
 
@@ -88,6 +96,11 @@ class PVXMLChannelG7231 : public PVXMLChannel
     PVXMLChannelG7231();
 
     // overrides from PVXMLChannel
+    virtual PString GetAudioFormat() const;
+    virtual unsigned GetSampleRate() const;
+    virtual bool SetSampleRate(unsigned rate);
+    virtual unsigned GetChannels() const;
+    virtual bool SetChannels(unsigned channels);
     virtual PBoolean WriteFrame(const void * buf, PINDEX len);
     virtual PBoolean ReadFrame(void * buffer, PINDEX amount);
     virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
@@ -102,6 +115,11 @@ class PVXMLChannelG729 : public PVXMLChannel
     PVXMLChannelG729();
 
     // overrides from PVXMLChannel
+    virtual PString GetAudioFormat() const;
+    virtual unsigned GetSampleRate() const;
+    virtual bool SetSampleRate(unsigned rate);
+    virtual unsigned GetChannels() const;
+    virtual bool SetChannels(unsigned channels);
     virtual PBoolean WriteFrame(const void * buf, PINDEX len);
     virtual PBoolean ReadFrame(void * buffer, PINDEX amount);
     virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
@@ -528,7 +546,6 @@ PVXMLPlayable::PVXMLPlayable()
   , m_subChannel(NULL)
   , m_repeat(1)
   , m_delay(0)
-  , m_sampleFrequency(8000)
   , m_autoDelete(false)
   , m_delayDone(false)
 {
@@ -752,7 +769,7 @@ bool PVXMLPlayableCommand::OnStart()
     return false;
 
   PString cmd = m_command;
-  cmd.Replace("%s", PString(PString::Unsigned, m_sampleFrequency));
+  cmd.Replace("%s", PString(PString::Unsigned, m_vxmlChannel->GetSampleRate()));
   cmd.Replace("%f", m_format);
 
   // execute a command and send the output through the stream
@@ -958,7 +975,7 @@ void PVXMLCache::SetDirectory(const PDirectory & directory)
 }
 
 
-PFilePath PVXMLCache::CreateFilename(const PString & prefix, const PString & key, const PString & fileType)
+PFilePath PVXMLCache::CreateFilename(const PString & prefix, const PString & key, const PString & suffix)
 {
   if (!m_directory.Exists()) {
     if (!m_directory.Create()) {
@@ -969,23 +986,13 @@ PFilePath PVXMLCache::CreateFilename(const PString & prefix, const PString & key
   PMessageDigest5::Result digest;
   PMessageDigest5::Encode(key, digest);
 
-  PStringStream filename;
-  filename << m_directory << prefix << '_' << hex << digest;
-
-  if (fileType.IsEmpty())
-    filename << ".dat";
-  else {
-    if (fileType[0] != '.')
-      filename << '.';
-    filename << fileType;
-  }
-  return filename;
+  return PSTRSTRM(m_directory << prefix << '_' << hex << digest << suffix);
 }
 
 
 bool PVXMLCache::Get(const PString & prefix,
                      const PString & key,
-                     const PString & fileType,
+                     const PString & suffix,
                          PFilePath & filename)
 {
   PAssert(!prefix.IsEmpty() && !key.IsEmpty(), PInvalidParameter);
@@ -993,7 +1000,7 @@ bool PVXMLCache::Get(const PString & prefix,
   PSafeLockReadOnly mutex(*this);
 
   PTextFile keyFile(CreateFilename(prefix, key, KeyFileType), PFile::ReadOnly);
-  PFile dataFile(CreateFilename(prefix, key, fileType), PFile::ReadOnly);
+  PFile dataFile(CreateFilename(prefix, key, suffix), PFile::ReadOnly);
 
   if (dataFile.Open()) {
     if (keyFile.Open()) {
@@ -1029,13 +1036,13 @@ bool PVXMLCache::Get(const PString & prefix,
 
 bool PVXMLCache::PutWithLock(const PString & prefix,
                              const PString & key,
-                             const PString & fileType,
+                             const PString & suffix,
                                      PFile & dataFile)
 {
   PSafeLockReadWrite mutex(*this);
 
   // create the filename for the cache files
-  if (!dataFile.Open(CreateFilename(prefix, key, "." + fileType), PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
+  if (!dataFile.Open(CreateFilename(prefix, key, suffix), PFile::WriteOnly, PFile::Create|PFile::Truncate)) {
     PTRACE(2, "Cannot create cache data file \"" << dataFile.GetFilePath() << "\""
               " for \"" << key << "\", error: " << dataFile.GetErrorText());
     return false;
@@ -1409,7 +1416,7 @@ PVXMLChannel * PVXMLSession::GetAndLockVXMLChannel()
 }
 
 
-PBoolean PVXMLSession::Open(const PString & mediaFormat)
+bool PVXMLSession::Open(const PString & mediaFormat, unsigned sampleRate, unsigned channels)
 {
   PVXMLChannel * chan = PFactory<PVXMLChannel>::CreateInstance(mediaFormat);
   if (chan == NULL) {
@@ -1417,7 +1424,7 @@ PBoolean PVXMLSession::Open(const PString & mediaFormat)
     return false;
   }
 
-  if (!chan->Open(this)) {
+  if (!chan->Open(this, sampleRate, channels)) {
     delete chan;
     return false;
   }
@@ -2129,7 +2136,9 @@ PBoolean PVXMLSession::PlayElement(PXMLElement & element)
   {
     const PStringArray & path = url.GetPath();
     if (!path.IsEmpty())
-      fileType = PFilePath(path[path.GetSize()-1]).GetType();
+      fileType = PFilePath(path[path.GetSize() - 1]).GetType();
+    else
+      fileType = ".dat";
   }
 
   if (!safe) {
@@ -2216,6 +2225,8 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
 
   PStringArray fileList;
 
+  PString suffix = GetVXMLChannel()->GetMediaFileSuffix() + ".wav";
+
   // Convert each line into it's own cached WAV file.
   PStringArray lines = textToPlay.Lines();
   for (PINDEX i = 0; i < lines.GetSize(); i++) {
@@ -2226,21 +2237,23 @@ PBoolean PVXMLSession::PlayText(const PString & textToPlay,
     // see if we have converted this text before
     if (useCache) {
       PFilePath cachedFilename;
-      if (GetCache().Get(prefix, line, "wav", cachedFilename)) {
+      if (GetCache().Get(prefix, line, suffix, cachedFilename)) {
         fileList.AppendString(cachedFilename);
         continue;
       }
     }
 
     PFile wavFile;
-    if (!GetCache().PutWithLock(prefix, line, "wav", wavFile))
+    if (!GetCache().PutWithLock(prefix, line, suffix, wavFile))
       continue;
 
     // Really want to use OpenChannel() but it isn't implemented yet.
     // So close file and just use filename.
     wavFile.Close();
 
-    bool ok = m_textToSpeech->OpenFile(wavFile.GetFilePath()) &&
+    bool ok = m_textToSpeech->SetSampleRate(GetVXMLChannel()->GetSampleRate()) &&
+              m_textToSpeech->SetChannels(GetVXMLChannel()->GetChannels()) &&
+              m_textToSpeech->OpenFile(wavFile.GetFilePath()) &&
               m_textToSpeech->Speak(line, type) &&
               m_textToSpeech->Close();
 
@@ -3353,7 +3366,6 @@ bool PVXMLDigitsGrammar::IsFilled()
 PVXMLChannel::PVXMLChannel(unsigned frameDelay, PINDEX frameSize)
   : PDelayChannel(DelayReadsAndWrites, frameDelay, frameSize)
   , m_vxmlSession(NULL)
-  , m_sampleFrequency(8000)
   , m_closed(false)
   , m_paused(false)
   , m_totalData(0)
@@ -3364,13 +3376,19 @@ PVXMLChannel::PVXMLChannel(unsigned frameDelay, PINDEX frameSize)
 }
 
 
-PBoolean PVXMLChannel::Open(PVXMLSession * session)
+PBoolean PVXMLChannel::Open(PVXMLSession * session, unsigned sampleRate, unsigned channels)
 {
+  PTRACE(4, "Opening channel:"
+            " this=" << this << ","
+            " session=" << session << ","
+            " format=" << GetAudioFormat() << ","
+            " rate=" << sampleRate << ","
+            " channels=" << channels);
+
   m_currentPlayItem = NULL;
   m_vxmlSession = session;
   m_silenceTimer.SetInterval(500); // 1/2 a second delay before we start outputting stuff
-  PTRACE(4, "Opening channel " << this);
-  return true;
+  return SetSampleRate(sampleRate) && SetChannels(channels);
 }
 
 
@@ -3404,27 +3422,39 @@ PBoolean PVXMLChannel::Close()
 }
 
 
+PString PVXMLChannel::GetMediaFileSuffix() const
+{
+  PStringStream suffix;
+
+  if (!IsMediaPCM())
+    suffix << '_' << GetAudioFormat().Replace(".", "", true).ToLower();
+  else {
+    switch (GetChannels()) {
+      case 1:
+        suffix << "_mono_";
+        break;
+      case 2:
+        suffix << "_stereo_";
+        break;
+      default:
+        suffix << '_' << GetChannels() << 'x';
+    }
+    suffix << PString(PString::ScaleSI, GetSampleRate(), 1) + "Hz";
+  }
+
+  return suffix;
+}
+
+
 PString PVXMLChannel::AdjustMediaFilename(const PString & ofn)
 {
-  if (m_mediaFilePrefix.IsEmpty())
-    return ofn;
+  PFilePath fn(ofn);
+  PFilePathString title = fn.GetTitle();
+  PString suffix = GetMediaFileSuffix();
+  if (title.Right(suffix.GetLength()) == suffix)
+    return fn;
 
-  PString fn = ofn;
-
-  // add in suffix required for channel format, if any
-  PINDEX pos = ofn.FindLast('.');
-  if (pos == P_MAX_INDEX) {
-    if (fn.Right(m_mediaFilePrefix.GetLength()) != m_mediaFilePrefix)
-      fn += m_mediaFilePrefix;
-  }
-  else {
-    PString basename = ofn.Left(pos);
-    PString ext      = ofn.Mid(pos+1);
-    if (basename.Right(m_mediaFilePrefix.GetLength()) != m_mediaFilePrefix)
-      basename += m_mediaFilePrefix;
-    fn = basename + "." + ext;
-  }
-  return fn;
+  return fn.GetDirectory() + title + suffix + fn.GetType();
 }
 
 
@@ -3434,28 +3464,28 @@ PChannel * PVXMLChannel::OpenMediaFile(const PFilePath & fn, bool recording)
   if (fn.GetType() == ".wav") {
     PWAVFile * wav = new PWAVFile;
     if (recording) {
-      wav->SetChannels(1);
+      wav->SetChannels(GetChannels());
       wav->SetSampleSize(16);
-      wav->SetSampleRate(GetSampleFrequency());
-      if (!wav->SetFormat(m_mediaFormat))
-        PTRACE(2, "Unsupported codec " << m_mediaFormat);
+      wav->SetSampleRate(GetSampleRate());
+      if (!wav->SetFormat(GetAudioFormat()))
+        PTRACE(2, "Unsupported codec " << GetAudioFormat());
       else if (!wav->Open(fn, PFile::WriteOnly))
         PTRACE(2, "Could not create WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
       else if (!wav->SetAutoconvert())
-        PTRACE(2, "WAV file cannot convert to " << m_mediaFormat);
+        PTRACE(2, "WAV file cannot convert to " << GetAudioFormat());
       else
         return wav;
     }
     else {
       if (!wav->Open(fn, PFile::ReadOnly))
         PTRACE(2, "Could not open WAV file \"" << wav->GetName() << "\" - " << wav->GetErrorText());
-      else if (wav->GetFormatString() != m_mediaFormat && !wav->SetAutoconvert())
+      else if (wav->GetFormatString() != GetAudioFormat() && !wav->SetAutoconvert())
         PTRACE(2, "WAV file cannot convert from " << wav->GetFormatString());
-      else if (wav->GetChannels() != 1)
+      else if (wav->GetChannels() != GetChannels())
         PTRACE(2, "WAV file has unsupported channel count " << wav->GetChannels());
       else if (wav->GetSampleSize() != 16)
         PTRACE(2, "WAV file has unsupported sample size " << wav->GetSampleSize());
-      else if (wav->GetSampleRate() != GetSampleFrequency())
+      else if (wav->GetSampleRate() != GetSampleRate())
         PTRACE(2, "WAV file has unsupported sample rate " << wav->GetSampleRate());
       else
         return wav;
@@ -3472,6 +3502,8 @@ PChannel * PVXMLChannel::OpenMediaFile(const PFilePath & fn, bool recording)
     PSoundChannel::Params params;
     params.m_direction = recording ? PSoundChannel::Player : PSoundChannel::Recorder; // Counter intuitive
     params.m_driver = fn;
+    params.m_sampleRate = GetSampleRate();
+    params.m_channels = GetChannels();
     if (audio->Open(params)) {
 #if P_VXML_VIDEO
       PVideoInputDevice * video = new PMediaFile::VideoInputDevice(mediaFile);
@@ -3674,7 +3706,6 @@ PBoolean PVXMLChannel::QueuePlayable(PVXMLPlayable * newItem)
     return false;
   }
 
-  newItem->SetSampleFrequency(GetSampleFrequency());
   m_playQueueMutex.Wait();
   m_playQueue.Enqueue(newItem);
   m_playQueueMutex.Signal();
@@ -3743,9 +3774,48 @@ PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelPCM, VXML_PCM16);
 
 PVXMLChannelPCM::PVXMLChannelPCM()
   : PVXMLChannel(10, 160)
+  , m_sampleRate(8000)
+  , m_channels(1)
 {
-  m_mediaFormat    = VXML_PCM16;
-  m_mediaFilePrefix.MakeEmpty();
+}
+
+
+PString PVXMLChannelPCM::GetAudioFormat() const
+{
+  return VXML_PCM16;
+}
+
+
+unsigned PVXMLChannelPCM::GetSampleRate() const
+{
+  return m_sampleRate;
+}
+
+
+bool PVXMLChannelPCM::SetSampleRate(unsigned rate)
+{
+  if (!PAssert(rate > 0, PInvalidParameter))
+    return false;
+
+  m_sampleRate = rate;
+  frameSize = rate*2*m_channels*frameDelay/1000;
+  return true;
+}
+
+
+unsigned PVXMLChannelPCM::GetChannels() const
+{
+  return m_channels;
+}
+
+
+bool PVXMLChannelPCM::SetChannels(unsigned channels)
+{
+  if (!PAssert(channels > 0, PInvalidParameter))
+    return false;
+
+  m_channels = channels;
+  return true;
 }
 
 
@@ -3817,8 +3887,36 @@ PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelG7231, VXML_G7231);
 PVXMLChannelG7231::PVXMLChannelG7231()
   : PVXMLChannel(30, 0)
 {
-  m_mediaFormat     = VXML_G7231;
-  m_mediaFilePrefix  = "_g7231";
+}
+
+
+PString PVXMLChannelG7231::GetAudioFormat() const
+{
+  return VXML_G7231;
+}
+
+
+unsigned PVXMLChannelG7231::GetSampleRate() const
+{
+  return 8000;
+}
+
+
+bool PVXMLChannelG7231::SetSampleRate(unsigned rate)
+{
+  return rate == 8000;
+}
+
+
+unsigned PVXMLChannelG7231::GetChannels() const
+{
+  return 1;
+}
+
+
+bool PVXMLChannelG7231::SetChannels(unsigned channels)
+{
+  return channels == 1;
 }
 
 
@@ -3874,8 +3972,36 @@ PFACTORY_CREATE(PFactory<PVXMLChannel>, PVXMLChannelG729, VXML_G729);
 PVXMLChannelG729::PVXMLChannelG729()
   : PVXMLChannel(10, 0)
 {
-  m_mediaFormat    = VXML_G729;
-  m_mediaFilePrefix  = "_g729";
+}
+
+
+PString PVXMLChannelG729::GetAudioFormat() const
+{
+  return VXML_G729;
+}
+
+
+unsigned PVXMLChannelG729::GetSampleRate() const
+{
+  return 8000;
+}
+
+
+bool PVXMLChannelG729::SetSampleRate(unsigned rate)
+{
+  return rate == 8000;
+}
+
+
+unsigned PVXMLChannelG729::GetChannels() const
+{
+  return 1;
+}
+
+
+bool PVXMLChannelG729::SetChannels(unsigned channels)
+{
+  return channels == 1;
 }
 
 
@@ -3914,8 +4040,10 @@ class TextToSpeech_Sample : public PTextToSpeech
     TextToSpeech_Sample();
     PStringArray GetVoiceList();
     PBoolean SetVoice(const PString & voice);
-    PBoolean SetRate(unsigned rate);
-    unsigned GetRate();
+    PBoolean SetSampleRate(unsigned rate);
+    unsigned GetSampleRate();
+    PBoolean SetChannels(unsigned channels);
+    unsigned GetChannels();
     PBoolean SetVolume(unsigned volume);
     unsigned GetVolume();
     PBoolean OpenFile   (const PFilePath & fn);
@@ -3935,7 +4063,9 @@ class TextToSpeech_Sample : public PTextToSpeech
     bool      m_usingFile;
     PString   m_text;
     PFilePath m_path;
-    unsigned  m_volume, m_rate;
+    unsigned  m_sampleRate;
+    unsigned  m_channels;
+    unsigned  m_volume;
     PString   m_voice;
 
     std::vector<PFilePath> m_filenames;
@@ -3943,11 +4073,12 @@ class TextToSpeech_Sample : public PTextToSpeech
 
 
 TextToSpeech_Sample::TextToSpeech_Sample()
+  : m_opened(false)
+  , m_usingFile(false)
+  , m_sampleRate(8000)
+  , m_channels(1)
+  , m_volume(100)
 {
-  PWaitAndSignal m(mutex);
-  m_usingFile = m_opened = false;
-  m_rate = 8000;
-  m_volume = 100;
 }
 
 
@@ -3965,16 +4096,29 @@ PBoolean TextToSpeech_Sample::SetVoice(const PString & v)
 }
 
 
-PBoolean TextToSpeech_Sample::SetRate(unsigned v)
+PBoolean TextToSpeech_Sample::SetSampleRate(unsigned v)
 {
-  m_rate = v;
+  m_sampleRate = v;
   return true;
 }
 
 
-unsigned TextToSpeech_Sample::GetRate()
+unsigned TextToSpeech_Sample::GetSampleRate()
 {
-  return m_rate;
+  return m_sampleRate;
+}
+
+
+PBoolean TextToSpeech_Sample::SetChannels(unsigned v)
+{
+  m_channels = v;
+  return true;
+}
+
+
+unsigned TextToSpeech_Sample::GetChannels()
+{
+  return m_channels;
 }
 
 

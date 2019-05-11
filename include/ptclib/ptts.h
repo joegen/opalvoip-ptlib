@@ -60,8 +60,11 @@ class PTextToSpeech : public PObject
     virtual PStringArray GetVoiceList() = 0;
     virtual PBoolean SetVoice(const PString & voice) = 0;
 
-    virtual PBoolean SetRate(unsigned rate) = 0;
-    virtual unsigned GetRate() = 0;
+    virtual PBoolean SetSampleRate(unsigned rate) = 0;
+    virtual unsigned GetSampleRate() = 0;
+
+    virtual PBoolean SetChannels(unsigned channels) = 0;
+    virtual unsigned GetChannels() = 0;
 
     virtual PBoolean SetVolume(unsigned volume) = 0;
     virtual unsigned GetVolume() = 0;

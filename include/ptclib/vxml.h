@@ -233,14 +233,14 @@ class PVXMLCache : public PSafeObject
     virtual bool Get(
       const PString & prefix,
       const PString & key,
-      const PString & fileType,
+      const PString & suffix,
       PFilePath     & filename
     );
 
     virtual bool PutWithLock(
       const PString   & prefix,
       const PString   & key,
-      const PString   & fileType,
+      const PString   & suffix,
       PFile           & file
     );
 
@@ -255,7 +255,7 @@ class PVXMLCache : public PSafeObject
     virtual PFilePath CreateFilename(
       const PString & prefix,
       const PString & key,
-      const PString & fileType
+      const PString & suffix
     );
 
     PDirectory m_directory;
@@ -289,7 +289,7 @@ class PVXMLSession : public PIndirectChannel
     virtual PBoolean LoadVXML(const PString & xml, const PString & firstForm = PString::Empty());
     virtual PBoolean IsLoaded() const { return m_currentXML.get() != NULL; }
 
-    virtual PBoolean Open(const PString & mediaFormat);
+    virtual bool Open(const PString & mediaFormat, unsigned sampleRate = 8000, unsigned channels = 1);
     virtual PBoolean Close();
 
     PVXMLChannel * GetAndLockVXMLChannel();
@@ -576,9 +576,6 @@ class PVXMLPlayable : public PObject
     void SetFormat(const PString & fmt)
     { m_format = fmt; }
 
-    void SetSampleFrequency(unsigned rate)
-    { m_sampleFrequency = rate; }
-
     friend class PVXMLChannel;
 
   protected:
@@ -587,7 +584,6 @@ class PVXMLPlayable : public PObject
     PINDEX   m_repeat;
     PINDEX   m_delay;
     PString  m_format;
-    unsigned m_sampleFrequency;
     bool     m_autoDelete;
     bool     m_delayDone; // very tacky flag used to indicate when the post-play delay has been done
 };
@@ -698,12 +694,13 @@ PQUEUE(PVXMLQueue, PVXMLPlayable);
 
 class PVXMLChannel : public PDelayChannel
 {
-  PCLASSINFO(PVXMLChannel, PDelayChannel);
-  public:
+    PCLASSINFO(PVXMLChannel, PDelayChannel);
+  protected:
     PVXMLChannel(unsigned frameDelay, PINDEX frameSize);
+  public:
     ~PVXMLChannel();
 
-    virtual PBoolean Open(PVXMLSession * session);
+    virtual bool Open(PVXMLSession * session, unsigned sampleRate, unsigned channels);
 
     // overrides from PIndirectChannel
     virtual PBoolean IsOpen() const;
@@ -712,8 +709,15 @@ class PVXMLChannel : public PDelayChannel
     virtual PBoolean Write(const void * buf, PINDEX len);
 
     // new functions
-    const PString & GetMediaFormat() const { return m_mediaFormat; }
-    PBoolean IsMediaPCM() const { return m_mediaFormat == VXML_PCM16; }
+    virtual PString GetAudioFormat() const = 0;
+    bool IsMediaPCM() const { return GetAudioFormat() == VXML_PCM16; }
+
+    virtual unsigned GetSampleRate() const = 0;
+    virtual bool SetSampleRate(unsigned rate) = 0;
+    virtual unsigned GetChannels() const = 0;
+    virtual bool SetChannels(unsigned channels) = 0;
+
+    virtual PString GetMediaFileSuffix() const;
     virtual PString AdjustMediaFilename(const PString & fn);
     virtual PChannel * OpenMediaFile(const PFilePath & fn, bool recording);
 
@@ -746,17 +750,10 @@ class PVXMLChannel : public PDelayChannel
     virtual PBoolean IsPlaying() const { return m_currentPlayItem != NULL || m_playQueue.GetSize() > 0; }
 
     void SetPause(PBoolean pause) { m_paused = pause; }
-
-    unsigned GetSampleFrequency() const { return m_sampleFrequency; }
-
     void SetSilence(unsigned msecs);
 
   protected:
     PVXMLSession * m_vxmlSession;
-
-    unsigned m_sampleFrequency;
-    PString  m_mediaFormat;
-    PString  m_mediaFilePrefix;
 
     PDECLARE_MUTEX(m_recordingMutex);
     PDECLARE_MUTEX(m_playQueueMutex);
