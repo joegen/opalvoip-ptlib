@@ -484,7 +484,7 @@ LONG WINAPI PExceptionHandler(PEXCEPTION_POINTERS info)
   string msg = strm.str();
 
   if (PProcess::Current().IsServiceProcess())
-    PSYSTEMLOG(Fatal, msg);
+    PSYSTEMLOG(Fatal, "Caught Exception: " << msg);
   else {
     if (PProcess::Current().IsGUIProcess()) {
       PVarString boxMsg = msg;
