@@ -89,6 +89,7 @@ They are usually in the output directory of the build, e.g. out.gn\x64.release
 #include <iomanip>
 
 #define V8_DEPRECATION_WARNINGS 1
+#define V8_IMMINENT_DEPRECATION_WARNINGS 1
 #include <v8.h>
 
 #ifndef V8_MAJOR_VERSION
@@ -171,7 +172,7 @@ PFACTORY_CREATE(PFactory<PScriptLanguage>, PJavaScript, JavaName, false);
       if (!args[0]->IsUint32())
         return;
 
-      unsigned level = args[0]->Uint32Value();
+      unsigned level = args[0]->Uint32Value(args.GetIsolate()->GetCurrentContext()).FromMaybe(UINT_MAX);
       if (!PTrace::CanTrace(level))
         return;
 
@@ -217,19 +218,25 @@ struct PJavaScript::Private : PObject
   v8::Isolate               * m_isolate;
   v8::Persistent<v8::Context> m_context;
 
-  v8::Local<v8::String> NewString(const char * str) const { return v8::String::NewFromUtf8(m_isolate, str); }
-  template <class Type, typename Param> v8::Handle<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
+  v8::Local<v8::String> NewString(const char * str) const
+  {
+    v8::Local<v8::String> obj;
+    if (!v8::String::NewFromUtf8(m_isolate, str, v8::NewStringType::kNormal).ToLocal(&obj))
+      obj = v8::String::Empty(m_isolate);
+    return obj;
+  }
+
+  template <class Type, typename Param> v8::Local<v8::Value> NewObject(Param param) const { return Type::New(m_isolate, param); }
   v8::Local<v8::Context> GetContext() const { return v8::Local<v8::Context>::New(m_isolate, m_context); }
   template <typename T> PString ToPString(const T & value) { return *v8::String::Utf8Value(m_isolate, value);  }
 
   struct Intialisation
   {
-    v8::Platform * m_platform;
-    bool           m_initialised;
+    unique_ptr<v8::Platform> m_platform;
+    bool m_initialised;
 
     Intialisation()
-      : m_platform(NULL)
-      , m_initialised(false)
+      : m_initialised(false)
     {
       PDirectory exeDir = PProcess::Current().GetFile().GetDirectory();
 
@@ -255,8 +262,8 @@ struct PJavaScript::Private : PObject
       }
 
       // Start it up!
-      m_platform = v8::platform::CreateDefaultPlatform();
-      v8::V8::InitializePlatform(m_platform);
+      m_platform = v8::platform::NewDefaultPlatform();
+      v8::V8::InitializePlatform(m_platform.get());
 
       if (!v8::V8::Initialize()) {
         PTRACE(1, PTraceModule(), "v8::V8::Initialize() failed, not loaded.");
@@ -272,7 +279,6 @@ struct PJavaScript::Private : PObject
       PTRACE(4, PTraceModule(), "V8 shutdown.");
       v8::V8::Dispose();
       v8::V8::ShutdownPlatform();
-      delete m_platform;
     }
   };
 
@@ -314,7 +320,7 @@ public:
     m_isolate->SetEventLogger(LogEventCallback);
 
     // Bind the global 'PTRACE' function to the PTLib trace callback.
-    v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
+    v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(m_isolate);
     global->Set(NewString("PTRACE"), v8::FunctionTemplate::New(m_isolate, TraceFunction));
 
     m_context.Reset(m_isolate, v8::Context::New(m_isolate, NULL, global));
@@ -336,22 +342,28 @@ public:
   }
 
 
-  v8::Handle<v8::Value> GetMember(v8::Handle<v8::Object> object, const PString & name)
+  v8::Local<v8::Value> GetMember(v8::Local<v8::Context> context,
+                                 v8::Local<v8::Object> object,
+                                 const PString & name)
   {
     if (object.IsEmpty())
-      return v8::Handle<v8::Value>();
+      return v8::Local<v8::Value>();
 
-    return name[0] != '[' ? object->Get(NewString(name)) : object->Get(name.Mid(1).AsInteger());
+    v8::MaybeLocal<v8::Value> result = name[0] != '[' ? object->Get(context, NewString(name))
+                                                      : object->Get(context, name.Mid(1).AsInteger());
+    return result.FromMaybe(v8::Local<v8::Value>());
   }
   
   
-  bool SetMember(v8::Handle<v8::Object> object,
+  bool SetMember(v8::Local<v8::Context> context,
+                 v8::Local<v8::Object> object,
                  const PString & name,
-                 v8::Handle<v8::Value> value
+                 v8::Local<v8::Value> value
                  PTRACE_PARAM(, const PString & key))
   {
-    if (name[0] != '[' ? object->Set(NewString(name), value)
-                       : object->Set(name.Mid(1).AsUnsigned(), value))
+    v8::Maybe<bool> result = name[0] != '[' ? object->Set(context, NewString(name), value)
+                                            : object->Set(context, name.Mid(1).AsUnsigned(), value);
+    if (result.FromMaybe(false))
     {
       PTRACE(5, "Set \"" << key << "\" to " << ToPString(value).Left(100).ToLiteral());
       return true;
@@ -362,12 +374,12 @@ public:
   }
 
 
-  v8::Handle<v8::Object> GetObjectHandle(const v8::Local<v8::Context> & context, const PString & key, PString & var)
+  v8::Local<v8::Object> GetObjectHandle(const v8::Local<v8::Context> & context, const PString & key, PString & var)
   {
     PStringArray tokens = key.Tokenise('.', false);
     if (tokens.GetSize() < 1) {
       PTRACE(3, "SetVar \"" << key << "\" is too short");
-      return v8::Handle<v8::Object>();
+      return v8::Local<v8::Object>();
     }
 
     for (PINDEX i = 0; i < tokens.GetSize(); ++i) {
@@ -386,12 +398,12 @@ public:
       }
     }
 
-    v8::Handle<v8::Object> object = context->Global();
+    v8::Local<v8::Object> object = context->Global();
 
     PINDEX i;
     for (i = 0; i < tokens.GetSize()-1; ++i) {
       // get the member variable
-      v8::Handle<v8::Value> value = GetMember(object, tokens[i]);
+      v8::Local<v8::Value> value = GetMember(context, object, tokens[i]);
       if (value.IsEmpty()) {
         PTRACE(3, "Cannot get element \"" << tokens[i] << '"');
         object.Clear();
@@ -399,8 +411,7 @@ public:
       }
 
       // if path has ended, return error
-      object = value->ToObject();
-      if (object.IsEmpty()) {
+      if (!value->ToObject(context).ToLocal(&object) || object.IsEmpty()) {
         PTRACE(3, "Intermediate element \"" << tokens[i] << "\" not found");
         object.Clear();
         break;
@@ -420,7 +431,10 @@ public:
   }
 
 
-  bool GetVarValue(v8::Handle<v8::Value> value, PVarType & var PTRACE_PARAM(, const PString & key))
+  bool GetVarValue(const v8::Local<v8::Context> & context,
+                   v8::Local<v8::Value> value,
+                   PVarType & var
+                   PTRACE_PARAM(, const PString & key))
   {
     if (value.IsEmpty()) {
       PTRACE(3, "Cannot get value for \"" << key << '"');
@@ -428,31 +442,31 @@ public:
     }
 
     if (value->IsInt32()) {
-      var = PVarType(value->Int32Value());
+      var = PVarType(value->Int32Value(context).FromMaybe(0));
       PTRACE(5, "Got Int32 \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsUint32()) {
-      var = PVarType(value->Uint32Value());
+      var = PVarType(value->Uint32Value(context).FromMaybe(0));
       PTRACE(5, "Got Uint32 \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsNumber()) {
-      var = PVarType(value->NumberValue());
+      var = PVarType(value->NumberValue(context).FromMaybe(0.0));
       PTRACE(5, "Got Number \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsBoolean()) {
-      var = PVarType(value->BooleanValue());
+      var = PVarType(value->BooleanValue(context).FromMaybe(false));
       PTRACE(5, "Got Boolean \"" << key << "\" = " << var);
       return true;
     }
 
     if (value->IsString()) {
-      var = PVarType(ToPString(value->ToString()));
+      var = PVarType(ToPString(value->ToString(context).FromMaybe(v8::Local<v8::String>())));
       PTRACE(5, "Got String \"" << key << "\" = " << var.AsString().Left(100).ToLiteral());
       return true;
     }
@@ -474,8 +488,8 @@ public:
     v8::Context::Scope contextScope(context);
 
     PString varName;
-    v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
-    return !object.IsEmpty() && GetVarValue(GetMember(object, varName), var PTRACE_PARAM(, key));
+    v8::Local<v8::Object> object = GetObjectHandle(context, key, varName);
+    return !object.IsEmpty() && GetVarValue(context, GetMember(context, object, varName), var PTRACE_PARAM(, key));
   }
 
 
@@ -485,11 +499,11 @@ public:
   }
 
 
-  v8::Handle<v8::Value> SetVarValue(const PVarType & var)
+  v8::Local<v8::Value> SetVarValue(const PVarType & var)
   {
     switch (var.GetType()) {
       case PVarType::VarNULL:
-        return v8::Handle<v8::Value>();
+        return v8::Local<v8::Value>();
 
       case PVarType::VarBoolean:
         return NewObject<v8::Boolean>(var.AsBoolean());
@@ -540,8 +554,8 @@ public:
     v8::Context::Scope contextScope(context);
 
     PString varName;
-    v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
-    return !object.IsEmpty() && SetMember(object, varName, SetVarValue(var) PTRACE_PARAM(, key));
+    v8::Local<v8::Object> object = GetObjectHandle(context, key, varName);
+    return !object.IsEmpty() && SetMember(context, object, varName, SetVarValue(var) PTRACE_PARAM(, key));
   }
 
 
@@ -563,7 +577,7 @@ public:
     int nargs = callbackInfo.Length();
     signature.m_arguments.resize(nargs);
     for (int arg = 0; arg < nargs; ++arg)
-      GetVarValue(callbackInfo[arg], signature.m_arguments[arg] PTRACE_PARAM(, notifierInfo.m_key));
+      GetVarValue(GetContext(), callbackInfo[arg], signature.m_arguments[arg] PTRACE_PARAM(, notifierInfo.m_key));
 
     notifierInfo.m_notifiers(notifierInfo.m_owner, signature);
 
@@ -592,7 +606,7 @@ public:
     v8::Context::Scope contextScope(context);
 
     PString varName;
-    v8::Handle<v8::Object> object = GetObjectHandle(context, key, varName);
+    v8::Local<v8::Object> object = GetObjectHandle(context, key, varName);
     if (object.IsEmpty())
       return false;
 
@@ -603,9 +617,10 @@ public:
     info.m_notifiers.Add(notifier);
 
     v8::Local<v8::External> data = v8::External::New(m_isolate, &info);
-    v8::Handle<v8::Value> value = v8::Function::New(m_isolate, StaticFunctionCallback, data);
-
-    if (object->Set(NewString(varName), value)) {
+    v8::Local<v8::Function> value;
+    if (v8::Function::New(context, StaticFunctionCallback, data).ToLocal(&value) &&
+        object->Set(context, NewString(varName), value).FromMaybe(false))
+    {
       PTRACE(5, "Set function \"" << varName << '"');
       return true;
     }
@@ -636,7 +651,7 @@ public:
     }
 
     // run the code
-    v8::Handle<v8::Value> result;
+    v8::Local<v8::Value> result;
     if (!script->Run(context).ToLocal(&result)) {
       PTRACE(3, "Script execution did not return a result.");
       return false;
@@ -733,9 +748,7 @@ bool PJavaScript::SetVar(const PString & key, const PVarType & var)
 bool PJavaScript::GetBoolean(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return false;
-  return var.AsBoolean();
+  return GetVar(name, var) && var.AsBoolean();
 }
 
 
@@ -749,15 +762,12 @@ bool PJavaScript::SetBoolean(const PString & name, bool value)
 int PJavaScript::GetInteger(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return 0;
-  return var.AsInteger();
+  return GetVar(name, var) ? var.AsInteger() : 0;
 }
 
 
 bool PJavaScript::SetInteger(const PString & name, int value)
 {
-  PVarType var(value);
   return SetVar(name, value);
 }
 
@@ -765,15 +775,12 @@ bool PJavaScript::SetInteger(const PString & name, int value)
 double PJavaScript::GetNumber(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return 0.0;
-  return var.AsFloat();
+  return GetVar(name, var) ? var.AsFloat() : 0.0;
 }
 
 
 bool PJavaScript::SetNumber(const PString & name, double value)
 {
-  PVarType var(value);
   return SetVar(name, value);
 }
 
@@ -781,15 +788,12 @@ bool PJavaScript::SetNumber(const PString & name, double value)
 PString PJavaScript::GetString(const PString & name)
 {
   PVarType var;
-  if (!GetVar(name, var))
-    return PString::Empty();
-  return var.AsString();
+  return GetVar(name, var) ? var.AsString() : PString::Empty();
 }
 
 
 bool PJavaScript::SetString(const PString & name, const char * value)
 {
-  PVarType var(value);
   return SetVar(name, value);
 }
 
