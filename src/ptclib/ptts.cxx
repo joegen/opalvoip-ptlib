@@ -78,8 +78,11 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     PStringArray GetVoiceList();
     PBoolean SetVoice(const PString & voice);
 
-    PBoolean SetRate(unsigned rate);
-    unsigned GetRate();
+    PBoolean SetSampleRate(unsigned rate);
+    unsigned GetSampleRate();
+
+    PBoolean SetChannels(unsigned channels);
+    unsigned GetChannels();
 
     PBoolean SetVolume(unsigned volume);
     unsigned GetVolume();
@@ -95,6 +98,7 @@ class PTextToSpeech_SAPI : public PTextToSpeech
     CComPtr<ISpVoice>  m_cpVoice;
     CComPtr<ISpStream> m_cpWavStream;
     bool               m_opened;
+    SPSTREAMFORMAT     m_spsfFormat;
     PString            m_CurrentVoice;
 };
 
@@ -106,6 +110,7 @@ PFACTORY_CREATE(PFactory<PTextToSpeech>, PTextToSpeech_SAPI, "Microsoft SAPI", f
 
 PTextToSpeech_SAPI::PTextToSpeech_SAPI()
   : m_opened(false)
+  , m_spsfFormat(SPSF_8kHz16BitMono)
 {
   PThread::Current()->CoInitialise();
   PTRACE(4, "Constructed " << this);
@@ -136,7 +141,7 @@ PBoolean PTextToSpeech_SAPI::OpenFile(const PFilePath & fn)
   }
 
   CSpStreamFormat wavFormat;
-  wavFormat.AssignFormat(SPSF_8kHz16BitMono);
+  wavFormat.AssignFormat(m_spsfFormat);
 
   PWideString wfn = fn;
   hr = SPBindToFile(wfn, SPFM_CREATE_ALWAYS, &m_cpWavStream, &wavFormat.FormatId(), wavFormat.WaveFormatExPtr()); 
@@ -242,13 +247,191 @@ PBoolean PTextToSpeech_SAPI::SetVoice(const PString & voice)
   return true;
 }
 
-PBoolean PTextToSpeech_SAPI::SetRate(unsigned)
+
+PBoolean PTextToSpeech_SAPI::SetSampleRate(unsigned rate)
 {
+  switch (rate) {
+    case 8000 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_8kHz16BitStereo : SPSF_8kHz16BitMono;
+      return true;
+    case 11000 :
+    case 11025 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_11kHz16BitStereo : SPSF_11kHz16BitMono;
+      return true;
+    case 12000 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_12kHz16BitStereo : SPSF_12kHz16BitMono;
+      return true;
+    case 16000 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_16kHz16BitStereo : SPSF_16kHz16BitMono;
+      return true;
+    case 22000 :
+    case 22050 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_22kHz16BitStereo : SPSF_22kHz16BitMono;
+      return true;
+    case 24000 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_24kHz16BitStereo : SPSF_24kHz16BitMono;
+      return true;
+    case 32000 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_32kHz16BitStereo : SPSF_32kHz16BitMono;
+      return true;
+    case 44000 :
+    case 44100 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_44kHz16BitStereo : SPSF_44kHz16BitMono;
+      return true;
+    case 48000 :
+      m_spsfFormat = GetChannels() > 1 ? SPSF_8kHz16BitStereo : SPSF_48kHz16BitMono;
+      return true;
+  }
   return false;
 }
 
-unsigned PTextToSpeech_SAPI::GetRate()
+unsigned PTextToSpeech_SAPI::GetSampleRate()
 {
+  switch (m_spsfFormat) {
+    case SPSF_8kHz16BitMono :
+    case SPSF_8kHz16BitStereo :
+      return 8000;
+    case SPSF_11kHz16BitMono :
+    case SPSF_11kHz16BitStereo :
+      return 11025;
+    case SPSF_12kHz16BitMono :
+    case SPSF_12kHz16BitStereo :
+      return 12000;
+    case SPSF_16kHz16BitMono :
+    case SPSF_16kHz16BitStereo :
+      return 16000;
+    case SPSF_22kHz16BitMono :
+    case SPSF_22kHz16BitStereo :
+      return 22050;
+    case SPSF_24kHz16BitMono :
+    case SPSF_24kHz16BitStereo :
+      return 24000;
+    case SPSF_32kHz16BitMono :
+    case SPSF_32kHz16BitStereo :
+      return 32000;
+    case SPSF_44kHz16BitMono :
+    case SPSF_44kHz16BitStereo :
+      return 44100;
+    case SPSF_48kHz16BitMono :
+    case SPSF_48kHz16BitStereo :
+      return 48000;
+  }
+  return 0;
+}
+
+PBoolean PTextToSpeech_SAPI::SetChannels(unsigned channels)
+{
+  switch (channels) {
+    case 1:
+      switch (m_spsfFormat) {
+        case SPSF_8kHz16BitMono :
+        case SPSF_11kHz16BitMono :
+        case SPSF_12kHz16BitMono :
+        case SPSF_16kHz16BitMono :
+        case SPSF_22kHz16BitMono :
+        case SPSF_24kHz16BitMono :
+        case SPSF_32kHz16BitMono :
+        case SPSF_44kHz16BitMono :
+        case SPSF_48kHz16BitMono :
+          return true;
+        case SPSF_8kHz16BitStereo :
+          m_spsfFormat = SPSF_8kHz16BitMono;
+          return true;
+        case SPSF_11kHz16BitStereo :
+          m_spsfFormat = SPSF_11kHz16BitMono;
+          return true;
+        case SPSF_12kHz16BitStereo :
+          m_spsfFormat = SPSF_12kHz16BitMono;
+          return true;
+        case SPSF_16kHz16BitStereo :
+          m_spsfFormat = SPSF_16kHz16BitMono;
+          return true;
+        case SPSF_22kHz16BitStereo :
+          m_spsfFormat = SPSF_22kHz16BitMono;
+          return true;
+        case SPSF_24kHz16BitStereo :
+          m_spsfFormat = SPSF_24kHz16BitMono;
+          return true;
+        case SPSF_32kHz16BitStereo :
+          m_spsfFormat = SPSF_16kHz16BitMono;
+          return true;
+        case SPSF_44kHz16BitStereo :
+          m_spsfFormat = SPSF_44kHz16BitMono;
+          return true;
+        case SPSF_48kHz16BitStereo :
+          m_spsfFormat = SPSF_48kHz16BitMono;
+          return true;
+      }
+      break;
+
+    case 2:
+      switch (m_spsfFormat) {
+        case SPSF_8kHz16BitMono :
+          m_spsfFormat = SPSF_8kHz16BitStereo;
+          return true;
+        case SPSF_11kHz16BitMono :
+          m_spsfFormat = SPSF_11kHz16BitStereo;
+          return true;
+        case SPSF_12kHz16BitMono :
+          m_spsfFormat = SPSF_12kHz16BitStereo;
+          return true;
+        case SPSF_16kHz16BitMono :
+          m_spsfFormat = SPSF_16kHz16BitStereo;
+          return true;
+        case SPSF_22kHz16BitMono :
+          m_spsfFormat = SPSF_22kHz16BitStereo;
+          return true;
+        case SPSF_24kHz16BitMono :
+          m_spsfFormat = SPSF_24kHz16BitStereo;
+          return true;
+        case SPSF_32kHz16BitMono :
+          m_spsfFormat = SPSF_32kHz16BitStereo;
+          return true;
+        case SPSF_44kHz16BitMono :
+          m_spsfFormat = SPSF_44kHz16BitStereo;
+          return true;
+        case SPSF_48kHz16BitMono :
+          m_spsfFormat = SPSF_48kHz16BitStereo;
+          return true;
+        case SPSF_8kHz16BitStereo :
+        case SPSF_11kHz16BitStereo :
+        case SPSF_12kHz16BitStereo :
+        case SPSF_16kHz16BitStereo :
+        case SPSF_22kHz16BitStereo :
+        case SPSF_24kHz16BitStereo :
+        case SPSF_32kHz16BitStereo :
+        case SPSF_44kHz16BitStereo :
+        case SPSF_48kHz16BitStereo :
+          return true;
+      }
+  }
+  return false;
+}
+
+unsigned PTextToSpeech_SAPI::GetChannels()
+{
+  switch (m_spsfFormat) {
+    case SPSF_8kHz16BitMono :
+    case SPSF_11kHz16BitMono :
+    case SPSF_12kHz16BitMono :
+    case SPSF_16kHz16BitMono :
+    case SPSF_22kHz16BitMono :
+    case SPSF_24kHz16BitMono :
+    case SPSF_32kHz16BitMono :
+    case SPSF_44kHz16BitMono :
+    case SPSF_48kHz16BitMono :
+      return 1;
+    case SPSF_8kHz16BitStereo :
+    case SPSF_11kHz16BitStereo :
+    case SPSF_12kHz16BitStereo :
+    case SPSF_16kHz16BitStereo :
+    case SPSF_22kHz16BitStereo :
+    case SPSF_24kHz16BitStereo :
+    case SPSF_32kHz16BitStereo :
+    case SPSF_44kHz16BitStereo :
+    case SPSF_48kHz16BitStereo :
+      return 2;
+  }
   return 0;
 }
 
@@ -285,8 +468,11 @@ class PTextToSpeech_Festival : public PTextToSpeech
     PStringArray GetVoiceList();
     PBoolean SetVoice(const PString & voice);
 
-    PBoolean SetRate(unsigned rate);
-    unsigned GetRate();
+    PBoolean SetSampleRate(unsigned rate);
+    unsigned GetSampleRate();
+
+    PBoolean SetChannels(unsigned channels);
+    unsigned GetChannels();
 
     PBoolean SetVolume(unsigned volume);
     unsigned GetVolume();
@@ -466,16 +652,28 @@ PBoolean PTextToSpeech_Festival::SetVoice(const PString & v)
 }
 
 
-PBoolean PTextToSpeech_Festival::SetRate(unsigned v)
+PBoolean PTextToSpeech_Festival::SetSampleRate(unsigned v)
 {
   m_sampleRate = v;
   return true;
 }
 
 
-unsigned PTextToSpeech_Festival::GetRate()
+unsigned PTextToSpeech_Festival::GetSampleRate()
 {
   return m_sampleRate;
+}
+
+
+PBoolean PTextToSpeech_Festival::SetChannels(unsigned v)
+{
+  return v == 1;
+}
+
+
+unsigned PTextToSpeech_Festival::GetChannels()
+{
+  return 1;
 }
 
 

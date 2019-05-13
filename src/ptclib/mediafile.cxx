@@ -853,7 +853,7 @@ public:
 
         av_dict_free(&options);
 
-        PTRACE_IF(4, m_codecOpened, m_owner, "Codec opened");
+        PTRACE_IF(4, m_codecOpened, m_owner, "Codec opened: " << m_codecInfo->long_name);
         return m_codecOpened;
       }
 
@@ -1128,8 +1128,8 @@ public:
       }
 
 
-      bool CreateResampler(AVSampleFormat inFormat, int inRate, int inChannels,
-                         AVSampleFormat outFormat, int outRate, int outChannels)
+      bool CreateResampler(AVSampleFormat  inFormat, int  inRate, int  inChannels,
+                           AVSampleFormat outFormat, int outRate, int outChannels)
       {
           m_swrContext = swr_alloc_set_opts(NULL,
                                             av_get_default_channel_layout(outChannels),
@@ -1147,13 +1147,16 @@ public:
           if (CHECK_ERROR_TRK(swr_init, (m_swrContext)))
             return false;
 
-          PTRACE(4, m_owner, "Created resampler");
+          PTRACE(4, m_owner, "Created resampler: " << inChannels << 'x' << inRate << "->" << outChannels << 'x' << outRate);
           return true;
       }
 
 
       bool ConfigureAudio(unsigned channels, unsigned sampleRate)
       {
+        if (!PAssert(channels > 0 && sampleRate > 0, PInvalidParameter))
+          return false;
+
         if (m_codecOpened) {
           PTRACE(2, m_owner, "Cannot configure audio once reading/writing commenced.");
           return false;
@@ -1161,6 +1164,7 @@ public:
 
         m_pcmSampleRate = sampleRate;
         m_pcmChannels = channels;
+        PTRACE(4, m_owner, "Configured audio output: rate=" << sampleRate << ", channels=" << channels);
         return true;
       }
 
@@ -1171,16 +1175,19 @@ public:
           return false;
 
         if (!m_codecOpened) {
+          if (m_pcmSampleRate == 0 || m_pcmChannels == 0)
+            ConfigureAudio(2, 48000);
+
           m_codecContext->request_sample_fmt = AV_SAMPLE_FMT_S16;
           if (!OpenCodec())
             return false;
 
           if (!CreateResampler(m_codecContext->sample_fmt, m_codecContext->sample_rate, m_codecContext->channels,
-                               AV_SAMPLE_FMT_S16, m_frame->sample_rate, m_frame->channels))
+                               AV_SAMPLE_FMT_S16, m_pcmSampleRate, m_pcmChannels))
             return false;
         }
 
-        int requestedSamples = size/m_frame->channels/2;
+        int requestedSamples = size/m_pcmChannels/2;
 
         if (swr_get_out_samples(m_swrContext, 0) < requestedSamples) {
           if (!ReadAndDecodeFrame())
@@ -1194,7 +1201,7 @@ public:
           return false;
 
         m_audioSamples += convertedSamples;
-        length = convertedSamples*m_frame->channels*2;
+        length = convertedSamples*m_pcmChannels*2;
         PTRACE(m_audioThrottle, m_owner, "Read audio: samples=" << convertedSamples << ", ts=" << m_audioSamples);
         return true;
       }
@@ -1256,6 +1263,9 @@ public:
           return false;
 
         if (!m_codecOpened) {
+          if (m_pcmSampleRate == 0 || m_pcmChannels == 0)
+            ConfigureAudio(2, 48000);
+
           m_codecContext->request_sample_fmt = AV_SAMPLE_FMT_S16;
           if (!OpenCodec())
             return false;
@@ -1272,13 +1282,14 @@ public:
 
           m_frame->format = m_codecContext->sample_fmt;
           m_frame->sample_rate = m_codecContext->sample_rate;
+          m_frame->channels = m_codecContext->channels;
           m_frame->channel_layout = m_codecContext->channel_layout;
           m_frame->nb_samples = m_codecContext->frame_size*m_codecContext->channels;
           if (CHECK_ERROR_TRK(av_frame_get_buffer, (m_frame, 0)))
               return false;
         }
 
-        int suppliedSamples = length / m_frame->channels / 2;
+        int suppliedSamples = length/m_pcmChannels/2;
         int ouputSampleCount = (int)av_rescale_rnd(suppliedSamples, m_codecContext->sample_rate, m_pcmSampleRate, AV_ROUND_UP);
 
         if (m_swrFrame == NULL || m_swrFrame->nb_samples < ouputSampleCount*m_codecContext->channels) {
@@ -1306,7 +1317,7 @@ public:
         if (!FlushAudio())
           return false;
 
-        written = suppliedSamples*m_frame->channels*2;
+        written = suppliedSamples*m_pcmChannels*2;
 
         PTRACE(m_audioThrottle, m_owner, "Write audio: in-samp=" << suppliedSamples << ", out-samp=" << m_frame->nb_samples << ", ts=" << m_audioSamples);
         return true;

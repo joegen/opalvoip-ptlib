@@ -40,6 +40,8 @@ void VxmlTest::Main()
   PArgList & args = GetArguments();
   if (!args.Parse("-sound-driver: Output to sound driver\n"
                   "S-sound-device: Output to sound device\n"
+                  "-sound-rate: Output to sound sample rate\n"
+                  "-sound-channels: Output to sound channels\n"
                   "T-tts: Text to speech method\n"
                   "c-cache: Text to speech cache directory\n"
 #if P_VXML_VIDEO
@@ -72,7 +74,7 @@ void VxmlTest::Main()
     m_tests.push_back(TestInstance());
     if (!m_tests.back().Initialise(m_tests.size(), args))
       m_tests.pop_back();
-  } while (args.Parse("-sound-driver:S-sound-device:T-tts:"
+  } while (args.Parse("-sound-driver:S-sound-device::-sound-rate:-sound-channels:T-tts:"
 #if P_VXML_VIDEO
                       "V-video."
                       "-input-driver:I-input-device:C-input-channel:"
@@ -157,6 +159,10 @@ bool TestInstance::Initialise(unsigned instance, const PArgList & args)
   audioParams.m_direction = PSoundChannel::Player;
   audioParams.m_driver = args.GetOptionString("sound-driver");
   audioParams.m_device = args.GetOptionString("sound-device");
+  if (args.HasOption("sound-rate"))
+    audioParams.m_sampleRate = args.GetOptionString("sound-rate").AsUnsigned();
+  if (args.HasOption("sound-channels"))
+    audioParams.m_channels = args.GetOptionString("sound-channels").AsUnsigned();
   m_player = PSoundChannel::CreateOpenedChannel(audioParams);
   if (m_player == NULL) {
     cerr << "Instance " << m_instance << " error: cannot open sound device \"" << audioParams.m_device << "\"" << endl;
@@ -218,7 +224,7 @@ bool TestInstance::Initialise(unsigned instance, const PArgList & args)
   if (args.HasOption('C'))
     m_vxml->GetCache().SetDirectory(args.GetOptionString('C'));
 
-  if (!m_vxml->Open(VXML_PCM16)) {
+  if (!m_vxml->Open(VXML_PCM16, audioParams.m_sampleRate, audioParams.m_channels)) {
     cerr << "Instance " << m_instance << " error: cannot open VXML device in PCM mode" << endl;
     return false;
   }
