@@ -949,7 +949,10 @@ void PHTTPListener::Worker::Work()
     return;
   }
   m_httpServer->SetServiceStartTime(m_queuedTime);
+
+  m_listener.m_httpServersMutex.Wait();
   m_listener.m_httpServers.Append(m_httpServer); // Deleted in this list
+  m_listener.m_httpServersMutex.Signal();
 
   PChannel * channel = m_listener.CreateChannelForHTTP(m_socket);
   if (channel == NULL) {
@@ -960,6 +963,7 @@ void PHTTPListener::Worker::Work()
 
   if (!m_httpServer->Open(channel)) {
     PTRACE(2, "Open failed" << socketInfo);
+    delete channel;
     return;
   }
 
