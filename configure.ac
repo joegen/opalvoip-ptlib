@@ -1896,33 +1896,34 @@ dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_RELEASE32,icuuc.lib,out.gn/ia32.release/...
 dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_DEBUG64,icuuc.lib,out.gn/x64.debug/...
 dnl MSWIN_FIND_FILE  v8,P_V8_ICUUC_RELEASE64,icuuc.lib,out.gn/x64.release/...
 
+oldCXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS $CPLUSPLUS_STD"
+ 
+AS_VAR_IF([target_os], [Darwin],
+   [
+      V8_EXTRA_CFLAGS="-I/usr/local/include/node"
+      V8_EXTRA_LIBS="-lv8_libplatform -lv8_libbase"
+   ]
+)
+
 PTLIB_MODULE_OPTION(
    [V8],
    [v8],
    [V8 Javascript script support],
    [v8],
-   [],
-   [-lv8_base -lv8_libbase -lv8_libplatform -lv8_snapshot],
-   [#include <v8.h>],
+   [$V8_EXTRA_CFLAGS],
+   [-lv8 $V8_EXTRA_LIBS],
+   [
+      #include <v8.h>
+      #include <libplatform/libplatform.h>
+   ],
    [
       int ver = V8_MAJOR_VERSION;
-      v8::V8::Initialize();
-   ],
-   [],
-   [PTLIB_MODULE_OPTION(
-      [V8],
-      [v8],
-      [V8 Javascript script support],
-      [v8],
-      [],
-      [-lv8],
-      [#include <v8.h>],
-      [
-         int ver = V8_MAJOR_VERSION;
-         v8::V8::Initialize();
-      ]
-   )]
+      v8::platform::CreateDefaultPlatform();
+   ]
 )
+ 
+CXXFLAGS="$oldCXXFLAGS"
 
 
 dnl ########################################################################
