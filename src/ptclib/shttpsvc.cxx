@@ -125,7 +125,7 @@ PChannel * PSecureHTTPServiceProcess::CreateChannelForHTTP(PChannel * channel)
     return PHTTPServiceProcess::CreateChannelForHTTP(channel);
 
   PSSLChannel * ssl = new HTTP_PSSLChannel(this, m_sslContext);
-  if (ssl->Accept(channel, false))
+  if (ssl->Accept(channel))
     return ssl;
 
   PSYSTEMLOG(Error, "Accept failed: " << ssl->GetErrorText());
