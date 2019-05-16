@@ -1319,9 +1319,7 @@ bool PWebSocket::Connect(const PURL & url, const PStringArray & protocols, PStri
   http->SetSSLCredentials(m_authority, m_certificate, m_privateKey);
 
   // Before starting up, make sure underlying socket is closed, so reconnects
-  PChannel * base = http->GetBaseReadChannel();
-  if (base != NULL)
-    base->Close();
+  http->CloseBaseReadChannel();
 
   PString key = PBase64::Encode(PRandom::Octets(16));
   PMIMEInfo outMIME, replyMIME;

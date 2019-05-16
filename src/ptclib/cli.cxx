@@ -145,9 +145,7 @@ bool PCLI::Context::Start()
 void PCLI::Context::Stop()
 {
   // Close this way in case we are inside a ^C interrupt
-  PChannel * base = GetBaseReadChannel();
-  if (base != NULL)
-    base->Close();
+  CloseBaseReadChannel();
   PThread::WaitAndDelete(m_thread);
 }
 
