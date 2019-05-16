@@ -521,6 +521,18 @@ PChannel * PChannel::GetBaseWriteChannel() const
 }
 
 
+bool PChannel::CloseBaseReadChannel()
+{
+  return Close();
+}
+
+
+bool PChannel::CloseBaseWriteChannel()
+{
+  return Close();
+}
+
+
 PChannel::Errors PChannel::GetErrorCode(ErrorGroup group) const
 {
   return m_status[group]->m_lastErrorCode;
@@ -944,6 +956,20 @@ PChannel * PIndirectChannel::GetBaseWriteChannel() const
 {
   PReadWaitAndSignal mutex(channelPointerMutex);
   return writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : 0;
+}
+
+
+bool PIndirectChannel::CloseBaseReadChannel()
+{
+  PReadWaitAndSignal mutex(channelPointerMutex);
+  return readChannel != NULL && readChannel->CloseBaseReadChannel();
+}
+
+
+bool PIndirectChannel::CloseBaseWriteChannel()
+{
+  PReadWaitAndSignal mutex(channelPointerMutex);
+  return writeChannel != NULL && writeChannel->CloseBaseWriteChannel();
 }
 
 

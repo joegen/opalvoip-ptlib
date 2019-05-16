@@ -205,6 +205,24 @@ class PIndirectChannel : public PChannel
      */
     virtual PChannel * GetBaseWriteChannel() const;
 
+    /** Close the base channel of channel indirection using PIndirectChannel.
+       This function closes the eventual base channel for reading of a series
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
+
+       @return
+       Base channel was closed.
+     */
+    virtual bool CloseBaseReadChannel();
+
+    /** Close the base channel of channel indirection using PIndirectChannel.
+       This function closes the eventual base channel for writing of a series
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
+
+       @return
+       Base channel was closed.
+     */
+    virtual bool CloseBaseWriteChannel();
+
     /** Get error message description.
         Return a string indicating the error message that may be displayed to
        the user. The error for the last I/O operation in this object is used.

@@ -199,6 +199,24 @@ class PChannel : public PObject, public std::iostream
        Pointer to base I/O channel for the indirect channel.
      */
     virtual PChannel * GetBaseWriteChannel() const;
+
+    /** Close the base channel of channel indirection using PIndirectChannel.
+       This function closes the eventual base channel for reading of a series
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
+
+       @return
+       Base channel was closed.
+     */
+    virtual bool CloseBaseReadChannel();
+
+    /** Close the base channel of channel indirection using PIndirectChannel.
+       This function closes the eventual base channel for writing of a series
+       of indirect channels provided by descendents of <code>PIndirectChannel</code>.
+
+       @return
+       Base channel was closed.
+     */
+    virtual bool CloseBaseWriteChannel();
   //@}
 
   /**@name Error functions */
