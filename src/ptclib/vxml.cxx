@@ -629,13 +629,7 @@ bool PVXMLPlayableStop::OnStart()
 
 PBoolean PVXMLPlayableFile::Open(PVXMLChannel & chan, const PString & fn, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 {
-  m_filePath = chan.AdjustMediaFilename(fn);
-  if (!PFile::Exists(m_filePath)) {
-    PTRACE(2, "Playable file \"" << m_filePath << "\" not found.");
-    return false;
-  }
-
-  return PVXMLPlayable::Open(chan, fn, delay, repeat, autoDelete);
+  return chan.AdjustMediaFilename(fn, m_filePath) && PVXMLPlayable::Open(chan, fn, delay, repeat, autoDelete);
 }
 
 
@@ -694,15 +688,12 @@ PBoolean PVXMLPlayableFileList::Open(PVXMLChannel & chan, const PString & list, 
 PBoolean PVXMLPlayableFileList::Open(PVXMLChannel & chan, const PStringArray & list, PINDEX delay, PINDEX repeat, PBoolean autoDelete)
 {
   for (PINDEX i = 0; i < list.GetSize(); ++i) {
-    PString fn = chan.AdjustMediaFilename(list[i]);
-    if (PFile::Exists(fn))
+    PFilePath fn;
+    if (chan.AdjustMediaFilename(list[i], fn))
       m_fileNames.AppendString(fn);
-    else {
-      PTRACE(2, "Audio file \"" << fn << "\" does not exist.");
-    }
   }
 
-  if (m_fileNames.GetSize() == 0) {
+  if (m_fileNames.IsEmpty()) {
     PTRACE(2, "No files in list exist.");
     return false;
   }
@@ -3446,15 +3437,23 @@ PString PVXMLChannel::GetMediaFileSuffix() const
 }
 
 
-PString PVXMLChannel::AdjustMediaFilename(const PString & ofn)
+bool PVXMLChannel::AdjustMediaFilename(const PFilePath & ifn, PFilePath & ofn)
 {
-  PFilePath fn(ofn);
-  PFilePathString title = fn.GetTitle();
-  PString suffix = GetMediaFileSuffix();
-  if (title.Right(suffix.GetLength()) == suffix)
-    return fn;
+  PFilePathString title = ifn.GetTitle();
+  PFilePathString suffix = GetMediaFileSuffix();
+  if (suffix != title.Right(suffix.GetLength())) {
+    ofn = PSTRSTRM(ifn.GetDirectory() << title << suffix << ifn.GetType());
+    if (PFile::Exists(ofn))
+      return true;
+  }
 
-  return fn.GetDirectory() + title + suffix + fn.GetType();
+  if (PFile::Exists(ifn)) {
+    ofn = ifn;
+    return true;
+  }
+
+  PTRACE(2, "Playable file \"" << ifn << "\" not found.");
+  return false;
 }
 
 

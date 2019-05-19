@@ -718,7 +718,7 @@ class PVXMLChannel : public PDelayChannel
     virtual bool SetChannels(unsigned channels) = 0;
 
     virtual PString GetMediaFileSuffix() const;
-    virtual PString AdjustMediaFilename(const PString & fn);
+    virtual bool AdjustMediaFilename(const PFilePath & ifn, PFilePath & ofn);
     virtual PChannel * OpenMediaFile(const PFilePath & fn, bool recording);
 
     // Incoming channel functions
