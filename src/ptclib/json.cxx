@@ -34,6 +34,7 @@
 #include <ptclib/pjson.h>
 #include <ptclib/cypher.h>
 
+#include <tgmath.h>
 
 #define new PNEW
 #define PTraceModule() "JSON"
@@ -417,14 +418,28 @@ PString PJSON::Object::GetString(const PString & name) const
 int PJSON::Object::GetInteger(const PString & name) const
 {
   const Number * num = Get<Number>(name);
-  return num != NULL ? (int)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
+}
+
+
+int64_t PJSON::Object::GetInteger64(const PString & name) const
+{
+  const Number * num = Get<Number>(name);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
 }
 
 
 unsigned PJSON::Object::GetUnsigned(const PString & name) const
 {
   const Number * num = Get<Number>(name);
-  return num != NULL ? (unsigned)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
+}
+
+
+uint64_t PJSON::Object::GetUnsigned64(const PString & name) const
+{
+  const Number * num = Get<Number>(name);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
 }
 
 
@@ -614,14 +629,28 @@ PString PJSON::Array::GetString(size_t index) const
 int PJSON::Array::GetInteger(size_t index) const
 {
   const Number * num = Get<Number>(index);
-  return num != NULL ? (int)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
+}
+
+
+int64_t PJSON::Array::GetInteger64(size_t index) const
+{
+  const Number * num = Get<Number>(index);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
 }
 
 
 unsigned PJSON::Array::GetUnsigned(size_t index) const
 {
   const Number * num = Get<Number>(index);
-  return num != NULL ? (unsigned)num->GetValue() : 0;
+  return num != NULL ? lrintl(num->GetValue()) : 0;
+}
+
+
+uint64_t PJSON::Array::GetUnsigned64(size_t index) const
+{
+  const Number * num = Get<Number>(index);
+  return num != NULL ? llrintl(num->GetValue()) : 0;
 }
 
 
@@ -718,7 +747,7 @@ PJSON::Base * PJSON::String::DeepClone() const
 }
 
 
-PJSON::Number::Number(double value)
+PJSON::Number::Number(long double value)
   : m_value(value)
 {
 }
