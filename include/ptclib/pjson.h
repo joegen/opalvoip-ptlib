@@ -91,7 +91,9 @@ class PJSON : public PObject
 
         PString GetString(const PString & name) const;
         int GetInteger(const PString & name) const;
+        int64_t GetInteger64(const PString & name) const;
         unsigned GetUnsigned(const PString & name) const;
+        uint64_t GetUnsigned64(const PString & name) const;
         double GetNumber(const PString & name) const;
         bool GetBoolean(const PString & name) const;
 
@@ -130,7 +132,9 @@ class PJSON : public PObject
 
         PString GetString(size_t index) const;
         int GetInteger(size_t index) const;
+        int64_t GetInteger64(size_t index) const;
         unsigned GetUnsigned(size_t index) const;
+        uint64_t GetUnsigned64(size_t index) const;
         double GetNumber(size_t index) const;
         bool GetBoolean(size_t index) const;
 
@@ -163,16 +167,16 @@ class PJSON : public PObject
     class Number : public Base
     {
       protected:
-        double m_value;
+        long double m_value;
       public:
-        explicit Number(double value = 0);
+        explicit Number(long double value = 0);
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
         virtual Base * DeepClone() const;
-        Number & operator=(double value) { m_value = value; return *this; }
-        void SetValue(double value) { m_value = value; }
-        double GetValue() const { return m_value; }
+        Number & operator=(long double value) { m_value = value; return *this; }
+        void SetValue(long double value) { m_value = value; }
+        long double GetValue() const { return m_value; }
     };
 
     class Boolean : public Base
