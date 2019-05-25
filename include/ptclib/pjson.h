@@ -62,6 +62,8 @@ class PJSON : public PObject
 
     class Array;
 
+    typedef long double NumberType;
+
     class Object : public Base, public std::map<PString, Base *>
     {
       public:
@@ -94,7 +96,7 @@ class PJSON : public PObject
         int64_t GetInteger64(const PString & name) const;
         unsigned GetUnsigned(const PString & name) const;
         uint64_t GetUnsigned64(const PString & name) const;
-        double GetNumber(const PString & name) const;
+        NumberType GetNumber(const PString & name) const;
         bool GetBoolean(const PString & name) const;
 
         bool Set(const PString & name, Types type);
@@ -103,7 +105,7 @@ class PJSON : public PObject
         Object & SetObject(const PString & name);
         Array & SetArray(const PString & name);
         bool SetString(const PString & name, const PString & value);
-        bool SetNumber(const PString & name, double value);
+        bool SetNumber(const PString & name, NumberType value);
         bool SetBoolean(const PString & name, bool value);
 
       private:
@@ -135,7 +137,7 @@ class PJSON : public PObject
         int64_t GetInteger64(size_t index) const;
         unsigned GetUnsigned(size_t index) const;
         uint64_t GetUnsigned64(size_t index) const;
-        double GetNumber(size_t index) const;
+        NumberType GetNumber(size_t index) const;
         bool GetBoolean(size_t index) const;
 
         void Append(Types type);
@@ -144,7 +146,7 @@ class PJSON : public PObject
         Object & AppendObject();
         Array & AppendArray();
         void AppendString(const PString & value);
-        void AppendNumber(double value);
+        void AppendNumber(NumberType value);
         void AppendBoolean(bool value);
 
       private:
@@ -167,16 +169,16 @@ class PJSON : public PObject
     class Number : public Base
     {
       protected:
-        long double m_value;
+        NumberType m_value;
       public:
-        explicit Number(long double value = 0);
+        explicit Number(NumberType value = 0);
         virtual bool IsType(Types type) const;
         virtual void ReadFrom(istream & strm);
         virtual void PrintOn(ostream & strm) const;
         virtual Base * DeepClone() const;
-        Number & operator=(long double value) { m_value = value; return *this; }
-        void SetValue(long double value) { m_value = value; }
-        long double GetValue() const { return m_value; }
+        Number & operator=(NumberType value) { m_value = value; return *this; }
+        void SetValue(NumberType value) { m_value = value; }
+        NumberType GetValue() const { return m_value; }
     };
 
     class Boolean : public Base

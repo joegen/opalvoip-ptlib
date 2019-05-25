@@ -34,7 +34,9 @@
 #include <ptclib/pjson.h>
 #include <ptclib/cypher.h>
 
-#include <tgmath.h>
+#ifndef _MSC_VER
+  #include <tgmath.h>
+#endif
 
 #define new PNEW
 #define PTraceModule() "JSON"
@@ -443,7 +445,7 @@ uint64_t PJSON::Object::GetUnsigned64(const PString & name) const
 }
 
 
-double PJSON::Object::GetNumber(const PString & name) const
+PJSON::NumberType PJSON::Object::GetNumber(const PString & name) const
 {
   const Number * num = Get<Number>(name);
   return num != NULL ? num->GetValue() : 0;
@@ -510,7 +512,7 @@ bool PJSON::Object::SetString(const PString & name, const PString & value)
 }
 
 
-bool PJSON::Object::SetNumber(const PString & name, double value)
+bool PJSON::Object::SetNumber(const PString & name, NumberType value)
 {
   if (!Set(name, e_Number))
     return false;
@@ -654,7 +656,7 @@ uint64_t PJSON::Array::GetUnsigned64(size_t index) const
 }
 
 
-double PJSON::Array::GetNumber(size_t index) const
+PJSON::NumberType PJSON::Array::GetNumber(size_t index) const
 {
   const Number * num = Get<Number>(index);
   return num != NULL ? num->GetValue() : 0;
@@ -709,7 +711,7 @@ void PJSON::Array::AppendString(const PString & value)
 }
 
 
-void PJSON::Array::AppendNumber(double value)
+void PJSON::Array::AppendNumber(NumberType value)
 {
   Append(e_Number);
   dynamic_cast<Number &>(*back()) = value;
@@ -747,7 +749,7 @@ PJSON::Base * PJSON::String::DeepClone() const
 }
 
 
-PJSON::Number::Number(long double value)
+PJSON::Number::Number(NumberType value)
   : m_value(value)
 {
 }
@@ -1029,7 +1031,7 @@ PString PJWT::GetAudience() const
 
 void PJWT::SetExpiration(const PTime & when)
 {
-  GetObject().SetNumber("exp", (double)when.GetTimeInSeconds());
+  GetObject().SetNumber("exp", (NumberType)when.GetTimeInSeconds());
 }
 
 
@@ -1041,7 +1043,7 @@ PTime PJWT::GetExpiration() const
 
 void PJWT::SetNotBefore(const PTime & when)
 {
-  GetObject().SetNumber("nbf", (double)when.GetTimeInSeconds());
+  GetObject().SetNumber("nbf", (NumberType)when.GetTimeInSeconds());
 }
 
 
@@ -1053,7 +1055,7 @@ PTime PJWT::GetNotBefore() const
 
 void PJWT::SetIssuedAt(const PTime & when)
 {
-  GetObject().SetNumber("iat", (double)when.GetTimeInSeconds());
+  GetObject().SetNumber("iat", (NumberType)when.GetTimeInSeconds());
 }
 
 
