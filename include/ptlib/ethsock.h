@@ -330,9 +330,13 @@ class PEthSocket : public PSocket
 
         PINDEX GetSize() const { return m_rawSize; }
 
+        void SetDataLinkType(unsigned dataLinkType) { m_dataLinkType = dataLinkType;  }
+        unsigned GetDataLinkType() const { return m_dataLinkType;  }
+
       protected:
         PBYTEArray  m_rawData;
         PINDEX      m_rawSize;
+        unsigned    m_dataLinkType;
 
         PBYTEArray  m_fragments;
         bool        m_fragmentated;

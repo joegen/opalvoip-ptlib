@@ -56,6 +56,12 @@ struct PEthFrameHeader {
   };
 };
 
+struct PCookedFrameHeader {
+  PUInt16b m_packetType;
+  PUInt16b m_linkAddrType;
+  PUInt16b m_linkAddrLen;
+  uint8_t  m_linkAddr[4]; // Make 4 bytes as total header size will then be sizeof(PCookedFrameHeader)+m_linkAddrLen
+};
 
 #pragma pack()
 
@@ -332,6 +338,7 @@ PBoolean PEthSocket::Listen(unsigned, WORD, Reusability)
 PEthSocket::Frame::Frame(PINDEX maxSize)
   : m_rawData(maxSize)
   , m_rawSize(0)
+  , m_dataLinkType(1)
   , m_fragmentated(false)
   , m_fragmentProto(0)
   , m_fragmentProcessed(false)
@@ -397,6 +404,17 @@ int PEthSocket::Frame::GetDataLink(PBYTEArray & payload)
 
 int PEthSocket::Frame::GetDataLink(PBYTEArray & payload, Address & src, Address & dst)
 {
+  if (m_dataLinkType == 113) {
+    const PCookedFrameHeader & header = m_rawData.GetAs<PCookedFrameHeader>();
+    if ((size_t)m_rawSize < sizeof(header)+header.m_linkAddrLen) {
+      PTRACE(2, "Frame severely truncated, size=" << m_rawSize);
+      return -1;
+    }
+
+    payload.Attach(&header.m_linkAddr[header.m_linkAddrLen+4], m_rawSize - sizeof(header)+header.m_linkAddrLen);
+    return *(PUInt16b *)&header.m_linkAddr[header.m_linkAddrLen+2];
+  }
+
   const PEthFrameHeader & header = m_rawData.GetAs<PEthFrameHeader>();
 
   if ((size_t)m_rawSize < sizeof(header.dst_addr)+sizeof(header.src_addr)+sizeof(header.snap.length)) {
