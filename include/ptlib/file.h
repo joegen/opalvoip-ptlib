@@ -592,7 +592,8 @@ class PFile : public PChannel
         const PString & prefix = PString::Empty(), // If empty, uses PProcess::Current().GetName()
         const PString & suffix = PString::Empty(),
         const PString & timestamp = DefaultTimestamp(),
-        PINDEX maxSize = 1000000000 // A gigabyte
+        off_t maxSize = 1000000000, // A gigabyte
+        off_t minFree = -10 // Percent
       );
       RotateInfo(const RotateInfo & other);
       RotateInfo & operator=(const RotateInfo & other);
@@ -642,13 +643,13 @@ class PFile : public PChannel
         const PString & msg   ///< Message to output
       );
 
-      enum Period {
+      P_DECLARE_STREAMABLE_ENUM(Period,
         SizeOnly,
         Hourly,
         Daily,
         Weekly,
         Monthly
-      };
+      );
 
       PDirectory      m_directory;    ///< Destination directory for rotated file, default to same s log file
       PFilePathString m_prefix;       ///< File name prefix, default PProcess::GetName()
@@ -656,6 +657,7 @@ class PFile : public PChannel
       int             m_timeZone;     ///< TIme zone for output and rotated file names
       PFilePathString m_suffix;       ///< File name suffix, default ".log"
       off_t           m_maxSize;      ///< Size in bytes which triggers a rotation, default zero disables
+      off_t           m_freeDisk;     ///< Minimum free space for the disk. Negative is percentage, positive is bytes
       Period          m_period;       ///< Rotate on the peroid regardless of size.
       unsigned        m_maxFileCount; ///< When this many files have been rotated, oldest is deleted
       PTimeInterval   m_maxFileAge;   ///< Rotated files older than this are deleted

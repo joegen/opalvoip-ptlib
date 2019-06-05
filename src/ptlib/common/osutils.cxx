@@ -4699,7 +4699,8 @@ PFile::RotateInfo::RotateInfo(const PDirectory & dir,
                               const PString & prefix,
                               const PString & suffix,
                               const PString & timestamp,
-                              PINDEX maxSize)
+                              off_t maxSize,
+                              off_t freeDisk)
   : m_directory(dir)
   , m_prefix(prefix.IsEmpty() ? PProcess::Current().GetName() : prefix)
   , m_timestamp(timestamp)
@@ -4710,6 +4711,7 @@ PFile::RotateInfo::RotateInfo(const PDirectory & dir,
 #endif
   , m_suffix(suffix)
   , m_maxSize(maxSize)
+  , m_freeDisk(freeDisk)
   , m_period(SizeOnly)
   , m_maxFileCount(0)
   , m_lastTime(0)
@@ -4723,6 +4725,7 @@ PFile::RotateInfo::RotateInfo(const RotateInfo & other)
   , m_timestamp(other.m_timestamp)
   , m_timeZone(other.m_timeZone)
   , m_maxSize(other.m_maxSize)
+  , m_freeDisk(other.m_freeDisk)
   , m_period(other.m_period)
   , m_maxFileCount(other.m_maxFileCount)
   , m_lastTime(0)
@@ -4737,6 +4740,7 @@ PFile::RotateInfo & PFile::RotateInfo::operator=(const RotateInfo & other)
   m_timestamp = other.m_timestamp;
   m_timeZone = other.m_timeZone;
   m_maxSize = other.m_maxSize;
+  m_freeDisk = other.m_freeDisk;
   m_period = other.m_period;
   m_maxFileCount = other.m_maxFileCount;
   return *this;
@@ -4746,6 +4750,20 @@ PFile::RotateInfo & PFile::RotateInfo::operator=(const RotateInfo & other)
 bool PFile::RotateInfo::CanRotate() const
 {
   return m_maxSize > 0 && !m_timestamp.IsEmpty();
+}
+
+
+typedef std::multimap<PTime, PFilePath> FilesByTime;
+
+static void DeleteOne(PFile::RotateInfo & info, FilesByTime & rotatedFiles, const char * msg)
+{
+  FilesByTime::iterator itFile = rotatedFiles.begin();
+  PFilePath filePath = itFile->second;
+  if (PFile::Remove(filePath))
+    info.OnMessage(false, PSTRSTRM("Removed " << msg << " file \"" << filePath << '"'));
+  else
+    info.OnMessage(true, PSTRSTRM("Could not remove " << msg << " file \"" << filePath << '"'));
+  rotatedFiles.erase(itFile);
 }
 
 
@@ -4761,31 +4779,23 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
 
   switch (m_period) {
     case Hourly :
-      if (now.GetHour() != m_lastTime.GetHour()) {
-        PTRACE(4, &file, "Hourly");
+      if (now.GetHour() != m_lastTime.GetHour())
         force = true;
-      }
       break;
 
     case Daily :
-      if (now.GetDay() != m_lastTime.GetDay()) {
-        PTRACE(4, &file, "Daily");
+      if (now.GetDay() != m_lastTime.GetDay())
         force = true;
-      }
       break;
 
     case Weekly :
-      if (now.GetDayOfWeek() != m_lastTime.GetDayOfWeek() && now.GetDayOfWeek() == PTime::Sunday) {
-        PTRACE(4, &file, "Weekly");
+      if (now.GetDayOfWeek() != m_lastTime.GetDayOfWeek() && now.GetDayOfWeek() == PTime::Sunday)
         force = true;
-      }
       break;
 
     case Monthly :
-      if (now.GetMonth() != m_lastTime.GetMonth()) {
-        PTRACE(4, &file, "Monthly");
+      if (now.GetMonth() != m_lastTime.GetMonth())
         force = true;
-      }
       break;
 
     default :
@@ -4794,6 +4804,16 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
 
   if (!force)
     return false;
+
+  PTRACE(4, &file, "Rotating:"
+         " last=" << m_lastTime.AsString(PTime::LoggingFormat, PTrace::GetTimeZone()) << ","
+         " period=" << m_period << ","
+         " maxFileCount=" << m_maxFileCount << ","
+         " maxFileAge=" << m_maxFileAge.AsString(0, PTimeInterval::IncludeDays) << ","
+         " freeDisk=" << m_freeDisk << ","
+         " dir=" << m_directory << ","
+         " prefix=" << m_prefix << ","
+         " suffix=" << m_suffix);
 
   m_lastTime = now;
 
@@ -4822,9 +4842,8 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
   if (badMove)
     OnMessage(true, PSTRSTRM("Could not move file from " << file.GetFilePath() << " to " << rotatedFile));
 
-  if (m_maxFileCount > 0 || m_maxFileAge > 0) {
-    std::multimap<PTime, PFilePath> rotatedFiles;
-    std::multimap<PTime, PFilePath>::iterator itFile;
+  if (m_maxFileCount > 0 || m_maxFileAge > 0 || m_freeDisk != 0) {
+    FilesByTime rotatedFiles;
 
     PDirectory dir(m_directory);
     if (dir.Open(PFileInfo::RegularFile)) {
@@ -4841,26 +4860,28 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
     }
 
     if (m_maxFileCount > 0) {
-      while (rotatedFiles.size() > m_maxFileCount) {
-        itFile = rotatedFiles.begin();
-        PFilePath filePath = itFile->second;
-        if (PFile::Remove(filePath))
-          OnMessage(false, PSTRSTRM("Removed excess file \"" << filePath << '"'));
-        else
-          OnMessage(true, PSTRSTRM("Could not remove excess file \"" << filePath << '"'));
-        rotatedFiles.erase(itFile);
-      }
+      while (rotatedFiles.size() > m_maxFileCount)
+        DeleteOne(*this, rotatedFiles, "excess");
     }
 
     if (m_maxFileAge > 0) {
       PTime then = now - m_maxFileAge;
-      while (!rotatedFiles.empty() && (itFile = rotatedFiles.begin())->first < then) {
-        PFilePath filePath = itFile->second;
-        if (PFile::Remove(filePath))
-          OnMessage(false, PSTRSTRM("Removed aged (" << itFile->first << ") file \"" << filePath << '"'));
-        else
-          OnMessage(true, PSTRSTRM("Could not remove aged file \"" << filePath << '"'));
-        rotatedFiles.erase(itFile);
+      while (!rotatedFiles.empty() && rotatedFiles.begin()->first < then)
+        DeleteOne(*this, rotatedFiles, "aged");
+    }
+
+    if (m_freeDisk != 0) {
+      int64_t total, free;
+      uint32_t cluster;
+      while (!rotatedFiles.empty() && dir.GetVolumeSpace(total, free, cluster)) {
+        int64_t limit = m_freeDisk > 0 ? m_freeDisk : (total * -m_freeDisk / 100);
+        PTRACE(4, &file, "Disk:"
+               " total=" << PString(PString::ScaleSI, total, 4) << "b,"
+               " free="  << PString(PString::ScaleSI, free,  4) << "b,"
+               " limit=" << PString(PString::ScaleSI, limit, 4) << 'b');
+        if (free > limit)
+          break;
+        DeleteOne(*this, rotatedFiles, "low disk space");
       }
     }
   }
