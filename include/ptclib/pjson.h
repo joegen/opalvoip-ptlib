@@ -108,6 +108,8 @@ class PJSON : public PObject
         bool SetNumber(const PString & name, NumberType value);
         bool SetBoolean(const PString & name, bool value);
 
+        bool Remove(const PString & name);
+
       private:
         Object(const Object &) { }
         void operator=(const Object &) { }
@@ -148,6 +150,8 @@ class PJSON : public PObject
         void AppendString(const PString & value);
         void AppendNumber(NumberType value);
         void AppendBoolean(bool value);
+
+        bool Remove(size_t index);
 
       private:
         Array(const Array &) { }
