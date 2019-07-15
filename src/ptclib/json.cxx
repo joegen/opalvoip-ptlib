@@ -530,6 +530,18 @@ bool PJSON::Object::SetBoolean(const PString & name, bool value)
 }
 
 
+bool PJSON::Object::Remove(const PString & name)
+{
+  iterator it = find(name);
+  if (it == end())
+    return false;
+
+  delete it->second;
+  erase(it);
+  return true;
+}
+
+
 PJSON::Array::~Array()
 {
   for (iterator it = begin(); it != end(); ++it)
@@ -722,6 +734,19 @@ void PJSON::Array::AppendBoolean(bool value)
 {
   Append(e_Boolean);
   dynamic_cast<Boolean &>(*back()) = value;
+}
+
+
+bool PJSON::Array::Remove(size_t index)
+{
+  if (index >= size())
+    return false;
+
+  iterator it = begin();
+  advance(it, index);
+  delete *it;
+  erase(it);
+  return true;
 }
 
 
