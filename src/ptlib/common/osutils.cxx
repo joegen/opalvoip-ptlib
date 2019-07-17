@@ -4872,7 +4872,7 @@ bool PFile::RotateInfo::Rotate(PFile & file, bool force, const PTime & now)
 
     if (m_freeDisk != 0) {
       int64_t total, free;
-      uint32_t cluster;
+      DWORD cluster;
       while (!rotatedFiles.empty() && dir.GetVolumeSpace(total, free, cluster)) {
         int64_t limit = m_freeDisk > 0 ? m_freeDisk : (total * -m_freeDisk / 100);
         PTRACE(4, &file, "Disk:"
