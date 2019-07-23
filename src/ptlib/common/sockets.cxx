@@ -2086,7 +2086,7 @@ bool PIPSocket::Address::IsSubNet(const Address & network, const Address & mask)
 }
 
 
-bool PIPSocket::Address::IsRFC1918() const
+bool PIPSocket::Address::IsPrivate() const
 {
   PINDEX offset = 0;
 #if P_HAS_IPV6
@@ -2103,19 +2103,11 @@ bool PIPSocket::Address::IsRFC1918() const
 
   BYTE b1 = (*this)[offset];
   BYTE b2 = (*this)[offset+1];
-  return (b1 == 10)
-          ||
-          (
-            (b1 == 172)
-            &&
-            (b2 >= 16) && (b2 <= 31)
-          )
-          ||
-          (
-            (b1 == 192) 
-            &&
-            (b2 == 168)
-          );
+  return  ((b1 == 10)                      ) || // RFC1918
+          ((b1 == 100) && ((b2&0xc0) == 64)) || // RFC6598
+          ((b1 == 169) && (b2 == 254)      ) || // RFC3927
+          ((b1 == 172) && ((b2&0xf0) == 16)) || // RFC1918
+          ((b1 == 192) && (b2 == 168)      ) ;  // RFC1918
 }
 
 
@@ -2232,7 +2224,7 @@ PIPSocket::Address PIPSocket::GetNetworkInterface(unsigned version)
   if (PIPSocket::GetInterfaceTable(interfaceTable)) {
     for (PINDEX i = 0; i < interfaceTable.GetSize(); ++i) {
       PIPSocket::Address localAddr = interfaceTable[i].GetAddress();
-      if (localAddr.GetVersion() == version && !localAddr.IsLoopback() && !localAddr.IsRFC1918())
+      if (localAddr.GetVersion() == version && !localAddr.IsLoopback() && !localAddr.IsPrivate())
         return localAddr;
     }
   }
