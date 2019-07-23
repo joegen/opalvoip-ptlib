@@ -73,7 +73,7 @@ bool PSTUNServer::Open(WORD port)
         && !interfaces[i].GetAddress().IsLinkLocal()
 #endif
 #ifndef _DEBUG
-        && !interfaces[i].GetAddress().IsRFC1918()
+        && !interfaces[i].GetAddress().IsPrivate()
 #endif
         ) {
       interfaceAddresses.push_back(interfaces[i].GetAddress());
