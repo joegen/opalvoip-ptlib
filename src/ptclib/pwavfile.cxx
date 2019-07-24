@@ -208,8 +208,10 @@ bool PWAVFile::SetAutoconvert(bool convert)
   if (!convert)
     return true;
 
-  if ((m_autoConverter = PWAVFileConverterFactory::CreateInstance(m_wavFmtChunk.format)) != NULL)
+  if ((m_autoConverter = PWAVFileConverterFactory::CreateInstance(m_wavFmtChunk.format)) != NULL) {
+    PTRACE(4, "Set format converter for type " << (WORD)m_wavFmtChunk.format);
     return true;
+  }
 
   PTRACE(2, "No format converter for type " << (WORD)m_wavFmtChunk.format);
   return false;
@@ -265,13 +267,16 @@ bool PWAVFile::RawRead(void * buf, PINDEX len)
     return false;
   }
 
-  if ((pos + (off_t)len) > fileLength)
-    len = fileLength - pos;
+  PINDEX adjustedLen = std::min(fileLength - pos, (off_t)len);
 
-  if (m_formatHandler != NULL)
-    return m_formatHandler->Read(*this, buf, len);
+  if (m_formatHandler == NULL)
+    return PFile::Read(buf, adjustedLen);
 
-  return PFile::Read(buf, len);
+  if (!m_formatHandler->Read(*this, buf, adjustedLen))
+    return false;
+
+  SetLastReadCount(adjustedLen);
+  return true;
 }
 
 
@@ -293,10 +298,14 @@ PBoolean PWAVFile::Write(const void * buf, PINDEX len)
 
 bool PWAVFile::RawWrite(const void * buf, PINDEX len)
 {
-  if (m_formatHandler != NULL)
-    return m_formatHandler->Write(*this, buf, len);
+  if (m_formatHandler == NULL)
+    return PFile::Write(buf, len);
 
-  return PFile::Write(buf, len);
+  if (!m_formatHandler->Write(*this, buf, len))
+    return false;
+
+  SetLastWriteCount(len);
+  return true;
 }
 
 
@@ -595,7 +604,9 @@ PBoolean PWAVFile::ProcessHeader()
     trace << " channel";
     if (m_readChannels > 1)
       trace << 's';
-    trace << '.'
+    if (m_autoConverter != NULL)
+      trace << ", converted from type " << (WORD)m_wavFmtChunk.format;
+    trace << ", " << PString(PString::ScaleSI, m_dataLength, 4) << "bytes."
           << PTrace::End;
   }
 #endif
