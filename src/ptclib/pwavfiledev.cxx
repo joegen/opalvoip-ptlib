@@ -109,11 +109,13 @@ bool PSoundChannel_WAVFile::Open(const Params & params)
   m_activeDirection = params.m_direction;
 
   if (params.m_direction == PSoundChannel::Player) {
-    SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
-    if (m_WAVFile.Open(params.m_device, PFile::WriteOnly)) {
-      m_WAVFile.SetChannels(m_channels);
-      m_WAVFile.SetSampleRate(m_sampleRate);
-      m_WAVFile.SetSampleSize(m_bytesPerSample*8);
+    if (SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample) &&
+        m_WAVFile.Open(params.m_device, PFile::WriteOnly) &&
+        m_WAVFile.SetChannels(m_channels) &&
+        m_WAVFile.SetSampleRate(m_sampleRate) &&
+        m_WAVFile.SetSampleSize(m_bytesPerSample*8))
+    {
+      PTRACE(4, "Opened Player \"" << m_WAVFile.GetFilePath() << '"');
       return true;
     }
 
@@ -133,9 +135,13 @@ bool PSoundChannel_WAVFile::Open(const Params & params)
     return false;
   }
 
-  if (params.m_sampleRate >= 8000 && m_WAVFile.GetSampleSize() == params.m_bitsPerSample) {
-    SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample);
-    return SetBuffers(320, 1);
+  if (params.m_sampleRate >= 8000 &&
+      params.m_bitsPerSample == m_WAVFile.GetSampleSize() &&
+      SetFormat(params.m_channels, params.m_sampleRate, params.m_bitsPerSample) &&
+      SetBuffers(320, 1))
+  {
+    PTRACE(4, "Opened Recorder \"" << m_WAVFile.GetFilePath() << "\", autoRepeat=" << ::boolalpha << m_autoRepeat);
+    return true;
   }
 
   Close();
@@ -179,7 +185,7 @@ bool PSoundChannel_WAVFile::RawWrite(const void * data, PINDEX size)
 bool PSoundChannel_WAVFile::RawRead(void * data, PINDEX size)
 {
   if (m_WAVFile.Read(data, size)) {
-    SetLastReadCount(m_WAVFile.GetLastReadCount() * 8 / m_WAVFile.GetSampleSize() * 1000 / m_WAVFile.GetSampleRate());
+    SetLastReadCount(m_WAVFile.GetLastReadCount());
     return true;
   }
 
