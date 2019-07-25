@@ -705,6 +705,25 @@ PBoolean PWAVFile::UpdateHeader()
   if (!PFile::Write(m_extendedHeader.GetPointer(), m_extendedHeader.GetSize()))
     return false;
 
+#if PTRACING
+  static unsigned const Level = 4;
+  if (PTrace::CanTrace(Level)) {
+    ostream & trace = PTRACE_BEGIN(Level);
+    trace << "Written \"" << GetFilePath() << "\" at " << m_readSampleRate << "Hz";
+    if (m_readSampleRate != m_wavFmtChunk.sampleRate)
+      trace << " (converted to " << m_wavFmtChunk.sampleRate << "Hz)";
+    trace << " using " << m_readChannels;
+    if (m_readChannels != m_wavFmtChunk.numChannels)
+      trace << " (converted to " << m_wavFmtChunk.numChannels << ')';
+    trace << " channel";
+    if (m_readChannels > 1)
+      trace << 's';
+    if (m_autoConverter != NULL)
+      trace << ", converted to type " << (WORD)m_wavFmtChunk.format;
+    trace << ", " << PString(PString::ScaleSI, m_dataLength, 4) << "bytes."
+          << PTrace::End;
+  }
+#endif
   return true;
 }
 
