@@ -1168,7 +1168,9 @@ PBoolean PWebSocket::Read(void * buf, PINDEX len)
 
     switch (opCode) {
       case Ping :
+        m_writeMutex.Wait();
         WriteHeader(Pong, false, 0, -1);
+        m_writeMutex.Signal();
         break;
 
       case ConnectionClose :
