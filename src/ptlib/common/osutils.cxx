@@ -2024,7 +2024,7 @@ bool PArgList::Parse(const char * spec, PBoolean optionsBeforeParams)
       m_parameterIndex.SetSize(param+1);
       m_parameterIndex[param++] = arg;
     }
-    else if (argStr == "--") {
+    else if (argStr.FindSpan("-") == P_MAX_INDEX) { // Nothing but dashes
       if (optionsBeforeParams) {
         ++arg;
         break;
