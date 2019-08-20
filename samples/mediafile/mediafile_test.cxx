@@ -253,7 +253,7 @@ void Test::DoWrite(const PFilePath & filename, const PStringArray & trackInfo, b
     if (variableFPS) {
       PTimeInterval ts;
       PTimeInterval rate = PTimeInterval::Frequency(fake->GetFrameRate());
-      for (PINDEX i = 0; i < fake->GetFrameRate() * 5; i++) {
+      for (unsigned i = 0; i < fake->GetFrameRate() * 5; i++) {
         fake->GetFrameDataNoDelay(frame.GetPointer());
         if (PRandom::Number(2) == 0)
           file->WriteVideo(videoTrack, frame, ts);
@@ -261,7 +261,7 @@ void Test::DoWrite(const PFilePath & filename, const PStringArray & trackInfo, b
       }
     }
     else {
-      for (PINDEX i = 0; i < fake->GetFrameRate() * 5; i++) {
+      for (unsigned i = 0; i < fake->GetFrameRate() * 5; i++) {
         fake->GetFrameDataNoDelay(frame.GetPointer());
         file->WriteVideo(videoTrack, frame);
       }
